@@ -122,10 +122,11 @@
     height: 2rem;
     min-width: 0;
     min-height: 0;
-    border-radius: 0.5rem;
+    border-radius: 0.25rem;
     // width: fit-content;
+    border: 1px solid transparent;
     &:hover {
-      border: 1px solid var(--divider-color);
+      border-color: var(--theme-divider-color);
     }
 
     .btn-close {
@@ -133,12 +134,12 @@
       margin-left: 0.125rem;
       padding: 0 0.25rem 0 0.125rem;
       height: 1.75rem;
-      color: var(--content-color);
+      color: var(--theme-content-color);
       border-left: 1px solid transparent;
 
       &:hover {
-        color: var(--caption-color);
-        border-left-color: var(--divider-color);
+        color: var(--theme-caption-color);
+        border-left-color: var(--theme-divider-color);
       }
     }
   }
