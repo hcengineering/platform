@@ -99,6 +99,8 @@
     "Show": "Отображение",
     "FilterArrayAll": "содержит все",
     "FilterArrayAny": "содержит любое из",
-    "Or": "Или"
+    "Or": "Или",
+    "HyperlinkPlaceholder": "https://jappleseed.com",
+    "CopyToClipboard": "Скопировать в буфер обмена"
   }
 }

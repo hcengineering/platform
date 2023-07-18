@@ -103,6 +103,8 @@
     "Show": "Show",
     "FilterArrayAll": "includes all",
     "FilterArrayAny": "includes any",
-    "Or": "Or"
+    "Or": "Or",
+    "HyperlinkPlaceholder": "https://jappleseed.com",
+    "CopyToClipboard": "Copy to clipboard"
   }
 }
