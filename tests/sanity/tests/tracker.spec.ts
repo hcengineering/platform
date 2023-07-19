@@ -172,6 +172,39 @@ test('report-time-from-issue-card', async ({ page }) => {
   }
 })
 
+test('report-multiple-time-from-issue-card', async ({ page }) => {
+  await navigate(page)
+  const assignee = 'Chen Rosamund'
+  const status = 'In Progress'
+  const time = 0.25
+
+  const name = getIssueName()
+
+  try {
+    await page.evaluate(() => localStorage.setItem('#platform.notification.timeout', '5000'))
+    await createIssue(page, { name, assignee, status })
+    await page.waitForSelector(`text="${name}"`)
+    await page.waitForSelector('text="View issue"')
+    await page.click('text="View issue"')
+  } finally {
+    await page.evaluate(() => localStorage.setItem('#platform.notification.timeout', '0'))
+  }
+
+  await page.click('#ReportedTimeEditor')
+
+  for (let i = 0; i < 5; i++) {
+    await expect(page.locator('.antiCard-content >> .footer')).toContainText(`Total: ${i}`)
+    await page.waitForSelector('text="Time spend reports"')
+    await page.click('#ReportsPopupAddButton')
+    await page.waitForSelector('text="Add time report"')
+    await expect(page.locator('button:has-text("Create")')).toBeDisabled()
+    await page.fill('[placeholder="Reported\\ days"]', `${time}`)
+    await expect(page.locator('button:has-text("Create")')).toBeEnabled()
+    await page.click('button:has-text("Create")')
+    await expect(page.locator('.antiCard-content >> .footer')).toContainText(`Total: ${i + 1}`)
+  }
+})
+
 test('report-time-from-main-view', async ({ page }) => {
   await navigate(page)
 
