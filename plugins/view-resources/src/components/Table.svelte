@@ -226,7 +226,7 @@
     _class,
     totalQuery ?? query ?? {},
     (result) => {
-      gtotal = result.total
+      gtotal = result.total === -1 ? 0 : result.total
     },
     {
       lookup,

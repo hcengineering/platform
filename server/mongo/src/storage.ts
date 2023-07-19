@@ -424,7 +424,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     cursor.maxTimeMS(30000)
     const res = (await cursor.toArray())[0]
     const result = res.results as WithLookup<T>[]
-    const total = res.totalCount?.shift()?.count ?? -1
+    const total = options?.total === true ? res.totalCount?.shift()?.count ?? 0 : -1
     for (const row of result) {
       await this.fillLookupValue(clazz, options?.lookup, row)
       this.clearExtraLookups(row)
