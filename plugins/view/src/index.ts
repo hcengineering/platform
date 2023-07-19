@@ -832,7 +832,9 @@ const view = plugin(viewId, {
     Delete: '' as IntlString,
     Then: '' as IntlString,
     Or: '' as IntlString,
-    Subscribed: '' as IntlString
+    Subscribed: '' as IntlString,
+    HyperlinkPlaceholder: '' as IntlString,
+    CopyToClipboard: '' as IntlString
   },
   icon: {
     Table: '' as Asset,

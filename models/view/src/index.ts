@@ -452,8 +452,8 @@ export function createModel (builder: Builder): void {
     builder,
     core.class.TypeHyperlink,
     view.component.HyperlinkPresenter,
-    view.component.StringEditor,
-    view.component.StringEditorPopup
+    view.component.HyperlinkEditor,
+    view.component.HyperlinkEditorPopup
   )
   classPresenter(builder, core.class.TypeIntlString, view.component.IntlStringPresenter)
   classPresenter(builder, core.class.TypeNumber, view.component.NumberPresenter, view.component.NumberEditor)
