@@ -18,7 +18,8 @@
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import TagsPopup from './TagsPopup.svelte'
 
-  export let objects: Doc[]
+  export let value: Doc | Doc[]
+  $: objects = Array.isArray(value) ? value : [value]
 
   let selected: Ref<TagElement>[] = []
   let tagRefs: TagReference[] = []
