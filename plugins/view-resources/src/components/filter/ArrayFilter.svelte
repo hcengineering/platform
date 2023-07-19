@@ -167,7 +167,7 @@
 
   const dispatch = createEventDispatcher()
 
-  getValues(search)
+  $: getValues(search)
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
@@ -179,9 +179,6 @@
       autoFocus={!$deviceOptionsStore.isMobile}
       bind:value={search}
       placeholder={presentation.string.Search}
-      on:change={() => {
-        getValues(search)
-      }}
     />
   </div>
   <div class="scroll">
