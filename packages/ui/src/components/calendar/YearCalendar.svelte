@@ -40,7 +40,7 @@
 <Scroller padding={'0 2.25rem'} fade={defaultSP}>
   <div class="year-erp-calendar">
     {#each [...Array(12).keys()] as m}
-      <div class="antiComponentBox flex-col flex-grow flex-wrap" style={`min-width: ${minWidth};`}>
+      <div class="antiComponentBox flex-col flex-grow flex-wrap" style:min-width={minWidth}>
         <span class="month-caption">{getMonthName(month(currentDate, m))}</span>
         <MonthCalendar
           {cellHeight}
@@ -63,6 +63,7 @@
   .year-erp-calendar {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(max(20rem, calc(100% / 5)), 1fr));
+    grid-auto-rows: 18.5rem;
     row-gap: 1rem;
     column-gap: 1rem;
     border-collapse: collapse;

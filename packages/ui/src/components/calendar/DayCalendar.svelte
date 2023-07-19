@@ -32,26 +32,27 @@
   export let currentDate: Date = selectedDate
   export let displayedDaysCount = 7
   export let displayedHours = 24
+  export let startHour = 0
   export let startFromWeekStart = true
   export let weekFormat: 'narrow' | 'short' | 'long' | undefined = displayedDaysCount > 4 ? 'short' : 'long'
-  // export let startHour = 0
 
   const dispatch = createEventDispatcher()
 
   const todayDate = new Date()
-
+  const cellBorder = 1
   $: fontSize = $deviceInfo.fontSize
+  $: cellHeight = 4 * fontSize
   $: weekMonday = startFromWeekStart
     ? getMonday(currentDate, mondayStart)
     : new Date(new Date(currentDate).setHours(0, 0, 0, 0))
 
-  interface CalendarCell {
-    id: number
-    start: number
-    end: number
-    day: number
-    element?: HTMLDivElement
+  const ampm = new Intl.DateTimeFormat([], { hour: 'numeric' }).resolvedOptions().hour12
+  // const timeZone = new Intl.DateTimeFormat([], { hour: 'numeric' }).resolvedOptions().timeZone
+
+  const getTimeFormat = (hour: number): string => {
+    return ampm ? `${hour > 12 ? hour - 12 : hour}${hour < 12 ? 'am' : 'pm'}` : `${addZero(hour)}:00`
   }
+
   interface CalendarElement {
     id: string
     date: Timestamp
@@ -65,28 +66,12 @@
     columns: CalendarRow[]
   }
 
-  const cells: CalendarCell[] = Array<CalendarCell>(displayedHours * 2 * displayedDaysCount)
   let container: HTMLElement
   let scroller: HTMLElement
   let calendarWidth: number = 0
   let calendarRect: DOMRect
   let colWidth: number = 0
 
-  for (let hourOfDay = 0; hourOfDay < displayedHours; hourOfDay++) {
-    for (let line = 1; line >= 0; line--) {
-      for (let dayOfWeek = 0; dayOfWeek < displayedDaysCount; dayOfWeek++) {
-        const cell = line
-          ? hourOfDay * 2 + displayedHours * 2 * dayOfWeek
-          : hourOfDay * 2 + displayedHours * 2 * dayOfWeek + 1
-        cells[cell] = {
-          id: cell,
-          start: line ? hourOfDay * 100 : hourOfDay * 100 + 30,
-          end: line ? hourOfDay * 100 + 30 : (hourOfDay + 1) * 100,
-          day: dayOfWeek
-        }
-      }
-    }
-  }
   let newEvents = events
   let grid: CalendarGrid[] = Array<CalendarGrid>(displayedDaysCount)
   $: if (newEvents !== events) {
@@ -158,83 +143,63 @@
       }
     }
   }
-
-  const checkSizes = (element: HTMLElement | Element) => {
-    calendarRect = element.getBoundingClientRect()
-    calendarWidth = calendarRect.width
-    colWidth = (calendarWidth - 3.5 * fontSize) / displayedDaysCount
-  }
-  const getCellByTime = (time: number, day: number, end: boolean = false): CalendarCell | undefined => {
-    return end
-      ? cells.filter((cell) => cell.start < time && time <= cell.end && cell.day === day)[0]
-      : cells.filter((cell) => cell.start <= time && time < cell.end && cell.day === day)[0]
-  }
-  const calcTimeOffset = (
-    date: Timestamp | Date,
-    rect: DOMRect,
-    needCorrect: boolean,
-    end: boolean = false
-  ): number => {
-    const mins = new Date(date).getMinutes()
-    if (mins === 0 || mins === 30) return end ? 2 : 1
-    else if (mins < 30) {
-      const res = end ? ((30 - mins) / 30) * rect.height : (mins / 30) * rect.height
-      return needCorrect ? res + 1 : res
-    } else {
-      const res = end ? ((60 - mins) / 30) * rect.height : ((mins - 30) / 30) * rect.height
-      return needCorrect ? res + 1 : res
-    }
-  }
   const checkIntersect = (date1: CalendarItem | CalendarElement, date2: CalendarItem | CalendarElement): boolean => {
     return (
       (date2.date <= date1.date && date2.dueDate > date1.date) ||
       (date2.date >= date1.date && date2.date < date1.dueDate)
     )
   }
-  const convertToTime = (date: Timestamp | Date): number => {
+  const convertToTime = (date: Timestamp | Date): { hours: number; mins: number } => {
     const temp = new Date(date)
-    return temp.getHours() * 100 + temp.getMinutes()
+    return { hours: temp.getHours() - startHour, mins: temp.getMinutes() }
   }
 
-  const getRect = (event: CalendarItem): { top: number; bottom: number; left: number; right: number } => {
+  const checkSizes = (element: HTMLElement | Element) => {
+    calendarRect = element.getBoundingClientRect()
+    calendarWidth = calendarRect.width
+    colWidth = (calendarWidth - 3.5 * fontSize) / displayedDaysCount
+  }
+
+  const getGridOffset = (mins: number, end: boolean = false): number => {
+    if (mins === 0) return end ? 2 + cellBorder : 2
+    return mins < 3 ? (end ? 1 : 2) : mins > 57 ? (end ? 2 + cellBorder : 1) : 1
+  }
+  const rem = (n: number): number => n * fontSize
+
+  const getRect = (
+    event: CalendarItem
+  ): { top: number; bottom: number; left: number; right: number; width: number } => {
     const result = { top: 0, bottom: 0, left: 0, right: 0, width: 0 }
     const checkDate = new Date(currentDate.getTime() + MILLISECONDS_IN_DAY * event.day)
-    const startDay = checkDate.setHours(0, 0, 0)
+    const startDay = checkDate.setHours(startHour, 0, 0)
     const endDay = checkDate.setHours(displayedHours - 1, 59, 59)
-    const startTime = event.date < startDay ? 0 : convertToTime(event.date)
-    const endTime = event.dueDate > endDay ? displayedHours * 100 : convertToTime(event.dueDate)
-    const startCell = getCellByTime(startTime, event.day)
-    const endCell = getCellByTime(endTime, event.day, true)
-
-    const scrollOffset = scroller?.scrollTop ?? 0
-    if (startCell?.element && endCell?.element) {
-      const rectStart = startCell.element.getBoundingClientRect()
-      const rectEnd = startCell.id === endCell.id ? rectStart : endCell.element.getBoundingClientRect()
-      const startTimeOffset = calcTimeOffset(event.date, rectStart, startCell.id !== endCell.id)
-      const endTimeOffset = calcTimeOffset(event.dueDate, rectEnd, startCell.id !== endCell.id, true)
-      result.top = rectStart.top - calendarRect.top + startTimeOffset + scrollOffset
-      result.bottom = calendarRect.bottom - rectEnd.bottom + endTimeOffset - scrollOffset
-
-      let cols = 1
-      let index: number = 0
-      grid[event.day].columns.forEach((col, i) =>
-        col.elements.forEach((el) => {
-          if (el.id === event.eventId) {
-            cols = el.cols
-            index = i
-          }
-        })
-      )
-      const elWidth = (rectStart.width - 0.25 * fontSize - (cols - 1) * 0.125 * fontSize) / cols
-      result.width = elWidth
-      result.left = rectStart.left - calendarRect.left + 0.125 * fontSize + index * elWidth + index * 0.125 * fontSize
-      result.right =
-        calendarRect.right -
-        rectEnd.right +
-        0.125 * fontSize +
-        (cols - index - 1) * elWidth +
-        (cols - index - 1) * 0.125 * fontSize
-    }
+    const startTime = event.date < startDay ? { hours: 0, mins: 0 } : convertToTime(event.date)
+    const endTime =
+      event.dueDate > endDay ? { hours: displayedHours - startHour, mins: 0 } : convertToTime(event.dueDate)
+    result.top =
+      rem(5.75) + cellHeight * startTime.hours + (startTime.mins / 60) * cellHeight + getGridOffset(startTime.mins)
+    result.bottom =
+      cellHeight * (displayedHours - startHour - endTime.hours - 1) +
+      ((60 - endTime.mins) / 60) * cellHeight +
+      getGridOffset(endTime.mins, true)
+    let cols = 1
+    let index: number = 0
+    grid[event.day].columns.forEach((col, i) =>
+      col.elements.forEach((el) => {
+        if (el.id === event.eventId) {
+          cols = el.cols
+          index = i
+        }
+      })
+    )
+    const elWidth = (colWidth - rem(0.25) - (cols - 1) * rem(0.125)) / cols
+    result.width = elWidth
+    result.left = rem(3.5) + event.day * colWidth + index * elWidth + index * rem(0.125) + rem(0.125) + cellBorder
+    result.right =
+      (displayedDaysCount - event.day - 1) * colWidth +
+      rem(0.125) +
+      (cols - index - 1) * elWidth +
+      (cols - index - 1) * rem(0.125)
     return result
   }
 
@@ -248,7 +213,7 @@
     bind:this={container}
     class="calendar-container"
     style:grid={`[header] 3.5rem [all-day] 2.25rem repeat(${
-      displayedHours * 2
+      (displayedHours - startHour) * 2
     }, [row-start] 2rem) / [time-col] 3.5rem repeat(${displayedDaysCount}, [col-start] 1fr)`}
     use:resizeObserver={(element) => checkSizes(element)}
   >
@@ -276,45 +241,44 @@
       >
         {#each alldays as ad}
           <div class="allday-event">
-            <slot name="allday" id={ad.eventId} />
+            <slot name="allday" id={ad.eventId} width={colWidth / alldays.length} />
           </div>
         {/each}
       </div>
     {/each}
 
-    {#each [...Array(displayedHours).keys()] as hourOfDay}
-      {#each [...Array(2).keys()] as half}
-        {#if hourOfDay === 0 && half === 0}
-          <div class="clear-cell" />
-        {:else if hourOfDay < displayedHours - 1 && half}
-          <div class="time-cell" style:grid-row={`row-start ${hourOfDay * 2 + 2} / row-start ${hourOfDay * 2 + 4}`}>
-            {addZero(hourOfDay + 1)}:00
-          </div>
-        {:else if half}
-          <div class="clear-cell" />
-        {/if}
-        {#each [...Array(displayedDaysCount).keys()] as dayOfWeek}
-          {@const day = getDay(weekMonday, dayOfWeek)}
-          {@const cell = hourOfDay * 2 + displayedHours * 2 * dayOfWeek + half}
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <div
-            bind:this={cells[cell].element}
-            class="empty-cell {half === 0 ? 'first-half' : 'second-half'}"
-            style:grid-column={`col-start ${dayOfWeek + 1} / ${dayOfWeek + 2}`}
-            on:click|stopPropagation={() => {
-              dispatch('create', {
-                day,
-                hour: hourOfDay,
-                halfHour: half === 1,
-                date: new Date(day.setHours(hourOfDay, half * 30, 0, 0))
-              })
-            }}
-          />
-        {/each}
+    {#each [...Array(displayedHours - startHour).keys()] as hourOfDay}
+      {#if hourOfDay === 0}
+        <div class="clear-cell" />
+      {:else if hourOfDay < displayedHours - startHour}
+        <div
+          class="time-cell"
+          style:grid-column={'time-col 1 / col-start 1'}
+          style:grid-row={`row-start ${hourOfDay * 2} / row-start ${hourOfDay * 2 + 2}`}
+        >
+          {getTimeFormat(hourOfDay + startHour)}
+        </div>
+      {/if}
+      {#each [...Array(displayedDaysCount).keys()] as dayOfWeek}
+        {@const day = getDay(weekMonday, dayOfWeek)}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <div
+          class="empty-cell"
+          style:grid-column={`col-start ${dayOfWeek + 1} / ${dayOfWeek + 2}`}
+          style:grid-row={`row-start ${hourOfDay * 2 + 1} / row-start ${hourOfDay * 2 + 3}`}
+          on:click|stopPropagation={() => {
+            dispatch('create', {
+              day,
+              hour: hourOfDay + startHour,
+              date: new Date(day.setHours(hourOfDay + startHour, 0, 0, 0))
+            })
+          }}
+        />
       {/each}
+      {#if hourOfDay === displayedHours - startHour - 1}<div class="clear-cell" />{/if}
     {/each}
 
-    {#key calendarWidth}
+    {#key calendarWidth || displayedDaysCount}
       {#each events.filter((ev) => !ev.allDay) as event, i}
         {@const rect = getRect(event)}
         <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
@@ -326,7 +290,7 @@
           style:right={`${rect.right}px`}
           tabindex={1000 + i}
         >
-          <slot name="event" id={event.eventId} />
+          <slot name="event" id={event.eventId} width={rect.width} />
         </div>
       {/each}
     {/key}
@@ -334,14 +298,9 @@
 </Scroller>
 
 <style lang="scss">
-  .first-half,
-  .second-half {
-    border-left: 1px solid var(--theme-divider-color);
-  }
-  .second-half {
-    border-bottom: 1px solid var(--theme-divider-color);
-  }
   .empty-cell {
+    border-left: 1px solid var(--theme-divider-color);
+    border-bottom: 1px solid var(--theme-divider-color);
   }
   .clear-cell {
   }
@@ -384,6 +343,10 @@
       }
 
       .day.today {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-width: 2.25rem;
         padding: 0.375rem;
         color: var(--accented-button-color);
         background-color: #3871e0;
