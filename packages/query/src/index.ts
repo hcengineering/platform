@@ -799,7 +799,7 @@ export class LiveQuery extends TxProcessor implements Client {
         }
 
         if (q.options?.limit !== undefined && q.result.length > q.options.limit) {
-          if (q.result.pop()?._id !== doc._id) {
+          if (q.result.pop()?._id !== doc._id || q.options?.total === true) {
             await this.callback(q)
           }
         } else {
