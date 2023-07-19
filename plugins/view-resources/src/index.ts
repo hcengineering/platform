@@ -44,6 +44,8 @@ import ValueFilter from './components/filter/ValueFilter.svelte'
 import HTMLEditor from './components/HTMLEditor.svelte'
 import HTMLPresenter from './components/HTMLPresenter.svelte'
 import HyperlinkPresenter from './components/HyperlinkPresenter.svelte'
+import HyperlinkEditor from './components/HyperlinkEditor.svelte'
+import HyperlinkEditorPopup from './components/HyperlinkEditorPopup.svelte'
 import IntlStringPresenter from './components/IntlStringPresenter.svelte'
 import GithubPresenter from './components/linkPresenters/GithubPresenter.svelte'
 import YoutubePresenter from './components/linkPresenters/YoutubePresenter.svelte'
@@ -202,6 +204,8 @@ export default async (): Promise<Resources> => ({
     StringEditor,
     StringPresenter,
     HyperlinkPresenter,
+    HyperlinkEditor,
+    HyperlinkEditorPopup,
     NumberEditor,
     NumberPresenter,
     BooleanPresenter,
