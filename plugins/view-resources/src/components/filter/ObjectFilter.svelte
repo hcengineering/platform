@@ -164,9 +164,6 @@
         autoFocus={!$deviceOptionsStore.isMobile}
         bind:value={search}
         placeholder={presentation.string.Search}
-        on:change={() => {
-          getValues(search)
-        }}
       />
     </div>
   {:else}
