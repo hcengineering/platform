@@ -1692,7 +1692,7 @@ export function createModel (builder: Builder): void {
         component: tags.component.ObjectsTagsEditorPopup,
         element: 'top',
         fillProps: {
-          _objects: 'objects'
+          _objects: 'value'
         }
       },
       label: tracker.string.Labels,
