@@ -245,9 +245,9 @@
                   <span class="lower"><Label label={m.label} /></span>
                   {#each value.added as cvalue}
                     {#if value.isObjectAdded}
-                      <ObjectPresenter value={cvalue} inline />
+                      <ObjectPresenter value={cvalue} inline accent />
                     {:else}
-                      <svelte:component this={m.presenter} value={cvalue} inline />
+                      <svelte:component this={m.presenter} value={cvalue} inline accent />
                     {/if}
                   {/each}
                 {:else if value.removed.length}
@@ -256,9 +256,9 @@
                   <span class="lower"><Label label={m.label} /></span>
                   {#each value.removed as cvalue}
                     {#if value.isObjectRemoved}
-                      <ObjectPresenter value={cvalue} inline />
+                      <ObjectPresenter value={cvalue} inline accent />
                     {:else}
-                      <svelte:component this={m.presenter} value={cvalue} inline />
+                      <svelte:component this={m.presenter} value={cvalue} inline accent />
                     {/if}
                   {/each}
                 {:else if value.set === null || value.set === undefined || value.set === ''}
@@ -272,9 +272,9 @@
                     <span class="lower"><Label label={activity.string.To} /></span>
                     <span class="strong overflow-label">
                       {#if value.isObjectSet}
-                        <ObjectPresenter value={value.set} inline />
+                        <ObjectPresenter value={value.set} inline accent />
                       {:else}
-                        <svelte:component this={m.presenter} value={value.set} inline />
+                        <svelte:component this={m.presenter} value={value.set} inline accent />
                       {/if}
                     </span>
                   {:else}
@@ -300,9 +300,9 @@
                   {#if !hasMessageType}
                     <div class="strong overflow-label">
                       {#if value.isObjectSet}
-                        <ObjectPresenter value={value.set} inline />
+                        <ObjectPresenter value={value.set} inline accent />
                       {:else}
-                        <svelte:component this={m.presenter} value={value.set} inline />
+                        <svelte:component this={m.presenter} value={value.set} inline accent />
                       {/if}
                     </div>
                   {/if}
