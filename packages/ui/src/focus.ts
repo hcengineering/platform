@@ -4,7 +4,7 @@ import { getContext, onDestroy, setContext } from 'svelte'
  * @public
  */
 export interface FocusManager {
-  next: (inc?: 1 | -1) => void
+  next: (inc?: 1 | -1) => boolean
   setFocus: (idx: number) => void
   setFocusPos: (order: number) => void
   updateFocus: (idx: number, order: number) => void
@@ -43,15 +43,15 @@ class FocusManagerImpl implements FocusManager {
     })
   }
 
-  next (inc?: 1 | -1): void {
+  next (inc?: 1 | -1): boolean {
     const current = this.elements[this.current]
     if (!(current?.canBlur?.() ?? false)) {
-      return
+      return false
     }
     while (true) {
       this.current = this.current + (inc ?? 1)
       if (this.elements[Math.abs(this.current) % this.elements.length].focus()) {
-        break
+        return true
       }
     }
   }
