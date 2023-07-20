@@ -67,7 +67,7 @@ export { default } from './plugin'
 export const DOMAIN_TASK = 'task' as Domain
 export const DOMAIN_KANBAN = 'kanban' as Domain
 @Model(task.class.State, core.class.Status)
-@UX(task.string.TaskState, task.icon.TaskState, undefined, 'rank')
+@UX(task.string.TaskState, task.icon.TaskState, undefined, 'rank', 'name')
 export class TState extends TStatus implements State {
   isArchived!: boolean
 }
