@@ -6,11 +6,9 @@
 
   function handleKey (evt: KeyboardEvent): void {
     if (evt.code === 'Tab' && isEnabled) {
-      const result = manager.next(evt.shiftKey ? -1 : 1)
-      if (result) {
-        evt.preventDefault()
-        evt.stopPropagation()
-      }
+      evt.preventDefault()
+      evt.stopPropagation()
+      manager.next(evt.shiftKey ? -1 : 1)
     }
   }
 </script>
