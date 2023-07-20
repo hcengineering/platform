@@ -115,7 +115,9 @@
             value = result._id
             dispatch('change', value)
           }
-          mgr?.setFocus(focusIndex)
+          if (result !== undefined) {
+            mgr?.setFocusPos(focusIndex)
+          }
         }
       )
     }
