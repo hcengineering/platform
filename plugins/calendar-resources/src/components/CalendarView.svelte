@@ -59,6 +59,7 @@
   export let createComponent: AnyComponent | undefined = undefined
 
   const mondayStart = true
+  let mode: CalendarMode = CalendarMode.Days
 
   // Current selected day
   let currentDate: Date = new Date()
@@ -202,8 +203,6 @@
     }).format(date)
   }
 
-  let mode: CalendarMode = CalendarMode.Days
-
   function showCreateDialog (date: Date, withTime: boolean) {
     if (createComponent === undefined) {
       return
@@ -226,11 +225,17 @@
     { id: 'year', label: calendar.string.ModeYear, mode: CalendarMode.Year }
   ]
 
-  const toCalendar = (events: Event[], date: Date, days: number = 1): CalendarItem[] => {
+  const toCalendar = (
+    events: Event[],
+    date: Date,
+    days: number = 1,
+    startHour: number = 0,
+    endHour: number = 24
+  ): CalendarItem[] => {
     const result: CalendarItem[] = []
     for (let day = 0; day < days; day++) {
-      const startDate = new Date(MILLISECONDS_IN_DAY * day + date.getTime()).setHours(0, 0, 0)
-      const lastDate = new Date(MILLISECONDS_IN_DAY * day + date.getTime()).setHours(23, 59, 59)
+      const startDate = new Date(MILLISECONDS_IN_DAY * day + date.getTime()).setHours(startHour, 0, 0)
+      const lastDate = new Date(MILLISECONDS_IN_DAY * day + date.getTime()).setHours(endHour - 1, 59, 59)
       events.forEach((event) => {
         const eventStart = event.allDay
           ? new Date(event.date + new Date().getTimezoneOffset() * 60 * 1000).getTime()
@@ -358,11 +363,12 @@
     bind:currentDate
     on:create={(e) => showCreateDialog(e.detail.date, true)}
   >
-    <svelte:fragment slot="allday" let:id>
+    <svelte:fragment slot="allday" let:id let:width>
       {@const event = objects.find((event) => event.eventId === id)}
       {#if event}
         <EventElement
           {event}
+          {width}
           allday
           on:create={(e) => {
             showCreateDialog(e.detail, true)
@@ -370,11 +376,12 @@
         />
       {/if}
     </svelte:fragment>
-    <svelte:fragment slot="event" let:id>
+    <svelte:fragment slot="event" let:id let:width>
       {@const event = objects.find((event) => event.eventId === id)}
       {#if event}
         <EventElement
           {event}
+          {width}
           on:create={(e) => {
             showCreateDialog(e.detail, true)
           }}
@@ -393,11 +400,12 @@
       bind:currentDate
       on:create={(e) => showCreateDialog(e.detail.date, true)}
     >
-      <svelte:fragment slot="allday" let:id>
+      <svelte:fragment slot="allday" let:id let:width>
         {@const event = objects.find((event) => event.eventId === id)}
         {#if event}
           <EventElement
             {event}
+            {width}
             allday
             on:create={(e) => {
               showCreateDialog(e.detail, true)
@@ -405,11 +413,12 @@
           />
         {/if}
       </svelte:fragment>
-      <svelte:fragment slot="event" let:id>
+      <svelte:fragment slot="event" let:id let:width>
         {@const event = objects.find((event) => event.eventId === id)}
         {#if event}
           <EventElement
             {event}
+            {width}
             on:create={(e) => {
               showCreateDialog(e.detail, true)
             }}

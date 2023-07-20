@@ -46,8 +46,8 @@
 </script>
 
 {#if size === 'huge'}
-  <div class="flex-grow h-full w-full p-1 flex-col" use:tooltip={tip}>
-    <div class="flex flex-reverse fs-title">
+  <div class="h-full w-full p-0-5 flex-col" use:tooltip={tip}>
+    <div class="flex-row-reverse">
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
         class="date flex-center"
@@ -107,25 +107,24 @@
   .event {
     border-radius: 0.25rem;
     padding: 0rem 0.5rem;
-    color: var(--accent-color);
+    color: var(--theme-caption-color);
   }
   .date {
-    border-radius: 50%;
     width: 1.5rem;
     height: 1.5rem;
-    padding: 0.25rem;
+    font-size: 0.75rem;
+    border-radius: 0.375rem;
   }
   .cell {
     border-radius: 0.25rem;
     border: 1px solid transparent;
   }
   .today {
-    color: var(--caption-color);
-    background-color: var(--accented-button-default);
-    border-color: var(--accented-button-outline);
+    color: var(--accented-button-color);
+    background-color: #3871e0;
   }
   .selected:not(.today, .wrongMonth) {
-    color: var(--caption-color);
+    color: var(--theme-caption-color);
     background-color: var(--accented-button-disabled);
     border-color: var(--accented-button-outline);
   }
