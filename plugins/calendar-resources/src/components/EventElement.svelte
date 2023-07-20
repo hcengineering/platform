@@ -20,11 +20,13 @@
 
   export let event: Event
   export let allday: boolean = false
+  export let width: number = 0
 
   $: startDate = new Date(event.date)
   $: endDate = new Date(event.dueDate)
   $: oneRow = event.dueDate - event.date <= MILLISECONDS_IN_MINUTE * 30 || allday
   $: narrow = event.dueDate - event.date < MILLISECONDS_IN_MINUTE * 25
+  $: empty = width < 44
 
   const getTime = (date: Date): string => {
     return `${addZero(date.getHours())}:${addZero(date.getMinutes())}`
@@ -36,15 +38,16 @@
   <div
     class="event-container"
     class:oneRow
-    use:tooltip={oneRow ? { component: EventPresenter, props: { value: event } } : {}}
+    class:empty
+    use:tooltip={{ component: EventPresenter, props: { value: event } }}
     on:click|stopPropagation={() => {
       if (event) showPanel(view.component.EditDoc, event._id, event._class, 'content')
     }}
   >
-    {#if !narrow}
-      <b class:overflow-label={oneRow}>{event.title}</b>
+    {#if !narrow && !empty}
+      <b class="overflow-label">{event.title}</b>
     {/if}
-    {#if !oneRow}
+    {#if !oneRow && !empty}
       <span class="overflow-label text-sm">{getTime(startDate)}-{getTime(endDate)}</span>
     {/if}
   </div>
@@ -67,12 +70,12 @@
     border-radius: 0.25rem;
     cursor: pointer;
 
-    &:not(.oneRow) {
-      padding: 0.25rem 1rem;
+    &:not(.oneRow, .empty) {
+      padding: 0.25rem 0.5rem 0.25rem 1rem;
     }
-    &.oneRow {
+    &.oneRow:not(.empty) {
       justify-content: center;
-      padding: 0 1rem;
+      padding: 0 0.25rem 0 1rem;
     }
   }
 </style>

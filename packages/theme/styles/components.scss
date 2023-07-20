@@ -630,10 +630,13 @@
   }
 }
 
+.scroller-header,
 .scroller-thead {
   position: sticky;
-  z-index: 2;
   top: 0;
+  z-index: 2;
+}
+.scroller-thead {
   height: 3rem;
   background-color: var(--theme-table-header-color);
 
