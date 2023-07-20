@@ -166,6 +166,7 @@ export interface Class<T extends Obj> extends Classifier {
   domain?: Domain
   shortLabel?: string
   sortingKey?: string
+  filteringKey?: string
 }
 
 /**

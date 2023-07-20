@@ -89,7 +89,7 @@ export const DOMAIN_TRACKER = 'tracker' as Domain
  * @public
  */
 @Model(tracker.class.IssueStatus, core.class.Status)
-@UX(tracker.string.IssueStatuses, undefined, undefined, 'rank')
+@UX(tracker.string.IssueStatuses, undefined, undefined, 'rank', 'name')
 export class TIssueStatus extends TStatus implements IssueStatus {}
 
 /**
