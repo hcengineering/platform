@@ -84,9 +84,9 @@
     }
 
     const resultQuery =
-      search !== '' && clazz.sortingKey
+      search !== '' && clazz.filteringKey
         ? {
-            [clazz.sortingKey]: { $like: '%' + search + '%' },
+            [clazz.filteringKey]: { $like: '%' + search + '%' },
             _id: { $in: Array.from(targets.keys()) }
           }
         : {
@@ -155,7 +155,7 @@
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
-  {#if clazz.sortingKey}
+  {#if clazz.filteringKey}
     <div class="header">
       <EditWithIcon
         icon={IconSearch}
