@@ -204,6 +204,24 @@ export function createModel (builder: Builder): void {
     telegram.ids.NewMessageNotification
   )
 
+  builder.createDoc(
+    activity.class.TxViewlet,
+    core.space.Model,
+    {
+      objectClass: telegram.class.Message,
+      icon: contact.icon.Telegram,
+      txClass: core.class.TxCreateDoc,
+      match: {
+        'attributes.incoming': true
+      },
+      label: telegram.string.NewIncomingMessage,
+      display: 'inline',
+      editable: false,
+      hideOnRemove: true
+    },
+    telegram.ids.NewMessageNotificationViewlet
+  )
+
   builder.mixin(telegram.class.Message, core.class.Class, core.mixin.FullTextSearchContext, {
     parentPropagate: false
   })

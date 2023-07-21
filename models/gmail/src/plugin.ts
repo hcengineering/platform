@@ -44,6 +44,7 @@ export default mergeIds(gmailId, gmail, {
   },
   ids: {
     TxSharedCreate: '' as Ref<TxViewlet>,
+    NewMessageNotification: '' as Ref<TxViewlet>,
     EmailNotificationGroup: '' as Ref<NotificationGroup>
   },
   activity: {

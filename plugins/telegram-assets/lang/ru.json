@@ -20,6 +20,7 @@
     "Incoming": "Входящее",
     "Messages": "Сообщения",
     "NewMessage": "Новое сообщение",
+    "NewIncomingMessage": "Прислал новое сообщение",
     "Telegram": "Telegram",
     "TelegramIntegrationDesc": "Подключить Telegram",
     "Status": "Статус",
