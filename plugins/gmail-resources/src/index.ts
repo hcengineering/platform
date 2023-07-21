@@ -21,7 +21,6 @@ import TxSharedCreate from './components/activity/TxSharedCreate.svelte'
 import TxWriteMessage from './components/activity/TxWriteMessage.svelte'
 import Configure from './components/Configure.svelte'
 import Connect from './components/Connect.svelte'
-import MessagePresenter from './components/MessagePresenter.svelte'
 import IconGmail from './components/icons/GmailColor.svelte'
 import Main from './components/Main.svelte'
 import NewMessages from './components/NewMessages.svelte'
@@ -34,8 +33,7 @@ export default async (): Promise<Resources> => ({
     Connect,
     IconGmail,
     NewMessages,
-    Configure,
-    MessagePresenter
+    Configure
   },
   activity: {
     TxSharedCreate,

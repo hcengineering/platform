@@ -263,8 +263,4 @@ export function createModel (builder: Builder): void {
   builder.mixin(gmail.class.Message, core.class.Class, core.mixin.FullTextSearchContext, {
     parentPropagate: false
   })
-
-  builder.mixin(gmail.class.Message, core.class.Class, view.mixin.ObjectPresenter, {
-    presenter: gmail.component.MessagePresenter
-  })
 }

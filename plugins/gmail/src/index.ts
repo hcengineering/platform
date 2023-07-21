@@ -85,8 +85,7 @@ export default plugin(gmailId, {
     Connect: '' as AnyComponent,
     IconGmail: '' as AnyComponent,
     NewMessages: '' as AnyComponent,
-    Configure: '' as AnyComponent,
-    MessagePresenter: '' as AnyComponent
+    Configure: '' as AnyComponent
   },
   integrationType: {
     Gmail: '' as Ref<IntegrationType>
