@@ -75,7 +75,7 @@
 
     {#if node}
       <div class="an-element__icon-arrow" class:collapsed>
-        <svg fill="currentColor" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+        <svg class="svg-small" fill="currentColor" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
           <polygon points="11.3,5.8 8,9.1 4.7,5.8 4,6.5 8,10.5 12,6.5 " />
         </svg>
       </div>
