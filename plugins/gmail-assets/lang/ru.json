@@ -34,6 +34,7 @@
     "Shared": "Публичный",
     "AvailableTo": "Доступен для",
     "HaveWrittenEmail": "написал(а) сообщение",
+    "NewIncomingMessage": "Прислал вам новое сообщение",
     "ConfigLabel": "Электронная почта",
     "ConfigDescription": "Расширение по работе с Gmail электронной почтой"
   }

@@ -34,6 +34,7 @@
     "Shared": "Shared",
     "AvailableTo": "Available to",
     "HaveWrittenEmail": "have written an email",
+    "NewIncomingMessage": "Sent you a new email",
     "ConfigLabel": "Email",
     "ConfigDescription": "Extension for Gmail email integration"
   }

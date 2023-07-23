@@ -20,6 +20,7 @@
     "Incoming": "Incoming",
     "Messages": "Messages",
     "NewMessage": "New message",
+    "NewIncomingMessage": "Sent you a new message",
     "Telegram": "Telegram",
     "TelegramIntegrationDesc": "Use telegram integration",
     "Status": "Status",

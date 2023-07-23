@@ -35,11 +35,13 @@ export default mergeIds(telegramId, telegram, {
     Status: '' as IntlString,
     ConfigLabel: '' as IntlString,
     ConfigDescription: '' as IntlString,
-    NewMessage: '' as IntlString
+    NewMessage: '' as IntlString,
+    NewIncomingMessage: '' as IntlString
   },
   ids: {
     TxMessage: '' as Ref<TxViewlet>,
     TxSharedCreate: '' as Ref<TxViewlet>,
+    NewMessageNotificationViewlet: '' as Ref<TxViewlet>,
     NotificationGroup: '' as Ref<NotificationGroup>
   },
   function: {

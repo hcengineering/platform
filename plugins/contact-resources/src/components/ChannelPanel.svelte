@@ -43,6 +43,9 @@
 
 {#await getPresenter(channel) then presenter}
   {#if presenter}
-    <Component is={presenter} props={{ embedded, _id: channel?.attachedTo, _class: channel?.attachedToClass }} />
+    <Component
+      is={presenter}
+      props={{ embedded, _id: channel?.attachedTo, _class: channel?.attachedToClass, channel }}
+    />
   {/if}
 {/await}
