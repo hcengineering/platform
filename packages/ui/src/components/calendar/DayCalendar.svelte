@@ -47,7 +47,6 @@
     : new Date(new Date(currentDate).setHours(0, 0, 0, 0))
 
   const ampm = new Intl.DateTimeFormat([], { hour: 'numeric' }).resolvedOptions().hour12
-  // const timeZone = new Intl.DateTimeFormat([], { hour: 'numeric' }).resolvedOptions().timeZone
 
   const getTimeFormat = (hour: number): string => {
     return ampm ? `${hour > 12 ? hour - 12 : hour}${hour < 12 ? 'am' : 'pm'}` : `${addZero(hour)}:00`
@@ -59,11 +58,20 @@
     dueDate: Timestamp
     cols: number
   }
-  interface CalendarRow {
+  interface CalendarColumn {
     elements: CalendarElement[]
   }
   interface CalendarGrid {
-    columns: CalendarRow[]
+    columns: CalendarColumn[]
+  }
+  interface CalendarADGrid {
+    alldays: (string | null)[]
+  }
+  interface CalendarADRows {
+    id: string
+    row: number
+    startCol: number
+    endCol: number
   }
 
   let container: HTMLElement
@@ -71,12 +79,19 @@
   let calendarWidth: number = 0
   let calendarRect: DOMRect
   let colWidth: number = 0
-
   let newEvents = events
   let grid: CalendarGrid[] = Array<CalendarGrid>(displayedDaysCount)
+  let alldays: CalendarItem[] = []
+  let alldaysGrid: CalendarADGrid[] = Array<CalendarADGrid>(displayedDaysCount)
+  let adMaxRow: number = 1
+  let adRows: CalendarADRows[]
+
   $: if (newEvents !== events) {
     grid = new Array<CalendarGrid>(displayedDaysCount)
+    alldaysGrid = new Array<CalendarADGrid>(displayedDaysCount)
     newEvents = events
+    alldays = []
+    prepareAllDays()
   }
   $: newEvents
     .filter((ev) => !ev.allDay)
@@ -143,6 +158,35 @@
       }
     }
   }
+
+  const prepareAllDays = () => {
+    alldays = events.filter((ev) => ev.day === -1)
+    adRows = []
+    for (let i = 0; i < displayedDaysCount; i++) alldaysGrid[i] = { alldays: [null] }
+    adMaxRow = 1
+    alldays.forEach((event, i) => {
+      const days = events
+        .filter((ev) => ev.allDay && ev.day !== -1 && event.eventId === ev.eventId)
+        .map((ev) => {
+          return ev.day
+        })
+      let emptyRow = 0
+      for (let checkRow = 0; checkRow < adMaxRow; checkRow++) {
+        const empty = days.every((day) => alldaysGrid[day].alldays[checkRow] === null)
+        if (empty) {
+          emptyRow = checkRow
+          break
+        } else if (checkRow === adMaxRow - 1) {
+          emptyRow = adMaxRow
+          adMaxRow++
+          break
+        }
+      }
+      adRows.push({ id: event.eventId, row: emptyRow, startCol: days[0], endCol: days[days.length - 1] })
+      days.forEach((day) => (alldaysGrid[day].alldays[emptyRow] = event.eventId))
+    })
+  }
+
   const checkIntersect = (date1: CalendarItem | CalendarElement, date2: CalendarItem | CalendarElement): boolean => {
     return (
       (date2.date <= date1.date && date2.dueDate > date1.date) ||
@@ -177,7 +221,10 @@
     const endTime =
       event.dueDate > endDay ? { hours: displayedHours - startHour, mins: 0 } : convertToTime(event.dueDate)
     result.top =
-      rem(5.75) + cellHeight * startTime.hours + (startTime.mins / 60) * cellHeight + getGridOffset(startTime.mins)
+      rem(3.75 + 2.125 * adMaxRow) +
+      cellHeight * startTime.hours +
+      (startTime.mins / 60) * cellHeight +
+      getGridOffset(startTime.mins)
     result.bottom =
       cellHeight * (displayedHours - startHour - endTime.hours - 1) +
       ((60 - endTime.mins) / 60) * cellHeight +
@@ -203,21 +250,35 @@
     return result
   }
 
+  const getADRect = (event: CalendarItem): { top: number; left: number; width: number } => {
+    const result = { top: 0, left: 0, width: 0 }
+    const index = adRows.findIndex((ev) => ev.id === event.eventId)
+    result.top = rem(0.125 + adRows[index].row * 2.125)
+    result.left = rem(0.125) + adRows[index].startCol * (colWidth + 0.125)
+    const w = adRows[index].endCol - adRows[index].startCol
+    result.width = colWidth + colWidth * w - rem(0.25)
+    return result
+  }
+
+  const getTimeZone = (): string => {
+    return new Intl.DateTimeFormat([], { timeZoneName: 'short' }).format(Date.now()).split(' ')[1]
+  }
+
   onMount(() => {
     if (container) checkSizes(container)
   })
 </script>
 
-<Scroller bind:divScroll={scroller} fade={{ multipler: { top: 5.75, bottom: 0 } }}>
+<Scroller bind:divScroll={scroller} fade={{ multipler: { top: 3.75 + 2.125 * adMaxRow, bottom: 0 } }}>
   <div
     bind:this={container}
     class="calendar-container"
-    style:grid={`[header] 3.5rem [all-day] 2.25rem repeat(${
+    style:grid={`[header] 3.5rem [all-day] ${2.125 * adMaxRow + 0.25}rem repeat(${
       (displayedHours - startHour) * 2
     }, [row-start] 2rem) / [time-col] 3.5rem repeat(${displayedDaysCount}, [col-start] 1fr)`}
     use:resizeObserver={(element) => checkSizes(element)}
   >
-    <div class="sticky-header head center"><span class="zone">CEST</span></div>
+    <div class="sticky-header head center"><span class="zone">{getTimeZone()}</span></div>
     {#each [...Array(displayedDaysCount).keys()] as dayOfWeek}
       {@const day = getDay(weekMonday, dayOfWeek)}
       <div class="sticky-header head title" class:center={displayedDaysCount > 1}>
@@ -227,25 +288,24 @@
     {/each}
 
     <div class="sticky-header center text-sm content-dark-color">All day</div>
-    {#each [...Array(displayedDaysCount).keys()] as dayOfWeek}
-      {@const day = getDay(weekMonday, dayOfWeek)}
-      {@const alldays = events.filter((ev) => ev.allDay && ev.day === dayOfWeek)}
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <div
-        class="sticky-header"
-        class:allday-container={alldays.length > 0}
-        style:width={`${colWidth}px`}
-        style:grid-template-columns={`repeat(${alldays.length}, minmax(0, 1fr))`}
-        on:click|stopPropagation={() =>
-          dispatch('create', { day, hour: -1, halfHour: false, date: new Date(day.setHours(0, 0, 0, 0)) })}
-      >
-        {#each alldays as ad}
-          <div class="allday-event">
-            <slot name="allday" id={ad.eventId} width={colWidth / alldays.length} />
+    <div class="sticky-header allday-container" style:grid-column={`col-start 1 / span ${displayedDaysCount}`}>
+      {#key calendarWidth || displayedDaysCount}
+        {#each alldays as event, i}
+          {@const rect = getADRect(event)}
+          <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+          <div
+            class="calendar-element"
+            style:top={`${rect.top}px`}
+            style:height={'2rem'}
+            style:left={`${rect.left}px`}
+            style:width={`${rect.width}px`}
+            tabindex={500 + i}
+          >
+            <slot name="allday" id={event.eventId} width={rect.width} />
           </div>
         {/each}
-      </div>
-    {/each}
+      {/key}
+    </div>
 
     {#each [...Array(displayedHours - startHour).keys()] as hourOfDay}
       {#if hourOfDay === 0}
@@ -264,13 +324,13 @@
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="empty-cell"
+          style:width={`${colWidth}px`}
           style:grid-column={`col-start ${dayOfWeek + 1} / ${dayOfWeek + 2}`}
           style:grid-row={`row-start ${hourOfDay * 2 + 1} / row-start ${hourOfDay * 2 + 3}`}
           on:click|stopPropagation={() => {
             dispatch('create', {
-              day,
-              hour: hourOfDay + startHour,
-              date: new Date(day.setHours(hourOfDay + startHour, 0, 0, 0))
+              date: new Date(day.setHours(hourOfDay + startHour, 0, 0, 0)),
+              withTime: true
             })
           }}
         />
@@ -279,7 +339,7 @@
     {/each}
 
     {#key calendarWidth || displayedDaysCount}
-      {#each events.filter((ev) => !ev.allDay) as event, i}
+      {#each newEvents.filter((ev) => !ev.allDay) as event, i}
         {@const rect = getRect(event)}
         <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
         <div
@@ -366,12 +426,6 @@
       align-items: center;
     }
     &.allday-container {
-      display: inline-grid;
-      justify-items: stretch;
-      gap: 0.125rem;
-      padding: 0.125rem;
-      max-width: 100%;
-
       .allday-event {
         background-color: red;
         border-radius: 0.25rem;
