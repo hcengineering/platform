@@ -59,6 +59,7 @@ import MarkupEditor from './components/MarkupEditor.svelte'
 import MarkupEditorPopup from './components/MarkupEditorPopup.svelte'
 import MarkupPresenter from './components/MarkupPresenter.svelte'
 import Menu from './components/Menu.svelte'
+import SelectableTreeNode from './components/navigator/SelectableTreeNode.svelte'
 import TreeItem from './components/navigator/TreeItem.svelte'
 import TreeNode from './components/navigator/TreeNode.svelte'
 import NumberEditor from './components/NumberEditor.svelte'
@@ -173,6 +174,7 @@ export {
   SortableList,
   SortableListItem,
   MarkupEditor,
+  SelectableTreeNode,
   TreeNode,
   TreeItem,
   StringEditor,

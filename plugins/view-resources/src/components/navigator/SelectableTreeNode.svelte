@@ -26,6 +26,7 @@
   export let notifications = 0
   export let parent = false
   export let collapsed = false
+  export let selected: boolean = false
   export let shortDropbox = false
   export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' | 'auto' = 'default'
 </script>
@@ -37,6 +38,8 @@
   {icon}
   {notifications}
   {collapsed}
+  selectable
+  {selected}
   {actions}
   node
   {parent}

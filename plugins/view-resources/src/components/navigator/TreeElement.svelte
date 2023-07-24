@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -29,10 +30,11 @@
   export let parent = false
   export let collapsed = false
   export let selected = false
+  export let selectable = true
   export let bold = false
   export let shortDropbox = false
   export let actions: (originalEvent?: MouseEvent) => Promise<Action[]> = async () => []
-  export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' = 'default'
+  export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' | 'auto' = 'default'
 
   let hovered = false
   async function onMenuClick (ev: MouseEvent) {
@@ -54,7 +56,9 @@
   class:collapsed
   class:child={!node}
   on:click={() => {
-    collapsed = !collapsed
+    if (!selectable || selected) {
+      collapsed = !collapsed
+    }
     dispatch('click')
   }}
 >
@@ -110,5 +114,11 @@
   {/if}
 </div>
 {#if node && !collapsed}
-  <div class="antiNav-element__dropbox" class:short={shortDropbox}><slot /></div>
+  <div
+    class="antiNav-element__dropbox"
+    class:short={shortDropbox}
+    class:indent-2={indent === 'auto'}
+  >
+    <slot />
+  </div>
 {/if}

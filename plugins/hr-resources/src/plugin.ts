@@ -18,7 +18,9 @@ import { IntlString, mergeIds } from '@hcengineering/platform'
 
 export default mergeIds(hrId, hr, {
   string: {
+    HRApplication: '' as IntlString,
     Department: '' as IntlString,
+    Departments: '' as IntlString,
     ParentDepartmentLabel: '' as IntlString,
     Structure: '' as IntlString,
     CreateDepartment: '' as IntlString,
@@ -55,6 +57,7 @@ export default mergeIds(hrId, hr, {
     Managers: '' as IntlString,
     Export: '' as IntlString,
     Separator: '' as IntlString,
-    ChooseSeparator: '' as IntlString
+    ChooseSeparator: '' as IntlString,
+    Positions: '' as IntlString
   }
 })

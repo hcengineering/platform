@@ -15,6 +15,7 @@
     "MoveStaff": "Employee transfer",
     "MoveStaffDescr": "Do you want to transfer employee from {current} to {department}",
     "Departments": "Departments",
+    "Positions": "Positions",
     "ShowEmployees": "Show employees",
     "AddEmployee": "Add employee",
     "SelectEmployee": "Select employee",
