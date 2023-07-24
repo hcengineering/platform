@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { Department } from '@hcengineering/hr'
-  import { Label, resolvedLocationStore } from '@hcengineering/ui'
+  import { Label, Scroller, resolvedLocationStore } from '@hcengineering/ui'
   import { TreeNode } from '@hcengineering/view-resources'
 
   import hr from '../../plugin'
@@ -39,19 +39,21 @@
     </span>
   </div>
 
-  <!-- TODO Specials -->
+  <Scroller shrink>
+    <!-- TODO Specials -->
 
-  <div class="antiNav-divider short line" />
+    <div class="antiNav-divider short line" />
 
-  <TreeNode label={hr.string.Departments} parent>
-    <DepartmentsHierarchy {departments} {descendants} {departmentById} selected={department} on:selected />
-  </TreeNode>
+    <TreeNode label={hr.string.Departments} parent>
+      <DepartmentsHierarchy {departments} {descendants} {departmentById} selected={department} on:selected />
+    </TreeNode>
 
-  <div class="antiNav-divider short line" />
+    <div class="antiNav-divider short line" />
 
-  <TreeNode label={hr.string.Positions} parent>
-    <!-- TODO Positions -->
-  </TreeNode>
+    <TreeNode label={hr.string.Positions} parent>
+      <!-- TODO Positions -->
+    </TreeNode>
 
-  <div class="antiNav-divider short line" />
+    <div class="antiNav-divider short line" />
+  </Scroller>
 </div>

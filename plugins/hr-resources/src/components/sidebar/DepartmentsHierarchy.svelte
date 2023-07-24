@@ -16,14 +16,16 @@
   import { createEventDispatcher } from 'svelte'
   import { Ref } from '@hcengineering/core'
   import { Department } from '@hcengineering/hr'
-  import { TreeItem, SelectableTreeNode } from '@hcengineering/view-resources'
 
   import hr from '../../plugin'
+
+  import TreeElement from './TreeElement.svelte'
 
   export let departments: Ref<Department>[]
   export let descendants: Map<Ref<Department>, Department[]>
   export let departmentById: Map<Ref<Department>, Department>
   export let selected: Ref<Department> | undefined
+  export let level = 0
 
   const dispatch = createEventDispatcher()
 
@@ -41,24 +43,17 @@
   {@const desc = getDescendants(dep)}
 
   {#if department}
-    {#if desc.length}
-      <SelectableTreeNode
-        icon={hr.icon.Department}
-        title={department.name}
-        selected={selected === department._id}
-        indent={'auto'}
-        on:click={() => handleDepartmentSelected(department._id)}
-      >
-        <svelte:self departments={desc} {descendants} {departmentById} {selected} on:selected />
-      </SelectableTreeNode>
-    {:else}
-      <TreeItem
-        _id={department._id}
-        icon={hr.icon.Department}
-        title={department.name}
-        selected={selected === department._id}
-        on:click={() => handleDepartmentSelected(department._id)}
-      />
-    {/if}
+    <TreeElement
+      icon={hr.icon.Department}
+      title={department.name}
+      selected={selected === department._id}
+      node={desc.length > 0}
+      {level}
+      on:click={() => handleDepartmentSelected(department._id)}
+    >
+      {#if desc.length}
+        <svelte:self departments={desc} {descendants} {departmentById} {selected} level={level + 1} on:selected />
+      {/if}
+    </TreeElement>
   {/if}
 {/each}

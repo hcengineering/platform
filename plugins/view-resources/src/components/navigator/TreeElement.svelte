@@ -17,7 +17,7 @@
   import type { Doc, Ref } from '@hcengineering/core'
   import type { Asset, IntlString } from '@hcengineering/platform'
   import type { Action, AnySvelteComponent } from '@hcengineering/ui'
-  import { ActionIcon, Icon, IconMoreH, Label, Menu, showPopup } from '@hcengineering/ui'
+  import { ActionIcon, Icon, IconChevronDown, IconMoreH, Label, Menu, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let _id: Ref<Doc> | undefined = undefined
@@ -30,11 +30,10 @@
   export let parent = false
   export let collapsed = false
   export let selected = false
-  export let selectable = true
   export let bold = false
   export let shortDropbox = false
   export let actions: (originalEvent?: MouseEvent) => Promise<Action[]> = async () => []
-  export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' | 'auto' = 'default'
+  export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' = 'default'
 
   let hovered = false
   async function onMenuClick (ev: MouseEvent) {
@@ -56,9 +55,7 @@
   class:collapsed
   class:child={!node}
   on:click={() => {
-    if (!selectable || selected) {
-      collapsed = !collapsed
-    }
+    collapsed = !collapsed
     dispatch('click')
   }}
 >
@@ -79,9 +76,7 @@
 
     {#if node}
       <div class="an-element__icon-arrow" class:collapsed>
-        <svg class="svg-small" fill="currentColor" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-          <polygon points="11.3,5.8 8,9.1 4.7,5.8 4,6.5 8,10.5 12,6.5 " />
-        </svg>
+        <IconChevronDown size={'small'} />
       </div>
     {/if}
   </span>
@@ -114,11 +109,5 @@
   {/if}
 </div>
 {#if node && !collapsed}
-  <div
-    class="antiNav-element__dropbox"
-    class:short={shortDropbox}
-    class:indent-2={indent === 'auto'}
-  >
-    <slot />
-  </div>
+  <div class="antiNav-element__dropbox" class:short={shortDropbox}><slot /></div>
 {/if}

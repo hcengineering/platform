@@ -186,25 +186,6 @@ export function createModel (builder: Builder): void {
       alias: hrId,
       hidden: false,
       component: hr.component.Schedule
-      // navigatorModel: {
-      //   specials: [
-      //     {
-      //       id: 'structure',
-      //       component: hr.component.Structure,
-      //       icon: hr.icon.Structure,
-      //       label: hr.string.Structure,
-      //       position: 'top'
-      //     },
-      //     {
-      //       id: 'schedule',
-      //       component: hr.component.Schedule,
-      //       icon: calendar.icon.Calendar,
-      //       label: hr.string.Schedule,
-      //       position: 'top'
-      //     }
-      //   ],
-      //   spaces: []
-      // }
     },
     hr.app.HR
   )

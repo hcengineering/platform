@@ -1,6 +1,5 @@
 <!--
 // Copyright © 2020 Anticrm Platform Contributors.
-// Copyright © 2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -27,7 +26,7 @@
   export let parent = false
   export let collapsed = false
   export let shortDropbox = false
-  export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' | 'auto' = 'default'
+  export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' = 'default'
 </script>
 
 <TreeElement
