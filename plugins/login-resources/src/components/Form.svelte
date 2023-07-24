@@ -1,6 +1,6 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2022 Hardcore Engineering Inc.
+// Copyright © 2021, 2022, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -63,8 +63,10 @@
   export let object: any
   export let ignoreInitialValidation: boolean = false
 
-  async function validate (language: string): Promise<boolean> {
-    if (ignoreInitialValidation) return
+  $: language = $themeStore.language
+
+  async function validate (): Promise<boolean> {
+    if (ignoreInitialValidation) return true
     for (const field of fields) {
       const v = object[field.name]
       const f = field
@@ -90,8 +92,7 @@
       if (f.rule !== undefined) {
         if (!f.rule.test(v)) {
           status = new Status(Severity.INFO, login.status.IncorrectValue, {
-            field: await translate(field.i18n, {}),
-            descr: field.ruleDescr ? await translate(field.ruleDescr, {}, language) : ''
+            field: await translate(field.i18n, {}, language)
           })
           return false
         }
@@ -100,7 +101,7 @@
     status = OK
     return true
   }
-  validate($themeStore.language)
+  validate()
 
   let inAction = false
 
@@ -184,6 +185,11 @@
             trim(field.name)
           }}
         />
+        {#if field.ruleDescr}
+          <div class="hint">
+            <Label label={field.ruleDescr} />
+          </div>
+        {/if}
       </div>
     {/each}
 
@@ -276,6 +282,13 @@
         grid-column-start: 1;
         grid-column-end: 3;
       }
+
+      .hint {
+        margin-top: 1rem;
+        font-size: 0.8rem;
+        color: var(--theme-content-color);
+      }
+
       .send {
         margin-top: 2.25rem;
       }
