@@ -168,7 +168,7 @@
     adRows = []
     for (let i = 0; i < displayedDaysCount; i++) alldaysGrid[i] = { alldays: [null] }
     adMaxRow = 1
-    alldays.forEach((event, i) => {
+    alldays.forEach(event => {
       const days = events
         .filter((ev) => ev.allDay && ev.day !== -1 && event.eventId === ev.eventId)
         .map((ev) => {
@@ -271,8 +271,6 @@
   onMount(() => {
     if (container) checkSizes(container)
   })
-  $: console.log('[!!!] events: ', events)
-  $: console.log('[!!!] alldaysGrid: ', alldaysGrid)
 </script>
 
 <Scroller bind:divScroll={scroller} fade={{ multipler: { top: 3.75 + 2.125 * adMaxRow, bottom: 0 } }}>
