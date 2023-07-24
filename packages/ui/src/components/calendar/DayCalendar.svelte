@@ -25,6 +25,7 @@
     areDatesEqual
   } from './internal/DateUtils'
   import { CalendarItem } from '../../types'
+  import { ActionIcon, IconUpOutline, IconDownOutline } from '../..'
 
   export let events: CalendarItem[]
   export let mondayStart = true
@@ -39,18 +40,25 @@
   const dispatch = createEventDispatcher()
 
   const todayDate = new Date()
-  const cellBorder = 1
+  const ampm = new Intl.DateTimeFormat([], { hour: 'numeric' }).resolvedOptions().hour12
+  const getTimeFormat = (hour: number): string => {
+    return ampm ? `${hour > 12 ? hour - 12 : hour}${hour < 12 ? 'am' : 'pm'}` : `${addZero(hour)}:00`
+  }
+
   $: fontSize = $deviceInfo.fontSize
+  $: docHeight = $deviceInfo.docHeight
   $: cellHeight = 4 * fontSize
   $: weekMonday = startFromWeekStart
     ? getMonday(currentDate, mondayStart)
     : new Date(new Date(currentDate).setHours(0, 0, 0, 0))
 
-  const ampm = new Intl.DateTimeFormat([], { hour: 'numeric' }).resolvedOptions().hour12
-
-  const getTimeFormat = (hour: number): string => {
-    return ampm ? `${hour > 12 ? hour - 12 : hour}${hour < 12 ? 'am' : 'pm'}` : `${addZero(hour)}:00`
-  }
+  const rem = (n: number): number => n * fontSize
+  const cellBorder: number = 1
+  const heightAD: number = 2
+  let minHeightAD: number = 0
+  let maxHeightAD: number = 0
+  let shownHeightAD: number = 0
+  let shownAD: boolean = false
 
   interface CalendarElement {
     id: string
@@ -92,6 +100,7 @@
     newEvents = events
     alldays = []
     prepareAllDays()
+    if (shownAD && adMaxRow < 4) shownAD = false
   }
   $: newEvents
     .filter((ev) => !ev.allDay)
@@ -202,17 +211,10 @@
     return { hours: temp.getHours() - startHour, mins: temp.getMinutes() }
   }
 
-  const checkSizes = (element: HTMLElement | Element) => {
-    calendarRect = element.getBoundingClientRect()
-    calendarWidth = calendarRect.width
-    colWidth = (calendarWidth - 3.5 * fontSize) / displayedDaysCount
-  }
-
   const getGridOffset = (mins: number, end: boolean = false): number => {
     if (mins === 0) return end ? 2 + cellBorder : 2
     return mins < 3 ? (end ? 1 : 2) : mins > 57 ? (end ? 2 + cellBorder : 1) : 1
   }
-  const rem = (n: number): number => n * fontSize
 
   const getRect = (
     event: CalendarItem
@@ -225,7 +227,8 @@
     const endTime =
       event.dueDate > endDay ? { hours: displayedHours - startHour, mins: 0 } : convertToTime(event.dueDate)
     result.top =
-      rem(3.75 + 2.125 * adMaxRow) +
+      rem(3.5) +
+      styleAD +
       cellHeight * startTime.hours +
       (startTime.mins / 60) * cellHeight +
       getGridOffset(startTime.mins)
@@ -257,7 +260,7 @@
   const getADRect = (event: CalendarItem): { top: number; left: number; width: number } => {
     const result = { top: 0, left: 0, width: 0 }
     const index = adRows.findIndex((ev) => ev.id === event.eventId)
-    result.top = rem(0.125 + adRows[index].row * 2.125)
+    result.top = rem(0.125 + adRows[index].row * (heightAD + 0.125))
     result.left = rem(0.125) + adRows[index].startCol * (colWidth + 0.125)
     const w = adRows[index].endCol - adRows[index].startCol
     result.width = colWidth + colWidth * w - rem(0.25)
@@ -270,14 +273,34 @@
 
   onMount(() => {
     if (container) checkSizes(container)
+    minHeightAD = rem((heightAD + 0.125) * 2 + 0.25)
   })
+
+  const checkSizes = (element: HTMLElement | Element) => {
+    calendarRect = element.getBoundingClientRect()
+    calendarWidth = calendarRect.width
+    colWidth = (calendarWidth - 3.5 * fontSize) / displayedDaysCount
+  }
+  $: if (docHeight && calendarRect?.top) {
+    const proc = ((docHeight - calendarRect.top) * 30) / 100
+    const temp = rem((heightAD + 0.125) * Math.trunc(proc / rem(heightAD + 0.125)) + 0.25)
+    maxHeightAD = temp < minHeightAD ? minHeightAD : temp
+    shownHeightAD = rem((heightAD + 0.125) * adMaxRow + 0.25)
+  }
+  $: styleAD = shownAD
+    ? shownHeightAD > maxHeightAD
+      ? maxHeightAD
+      : shownHeightAD
+    : rem((heightAD + 0.125) * adMaxRow + 0.25) > maxHeightAD && maxHeightAD === minHeightAD
+      ? rem((heightAD + 0.125) * (adMaxRow < 3 ? adMaxRow : 2) + 0.25)
+      : rem((heightAD + 0.125) * (adMaxRow < 4 ? adMaxRow : 3) + 0.25)
 </script>
 
-<Scroller bind:divScroll={scroller} fade={{ multipler: { top: 3.75 + 2.125 * adMaxRow, bottom: 0 } }}>
+<Scroller bind:divScroll={scroller} fade={{ multipler: { top: 3.5 + styleAD / fontSize, bottom: 0 } }}>
   <div
     bind:this={container}
     class="calendar-container"
-    style:grid={`[header] 3.5rem [all-day] ${2.125 * adMaxRow + 0.25}rem repeat(${
+    style:grid={`[header] 3.5rem [all-day] ${styleAD}px repeat(${
       (displayedHours - startHour) * 2
     }, [row-start] 2rem) / [time-col] 3.5rem repeat(${displayedDaysCount}, [col-start] 1fr)`}
     use:resizeObserver={(element) => checkSizes(element)}
@@ -291,24 +314,57 @@
       </div>
     {/each}
 
-    <div class="sticky-header center text-sm content-dark-color">All day</div>
+    <div class="sticky-header allday-header text-sm content-dark-color">
+      All day
+      {#if adMaxRow > 3}
+        <ActionIcon
+          icon={shownAD ? IconUpOutline : IconDownOutline}
+          size={'small'}
+          action={() => {
+            shownAD = !shownAD
+          }}
+        />
+      {/if}
+    </div>
     <div class="sticky-header allday-container" style:grid-column={`col-start 1 / span ${displayedDaysCount}`}>
-      {#key calendarWidth || displayedDaysCount}
-        {#each alldays as event, i}
-          {@const rect = getADRect(event)}
-          <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-          <div
-            class="calendar-element"
-            style:top={`${rect.top}px`}
-            style:height={'2rem'}
-            style:left={`${rect.left}px`}
-            style:width={`${rect.width}px`}
-            tabindex={500 + i}
-          >
-            <slot name="allday" id={event.eventId} width={rect.width} />
-          </div>
-        {/each}
-      {/key}
+      {#if shownHeightAD > maxHeightAD && shownAD}
+        <Scroller noFade={false}>
+          {#key calendarWidth || displayedDaysCount}
+            <div style:min-height={`${shownHeightAD - cellBorder * 2}px`} />
+            {#each alldays as event, i}
+              {@const rect = getADRect(event)}
+              <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+              <div
+                class="calendar-element"
+                style:top={`${rect.top}px`}
+                style:height={`${heightAD}rem`}
+                style:left={`${rect.left}px`}
+                style:width={`${rect.width}px`}
+                tabindex={500 + i}
+              >
+                <slot name="allday" id={event.eventId} width={rect.width} />
+              </div>
+            {/each}
+          {/key}
+        </Scroller>
+      {:else}
+        {#key calendarWidth || displayedDaysCount}
+          {#each alldays as event, i}
+            {@const rect = getADRect(event)}
+            <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+            <div
+              class="calendar-element"
+              style:top={`${rect.top}px`}
+              style:height={`${heightAD}rem`}
+              style:left={`${rect.left}px`}
+              style:width={`${rect.width}px`}
+              tabindex={500 + i}
+            >
+              <slot name="allday" id={event.eventId} width={rect.width} />
+            </div>
+          {/each}
+        {/key}
+      {/if}
     </div>
 
     {#each [...Array(displayedHours - startHour).keys()] as hourOfDay}
@@ -342,22 +398,22 @@
       {#if hourOfDay === displayedHours - startHour - 1}<div class="clear-cell" />{/if}
     {/each}
 
-    {#key calendarWidth || displayedDaysCount}
-      {#each newEvents.filter((ev) => !ev.allDay) as event, i}
-        {@const rect = getRect(event)}
-        <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-        <div
-          class="calendar-element"
-          style:top={`${rect.top}px`}
-          style:bottom={`${rect.bottom}px`}
-          style:left={`${rect.left}px`}
-          style:right={`${rect.right}px`}
-          tabindex={1000 + i}
-        >
-          <slot name="event" id={event.eventId} width={rect.width} />
-        </div>
-      {/each}
-    {/key}
+    {#key styleAD}{#key calendarWidth}{#key displayedDaysCount}
+          {#each newEvents.filter((ev) => !ev.allDay) as event, i}
+            {@const rect = getRect(event)}
+            <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+            <div
+              class="calendar-element"
+              style:top={`${rect.top}px`}
+              style:bottom={`${rect.bottom}px`}
+              style:left={`${rect.left}px`}
+              style:right={`${rect.right}px`}
+              tabindex={1000 + i}
+            >
+              <slot name="event" id={event.eventId} width={rect.width} />
+            </div>
+          {/each}
+        {/key}{/key}{/key}
   </div>
 </Scroller>
 
@@ -429,9 +485,15 @@
       display: flex;
       align-items: center;
     }
+    &.allday-header {
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 0.625rem 0.125rem;
+    }
     &.allday-container {
+      overflow: hidden;
+
       .allday-event {
-        background-color: red;
         border-radius: 0.25rem;
       }
     }
