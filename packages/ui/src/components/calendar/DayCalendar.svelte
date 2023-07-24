@@ -168,7 +168,7 @@
     adRows = []
     for (let i = 0; i < displayedDaysCount; i++) alldaysGrid[i] = { alldays: [null] }
     adMaxRow = 1
-    alldays.forEach(event => {
+    alldays.forEach((event) => {
       const days = events
         .filter((ev) => ev.allDay && ev.day !== -1 && event.eventId === ev.eventId)
         .map((ev) => {
