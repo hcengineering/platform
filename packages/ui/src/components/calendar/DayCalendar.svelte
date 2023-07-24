@@ -159,6 +159,10 @@
     }
   }
 
+  const addNullRow = () => {
+    for (let i = 0; i < displayedDaysCount; i++) alldaysGrid[i].alldays.push(null)
+    adMaxRow++
+  }
   const prepareAllDays = () => {
     alldays = events.filter((ev) => ev.day === -1)
     adRows = []
@@ -178,7 +182,7 @@
           break
         } else if (checkRow === adMaxRow - 1) {
           emptyRow = adMaxRow
-          adMaxRow++
+          addNullRow()
           break
         }
       }
@@ -267,6 +271,8 @@
   onMount(() => {
     if (container) checkSizes(container)
   })
+  $: console.log('[!!!] events: ', events)
+  $: console.log('[!!!] alldaysGrid: ', alldaysGrid)
 </script>
 
 <Scroller bind:divScroll={scroller} fade={{ multipler: { top: 3.75 + 2.125 * adMaxRow, bottom: 0 } }}>
