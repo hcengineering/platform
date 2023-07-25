@@ -15,8 +15,9 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { Department } from '@hcengineering/hr'
-  import { Label, Scroller, resolvedLocationStore } from '@hcengineering/ui'
+  import { Scroller } from '@hcengineering/ui'
   import { TreeNode } from '@hcengineering/view-resources'
+  import { NavFooter, NavHeader } from '@hcengineering/workbench-resources'
 
   import hr from '../../plugin'
 
@@ -30,14 +31,7 @@
 </script>
 
 <div class="antiPanel-navigator filledNav indent">
-  <div class="antiNav-header">
-    <span class="top overflow-label">
-      <Label label={hr.string.HRApplication} />
-    </span>
-    <span class="bottom overflow-label">
-      {$resolvedLocationStore.path[1]}
-    </span>
-  </div>
+  <NavHeader label={hr.string.HRApplication} />
 
   <Scroller shrink>
     <!-- TODO Specials -->
@@ -53,7 +47,7 @@
     <TreeNode label={hr.string.Positions} parent>
       <!-- TODO Positions -->
     </TreeNode>
-
-    <div class="antiNav-divider short line" />
   </Scroller>
+
+  <NavFooter />
 </div>
