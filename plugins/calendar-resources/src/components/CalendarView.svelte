@@ -114,6 +114,7 @@
   const calendarsQuery = createQuery()
 
   let calendars: Calendar[] = []
+  const offsetTZ = new Date().getTimezoneOffset() * 60 * 1000
 
   calendarsQuery.query(calendar.class.Calendar, { createdBy: getCurrentAccount()._id }, (res) => {
     calendars = res
@@ -234,27 +235,43 @@
   ): CalendarItem[] => {
     const result: CalendarItem[] = []
     for (let day = 0; day < days; day++) {
-      const startDate = new Date(MILLISECONDS_IN_DAY * day + date.getTime()).setHours(startHour, 0, 0)
-      const lastDate = new Date(MILLISECONDS_IN_DAY * day + date.getTime()).setHours(endHour - 1, 59, 59)
+      const startDay = new Date(MILLISECONDS_IN_DAY * day + date.getTime()).setHours(0, 0, 0, 0)
+      const startDate = new Date(MILLISECONDS_IN_DAY * day + date.getTime()).setHours(startHour, 0, 0, 0)
+      const lastDate = new Date(MILLISECONDS_IN_DAY * day + date.getTime()).setHours(endHour, 0, 0, 0)
       events.forEach((event) => {
-        const eventStart = event.allDay
-          ? new Date(event.date + new Date().getTimezoneOffset() * 60 * 1000).getTime()
-          : event.date
-        const eventEnd = event.allDay
-          ? new Date(event.dueDate + new Date().getTimezoneOffset() * 60 * 1000).getTime()
-          : event.dueDate
-        if ((eventStart <= startDate && eventEnd > startDate) || (eventStart >= startDate && eventStart < lastDate)) {
+        const eventStart = event.allDay ? event.date + offsetTZ : event.date
+        const eventEnd = event.allDay ? event.dueDate + offsetTZ : event.dueDate
+        if ((eventStart < lastDate && eventEnd > startDate) || (eventStart === eventEnd && eventStart === startDay)) {
           result.push({
             eventId: event.eventId,
             allDay: event.allDay,
-            date: event.date,
-            dueDate: event.dueDate,
+            date: eventStart,
+            dueDate: eventEnd,
             day,
             access: event.access
           })
         }
       })
     }
+    const sd = date.setHours(0, 0, 0, 0)
+    const ld = new Date(MILLISECONDS_IN_DAY * (days - 1) + date.getTime()).setHours(23, 59, 59, 999)
+    events
+      .filter((ev) => ev.allDay)
+      .sort((a, b) => b.dueDate - b.date - (a.dueDate - a.date))
+      .forEach((event) => {
+        const eventStart = event.date + offsetTZ
+        const eventEnd = event.dueDate + offsetTZ
+        if ((eventStart < ld && eventEnd > sd) || (eventStart === eventEnd && eventStart === sd)) {
+          result.push({
+            eventId: event.eventId,
+            allDay: event.allDay,
+            date: eventStart,
+            dueDate: eventEnd,
+            day: -1,
+            access: event.access
+          })
+        }
+      })
     return result
   }
 </script>
@@ -361,7 +378,7 @@
     startFromWeekStart={false}
     bind:selectedDate
     bind:currentDate
-    on:create={(e) => showCreateDialog(e.detail.date, true)}
+    on:create={(e) => showCreateDialog(e.detail.date, e.detail.withTime)}
   >
     <svelte:fragment slot="allday" let:id let:width>
       {@const event = objects.find((event) => event.eventId === id)}
@@ -371,7 +388,7 @@
           {width}
           allday
           on:create={(e) => {
-            showCreateDialog(e.detail, true)
+            showCreateDialog(e.detail.date, e.detail.withTime)
           }}
         />
       {/if}
@@ -383,7 +400,7 @@
           {event}
           {width}
           on:create={(e) => {
-            showCreateDialog(e.detail, true)
+            showCreateDialog(e.detail.date, e.detail.withTime)
           }}
         />
       {/if}
@@ -398,7 +415,7 @@
       startFromWeekStart={false}
       bind:selectedDate
       bind:currentDate
-      on:create={(e) => showCreateDialog(e.detail.date, true)}
+      on:create={(e) => showCreateDialog(e.detail.date, e.detail.withTime)}
     >
       <svelte:fragment slot="allday" let:id let:width>
         {@const event = objects.find((event) => event.eventId === id)}
@@ -408,7 +425,7 @@
             {width}
             allday
             on:create={(e) => {
-              showCreateDialog(e.detail, true)
+              showCreateDialog(e.detail.date, e.detail.withTime)
             }}
           />
         {/if}
@@ -420,7 +437,7 @@
             {event}
             {width}
             on:create={(e) => {
-              showCreateDialog(e.detail, true)
+              showCreateDialog(e.detail.date, e.detail.withTime)
             }}
           />
         {/if}
