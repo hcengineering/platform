@@ -16,7 +16,7 @@
   import { Calendar, generateEventId } from '@hcengineering/calendar'
   import { Employee, EmployeeAccount } from '@hcengineering/contact'
   import { UserBoxList } from '@hcengineering/contact-resources'
-  import { Class, DateRangeMode, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
+  import { Class, DateRangeMode, Doc, Ref, Timestamp, getCurrentAccount } from '@hcengineering/core'
   import { Card, getClient } from '@hcengineering/presentation'
   import ui, { DateRangePresenter, EditBox, ToggleWithLabel } from '@hcengineering/ui'
   import { createEventDispatcher, tick } from 'svelte'
@@ -29,8 +29,8 @@
   export let withTime = false
 
   const now = new Date()
-  const defaultDuration = 30 * 60 * 1000
-  const allDayDuration = 24 * 60 * 60 * 1000
+  const defaultDuration = 60 * 60 * 1000
+  const allDayDuration = 24 * 60 * 60 * 1000 - 1
 
   let startDate =
     date === undefined ? now.getTime() : withTime ? date.getTime() : date.setHours(now.getHours(), now.getMinutes())
@@ -49,6 +49,19 @@
     return title !== undefined && title.trim().length === 0 && participants.length === 0
   }
 
+  const saveUTC = (date: Timestamp): Timestamp => {
+    const utcdate = new Date(date)
+    return Date.UTC(
+      utcdate.getFullYear(),
+      utcdate.getMonth(),
+      utcdate.getDate(),
+      utcdate.getHours(),
+      utcdate.getMinutes(),
+      utcdate.getSeconds(),
+      utcdate.getMilliseconds()
+    )
+  }
+
   async function saveEvent () {
     let date: number | undefined
     if (startDate != null) date = startDate
@@ -56,8 +69,8 @@
     const space = `${getCurrentAccount()._id}_calendar` as Ref<Calendar>
     await client.addCollection(calendar.class.Event, space, attachedTo, attachedToClass, 'events', {
       eventId: generateEventId(),
-      date: allDay ? new Date(date).setUTCHours(0, 0, 0, 0) : date,
-      dueDate: allDay ? new Date(dueDate).setUTCHours(0, 0, 0, 0) : dueDate,
+      date: allDay ? saveUTC(date) : date,
+      dueDate: allDay ? saveUTC(dueDate) : dueDate,
       description: '',
       participants,
       title,
@@ -68,7 +81,7 @@
 
   const handleNewStartDate = async (newStartDate: number | null) => {
     if (newStartDate !== null) {
-      startDate = newStartDate
+      startDate = allDay ? new Date(newStartDate).setHours(0, 0, 0, 0) : newStartDate
       dueDate = startDate + (allDay ? allDayDuration : duration)
       await tick()
       dueDateRef.adaptValue()
@@ -79,8 +92,8 @@
     if (newDueDate !== null) {
       const diff = newDueDate - startDate
       if (diff > 0) {
-        dueDate = newDueDate
-        duration = diff
+        dueDate = allDay ? new Date(newDueDate).setHours(23, 59, 59, 999) : newDueDate
+        duration = dueDate - startDate
       } else {
         dueDate = startDate + (allDay ? allDayDuration : duration)
       }
@@ -91,11 +104,9 @@
 
   async function allDayChangeHandler () {
     if (allDay) {
-      startDate = new Date(startDate).setUTCHours(0, 0, 0, 0)
-      if (dueDate - startDate < allDayDuration) {
-        dueDate = allDayDuration + startDate
-      }
-      dueDate = new Date(dueDate).setUTCHours(0, 0, 0, 0)
+      startDate = new Date(startDate).setHours(0, 0, 0, 0)
+      if (dueDate - startDate < allDayDuration) dueDate = allDayDuration + startDate
+      else dueDate = new Date(dueDate).setHours(23, 59, 59, 999)
     } else {
       dueDate = startDate + defaultDuration
     }
