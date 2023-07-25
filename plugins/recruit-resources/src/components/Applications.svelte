@@ -14,10 +14,9 @@
 -->
 <script lang="ts">
   import type { Doc, Ref } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
   import { Button, Icon, IconAdd, Label, Scroller, showPopup } from '@hcengineering/ui'
-  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { getViewOptions, Table, ViewletSettingButton, viewOptionStore } from '@hcengineering/view-resources'
+  import { Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { Table, ViewletSettingButton } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import CreateApplication from './CreateApplication.svelte'
   import IconApplication from './icons/Application.svelte'
@@ -34,28 +33,6 @@
   let viewlet: Viewlet | undefined
   let preference: ViewletPreference | undefined
   let loading = true
-
-  const viewletQuery = createQuery()
-  $: viewletQuery.query(view.class.Viewlet, { _id: recruit.viewlet.VacancyApplicationsEmbeddeed }, (res) => {
-    ;[viewlet] = res
-  })
-
-  $: viewOptions = viewlet !== undefined ? getViewOptions(viewlet, $viewOptionStore) : undefined
-
-  const preferenceQuery = createQuery()
-
-  $: viewlet &&
-    preferenceQuery.query(
-      view.class.ViewletPreference,
-      {
-        attachedTo: viewlet._id
-      },
-      (res) => {
-        preference = res[0]
-        loading = false
-      },
-      { limit: 1 }
-    )
 </script>
 
 <div class="antiSection">
@@ -67,9 +44,13 @@
       <Label label={recruit.string.Applications} />
     </span>
     <div class="flex-row-center gap-2 reverse">
-      {#if viewlet && viewOptions}
-        <ViewletSettingButton bind:viewOptions {viewlet} kind={'ghost'} />
-      {/if}
+      <ViewletSettingButton
+        viewletQuery={{ _id: recruit.viewlet.VacancyApplicationsEmbeddeed }}
+        kind={'ghost'}
+        bind:viewlet
+        bind:loading
+        bind:preference
+      />
       <Button id="appls.add" icon={IconAdd} kind={'ghost'} on:click={createApp} />
     </div>
   </div>

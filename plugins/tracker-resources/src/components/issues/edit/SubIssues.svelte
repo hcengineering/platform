@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, toIdMap } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
+  import { Class, Doc, Ref, toIdMap } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { Issue, Project, trackerId } from '@hcengineering/tracker'
   import {
     Button,
@@ -28,18 +28,12 @@
     navigate,
     showPopup
   } from '@hcengineering/ui'
-  import view, { Viewlet } from '@hcengineering/view'
-  import {
-    ViewletSettingButton,
-    createFilter,
-    getViewOptions,
-    setFilters,
-    viewOptionStore
-  } from '@hcengineering/view-resources'
-  import tracker from '../../../plugin'
-  import SubIssueList from './SubIssueList.svelte'
+  import view, { ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { ViewletSettingButton, createFilter, setFilters } from '@hcengineering/view-resources'
   import { afterUpdate } from 'svelte'
+  import tracker from '../../../plugin'
   import CreateIssue from '../../CreateIssue.svelte'
+  import SubIssueList from './SubIssueList.svelte'
 
   export let issue: Issue
   export let projects: Map<Ref<Project>, Project>
@@ -51,12 +45,7 @@
   $: hasSubIssues = issue.subIssues > 0
 
   let viewlet: Viewlet | undefined
-
-  const query = createQuery()
-  $: query.query(view.class.Viewlet, { _id: tracker.viewlet.SubIssues }, (res) => {
-    ;[viewlet] = res
-  })
-
+  let viewOptions: ViewOptions | undefined
   let _projects = projects
 
   const projectsQuery = createQuery()
@@ -73,8 +62,6 @@
     projectsQuery.unsubscribe()
   }
 
-  $: viewOptions = viewlet !== undefined ? getViewOptions(viewlet, $viewOptionStore) : undefined
-
   export let focusIndex = -1
 
   let lastIssueId: Ref<Issue>
@@ -83,6 +70,64 @@
       lastIssueId = issue._id
     }
   })
+
+  const preferenceQuery = createQuery()
+  const objectConfigurations = createQuery()
+  let preference: ViewletPreference[] = []
+  let loading = true
+
+  let configurationRaw: Viewlet[] = []
+  let configurations: Record<Ref<Class<Doc>>, Viewlet['config']> = {}
+
+  const client = getClient()
+
+  $: viewlet &&
+    objectConfigurations.query(
+      view.class.Viewlet,
+      {
+        attachTo: { $in: client.getHierarchy().getDescendants(viewlet.attachTo) },
+        descriptor: viewlet.descriptor,
+        variant: viewlet.variant ? viewlet.variant : { $exists: false }
+      },
+      (res) => {
+        configurationRaw = res
+        loading = false
+      }
+    )
+
+  $: viewlet &&
+    preferenceQuery.query(
+      view.class.ViewletPreference,
+      {
+        attachedTo: { $in: configurationRaw.map((it) => it._id) }
+      },
+      (res) => {
+        preference = res
+        loading = false
+      }
+    )
+
+  function updateConfiguration (configurationRaw: Viewlet[], preference: ViewletPreference[]): void {
+    const newConfigurations: Record<Ref<Class<Doc>>, Viewlet['config']> = {}
+
+    for (const v of configurationRaw) {
+      newConfigurations[v.attachTo] = v.config
+    }
+
+    // Add viewlet configurations.
+    for (const pref of preference) {
+      if (pref.config.length > 0) {
+        const viewlet = configurationRaw.find((it) => it._id === pref.attachedTo)
+        if (viewlet !== undefined) {
+          newConfigurations[viewlet.attachTo] = pref.config
+        }
+      }
+    }
+
+    configurations = newConfigurations
+  }
+
+  $: updateConfiguration(configurationRaw, preference)
 </script>
 
 <div class="flex-between mb-1">
@@ -101,8 +146,13 @@
     </Button>
   {/if}
   <div class="flex-row-center gap-2">
-    {#if viewlet && hasSubIssues && viewOptions}
-      <ViewletSettingButton bind:viewOptions {viewlet} kind={'ghost'} />
+    {#if hasSubIssues}
+      <ViewletSettingButton
+        bind:viewOptions
+        viewletQuery={{ _id: tracker.viewlet.SubIssues }}
+        kind={'ghost'}
+        bind:viewlet
+      />
     {/if}
     {#if hasSubIssues}
       <Button
@@ -150,6 +200,8 @@
           createItemDialogProps={{ space: issue.space, parentIssue: issue, shouldSaveDraft }}
           focusIndex={focusIndex === -1 ? -1 : focusIndex + 1}
           projects={_projects}
+          {configurations}
+          {preference}
           {viewlet}
           {viewOptions}
           query={{ attachedTo: issue._id }}

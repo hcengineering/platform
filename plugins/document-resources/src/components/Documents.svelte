@@ -17,17 +17,10 @@
 <script lang="ts">
   import { Doc, DocumentQuery } from '@hcengineering/core'
   import { Document } from '@hcengineering/document'
-  import { createQuery, getClient, ActionContext } from '@hcengineering/presentation'
+  import { ActionContext } from '@hcengineering/presentation'
   import { Label, Loading, SearchEdit } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import {
-    FilterButton,
-    getViewOptions,
-    setActiveViewletId,
-    viewOptionStore,
-    TableBrowser,
-    ViewletSettingButton
-  } from '@hcengineering/view-resources'
+  import { FilterButton, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
   import document from '../plugin'
 
   export let query: DocumentQuery<Document> = {}
@@ -42,37 +35,7 @@
   let viewlet: Viewlet | undefined
   let loading = true
 
-  const preferenceQuery = createQuery()
   let preference: ViewletPreference | undefined
-
-  const client = getClient()
-  client
-    .findOne<Viewlet>(view.class.Viewlet, {
-      attachTo: document.class.Document,
-      descriptor: view.viewlet.Table
-    })
-    .then((res) => {
-      viewlet = res
-      if (res !== undefined) {
-        setActiveViewletId(res._id)
-        preferenceQuery.query(
-          view.class.ViewletPreference,
-          {
-            attachedTo: res._id
-          },
-          (res) => {
-            preference = res[0]
-            loading = false
-          },
-          { limit: 1 }
-        )
-      }
-    })
-
-  // let twoRows: boolean
-  // $: twoRows = $deviceInfo.docWidth <= 680
-
-  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 </script>
 
 <ActionContext
@@ -94,22 +57,28 @@
       <FilterButton _class={document.class.Document} />
     </div>
     <div class="ac-header-full medium-gap">
-      <ViewletSettingButton bind:viewOptions {viewlet} />
+      <ViewletSettingButton
+        viewletQuery={{
+          attachTo: document.class.Document,
+          descriptor: view.viewlet.Table
+        }}
+        bind:viewlet
+        bind:preference
+        bind:loading
+      />
       <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
     </div>
   </div>
 
-  {#if viewlet}
-    {#if loading}
-      <Loading />
-    {:else}
-      <TableBrowser
-        _class={document.class.Document}
-        config={preference?.config ?? viewlet.config}
-        options={viewlet.options}
-        query={resultQuery}
-        showNotification
-      />
-    {/if}
+  {#if loading}
+    <Loading />
+  {:else if viewlet}
+    <TableBrowser
+      _class={document.class.Document}
+      config={preference?.config ?? viewlet.config}
+      options={viewlet.options}
+      query={resultQuery}
+      showNotification
+    />
   {/if}
 </div>

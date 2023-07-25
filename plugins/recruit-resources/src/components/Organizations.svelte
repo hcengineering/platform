@@ -15,19 +15,11 @@
 <script lang="ts">
   import { Organization } from '@hcengineering/contact'
   import core, { Doc, DocumentQuery, Ref } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery } from '@hcengineering/presentation'
   import { Applicant, Vacancy } from '@hcengineering/recruit'
   import { Button, IconAdd, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
-  import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
-  import {
-    FilterBar,
-    FilterButton,
-    TableBrowser,
-    ViewletSettingButton,
-    getViewOptions,
-    setActiveViewletId,
-    viewOptionStore
-  } from '@hcengineering/view-resources'
+  import view, { BuildModelKey, Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
+  import { FilterBar, FilterButton, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import CreateOrganization from './CreateOrganization.svelte'
   import VacancyListApplicationsPopup from './organizations/VacancyListApplicationsPopup.svelte'
@@ -177,36 +169,11 @@
     ]
   ])
 
-  const client = getClient()
-
-  let descr: Viewlet | undefined
+  let viewlet: Viewlet | undefined
   let loading = true
 
-  const preferenceQuery = createQuery()
   let preference: ViewletPreference | undefined
-
-  client
-    .findOne<Viewlet>(view.class.Viewlet, {
-      attachTo: recruit.mixin.VacancyList,
-      descriptor: view.viewlet.Table
-    })
-    .then((res) => {
-      descr = res
-      if (res !== undefined) {
-        setActiveViewletId(res._id)
-        preferenceQuery.query(
-          view.class.ViewletPreference,
-          {
-            attachedTo: res._id
-          },
-          (res) => {
-            preference = res[0]
-            loading = false
-          },
-          { limit: 1 }
-        )
-      }
-    })
+  let viewOptions: ViewOptions | undefined
 
   function createConfig (descr: Viewlet, preference: ViewletPreference | undefined): (string | BuildModelKey)[] {
     const base = preference?.config ?? descr.config
@@ -220,10 +187,6 @@
     }
     return result
   }
-
-  // $: twoRows = $deviceInfo.twoRows
-
-  $: viewOptions = getViewOptions(descr, $viewOptionStore)
 </script>
 
 <div class="ac-header full divide">
@@ -242,7 +205,16 @@
     <FilterButton _class={recruit.mixin.VacancyList} />
   </div>
   <div class="ac-header-full medium-gap">
-    <ViewletSettingButton bind:viewOptions viewlet={descr} />
+    <ViewletSettingButton
+      bind:viewOptions
+      viewletQuery={{
+        attachTo: recruit.mixin.VacancyList,
+        descriptor: view.viewlet.Table
+      }}
+      bind:viewlet
+      bind:preference
+      bind:loading
+    />
     <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
   </div>
 </div>
@@ -254,14 +226,14 @@
   on:change={(e) => (resultQuery = e.detail)}
 />
 
-{#if descr}
+{#if viewlet}
   {#if loading}
     <Loading />
   {:else}
     <TableBrowser
       _class={recruit.mixin.VacancyList}
-      config={createConfig(descr, preference)}
-      options={descr.options}
+      config={createConfig(viewlet, preference)}
+      options={viewlet.options}
       query={{
         ...resultQuery
       }}

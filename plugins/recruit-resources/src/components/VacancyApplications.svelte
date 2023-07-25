@@ -17,8 +17,8 @@
   import { createQuery } from '@hcengineering/presentation'
   import { recruitId, Vacancy } from '@hcengineering/recruit'
   import { Button, Icon, IconAdd, Label, Loading, resizeObserver, Scroller, showPopup } from '@hcengineering/ui'
-  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { getViewOptions, NavLink, Table, ViewletSettingButton, viewOptionStore } from '@hcengineering/view-resources'
+  import { Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { NavLink, Table, ViewletSettingButton } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import CreateApplication from './CreateApplication.svelte'
   import IconApplication from './icons/Application.svelte'
@@ -40,28 +40,6 @@
   let viewlet: Viewlet | undefined
   let preference: ViewletPreference | undefined
   let loading = true
-
-  const viewletQuery = createQuery()
-  $: viewletQuery.query(view.class.Viewlet, { _id: recruit.viewlet.VacancyApplicationsShort }, (res) => {
-    ;[viewlet] = res
-  })
-
-  $: viewOptions = viewlet !== undefined ? getViewOptions(viewlet, $viewOptionStore) : undefined
-
-  const preferenceQuery = createQuery()
-
-  $: viewlet &&
-    preferenceQuery.query(
-      view.class.ViewletPreference,
-      {
-        attachedTo: viewlet._id
-      },
-      (res) => {
-        preference = res[0]
-        loading = false
-      },
-      { limit: 1 }
-    )
 </script>
 
 <div class="antiSection max-h-125 clear-mins" use:resizeObserver={(element) => (wSection = element.clientWidth)}>
@@ -75,9 +53,13 @@
       </NavLink>
     </span>
     <div class="flex-row-center gap-2 reverse">
-      {#if viewlet && viewOptions}
-        <ViewletSettingButton bind:viewOptions {viewlet} kind={'ghost'} />
-      {/if}
+      <ViewletSettingButton
+        viewletQuery={{ _id: recruit.viewlet.VacancyApplicationsShort }}
+        kind={'ghost'}
+        bind:viewlet
+        bind:preference
+        bind:loading
+      />
       <Button id="appls.add" icon={IconAdd} kind={'ghost'} on:click={createApp} />
     </div>
   </div>

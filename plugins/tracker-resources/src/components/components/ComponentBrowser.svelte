@@ -16,22 +16,18 @@
   import { DocumentQuery, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Component } from '@hcengineering/tracker'
-  import { createQuery } from '@hcengineering/presentation'
-  import view, { Viewlet } from '@hcengineering/view'
+  import { Button, IconAdd, Label, SearchEdit, TabList, resolvedLocationStore, showPopup } from '@hcengineering/ui'
+  import { ViewOptions, Viewlet } from '@hcengineering/view'
   import {
-    makeViewletKey,
-    updateActiveViewlet,
-    activeViewlet,
-    getViewOptions,
-    viewOptionStore,
+    FilterBar,
     FilterButton,
     ViewletSettingButton,
-    FilterBar
+    makeViewletKey,
+    updateActiveViewlet
   } from '@hcengineering/view-resources'
-  import { Button, IconAdd, Label, SearchEdit, TabList, resolvedLocationStore, showPopup } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
-  import { ComponentsFilterMode, componentsTitleMap } from '../../utils'
   import tracker from '../../plugin'
+  import { ComponentsFilterMode, componentsTitleMap } from '../../utils'
   import ComponentsContent from './ComponentsContent.svelte'
   import NewComponent from './NewComponent.svelte'
 
@@ -41,7 +37,6 @@
   export let filterMode: ComponentsFilterMode = 'all'
   export let panelWidth: number = 0
 
-  const viewletQuery = createQuery()
   const space = typeof query.space === 'string' ? query.space : tracker.project.DefaultProject
 
   let viewlet: WithLookup<Viewlet> | undefined
@@ -65,11 +60,7 @@
   $: searchQuery = search === '' ? { ...query } : { ...query, $search: search }
   $: resultQuery = { ...searchQuery }
 
-  $: viewletQuery.query(view.class.Viewlet, { attachTo: tracker.class.Component }, (res) => (viewlets = res), {
-    lookup: { descriptor: view.class.ViewletDescriptor }
-  })
-  $: viewlet = viewlets && updateActiveViewlet(viewlets, $activeViewlet[viewletKey])
-  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
+  let viewOptions: ViewOptions | undefined
   $: views =
     viewlets?.map((v) => ({ id: v._id, icon: v.$lookup?.descriptor?.icon, tooltip: v.$lookup?.descriptor?.label })) ??
     []
@@ -115,10 +106,13 @@
     <FilterButton _class={tracker.class.Component} {space} />
   </div>
   <div class="ac-header-full medium-gap">
-    {#if viewlet}
-      <ViewletSettingButton bind:viewOptions {viewlet} />
-      <!-- <ActionIcon icon={IconMoreH} size="small" /> -->
-    {/if}
+    <ViewletSettingButton
+      bind:viewOptions
+      viewletQuery={{ attachTo: tracker.class.Component }}
+      bind:viewlet
+      bind:viewlets
+    />
+    <!-- <ActionIcon icon={IconMoreH} size="small" /> -->
   </div>
 </div>
 
@@ -130,7 +124,7 @@
 />
 
 <div class="flex w-full h-full clear-mins">
-  {#if viewlet}
+  {#if viewlet && viewOptions}
     <ComponentsContent {viewlet} query={{ ...resultQuery }} {space} {viewOptions} />
   {/if}
   {#if $$slots.aside !== undefined && asideShown}

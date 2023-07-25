@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, DocumentQuery, Ref } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { ActionContext } from '@hcengineering/presentation'
   import { Issue, Project } from '@hcengineering/tracker'
   import { AnyComponent, AnySvelteComponent, registerFocus } from '@hcengineering/ui'
-  import { ViewOptions, Viewlet } from '@hcengineering/view'
+  import { ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { List, ListSelectionProvider, SelectDirection, selectionStore } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
 
@@ -28,6 +28,8 @@
   export let viewOptions: ViewOptions
   export let disableHeader: boolean = false
   export let compactMode: boolean = false
+  export let configurations: Record<Ref<Class<Doc>>, Viewlet['config']> = {}
+  export let preference: ViewletPreference[] = []
 
   // Extra properties
   export let projects: Map<Ref<Project>, Project> | undefined
@@ -77,7 +79,8 @@
     _class={tracker.class.Issue}
     {viewOptions}
     viewOptionsConfig={viewlet.viewOptions?.other}
-    config={viewlet.config}
+    config={preference.find((it) => it.attachedTo === viewlet._id)?.config ?? viewlet.config}
+    {configurations}
     documents={issues}
     {query}
     flatHeaders={true}

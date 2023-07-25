@@ -15,7 +15,6 @@
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
-  import { createQuery } from '@hcengineering/presentation'
   import {
     AnyComponent,
     Button,
@@ -25,21 +24,10 @@
     Loading,
     SearchEdit,
     TabList,
-    resolvedLocationStore,
     showPopup
   } from '@hcengineering/ui'
-  import view, { Viewlet, ViewletDescriptor, ViewletPreference } from '@hcengineering/view'
-  import {
-    FilterBar,
-    FilterButton,
-    ViewletSettingButton,
-    activeViewlet,
-    getViewOptions,
-    makeViewletKey,
-    setActiveViewletId,
-    viewOptionStore
-  } from '@hcengineering/view-resources'
-  import { onDestroy } from 'svelte'
+  import { ViewOptions, Viewlet, ViewletDescriptor, ViewletPreference } from '@hcengineering/view'
+  import { FilterBar, FilterButton, ViewletSettingButton, setActiveViewletId } from '@hcengineering/view-resources'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined
@@ -55,67 +43,9 @@
   let search = ''
   let viewlet: WithLookup<Viewlet> | undefined
 
-  const preferenceQuery = createQuery()
   let preference: ViewletPreference | undefined
-
   let viewlets: WithLookup<Viewlet>[] = []
-
-  const viewletQuery = createQuery()
-
-  $: viewletQuery.query(
-    view.class.Viewlet,
-    {
-      attachTo: _class,
-      variant: { $exists: false },
-      ...(descriptors !== undefined ? { descriptor: { $in: descriptors } } : {})
-    },
-    (res) => {
-      viewlets = res
-    },
-    {
-      lookup: {
-        descriptor: view.class.ViewletDescriptor
-      }
-    }
-  )
-
-  let key = makeViewletKey()
-
-  onDestroy(
-    resolvedLocationStore.subscribe((loc) => {
-      key = makeViewletKey(loc)
-    })
-  )
-
-  $: getActiveViewlet(viewlets, $activeViewlet, key)
-
-  function getActiveViewlet (
-    viewlets: WithLookup<Viewlet>[],
-    activeViewlet: Record<string, Ref<Viewlet> | null>,
-    key: string
-  ) {
-    if (viewlets.length === 0) return
-    const newViewlet = viewlets.find((viewlet) => viewlet?._id === activeViewlet[key]) ?? viewlets[0]
-    if (viewlet?._id !== newViewlet?._id) {
-      preference = undefined
-    }
-    viewlet = newViewlet
-  }
-
-  $: if (viewlet !== undefined) {
-    preferenceQuery.query(
-      view.class.ViewletPreference,
-      {
-        attachedTo: viewlet._id
-      },
-      (res) => {
-        preference = res[0]
-      },
-      { limit: 1 }
-    )
-  } else {
-    preferenceQuery.unsubscribe()
-  }
+  let viewOptions: ViewOptions | undefined
 
   $: query = { ...(baseQuery ?? {}), ...(viewlet?.baseQuery ?? {}) }
   $: searchQuery = search === '' ? query : { ...query, $search: search }
@@ -125,10 +55,6 @@
     if (createComponent === undefined) return
     showPopup(createComponent, createComponentProps, 'top')
   }
-
-  // $: twoRows = $deviceInfo.twoRows
-
-  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 
   $: viewslist = viewlets.map((views) => {
     return {
@@ -182,14 +108,24 @@
     <FilterButton {_class} />
   </div>
   <div class="ac-header-full medium-gap">
-    <ViewletSettingButton bind:viewOptions {viewlet} />
+    <ViewletSettingButton
+      bind:viewOptions
+      viewletQuery={{
+        attachTo: _class,
+        variant: { $exists: false },
+        ...(descriptors !== undefined ? { descriptor: { $in: descriptors } } : {})
+      }}
+      bind:viewlets
+      bind:viewlet
+      bind:preference
+    />
     <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
   </div>
 </div>
 
 {#if !viewlet?.$lookup?.descriptor?.component || viewlet?.attachTo !== _class || (preference !== undefined && viewlet?._id !== preference.attachedTo)}
   <Loading />
-{:else}
+{:else if viewOptions && viewlet}
   <FilterBar
     {_class}
     query={searchQuery}

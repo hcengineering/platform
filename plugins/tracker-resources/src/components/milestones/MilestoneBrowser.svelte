@@ -15,34 +15,14 @@
 <script lang="ts">
   import { DocumentQuery, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { createQuery } from '@hcengineering/presentation'
   import { Milestone } from '@hcengineering/tracker'
-  import {
-    Button,
-    IconAdd,
-    Label,
-    SearchEdit,
-    TabItem,
-    TabList,
-    resolvedLocationStore,
-    showPopup
-  } from '@hcengineering/ui'
-  import view, { Viewlet } from '@hcengineering/view'
-  import {
-    FilterBar,
-    FilterButton,
-    ViewletSettingButton,
-    activeViewlet,
-    getViewOptions,
-    makeViewletKey,
-    updateActiveViewlet,
-    viewOptionStore
-  } from '@hcengineering/view-resources'
-  import { onDestroy } from 'svelte'
+  import { Button, IconAdd, Label, SearchEdit, TabItem, TabList, showPopup } from '@hcengineering/ui'
+  import { ViewOptions, Viewlet } from '@hcengineering/view'
+  import { FilterBar, FilterButton, ViewletSettingButton } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import { MilestoneViewMode, getIncludedMilestoneStatuses, milestoneTitleMap } from '../../utils'
-  import NewMilestone from './NewMilestone.svelte'
   import MilestoneContent from './MilestoneContent.svelte'
+  import NewMilestone from './NewMilestone.svelte'
 
   export let label: IntlString
   export let query: DocumentQuery<Milestone> = {}
@@ -57,6 +37,7 @@
   export let panelWidth: number = 0
 
   let viewlet: WithLookup<Viewlet> | undefined = undefined
+  let viewOptions: ViewOptions | undefined
 
   let searchQuery: DocumentQuery<Milestone> = { ...query }
   function updateSearchQuery (search: string): void {
@@ -70,27 +51,6 @@
 
   let resultQuery: DocumentQuery<Milestone> = { ...searchQuery }
 
-  let viewlets: WithLookup<Viewlet>[] | undefined
-
-  $: viewlet = viewlets && updateActiveViewlet(viewlets, active)
-
-  const viewletQuery = createQuery()
-  viewletQuery.query(view.class.Viewlet, { attachTo: tracker.class.Milestone }, (res) => (viewlets = res), {
-    lookup: {
-      descriptor: view.class.ViewletDescriptor
-    }
-  })
-
-  let key = makeViewletKey()
-
-  onDestroy(
-    resolvedLocationStore.subscribe((loc) => {
-      key = makeViewletKey(loc)
-    })
-  )
-
-  $: active = $activeViewlet[key]
-
   let asideFloat: boolean = false
   let asideShown: boolean = true
   $: if (panelWidth < 900 && !asideFloat) asideFloat = true
@@ -102,8 +62,6 @@
   let docSize: boolean = false
   $: if (docWidth <= 900 && !docSize) docSize = true
   $: if (docWidth > 900 && docSize) docSize = false
-
-  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 
   const handleViewModeChanged = (newMode: MilestoneViewMode) => {
     if (newMode === undefined || newMode === mode) {
@@ -141,10 +99,8 @@
     <FilterButton _class={tracker.class.Milestone} {space} />
   </div>
   <div class="ac-header-full medium-gap">
-    {#if viewlet}
-      <ViewletSettingButton bind:viewOptions {viewlet} />
-      <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
-    {/if}
+    <ViewletSettingButton bind:viewOptions viewletQuery={{ attachTo: tracker.class.Milestone }} bind:viewlet />
+    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
   </div>
 </div>
 <div class="ac-header tabs-start full divide">
@@ -166,7 +122,7 @@
 />
 
 <div class="flex w-full h-full clear-mins">
-  {#if viewlet}
+  {#if viewlet && viewOptions}
     <MilestoneContent {viewlet} query={{ ...resultQuery, ...includedMilestonesQuery }} {space} {viewOptions} />
   {/if}
   {#if $$slots.aside !== undefined && asideShown}

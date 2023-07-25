@@ -369,6 +369,36 @@ export class TMilestone extends TDoc implements Milestone {
 @Model(tracker.class.TypeReportedTime, core.class.Type)
 export class TTypeReportedTime extends TType {}
 
+export const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
+  groupBy: ['status', 'assignee', 'priority', 'component', 'milestone', 'createdBy', 'modifiedBy'],
+  orderBy: [
+    ['status', SortingOrder.Ascending],
+    ['priority', SortingOrder.Descending],
+    ['modifiedOn', SortingOrder.Descending],
+    ['createdOn', SortingOrder.Descending],
+    ['dueDate', SortingOrder.Ascending],
+    ['rank', SortingOrder.Ascending]
+  ],
+  other: [
+    {
+      key: 'shouldShowSubIssues',
+      type: 'toggle',
+      defaultValue: true,
+      actionTarget: 'query',
+      action: tracker.function.SubIssueQuery,
+      label: tracker.string.SubIssues
+    },
+    {
+      key: 'shouldShowAll',
+      type: 'toggle',
+      defaultValue: false,
+      actionTarget: 'category',
+      action: view.function.ShowEmptyGroups,
+      label: view.string.ShowEmptyGroups
+    },
+    ...(!kanban ? [showColorsViewOption] : [])
+  ]
+})
 export function createModel (builder: Builder): void {
   builder.createModel(
     TProject,
@@ -382,37 +412,6 @@ export function createModel (builder: Builder): void {
     TTimeSpendReport,
     TTypeReportedTime
   )
-
-  const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
-    groupBy: ['status', 'assignee', 'priority', 'component', 'milestone', 'createdBy', 'modifiedBy'],
-    orderBy: [
-      ['status', SortingOrder.Ascending],
-      ['priority', SortingOrder.Descending],
-      ['modifiedOn', SortingOrder.Descending],
-      ['createdOn', SortingOrder.Descending],
-      ['dueDate', SortingOrder.Ascending],
-      ['rank', SortingOrder.Ascending]
-    ],
-    other: [
-      {
-        key: 'shouldShowSubIssues',
-        type: 'toggle',
-        defaultValue: true,
-        actionTarget: 'query',
-        action: tracker.function.SubIssueQuery,
-        label: tracker.string.SubIssues
-      },
-      {
-        key: 'shouldShowAll',
-        type: 'toggle',
-        defaultValue: false,
-        actionTarget: 'category',
-        action: view.function.ShowEmptyGroups,
-        label: view.string.ShowEmptyGroups
-      },
-      ...(!kanban ? [showColorsViewOption] : [])
-    ]
-  })
 
   builder.createDoc(
     view.class.Viewlet,
@@ -429,7 +428,6 @@ export function createModel (builder: Builder): void {
           'relations',
           'description',
           'number',
-          'titile',
           'reportedTime',
           'reports',
           'priority',

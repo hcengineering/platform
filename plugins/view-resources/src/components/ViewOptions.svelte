@@ -90,7 +90,7 @@
       kind={'regular'}
       size={'medium'}
       items={orderBy}
-      selected={viewOptions.orderBy[0]}
+      selected={viewOptions.orderBy?.[0]}
       width="10rem"
       justify="left"
       on:selected={(e) => {

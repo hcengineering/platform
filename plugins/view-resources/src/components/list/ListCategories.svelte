@@ -17,7 +17,14 @@
   import { getResource, IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
-  import { AttributeModel, BuildModelKey, CategoryOption, ViewOptionModel, ViewOptions } from '@hcengineering/view'
+  import {
+    AttributeModel,
+    BuildModelKey,
+    CategoryOption,
+    Viewlet,
+    ViewOptionModel,
+    ViewOptions
+  } from '@hcengineering/view'
   import { createEventDispatcher, onDestroy, SvelteComponentTyped } from 'svelte'
   import {
     buildModel,
@@ -39,6 +46,7 @@
   export let lookup: Lookup<Doc>
   export let baseMenuClass: Ref<Class<Doc>> | undefined
   export let config: (string | BuildModelKey)[]
+  export let configurations: Record<Ref<Class<Doc>>, Viewlet['config']> | undefined
   export let selectedObjectIds: Doc[] = []
   export let createItemDialog: AnyComponent | AnySvelteComponent | undefined
   export let createItemDialogProps: Record<string, any> | undefined
@@ -102,7 +110,7 @@
     }
   }
 
-  let itemModels: AttributeModel[]
+  let itemModels: Map<Ref<Class<Doc>>, AttributeModel[]> = new Map()
 
   function getHeader (_class: Ref<Class<Doc>>, groupByKey: string): void {
     if (groupByKey === noCategory) {
@@ -114,17 +122,46 @@
 
   let headerComponent: AttributeModel | undefined
   $: getHeader(_class, groupByKey)
-  $: buildModel({ client, _class, keys: config, lookup }).then((res) => {
-    itemModels = res
-    res.forEach((m) => {
-      if (m.displayProps?.key !== undefined) {
-        const key = `list_item_${m.displayProps.key}`
-        if (m.displayProps.fixed) {
-          $fixedWidthStore[key] = 0
-        }
+
+  let updateCounter = 0
+
+  async function buildModels (
+    _class: Ref<Class<Doc>>,
+    config: (string | BuildModelKey)[],
+    configurations?: Record<Ref<Class<Doc>>, Viewlet['config']> | undefined
+  ): Promise<void> {
+    const id = ++updateCounter
+    updateCounter = id
+    const newItemModels: Map<Ref<Class<Doc>>, AttributeModel[]> = new Map()
+    const entries = Object.entries(configurations ?? [])
+    for (const [k, v] of entries) {
+      const _cl = k as Ref<Class<Doc>>
+      const res = await buildModel({ client, _class: _cl, keys: v, lookup })
+      newItemModels.set(_cl, res)
+    }
+
+    if (!newItemModels.has(_class)) {
+      const res = await buildModel({ client, _class, keys: config, lookup })
+      newItemModels.set(_class, res)
+    }
+
+    if (id === updateCounter) {
+      itemModels = newItemModels
+      for (const [, v] of Object.entries(newItemModels)) {
+        // itemModels = itemModels
+        ;(v as AttributeModel[]).forEach((m: AttributeModel) => {
+          if (m.displayProps?.key !== undefined) {
+            const key = `list_item_${m.displayProps.key}`
+            if (m.displayProps.fixed) {
+              $fixedWidthStore[key] = 0
+            }
+          }
+        })
       }
-    })
-  })
+    }
+  }
+
+  $: buildModels(_class, config, configurations)
 
   function getInitIndex (categories: any, i: number): number {
     let res = initIndex
@@ -298,6 +335,7 @@
     {lookup}
     index={i}
     {config}
+    {configurations}
     {itemModels}
     {_class}
     groupPersistKey={`${groupPersistKey}_${level}_${typeof category === 'object' ? category.name : category}`}

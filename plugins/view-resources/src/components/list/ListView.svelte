@@ -2,7 +2,7 @@
   import { Class, Doc, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { AnyComponent, Scroller } from '@hcengineering/ui'
-  import { BuildModelKey, ViewOptions, Viewlet } from '@hcengineering/view'
+  import { BuildModelKey, Viewlet, ViewOptions } from '@hcengineering/view'
   import { onMount } from 'svelte'
   import { ActionContext } from '@hcengineering/presentation'
   import { ListSelectionProvider, SelectDirection, focusStore, selectionStore } from '../..'
@@ -15,6 +15,9 @@
   export let options: FindOptions<Doc> | undefined = undefined
   export let viewlet: Viewlet
   export let config: (string | BuildModelKey)[]
+
+  // Per _class configuration, if supported.
+  export let configurations: Record<Ref<Class<Doc>>, Viewlet['config']> | undefined
   export let createItemDialog: AnyComponent | undefined
   export let createItemDialogProps: Record<string, any> | undefined = undefined
   export let createItemLabel: IntlString | undefined
@@ -43,7 +46,6 @@
     mode: 'browser'
   }}
 />
-
 <div bind:clientWidth={listWidth} class="w-full h-full py-4 clear-mins">
   <Scroller
     bind:this={scroll}
@@ -59,6 +61,7 @@
       {space}
       {query}
       {config}
+      {configurations}
       {options}
       {createItemDialog}
       {createItemDialogProps}

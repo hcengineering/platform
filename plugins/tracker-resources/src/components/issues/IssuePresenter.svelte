@@ -16,9 +16,10 @@
   import { Ref, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import type { Issue, Project } from '@hcengineering/tracker'
-  import { Icon, tooltip } from '@hcengineering/ui'
+  import { AnySvelteComponent, Icon, tooltip } from '@hcengineering/ui'
   import { DocNavLink } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
+  import { Asset } from '@hcengineering/platform'
 
   export let value: WithLookup<Issue>
   export let disabled = false
@@ -27,6 +28,7 @@
   export let noUnderline = false
   export let inline = false
   export let kind: 'list' | undefined = undefined
+  export let icon: Asset | AnySvelteComponent | undefined = undefined
 
   // Extra properties
   export let projects: Map<Ref<Project>, Project> | undefined = undefined
@@ -59,11 +61,12 @@
     <span class="issuePresenterRoot" class:inline class:list={kind === 'list'}>
       {#if !inline && shouldShowAvatar}
         <div class="icon" use:tooltip={{ label: tracker.string.Issue }}>
-          <Icon icon={tracker.icon.Issues} size={'small'} />
+          <Icon icon={icon ?? tracker.icon.Issues} size={'small'} />
         </div>
       {/if}
       <span class="select-text" title={value?.title}>
         {title}
+        <slot name="details" />
       </span>
     </span>
   </DocNavLink>

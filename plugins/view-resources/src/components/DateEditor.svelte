@@ -23,6 +23,7 @@
   export let onChange: (value: any) => void
   export let kind: 'no-border' | 'link' | 'regular' = 'no-border'
   export let size: 'small' | 'medium' | 'large' = 'small'
+  export let editable = true
 </script>
 
 <DateRangePresenter
@@ -30,7 +31,7 @@
   labelNull={label}
   mode={type?.mode}
   noShift={!type?.withShift}
-  editable
+  {editable}
   {kind}
   {size}
   on:change={(res) => {

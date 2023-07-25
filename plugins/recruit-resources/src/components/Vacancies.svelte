@@ -14,19 +14,11 @@
 -->
 <script lang="ts">
   import core, { Doc, DocumentQuery, Ref } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery } from '@hcengineering/presentation'
   import { Vacancy } from '@hcengineering/recruit'
-  import { Button, Label, Loading, SearchEdit, showPopup, tableToCSV, IconAdd } from '@hcengineering/ui'
-  import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
-  import {
-    FilterBar,
-    FilterButton,
-    TableBrowser,
-    ViewletSettingButton,
-    getViewOptions,
-    setActiveViewletId,
-    viewOptionStore
-  } from '@hcengineering/view-resources'
+  import { Button, IconAdd, Label, Loading, SearchEdit, showPopup, tableToCSV } from '@hcengineering/ui'
+  import view, { BuildModelKey, ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { FilterBar, FilterButton, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import CreateVacancy from './CreateVacancy.svelte'
 
@@ -99,36 +91,11 @@
     ]
   ])
 
-  const client = getClient()
-
-  let descr: Viewlet | undefined
+  let viewlet: Viewlet | undefined
   let loading = true
 
-  const preferenceQuery = createQuery()
   let preference: ViewletPreference | undefined
-
-  client
-    .findOne<Viewlet>(view.class.Viewlet, {
-      attachTo: recruit.class.Vacancy,
-      descriptor: view.viewlet.Table
-    })
-    .then((res) => {
-      descr = res
-      if (res !== undefined) {
-        setActiveViewletId(res._id)
-        preferenceQuery.query(
-          view.class.ViewletPreference,
-          {
-            attachedTo: res._id
-          },
-          (res) => {
-            preference = res[0]
-            loading = false
-          },
-          { limit: 1 }
-        )
-      }
-    })
+  let viewOptions: ViewOptions | undefined
 
   function createConfig (
     descr: Viewlet,
@@ -146,10 +113,6 @@
     }
     return result
   }
-
-  // $: twoRows = $deviceInfo.twoRows
-
-  $: viewOptions = getViewOptions(descr, $viewOptionStore)
 </script>
 
 <div class="ac-header full divide">
@@ -186,7 +149,16 @@
     <FilterButton _class={recruit.class.Vacancy} />
   </div>
   <div class="ac-header-full medium-gap">
-    <ViewletSettingButton bind:viewOptions viewlet={descr} />
+    <ViewletSettingButton
+      bind:viewOptions
+      viewletQuery={{
+        attachTo: recruit.class.Vacancy,
+        descriptor: view.viewlet.Table
+      }}
+      bind:viewlet
+      bind:preference
+      bind:loading
+    />
     <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
   </div>
 </div>
@@ -198,20 +170,18 @@
   on:change={(e) => (resultQuery = e.detail)}
 />
 
-{#if descr}
-  {#if loading}
-    <Loading />
-  {:else}
-    <TableBrowser
-      _class={recruit.class.Vacancy}
-      config={createConfig(descr, preference, applications)}
-      options={descr.options}
-      tableId={'vacanciesData'}
-      query={{
-        ...resultQuery,
-        archived
-      }}
-      showNotification
-    />
-  {/if}
+{#if loading}
+  <Loading />
+{:else if viewlet}
+  <TableBrowser
+    _class={recruit.class.Vacancy}
+    config={createConfig(viewlet, preference, applications)}
+    options={viewlet.options}
+    tableId={'vacanciesData'}
+    query={{
+      ...resultQuery,
+      archived
+    }}
+    showNotification
+  />
 {/if}
