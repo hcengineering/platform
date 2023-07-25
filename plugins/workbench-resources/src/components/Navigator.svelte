@@ -17,13 +17,10 @@
   import { getResource } from '@hcengineering/platform'
   import preference, { SpacePreference } from '@hcengineering/preference'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import setting from '@hcengineering/setting'
-  import { Icon, Label, Scroller, showPopup } from '@hcengineering/ui'
+  import { Scroller } from '@hcengineering/ui'
   import { NavLink } from '@hcengineering/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel } from '@hcengineering/workbench'
-  import workbench from '../plugin'
   import { getSpecialSpaceClass } from '../utils'
-  import HelpAndSupport from './HelpAndSupport.svelte'
   import SpacesNav from './navigator/SpacesNav.svelte'
   import SpecialElement from './navigator/SpecialElement.svelte'
   import StarredNav from './navigator/StarredNav.svelte'
@@ -184,17 +181,3 @@
     <div class="antiNav-space" />
   </Scroller>
 {/if}
-<div class="antiNav-footer-line" />
-<div class="antiNav-footer-grower" />
-<div class="antiNav-footer">
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="antiNav-element" style:flex-grow={1} on:click={() => showPopup(HelpAndSupport, {}, 'help-center')}>
-    <div class="an-element__icon">
-      <Icon icon={setting.icon.Support} size={'small'} />
-    </div>
-    <span class="an-element__label title dark">
-      <Label label={workbench.string.HelpAndSupport} />
-    </span>
-  </div>
-  <slot />
-</div>

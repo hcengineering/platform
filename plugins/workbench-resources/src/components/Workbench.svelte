@@ -69,6 +69,7 @@
   import AppSwitcher from './AppSwitcher.svelte'
   import Applications from './Applications.svelte'
   import Logo from './Logo.svelte'
+  import NavFooter from './NavFooter.svelte'
   import NavHeader from './NavHeader.svelte'
   import Navigator from './Navigator.svelte'
   import SelectWorkspaceMenu from './SelectWorkspaceMenu.svelte'
@@ -695,11 +696,18 @@
               {/await}
             {/if}
           {/if}
-          <Navigator {currentSpace} {currentSpecial} model={navigatorModel} {currentApplication} on:open={checkOnHide}>
+          <Navigator
+            {currentSpace}
+            {currentSpecial}
+            model={navigatorModel}
+            {currentApplication}
+            on:open={checkOnHide}
+          />
+          <NavFooter>
             {#if currentApplication.navFooterComponent}
               <Component is={currentApplication.navFooterComponent} props={{ currentSpace }} />
             {/if}
-          </Navigator>
+          </NavFooter>
         </div>
       {/if}
       <div

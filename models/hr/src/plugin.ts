@@ -1,5 +1,5 @@
 //
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -23,8 +23,6 @@ import { Action, ActionCategory, ViewAction } from '@hcengineering/view'
 
 export default mergeIds(hrId, hr, {
   string: {
-    HRApplication: '' as IntlString,
-    Departments: '' as IntlString,
     Request: '' as IntlString,
     Vacation: '' as IntlString,
     Sick: '' as IntlString,

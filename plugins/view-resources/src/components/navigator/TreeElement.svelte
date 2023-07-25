@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -16,7 +17,7 @@
   import type { Doc, Ref } from '@hcengineering/core'
   import type { Asset, IntlString } from '@hcengineering/platform'
   import type { Action, AnySvelteComponent } from '@hcengineering/ui'
-  import { ActionIcon, Icon, IconMoreH, Label, Menu, showPopup } from '@hcengineering/ui'
+  import { ActionIcon, Icon, IconChevronDown, IconMoreH, Label, Menu, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let _id: Ref<Doc> | undefined = undefined
@@ -75,9 +76,7 @@
 
     {#if node}
       <div class="an-element__icon-arrow" class:collapsed>
-        <svg class="svg-small" fill="currentColor" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-          <polygon points="11.3,5.8 8,9.1 4.7,5.8 4,6.5 8,10.5 12,6.5 " />
-        </svg>
+        <IconChevronDown size={'small'} />
       </div>
     {/if}
   </span>

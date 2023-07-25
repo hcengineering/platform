@@ -1,5 +1,5 @@
 //
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -185,25 +185,7 @@ export function createModel (builder: Builder): void {
       icon: hr.icon.HR,
       alias: hrId,
       hidden: false,
-      navigatorModel: {
-        specials: [
-          {
-            id: 'structure',
-            component: hr.component.Structure,
-            icon: hr.icon.Structure,
-            label: hr.string.Structure,
-            position: 'top'
-          },
-          {
-            id: 'schedule',
-            component: hr.component.Schedule,
-            icon: calendar.icon.Calendar,
-            label: hr.string.Schedule,
-            position: 'top'
-          }
-        ],
-        spaces: []
-      }
+      component: hr.component.Schedule
     },
     hr.app.HR
   )

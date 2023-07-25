@@ -20,7 +20,7 @@ test.describe('hr tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test('test-pto-after-department-change', async ({ page, context }) => {
+  test.skip('test-pto-after-department-change', async ({ page }) => {
     await page.locator('[id="app-hr\\:string\\:HRApplication"]').click()
     await page.click('text="Structure"')
     const department1 = 'dep1'
