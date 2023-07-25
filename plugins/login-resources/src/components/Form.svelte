@@ -63,9 +63,9 @@
   export let object: any
   export let ignoreInitialValidation: boolean = false
 
-  $: language = $themeStore.language
+  $: $themeStore.language && validate($themeStore.language)
 
-  async function validate (): Promise<boolean> {
+  async function validate (language: string): Promise<boolean> {
     if (ignoreInitialValidation) return true
     for (const field of fields) {
       const v = object[field.name]
@@ -101,7 +101,7 @@
     status = OK
     return true
   }
-  validate()
+  validate($themeStore.language)
 
   let inAction = false
 
@@ -135,7 +135,7 @@
   style:min-height={$deviceInfo.docHeight > 720 ? '42rem' : '0'}
   on:keydown={(evt) => {
     if (evt.key === 'Enter' && !inAction) {
-      validate().then((res) => {
+      validate($themeStore.language).then((res) => {
         if (res) {
           performAction(action)
         }
@@ -180,7 +180,7 @@
           name={field.id}
           password={field.password}
           bind:value={object[field.name]}
-          on:input={validate}
+          on:input={() => validate($themeStore.language)}
           on:blur={() => {
             trim(field.name)
           }}
