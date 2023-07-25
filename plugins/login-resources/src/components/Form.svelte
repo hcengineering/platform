@@ -1,6 +1,6 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2022 Hardcore Engineering Inc.
+// Copyright © 2021, 2022, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -63,8 +63,10 @@
   export let object: any
   export let ignoreInitialValidation: boolean = false
 
+  $: $themeStore.language && validate($themeStore.language)
+
   async function validate (language: string): Promise<boolean> {
-    if (ignoreInitialValidation) return
+    if (ignoreInitialValidation) return true
     for (const field of fields) {
       const v = object[field.name]
       const f = field
@@ -90,8 +92,7 @@
       if (f.rule !== undefined) {
         if (!f.rule.test(v)) {
           status = new Status(Severity.INFO, login.status.IncorrectValue, {
-            field: await translate(field.i18n, {}),
-            descr: field.ruleDescr ? await translate(field.ruleDescr, {}, language) : ''
+            field: await translate(field.i18n, {}, language)
           })
           return false
         }
@@ -134,7 +135,7 @@
   style:min-height={$deviceInfo.docHeight > 720 ? '42rem' : '0'}
   on:keydown={(evt) => {
     if (evt.key === 'Enter' && !inAction) {
-      validate().then((res) => {
+      validate($themeStore.language).then((res) => {
         if (res) {
           performAction(action)
         }
@@ -179,11 +180,16 @@
           name={field.id}
           password={field.password}
           bind:value={object[field.name]}
-          on:input={validate}
+          on:input={() => validate($themeStore.language)}
           on:blur={() => {
             trim(field.name)
           }}
         />
+        {#if field.ruleDescr}
+          <div class="hint">
+            <Label label={field.ruleDescr} />
+          </div>
+        {/if}
       </div>
     {/each}
 
@@ -276,6 +282,13 @@
         grid-column-start: 1;
         grid-column-end: 3;
       }
+
+      .hint {
+        margin-top: 1rem;
+        font-size: 0.8rem;
+        color: var(--theme-content-color);
+      }
+
       .send {
         margin-top: 2.25rem;
       }

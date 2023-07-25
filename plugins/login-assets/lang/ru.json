@@ -3,7 +3,7 @@
     "RequiredField": "Требуется заполнить {field}",
     "FieldsDoNotMatch": "{field} не совпадает {field2}",
     "ConnectingToServer": "Подключение к серверу....",
-    "IncorrectValue": "Неправильное значение {field}. {descr}"
+    "IncorrectValue": "Неправильное значение {field}"
   },
   "string": {
     "LogIn": "Вход",
@@ -27,7 +27,7 @@
     "WantAnotherWorkspace": "Хотите создать другое рабочее пространство?",
     "ChangeAccount": "Сменить пользователя",
     "NotSeeingWorkspace": "Не видите ваше рабочее пространство?",
-    "WorkspaceNameRule": "Название рабочего пространства должно состояить из строчных латинских букв, цифр и символа - (внутри имени)",
+    "WorkspaceNameRule": "Название рабочего пространства должно состоять из строчных латинских букв, цифр и символа - (внутри имени)",
     "ForgotPassword": "Забыли пароль?",
     "KnowPassword": "Знаете пароль?",
     "Recover": "Восстановить",
