@@ -15,6 +15,7 @@
     "MoveStaff": "Перевод сотрудника",
     "MoveStaffDescr": "Вы действительно хотите перевести сотрудника из {current} в {department}",
     "Departments": "Департаменты",
+    "Positions": "Позиции",
     "ShowEmployees": "Просмотреть сотрудников",
     "AddEmployee": "Добавить сотрудника",
     "SelectEmployee": "Выберите сотрудника",
