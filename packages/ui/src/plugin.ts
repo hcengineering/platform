@@ -82,6 +82,7 @@ export const uis = plugin(uiId, {
     Symbols: '' as IntlString,
     TravelAndPlaces: '' as IntlString,
     Food: '' as IntlString,
+    MoreCount: '' as IntlString,
     Objects: '' as IntlString
   },
   metadata: {
