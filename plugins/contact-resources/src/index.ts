@@ -218,7 +218,7 @@ async function kickEmployee (doc: Employee): Promise<void> {
       MessageBox,
       {
         label: contact.string.DeleteEmployee,
-        message: contact.string.DeleteEmployee
+        message: contact.string.DeleteEmployeeDescr
       },
       undefined,
       (res?: boolean) => {
