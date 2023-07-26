@@ -1172,11 +1172,10 @@ async function deactivateEmployeeAccount (email: string, workspace: string, prod
   try {
     const ops = new TxOperations(connection, core.account.System)
 
-    const existingAccounts = await ops.findAll(contact.class.EmployeeAccount, { email })
-    const employeeIds = existingAccounts.map((a) => a.employee)
+    const existingAccount = await ops.findOne(contact.class.EmployeeAccount, { email })
 
-    if (employeeIds.length > 0) {
-      const employee = await ops.findOne(contact.class.Employee, { _id: { $in: employeeIds } })
+    if (existingAccount !== undefined) {
+      const employee = await ops.findOne(contact.class.Employee, { _id: existingAccount.employee })
       if (employee !== undefined) {
         await ops.update(employee, {
           active: false
