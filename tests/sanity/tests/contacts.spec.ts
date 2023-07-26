@@ -88,15 +88,70 @@ test.describe('contact tests', () => {
     await page.locator('.antiCard button:has-text("Create")').click()
     await page.waitForSelector('form.antiCard', { state: 'detached' })
 
+    await expect(page.locator(`td:has-text("${last} ${first}")`)).toHaveCount(1)
+
     // Click #context-menu svg
     await page.hover(`td:has-text("${last} ${first}")`)
     await page.click(`td:has-text("${last} ${first}")`, {
       button: 'right'
     })
     await page.click('text="Delete"')
-    // Click text=Ok
+    // Click text=Yes
     await page.click('text=Yes')
 
-    await expect(page.locator(`td:has-text("${first} ${last}")`)).toHaveCount(0)
+    await expect(page.locator(`td:has-text("${last} ${first}")`)).toHaveCount(0)
+  })
+
+  test('kick-and-delete-employee', async ({ page }) => {
+    // Create a new context with the saved storage state.
+    await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
+
+    // Create employee
+    await page.click('.antiNav-element:has-text("Employee")')
+    await page.click('button:has-text("Employee")')
+
+    const first = 'Elton-' + generateId(5)
+    const last = 'John-' + generateId(5)
+    const mail = 'eltonjohn@' + generateId(5)
+
+    const firstName = page.locator('[placeholder="First name"]')
+    await firstName.click()
+    await firstName.fill(first)
+
+    const lastName = page.locator('[placeholder="Last name"]')
+    await lastName.click()
+    await lastName.fill(last)
+
+    const email = page.locator('[placeholder="Email"]')
+    await email.click()
+    await email.fill(mail)
+
+    await page.locator('.antiCard button:has-text("Create")').click()
+    await page.waitForSelector('form.antiCard', { state: 'detached' })
+
+    // Kick employee
+
+    // Click #context-menu svg
+    await page.hover(`td:has-text("${last} ${first}")`)
+    await page.click(`td:has-text("${last} ${first}")`, { button: 'right' })
+    await page.click('text="Kick employee"')
+    // Click text=Ok
+    await page.click('text=Ok')
+
+    await expect(page.locator(`td:has-text("${last} ${first}")`)).toHaveCount(1)
+
+    // We need some time to ensure that the status is proper one
+    await page.waitForTimeout(1000)
+
+    // Delete employee
+
+    // Click #context-menu svg
+    await page.hover(`td:has-text("${last} ${first}")`)
+    await page.click(`td:has-text("${last} ${first}")`, { button: 'right' })
+    await page.click('text="Delete employee"')
+    // Click text=Ok
+    await page.click('text=Ok')
+
+    await expect(page.locator(`td:has-text("${last} ${first}")`)).toHaveCount(0)
   })
 })

@@ -29,6 +29,7 @@
     "Organization": "Компания",
     "Employee": "Сотрудник",
     "DeleteEmployee": "Удалить",
+    "DeleteEmployeeDescr": "Вы действительно хотите удалить сотрудника из рабочего пространства?",
     "Value": "Значение",
     "FullDescription": "Полное описание",
     "Phone": "Телефон",
