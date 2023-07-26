@@ -31,7 +31,7 @@ import contact from '@hcengineering/contact'
  * - props - additional text provider props.
  */
 async function CopyTextToClipboard (
-  doc: Doc,
+  doc: Doc | Doc[],
   evt: Event,
   props: {
     textProvider: Resource<(doc: Doc, props?: Record<string, any>) => Promise<string>>
@@ -42,13 +42,18 @@ async function CopyTextToClipboard (
   try {
     // Safari specific behavior
     // see https://bugs.webkit.org/show_bug.cgi?id=222262
+    const text = Array.isArray(doc)
+      ? (await Promise.all(doc.map(async (d) => await getText(d, props.props)))).join(',')
+      : await getText(doc, props.props)
     const clipboardItem = new ClipboardItem({
-      'text/plain': getText(doc, props.props)
+      'text/plain': text
     })
     await navigator.clipboard.write([clipboardItem])
   } catch {
     // Fallback to default clipboard API implementation
-    const text = await getText(doc, props.props)
+    const text = Array.isArray(doc)
+      ? (await Promise.all(doc.map(async (d) => await getText(d, props.props)))).join(',')
+      : await getText(doc, props.props)
     await navigator.clipboard.writeText(text)
   }
 }
