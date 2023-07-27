@@ -1,5 +1,6 @@
 import { Doc, DocumentUpdate, Ref, RelatedDocument, TxOperations } from '@hcengineering/core'
-import { getClient } from '@hcengineering/presentation'
+import presentation, { getClient } from '@hcengineering/presentation'
+import { getMetadata } from '@hcengineering/platform'
 import { Component, Issue, Project, Milestone, trackerId } from '@hcengineering/tracker'
 import { Location, ResolvedLocation, getPanelURI, getCurrentResolvedLocation } from '@hcengineering/ui'
 import { workbenchId } from '@hcengineering/workbench'
@@ -64,7 +65,9 @@ export async function issueLinkProvider (doc: Doc): Promise<string> {
 
 export function generateIssueShortLink (issueId: string): string {
   const location = getCurrentResolvedLocation()
-  return `${window.location.protocol}//${window.location.host}/${workbenchId}/${location.path[1]}/${trackerId}/${issueId}`
+  const frontUrl = getMetadata(presentation.metadata.FrontUrl)  
+  const protocolAndHost = frontUrl ?? `${window.location.protocol}//${window.location.host}`
+  return `${protocolAndHost}/${workbenchId}/${location.path[1]}/${trackerId}/${issueId}`
 }
 
 export async function generateIssueLocation (loc: Location, issueId: string): Promise<ResolvedLocation | undefined> {
