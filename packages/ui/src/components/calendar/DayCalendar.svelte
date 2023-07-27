@@ -276,7 +276,9 @@
     const startTime = event.date < startDay ? { hours: 0, mins: 0 } : convertToTime(event.date)
     const endTime =
       event.dueDate > endDay ? { hours: displayedHours - startHour, mins: 0 } : convertToTime(event.dueDate)
-    if (getDay(weekMonday, event.day).setHours(endTime.hours, endTime.mins, 0, 0) <= todayDate.getTime()) { result.visibility = 0 }
+    if (getDay(weekMonday, event.day).setHours(endTime.hours, endTime.mins, 0, 0) <= todayDate.getTime()) {
+      result.visibility = 0
+    }
     result.top =
       rem(3.5) +
       styleAD +
