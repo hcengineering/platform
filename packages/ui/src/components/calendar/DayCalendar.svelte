@@ -101,20 +101,20 @@
   let maxHeightAD: number = 0
   let shownHeightAD: number = 0
   let shownAD: boolean = false
-  let shortAlldays: { id: string; day: number }[] = []
+  let shortAlldays: { id: string; day: number; fixRow?: boolean }[] = []
   let moreCounts: number[] = Array<number>(displayedDaysCount)
 
   $: if (newEvents !== events) {
+    newEvents = events
     grid = new Array<CalendarGrid>(displayedDaysCount)
     alldaysGrid = new Array<CalendarADGrid>(displayedDaysCount)
-    newEvents = events
     alldays = []
     shortAlldays = []
     moreCounts = new Array<number>(displayedDaysCount)
-    prepareAllDays()
     if (shownAD && adMaxRow <= maxAD) shownAD = false
+    prepareAllDays()
   }
-  $: minimizedAD = maxHeightAD === minHeightAD
+  $: minimizedAD = maxHeightAD === minHeightAD && maxHeightAD !== 0
   $: newEvents
     .filter((ev) => !ev.allDay)
     .forEach((event, i, arr) => {
@@ -232,8 +232,13 @@
             }
           } else if (alldaysGrid[d].alldays[r] === null) {
             tempEventID = ''
-            if (filtered.length > 0) moreCounts[d] = filtered.length
-            else moreCounts[d] = 0
+            if (filtered.length > 1) moreCounts[d] = filtered.length
+            else {
+              if (filtered.length === 1 && filtered[0] !== null) {
+                shortAlldays.push({ id: filtered[0], day: d, fixRow: true })
+              }
+              moreCounts[d] = 0
+            }
           } else if (alldaysGrid[d].alldays[r] === tempEventID) {
             if (filtered.length > 0) {
               tempEventID = ''
@@ -263,14 +268,15 @@
 
   const getRect = (
     event: CalendarItem
-  ): { top: number; bottom: number; left: number; right: number; width: number } => {
-    const result = { top: 0, bottom: 0, left: 0, right: 0, width: 0 }
+  ): { top: number; bottom: number; left: number; right: number; width: number; visibility: number } => {
+    const result = { top: 0, bottom: 0, left: 0, right: 0, width: 0, visibility: 1 }
     const checkDate = new Date(currentDate.getTime() + MILLISECONDS_IN_DAY * event.day)
-    const startDay = checkDate.setHours(startHour, 0, 0)
-    const endDay = checkDate.setHours(displayedHours - 1, 59, 59)
+    const startDay = checkDate.setHours(startHour, 0, 0, 0)
+    const endDay = checkDate.setHours(displayedHours - 1, 59, 59, 999)
     const startTime = event.date < startDay ? { hours: 0, mins: 0 } : convertToTime(event.date)
     const endTime =
       event.dueDate > endDay ? { hours: displayedHours - startHour, mins: 0 } : convertToTime(event.dueDate)
+    if (getDay(weekMonday, event.day).setHours(endTime.hours, endTime.mins, 0, 0) <= todayDate.getTime()) { result.visibility = 0 }
     result.top =
       rem(3.5) +
       styleAD +
@@ -301,13 +307,30 @@
       (cols - index - 1) * rem(0.125)
     return result
   }
-  const getADRect = (id: string, day?: number): { top: number; left: number; width: number; fit: boolean } => {
-    const result = { top: 0, left: 0, width: 0, fit: true }
+  const getADRect = (
+    id: string,
+    day?: number,
+    fixRow?: boolean
+  ): { top: number; left: number; width: number; height: number; fit: boolean; visibility: number } => {
+    const result = { top: 0, left: 0, width: 0, height: rem(heightAD), fit: true, visibility: 1 }
     const index = adRows.findIndex((ev) => ev.id === id)
+
+    const checkTime = new Date().setHours(0, 0, 0, 0)
+    const startEvent = getDay(weekMonday, typeof day !== 'undefined' ? day : adRows[index].startCol).getTime()
+    const endEvent = getDay(weekMonday, adRows[index].endCol).setHours(24)
+    if (endEvent <= checkTime) result.visibility = 0
+    else if (startEvent <= checkTime && endEvent > checkTime) {
+      const eventTime = endEvent - startEvent
+      const remained = endEvent - checkTime
+      const proc = remained / eventTime
+      result.visibility = proc
+    }
+
     const shown = minimizedAD ? minAD : maxAD
-    const lastRow = adRows[index].row === shown - 1
+    const row = fixRow ? shown - 1 : adRows[index].row
+    const lastRow = row === shown - 1
     const fitting = !shownAD && lastRow && typeof day !== 'undefined'
-    result.top = rem(0.125 + adRows[index].row * (heightAD + 0.125))
+    result.top = rem(0.125 + row * (heightAD + 0.125))
     if (fitting) {
       result.left = rem(0.125) + day * (colWidth + 0.125)
       if (day < adRows[index].endCol) {
@@ -318,7 +341,7 @@
           } else if (d === adRows[index].endCol) result.width = colWidth + colWidth * (d - day) - rem(0.25)
         }
       } else result.width = colWidth - rem(0.25)
-    } else if (fitting && (adRows[index].row > shown - 1 || (lastRow && moreCounts[day] > 0))) {
+    } else if (fitting && (row > shown - 1 || (lastRow && moreCounts[day] > 0))) {
       result.fit = false
     } else {
       result.left = rem(0.125) + adRows[index].startCol * (colWidth + 0.125)
@@ -326,6 +349,11 @@
       result.width = colWidth + colWidth * w - rem(0.25)
     }
     return result
+  }
+  const getMask = (visibility: number): string => {
+    return visibility === 0 || visibility === 1
+      ? 'none'
+      : `linear-gradient(-90deg, rgba(0, 0, 0, 1) ${visibility * 100}%, rgba(0, 0, 0, .4) ${visibility * 100}%)`
   }
   const getMore = (day: number): { top: number; left: number; width: number } => {
     const result = { top: 0, left: 0, width: 0 }
@@ -398,78 +426,85 @@
     <div class="sticky-header allday-container" style:grid-column={`col-start 1 / span ${displayedDaysCount}`}>
       {#if shownHeightAD > maxHeightAD && shownAD}
         <Scroller noFade={false}>
-          {#key calendarWidth}{#key displayedDaysCount}
-              <div style:min-height={`${shownHeightAD - cellBorder * 2}px`} />
+          {#key styleAD}{#key calendarWidth}{#key displayedDaysCount}
+                <div style:min-height={`${shownHeightAD - cellBorder * 2}px`} />
+                {#each alldays as event, i}
+                  {@const rect = getADRect(event.eventId)}
+                  <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+                  <div
+                    class="calendar-element"
+                    style:top={`${rect.top}px`}
+                    style:height={`${rect.height}px`}
+                    style:left={`${rect.left}px`}
+                    style:width={`${rect.width}px`}
+                    style:opacity={rect.visibility === 0 ? 0.4 : 1}
+                    style:--mask-image={getMask(rect.visibility)}
+                    tabindex={500 + i}
+                  >
+                    <slot name="event" id={event.eventId} size={{ width: rect.width, height: rect.height }} />
+                  </div>
+                {/each}
+              {/key}{/key}{/key}
+        </Scroller>
+      {:else if shownAD}
+        {#key styleAD}{#key calendarWidth}{#key displayedDaysCount}
               {#each alldays as event, i}
                 {@const rect = getADRect(event.eventId)}
                 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
                 <div
                   class="calendar-element"
                   style:top={`${rect.top}px`}
-                  style:height={`${heightAD}rem`}
+                  style:height={`${rect.height}px`}
                   style:left={`${rect.left}px`}
                   style:width={`${rect.width}px`}
+                  style:opacity={rect.visibility === 0 ? 0.4 : 1}
+                  style:--mask-image={getMask(rect.visibility)}
                   tabindex={500 + i}
                 >
-                  <slot name="allday" id={event.eventId} width={rect.width} />
+                  <slot name="event" id={event.eventId} size={{ width: rect.width, height: rect.height }} />
                 </div>
               {/each}
-            {/key}{/key}
-        </Scroller>
-      {:else if shownAD}
-        {#key calendarWidth}{#key displayedDaysCount}
-            {#each alldays as event, i}
-              {@const rect = getADRect(event.eventId)}
-              <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-              <div
-                class="calendar-element"
-                style:top={`${rect.top}px`}
-                style:height={`${heightAD}rem`}
-                style:left={`${rect.left}px`}
-                style:width={`${rect.width}px`}
-                tabindex={500 + i}
-              >
-                <slot name="allday" id={event.eventId} width={rect.width} />
-              </div>
-            {/each}
-          {/key}{/key}
+            {/key}{/key}{/key}
       {:else}
-        {#key calendarWidth}{#key displayedDaysCount}
-            {#each shortAlldays as event, i}
-              {@const rect = getADRect(event.id, event.day)}
-              <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-              <div
-                class="calendar-element"
-                style:top={`${rect.top}px`}
-                style:height={`${heightAD}rem`}
-                style:left={`${rect.left}px`}
-                style:width={`${rect.width}px`}
-                tabindex={500 + i}
-              >
-                <slot name="allday" id={event.id} width={rect.width} />
-              </div>
-            {/each}
-            {#each moreCounts as more, day}
-              {@const addon = shortAlldays.length}
-              {#if more !== 0}
-                {@const rect = getMore(day)}
+        {#key styleAD}{#key calendarWidth}{#key displayedDaysCount}
+              {#each shortAlldays as event, i}
+                {@const rect = getADRect(event.id, event.day, event.fixRow)}
                 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-                <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <div
-                  class="calendar-element antiButton ghost medium accent cursor-pointer"
+                  class="calendar-element"
                   style:top={`${rect.top}px`}
-                  style:height={`${heightAD}rem`}
+                  style:height={`${rect.height}px`}
                   style:left={`${rect.left}px`}
                   style:width={`${rect.width}px`}
-                  style:padding-left={'1.25rem'}
-                  tabindex={500 + addon + day}
-                  on:click={() => (shownAD = true)}
+                  style:opacity={rect.visibility === 0 ? 0.4 : 1}
+                  style:--mask-image={getMask(rect.visibility)}
+                  tabindex={500 + i}
                 >
-                  <Label label={ui.string.MoreCount} params={{ count: more }} />
+                  <slot name="event" id={event.id} size={{ width: rect.width, height: rect.height }} />
                 </div>
-              {/if}
-            {/each}
-          {/key}{/key}
+              {/each}
+              {#each moreCounts as more, day}
+                {@const addon = shortAlldays.length}
+                {#if more !== 0}
+                  {@const rect = getMore(day)}
+                  <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+                  <!-- svelte-ignore a11y-click-events-have-key-events -->
+                  <div
+                    class="calendar-element antiButton ghost medium accent cursor-pointer"
+                    style:top={`${rect.top}px`}
+                    style:height={`${heightAD}rem`}
+                    style:left={`${rect.left}px`}
+                    style:width={`${rect.width}px`}
+                    style:padding-left={'1.25rem'}
+                    style:--mask-image={'none'}
+                    tabindex={500 + addon + day}
+                    on:click={() => (shownAD = true)}
+                  >
+                    <Label label={ui.string.MoreCount} params={{ count: more }} />
+                  </div>
+                {/if}
+              {/each}
+            {/key}{/key}{/key}
       {/if}
     </div>
 
@@ -514,9 +549,18 @@
               style:bottom={`${rect.bottom}px`}
               style:left={`${rect.left}px`}
               style:right={`${rect.right}px`}
+              style:opacity={rect.visibility === 0 ? 0.4 : 1}
+              style:--mask-image={'none'}
               tabindex={1000 + i}
             >
-              <slot name="event" id={event.eventId} width={rect.width} />
+              <slot
+                name="event"
+                id={event.eventId}
+                size={{
+                  width: rect.width,
+                  height: (calendarRect?.height ?? rect.top + rect.bottom) - rect.top - rect.bottom
+                }}
+              />
             </div>
           {/each}
         {/key}{/key}{/key}
@@ -539,6 +583,8 @@
   }
   .calendar-element {
     position: absolute;
+    mask-image: var(--mask-image, none);
+    --webkit-mask-image: var(--mask-image, none);
     border-radius: 0.25rem;
   }
   .sticky-header {
