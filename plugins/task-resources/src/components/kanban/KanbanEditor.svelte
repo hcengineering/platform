@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Ref, SortingOrder } from '@hcengineering/core'
+  import { Class, Ref, SortingOrder, Status } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import type { DoneState, Kanban, State } from '@hcengineering/task'
   import task, { calcRank } from '@hcengineering/task'
@@ -75,17 +75,31 @@
   }
 
   async function onAdd (_class: Ref<Class<State | DoneState>>) {
-    const lastOne = await client.findOne(_class, {}, { sort: { rank: SortingOrder.Descending } })
+    const states = await client.findAll(_class, {}, { sort: { rank: SortingOrder.Descending } })
+    const names = (states as Array<Status>).map((state) => state.name)
+    const lastOne = states[0]
     if (hierarchy.isDerived(_class, task.class.DoneState)) {
+      let index = 0
+      let newName = 'New Done State'
+      while (names.includes(newName)) {
+        index++
+        newName = 'New Done State ' + index
+      }
       await client.createDoc(_class, kanban.space, {
         ofAttribute: task.attribute.State,
-        name: 'New Done State',
+        name: newName,
         rank: calcRank(lastOne, undefined)
       })
     } else {
+      let index = 0
+      let newName = 'New State'
+      while (names.includes(newName)) {
+        index++
+        newName = 'New State ' + index
+      }
       await client.createDoc(task.class.State, kanban.space, {
         ofAttribute: task.attribute.State,
-        name: 'New State',
+        name: newName,
         color: 9,
         rank: calcRank(lastOne, undefined)
       })

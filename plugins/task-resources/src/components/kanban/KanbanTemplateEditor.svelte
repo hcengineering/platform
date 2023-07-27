@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Ref, Space, SortingOrder, Class } from '@hcengineering/core'
+  import { Ref, Space, SortingOrder, Class, Status } from '@hcengineering/core'
   import core from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import type {
@@ -96,23 +96,43 @@
   }
 
   async function onAdd (_class: Ref<Class<State | DoneState>>) {
-    const lastOne = await client.findOne(
-      task.class.StateTemplate,
-      { attachedTo: kanban._id },
-      { sort: { rank: SortingOrder.Descending } }
-    )
-
     if (hierarchy.isDerived(_class, task.class.DoneState)) {
       const targetClass = _class === task.class.WonState ? task.class.WonStateTemplate : task.class.LostStateTemplate
+      const states = await client.findAll(
+        targetClass,
+        { attachedTo: kanban._id },
+        { sort: { rank: SortingOrder.Descending } }
+      )
+      const names = (states as Array<Status>).map((state) => state.name)
+      const lastOne = states[0]
+      let index = 0
+      let newName = 'New Done State'
+      while (names.includes(newName)) {
+        index++
+        newName = 'New Done State ' + index
+      }
       await client.createDoc(targetClass, kanban.space, {
         ofAttribute: task.attribute.DoneState,
-        name: 'New Done State',
+        name: newName,
         rank: calcRank(lastOne, undefined),
         attachedTo: kanban._id
       })
     } else {
+      const states = await client.findAll(
+        task.class.StateTemplate,
+        { attachedTo: kanban._id },
+        { sort: { rank: SortingOrder.Descending } }
+      )
+      const names = (states as Array<Status>).map((state) => state.name)
+      const lastOne = states[0]
+      let index = 0
+      let newName = 'New State'
+      while (names.includes(newName)) {
+        index++
+        newName = 'New State ' + index
+      }
       await client.createDoc(task.class.StateTemplate, kanban.space, {
-        name: 'New State',
+        name: newName,
         ofAttribute: task.attribute.DoneState,
         color: 9,
         rank: calcRank(lastOne, undefined),

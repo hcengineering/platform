@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { Class, Ref } from '@hcengineering/core'
-  import { AttributeEditor, getClient } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import type { DoneState, KanbanTemplate, KanbanTemplateSpace, State } from '@hcengineering/task'
   import {
     CircleButton,
@@ -38,6 +38,7 @@
   import Lost from '../icons/Lost.svelte'
   import Won from '../icons/Won.svelte'
   import StatusesPopup from './StatusesPopup.svelte'
+  import { StringEditor } from '@hcengineering/view-resources'
 
   export let template: KanbanTemplate | undefined = undefined
   export let space: KanbanTemplateSpace | undefined = undefined
@@ -47,6 +48,7 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
+  const hierarchy = client.getHierarchy()
 
   const elements: HTMLElement[] = []
   let selected: number | undefined
@@ -89,6 +91,32 @@
 
   async function onAdd (_class: Ref<Class<State | DoneState>>) {
     dispatch('add', _class)
+  }
+
+  async function checkAndSaveNewName (newName: string, object: State | DoneState): Promise<void> {
+    let names: string[] = []
+    if (
+      hierarchy.isDerived(object._class, task.class.DoneState) ||
+      hierarchy.isDerived(object._class, task.class.DoneStateTemplate)
+    ) {
+      if (object._class === task.class.WonState || object._class === task.class.WonStateTemplate) {
+        names = wonStates.map((state) => state.name)
+      } else if (object._class === task.class.LostState || object._class === task.class.LostStateTemplate) {
+        names = lostStates.map((state) => state.name)
+      }
+    } else if (
+      hierarchy.isDerived(object._class, task.class.State) ||
+      hierarchy.isDerived(object._class, task.class.StateTemplate)
+    ) {
+      names = states.map((state) => state.name)
+    }
+    let newFixedName = newName
+    let index = 0
+    while (names.includes(newFixedName)) {
+      index++
+      newFixedName = newName + ' ' + index
+    }
+    await client.update(object, { name: newFixedName })
   }
 </script>
 
@@ -138,7 +166,11 @@
           }}
         />
         <div class="flex-grow caption-color">
-          <AttributeEditor maxWidth={'20rem'} _class={state._class} object={state} key="name" />
+          <StringEditor
+            onChange={(newName) => checkAndSaveNewName(newName, state)}
+            value={state.name}
+            placeholder={task.string.TaskStateTitle}
+          />
         </div>
         {#if states.length > 1}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -185,7 +217,11 @@
             <Won size={'medium'} />
           </div>
           <div class="flex-grow caption-color">
-            <AttributeEditor maxWidth={'13rem'} _class={state._class} object={state} key="name" />
+            <StringEditor
+              onChange={(newName) => checkAndSaveNewName(newName, state)}
+              value={state.name}
+              placeholder={task.string.TaskStateTitle}
+            />
           </div>
           {#if wonStates.length > 1}
             <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -233,7 +269,11 @@
             <Lost size={'medium'} />
           </div>
           <div class="flex-grow caption-color">
-            <AttributeEditor maxWidth={'13rem'} _class={state._class} object={state} key="name" />
+            <StringEditor
+              onChange={(newName) => checkAndSaveNewName(newName, state)}
+              value={state.name}
+              placeholder={task.string.TaskStateTitle}
+            />
           </div>
           {#if lostStates.length > 1}
             <!-- svelte-ignore a11y-click-events-have-key-events -->
