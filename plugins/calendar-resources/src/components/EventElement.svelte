@@ -19,14 +19,13 @@
   import EventPresenter from './EventPresenter.svelte'
 
   export let event: Event
-  export let allday: boolean = false
-  export let width: number = 0
+  export let size: { width: number; height: number }
 
   $: startDate = new Date(event.date)
   $: endDate = new Date(event.dueDate)
-  $: oneRow = event.dueDate - event.date <= MILLISECONDS_IN_MINUTE * 30 || allday
+  $: oneRow = size.height < 42 || event.allDay
   $: narrow = event.dueDate - event.date < MILLISECONDS_IN_MINUTE * 25
-  $: empty = width < 44
+  $: empty = size.width < 44
 
   const getTime = (date: Date): string => {
     return `${addZero(date.getHours())}:${addZero(date.getMinutes())}`
