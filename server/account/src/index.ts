@@ -419,13 +419,26 @@ async function sendConfirmation (productId: string, account: Account): Promise<v
 
   const link = concatLink(front, `/login/confirm?id=${token}`)
 
-  const text = `Спасибо за ваш интерес к Bold. Для завершения регистрации копируйте ссылку в адресную строку вашего браузера ${link}. С уважением, Команда Bold.`
-  const html = `<p>Здравствуйте,</p>
+  let text = `Спасибо за ваш интерес к Bold. Для завершения регистрации копируйте ссылку в адресную строку вашего браузера ${link}. С уважением, Команда Bold.`
+  let html = `<p>Здравствуйте,</p>
   <p>Спасибо за ваш интерес к Bold. Для завершения регистрации пройдите по <a href=${link}>этой ссылке</a> или скопируйте ссылку ниже в адресную строку вашего браузера.</p>
   <p>${link}</p>
   <p>С уважением,</p>
   <p>Команда Bold.</p>`
-  const subject = 'Подтвердите адрес электронной почты для регистрации на Bold.ru'
+  let subject = 'Подтвердите адрес электронной почты для регистрации на Bold.ru'
+
+  // A quick workaround for now to have confirmation email in english for ezqms.
+  // Remove as soon as sever i18n is there.
+  if (productId === 'ezqms') {
+    text = `Thank you for your interest in ezQMS. To complete the sign up process please copy the following link into your browser's URL bar ${link}. Regards, ezQMS Team.`
+    html = `<p>Hello,</p>
+    <p>Thank you for your interest in ezQMS. To complete the sign up process please follow <a href=${link}>this link</a> or copy the following link into your browser's URL bar.</p>
+    <p>${link}</p>
+    <p>Regards,</p>
+    <p>ezQMS Team.</p>`
+    subject = 'Confirm your email address to sign up for ezQMS'
+  }
+
   const to = account.email
   await fetch(concatLink(sesURL, '/send'), {
     method: 'post',
