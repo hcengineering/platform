@@ -117,7 +117,8 @@
     "ConfigDescription": "Модуль по работе с талантами/кандидатами и вакансиями",
     "MyApplications": "Мои кандидаты",
 
-    "ShowApplications": "Показать кандидатов"
+    "ShowApplications": "Показать кандидатов",
+    "GetTalentIds": "Получить ID талантов"
   },
   "status": {
     "ApplicationExists": "Кандидат уже существует",
