@@ -16,11 +16,12 @@
   import { Calendar, generateEventId } from '@hcengineering/calendar'
   import { Employee, EmployeeAccount } from '@hcengineering/contact'
   import { UserBoxList } from '@hcengineering/contact-resources'
-  import { Class, DateRangeMode, Doc, Ref, Timestamp, getCurrentAccount } from '@hcengineering/core'
+  import { Class, DateRangeMode, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
   import { Card, getClient } from '@hcengineering/presentation'
   import ui, { DateRangePresenter, EditBox, ToggleWithLabel } from '@hcengineering/ui'
   import { createEventDispatcher, tick } from 'svelte'
   import calendar from '../plugin'
+  import { saveUTC } from '../utils'
 
   export let attachedTo: Ref<Doc> = calendar.ids.NoAttached
   export let attachedToClass: Ref<Class<Doc>> = calendar.class.Event
@@ -47,19 +48,6 @@
 
   export function canClose (): boolean {
     return title !== undefined && title.trim().length === 0 && participants.length === 0
-  }
-
-  const saveUTC = (date: Timestamp): Timestamp => {
-    const utcdate = new Date(date)
-    return Date.UTC(
-      utcdate.getFullYear(),
-      utcdate.getMonth(),
-      utcdate.getDate(),
-      utcdate.getHours(),
-      utcdate.getMinutes(),
-      utcdate.getSeconds(),
-      utcdate.getMilliseconds()
-    )
   }
 
   async function saveEvent () {

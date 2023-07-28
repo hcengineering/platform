@@ -33,6 +33,7 @@
   import { ContextMenu, ObjectPresenter, getObjectPreview } from '@hcengineering/view-resources'
   import { createEventDispatcher, tick } from 'svelte'
   import calendar from '../plugin'
+  import { saveUTC } from '../utils'
 
   export let object: Event
 
@@ -60,26 +61,22 @@
 
   $: mode = object.allDay ? DateRangeMode.DATE : DateRangeMode.DATETIME
 
-  const defaultDuration = 30 * 60 * 1000
-  const allDayDuration = 24 * 60 * 60 * 1000
+  const defaultDuration = 60 * 60 * 1000
+  const allDayDuration = 24 * 60 * 60 * 1000 - 1
   let duration = object.dueDate - object.date
 
   async function updateDate () {
     await client.update(object, {
-      date: object.date,
-      dueDate: object.dueDate,
+      date: object.allDay ? saveUTC(object.date) : object.date,
+      dueDate: object.allDay ? saveUTC(object.dueDate) : object.dueDate,
       allDay: object.allDay
     })
   }
 
   async function handleNewStartDate (newStartDate: number | null) {
     if (newStartDate !== null) {
-      object.date = newStartDate
+      object.date = object.allDay ? new Date(newStartDate).setHours(0, 0, 0, 0) : newStartDate
       object.dueDate = object.date + (object.allDay ? allDayDuration : duration)
-      if (object.allDay) {
-        object.date = new Date(object.date).setUTCHours(0, 0, 0, 0)
-        object.dueDate = new Date(object.dueDate).setUTCHours(0, 0, 0, 0)
-      }
       await tick()
       dueDateRef.adaptValue()
       await updateDate()
@@ -90,14 +87,10 @@
     if (newDueDate !== null) {
       const diff = newDueDate - object.date
       if (diff > 0) {
-        object.dueDate = newDueDate
-        duration = diff
+        object.dueDate = object.allDay ? new Date(newDueDate).setHours(23, 59, 59, 999) : newDueDate
+        duration = object.dueDate - object.date
       } else {
         object.dueDate = object.date + (object.allDay ? allDayDuration : duration)
-      }
-      if (object.allDay) {
-        object.date = new Date(object.date).setUTCHours(0, 0, 0, 0)
-        object.dueDate = new Date(object.dueDate).setUTCHours(0, 0, 0, 0)
       }
       await tick()
       dueDateRef.adaptValue()
@@ -107,8 +100,9 @@
 
   async function allDayChangeHandler () {
     if (object.allDay) {
-      object.date = new Date(object.date).setUTCHours(0, 0, 0, 0)
-      object.dueDate = new Date(object.dueDate).setUTCHours(0, 0, 0, 0)
+      object.date = new Date(object.date).setHours(0, 0, 0, 0)
+      if (object.dueDate - object.date < allDayDuration) object.dueDate = allDayDuration + object.date
+      else object.dueDate = new Date(object.dueDate).setHours(23, 59, 59, 999)
     } else {
       object.dueDate = object.date + defaultDuration
     }
