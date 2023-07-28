@@ -15,18 +15,10 @@
 -->
 <script lang="ts">
   import { Doc, DocumentQuery } from '@hcengineering/core'
-  import { createQuery, getClient, ActionContext } from '@hcengineering/presentation'
+  import { ActionContext } from '@hcengineering/presentation'
   import { Button, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
-  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import {
-    FilterBar,
-    FilterButton,
-    getViewOptions,
-    setActiveViewletId,
-    TableBrowser,
-    ViewletSettingButton,
-    viewOptionStore
-  } from '@hcengineering/view-resources'
+  import view, { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
+  import { FilterBar, FilterButton, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
   import contact from '../plugin'
   import CreateContact from './CreateContact.svelte'
   // import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
@@ -40,42 +32,13 @@
   }
 
   let viewlet: Viewlet | undefined
+  let viewOptions: ViewOptions | undefined
+  let preference: ViewletPreference | undefined = undefined
   let loading = true
-
-  const preferenceQuery = createQuery()
-  let preference: ViewletPreference | undefined
-
-  const client = getClient()
-  client
-    .findOne<Viewlet>(view.class.Viewlet, {
-      attachTo: contact.class.Contact,
-      descriptor: view.viewlet.Table
-    })
-    .then((res) => {
-      viewlet = res
-      if (res !== undefined) {
-        setActiveViewletId(res._id)
-        preferenceQuery.query(
-          view.class.ViewletPreference,
-          {
-            attachedTo: res._id
-          },
-          (res) => {
-            preference = res[0]
-            loading = false
-          },
-          { limit: 1 }
-        )
-      }
-    })
 
   function showCreateDialog (ev: Event) {
     showPopup(CreateContact, { space: contact.space.Contacts, targetElement: ev.target }, ev.target as HTMLElement)
   }
-
-  // $: twoRows = $deviceInfo.twoRows
-
-  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 </script>
 
 <ActionContext
@@ -105,7 +68,16 @@
       <FilterButton _class={contact.class.Contact} />
     </div>
     <div class="ac-header-full medium-gap">
-      <ViewletSettingButton bind:viewOptions {viewlet} />
+      <ViewletSettingButton
+        bind:viewOptions
+        viewletQuery={{
+          attachTo: contact.class.Contact,
+          descriptor: view.viewlet.Table
+        }}
+        bind:viewlet
+        bind:preference
+        bind:loading
+      />
       <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
     </div>
   </div>
@@ -116,18 +88,15 @@
     query={searchQuery}
     on:change={(e) => (resultQuery = e.detail)}
   />
-
-  {#if viewlet}
-    {#if loading}
-      <Loading />
-    {:else}
-      <TableBrowser
-        _class={contact.class.Contact}
-        config={preference?.config ?? viewlet.config}
-        options={viewlet.options}
-        query={resultQuery}
-        showNotification
-      />
-    {/if}
+  {#if loading}
+    <Loading />
+  {:else if viewlet && viewOptions}}
+    <TableBrowser
+      _class={contact.class.Contact}
+      config={preference?.config ?? viewlet.config}
+      options={viewlet.options}
+      query={resultQuery}
+      showNotification
+    />
   {/if}
 </div>

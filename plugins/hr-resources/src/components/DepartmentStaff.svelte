@@ -14,19 +14,13 @@
 -->
 <script lang="ts">
   import contact from '@hcengineering/contact'
+  import { UsersPopup } from '@hcengineering/contact-resources'
   import { Ref, WithLookup } from '@hcengineering/core'
   import { Department, Staff } from '@hcengineering/hr'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { UsersPopup } from '@hcengineering/contact-resources'
-  import { Button, eventToHTMLElement, IconAdd, Label, Scroller, showPopup } from '@hcengineering/ui'
-  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import {
-    getViewOptions,
-    setActiveViewletId,
-    viewOptionStore,
-    Table,
-    ViewletSettingButton
-  } from '@hcengineering/view-resources'
+  import { Button, IconAdd, Label, Scroller, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { Table, ViewletSettingButton } from '@hcengineering/view-resources'
   import hr from '../plugin'
   import { addMember } from '../utils'
 
@@ -68,39 +62,9 @@
     memberItems = result
   })
 
-  const preferenceQuery = createQuery()
   let preference: ViewletPreference | undefined
   let loading = false
-  let descr: WithLookup<Viewlet> | undefined
-
-  $: updateDescriptor(hr.viewlet.TableMember)
-
-  function updateDescriptor (id: Ref<Viewlet>) {
-    loading = true
-    client
-      .findOne<Viewlet>(view.class.Viewlet, {
-        _id: id
-      })
-      .then((res) => {
-        descr = res
-        if (res !== undefined) {
-          setActiveViewletId(res._id)
-          preferenceQuery.query(
-            view.class.ViewletPreference,
-            {
-              attachedTo: res._id
-            },
-            (res) => {
-              preference = res[0]
-              loading = false
-            },
-            { limit: 1 }
-          )
-        }
-      })
-  }
-
-  $: viewOptions = getViewOptions(descr, $viewOptionStore)
+  let viewlet: WithLookup<Viewlet> | undefined
 </script>
 
 <div class="antiSection">
@@ -109,7 +73,13 @@
       <Label label={hr.string.Members} />
     </span>
     <div class="flex-row-center gap-2 reverse">
-      <ViewletSettingButton bind:viewOptions viewlet={descr} kind={'ghost'} />
+      <ViewletSettingButton
+        viewletQuery={{ _id: hr.viewlet.TableMember }}
+        kind={'ghost'}
+        bind:viewlet
+        bind:preference
+        bind:loading
+      />
       <Button id={hr.string.AddEmployee} icon={IconAdd} kind={'ghost'} on:click={add} />
     </div>
   </div>
@@ -117,8 +87,8 @@
     <Scroller>
       <Table
         _class={hr.mixin.Staff}
-        config={preference?.config ?? descr?.config ?? []}
-        options={descr?.options}
+        config={preference?.config ?? viewlet?.config ?? []}
+        options={viewlet?.options}
         query={{ department: objectId }}
         loadingProps={{ length: value?.members.length ?? 0 }}
       />

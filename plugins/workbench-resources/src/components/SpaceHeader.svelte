@@ -13,39 +13,25 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, Ref, Space } from '@hcengineering/core'
+  import type { Class, Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
   import core, { WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import presentation, { createQuery } from '@hcengineering/presentation'
-  import {
-    AnyComponent,
-    Button,
-    IconAdd,
-    SearchEdit,
-    TabList,
-    resolvedLocationStore,
-    showPopup
-  } from '@hcengineering/ui'
+  import { AnyComponent, Button, IconAdd, SearchEdit, TabList, showPopup } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
-  import {
-    FilterButton,
-    ViewletSettingButton,
-    activeViewlet,
-    makeViewletKey,
-    setActiveViewletId,
-    updateActiveViewlet
-  } from '@hcengineering/view-resources'
-  import { createEventDispatcher, onDestroy } from 'svelte'
+  import { FilterButton, ViewletSettingButton, setActiveViewletId } from '@hcengineering/view-resources'
+  import { createEventDispatcher } from 'svelte'
   import Header from './Header.svelte'
 
   export let spaceId: Ref<Space> | undefined
   export let createItemDialog: AnyComponent | undefined
   export let createItemLabel: IntlString = presentation.string.Create
   export let search: string
-  export let viewlet: WithLookup<Viewlet> | undefined
+  export let viewletQuery: DocumentQuery<Viewlet>
+  export let viewlet: Viewlet | undefined = undefined
   export let viewlets: WithLookup<Viewlet>[] = []
   export let _class: Ref<Class<Doc>> | undefined = undefined
-  export let viewOptions: ViewOptions
+  export let viewOptions: ViewOptions | undefined
 
   const query = createQuery()
   let space: Space | undefined
@@ -61,22 +47,10 @@
     showPopup(createItemDialog as AnyComponent, { space: spaceId }, 'top')
   }
 
-  $: viewlet = updateActiveViewlet(viewlets, active)
-
   $: if (prevSpaceId !== spaceId) {
     search = ''
     dispatch('search', '')
   }
-
-  let key = makeViewletKey()
-
-  onDestroy(
-    resolvedLocationStore.subscribe((loc) => {
-      key = makeViewletKey(loc)
-    })
-  )
-
-  $: active = $activeViewlet[key]
 
   $: viewslist = viewlets.map((views) => {
     return {
@@ -120,7 +94,7 @@
       <FilterButton {_class} />
     </div>
     <div class="ac-header-full medium-gap">
-      <ViewletSettingButton bind:viewOptions {viewlet} />
+      <ViewletSettingButton bind:viewOptions {viewletQuery} bind:viewlet bind:viewlets />
       <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
     </div>
   </div>

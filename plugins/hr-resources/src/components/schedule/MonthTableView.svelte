@@ -16,22 +16,16 @@
   import { Employee } from '@hcengineering/contact'
   import { Doc, Ref } from '@hcengineering/core'
   import type { Request, RequestType, Staff } from '@hcengineering/hr'
+  import { Department } from '@hcengineering/hr'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
   import { Button, Label, Loading, showPopup, tableToCSV } from '@hcengineering/ui'
-  import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
-  import {
-    getViewOptions,
-    setActiveViewletId,
-    TableBrowser,
-    viewOptionStore,
-    ViewletSettingButton
-  } from '@hcengineering/view-resources'
+  import { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
   import hr from '../../plugin'
   import {
     EmployeeReports,
-    getHolidayDatesForEmployee,
     getEndDate,
+    getHolidayDatesForEmployee,
     getMonth,
     getRequestDates,
     getRequests,
@@ -39,11 +33,10 @@
     getTotal,
     weekDays
   } from '../../utils'
-  import StatPresenter from './StatPresenter.svelte'
-  import ReportPresenter from './ReportPresenter.svelte'
-  import HolidayPresenter from './HolidayPresenter.svelte'
   import ExportPopup from './ExportPopup.svelte'
-  import { Department } from '@hcengineering/hr'
+  import HolidayPresenter from './HolidayPresenter.svelte'
+  import ReportPresenter from './ReportPresenter.svelte'
+  import StatPresenter from './StatPresenter.svelte'
 
   export let currentDate: Date = new Date()
 
@@ -303,40 +296,10 @@
     ])
   }
 
-  const preferenceQuery = createQuery()
   let preference: ViewletPreference | undefined
-  let descr: Viewlet | undefined
-
-  $: updateDescriptor(hr.viewlet.StaffStats)
-
-  const client = getClient()
+  let viewlet: Viewlet | undefined
 
   let loading = false
-
-  function updateDescriptor (id: Ref<Viewlet>) {
-    loading = true
-    client
-      .findOne<Viewlet>(view.class.Viewlet, {
-        _id: id
-      })
-      .then((res) => {
-        descr = res
-        if (res !== undefined) {
-          setActiveViewletId(res._id)
-          preferenceQuery.query(
-            view.class.ViewletPreference,
-            {
-              attachedTo: res._id
-            },
-            (res) => {
-              preference = res[0]
-              loading = false
-            },
-            { limit: 1 }
-          )
-        }
-      })
-  }
 
   async function createConfig (
     descr: Viewlet,
@@ -394,31 +357,28 @@
       }
     )
   }
-  $: viewOptions = getViewOptions(descr, $viewOptionStore)
 </script>
 
 {#if departmentStaff.length}
-  {#if descr}
-    {#if loading}
-      <Loading />
-    {:else}
-      <div class="ac-header full divide">
-        <div class="clear-mins" />
-        <div class="ac-header-full small-gap">
-          <Button label={getEmbeddedLabel('Export')} on:click={(evt) => exportTable(evt)} />
-          <ViewletSettingButton bind:viewOptions viewlet={descr} />
-        </div>
+  {#if loading}
+    <Loading />
+  {:else if viewlet}
+    <div class="ac-header full divide">
+      <div class="clear-mins" />
+      <div class="ac-header-full small-gap">
+        <Button label={getEmbeddedLabel('Export')} on:click={(evt) => exportTable(evt)} />
+        <ViewletSettingButton viewletQuery={{ _id: hr.viewlet.StaffStats }} bind:viewlet bind:preference bind:loading />
       </div>
-      {#await createConfig(descr, preference, month) then config}
-        <TableBrowser
-          tableId={'exportableData'}
-          _class={hr.mixin.Staff}
-          query={{ _id: { $in: departmentStaff.map((it) => it._id) } }}
-          {config}
-          options={descr.options}
-        />
-      {/await}
-    {/if}
+    </div>
+    {#await createConfig(viewlet, preference, month) then config}
+      <TableBrowser
+        tableId={'exportableData'}
+        _class={hr.mixin.Staff}
+        query={{ _id: { $in: departmentStaff.map((it) => it._id) } }}
+        {config}
+        options={viewlet.options}
+      />
+    {/await}
   {/if}
 {:else}
   <div class="flex-center h-full w-full flex-grow fs-title">

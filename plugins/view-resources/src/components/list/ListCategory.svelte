@@ -26,7 +26,7 @@
     mouseAttractor,
     showPopup
   } from '@hcengineering/ui'
-  import { AttributeModel, BuildModelKey, ViewOptionModel, ViewOptions } from '@hcengineering/view'
+  import { AttributeModel, BuildModelKey, Viewlet, ViewOptionModel, ViewOptions } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { fade } from 'svelte/transition'
   import { FocusSelection, focusStore } from '../../selection'
@@ -47,7 +47,7 @@
   export let createItemDialogProps: Record<string, any> | undefined
   export let createItemLabel: IntlString | undefined
   export let selectedObjectIds: Doc[]
-  export let itemModels: AttributeModel[]
+  export let itemModels: Map<Ref<Class<Doc>>, AttributeModel[]>
   export let extraHeaders: AnyComponent[] | undefined
   export let flatHeaders = false
   export let disableHeader = false
@@ -56,6 +56,7 @@
   export let lookup: Lookup<Doc>
   export let _class: Ref<Class<Doc>>
   export let config: (string | BuildModelKey)[]
+  export let configurations: Record<Ref<Class<Doc>>, Viewlet['config']> | undefined
   export let viewOptions: ViewOptions
   export let newObjectProps: (doc: Doc) => Record<string, any> | undefined
   export let viewOptionsConfig: ViewOptionModel[] | undefined
@@ -153,7 +154,7 @@
     return focusStore.focus?._id === doc._id
   }
 
-  $: byRank = viewOptions.orderBy[0] === 'rank'
+  $: byRank = viewOptions.orderBy?.[0] === 'rank'
 
   const client = getClient()
 
@@ -248,7 +249,7 @@
     ev.stopPropagation()
     ev.preventDefault()
     const update: DocumentUpdate<Doc> = {}
-    if (dragItemIndex !== undefined && viewOptions.orderBy[0] === 'rank') {
+    if (dragItemIndex !== undefined && viewOptions.orderBy?.[0] === 'rank') {
       const prev = limited[dragItemIndex - 1] as DocWithRank
       const next = limited[dragItemIndex + 1] as DocWithRank
       try {
@@ -407,6 +408,7 @@
         {lookup}
         {baseMenuClass}
         {config}
+        {configurations}
         {selectedObjectIds}
         {createItemDialog}
         {createItemLabel}
@@ -421,13 +423,13 @@
         dragItem
         dragstart={dragStartHandler}
       />
-    {:else if itemModels && (!collapsed || wasLoaded || dragItemIndex !== undefined)}
+    {:else if itemModels && itemModels.size > 0 && (!collapsed || wasLoaded || dragItemIndex !== undefined)}
       {#if limited && !loading}
         {#each limited as docObject, i (docObject._id)}
           <ListItem
             bind:this={listItems[i]}
             {docObject}
-            model={itemModels}
+            model={itemModels.get(docObject._class) ?? []}
             {groupByKey}
             selected={isSelected(docObject, $focusStore)}
             checked={selectedObjectIdsSet.has(docObject._id)}

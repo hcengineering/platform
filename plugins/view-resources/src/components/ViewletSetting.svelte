@@ -17,29 +17,43 @@
   import { Asset, IntlString } from '@hcengineering/platform'
   import preferencePlugin from '@hcengineering/preference'
   import { createQuery, getAttributePresenterClass, getClient, hasResource } from '@hcengineering/presentation'
-  import { Button, Loading, ToggleWithLabel } from '@hcengineering/ui'
+  import { Loading } from '@hcengineering/ui'
   import { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { deepEqual } from 'fast-equals'
   import view from '../plugin'
   import { buildConfigLookup, getKeyLabel } from '../utils'
+  import ViewletClassSettings from './ViewletClassSettings.svelte'
+  import DropdownLabelsIntl from '@hcengineering/ui/src/components/DropdownLabelsIntl.svelte'
 
   export let viewlet: Viewlet
 
-  let preference: ViewletPreference | undefined
+  let preferences: ViewletPreference[] = []
   const preferenceQuery = createQuery()
 
-  $: if (viewlet) {
+  let selected = viewlet._id
+
+  let viewlets: Viewlet[] = []
+
+  $: client
+    .findAll(view.class.Viewlet, {
+      attachTo: { $in: client.getHierarchy().getDescendants(viewlet.attachTo) },
+      variant: viewlet.variant ? viewlet.variant : { $exists: false },
+      descriptor: viewlet.descriptor
+    })
+    .then((res) => {
+      viewlets = res
+    })
+
+  $: if (viewlet && viewlets.length > 0) {
     preferenceQuery.query(
       view.class.ViewletPreference,
       {
-        attachedTo: viewlet._id
+        attachedTo: { $in: Array.from(viewlets.map((it) => it._id)) }
       },
       (res) => {
-        preference = res[0]
-        items = getConfig(viewlet, preference)
+        preferences = res
         loading = false
-      },
-      { limit: 1 }
+      }
     )
   } else {
     preferenceQuery.unsubscribe()
@@ -47,7 +61,6 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  let items: (Config | AttributeConfig)[] = []
   let loading = true
 
   interface Config {
@@ -232,26 +245,29 @@
     return preference === undefined ? result : setStatus(result, preference)
   }
 
-  async function save (): Promise<void> {
-    const config = items
-      .filter(
-        (p) =>
-          p.value !== undefined && (p.type === 'divider' || (p.type === 'attribute' && (p as AttributeConfig).enabled))
-      )
-      .map((p) => p.value as string | BuildModelKey)
+  async function save (viewletId: Ref<Viewlet>, items: (Config | AttributeConfig)[]): Promise<void> {
+    const configValues = items.filter(
+      (p) =>
+        p.value !== undefined &&
+        ((p.type === 'divider' && typeof p.value === 'object' && p.value.displayProps?.grow) ||
+          (p.type === 'attribute' && (p as AttributeConfig).enabled))
+    )
+    const config = configValues.map((p) => p.value as string | BuildModelKey)
+    const preference = preferences.find((p) => p.attachedTo === viewletId)
     if (preference !== undefined) {
       await client.update(preference, {
         config
       })
     } else {
       await client.createDoc(view.class.ViewletPreference, preferencePlugin.space.Preference, {
-        attachedTo: viewlet._id,
+        attachedTo: viewletId,
         config
       })
     }
   }
 
-  async function restoreDefault (): Promise<void> {
+  async function restoreDefault (viewletId: Ref<Viewlet>): Promise<void> {
+    const preference = preferences.find((p) => p.attachedTo === viewletId)
     if (preference !== undefined) {
       await client.remove(preference)
     }
@@ -275,41 +291,6 @@
     }
     return result
   }
-
-  function dragEnd () {
-    selected = undefined
-    save()
-  }
-
-  function dragOver (e: DragEvent, i: number) {
-    e.preventDefault()
-    e.stopPropagation()
-    const s = selected as number
-    if (dragswap(e, i, s)) {
-      ;[items[i], items[s]] = [items[s], items[i]]
-      selected = i
-    }
-  }
-
-  const elements: HTMLElement[] = []
-
-  function dragswap (ev: MouseEvent, i: number, s: number): boolean {
-    if (i < s) {
-      return ev.offsetY < elements[i].offsetHeight / 2
-    } else if (i > s) {
-      return ev.offsetY > elements[i].offsetHeight / 2
-    }
-    return false
-  }
-
-  function change (item: Config, value: boolean): void {
-    if (isAttribute(item)) {
-      item.enabled = value
-      save()
-    }
-  }
-
-  let selected: number | undefined
 </script>
 
 <div class="selectPopup">
@@ -319,57 +300,36 @@
       {#if loading}
         <Loading />
       {:else}
-        <div class="flex-row-reverse mb-2 mr-2">
-          <Button
-            on:click={restoreDefault}
-            label={view.string.RestoreDefaults}
-            size={'x-small'}
-            kind={'link'}
-            noFocus
-          />
-        </div>
-        {#each items as item, i}
-          {#if isAttribute(item)}
-            <div
-              class="menu-item flex-row-center"
-              bind:this={elements[i]}
-              draggable={viewlet.configOptions?.sortable && item.enabled}
-              on:dragstart={(ev) => {
-                if (ev.dataTransfer) {
-                  ev.dataTransfer.effectAllowed = 'move'
-                  ev.dataTransfer.dropEffect = 'move'
-                }
-                // ev.preventDefault()
-                ev.stopPropagation()
-                selected = i
+        {#if viewlets.length > 1}
+          <div class="p-1">
+            <DropdownLabelsIntl
+              kind={'ghost'}
+              items={viewlets.map((it) => ({ id: it._id, label: hierarchy.getClass(it.attachTo).label }))}
+              {selected}
+              on:selected={(evt) => {
+                selected = evt.detail
               }}
-              on:dragover|preventDefault={(e) => dragOver(e, i)}
-              on:dragend={dragEnd}
-            >
-              <ToggleWithLabel
-                on={item.enabled}
-                label={item.label}
-                on:change={(e) => {
-                  change(item, e.detail)
-                }}
-              />
-            </div>
-          {:else}
-            <div class="antiDivider" />
-          {/if}
-        {/each}
+              width={'100%'}
+            />
+          </div>
+        {/if}
+        {@const selectedViewlet = viewlets.find((it) => it._id === selected)}
+        {@const selectedPreferece = preferences.find((it) => it.attachedTo === selected)}
+        {#if selectedViewlet}
+          {@const citems = getConfig(selectedViewlet, selectedPreferece)}
+          <ViewletClassSettings
+            {viewlet}
+            items={citems}
+            on:restoreDefaults={() => {
+              restoreDefault(selected)
+            }}
+            on:save={(evt) => {
+              save(selected, evt.detail)
+            }}
+          />
+        {/if}
       {/if}
     </div>
   </div>
   <div class="menu-space" />
 </div>
-
-<style lang="scss">
-  .item {
-    padding: 0.5rem;
-    border-radius: 0.25rem;
-    &:hover {
-      background-color: var(--theme-button-hovered);
-    }
-  }
-</style>

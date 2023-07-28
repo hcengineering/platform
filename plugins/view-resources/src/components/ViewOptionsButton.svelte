@@ -13,8 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { getClient } from '@hcengineering/presentation'
   import { Button, ButtonKind, eventToHTMLElement, showPopup } from '@hcengineering/ui'
-  import { ViewOptions, Viewlet } from '@hcengineering/view'
+  import { ViewOptions, ViewOptionsModel, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
   import { focusStore } from '../selection'
@@ -26,13 +27,54 @@
   export let viewOptions: ViewOptions
 
   const dispatch = createEventDispatcher()
+  const client = getClient()
 
   let btn: HTMLButtonElement
 
-  function clickHandler (event: MouseEvent) {
+  async function clickHandler (event: MouseEvent): Promise<void> {
+    if (viewlet === undefined) {
+      return
+    }
+    const config = await client.findAll(view.class.Viewlet, {
+      attachTo: { $in: client.getHierarchy().getDescendants(viewlet.attachTo) },
+      variant: viewlet.variant ? viewlet.variant : { $exists: false },
+      descriptor: viewlet.descriptor
+    })
+
+    // Use one ancestor, viewlet class and all derived ones.
+    const classes = [viewlet.attachTo, ...config.map((it) => it.attachTo)].filter(
+      (it, idx, arr) => arr.indexOf(it) === idx
+    )
+
+    const extraViewlets = await client.findAll(view.class.Viewlet, {
+      attachTo: { $in: classes },
+      descriptor: viewlet.descriptor,
+      variant: viewlet.variant ? viewlet.variant : { $exists: false }
+    })
+
+    const mergedModel: ViewOptionsModel = {
+      groupBy: [],
+      orderBy: [],
+      other: [],
+      groupDepth: viewlet.viewOptions?.groupDepth
+    }
+
+    if (classes.length > 1) {
+      mergedModel.groupBy.push('_class')
+    }
+    for (const ev of extraViewlets) {
+      mergedModel.groupBy.push(...(ev.viewOptions?.groupBy ?? []))
+      mergedModel.orderBy.push(...(ev.viewOptions?.orderBy ?? []))
+      mergedModel.other.push(...(ev.viewOptions?.other ?? []))
+    }
+
+    mergedModel.groupBy = mergedModel.groupBy.filter((it, idx, arr) => arr.indexOf(it) === idx)
+    mergedModel.orderBy = mergedModel.orderBy.filter((it, idx, arr) => arr.indexOf(it) === idx)
+    mergedModel.other = mergedModel.other.filter((it, idx, arr) => arr.findIndex((q) => q.key === it.key) === idx)
+
     showPopup(
       ViewOptionsEditor,
-      { viewlet, config: viewlet?.viewOptions, viewOptions },
+      { viewlet, config: mergedModel, viewOptions },
       eventToHTMLElement(event),
       undefined,
       (result) => {
