@@ -643,6 +643,9 @@ export const createUserWorkspace =
         }
       }
 
+      if ((await getWorkspace(db, productId, workspace)) !== null) {
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceAlreadyExists, { workspace }))
+      }
       try {
         await createWorkspace(version, txes, migrationOperation, db, productId, workspace, '')
       } catch (err: any) {
@@ -656,7 +659,7 @@ export const createUserWorkspace =
           {
             _id: ws._id
           },
-          { $set: { disabled: true } }
+          { $set: { disabled: true, message: JSON.stringify(err?.message ?? ''), err: JSON.stringify(err) } }
         )
         throw err
       }
