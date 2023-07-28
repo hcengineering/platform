@@ -481,7 +481,9 @@
         if (
           $tooltipstore.label !== undefined ||
           ($tooltipstore.component !== undefined && $tooltipstore.kind !== 'submenu')
-        ) { closeTooltip() }
+        ) {
+          closeTooltip()
+        }
       }}
     >
       <div
