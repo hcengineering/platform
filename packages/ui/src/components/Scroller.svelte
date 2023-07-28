@@ -478,7 +478,10 @@
       class="scroll relative flex-shrink"
       style:overflow-x={horizontal ? 'auto' : 'hidden'}
       on:scroll={() => {
-        if ($tooltipstore.label !== undefined || $tooltipstore.component !== undefined) closeTooltip()
+        if (
+          $tooltipstore.label !== undefined ||
+          ($tooltipstore.component !== undefined && $tooltipstore.kind !== 'submenu')
+        ) { closeTooltip() }
       }}
     >
       <div
