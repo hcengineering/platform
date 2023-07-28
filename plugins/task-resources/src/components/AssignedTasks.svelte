@@ -14,7 +14,8 @@
 -->
 <script lang="ts">
   import { EmployeeAccount } from '@hcengineering/contact'
-  import { Class, Doc, DocumentQuery, getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import tags, { selectedTagElements, TagCategory, TagElement } from '@hcengineering/tags'
   import { DoneState, Task } from '@hcengineering/task'
@@ -22,25 +23,15 @@
     Component,
     IModeSelector,
     Label,
-    resolvedLocationStore,
-    SearchEdit,
+    Loading,
     ModeSelector,
-    Loading
+    resolvedLocationStore,
+    SearchEdit
   } from '@hcengineering/ui'
-  import {
-    activeViewlet,
-    FilterButton,
-    getViewOptions,
-    makeViewletKey,
-    TableBrowser,
-    updateActiveViewlet,
-    viewOptionStore
-  } from '@hcengineering/view-resources'
+  import { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
+  import { FilterBar, FilterButton, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { createEventDispatcher } from 'svelte'
   import task from '../plugin'
-  import { IntlString } from '@hcengineering/platform'
-  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { createEventDispatcher, onDestroy } from 'svelte'
-  import { FilterBar, ViewletSettingButton } from '@hcengineering/view-resources'
 
   export let _class: Ref<Class<Task>> = task.class.Task
   export let labelTasks = task.string.Tasks
@@ -126,34 +117,10 @@
   }
 
   $: updateResultQuery(search, documentIds, doneStates)
-  let viewlets: WithLookup<Viewlet>[] | undefined
 
-  let key = makeViewletKey()
+  let viewlet: Viewlet | undefined
 
-  onDestroy(
-    resolvedLocationStore.subscribe((loc) => {
-      key = makeViewletKey(loc)
-    })
-  )
-  $: viewlet = viewlets && updateActiveViewlet(viewlets, active)
-  $: active = $activeViewlet[key]
-  const viewletQuery = createQuery()
-  const preferenceQuery = createQuery()
-  viewletQuery.query(view.class.Viewlet, { attachTo: _class, descriptor: task.viewlet.StatusTable }, (res) => {
-    viewlets = res
-    preferenceQuery.query(
-      view.class.ViewletPreference,
-      {
-        attachedTo: res[0]._id
-      },
-      (pref) => {
-        preference = pref[0]
-        loading = false
-      },
-      { limit: 1 }
-    )
-  })
-  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
+  let viewOptions: ViewOptions | undefined
 
   function updateCategory (detail: { category: Ref<TagCategory> | null; elements: TagElement[] }) {
     category = detail.category ?? undefined
@@ -185,9 +152,13 @@
     <div class="buttons-divider" />
     <FilterButton {_class} />
   </div>
-  {#if viewlet}
-    <ViewletSettingButton bind:viewOptions {viewlet} />
-  {/if}
+  <ViewletSettingButton
+    bind:viewOptions
+    viewletQuery={{ attachTo: _class, descriptor: task.viewlet.StatusTable }}
+    bind:viewlet
+    bind:preference
+    bind:loading
+  />
 </div>
 <FilterBar {_class} query={searchQuery} {viewOptions} on:change={(e) => (resultQuery = e.detail)} />
 

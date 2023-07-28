@@ -43,9 +43,9 @@
     { attachTo: _class },
     (res) => {
       viewlets = res
-      if (selectedViewlet === undefined || res.findIndex((p) => p._id === selectedViewlet?._id) === -1) {
-        selectedViewlet = res[0]
-        setActiveViewletId(selectedViewlet._id)
+      if (viewlet === undefined || res.findIndex((p) => p._id === viewlet?._id) === -1) {
+        viewlet = res[0]
+        setActiveViewletId(viewlet._id)
       }
     },
     { lookup: { descriptor: view.class.ViewletDescriptor } }
@@ -64,17 +64,17 @@
     showPopup(createComponent, {}, 'top')
   }
 
-  let selectedViewlet: WithLookup<Viewlet> | undefined
+  let viewlet: WithLookup<Viewlet> | undefined
 
   const preferenceQuery = createQuery()
   let preference: ViewletPreference | undefined
   let loading = true
 
-  $: selectedViewlet &&
+  $: viewlet &&
     preferenceQuery.query(
       view.class.ViewletPreference,
       {
-        attachedTo: selectedViewlet._id
+        attachedTo: viewlet._id
       },
       (res) => {
         preference = res[0]
@@ -90,7 +90,7 @@
     }
   })
 
-  $: viewOptions = getViewOptions(selectedViewlet, $viewOptionStore)
+  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 </script>
 
 <div class="ac-header full divide">
@@ -103,9 +103,9 @@
       <TabList
         items={viewslist}
         multiselect={false}
-        selected={selectedViewlet?._id}
+        selected={viewlet?._id}
         on:select={(result) => {
-          if (result.detail !== undefined) selectedViewlet = viewlets.find((vl) => vl._id === result.detail.id)
+          if (result.detail !== undefined) viewlet = viewlets.find((vl) => vl._id === result.detail.id)
         }}
       />
     {/if}
@@ -113,19 +113,19 @@
   </div>
 </div>
 <div class="flex-col w-full h-full background-comp-header-color">
-  {#if selectedViewlet?.$lookup?.descriptor?.component}
+  {#if viewlet?.$lookup?.descriptor?.component}
     {#if loading}
       <Loading />
-    {:else}
+    {:else if viewlet && viewOptions}
       <Component
-        is={selectedViewlet.$lookup?.descriptor?.component}
+        is={viewlet.$lookup?.descriptor?.component}
         props={{
           _class,
           space,
-          options: selectedViewlet.options,
-          config: preference?.config ?? selectedViewlet.config,
+          options: viewlet.options,
+          config: preference?.config ?? viewlet.config,
           viewOptions,
-          viewlet: selectedViewlet,
+          viewlet,
           query: resultQuery,
           search,
           createComponent

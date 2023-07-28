@@ -325,7 +325,7 @@
         {#if headerEditor !== undefined}
           <Component
             is={headerEditor}
-            props={{ object, keys, mixins, ignoreKeys, vertical: dir === 'column', allowedCollections }}
+            props={{ object, keys, mixins, ignoreKeys, vertical: dir === 'column', allowedCollections, embedded }}
             on:update={updateKeys}
           />
         {:else if dir === 'column'}

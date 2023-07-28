@@ -17,14 +17,8 @@
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { AnyComponent, Component, resolvedLocationStore } from '@hcengineering/ui'
-  import view, { Viewlet } from '@hcengineering/view'
-  import {
-    activeViewlet,
-    getViewOptions,
-    makeViewletKey,
-    updateActiveViewlet,
-    viewOptionStore
-  } from '@hcengineering/view-resources'
+  import view, { ViewOptions, Viewlet } from '@hcengineering/view'
+  import { activeViewlet, makeViewletKey, updateActiveViewlet } from '@hcengineering/view-resources'
   import type { ViewConfiguration } from '@hcengineering/workbench'
   import { onDestroy } from 'svelte'
   import SpaceContent from './SpaceContent.svelte'
@@ -37,6 +31,7 @@
 
   let search: string = ''
   let viewlet: WithLookup<Viewlet> | undefined = undefined
+  let viewOptions: ViewOptions | undefined
   let space: Space | undefined
   let _class: Ref<Class<Doc>> | undefined = undefined
   let header: AnyComponent | undefined
@@ -98,8 +93,6 @@
   function setViewlet (e: CustomEvent<WithLookup<Viewlet>>) {
     viewlet = e.detail
   }
-
-  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 </script>
 
 {#if _class && space}
@@ -111,9 +104,9 @@
     />
   {:else}
     <SpaceHeader
+      viewletQuery={{ attachTo: currentView?.class, variant: { $exists: false } }}
       spaceId={space._id}
       {_class}
-      {viewlets}
       {createItemDialog}
       {createItemLabel}
       bind:viewOptions
@@ -121,5 +114,7 @@
       bind:viewlet
     />
   {/if}
-  <SpaceContent space={space._id} {_class} {createItemDialog} {viewOptions} {createItemLabel} bind:search {viewlet} />
+  {#if viewOptions}
+    <SpaceContent space={space._id} {_class} {createItemDialog} {viewOptions} {createItemLabel} bind:search {viewlet} />
+  {/if}
 {/if}

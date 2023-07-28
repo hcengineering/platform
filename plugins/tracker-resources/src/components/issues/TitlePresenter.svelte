@@ -49,6 +49,7 @@
   {#if showParent}
     <ParentNamesPresenter {value} />
   {/if}
+  <slot />
 {/if}
 
 <style lang="scss">

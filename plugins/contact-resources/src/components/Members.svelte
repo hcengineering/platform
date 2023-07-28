@@ -16,18 +16,12 @@
   import { Member } from '@hcengineering/contact'
   import type { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Button, IconAdd, Label, showPopup, Icon } from '@hcengineering/ui'
-  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import IconMembersOutline from './icons/MembersOutline.svelte'
-  import {
-    getViewOptions,
-    setActiveViewletId,
-    Table,
-    ViewletSettingButton,
-    viewOptionStore
-  } from '@hcengineering/view-resources'
+  import { Button, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
+  import { Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { Table, ViewletSettingButton } from '@hcengineering/view-resources'
   import contact from '../plugin'
   import UsersPopup from './UsersPopup.svelte'
+  import IconMembersOutline from './icons/MembersOutline.svelte'
 
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
@@ -68,38 +62,8 @@
     )
   }
 
-  let descr: Viewlet | undefined
-
-  const preferenceQuery = createQuery()
+  let viewlet: Viewlet | undefined
   let preference: ViewletPreference | undefined
-
-  $: updateDescriptor(contact.viewlet.TableMember)
-
-  function updateDescriptor (id: Ref<Viewlet>) {
-    loading = true
-    client
-      .findOne<Viewlet>(view.class.Viewlet, {
-        _id: id
-      })
-      .then((res) => {
-        descr = res
-        if (res !== undefined) {
-          setActiveViewletId(res._id)
-          preferenceQuery.query(
-            view.class.ViewletPreference,
-            {
-              attachedTo: res._id
-            },
-            (res) => {
-              preference = res[0]
-              loading = false
-            },
-            { limit: 1 }
-          )
-        }
-      })
-  }
-  $: viewOptions = getViewOptions(descr, $viewOptionStore)
 </script>
 
 <div class="antiSection">
@@ -111,15 +75,21 @@
       <Label label={contact.string.Members} />
     </span>
     <div class="buttons-group xsmall-gap">
-      <ViewletSettingButton bind:viewOptions viewlet={descr} kind={'ghost'} />
+      <ViewletSettingButton
+        viewletQuery={{ _id: contact.viewlet.TableMember }}
+        kind={'ghost'}
+        bind:viewlet
+        bind:preference
+        bind:loading
+      />
       <Button id={contact.string.AddMember} icon={IconAdd} kind={'ghost'} on:click={createApp} />
     </div>
   </div>
-  {#if members > 0 && descr}
+  {#if members > 0 && viewlet}
     <Table
       _class={contact.class.Member}
-      config={preference?.config ?? descr.config}
-      options={descr.options}
+      config={preference?.config ?? viewlet.config}
+      options={viewlet.options}
       query={{ attachedTo: objectId }}
       loadingProps={{ length: members }}
     />

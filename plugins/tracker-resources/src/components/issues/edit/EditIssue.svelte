@@ -22,7 +22,9 @@
   import setting, { settingId } from '@hcengineering/setting'
   import { Issue, Project } from '@hcengineering/tracker'
   import {
+    AnyComponent,
     Button,
+    Component,
     EditBox,
     FocusHandler,
     IconMixin,
@@ -54,6 +56,7 @@
   const queryClient = createQuery()
   const dispatch = createEventDispatcher()
   const client = getClient()
+  const hierarchy = client.getHierarchy()
 
   let issue: WithLookup<Issue> | undefined
   let currentProject: Project | undefined
@@ -136,7 +139,23 @@
   $: lastCtx = $contextStore.getLastContext()
   $: isContextEnabled = lastCtx?.mode === 'editor' || lastCtx?.mode === 'browser'
 
-  $: descriptionKey = client.getHierarchy().getAttribute(tracker.class.Issue, 'description')
+  $: descriptionKey = hierarchy.getAttribute(tracker.class.Issue, 'description')
+
+  function getEditorFooter (
+    _class?: Ref<Class<Doc>>
+  ): { footer: AnyComponent; props?: Record<string, any> } | undefined {
+    if (_class === undefined) {
+      return
+    }
+    const clazz = hierarchy.getClass(_class)
+    const editorMixin = hierarchy.as(clazz, view.mixin.ObjectEditorFooter)
+    if (editorMixin?.editor == null && clazz.extends != null) return getEditorFooter(clazz.extends)
+    if (editorMixin.editor) {
+      return { footer: editorMixin.editor, props: editorMixin?.props }
+    }
+    return undefined
+  }
+  $: editorFooter = getEditorFooter(issue?._class)
 </script>
 
 {#if !embedded}
@@ -226,6 +245,12 @@
         {/if}
       {/key}
     </div>
+
+    {#if editorFooter}
+      <div class="step-tb-6">
+        <Component is={editorFooter.footer} props={{ object: issue, _class, ...editorFooter.props }} />
+      </div>
+    {/if}
 
     <span slot="actions-label" class="select-text">
       {#if issueId}{issueId}{/if}

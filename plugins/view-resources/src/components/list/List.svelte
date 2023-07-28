@@ -17,7 +17,7 @@
   import { IntlString, getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
-  import { BuildModelKey, ViewOptionModel, ViewOptions, ViewQueryOption } from '@hcengineering/view'
+  import { BuildModelKey, ViewOptionModel, ViewOptions, ViewQueryOption, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { buildConfigLookup } from '../../utils'
   import ListCategories from './ListCategories.svelte'
@@ -28,6 +28,7 @@
   export let options: FindOptions<Doc> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let config: (string | BuildModelKey)[]
+  export let configurations: Record<Ref<Class<Doc>>, Viewlet['config']> | undefined
   export let selectedObjectIds: Doc[] = []
   export let createItemDialog: AnyComponent | AnySvelteComponent | undefined = undefined
   export let createItemDialogProps: Record<string, any> | undefined = undefined
@@ -48,7 +49,7 @@
 
   const docsQuery = createQuery()
   $: lookup = buildConfigLookup(client.getHierarchy(), _class, config, options?.lookup)
-  $: resultOptions = { ...options, lookup, sort: { [orderBy[0]]: orderBy[1] } }
+  $: resultOptions = { ...options, lookup, ...(orderBy !== undefined ? { sort: { [orderBy[0]]: orderBy[1] } } : {}) }
 
   let resultQuery: DocumentQuery<Doc> = query
   $: getResultQuery(query, viewOptionsConfig, viewOptions).then((p) => {
@@ -124,6 +125,7 @@
     {lookup}
     {baseMenuClass}
     {config}
+    {configurations}
     {viewOptions}
     {viewOptionsConfig}
     {selectedObjectIds}

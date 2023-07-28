@@ -15,22 +15,15 @@
 <script lang="ts">
   import { EmployeeAccount } from '@hcengineering/contact'
   import { AttachedDoc, Class, DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import task from '@hcengineering/task'
-  import { IModeSelector, Label, resolvedLocationStore, SearchEdit, ModeSelector, Loading } from '@hcengineering/ui'
-  import {
-    FilterButton,
-    getViewOptions,
-    makeViewletKey,
-    TableBrowser,
-    viewOptionStore
-  } from '@hcengineering/view-resources'
-  import { IntlString } from '@hcengineering/platform'
-  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { createEventDispatcher, onDestroy } from 'svelte'
-  import { FilterBar, ViewletSettingButton } from '@hcengineering/view-resources'
-  import lead from '../plugin'
   import { Lead } from '@hcengineering/lead'
+  import { IntlString } from '@hcengineering/platform'
+  import { createQuery } from '@hcengineering/presentation'
+  import task from '@hcengineering/task'
+  import { IModeSelector, Label, Loading, ModeSelector, resolvedLocationStore, SearchEdit } from '@hcengineering/ui'
+  import { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
+  import { FilterBar, FilterButton, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { createEventDispatcher } from 'svelte'
+  import lead from '../plugin'
 
   export let _class: Ref<Class<Lead>> = lead.class.Lead
   export let labelTasks = lead.string.MyLeads
@@ -86,37 +79,9 @@
 
   let viewlet: Viewlet | undefined
   let loading = true
+  let preference: ViewletPreference | undefined = undefined
 
-  let key = makeViewletKey()
-  let preference: ViewletPreference | undefined
-  onDestroy(
-    resolvedLocationStore.subscribe((loc) => {
-      key = makeViewletKey(loc)
-    })
-  )
-
-  const preferenceQuery = createQuery()
-  const client = getClient()
-  client
-    .findOne<Viewlet>(view.class.Viewlet, { attachTo: _class, descriptor: task.viewlet.StatusTable })
-    .then((res) => {
-      viewlet = res
-      if (res == null) {
-        return
-      }
-      preferenceQuery.query(
-        view.class.ViewletPreference,
-        {
-          attachedTo: res._id
-        },
-        (res) => {
-          preference = res[0]
-          loading = false
-        },
-        { limit: 1 }
-      )
-    })
-  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
+  let viewOptions: ViewOptions | undefined = undefined
 </script>
 
 <div
@@ -137,9 +102,16 @@
     <div class="buttons-divider" />
     <FilterButton {_class} />
   </div>
-  {#if viewlet}
-    <ViewletSettingButton bind:viewOptions {viewlet} />
-  {/if}
+  <ViewletSettingButton
+    bind:viewOptions
+    viewletQuery={{
+      attachTo: _class,
+      descriptor: task.viewlet.StatusTable
+    }}
+    bind:viewlet
+    bind:preference
+    bind:loading
+  />
 </div>
 <FilterBar {_class} query={searchQuery} {viewOptions} on:change={(e) => (resultQuery = e.detail)} />
 

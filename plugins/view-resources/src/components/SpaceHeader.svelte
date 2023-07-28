@@ -53,7 +53,9 @@
             if (viewlet?._id === result.detail.id) return
             viewlet = viewlets.find((vl) => vl._id === result.detail.id)
 
-            if (viewlet) setActiveViewletId(viewlet._id)
+            if (viewlet) {
+              setActiveViewletId(viewlet._id)
+            }
           }
         }}
       />

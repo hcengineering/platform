@@ -1,29 +1,10 @@
 <script lang="ts">
   import { DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
-  import { createQuery } from '@hcengineering/presentation'
   import { IssueTemplate } from '@hcengineering/tracker'
-  import {
-    Button,
-    IconAdd,
-    IconDetails,
-    IconDetailsFilled,
-    resolvedLocationStore,
-    showPopup,
-    themeStore
-  } from '@hcengineering/ui'
-  import view, { Viewlet } from '@hcengineering/view'
-  import {
-    FilterBar,
-    SpaceHeader,
-    ViewletSettingButton,
-    activeViewlet,
-    getViewOptions,
-    makeViewletKey,
-    updateActiveViewlet,
-    viewOptionStore
-  } from '@hcengineering/view-resources'
-  import { onDestroy } from 'svelte'
+  import { Button, IconAdd, IconDetails, IconDetailsFilled, showPopup, themeStore } from '@hcengineering/ui'
+  import { ViewOptions, Viewlet } from '@hcengineering/view'
+  import { FilterBar, SpaceHeader, ViewletSettingButton } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import CreateIssueTemplate from './CreateIssueTemplate.svelte'
   import IssueTemplatesContent from './IssueTemplatesContent.svelte'
@@ -36,6 +17,9 @@
   export let panelWidth: number = 0
 
   let viewlet: WithLookup<Viewlet> | undefined = undefined
+  let viewlets: WithLookup<Viewlet>[] | undefined
+  let viewOptions: ViewOptions | undefined
+
   let search = ''
   let searchQuery: DocumentQuery<IssueTemplate> = { ...query }
   function updateSearchQuery (search: string): void {
@@ -44,27 +28,6 @@
   $: updateSearchQuery(search)
   $: if (query) updateSearchQuery(search)
   let resultQuery: DocumentQuery<IssueTemplate> = { ...searchQuery }
-
-  let viewlets: WithLookup<Viewlet>[] | undefined
-
-  $: viewlet = viewlets && updateActiveViewlet(viewlets, active)
-
-  const viewletQuery = createQuery()
-  viewletQuery.query(view.class.Viewlet, { attachTo: tracker.class.IssueTemplate }, (res) => (viewlets = res), {
-    lookup: {
-      descriptor: view.class.ViewletDescriptor
-    }
-  })
-
-  let key = makeViewletKey()
-
-  onDestroy(
-    resolvedLocationStore.subscribe((loc) => {
-      key = makeViewletKey(loc)
-    })
-  )
-
-  $: active = $activeViewlet[key]
 
   $: if (!label && title) {
     translate(title, {}, $themeStore.language).then((res) => {
@@ -87,8 +50,6 @@
   const showCreateDialog = async () => {
     showPopup(CreateIssueTemplate, { targetElement: null, space }, 'top')
   }
-
-  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 </script>
 
 <SpaceHeader
@@ -119,9 +80,12 @@
       />
       <div class="buttons-divider" />
     {/if}
-    {#if viewlet}
-      <ViewletSettingButton bind:viewOptions {viewlet} />
-    {/if}
+    <ViewletSettingButton
+      bind:viewOptions
+      viewletQuery={{ attachTo: tracker.class.IssueTemplate }}
+      bind:viewlet
+      bind:viewlets
+    />
   </svelte:fragment>
 </SpaceHeader>
 <slot name="afterHeader" />
