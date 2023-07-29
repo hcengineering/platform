@@ -117,7 +117,8 @@
     "ConfigDescription": "Extension to manage Talents/Applicants and Vacancies.",
     "MyApplications": "My applications",
 
-    "ShowApplications": "Show applications"
+    "ShowApplications": "Show applications",
+    "GetTalentIds": "Get talents' ids"
   },
   "status": {
     "ApplicationExists": "Application already exists",

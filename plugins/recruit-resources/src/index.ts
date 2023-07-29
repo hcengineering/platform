@@ -70,6 +70,7 @@ import {
   getRevTitle,
   getSequenceId,
   getSequenceLink,
+  getTalentId,
   getVacTitle,
   objectLinkProvider,
   resolveLocation
@@ -335,6 +336,7 @@ export default async (): Promise<Resources> => ({
     VacTitleProvider: getVacTitle,
     RevTitleProvider: getRevTitle,
     IdProvider: getSequenceId,
+    GetTalentId: getTalentId,
     HasActiveApplicant: hasActiveApplicant,
     HasNoActiveApplicant: hasNoActiveApplicant,
     NoneApplications: noneApplicant,

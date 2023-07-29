@@ -1453,4 +1453,26 @@ export function createModel (builder: Builder): void {
     },
     recruit.action.MoveApplicant
   )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.CopyTextToClipboard,
+      actionProps: {
+        textProvider: recruit.function.GetTalentId
+      },
+      label: recruit.string.GetTalentIds,
+      icon: view.icon.CopyId,
+      keyBinding: [],
+      input: 'any',
+      category: recruit.category.Recruit,
+      target: recruit.mixin.Candidate,
+      context: {
+        mode: ['context', 'browser'],
+        application: recruit.app.Recruit,
+        group: 'copy'
+      }
+    },
+    recruit.action.GetTalentIds
+  )
 }

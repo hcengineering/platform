@@ -196,3 +196,7 @@ export async function getSequenceId (doc: RecruitDocument): Promise<string> {
 
   return label !== undefined ? `${label}-${doc.number}` : doc.number.toString()
 }
+
+export async function getTalentId (doc: Candidate): Promise<string> {
+  return doc._id
+}
