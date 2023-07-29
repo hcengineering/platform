@@ -30,7 +30,8 @@ export default mergeIds(recruitId, recruit, {
     CopyApplicationId: '' as Ref<Action>,
     CopyApplicationLink: '' as Ref<Action>,
     CopyCandidateLink: '' as Ref<Action>,
-    MoveApplicant: '' as Ref<Action>
+    MoveApplicant: '' as Ref<Action>,
+    GetTalentIds: '' as Ref<Action>
   },
   actionImpl: {
     CreateOpinion: '' as ViewAction,
@@ -42,7 +43,8 @@ export default mergeIds(recruitId, recruit, {
   function: {
     GetObjectLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     GetIdObjectLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
-    GetObjectLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>
+    GetObjectLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
+    GetTalentId: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>
   },
   string: {
     ApplicationsShort: '' as IntlString,

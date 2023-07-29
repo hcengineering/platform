@@ -131,7 +131,8 @@ export default mergeIds(recruitId, recruit, {
     TemplateReplaceConfirm: '' as IntlString,
     Apply: '' as IntlString,
     OpenVacancyList: '' as IntlString,
-    Export: '' as IntlString
+    Export: '' as IntlString,
+    GetTalentIds: '' as IntlString
   },
   space: {
     CandidatesPublic: '' as Ref<Space>
