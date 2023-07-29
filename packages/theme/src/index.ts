@@ -27,10 +27,18 @@ export const setDefaultLanguage = (language: string): void => {
   }
 }
 
+function isSystemThemeDark (): boolean {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+}
+
+function getDefaultTheme (): string {
+  return isSystemThemeDark() ? 'theme-dark' : 'theme-light'
+}
+
 /**
  * @public
  */
-export const getCurrentTheme = (): string => localStorage.getItem('theme') ?? 'theme-dark'
+export const getCurrentTheme = (): string => localStorage.getItem('theme') ?? getDefaultTheme()
 /**
  * @public
  */
