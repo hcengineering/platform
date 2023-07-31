@@ -74,18 +74,18 @@
     })
   }
 
-  async function onAdd (_class: Ref<Class<State | DoneState>>) {
-    const lastOne = await client.findOne(_class, {}, { sort: { rank: SortingOrder.Descending } })
-    if (hierarchy.isDerived(_class, task.class.DoneState)) {
-      await client.createDoc(_class, kanban.space, {
+  async function onAdd (result: { _class: Ref<Class<State | DoneState>>; name: string }) {
+    const lastOne = await client.findOne(result._class, {}, { sort: { rank: SortingOrder.Descending } })
+    if (hierarchy.isDerived(result._class, task.class.DoneState)) {
+      await client.createDoc(result._class, kanban.space, {
         ofAttribute: task.attribute.State,
-        name: 'New Done State',
+        name: result.name,
         rank: calcRank(lastOne, undefined)
       })
     } else {
       await client.createDoc(task.class.State, kanban.space, {
         ofAttribute: task.attribute.State,
-        name: 'New State',
+        name: result.name,
         color: 9,
         rank: calcRank(lastOne, undefined)
       })

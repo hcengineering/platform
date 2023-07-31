@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { Class, Ref } from '@hcengineering/core'
-  import { AttributeEditor, getClient } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import type { DoneState, KanbanTemplate, KanbanTemplateSpace, State } from '@hcengineering/task'
   import {
     CircleButton,
@@ -32,7 +32,7 @@
     showPopup,
     themeStore
   } from '@hcengineering/ui'
-  import { ColorsPopup } from '@hcengineering/view-resources'
+  import { ColorsPopup, StringPresenter } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import task from '../../plugin'
   import Lost from '../icons/Lost.svelte'
@@ -87,8 +87,8 @@
         await client.updateDoc(state._class, state.space, state._id, { color })
       }
 
-  async function onAdd (_class: Ref<Class<State | DoneState>>) {
-    dispatch('add', _class)
+  async function onAdd (_class: Ref<Class<State | DoneState>>, name: string) {
+    dispatch('add', { _class, name })
   }
 </script>
 
@@ -101,7 +101,16 @@
     icon={IconAdd}
     size={'medium'}
     on:click={() => {
-      onAdd(task.class.State)
+      showPopup(
+        task.component.CreateStatePopup,
+        { existingNames: states.map((state) => state.name) },
+        undefined,
+        (result) => {
+          if (result) {
+            onAdd(task.class.State, result)
+          }
+        }
+      )
     }}
   />
 </div>
@@ -138,24 +147,37 @@
           }}
         />
         <div class="flex-grow caption-color">
-          <AttributeEditor maxWidth={'20rem'} _class={state._class} object={state} key="name" />
+          <StringPresenter value={state.name} oneLine />
         </div>
-        {#if states.length > 1}
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <div
-            class="tool hover-trans"
-            on:click={(ev) => {
-              showPopup(
-                StatusesPopup,
-                { onDelete: () => dispatch('delete', { state }) },
-                eventToHTMLElement(ev),
-                () => {}
-              )
-            }}
-          >
-            <IconMoreH size={'medium'} />
-          </div>
-        {/if}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <div
+          class="tool hover-trans"
+          on:click={(ev) => {
+            showPopup(
+              StatusesPopup,
+              {
+                onDelete: () => dispatch('delete', { state }),
+                showDelete: states.length > 1,
+                onUpdate: () => {
+                  showPopup(
+                    task.component.CreateStatePopup,
+                    { existingNames: states.map((state) => state.name), value: state.name },
+                    undefined,
+                    async (result) => {
+                      if (result) {
+                        await client.update(state, { name: result })
+                      }
+                    }
+                  )
+                }
+              },
+              eventToHTMLElement(ev),
+              () => {}
+            )
+          }}
+        >
+          <IconMoreH size={'medium'} />
+        </div>
       </div>
     {/if}
   {/each}
@@ -167,7 +189,16 @@
       icon={IconAdd}
       size={'medium'}
       on:click={() => {
-        onAdd(task.class.WonState)
+        showPopup(
+          task.component.CreateStatePopup,
+          { existingNames: wonStates.map((state) => state.name) },
+          undefined,
+          (result) => {
+            if (result) {
+              onAdd(task.class.WonState, result)
+            }
+          }
+        )
       }}
     />
   </div>
@@ -185,24 +216,38 @@
             <Won size={'medium'} />
           </div>
           <div class="flex-grow caption-color">
-            <AttributeEditor maxWidth={'13rem'} _class={state._class} object={state} key="name" />
+            <StringPresenter value={state.name} oneLine />
+            <!--            <AttributeEditor maxWidth={'13rem'} _class={state._class} object={state} key="name" />-->
           </div>
-          {#if wonStates.length > 1}
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <div
-              class="tool hover-trans"
-              on:click={(ev) => {
-                showPopup(
-                  StatusesPopup,
-                  { onDelete: () => dispatch('delete', { state }) },
-                  eventToHTMLElement(ev),
-                  () => {}
-                )
-              }}
-            >
-              <IconMoreH size={'medium'} />
-            </div>
-          {/if}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <div
+            class="tool hover-trans"
+            on:click={(ev) => {
+              showPopup(
+                StatusesPopup,
+                {
+                  onDelete: () => dispatch('delete', { state }),
+                  showDelete: wonStates.length > 1,
+                  onUpdate: () => {
+                    showPopup(
+                      task.component.CreateStatePopup,
+                      { existingNames: wonStates.map((state) => state.name), value: state.name },
+                      undefined,
+                      async (result) => {
+                        if (result) {
+                          await client.update(state, { name: result })
+                        }
+                      }
+                    )
+                  }
+                },
+                eventToHTMLElement(ev),
+                () => {}
+              )
+            }}
+          >
+            <IconMoreH size={'medium'} />
+          </div>
         </div>
       {/if}
     {/each}
@@ -215,7 +260,16 @@
       icon={IconAdd}
       size={'medium'}
       on:click={() => {
-        onAdd(task.class.LostState)
+        showPopup(
+          task.component.CreateStatePopup,
+          { existingNames: lostStates.map((state) => state.name) },
+          undefined,
+          (result) => {
+            if (result) {
+              onAdd(task.class.LostState, result)
+            }
+          }
+        )
       }}
     />
   </div>
@@ -233,24 +287,38 @@
             <Lost size={'medium'} />
           </div>
           <div class="flex-grow caption-color">
-            <AttributeEditor maxWidth={'13rem'} _class={state._class} object={state} key="name" />
+            <StringPresenter value={state.name} oneLine />
+            <!--            <AttributeEditor maxWidth={'13rem'} _class={state._class} object={state} key="name" />-->
           </div>
-          {#if lostStates.length > 1}
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <div
-              class="tool hover-trans"
-              on:click={(ev) => {
-                showPopup(
-                  StatusesPopup,
-                  { onDelete: () => dispatch('delete', { state }) },
-                  eventToHTMLElement(ev),
-                  () => {}
-                )
-              }}
-            >
-              <IconMoreH size={'medium'} />
-            </div>
-          {/if}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <div
+            class="tool hover-trans"
+            on:click={(ev) => {
+              showPopup(
+                StatusesPopup,
+                {
+                  onDelete: () => dispatch('delete', { state }),
+                  showDelete: lostStates.length > 1,
+                  onUpdate: () => {
+                    showPopup(
+                      task.component.CreateStatePopup,
+                      { existingNames: lostStates.map((state) => state.name), value: state.name },
+                      undefined,
+                      async (result) => {
+                        if (result) {
+                          await client.update(state, { name: result })
+                        }
+                      }
+                    )
+                  }
+                },
+                eventToHTMLElement(ev),
+                () => {}
+              )
+            }}
+          >
+            <IconMoreH size={'medium'} />
+          </div>
         </div>
       {/if}
     {/each}
