@@ -349,6 +349,27 @@
   }
 
   const listItems: ListItem[] = []
+
+  function getDocItemModel (docClass: Ref<Class<Doc>>): AttributeModel[] {
+    let res = itemModels.get(docClass)
+    if (res) {
+      return res
+    }
+
+    try {
+      for (const ac of client.getHierarchy().getAncestors(docClass)) {
+        res = itemModels.get(ac)
+
+        if (res) {
+          return res
+        }
+      }
+    } catch (e) {
+      // suppress
+    }
+
+    return []
+  }
 </script>
 
 <div
@@ -429,7 +450,7 @@
           <ListItem
             bind:this={listItems[i]}
             {docObject}
-            model={itemModels.get(docObject._class) ?? []}
+            model={getDocItemModel(docObject._class)}
             {groupByKey}
             selected={isSelected(docObject, $focusStore)}
             checked={selectedObjectIdsSet.has(docObject._id)}
