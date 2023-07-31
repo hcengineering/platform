@@ -24,6 +24,7 @@
   import DateInputBox from './DateInputBox.svelte'
   import MonthSquare from './MonthSquare.svelte'
   import Shifts from './Shifts.svelte'
+  import { Scroller, deviceOptionsStore as deviceInfo } from '../..'
 
   export let currentDate: Date | null
   export let withTime: boolean = false
@@ -35,6 +36,7 @@
   const dispatch = createEventDispatcher()
 
   const today: Date = new Date(Date.now())
+  $: docHeight = $deviceInfo.docHeight
 
   let viewDate: Date = currentDate ?? today
   let viewDateSec: Date
@@ -91,40 +93,42 @@
     />
   </div>
   <div class="content">
-    <div class="label">
-      <span class="bold"><Label {label} /></span>
-      {#if detail}
-        <span class="divider">-</span>
-        <Label label={detail} />
-      {/if}
-    </div>
+    <Scroller padding={'1.5rem 2rem'} thinScrollBars>
+      <div class="label">
+        <span class="bold"><Label {label} /></span>
+        {#if detail}
+          <span class="divider">-</span>
+          <Label label={detail} />
+        {/if}
+      </div>
 
-    <DateInputBox
-      bind:this={dateInput}
-      bind:currentDate
-      {withTime}
-      on:close={() => closeDP(withTime)}
-      on:save={() => saveDate(withTime)}
-    />
+      <DateInputBox
+        bind:this={dateInput}
+        bind:currentDate
+        {withTime}
+        on:close={() => closeDP(withTime)}
+        on:save={() => saveDate(withTime)}
+      />
 
-    <div class="month-group">
-      <MonthSquare
-        bind:currentDate
-        {viewDate}
-        {mondayStart}
-        viewUpdate={false}
-        hideNavigator="all"
-        on:update={(result) => updateDate(result.detail)}
-      />
-      <MonthSquare
-        bind:currentDate
-        viewDate={viewDateSec}
-        {mondayStart}
-        viewUpdate={false}
-        on:update={(result) => updateDate(result.detail)}
-        on:navigation={(result) => navigateMonth(result.detail)}
-      />
-    </div>
+      <div class="month-group">
+        <MonthSquare
+          bind:currentDate
+          {viewDate}
+          {mondayStart}
+          viewUpdate={false}
+          hideNavigator="all"
+          on:update={(result) => updateDate(result.detail)}
+        />
+        <MonthSquare
+          bind:currentDate
+          viewDate={viewDateSec}
+          {mondayStart}
+          viewUpdate={false}
+          on:update={(result) => updateDate(result.detail)}
+          on:navigation={(result) => navigateMonth(result.detail)}
+        />
+      </div>
+    </Scroller>
   </div>
   <div class="footer">
     <Button
@@ -172,7 +176,6 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      padding: 1.5rem 2rem;
       min-height: 0;
 
       .label {
