@@ -34,7 +34,7 @@
     return nodes[pos - 1]?.nodeName
   }
 
-  function handleLink(node: HTMLElement, e: MouseEvent) {    
+  function handleLink (node: HTMLElement, e: MouseEvent) {
     try {
       const href = node.getAttribute('href')
       if (href) {
@@ -46,7 +46,7 @@
           navigate(parseLocation(url))
         }
       }
-    } catch {}    
+    } catch {}
   }
 </script>
 
@@ -100,11 +100,7 @@
     {:else if node.nodeName === 'DIV'}
       <div><svelte:self nodes={node.childNodes} /></div>
     {:else if node.nodeName === 'A'}
-      <a
-        href={node.getAttribute('href')}
-        target={node.getAttribute('target')}
-        on:click={(e) => handleLink(node, e)}
-      >
+      <a href={node.getAttribute('href')} target={node.getAttribute('target')} on:click={(e) => handleLink(node, e)}>
         <svelte:self nodes={node.childNodes} />
       </a>
     {:else if node.nodeName === 'LABEL'}
