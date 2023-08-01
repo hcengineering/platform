@@ -33,8 +33,6 @@
   import login from '../plugin'
   import { getInviteLink } from '../utils'
   import InviteWorkspace from './icons/InviteWorkspace.svelte'
-  
-  
 
   const dispatch = createEventDispatcher()
 
@@ -82,7 +80,7 @@
     loc.fragment = undefined
 
     const url = locationToUrl(loc)
-    
+
     const frontUrl = getMetadata(presentation.metadata.FrontUrl)
     const host = frontUrl ?? document.location.origin
     link = host + url
