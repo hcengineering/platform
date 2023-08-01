@@ -65,7 +65,7 @@ export async function issueLinkProvider (doc: Doc): Promise<string> {
 
 export function generateIssueShortLink (issueId: string): string {
   const location = getCurrentResolvedLocation()
-  const frontUrl = getMetadata(presentation.metadata.FrontUrl)  
+  const frontUrl = getMetadata(presentation.metadata.FrontUrl)
   const protocolAndHost = frontUrl ?? `${window.location.protocol}//${window.location.host}`
   return `${protocolAndHost}/${workbenchId}/${location.path[1]}/${trackerId}/${issueId}`
 }
