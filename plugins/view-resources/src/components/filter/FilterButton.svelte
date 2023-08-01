@@ -21,6 +21,7 @@
   import view from '../../plugin'
   import FilterTypePopup from './FilterTypePopup.svelte'
   import IconClose from '../icons/Close.svelte'
+  import { onDestroy } from 'svelte'
 
   export let _class: Ref<Class<Doc>> | undefined
   export let space: Ref<Space> | undefined = undefined
@@ -50,6 +51,10 @@
   function onChange (e: Filter | undefined) {
     if (e !== undefined) setFilters([e])
   }
+
+  onDestroy(() => {
+    _class = undefined
+  })
 
   function add (e: MouseEvent) {
     const target = eventToHTMLElement(e)

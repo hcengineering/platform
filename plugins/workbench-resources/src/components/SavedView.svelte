@@ -110,7 +110,6 @@
       query: fv.location.query ?? undefined,
       fragment: fv.location.fragment ?? undefined
     })
-    setFilters(JSON.parse(fv.filters))
     if (fv.viewletId !== undefined && fv.viewletId !== null) {
       const viewlet = await client.findOne(view.class.Viewlet, { _id: fv.viewletId })
       setActiveViewletId(fv.viewletId, fv.location)
@@ -118,6 +117,7 @@
         setViewOptions(viewlet, copy(fv.viewOptions))
       }
     }
+    setFilters(JSON.parse(fv.filters))
   }
 
   const clearSelection = () => {
