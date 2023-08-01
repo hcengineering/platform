@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Ref } from '@hcengineering/core'
+  import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import type { DoneState, KanbanTemplate, KanbanTemplateSpace, State } from '@hcengineering/task'
+  import type { DoneState, Kanban, KanbanTemplate, KanbanTemplateSpace, State } from '@hcengineering/task'
   import {
     CircleButton,
     Component,
@@ -40,7 +40,7 @@
   import StatusesPopup from './StatusesPopup.svelte'
 
   export let template: KanbanTemplate | undefined = undefined
-  export let space: KanbanTemplateSpace | undefined = undefined
+  export let space: KanbanTemplateSpace | Kanban | undefined = undefined
   export let states: State[] = []
   export let wonStates: DoneState[] = []
   export let lostStates: DoneState[] = []
@@ -86,14 +86,11 @@
 
         await client.updateDoc(state._class, state.space, state._id, { color })
       }
-
-  async function onAdd (_class: Ref<Class<State | DoneState>>, name: string) {
-    dispatch('add', { _class, name })
-  }
+  const spaceEditor = (space as KanbanTemplateSpace)?.editor
 </script>
 
-{#if space?.editor}
-  <Component is={space.editor} props={{ template }} />
+{#if spaceEditor}
+  <Component is={spaceEditor} props={{ template }} />
 {/if}
 <div class="flex-no-shrink flex-between trans-title uppercase">
   <Label label={task.string.ActiveStates} />
@@ -103,13 +100,12 @@
     on:click={() => {
       showPopup(
         task.component.CreateStatePopup,
-        { existingNames: states.map((state) => state.name) },
-        undefined,
-        (result) => {
-          if (result) {
-            onAdd(task.class.State, result)
-          }
-        }
+        {
+          space,
+          template,
+          _class: template !== undefined ? task.class.StateTemplate : task.class.State
+        },
+        undefined
       )
     }}
   />
@@ -161,13 +157,8 @@
                 onUpdate: () => {
                   showPopup(
                     task.component.CreateStatePopup,
-                    { existingNames: states.map((state) => state.name), value: state.name },
-                    undefined,
-                    async (result) => {
-                      if (result) {
-                        await client.update(state, { name: result })
-                      }
-                    }
+                    { status: state, template },
+                    undefined
                   )
                 }
               },
@@ -191,13 +182,12 @@
       on:click={() => {
         showPopup(
           task.component.CreateStatePopup,
-          { existingNames: wonStates.map((state) => state.name) },
-          undefined,
-          (result) => {
-            if (result) {
-              onAdd(task.class.WonState, result)
-            }
-          }
+          {
+            space,
+            template,
+            _class: template !== undefined ? task.class.WonStateTemplate : task.class.WonState
+          },
+          undefined
         )
       }}
     />
@@ -231,13 +221,8 @@
                   onUpdate: () => {
                     showPopup(
                       task.component.CreateStatePopup,
-                      { existingNames: wonStates.map((state) => state.name), value: state.name },
-                      undefined,
-                      async (result) => {
-                        if (result) {
-                          await client.update(state, { name: result })
-                        }
-                      }
+                      { status: state, template },
+                      undefined
                     )
                   }
                 },
@@ -262,13 +247,12 @@
       on:click={() => {
         showPopup(
           task.component.CreateStatePopup,
-          { existingNames: lostStates.map((state) => state.name) },
-          undefined,
-          (result) => {
-            if (result) {
-              onAdd(task.class.LostState, result)
-            }
-          }
+          {
+            space,
+            template,
+            _class: template !== undefined ? task.class.LostStateTemplate : task.class.LostState
+          },
+          undefined
         )
       }}
     />
@@ -302,13 +286,8 @@
                   onUpdate: () => {
                     showPopup(
                       task.component.CreateStatePopup,
-                      { existingNames: lostStates.map((state) => state.name), value: state.name },
-                      undefined,
-                      async (result) => {
-                        if (result) {
-                          await client.update(state, { name: result })
-                        }
-                      }
+                      { status: state, template },
+                      undefined
                     )
                   }
                 },

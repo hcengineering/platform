@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Ref, Space, SortingOrder, Class } from '@hcengineering/core'
+  import { Ref, Space, SortingOrder } from '@hcengineering/core'
   import core from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import type {
@@ -42,7 +42,6 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const hierarchy = client.getHierarchy()
 
   const statesQ = createQuery()
   $: statesQ.query(
@@ -95,33 +94,6 @@
     })
   }
 
-  async function onAdd (result: { _class: Ref<Class<State | DoneState>>; name: string }) {
-    const lastOne = await client.findOne(
-      task.class.StateTemplate,
-      { attachedTo: kanban._id },
-      { sort: { rank: SortingOrder.Descending } }
-    )
-
-    if (hierarchy.isDerived(result._class, task.class.DoneState)) {
-      const targetClass =
-        result._class === task.class.WonState ? task.class.WonStateTemplate : task.class.LostStateTemplate
-      await client.createDoc(targetClass, kanban.space, {
-        ofAttribute: task.attribute.DoneState,
-        name: result.name,
-        rank: calcRank(lastOne, undefined),
-        attachedTo: kanban._id
-      })
-    } else {
-      await client.createDoc(task.class.StateTemplate, kanban.space, {
-        name: result.name,
-        ofAttribute: task.attribute.DoneState,
-        color: 9,
-        rank: calcRank(lastOne, undefined),
-        attachedTo: kanban._id
-      })
-    }
-  }
-
   function onDelete ({ detail: { state } }: { detail: { state: State | DoneState } }) {
     if (space === undefined) {
       return
@@ -137,9 +109,6 @@
   {states}
   {wonStates}
   {lostStates}
-  on:add={(e) => {
-    onAdd(e.detail)
-  }}
   on:delete={onDelete}
   on:move={onMove}
 />
