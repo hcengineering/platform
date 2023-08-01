@@ -31,7 +31,6 @@
   $: lostStates = doneStates.filter((x) => x._class === task.class.LostState)
 
   const client = getClient()
-  const hierarchy = client.getHierarchy()
 
   const statesQ = createQuery()
   $: statesQ.query(
@@ -73,14 +72,6 @@
       rank: calcRank(prev, next)
     })
   }
-
 </script>
 
-<StatesEditor
-  {states}
-  {wonStates}
-  {lostStates}
-  space={kanban}
-  on:delete
-  on:move={onMove}
-/>
+<StatesEditor {states} {wonStates} {lostStates} space={kanban} on:delete on:move={onMove} />

@@ -155,11 +155,7 @@
                 onDelete: () => dispatch('delete', { state }),
                 showDelete: states.length > 1,
                 onUpdate: () => {
-                  showPopup(
-                    task.component.CreateStatePopup,
-                    { status: state, template },
-                    undefined
-                  )
+                  showPopup(task.component.CreateStatePopup, { status: state, template }, undefined)
                 }
               },
               eventToHTMLElement(ev),
@@ -219,11 +215,7 @@
                   onDelete: () => dispatch('delete', { state }),
                   showDelete: wonStates.length > 1,
                   onUpdate: () => {
-                    showPopup(
-                      task.component.CreateStatePopup,
-                      { status: state, template },
-                      undefined
-                    )
+                    showPopup(task.component.CreateStatePopup, { status: state, template }, undefined)
                   }
                 },
                 eventToHTMLElement(ev),
@@ -284,11 +276,7 @@
                   onDelete: () => dispatch('delete', { state }),
                   showDelete: lostStates.length > 1,
                   onUpdate: () => {
-                    showPopup(
-                      task.component.CreateStatePopup,
-                      { status: state, template },
-                      undefined
-                    )
+                    showPopup(task.component.CreateStatePopup, { status: state, template }, undefined)
                   }
                 },
                 eventToHTMLElement(ev),
