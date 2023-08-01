@@ -17,6 +17,7 @@
   import { createEventDispatcher } from 'svelte'
   import Scroller from '../Scroller.svelte'
   import TimeShiftPresenter from '../TimeShiftPresenter.svelte'
+  import { DAY, HOUR, MINUTE } from '../../types'
 
   export let currentDate: Date | null
   export let direction: 'before' | 'after' = 'after'
@@ -32,9 +33,6 @@
   const dispatch = createEventDispatcher()
 
   $: base = direction === 'before' ? -1 : 1
-  const MINUTE = 60 * 1000
-  const HOUR = 60 * MINUTE
-  const DAY = 24 * HOUR
 
   const shiftValues: (number | string)[] = []
 

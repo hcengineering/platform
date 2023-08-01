@@ -16,13 +16,9 @@
   import { translate } from '@hcengineering/platform'
   import ui from '../plugin'
   import { themeStore } from '@hcengineering/theme'
+  import { DAY, HOUR, MINUTE } from '../types'
 
   export let value: number
-
-  const SECOND = 1000
-  const MINUTE = SECOND * 60
-  const HOUR = MINUTE * 60
-  const DAY = HOUR * 24
 
   let time: string = ''
 

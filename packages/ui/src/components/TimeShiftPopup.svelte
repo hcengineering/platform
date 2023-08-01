@@ -16,7 +16,7 @@
   import { DateRangeMode } from '@hcengineering/core'
   import { createEventDispatcher } from 'svelte'
   import ui from '../plugin'
-  import { DateOrShift } from '../types'
+  import { DAY, DateOrShift, HOUR, MINUTE } from '../types'
   import DateRangePresenter from './calendar/DateRangePresenter.svelte'
   import TimeShiftPresenter from './TimeShiftPresenter.svelte'
 
@@ -30,9 +30,7 @@
   const dispatch = createEventDispatcher()
 
   $: base = direction === 'before' ? -1 : 1
-  const MINUTE = 60 * 1000
-  const HOUR = 60 * MINUTE
-  const DAY = 24 * HOUR
+
   $: values = [...minutes.map((m) => m * MINUTE), ...hours.map((m) => m * HOUR), ...days.map((m) => m * DAY)]
 </script>
 

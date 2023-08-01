@@ -39,7 +39,6 @@ export default mergeIds(trackerId, tracker, {
     Parent: '' as IntlString,
     CreatedDate: '' as IntlString,
     ChangeStatus: '' as IntlString,
-    ConfigLabel: '' as IntlString,
     ConfigDescription: '' as IntlString,
     Unarchive: '' as IntlString,
     UnarchiveConfirm: '' as IntlString,

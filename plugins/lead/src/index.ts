@@ -17,7 +17,7 @@
 import type { Contact } from '@hcengineering/contact'
 import type { Class, Doc, Ref, Timestamp } from '@hcengineering/core'
 import { Mixin } from '@hcengineering/core'
-import type { Asset, Plugin } from '@hcengineering/platform'
+import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { KanbanTemplateSpace, SpaceWithStates, State, Task } from '@hcengineering/task'
 
@@ -67,6 +67,9 @@ const lead = plugin(leadId, {
   },
   mixin: {
     Customer: '' as Ref<Mixin<Customer>>
+  },
+  string: {
+    ConfigLabel: '' as IntlString
   },
   icon: {
     Funnel: '' as Asset,

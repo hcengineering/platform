@@ -334,7 +334,7 @@
         span {
           margin-left: 0.5rem;
           font-weight: 400;
-          font-size: 0.875rem;
+
           line-height: 1.125rem;
           opacity: 0.4;
         }
