@@ -28,8 +28,8 @@ import { DocumentClassQuery, Tx, TxCUD, TxFactory, TxProcessor } from './tx'
 export class TxOperations implements Omit<Client, 'notify'> {
   readonly txFactory: TxFactory
 
-  constructor (readonly client: Client, readonly user: Ref<Account>) {
-    this.txFactory = new TxFactory(user)
+  constructor (readonly client: Client, readonly user: Ref<Account>, readonly isDerived: boolean = false) {
+    this.txFactory = new TxFactory(user, isDerived)
   }
 
   getHierarchy (): Hierarchy {
