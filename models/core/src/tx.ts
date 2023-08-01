@@ -33,7 +33,9 @@ import {
   TxCUD,
   TxMixin,
   TxRemoveDoc,
-  TxUpdateDoc
+  TxUpdateDoc,
+  TxWorkspaceEvent,
+  WorkspaceEvent
 } from '@hcengineering/core'
 import { Hidden, Index, Model, Prop, TypeRef } from '@hcengineering/model'
 import core from './component'
@@ -99,4 +101,10 @@ export class TTxApplyIf extends TTx implements TxApplyIf {
   // All matches should be false for all documents.
   notMatch!: DocumentClassQuery<Doc>[]
   txes!: TxCUD<Doc>[]
+}
+
+@Model(core.class.TxWorkspaceEvent, core.class.Doc)
+export class TTxWorkspaceEvent extends TTx implements TxWorkspaceEvent {
+  event!: WorkspaceEvent
+  params!: any
 }
