@@ -35,7 +35,6 @@ export default mergeIds(calendarId, calendar, {
     ModeWeek: '' as IntlString,
     ModeMonth: '' as IntlString,
     ModeYear: '' as IntlString,
-    Today: '' as IntlString,
     TableView: '' as IntlString,
     DueMinutes: '' as IntlString,
     DueHours: '' as IntlString,

@@ -46,8 +46,8 @@ import {
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
-import { TTask } from '@hcengineering/model-task'
-import core, { DOMAIN_SPACE, TAttachedDoc, TDoc, TSpace, TStatus, TType } from '@hcengineering/model-core'
+import core, { TAttachedDoc, TDoc, TStatus, TType } from '@hcengineering/model-core'
+import { TSpaceWithStates, TTask } from '@hcengineering/model-task'
 import view, { actionTemplates, classPresenter, createAction, showColorsViewOption } from '@hcengineering/model-view'
 import workbench, { createNavigateAction } from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
@@ -121,9 +121,9 @@ export class TTypeMilestoneStatus extends TType {}
 /**
  * @public
  */
-@Model(tracker.class.Project, core.class.Space, DOMAIN_SPACE)
+@Model(tracker.class.Project, task.class.SpaceWithStates)
 @UX(tracker.string.Project, tracker.icon.Issues, 'Project', 'name')
-export class TProject extends TSpace implements Project {
+export class TProject extends TSpaceWithStates implements Project {
   @Prop(TypeString(), tracker.string.ProjectIdentifier)
   @Index(IndexKind.FullText)
     identifier!: IntlString

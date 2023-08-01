@@ -123,6 +123,7 @@ const calendarPlugin = plugin(calendarId, {
     Calendar: '' as Ref<Doc>
   },
   component: {
+    CalendarView: '' as AnyComponent,
     PersonsPresenter: '' as AnyComponent,
     Events: '' as AnyComponent,
     DateTimePresenter: '' as AnyComponent,
@@ -141,7 +142,8 @@ const calendarPlugin = plugin(calendarId, {
     NoParticipants: '' as IntlString,
     PersonsLabel: '' as IntlString,
     EventNumber: '' as IntlString,
-    Reminders: '' as IntlString
+    Reminders: '' as IntlString,
+    Today: '' as IntlString
   },
   handler: {
     DisconnectHandler: '' as Handler

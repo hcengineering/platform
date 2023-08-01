@@ -16,7 +16,7 @@
 import { Event } from '@hcengineering/calendar'
 import type { Channel, Organization, Person } from '@hcengineering/contact'
 import type { AttachedData, AttachedDoc, Class, Doc, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
-import type { Asset, Plugin, Resource } from '@hcengineering/platform'
+import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { TagReference } from '@hcengineering/tags'
 import type { KanbanTemplateSpace, SpaceWithStates, State, Task } from '@hcengineering/task'
@@ -157,6 +157,9 @@ const recruit = plugin(recruitId, {
   },
   component: {
     EditVacancy: '' as AnyComponent
+  },
+  string: {
+    ConfigLabel: '' as IntlString
   },
   icon: {
     RecruitApplication: '' as Asset,

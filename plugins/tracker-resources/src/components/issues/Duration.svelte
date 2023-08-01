@@ -12,19 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-<script lang="ts" context="module">
-  const SECOND = 1000
-  const MINUTE = SECOND * 60
-  const HOUR = MINUTE * 60
-  const DAY = HOUR * 24
-  const MONTH = DAY * 30
-  const YEAR = MONTH * 12
-</script>
-
 <script lang="ts">
   import { translate } from '@hcengineering/platform'
   import tracker from '../../plugin'
-  import { themeStore } from '@hcengineering/ui'
+  import { DAY, HOUR, MINUTE, MONTH, YEAR, themeStore } from '@hcengineering/ui'
 
   export let value: number
 

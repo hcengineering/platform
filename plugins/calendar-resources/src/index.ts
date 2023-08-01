@@ -32,9 +32,12 @@ import SaveEventReminder from './components/SaveEventReminder.svelte'
 import UpdateRecInstancePopup from './components/UpdateRecInstancePopup.svelte'
 import ReminderViewlet from './components/activity/ReminderViewlet.svelte'
 import CalendarIntegrationIcon from './components/icons/Calendar.svelte'
+import EventElement from './components/EventElement.svelte'
 import calendar from './plugin'
 import contact from '@hcengineering/contact'
 import { deleteObjects } from '@hcengineering/view-resources'
+
+export { EventElement, CalendarView }
 
 async function saveEventReminder (object: Doc): Promise<void> {
   showPopup(SaveEventReminder, { objectId: object._id, objectClass: object._class })
