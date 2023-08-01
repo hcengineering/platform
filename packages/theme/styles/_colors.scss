@@ -59,6 +59,7 @@
   --primary-color-skyblue: #93CAF3;
   --primary-color-pink: #FA8DA1;
 
+  --highlight-blue-01: #0084FF;
   --highlight-red: #F96E50;
   --highlight-red-hover: #ff967e;
   --highlight-red-press: #f96f50bd;
@@ -349,9 +350,13 @@
   --theme-calendar-today-color: #000;
   --theme-calendar-holiday-color: #eb5757;
   --theme-calendar-weekend-color: rgba(242, 153, 74, 1);
-  --theme-calendar-today-bgcolor: rgba(43, 81, 144, .1);
+  --theme-calendar-today-bgcolor: rgba(51, 157, 255, .1);
   --theme-calendar-holiday-bgcolor: rgba(235, 87, 87, .1);
   --theme-calendar-weekend-bgcolor: rgba(242, 153, 74, .1);
+  --theme-calendar-event-available-color: rgba(55, 122, 230, 0.20);
+  --theme-calendar-event-available-bgcolor: #f6f9fe;
+  --theme-calendar-event-unavailable-color: rgba(244, 119, 88, 0.20);
+  --theme-calendar-event-unavailable-bgcolor: #fdece7;
 
   --theme-tooltip-color: #FFF;
   --theme-tooltip-bg: #444248;

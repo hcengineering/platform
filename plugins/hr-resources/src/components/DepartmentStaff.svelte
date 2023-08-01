@@ -98,6 +98,7 @@
       <span class="text-sm content-dark-color">
         <Label label={hr.string.NoMembers} />
       </span>
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <span class="text-sm content-color over-underline" on:click={add}>
         <Label label={hr.string.AddMember} />
       </span>
