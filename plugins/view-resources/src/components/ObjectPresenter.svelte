@@ -53,9 +53,16 @@
   }
 
   $: if (doc !== undefined) {
-    getObjectPresenter(client, doc._class, { key: '' }).then((p) => {
-      presenter = p
-    })
+    getObjectPresenter(client, doc._class, { key: '' })
+      .then((p) => {
+        presenter = p
+      })
+      .catch((p) => {
+        console.log(objectId)
+        console.log(_class)
+        console.log(value)
+        throw p
+      })
   }
 </script>
 

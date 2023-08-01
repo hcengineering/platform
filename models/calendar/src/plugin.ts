@@ -27,7 +27,6 @@ export default mergeIds(calendarId, calendar, {
   component: {
     IntegrationConnect: '' as AnyComponent,
     CreateCalendar: '' as AnyComponent,
-    CalendarView: '' as AnyComponent,
     EventPresenter: '' as AnyComponent,
     CalendarIntegrationIcon: '' as AnyComponent
   },

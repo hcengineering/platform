@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import { Calendar, Event, getAllEvents } from '@hcengineering/calendar'
+  import { EmployeeAccount } from '@hcengineering/contact'
   import {
     Class,
     Doc,
@@ -21,50 +22,52 @@
     FindOptions,
     Ref,
     SortingOrder,
-    Space,
     Timestamp,
     getCurrentAccount
   } from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import {
     AnyComponent,
     Button,
-    IconBack,
-    IconForward,
-    MonthCalendar,
     CalendarItem,
     DayCalendar,
-    WeekCalendar,
+    DropdownLabelsIntl,
+    IconBack,
+    IconForward,
+    MILLISECONDS_IN_DAY,
+    MonthCalendar,
     YearCalendar,
     areDatesEqual,
     getMonday,
-    DropdownLabelsIntl,
-    showPopup,
-    MILLISECONDS_IN_DAY
+    showPopup
   } from '@hcengineering/ui'
-  import { BuildModelKey } from '@hcengineering/view'
   import { CalendarMode } from '../index'
   import calendar from '../plugin'
   import Day from './Day.svelte'
-  import Hour from './Hour.svelte'
   import EventElement from './EventElement.svelte'
-  import { IntlString } from '@hcengineering/platform'
 
-  export let _class: Ref<Class<Doc>>
-  export let space: Ref<Space> | undefined = undefined
-  export let query: DocumentQuery<Event> = {}
+  export let _class: Ref<Class<Doc>> = calendar.class.Event
+  export let query: DocumentQuery<Event> | undefined = undefined
   export let options: FindOptions<Event> | undefined = undefined
-  export let baseMenuClass: Ref<Class<Event>> | undefined = undefined
-  export let config: (string | BuildModelKey)[]
-  export let createComponent: AnyComponent | undefined = undefined
+  export let createComponent: AnyComponent | undefined = calendar.component.CreateEvent
+  export let allowedModes: CalendarMode[] = [
+    CalendarMode.Days,
+    CalendarMode.Week,
+    CalendarMode.Month,
+    CalendarMode.Year
+  ]
+
+  const me = getCurrentAccount() as EmployeeAccount
 
   const mondayStart = true
-  let mode: CalendarMode = CalendarMode.Days
+  let mode: CalendarMode = allowedModes.includes(CalendarMode.Days) ? CalendarMode.Days : allowedModes[0]
 
   // Current selected day
   let currentDate: Date = new Date()
   let selectedDate: Date = new Date()
 
+  let raw: Event[] = []
   let objects: Event[] = []
 
   function getFrom (date: Date, mode: CalendarMode): Timestamp {
@@ -90,7 +93,7 @@
   function getTo (date: Date, mode: CalendarMode): Timestamp {
     switch (mode) {
       case CalendarMode.Days: {
-        return new Date(date).setDate(date.getDate() + 1)
+        return new Date(date).setDate(date.getDate() + 4)
       }
       case CalendarMode.Day: {
         return new Date(date).setDate(date.getDate() + 1)
@@ -116,7 +119,7 @@
   let calendars: Calendar[] = []
   const offsetTZ = new Date().getTimezoneOffset() * 60 * 1000
 
-  calendarsQuery.query(calendar.class.Calendar, { createdBy: getCurrentAccount()._id }, (res) => {
+  calendarsQuery.query(calendar.class.Calendar, { createdBy: me._id }, (res) => {
     calendars = res
   })
 
@@ -124,25 +127,21 @@
 
   async function update (
     _class: Ref<Class<Event>>,
-    query: DocumentQuery<Event>,
-    from: Timestamp,
-    to: Timestamp,
+    query: DocumentQuery<Event> | undefined,
     calendars: Calendar[],
     options?: FindOptions<Event>
   ) {
     q.query<Event>(
       _class,
-      {
-        space: { $in: calendars.map((p) => p._id) },
-        ...query
-      },
+      query ?? { space: { $in: calendars.map((p) => p._id) } },
       (result) => {
-        objects = getAllEvents(result, from, to)
+        raw = result
       },
       { sort: { date: SortingOrder.Ascending }, ...options }
     )
   }
-  $: update(_class, query, from, to, calendars, options)
+  $: update(_class, query, calendars, options)
+  $: objects = getAllEvents(raw, from, to)
 
   function inRange (start: Date, end: Date, startPeriod: Date, period: 'day' | 'hour'): boolean {
     const endPeriod =
@@ -211,9 +210,32 @@
     showPopup(createComponent, { date, withTime }, 'top')
   }
 
-  let indexes = new Map<Ref<Event>, number>()
+  function getDdItem (mode: CalendarMode) {
+    switch (mode) {
+      case CalendarMode.Day:
+        return { id: 'day', label: calendar.string.ModeDay, mode: CalendarMode.Day }
+      case CalendarMode.Days:
+        return { id: 'days', label: calendar.string.DueDays, mode: CalendarMode.Days, params: { days: 3 } }
+      case CalendarMode.Week:
+        return { id: 'week', label: calendar.string.ModeWeek, mode: CalendarMode.Week }
+      case CalendarMode.Month:
+        return { id: 'month', label: calendar.string.ModeMonth, mode: CalendarMode.Month }
+      case CalendarMode.Year:
+        return { id: 'year', label: calendar.string.ModeYear, mode: CalendarMode.Year }
+    }
+  }
 
-  const ddItems: {
+  function getDdItems (allowedModes: CalendarMode[]): void {
+    ddItems = []
+    for (const mode of allowedModes) {
+      ddItems.push(getDdItem(mode))
+    }
+    ddItems = ddItems
+  }
+
+  $: getDdItems(allowedModes)
+
+  let ddItems: {
     id: string | number
     label: IntlString
     mode: CalendarMode
@@ -243,7 +265,7 @@
         const eventEnd = event.allDay ? event.dueDate + offsetTZ : event.dueDate
         if ((eventStart < lastDate && eventEnd > startDate) || (eventStart === eventEnd && eventStart === startDay)) {
           result.push({
-            eventId: event.eventId,
+            _id: event._id,
             allDay: event.allDay,
             date: eventStart,
             dueDate: eventEnd,
@@ -263,7 +285,7 @@
         const eventEnd = event.dueDate + offsetTZ
         if ((eventStart < ld && eventEnd > sd) || (eventStart === eventEnd && eventStart === sd)) {
           result.push({
-            eventId: event.eventId,
+            _id: event._id,
             allDay: event.allDay,
             date: eventStart,
             dueDate: eventEnd,
@@ -282,14 +304,16 @@
     <span>{currentDate.getFullYear()}</span>
   </div>
   <div class="flex-row-center gap-2">
-    <DropdownLabelsIntl
-      items={ddItems.map((it) => {
-        return { id: it.id, label: it.label, params: it.params }
-      })}
-      size={'medium'}
-      selected={ddItems.find((it) => it.mode === mode)?.id}
-      on:selected={(e) => (mode = ddItems.find((it) => it.id === e.detail)?.mode ?? ddItems[0].mode)}
-    />
+    {#if ddItems.length > 1}
+      <DropdownLabelsIntl
+        items={ddItems.map((it) => {
+          return { id: it.id, label: it.label, params: it.params }
+        })}
+        size={'medium'}
+        selected={ddItems.find((it) => it.mode === mode)?.id}
+        on:selected={(e) => (mode = ddItems.find((it) => it.id === e.detail)?.mode ?? ddItems[0].mode)}
+      />
+    {/if}
     <Button
       label={calendar.string.Today}
       on:click={() => {
@@ -328,18 +352,7 @@
     }}
   >
     <svelte:fragment slot="cell" let:date let:today let:selected let:wrongMonth>
-      <Day
-        events={findEvents(objects, date)}
-        {date}
-        {_class}
-        {baseMenuClass}
-        {options}
-        {config}
-        {today}
-        {selected}
-        {wrongMonth}
-        {query}
-      />
+      <Day events={findEvents(objects, date)} {date} {_class} {options} {today} {selected} {wrongMonth} {query} />
     </svelte:fragment>
   </YearCalendar>
 {:else if mode === CalendarMode.Month}
@@ -350,9 +363,7 @@
         {date}
         size={'huge'}
         {_class}
-        {baseMenuClass}
         {options}
-        {config}
         {today}
         {selected}
         {wrongMonth}
@@ -379,9 +390,10 @@
     bind:selectedDate
     bind:currentDate
     on:create={(e) => showCreateDialog(e.detail.date, e.detail.withTime)}
+    on:drop
   >
     <svelte:fragment slot="event" let:id let:size>
-      {@const event = objects.find((event) => event.eventId === id)}
+      {@const event = objects.find((event) => event._id === id)}
       {#if event}
         <EventElement {event} {size} />
       {/if}
@@ -397,36 +409,16 @@
       bind:selectedDate
       bind:currentDate
       on:create={(e) => showCreateDialog(e.detail.date, e.detail.withTime)}
+      on:drop
     >
       <svelte:fragment slot="event" let:id let:size>
-        {@const event = objects.find((event) => event.eventId === id)}
+        {@const event = objects.find((event) => event._id === id)}
         {#if event}
           <EventElement {event} {size} />
         {/if}
       </svelte:fragment>
     </DayCalendar>
   {/key}
-{:else if mode === CalendarMode.Day}
-  <WeekCalendar
-    {mondayStart}
-    displayedDaysCount={1}
-    startFromWeekStart={false}
-    cellHeight={'4.5rem'}
-    bind:selectedDate
-    bind:currentDate
-  >
-    <svelte:fragment slot="cell" let:date>
-      <Hour
-        events={findEvents(objects, date, true)}
-        {date}
-        bind:indexes
-        wide
-        on:create={(e) => {
-          showCreateDialog(e.detail, true)
-        }}
-      />
-    </svelte:fragment>
-  </WeekCalendar>
 {/if}
 
 <!-- <div class="min-h-4 max-h-4 h-4 flex-no-shrink" /> -->

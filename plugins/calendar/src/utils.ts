@@ -262,6 +262,8 @@ export function getAllEvents (events: Event[], from: Timestamp, to: Timestamp): 
   const instancesMap: Map<string, ReccuringInstance[]> = new Map()
   for (const event of events) {
     if (event._class === calendar.class.Event) {
+      if (from > event.dueDate) continue
+      if (event.date > to) continue
       base.push(event)
     } else if (event._class === calendar.class.ReccuringEvent) {
       recur.push(event as ReccuringEvent)
@@ -276,7 +278,13 @@ export function getAllEvents (events: Event[], from: Timestamp, to: Timestamp): 
   for (const rec of recur) {
     recurData.push(...getReccuringEventInstances(rec, instancesMap.get(rec.eventId) ?? [], from, to))
   }
-  const res = [...base, ...recurData, ...instances]
+  const res = [
+    ...base,
+    ...recurData,
+    ...instances.filter((p) => {
+      return from <= p.dueDate && p.date <= to
+    })
+  ]
   res.sort((a, b) => a.date - b.date)
   return res
 }

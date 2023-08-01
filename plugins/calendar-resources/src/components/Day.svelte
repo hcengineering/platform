@@ -16,7 +16,6 @@
   import { Event } from '@hcengineering/calendar'
   import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
   import { Label, addZero, getPlatformColorForTextDef, showPopup, themeStore, tooltip } from '@hcengineering/ui'
-  import { BuildModelKey } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
   import EventsPopup from './EventsPopup.svelte'
@@ -28,8 +27,6 @@
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Event> = {}
   export let options: FindOptions<Event> | undefined = undefined
-  export let baseMenuClass: Ref<Class<Event>> | undefined = undefined
-  export let config: (string | BuildModelKey)[]
 
   export let today: boolean = false
   export let selected: boolean = false

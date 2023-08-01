@@ -64,7 +64,6 @@ export default mergeIds(recruitId, recruit, {
     GotoApplicants: '' as IntlString,
     GotoRecruitApplication: '' as IntlString,
     VacancyList: '' as IntlString,
-    ConfigLabel: '' as IntlString,
     ConfigDescription: '' as IntlString,
     ShowApplications: '' as IntlString
   },

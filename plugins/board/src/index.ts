@@ -117,6 +117,9 @@ const boards = plugin(boardId, {
     SendToBoard: '' as Ref<Action>,
     Delete: '' as Ref<Action>
   },
+  string: {
+    ConfigLabel: '' as IntlString
+  },
   icon: {
     Board: '' as Asset,
     Card: '' as Asset

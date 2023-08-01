@@ -16,7 +16,7 @@
   import { Event } from '@hcengineering/calendar'
   import { DateRangeMode } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
-  import { DateRangePresenter, themeStore } from '@hcengineering/ui'
+  import { DAY, DateRangePresenter, HOUR, MINUTE, themeStore } from '@hcengineering/ui'
   import calendar from '../plugin'
 
   export let value: Event
@@ -35,11 +35,6 @@
       dateRangeMode = DateRangeMode.DATE
     }
   }
-
-  const SECOND = 1000
-  const MINUTE = SECOND * 60
-  const HOUR = MINUTE * 60
-  const DAY = HOUR * 24
 
   async function formatDueDate (interval: number): Promise<string> {
     let passed = interval

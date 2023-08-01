@@ -24,7 +24,6 @@ import {
   Markup,
   Ref,
   RelatedDocument,
-  Space,
   Status,
   StatusCategory,
   Timestamp,
@@ -33,7 +32,7 @@ import {
 } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, Resource, plugin } from '@hcengineering/platform'
 import { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
-import { Task } from '@hcengineering/task'
+import { SpaceWithStates, Task } from '@hcengineering/task'
 import { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui'
 import { Action, ActionCategory, IconProps } from '@hcengineering/view'
 
@@ -45,7 +44,7 @@ export interface IssueStatus extends Status {}
 /**
  * @public
  */
-export interface Project extends Space, IconProps {
+export interface Project extends SpaceWithStates, IconProps {
   identifier: string // Project identifier
   sequence: number
   defaultIssueStatus: Ref<IssueStatus>
@@ -451,6 +450,7 @@ export default plugin(trackerId, {
     Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
   },
   string: {
+    ConfigLabel: '' as IntlString,
     NewRelatedIssue: '' as IntlString
   }
 })
