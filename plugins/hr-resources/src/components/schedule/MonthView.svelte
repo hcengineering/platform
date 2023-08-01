@@ -188,7 +188,8 @@
   function getTooltip(requests: Request[], day: Date, staff: Staff): LabelAndProps | undefined {
     if (requests.length === 0) return
     const weekend = isWeekend(day)
-    const holiday = holidays?.size > 0 && isHoliday(getHolidayDatesForEmployee(staffDepartmentMap, staff._id, holidays), day)
+    const holiday =
+      holidays?.size > 0 && isHoliday(getHolidayDatesForEmployee(staffDepartmentMap, staff._id, holidays), day)
     if (day && (weekend || holiday) && requests.some((req) => noWeekendHolidayType.includes(req.type))) {
       return
     }
@@ -324,7 +325,10 @@
                 {@const day = getDay(startDate, value)}
                 {@const today = areDatesEqual(todayDate, day)}
                 {@const weekend = isWeekend(day)}
-                {@const holiday = isHoliday(getHolidayDatesForEmployee(staffDepartmentMap, employee._id, holidays), day)}
+                {@const holiday = isHoliday(
+                  getHolidayDatesForEmployee(staffDepartmentMap, employee._id, holidays),
+                  day
+                )}
                 {@const requests = getRequests(employeeRequests, day, day, employee._id)}
                 {@const tooltipValue = getTooltip(requests, day, employee)}
 
