@@ -63,7 +63,17 @@ import {
 import { TAccount, TSpace } from './security'
 import { TStatus, TStatusCategory } from './status'
 import { TUserStatus } from './transient'
-import { TTx, TTxApplyIf, TTxCUD, TTxCollectionCUD, TTxCreateDoc, TTxMixin, TTxRemoveDoc, TTxUpdateDoc } from './tx'
+import {
+  TTx,
+  TTxApplyIf,
+  TTxCUD,
+  TTxCollectionCUD,
+  TTxCreateDoc,
+  TTxMixin,
+  TTxRemoveDoc,
+  TTxUpdateDoc,
+  TTxWorkspaceEvent
+} from './tx'
 
 export { coreId } from '@hcengineering/core'
 export * from './core'
@@ -89,6 +99,7 @@ export function createModel (builder: Builder): void {
     TTxUpdateDoc,
     TTxRemoveDoc,
     TTxApplyIf,
+    TTxWorkspaceEvent,
     TSpace,
     TAccount,
     TAttribute,
