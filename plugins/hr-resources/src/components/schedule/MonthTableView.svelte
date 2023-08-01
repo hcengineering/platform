@@ -362,7 +362,7 @@
 {#if departmentStaff.length}
   {#if loading}
     <Loading />
-  {:else if viewlet}
+  {:else}
     <div class="ac-header full divide">
       <div class="clear-mins" />
       <div class="ac-header-full small-gap">
@@ -370,15 +370,17 @@
         <ViewletSettingButton viewletQuery={{ _id: hr.viewlet.StaffStats }} bind:viewlet bind:preference bind:loading />
       </div>
     </div>
-    {#await createConfig(viewlet, preference, month) then config}
-      <TableBrowser
-        tableId={'exportableData'}
-        _class={hr.mixin.Staff}
-        query={{ _id: { $in: departmentStaff.map((it) => it._id) } }}
-        {config}
-        options={viewlet.options}
-      />
-    {/await}
+    {#if viewlet}
+      {#await createConfig(viewlet, preference, month) then config}
+        <TableBrowser
+          tableId={'exportableData'}
+          _class={hr.mixin.Staff}
+          query={{ _id: { $in: departmentStaff.map((it) => it._id) } }}
+          {config}
+          options={viewlet.options}
+        />
+      {/await}
+    {/if}
   {/if}
 {:else}
   <div class="flex-center h-full w-full flex-grow fs-title">
