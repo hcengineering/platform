@@ -282,40 +282,43 @@
   })
 </script>
 
-{#if staffDepartmentMap.size > 0}
-  {#if mode === CalendarMode.Year}
-    <YearView {departmentStaff} {employeeRequests} {types} {currentDate} {holidays} {staffDepartmentMap} />
-  {:else if mode === CalendarMode.Month}
-    {#if display === 'chart'}
-      <MonthView
-        {departmentStaff}
-        {employeeRequests}
-        {types}
-        {startDate}
-        {endDate}
-        {editableList}
-        {currentDate}
-        {timeReports}
-        {holidays}
-        {department}
-        {departments}
-        {staffDepartmentMap}
-      />
-    {:else if display === 'stats'}
-      <MonthTableView
-        {departmentStaff}
-        {employeeRequests}
-        {types}
-        {currentDate}
-        {timeReports}
-        {holidays}
-        {staffDepartmentMap}
-        {getHolidays}
-      />
+<div class="w-full h-full background-comp-header-color">
+  {#if staffDepartmentMap.size > 0}
+    {#if mode === CalendarMode.Year}
+      <YearView {departmentStaff} {employeeRequests} {types} {currentDate} {holidays} {staffDepartmentMap} />
+    {:else if mode === CalendarMode.Month}
+      {#if display === 'chart'}
+        <MonthView
+          {departmentStaff}
+          {employeeRequests}
+          {types}
+          {startDate}
+          {endDate}
+          {editableList}
+          {currentDate}
+          {timeReports}
+          {holidays}
+          {department}
+          {departments}
+          {departmentById}
+          {staffDepartmentMap}
+        />
+      {:else if display === 'stats'}
+        <MonthTableView
+          {departmentStaff}
+          {employeeRequests}
+          {types}
+          {currentDate}
+          {timeReports}
+          {holidays}
+          {staffDepartmentMap}
+          {getHolidays}
+        />
+      {/if}
     {/if}
+  {:else}
+    <div class="flex-center h-full w-full flex-grow fs-title">
+      <Label label={hr.string.NoEmployeesInDepartment} />
+    </div>
   {/if}
-{:else}
-  <div class="flex-center h-full w-full flex-grow fs-title">
-    <Label label={hr.string.NoEmployeesInDepartment} />
-  </div>
-{/if}
+</div>

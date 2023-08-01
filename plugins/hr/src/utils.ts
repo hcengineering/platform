@@ -39,3 +39,18 @@ export function fromTzDate (tzDate: TzDate): number {
 export function tzDateEqual (tzDate: TzDate, tzDate2: TzDate): boolean {
   return tzDate.year === tzDate2.year && tzDate.month === tzDate2.month && tzDate.day === tzDate2.day
 }
+
+/**
+ * @public
+ */
+export function tzDateCompare (tzDate1: TzDate, tzDate2: TzDate): number {
+  if (tzDate1.year === tzDate2.year) {
+    if (tzDate1.month === tzDate2.month) {
+      return tzDate1.day - tzDate2.day
+    } else {
+      return tzDate1.month - tzDate2.month
+    }
+  } else {
+    return tzDate1.year - tzDate2.year
+  }
+}
