@@ -30,7 +30,7 @@
     const link = concatLink(calendarUrl, '/signin')
     const url = new URL(link)
     url.search = new URLSearchParams({
-      redirectURL: window.location.href
+      redirectURL: (getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin) + window.location.pathname
     }).toString()
 
     const res = await fetch(url.toString(), {
@@ -41,7 +41,8 @@
       }
     })
     const redirectTo = await res.text()
-    window.open(redirectTo, '_self')
+    window.open(redirectTo)
+    dispatch('close')
   }
 </script>
 
