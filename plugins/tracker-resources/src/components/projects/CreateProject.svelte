@@ -82,7 +82,7 @@
       private: isPrivate,
       members,
       archived: false,
-      identifier,
+      identifier: identifier.toUpperCase(),
       sequence: 0,
       defaultIssueStatus: defaultStatusId,
       defaultAssignee: defaultAssignee ?? undefined,
@@ -120,8 +120,8 @@
     if (projectData.defaultTimeReportDay !== project?.defaultTimeReportDay) {
       update.defaultTimeReportDay = projectData.defaultTimeReportDay
     }
-    if (projectData.identifier !== project?.identifier) {
-      update.identifier = projectData.identifier
+    if (projectData.identifier.toUpperCase() !== project?.identifier) {
+      update.identifier = projectData.identifier.toUpperCase()
     }
     if (projectData.members.length !== project?.members.length) {
       update.members = projectData.members
@@ -146,7 +146,9 @@
   async function createProject () {
     const projectId = generateId<Project>()
     const projectData = getProjectData()
-    const ops = client.apply(projectId).notMatch(tracker.class.Project, { identifier: projectData.identifier })
+    const ops = client
+      .apply(projectId)
+      .notMatch(tracker.class.Project, { identifier: projectData.identifier.toUpperCase() })
 
     isSaving = true
     await ops.createDoc(tracker.class.Project, core.space.Space, projectData, projectId)
@@ -195,7 +197,7 @@
   okAction={handleSave}
   canSave={name.length > 0 &&
     identifier.length > 0 &&
-    !projectsIdentifiers.has(identifier) &&
+    !projectsIdentifiers.has(identifier.toUpperCase()) &&
     !(members.length === 0 && isPrivate)}
   accentHeader
   width={'medium'}
@@ -232,6 +234,7 @@
       <div bind:this={changeIdentityRef} class="padding flex-row-center relative">
         <EditBox
           bind:value={identifier}
+          on:input
           disabled={!isNew}
           placeholder={tracker.string.ProjectIdentifierPlaceholder}
           kind={'large-style'}
@@ -241,7 +244,7 @@
           <div class="ml-1">
             <Button size={'small'} icon={IconEdit} on:click={(ev) => changeIdentity(eventToHTMLElement(ev))} />
           </div>
-        {:else if !isSaving && projectsIdentifiers.has(identifier)}
+        {:else if !isSaving && projectsIdentifiers.has(identifier.toUpperCase())}
           <div class="absolute overflow-label duplicated-identifier">
             <Label label={tracker.string.IdentifierExists} />
           </div>
