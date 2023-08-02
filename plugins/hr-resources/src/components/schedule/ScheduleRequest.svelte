@@ -79,6 +79,8 @@
 
 <style lang="scss">
   .request {
+    color: var(--theme-calendar-event-caption-color);
+
     border-radius: 0.25rem;
     height: 100%;
     width: 100%;
