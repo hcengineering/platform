@@ -17,6 +17,10 @@
   import { CheckBox, Component, navigate, parseLocation } from '@hcengineering/ui'
   import view from '@hcengineering/view'
 
+  import { getMetadata } from '@hcengineering/platform'
+
+  import presentation from '../../plugin'
+
   export let nodes: NodeListOf<any>
 
   function prevName (pos: number, nodes: NodeListOf<any>): string | undefined {
@@ -28,6 +32,21 @@
       break
     }
     return nodes[pos - 1]?.nodeName
+  }
+
+  function handleLink (node: HTMLElement, e: MouseEvent) {
+    try {
+      const href = node.getAttribute('href')
+      if (href) {
+        const url = new URL(href)
+        const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
+
+        if (url.origin === frontUrl) {
+          e.preventDefault()
+          navigate(parseLocation(url))
+        }
+      }
+    } catch {}
   }
 </script>
 
@@ -81,20 +100,9 @@
     {:else if node.nodeName === 'DIV'}
       <div><svelte:self nodes={node.childNodes} /></div>
     {:else if node.nodeName === 'A'}
-      <a
-        href={node.getAttribute('href')}
-        target={node.getAttribute('target')}
-        on:click={(e) => {
-          try {
-            const url = new URL(node.getAttribute('href'))
-
-            if (url.origin === window.location.origin) {
-              e.preventDefault()
-              navigate(parseLocation(url))
-            }
-          } catch {}
-        }}><svelte:self nodes={node.childNodes} /></a
-      >
+      <a href={node.getAttribute('href')} target={node.getAttribute('target')} on:click={(e) => handleLink(node, e)}>
+        <svelte:self nodes={node.childNodes} />
+      </a>
     {:else if node.nodeName === 'LABEL'}
       <svelte:self nodes={node.childNodes} />
     {:else if node.nodeName === 'INPUT'}

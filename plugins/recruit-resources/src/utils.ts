@@ -1,6 +1,7 @@
 import contact, { getName } from '@hcengineering/contact'
 import { Class, Client, Doc, Hierarchy, Ref } from '@hcengineering/core'
-import { getClient } from '@hcengineering/presentation'
+import presentation, { getClient } from '@hcengineering/presentation'
+import { getMetadata } from '@hcengineering/platform'
 import { Applicant, Candidate, Review, Vacancy, VacancyList, recruitId } from '@hcengineering/recruit'
 import { Location, ResolvedLocation, getCurrentResolvedLocation, getPanelURI } from '@hcengineering/ui'
 import view from '@hcengineering/view'
@@ -11,11 +12,9 @@ type RecruitDocument = Vacancy | Applicant | Review
 
 export async function objectLinkProvider (doc: RecruitDocument): Promise<string> {
   const location = getCurrentResolvedLocation()
-  return await Promise.resolve(
-    `${window.location.protocol}//${window.location.host}/${workbenchId}/${
-      location.path[1]
-    }/${recruitId}/${await getSequenceId(doc)}`
-  )
+  const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
+  const url = `${frontUrl}/${workbenchId}/${location.path[1]}/${recruitId}/${await getSequenceId(doc)}`
+  return url
 }
 
 function isShortId (shortLink: string): boolean {
