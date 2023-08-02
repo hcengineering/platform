@@ -15,7 +15,16 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { AccountArrayEditor, AssigneeBox } from '@hcengineering/contact-resources'
-  import core, { Account, DocumentUpdate, Ref, generateId, getCurrentAccount } from '@hcengineering/core'
+  import core, {
+    Account,
+    ApplyOperations,
+    DocumentUpdate,
+    Ref,
+    Status,
+    TxOperations,
+    generateId,
+    getCurrentAccount
+  } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
@@ -41,12 +50,22 @@
 
   export let project: Project | undefined = undefined
 
+  export let namePlaceholder: ''
+  export let descriptionPlaceholder: ''
+  export let statusFactory: (
+    client: TxOperations | ApplyOperations,
+    spaceId: Status['space'],
+    statusClass: Status['_class'],
+    categoryOfAttribute: Status['ofAttribute'],
+    defaultStatusId: Status['_id']
+  ) => Promise<void> = createStatuses
+
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const projectsQuery = createQuery()
 
-  let name: string = project?.name ?? ''
-  let description: string = project?.description ?? ''
+  let name: string = project?.name ?? namePlaceholder
+  let description: string = project?.description ?? descriptionPlaceholder
   let isPrivate: boolean = project?.private ?? false
   let icon: Asset | undefined = project?.icon ?? undefined
   let color = project?.color ?? getColorNumberByText(name)
@@ -152,12 +171,12 @@
 
     isSaving = true
     await ops.createDoc(tracker.class.Project, core.space.Space, projectData, projectId)
-    await createStatuses(ops, projectId, tracker.class.IssueStatus, tracker.attribute.IssueStatus, defaultStatusId)
+    await statusFactory(ops, projectId, tracker.class.IssueStatus, tracker.attribute.IssueStatus, defaultStatusId)
     const succeeded = await ops.commit()
     isSaving = false
 
     if (succeeded) {
-      close()
+      close(projectId)
     } else {
       changeIdentity(changeIdentityRef)
     }
@@ -180,8 +199,8 @@
     })
   }
 
-  function close () {
-    dispatch('close')
+  function close (id?: Ref<Project>) {
+    dispatch('close', id)
   }
 
   $: projectsQuery.query(
