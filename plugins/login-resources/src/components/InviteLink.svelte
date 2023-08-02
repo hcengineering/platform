@@ -15,7 +15,8 @@
 <script lang="ts">
   import { AccountRole, getCurrentAccount, Timestamp } from '@hcengineering/core'
   import { loginId } from '@hcengineering/login'
-  import { copyTextToClipboard, createQuery } from '@hcengineering/presentation'
+  import { getMetadata } from '@hcengineering/platform'
+  import presentation, { copyTextToClipboard, createQuery } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import {
     Button,
@@ -79,7 +80,10 @@
     loc.fragment = undefined
 
     const url = locationToUrl(loc)
-    link = document.location.origin + url
+
+    const frontUrl = getMetadata(presentation.metadata.FrontUrl)
+    const host = frontUrl ?? document.location.origin
+    link = host + url
     loading = false
   }
 

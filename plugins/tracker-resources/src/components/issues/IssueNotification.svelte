@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { copyTextToClipboard, createQuery } from '@hcengineering/presentation'
+  import presentation, { copyTextToClipboard, createQuery } from '@hcengineering/presentation'
+  import { getMetadata } from '@hcengineering/platform'
   import { Issue, IssueStatus } from '@hcengineering/tracker'
   import view from '@hcengineering/view'
   import {
@@ -77,8 +78,9 @@
   const handleIssueOpened = () => {
     if (params?.issueUrl) {
       const url = new URL(params?.issueUrl)
+      const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
 
-      if (url.origin === window.location.origin) {
+      if (url.origin === frontUrl) {
         navigate(parseLocation(url))
       }
     }
