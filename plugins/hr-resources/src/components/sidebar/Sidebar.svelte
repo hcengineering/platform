@@ -42,11 +42,11 @@
       <DepartmentsHierarchy {departments} {descendants} {departmentById} selected={department} on:selected />
     </TreeNode>
 
-    <div class="antiNav-divider short line" />
+    <!-- TODO Add Positions -->
+    <!-- <div class="antiNav-divider short line" /> -->
 
-    <TreeNode label={hr.string.Positions} parent>
-      <!-- TODO Positions -->
-    </TreeNode>
+    <!-- <TreeNode label={hr.string.Positions} parent> -->
+    <!-- </TreeNode> -->
   </Scroller>
 
   <NavFooter />

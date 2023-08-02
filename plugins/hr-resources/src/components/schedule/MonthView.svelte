@@ -369,6 +369,7 @@
   $timeline-bg-color: var(--theme-comp-header-color);
   $timeline-border-color: var(--theme-bg-divider-color);
   $timeline-border: 1px solid $timeline-border-color;
+  $timeline-weekend-stroke-color: var(--theme-calendar-weekend-stroke-color);
 
   .timeline {
     width: 100%;
@@ -448,15 +449,15 @@
   .timeline-grid-bg {
     background-image: linear-gradient(
       135deg,
-      $timeline-border-color 8.33%,
-      $timeline-bg-color 8.33%,
+      $timeline-weekend-stroke-color 10%,
+      $timeline-bg-color 10%,
       $timeline-bg-color 50%,
-      $timeline-border-color 50%,
-      $timeline-border-color 58.33%,
-      $timeline-bg-color 58.33%,
+      $timeline-weekend-stroke-color 50%,
+      $timeline-weekend-stroke-color 60%,
+      $timeline-bg-color 60%,
       $timeline-bg-color 100%
     );
-    background-size: 6px 6px;
+    background-size: 7px 7px;
   }
 
   .timeline-row {
