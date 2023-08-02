@@ -146,7 +146,9 @@
   async function createProject () {
     const projectId = generateId<Project>()
     const projectData = getProjectData()
-    const ops = client.apply(projectId).notMatch(tracker.class.Project, { identifier: projectData.identifier.toUpperCase() })
+    const ops = client
+      .apply(projectId)
+      .notMatch(tracker.class.Project, { identifier: projectData.identifier.toUpperCase() })
 
     isSaving = true
     await ops.createDoc(tracker.class.Project, core.space.Space, projectData, projectId)
