@@ -18,7 +18,13 @@
   import { getClient } from '@hcengineering/presentation'
   import { AnyComponent, Component, resolvedLocationStore } from '@hcengineering/ui'
   import view, { ViewOptions, Viewlet } from '@hcengineering/view'
-  import { activeViewlet, makeViewletKey, updateActiveViewlet } from '@hcengineering/view-resources'
+  import {
+    activeViewlet,
+    getViewOptions,
+    makeViewletKey,
+    updateActiveViewlet,
+    viewOptionStore
+  } from '@hcengineering/view-resources'
   import type { ViewConfiguration } from '@hcengineering/workbench'
   import { onDestroy } from 'svelte'
   import SpaceContent from './SpaceContent.svelte'
@@ -78,6 +84,7 @@
       )
       if (header !== undefined) {
         viewlet = updateActiveViewlet(viewlets, active)
+        viewOptions = getViewOptions(viewlet, $viewOptionStore)
       }
       _class = attachTo
     }
