@@ -737,7 +737,7 @@ class MongoAdapter extends MongoAdapterBase {
       return (await this.getOperations(txes[0])?.raw()) ?? {}
     }
     if (result.length === 0) {
-      return {}
+      return false
     }
     if (result.length === 1) {
       return result[0]
