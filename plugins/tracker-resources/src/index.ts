@@ -141,7 +141,7 @@ import { get } from 'svelte/store'
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 export { default as IssueStatusIcon } from './components/issues/IssueStatusIcon.svelte'
 
-export { IssuePresenter, TitlePresenter }
+export { IssuePresenter, TitlePresenter, CreateProject }
 
 export async function queryIssue<D extends Issue> (
   _class: Ref<Class<D>>,
