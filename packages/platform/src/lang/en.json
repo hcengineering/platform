@@ -9,7 +9,7 @@
     "Unauthorized": "Unauthorized",
     "UnknownMethod": "Unknown method: {method}",
     "InternalServerError": "Internal server error",
-    "MaintenanceWarning": "Maintenance Scheduled in {time, plural, =1 {less a minute} other {# minutes}}",
+    "MaintenanceWarning": "Maintenance Scheduled in {time, plural, =1 {less than a minute} other {# minutes}}",
     "AccountNotFound": "Account not found",
     "WorkspaceNotFound": "Workspace not found",
     "InvalidPassword": "Invalid password",
