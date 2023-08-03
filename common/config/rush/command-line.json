@@ -242,7 +242,8 @@
       "incremental": false,
       "ignoreDependencyOrder": false,
       "ignoreMissingScript": true,
-      "disableBuildCache": true
+      "disableBuildCache": true,
+      "allowWarningsInSuccessfulBuild": true
     },
     {
       "commandKind": "bulk",
@@ -253,7 +254,8 @@
       "incremental": false,
       "ignoreDependencyOrder": false,
       "ignoreMissingScript": true,
-      "disableBuildCache": true
+      "disableBuildCache": true,
+      "allowWarningsInSuccessfulBuild": true
     },
     {
       "commandKind": "bulk",
@@ -264,7 +266,8 @@
       "incremental": false,
       "ignoreDependencyOrder": false,
       "ignoreMissingScript": true,
-      "disableBuildCache": true
+      "disableBuildCache": true,
+      "allowWarningsInSuccessfulBuild": true
     },
     {
       "commandKind": "bulk",
