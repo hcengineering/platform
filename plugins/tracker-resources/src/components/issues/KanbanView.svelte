@@ -242,7 +242,7 @@
     if (groupValue === undefined) {
       return undefined
     }
-    if ((doc as any)[groupByKey] === groupValue) {
+    if ((doc as any)[groupByKey] === groupValue && viewOptions.orderBy[0] !== 'rank') {
       return
     }
     return {
