@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Employee, EmployeeAccount, getName, Status } from '@hcengineering/contact'
+  import { Employee, PersonAccount, getName, Status } from '@hcengineering/contact'
   import { getCurrentAccount, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import Avatar from './Avatar.svelte'
@@ -15,12 +15,12 @@
   export let employeeId: Ref<Employee>
 
   const client = getClient()
-  const me = (getCurrentAccount() as EmployeeAccount).employee
+  const me = (getCurrentAccount() as PersonAccount).person
   $: editable = employeeId === me
 
   const statusesQuery = createQuery()
   let status: Status | undefined = undefined
-  $: employee = $employeeByIdStore.get(employeeId)
+  $: employee = $employeeByIdStore.get(employeeId) as Employee
   statusesQuery.query(contact.class.Status, { attachedTo: employeeId }, (res) => (status = res[0]))
 
   const dispatch = createEventDispatcher()
@@ -39,7 +39,7 @@
         } else if (status && !newStatus) {
           client.removeDoc(contact.class.Status, status.space, status._id)
         } else {
-          client.addCollection(contact.class.Status, employee!.space, employeeId, contact.class.Employee, 'statuses', {
+          client.addCollection(contact.class.Status, employee!.space, employeeId, contact.mixin.Employee, 'statuses', {
             name: newStatus.name,
             dueDate: newStatus.dueDate
           })
@@ -60,7 +60,7 @@
     <div class="flex-col-center pb-2">
       <Avatar size="x-large" avatar={employee.avatar} />
     </div>
-    <div class="pb-2">{getName(employee)}</div>
+    <div class="pb-2">{getName(client.getHierarchy(), employee)}</div>
     <DocNavLink object={employee}>
       <Label label={contact.string.ViewFullProfile} />
     </DocNavLink>

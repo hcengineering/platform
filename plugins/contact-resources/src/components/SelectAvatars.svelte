@@ -25,7 +25,7 @@
   import UsersPopup from './UsersPopup.svelte'
 
   export let items: Ref<Employee>[] = []
-  export let _class: Ref<Class<Employee>> = contact.class.Employee
+  export let _class: Ref<Class<Employee>> = contact.mixin.Employee
   export let docQuery: DocumentQuery<Employee> | undefined = {
     active: true
   }

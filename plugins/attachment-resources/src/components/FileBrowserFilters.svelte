@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee } from '@hcengineering/contact'
+  import { Person } from '@hcengineering/contact'
   import { Class, Ref, Space } from '@hcengineering/core'
   import { SpaceMultiBoxList } from '@hcengineering/presentation'
   import { Component, DropdownLabelsIntl } from '@hcengineering/ui'
@@ -23,7 +23,7 @@
 
   export let requestedSpaceClasses: Ref<Class<Space>>[]
   export let spaceId: Ref<Space> | undefined
-  export let selectedParticipants: Ref<Employee>[]
+  export let selectedParticipants: Ref<Person>[]
   export let selectedSpaces: Ref<Space>[]
   export let selectedDateId: string
   export let selectedFileTypeId: string

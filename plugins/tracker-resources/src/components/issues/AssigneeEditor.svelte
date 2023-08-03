@@ -13,15 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee, EmployeeAccount } from '@hcengineering/contact'
-  import { AssigneeBox, employeeAccountByIdStore } from '@hcengineering/contact-resources'
+  import { Employee, PersonAccount, Person } from '@hcengineering/contact'
+  import { AssigneeBox, personAccountByIdStore } from '@hcengineering/contact-resources'
   import { Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Issue, Project } from '@hcengineering/tracker'
   import { ButtonKind, ButtonSize, IconSize, TooltipAlignment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { getPreviousAssignees } from '../../utils'
   import tracker from '../../plugin'
+  import { getPreviousAssignees } from '../../utils'
 
   type Object = (Doc | {}) & Pick<Issue, 'space' | 'component' | 'assignee'>
 
@@ -40,10 +40,10 @@
   const projectQuery = createQuery()
 
   let project: Project | undefined
-  let prevAssigned: Ref<Employee>[] = []
+  let prevAssigned: Ref<Person>[] = []
   let componentLead: Ref<Employee> | undefined = undefined
   let members: Ref<Employee>[] = []
-  let docQuery: DocumentQuery<Employee> = { active: true }
+  let docQuery: DocumentQuery<Employee> = {}
 
   $: '_class' in object &&
     getPreviousAssignees(object._id).then((res) => {
@@ -59,17 +59,17 @@
     }
     if (project !== undefined) {
       const accounts = project.members
-        .map((p) => $employeeAccountByIdStore.get(p as Ref<EmployeeAccount>))
-        .filter((p) => p !== undefined) as EmployeeAccount[]
-      members = accounts.map((p) => p.employee)
+        .map((p) => $personAccountByIdStore.get(p as Ref<PersonAccount>))
+        .filter((p) => p !== undefined) as PersonAccount[]
+      members = accounts.map((p) => p.person as Ref<Employee>)
     } else {
       members = []
     }
 
-    docQuery = project?.private ? { _id: { $in: members }, active: true } : { active: true }
+    docQuery = project?.private ? { _id: { $in: members } } : { active: true }
   }
 
-  const handleAssigneeChanged = async (newAssignee: Ref<Employee> | undefined) => {
+  const handleAssigneeChanged = async (newAssignee: Ref<Person> | undefined) => {
     if (newAssignee === undefined || object.assignee === newAssignee) {
       return
     }
@@ -83,7 +83,7 @@
 
   $: projectQuery.query(tracker.class.Project, { _id: object.space }, (res) => ([project] = res))
   $: project && updateComponentMembers(project, object)
-  $: docQuery = project?.private ? { _id: { $in: members }, active: true } : { active: true }
+  $: docQuery = project?.private ? { _id: { $in: members } } : {}
 </script>
 
 {#if object}

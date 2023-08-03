@@ -18,7 +18,7 @@
   import { getCurrentAccount } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { CombineAvatars } from '@hcengineering/contact-resources'
-  import contact, { EmployeeAccount } from '@hcengineering/contact'
+  import contact, { PersonAccount } from '@hcengineering/contact'
   import { SearchEdit, showPanel } from '@hcengineering/ui'
   import chunter from '../plugin'
   import { getDmName, navigateToSpecial } from '../utils'
@@ -42,11 +42,11 @@
   async function getEmpolyeeIds () {
     const empAccIds = dm?.members.length !== 1 ? dm?.members.filter((accId) => accId !== myAccId) : dm?.members
 
-    const employeeAccounts = await client.findAll(contact.class.EmployeeAccount, {
-      _id: { $in: empAccIds as Ref<EmployeeAccount>[] }
+    const employeeAccounts = await client.findAll(contact.class.PersonAccount, {
+      _id: { $in: empAccIds as Ref<PersonAccount>[] }
     })
 
-    return employeeAccounts.map((ea) => ea.employee)
+    return employeeAccounts.map((ea) => ea.person)
   }
 
   async function onSpaceEdit (): Promise<void> {
@@ -62,7 +62,7 @@
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div class="ac-header__wrap-title" on:click={onSpaceEdit}>
           <div class="ac-header__icon">
-            <CombineAvatars _class={contact.class.Employee} items={empolyeeIds} size={'x-small'} />
+            <CombineAvatars _class={contact.mixin.Employee} items={empolyeeIds} size={'x-small'} />
           </div>
           <span class="ac-header__title">{name}</span>
         </div>

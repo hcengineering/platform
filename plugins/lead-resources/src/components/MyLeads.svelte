@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { EmployeeAccount } from '@hcengineering/contact'
+  import { PersonAccount } from '@hcengineering/contact'
   import { AttachedDoc, Class, DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
   import { Lead } from '@hcengineering/lead'
   import { IntlString } from '@hcengineering/platform'
@@ -31,8 +31,8 @@
 
   let search = ''
   const dispatch = createEventDispatcher()
-  const currentUser = getCurrentAccount() as EmployeeAccount
-  const assigned = { assignee: currentUser.employee }
+  const currentUser = getCurrentAccount() as PersonAccount
+  const assigned = { assignee: currentUser.person }
   const created = { createdBy: currentUser._id }
   let subscribed = { _id: { $in: [] as Ref<Lead>[] } }
   let mode: string | undefined = undefined

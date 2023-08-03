@@ -13,18 +13,18 @@
 // limitations under the License.
 //
 
+import contact, { Employee, PersonAccount } from '@hcengineering/contact'
 import { employeeByIdStore, getContactChannel } from '@hcengineering/contact-resources'
 import { Ref, getCurrentAccount } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
-import contact, { EmployeeAccount } from '@hcengineering/contact'
+import setting from '@hcengineering/setting'
 import { TemplateDataProvider } from '@hcengineering/templates'
 import { get } from 'svelte/store'
-import setting from '@hcengineering/setting'
 
 export async function getCurrentEmployeeTG (): Promise<string | undefined> {
-  const me = getCurrentAccount() as EmployeeAccount
+  const me = getCurrentAccount() as PersonAccount
   const client = getClient()
-  const employee = await client.findOne(contact.class.Employee, { _id: me.employee })
+  const employee = await client.findOne(contact.mixin.Employee, { _id: me.person as unknown as Ref<Employee> })
   if (employee !== undefined) {
     return await getContactChannel(employee, contact.channelProvider.Telegram)
   }
@@ -34,11 +34,11 @@ export async function getIntegrationOwnerTG (provider: TemplateDataProvider): Pr
   const value = provider.get(setting.class.Integration)
   if (value === undefined) return
   const client = getClient()
-  const employeeAccount = await client.findOne(contact.class.EmployeeAccount, {
-    _id: value.modifiedBy as Ref<EmployeeAccount>
+  const employeeAccount = await client.findOne(contact.class.PersonAccount, {
+    _id: value.modifiedBy as Ref<PersonAccount>
   })
   if (employeeAccount !== undefined) {
-    const employee = get(employeeByIdStore).get(employeeAccount.employee)
+    const employee = get(employeeByIdStore).get(employeeAccount.person as Ref<Employee>)
     if (employee !== undefined) {
       return await getContactChannel(employee, contact.channelProvider.Telegram)
     }

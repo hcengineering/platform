@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { EmployeeAccount } from '@hcengineering/contact'
+  import { PersonAccount } from '@hcengineering/contact'
   import { AccountRole, getCurrentAccount } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import setting, { SettingsCategory } from '@hcengineering/setting'
@@ -25,7 +25,7 @@
   let categoryId: string = ''
 
   let categories: SettingsCategory[] = []
-  const account = getCurrentAccount() as EmployeeAccount
+  const account = getCurrentAccount() as PersonAccount
 
   export let visibileNav = true
 

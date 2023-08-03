@@ -43,7 +43,7 @@
         requestedSpaceClasses: [plugin.class.Channel, plugin.class.DirectMessage]
       }
     },
-    { searchType: SearchType.Contacts, component: EmployeeBrowser, filterClass: contact.class.Employee }
+    { searchType: SearchType.Contacts, component: EmployeeBrowser, filterClass: contact.mixin.Employee }
   ]
 </script>
 

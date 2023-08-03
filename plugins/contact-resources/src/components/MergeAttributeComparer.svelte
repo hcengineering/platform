@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee } from '@hcengineering/contact'
+  import { Person } from '@hcengineering/contact'
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { getAttribute, getAttributeEditor, getClient } from '@hcengineering/presentation'
   import MergeComparer from './MergeComparer.svelte'
 
-  export let value: Employee
+  export let value: Person
   export let _class: Ref<Class<Doc>>
-  export let targetEmp: Employee
+  export let targetEmp: Person
   export let key: string
   export let onChange: (key: string, value: boolean) => void
   export let selected = false

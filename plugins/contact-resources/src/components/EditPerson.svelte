@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { combineName, EmployeeAccount, getFirstName, getLastName, Person } from '@hcengineering/contact'
+  import { combineName, PersonAccount, getFirstName, getLastName, Person } from '@hcengineering/contact'
   import { getCurrentAccount, Ref } from '@hcengineering/core'
   import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
   import setting, { IntegrationType } from '@hcengineering/setting'
@@ -27,7 +27,7 @@
   export let object: Person
   const client = getClient()
 
-  const account = getCurrentAccount() as EmployeeAccount
+  const account = getCurrentAccount() as PersonAccount
 
   let avatarEditor: EditableAvatar
 

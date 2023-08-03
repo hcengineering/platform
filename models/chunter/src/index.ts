@@ -27,7 +27,7 @@ import {
   SavedMessages,
   ThreadMessage
 } from '@hcengineering/chunter'
-import contact, { Employee } from '@hcengineering/contact'
+import contact, { Person } from '@hcengineering/contact'
 import type { Account, Class, Doc, Domain, Ref, Space, Timestamp } from '@hcengineering/core'
 import { IndexKind } from '@hcengineering/core'
 import {
@@ -113,8 +113,8 @@ export class TMessage extends TChunterMessage implements Message {
 
   declare attachedToClass: Ref<Class<Space>>
 
-  @Prop(ArrOf(TypeRef(contact.class.Employee)), chunter.string.Replies)
-    replies?: Ref<Employee>[]
+  @Prop(ArrOf(TypeRef(contact.class.Person)), chunter.string.Replies)
+    replies?: Ref<Person>[]
 
   repliesCount?: number
 

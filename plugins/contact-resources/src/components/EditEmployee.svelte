@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Channel, Employee, EmployeeAccount, getFirstName, getLastName, Person } from '@hcengineering/contact'
+  import { Channel, Employee, PersonAccount, getFirstName, getLastName, Person } from '@hcengineering/contact'
   import { AccountRole, getCurrentAccount, Ref } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
@@ -28,28 +28,27 @@
   import ChannelsEditor from './ChannelsEditor.svelte'
   import EditableAvatar from './EditableAvatar.svelte'
 
-  export let object: Employee
+  export let object: Person
   export let readonly = false
 
   export let channels: Channel[] | undefined = undefined
 
   const client = getClient()
 
-  const account = getCurrentAccount() as EmployeeAccount
+  const account = getCurrentAccount() as PersonAccount
 
   let avatarEditor: EditableAvatar
 
-  $: owner = account.employee === object._id
+  $: owner = account.person === object._id
   $: editable = !readonly && (account.role >= AccountRole.Maintainer || owner)
   let firstName = getFirstName(object.name)
   let lastName = getLastName(object.name)
-  let displayName = object.displayName ?? ''
 
   $: setName(object)
 
   let email: string | undefined
   $: if (editable) {
-    client.findOne(contact.class.EmployeeAccount, { employee: (object as Employee)._id }).then((acc) => {
+    client.findOne(contact.class.PersonAccount, { person: (object as Employee)._id }).then((acc) => {
       email = acc?.email
     })
   }
@@ -69,12 +68,6 @@
   async function lastNameChange () {
     const changeName = await getResource(login.function.ChangeName)
     await changeName(getFirstName(object.name), lastName)
-  }
-
-  function changeDisplayName () {
-    client.update(object, {
-      displayName: displayName.trim() === '' ? null : displayName
-    })
   }
 
   let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
@@ -144,19 +137,6 @@
           />
         {:else}
           {lastName}
-        {/if}
-      </div>
-      <div class="name">
-        {#if editable}
-          <EditBox
-            placeholder={contact.string.DisplayName}
-            bind:value={displayName}
-            on:change={changeDisplayName}
-            disabled={!editable}
-            focusIndex={1}
-          />
-        {:else}
-          {displayName}
         {/if}
       </div>
       <div class="location">

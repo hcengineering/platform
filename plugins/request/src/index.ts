@@ -14,7 +14,7 @@
 //
 
 import { Comment } from '@hcengineering/chunter'
-import { EmployeeAccount } from '@hcengineering/contact'
+import { PersonAccount } from '@hcengineering/contact'
 import type { AttachedDoc, Class, Doc, Mixin, Ref, Tx } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -24,10 +24,10 @@ import { AnyComponent } from '@hcengineering/ui'
  * @public
  */
 export interface Request extends AttachedDoc {
-  requested: Ref<EmployeeAccount>[]
-  approved: Ref<EmployeeAccount>[]
+  requested: Ref<PersonAccount>[]
+  approved: Ref<PersonAccount>[]
   requiredApprovesCount: number
-  rejected?: Ref<EmployeeAccount>
+  rejected?: Ref<PersonAccount>
   status: RequestStatus
   tx: Tx
   comments?: number

@@ -35,8 +35,9 @@
     if (viewlet === undefined) {
       return
     }
+    const h = client.getHierarchy()
     const config = await client.findAll(view.class.Viewlet, {
-      attachTo: { $in: client.getHierarchy().getDescendants(viewlet.attachTo) },
+      attachTo: { $in: h.getDescendants(viewlet.attachTo) },
       variant: viewlet.variant ? viewlet.variant : { $exists: false },
       descriptor: viewlet.descriptor
     })

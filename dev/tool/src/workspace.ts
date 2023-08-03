@@ -33,7 +33,7 @@ export async function diffWorkspace (mongoUrl: string, workspace: WorkspaceId, r
       .find<Tx>({
       objectSpace: core.space.Model,
       modifiedBy: core.account.System,
-      objectClass: { $ne: contact.class.EmployeeAccount }
+      objectClass: { $ne: contact.class.PersonAccount }
     })
       .toArray()
 
@@ -41,7 +41,7 @@ export async function diffWorkspace (mongoUrl: string, workspace: WorkspaceId, r
       return (
         tx.objectSpace === core.space.Model &&
         tx.modifiedBy === core.account.System &&
-        (tx as any).objectClass !== contact.class.EmployeeAccount
+        (tx as any).objectClass !== contact.class.PersonAccount
       )
     })
 

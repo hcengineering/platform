@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import contact, { Contact, Employee, EmployeeAccount, formatName, getName } from '@hcengineering/contact'
+import contact, { Contact, Employee, PersonAccount, formatName, getName } from '@hcengineering/contact'
 import core, {
   Doc,
   Ref,
@@ -39,7 +39,7 @@ import hr, {
 import notification, { NotificationType } from '@hcengineering/notification'
 import { translate } from '@hcengineering/platform'
 import { TriggerControl } from '@hcengineering/server-core'
-import { getEmployee, getEmployeeAccountById } from '@hcengineering/server-notification'
+import { getEmployee, getPersonAccountById } from '@hcengineering/server-notification'
 import { getContent, isAllowed } from '@hcengineering/server-notification-resources'
 
 async function getOldDepartment (
@@ -120,8 +120,8 @@ export async function OnDepartmentStaff (tx: Tx, control: TriggerControl): Promi
   const ctx = TxProcessor.extractTx(tx) as TxMixin<Employee, Staff>
 
   const targetAccount = (
-    await control.modelDb.findAll(contact.class.EmployeeAccount, {
-      employee: ctx.objectId
+    await control.modelDb.findAll(contact.class.PersonAccount, {
+      person: ctx.objectId
     })
   )[0]
   if (targetAccount === undefined) return []
@@ -164,12 +164,12 @@ export async function OnDepartmentRemove (tx: Tx, control: TriggerControl): Prom
 
   const department = (await control.findAll(hr.class.Department, { _id: ctx.objectSpace as Ref<Department> }))[0]
 
-  const targetAccounts = await control.modelDb.findAll(contact.class.EmployeeAccount, {
+  const targetAccounts = await control.modelDb.findAll(contact.class.PersonAccount, {
     _id: { $in: department.members }
   })
-  const employeeIds = targetAccounts.map((acc) => acc.employee as Ref<Staff>)
+  const employeeIds = targetAccounts.map((acc) => acc.person as Ref<Staff>)
 
-  const employee = await control.findAll(contact.class.Employee, {
+  const employee = await control.findAll(contact.mixin.Employee, {
     _id: { $in: employeeIds }
   })
   const removed = await buildHierarchy(department._id, control)
@@ -199,13 +199,13 @@ export async function OnEmployeeDeactivate (tx: Tx, control: TriggerControl): Pr
     return []
   }
   const ctx = actualTx as TxUpdateDoc<Employee>
-  if (ctx.objectClass !== contact.class.Employee || ctx.operations.active !== false) {
+  if (ctx.objectClass !== contact.mixin.Employee || ctx.operations.active !== false) {
     return []
   }
 
   const targetAccount = (
-    await control.modelDb.findAll(contact.class.EmployeeAccount, {
-      employee: ctx.objectId
+    await control.modelDb.findAll(contact.class.PersonAccount, {
+      person: ctx.objectId
     })
   )[0]
   if (targetAccount === undefined) return []
@@ -223,7 +223,7 @@ export async function OnEmployeeDeactivate (tx: Tx, control: TriggerControl): Pr
 
 async function getEmailNotification (
   control: TriggerControl,
-  sender: EmployeeAccount,
+  sender: PersonAccount,
   doc: Request | PublicHoliday,
   space: Ref<Department>,
   type: Ref<NotificationType>
@@ -238,13 +238,13 @@ async function getEmailNotification (
   }
 
   // should respect employee settings
-  const accounts = await control.modelDb.findAll(contact.class.EmployeeAccount, {
-    employee: { $in: Array.from(contacts.values()) as Ref<Employee>[] }
+  const accounts = await control.modelDb.findAll(contact.class.PersonAccount, {
+    person: { $in: Array.from(contacts.values()) as Ref<Employee>[] }
   })
   for (const account of accounts) {
     const allowed = await isAllowed(control, account._id, type, notification.providers.EmailNotification)
     if (!allowed) {
-      contacts.delete(account.employee)
+      contacts.delete(account.person)
     }
   }
 
@@ -282,7 +282,7 @@ async function getEmailNotification (
 export async function OnRequestCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const ctx = TxProcessor.extractTx(tx) as TxCreateDoc<Request>
 
-  const sender = await getEmployeeAccountById(ctx.modifiedBy, control)
+  const sender = await getPersonAccountById(ctx.modifiedBy, control)
   if (sender === undefined) return []
 
   const request = TxProcessor.createDoc2Doc(ctx)
@@ -302,7 +302,7 @@ export async function OnRequestCreate (tx: Tx, control: TriggerControl): Promise
 export async function OnRequestUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const ctx = TxProcessor.extractTx(tx) as TxUpdateDoc<Request>
 
-  const sender = await getEmployeeAccountById(ctx.modifiedBy, control)
+  const sender = await getPersonAccountById(ctx.modifiedBy, control)
   if (sender === undefined) return []
 
   const request = (await control.findAll(hr.class.Request, { _id: ctx.objectId }))[0] as Request
@@ -323,7 +323,7 @@ export async function OnRequestUpdate (tx: Tx, control: TriggerControl): Promise
 export async function OnRequestRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const ctx = TxProcessor.extractTx(tx) as TxCreateDoc<Request>
 
-  const sender = await getEmployeeAccountById(ctx.modifiedBy, control)
+  const sender = await getPersonAccountById(ctx.modifiedBy, control)
   if (sender === undefined) return []
 
   const request = control.removedMap.get(ctx.objectId) as Request
@@ -343,8 +343,8 @@ export async function OnRequestRemove (tx: Tx, control: TriggerControl): Promise
  */
 export async function RequestHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const request = doc as Request
-  const employee = (await control.findAll(contact.class.Employee, { _id: request.attachedTo }))[0]
-  const who = getName(employee)
+  const employee = (await control.findAll(contact.mixin.Employee, { _id: request.attachedTo }))[0]
+  const who = getName(control.hierarchy, employee)
   const type = await translate(control.modelDb.getObject(request.type).label, {})
 
   const date = tzDateEqual(request.tzDate, request.tzDueDate)
@@ -361,8 +361,8 @@ export async function RequestHTMLPresenter (doc: Doc, control: TriggerControl): 
  */
 export async function RequestTextPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const request = doc as Request
-  const employee = (await control.findAll(contact.class.Employee, { _id: request.attachedTo }))[0]
-  const who = getName(employee)
+  const employee = (await control.findAll(contact.mixin.Employee, { _id: request.attachedTo }))[0]
+  const who = getName(control.hierarchy, employee)
   const type = await translate(control.modelDb.getObject(request.type).label, {})
 
   const date = tzDateEqual(request.tzDate, request.tzDueDate)
@@ -380,9 +380,9 @@ export async function RequestTextPresenter (doc: Doc, control: TriggerControl): 
 export async function OnPublicHolidayCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const ctx = TxProcessor.extractTx(tx) as TxCreateDoc<PublicHoliday>
 
-  const sender = await getEmployeeAccountById(ctx.modifiedBy, control)
+  const sender = await getPersonAccountById(ctx.modifiedBy, control)
   if (sender === undefined) return []
-  const employee = await getEmployee(sender.employee, control)
+  const employee = await getEmployee(sender.person as Ref<Employee>, control)
   if (employee === undefined) return []
 
   const publicHoliday = TxProcessor.createDoc2Doc(ctx)
@@ -400,9 +400,9 @@ export async function OnPublicHolidayCreate (tx: Tx, control: TriggerControl): P
  */
 export async function PublicHolidayHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const holiday = doc as PublicHoliday
-  const sender = await getEmployeeAccountById(holiday.modifiedBy, control)
+  const sender = await getPersonAccountById(holiday.modifiedBy, control)
   if (sender === undefined) return ''
-  const employee = await getEmployee(sender.employee, control)
+  const employee = await getEmployee(sender.person as Ref<Employee>, control)
   if (employee === undefined) return ''
   const who = formatName(employee.name)
 
@@ -416,9 +416,9 @@ export async function PublicHolidayHTMLPresenter (doc: Doc, control: TriggerCont
  */
 export async function PublicHolidayTextPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const holiday = doc as PublicHoliday
-  const sender = await getEmployeeAccountById(holiday.modifiedBy, control)
+  const sender = await getPersonAccountById(holiday.modifiedBy, control)
   if (sender === undefined) return ''
-  const employee = await getEmployee(sender.employee, control)
+  const employee = await getEmployee(sender.person as Ref<Employee>, control)
   if (employee === undefined) return ''
   const who = formatName(employee.name)
 

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Contact, Employee, getName } from '@hcengineering/contact'
+  import contact, { Contact, Employee, Person, getName } from '@hcengineering/contact'
   import { Class, DocumentQuery, FindOptions, Hierarchy, Ref } from '@hcengineering/core'
   import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import {
@@ -34,13 +34,13 @@
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import { PersonLabelTooltip, employeeByIdStore } from '..'
+  import { PersonLabelTooltip, personByIdStore } from '..'
   import AssigneePopup from './AssigneePopup.svelte'
   import IconPerson from './icons/Person.svelte'
   import UserInfo from './UserInfo.svelte'
   import EmployeePresenter from './EmployeePresenter.svelte'
 
-  export let _class: Ref<Class<Employee>> = contact.class.Employee
+  export let _class: Ref<Class<Employee>> = contact.mixin.Employee
   export let excluded: Ref<Contact>[] | undefined = undefined
   export let options: FindOptions<Employee> | undefined = undefined
   export let docQuery: DocumentQuery<Employee> | undefined = {
@@ -48,8 +48,8 @@
   }
   export let label: IntlString
   export let placeholder: IntlString = presentation.string.Search
-  export let value: Ref<Employee> | null | undefined
-  export let prevAssigned: Ref<Employee>[] | undefined = []
+  export let value: Ref<Person> | null | undefined
+  export let prevAssigned: Ref<Person>[] | undefined = []
   export let componentLead: Ref<Employee> | undefined = undefined
   export let members: Ref<Employee>[] | undefined = []
   export let allowDeselect = true
@@ -71,13 +71,15 @@
 
   const dispatch = createEventDispatcher()
 
-  let selected: Employee | undefined
+  let selected: Person | undefined
   let container: HTMLElement
 
   const client = getClient()
 
-  async function updateSelected (value: Ref<Employee> | null | undefined) {
-    selected = value ? $employeeByIdStore.get(value) ?? (await client.findOne(_class, { _id: value })) : undefined
+  async function updateSelected (value: Ref<Person> | null | undefined) {
+    selected = value
+      ? $personByIdStore.get(value) ?? (await client.findOne(contact.class.Person, { _id: value }))
+      : undefined
   }
 
   $: updateSelected(value)
@@ -132,7 +134,9 @@
     <div
       class="w-full h-full flex-streatch"
       on:click={_click}
-      use:tooltip={selected !== undefined ? { label: getEmbeddedLabel(getName(selected)) } : undefined}
+      use:tooltip={selected !== undefined
+        ? { label: getEmbeddedLabel(getName(client.getHierarchy(), selected)) }
+        : undefined}
     >
       <slot name="content" />
     </div>
@@ -158,13 +162,15 @@
           style:width={showNavigate && selected
             ? `calc(${width ?? 'min-content'} - 1.5rem)`
             : `${width ?? 'min-content'}`}
-          use:tooltip={selected !== undefined ? { label: getEmbeddedLabel(getName(selected)) } : undefined}
+          use:tooltip={selected !== undefined
+            ? { label: getEmbeddedLabel(getName(client.getHierarchy(), selected)) }
+            : undefined}
         >
           {#if selected}
             {#if hideIcon || selected}
               <UserInfo value={selected} size={avatarSize} {icon} {short} on:accent-color />
             {:else}
-              {getName(selected)}
+              {getName(client.getHierarchy(), selected)}
             {/if}
           {:else}
             <div class="flex-presenter not-selected">

@@ -62,7 +62,7 @@
     showPopup(
       UsersPopup,
       {
-        _class: contact.class.Employee,
+        _class: contact.mixin.Employee,
         selected: value.$lookup?.teamLead,
         allowDeselect: true,
         placeholder: hr.string.TeamLead,

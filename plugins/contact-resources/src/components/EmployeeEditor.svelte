@@ -31,7 +31,7 @@
   export let readonly = false
   export let showNavigate = true
 
-  $: _class = type?.to ?? contact.class.Employee
+  $: _class = type?.to ?? contact.mixin.Employee
 
   const query: DocumentQuery<Employee> = {
     active: true

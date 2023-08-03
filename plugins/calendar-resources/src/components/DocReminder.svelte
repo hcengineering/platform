@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { EmployeeAccount } from '@hcengineering/contact'
+  import { PersonAccount } from '@hcengineering/contact'
   import { Doc, getCurrentAccount } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Button, showPopup } from '@hcengineering/ui'
@@ -34,10 +34,10 @@
     if (isEvent) {
       showPopup(SaveEventReminder, { objectId: value._id, objectClass: value._class }, ev.target as HTMLElement)
     } else {
-      const currentUser = getCurrentAccount() as EmployeeAccount
+      const currentUser = getCurrentAccount() as PersonAccount
       const current = await client.findOne(calendar.class.Event, {
         attachedTo: value._id,
-        participants: currentUser.employee
+        participants: currentUser.person
       })
       if (current === undefined) {
         showPopup(

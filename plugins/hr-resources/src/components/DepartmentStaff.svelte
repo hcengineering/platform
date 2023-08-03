@@ -44,7 +44,7 @@
     showPopup(
       UsersPopup,
       {
-        _class: contact.class.Employee,
+        _class: contact.mixin.Employee,
         docQuery: {
           active: true
         },

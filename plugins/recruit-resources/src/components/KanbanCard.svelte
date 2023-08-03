@@ -64,7 +64,7 @@
       <Avatar avatar={object.$lookup?.attachedTo?.avatar} size={'medium'} />
       <div class="flex-grow flex-col min-w-0 ml-2">
         <div class="fs-title over-underline lines-limit-2">
-          {object.$lookup?.attachedTo ? getName(object.$lookup.attachedTo) : ''}
+          {object.$lookup?.attachedTo ? getName(client.getHierarchy(), object.$lookup.attachedTo) : ''}
         </div>
         {#if !isTitleHidden && enabledConfig(config, 'title')}
           <div class="text-sm lines-limit-2">{object.$lookup?.attachedTo?.title ?? ''}</div>
@@ -139,7 +139,7 @@
       <AssigneePresenter
         value={object.assignee}
         issueId={object._id}
-        defaultClass={contact.class.Employee}
+        defaultClass={contact.mixin.Employee}
         currentSpace={object.space}
         placeholderLabel={assigneeAttribute.label}
       />

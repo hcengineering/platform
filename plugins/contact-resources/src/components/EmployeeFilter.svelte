@@ -78,7 +78,7 @@
         : {
             _id: { $in: Array.from(targets.keys()) }
           }
-    objectsPromise = client.findAll(contact.class.Employee, resultQuery, { sort: { name: SortingOrder.Ascending } })
+    objectsPromise = client.findAll(contact.mixin.Employee, resultQuery, { sort: { name: SortingOrder.Ascending } })
     values = await objectsPromise
     if (targets.has(undefined)) {
       values.unshift(undefined)

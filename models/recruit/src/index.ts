@@ -162,7 +162,7 @@ export class TApplicant extends TTask implements Applicant {
   @Prop(TypeDate(), task.string.StartDate)
     startDate!: Timestamp | null
 
-  @Prop(TypeRef(contact.class.Employee), recruit.string.AssignedRecruiter)
+  @Prop(TypeRef(contact.mixin.Employee), recruit.string.AssignedRecruiter)
   declare assignee: Ref<Employee> | null
 
   @Prop(TypeRef(task.class.State), task.string.TaskState, { _id: task.attribute.State })
@@ -1105,7 +1105,7 @@ export function createModel (builder: Builder): void {
     actionPopup: view.component.ValueSelector,
     actionProps: {
       attribute: 'assignee',
-      _class: contact.class.Employee,
+      _class: contact.mixin.Employee,
       query: {},
       placeholder: recruit.string.AssignRecruiter
     },

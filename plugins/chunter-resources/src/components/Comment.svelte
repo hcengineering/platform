@@ -15,6 +15,7 @@
 <script lang="ts">
   import { getName, Person } from '@hcengineering/contact'
   import { Avatar } from '@hcengineering/contact-resources'
+  import { getClient } from '@hcengineering/presentation'
 
   interface IMessage {
     text: string
@@ -23,12 +24,13 @@
 
   export let user: Person
   export let message: IMessage
+  const client = getClient()
 </script>
 
 <div class="flex-nowrap">
   <div class="avatar"><Avatar size={'medium'} /></div>
   <div class="flex-col-stretch message">
-    <div class="header">{getName(user)}<span>{message.createDate}</span></div>
+    <div class="header">{getName(client.getHierarchy(), user)}<span>{message.createDate}</span></div>
     <div class="text">{message.text}</div>
   </div>
 </div>

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
+import contact, { Employee, PersonAccount } from '@hcengineering/contact'
 import { Account, Class, Doc, Mixin, Ref, Tx } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
 import { Plugin, Resource, plugin } from '@hcengineering/platform'
@@ -28,13 +28,13 @@ export const serverNotificationId = 'server-notification' as Plugin
 /**
  * @public
  */
-export async function getEmployeeAccount (
+export async function getPersonAccount (
   employee: Ref<Employee>,
   control: TriggerControl
-): Promise<EmployeeAccount | undefined> {
+): Promise<PersonAccount | undefined> {
   const account = (
     await control.modelDb.findAll(
-      contact.class.EmployeeAccount,
+      contact.class.PersonAccount,
       {
         employee
       },
@@ -47,15 +47,15 @@ export async function getEmployeeAccount (
 /**
  * @public
  */
-export async function getEmployeeAccountById (
+export async function getPersonAccountById (
   _id: Ref<Account>,
   control: TriggerControl
-): Promise<EmployeeAccount | undefined> {
+): Promise<PersonAccount | undefined> {
   const account = (
     await control.modelDb.findAll(
-      contact.class.EmployeeAccount,
+      contact.class.PersonAccount,
       {
-        _id: _id as Ref<EmployeeAccount>
+        _id: _id as Ref<PersonAccount>
       },
       { limit: 1 }
     )
@@ -69,7 +69,7 @@ export async function getEmployeeAccountById (
 export async function getEmployee (employee: Ref<Employee>, control: TriggerControl): Promise<Employee | undefined> {
   const account = (
     await control.findAll(
-      contact.class.Employee,
+      contact.mixin.Employee,
       {
         _id: employee
       },

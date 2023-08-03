@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee, EmployeeAccount } from '@hcengineering/contact'
+  import { Person, PersonAccount } from '@hcengineering/contact'
   import core, { Account, DocumentQuery, Ref, matchQuery } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
-  import { employeeAccountByIdStore } from '../utils'
+  import { personAccountByIdStore } from '../utils'
   import UserBox from './UserBox.svelte'
   import { getClient } from '@hcengineering/presentation'
 
@@ -33,21 +33,21 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   $: accounts = matchQuery<Account>(
-    Array.from($employeeAccountByIdStore.values()),
+    Array.from($personAccountByIdStore.values()),
     docQuery,
     core.class.Account,
     hierarchy
-  ) as EmployeeAccount[]
+  ) as PersonAccount[]
 
-  let map: Map<Ref<Employee>, Ref<Account>> = new Map()
-  $: map = new Map(accounts.map((p) => [p.employee, p._id]))
+  let map: Map<Ref<Person>, Ref<Account>> = new Map()
+  $: map = new Map(accounts.map((p) => [p.person, p._id]))
 
-  $: employees = accounts.map((p) => p.employee)
-  $: selectedEmp = value && accounts.find((p) => p._id === value)?.employee
+  $: employees = accounts.map((p) => p.person)
+  $: selectedEmp = value && accounts.find((p) => p._id === value)?.person
 
   const dispatch = createEventDispatcher()
 
-  function change (e: CustomEvent<Ref<Employee> | null>) {
+  function change (e: CustomEvent<Ref<Person> | null>) {
     if (e.detail === null) {
       dispatch('change', null)
     } else {
@@ -58,7 +58,7 @@
 </script>
 
 <UserBox
-  _class={contact.class.Employee}
+  _class={contact.mixin.Employee}
   docQuery={{ _id: { $in: employees } }}
   showNavigate={false}
   {kind}

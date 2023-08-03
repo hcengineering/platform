@@ -1,5 +1,5 @@
 <script lang="ts">
-  import contact, { EmployeeAccount } from '@hcengineering/contact'
+  import contact, { PersonAccount } from '@hcengineering/contact'
   import { metricsToRows } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
@@ -55,10 +55,10 @@
 
   const employeeQuery = createQuery()
 
-  let employees: Map<string, EmployeeAccount> = new Map()
+  let employees: Map<string, PersonAccount> = new Map()
 
-  employeeQuery.query(contact.class.EmployeeAccount, {}, (res) => {
-    const emp: Map<string, EmployeeAccount> = new Map()
+  employeeQuery.query(contact.class.PersonAccount, {}, (res) => {
+    const emp: Map<string, PersonAccount> = new Map()
     for (const r of res) {
       emp.set(r.email, r)
     }
@@ -136,8 +136,8 @@
                 <div class="p-1 flex-row-center">
                   {#if employee}
                     <ObjectPresenter
-                      _class={contact.class.Employee}
-                      objectId={employee.employee}
+                      _class={contact.mixin.Employee}
+                      objectId={employee.person}
                       props={{ shouldShowAvatar: true }}
                     />
                   {:else}

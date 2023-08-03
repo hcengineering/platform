@@ -1,5 +1,5 @@
 import { Card } from '@hcengineering/board'
-import { Employee, EmployeeAccount } from '@hcengineering/contact'
+import { Employee, PersonAccount } from '@hcengineering/contact'
 import {
   TxOperations as Client,
   TxResult,
@@ -86,9 +86,9 @@ export function canAddCurrentUser (card: Card): boolean {
   if (card.members == null) {
     return true
   }
-  const employee = (getCurrentAccount() as EmployeeAccount).employee
+  const employee = (getCurrentAccount() as PersonAccount).person
 
-  return !card.members.includes(employee)
+  return !card.members.includes(employee as Ref<Employee>)
 }
 
 export function hasCover (card: Card): boolean {
@@ -100,13 +100,13 @@ export function hasDate (card: Card): boolean {
 }
 
 export function addCurrentUser (card: Card, client: Client): Promise<TxResult> | undefined {
-  const employee = (getCurrentAccount() as EmployeeAccount).employee
+  const employee = (getCurrentAccount() as PersonAccount).person
 
-  if (card.members?.includes(employee) === true) {
+  if (card.members?.includes(employee as Ref<Employee>) === true) {
     return
   }
 
-  return client.update(card, { $push: { members: employee } })
+  return client.update(card, { $push: { members: employee as Ref<Employee> } })
 }
 
 export function archiveCard (card: Card, client: Client): Promise<TxResult> | undefined {

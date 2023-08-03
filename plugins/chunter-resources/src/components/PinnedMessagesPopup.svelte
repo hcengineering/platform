@@ -1,15 +1,17 @@
 <script lang="ts">
   import chunter, { ChunterMessage } from '@hcengineering/chunter'
-  import { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
-  import { Avatar, employeeAccountByIdStore, employeeByIdStore } from '@hcengineering/contact-resources'
+  import { Person, PersonAccount, getName } from '@hcengineering/contact'
+  import { Avatar, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
   import { IdMap, Ref, Space } from '@hcengineering/core'
-  import { MessageViewer, createQuery } from '@hcengineering/presentation'
+  import { MessageViewer, createQuery, getClient } from '@hcengineering/presentation'
   import { IconClose } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { UnpinMessage } from '../index'
   import { getTime } from '../utils'
 
   export let space: Ref<Space>
+
+  const client = getClient()
 
   const pinnedQuery = createQuery()
   let pinnedIds: Ref<ChunterMessage>[] = []
@@ -34,27 +36,28 @@
 
   function getEmployee (
     message: ChunterMessage,
-    employeeAccounts: IdMap<EmployeeAccount>,
-    employees: IdMap<Employee>
-  ): Employee | undefined {
-    const acc = employeeAccounts.get(message.createBy as Ref<EmployeeAccount>)
+    employeeAccounts: IdMap<PersonAccount>,
+    employees: IdMap<Person>
+  ): Person | undefined {
+    const acc = employeeAccounts.get(message.createBy as Ref<PersonAccount>)
     if (acc) {
-      return employees.get(acc.employee)
+      return employees.get(acc.person)
     }
   }
 </script>
 
 <div class="antiPopup vScroll popup">
   {#each pinnedMessages as message}
-    {@const employee = getEmployee(message, $employeeAccountByIdStore, $employeeByIdStore)}
+    {@const employee = getEmployee(message, $personAccountByIdStore, $personByIdStore)}
     <div class="message">
       <div class="header">
         <div class="avatar">
           <Avatar size={'medium'} avatar={employee?.avatar} />
         </div>
         <span class="name">
-          {employee ? getName(employee) : ''}
+          {employee ? getName(client.getHierarchy(), employee) : ''}
         </span>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="cross"
           on:click={async () => {

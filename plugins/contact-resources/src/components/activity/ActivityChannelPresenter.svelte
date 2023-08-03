@@ -16,7 +16,7 @@
   import contact, { Channel, Contact, getName } from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { CircleButton, tooltip } from '@hcengineering/ui'
   import { DocNavLink } from '@hcengineering/view-resources'
   import { channelProviders } from '../../utils'
@@ -27,6 +27,8 @@
   let target: Contact | undefined
   const query = createQuery()
   $: query.query(contact.class.Contact, { _id: value.attachedTo as Ref<Contact> }, (res) => ([target] = res))
+
+  const client = getClient()
 </script>
 
 <div class="flex-row-center" use:tooltip={{ label: getEmbeddedLabel(value.value) }}>
@@ -36,7 +38,7 @@
   {#if target}
     <div class="ml-1">
       <DocNavLink object={target}>
-        {getName(target)}
+        {getName(client.getHierarchy(), target)}
       </DocNavLink>
     </div>
   {/if}

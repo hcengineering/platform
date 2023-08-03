@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Employee } from '@hcengineering/contact'
+import type { Person } from '@hcengineering/contact'
 import {
   AttachedDoc,
   Attribute,
@@ -82,7 +82,7 @@ export interface Task extends AttachedDoc, DocWithRank {
   status: Ref<Status>
   doneState: Ref<DoneState> | null
   number: number
-  assignee: Ref<Employee> | null
+  assignee: Ref<Person> | null
   dueDate: Timestamp | null
   comments?: number
   attachments?: number
@@ -95,7 +95,7 @@ export interface Task extends AttachedDoc, DocWithRank {
  */
 export interface TodoItem extends AttachedDoc, DocWithRank {
   name: Markup
-  assignee: Ref<Employee> | null
+  assignee: Ref<Person> | null
   done: boolean
   dueTo: Timestamp | null
   items?: number

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Contact, getFirstName, getLastName, Person } from '@hcengineering/contact'
+  import contact, { Contact, getFirstName, getLastName, Person } from '@hcengineering/contact'
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
   import type { Asset, IntlString } from '@hcengineering/platform'
   import presentation, { getClient, ObjectCreate, ObjectPopup } from '@hcengineering/presentation'
@@ -25,6 +25,15 @@
   export let options: FindOptions<Contact> | undefined = undefined
   export let selected: Ref<Person> | undefined
   export let docQuery: DocumentQuery<Contact> | undefined = undefined
+
+  const client = getClient()
+
+  export let filter: (it: Doc) => boolean = (it) => {
+    if (client.getHierarchy().hasMixin(it, contact.mixin.Employee)) {
+      return client.getHierarchy().as(it, contact.mixin.Employee).active
+    }
+    return true
+  }
 
   export let multiSelect: boolean = false
   export let allowDeselect: boolean = false
@@ -61,6 +70,7 @@
   {titleDeselect}
   {placeholder}
   {docQuery}
+  {filter}
   groupBy={'_class'}
   bind:selectedObjects={selectedUsers}
   bind:ignoreObjects={ignoreUsers}
