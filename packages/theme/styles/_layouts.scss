@@ -348,7 +348,7 @@ input.search {
 .inline-presenter {
   display: inline-flex;
   align-items: baseline;
-  margin: -.25rem 0;
+  padding: -.25rem 0;
 
   .icon { transform: translateY(.2rem); }
   .icon.circle { transform: translateY(.375rem); }
