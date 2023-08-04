@@ -16,14 +16,8 @@
 <script lang="ts">
   import attachment from '@hcengineering/attachment'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import contact, {
-    Channel,
-    Contact,
-    Employee,
-    EmployeeAccount,
-    getName as getContactName
-  } from '@hcengineering/contact'
-  import { Avatar, employeeAccountByIdStore, employeeByIdStore } from '@hcengineering/contact-resources'
+  import contact, { Channel, Contact, Person, PersonAccount, getName as getContactName } from '@hcengineering/contact'
+  import { Avatar, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
   import { IdMap, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
@@ -138,8 +132,8 @@
     loading = false
   }
 
-  function getName (message: TelegramMessage, accounts: IdMap<EmployeeAccount>): string {
-    return message.incoming ? object.name : accounts.get(message.modifiedBy as Ref<EmployeeAccount>)?.name ?? ''
+  function getName (message: TelegramMessage, accounts: IdMap<PersonAccount>): string {
+    return message.incoming ? object.name : accounts.get(message.modifiedBy as Ref<PersonAccount>)?.name ?? ''
   }
 
   async function share (): Promise<void> {
@@ -151,7 +145,7 @@
       object._class,
       'sharedTelegramMessages',
       {
-        messages: convertMessages(selectedMessages, $employeeAccountByIdStore)
+        messages: convertMessages(selectedMessages, $personAccountByIdStore)
       }
     )
     if (channel !== undefined) {
@@ -166,7 +160,7 @@
     selected = selected
   }
 
-  function convertMessages (messages: TelegramMessage[], accounts: IdMap<EmployeeAccount>): SharedTelegramMessage[] {
+  function convertMessages (messages: TelegramMessage[], accounts: IdMap<PersonAccount>): SharedTelegramMessage[] {
     return messages.map((m) => {
       return {
         ...m,
@@ -197,18 +191,18 @@
 
   function getParticipants (
     messages: TelegramMessage[],
-    accounts: IdMap<EmployeeAccount>,
+    accounts: IdMap<PersonAccount>,
     object: Contact | undefined,
-    employees: IdMap<Employee>
+    employees: IdMap<Person>
   ): Contact[] {
     if (object === undefined || accounts.size === 0) return []
     const res: IdMap<Contact> = new Map()
     res.set(object._id, object)
     const accs = new Set(messages.map((p) => p.modifiedBy))
     for (const acc of accs) {
-      const account = accounts.get(acc as Ref<EmployeeAccount>)
+      const account = accounts.get(acc as Ref<PersonAccount>)
       if (account !== undefined) {
-        const emp = employees.get(account.employee)
+        const emp = employees.get(account.person)
         if (emp !== undefined) {
           res.set(emp._id, emp)
         }
@@ -217,7 +211,7 @@
     return Array.from(res.values())
   }
 
-  $: participants = getParticipants(messages, $employeeAccountByIdStore, object, $employeeByIdStore)
+  $: participants = getParticipants(messages, $personAccountByIdStore, object, $personByIdStore)
 </script>
 
 {#if object !== undefined}
@@ -277,7 +271,7 @@
 
     <Scroller bottomStart autoscroll>
       {#if messages}
-        <Messages messages={convertMessages(messages, $employeeAccountByIdStore)} {selectable} bind:selected />
+        <Messages messages={convertMessages(messages, $personAccountByIdStore)} {selectable} bind:selected />
       {/if}
     </Scroller>
 

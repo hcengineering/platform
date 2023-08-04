@@ -1,5 +1,5 @@
 import { chunterId, ChunterMessage, Comment, ThreadMessage } from '@hcengineering/chunter'
-import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
+import contact, { Employee, PersonAccount, getName } from '@hcengineering/contact'
 import { employeeByIdStore } from '@hcengineering/contact-resources'
 import { Class, Client, Doc, getCurrentAccount, IdMap, Obj, Ref, Space, Timestamp } from '@hcengineering/core'
 import { Asset } from '@hcengineering/platform'
@@ -48,8 +48,8 @@ export function classIcon (client: Client, _class: Ref<Class<Obj>>): Asset | und
 export async function getDmName (client: Client, dm: Space): Promise<string> {
   const myAccId = getCurrentAccount()._id
 
-  let employeeAccounts: EmployeeAccount[] = await client.findAll(contact.class.EmployeeAccount, {
-    _id: { $in: dm.members as Array<Ref<EmployeeAccount>> }
+  let employeeAccounts: PersonAccount[] = await client.findAll(contact.class.PersonAccount, {
+    _id: { $in: dm.members as Array<Ref<PersonAccount>> }
   })
 
   if (dm.members.length > 1) {
@@ -72,9 +72,9 @@ export async function getDmName (client: Client, dm: Space): Promise<string> {
   const names: string[] = []
 
   for (const acc of employeeAccounts) {
-    const employee = map.get(acc.employee)
+    const employee = map.get(acc.person as unknown as Ref<Employee>)
     if (employee !== undefined) {
-      names.push(getName(employee))
+      names.push(getName(client.getHierarchy(), employee))
     }
   }
   const name = names.join(', ')

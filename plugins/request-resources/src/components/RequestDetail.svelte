@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { EmployeeAccount } from '@hcengineering/contact'
-  import { EmployeeAccountRefPresenter } from '@hcengineering/contact-resources'
+  import contact, { PersonAccount } from '@hcengineering/contact'
+  import { PersonAccountRefPresenter } from '@hcengineering/contact-resources'
   import { Account, Ref } from '@hcengineering/core'
   import { createQuery, MessageViewer } from '@hcengineering/presentation'
   import { Request, RequestDecisionComment } from '@hcengineering/request'
@@ -32,7 +32,7 @@
   )
 
   interface RequestDecision {
-    employee: Ref<EmployeeAccount>
+    employee: Ref<PersonAccount>
     decision?: boolean
     comment?: RequestDecisionComment
   }
@@ -65,7 +65,7 @@
   <tbody>
     {#each convert(value, comments) as requested}
       <tr class="antiTable-body__row">
-        <td><EmployeeAccountRefPresenter value={requested.employee} /></td>
+        <td><PersonAccountRefPresenter value={requested.employee} /></td>
         <td><BooleanIcon value={requested.decision} /></td>
         <td
           >{#if requested.comment}

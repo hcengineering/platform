@@ -85,7 +85,7 @@
     showPopup(
       UsersPopup,
       {
-        _class: contact.class.Employee,
+        _class: contact.mixin.Employee,
         selected: employeeValue?._id,
         docQuery: {
           active: true
@@ -110,7 +110,7 @@
     shouldShowName={shouldShowLabel}
     onEmployeeEdit={handleAssigneeEditorOpened}
     tooltipLabels={{
-      personLabel: employeeValue ? getEmbeddedLabel(getName(employeeValue)) : undefined,
+      personLabel: employeeValue ? getEmbeddedLabel(getName(client.getHierarchy(), employeeValue)) : undefined,
       placeholderLabel: placeholderLabel ?? presenter.label
     }}
   />

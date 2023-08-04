@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { EmployeeAccount, getFirstName, getLastName } from '@hcengineering/contact'
+  import contact, { Employee, PersonAccount, getFirstName, getLastName } from '@hcengineering/contact'
   import { ChannelsEditor, EditableAvatar, employeeByIdStore } from '@hcengineering/contact-resources'
-  import { getCurrentAccount } from '@hcengineering/core'
+  import { Ref, getCurrentAccount } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
   import { AttributeEditor, getClient, MessageBox } from '@hcengineering/presentation'
@@ -26,15 +26,15 @@
 
   let avatarEditor: EditableAvatar
 
-  const account = getCurrentAccount() as EmployeeAccount
-  const employee = $employeeByIdStore.get(account.employee)
+  const account = getCurrentAccount() as PersonAccount
+  const employee = account !== undefined ? $employeeByIdStore.get(account.person as Ref<Employee>) : undefined
   let firstName = employee ? getFirstName(employee.name) : ''
   let lastName = employee ? getLastName(employee.name) : ''
   let displayName = employee?.displayName ?? ''
 
   onDestroy(
     employeeByIdStore.subscribe((p) => {
-      const emp = p.get(account.employee)
+      const emp = p.get(account.person as Ref<Employee>)
       if (emp) {
         firstName = getFirstName(emp.name)
         lastName = getLastName(emp.name)
@@ -50,7 +50,7 @@
       await avatarEditor.removeAvatar(employee.avatar)
     }
     const avatar = await avatarEditor.createAvatar()
-    await client.updateDoc(employee._class, employee.space, employee._id, {
+    await client.update(employee, {
       avatar
     })
   }

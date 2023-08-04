@@ -76,7 +76,7 @@ export async function cleanWorkspace (
     if (opt.recruit) {
       const contacts = await ops.findAll(recruit.mixin.Candidate, {})
       console.log('removing Talents', contacts.length)
-      const filter = contacts.filter((it) => !hierarchy.isDerived(it._class, contact.class.Employee))
+      const filter = contacts.filter((it) => !hierarchy.isDerived(it._class, contact.mixin.Employee))
 
       while (filter.length > 0) {
         const part = filter.splice(0, 100)

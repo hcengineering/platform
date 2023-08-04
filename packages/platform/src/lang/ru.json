@@ -16,7 +16,6 @@
     "AccountAlreadyExists": "Аккаунт уже существует",
     "WorkspaceRateLimit": "Сервер перегружен, Пожалуйста подождите",
     "AccountAlreadyConfirmed": "Аккаунт уже подтвержден",
-    "AccountWasMerged": "Аккаунт был объединен",
     "WorkspaceAlreadyExists": "Рабочее пространство уже существует",
     "ProductIdMismatch": "Продукт не соответсвует"
   }

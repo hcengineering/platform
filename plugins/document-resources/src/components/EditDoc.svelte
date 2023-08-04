@@ -16,7 +16,7 @@
 -->
 <script lang="ts">
   import { Attachments } from '@hcengineering/attachment-resources'
-  import { EmployeeAccount } from '@hcengineering/contact'
+  import { Employee, PersonAccount } from '@hcengineering/contact'
   import core, { Class, Doc, generateId, getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
   import {
     CollaboratorDocument,
@@ -85,7 +85,7 @@
     }
   }
 
-  const currentUser = getCurrentAccount() as EmployeeAccount
+  const currentUser = getCurrentAccount() as PersonAccount
 
   onDestroy(async () => {
     notificationClient.then((client) => client.read(_id))
@@ -93,7 +93,7 @@
 
   let requests: DocumentRequest[] = []
 
-  $: myRequests = requests.filter((it) => it.assignee === currentUser.employee)
+  $: myRequests = requests.filter((it) => it.assignee === currentUser.person)
 
   $: approveRequest = myRequests.find((it) => it.kind === DocumentRequestKind.Approve)
   $: allApproveRequest = requests.find((it) => it.kind === DocumentRequestKind.Approve)
@@ -229,7 +229,7 @@
     )
   }
 
-  $: readonly = !documentObject?.authors.includes(currentUser.employee)
+  $: readonly = !documentObject?.authors.includes(currentUser.person as Ref<Employee>)
 
   let autoSelect = true
 

@@ -36,8 +36,8 @@ export default mergeIds(contactId, contact, {
     OrganizationPresenter: '' as AnyComponent,
     Contacts: '' as AnyComponent,
     ContactsTabs: '' as AnyComponent,
-    EmployeeAccountPresenter: '' as AnyComponent,
-    EmployeeAccountRefPresenter: '' as AnyComponent,
+    PersonAccountPresenter: '' as AnyComponent,
+    PersonAccountRefPresenter: '' as AnyComponent,
     OrganizationEditor: '' as AnyComponent,
     EmployeePresenter: '' as AnyComponent,
     EmployeeRefPresenter: '' as AnyComponent,
@@ -52,13 +52,13 @@ export default mergeIds(contactId, contact, {
     CreateEmployee: '' as AnyComponent,
     AccountArrayEditor: '' as AnyComponent,
     ChannelFilter: '' as AnyComponent,
-    MergeEmployee: '' as AnyComponent,
+    MergePersons: '' as AnyComponent,
     ActivityChannelMessage: '' as AnyComponent,
     ChannelPanel: '' as AnyComponent,
     ActivityChannelPresenter: '' as AnyComponent,
     EmployeeFilter: '' as AnyComponent,
     EmployeeFilterValuePresenter: '' as AnyComponent,
-    EmployeeAccountFilterValuePresenter: '' as AnyComponent
+    PersonAccountFilterValuePresenter: '' as AnyComponent
   },
   string: {
     Persons: '' as IntlString,
@@ -114,7 +114,7 @@ export default mergeIds(contactId, contact, {
   action: {
     KickEmployee: '' as Ref<Action>,
     DeleteEmployee: '' as Ref<Action>,
-    MergeEmployee: '' as Ref<Action>
+    MergePersons: '' as Ref<Action>
   },
   actionImpl: {
     KickEmployee: '' as ViewAction,

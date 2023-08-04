@@ -76,6 +76,7 @@
       <svelte:component
         this={editor}
         readonly={isReadonly}
+        disabled="(isReadonly)"
         label={attribute?.label}
         placeholder={attribute?.label}
         {kind}
@@ -101,6 +102,7 @@
         {attributeKey}
         value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
         readonly={isReadonly}
+        disabled="(isReadonly)"
         space={object.space}
         {onChange}
         {focus}

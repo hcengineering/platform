@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
+  import { Person, PersonAccount, getName } from '@hcengineering/contact'
   import core, { IdMap, Ref, Space } from '@hcengineering/core'
   import presentation, { getClient } from '@hcengineering/presentation'
   import { ActionIcon, Button, IconClose, Label } from '@hcengineering/ui'
@@ -11,19 +11,17 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
 
-  const employees: IdMap<Employee> = new Map()
+  const employees: IdMap<Person> = new Map()
 
-  let membersToAdd: EmployeeAccount[] = []
-  let channelMembers: Ref<Employee>[] = []
+  let membersToAdd: PersonAccount[] = []
+  let channelMembers: Ref<Person>[] = []
   client.findAll(core.class.Account, { _id: { $in: value.members } }).then((res) => {
-    channelMembers = res
-      .filter((e) => e._class === contact.class.EmployeeAccount)
-      .map((e) => (e as EmployeeAccount).employee)
+    channelMembers = res.filter((e) => e._class === contact.class.PersonAccount).map((e) => (e as PersonAccount).person)
   })
 
-  async function changeMembersToAdd (employees: Ref<Employee>[]) {
+  async function changeMembersToAdd (employees: Ref<Person>[]) {
     if (employees) {
-      await client.findAll(contact.class.EmployeeAccount, { employee: { $in: employees } }).then((res) => {
+      await client.findAll(contact.class.PersonAccount, { person: { $in: employees } }).then((res) => {
         if (res) {
           membersToAdd = res
         }
@@ -31,9 +29,9 @@
     }
   }
 
-  $: selectedEmployees = membersToAdd.map((e) => e.employee)
+  $: selectedEmployees = membersToAdd.map((e) => e.person)
 
-  function removeMember (_id: Ref<EmployeeAccount>) {
+  function removeMember (_id: Ref<PersonAccount>) {
     membersToAdd = membersToAdd.filter((m) => m._id !== _id)
   }
 </script>
@@ -56,9 +54,9 @@
   {#if membersToAdd.length}
     <div class="flex-row-top flex-wrap ml-6 mr-6 mt-4">
       {#each membersToAdd as m}
-        {@const employee = employees.get(m.employee)}
+        {@const employee = employees.get(m.person)}
         <div class="mr-2 p-1 item">
-          {employee ? getName(employee) : ''}
+          {employee ? getName(client.getHierarchy(), employee) : ''}
           <div class="tool">
             <ActionIcon
               icon={IconClose}
@@ -75,7 +73,7 @@
   <div class="ml-8 mr-8 mb-6 mt-4">
     <UsersPopup
       selected={undefined}
-      _class={contact.class.Employee}
+      _class={contact.mixin.Employee}
       docQuery={{
         active: true
       }}

@@ -179,7 +179,7 @@
       />
       <div class="flex-grow flex-col">
         <Label label={plugin.string.NewMessage} />
-        <span class="content-color"><b>{getName(object)} ({channel.value})</b></span>
+        <span class="content-color"><b>{getName(client.getHierarchy(), object)} ({channel.value})</b></span>
       </div>
     </div>
     <div class="buttons-group small-gap">

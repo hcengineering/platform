@@ -36,7 +36,12 @@
 
   $: client
     .findAll(view.class.Viewlet, {
-      attachTo: { $in: client.getHierarchy().getDescendants(viewlet.attachTo) },
+      attachTo: {
+        $in: client
+          .getHierarchy()
+          .getDescendants(viewlet.attachTo)
+          .filter((it) => !client.getHierarchy().isMixin(it) || it === viewlet.attachTo)
+      },
       variant: viewlet.variant ? viewlet.variant : { $exists: false },
       descriptor: viewlet.descriptor
     })

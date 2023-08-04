@@ -17,22 +17,22 @@
   import { AccountRole, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import view from '@hcengineering/view-resources/src/plugin'
   import { createEventDispatcher } from 'svelte'
-  import { EmployeeAccount } from '@hcengineering/contact'
-  import { employeeAccountByIdStore } from '../utils'
+  import { PersonAccount } from '@hcengineering/contact'
+  import { personAccountByIdStore } from '../utils'
   import ui, { Button, Label } from '@hcengineering/ui'
-  import EmployeeAccountRefPresenter from './EmployeeAccountRefPresenter.svelte'
-  import EmployeeAccountPresenter from './EmployeeAccountPresenter.svelte'
+  import PersonAccountRefPresenter from './PersonAccountRefPresenter.svelte'
+  import PersonAccountPresenter from './PersonAccountPresenter.svelte'
 
   export let object: Doc | Doc[]
   export let deleteAction: () => void
   const objectArray = Array.isArray(object) ? object : [object]
-  const owners: EmployeeAccount[] = Array.from($employeeAccountByIdStore.values()).filter(
+  const owners: PersonAccount[] = Array.from($personAccountByIdStore.values()).filter(
     (acc) => acc.role === AccountRole.Owner
   )
   const dispatch = createEventDispatcher()
-  $: creators = [...new Set(objectArray.map((obj) => obj.createdBy as Ref<EmployeeAccount>))]
+  $: creators = [...new Set(objectArray.map((obj) => obj.createdBy as Ref<PersonAccount>))]
   $: canDelete =
-    (creators.length === 1 && creators.includes(getCurrentAccount()._id as Ref<EmployeeAccount>)) ||
+    (creators.length === 1 && creators.includes(getCurrentAccount()._id as Ref<PersonAccount>)) ||
     getCurrentAccount().role === AccountRole.Owner
   $: label = canDelete ? view.string.DeleteObject : view.string.DeletePopupNoPermissionTitle
 </script>
@@ -62,7 +62,7 @@
         <Label label={view.string.DeletePopupCreatorLabel} />
         {#each creators as account}
           <div class="my-2">
-            <EmployeeAccountRefPresenter value={account} />
+            <PersonAccountRefPresenter value={account} />
           </div>
         {/each}
       </div>
@@ -70,7 +70,7 @@
         <Label label={view.string.DeletePopupOwnerLabel} />
         {#each owners as owner}
           <div class="my-2">
-            <EmployeeAccountPresenter value={owner} />
+            <PersonAccountPresenter value={owner} />
           </div>
         {/each}
       </div>

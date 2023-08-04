@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact, { Employee } from '@hcengineering/contact'
-  import type { Class, DocumentQuery, IdMap, Ref } from '@hcengineering/core'
+  import type { Class, Doc, DocumentQuery, IdMap, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import { Label, showPopup, ActionIcon, IconClose, IconAdd, Icon } from '@hcengineering/ui'
   import type { IconSize } from '@hcengineering/ui'
@@ -23,13 +23,12 @@
   import { employeeByIdStore } from '../utils'
   import UserInfo from './UserInfo.svelte'
   import UsersPopup from './UsersPopup.svelte'
+  import { getClient } from '@hcengineering/presentation'
 
   export let items: Ref<Employee>[] = []
   export let readonlyItems: Ref<Employee>[] = []
-  export let _class: Ref<Class<Employee>> = contact.class.Employee
-  export let docQuery: DocumentQuery<Employee> | undefined = {
-    active: true
-  }
+  export let _class: Ref<Class<Employee>> = contact.mixin.Employee
+  export let docQuery: DocumentQuery<Employee> | undefined = {}
 
   export let label: IntlString | undefined = undefined
   export let actionLabel: IntlString = plugin.string.AddMember
@@ -41,6 +40,8 @@
   $: persons = getPersons(items, $employeeByIdStore)
   let readonlyPersons: Employee[] = getPersons(readonlyItems, $employeeByIdStore)
   $: readonlyPersons = getPersons(readonlyItems, $employeeByIdStore)
+
+  const client = getClient()
 
   const dispatch = createEventDispatcher()
 
@@ -55,7 +56,13 @@
         allowDeselect: false,
         selectedUsers: items,
         ignoreUsers: readonlyItems,
-        readonly
+        readonly,
+        filter: (it: Doc) => {
+          if (client.getHierarchy().hasMixin(it, contact.mixin.Employee)) {
+            return client.getHierarchy().as(it, contact.mixin.Employee).active
+          }
+          return true
+        }
       },
       evt.target as HTMLElement,
       undefined,

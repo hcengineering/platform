@@ -38,7 +38,7 @@
       </div>
       <div class="flex-col">
         <div class="member-title fs-title">
-          {getName(value)}
+          {getName(client.getHierarchy(), value)}
         </div>
         {#await getDepartment(value) then department}
           {#if department}

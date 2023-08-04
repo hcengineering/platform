@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import chunter from '@hcengineering/chunter'
-  import { EmployeeAccount } from '@hcengineering/contact'
+  import { PersonAccount } from '@hcengineering/contact'
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { DocUpdates } from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
@@ -48,7 +48,7 @@
   let component: AnyComponent | undefined
   let _id: Ref<Doc> | undefined
   let _class: Ref<Class<Doc>> | undefined
-  let selectedEmployee: Ref<EmployeeAccount> | undefined = undefined
+  let selectedEmployee: Ref<PersonAccount> | undefined = undefined
   let prevValue: DocUpdates | undefined = undefined
 
   async function select (value: DocUpdates | undefined) {

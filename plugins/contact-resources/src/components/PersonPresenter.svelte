@@ -18,6 +18,7 @@
   import type { LabelAndProps, IconSize } from '@hcengineering/ui'
   import { PersonLabelTooltip } from '..'
   import PersonContent from './PersonContent.svelte'
+  import { getClient } from '@hcengineering/presentation'
 
   export let value: Person | null | undefined
   export let inline = false
@@ -36,6 +37,8 @@
   export let accent: boolean = false
   export let maxWidth = ''
 
+  const client = getClient()
+
   function getTooltip (
     tooltipLabels: PersonLabelTooltip | undefined,
     value: Person | null | undefined
@@ -44,7 +47,7 @@
       return !value
         ? undefined
         : {
-            label: getEmbeddedLabel(getName(value))
+            label: getEmbeddedLabel(getName(client.getHierarchy(), value))
           }
     }
     const direction = tooltipLabels?.direction
@@ -52,11 +55,15 @@
     const label = value
       ? tooltipLabels.personLabel
         ? tooltipLabels.personLabel
-        : getEmbeddedLabel(getName(value))
+        : getEmbeddedLabel(getName(client.getHierarchy(), value))
       : tooltipLabels.placeholderLabel
         ? tooltipLabels.placeholderLabel
         : undefined
-    const props = tooltipLabels.props ? tooltipLabels.props : value ? { value: getName(value) } : undefined
+    const props = tooltipLabels.props
+      ? tooltipLabels.props
+      : value
+        ? { value: getName(client.getHierarchy(), value) }
+        : undefined
     return {
       component,
       label,

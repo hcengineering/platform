@@ -176,7 +176,7 @@ export async function getAppTitle (client: Client, ref: Ref<Applicant>): Promise
   if (applicant === undefined) return ''
   const candidate = await client.findOne(contact.class.Contact, { _id: applicant.attachedTo })
   if (candidate === undefined) return ''
-  return getName(candidate)
+  return getName(client.getHierarchy(), candidate)
 }
 
 export async function getRevTitle (client: Client, ref: Ref<Review>): Promise<string> {

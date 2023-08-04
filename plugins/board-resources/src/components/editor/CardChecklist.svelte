@@ -16,20 +16,20 @@
   import { Employee } from '@hcengineering/contact'
   import { EmployeeBox } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
-  import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
+  import { MessageBox, createQuery, getClient } from '@hcengineering/presentation'
   import type { TodoItem } from '@hcengineering/task'
   import task, { calcRank } from '@hcengineering/task'
   import {
     Button,
     CheckBox,
     DateRangePresenter,
-    getEventPopupPositionElement,
     IconAdd,
     IconDelete,
     IconMoreH,
     Progress,
-    showPopup,
-    TextAreaEditor
+    TextAreaEditor,
+    getEventPopupPositionElement,
+    showPopup
   } from '@hcengineering/ui'
   import { ContextMenu, HTMLPresenter } from '@hcengineering/view-resources'
 

@@ -30,7 +30,7 @@ export async function addMember (client: TxOperations, employee?: Employee, valu
           MessageBox,
           {
             label: hr.string.MoveStaff,
-            labelProps: { name: getName(employee) },
+            labelProps: { name: getName(client.getHierarchy(), employee) },
             message: hr.string.MoveStaffDescr,
             params: {
               current: current.name,

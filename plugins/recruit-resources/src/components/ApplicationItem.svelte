@@ -39,6 +39,6 @@
     {#if shortLabel}{shortLabel}-{/if}{value.number}
   </span>
   {#if person}
-    <span class="ml-1">{getName(person)}</span>
+    <span class="ml-1">{getName(client.getHierarchy(), person)}</span>
   {/if}
 </div>

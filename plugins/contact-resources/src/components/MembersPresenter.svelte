@@ -61,7 +61,7 @@
     showPopup(
       UsersPopup,
       {
-        _class: contact.class.Employee,
+        _class: contact.mixin.Employee,
         selectedUsers: members,
         allowDeselect: true,
         multiSelect: true,

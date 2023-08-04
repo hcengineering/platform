@@ -24,8 +24,8 @@
   import activity from '@hcengineering/activity-resources/src/plugin'
   import attachment from '@hcengineering/attachment'
   import chunter from '@hcengineering/chunter'
-  import { Employee, EmployeeAccount } from '@hcengineering/contact'
-  import { Avatar, employeeAccountByIdStore, employeeByIdStore } from '@hcengineering/contact-resources'
+  import { Person, PersonAccount } from '@hcengineering/contact'
+  import { Avatar, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
   import core, { AnyAttribute, Class, Doc, Ref, TxCUD } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
@@ -42,8 +42,8 @@
   let viewlet: TxDisplayViewlet | undefined
   let props: any
 
-  let account: EmployeeAccount | undefined
-  let employee: Employee | undefined
+  let account: PersonAccount | undefined
+  let employee: Person | undefined
   let model: AttributeModel[] = []
   let iconComponent: AnyComponent | undefined = undefined
   let modelIcon: Asset | undefined = undefined
@@ -74,8 +74,8 @@
       }
     })
 
-  $: account = $employeeAccountByIdStore.get(tx.modifiedBy as Ref<EmployeeAccount>)
-  $: employee = account ? $employeeByIdStore.get(account?.employee) : undefined
+  $: account = $personAccountByIdStore.get(tx.modifiedBy as Ref<PersonAccount>)
+  $: employee = account ? $personByIdStore.get(account?.person) : undefined
 
   function isMessageType (attr?: AnyAttribute): boolean {
     return attr?.type._class === core.class.TypeMarkup

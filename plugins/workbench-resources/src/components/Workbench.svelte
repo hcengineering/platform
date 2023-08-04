@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
+  import contact, { Employee, PersonAccount } from '@hcengineering/contact'
   import core, { Class, Doc, Ref, Space, getCurrentAccount, setCurrentAccount } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import notification, { notificationId } from '@hcengineering/notification'
@@ -127,12 +127,12 @@
     })
   })
 
-  const accountId = (getCurrentAccount() as EmployeeAccount)._id
+  const accountId = (getCurrentAccount() as PersonAccount)._id
 
-  let account: EmployeeAccount | undefined
+  let account: PersonAccount | undefined
   const accountQ = createQuery()
   accountQ.query(
-    contact.class.EmployeeAccount,
+    contact.class.PersonAccount,
     {
       _id: accountId
     },
@@ -149,9 +149,9 @@
   const employeeQ = createQuery()
 
   $: employeeQ.query(
-    contact.class.Employee,
+    contact.mixin.Employee,
     {
-      _id: account?.employee
+      _id: account?.person as Ref<Employee>
     },
     (res) => {
       employee = res[0]

@@ -1,4 +1,4 @@
-import contact, { EmployeeAccount, getFirstName, getLastName } from '@hcengineering/contact'
+import contact, { Employee, PersonAccount, getFirstName, getLastName } from '@hcengineering/contact'
 import { employeeByIdStore } from '@hcengineering/contact-resources'
 import { Class, Doc, Hierarchy, Ref } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
@@ -61,11 +61,11 @@ export async function getOwnerFirstName (provider: TemplateDataProvider): Promis
   const value = provider.get(setting.class.Integration)
   if (value === undefined) return
   const client = getClient()
-  const employeeAccount = await client.findOne(contact.class.EmployeeAccount, {
-    _id: value.modifiedBy as Ref<EmployeeAccount>
+  const employeeAccount = await client.findOne(contact.class.PersonAccount, {
+    _id: value.modifiedBy as Ref<PersonAccount>
   })
   if (employeeAccount !== undefined) {
-    const employee = get(employeeByIdStore).get(employeeAccount.employee)
+    const employee = get(employeeByIdStore).get(employeeAccount.person as Ref<Employee>)
     return employee != null ? getFirstName(employee.name) : undefined
   }
 }
@@ -74,11 +74,11 @@ export async function getOwnerLastName (provider: TemplateDataProvider): Promise
   const value = provider.get(setting.class.Integration)
   if (value === undefined) return
   const client = getClient()
-  const employeeAccount = await client.findOne(contact.class.EmployeeAccount, {
-    _id: value.modifiedBy as Ref<EmployeeAccount>
+  const employeeAccount = await client.findOne(contact.class.PersonAccount, {
+    _id: value.modifiedBy as Ref<PersonAccount>
   })
   if (employeeAccount !== undefined) {
-    const employee = get(employeeByIdStore).get(employeeAccount.employee)
+    const employee = get(employeeByIdStore).get(employeeAccount.person as Ref<Employee>)
     return employee != null ? getLastName(employee.name) : undefined
   }
 }
@@ -87,11 +87,14 @@ export async function getOwnerPosition (provider: TemplateDataProvider): Promise
   const value = provider.get(setting.class.Integration)
   if (value === undefined) return
   const client = getClient()
-  const employeeAccount = await client.findOne(contact.class.EmployeeAccount, {
-    _id: value.modifiedBy as Ref<EmployeeAccount>
+  const employeeAccount = await client.findOne(contact.class.PersonAccount, {
+    _id: value.modifiedBy as Ref<PersonAccount>
   })
   if (employeeAccount !== undefined) {
-    const employee = get(employeeByIdStore).get(employeeAccount.employee)
-    return employee != null ? employee.position ?? '' : undefined
+    const employee = get(employeeByIdStore).get(employeeAccount.person as Ref<Employee>)
+    if (employee != null && client.getHierarchy().hasMixin(employee, contact.mixin.Employee)) {
+      return client.getHierarchy().as(employee, contact.mixin.Employee)?.position ?? undefined
+    }
+    return undefined
   }
 }

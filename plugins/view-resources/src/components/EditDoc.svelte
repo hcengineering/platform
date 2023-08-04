@@ -225,7 +225,7 @@
     const name = (object as any).name
     if (name !== undefined) {
       if (hierarchy.isDerived(object._class, contact.class.Person)) {
-        return getName(object as Contact)
+        return getName(client.getHierarchy(), object as Contact)
       }
       return name
     }

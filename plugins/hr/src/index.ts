@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Contact, Employee, EmployeeAccount } from '@hcengineering/contact'
+import type { Contact, Employee, PersonAccount } from '@hcengineering/contact'
 import type { Arr, AttachedDoc, Class, Doc, Markup, Mixin, Ref, Space, Type } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -38,7 +38,7 @@ export interface Department extends Space {
 /**
  * @public
  */
-export interface DepartmentMember extends EmployeeAccount {}
+export interface DepartmentMember extends PersonAccount {}
 
 /**
  * @public

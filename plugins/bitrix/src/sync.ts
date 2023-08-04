@@ -1,6 +1,6 @@
 import attachment, { Attachment } from '@hcengineering/attachment'
 import chunter, { Comment } from '@hcengineering/chunter'
-import contact, { Channel, combineName, Contact, EmployeeAccount } from '@hcengineering/contact'
+import contact, { Channel, combineName, Contact, Employee, PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
   AccountRole,
@@ -489,8 +489,8 @@ interface SyncOptionsExtra {
   ownerTypeValues: BitrixOwnerType[]
   commentFieldKeys: string[]
   allMappings: FindResult<BitrixEntityMapping>
-  allEmployee: FindResult<EmployeeAccount>
-  userList: Map<string, Ref<EmployeeAccount>>
+  allEmployee: FindResult<PersonAccount>
+  userList: Map<string, Ref<PersonAccount>>
 }
 
 /**
@@ -505,7 +505,7 @@ export async function performSynchronization (ops: SyncOptions): Promise<BitrixS
 
   const commentFieldKeys = Object.keys(commentFields.result)
 
-  const allEmployee = await ops.client.findAll(contact.class.EmployeeAccount, {})
+  const allEmployee = await ops.client.findAll(contact.class.PersonAccount, {})
 
   const allMappings = await ops.client.findAll<BitrixEntityMapping>(
     bitrix.class.EntityMapping,
@@ -519,7 +519,7 @@ export async function performSynchronization (ops: SyncOptions): Promise<BitrixS
     }
   )
 
-  const userList = new Map<string, Ref<EmployeeAccount>>()
+  const userList = new Map<string, Ref<PersonAccount>>()
 
   // Fill all users and create new ones, if required.
   await synchronizeUsers(userList, ops, allEmployee)
@@ -764,7 +764,7 @@ async function downloadComments (
     syncEmails?: boolean
   },
   commentFieldKeys: string[],
-  userList: Map<string, Ref<EmployeeAccount>>,
+  userList: Map<string, Ref<PersonAccount>>,
   ownerTypeValues: BitrixOwnerType[]
 ): Promise<void> {
   const entityType = ops.mapping.type.replace('crm.', '')
@@ -887,7 +887,7 @@ async function downloadComments (
 }
 
 async function synchronizeUsers (
-  userList: Map<string, Ref<EmployeeAccount>>,
+  userList: Map<string, Ref<PersonAccount>>,
   ops: {
     client: TxOperations
     bitrixClient: BitrixClient
@@ -900,13 +900,13 @@ async function synchronizeUsers (
     monitor: (total: number) => void
     blobProvider?: ((blobRef: { file: string, id: string }) => Promise<Blob | undefined>) | undefined
   },
-  allEmployee: FindResult<EmployeeAccount>
+  allEmployee: FindResult<PersonAccount>
 ): Promise<void> {
   let totalUsers = 1
   let next = 0
 
   const employeesList = await ops.client.findAll(
-    contact.class.Employee,
+    contact.mixin.Employee,
     {},
     {
       lookup: {
@@ -929,23 +929,25 @@ async function synchronizeUsers (
         // Try to find from employee
         employeesList.forEach((it) => {
           if ((it.$lookup?.channels as Channel[])?.some((q) => q.value === u.EMAIL)) {
-            account = allEmployee.find((qit) => qit.employee === it._id)
+            account = allEmployee.find((qit) => qit.person === it._id)
           }
         })
       }
 
       let accountId = account?._id
       if (accountId === undefined) {
-        const employeeId = await ops.client.createDoc(contact.class.Employee, contact.space.Contacts, {
+        const employeeId = await ops.client.createDoc(contact.class.Person, contact.space.Contacts, {
           name: combineName(u.NAME, u.LAST_NAME),
           avatar: u.PERSONAL_PHOTO,
-          active: u.ACTIVE,
           city: u.PERSONAL_CITY
         })
-        accountId = await ops.client.createDoc(contact.class.EmployeeAccount, core.space.Model, {
+        await ops.client.createMixin(employeeId, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
+          active: u.ACTIVE
+        })
+        accountId = await ops.client.createDoc(contact.class.PersonAccount, core.space.Model, {
           email: u.EMAIL,
           name: combineName(u.NAME, u.LAST_NAME),
-          employee: employeeId,
+          person: employeeId,
           role: AccountRole.User
         })
         if (u.EMAIL !== undefined && u.EMAIL !== null) {
@@ -953,7 +955,7 @@ async function synchronizeUsers (
             contact.class.Channel,
             contact.space.Contacts,
             employeeId,
-            contact.class.Employee,
+            contact.mixin.Employee,
             'channels',
             {
               provider: contact.channelProvider.Email,
@@ -963,7 +965,7 @@ async function synchronizeUsers (
         }
         await ops.client.createMixin<Doc, BitrixSyncDoc>(
           employeeId,
-          contact.class.Employee,
+          contact.mixin.Employee,
           contact.space.Contacts,
           bitrix.mixin.BitrixSyncDoc,
           {
@@ -973,7 +975,7 @@ async function synchronizeUsers (
           }
         )
       } else if (account != null) {
-        const emp = employees.get(account.employee)
+        const emp = employees.get(account.person as unknown as Ref<Employee>)
         if (emp !== undefined && !ops.client.getHierarchy().hasMixin(emp, bitrix.mixin.BitrixSyncDoc)) {
           await ops.client.createMixin<Doc, BitrixSyncDoc>(emp._id, emp._class, emp.space, bitrix.mixin.BitrixSyncDoc, {
             type: 'employee',

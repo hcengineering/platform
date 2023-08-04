@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Calendar, Event, getAllEvents } from '@hcengineering/calendar'
-  import { EmployeeAccount } from '@hcengineering/contact'
+  import { PersonAccount } from '@hcengineering/contact'
   import {
     Class,
     Doc,
@@ -58,7 +58,7 @@
     CalendarMode.Year
   ]
 
-  const me = getCurrentAccount() as EmployeeAccount
+  const me = getCurrentAccount() as PersonAccount
 
   const mondayStart = true
   let mode: CalendarMode = allowedModes.includes(CalendarMode.Days) ? CalendarMode.Days : allowedModes[0]

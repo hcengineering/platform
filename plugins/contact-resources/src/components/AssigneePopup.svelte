@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Contact, Employee, EmployeeAccount, Person } from '@hcengineering/contact'
+  import contact, { Contact, PersonAccount, Person, Employee } from '@hcengineering/contact'
   import { DocumentQuery, FindOptions, getCurrentAccount, Ref } from '@hcengineering/core'
   import type { Asset, IntlString } from '@hcengineering/platform'
   import {
@@ -52,9 +52,7 @@
   export let showCategories: boolean = true
   export let icon: Asset | AnySvelteComponent | undefined = undefined
 
-  // const client = getClient()
-  // const hierarchy = client.getHierarchy()
-  const currentEmployee = (getCurrentAccount() as EmployeeAccount).employee
+  const currentEmployee = (getCurrentAccount() as PersonAccount).person
 
   let search: string = ''
   let objects: Contact[] = []
@@ -66,7 +64,7 @@
   const query = createQuery()
 
   $: query.query<Contact>(
-    contact.class.Employee,
+    contact.mixin.Employee,
     {
       ...(docQuery ?? {}),
       [searchField]: { $like: '%' + search + '%' },

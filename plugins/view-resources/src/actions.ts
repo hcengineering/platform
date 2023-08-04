@@ -151,6 +151,14 @@ export function filterActions (
       ignore.push(...ignoreActions.actions)
     }
   }
+  for (const cl of hierarchy.getDescendants(clazz._id)) {
+    if (hierarchy.isMixin(cl) && hierarchy.hasMixin(doc, cl)) {
+      const ignoreActions = hierarchy.as(hierarchy.getClassOrInterface(cl), view.mixin.IgnoreActions)
+      if (ignoreActions?.actions !== undefined) {
+        ignore.push(...ignoreActions.actions)
+      }
+    }
+  }
   const overrideRemove: Array<Ref<Action>> = []
   for (const action of actions) {
     if (ignore.includes(action._id)) {
@@ -167,9 +175,16 @@ export function filterActions (
         overrideRemove.push(...action.override)
       }
       if (action.query !== undefined) {
-        const r = matchQuery([doc], action.query, doc._class, hierarchy)
-        if (r.length === 0) {
-          continue
+        if (hierarchy.isMixin(action.target)) {
+          const r = matchQuery([hierarchy.as(doc, action.target)], action.query, action.target, hierarchy)
+          if (r.length === 0) {
+            continue
+          }
+        } else {
+          const r = matchQuery([doc], action.query, doc._class, hierarchy)
+          if (r.length === 0) {
+            continue
+          }
         }
       }
       result.push(action)

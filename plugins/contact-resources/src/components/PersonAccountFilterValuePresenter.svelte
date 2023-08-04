@@ -13,17 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee, EmployeeAccount } from '@hcengineering/contact'
+  import { Employee, PersonAccount } from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
   import contact from '../plugin'
-  import { employeeAccountByIdStore } from '../utils'
+  import { personAccountByIdStore } from '../utils'
   import CombineAvatars from './CombineAvatars.svelte'
 
-  export let value: Ref<EmployeeAccount>[]
+  export let value: Ref<PersonAccount>[]
 
   $: employees = value
-    .map((p) => $employeeAccountByIdStore.get(p)?.employee)
+    .map((p) => $personAccountByIdStore.get(p)?.person)
     .filter((p) => p !== undefined) as Ref<Employee>[]
 </script>
 
-<CombineAvatars _class={contact.class.Employee} items={employees} limit={5} size={'x-small'} />
+<CombineAvatars _class={contact.mixin.Employee} items={employees} limit={5} size={'x-small'} />

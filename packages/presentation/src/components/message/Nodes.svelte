@@ -48,6 +48,12 @@
       }
     } catch {}
   }
+  function correctClass (clName: string): string {
+    if (clName === 'contact:class:Employee') {
+      return 'contact:mixin:Employee'
+    }
+    return clName
+  }
 </script>
 
 {#if nodes}
@@ -121,7 +127,7 @@
             props={{
               objectId: node.getAttribute('data-id'),
               title: node.getAttribute('data-label'),
-              _class: node.getAttribute('data-objectclass'),
+              _class: correctClass(node.getAttribute('data-objectclass')),
               inline: true
             }}
           />

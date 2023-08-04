@@ -43,7 +43,7 @@
       </span>
     </div>
     <span class="overflow-label mt-10px">
-      {candidate ? getName(candidate) : ''}
+      {candidate ? getName(client.getHierarchy(), candidate) : ''}
     </span>
   </div>
 {/if}

@@ -19,7 +19,8 @@ import contact, {
   checkHasGravatar,
   combineName,
   Employee,
-  getAvatarColorForId
+  getAvatarColorForId,
+  Person
 } from '@hcengineering/contact'
 import core, {
   AccountRole,
@@ -774,7 +775,7 @@ export async function setRole (email: string, workspace: string, productId: stri
   try {
     const ops = new TxOperations(connection, core.account.System)
 
-    const existingAccount = await ops.findOne(contact.class.EmployeeAccount, { email })
+    const existingAccount = await ops.findOne(contact.class.PersonAccount, { email })
 
     if (existingAccount !== undefined) {
       const value = isNaN(Number(role)) ? 0 : Number(role)
@@ -798,7 +799,7 @@ export async function assignWorkspace (db: Db, productId: string, email: string,
   const { workspaceId, accountId } = await getWorkspaceAndAccount(db, productId, email, workspace)
   const account = await db.collection<Account>(ACCOUNT_COLLECTION).findOne({ _id: accountId })
 
-  if (account !== null) await createEmployeeAccount(account, productId, workspace)
+  if (account !== null) await createPersonAccount(account, productId, workspace)
 
   // Add account into workspace.
   await db.collection(WORKSPACE_COLLECTION).updateOne({ _id: workspaceId }, { $addToSet: { accounts: accountId } })
@@ -807,22 +808,24 @@ export async function assignWorkspace (db: Db, productId: string, email: string,
   await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: accountId }, { $addToSet: { workspaces: workspaceId } })
 }
 
-async function createEmployee (ops: TxOperations, name: string, email: string): Promise<Ref<Employee>> {
+async function createEmployee (ops: TxOperations, name: string, email: string): Promise<Ref<Person>> {
   const gravatarId = buildGravatarId(email)
   const hasGravatar = await checkHasGravatar(gravatarId)
 
-  const id = await ops.createDoc(contact.class.Employee, contact.space.Employee, {
+  const id = await ops.createDoc(contact.class.Person, contact.space.Employee, {
     name,
     city: '',
-    ...(hasGravatar ? { avatar: `${AvatarType.GRAVATAR}://${gravatarId}` } : {}),
+    ...(hasGravatar ? { avatar: `${AvatarType.GRAVATAR}://${gravatarId}` } : {})
+  })
+  await ops.createMixin(id, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
     active: true
   })
   if (!hasGravatar) {
-    await ops.updateDoc(contact.class.Employee, contact.space.Employee, id, {
+    await ops.updateDoc(contact.mixin.Employee, contact.space.Employee, id, {
       avatar: `${AvatarType.COLOR}://${getAvatarColorForId(id)}`
     })
   }
-  await ops.addCollection(contact.class.Channel, contact.space.Contacts, id, contact.class.Employee, 'channels', {
+  await ops.addCollection(contact.class.Channel, contact.space.Contacts, id, contact.mixin.Employee, 'channels', {
     provider: contact.channelProvider.Email,
     value: email.trim()
   })
@@ -830,38 +833,33 @@ async function createEmployee (ops: TxOperations, name: string, email: string): 
   return id
 }
 
-async function createEmployeeAccount (account: Account, productId: string, workspace: string): Promise<void> {
+async function createPersonAccount (account: Account, productId: string, workspace: string): Promise<void> {
   const connection = await connect(getTransactor(), getWorkspaceId(workspace, productId))
   try {
     const ops = new TxOperations(connection, core.account.System)
 
     const name = combineName(account.first, account.last)
     // Check if EmployeeAccoun is not exists
-    const existingAccount = await ops.findOne(contact.class.EmployeeAccount, { email: account.email })
+    const existingAccount = await ops.findOne(contact.class.PersonAccount, { email: account.email })
     if (existingAccount === undefined) {
       const employee = await createEmployee(ops, name, account.email)
 
-      await ops.createDoc(contact.class.EmployeeAccount, core.space.Model, {
+      await ops.createDoc(contact.class.PersonAccount, core.space.Model, {
         email: account.email,
-        employee,
+        person: employee,
         name,
         role: 0
       })
     } else {
-      const employee = await ops.findOne(contact.class.Employee, { _id: existingAccount.employee })
+      const employee = await ops.findOne(contact.mixin.Employee, { _id: existingAccount.person as Ref<Employee> })
       if (employee === undefined) {
         // Employee was deleted, let's restore it.
         const employeeId = await createEmployee(ops, name, account.email)
 
-        await ops.updateDoc(contact.class.EmployeeAccount, existingAccount.space, existingAccount._id, {
-          employee: employeeId
+        await ops.updateDoc(contact.class.PersonAccount, existingAccount.space, existingAccount._id, {
+          person: employeeId
         })
       } else if (!employee.active) {
-        if (employee.mergedTo !== undefined) {
-          throw new PlatformError(
-            new Status(Severity.ERROR, platform.status.AccountWasMerged, { account: account.email })
-          )
-        }
         await ops.update(employee, {
           active: true
         })
@@ -998,26 +996,26 @@ export async function changeName (db: Db, productId: string, token: string, firs
 
   const promises: Promise<void>[] = []
   for (const ws of workspaces) {
-    promises.push(updateEmployeeAccount(account, ws.workspace, ws.productId))
+    promises.push(updatePersonAccount(account, ws.workspace, ws.productId))
   }
   await Promise.all(promises)
 }
 
-async function updateEmployeeAccount (account: Account, workspace: string, productId: string): Promise<void> {
+async function updatePersonAccount (account: Account, workspace: string, productId: string): Promise<void> {
   const connection = await connect(getTransactor(), getWorkspaceId(workspace, productId), account.email)
   try {
     const ops = new TxOperations(connection, core.account.System)
 
     const name = combineName(account.first, account.last)
 
-    const employeeAccount = await ops.findOne(contact.class.EmployeeAccount, { email: account.email })
+    const employeeAccount = await ops.findOne(contact.class.PersonAccount, { email: account.email })
     if (employeeAccount === undefined) return
 
     await ops.update(employeeAccount, {
       name
     })
 
-    const employee = await ops.findOne(contact.class.Employee, { _id: employeeAccount.employee })
+    const employee = await ops.findOne(contact.mixin.Employee, { _id: employeeAccount.person as Ref<Employee> })
     if (employee === undefined) return
 
     await ops.update(employee, {
@@ -1086,7 +1084,7 @@ export async function dropAccount (db: Db, productId: string, email: string): Pr
 
   await Promise.all(
     workspaces.map(async (ws) => {
-      return await deactivateEmployeeAccount(account.email, ws.workspace, productId)
+      return await deactivatePersonAccount(account.email, ws.workspace, productId)
     })
   )
 
@@ -1114,7 +1112,7 @@ export async function leaveWorkspace (db: Db, productId: string, token: string, 
     )
   }
 
-  await deactivateEmployeeAccount(email, workspace.workspace, workspace.productId)
+  await deactivatePersonAccount(email, workspace.workspace, workspace.productId)
 
   const account = tokenData.email !== email ? await getAccount(db, email) : currentAccount
   if (account !== null) {
@@ -1183,15 +1181,15 @@ export async function sendInvite (db: Db, productId: string, token: string, emai
   })
 }
 
-async function deactivateEmployeeAccount (email: string, workspace: string, productId: string): Promise<void> {
+async function deactivatePersonAccount (email: string, workspace: string, productId: string): Promise<void> {
   const connection = await connect(getTransactor(), getWorkspaceId(workspace, productId), email)
   try {
     const ops = new TxOperations(connection, core.account.System)
 
-    const existingAccount = await ops.findOne(contact.class.EmployeeAccount, { email })
+    const existingAccount = await ops.findOne(contact.class.PersonAccount, { email })
 
     if (existingAccount !== undefined) {
-      const employee = await ops.findOne(contact.class.Employee, { _id: existingAccount.employee })
+      const employee = await ops.findOne(contact.mixin.Employee, { _id: existingAccount.person as Ref<Employee> })
       if (employee !== undefined) {
         await ops.update(employee, {
           active: false

@@ -34,10 +34,10 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverCalendar.trigger.OnEmployeeAccountCreate,
+    trigger: serverCalendar.trigger.OnPersonAccountCreate,
     txMatch: {
       _class: core.class.TxCreateDoc,
-      objectClass: contact.class.EmployeeAccount
+      objectClass: contact.class.PersonAccount
     }
   })
 

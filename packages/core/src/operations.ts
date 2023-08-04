@@ -227,10 +227,11 @@ export class TxOperations implements Omit<Client, 'notify'> {
     modifiedBy?: Ref<Account>
   ): Promise<TxResult> {
     const hierarchy = this.client.getHierarchy()
-    if (hierarchy.isMixin(doc._class)) {
+    const mixClass = Hierarchy.mixinOrClass(doc)
+    if (hierarchy.isMixin(mixClass)) {
       // TODO: Rework it is wrong, we need to split values to mixin update and original document update if mixed.
       const baseClass = hierarchy.getBaseClass(doc._class)
-      return this.updateMixin(doc._id, baseClass, doc.space, doc._class, update, modifiedOn, modifiedBy)
+      return this.updateMixin(doc._id, baseClass, doc.space, mixClass, update, modifiedOn, modifiedBy)
     }
     if (hierarchy.isDerived(doc._class, core.class.AttachedDoc)) {
       const adoc = doc as unknown as AttachedDoc

@@ -17,7 +17,7 @@
   import type { DisplayTx, TxViewlet } from '@hcengineering/activity'
   import attachment from '@hcengineering/attachment'
   import chunter from '@hcengineering/chunter'
-  import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
+  import contact, { Employee, PersonAccount, getName } from '@hcengineering/contact'
   import core, { AnyAttribute, Class, Doc, Ref, TxCUD, getCurrentAccount } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -55,7 +55,7 @@
 
   let viewlet: TxDisplayViewlet | undefined
   let props: any
-  let account: EmployeeAccount | undefined
+  let account: PersonAccount | undefined
   let employee: Employee | undefined
   let model: AttributeModel[] = []
   let modelIcon: Asset | undefined = undefined
@@ -97,8 +97,8 @@
   })
 
   $: query.query(
-    contact.class.EmployeeAccount,
-    { _id: tx.tx.modifiedBy as Ref<EmployeeAccount> },
+    contact.class.PersonAccount,
+    { _id: tx.tx.modifiedBy as Ref<PersonAccount> },
     (res) => {
       ;[account] = res
     },
@@ -107,8 +107,8 @@
 
   $: account &&
     employeeQuery.query(
-      contact.class.Employee,
-      { _id: account.employee },
+      contact.mixin.Employee,
+      { _id: account.person as Ref<Employee> },
       (res) => {
         ;[employee] = res
       },
@@ -213,7 +213,7 @@
         <div class="msgactivity-content__title labels-row">
           <span class={withAvatar ? 'bold' : 'strong'}>
             {#if employee}
-              {getName(employee)}
+              {getName(client.getHierarchy(), employee)}
             {:else}
               <Label label={core.string.System} />
             {/if}

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { EmployeeAccount } from '@hcengineering/contact'
+  import { PersonAccount } from '@hcengineering/contact'
   import { AccountRole, getCurrentAccount } from '@hcengineering/core'
   import login, { loginId } from '@hcengineering/login'
   import { setMetadata } from '@hcengineering/platform'
@@ -37,7 +37,7 @@
   let categoryId: string = ''
 
   let categories: SettingsCategory[] = []
-  const account = getCurrentAccount() as EmployeeAccount
+  const account = getCurrentAccount() as PersonAccount
 
   const settingsQuery = createQuery()
   settingsQuery.query(

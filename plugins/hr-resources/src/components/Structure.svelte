@@ -67,7 +67,7 @@
     },
     {
       lookup: {
-        teamLead: contact.class.Employee
+        teamLead: contact.mixin.Employee
       }
     }
   )

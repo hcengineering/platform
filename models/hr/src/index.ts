@@ -43,7 +43,7 @@ import {
 import attachment from '@hcengineering/model-attachment'
 import calendar from '@hcengineering/model-calendar'
 import chunter from '@hcengineering/model-chunter'
-import contact, { TEmployee, TEmployeeAccount } from '@hcengineering/model-contact'
+import contact, { TEmployee, TPersonAccount } from '@hcengineering/model-contact'
 import core, { TAttachedDoc, TDoc, TSpace, TType } from '@hcengineering/model-core'
 import view, { classPresenter, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
@@ -80,7 +80,7 @@ export class TDepartment extends TSpace implements Department {
 
   avatar?: string | null
 
-  @Prop(TypeRef(contact.class.Employee), hr.string.TeamLead)
+  @Prop(TypeRef(contact.mixin.Employee), hr.string.TeamLead)
     teamLead!: Ref<Employee> | null
 
   @Prop(ArrOf(TypeRef(hr.class.DepartmentMember)), contact.string.Members)
@@ -89,15 +89,15 @@ export class TDepartment extends TSpace implements Department {
   @Prop(ArrOf(TypeRef(contact.class.Contact)), hr.string.Subscribers)
     subscribers?: Arr<Ref<Contact>>
 
-  @Prop(ArrOf(TypeRef(contact.class.Employee)), hr.string.Managers)
+  @Prop(ArrOf(TypeRef(contact.mixin.Employee)), hr.string.Managers)
     managers!: Arr<Ref<Employee>>
 }
 
-@Model(hr.class.DepartmentMember, contact.class.EmployeeAccount)
+@Model(hr.class.DepartmentMember, contact.class.PersonAccount)
 @UX(contact.string.Employee, hr.icon.HR)
-export class TDepartmentMember extends TEmployeeAccount implements DepartmentMember {}
+export class TDepartmentMember extends TPersonAccount implements DepartmentMember {}
 
-@Mixin(hr.mixin.Staff, contact.class.Employee)
+@Mixin(hr.mixin.Staff, contact.mixin.Employee)
 @UX(hr.string.Staff, hr.icon.HR, 'STFF', 'name')
 export class TStaff extends TEmployee implements Staff {
   @Prop(TypeRef(hr.class.Department), hr.string.Department)

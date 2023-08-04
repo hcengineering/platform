@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
-  import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
+  import contact, { Person, PersonAccount } from '@hcengineering/contact'
   import core, { Class, getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Label, Loading, navigate, TabList, SearchEdit, getLocation } from '@hcengineering/ui'
@@ -38,8 +38,8 @@
     navigate(loc)
   }
   export let requestedSpaceClasses: Ref<Class<Space>>[] = []
-  const currentUser = getCurrentAccount() as EmployeeAccount
-  let selectedParticipants: Ref<Employee>[] = [currentUser.employee]
+  const currentUser = getCurrentAccount() as PersonAccount
+  let selectedParticipants: Ref<Person>[] = [currentUser.person]
   let selectedSpaces: Ref<Space>[] = []
   export let search: string = ''
   let isLoading = false
@@ -58,14 +58,14 @@
     selectedSort_: FileBrowserSortMode,
     selectedFileTypeId_: string,
     selectedDateId_: string,
-    selectedParticipants_: Ref<Employee>[],
+    selectedParticipants_: Ref<Person>[],
     selectedSpaces_: Ref<Space>[]
   ) {
     isLoading = true
 
     const nameQuery = searchQuery_ ? { name: { $like: '%' + searchQuery_ + '%' } } : {}
 
-    const accounts = await client.findAll(contact.class.EmployeeAccount, { employee: { $in: selectedParticipants_ } })
+    const accounts = await client.findAll(contact.class.PersonAccount, { person: { $in: selectedParticipants_ } })
     const senderQuery = accounts.length ? { modifiedBy: { $in: accounts.map((a) => a._id) } } : {}
 
     let spaceQuery: { space: any }

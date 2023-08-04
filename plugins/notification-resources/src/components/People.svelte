@@ -15,8 +15,8 @@
 <script lang="ts">
   import activity, { TxViewlet } from '@hcengineering/activity'
   import { activityKey, ActivityKey } from '@hcengineering/activity-resources'
-  import { EmployeeAccount } from '@hcengineering/contact'
-  import { employeeAccountByIdStore } from '@hcengineering/contact-resources'
+  import { PersonAccount } from '@hcengineering/contact'
+  import { personAccountByIdStore } from '@hcengineering/contact-resources'
   import { Account, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { DocUpdates } from '@hcengineering/notification'
   import { createQuery } from '@hcengineering/presentation'
@@ -31,7 +31,7 @@
 
   let docs: DocUpdates[] = []
   let map: Map<Ref<Account>, DocUpdates[]> = new Map()
-  let accounts: EmployeeAccount[] = []
+  let accounts: PersonAccount[] = []
   let loading = true
 
   $: query.query(
@@ -88,8 +88,8 @@
     }
     map = map
     accounts = Array.from(map.keys())
-      .map((p) => $employeeAccountByIdStore.get(p as Ref<EmployeeAccount>))
-      .filter((p) => p !== undefined) as EmployeeAccount[]
+      .map((p) => $personAccountByIdStore.get(p as Ref<PersonAccount>))
+      .filter((p) => p !== undefined) as PersonAccount[]
     if (_id === undefined) {
       changeSelected(selected)
     } else {
