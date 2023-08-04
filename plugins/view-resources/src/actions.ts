@@ -25,7 +25,7 @@ import core, {
   Ref
 } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
-import { Action, ViewAction, ViewActionInput, ViewContextType } from '@hcengineering/view'
+import { Action, ActionGroup, ViewAction, ViewActionInput, ViewContextType } from '@hcengineering/view'
 import view from './plugin'
 import { FocusSelection } from './selection'
 
@@ -60,7 +60,7 @@ export async function getActions (
     'context.mode': mode
   })
 
-  const categories: Record<string, number> = { top: 1, filter: 50, tools: 100 }
+  const categories: Partial<Record<ActionGroup | 'top', number>> = { top: 1, tools: 50, other: 100, remove: 200 }
 
   let filteredActions: Action[] = []
 
