@@ -59,7 +59,15 @@
     </span>
 
     {#if node}
-      <div class="an-element__icon-arrow" class:collapsed>
+      <div
+        class="an-element__icon-arrow"
+        class:collapsed
+        on:click={(e) => {
+          e.stopPropagation()
+          e.preventDefault()
+          collapsed = !collapsed
+        }}
+      >
         <IconChevronDown size={'small'} />
       </div>
     {/if}
