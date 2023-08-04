@@ -741,7 +741,7 @@ export function createModel (builder: Builder): void {
       input: 'focus',
       context: {
         mode: ['context'],
-        group: 'other'
+        group: 'remove'
       },
       secured: true
     },
@@ -761,7 +761,7 @@ export function createModel (builder: Builder): void {
       input: 'focus',
       context: {
         mode: ['context'],
-        group: 'other'
+        group: 'remove'
       },
       secured: true
     },
@@ -788,7 +788,7 @@ export function createModel (builder: Builder): void {
       input: 'focus',
       context: {
         mode: ['context'],
-        group: 'other'
+        group: 'remove'
       },
       secured: true
     },

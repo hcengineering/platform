@@ -37,7 +37,8 @@
     copy: 3,
     associate: 4,
     tools: 5,
-    other: 6
+    other: 6,
+    remove: 7
   }
 
   getActions(client, object, baseMenuClass, mode).then((result) => {

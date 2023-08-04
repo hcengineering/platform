@@ -1260,7 +1260,7 @@ export function createModel (builder: Builder): void {
       target: tracker.class.Issue,
       context: {
         mode: ['context', 'browser'],
-        group: 'edit'
+        group: 'remove'
       },
       override: [view.action.Delete]
     },
@@ -1874,7 +1874,7 @@ export function createModel (builder: Builder): void {
       category: tracker.category.Tracker,
       input: 'any',
       target: tracker.class.Milestone,
-      context: { mode: ['context', 'browser'], group: 'tools' }
+      context: { mode: ['context', 'browser'], group: 'remove' }
     },
     tracker.action.DeleteMilestone
   )
