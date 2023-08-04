@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Ref } from '@hcengineering/core'
-  import { AttributeEditor, getClient } from '@hcengineering/presentation'
-  import type { DoneState, KanbanTemplate, KanbanTemplateSpace, State } from '@hcengineering/task'
+  import { Ref } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import type { DoneState, Kanban, KanbanTemplate, KanbanTemplateSpace, State } from '@hcengineering/task'
   import {
     CircleButton,
     Component,
@@ -32,7 +32,7 @@
     showPopup,
     themeStore
   } from '@hcengineering/ui'
-  import { ColorsPopup } from '@hcengineering/view-resources'
+  import { ColorsPopup, StringPresenter } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import task from '../../plugin'
   import Lost from '../icons/Lost.svelte'
@@ -40,7 +40,7 @@
   import StatusesPopup from './StatusesPopup.svelte'
 
   export let template: KanbanTemplate | undefined = undefined
-  export let space: KanbanTemplateSpace | undefined = undefined
+  export let space: KanbanTemplateSpace | Kanban | undefined = undefined
   export let states: State[] = []
   export let wonStates: DoneState[] = []
   export let lostStates: DoneState[] = []
@@ -86,14 +86,11 @@
 
         await client.updateDoc(state._class, state.space, state._id, { color })
       }
-
-  async function onAdd (_class: Ref<Class<State | DoneState>>) {
-    dispatch('add', _class)
-  }
+  const spaceEditor = (space as KanbanTemplateSpace)?.editor
 </script>
 
-{#if space?.editor}
-  <Component is={space.editor} props={{ template }} />
+{#if spaceEditor}
+  <Component is={spaceEditor} props={{ template }} />
 {/if}
 <div class="flex-no-shrink flex-between trans-title uppercase">
   <Label label={task.string.ActiveStates} />
@@ -101,7 +98,15 @@
     icon={IconAdd}
     size={'medium'}
     on:click={() => {
-      onAdd(task.class.State)
+      showPopup(
+        task.component.CreateStatePopup,
+        {
+          space,
+          template,
+          _class: template !== undefined ? task.class.StateTemplate : task.class.State
+        },
+        undefined
+      )
     }}
   />
 </div>
@@ -138,24 +143,28 @@
           }}
         />
         <div class="flex-grow caption-color">
-          <AttributeEditor maxWidth={'20rem'} _class={state._class} object={state} key="name" />
+          <StringPresenter value={state.name} oneLine />
         </div>
-        {#if states.length > 1}
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <div
-            class="tool hover-trans"
-            on:click={(ev) => {
-              showPopup(
-                StatusesPopup,
-                { onDelete: () => dispatch('delete', { state }) },
-                eventToHTMLElement(ev),
-                () => {}
-              )
-            }}
-          >
-            <IconMoreH size={'medium'} />
-          </div>
-        {/if}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <div
+          class="tool hover-trans"
+          on:click={(ev) => {
+            showPopup(
+              StatusesPopup,
+              {
+                onDelete: () => dispatch('delete', { state }),
+                showDelete: states.length > 1,
+                onUpdate: () => {
+                  showPopup(task.component.CreateStatePopup, { status: state, template }, undefined)
+                }
+              },
+              eventToHTMLElement(ev),
+              () => {}
+            )
+          }}
+        >
+          <IconMoreH size={'medium'} />
+        </div>
       </div>
     {/if}
   {/each}
@@ -167,7 +176,15 @@
       icon={IconAdd}
       size={'medium'}
       on:click={() => {
-        onAdd(task.class.WonState)
+        showPopup(
+          task.component.CreateStatePopup,
+          {
+            space,
+            template,
+            _class: template !== undefined ? task.class.WonStateTemplate : task.class.WonState
+          },
+          undefined
+        )
       }}
     />
   </div>
@@ -185,24 +202,29 @@
             <Won size={'medium'} />
           </div>
           <div class="flex-grow caption-color">
-            <AttributeEditor maxWidth={'13rem'} _class={state._class} object={state} key="name" />
+            <StringPresenter value={state.name} oneLine />
+            <!--            <AttributeEditor maxWidth={'13rem'} _class={state._class} object={state} key="name" />-->
           </div>
-          {#if wonStates.length > 1}
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <div
-              class="tool hover-trans"
-              on:click={(ev) => {
-                showPopup(
-                  StatusesPopup,
-                  { onDelete: () => dispatch('delete', { state }) },
-                  eventToHTMLElement(ev),
-                  () => {}
-                )
-              }}
-            >
-              <IconMoreH size={'medium'} />
-            </div>
-          {/if}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <div
+            class="tool hover-trans"
+            on:click={(ev) => {
+              showPopup(
+                StatusesPopup,
+                {
+                  onDelete: () => dispatch('delete', { state }),
+                  showDelete: wonStates.length > 1,
+                  onUpdate: () => {
+                    showPopup(task.component.CreateStatePopup, { status: state, template }, undefined)
+                  }
+                },
+                eventToHTMLElement(ev),
+                () => {}
+              )
+            }}
+          >
+            <IconMoreH size={'medium'} />
+          </div>
         </div>
       {/if}
     {/each}
@@ -215,7 +237,15 @@
       icon={IconAdd}
       size={'medium'}
       on:click={() => {
-        onAdd(task.class.LostState)
+        showPopup(
+          task.component.CreateStatePopup,
+          {
+            space,
+            template,
+            _class: template !== undefined ? task.class.LostStateTemplate : task.class.LostState
+          },
+          undefined
+        )
       }}
     />
   </div>
@@ -233,24 +263,29 @@
             <Lost size={'medium'} />
           </div>
           <div class="flex-grow caption-color">
-            <AttributeEditor maxWidth={'13rem'} _class={state._class} object={state} key="name" />
+            <StringPresenter value={state.name} oneLine />
+            <!--            <AttributeEditor maxWidth={'13rem'} _class={state._class} object={state} key="name" />-->
           </div>
-          {#if lostStates.length > 1}
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <div
-              class="tool hover-trans"
-              on:click={(ev) => {
-                showPopup(
-                  StatusesPopup,
-                  { onDelete: () => dispatch('delete', { state }) },
-                  eventToHTMLElement(ev),
-                  () => {}
-                )
-              }}
-            >
-              <IconMoreH size={'medium'} />
-            </div>
-          {/if}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <div
+            class="tool hover-trans"
+            on:click={(ev) => {
+              showPopup(
+                StatusesPopup,
+                {
+                  onDelete: () => dispatch('delete', { state }),
+                  showDelete: lostStates.length > 1,
+                  onUpdate: () => {
+                    showPopup(task.component.CreateStatePopup, { status: state, template }, undefined)
+                  }
+                },
+                eventToHTMLElement(ev),
+                () => {}
+              )
+            }}
+          >
+            <IconMoreH size={'medium'} />
+          </div>
         </div>
       {/if}
     {/each}

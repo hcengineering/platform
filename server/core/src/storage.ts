@@ -196,7 +196,7 @@ class TServerStorage implements ServerStorage {
       return result[0]
     }
     if (result.length === 0) {
-      return [{}, false]
+      return false
     }
     return result
   }
