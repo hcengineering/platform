@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Employee } from '@hcengineering/contact'
+import type { Employee, Person } from '@hcengineering/contact'
 import contact from '@hcengineering/contact'
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
@@ -101,8 +101,8 @@ export class TTask extends TAttachedDoc implements Task {
   @Hidden()
     number!: number
 
-  // @Prop(TypeRef(contact.class.Employee), task.string.TaskAssignee)
-  assignee!: Ref<Employee> | null
+  // @Prop(TypeRef(contact.mixin.Employee), task.string.TaskAssignee)
+  assignee!: Ref<Person> | null
 
   @Prop(TypeDate(), task.string.DueDate, { editor: task.component.DueDateEditor })
     dueDate!: Timestamp | null
@@ -126,7 +126,7 @@ export class TTodoItem extends TAttachedDoc implements TodoItem {
   @Index(IndexKind.FullText)
     name!: string
 
-  @Prop(TypeRef(contact.class.Employee), task.string.TaskAssignee)
+  @Prop(TypeRef(contact.mixin.Employee), task.string.TaskAssignee)
     assignee!: Ref<Employee> | null
 
   @Prop(TypeBoolean(), task.string.TaskDone)

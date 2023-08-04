@@ -1,5 +1,5 @@
 import attachment, { Attachment } from '@hcengineering/attachment'
-import contact, { Channel, EmployeeAccount, Organization } from '@hcengineering/contact'
+import contact, { Channel, PersonAccount, Organization } from '@hcengineering/contact'
 import core, {
   AnyAttribute,
   AttachedDoc,
@@ -102,7 +102,7 @@ export async function convert (
   space: Ref<Space>,
   fields: BitrixFieldMapping[],
   rawDocument: any,
-  userList: Map<string, Ref<EmployeeAccount>>,
+  userList: Map<string, Ref<PersonAccount>>,
   existingDoc: WithLookup<Doc> | undefined,
   defaultCategories: TagCategory[],
   allTagElements: TagElement[],

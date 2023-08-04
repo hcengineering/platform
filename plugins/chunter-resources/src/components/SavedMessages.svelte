@@ -2,8 +2,8 @@
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPreview } from '@hcengineering/attachment-resources'
   import { ChunterMessage } from '@hcengineering/chunter'
-  import { EmployeeAccount, getName as getContactName } from '@hcengineering/contact'
-  import { employeeAccountByIdStore, employeeByIdStore } from '@hcengineering/contact-resources'
+  import { Person, PersonAccount, getName as getContactName } from '@hcengineering/contact'
+  import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
   import core, { IdMap, Ref, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Label, Scroller } from '@hcengineering/ui'
@@ -74,12 +74,16 @@
     })
   }
 
-  function getName (a: Attachment, employeeAccountByIdStore: IdMap<EmployeeAccount>): string | undefined {
-    const acc = employeeAccountByIdStore.get(a.modifiedBy as Ref<EmployeeAccount>)
+  function getName (
+    a: Attachment,
+    personAccountByIdStore: IdMap<PersonAccount>,
+    personByIdStore: IdMap<Person>
+  ): string | undefined {
+    const acc = personAccountByIdStore.get(a.modifiedBy as Ref<PersonAccount>)
     if (acc !== undefined) {
-      const emp = $employeeByIdStore.get(acc?.employee)
+      const emp = personByIdStore.get(acc?.person)
       if (emp !== undefined) {
-        return getContactName(emp)
+        return getContactName(client.getHierarchy(), emp)
       }
     }
   }
@@ -112,7 +116,7 @@
         <div class="label">
           <Label
             label={chunter.string.SharedBy}
-            params={{ name: getName(att, $employeeAccountByIdStore), time: getTime(att.modifiedOn) }}
+            params={{ name: getName(att, $personAccountByIdStore, $personByIdStore), time: getTime(att.modifiedOn) }}
           />
         </div>
       </div>

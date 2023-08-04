@@ -150,7 +150,6 @@ export default plugin(platformId, {
     InvalidPassword: '' as StatusCode<{ account: string }>,
     AccountAlreadyExists: '' as StatusCode<{ account: string }>,
     AccountAlreadyConfirmed: '' as StatusCode<{ account: string }>,
-    AccountWasMerged: '' as StatusCode<{ account: string }>,
     WorkspaceAlreadyExists: '' as StatusCode<{ workspace: string }>,
     WorkspaceRateLimit: '' as StatusCode<{ workspace: string }>,
     ProductIdMismatch: '' as StatusCode<{ productId: string }>

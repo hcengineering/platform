@@ -18,25 +18,26 @@ import {
   AvatarProvider,
   AvatarType,
   ChannelProvider,
-  Contact,
-  contactId,
   Employee,
-  EmployeeAccount,
+  Contact,
+  PersonAccount,
+  contactId,
   formatName,
   getFirstName,
   getLastName,
-  getName
+  getName,
+  Person
 } from '@hcengineering/contact'
-import { Client, Doc, getCurrentAccount, IdMap, ObjQueryType, Ref, Timestamp, toIdMap } from '@hcengineering/core'
+import { Client, Doc, IdMap, ObjQueryType, Ref, Timestamp, getCurrentAccount, toIdMap } from '@hcengineering/core'
+import notification, { DocUpdateTx, DocUpdates } from '@hcengineering/notification'
+import { getResource } from '@hcengineering/platform'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { TemplateDataProvider } from '@hcengineering/templates'
-import { TabItem, getCurrentResolvedLocation, getPanelURI, Location, ResolvedLocation } from '@hcengineering/ui'
+import { Location, ResolvedLocation, TabItem, getCurrentResolvedLocation, getPanelURI } from '@hcengineering/ui'
 import view, { Filter } from '@hcengineering/view'
 import { FilterQuery } from '@hcengineering/view-resources'
-import { get, writable } from 'svelte/store'
+import { derived, get, writable } from 'svelte/store'
 import contact from './plugin'
-import notification, { DocUpdates, DocUpdateTx } from '@hcengineering/notification'
-import { getResource } from '@hcengineering/platform'
 
 export function formatDate (dueDateMs: Timestamp): string {
   return new Date(dueDateMs).toLocaleString('default', {
@@ -48,6 +49,7 @@ export function formatDate (dueDateMs: Timestamp): string {
 }
 
 export async function employeeSort (value: Array<Ref<Employee>>): Promise<Array<Ref<Employee>>> {
+  const h = getClient().getHierarchy()
   return value.sort((a, b) => {
     const employeeId1 = a as Ref<Employee> | null | undefined
     const employeeId2 = b as Ref<Employee> | null | undefined
@@ -63,8 +65,8 @@ export async function employeeSort (value: Array<Ref<Employee>>): Promise<Array<
     if (employeeId1 != null && employeeId2 != null) {
       const employee1 = get(employeeByIdStore).get(employeeId1)
       const employee2 = get(employeeByIdStore).get(employeeId2)
-      const name1 = employee1 != null ? getName(employee1) : ''
-      const name2 = employee2 != null ? getName(employee2) : ''
+      const name1 = employee1 != null ? getName(h, employee1) : ''
+      const name2 = employee2 != null ? getName(h, employee2) : ''
 
       return name1.localeCompare(name2)
     }
@@ -137,19 +139,19 @@ export async function getRefs (
 }
 
 export async function getCurrentEmployeeName (): Promise<string> {
-  const me = getCurrentAccount() as EmployeeAccount
+  const me = getCurrentAccount() as PersonAccount
   return formatName(me.name)
 }
 
 export async function getCurrentEmployeeEmail (): Promise<string> {
-  const me = getCurrentAccount() as EmployeeAccount
+  const me = getCurrentAccount() as PersonAccount
   return me.email
 }
 
 export async function getCurrentEmployeePosition (): Promise<string | undefined> {
-  const me = getCurrentAccount() as EmployeeAccount
+  const me = getCurrentAccount() as PersonAccount
   const client = getClient()
-  const employee = await client.findOne(contact.class.Employee, { _id: me.employee })
+  const employee = await client.findOne<Employee>(contact.mixin.Employee, { _id: me.person as Ref<Employee> })
   if (employee !== undefined) {
     return employee.position ?? ''
   }
@@ -161,7 +163,7 @@ export async function getContactName (provider: TemplateDataProvider): Promise<s
   const client = getClient()
   const hierarchy = client.getHierarchy()
   if (hierarchy.isDerived(value._class, contact.class.Person)) {
-    return getName(value)
+    return getName(client.getHierarchy(), value)
   } else {
     return value.name
   }
@@ -234,7 +236,7 @@ async function generateLocation (loc: Location, id: Ref<Contact>): Promise<Resol
   const workspace = loc.path[1] ?? ''
   const special = client.getHierarchy().isDerived(doc._class, contact.class.Organization)
     ? 'companies'
-    : client.getHierarchy().isDerived(doc._class, contact.class.Employee)
+    : client.getHierarchy().isDerived(doc._class, contact.mixin.Employee)
       ? 'employees'
       : 'persons'
   return {
@@ -252,33 +254,43 @@ async function generateLocation (loc: Location, id: Ref<Contact>): Promise<Resol
 export const employeeByIdStore = writable<IdMap<Employee>>(new Map())
 export const employeesStore = writable<Employee[]>([])
 
-export const employeeAccountByIdStore = writable<IdMap<EmployeeAccount>>(new Map())
+export const personAccountByIdStore = writable<IdMap<PersonAccount>>(new Map())
 
 export const channelProviders = writable<ChannelProvider[]>([])
 
+export const personAccountPersonByIdStore = writable<IdMap<Person>>(new Map())
+
+export const personByIdStore = derived([personAccountPersonByIdStore, employeeByIdStore], (vals) => {
+  const m1 = Array.from(vals[0].entries())
+  const m2 = Array.from(vals[1].entries())
+  return new Map([...m1, ...m2])
+})
+
 function fillStores (): void {
   const client = getClient()
+
   if (client !== undefined) {
+    const accountPersonQuery = createQuery(true)
+
     const query = createQuery(true)
-    query.query(contact.class.Employee, {}, (res) => {
+    query.query(contact.mixin.Employee, {}, (res) => {
       employeesStore.set(res)
       employeeByIdStore.set(toIdMap(res))
     })
 
     const accountQ = createQuery(true)
-    accountQ.query(contact.class.EmployeeAccount, {}, (res) => {
-      const mergedEmployees = res.filter((it) => it.mergedTo !== undefined)
-      const activeEmployees = res.filter((it) => it.mergedTo === undefined)
-      const ids = toIdMap(activeEmployees)
-      for (const e of mergedEmployees) {
-        if (e.mergedTo !== undefined) {
-          const mergeTo = ids.get(e.mergedTo)
-          if (mergeTo !== undefined) {
-            ids.set(e._id, mergeTo)
-          }
+    accountQ.query(contact.class.PersonAccount, {}, (res) => {
+      personAccountByIdStore.set(toIdMap(res))
+
+      const persons = res.map((it) => it.person)
+
+      accountPersonQuery.query(
+        contact.class.Person,
+        { _id: { $in: persons }, [contact.mixin.Employee]: { $exists: false } },
+        (res) => {
+          personAccountPersonByIdStore.set(toIdMap(res))
         }
-      }
-      employeeAccountByIdStore.set(ids)
+      )
     })
 
     const providerQuery = createQuery(true)
@@ -332,5 +344,5 @@ export function getAvatarProviderId (avatar?: string | null): Ref<AvatarProvider
 export async function contactTitleProvider (client: Client, ref: Ref<Contact>): Promise<string> {
   const object = await client.findOne(contact.class.Contact, { _id: ref })
   if (object === undefined) return ''
-  return getName(object)
+  return getName(client.getHierarchy(), object)
 }

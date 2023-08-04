@@ -13,7 +13,7 @@ import { generateClassNotificationTypes } from '@hcengineering/model-notificatio
 export const reviewTableOptions: FindOptions<Review> = {
   lookup: {
     attachedTo: recruit.mixin.Candidate,
-    participants: contact.class.Employee,
+    participants: contact.mixin.Employee,
     company: contact.class.Organization
   }
 }

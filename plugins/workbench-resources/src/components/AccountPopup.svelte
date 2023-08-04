@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
-  import { AccountRole, getCurrentAccount } from '@hcengineering/core'
+  import contact, { Employee, PersonAccount, formatName } from '@hcengineering/contact'
+  import { AccountRole, getCurrentAccount, Ref } from '@hcengineering/core'
   import login, { loginId } from '@hcengineering/login'
   import { setMetadata } from '@hcengineering/platform'
   import presentation, { closeClient, createQuery } from '@hcengineering/presentation'
@@ -50,14 +50,14 @@
     { sort: { order: 1 } }
   )
 
-  const account = getCurrentAccount() as EmployeeAccount
+  const account = getCurrentAccount() as PersonAccount
   let employee: Employee | undefined
   const employeeQ = createQuery()
 
   employeeQ.query(
-    contact.class.Employee,
+    contact.mixin.Employee,
     {
-      _id: account.employee
+      _id: account.person as Ref<Employee>
     },
     (res) => {
       employee = res[0]

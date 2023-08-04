@@ -73,7 +73,7 @@ export class ClientSession implements Session {
       // Generate fake account for admin user
       const account = {
         _id: core.account.System,
-        _class: 'contact:class:EmployeeAccount' as Ref<Class<Account>>,
+        _class: 'contact:class:PersonAccount' as Ref<Class<Account>>,
         name: 'System,Ghost',
         email: this.token.email,
         space: core.space.Model,

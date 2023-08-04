@@ -14,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Contact, getName } from '@hcengineering/contact'
-  import { Class, DocumentQuery, FindOptions, Hierarchy, Ref } from '@hcengineering/core'
+  import contact, { Contact, getName } from '@hcengineering/contact'
+  import { Class, DocumentQuery, FindOptions, Hierarchy, Ref, Doc } from '@hcengineering/core'
   import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import { getClient, ObjectCreate } from '@hcengineering/presentation'
   import {
@@ -42,6 +42,7 @@
   import UsersPopup from './UsersPopup.svelte'
 
   export let _class: Ref<Class<Contact>>
+  export let _previewClass: Ref<Class<Contact>> = contact.class.Contact
   export let excluded: Ref<Contact>[] | undefined = undefined
   export let options: FindOptions<Contact> | undefined = undefined
   export let docQuery: DocumentQuery<Contact> | undefined = undefined
@@ -61,6 +62,9 @@
   export let showTooltip: LabelAndProps | undefined = undefined
   export let showNavigate = true
   export let id: string | undefined = undefined
+  export let filter: (it: Doc) => boolean = () => {
+    return true
+  }
 
   export let create: ObjectCreate | undefined = undefined
 
@@ -72,7 +76,7 @@
   const client = getClient()
 
   async function updateSelected (value: Ref<Contact> | null | undefined) {
-    selected = value ? await client.findOne(_class, { _id: value }) : undefined
+    selected = value ? await client.findOne(_previewClass, { _id: value }) : undefined
   }
 
   $: updateSelected(value)
@@ -93,7 +97,8 @@
           selected: value,
           titleDeselect,
           placeholder,
-          create
+          create,
+          filter
         },
         !$$slots.content ? container : getEventPositionElement(ev),
         (result) => {
@@ -121,7 +126,9 @@
       class="w-full h-full flex-streatch"
       on:click={_click}
       class:content-color={selected === undefined}
-      use:tooltip={selected !== undefined ? { label: getEmbeddedLabel(getName(selected)) } : undefined}
+      use:tooltip={selected !== undefined
+        ? { label: getEmbeddedLabel(getName(client.getHierarchy(), selected)) }
+        : undefined}
     >
       <slot name="content" />
     </div>
@@ -148,13 +155,15 @@
           style:width={showNavigate && selected
             ? `calc(${width ?? 'min-content'} - 1.5rem)`
             : `${width ?? 'min-content'}`}
-          use:tooltip={selected !== undefined ? { label: getEmbeddedLabel(getName(selected)) } : undefined}
+          use:tooltip={selected !== undefined
+            ? { label: getEmbeddedLabel(getName(client.getHierarchy(), selected)) }
+            : undefined}
         >
           {#if selected}
             {#if hideIcon || selected}
               <UserInfo value={selected} size={avatarSize} {icon} />
             {:else}
-              {getName(selected)}
+              {getName(client.getHierarchy(), selected)}
             {/if}
           {:else}
             <div class="flex-presenter not-selected">

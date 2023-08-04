@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Calendar, Event, generateEventId } from '@hcengineering/calendar'
-  import { Employee, EmployeeAccount } from '@hcengineering/contact'
+  import { Employee, PersonAccount } from '@hcengineering/contact'
   import { UserBoxList } from '@hcengineering/contact-resources'
   import { Class, DateRangeMode, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
   import { Card, getClient } from '@hcengineering/presentation'
@@ -29,8 +29,8 @@
   let _title = title
 
   let value: number | null | undefined = null
-  const currentUser = getCurrentAccount() as EmployeeAccount
-  let participants: Ref<Employee>[] = [currentUser.employee]
+  const currentUser = getCurrentAccount() as PersonAccount
+  let participants: Ref<Employee>[] = [currentUser.person as Ref<Employee>]
   const defaultDuration = 30 * 60 * 1000
 
   const dispatch = createEventDispatcher()

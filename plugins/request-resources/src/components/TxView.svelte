@@ -16,8 +16,8 @@
   import { DisplayTx, TxViewlet } from '@hcengineering/activity'
   import { ActivityKey, getValue, newDisplayTx, updateViewlet } from '@hcengineering/activity-resources'
   import activity from '@hcengineering/activity-resources/src/plugin'
-  import { EmployeeAccount } from '@hcengineering/contact'
-  import { employeeAccountByIdStore } from '@hcengineering/contact-resources'
+  import { PersonAccount } from '@hcengineering/contact'
+  import { personAccountByIdStore } from '@hcengineering/contact-resources'
   import core, { AnyAttribute, Doc, Ref, Tx, TxCUD } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
@@ -33,7 +33,7 @@
   let ptx: DisplayTx | undefined
 
   let props: any
-  let employee: EmployeeAccount | undefined
+  let employee: PersonAccount | undefined
   let model: AttributeModel[] = []
   let modelIcon: Asset | undefined = undefined
 
@@ -55,7 +55,7 @@
       }
     })
 
-  $: employee = $employeeAccountByIdStore.get(tx.modifiedBy as Ref<EmployeeAccount>)
+  $: employee = $personAccountByIdStore.get(tx.modifiedBy as Ref<PersonAccount>)
 
   function isMessageType (attr?: AnyAttribute): boolean {
     return attr?.type._class === core.class.TypeMarkup

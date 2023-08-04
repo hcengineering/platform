@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { EmployeeAccount } from '@hcengineering/contact'
+  import { PersonAccount } from '@hcengineering/contact'
   import { Class, getCurrentAccount, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Request, RequestStatus } from '@hcengineering/request'
@@ -21,7 +21,7 @@
   import request from '../plugin'
 
   let requests: Request[] = []
-  const me = getCurrentAccount()._id as Ref<EmployeeAccount>
+  const me = getCurrentAccount()._id as Ref<PersonAccount>
   const query = createQuery()
   query.query(
     request.class.Request,

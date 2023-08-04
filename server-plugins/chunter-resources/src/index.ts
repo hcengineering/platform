@@ -14,7 +14,7 @@
 //
 
 import chunter, { Backlink, chunterId, ChunterSpace, Comment, Message, ThreadMessage } from '@hcengineering/chunter'
-import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
+import contact, { Employee, PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
   Class,
@@ -105,13 +105,13 @@ async function ThreadMessageCreate (tx: Tx, control: TriggerControl): Promise<Tx
       lastReply: tx.modifiedOn
     }
   )
-  const employee = control.modelDb.getObject(tx.modifiedBy) as EmployeeAccount
+  const employee = control.modelDb.getObject(tx.modifiedBy) as PersonAccount
   const employeeTx = control.txFactory.createTxUpdateDoc<Message>(
     chunter.class.Message,
     comment.space,
     comment.attachedTo as Ref<Message>,
     {
-      $push: { replies: employee.employee }
+      $push: { replies: employee.person }
     }
   )
   const result: TxUpdateDoc<Message>[] = []
@@ -184,7 +184,7 @@ async function ThreadMessageDelete (tx: Tx, control: TriggerControl): Promise<Tx
     comment.space,
     comment.attachedTo,
     {
-      replies: comments.map((comm) => (control.modelDb.getObject(comm.createBy) as EmployeeAccount).employee),
+      replies: comments.map((comm) => (control.modelDb.getObject(comm.createBy) as PersonAccount).person),
       lastReply:
         comments.length > 0 ? Math.max(...comments.map((comm) => comm.createdOn ?? comm.modifiedOn)) : undefined
     }
@@ -228,7 +228,7 @@ function isBacklink (ptx: TxCollectionCUD<Doc, Backlink>, hierarchy: Hierarchy):
   if (
     ptx.tx._class !== core.class.TxCreateDoc ||
     !hierarchy.isDerived(ptx.tx.objectClass, chunter.class.Backlink) ||
-    !hierarchy.isDerived(ptx.objectClass, contact.class.Employee)
+    !hierarchy.isDerived(ptx.objectClass, contact.mixin.Employee)
   ) {
     return false
   }
@@ -248,9 +248,9 @@ export async function IsMeMentioned (
   const ptx = tx as TxCollectionCUD<Doc, Backlink>
   if (!isBacklink(ptx, control.hierarchy)) return false
   const backlink = TxProcessor.createDoc2Doc(ptx.tx as TxCreateDoc<Backlink>)
-  if (!control.hierarchy.isDerived(backlink.backlinkClass, contact.class.Employee)) return false
+  if (!control.hierarchy.isDerived(backlink.backlinkClass, contact.mixin.Employee)) return false
   const acc = (
-    await control.modelDb.findAll(contact.class.EmployeeAccount, { employee: backlink.backlinkId as Ref<Employee> })
+    await control.modelDb.findAll(contact.class.PersonAccount, { person: backlink.backlinkId as Ref<Employee> })
   )[0]
   return acc._id === user
 }

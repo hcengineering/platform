@@ -48,20 +48,22 @@
   async function createPerson () {
     changeEmail()
     const name = combineName(firstName, lastName)
-    const person: Data<Employee> = {
+    const person: Data<Person> = {
       name,
-      city: object.city,
-      active: true
+      city: object.city
     }
 
     person.avatar = await avatarEditor.createAvatar()
 
-    await client.createDoc(contact.class.Employee, contact.space.Contacts, person, id)
+    await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)
+    await client.createMixin(id, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
+      active: true
+    })
 
-    await client.createDoc(contact.class.EmployeeAccount, core.space.Model, {
+    await client.createDoc(contact.class.PersonAccount, core.space.Model, {
       email: email.trim(),
       name,
-      employee: id,
+      person: id,
       role: AccountRole.User
     })
 

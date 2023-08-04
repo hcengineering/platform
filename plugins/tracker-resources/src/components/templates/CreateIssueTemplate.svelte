@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee } from '@hcengineering/contact'
-  import { Data, Doc, generateId, Ref } from '@hcengineering/core'
-  import { Card, getClient, KeyedAttribute, SpaceSelector } from '@hcengineering/presentation'
+  import { Person } from '@hcengineering/contact'
+  import { Data, Doc, Ref, generateId } from '@hcengineering/core'
+  import { Card, KeyedAttribute, SpaceSelector, getClient } from '@hcengineering/presentation'
   import tags, { TagElement } from '@hcengineering/tags'
   import { StyledTextBox } from '@hcengineering/text-editor'
-  import { Component as ComponentType, IssuePriority, IssueTemplate, Project, Milestone } from '@hcengineering/tracker'
+  import { Component as ComponentType, IssuePriority, IssueTemplate, Milestone, Project } from '@hcengineering/tracker'
   import { Component, EditBox, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { activeComponent, activeMilestone } from '../../issues'
@@ -27,13 +27,13 @@
   import AssigneeEditor from '../issues/AssigneeEditor.svelte'
   import PriorityEditor from '../issues/PriorityEditor.svelte'
   import MilestoneSelector from '../milestones/MilestoneSelector.svelte'
+  import ProjectPresenter from '../projects/ProjectPresenter.svelte'
   import EstimationEditor from './EstimationEditor.svelte'
   import SubIssueTemplates from './IssueTemplateChilds.svelte'
-  import ProjectPresenter from '../projects/ProjectPresenter.svelte'
 
   export let space: Ref<Project>
   export let priority: IssuePriority = IssuePriority.NoPriority
-  export let assignee: Ref<Employee> | null = null
+  export let assignee: Ref<Person> | null = null
   export let component: Ref<ComponentType> | null = $activeComponent ?? null
   export let milestone: Ref<Milestone> | null = $activeMilestone ?? null
   export let relatedTo: Doc | undefined

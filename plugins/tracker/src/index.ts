@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Employee } from '@hcengineering/contact'
+import { Employee, Person } from '@hcengineering/contact'
 import {
   AttachedDoc,
   Attribute,
@@ -179,7 +179,7 @@ export interface IssueDraft {
   description: Markup
   status?: Ref<IssueStatus>
   priority: IssuePriority
-  assignee: Ref<Employee> | null
+  assignee: Ref<Person> | null
   component: Ref<Component> | null
   space: Ref<Project>
   dueDate: Timestamp | null
@@ -207,7 +207,7 @@ export interface IssueTemplateData {
   description: Markup
   priority: IssuePriority
 
-  assignee: Ref<Employee> | null
+  assignee: Ref<Person> | null
   component: Ref<Component> | null
 
   milestone?: Ref<Milestone> | null

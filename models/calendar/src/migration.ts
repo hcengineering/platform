@@ -22,7 +22,7 @@ import contact from '@hcengineering/contact'
 
 async function migrateCalendars (tx: TxOperations): Promise<void> {
   const existCalendars = new Set((await tx.findAll(calendar.class.Calendar, {})).map((p) => p._id))
-  const users = await tx.findAll(contact.class.EmployeeAccount, {})
+  const users = await tx.findAll(contact.class.PersonAccount, {})
   for (const user of users) {
     if (!existCalendars.has(`${user._id}_calendar` as Ref<Calendar>)) {
       await tx.createDoc(

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { Channel, Contact, Employee, getGravatarUrl, getName } from '@hcengineering/contact'
+import { Channel, Contact, getGravatarUrl, getName, Person } from '@hcengineering/contact'
 import { Class, Client, DocumentQuery, Ref, RelatedDocument, WithLookup } from '@hcengineering/core'
 import login from '@hcengineering/login'
 import { IntlString, Resources, getResource } from '@hcengineering/platform'
@@ -55,9 +55,9 @@ import EditMember from './components/EditMember.svelte'
 import EditOrganization from './components/EditOrganization.svelte'
 import EditPerson from './components/EditPerson.svelte'
 import EditableAvatar from './components/EditableAvatar.svelte'
-import EmployeeAccountFilterValuePresenter from './components/EmployeeAccountFilterValuePresenter.svelte'
-import EmployeeAccountPresenter from './components/EmployeeAccountPresenter.svelte'
-import EmployeeAccountRefPresenter from './components/EmployeeAccountRefPresenter.svelte'
+import PersonAccountFilterValuePresenter from './components/PersonAccountFilterValuePresenter.svelte'
+import PersonAccountPresenter from './components/PersonAccountPresenter.svelte'
+import PersonAccountRefPresenter from './components/PersonAccountRefPresenter.svelte'
 import EmployeeArrayEditor from './components/EmployeeArrayEditor.svelte'
 import EmployeeBox from './components/EmployeeBox.svelte'
 import EmployeeBrowser from './components/EmployeeBrowser.svelte'
@@ -70,7 +70,7 @@ import MemberPresenter from './components/MemberPresenter.svelte'
 import Members from './components/Members.svelte'
 import MembersBox from './components/MembersBox.svelte'
 import MembersPresenter from './components/MembersPresenter.svelte'
-import MergeEmployee from './components/MergeEmployee.svelte'
+import MergePersons from './components/MergePersons.svelte'
 import OrganizationEditor from './components/OrganizationEditor.svelte'
 import OrganizationPresenter from './components/OrganizationPresenter.svelte'
 import PersonEditor from './components/PersonEditor.svelte'
@@ -121,7 +121,7 @@ export {
   EmployeeBrowser,
   MemberPresenter,
   EmployeeEditor,
-  EmployeeAccountRefPresenter,
+  PersonAccountRefPresenter,
   MembersPresenter,
   EditPerson,
   EmployeeRefPresenter,
@@ -148,7 +148,7 @@ export {
 
 const toObjectSearchResult = (e: WithLookup<Contact>): ObjectSearchResult => ({
   doc: e,
-  title: getName(e),
+  title: getName(getClient().getHierarchy(), e),
   icon: Avatar,
   iconProps: { size: 'x-small', avatar: e.avatar },
   component: UserInfo,
@@ -171,13 +171,13 @@ async function queryEmployee (
   filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
 ): Promise<ObjectSearchResult[]> {
   const q1 = await doContactQuery(
-    contact.class.Employee,
+    contact.mixin.Employee,
     { name: { $like: `%${search}%` }, active: true },
     filter,
     client
   )
   const q2 = await doContactQuery(
-    contact.class.Employee,
+    contact.mixin.Employee,
     { displayName: { $like: `%${search}%` }, active: true },
     {
       in: filter?.in,
@@ -195,7 +195,7 @@ async function doContactQuery<T extends Contact> (
   filter: { in?: RelatedDocument[] | undefined, nin?: RelatedDocument[] | undefined } | undefined,
   client: Client
 ): Promise<ObjectSearchResult[]> {
-  if (_class === contact.class.Employee) {
+  if (_class === contact.mixin.Employee) {
     q = { ...q, active: true }
   }
   if (filter?.in !== undefined || filter?.nin !== undefined) {
@@ -210,10 +210,12 @@ async function doContactQuery<T extends Contact> (
   return (await client.findAll(_class, q, { limit: 200 })).map(toObjectSearchResult)
 }
 
-async function kickEmployee (doc: Employee): Promise<void> {
+async function kickEmployee (doc: Person): Promise<void> {
   const client = getClient()
-  const email = await client.findOne(contact.class.EmployeeAccount, { employee: doc._id })
-  if (!doc.active) {
+
+  const employee = client.getHierarchy().as(doc, contact.mixin.Employee)
+  const email = await client.findOne(contact.class.PersonAccount, { person: doc._id })
+  if (!employee.active) {
     showPopup(
       MessageBox,
       {
@@ -230,7 +232,7 @@ async function kickEmployee (doc: Employee): Promise<void> {
     return
   }
   if (email === undefined) {
-    await client.update(doc, { active: false })
+    await client.update(employee, { active: false })
   } else {
     showPopup(
       MessageBox,
@@ -288,7 +290,7 @@ export default async (): Promise<Resources> => ({
     SocialEditor,
     Contacts,
     ContactsTabs,
-    EmployeeAccountPresenter,
+    PersonAccountPresenter,
     EmployeePresenter,
     EmployeeRefPresenter,
     Members,
@@ -300,7 +302,7 @@ export default async (): Promise<Resources> => ({
     CreateEmployee,
     AccountArrayEditor,
     ChannelFilter,
-    MergeEmployee,
+    MergePersons,
     Avatar,
     UserBoxList,
     ActivityChannelMessage,
@@ -312,9 +314,9 @@ export default async (): Promise<Resources> => ({
     UserBoxItems,
     EmployeeFilter,
     EmployeeFilterValuePresenter,
-    EmployeeAccountFilterValuePresenter,
+    PersonAccountFilterValuePresenter,
     DeleteConfirmationPopup,
-    EmployeeAccountRefPresenter
+    PersonAccountRefPresenter
   },
   completion: {
     EmployeeQuery: async (

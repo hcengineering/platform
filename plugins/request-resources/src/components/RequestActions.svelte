@@ -16,7 +16,7 @@
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import chunter, { Comment } from '@hcengineering/chunter'
   import { updateBacklinks } from '@hcengineering/chunter-resources'
-  import { EmployeeAccount } from '@hcengineering/contact'
+  import { PersonAccount } from '@hcengineering/contact'
   import { AttachedData, getCurrentAccount, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Request, RequestStatus } from '@hcengineering/request'
@@ -30,7 +30,7 @@
   export let value: Request
 
   const client = getClient()
-  const me = getCurrentAccount()._id as Ref<EmployeeAccount>
+  const me = getCurrentAccount()._id as Ref<PersonAccount>
 
   const approvable = value.requested.filter((a) => a === me).length > value.approved.filter((a) => a === me).length
 

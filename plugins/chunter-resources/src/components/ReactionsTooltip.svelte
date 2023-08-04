@@ -1,15 +1,17 @@
 <script lang="ts">
-  import { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
-  import { employeeAccountByIdStore, employeeByIdStore } from '@hcengineering/contact-resources'
+  import { Person, PersonAccount, getName } from '@hcengineering/contact'
+  import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
   import { Account, IdMap, Ref } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
 
   export let reactionAccounts: Ref<Account>[]
 
-  function getAccName (acc: Ref<Account>, accounts: IdMap<EmployeeAccount>, employees: IdMap<Employee>): string {
-    const account = accounts.get(acc as Ref<EmployeeAccount>)
+  const client = getClient()
+  function getAccName (acc: Ref<Account>, accounts: IdMap<PersonAccount>, employees: IdMap<Person>): string {
+    const account = accounts.get(acc as Ref<PersonAccount>)
     if (account !== undefined) {
-      const emp = employees.get(account.employee)
-      return emp ? getName(emp) : ''
+      const emp = employees.get(account.person)
+      return emp ? getName(client.getHierarchy(), emp) : ''
     }
     return ''
   }
@@ -17,6 +19,6 @@
 
 {#each reactionAccounts as acc}
   <div>
-    {getAccName(acc, $employeeAccountByIdStore, $employeeByIdStore)}
+    {getAccName(acc, $personAccountByIdStore, $personByIdStore)}
   </div>
 {/each}

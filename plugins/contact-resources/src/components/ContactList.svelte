@@ -28,9 +28,7 @@
   export let items: Ref<Contact>[] = []
   export let _class: Ref<Class<Contact>> = contact.class.Contact
   export let label: IntlString
-  export let docQuery: DocumentQuery<Contact> | undefined = {
-    active: true
-  }
+  export let docQuery: DocumentQuery<Contact> | undefined = {}
 
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'

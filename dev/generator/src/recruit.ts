@@ -1,4 +1,4 @@
-import contact, { Channel, Employee, EmployeeAccount, Person } from '@hcengineering/contact'
+import contact, { Channel, PersonAccount, Person, Employee } from '@hcengineering/contact'
 import core, {
   AttachedData,
   Data,
@@ -48,9 +48,9 @@ export async function generateContacts (
 ): Promise<void> {
   const connection = await connect(transactorUrl, workspaceId)
 
-  const accounts = await connection.findAll(contact.class.EmployeeAccount, {})
+  const accounts = await connection.findAll(contact.class.PersonAccount, {})
   const accountIds = accounts.map((a) => a._id)
-  const emoloyeeIds = accounts.map((a) => a.employee)
+  const emoloyeeIds = accounts.map((a) => a.person as Ref<Employee>)
 
   const account = faker.random.arrayElement(accounts)
 
@@ -78,7 +78,7 @@ export async function generateContacts (
 
 async function genVacansyApplicants (
   ctx: MeasureContext,
-  accountIds: Ref<EmployeeAccount>[],
+  accountIds: Ref<PersonAccount>[],
   options: RecruitOptions,
   i: number,
   client: TxOperations,

@@ -279,16 +279,17 @@ async function loadModel (
   console.log('find' + (lastTxTime >= 0 ? 'full model' : 'model diff'), atxes.length, Date.now() - t)
 
   // Ignore Employee accounts.
-  function isEmployeeAccount (tx: Tx): boolean {
+  function isPersonAccount (tx: Tx): boolean {
     return (
       (tx._class === core.class.TxCreateDoc ||
         tx._class === core.class.TxUpdateDoc ||
         tx._class === core.class.TxRemoveDoc) &&
-      (tx as TxCUD<Doc>).objectClass === 'contact:class:EmployeeAccount'
+      ((tx as TxCUD<Doc>).objectClass === 'contact:class:PersonAccount' ||
+        (tx as TxCUD<Doc>).objectClass === 'contact:class:Account')
     )
   }
 
-  atxes.forEach((tx) => (tx.modifiedBy === core.account.System && !isEmployeeAccount(tx) ? systemTx : userTx).push(tx))
+  atxes.forEach((tx) => (tx.modifiedBy === core.account.System && !isPersonAccount(tx) ? systemTx : userTx).push(tx))
 
   if (allowedPlugins != null) {
     fillConfiguration(systemTx, configs)

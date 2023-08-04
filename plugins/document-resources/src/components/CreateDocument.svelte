@@ -15,7 +15,7 @@
 //
 -->
 <script lang="ts">
-  import { EmployeeAccount } from '@hcengineering/contact'
+  import { Employee, PersonAccount } from '@hcengineering/contact'
   import { Data, generateId, getCurrentAccount, Ref } from '@hcengineering/core'
   import { CollaboratorDocument, Document, DocumentVersionState } from '@hcengineering/document'
   import { Card, getClient } from '@hcengineering/presentation'
@@ -29,7 +29,7 @@
   }
 
   const id = generateId()
-  const currentUser = getCurrentAccount() as EmployeeAccount
+  const currentUser = getCurrentAccount() as PersonAccount
 
   const object: Data<Document> = {
     name: '',
@@ -40,7 +40,7 @@
     version: 0,
     latest: 0.1,
     approvers: [],
-    authors: [currentUser.employee],
+    authors: [currentUser.person as Ref<Employee>],
     reviewers: [],
     requests: 0
   }

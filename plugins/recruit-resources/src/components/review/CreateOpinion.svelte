@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Employee } from '@hcengineering/contact'
+  import type { Person } from '@hcengineering/contact'
   import { Account, generateId, Ref } from '@hcengineering/core'
   import { OK, Status } from '@hcengineering/platform'
   import { Card, getClient } from '@hcengineering/presentation'
@@ -26,7 +26,7 @@
 
   export let space: Ref<SpaceWithStates>
   export let review: Ref<Review>
-  export let assignee: Ref<Employee>
+  export let assignee: Ref<Person>
 
   const status: Status = OK
 

@@ -1034,18 +1034,17 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
     const userTx: Tx[] = []
 
     // Ignore Employee accounts.
-    function isEmployeeAccount (tx: Tx): boolean {
+    function isPersonAccount (tx: Tx): boolean {
       return (
         (tx._class === core.class.TxCreateDoc ||
           tx._class === core.class.TxUpdateDoc ||
           tx._class === core.class.TxRemoveDoc) &&
-        (tx as TxCUD<Doc>).objectClass === 'contact:class:EmployeeAccount'
+        ((tx as TxCUD<Doc>).objectClass === 'contact:class:PersonAccount' ||
+          (tx as TxCUD<Doc>).objectClass === 'contact:class:EmployeeAccount')
       )
     }
 
-    model.forEach((tx) =>
-      (tx.modifiedBy === core.account.System && !isEmployeeAccount(tx) ? systemTx : userTx).push(tx)
-    )
+    model.forEach((tx) => (tx.modifiedBy === core.account.System && !isPersonAccount(tx) ? systemTx : userTx).push(tx))
     return systemTx.concat(userTx)
   }
 }

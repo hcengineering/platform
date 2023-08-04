@@ -65,7 +65,7 @@
     showPopup(
       UsersPopup,
       {
-        _class: contact.class.Employee,
+        _class: contact.mixin.Employee,
         selected: value?._id,
         docQuery: {
           active: true

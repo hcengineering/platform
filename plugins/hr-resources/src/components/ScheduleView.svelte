@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { CalendarMode } from '@hcengineering/calendar-resources'
-  import { Employee, EmployeeAccount } from '@hcengineering/contact'
+  import { Employee, PersonAccount } from '@hcengineering/contact'
   import contact from '@hcengineering/contact-resources/src/plugin'
   import { DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
   import { Department, fromTzDate, Request, RequestType, Staff } from '@hcengineering/hr'
@@ -52,7 +52,7 @@
   const lq = createQuery()
   const typeQuery = createQuery()
   const staffQ = createQuery()
-  const currentEmployee = (getCurrentAccount() as EmployeeAccount).employee
+  const currentEmployee = (getCurrentAccount() as PersonAccount).person
 
   let staff: Staff[] = []
   let requests: Request[] = []
@@ -265,7 +265,7 @@
     const map = new Map<Ref<Staff>, Department[]>()
     if (departmentStaff && departmentStaff.length > 0) {
       const ids = departmentStaff.map((staff) => staff._id)
-      const staffs = await client.findAll(contact.class.EmployeeAccount, { employee: { $in: ids } })
+      const staffs = await client.findAll(contact.class.PersonAccount, { employee: { $in: ids } })
       const departments = await client.findAll(hr.class.Department, {
         members: { $in: staffs.map((staff) => staff._id) }
       })

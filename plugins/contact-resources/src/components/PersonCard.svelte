@@ -15,7 +15,7 @@
 <script lang="ts">
   import attachment from '@hcengineering/attachment'
   import contact, { Channel, Contact, getName } from '@hcengineering/contact'
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import Avatar from './Avatar.svelte'
   import { Component, Label } from '@hcengineering/ui'
   import { DocNavLink } from '@hcengineering/view-resources'
@@ -23,6 +23,8 @@
 
   export let object: Contact
   export let disabled: boolean = false
+
+  const client = getClient()
 
   let channels: Channel[] = []
   const channelsQuery = createQuery()
@@ -46,7 +48,7 @@
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <DocNavLink {object} {disabled}>
       <div class="name lines-limit-2">
-        {getName(object)}
+        {getName(client.getHierarchy(), object)}
       </div>
     </DocNavLink>
     <div class="description overflow-label">{object.city ?? ''}</div>

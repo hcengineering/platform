@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { EmployeeAccount, getName } from '@hcengineering/contact'
+  import contact, { PersonAccount, getName, Employee } from '@hcengineering/contact'
   import { employeeByIdStore } from '@hcengineering/contact-resources'
-  import { Ref } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
+  import { Doc, Ref, TxCUD } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { Request } from '@hcengineering/request'
   import { Label, TimeSince } from '@hcengineering/ui'
   import { ObjectPresenter } from '@hcengineering/view-resources'
@@ -26,19 +26,21 @@
 
   export let value: Request
 
-  let account: EmployeeAccount | undefined
-  $: employee = account && $employeeByIdStore.get(account.employee)
+  let account: PersonAccount | undefined
+  $: employee = account && $employeeByIdStore.get(account.person as Ref<Employee>)
 
+  const client = getClient()
   const query = createQuery()
 
   $: query.query(
-    contact.class.EmployeeAccount,
-    { _id: value.tx.modifiedBy as Ref<EmployeeAccount> },
+    contact.class.PersonAccount,
+    { _id: value.tx.modifiedBy as Ref<PersonAccount> },
     (res) => {
       ;[account] = res
     },
     { limit: 1 }
   )
+  $: txCud = value.tx as TxCUD<Doc>
 </script>
 
 <div class="container">
@@ -46,14 +48,14 @@
     <div class="label">
       <div class="bold">
         {#if employee}
-          {getName(employee)}
+          {getName(client.getHierarchy(), employee)}
         {/if}
       </div>
       <span class="lower">
         <Label label={request.string.CreatedRequest} />
         <Label label={request.string.For} />
       </span>
-      <ObjectPresenter objectId={value.tx.objectId} _class={value.tx.objectClass} />
+      <ObjectPresenter objectId={txCud.objectId} _class={txCud.objectClass} />
     </div>
     <div class="time"><TimeSince value={value.tx.modifiedOn} /></div>
   </div>

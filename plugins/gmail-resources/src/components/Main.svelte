@@ -20,7 +20,7 @@
   import { Message, SharedMessage } from '@hcengineering/gmail'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { Integration } from '@hcengineering/setting'
   import templates, { TemplateDataProvider } from '@hcengineering/templates'
   import { Button, Icon, Label, Panel, eventToHTMLElement, showPopup } from '@hcengineering/ui'
@@ -36,6 +36,8 @@
   export let channel: Channel
   export let embedded = false
   export let message: Message | undefined = undefined
+
+  const client = getClient()
 
   let object: Contact
   let currentMessage: SharedMessage | undefined = undefined
@@ -108,7 +110,7 @@
         <div class="title-wrapper">
           <span class="wrapped-title">Email</span>
           <span class="wrapped-subtitle">
-            <b>{getName(object)}</b>
+            <b>{getName(client.getHierarchy(), object)}</b>
           </span>
         </div>
       </div>

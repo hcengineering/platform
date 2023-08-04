@@ -17,6 +17,7 @@
 
   import { getName, Person } from '@hcengineering/contact'
   import { Asset } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
   import { AnySvelteComponent, IconSize } from '@hcengineering/ui'
 
   export let value: Person
@@ -24,6 +25,8 @@
   export let size: IconSize
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let short: boolean = false
+
+  const client = getClient()
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -31,6 +34,6 @@
   <Avatar avatar={value.avatar} {size} {icon} on:accent-color />
   <div class="flex-col min-w-0 {size === 'tiny' || size === 'inline' ? 'ml-1' : 'ml-2'}" class:max-w-20={short}>
     {#if subtitle}<div class="content-dark-color text-sm">{subtitle}</div>{/if}
-    <div class="label overflow-label text-left">{getName(value)}</div>
+    <div class="label overflow-label text-left">{getName(client.getHierarchy(), value)}</div>
   </div>
 </div>

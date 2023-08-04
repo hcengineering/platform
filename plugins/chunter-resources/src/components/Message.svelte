@@ -16,8 +16,8 @@
   import { Attachment } from '@hcengineering/attachment'
   import { AttachmentList, AttachmentRefInput } from '@hcengineering/attachment-resources'
   import type { ChunterMessage, Message, Reaction } from '@hcengineering/chunter'
-  import { EmployeeAccount } from '@hcengineering/contact'
-  import { Avatar, employeeByIdStore, EmployeePresenter } from '@hcengineering/contact-resources'
+  import { PersonAccount } from '@hcengineering/contact'
+  import { Avatar, personByIdStore, EmployeePresenter } from '@hcengineering/contact-resources'
   import { getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { getClient, MessageViewer } from '@hcengineering/presentation'
@@ -46,8 +46,8 @@
 
   let refInput: AttachmentRefInput
 
-  $: empRef = (message.$lookup?.createBy as EmployeeAccount)?.employee
-  $: employee = empRef !== undefined ? $employeeByIdStore.get(empRef) : undefined
+  $: empRef = (message.$lookup?.createBy as PersonAccount)?.person
+  $: employee = empRef !== undefined ? $personByIdStore.get(empRef) : undefined
   $: attachments = (message.$lookup?.attachments ?? []) as Attachment[]
 
   const client = getClient()

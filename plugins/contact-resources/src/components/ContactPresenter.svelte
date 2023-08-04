@@ -38,7 +38,7 @@
   function isEmployee (value: Contact): boolean {
     const client = getClient()
     const hierarchy = client.getHierarchy()
-    return hierarchy.isDerived(value._class, contact.class.Employee)
+    return hierarchy.isDerived(value._class, contact.mixin.Employee)
   }
   const toOrg = (contact: Contact) => contact as Organization
   const toEmployee = (contact: Contact) => contact as Employee

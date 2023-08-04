@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { EmployeeAccount } from '@hcengineering/contact'
+  import { PersonAccount } from '@hcengineering/contact'
   import { getCurrentAccount, Ref } from '@hcengineering/core'
   import {
     NotificationProvider,
@@ -64,7 +64,7 @@
     query.query(
       notification.class.Notification,
       {
-        attachedTo: (getCurrentAccount() as EmployeeAccount).employee,
+        attachedTo: (getCurrentAccount() as PersonAccount).person,
         status: { $nin: [NotificationStatus.Read] }
       },
       (res) => {
