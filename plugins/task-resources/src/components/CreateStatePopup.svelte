@@ -18,7 +18,7 @@
   import task from '../plugin'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
   import { calcRank, DoneState, Kanban, KanbanTemplate, KanbanTemplateSpace, State } from '@hcengineering/task'
-  import { Class, Data, Ref, SortingOrder } from '@hcengineering/core'
+  import { Class, Data, generateId, Ref, SortingOrder } from '@hcengineering/core'
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -53,7 +53,7 @@
           ...attachedTo
         }
       }
-      const ops = client.apply('create-update-state').notMatch(_class, {
+      const ops = client.apply(template?.space ?? kanban?.attachedTo ?? generateId()).notMatch(_class, {
         space: isTemplate && template ? template.space : kanban?.attachedTo,
         name: value.trim(),
         ...attachedTo
