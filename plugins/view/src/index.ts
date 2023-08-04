@@ -433,7 +433,7 @@ export interface ActionCategory extends Doc, UXObject {
 /**
  * @public
  */
-export type ActionGroup = 'create' | 'edit' | 'associate' | 'copy' | 'tools' | 'other'
+export type ActionGroup = 'create' | 'edit' | 'associate' | 'copy' | 'tools' | 'other' | 'remove'
 
 /**
  * @public
