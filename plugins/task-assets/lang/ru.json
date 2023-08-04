@@ -73,6 +73,9 @@
     "TodoItems": "Todos",
     "Dashboard": "Дашборд",
     "AllTime": "Все время",
-    "RelatedIssues": "Связанные процессы"
+    "RelatedIssues": "Связанные процессы",
+    "StatusName": "Имя статуса",
+    "StatusPopupTitle": "Создание статуса и изменение имени существующего",
+    "NameAlreadyExists": "Данное имя уже исползутеся другим статусом этого типа"
   }
 }

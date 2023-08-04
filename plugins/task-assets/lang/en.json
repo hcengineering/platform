@@ -73,6 +73,9 @@
     "TodoItems": "Todos",
     "Dashboard": "Dashboard",
     "AllTime": "All time",
-    "RelatedIssues": "Related processes"
+    "RelatedIssues": "Related processes",
+    "StatusName": "Status name",
+    "StatusPopupTitle": "Create new status or edit name for existing",
+    "NameAlreadyExists": "This name already exists for this status type"
   }
 }

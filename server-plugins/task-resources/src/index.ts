@@ -70,7 +70,7 @@ export async function OnTemplateStateCreate (tx: Tx, control: TriggerControl): P
     await control.findAll(task.class.KanbanTemplate, { _id: actualTx.attributes.attachedTo })
   )[0] as KanbanTemplate
   const classToChange = getClassToChangeOrCreate(actualTx.objectClass)
-  const objectWithStatesToChange = await control.findAll(templateSpace.attachedToClass, { templateId: template._id })
+  const objectWithStatesToChange = await control.findAll(templateSpace.attachedToClass, { templateId: template?._id })
   const ids = Array.from(objectWithStatesToChange.map((x) => x._id)) as Array<Ref<Space>>
   const doc = TxProcessor.createDoc2Doc(actualTx)
   const ofAttribute = classToChange === task.class.State ? task.attribute.State : task.attribute.DoneState

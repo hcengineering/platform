@@ -279,7 +279,8 @@ const task = plugin(taskId, {
   component: {
     KanbanTemplateEditor: '' as AnyComponent,
     KanbanTemplateSelector: '' as AnyComponent,
-    TodoItemsPopup: '' as AnyComponent
+    TodoItemsPopup: '' as AnyComponent,
+    CreateStatePopup: '' as AnyComponent
   },
   ids: {
     AssigneedNotification: '' as Ref<NotificationType>
