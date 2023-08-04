@@ -36,7 +36,7 @@
     "ApplyTags": "Apply",
     "Weight": "Weight",
     "Expert": "Expert",
-    "Meaningfull": "Meaningfull",
+    "Meaningfull": "Meaningful",
     "Initial": "Initial",
     "NumberLabels": "{count, plural, =0 {no labels} =1 {1 label} other {# labels}}"
   }
