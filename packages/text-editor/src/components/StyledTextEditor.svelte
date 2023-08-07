@@ -24,8 +24,6 @@
     Scroller,
     SelectPopup,
     showPopup,
-    deviceOptionsStore as deviceInfo,
-    checkAdaptiveMatching
   } from '@hcengineering/ui'
   import { Level } from '@tiptap/extension-heading'
   import { createEventDispatcher } from 'svelte'
@@ -82,6 +80,8 @@
   export let extensions: AnyExtension[] = []
 
   let textEditor: TextEditor
+  let textEditorToolbar: HTMLElement
+
   let isEmpty = true
   let contentHeight: number
 
@@ -447,9 +447,9 @@
       }
     )
   }
-
-  $: devSize = $deviceInfo.size
-  $: buttonsGap = checkAdaptiveMatching(devSize, 'sm') ? 'small-gap' : 'large-gap'
+  
+  let buttonsGap = 'small-gap'
+  
   $: buttonsHeight =
     buttonSize === 'large' || buttonSize === 'x-large' || buttonSize === 'full'
       ? 'h-6 max-h-6'
@@ -472,7 +472,7 @@
   tabindex="-1"
   on:click|preventDefault|stopPropagation={() => (needFocus = true)}
 >
-  {#if isFormatting}
+  {#if isFormatting}  
     <div class="formatPanel buttons-group xsmall-gap mb-4" class:withoutTopBorder>
       <StyleButton
         icon={Header}
@@ -592,6 +592,7 @@
             on:blur
             on:focus
             supportSubmit={false}
+            {textEditorToolbar}
             on:selection-update={updateFormattingState}
           />
         </Scroller>
@@ -611,14 +612,15 @@
           on:blur
           on:focus
           supportSubmit={false}
+          {textEditorToolbar}
           on:selection-update={updateFormattingState}
         />
       {/if}
     </div>
   </div>
   {#if showButtons}
-    <div class="flex-between">
-      <div class="buttons-group {buttonsGap} mt-3">
+    <div class="flex-between"  >
+      <div class="buttons-group buttons-toolbar {buttonsGap} mt-3" bind:this={textEditorToolbar} >
         {#each actions.filter((it) => it.hidden !== true) as a}
           <StyleButton icon={a.icon} size={buttonSize} on:click={(evt) => handleAction(a, evt)} />
           {#if a.order % 10 === 1}
@@ -702,5 +704,13 @@
       box-shadow: var(--theme-popup-shadow);
       z-index: 1;
     }
+  }
+
+  .buttons-toolbar {
+    padding: 0.5rem 0.5rem;
+    border-radius: 0.5rem;
+    background-color: var(--theme-panel-color);
+    border: 1px solid var(--theme-list-divider-color);    
+    box-shadow: 0px 0px 2px var(--theme-list-divider-color);
   }
 </style>

@@ -20,6 +20,9 @@
   import { AnyExtension, Editor, Extension, HTMLContent } from '@tiptap/core'
   import { Level } from '@tiptap/extension-heading'
   import Placeholder from '@tiptap/extension-placeholder'
+  import BubbleMenu from '@tiptap/extension-bubble-menu'
+
+
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import textEditorPlugin from '../plugin'
   import { FormatMode } from '../types'
@@ -32,6 +35,7 @@
   export let extensions: AnyExtension[] = []
   export let supportSubmit = true
   export let isEmpty = true
+  export let textEditorToolbar: HTMLElement
 
   let element: HTMLElement
   let editor: Editor
@@ -202,7 +206,10 @@
           ...defaultExtensions,
           ...(supportSubmit ? [Handle] : []), // order important
           Placeholder.configure({ placeholder: placeHolderStr }),
-          ...extensions
+          ...extensions,
+          BubbleMenu.configure({
+            element: textEditorToolbar,
+          }),
         ],
         parseOptions: {
           preserveWhitespace: 'full'

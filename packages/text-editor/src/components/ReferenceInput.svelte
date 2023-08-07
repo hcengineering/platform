@@ -69,6 +69,8 @@
   const client = getClient()
 
   let textEditor: TextEditor
+  let textEditorToolbar: HTMLElement
+
   let isFormatting = false
   let activeModes = new Set<FormatMode>()
   let isSelectionEmpty = true
@@ -361,6 +363,7 @@
         on:selection-update={updateFormattingState}
         on:update
         placeholder={placeholder ?? textEditorPlugin.string.EditorPlaceholder}
+        {textEditorToolbar}
       />
     </div>
     {#if showSend}
@@ -383,7 +386,7 @@
     {/if}
   </div>
   <div class="flex-between clear-mins" style:margin={'.75rem .75rem 0'}>
-    <div class="buttons-group {shrinkButtons ? 'medium-gap' : 'large-gap'}">
+    <div class="buttons-group buttons-toolbar medium-gap" bind:this={textEditorToolbar}>
       {#each actions as a}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
@@ -534,5 +537,13 @@
         }
       }
     }
+  }
+
+  .buttons-toolbar {
+    padding: 0.5rem 0.5rem;
+    border-radius: 0.5rem;
+    background-color: var(--theme-panel-color);
+    border: 1px solid var(--theme-list-divider-color);    
+    box-shadow: 0px 0px 2px var(--theme-list-divider-color);
   }
 </style>
