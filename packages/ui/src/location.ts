@@ -176,3 +176,16 @@ export function navigate (location: PlatformLocation, store = true): boolean {
   }
   return false
 }
+
+export function tryOpenInDesktopApp(protocol: string) {
+  if (!window.location.origin) {
+    return
+  }
+  const link = window.location.toString()
+    .replace('http://', protocol)
+    .replace('https://', protocol)
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  iframe.src = link;
+  document.body.appendChild(iframe); 
+}
