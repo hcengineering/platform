@@ -47,6 +47,7 @@
     viewletQuery,
     (res) => {
       viewlets = res
+      viewlet = viewlets[0]
       dispatch('viewlets', viewlets)
     },
     {
