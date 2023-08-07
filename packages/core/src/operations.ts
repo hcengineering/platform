@@ -272,7 +272,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     return new ApplyOperations(this, scope)
   }
 
-  async diffUpdate (doc: Doc, raw: Doc | Data<Doc>, date: Timestamp): Promise<Doc> {
+  async diffUpdate (doc: Doc, raw: Doc | Data<Doc>, date: Timestamp, account?: Ref<Account>): Promise<Doc> {
     // We need to update fields if they are different.
     const documentUpdate: DocumentUpdate<Doc> = {}
     for (const [k, v] of Object.entries(raw)) {
@@ -285,7 +285,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
       }
     }
     if (Object.keys(documentUpdate).length > 0) {
-      await this.update(doc, documentUpdate, false, date, doc.modifiedBy)
+      await this.update(doc, documentUpdate, false, date, account ?? doc.modifiedBy)
       TxProcessor.applyUpdate(doc, documentUpdate)
     }
     return doc

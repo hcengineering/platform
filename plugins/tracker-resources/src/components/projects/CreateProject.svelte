@@ -50,8 +50,8 @@
 
   export let project: Project | undefined = undefined
 
-  export let namePlaceholder: ''
-  export let descriptionPlaceholder: ''
+  export let namePlaceholder: string = ''
+  export let descriptionPlaceholder: string = ''
   export let statusFactory: (
     client: TxOperations | ApplyOperations,
     spaceId: Status['space'],
@@ -208,6 +208,8 @@
     { _id: { $nin: project ? [project._id] : [] } },
     (res) => (projectsIdentifiers = new Set(res.map(({ identifier }) => identifier)))
   )
+
+  $: identifier = identifier.toLocaleUpperCase().replaceAll('-', '_').replaceAll(' ', '_').substring(0, 5)
 </script>
 
 <Card
@@ -237,7 +239,7 @@
           autoFocus
           on:input={() => {
             if (isNew) {
-              identifier = name.toLocaleUpperCase().replaceAll(' ', '_').substring(0, 5)
+              identifier = name.toLocaleUpperCase().replaceAll('-', '_').replaceAll(' ', '_').substring(0, 5)
               color = isColorSelected ? color : getColorNumberByText(name)
             }
           }}
@@ -253,7 +255,6 @@
       <div bind:this={changeIdentityRef} class="padding flex-row-center relative">
         <EditBox
           bind:value={identifier}
-          on:input
           disabled={!isNew}
           placeholder={tracker.string.ProjectIdentifierPlaceholder}
           kind={'large-style'}

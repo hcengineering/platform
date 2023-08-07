@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { MeasureContext, ServerStorage, Tx } from '@hcengineering/core'
+import core, { MeasureContext, ServerStorage, Tx, systemAccountEmail } from '@hcengineering/core'
 import { BroadcastFunc, Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
 import { BaseMiddleware } from './base'
 
@@ -35,7 +35,7 @@ export class ModifiedMiddleware extends BaseMiddleware implements Middleware {
   }
 
   async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
-    if (tx.modifiedBy !== core.account.System) {
+    if (tx.modifiedBy !== core.account.System && ctx.userEmail !== systemAccountEmail) {
       tx.modifiedOn = Date.now()
       tx.createdOn = tx.createdOn ?? tx.modifiedOn
     }
