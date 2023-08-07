@@ -235,7 +235,7 @@
       )`
       divScroll.style.webkitMaskImage = gradient
     }
-    if (divHScroll && horizontal) {
+    if (divHScroll && horizontal && !noFade) {
       const gradientH = `linear-gradient(
         90deg,
         rgba(0, 0, 0, 1) ${shiftLeft}px,

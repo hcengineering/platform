@@ -41,6 +41,7 @@ export default mergeIds(hrId, hr, {
   },
   component: {
     Structure: '' as AnyComponent,
+    CreateDepartment: '' as AnyComponent,
     EditDepartment: '' as AnyComponent,
     DepartmentStaff: '' as AnyComponent,
     DepartmentEditor: '' as AnyComponent,
@@ -54,6 +55,7 @@ export default mergeIds(hrId, hr, {
     HR: '' as Ref<ActionCategory>
   },
   action: {
+    CreateDepartment: '' as Ref<Action>,
     EditDepartment: '' as Ref<Action>,
     ArchiveDepartment: '' as Ref<Action>,
     EditRequest: '' as Ref<Action>,

@@ -34,19 +34,11 @@
   <NavHeader label={hr.string.HRApplication} />
 
   <Scroller shrink>
-    <!-- TODO Specials -->
-
     <div class="antiNav-divider short line" />
 
     <TreeNode label={hr.string.Departments} parent>
       <DepartmentsHierarchy {departments} {descendants} {departmentById} selected={department} on:selected />
     </TreeNode>
-
-    <!-- TODO Add Positions -->
-    <!-- <div class="antiNav-divider short line" /> -->
-
-    <!-- <TreeNode label={hr.string.Positions} parent> -->
-    <!-- </TreeNode> -->
   </Scroller>
 
   <NavFooter />
