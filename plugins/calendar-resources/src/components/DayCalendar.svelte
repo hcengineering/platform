@@ -13,28 +13,29 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Event } from '@hcengineering/calendar'
   import { Timestamp } from '@hcengineering/core'
-  import { createEventDispatcher, onMount } from 'svelte'
   import ui, {
-    resizeObserver,
-    deviceOptionsStore as deviceInfo,
-    Scroller,
-    Label,
     ActionIcon,
+    CalendarItem,
+    IconDownOutline,
     IconUpOutline,
-    IconDownOutline
-  } from '../..'
-  import {
+    Label,
     MILLISECONDS_IN_DAY,
+    Scroller,
     addZero,
+    areDatesEqual,
+    deviceOptionsStore as deviceInfo,
     day as getDay,
     getMonday,
     getWeekDayName,
-    areDatesEqual
-  } from './internal/DateUtils'
-  import { CalendarItem } from '../../types'
+    resizeObserver
+  } from '@hcengineering/ui'
+  import { createEventDispatcher, onMount } from 'svelte'
+  import calendar from '../plugin'
+  import EventElement from './EventElement.svelte'
 
-  export let events: CalendarItem[]
+  export let events: Event[]
   export let mondayStart = true
   export let selectedDate: Date = new Date()
   export let currentDate: Date = selectedDate
@@ -53,6 +54,59 @@
     return ampm ? `${hour > 12 ? hour - 12 : hour}${hour < 12 ? 'am' : 'pm'}` : `${addZero(hour)}:00`
   }
   const rem = (n: number): number => n * fontSize
+
+  const offsetTZ = new Date().getTimezoneOffset() * 60 * 1000
+
+  const toCalendar = (
+    events: Event[],
+    date: Date,
+    days: number = 1,
+    startHour: number = 0,
+    endHour: number = 24
+  ): CalendarItem[] => {
+    const result: CalendarItem[] = []
+    for (let day = 0; day < days; day++) {
+      const startDay = new Date(MILLISECONDS_IN_DAY * day + date.getTime()).setHours(0, 0, 0, 0)
+      const startDate = new Date(MILLISECONDS_IN_DAY * day + date.getTime()).setHours(startHour, 0, 0, 0)
+      const lastDate = new Date(MILLISECONDS_IN_DAY * day + date.getTime()).setHours(endHour, 0, 0, 0)
+      events.forEach((event) => {
+        const eventStart = event.allDay ? event.date + offsetTZ : event.date
+        const eventEnd = event.allDay ? event.dueDate + offsetTZ : event.dueDate
+        if ((eventStart < lastDate && eventEnd > startDate) || (eventStart === eventEnd && eventStart === startDay)) {
+          result.push({
+            _id: event._id,
+            allDay: event.allDay,
+            date: eventStart,
+            dueDate: eventEnd,
+            day,
+            access: event.access
+          })
+        }
+      })
+    }
+    const sd = date.setHours(0, 0, 0, 0)
+    const ld = new Date(MILLISECONDS_IN_DAY * (days - 1) + date.getTime()).setHours(23, 59, 59, 999)
+    events
+      .filter((ev) => ev.allDay)
+      .sort((a, b) => b.dueDate - b.date - (a.dueDate - a.date))
+      .forEach((event) => {
+        const eventStart = event.date + offsetTZ
+        const eventEnd = event.dueDate + offsetTZ
+        if ((eventStart < ld && eventEnd > sd) || (eventStart === eventEnd && eventStart === sd)) {
+          result.push({
+            _id: event._id,
+            allDay: event.allDay,
+            date: eventStart,
+            dueDate: eventEnd,
+            day: -1,
+            access: event.access
+          })
+        }
+      })
+    return result
+  }
+
+  $: calendarEvents = toCalendar(events, currentDate, displayedDaysCount, startHour, displayedHours + startHour)
 
   $: fontSize = $deviceInfo.fontSize
   $: docHeight = $deviceInfo.docHeight
@@ -88,7 +142,7 @@
   let calendarWidth: number = 0
   let calendarRect: DOMRect
   let colWidth: number = 0
-  let newEvents = events
+  let newEvents = calendarEvents
   let grid: CalendarGrid[] = Array<CalendarGrid>(displayedDaysCount)
   let alldays: CalendarItem[] = []
   let alldaysGrid: CalendarADGrid[] = Array<CalendarADGrid>(displayedDaysCount)
@@ -105,8 +159,8 @@
   let shortAlldays: { id: string; day: number; fixRow?: boolean }[] = []
   let moreCounts: number[] = Array<number>(displayedDaysCount)
 
-  $: if (newEvents !== events) {
-    newEvents = events
+  $: if (newEvents !== calendarEvents) {
+    newEvents = calendarEvents
     grid = new Array<CalendarGrid>(displayedDaysCount)
     alldaysGrid = new Array<CalendarADGrid>(displayedDaysCount)
     alldays = []
@@ -187,12 +241,12 @@
     adMaxRow++
   }
   const prepareAllDays = () => {
-    alldays = events.filter((ev) => ev.day === -1)
+    alldays = calendarEvents.filter((ev) => ev.allDay)
     adRows = []
     for (let i = 0; i < displayedDaysCount; i++) alldaysGrid[i] = { alldays: [null] }
     adMaxRow = 1
     alldays.forEach((event) => {
-      const days = events
+      const days = calendarEvents
         .filter((ev) => ev.allDay && ev.day !== -1 && event._id === ev._id)
         .map((ev) => {
           return ev.day
@@ -288,7 +342,8 @@
     result.bottom =
       cellHeight * (displayedHours - startHour - endTime.hours - 1) +
       ((60 - endTime.mins) / 60) * cellHeight +
-      getGridOffset(endTime.mins, true)
+      getGridOffset(endTime.mins, true) +
+      (showHeader ? 0 : rem(2.5))
     let cols = 1
     let index: number = 0
     grid[event.day].columns.forEach((col, i) =>
@@ -414,7 +469,7 @@
     {/each}
 
     <div class="sticky-header allday-header text-sm content-dark-color">
-      All day
+      <Label label={calendar.string.AllDay} />
       {#if (!minimizedAD && adMaxRow > maxAD) || (minimizedAD && adMaxRow > minAD)}
         <ActionIcon
           icon={shownAD ? IconUpOutline : IconDownOutline}
@@ -432,19 +487,26 @@
                 <div style:min-height={`${shownHeightAD - cellBorder * 2}px`} />
                 {#each alldays as event, i}
                   {@const rect = getADRect(event._id)}
-                  <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-                  <div
-                    class="calendar-element"
-                    style:top={`${rect.top}px`}
-                    style:height={`${rect.height}px`}
-                    style:left={`${rect.left}px`}
-                    style:width={`${rect.width}px`}
-                    style:opacity={rect.visibility === 0 ? 0.4 : 1}
-                    style:--mask-image={getMask(rect.visibility)}
-                    tabindex={500 + i}
-                  >
-                    <slot name="event" id={event._id} size={{ width: rect.width, height: rect.height }} />
-                  </div>
+                  {@const ev = events.find((p) => p._id === event._id)}
+                  {#if ev}
+                    <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+                    <div
+                      class="calendar-element"
+                      style:top={`${rect.top}px`}
+                      style:height={`${rect.height}px`}
+                      style:left={`${rect.left}px`}
+                      style:width={`${rect.width}px`}
+                      style:opacity={rect.visibility === 0 ? 0.4 : 1}
+                      style:--mask-image={getMask(rect.visibility)}
+                      tabindex={500 + i}
+                    >
+                      <EventElement
+                        hourHeight={cellHeight}
+                        event={ev}
+                        size={{ width: rect.width, height: rect.height }}
+                      />
+                    </div>
+                  {/if}
                 {/each}
               {/key}{/key}{/key}
         </Scroller>
@@ -452,38 +514,44 @@
         {#key [styleAD, calendarWidth, displayedDaysCount]}
           {#each alldays as event, i}
             {@const rect = getADRect(event._id)}
-            <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-            <div
-              class="calendar-element"
-              style:top={`${rect.top}px`}
-              style:height={`${rect.height}px`}
-              style:left={`${rect.left}px`}
-              style:width={`${rect.width}px`}
-              style:opacity={rect.visibility === 0 ? 0.4 : 1}
-              style:--mask-image={getMask(rect.visibility)}
-              tabindex={500 + i}
-            >
-              <slot name="event" id={event._id} size={{ width: rect.width, height: rect.height }} />
-            </div>
+            {@const ev = events.find((p) => p._id === event._id)}
+            {#if ev}
+              <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+              <div
+                class="calendar-element"
+                style:top={`${rect.top}px`}
+                style:height={`${rect.height}px`}
+                style:left={`${rect.left}px`}
+                style:width={`${rect.width}px`}
+                style:opacity={rect.visibility === 0 ? 0.4 : 1}
+                style:--mask-image={getMask(rect.visibility)}
+                tabindex={500 + i}
+              >
+                <EventElement hourHeight={cellHeight} event={ev} size={{ width: rect.width, height: rect.height }} />
+              </div>
+            {/if}
           {/each}
         {/key}
       {:else}
         {#key [styleAD, calendarWidth, displayedDaysCount]}
           {#each shortAlldays as event, i}
             {@const rect = getADRect(event.id, event.day, event.fixRow)}
-            <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-            <div
-              class="calendar-element"
-              style:top={`${rect.top}px`}
-              style:height={`${rect.height}px`}
-              style:left={`${rect.left}px`}
-              style:width={`${rect.width}px`}
-              style:opacity={rect.visibility === 0 ? 0.4 : 1}
-              style:--mask-image={getMask(rect.visibility)}
-              tabindex={500 + i}
-            >
-              <slot name="event" id={event.id} size={{ width: rect.width, height: rect.height }} />
-            </div>
+            {@const ev = events.find((p) => p._id === event.id)}
+            {#if ev}
+              <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+              <div
+                class="calendar-element"
+                style:top={`${rect.top}px`}
+                style:height={`${rect.height}px`}
+                style:left={`${rect.left}px`}
+                style:width={`${rect.width}px`}
+                style:opacity={rect.visibility === 0 ? 0.4 : 1}
+                style:--mask-image={getMask(rect.visibility)}
+                tabindex={500 + i}
+              >
+                <EventElement hourHeight={cellHeight} event={ev} size={{ width: rect.width, height: rect.height }} />
+              </div>
+            {/if}
           {/each}
           {#each moreCounts as more, day}
             {@const addon = shortAlldays.length}
@@ -530,7 +598,11 @@
           style:width={`${colWidth}px`}
           style:grid-column={`col-start ${dayOfWeek + 1} / ${dayOfWeek + 2}`}
           style:grid-row={`row-start ${hourOfDay * 2 + 1} / row-start ${hourOfDay * 2 + 3}`}
-          on:dragover|preventDefault
+          on:dragenter={(e) => {
+            dispatch('dragenter', {
+              date: new Date(day.setHours(hourOfDay + startHour, 0, 0, 0))
+            })
+          }}
           on:drop|preventDefault={(e) => {
             dispatch('drop', {
               day,
@@ -552,26 +624,35 @@
     {#key [styleAD, calendarWidth, displayedDaysCount]}
       {#each newEvents.filter((ev) => !ev.allDay) as event, i}
         {@const rect = getRect(event)}
-        <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-        <div
-          class="calendar-element"
-          style:top={`${rect.top}px`}
-          style:bottom={`${rect.bottom}px`}
-          style:left={`${rect.left}px`}
-          style:right={`${rect.right}px`}
-          style:opacity={rect.visibility === 0 ? 0.4 : 1}
-          style:--mask-image={'none'}
-          tabindex={1000 + i}
-        >
-          <slot
-            name="event"
-            id={event._id}
-            size={{
-              width: rect.width,
-              height: (calendarRect?.height ?? rect.top + rect.bottom) - rect.top - rect.bottom
-            }}
-          />
-        </div>
+        {@const ev = events.find((p) => p._id === event._id)}
+        {#if ev}
+          <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+          <div
+            class="calendar-element"
+            style:top={`${rect.top}px`}
+            style:bottom={`${rect.bottom}px`}
+            style:left={`${rect.left}px`}
+            style:right={`${rect.right}px`}
+            style:opacity={rect.visibility === 0 ? 0.4 : 1}
+            style:--mask-image={'none'}
+            tabindex={1000 + i}
+          >
+            <EventElement
+              event={ev}
+              hourHeight={cellHeight}
+              size={{
+                width: rect.width,
+                height: (calendarRect?.height ?? rect.top + rect.bottom) - rect.top - rect.bottom
+              }}
+              on:drop={(e) => {
+                dispatch('drop', {
+                  date: new Date(event.date)
+                })
+              }}
+              on:resize={() => (events = events)}
+            />
+          </div>
+        {/if}
       {/each}
     {/key}
   </div>
@@ -596,6 +677,7 @@
     mask-image: var(--mask-image, none);
     --webkit-mask-image: var(--mask-image, none);
     border-radius: 0.25rem;
+    pointer-events: none;
   }
   .sticky-header {
     position: sticky;

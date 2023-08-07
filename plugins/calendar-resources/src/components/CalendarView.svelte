@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Calendar, Event, getAllEvents } from '@hcengineering/calendar'
+  import { Calendar, Event, generateEventId, getAllEvents } from '@hcengineering/calendar'
   import { PersonAccount } from '@hcengineering/contact'
   import {
     Class,
@@ -30,27 +30,25 @@
   import {
     AnyComponent,
     Button,
-    CalendarItem,
-    DayCalendar,
     DropdownLabelsIntl,
     IconBack,
     IconForward,
-    MILLISECONDS_IN_DAY,
     MonthCalendar,
     YearCalendar,
     areDatesEqual,
     getMonday,
     showPopup
   } from '@hcengineering/ui'
-  import { CalendarMode } from '../index'
+  import { CalendarMode, DayCalendar } from '../index'
   import calendar from '../plugin'
   import Day from './Day.svelte'
-  import EventElement from './EventElement.svelte'
 
   export let _class: Ref<Class<Doc>> = calendar.class.Event
   export let query: DocumentQuery<Event> | undefined = undefined
   export let options: FindOptions<Event> | undefined = undefined
   export let createComponent: AnyComponent | undefined = calendar.component.CreateEvent
+  export let dragItem: Doc | undefined = undefined
+  export let dragEventClass: Ref<Class<Event>> = calendar.class.Event
   export let allowedModes: CalendarMode[] = [
     CalendarMode.Days,
     CalendarMode.Week,
@@ -117,7 +115,6 @@
   const calendarsQuery = createQuery()
 
   let calendars: Calendar[] = []
-  const offsetTZ = new Date().getTimezoneOffset() * 60 * 1000
 
   calendarsQuery.query(calendar.class.Calendar, { createdBy: me._id }, (res) => {
     calendars = res
@@ -233,6 +230,50 @@
     ddItems = ddItems
   }
 
+  const dragItemId = 'drag_item' as Ref<Event>
+
+  function dragEnter (e: CustomEvent<any>) {
+    if (dragItem !== undefined) {
+      const current = raw.find((p) => p._id === dragItemId)
+      if (current !== undefined) {
+        current.attachedTo = dragItem._id
+        current.attachedToClass = dragItem._class
+        current.date = e.detail.date.getTime()
+        current.dueDate = new Date(e.detail.date).setMinutes(new Date(e.detail.date).getMinutes() + 30)
+      } else {
+        const me = getCurrentAccount() as PersonAccount
+        raw.push({
+          _id: dragItemId,
+          allDay: false,
+          eventId: generateEventId(),
+          title: '',
+          description: '',
+          access: 'owner',
+          attachedTo: dragItem._id,
+          attachedToClass: dragItem._class,
+          _class: dragEventClass,
+          collection: 'events',
+          space: dragItem.space,
+          modifiedBy: me._id,
+          participants: [me.person],
+          modifiedOn: Date.now(),
+          date: e.detail.date.getTime(),
+          dueDate: new Date(e.detail.date).setMinutes(new Date(e.detail.date).getMinutes() + 30)
+        })
+      }
+      raw = raw
+    }
+  }
+
+  $: clear(dragItem)
+
+  function clear (dragItem: Doc | undefined) {
+    if (dragItem === undefined) {
+      raw = raw.filter((p) => p._id !== dragItemId)
+      objects = getAllEvents(raw, from, to)
+    }
+  }
+
   $: getDdItems(allowedModes)
 
   let ddItems: {
@@ -247,55 +288,6 @@
     { id: 'month', label: calendar.string.ModeMonth, mode: CalendarMode.Month },
     { id: 'year', label: calendar.string.ModeYear, mode: CalendarMode.Year }
   ]
-
-  const toCalendar = (
-    events: Event[],
-    date: Date,
-    days: number = 1,
-    startHour: number = 0,
-    endHour: number = 24
-  ): CalendarItem[] => {
-    const result: CalendarItem[] = []
-    for (let day = 0; day < days; day++) {
-      const startDay = new Date(MILLISECONDS_IN_DAY * day + date.getTime()).setHours(0, 0, 0, 0)
-      const startDate = new Date(MILLISECONDS_IN_DAY * day + date.getTime()).setHours(startHour, 0, 0, 0)
-      const lastDate = new Date(MILLISECONDS_IN_DAY * day + date.getTime()).setHours(endHour, 0, 0, 0)
-      events.forEach((event) => {
-        const eventStart = event.allDay ? event.date + offsetTZ : event.date
-        const eventEnd = event.allDay ? event.dueDate + offsetTZ : event.dueDate
-        if ((eventStart < lastDate && eventEnd > startDate) || (eventStart === eventEnd && eventStart === startDay)) {
-          result.push({
-            _id: event._id,
-            allDay: event.allDay,
-            date: eventStart,
-            dueDate: eventEnd,
-            day,
-            access: event.access
-          })
-        }
-      })
-    }
-    const sd = date.setHours(0, 0, 0, 0)
-    const ld = new Date(MILLISECONDS_IN_DAY * (days - 1) + date.getTime()).setHours(23, 59, 59, 999)
-    events
-      .filter((ev) => ev.allDay)
-      .sort((a, b) => b.dueDate - b.date - (a.dueDate - a.date))
-      .forEach((event) => {
-        const eventStart = event.date + offsetTZ
-        const eventEnd = event.dueDate + offsetTZ
-        if ((eventStart < ld && eventEnd > sd) || (eventStart === eventEnd && eventStart === sd)) {
-          result.push({
-            _id: event._id,
-            allDay: event.allDay,
-            date: eventStart,
-            dueDate: eventEnd,
-            day: -1,
-            access: event.access
-          })
-        }
-      })
-    return result
-  }
 </script>
 
 <div class="calendar-header">
@@ -383,7 +375,7 @@
   </MonthCalendar>
 {:else if mode === CalendarMode.Week}
   <DayCalendar
-    events={toCalendar(objects, currentDate, 7)}
+    events={objects}
     {mondayStart}
     displayedDaysCount={7}
     startFromWeekStart={false}
@@ -391,18 +383,12 @@
     bind:currentDate
     on:create={(e) => showCreateDialog(e.detail.date, e.detail.withTime)}
     on:drop
-  >
-    <svelte:fragment slot="event" let:id let:size>
-      {@const event = objects.find((event) => event._id === id)}
-      {#if event}
-        <EventElement {event} {size} />
-      {/if}
-    </svelte:fragment>
-  </DayCalendar>
+    on:dragenter={dragEnter}
+  />
 {:else if mode === CalendarMode.Day || mode === CalendarMode.Days}
   {#key mode}
     <DayCalendar
-      events={toCalendar(objects, currentDate, mode === CalendarMode.Days ? 3 : 1)}
+      events={objects}
       {mondayStart}
       displayedDaysCount={mode === CalendarMode.Days ? 3 : 1}
       startFromWeekStart={false}
@@ -410,14 +396,8 @@
       bind:currentDate
       on:create={(e) => showCreateDialog(e.detail.date, e.detail.withTime)}
       on:drop
-    >
-      <svelte:fragment slot="event" let:id let:size>
-        {@const event = objects.find((event) => event._id === id)}
-        {#if event}
-          <EventElement {event} {size} />
-        {/if}
-      </svelte:fragment>
-    </DayCalendar>
+      on:dragenter={dragEnter}
+    />
   {/key}
 {/if}
 
