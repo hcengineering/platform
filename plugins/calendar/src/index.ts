@@ -12,7 +12,7 @@
 // limitations under the License.
 
 import { Contact } from '@hcengineering/contact'
-import type { AttachedDoc, Class, Doc, Markup, Ref, Space, Timestamp } from '@hcengineering/core'
+import type { AttachedDoc, Class, Doc, Markup, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
 import type { Asset, IntlString, Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -97,6 +97,13 @@ export interface ReccuringInstance extends Event {
 /**
  * @public
  */
+export interface CalendarEventPresenter extends Class<Event> {
+  presenter: AnyComponent
+}
+
+/**
+ * @public
+ */
 export const calendarId = 'calendar' as Plugin
 
 /**
@@ -108,6 +115,9 @@ const calendarPlugin = plugin(calendarId, {
     Event: '' as Ref<Class<Event>>,
     ReccuringEvent: '' as Ref<Class<ReccuringEvent>>,
     ReccuringInstance: '' as Ref<Class<ReccuringInstance>>
+  },
+  mixin: {
+    CalendarEventPresenter: '' as Ref<Mixin<CalendarEventPresenter>>
   },
   icon: {
     Calendar: '' as Asset,

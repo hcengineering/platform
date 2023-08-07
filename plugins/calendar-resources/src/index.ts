@@ -33,11 +33,13 @@ import UpdateRecInstancePopup from './components/UpdateRecInstancePopup.svelte'
 import ReminderViewlet from './components/activity/ReminderViewlet.svelte'
 import CalendarIntegrationIcon from './components/icons/Calendar.svelte'
 import EventElement from './components/EventElement.svelte'
+import CalendarEventPresenter from './components/CalendarEventPresenter.svelte'
+import DayCalendar from './components/DayCalendar.svelte'
 import calendar from './plugin'
 import contact from '@hcengineering/contact'
 import { deleteObjects } from '@hcengineering/view-resources'
 
-export { EventElement, CalendarView }
+export { EventElement, CalendarView, DayCalendar }
 
 async function saveEventReminder (object: Doc): Promise<void> {
   showPopup(SaveEventReminder, { objectId: object._id, objectClass: object._class })
@@ -148,7 +150,8 @@ export default async (): Promise<Resources> => ({
     EventPresenter,
     CreateEvent,
     IntegrationConnect,
-    CalendarIntegrationIcon
+    CalendarIntegrationIcon,
+    CalendarEventPresenter
   },
   activity: {
     ReminderViewlet
