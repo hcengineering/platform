@@ -261,11 +261,7 @@ export function getAllEvents (events: Event[], from: Timestamp, to: Timestamp): 
   const recurData: ReccuringInstance[] = []
   const instancesMap: Map<string, ReccuringInstance[]> = new Map()
   for (const event of events) {
-    if (event._class === calendar.class.Event) {
-      if (from > event.dueDate) continue
-      if (event.date > to) continue
-      base.push(event)
-    } else if (event._class === calendar.class.ReccuringEvent) {
+    if (event._class === calendar.class.ReccuringEvent) {
       recur.push(event as ReccuringEvent)
     } else if (event._class === calendar.class.ReccuringInstance) {
       const instance = event as ReccuringInstance
@@ -273,6 +269,10 @@ export function getAllEvents (events: Event[], from: Timestamp, to: Timestamp): 
       const arr = instancesMap.get(instance.recurringEventId) ?? []
       arr.push(instance)
       instancesMap.set(instance.recurringEventId, arr)
+    } else {
+      if (from > event.dueDate) continue
+      if (event.date > to) continue
+      base.push(event)
     }
   }
   for (const rec of recur) {

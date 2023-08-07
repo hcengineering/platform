@@ -28,7 +28,8 @@ export default mergeIds(calendarId, calendar, {
     IntegrationConnect: '' as AnyComponent,
     CreateCalendar: '' as AnyComponent,
     EventPresenter: '' as AnyComponent,
-    CalendarIntegrationIcon: '' as AnyComponent
+    CalendarIntegrationIcon: '' as AnyComponent,
+    CalendarEventPresenter: '' as AnyComponent
   },
   action: {
     SaveEventReminder: '' as Ref<Action>,
