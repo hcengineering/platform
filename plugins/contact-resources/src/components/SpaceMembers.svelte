@@ -49,8 +49,8 @@
     )
   }
 
-  async function add (employee: Ref<Person>): Promise<void> {
-    const account = await client.findOne(contact.class.PersonAccount, { employee })
+  async function add (person: Ref<Person>): Promise<void> {
+    const account = await client.findOne(contact.class.PersonAccount, { person })
     if (account === undefined) return
     await client.update(space, {
       $push: {
@@ -59,8 +59,8 @@
     })
   }
 
-  async function removeMember (employee: Ref<Person>): Promise<void> {
-    const account = await client.findOne(contact.class.PersonAccount, { employee })
+  async function removeMember (person: Ref<Person>): Promise<void> {
+    const account = await client.findOne(contact.class.PersonAccount, { person })
     if (account === undefined) return
     await client.update(space, { $pull: { members: account._id } })
   }
