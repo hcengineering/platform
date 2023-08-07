@@ -29,7 +29,7 @@
     showPopup
   } from '@hcengineering/ui'
   import view, { ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { ViewletSettingButton, createFilter, setFilters } from '@hcengineering/view-resources'
+  import { ViewletsSettingButton, createFilter, setFilters } from '@hcengineering/view-resources'
   import { afterUpdate } from 'svelte'
   import tracker from '../../../plugin'
   import CreateIssue from '../../CreateIssue.svelte'
@@ -147,7 +147,7 @@
   {/if}
   <div class="flex-row-center gap-2">
     {#if hasSubIssues}
-      <ViewletSettingButton
+      <ViewletsSettingButton
         bind:viewOptions
         viewletQuery={{ _id: tracker.viewlet.SubIssues }}
         kind={'ghost'}

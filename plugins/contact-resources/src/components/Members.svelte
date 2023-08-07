@@ -18,7 +18,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Button, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
   import { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { Table, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { Table, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
   import contact from '../plugin'
   import UsersPopup from './UsersPopup.svelte'
   import IconMembersOutline from './icons/MembersOutline.svelte'
@@ -75,13 +75,14 @@
       <Label label={contact.string.Members} />
     </span>
     <div class="buttons-group xsmall-gap">
-      <ViewletSettingButton
-        viewletQuery={{ _id: contact.viewlet.TableMember }}
-        kind={'ghost'}
+      <ViewletSelector
+        hidden
         bind:viewlet
         bind:preference
         bind:loading
+        viewletQuery={{ _id: contact.viewlet.TableMember }}
       />
+      <ViewletSettingButton kind={'ghost'} bind:viewlet />
       <Button id={contact.string.AddMember} icon={IconAdd} kind={'ghost'} on:click={createApp} />
     </div>
   </div>

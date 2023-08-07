@@ -17,9 +17,9 @@
   import core, { WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import presentation, { createQuery } from '@hcengineering/presentation'
-  import { AnyComponent, Button, IconAdd, SearchEdit, TabList, showPopup } from '@hcengineering/ui'
+  import { AnyComponent, Button, IconAdd, SearchEdit, showPopup } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
-  import { FilterButton, ViewletSettingButton, setActiveViewletId } from '@hcengineering/view-resources'
+  import { FilterButton, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import Header from './Header.svelte'
 
@@ -52,14 +52,6 @@
     dispatch('search', '')
   }
 
-  $: viewslist = viewlets.map((views) => {
-    return {
-      id: views._id,
-      icon: views.$lookup?.descriptor?.icon,
-      tooltip: views.$lookup?.descriptor?.label
-    }
-  })
-
   // $: twoRows = $deviceInfo.twoRows
 </script>
 
@@ -68,19 +60,7 @@
     <Header {space} {_class} />
 
     <div class="ac-header-full medium-gap mb-1">
-      {#if viewlets.length > 1}
-        <TabList
-          items={viewslist}
-          multiselect={false}
-          selected={viewlet?._id}
-          on:select={(result) => {
-            if (result.detail !== undefined) {
-              viewlet = viewlets.find((vl) => vl._id === result.detail.id)
-              if (viewlet) setActiveViewletId(viewlet._id)
-            }
-          }}
-        />
-      {/if}
+      <ViewletSelector {viewletQuery} bind:viewlet bind:viewlets />
       {#if createItemDialog}
         <Button icon={IconAdd} label={createItemLabel} kind={'accented'} on:click={(ev) => showCreateDialog(ev)} />
       {/if}
@@ -94,7 +74,7 @@
       <FilterButton {_class} />
     </div>
     <div class="ac-header-full medium-gap">
-      <ViewletSettingButton bind:viewOptions {viewletQuery} bind:viewlet bind:viewlets />
+      <ViewletSettingButton bind:viewOptions bind:viewlet />
       <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
     </div>
   </div>

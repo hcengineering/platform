@@ -16,10 +16,9 @@
   import { Event } from '@hcengineering/calendar'
   import { Class, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
-  import { createQuery } from '@hcengineering/presentation'
-  import { AnyComponent, Button, Component, Label, Loading, showPopup, TabList, IconAdd } from '@hcengineering/ui'
-  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { getViewOptions, setActiveViewletId, viewOptionStore } from '@hcengineering/view-resources'
+  import { AnyComponent, Button, Component, IconAdd, Label, Loading, showPopup } from '@hcengineering/ui'
+  import { Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { ViewletSelector, getViewOptions, viewOptionStore } from '@hcengineering/view-resources'
   import calendar from '../plugin'
   // import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
@@ -33,23 +32,10 @@
   export let createComponent: AnyComponent | undefined = calendar.component.CreateEvent
   export let createLabel: IntlString | undefined = calendar.string.CreateEvent
 
-  const viewletQuery = createQuery()
   const search = ''
   let resultQuery: DocumentQuery<Event> = {}
 
   let viewlets: WithLookup<Viewlet>[] = []
-  viewletQuery.query(
-    view.class.Viewlet,
-    { attachTo: _class },
-    (res) => {
-      viewlets = res
-      if (viewlet === undefined || res.findIndex((p) => p._id === viewlet?._id) === -1) {
-        viewlet = res[0]
-        setActiveViewletId(viewlet._id)
-      }
-    },
-    { lookup: { descriptor: view.class.ViewletDescriptor } }
-  )
 
   function updateResultQuery (search: string): void {
     resultQuery = search === '' ? { ...query } : { ...query, $search: search }
@@ -66,29 +52,8 @@
 
   let viewlet: WithLookup<Viewlet> | undefined
 
-  const preferenceQuery = createQuery()
   let preference: ViewletPreference | undefined
   let loading = true
-
-  $: viewlet &&
-    preferenceQuery.query(
-      view.class.ViewletPreference,
-      {
-        attachedTo: viewlet._id
-      },
-      (res) => {
-        preference = res[0]
-        loading = false
-      },
-      { limit: 1 }
-    )
-  $: viewslist = viewlets.map((views) => {
-    return {
-      id: views._id,
-      icon: views.$lookup?.descriptor?.icon,
-      tooltip: views.$lookup?.descriptor?.label
-    }
-  })
 
   $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 </script>
@@ -99,16 +64,7 @@
   </div>
 
   <div class="ac-header-full medium-gap mb-1">
-    {#if viewlets.length > 1}
-      <TabList
-        items={viewslist}
-        multiselect={false}
-        selected={viewlet?._id}
-        on:select={(result) => {
-          if (result.detail !== undefined) viewlet = viewlets.find((vl) => vl._id === result.detail.id)
-        }}
-      />
-    {/if}
+    <ViewletSelector bind:viewlet bind:loading bind:preference bind:viewlets viewletQuery={{ attachTo: _class }} />
     <Button icon={IconAdd} label={createLabel} kind={'accented'} on:click={showCreateDialog} />
   </div>
 </div>
