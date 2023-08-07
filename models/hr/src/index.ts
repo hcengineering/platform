@@ -311,6 +311,27 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: hr.component.CreateDepartment,
+        element: 'top',
+        fillProps: {
+          _id: 'space'
+        }
+      },
+      label: hr.string.CreateDepartment,
+      icon: hr.icon.Department,
+      input: 'focus',
+      category: hr.category.HR,
+      target: hr.class.Department,
+      context: { mode: 'context', application: hr.app.HR, group: 'create' }
+    },
+    hr.action.CreateDepartment
+  )
+
+  createAction(
+    builder,
+    {
       action: view.actionImpl.Archive,
       label: view.string.Archive,
       icon: view.icon.Archive,
