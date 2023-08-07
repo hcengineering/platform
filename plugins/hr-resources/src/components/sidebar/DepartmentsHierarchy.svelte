@@ -16,6 +16,10 @@
   import { createEventDispatcher } from 'svelte'
   import { Ref } from '@hcengineering/core'
   import { Department } from '@hcengineering/hr'
+  import { getResource } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
+  import { Action, IconEdit } from '@hcengineering/ui'
+  import { getActions as getContributedActions } from '@hcengineering/view-resources'
 
   import hr from '../../plugin'
 
@@ -27,27 +31,48 @@
   export let selected: Ref<Department> | undefined
   export let level = 0
 
+  const client = getClient()
   const dispatch = createEventDispatcher()
 
   function getDescendants (department: Ref<Department>): Ref<Department>[] {
-    return (descendants.get(department) ?? []).map((p) => p._id)
+    return (descendants.get(department) ?? []).sort((a, b) => a.name.localeCompare(b.name)).map((p) => p._id)
+  }
+
+  async function getActions (obj: Department): Promise<Action[]> {
+    const result: Action[] = []
+    const extraActions = await getContributedActions(client, obj, obj._class)
+    for (const act of extraActions) {
+      result.push({
+        icon: act.icon ?? IconEdit,
+        label: act.label,
+        action: async (ctx: any, evt: Event) => {
+          const impl = await getResource(act.action)
+          await impl(obj, evt, act.actionProps)
+        }
+      })
+    }
+    return result
   }
 
   function handleDepartmentSelected (department: Ref<Department>): void {
     dispatch('selected', department)
   }
+
+  $: _departments = departments.map((it) => departmentById.get(it)).filter((it) => it !== undefined) as Department[]
+  $: _descendants = new Map(_departments.map((it) => [it._id, getDescendants(it._id)]))
 </script>
 
-{#each departments as dep}
-  {@const department = departmentById.get(dep)}
-  {@const desc = getDescendants(dep)}
+{#each _departments as department}
+  {@const desc = _descendants.get(department._id) ?? []}
 
   {#if department}
     <TreeElement
+      _id={department._id}
       icon={hr.icon.Department}
       title={department.name}
       selected={selected === department._id}
       node={desc.length > 0}
+      actions={() => getActions(department)}
       {level}
       on:click={() => handleDepartmentSelected(department._id)}
     >

@@ -14,6 +14,7 @@
 //
 
 import { Resources } from '@hcengineering/platform'
+import CreateDepartment from './components/CreateDepartment.svelte'
 import DepartmentEditor from './components/DepartmentEditor.svelte'
 import DepartmentStaff from './components/DepartmentStaff.svelte'
 import EditDepartment from './components/EditDepartment.svelte'
@@ -34,6 +35,7 @@ async function editRequestType (object: Request): Promise<void> {
 export default async (): Promise<Resources> => ({
   component: {
     Structure,
+    CreateDepartment,
     EditDepartment,
     DepartmentStaff,
     DepartmentEditor,
