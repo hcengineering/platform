@@ -52,7 +52,6 @@
   class:selected
   class:parent
   class:collapsed
-  class:child={!node}
   {style}
   on:click={() => {
     if (selected) {
