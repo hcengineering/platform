@@ -250,7 +250,7 @@
 {#if rows.length}
   {@const dep = departmentById.get(department)}
 
-  <Scroller horizontal noFade>
+  <Scroller horizontal fade={{ multipler: { top: headerHeightRem, left: headerWidthRem } }} noFade>
     <div bind:clientWidth={containerWidth} class="timeline">
       {#key [containerWidthRem, columnWidthRem, headerWidthRem]}
         <!-- Resource Header -->
