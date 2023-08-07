@@ -16,7 +16,7 @@
   import { DocumentQuery, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Button, ButtonKind, showPopup } from '@hcengineering/ui'
-  import { ViewOptions, Viewlet } from '@hcengineering/view'
+  import { ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
   import { getViewOptions, viewOptionStore } from '../viewOptions'
@@ -29,6 +29,8 @@
 
   export let viewlet: Viewlet | undefined = undefined
   export let viewlets: WithLookup<Viewlet>[] = []
+  export let preference: ViewletPreference | undefined = undefined
+  export let loading = true
 
   const dispatch = createEventDispatcher()
 
@@ -56,6 +58,24 @@
       }
     }
   )
+
+  const preferenceQuery = createQuery()
+
+  $: if (viewlet != null) {
+    preferenceQuery.query(
+      view.class.ViewletPreference,
+      {
+        attachedTo: viewlet._id
+      },
+      (res) => {
+        preference = res[0]
+        loading = false
+      },
+      { limit: 1 }
+    )
+  } else {
+    preferenceQuery.unsubscribe()
+  }
 </script>
 
 {#if viewlet}
