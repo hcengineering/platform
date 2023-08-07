@@ -19,7 +19,7 @@
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Action, IconEdit } from '@hcengineering/ui'
-  import { getActions as getContributedActions} from '@hcengineering/view-resources'
+  import { getActions as getContributedActions } from '@hcengineering/view-resources'
 
   import hr from '../../plugin'
 
