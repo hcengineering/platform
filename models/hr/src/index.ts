@@ -360,7 +360,8 @@ export function createModel (builder: Builder): void {
       input: 'any',
       category: hr.category.HR,
       target: hr.class.Request,
-      context: { mode: 'context', application: hr.app.HR, group: 'create' }
+      context: { mode: 'context', application: hr.app.HR, group: 'create' },
+      override: [view.action.Open]
     },
     hr.action.EditRequest
   )
@@ -371,7 +372,7 @@ export function createModel (builder: Builder): void {
       action: hr.actionImpl.EditRequestType,
       actionProps: {},
       label: hr.string.EditRequestType,
-      icon: view.icon.Open,
+      icon: view.icon.Edit,
       input: 'any',
       category: hr.category.HR,
       target: hr.class.Request,
