@@ -13,16 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { DocumentQuery, WithLookup } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
   import { Button, ButtonKind, showPopup } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
+  import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
   import { getViewOptions, viewOptionStore } from '../viewOptions'
   import ViewOptionsButton from './ViewOptionsButton.svelte'
   import ViewletSetting from './ViewletSetting.svelte'
 
+  export let viewletQuery: DocumentQuery<Viewlet> = {}
   export let kind: ButtonKind = 'regular'
   export let viewOptions: ViewOptions | undefined = undefined
+
   export let viewlet: Viewlet | undefined = undefined
+  export let viewlets: WithLookup<Viewlet>[] = []
+
+  const dispatch = createEventDispatcher()
 
   let btn: HTMLButtonElement
 
@@ -31,6 +39,22 @@
   }
 
   $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
+
+  const query = createQuery()
+
+  $: query.query(
+    view.class.Viewlet,
+    viewletQuery,
+    (res) => {
+      viewlets = res
+      dispatch('viewlets', viewlets)
+    },
+    {
+      lookup: {
+        descriptor: view.class.ViewletDescriptor
+      }
+    }
+  )
 </script>
 
 {#if viewlet}

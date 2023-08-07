@@ -20,7 +20,7 @@
   import { ActionContext } from '@hcengineering/presentation'
   import { Label, Loading, SearchEdit } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { FilterButton, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { FilterButton, TableBrowser, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
   import document from '../plugin'
 
   export let query: DocumentQuery<Document> = {}
@@ -57,15 +57,17 @@
       <FilterButton _class={document.class.Document} />
     </div>
     <div class="ac-header-full medium-gap">
-      <ViewletSettingButton
+      <ViewletSelector
+        hidden
+        bind:viewlet
+        bind:preference
+        bind:loading
         viewletQuery={{
           attachTo: document.class.Document,
           descriptor: view.viewlet.Table
         }}
-        bind:viewlet
-        bind:preference
-        bind:loading
       />
+      <ViewletSettingButton bind:viewlet />
       <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
     </div>
   </div>

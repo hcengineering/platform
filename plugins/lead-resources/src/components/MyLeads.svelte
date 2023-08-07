@@ -21,7 +21,13 @@
   import task from '@hcengineering/task'
   import { IModeSelector, Label, Loading, ModeSelector, resolvedLocationStore, SearchEdit } from '@hcengineering/ui'
   import { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
-  import { FilterBar, FilterButton, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
+  import {
+    FilterBar,
+    FilterButton,
+    TableBrowser,
+    ViewletSelector,
+    ViewletSettingButton
+  } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
 
@@ -102,16 +108,17 @@
     <div class="buttons-divider" />
     <FilterButton {_class} />
   </div>
-  <ViewletSettingButton
-    bind:viewOptions
+  <ViewletSelector
+    hidden
+    bind:viewlet
+    bind:preference
+    bind:loading
     viewletQuery={{
       attachTo: _class,
       descriptor: task.viewlet.StatusTable
     }}
-    bind:viewlet
-    bind:preference
-    bind:loading
   />
+  <ViewletSettingButton bind:viewOptions bind:viewlet />
 </div>
 <FilterBar {_class} query={searchQuery} {viewOptions} on:change={(e) => (resultQuery = e.detail)} />
 

@@ -15,19 +15,10 @@
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
-  import {
-    AnyComponent,
-    Button,
-    Component,
-    IconAdd,
-    Label,
-    Loading,
-    SearchEdit,
-    TabList,
-    showPopup
-  } from '@hcengineering/ui'
+  import { AnyComponent, Button, Component, IconAdd, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
   import { ViewOptions, Viewlet, ViewletDescriptor, ViewletPreference } from '@hcengineering/view'
-  import { FilterBar, FilterButton, ViewletSettingButton, setActiveViewletId } from '@hcengineering/view-resources'
+  import { FilterBar, FilterButton, ViewletSettingButton } from '@hcengineering/view-resources'
+  import ViewletSelector from '@hcengineering/view-resources/src/components/ViewletSelector.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined
@@ -55,14 +46,6 @@
     if (createComponent === undefined) return
     showPopup(createComponent, createComponentProps, 'top')
   }
-
-  $: viewslist = viewlets.map((views) => {
-    return {
-      id: views._id,
-      icon: views.$lookup?.descriptor?.icon,
-      tooltip: views.$lookup?.descriptor?.label
-    }
-  })
 </script>
 
 <div class="ac-header full divide caption-height">
@@ -71,24 +54,16 @@
   </div>
 
   <div class="ac-header-full medium-gap mb-1">
-    {#if viewlets.length > 1}
-      <TabList
-        items={viewslist}
-        multiselect={false}
-        selected={viewlet?._id}
-        on:select={(result) => {
-          if (result.detail !== undefined) {
-            if (viewlet?._id === result.detail.id) {
-              return
-            }
-            viewlet = viewlets.find((vl) => vl._id === result.detail.id)
-            if (viewlet) {
-              setActiveViewletId(viewlet._id)
-            }
-          }
-        }}
-      />
-    {/if}
+    <ViewletSelector
+      bind:viewlet
+      bind:preference
+      bind:viewlets
+      viewletQuery={{
+        attachTo: _class,
+        variant: { $exists: false },
+        ...(descriptors !== undefined ? { descriptor: { $in: descriptors } } : {})
+      }}
+    />
     {#if createLabel && createComponent}
       <Button
         icon={IconAdd}
@@ -108,17 +83,7 @@
     <FilterButton {_class} />
   </div>
   <div class="ac-header-full medium-gap">
-    <ViewletSettingButton
-      bind:viewOptions
-      viewletQuery={{
-        attachTo: _class,
-        variant: { $exists: false },
-        ...(descriptors !== undefined ? { descriptor: { $in: descriptors } } : {})
-      }}
-      bind:viewlets
-      bind:viewlet
-      bind:preference
-    />
+    <ViewletSettingButton bind:viewOptions bind:viewlet />
     <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
   </div>
 </div>

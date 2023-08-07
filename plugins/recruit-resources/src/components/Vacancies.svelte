@@ -149,16 +149,17 @@
     <FilterButton _class={recruit.class.Vacancy} />
   </div>
   <div class="ac-header-full medium-gap">
-    <ViewletSettingButton
-      bind:viewOptions
+    <ViewletSelector
+      hidden
       viewletQuery={{
         attachTo: recruit.class.Vacancy,
         descriptor: view.viewlet.Table
       }}
-      bind:viewlet
       bind:preference
       bind:loading
+      bind:viewlet
     />
+    <ViewletSettingButton bind:viewOptions bind:viewlet />
     <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
   </div>
 </div>

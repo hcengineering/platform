@@ -18,7 +18,13 @@
   import { ActionContext } from '@hcengineering/presentation'
   import { Button, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
-  import { FilterBar, FilterButton, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
+  import {
+    FilterBar,
+    FilterButton,
+    TableBrowser,
+    ViewletSelector,
+    ViewletSettingButton
+  } from '@hcengineering/view-resources'
   import contact from '../plugin'
   import CreateContact from './CreateContact.svelte'
   // import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
@@ -68,16 +74,17 @@
       <FilterButton _class={contact.class.Contact} />
     </div>
     <div class="ac-header-full medium-gap">
-      <ViewletSettingButton
-        bind:viewOptions
+      <ViewletSelector
+        hidden
+        bind:viewlet
+        bind:preference
+        bind:loading
         viewletQuery={{
           attachTo: contact.class.Contact,
           descriptor: view.viewlet.Table
         }}
-        bind:viewlet
-        bind:preference
-        bind:loading
       />
+      <ViewletSettingButton bind:viewOptions bind:viewlet />
       <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
     </div>
   </div>
