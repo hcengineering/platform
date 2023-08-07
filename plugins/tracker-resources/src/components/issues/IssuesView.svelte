@@ -16,7 +16,7 @@
   export let modeSelectorProps: IModeSelector | undefined = undefined
 
   let viewlet: WithLookup<Viewlet> | undefined = undefined
-  let viewlets: WithLookup<Viewlet>[] | undefined = undefined
+  const viewlets: WithLookup<Viewlet>[] | undefined = undefined
   let viewOptions: ViewOptions | undefined
 
   let search = ''
@@ -51,6 +51,7 @@
   bind:viewlet
   bind:search
   showLabelSelector={$$slots.label_selector}
+  viewletQuery={{ attachTo: tracker.class.Issue, variant: { $ne: 'subissue' } }}
   {viewlets}
   {label}
   {space}
@@ -60,12 +61,7 @@
     <slot name="label_selector" />
   </svelte:fragment>
   <svelte:fragment slot="extra">
-    <ViewletSettingButton
-      bind:viewOptions
-      viewletQuery={{ attachTo: tracker.class.Issue, variant: { $ne: 'subissue' } }}
-      bind:viewlet
-      bind:viewlets
-    />
+    <ViewletSettingButton bind:viewOptions bind:viewlet />
     {#if asideFloat && $$slots.aside}
       <div class="buttons-divider" />
       <Button

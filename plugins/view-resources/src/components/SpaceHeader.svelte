@@ -1,27 +1,19 @@
 <script lang="ts">
-  import { Class, Doc, Ref, Space } from '@hcengineering/core'
-  import { TabList, SearchEdit, IModeSelector, ModeSelector } from '@hcengineering/ui'
+  import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
+  import { IModeSelector, ModeSelector, SearchEdit } from '@hcengineering/ui'
   import { Viewlet } from '@hcengineering/view'
-  import { WithLookup } from '@hcengineering/core'
-  import { setActiveViewletId } from '../utils'
+  import ViewletSelector from './ViewletSelector.svelte'
   import FilterButton from './filter/FilterButton.svelte'
 
   export let space: Ref<Space> | undefined = undefined
   export let _class: Ref<Class<Doc>>
   export let viewlet: WithLookup<Viewlet> | undefined
+  export let viewletQuery: DocumentQuery<Viewlet> | undefined = undefined
   export let viewlets: WithLookup<Viewlet>[] = []
   export let label: string
   export let search: string
   export let showLabelSelector = false
   export let modeSelectorProps: IModeSelector | undefined = undefined
-
-  $: viewslist = viewlets.map((views) => {
-    return {
-      id: views._id,
-      icon: views.$lookup?.descriptor?.icon,
-      tooltip: views.$lookup?.descriptor?.label
-    }
-  })
 </script>
 
 <div
@@ -42,24 +34,7 @@
     {/if}
   </div>
   <div class="mb-1 clear-mins">
-    {#if viewlets.length > 1}
-      <TabList
-        items={viewslist}
-        multiselect={false}
-        selected={viewlet?._id}
-        onlyIcons
-        on:select={(result) => {
-          if (result.detail !== undefined) {
-            if (viewlet?._id === result.detail.id) return
-            viewlet = viewlets.find((vl) => vl._id === result.detail.id)
-
-            if (viewlet) {
-              setActiveViewletId(viewlet._id)
-            }
-          }
-        }}
-      />
-    {/if}
+    <ViewletSelector bind:viewlet bind:viewlets viewletQuery={viewletQuery ?? { attachTo: _class }} />
     <slot name="header-tools" />
   </div>
 </div>

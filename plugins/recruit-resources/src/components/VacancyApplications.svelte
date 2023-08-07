@@ -18,7 +18,7 @@
   import { recruitId, Vacancy } from '@hcengineering/recruit'
   import { Button, Icon, IconAdd, Label, Loading, resizeObserver, Scroller, showPopup } from '@hcengineering/ui'
   import { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { NavLink, Table, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { NavLink, Table, ViewletsSettingButton } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import CreateApplication from './CreateApplication.svelte'
   import IconApplication from './icons/Application.svelte'
@@ -53,7 +53,7 @@
       </NavLink>
     </span>
     <div class="flex-row-center gap-2 reverse">
-      <ViewletSettingButton
+      <ViewletsSettingButton
         viewletQuery={{ _id: recruit.viewlet.VacancyApplicationsShort }}
         kind={'ghost'}
         bind:viewlet

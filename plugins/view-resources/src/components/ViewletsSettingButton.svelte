@@ -13,16 +13,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { DocumentQuery, WithLookup } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
   import { Button, ButtonKind, showPopup } from '@hcengineering/ui'
-  import { ViewOptions, Viewlet } from '@hcengineering/view'
+  import { ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
   import { getViewOptions, viewOptionStore } from '../viewOptions'
   import ViewOptionsButton from './ViewOptionsButton.svelte'
   import ViewletSetting from './ViewletSetting.svelte'
 
+  export let viewletQuery: DocumentQuery<Viewlet> = {}
   export let kind: ButtonKind = 'regular'
   export let viewOptions: ViewOptions | undefined = undefined
+
   export let viewlet: Viewlet | undefined = undefined
+  export let viewlets: WithLookup<Viewlet>[] = []
+  export let preference: ViewletPreference | undefined = undefined
+  export let loading = true
+
+  const dispatch = createEventDispatcher()
 
   let btn: HTMLButtonElement
 
@@ -31,6 +41,41 @@
   }
 
   $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
+
+  const query = createQuery()
+
+  $: query.query(
+    view.class.Viewlet,
+    viewletQuery,
+    (res) => {
+      viewlets = res
+      viewlet = viewlets[0]
+      dispatch('viewlets', viewlets)
+    },
+    {
+      lookup: {
+        descriptor: view.class.ViewletDescriptor
+      }
+    }
+  )
+
+  const preferenceQuery = createQuery()
+
+  $: if (viewlet != null) {
+    preferenceQuery.query(
+      view.class.ViewletPreference,
+      {
+        attachedTo: viewlet._id
+      },
+      (res) => {
+        preference = res[0]
+        loading = false
+      },
+      { limit: 1 }
+    )
+  } else {
+    preferenceQuery.unsubscribe()
+  }
 </script>
 
 {#if viewlet}
