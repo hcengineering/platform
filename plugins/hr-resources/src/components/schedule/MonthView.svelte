@@ -314,7 +314,14 @@
                 {#each tracks as track, trackIndex}
                   {#each track.elements as element}
                     {@const request = element.request}
-                    <div class="timeline-event-wrapper" style={getElementStyle(element, trackIndex)}>
+                    <div
+                      class="timeline-event-wrapper"
+                      style={getElementStyle(element, trackIndex)}
+                      use:tooltip={{
+                        component: RequestsPopup,
+                        props: { requests: [request._id] }
+                      }}
+                    >
                       <ScheduleRequest {request} {editable} shouldShowDescription={element.length > 1} />
                     </div>
                   {/each}
