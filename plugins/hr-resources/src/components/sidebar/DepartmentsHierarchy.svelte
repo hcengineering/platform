@@ -35,7 +35,7 @@
   const dispatch = createEventDispatcher()
 
   function getDescendants (department: Ref<Department>): Ref<Department>[] {
-    return (descendants.get(department) ?? []).map((p) => p._id)
+    return (descendants.get(department) ?? []).sort((a, b) => a.name.localeCompare(b.name)).map((p) => p._id)
   }
 
   async function getActions (obj: Department): Promise<Action[]> {
@@ -57,15 +57,17 @@
   function handleDepartmentSelected (department: Ref<Department>): void {
     dispatch('selected', department)
   }
+
+  $: _departments = departments.map((it) => departmentById.get(it)).filter((it) => it !== undefined) as Department[]
+  $: _descendants = new Map(_departments.map((it) => [it._id, getDescendants(it._id)]))
 </script>
 
-{#each departments as dep}
-  {@const department = departmentById.get(dep)}
-  {@const desc = getDescendants(dep)}
+{#each _departments as department}
+  {@const desc = _descendants.get(department._id) ?? []}
 
   {#if department}
     <TreeElement
-      _id={dep}
+      _id={department._id}
       icon={hr.icon.Department}
       title={department.name}
       selected={selected === department._id}
