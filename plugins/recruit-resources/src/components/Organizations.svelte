@@ -19,7 +19,7 @@
   import { Applicant, Vacancy } from '@hcengineering/recruit'
   import { Button, IconAdd, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
   import view, { BuildModelKey, Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
-  import { FilterBar, FilterButton, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { FilterBar, FilterButton, TableBrowser, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import CreateOrganization from './CreateOrganization.svelte'
   import VacancyListApplicationsPopup from './organizations/VacancyListApplicationsPopup.svelte'
@@ -208,7 +208,7 @@
     <ViewletSelector
       hidden
       viewletQuery={{
-        attachTo: recruit.class.VacancyList,
+        attachTo: recruit.mixin.VacancyList,
         descriptor: view.viewlet.Table
       }}
       bind:preference
