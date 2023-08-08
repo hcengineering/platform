@@ -74,10 +74,7 @@
 {#if doc}
   <div bind:this={div} class="inbox-activity__container w-165 h-20 pl-4 pr-4 card" tabindex="-1" on:keydown on:click>
     {#if newTxes > 0 && !selected}<div class="notify" />{/if}
-    <div
-      class="inbox-activity__content flex-grow clear-mins"
-      class:read={newTxes === 0}
-    >
+    <div class="inbox-activity__content flex-grow clear-mins" class:read={newTxes === 0}>
       <div class="flex-row-center flex-no-shrink mr-8">
         {#if presenter}
           <svelte:component this={presenter} value={doc} inline accent />

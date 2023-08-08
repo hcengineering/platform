@@ -19,7 +19,7 @@
   import core, { Class, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
   import { DocUpdates } from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
-  import { AnyComponent, Component, Tabs, getLocation, navigate } from '@hcengineering/ui'
+  import { AnyComponent, Component, Tabs } from '@hcengineering/ui'
   import view from '@hcengineering/view'
 
   import notification from '../plugin'

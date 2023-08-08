@@ -55,8 +55,8 @@
   const client = getClient()
   const currentUser = getCurrentAccount()._id as Ref<PersonAccount>
   $: getAccounts()
-  async function getAccounts() {
-    accounts = await client.findAll(contact.class.PersonAccount, { _id: { $ne: currentUser }})
+  async function getAccounts () {
+    accounts = await client.findAll(contact.class.PersonAccount, { _id: { $ne: currentUser } })
     loading = false
   }
 

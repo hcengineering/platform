@@ -50,7 +50,7 @@
   let directUser: Ref<Account> | undefined
   const docUpdatesQuery = createQuery()
 
-  type FeedData = (Message | DocUpdates)
+  type FeedData = Message | DocUpdates
   let feed: FeedData[] = []
 
   let loadingUpdates = true
@@ -63,7 +63,7 @@
     if (spaceObject !== undefined) {
       isDirectMessageSpace = hierarchy.isDerived(spaceObject._class, chunter.class.DirectMessage)
       if (isDirectMessageSpace) {
-        directUser = spaceObject.members.filter(m => m !== currentUser)[0]
+        directUser = spaceObject.members.filter((m) => m !== currentUser)[0]
       }
     }
 
@@ -95,7 +95,7 @@
     loadingUpdates = false
   }
 
-  function filterDocUpdates(docs: DocUpdates[], directUser?: Ref<Account>): DocUpdates[] {
+  function filterDocUpdates (docs: DocUpdates[], directUser?: Ref<Account>): DocUpdates[] {
     if (directUser === undefined) {
       return []
     }
@@ -105,7 +105,7 @@
       if (doc.txes.length === 0) continue
       const txes = doc.txes.filter((p) => p.modifiedBy === directUser)
       if (txes.length > 0) {
-        result.push({...doc, txes})
+        result.push({ ...doc, txes })
       }
     }
     return result
@@ -170,11 +170,15 @@
     }
   )
 
-  function buildFeed(feed: FeedData[], docs: DocUpdates[], messages: Message[], directUser?: Ref<Account>): FeedData[] {
+  function buildFeed (feed: FeedData[], docs: DocUpdates[], messages: Message[], directUser?: Ref<Account>): FeedData[] {
     feed = [...messages, ...filterDocUpdates(docs, directUser)]
     feed.sort((a, b) => {
-      const ta = hierarchy.isDerived(a._class, chunter.class.Message) ? (a.createdOn ?? 0) : (a as DocUpdates).txes[0].modifiedOn
-      const tb = hierarchy.isDerived(b._class, chunter.class.Message) ? (b.createdOn ?? 0): (b as DocUpdates).txes[0].modifiedOn
+      const ta = hierarchy.isDerived(a._class, chunter.class.Message)
+        ? a.createdOn ?? 0
+        : (a as DocUpdates).txes[0].modifiedOn
+      const tb = hierarchy.isDerived(b._class, chunter.class.Message)
+        ? b.createdOn ?? 0
+        : (b as DocUpdates).txes[0].modifiedOn
       return ta - tb
     })
     return feed
@@ -280,11 +284,11 @@
     return firstVisible
   }
 
-  function toMessage(data: FeedData): Message {
+  function toMessage (data: FeedData): Message {
     return data as Message
   }
 
-  function toDocUpdate(data: FeedData): DocUpdates {
+  function toDocUpdate (data: FeedData): DocUpdates {
     return data as DocUpdates
   }
 
@@ -300,7 +304,6 @@
   }
 
   $: feed = buildFeed(feed, docs, messages, directUser)
-
 </script>
 
 <div class="flex-col vScroll" bind:this={div} on:scroll={handleScroll}>
@@ -323,11 +326,7 @@
       {#if hierarchy.isDerived(data._class, notification.class.DocUpdates)}
         {@const item = toDocUpdate(data)}
         <div class="mb-4">
-          <NotificationView
-            value={item}
-            selected={false}
-            on:click={() => select(item)}
-          />
+          <NotificationView value={item} selected={false} on:click={() => select(item)} />
         </div>
       {:else}
         {@const message = toMessage(data)}
