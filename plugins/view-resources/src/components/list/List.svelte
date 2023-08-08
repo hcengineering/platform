@@ -98,9 +98,9 @@
     selectedObjectIds = []
   }
 
-  export function select (offset: 2 | -2 | 1 | -1 | 0, of?: Doc): void {
+  export function select (offset: 2 | -2 | 1 | -1 | 0, of?: Doc, noScroll?: boolean): void {
     if (of !== undefined || offset !== 0) {
-      listCategories?.select(offset, of)
+      listCategories?.select(offset, of, undefined, noScroll)
     }
   }
 
