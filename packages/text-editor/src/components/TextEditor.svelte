@@ -34,7 +34,7 @@
   export let extensions: AnyExtension[] = []
   export let supportSubmit = true
   export let isEmpty = true
-  export let textEditorToolbar: HTMLElement
+  export let textEditorToolbar = null
 
   let element: HTMLElement
   let editor: Editor
