@@ -29,7 +29,6 @@
   import JumpToDateSelector from './JumpToDateSelector.svelte'
   import MessageComponent from './Message.svelte'
   import NotificationView from './NotificationView.svelte'
-  import { EmployeeAccount } from '@hcengineering/contact'
 
   export let space: Ref<Space> | undefined
   export let pinnedIds: Ref<ChunterMessage>[]
@@ -302,12 +301,6 @@
 
   $: feed = buildFeed(feed, docs, messages, directUser)
 
-  function updateMessage(feed: FeedData[], message: Message) {
-    const msgIndex = feed.findIndex((d) => d._id === message._id)
-    if (msgIndex > 0) {
-      feed[msgIndex] = message
-    }
-  }
 </script>
 
 <div class="flex-col vScroll" bind:this={div} on:scroll={handleScroll}>
@@ -342,7 +335,6 @@
           isHighlighted={$messageIdForScroll === data._id && $isMessageHighlighted}
           {message}
           on:openThread
-          on:openThread={() => updateMessage(feed, message)}
           isPinned={pinnedIds.includes(message._id)}
           isSaved={savedMessagesIds.includes(message._id)}
           {savedAttachmentsIds}

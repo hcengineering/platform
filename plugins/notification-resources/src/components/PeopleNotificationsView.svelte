@@ -21,6 +21,7 @@
   import core from '@hcengineering/core'
   import { DocUpdates } from '@hcengineering/notification'
   import { ActionIcon, Label } from '@hcengineering/ui'
+  import { getClient } from '@hcengineering/presentation'
 
   import ArrowRight from './icons/ArrowRight.svelte'
 
@@ -37,6 +38,8 @@
   let div: HTMLDivElement
 
   $: if (selected && div !== undefined) div.focus()
+
+  const hierarchy = getClient().getHierarchy()
 </script>
 
 <div
@@ -53,7 +56,7 @@
     <div class="flex-row-center gap-2">
       <Avatar avatar={employee?.avatar} size="small" />
       {#if employee}
-        <span class="font-medium">{getName(employee)}</span>
+        <span class="font-medium">{getName(hierarchy, employee)}</span>
       {:else}
         <span class="font-medium"><Label label={core.string.System} /></span>
       {/if}
