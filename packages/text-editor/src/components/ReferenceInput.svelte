@@ -36,8 +36,8 @@
   import LinkPopup from './LinkPopup.svelte'
   import TextEditor from './TextEditor.svelte'
   import { completionConfig } from './extensions'
-  import Attach from './icons/Attach.svelte'  
-  import CodeBlock from './icons/CodeBlock.svelte'  
+  import Attach from './icons/Attach.svelte'
+  import CodeBlock from './icons/CodeBlock.svelte'
   import ListBullet from './icons/ListBullet.svelte'
   import ListNumber from './icons/ListNumber.svelte'
   import Quote from './icons/Quote.svelte'
@@ -47,7 +47,7 @@
   import RILink from './icons/RILink.svelte'
   import RIMention from './icons/RIMention.svelte'
   import RIStrikethrough from './icons/RIStrikethrough.svelte'
-  import Send from './icons/Send.svelte'  
+  import Send from './icons/Send.svelte'
 
   const dispatch = createEventDispatcher()
   export let content: string = ''
@@ -65,7 +65,7 @@
   let textEditor: TextEditor
   let textEditorToolbar: HTMLElement
 
-  let isFormatting = true
+  const isFormatting = true
   let activeModes = new Set<FormatMode>()
   let isSelectionEmpty = true
   let isEmpty = true
@@ -109,7 +109,7 @@
         )
       },
       order: 4001
-    },    
+    }
   ]
 
   let actions: RefAction[] = []
@@ -199,11 +199,7 @@
 
 <div class="ref-container">
   {#if isFormatting}
-    <div 
-      class="formatPanel buttons-group xsmall-gap mb-4" 
-      class:withoutTopBorder
-      bind:this={textEditorToolbar}
-    >
+    <div class="formatPanel buttons-group xsmall-gap mb-4" class:withoutTopBorder bind:this={textEditorToolbar}>
       <Button
         icon={RIBold}
         kind={'ghost'}
@@ -331,7 +327,7 @@
     {/if}
   </div>
   <div class="flex-between clear-mins" style:margin={'.75rem .75rem 0'}>
-    <div class="buttons-group medium-gap" >
+    <div class="buttons-group medium-gap">
       {#each actions as a}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div

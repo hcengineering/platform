@@ -22,7 +22,6 @@
   import Placeholder from '@tiptap/extension-placeholder'
   import BubbleMenu from '@tiptap/extension-bubble-menu'
 
-
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import textEditorPlugin from '../plugin'
   import { FormatMode } from '../types'
@@ -208,8 +207,8 @@
           Placeholder.configure({ placeholder: placeHolderStr }),
           ...extensions,
           BubbleMenu.configure({
-            element: textEditorToolbar,
-          }),
+            element: textEditorToolbar
+          })
         ],
         parseOptions: {
           preserveWhitespace: 'full'

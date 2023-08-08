@@ -23,7 +23,7 @@
     IconSize,
     Scroller,
     SelectPopup,
-    showPopup,
+    showPopup
   } from '@hcengineering/ui'
   import { Level } from '@tiptap/extension-heading'
   import { createEventDispatcher } from 'svelte'
@@ -33,7 +33,7 @@
   import Attach from './icons/Attach.svelte'
   import CodeBlock from './icons/CodeBlock.svelte'
   import Header from './icons/Header.svelte'
-  import IconTable from './icons/IconTable.svelte'  
+  import IconTable from './icons/IconTable.svelte'
   import ListBullet from './icons/ListBullet.svelte'
   import ListNumber from './icons/ListNumber.svelte'
   import Quote from './icons/Quote.svelte'
@@ -41,7 +41,7 @@
   import RICode from './icons/RICode.svelte'
   import RIItalic from './icons/RIItalic.svelte'
   import RILink from './icons/RILink.svelte'
-  import RIStrikethrough from './icons/RIStrikethrough.svelte'  
+  import RIStrikethrough from './icons/RIStrikethrough.svelte'
   // import RIMention from './icons/RIMention.svelte'
   import { AnyExtension } from '@tiptap/core'
   import AddColAfter from './icons/table/AddColAfter.svelte'
@@ -121,7 +121,7 @@
           ? 'max-content'
           : maxHeight
 
-  let isFormatting = true
+  const isFormatting = true
   let activeModes = new Set<FormatMode>()
   let isSelectionEmpty = true
 
@@ -140,7 +140,7 @@
         dispatch('attach')
       },
       order: 1001
-    },        
+    },
     {
       label: textEditorPlugin.string.Emoji,
       icon: IconEmoji,
@@ -158,7 +158,7 @@
         )
       },
       order: 4001
-    },    
+    }
   ]
 
   const client = getClient()
@@ -382,9 +382,9 @@
       }
     )
   }
-  
-  let buttonsGap = 'small-gap'
-  
+
+  const buttonsGap = 'small-gap'
+
   $: buttonsHeight =
     buttonSize === 'large' || buttonSize === 'x-large' || buttonSize === 'full'
       ? 'h-6 max-h-6'
@@ -407,12 +407,8 @@
   tabindex="-1"
   on:click|preventDefault|stopPropagation={() => (needFocus = true)}
 >
-  {#if isFormatting}  
-    <div 
-      class="formatPanel buttons-group xsmall-gap mb-4" 
-      class:withoutTopBorder
-      bind:this={textEditorToolbar} 
-    >
+  {#if isFormatting}
+    <div class="formatPanel buttons-group xsmall-gap mb-4" class:withoutTopBorder bind:this={textEditorToolbar}>
       <StyleButton
         icon={Header}
         size={formatButtonSize}
@@ -510,7 +506,7 @@
     <div
       bind:clientHeight={contentHeight}
       class="inputMsg showScroll"
-      class:scrollable={isScrollable}      
+      class:scrollable={isScrollable}
       style="--texteditor-maxheight: {varsStyle};"
     >
       {#if isScrollable}
@@ -557,7 +553,7 @@
     </div>
   </div>
   {#if showButtons}
-    <div class="flex-between"  >
+    <div class="flex-between">
       <div class="buttons-group {buttonsGap} mt-3">
         {#each actions.filter((it) => it.hidden !== true) as a}
           <StyleButton icon={a.icon} size={buttonSize} on:click={(evt) => handleAction(a, evt)} />
@@ -640,7 +636,7 @@
         }
       }
     }
-    
+
     .formatPanel {
       margin: -0.5rem -0.25rem 0.5rem;
       padding: 0.375rem;
@@ -649,5 +645,5 @@
       box-shadow: var(--theme-popup-shadow);
       z-index: 1;
     }
-  }  
+  }
 </style>
