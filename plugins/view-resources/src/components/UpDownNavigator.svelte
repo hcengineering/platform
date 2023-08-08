@@ -30,7 +30,7 @@
     }
   }
 
-  $: select(undefined, 0, element, 'vertical')
+  $: select(undefined, 0, element, 'vertical', true)
 </script>
 
 {#if $focusStore.focus !== undefined && $focusStore.provider !== undefined}

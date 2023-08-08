@@ -29,12 +29,14 @@
   let divScroll: HTMLDivElement
   let listWidth: number
 
-  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
-    if (dir === 'vertical') {
-      // Select next
-      list?.select(offset, of)
+  const listProvider = new ListSelectionProvider(
+    (offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection, noScroll?: boolean) => {
+      if (dir === 'vertical') {
+        // Select next
+        list?.select(offset, of, noScroll)
+      }
     }
-  })
+  )
 
   onMount(() => {
     ;(document.activeElement as HTMLElement)?.blur()

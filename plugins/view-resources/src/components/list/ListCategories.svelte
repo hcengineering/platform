@@ -188,7 +188,12 @@
     return -1
   }
 
-  export function select (offset: 2 | 1 | -2 | -1 | 0, of?: Doc, dir?: 'vertical' | 'horizontal'): void {
+  export function select (
+    offset: 2 | 1 | -2 | -1 | 0,
+    of?: Doc,
+    dir?: 'vertical' | 'horizontal',
+    noScroll?: boolean
+  ): void {
     let pos = (of != null ? docs.findIndex((it) => it._id === of._id) : selection) ?? -1
     if (pos === -1) {
       for (const st of categories) {
@@ -276,7 +281,7 @@
           } else {
             const obj = stateObjs[statePos - 1]
             if (obj !== undefined) {
-              scrollInto(objState, obj)
+              if (!noScroll) scrollInto(objState, obj)
               dispatch('row-focus', obj)
             }
           }
@@ -296,7 +301,7 @@
           } else {
             const obj = stateObjs[statePos + 1]
             if (obj !== undefined) {
-              scrollInto(objState, obj)
+              if (!noScroll) scrollInto(objState, obj)
               dispatch('row-focus', obj)
             }
           }
@@ -304,11 +309,11 @@
         }
       }
       if (offset === 0) {
-        scrollInto(objState, obj)
+        if (!noScroll) scrollInto(objState, obj)
         dispatch('row-focus', obj)
       }
     } else {
-      listCategory[objState]?.select(offset, of, dir)
+      listCategory[objState]?.select(offset, of, dir, noScroll)
     }
   }
   function scrollInto (statePos: number, obj: Doc): void {
