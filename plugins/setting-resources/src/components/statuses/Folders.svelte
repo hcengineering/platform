@@ -28,7 +28,7 @@
   })
 
   $: if (folder === undefined && folders.length > 0) {
-    folder = folders[0]
+    folder = folders.filter((f) => hasResource(f.icon))[0]
   }
 
   function select (item: KanbanTemplateSpace) {
