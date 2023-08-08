@@ -570,9 +570,8 @@
   <div class="textInput" class:focusable>
     <div
       bind:clientHeight={contentHeight}
-      class="inputMsg"
-      class:scrollable={isScrollable}
-      class:showScroll={contentHeight > 32}
+      class="inputMsg showScroll"
+      class:scrollable={isScrollable}      
       style="--texteditor-maxheight: {varsStyle};"
     >
       {#if isScrollable}
@@ -674,6 +673,16 @@
         }
         &:not(.showScroll) {
           overflow-y: hidden;
+          /* 
+            showScroll was set only when contentHeight > 32
+            But this gave a bad behaviour for editor toolbar
+            in the bubble when there is only one line of text.
+
+            I did the testing and figured out that now
+            we can use showScroll always.
+
+            Please refer UBER-555
+          */
 
           &::-webkit-scrollbar-thumb {
             background-color: transparent;
