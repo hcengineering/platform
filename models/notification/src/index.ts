@@ -54,7 +54,7 @@ import setting from '@hcengineering/setting'
 import { AnyComponent } from '@hcengineering/ui'
 import notification from './plugin'
 import activity from '@hcengineering/activity'
-
+import chunter from '@hcengineering/chunter'
 export { notificationId } from '@hcengineering/notification'
 export { notificationOperation } from './migration'
 export { notification as default }
@@ -230,7 +230,8 @@ export function createModel (builder: Builder): void {
       icon: notification.icon.Notifications,
       alias: notificationId,
       hidden: true,
-      component: notification.component.Inbox
+      component: notification.component.Inbox,
+      aside: chunter.component.ThreadView
     },
     notification.app.Notification
   )

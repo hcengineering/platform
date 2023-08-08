@@ -13,15 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import activity, { TxViewlet } from '@hcengineering/activity'
   import { activityKey, ActivityKey } from '@hcengineering/activity-resources'
-  import { EmployeeAccount } from '@hcengineering/contact'
-  import { employeeAccountByIdStore } from '@hcengineering/contact-resources'
+  import contact, { EmployeeAccount } from '@hcengineering/contact'
   import { Account, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { DocUpdates } from '@hcengineering/notification'
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { Loading, Scroller } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+
   import PeopleNotificationView from './PeopleNotificationsView.svelte'
 
   export let filter: 'all' | 'read' | 'unread' = 'all'
@@ -51,6 +51,14 @@
       }
     }
   )
+
+  const client = getClient()
+  const currentUser = getCurrentAccount()._id as Ref<EmployeeAccount>
+  $: getAccounts()
+  async function getAccounts() {
+    accounts = await client.findAll(contact.class.EmployeeAccount, { _id: { $ne: currentUser }})
+    loading = false
+  }
 
   function getFiltered (docs: DocUpdates[], filter: 'all' | 'read' | 'unread'): void {
     const filtered: DocUpdates[] = []
@@ -87,9 +95,6 @@
       }
     }
     map = map
-    accounts = Array.from(map.keys())
-      .map((p) => $employeeAccountByIdStore.get(p as Ref<EmployeeAccount>))
-      .filter((p) => p !== undefined) as EmployeeAccount[]
     if (_id === undefined) {
       changeSelected(selected)
     } else {
@@ -131,7 +136,7 @@
     viewlets = new Map(result.map((r) => [activityKey(r.objectClass, r.txClass), r]))
   })
 
-  let selected = 0
+  let selected = -1
 
   const dispatch = createEventDispatcher()
   function onKeydown (key: KeyboardEvent): void {
@@ -169,7 +174,7 @@
           {viewlets}
           on:keydown={onKeydown}
           on:open
-          on:click={() => {
+          on:open={() => {
             selected = i
           }}
         />

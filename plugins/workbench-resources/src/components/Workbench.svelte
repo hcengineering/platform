@@ -456,7 +456,7 @@
     specialComponent = getSpecialComponent(spaceSpecial)
     if (specialComponent !== undefined) {
       currentSpecial = spaceSpecial
-    } else if (navigatorModel?.aside !== undefined) {
+    } else if (navigatorModel?.aside !== undefined || currentApplication?.aside !== undefined) {
       asideId = spaceSpecial
     }
   }
@@ -737,17 +737,20 @@
           <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
         {/if}
       </div>
-      {#if asideId && navigatorModel?.aside !== undefined}
-        <div class="splitter" class:hovered={isResizing} on:mousedown={startResize} />
-        <div
-          class="antiPanel-component antiComponent aside"
-          use:resizeObserver={(element) => {
-            asideWidth = element.clientWidth
-          }}
-          bind:this={aside}
-        >
-          <Component is={navigatorModel.aside} props={{ currentSpace, _id: asideId }} on:close={closeAside} />
-        </div>
+      {#if asideId}
+        {@const asideComponent = navigatorModel?.aside ?? currentApplication?.aside}
+        {#if asideComponent !== undefined}
+          <div class="splitter" class:hovered={isResizing} on:mousedown={startResize} />
+          <div
+            class="antiPanel-component antiComponent aside"
+            use:resizeObserver={(element) => {
+              asideWidth = element.clientWidth
+            }}
+            bind:this={aside}
+          >
+            <Component is={asideComponent} props={{ currentSpace, _id: asideId }} on:close={closeAside} />
+          </div>
+        {/if}
       {/if}
     </div>
   </div>

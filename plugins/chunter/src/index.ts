@@ -131,6 +131,7 @@ export default plugin(chunterId, {
     CommentInput: '' as AnyComponent,
     DmHeader: '' as AnyComponent,
     ChannelView: '' as AnyComponent,
+    ThreadView: '' as AnyComponent,
     CommentsPresenter: '' as AnyComponent
   },
   class: {

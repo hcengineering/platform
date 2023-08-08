@@ -13,19 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { afterUpdate, beforeUpdate, onDestroy } from 'svelte'
   import attachment, { Attachment } from '@hcengineering/attachment'
   import type { ChunterMessage, Message } from '@hcengineering/chunter'
-  import core, { Doc, Ref, Space, Timestamp, WithLookup } from '@hcengineering/core'
-  import { DocUpdates } from '@hcengineering/notification'
+  import core, { Account, Doc, Ref, Space, Timestamp, WithLookup, getCurrentAccount } from '@hcengineering/core'
+  import notification, { DocUpdates } from '@hcengineering/notification'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
-  import { createQuery } from '@hcengineering/presentation'
-  import { location as locationStore } from '@hcengineering/ui'
-  import { afterUpdate, beforeUpdate, onDestroy } from 'svelte'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { location as locationStore, showPanel, Spinner } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
+
   import chunter from '../plugin'
   import { getDay, isMessageHighlighted, messageIdForScroll, scrollAndHighLight, shouldScrollToMessage } from '../utils'
   import ChannelSeparator from './ChannelSeparator.svelte'
   import JumpToDateSelector from './JumpToDateSelector.svelte'
   import MessageComponent from './Message.svelte'
+  import NotificationView from './NotificationView.svelte'
+  import { EmployeeAccount } from '@hcengineering/contact'
 
   export let space: Ref<Space> | undefined
   export let pinnedIds: Ref<ChunterMessage>[]
@@ -35,6 +39,78 @@
 
   let div: HTMLDivElement | undefined
   let autoscroll: boolean = false
+
+  const currentUser = getCurrentAccount()._id
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  const spaceQuery = createQuery()
+  let spaceObject: Space | undefined
+  let isDirectMessageSpace = false
+  let directUser: Ref<Account> | undefined
+  const docUpdatesQuery = createQuery()
+
+  type FeedData = (Message | DocUpdates)
+  let feed: FeedData[] = []
+
+  let loadingUpdates = true
+  let loadingMessages = true
+  let messages: WithLookup<Message>[] = []
+  let docs: DocUpdates[] = []
+
+  $: spaceQuery.query(core.class.Space, { _id: space }, (res) => {
+    ;[spaceObject] = res
+    if (spaceObject !== undefined) {
+      isDirectMessageSpace = hierarchy.isDerived(spaceObject._class, chunter.class.DirectMessage)
+      if (isDirectMessageSpace) {
+        directUser = spaceObject.members.filter(m => m !== currentUser)[0]
+      }
+    }
+
+    feed = []
+    loadingMessages = true
+    messages = []
+  })
+
+  $: if (directUser !== undefined && isDirectMessageSpace) {
+    docUpdatesQuery.query(
+      notification.class.DocUpdates,
+      {
+        user: getCurrentAccount()._id,
+        hidden: false,
+        attachedToClass: { $ne: chunter.class.DirectMessage }
+      },
+      (res) => {
+        docs = res
+        loadingUpdates = false
+      },
+      {
+        sort: {
+          lastTxTime: -1
+        }
+      }
+    )
+  } else {
+    docUpdatesQuery.unsubscribe()
+    loadingUpdates = false
+  }
+
+  function filterDocUpdates(docs: DocUpdates[], directUser?: Ref<Account>): DocUpdates[] {
+    if (directUser === undefined) {
+      return []
+    }
+
+    const result: DocUpdates[] = []
+    for (const doc of docs) {
+      if (doc.txes.length === 0) continue
+      const txes = doc.txes.filter((p) => p.modifiedBy === directUser)
+      if (txes.length > 0) {
+        result.push({...doc, txes})
+      }
+    }
+    return result
+  }
 
   const unsubscribe = locationStore.subscribe((newLocation) => {
     const messageId = newLocation.fragment
@@ -69,47 +145,56 @@
     }
   })
 
-  let messages: WithLookup<Message>[] = []
   const query = createQuery()
 
   const notificationClient = NotificationClientImpl.getClient()
   const docUpdates = notificationClient.docUpdatesStore
 
-  $: updateQuery(space)
-
-  function updateQuery (space: Ref<Space> | undefined) {
-    if (space === undefined) {
-      query.unsubscribe()
-      messages = []
-      return
-    }
-    query.query(
-      chunter.class.Message,
-      {
-        space
-      },
-      (res) => {
-        messages = res
-        newMessagesPos = newMessagesStart(messages, $docUpdates)
+  $: query.query(
+    chunter.class.Message,
+    {
+      space
+    },
+    (res) => {
+      messages = res
+      newMessagesPos = newMessagesStart(messages, $docUpdates)
+      if (space !== undefined) {
         notificationClient.read(space)
-      },
-      {
-        lookup: {
-          _id: { attachments: attachment.class.Attachment, reactions: chunter.class.Reaction },
-          createBy: core.class.Account
-        }
       }
-    )
+      loadingMessages = false
+    },
+    {
+      lookup: {
+        _id: { attachments: attachment.class.Attachment, reactions: chunter.class.Reaction },
+        createBy: core.class.Account
+      }
+    }
+  )
+
+  function buildFeed(feed: FeedData[], docs: DocUpdates[], messages: Message[], directUser?: Ref<Account>): FeedData[] {
+    feed = [...messages, ...filterDocUpdates(docs, directUser)]
+    feed.sort((a, b) => {
+      const ta = hierarchy.isDerived(a._class, chunter.class.Message) ? (a.createdOn ?? 0) : (a as DocUpdates).txes[0].modifiedOn
+      const tb = hierarchy.isDerived(b._class, chunter.class.Message) ? (b.createdOn ?? 0): (b as DocUpdates).txes[0].modifiedOn
+      return ta - tb
+    })
+    return feed
   }
 
   function newMessagesStart (messages: Message[], docUpdates: Map<Ref<Doc>, DocUpdates>): number {
     if (space === undefined) return -1
     const docUpdate = docUpdates.get(space)
-    const lastView = docUpdate?.txes?.[0]?.modifiedOn
+    let lastView: number | undefined
+    for (const tx of docUpdate?.txes ?? []) {
+      if (tx.isNew) {
+        lastView = tx.modifiedOn
+        break
+      }
+    }
     if (docUpdate === undefined || lastView === undefined) return -1
     for (let index = 0; index < messages.length; index++) {
       const message = messages[index]
-      if ((message.createdOn ?? 0) >= lastView) return index
+      if ((message.createdOn ?? 0) >= lastView) return index - 1
     }
     return -1
   }
@@ -195,6 +280,34 @@
     }
     return firstVisible
   }
+
+  function toMessage(data: FeedData): Message {
+    return data as Message
+  }
+
+  function toDocUpdate(data: FeedData): DocUpdates {
+    return data as DocUpdates
+  }
+
+  async function select (value: DocUpdates | undefined) {
+    if (!value) {
+      return
+    }
+
+    const targetClass = hierarchy.getClass(value.attachedToClass)
+    const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)
+    const component = panelComponent.component ?? view.component.EditDoc
+    showPanel(component, value.attachedTo, value.attachedToClass, 'content')
+  }
+
+  $: feed = buildFeed(feed, docs, messages, directUser)
+
+  function updateMessage(feed: FeedData[], message: Message) {
+    const msgIndex = feed.findIndex((d) => d._id === message._id)
+    if (msgIndex > 0) {
+      feed[msgIndex] = message
+    }
+  }
 </script>
 
 <div class="flex-col vScroll" bind:this={div} on:scroll={handleScroll}>
@@ -204,22 +317,37 @@
       <JumpToDateSelector {selectedDate} fixed on:jumpToDate={handleJumpToDate} />
     </div>
   {/if}
-  {#if messages}
-    {#each messages as message, i (message._id)}
+  {#if loadingMessages || loadingUpdates}
+    <Spinner />
+  {:else}
+    {#each feed as data, i (data._id)}
       {#if newMessagesPos === i}
         <ChannelSeparator title={chunter.string.New} line reverse isNew />
       {/if}
-      {#if i === 0 || isOtherDay(message.createdOn ?? 0, messages[i - 1].createdOn ?? 0)}
-        <JumpToDateSelector selectedDate={message.createdOn} on:jumpToDate={handleJumpToDate} />
+      {#if i === 0 || isOtherDay(data.createdOn ?? 0, feed[i - 1].createdOn ?? 0)}
+        <JumpToDateSelector selectedDate={data.createdOn} on:jumpToDate={handleJumpToDate} />
       {/if}
-      <MessageComponent
-        isHighlighted={$messageIdForScroll === message._id && $isMessageHighlighted}
-        {message}
-        on:openThread
-        isPinned={pinnedIds.includes(message._id)}
-        isSaved={savedMessagesIds.includes(message._id)}
-        {savedAttachmentsIds}
-      />
+      {#if hierarchy.isDerived(data._class, notification.class.DocUpdates)}
+        {@const item = toDocUpdate(data)}
+        <div class="mb-4">
+          <NotificationView
+            value={item}
+            selected={false}
+            on:click={() => select(item)}
+          />
+        </div>
+      {:else}
+        {@const message = toMessage(data)}
+        <MessageComponent
+          isHighlighted={$messageIdForScroll === data._id && $isMessageHighlighted}
+          {message}
+          on:openThread
+          on:openThread={() => updateMessage(feed, message)}
+          isPinned={pinnedIds.includes(message._id)}
+          isSaved={savedMessagesIds.includes(message._id)}
+          {savedAttachmentsIds}
+        />
+      {/if}
     {/each}
   {/if}
 </div>

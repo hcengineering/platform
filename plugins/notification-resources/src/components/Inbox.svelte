@@ -13,16 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { deepEqual } from 'fast-equals'
   import chunter from '@hcengineering/chunter'
   import { EmployeeAccount } from '@hcengineering/contact'
-  import { Class, Doc, Ref } from '@hcengineering/core'
+  import core, { Class, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
   import { DocUpdates } from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
-  import { AnyComponent, Component, Tabs } from '@hcengineering/ui'
+  import { AnyComponent, Component, Tabs, getLocation, navigate } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+
   import notification from '../plugin'
   import Activity from './Activity.svelte'
-  import EmployeeInbox from './EmployeeInbox.svelte'
   import Filter from './Filter.svelte'
   import People from './People.svelte'
 
@@ -73,14 +74,38 @@
     prevValue = value
   }
 
-  function openDM (value: Ref<Doc>) {
+  async function openDM (value?: Ref<EmployeeAccount>) {
     if (value) {
+      const dmId = await getDirectMessage(value as Ref<EmployeeAccount>)
       const targetClass = hierarchy.getClass(chunter.class.DirectMessage)
       const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)
       component = panelComponent.component ?? view.component.EditDoc
-      _id = value
+      _id = dmId
       _class = chunter.class.DirectMessage
     }
+  }
+
+  const myAccId = getCurrentAccount()._id
+
+  async function getDirectMessage (employeeAccount: Ref<EmployeeAccount>) {
+    const accIds = [myAccId, employeeAccount].sort()
+    const existingDms = await client.findAll(chunter.class.DirectMessage, {})
+
+    for (const dm of existingDms) {
+      if (deepEqual(dm.members.sort(), accIds)) {
+        return dm._id
+      }
+    }
+
+    const dmId = await client.createDoc(chunter.class.DirectMessage, core.space.Space, {
+      name: '',
+      description: '',
+      private: true,
+      archived: false,
+      members: accIds
+    })
+
+    return dmId
   }
 
   let selectedTab = 0
@@ -89,36 +114,26 @@
 <div class="flex-row-top h-full">
   {#if visibileNav}
     <div class="antiPanel-component header border-right aside min-w-100 flex-no-shrink">
-      {#if selectedEmployee === undefined}
-        <Tabs
-          bind:selected={selectedTab}
-          model={tabs}
-          on:change={(e) => select(e.detail)}
-          on:open={(e) => {
-            selectedEmployee = e.detail
-          }}
-          padding={'0 1.75rem'}
-          size="small"
-        >
-          <svelte:fragment slot="rightButtons">
-            <Filter bind:filter />
-          </svelte:fragment>
-        </Tabs>
-      {:else}
-        <EmployeeInbox
-          accountId={selectedEmployee}
-          on:change={(e) => select(e.detail)}
-          on:dm={(e) => openDM(e.detail)}
-          on:close={(e) => {
-            selectedEmployee = undefined
-          }}
-        />
-      {/if}
+      <Tabs
+        bind:selected={selectedTab}
+        model={tabs}
+        on:change={(e) => select(e.detail)}
+        on:open={(e) => {
+          selectedEmployee = e.detail
+          openDM(selectedEmployee)
+        }}
+        padding={'0 1.75rem'}
+        size="small"
+      >
+        <svelte:fragment slot="rightButtons">
+          <Filter bind:filter />
+        </svelte:fragment>
+      </Tabs>
     </div>
   {/if}
   <div class="antiPanel-component filled w-full">
     {#if component && _id && _class}
-      <Component is={component} props={{ embedded: true, _id, _class }} />
+      <Component is={component} props={{ _id, _class }} on:close={() => select(undefined)} />
     {/if}
   </div>
 </div>
