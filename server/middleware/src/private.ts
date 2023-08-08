@@ -64,7 +64,11 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
         if (account !== tx.modifiedBy && account !== core.account.System) {
           throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
         }
+        const modifiedByAccount = await this.storage.modelDb.findAll(core.class.Account, { _id: tx.modifiedBy })
         target = [ctx.userEmail, systemAccountEmail]
+        if (modifiedByAccount.length > 0 && !target.includes(modifiedByAccount[0].email)) {
+          target.push(modifiedByAccount[0].email)
+        }
       }
     }
     const res = await this.provideTx(ctx, tx)
