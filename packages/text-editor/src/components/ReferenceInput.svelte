@@ -36,12 +36,8 @@
   import LinkPopup from './LinkPopup.svelte'
   import TextEditor from './TextEditor.svelte'
   import { completionConfig } from './extensions'
-  import Attach from './icons/Attach.svelte'
-  import Bold from './icons/Bold.svelte'
-  import Code from './icons/Code.svelte'
-  import CodeBlock from './icons/CodeBlock.svelte'
-  import Italic from './icons/Italic.svelte'
-  import Link from './icons/Link.svelte'
+  import Attach from './icons/Attach.svelte'  
+  import CodeBlock from './icons/CodeBlock.svelte'  
   import ListBullet from './icons/ListBullet.svelte'
   import ListNumber from './icons/ListNumber.svelte'
   import Quote from './icons/Quote.svelte'
@@ -51,9 +47,7 @@
   import RILink from './icons/RILink.svelte'
   import RIMention from './icons/RIMention.svelte'
   import RIStrikethrough from './icons/RIStrikethrough.svelte'
-  import Send from './icons/Send.svelte'
-  import Strikethrough from './icons/Strikethrough.svelte'
-  import TextStyle from './icons/TextStyle.svelte'
+  import Send from './icons/Send.svelte'  
 
   const dispatch = createEventDispatcher()
   export let content: string = ''
@@ -71,7 +65,7 @@
   let textEditor: TextEditor
   let textEditorToolbar: HTMLElement
 
-  let isFormatting = false
+  let isFormatting = true
   let activeModes = new Set<FormatMode>()
   let isSelectionEmpty = true
   let isEmpty = true
@@ -91,14 +85,6 @@
         dispatch('attach')
       },
       order: 1001
-    },
-    {
-      label: textEditorPlugin.string.Link,
-      icon: RILink,
-      action: () => {
-        if (!(isSelectionEmpty && !activeModes.has('link'))) formatLink()
-      },
-      order: 2000
     },
     {
       label: textEditorPlugin.string.Mention,
@@ -123,52 +109,7 @@
         )
       },
       order: 4001
-    },
-    {
-      label: textEditorPlugin.string.TextStyle,
-      icon: TextStyle,
-      action: () => {
-        isFormatting = !isFormatting
-        textEditor.focus()
-      },
-      order: 6000
-    },
-    {
-      label: textEditorPlugin.string.Bold,
-      icon: RIBold,
-      action: () => {
-        textEditor.toggleBold()
-        textEditor.focus()
-      },
-      order: 6010
-    },
-    {
-      label: textEditorPlugin.string.Italic,
-      icon: RIItalic,
-      action: () => {
-        textEditor.toggleItalic()
-        textEditor.focus()
-      },
-      order: 6020
-    },
-    {
-      label: textEditorPlugin.string.Strikethrough,
-      icon: RIStrikethrough,
-      action: () => {
-        textEditor.toggleStrike()
-        textEditor.focus()
-      },
-      order: 6030
-    },
-    {
-      label: textEditorPlugin.string.Code,
-      icon: RICode,
-      action: () => {
-        textEditor.toggleCode()
-        textEditor.focus()
-      },
-      order: 6040
-    }
+    },    
   ]
 
   let actions: RefAction[] = []
@@ -258,9 +199,13 @@
 
 <div class="ref-container">
   {#if isFormatting}
-    <div class="formatPanelRef buttons-group xsmall-gap" class:withoutTopBorder>
+    <div 
+      class="formatPanel buttons-group xsmall-gap mb-4" 
+      class:withoutTopBorder
+      bind:this={textEditorToolbar}
+    >
       <Button
-        icon={Bold}
+        icon={RIBold}
         kind={'ghost'}
         size={'small'}
         selected={activeModes.has('bold')}
@@ -268,7 +213,7 @@
         on:click={getToggler(textEditor.toggleBold)}
       />
       <Button
-        icon={Italic}
+        icon={RIItalic}
         kind={'ghost'}
         size={'small'}
         selected={activeModes.has('italic')}
@@ -276,7 +221,7 @@
         on:click={getToggler(textEditor.toggleItalic)}
       />
       <Button
-        icon={Strikethrough}
+        icon={RIStrikethrough}
         kind={'ghost'}
         size={'small'}
         selected={activeModes.has('strike')}
@@ -284,7 +229,7 @@
         on:click={getToggler(textEditor.toggleStrike)}
       />
       <Button
-        icon={Link}
+        icon={RILink}
         kind={'ghost'}
         size={'small'}
         selected={activeModes.has('link')}
@@ -320,7 +265,7 @@
       />
       <div class="buttons-divider" />
       <Button
-        icon={Code}
+        icon={RICode}
         kind={'ghost'}
         size={'small'}
         selected={activeModes.has('code')}
@@ -386,7 +331,7 @@
     {/if}
   </div>
   <div class="flex-between clear-mins" style:margin={'.75rem .75rem 0'}>
-    <div class="buttons-group buttons-toolbar medium-gap" bind:this={textEditorToolbar}>
+    <div class="buttons-group medium-gap" >
       {#each actions as a}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
@@ -537,13 +482,14 @@
         }
       }
     }
-  }
 
-  .buttons-toolbar {
-    padding: 0.5rem 0.5rem;
-    border-radius: 0.5rem;
-    background-color: var(--theme-panel-color);
-    border: 1px solid var(--theme-list-divider-color);    
-    box-shadow: 0px 0px 2px var(--theme-list-divider-color);
+    .formatPanel {
+      margin: -0.5rem -0.25rem 0.5rem;
+      padding: 0.375rem;
+      background-color: var(--theme-comp-header-color);
+      border-radius: 0.5rem;
+      box-shadow: var(--theme-popup-shadow);
+      z-index: 1;
+    }
   }
 </style>

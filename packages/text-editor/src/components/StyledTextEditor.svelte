@@ -31,13 +31,9 @@
   import { FORMAT_MODES, FormatMode, RefInputAction, RefInputActionItem, TextEditorHandler } from '../types'
   import { headingLevels, mInsertTable } from './extensions'
   import Attach from './icons/Attach.svelte'
-  import Bold from './icons/Bold.svelte'
-  import Code from './icons/Code.svelte'
   import CodeBlock from './icons/CodeBlock.svelte'
   import Header from './icons/Header.svelte'
-  import IconTable from './icons/IconTable.svelte'
-  import Italic from './icons/Italic.svelte'
-  import Link from './icons/Link.svelte'
+  import IconTable from './icons/IconTable.svelte'  
   import ListBullet from './icons/ListBullet.svelte'
   import ListNumber from './icons/ListNumber.svelte'
   import Quote from './icons/Quote.svelte'
@@ -45,8 +41,7 @@
   import RICode from './icons/RICode.svelte'
   import RIItalic from './icons/RIItalic.svelte'
   import RILink from './icons/RILink.svelte'
-  import RIStrikethrough from './icons/RIStrikethrough.svelte'
-  import Strikethrough from './icons/Strikethrough.svelte'
+  import RIStrikethrough from './icons/RIStrikethrough.svelte'  
   // import RIMention from './icons/RIMention.svelte'
   import { AnyExtension } from '@tiptap/core'
   import AddColAfter from './icons/table/AddColAfter.svelte'
@@ -56,7 +51,6 @@
   import DeleteCol from './icons/table/DeleteCol.svelte'
   import DeleteRow from './icons/table/DeleteRow.svelte'
   import DeleteTable from './icons/table/DeleteTable.svelte'
-  import TextStyle from './icons/TextStyle.svelte'
   import LinkPopup from './LinkPopup.svelte'
   import StyleButton from './StyleButton.svelte'
   import TextEditor from './TextEditor.svelte'
@@ -127,7 +121,7 @@
           ? 'max-content'
           : maxHeight
 
-  let isFormatting = enableFormatting
+  let isFormatting = true
   let activeModes = new Set<FormatMode>()
   let isSelectionEmpty = true
 
@@ -146,21 +140,7 @@
         dispatch('attach')
       },
       order: 1001
-    },
-    {
-      label: textEditorPlugin.string.Link,
-      icon: RILink,
-      action: () => {
-        if (!(isSelectionEmpty && !activeModes.has('link'))) formatLink()
-      },
-      order: 2000
-    },
-    // {
-    //   label: textEditorPlugin.string.Mention,
-    //   icon: RIMention,
-    //   action: () => textEditor.insertText('@'),
-    //   order: 3000
-    // },
+    },        
     {
       label: textEditorPlugin.string.Emoji,
       icon: IconEmoji,
@@ -178,52 +158,7 @@
         )
       },
       order: 4001
-    },
-    {
-      label: textEditorPlugin.string.TextStyle,
-      icon: TextStyle,
-      action: () => {
-        isFormatting = !isFormatting
-        textEditor.focus()
-      },
-      order: 6000
-    },
-    {
-      label: textEditorPlugin.string.Bold,
-      icon: RIBold,
-      action: () => {
-        textEditor.toggleBold()
-        textEditor.focus()
-      },
-      order: 6010
-    },
-    {
-      label: textEditorPlugin.string.Italic,
-      icon: RIItalic,
-      action: () => {
-        textEditor.toggleItalic()
-        textEditor.focus()
-      },
-      order: 6020
-    },
-    {
-      label: textEditorPlugin.string.Strikethrough,
-      icon: RIStrikethrough,
-      action: () => {
-        textEditor.toggleStrike()
-        textEditor.focus()
-      },
-      order: 6030
-    },
-    {
-      label: textEditorPlugin.string.Code,
-      icon: RICode,
-      action: () => {
-        textEditor.toggleCode()
-        textEditor.focus()
-      },
-      order: 6040
-    }
+    },    
   ]
 
   const client = getClient()
@@ -473,7 +408,11 @@
   on:click|preventDefault|stopPropagation={() => (needFocus = true)}
 >
   {#if isFormatting}  
-    <div class="formatPanel buttons-group xsmall-gap mb-4" class:withoutTopBorder>
+    <div 
+      class="formatPanel buttons-group xsmall-gap mb-4" 
+      class:withoutTopBorder
+      bind:this={textEditorToolbar} 
+    >
       <StyleButton
         icon={Header}
         size={formatButtonSize}
@@ -482,28 +421,28 @@
         on:click={toggleHeader}
       />
       <StyleButton
-        icon={Bold}
+        icon={RIBold}
         size={formatButtonSize}
         selected={activeModes.has('bold')}
         showTooltip={{ label: textEditorPlugin.string.Bold }}
         on:click={getToggler(textEditor.toggleBold)}
       />
       <StyleButton
-        icon={Italic}
+        icon={RIItalic}
         size={formatButtonSize}
         selected={activeModes.has('italic')}
         showTooltip={{ label: textEditorPlugin.string.Italic }}
         on:click={getToggler(textEditor.toggleItalic)}
       />
       <StyleButton
-        icon={Strikethrough}
+        icon={RIStrikethrough}
         size={formatButtonSize}
         selected={activeModes.has('strike')}
         showTooltip={{ label: textEditorPlugin.string.Strikethrough }}
         on:click={getToggler(textEditor.toggleStrike)}
       />
       <StyleButton
-        icon={Link}
+        icon={RILink}
         size={formatButtonSize}
         selected={activeModes.has('link')}
         disabled={isSelectionEmpty && !activeModes.has('link')}
@@ -535,7 +474,7 @@
       />
       <div class="buttons-divider" />
       <StyleButton
-        icon={Code}
+        icon={RICode}
         size={formatButtonSize}
         selected={activeModes.has('code')}
         showTooltip={{ label: textEditorPlugin.string.Code }}
@@ -619,7 +558,7 @@
   </div>
   {#if showButtons}
     <div class="flex-between"  >
-      <div class="buttons-group buttons-toolbar {buttonsGap} mt-3" bind:this={textEditorToolbar} >
+      <div class="buttons-group {buttonsGap} mt-3">
         {#each actions.filter((it) => it.hidden !== true) as a}
           <StyleButton icon={a.icon} size={buttonSize} on:click={(evt) => handleAction(a, evt)} />
           {#if a.order % 10 === 1}
@@ -701,10 +640,7 @@
         }
       }
     }
-    &:focus-within .formatPanel {
-      position: sticky;
-      top: 1.25rem;
-    }
+    
     .formatPanel {
       margin: -0.5rem -0.25rem 0.5rem;
       padding: 0.375rem;
@@ -713,13 +649,5 @@
       box-shadow: var(--theme-popup-shadow);
       z-index: 1;
     }
-  }
-
-  .buttons-toolbar {
-    padding: 0.5rem 0.5rem;
-    border-radius: 0.5rem;
-    background-color: var(--theme-panel-color);
-    border: 1px solid var(--theme-list-divider-color);    
-    box-shadow: 0px 0px 2px var(--theme-list-divider-color);
-  }
+  }  
 </style>
