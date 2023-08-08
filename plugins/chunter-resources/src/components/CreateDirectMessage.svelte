@@ -32,7 +32,7 @@
   let employeeIds: Ref<Employee>[] = []
 
   async function createDirectMessage () {
-    const employeeAccounts = await client.findAll(contact.class.EmployeeAccount, { employee: { $in: employeeIds } })
+    const employeeAccounts = await client.findAll(contact.class.PersonAccount, { person: { $in: employeeIds } })
 
     const accIds = [myAccId, ...employeeAccounts.filter((ea) => ea._id !== myAccId).map((ea) => ea._id)].sort()
     const existingDms = await client.findAll(chunter.class.DirectMessage, {})

@@ -18,7 +18,13 @@
   import { Vacancy } from '@hcengineering/recruit'
   import { Button, IconAdd, Label, Loading, SearchEdit, showPopup, tableToCSV } from '@hcengineering/ui'
   import view, { BuildModelKey, ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { FilterBar, FilterButton, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
+  import {
+    FilterBar,
+    FilterButton,
+    TableBrowser,
+    ViewletSelector,
+    ViewletSettingButton
+  } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import CreateVacancy from './CreateVacancy.svelte'
 
@@ -149,16 +155,17 @@
     <FilterButton _class={recruit.class.Vacancy} />
   </div>
   <div class="ac-header-full medium-gap">
-    <ViewletSettingButton
-      bind:viewOptions
+    <ViewletSelector
+      hidden
       viewletQuery={{
         attachTo: recruit.class.Vacancy,
         descriptor: view.viewlet.Table
       }}
-      bind:viewlet
       bind:preference
       bind:loading
+      bind:viewlet
     />
+    <ViewletSettingButton bind:viewOptions bind:viewlet />
     <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
   </div>
 </div>

@@ -14,21 +14,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { EmployeeAccount } from '@hcengineering/contact'
+  import { PersonAccount } from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
   import { IconSize } from '@hcengineering/ui'
-  import { employeeAccountByIdStore } from '../utils'
-  import EmployeeAccountPresenter from './EmployeeAccountPresenter.svelte'
+  import { personAccountByIdStore } from '../utils'
+  import PersonAccountPresenter from './PersonAccountPresenter.svelte'
 
-  export let value: Ref<EmployeeAccount>
+  export let value: Ref<PersonAccount>
   export let avatarSize: IconSize = 'x-small'
   export let disabled: boolean = false
   export let inline: boolean = false
   export let accent: boolean = false
 
-  $: account = $employeeAccountByIdStore.get(value)
+  $: account = $personAccountByIdStore.get(value)
 </script>
 
 {#if account}
-  <EmployeeAccountPresenter value={account} {disabled} {inline} {avatarSize} on:accent-color />
+  <PersonAccountPresenter value={account} {disabled} {inline} {avatarSize} on:accent-color />
 {/if}

@@ -1,13 +1,13 @@
 import { Backlink } from '@hcengineering/chunter'
-import contact, { EmployeeAccount } from '@hcengineering/contact'
+import contact, { PersonAccount } from '@hcengineering/contact'
 import { Account, Class, Client, Data, Doc, DocumentQuery, Ref, TxOperations } from '@hcengineering/core'
 import chunter from './plugin'
 
 export async function getUser (
   client: Client,
-  user: Ref<EmployeeAccount> | Ref<Account>
-): Promise<EmployeeAccount | undefined> {
-  return await client.findOne(contact.class.EmployeeAccount, { _id: user as Ref<EmployeeAccount> })
+  user: Ref<PersonAccount> | Ref<Account>
+): Promise<PersonAccount | undefined> {
+  return await client.findOne(contact.class.PersonAccount, { _id: user as Ref<PersonAccount> })
 }
 
 export function getTime (time: number): string {

@@ -16,8 +16,8 @@
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import type { ChunterSpace, Message, ThreadMessage } from '@hcengineering/chunter'
-  import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
-  import { employeeByIdStore } from '@hcengineering/contact-resources'
+  import contact, { Person, PersonAccount, getName } from '@hcengineering/contact'
+  import { personByIdStore } from '@hcengineering/contact-resources'
   import core, { FindOptions, IdMap, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -98,21 +98,21 @@
   async function getParticipants (
     comments: ThreadMessage[],
     parent: Message | undefined,
-    employees: IdMap<Employee>
+    employees: IdMap<Person>
   ): Promise<string[]> {
     const refs = new Set(comments.map((p) => p.createBy))
     if (parent !== undefined) {
       refs.add(parent.createBy)
     }
     refs.delete(getCurrentAccount()._id)
-    const accounts = await client.findAll(contact.class.EmployeeAccount, {
-      _id: { $in: Array.from(refs) as Ref<EmployeeAccount>[] }
+    const accounts = await client.findAll(contact.class.PersonAccount, {
+      _id: { $in: Array.from(refs) as Ref<PersonAccount>[] }
     })
     const res: string[] = []
     for (const account of accounts) {
-      const employee = employees.get(account.employee)
+      const employee = employees.get(account.person)
       if (employee !== undefined) {
-        res.push(getName(employee))
+        res.push(getName(client.getHierarchy(), employee))
       }
     }
     return res
@@ -159,7 +159,7 @@
         <DmPresenter value={channel} />
       {/if}
     {/await}
-    {#await getParticipants(comments, parent, $employeeByIdStore) then participants}
+    {#await getParticipants(comments, parent, $personByIdStore) then participants}
       {participants.join(', ')}
       <Label label={chunter.string.AndYou} params={{ participants: participants.length }} />
     {/await}

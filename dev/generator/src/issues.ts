@@ -49,7 +49,7 @@ export async function generateIssues (
   options: IssueOptions
 ): Promise<void> {
   const connection = await connect(transactorUrl, workspaceId)
-  const accounts = await connection.findAll(contact.class.EmployeeAccount, {})
+  const accounts = await connection.findAll(contact.class.PersonAccount, {})
   const account = faker.random.arrayElement(accounts)
   const client = new TxOperations(connection, account._id)
   const ctx = new MeasureMetricsContext('recruit', {})

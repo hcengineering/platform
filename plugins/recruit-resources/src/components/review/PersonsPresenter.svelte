@@ -20,6 +20,7 @@
   import { Avatar } from '@hcengineering/contact-resources'
   import { showPanel, tooltip } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import { getClient } from '@hcengineering/presentation'
 
   export let value: Person | Person[]
   export let inline: boolean = false
@@ -30,6 +31,7 @@
   async function onClick (p: Person) {
     showPanel(view.component.EditDoc, p._id, Hierarchy.mixinOrClass(p), 'content')
   }
+  const client = getClient()
 </script>
 
 {#if value}
@@ -38,7 +40,7 @@
       <div
         class="flex-presenter"
         class:inline-presenter={inline}
-        use:tooltip={{ label: calendar.string.PersonsLabel, props: { name: getName(p) } }}
+        use:tooltip={{ label: calendar.string.PersonsLabel, props: { name: getName(client.getHierarchy(), p) } }}
         on:click={() => onClick(p)}
       >
         <div class="icon">

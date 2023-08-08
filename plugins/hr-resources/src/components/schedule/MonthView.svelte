@@ -250,7 +250,7 @@
 {#if rows.length}
   {@const dep = departmentById.get(department)}
 
-  <Scroller fade={{ multipler: { top: headerHeightRem, bottom: 0, left: headerWidthRem } }} horizontal>
+  <Scroller horizontal fade={{ multipler: { top: headerHeightRem, left: headerWidthRem } }} noFade>
     <div bind:clientWidth={containerWidth} class="timeline">
       {#key [containerWidthRem, columnWidthRem, headerWidthRem]}
         <!-- Resource Header -->
@@ -314,7 +314,14 @@
                 {#each tracks as track, trackIndex}
                   {#each track.elements as element}
                     {@const request = element.request}
-                    <div class="timeline-event-wrapper" style={getElementStyle(element, trackIndex)}>
+                    <div
+                      class="timeline-event-wrapper"
+                      style={getElementStyle(element, trackIndex)}
+                      use:tooltip={{
+                        component: RequestsPopup,
+                        props: { requests: [request._id] }
+                      }}
+                    >
                       <ScheduleRequest {request} {editable} shouldShowDescription={element.length > 1} />
                     </div>
                   {/each}

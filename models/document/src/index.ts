@@ -133,13 +133,13 @@ export class TDocument extends TDoc implements Document {
   @Hidden()
     versions!: number
 
-  @Prop(ArrOf(TypeRef(contact.class.Employee)), document.string.Authors)
+  @Prop(ArrOf(TypeRef(contact.mixin.Employee)), document.string.Authors)
     authors!: Ref<Employee>[]
 
-  @Prop(ArrOf(TypeRef(contact.class.Employee)), document.string.Reviewers)
+  @Prop(ArrOf(TypeRef(contact.mixin.Employee)), document.string.Reviewers)
     reviewers!: Ref<Employee>[]
 
-  @Prop(ArrOf(TypeRef(contact.class.Employee)), document.string.Approvers)
+  @Prop(ArrOf(TypeRef(contact.mixin.Employee)), document.string.Approvers)
     approvers!: Ref<Employee>[]
 
   @Prop(Collection(document.class.DocumentRequest), document.string.Requests)

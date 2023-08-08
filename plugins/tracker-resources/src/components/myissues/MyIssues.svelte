@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import type { EmployeeAccount } from '@hcengineering/contact'
+  import type { PersonAccount } from '@hcengineering/contact'
   import { Doc, DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
@@ -28,8 +28,8 @@
   export let config: [string, IntlString, object][] = []
 
   const dispatch = createEventDispatcher()
-  const currentUser = getCurrentAccount() as EmployeeAccount
-  const assigned = { assignee: currentUser.employee }
+  const currentUser = getCurrentAccount() as PersonAccount
+  const assigned = { assignee: currentUser.person }
   const created = { createdBy: currentUser._id }
   let subscribed = { _id: { $in: [] as Ref<Issue>[] } }
   let query: DocumentQuery<Issue> | undefined = undefined

@@ -188,7 +188,7 @@
   function getName (channel: Channel): string {
     const contact = contactMap.get(channel.attachedTo as Ref<Contact>)
     if (contact === undefined) return channel.value
-    return `${getContactName(contact)} (${channel.value})`
+    return `${getContactName(client.getHierarchy(), contact)} (${channel.value})`
   }
 
   const settingsQuery = createQuery()

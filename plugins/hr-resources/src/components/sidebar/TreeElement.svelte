@@ -13,11 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
+  import { Doc, Ref } from '@hcengineering/core'
   import type { Asset, IntlString } from '@hcengineering/platform'
   import type { AnySvelteComponent } from '@hcengineering/ui'
-  import { Icon, IconChevronDown, Label } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { Icon, IconChevronDown, IconMoreH, Label, Menu, showPopup } from '@hcengineering/ui'
+  import { Action } from '@hcengineering/view'
 
+  export let _id: Ref<Doc> | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let iconProps: Record<string, any> | undefined = undefined
   export let label: IntlString | undefined = undefined
@@ -27,6 +30,15 @@
   export let collapsed = false
   export let selected = false
   export let level = 0
+  export let actions: (originalEvent?: MouseEvent) => Promise<Action[]> = async () => []
+
+  let hovered = false
+  async function onMenuClick (ev: MouseEvent) {
+    showPopup(Menu, { actions: await actions(ev), ctx: _id }, ev.target as HTMLElement, () => {
+      hovered = false
+    })
+    hovered = true
+  }
 
   $: style = `padding-left: calc(${level} * 1.25rem);`
 
@@ -36,10 +48,10 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
   class="antiNav-element"
+  class:hovered
   class:selected
   class:parent
   class:collapsed
-  class:child={!node}
   {style}
   on:click={() => {
     if (selected) {
@@ -59,12 +71,25 @@
     </span>
 
     {#if node}
-      <div class="an-element__icon-arrow" class:collapsed>
+      <div
+        class="an-element__icon-arrow"
+        class:collapsed
+        on:click={(e) => {
+          e.stopPropagation()
+          e.preventDefault()
+          collapsed = !collapsed
+        }}
+      >
         <IconChevronDown size={'small'} />
       </div>
     {/if}
   </span>
+
+  <div class="an-element__tool" on:click|preventDefault|stopPropagation={onMenuClick}>
+    <IconMoreH size={'small'} />
+  </div>
 </div>
+
 {#if node && !collapsed}
   <div class="antiNav-element__dropbox"><slot /></div>
 {/if}

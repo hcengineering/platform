@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Ref, SortingOrder } from '@hcengineering/core'
+  import { Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import type { DoneState, Kanban, State } from '@hcengineering/task'
   import task, { calcRank } from '@hcengineering/task'
@@ -31,7 +31,6 @@
   $: lostStates = doneStates.filter((x) => x._class === task.class.LostState)
 
   const client = getClient()
-  const hierarchy = client.getHierarchy()
 
   const statesQ = createQuery()
   $: statesQ.query(
@@ -73,33 +72,6 @@
       rank: calcRank(prev, next)
     })
   }
-
-  async function onAdd (_class: Ref<Class<State | DoneState>>) {
-    const lastOne = await client.findOne(_class, {}, { sort: { rank: SortingOrder.Descending } })
-    if (hierarchy.isDerived(_class, task.class.DoneState)) {
-      await client.createDoc(_class, kanban.space, {
-        ofAttribute: task.attribute.State,
-        name: 'New Done State',
-        rank: calcRank(lastOne, undefined)
-      })
-    } else {
-      await client.createDoc(task.class.State, kanban.space, {
-        ofAttribute: task.attribute.State,
-        name: 'New State',
-        color: 9,
-        rank: calcRank(lastOne, undefined)
-      })
-    }
-  }
 </script>
 
-<StatesEditor
-  {states}
-  {wonStates}
-  {lostStates}
-  on:add={(e) => {
-    onAdd(e.detail)
-  }}
-  on:delete
-  on:move={onMove}
-/>
+<StatesEditor {states} {wonStates} {lostStates} space={kanban} on:delete on:move={onMove} />

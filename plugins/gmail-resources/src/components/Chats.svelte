@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { Channel, Contact } from '@hcengineering/contact'
-  import { employeeAccountByIdStore, employeeByIdStore } from '@hcengineering/contact-resources'
+  import { personAccountByIdStore, employeeByIdStore } from '@hcengineering/contact-resources'
   import { Ref, SortingOrder } from '@hcengineering/core'
   import { Message, SharedMessage } from '@hcengineering/gmail'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
@@ -80,7 +80,7 @@
       object._class,
       'gmailSharedMessages',
       {
-        messages: convertMessages(object, channel, selectedMessages, $employeeAccountByIdStore, $employeeByIdStore)
+        messages: convertMessages(object, channel, selectedMessages, $personAccountByIdStore, $employeeByIdStore)
       }
     )
     await notificationClient.read(channel._id)
@@ -138,7 +138,7 @@
   <div class="popupPanel-body__main-content py-4 clear-mins flex-no-shrink">
     {#if messages && messages.length > 0}
       <Messages
-        messages={convertMessages(object, channel, messages, $employeeAccountByIdStore, $employeeByIdStore)}
+        messages={convertMessages(object, channel, messages, $personAccountByIdStore, $employeeByIdStore)}
         {selectable}
         bind:selected
         on:select

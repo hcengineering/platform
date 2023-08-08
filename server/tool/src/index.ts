@@ -165,7 +165,7 @@ export async function upgradeModel (
     const result = await db.collection(DOMAIN_TX).deleteMany({
       objectSpace: core.space.Model,
       modifiedBy: core.account.System,
-      objectClass: { $ne: contact.class.EmployeeAccount }
+      objectClass: { $nin: [contact.class.PersonAccount, 'contact:class:EmployeeAccount'] }
     })
     console.log(`${workspaceId.name}: ${result.deletedCount} transactions deleted.`)
 

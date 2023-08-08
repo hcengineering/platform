@@ -16,7 +16,7 @@
   import { createEventDispatcher } from 'svelte'
   import activity, { TxViewlet } from '@hcengineering/activity'
   import { activityKey, ActivityKey } from '@hcengineering/activity-resources'
-  import contact, { EmployeeAccount } from '@hcengineering/contact'
+  import contact, { PersonAccount } from '@hcengineering/contact'
   import { Account, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { DocUpdates } from '@hcengineering/notification'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -31,7 +31,7 @@
 
   let docs: DocUpdates[] = []
   let map: Map<Ref<Account>, DocUpdates[]> = new Map()
-  let accounts: EmployeeAccount[] = []
+  let accounts: PersonAccount[] = []
   let loading = true
 
   $: query.query(
@@ -53,10 +53,10 @@
   )
 
   const client = getClient()
-  const currentUser = getCurrentAccount()._id as Ref<EmployeeAccount>
+  const currentUser = getCurrentAccount()._id as Ref<PersonAccount>
   $: getAccounts()
   async function getAccounts() {
-    accounts = await client.findAll(contact.class.EmployeeAccount, { _id: { $ne: currentUser }})
+    accounts = await client.findAll(contact.class.PersonAccount, { _id: { $ne: currentUser }})
     loading = false
   }
 

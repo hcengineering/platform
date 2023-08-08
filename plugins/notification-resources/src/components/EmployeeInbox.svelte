@@ -16,8 +16,8 @@
   import activity, { TxViewlet } from '@hcengineering/activity'
   import { activityKey, ActivityKey } from '@hcengineering/activity-resources'
   import chunter from '@hcengineering/chunter'
-  import { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
-  import { Avatar, employeeAccountByIdStore, employeeByIdStore } from '@hcengineering/contact-resources'
+  import { Employee, getName, PersonAccount } from '@hcengineering/contact'
+  import { Avatar, employeeByIdStore, personAccountByIdStore } from '@hcengineering/contact-resources'
   import core, { Account, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { DocUpdates } from '@hcengineering/notification'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
@@ -125,8 +125,8 @@
 
   let employee: Employee | undefined = undefined
   $: newTxes = docs.reduce((acc, cur) => acc + cur.txes.filter((p) => p.isNew).length, 0) // items.length
-  $: account = $employeeAccountByIdStore.get(accountId as Ref<EmployeeAccount>)
-  $: employee = account ? $employeeByIdStore.get(account.employee) : undefined
+  $: account = $personAccountByIdStore.get(accountId as Ref<PersonAccount>)
+  $: employee = account ? $employeeByIdStore.get(account.person as Ref<Employee>) : undefined
 
   const client = getClient()
 
@@ -186,7 +186,7 @@
     </div>
     {#if employee}
       <Avatar size="smaller" avatar={employee.avatar} />
-      <span class="font-medium mx-2">{getName(employee)}</span>
+      <span class="font-medium mx-2">{getName(client.getHierarchy(), employee)}</span>
     {/if}
     {#if newTxes > 0}
       <span class="counter">

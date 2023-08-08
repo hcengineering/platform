@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
+  import contact, { Employee, PersonAccount } from '@hcengineering/contact'
   import core, { Account, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
-  import { employeeAccountByIdStore } from '../utils'
+  import { personAccountByIdStore } from '../utils'
   import UserBoxList from './UserBoxList.svelte'
 
   export let label: IntlString
@@ -36,7 +36,7 @@
   function onUpdate (evt: CustomEvent<Ref<Employee>[]>): void {
     clearTimeout(timer)
     timer = setTimeout(async () => {
-      const accounts = await client.findAll(contact.class.EmployeeAccount, { employee: { $in: evt.detail } })
+      const accounts = await client.findAll(contact.class.PersonAccount, { person: { $in: evt.detail } })
       onChange(accounts.map((it) => it._id))
     }, 500)
   }
@@ -55,14 +55,14 @@
   }
 
   $: employees = Array.from(
-    (value ?? []).map((it) => $employeeAccountByIdStore.get(it as Ref<EmployeeAccount>)?.employee)
+    (value ?? []).map((it) => $personAccountByIdStore.get(it as Ref<PersonAccount>)?.person)
   ).filter((it) => it !== undefined) as Ref<Employee>[]
 
   $: docQuery =
     excluded.length > 0
       ? {
           active: true,
-          _id: { $nin: excluded.map((p) => (p as EmployeeAccount).employee) }
+          _id: { $nin: excluded.map((p) => (p as PersonAccount).person as Ref<Employee>) }
         }
       : {
           active: true

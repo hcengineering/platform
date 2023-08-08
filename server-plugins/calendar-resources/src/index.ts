@@ -32,7 +32,7 @@ import core, {
 import { getResource } from '@hcengineering/platform'
 import { TriggerControl } from '@hcengineering/server-core'
 import { getHTMLPresenter, getTextPresenter } from '@hcengineering/server-notification-resources'
-import contact, { EmployeeAccount } from '@hcengineering/contact'
+import contact, { PersonAccount } from '@hcengineering/contact'
 
 /**
  * @public
@@ -82,8 +82,8 @@ export async function ReminderTextPresenter (doc: Doc, control: TriggerControl):
 /**
  * @public
  */
-export async function OnEmployeeAccountCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const ctx = TxProcessor.extractTx(tx) as TxCreateDoc<EmployeeAccount>
+export async function OnPersonAccountCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const ctx = TxProcessor.extractTx(tx) as TxCreateDoc<PersonAccount>
   const user = TxProcessor.createDoc2Doc(ctx)
 
   const res: TxCreateDoc<Calendar> = control.txFactory.createTxCreateDoc(
@@ -108,9 +108,9 @@ async function onEventCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const ev = TxProcessor.createDoc2Doc(ctx)
 
   const res: Tx[] = []
-  const accounts = await control.modelDb.findAll(contact.class.EmployeeAccount, {})
+  const accounts = await control.modelDb.findAll(contact.class.PersonAccount, {})
   const participants = accounts.filter(
-    (p) => (p._id !== ev.createdBy ?? ev.modifiedBy) && ev.participants.includes(p.employee)
+    (p) => (p._id !== ev.createdBy ?? ev.modifiedBy) && ev.participants.includes(p.person)
   )
   for (const acc of participants) {
     const innerTx = control.txFactory.createTxCreateDoc(ev._class, `${acc._id}_calendar` as Ref<Calendar>, {
@@ -227,6 +227,6 @@ export default async () => ({
   },
   trigger: {
     OnEvent,
-    OnEmployeeAccountCreate
+    OnPersonAccountCreate
   }
 })

@@ -84,7 +84,7 @@
     "AddDescription": "Add description",
     "NumberSkills": "{count, plural, =0 {нет навыков} one {# навык} few {# навыка} other {# навыков}}",
 
-    "GotoTalents": "Перейте к талантам",
+    "GotoTalents": "Перейти к талантам",
     "GotoVacancies": "Перейти к вакансиям",
     "GotoSkills": "Перейти к навыкам",
     "GotoMyApplications": "Перейти к Моим Кандидатам",

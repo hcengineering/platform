@@ -15,7 +15,7 @@
     "TagCreateLabel": "Тег",
     "CancelLabel": "Отмена",
     "SearchCreate": "Название...",
-    "NoItems": "Отсутсвует добавленный {word}",
+    "NoItems": "Отсутствует добавленный {word}",
     "TagDescriptionLabel": "Описание",
     "TagDescriptionPlaceholder": "Пожалуйста введите описание",
     "TagTooltip": "{text}",

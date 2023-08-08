@@ -27,6 +27,7 @@
   import { DocNavLink } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import Avatar from './Avatar.svelte'
+  import { getClient } from '@hcengineering/presentation'
 
   export let value: Person | Employee | undefined | null
   export let inline: boolean = false
@@ -44,6 +45,8 @@
   export let colorInherit: boolean = false
   export let accent: boolean = false
   export let maxWidth = ''
+
+  const client = getClient()
 
   const onEditClick = (evt: MouseEvent) => {
     if (!disabled) {
@@ -83,7 +86,9 @@
         </span>
       {/if}
       {#if shouldShowName}
-        <span class="eContentPresenterLabel" class:colorInherit class:fs-bold={accent}>{getName(value)}</span>
+        <span class="eContentPresenterLabel" class:colorInherit class:fs-bold={accent}
+          >{getName(client.getHierarchy(), value)}</span
+        >
       {/if}
     </span>
   </DocNavLink>

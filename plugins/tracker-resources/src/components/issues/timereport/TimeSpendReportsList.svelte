@@ -98,7 +98,7 @@
             width={'100%'}
             kind={'ghost'}
             label={tracker.string.Assignee}
-            _class={contact.class.Employee}
+            _class={contact.mixin.Employee}
             value={report.employee}
             readonly
             showNavigate={false}

@@ -25,7 +25,7 @@ import core, {
   Ref
 } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
-import { Action, ViewAction, ViewActionInput, ViewContextType } from '@hcengineering/view'
+import { Action, ActionGroup, ViewAction, ViewActionInput, ViewContextType } from '@hcengineering/view'
 import view from './plugin'
 import { FocusSelection } from './selection'
 
@@ -60,7 +60,7 @@ export async function getActions (
     'context.mode': mode
   })
 
-  const categories: Record<string, number> = { top: 1, filter: 50, tools: 100 }
+  const categories: Partial<Record<ActionGroup | 'top', number>> = { top: 1, tools: 50, other: 100, remove: 200 }
 
   let filteredActions: Action[] = []
 
@@ -151,6 +151,14 @@ export function filterActions (
       ignore.push(...ignoreActions.actions)
     }
   }
+  for (const cl of hierarchy.getDescendants(clazz._id)) {
+    if (hierarchy.isMixin(cl) && hierarchy.hasMixin(doc, cl)) {
+      const ignoreActions = hierarchy.as(hierarchy.getClassOrInterface(cl), view.mixin.IgnoreActions)
+      if (ignoreActions?.actions !== undefined) {
+        ignore.push(...ignoreActions.actions)
+      }
+    }
+  }
   const overrideRemove: Array<Ref<Action>> = []
   for (const action of actions) {
     if (ignore.includes(action._id)) {
@@ -167,9 +175,16 @@ export function filterActions (
         overrideRemove.push(...action.override)
       }
       if (action.query !== undefined) {
-        const r = matchQuery([doc], action.query, doc._class, hierarchy)
-        if (r.length === 0) {
-          continue
+        if (hierarchy.isMixin(action.target)) {
+          const r = matchQuery([hierarchy.as(doc, action.target)], action.query, action.target, hierarchy)
+          if (r.length === 0) {
+            continue
+          }
+        } else {
+          const r = matchQuery([doc], action.query, doc._class, hierarchy)
+          if (r.length === 0) {
+            continue
+          }
         }
       }
       result.push(action)

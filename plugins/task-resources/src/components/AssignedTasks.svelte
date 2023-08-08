@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { EmployeeAccount } from '@hcengineering/contact'
+  import { PersonAccount } from '@hcengineering/contact'
   import { Class, Doc, DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -29,7 +29,13 @@
     SearchEdit
   } from '@hcengineering/ui'
   import { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
-  import { FilterBar, FilterButton, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
+  import {
+    FilterBar,
+    FilterButton,
+    TableBrowser,
+    ViewletSelector,
+    ViewletSettingButton
+  } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import task from '../plugin'
 
@@ -39,8 +45,8 @@
 
   let search = ''
   const dispatch = createEventDispatcher()
-  const currentUser = getCurrentAccount() as EmployeeAccount
-  const assigned = { assignee: currentUser.employee }
+  const currentUser = getCurrentAccount() as PersonAccount
+  const assigned = { assignee: currentUser.person }
   const created = { createdBy: currentUser._id }
   let subscribed = { _id: { $in: [] as Ref<Task>[] } }
   let mode: string | undefined = undefined
@@ -152,13 +158,14 @@
     <div class="buttons-divider" />
     <FilterButton {_class} />
   </div>
-  <ViewletSettingButton
-    bind:viewOptions
-    viewletQuery={{ attachTo: _class, descriptor: task.viewlet.StatusTable }}
+  <ViewletSelector
+    hidden
     bind:viewlet
     bind:preference
     bind:loading
+    viewletQuery={{ attachTo: _class, descriptor: task.viewlet.StatusTable }}
   />
+  <ViewletSettingButton bind:viewOptions bind:viewlet />
 </div>
 <FilterBar {_class} query={searchQuery} {viewOptions} on:change={(e) => (resultQuery = e.detail)} />
 

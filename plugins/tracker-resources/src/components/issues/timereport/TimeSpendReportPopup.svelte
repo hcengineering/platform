@@ -29,7 +29,7 @@
   export let issueId: Ref<Issue> | undefined = issue?._id
   export let issueClass: Ref<Class<Issue>> = issue?._class ?? tracker.class.Issue
   export let space: Ref<Space> | undefined = issue?.space
-  export let assignee: Ref<Employee> | null | undefined = issue?.assignee
+  export let assignee: Ref<Employee> | null | undefined = issue?.assignee as Ref<Employee>
 
   export let value: TimeSpendReport | undefined
   export let placeholder: IntlString = tracker.string.TimeSpendReportValue
@@ -131,7 +131,7 @@
   <EditBox bind:value={data.description} placeholder={tracker.string.TimeSpendReportDescription} kind={'editbox'} />
   <svelte:fragment slot="pool">
     <UserBox
-      _class={contact.class.Employee}
+      _class={contact.mixin.Employee}
       label={contact.string.Employee}
       kind={'regular'}
       size={'large'}

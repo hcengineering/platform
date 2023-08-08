@@ -14,23 +14,22 @@
 -->
 <script lang="ts">
   import contact, { Employee } from '@hcengineering/contact'
-  import type { Class, DocumentQuery, Ref } from '@hcengineering/core'
+  import type { Class, DocumentQuery, Ref, Doc } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
-  import { Button, Label, showPopup } from '@hcengineering/ui'
   import type { ButtonKind, ButtonSize, TooltipAlignment } from '@hcengineering/ui'
+  import { Button, Label, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../plugin'
   import { employeeByIdStore } from '../utils'
   import CombineAvatars from './CombineAvatars.svelte'
-  import Members from './icons/Members.svelte'
   import UserInfo from './UserInfo.svelte'
   import UsersPopup from './UsersPopup.svelte'
+  import Members from './icons/Members.svelte'
+  import { getClient } from '@hcengineering/presentation'
 
   export let items: Ref<Employee>[] = []
-  export let _class: Ref<Class<Employee>> = contact.class.Employee
-  export let docQuery: DocumentQuery<Employee> | undefined = {
-    active: true
-  }
+  export let _class: Ref<Class<Employee>> = contact.mixin.Employee
+  export let docQuery: DocumentQuery<Employee> | undefined = {}
 
   export let label: IntlString | undefined = undefined
   export let kind: ButtonKind = 'no-border'
@@ -45,6 +44,7 @@
   $: persons = items.map((p) => $employeeByIdStore.get(p)).filter((p) => p !== undefined) as Employee[]
 
   const dispatch = createEventDispatcher()
+  const client = getClient()
 
   async function addPerson (evt: Event): Promise<void> {
     showPopup(
@@ -56,6 +56,12 @@
         multiSelect: true,
         allowDeselect: false,
         selectedUsers: items,
+        filter: (it: Doc) => {
+          const h = client.getHierarchy()
+          if (h.hasMixin(it, contact.mixin.Employee)) {
+            return h.as(it, contact.mixin.Employee).active
+          }
+        },
         readonly
       },
       evt.target as HTMLElement,

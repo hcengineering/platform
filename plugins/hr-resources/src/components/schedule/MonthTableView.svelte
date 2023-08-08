@@ -20,7 +20,7 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { Button, Label, Loading, showPopup, tableToCSV } from '@hcengineering/ui'
   import { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { TableBrowser, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
   import hr from '../../plugin'
   import {
     EmployeeReports,
@@ -367,7 +367,14 @@
       <div class="clear-mins" />
       <div class="ac-header-full small-gap">
         <Button label={getEmbeddedLabel('Export')} on:click={(evt) => exportTable(evt)} />
-        <ViewletSettingButton viewletQuery={{ _id: hr.viewlet.StaffStats }} bind:viewlet bind:preference bind:loading />
+        <ViewletSelector
+          hidden
+          bind:viewlet
+          bind:preference
+          bind:loading
+          viewletQuery={{ _id: hr.viewlet.StaffStats }}
+        />
+        <ViewletSettingButton bind:viewlet />
       </div>
     </div>
     {#if viewlet}

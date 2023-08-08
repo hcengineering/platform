@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import calendar from '@hcengineering/calendar'
-  import type { Contact, EmployeeAccount, Organization, Person } from '@hcengineering/contact'
+  import type { Contact, PersonAccount, Organization, Person } from '@hcengineering/contact'
   import contact from '@hcengineering/contact'
   import { Account, Class, Client, DateRangeMode, Doc, generateId, getCurrentAccount, Ref } from '@hcengineering/core'
   import { getResource, OK, Resource, Severity, Status } from '@hcengineering/platform'
@@ -40,7 +40,7 @@
   const initDate =
     date === undefined ? now : withTime ? date : new Date(date.setHours(now.getHours(), now.getMinutes()))
 
-  const currentUser = getCurrentAccount() as EmployeeAccount
+  const currentUser = getCurrentAccount() as PersonAccount
 
   let status: Status = OK
 
@@ -70,7 +70,7 @@
     company,
     verdict: '',
     title,
-    participants: [currentUser.employee]
+    participants: [currentUser.person]
   }
 
   const dispatch = createEventDispatcher()

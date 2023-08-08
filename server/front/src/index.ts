@@ -144,7 +144,8 @@ export function start (
     title?: string
     defaultLanguage: string
   },
-  port: number
+  port: number,
+  extraConfig?: Record<string, string>
 ): () => void {
   const app = express()
 
@@ -181,7 +182,8 @@ export function start (
       GMAIL_URL: config.gmailUrl,
       CALENDAR_URL: config.calendarUrl,
       TITLE: config.title,
-      DEFAULT_LANGUAGE: config.defaultLanguage
+      DEFAULT_LANGUAGE: config.defaultLanguage,
+      ...(extraConfig ?? {})
     })
   })
 

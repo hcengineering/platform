@@ -394,7 +394,7 @@ export function createModel (builder: Builder): void {
       category: view.category.General,
       input: 'any',
       target: setting.mixin.UserMixin,
-      context: { mode: ['context', 'browser'], group: 'tools' }
+      context: { mode: ['context', 'browser'], group: 'remove' }
     },
     setting.action.DeleteMixin
   )

@@ -30,7 +30,7 @@
   const options: FindOptions<TimeSpendReport> = {
     lookup: {
       attachedTo: tracker.class.Issue,
-      employee: contact.class.Employee
+      employee: contact.mixin.Employee
     },
     sort: {
       date: -1

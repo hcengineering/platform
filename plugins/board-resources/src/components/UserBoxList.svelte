@@ -3,8 +3,8 @@
   import { Ref } from '@hcengineering/core'
 
   import contact from '@hcengineering/contact'
-  import board from '../plugin'
   import { Component } from '@hcengineering/ui'
+  import board from '../plugin'
 
   export let value: Ref<Employee>[]
   export let readonly = false

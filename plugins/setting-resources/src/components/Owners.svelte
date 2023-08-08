@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { EmployeeAccount, formatName } from '@hcengineering/contact'
-  import { employeeByIdStore, EmployeePresenter } from '@hcengineering/contact-resources'
+  import contact, { PersonAccount, formatName } from '@hcengineering/contact'
+  import { EmployeePresenter, personByIdStore } from '@hcengineering/contact-resources'
   import { AccountRole, getCurrentAccount, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { DropdownIntlItem, DropdownLabelsIntl, Icon, Label, EditBox } from '@hcengineering/ui'
@@ -32,11 +32,11 @@
     { id: AccountRole.Owner.toString(), label: setting.string.Owner }
   ]
 
-  let accounts: EmployeeAccount[] = []
+  let accounts: PersonAccount[] = []
   $: owners = accounts.filter((p) => p.role === AccountRole.Owner)
 
   query.query(
-    contact.class.EmployeeAccount,
+    contact.class.PersonAccount,
     {},
     (res) => {
       accounts = res
@@ -46,7 +46,7 @@
     }
   )
 
-  async function change (account: EmployeeAccount, value: AccountRole): Promise<void> {
+  async function change (account: PersonAccount, value: AccountRole): Promise<void> {
     await client.update(account, {
       role: value
     })
@@ -63,7 +63,7 @@
   <div class="ac-body columns">
     <div class="ac-column max">
       {#each accounts as account (account._id)}
-        {@const employee = $employeeByIdStore.get(account.employee)}
+        {@const employee = $personByIdStore.get(account.person)}
         {#if account.name.includes(search)}
           <div class="flex-row-center p-2">
             <div class="p-1 min-w-80">

@@ -14,7 +14,7 @@
 
   async function updateEmployees (resultQuery: DocumentQuery<Employee>) {
     employees = await client.findAll(
-      contact.class.Employee,
+      contact.mixin.Employee,
       {
         ...resultQuery
       },

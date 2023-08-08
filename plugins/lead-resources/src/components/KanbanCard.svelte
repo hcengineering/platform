@@ -96,7 +96,7 @@
       <AssigneePresenter
         value={object.assignee}
         issueId={object._id}
-        defaultClass={contact.class.Employee}
+        defaultClass={contact.mixin.Employee}
         currentSpace={object.space}
         placeholderLabel={assigneeAttribute.label}
       />

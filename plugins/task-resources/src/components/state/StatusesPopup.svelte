@@ -14,28 +14,45 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Label, IconDelete as Delete } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
+  import { Label, IconDelete as Delete, IconEdit } from '@hcengineering/ui'
   import task from '../../plugin'
 
   export let onDelete: () => void
+  export let showDelete = true
+  export let onUpdate: () => void
 
   const dispatch = createEventDispatcher()
 </script>
 
 <div class="antiPopup">
   <div class="ap-space x2" />
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  {#if showDelete}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <div
+      class="ap-menuItem hoverable flex-row-center redlight"
+      on:click={() => {
+        dispatch('close')
+        onDelete()
+      }}
+    >
+      <div class="mr-2">
+        <Delete size={'small'} />
+      </div>
+      <Label label={task.string.Delete} />
+    </div>
+  {/if}
   <div
-    class="ap-menuItem hoverable flex-row-center redlight"
+    class="ap-menuItem hoverable flex-row-center"
     on:click={() => {
       dispatch('close')
-      onDelete()
+      onUpdate()
     }}
   >
     <div class="mr-2">
-      <Delete size={'small'} />
+      <IconEdit size={'small'} />
     </div>
-    <Label label={task.string.Delete} />
+    <Label label={view.string.Rename} />
   </div>
   <div class="ap-space x2" />
 </div>

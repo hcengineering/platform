@@ -227,10 +227,11 @@ export class TxOperations implements Omit<Client, 'notify'> {
     modifiedBy?: Ref<Account>
   ): Promise<TxResult> {
     const hierarchy = this.client.getHierarchy()
-    if (hierarchy.isMixin(doc._class)) {
+    const mixClass = Hierarchy.mixinOrClass(doc)
+    if (hierarchy.isMixin(mixClass)) {
       // TODO: Rework it is wrong, we need to split values to mixin update and original document update if mixed.
       const baseClass = hierarchy.getBaseClass(doc._class)
-      return this.updateMixin(doc._id, baseClass, doc.space, doc._class, update, modifiedOn, modifiedBy)
+      return this.updateMixin(doc._id, baseClass, doc.space, mixClass, update, modifiedOn, modifiedBy)
     }
     if (hierarchy.isDerived(doc._class, core.class.AttachedDoc)) {
       const adoc = doc as unknown as AttachedDoc
@@ -271,7 +272,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     return new ApplyOperations(this, scope)
   }
 
-  async diffUpdate (doc: Doc, raw: Doc | Data<Doc>, date: Timestamp): Promise<Doc> {
+  async diffUpdate (doc: Doc, raw: Doc | Data<Doc>, date: Timestamp, account?: Ref<Account>): Promise<Doc> {
     // We need to update fields if they are different.
     const documentUpdate: DocumentUpdate<Doc> = {}
     for (const [k, v] of Object.entries(raw)) {
@@ -284,7 +285,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
       }
     }
     if (Object.keys(documentUpdate).length > 0) {
-      await this.update(doc, documentUpdate, false, date, doc.modifiedBy)
+      await this.update(doc, documentUpdate, false, date, account ?? doc.modifiedBy)
       TxProcessor.applyUpdate(doc, documentUpdate)
     }
     return doc

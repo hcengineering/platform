@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee } from '@hcengineering/contact'
+  import { Person } from '@hcengineering/contact'
   import { Doc, Mixin, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { CheckBox, Label } from '@hcengineering/ui'
 
-  export let value: Employee
-  export let targetEmp: Employee
+  export let value: Person
+  export let targetEmp: Person
   export let cast: Ref<Mixin<Doc>> | undefined = undefined
   export let key: string
   export let selected = false
@@ -28,7 +28,7 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  function isEqual (value: Employee, targetEmp: Employee, key: string) {
+  function isEqual (value: Person, targetEmp: Person, key: string) {
     if (cast !== undefined) {
       value = hierarchy.as(value, cast)
       targetEmp = hierarchy.as(targetEmp, cast)

@@ -52,7 +52,7 @@
     if (attrClass === core.class.RefTo) {
       return (attribute.type as RefTo<Doc>).to
     }
-    return contact.class.Employee
+    return contact.mixin.Employee
   }
 
   const taskKeys = ['status', 'assignee', 'doneState']

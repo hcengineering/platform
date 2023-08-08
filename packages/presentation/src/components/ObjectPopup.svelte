@@ -47,6 +47,10 @@
   export let readonly = false
   export let disallowDeselect: Ref<Doc>[] | undefined = undefined
 
+  export let filter: (it: Doc) => boolean = () => {
+    return true
+  }
+
   const created: Doc[] = []
   const dispatch = createEventDispatcher()
 
@@ -75,9 +79,9 @@
       })
       if (created.length > 0) {
         const cmap = new Set(created.map((it) => it._id))
-        objects = [...created, ...result.filter((d) => !cmap.has(d._id))]
+        objects = [...created, ...result.filter((d) => !cmap.has(d._id))].filter(filter)
       } else {
-        objects = result
+        objects = result.filter(filter)
       }
     },
     { ...(options ?? {}), limit: 200 }

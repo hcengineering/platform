@@ -44,6 +44,7 @@ import { generateClassNotificationTypes } from '@hcengineering/model-notificatio
 import notification from '@hcengineering/notification'
 import lead from './plugin'
 import tracker from '@hcengineering/model-tracker'
+import { State } from '@hcengineering/task'
 
 export { leadId } from '@hcengineering/lead'
 export { leadOperation } from './migration'
@@ -77,8 +78,11 @@ export class TLead extends TTask implements Lead {
   @Index(IndexKind.FullText)
     title!: string
 
-  @Prop(TypeRef(contact.class.Employee), lead.string.Assignee)
+  @Prop(TypeRef(contact.mixin.Employee), lead.string.Assignee)
   declare assignee: Ref<Employee> | null
+
+  @Prop(TypeRef(task.class.State), task.string.TaskState, { _id: task.attribute.State })
+  declare status: Ref<State>
 }
 
 @Mixin(lead.mixin.Customer, contact.class.Contact)

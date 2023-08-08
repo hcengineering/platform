@@ -16,20 +16,20 @@
   import { createEventDispatcher } from 'svelte'
   import { TxViewlet } from '@hcengineering/activity'
   import { ActivityKey } from '@hcengineering/activity-resources'
-  import { EmployeeAccount, getName } from '@hcengineering/contact'
-  import { Avatar, employeeByIdStore } from '@hcengineering/contact-resources'
+  import { PersonAccount, getName } from '@hcengineering/contact'
+  import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
   import core from '@hcengineering/core'
   import { DocUpdates } from '@hcengineering/notification'
   import { ActionIcon, Label } from '@hcengineering/ui'
 
   import ArrowRight from './icons/ArrowRight.svelte'
 
-  export let value: EmployeeAccount
+  export let value: PersonAccount
   export let items: DocUpdates[]
   export let viewlets: Map<ActivityKey, TxViewlet>
   export let selected: boolean
 
-  $: employee = $employeeByIdStore.get(value.employee)
+  $: employee = $personByIdStore.get(value.person)
 
   $: newTxes = items.reduce((acc, cur) => acc + cur.txes.filter((p) => p.isNew && p.modifiedBy === value._id).length, 0) // items.length
   const dispatch = createEventDispatcher()

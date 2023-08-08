@@ -16,7 +16,7 @@
   import hr, { Request, RequestType } from '@hcengineering/hr'
   import { getClient } from '@hcengineering/presentation'
   import { closeTooltip, Icon, Label, showPopup } from '@hcengineering/ui'
-  import { ContextMenu, HTMLPresenter } from '@hcengineering/view-resources'
+  import { ContextMenu } from '@hcengineering/view-resources'
 
   export let request: Request
   export let editable: boolean = false
@@ -30,10 +30,8 @@
     })
   }
 
-  function isAvailable (type: RequestType, request: Request): boolean {
-    // TODO Move availability to the Request model
-    const available = type.value >= 0
-    return available
+  function isAvailable (type: RequestType): boolean {
+    return type.value >= 0
   }
 
   function click (e: MouseEvent, request: Request) {
@@ -43,11 +41,13 @@
     closeTooltip()
     showPopup(ContextMenu, { object: request }, e.target as HTMLElement)
   }
+
+  $: description = shouldShowDescription ? request.description.replace(/<[^>]*>/g, '').trim() : ''
 </script>
 
 {#await getType(request) then type}
   {#if type}
-    {@const available = isAvailable(type, request)}
+    {@const available = isAvailable(type)}
 
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
@@ -66,8 +66,8 @@
 
       {#if shouldShowDescription}
         <span class="overflow-label">
-          {#if request.description !== ''}
-            <HTMLPresenter value={request.description} />
+          {#if description !== ''}
+            {description}
           {:else if type}
             <Label label={type.label} />
           {/if}

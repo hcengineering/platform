@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { AttachedData, Class, Client, Doc, FindResult, Ref } from '@hcengineering/core'
+import { AttachedData, Class, Client, Doc, FindResult, Ref, Hierarchy } from '@hcengineering/core'
 import { IconSize } from '@hcengineering/ui'
 import { MD5 } from 'crypto-js'
 import { Channel, Contact, contactPlugin, Employee, Person } from '.'
@@ -211,9 +211,9 @@ export function formatName (name: string): string {
 /**
  * @public
  */
-export function getName (value: Contact): string {
-  if (isEmployee(value)) {
-    return value.displayName ?? formatName(value.name)
+export function getName (hierarchy: Hierarchy, value: Contact): string {
+  if (isEmployee(hierarchy, value)) {
+    return hierarchy.as(value, contactPlugin.mixin.Employee).displayName ?? formatName(value.name)
   }
   if (isPerson(value)) {
     return formatName(value.name)
@@ -221,8 +221,8 @@ export function getName (value: Contact): string {
   return value.name
 }
 
-function isEmployee (value: Contact): value is Employee {
-  return value._class === contactPlugin.class.Employee
+function isEmployee (hierarchy: Hierarchy, value: Contact): value is Employee {
+  return hierarchy.hasMixin(value, contactPlugin.mixin.Employee)
 }
 
 function isPerson (value: Contact): value is Person {

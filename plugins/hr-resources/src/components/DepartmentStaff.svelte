@@ -20,7 +20,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Button, IconAdd, Label, Scroller, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { Table, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { Table, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
   import hr from '../plugin'
   import { addMember } from '../utils'
 
@@ -44,7 +44,7 @@
     showPopup(
       UsersPopup,
       {
-        _class: contact.class.Employee,
+        _class: contact.mixin.Employee,
         docQuery: {
           active: true
         },
@@ -73,13 +73,14 @@
       <Label label={hr.string.Members} />
     </span>
     <div class="flex-row-center gap-2 reverse">
-      <ViewletSettingButton
-        viewletQuery={{ _id: hr.viewlet.TableMember }}
-        kind={'ghost'}
+      <ViewletSelector
+        hidden
         bind:viewlet
         bind:preference
         bind:loading
+        viewletQuery={{ _id: hr.viewlet.TableMember }}
       />
+      <ViewletSettingButton kind={'ghost'} bind:viewlet />
       <Button id={hr.string.AddEmployee} icon={IconAdd} kind={'ghost'} on:click={add} />
     </div>
   </div>

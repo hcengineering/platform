@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
+  import contact, { Person, PersonAccount, Employee } from '@hcengineering/contact'
   import { Account, AccountRole, DocumentQuery, getCurrentAccount, Ref, SortingOrder, Space } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
@@ -33,29 +33,24 @@
   }
   let search: string = ''
   $: isSearch = search.trim().length
-  let members: Set<Ref<Employee>> = new Set<Ref<Employee>>()
+  let members: Set<Ref<Person>> = new Set<Ref<Person>>()
 
-  async function getUsers (accounts: Ref<Account>[], search: string): Promise<Employee[]> {
-    const query: DocumentQuery<EmployeeAccount> =
-      isSearch > 0 ? { name: { $like: '%' + search + '%' } } : { _id: { $in: accounts as Ref<EmployeeAccount>[] } }
-    const employess = await client.findAll(contact.class.EmployeeAccount, query)
-    members = new Set(
-      employess
-        .filter((it) => it.mergedTo == null)
-        .filter((p) => accounts.includes(p._id))
-        .map((p) => p.employee)
-    )
+  async function getUsers (accounts: Ref<Account>[], search: string): Promise<Person[]> {
+    const query: DocumentQuery<PersonAccount> =
+      isSearch > 0 ? { name: { $like: '%' + search + '%' } } : { _id: { $in: accounts as Ref<PersonAccount>[] } }
+    const employess = await client.findAll(contact.class.PersonAccount, query)
+    members = new Set(employess.filter((p) => accounts.includes(p._id)).map((p) => p.person))
     return await client.findAll(
-      contact.class.Employee,
+      contact.mixin.Employee,
       {
-        _id: { $in: employess.map((e) => e.employee) }
+        _id: { $in: employess.map((e) => e.person as Ref<Employee>) }
       },
       { sort: { name: SortingOrder.Descending } }
     )
   }
 
-  async function add (employee: Ref<Employee>): Promise<void> {
-    const account = await client.findOne(contact.class.EmployeeAccount, { employee })
+  async function add (person: Ref<Person>): Promise<void> {
+    const account = await client.findOne(contact.class.PersonAccount, { person })
     if (account === undefined) return
     await client.update(space, {
       $push: {
@@ -64,14 +59,14 @@
     })
   }
 
-  async function removeMember (employee: Ref<Employee>): Promise<void> {
-    const account = await client.findOne(contact.class.EmployeeAccount, { employee })
+  async function removeMember (person: Ref<Person>): Promise<void> {
+    const account = await client.findOne(contact.class.PersonAccount, { person })
     if (account === undefined) return
     await client.update(space, { $pull: { members: account._id } })
   }
 
   function openAddMembersPopup () {
-    showPopup(AddMembersPopup, { value: space }, undefined, async (membersIds: Ref<EmployeeAccount>[]) => {
+    showPopup(AddMembersPopup, { value: space }, undefined, async (membersIds: Ref<PersonAccount>[]) => {
       if (membersIds) {
         for (const member of membersIds) {
           if (space.members.includes(member)) continue

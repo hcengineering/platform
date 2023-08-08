@@ -55,12 +55,4 @@ export function createModel (builder: Builder): void {
       _class: core.class.TxUpdateDoc
     }
   })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverContact.trigger.OnEmployeeUpdate,
-    txMatch: {
-      objectClass: contact.class.Employee,
-      _class: core.class.TxUpdateDoc
-    }
-  })
 }

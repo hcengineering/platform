@@ -14,7 +14,7 @@
 //
 
 import activity from '@hcengineering/activity'
-import contact, { Employee } from '@hcengineering/contact'
+import contact, { Employee, Person } from '@hcengineering/contact'
 import {
   DOMAIN_MODEL,
   DateRangeMode,
@@ -135,7 +135,7 @@ export class TProject extends TSpaceWithStates implements Project {
   @Prop(TypeRef(tracker.class.IssueStatus), tracker.string.DefaultIssueStatus)
     defaultIssueStatus!: Ref<IssueStatus>
 
-  @Prop(TypeRef(contact.class.Employee), tracker.string.DefaultAssignee)
+  @Prop(TypeRef(contact.mixin.Employee), tracker.string.DefaultAssignee)
     defaultAssignee!: Ref<Employee>
 
   declare defaultTimeReportDay: TimeReportDayType
@@ -183,9 +183,9 @@ export class TIssue extends TTask implements Issue {
   @ReadOnly()
     number!: number
 
-  @Prop(TypeRef(contact.class.Employee), tracker.string.Assignee)
+  @Prop(TypeRef(contact.class.Person), tracker.string.Assignee)
   @Index(IndexKind.Indexed)
-    assignee!: Ref<Employee> | null
+    assignee!: Ref<Person> | null
 
   @Prop(TypeRef(tracker.class.Component), tracker.string.Component, { icon: tracker.icon.Component })
   @Index(IndexKind.Indexed)
@@ -256,8 +256,8 @@ export class TIssueTemplate extends TDoc implements IssueTemplate {
   @Prop(TypeIssuePriority(), tracker.string.Priority)
     priority!: IssuePriority
 
-  @Prop(TypeRef(contact.class.Employee), tracker.string.Assignee)
-    assignee!: Ref<Employee> | null
+  @Prop(TypeRef(contact.class.Person), tracker.string.Assignee)
+    assignee!: Ref<Person> | null
 
   @Prop(TypeRef(tracker.class.Component), tracker.string.Component)
     component!: Ref<Component> | null
@@ -298,7 +298,7 @@ export class TTimeSpendReport extends TAttachedDoc implements TimeSpendReport {
   @Prop(TypeRef(tracker.class.Issue), tracker.string.Parent)
   declare attachedTo: Ref<Issue>
 
-  @Prop(TypeRef(contact.class.Employee), contact.string.Employee)
+  @Prop(TypeRef(contact.mixin.Employee), contact.string.Employee)
     employee!: Ref<Employee>
 
   @Prop(TypeDate(), tracker.string.TimeSpendReportDate)
@@ -324,7 +324,7 @@ export class TComponent extends TDoc implements Component {
   @Prop(TypeMarkup(), tracker.string.Description)
     description?: Markup
 
-  @Prop(TypeRef(contact.class.Employee), tracker.string.ComponentLead)
+  @Prop(TypeRef(contact.mixin.Employee), tracker.string.ComponentLead)
     lead!: Ref<Employee> | null
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
@@ -1260,7 +1260,7 @@ export function createModel (builder: Builder): void {
       target: tracker.class.Issue,
       context: {
         mode: ['context', 'browser'],
-        group: 'edit'
+        group: 'remove'
       },
       override: [view.action.Delete]
     },
@@ -1584,7 +1584,7 @@ export function createModel (builder: Builder): void {
       actionPopup: view.component.ValueSelector,
       actionProps: {
         attribute: 'assignee',
-        _class: contact.class.Employee,
+        _class: contact.mixin.Employee,
         query: {},
         placeholder: tracker.string.AssignTo
       },
@@ -1874,7 +1874,7 @@ export function createModel (builder: Builder): void {
       category: tracker.category.Tracker,
       input: 'any',
       target: tracker.class.Milestone,
-      context: { mode: ['context', 'browser'], group: 'tools' }
+      context: { mode: ['context', 'browser'], group: 'remove' }
     },
     tracker.action.DeleteMilestone
   )
@@ -2006,7 +2006,7 @@ export function createModel (builder: Builder): void {
             dividerBefore: true,
             key: 'lead'
           },
-          props: { _class: tracker.class.Component, defaultClass: contact.class.Employee, shouldShowLabel: false }
+          props: { _class: tracker.class.Component, defaultClass: contact.mixin.Employee, shouldShowLabel: false }
         }
       ]
     },

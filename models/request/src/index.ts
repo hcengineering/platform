@@ -15,7 +15,7 @@
 
 import activity from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
-import type { EmployeeAccount } from '@hcengineering/contact'
+import type { PersonAccount } from '@hcengineering/contact'
 import contact from '@hcengineering/contact'
 import { Domain, IndexKind, Ref, Tx } from '@hcengineering/core'
 import {
@@ -48,13 +48,13 @@ export const DOMAIN_REQUEST = 'request' as Domain
 @Model(request.class.Request, core.class.AttachedDoc, DOMAIN_REQUEST)
 @UX(request.string.Request, request.icon.Requests)
 export class TRequest extends TAttachedDoc implements Request {
-  @Prop(ArrOf(TypeRef(contact.class.EmployeeAccount)), request.string.Requested)
+  @Prop(ArrOf(TypeRef(contact.class.PersonAccount)), request.string.Requested)
   @Index(IndexKind.Indexed)
-    requested!: Ref<EmployeeAccount>[]
+    requested!: Ref<PersonAccount>[]
 
-  @Prop(ArrOf(TypeRef(contact.class.EmployeeAccount)), request.string.Approved)
+  @Prop(ArrOf(TypeRef(contact.class.PersonAccount)), request.string.Approved)
   @ReadOnly()
-    approved!: Ref<EmployeeAccount>[]
+    approved!: Ref<PersonAccount>[]
 
   requiredApprovesCount!: number
 
@@ -64,9 +64,9 @@ export class TRequest extends TAttachedDoc implements Request {
 
   tx!: Tx
 
-  @Prop(TypeRef(contact.class.EmployeeAccount), request.string.Rejected)
+  @Prop(TypeRef(contact.class.PersonAccount), request.string.Rejected)
   @ReadOnly()
-    rejected?: Ref<EmployeeAccount>
+    rejected?: Ref<PersonAccount>
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
     comments?: number

@@ -5,7 +5,7 @@
   import { Issue, trackerId } from '@hcengineering/tracker'
   import { Button, Component, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
-  import { ViewletSettingButton, getAdditionalHeader } from '@hcengineering/view-resources'
+  import { ViewletsSettingButton, getAdditionalHeader } from '@hcengineering/view-resources'
   import viewplg from '@hcengineering/view-resources/src/plugin'
   import { fade } from 'svelte/transition'
   import tracker from '../../../plugin'
@@ -56,7 +56,7 @@
         <span class="flex-grow" />
       {/if}
       <div class="flex-row-center gap-2">
-        <ViewletSettingButton
+        <ViewletsSettingButton
           bind:viewOptions
           viewletQuery={{ _id: tracker.viewlet.SubIssues }}
           kind={'ghost'}

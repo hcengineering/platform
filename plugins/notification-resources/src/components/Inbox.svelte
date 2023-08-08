@@ -15,7 +15,7 @@
 <script lang="ts">
   import { deepEqual } from 'fast-equals'
   import chunter from '@hcengineering/chunter'
-  import { EmployeeAccount } from '@hcengineering/contact'
+  import { PersonAccount } from '@hcengineering/contact'
   import core, { Class, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
   import { DocUpdates } from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
@@ -49,7 +49,7 @@
   let component: AnyComponent | undefined
   let _id: Ref<Doc> | undefined
   let _class: Ref<Class<Doc>> | undefined
-  let selectedEmployee: Ref<EmployeeAccount> | undefined = undefined
+  let selectedEmployee: Ref<PersonAccount> | undefined = undefined
   let prevValue: DocUpdates | undefined = undefined
 
   async function select (value: DocUpdates | undefined) {
@@ -74,9 +74,9 @@
     prevValue = value
   }
 
-  async function openDM (value?: Ref<EmployeeAccount>) {
+  async function openDM (value?: Ref<PersonAccount>) {
     if (value) {
-      const dmId = await getDirectMessage(value as Ref<EmployeeAccount>)
+      const dmId = await getDirectMessage(value as Ref<PersonAccount>)
       const targetClass = hierarchy.getClass(chunter.class.DirectMessage)
       const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)
       component = panelComponent.component ?? view.component.EditDoc
@@ -87,7 +87,7 @@
 
   const myAccId = getCurrentAccount()._id
 
-  async function getDirectMessage (employeeAccount: Ref<EmployeeAccount>) {
+  async function getDirectMessage (employeeAccount: Ref<PersonAccount>) {
     const accIds = [myAccId, employeeAccount].sort()
     const existingDms = await client.findAll(chunter.class.DirectMessage, {})
 

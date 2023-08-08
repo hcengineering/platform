@@ -16,14 +16,14 @@
   import { DocumentQuery, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Component } from '@hcengineering/tracker'
-  import { Button, IconAdd, Label, SearchEdit, TabList, resolvedLocationStore, showPopup } from '@hcengineering/ui'
+  import { Button, IconAdd, Label, SearchEdit, resolvedLocationStore, showPopup } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
   import {
     FilterBar,
     FilterButton,
+    ViewletSelector,
     ViewletSettingButton,
-    makeViewletKey,
-    updateActiveViewlet
+    makeViewletKey
   } from '@hcengineering/view-resources'
   import { onDestroy } from 'svelte'
   import tracker from '../../plugin'
@@ -86,15 +86,7 @@
   </div>
 
   <div class="ac-header-full medium-gap mb-1">
-    {#if viewlets && viewlets.length > 1}
-      <TabList
-        items={views}
-        selected={viewlet?._id}
-        kind="normal"
-        on:select={({ detail }) =>
-          (viewlet = viewlets && detail?.id ? updateActiveViewlet(viewlets, detail.id) : viewlet)}
-      />
-    {/if}
+    <ViewletSelector bind:viewlet bind:viewlets viewletQuery={{ attachTo: tracker.class.Component }} />
     <Button icon={IconAdd} label={tracker.string.Component} kind="accented" on:click={showCreateDialog} />
   </div>
 </div>
@@ -106,12 +98,7 @@
     <FilterButton _class={tracker.class.Component} {space} />
   </div>
   <div class="ac-header-full medium-gap">
-    <ViewletSettingButton
-      bind:viewOptions
-      viewletQuery={{ attachTo: tracker.class.Component }}
-      bind:viewlet
-      bind:viewlets
-    />
+    <ViewletSettingButton bind:viewOptions bind:viewlet />
     <!-- <ActionIcon icon={IconMoreH} size="small" /> -->
   </div>
 </div>

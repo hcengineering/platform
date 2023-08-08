@@ -80,12 +80,7 @@
       />
       <div class="buttons-divider" />
     {/if}
-    <ViewletSettingButton
-      bind:viewOptions
-      viewletQuery={{ attachTo: tracker.class.IssueTemplate }}
-      bind:viewlet
-      bind:viewlets
-    />
+    <ViewletSettingButton bind:viewOptions bind:viewlet />
   </svelte:fragment>
 </SpaceHeader>
 <slot name="afterHeader" />

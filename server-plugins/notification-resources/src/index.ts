@@ -15,7 +15,7 @@
 //
 
 import chunter, { Backlink } from '@hcengineering/chunter'
-import contact, { Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
+import contact, { Employee, PersonAccount, formatName } from '@hcengineering/contact'
 import core, {
   Account,
   AnyAttribute,
@@ -54,8 +54,8 @@ import type { TriggerControl } from '@hcengineering/server-core'
 import serverNotification, {
   HTMLPresenter,
   TextPresenter,
-  getEmployeeAccount,
-  getEmployeeAccountById
+  getPersonAccount,
+  getPersonAccountById
 } from '@hcengineering/server-notification'
 import { Content } from './types'
 import { replaceAll } from './utils'
@@ -70,10 +70,10 @@ export async function OnBacklinkCreate (tx: Tx, control: TriggerControl): Promis
 
   if (!checkTx(ptx, hierarchy)) return []
 
-  const receiver = await getEmployeeAccount(ptx.objectId as Ref<Employee>, control)
+  const receiver = await getPersonAccount(ptx.objectId as Ref<Employee>, control)
   if (receiver === undefined) return []
 
-  const sender = await getEmployeeAccountById(ptx.modifiedBy, control)
+  const sender = await getPersonAccountById(ptx.modifiedBy, control)
   if (sender === undefined) return []
   const backlink = getBacklink(ptx)
   const doc = await getBacklinkDoc(backlink, control)
@@ -106,7 +106,7 @@ function checkTx (ptx: TxCollectionCUD<Doc, Backlink>, hierarchy: Hierarchy): bo
   if (
     ptx.tx._class !== core.class.TxCreateDoc ||
     !hierarchy.isDerived(ptx.tx.objectClass, chunter.class.Backlink) ||
-    !hierarchy.isDerived(ptx.objectClass, contact.class.Employee)
+    !hierarchy.isDerived(ptx.objectClass, contact.mixin.Employee)
   ) {
     return false
   }
@@ -118,7 +118,7 @@ function checkTx (ptx: TxCollectionCUD<Doc, Backlink>, hierarchy: Hierarchy): bo
  */
 export async function isAllowed (
   control: TriggerControl,
-  receiver: Ref<EmployeeAccount>,
+  receiver: Ref<PersonAccount>,
   typeId: Ref<NotificationType>,
   providerId: Ref<NotificationProvider>
 ): Promise<boolean> {
@@ -213,13 +213,13 @@ async function createEmailNotificationTxes (
   tx: Tx,
   type: Ref<NotificationType>,
   doc: Doc | undefined,
-  senderId: Ref<EmployeeAccount>,
-  receiverId: Ref<EmployeeAccount>,
+  senderId: Ref<PersonAccount>,
+  receiverId: Ref<PersonAccount>,
   data: string = ''
 ): Promise<Tx | undefined> {
-  const sender = (await control.modelDb.findAll(contact.class.EmployeeAccount, { _id: senderId }))[0]
+  const sender = (await control.modelDb.findAll(contact.class.PersonAccount, { _id: senderId }))[0]
 
-  const receiver = (await control.modelDb.findAll(contact.class.EmployeeAccount, { _id: receiverId }))[0]
+  const receiver = (await control.modelDb.findAll(contact.class.PersonAccount, { _id: receiverId }))[0]
   if (receiver === undefined) return
 
   const senderName = sender !== undefined ? formatName(sender.name) : ''
@@ -237,7 +237,7 @@ async function getEmailNotificationTx (
   text: string,
   html: string,
   subject: string,
-  receiver: EmployeeAccount
+  receiver: PersonAccount
 ): Promise<TxCreateDoc<EmailNotification> | undefined> {
   return {
     _id: generateId(),
@@ -279,24 +279,24 @@ async function getValueCollaborators (value: any, attr: AnyAttribute, control: T
   const hierarchy = control.hierarchy
   if (attr.type._class === core.class.RefTo) {
     const to = (attr.type as RefTo<Doc>).to
-    if (hierarchy.isDerived(to, contact.class.Employee)) {
-      const acc = await getEmployeeAccount(value, control)
+    if (hierarchy.isDerived(to, contact.mixin.Employee)) {
+      const acc = await getPersonAccount(value, control)
       return acc !== undefined ? [acc._id] : []
     } else if (hierarchy.isDerived(to, core.class.Account)) {
-      const acc = await getEmployeeAccountById(value, control)
+      const acc = await getPersonAccountById(value, control)
       return acc !== undefined ? [acc._id] : []
     }
   } else if (attr.type._class === core.class.ArrOf) {
     const arrOf = (attr.type as ArrOf<RefTo<Doc>>).of
     if (arrOf._class === core.class.RefTo) {
       const to = (arrOf as RefTo<Doc>).to
-      if (hierarchy.isDerived(to, contact.class.Employee)) {
-        const employeeAccounts = await control.modelDb.findAll(contact.class.EmployeeAccount, {
-          employee: { $in: Array.isArray(value) ? value : [value] }
+      if (hierarchy.isDerived(to, contact.mixin.Employee)) {
+        const employeeAccounts = await control.modelDb.findAll(contact.class.PersonAccount, {
+          person: { $in: Array.isArray(value) ? value : [value] }
         })
         return employeeAccounts.map((p) => p._id)
       } else if (hierarchy.isDerived(to, core.class.Account)) {
-        const employeeAccounts = await control.modelDb.findAll(contact.class.EmployeeAccount, {
+        const employeeAccounts = await control.modelDb.findAll(contact.class.PersonAccount, {
           _id: { $in: Array.isArray(value) ? value : [value] }
         })
         return employeeAccounts.map((p) => p._id)
@@ -419,10 +419,10 @@ async function isShouldNotify (
         if (!res) continue
       }
     }
-    if (await isAllowed(control, user as Ref<EmployeeAccount>, type._id, notification.providers.PlatformNotification)) {
+    if (await isAllowed(control, user as Ref<PersonAccount>, type._id, notification.providers.PlatformNotification)) {
       allowed = true
     }
-    if (await isAllowed(control, user as Ref<EmployeeAccount>, type._id, notification.providers.EmailNotification)) {
+    if (await isAllowed(control, user as Ref<PersonAccount>, type._id, notification.providers.EmailNotification)) {
       emailTypes.push(type)
     }
   }
@@ -488,8 +488,8 @@ async function getNotificationTxes (
       originTx,
       type._id,
       object,
-      originTx.modifiedBy as Ref<EmployeeAccount>,
-      target as Ref<EmployeeAccount>
+      originTx.modifiedBy as Ref<PersonAccount>,
+      target as Ref<PersonAccount>
     )
     if (emailTx !== undefined) {
       res.push(emailTx)
@@ -640,7 +640,7 @@ async function updateCollaboratorsMixin (
         if (
           await isAllowed(
             control,
-            collab as Ref<EmployeeAccount>,
+            collab as Ref<PersonAccount>,
             notification.ids.CollaboratoAddNotification,
             notification.providers.PlatformNotification
           )
@@ -822,14 +822,12 @@ export async function isUserEmployeeInFieldValue (
   if (type.field === undefined) return false
   const value = (doc as any)[type.field]
   if (value === undefined) return false
-  const employee = (
-    await control.modelDb.findAll(contact.class.EmployeeAccount, { _id: user as Ref<EmployeeAccount> })
-  )[0]
+  const employee = (await control.modelDb.findAll(contact.class.PersonAccount, { _id: user as Ref<PersonAccount> }))[0]
   if (employee === undefined) return false
   if (Array.isArray(value)) {
-    return value.includes(employee.employee)
+    return value.includes(employee.person)
   } else {
-    return value === employee.employee
+    return value === employee.person
   }
 }
 

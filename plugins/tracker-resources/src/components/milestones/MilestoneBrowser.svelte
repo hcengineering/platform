@@ -18,7 +18,7 @@
   import { Milestone } from '@hcengineering/tracker'
   import { Button, IconAdd, Label, SearchEdit, TabItem, TabList, showPopup } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
-  import { FilterBar, FilterButton, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { FilterBar, FilterButton, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import { MilestoneViewMode, getIncludedMilestoneStatuses, milestoneTitleMap } from '../../utils'
   import MilestoneContent from './MilestoneContent.svelte'
@@ -99,7 +99,8 @@
     <FilterButton _class={tracker.class.Milestone} {space} />
   </div>
   <div class="ac-header-full medium-gap">
-    <ViewletSettingButton bind:viewOptions viewletQuery={{ attachTo: tracker.class.Milestone }} bind:viewlet />
+    <ViewletSelector viewletQuery={{ attachTo: tracker.class.Milestone }} bind:viewlet />
+    <ViewletSettingButton bind:viewOptions bind:viewlet />
     <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
   </div>
 </div>

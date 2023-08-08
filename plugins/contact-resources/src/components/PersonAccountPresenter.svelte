@@ -14,13 +14,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { EmployeeAccount } from '@hcengineering/contact'
-  import core, { Account, systemAccountEmail } from '@hcengineering/core'
+  import { Employee, PersonAccount } from '@hcengineering/contact'
+  import core, { Account, Ref, systemAccountEmail } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { Label, tooltip, IconSize } from '@hcengineering/ui'
-  import { employeeByIdStore } from '../utils'
+  import { IconSize, Label, tooltip } from '@hcengineering/ui'
+  import { employeeByIdStore, personAccountPersonByIdStore } from '../utils'
   import Avatar from './Avatar.svelte'
   import EmployeePresenter from './EmployeePresenter.svelte'
+  import PersonPresenter from './PersonPresenter.svelte'
 
   export let value: Account
   export let avatarSize: IconSize = 'x-small'
@@ -28,8 +29,9 @@
   export let inline: boolean = false
   export let accent: boolean = false
 
-  $: employee = $employeeByIdStore.get((value as EmployeeAccount)?.employee)
+  $: employee = $employeeByIdStore.get((value as PersonAccount)?.person as Ref<Employee>)
 
+  $: person = $personAccountPersonByIdStore.get((value as PersonAccount)?.person)
   const valueLabel = value?.email === systemAccountEmail ? core.string.System : getEmbeddedLabel(value?.email)
 </script>
 
@@ -37,6 +39,8 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   {#if employee}
     <EmployeePresenter value={employee} {disabled} {inline} {accent} {avatarSize} on:accent-color />
+  {:else if person}
+    <PersonPresenter value={person} {disabled} {inline} {accent} {avatarSize} on:accent-color />
   {:else}
     <div class="flex-row-center">
       <Avatar size={avatarSize} />

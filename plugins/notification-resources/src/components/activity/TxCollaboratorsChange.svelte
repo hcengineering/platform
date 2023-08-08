@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { EmployeeAccount } from '@hcengineering/contact'
-  import { EmployeeAccountRefPresenter } from '@hcengineering/contact-resources'
+  import { PersonAccount } from '@hcengineering/contact'
+  import { PersonAccountRefPresenter } from '@hcengineering/contact-resources'
   import { Doc, Ref, TxMixin } from '@hcengineering/core'
   import { Collaborators } from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
@@ -26,27 +26,27 @@
   export let prevValue: Collaborators | undefined = undefined
 
   interface Diff {
-    added: Ref<EmployeeAccount>[]
-    removed: Ref<EmployeeAccount>[]
+    added: Ref<PersonAccount>[]
+    removed: Ref<PersonAccount>[]
   }
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
   function buildDiff (value: Collaborators, prev: Collaborators | undefined): Diff | undefined {
     if (prev === undefined) return
-    const added: Ref<EmployeeAccount>[] = []
-    const removed: Ref<EmployeeAccount>[] = []
+    const added: Ref<PersonAccount>[] = []
+    const removed: Ref<PersonAccount>[] = []
     const mixin = hierarchy.as(value, notification.mixin.Collaborators)
     const prevMixin = hierarchy.as(prev, notification.mixin.Collaborators)
     const prevSet = new Set(prevMixin?.collaborators ?? [])
     const newSet = new Set(mixin.collaborators)
 
     for (const newCollab of mixin.collaborators) {
-      if (!prevSet.has(newCollab)) added.push(newCollab as Ref<EmployeeAccount>)
+      if (!prevSet.has(newCollab)) added.push(newCollab as Ref<PersonAccount>)
     }
 
     for (const oldCollab of prevMixin?.collaborators ?? []) {
-      if (!newSet.has(oldCollab)) removed.push(oldCollab as Ref<EmployeeAccount>)
+      if (!newSet.has(oldCollab)) removed.push(oldCollab as Ref<PersonAccount>)
     }
 
     return {
@@ -64,7 +64,7 @@
     <div class="antiHSpacer" />
     <IconAdd size={'x-small'} fill={'var(--theme-trans-color)'} />
     {#each diff.added as add}
-      <EmployeeAccountRefPresenter value={add} disabled inline />
+      <PersonAccountRefPresenter value={add} disabled inline />
       <div class="antiHSpacer" />
     {/each}
   {/if}
@@ -72,7 +72,7 @@
     <div class="antiHSpacer" />
     <IconDelete size={'x-small'} fill={'var(--theme-trans-color)'} />
     {#each diff.removed as removed}
-      <EmployeeAccountRefPresenter value={removed} disabled inline />
+      <PersonAccountRefPresenter value={removed} disabled inline />
       <div class="antiHSpacer" />
     {/each}
   {/if}
