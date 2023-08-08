@@ -113,20 +113,9 @@ async function onEventCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
     (p) => (p._id !== ev.createdBy ?? ev.modifiedBy) && ev.participants.includes(p.person)
   )
   for (const acc of participants) {
-    const innerTx = control.txFactory.createTxCreateDoc(ev._class, `${acc._id}_calendar` as Ref<Calendar>, {
-      eventId: ev.eventId,
-      participants: ev.participants,
-      externalParticipants: ev.externalParticipants,
-      title: ev.title,
-      description: ev.description,
-      allDay: ev.allDay,
-      attachedTo: ev.attachedTo,
-      attachedToClass: ev.attachedToClass,
-      collection: ev.collection,
-      date: ev.date,
-      dueDate: ev.dueDate,
-      reminders: ev.reminders,
-      location: ev.location,
+    const { _id, _class, space, modifiedBy, modifiedOn, ...data } = ev
+    const innerTx = control.txFactory.createTxCreateDoc(_class, `${acc._id}_calendar` as Ref<Calendar>, {
+      ...data,
       access: 'reader'
     })
     res.push(

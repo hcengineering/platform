@@ -227,21 +227,21 @@ function getReccuringEventInstances (
   to: Timestamp
 ): ReccuringInstance[] {
   let res: ReccuringInstance[] = []
-  for (const rule of event.rules) {
+  for (const rule of event.rules ?? []) {
     const values = generateRecurringValues(rule, event.date, from, to)
     for (const val of values) {
       const instance = getInstance(event, val)
       res.push(instance)
     }
   }
-  for (const date of event.rdate) {
+  for (const date of event.rdate ?? []) {
     if (date < from || date > to) continue
     const instance = getInstance(event, date)
     const exists = res.find((p) => p.date === instance.date)
     if (exists === undefined) res.push(instance)
   }
 
-  const excludes = new Set(event.exdate)
+  const excludes = new Set(event.exdate ?? [])
   res = res.filter((p) => !excludes.has(p.date))
   res = res.filter((i) => {
     const override = instances.find((p) => p.originalStartTime === i.date)
