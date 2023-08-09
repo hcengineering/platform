@@ -27,7 +27,7 @@
   "dependencies": {
     "@hcengineering/core": "^0.6.27",
     "@hcengineering/model": "^0.6.6",
-    "@hcengineering/contact": "^0.6.18",
+    "@hcengineering/contact": "^0.6.19",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/model-core": "^0.6.0",
     "@hcengineering/activity": "^0.6.0",
