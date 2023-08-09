@@ -26,9 +26,9 @@
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.27",
-    "@hcengineering/gmail": "^0.6.12",
+    "@hcengineering/gmail": "^0.6.13",
     "@hcengineering/model": "^0.6.6",
-    "@hcengineering/contact": "^0.6.18",
+    "@hcengineering/contact": "^0.6.19",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/server-gmail": "^0.6.0",
     "@hcengineering/server-core": "^0.6.1",

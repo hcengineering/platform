@@ -32,8 +32,8 @@
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server": "^0.6.4",
-    "@hcengineering/chunter": "^0.6.9",
-    "@hcengineering/recruit": "^0.6.16",
+    "@hcengineering/chunter": "^0.6.10",
+    "@hcengineering/recruit": "^0.6.17",
     "got": "^11.8.3",
     "fast-equals": "^2.0.3",
     "html-to-text": "^9.0.3"
