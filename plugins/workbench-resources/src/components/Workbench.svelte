@@ -579,6 +579,27 @@
 
   let inboxPopup: PopupResult | undefined = undefined
   let lastLoc: Location | undefined = undefined
+
+  const currentAccount = getCurrentAccount() as PersonAccount
+
+  // window.intercomSettings = {
+  //   // app settings
+  //   api_base: "https://api-iam.intercom.io",
+  //   app_id: "kmzvn8kb",
+  //   // button placement
+  //   alignment: 'left',
+  //   horizontal_padding: 88,
+  //   vertical_padding: 20,
+  //   custom_launcher_selector: '#contact-us',
+  //   // user
+  //   name: currentAccount.name,
+  //   email: currentAccount.email,
+  //   user_id: currentAccount._id,
+  //   created_at: currentAccount.createdOn,
+  //   // custom attributes
+  //   // TODO language
+  //   // TODO workspace
+  // }
 </script>
 
 {#if employee?.active === true || accountId === core.account.System}
@@ -659,14 +680,17 @@
           size={appsMini ? 'small' : 'large'}
           on:click={() => showPopup(AppSwitcher, { apps: getApps(apps) }, popupPosition)}
         />
+        <AppItem
+          icon={setting.icon.Support}
+          label={setting.string.ContactUs}
+          size={appsMini ? 'small' : 'large'}
+        />
         <div class="flex-center" class:mt-3={appsDirection === 'vertical'} class:ml-2={appsDirection === 'horizontal'}>
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div
             id="profile-button"
             class="cursor-pointer"
-            on:click|stopPropagation={() => {
-              showPopup(AccountPopup, {}, popupPosition)
-            }}
+            on:click|stopPropagation={() => showPopup(AccountPopup, {}, popupPosition)}
           >
             <Component is={contact.component.Avatar} props={{ avatar: employee?.avatar, size: 'small' }} />
           </div>
