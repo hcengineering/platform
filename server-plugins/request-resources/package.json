@@ -30,9 +30,9 @@
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-request": "^0.6.0",
-    "@hcengineering/request": "^0.6.3",
-    "@hcengineering/chunter": "^0.6.9",
+    "@hcengineering/request": "^0.6.4",
+    "@hcengineering/chunter": "^0.6.10",
     "@hcengineering/view": "^0.6.8",
-    "@hcengineering/contact": "^0.6.18"
+    "@hcengineering/contact": "^0.6.19"
   }
 }

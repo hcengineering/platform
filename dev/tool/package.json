@@ -47,10 +47,10 @@
     "commander": "^8.1.0",
     "@hcengineering/account": "^0.6.0",
     "@hcengineering/core": "^0.6.27",
-    "@hcengineering/contact": "^0.6.18",
+    "@hcengineering/contact": "^0.6.19",
     "@hcengineering/model-all": "^0.6.0",
     "@hcengineering/model-telegram": "^0.6.0",
-    "@hcengineering/telegram": "^0.6.11",
+    "@hcengineering/telegram": "^0.6.12",
     "@hcengineering/client-resources": "^0.6.21",
     "ws": "^8.10.0",
     "@hcengineering/client": "^0.6.13",
@@ -69,9 +69,9 @@
     "@hcengineering/server-attachment-resources": "^0.6.0",
     "xml2js": "~0.4.23",
     "@hcengineering/model-recruit": "^0.6.0",
-    "@hcengineering/recruit": "^0.6.16",
-    "@hcengineering/task": "^0.6.10",
-    "@hcengineering/chunter": "^0.6.9",
+    "@hcengineering/recruit": "^0.6.17",
+    "@hcengineering/task": "^0.6.11",
+    "@hcengineering/chunter": "^0.6.10",
     "mime-types": "~2.1.34",
     "@hcengineering/attachment": "^0.6.8",
     "@hcengineering/server-contact": "^0.6.1",
@@ -118,6 +118,6 @@
     "@hcengineering/setting": "^0.6.9",
     "@hcengineering/minio": "^0.6.0",
     "@hcengineering/openai": "^0.6.0",
-    "@hcengineering/tracker": "^0.6.10"
+    "@hcengineering/tracker": "^0.6.11"
   }
 }

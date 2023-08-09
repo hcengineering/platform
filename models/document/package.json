@@ -40,7 +40,7 @@
     "@hcengineering/document": "^0.6.0",
     "@hcengineering/document-resources": "^0.6.0",
     "@hcengineering/view": "^0.6.8",
-    "@hcengineering/contact": "^0.6.18",
+    "@hcengineering/contact": "^0.6.19",
     "@hcengineering/tags": "^0.6.11"
   }
 }

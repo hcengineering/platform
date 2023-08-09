@@ -36,7 +36,7 @@
     "svelte": "3.55.1",
     "@hcengineering/inventory": "^0.6.6",
     "@hcengineering/ui": "^0.6.10",
-    "@hcengineering/panel": "^0.6.10",
+    "@hcengineering/panel": "^0.6.11",
     "@hcengineering/presentation": "^0.6.2",
     "@hcengineering/view": "^0.6.8",
     "@hcengineering/view-resources": "^0.6.0",
