@@ -1503,6 +1503,11 @@
       "packageName": "@hcengineering/server-view-resources",
       "projectFolder": "server-plugins/view-resources",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/intercom",
+      "projectFolder": "plugins/intercom",
+      "shouldPublish": true
     }
   ]
 }

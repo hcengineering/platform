@@ -116,6 +116,24 @@ export function startFront (extraConfig?: Record<string, string>): void {
     process.exit(1)
   }
 
+  const intercomAppId = process.env.INTERCOM_APP_ID
+  if (intercomAppId === undefined) {
+    console.error('please provide intercom app id')
+    process.exit(1)
+  }
+
+  const intercomApiUrl = process.env.INTERCOM_API_URL
+  if (intercomApiUrl === undefined) {
+    console.error('please provide intercom api url')
+    process.exit(1)
+  }
+
+  const intercomSecretKey = process.env.INTERCOM_SECRET_KEY
+  if (intercomSecretKey === undefined) {
+    console.error('please provide intercom secret key')
+    process.exit(1)
+  }
+
   const title = process.env.TITLE
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
@@ -132,6 +150,9 @@ export function startFront (extraConfig?: Record<string, string>): void {
     telegramUrl,
     rekoniUrl,
     calendarUrl,
+    intercomAppId,
+    intercomApiUrl,
+    intercomSecretKey,
     title,
     languages,
     defaultLanguage

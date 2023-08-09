@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { showIntercomMessenger } from '@hcengineering/intercom'
   import { getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
   import {
@@ -174,7 +175,7 @@
       id="contact-us"
       icon={setting.icon.Support}
       kind={'ghost'}
-      disabled={true}
+      on:click={showIntercomMessenger}
       label={workbench.string.ContactUs}
     />
   </div>

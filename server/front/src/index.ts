@@ -141,6 +141,9 @@ export function start (
     telegramUrl: string
     gmailUrl: string
     calendarUrl: string
+    intercomAppId: string
+    intercomApiUrl: string
+    intercomSecretKey: string
     title?: string
     languages: string
     defaultLanguage: string
@@ -182,6 +185,9 @@ export function start (
       TELEGRAM_URL: config.telegramUrl,
       GMAIL_URL: config.gmailUrl,
       CALENDAR_URL: config.calendarUrl,
+      INTERCOM_APP_ID: config.intercomAppId,
+      INTERCOM_API_URL: config.intercomApiUrl,
+      INTERCOM_SECRET_KEY: config.intercomSecretKey,
       TITLE: config.title,
       LANGUAGES: config.languages,
       DEFAULT_LANGUAGE: config.defaultLanguage,

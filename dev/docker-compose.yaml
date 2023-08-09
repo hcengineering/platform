@@ -100,6 +100,9 @@ services:
       - MINIO_ENDPOINT=minio
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
+      - INTERCOM_APP_ID=kmzvn8kb
+      - INTERCOM_API_URL=
+      - INTERCOM_SECRET_KEY=ltgmxOL1apfqLf9LIsdRV9VJDxKroDj9u4xvln-F
       - TITLE=DevPlatform
       - DEFAULT_LANGUAGE=ru
     restart: unless-stopped

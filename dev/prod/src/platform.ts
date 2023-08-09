@@ -27,6 +27,7 @@ import document, { documentId } from '@hcengineering/document'
 import gmail, { gmailId } from '@hcengineering/gmail'
 import { hrId } from '@hcengineering/hr'
 import { imageCropperId } from '@hcengineering/image-cropper'
+import intercom from '@hcengineering/intercom'
 import { inventoryId } from '@hcengineering/inventory'
 import { leadId } from '@hcengineering/lead'
 import login, { loginId } from '@hcengineering/login'
@@ -89,6 +90,9 @@ interface Config {
   TELEGRAM_URL: string
   GMAIL_URL: string
   CALENDAR_URL: string
+  INTERCOM_APP_ID: string
+  INTERCOM_API_URL: string
+  INTERCOM_SECRET_KEY: string
   TITLE?: string
   LANGUAGES?: string
   DEFAULT_LANGUAGE?: string
@@ -128,6 +132,10 @@ export async function configurePlatform() {
       [loginId, login.component.LoginApp]
     ])
   )
+
+  setMetadata(intercom.metadata.AppID, config.INTERCOM_APP_ID)
+  setMetadata(intercom.metadata.ApiBaseURL, config.INTERCOM_API_URL)
+  setMetadata(intercom.metadata.SecretKey, config.INTERCOM_SECRET_KEY)
 
   addLocation(coreId, async () => ({ default: async () => ({}) }))
   addLocation(presentationId, async () => ({ default: async () => ({}) }))

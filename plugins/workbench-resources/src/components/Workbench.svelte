@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,6 +15,7 @@
 <script lang="ts">
   import contact, { Employee, PersonAccount } from '@hcengineering/contact'
   import core, { Class, Doc, Ref, Space, getCurrentAccount, setCurrentAccount } from '@hcengineering/core'
+  import { intercomStore, shutdownIntercom, toggleIntercomMessenger, updateIntercom } from '@hcengineering/intercom'
   import login from '@hcengineering/login'
   import notification, { notificationId } from '@hcengineering/notification'
   import { BrowserNotificatator, NotificationClientImpl } from '@hcengineering/notification-resources'
@@ -49,7 +50,8 @@
     resizeObserver,
     resolvedLocationStore,
     setResolvedLocation,
-    showPopup
+    showPopup,
+    themeStore
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import {
@@ -581,25 +583,10 @@
   let lastLoc: Location | undefined = undefined
 
   const currentAccount = getCurrentAccount() as PersonAccount
+  $: language = $themeStore.language
+  $: updateIntercom(currentAccount, language)
 
-  // window.intercomSettings = {
-  //   // app settings
-  //   api_base: "https://api-iam.intercom.io",
-  //   app_id: "kmzvn8kb",
-  //   // button placement
-  //   alignment: 'left',
-  //   horizontal_padding: 88,
-  //   vertical_padding: 20,
-  //   custom_launcher_selector: '#contact-us',
-  //   // user
-  //   name: currentAccount.name,
-  //   email: currentAccount.email,
-  //   user_id: currentAccount._id,
-  //   created_at: currentAccount.createdOn,
-  //   // custom attributes
-  //   // TODO language
-  //   // TODO workspace
-  // }
+  onDestroy(() => shutdownIntercom())
 </script>
 
 {#if employee?.active === true || accountId === core.account.System}
@@ -684,6 +671,9 @@
           icon={setting.icon.Support}
           label={setting.string.ContactUs}
           size={appsMini ? 'small' : 'large'}
+          selected={$intercomStore.visible}
+          notify={$intercomStore.unreadCount > 0}
+          on:click={() => toggleIntercomMessenger()}
         />
         <div class="flex-center" class:mt-3={appsDirection === 'vertical'} class:ml-2={appsDirection === 'horizontal'}>
           <!-- svelte-ignore a11y-click-events-have-key-events -->
