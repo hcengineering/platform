@@ -541,12 +541,7 @@ export function createModel (builder: Builder): void {
           displayProps: { key: 'assignee', fixed: 'right' },
           props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' }
         }
-      ],
-      options: {
-        lookup: {
-          space: tracker.class.Project
-        }
-      }
+      ]
     },
     tracker.viewlet.IssueList
   )
@@ -1052,7 +1047,6 @@ export function createModel (builder: Builder): void {
             icon: tracker.icon.Issues,
             component: tracker.component.Issues,
             componentProps: {
-              baseQuery: { '$lookup.space.archived': false },
               space: undefined,
               title: tracker.string.AllIssues,
               config: [

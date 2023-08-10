@@ -48,6 +48,7 @@
   $: orderBy = viewOptions.orderBy
 
   const docsQuery = createQuery()
+
   $: lookup = buildConfigLookup(client.getHierarchy(), _class, config, options?.lookup)
   $: resultOptions = { ...options, lookup, ...(orderBy !== undefined ? { sort: { [orderBy[0]]: orderBy[1] } } : {}) }
 
@@ -59,15 +60,36 @@
   $: if (documents === undefined) {
     docsQuery.query(
       _class,
-      resultQuery,
+      noLookup(resultQuery),
       (res) => {
         docs = res
       },
-      resultOptions
+      {
+        ...resultOptions,
+        projection: { ...resultOptions.projection, _id: 1, _class: 1, ...getProjection(viewOptions.groupBy) }
+      }
     )
   } else {
     docsQuery.unsubscribe()
     docs = documents
+  }
+
+  function getProjection (fields: string[]): Record<string, number> {
+    const res: Record<string, number> = {}
+    for (const f of fields) {
+      res[f] = 1
+    }
+    return res
+  }
+
+  function noLookup (query: DocumentQuery<Doc>): DocumentQuery<Doc> {
+    const newQuery: DocumentQuery<Doc> = {}
+    for (const [k, v] of Object.entries(query)) {
+      if (!k.startsWith('$lookup.')) {
+        newQuery[k] = v
+      }
+    }
+    return newQuery
   }
 
   $: dispatch('content', docs)
@@ -153,6 +175,8 @@
       select(-2, evt.detail)
     }}
     on:collapsed
+    {resultQuery}
+    {resultOptions}
   />
 </div>
 
