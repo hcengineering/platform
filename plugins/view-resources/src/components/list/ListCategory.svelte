@@ -13,9 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AggregateValue, Class, Doc, DocumentUpdate, Lookup, PrimitiveType, Ref, Space } from '@hcengineering/core'
+  import {
+    AggregateValue,
+    Class,
+    Doc,
+    DocumentQuery,
+    DocumentUpdate,
+    FindOptions,
+    Lookup,
+    PrimitiveType,
+    Ref,
+    Space
+  } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { DocWithRank, calcRank } from '@hcengineering/task'
   import {
     AnyComponent,
@@ -42,7 +53,7 @@
   export let groupByKey: string
   export let space: Ref<Space> | undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined
-  export let items: Doc[]
+  export let itemProj: Doc[]
   export let createItemDialog: AnyComponent | AnySvelteComponent | undefined
   export let createItemDialogProps: Record<string, any> | undefined
   export let createItemLabel: IntlString | undefined
@@ -68,14 +79,33 @@
   export let index: number
   export let groupPersistKey: string
   export let compactMode: boolean = false
+  export let resultQuery: DocumentQuery<Doc>
+  export let resultOptions: FindOptions<Doc>
 
   $: lastLevel = level + 1 >= viewOptions.groupBy.length
+
+  let items: Doc[] = []
+
+  const docsQuery = createQuery()
 
   const autoFoldLimit = 20
   const defaultLimit = 20
   const singleCategoryLimit = 50
   $: initialLimit = !lastLevel ? undefined : singleCat ? singleCategoryLimit : defaultLimit
   $: limit = initialLimit
+
+  $: if (lastLevel) {
+    docsQuery.query(
+      _class,
+      { ...resultQuery, _id: { $in: itemProj.map((it) => it._id) } },
+      (res) => {
+        items = res
+      },
+      { ...resultOptions, limit: limit ?? 200 }
+    )
+  } else {
+    docsQuery.unsubscribe()
+  }
 
   $: categoryCollapseKey = `list_collapsing_${location.pathname}_${groupPersistKey}`
   $: storedCollapseState = localStorage.getItem(categoryCollapseKey)
@@ -92,7 +122,7 @@
 
   function initCollapsed (singleCat: boolean, lastLevel: boolean): void {
     if (localStorage.getItem(categoryCollapseKey) === null) {
-      collapsed = !disableHeader && !singleCat && items.length > (lastLevel ? autoFoldLimit : singleCategoryLimit)
+      collapsed = !disableHeader && !singleCat && itemProj.length > (lastLevel ? autoFoldLimit : singleCategoryLimit)
     }
   }
 
@@ -388,8 +418,9 @@
       {category}
       {space}
       {level}
-      limited={limited.length}
-      {items}
+      limited={lastLevel ? limited.length : itemProj.length}
+      itemsProj={itemProj}
+      items={limited}
       {headerComponent}
       {createItemDialog}
       {createItemDialogProps}
@@ -423,7 +454,7 @@
     {#if !lastLevel}
       <slot
         name="category"
-        docs={items}
+        docs={itemProj}
         {_class}
         {space}
         {lookup}

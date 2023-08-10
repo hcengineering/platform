@@ -13,7 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { CategoryType, Class, Doc, DocumentQuery, generateId, Lookup, Ref, Space } from '@hcengineering/core'
+  import {
+    CategoryType,
+    Class,
+    Doc,
+    DocumentQuery,
+    FindOptions,
+    generateId,
+    Lookup,
+    Ref,
+    Space
+  } from '@hcengineering/core'
   import { getResource, IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
@@ -67,6 +77,9 @@
   export let selection: number | undefined = undefined
   export let groupPersistKey: string
   export let compactMode: boolean = false
+
+  export let resultQuery: DocumentQuery<Doc>
+  export let resultOptions: FindOptions<Doc>
 
   $: groupByKey = viewOptions.groupBy[level] ?? noCategory
   let categories: CategoryType[] = []
@@ -348,13 +361,15 @@
     oneCat={viewOptions.groupBy.length === 1}
     lastCat={i === categories.length - 1}
     {category}
-    {items}
+    itemProj={items}
     {newObjectProps}
     {createItemDialog}
     {createItemDialogProps}
     {createItemLabel}
     {viewOptionsConfig}
     {compactMode}
+    {resultQuery}
+    {resultOptions}
     on:check
     on:uncheckAll
     on:row-focus
@@ -411,6 +426,8 @@
         {initIndex}
         {viewOptionsConfig}
         {listDiv}
+        {resultQuery}
+        {resultOptions}
         on:dragItem
         on:check
         on:uncheckAll
