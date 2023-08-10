@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Label, getCurrentLocation, navigate } from '@hcengineering/ui'
   import login from '../plugin'
-  import { getAccount, delay } from '../utils'
+  import { getAccount } from '../utils'
   import { onMount } from 'svelte'
 
   const CHECK_INTERVAL = 1000
@@ -33,7 +33,11 @@
   let weAreHere = false
 
   async function check () {
-    await checkAccountStatus()
+    try {
+      await checkAccountStatus()
+    } catch(e) {
+      // we should be able to continue from this state
+    }
     if (weAreHere) {
       setTimeout(check, CHECK_INTERVAL)
     }

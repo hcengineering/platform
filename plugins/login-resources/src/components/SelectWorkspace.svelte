@@ -46,7 +46,11 @@
   }
 
   async function updateWorkspaces () {
-    workspaces = await getWorkspaces()
+    try {
+      workspaces = await getWorkspaces()
+    } catch(e) {
+      // we should be able to continue from this state
+    }
     if (flagToUpdateWorkspaces) {
       setTimeout(updateWorkspaces, CHECK_INTERVAL)
     }
