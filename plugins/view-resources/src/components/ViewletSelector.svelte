@@ -46,7 +46,7 @@
     activeViewlet: Record<string, Ref<Viewlet> | null>,
     key: string
   ) {
-    if (viewlets.length === 0) return
+    if (viewlets == null || viewlets.length === 0) return
     const newViewlet = viewlets.find((viewlet) => viewlet?._id === activeViewlet[key]) ?? viewlets[0]
     if (viewlet?._id !== newViewlet?._id) {
       viewlet = newViewlet
@@ -55,7 +55,7 @@
     }
   }
 
-  $: viewslist = viewlets.map((views) => {
+  $: viewslist = viewlets?.map((views) => {
     return {
       id: views._id,
       icon: views.$lookup?.descriptor?.icon,

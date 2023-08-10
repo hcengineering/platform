@@ -73,11 +73,17 @@
       prefix = attr.attributeOf + '.'
     }
     const isDerivedFromSpace = hierarchy.isDerived(_class, core.class.Space)
+
+    const archived =
+      space === undefined || isDerivedFromSpace
+        ? []
+        : (await client.findAll(core.class.Space, { archived: true }, { projection: { _id: 1 } })).map((it) => it._id)
+
     objectsPromise = client.findAll(
       _class,
       {
         ...resultQuery,
-        ...(space ? { space } : isDerivedFromSpace ? { archived: false } : { '$lookup.space.archived': false })
+        ...(space ? { space } : isDerivedFromSpace ? { archived: false } : { space: { $nin: archived } })
       },
       {
         sort: { [filter.key.key]: SortingOrder.Ascending },
