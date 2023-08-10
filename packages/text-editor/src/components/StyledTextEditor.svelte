@@ -121,7 +121,6 @@
           ? 'max-content'
           : maxHeight
 
-  const isFormatting = true
   let activeModes = new Set<FormatMode>()
   let isSelectionEmpty = true
 
@@ -406,102 +405,100 @@
   class:h-full={full}
   tabindex="-1"
   on:click|preventDefault|stopPropagation={() => (needFocus = true)}
->
-  {#if isFormatting}
-    <div class="formatPanel buttons-group xsmall-gap mb-4" class:withoutTopBorder bind:this={textEditorToolbar}>
-      <StyleButton
-        icon={Header}
-        size={formatButtonSize}
-        selected={activeModes.has('heading')}
-        showTooltip={{ label: getEmbeddedLabel(`H${headingLevel}`) }}
-        on:click={toggleHeader}
-      />
-      <StyleButton
-        icon={RIBold}
-        size={formatButtonSize}
-        selected={activeModes.has('bold')}
-        showTooltip={{ label: textEditorPlugin.string.Bold }}
-        on:click={getToggler(textEditor.toggleBold)}
-      />
-      <StyleButton
-        icon={RIItalic}
-        size={formatButtonSize}
-        selected={activeModes.has('italic')}
-        showTooltip={{ label: textEditorPlugin.string.Italic }}
-        on:click={getToggler(textEditor.toggleItalic)}
-      />
-      <StyleButton
-        icon={RIStrikethrough}
-        size={formatButtonSize}
-        selected={activeModes.has('strike')}
-        showTooltip={{ label: textEditorPlugin.string.Strikethrough }}
-        on:click={getToggler(textEditor.toggleStrike)}
-      />
-      <StyleButton
-        icon={RILink}
-        size={formatButtonSize}
-        selected={activeModes.has('link')}
-        disabled={isSelectionEmpty && !activeModes.has('link')}
-        showTooltip={{ label: textEditorPlugin.string.Link }}
-        on:click={formatLink}
-      />
-      <div class="buttons-divider" />
-      <StyleButton
-        icon={ListNumber}
-        size={formatButtonSize}
-        selected={activeModes.has('orderedList')}
-        showTooltip={{ label: textEditorPlugin.string.OrderedList }}
-        on:click={getToggler(textEditor.toggleOrderedList)}
-      />
-      <StyleButton
-        icon={ListBullet}
-        size={formatButtonSize}
-        selected={activeModes.has('bulletList')}
-        showTooltip={{ label: textEditorPlugin.string.BulletedList }}
-        on:click={getToggler(textEditor.toggleBulletList)}
-      />
-      <div class="buttons-divider" />
-      <StyleButton
-        icon={Quote}
-        size={formatButtonSize}
-        selected={activeModes.has('blockquote')}
-        showTooltip={{ label: textEditorPlugin.string.Blockquote }}
-        on:click={getToggler(textEditor.toggleBlockquote)}
-      />
-      <div class="buttons-divider" />
-      <StyleButton
-        icon={RICode}
-        size={formatButtonSize}
-        selected={activeModes.has('code')}
-        showTooltip={{ label: textEditorPlugin.string.Code }}
-        on:click={getToggler(textEditor.toggleCode)}
-      />
-      <StyleButton
-        icon={CodeBlock}
-        size={formatButtonSize}
-        selected={activeModes.has('codeBlock')}
-        showTooltip={{ label: textEditorPlugin.string.CodeBlock }}
-        on:click={getToggler(textEditor.toggleCodeBlock)}
-      />
+>  
+  <div class="formatPanel buttons-group xsmall-gap mb-4" class:withoutTopBorder bind:this={textEditorToolbar}>
+    <StyleButton
+      icon={Header}
+      size={formatButtonSize}
+      selected={activeModes.has('heading')}
+      showTooltip={{ label: getEmbeddedLabel(`H${headingLevel}`) }}
+      on:click={toggleHeader}
+    />
+    <StyleButton
+      icon={RIBold}
+      size={formatButtonSize}
+      selected={activeModes.has('bold')}
+      showTooltip={{ label: textEditorPlugin.string.Bold }}
+      on:click={getToggler(textEditor.toggleBold)}
+    />
+    <StyleButton
+      icon={RIItalic}
+      size={formatButtonSize}
+      selected={activeModes.has('italic')}
+      showTooltip={{ label: textEditorPlugin.string.Italic }}
+      on:click={getToggler(textEditor.toggleItalic)}
+    />
+    <StyleButton
+      icon={RIStrikethrough}
+      size={formatButtonSize}
+      selected={activeModes.has('strike')}
+      showTooltip={{ label: textEditorPlugin.string.Strikethrough }}
+      on:click={getToggler(textEditor.toggleStrike)}
+    />
+    <StyleButton
+      icon={RILink}
+      size={formatButtonSize}
+      selected={activeModes.has('link')}
+      disabled={isSelectionEmpty && !activeModes.has('link')}
+      showTooltip={{ label: textEditorPlugin.string.Link }}
+      on:click={formatLink}
+    />
+    <div class="buttons-divider" />
+    <StyleButton
+      icon={ListNumber}
+      size={formatButtonSize}
+      selected={activeModes.has('orderedList')}
+      showTooltip={{ label: textEditorPlugin.string.OrderedList }}
+      on:click={getToggler(textEditor.toggleOrderedList)}
+    />
+    <StyleButton
+      icon={ListBullet}
+      size={formatButtonSize}
+      selected={activeModes.has('bulletList')}
+      showTooltip={{ label: textEditorPlugin.string.BulletedList }}
+      on:click={getToggler(textEditor.toggleBulletList)}
+    />
+    <div class="buttons-divider" />
+    <StyleButton
+      icon={Quote}
+      size={formatButtonSize}
+      selected={activeModes.has('blockquote')}
+      showTooltip={{ label: textEditorPlugin.string.Blockquote }}
+      on:click={getToggler(textEditor.toggleBlockquote)}
+    />
+    <div class="buttons-divider" />
+    <StyleButton
+      icon={RICode}
+      size={formatButtonSize}
+      selected={activeModes.has('code')}
+      showTooltip={{ label: textEditorPlugin.string.Code }}
+      on:click={getToggler(textEditor.toggleCode)}
+    />
+    <StyleButton
+      icon={CodeBlock}
+      size={formatButtonSize}
+      selected={activeModes.has('codeBlock')}
+      showTooltip={{ label: textEditorPlugin.string.CodeBlock }}
+      on:click={getToggler(textEditor.toggleCodeBlock)}
+    />
+    <StyleButton
+      icon={IconTable}
+      iconProps={{ style: 'table' }}
+      size={formatButtonSize}
+      selected={activeModes.has('table')}
+      on:click={insertTable}
+      showTooltip={{ label: textEditorPlugin.string.InsertTable }}
+    />
+    {#if activeModes.has('table')}
       <StyleButton
         icon={IconTable}
-        iconProps={{ style: 'table' }}
+        iconProps={{ style: 'tableProps' }}
         size={formatButtonSize}
-        selected={activeModes.has('table')}
-        on:click={insertTable}
-        showTooltip={{ label: textEditorPlugin.string.InsertTable }}
+        on:click={tableOptions}
+        showTooltip={{ label: textEditorPlugin.string.TableOptions }}
       />
-      {#if activeModes.has('table')}
-        <StyleButton
-          icon={IconTable}
-          iconProps={{ style: 'tableProps' }}
-          size={formatButtonSize}
-          on:click={tableOptions}
-          showTooltip={{ label: textEditorPlugin.string.TableOptions }}
-        />
-      {/if}
-    </div>
-  {/if}
+    {/if}
+  </div>
   <div class="textInput" class:focusable>
     <div
       bind:clientHeight={contentHeight}

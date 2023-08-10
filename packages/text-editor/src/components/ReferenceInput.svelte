@@ -65,7 +65,6 @@
   let textEditor: TextEditor
   let textEditorToolbar: HTMLElement
 
-  const isFormatting = true
   let activeModes = new Set<FormatMode>()
   let isSelectionEmpty = true
   let isEmpty = true
@@ -197,88 +196,86 @@
   })
 </script>
 
-<div class="ref-container">
-  {#if isFormatting}
-    <div class="formatPanel buttons-group xsmall-gap mb-4" class:withoutTopBorder bind:this={textEditorToolbar}>
-      <Button
-        icon={RIBold}
-        kind={'ghost'}
-        size={'small'}
-        selected={activeModes.has('bold')}
-        showTooltip={{ label: textEditorPlugin.string.Bold }}
-        on:click={getToggler(textEditor.toggleBold)}
-      />
-      <Button
-        icon={RIItalic}
-        kind={'ghost'}
-        size={'small'}
-        selected={activeModes.has('italic')}
-        showTooltip={{ label: textEditorPlugin.string.Italic }}
-        on:click={getToggler(textEditor.toggleItalic)}
-      />
-      <Button
-        icon={RIStrikethrough}
-        kind={'ghost'}
-        size={'small'}
-        selected={activeModes.has('strike')}
-        showTooltip={{ label: textEditorPlugin.string.Strikethrough }}
-        on:click={getToggler(textEditor.toggleStrike)}
-      />
-      <Button
-        icon={RILink}
-        kind={'ghost'}
-        size={'small'}
-        selected={activeModes.has('link')}
-        disabled={isSelectionEmpty && !activeModes.has('link')}
-        showTooltip={{ label: textEditorPlugin.string.Link }}
-        on:click={formatLink}
-      />
-      <div class="buttons-divider" />
-      <Button
-        icon={ListNumber}
-        kind={'ghost'}
-        size={'small'}
-        selected={activeModes.has('orderedList')}
-        showTooltip={{ label: textEditorPlugin.string.OrderedList }}
-        on:click={getToggler(textEditor.toggleOrderedList)}
-      />
-      <Button
-        icon={ListBullet}
-        kind={'ghost'}
-        size={'small'}
-        selected={activeModes.has('bulletList')}
-        showTooltip={{ label: textEditorPlugin.string.BulletedList }}
-        on:click={getToggler(textEditor.toggleBulletList)}
-      />
-      <div class="buttons-divider" />
-      <Button
-        icon={Quote}
-        kind={'ghost'}
-        size={'small'}
-        selected={activeModes.has('blockquote')}
-        showTooltip={{ label: textEditorPlugin.string.Blockquote }}
-        on:click={getToggler(textEditor.toggleBlockquote)}
-      />
-      <div class="buttons-divider" />
-      <Button
-        icon={RICode}
-        kind={'ghost'}
-        size={'small'}
-        selected={activeModes.has('code')}
-        showTooltip={{ label: textEditorPlugin.string.Code }}
-        on:click={getToggler(textEditor.toggleCode)}
-      />
-      <Button
-        icon={CodeBlock}
-        kind={'ghost'}
-        size={'small'}
-        selected={activeModes.has('codeBlock')}
-        showTooltip={{ label: textEditorPlugin.string.CodeBlock }}
-        on:click={getToggler(textEditor.toggleCodeBlock)}
-      />
-    </div>
-  {/if}
-  <div class="textInput" class:withoutTopBorder={withoutTopBorder || isFormatting}>
+<div class="ref-container">  
+  <div class="formatPanel buttons-group xsmall-gap mb-4" class:withoutTopBorder bind:this={textEditorToolbar}>
+    <Button
+      icon={RIBold}
+      kind={'ghost'}
+      size={'small'}
+      selected={activeModes.has('bold')}
+      showTooltip={{ label: textEditorPlugin.string.Bold }}
+      on:click={getToggler(textEditor.toggleBold)}
+    />
+    <Button
+      icon={RIItalic}
+      kind={'ghost'}
+      size={'small'}
+      selected={activeModes.has('italic')}
+      showTooltip={{ label: textEditorPlugin.string.Italic }}
+      on:click={getToggler(textEditor.toggleItalic)}
+    />
+    <Button
+      icon={RIStrikethrough}
+      kind={'ghost'}
+      size={'small'}
+      selected={activeModes.has('strike')}
+      showTooltip={{ label: textEditorPlugin.string.Strikethrough }}
+      on:click={getToggler(textEditor.toggleStrike)}
+    />
+    <Button
+      icon={RILink}
+      kind={'ghost'}
+      size={'small'}
+      selected={activeModes.has('link')}
+      disabled={isSelectionEmpty && !activeModes.has('link')}
+      showTooltip={{ label: textEditorPlugin.string.Link }}
+      on:click={formatLink}
+    />
+    <div class="buttons-divider" />
+    <Button
+      icon={ListNumber}
+      kind={'ghost'}
+      size={'small'}
+      selected={activeModes.has('orderedList')}
+      showTooltip={{ label: textEditorPlugin.string.OrderedList }}
+      on:click={getToggler(textEditor.toggleOrderedList)}
+    />
+    <Button
+      icon={ListBullet}
+      kind={'ghost'}
+      size={'small'}
+      selected={activeModes.has('bulletList')}
+      showTooltip={{ label: textEditorPlugin.string.BulletedList }}
+      on:click={getToggler(textEditor.toggleBulletList)}
+    />
+    <div class="buttons-divider" />
+    <Button
+      icon={Quote}
+      kind={'ghost'}
+      size={'small'}
+      selected={activeModes.has('blockquote')}
+      showTooltip={{ label: textEditorPlugin.string.Blockquote }}
+      on:click={getToggler(textEditor.toggleBlockquote)}
+    />
+    <div class="buttons-divider" />
+    <Button
+      icon={RICode}
+      kind={'ghost'}
+      size={'small'}
+      selected={activeModes.has('code')}
+      showTooltip={{ label: textEditorPlugin.string.Code }}
+      on:click={getToggler(textEditor.toggleCode)}
+    />
+    <Button
+      icon={CodeBlock}
+      kind={'ghost'}
+      size={'small'}
+      selected={activeModes.has('codeBlock')}
+      showTooltip={{ label: textEditorPlugin.string.CodeBlock }}
+      on:click={getToggler(textEditor.toggleCodeBlock)}
+    />
+  </div>
+  <div class="textInput" class:withoutTopBorder={withoutTopBorder}>
     <div class="inputMsg">
       <TextEditor
         bind:content
