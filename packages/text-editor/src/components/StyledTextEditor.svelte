@@ -23,9 +23,7 @@
     IconSize,
     Scroller,
     SelectPopup,
-    showPopup,
-    deviceOptionsStore as deviceInfo,
-    checkAdaptiveMatching
+    showPopup
   } from '@hcengineering/ui'
   import { Level } from '@tiptap/extension-heading'
   import { createEventDispatcher } from 'svelte'
@@ -33,13 +31,9 @@
   import { FORMAT_MODES, FormatMode, RefInputAction, RefInputActionItem, TextEditorHandler } from '../types'
   import { headingLevels, mInsertTable } from './extensions'
   import Attach from './icons/Attach.svelte'
-  import Bold from './icons/Bold.svelte'
-  import Code from './icons/Code.svelte'
   import CodeBlock from './icons/CodeBlock.svelte'
   import Header from './icons/Header.svelte'
   import IconTable from './icons/IconTable.svelte'
-  import Italic from './icons/Italic.svelte'
-  import Link from './icons/Link.svelte'
   import ListBullet from './icons/ListBullet.svelte'
   import ListNumber from './icons/ListNumber.svelte'
   import Quote from './icons/Quote.svelte'
@@ -48,7 +42,6 @@
   import RIItalic from './icons/RIItalic.svelte'
   import RILink from './icons/RILink.svelte'
   import RIStrikethrough from './icons/RIStrikethrough.svelte'
-  import Strikethrough from './icons/Strikethrough.svelte'
   // import RIMention from './icons/RIMention.svelte'
   import { AnyExtension } from '@tiptap/core'
   import AddColAfter from './icons/table/AddColAfter.svelte'
@@ -58,7 +51,6 @@
   import DeleteCol from './icons/table/DeleteCol.svelte'
   import DeleteRow from './icons/table/DeleteRow.svelte'
   import DeleteTable from './icons/table/DeleteTable.svelte'
-  import TextStyle from './icons/TextStyle.svelte'
   import LinkPopup from './LinkPopup.svelte'
   import StyleButton from './StyleButton.svelte'
   import TextEditor from './TextEditor.svelte'
@@ -82,6 +74,8 @@
   export let extensions: AnyExtension[] = []
 
   let textEditor: TextEditor
+  let textEditorToolbar: HTMLElement
+
   let isEmpty = true
   let contentHeight: number
 
@@ -127,7 +121,6 @@
           ? 'max-content'
           : maxHeight
 
-  let isFormatting = enableFormatting
   let activeModes = new Set<FormatMode>()
   let isSelectionEmpty = true
 
@@ -148,20 +141,6 @@
       order: 1001
     },
     {
-      label: textEditorPlugin.string.Link,
-      icon: RILink,
-      action: () => {
-        if (!(isSelectionEmpty && !activeModes.has('link'))) formatLink()
-      },
-      order: 2000
-    },
-    // {
-    //   label: textEditorPlugin.string.Mention,
-    //   icon: RIMention,
-    //   action: () => textEditor.insertText('@'),
-    //   order: 3000
-    // },
-    {
       label: textEditorPlugin.string.Emoji,
       icon: IconEmoji,
       action: (element) => {
@@ -178,51 +157,6 @@
         )
       },
       order: 4001
-    },
-    {
-      label: textEditorPlugin.string.TextStyle,
-      icon: TextStyle,
-      action: () => {
-        isFormatting = !isFormatting
-        textEditor.focus()
-      },
-      order: 6000
-    },
-    {
-      label: textEditorPlugin.string.Bold,
-      icon: RIBold,
-      action: () => {
-        textEditor.toggleBold()
-        textEditor.focus()
-      },
-      order: 6010
-    },
-    {
-      label: textEditorPlugin.string.Italic,
-      icon: RIItalic,
-      action: () => {
-        textEditor.toggleItalic()
-        textEditor.focus()
-      },
-      order: 6020
-    },
-    {
-      label: textEditorPlugin.string.Strikethrough,
-      icon: RIStrikethrough,
-      action: () => {
-        textEditor.toggleStrike()
-        textEditor.focus()
-      },
-      order: 6030
-    },
-    {
-      label: textEditorPlugin.string.Code,
-      icon: RICode,
-      action: () => {
-        textEditor.toggleCode()
-        textEditor.focus()
-      },
-      order: 6040
     }
   ]
 
@@ -448,8 +382,8 @@
     )
   }
 
-  $: devSize = $deviceInfo.size
-  $: buttonsGap = checkAdaptiveMatching(devSize, 'sm') ? 'small-gap' : 'large-gap'
+  const buttonsGap = 'small-gap'
+
   $: buttonsHeight =
     buttonSize === 'large' || buttonSize === 'x-large' || buttonSize === 'full'
       ? 'h-6 max-h-6'
@@ -472,107 +406,104 @@
   tabindex="-1"
   on:click|preventDefault|stopPropagation={() => (needFocus = true)}
 >
-  {#if isFormatting}
-    <div class="formatPanel buttons-group xsmall-gap mb-4" class:withoutTopBorder>
-      <StyleButton
-        icon={Header}
-        size={formatButtonSize}
-        selected={activeModes.has('heading')}
-        showTooltip={{ label: getEmbeddedLabel(`H${headingLevel}`) }}
-        on:click={toggleHeader}
-      />
-      <StyleButton
-        icon={Bold}
-        size={formatButtonSize}
-        selected={activeModes.has('bold')}
-        showTooltip={{ label: textEditorPlugin.string.Bold }}
-        on:click={getToggler(textEditor.toggleBold)}
-      />
-      <StyleButton
-        icon={Italic}
-        size={formatButtonSize}
-        selected={activeModes.has('italic')}
-        showTooltip={{ label: textEditorPlugin.string.Italic }}
-        on:click={getToggler(textEditor.toggleItalic)}
-      />
-      <StyleButton
-        icon={Strikethrough}
-        size={formatButtonSize}
-        selected={activeModes.has('strike')}
-        showTooltip={{ label: textEditorPlugin.string.Strikethrough }}
-        on:click={getToggler(textEditor.toggleStrike)}
-      />
-      <StyleButton
-        icon={Link}
-        size={formatButtonSize}
-        selected={activeModes.has('link')}
-        disabled={isSelectionEmpty && !activeModes.has('link')}
-        showTooltip={{ label: textEditorPlugin.string.Link }}
-        on:click={formatLink}
-      />
-      <div class="buttons-divider" />
-      <StyleButton
-        icon={ListNumber}
-        size={formatButtonSize}
-        selected={activeModes.has('orderedList')}
-        showTooltip={{ label: textEditorPlugin.string.OrderedList }}
-        on:click={getToggler(textEditor.toggleOrderedList)}
-      />
-      <StyleButton
-        icon={ListBullet}
-        size={formatButtonSize}
-        selected={activeModes.has('bulletList')}
-        showTooltip={{ label: textEditorPlugin.string.BulletedList }}
-        on:click={getToggler(textEditor.toggleBulletList)}
-      />
-      <div class="buttons-divider" />
-      <StyleButton
-        icon={Quote}
-        size={formatButtonSize}
-        selected={activeModes.has('blockquote')}
-        showTooltip={{ label: textEditorPlugin.string.Blockquote }}
-        on:click={getToggler(textEditor.toggleBlockquote)}
-      />
-      <div class="buttons-divider" />
-      <StyleButton
-        icon={Code}
-        size={formatButtonSize}
-        selected={activeModes.has('code')}
-        showTooltip={{ label: textEditorPlugin.string.Code }}
-        on:click={getToggler(textEditor.toggleCode)}
-      />
-      <StyleButton
-        icon={CodeBlock}
-        size={formatButtonSize}
-        selected={activeModes.has('codeBlock')}
-        showTooltip={{ label: textEditorPlugin.string.CodeBlock }}
-        on:click={getToggler(textEditor.toggleCodeBlock)}
-      />
+  <div class="formatPanel buttons-group xsmall-gap mb-4" class:withoutTopBorder bind:this={textEditorToolbar}>
+    <StyleButton
+      icon={Header}
+      size={formatButtonSize}
+      selected={activeModes.has('heading')}
+      showTooltip={{ label: getEmbeddedLabel(`H${headingLevel}`) }}
+      on:click={toggleHeader}
+    />
+    <StyleButton
+      icon={RIBold}
+      size={formatButtonSize}
+      selected={activeModes.has('bold')}
+      showTooltip={{ label: textEditorPlugin.string.Bold }}
+      on:click={getToggler(textEditor.toggleBold)}
+    />
+    <StyleButton
+      icon={RIItalic}
+      size={formatButtonSize}
+      selected={activeModes.has('italic')}
+      showTooltip={{ label: textEditorPlugin.string.Italic }}
+      on:click={getToggler(textEditor.toggleItalic)}
+    />
+    <StyleButton
+      icon={RIStrikethrough}
+      size={formatButtonSize}
+      selected={activeModes.has('strike')}
+      showTooltip={{ label: textEditorPlugin.string.Strikethrough }}
+      on:click={getToggler(textEditor.toggleStrike)}
+    />
+    <StyleButton
+      icon={RILink}
+      size={formatButtonSize}
+      selected={activeModes.has('link')}
+      disabled={isSelectionEmpty && !activeModes.has('link')}
+      showTooltip={{ label: textEditorPlugin.string.Link }}
+      on:click={formatLink}
+    />
+    <div class="buttons-divider" />
+    <StyleButton
+      icon={ListNumber}
+      size={formatButtonSize}
+      selected={activeModes.has('orderedList')}
+      showTooltip={{ label: textEditorPlugin.string.OrderedList }}
+      on:click={getToggler(textEditor.toggleOrderedList)}
+    />
+    <StyleButton
+      icon={ListBullet}
+      size={formatButtonSize}
+      selected={activeModes.has('bulletList')}
+      showTooltip={{ label: textEditorPlugin.string.BulletedList }}
+      on:click={getToggler(textEditor.toggleBulletList)}
+    />
+    <div class="buttons-divider" />
+    <StyleButton
+      icon={Quote}
+      size={formatButtonSize}
+      selected={activeModes.has('blockquote')}
+      showTooltip={{ label: textEditorPlugin.string.Blockquote }}
+      on:click={getToggler(textEditor.toggleBlockquote)}
+    />
+    <div class="buttons-divider" />
+    <StyleButton
+      icon={RICode}
+      size={formatButtonSize}
+      selected={activeModes.has('code')}
+      showTooltip={{ label: textEditorPlugin.string.Code }}
+      on:click={getToggler(textEditor.toggleCode)}
+    />
+    <StyleButton
+      icon={CodeBlock}
+      size={formatButtonSize}
+      selected={activeModes.has('codeBlock')}
+      showTooltip={{ label: textEditorPlugin.string.CodeBlock }}
+      on:click={getToggler(textEditor.toggleCodeBlock)}
+    />
+    <StyleButton
+      icon={IconTable}
+      iconProps={{ style: 'table' }}
+      size={formatButtonSize}
+      selected={activeModes.has('table')}
+      on:click={insertTable}
+      showTooltip={{ label: textEditorPlugin.string.InsertTable }}
+    />
+    {#if activeModes.has('table')}
       <StyleButton
         icon={IconTable}
-        iconProps={{ style: 'table' }}
+        iconProps={{ style: 'tableProps' }}
         size={formatButtonSize}
-        selected={activeModes.has('table')}
-        on:click={insertTable}
-        showTooltip={{ label: textEditorPlugin.string.InsertTable }}
+        on:click={tableOptions}
+        showTooltip={{ label: textEditorPlugin.string.TableOptions }}
       />
-      {#if activeModes.has('table')}
-        <StyleButton
-          icon={IconTable}
-          iconProps={{ style: 'tableProps' }}
-          size={formatButtonSize}
-          on:click={tableOptions}
-          showTooltip={{ label: textEditorPlugin.string.TableOptions }}
-        />
-      {/if}
-    </div>
-  {/if}
+    {/if}
+  </div>
   <div class="textInput" class:focusable>
     <div
       bind:clientHeight={contentHeight}
-      class="inputMsg"
+      class="inputMsg showScroll"
       class:scrollable={isScrollable}
-      class:showScroll={contentHeight > 32}
       style="--texteditor-maxheight: {varsStyle};"
     >
       {#if isScrollable}
@@ -592,6 +523,7 @@
             on:blur
             on:focus
             supportSubmit={false}
+            {textEditorToolbar}
             on:selection-update={updateFormattingState}
           />
         </Scroller>
@@ -611,6 +543,7 @@
           on:blur
           on:focus
           supportSubmit={false}
+          {textEditorToolbar}
           on:selection-update={updateFormattingState}
         />
       {/if}
@@ -672,6 +605,16 @@
         }
         &:not(.showScroll) {
           overflow-y: hidden;
+          /* 
+            showScroll was set only when contentHeight > 32
+            But this gave a bad behaviour for editor toolbar
+            in the bubble when there is only one line of text.
+
+            I did the testing and figured out that now
+            we can use showScroll always.
+
+            Please refer UBER-555
+          */
 
           &::-webkit-scrollbar-thumb {
             background-color: transparent;
@@ -690,10 +633,7 @@
         }
       }
     }
-    &:focus-within .formatPanel {
-      position: sticky;
-      top: 1.25rem;
-    }
+
     .formatPanel {
       margin: -0.5rem -0.25rem 0.5rem;
       padding: 0.375rem;
