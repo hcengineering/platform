@@ -669,7 +669,7 @@
         />
         <AppItem
           icon={setting.icon.Support}
-          label={setting.string.ContactUs}
+          label={workbench.string.ContactUs}
           size={appsMini ? 'small' : 'large'}
           selected={$intercomStore.visible}
           notify={$intercomStore.unreadCount > 0}
