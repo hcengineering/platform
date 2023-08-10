@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import { getContext } from 'svelte'
+  import { getMetadata } from '@hcengineering/platform'
   import { showPopup } from '../..'
   import LangPopup from './LangPopup.svelte'
   import ui from '../../plugin'
@@ -24,15 +25,34 @@
     currentLanguage: string
     setLanguage: (lang: string) => void
   }
+  const uiLangs = new Set(getMetadata(ui.metadata.Languages))
   const langs = [
     { id: 'en', label: ui.string.English },
     { id: 'ru', label: ui.string.Russian }
-  ]
+  ].filter((lang) => uiLangs.has(lang.id))
+
+  if (langs.findIndex((l) => l.id === currentLanguage) < 0 && langs.length !== 0) {
+    setLanguage(langs[0].id)
+  }
+
+  if (langs.length === 0) {
+    console.error(
+      `List of configured UI languages: [${getMetadata(ui.metadata.Languages)?.join(
+        ', '
+      )}] doesn't contain any languages available in the app. Please check you configuration.`
+    )
+  }
+
+  const isSelectable = langs.length > 1
 
   $: selected = langs.find((item) => item.id === currentLanguage)
   let trigger: HTMLElement
 
   const selectLanguage = (): void => {
+    if (!isSelectable) {
+      return
+    }
+
     showPopup(LangPopup, { langs }, trigger, (result) => {
       if (result) {
         selected = langs.find((item) => item.id === result)
@@ -45,7 +65,7 @@
 <Flags />
 {#if selected}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div bind:this={trigger} class="flex-center cursor-pointer" on:click={selectLanguage}>
+  <div bind:this={trigger} class="flex-center {isSelectable ? 'cursor-pointer' : ''}" on:click={selectLanguage}>
     <svg class="svg-16px">
       <use href="#{selected.id}-flag" />
     </svg>
