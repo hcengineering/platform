@@ -159,7 +159,7 @@
           <div class="clock">
             <Clock />
           </div>
-          <div class="flex-center widget cursor-pointer">
+          <div class="flex-center widget">
             <LangSelector />
           </div>
           <div class="flex-center widget cursor-pointer">

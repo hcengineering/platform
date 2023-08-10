@@ -142,6 +142,7 @@ export function start (
     gmailUrl: string
     calendarUrl: string
     title?: string
+    languages: string
     defaultLanguage: string
   },
   port: number,
@@ -182,6 +183,7 @@ export function start (
       GMAIL_URL: config.gmailUrl,
       CALENDAR_URL: config.calendarUrl,
       TITLE: config.title,
+      LANGUAGES: config.languages,
       DEFAULT_LANGUAGE: config.defaultLanguage,
       ...(extraConfig ?? {})
     })

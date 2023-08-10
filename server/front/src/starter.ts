@@ -21,6 +21,7 @@ import { start } from '.'
 
 export function startFront (extraConfig?: Record<string, string>): void {
   const defaultLanguage = process.env.DEFAULT_LANGUAGE ?? 'en'
+  const languages = process.env.LANGUAGES ?? 'en,ru'
   const SERVER_PORT = parseInt(process.env.SERVER_PORT ?? '8080')
 
   const transactorEndpoint = process.env.TRANSACTOR_URL
@@ -132,6 +133,7 @@ export function startFront (extraConfig?: Record<string, string>): void {
     rekoniUrl,
     calendarUrl,
     title,
+    languages,
     defaultLanguage
   }
   console.log('Starting Front service with', config)
