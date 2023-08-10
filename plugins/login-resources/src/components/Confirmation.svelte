@@ -23,6 +23,22 @@
 
   let status: Status<any> = OK
 
+  function goToWorkspaces() {
+    const loc = getCurrentLocation()
+    loc.query = undefined
+    loc.path[1] = 'selectWorkspace'
+    loc.path.length = 2
+    navigate(loc)
+  }
+
+  function goToLogin() {
+    const loc = getCurrentLocation()
+    loc.query = undefined
+    loc.path[1] = 'login'
+    loc.path.length = 2
+    navigate(loc)
+  }
+
   async function check () {
     const location = getCurrentLocation()
     if (location.query?.id === undefined || location.query?.id === null) return
@@ -36,11 +52,9 @@
       setMetadata(presentation.metadata.Token, result.token)
       setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
       setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
-      const loc = getCurrentLocation()
-      loc.query = undefined
-      loc.path[1] = 'selectWorkspace'
-      loc.path.length = 2
-      navigate(loc)
+      goToWorkspaces()
+    } else {
+      goToLogin()
     }
   }
 

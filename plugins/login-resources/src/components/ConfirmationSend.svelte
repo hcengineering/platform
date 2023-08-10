@@ -15,16 +15,35 @@
 <script lang="ts">
   import { Label, getCurrentLocation, navigate } from '@hcengineering/ui'
   import login from '../plugin'
-  import { getAccount } from '../utils'
+  import { getAccount, delay } from '../utils'
   import { onMount } from 'svelte'
 
-  onMount(async () => {
+  const CHECK_INTERVAL = 1000
+
+  async function checkAccountStatus() {
     const account = await getAccount()
     if (account?.confirmed === true) {
       const loc = getCurrentLocation()
       loc.path[1] = 'selectWorkspace'
       loc.path.length = 2
       navigate(loc)
+    }
+  }
+
+  let weAreHere = false
+
+  async function check() {
+    while (weAreHere) {
+      await checkAccountStatus()
+      await delay(CHECK_INTERVAL)
+    }
+  }
+
+  onMount(() => {
+    weAreHere = true
+    check()
+    return () => {
+      weAreHere = false
     }
   })
 </script>
