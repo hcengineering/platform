@@ -26,7 +26,7 @@
     setMetadataLocalStorage
   } from '@hcengineering/ui'
   import login from '../plugin'
-  import { delay, getAccount, getWorkspaces, navigateToWorkspace, selectWorkspace } from '../utils'
+  import { getAccount, getWorkspaces, navigateToWorkspace, selectWorkspace } from '../utils'
   import StatusControl from './StatusControl.svelte'
   import { LoginInfo, Workspace } from '@hcengineering/login'
   import { onMount } from 'svelte'
@@ -41,14 +41,14 @@
 
   let account: LoginInfo | undefined = undefined
 
-  async function loadAccount() {
+  async function loadAccount () {
     account = await getAccount()
   }
 
-  async function updateWorkspaces() {
-    while (flagToUpdateWorkspaces) {
-      await delay(CHECK_INTERVAL)
-      workspaces = await getWorkspaces()
+  async function updateWorkspaces () {
+    workspaces = await getWorkspaces()
+    if (flagToUpdateWorkspaces) {
+      setTimeout(updateWorkspaces, CHECK_INTERVAL)
     }
   }
 

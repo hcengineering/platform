@@ -726,15 +726,3 @@ export async function restorePassword (token: string, password: string): Promise
     return [unknownError(err), undefined]
   }
 }
-
-/**
- * Like Thread.sleep but without threads
- */
-export async function delay(interval: number) {
-  const pr = new Promise<void>((resolve) => {
-    setTimeout(() => {
-      resolve()
-    }, interval)
-  })
-  return pr
-}

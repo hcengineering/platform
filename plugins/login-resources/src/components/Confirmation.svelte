@@ -23,7 +23,7 @@
 
   let status: Status<any> = OK
 
-  function goToWorkspaces() {
+  function goToWorkspaces () {
     const loc = getCurrentLocation()
     loc.query = undefined
     loc.path[1] = 'selectWorkspace'
@@ -31,7 +31,7 @@
     navigate(loc)
   }
 
-  function goToLogin() {
+  function goToLogin () {
     const loc = getCurrentLocation()
     loc.query = undefined
     loc.path[1] = 'login'

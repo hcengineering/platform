@@ -20,7 +20,7 @@
 
   const CHECK_INTERVAL = 1000
 
-  async function checkAccountStatus() {
+  async function checkAccountStatus () {
     const account = await getAccount()
     if (account?.confirmed === true) {
       const loc = getCurrentLocation()
@@ -32,10 +32,10 @@
 
   let weAreHere = false
 
-  async function check() {
-    while (weAreHere) {
-      await checkAccountStatus()
-      await delay(CHECK_INTERVAL)
+  async function check () {
+    await checkAccountStatus()
+    if (weAreHere) {
+      setTimeout(check, CHECK_INTERVAL)
     }
   }
 
