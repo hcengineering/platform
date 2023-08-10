@@ -48,7 +48,7 @@
   async function updateWorkspaces () {
     try {
       workspaces = await getWorkspaces()
-    } catch(e) {
+    } catch (e) {
       // we should be able to continue from this state
     }
     if (flagToUpdateWorkspaces) {

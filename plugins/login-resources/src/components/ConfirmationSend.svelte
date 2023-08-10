@@ -35,7 +35,7 @@
   async function check () {
     try {
       await checkAccountStatus()
-    } catch(e) {
+    } catch (e) {
       // we should be able to continue from this state
     }
     if (weAreHere) {
