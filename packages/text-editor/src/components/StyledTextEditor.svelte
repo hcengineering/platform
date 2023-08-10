@@ -405,7 +405,7 @@
   class:h-full={full}
   tabindex="-1"
   on:click|preventDefault|stopPropagation={() => (needFocus = true)}
->  
+>
   <div class="formatPanel buttons-group xsmall-gap mb-4" class:withoutTopBorder bind:this={textEditorToolbar}>
     <StyleButton
       icon={Header}

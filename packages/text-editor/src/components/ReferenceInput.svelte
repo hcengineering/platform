@@ -196,7 +196,7 @@
   })
 </script>
 
-<div class="ref-container">  
+<div class="ref-container">
   <div class="formatPanel buttons-group xsmall-gap mb-4" class:withoutTopBorder bind:this={textEditorToolbar}>
     <Button
       icon={RIBold}
@@ -275,7 +275,7 @@
       on:click={getToggler(textEditor.toggleCodeBlock)}
     />
   </div>
-  <div class="textInput" class:withoutTopBorder={withoutTopBorder}>
+  <div class="textInput" class:withoutTopBorder>
     <div class="inputMsg">
       <TextEditor
         bind:content
