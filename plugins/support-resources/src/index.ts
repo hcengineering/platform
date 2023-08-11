@@ -13,23 +13,16 @@
 // limitations under the License.
 //
 
-import type { Metadata, Plugin } from '@hcengineering/platform'
-import { plugin } from '@hcengineering/platform'
+import { showIntercomMessenger } from '@hcengineering/intercom'
+import { Resources } from '@hcengineering/platform'
 
-/**
- * @public
- */
-export const intercomId = 'intercom' as Plugin
+import ContactUsButton from './components/ContactUsButton.svelte'
 
-export default plugin(intercomId, {
-  metadata: {
-    ApiBaseURL: '' as Metadata<string>,
-    AppID: '' as Metadata<string>,
-    SecretKey: '' as Metadata<string>
-  // },
-  // function: {
-  //   InitIntercom: '' as Func
+export default async (): Promise<Resources> => ({
+  component: {
+    ContactUsButton,
+  },
+  function: {
+    ContactUs: showIntercomMessenger
   }
 })
-
-export * from './intercom'

@@ -15,13 +15,13 @@
 <script lang="ts">
   import contact, { Employee, PersonAccount } from '@hcengineering/contact'
   import core, { Class, Doc, Ref, Space, getCurrentAccount, setCurrentAccount } from '@hcengineering/core'
-  import { intercomStore, shutdownIntercom, toggleIntercomMessenger, updateIntercom } from '@hcengineering/intercom'
   import login from '@hcengineering/login'
   import notification, { notificationId } from '@hcengineering/notification'
   import { BrowserNotificatator, NotificationClientImpl } from '@hcengineering/notification-resources'
   import { IntlString, broadcastEvent, getMetadata, getResource } from '@hcengineering/platform'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
+  import support from '@hcengineering/support'
   import { locationStorageKeyId } from '@hcengineering/ui'
   import {
     AnyComponent,
@@ -581,12 +581,6 @@
 
   let inboxPopup: PopupResult | undefined = undefined
   let lastLoc: Location | undefined = undefined
-
-  const currentAccount = getCurrentAccount() as PersonAccount
-  $: language = $themeStore.language
-  $: updateIntercom(currentAccount, language)
-
-  onDestroy(() => shutdownIntercom())
 </script>
 
 {#if employee?.active === true || accountId === core.account.System}
@@ -667,14 +661,7 @@
           size={appsMini ? 'small' : 'large'}
           on:click={() => showPopup(AppSwitcher, { apps: getApps(apps) }, popupPosition)}
         />
-        <AppItem
-          icon={setting.icon.Support}
-          label={workbench.string.ContactUs}
-          size={appsMini ? 'small' : 'large'}
-          selected={$intercomStore.visible}
-          notify={$intercomStore.unreadCount > 0}
-          on:click={() => toggleIntercomMessenger()}
-        />
+        <Component is={support.component.ContactUsButton} />
         <div class="flex-center" class:mt-3={appsDirection === 'vertical'} class:ml-2={appsDirection === 'horizontal'}>
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div

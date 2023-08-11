@@ -41,7 +41,6 @@ export default mergeIds(workbenchId, workbench, {
     HelpCenter: '' as IntlString,
     KeyboardShortcuts: '' as IntlString,
     Documentation: '' as IntlString,
-    ContactUs: '' as IntlString,
     OpenPlatformGuide: '' as IntlString,
     AccessWorkspaceSettings: '' as IntlString,
     HowToWorkFaster: '' as IntlString,

@@ -1,5 +1,5 @@
 //
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2023 Anticrm Platform Contributors.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,23 +13,12 @@
 // limitations under the License.
 //
 
-import type { Metadata, Plugin } from '@hcengineering/platform'
-import { plugin } from '@hcengineering/platform'
+import { loadMetadata, addStringsLoader } from '@hcengineering/platform'
+import support, { supportId } from '@hcengineering/support'
 
-/**
- * @public
- */
-export const intercomId = 'intercom' as Plugin
-
-export default plugin(intercomId, {
-  metadata: {
-    ApiBaseURL: '' as Metadata<string>,
-    AppID: '' as Metadata<string>,
-    SecretKey: '' as Metadata<string>
-  // },
-  // function: {
-  //   InitIntercom: '' as Func
-  }
+const icons = require('../assets/icons.svg') as string // eslint-disable-line
+loadMetadata(support.icon, {
+  Support: `${icons}#support`
 })
 
-export * from './intercom'
+addStringsLoader(supportId, async (lang: string) => await import(`../lang/${lang}.json`))

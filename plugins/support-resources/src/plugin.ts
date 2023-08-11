@@ -13,23 +13,8 @@
 // limitations under the License.
 //
 
-import type { Metadata, Plugin } from '@hcengineering/platform'
-import { plugin } from '@hcengineering/platform'
+import { mergeIds } from '@hcengineering/platform'
 
-/**
- * @public
- */
-export const intercomId = 'intercom' as Plugin
+import support, { supportId } from '@hcengineering/support'
 
-export default plugin(intercomId, {
-  metadata: {
-    ApiBaseURL: '' as Metadata<string>,
-    AppID: '' as Metadata<string>,
-    SecretKey: '' as Metadata<string>
-  // },
-  // function: {
-  //   InitIntercom: '' as Func
-  }
-})
-
-export * from './intercom'
+export default mergeIds(supportId, support, {})

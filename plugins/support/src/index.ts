@@ -13,23 +13,26 @@
 // limitations under the License.
 //
 
-import type { Metadata, Plugin } from '@hcengineering/platform'
+import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
+import { AnyComponent } from '@hcengineering/ui'
 
 /**
  * @public
  */
-export const intercomId = 'intercom' as Plugin
+export const supportId = 'support' as Plugin
 
-export default plugin(intercomId, {
-  metadata: {
-    ApiBaseURL: '' as Metadata<string>,
-    AppID: '' as Metadata<string>,
-    SecretKey: '' as Metadata<string>
-  // },
-  // function: {
-  //   InitIntercom: '' as Func
+export default plugin(supportId, {
+  component: {
+    ContactUsButton: '' as AnyComponent
+  },
+  function: {
+    ContactUs: '' as Resource<() => void>
+  },
+  icon: {
+    Support: '' as Asset
+  },
+  string: {
+    ContactUs: '' as IntlString
   }
 })
-
-export * from './intercom'

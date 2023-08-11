@@ -190,6 +190,9 @@ specifiers:
   '@rush-temp/setting-assets': file:./projects/setting-assets.tgz
   '@rush-temp/setting-resources': file:./projects/setting-resources.tgz
   '@rush-temp/storybook': file:./projects/storybook.tgz
+  '@rush-temp/support': file:./projects/support.tgz
+  '@rush-temp/support-assets': file:./projects/support-assets.tgz
+  '@rush-temp/support-resources': file:./projects/support-resources.tgz
   '@rush-temp/tags': file:./projects/tags.tgz
   '@rush-temp/tags-assets': file:./projects/tags-assets.tgz
   '@rush-temp/tags-resources': file:./projects/tags-resources.tgz
@@ -583,6 +586,9 @@ dependencies:
   '@rush-temp/setting-assets': file:projects/setting-assets.tgz_typescript@4.8.4
   '@rush-temp/setting-resources': file:projects/setting-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
   '@rush-temp/storybook': file:projects/storybook.tgz_6bc661cab26bb0f62d6cb98e8e1d7eba
+  '@rush-temp/support': file:projects/support.tgz
+  '@rush-temp/support-assets': file:projects/support-assets.tgz_typescript@4.8.4
+  '@rush-temp/support-resources': file:projects/support-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
   '@rush-temp/tags': file:projects/tags.tgz
   '@rush-temp/tags-assets': file:projects/tags-assets.tgz
   '@rush-temp/tags-resources': file:projects/tags-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
@@ -21639,6 +21645,85 @@ packages:
       - vue-template-compiler
       - webpack
       - webpack-cli
+    dev: false
+
+  file:projects/support-assets.tgz_typescript@4.8.4:
+    resolution: {integrity: sha512-pJfyDyn9RC3kPKIQCw6fyBBfvbSblHoQekMmxjJXaxygZAxq7DtubZFvKHYLJl7t73CdHZUVWNhDo/ZaS6sfNA==, tarball: file:projects/support-assets.tgz}
+    id: file:projects/support-assets.tgz
+    name: '@rush-temp/support-assets'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.47.11
+      '@types/heft-jest': 1.0.3
+      '@types/node': 16.11.68
+      '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
+      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
+      eslint: 8.27.0
+      eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
+      eslint-plugin-import: 2.26.0_eslint@8.27.0
+      eslint-plugin-n: 15.5.1_eslint@8.27.0
+      eslint-plugin-promise: 6.1.1_eslint@8.27.0
+      prettier: 2.8.8
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+    dev: false
+
+  file:projects/support-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
+    resolution: {integrity: sha512-xtIpIwoTuo2KJ8sBTkXJVOLINeNVs/7MHLqULisTZQzS6p/4KfKn+dgMFbLMEo8FzVMCEugz84mpMbIQtSCz3w==, tarball: file:projects/support-resources.tgz}
+    id: file:projects/support-resources.tgz
+    name: '@rush-temp/support-resources'
+    version: 0.0.0
+    dependencies:
+      '@types/crypto-js': 4.1.1
+      '@types/intercom-web': 2.8.21
+      '@types/qs': 6.9.7
+      '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
+      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
+      eslint: 8.27.0
+      eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
+      eslint-plugin-import: 2.26.0_eslint@8.27.0
+      eslint-plugin-n: 15.5.1_eslint@8.27.0
+      eslint-plugin-promise: 6.1.1_eslint@8.27.0
+      eslint-plugin-svelte3: 4.0.0_eslint@8.27.0+svelte@3.55.1
+      prettier: 2.8.8
+      prettier-plugin-svelte: 2.8.0_prettier@2.8.8+svelte@3.55.1
+      sass: 1.56.1
+      svelte: 3.55.1
+      svelte-check: 3.2.0_ae2e9904602215f07e0b815d3fa1ffe9
+      svelte-loader: 3.1.4_svelte@3.55.1
+      svelte-preprocess: 5.0.3_6420a3eba9d5580d9c2f627c17e61722
+      typescript: 4.8.4
+    transitivePeerDependencies:
+      - '@babel/core'
+      - coffeescript
+      - less
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - supports-color
+    dev: false
+
+  file:projects/support.tgz:
+    resolution: {integrity: sha512-AjLnK27Lt+BKpaJE+JKDWT2Y0mlPw43ZKxh+SYJy+58OD2iFFLm+hwkTxpY7OEVCdOsZqtYFYM0d4iJyaYWlyQ==, tarball: file:projects/support.tgz}
+    name: '@rush-temp/support'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.47.11
+      '@types/heft-jest': 1.0.3
+      '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
+      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
+      eslint: 8.27.0
+      eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
+      eslint-plugin-import: 2.26.0_eslint@8.27.0
+      eslint-plugin-n: 15.5.1_eslint@8.27.0
+      eslint-plugin-promise: 6.1.1_eslint@8.27.0
+      prettier: 2.8.8
+      typescript: 4.8.4
+    transitivePeerDependencies:
+      - supports-color
     dev: false
 
   file:projects/tags-assets.tgz:

@@ -1508,6 +1508,21 @@
       "packageName": "@hcengineering/intercom",
       "projectFolder": "plugins/intercom",
       "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/support",
+      "projectFolder": "plugins/support",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/support-assets",
+      "projectFolder": "plugins/support-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/support-resources",
+      "projectFolder": "plugins/support-resources",
+      "shouldPublish": false
     }
   ]
 }

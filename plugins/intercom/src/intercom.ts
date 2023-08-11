@@ -54,8 +54,8 @@ function patchIntercomStore (patch: Partial<IntercomState>): void {
 /**
  * @public
  */
-export function updateIntercom (account?: Account, language?: string): void {
-  const config = getConfig(account, language)
+export function updateIntercom (account?: Account, workspace?: string, language?: string): void {
+  const config = getConfig(account, workspace, language)
   patchIntercomStore({ config })
 
   const state = get(intercomStore)
@@ -127,7 +127,7 @@ function initializeIntercom (): void {
   }
 }
 
-function getConfig (account?: Account, language?: string): IntercomConfig {
+function getConfig (account?: Account, workspace?: string, language?: string): IntercomConfig {
   const appId = getMetadata(intercom.metadata.AppID)
   const apiUrl = getMetadata(intercom.metadata.ApiBaseURL)
   const secretKey = getMetadata(intercom.metadata.SecretKey)
@@ -147,7 +147,8 @@ function getConfig (account?: Account, language?: string): IntercomConfig {
     name: account?.name,
     email: account?.email,
     user_id: account?._id,
-    user_hash: userHash
+    user_hash: userHash,
+    workspace
   }
 
   return config
