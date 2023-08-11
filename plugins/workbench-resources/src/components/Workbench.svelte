@@ -577,6 +577,11 @@
     }
   }
 
+  const supportClient = getResource(support.function.GetSupport).then((res) => res())
+  onDestroy(async () => {
+    await supportClient.then((support) => support.destroy())
+  })
+
   $: checkInbox($popupstore)
 
   let inboxPopup: PopupResult | undefined = undefined
@@ -661,7 +666,14 @@
           size={appsMini ? 'small' : 'large'}
           on:click={() => showPopup(AppSwitcher, { apps: getApps(apps) }, popupPosition)}
         />
-        <Component is={support.component.ContactUsButton} />
+        {#await supportClient then client}
+          <AppItem
+            icon={support.icon.Support}
+            label={support.string.ContactUs}
+            size={appsMini ? 'small' : 'large'}
+            on:click={() => client.toggleWidget()}
+          />
+        {/await}
         <div class="flex-center" class:mt-3={appsDirection === 'vertical'} class:ml-2={appsDirection === 'horizontal'}>
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div

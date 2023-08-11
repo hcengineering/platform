@@ -1510,6 +1510,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@hcengineering/intercom-resources",
+      "projectFolder": "plugins/intercom-resources",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/support",
       "projectFolder": "plugins/support",
       "shouldPublish": true

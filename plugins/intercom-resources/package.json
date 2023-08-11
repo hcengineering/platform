@@ -1,5 +1,5 @@
 {
-  "name": "@hcengineering/support-resources",
+  "name": "@hcengineering/intercom-resources",
   "version": "0.6.0",
   "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
@@ -28,15 +28,17 @@
     "prettier-plugin-svelte": "^2.8.0",
     "prettier": "^2.7.1",
     "svelte-check": "3.2.0",
-    "typescript": "^4.3.5"
+    "typescript": "^4.3.5",
+    "@types/crypto-js": "^4.1.1",
+    "@types/intercom-web": "^2.8.21"
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.27",
-    "@hcengineering/intercom": "^0.6.0",
     "@hcengineering/platform": "^0.6.9",
+    "@hcengineering/intercom": "^0.6.0",
     "@hcengineering/support": "^0.6.0",
-    "@hcengineering/ui": "^0.6.10",
-    "svelte": "3.55.1"
+    "svelte": "3.55.1",
+    "crypto-js": "^4.1.1"
   },
   "repository": "https://github.com/hcengineering/anticrm",
   "publishConfig": {

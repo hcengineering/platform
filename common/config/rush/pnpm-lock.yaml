@@ -56,6 +56,7 @@ specifiers:
   '@rush-temp/image-cropper': file:./projects/image-cropper.tgz
   '@rush-temp/image-cropper-resources': file:./projects/image-cropper-resources.tgz
   '@rush-temp/intercom': file:./projects/intercom.tgz
+  '@rush-temp/intercom-resources': file:./projects/intercom-resources.tgz
   '@rush-temp/inventory': file:./projects/inventory.tgz
   '@rush-temp/inventory-assets': file:./projects/inventory-assets.tgz
   '@rush-temp/inventory-resources': file:./projects/inventory-resources.tgz
@@ -263,7 +264,7 @@ specifiers:
   '@types/faker': ~5.5.9
   '@types/heft-jest': ^1.0.3
   '@types/html-to-text': ^8.1.1
-  '@types/intercom-web': 2.8.21
+  '@types/intercom-web': ~2.8.21
   '@types/jest': ~28.1.0
   '@types/koa': ^2.13.4
   '@types/koa-bodyparser': ^4.3.3
@@ -452,6 +453,7 @@ dependencies:
   '@rush-temp/image-cropper': file:projects/image-cropper.tgz
   '@rush-temp/image-cropper-resources': file:projects/image-cropper-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
   '@rush-temp/intercom': file:projects/intercom.tgz
+  '@rush-temp/intercom-resources': file:projects/intercom-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
   '@rush-temp/inventory': file:projects/inventory.tgz
   '@rush-temp/inventory-assets': file:projects/inventory-assets.tgz
   '@rush-temp/inventory-resources': file:projects/inventory-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
@@ -18477,8 +18479,49 @@ packages:
       - supports-color
     dev: false
 
+  file:projects/intercom-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
+    resolution: {integrity: sha512-gydfP1yhk+yZwYFNjvBwXCQ3BR6/wFnWCYaL70pA+qBoDm4wt2UhD2BYHVlC3s9pjBLdPRKNf8yeF71czaB3Hw==, tarball: file:projects/intercom-resources.tgz}
+    id: file:projects/intercom-resources.tgz
+    name: '@rush-temp/intercom-resources'
+    version: 0.0.0
+    dependencies:
+      '@types/crypto-js': 4.1.1
+      '@types/intercom-web': 2.8.21
+      '@types/qs': 6.9.7
+      '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
+      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
+      crypto-js: 4.1.1
+      eslint: 8.27.0
+      eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
+      eslint-plugin-import: 2.26.0_eslint@8.27.0
+      eslint-plugin-n: 15.5.1_eslint@8.27.0
+      eslint-plugin-promise: 6.1.1_eslint@8.27.0
+      eslint-plugin-svelte3: 4.0.0_eslint@8.27.0+svelte@3.55.1
+      fast-equals: 2.0.4
+      p-queue: 7.3.0
+      prettier: 2.8.8
+      prettier-plugin-svelte: 2.8.0_prettier@2.8.8+svelte@3.55.1
+      qs: 6.11.0
+      sass: 1.56.1
+      svelte: 3.55.1
+      svelte-check: 3.2.0_ae2e9904602215f07e0b815d3fa1ffe9
+      svelte-loader: 3.1.4_svelte@3.55.1
+      svelte-preprocess: 5.0.3_6420a3eba9d5580d9c2f627c17e61722
+      typescript: 4.8.4
+    transitivePeerDependencies:
+      - '@babel/core'
+      - coffeescript
+      - less
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - supports-color
+    dev: false
+
   file:projects/intercom.tgz:
-    resolution: {integrity: sha512-wUsQicMiCE2bEQJ/cBtRQHepPVYb8RRM0drHaNU/d6XHipUaj0oWTWc05ifKV/XHpwMNP5BaohAhX9sh4yla7A==, tarball: file:projects/intercom.tgz}
+    resolution: {integrity: sha512-vMmzlXXNMXPz95VNJeiNJUSNN1SIZgyxKghjdk0zpdw59vmmzXqoNVOwwSqPQzrDyDtCUBHLi4DyD2FTKO8vEQ==, tarball: file:projects/intercom.tgz}
     name: '@rush-temp/intercom'
     version: 0.0.0
     dependencies:
@@ -20370,6 +20413,7 @@ packages:
     name: '@rush-temp/prod'
     version: 0.0.0
     dependencies:
+      '@types/intercom-web': 2.8.21
       '@types/node': 16.11.68
       autoprefixer: 10.4.14_postcss@8.4.20
       browserslist: 4.21.5
@@ -21670,7 +21714,7 @@ packages:
     dev: false
 
   file:projects/support-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-xtIpIwoTuo2KJ8sBTkXJVOLINeNVs/7MHLqULisTZQzS6p/4KfKn+dgMFbLMEo8FzVMCEugz84mpMbIQtSCz3w==, tarball: file:projects/support-resources.tgz}
+    resolution: {integrity: sha512-rXtuav9Z4eVltJUyCr3J64oBUUIevqaeZMtCq9tpWHuS3xtKq1/lXCRfJtL9emqy8euEI0S43H6QtUZY7qfIjw==, tarball: file:projects/support-resources.tgz}
     id: file:projects/support-resources.tgz
     name: '@rush-temp/support-resources'
     version: 0.0.0
@@ -21707,7 +21751,7 @@ packages:
     dev: false
 
   file:projects/support.tgz:
-    resolution: {integrity: sha512-AjLnK27Lt+BKpaJE+JKDWT2Y0mlPw43ZKxh+SYJy+58OD2iFFLm+hwkTxpY7OEVCdOsZqtYFYM0d4iJyaYWlyQ==, tarball: file:projects/support.tgz}
+    resolution: {integrity: sha512-cbGgfYfGFQFlzmng/J9n9Dm78h/5LMPrIU/6cK+O8OPw2OE2qaXJz8XlAd5wBMJofHxXKWcWhUvuu/N0Z2SuYA==, tarball: file:projects/support.tgz}
     name: '@rush-temp/support'
     version: 0.0.0
     dependencies:

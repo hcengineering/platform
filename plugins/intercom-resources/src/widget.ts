@@ -28,6 +28,7 @@ export function loadScript (appId: string, done: () => void): void {
     if (typeof ic === 'function') {
       ic('reattach_activator')
       ic('update', w.intercomSettings)
+      done()
     } else {
       const doc = document
       const i: any = function () {

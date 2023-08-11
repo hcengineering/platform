@@ -13,7 +13,12 @@
 // limitations under the License.
 //
 
-import { mergeIds } from '@hcengineering/platform'
-import support, { supportId } from '@hcengineering/support'
+import { Resources } from '@hcengineering/platform'
 
-export default mergeIds(supportId, support, {})
+import { getIntercomWidget } from './intercom'
+
+export default async (): Promise<Resources> => ({
+  function: {
+    GetWidget: getIntercomWidget
+  }
+})

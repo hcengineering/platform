@@ -14,6 +14,7 @@
 //
 
 import { mergeIds } from '@hcengineering/platform'
-import support, { supportId } from '@hcengineering/support'
 
-export default mergeIds(supportId, support, {})
+import intercom, { intercomId } from '@hcengineering/intercom'
+
+export default mergeIds(intercomId, intercom, {})

@@ -13,25 +13,41 @@
 // limitations under the License.
 //
 
-import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
-import { plugin } from '@hcengineering/platform'
-import { SupportClientFactory } from './types'
+import { Account } from '@hcengineering/core'
 
 /**
  * @public
  */
-export const supportId = 'support' as Plugin
+export interface SupportClient {
+  showWidget: () => Promise<void>
+  hideWidget: () => Promise<void>
+  toggleWidget: () => Promise<void>
+  destroy: () => void
+}
 
-export default plugin(supportId, {
-  function: {
-    GetSupport: '' as Resource<SupportClientFactory>
-  },
-  icon: {
-    Support: '' as Asset
-  },
-  string: {
-    ContactUs: '' as IntlString
-  }
-})
+/**
+ * @public
+ */
+export interface SupportWidget {
+  configure: (config: SupportWidgetConfig) => void
 
-export * from './types'
+  showWidget: () => void
+  hideWidget: () => void
+  toggleWidget: () => void
+
+  destroy: () => void
+}
+
+/**
+ * @public
+ */
+export interface SupportWidgetConfig {
+  account?: Account
+  workspace?: string
+  language?: string
+}
+
+/**
+ * @public
+ */
+export type SupportClientFactory = () => SupportClient

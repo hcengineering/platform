@@ -1,5 +1,5 @@
 //
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -27,7 +27,7 @@ import document, { documentId } from '@hcengineering/document'
 import gmail, { gmailId } from '@hcengineering/gmail'
 import { hrId } from '@hcengineering/hr'
 import { imageCropperId } from '@hcengineering/image-cropper'
-import intercom from '@hcengineering/intercom'
+import intercom, { intercomId } from '@hcengineering/intercom'
 import { inventoryId } from '@hcengineering/inventory'
 import { leadId } from '@hcengineering/lead'
 import login, { loginId } from '@hcengineering/login'
@@ -153,7 +153,6 @@ export async function configurePlatform() {
   addLocation(recruitId, () => import(/* webpackChunkName: "recruit" */ '@hcengineering/recruit-resources'))
   addLocation(activityId, () => import(/*webpackChunkName: "activity" */ '@hcengineering/activity-resources'))
   addLocation(settingId, () => import(/* webpackChunkName: "setting" */ '@hcengineering/setting-resources'))
-  addLocation(supportId, () => import(/* webpackChunkName: "support" */ '@hcengineering/support-resources'))
   addLocation(leadId, () => import(/* webpackChunkName: "lead" */ '@hcengineering/lead-resources'))
   addLocation(telegramId, () => import(/* webpackChunkName: "telegram" */ '@hcengineering/telegram-resources'))
   addLocation(attachmentId, () => import(/* webpackChunkName: "attachment" */ '@hcengineering/attachment-resources'))
@@ -172,6 +171,8 @@ export async function configurePlatform() {
   addLocation(documentId, () => import(/* webpackChunkName: "document" */ '@hcengineering/document-resources'))
   addLocation(bitrixId, () => import(/* webpackChunkName: "bitrix" */ '@hcengineering/bitrix-resources'))
   addLocation(requestId, () => import(/* webpackChunkName: "request" */ '@hcengineering/request-resources'))
+  addLocation(supportId, () => import(/* webpackChunkName: "support" */ '@hcengineering/support-resources'))
+  addLocation(intercomId, () => import(/* webpackChunkName: "intercom" */ '@hcengineering/intercom-resources'))
 
   setMetadata(client.metadata.FilterModel, true)
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])

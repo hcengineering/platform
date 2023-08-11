@@ -13,8 +13,9 @@
 // limitations under the License.
 //
 
-import type { Metadata, Plugin } from '@hcengineering/platform'
+import type { Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
+import { SupportWidget, SupportWidgetConfig } from '@hcengineering/support'
 
 /**
  * @public
@@ -26,10 +27,8 @@ export default plugin(intercomId, {
     ApiBaseURL: '' as Metadata<string>,
     AppID: '' as Metadata<string>,
     SecretKey: '' as Metadata<string>
-  // },
-  // function: {
-  //   InitIntercom: '' as Func
+  },
+  function: {
+    GetWidget: '' as Resource<(config: SupportWidgetConfig) => SupportWidget>
   }
 })
-
-export * from './intercom'

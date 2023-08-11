@@ -164,6 +164,7 @@
     "@hcengineering/bitrix-assets": "^0.6.0",
     "@hcengineering/bitrix-resources": "^0.6.0",
     "@hcengineering/intercom": "^0.6.0",
+    "@hcengineering/intercom-resources": "^0.6.0",
     "@hcengineering/support": "^0.6.0",
     "@hcengineering/support-assets": "^0.6.0",
     "@hcengineering/support-resources": "^0.6.0",
@@ -173,6 +174,7 @@
     "@hcengineering/server-request": "^0.6.0",
     "@hcengineering/server-request-resources": "^0.6.0",
     "@hcengineering/server-view": "^0.6.0",
-    "@hcengineering/server-view-resources": "^0.6.0"
+    "@hcengineering/server-view-resources": "^0.6.0",
+    "@types/intercom-web": "^2.8.21"
   }
 }

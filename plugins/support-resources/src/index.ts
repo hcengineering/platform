@@ -13,16 +13,14 @@
 // limitations under the License.
 //
 
-import { showIntercomMessenger } from '@hcengineering/intercom'
 import { Resources } from '@hcengineering/platform'
 
-import ContactUsButton from './components/ContactUsButton.svelte'
+import { createSupportClient } from './support'
+
+export { getSupportClient } from './support'
 
 export default async (): Promise<Resources> => ({
-  component: {
-    ContactUsButton,
-  },
   function: {
-    ContactUs: showIntercomMessenger
+    GetSupport: createSupportClient
   }
 })

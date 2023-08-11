@@ -16,6 +16,7 @@
   import { getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
   import support from '@hcengineering/support'
+  import { getSupportClient } from '@hcengineering/support-resources'
   import {
     Button,
     capitalizeFirstLetter,
@@ -35,7 +36,6 @@
   import RightArrowIcon from './icons/Collapsed.svelte'
   import DocumentationIcon from './icons/Documentation.svelte'
   import KeyboardIcon from './icons/Keyboard.svelte'
-  import { getResource } from '@hcengineering/platform'
 
   let shortcuts = false
   let actions: Action[] = []
@@ -102,8 +102,7 @@
   ]
 
   async function contactUs() {
-    const contactUsFunc = await getResource(support.function.ContactUs)
-    contactUsFunc()
+    await getSupportClient()?.showWidget()
   }
 </script>
 
