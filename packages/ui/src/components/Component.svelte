@@ -52,6 +52,7 @@
           on:click
           on:delete
           on:action
+          on:valid
         >
           <slot />
         </Ctor>
@@ -67,6 +68,7 @@
           on:click
           on:delete
           on:action
+          on:valid
         />
       {/if}
     </ErrorBoundary>
