@@ -18,13 +18,36 @@
   import { getAccount } from '../utils'
   import { onMount } from 'svelte'
 
-  onMount(async () => {
+  const CHECK_INTERVAL = 1000
+
+  async function checkAccountStatus () {
     const account = await getAccount()
     if (account?.confirmed === true) {
       const loc = getCurrentLocation()
       loc.path[1] = 'selectWorkspace'
       loc.path.length = 2
       navigate(loc)
+    }
+  }
+
+  let weAreHere = false
+
+  async function check () {
+    try {
+      await checkAccountStatus()
+    } catch (e) {
+      // we should be able to continue from this state
+    }
+    if (weAreHere) {
+      setTimeout(check, CHECK_INTERVAL)
+    }
+  }
+
+  onMount(() => {
+    weAreHere = true
+    check()
+    return () => {
+      weAreHere = false
     }
   })
 </script>
