@@ -112,6 +112,7 @@ export { employeeByIdStore, employeesStore } from './utils'
 export {
   Channels,
   ChannelsEditor,
+  ContactRefPresenter,
   ContactPresenter,
   ChannelsView,
   ChannelsDropdown,

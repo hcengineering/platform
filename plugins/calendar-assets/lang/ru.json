@@ -51,6 +51,29 @@
     "RemoveRecEvent": "Удаление повторяющегося события",
     "ThisEvent": "Только это событие",
     "ThisAndNext": "Это и последующие события",
-    "AllEvents": "Все события"
+    "AllEvents": "Все события",
+    "NewEvent": "Новое событие",
+    "TimeZone": "Часовой пояс",
+    "Repeat": "Повтор",
+    "On": "В",
+    "Every": "Кажд.",
+    "After": "После",
+    "Ends": "Окончание",
+    "Never": "Никогда",
+    "Day": "{count, plural, one {день} few {дня} other {дней}}",
+    "Week": "{count, plural, one {неделю} few {недели} other {недель}}",
+    "Month": "{count, plural, one {месяц} few {месяца} other {месяцев}}",
+    "Year": "{count, plural, one {год} few {года} other {лет}}",
+    "MondayShort": "Пн",
+    "TuesdayShort": "Вт",
+    "WednesdayShort": "Ср",
+    "ThursdayShort": "Чт",
+    "FridayShort": "Пт",
+    "SaturdayShort": "Сб",
+    "SundayShort": "Вс",
+    "OnUntil": "До",
+    "Times": "{count, plural, one {раз} few {раза} other {раз}}",
+    "AddParticipants": "Добавить участников"
+
   }
 }

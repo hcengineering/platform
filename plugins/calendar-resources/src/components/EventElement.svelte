@@ -16,10 +16,18 @@
   import calendar, { CalendarEventPresenter, Event } from '@hcengineering/calendar'
   import { Doc, DocumentUpdate } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Component, MILLISECONDS_IN_MINUTE, deviceOptionsStore, showPopup, tooltip } from '@hcengineering/ui'
+  import {
+    Component,
+    MILLISECONDS_IN_MINUTE,
+    deviceOptionsStore,
+    getEventPositionElement,
+    showPopup,
+    tooltip
+  } from '@hcengineering/ui'
   import view, { ObjectEditor } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import EventPresenter from './EventPresenter.svelte'
+  import { Menu } from '@hcengineering/view-resources'
 
   export let event: Event
   export let hourHeight: number
@@ -122,6 +130,11 @@
       })
     }
   }
+
+  const showMenu = async (ev: MouseEvent, item: Event): Promise<void> => {
+    ev.preventDefault()
+    showPopup(Menu, { object: item }, getEventPositionElement(ev))
+  }
 </script>
 
 {#if event}
@@ -134,6 +147,7 @@
     draggable={!event.allDay}
     use:tooltip={{ component: EventPresenter, props: { value: event } }}
     on:click|stopPropagation={click}
+    on:contextmenu={(evt) => showMenu(evt, event)}
     on:dragstart={dragStart}
     on:drag={drag}
     on:dragend={drop}

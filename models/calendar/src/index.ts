@@ -118,7 +118,7 @@ export class TReccuringEvent extends TEvent implements ReccuringEvent {
 
 @Model(calendar.class.ReccuringInstance, calendar.class.Event)
 @UX(calendar.string.Event, calendar.icon.Calendar)
-export class TReccuringInstance extends TEvent implements ReccuringInstance {
+export class TReccuringInstance extends TReccuringEvent implements ReccuringInstance {
   recurringEventId!: Ref<ReccuringEvent>
   originalStartTime!: number
   isCancelled?: boolean
@@ -286,10 +286,6 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(calendar.class.Event, core.class.Class, view.mixin.ObjectEditor, {
     editor: calendar.component.EditEvent
-  })
-
-  builder.mixin(calendar.class.ReccuringInstance, core.class.Class, view.mixin.ObjectEditor, {
-    editor: calendar.component.EditRecEvent
   })
 
   builder.mixin(calendar.class.Event, core.class.Class, view.mixin.ObjectPresenter, {

@@ -80,10 +80,10 @@
         return getMonday(date, mondayStart).setHours(0, 0, 0, 0)
       }
       case CalendarMode.Month: {
-        return new Date(new Date(date).setDate(1)).setHours(0, 0, 0, 0)
+        return new Date(new Date(date).setDate(-7)).setHours(0, 0, 0, 0)
       }
       case CalendarMode.Year: {
-        return new Date(new Date(date).setMonth(0, 1)).setHours(0, 0, 0, 0)
+        return new Date(new Date(date).setMonth(0, -7)).setHours(0, 0, 0, 0)
       }
     }
   }
@@ -101,10 +101,10 @@
         return new Date(monday.setDate(monday.getDate() + 7)).setHours(0, 0, 0, 0)
       }
       case CalendarMode.Month: {
-        return new Date(new Date(date).setMonth(date.getMonth() + 1, 1)).setHours(0, 0, 0, 0)
+        return new Date(new Date(date).setMonth(date.getMonth() + 1, 14)).setHours(0, 0, 0, 0)
       }
       case CalendarMode.Year: {
-        return new Date(new Date(date).setMonth(12, 1)).setHours(0, 0, 0, 0)
+        return new Date(new Date(date).setMonth(12, 14)).setHours(0, 0, 0, 0)
       }
     }
   }
@@ -378,7 +378,7 @@
     events={objects}
     {mondayStart}
     displayedDaysCount={7}
-    startFromWeekStart={false}
+    startFromWeekStart
     bind:selectedDate
     bind:currentDate
     on:create={(e) => showCreateDialog(e.detail.date, e.detail.withTime)}

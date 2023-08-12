@@ -23,7 +23,6 @@ import CreateEvent from './components/CreateEvent.svelte'
 import DateTimePresenter from './components/DateTimePresenter.svelte'
 import DocReminder from './components/DocReminder.svelte'
 import EditEvent from './components/EditEvent.svelte'
-import EditRecEvent from './components/EditRecEvent.svelte'
 import EventPresenter from './components/EventPresenter.svelte'
 import Events from './components/Events.svelte'
 import IntegrationConnect from './components/IntegrationConnect.svelte'
@@ -68,6 +67,9 @@ async function deleteRecHandler (res: any, object: ReccuringInstance): Promise<v
         reminders: object.reminders,
         location: object.location,
         isCancelled: true,
+        rdate: object.rdate,
+        rules: object.rules,
+        exdate: object.exdate,
         access: 'owner'
       },
       object._id
@@ -141,7 +143,6 @@ export enum CalendarMode {
 export default async (): Promise<Resources> => ({
   component: {
     EditEvent,
-    EditRecEvent,
     PersonsPresenter,
     CalendarView,
     Events,
