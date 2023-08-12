@@ -131,9 +131,9 @@
     }
   }
 
-  const showMenu = async (ev: MouseEvent, item: Event): Promise<void> => {
+  function showMenu (ev: MouseEvent) {
     ev.preventDefault()
-    showPopup(Menu, { object: item }, getEventPositionElement(ev))
+    showPopup(Menu, { object: event }, getEventPositionElement(ev))
   }
 </script>
 
@@ -147,7 +147,7 @@
     draggable={!event.allDay}
     use:tooltip={{ component: EventPresenter, props: { value: event } }}
     on:click|stopPropagation={click}
-    on:contextmenu={(evt) => showMenu(evt, event)}
+    on:contextmenu={showMenu}
     on:dragstart={dragStart}
     on:drag={drag}
     on:dragend={drop}
