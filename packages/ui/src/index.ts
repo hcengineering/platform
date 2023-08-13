@@ -190,6 +190,8 @@ export { default as StepsDialog } from './components/StepsDialog.svelte'
 export { default as EmojiPopup } from './components/EmojiPopup.svelte'
 export { default as IconWithEmoji } from './components/IconWithEmoji.svelte'
 export { default as ModeSelector } from './components/ModeSelector.svelte'
+export { default as SimpleTimePopup } from './components/calendar/SimpleTimePopup.svelte'
+export { default as NumberInput } from './components/NumberInput.svelte'
 
 export * from './types'
 export * from './location'

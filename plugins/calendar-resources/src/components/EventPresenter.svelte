@@ -21,13 +21,7 @@
   export let inline: boolean = false
 
   function click (): void {
-    showPopup(
-      value._class === calendar.class.ReccuringInstance
-        ? calendar.component.EditRecEvent
-        : calendar.component.EditEvent,
-      { object: value },
-      'content'
-    )
+    showPopup(calendar.component.EditEvent, { object: value }, 'content')
   }
 </script>
 

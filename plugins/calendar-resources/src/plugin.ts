@@ -20,8 +20,7 @@ import { AnyComponent } from '@hcengineering/ui'
 export default mergeIds(calendarId, calendar, {
   component: {
     CreateEvent: '' as AnyComponent,
-    EditEvent: '' as AnyComponent,
-    EditRecEvent: '' as AnyComponent
+    EditEvent: '' as AnyComponent
   },
   activity: {
     ReminderViewlet: '' as AnyComponent
@@ -54,6 +53,28 @@ export default mergeIds(calendarId, calendar, {
     RemoveRecEvent: '' as IntlString,
     ThisEvent: '' as IntlString,
     ThisAndNext: '' as IntlString,
-    AllEvents: '' as IntlString
+    AllEvents: '' as IntlString,
+    NewEvent: '' as IntlString,
+    TimeZone: '' as IntlString,
+    Repeat: '' as IntlString,
+    Every: '' as IntlString,
+    On: '' as IntlString,
+    OnUntil: '' as IntlString,
+    Ends: '' as IntlString,
+    Never: '' as IntlString,
+    After: '' as IntlString,
+    Day: '' as IntlString,
+    Week: '' as IntlString,
+    Month: '' as IntlString,
+    Year: '' as IntlString,
+    MondayShort: '' as IntlString,
+    TuesdayShort: '' as IntlString,
+    WednesdayShort: '' as IntlString,
+    ThursdayShort: '' as IntlString,
+    FridayShort: '' as IntlString,
+    SaturdayShort: '' as IntlString,
+    SundayShort: '' as IntlString,
+    Times: '' as IntlString,
+    AddParticipants: '' as IntlString
   }
 })
