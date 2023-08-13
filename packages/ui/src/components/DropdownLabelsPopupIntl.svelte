@@ -21,6 +21,7 @@
 
   export let items: DropdownIntlItem[]
   export let selected: DropdownIntlItem['id'] | undefined = undefined
+  export let params: Record<string, any> = {}
 
   const dispatch = createEventDispatcher()
   const btns: HTMLButtonElement[] = []
@@ -50,7 +51,7 @@
             dispatch('close', item.id)
           }}
         >
-          <div class="flex-grow caption-color nowrap"><Label label={item.label} params={item.params} /></div>
+          <div class="flex-grow caption-color nowrap"><Label label={item.label} params={item.params ?? params} /></div>
           <div class="check">
             {#if item.id === selected}<IconCheck size={'small'} />{/if}
           </div>

@@ -106,7 +106,7 @@
     return result
   }
 
-  $: calendarEvents = toCalendar(events, currentDate, displayedDaysCount, startHour, displayedHours + startHour)
+  $: calendarEvents = toCalendar(events, weekMonday, displayedDaysCount, startHour, displayedHours + startHour)
 
   $: fontSize = $deviceInfo.fontSize
   $: docHeight = $deviceInfo.docHeight
@@ -325,7 +325,7 @@
     event: CalendarItem
   ): { top: number; bottom: number; left: number; right: number; width: number; visibility: number } => {
     const result = { top: 0, bottom: 0, left: 0, right: 0, width: 0, visibility: 1 }
-    const checkDate = new Date(currentDate.getTime() + MILLISECONDS_IN_DAY * event.day)
+    const checkDate = new Date(weekMonday.getTime() + MILLISECONDS_IN_DAY * event.day)
     const startDay = checkDate.setHours(startHour, 0, 0, 0)
     const endDay = checkDate.setHours(displayedHours - 1, 59, 59, 999)
     const startTime = event.date < startDay ? { hours: 0, mins: 0 } : convertToTime(event.date)
@@ -343,7 +343,7 @@
       cellHeight * (displayedHours - startHour - endTime.hours - 1) +
       ((60 - endTime.mins) / 60) * cellHeight +
       getGridOffset(endTime.mins, true) +
-      (showHeader ? 0 : rem(2.5))
+      (showHeader ? 0 : rem(3.5))
     let cols = 1
     let index: number = 0
     grid[event.day].columns.forEach((col, i) =>

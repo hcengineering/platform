@@ -87,7 +87,7 @@ export interface Event extends AttachedDoc {
  * @public
  * use for an instance of a recurring event
  */
-export interface ReccuringInstance extends Event {
+export interface ReccuringInstance extends ReccuringEvent {
   recurringEventId: string
   originalStartTime: number
   isCancelled?: boolean
@@ -123,7 +123,12 @@ const calendarPlugin = plugin(calendarId, {
     Calendar: '' as Asset,
     Location: '' as Asset,
     Reminder: '' as Asset,
-    Notifications: '' as Asset
+    Notifications: '' as Asset,
+    Watch: '' as Asset,
+    Description: '' as Asset,
+    Participants: '' as Asset,
+    Repeat: '' as Asset,
+    Globe: '' as Asset
   },
   space: {
     // deprecated

@@ -24,7 +24,6 @@ function generateRecurringValues (
 ): Timestamp[] {
   const values: Timestamp[] = []
   const currentDate = new Date(startDate)
-
   switch (rule.freq) {
     case 'DAILY':
       generateDailyValues(rule, currentDate, values, from, to)
@@ -41,7 +40,6 @@ function generateRecurringValues (
     default:
       throw new Error('Invalid recurring rule frequency')
   }
-
   return values
 }
 
@@ -53,16 +51,11 @@ function generateDailyValues (
   to: Timestamp
 ): void {
   const { count, endDate, interval } = rule
-  const { bySecond, byMinute, byHour, bySetPos } = rule
+  const { bySetPos } = rule
   let i = 0
 
   while (true) {
-    if (
-      (bySecond == null || bySecond.includes(currentDate.getSeconds())) &&
-      (byMinute == null || byMinute.includes(currentDate.getMinutes())) &&
-      (byHour == null || byHour.includes(currentDate.getHours())) &&
-      (bySetPos == null || bySetPos.includes(getSetPos(currentDate)))
-    ) {
+    if (bySetPos == null || bySetPos.includes(getSetPos(currentDate))) {
       const res = currentDate.getTime()
       if (res > from) {
         values.push(res)
@@ -85,28 +78,31 @@ function generateWeeklyValues (
   to: Timestamp
 ): void {
   const { count, endDate, interval } = rule
-  const { bySecond, byMinute, byHour, byDay, wkst, bySetPos } = rule
+  const { byDay, wkst, bySetPos } = rule
   let i = 0
 
   while (true) {
-    if (
-      (bySecond == null || bySecond.includes(currentDate.getSeconds())) &&
-      (byMinute == null || byMinute.includes(currentDate.getMinutes())) &&
-      (byHour == null || byHour.includes(currentDate.getHours())) &&
-      (byDay == null || byDay.includes(getWeekday(currentDate, wkst))) &&
-      (bySetPos == null || bySetPos.includes(getSetPos(currentDate)))
-    ) {
-      const res = currentDate.getTime()
-      if (res > from) {
-        values.push(res)
+    const next = new Date(currentDate).setDate(currentDate.getDate() + (interval ?? 1) * 7)
+    const end = new Date(new Date(currentDate).setDate(currentDate.getDate() + 7))
+    let date = currentDate
+    while (date < end) {
+      if (
+        (byDay == null || byDay.includes(getWeekday(date, wkst))) &&
+        (bySetPos == null || bySetPos.includes(getSetPos(date)))
+      ) {
+        const res = date.getTime()
+        if (res > from) {
+          values.push(res)
+        }
+        i++
       }
-      i++
+      date = new Date(date.setDate(date.getDate() + 1))
+      if (count !== undefined && i === count) return
+      if (endDate !== undefined && date.getTime() > endDate) return
+      if (date.getTime() > to) return
     }
 
-    currentDate.setDate(currentDate.getDate() + (interval ?? 1) * 7)
-    if (count !== undefined && i === count) break
-    if (endDate !== undefined && currentDate.getTime() > endDate) break
-    if (currentDate.getTime() > to) break
+    currentDate = new Date(next)
   }
 }
 
@@ -118,29 +114,32 @@ function generateMonthlyValues (
   to: Timestamp
 ): void {
   const { count, endDate, interval } = rule
-  const { bySecond, byMinute, byHour, byDay, byMonthDay, bySetPos, wkst } = rule
+  const { byDay, byMonthDay, bySetPos, wkst } = rule
   let i = 0
 
   while (true) {
-    if (
-      (bySecond == null || bySecond.includes(currentDate.getSeconds())) &&
-      (byMinute == null || byMinute.includes(currentDate.getMinutes())) &&
-      (byHour == null || byHour.includes(currentDate.getHours())) &&
-      (byDay == null || byDay.includes(getWeekday(currentDate, wkst))) &&
-      (byMonthDay == null || byMonthDay.includes(new Date(currentDate).getDate())) &&
-      (bySetPos == null || bySetPos.includes(getSetPos(currentDate)))
-    ) {
-      const res = currentDate.getTime()
-      if (res > from) {
-        values.push(res)
+    const next = new Date(currentDate).setMonth(currentDate.getMonth() + (interval ?? 1))
+    const end = new Date(new Date(currentDate).setMonth(currentDate.getMonth() + 1))
+    let date = currentDate
+    while (date < end) {
+      if (
+        (byDay == null || byDay.includes(getWeekday(currentDate, wkst))) &&
+        (byMonthDay == null || byMonthDay.includes(new Date(currentDate).getDate())) &&
+        (bySetPos == null || bySetPos.includes(getSetPos(currentDate)))
+      ) {
+        const res = currentDate.getTime()
+        if (res > from) {
+          values.push(res)
+        }
+        i++
       }
-      i++
-    }
+      date = new Date(date.setDate(date.getDate() + 1))
 
-    currentDate.setMonth(currentDate.getMonth() + (interval ?? 1))
-    if (count !== undefined && i === count) break
-    if (endDate !== undefined && currentDate.getTime() > endDate) break
-    if (currentDate.getTime() > to) break
+      if (count !== undefined && i === count) return
+      if (endDate !== undefined && date.getTime() > endDate) return
+      if (date.getTime() > to) return
+    }
+    currentDate = new Date(next)
   }
 }
 
@@ -152,32 +151,34 @@ function generateYearlyValues (
   to: Timestamp
 ): void {
   const { count, endDate, interval } = rule
-  const { bySecond, byMinute, byHour, byDay, byMonthDay, byYearDay, byWeekNo, byMonth, bySetPos, wkst } = rule
+  const { byDay, byMonthDay, byYearDay, byWeekNo, byMonth, bySetPos, wkst } = rule
   let i = 0
 
   while (true) {
-    if (
-      (bySecond == null || bySecond.includes(currentDate.getSeconds())) &&
-      (byMinute == null || byMinute.includes(currentDate.getMinutes())) &&
-      (byHour == null || byHour.includes(currentDate.getHours())) &&
-      (byDay == null || byDay.includes(getWeekday(currentDate, wkst))) &&
-      (byMonthDay == null || byMonthDay.includes(currentDate.getDate())) &&
-      (byYearDay == null || byYearDay.includes(getYearDay(currentDate))) &&
-      (byWeekNo == null || byWeekNo.includes(getWeekNumber(currentDate))) &&
-      (byMonth == null || byMonth.includes(currentDate.getMonth())) &&
-      (bySetPos == null || bySetPos.includes(getSetPos(currentDate)))
-    ) {
-      const res = currentDate.getTime()
-      if (res > from) {
-        values.push(res)
+    const next = new Date(currentDate).setFullYear(currentDate.getFullYear() + (interval ?? 1))
+    const end = new Date(new Date(currentDate).setFullYear(currentDate.getFullYear() + 1))
+    let date = currentDate
+    while (date < end) {
+      if (
+        (byDay == null || byDay.includes(getWeekday(currentDate, wkst))) &&
+        (byMonthDay == null || byMonthDay.includes(currentDate.getDate())) &&
+        (byYearDay == null || byYearDay.includes(getYearDay(currentDate))) &&
+        (byWeekNo == null || byWeekNo.includes(getWeekNumber(currentDate))) &&
+        (byMonth == null || byMonth.includes(currentDate.getMonth())) &&
+        (bySetPos == null || bySetPos.includes(getSetPos(currentDate)))
+      ) {
+        const res = currentDate.getTime()
+        if (res > from) {
+          values.push(res)
+        }
+        i++
       }
-      i++
+      date = new Date(date.setDate(date.getDate() + 1))
+      if (count !== undefined && i === count) return
+      if (endDate !== undefined && date.getTime() > endDate) return
+      if (date.getTime() > to) return
     }
-
-    currentDate.setFullYear(currentDate.getFullYear() + (interval ?? 1))
-    if (count !== undefined && i === count) break
-    if (endDate !== undefined && currentDate.getTime() > endDate) break
-    if (currentDate.getTime() > to) break
+    currentDate = new Date(next)
   }
 }
 
@@ -191,7 +192,10 @@ function getSetPos (date: Date): number {
   return Math.ceil((day + daysOffset) / 7)
 }
 
-function getWeekday (date: Date, wkst?: string): string {
+/**
+ * @public
+ */
+export function getWeekday (date: Date, wkst?: string): string {
   const weekdays = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA']
   const weekday = weekdays[date.getDay()]
 
@@ -247,7 +251,6 @@ function getReccuringEventInstances (
     const override = instances.find((p) => p.originalStartTime === i.date)
     return override === undefined
   })
-
   return res
 }
 
