@@ -34,11 +34,14 @@ import CalendarIntegrationIcon from './components/icons/Calendar.svelte'
 import EventElement from './components/EventElement.svelte'
 import CalendarEventPresenter from './components/CalendarEventPresenter.svelte'
 import DayCalendar from './components/DayCalendar.svelte'
+import IntegrationConfigure from './components/IntegrationConfigure.svelte'
 import calendar from './plugin'
 import contact from '@hcengineering/contact'
 import { deleteObjects } from '@hcengineering/view-resources'
 
 export { EventElement, CalendarView, DayCalendar }
+
+export * from './utils'
 
 async function saveEventReminder (object: Doc): Promise<void> {
   showPopup(SaveEventReminder, { objectId: object._id, objectClass: object._class })
@@ -70,7 +73,8 @@ async function deleteRecHandler (res: any, object: ReccuringInstance): Promise<v
         rdate: object.rdate,
         rules: object.rules,
         exdate: object.exdate,
-        access: 'owner'
+        visibility: object.visibility,
+        access: object.access
       },
       object._id
     )
@@ -152,7 +156,8 @@ export default async (): Promise<Resources> => ({
     CreateEvent,
     IntegrationConnect,
     CalendarIntegrationIcon,
-    CalendarEventPresenter
+    CalendarEventPresenter,
+    IntegrationConfigure
   },
   activity: {
     ReminderViewlet

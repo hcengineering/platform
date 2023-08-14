@@ -20,6 +20,7 @@
   export let startDate: number
   export let dueDate: number
   export let allDay: boolean
+  export let disabled: boolean = false
 
   $: sameDate = areDatesEqual(new Date(startDate), new Date(dueDate))
 
@@ -46,7 +47,7 @@
 <div class="flex-row-center flex-gap-1 mt-2 mb-2">
   <Icon icon={calendar.icon.Watch} size="small" />
   {#if sameDate}
-    <DateEditor bind:date={startDate} direction="horizontal" withoutTime={allDay} on:update={dateChange} />
+    <DateEditor bind:date={startDate} direction="horizontal" withoutTime={allDay} on:update={dateChange} {disabled} />
     <div class="content-dark-color">
       <IconArrowRight size="small" />
     </div>
@@ -55,13 +56,14 @@
       direction="horizontal"
       withoutTime={allDay}
       showDate={false}
+      {disabled}
       on:update={dueChange}
     />
   {:else}
-    <DateEditor bind:date={startDate} direction="vertical" withoutTime={allDay} on:update={dateChange} />
+    <DateEditor bind:date={startDate} direction="vertical" withoutTime={allDay} on:update={dateChange} {disabled} />
     <div class="content-dark-color">
       <IconArrowRight size="small" />
     </div>
-    <DateEditor bind:date={dueDate} direction="vertical" withoutTime={allDay} on:update={dueChange} />
+    <DateEditor bind:date={dueDate} direction="vertical" withoutTime={allDay} on:update={dueChange} {disabled} />
   {/if}
 </div>

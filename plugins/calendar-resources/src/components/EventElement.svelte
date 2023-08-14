@@ -25,9 +25,10 @@
     tooltip
   } from '@hcengineering/ui'
   import view, { ObjectEditor } from '@hcengineering/view'
-  import { createEventDispatcher } from 'svelte'
-  import EventPresenter from './EventPresenter.svelte'
   import { Menu } from '@hcengineering/view-resources'
+  import { createEventDispatcher } from 'svelte'
+  import { calendarStore, isReadOnly, isVisible } from '../utils'
+  import EventPresenter from './EventPresenter.svelte'
 
   export let event: Event
   export let hourHeight: number
@@ -38,9 +39,11 @@
   $: empty = size.width < 44
 
   function click () {
-    const editor = hierarchy.classHierarchyMixin<Doc, ObjectEditor>(event._class, view.mixin.ObjectEditor)
-    if (editor?.editor !== undefined) {
-      showPopup(editor.editor, { object: event })
+    if (visible) {
+      const editor = hierarchy.classHierarchyMixin<Doc, ObjectEditor>(event._class, view.mixin.ObjectEditor)
+      if (editor?.editor !== undefined) {
+        showPopup(editor.editor, { object: event })
+      }
     }
   }
 
@@ -58,6 +61,7 @@
   $: fontSize = $deviceOptionsStore.fontSize
 
   function dragStart (e: DragEvent) {
+    if (readOnly) return
     if (event.allDay) return
     originDate = event.date
     originDueDate = event.dueDate
@@ -87,6 +91,7 @@
   let dragDirection: 'bottom' | 'mid' | 'top' | undefined
 
   function drag (e: DragEvent) {
+    if (readOnly) return
     if (event.allDay) return
     if (dragInitY !== undefined) {
       const diff = Math.floor((e.y - dragInitY) / pixelPer15Min)
@@ -135,6 +140,9 @@
     ev.preventDefault()
     showPopup(Menu, { object: event }, getEventPositionElement(ev))
   }
+
+  $: visible = isVisible(event, $calendarStore)
+  $: readOnly = isReadOnly(event)
 </script>
 
 {#if event}
@@ -145,7 +153,7 @@
     class:oneRow
     class:empty
     draggable={!event.allDay}
-    use:tooltip={{ component: EventPresenter, props: { value: event } }}
+    use:tooltip={{ component: EventPresenter, props: { value: event, hideDetails: !visible } }}
     on:click|stopPropagation={click}
     on:contextmenu={showMenu}
     on:dragstart={dragStart}
@@ -154,7 +162,7 @@
     on:drop
   >
     {#if !empty && presenter?.presenter}
-      <Component is={presenter.presenter} props={{ event, narrow, oneRow }} />
+      <Component is={presenter.presenter} props={{ event, narrow, oneRow, hideDetails: !visible }} />
     {/if}
   </div>
 {/if}
