@@ -75,6 +75,11 @@
   function openFile () {
     inputFile.click()
   }
+
+  function updateContent (evt: CustomEvent) {
+    attachments = evt.detail.length
+    dispatch('attachments', evt.detail)
+  }
 </script>
 
 <div class="antiSection" use:resizeObserver={(element) => (wSection = element.clientWidth)}>
@@ -151,9 +156,7 @@
         options={{ sort: { pinned: -1 } }}
         query={{ ...query, attachedTo: objectId }}
         loadingProps={{ length: attachments ?? 0 }}
-        on:content={(evt) => {
-          attachments = evt.detail.length
-        }}
+        on:content={updateContent}
         {readonly}
       />
     </Scroller>
@@ -175,9 +178,7 @@
       options={{ sort: { pinned: -1 } }}
       query={{ ...query, attachedTo: objectId }}
       loadingProps={{ length: attachments ?? 0 }}
-      on:content={(evt) => {
-        attachments = evt.detail.length
-      }}
+      on:content={updateContent}
       {readonly}
     />
   {/if}

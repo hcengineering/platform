@@ -18,7 +18,7 @@
   import { Doc, DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import type { Issue } from '@hcengineering/tracker'
+  import type { Issue, Project } from '@hcengineering/tracker'
   import { resolvedLocationStore } from '@hcengineering/ui'
 
   import { IModeSelector } from '@hcengineering/ui'
@@ -50,13 +50,28 @@
     { sort: { _id: 1 } }
   )
 
+  const archivedProjectQuery = createQuery()
+  let archived: Ref<Project>[] = []
+
+  archivedProjectQuery.query(
+    tracker.class.Project,
+    { archived: true },
+    (res) => {
+      archived = res.map((it) => it._id)
+    },
+    { projection: { _id: 1 } }
+  )
+
   $: queries = { assigned, created, subscribed }
   $: mode = $resolvedLocationStore.query?.mode ?? undefined
   $: if (mode === undefined || queries[mode] === undefined) {
     ;[[mode]] = config
   }
   $: if (mode !== undefined) {
-    query = { ...queries[mode], '$lookup.space.archived': false }
+    query = { ...queries[mode] }
+    if (query?.space === undefined) {
+      query = { ...query, space: { $nin: archived } }
+    }
     modeSelectorProps = {
       config,
       mode,

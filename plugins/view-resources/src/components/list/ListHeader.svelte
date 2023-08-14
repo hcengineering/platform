@@ -45,6 +45,7 @@
   export let space: Ref<Space> | undefined
   export let limited: number
   export let items: Doc[]
+  export let itemsProj: Doc[]
   export let flat = false
   export let collapsed = false
   export let lastCat = false
@@ -139,11 +140,11 @@
           </span>
         </span>
       {/if}
-      {#if limited < items.length}
+      {#if limited < itemsProj.length}
         <div class="antiSection-header__counter flex-row-center mx-2">
           <span class="caption-color">{limited}</span>
           <span class="text-xs mx-0-5">/</span>
-          {items.length}
+          {itemsProj.length}
         </div>
         <ActionIcon
           size={'small'}
@@ -154,7 +155,7 @@
           }}
         />
       {:else}
-        <span class="antiSection-header__counter ml-2">{items.length}</span>
+        <span class="antiSection-header__counter ml-2">{itemsProj.length}</span>
       {/if}
       <div class="flex-row-center flex-reverse flex-grow mr-2 gap-2 reverse">
         {#each extraHeaders ?? [] as extra}

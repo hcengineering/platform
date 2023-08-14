@@ -4932,6 +4932,10 @@ packages:
     resolution: {integrity: sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==}
     dev: false
 
+  /@popperjs/core/2.11.8:
+    resolution: {integrity: sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==}
+    dev: false
+
   /@remirror/core-constants/2.0.0:
     resolution: {integrity: sha512-vpePPMecHJllBqCWXl6+FIcZqS+tRUM2kSCCKFeEo1H3XUEv3ocijBIPhnlSAa7g6maX+12ATTgxrOsLpWVr2g==}
     dependencies:
@@ -6299,6 +6303,17 @@ packages:
       '@tiptap/core': ^2.0.0
     dependencies:
       '@tiptap/core': 2.0.3_@tiptap+pm@2.0.3
+    dev: false
+
+  /@tiptap/extension-bubble-menu/2.0.4_fc2f730f0ef238c57ef10dc1abce4607:
+    resolution: {integrity: sha512-+cRZwj0YINNNDElSAiX1pvY2K98S2j9MQW2dXV5oLqsJhqGPZsKxVo8I1u7ZtqUla3QE1V18RYPAzVgTiMRkBg==}
+    peerDependencies:
+      '@tiptap/core': ^2.0.0
+      '@tiptap/pm': ^2.0.0
+    dependencies:
+      '@tiptap/core': 2.0.3_@tiptap+pm@2.0.3
+      '@tiptap/pm': 2.0.3_@tiptap+core@2.0.3
+      tippy.js: 6.3.7
     dev: false
 
   /@tiptap/extension-bullet-list/2.0.3_@tiptap+core@2.0.3:
@@ -16094,6 +16109,12 @@ packages:
     resolution: {integrity: sha512-pkY1fj1cKHb2seWDy0B16HeWyczlJA9/WW3u3c4z/NiWDsO3DOU5D7nhTLE9CF0yXv/QZFY7sEJmj24dK+Rrqw==}
     dev: false
 
+  /tippy.js/6.3.7:
+    resolution: {integrity: sha512-E1d3oP2emgJ9dRQZdf3Kkn0qJgI6ZLpyS5z6ZkY1DF3kaQaBsGZsndEpHwx+eC+tYM41HaSNvNtLx8tU57FzTQ==}
+    dependencies:
+      '@popperjs/core': 2.11.8
+    dev: false
+
   /tmpl/1.0.5:
     resolution: {integrity: sha512-3f0uOEAQwIqGuWW2MVzYg8fV/QNnc/IpuJNG837rLuczAaLVHslWHZQj4IGiEl5Hs3kkbhwL9Ab7Hrsmuj+Smw==}
     dev: false
@@ -18331,7 +18352,7 @@ packages:
     dev: false
 
   file:projects/hr-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-81poQ5qcA27EiFRBRDKjIExHpnURMQhgmdmOv8oItDC/PiW6clST+g7IlhTyHOeTWEpAvz0jvQRXfr9yURH27g==, tarball: file:projects/hr-resources.tgz}
+    resolution: {integrity: sha512-Z30ThCEErC5WKhgt8MbumCXRlr8AIv8sJfOME3nqRp4/AyHbVQLwqWZzcBD9K80v8qxmeqGckv8WbZyo6rU2lA==, tarball: file:projects/hr-resources.tgz}
     id: file:projects/hr-resources.tgz
     name: '@rush-temp/hr-resources'
     version: 0.0.0
@@ -19872,7 +19893,7 @@ packages:
     dev: false
 
   file:projects/notification-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-2W5UKPxFSwK7CFe8iTSifV72dwPpLLTKzX7G917wY/t55I8kjdwgs1qqHbTzXTLFS18GpJ3jrHPWs1pE3wBziw==, tarball: file:projects/notification-resources.tgz}
+    resolution: {integrity: sha512-+0GyVR16SOhO7hhsyOE+5LfRHBOdKh2tsool52jXOFX9mxtfVYMb5TmTow7WyCHx/Ds+VohE+WS67xrl+fk1uA==, tarball: file:projects/notification-resources.tgz}
     id: file:projects/notification-resources.tgz
     name: '@rush-temp/notification-resources'
     version: 0.0.0
@@ -21914,12 +21935,13 @@ packages:
     dev: false
 
   file:projects/text-editor.tgz_1e646fd62a3adc9d0b41f256dafe3d38:
-    resolution: {integrity: sha512-xIzsjqblGEQrdi9EFIBrtG+oJKdq8w3Ry4DreO3DgmJ8MgXGSUdyToAKUMYC+cxm+qh1jSv1qpI0JJJquliUaQ==, tarball: file:projects/text-editor.tgz}
+    resolution: {integrity: sha512-YOAukVGBYlxGQ8RgrCMH/G2nNo5lhAJvABE1uuJIdICfv8p0a/gzvkpnVMQBxSAOqjLI4sulnyGOlQnxBUR++A==, tarball: file:projects/text-editor.tgz}
     id: file:projects/text-editor.tgz
     name: '@rush-temp/text-editor'
     version: 0.0.0
     dependencies:
       '@tiptap/core': 2.0.3_@tiptap+pm@2.0.3
+      '@tiptap/extension-bubble-menu': 2.0.4_fc2f730f0ef238c57ef10dc1abce4607
       '@tiptap/extension-code': 2.0.3_@tiptap+core@2.0.3
       '@tiptap/extension-code-block': 2.0.3_fc2f730f0ef238c57ef10dc1abce4607
       '@tiptap/extension-collaboration': 2.0.3_9d93b21d48f6156ab534bd7bbcc15ccc

@@ -31,13 +31,38 @@
   import { LoginInfo, Workspace } from '@hcengineering/login'
   import { onMount } from 'svelte'
 
+  const CHECK_INTERVAL = 1000
+
   export let navigateUrl: string | undefined = undefined
+  let workspaces: Workspace[] = []
+  let flagToUpdateWorkspaces = false
 
   let status = OK
 
   let account: LoginInfo | undefined = undefined
 
-  onMount(async () => (account = await getAccount()))
+  async function loadAccount () {
+    account = await getAccount()
+  }
+
+  async function updateWorkspaces () {
+    try {
+      workspaces = await getWorkspaces()
+    } catch (e) {
+      // we should be able to continue from this state
+    }
+    if (flagToUpdateWorkspaces) {
+      setTimeout(updateWorkspaces, CHECK_INTERVAL)
+    }
+  }
+
+  onMount(() => {
+    loadAccount()
+
+    return () => {
+      flagToUpdateWorkspaces = false
+    }
+  })
 
   async function select (workspace: string) {
     status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
@@ -48,17 +73,20 @@
     navigateToWorkspace(workspace, result, navigateUrl)
   }
 
-  async function _getWorkspaces (): Promise<Workspace[]> {
+  async function _getWorkspaces () {
     try {
       const res = await getWorkspaces()
+
       if (res.length === 0 && account?.confirmed === false) {
         const loc = getCurrentLocation()
         loc.path[1] = 'confirmationSend'
         loc.path.length = 2
         navigate(loc)
-        return []
       }
-      return res
+
+      workspaces = res
+      flagToUpdateWorkspaces = true
+      updateWorkspaces()
     } catch (err: any) {
       setMetadataLocalStorage(presentation.metadata.Token, null)
       setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
@@ -89,7 +117,7 @@
   <div class="status">
     <StatusControl {status} />
   </div>
-  {#await _getWorkspaces() then workspaces}
+  {#await _getWorkspaces() then}
     <Scroller padding={'.125rem 0'}>
       <div class="form">
         {#each workspaces as workspace}

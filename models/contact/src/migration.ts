@@ -118,6 +118,37 @@ export const contactOperation: MigrateOperation = {
       }
     )
 
+    await client.update(
+      DOMAIN_TX,
+      {
+        objectClass: core.class.Attribute,
+        'attributes.type.to': 'contact:class:Employee'
+      },
+      {
+        $set: { 'attributes.type.to': contact.mixin.Employee }
+      }
+    )
+    await client.update(
+      DOMAIN_TX,
+      {
+        objectClass: core.class.Attribute,
+        'operations.type.to': 'contact:class:Employee'
+      },
+      {
+        $set: { 'operations.type.to': contact.mixin.Employee }
+      }
+    )
+
+    await client.update(
+      DOMAIN_TX,
+      {
+        'attributes.extends': 'contact:class:Employee'
+      },
+      {
+        $set: { 'attributes.extends': contact.mixin.Employee }
+      }
+    )
+
     for (const d of client.hierarchy.domains()) {
       await client.update(
         d,

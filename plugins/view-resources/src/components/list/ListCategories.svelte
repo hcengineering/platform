@@ -13,7 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { CategoryType, Class, Doc, DocumentQuery, generateId, Lookup, Ref, Space } from '@hcengineering/core'
+  import {
+    CategoryType,
+    Class,
+    Doc,
+    DocumentQuery,
+    FindOptions,
+    generateId,
+    Lookup,
+    Ref,
+    Space
+  } from '@hcengineering/core'
   import { getResource, IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
@@ -67,6 +77,9 @@
   export let selection: number | undefined = undefined
   export let groupPersistKey: string
   export let compactMode: boolean = false
+
+  export let resultQuery: DocumentQuery<Doc>
+  export let resultOptions: FindOptions<Doc>
 
   $: groupByKey = viewOptions.groupBy[level] ?? noCategory
   let categories: CategoryType[] = []
@@ -188,7 +201,12 @@
     return -1
   }
 
-  export function select (offset: 2 | 1 | -2 | -1 | 0, of?: Doc, dir?: 'vertical' | 'horizontal'): void {
+  export function select (
+    offset: 2 | 1 | -2 | -1 | 0,
+    of?: Doc,
+    dir?: 'vertical' | 'horizontal',
+    noScroll?: boolean
+  ): void {
     let pos = (of != null ? docs.findIndex((it) => it._id === of._id) : selection) ?? -1
     if (pos === -1) {
       for (const st of categories) {
@@ -276,7 +294,7 @@
           } else {
             const obj = stateObjs[statePos - 1]
             if (obj !== undefined) {
-              scrollInto(objState, obj)
+              if (!noScroll) scrollInto(objState, obj)
               dispatch('row-focus', obj)
             }
           }
@@ -296,7 +314,7 @@
           } else {
             const obj = stateObjs[statePos + 1]
             if (obj !== undefined) {
-              scrollInto(objState, obj)
+              if (!noScroll) scrollInto(objState, obj)
               dispatch('row-focus', obj)
             }
           }
@@ -304,11 +322,11 @@
         }
       }
       if (offset === 0) {
-        scrollInto(objState, obj)
+        if (!noScroll) scrollInto(objState, obj)
         dispatch('row-focus', obj)
       }
     } else {
-      listCategory[objState]?.select(offset, of, dir)
+      listCategory[objState]?.select(offset, of, dir, noScroll)
     }
   }
   function scrollInto (statePos: number, obj: Doc): void {
@@ -343,13 +361,15 @@
     oneCat={viewOptions.groupBy.length === 1}
     lastCat={i === categories.length - 1}
     {category}
-    {items}
+    itemProj={items}
     {newObjectProps}
     {createItemDialog}
     {createItemDialogProps}
     {createItemLabel}
     {viewOptionsConfig}
     {compactMode}
+    {resultQuery}
+    {resultOptions}
     on:check
     on:uncheckAll
     on:row-focus
@@ -406,6 +426,8 @@
         {initIndex}
         {viewOptionsConfig}
         {listDiv}
+        {resultQuery}
+        {resultOptions}
         on:dragItem
         on:check
         on:uncheckAll

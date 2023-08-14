@@ -13,41 +13,46 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { IntlString } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
-  import {
-    Button,
-    DropdownIntlItem,
-    DropdownLabelsIntl,
-    FocusHandler,
-    Label,
-    createFocusManager
-  } from '@hcengineering/ui'
+  import { Button, DropdownLabelsIntl, FocusHandler, Label, createFocusManager } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
-  import { IntlString } from '@hcengineering/platform'
 
   export let label: IntlString = calendar.string.EditRecEvent
+  export let currentAvailable: boolean = true
 
   const dispatch = createEventDispatcher()
 
   const manager = createFocusManager()
 
-  const items: DropdownIntlItem[] = [
-    {
-      id: 'current',
-      label: calendar.string.ThisEvent
-    },
-    {
-      id: 'next',
-      label: calendar.string.ThisAndNext
-    },
-    {
-      id: 'all',
-      label: calendar.string.AllEvents
-    }
-  ]
+  const items = currentAvailable
+    ? [
+        {
+          id: 'current',
+          label: calendar.string.ThisEvent
+        },
+        {
+          id: 'next',
+          label: calendar.string.ThisAndNext
+        },
+        {
+          id: 'all',
+          label: calendar.string.AllEvents
+        }
+      ]
+    : [
+        {
+          id: 'next',
+          label: calendar.string.ThisAndNext
+        },
+        {
+          id: 'all',
+          label: calendar.string.AllEvents
+        }
+      ]
 
-  let selected = 'current'
+  let selected = items[0].id
 </script>
 
 <FocusHandler {manager} />

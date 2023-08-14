@@ -34,11 +34,11 @@
   "dependencies": {
     "@hcengineering/platform": "^0.6.9",
     "svelte": "3.55.1",
-    "@hcengineering/bitrix": "^0.6.39",
+    "@hcengineering/bitrix": "^0.6.40",
     "@hcengineering/ui": "^0.6.10",
     "@hcengineering/presentation": "^0.6.2",
     "@hcengineering/text-editor": "^0.6.0",
-    "@hcengineering/contact": "^0.6.18",
+    "@hcengineering/contact": "^0.6.19",
     "@hcengineering/lead": "^0.6.0",
     "@hcengineering/login": "^0.6.7",
     "@hcengineering/setting": "^0.6.9",
@@ -48,14 +48,14 @@
     "@hcengineering/view": "^0.6.8",
     "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/setting-resources": "^0.6.0",
-    "@hcengineering/chunter": "^0.6.9",
+    "@hcengineering/chunter": "^0.6.10",
     "p-queue": "~7.3.0",
     "qs": "~6.11.0",
     "@hcengineering/tags": "^0.6.11",
     "@hcengineering/tags-resources": "^0.6.0",
     "fast-equals": "^2.0.3",
-    "@hcengineering/recruit": "^0.6.16",
-    "@hcengineering/task": "^0.6.10"
+    "@hcengineering/recruit": "^0.6.17",
+    "@hcengineering/task": "^0.6.11"
   },
   "repository": "https://github.com/hcengineering/anticrm",
   "publishConfig": {

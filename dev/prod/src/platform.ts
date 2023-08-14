@@ -90,6 +90,7 @@ interface Config {
   GMAIL_URL: string
   CALENDAR_URL: string
   TITLE?: string
+  LANGUAGES?: string
   DEFAULT_LANGUAGE?: string
 }
 
@@ -117,6 +118,9 @@ export async function configurePlatform() {
 
   setMetadata(uiPlugin.metadata.DefaultApplication, login.component.LoginApp)
 
+  const languages = config.LANGUAGES ? (config.LANGUAGES as string).split(',').map((l) => l.trim()) : ['en', 'ru']
+
+  setMetadata(uiPlugin.metadata.Languages, languages)
   setMetadata(
     uiPlugin.metadata.Routes,
     new Map([

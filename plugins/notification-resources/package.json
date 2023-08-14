@@ -40,11 +40,11 @@
     "@hcengineering/presentation": "^0.6.2",
     "@hcengineering/activity-resources": "^0.6.1",
     "@hcengineering/activity": "^0.6.0",
-    "@hcengineering/contact": "^0.6.18",
+    "@hcengineering/contact": "^0.6.19",
     "@hcengineering/contact-resources": "^0.6.0",
     "@hcengineering/attachment": "^0.6.8",
     "@hcengineering/attachment-resources": "^0.6.0",
-    "@hcengineering/chunter": "^0.6.9",
+    "@hcengineering/chunter": "^0.6.10",
     "@hcengineering/core": "^0.6.27",
     "@hcengineering/view": "^0.6.8",
     "@hcengineering/view-resources": "^0.6.0"

@@ -170,7 +170,7 @@
     dispatch('row-focus', object)
   }
 
-  export function select (offset: 1 | -1 | 0, of?: Doc): void {
+  export function select (offset: 1 | -1 | 0, of?: Doc, noScroll?: boolean): void {
     let pos = (of !== undefined ? objects.findIndex((it) => it._id === of._id) : selection) ?? -1
     pos += offset
     if (pos < 0) {
@@ -182,7 +182,7 @@
     const r = refs[pos]
     selection = pos
     onRow(objects[pos])
-    if (r !== undefined) {
+    if (r !== undefined && !noScroll) {
       r?.scrollIntoView({ behavior: 'auto', block: 'nearest' })
     }
   }

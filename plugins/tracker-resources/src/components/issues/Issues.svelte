@@ -60,13 +60,28 @@
     }
   )
 
+  const archivedProjectQuery = createQuery()
+  let archived: Ref<Project>[] = []
+
+  archivedProjectQuery.query(
+    tracker.class.Project,
+    { archived: true },
+    (res) => {
+      archived = res.map((it) => it._id)
+    },
+    { projection: { _id: 1 } }
+  )
+
   $: queries = { all, active, backlog }
   $: mode = $resolvedLocationStore.query?.mode ?? undefined
   $: if (mode === undefined || queries[mode] === undefined) {
     ;[[mode]] = config
   }
   $: if (mode !== undefined) {
-    query = { ...queries[mode], '$lookup.space.archived': false }
+    query = { ...queries[mode] }
+    if (query?.space === undefined) {
+      query = { ...query, space: { $nin: archived } }
+    }
     modeSelectorProps = {
       config,
       mode,

@@ -59,4 +59,5 @@
   {disabled}
   {inline}
   {accent}
+  on:accent-color
 />

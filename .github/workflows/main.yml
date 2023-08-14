@@ -204,7 +204,7 @@ jobs:
           restore-keys: |
             build-cache-${{ hashFiles('./common/temp/pnpm-lock.yaml') }}
       - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.9.0
+        uses: supercharge/mongodb-github-action@v1.10.0
         with:
           mongodb-version: 5.0
 

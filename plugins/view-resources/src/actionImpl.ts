@@ -107,10 +107,16 @@ contextStore.subscribe((it) => {
   $contextStore = it
 })
 
-export function select (evt: Event | undefined, offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection): void {
+export function select (
+  evt: Event | undefined,
+  offset: 1 | -1 | 0,
+  of?: Doc,
+  direction?: SelectDirection,
+  noScroll?: boolean
+): void {
   closeTooltip()
   if ($focusStore.provider?.select !== undefined) {
-    $focusStore.provider?.select(offset, of, direction)
+    $focusStore.provider?.select(offset, of, direction, noScroll)
     evt?.preventDefault()
     previewDocument.update((old) => {
       if (old !== undefined) {

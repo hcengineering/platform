@@ -17,7 +17,7 @@
   import type { AnySvelteComponent, ButtonSize } from '../types'
   import Icon from './Icon.svelte'
 
-  export let icon: Asset | AnySvelteComponent | undefined
+  export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let size: ButtonSize = 'large'
   export let ghost: boolean = false
   export let selected: boolean = false
@@ -35,13 +35,13 @@
   on:click|stopPropagation
   on:mousemove
 >
-  <div class="content">
-    {#if $$slots.content}
-      <slot name="content" />
-    {:else if icon}
+  {#if $$slots.content}
+    <slot name="content" />
+  {:else if icon}
+    <div class="content">
       <Icon {icon} size={'full'} />
-    {/if}
-  </div>
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">

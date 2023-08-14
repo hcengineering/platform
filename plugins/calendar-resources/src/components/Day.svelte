@@ -70,13 +70,7 @@
           class="overflow-label mt-1 py-1 flex flex-between event cursor-pointer"
           style="background-color: {getPlatformColorForTextDef(e.space, $themeStore.dark).color};"
           on:click|stopPropagation|preventDefault={() => {
-            showPopup(
-              e._class === calendar.class.ReccuringInstance
-                ? calendar.component.EditRecEvent
-                : calendar.component.EditEvent,
-              { object: e },
-              'content'
-            )
+            showPopup(calendar.component.EditEvent, { object: e }, 'content')
           }}
         >
           {e.title}

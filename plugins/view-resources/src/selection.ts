@@ -16,7 +16,7 @@ export interface SelectionFocusProvider {
   // * If vertical, next will return item under.
   // * If horizontal, next will return item on right.
   // of - document offset from we requesting.
-  select?: (offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection) => void
+  select?: (offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection, noScroll?: boolean) => void
 
   // Update documents content
   update: (docs: Doc[]) => void
@@ -110,7 +110,7 @@ export class ListSelectionProvider implements SelectionFocusProvider {
   _current?: FocusSelection
   private readonly unsubscribe: Unsubscriber
   constructor (
-    private readonly delegate: (offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection) => void,
+    private readonly delegate: (offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection, noScroll?: boolean) => void,
     autoDestroy = true
   ) {
     this.unsubscribe = focusStore.subscribe((doc) => {
@@ -154,10 +154,11 @@ export class ListSelectionProvider implements SelectionFocusProvider {
     this.unsubscribe()
   }
 
-  select (offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection): void {
-    this.delegate(offset, of, direction)
+  select (offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection, noScroll?: boolean): void {
+    this.delegate(offset, of, direction, noScroll)
   }
 
+  // this is the main method that is called when docs are updated
   update (docs: Doc[]): void {
     this._docs = docs
 
@@ -171,7 +172,7 @@ export class ListSelectionProvider implements SelectionFocusProvider {
         this.delegate(0, undefined, 'vertical')
       } else {
         // Check if we don't have object, we need to select first one.
-        this.delegate(0, this._current?.focus, 'vertical')
+        this.delegate(0, this._current?.focus, 'vertical', true)
       }
       if (this._current?.focus === undefined) {
         updateFocus({ focus: this._current?.focus, provider: this })

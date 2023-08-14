@@ -40,12 +40,14 @@
   export let loadingProps: LoadingProps | undefined = undefined
 
   let table: Table
-  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
-    if (dir === 'vertical') {
-      // Select next
-      table?.select(offset, of)
+  const listProvider = new ListSelectionProvider(
+    (offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection, noScroll?: boolean) => {
+      if (dir === 'vertical') {
+        // Select next
+        table?.select(offset, of, noScroll)
+      }
     }
-  })
+  )
 
   onMount(() => {
     ;(document.activeElement as HTMLElement)?.blur()

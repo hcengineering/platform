@@ -53,7 +53,7 @@
   function openPopup () {
     if (!opened) {
       opened = true
-      showPopup(DropdownLabelsPopupIntl, { items, selected }, container, (result) => {
+      showPopup(DropdownLabelsPopupIntl, { items, selected, params }, container, (result) => {
         if (result) {
           selected = result
           dispatch('selected', result)
@@ -87,7 +87,10 @@
     on:click={openPopup}
   >
     <span slot="content" class="overflow-label disabled flex-grow text-left mr-2">
-      <Label label={selectedItem ? selectedItem.label : label} params={selectedItem ? selectedItem.params : params} />
+      <Label
+        label={selectedItem ? selectedItem.label : label}
+        params={selectedItem ? selectedItem.params ?? params : params}
+      />
     </span>
     <svelte:fragment slot="iconRight">
       <DropdownIcon size={'small'} fill={'var(--theme-dark-color)'} />
