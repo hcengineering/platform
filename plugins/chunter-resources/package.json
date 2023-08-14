@@ -52,7 +52,6 @@
     "@hcengineering/view": "^0.6.8",
     "@hcengineering/workbench": "^0.6.8",
     "@hcengineering/preference": "^0.6.8",
-    "@hcengineering/workbench-resources": "^0.6.1",
-    "@hcengineering/activity-resources": "^0.6.1"
+    "@hcengineering/workbench-resources": "^0.6.1"
   }
 }

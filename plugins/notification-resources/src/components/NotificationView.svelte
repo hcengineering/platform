@@ -15,18 +15,22 @@
 <script lang="ts">
   import { TxViewlet } from '@hcengineering/activity'
   import { ActivityKey } from '@hcengineering/activity-resources'
-  import core, { Doc, TxCUD, TxProcessor } from '@hcengineering/core'
+  import core, { Doc, Ref, SortingOrder, TxCUD, TxProcessor } from '@hcengineering/core'
   import notification, { DocUpdates } from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { AnySvelteComponent, TimeSince, getEventPositionElement, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { Menu } from '@hcengineering/view-resources'
+  import chunter, { DirectMessage, Message } from '@hcengineering/chunter'
+
   import TxView from './TxView.svelte'
+  import MessagesPreview from './MessagesPreview.svelte'
 
   export let value: DocUpdates
   export let viewlets: Map<ActivityKey, TxViewlet>
   export let selected: boolean
+  export let preview: boolean = false
 
   let doc: Doc | undefined = undefined
   let tx: TxCUD<Doc> | undefined = undefined
@@ -66,6 +70,8 @@
 
   let div: HTMLDivElement
   $: if (selected && div !== undefined) div.focus()
+
+  $: directMessageChannel = hierarchy.isDerived(value.attachedToClass, chunter.class.DirectMessage) ? value.attachedTo as Ref<DirectMessage> : undefined
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -85,14 +91,21 @@
           <div class="counter float">{newTxes}</div>
         {/if}
       </div>
-      <div class="flex-between flex-baseline mt-3">
-        {#if tx}
-          <TxView {tx} {viewlets} objectId={value.attachedTo} />
-        {/if}
-        <div class="time">
-          <TimeSince value={tx?.modifiedOn} />
+      {#if preview && directMessageChannel !== undefined}
+        <div class="mt-2">
+          <MessagesPreview channel={directMessageChannel} numOfMessages={newTxes} />
         </div>
-      </div>
+      {/if}
+      {#if !preview || directMessageChannel === undefined}
+        <div class="flex-between flex-baseline mt-3">
+          {#if tx}
+            <TxView {tx} {viewlets} objectId={value.attachedTo} />
+          {/if}
+          <div class="time">
+            <TimeSince value={tx?.modifiedOn} />
+          </div>
+        </div>
+      {/if}
     </div>
   </div>
 {/if}

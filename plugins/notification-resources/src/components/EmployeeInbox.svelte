@@ -13,18 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import activity, { TxViewlet } from '@hcengineering/activity'
   import { activityKey, ActivityKey } from '@hcengineering/activity-resources'
-  import chunter from '@hcengineering/chunter'
+  import chunter, { createBacklinks, DirectMessage, Message } from '@hcengineering/chunter'
   import { Employee, getName, PersonAccount } from '@hcengineering/contact'
   import { Avatar, employeeByIdStore, personAccountByIdStore } from '@hcengineering/contact-resources'
-  import core, { Account, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+  import core, { Account, Doc, generateId, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { DocUpdates } from '@hcengineering/notification'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
-  import { ActionIcon, Button, IconBack, Loading, Scroller } from '@hcengineering/ui'
-  import { ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
+  import { Button, Loading, Scroller } from '@hcengineering/ui'
+
   import NotificationView from './NotificationView.svelte'
+  import { AttachmentRefInput } from '@hcengineering/attachment-resources'
+  import { getDirectChannel } from '../utils'
 
   export let accountId: Ref<Account>
   const dispatch = createEventDispatcher()
@@ -33,6 +35,7 @@
 
   let _id: Ref<Doc> | undefined
   let docs: DocUpdates[] = []
+  let _docs: DocUpdates[] = []
   let loading = true
   const me = getCurrentAccount()._id
 
@@ -43,30 +46,8 @@
       hidden: false
     },
     (res) => {
-      docs = []
-      for (const doc of res) {
-        if (doc.txes.length === 0) continue
-        const txes = doc.txes.filter((p) => p.modifiedBy === accountId)
-        if (txes.length > 0) {
-          docs.push({
-            ...doc,
-            txes
-          })
-        }
-      }
-      docs = docs
-      listProvider.update(docs)
-      if (loading || _id === undefined) {
-        changeSelected(selected)
-      } else {
-        const index = docs.findIndex((p) => p.attachedTo === _id)
-        if (index === -1) {
-          changeSelected(selected)
-        } else {
-          selected = index
-          markAsRead(selected)
-        }
-      }
+      docs = res
+      updateDocs(docs, accountId, true)
       loading = false
     },
     {
@@ -76,22 +57,41 @@
     }
   )
 
+  $: updateDocs(docs, accountId)
+  function updateDocs(docs: DocUpdates[], accountId: Ref<Account>, forceUpdate = false) {
+    if (loading && !forceUpdate) {
+      return
+    }
+
+    _docs = []
+    for (const doc of docs) {
+      if (doc.txes.length === 0) continue
+      const txes = doc.txes.filter((p) => p.modifiedBy === accountId)
+      if (txes.length > 0) {
+        _docs.push({
+          ...doc,
+          txes
+        })
+      }
+    }
+    _docs = _docs
+  }
+
   function markAsRead (index: number) {
-    if (docs[index] !== undefined) {
-      docs[index].txes.forEach((p) => (p.isNew = false))
-      docs[index].txes = docs[index].txes
-      docs = docs
+    if (_docs[index] !== undefined) {
+      _docs[index].txes.forEach((p) => (p.isNew = false))
+      _docs[index].txes = _docs[index].txes
+      _docs = _docs
     }
   }
 
   function changeSelected (index: number) {
-    if (docs[index] !== undefined) {
-      listProvider.updateFocus(docs[index])
-      _id = docs[index]?.attachedTo
-      dispatch('change', docs[index])
+    if (_docs[index] !== undefined) {
+      _id = _docs[index]?.attachedTo
+      dispatch('change', _docs[index])
       markAsRead(index)
-    } else if (docs.length) {
-      if (index < docs.length - 1) {
+    } else if (_docs.length) {
+      if (index < _docs.length - 1) {
         selected++
       } else {
         selected--
@@ -106,16 +106,6 @@
 
   let viewlets: Map<ActivityKey, TxViewlet>
 
-  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
-    if (dir === 'vertical') {
-      const value = selected + offset
-      if (docs[value] !== undefined) {
-        selected = value
-        changeSelected(selected)
-      }
-    }
-  })
-
   const descriptors = createQuery()
   descriptors.query(activity.class.TxViewlet, {}, (result) => {
     viewlets = new Map(result.map((r) => [activityKey(r.objectClass, r.txClass), r]))
@@ -124,7 +114,7 @@
   let selected = 0
 
   let employee: Employee | undefined = undefined
-  $: newTxes = docs.reduce((acc, cur) => acc + cur.txes.filter((p) => p.isNew).length, 0) // items.length
+  $: newTxes = _docs.reduce((acc, cur) => acc + cur.txes.filter((p) => p.isNew).length, 0) // items.length
   $: account = $personAccountByIdStore.get(accountId as Ref<PersonAccount>)
   $: employee = account ? $employeeByIdStore.get(account.person as Ref<Employee>) : undefined
 
@@ -166,6 +156,46 @@
       changeSelected(selected)
     }
   }
+
+  const _class = chunter.class.Message
+  let messageId = generateId() as Ref<Message>
+
+  let space: Ref<DirectMessage> | undefined
+
+  $: _getDirectChannel(account?._id)
+  async function _getDirectChannel(account?: Ref<PersonAccount>): Promise<void> {
+    if (account === undefined) {
+      return
+    }
+
+    space = await getDirectChannel(client, me as Ref<PersonAccount>, account)
+  }
+
+  async function onMessage (event: CustomEvent) {
+    if (space === undefined) {
+      return
+    }
+
+    const { message, attachments } = event.detail
+    await client.addCollection(
+      _class,
+      space,
+      space,
+      chunter.class.DirectMessage,
+      'messages',
+      {
+        content: message,
+        createBy: me,
+        attachments
+      },
+      messageId
+    )
+
+    await createBacklinks(client, space, chunter.class.ChunterSpace, _id, message)
+
+    messageId = generateId()
+    loading = false
+  }
 </script>
 
 <ActionContext
@@ -175,15 +205,6 @@
 />
 <div class="flex-between header bottom-divider">
   <div class="flex-row-center">
-    <div class="clear-mins flex-no-shrink mr-4">
-      <ActionIcon
-        icon={IconBack}
-        size="medium"
-        action={() => {
-          dispatch('close')
-        }}
-      />
-    </div>
     {#if employee}
       <Avatar size="smaller" avatar={employee.avatar} />
       <span class="font-medium mx-2">{getName(client.getHierarchy(), employee)}</span>
@@ -203,21 +224,29 @@
     {#if loading}
       <Loading />
     {:else}
-      {#each docs as item, i (item._id)}
-        <NotificationView
-          value={item}
-          selected={selected === i}
-          {viewlets}
-          on:keydown={onKeydown}
-          on:click={() => {
-            selected = i
-            changeSelected(selected)
-          }}
-        />
+      {#each _docs as item, i (item._id)}
+        <div class="with-hover">
+          <NotificationView
+            value={item}
+            selected={false}
+            {viewlets}
+            on:keydown={onKeydown}
+            on:click={() => {
+              selected = i
+              changeSelected(selected)
+            }}
+            preview
+          />
+        </div>
       {/each}
     {/if}
   </Scroller>
 </div>
+{#if space !== undefined}
+  <div class="reference">
+    <AttachmentRefInput bind:loading {space} {_class} objectId={messageId} on:message={onMessage} />
+  </div>
+{/if}
 
 <style lang="scss">
   .header {
@@ -237,5 +266,15 @@
     color: var(--theme-inbox-people-notify);
     background-color: var(--theme-inbox-people-counter-bgcolor);
     border-radius: 50%;
+  }
+
+  .reference {
+    margin: 1.25rem 2.5rem;
+  }
+
+  .with-hover {
+    &:hover {
+      background-color: var(--theme-inbox-activitymsg-bgcolor);
+    }
   }
 </style>

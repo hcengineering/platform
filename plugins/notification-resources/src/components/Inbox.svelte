@@ -13,20 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { deepEqual } from 'fast-equals'
   import chunter from '@hcengineering/chunter'
-  import { PersonAccount } from '@hcengineering/contact'
-  import core, { Class, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
+  import { Employee, PersonAccount } from '@hcengineering/contact'
+  import { Class, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
   import { DocUpdates } from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
-  import { AnyComponent, Component, Tabs } from '@hcengineering/ui'
+  import { AnyComponent, Button, Component, IconAdd, Tabs, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import contact from '@hcengineering/contact'
+  import { UsersPopup } from '@hcengineering/contact-resources'
 
   import notification from '../plugin'
   import Activity from './Activity.svelte'
+  import EmployeeInbox from './EmployeeInbox.svelte'
   import Filter from './Filter.svelte'
   import People from './People.svelte'
-
+  import { getDirectChannel } from '../utils'
+  
   export let visibileNav: boolean
   let filter: 'all' | 'read' | 'unread' = 'all'
 
@@ -74,41 +77,32 @@
     prevValue = value
   }
 
-  async function openDM (value?: Ref<PersonAccount>) {
+  function openDM (value: Ref<Doc>) {
     if (value) {
-      const dmId = await getDirectMessage(value as Ref<PersonAccount>)
       const targetClass = hierarchy.getClass(chunter.class.DirectMessage)
       const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)
       component = panelComponent.component ?? view.component.EditDoc
-      _id = dmId
+      _id = value
       _class = chunter.class.DirectMessage
     }
   }
 
-  const myAccId = getCurrentAccount()._id
-
-  async function getDirectMessage (employeeAccount: Ref<PersonAccount>) {
-    const accIds = [myAccId, employeeAccount].sort()
-    const existingDms = await client.findAll(chunter.class.DirectMessage, {})
-
-    for (const dm of existingDms) {
-      if (deepEqual(dm.members.sort(), accIds)) {
-        return dm._id
-      }
-    }
-
-    const dmId = await client.createDoc(chunter.class.DirectMessage, core.space.Space, {
-      name: '',
-      description: '',
-      private: true,
-      archived: false,
-      members: accIds
-    })
-
-    return dmId
-  }
-
   let selectedTab = 0
+
+  const me = getCurrentAccount() as PersonAccount
+
+  function openUsersPopup(ev: MouseEvent) {
+    showPopup(UsersPopup, { _class: contact.mixin.Employee, docQuery: { _id: { $ne: me.person } } }, eventToHTMLElement(ev),
+    async (employee: Employee) => {
+      if (employee != null) {
+        const personAccount = await client.findOne(contact.class.PersonAccount, { person: employee._id })
+        if (personAccount !== undefined) {
+          const channel = await getDirectChannel(client, me._id as Ref<PersonAccount>, personAccount._id)
+          openDM(channel)
+        }
+      }
+    })
+  }
 </script>
 
 <div class="flex-row-top h-full">
@@ -120,20 +114,39 @@
         on:change={(e) => select(e.detail)}
         on:open={(e) => {
           selectedEmployee = e.detail
-          openDM(selectedEmployee)
+          select(undefined)
         }}
         padding={'0 1.75rem'}
         size="small"
       >
         <svelte:fragment slot="rightButtons">
-          <Filter bind:filter />
+          <div class="flex flex-gap-2">
+            {#if selectedTab > 0}
+              <Button
+                label={chunter.string.Message}
+                icon={IconAdd}
+                kind="accented"
+                on:click={openUsersPopup}
+              />
+            {/if}
+            <Filter bind:filter />
+          </div>
         </svelte:fragment>
       </Tabs>
     </div>
   {/if}
   <div class="antiPanel-component filled w-full">
-    {#if component && _id && _class}
-      <Component is={component} props={{ _id, _class }} on:close={() => select(undefined)} />
+    {#if selectedEmployee !== undefined && component === undefined}
+      <EmployeeInbox
+        accountId={selectedEmployee}
+        on:change={(e) => select(e.detail)}
+        on:dm={(e) => openDM(e.detail)}
+        on:close={() => {
+          selectedEmployee = undefined
+        }}
+      />
+    {:else if component && _id && _class}
+      <Component is={component} props={{ _id, _class, embedded: selectedTab === 0 }} on:close={() => select(undefined)} />
     {/if}
   </div>
 </div>

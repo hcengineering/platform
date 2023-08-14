@@ -118,6 +118,8 @@ export interface SavedMessages extends Preference {
  */
 export const chunterId = 'chunter' as Plugin
 
+export * from './utils'
+
 export default plugin(chunterId, {
   icon: {
     Chunter: '' as Asset,
