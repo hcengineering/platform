@@ -57,16 +57,23 @@
     resultQuery = { ...p, ...query }
   })
 
+  $: queryNoLookup = noLookup(resultQuery)
+
   $: if (documents === undefined) {
     docsQuery.query(
       _class,
-      noLookup(resultQuery),
+      queryNoLookup,
       (res) => {
         docs = res
       },
       {
         ...resultOptions,
-        projection: { ...resultOptions.projection, _id: 1, _class: 1, ...getProjection(viewOptions.groupBy) }
+        projection: {
+          ...resultOptions.projection,
+          _id: 1,
+          _class: 1,
+          ...getProjection(viewOptions.groupBy, queryNoLookup)
+        }
       }
     )
   } else {
@@ -74,9 +81,12 @@
     docs = documents
   }
 
-  function getProjection (fields: string[]): Record<string, number> {
+  function getProjection (fields: string[], query: DocumentQuery<Doc>): Record<string, number> {
     const res: Record<string, number> = {}
     for (const f of fields) {
+      res[f] = 1
+    }
+    for (const f of Object.keys(query)) {
       res[f] = 1
     }
     return res
