@@ -94,7 +94,8 @@ export async function OnPersonAccountCreate (tx: Tx, control: TriggerControl): P
       description: '',
       archived: false,
       private: false,
-      members: [user._id]
+      members: [user._id],
+      visibility: 'public'
     },
     `${user._id}_calendar` as Ref<Calendar>,
     undefined,
@@ -108,11 +109,10 @@ async function onEventCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const ev = TxProcessor.createDoc2Doc(ctx)
 
   const res: Tx[] = []
-  const accounts = await control.modelDb.findAll(contact.class.PersonAccount, {})
-  const participants = accounts.filter(
-    (p) => (p._id !== ev.createdBy ?? ev.modifiedBy) && ev.participants.includes(p.person)
-  )
-  for (const acc of participants) {
+  for (const participant of ev.participants) {
+    const acc = (await control.modelDb.findAll(contact.class.PersonAccount, { person: participant }))[0]
+    if (acc === undefined) continue
+    if (acc._id === ev.createdBy ?? ev.modifiedBy) continue
     const { _id, _class, space, modifiedBy, modifiedOn, ...data } = ev
     const innerTx = control.txFactory.createTxCreateDoc(_class, `${acc._id}_calendar` as Ref<Calendar>, {
       ...data,

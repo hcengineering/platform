@@ -33,7 +33,8 @@ async function migrateCalendars (tx: TxOperations): Promise<void> {
           description: '',
           archived: false,
           private: false,
-          members: [user._id]
+          members: [user._id],
+          visibility: 'public'
         },
         `${user._id}_calendar` as Ref<Calendar>,
         undefined,
@@ -48,6 +49,11 @@ async function migrateCalendars (tx: TxOperations): Promise<void> {
   const space = await tx.findOne(calendar.class.Calendar, { _id: calendar.space.PersonalEvents })
   if (space !== undefined) {
     await tx.remove(space)
+  }
+
+  const calendars = await tx.findAll(calendar.class.Calendar, { visibility: { $exists: false } })
+  for (const calendar of calendars) {
+    await tx.update(calendar, { visibility: 'public' })
   }
 }
 

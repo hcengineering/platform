@@ -50,8 +50,8 @@ import view, { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
-import calendar from './plugin'
 import { AnyComponent } from '@hcengineering/ui'
+import calendar from './plugin'
 
 export * from '@hcengineering/calendar'
 export { calendarId } from '@hcengineering/calendar'
@@ -62,13 +62,16 @@ export const DOMAIN_CALENDAR = 'calendar' as Domain
 @Model(calendar.class.Calendar, core.class.Space)
 @UX(calendar.string.Calendar, calendar.icon.Calendar)
 export class TCalendar extends TSpaceWithStates implements Calendar {
-  @Prop(TypeString(), calendar.string.HideDetails)
-    hideDetails?: boolean
+  visibility!: 'public' | 'freeBusy' | 'private'
+
+  sync?: boolean
 }
 
 @Model(calendar.class.Event, core.class.AttachedDoc, DOMAIN_CALENDAR)
 @UX(calendar.string.Event, calendar.icon.Calendar)
 export class TEvent extends TAttachedDoc implements Event {
+  declare space: Ref<Calendar>
+
   eventId!: string
 
   @Prop(TypeString(), calendar.string.Title)
@@ -106,6 +109,8 @@ export class TEvent extends TAttachedDoc implements Event {
     externalParticipants?: string[]
 
   access!: 'freeBusyReader' | 'reader' | 'writer' | 'owner'
+
+  visibility?: 'public' | 'freeBusy' | 'private'
 }
 
 @Model(calendar.class.ReccuringEvent, calendar.class.Event)
@@ -174,7 +179,8 @@ export function createModel (builder: Builder): void {
       icon: calendar.component.CalendarIntegrationIcon,
       createComponent: calendar.component.IntegrationConnect,
       onDisconnect: calendar.handler.DisconnectHandler,
-      reconnectComponent: calendar.component.IntegrationConnect
+      reconnectComponent: calendar.component.IntegrationConnect,
+      configureComponent: calendar.component.IntegrationConfigure
     },
     calendar.integrationType.Calendar
   )

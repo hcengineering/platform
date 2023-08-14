@@ -39,7 +39,7 @@
     getMonday,
     showPopup
   } from '@hcengineering/ui'
-  import { CalendarMode, DayCalendar } from '../index'
+  import { CalendarMode, DayCalendar, calendarStore, hidePrivateEvents } from '../index'
   import calendar from '../plugin'
   import Day from './Day.svelte'
 
@@ -66,6 +66,7 @@
   let selectedDate: Date = new Date()
 
   let raw: Event[] = []
+  let visible: Event[] = []
   let objects: Event[] = []
 
   function getFrom (date: Date, mode: CalendarMode): Timestamp {
@@ -116,7 +117,7 @@
 
   let calendars: Calendar[] = []
 
-  calendarsQuery.query(calendar.class.Calendar, { createdBy: me._id }, (res) => {
+  calendarsQuery.query(calendar.class.Calendar, { members: me._id }, (res) => {
     calendars = res
   })
 
@@ -138,7 +139,8 @@
     )
   }
   $: update(_class, query, calendars, options)
-  $: objects = getAllEvents(raw, from, to)
+  $: visible = hidePrivateEvents(raw, $calendarStore)
+  $: objects = getAllEvents(visible, from, to)
 
   function inRange (start: Date, end: Date, startPeriod: Date, period: 'day' | 'hour'): boolean {
     const endPeriod =
@@ -242,7 +244,7 @@
         current.dueDate = new Date(e.detail.date).setMinutes(new Date(e.detail.date).getMinutes() + 30)
       } else {
         const me = getCurrentAccount() as PersonAccount
-        raw.push({
+        const temp: Event = {
           _id: dragItemId,
           allDay: false,
           eventId: generateEventId(),
@@ -253,13 +255,14 @@
           attachedToClass: dragItem._class,
           _class: dragEventClass,
           collection: 'events',
-          space: dragItem.space,
+          space: `${me._id}_calendar` as Ref<Calendar>,
           modifiedBy: me._id,
           participants: [me.person],
           modifiedOn: Date.now(),
           date: e.detail.date.getTime(),
           dueDate: new Date(e.detail.date).setMinutes(new Date(e.detail.date).getMinutes() + 30)
-        })
+        }
+        raw.push(temp)
       }
       raw = raw
     }
@@ -270,7 +273,8 @@
   function clear (dragItem: Doc | undefined) {
     if (dragItem === undefined) {
       raw = raw.filter((p) => p._id !== dragItemId)
-      objects = getAllEvents(raw, from, to)
+      visible = hidePrivateEvents(raw, $calendarStore)
+      objects = getAllEvents(visible, from, to)
     }
   }
 
