@@ -13,22 +13,9 @@
 // limitations under the License.
 //
 
-import type { Metadata, Plugin, Resource } from '@hcengineering/platform'
-import { plugin } from '@hcengineering/platform'
-import { SupportWidgetFactory } from '@hcengineering/support'
+import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 
-/**
- * @public
- */
-export const intercomId = 'intercom' as Plugin
-
-export default plugin(intercomId, {
-  metadata: {
-    ApiBaseURL: '' as Metadata<string>,
-    AppID: '' as Metadata<string>,
-    SecretKey: '' as Metadata<string>
-  },
-  function: {
-    GetWidget: '' as Resource<SupportWidgetFactory>
-  }
-})
+export const supportOperation: MigrateOperation = {
+  async migrate (client: MigrationClient): Promise<void> {},
+  async upgrade (client: MigrationUpgradeClient): Promise<void> {}
+}

@@ -1515,6 +1515,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/model-support",
+      "projectFolder": "models/support",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/support",
       "projectFolder": "plugins/support",
       "shouldPublish": true

@@ -112,6 +112,7 @@ specifiers:
   '@rush-temp/model-server-translate': file:./projects/model-server-translate.tgz
   '@rush-temp/model-server-view': file:./projects/model-server-view.tgz
   '@rush-temp/model-setting': file:./projects/model-setting.tgz
+  '@rush-temp/model-support': file:./projects/model-support.tgz
   '@rush-temp/model-tags': file:./projects/model-tags.tgz
   '@rush-temp/model-task': file:./projects/model-task.tgz
   '@rush-temp/model-telegram': file:./projects/model-telegram.tgz
@@ -264,7 +265,7 @@ specifiers:
   '@types/faker': ~5.5.9
   '@types/heft-jest': ^1.0.3
   '@types/html-to-text': ^8.1.1
-  '@types/intercom-web': ~2.8.21
+  '@types/intercom-web': ^2.8.21
   '@types/jest': ~28.1.0
   '@types/koa': ^2.13.4
   '@types/koa-bodyparser': ^4.3.3
@@ -509,6 +510,7 @@ dependencies:
   '@rush-temp/model-server-translate': file:projects/model-server-translate.tgz_typescript@4.8.4
   '@rush-temp/model-server-view': file:projects/model-server-view.tgz_typescript@4.8.4
   '@rush-temp/model-setting': file:projects/model-setting.tgz_typescript@4.8.4
+  '@rush-temp/model-support': file:projects/model-support.tgz_typescript@4.8.4
   '@rush-temp/model-tags': file:projects/model-tags.tgz_typescript@4.8.4
   '@rush-temp/model-task': file:projects/model-task.tgz_typescript@4.8.4
   '@rush-temp/model-telegram': file:projects/model-telegram.tgz_typescript@4.8.4
@@ -18480,7 +18482,7 @@ packages:
     dev: false
 
   file:projects/intercom-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-gydfP1yhk+yZwYFNjvBwXCQ3BR6/wFnWCYaL70pA+qBoDm4wt2UhD2BYHVlC3s9pjBLdPRKNf8yeF71czaB3Hw==, tarball: file:projects/intercom-resources.tgz}
+    resolution: {integrity: sha512-jm2piNnNuTSplGkuhhAPbHTK3oYn2Kku9g4JkdXnalfYy/jBRJrUJXV91UdGbK7L5s1aQ59j1wziRURUS+fTIg==, tarball: file:projects/intercom-resources.tgz}
     id: file:projects/intercom-resources.tgz
     name: '@rush-temp/intercom-resources'
     version: 0.0.0
@@ -19723,6 +19725,27 @@ packages:
     resolution: {integrity: sha512-wuSZ+tmEQts89rYDUAdt/0gzM2MN7kHsHOLK9Q+Z9Augm4UVfsyS825fG7XRzS14FuA/488HPkBm5jqDY3sdJQ==, tarball: file:projects/model-setting.tgz}
     id: file:projects/model-setting.tgz
     name: '@rush-temp/model-setting'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.47.11
+      '@types/heft-jest': 1.0.3
+      '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
+      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
+      eslint: 8.27.0
+      eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
+      eslint-plugin-import: 2.26.0_eslint@8.27.0
+      eslint-plugin-n: 15.5.1_eslint@8.27.0
+      eslint-plugin-promise: 6.1.1_eslint@8.27.0
+      prettier: 2.8.8
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+    dev: false
+
+  file:projects/model-support.tgz_typescript@4.8.4:
+    resolution: {integrity: sha512-FiN4/Xd/5RNNmyUnJ+vCuHENLuGHNPY+ged/SRkx287LQAgQDlyCkcISiieYDN3r7JFeSJfdNQ1PgPxPbJW+eQ==, tarball: file:projects/model-support.tgz}
+    id: file:projects/model-support.tgz
+    name: '@rush-temp/model-support'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.47.11
@@ -21714,7 +21737,7 @@ packages:
     dev: false
 
   file:projects/support-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-rXtuav9Z4eVltJUyCr3J64oBUUIevqaeZMtCq9tpWHuS3xtKq1/lXCRfJtL9emqy8euEI0S43H6QtUZY7qfIjw==, tarball: file:projects/support-resources.tgz}
+    resolution: {integrity: sha512-QGH85mOI91VJO7+VhwXSYUyQR+GlGBBkYhzLTd3C4ir28tjcHbzryRwOUf1J9iiTuTtUBWCmyKTfOgZz97SGzg==, tarball: file:projects/support-resources.tgz}
     id: file:projects/support-resources.tgz
     name: '@rush-temp/support-resources'
     version: 0.0.0

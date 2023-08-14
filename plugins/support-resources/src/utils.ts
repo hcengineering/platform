@@ -13,22 +13,17 @@
 // limitations under the License.
 //
 
-import type { Metadata, Plugin, Resource } from '@hcengineering/platform'
-import { plugin } from '@hcengineering/platform'
-import { SupportWidgetFactory } from '@hcengineering/support'
+import { Account, Ref, Space } from '@hcengineering/core'
+import { getClient } from '@hcengineering/presentation'
+import support from '@hcengineering/support'
 
-/**
- * @public
- */
-export const intercomId = 'intercom' as Plugin
+export async function markHasUnreadMessages (user: Ref<Account>, hasUnreadMessages: boolean): Promise<void> {
+  const client = getClient()
 
-export default plugin(intercomId, {
-  metadata: {
-    ApiBaseURL: '' as Metadata<string>,
-    AppID: '' as Metadata<string>,
-    SecretKey: '' as Metadata<string>
-  },
-  function: {
-    GetWidget: '' as Resource<SupportWidgetFactory>
+  const doc = await client.findOne(support.class.SupportStatus, { user })
+  if (doc !== undefined) {
+    await client.update(doc, { hasUnreadMessages })
+  } else {
+    await client.createDoc(support.class.SupportStatus, user as string as Ref<Space>, { user, hasUnreadMessages })
   }
-})
+}

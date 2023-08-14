@@ -18,6 +18,7 @@ import { Resources } from '@hcengineering/platform'
 import { createSupportClient } from './support'
 
 export { getSupportClient } from './support'
+export { markHasUnreadMessages } from './utils'
 
 export default async (): Promise<Resources> => ({
   function: {

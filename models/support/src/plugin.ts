@@ -12,23 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { supportId } from '@hcengineering/support'
+import support from '@hcengineering/support-resources/src/plugin'
+import { mergeIds } from '@hcengineering/platform'
 
-import type { Metadata, Plugin, Resource } from '@hcengineering/platform'
-import { plugin } from '@hcengineering/platform'
-import { SupportWidgetFactory } from '@hcengineering/support'
-
-/**
- * @public
- */
-export const intercomId = 'intercom' as Plugin
-
-export default plugin(intercomId, {
-  metadata: {
-    ApiBaseURL: '' as Metadata<string>,
-    AppID: '' as Metadata<string>,
-    SecretKey: '' as Metadata<string>
-  },
-  function: {
-    GetWidget: '' as Resource<SupportWidgetFactory>
-  }
-})
+export default mergeIds(supportId, support, {})

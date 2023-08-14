@@ -42,7 +42,7 @@ export interface SupportWidget {
  * @public
  */
 export interface SupportWidgetConfig {
-  account?: Account
+  account: Account
   workspace?: string
   language?: string
 }
@@ -51,3 +51,12 @@ export interface SupportWidgetConfig {
  * @public
  */
 export type SupportClientFactory = () => SupportClient
+
+/**
+ * @public
+ */
+export type SupportWidgetFactory = (
+  config: SupportWidgetConfig,
+  onUnreadCountChanged?: (count: number) => void,
+  onVisibilityChanged?: (visible: boolean) => void
+) => SupportWidget

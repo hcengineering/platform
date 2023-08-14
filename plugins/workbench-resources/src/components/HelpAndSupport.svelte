@@ -101,7 +101,7 @@
     }
   ]
 
-  async function contactUs() {
+  async function contactUs () {
     await getSupportClient()?.showWidget()
   }
 </script>

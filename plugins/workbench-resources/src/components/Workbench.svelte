@@ -582,6 +582,19 @@
     await supportClient.then((support) => support.destroy())
   })
 
+  let hasSupportReply = false
+  const supportQuery = createQuery()
+
+  supportQuery.query(
+    support.class.SupportStatus,
+    {
+      user: accountId
+    },
+    (res) => {
+      hasSupportReply = res.hasUnread
+    }
+  )
+
   $: checkInbox($popupstore)
 
   let inboxPopup: PopupResult | undefined = undefined
