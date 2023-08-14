@@ -75,6 +75,8 @@ export default mergeIds(calendarId, calendar, {
     SaturdayShort: '' as IntlString,
     SundayShort: '' as IntlString,
     Times: '' as IntlString,
-    AddParticipants: '' as IntlString
+    AddParticipants: '' as IntlString,
+    Sync: '' as IntlString,
+    Busy: '' as IntlString
   }
 })

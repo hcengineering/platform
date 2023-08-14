@@ -14,9 +14,11 @@
 -->
 <script lang="ts">
   import { Event } from '@hcengineering/calendar'
-  import { addZero } from '@hcengineering/ui'
+  import { Label, addZero } from '@hcengineering/ui'
+  import calendar from '../plugin'
 
   export let event: Event
+  export let hideDetails: boolean = false
   export let oneRow: boolean = false
   export let narrow: boolean = false
   export let size: { width: number; height: number }
@@ -30,7 +32,13 @@
 </script>
 
 {#if !narrow}
-  <b class="overflow-label">{event.title}</b>
+  {#if !hideDetails}
+    <b class="overflow-label">
+      {event.title}
+    </b>
+  {:else}
+    <span class="content-dark-color"><Label label={calendar.string.Busy} /></span>
+  {/if}
 {/if}
 {#if !oneRow}
   <span class="overflow-label text-sm">{getTime(startDate)}-{getTime(endDate)}</span>
