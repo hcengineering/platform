@@ -93,6 +93,9 @@ export async function createIssue (page: Page, props: IssueProps): Promise<void>
   await fillIssueForm(page, props)
   await page.click('form button:has-text("Create issue")')
   await page.waitForSelector('form.antiCard', { state: 'detached' })
+
+  // Close the modal window after creating the issue
+  await page.locator('.flex-between > .antiButton').first().click();
 }
 
 export async function createComponent (page: Page, componentName: string): Promise<void> {
