@@ -276,6 +276,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     // We need to update fields if they are different.
     const documentUpdate: DocumentUpdate<Doc> = {}
     for (const [k, v] of Object.entries(raw)) {
+      // я бы вынес в отдельную константу (встречается на 312 строке)
       if (['_class', '_id', 'modifiedBy', 'modifiedOn', 'space', 'attachedTo', 'attachedToClass'].includes(k)) {
         continue
       }

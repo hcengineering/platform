@@ -37,6 +37,7 @@
     return (endYear - startYear) * 12 + (endMonth - startMonth)
   }
 
+// Можно вынести, если это общий метод преобразования даты
   async function formatTime (now: number, value: number) {
     let passed = now - value
     if (passed < 0) passed = 0

@@ -341,6 +341,7 @@ export function getAttributePresenterClass (
   let category: AttributeCategory = 'attribute'
   if (hierarchy.isDerived(attrClass, core.class.RefTo)) {
     attrClass = (attribute.type as RefTo<Doc>).to
+    // Стоит вынести в отдельный enum
     category = 'object'
   }
   if (hierarchy.isDerived(attrClass, core.class.TypeMarkup)) {

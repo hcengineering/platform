@@ -326,6 +326,7 @@ async function loadModel (
 }
 
 function fillConfiguration (systemTx: Tx[], configs: Map<Ref<PluginConfiguration>, PluginConfiguration>): void {
+  // Здесь не самые показательные имена переменных. Сходу сложно разобраться что происходит в цикле
   for (const t of systemTx) {
     if (t._class === core.class.TxCreateDoc) {
       const ct = t as TxCreateDoc<Doc>
@@ -349,6 +350,7 @@ function pluginFilterTx (
   configs: Map<Ref<PluginConfiguration>, PluginConfiguration>,
   systemTx: Tx[]
 ): Tx[] {
+  // Тоже вопрос к названиям переменных
   for (const a of excludedPlugins) {
     for (const c of configs.values()) {
       if (a.pluginId === c.pluginId) {

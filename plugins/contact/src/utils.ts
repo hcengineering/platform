@@ -49,6 +49,7 @@ export function getGravatarUrl (
 ): string {
   let width = 64
   switch (size) {
+    // Стоит вынести в отдельный enum
     case 'inline':
     case 'tiny':
     case 'x-small':

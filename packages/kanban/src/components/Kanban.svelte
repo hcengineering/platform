@@ -209,6 +209,7 @@
     return -1
   }
 
+// Очень большое количество разветвлений в функции. Стоит разбить на более простые методы, например, по значениям offset
   export function select (offset: 1 | -1 | 0, of?: Doc, dir?: 'vertical' | 'horizontal'): void {
     let pos = (of != null ? objects.findIndex((it) => it._id === of._id) : selection) ?? -1
     if (pos === -1) {

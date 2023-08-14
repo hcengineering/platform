@@ -203,6 +203,7 @@
   {:else}
     <Scroller
       bind:divScroll={scroll}
+      // Всю логику лучше выносить из компонента
       on:divScrollTop={(event) => {
         if (lastHref === window.location.href && event && event.detail !== $PanelScrollTop[lastHref]) {
           $PanelScrollTop[lastHref] = event.detail

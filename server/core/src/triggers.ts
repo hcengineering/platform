@@ -93,6 +93,7 @@ export class Triggers {
         })
         q[key].$in = Array.from(newIn.values())
       }
+      // Ещё раз про именование переменных: объект q со свойствами nin, in и ne. Сходу в таком коде сложно ориентироваться
       if (Array.isArray(q[key].$nin)) {
         const oldNin = q[key].$nin
         const newNin = new Set(oldNin)

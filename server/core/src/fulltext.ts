@@ -155,6 +155,7 @@ export class FullTextIndex implements WithFind {
 
     classes = classes.filter((it) => {
       if (typeof query._class === 'object') {
+        // Оператор ? лишний, в условии выше уже подтверждено существование _class
         if (query._class?.$in !== undefined) {
           return query._class.$in.includes(it)
         }

@@ -155,6 +155,7 @@ export function fromStatus (status: Status, id?: ReqId): Response<any> {
   return { id, error: status }
 }
 
+// Судя по историчности, дальнейший код пора удалять
 // class DeferredPromise {
 //   promise: Promise<any>
 //   resolve!: <T>(value: T) => void

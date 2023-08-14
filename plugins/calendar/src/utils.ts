@@ -44,7 +44,7 @@ function generateRecurringValues (
 
   return values
 }
-
+//generateDailyValues, generateWeeklyValues, generateMonthlyValues и generateYearlyValues очень похожи по реализации. Я бы попробовал сделать универсальный общий метод
 function generateDailyValues (
   rule: RecurringRule,
   currentDate: Date,

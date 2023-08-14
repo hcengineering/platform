@@ -564,6 +564,7 @@ export class LiveQuery extends TxProcessor implements Client {
     }
   }
 
+  // Метод с уровнями вложенности 5 и 6, в нем очень сложно разобраться
   private async proccesLookupUpdateDoc (
     docs: Doc[],
     lookup: Lookup<Doc>,
@@ -838,6 +839,7 @@ export class LiveQuery extends TxProcessor implements Client {
     }
   }
 
+  // Метод с уровнями вложенности 5 и 6, в нем очень сложно разобраться
   private proccesLookupAddDoc (docs: Doc[], lookup: Lookup<Doc>, doc: Doc): boolean {
     let needCallback = false
     const lookupWays = this.getLookupWays(lookup, doc._class)

@@ -20,6 +20,7 @@ export function findProperty (objects: Doc[], propertyKey: string, value: any): 
   const result: Doc[] = []
   for (const object of objects) {
     const val = getObjectValue(propertyKey, object)
+    // Первое условие уже содержит в себе второе
     if (val === value || (val == null && value == null) || isArrayValueCheck(val, value)) {
       result.push(object)
     }
@@ -102,6 +103,7 @@ function getSortingResult (aValue: any, bValue: any, order: SortingOrder | Sorti
     return 1
   }
 
+  // Не самое говорящее название переменной
   const orderOrder = typeof order === 'object' ? order.order : order
 
   if (Array.isArray(aValue) && Array.isArray(bValue)) {
@@ -126,6 +128,7 @@ async function getEnums<T extends Doc> (
   for (const key in sortOptions) {
     const attr = hierarchy.findAttribute(_class, key)
     if (attr !== undefined) {
+      // Лишнее условие
       if (attr !== undefined) {
         if (attr.type._class === core.class.EnumOf) {
           const ref = (attr.type as EnumOf).of

@@ -20,6 +20,7 @@ import { FindResult } from './storage'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
+  // Вместо блока if можно использовать метод строки: return result.padStart(chars, '0')
   if (result.length < chars) {
     return '0'.repeat(chars - result.length) + result
   }
@@ -27,6 +28,7 @@ function toHex (value: number, chars: number): string {
 }
 
 let counter = (Math.random() * (1 << 24)) | 0
+// Зачем выносить константу, если она используется только внутри generateId?
 const random = toHex((Math.random() * (1 << 24)) | 0, 6) + toHex((Math.random() * (1 << 16)) | 0, 4)
 
 function timestamp (): string {
@@ -47,6 +49,7 @@ export function generateId<T extends Doc> (): Ref<T> {
   return (timestamp() + random + count()) as Ref<T>
 }
 
+// Почему нужно таким способом хранить account?
 let currentAccount: Account
 
 /**
@@ -127,6 +130,7 @@ export function docUpdKey (name: string, opt?: IndexKeyOptions): string {
  * @public
  */
 export function docKey (name: string, opt?: IndexKeyOptions): string {
+  // Оператор ?? излишен. Если extra не пустой, то join() никогда не выдаст значение === false
   const extra = opt?.extra !== undefined && opt?.extra?.length > 0 ? `#${opt.extra?.join('#') ?? ''}` : ''
   return (
     (opt?.docId !== undefined ? opt.docId.split('.').join('_') + '|' : '') +
