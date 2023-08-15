@@ -189,6 +189,7 @@
       ...resultQuery,
       archived
     }}
+    totalQuery={{}}
     showNotification
   />
 {/if}
