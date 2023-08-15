@@ -384,15 +384,21 @@
       <span class="select-text">
         <Label label={view.string.Total} params={{ total: gtotal }} />
       </span>
-      {#if objects.length > 0 && objects.length < gtotal}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
+
+      {#if objects.length > 0 && (total !== gtotal || objects.length < total) }
         <span class="select-text ml-2">
           <Label
             label={view.string.Shown}
-            params={{ total: objects.length === total ? -1 : total, len: objects.length }}
+            params={{
+              total: (objects.length === total || total === gtotal) ? -1 : total,
+              len: objects.length,
+            }}
           />
         </span>
+      {/if}
 
+      {#if objects.length > 0 && objects.length < total}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <Button
           label={ui.string.ShowMore}
           kind={'ghost'}
