@@ -31,6 +31,8 @@ export interface Attachment extends AttachedDoc {
   lastModified: number
   description?: string
   pinned?: boolean // If defined and true, will be shown in top of attachments collection
+
+  readonly?: boolean // If readonly, user will not be able to remove or modify this attachment
 }
 
 /**

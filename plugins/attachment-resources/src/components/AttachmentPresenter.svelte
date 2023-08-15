@@ -131,7 +131,7 @@
         >
           <Label label={presentation.string.Download} />
         </a>
-        {#if removable}
+        {#if removable && value.readonly !== true}
           <span>•</span>
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <span
