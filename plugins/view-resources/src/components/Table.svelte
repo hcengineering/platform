@@ -385,13 +385,13 @@
         <Label label={view.string.Total} params={{ total: gtotal }} />
       </span>
 
-      {#if objects.length > 0 && (total !== gtotal || objects.length < total) }
+      {#if objects.length > 0 && (total !== gtotal || objects.length < total)}
         <span class="select-text ml-2">
           <Label
             label={view.string.Shown}
             params={{
-              total: (objects.length === total || total === gtotal) ? -1 : total,
-              len: objects.length,
+              total: objects.length === total || total === gtotal ? -1 : total,
+              len: objects.length
             }}
           />
         </span>
