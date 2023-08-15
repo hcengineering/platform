@@ -16,11 +16,12 @@
   import { getName, Person } from '@hcengineering/contact'
   import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import type { LabelAndProps, IconSize } from '@hcengineering/ui'
-  import { PersonLabelTooltip } from '..'
+  import { personByIdStore, PersonLabelTooltip } from '..'
   import PersonContent from './PersonContent.svelte'
   import { getClient } from '@hcengineering/presentation'
+  import { Ref } from '@hcengineering/core'
 
-  export let value: Person | null | undefined
+  export let value: Ref<Person> | Person | null | undefined
   export let inline = false
   export let enlargedText = false
   export let disabled = false
@@ -38,6 +39,7 @@
   export let maxWidth = ''
 
   const client = getClient()
+  $: personValue = typeof value === 'string' ? $personByIdStore.get(value) : value
 
   function getTooltip (
     tooltipLabels: PersonLabelTooltip | undefined,
@@ -75,8 +77,8 @@
 
 {#if value || shouldShowPlaceholder}
   <PersonContent
-    showTooltip={getTooltip(tooltipLabels, value)}
-    {value}
+    showTooltip={getTooltip(tooltipLabels, personValue)}
+    value={personValue}
     {inline}
     {onEdit}
     {avatarSize}
