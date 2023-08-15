@@ -228,7 +228,11 @@ export class TxOperations implements Omit<Client, 'notify'> {
   ): Promise<TxResult> {
     const hierarchy = this.client.getHierarchy()
     const mixClass = Hierarchy.mixinOrClass(doc)
-    if (hierarchy.isMixin(mixClass)) {
+    const updateKeys = Object.keys(update).filter((key) => !key.startsWith('$'))
+    if (
+      hierarchy.isMixin(mixClass) &&
+      Array.from(hierarchy.getAllAttributes(mixClass).keys()).every((attrKey) => updateKeys.includes(attrKey))
+    ) {
       // TODO: Rework it is wrong, we need to split values to mixin update and original document update if mixed.
       const baseClass = hierarchy.getBaseClass(doc._class)
       return this.updateMixin(doc._id, baseClass, doc.space, mixClass, update, modifiedOn, modifiedBy)
@@ -248,7 +252,17 @@ export class TxOperations implements Omit<Client, 'notify'> {
         modifiedBy
       )
     }
-    return this.updateDoc(doc._class, doc.space, doc._id, update, retrieve, modifiedOn, modifiedBy)
+    let docToUpdate = doc
+    if (hierarchy.isMixin(mixClass)) docToUpdate = Hierarchy.toDoc(doc)
+    return this.updateDoc(
+      docToUpdate._class,
+      docToUpdate.space,
+      docToUpdate._id,
+      update,
+      retrieve,
+      modifiedOn,
+      modifiedBy
+    )
   }
 
   remove<T extends Doc>(doc: T, modifiedOn?: Timestamp, modifiedBy?: Ref<Account>): Promise<TxResult> {
