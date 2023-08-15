@@ -244,6 +244,7 @@
       query={{
         ...resultQuery
       }}
+      totalQuery={{}}
       showNotification
     />
   {/if}

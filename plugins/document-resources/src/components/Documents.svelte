@@ -80,6 +80,7 @@
       config={preference?.config ?? viewlet.config}
       options={viewlet.options}
       query={resultQuery}
+      totalQuery={query}
       showNotification
     />
   {/if}
