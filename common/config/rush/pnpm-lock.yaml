@@ -133,6 +133,7 @@ specifiers:
   '@rush-temp/pod-backup': file:./projects/pod-backup.tgz
   '@rush-temp/pod-collaborator': file:./projects/pod-collaborator.tgz
   '@rush-temp/pod-front': file:./projects/pod-front.tgz
+  '@rush-temp/pod-intercom': file:./projects/pod-intercom.tgz
   '@rush-temp/pod-server': file:./projects/pod-server.tgz
   '@rush-temp/preference': file:./projects/preference.tgz
   '@rush-temp/preference-assets': file:./projects/preference-assets.tgz
@@ -326,6 +327,7 @@ specifiers:
   got: ^11.8.3
   html-to-text: ^9.0.3
   html-webpack-plugin: ^5.5.0
+  intercom-client: ^4.0.0
   intl-messageformat: ^9.7.1
   jpeg-js: ~0.4.3
   just-clone: ~6.2.0
@@ -531,6 +533,7 @@ dependencies:
   '@rush-temp/pod-backup': file:projects/pod-backup.tgz
   '@rush-temp/pod-collaborator': file:projects/pod-collaborator.tgz_bufferutil@4.0.7
   '@rush-temp/pod-front': file:projects/pod-front.tgz
+  '@rush-temp/pod-intercom': file:projects/pod-intercom.tgz_bufferutil@4.0.7
   '@rush-temp/pod-server': file:projects/pod-server.tgz
   '@rush-temp/preference': file:projects/preference.tgz
   '@rush-temp/preference-assets': file:projects/preference-assets.tgz
@@ -724,6 +727,7 @@ dependencies:
   got: 11.8.5
   html-to-text: 9.0.3
   html-webpack-plugin: 5.5.0_webpack@5.75.0
+  intercom-client: 4.0.0
   intl-messageformat: 9.13.0
   jpeg-js: 0.4.4
   just-clone: 6.2.0
@@ -7943,6 +7947,14 @@ packages:
     engines: {node: '>= 0.4'}
     dev: false
 
+  /axios/0.24.0:
+    resolution: {integrity: sha512-Q6cWsys88HoPgAaFAVUb0WpPk0O8iTeisR9IMqy9G8AbO4NlpVknrnQS03zzF9PGAWgO3cgletO3VjV/P7VztA==}
+    dependencies:
+      follow-redirects: 1.15.2
+    transitivePeerDependencies:
+      - debug
+    dev: false
+
   /babel-core/7.0.0-bridge.0_@babel+core@7.20.2:
     resolution: {integrity: sha512-poPX9mZH/5CSanm50Q+1toVci6pv5KSRv/5TWCwtzQS5XEwn40BcCrgIeMFWP9CKKIniKXNxoIOnOq4VVlGXhg==}
     peerDependencies:
@@ -11196,6 +11208,10 @@ packages:
       webpack: 5.75.0_c5a9b74f1e48ccd7ef01359287c5ad78
     dev: false
 
+  /htmlencode/0.0.4:
+    resolution: {integrity: sha512-0uDvNVpzj/E2TfvLLyyXhKBRvF1y84aZsyRxRXFsQobnHaL4pcaXk+Y9cnFlvnxrBLeXDNq/VJBD+ngdBgQG1w==}
+    dev: false
+
   /htmlparser2-svelte/4.1.0:
     resolution: {integrity: sha512-+4f4RBFz7Rj2Hp0ZbFbXC+Kzbd6S9PgjiuFtdT76VMNgKogrEZy0pG2UrPycPbrZzVEIM5lAT3lAdkSTCHLPjg==}
     dependencies:
@@ -11448,6 +11464,17 @@ packages:
 
   /ini/1.3.8:
     resolution: {integrity: sha512-JV/yugV2uzW5iMRSiZAyDtQd+nxtUnjeLt0acNdw98kKLrvuRVyB80tsREOE7yvGVgalhZ6RNXCmEHkUKBKxew==}
+    dev: false
+
+  /intercom-client/4.0.0:
+    resolution: {integrity: sha512-xtAsO0wnyd46JNRP98/JK0BXIfWNTO/tUk+1op4rnZ+N/DSdhAaBw8ZaJD8bL8ePNhyAMl/Vd6h7kYI/h9riaw==}
+    engines: {node: '>= v8.0.0'}
+    dependencies:
+      axios: 0.24.0
+      htmlencode: 0.0.4
+      lodash: 4.17.21
+    transitivePeerDependencies:
+      - debug
     dev: false
 
   /internal-slot/1.0.3:
@@ -18877,7 +18904,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz_typescript@4.8.4:
-    resolution: {integrity: sha512-YoowYjf3SU8BY37ZFpPzyd8KEJNtxKN9QYhmvEMDgb4zHRx8UoT1z/EX+R9NBeANNYMXz9n0eOtjSYVCLBzYgA==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-g6cNmmiQ8u2RKGeoHFUfJZpwv3ANw9G+eL5w9ugE1641qM35z4Mc98pCVvC4qo7KxEUkf71fEAkVn1PYEhd1Zw==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -19743,7 +19770,7 @@ packages:
     dev: false
 
   file:projects/model-support.tgz_typescript@4.8.4:
-    resolution: {integrity: sha512-FiN4/Xd/5RNNmyUnJ+vCuHENLuGHNPY+ged/SRkx287LQAgQDlyCkcISiieYDN3r7JFeSJfdNQ1PgPxPbJW+eQ==, tarball: file:projects/model-support.tgz}
+    resolution: {integrity: sha512-AQNy8c/pBLnf4a4TwO6MRYZU1+dQTqvqZ+gFrGCTvPAdnjyRSJDNIi5aMkDjCVZQhNpvffxOus8eNzDB0eAMCg==, tarball: file:projects/model-support.tgz}
     id: file:projects/model-support.tgz
     name: '@rush-temp/model-support'
     version: 0.0.0
@@ -20320,6 +20347,45 @@ packages:
       - '@swc/core'
       - '@swc/wasm'
       - supports-color
+    dev: false
+
+  file:projects/pod-intercom.tgz_bufferutil@4.0.7:
+    resolution: {integrity: sha512-4NDNID4vtNAGwKM4nwH5HiBrishGyQy3kzyuQv7hQJ+MfqZC7yMBi1UDwQUdM5zZ3eJoenxuGD+TwEplkeLJBA==, tarball: file:projects/pod-intercom.tgz}
+    id: file:projects/pod-intercom.tgz
+    name: '@rush-temp/pod-intercom'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.47.11
+      '@types/heft-jest': 1.0.3
+      '@types/koa': 2.13.5
+      '@types/koa-bodyparser': 4.3.10
+      '@types/koa-router': 7.4.4
+      '@types/node': 16.11.68
+      '@types/ws': 8.5.3
+      '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
+      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
+      cross-env: 7.0.3
+      esbuild: 0.16.14
+      eslint: 8.27.0
+      eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
+      eslint-plugin-import: 2.26.0_eslint@8.27.0
+      eslint-plugin-n: 15.5.1_eslint@8.27.0
+      eslint-plugin-promise: 6.1.1_eslint@8.27.0
+      intercom-client: 4.0.0
+      koa: 2.13.4
+      koa-bodyparser: 4.3.0
+      koa-router: 10.1.1
+      prettier: 2.8.8
+      ts-node: 10.9.1_867af3484524ae72fe2b1aa24b40f5ee
+      typescript: 4.8.4
+      ws: 8.11.0_bufferutil@4.0.7
+    transitivePeerDependencies:
+      - '@swc/core'
+      - '@swc/wasm'
+      - bufferutil
+      - debug
+      - supports-color
+      - utf-8-validate
     dev: false
 
   file:projects/pod-server.tgz:
@@ -21737,7 +21803,7 @@ packages:
     dev: false
 
   file:projects/support-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-QGH85mOI91VJO7+VhwXSYUyQR+GlGBBkYhzLTd3C4ir28tjcHbzryRwOUf1J9iiTuTtUBWCmyKTfOgZz97SGzg==, tarball: file:projects/support-resources.tgz}
+    resolution: {integrity: sha512-XqL1dxXqU0eiHXAsrTRgYfrFoTbFHMb0UT1F8xPDrm/8BG4Bsfhc2H2t6BYDJmKRwRPjkGJM61LTE0d+RgXhWg==, tarball: file:projects/support-resources.tgz}
     id: file:projects/support-resources.tgz
     name: '@rush-temp/support-resources'
     version: 0.0.0

@@ -13,17 +13,4 @@
 // limitations under the License.
 //
 
-import { Account, Ref, Space } from '@hcengineering/core'
-import { getClient } from '@hcengineering/presentation'
-import support from '@hcengineering/support'
-
-export async function markHasUnreadMessages (user: Ref<Account>, hasUnreadMessages: boolean): Promise<void> {
-  const client = getClient()
-
-  const doc = await client.findOne(support.class.SupportStatus, { user })
-  if (doc !== undefined) {
-    await client.update(doc, { hasUnreadMessages })
-  } else {
-    await client.createDoc(support.class.SupportStatus, user as string as Ref<Space>, { user, hasUnreadMessages })
-  }
-}
+export { start } from './server'

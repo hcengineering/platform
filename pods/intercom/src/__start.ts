@@ -13,14 +13,19 @@
 // limitations under the License.
 //
 
-import { Resources } from '@hcengineering/platform'
+import { start } from './server'
 
-import { createSupportClient } from './support'
+const signals = ['SIGINT', 'SIGTERM', 'exit']
 
-export { getSupportClient } from './support'
+const shutdown = start()
 
-export default async (): Promise<Resources> => ({
-  function: {
-    GetSupport: createSupportClient
-  }
+const close = (signal: string): void => {
+  console.log('server stopped by ' + signal)
+
+  shutdown()
+  process.exit(0)
+}
+
+signals.forEach((it) => {
+  process.on(it, () => close(it))
 })

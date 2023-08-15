@@ -50,7 +50,20 @@ export interface SupportWidgetConfig {
 /**
  * @public
  */
-export type SupportClientFactory = () => SupportClient
+export interface SupportStatus {
+  visible: boolean
+  hasUnreadMessages: boolean
+}
+
+/**
+ * @public
+ */
+export type SupportStatusCallback = (status: SupportStatus) => void
+
+/**
+ * @public
+ */
+export type SupportClientFactory = (onStatusChanged?: SupportStatusCallback) => SupportClient
 
 /**
  * @public

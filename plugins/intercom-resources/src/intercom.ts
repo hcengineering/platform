@@ -27,6 +27,7 @@ class IntercomSupportWidget implements SupportWidget {
   private readonly onVisibilityChanged?: (visible: boolean) => void
 
   private initialized = false
+  private unreadCountInitialized = false
   private visible = false
 
   constructor (
@@ -78,6 +79,14 @@ class IntercomSupportWidget implements SupportWidget {
     this.onVisibilityChanged?.(visible)
   }
 
+  handleUnreadCountChange (count: number): void {
+    // prevent 0 unread messages count being reported by the widget when initialized
+    if (this.unreadCountInitialized) {
+      this.onUnreadCountChanged?.(count)
+    }
+    this.unreadCountInitialized = true
+  }
+
   initialize (): void {
     if (!this.initialized) {
       const config = getIntercomConfig(this.config)
@@ -90,7 +99,7 @@ class IntercomSupportWidget implements SupportWidget {
       loadScript(appId, () => {
         window.Intercom('onHide', () => this.setVisible(false))
         window.Intercom('onShow', () => this.setVisible(true))
-        window.Intercom('onUnreadCountChange', (count: number) => this.onUnreadCountChanged?.(count))
+        window.Intercom('onUnreadCountChange', (count: number) => this.handleUnreadCountChange(count))
         window.Intercom('boot', { app_id: appId, ...config })
 
         this.initialized = true

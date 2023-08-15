@@ -1505,6 +1505,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/pod-intercom",
+      "projectFolder": "pods/intercom",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/intercom",
       "projectFolder": "plugins/intercom",
       "shouldPublish": true

@@ -18,24 +18,50 @@ import { Unsubscriber, get } from 'svelte/store'
 import { getCurrentAccount } from '@hcengineering/core'
 import intercom from '@hcengineering/intercom'
 import { getResource } from '@hcengineering/platform'
-import { SupportClient, SupportWidget, SupportWidgetConfig } from '@hcengineering/support'
+import support, {
+  SupportClient,
+  SupportStatusCallback,
+  SupportWidget,
+  SupportWidgetConfig
+} from '@hcengineering/support'
 import { location, themeStore } from '@hcengineering/ui'
-
-import { markHasUnreadMessages } from './utils'
+import { createQuery, LiveQuery } from '@hcengineering/presentation'
 
 class SupportClientImpl implements SupportClient {
   private config: SupportWidgetConfig
   private widget: SupportWidget | undefined = undefined
-  private visible = false
-  private readonly unsub: Unsubscriber | undefined = undefined
+  private readonly onStatusChanged: SupportStatusCallback | undefined
 
-  constructor () {
+  private hasUnreadMessages: boolean = false
+  private widgetUnreadCount: number | undefined = undefined
+  private widgetVisible = false
+
+  private readonly query?: LiveQuery
+  private readonly unsub?: Unsubscriber
+
+  constructor (onStatusChanged?: SupportStatusCallback) {
+    this.onStatusChanged = onStatusChanged
+
     this.config = {
       account: getCurrentAccount(),
       workspace: get(location).path[1],
       language: get(themeStore).language
     }
     this.updateWidgetConfig(this.config)
+
+    if (onStatusChanged !== undefined) {
+      const query = createQuery(true)
+      query.query(
+        support.class.SupportConversation,
+        {
+          account: this.config.account._id
+        },
+        (res) => {
+          this.hasUnreadMessages = res.some((p) => p.hasUnreadMessages)
+          this.updateWidgetStatus()
+        }
+      )
+    }
 
     this.unsub = themeStore.subscribe((theme) => {
       const config = { ...this.config, language: theme.language }
@@ -44,6 +70,7 @@ class SupportClientImpl implements SupportClient {
   }
 
   destroy (): void {
+    this.query?.unsubscribe()
     this.unsub?.()
     this.widget?.destroy()
   }
@@ -66,11 +93,22 @@ class SupportClientImpl implements SupportClient {
   }
 
   private handleUnreadCountChanged (count: number): void {
-    void markHasUnreadMessages(this.config.account._id, count > 0)
+    this.widgetUnreadCount = count
+    this.updateWidgetStatus()
   }
 
   private handleVisibilityChanged (visible: boolean): void {
-    this.visible = visible
+    this.widgetVisible = visible
+    this.updateWidgetStatus()
+  }
+
+  private updateWidgetStatus (): void {
+    if (this.onStatusChanged === undefined) return
+
+    const visible = this.widgetVisible
+    const hasUnreadMessages = this.widgetUnreadCount !== undefined ? this.widgetUnreadCount > 0 : this.hasUnreadMessages
+
+    this.onStatusChanged({ visible, hasUnreadMessages })
   }
 
   private async getWidget (): Promise<SupportWidget> {
@@ -88,8 +126,8 @@ class SupportClientImpl implements SupportClient {
 
 let client: SupportClient | undefined
 
-export function createSupportClient (): SupportClient {
-  client = new SupportClientImpl()
+export function createSupportClient (onStatusChanged?: SupportStatusCallback): SupportClient {
+  client = new SupportClientImpl(onStatusChanged)
   return client
 }
 

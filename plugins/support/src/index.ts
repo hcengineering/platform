@@ -18,11 +18,15 @@ import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platfor
 import { plugin } from '@hcengineering/platform'
 import { SupportClientFactory } from './types'
 
+export * from './types'
+export { deleteSupportConversation, updateSupportConversation } from './utils'
+
 /**
  * @public
  */
-export interface SupportStatus extends Doc {
-  user: Ref<Account>
+export interface SupportConversation extends Doc {
+  account: Ref<Account>
+  conversationId: string
   hasUnreadMessages: boolean
 }
 
@@ -33,7 +37,7 @@ export const supportId = 'support' as Plugin
 
 export default plugin(supportId, {
   class: {
-    SupportStatus: '' as Ref<Class<SupportStatus>>
+    SupportConversation: '' as Ref<Class<SupportConversation>>
   },
   function: {
     GetSupport: '' as Resource<SupportClientFactory>
@@ -45,5 +49,3 @@ export default plugin(supportId, {
     ContactUs: '' as IntlString
   }
 })
-
-export * from './types'

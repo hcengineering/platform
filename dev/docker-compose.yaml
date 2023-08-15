@@ -171,6 +171,20 @@ services:
   #     - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/etcd:/etcd
   #   command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
   #   restart: unless-stopped
+  # intercom:
+  #   image: hardcoreeng/intercom
+  #   links:
+  #     - mongodb
+  #     - minio
+  #     - transactor
+  #   ports:
+  #     - 3600:3600
+  #   environment:
+  #     - SERVER_SECRET=secret
+  #     - TRANSACTOR_URL=ws://transactor:3333
+  #     - INTERCOM_APP_ID=kmzvn8kb
+  #     - INTERCOM_AUTH_TOKEN=dG9rOjE4NmMwZDRmXzk0MTJfNDE3ZF9iOTMyX2Q0ZDQ4YzcwODQwMDoxOjA=
+  #   restart: unless-stopped
 volumes:
   db:
   files:

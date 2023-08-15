@@ -21,7 +21,7 @@
   import { IntlString, broadcastEvent, getMetadata, getResource } from '@hcengineering/platform'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
-  import support from '@hcengineering/support'
+  import support, { SupportStatus } from '@hcengineering/support'
   import { locationStorageKeyId } from '@hcengineering/ui'
   import {
     AnyComponent,
@@ -50,8 +50,7 @@
     resizeObserver,
     resolvedLocationStore,
     setResolvedLocation,
-    showPopup,
-    themeStore
+    showPopup
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import {
@@ -577,23 +576,17 @@
     }
   }
 
-  const supportClient = getResource(support.function.GetSupport).then((res) => res())
+  let supportStatus: SupportStatus | undefined = undefined
+  function handleSupportStatusChanged (status: SupportStatus) {
+    supportStatus = status
+  }
+
+  const supportClient = getResource(support.function.GetSupport).then((res) =>
+    res((status) => handleSupportStatusChanged(status))
+  )
   onDestroy(async () => {
     await supportClient.then((support) => support.destroy())
   })
-
-  let hasSupportReply = false
-  const supportQuery = createQuery()
-
-  supportQuery.query(
-    support.class.SupportStatus,
-    {
-      user: accountId
-    },
-    (res) => {
-      hasSupportReply = res.hasUnread
-    }
-  )
 
   $: checkInbox($popupstore)
 
@@ -684,6 +677,8 @@
             icon={support.icon.Support}
             label={support.string.ContactUs}
             size={appsMini ? 'small' : 'large'}
+            notify={supportStatus?.hasUnreadMessages}
+            selected={supportStatus?.visible}
             on:click={() => client.toggleWidget()}
           />
         {/await}

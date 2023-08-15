@@ -16,7 +16,7 @@
 import { Account, Domain, IndexKind, Ref } from '@hcengineering/core'
 import { Builder, Index, Model } from '@hcengineering/model'
 import preference, { TPreference } from '@hcengineering/model-preference'
-import { SupportStatus } from '@hcengineering/support'
+import { SupportConversation } from '@hcengineering/support'
 
 import support from './plugin'
 
@@ -26,14 +26,17 @@ export { support as default }
 
 export const DOMAIN_SUPPORT = 'support' as Domain
 
-@Model(support.class.SupportStatus, preference.class.Preference)
-export class TSupportStatus extends TPreference implements SupportStatus {
+@Model(support.class.SupportConversation, preference.class.Preference)
+export class TSupportConversation extends TPreference implements SupportConversation {
   @Index(IndexKind.Indexed)
-    user!: Ref<Account>
+    account!: Ref<Account>
+
+  @Index(IndexKind.Indexed)
+    conversationId!: string
 
   hasUnreadMessages!: boolean
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TSupportStatus)
+  builder.createModel(TSupportConversation)
 }
