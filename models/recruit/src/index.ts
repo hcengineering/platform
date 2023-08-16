@@ -776,7 +776,7 @@ export function createModel (builder: Builder): void {
         {
           key: 'location',
           displayProps: { key: 'location', fixed: 'right' }
-        },
+        }
       ],
       configOptions: {
         hiddenKeys: ['name', 'space', 'modifiedOn'],

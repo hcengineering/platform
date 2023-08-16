@@ -21,7 +21,6 @@
   import {
     FilterBar,
     FilterButton,
-    TableBrowser,
     ViewletSelector,
     ViewletSettingButton
   } from '@hcengineering/view-resources'
@@ -132,7 +131,7 @@
       bind:preference
       viewletQuery={{
         attachTo: recruit.class.Vacancy,
-        descriptor: { $in: [view.viewlet.Table, view.viewlet.List] },
+        descriptor: { $in: [view.viewlet.Table, view.viewlet.List] }
       }}
     />
     <Button
@@ -192,7 +191,7 @@
         ...resultQuery,
         archived
       },
-      totalQuery: {},
+      totalQuery: {}
     }}
   />
 {/if}
