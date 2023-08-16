@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2022 Hardcore Engineering Inc.
+// Copyright © 2021, 2022, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import contact, { Employee, PersonAccount } from '@hcengineering/contact'
+import contact, { Employee, Person, PersonAccount } from '@hcengineering/contact'
 import { Account, Class, Doc, Mixin, Ref, Tx } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
 import { Plugin, Resource, plugin } from '@hcengineering/platform'
@@ -29,14 +29,14 @@ export const serverNotificationId = 'server-notification' as Plugin
  * @public
  */
 export async function getPersonAccount (
-  employee: Ref<Employee>,
+  person: Ref<Person>,
   control: TriggerControl
 ): Promise<PersonAccount | undefined> {
   const account = (
     await control.modelDb.findAll(
       contact.class.PersonAccount,
       {
-        employee
+        person
       },
       { limit: 1 }
     )
