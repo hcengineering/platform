@@ -43,7 +43,7 @@
 </script>
 
 <DropdownLabels
-  selected={value ?? []}
+  selected={[...value] ?? []}
   {items}
   {label}
   useFlexGrow={true}
