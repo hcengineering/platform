@@ -676,6 +676,7 @@ export function createModel (builder: Builder): void {
     }
     return model
   }
+
   builder.createDoc(
     view.class.Viewlet,
     core.space.Model,
@@ -752,6 +753,60 @@ export function createModel (builder: Builder): void {
       viewOptions: applicantViewOptions(true)
     },
     recruit.viewlet.ListApplicant
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: recruit.class.Vacancy,
+      descriptor: view.viewlet.List,
+      config: [
+        { key: '', displayProps: { fixed: 'left', key: 'app' } },
+        'description',
+        {
+          key: '@applications',
+          label: recruit.string.Applications
+        },
+        { key: '', displayProps: { grow: true } },
+        {
+          key: '$lookup.company',
+          displayProps: { key: '$lookup.company', fixed: 'right' }
+        },
+        {
+          key: 'location',
+          displayProps: { key: 'location', fixed: 'right' }
+        },
+      ],
+      configOptions: {
+        hiddenKeys: ['name', 'space', 'modifiedOn'],
+        sortable: true
+      },
+      baseQuery: {
+        doneState: null,
+        '$lookup.space.archived': false
+      },
+      viewOptions: {
+        groupBy: ['company', 'location', 'dueTo', 'createdBy'],
+        orderBy: [
+          ['company', SortingOrder.Ascending],
+          ['dueTo', SortingOrder.Ascending],
+          ['modifiedOn', SortingOrder.Descending],
+          ['createdOn', SortingOrder.Descending]
+        ],
+        other: [
+          {
+            key: 'shouldShowAll',
+            type: 'toggle',
+            defaultValue: false,
+            actionTarget: 'category',
+            action: view.function.ShowEmptyGroups,
+            label: view.string.ShowEmptyGroups
+          }
+        ]
+      }
+    },
+    recruit.viewlet.ListVacancy
   )
 
   builder.createDoc(
