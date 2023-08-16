@@ -25,8 +25,7 @@ import support, {
   SupportWidgetConfig
 } from '@hcengineering/support'
 import { location, themeStore } from '@hcengineering/ui'
-import { createQuery, LiveQuery } from '@hcengineering/presentation'
-import { getClient } from '@hcengineering/presentation'
+import { createQuery, LiveQuery, getClient } from '@hcengineering/presentation'
 
 class SupportClientImpl implements SupportClient {
   private readonly supportSystem: SupportSystem

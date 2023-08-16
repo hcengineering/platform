@@ -1505,26 +1505,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/pod-intercom",
-      "projectFolder": "pods/intercom",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/model-intercom",
-      "projectFolder": "models/intercom",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/intercom",
-      "projectFolder": "plugins/intercom",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/intercom-resources",
-      "projectFolder": "plugins/intercom-resources",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/model-support",
       "projectFolder": "models/support",
       "shouldPublish": false

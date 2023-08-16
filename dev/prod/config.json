@@ -2,8 +2,5 @@
   "ACCOUNTS_URL":"http://localhost:3000",
   "COLLABORATOR_URL": "ws://localhost:3078",
   "UPLOAD_URL":"/files",
-  "REKONI_URL": "http://localhost:4004",
-  "INTERCOM_APP_ID": "kmzvn8kb",
-  "INTERCOM_API_URL": "",
-  "INTERCOM_SECRET_KEY": "ltgmxOL1apfqLf9LIsdRV9VJDxKroDj9u4xvln-F"
+  "REKONI_URL": "http://localhost:4004"
 }

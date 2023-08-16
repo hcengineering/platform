@@ -55,8 +55,6 @@ specifiers:
   '@rush-temp/hr-resources': file:./projects/hr-resources.tgz
   '@rush-temp/image-cropper': file:./projects/image-cropper.tgz
   '@rush-temp/image-cropper-resources': file:./projects/image-cropper-resources.tgz
-  '@rush-temp/intercom': file:./projects/intercom.tgz
-  '@rush-temp/intercom-resources': file:./projects/intercom-resources.tgz
   '@rush-temp/inventory': file:./projects/inventory.tgz
   '@rush-temp/inventory-assets': file:./projects/inventory-assets.tgz
   '@rush-temp/inventory-resources': file:./projects/inventory-resources.tgz
@@ -83,7 +81,6 @@ specifiers:
   '@rush-temp/model-document': file:./projects/model-document.tgz
   '@rush-temp/model-gmail': file:./projects/model-gmail.tgz
   '@rush-temp/model-hr': file:./projects/model-hr.tgz
-  '@rush-temp/model-intercom': file:./projects/model-intercom.tgz
   '@rush-temp/model-inventory': file:./projects/model-inventory.tgz
   '@rush-temp/model-lead': file:./projects/model-lead.tgz
   '@rush-temp/model-notification': file:./projects/model-notification.tgz
@@ -134,7 +131,6 @@ specifiers:
   '@rush-temp/pod-backup': file:./projects/pod-backup.tgz
   '@rush-temp/pod-collaborator': file:./projects/pod-collaborator.tgz
   '@rush-temp/pod-front': file:./projects/pod-front.tgz
-  '@rush-temp/pod-intercom': file:./projects/pod-intercom.tgz
   '@rush-temp/pod-server': file:./projects/pod-server.tgz
   '@rush-temp/preference': file:./projects/preference.tgz
   '@rush-temp/preference-assets': file:./projects/preference-assets.tgz
@@ -267,7 +263,6 @@ specifiers:
   '@types/faker': ~5.5.9
   '@types/heft-jest': ^1.0.3
   '@types/html-to-text': ^8.1.1
-  '@types/intercom-web': ^2.8.21
   '@types/jest': ~28.1.0
   '@types/koa': ^2.13.4
   '@types/koa-bodyparser': ^4.3.3
@@ -328,7 +323,6 @@ specifiers:
   got: ^11.8.3
   html-to-text: ^9.0.3
   html-webpack-plugin: ^5.5.0
-  intercom-client: ^4.0.0
   intl-messageformat: ^9.7.1
   jpeg-js: ~0.4.3
   just-clone: ~6.2.0
@@ -456,8 +450,6 @@ dependencies:
   '@rush-temp/hr-resources': file:projects/hr-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
   '@rush-temp/image-cropper': file:projects/image-cropper.tgz
   '@rush-temp/image-cropper-resources': file:projects/image-cropper-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
-  '@rush-temp/intercom': file:projects/intercom.tgz
-  '@rush-temp/intercom-resources': file:projects/intercom-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
   '@rush-temp/inventory': file:projects/inventory.tgz
   '@rush-temp/inventory-assets': file:projects/inventory-assets.tgz
   '@rush-temp/inventory-resources': file:projects/inventory-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
@@ -484,7 +476,6 @@ dependencies:
   '@rush-temp/model-document': file:projects/model-document.tgz_typescript@4.8.4
   '@rush-temp/model-gmail': file:projects/model-gmail.tgz_typescript@4.8.4
   '@rush-temp/model-hr': file:projects/model-hr.tgz_typescript@4.8.4
-  '@rush-temp/model-intercom': file:projects/model-intercom.tgz_typescript@4.8.4
   '@rush-temp/model-inventory': file:projects/model-inventory.tgz_typescript@4.8.4
   '@rush-temp/model-lead': file:projects/model-lead.tgz_typescript@4.8.4
   '@rush-temp/model-notification': file:projects/model-notification.tgz_typescript@4.8.4
@@ -535,7 +526,6 @@ dependencies:
   '@rush-temp/pod-backup': file:projects/pod-backup.tgz
   '@rush-temp/pod-collaborator': file:projects/pod-collaborator.tgz_bufferutil@4.0.7
   '@rush-temp/pod-front': file:projects/pod-front.tgz
-  '@rush-temp/pod-intercom': file:projects/pod-intercom.tgz_bufferutil@4.0.7
   '@rush-temp/pod-server': file:projects/pod-server.tgz
   '@rush-temp/preference': file:projects/preference.tgz
   '@rush-temp/preference-assets': file:projects/preference-assets.tgz
@@ -668,7 +658,6 @@ dependencies:
   '@types/faker': 5.5.9
   '@types/heft-jest': 1.0.3
   '@types/html-to-text': 8.1.1
-  '@types/intercom-web': 2.8.21
   '@types/jest': 28.1.8
   '@types/koa': 2.13.5
   '@types/koa-bodyparser': 4.3.10
@@ -729,7 +718,6 @@ dependencies:
   got: 11.8.5
   html-to-text: 9.0.3
   html-webpack-plugin: 5.5.0_webpack@5.75.0
-  intercom-client: 4.0.0
   intl-messageformat: 9.13.0
   jpeg-js: 0.4.4
   just-clone: 6.2.0
@@ -7949,14 +7937,6 @@ packages:
     engines: {node: '>= 0.4'}
     dev: false
 
-  /axios/0.24.0:
-    resolution: {integrity: sha512-Q6cWsys88HoPgAaFAVUb0WpPk0O8iTeisR9IMqy9G8AbO4NlpVknrnQS03zzF9PGAWgO3cgletO3VjV/P7VztA==}
-    dependencies:
-      follow-redirects: 1.15.2
-    transitivePeerDependencies:
-      - debug
-    dev: false
-
   /babel-core/7.0.0-bridge.0_@babel+core@7.20.2:
     resolution: {integrity: sha512-poPX9mZH/5CSanm50Q+1toVci6pv5KSRv/5TWCwtzQS5XEwn40BcCrgIeMFWP9CKKIniKXNxoIOnOq4VVlGXhg==}
     peerDependencies:
@@ -11210,10 +11190,6 @@ packages:
       webpack: 5.75.0_c5a9b74f1e48ccd7ef01359287c5ad78
     dev: false
 
-  /htmlencode/0.0.4:
-    resolution: {integrity: sha512-0uDvNVpzj/E2TfvLLyyXhKBRvF1y84aZsyRxRXFsQobnHaL4pcaXk+Y9cnFlvnxrBLeXDNq/VJBD+ngdBgQG1w==}
-    dev: false
-
   /htmlparser2-svelte/4.1.0:
     resolution: {integrity: sha512-+4f4RBFz7Rj2Hp0ZbFbXC+Kzbd6S9PgjiuFtdT76VMNgKogrEZy0pG2UrPycPbrZzVEIM5lAT3lAdkSTCHLPjg==}
     dependencies:
@@ -11466,17 +11442,6 @@ packages:
 
   /ini/1.3.8:
     resolution: {integrity: sha512-JV/yugV2uzW5iMRSiZAyDtQd+nxtUnjeLt0acNdw98kKLrvuRVyB80tsREOE7yvGVgalhZ6RNXCmEHkUKBKxew==}
-    dev: false
-
-  /intercom-client/4.0.0:
-    resolution: {integrity: sha512-xtAsO0wnyd46JNRP98/JK0BXIfWNTO/tUk+1op4rnZ+N/DSdhAaBw8ZaJD8bL8ePNhyAMl/Vd6h7kYI/h9riaw==}
-    engines: {node: '>= v8.0.0'}
-    dependencies:
-      axios: 0.24.0
-      htmlencode: 0.0.4
-      lodash: 4.17.21
-    transitivePeerDependencies:
-      - debug
     dev: false
 
   /internal-slot/1.0.3:
@@ -18510,71 +18475,6 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/intercom-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-jm2piNnNuTSplGkuhhAPbHTK3oYn2Kku9g4JkdXnalfYy/jBRJrUJXV91UdGbK7L5s1aQ59j1wziRURUS+fTIg==, tarball: file:projects/intercom-resources.tgz}
-    id: file:projects/intercom-resources.tgz
-    name: '@rush-temp/intercom-resources'
-    version: 0.0.0
-    dependencies:
-      '@types/crypto-js': 4.1.1
-      '@types/intercom-web': 2.8.21
-      '@types/qs': 6.9.7
-      '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
-      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
-      crypto-js: 4.1.1
-      eslint: 8.27.0
-      eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
-      eslint-plugin-import: 2.26.0_eslint@8.27.0
-      eslint-plugin-n: 15.5.1_eslint@8.27.0
-      eslint-plugin-promise: 6.1.1_eslint@8.27.0
-      eslint-plugin-svelte3: 4.0.0_eslint@8.27.0+svelte@3.55.1
-      fast-equals: 2.0.4
-      p-queue: 7.3.0
-      prettier: 2.8.8
-      prettier-plugin-svelte: 2.8.0_prettier@2.8.8+svelte@3.55.1
-      qs: 6.11.0
-      sass: 1.56.1
-      svelte: 3.55.1
-      svelte-check: 3.2.0_ae2e9904602215f07e0b815d3fa1ffe9
-      svelte-loader: 3.1.4_svelte@3.55.1
-      svelte-preprocess: 5.0.3_6420a3eba9d5580d9c2f627c17e61722
-      typescript: 4.8.4
-    transitivePeerDependencies:
-      - '@babel/core'
-      - coffeescript
-      - less
-      - postcss
-      - postcss-load-config
-      - pug
-      - stylus
-      - sugarss
-      - supports-color
-    dev: false
-
-  file:projects/intercom.tgz:
-    resolution: {integrity: sha512-vMmzlXXNMXPz95VNJeiNJUSNN1SIZgyxKghjdk0zpdw59vmmzXqoNVOwwSqPQzrDyDtCUBHLi4DyD2FTKO8vEQ==, tarball: file:projects/intercom.tgz}
-    name: '@rush-temp/intercom'
-    version: 0.0.0
-    dependencies:
-      '@rushstack/heft': 0.47.11
-      '@types/crypto-js': 4.1.1
-      '@types/heft-jest': 1.0.3
-      '@types/intercom-web': 2.8.21
-      '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
-      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
-      crypto-js: 4.1.1
-      eslint: 8.27.0
-      eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
-      eslint-plugin-import: 2.26.0_eslint@8.27.0
-      eslint-plugin-n: 15.5.1_eslint@8.27.0
-      eslint-plugin-promise: 6.1.1_eslint@8.27.0
-      prettier: 2.8.8
-      svelte: 3.55.1
-      typescript: 4.8.4
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
-
   file:projects/inventory-assets.tgz:
     resolution: {integrity: sha512-A/F1uEKTFHmwoZa8mHO/HhvmM++V6pZk0zrwR0bFPPAYpXxCNb84V32x/hdvDheB9k2oY+OL+fi78NrhObPGgw==, tarball: file:projects/inventory-assets.tgz}
     name: '@rush-temp/inventory-assets'
@@ -18906,7 +18806,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz_typescript@4.8.4:
-    resolution: {integrity: sha512-/+zCISGE0/SwSl3ltKGS1iCzDXfFG5eQuDfg3XN805epke/F/1afm55AyY0VCpfDEF+54MUE1iOCrU5pz9mT6Q==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-g6cNmmiQ8u2RKGeoHFUfJZpwv3ANw9G+eL5w9ugE1641qM35z4Mc98pCVvC4qo7KxEUkf71fEAkVn1PYEhd1Zw==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -19146,27 +19046,6 @@ packages:
     resolution: {integrity: sha512-B/0+Hw+MDa6P1vFGjDYkIlQigLz6L8TwRH8gouagxsSKLEHGovcyKUXWTkvh3nXHACG2YhSeXhhObQsMi0HElA==, tarball: file:projects/model-hr.tgz}
     id: file:projects/model-hr.tgz
     name: '@rush-temp/model-hr'
-    version: 0.0.0
-    dependencies:
-      '@rushstack/heft': 0.47.11
-      '@types/heft-jest': 1.0.3
-      '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
-      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
-      eslint: 8.27.0
-      eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
-      eslint-plugin-import: 2.26.0_eslint@8.27.0
-      eslint-plugin-n: 15.5.1_eslint@8.27.0
-      eslint-plugin-promise: 6.1.1_eslint@8.27.0
-      prettier: 2.8.8
-    transitivePeerDependencies:
-      - supports-color
-      - typescript
-    dev: false
-
-  file:projects/model-intercom.tgz_typescript@4.8.4:
-    resolution: {integrity: sha512-pfxnM/UyW/Mdv6WLQDhECLBN3IvQ+q9m52jqI39coSDT+ZX9nl1XvyxMg9rkytll0iHYnt9nE2ybCFDiPovjww==, tarball: file:projects/model-intercom.tgz}
-    id: file:projects/model-intercom.tgz
-    name: '@rush-temp/model-intercom'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.47.11
@@ -20372,47 +20251,8 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/pod-intercom.tgz_bufferutil@4.0.7:
-    resolution: {integrity: sha512-JQAGKBci2fYjtuaZtSmoprpo7eOGhl67VvgolIzTepoEh7qZvaneBn1tiTBjpYDR0sJ9btDogZblOmEPkILoUg==, tarball: file:projects/pod-intercom.tgz}
-    id: file:projects/pod-intercom.tgz
-    name: '@rush-temp/pod-intercom'
-    version: 0.0.0
-    dependencies:
-      '@rushstack/heft': 0.47.11
-      '@types/heft-jest': 1.0.3
-      '@types/koa': 2.13.5
-      '@types/koa-bodyparser': 4.3.10
-      '@types/koa-router': 7.4.4
-      '@types/node': 16.11.68
-      '@types/ws': 8.5.3
-      '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
-      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
-      cross-env: 7.0.3
-      esbuild: 0.16.14
-      eslint: 8.27.0
-      eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
-      eslint-plugin-import: 2.26.0_eslint@8.27.0
-      eslint-plugin-n: 15.5.1_eslint@8.27.0
-      eslint-plugin-promise: 6.1.1_eslint@8.27.0
-      intercom-client: 4.0.0
-      koa: 2.13.4
-      koa-bodyparser: 4.3.0
-      koa-router: 10.1.1
-      prettier: 2.8.8
-      ts-node: 10.9.1_867af3484524ae72fe2b1aa24b40f5ee
-      typescript: 4.8.4
-      ws: 8.11.0_bufferutil@4.0.7
-    transitivePeerDependencies:
-      - '@swc/core'
-      - '@swc/wasm'
-      - bufferutil
-      - debug
-      - supports-color
-      - utf-8-validate
-    dev: false
-
   file:projects/pod-server.tgz:
-    resolution: {integrity: sha512-5FxS/GmNbWA69WomuWTe1xOcyJ7M0qUA81SJxoqdNpN4G4SkSY67WGLS6xwHczPRlwGEGptxjStoQTXFuYJ2uw==, tarball: file:projects/pod-server.tgz}
+    resolution: {integrity: sha512-SWB1f4OdOIZosUoV511VmwfS+cawaMdX+W/PdpsAOHHRG17St/PLy4+IpVec0B3xeFLXq9pdXiBXq5J73LwWKA==, tarball: file:projects/pod-server.tgz}
     name: '@rush-temp/pod-server'
     version: 0.0.0
     dependencies:
@@ -20520,7 +20360,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_91152849c259b1b3925f7bb3d415bc80:
-    resolution: {integrity: sha512-UKzqJtNfUK45Ci4MH2M1iiRGvNc9d1npEC4gSxO4AzewoS0+uclRqGFMSNoCXNpII+/iy/DfzxBg/7Cdxxf+EQ==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-dB1fl4vWrudVeRZJRFyOejr/xRHzIj4ZgkssAuS59WZIVVbyGvMgjPhC/tCGovi/O581wEJBBO1fgVLfOOXXiw==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -21826,7 +21666,7 @@ packages:
     dev: false
 
   file:projects/support-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-XqL1dxXqU0eiHXAsrTRgYfrFoTbFHMb0UT1F8xPDrm/8BG4Bsfhc2H2t6BYDJmKRwRPjkGJM61LTE0d+RgXhWg==, tarball: file:projects/support-resources.tgz}
+    resolution: {integrity: sha512-nTQVfS8Ei84tbW7m191HzNNBGX87o5WzHAEHQuRPR+eT1asnB4KseXB7c8SNzl8eAMFehGfLzZHLZnm60UajiA==, tarball: file:projects/support-resources.tgz}
     id: file:projects/support-resources.tgz
     name: '@rush-temp/support-resources'
     version: 0.0.0

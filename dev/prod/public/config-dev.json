@@ -6,8 +6,5 @@
   "TELEGRAM_URL": "https://telegram.hc.engineering",
   "GMAIL_URL": "https://gmail.hc.engineering",
   "CALENDAR_URL": "https://calendar.hc.engineering",
-  "REKONI_URL": "https://rekoni.hc.engineering",
-  "INTERCOM_APP_ID": "kmzvn8kb",
-  "INTERCOM_API_URL": "",
-  "INTERCOM_SECRET_KEY": "ltgmxOL1apfqLf9LIsdRV9VJDxKroDj9u4xvln-F"
+  "REKONI_URL": "https://rekoni.hc.engineering"
 }
