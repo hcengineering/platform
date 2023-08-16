@@ -335,7 +335,8 @@
       result.visibility = 0
     }
     result.top =
-      (showHeader ? rem(3.5) : 0) + styleAD +
+      (showHeader ? rem(3.5) : 0) +
+      styleAD +
       cellHeight * startTime.hours +
       (startTime.mins / 60) * cellHeight +
       getGridOffset(startTime.mins)
@@ -449,7 +450,10 @@
       : rem((heightAD + 0.125) * (adMaxRow <= maxAD ? adMaxRow : maxAD) + 0.25)
 </script>
 
-<Scroller bind:divScroll={scroller} fade={{ multipler: { top: (showHeader ? 3.5 : 0) + styleAD / fontSize, bottom: 0 } }}>
+<Scroller
+  bind:divScroll={scroller}
+  fade={{ multipler: { top: (showHeader ? 3.5 : 0) + styleAD / fontSize, bottom: 0 } }}
+>
   <div
     bind:this={container}
     class="calendar-container"
@@ -482,7 +486,11 @@
         />
       {/if}
     </div>
-    <div class="sticky-header allday-container" class:top={!showHeader} style:grid-column={`col-start 1 / span ${displayedDaysCount}`}>
+    <div
+      class="sticky-header allday-container"
+      class:top={!showHeader}
+      style:grid-column={`col-start 1 / span ${displayedDaysCount}`}
+    >
       {#if shownHeightAD > maxHeightAD && shownAD}
         <Scroller noFade={false}>
           {#key [styleAD, calendarWidth, displayedDaysCount, showHeader]}
@@ -502,11 +510,7 @@
                   style:--mask-image={getMask(rect.visibility)}
                   tabindex={500 + i}
                 >
-                  <EventElement
-                    hourHeight={cellHeight}
-                    event={ev}
-                    size={{ width: rect.width, height: rect.height }}
-                  />
+                  <EventElement hourHeight={cellHeight} event={ev} size={{ width: rect.width, height: rect.height }} />
                 </div>
               {/if}
             {/each}
@@ -759,7 +763,9 @@
       background-color: rgba(64, 109, 223, 0.1);
       border-radius: 0.25rem;
 
-      &.mini { padding: 0.125rem; }
+      &.mini {
+        padding: 0.125rem;
+      }
     }
   }
   .calendar-container {
