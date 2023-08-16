@@ -13,22 +13,13 @@
 // limitations under the License.
 //
 
-import { Account, Class, Doc, Ref } from '@hcengineering/core'
+import { Class, Ref } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { SupportClientFactory } from './types'
+import { SupportClientFactory, SupportConversation, SupportSystem } from './types'
 
 export * from './types'
 export { deleteSupportConversation, updateSupportConversation } from './utils'
-
-/**
- * @public
- */
-export interface SupportConversation extends Doc {
-  account: Ref<Account>
-  conversationId: string
-  hasUnreadMessages: boolean
-}
 
 /**
  * @public
@@ -37,7 +28,8 @@ export const supportId = 'support' as Plugin
 
 export default plugin(supportId, {
   class: {
-    SupportConversation: '' as Ref<Class<SupportConversation>>
+    SupportConversation: '' as Ref<Class<SupportConversation>>,
+    SupportSystem: '' as Ref<Class<SupportSystem>>
   },
   function: {
     GetSupport: '' as Resource<SupportClientFactory>

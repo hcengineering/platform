@@ -29,6 +29,7 @@ import { createModel as coreModel } from '@hcengineering/model-core'
 import document, { documentId, createModel as documentModel } from '@hcengineering/model-document'
 import gmail, { gmailId, createModel as gmailModel } from '@hcengineering/model-gmail'
 import hr, { hrId, createModel as hrModel } from '@hcengineering/model-hr'
+import { intercomId, createModel as intercomModel } from '@hcengineering/model-intercom'
 import inventory, { inventoryId, createModel as inventoryModel } from '@hcengineering/model-inventory'
 import lead, { leadId, createModel as leadModel } from '@hcengineering/model-lead'
 import notification, { notificationId, createModel as notificationModel } from '@hcengineering/model-notification'
@@ -275,6 +276,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     ],
     [automationModel, automationId],
     [supportModel, supportId],
+    [intercomModel, intercomId],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],

@@ -1,0 +1,4 @@
+*
+!/lib/**
+!CHANGELOG.md
+/lib/**/__tests__/

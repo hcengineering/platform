@@ -13,9 +13,22 @@
 // limitations under the License.
 //
 
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import core from '@hcengineering/core'
+import { Builder } from '@hcengineering/model'
+import intercom from '@hcengineering/intercom'
+import support from '@hcengineering/support'
 
-export const supportOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {}
+export { intercomId } from '@hcengineering/intercom'
+export { intercom as default }
+
+export function createModel (builder: Builder): void {
+  builder.createDoc(
+    support.class.SupportSystem,
+    core.space.Model,
+    {
+      name: 'Intercom',
+      factory: intercom.function.GetWidget
+    },
+    intercom.ids.Intercom
+  )
 }

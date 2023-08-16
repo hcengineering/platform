@@ -83,6 +83,7 @@ specifiers:
   '@rush-temp/model-document': file:./projects/model-document.tgz
   '@rush-temp/model-gmail': file:./projects/model-gmail.tgz
   '@rush-temp/model-hr': file:./projects/model-hr.tgz
+  '@rush-temp/model-intercom': file:./projects/model-intercom.tgz
   '@rush-temp/model-inventory': file:./projects/model-inventory.tgz
   '@rush-temp/model-lead': file:./projects/model-lead.tgz
   '@rush-temp/model-notification': file:./projects/model-notification.tgz
@@ -483,6 +484,7 @@ dependencies:
   '@rush-temp/model-document': file:projects/model-document.tgz_typescript@4.8.4
   '@rush-temp/model-gmail': file:projects/model-gmail.tgz_typescript@4.8.4
   '@rush-temp/model-hr': file:projects/model-hr.tgz_typescript@4.8.4
+  '@rush-temp/model-intercom': file:projects/model-intercom.tgz_typescript@4.8.4
   '@rush-temp/model-inventory': file:projects/model-inventory.tgz_typescript@4.8.4
   '@rush-temp/model-lead': file:projects/model-lead.tgz_typescript@4.8.4
   '@rush-temp/model-notification': file:projects/model-notification.tgz_typescript@4.8.4
@@ -18904,7 +18906,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz_typescript@4.8.4:
-    resolution: {integrity: sha512-g6cNmmiQ8u2RKGeoHFUfJZpwv3ANw9G+eL5w9ugE1641qM35z4Mc98pCVvC4qo7KxEUkf71fEAkVn1PYEhd1Zw==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-/+zCISGE0/SwSl3ltKGS1iCzDXfFG5eQuDfg3XN805epke/F/1afm55AyY0VCpfDEF+54MUE1iOCrU5pz9mT6Q==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -19144,6 +19146,27 @@ packages:
     resolution: {integrity: sha512-B/0+Hw+MDa6P1vFGjDYkIlQigLz6L8TwRH8gouagxsSKLEHGovcyKUXWTkvh3nXHACG2YhSeXhhObQsMi0HElA==, tarball: file:projects/model-hr.tgz}
     id: file:projects/model-hr.tgz
     name: '@rush-temp/model-hr'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.47.11
+      '@types/heft-jest': 1.0.3
+      '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
+      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
+      eslint: 8.27.0
+      eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
+      eslint-plugin-import: 2.26.0_eslint@8.27.0
+      eslint-plugin-n: 15.5.1_eslint@8.27.0
+      eslint-plugin-promise: 6.1.1_eslint@8.27.0
+      prettier: 2.8.8
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+    dev: false
+
+  file:projects/model-intercom.tgz_typescript@4.8.4:
+    resolution: {integrity: sha512-pfxnM/UyW/Mdv6WLQDhECLBN3IvQ+q9m52jqI39coSDT+ZX9nl1XvyxMg9rkytll0iHYnt9nE2ybCFDiPovjww==, tarball: file:projects/model-intercom.tgz}
+    id: file:projects/model-intercom.tgz
+    name: '@rush-temp/model-intercom'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.47.11
@@ -20350,7 +20373,7 @@ packages:
     dev: false
 
   file:projects/pod-intercom.tgz_bufferutil@4.0.7:
-    resolution: {integrity: sha512-4NDNID4vtNAGwKM4nwH5HiBrishGyQy3kzyuQv7hQJ+MfqZC7yMBi1UDwQUdM5zZ3eJoenxuGD+TwEplkeLJBA==, tarball: file:projects/pod-intercom.tgz}
+    resolution: {integrity: sha512-JQAGKBci2fYjtuaZtSmoprpo7eOGhl67VvgolIzTepoEh7qZvaneBn1tiTBjpYDR0sJ9btDogZblOmEPkILoUg==, tarball: file:projects/pod-intercom.tgz}
     id: file:projects/pod-intercom.tgz
     name: '@rush-temp/pod-intercom'
     version: 0.0.0
@@ -20389,7 +20412,7 @@ packages:
     dev: false
 
   file:projects/pod-server.tgz:
-    resolution: {integrity: sha512-g9MhoriTgqZHzOEpyggUSXgC0fAs3rarkP9THQRxbQRaMGa8XaezFsNcltx6WqoISHAIGxuM3SsEI3BlW2yu2g==, tarball: file:projects/pod-server.tgz}
+    resolution: {integrity: sha512-5FxS/GmNbWA69WomuWTe1xOcyJ7M0qUA81SJxoqdNpN4G4SkSY67WGLS6xwHczPRlwGEGptxjStoQTXFuYJ2uw==, tarball: file:projects/pod-server.tgz}
     name: '@rush-temp/pod-server'
     version: 0.0.0
     dependencies:
@@ -20497,7 +20520,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_91152849c259b1b3925f7bb3d415bc80:
-    resolution: {integrity: sha512-OSM0a05AcFJ0HashK+Exow4UW5bbTwyKfFf/DwR/atBRJqH19fgu1IAH2bjD4yuti9gC/vEu7U4IO8pi3vMFmA==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-UKzqJtNfUK45Ci4MH2M1iiRGvNc9d1npEC4gSxO4AzewoS0+uclRqGFMSNoCXNpII+/iy/DfzxBg/7Cdxxf+EQ==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -22582,7 +22605,7 @@ packages:
     dev: false
 
   file:projects/workbench-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-mSSQmxgMJPi3Da8HML1tIX8NMCnDvbko+duCnSK5bxEa5NUiNPbt3BYfI6c53f6srgRoy6vRsGcmVaz9cFgHXQ==, tarball: file:projects/workbench-resources.tgz}
+    resolution: {integrity: sha512-2BkB1FrhyjV1QSVJMOT3Qs1a/5NBe3n1X/5xWhYKSLYdSYe4WMkccjK0S6wb76IkYQ0+SowyCRotzjkVHs92Iw==, tarball: file:projects/workbench-resources.tgz}
     id: file:projects/workbench-resources.tgz
     name: '@rush-temp/workbench-resources'
     version: 0.0.0

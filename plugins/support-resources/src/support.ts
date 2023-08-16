@@ -16,21 +16,24 @@
 import { Unsubscriber, get } from 'svelte/store'
 
 import { getCurrentAccount } from '@hcengineering/core'
-import intercom from '@hcengineering/intercom'
 import { getResource } from '@hcengineering/platform'
 import support, {
   SupportClient,
   SupportStatusCallback,
+  SupportSystem,
   SupportWidget,
   SupportWidgetConfig
 } from '@hcengineering/support'
 import { location, themeStore } from '@hcengineering/ui'
 import { createQuery, LiveQuery } from '@hcengineering/presentation'
+import { getClient } from '@hcengineering/presentation'
 
 class SupportClientImpl implements SupportClient {
+  private readonly supportSystem: SupportSystem
+  private readonly onStatusChanged: SupportStatusCallback | undefined
+
   private config: SupportWidgetConfig
   private widget: SupportWidget | undefined = undefined
-  private readonly onStatusChanged: SupportStatusCallback | undefined
 
   private hasUnreadMessages: boolean = false
   private widgetUnreadCount: number | undefined = undefined
@@ -39,7 +42,8 @@ class SupportClientImpl implements SupportClient {
   private readonly query?: LiveQuery
   private readonly unsub?: Unsubscriber
 
-  constructor (onStatusChanged?: SupportStatusCallback) {
+  constructor (supportSystem: SupportSystem, onStatusChanged?: SupportStatusCallback) {
+    this.supportSystem = supportSystem
     this.onStatusChanged = onStatusChanged
 
     this.config = {
@@ -113,7 +117,7 @@ class SupportClientImpl implements SupportClient {
 
   private async getWidget (): Promise<SupportWidget> {
     if (this.widget === undefined) {
-      const factory = await getResource(intercom.function.GetWidget)
+      const factory = await getResource(this.supportSystem.factory)
       this.widget = factory(
         this.config,
         (count: number) => this.handleUnreadCountChanged(count),
@@ -126,9 +130,13 @@ class SupportClientImpl implements SupportClient {
 
 let client: SupportClient | undefined
 
-export function createSupportClient (onStatusChanged?: SupportStatusCallback): SupportClient {
-  client = new SupportClientImpl(onStatusChanged)
-  return client
+export async function createSupportClient (onStatusChanged?: SupportStatusCallback): Promise<SupportClient | undefined> {
+  const supportSystem = await getClient().findOne(support.class.SupportSystem, {})
+
+  if (supportSystem !== undefined) {
+    client = new SupportClientImpl(supportSystem, onStatusChanged)
+    return client
+  }
 }
 
 export function getSupportClient (): SupportClient | undefined {

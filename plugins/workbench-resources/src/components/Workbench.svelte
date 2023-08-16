@@ -585,7 +585,7 @@
     res((status) => handleSupportStatusChanged(status))
   )
   onDestroy(async () => {
-    await supportClient.then((support) => support.destroy())
+    await supportClient?.then((support) => support.destroy())
   })
 
   $: checkInbox($popupstore)
@@ -673,14 +673,16 @@
           on:click={() => showPopup(AppSwitcher, { apps: getApps(apps) }, popupPosition)}
         />
         {#await supportClient then client}
-          <AppItem
-            icon={support.icon.Support}
-            label={support.string.ContactUs}
-            size={appsMini ? 'small' : 'large'}
-            notify={supportStatus?.hasUnreadMessages}
-            selected={supportStatus?.visible}
-            on:click={() => client.toggleWidget()}
-          />
+          {#if client}
+            <AppItem
+              icon={support.icon.Support}
+              label={support.string.ContactUs}
+              size={appsMini ? 'small' : 'large'}
+              notify={supportStatus?.hasUnreadMessages}
+              selected={supportStatus?.visible}
+              on:click={() => client.toggleWidget()}
+            />
+          {/if}
         {/await}
         <div class="flex-center" class:mt-3={appsDirection === 'vertical'} class:ml-2={appsDirection === 'horizontal'}>
           <!-- svelte-ignore a11y-click-events-have-key-events -->

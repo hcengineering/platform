@@ -32,7 +32,6 @@
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.27",
-    "@hcengineering/intercom": "^0.6.0",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/presentation": "^0.6.2",
     "@hcengineering/support": "^0.6.0",

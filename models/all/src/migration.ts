@@ -38,7 +38,6 @@ import { hrOperation } from '@hcengineering/model-hr'
 import { documentOperation } from '@hcengineering/model-document'
 import { bitrixOperation } from '@hcengineering/model-bitrix'
 import { calendarOperation } from '@hcengineering/model-calendar'
-import { supportOperation } from '@hcengineering/model-support'
 
 export const migrateOperations: [string, MigrateOperation][] = [
   ['core', coreOperation],
@@ -58,7 +57,6 @@ export const migrateOperations: [string, MigrateOperation][] = [
   ['tags', tagsOperation],
   ['notification', notificationOperation],
   ['setting', settingOperation],
-  ['support', supportOperation],
   ['tracker', trackerOperation],
   ['board', boardOperation],
   ['hr', hrOperation],

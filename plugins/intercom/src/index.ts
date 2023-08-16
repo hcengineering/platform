@@ -13,9 +13,10 @@
 // limitations under the License.
 //
 
+import { Ref } from '@hcengineering/core'
 import type { Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { SupportWidgetFactory } from '@hcengineering/support'
+import { SupportSystem, SupportWidgetFactory } from '@hcengineering/support'
 
 /**
  * @public
@@ -30,5 +31,8 @@ export default plugin(intercomId, {
   },
   function: {
     GetWidget: '' as Resource<SupportWidgetFactory>
+  },
+  ids: {
+    Intercom: '' as Ref<SupportSystem>
   }
 })

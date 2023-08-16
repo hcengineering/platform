@@ -13,7 +13,25 @@
 // limitations under the License.
 //
 
-import { Account } from '@hcengineering/core'
+import { Account, Doc, Ref } from '@hcengineering/core'
+import { Resource } from '@hcengineering/platform'
+
+/**
+ * @public
+ */
+export interface SupportConversation extends Doc {
+  account: Ref<Account>
+  conversationId: string
+  hasUnreadMessages: boolean
+}
+
+/**
+ * @public
+ */
+export interface SupportSystem extends Doc {
+  name: string
+  factory: Resource<SupportWidgetFactory>
+}
 
 /**
  * @public
@@ -63,7 +81,7 @@ export type SupportStatusCallback = (status: SupportStatus) => void
 /**
  * @public
  */
-export type SupportClientFactory = (onStatusChanged?: SupportStatusCallback) => SupportClient
+export type SupportClientFactory = (onStatusChanged?: SupportStatusCallback) => Promise<SupportClient>
 
 /**
  * @public

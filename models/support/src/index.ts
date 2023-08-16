@@ -13,15 +13,15 @@
 // limitations under the License.
 //
 
-import { Account, Domain, IndexKind, Ref } from '@hcengineering/core'
+import core, { Account, DOMAIN_MODEL, Domain, IndexKind, Ref } from '@hcengineering/core'
 import { Builder, Index, Model } from '@hcengineering/model'
 import preference, { TPreference } from '@hcengineering/model-preference'
-import { SupportConversation } from '@hcengineering/support'
+import support, { SupportConversation, SupportSystem, SupportWidgetFactory } from '@hcengineering/support'
 
-import support from './plugin'
+import { TDoc } from '@hcengineering/model-core'
+import { Resource } from '@hcengineering/platform'
 
 export { supportId } from '@hcengineering/support'
-export { supportOperation } from './migration'
 export { support as default }
 
 export const DOMAIN_SUPPORT = 'support' as Domain
@@ -37,6 +37,12 @@ export class TSupportConversation extends TPreference implements SupportConversa
   hasUnreadMessages!: boolean
 }
 
+@Model(support.class.SupportSystem, core.class.Doc, DOMAIN_MODEL)
+export class TSupportSystem extends TDoc implements SupportSystem {
+  name!: string
+  factory!: Resource<SupportWidgetFactory>
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TSupportConversation)
+  builder.createModel(TSupportConversation, TSupportSystem)
 }
