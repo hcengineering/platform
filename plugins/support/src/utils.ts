@@ -26,14 +26,15 @@ export async function updateSupportConversation (
   conversationId: string,
   hasUnreadMessages: boolean
 ): Promise<void> {
-  const doc = await client.findOne(support.class.SupportConversation, { account, conversationId })
+  const space = account as string as Ref<Space>
+  const doc = await client.findOne(support.class.SupportConversation, { conversationId, space })
   if (doc !== undefined) {
     await client.update(doc, { hasUnreadMessages }, undefined, undefined, account)
   } else {
     await client.createDoc(
       support.class.SupportConversation,
-      account as string as Ref<Space>,
-      { account, conversationId, hasUnreadMessages },
+      space,
+      { conversationId, hasUnreadMessages },
       undefined,
       undefined,
       account
@@ -49,7 +50,8 @@ export async function deleteSupportConversation (
   account: Ref<Account>,
   conversationId: string
 ): Promise<void> {
-  const doc = await client.findOne(support.class.SupportConversation, { account, conversationId })
+  const space = account as string as Ref<Space>
+  const doc = await client.findOne(support.class.SupportConversation, { conversationId, space })
   if (doc !== undefined) {
     await client.remove(doc, undefined, account)
   }

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { Account, DOMAIN_MODEL, Domain, IndexKind, Ref } from '@hcengineering/core'
+import core, { DOMAIN_MODEL, Domain, IndexKind } from '@hcengineering/core'
 import { Builder, Index, Model } from '@hcengineering/model'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import support, { SupportConversation, SupportSystem, SupportWidgetFactory } from '@hcengineering/support'
@@ -28,9 +28,6 @@ export const DOMAIN_SUPPORT = 'support' as Domain
 
 @Model(support.class.SupportConversation, preference.class.Preference)
 export class TSupportConversation extends TPreference implements SupportConversation {
-  @Index(IndexKind.Indexed)
-    account!: Ref<Account>
-
   @Index(IndexKind.Indexed)
     conversationId!: string
 

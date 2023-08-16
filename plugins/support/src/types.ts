@@ -13,14 +13,13 @@
 // limitations under the License.
 //
 
-import { Account, Doc, Ref } from '@hcengineering/core'
+import { Account, Doc } from '@hcengineering/core'
 import { Resource } from '@hcengineering/platform'
 
 /**
  * @public
  */
 export interface SupportConversation extends Doc {
-  account: Ref<Account>
   conversationId: string
   hasUnreadMessages: boolean
 }
