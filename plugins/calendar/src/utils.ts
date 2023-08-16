@@ -65,7 +65,7 @@ function generateDailyValues (
 
     currentDate.setDate(currentDate.getDate() + (interval ?? 1))
     if (count !== undefined && i === count) break
-    if (endDate !== undefined && currentDate.getTime() > endDate) break
+    if (endDate !== undefined && (endDate !== null && currentDate.getTime() > endDate) break
     if (currentDate.getTime() > to) break
   }
 }
@@ -78,8 +78,12 @@ function generateWeeklyValues (
   to: Timestamp
 ): void {
   const { count, endDate, interval } = rule
-  const { byDay, wkst, bySetPos } = rule
+  let { byDay, wkst, bySetPos } = rule
   let i = 0
+
+  if (byDay === undefined) {
+    byDay = [getWeekday(currentDate, wkst)]
+  }
 
   while (true) {
     const next = new Date(currentDate).setDate(currentDate.getDate() + (interval ?? 1) * 7)
@@ -87,7 +91,7 @@ function generateWeeklyValues (
     let date = currentDate
     while (date < end) {
       if (
-        (byDay == null || byDay.includes(getWeekday(date, wkst))) &&
+        (byDay == null || matchesByDay(date, byDay, wkst)) &&
         (bySetPos == null || bySetPos.includes(getSetPos(date)))
       ) {
         const res = date.getTime()
@@ -98,12 +102,51 @@ function generateWeeklyValues (
       }
       date = new Date(date.setDate(date.getDate() + 1))
       if (count !== undefined && i === count) return
-      if (endDate !== undefined && date.getTime() > endDate) return
+      if (endDate !== undefined && endDate !== null && date.getTime() > endDate) return
       if (date.getTime() > to) return
     }
 
     currentDate = new Date(next)
   }
+}
+
+function matchesByDay (date: Date, byDay: string[], wkst: string | undefined): boolean {
+  const weekday = getWeekday(date, wkst)
+  const dayOfMonth = Math.floor((date.getDate() - 1) / 7) + 1
+
+  for (const byDayItem of byDay) {
+    if (byDayItem === weekday) {
+      return true
+    }
+
+    const pos = parseInt(byDayItem)
+    if (isNaN(pos)) continue
+
+    if (pos > 0 && dayOfMonth === pos) {
+      return true
+    }
+
+    if (pos < 0 && dayOfMonth === getNegativePosition(date, weekday, pos)) {
+      return true
+    }
+  }
+
+  return false
+}
+
+function getNegativePosition (date: Date, weekday: string, pos: number): number {
+  const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
+  const occurrences = []
+  for (let day = lastDayOfMonth; day >= 1; day--) {
+    const tempDate = new Date(date.getFullYear(), date.getMonth(), day)
+    if (getWeekday(tempDate) === weekday) {
+      occurrences.push(day)
+    }
+    if (occurrences.length === Math.abs(pos)) {
+      return occurrences.pop()!
+    }
+  }
+  throw new Error(`Unable to calculate negative position ${pos}`)
 }
 
 function generateMonthlyValues (
@@ -123,7 +166,7 @@ function generateMonthlyValues (
     let date = currentDate
     while (date < end) {
       if (
-        (byDay == null || byDay.includes(getWeekday(currentDate, wkst))) &&
+        (byDay == null || matchesByDay(date, byDay, wkst)) &&
         (byMonthDay == null || byMonthDay.includes(new Date(currentDate).getDate())) &&
         (bySetPos == null || bySetPos.includes(getSetPos(currentDate)))
       ) {
@@ -136,7 +179,7 @@ function generateMonthlyValues (
       date = new Date(date.setDate(date.getDate() + 1))
 
       if (count !== undefined && i === count) return
-      if (endDate !== undefined && date.getTime() > endDate) return
+      if (endDate !== undefined && endDate !== null && date.getTime() > endDate) return
       if (date.getTime() > to) return
     }
     currentDate = new Date(next)
@@ -160,7 +203,7 @@ function generateYearlyValues (
     let date = currentDate
     while (date < end) {
       if (
-        (byDay == null || byDay.includes(getWeekday(currentDate, wkst))) &&
+        (byDay == null || matchesByDay(date, byDay, wkst)) &&
         (byMonthDay == null || byMonthDay.includes(currentDate.getDate())) &&
         (byYearDay == null || byYearDay.includes(getYearDay(currentDate))) &&
         (byWeekNo == null || byWeekNo.includes(getWeekNumber(currentDate))) &&
@@ -175,7 +218,7 @@ function generateYearlyValues (
       }
       date = new Date(date.setDate(date.getDate() + 1))
       if (count !== undefined && i === count) return
-      if (endDate !== undefined && date.getTime() > endDate) return
+      if (endDate !== undefined && endDate !== null && date.getTime() > endDate) return
       if (date.getTime() > to) return
     }
     currentDate = new Date(next)
