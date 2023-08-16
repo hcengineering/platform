@@ -279,7 +279,7 @@ async function getValueCollaborators (value: any, attr: AnyAttribute, control: T
   const hierarchy = control.hierarchy
   if (attr.type._class === core.class.RefTo) {
     const to = (attr.type as RefTo<Doc>).to
-    if (hierarchy.isDerived(to, contact.mixin.Employee)) {
+    if (hierarchy.isDerived(to, contact.class.Person)) {
       const acc = await getPersonAccount(value, control)
       return acc !== undefined ? [acc._id] : []
     } else if (hierarchy.isDerived(to, core.class.Account)) {
@@ -290,7 +290,7 @@ async function getValueCollaborators (value: any, attr: AnyAttribute, control: T
     const arrOf = (attr.type as ArrOf<RefTo<Doc>>).of
     if (arrOf._class === core.class.RefTo) {
       const to = (arrOf as RefTo<Doc>).to
-      if (hierarchy.isDerived(to, contact.mixin.Employee)) {
+      if (hierarchy.isDerived(to, contact.class.Person)) {
         const employeeAccounts = await control.modelDb.findAll(contact.class.PersonAccount, {
           person: { $in: Array.isArray(value) ? value : [value] }
         })
