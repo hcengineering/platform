@@ -648,7 +648,7 @@ export function createModel (builder: Builder): void {
         {
           key: 'assignee',
           presenter: tracker.component.AssigneeEditor,
-          displayProps: { key: 'assigee', fixed: 'right' },
+          displayProps: { key: 'assignee', fixed: 'right' },
           props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' }
         }
       ]
