@@ -125,7 +125,8 @@ export default plugin(serverNotificationId, {
     OnBacklinkCreate: '' as Resource<TriggerFunc>,
     CollaboratorDocHandler: '' as Resource<TriggerFunc>,
     OnAttributeCreate: '' as Resource<TriggerFunc>,
-    OnAttributeUpdate: '' as Resource<TriggerFunc>
+    OnAttributeUpdate: '' as Resource<TriggerFunc>,
+    OnDmCreate: '' as Resource<TriggerFunc>
   },
   function: {
     IsUserInFieldValue: '' as TypeMatchFunc,

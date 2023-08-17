@@ -345,6 +345,21 @@ export function createModel (builder: Builder): void {
     },
     notification.ids.TxCollaboratorsChange
   )
+
+  builder.createDoc(
+    activity.class.TxViewlet,
+    core.space.Model,
+    {
+      objectClass: chunter.class.DirectMessage,
+      icon: chunter.icon.Chunter,
+      txClass: core.class.TxCreateDoc,
+      component: notification.activity.TxDmCreation,
+      display: 'inline',
+      editable: false,
+      hideOnRemove: true
+    },
+    notification.ids.TxDmCreation
+  )
 }
 
 export function generateClassNotificationTypes (

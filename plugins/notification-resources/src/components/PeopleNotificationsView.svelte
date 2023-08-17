@@ -72,7 +72,7 @@
 
   let div: HTMLDivElement
 
-  $: if (selected && div !== undefined) div.focus()
+  $: if (selected && div != null) div.focus()
 </script>
 
 {#if doc}

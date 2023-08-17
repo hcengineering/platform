@@ -170,7 +170,8 @@ export default plugin(chunterId, {
     DMNotification: '' as Ref<NotificationType>,
     MentionNotification: '' as Ref<NotificationType>,
     ThreadNotification: '' as Ref<NotificationType>,
-    ChannelNotification: '' as Ref<NotificationType>
+    ChannelNotification: '' as Ref<NotificationType>,
+    DMCreationNotification: '' as Ref<NotificationType>
   },
   app: {
     Chunter: '' as Ref<Doc>

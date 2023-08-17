@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import chunter, { Backlink } from '@hcengineering/chunter'
+import chunter, { Backlink, DirectMessage } from '@hcengineering/chunter'
 import contact, { Employee, PersonAccount, formatName } from '@hcengineering/contact'
 import core, {
   Account,
@@ -96,6 +96,45 @@ export async function OnBacklinkCreate (tx: Tx, control: TriggerControl): Promis
     res = res.concat(await createCollabDocInfo([receiver._id], control, tx as TxCUD<Doc>, doc))
   }
   return res
+}
+
+/**
+ * @public
+ */
+export async function OnDmCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const hierarchy = control.hierarchy
+  const ptx = tx as TxCreateDoc<DirectMessage>
+  const res: Tx[] = []
+
+  if (tx.createdBy == null) return []
+  if (!isDmCreationTx(ptx, hierarchy)) return []
+
+  const dm = (await control.findAll(ptx.objectClass, { _id: ptx.objectId }, { limit: 1 })).shift()
+  if (dm == null) return []
+
+  let dmWithPerson: Ref<Account> | undefined
+  for (const person of dm.members) {
+    if (person !== tx.createdBy) {
+      dmWithPerson = person
+      break
+    }
+  }
+
+  if (dmWithPerson == null) return []
+
+  pushNotification(control, res, tx.createdBy, dm, ptx, [], dmWithPerson)
+
+  return res
+}
+
+function isDmCreationTx (ptx: TxCreateDoc<DirectMessage>, hierarchy: Hierarchy): boolean {
+  if (ptx._class !== core.class.TxCreateDoc ||
+    !hierarchy.isDerived(ptx.objectClass, chunter.class.DirectMessage)
+  ) {
+    return false
+  }
+
+  return true
 }
 
 function checkTx (ptx: TxCollectionCUD<Doc, Backlink>, hierarchy: Hierarchy): boolean {
@@ -438,7 +477,8 @@ function pushNotification (
   target: Ref<Account>,
   object: Doc,
   originTx: TxCUD<Doc>,
-  docUpdates: DocUpdates[]
+  docUpdates: DocUpdates[],
+  modifiedBy?: Ref<Account>
 ): void {
   const current = docUpdates.find((p) => p.user === target)
   if (current === undefined) {
@@ -449,14 +489,14 @@ function pushNotification (
         attachedToClass: object._class,
         hidden: false,
         lastTxTime: originTx.modifiedOn,
-        txes: [{ _id: originTx._id, modifiedOn: originTx.modifiedOn, modifiedBy: originTx.modifiedBy, isNew: true }]
+        txes: [{ _id: originTx._id, modifiedOn: originTx.modifiedOn, modifiedBy: modifiedBy ?? originTx.modifiedBy, isNew: true }]
       })
     )
   } else {
     res.push(
       control.txFactory.createTxUpdateDoc(current._class, current.space, current._id, {
         $push: {
-          txes: { _id: originTx._id, modifiedOn: originTx.modifiedOn, modifiedBy: originTx.modifiedBy, isNew: true }
+          txes: { _id: originTx._id, modifiedOn: originTx.modifiedOn, modifiedBy: modifiedBy ?? originTx.modifiedBy, isNew: true }
         }
       })
     )
@@ -889,7 +929,8 @@ export default async () => ({
     OnBacklinkCreate,
     CollaboratorDocHandler: collaboratorDocHandler,
     OnAttributeCreate,
-    OnAttributeUpdate
+    OnAttributeUpdate,
+    OnDmCreate
   },
   function: {
     IsUserInFieldValue: isUserInFieldValue,

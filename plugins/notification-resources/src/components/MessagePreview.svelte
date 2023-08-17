@@ -10,6 +10,8 @@
   import { EmployeePresenter, personAccountByIdStore, personByIdStore } from "@hcengineering/contact-resources"
   import { PersonAccount } from "@hcengineering/contact"
 
+  import notification from "../plugin"
+
   export let message: WithLookup<ChunterMessage>
 
   $: attachments = (message.$lookup?.attachments ?? []) as Attachment[]
@@ -74,7 +76,7 @@
         {#if account._id !== me}
           <EmployeePresenter value={employee} shouldShowAvatar={true} disabled />
         {:else}
-          <div>You</div>
+          <Label label={notification.string.You} />
         {/if}
       {/if}
       <span>{getTime(message.createdOn ?? 0)}</span>

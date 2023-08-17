@@ -17,6 +17,9 @@
   import { createQuery } from '@hcengineering/presentation'
   import chunter, { ChunterMessage, DirectMessage } from '@hcengineering/chunter'
   import attachment from '@hcengineering/attachment'
+  import { Label } from '@hcengineering/ui'
+
+  import notification from '../plugin'
   import MessagePreview from './MessagePreview.svelte'
 
   export let channel: Ref<DirectMessage>
@@ -33,7 +36,7 @@
       }
     },
     {
-      limit: numOfMessages || NUM_OF_RECENT_MESSAGES,
+      limit: numOfMessages + NUM_OF_RECENT_MESSAGES,
       sort: {
         createdOn: SortingOrder.Descending
       },
@@ -44,9 +47,13 @@
 </script>
 
 <div class="flex-col flex-gap-3 preview-container">
-  {#each messages as message}
-    <MessagePreview {message} />
-  {/each}
+  {#if messages.length}
+    {#each messages as message}
+      <MessagePreview {message} />
+    {/each}
+  {:else}
+    <Label label={notification.string.YouHaveStartedAConversation} />
+  {/if}
 </div>
 
 <style lang="scss">
