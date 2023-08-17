@@ -335,15 +335,15 @@
       result.visibility = 0
     }
     result.top =
-      (showHeader ? rem(3.5) + styleAD : 0) +
+      (showHeader ? rem(3.5) : 0) +
+      styleAD +
       cellHeight * startTime.hours +
       (startTime.mins / 60) * cellHeight +
       getGridOffset(startTime.mins)
     result.bottom =
       cellHeight * (displayedHours - startHour - endTime.hours - 1) +
       ((60 - endTime.mins) / 60) * cellHeight +
-      getGridOffset(endTime.mins, true) +
-      (showHeader ? 0 : rem(3.5))
+      getGridOffset(endTime.mins, true)
     let cols = 1
     let index: number = 0
     grid[event.day].columns.forEach((col, i) =>
@@ -450,25 +450,31 @@
       : rem((heightAD + 0.125) * (adMaxRow <= maxAD ? adMaxRow : maxAD) + 0.25)
 </script>
 
-<Scroller bind:divScroll={scroller} fade={{ multipler: { top: 3.5 + styleAD / fontSize, bottom: 0 } }}>
+<Scroller
+  bind:divScroll={scroller}
+  fade={{ multipler: { top: (showHeader ? 3.5 : 0) + styleAD / fontSize, bottom: 0 } }}
+>
   <div
     bind:this={container}
     class="calendar-container"
-    style:grid={`${showHeader ? '[header] 3.5rem [all-day] ' + styleAD + 'px' : ''} repeat(${
+    style:--calendar-ad-height={styleAD + 'px'}
+    style:grid={`${showHeader ? '[header] 3.5rem ' : ''}[all-day] ${styleAD}px repeat(${
       (displayedHours - startHour) * 2
     }, [row-start] 2rem) / [time-col] 3.5rem repeat(${displayedDaysCount}, [col-start] 1fr)`}
     use:resizeObserver={(element) => checkSizes(element)}
   >
-    <div class="sticky-header head center"><span class="zone">{getTimeZone()}</span></div>
-    {#each [...Array(displayedDaysCount).keys()] as dayOfWeek}
-      {@const day = getDay(weekMonday, dayOfWeek)}
-      <div class="sticky-header head title" class:center={displayedDaysCount > 1}>
-        <span class="day" class:today={areDatesEqual(todayDate, day)}>{day.getDate()}</span>
-        <span class="weekday">{getWeekDayName(day, weekFormat)}</span>
-      </div>
-    {/each}
+    {#if showHeader}
+      <div class="sticky-header head center"><span class="zone">{getTimeZone()}</span></div>
+      {#each [...Array(displayedDaysCount).keys()] as dayOfWeek}
+        {@const day = getDay(weekMonday, dayOfWeek)}
+        <div class="sticky-header head title" class:center={displayedDaysCount > 1}>
+          <span class="day" class:today={areDatesEqual(todayDate, day)}>{day.getDate()}</span>
+          <span class="weekday">{getWeekDayName(day, weekFormat)}</span>
+        </div>
+      {/each}
+    {/if}
 
-    <div class="sticky-header allday-header text-sm content-dark-color">
+    <div class="sticky-header allday-header text-sm content-dark-color" class:top={!showHeader}>
       <Label label={calendar.string.AllDay} />
       {#if (!minimizedAD && adMaxRow > maxAD) || (minimizedAD && adMaxRow > minAD)}
         <ActionIcon
@@ -480,38 +486,38 @@
         />
       {/if}
     </div>
-    <div class="sticky-header allday-container" style:grid-column={`col-start 1 / span ${displayedDaysCount}`}>
+    <div
+      class="sticky-header allday-container"
+      class:top={!showHeader}
+      style:grid-column={`col-start 1 / span ${displayedDaysCount}`}
+    >
       {#if shownHeightAD > maxHeightAD && shownAD}
         <Scroller noFade={false}>
-          {#key styleAD}{#key calendarWidth}{#key displayedDaysCount}
-                <div style:min-height={`${shownHeightAD - cellBorder * 2}px`} />
-                {#each alldays as event, i}
-                  {@const rect = getADRect(event._id)}
-                  {@const ev = events.find((p) => p._id === event._id)}
-                  {#if ev}
-                    <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-                    <div
-                      class="calendar-element"
-                      style:top={`${rect.top}px`}
-                      style:height={`${rect.height}px`}
-                      style:left={`${rect.left}px`}
-                      style:width={`${rect.width}px`}
-                      style:opacity={rect.visibility === 0 ? 0.4 : 1}
-                      style:--mask-image={getMask(rect.visibility)}
-                      tabindex={500 + i}
-                    >
-                      <EventElement
-                        hourHeight={cellHeight}
-                        event={ev}
-                        size={{ width: rect.width, height: rect.height }}
-                      />
-                    </div>
-                  {/if}
-                {/each}
-              {/key}{/key}{/key}
+          {#key [styleAD, calendarWidth, displayedDaysCount, showHeader]}
+            <div style:min-height={`${shownHeightAD - cellBorder * 2}px`} />
+            {#each alldays as event, i}
+              {@const rect = getADRect(event._id)}
+              {@const ev = events.find((p) => p._id === event._id)}
+              {#if ev}
+                <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+                <div
+                  class="calendar-element"
+                  style:top={`${rect.top}px`}
+                  style:height={`${rect.height}px`}
+                  style:left={`${rect.left}px`}
+                  style:width={`${rect.width}px`}
+                  style:opacity={rect.visibility === 0 ? 0.4 : 1}
+                  style:--mask-image={getMask(rect.visibility)}
+                  tabindex={500 + i}
+                >
+                  <EventElement hourHeight={cellHeight} event={ev} size={{ width: rect.width, height: rect.height }} />
+                </div>
+              {/if}
+            {/each}
+          {/key}
         </Scroller>
       {:else if shownAD}
-        {#key [styleAD, calendarWidth, displayedDaysCount]}
+        {#key [styleAD, calendarWidth, displayedDaysCount, showHeader]}
           {#each alldays as event, i}
             {@const rect = getADRect(event._id)}
             {@const ev = events.find((p) => p._id === event._id)}
@@ -533,7 +539,7 @@
           {/each}
         {/key}
       {:else}
-        {#key [styleAD, calendarWidth, displayedDaysCount]}
+        {#key [styleAD, calendarWidth, displayedDaysCount, showHeader]}
           {#each shortAlldays as event, i}
             {@const rect = getADRect(event.id, event.day, event.fixRow)}
             {@const ev = events.find((p) => p._id === event.id)}
@@ -580,7 +586,11 @@
 
     {#each [...Array(displayedHours - startHour).keys()] as hourOfDay}
       {#if hourOfDay === 0}
-        <div class="clear-cell" />
+        {#if showHeader}
+          <div class="clear-cell" />
+        {:else}
+          <div class="sticky-header head center zm"><span class="zone mini">{getTimeZone()}</span></div>
+        {/if}
       {:else if hourOfDay < displayedHours - startHour}
         <div
           class="time-cell"
@@ -621,7 +631,7 @@
       {#if hourOfDay === displayedHours - startHour - 1}<div class="clear-cell" />{/if}
     {/each}
 
-    {#key [styleAD, calendarWidth, displayedDaysCount]}
+    {#key [styleAD, calendarWidth, displayedDaysCount, showHeader]}
       {#each newEvents.filter((ev) => !ev.allDay) as event, i}
         {@const rect = getRect(event)}
         {@const ev = events.find((p) => p._id === event._id)}
@@ -684,13 +694,17 @@
     background-color: var(--theme-comp-header-color);
     z-index: 10;
 
-    &.head {
-      top: 0;
-    }
     &:not(.head) {
       top: 3.5rem;
       border-top: 1px solid var(--theme-divider-color);
       border-bottom: 1px solid var(--theme-divider-color);
+    }
+    &.head,
+    &.top {
+      top: 0;
+    }
+    &.zm {
+      top: var(--calendar-ad-height, 2.25rem);
     }
     &.center {
       justify-content: center;
@@ -748,6 +762,10 @@
       color: var(--theme-dark-color);
       background-color: rgba(64, 109, 223, 0.1);
       border-radius: 0.25rem;
+
+      &.mini {
+        padding: 0.125rem;
+      }
     }
   }
   .calendar-container {
