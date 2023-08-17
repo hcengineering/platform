@@ -76,6 +76,7 @@
       <svelte:component
         this={editor}
         readonly={isReadonly}
+        editable={!isReadonly}
         disabled={isReadonly}
         label={attribute?.label}
         placeholder={attribute?.label}
