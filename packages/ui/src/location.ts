@@ -126,6 +126,8 @@ if (!embeddedPlatform) {
 
 export const location = derived(locationWritable, (loc) => justClone(loc))
 
+export const workspaceId = derived(location, (loc) => loc.path[1])
+
 /**
  * @public
  */

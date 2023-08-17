@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -21,6 +21,7 @@
   import { IntlString, broadcastEvent, getMetadata, getResource } from '@hcengineering/platform'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
+  import support, { SupportStatus } from '@hcengineering/support'
   import { locationStorageKeyId } from '@hcengineering/ui'
   import {
     AnyComponent,
@@ -575,6 +576,18 @@
     }
   }
 
+  let supportStatus: SupportStatus | undefined = undefined
+  function handleSupportStatusChanged (status: SupportStatus) {
+    supportStatus = status
+  }
+
+  const supportClient = getResource(support.function.GetSupport).then((res) =>
+    res((status) => handleSupportStatusChanged(status))
+  )
+  onDestroy(async () => {
+    await supportClient?.then((support) => support.destroy())
+  })
+
   $: checkInbox($popupstore)
 
   let inboxPopup: PopupResult | undefined = undefined
@@ -659,14 +672,24 @@
           size={appsMini ? 'small' : 'large'}
           on:click={() => showPopup(AppSwitcher, { apps: getApps(apps) }, popupPosition)}
         />
+        {#await supportClient then client}
+          {#if client}
+            <AppItem
+              icon={support.icon.Support}
+              label={support.string.ContactUs}
+              size={appsMini ? 'small' : 'large'}
+              notify={supportStatus?.hasUnreadMessages}
+              selected={supportStatus?.visible}
+              on:click={() => client.toggleWidget()}
+            />
+          {/if}
+        {/await}
         <div class="flex-center" class:mt-3={appsDirection === 'vertical'} class:ml-2={appsDirection === 'horizontal'}>
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div
             id="profile-button"
             class="cursor-pointer"
-            on:click|stopPropagation={() => {
-              showPopup(AccountPopup, {}, popupPosition)
-            }}
+            on:click|stopPropagation={() => showPopup(AccountPopup, {}, popupPosition)}
           >
             <Component is={contact.component.Avatar} props={{ avatar: employee?.avatar, size: 'small' }} />
           </div>
