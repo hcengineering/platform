@@ -157,8 +157,12 @@ function generateMonthlyValues (
   to: Timestamp
 ): void {
   const { count, endDate, interval } = rule
-  const { byDay, byMonthDay, bySetPos, wkst } = rule
+  let { byDay, byMonthDay, bySetPos, wkst } = rule
   let i = 0
+
+  if (byDay == null && byMonthDay == null) {
+    byMonthDay = [currentDate.getDate()]
+  }
 
   while (true) {
     const next = new Date(currentDate).setMonth(currentDate.getMonth() + (interval ?? 1))
