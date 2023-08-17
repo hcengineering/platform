@@ -63,7 +63,7 @@
         {/if}
       </span>
     </div>
-    <div class="buttons-group small-gap content-dark-color">
+    <div class="ml-4 buttons-group small-gap content-dark-color">
       <Button
         id="card-close"
         focusIndex={10002}
