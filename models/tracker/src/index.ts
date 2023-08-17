@@ -1805,7 +1805,8 @@ export function createModel (builder: Builder): void {
         mode: ['context', 'browser'],
         application: tracker.app.Tracker,
         group: 'associate'
-      }
+      },
+      override: [task.action.Move]
     },
     tracker.action.MoveToProject
   )
