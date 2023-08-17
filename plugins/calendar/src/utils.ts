@@ -65,7 +65,7 @@ function generateDailyValues (
 
     currentDate.setDate(currentDate.getDate() + (interval ?? 1))
     if (count !== undefined && i === count) break
-    if (endDate !== undefined && (endDate !== null && currentDate.getTime() > endDate) break
+    if (endDate != null && currentDate.getTime() > endDate) break
     if (currentDate.getTime() > to) break
   }
 }
@@ -102,7 +102,7 @@ function generateWeeklyValues (
       }
       date = new Date(date.setDate(date.getDate() + 1))
       if (count !== undefined && i === count) return
-      if (endDate !== undefined && endDate !== null && date.getTime() > endDate) return
+      if (endDate != null && date.getTime() > endDate) return
       if (date.getTime() > to) return
     }
 
@@ -134,7 +134,7 @@ function matchesByDay (date: Date, byDay: string[], wkst: string | undefined): b
   return false
 }
 
-function getNegativePosition (date: Date, weekday: string, pos: number): number {
+function getNegativePosition (date: Date, weekday: string, pos: number): number | undefined {
   const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
   const occurrences = []
   for (let day = lastDayOfMonth; day >= 1; day--) {
@@ -143,7 +143,7 @@ function getNegativePosition (date: Date, weekday: string, pos: number): number 
       occurrences.push(day)
     }
     if (occurrences.length === Math.abs(pos)) {
-      return occurrences.pop()!
+      return occurrences.pop()
     }
   }
   throw new Error(`Unable to calculate negative position ${pos}`)
@@ -179,7 +179,7 @@ function generateMonthlyValues (
       date = new Date(date.setDate(date.getDate() + 1))
 
       if (count !== undefined && i === count) return
-      if (endDate !== undefined && endDate !== null && date.getTime() > endDate) return
+      if (endDate != null && date.getTime() > endDate) return
       if (date.getTime() > to) return
     }
     currentDate = new Date(next)
@@ -218,7 +218,7 @@ function generateYearlyValues (
       }
       date = new Date(date.setDate(date.getDate() + 1))
       if (count !== undefined && i === count) return
-      if (endDate !== undefined && endDate !== null && date.getTime() > endDate) return
+      if (endDate != null && date.getTime() > endDate) return
       if (date.getTime() > to) return
     }
     currentDate = new Date(next)
