@@ -16,7 +16,7 @@
   import { Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Issue, IssueTemplate, Milestone } from '@hcengineering/tracker'
+  import { Issue, IssueTemplate, Milestone, Project } from '@hcengineering/tracker'
   import {
     ButtonKind,
     ButtonShape,
@@ -30,6 +30,7 @@
   import { createEventDispatcher } from 'svelte'
 
   export let value: Issue | IssueTemplate
+  export let space: Ref<Project> | undefined = undefined
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = true
   export let popupPlaceholder: IntlString = tracker.string.MoveToMilestone
@@ -73,6 +74,8 @@
     })
   }
 
+  $: _space = space ?? value.space
+
   $: twoRows = $deviceInfo.twoRows
 </script>
 
@@ -89,6 +92,7 @@
         {popupPlaceholder}
         {onlyIcon}
         {enlargedText}
+        space={_space}
         short={compression}
         showTooltip={{ label: value.milestone ? tracker.string.MoveToMilestone : tracker.string.AddToMilestone }}
         value={value.milestone}
@@ -117,6 +121,7 @@
           {popupPlaceholder}
           {onlyIcon}
           {enlargedText}
+          space={_space}
           showTooltip={{ label: value.milestone ? tracker.string.MoveToMilestone : tracker.string.AddToMilestone }}
           value={value.milestone}
           onChange={handleMilestoneIdChanged}

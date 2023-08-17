@@ -204,6 +204,7 @@
     />
     <EstimationEditor kind={'regular'} size={'large'} value={object} />
     <ComponentSelector
+      {space}
       value={object.component}
       onChange={handleComponentIdChanged}
       isEditable={true}
@@ -211,9 +212,9 @@
       size={'large'}
     />
     <MilestoneSelector
+      {space}
       value={object.milestone}
       onChange={handleMilestoneIdChanged}
-      useComponent={object.component ?? undefined}
       kind={'regular'}
       size={'large'}
     />

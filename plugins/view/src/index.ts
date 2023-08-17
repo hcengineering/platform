@@ -954,6 +954,8 @@ const view = plugin(viewId, {
       attribute: string
       isAction?: boolean
 
+      fillProps?: Record<string, string>
+
       // Or list of values to select from
       values?: { icon?: Asset, label: IntlString, id: number | string }[]
     }>
