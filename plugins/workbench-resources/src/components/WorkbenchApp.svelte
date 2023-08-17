@@ -20,7 +20,7 @@
   import { workbenchId } from '@hcengineering/workbench'
   import workbench from '../plugin'
 
-  const isNeedUpgrade = (window.location.host == '')
+  const isNeedUpgrade = window.location.host == ''
 </script>
 
 {#if $location.path[0] === workbenchId || $location.path[0] === workbench.component.WorkbenchApp}
@@ -31,9 +31,9 @@
       {#if !client && versionError}
         <div class="version-wrapper">
           <div class="antiPopup version-popup">
-            {#if isNeedUpgrade} 
+            {#if isNeedUpgrade}
               <h1><Label label={workbench.string.NewVersionAvailable} /></h1>
-              <span class="please-update" ><Label label={workbench.string.PleaseUpdate} /></span>
+              <span class="please-update"><Label label={workbench.string.PleaseUpdate} /></span>
             {:else}
               <h1><Label label={workbench.string.ServerUnderMaintenance} /></h1>
             {/if}
