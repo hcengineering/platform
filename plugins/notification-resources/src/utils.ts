@@ -14,13 +14,11 @@
 // limitations under the License.
 //
 
-import core from '@hcengineering/core'
-import { Backlink, DirectMessage } from '@hcengineering/chunter'
-import { Account, Class, Data, Doc, getCurrentAccount, Ref, TxOperations } from '@hcengineering/core'
+import core, { Account, Class, Doc, getCurrentAccount, Ref, TxOperations } from '@hcengineering/core'
+import chunter, { DirectMessage } from '@hcengineering/chunter'
 import notification, { Collaborators, DocUpdates, NotificationClient } from '@hcengineering/notification'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { writable } from 'svelte/store'
-import chunter from '@hcengineering/chunter'
 import { PersonAccount } from '@hcengineering/contact'
 import { deepEqual } from 'fast-equals'
 
@@ -178,7 +176,11 @@ export async function markAsUnread (object: DocUpdates): Promise<void> {
   })
 }
 
-export async function getDirectChannel (client: TxOperations, me: Ref<PersonAccount>, employeeAccount: Ref<PersonAccount>): Promise<Ref<DirectMessage>> {
+export async function getDirectChannel (
+  client: TxOperations,
+  me: Ref<PersonAccount>,
+  employeeAccount: Ref<PersonAccount>
+): Promise<Ref<DirectMessage>> {
   const accIds = [me, employeeAccount].sort()
   const existingDms = await client.findAll(chunter.class.DirectMessage, {})
   for (const dm of existingDms) {

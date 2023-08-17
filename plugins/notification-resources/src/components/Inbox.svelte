@@ -29,7 +29,7 @@
   import Filter from './Filter.svelte'
   import People from './People.svelte'
   import { getDirectChannel } from '../utils'
-  
+
   export let visibileNav: boolean
   let filter: 'all' | 'read' | 'unread' = 'all'
 
@@ -91,17 +91,21 @@
 
   const me = getCurrentAccount() as PersonAccount
 
-  function openUsersPopup(ev: MouseEvent) {
-    showPopup(UsersPopup, { _class: contact.mixin.Employee, docQuery: { _id: { $ne: me.person } } }, eventToHTMLElement(ev),
-    async (employee: Employee) => {
-      if (employee != null) {
-        const personAccount = await client.findOne(contact.class.PersonAccount, { person: employee._id })
-        if (personAccount !== undefined) {
-          const channel = await getDirectChannel(client, me._id as Ref<PersonAccount>, personAccount._id)
-          openDM(channel)
+  function openUsersPopup (ev: MouseEvent) {
+    showPopup(
+      UsersPopup,
+      { _class: contact.mixin.Employee, docQuery: { _id: { $ne: me.person } } },
+      eventToHTMLElement(ev),
+      async (employee: Employee) => {
+        if (employee != null) {
+          const personAccount = await client.findOne(contact.class.PersonAccount, { person: employee._id })
+          if (personAccount !== undefined) {
+            const channel = await getDirectChannel(client, me._id as Ref<PersonAccount>, personAccount._id)
+            openDM(channel)
+          }
         }
       }
-    })
+    )
   }
 </script>
 
@@ -122,12 +126,7 @@
         <svelte:fragment slot="rightButtons">
           <div class="flex flex-gap-2">
             {#if selectedTab > 0}
-              <Button
-                label={chunter.string.Message}
-                icon={IconAdd}
-                kind="accented"
-                on:click={openUsersPopup}
-              />
+              <Button label={chunter.string.Message} icon={IconAdd} kind="accented" on:click={openUsersPopup} />
             {/if}
             <Filter bind:filter />
           </div>
@@ -146,7 +145,11 @@
         }}
       />
     {:else if component && _id && _class}
-      <Component is={component} props={{ _id, _class, embedded: selectedTab === 0 }} on:close={() => select(undefined)} />
+      <Component
+        is={component}
+        props={{ _id, _class, embedded: selectedTab === 0 }}
+        on:close={() => select(undefined)}
+      />
     {/if}
   </div>
 </div>

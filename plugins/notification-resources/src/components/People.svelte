@@ -16,13 +16,12 @@
   import { createEventDispatcher } from 'svelte'
   import activity, { TxViewlet } from '@hcengineering/activity'
   import { activityKey, ActivityKey } from '@hcengineering/activity-resources'
-  import contact, { PersonAccount } from '@hcengineering/contact'
+  import { PersonAccount } from '@hcengineering/contact'
   import { personAccountByIdStore } from '@hcengineering/contact-resources'
   import { Account, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { DocUpdates } from '@hcengineering/notification'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery } from '@hcengineering/presentation'
   import { Loading, Scroller } from '@hcengineering/ui'
-  import chunter from '@hcengineering/chunter'
 
   import PeopleNotificationView from './PeopleNotificationsView.svelte'
 

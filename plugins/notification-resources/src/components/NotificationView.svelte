@@ -15,14 +15,14 @@
 <script lang="ts">
   import { TxViewlet } from '@hcengineering/activity'
   import { ActivityKey } from '@hcengineering/activity-resources'
-  import core, { Doc, Ref, SortingOrder, TxCUD, TxProcessor } from '@hcengineering/core'
+  import core, { Doc, Ref, TxCUD, TxProcessor } from '@hcengineering/core'
   import notification, { DocUpdates } from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { AnySvelteComponent, TimeSince, getEventPositionElement, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { Menu } from '@hcengineering/view-resources'
-  import chunter, { DirectMessage, Message } from '@hcengineering/chunter'
+  import chunter, { DirectMessage } from '@hcengineering/chunter'
 
   import TxView from './TxView.svelte'
   import MessagesPreview from './MessagesPreview.svelte'
@@ -71,7 +71,9 @@
   let div: HTMLDivElement
   $: if (selected && div !== undefined) div.focus()
 
-  $: directMessageChannel = hierarchy.isDerived(value.attachedToClass, chunter.class.DirectMessage) ? value.attachedTo as Ref<DirectMessage> : undefined
+  $: directMessageChannel = hierarchy.isDerived(value.attachedToClass, chunter.class.DirectMessage)
+    ? (value.attachedTo as Ref<DirectMessage>)
+    : undefined
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->

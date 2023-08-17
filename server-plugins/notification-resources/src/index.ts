@@ -128,9 +128,7 @@ export async function OnDmCreate (tx: Tx, control: TriggerControl): Promise<Tx[]
 }
 
 function isDmCreationTx (ptx: TxCreateDoc<DirectMessage>, hierarchy: Hierarchy): boolean {
-  if (ptx._class !== core.class.TxCreateDoc ||
-    !hierarchy.isDerived(ptx.objectClass, chunter.class.DirectMessage)
-  ) {
+  if (ptx._class !== core.class.TxCreateDoc || !hierarchy.isDerived(ptx.objectClass, chunter.class.DirectMessage)) {
     return false
   }
 
@@ -489,14 +487,26 @@ function pushNotification (
         attachedToClass: object._class,
         hidden: false,
         lastTxTime: originTx.modifiedOn,
-        txes: [{ _id: originTx._id, modifiedOn: originTx.modifiedOn, modifiedBy: modifiedBy ?? originTx.modifiedBy, isNew: true }]
+        txes: [
+          {
+            _id: originTx._id,
+            modifiedOn: originTx.modifiedOn,
+            modifiedBy: modifiedBy ?? originTx.modifiedBy,
+            isNew: true
+          }
+        ]
       })
     )
   } else {
     res.push(
       control.txFactory.createTxUpdateDoc(current._class, current.space, current._id, {
         $push: {
-          txes: { _id: originTx._id, modifiedOn: originTx.modifiedOn, modifiedBy: modifiedBy ?? originTx.modifiedBy, isNew: true }
+          txes: {
+            _id: originTx._id,
+            modifiedOn: originTx.modifiedOn,
+            modifiedBy: modifiedBy ?? originTx.modifiedBy,
+            isNew: true
+          }
         }
       })
     )

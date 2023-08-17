@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { ChunterMessage } from "@hcengineering/chunter"
-  import { MessageViewer } from "@hcengineering/presentation"
-  import ui, { Label, tooltip } from "@hcengineering/ui"
-  import { LinkPresenter } from "@hcengineering/view-resources"
+  import { ChunterMessage } from '@hcengineering/chunter'
+  import { MessageViewer } from '@hcengineering/presentation'
+  import ui, { Label, tooltip } from '@hcengineering/ui'
+  import { LinkPresenter } from '@hcengineering/view-resources'
   import { AttachmentList } from '@hcengineering/attachment-resources'
-  import { getEmbeddedLabel } from "@hcengineering/platform"
-  import { Ref, WithLookup, getCurrentAccount } from "@hcengineering/core"
-  import { Attachment } from "@hcengineering/attachment"
-  import { EmployeePresenter, personAccountByIdStore, personByIdStore } from "@hcengineering/contact-resources"
-  import { PersonAccount } from "@hcengineering/contact"
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { Ref, WithLookup, getCurrentAccount } from '@hcengineering/core'
+  import { Attachment } from '@hcengineering/attachment'
+  import { EmployeePresenter, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
+  import { PersonAccount } from '@hcengineering/contact'
 
-  import notification from "../plugin"
+  import notification from '../plugin'
 
   export let message: WithLookup<ChunterMessage>
 
@@ -82,7 +82,7 @@
       <span>{getTime(message.createdOn ?? 0)}</span>
       {#if message.editedOn}
         <span use:tooltip={{ label: ui.string.TimeTooltip, props: { value: getTime(message.editedOn) } }}>
-          <Label label={getEmbeddedLabel("Edited")} />
+          <Label label={getEmbeddedLabel('Edited')} />
         </span>
       {/if}
     </div>

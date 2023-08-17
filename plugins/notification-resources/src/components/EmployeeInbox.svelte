@@ -58,7 +58,7 @@
   )
 
   $: updateDocs(docs, accountId)
-  function updateDocs(docs: DocUpdates[], accountId: Ref<Account>, forceUpdate = false) {
+  function updateDocs (docs: DocUpdates[], accountId: Ref<Account>, forceUpdate = false) {
     if (loading && !forceUpdate) {
       return
     }
@@ -163,7 +163,7 @@
   let space: Ref<DirectMessage> | undefined
 
   $: _getDirectChannel(account?._id)
-  async function _getDirectChannel(account?: Ref<PersonAccount>): Promise<void> {
+  async function _getDirectChannel (account?: Ref<PersonAccount>): Promise<void> {
     if (account === undefined) {
       return
     }

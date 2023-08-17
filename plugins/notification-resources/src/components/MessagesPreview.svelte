@@ -29,7 +29,9 @@
 
   let messages: ChunterMessage[] = []
   const messagesQuery = createQuery()
-  $: messagesQuery.query(chunter.class.ChunterMessage, { attachedTo: channel },
+  $: messagesQuery.query(
+    chunter.class.ChunterMessage,
+    { attachedTo: channel },
     (res) => {
       if (res !== undefined) {
         messages = res.sort((a, b) => (a.createdOn ?? 0) - (b.createdOn ?? 0))
@@ -43,7 +45,8 @@
       lookup: {
         _id: { attachments: attachment.class.Attachment }
       }
-    })
+    }
+  )
 </script>
 
 <div class="flex-col flex-gap-3 preview-container">
