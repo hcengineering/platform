@@ -20,6 +20,7 @@
   import PersonContent from './PersonContent.svelte'
   import { getClient } from '@hcengineering/presentation'
   import { Ref } from '@hcengineering/core'
+  import ui from '@hcengineering/ui'
 
   export let value: Ref<Person> | Person | null | undefined
   export let inline = false
@@ -28,7 +29,7 @@
   export let shouldShowAvatar = true
   export let shouldShowName = true
   export let shouldShowPlaceholder = false
-  export let defaultName: IntlString | undefined = undefined
+  export let defaultName: IntlString | undefined = ui.string.NotSelected
   export let statusLabel: IntlString | undefined = undefined
   export let tooltipLabels: PersonLabelTooltip | undefined = undefined
   export let avatarSize: IconSize = 'x-small'
