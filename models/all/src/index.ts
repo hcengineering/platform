@@ -55,6 +55,7 @@ import { serverTelegramId, createModel as serverTelegramModel } from '@hcenginee
 import { serverTrackerId, createModel as serverTrackerModel } from '@hcengineering/model-server-tracker'
 import { serverViewId, createModel as serverViewModel } from '@hcengineering/model-server-view'
 import setting, { settingId, createModel as settingModel } from '@hcengineering/model-setting'
+import { supportId, createModel as supportModel } from '@hcengineering/model-support'
 import { tagsId, createModel as tagsModel } from '@hcengineering/model-tags'
 import { taskId, createModel as taskModel } from '@hcengineering/model-task'
 import telegram, { telegramId, createModel as telegramModel } from '@hcengineering/model-telegram'
@@ -273,6 +274,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       }
     ],
     [automationModel, automationId],
+    [supportModel, supportId],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],
