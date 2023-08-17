@@ -16,13 +16,14 @@
   import { Ref, SortingOrder } from '@hcengineering/core'
   import { getEmbeddedLabel, IntlString, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import { Component, Milestone } from '@hcengineering/tracker'
+  import { Milestone, Project } from '@hcengineering/tracker'
   import type { ButtonKind, ButtonSize, LabelAndProps } from '@hcengineering/ui'
   import { Button, ButtonShape, eventToHTMLElement, SelectPopup, showPopup, Label, themeStore } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import { milestoneStatusAssets } from '../../types'
 
   export let value: Ref<Milestone> | null | undefined
+  export let space: Ref<Project> | undefined = undefined
   export let shouldShowLabel: boolean = true
   export let isEditable: boolean = true
   export let onChange: ((newMilestoneId: Ref<Milestone> | undefined) => void) | undefined = undefined
@@ -38,7 +39,6 @@
   export let focusIndex: number | undefined = undefined
   export let isAction: boolean = false
 
-  export let useComponent: Ref<Component> | undefined = undefined
   export let showTooltip: LabelAndProps | undefined = undefined
 
   let selectedMilestone: Milestone | undefined
@@ -46,9 +46,9 @@
 
   const query = createQuery()
   let rawMilestones: Milestone[] = []
-  query.query(
+  $: query.query(
     tracker.class.Milestone,
-    useComponent ? { component: useComponent } : {},
+    space ? { space } : {},
     (res) => {
       rawMilestones = res
     },

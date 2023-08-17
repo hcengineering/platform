@@ -384,6 +384,7 @@
             {#if enabledConfig(config, 'component')}
               <ComponentEditor
                 value={issue}
+                {space}
                 isEditable={true}
                 kind={'link-bordered'}
                 size={'small'}
