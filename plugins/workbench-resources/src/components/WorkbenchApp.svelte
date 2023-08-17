@@ -14,11 +14,13 @@
 -->
 <script lang="ts">
   import { getMetadata } from '@hcengineering/platform'
-  import { Component, Loading, Notifications, location } from '@hcengineering/ui'
+  import { Component, Label, Loading, Notifications, location } from '@hcengineering/ui'
   import { connect, versionError } from '../connect'
 
   import { workbenchId } from '@hcengineering/workbench'
   import workbench from '../plugin'
+
+  const isNeedUpgrade = (window.location.host == '')
 </script>
 
 {#if $location.path[0] === workbenchId || $location.path[0] === workbench.component.WorkbenchApp}
@@ -27,9 +29,16 @@
       <Loading />
     {:then client}
       {#if !client && versionError}
-        <div class="antiPopup version-popup">
-          <h1>Server is under maintenance.</h1>
-          {versionError}
+        <div class="version-wrapper">
+          <div class="antiPopup version-popup">
+            {#if isNeedUpgrade} 
+              <h1><Label label={workbench.string.NewVersionAvailable} /></h1>
+              <span class="please-update" ><Label label={workbench.string.PleaseUpdate} /></span>
+            {:else}
+              <h1><Label label={workbench.string.ServerUnderMaintenance} /></h1>
+            {/if}
+            {versionError}
+          </div>
         </div>
       {:else if client}
         <Notifications>
@@ -43,14 +52,19 @@
 {/if}
 
 <style lang="scss">
+  .version-wrapper {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .please-update {
+    margin-bottom: 1rem;
+  }
   .version-popup {
     display: flex;
     align-items: center;
     justify-content: center;
-    position: fixed;
-    left: 25%;
-    right: 25%;
-    top: 25%;
-    bottom: 25%;
+    padding: 2rem;
   }
 </style>
