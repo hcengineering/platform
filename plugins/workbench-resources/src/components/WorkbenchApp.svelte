@@ -20,7 +20,7 @@
   import { workbenchId } from '@hcengineering/workbench'
   import workbench from '../plugin'
 
-  const isNeedUpgrade = window.location.host == ''
+  const isNeedUpgrade = window.location.host === ''
 </script>
 
 {#if $location.path[0] === workbenchId || $location.path[0] === workbench.component.WorkbenchApp}
