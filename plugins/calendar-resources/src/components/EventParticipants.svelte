@@ -22,6 +22,7 @@
 
   export let participants: Ref<Person>[]
   export let externalParticipants: string[]
+  export let disabled: boolean = false
 
   $: placeholder =
     participants.length > 0 || externalParticipants.length > 0

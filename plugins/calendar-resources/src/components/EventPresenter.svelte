@@ -14,10 +14,11 @@
 -->
 <script lang="ts">
   import { Event } from '@hcengineering/calendar'
-  import { DatePresenter, DateTimeRangePresenter, showPopup } from '@hcengineering/ui'
+  import { DatePresenter, DateTimeRangePresenter, Label, showPopup } from '@hcengineering/ui'
   import calendar from '../plugin'
 
   export let value: Event
+  export let hideDetails: boolean = false
   export let inline: boolean = false
 
   function click (): void {
@@ -29,7 +30,11 @@
 <div class="antiSelect w-full cursor-pointer flex-center flex-between" on:click={click}>
   {#if value}
     <div class="mr-4">
-      {value.title}
+      {#if !hideDetails}
+        {value.title}
+      {:else}
+        <Label label={calendar.string.Busy} />
+      {/if}
     </div>
     {#if !inline}
       {#if value.allDay}

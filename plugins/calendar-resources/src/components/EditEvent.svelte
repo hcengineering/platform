@@ -20,7 +20,7 @@
   import { Button, CheckBox, DAY, EditBox, Icon, IconClose, Label, closePopup, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
-  import { saveUTC } from '../utils'
+  import { isReadOnly, saveUTC } from '../utils'
   import EventParticipants from './EventParticipants.svelte'
   import EventTimeEditor from './EventTimeEditor.svelte'
   import RRulePresenter from './RRulePresenter.svelte'
@@ -28,6 +28,8 @@
   import UpdateRecInstancePopup from './UpdateRecInstancePopup.svelte'
 
   export let object: Event
+
+  $: readOnly = isReadOnly(object)
 
   let title = object.title
 
@@ -54,6 +56,9 @@
   }
 
   async function saveEvent () {
+    if (readOnly) {
+      return
+    }
     const update: DocumentUpdate<Event> = {}
     if (object.title !== title) {
       update.title = title.trim()
@@ -97,6 +102,9 @@
   }
 
   function setRecurrance () {
+    if (readOnly) {
+      return
+    }
     showPopup(ReccurancePopup, { rules }, undefined, (res) => {
       if (res) {
         rules = res
@@ -196,7 +204,7 @@
 <div class="container">
   <div class="header flex-between">
     {#if object.attachedTo === calendar.ids.NoAttached}
-      <EditBox bind:value={title} placeholder={calendar.string.NewEvent} />
+      <EditBox bind:value={title} placeholder={calendar.string.NewEvent} disabled={readOnly} />
     {:else}
       <div />
     {/if}
@@ -213,7 +221,7 @@
     />
   </div>
   <div class="time">
-    <EventTimeEditor {allDay} bind:startDate bind:dueDate />
+    <EventTimeEditor {allDay} bind:startDate bind:dueDate disabled={readOnly} />
     <div>
       {#if !allDay && rules.length === 0}
         <div class="flex-row-center flex-gap-3 ext">
@@ -232,7 +240,7 @@
       {:else}
         <div>
           <div class="flex-row-center flex-gap-2 mt-1">
-            <CheckBox bind:checked={allDay} accented on:value={allDayChangeHandler} />
+            <CheckBox bind:checked={allDay} accented on:value={allDayChangeHandler} readonly={readOnly} />
             <Label label={calendar.string.AllDay} />
           </div>
           <div class="flex-row-center flex-gap-2 mt-1">
@@ -255,24 +263,19 @@
   </div>
   <div class="divider" />
   <div>
-    <EventParticipants bind:participants bind:externalParticipants />
+    <EventParticipants bind:participants bind:externalParticipants disabled={readOnly} />
   </div>
   <div class="divider" />
   <div class="block">
     <div class="flex-row-center flex-gap-2">
       <Icon icon={calendar.icon.Description} size="small" />
-      <EditBox bind:value={description} placeholder={calendar.string.Description} />
+      <EditBox bind:value={description} placeholder={calendar.string.Description} disabled={readOnly} />
     </div>
   </div>
   <div class="divider" />
   <div class="flex-between pool">
     <div />
-    <Button
-      kind="accented"
-      label={presentation.string.Save}
-      on:click={saveEvent}
-      disabled={title === '' && object.attachedTo === calendar.ids.NoAttached}
-    />
+    <Button kind="accented" label={presentation.string.Save} disabled={readOnly} on:click={saveEvent} />
   </div>
 </div>
 

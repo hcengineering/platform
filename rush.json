@@ -1503,6 +1503,26 @@
       "packageName": "@hcengineering/server-view-resources",
       "projectFolder": "server-plugins/view-resources",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-support",
+      "projectFolder": "models/support",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/support",
+      "projectFolder": "plugins/support",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/support-assets",
+      "projectFolder": "plugins/support-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/support-resources",
+      "projectFolder": "plugins/support-resources",
+      "shouldPublish": false
     }
   ]
 }

@@ -41,7 +41,7 @@
     "@hcengineering/core": "^0.6.27",
     "@hcengineering/view": "^0.6.8",
     "@hcengineering/view-resources": "^0.6.0",
-    "@hcengineering/panel": "^0.6.11",
+    "@hcengineering/panel": "^0.6.12",
     "@hcengineering/text-editor": "^0.6.0",
     "@hcengineering/login": "^0.6.7",
     "filesize": "^8.0.3",

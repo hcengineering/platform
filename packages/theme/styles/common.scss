@@ -397,6 +397,19 @@
   &.x4 { width: 1rem; }
 }
 
+.antiVSpacer {
+  flex-shrink: 0;
+  height: .25rem;
+
+  &:not(.withMargins) { margin: 0 !important; }
+
+  &.x1-5 { height: .375rem; }
+  &.x2 { height: .5rem; }
+  &.x3 { height: .75rem; }
+  &.x4 { height: 1rem; }
+  &.x7 { height: 1.75rem; }
+}
+
 .antiSection {
   display: flex;
   flex-direction: column;

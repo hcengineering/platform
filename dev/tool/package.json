@@ -69,7 +69,7 @@
     "@hcengineering/server-attachment-resources": "^0.6.0",
     "xml2js": "~0.4.23",
     "@hcengineering/model-recruit": "^0.6.0",
-    "@hcengineering/recruit": "^0.6.17",
+    "@hcengineering/recruit": "^0.6.18",
     "@hcengineering/task": "^0.6.11",
     "@hcengineering/chunter": "^0.6.10",
     "mime-types": "~2.1.34",

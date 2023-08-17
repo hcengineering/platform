@@ -13,18 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Doc, DocumentQuery, Ref } from '@hcengineering/core'
+  import core, { Doc, DocumentQuery, Ref, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Vacancy } from '@hcengineering/recruit'
-  import { Button, IconAdd, Label, Loading, SearchEdit, showPopup, tableToCSV } from '@hcengineering/ui'
+  import { Button, Component, IconAdd, Label, Loading, SearchEdit, showPopup, tableToCSV } from '@hcengineering/ui'
   import view, { BuildModelKey, ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
-  import {
-    FilterBar,
-    FilterButton,
-    TableBrowser,
-    ViewletSelector,
-    ViewletSettingButton
-  } from '@hcengineering/view-resources'
+  import { FilterBar, FilterButton, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import CreateVacancy from './CreateVacancy.svelte'
 
@@ -97,7 +91,7 @@
     ]
   ])
 
-  let viewlet: Viewlet | undefined
+  let viewlet: WithLookup<Viewlet> | undefined
   let loading = true
 
   let preference: ViewletPreference | undefined
@@ -126,6 +120,15 @@
     <span class="ac-header__title"><Label label={recruit.string.Vacancies} /></span>
   </div>
   <div class="ac-header-full medium-gap mb-1">
+    <ViewletSelector
+      bind:loading
+      bind:viewlet
+      bind:preference
+      viewletQuery={{
+        attachTo: recruit.class.Vacancy,
+        descriptor: { $in: [view.viewlet.Table, view.viewlet.List] }
+      }}
+    />
     <Button
       label={recruit.string.Export}
       on:click={() => {
@@ -155,16 +158,6 @@
     <FilterButton _class={recruit.class.Vacancy} />
   </div>
   <div class="ac-header-full medium-gap">
-    <ViewletSelector
-      hidden
-      viewletQuery={{
-        attachTo: recruit.class.Vacancy,
-        descriptor: view.viewlet.Table
-      }}
-      bind:preference
-      bind:loading
-      bind:viewlet
-    />
     <ViewletSettingButton bind:viewOptions bind:viewlet />
     <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
   </div>
@@ -179,16 +172,21 @@
 
 {#if loading}
   <Loading />
-{:else if viewlet}
-  <TableBrowser
-    _class={recruit.class.Vacancy}
-    config={createConfig(viewlet, preference, applications)}
-    options={viewlet.options}
-    tableId={'vacanciesData'}
-    query={{
-      ...resultQuery,
-      archived
+{:else if viewlet && viewlet?.$lookup?.descriptor?.component}
+  <Component
+    is={viewlet.$lookup.descriptor.component}
+    props={{
+      _class: recruit.class.Vacancy,
+      options: viewlet.options,
+      config: createConfig(viewlet, preference, applications),
+      viewlet,
+      viewOptions,
+      viewOptionsConfig: viewlet.viewOptions?.other,
+      query: {
+        ...resultQuery,
+        archived
+      },
+      totalQuery: {}
     }}
-    showNotification
   />
 {/if}

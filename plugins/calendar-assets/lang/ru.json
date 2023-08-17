@@ -73,7 +73,8 @@
     "SundayShort": "Вс",
     "OnUntil": "До",
     "Times": "{count, plural, one {раз} few {раза} other {раз}}",
-    "AddParticipants": "Добавить участников"
-
+    "AddParticipants": "Добавить участников",
+    "Sync": "Синхронизация",
+    "Busy": "Занято"
   }
 }

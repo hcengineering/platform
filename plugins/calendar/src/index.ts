@@ -22,7 +22,10 @@ import { AnyComponent } from '@hcengineering/ui'
 /**
  * @public
  */
-export interface Calendar extends Space {}
+export interface Calendar extends Space {
+  visibility: 'public' | 'freeBusy' | 'private'
+  sync?: boolean
+}
 
 /**
  * @public
@@ -58,6 +61,7 @@ export interface ReccuringEvent extends Event {
  * @public
  */
 export interface Event extends AttachedDoc {
+  space: Ref<Calendar>
   eventId: string
   title: string
   description: Markup
@@ -79,6 +83,8 @@ export interface Event extends AttachedDoc {
   externalParticipants?: string[]
 
   reminders?: Timestamp[]
+
+  visibility?: 'public' | 'freeBusy' | 'private'
 
   access: 'freeBusyReader' | 'reader' | 'writer' | 'owner'
 }
@@ -132,7 +138,7 @@ const calendarPlugin = plugin(calendarId, {
   },
   space: {
     // deprecated
-    PersonalEvents: '' as Ref<Space>
+    PersonalEvents: '' as Ref<Calendar>
   },
   app: {
     Calendar: '' as Ref<Doc>
