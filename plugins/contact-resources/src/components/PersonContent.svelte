@@ -118,11 +118,6 @@
       <span class="eContentPresenterLabel" class:colorInherit class:fs-bold={accent}>
         <Label label={defaultName} />
       </span>
-      {#if statusLabel}
-        <span class="eContentStatusLabel">
-          <Label label={statusLabel} />
-        </span>
-      {/if}
     {/if}
   </span>
 {/if}
