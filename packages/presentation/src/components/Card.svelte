@@ -1,6 +1,6 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
-  import { Button, checkMac, IconClose, Label, Scroller } from '@hcengineering/ui'
+  import { beautifyKey, Button, checkMac, IconClose, Label, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
   import { deviceOptionsStore as deviceInfo, resizeObserver } from '@hcengineering/ui'
@@ -61,9 +61,12 @@
 
   const isMac = checkMac()
 
+  const submitKey = 'Enter'
+  const submitModifier = isMac ? 'Meta' : 'Ctrl'
+  const shortcut = beautifyKey(`${submitModifier}+${submitKey}`)
+
   function handleKeydown (key: KeyboardEvent): void {
-    const modifier = isMac ? key.metaKey : key.ctrlKey
-    if (key.code === 'Enter' && modifier) {
+    if (key.code === submitKey && key.getModifierState(submitModifier)) {
       key.stopPropagation()
       key.preventDefault()
       handleOkButton()
@@ -149,6 +152,7 @@
         label={okLabel}
         kind={'accented'}
         size={'large'}
+        showTooltip={{ label: presentation.string.PressToSubmit, props: { shortcut } }}
         on:click={() => handleOkButton()}
       />
     </div>

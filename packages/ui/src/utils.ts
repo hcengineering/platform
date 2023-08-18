@@ -245,3 +245,12 @@ export function formatKey (key: string): string[][] {
   }
   return result
 }
+
+/**
+ * @public
+ */
+export function beautifyKey (key: string): string {
+  return formatKey(key)
+    .map((it) => it.map(capitalizeFirstLetter).join(' + '))
+    .join(' ')
+}

@@ -44,6 +44,7 @@ export default plugin(presentationId, {
     Archived: '' as IntlString,
     AddSocialLinks: '' as IntlString,
     EditSocialLinks: '' as IntlString,
+    PressToSubmit: '' as IntlString,
     Change: '' as IntlString,
     Remove: '' as IntlString,
     Search: '' as IntlString,
