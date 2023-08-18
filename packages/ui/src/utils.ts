@@ -54,6 +54,13 @@ export function fetchMetadataLocalStorage<T> (id: Metadata<T>): T | null {
 /**
  * @public
  */
+export function checkMac (): boolean {
+  return /Macintosh/i.test(navigator.userAgent)
+}
+
+/**
+ * @public
+ */
 export function checkMobile (): boolean {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|Mobile|Opera Mini/i.test(navigator.userAgent)
 }
@@ -213,7 +220,7 @@ export function capitalizeFirstLetter (str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
-const isMac = /Macintosh/i.test(navigator.userAgent)
+const isMac = checkMac()
 
 /**
  * @public

@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
-  import { Button, IconClose, Label, Scroller } from '@hcengineering/ui'
+  import { Button, checkMac, IconClose, Label, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
   import { deviceOptionsStore as deviceInfo, resizeObserver } from '@hcengineering/ui'
@@ -38,6 +38,37 @@
   const dispatch = createEventDispatcher()
 
   let okProcessing = false
+
+  function handleOkButton () {
+    if (!canSave) {
+      return
+    }
+    if (okProcessing) {
+      return
+    }
+    okProcessing = true
+    const r = okAction()
+    if (r instanceof Promise) {
+      r.then(() => {
+        okProcessing = false
+        dispatch('close')
+      })
+    } else {
+      okProcessing = false
+      dispatch('close')
+    }
+  }
+
+  const isMac = checkMac()
+
+  function handleKeydown (key: KeyboardEvent): void {
+    const modifier = isMac ? key.metaKey : key.ctrlKey
+    if (key.code === 'Enter' && modifier) {
+      key.stopPropagation()
+      key.preventDefault()
+      handleOkButton()
+    }
+  }
 </script>
 
 <form
@@ -45,6 +76,7 @@
   class="antiCard {$deviceInfo.isMobile ? 'mobile' : 'dialog'} {width}"
   class:full={fullSize}
   on:submit|preventDefault={() => {}}
+  on:keydown={handleKeydown}
   use:resizeObserver={() => {
     dispatch('changeContent')
   }}
@@ -117,22 +149,7 @@
         label={okLabel}
         kind={'accented'}
         size={'large'}
-        on:click={() => {
-          if (okProcessing) {
-            return
-          }
-          okProcessing = true
-          const r = okAction()
-          if (r instanceof Promise) {
-            r.then(() => {
-              okProcessing = false
-              dispatch('close')
-            })
-          } else {
-            okProcessing = false
-            dispatch('close')
-          }
-        }}
+        on:click={() => handleOkButton()}
       />
     </div>
     <div class="buttons-group small-gap text-sm">
