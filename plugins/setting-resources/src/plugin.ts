@@ -24,6 +24,7 @@ export default mergeIds(settingId, setting, {
   },
   string: {
     IntegrationDisabled: '' as IntlString,
+    IntegrationDisabledSetting: '' as IntlString,
     IntegrationWith: '' as IntlString,
     DeleteStatus: '' as IntlString,
     DeleteStatusConfirm: '' as IntlString,
