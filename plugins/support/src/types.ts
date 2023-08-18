@@ -48,9 +48,9 @@ export interface SupportClient {
 export interface SupportWidget {
   configure: (config: SupportWidgetConfig) => void
 
-  showWidget: () => void
-  hideWidget: () => void
-  toggleWidget: () => void
+  showWidget: () => Promise<void>
+  hideWidget: () => Promise<void>
+  toggleWidget: () => Promise<void>
 
   destroy: () => void
 }
