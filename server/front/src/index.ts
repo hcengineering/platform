@@ -229,9 +229,29 @@ export function start (
 
   const filesHandler = async (req: any, res: Response): Promise<void> => {
     try {
-      const token = req.query.token as string
-      const payload = decodeToken(token)
+      console.log(req.headers)
+      const cookies = ((req?.headers?.cookie as string) ?? '').split(';').map((it) => it.split('='))
+
+      const token = cookies.find((it) => it[0] === 'presentation-metadata-Token')?.[1]
+      const payload =
+        token !== undefined
+          ? decodeToken(token)
+          : { email: 'guest', workspace: { name: req.query.workspace as string, productId: '' } }
+
       let uuid = req.query.file as string
+      if (token === undefined) {
+        try {
+          const d = await config.minio.stat(payload.workspace, uuid)
+          if (!((d.metaData['content-type'] as string) ?? '').includes('image')) {
+            // Do not allow to return non images with no token.
+            if (token === undefined) {
+              res.status(403).send()
+              return
+            }
+          }
+        } catch (err) {}
+      }
+
       const size = req.query.size as 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' | 'full'
 
       uuid = await getResizeID(size, uuid, config, payload)

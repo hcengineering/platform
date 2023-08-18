@@ -57,7 +57,7 @@ export const ImageRef = Node.create<ImageOptions>({
 
   addOptions () {
     return {
-      inline: false,
+      inline: true,
       HTMLAttributes: {}
     }
   },
@@ -75,24 +75,22 @@ export const ImageRef = Node.create<ImageOptions>({
 
   addAttributes () {
     return {
-      fileid: {
-        default: null,
-        parseHTML: (element) => element.getAttribute('file-id'),
-        renderHTML: (attributes) => {
-          // eslint-disable-next-line
-          if (!attributes.fileid) {
-            return {}
-          }
-
-          return {
-            'file-id': attributes.fileid
-          }
-        }
+      'file-id': {
+        default: null
       },
       width: {
         default: null
       },
       height: {
+        default: null
+      },
+      src: {
+        default: null
+      },
+      alt: {
+        default: null
+      },
+      title: {
         default: null
       }
     }
@@ -115,29 +113,31 @@ export const ImageRef = Node.create<ImageOptions>({
       HTMLAttributes
     )
     const id = merged['file-id']
-    merged.src = getFileUrl(id, 'full')
-    let width: IconSize | undefined
-    switch (merged.width) {
-      case '32px':
-        width = 'small'
-        break
-      case '64px':
-        width = 'medium'
-        break
-      case '128px':
-      case '256px':
-        width = 'large'
-        break
-      case '512px':
-        width = 'x-large'
-        break
+    if (id != null) {
+      merged.src = getFileUrl(id, 'full')
+      let width: IconSize | undefined
+      switch (merged.width) {
+        case '32px':
+          width = 'small'
+          break
+        case '64px':
+          width = 'medium'
+          break
+        case '128px':
+        case '256px':
+          width = 'large'
+          break
+        case '512px':
+          width = 'x-large'
+          break
+      }
+      if (width !== undefined) {
+        merged.src = getFileUrl(id, width)
+        merged.srcset = getFileUrl(id, width) + ' 1x,' + getFileUrl(id, getIconSize2x(width)) + ' 2x'
+      }
+      merged.class = 'textEditorImage'
+      this.options.reportNode?.(id, node)
     }
-    if (width !== undefined) {
-      merged.src = getFileUrl(id, width)
-      merged.srcset = getFileUrl(id, width) + ' 1x,' + getFileUrl(id, getIconSize2x(width)) + ' 2x'
-    }
-    merged.class = 'textEditorImage'
-    this.options.reportNode?.(id, node)
     return ['img', merged]
   },
 

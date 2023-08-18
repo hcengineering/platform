@@ -284,11 +284,11 @@ export function getFileUrl (file: string, size: IconSize = 'full', filename?: st
     return file
   }
   const uploadUrl = getMetadata(plugin.metadata.UploadURL)
-  const token = getMetadata(plugin.metadata.Token)
+
   if (filename !== undefined) {
-    return `${uploadUrl as string}/${filename}?file=${file}&token=${token as string}&size=${size as string}`
+    return `${uploadUrl as string}/${filename}?file=${file}&size=${size as string}`
   }
-  return `${uploadUrl as string}?file=${file}&token=${token as string}&size=${size as string}`
+  return `${uploadUrl as string}?file=${file}&size=${size as string}`
 }
 
 /**
