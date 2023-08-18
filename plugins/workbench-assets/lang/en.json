@@ -25,6 +25,9 @@
     "AccessWorkspaceSettings": "Access your workspace settings",
     "HowToWorkFaster": "Learn how to work faster",
     "HiddenApplication": "Hidden application",
-    "OpenInNewTab": "Open in a new tab"
+    "OpenInNewTab": "Open in a new tab",
+    "NewVersionAvailable": "New version is available",
+    "PleaseUpdate": "Please update",
+    "ServerUnderMaintenance": "Server is under maintenance"
   }
 }
