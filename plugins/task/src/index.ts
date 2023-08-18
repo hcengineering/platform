@@ -32,7 +32,7 @@ import { NotificationType } from '@hcengineering/notification'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
-import { ViewletDescriptor } from '@hcengineering/view'
+import { Action, ViewletDescriptor } from '@hcengineering/view'
 import { genRanks } from './utils'
 
 /**
@@ -200,6 +200,9 @@ export const taskId = 'task' as Plugin
 const task = plugin(taskId, {
   app: {
     Tasks: '' as Ref<Doc>
+  },
+  action: {
+    Move: '' as Ref<Action>
   },
   mixin: {
     KanbanCard: '' as Ref<Mixin<KanbanCard>>
