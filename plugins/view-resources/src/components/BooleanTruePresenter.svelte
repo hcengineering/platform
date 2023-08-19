@@ -17,8 +17,8 @@
   import { getPlatformColor, themeStore } from '@hcengineering/ui'
 
   export let value: boolean
-  export let trueColor = 0
-  export let falseColor = 16
+  export let trueColor = 16
+  export let falseColor = 0
   export let useInvert = false
 
   $: val = useInvert ? !value : value
