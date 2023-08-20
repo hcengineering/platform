@@ -23,9 +23,9 @@
   import notification, { DocUpdates } from '@hcengineering/notification'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import { Button, Loading, Scroller } from '@hcengineering/ui'
+  import { AttachmentRefInput } from '@hcengineering/attachment-resources'
 
   import NotificationView from './NotificationView.svelte'
-  import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import { getDirectChannel } from '../utils'
 
   export let accountId: Ref<Account>
@@ -35,7 +35,7 @@
 
   let _id: Ref<Doc> | undefined
   let docs: DocUpdates[] = []
-  let _docs: DocUpdates[] = []
+  let filteredDocs: DocUpdates[] = []
   let loading = true
   const me = getCurrentAccount()._id
 
@@ -47,7 +47,7 @@
     },
     (res) => {
       docs = res
-      updateDocs(docs, accountId, true)
+      updateDocs(accountId, true)
       loading = false
     },
     {
@@ -57,41 +57,43 @@
     }
   )
 
-  $: updateDocs(docs, accountId)
-  function updateDocs (docs: DocUpdates[], accountId: Ref<Account>, forceUpdate = false) {
+  $: updateDocs(accountId)
+  function updateDocs (accountId: Ref<Account>, forceUpdate = false) {
     if (loading && !forceUpdate) {
       return
     }
 
-    _docs = []
+    const filtered = []
+
     for (const doc of docs) {
       if (doc.txes.length === 0) continue
       const txes = doc.txes.filter((p) => p.modifiedBy === accountId)
       if (txes.length > 0) {
-        _docs.push({
+        filtered.push({
           ...doc,
           txes
         })
       }
     }
-    _docs = _docs
+
+    filteredDocs = filtered
   }
 
   function markAsRead (index: number) {
-    if (_docs[index] !== undefined) {
-      _docs[index].txes.forEach((p) => (p.isNew = false))
-      _docs[index].txes = _docs[index].txes
-      _docs = _docs
+    if (filteredDocs[index] !== undefined) {
+      filteredDocs[index].txes.forEach((p) => (p.isNew = false))
+      filteredDocs[index].txes = filteredDocs[index].txes
+      filteredDocs = filteredDocs
     }
   }
 
   function changeSelected (index: number) {
-    if (_docs[index] !== undefined) {
-      _id = _docs[index]?.attachedTo
-      dispatch('change', _docs[index])
+    if (filteredDocs[index] !== undefined) {
+      _id = filteredDocs[index]?.attachedTo
+      dispatch('change', filteredDocs[index])
       markAsRead(index)
-    } else if (_docs.length) {
-      if (index < _docs.length - 1) {
+    } else if (filteredDocs.length) {
+      if (index < filteredDocs.length - 1) {
         selected++
       } else {
         selected--
@@ -114,7 +116,7 @@
   let selected = 0
 
   let employee: Employee | undefined = undefined
-  $: newTxes = _docs.reduce((acc, cur) => acc + cur.txes.filter((p) => p.isNew).length, 0) // items.length
+  $: newTxes = filteredDocs.reduce((acc, cur) => acc + cur.txes.filter((p) => p.isNew).length, 0) // items.length
   $: account = $personAccountByIdStore.get(accountId as Ref<PersonAccount>)
   $: employee = account ? $employeeByIdStore.get(account.person as Ref<Employee>) : undefined
 
@@ -224,7 +226,7 @@
     {#if loading}
       <Loading />
     {:else}
-      {#each _docs as item, i (item._id)}
+      {#each filteredDocs as item, i (item._id)}
         <div class="with-hover">
           <NotificationView
             value={item}

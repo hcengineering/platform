@@ -229,6 +229,10 @@ export function createModel (builder: Builder, options = { addApplication: true 
     presenter: chunter.component.MessagePresenter
   })
 
+  builder.mixin(chunter.class.Message, core.class.Class, view.mixin.PreviewPresenter, {
+    presenter: chunter.component.MessagePreview
+  })
+
   builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: chunter.component.ChannelPresenter
   })

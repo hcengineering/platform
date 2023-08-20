@@ -102,15 +102,14 @@ export async function OnBacklinkCreate (tx: Tx, control: TriggerControl): Promis
  * @public
  */
 export async function OnDmCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const hierarchy = control.hierarchy
   const ptx = tx as TxCreateDoc<DirectMessage>
   const res: Tx[] = []
 
   if (tx.createdBy == null) return []
-  if (!isDmCreationTx(ptx, hierarchy)) return []
 
-  const dm = (await control.findAll(ptx.objectClass, { _id: ptx.objectId }, { limit: 1 })).shift()
-  if (dm == null) return []
+  const dm = TxProcessor.createDoc2Doc(ptx)
+
+  if (dm.members.length > 2) return []
 
   let dmWithPerson: Ref<Account> | undefined
   for (const person of dm.members) {
@@ -125,14 +124,6 @@ export async function OnDmCreate (tx: Tx, control: TriggerControl): Promise<Tx[]
   pushNotification(control, res, tx.createdBy, dm, ptx, [], dmWithPerson)
 
   return res
-}
-
-function isDmCreationTx (ptx: TxCreateDoc<DirectMessage>, hierarchy: Hierarchy): boolean {
-  if (ptx._class !== core.class.TxCreateDoc || !hierarchy.isDerived(ptx.objectClass, chunter.class.DirectMessage)) {
-    return false
-  }
-
-  return true
 }
 
 function checkTx (ptx: TxCollectionCUD<Doc, Backlink>, hierarchy: Hierarchy): boolean {

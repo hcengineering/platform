@@ -13,14 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, SortingOrder } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
+  import { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
+  import { getResource } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import chunter, { ChunterMessage, DirectMessage } from '@hcengineering/chunter'
   import attachment from '@hcengineering/attachment'
-  import { Label } from '@hcengineering/ui'
+  import { AnySvelteComponent, Label } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
 
   import notification from '../plugin'
-  import MessagePreview from './MessagePreview.svelte'
 
   export let channel: Ref<DirectMessage>
   export let numOfMessages: number
@@ -47,12 +48,24 @@
       }
     }
   )
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  let preview: AnySvelteComponent | undefined = undefined
+  $: presenterRes = hierarchy.classHierarchyMixin(
+    chunter.class.Message as Ref<Class<Doc>>,
+    view.mixin.PreviewPresenter
+  )?.presenter
+  $: if (presenterRes) {
+    getResource(presenterRes).then((res) => (preview = res))
+  }
 </script>
 
 <div class="flex-col flex-gap-3 preview-container">
   {#if messages.length}
     {#each messages as message}
-      <MessagePreview {message} />
+      <svelte:component this={preview} value={message} inline />
     {/each}
   {:else}
     <Label label={notification.string.YouHaveStartedAConversation} />

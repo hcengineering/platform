@@ -1,3 +1,17 @@
+<!--
+// Copyright © 2023 Hardcore Engineering Inc.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
 <script lang="ts">
   import { ChunterMessage } from '@hcengineering/chunter'
   import { MessageViewer } from '@hcengineering/presentation'
@@ -10,36 +24,14 @@
   import { EmployeePresenter, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
   import { PersonAccount } from '@hcengineering/contact'
 
-  import notification from '../plugin'
+  import chunter from '../plugin'
+  import { getTime } from '../utils'
 
-  export let message: WithLookup<ChunterMessage>
+  export let value: WithLookup<ChunterMessage>
 
-  $: attachments = (message.$lookup?.attachments ?? []) as Attachment[]
+  $: attachments = (value.$lookup?.attachments ?? []) as Attachment[]
 
-  export function isToday (time: number): boolean {
-    const current = new Date()
-    const target = new Date(time)
-    return (
-      current.getDate() === target.getDate() &&
-      current.getMonth() === target.getMonth() &&
-      current.getFullYear() === target.getFullYear()
-    )
-  }
-
-  export function getTime (time: number): string {
-    let options: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: 'numeric' }
-    if (!isToday(time)) {
-      options = {
-        month: 'numeric',
-        day: 'numeric',
-        ...options
-      }
-    }
-
-    return new Date(time).toLocaleString('default', options)
-  }
-
-  $: links = getLinks(message.content)
+  $: links = getLinks(value.content)
 
   function getLinks (content: string): HTMLLinkElement[] {
     const parser = new DOMParser()
@@ -64,11 +56,11 @@
 
   let account: PersonAccount | undefined
 
-  $: account = $personAccountByIdStore.get(message.createdBy as Ref<PersonAccount>)
+  $: account = $personAccountByIdStore.get(value.createdBy as Ref<PersonAccount>)
   $: employee = account && $personByIdStore.get(account.person)
 </script>
 
-<div class="container clear-mins" class:highlighted={false} id={message._id}>
+<div class="container clear-mins" class:highlighted={false} id={value._id}>
   <!-- <div class="avatar"><Avatar size={'medium'} avatar={employee?.avatar} /></div> -->
   <div class="message clear-mins">
     <div class="flex-row-center header clear-mins">
@@ -76,18 +68,18 @@
         {#if account._id !== me}
           <EmployeePresenter value={employee} shouldShowAvatar={true} disabled />
         {:else}
-          <Label label={notification.string.You} />
+          <Label label={chunter.string.You} />
         {/if}
       {/if}
-      <span>{getTime(message.createdOn ?? 0)}</span>
-      {#if message.editedOn}
-        <span use:tooltip={{ label: ui.string.TimeTooltip, props: { value: getTime(message.editedOn) } }}>
+      <span>{getTime(value.createdOn ?? 0)}</span>
+      {#if value.editedOn}
+        <span use:tooltip={{ label: ui.string.TimeTooltip, props: { value: getTime(value.editedOn) } }}>
           <Label label={getEmbeddedLabel('Edited')} />
         </span>
       {/if}
     </div>
-    <div class="text"><MessageViewer message={message.content} /></div>
-    {#if message.attachments}
+    <div class="text"><MessageViewer message={value.content} /></div>
+    {#if value.attachments}
       <div class="attachments">
         <AttachmentList {attachments} />
       </div>

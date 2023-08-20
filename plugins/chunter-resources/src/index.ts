@@ -46,6 +46,7 @@ import DmHeader from './components/DmHeader.svelte'
 import DmPresenter from './components/DmPresenter.svelte'
 import EditChannel from './components/EditChannel.svelte'
 import MessagePresenter from './components/MessagePresenter.svelte'
+import MessagePreview from './components/MessagePreview.svelte'
 import SavedMessages from './components/SavedMessages.svelte'
 import ThreadParentPresenter from './components/ThreadParentPresenter.svelte'
 import ThreadView from './components/ThreadView.svelte'
@@ -281,6 +282,7 @@ export default async (): Promise<Resources> => ({
     ChannelPresenter,
     DirectMessagePresenter,
     MessagePresenter,
+    MessagePreview,
     ChunterBrowser,
     DmHeader,
     DmPresenter,

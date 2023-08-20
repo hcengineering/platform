@@ -184,7 +184,7 @@ export async function getDirectChannel (
   const accIds = [me, employeeAccount].sort()
   const existingDms = await client.findAll(chunter.class.DirectMessage, {})
   for (const dm of existingDms) {
-    if (deepEqual(dm.members.sort(), accIds)) {
+    if (deepEqual(dm.members, accIds)) {
       return dm._id
     }
   }
