@@ -71,6 +71,7 @@
     "DMNotification": "Sent you a message",
     "ConfigLabel": "Chat",
     "ConfigDescription": "Extension to perform text communications",
-    "LastMessage": "Last message"
+    "LastMessage": "Last message",
+    "You": "You"
   }
 }

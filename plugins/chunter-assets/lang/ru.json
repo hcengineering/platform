@@ -71,6 +71,7 @@
     "DMNotification": "Отправил сообщение",
     "ConfigLabel": "Чат",
     "ConfigDescription": "Расширение для текстовых переписок",
-    "LastMessage": "Последнее сообщение"
+    "LastMessage": "Последнее сообщение",
+    "You": "Вы"
   }
 }
