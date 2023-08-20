@@ -232,8 +232,6 @@
       }
     }
   }
-  $: console.log('[!!!] grid C: ', grid)
-  $: console.log('[!!!] newEvents C: ', newEvents)
 
   const addNullRow = () => {
     for (let i = 0; i < displayedDaysCount; i++) alldaysGrid[i].alldays.push(null)
