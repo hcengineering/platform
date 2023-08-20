@@ -113,7 +113,7 @@ declare global {
     embeddedPlatform?: boolean
   }
 }
-const embeddedPlatform = window.embeddedPlatform ?? false
+export const embeddedPlatform = window.embeddedPlatform ?? false
 const locationWritable = writable(getRawCurrentLocation())
 
 console.log('embeddedPlatform', window.embeddedPlatform)

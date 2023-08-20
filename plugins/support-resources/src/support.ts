@@ -79,15 +79,15 @@ class SupportClientImpl implements SupportClient {
   }
 
   async showWidget (): Promise<void> {
-    await this.getWidget().then((widget) => widget.showWidget())
+    await this.getWidget().then(async (widget) => await widget.showWidget())
   }
 
   async hideWidget (): Promise<void> {
-    this.widget?.hideWidget()
+    await this.widget?.hideWidget()
   }
 
   async toggleWidget (): Promise<void> {
-    await this.getWidget().then((widget) => widget.toggleWidget())
+    await this.getWidget().then(async (widget) => await widget.toggleWidget())
   }
 
   private updateWidgetConfig (config: SupportWidgetConfig): void {

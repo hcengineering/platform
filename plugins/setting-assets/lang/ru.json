@@ -29,6 +29,7 @@
     "DeleteStatusConfirm": "Вы действительно хотите удалить этот статус?",
     "Reconnect": "Переподключить",
     "IntegrationDisabled": " была отключена",
+    "IntegrationDisabledSetting": "Интеграция была отключена",
     "IntegrationWith": "Интеграция с ",
     "ClassSetting": "Настройки класса",
     "Attributes": "Атрибуты",

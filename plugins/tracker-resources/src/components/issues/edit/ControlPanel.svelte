@@ -173,12 +173,12 @@
   <span class="label">
     <Label label={tracker.string.Component} />
   </span>
-  <ComponentEditor value={issue} size={'medium'} />
+  <ComponentEditor value={issue} space={issue.space} size={'medium'} />
 
   <span class="label">
     <Label label={tracker.string.Milestone} />
   </span>
-  <MilestoneEditor value={issue} size={'medium'} />
+  <MilestoneEditor value={issue} space={issue.space} size={'medium'} />
 
   {#if issue.dueDate !== null}
     <div class="divider" />

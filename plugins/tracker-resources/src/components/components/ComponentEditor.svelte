@@ -53,6 +53,8 @@
       await client.update(value, { component: newComponentId })
     }
   }
+
+  $: _space = space ?? ('space' in value ? value.space : undefined)
 </script>
 
 {#if (value.component && value.component !== $activeComponent && groupBy !== 'component') || shouldShowPlaceholder}
@@ -67,13 +69,13 @@
       {shape}
       {width}
       {justify}
-      {space}
       {isEditable}
       {shouldShowLabel}
       {popupPlaceholder}
       {onlyIcon}
       {enlargedText}
       {shrink}
+      space={_space}
       value={value.component}
       short={compression}
       onChange={handleComponentIdChanged}

@@ -71,8 +71,8 @@ export const defaultExtensions: AnyExtension[] = [
     openOnClick: true,
     HTMLAttributes: { class: 'cursor-pointer', rel: 'noopener noreferrer', target: '_blank' }
   }),
-  ...tableExtensions,
-  ...taskListExtensions
+  ...tableExtensions
+  // ...taskListExtensions // Disable since tasks are not working properly now.
 ]
 
 export const mInsertTable = [

@@ -510,7 +510,7 @@ export function createModel (builder: Builder): void {
     {
       hidden: false,
       generated: false,
-      label: setting.string.IntegrationDisabled,
+      label: setting.string.IntegrationDisabledSetting,
       group: setting.ids.SettingNotificationGroup,
       field: 'disabled',
       txClasses: [core.class.TxUpdateDoc],

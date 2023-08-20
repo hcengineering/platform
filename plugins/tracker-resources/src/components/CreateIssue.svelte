@@ -722,6 +722,7 @@
     <ComponentSelector
       focusIndex={8}
       value={object.component}
+      space={_space}
       onChange={handleComponentIdChanged}
       isEditable={true}
       kind={'regular'}
@@ -735,8 +736,8 @@
       <MilestoneSelector
         focusIndex={9}
         value={object.milestone}
+        space={_space}
         onChange={handleMilestoneIdChanged}
-        useComponent={(!originalIssue && object.component) || undefined}
         kind={'regular'}
         size={'large'}
         short

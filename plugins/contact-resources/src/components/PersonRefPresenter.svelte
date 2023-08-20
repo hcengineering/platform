@@ -28,7 +28,7 @@
   export let accent: boolean = false
   export let shouldShowAvatar = true
   export let shouldShowName = true
-  export let shouldShowPlaceholder = false
+  export let shouldShowPlaceholder = true
   export let defaultName: IntlString | undefined = undefined
   export let tooltipLabels: PersonLabelTooltip | undefined = undefined
   export let avatarSize: 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' = 'x-small'

@@ -25,6 +25,9 @@
     "AccessWorkspaceSettings": "Открыть настройки рабочего пространства",
     "HowToWorkFaster": "Узнайте как работать эффективнее",
     "HiddenApplication": "Скрытое приложение",
-    "OpenInNewTab": "Открыть в новой вкладке"
+    "OpenInNewTab": "Открыть в новой вкладке",
+    "NewVersionAvailable": "Доступна новая версия",
+    "PleaseUpdate": "Пожалуйста, обновите приложение",
+    "ServerUnderMaintenance": "Обслуживание сервера"
   }
 }

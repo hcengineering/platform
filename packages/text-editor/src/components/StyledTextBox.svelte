@@ -143,7 +143,7 @@
   const attachments = new Map<string, ProseMirrorNode>()
 
   const imagePlugin = ImageRef.configure({
-    inline: false,
+    inline: true,
     HTMLAttributes: {},
     attachFile,
     reportNode: (id, node) => {
