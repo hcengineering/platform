@@ -109,6 +109,7 @@
     shouldShowPlaceholder={true}
     shouldShowName={shouldShowLabel}
     onEmployeeEdit={handleAssigneeEditorOpened}
+    onEdit={handleAssigneeEditorOpened}
     tooltipLabels={{
       personLabel: employeeValue ? getEmbeddedLabel(getName(client.getHierarchy(), employeeValue)) : undefined,
       placeholderLabel: placeholderLabel ?? presenter.label
