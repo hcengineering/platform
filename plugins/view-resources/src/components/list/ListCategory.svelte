@@ -69,7 +69,7 @@
   export let config: (string | BuildModelKey)[]
   export let configurations: Record<Ref<Class<Doc>>, Viewlet['config']> | undefined
   export let viewOptions: ViewOptions
-  export let newObjectProps: (doc: Doc) => Record<string, any> | undefined
+  export let newObjectProps: (doc: Doc | undefined) => Record<string, any> | undefined
   export let viewOptionsConfig: ViewOptionModel[] | undefined
   export let dragItem: {
     doc?: Doc
@@ -167,16 +167,14 @@
 
   $: selectedObjectIdsSet = new Set<Ref<Doc>>(selectedObjectIds.map((it) => it._id))
 
-  $: _newObjectProps = (doc: Doc) => {
+  $: _newObjectProps = (doc: Doc | undefined): Record<string, any> | undefined => {
     const groupValue =
-      typeof category === 'object' ? category.values.find((it) => it.space === doc.space)?._id : category
-    if (groupValue === undefined) {
-      return undefined
-    }
+      typeof category === 'object' ? category.values.find((it) => it.space === doc?.space)?._id : category
+
     return {
       ...newObjectProps(doc),
-      [groupByKey]: groupValue,
-      space: doc.space
+      ...(doc ? { space: doc.space } : {}),
+      ...(groupValue !== undefined ? { [groupByKey]: groupValue } : {})
     }
   }
 

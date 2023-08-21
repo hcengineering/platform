@@ -56,7 +56,7 @@
   export let createItemLabel: IntlString | undefined
   export let extraHeaders: AnyComponent[] | undefined
   export let props: Record<string, any> = {}
-  export let newObjectProps: (doc: Doc) => Record<string, any> | undefined
+  export let newObjectProps: (doc: Doc | undefined) => Record<string, any> | undefined
 
   export let viewOptions: ViewOptions
 
