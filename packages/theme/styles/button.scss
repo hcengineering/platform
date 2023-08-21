@@ -105,8 +105,10 @@
     }
     &:disabled { background-color: var(--theme-button-disabled); }
     &.selected {
-      background-color: var(--theme-button-hovered);
-      .btn-icon { color: var(--theme-caption-color); }
+      color: var(--theme-button-contrast-color);
+      background-color: var(--theme-accent-color);
+      .btn-icon { color: var(--theme-button-contrast-color); }
+      &:hover { color: var(--theme-button-contrast-color); }
     }
   }
   &.no-border {
@@ -196,10 +198,6 @@
   }
   &.regular, &.ghost {
     &:hover, &:active, &:focus { color: var(--theme-caption-color); }
-    &.selected {
-      color: var(--theme-button-contrast-color);
-      background-color: var(--theme-accent-color);
-    }
   }
   &.accented,
   &.brand,
