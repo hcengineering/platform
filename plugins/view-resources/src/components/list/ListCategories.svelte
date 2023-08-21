@@ -428,6 +428,7 @@
         {listDiv}
         {resultQuery}
         {resultOptions}
+        bind:dragItem
         on:dragItem
         on:check
         on:uncheckAll
