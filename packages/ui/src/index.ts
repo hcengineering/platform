@@ -80,6 +80,7 @@ export { default as DateTimeRangePresenter } from './components/calendar/DateTim
 export { default as DatePresenter } from './components/calendar/DatePresenter.svelte'
 export { default as DueDatePresenter } from './components/calendar/DueDatePresenter.svelte'
 export { default as DateTimePresenter } from './components/calendar/DateTimePresenter.svelte'
+export { default as TimeInputBox } from './components/calendar/TimeInputBox.svelte'
 export { default as StylishEdit } from './components/StylishEdit.svelte'
 export { default as Grid } from './components/Grid.svelte'
 export { default as Row } from './components/Row.svelte'

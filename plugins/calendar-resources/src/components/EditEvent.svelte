@@ -28,7 +28,6 @@
   import UpdateRecInstancePopup from './UpdateRecInstancePopup.svelte'
 
   export let object: Event
-
   $: readOnly = isReadOnly(object)
 
   let title = object.title
@@ -225,6 +224,7 @@
     <div>
       {#if !allDay && rules.length === 0}
         <div class="flex-row-center flex-gap-3 ext">
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div class="cursor-pointer" on:click={() => (allDay = true)}>
             <Label label={calendar.string.AllDay} />
           </div>
@@ -232,6 +232,7 @@
             <Label label={calendar.string.TimeZone} />
           </div>
           {#if rules.length > 0}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div class="cursor-pointer" on:click={setRecurrance}>
               <Label label={calendar.string.Repeat} />
             </div>
@@ -248,6 +249,7 @@
             <Label label={calendar.string.TimeZone} />
           </div>
           {#if rules.length > 0}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div class="flex-row-center flex-gap-2 mt-1" on:click={setRecurrance}>
               <Icon size="small" icon={calendar.icon.Repeat} />
               {#if rules.length > 0}
@@ -286,7 +288,7 @@
     min-height: 0;
     background: var(--theme-popup-color);
     box-shadow: var(--theme-popup-shadow);
-    width: 25rem;
+    min-width: 25rem;
     border-radius: 1rem;
 
     .header {

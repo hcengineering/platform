@@ -16,11 +16,12 @@
   import ui, {
     Button,
     ButtonKind,
+    ButtonSize,
     DatePopup,
     SimpleDatePopup,
-    SimpleTimePopup,
     eventToHTMLElement,
-    showPopup
+    showPopup,
+    TimeInputBox
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import DateLocalePresenter from './DateLocalePresenter.svelte'
@@ -30,22 +31,18 @@
   export let showDate: boolean = true
   export let withoutTime: boolean
   export let kind: ButtonKind = 'ghost'
+  export let size: ButtonSize = 'medium'
   export let disabled: boolean = false
 
   const dispatch = createEventDispatcher()
 
+  $: currentDate = new Date(date)
+
   function timeClick (e: MouseEvent) {
-    if (showDate) {
-      showPopup(SimpleTimePopup, { currentDate: new Date(date) }, eventToHTMLElement(e), (res) => {
-        if (res.value) {
-          date = res.value.getTime()
-          dispatch('update', date)
-        }
-      })
-    } else {
+    if (!showDate) {
       showPopup(
         DatePopup,
-        { currentDate: new Date(date), withTime: !withoutTime, label: ui.string.SelectDate, noShift: true },
+        { currentDate, withTime: !withoutTime, label: ui.string.SelectDate, noShift: true },
         undefined,
         (res) => {
           if (res) {
@@ -58,43 +55,47 @@
   }
 
   function dateClick (e: MouseEvent) {
-    showPopup(SimpleDatePopup, { currentDate: new Date(date) }, eventToHTMLElement(e), (res) => {
+    showPopup(SimpleDatePopup, { currentDate }, eventToHTMLElement(e), (res) => {
       if (res) {
         date = res.getTime()
         dispatch('update', date)
       }
     })
   }
+  const updateTime = (d?: Date) => {
+    const dat = d ?? currentDate
+    date = dat.getTime()
+    dispatch('update', dat)
+  }
 </script>
 
-<div class="container" class:vertical={direction === 'vertical'} class:horizontal={direction === 'horizontal'}>
+<div class="dateEditor-container {direction}">
   {#if showDate || withoutTime}
-    <Button {kind} on:click={dateClick} {disabled}>
+    <Button {kind} {size} padding={'0 .5rem'} on:click={dateClick} {disabled}>
       <div slot="content">
-        <DateLocalePresenter {date} />
+        <DateLocalePresenter date={currentDate.getTime()} />
       </div>
     </Button>
   {/if}
   {#if !withoutTime}
-    <Button {kind} on:click={timeClick} {disabled}>
-      <div slot="content">
-        {new Date(date).toLocaleTimeString('default', { hour: 'numeric', minute: '2-digit' })}
-      </div>
+    <Button {kind} {size} padding={'0 .5rem'} on:click={timeClick} {disabled}>
+      <svelte:fragment slot="content">
+        <TimeInputBox bind:currentDate noBorder size={'small'} on:update={(date) => updateTime(date.detail)} />
+      </svelte:fragment>
     </Button>
   {/if}
 </div>
 
 <style lang="scss">
-  .container {
+  .dateEditor-container {
     display: flex;
-    align-items: center;
-  }
+    flex-wrap: nowrap;
 
-  .vertical {
-    flex-direction: column;
-  }
-
-  .horizontal {
-    flex-direction: row;
+    &.horizontal {
+      align-items: center;
+    }
+    &.vertical {
+      flex-direction: column;
+    }
   }
 </style>

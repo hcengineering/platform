@@ -41,6 +41,7 @@
   export let iconRight: Asset | AnySvelteComponent | ComponentType | undefined = undefined
   export let iconRightProps: IconProps = {}
   export let justify: 'left' | 'center' = 'center'
+  export let padding: string = '0 .75rem'
   export let disabled: boolean = false
   export let loading: boolean = false
   export let width: string | undefined = undefined
@@ -128,6 +129,7 @@
   style:width
   style:height
   style:flex-shrink={shrink}
+  style:padding
   {title}
   type={kind === 'accented' ? 'submit' : 'button'}
   on:click|stopPropagation|preventDefault

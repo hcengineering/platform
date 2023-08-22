@@ -145,8 +145,6 @@ a.noUnderline {
   }
 }
 
-.text-center { text-align: center; }
-
 .firstLetter span{
   display: inline-block;
   &::first-letter { text-transform: uppercase; }
@@ -804,6 +802,8 @@ a.no-line {
 .uppercase { text-transform: uppercase; }
 .lower { text-transform: lowercase; }
 .text-left { text-align: left; }
+.text-center { text-align: center; }
+.leading-3 { line-height: .75rem; }
 
 .over-underline {
   cursor: pointer;
