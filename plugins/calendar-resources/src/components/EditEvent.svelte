@@ -26,6 +26,8 @@
   import RRulePresenter from './RRulePresenter.svelte'
   import ReccurancePopup from './ReccurancePopup.svelte'
   import UpdateRecInstancePopup from './UpdateRecInstancePopup.svelte'
+  import { deepEqual } from 'fast-equals'
+  import EventReminders from './EventReminders.svelte'
 
   export let object: Event
 
@@ -40,6 +42,7 @@
   const duration = object.dueDate - object.date
   let dueDate = startDate + duration
   let allDay = object.allDay
+  let reminders = [...(object.reminders ?? [])]
 
   let description = object.description
 
@@ -78,9 +81,13 @@
         update.dueDate = allDay ? saveUTC(dueDate) : dueDate
       }
     }
+    if (deepEqual(object.reminders, reminders) === false) {
+      update.reminders = reminders
+    }
     if (rules !== (object as ReccuringEvent).rules) {
       ;(update as DocumentUpdate<ReccuringEvent>).rules = rules
     }
+
     if (Object.keys(update).length > 0) {
       if (object._class === calendar.class.ReccuringInstance) {
         await updateHandler(update)
@@ -105,7 +112,7 @@
     if (readOnly) {
       return
     }
-    showPopup(ReccurancePopup, { rules }, undefined, (res) => {
+    showPopup(ReccurancePopup, { rules, startDate }, undefined, (res) => {
       if (res) {
         rules = res
       }
@@ -271,6 +278,10 @@
       <Icon icon={calendar.icon.Description} size="small" />
       <EditBox bind:value={description} placeholder={calendar.string.Description} disabled={readOnly} />
     </div>
+  </div>
+  <div class="divider" />
+  <div class="block">
+    <EventReminders bind:reminders />
   </div>
   <div class="divider" />
   <div class="flex-between pool">

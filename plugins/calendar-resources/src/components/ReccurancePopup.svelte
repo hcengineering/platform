@@ -27,8 +27,10 @@
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
   import DateEditor from './DateEditor.svelte'
+  import { Timestamp } from '@hcengineering/core'
 
   export let rules: RecurringRule[]
+  export let startDate: Timestamp
 
   type Freq = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY'
   let periodType: Freq = (rules[0]?.freq as Freq) ?? 'WEEKLY'
@@ -76,7 +78,7 @@
 
   let count: number = rules[0]?.count ?? 1
 
-  let selectedWeekdays: string[] = rules[0]?.byDay ?? [getWeekday(new Date())]
+  let selectedWeekdays: string[] = rules[0]?.byDay ?? [getWeekday(new Date(startDate))]
 
   function weekdayClick (day: string) {
     const index = selectedWeekdays.findIndex((p) => p === day)
