@@ -17,7 +17,7 @@
   import { IntlString, translate } from '@hcengineering/platform'
 
   import { FocusPosition } from '@tiptap/core'
-  import { AnyExtension, Editor, Extension, HTMLContent } from '@tiptap/core'
+  import { AnyExtension, Editor, Extension, HTMLContent, isTextSelection } from '@tiptap/core'
   import { Level } from '@tiptap/extension-heading'
   import Placeholder from '@tiptap/extension-placeholder'
   import BubbleMenu from '@tiptap/extension-bubble-menu'
@@ -149,6 +149,7 @@
   let needFocus = false
   let focused = false
   let posFocus: FocusPosition | undefined = undefined
+  let showContextMenu = false
 
   export function focus (position?: FocusPosition): void {
     posFocus = position
@@ -207,7 +208,37 @@
           Placeholder.configure({ placeholder: placeHolderStr }),
           ...extensions,
           BubbleMenu.configure({
-            element: textEditorToolbar
+            element: textEditorToolbar,
+
+            // to override shouldShow behaviour a little
+            // I need to copypaste original function and make a little change
+            // with showContextMenu falg
+            shouldShow: ({ editor, view, state, oldState, from, to }) => {
+              const { doc, selection } = state
+              const { empty } = selection
+
+              // Sometime check for `empty` is not enough.
+              // Doubleclick an empty paragraph returns a node size of 2.
+              // So we check also for an empty text size.
+              const isEmptyTextBlock = !doc.textBetween(from, to).length && isTextSelection(state.selection)
+
+              // When clicking on a element inside the bubble menu the editor "blur" event
+              // is called and the bubble menu item is focussed. In this case we should
+              // consider the menu as part of the editor and keep showing the menu
+              const isChildOfMenu = element.contains(document.activeElement)
+
+              const hasEditorFocus = view.hasFocus() || isChildOfMenu
+
+              if (showContextMenu) {
+                return true
+              }
+
+              if (!hasEditorFocus || empty || isEmptyTextBlock || !editor.isEditable) {
+                return false
+              }
+
+              return true
+            }
           })
         ],
         parseOptions: {
@@ -228,13 +259,18 @@
         onUpdate: () => {
           content = editor.getHTML()
           isEmpty = editor.isEmpty
+          showContextMenu = false
           dispatch('value', content)
           dispatch('update', content)
         },
         onCreate: () => {
           isEmpty = editor.isEmpty
         },
-        onSelectionUpdate: () => dispatch('selection-update')
+        onSelectionUpdate: () => {
+          showContextMenu = false
+
+          dispatch('selection-update')
+        }
       })
     })
   })
@@ -244,6 +280,10 @@
       editor.destroy()
     }
   })
+
+  function onEditorClick () {
+    showContextMenu = true
+  }
 
   /**
    * @public
@@ -262,7 +302,7 @@
   }
 </script>
 
-<div class="select-text" style="width: 100%;" bind:this={element} />
+<div class="select-text" style="width: 100%;" on:mousedown={onEditorClick} bind:this={element} />
 
 <style lang="scss" global>
   .ProseMirror {
