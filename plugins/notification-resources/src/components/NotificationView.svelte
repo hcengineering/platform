@@ -70,19 +70,19 @@
   $: if (selected && div !== undefined) div.focus()
 
   let notificationPreviewPresenter: AnySvelteComponent | undefined = undefined
-  $: notificationPreviewPresenterRes =
-    hierarchy.classHierarchyMixin(value.attachedToClass, notification.mixin.NotificationPreview)?.presenter
+  $: notificationPreviewPresenterRes = hierarchy.classHierarchyMixin(
+    value.attachedToClass,
+    notification.mixin.NotificationPreview
+  )?.presenter
   $: if (notificationPreviewPresenterRes) {
     getResource(notificationPreviewPresenterRes).then((res) => (notificationPreviewPresenter = res))
   }
 
   let object: Doc | undefined
   const objQuery = createQuery()
-  $: objQuery.query(value.attachedToClass, { _id: value.attachedTo },
-    (res) => {
-      ;[object] = res
-    })
-
+  $: objQuery.query(value.attachedToClass, { _id: value.attachedTo }, (res) => {
+    ;[object] = res
+  })
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->

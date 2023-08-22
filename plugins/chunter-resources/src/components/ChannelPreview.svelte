@@ -47,7 +47,6 @@
       }
     }
   )
-
 </script>
 
 <div class="flex-col flex-gap-3 preview-container">

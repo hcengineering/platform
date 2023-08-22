@@ -160,8 +160,10 @@
   }
 
   let dmInput: AnySvelteComponent | undefined = undefined
-  $: dmInputRes =
-    hierarchy.classHierarchyMixin(chunter.class.DirectMessage as Ref<Class<Doc>>, chunter.mixin.DirectMessageInput)?.component
+  $: dmInputRes = hierarchy.classHierarchyMixin(
+    chunter.class.DirectMessage as Ref<Class<Doc>>,
+    chunter.mixin.DirectMessageInput
+  )?.component
   $: if (dmInputRes) {
     getResource(dmInputRes).then((res) => (dmInput = res))
   }

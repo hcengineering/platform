@@ -14,7 +14,17 @@
 //
 
 import type { Person } from '@hcengineering/contact'
-import type { Account, AttachedDoc, Class, Doc, Mixin, Ref, RelatedDocument, Space, Timestamp } from '@hcengineering/core'
+import type {
+  Account,
+  AttachedDoc,
+  Class,
+  Doc,
+  Mixin,
+  Ref,
+  RelatedDocument,
+  Space,
+  Timestamp
+} from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
