@@ -25,7 +25,8 @@ import {
   Message,
   Reaction,
   SavedMessages,
-  ThreadMessage
+  ThreadMessage,
+  DirectMessageInput
 } from '@hcengineering/chunter'
 import contact, { Person } from '@hcengineering/contact'
 import type { Account, Class, Doc, Domain, Ref, Space, Timestamp } from '@hcengineering/core'
@@ -35,6 +36,7 @@ import {
   Builder,
   Collection,
   Index,
+  Mixin,
   Model,
   Prop,
   ReadOnly,
@@ -45,12 +47,13 @@ import {
   UX
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
-import core, { TAttachedDoc, TSpace } from '@hcengineering/model-core'
+import core, { TAttachedDoc, TClass, TSpace } from '@hcengineering/model-core'
 import notification from '@hcengineering/model-notification'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import view, { createAction, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import chunter from './plugin'
+import { AnyComponent } from '@hcengineering/ui'
 export { chunterId } from '@hcengineering/chunter'
 export { chunterOperation } from './migration'
 
@@ -158,6 +161,11 @@ export class TSavedMessages extends TPreference implements SavedMessages {
     attachedTo!: Ref<ChunterMessage>
 }
 
+@Mixin(chunter.mixin.DirectMessageInput, core.class.Class)
+export class TDirectMessageInput extends TClass implements DirectMessageInput {
+  component!: AnyComponent
+}
+
 export function createModel (builder: Builder, options = { addApplication: true }): void {
   builder.createModel(
     TChunterSpace,
@@ -169,7 +177,8 @@ export function createModel (builder: Builder, options = { addApplication: true 
     TBacklink,
     TDirectMessage,
     TSavedMessages,
-    TReaction
+    TReaction,
+    TDirectMessageInput
   )
   const spaceClasses = [chunter.class.Channel, chunter.class.DirectMessage]
 
@@ -213,6 +222,14 @@ export function createModel (builder: Builder, options = { addApplication: true 
     presenter: chunter.component.DmPresenter
   })
 
+  builder.mixin(chunter.class.DirectMessage, core.class.Class, notification.mixin.NotificationPreview, {
+    presenter: chunter.component.ChannelPreview
+  })
+
+  builder.mixin(chunter.class.DirectMessage, core.class.Class, chunter.mixin.DirectMessageInput, {
+    component: chunter.component.DirectMessageInput
+  })
+
   builder.mixin(chunter.class.Message, core.class.Class, notification.mixin.NotificationObjectPresenter, {
     presenter: chunter.component.ThreadParentPresenter
   })
@@ -227,10 +244,6 @@ export function createModel (builder: Builder, options = { addApplication: true 
 
   builder.mixin(chunter.class.Message, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: chunter.component.MessagePresenter
-  })
-
-  builder.mixin(chunter.class.Message, core.class.Class, view.mixin.PreviewPresenter, {
-    presenter: chunter.component.MessagePreview
   })
 
   builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ObjectPresenter, {

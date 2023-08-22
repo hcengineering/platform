@@ -14,13 +14,10 @@
 // limitations under the License.
 //
 
-import core, { Account, Class, Doc, getCurrentAccount, Ref, TxOperations } from '@hcengineering/core'
-import chunter, { DirectMessage } from '@hcengineering/chunter'
+import { Account, Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
 import notification, { Collaborators, DocUpdates, NotificationClient } from '@hcengineering/notification'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { writable } from 'svelte/store'
-import { PersonAccount } from '@hcengineering/contact'
-import { deepEqual } from 'fast-equals'
 
 /**
  * @public
@@ -173,27 +170,5 @@ export async function markAsUnread (object: DocUpdates): Promise<void> {
   txes[0].isNew = true
   await client.update(object, {
     txes
-  })
-}
-
-export async function getDirectChannel (
-  client: TxOperations,
-  me: Ref<PersonAccount>,
-  employeeAccount: Ref<PersonAccount>
-): Promise<Ref<DirectMessage>> {
-  const accIds = [me, employeeAccount].sort()
-  const existingDms = await client.findAll(chunter.class.DirectMessage, {})
-  for (const dm of existingDms) {
-    if (deepEqual(dm.members, accIds)) {
-      return dm._id
-    }
-  }
-
-  return await client.createDoc(chunter.class.DirectMessage, core.space.Space, {
-    name: '',
-    description: '',
-    private: true,
-    archived: false,
-    members: accIds
   })
 }

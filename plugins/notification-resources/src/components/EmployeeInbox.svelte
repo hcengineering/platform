@@ -16,17 +16,16 @@
   import { createEventDispatcher } from 'svelte'
   import activity, { TxViewlet } from '@hcengineering/activity'
   import { activityKey, ActivityKey } from '@hcengineering/activity-resources'
-  import chunter, { createBacklinks, DirectMessage, Message } from '@hcengineering/chunter'
+  import chunter from '@hcengineering/chunter'
   import { Employee, getName, PersonAccount } from '@hcengineering/contact'
   import { Avatar, employeeByIdStore, personAccountByIdStore } from '@hcengineering/contact-resources'
-  import core, { Account, Doc, generateId, getCurrentAccount, Ref } from '@hcengineering/core'
+  import core, { Account, Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { DocUpdates } from '@hcengineering/notification'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
-  import { Button, Loading, Scroller } from '@hcengineering/ui'
-  import { AttachmentRefInput } from '@hcengineering/attachment-resources'
+  import { AnySvelteComponent, Button, Loading, Scroller } from '@hcengineering/ui'
 
   import NotificationView from './NotificationView.svelte'
-  import { getDirectChannel } from '../utils'
+  import { getResource } from '@hcengineering/platform'
 
   export let accountId: Ref<Account>
   const dispatch = createEventDispatcher()
@@ -121,6 +120,7 @@
   $: employee = account ? $employeeByIdStore.get(account.person as Ref<Employee>) : undefined
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
 
   async function openDM () {
     const res = await client.findAll(chunter.class.DirectMessage, { members: accountId })
@@ -159,44 +159,11 @@
     }
   }
 
-  const _class = chunter.class.Message
-  let messageId = generateId() as Ref<Message>
-
-  let space: Ref<DirectMessage> | undefined
-
-  $: _getDirectChannel(account?._id)
-  async function _getDirectChannel (account?: Ref<PersonAccount>): Promise<void> {
-    if (account === undefined) {
-      return
-    }
-
-    space = await getDirectChannel(client, me as Ref<PersonAccount>, account)
-  }
-
-  async function onMessage (event: CustomEvent) {
-    if (space === undefined) {
-      return
-    }
-
-    const { message, attachments } = event.detail
-    await client.addCollection(
-      _class,
-      space,
-      space,
-      chunter.class.DirectMessage,
-      'messages',
-      {
-        content: message,
-        createBy: me,
-        attachments
-      },
-      messageId
-    )
-
-    await createBacklinks(client, space, chunter.class.ChunterSpace, _id, message)
-
-    messageId = generateId()
-    loading = false
+  let dmInput: AnySvelteComponent | undefined = undefined
+  $: dmInputRes =
+    hierarchy.classHierarchyMixin(chunter.class.DirectMessage as Ref<Class<Doc>>, chunter.mixin.DirectMessageInput)?.component
+  $: if (dmInputRes) {
+    getResource(dmInputRes).then((res) => (dmInput = res))
   }
 </script>
 
@@ -244,10 +211,8 @@
     {/if}
   </Scroller>
 </div>
-{#if space !== undefined}
-  <div class="reference">
-    <AttachmentRefInput bind:loading {space} {_class} objectId={messageId} on:message={onMessage} />
-  </div>
+{#if dmInput && account}
+  <svelte:component this={dmInput} {account} bind:loading />
 {/if}
 
 <style lang="scss">
@@ -268,10 +233,6 @@
     color: var(--theme-inbox-people-notify);
     background-color: var(--theme-inbox-people-counter-bgcolor);
     border-radius: 50%;
-  }
-
-  .reference {
-    margin: 1.25rem 2.5rem;
   }
 
   .with-hover {

@@ -28,7 +28,6 @@ import serverNotification, {
   TextPresenter,
   TypeMatch
 } from '@hcengineering/server-notification'
-import chunter from '@hcengineering/chunter'
 
 export { serverNotificationId } from '@hcengineering/server-notification'
 
@@ -54,14 +53,6 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverNotification.trigger.OnBacklinkCreate
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverNotification.trigger.OnDmCreate,
-    txMatch: {
-      objectClass: chunter.class.DirectMessage,
-      _class: core.class.TxCreateDoc
-    }
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {

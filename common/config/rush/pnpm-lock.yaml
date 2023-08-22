@@ -17787,7 +17787,7 @@ packages:
     dev: false
 
   file:projects/chunter.tgz:
-    resolution: {integrity: sha512-P+ZhImPhzQJDSPEIR+zEXNT87Rn3CvGG+7JN1OsF+3tVdNBnlkCQ/qrmK70Xp0tktXzolaB54lITf9luPQn/Tw==, tarball: file:projects/chunter.tgz}
+    resolution: {integrity: sha512-YvadGb0k4jR7JApOhvPTLZKTm3fX68dE9zX4j0GvCI6XrkUzZdD4oTa1IF8uuA3DRpHSt5pjNF8p1mI1ptK+BA==, tarball: file:projects/chunter.tgz}
     name: '@rush-temp/chunter'
     version: 0.0.0
     dependencies:
@@ -17800,6 +17800,7 @@ packages:
       eslint-plugin-import: 2.26.0_eslint@8.27.0
       eslint-plugin-n: 15.5.1_eslint@8.27.0
       eslint-plugin-promise: 6.1.1_eslint@8.27.0
+      fast-equals: 2.0.4
       prettier: 2.8.8
       typescript: 4.8.4
     transitivePeerDependencies:
@@ -19106,7 +19107,7 @@ packages:
     dev: false
 
   file:projects/model-notification.tgz_typescript@4.8.4:
-    resolution: {integrity: sha512-vZSXHfSkfeklcsrLofIc/OuwLLUj6gT4o9Jl91MgLWeXjiIzaqZLBN6EcGegQ7nu9DU+8tWv0iZcWR6bpqWqcQ==, tarball: file:projects/model-notification.tgz}
+    resolution: {integrity: sha512-4TdxvQk1W0Q+g6eF8APHXTVp+ZZFHo2/HjnZZ7nYYqbEJy4EJUGvcCRXhbjsPqAgmoC80Y+D/GVdttR4fJKdnA==, tarball: file:projects/model-notification.tgz}
     id: file:projects/model-notification.tgz
     name: '@rush-temp/model-notification'
     version: 0.0.0
@@ -19928,7 +19929,7 @@ packages:
     dev: false
 
   file:projects/notification-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-q3n0DYJDx1EejE47b3uDDVn9cKjcqNCkm502u0+TR6C3owM0rWljB9s0PGAZmJ66VWtglB0LMszUhJ1IqX4n0w==, tarball: file:projects/notification-resources.tgz}
+    resolution: {integrity: sha512-m2wYJypLkf9adSBx5NAW/1RJ7soDNp/VJb6WJk8vfdTfsIK9ttrm321UGN5FoWg3DP6H/UvCZObBN344cKno/w==, tarball: file:projects/notification-resources.tgz}
     id: file:projects/notification-resources.tgz
     name: '@rush-temp/notification-resources'
     version: 0.0.0

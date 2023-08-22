@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import chunter, { Backlink, chunterId, ChunterSpace, Comment, Message, ThreadMessage } from '@hcengineering/chunter'
+import chunter, { Backlink, chunterId, ChunterSpace, Comment, DirectMessage, Message, ThreadMessage } from '@hcengineering/chunter'
 import contact, { Employee, PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
@@ -36,7 +36,7 @@ import core, {
 import notification, { Collaborators, NotificationType } from '@hcengineering/notification'
 import { getMetadata } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
-import { getDocCollaborators, getMixinTx } from '@hcengineering/server-notification-resources'
+import { pushNotification, getDocCollaborators, getMixinTx } from '@hcengineering/server-notification-resources'
 import { workbenchId } from '@hcengineering/workbench'
 
 /**
@@ -209,6 +209,34 @@ export async function ChunterTrigger (tx: Tx, control: TriggerControl): Promise<
 /**
  * @public
  */
+export async function OnDmCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const ptx = tx as TxCreateDoc<DirectMessage>
+  const res: Tx[] = []
+
+  if (tx.createdBy == null) return []
+
+  const dm = TxProcessor.createDoc2Doc(ptx)
+
+  if (dm.members.length > 2) return []
+
+  let dmWithPerson: Ref<Account> | undefined
+  for (const person of dm.members) {
+    if (person !== tx.createdBy) {
+      dmWithPerson = person
+      break
+    }
+  }
+
+  if (dmWithPerson == null) return []
+
+  pushNotification(control, res, tx.createdBy, dm, ptx, [], dmWithPerson)
+
+  return res
+}
+
+/**
+ * @public
+ */
 export async function IsDirectMessage (
   tx: Tx,
   doc: Doc,
@@ -272,7 +300,8 @@ export async function IsChannelMessage (
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    ChunterTrigger
+    ChunterTrigger,
+    OnDmCreate
   },
   function: {
     CommentRemove,

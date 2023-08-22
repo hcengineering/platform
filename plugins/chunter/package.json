@@ -26,6 +26,7 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
+    "fast-equals": "^2.0.3",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/ui": "^0.6.10",
     "@hcengineering/notification": "^0.6.14",

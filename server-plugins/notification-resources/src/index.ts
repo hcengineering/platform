@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import chunter, { Backlink, DirectMessage } from '@hcengineering/chunter'
+import chunter, { Backlink } from '@hcengineering/chunter'
 import contact, { Employee, PersonAccount, formatName } from '@hcengineering/contact'
 import core, {
   Account,
@@ -95,34 +95,6 @@ export async function OnBacklinkCreate (tx: Tx, control: TriggerControl): Promis
     }
     res = res.concat(await createCollabDocInfo([receiver._id], control, tx as TxCUD<Doc>, doc))
   }
-  return res
-}
-
-/**
- * @public
- */
-export async function OnDmCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const ptx = tx as TxCreateDoc<DirectMessage>
-  const res: Tx[] = []
-
-  if (tx.createdBy == null) return []
-
-  const dm = TxProcessor.createDoc2Doc(ptx)
-
-  if (dm.members.length > 2) return []
-
-  let dmWithPerson: Ref<Account> | undefined
-  for (const person of dm.members) {
-    if (person !== tx.createdBy) {
-      dmWithPerson = person
-      break
-    }
-  }
-
-  if (dmWithPerson == null) return []
-
-  pushNotification(control, res, tx.createdBy, dm, ptx, [], dmWithPerson)
-
   return res
 }
 
@@ -460,7 +432,10 @@ async function isShouldNotify (
   }
 }
 
-function pushNotification (
+/**
+ * @public
+ */
+export function pushNotification (
   control: TriggerControl,
   res: Tx[],
   target: Ref<Account>,
@@ -930,8 +905,7 @@ export default async () => ({
     OnBacklinkCreate,
     CollaboratorDocHandler: collaboratorDocHandler,
     OnAttributeCreate,
-    OnAttributeUpdate,
-    OnDmCreate
+    OnAttributeUpdate
   },
   function: {
     IsUserInFieldValue: isUserInFieldValue,

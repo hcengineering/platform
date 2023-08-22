@@ -43,6 +43,7 @@ import {
   NotificationGroup,
   notificationId,
   NotificationObjectPresenter,
+  NotificationPreview,
   NotificationProvider,
   NotificationSetting,
   NotificationStatus,
@@ -148,6 +149,11 @@ export class TNotificationObjectPresenter extends TClass implements Notification
   presenter!: AnyComponent
 }
 
+@Mixin(notification.mixin.NotificationPreview, core.class.Class)
+export class TNotificationPreview extends TClass implements NotificationPreview {
+  presenter!: AnyComponent
+}
+
 @Model(notification.class.DocUpdates, core.class.Doc, DOMAIN_NOTIFICATION)
 export class TDocUpdates extends TDoc implements DocUpdates {
   @Index(IndexKind.Indexed)
@@ -175,7 +181,8 @@ export function createModel (builder: Builder): void {
     TClassCollaborators,
     TCollaborators,
     TDocUpdates,
-    TNotificationObjectPresenter
+    TNotificationObjectPresenter,
+    TNotificationPreview
   )
 
   // Temporarily disabled, we should think about it

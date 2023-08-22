@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import chunter from '@hcengineering/chunter'
+  import chunter, { getDirectChannel } from '@hcengineering/chunter'
   import { Employee, PersonAccount } from '@hcengineering/contact'
   import { Class, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
   import { DocUpdates } from '@hcengineering/notification'
@@ -28,7 +28,6 @@
   import EmployeeInbox from './EmployeeInbox.svelte'
   import Filter from './Filter.svelte'
   import People from './People.svelte'
-  import { getDirectChannel } from '../utils'
 
   export let visibileNav: boolean
   let filter: 'all' | 'read' | 'unread' = 'all'

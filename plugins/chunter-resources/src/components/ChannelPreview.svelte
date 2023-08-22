@@ -13,18 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
-  import { getResource } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { SortingOrder } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
   import chunter, { ChunterMessage, DirectMessage } from '@hcengineering/chunter'
   import attachment from '@hcengineering/attachment'
-  import { AnySvelteComponent, Label } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import { Label } from '@hcengineering/ui'
 
-  import notification from '../plugin'
+  import chunterResources from '../plugin'
+  import MessagePreview from './MessagePreview.svelte'
 
-  export let channel: Ref<DirectMessage>
-  export let numOfMessages: number
+  export let object: DirectMessage
+  export let newTxes: number
 
   const NUM_OF_RECENT_MESSAGES = 5 as const
 
@@ -32,14 +31,14 @@
   const messagesQuery = createQuery()
   $: messagesQuery.query(
     chunter.class.ChunterMessage,
-    { attachedTo: channel },
+    { attachedTo: object._id },
     (res) => {
       if (res !== undefined) {
         messages = res.sort((a, b) => (a.createdOn ?? 0) - (b.createdOn ?? 0))
       }
     },
     {
-      limit: numOfMessages + NUM_OF_RECENT_MESSAGES,
+      limit: newTxes + NUM_OF_RECENT_MESSAGES,
       sort: {
         createdOn: SortingOrder.Descending
       },
@@ -49,26 +48,15 @@
     }
   )
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
-  let preview: AnySvelteComponent | undefined = undefined
-  $: presenterRes = hierarchy.classHierarchyMixin(
-    chunter.class.Message as Ref<Class<Doc>>,
-    view.mixin.PreviewPresenter
-  )?.presenter
-  $: if (presenterRes) {
-    getResource(presenterRes).then((res) => (preview = res))
-  }
 </script>
 
 <div class="flex-col flex-gap-3 preview-container">
   {#if messages.length}
     {#each messages as message}
-      <svelte:component this={preview} value={message} inline />
+      <MessagePreview value={message} />
     {/each}
   {:else}
-    <Label label={notification.string.YouHaveStartedAConversation} />
+    <Label label={chunterResources.string.YouHaveStartedAConversation} />
   {/if}
 </div>
 

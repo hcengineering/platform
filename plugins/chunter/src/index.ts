@@ -14,7 +14,7 @@
 //
 
 import type { Person } from '@hcengineering/contact'
-import type { Account, AttachedDoc, Class, Doc, Ref, RelatedDocument, Space, Timestamp } from '@hcengineering/core'
+import type { Account, AttachedDoc, Class, Doc, Mixin, Ref, RelatedDocument, Space, Timestamp } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
@@ -116,6 +116,13 @@ export interface SavedMessages extends Preference {
 /**
  * @public
  */
+export interface DirectMessageInput extends Class<Doc> {
+  component: AnyComponent
+}
+
+/**
+ * @public
+ */
 export const chunterId = 'chunter' as Plugin
 
 export * from './utils'
@@ -147,6 +154,9 @@ export default plugin(chunterId, {
     SavedMessages: '' as Ref<Class<SavedMessages>>,
     DirectMessage: '' as Ref<Class<DirectMessage>>,
     Reaction: '' as Ref<Class<Reaction>>
+  },
+  mixin: {
+    DirectMessageInput: '' as Ref<Mixin<DirectMessageInput>>
   },
   space: {
     Backlinks: '' as Ref<Space>

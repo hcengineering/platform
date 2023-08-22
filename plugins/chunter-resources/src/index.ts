@@ -44,8 +44,10 @@ import CreateDirectMessage from './components/CreateDirectMessage.svelte'
 import DirectMessagePresenter from './components/DirectMessagePresenter.svelte'
 import DmHeader from './components/DmHeader.svelte'
 import DmPresenter from './components/DmPresenter.svelte'
+import DirectMessageInput from './components/DirectMessageInput.svelte'
 import EditChannel from './components/EditChannel.svelte'
 import MessagePresenter from './components/MessagePresenter.svelte'
+import ChannelPreview from './components/ChannelPreview.svelte'
 import MessagePreview from './components/MessagePreview.svelte'
 import SavedMessages from './components/SavedMessages.svelte'
 import ThreadParentPresenter from './components/ThreadParentPresenter.svelte'
@@ -283,9 +285,11 @@ export default async (): Promise<Resources> => ({
     DirectMessagePresenter,
     MessagePresenter,
     MessagePreview,
+    ChannelPreview,
     ChunterBrowser,
     DmHeader,
     DmPresenter,
+    DirectMessageInput,
     EditChannel,
     Threads,
     ThreadView,

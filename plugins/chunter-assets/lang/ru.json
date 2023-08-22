@@ -72,6 +72,7 @@
     "ConfigLabel": "Чат",
     "ConfigDescription": "Расширение для текстовых переписок",
     "LastMessage": "Последнее сообщение",
-    "You": "Вы"
+    "You": "Вы",
+    "YouHaveStartedAConversation": "Вы начали диалог"
   }
 }

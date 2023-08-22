@@ -29,7 +29,8 @@ export const serverChunterId = 'server-chunter' as Plugin
  */
 export default plugin(serverChunterId, {
   trigger: {
-    ChunterTrigger: '' as Resource<TriggerFunc>
+    ChunterTrigger: '' as Resource<TriggerFunc>,
+    OnDmCreate: '' as Resource<TriggerFunc>
   },
   function: {
     CommentRemove: '' as Resource<

@@ -15,17 +15,15 @@
 <script lang="ts">
   import { TxViewlet } from '@hcengineering/activity'
   import { ActivityKey } from '@hcengineering/activity-resources'
-  import core, { Doc, Ref, TxCUD, TxProcessor } from '@hcengineering/core'
+  import core, { Doc, TxCUD, TxProcessor } from '@hcengineering/core'
   import notification, { DocUpdates } from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { AnySvelteComponent, TimeSince, getEventPositionElement, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { Menu } from '@hcengineering/view-resources'
-  import chunter, { DirectMessage } from '@hcengineering/chunter'
 
   import TxView from './TxView.svelte'
-  import MessagesPreview from './MessagesPreview.svelte'
 
   export let value: DocUpdates
   export let viewlets: Map<ActivityKey, TxViewlet>
@@ -71,9 +69,20 @@
   let div: HTMLDivElement
   $: if (selected && div !== undefined) div.focus()
 
-  $: directMessageChannel = hierarchy.isDerived(value.attachedToClass, chunter.class.DirectMessage)
-    ? (value.attachedTo as Ref<DirectMessage>)
-    : undefined
+  let notificationPreviewPresenter: AnySvelteComponent | undefined = undefined
+  $: notificationPreviewPresenterRes =
+    hierarchy.classHierarchyMixin(value.attachedToClass, notification.mixin.NotificationPreview)?.presenter
+  $: if (notificationPreviewPresenterRes) {
+    getResource(notificationPreviewPresenterRes).then((res) => (notificationPreviewPresenter = res))
+  }
+
+  let object: Doc | undefined
+  const objQuery = createQuery()
+  $: objQuery.query(value.attachedToClass, { _id: value.attachedTo },
+    (res) => {
+      ;[object] = res
+    })
+
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -93,12 +102,12 @@
           <div class="counter float">{newTxes}</div>
         {/if}
       </div>
-      {#if preview && directMessageChannel !== undefined}
+      {#if preview && object && notificationPreviewPresenter !== undefined}
         <div class="mt-2">
-          <MessagesPreview channel={directMessageChannel} numOfMessages={newTxes} />
+          <svelte:component this={notificationPreviewPresenter} {object} {newTxes} />
         </div>
       {/if}
-      {#if !preview || directMessageChannel === undefined}
+      {#if !preview || notificationPreviewPresenter === undefined}
         <div class="flex-between flex-baseline mt-3">
           {#if tx}
             <TxView {tx} {viewlets} objectId={value.attachedTo} />

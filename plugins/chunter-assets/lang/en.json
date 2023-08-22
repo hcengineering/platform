@@ -72,6 +72,7 @@
     "ConfigLabel": "Chat",
     "ConfigDescription": "Extension to perform text communications",
     "LastMessage": "Last message",
-    "You": "You"
+    "You": "You",
+    "YouHaveStartedAConversation": "You have started a conversation"
   }
 }

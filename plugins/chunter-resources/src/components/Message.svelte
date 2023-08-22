@@ -28,7 +28,7 @@
   import { createEventDispatcher } from 'svelte'
   import { AddMessageToSaved, DeleteMessageFromSaved, UnpinMessage } from '../index'
   import chunter from '../plugin'
-  import { getTime } from '../utils'
+  import { getLinks, getTime } from '../utils'
   // import Share from './icons/Share.svelte'
   import notification, { Collaborators } from '@hcengineering/notification'
   import Bookmark from './icons/Bookmark.svelte'
@@ -200,24 +200,6 @@
 
   $: links = getLinks(message.content)
 
-  function getLinks (content: string): HTMLLinkElement[] {
-    const parser = new DOMParser()
-    const parent = parser.parseFromString(content, 'text/html').firstChild?.childNodes[1] as HTMLElement
-    return parseLinks(parent.childNodes)
-  }
-
-  function parseLinks (nodes: NodeListOf<ChildNode>): HTMLLinkElement[] {
-    const res: HTMLLinkElement[] = []
-    nodes.forEach((p) => {
-      if (p.nodeType !== Node.TEXT_NODE) {
-        if (p.nodeName === 'A') {
-          res.push(p as HTMLLinkElement)
-        }
-        res.push(...parseLinks(p.childNodes))
-      }
-    })
-    return res
-  }
   let loading = false
 </script>
 
