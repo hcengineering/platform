@@ -21,6 +21,8 @@
   import { getDmName } from '../utils'
 
   export let value: DirectMessage
+  export let disabled = false
+
   const client = getClient()
 
   $: icon = client.getHierarchy().getClass(value._class).icon
@@ -28,7 +30,7 @@
 
 {#if value}
   {#await getDmName(client, value) then name}
-    <NavLink app={chunterId} space={value._id}>
+    <NavLink app={chunterId} space={value._id} {disabled}>
       <div class="flex-presenter">
         <div class="icon">
           {#if icon}
