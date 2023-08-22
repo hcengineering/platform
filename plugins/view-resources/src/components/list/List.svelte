@@ -84,10 +84,19 @@
   function getProjection (fields: string[], query: DocumentQuery<Doc>): Record<string, number> {
     const res: Record<string, number> = {}
     for (const f of fields) {
-      res[f] = 1
+      /*
+        Mongo projection doesn't support properties fields which
+        start from $. Such field here is $search. The least we could do
+        is to filter all properties which start from $.
+      */
+      if (!f.startsWith('$')) {
+        res[f] = 1
+      }
     }
     for (const f of Object.keys(query)) {
-      res[f] = 1
+      if (!f.startsWith('$')) {
+        res[f] = 1
+      }
     }
     return res
   }
