@@ -261,3 +261,22 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Reso
 function isShortId (shortLink: string): boolean {
   return /^\S+-\S+$/.test(shortLink)
 }
+
+export function getLinks (content: string): HTMLLinkElement[] {
+  const parser = new DOMParser()
+  const parent = parser.parseFromString(content, 'text/html').firstChild?.childNodes[1] as HTMLElement
+  return parseLinks(parent.childNodes)
+}
+
+function parseLinks (nodes: NodeListOf<ChildNode>): HTMLLinkElement[] {
+  const res: HTMLLinkElement[] = []
+  nodes.forEach((p) => {
+    if (p.nodeType !== Node.TEXT_NODE) {
+      if (p.nodeName === 'A') {
+        res.push(p as HTMLLinkElement)
+      }
+      res.push(...parseLinks(p.childNodes))
+    }
+  })
+  return res
+}

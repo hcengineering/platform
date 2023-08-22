@@ -432,13 +432,17 @@ async function isShouldNotify (
   }
 }
 
-function pushNotification (
+/**
+ * @public
+ */
+export function pushNotification (
   control: TriggerControl,
   res: Tx[],
   target: Ref<Account>,
   object: Doc,
   originTx: TxCUD<Doc>,
-  docUpdates: DocUpdates[]
+  docUpdates: DocUpdates[],
+  modifiedBy?: Ref<Account>
 ): void {
   const current = docUpdates.find((p) => p.user === target)
   if (current === undefined) {
@@ -449,14 +453,26 @@ function pushNotification (
         attachedToClass: object._class,
         hidden: false,
         lastTxTime: originTx.modifiedOn,
-        txes: [{ _id: originTx._id, modifiedOn: originTx.modifiedOn, modifiedBy: originTx.modifiedBy, isNew: true }]
+        txes: [
+          {
+            _id: originTx._id,
+            modifiedOn: originTx.modifiedOn,
+            modifiedBy: modifiedBy ?? originTx.modifiedBy,
+            isNew: true
+          }
+        ]
       })
     )
   } else {
     res.push(
       control.txFactory.createTxUpdateDoc(current._class, current.space, current._id, {
         $push: {
-          txes: { _id: originTx._id, modifiedOn: originTx.modifiedOn, modifiedBy: originTx.modifiedBy, isNew: true }
+          txes: {
+            _id: originTx._id,
+            modifiedOn: originTx.modifiedOn,
+            modifiedBy: modifiedBy ?? originTx.modifiedBy,
+            isNew: true
+          }
         }
       })
     )

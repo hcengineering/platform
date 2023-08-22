@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import { TxViewlet } from '@hcengineering/activity'
   import { ActivityKey } from '@hcengineering/activity-resources'
   import { PersonAccount, getName } from '@hcengineering/contact'
@@ -23,7 +24,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { ActionIcon, AnySvelteComponent, Label, TimeSince } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { createEventDispatcher } from 'svelte'
+
   import TxView from './TxView.svelte'
   import ArrowRight from './icons/ArrowRight.svelte'
 
@@ -71,7 +72,7 @@
 
   let div: HTMLDivElement
 
-  $: if (selected && div !== undefined) div.focus()
+  $: if (selected && div != null) div.focus()
 </script>
 
 {#if doc}

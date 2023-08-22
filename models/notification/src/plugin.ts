@@ -35,10 +35,12 @@ export default mergeIds(notificationId, notification, {
     Notification: '' as Ref<Application>
   },
   activity: {
-    TxCollaboratorsChange: '' as AnyComponent
+    TxCollaboratorsChange: '' as AnyComponent,
+    TxDmCreation: '' as AnyComponent
   },
   ids: {
-    TxCollaboratorsChange: '' as Ref<TxViewlet>
+    TxCollaboratorsChange: '' as Ref<TxViewlet>,
+    TxDmCreation: '' as Ref<TxViewlet>
   },
   component: {
     NotificationSettings: '' as AnyComponent

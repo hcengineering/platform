@@ -43,6 +43,7 @@ import {
   NotificationGroup,
   notificationId,
   NotificationObjectPresenter,
+  NotificationPreview,
   NotificationProvider,
   NotificationSetting,
   NotificationStatus,
@@ -54,7 +55,7 @@ import setting from '@hcengineering/setting'
 import { AnyComponent } from '@hcengineering/ui'
 import notification from './plugin'
 import activity from '@hcengineering/activity'
-
+import chunter from '@hcengineering/chunter'
 export { notificationId } from '@hcengineering/notification'
 export { notificationOperation } from './migration'
 export { notification as default }
@@ -148,6 +149,11 @@ export class TNotificationObjectPresenter extends TClass implements Notification
   presenter!: AnyComponent
 }
 
+@Mixin(notification.mixin.NotificationPreview, core.class.Class)
+export class TNotificationPreview extends TClass implements NotificationPreview {
+  presenter!: AnyComponent
+}
+
 @Model(notification.class.DocUpdates, core.class.Doc, DOMAIN_NOTIFICATION)
 export class TDocUpdates extends TDoc implements DocUpdates {
   @Index(IndexKind.Indexed)
@@ -175,7 +181,8 @@ export function createModel (builder: Builder): void {
     TClassCollaborators,
     TCollaborators,
     TDocUpdates,
-    TNotificationObjectPresenter
+    TNotificationObjectPresenter,
+    TNotificationPreview
   )
 
   // Temporarily disabled, we should think about it
@@ -230,7 +237,8 @@ export function createModel (builder: Builder): void {
       icon: notification.icon.Notifications,
       alias: notificationId,
       hidden: true,
-      component: notification.component.Inbox
+      component: notification.component.Inbox,
+      aside: chunter.component.ThreadView
     },
     notification.app.Notification
   )
@@ -343,6 +351,21 @@ export function createModel (builder: Builder): void {
       hideOnRemove: true
     },
     notification.ids.TxCollaboratorsChange
+  )
+
+  builder.createDoc(
+    activity.class.TxViewlet,
+    core.space.Model,
+    {
+      objectClass: chunter.class.DirectMessage,
+      icon: chunter.icon.Chunter,
+      txClass: core.class.TxCreateDoc,
+      component: notification.activity.TxDmCreation,
+      display: 'inline',
+      editable: false,
+      hideOnRemove: true
+    },
+    notification.ids.TxDmCreation
   )
 }
 

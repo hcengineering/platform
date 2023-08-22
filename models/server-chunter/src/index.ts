@@ -45,6 +45,14 @@ export function createModel (builder: Builder): void {
     trigger: serverChunter.trigger.ChunterTrigger
   })
 
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverChunter.trigger.OnDmCreate,
+    txMatch: {
+      objectClass: chunter.class.DirectMessage,
+      _class: core.class.TxCreateDoc
+    }
+  })
+
   builder.mixin(chunter.ids.DMNotification, notification.class.NotificationType, serverNotification.mixin.TypeMatch, {
     func: serverChunter.function.IsDirectMessage
   })

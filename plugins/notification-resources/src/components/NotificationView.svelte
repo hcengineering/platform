@@ -22,11 +22,13 @@
   import { AnySvelteComponent, TimeSince, getEventPositionElement, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { Menu } from '@hcengineering/view-resources'
+
   import TxView from './TxView.svelte'
 
   export let value: DocUpdates
   export let viewlets: Map<ActivityKey, TxViewlet>
   export let selected: boolean
+  export let preview: boolean = false
 
   let doc: Doc | undefined = undefined
   let tx: TxCUD<Doc> | undefined = undefined
@@ -66,6 +68,21 @@
 
   let div: HTMLDivElement
   $: if (selected && div !== undefined) div.focus()
+
+  let notificationPreviewPresenter: AnySvelteComponent | undefined = undefined
+  $: notificationPreviewPresenterRes = hierarchy.classHierarchyMixin(
+    value.attachedToClass,
+    notification.mixin.NotificationPreview
+  )?.presenter
+  $: if (notificationPreviewPresenterRes) {
+    getResource(notificationPreviewPresenterRes).then((res) => (notificationPreviewPresenter = res))
+  }
+
+  let object: Doc | undefined
+  const objQuery = createQuery()
+  $: objQuery.query(value.attachedToClass, { _id: value.attachedTo }, (res) => {
+    ;[object] = res
+  })
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -85,14 +102,21 @@
           <div class="counter float">{newTxes}</div>
         {/if}
       </div>
-      <div class="flex-between flex-baseline mt-3">
-        {#if tx}
-          <TxView {tx} {viewlets} objectId={value.attachedTo} />
-        {/if}
-        <div class="time">
-          <TimeSince value={tx?.modifiedOn} />
+      {#if preview && object && notificationPreviewPresenter !== undefined}
+        <div class="mt-2">
+          <svelte:component this={notificationPreviewPresenter} {object} {newTxes} />
         </div>
-      </div>
+      {/if}
+      {#if !preview || notificationPreviewPresenter === undefined}
+        <div class="flex-between flex-baseline mt-3">
+          {#if tx}
+            <TxView {tx} {viewlets} objectId={value.attachedTo} />
+          {/if}
+          <div class="time">
+            <TimeSince value={tx?.modifiedOn} />
+          </div>
+        </div>
+      {/if}
     </div>
   </div>
 {/if}

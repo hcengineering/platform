@@ -28,7 +28,10 @@ export default mergeIds(chunterId, chunter, {
     ChannelViewPanel: '' as AnyComponent,
     ThreadViewPanel: '' as AnyComponent,
     ThreadParentPresenter: '' as AnyComponent,
-    EditChannel: '' as AnyComponent
+    EditChannel: '' as AnyComponent,
+    ChannelPreview: '' as AnyComponent,
+    MessagePreview: '' as AnyComponent,
+    DirectMessageInput: '' as AnyComponent
   },
   function: {
     GetDmName: '' as Resource<(client: Client, space: Space) => Promise<string>>
@@ -84,6 +87,8 @@ export default mergeIds(chunterId, chunter, {
     ChunterBrowser: '' as IntlString,
     Messages: '' as IntlString,
     NoResults: '' as IntlString,
-    CopyLink: '' as IntlString
+    CopyLink: '' as IntlString,
+    You: '' as IntlString,
+    YouHaveStartedAConversation: '' as IntlString
   }
 })

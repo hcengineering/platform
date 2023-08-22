@@ -15,10 +15,9 @@
 -->
 <script lang="ts">
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import { Comment } from '@hcengineering/chunter'
+  import { Comment, createBacklinks } from '@hcengineering/chunter'
   import { AttachedData, Doc, generateId, Ref } from '@hcengineering/core'
   import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
-  import { createBacklinks } from '../backlinks'
   import chunter from '../plugin'
 
   export let object: Doc

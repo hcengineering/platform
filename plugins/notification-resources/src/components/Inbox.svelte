@@ -13,13 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import chunter from '@hcengineering/chunter'
-  import { PersonAccount } from '@hcengineering/contact'
-  import { Class, Doc, Ref } from '@hcengineering/core'
+  import chunter, { getDirectChannel } from '@hcengineering/chunter'
+  import { Employee, PersonAccount } from '@hcengineering/contact'
+  import { Class, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
   import { DocUpdates } from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
-  import { AnyComponent, Component, Tabs } from '@hcengineering/ui'
+  import { AnyComponent, Button, Component, IconAdd, Tabs, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import contact from '@hcengineering/contact'
+  import { UsersPopup } from '@hcengineering/contact-resources'
+
   import notification from '../plugin'
   import Activity from './Activity.svelte'
   import EmployeeInbox from './EmployeeInbox.svelte'
@@ -84,41 +87,68 @@
   }
 
   let selectedTab = 0
+
+  const me = getCurrentAccount() as PersonAccount
+
+  function openUsersPopup (ev: MouseEvent) {
+    showPopup(
+      UsersPopup,
+      { _class: contact.mixin.Employee, docQuery: { _id: { $ne: me.person } } },
+      eventToHTMLElement(ev),
+      async (employee: Employee) => {
+        if (employee != null) {
+          const personAccount = await client.findOne(contact.class.PersonAccount, { person: employee._id })
+          if (personAccount !== undefined) {
+            const channel = await getDirectChannel(client, me._id as Ref<PersonAccount>, personAccount._id)
+            openDM(channel)
+          }
+        }
+      }
+    )
+  }
 </script>
 
 <div class="flex-row-top h-full">
   {#if visibileNav}
     <div class="antiPanel-component header border-right aside min-w-100 flex-no-shrink">
-      {#if selectedEmployee === undefined}
-        <Tabs
-          bind:selected={selectedTab}
-          model={tabs}
-          on:change={(e) => select(e.detail)}
-          on:open={(e) => {
-            selectedEmployee = e.detail
-          }}
-          padding={'0 1.75rem'}
-          size="small"
-        >
-          <svelte:fragment slot="rightButtons">
+      <Tabs
+        bind:selected={selectedTab}
+        model={tabs}
+        on:change={(e) => select(e.detail)}
+        on:open={(e) => {
+          selectedEmployee = e.detail
+          select(undefined)
+        }}
+        padding={'0 1.75rem'}
+        size="small"
+      >
+        <svelte:fragment slot="rightButtons">
+          <div class="flex flex-gap-2">
+            {#if selectedTab > 0}
+              <Button label={chunter.string.Message} icon={IconAdd} kind="accented" on:click={openUsersPopup} />
+            {/if}
             <Filter bind:filter />
-          </svelte:fragment>
-        </Tabs>
-      {:else}
-        <EmployeeInbox
-          accountId={selectedEmployee}
-          on:change={(e) => select(e.detail)}
-          on:dm={(e) => openDM(e.detail)}
-          on:close={(e) => {
-            selectedEmployee = undefined
-          }}
-        />
-      {/if}
+          </div>
+        </svelte:fragment>
+      </Tabs>
     </div>
   {/if}
   <div class="antiPanel-component filled w-full">
-    {#if component && _id && _class}
-      <Component is={component} props={{ embedded: true, _id, _class }} />
+    {#if selectedEmployee !== undefined && component === undefined}
+      <EmployeeInbox
+        accountId={selectedEmployee}
+        on:change={(e) => select(e.detail)}
+        on:dm={(e) => openDM(e.detail)}
+        on:close={() => {
+          selectedEmployee = undefined
+        }}
+      />
+    {:else if component && _id && _class}
+      <Component
+        is={component}
+        props={{ _id, _class, embedded: selectedTab === 0 }}
+        on:close={() => select(undefined)}
+      />
     {/if}
   </div>
 </div>

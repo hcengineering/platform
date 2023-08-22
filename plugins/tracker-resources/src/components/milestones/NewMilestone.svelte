@@ -15,6 +15,7 @@
 <script lang="ts">
   import { Data, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
+  import { createBacklinks } from '@hcengineering/chunter'
   import { Card, getClient, SpaceSelector } from '@hcengineering/presentation'
   import { Milestone, MilestoneStatus, Project } from '@hcengineering/tracker'
   import ui, { DatePresenter, EditBox } from '@hcengineering/ui'
@@ -22,7 +23,6 @@
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import MilestoneStatusEditor from './MilestoneStatusEditor.svelte'
-  import { createBacklinks } from '@hcengineering/chunter-resources'
   import ProjectPresenter from '../projects/ProjectPresenter.svelte'
 
   export let space: Ref<Project>

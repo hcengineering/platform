@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import activity, { TxViewlet } from '@hcengineering/activity'
   import { activityKey, ActivityKey } from '@hcengineering/activity-resources'
   import { PersonAccount } from '@hcengineering/contact'
@@ -21,7 +22,7 @@
   import notification, { DocUpdates } from '@hcengineering/notification'
   import { createQuery } from '@hcengineering/presentation'
   import { Loading, Scroller } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+
   import PeopleNotificationView from './PeopleNotificationsView.svelte'
 
   export let filter: 'all' | 'read' | 'unread' = 'all'
@@ -40,9 +41,9 @@
       user: getCurrentAccount()._id,
       hidden: false
     },
-    (res) => {
+    async (res) => {
       docs = res
-      getFiltered(docs, filter)
+      await getFiltered(docs, filter)
       loading = false
     },
     {
@@ -52,7 +53,7 @@
     }
   )
 
-  function getFiltered (docs: DocUpdates[], filter: 'all' | 'read' | 'unread'): void {
+  async function getFiltered (docs: DocUpdates[], filter: 'all' | 'read' | 'unread'): Promise<void> {
     const filtered: DocUpdates[] = []
     for (const doc of docs) {
       if (doc.txes.length === 0) continue
@@ -169,7 +170,7 @@
           {viewlets}
           on:keydown={onKeydown}
           on:open
-          on:click={() => {
+          on:open={() => {
             selected = i
           }}
         />

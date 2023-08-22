@@ -44,8 +44,11 @@ import CreateDirectMessage from './components/CreateDirectMessage.svelte'
 import DirectMessagePresenter from './components/DirectMessagePresenter.svelte'
 import DmHeader from './components/DmHeader.svelte'
 import DmPresenter from './components/DmPresenter.svelte'
+import DirectMessageInput from './components/DirectMessageInput.svelte'
 import EditChannel from './components/EditChannel.svelte'
 import MessagePresenter from './components/MessagePresenter.svelte'
+import ChannelPreview from './components/ChannelPreview.svelte'
+import MessagePreview from './components/MessagePreview.svelte'
 import SavedMessages from './components/SavedMessages.svelte'
 import ThreadParentPresenter from './components/ThreadParentPresenter.svelte'
 import ThreadView from './components/ThreadView.svelte'
@@ -64,7 +67,7 @@ import { getDmName, getLink, getTitle, resolveLocation } from './utils'
 export { default as Header } from './components/Header.svelte'
 export { classIcon } from './utils'
 export { CommentPopup, CommentsPresenter }
-export { createBacklinks, updateBacklinks } from './backlinks'
+export { updateBacklinks } from './backlinks'
 
 async function MarkUnread (object: Message): Promise<void> {
   const client = NotificationClientImpl.getClient()
@@ -281,9 +284,12 @@ export default async (): Promise<Resources> => ({
     ChannelPresenter,
     DirectMessagePresenter,
     MessagePresenter,
+    MessagePreview,
+    ChannelPreview,
     ChunterBrowser,
     DmHeader,
     DmPresenter,
+    DirectMessageInput,
     EditChannel,
     Threads,
     ThreadView,
