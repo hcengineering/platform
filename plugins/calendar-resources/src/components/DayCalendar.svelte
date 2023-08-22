@@ -578,7 +578,7 @@
                   style:height={`${heightAD}rem`}
                   style:left={`${rect.left}px`}
                   style:width={`${rect.width}px`}
-                  style:padding-left={'1.25rem'}
+                  style:padding={'0 .5rem 0 1.25rem'}
                   style:--mask-image={'none'}
                   tabindex={500 + addon + day}
                   on:click={() => (shownAD = true)}
