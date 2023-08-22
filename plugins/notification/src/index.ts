@@ -192,6 +192,13 @@ export interface NotificationClient {
 /**
  * @public
  */
+export interface NotificationPreview extends Class<Doc> {
+  presenter: AnyComponent
+}
+
+/**
+ * @public
+ */
 export type NotificationClientFactoy = () => NotificationClient
 
 /**
@@ -201,7 +208,8 @@ const notification = plugin(notificationId, {
   mixin: {
     ClassCollaborators: '' as Ref<Mixin<ClassCollaborators>>,
     Collaborators: '' as Ref<Mixin<Collaborators>>,
-    NotificationObjectPresenter: '' as Ref<Mixin<NotificationObjectPresenter>>
+    NotificationObjectPresenter: '' as Ref<Mixin<NotificationObjectPresenter>>,
+    NotificationPreview: '' as Ref<Mixin<NotificationPreview>>
   },
   class: {
     Notification: '' as Ref<Class<Notification>>,

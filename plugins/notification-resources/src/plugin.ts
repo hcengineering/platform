@@ -30,6 +30,7 @@ export default mergeIds(notificationId, notification, {
     Change: '' as IntlString,
     AddedRemoved: '' as IntlString,
     YouAddedCollaborators: '' as IntlString,
+    YouHaveStartedAConversation: '' as IntlString,
     ChangeCollaborators: '' as IntlString,
     Activity: '' as IntlString,
     People: '' as IntlString,

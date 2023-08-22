@@ -19,6 +19,7 @@ import Inbox from './components/Inbox.svelte'
 import NotificationSettings from './components/NotificationSettings.svelte'
 import NotificationPresenter from './components/NotificationPresenter.svelte'
 import TxCollaboratorsChange from './components/activity/TxCollaboratorsChange.svelte'
+import TxDmCreation from './components/activity/TxDmCreation.svelte'
 import { NotificationClientImpl, hasntNotifications, hide, markAsUnread, unsubscribe } from './utils'
 
 export * from './utils'
@@ -32,7 +33,8 @@ export default async (): Promise<Resources> => ({
     NotificationSettings
   },
   activity: {
-    TxCollaboratorsChange
+    TxCollaboratorsChange,
+    TxDmCreation
   },
   function: {
     GetNotificationClient: NotificationClientImpl.getClient,

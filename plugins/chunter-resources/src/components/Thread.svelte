@@ -15,14 +15,14 @@
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import type { ChunterSpace, Message, ThreadMessage } from '@hcengineering/chunter'
+  import { createBacklinks, type ChunterSpace, type Message, type ThreadMessage } from '@hcengineering/chunter'
   import contact, { Person, PersonAccount, getName } from '@hcengineering/contact'
   import { personByIdStore } from '@hcengineering/contact-resources'
   import core, { FindOptions, IdMap, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
-  import { createBacklinks } from '../backlinks'
+
   import chunter from '../plugin'
   import ChannelPresenter from './ChannelPresenter.svelte'
   import DmPresenter from './DmPresenter.svelte'

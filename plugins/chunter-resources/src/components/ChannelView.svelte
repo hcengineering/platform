@@ -15,11 +15,10 @@
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import { ChunterMessage, ChunterSpace, Message } from '@hcengineering/chunter'
+  import { ChunterMessage, ChunterSpace, Message, createBacklinks } from '@hcengineering/chunter'
   import { Ref, Space, generateId, getCurrentAccount } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { getLocation, navigate } from '@hcengineering/ui'
-  import { createBacklinks } from '../backlinks'
   import chunter from '../plugin'
   import Channel from './Channel.svelte'
   import PinnedMessages from './PinnedMessages.svelte'

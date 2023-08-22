@@ -31,7 +31,6 @@ export default mergeIds(chunterId, chunter, {
     MessagePresenter: '' as AnyComponent,
     DmPresenter: '' as AnyComponent,
     Threads: '' as AnyComponent,
-    ThreadView: '' as AnyComponent,
     SavedMessages: '' as AnyComponent,
     ChunterBrowser: '' as AnyComponent
   },

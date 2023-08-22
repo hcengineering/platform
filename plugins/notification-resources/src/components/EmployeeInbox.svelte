@@ -13,18 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import activity, { TxViewlet } from '@hcengineering/activity'
   import { activityKey, ActivityKey } from '@hcengineering/activity-resources'
   import chunter from '@hcengineering/chunter'
   import { Employee, getName, PersonAccount } from '@hcengineering/contact'
   import { Avatar, employeeByIdStore, personAccountByIdStore } from '@hcengineering/contact-resources'
-  import core, { Account, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+  import core, { Account, Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { DocUpdates } from '@hcengineering/notification'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
-  import { ActionIcon, Button, IconBack, Loading, Scroller } from '@hcengineering/ui'
-  import { ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
+  import { AnySvelteComponent, Button, Loading, Scroller } from '@hcengineering/ui'
+
   import NotificationView from './NotificationView.svelte'
+  import { getResource } from '@hcengineering/platform'
 
   export let accountId: Ref<Account>
   const dispatch = createEventDispatcher()
@@ -33,6 +34,7 @@
 
   let _id: Ref<Doc> | undefined
   let docs: DocUpdates[] = []
+  let filteredDocs: DocUpdates[] = []
   let loading = true
   const me = getCurrentAccount()._id
 
@@ -43,30 +45,8 @@
       hidden: false
     },
     (res) => {
-      docs = []
-      for (const doc of res) {
-        if (doc.txes.length === 0) continue
-        const txes = doc.txes.filter((p) => p.modifiedBy === accountId)
-        if (txes.length > 0) {
-          docs.push({
-            ...doc,
-            txes
-          })
-        }
-      }
-      docs = docs
-      listProvider.update(docs)
-      if (loading || _id === undefined) {
-        changeSelected(selected)
-      } else {
-        const index = docs.findIndex((p) => p.attachedTo === _id)
-        if (index === -1) {
-          changeSelected(selected)
-        } else {
-          selected = index
-          markAsRead(selected)
-        }
-      }
+      docs = res
+      updateDocs(accountId, true)
       loading = false
     },
     {
@@ -76,22 +56,43 @@
     }
   )
 
+  $: updateDocs(accountId)
+  function updateDocs (accountId: Ref<Account>, forceUpdate = false) {
+    if (loading && !forceUpdate) {
+      return
+    }
+
+    const filtered: DocUpdates[] = []
+
+    for (const doc of docs) {
+      if (doc.txes.length === 0) continue
+      const txes = doc.txes.filter((p) => p.modifiedBy === accountId)
+      if (txes.length > 0) {
+        filtered.push({
+          ...doc,
+          txes
+        })
+      }
+    }
+
+    filteredDocs = filtered
+  }
+
   function markAsRead (index: number) {
-    if (docs[index] !== undefined) {
-      docs[index].txes.forEach((p) => (p.isNew = false))
-      docs[index].txes = docs[index].txes
-      docs = docs
+    if (filteredDocs[index] !== undefined) {
+      filteredDocs[index].txes.forEach((p) => (p.isNew = false))
+      filteredDocs[index].txes = filteredDocs[index].txes
+      filteredDocs = filteredDocs
     }
   }
 
   function changeSelected (index: number) {
-    if (docs[index] !== undefined) {
-      listProvider.updateFocus(docs[index])
-      _id = docs[index]?.attachedTo
-      dispatch('change', docs[index])
+    if (filteredDocs[index] !== undefined) {
+      _id = filteredDocs[index]?.attachedTo
+      dispatch('change', filteredDocs[index])
       markAsRead(index)
-    } else if (docs.length) {
-      if (index < docs.length - 1) {
+    } else if (filteredDocs.length) {
+      if (index < filteredDocs.length - 1) {
         selected++
       } else {
         selected--
@@ -106,17 +107,6 @@
 
   let viewlets: Map<ActivityKey, TxViewlet>
 
-  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
-    if (dir === 'vertical') {
-      let value = offset + docs.findIndex((p) => p._id === of?._id)
-      if (value < 0) value = 0
-      if (docs[value] !== undefined) {
-        selected = value
-        changeSelected(selected)
-      }
-    }
-  })
-
   const descriptors = createQuery()
   descriptors.query(activity.class.TxViewlet, {}, (result) => {
     viewlets = new Map(result.map((r) => [activityKey(r.objectClass, r.txClass), r]))
@@ -125,11 +115,12 @@
   let selected = 0
 
   let employee: Employee | undefined = undefined
-  $: newTxes = docs.reduce((acc, cur) => acc + cur.txes.filter((p) => p.isNew).length, 0) // items.length
+  $: newTxes = filteredDocs.reduce((acc, cur) => acc + cur.txes.filter((p) => p.isNew).length, 0) // items.length
   $: account = $personAccountByIdStore.get(accountId as Ref<PersonAccount>)
   $: employee = account ? $employeeByIdStore.get(account.person as Ref<Employee>) : undefined
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
 
   async function openDM () {
     const res = await client.findAll(chunter.class.DirectMessage, { members: accountId })
@@ -167,6 +158,15 @@
       changeSelected(selected)
     }
   }
+
+  let dmInput: AnySvelteComponent | undefined = undefined
+  $: dmInputRes = hierarchy.classHierarchyMixin(
+    chunter.class.DirectMessage as Ref<Class<Doc>>,
+    chunter.mixin.DirectMessageInput
+  )?.component
+  $: if (dmInputRes) {
+    getResource(dmInputRes).then((res) => (dmInput = res))
+  }
 </script>
 
 <ActionContext
@@ -176,15 +176,6 @@
 />
 <div class="flex-between header bottom-divider">
   <div class="flex-row-center">
-    <div class="clear-mins flex-no-shrink mr-4">
-      <ActionIcon
-        icon={IconBack}
-        size="medium"
-        action={() => {
-          dispatch('close')
-        }}
-      />
-    </div>
     {#if employee}
       <Avatar size="smaller" avatar={employee.avatar} />
       <span class="font-medium mx-2">{getName(client.getHierarchy(), employee)}</span>
@@ -204,21 +195,27 @@
     {#if loading}
       <Loading />
     {:else}
-      {#each docs as item, i (item._id)}
-        <NotificationView
-          value={item}
-          selected={selected === i}
-          {viewlets}
-          on:keydown={onKeydown}
-          on:click={() => {
-            selected = i
-            changeSelected(selected)
-          }}
-        />
+      {#each filteredDocs as item, i (item._id)}
+        <div class="with-hover">
+          <NotificationView
+            value={item}
+            selected={false}
+            {viewlets}
+            on:keydown={onKeydown}
+            on:click={() => {
+              selected = i
+              changeSelected(selected)
+            }}
+            preview
+          />
+        </div>
       {/each}
     {/if}
   </Scroller>
 </div>
+{#if dmInput && account}
+  <svelte:component this={dmInput} {account} bind:loading />
+{/if}
 
 <style lang="scss">
   .header {
@@ -238,5 +235,11 @@
     color: var(--theme-inbox-people-notify);
     background-color: var(--theme-inbox-people-counter-bgcolor);
     border-radius: 50%;
+  }
+
+  .with-hover {
+    &:hover {
+      background-color: var(--theme-inbox-activitymsg-bgcolor);
+    }
   }
 </style>

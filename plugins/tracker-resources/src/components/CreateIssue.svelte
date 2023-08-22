@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import chunter from '@hcengineering/chunter'
+  import chunter, { createBacklinks } from '@hcengineering/chunter'
   import { Employee } from '@hcengineering/contact'
   import core, { Account, AttachedData, Doc, fillDefaults, generateId, Ref, SortingOrder } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
@@ -70,7 +70,6 @@
   import MilestoneSelector from './milestones/MilestoneSelector.svelte'
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
   import SubIssues from './SubIssues.svelte'
-  import { createBacklinks } from '@hcengineering/chunter-resources'
   import ProjectPresenter from './projects/ProjectPresenter.svelte'
 
   export let space: Ref<Project>
