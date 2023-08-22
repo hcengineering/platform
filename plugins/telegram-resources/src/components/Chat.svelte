@@ -232,7 +232,10 @@
           <div class="wrapped-title flex">
             Telegram
             {#each participants as participant}
-              <div class="ml-2" use:tooltip={{ label: getEmbeddedLabel(getContactName(participant)) }}>
+              <div
+                class="ml-2"
+                use:tooltip={{ label: getEmbeddedLabel(getContactName(client.getHierarchy(), participant)) }}
+              >
                 <Avatar size="x-small" avatar={participant.avatar} />
               </div>
             {/each}
