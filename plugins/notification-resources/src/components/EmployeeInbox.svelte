@@ -62,7 +62,7 @@
       return
     }
 
-    const filtered = []
+    const filtered: DocUpdates[] = []
 
     for (const doc of docs) {
       if (doc.txes.length === 0) continue
