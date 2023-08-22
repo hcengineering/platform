@@ -763,11 +763,11 @@ export function createModel (builder: Builder): void {
       descriptor: view.viewlet.List,
       config: [
         { key: '', displayProps: { fixed: 'left', key: 'app' } },
-        'description',
         {
           key: '@applications',
           label: recruit.string.Applications
         },
+        'description',
         { key: '', displayProps: { grow: true } },
         {
           key: '$lookup.company',
@@ -779,8 +779,8 @@ export function createModel (builder: Builder): void {
         }
       ],
       configOptions: {
-        hiddenKeys: ['name', 'space', 'modifiedOn'],
-        sortable: true
+        strict: true,
+        hiddenKeys: ['name', 'space', 'modifiedOn']
       },
       baseQuery: {
         doneState: null,
@@ -794,16 +794,7 @@ export function createModel (builder: Builder): void {
           ['modifiedOn', SortingOrder.Descending],
           ['createdOn', SortingOrder.Descending]
         ],
-        other: [
-          {
-            key: 'shouldShowAll',
-            type: 'toggle',
-            defaultValue: false,
-            actionTarget: 'category',
-            action: view.function.ShowEmptyGroups,
-            label: view.string.ShowEmptyGroups
-          }
-        ]
+        other: []
       }
     },
     recruit.viewlet.ListVacancy

@@ -64,6 +64,8 @@
     viewOptions[model.key] = !viewOptions[model.key]
     dispatch('update', { key: model.key, value: viewOptions[model.key] })
   }
+
+  $: visibleOthers = config.other.filter((p) => !p.hidden?.(viewOptions))
 </script>
 
 <div class="antiCard dialog menu">
@@ -103,8 +105,10 @@
       }}
     />
   </div>
-  <div class="antiCard-menu__divider" />
-  {#each config.other.filter((p) => !p.hidden?.(viewOptions)) as model}
+  {#if visibleOthers.length > 0}
+    <div class="antiCard-menu__divider" />
+  {/if}
+  {#each visibleOthers as model}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
       class="antiCard-menu__item hoverable ordering"
