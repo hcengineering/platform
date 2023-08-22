@@ -67,7 +67,7 @@
   export let props: Record<string, any> = {}
   export let level: number
   export let initIndex = 0
-  export let newObjectProps: (doc: Doc) => Record<string, any> | undefined
+  export let newObjectProps: (doc: Doc | undefined) => Record<string, any> | undefined
   export let viewOptionsConfig: ViewOptionModel[] | undefined
   export let dragItem: {
     doc?: Doc
@@ -428,6 +428,7 @@
         {listDiv}
         {resultQuery}
         {resultOptions}
+        bind:dragItem
         on:dragItem
         on:check
         on:uncheckAll

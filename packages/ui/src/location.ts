@@ -122,6 +122,12 @@ if (!embeddedPlatform) {
   window.addEventListener('popstate', () => {
     locationWritable.set(getRawCurrentLocation())
   })
+} else {
+  window.addEventListener('popstate', (state) => {
+    if (state.state.location !== undefined) {
+      locationWritable.set(state.state.location)
+    }
+  })
 }
 
 export const location = derived(locationWritable, (loc) => justClone(loc))
@@ -167,6 +173,8 @@ export function navigate (location: PlatformLocation, store = true): boolean {
     if (store) {
       if (!embeddedPlatform) {
         history.pushState(null, '', url)
+      } else {
+        history.pushState({ location }, '')
       }
       localStorage.setItem(locationStorageKeyId, JSON.stringify(location))
       if (location.path[1] !== undefined) {
