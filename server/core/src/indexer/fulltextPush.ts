@@ -199,7 +199,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
 
           const allAttributes = pipeline.hierarchy.getAllAttributes(elasticDoc._class)
 
-          // Include all child ref attributes
+          // Include child ref attributes
           await this.indexRefAttributes(allAttributes, doc, elasticDoc, metrics)
 
           this.checkIntegrity(elasticDoc)
