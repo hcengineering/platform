@@ -35,7 +35,6 @@
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { ContextMenu, ParentsNavigator } from '..'
   import { categorizeFields, getCollectionCounter, getFiltredKeys } from '../utils'
-  import hr from '@hcengineering/hr'
   import DocAttributeBar from './DocAttributeBar.svelte'
   import UpDownNavigator from './UpDownNavigator.svelte'
 
@@ -107,8 +106,7 @@
         (hierarchy.hasMixin(object, m._id) ||
           (showAllMixins &&
             hierarchy.isDerived(realObjectClass, hierarchy.getBaseClass(m._id)) &&
-            m._id !== hr.mixin.Staff) ||
-          (m._id === hr.mixin.Staff && hierarchy.hasMixin(object, contact.mixin.Employee)))
+            (m.extends && hierarchy.isMixin(m.extends) ? hierarchy.hasMixin(object, m.extends) : true)))
     )
   }
 
