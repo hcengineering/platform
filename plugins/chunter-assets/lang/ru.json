@@ -73,6 +73,7 @@
     "ConfigDescription": "Расширение для текстовых переписок",
     "LastMessage": "Последнее сообщение",
     "You": "Вы",
-    "YouHaveStartedAConversation": "Вы начали диалог"
+    "YouHaveJoinedTheConversation": "Вы присоединились к диалогу",
+    "NoMessages": "Сообщений пока нет"
   }
 }

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { Account, Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+import { Account, Class, Doc, DocumentUpdate, getCurrentAccount, Ref, TxOperations } from '@hcengineering/core'
 import notification, { Collaborators, DocUpdates, NotificationClient } from '@hcengineering/notification'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { writable } from 'svelte/store'
@@ -119,27 +119,67 @@ export async function hasntNotifications (object: DocUpdates): Promise<boolean> 
   return !object.txes.some((p) => p.isNew)
 }
 
+enum OpWithMe {
+  Add = 'add',
+  Remove = 'remove'
+}
+
+async function updateMeInCollaborators (
+  client: TxOperations,
+  docClass: Ref<Class<Doc>>,
+  docId: Ref<Doc>,
+  op: OpWithMe
+): Promise<void> {
+  const me = getCurrentAccount()._id
+  const hierarchy = client.getHierarchy()
+  const target = await client.findOne(docClass, { _id: docId })
+  if (target !== undefined) {
+    if (hierarchy.hasMixin(target, notification.mixin.Collaborators)) {
+      const collab = hierarchy.as(target, notification.mixin.Collaborators)
+      let collabUpdate: DocumentUpdate<Collaborators> | undefined
+
+      if (collab.collaborators.includes(me) && op === OpWithMe.Remove) {
+        collabUpdate = {
+          $pull: {
+            collaborators: me
+          }
+        }
+      } else if (!collab.collaborators.includes(me) && op === OpWithMe.Add) {
+        collabUpdate = {
+          $push: {
+            collaborators: me
+          }
+        }
+      }
+
+      if (collabUpdate !== undefined) {
+        await client.updateMixin(
+          collab._id,
+          collab._class,
+          collab.space,
+          notification.mixin.Collaborators,
+          collabUpdate
+        )
+      }
+    }
+  }
+}
+
 /**
  * @public
  */
 export async function unsubscribe (object: DocUpdates): Promise<void> {
-  const me = getCurrentAccount()._id
   const client = getClient()
-  const hierarchy = client.getHierarchy()
-  const target = await client.findOne(object.attachedToClass, { _id: object.attachedTo })
-  if (target !== undefined) {
-    if (hierarchy.hasMixin(target, notification.mixin.Collaborators)) {
-      const collab = hierarchy.as(target, notification.mixin.Collaborators)
-      if (collab.collaborators.includes(me)) {
-        await client.updateMixin(collab._id, collab._class, collab.space, notification.mixin.Collaborators, {
-          $pull: {
-            collaborators: me
-          }
-        })
-      }
-    }
-  }
+  await updateMeInCollaborators(client, object.attachedToClass, object.attachedTo, OpWithMe.Remove)
   await client.remove(object)
+}
+
+/**
+ * @public
+ */
+export async function subscribe (docClass: Ref<Class<Doc>>, docId: Ref<Doc>): Promise<void> {
+  const client = getClient()
+  await updateMeInCollaborators(client, docClass, docId, OpWithMe.Add)
 }
 
 /**

@@ -28,6 +28,7 @@
   import EmployeeInbox from './EmployeeInbox.svelte'
   import Filter from './Filter.svelte'
   import People from './People.svelte'
+  import { subscribe } from '../utils'
 
   export let visibileNav: boolean
   let filter: 'all' | 'read' | 'unread' = 'all'
@@ -100,6 +101,10 @@
           const personAccount = await client.findOne(contact.class.PersonAccount, { person: employee._id })
           if (personAccount !== undefined) {
             const channel = await getDirectChannel(client, me._id as Ref<PersonAccount>, personAccount._id)
+
+            // re-subscribing in case DM was removed from notifications
+            await subscribe(chunter.class.DirectMessage, channel)
+
             openDM(channel)
           }
         }
