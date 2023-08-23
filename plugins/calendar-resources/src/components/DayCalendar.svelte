@@ -242,32 +242,34 @@
     adRows = []
     for (let i = 0; i < displayedDaysCount; i++) alldaysGrid[i] = { alldays: [null] }
     adMaxRow = 1
-    alldays.forEach((event) => {
-      const days = calendarEvents
-        .filter((ev) => ev.allDay && ev.day !== -1 && event._id === ev._id)
-        .map((ev) => {
-          return ev.day
-        })
-      let emptyRow = 0
-      for (let checkRow = 0; checkRow < adMaxRow; checkRow++) {
-        const empty = days.every((day) => alldaysGrid[day].alldays[checkRow] === null)
-        if (empty) {
-          emptyRow = checkRow
-          break
-        } else if (checkRow === adMaxRow - 1) {
-          emptyRow = adMaxRow
-          addNullRow()
-          break
+    alldays
+      .filter((event) => event.day === -1)
+      .forEach((event) => {
+        const days = newEvents
+          .filter((ev) => ev.allDay && ev.day !== -1 && event._id === ev._id)
+          .map((ev) => {
+            return ev.day
+          })
+        let emptyRow = 0
+        for (let checkRow = 0; checkRow < adMaxRow; checkRow++) {
+          const empty = days.every((day) => alldaysGrid[day].alldays[checkRow] === null)
+          if (empty) {
+            emptyRow = checkRow
+            break
+          } else if (checkRow === adMaxRow - 1) {
+            emptyRow = adMaxRow
+            addNullRow()
+            break
+          }
         }
-      }
-      adRows.push({ id: event._id, row: emptyRow, startCol: days[0], endCol: days[days.length - 1] })
-      days.forEach((day) => (alldaysGrid[day].alldays[emptyRow] = event._id))
-    })
+        adRows.push({ id: event._id, row: emptyRow, startCol: days[0], endCol: days[days.length - 1] })
+        days.forEach((day) => (alldaysGrid[day].alldays[emptyRow] = event._id))
+      })
     const shown = minimizedAD ? minAD : maxAD
     let tempEventID: string = ''
     for (let r = 0; r < shown; r++) {
+      const lastRow = r === shown - 1
       for (let d = 0; d < displayedDaysCount; d++) {
-        const lastRow = r === shown - 1
         if (r < shown - 1 && tempEventID !== alldaysGrid[d].alldays[r] && alldaysGrid[d].alldays[r] !== null) {
           tempEventID = alldaysGrid[d].alldays[r] ?? ''
           if (tempEventID !== '') shortAlldays.push({ id: tempEventID, day: d })
@@ -445,6 +447,7 @@
     : rem((heightAD + 0.125) * adMaxRow + 0.25) > maxHeightAD && minimizedAD
       ? rem((heightAD + 0.125) * (adMaxRow <= minAD ? adMaxRow : minAD) + 0.25)
       : rem((heightAD + 0.125) * (adMaxRow <= maxAD ? adMaxRow : maxAD) + 0.25)
+  $: showArrowAD = (!minimizedAD && adMaxRow > maxAD) || (minimizedAD && adMaxRow > minAD)
 </script>
 
 <Scroller
@@ -472,9 +475,11 @@
         {/each}
       {/if}
 
-      <div class="sticky-header allday-header text-sm content-dark-color" class:top={!showHeader}>
-        <Label label={calendar.string.AllDay} />
-        {#if (!minimizedAD && adMaxRow > maxAD) || (minimizedAD && adMaxRow > minAD)}
+      <div class="sticky-header allday-header content-dark-color" class:top={!showHeader} class:opened={showArrowAD}>
+        <div class="flex-center text-sm leading-3 text-center" style:height={`${heightAD + 0.25}rem`}>
+          <Label label={calendar.string.AllDay} />
+        </div>
+        {#if showArrowAD}
           <ActionIcon
             icon={shownAD ? IconUpOutline : IconDownOutline}
             size={'small'}
@@ -568,12 +573,12 @@
                 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <div
-                  class="calendar-element antiButton ghost medium accent cursor-pointer"
+                  class="calendar-element withPointer antiButton ghost medium accent cursor-pointer"
                   style:top={`${rect.top}px`}
                   style:height={`${heightAD}rem`}
                   style:left={`${rect.left}px`}
                   style:width={`${rect.width}px`}
-                  style:padding-left={'1.25rem'}
+                  style:padding={'0 .5rem 0 1.25rem'}
                   style:--mask-image={'none'}
                   tabindex={500 + addon + day}
                   on:click={() => (shownAD = true)}
@@ -690,7 +695,10 @@
     mask-image: var(--mask-image, none);
     --webkit-mask-image: var(--mask-image, none);
     border-radius: 0.25rem;
-    pointer-events: none;
+
+    &:not(.withPointer) {
+      pointer-events: none;
+    }
   }
   .sticky-header {
     position: sticky;
@@ -749,7 +757,12 @@
     &.allday-header {
       flex-direction: column;
       justify-content: space-between;
-      padding: 0.625rem 0.125rem;
+      align-items: center;
+      padding: 0 0.125rem;
+
+      &.opened {
+        padding: 0 0.125rem 0.625rem;
+      }
     }
     &.allday-container {
       overflow: hidden;
