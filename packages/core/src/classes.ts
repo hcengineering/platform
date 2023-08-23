@@ -94,7 +94,15 @@ export interface Type<T extends PropertyType> extends UXObject {}
  * @public
  */
 export enum IndexKind {
+  /**
+   * Indicates attribute with this index annotation should be added to elastic for search
+   * Could be added to string or Ref attribute
+   * TODO: rename properly for better code readability
+   */
   FullText,
+  /**
+   * Indicates for attribute with this annotation should be created an index in mongo database
+   */
   Indexed
 }
 
@@ -425,9 +433,6 @@ export interface FullTextSearchContext extends Class<Doc> {
 
   // Do we need to propagate child value to parent one. Default(true)
   parentPropagate?: boolean
-
-  // Will propagate changes to childs with defined set of references
-  propagateRefsAttributes?: string[]
 }
 
 /**

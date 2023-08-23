@@ -14,12 +14,14 @@
 //
 
 import core, {
+  AnyAttribute,
   Class,
   Doc,
   DocIndexState,
   DocumentQuery,
   DocumentUpdate,
   extractDocKey,
+  IndexKind,
   MeasureContext,
   Ref,
   ServerStorage,
@@ -96,14 +98,20 @@ export class FullTextPushStage implements FullTextPipelineStage {
   }
 
   async indexRefAttributes (
-    attributes: string[],
+    attributes: Map<string, AnyAttribute>,
     doc: DocIndexState,
     elasticDoc: IndexedDoc,
     metrics: MeasureContext
   ): Promise<void> {
     for (const attribute in doc.attributes) {
       const { attr } = extractDocKey(attribute)
-      if (attributes.includes(attr)) {
+      const attrObj = attributes.get(attr)
+      if (
+        attrObj !== null &&
+        attrObj !== undefined &&
+        attrObj.index === IndexKind.FullText &&
+        attrObj.type._class === core.class.RefTo
+      ) {
         const refs = doc.attributes[attribute].split(',')
         const refDocs = await metrics.with(
           'ref-docs',
@@ -189,11 +197,10 @@ export class FullTextPushStage implements FullTextPipelineStage {
             }
           }
 
-          const docCtx = getFullTextContext(pipeline.hierarchy, doc.objectClass)
+          const allAttributes = pipeline.hierarchy.getAllAttributes(elasticDoc._class)
+
           // Include all child ref attributes
-          if (docCtx.propagateRefsAttributes !== undefined) {
-            await this.indexRefAttributes(docCtx.propagateRefsAttributes, doc, elasticDoc, metrics)
-          }
+          await this.indexRefAttributes(allAttributes, doc, elasticDoc, metrics)
 
           this.checkIntegrity(elasticDoc)
           bulk.push(elasticDoc)
@@ -245,7 +252,6 @@ export function createElasticDoc (upd: DocIndexState): IndexedDoc {
   }
   return doc
 }
-
 function updateDoc2Elastic (attributes: Record<string, any>, doc: IndexedDoc, docIdOverride?: Ref<DocIndexState>): void {
   for (const [k, v] of Object.entries(attributes)) {
     if (v == null) {

@@ -194,7 +194,7 @@ export class FullTextIndex implements WithFind {
     if (docs.length === 0) {
       return toFindResult([], 0)
     }
-    const scoreSearch: number | undefined = (options?.sort as any)?.['#score']
+    const scoreSearch: number | undefined = (options?.sort)?.['#score']
 
     const resultIds = Array.from(getResultIds(ids, _id))
     let result = await this.dbStorage.findAll(
