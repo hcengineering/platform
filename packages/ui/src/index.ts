@@ -111,6 +111,7 @@ export { default as ScrollerBar } from './components/ScrollerBar.svelte'
 export { default as TabList } from './components/TabList.svelte'
 export { default as Chevron } from './components/Chevron.svelte'
 export { default as Timeline } from './components/Timeline.svelte'
+export { default as TimeShiftPresenter } from './components/TimeShiftPresenter.svelte'
 
 export { default as IconAdd } from './components/icons/Add.svelte'
 export { default as IconStart } from './components/icons/Start.svelte'

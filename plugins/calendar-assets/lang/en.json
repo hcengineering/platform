@@ -75,6 +75,7 @@
     "Times": "{count, plural, one {time} other {times}}",
     "AddParticipants": "Add participants",
     "Sync": "Synchronization",
-    "Busy": "Busy"
+    "Busy": "Busy",
+    "AddReminder": "Add reminder"
   }
 }

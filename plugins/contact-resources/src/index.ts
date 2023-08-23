@@ -144,7 +144,8 @@ export {
   IconMembers,
   SelectAvatars,
   UserBoxItems,
-  MembersBox
+  MembersBox,
+  PersonRefPresenter
 }
 
 const toObjectSearchResult = (e: WithLookup<Contact>): ObjectSearchResult => ({
