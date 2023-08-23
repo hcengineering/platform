@@ -26,9 +26,10 @@
   import RRulePresenter from './RRulePresenter.svelte'
   import ReccurancePopup from './ReccurancePopup.svelte'
   import UpdateRecInstancePopup from './UpdateRecInstancePopup.svelte'
+  import { deepEqual } from 'fast-equals'
+  import EventReminders from './EventReminders.svelte'
 
   export let object: Event
-
   $: readOnly = isReadOnly(object)
 
   let title = object.title
@@ -40,6 +41,7 @@
   const duration = object.dueDate - object.date
   let dueDate = startDate + duration
   let allDay = object.allDay
+  let reminders = [...(object.reminders ?? [])]
 
   let description = object.description
 
@@ -78,9 +80,13 @@
         update.dueDate = allDay ? saveUTC(dueDate) : dueDate
       }
     }
+    if (deepEqual(object.reminders, reminders) === false) {
+      update.reminders = reminders
+    }
     if (rules !== (object as ReccuringEvent).rules) {
       ;(update as DocumentUpdate<ReccuringEvent>).rules = rules
     }
+
     if (Object.keys(update).length > 0) {
       if (object._class === calendar.class.ReccuringInstance) {
         await updateHandler(update)
@@ -105,7 +111,7 @@
     if (readOnly) {
       return
     }
-    showPopup(ReccurancePopup, { rules }, undefined, (res) => {
+    showPopup(ReccurancePopup, { rules, startDate }, undefined, (res) => {
       if (res) {
         rules = res
       }
@@ -225,6 +231,7 @@
     <div>
       {#if !allDay && rules.length === 0}
         <div class="flex-row-center flex-gap-3 ext">
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div class="cursor-pointer" on:click={() => (allDay = true)}>
             <Label label={calendar.string.AllDay} />
           </div>
@@ -232,6 +239,7 @@
             <Label label={calendar.string.TimeZone} />
           </div>
           {#if rules.length > 0}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div class="cursor-pointer" on:click={setRecurrance}>
               <Label label={calendar.string.Repeat} />
             </div>
@@ -248,6 +256,7 @@
             <Label label={calendar.string.TimeZone} />
           </div>
           {#if rules.length > 0}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div class="flex-row-center flex-gap-2 mt-1" on:click={setRecurrance}>
               <Icon size="small" icon={calendar.icon.Repeat} />
               {#if rules.length > 0}
@@ -273,6 +282,10 @@
     </div>
   </div>
   <div class="divider" />
+  <div class="block">
+    <EventReminders bind:reminders />
+  </div>
+  <div class="divider" />
   <div class="flex-between pool">
     <div />
     <Button kind="accented" label={presentation.string.Save} disabled={readOnly} on:click={saveEvent} />
@@ -286,7 +299,7 @@
     min-height: 0;
     background: var(--theme-popup-color);
     box-shadow: var(--theme-popup-shadow);
-    width: 25rem;
+    min-width: 25rem;
     border-radius: 1rem;
 
     .header {

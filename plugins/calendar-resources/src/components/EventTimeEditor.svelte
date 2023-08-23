@@ -36,7 +36,6 @@
     const newDiff = dueDate - startDate
     if (newDiff > 0) {
       dueDate = allDay ? new Date(dueDate).setHours(23, 59, 59, 999) : dueDate
-      diff = dueDate - startDate
     } else {
       dueDate = startDate + (allDay ? allDayDuration : diff)
     }

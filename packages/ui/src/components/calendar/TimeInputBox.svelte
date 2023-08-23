@@ -18,6 +18,9 @@
   import Label from '../Label.svelte'
 
   export let currentDate: Date
+  export let size: 'small' | 'medium' = 'medium'
+  export let noBorder: boolean = false
+  export let disabled: boolean = false
 
   type TEdits = 'hour' | 'min'
   interface IEdits {
@@ -92,7 +95,7 @@
   }
 
   const keyDown = (ev: KeyboardEvent, ed: TEdits): void => {
-    if (selected === ed) {
+    if (selected === ed && !disabled) {
       const index = getIndex(ed)
       if (ev.key >= '0' && ev.key <= '9') {
         const shouldNext = !startTyping
@@ -114,6 +117,7 @@
           dateToEdits(currentDate)
         }
         edits = edits
+        dispatch('update', currentDate)
 
         if (selected === 'hour' && (shouldNext || edits[0].value > 2)) selected = 'min'
       }
@@ -130,6 +134,7 @@
           if (currentDate) {
             currentDate = setValue(val, currentDate, ed)
             dateToEdits(currentDate)
+            dispatch('update', currentDate)
           }
         }
       }
@@ -163,59 +168,71 @@
   })
 </script>
 
-<div class="datetime-input">
-  <div class="flex-row-center">
-    <span
-      bind:this={edits[0].el}
-      class="digit"
-      tabindex="0"
-      on:keydown={(ev) => keyDown(ev, edits[0].id)}
-      on:focus={() => focused(edits[0].id)}
-      on:blur={() => (selected = null)}
-    >
-      {#if edits[0].value > -1}
-        {edits[0].value.toString().padStart(2, '0')}
-      {:else}<Label label={ui.string.HH} />{/if}
-    </span>
-    <span class="separator">:</span>
-    <span
-      bind:this={edits[1].el}
-      class="digit"
-      tabindex="0"
-      on:keydown={(ev) => keyDown(ev, edits[1].id)}
-      on:focus={() => focused(edits[1].id)}
-      on:blur={() => (selected = null)}
-    >
-      {#if edits[1].value > -1}
-        {edits[1].value.toString().padStart(2, '0')}
-      {:else}<Label label={ui.string.MM} />{/if}
-    </span>
-  </div>
+<div class="datetime-input {size}" class:noBorder class:disabled>
+  <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+  <span
+    bind:this={edits[0].el}
+    class="digit"
+    tabindex="0"
+    on:keydown={(ev) => keyDown(ev, edits[0].id)}
+    on:focus={() => focused(edits[0].id)}
+    on:blur={() => (selected = null)}
+  >
+    {#if edits[0].value > -1}
+      {edits[0].value.toString().padStart(2, '0')}
+    {:else}<Label label={ui.string.HH} />{/if}
+  </span>
+  <span class="separator">:</span>
+  <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+  <span
+    bind:this={edits[1].el}
+    class="digit"
+    tabindex="0"
+    on:keydown={(ev) => keyDown(ev, edits[1].id)}
+    on:focus={() => focused(edits[1].id)}
+    on:blur={() => (selected = null)}
+  >
+    {#if edits[1].value > -1}
+      {edits[1].value.toString().padStart(2, '0')}
+    {:else}<Label label={ui.string.MM} />{/if}
+  </span>
 </div>
 
 <style lang="scss">
   .datetime-input {
     display: flex;
-    justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
     margin: 0;
-    padding: 0.75rem;
-    height: 3rem;
+    min-width: 0;
     font-family: inherit;
-    font-size: 1rem;
     color: var(--theme-content-color);
-    background-color: var(--theme-bg-color);
-    border: 1px solid var(--theme-button-border);
     border-radius: 0.25rem;
     transition: border-color 0.15s ease;
 
-    &:hover {
-      border-color: var(--theme-button-default);
+    &.small {
+      font-size: 0.8125rem;
+    }
+    &.medium {
+      height: 3rem;
+      font-size: 1rem;
+    }
+    &:not(.noBorder) {
+      padding: 0.75rem;
+      background-color: var(--theme-bg-color);
+      border: 1px solid var(--theme-button-border);
+      &:hover {
+        border-color: var(--theme-button-default);
+      }
+      &:focus-within {
+        border-color: var(--primary-edit-border-color);
+      }
+    }
+    &.noBorder {
+      padding: 0.125rem;
     }
     &:focus-within {
       color: var(--theme-caption-color);
-      border-color: var(--primary-edit-border-color);
     }
 
     .close-btn {
@@ -246,10 +263,6 @@
       outline: none;
       border-radius: 0.125rem;
 
-      &:focus {
-        color: var(--accented-button-color);
-        background-color: var(--accented-button-default);
-      }
       &::after {
         position: absolute;
         top: 0;
@@ -259,6 +272,10 @@
         z-index: 11000;
         cursor: pointer;
       }
+    }
+    &:not(.disabled) .digit:focus {
+      color: var(--accented-button-color);
+      background-color: var(--accented-button-default);
     }
     .time-divider {
       flex-shrink: 0;

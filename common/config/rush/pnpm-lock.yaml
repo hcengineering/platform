@@ -17676,7 +17676,7 @@ packages:
     dev: false
 
   file:projects/calendar-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-/KSbpPzT33ajfBoTvXd075rtPPiYnC1XOF7eI/8lKcCofw3gBCY5ZT3qgxmwwGqWzx/Sfdzp0TwAQhqsGgtcrg==, tarball: file:projects/calendar-resources.tgz}
+    resolution: {integrity: sha512-zNDWSAzkH0tXFVIy8dr2OUI92YvnIvsxSGpeQuLq3yiXUfCCaRKoROIPeQebjsPzmgwv/KvX32/UojKxQdebxA==, tarball: file:projects/calendar-resources.tgz}
     id: file:projects/calendar-resources.tgz
     name: '@rush-temp/calendar-resources'
     version: 0.0.0
@@ -17689,6 +17689,7 @@ packages:
       eslint-plugin-n: 15.5.1_eslint@8.27.0
       eslint-plugin-promise: 6.1.1_eslint@8.27.0
       eslint-plugin-svelte3: 4.0.0_eslint@8.27.0+svelte@3.55.1
+      fast-equals: 2.0.4
       prettier: 2.8.8
       prettier-plugin-svelte: 2.8.0_prettier@2.8.8+svelte@3.55.1
       sass: 1.56.1
