@@ -95,13 +95,13 @@ export interface Type<T extends PropertyType> extends UXObject {}
  */
 export enum IndexKind {
   /**
-   * Indicates attribute with this index annotation should be added to elastic for search
+   * Attribute with this index annotation should be added to elastic for search
    * Could be added to string or Ref attribute
    * TODO: rename properly for better code readability
    */
   FullText,
   /**
-   * Indicates for attribute with this annotation should be created an index in mongo database
+   * For attribute with this annotation should be created an index in mongo database
    */
   Indexed
 }
