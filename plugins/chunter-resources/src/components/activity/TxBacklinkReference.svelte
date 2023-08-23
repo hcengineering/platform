@@ -50,6 +50,6 @@
 {#if presenter}
   <span class="labels-row">
     <span style:text-transform={'lowercase'}><Label label={chunter.string.In} /></span>
-    <svelte:component this={presenter.presenter} value={doc} inline />
+    <svelte:component this={presenter.presenter} value={doc} inline disabled />
   </span>
 {/if}
