@@ -25,6 +25,7 @@
   import EventTimeEditor from './EventTimeEditor.svelte'
   import RRulePresenter from './RRulePresenter.svelte'
   import ReccurancePopup from './ReccurancePopup.svelte'
+  import EventReminders from './EventReminders.svelte'
 
   export let attachedTo: Ref<Doc> = calendar.ids.NoAttached
   export let attachedToClass: Ref<Class<Doc>> = calendar.class.Event
@@ -41,6 +42,8 @@
   const duration = defaultDuration
   let dueDate = startDate + duration
   let allDay = false
+
+  let reminders = [30 * 60 * 1000]
 
   let description: string = ''
 
@@ -72,6 +75,7 @@
         rdate: [],
         exdate: [],
         rules,
+        reminders,
         description,
         participants,
         title,
@@ -86,6 +90,7 @@
         externalParticipants,
         description,
         participants,
+        reminders,
         title,
         allDay,
         access: 'owner'
@@ -105,7 +110,7 @@
   }
 
   function setRecurrance () {
-    showPopup(ReccurancePopup, { rules }, undefined, (res) => {
+    showPopup(ReccurancePopup, { rules, startDate }, undefined, (res) => {
       if (res) {
         rules = res
       }
@@ -175,6 +180,10 @@
       <Icon icon={calendar.icon.Description} size="small" />
       <EditBox bind:value={description} placeholder={calendar.string.Description} />
     </div>
+  </div>
+  <div class="divider" />
+  <div class="block">
+    <EventReminders bind:reminders />
   </div>
   <div class="divider" />
   <div class="flex-between pool">

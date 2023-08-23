@@ -13,20 +13,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Person } from '@hcengineering/contact'
+  import contact, { Person, PersonAccount } from '@hcengineering/contact'
+  import { personAccountByIdStore } from '@hcengineering/contact-resources'
+  import { IdMap, Ref } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import setting, { Integration } from '@hcengineering/setting'
   import { themeStore } from '@hcengineering/theme'
-  import { registerFocus, resizeObserver } from '@hcengineering/ui'
+  import { closePopup, registerFocus, resizeObserver, showPopup } from '@hcengineering/ui'
   import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
+  import calendar from '../plugin'
+  import ParticipantsPopup from './ParticipantsPopup.svelte'
 
   export let maxWidth: string | undefined = undefined
-  export let value: string | number | undefined = undefined
+  export let value: string | undefined = undefined
   export let placeholder: IntlString
   export let autoFocus: boolean = false
   export let select: boolean = false
   export let focusable: boolean = false
   export let disabled: boolean = false
+  export let excluded: Ref<Person>[] = []
 
   const dispatch = createEventDispatcher()
 
@@ -98,13 +104,61 @@
     input.focus()
   }
 
-  const query = createQuery()
+  const client = getClient()
+  let integrations: Integration[] = []
 
-  let persons: Person[] = []
+  const integrationsQuery = createQuery()
+  integrationsQuery.query(
+    setting.class.Integration,
+    { type: calendar.integrationType.Calendar, disabled: false },
+    (res) => {
+      integrations = res
+    }
+  )
 
-  $: query.query(contact.class.Person, {}, (res) => {
-    persons = res
-  })
+  $: findCompletions(value, integrations, $personAccountByIdStore, excluded)
+
+  async function findCompletions (
+    val: string | undefined,
+    integrations: Integration[],
+    accounts: IdMap<PersonAccount>,
+    excluded: Ref<Person>[]
+  ): Promise<void> {
+    if (val === undefined || val.length < 3) {
+      closePopup('participants')
+      return
+    }
+    const persons = client.findAll(contact.class.Person, { $search: `${val}*`, _id: { $nin: excluded } }, { limit: 5 })
+    const res: Set<Ref<Person>> = new Set()
+    for (const integration of integrations) {
+      if (integration.value.includes(val)) {
+        const acc = accounts.get((integration.createdBy ?? integration.modifiedBy) as Ref<PersonAccount>)
+        if (acc !== undefined && !excluded.includes(acc.person)) {
+          res.add(acc.person)
+        }
+      }
+    }
+    for (const person of await persons) {
+      res.add(person._id)
+    }
+    if (res.size > 0) {
+      showPopup(
+        ParticipantsPopup,
+        { participants: Array.from(res) },
+        input,
+        (res) => {
+          if (res) {
+            value = ''
+            dispatch('ref', res)
+          }
+        },
+        undefined,
+        { category: 'participants', overlay: true }
+      )
+    } else {
+      closePopup('participants')
+    }
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -116,6 +170,14 @@
   }}
   use:resizeObserver={(element) => {
     parentWidth = element.parentElement?.getBoundingClientRect().width
+  }}
+  on:keydown={(ev) => {
+    if (ev.key === 'Enter') {
+      ev.preventDefault()
+      ev.stopPropagation()
+      dispatch('enter', value)
+      value = ''
+    }
   }}
 >
   <div class="hidden-text" bind:this={text} />

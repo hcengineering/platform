@@ -75,6 +75,7 @@
     "Times": "{count, plural, one {раз} few {раза} other {раз}}",
     "AddParticipants": "Добавить участников",
     "Sync": "Синхронизация",
-    "Busy": "Занято"
+    "Busy": "Занято",
+    "AddReminder": "Добавить напоминание"
   }
 }

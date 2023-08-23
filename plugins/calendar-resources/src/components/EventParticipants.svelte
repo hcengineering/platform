@@ -14,11 +14,11 @@
 -->
 <script lang="ts">
   import { Person } from '@hcengineering/contact'
+  import { ContactRefPresenter } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { Button, Icon, IconClose } from '@hcengineering/ui'
   import calendar from '../plugin'
   import AddParticipant from './AddParticipant.svelte'
-  import { ContactRefPresenter } from '@hcengineering/contact-resources'
 
   export let participants: Ref<Person>[]
   export let externalParticipants: string[]
@@ -44,12 +44,28 @@
       externalParticipants = externalParticipants
     }
   }
+
+  function ref (e: CustomEvent<Ref<Person>>) {
+    if (e.detail) {
+      participants.push(e.detail)
+      participants = participants
+    }
+  }
+
+  function enter (e: CustomEvent<string>) {
+    if (e.detail && e.detail !== '') {
+      if (!externalParticipants.includes(e.detail)) {
+        externalParticipants.push(e.detail)
+        externalParticipants = externalParticipants
+      }
+    }
+  }
 </script>
 
 <div class="container flex-col">
   <div class="header flex-row-center flex-gap-3">
     <Icon icon={calendar.icon.Participants} size="small" />
-    <AddParticipant {placeholder} />
+    <AddParticipant {placeholder} excluded={participants} on:ref={ref} on:enter={enter} />
   </div>
   <div class="content">
     {#each participants as participant}
@@ -69,7 +85,7 @@
       </div>
     {/each}
     {#each externalParticipants as participant}
-      <div class="flex-between item">
+      <div class="flex-between item overflow-label">
         {participant}
         <div class="tool">
           <Button
