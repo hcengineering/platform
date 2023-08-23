@@ -21,6 +21,7 @@
   import { focusStore } from '../selection'
   import { setViewOptions } from '../viewOptions'
   import ViewOptionsEditor from './ViewOptions.svelte'
+  import core from '@hcengineering/core'
 
   export let viewlet: Viewlet | undefined
   export let kind: ButtonKind = 'regular'
@@ -53,6 +54,12 @@
       variant: viewlet.variant ? viewlet.variant : { $exists: false }
     })
 
+    const customAttributes = classes
+      .flatMap((c) => Array.from(client.getHierarchy().getOwnAttributes(c).values()))
+      .filter(
+        (attr) => attr.isCustom && !attr.isHidden && [core.class.RefTo, core.class.EnumOf].includes(attr.type._class)
+      )
+      .map((a) => a.name)
     const mergedModel: ViewOptionsModel = {
       groupBy: [],
       orderBy: [],
@@ -68,7 +75,7 @@
       mergedModel.orderBy.push(...(ev.viewOptions?.orderBy ?? []))
       mergedModel.other.push(...(ev.viewOptions?.other ?? []))
     }
-
+    mergedModel.groupBy = Array.from(new Set([...mergedModel.groupBy, ...customAttributes]))
     mergedModel.groupBy = mergedModel.groupBy.filter((it, idx, arr) => arr.indexOf(it) === idx)
     mergedModel.orderBy = mergedModel.orderBy.filter((it, idx, arr) => arr.indexOf(it) === idx)
     mergedModel.other = mergedModel.other.filter((it, idx, arr) => arr.findIndex((q) => q.key === it.key) === idx)
