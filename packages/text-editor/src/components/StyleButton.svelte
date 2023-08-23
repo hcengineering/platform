@@ -27,6 +27,7 @@
 <button
   class="button {size}"
   class:selected
+  class:disabled
   {disabled}
   use:tooltip={showTooltip}
   tabindex="0"
@@ -68,6 +69,15 @@
     &.large {
       width: 1.5rem;
       height: 1.5rem;
+    }
+
+    &.disabled {
+      opacity: 0.5;
+
+      &:hover {
+        color: var(--theme-darker-color);
+        cursor: default;
+      }
     }
   }
 </style>
