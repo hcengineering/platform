@@ -13,15 +13,7 @@
 // limitations under the License.
 //
 
-import chunter, {
-  Backlink,
-  chunterId,
-  ChunterSpace,
-  Comment,
-  DirectMessage,
-  Message,
-  ThreadMessage
-} from '@hcengineering/chunter'
+import chunter, { Backlink, chunterId, ChunterSpace, Comment, Message, ThreadMessage } from '@hcengineering/chunter'
 import contact, { Employee, PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
@@ -44,7 +36,7 @@ import core, {
 import notification, { Collaborators, NotificationType } from '@hcengineering/notification'
 import { getMetadata } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
-import { pushNotification, getDocCollaborators, getMixinTx } from '@hcengineering/server-notification-resources'
+import { getDocCollaborators, getMixinTx, pushNotification } from '@hcengineering/server-notification-resources'
 import { workbenchId } from '@hcengineering/workbench'
 
 /**
@@ -216,28 +208,49 @@ export async function ChunterTrigger (tx: Tx, control: TriggerControl): Promise<
 
 /**
  * @public
+ * Sends notification to the message sender in case when DM
+ * notifications are deleted or hidden. This is required for
+ * the DM to re-appear in the sender's inbox.
  */
-export async function OnDmCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const ptx = tx as TxCreateDoc<DirectMessage>
+export async function OnMessageSent (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const ptx = TxProcessor.extractTx(tx) as TxCreateDoc<Message>
+  if (ptx._class !== core.class.TxCreateDoc) return []
+
+  const message = TxProcessor.createDoc2Doc(ptx)
+  if (message.createdBy === undefined) return []
+
+  if (!control.hierarchy.isDerived(message.attachedToClass, chunter.class.DirectMessage)) return []
+
+  const channel = (await control.findAll(chunter.class.DirectMessage, { _id: message.attachedTo })).shift()
+  if (channel === undefined || channel.members.length !== 2 || !channel.private) return []
+
   const res: Tx[] = []
 
-  if (tx.createdBy == null) return []
+  const docUpdates = await control.findAll(notification.class.DocUpdates, { attachedTo: channel._id })
 
-  const dm = TxProcessor.createDoc2Doc(ptx)
+  // binding notification to the DM creation tx to properly display it in inbox
+  const dmCreationTx = (
+    await control.findAll(core.class.TxCreateDoc, { objectClass: channel._class, objectId: channel._id })
+  ).shift()
+  if (dmCreationTx === undefined) return []
 
-  if (dm.members.length > 2) return []
-
-  let dmWithPerson: Ref<Account> | undefined
-  for (const person of dm.members) {
-    if (person !== tx.createdBy) {
-      dmWithPerson = person
-      break
+  const sender = message.createdBy
+  const docUpdate = docUpdates.find((du) => du.user === sender)
+  if (docUpdate === undefined) {
+    let anotherPerson: Ref<Account> | undefined
+    for (const person of channel.members) {
+      if (person !== sender) {
+        anotherPerson = person
+        break
+      }
     }
+
+    if (anotherPerson == null) return []
+
+    pushNotification(control, res, sender, channel, dmCreationTx, docUpdates, anotherPerson)
+  } else if (docUpdate.hidden) {
+    res.push(control.txFactory.createTxUpdateDoc(docUpdate._class, docUpdate.space, docUpdate._id, { hidden: false }))
   }
-
-  if (dmWithPerson == null) return []
-
-  pushNotification(control, res, tx.createdBy, dm, ptx, [], dmWithPerson)
 
   return res
 }
@@ -309,7 +322,7 @@ export async function IsChannelMessage (
 export default async () => ({
   trigger: {
     ChunterTrigger,
-    OnDmCreate
+    OnMessageSent
   },
   function: {
     CommentRemove,

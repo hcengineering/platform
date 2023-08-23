@@ -46,10 +46,11 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverChunter.trigger.OnDmCreate,
+    trigger: serverChunter.trigger.OnMessageSent,
     txMatch: {
       objectClass: chunter.class.DirectMessage,
-      _class: core.class.TxCreateDoc
+      _class: core.class.TxCollectionCUD,
+      collection: 'messages'
     }
   })
 
