@@ -37,7 +37,6 @@
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import tracker from '../../plugin'
 
-  import { updateBacklinks } from '@hcengineering/chunter-resources'
   import SubIssueTemplates from './IssueTemplateChilds.svelte'
   import TemplateControlPanel from './TemplateControlPanel.svelte'
 
@@ -184,9 +183,6 @@
         placeholder={tracker.string.IssueDescriptionPlaceholder}
         on:saved={(evt) => {
           saved = evt.detail
-        }}
-        updateBacklinks={(doc, description) => {
-          updateBacklinks(client, doc._id, doc._class, doc._id, description)
         }}
       />
     </div>

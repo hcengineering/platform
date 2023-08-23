@@ -249,6 +249,7 @@ specifiers:
   '@tiptap/extension-task-item': ^2.0.3
   '@tiptap/extension-task-list': ^2.0.3
   '@tiptap/extension-typography': ^2.0.3
+  '@tiptap/html': ^2.0.3
   '@tiptap/pm': ^2.0.3
   '@tiptap/prosemirror-tables': ^1.1.4
   '@tiptap/starter-kit': ^2.0.3
@@ -644,6 +645,7 @@ dependencies:
   '@tiptap/extension-task-item': 2.0.3_fc2f730f0ef238c57ef10dc1abce4607
   '@tiptap/extension-task-list': 2.0.3_@tiptap+core@2.0.3
   '@tiptap/extension-typography': 2.0.3_@tiptap+core@2.0.3
+  '@tiptap/html': 2.1.6_fc2f730f0ef238c57ef10dc1abce4607
   '@tiptap/pm': 2.0.3_@tiptap+core@2.0.3
   '@tiptap/prosemirror-tables': 1.1.4_a7abb371f17d2bc77abec7bc53398db5
   '@tiptap/starter-kit': 2.0.3_@tiptap+pm@2.0.3
@@ -6585,6 +6587,17 @@ packages:
       '@tiptap/core': ^2.0.0
     dependencies:
       '@tiptap/core': 2.0.3_@tiptap+pm@2.0.3
+    dev: false
+
+  /@tiptap/html/2.1.6_fc2f730f0ef238c57ef10dc1abce4607:
+    resolution: {integrity: sha512-/7PcivMMty2Xw8oNEOqRi1W4WlD9afrmA3vlgNYGnO+knmwG5VzyhYV+oDlKAWvYqfrPxtfGnhNEQywzyHKbBg==}
+    peerDependencies:
+      '@tiptap/core': ^2.0.0
+      '@tiptap/pm': ^2.0.0
+    dependencies:
+      '@tiptap/core': 2.0.3_@tiptap+pm@2.0.3
+      '@tiptap/pm': 2.0.3_@tiptap+core@2.0.3
+      zeed-dom: 0.9.26
     dev: false
 
   /@tiptap/pm/2.0.3_@tiptap+core@2.0.3:
@@ -17210,6 +17223,13 @@ packages:
       commander: 2.20.3
     dev: false
 
+  /zeed-dom/0.9.26:
+    resolution: {integrity: sha512-HWjX8rA3Y/RI32zby3KIN1D+mgskce+She4K7kRyyx62OiVxJ5FnYm8vWq0YVAja3Tf2S1M0XAc6O2lRFcMgcQ==}
+    engines: {node: '>=14.13.1'}
+    dependencies:
+      css-what: 6.1.0
+    dev: false
+
   file:projects/account.tgz_bufferutil@4.0.7:
     resolution: {integrity: sha512-4tS8wBCO4BXrFfa11XEyJzCw6AG+7romshdy1O3kWS2by/z8IpsFcblvOk3Q3zaIExY6MSA0Wjdf+9od8vJMDA==, tarball: file:projects/account.tgz}
     id: file:projects/account.tgz
@@ -20743,11 +20763,15 @@ packages:
     dev: false
 
   file:projects/server-chunter-resources.tgz:
-    resolution: {integrity: sha512-kNwG1PW31TnvKu/srs+aikf6idi3OZVIt5JTPnSBvGQ++A7ZUz/Cal5onvxUP72/zSfl2VIPSWUn6WViYx5xyg==, tarball: file:projects/server-chunter-resources.tgz}
+    resolution: {integrity: sha512-JcfAfNelFYniRJ5SXsj46ZAYFStiyBqZg9Dt4iOjOLkAcNUXc3MuqDt9mTUX3+dvACXUm1RFn564PyEYucf/5Q==, tarball: file:projects/server-chunter-resources.tgz}
     name: '@rush-temp/server-chunter-resources'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.47.11
+      '@tiptap/core': 2.0.3_@tiptap+pm@2.0.3
+      '@tiptap/html': 2.1.6_fc2f730f0ef238c57ef10dc1abce4607
+      '@tiptap/pm': 2.0.3_@tiptap+core@2.0.3
+      '@tiptap/starter-kit': 2.0.3_@tiptap+pm@2.0.3
       '@types/heft-jest': 1.0.3
       '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
       '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4

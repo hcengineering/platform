@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Markup, Ref, updateAttribute } from '@hcengineering/core'
+  import { Class, Doc, Ref, updateAttribute } from '@hcengineering/core'
 
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getAttribute, getClient, KeyedAttribute } from '@hcengineering/presentation'
@@ -27,7 +27,6 @@
   export let key: KeyedAttribute
   export let placeholder: IntlString
   export let focusIndex = -1
-  export let updateBacklinks: ((doc: Doc, description: Markup) => void) | undefined = undefined
   let _id: Ref<Doc> | undefined = undefined
   let _class: Ref<Class<Doc>> | undefined = undefined
   const client = getClient()
@@ -69,7 +68,6 @@
       setTimeout(() => {
         dispatch('saved', false)
       }, 2500)
-      updateBacklinks?.(object, description)
     }
 
     await descriptionBox.createAttachments()

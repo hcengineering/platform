@@ -15,7 +15,6 @@
 -->
 <script lang="ts">
   import { AttachmentStyleBoxEditor } from '@hcengineering/attachment-resources'
-  import { updateBacklinks } from '@hcengineering/chunter-resources'
   import core, { ClassifierKind, Data, Doc, Mixin, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
@@ -192,9 +191,6 @@
         placeholder={recruit.string.FullDescription}
         on:saved={(evt) => {
           saved = evt.detail
-        }}
-        updateBacklinks={(doc, description) => {
-          updateBacklinks(client, doc._id, doc._class, doc._id, description)
         }}
       />
     </div>

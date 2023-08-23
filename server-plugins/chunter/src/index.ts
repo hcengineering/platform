@@ -29,6 +29,7 @@ export const serverChunterId = 'server-chunter' as Plugin
  */
 export default plugin(serverChunterId, {
   trigger: {
+    BacklinkTrigger: '' as Resource<TriggerFunc>,
     ChunterTrigger: '' as Resource<TriggerFunc>,
     OnMessageSent: '' as Resource<TriggerFunc>
   },

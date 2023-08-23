@@ -46,7 +46,6 @@
   import CopyToClipboard from './CopyToClipboard.svelte'
   import SubIssueSelector from './SubIssueSelector.svelte'
   import SubIssues from './SubIssues.svelte'
-  import { updateBacklinks } from '@hcengineering/chunter-resources'
 
   export let _id: Ref<Issue>
   export let _class: Ref<Class<Issue>>
@@ -226,9 +225,6 @@
         placeholder={tracker.string.IssueDescriptionPlaceholder}
         on:saved={(evt) => {
           saved = evt.detail
-        }}
-        updateBacklinks={(doc, description) => {
-          updateBacklinks(client, doc._id, doc._class, doc._id, description)
         }}
       />
     </div>
