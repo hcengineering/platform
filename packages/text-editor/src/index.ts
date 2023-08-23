@@ -18,7 +18,6 @@ import { addStringsLoader } from '@hcengineering/platform'
 import { textEditorId } from './plugin'
 
 export * from '@hcengineering/presentation/src/types'
-export { defaultExtensions } from './components/extensions'
 export { default as ReferenceInput } from './components/ReferenceInput.svelte'
 export { default as StyledTextBox } from './components/StyledTextBox.svelte'
 export { default as StyledTextArea } from './components/StyledTextArea.svelte'

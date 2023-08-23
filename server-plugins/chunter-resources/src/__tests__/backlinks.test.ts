@@ -32,7 +32,7 @@ describe('extractBacklinks', () => {
 
   it('should parse single backlink', () => {
     const content =
-      '<p>hello <span data-type="reference" data-id="id" data-label="Appleseed John" data-objectclass="contact:class:Person">@Appleseed John</span> </p>'
+      '<p>hello <span class="reference" data-type="reference" data-id="id" data-objectclass="contact:class:Person" data-label="Appleseed John">@Appleseed John</span> </p>'
 
     const backlinks = getBacklinks(
       'backlinkId' as Ref<Doc>,
@@ -49,7 +49,7 @@ describe('extractBacklinks', () => {
         collection: 'backlinks',
         backlinkId: 'backlinkId',
         backlinkClass: 'backlinkClass',
-        message: content,
+        message: 'hello <span data-type="reference" data-id="id" data-objectclass="contact:class:Person" data-label="Appleseed John" class="reference">@Appleseed John</span>',
         attachedDocId: 'attachedDocId'
       }
     ])

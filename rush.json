@@ -482,6 +482,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@hcengineering/tiptap",
+      "projectFolder": "packages/tiptap",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@hcengineering/ui",
       "projectFolder": "packages/ui",
       "shouldPublish": true

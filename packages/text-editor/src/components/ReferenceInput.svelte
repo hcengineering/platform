@@ -29,8 +29,8 @@
     deviceOptionsStore as deviceInfo,
     checkAdaptiveMatching
   } from '@hcengineering/ui'
+  import { Completion } from '@hcengineering/tiptap'
   import { createEventDispatcher } from 'svelte'
-  import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
   import { FORMAT_MODES, FormatMode, RefAction, RefInputActionItem, TextEditorHandler } from '../types'
   import LinkPopup from './LinkPopup.svelte'

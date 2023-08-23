@@ -13,79 +13,15 @@
 // limitations under the License.
 //
 
-import { AnyExtension, getSchema, Node, mergeAttributes } from '@tiptap/core'
-import { generateJSON } from '@tiptap/html'
-import StarterKit from '@tiptap/starter-kit'
+import { AnyExtension, getSchema } from '@tiptap/core'
+import { generateJSON, generateHTML } from '@tiptap/html'
 import { Node as ProseMirrorNode } from '@tiptap/pm/model'
 
 import { Backlink } from '@hcengineering/chunter'
 import { Class, Data, Doc, Ref } from '@hcengineering/core'
+import { defaultExtensions, ReferenceNode } from '@hcengineering/tiptap'
 
-const ReferenceNode = Node.create({
-  name: 'reference',
-  group: 'inline',
-  inline: true,
-
-  addAttributes () {
-    return {
-      id: {
-        default: null,
-        parseHTML: (element) => element.getAttribute('data-id'),
-        renderHTML: (attributes) => {
-          if (attributes.id !== null) {
-            return {}
-          }
-
-          return {
-            'data-id': attributes.id
-          }
-        }
-      },
-
-      objectClass: {
-        default: null,
-        parseHTML: (element) => element.getAttribute('data-objectclass'),
-        renderHTML: (attributes) => {
-          if (attributes.objectClass !== null) {
-            return {}
-          }
-
-          return {
-            'data-objectclass': attributes.objectClass
-          }
-        }
-      },
-
-      label: {
-        default: null,
-        parseHTML: (element) => element.getAttribute('data-label'),
-        renderHTML: (attributes) => {
-          if (attributes.label !== null) {
-            return {}
-          }
-
-          return {
-            'data-label': attributes.label
-          }
-        }
-      }
-    }
-  },
-
-  parseHTML () {
-    return [
-      {
-        tag: 'span[data-type="reference"]'
-      }
-    ]
-  },
-
-  renderHTML ({ HTMLAttributes }) {
-    return ['span', mergeAttributes({ 'data-type': this.name }, this.options.HTMLAttributes, HTMLAttributes)]
-  }
-})
-
-const extensions: Array<AnyExtension> = [StarterKit, ReferenceNode]
+const extensions: Array<AnyExtension> = [...defaultExtensions, ReferenceNode]
 const schema = getSchema(extensions)
 
 export function getBacklinks (
@@ -99,7 +35,7 @@ export function getBacklinks (
 
   const result: Array<Data<Backlink>> = []
 
-  doc.descendants((node): boolean => {
+  doc.descendants((node, _pos, parent): boolean => {
     if (node.type.name === ReferenceNode.name) {
       const ato = node.attrs.id as Ref<Doc>
       const atoClass = node.attrs.objectClass as Ref<Class<Doc>>
@@ -111,7 +47,7 @@ export function getBacklinks (
           collection: 'backlinks',
           backlinkId,
           backlinkClass,
-          message: content,
+          message: parent !== null ? generateHTML(parent.toJSON(), extensions) : '',
           attachedDocId
         })
       }

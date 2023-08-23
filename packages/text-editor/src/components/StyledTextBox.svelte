@@ -12,8 +12,8 @@
     registerFocus,
     resizeObserver
   } from '@hcengineering/ui'
+  import { Completion } from '@hcengineering/tiptap'
   import { createEventDispatcher } from 'svelte'
-  import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
   import StyledTextEditor from './StyledTextEditor.svelte'
   import { completionConfig } from './extensions'

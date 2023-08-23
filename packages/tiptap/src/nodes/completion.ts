@@ -3,6 +3,9 @@ import Suggestion, { SuggestionOptions } from '@tiptap/suggestion'
 
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 
+/**
+ * @public
+ */
 export interface CompletionOptions {
   HTMLAttributes: Record<string, any>
   renderLabel: (props: { options: CompletionOptions, node: any }) => string
@@ -10,6 +13,9 @@ export interface CompletionOptions {
   showDoc?: (event: MouseEvent, _id: string, _class: string) => void
 }
 
+/**
+ * @public
+ */
 export function clickHandler (opt: CompletionOptions): Plugin {
   return new Plugin({
     key: new PluginKey('completion-handleClickLink'),
@@ -34,6 +40,9 @@ export function clickHandler (opt: CompletionOptions): Plugin {
   })
 }
 
+/**
+ * @public
+ */
 export const Completion = Node.create<CompletionOptions>({
   name: 'reference',
 

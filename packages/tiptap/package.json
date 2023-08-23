@@ -1,12 +1,11 @@
 {
-  "name": "@hcengineering/server-chunter-resources",
+  "name": "@hcengineering/tiptap",
   "version": "0.6.0",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
     "build": "heft build",
-    "test": "heft test",
     "build:watch": "tsc",
     "lint:fix": "eslint --fix src",
     "lint": "eslint src",
@@ -27,21 +26,22 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.27",
-    "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/contact": "^0.6.19",
-    "@hcengineering/chunter": "^0.6.10",
-    "@hcengineering/view": "^0.6.8",
-    "@hcengineering/login": "^0.6.7",
-    "@hcengineering/workbench": "^0.6.8",
-    "@hcengineering/notification": "^0.6.14",
-    "@hcengineering/server-notification": "^0.6.1",
-    "@hcengineering/server-notification-resources": "^0.6.0",
-    "@hcengineering/server": "^0.6.0",
-    "@hcengineering/tiptap": "^0.6.0",
     "@tiptap/core": "^2.0.3",
-    "@tiptap/html": "^2.0.4",
-    "@tiptap/pm": "^2.0.3"
+    "@tiptap/pm": "^2.0.3",
+    "@tiptap/starter-kit": "^2.0.3",
+    "@tiptap/extension-gapcursor": "^2.0.3",
+    "@tiptap/extension-heading": "^2.0.3",
+    "@tiptap/extension-highlight": "^2.0.3",
+    "@tiptap/extension-link": "^2.0.3",
+    "@tiptap/extension-mention": "^2.0.3",
+    "@tiptap/extension-table": "^2.0.3",
+    "@tiptap/extension-table-cell": "^2.0.3",
+    "@tiptap/extension-table-header": "^2.0.3",
+    "@tiptap/extension-table-row": "^2.0.3",
+    "@tiptap/extension-task-item": "^2.0.3",
+    "@tiptap/extension-task-list": "^2.0.3",
+    "@tiptap/extension-typography": "^2.0.3",
+    "@tiptap/suggestion": "^2.0.3",
+    "@tiptap/prosemirror-tables": "^1.1.4"
   }
 }

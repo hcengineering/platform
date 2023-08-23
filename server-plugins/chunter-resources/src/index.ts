@@ -17,7 +17,6 @@ import chunter, { Backlink, chunterId, ChunterSpace, Comment, Message, ThreadMes
 import contact, { Employee, PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
-  AttachedDoc,
   Class,
   concatLink,
   Doc,
@@ -46,8 +45,8 @@ import { getMarkupAttributes } from './utils'
 function getCreateBacklinksTxes (hierarchy: Hierarchy, txFactory: TxFactory, doc: Doc): Tx[] {
   const txes: Tx[] = []
 
-  const backlinkId = (doc as AttachedDoc)?.attachedTo ?? doc._id
-  const backlinkClass = (doc as AttachedDoc)?.attachedToClass ?? doc._class
+  const backlinkId = doc._id
+  const backlinkClass = doc._class
   const attachedDocId = doc._id
 
   const attributes = getMarkupAttributes(hierarchy, doc._class)
@@ -76,8 +75,8 @@ function getCreateBacklinksTxes (hierarchy: Hierarchy, txFactory: TxFactory, doc
 async function getUpdateBacklinksTxes (control: TriggerControl, txFactory: TxFactory, doc: Doc): Promise<Tx[]> {
   const txes: Tx[] = []
 
-  const backlinkId = (doc as AttachedDoc)?.attachedTo ?? doc._id
-  const backlinkClass = (doc as AttachedDoc)?.attachedToClass ?? doc._class
+  const backlinkId = doc._id
+  const backlinkClass = doc._class
   const attachedDocId = doc._id
 
   const attributes = getMarkupAttributes(control.hierarchy, doc._class)
@@ -434,7 +433,7 @@ export async function OnMessageSent (tx: Tx, control: TriggerControl): Promise<T
   return res
 }
 
-  /**
+/**
  * @public
  */
 export async function BacklinkTrigger (tx: Tx, control: TriggerControl): Promise<Tx[]> {
