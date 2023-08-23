@@ -55,7 +55,7 @@
       <MessagePreview value={message} />
     {/each}
   {:else}
-    <Label label={chunterResources.string.YouHaveStartedAConversation} />
+    <Label label={chunterResources.string.NoMessages} />
   {/if}
 </div>
 

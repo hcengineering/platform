@@ -23,4 +23,4 @@
   export let value: DirectMessage
 </script>
 
-<Label label={notification.string.YouHaveStartedAConversation} />
+<Label label={notification.string.YouHaveJoinedTheConversation} />
