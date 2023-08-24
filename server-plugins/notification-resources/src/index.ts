@@ -221,8 +221,12 @@ async function createEmailNotificationTxes (
 
   const receiver = (await control.modelDb.findAll(contact.class.PersonAccount, { _id: receiverId }))[0]
   if (receiver === undefined) return
+  let senderName = ''
 
-  const senderName = sender !== undefined ? formatName(sender.name) : ''
+  if (sender !== undefined) {
+    const senderPerson = (await control.modelDb.findAll(contact.class.Person, { _id: sender.person }))[0]
+    senderName = senderPerson !== undefined ? formatName(senderPerson.name) : ''
+  }
 
   const content = await getContent(doc, senderName, type, control, data)
 

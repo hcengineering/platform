@@ -26,7 +26,7 @@
   import TxView from './TxView.svelte'
 
   export let value: DocUpdates
-  export let viewlets: Map<ActivityKey, TxViewlet>
+  export let viewlets: Map<ActivityKey, TxViewlet[]>
   export let selected: boolean
   export let preview: boolean = false
 

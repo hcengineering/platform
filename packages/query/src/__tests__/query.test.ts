@@ -101,7 +101,6 @@ describe('query', () => {
 
     await factory.createDoc(core.class.Account, core.space.Model, {
       email: 'user1@site.com',
-      name: 'user1',
       role: 0
     })
     await factory.createDoc<Channel>(core.class.Space, core.space.Model, {

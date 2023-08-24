@@ -69,7 +69,6 @@ export default plugin(loginId, {
     InviteLimit: '' as IntlString
   },
   function: {
-    ChangeName: '' as Resource<(first: string, last: string) => Promise<void>>,
     SendInvite: '' as Resource<(email: string) => Promise<void>>,
     LeaveWorkspace: '' as Resource<(email: string) => Promise<void>>,
     ChangePassword: '' as Resource<(oldPassword: string, password: string) => Promise<void>>,

@@ -14,13 +14,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Channel, Employee, PersonAccount, getFirstName, getLastName, Person } from '@hcengineering/contact'
-  import { AccountRole, getCurrentAccount, Ref } from '@hcengineering/core'
-  import login from '@hcengineering/login'
-  import { getResource } from '@hcengineering/platform'
+  import {
+    Channel,
+    Employee,
+    Person,
+    PersonAccount,
+    combineName,
+    getFirstName,
+    getLastName
+  } from '@hcengineering/contact'
+  import { AccountRole, Ref, getCurrentAccount } from '@hcengineering/core'
   import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
   import setting, { IntegrationType } from '@hcengineering/setting'
-  import { createFocusManager, EditBox, FocusHandler, Scroller } from '@hcengineering/ui'
+  import { EditBox, FocusHandler, Scroller, createFocusManager } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import { ChannelsDropdown } from '..'
   import contact from '../plugin'
@@ -61,13 +67,15 @@
   const dispatch = createEventDispatcher()
 
   async function firstNameChange () {
-    const changeName = await getResource(login.function.ChangeName)
-    await changeName(firstName, getLastName(object.name))
+    await client.update(object, {
+      name: combineName(firstName, getLastName(object.name))
+    })
   }
 
   async function lastNameChange () {
-    const changeName = await getResource(login.function.ChangeName)
-    await changeName(getFirstName(object.name), lastName)
+    await client.update(object, {
+      name: combineName(getFirstName(object.name), lastName)
+    })
   }
 
   let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
@@ -76,7 +84,7 @@
     integrations = new Set(res.map((p) => p.type))
   })
 
-  const sendOpen = () => dispatch('open', { ignoreKeys: ['comments', 'name', 'channels', 'city', 'displayName'] })
+  const sendOpen = () => dispatch('open', { ignoreKeys: ['comments', 'name', 'channels', 'city'] })
   onMount(sendOpen)
 
   async function onAvatarDone () {

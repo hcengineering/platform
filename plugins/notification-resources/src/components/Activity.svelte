@@ -106,7 +106,7 @@
     }
   }
 
-  let viewlets: Map<ActivityKey, TxViewlet>
+  let viewlets: Map<ActivityKey, TxViewlet[]>
 
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
     if (dir === 'vertical') {
@@ -121,7 +121,14 @@
 
   const descriptors = createQuery()
   descriptors.query(activity.class.TxViewlet, {}, (result) => {
-    viewlets = new Map(result.map((r) => [activityKey(r.objectClass, r.txClass), r]))
+    viewlets = new Map()
+    for (const res of result) {
+      const key = activityKey(res.objectClass, res.txClass)
+      const arr = viewlets.get(key) ?? []
+      arr.push(res)
+      viewlets.set(key, arr)
+    }
+    viewlets = viewlets
   })
 
   let selected = 0

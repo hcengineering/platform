@@ -35,7 +35,7 @@
 
   export let tx: TxCUD<Doc>
   export let objectId: Ref<Doc>
-  export let viewlets: Map<ActivityKey, TxViewlet>
+  export let viewlets: Map<ActivityKey, TxViewlet[]>
   const client = getClient()
 
   let ptx: DisplayTx | undefined

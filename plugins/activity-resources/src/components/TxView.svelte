@@ -43,7 +43,7 @@
   import TxViewTx from './TxViewTx.svelte'
 
   export let tx: DisplayTx
-  export let viewlets: Map<ActivityKey, TxViewlet>
+  export let viewlets: Map<ActivityKey, TxViewlet[]>
   export let showIcon: boolean = true
   export let isNew: boolean = false
   export let isNextNew: boolean = false

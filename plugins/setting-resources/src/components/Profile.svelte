@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, PersonAccount, getFirstName, getLastName } from '@hcengineering/contact'
+  import contact, { Employee, PersonAccount, combineName, getFirstName, getLastName } from '@hcengineering/contact'
   import { ChannelsEditor, EditableAvatar, employeeByIdStore } from '@hcengineering/contact-resources'
   import { Ref, getCurrentAccount } from '@hcengineering/core'
   import login from '@hcengineering/login'
@@ -30,7 +30,6 @@
   const employee = account !== undefined ? $employeeByIdStore.get(account.person as Ref<Employee>) : undefined
   let firstName = employee ? getFirstName(employee.name) : ''
   let lastName = employee ? getLastName(employee.name) : ''
-  let displayName = employee?.displayName ?? ''
 
   onDestroy(
     employeeByIdStore.subscribe((p) => {
@@ -38,7 +37,6 @@
       if (emp) {
         firstName = getFirstName(emp.name)
         lastName = getLastName(emp.name)
-        displayName = emp?.displayName ?? ''
       }
     })
   )
@@ -74,10 +72,10 @@
     )
   }
 
-  function changeDisplayName () {
+  async function nameChange () {
     if (employee) {
-      client.update(employee, {
-        displayName: displayName.trim() === '' ? null : displayName
+      await client.update(employee, {
+        name: combineName(firstName, lastName)
       })
     }
   }
@@ -110,27 +108,14 @@
             kind={'large-style'}
             autoFocus
             focusIndex={1}
-            on:change={async () => {
-              const changeName = await getResource(login.function.ChangeName)
-              changeName(firstName, lastName)
-            }}
+            on:change={nameChange}
           />
           <EditBox
             placeholder={contact.string.PersonLastNamePlaceholder}
             bind:value={lastName}
             kind={'large-style'}
             focusIndex={2}
-            on:change={async () => {
-              const changeName = await getResource(login.function.ChangeName)
-              changeName(firstName, lastName)
-            }}
-          />
-          <EditBox
-            placeholder={contact.string.DisplayName}
-            bind:value={displayName}
-            kind={'large-style'}
-            focusIndex={2}
-            on:change={changeDisplayName}
+            on:change={nameChange}
           />
           <div class="location">
             <AttributeEditor

@@ -48,6 +48,5 @@ export class TSpace extends TDoc implements Space {
 @UX(core.string.Account, undefined, undefined, 'name')
 export class TAccount extends TDoc implements Account {
   email!: string
-  name!: string
   role!: AccountRole
 }

@@ -88,6 +88,7 @@ import ActivityChannelMessage from './components/activity/ActivityChannelMessage
 import ActivityChannelPresenter from './components/activity/ActivityChannelPresenter.svelte'
 import ExpandRightDouble from './components/icons/ExpandRightDouble.svelte'
 import IconMembers from './components/icons/Members.svelte'
+import TxNameChange from './components/activity/TxNameChange.svelte'
 
 import contact from './plugin'
 import {
@@ -273,6 +274,9 @@ export default async (): Promise<Resources> => ({
   actionImpl: {
     KickEmployee: kickEmployee,
     OpenChannel: openChannelURL
+  },
+  activity: {
+    TxNameChange
   },
   component: {
     ContactArrayEditor,

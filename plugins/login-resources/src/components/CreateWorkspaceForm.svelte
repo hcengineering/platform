@@ -25,6 +25,8 @@
   import { onMount } from 'svelte'
 
   const fields = [
+    { id: 'given-name', name: 'first', i18n: login.string.FirstName, short: true },
+    { id: 'family-name', name: 'last', i18n: login.string.LastName, short: true },
     {
       name: 'workspace',
       i18n: login.string.Workspace,
@@ -34,7 +36,9 @@
   ]
 
   const object = {
-    workspace: ''
+    workspace: '',
+    first: '',
+    last: ''
   }
 
   let status: Status<any> = OK
@@ -54,7 +58,7 @@
     func: async () => {
       status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
-      const [loginStatus, result] = await createWorkspace(object.workspace)
+      const [loginStatus, result] = await createWorkspace(object.workspace, object.first, object.last)
       status = loginStatus
 
       if (result !== undefined) {

@@ -16,7 +16,7 @@
 import { AttachedData, Class, Client, Doc, FindResult, Ref, Hierarchy } from '@hcengineering/core'
 import { IconSize } from '@hcengineering/ui'
 import { MD5 } from 'crypto-js'
-import { Channel, Contact, contactPlugin, Employee, Person } from '.'
+import { Channel, Contact, contactPlugin, Person } from '.'
 import { AVATAR_COLORS, GravatarPlaceholderType } from './types'
 
 /**
@@ -212,19 +212,12 @@ export function formatName (name: string): string {
  * @public
  */
 export function getName (hierarchy: Hierarchy, value: Contact): string {
-  if (isEmployee(hierarchy, value)) {
-    return hierarchy.as(value, contactPlugin.mixin.Employee).displayName ?? formatName(value.name)
-  }
-  if (isPerson(value)) {
+  if (isPerson(hierarchy, value)) {
     return formatName(value.name)
   }
   return value.name
 }
 
-function isEmployee (hierarchy: Hierarchy, value: Contact): value is Employee {
-  return hierarchy.hasMixin(value, contactPlugin.mixin.Employee)
-}
-
-function isPerson (value: Contact): value is Person {
-  return value._class === contactPlugin.class.Person
+function isPerson (hierarchy: Hierarchy, value: Contact): value is Person {
+  return hierarchy.isDerived(value._class, contactPlugin.class.Person)
 }

@@ -27,7 +27,7 @@
   import request from '../plugin'
 
   export let tx: Tx
-  const viewlets: Map<ActivityKey, TxViewlet> = new Map<ActivityKey, TxViewlet>()
+  const viewlets: Map<ActivityKey, TxViewlet[]> = new Map<ActivityKey, TxViewlet[]>()
   const client = getClient()
 
   let ptx: DisplayTx | undefined
