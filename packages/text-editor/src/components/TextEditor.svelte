@@ -214,6 +214,13 @@
             // I need to copypaste original function and make a little change
             // with showContextMenu falg
             shouldShow: ({ editor, view, state, oldState, from, to }) => {
+              // For some reason shouldShow might be called after dismount and
+              // after destroing the editor. We should handle this just no to have
+              // any errors in runtime
+              if (!element) {
+                return false
+              }
+
               const { doc, selection } = state
               const { empty } = selection
 
