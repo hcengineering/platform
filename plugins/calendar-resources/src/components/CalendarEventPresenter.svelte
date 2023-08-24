@@ -21,7 +21,6 @@
   export let hideDetails: boolean = false
   export let oneRow: boolean = false
   export let narrow: boolean = false
-  export let size: { width: number; height: number }
 
   $: startDate = new Date(event.date)
   $: endDate = new Date(event.dueDate)
