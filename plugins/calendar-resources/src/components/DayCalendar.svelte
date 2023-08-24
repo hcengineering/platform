@@ -454,77 +454,49 @@
   bind:divScroll={scroller}
   fade={{ multipler: { top: (showHeader ? 3.5 : 0) + styleAD / fontSize, bottom: 0 } }}
 >
-  {#key newEvents}
-    <div
-      bind:this={container}
-      class="calendar-container"
-      style:--calendar-ad-height={styleAD + 'px'}
-      style:grid={`${showHeader ? '[header] 3.5rem ' : ''}[all-day] ${styleAD}px repeat(${
-        (displayedHours - startHour) * 2
-      }, [row-start] 2rem) / [time-col] 3.5rem repeat(${displayedDaysCount}, [col-start] 1fr)`}
-      use:resizeObserver={(element) => checkSizes(element)}
-    >
-      {#if showHeader}
-        <div class="sticky-header head center"><span class="zone">{getTimeZone()}</span></div>
-        {#each [...Array(displayedDaysCount).keys()] as dayOfWeek}
-          {@const day = getDay(weekMonday, dayOfWeek)}
-          <div class="sticky-header head title" class:center={displayedDaysCount > 1}>
-            <span class="day" class:today={areDatesEqual(todayDate, day)}>{day.getDate()}</span>
-            <span class="weekday">{getWeekDayName(day, weekFormat)}</span>
-          </div>
-        {/each}
-      {/if}
-
-      <div class="sticky-header allday-header content-dark-color" class:top={!showHeader} class:opened={showArrowAD}>
-        <div class="flex-center text-sm leading-3 text-center" style:height={`${heightAD + 0.25}rem`}>
-          <Label label={calendar.string.AllDay} />
+  <div
+    bind:this={container}
+    class="calendar-container"
+    style:--calendar-ad-height={styleAD + 'px'}
+    style:grid={`${showHeader ? '[header] 3.5rem ' : ''}[all-day] ${styleAD}px repeat(${
+      (displayedHours - startHour) * 2
+    }, [row-start] 2rem) / [time-col] 3.5rem repeat(${displayedDaysCount}, [col-start] 1fr)`}
+    use:resizeObserver={(element) => checkSizes(element)}
+  >
+    {#if showHeader}
+      <div class="sticky-header head center"><span class="zone">{getTimeZone()}</span></div>
+      {#each [...Array(displayedDaysCount).keys()] as dayOfWeek}
+        {@const day = getDay(weekMonday, dayOfWeek)}
+        <div class="sticky-header head title" class:center={displayedDaysCount > 1}>
+          <span class="day" class:today={areDatesEqual(todayDate, day)}>{day.getDate()}</span>
+          <span class="weekday">{getWeekDayName(day, weekFormat)}</span>
         </div>
-        {#if showArrowAD}
-          <ActionIcon
-            icon={shownAD ? IconUpOutline : IconDownOutline}
-            size={'small'}
-            action={() => {
-              shownAD = !shownAD
-            }}
-          />
-        {/if}
+      {/each}
+    {/if}
+
+    <div class="sticky-header allday-header content-dark-color" class:top={!showHeader} class:opened={showArrowAD}>
+      <div class="flex-center text-sm leading-3 text-center" style:height={`${heightAD + 0.25}rem`}>
+        <Label label={calendar.string.AllDay} />
       </div>
-      <div
-        class="sticky-header allday-container"
-        class:top={!showHeader}
-        style:grid-column={`col-start 1 / span ${displayedDaysCount}`}
-      >
-        {#if shownHeightAD > maxHeightAD && shownAD}
-          <Scroller noFade={false}>
-            {#key [styleAD, calendarWidth, displayedDaysCount, showHeader]}
-              <div style:min-height={`${shownHeightAD - cellBorder * 2}px`} />
-              {#each alldays as event, i}
-                {@const rect = getADRect(event._id)}
-                {@const ev = events.find((p) => p._id === event._id)}
-                {#if ev}
-                  <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-                  <div
-                    class="calendar-element"
-                    style:top={`${rect.top}px`}
-                    style:height={`${rect.height}px`}
-                    style:left={`${rect.left}px`}
-                    style:width={`${rect.width}px`}
-                    style:opacity={rect.visibility === 0 ? 0.4 : 1}
-                    style:--mask-image={getMask(rect.visibility)}
-                    tabindex={500 + i}
-                  >
-                    <EventElement
-                      hourHeight={cellHeight}
-                      event={ev}
-                      size={{ width: rect.width, height: rect.height }}
-                    />
-                  </div>
-                {/if}
-              {/each}
-            {/key}
-          </Scroller>
-        {:else if shownAD}
+      {#if showArrowAD}
+        <ActionIcon
+          icon={shownAD ? IconUpOutline : IconDownOutline}
+          size={'small'}
+          action={() => {
+            shownAD = !shownAD
+          }}
+        />
+      {/if}
+    </div>
+    <div
+      class="sticky-header allday-container"
+      class:top={!showHeader}
+      style:grid-column={`col-start 1 / span ${displayedDaysCount}`}
+    >
+      {#if shownHeightAD > maxHeightAD && shownAD}
+        <Scroller noFade={false}>
           {#key [styleAD, calendarWidth, displayedDaysCount, showHeader]}
+            <div style:min-height={`${shownHeightAD - cellBorder * 2}px`} />
             {#each alldays as event, i}
               {@const rect = getADRect(event._id)}
               {@const ev = events.find((p) => p._id === event._id)}
@@ -545,135 +517,157 @@
               {/if}
             {/each}
           {/key}
-        {:else}
-          {#key [styleAD, calendarWidth, displayedDaysCount, showHeader]}
-            {#each shortAlldays as event, i}
-              {@const rect = getADRect(event.id, event.day, event.fixRow)}
-              {@const ev = events.find((p) => p._id === event.id)}
-              {#if ev}
-                <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-                <div
-                  class="calendar-element"
-                  style:top={`${rect.top}px`}
-                  style:height={`${rect.height}px`}
-                  style:left={`${rect.left}px`}
-                  style:width={`${rect.width}px`}
-                  style:opacity={rect.visibility === 0 ? 0.4 : 1}
-                  style:--mask-image={getMask(rect.visibility)}
-                  tabindex={500 + i}
-                >
-                  <EventElement hourHeight={cellHeight} event={ev} size={{ width: rect.width, height: rect.height }} />
-                </div>
-              {/if}
-            {/each}
-            {#each moreCounts as more, day}
-              {@const addon = shortAlldays.length}
-              {#if more !== 0}
-                {@const rect = getMore(day)}
-                <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-                <!-- svelte-ignore a11y-click-events-have-key-events -->
-                <div
-                  class="calendar-element withPointer antiButton ghost medium accent cursor-pointer"
-                  style:top={`${rect.top}px`}
-                  style:height={`${heightAD}rem`}
-                  style:left={`${rect.left}px`}
-                  style:width={`${rect.width}px`}
-                  style:padding={'0 .5rem 0 1.25rem'}
-                  style:--mask-image={'none'}
-                  tabindex={500 + addon + day}
-                  on:click={() => (shownAD = true)}
-                >
-                  <Label label={ui.string.MoreCount} params={{ count: more }} />
-                </div>
-              {/if}
-            {/each}
-          {/key}
-        {/if}
-      </div>
+        </Scroller>
+      {:else if shownAD}
+        {#key [styleAD, calendarWidth, displayedDaysCount, showHeader]}
+          {#each alldays as event, i}
+            {@const rect = getADRect(event._id)}
+            {@const ev = events.find((p) => p._id === event._id)}
+            {#if ev}
+              <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+              <div
+                class="calendar-element"
+                style:top={`${rect.top}px`}
+                style:height={`${rect.height}px`}
+                style:left={`${rect.left}px`}
+                style:width={`${rect.width}px`}
+                style:opacity={rect.visibility === 0 ? 0.4 : 1}
+                style:--mask-image={getMask(rect.visibility)}
+                tabindex={500 + i}
+              >
+                <EventElement hourHeight={cellHeight} event={ev} size={{ width: rect.width, height: rect.height }} />
+              </div>
+            {/if}
+          {/each}
+        {/key}
+      {:else}
+        {#key [styleAD, calendarWidth, displayedDaysCount, showHeader]}
+          {#each shortAlldays as event, i}
+            {@const rect = getADRect(event.id, event.day, event.fixRow)}
+            {@const ev = events.find((p) => p._id === event.id)}
+            {#if ev}
+              <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+              <div
+                class="calendar-element"
+                style:top={`${rect.top}px`}
+                style:height={`${rect.height}px`}
+                style:left={`${rect.left}px`}
+                style:width={`${rect.width}px`}
+                style:opacity={rect.visibility === 0 ? 0.4 : 1}
+                style:--mask-image={getMask(rect.visibility)}
+                tabindex={500 + i}
+              >
+                <EventElement hourHeight={cellHeight} event={ev} size={{ width: rect.width, height: rect.height }} />
+              </div>
+            {/if}
+          {/each}
+          {#each moreCounts as more, day}
+            {@const addon = shortAlldays.length}
+            {#if more !== 0}
+              {@const rect = getMore(day)}
+              <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <div
+                class="calendar-element withPointer antiButton ghost medium accent cursor-pointer"
+                style:top={`${rect.top}px`}
+                style:height={`${heightAD}rem`}
+                style:left={`${rect.left}px`}
+                style:width={`${rect.width}px`}
+                style:padding={'0 .5rem 0 1.25rem'}
+                style:--mask-image={'none'}
+                tabindex={500 + addon + day}
+                on:click={() => (shownAD = true)}
+              >
+                <Label label={ui.string.MoreCount} params={{ count: more }} />
+              </div>
+            {/if}
+          {/each}
+        {/key}
+      {/if}
+    </div>
 
-      {#each [...Array(displayedHours - startHour).keys()] as hourOfDay}
-        {#if hourOfDay === 0}
-          {#if showHeader}
-            <div class="clear-cell" />
-          {:else}
-            <div class="sticky-header head center zm"><span class="zone mini">{getTimeZone()}</span></div>
-          {/if}
-        {:else if hourOfDay < displayedHours - startHour}
+    {#each [...Array(displayedHours - startHour).keys()] as hourOfDay}
+      {#if hourOfDay === 0}
+        {#if showHeader}
+          <div class="clear-cell" />
+        {:else}
+          <div class="sticky-header head center zm"><span class="zone mini">{getTimeZone()}</span></div>
+        {/if}
+      {:else if hourOfDay < displayedHours - startHour}
+        <div
+          class="time-cell"
+          style:grid-column={'time-col 1 / col-start 1'}
+          style:grid-row={`row-start ${hourOfDay * 2} / row-start ${hourOfDay * 2 + 2}`}
+        >
+          {getTimeFormat(hourOfDay + startHour)}
+        </div>
+      {/if}
+      {#each [...Array(displayedDaysCount).keys()] as dayOfWeek}
+        {@const day = getDay(weekMonday, dayOfWeek)}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <div
+          class="empty-cell"
+          style:width={`${colWidth}px`}
+          style:grid-column={`col-start ${dayOfWeek + 1} / ${dayOfWeek + 2}`}
+          style:grid-row={`row-start ${hourOfDay * 2 + 1} / row-start ${hourOfDay * 2 + 3}`}
+          on:dragenter={(e) => {
+            dispatch('dragenter', {
+              date: new Date(day.setHours(hourOfDay + startHour, 0, 0, 0))
+            })
+          }}
+          on:drop|preventDefault={(e) => {
+            dispatch('drop', {
+              day,
+              hour: hourOfDay + startHour,
+              date: new Date(day.setHours(hourOfDay + startHour, 0, 0, 0))
+            })
+          }}
+          on:click|stopPropagation={() => {
+            dispatch('create', {
+              date: new Date(day.setHours(hourOfDay + startHour, 0, 0, 0)),
+              withTime: true
+            })
+          }}
+        />
+      {/each}
+      {#if hourOfDay === displayedHours - startHour - 1}<div class="clear-cell" />{/if}
+    {/each}
+
+    {#key [styleAD, calendarWidth, displayedDaysCount, showHeader]}
+      {#each newEvents.filter((ev) => !ev.allDay) as event, i}
+        {@const rect = getRect(event)}
+        {@const ev = events.find((p) => p._id === event._id)}
+        {#if ev}
+          <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
           <div
-            class="time-cell"
-            style:grid-column={'time-col 1 / col-start 1'}
-            style:grid-row={`row-start ${hourOfDay * 2} / row-start ${hourOfDay * 2 + 2}`}
+            class="calendar-element"
+            style:top={`${rect.top}px`}
+            style:bottom={`${rect.bottom}px`}
+            style:left={`${rect.left}px`}
+            style:right={`${rect.right}px`}
+            style:opacity={rect.visibility === 0 ? 0.4 : 1}
+            style:--mask-image={'none'}
+            tabindex={1000 + i}
           >
-            {getTimeFormat(hourOfDay + startHour)}
+            <EventElement
+              event={ev}
+              hourHeight={cellHeight}
+              size={{
+                width: rect.width,
+                height: (calendarRect?.height ?? rect.top + rect.bottom) - rect.top - rect.bottom
+              }}
+              on:drop={(e) => {
+                dispatch('drop', {
+                  date: new Date(event.date)
+                })
+              }}
+              on:resize={() => (events = events)}
+            />
           </div>
         {/if}
-        {#each [...Array(displayedDaysCount).keys()] as dayOfWeek}
-          {@const day = getDay(weekMonday, dayOfWeek)}
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <div
-            class="empty-cell"
-            style:width={`${colWidth}px`}
-            style:grid-column={`col-start ${dayOfWeek + 1} / ${dayOfWeek + 2}`}
-            style:grid-row={`row-start ${hourOfDay * 2 + 1} / row-start ${hourOfDay * 2 + 3}`}
-            on:dragenter={(e) => {
-              dispatch('dragenter', {
-                date: new Date(day.setHours(hourOfDay + startHour, 0, 0, 0))
-              })
-            }}
-            on:drop|preventDefault={(e) => {
-              dispatch('drop', {
-                day,
-                hour: hourOfDay + startHour,
-                date: new Date(day.setHours(hourOfDay + startHour, 0, 0, 0))
-              })
-            }}
-            on:click|stopPropagation={() => {
-              dispatch('create', {
-                date: new Date(day.setHours(hourOfDay + startHour, 0, 0, 0)),
-                withTime: true
-              })
-            }}
-          />
-        {/each}
-        {#if hourOfDay === displayedHours - startHour - 1}<div class="clear-cell" />{/if}
       {/each}
-
-      {#key [styleAD, calendarWidth, displayedDaysCount, showHeader]}
-        {#each newEvents.filter((ev) => !ev.allDay) as event, i}
-          {@const rect = getRect(event)}
-          {@const ev = events.find((p) => p._id === event._id)}
-          {#if ev}
-            <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-            <div
-              class="calendar-element"
-              style:top={`${rect.top}px`}
-              style:bottom={`${rect.bottom}px`}
-              style:left={`${rect.left}px`}
-              style:right={`${rect.right}px`}
-              style:opacity={rect.visibility === 0 ? 0.4 : 1}
-              style:--mask-image={'none'}
-              tabindex={1000 + i}
-            >
-              <EventElement
-                event={ev}
-                hourHeight={cellHeight}
-                size={{
-                  width: rect.width,
-                  height: (calendarRect?.height ?? rect.top + rect.bottom) - rect.top - rect.bottom
-                }}
-                on:drop={(e) => {
-                  dispatch('drop', {
-                    date: new Date(event.date)
-                  })
-                }}
-                on:resize={() => (events = events)}
-              />
-            </div>
-          {/if}
-        {/each}
-      {/key}
-    </div>
-  {/key}
+    {/key}
+  </div>
 </Scroller>
 
 <style lang="scss">
