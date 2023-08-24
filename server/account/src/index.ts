@@ -97,8 +97,6 @@ const getTransactor = (): string => {
 export interface Account {
   _id: ObjectId
   email: string
-  first: string
-  last: string
   hash: Binary
   salt: Binary
   workspaces: ObjectId[]
@@ -349,12 +347,14 @@ export async function join (
   productId: string,
   email: string,
   password: string,
+  firstName: string,
+  lastName: string,
   inviteId: ObjectId
 ): Promise<WorkspaceLoginInfo> {
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(invite, email)
   console.log(`join attempt:${email}, ${workspace.name}`)
-  await assignWorkspace(db, productId, email, workspace.name)
+  await assignWorkspace(db, productId, email, workspace.name, firstName, lastName)
 
   const token = (await login(db, productId, email, password)).token
   const result = await selectWorkspace(db, productId, token, workspace.name)
@@ -470,8 +470,8 @@ export async function signUpJoin (
   console.log(`signup join:${email} ${first} ${last}`)
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(invite, email)
-  await createAcc(db, productId, email, password, first, last, invite?.emailMask === email)
-  await assignWorkspace(db, productId, email, workspace.name)
+  await createAcc(db, productId, email, password, invite?.emailMask === email)
+  await assignWorkspace(db, productId, email, workspace.name, first, last)
 
   const token = (await login(db, productId, email, password)).token
   const result = await selectWorkspace(db, productId, token, workspace.name)
@@ -487,8 +487,6 @@ export async function createAcc (
   productId: string,
   email: string,
   password: string,
-  first: string,
-  last: string,
   confirmed: boolean = false
 ): Promise<Account> {
   const salt = randomBytes(32)
@@ -508,8 +506,6 @@ export async function createAcc (
     email,
     hash,
     salt,
-    first,
-    last,
     confirmed,
     workspaces: []
   })
@@ -527,15 +523,8 @@ export async function createAcc (
 /**
  * @public
  */
-export async function createAccount (
-  db: Db,
-  productId: string,
-  email: string,
-  password: string,
-  first: string,
-  last: string
-): Promise<LoginInfo> {
-  const account = await createAcc(db, productId, email, password, first, last, false)
+export async function createAccount (db: Db, productId: string, email: string, password: string): Promise<LoginInfo> {
+  const account = await createAcc(db, productId, email, password, false)
 
   const result = {
     endpoint: getEndpoint(),
@@ -634,7 +623,14 @@ export async function upgradeWorkspace (
  */
 export const createUserWorkspace =
   (version: Data<Version>, txes: Tx[], migrationOperation: [string, MigrateOperation][]) =>
-    async (db: Db, productId: string, token: string, workspace: string): Promise<LoginInfo> => {
+    async (
+      db: Db,
+      productId: string,
+      token: string,
+      workspace: string,
+      firstName: string,
+      lastName: string
+    ): Promise<LoginInfo> => {
       if (!/^[0-9a-z][0-9a-z-]{2,62}[0-9a-z]$/.test(workspace)) {
         throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidId, { id: workspace }))
       }
@@ -682,7 +678,7 @@ export const createUserWorkspace =
       // Update last workspace time.
       await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: info._id }, { $set: { lastWorkspace: Date.now() } })
 
-      await assignWorkspace(db, productId, email, workspace)
+      await assignWorkspace(db, productId, email, workspace, firstName, lastName)
       await setRole(email, workspace, productId, AccountRole.Owner)
       const result = {
         endpoint: getEndpoint(),
@@ -791,7 +787,14 @@ export async function setRole (email: string, workspace: string, productId: stri
 /**
  * @public
  */
-export async function assignWorkspace (db: Db, productId: string, email: string, workspace: string): Promise<void> {
+export async function assignWorkspace (
+  db: Db,
+  productId: string,
+  email: string,
+  workspace: string,
+  firstName: string,
+  lastName: string
+): Promise<void> {
   const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
   if (initWS !== undefined && initWS === workspace) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
@@ -799,7 +802,7 @@ export async function assignWorkspace (db: Db, productId: string, email: string,
   const { workspaceId, accountId } = await getWorkspaceAndAccount(db, productId, email, workspace)
   const account = await db.collection<Account>(ACCOUNT_COLLECTION).findOne({ _id: accountId })
 
-  if (account !== null) await createPersonAccount(account, productId, workspace)
+  if (account !== null) await createPersonAccount(account, productId, workspace, firstName, lastName)
 
   // Add account into workspace.
   await db.collection(WORKSPACE_COLLECTION).updateOne({ _id: workspaceId }, { $addToSet: { accounts: accountId } })
@@ -833,12 +836,18 @@ async function createEmployee (ops: TxOperations, name: string, email: string): 
   return id
 }
 
-async function createPersonAccount (account: Account, productId: string, workspace: string): Promise<void> {
+async function createPersonAccount (
+  account: Account,
+  productId: string,
+  workspace: string,
+  firstName: string,
+  lastName: string
+): Promise<void> {
   const connection = await connect(getTransactor(), getWorkspaceId(workspace, productId))
   try {
     const ops = new TxOperations(connection, core.account.System)
 
-    const name = combineName(account.first, account.last)
+    const name = combineName(firstName, lastName)
     // Check if EmployeeAccoun is not exists
     const existingAccount = await ops.findOne(contact.class.PersonAccount, { email: account.email })
     if (existingAccount === undefined) {
@@ -847,7 +856,6 @@ async function createPersonAccount (account: Account, productId: string, workspa
       await ops.createDoc(contact.class.PersonAccount, core.space.Model, {
         email: account.email,
         person: employee,
-        name,
         role: 0
       })
     } else {
@@ -973,57 +981,6 @@ export async function restorePassword (db: Db, productId: string, token: string,
   await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { salt, hash } })
 
   return await login(db, productId, email, password)
-}
-
-/**
- * @public
- */
-export async function changeName (db: Db, productId: string, token: string, first: string, last: string): Promise<void> {
-  const { email } = decodeToken(token)
-  const account = await getAccount(db, email)
-  if (account === null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
-  }
-
-  await db.collection<Account>(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { first, last } })
-  account.first = first
-  account.last = last
-
-  const workspaces = await db
-    .collection<Workspace>(WORKSPACE_COLLECTION)
-    .find(withProductId(productId, { _id: { $in: account.workspaces } }))
-    .toArray()
-
-  const promises: Promise<void>[] = []
-  for (const ws of workspaces) {
-    promises.push(updatePersonAccount(account, ws.workspace, ws.productId))
-  }
-  await Promise.all(promises)
-}
-
-async function updatePersonAccount (account: Account, workspace: string, productId: string): Promise<void> {
-  const connection = await connect(getTransactor(), getWorkspaceId(workspace, productId), account.email)
-  try {
-    const ops = new TxOperations(connection, core.account.System)
-
-    const name = combineName(account.first, account.last)
-
-    const employeeAccount = await ops.findOne(contact.class.PersonAccount, { email: account.email })
-    if (employeeAccount === undefined) return
-
-    await ops.update(employeeAccount, {
-      name
-    })
-
-    const employee = await ops.findOne(contact.mixin.Employee, { _id: employeeAccount.person as Ref<Employee> })
-    if (employee === undefined) return
-
-    await ops.update(employee, {
-      name
-    })
-  } finally {
-    await connection.close()
-  }
 }
 
 /**
@@ -1246,7 +1203,6 @@ export function getMethods (
     removeWorkspace: wrap(removeWorkspace),
     leaveWorkspace: wrap(leaveWorkspace),
     listWorkspaces: wrap(listWorkspaces),
-    changeName: wrap(changeName),
     changePassword: wrap(changePassword),
     requestPassword: wrap(requestPassword),
     restorePassword: wrap(restorePassword),

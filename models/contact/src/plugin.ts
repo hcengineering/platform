@@ -26,6 +26,9 @@ import type { AnyComponent } from '@hcengineering/ui'
 import { Action, ActionCategory, ViewAction } from '@hcengineering/view'
 
 export default mergeIds(contactId, contact, {
+  activity: {
+    TxNameChange: '' as AnyComponent
+  },
   component: {
     PersonPresenter: '' as AnyComponent,
     ContactRefPresenter: '' as AnyComponent,

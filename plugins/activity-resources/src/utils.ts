@@ -5,6 +5,7 @@ import core, {
   Client,
   Collection,
   Doc,
+  Hierarchy,
   Obj,
   Ref,
   TxCUD,
@@ -14,7 +15,8 @@ import core, {
   TxOperations,
   TxProcessor,
   TxUpdateDoc,
-  getObjectValue
+  getObjectValue,
+  matchQuery
 } from '@hcengineering/core'
 import { Asset, IntlString, getResource, translate } from '@hcengineering/platform'
 import { getAttributePresenterClass } from '@hcengineering/presentation'
@@ -82,7 +84,11 @@ export function getDTxProps (dtx: DisplayTx): any {
   return { tx: dtx.tx, value: dtx.doc, isOwnTx: dtx.isOwnTx, prevValue: dtx.prevDoc }
 }
 
-function getViewlet (viewlets: Map<ActivityKey, TxViewlet>, dtx: DisplayTx): TxDisplayViewlet | undefined {
+function getViewlet (
+  viewlets: Map<ActivityKey, TxViewlet[]>,
+  dtx: DisplayTx,
+  hierarchy: Hierarchy
+): TxDisplayViewlet | undefined {
   let key: string
   if (dtx.mixinTx?.mixin !== undefined && dtx.tx._id === dtx.mixinTx._id) {
     key = activityKey(dtx.mixinTx.mixin, dtx.tx._class)
@@ -91,13 +97,21 @@ function getViewlet (viewlets: Map<ActivityKey, TxViewlet>, dtx: DisplayTx): TxD
   }
   const vl = viewlets.get(key)
   if (vl !== undefined) {
-    return { ...vl, pseudo: false }
+    for (const viewlet of vl) {
+      if (viewlet.match === undefined) {
+        return { ...viewlet, pseudo: false }
+      }
+      const res = matchQuery([dtx.tx], viewlet.match, dtx.tx._class, hierarchy)
+      if (res.length > 0) {
+        return { ...viewlet, pseudo: false }
+      }
+    }
   }
 }
 
 export async function updateViewlet (
   client: TxOperations,
-  viewlets: Map<ActivityKey, TxViewlet>,
+  viewlets: Map<ActivityKey, TxViewlet[]>,
   dtx: DisplayTx
 ): Promise<{
     viewlet: TxDisplayViewlet
@@ -107,7 +121,7 @@ export async function updateViewlet (
     modelIcon: Asset | undefined
     iconComponent: AnyComponent | undefined
   }> {
-  let viewlet = getViewlet(viewlets, dtx)
+  let viewlet = getViewlet(viewlets, dtx, client.getHierarchy())
 
   const props = getDTxProps(dtx)
   let model: AttributeModel[] = []

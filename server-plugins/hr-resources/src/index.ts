@@ -253,7 +253,9 @@ async function getEmailNotification (
     attachedTo: { $in: Array.from(contacts) }
   })
 
-  const senderName = formatName(sender.name)
+  const senderPerson = (await control.findAll(contact.class.Person, { _id: sender.person }))[0]
+
+  const senderName = senderPerson !== undefined ? formatName(senderPerson.name) : ''
   const content = await getContent(doc, senderName, type, control, '')
   if (content === undefined) return []
 

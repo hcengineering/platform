@@ -139,7 +139,6 @@ export interface Status extends AttachedDoc {
 export interface Employee extends Person {
   active: boolean
   statuses?: number
-  displayName?: string | null
   position?: string | null
 }
 
@@ -263,7 +262,6 @@ export const contactPlugin = plugin(contactId, {
     UseColor: '' as IntlString,
     PersonFirstNamePlaceholder: '' as IntlString,
     PersonLastNamePlaceholder: '' as IntlString,
-    DisplayName: '' as IntlString,
     NumberMembers: '' as IntlString,
     Position: '' as IntlString
   },

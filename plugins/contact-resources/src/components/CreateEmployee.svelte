@@ -62,7 +62,6 @@
 
     await client.createDoc(contact.class.PersonAccount, core.space.Model, {
       email: email.trim(),
-      name,
       person: id,
       role: AccountRole.User
     })

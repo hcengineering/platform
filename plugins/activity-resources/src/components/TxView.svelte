@@ -43,7 +43,7 @@
   import TxViewTx from './TxViewTx.svelte'
 
   export let tx: DisplayTx
-  export let viewlets: Map<ActivityKey, TxViewlet>
+  export let viewlets: Map<ActivityKey, TxViewlet[]>
   export let showIcon: boolean = true
   export let isNew: boolean = false
   export let isNextNew: boolean = false
@@ -213,7 +213,7 @@
         <div class="msgactivity-content__title labels-row">
           <span class={withAvatar ? 'bold' : 'strong'}>
             {#if employee}
-              {getName(client.getHierarchy(), employee)}
+              {getName(employee)}
             {:else}
               <Label label={core.string.System} />
             {/if}

@@ -30,7 +30,7 @@
 
   export let value: PersonAccount
   export let items: DocUpdates[]
-  export let viewlets: Map<ActivityKey, TxViewlet>
+  export let viewlets: Map<ActivityKey, TxViewlet[]>
   export let selected: boolean
 
   $: firstItem = items[0]

@@ -184,7 +184,9 @@
       {/if}
       <div class="ml-2 flex-col">
         {#if account}
-          <div class="overflow-label fs-bold caption-color">{formatName(account.name)}</div>
+          <div class="overflow-label fs-bold caption-color">
+            {employee !== undefined ? formatName(employee.name) : ''}
+          </div>
           <div class="overflow-label text-sm content-dark-color">{account.email}</div>
         {/if}
       </div>

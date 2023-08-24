@@ -16,7 +16,7 @@
 
 import InviteLink from './components/InviteLink.svelte'
 import LoginApp from './components/LoginApp.svelte'
-import { changeName, changePassword, getWorkspaces, leaveWorkspace, selectWorkspace, sendInvite } from './utils'
+import { changePassword, getWorkspaces, leaveWorkspace, selectWorkspace, sendInvite } from './utils'
 /*!
  * Anticrm Platform™ Login Plugin
  * © 2020, 2021 Anticrm Platform Contributors.
@@ -30,7 +30,6 @@ export default async () => ({
     InviteLink
   },
   function: {
-    ChangeName: changeName,
     LeaveWorkspace: leaveWorkspace,
     ChangePassword: changePassword,
     SelectWorkspace: selectWorkspace,

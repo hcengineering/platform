@@ -90,7 +90,6 @@ export class TChannelProvider extends TDoc implements ChannelProvider {
 export class TContact extends TDoc implements Contact {
   @Prop(TypeString(), contact.string.Name)
   @Index(IndexKind.FullText)
-  @Hidden()
     name!: string
 
   avatar?: string | null
@@ -167,10 +166,6 @@ export class TEmployee extends TPerson implements Employee {
   @Prop(Collection(contact.class.Status), contact.string.Status)
   @Hidden()
     statuses?: number
-
-  @Prop(TypeString(), contact.string.DisplayName)
-  @Hidden()
-    displayName?: string | null
 
   @Prop(TypeString(), contact.string.Position)
   @Hidden()
@@ -291,6 +286,15 @@ export function createModel (builder: Builder): void {
     component: contact.component.Contacts,
     label: contact.string.Contacts,
     index: 100
+  })
+
+  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
+    objectClass: contact.class.Person,
+    icon: contact.icon.Person,
+    txClass: core.class.TxUpdateDoc,
+    labelComponent: contact.activity.TxNameChange,
+    display: 'inline',
+    match: { 'operations.name': { $exists: true } }
   })
 
   builder.createDoc<Viewlet>(

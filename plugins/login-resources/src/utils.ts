@@ -76,12 +76,7 @@ export async function doLogin (email: string, password: string): Promise<[Status
   }
 }
 
-export async function signUp (
-  email: string,
-  password: string,
-  first: string,
-  last: string
-): Promise<[Status, LoginInfo | undefined]> {
+export async function signUp (email: string, password: string): Promise<[Status, LoginInfo | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -98,7 +93,7 @@ export async function signUp (
 
   const request = {
     method: 'createAccount',
-    params: [email, password, first, last]
+    params: [email, password]
   }
 
   try {
@@ -116,7 +111,11 @@ export async function signUp (
   }
 }
 
-export async function createWorkspace (workspace: string): Promise<[Status, LoginInfo | undefined]> {
+export async function createWorkspace (
+  workspace: string,
+  firstName: string,
+  lastName: string
+): Promise<[Status, LoginInfo | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -143,7 +142,7 @@ export async function createWorkspace (workspace: string): Promise<[Status, Logi
 
   const request = {
     method: 'createWorkspace',
-    params: [workspace]
+    params: [workspace, firstName, lastName]
   }
 
   try {
@@ -426,6 +425,8 @@ export async function getInviteLink (expHours: number = 1, emailMask: string = '
 export async function join (
   email: string,
   password: string,
+  first: string,
+  last: string,
   inviteId: string
 ): Promise<[Status, WorkspaceLoginInfo | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
@@ -444,7 +445,7 @@ export async function join (
 
   const request = {
     method: 'join',
-    params: [email, password, inviteId]
+    params: [email, password, first, last, inviteId]
   }
 
   try {
@@ -501,37 +502,6 @@ export async function signUpJoin (
   } catch (err) {
     return [unknownError(err), undefined]
   }
-}
-
-export async function changeName (first: string, last: string): Promise<void> {
-  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
-
-  if (accountsUrl === undefined) {
-    throw new Error('accounts url not specified')
-  }
-
-  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  if (overrideToken !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return
-    }
-  }
-  const token = getMetadata(presentation.metadata.Token) as string
-
-  const request = {
-    method: 'changeName',
-    params: [first, last]
-  }
-
-  await fetch(accountsUrl, {
-    method: 'POST',
-    headers: {
-      Authorization: 'Bearer ' + token,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(request)
-  })
 }
 
 export async function changePassword (oldPassword: string, password: string): Promise<void> {

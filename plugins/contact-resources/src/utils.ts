@@ -140,7 +140,9 @@ export async function getRefs (
 
 export async function getCurrentEmployeeName (): Promise<string> {
   const me = getCurrentAccount() as PersonAccount
-  return formatName(me.name)
+  const client = getClient()
+  const employee = await client.findOne(contact.class.Person, { _id: me.person })
+  return employee !== undefined ? formatName(employee.name) : ''
 }
 
 export async function getCurrentEmployeeEmail (): Promise<string> {

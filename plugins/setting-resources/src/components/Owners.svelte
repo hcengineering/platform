@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { PersonAccount, formatName } from '@hcengineering/contact'
+  import contact, { PersonAccount } from '@hcengineering/contact'
   import { EmployeePresenter, personByIdStore } from '@hcengineering/contact-resources'
-  import { AccountRole, getCurrentAccount, SortingOrder } from '@hcengineering/core'
+  import { AccountRole, SortingOrder, getCurrentAccount } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { DropdownIntlItem, DropdownLabelsIntl, Icon, Label, EditBox } from '@hcengineering/ui'
+  import { DropdownIntlItem, DropdownLabelsIntl, EditBox, Icon, Label } from '@hcengineering/ui'
   import setting from '../plugin'
 
   const client = getClient()
@@ -64,13 +64,13 @@
     <div class="ac-column max">
       {#each accounts as account (account._id)}
         {@const employee = $personByIdStore.get(account.person)}
-        {#if account.name.includes(search)}
+        {#if employee?.name?.includes(search)}
           <div class="flex-row-center p-2">
             <div class="p-1 min-w-80">
               {#if employee}
                 <EmployeePresenter value={employee} disabled={false} />
               {:else}
-                {formatName(account.name)}
+                {account.email}
               {/if}
             </div>
             <DropdownLabelsIntl

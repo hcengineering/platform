@@ -114,13 +114,11 @@ export function devTool (
     .command('create-account <email>')
     .description('create user and corresponding account in master database')
     .requiredOption('-p, --password <password>', 'user password')
-    .requiredOption('-f, --first <first>', 'first name')
-    .requiredOption('-l, --last <last>', 'last name')
     .action(async (email: string, cmd) => {
       const { mongodbUri } = prepareTools()
       return await withDatabase(mongodbUri, async (db) => {
         console.log(`creating account ${cmd.first as string} ${cmd.last as string} (${email})...`)
-        await createAcc(db, productId, email, cmd.password, cmd.first, cmd.last, true)
+        await createAcc(db, productId, email, cmd.password, true)
       })
     })
 
@@ -139,11 +137,13 @@ export function devTool (
   program
     .command('assign-workspace <email> <workspace>')
     .description('assign workspace')
+    .requiredOption('-f, --first <first>', 'first name')
+    .requiredOption('-l, --last <last>', 'last name')
     .action(async (email: string, workspace: string, cmd) => {
       const { mongodbUri } = prepareTools()
       return await withDatabase(mongodbUri, async (db, client) => {
         console.log(`assigning user ${email} to ${workspace}...`)
-        await assignWorkspace(db, productId, email, workspace)
+        await assignWorkspace(db, productId, email, workspace, cmd.first, cmd.last)
       })
     })
 

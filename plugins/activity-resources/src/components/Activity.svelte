@@ -46,7 +46,7 @@
 
   const activityQuery = newActivity(client, attrs)
 
-  let viewlets: Map<ActivityKey, TxViewlet>
+  let viewlets: Map<ActivityKey, TxViewlet[]> = new Map()
 
   let allViewlets: TxViewlet[] = []
   let editableMap: Map<Ref<Class<Doc>>, boolean> | undefined = undefined
@@ -61,7 +61,18 @@
     )
   })
 
-  $: viewlets = new Map(allViewlets.map((r) => [activityKey(r.objectClass, r.txClass), r]))
+  $: viewlets = buildViewletsMap(allViewlets)
+
+  function buildViewletsMap (allViewlets: TxViewlet[]): Map<ActivityKey, TxViewlet[]> {
+    const viewlets = new Map()
+    for (const res of allViewlets) {
+      const key = activityKey(res.objectClass, res.txClass)
+      const arr = viewlets.get(key) ?? []
+      arr.push(res)
+      viewlets.set(key, arr)
+    }
+    return viewlets
+  }
 
   let loading = false
 

@@ -238,7 +238,6 @@ describe('memdb', () => {
     })
     const account = await model.createDoc(core.class.Account, core.space.Model, {
       email: 'email',
-      name: 'test',
       role: 0
     })
     await model.updateDoc(core.class.Space, core.space.Model, space, { $push: { members: account } })

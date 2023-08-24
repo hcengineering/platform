@@ -946,7 +946,6 @@ async function synchronizeUsers (
         })
         accountId = await ops.client.createDoc(contact.class.PersonAccount, core.space.Model, {
           email: u.EMAIL,
-          name: combineName(u.NAME, u.LAST_NAME),
           person: employeeId,
           role: AccountRole.User
         })
