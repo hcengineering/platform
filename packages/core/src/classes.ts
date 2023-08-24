@@ -94,7 +94,15 @@ export interface Type<T extends PropertyType> extends UXObject {}
  * @public
  */
 export enum IndexKind {
+  /**
+   * Attribute with this index annotation should be added to elastic for search
+   * Could be added to string or Ref attribute
+   * TODO: rename properly for better code readability
+   */
   FullText,
+  /**
+   * For attribute with this annotation should be created an index in mongo database
+   */
   Indexed
 }
 

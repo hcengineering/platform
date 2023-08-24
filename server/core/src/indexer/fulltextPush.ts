@@ -14,12 +14,15 @@
 //
 
 import core, {
+  AnyAttribute,
+  ArrOf,
   Class,
   Doc,
   DocIndexState,
   DocumentQuery,
   DocumentUpdate,
   extractDocKey,
+  IndexKind,
   MeasureContext,
   Ref,
   ServerStorage,
@@ -95,6 +98,43 @@ export class FullTextPushStage implements FullTextPipelineStage {
     return { docs: [], pass: true }
   }
 
+  async indexRefAttributes (
+    attributes: Map<string, AnyAttribute>,
+    doc: DocIndexState,
+    elasticDoc: IndexedDoc,
+    metrics: MeasureContext
+  ): Promise<void> {
+    for (const attribute in doc.attributes) {
+      const { attr } = extractDocKey(attribute)
+      const attrObj = attributes.get(attr)
+      if (
+        attrObj !== null &&
+        attrObj !== undefined &&
+        attrObj.index === IndexKind.FullText &&
+        (attrObj.type._class === core.class.RefTo ||
+          (attrObj.type._class === core.class.ArrOf && (attrObj.type as ArrOf<any>).of._class === core.class.RefTo))
+      ) {
+        const attrStringValue = doc.attributes[attribute]
+        if (attrStringValue !== undefined && attrStringValue !== null && attrStringValue !== '') {
+          const refs = attrStringValue.split(',')
+          const refDocs = await metrics.with(
+            'ref-docs',
+            {},
+            async (ctx) =>
+              await this.dbStorage.findAll(ctx, core.class.DocIndexState, {
+                _id: { $in: refs }
+              })
+          )
+          if (refDocs.length > 0) {
+            refDocs.forEach((c) => {
+              updateDoc2Elastic(c.attributes, elasticDoc, c._id)
+            })
+          }
+        }
+      }
+    }
+  }
+
   async collect (toIndex: DocIndexState[], pipeline: FullTextPipeline, metrics: MeasureContext): Promise<void> {
     const bulk: IndexedDoc[] = []
 
@@ -161,6 +201,11 @@ export class FullTextPushStage implements FullTextPipelineStage {
               }
             }
           }
+
+          const allAttributes = pipeline.hierarchy.getAllAttributes(elasticDoc._class)
+
+          // Include child ref attributes
+          await this.indexRefAttributes(allAttributes, doc, elasticDoc, metrics)
 
           this.checkIntegrity(elasticDoc)
           bulk.push(elasticDoc)
