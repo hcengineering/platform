@@ -512,11 +512,7 @@
                   style:--mask-image={getMask(rect.visibility)}
                   tabindex={500 + i}
                 >
-                  <EventElement
-                    hourHeight={cellHeight}
-                    event={ev}
-                    size={{ width: rect.width, height: rect.height }}
-                  />
+                  <EventElement hourHeight={cellHeight} event={ev} size={{ width: rect.width, height: rect.height }} />
                 </div>
               {/if}
             {/each}
