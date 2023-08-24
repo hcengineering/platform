@@ -1,7 +1,6 @@
 <script lang="ts">
   import { IntlString } from '@hcengineering/platform'
   import presentation, { MessageViewer } from '@hcengineering/presentation'
-  import { Completion } from '@hcengineering/text'
   import {
     ActionIcon,
     IconCheck,
@@ -14,6 +13,7 @@
     resizeObserver
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
   import StyledTextEditor from './StyledTextEditor.svelte'
   import { completionConfig } from './extensions'

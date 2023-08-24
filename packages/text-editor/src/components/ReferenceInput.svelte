@@ -15,7 +15,6 @@
 <script lang="ts">
   import { Asset, IntlString, getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { Completion } from '@hcengineering/text'
   import {
     AnySvelteComponent,
     Button,
@@ -31,6 +30,7 @@
     checkAdaptiveMatching
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
   import { FORMAT_MODES, FormatMode, RefAction, RefInputActionItem, TextEditorHandler } from '../types'
   import LinkPopup from './LinkPopup.svelte'

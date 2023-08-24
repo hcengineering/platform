@@ -13,5 +13,4 @@
 // limitations under the License.
 //
 
-export * from './completion'
 export * from './reference'

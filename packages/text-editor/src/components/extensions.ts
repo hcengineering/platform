@@ -1,13 +1,79 @@
-import { CompletionOptions } from '@hcengineering/text'
+import Table from '@tiptap/extension-table'
+import TableCell from '@tiptap/extension-table-cell'
+import TableHeader from '@tiptap/extension-table-header'
+import TableRow from '@tiptap/extension-table-row'
 
+import TaskItem from '@tiptap/extension-task-item'
+import TaskList from '@tiptap/extension-task-list'
+
+import { Level } from '@tiptap/extension-heading'
+import Highlight from '@tiptap/extension-highlight'
+import StarterKit from '@tiptap/starter-kit'
+
+import Gapcursor from '@tiptap/extension-gapcursor'
+
+import { AnyExtension } from '@tiptap/core'
+import Link from '@tiptap/extension-link'
+import Typography from '@tiptap/extension-typography'
+import { CompletionOptions } from '../Completion'
 import MentionList from './MentionList.svelte'
 import { SvelteRenderer } from './SvelteRenderer'
 
-import '@tiptap/starter-kit'
-import '@tiptap/extension-link'
-import '@tiptap/extension-table'
+export const tableExtensions = [
+  Table.configure({
+    resizable: false,
+    HTMLAttributes: {
+      class: 'proseTable'
+    }
+  }),
+  TableRow.configure({}),
+  TableHeader.configure({}),
+  TableCell.configure({})
+]
 
-export { defaultExtensions, headingLevels } from '@hcengineering/text'
+export const taskListExtensions = [
+  TaskList,
+  TaskItem.configure({
+    nested: true,
+    HTMLAttributes: {
+      class: 'flex flex-grow gap-1 checkbox_style'
+    }
+  })
+]
+
+export const headingLevels: Level[] = [1, 2, 3, 4, 5, 6]
+
+export const defaultExtensions: AnyExtension[] = [
+  StarterKit.configure({
+    code: {
+      HTMLAttributes: {
+        class: 'proseCode'
+      }
+    },
+    codeBlock: {
+      languageClassPrefix: 'language-',
+      exitOnArrowDown: true,
+      exitOnTripleEnter: true,
+      HTMLAttributes: {
+        class: 'proseCodeBlock'
+      }
+    },
+    heading: {
+      levels: headingLevels
+    }
+  }),
+  Highlight.configure({
+    multicolor: false
+  }),
+  Typography.configure({}),
+  Gapcursor,
+  Link.configure({
+    openOnClick: true,
+    HTMLAttributes: { class: 'cursor-pointer', rel: 'noopener noreferrer', target: '_blank' }
+  }),
+  ...tableExtensions
+  // ...taskListExtensions // Disable since tasks are not working properly now.
+]
 
 export const mInsertTable = [
   {
