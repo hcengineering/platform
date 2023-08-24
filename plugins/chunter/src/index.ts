@@ -180,6 +180,7 @@ export default plugin(chunterId, {
     UnarchiveChannel: '' as IntlString,
     ArchiveConfirm: '' as IntlString,
     Message: '' as IntlString,
+    MessageOn: '' as IntlString,
     UnarchiveConfirm: '' as IntlString,
     ConvertToPrivate: '' as IntlString
   },

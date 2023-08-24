@@ -19,10 +19,11 @@
   import chunter from '@hcengineering/chunter'
   import { Person, PersonAccount, getName } from '@hcengineering/contact'
   import { Avatar, personByIdStore, personAccountByIdStore } from '@hcengineering/contact-resources'
-  import { IdMap, Ref } from '@hcengineering/core'
-  import { MessageViewer, getClient } from '@hcengineering/presentation'
-  import { Icon, ShowMore, TimeSince } from '@hcengineering/ui'
-  import { LinkPresenter } from '@hcengineering/view-resources'
+  import { Doc, IdMap, Ref } from '@hcengineering/core'
+  import { MessageViewer, createQuery, getClient } from '@hcengineering/presentation'
+  import { Icon, Label, ShowMore, TimeSince } from '@hcengineering/ui'
+  import { AttributeModel } from '@hcengineering/view'
+  import { LinkPresenter, getObjectPresenter } from '@hcengineering/view-resources'
 
   export let value: Comment
   export let inline: boolean = false
@@ -48,6 +49,17 @@
 
   $: links = getLinks(value.message)
 
+  let presenter: AttributeModel | undefined
+  getObjectPresenter(client, value.attachedToClass, { key: '' }).then((p) => {
+    presenter = p
+  })
+
+  let doc: Doc | undefined = undefined
+  const docQuery = createQuery()
+  $: docQuery.query(value.attachedToClass, { _id: value.attachedTo }, (res) => {
+    ;[doc] = res
+  })
+
   function getLinks (content: string): HTMLLinkElement[] {
     const parser = new DOMParser()
     const parent = parser.parseFromString(content, 'text/html').firstChild?.childNodes[1] as HTMLElement
@@ -69,13 +81,21 @@
 </script>
 
 {#if inline}
-  <a class="flex-presenter inline-presenter" href="#{disabled ? null : ''}">
-    <div class="icon">
-      <Icon icon={chunter.icon.Thread} size={'small'} />
-    </div>
-    <span class="label nowrap">Message</span>
-  </a>
-  &nbsp;<span class="content-dark-color">#{cutId(value._id.toString())}</span>
+  <div class="flex-presenter inline-presenter">
+    {#if presenter && doc}
+      <span class="labels-row" style:text-transform={'lowercase'}><Label label={chunter.string.MessageOn} /></span>
+      &nbsp;
+      <div class="icon">
+        <Icon icon={chunter.icon.Thread} size={'small'} />
+      </div>
+      &nbsp;
+      <svelte:component this={presenter.presenter} value={doc} {inline} {disabled} />
+    {:else}
+      <Label label={chunter.string.Message} />
+      &nbsp;
+      <span class="content-dark-color">#{cutId(value._id.toString())}</span>
+    {/if}
+  </div>
 {:else}
   <div class="flex-row-top">
     {#await getEmployee(value, $personByIdStore, $personAccountByIdStore) then employee}
