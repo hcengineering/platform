@@ -19,7 +19,7 @@ import { Node as ProseMirrorNode } from '@tiptap/pm/model'
 
 import { Backlink } from '@hcengineering/chunter'
 import { Class, Data, Doc, Ref } from '@hcengineering/core'
-import { defaultExtensions, ReferenceNode } from '@hcengineering/tiptap'
+import { defaultExtensions, ReferenceNode } from '@hcengineering/text'
 
 const extensions: Array<AnyExtension> = [...defaultExtensions, ReferenceNode]
 const schema = getSchema(extensions)

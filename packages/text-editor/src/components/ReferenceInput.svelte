@@ -15,6 +15,7 @@
 <script lang="ts">
   import { Asset, IntlString, getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
+  import { Completion } from '@hcengineering/text'
   import {
     AnySvelteComponent,
     Button,
@@ -29,7 +30,6 @@
     deviceOptionsStore as deviceInfo,
     checkAdaptiveMatching
   } from '@hcengineering/ui'
-  import { Completion } from '@hcengineering/tiptap'
   import { createEventDispatcher } from 'svelte'
   import textEditorPlugin from '../plugin'
   import { FORMAT_MODES, FormatMode, RefAction, RefInputActionItem, TextEditorHandler } from '../types'

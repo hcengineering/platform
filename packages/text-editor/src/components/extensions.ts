@@ -1,4 +1,4 @@
-import { CompletionOptions } from '@hcengineering/tiptap'
+import { CompletionOptions } from '@hcengineering/text'
 
 import MentionList from './MentionList.svelte'
 import { SvelteRenderer } from './SvelteRenderer'
@@ -7,7 +7,7 @@ import '@tiptap/starter-kit'
 import '@tiptap/extension-link'
 import '@tiptap/extension-table'
 
-export { defaultExtensions, headingLevels } from '@hcengineering/tiptap'
+export { defaultExtensions, headingLevels } from '@hcengineering/text'
 
 export const mInsertTable = [
   {

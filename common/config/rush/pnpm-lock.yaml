@@ -206,9 +206,9 @@ specifiers:
   '@rush-temp/templates-assets': file:./projects/templates-assets.tgz
   '@rush-temp/templates-resources': file:./projects/templates-resources.tgz
   '@rush-temp/tests-sanity': file:./projects/tests-sanity.tgz
+  '@rush-temp/text': file:./projects/text.tgz
   '@rush-temp/text-editor': file:./projects/text-editor.tgz
   '@rush-temp/theme': file:./projects/theme.tgz
-  '@rush-temp/tiptap': file:./projects/tiptap.tgz
   '@rush-temp/tool': file:./projects/tool.tgz
   '@rush-temp/tracker': file:./projects/tracker.tgz
   '@rush-temp/tracker-assets': file:./projects/tracker-assets.tgz
@@ -250,7 +250,6 @@ specifiers:
   '@tiptap/extension-task-item': ^2.0.3
   '@tiptap/extension-task-list': ^2.0.3
   '@tiptap/extension-typography': ^2.0.3
-  '@tiptap/html': ^2.0.4
   '@tiptap/pm': ^2.0.3
   '@tiptap/prosemirror-tables': ^1.1.4
   '@tiptap/starter-kit': ^2.0.3
@@ -603,9 +602,9 @@ dependencies:
   '@rush-temp/templates-assets': file:projects/templates-assets.tgz
   '@rush-temp/templates-resources': file:projects/templates-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
   '@rush-temp/tests-sanity': file:projects/tests-sanity.tgz
+  '@rush-temp/text': file:projects/text.tgz_a7abb371f17d2bc77abec7bc53398db5
   '@rush-temp/text-editor': file:projects/text-editor.tgz_1e646fd62a3adc9d0b41f256dafe3d38
   '@rush-temp/theme': file:projects/theme.tgz_a1d864769aaf53d09b76fe134ab55e60
-  '@rush-temp/tiptap': file:projects/tiptap.tgz_fdabd6ab056a64e776886b9838fe81f9
   '@rush-temp/tool': file:projects/tool.tgz_bufferutil@4.0.7
   '@rush-temp/tracker': file:projects/tracker.tgz
   '@rush-temp/tracker-assets': file:projects/tracker-assets.tgz_typescript@4.8.4
@@ -647,7 +646,6 @@ dependencies:
   '@tiptap/extension-task-item': 2.0.3_fc2f730f0ef238c57ef10dc1abce4607
   '@tiptap/extension-task-list': 2.0.3_@tiptap+core@2.0.3
   '@tiptap/extension-typography': 2.0.3_@tiptap+core@2.0.3
-  '@tiptap/html': 2.1.6_fc2f730f0ef238c57ef10dc1abce4607
   '@tiptap/pm': 2.0.3_@tiptap+core@2.0.3
   '@tiptap/prosemirror-tables': 1.1.4_a7abb371f17d2bc77abec7bc53398db5
   '@tiptap/starter-kit': 2.0.3_@tiptap+pm@2.0.3
@@ -20385,7 +20383,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_91152849c259b1b3925f7bb3d415bc80:
-    resolution: {integrity: sha512-3o2uSMVCDrbewUaVu1hQhVYLWEk3tVtydylKMgnazWFwgFmDXEFYs0HaNzHghBfUeRtgi99ZXigirBEcysP1Kg==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-wZWIAN+CPlPommWoqqH2yf11giIQ+B7Gbx6NQ8hkQ3PeZS2zJWsN3Ki+4vYu+BOZHwthzEJn3Y9LhKsyTL9m2A==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -20765,7 +20763,7 @@ packages:
     dev: false
 
   file:projects/server-chunter-resources.tgz:
-    resolution: {integrity: sha512-PRU5a018L11oMBz6xwm334vXn+23+eId6GVANpDvhz2oiau8rws8+i8vxyE4gd4HIWa3TMwYa5rZgopc+wmQrQ==, tarball: file:projects/server-chunter-resources.tgz}
+    resolution: {integrity: sha512-/t2NvPZEV7xa90ZuDnc/Bi5KK9bXAozhOmghDjB0ztXFX9QRibqnObPNkR6lKP4QCHeihGFeow0gp5lqqb0DbQ==, tarball: file:projects/server-chunter-resources.tgz}
     name: '@rush-temp/server-chunter-resources'
     version: 0.0.0
     dependencies:
@@ -22078,7 +22076,7 @@ packages:
     dev: false
 
   file:projects/text-editor.tgz_1e646fd62a3adc9d0b41f256dafe3d38:
-    resolution: {integrity: sha512-JkYOSTl55MDMfWUFOmel7UfZg8eBLcub2A70AkOCG+NCTyY3/JUD6b5gKfF5hE9luYW0Dc2QPxzJRhiJ0jtZsA==, tarball: file:projects/text-editor.tgz}
+    resolution: {integrity: sha512-Omwv7uuoSX4eicxv4jQUEegyhpg0QWeFuCr+DxCR3j7yfsFfF5mUCleLcX7LWh+M9EXbdldBdcHE3OriJg5ECQ==, tarball: file:projects/text-editor.tgz}
     id: file:projects/text-editor.tgz
     name: '@rush-temp/text-editor'
     version: 0.0.0
@@ -22154,6 +22152,49 @@ packages:
       - y-protocols
     dev: false
 
+  file:projects/text.tgz_a7abb371f17d2bc77abec7bc53398db5:
+    resolution: {integrity: sha512-McvKY4vlC1EY3CIok56LeT5SLAXkLl7mX2lUkFeFg9q2WF40ON9mmEy9VcJJ5T1hcKh4FhaIfcOsxkDS2d+CNw==, tarball: file:projects/text.tgz}
+    id: file:projects/text.tgz
+    name: '@rush-temp/text'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.47.11
+      '@tiptap/core': 2.0.3_@tiptap+pm@2.0.3
+      '@tiptap/extension-gapcursor': 2.0.3_fc2f730f0ef238c57ef10dc1abce4607
+      '@tiptap/extension-heading': 2.0.3_@tiptap+core@2.0.3
+      '@tiptap/extension-highlight': 2.0.3_@tiptap+core@2.0.3
+      '@tiptap/extension-link': 2.0.3_fc2f730f0ef238c57ef10dc1abce4607
+      '@tiptap/extension-mention': 2.0.3_dc69df04ca9f1acb766e21a98969ce2c
+      '@tiptap/extension-table': 2.0.3_fc2f730f0ef238c57ef10dc1abce4607
+      '@tiptap/extension-table-cell': 2.0.3_@tiptap+core@2.0.3
+      '@tiptap/extension-table-header': 2.0.3_@tiptap+core@2.0.3
+      '@tiptap/extension-table-row': 2.0.3_@tiptap+core@2.0.3
+      '@tiptap/extension-task-item': 2.0.3_fc2f730f0ef238c57ef10dc1abce4607
+      '@tiptap/extension-task-list': 2.0.3_@tiptap+core@2.0.3
+      '@tiptap/extension-typography': 2.0.3_@tiptap+core@2.0.3
+      '@tiptap/pm': 2.0.3_@tiptap+core@2.0.3
+      '@tiptap/prosemirror-tables': 1.1.4_a7abb371f17d2bc77abec7bc53398db5
+      '@tiptap/starter-kit': 2.0.3_@tiptap+pm@2.0.3
+      '@tiptap/suggestion': 2.0.3_fc2f730f0ef238c57ef10dc1abce4607
+      '@types/heft-jest': 1.0.3
+      '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
+      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
+      eslint: 8.27.0
+      eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
+      eslint-plugin-import: 2.26.0_eslint@8.27.0
+      eslint-plugin-n: 15.5.1_eslint@8.27.0
+      eslint-plugin-promise: 6.1.1_eslint@8.27.0
+      prettier: 2.8.8
+      typescript: 4.8.4
+    transitivePeerDependencies:
+      - prosemirror-keymap
+      - prosemirror-model
+      - prosemirror-state
+      - prosemirror-transform
+      - prosemirror-view
+      - supports-color
+    dev: false
+
   file:projects/theme.tgz_a1d864769aaf53d09b76fe134ab55e60:
     resolution: {integrity: sha512-wnu6qKDGjkOGG0e/hcmvG2yHZv9oOFqO1UDrxFCa/+/oMuTnaRsSscLUjPiYWE3iHDFXZNaNJzVrZc7tCwXXQw==, tarball: file:projects/theme.tgz}
     id: file:projects/theme.tgz
@@ -22185,49 +22226,6 @@ packages:
       - pug
       - stylus
       - sugarss
-      - supports-color
-    dev: false
-
-  file:projects/tiptap.tgz_fdabd6ab056a64e776886b9838fe81f9:
-    resolution: {integrity: sha512-zJETy6tmoZs/+1tkXh1pRkdPJG/SD/SND4hPVid33v3D/9daOBiErKHnKwD8OmY8yLSojkZi0jZxNG4JxfCbUQ==, tarball: file:projects/tiptap.tgz}
-    id: file:projects/tiptap.tgz
-    name: '@rush-temp/tiptap'
-    version: 0.0.0
-    dependencies:
-      '@rushstack/heft': 0.47.11
-      '@tiptap/core': 2.0.3_@tiptap+pm@2.0.3
-      '@tiptap/extension-gapcursor': 2.0.3_fc2f730f0ef238c57ef10dc1abce4607
-      '@tiptap/extension-heading': 2.0.3_@tiptap+core@2.0.3
-      '@tiptap/extension-highlight': 2.0.3_@tiptap+core@2.0.3
-      '@tiptap/extension-link': 2.0.3_fc2f730f0ef238c57ef10dc1abce4607
-      '@tiptap/extension-mention': 2.0.3_dc69df04ca9f1acb766e21a98969ce2c
-      '@tiptap/extension-table': 2.0.3_fc2f730f0ef238c57ef10dc1abce4607
-      '@tiptap/extension-table-cell': 2.0.3_@tiptap+core@2.0.3
-      '@tiptap/extension-table-header': 2.0.3_@tiptap+core@2.0.3
-      '@tiptap/extension-table-row': 2.0.3_@tiptap+core@2.0.3
-      '@tiptap/extension-task-item': 2.0.3_fc2f730f0ef238c57ef10dc1abce4607
-      '@tiptap/extension-task-list': 2.0.3_@tiptap+core@2.0.3
-      '@tiptap/extension-typography': 2.0.3_@tiptap+core@2.0.3
-      '@tiptap/pm': 2.0.3_@tiptap+core@2.0.3
-      '@tiptap/prosemirror-tables': 1.1.4_a7abb371f17d2bc77abec7bc53398db5
-      '@tiptap/starter-kit': 2.0.3_@tiptap+pm@2.0.3
-      '@tiptap/suggestion': 2.0.3_fc2f730f0ef238c57ef10dc1abce4607
-      '@types/heft-jest': 1.0.3
-      '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
-      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
-      eslint: 8.27.0
-      eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
-      eslint-plugin-import: 2.26.0_eslint@8.27.0
-      eslint-plugin-n: 15.5.1_eslint@8.27.0
-      eslint-plugin-promise: 6.1.1_eslint@8.27.0
-      prettier: 2.8.8
-      prosemirror-state: 1.4.3
-      typescript: 4.8.4
-    transitivePeerDependencies:
-      - prosemirror-keymap
-      - prosemirror-model
-      - prosemirror-transform
-      - prosemirror-view
       - supports-color
     dev: false
 

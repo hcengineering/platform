@@ -482,8 +482,8 @@
       "shouldPublish": true
     },
     {
-      "packageName": "@hcengineering/tiptap",
-      "projectFolder": "packages/tiptap",
+      "packageName": "@hcengineering/text",
+      "projectFolder": "packages/text",
       "shouldPublish": true
     },
     {

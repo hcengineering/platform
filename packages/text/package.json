@@ -1,5 +1,5 @@
 {
-  "name": "@hcengineering/tiptap",
+  "name": "@hcengineering/text",
   "version": "0.6.0",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
