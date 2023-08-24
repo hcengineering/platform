@@ -1,6 +1,6 @@
 <script lang="ts">
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import chunter, { DirectMessage, Message, createBacklinks, getDirectChannel } from '@hcengineering/chunter'
+  import chunter, { DirectMessage, Message, getDirectChannel } from '@hcengineering/chunter'
   import { PersonAccount } from '@hcengineering/contact'
   import { Ref, generateId, getCurrentAccount } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
@@ -45,8 +45,6 @@
       },
       messageId
     )
-
-    await createBacklinks(client, space, chunter.class.ChunterSpace, messageId, message)
 
     messageId = generateId()
   }

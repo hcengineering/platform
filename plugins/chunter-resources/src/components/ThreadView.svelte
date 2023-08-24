@@ -15,14 +15,13 @@
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import { createBacklinks, type ChunterMessage, type Message, type ThreadMessage } from '@hcengineering/chunter'
+  import { type ChunterMessage, type Message, type ThreadMessage } from '@hcengineering/chunter'
   import core, { Doc, Ref, Space, generateId, getCurrentAccount } from '@hcengineering/core'
   import { DocUpdates } from '@hcengineering/notification'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { IconClose, Label, getCurrentResolvedLocation, navigate } from '@hcengineering/ui'
   import { afterUpdate, beforeUpdate, createEventDispatcher } from 'svelte'
-
   import chunter from '../plugin'
   import { isMessageHighlighted, messageIdForScroll, scrollAndHighLight, shouldScrollToMessage } from '../utils'
   import ChannelSeparator from './ChannelSeparator.svelte'
@@ -148,9 +147,6 @@
       },
       commentId
     )
-
-    // Create an backlink to document
-    await createBacklinks(client, _id, chunter.class.Message, commentId, message)
 
     commentId = generateId()
     isScrollForced = true

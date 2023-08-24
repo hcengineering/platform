@@ -19,7 +19,6 @@
   import { AttachmentDocList } from '@hcengineering/attachment-resources'
   import { Button } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { updateBacklinks } from '../../backlinks'
   import chunter from '../../plugin'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import { LinkPresenter } from '@hcengineering/view-resources'
@@ -49,8 +48,6 @@
           attachments
         }
       )
-      // We need to update backlinks before and after.
-      await updateBacklinks(client, value.attachedTo, value.attachedToClass, value._id, message)
     } finally {
       loading = false
     }

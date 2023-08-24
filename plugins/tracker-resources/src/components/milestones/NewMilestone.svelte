@@ -15,7 +15,6 @@
 <script lang="ts">
   import { Data, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { createBacklinks } from '@hcengineering/chunter'
   import { Card, getClient, SpaceSelector } from '@hcengineering/presentation'
   import { Milestone, MilestoneStatus, Project } from '@hcengineering/tracker'
   import ui, { DatePresenter, EditBox } from '@hcengineering/ui'
@@ -39,9 +38,7 @@
   }
 
   async function onSave () {
-    const _id = await client.createDoc(tracker.class.Milestone, space, object)
-    // Create an backlink to document
-    await createBacklinks(client, _id, tracker.class.Milestone, _id, object.description ?? '')
+    await client.createDoc(tracker.class.Milestone, space, object)
   }
 </script>
 

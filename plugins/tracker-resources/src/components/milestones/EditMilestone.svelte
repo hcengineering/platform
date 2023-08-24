@@ -19,7 +19,6 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../plugin'
   import { AttachmentStyleBoxEditor } from '@hcengineering/attachment-resources'
-  import { updateBacklinks } from '@hcengineering/chunter-resources'
 
   export let object: Milestone
 
@@ -65,8 +64,5 @@
     key={{ key: 'description', attr: descriptionKey }}
     bind:this={descriptionBox}
     placeholder={tracker.string.IssueDescriptionPlaceholder}
-    updateBacklinks={(doc, description) => {
-      updateBacklinks(client, doc._id, doc._class, doc._id, description)
-    }}
   />
 </div>

@@ -482,6 +482,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@hcengineering/text",
+      "projectFolder": "packages/text",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@hcengineering/ui",
       "projectFolder": "packages/ui",
       "shouldPublish": true

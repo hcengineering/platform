@@ -15,14 +15,13 @@
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import { createBacklinks, type ChunterSpace, type Message, type ThreadMessage } from '@hcengineering/chunter'
+  import { type ChunterSpace, type Message, type ThreadMessage } from '@hcengineering/chunter'
   import contact, { Person, PersonAccount, getName } from '@hcengineering/contact'
   import { personByIdStore } from '@hcengineering/contact-resources'
   import core, { FindOptions, IdMap, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
-
   import chunter from '../plugin'
   import ChannelPresenter from './ChannelPresenter.svelte'
   import DmPresenter from './DmPresenter.svelte'
@@ -135,9 +134,6 @@
       },
       commentId
     )
-
-    // Create an backlink to document
-    await createBacklinks(client, parent._id, parent._class, commentId, message)
 
     commentId = generateId()
     loading = false

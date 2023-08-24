@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import { Comment, createBacklinks } from '@hcengineering/chunter'
+  import { Comment } from '@hcengineering/chunter'
   import { AttachedData, Doc, generateId, Ref } from '@hcengineering/core'
   import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
   import chunter from '../plugin'
@@ -104,9 +104,6 @@
         { message, attachments },
         _id
       )
-
-      // Create an backlink to document
-      await createBacklinks(client, object._id, object._class, _id, message)
 
       // Remove draft from Local Storage
       comment = getDefault()

@@ -36,6 +36,7 @@
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/core": "^0.6.27",
     "@hcengineering/ui": "^0.6.10",
+    "@hcengineering/text": "^0.6.0",
     "svelte": "3.55.1",
     "@tiptap/core": "^2.0.3",
     "@tiptap/pm": "^2.0.3",

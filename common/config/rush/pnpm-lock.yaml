@@ -206,6 +206,7 @@ specifiers:
   '@rush-temp/templates-assets': file:./projects/templates-assets.tgz
   '@rush-temp/templates-resources': file:./projects/templates-resources.tgz
   '@rush-temp/tests-sanity': file:./projects/tests-sanity.tgz
+  '@rush-temp/text': file:./projects/text.tgz
   '@rush-temp/text-editor': file:./projects/text-editor.tgz
   '@rush-temp/theme': file:./projects/theme.tgz
   '@rush-temp/tool': file:./projects/tool.tgz
@@ -249,6 +250,7 @@ specifiers:
   '@tiptap/extension-task-item': ^2.0.3
   '@tiptap/extension-task-list': ^2.0.3
   '@tiptap/extension-typography': ^2.0.3
+  '@tiptap/html': ^2.0.3
   '@tiptap/pm': ^2.0.3
   '@tiptap/prosemirror-tables': ^1.1.4
   '@tiptap/starter-kit': ^2.0.3
@@ -601,6 +603,7 @@ dependencies:
   '@rush-temp/templates-assets': file:projects/templates-assets.tgz
   '@rush-temp/templates-resources': file:projects/templates-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
   '@rush-temp/tests-sanity': file:projects/tests-sanity.tgz
+  '@rush-temp/text': file:projects/text.tgz_a7abb371f17d2bc77abec7bc53398db5
   '@rush-temp/text-editor': file:projects/text-editor.tgz_1e646fd62a3adc9d0b41f256dafe3d38
   '@rush-temp/theme': file:projects/theme.tgz_a1d864769aaf53d09b76fe134ab55e60
   '@rush-temp/tool': file:projects/tool.tgz_bufferutil@4.0.7
@@ -644,6 +647,7 @@ dependencies:
   '@tiptap/extension-task-item': 2.0.3_fc2f730f0ef238c57ef10dc1abce4607
   '@tiptap/extension-task-list': 2.0.3_@tiptap+core@2.0.3
   '@tiptap/extension-typography': 2.0.3_@tiptap+core@2.0.3
+  '@tiptap/html': 2.1.6_fc2f730f0ef238c57ef10dc1abce4607
   '@tiptap/pm': 2.0.3_@tiptap+core@2.0.3
   '@tiptap/prosemirror-tables': 1.1.4_a7abb371f17d2bc77abec7bc53398db5
   '@tiptap/starter-kit': 2.0.3_@tiptap+pm@2.0.3
@@ -6585,6 +6589,17 @@ packages:
       '@tiptap/core': ^2.0.0
     dependencies:
       '@tiptap/core': 2.0.3_@tiptap+pm@2.0.3
+    dev: false
+
+  /@tiptap/html/2.1.6_fc2f730f0ef238c57ef10dc1abce4607:
+    resolution: {integrity: sha512-/7PcivMMty2Xw8oNEOqRi1W4WlD9afrmA3vlgNYGnO+knmwG5VzyhYV+oDlKAWvYqfrPxtfGnhNEQywzyHKbBg==}
+    peerDependencies:
+      '@tiptap/core': ^2.0.0
+      '@tiptap/pm': ^2.0.0
+    dependencies:
+      '@tiptap/core': 2.0.3_@tiptap+pm@2.0.3
+      '@tiptap/pm': 2.0.3_@tiptap+core@2.0.3
+      zeed-dom: 0.9.26
     dev: false
 
   /@tiptap/pm/2.0.3_@tiptap+core@2.0.3:
@@ -17210,6 +17225,13 @@ packages:
       commander: 2.20.3
     dev: false
 
+  /zeed-dom/0.9.26:
+    resolution: {integrity: sha512-HWjX8rA3Y/RI32zby3KIN1D+mgskce+She4K7kRyyx62OiVxJ5FnYm8vWq0YVAja3Tf2S1M0XAc6O2lRFcMgcQ==}
+    engines: {node: '>=14.13.1'}
+    dependencies:
+      css-what: 6.1.0
+    dev: false
+
   file:projects/account.tgz_bufferutil@4.0.7:
     resolution: {integrity: sha512-4tS8wBCO4BXrFfa11XEyJzCw6AG+7romshdy1O3kWS2by/z8IpsFcblvOk3Q3zaIExY6MSA0Wjdf+9od8vJMDA==, tarball: file:projects/account.tgz}
     id: file:projects/account.tgz
@@ -20363,7 +20385,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_91152849c259b1b3925f7bb3d415bc80:
-    resolution: {integrity: sha512-dB1fl4vWrudVeRZJRFyOejr/xRHzIj4ZgkssAuS59WZIVVbyGvMgjPhC/tCGovi/O581wEJBBO1fgVLfOOXXiw==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-wZWIAN+CPlPommWoqqH2yf11giIQ+B7Gbx6NQ8hkQ3PeZS2zJWsN3Ki+4vYu+BOZHwthzEJn3Y9LhKsyTL9m2A==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -20743,11 +20765,15 @@ packages:
     dev: false
 
   file:projects/server-chunter-resources.tgz:
-    resolution: {integrity: sha512-kNwG1PW31TnvKu/srs+aikf6idi3OZVIt5JTPnSBvGQ++A7ZUz/Cal5onvxUP72/zSfl2VIPSWUn6WViYx5xyg==, tarball: file:projects/server-chunter-resources.tgz}
+    resolution: {integrity: sha512-/t2NvPZEV7xa90ZuDnc/Bi5KK9bXAozhOmghDjB0ztXFX9QRibqnObPNkR6lKP4QCHeihGFeow0gp5lqqb0DbQ==, tarball: file:projects/server-chunter-resources.tgz}
     name: '@rush-temp/server-chunter-resources'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.47.11
+      '@tiptap/core': 2.0.3_@tiptap+pm@2.0.3
+      '@tiptap/html': 2.1.6_fc2f730f0ef238c57ef10dc1abce4607
+      '@tiptap/pm': 2.0.3_@tiptap+core@2.0.3
+      '@tiptap/starter-kit': 2.0.3_@tiptap+pm@2.0.3
       '@types/heft-jest': 1.0.3
       '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
       '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
@@ -22052,7 +22078,7 @@ packages:
     dev: false
 
   file:projects/text-editor.tgz_1e646fd62a3adc9d0b41f256dafe3d38:
-    resolution: {integrity: sha512-veer1goACGzBNOXgkYDbqPx/5obONA8llhpWAv2M+M/I2tumjLZxG4ohodKBQNa0ijAZ+MUgRlcaS9c8MsKF6A==, tarball: file:projects/text-editor.tgz}
+    resolution: {integrity: sha512-Omwv7uuoSX4eicxv4jQUEegyhpg0QWeFuCr+DxCR3j7yfsFfF5mUCleLcX7LWh+M9EXbdldBdcHE3OriJg5ECQ==, tarball: file:projects/text-editor.tgz}
     id: file:projects/text-editor.tgz
     name: '@rush-temp/text-editor'
     version: 0.0.0
@@ -22126,6 +22152,50 @@ packages:
       - sugarss
       - supports-color
       - y-protocols
+    dev: false
+
+  file:projects/text.tgz_a7abb371f17d2bc77abec7bc53398db5:
+    resolution: {integrity: sha512-QfLKyYxcLXLoqBMnbP4k2ND5871b+ycKCz7+NZ7xBtPtEb3Ee6jPdFrf8wbmnIYX/dLV0VThNKXcJ4ZiWxNvbA==, tarball: file:projects/text.tgz}
+    id: file:projects/text.tgz
+    name: '@rush-temp/text'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.47.11
+      '@tiptap/core': 2.0.3_@tiptap+pm@2.0.3
+      '@tiptap/extension-gapcursor': 2.0.3_fc2f730f0ef238c57ef10dc1abce4607
+      '@tiptap/extension-heading': 2.0.3_@tiptap+core@2.0.3
+      '@tiptap/extension-highlight': 2.0.3_@tiptap+core@2.0.3
+      '@tiptap/extension-link': 2.0.3_fc2f730f0ef238c57ef10dc1abce4607
+      '@tiptap/extension-mention': 2.0.3_dc69df04ca9f1acb766e21a98969ce2c
+      '@tiptap/extension-table': 2.0.3_fc2f730f0ef238c57ef10dc1abce4607
+      '@tiptap/extension-table-cell': 2.0.3_@tiptap+core@2.0.3
+      '@tiptap/extension-table-header': 2.0.3_@tiptap+core@2.0.3
+      '@tiptap/extension-table-row': 2.0.3_@tiptap+core@2.0.3
+      '@tiptap/extension-task-item': 2.0.3_fc2f730f0ef238c57ef10dc1abce4607
+      '@tiptap/extension-task-list': 2.0.3_@tiptap+core@2.0.3
+      '@tiptap/extension-typography': 2.0.3_@tiptap+core@2.0.3
+      '@tiptap/html': 2.1.6_fc2f730f0ef238c57ef10dc1abce4607
+      '@tiptap/pm': 2.0.3_@tiptap+core@2.0.3
+      '@tiptap/prosemirror-tables': 1.1.4_a7abb371f17d2bc77abec7bc53398db5
+      '@tiptap/starter-kit': 2.0.3_@tiptap+pm@2.0.3
+      '@tiptap/suggestion': 2.0.3_fc2f730f0ef238c57ef10dc1abce4607
+      '@types/heft-jest': 1.0.3
+      '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
+      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
+      eslint: 8.27.0
+      eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
+      eslint-plugin-import: 2.26.0_eslint@8.27.0
+      eslint-plugin-n: 15.5.1_eslint@8.27.0
+      eslint-plugin-promise: 6.1.1_eslint@8.27.0
+      prettier: 2.8.8
+      typescript: 4.8.4
+    transitivePeerDependencies:
+      - prosemirror-keymap
+      - prosemirror-model
+      - prosemirror-state
+      - prosemirror-transform
+      - prosemirror-view
+      - supports-color
     dev: false
 
   file:projects/theme.tgz_a1d864769aaf53d09b76fe134ab55e60:

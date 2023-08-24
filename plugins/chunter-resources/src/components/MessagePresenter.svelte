@@ -13,10 +13,44 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Message } from '@hcengineering/chunter'
-  import { MessageViewer } from '@hcengineering/presentation'
+  import chunter, { Message } from '@hcengineering/chunter'
+  import { Doc } from '@hcengineering/core'
+  import { MessageViewer, createQuery, getClient } from '@hcengineering/presentation'
+  import { Icon, Label } from '@hcengineering/ui'
+  import { AttributeModel } from '@hcengineering/view'
+  import { getObjectPresenter } from '@hcengineering/view-resources'
 
   export let value: Message
+  export let inline: boolean = false
+  export let disabled = false
+
+  const client = getClient()
+
+  let presenter: AttributeModel | undefined
+  getObjectPresenter(client, value.attachedToClass, { key: '' }).then((p) => {
+    presenter = p
+  })
+
+  let doc: Doc | undefined = undefined
+  const docQuery = createQuery()
+  $: docQuery.query(value.attachedToClass, { _id: value.attachedTo }, (res) => {
+    ;[doc] = res
+  })
 </script>
 
-<div><MessageViewer message={value.content} /></div>
+{#if inline}
+  {#if presenter && doc}
+    <div class="flex-presenter inline-presenter">
+      <div class="icon">
+        <Icon icon={chunter.icon.Thread} size={'small'} />
+      </div>
+      <span class="labels-row" style:text-transform={'lowercase'}>
+        <Label label={chunter.string.MessageOn} />
+      </span>
+      &nbsp;
+      <svelte:component this={presenter.presenter} value={doc} inline {disabled} />
+    </div>
+  {/if}
+{:else}
+  <div><MessageViewer message={value.content} /></div>
+{/if}

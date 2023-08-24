@@ -1,5 +1,5 @@
 //
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -29,6 +29,7 @@ import core, {
   TxCollectionCUD,
   TxCreateDoc,
   TxCUD,
+  TxFactory,
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc
@@ -38,6 +39,130 @@ import { getMetadata } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { getDocCollaborators, getMixinTx, pushNotification } from '@hcengineering/server-notification-resources'
 import { workbenchId } from '@hcengineering/workbench'
+import { getBacklinks } from './backlinks'
+
+function getCreateBacklinksTxes (control: TriggerControl, txFactory: TxFactory, doc: Doc): Tx[] {
+  const txes: Tx[] = []
+
+  const backlinkId = doc._id
+  const backlinkClass = doc._class
+  const attachedDocId = doc._id
+
+  const attributes = control.hierarchy.getAllAttributes(doc._class)
+  for (const attr of attributes.values()) {
+    if (attr.type._class === core.class.TypeMarkup) {
+      const content = (doc as any)[attr.name]?.toString() ?? ''
+      const backlinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, content)
+
+      for (const backlink of backlinks) {
+        const innerTx = txFactory.createTxCreateDoc(chunter.class.Backlink, chunter.space.Backlinks, backlink)
+
+        const collectionTx = txFactory.createTxCollectionCUD(
+          backlink.attachedToClass,
+          backlink.attachedTo,
+          chunter.space.Backlinks,
+          backlink.collection,
+          innerTx
+        )
+
+        txes.push(collectionTx)
+      }
+    }
+  }
+
+  return txes
+}
+
+async function getUpdateBacklinksTxes (control: TriggerControl, txFactory: TxFactory, doc: Doc): Promise<Tx[]> {
+  const txes: Tx[] = []
+
+  const backlinkId = doc._id
+  const backlinkClass = doc._class
+  const attachedDocId = doc._id
+
+  const attributes = control.hierarchy.getAllAttributes(doc._class)
+  for (const attr of attributes.values()) {
+    if (attr.type._class === core.class.TypeMarkup) {
+      const content = (doc as any)[attr.name]?.toString() ?? ''
+      const backlinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, content)
+
+      const current = await control.findAll(chunter.class.Backlink, {
+        backlinkId,
+        backlinkClass,
+        attachedDocId,
+        collection: 'backlinks'
+      })
+
+      for (const c of current) {
+        // Find existing and check if we need to update message
+        const pos = backlinks.findIndex(
+          (b) => b.backlinkId === c.backlinkId && b.backlinkClass === c.backlinkClass && b.attachedTo === c.attachedTo
+        )
+        if (pos !== -1) {
+          // Update existing backlinks when message changed
+          const data = backlinks[pos]
+          if (c.message !== data.message) {
+            const innerTx = txFactory.createTxUpdateDoc(c._class, c.space, c._id, {
+              message: data.message
+            })
+            txes.push(
+              txFactory.createTxCollectionCUD(
+                c.attachedToClass,
+                c.attachedTo,
+                chunter.space.Backlinks,
+                c.collection,
+                innerTx
+              )
+            )
+          }
+          backlinks.splice(pos, 1)
+        } else {
+          // Remove not found backlinks
+          const innerTx = txFactory.createTxRemoveDoc(c._class, c.space, c._id)
+          txes.push(
+            txFactory.createTxCollectionCUD(
+              c.attachedToClass,
+              c.attachedTo,
+              chunter.space.Backlinks,
+              c.collection,
+              innerTx
+            )
+          )
+        }
+      }
+
+      // Add missing backlinks
+      for (const backlink of backlinks) {
+        const backlinkTx = txFactory.createTxCreateDoc(chunter.class.Backlink, chunter.space.Backlinks, backlink)
+        txes.push(
+          txFactory.createTxCollectionCUD(
+            backlink.attachedToClass,
+            backlink.attachedTo,
+            chunter.space.Backlinks,
+            backlink.collection,
+            backlinkTx
+          )
+        )
+      }
+    }
+  }
+
+  return txes
+}
+
+async function getRemoveBacklinksTxes (control: TriggerControl, txFactory: TxFactory, doc: Ref<Doc>): Promise<Tx[]> {
+  const txes: Tx[] = []
+
+  const backlinks = await control.findAll(chunter.class.Backlink, { attachedDocId: doc, collection: 'backlinks' })
+  for (const b of backlinks) {
+    const innerTx = txFactory.createTxRemoveDoc(b._class, b.space, b._id)
+    txes.push(
+      txFactory.createTxCollectionCUD(b.attachedToClass, b.attachedTo, chunter.space.Backlinks, b.collection, innerTx)
+    )
+  }
+
+  return txes
+}
 
 /**
  * @public
@@ -193,6 +318,62 @@ async function ThreadMessageDelete (tx: Tx, control: TriggerControl): Promise<Tx
   return [updateTx]
 }
 
+async function BacklinksCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const hierarchy = control.hierarchy
+  const ctx = TxProcessor.extractTx(tx) as TxCreateDoc<Doc>
+  if (ctx._class !== core.class.TxCreateDoc) return []
+  if (hierarchy.isDerived(ctx.objectClass, chunter.class.Backlink)) return []
+
+  const txFactory = new TxFactory(control.txFactory.account)
+  const doc = TxProcessor.createDoc2Doc(ctx)
+
+  const txes: Tx[] = getCreateBacklinksTxes(control, txFactory, doc)
+  if (txes.length !== 0) {
+    await control.apply(txes, true)
+  }
+
+  return []
+}
+
+async function BacklinksUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const hierarchy = control.hierarchy
+  const ctx = TxProcessor.extractTx(tx) as TxUpdateDoc<Doc>
+  if (ctx._class !== core.class.TxUpdateDoc) return []
+  if (hierarchy.isDerived(ctx.objectClass, chunter.class.Backlink)) return []
+
+  const rawDoc = (await control.findAll(ctx.objectClass, { _id: ctx.objectId }))[0]
+  if (rawDoc === undefined) return []
+
+  const txFactory = new TxFactory(control.txFactory.account)
+
+  if (rawDoc !== undefined) {
+    const doc = TxProcessor.updateDoc2Doc(rawDoc, ctx)
+    const txes: Tx[] = await getUpdateBacklinksTxes(control, txFactory, doc)
+
+    if (txes.length !== 0) {
+      await control.apply(txes, true)
+    }
+  }
+
+  return []
+}
+
+async function BacklinksRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const hierarchy = control.hierarchy
+  const ctx = TxProcessor.extractTx(tx) as TxRemoveDoc<Doc>
+  if (ctx._class !== core.class.TxRemoveDoc) return []
+  if (hierarchy.isDerived(ctx.objectClass, chunter.class.Backlink)) return []
+
+  const txFactory = new TxFactory(control.txFactory.account)
+
+  const txes: Tx[] = await getRemoveBacklinksTxes(control, txFactory, ctx.objectId)
+  if (txes.length !== 0) {
+    await control.apply(txes, true)
+  }
+
+  return []
+}
+
 /**
  * @public
  */
@@ -253,6 +434,15 @@ export async function OnMessageSent (tx: Tx, control: TriggerControl): Promise<T
   }
 
   return res
+}
+
+/**
+ * @public
+ */
+export async function BacklinkTrigger (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const promises = [BacklinksCreate(tx, control), BacklinksUpdate(tx, control), BacklinksRemove(tx, control)]
+  const res = await Promise.all(promises)
+  return res.flat()
 }
 
 /**
@@ -321,6 +511,7 @@ export async function IsChannelMessage (
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
+    BacklinkTrigger,
     ChunterTrigger,
     OnMessageSent
   },

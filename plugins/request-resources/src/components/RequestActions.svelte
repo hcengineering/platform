@@ -15,7 +15,6 @@
 <script lang="ts">
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import chunter, { Comment } from '@hcengineering/chunter'
-  import { updateBacklinks } from '@hcengineering/chunter-resources'
   import { PersonAccount } from '@hcengineering/contact'
   import { AttachedData, getCurrentAccount, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
@@ -69,8 +68,6 @@
 
     await client.createMixin(_id, chunter.class.Comment, value.space, request.mixin.RequestDecisionComment, {})
 
-    // We need to update backlinks before and after.
-    await updateBacklinks(client, value.attachedTo, value.attachedToClass, value._id, message)
     refInput.createAttachments()
     loading = false
   }
@@ -81,8 +78,6 @@
       attachments
     })
 
-    // We need to update backlinks before and after.
-    await updateBacklinks(client, value.attachedTo, value.attachedToClass, value._id, message)
     loading = false
   }
 

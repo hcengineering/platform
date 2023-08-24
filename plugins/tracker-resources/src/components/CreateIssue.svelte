@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import chunter, { createBacklinks } from '@hcengineering/chunter'
+  import chunter from '@hcengineering/chunter'
   import { Employee } from '@hcengineering/contact'
   import core, { Account, AttachedData, Doc, fillDefaults, generateId, Ref, SortingOrder } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
@@ -428,9 +428,6 @@
         issueUrl: currentProject && generateIssueShortLink(getIssueId(currentProject, value as Issue))
       }
     )
-
-    // Create an backlink to document
-    await createBacklinks(client, _id, tracker.class.Issue, _id, object.description)
 
     draftController.remove()
     resetObject()

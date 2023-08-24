@@ -1,56 +1,7 @@
-import { Backlink, getBacklinks } from '@hcengineering/chunter'
-import contact, { PersonAccount } from '@hcengineering/contact'
-import { Account, Class, Client, Data, Doc, DocumentQuery, Ref, TxOperations } from '@hcengineering/core'
+import { Backlink } from '@hcengineering/chunter'
+import { Data, DocumentQuery, TxOperations } from '@hcengineering/core'
 import chunter from './plugin'
 
-export async function getUser (
-  client: Client,
-  user: Ref<PersonAccount> | Ref<Account>
-): Promise<PersonAccount | undefined> {
-  return await client.findOne(contact.class.PersonAccount, { _id: user as Ref<PersonAccount> })
-}
-
-export function getTime (time: number): string {
-  let options: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: 'numeric' }
-  if (!isToday(time)) {
-    options = {
-      month: 'numeric',
-      day: 'numeric',
-      ...options
-    }
-  }
-
-  return new Date(time).toLocaleString('default', options)
-}
-
-export function isToday (time: number): boolean {
-  const current = new Date()
-  const target = new Date(time)
-  return (
-    current.getDate() === target.getDate() &&
-    current.getMonth() === target.getMonth() &&
-    current.getFullYear() === target.getFullYear()
-  )
-}
-
-/**
- * @public
- */
-export async function updateBacklinks (
-  client: TxOperations,
-  backlinkId: Ref<Doc>,
-  backlinkClass: Ref<Class<Doc>>,
-  attachedDocId: Ref<Doc> | undefined,
-  content: string
-): Promise<void> {
-  const q: DocumentQuery<Backlink> = { backlinkId, backlinkClass, collection: 'backlinks' }
-  if (attachedDocId !== undefined) {
-    q.attachedDocId = attachedDocId
-  }
-  const backlinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, content)
-
-  await updateBacklinksList(client, q, backlinks)
-}
 /**
  * @public
  */
