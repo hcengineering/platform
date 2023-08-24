@@ -13,6 +13,23 @@
 // limitations under the License.
 //
 
-export * from './extensions'
-export * from './html'
-export * from './nodes'
+import { Extensions, getSchema } from '@tiptap/core'
+import { generateJSON, generateHTML } from '@tiptap/html'
+import { Node as ProseMirrorNode } from '@tiptap/pm/model'
+
+/**
+ * @public
+ */
+export function getHTML (node: ProseMirrorNode, extensions: Extensions): string {
+  return generateHTML(node.toJSON(), extensions)
+}
+
+/**
+ * @public
+ */
+export function parseHTML (content: string, extensions: Extensions): ProseMirrorNode {
+  const schema = getSchema(extensions)
+  const json = generateJSON(content, extensions)
+
+  return ProseMirrorNode.fromJSON(schema, json)
+}

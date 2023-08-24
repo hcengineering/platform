@@ -13,16 +13,11 @@
 // limitations under the License.
 //
 
-import { AnyExtension, getSchema } from '@tiptap/core'
-import { generateJSON, generateHTML } from '@tiptap/html'
-import { Node as ProseMirrorNode } from '@tiptap/pm/model'
-
 import { Backlink } from '@hcengineering/chunter'
 import { Class, Data, Doc, Ref } from '@hcengineering/core'
-import { defaultExtensions, ReferenceNode } from '@hcengineering/text'
+import { defaultExtensions, getHTML, parseHTML, ReferenceNode } from '@hcengineering/text'
 
-const extensions: Array<AnyExtension> = [...defaultExtensions, ReferenceNode]
-const schema = getSchema(extensions)
+const extensions = [...defaultExtensions, ReferenceNode]
 
 export function getBacklinks (
   backlinkId: Ref<Doc>,
@@ -30,8 +25,7 @@ export function getBacklinks (
   attachedDocId: Ref<Doc> | undefined,
   content: string
 ): Array<Data<Backlink>> {
-  const json = generateJSON(content, extensions)
-  const doc = ProseMirrorNode.fromJSON(schema, json)
+  const doc = parseHTML(content, extensions)
 
   const result: Array<Data<Backlink>> = []
 
@@ -47,7 +41,7 @@ export function getBacklinks (
           collection: 'backlinks',
           backlinkId,
           backlinkClass,
-          message: parent !== null ? generateHTML(parent.toJSON(), extensions) : '',
+          message: parent !== null ? getHTML(parent, extensions) : '',
           attachedDocId
         })
       }

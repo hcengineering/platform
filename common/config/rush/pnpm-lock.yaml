@@ -250,6 +250,7 @@ specifiers:
   '@tiptap/extension-task-item': ^2.0.3
   '@tiptap/extension-task-list': ^2.0.3
   '@tiptap/extension-typography': ^2.0.3
+  '@tiptap/html': ^2.0.3
   '@tiptap/pm': ^2.0.3
   '@tiptap/prosemirror-tables': ^1.1.4
   '@tiptap/starter-kit': ^2.0.3
@@ -646,6 +647,7 @@ dependencies:
   '@tiptap/extension-task-item': 2.0.3_fc2f730f0ef238c57ef10dc1abce4607
   '@tiptap/extension-task-list': 2.0.3_@tiptap+core@2.0.3
   '@tiptap/extension-typography': 2.0.3_@tiptap+core@2.0.3
+  '@tiptap/html': 2.1.6_fc2f730f0ef238c57ef10dc1abce4607
   '@tiptap/pm': 2.0.3_@tiptap+core@2.0.3
   '@tiptap/prosemirror-tables': 1.1.4_a7abb371f17d2bc77abec7bc53398db5
   '@tiptap/starter-kit': 2.0.3_@tiptap+pm@2.0.3
@@ -22153,7 +22155,7 @@ packages:
     dev: false
 
   file:projects/text.tgz_a7abb371f17d2bc77abec7bc53398db5:
-    resolution: {integrity: sha512-McvKY4vlC1EY3CIok56LeT5SLAXkLl7mX2lUkFeFg9q2WF40ON9mmEy9VcJJ5T1hcKh4FhaIfcOsxkDS2d+CNw==, tarball: file:projects/text.tgz}
+    resolution: {integrity: sha512-QfLKyYxcLXLoqBMnbP4k2ND5871b+ycKCz7+NZ7xBtPtEb3Ee6jPdFrf8wbmnIYX/dLV0VThNKXcJ4ZiWxNvbA==, tarball: file:projects/text.tgz}
     id: file:projects/text.tgz
     name: '@rush-temp/text'
     version: 0.0.0
@@ -22172,6 +22174,7 @@ packages:
       '@tiptap/extension-task-item': 2.0.3_fc2f730f0ef238c57ef10dc1abce4607
       '@tiptap/extension-task-list': 2.0.3_@tiptap+core@2.0.3
       '@tiptap/extension-typography': 2.0.3_@tiptap+core@2.0.3
+      '@tiptap/html': 2.1.6_fc2f730f0ef238c57ef10dc1abce4607
       '@tiptap/pm': 2.0.3_@tiptap+core@2.0.3
       '@tiptap/prosemirror-tables': 1.1.4_a7abb371f17d2bc77abec7bc53398db5
       '@tiptap/starter-kit': 2.0.3_@tiptap+pm@2.0.3
