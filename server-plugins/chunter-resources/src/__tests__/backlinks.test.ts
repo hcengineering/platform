@@ -49,9 +49,24 @@ describe('extractBacklinks', () => {
         collection: 'backlinks',
         backlinkId: 'backlinkId',
         backlinkClass: 'backlinkClass',
-        message: 'hello <span data-type="reference" data-id="id" data-objectclass="contact:class:Person" data-label="Appleseed John" class="reference">@Appleseed John</span>',
+        message:
+          'hello <span data-type="reference" data-id="id" data-objectclass="contact:class:Person" data-label="Appleseed John" class="reference">@Appleseed John</span>',
         attachedDocId: 'attachedDocId'
       }
     ])
+  })
+
+  it('should parse single backlink for multiple references', () => {
+    const content =
+      '<p><span class="reference" data-type="reference" data-id="id" data-label="Appleseed John" data-objectclass="contact:class:Person">@Appleseed John</span> <span data-type="reference" class="reference" data-id="id" data-label="Appleseed John" data-objectclass="contact:class:Person">@Appleseed John</span> </p>'
+
+    const backlinks = getBacklinks(
+      'backlinkId' as Ref<Doc>,
+      'backlinkClass' as Ref<Class<Doc>>,
+      'attachedDocId' as Ref<Doc>,
+      content
+    )
+
+    expect(backlinks.length).toBe(1)
   })
 })

@@ -16,8 +16,8 @@
 import { Node, mergeAttributes } from '@tiptap/core'
 
 /**
-* @public
-*/
+ * @public
+ */
 export const ReferenceNode = Node.create({
   name: 'reference',
   group: 'inline',
@@ -83,10 +83,6 @@ export const ReferenceNode = Node.create({
   },
 
   renderHTML ({ HTMLAttributes }) {
-    return [
-      'span',
-      mergeAttributes({ 'data-type': this.name }, HTMLAttributes),
-      0
-    ]
+    return ['span', mergeAttributes({ 'data-type': this.name }, HTMLAttributes), 0]
   }
 })
