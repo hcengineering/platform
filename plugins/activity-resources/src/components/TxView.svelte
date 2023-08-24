@@ -213,7 +213,7 @@
         <div class="msgactivity-content__title labels-row">
           <span class={withAvatar ? 'bold' : 'strong'}>
             {#if employee}
-              {getName(employee)}
+              {getName(client.getHierarchy(), employee)}
             {:else}
               <Label label={core.string.System} />
             {/if}
