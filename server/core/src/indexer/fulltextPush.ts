@@ -15,6 +15,7 @@
 
 import core, {
   AnyAttribute,
+  ArrOf,
   Class,
   Doc,
   DocIndexState,
@@ -110,21 +111,25 @@ export class FullTextPushStage implements FullTextPipelineStage {
         attrObj !== null &&
         attrObj !== undefined &&
         attrObj.index === IndexKind.FullText &&
-        attrObj.type._class === core.class.RefTo
+        (attrObj.type._class === core.class.RefTo ||
+          (attrObj.type._class === core.class.ArrOf && (attrObj.type as ArrOf<any>).of._class === core.class.RefTo))
       ) {
-        const refs = doc.attributes[attribute].split(',')
-        const refDocs = await metrics.with(
-          'ref-docs',
-          {},
-          async (ctx) =>
-            await this.dbStorage.findAll(ctx, core.class.DocIndexState, {
-              _id: { $in: refs }
+        const attrStringValue = doc.attributes[attribute]
+        if (attrStringValue !== undefined && attrStringValue !== null && attrStringValue !== '') {
+          const refs = attrStringValue.split(',')
+          const refDocs = await metrics.with(
+            'ref-docs',
+            {},
+            async (ctx) =>
+              await this.dbStorage.findAll(ctx, core.class.DocIndexState, {
+                _id: { $in: refs }
+              })
+          )
+          if (refDocs.length > 0) {
+            refDocs.forEach((c) => {
+              updateDoc2Elastic(c.attributes, elasticDoc, c._id)
             })
-        )
-        if (refDocs.length > 0) {
-          refDocs.forEach((c) => {
-            updateDoc2Elastic(c.attributes, elasticDoc, c._id)
-          })
+          }
         }
       }
     }
