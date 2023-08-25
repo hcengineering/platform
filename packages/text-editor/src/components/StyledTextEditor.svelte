@@ -42,7 +42,7 @@
   import RIItalic from './icons/RIItalic.svelte'
   import RILink from './icons/RILink.svelte'
   import RIStrikethrough from './icons/RIStrikethrough.svelte'
-  // import RIMention from './icons/RIMention.svelte'
+  import Underline from './icons/Underline.svelte'
   import { AnyExtension } from '@tiptap/core'
   import AddColAfter from './icons/table/AddColAfter.svelte'
   import AddColBefore from './icons/table/AddColBefore.svelte'
@@ -434,6 +434,13 @@
       selected={activeModes.has('strike')}
       showTooltip={{ label: textEditorPlugin.string.Strikethrough }}
       on:click={getToggler(textEditor.toggleStrike)}
+    />
+    <StyleButton
+      icon={Underline}
+      size={formatButtonSize}
+      selected={activeModes.has('underline')}
+      showTooltip={{ label: textEditorPlugin.string.Underlined }}
+      on:click={getToggler(textEditor.toggleUnderline)}
     />
     <StyleButton
       icon={RILink}

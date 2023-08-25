@@ -9,6 +9,7 @@ import TaskList from '@tiptap/extension-task-list'
 import { Level } from '@tiptap/extension-heading'
 import Highlight from '@tiptap/extension-highlight'
 import StarterKit from '@tiptap/starter-kit'
+import Underline from '@tiptap/extension-underline'
 
 import Gapcursor from '@tiptap/extension-gapcursor'
 
@@ -65,6 +66,7 @@ export const defaultExtensions: AnyExtension[] = [
   Highlight.configure({
     multicolor: false
   }),
+  Underline.configure({}),
   Typography.configure({}),
   Gapcursor,
   Link.configure({
