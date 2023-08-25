@@ -47,6 +47,7 @@
   import RILink from './icons/RILink.svelte'
   import RIMention from './icons/RIMention.svelte'
   import RIStrikethrough from './icons/RIStrikethrough.svelte'
+  import Underline from './icons/Underline.svelte'
   import Send from './icons/Send.svelte'
 
   const dispatch = createEventDispatcher()
@@ -221,6 +222,14 @@
       selected={activeModes.has('strike')}
       showTooltip={{ label: textEditorPlugin.string.Strikethrough }}
       on:click={getToggler(textEditor.toggleStrike)}
+    />
+    <Button
+      icon={Underline}
+      kind={'ghost'}
+      size={'small'}
+      selected={activeModes.has('underline')}
+      showTooltip={{ label: textEditorPlugin.string.Underlined }}
+      on:click={getToggler(textEditor.toggleUnderline)}
     />
     <Button
       icon={RILink}

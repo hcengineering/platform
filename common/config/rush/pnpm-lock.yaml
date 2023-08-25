@@ -250,6 +250,7 @@ specifiers:
   '@tiptap/extension-task-item': ^2.0.3
   '@tiptap/extension-task-list': ^2.0.3
   '@tiptap/extension-typography': ^2.0.3
+  '@tiptap/extension-underline': ^2.0.4
   '@tiptap/html': ^2.0.3
   '@tiptap/pm': ^2.0.3
   '@tiptap/prosemirror-tables': ^1.1.4
@@ -647,6 +648,7 @@ dependencies:
   '@tiptap/extension-task-item': 2.0.3_fc2f730f0ef238c57ef10dc1abce4607
   '@tiptap/extension-task-list': 2.0.3_@tiptap+core@2.0.3
   '@tiptap/extension-typography': 2.0.3_@tiptap+core@2.0.3
+  '@tiptap/extension-underline': 2.1.7_@tiptap+core@2.0.3
   '@tiptap/html': 2.1.6_fc2f730f0ef238c57ef10dc1abce4607
   '@tiptap/pm': 2.0.3_@tiptap+core@2.0.3
   '@tiptap/prosemirror-tables': 1.1.4_a7abb371f17d2bc77abec7bc53398db5
@@ -6585,6 +6587,14 @@ packages:
 
   /@tiptap/extension-typography/2.0.3_@tiptap+core@2.0.3:
     resolution: {integrity: sha512-5U91O2dffYOvwenWG+zT1N/pnt+RppSlocxs1KaNWFLlI2fgzDTyUyjzygIHGmskStqay2MuvmPnfVABoC+1Gw==}
+    peerDependencies:
+      '@tiptap/core': ^2.0.0
+    dependencies:
+      '@tiptap/core': 2.0.3_@tiptap+pm@2.0.3
+    dev: false
+
+  /@tiptap/extension-underline/2.1.7_@tiptap+core@2.0.3:
+    resolution: {integrity: sha512-mL95afyEJvg+C2yrTVn7QltfyE9ja1+94+OUkRBbB8PN3N6HvfSL4K/QSqecOLQ38bSQm/6ZGPkBLDkDGhGPdw==}
     peerDependencies:
       '@tiptap/core': ^2.0.0
     dependencies:
@@ -22078,7 +22088,7 @@ packages:
     dev: false
 
   file:projects/text-editor.tgz_1e646fd62a3adc9d0b41f256dafe3d38:
-    resolution: {integrity: sha512-Omwv7uuoSX4eicxv4jQUEegyhpg0QWeFuCr+DxCR3j7yfsFfF5mUCleLcX7LWh+M9EXbdldBdcHE3OriJg5ECQ==, tarball: file:projects/text-editor.tgz}
+    resolution: {integrity: sha512-mZ+9T1R2k5X+qEj4fXliwEVDzmBbGEggRReeFSTver56sVbuZQrbnAeeHEa1kMX6rD/O5kKTn8Bwk+S97y3jkw==, tarball: file:projects/text-editor.tgz}
     id: file:projects/text-editor.tgz
     name: '@rush-temp/text-editor'
     version: 0.0.0
@@ -22102,6 +22112,7 @@ packages:
       '@tiptap/extension-task-item': 2.0.3_fc2f730f0ef238c57ef10dc1abce4607
       '@tiptap/extension-task-list': 2.0.3_@tiptap+core@2.0.3
       '@tiptap/extension-typography': 2.0.3_@tiptap+core@2.0.3
+      '@tiptap/extension-underline': 2.1.7_@tiptap+core@2.0.3
       '@tiptap/pm': 2.0.3_@tiptap+core@2.0.3
       '@tiptap/prosemirror-tables': 1.1.4_a7abb371f17d2bc77abec7bc53398db5
       '@tiptap/starter-kit': 2.0.3_@tiptap+pm@2.0.3

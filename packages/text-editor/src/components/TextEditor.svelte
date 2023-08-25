@@ -83,6 +83,9 @@
   export function toggleStrike () {
     editor.commands.toggleStrike()
   }
+  export function toggleUnderline () {
+    editor.commands.toggleUnderline()
+  }
   export function getLink () {
     return editor.getAttributes('link').href
   }
