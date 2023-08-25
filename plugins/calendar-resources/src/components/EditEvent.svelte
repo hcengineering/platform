@@ -17,17 +17,17 @@
   import { Person } from '@hcengineering/contact'
   import { DocumentUpdate, Ref } from '@hcengineering/core'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import { Button, CheckBox, DAY, EditBox, Icon, IconClose, Label, closePopup, showPopup } from '@hcengineering/ui'
+  import { Button, DAY, EditBox, Icon, IconClose, IconMoreH, closePopup, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
   import { isReadOnly, saveUTC } from '../utils'
   import EventParticipants from './EventParticipants.svelte'
   import EventTimeEditor from './EventTimeEditor.svelte'
-  import RRulePresenter from './RRulePresenter.svelte'
   import ReccurancePopup from './ReccurancePopup.svelte'
   import UpdateRecInstancePopup from './UpdateRecInstancePopup.svelte'
   import { deepEqual } from 'fast-equals'
   import EventReminders from './EventReminders.svelte'
+  import EventTimeExtraButton from './EventTimeExtraButton.svelte'
 
   export let object: Event
   $: readOnly = isReadOnly(object)
@@ -207,124 +207,94 @@
   }
 </script>
 
-<div class="container">
+<div class="eventPopup-container">
   <div class="header flex-between">
-    <EditBox bind:value={title} placeholder={calendar.string.NewEvent} disabled={readOnly} />
-    <Button
-      id="card-close"
-      focusIndex={10002}
-      icon={IconClose}
-      iconProps={{ size: 'medium', fill: 'var(--theme-dark-color)' }}
-      kind={'ghost'}
-      size={'small'}
-      on:click={() => {
-        dispatch('close')
-      }}
+    <EditBox
+      bind:value={title}
+      placeholder={calendar.string.NewEvent}
+      disabled={readOnly}
+      kind={'ghost-large'}
+      fullSize
+      focusable
+      focusIndex={10001}
     />
-  </div>
-  <div class="time">
-    <EventTimeEditor {allDay} bind:startDate bind:dueDate disabled={readOnly} />
-    <div>
-      {#if !allDay && rules.length === 0}
-        <div class="flex-row-center flex-gap-3 ext">
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <div class="cursor-pointer" on:click={() => (allDay = true)}>
-            <Label label={calendar.string.AllDay} />
-          </div>
-          <div>
-            <Label label={calendar.string.TimeZone} />
-          </div>
-          {#if rules.length > 0}
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <div class="cursor-pointer" on:click={setRecurrance}>
-              <Label label={calendar.string.Repeat} />
-            </div>
-          {/if}
-        </div>
-      {:else}
-        <div>
-          <div class="flex-row-center flex-gap-2 mt-1">
-            <CheckBox bind:checked={allDay} accented on:value={allDayChangeHandler} readonly={readOnly} />
-            <Label label={calendar.string.AllDay} />
-          </div>
-          <div class="flex-row-center flex-gap-2 mt-1">
-            <Icon size="small" icon={calendar.icon.Globe} />
-            <Label label={calendar.string.TimeZone} />
-          </div>
-          {#if rules.length > 0}
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <div class="flex-row-center flex-gap-2 mt-1" on:click={setRecurrance}>
-              <Icon size="small" icon={calendar.icon.Repeat} />
-              {#if rules.length > 0}
-                <RRulePresenter {rules} />
-              {:else}
-                <Label label={calendar.string.Repeat} />
-              {/if}
-            </div>
-          {/if}
-        </div>
-      {/if}
+    <div class="flex-row-center gap-1 flex-no-shrink ml-3">
+      <Button id="card-more" focusIndex={10002} icon={IconMoreH} kind={'ghost'} size={'small'} on:click={() => {}} />
+      <Button
+        id="card-close"
+        focusIndex={10003}
+        icon={IconClose}
+        kind={'ghost'}
+        size={'small'}
+        on:click={() => {
+          dispatch('close')
+        }}
+      />
     </div>
   </div>
-  <div class="divider" />
-  <div>
+  <div class="block first flex-no-shrink">
+    <EventTimeEditor {allDay} bind:startDate bind:dueDate disabled={readOnly} />
+    <EventTimeExtraButton bind:allDay bind:rules on:repeat={setRecurrance} on:allday={allDayChangeHandler} noRepeat />
+  </div>
+  <div class="block rightCropPadding">
     <EventParticipants bind:participants bind:externalParticipants disabled={readOnly} />
   </div>
-  <div class="divider" />
-  <div class="block">
-    <div class="flex-row-center flex-gap-2">
-      <Icon icon={calendar.icon.Description} size="small" />
-      <EditBox bind:value={description} placeholder={calendar.string.Description} disabled={readOnly} />
+  <div class="block flex-no-shrink">
+    <div class="flex-row-center gap-1-5">
+      <Icon icon={calendar.icon.Description} size={'small'} />
+      <EditBox
+        bind:value={description}
+        placeholder={calendar.string.Description}
+        kind={'ghost'}
+        fullSize
+        focusable
+        disabled={readOnly}
+      />
     </div>
   </div>
   <div class="divider" />
-  <div class="block">
+  <div class="block rightCropPadding">
     <EventReminders bind:reminders />
   </div>
   <div class="divider" />
-  <div class="flex-between pool">
+  <div class="flex-between p-5 flex-no-shrink">
     <div />
     <Button kind="accented" label={presentation.string.Save} disabled={readOnly} on:click={saveEvent} />
   </div>
 </div>
 
 <style lang="scss">
-  .container {
+  .eventPopup-container {
     display: flex;
     flex-direction: column;
+    max-width: 25rem;
+    min-width: 25rem;
     min-height: 0;
     background: var(--theme-popup-color);
-    box-shadow: var(--theme-popup-shadow);
-    min-width: 25rem;
     border-radius: 1rem;
+    box-shadow: var(--theme-popup-shadow);
 
     .header {
-      margin: 0.75rem 0.75rem 0 0.75rem;
-      padding: 0.5rem;
+      flex-shrink: 0;
+      padding: 0.75rem 0.75rem 0.5rem;
     }
 
     .block {
-      padding-left: 1.25rem;
-      padding-right: 1.25rem;
-    }
+      display: flex;
+      flex-direction: column;
+      padding: 0.75rem 1.25rem;
+      min-width: 0;
+      min-height: 0;
+      border-bottom: 1px solid var(--theme-divider-color);
 
-    .divider {
-      margin-top: 0.75rem;
-      margin-bottom: 0.75rem;
-      border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
-    }
-
-    .pool {
-      margin-top: 0.5rem;
-      margin: 1.25rem;
-    }
-
-    .time {
-      margin-left: 1.25rem;
-      margin-right: 1.25rem;
-
-      .ext {
-        color: var(--theme-dark-color);
+      &.first {
+        padding-top: 0;
+      }
+      &:not(.rightCropPadding) {
+        padding: 0.75rem 1.25rem;
+      }
+      &.rightCropPadding {
+        padding: 0.75rem 1rem 0.75rem 1.25rem;
       }
     }
   }

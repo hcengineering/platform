@@ -21,12 +21,14 @@
     SimpleDatePopup,
     eventToHTMLElement,
     showPopup,
-    TimeInputBox
+    TimeInputBox,
+    TimeShiftPresenter
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import DateLocalePresenter from './DateLocalePresenter.svelte'
 
   export let date: number
+  export let difference: number = 0
   export let direction: 'vertical' | 'horizontal' = 'vertical'
   export let showDate: boolean = true
   export let withoutTime: boolean
@@ -69,18 +71,27 @@
   }
 </script>
 
-<div class="dateEditor-container {direction}">
+<div
+  class="dateEditor-container {direction}"
+  class:difference={difference > 0}
+  class:gap-1-5={direction === 'horizontal'}
+>
   {#if showDate || withoutTime}
-    <Button {kind} {size} padding={'0 .5rem'} on:click={dateClick} {disabled}>
-      <div slot="content">
+    <Button {kind} {size} padding={'0 .5rem'} shape={'round-sm'} on:click={dateClick} {disabled}>
+      <svelte:fragment slot="content">
         <DateLocalePresenter date={currentDate.getTime()} />
-      </div>
+      </svelte:fragment>
     </Button>
   {/if}
   {#if !withoutTime}
-    <Button {kind} {size} padding={'0 .5rem'} on:click={timeClick} {disabled}>
+    <Button {kind} {size} padding={'0 .5rem'} shape={'round-sm'} on:click={timeClick} {disabled}>
       <svelte:fragment slot="content">
         <TimeInputBox bind:currentDate noBorder size={'small'} on:update={(date) => updateTime(date.detail)} />
+        {#if difference > 0}
+          <div class="ml-2 flex-no-shrink content-darker-color overflow-label">
+            <TimeShiftPresenter value={date - difference} exact />
+          </div>
+        {/if}
       </svelte:fragment>
     </Button>
   {/if}
@@ -96,6 +107,13 @@
     }
     &.vertical {
       flex-direction: column;
+
+      &.difference {
+        align-items: start;
+      }
+      &:not(.difference) {
+        align-items: stretch;
+      }
     }
   }
 </style>

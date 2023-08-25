@@ -56,14 +56,14 @@
   <Label label={calendar.string.Every} />
   {rule.interval ?? 1}
   <Label label={periods[rule.freq]} params={{ count: rule.interval ?? 1 }} />
-  <span class="content-darker-color">
+  <span class="ml-2 content-darker-color">
     {#if rule.freq === 'WEEKLY' && rule.byDay}
       {#await getDays(rule.byDay ?? [], $themeStore.language) then str}
         {str}
       {/await}
     {/if}
     {#if rule.endDate}
-      <Label label={calendar.string.OnUntil} />
+      <span class="lower"><Label label={calendar.string.OnUntil} /></span>
       <DateLocalePresenter date={rule.endDate} />
     {/if}
     {#if rule.count}

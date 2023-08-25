@@ -107,21 +107,21 @@
   let until: number = rules[0]?.endDate ?? Date.now()
 </script>
 
-<div class="container">
-  <div class="header fs-title">
+<div class="repeatPopup-container">
+  <div class="header">
     <Label label={calendar.string.Repeat} />
     {selected}
   </div>
-  <div class="content">
-    <div class="flex-row-center flex-gap-2">
-      <Label label={calendar.string.Every} />
-      <NumberInput bind:value={interval} maxWidth={'3rem'} maxDigitsAfterPoint={0} minValue={1} />
+  <div class="content flex-col">
+    <div class="flex-row-center gap-1-5">
+      <span class="min-w-12"><Label label={calendar.string.Every} /></span>
+      <NumberInput bind:value={interval} maxWidth={'4rem'} maxDigitsAfterPoint={0} minValue={1} />
       <DropdownLabelsIntl bind:selected={periodType} items={ddItems} size="medium" params={{ count: interval }} />
     </div>
     {#if periodType === 'WEEKLY'}
-      <div class="flex-row-center mt-4">
-        <Label label={calendar.string.On} />
-        <div class="flex-row-center flex-gap-2 ml-6">
+      <div class="flex-row-center mt-3">
+        <span class="min-w-12"><Label label={calendar.string.On} /></span>
+        <div class="flex-row-center flex-gap-2 ml-1-5">
           {#each weekdays as day}
             <CircleButton
               size="medium"
@@ -136,10 +136,10 @@
         </div>
       </div>
     {/if}
-    <div class="mt-4 mb-6">
+    <div class="flex-row-center mt-3 mb-3 min-h-8">
       <Label label={calendar.string.Ends} />
     </div>
-    <Grid columnGap={1} rowGap={1}>
+    <Grid columnGap={0.375} rowGap={0.75}>
       <RadioButton
         labelIntl={calendar.string.Never}
         value={'never'}
@@ -157,7 +157,7 @@
           selected = 'on'
         }}
       />
-      <div class="flex">
+      <div class="flex-row-center">
         <DateEditor bind:date={until} withoutTime kind="regular" disabled={selected !== 'on'} />
       </div>
       <RadioButton
@@ -168,7 +168,7 @@
           selected = 'after'
         }}
       />
-      <div class="flex-row-center flex-gap-2">
+      <div class="flex-row-center">
         <NumberInput
           bind:value={count}
           maxWidth={'3rem'}
@@ -176,7 +176,9 @@
           minValue={1}
           disabled={selected !== 'after'}
         />
-        <Label label={calendar.string.Times} params={{ count }} />
+        <span class="ml-1-5" class:content-dark-color={selected !== 'after'}>
+          <Label label={calendar.string.Times} params={{ count }} />
+        </span>
       </div>
     </Grid>
   </div>
@@ -192,7 +194,7 @@
 </div>
 
 <style lang="scss">
-  .container {
+  .repeatPopup-container {
     display: flex;
     flex-direction: column;
     min-height: 0;
@@ -202,12 +204,13 @@
     border-radius: 1rem;
 
     .header {
-      margin: 1.25rem;
-      margin-bottom: 0;
+      padding: 1.25rem;
+      font-weight: 500;
+      font-size: 1rem;
     }
 
     .content {
-      margin: 1.25rem;
+      padding: 0 1.25rem 1.25rem;
     }
 
     .weekday {
@@ -216,8 +219,8 @@
     }
 
     .pool {
-      border-top: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
       padding: 1.25rem;
+      border-top: 1px solid var(--theme-divider-color);
     }
   }
 </style>

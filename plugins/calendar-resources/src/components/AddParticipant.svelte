@@ -33,6 +33,7 @@
   export let focusable: boolean = false
   export let disabled: boolean = false
   export let excluded: Ref<Person>[] = []
+  export let fullSize: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -163,7 +164,8 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
-  class="editbox-container"
+  class="antiEditBox"
+  class:flex-grow={fullSize}
   class:w-full={focusable}
   on:click={() => {
     input.focus()
@@ -181,7 +183,7 @@
   }}
 >
   <div class="hidden-text" bind:this={text} />
-  <div class="flex-row-center clear-mins" class:focusable>
+  <div class="ghost flex-row-center clear-mins" class:focusable class:w-full={fullSize}>
     <input
       {disabled}
       bind:this={input}
@@ -197,42 +199,3 @@
     />
   </div>
 </div>
-
-<style lang="scss">
-  .editbox-container {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: flex-start;
-
-    .focusable {
-      margin: 0 -0.75rem;
-      padding: 0.625rem 0.75rem;
-      width: calc(100% + 1.5rem);
-      border-radius: 0.25rem;
-      transition: border-color 0.15s ease-in-out;
-
-      &:focus-within {
-        box-shadow: 0 0 0 1px var(--theme-editbox-focus-border);
-      }
-    }
-
-    input {
-      margin: 0;
-      padding: 0;
-      min-width: 0;
-      color: var(--theme-caption-color);
-      border: none;
-      border-radius: 2px;
-
-      &::-webkit-contacts-auto-fill-button,
-      &::-webkit-credentials-auto-fill-button {
-        visibility: hidden;
-        display: none !important;
-        pointer-events: none;
-        height: 0;
-        width: 0;
-        margin: 0;
-      }
-    }
-  }
-</style>

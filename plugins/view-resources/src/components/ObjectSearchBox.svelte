@@ -121,6 +121,7 @@
 
 <div {id} bind:this={container} class="min-w-0" class:w-full={width === '100%'} class:h-full={$$slots.content}>
   {#if $$slots.content}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="w-full h-full flex-streatch" on:click={_click}>
       <slot name="content" />
     </div>
@@ -143,7 +144,7 @@
           {:else}
             <div class="flex-row-center">
               {#if icon}
-                <Icon {icon} size={kind === 'link' ? 'small' : size} />
+                <Icon {icon} size={kind === 'link' || kind === 'stepper' ? 'small' : size} />
               {/if}
               <div class="ml-2">
                 <Label {label} />

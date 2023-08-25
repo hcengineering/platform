@@ -76,6 +76,8 @@
     "AddParticipants": "Добавить участников",
     "Sync": "Синхронизация",
     "Busy": "Занято",
-    "AddReminder": "Добавить напоминание"
+    "AddReminder": "Добавить напоминание",
+    "SeeAllNumberParticipants": "{value, plural, other {Увидеть всех # участников}}",
+    "SeeAllNumberReminders": "{value, plural, other {Просмотреть все # напоминаний}}"
   }
 }

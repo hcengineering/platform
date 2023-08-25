@@ -142,7 +142,7 @@
         selected = index === 0 ? edits[1].id : edits[index - 1].id
       }
       if (ev.code === 'ArrowRight' && edits[index].el) {
-        selected = index === 4 ? edits[0].id : edits[index + 1].id
+        selected = index === 1 ? edits[0].id : edits[index + 1].id
       }
       if (ev.code === 'Tab') {
         if (ed === 'min') dispatch('save')

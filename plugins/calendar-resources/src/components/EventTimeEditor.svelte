@@ -43,26 +43,27 @@
   }
 </script>
 
-<div class="flex-row-center flex-gap-1 mt-2 mb-2">
-  <Icon icon={calendar.icon.Watch} size="small" />
-  {#if sameDate}
-    <DateEditor bind:date={startDate} direction="horizontal" withoutTime={allDay} on:update={dateChange} {disabled} />
-    <div class="content-dark-color">
-      <IconArrowRight size="small" />
-    </div>
-    <DateEditor
-      bind:date={dueDate}
-      direction="horizontal"
-      withoutTime={allDay}
-      showDate={false}
-      {disabled}
-      on:update={dueChange}
-    />
-  {:else}
-    <DateEditor bind:date={startDate} direction="vertical" withoutTime={allDay} on:update={dateChange} {disabled} />
-    <div class="content-dark-color">
-      <IconArrowRight size="small" />
-    </div>
-    <DateEditor bind:date={dueDate} direction="vertical" withoutTime={allDay} on:update={dueChange} {disabled} />
-  {/if}
+<div class="flex-row-center">
+  <div class="self-start flex-no-shrink mt-2 mr-1-5 content-dark-color">
+    <Icon icon={calendar.icon.Watch} size={'small'} />
+  </div>
+  <DateEditor
+    bind:date={startDate}
+    direction={sameDate ? 'horizontal' : 'vertical'}
+    withoutTime={allDay}
+    on:update={dateChange}
+    {disabled}
+  />
+  <div class="self-end flex-no-shrink mb-2 ml-1-5 mr-1-5 content-darker-color">
+    <IconArrowRight size={'small'} />
+  </div>
+  <DateEditor
+    bind:date={dueDate}
+    direction={sameDate ? 'horizontal' : 'vertical'}
+    withoutTime={allDay}
+    showDate={!sameDate}
+    difference={startDate}
+    {disabled}
+    on:update={dueChange}
+  />
 </div>

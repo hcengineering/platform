@@ -1,0 +1,97 @@
+.antiEditBox {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+
+  .large-style {
+    font-weight: 400;
+    font-size: 1.25rem;
+  }
+  .small-style {
+    font-weight: 400;
+    font-size: 0.75rem;
+  }
+  .search-style {
+    font-weight: 400;
+    padding: 0.625rem 0.75rem;
+  }
+  .underline {
+    font-weight: 500;
+
+    input {
+      padding: 0.25rem 0.5rem;
+      background-color: var(--theme-editbox-focus-color);
+      border-radius: 0.25rem;
+
+      &:focus { box-shadow: 0 0 0 1px var(--theme-editbox-focus-border); }
+    }
+  }
+  .focusable:not(.default, .default-large, .ghost, .ghost-large) {
+    margin: 0 -0.75rem;
+    padding: 0.625rem 0.75rem;
+    width: calc(100% + 1.5rem);
+    border-radius: 0.25rem;
+    transition: border-color 0.15s ease-in-out;
+
+    &:focus-within { box-shadow: 0 0 0 1px var(--theme-editbox-focus-border); }
+  }
+
+  input {
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+    color: var(--theme-caption-color);
+    border: none;
+    border-radius: 2px;
+
+    &::-webkit-contacts-auto-fill-button,
+    &::-webkit-credentials-auto-fill-button {
+      visibility: hidden;
+      display: none !important;
+      pointer-events: none;
+      height: 0;
+      width: 0;
+      margin: 0;
+    }
+    &.number::-webkit-outer-spin-button,
+    &.number::-webkit-inner-spin-button { -webkit-appearance: none; }
+  }
+  input[type='number'] { -moz-appearance: textfield; }
+  &.uppercase .hidden-text,
+  &.uppercase input { text-transform: uppercase; }
+
+  .default, .ghost {
+    font-weight: 400;
+    font-size: .8125rem;
+  }
+  .default-large, .ghost-large {
+    font-weight: 500;
+    font-size: 1rem;
+  }
+  .default, .ghost { padding: 0.3125rem 0.5rem; }
+  .default-large, .ghost-large { padding: 0.4375rem 0.5rem; }
+  .default, .ghost, .default-large, .ghost-large {
+    box-sizing: border-box;
+    line-height: 1.25rem;
+    border-radius: .375rem;
+    border: 1px solid transparent;
+    
+    input {
+      color: inherit;
+
+      &::placeholder { color: var(--theme-darker-color); }
+    }
+    &:hover { background-color: var(--theme-button-hovered); }
+    &.focusable:focus-within {
+      background-color: var(--theme-button-focused);
+      border-color: var(--theme-editbox-default-focus-border);
+    }
+    &.disabled {
+      color: var(--theme-dark-color);
+      background-color: transparent;
+      border-color: var(--theme-divider-color);
+    }
+  }
+  .default, .default-large { border-color: var(--theme-divider-color); }
+}

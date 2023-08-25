@@ -23,6 +23,7 @@
   import { floorFractionDigits } from '../utils'
   import DownOutline from './icons/DownOutline.svelte'
   import UpOutline from './icons/UpOutline.svelte'
+  import Button from './Button.svelte'
 
   export let maxWidth: string | undefined = undefined
   export let value: number = 0
@@ -145,13 +146,9 @@
       on:keypress
       on:blur
     />
-    <div class="flex-col-center">
-      <div on:click={() => value++}>
-        <UpOutline size="small" />
-      </div>
-      <div on:click={() => value--}>
-        <DownOutline size="small" />
-      </div>
+    <div class="flex-col-center py-0-5">
+      <Button icon={UpOutline} kind={'stepper'} padding={'0'} {disabled} on:click={() => value++} />
+      <Button icon={DownOutline} kind={'stepper'} padding={'0'} {disabled} on:click={() => value--} />
     </div>
   </div>
 </div>
@@ -161,9 +158,9 @@
     display: inline-flex;
     flex-direction: column;
     align-items: flex-start;
+    padding: 0rem 0.125rem 0 0.5rem;
+    border: 1px solid var(--theme-divider-color);
     border-radius: 0.375rem;
-    border: 1px solid var(--theme-table-border-color);
-    padding: 0rem 0.5rem;
 
     input {
       margin: 0;
@@ -180,6 +177,9 @@
         height: 0;
         width: 0;
         margin: 0;
+      }
+      &:disabled {
+        color: var(--theme-darker-color);
       }
 
       &.number::-webkit-outer-spin-button,

@@ -222,6 +222,7 @@
   .ap-space {
     flex-shrink: 0;
     height: .25rem;
+    &.x1-5 { height: .375rem; }
     &.x2 { height: .5rem; }
     &.x3 { height: .75rem; }
   }
@@ -255,11 +256,13 @@
     cursor: pointer;
     
     &:not(.separator) {
-      margin: 0 .5rem;
       min-height: 2.25rem;
       border-radius: .25rem;
     }
-    &:not(.separator, .withComp) { padding: .25rem .5rem; }
+    &:not(.separator, .noMargin) {
+      margin-left: .5rem;
+      margin-right: .5rem;
+    }
     &.withComp {
       display: flex;
       align-items: center;
@@ -338,6 +341,21 @@
 
       &:not(.halfMargin) { margin: .5rem 0; }
       &.halfMargin { margin: .25rem 0; }
+    }
+  }
+  &:not(.thinStyle) .ap-menuItem:not(.separator, .withComp) { padding: .25rem .5rem; }
+  &.thinStyle {
+    border-radius: .75rem;
+
+    .ap-menuItem:not(.separator) {
+      padding: 0 .5rem;
+      min-height: 2rem;
+      font-size: .8125rem;
+      border-radius: .375rem;
+    }
+    .ap-menuItem:not(.separator, .noMargin) {
+      margin-left: .375rem;
+      margin-right: .375rem;
     }
   }
   .ap-check {

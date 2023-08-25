@@ -57,18 +57,20 @@
   }
 </script>
 
-<div class="antiPopup" on:keydown={onKeyDown}>
+<div class="antiPopup thinStyle" on:keydown={onKeyDown}>
+  <div class="ap-space x1-5" />
   <div class="ap-scroll">
     <div class="ap-box">
       <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <ListView bind:this={list} count={participants.length}>
+      <ListView bind:this={list} count={participants.length} kind={'thin'}>
         <svelte:fragment slot="item" let:item>
           {@const doc = participants[item]}
-          <div class="ap-menuItem withComp" on:click={() => select(doc)}>
+          <div class="ap-menuItem withComp noMargin" on:click={() => select(doc)}>
             <PersonRefPresenter disabled value={doc} />
           </div>
         </svelte:fragment>
       </ListView>
     </div>
   </div>
+  <div class="ap-space x1-5" />
 </div>
