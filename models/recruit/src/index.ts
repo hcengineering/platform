@@ -787,7 +787,7 @@ export function createModel (builder: Builder): void {
         '$lookup.space.archived': false
       },
       viewOptions: {
-        groupBy: ['company', 'location', 'dueTo', 'createdBy'],
+        groupBy: ['company', 'dueTo', 'createdBy'],
         orderBy: [
           ['company', SortingOrder.Ascending],
           ['dueTo', SortingOrder.Ascending],
