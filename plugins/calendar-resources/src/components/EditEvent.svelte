@@ -209,11 +209,7 @@
 
 <div class="container">
   <div class="header flex-between">
-    {#if object.attachedTo === calendar.ids.NoAttached}
-      <EditBox bind:value={title} placeholder={calendar.string.NewEvent} disabled={readOnly} />
-    {:else}
-      <div />
-    {/if}
+    <EditBox bind:value={title} placeholder={calendar.string.NewEvent} disabled={readOnly} />
     <Button
       id="card-close"
       focusIndex={10002}
