@@ -36,13 +36,22 @@ import CalendarEventPresenter from './components/CalendarEventPresenter.svelte'
 import DayCalendar from './components/DayCalendar.svelte'
 import EventParticipants from './components/EventParticipants.svelte'
 import EventTimeEditor from './components/EventTimeEditor.svelte'
+import EventTimeExtraButton from './components/EventTimeExtraButton.svelte'
 import IntegrationConfigure from './components/IntegrationConfigure.svelte'
 import EventReminders from './components/EventReminders.svelte'
 import calendar from './plugin'
 import contact from '@hcengineering/contact'
 import { deleteObjects } from '@hcengineering/view-resources'
 
-export { EventElement, CalendarView, DayCalendar, EventParticipants, EventTimeEditor, EventReminders }
+export {
+  EventElement,
+  CalendarView,
+  DayCalendar,
+  EventParticipants,
+  EventTimeEditor,
+  EventTimeExtraButton,
+  EventReminders
+}
 
 export * from './utils'
 

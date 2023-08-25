@@ -139,17 +139,28 @@ export type ButtonKind =
   | 'list'
   | 'list-header'
   | 'contrast'
+  | 'stepper'
 export type ButtonSize = 'inline' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
 export type ButtonShape =
   | 'rectangle'
   | 'rectangle-left'
   | 'rectangle-right'
   | 'circle'
+  | 'round-sm'
   | 'round'
   | 'round2'
   | 'filter'
   | undefined
-export type EditStyle = 'editbox' | 'large-style' | 'small-style' | 'search-style' | 'underline'
+export type EditStyle =
+  | 'editbox'
+  | 'large-style'
+  | 'small-style'
+  | 'search-style'
+  | 'underline'
+  | 'default'
+  | 'ghost'
+  | 'default-large'
+  | 'ghost-large'
 export interface PopupPositionElement {
   getBoundingClientRect: () => DOMRect
   position?: {

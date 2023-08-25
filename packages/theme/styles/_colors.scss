@@ -144,6 +144,7 @@
 
   --theme-editbox-focus-color: rgba(255, 255, 255, .04);
   --theme-editbox-focus-border: #5190EC;
+  --theme-editbox-default-focus-border: #205DC2; // Light
   --theme-tablist-color: rgba(0, 0, 0, .02);
   --theme-tablist-plain-color: #2A64C4; // Light
   --theme-tablist-plain-divider: rgba(255, 255, 255, .07); // Light invert
@@ -339,6 +340,7 @@
 
   --theme-editbox-focus-color: rgba(0, 0, 0, .08);
   --theme-editbox-focus-border: #5190EC;
+  --theme-editbox-default-focus-border: #205DC2;
   --theme-tablist-color: rgba(0, 0, 0, .02);
   --theme-tablist-plain-color: #2A64C4;
   --theme-tablist-plain-divider: rgba(0, 0, 0, .07);

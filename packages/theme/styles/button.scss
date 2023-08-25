@@ -27,7 +27,7 @@
     font-size: .8125rem;
     &.only-icon { width: 1.75rem; }
   }
-  &.medium {
+  &.medium:not(.stepper) {
     height: 2rem;
     &.only-icon { width: 2rem; }
   }
@@ -59,6 +59,7 @@
   &.short { max-width: 8.5rem; }
   &.accent { font-weight: 500; }
   &.sh-no-shape { border-radius: .25rem; }
+  &.sh-round-sm { border-radius: .375rem; }
   &.sh-round { border-radius: .5rem; }
   &.sh-round2 { border-radius: .75rem; }
   &.sh-circle { border-radius: 1rem; }
@@ -89,7 +90,8 @@
   &.jf-center { justify-content: center; }
   &.only-icon {
     flex-shrink: 0 !important;
-    padding: 0;
+
+    &:not(.stepper) { padding: 0; }
   }
 
   &.regular {
@@ -133,7 +135,7 @@
       }
     }
   }
-  &.ghost {
+  &.ghost, &.stepper {
     &:hover { background-color: var(--theme-button-hovered); }
     &:active { background-color: var(--theme-button-pressed); }
     &.selected { background-color: var(--highlight-select); }
@@ -264,6 +266,14 @@
       color: var(--theme-button-contrast-disabled-color);
       background-color: var(--theme-button-contrast-disabled);
     }
+  }
+  &.stepper {
+    padding: 0;
+    width: 1rem;
+    height: .8125rem;
+    min-width: 1rem;
+
+    &:focus { box-shadow: 0 0 0 1px var(--accented-button-outline); }
   }
 
   &.notSelected {

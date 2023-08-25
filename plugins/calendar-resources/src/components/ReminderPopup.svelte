@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DAY, HOUR, MINUTE, TimeShiftPresenter } from '@hcengineering/ui'
+  import { DAY, HOUR, MINUTE, TimeShiftPresenter, IconCheck } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let value: number
@@ -31,16 +31,25 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="antiPopup">
+<div class="antiPopup thinStyle">
+  <div class="ap-space x1-5" />
   {#each values as val}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
-      class="ap-menuItem flex-row-center hoverable"
-      class:selected={value === val}
+      class="ap-menuItem flex-row-center withCheck hoverable step-tb375"
       on:click={() => {
         dispatch('close', val)
       }}
     >
-      <TimeShiftPresenter value={val * -1} />
+      <span class="overflow-label flex-grow">
+        <TimeShiftPresenter value={val * -1} />
+      </span>
+      <div class="ap-check">
+        {#if value === val}
+          <IconCheck size={'small'} />
+        {/if}
+      </div>
     </div>
   {/each}
+  <div class="ap-space x1-5" />
 </div>

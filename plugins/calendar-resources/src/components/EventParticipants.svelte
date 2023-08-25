@@ -14,15 +14,35 @@
 -->
 <script lang="ts">
   import { Person } from '@hcengineering/contact'
-  import { ContactRefPresenter } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
-  import { Button, Icon, IconClose } from '@hcengineering/ui'
+  import { Button, Icon, Label, IconMoreV, Scroller } from '@hcengineering/ui'
   import calendar from '../plugin'
   import AddParticipant from './AddParticipant.svelte'
+  import EventParticipantItem from './EventParticipantItem.svelte'
 
   export let participants: Ref<Person>[]
   export let externalParticipants: string[]
   export let disabled: boolean = false
+
+  interface IParticipants {
+    participant: Ref<Person> | undefined
+    externalParticipant: string | undefined
+  }
+  const shortListLength: number = 4
+  let shown: boolean = false
+  let needShort: boolean = false
+  let allParticipants: IParticipants[]
+  let shortParticipants: IParticipants[]
+  $: if (participants || externalParticipants) {
+    allParticipants = []
+    participants.forEach((p) => allParticipants.push({ participant: p, externalParticipant: undefined }))
+    externalParticipants.forEach((p) => allParticipants.push({ participant: undefined, externalParticipant: p }))
+    needShort = allParticipants.length > shortListLength
+    if (needShort) {
+      shortParticipants = []
+      for (let i = 0; i < shortListLength - 2; i++) shortParticipants.push(allParticipants[i])
+    }
+  }
 
   $: placeholder =
     participants.length > 0 || externalParticipants.length > 0
@@ -62,66 +82,66 @@
   }
 </script>
 
-<div class="container flex-col">
-  <div class="header flex-row-center flex-gap-3">
-    <Icon icon={calendar.icon.Participants} size="small" />
-    <AddParticipant {placeholder} excluded={participants} on:ref={ref} on:enter={enter} />
-  </div>
-  <div class="content">
-    {#each participants as participant}
-      <div class="flex-between item">
-        <ContactRefPresenter disabled value={participant} />
-        <div class="tool">
-          <Button
-            icon={IconClose}
-            iconProps={{ size: 'medium', fill: 'var(--theme-dark-color)' }}
-            kind={'ghost'}
-            size={'small'}
-            on:click={() => {
-              removeParticipant(participant)
-            }}
-          />
-        </div>
-      </div>
-    {/each}
-    {#each externalParticipants as participant}
-      <div class="flex-between item overflow-label">
-        {participant}
-        <div class="tool">
-          <Button
-            icon={IconClose}
-            iconProps={{ size: 'medium', fill: 'var(--theme-dark-color)' }}
-            kind={'ghost'}
-            size={'small'}
-            on:click={() => {
-              removeExtParticipant(participant)
-            }}
-          />
-        </div>
-      </div>
-    {/each}
-  </div>
+<div class="flex-row-center gap-1-5 pb-0-5 pr-1">
+  <Icon icon={calendar.icon.Participants} size="small" />
+  <AddParticipant {placeholder} excluded={participants} focusable fullSize on:ref={ref} on:enter={enter} />
 </div>
-
-<style lang="scss">
-  .container {
-    margin: 0 1.25rem;
-
-    .content {
-      margin-top: 0.25rem;
-      margin-left: 1.75rem;
-    }
-
-    .item {
-      .tool {
-        opacity: 0;
-      }
-
-      &:hover {
-        .tool {
-          opacity: 1;
-        }
-      }
-    }
-  }
-</style>
+{#if allParticipants.length}
+  <Scroller padding={'.125rem .375rem 0 1.5rem'} shrink>
+    {#if needShort && !shown}
+      {#each shortParticipants as p, i}
+        <EventParticipantItem
+          participant={p.participant}
+          externalParticipant={p.externalParticipant}
+          focusIndex={10010 + i}
+          on:removeParticipant={() => {
+            if (p.participant) removeParticipant(p.participant)
+          }}
+          on:removeExtParticipant={() => {
+            if (p.externalParticipant) removeExtParticipant(p.externalParticipant)
+          }}
+        />
+      {/each}
+      <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+      <div class="antiOption step-tb25" tabindex={10010 + shortListLength - 2}>
+        <Button
+          icon={IconMoreV}
+          kind={'ghost'}
+          size={'x-small'}
+          padding={'0 .5rem'}
+          focusIndex={-1}
+          on:click={() => (shown = true)}
+        />
+        <span class="overflow-label flex-grow ml-2">
+          <Label label={calendar.string.SeeAllNumberParticipants} params={{ value: allParticipants.length }} />
+        </span>
+      </div>
+      <EventParticipantItem
+        participant={allParticipants[allParticipants.length - 1].participant}
+        externalParticipant={allParticipants[allParticipants.length - 1].externalParticipant}
+        focusIndex={10010 + shortListLength - 1}
+        on:removeParticipant={(event) => {
+          if (event.detail !== undefined) removeParticipant(event.detail)
+        }}
+        on:removeExtParticipant={(event) => {
+          if (event.detail !== undefined) removeExtParticipant(event.detail)
+        }}
+      />
+    {:else}
+      {#each allParticipants as p, i}
+        <EventParticipantItem
+          participant={p.participant}
+          externalParticipant={p.externalParticipant}
+          focusIndex={10010 + i}
+          on:removeParticipant={() => {
+            if (p.participant) removeParticipant(p.participant)
+          }}
+          on:removeExtParticipant={() => {
+            if (p.externalParticipant) removeExtParticipant(p.externalParticipant)
+          }}
+        />
+      {/each}
+    {/if}
+    <div class="antiVSpacer x0-5" />
+  </Scroller>
+{/if}

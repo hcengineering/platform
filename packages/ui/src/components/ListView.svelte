@@ -20,6 +20,7 @@
   export let count: number
   export let addClass: string | undefined = undefined
   export let noScroll: boolean = false
+  export let kind: 'default' | 'thin' = 'default'
 
   const refs: HTMLElement[] = []
 
@@ -60,7 +61,7 @@
 
 {#if count}
   <div
-    class="list-container flex-col flex-grow"
+    class="list-container {kind} flex-col flex-grow"
     style:overflow={noScroll ? 'visible' : 'auto'}
     use:resizeObserver={() => {
       dispatch('changeContent')
@@ -94,6 +95,15 @@
       margin: 0 0.5rem;
       min-width: 0;
       border-radius: 0.25rem;
+    }
+    &.thin {
+      .list-item {
+        margin: 0 0.375rem;
+        border-radius: 0.375rem;
+      }
+      .list-item + .list-item {
+        margin-top: 0.375rem;
+      }
     }
     .selection {
       background-color: var(--theme-popup-hover);

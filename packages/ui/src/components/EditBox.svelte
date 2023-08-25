@@ -133,7 +133,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
-  class="editbox-container"
+  class="antiEditBox"
   class:flex-grow={fullSize}
   class:w-full={focusable || fullSize}
   class:uppercase
@@ -152,7 +152,7 @@
       {#if required}<span class="error-color">&ast</span>{/if}
     </div>
   {/if}
-  <div class="{kind} flex-row-center clear-mins" class:focusable>
+  <div class="{kind} flex-row-center clear-mins" class:focusable class:disabled class:w-full={fullSize}>
     {#if icon}
       <div class="dark-color mr-1">
         <Icon {icon} size={'small'} />
@@ -205,78 +205,3 @@
     {/if}
   </div>
 </div>
-
-<style lang="scss">
-  .editbox-container {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: flex-start;
-
-    .large-style {
-      font-weight: 400;
-      font-size: 1.25rem;
-    }
-    .small-style {
-      font-weight: 400;
-      font-size: 0.75rem;
-    }
-    .search-style {
-      font-weight: 400;
-      padding: 0.625rem 0.75rem;
-    }
-    .underline {
-      font-weight: 500;
-
-      input {
-        padding: 0.25rem 0.5rem;
-        background-color: var(--theme-editbox-focus-color);
-        border-radius: 0.25rem;
-
-        &:focus {
-          box-shadow: 0 0 0 1px var(--theme-editbox-focus-border);
-        }
-      }
-    }
-    .focusable {
-      margin: 0 -0.75rem;
-      padding: 0.625rem 0.75rem;
-      width: calc(100% + 1.5rem);
-      border-radius: 0.25rem;
-      transition: border-color 0.15s ease-in-out;
-
-      &:focus-within {
-        box-shadow: 0 0 0 1px var(--theme-editbox-focus-border);
-      }
-    }
-
-    input {
-      margin: 0;
-      padding: 0;
-      min-width: 0;
-      color: var(--theme-caption-color);
-      border: none;
-      border-radius: 2px;
-
-      &::-webkit-contacts-auto-fill-button,
-      &::-webkit-credentials-auto-fill-button {
-        visibility: hidden;
-        display: none !important;
-        pointer-events: none;
-        height: 0;
-        width: 0;
-        margin: 0;
-      }
-      &.number::-webkit-outer-spin-button,
-      &.number::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-      }
-    }
-    input[type='number'] {
-      -moz-appearance: textfield;
-    }
-    &.uppercase .hidden-text,
-    &.uppercase input {
-      text-transform: uppercase;
-    }
-  }
-</style>

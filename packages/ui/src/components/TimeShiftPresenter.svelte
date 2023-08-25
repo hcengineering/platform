@@ -19,17 +19,27 @@
   import { DAY, HOUR, MINUTE } from '../types'
 
   export let value: number
+  export let exact: boolean = false
 
   let time: string = ''
 
   async function formatTime (value: number) {
     if (value > 0) {
-      if (value < HOUR) {
-        time = await translate(ui.string.MinutesAfter, { minutes: Math.floor(value / MINUTE) }, $themeStore.language)
-      } else if (value < DAY) {
-        time = await translate(ui.string.HoursAfter, { hours: Math.floor(value / HOUR) }, $themeStore.language)
+      if (exact) {
+        const d = Math.floor(value / DAY)
+        time = d ? await translate(ui.string.DaysShort, { value: d }, $themeStore.language) : ''
+        const h = Math.floor((value - d * DAY) / HOUR)
+        time += h ? ` ${await translate(ui.string.HoursShort, { value: h }, $themeStore.language)}` : ''
+        const m = Math.floor((value - d * DAY - h * HOUR) / MINUTE)
+        time += m ? ` ${await translate(ui.string.MinutesShort, { value: m }, $themeStore.language)}` : ''
       } else {
-        time = await translate(ui.string.DaysAfter, { days: Math.floor(value / DAY) }, $themeStore.language)
+        if (value < HOUR) {
+          time = await translate(ui.string.MinutesAfter, { minutes: Math.floor(value / MINUTE) }, $themeStore.language)
+        } else if (value < DAY) {
+          time = await translate(ui.string.HoursAfter, { hours: Math.floor(value / HOUR) }, $themeStore.language)
+        } else {
+          time = await translate(ui.string.DaysAfter, { days: Math.floor(value / DAY) }, $themeStore.language)
+        }
       }
     } else {
       const abs = Math.abs(value)
