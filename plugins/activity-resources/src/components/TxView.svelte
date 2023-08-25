@@ -17,7 +17,7 @@
   import type { DisplayTx, TxViewlet } from '@hcengineering/activity'
   import attachment from '@hcengineering/attachment'
   import chunter from '@hcengineering/chunter'
-  import contact, { Employee, PersonAccount, getName } from '@hcengineering/contact'
+  import contact, { Person, PersonAccount, getName } from '@hcengineering/contact'
   import core, { AnyAttribute, Class, Doc, Ref, TxCUD, getCurrentAccount } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -56,7 +56,7 @@
   let viewlet: TxDisplayViewlet | undefined
   let props: any
   let account: PersonAccount | undefined
-  let employee: Employee | undefined
+  let person: Person | undefined
   let model: AttributeModel[] = []
   let modelIcon: Asset | undefined = undefined
   let iconComponent: AnyComponent | undefined = undefined
@@ -67,7 +67,7 @@
   $: if (tx.tx._id !== ptx?.tx._id) {
     if (tx.tx.modifiedBy !== account?._id) {
       account = undefined
-      employee = undefined
+      person = undefined
     }
     viewlet = undefined
     props = undefined
@@ -107,10 +107,10 @@
 
   $: account &&
     employeeQuery.query(
-      contact.mixin.Employee,
-      { _id: account.person as Ref<Employee> },
+      contact.class.Person,
+      { _id: account.person },
       (res) => {
-        ;[employee] = res
+        ;[person] = res
       },
       { limit: 1 }
     )
@@ -191,7 +191,7 @@
     {#if showIcon}
       {#if withAvatar}
         <div class="msgactivity-avatar">
-          <Component is={contact.component.Avatar} props={{ avatar: employee?.avatar, size: 'medium' }} />
+          <Component is={contact.component.Avatar} props={{ avatar: person?.avatar, size: 'medium' }} />
         </div>
       {:else}
         <div class="msgactivity-icon">
@@ -212,8 +212,8 @@
       <div class="msgactivity-content__header">
         <div class="msgactivity-content__title labels-row">
           <span class={withAvatar ? 'bold' : 'strong'}>
-            {#if employee}
-              {getName(client.getHierarchy(), employee)}
+            {#if person}
+              {getName(client.getHierarchy(), person)}
             {:else}
               <Label label={core.string.System} />
             {/if}

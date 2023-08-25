@@ -24,16 +24,19 @@ import core, {
   DocumentQuery,
   FindOptions,
   Hierarchy,
+  IdMap,
   Ref,
   SortingOrder,
   SortingRules,
   Space,
   Status,
+  StatusCategory,
   StatusManager,
   StatusValue,
   Tx,
   WithLookup,
-  matchQuery
+  matchQuery,
+  toIdMap
 } from '@hcengineering/core'
 import { LiveQuery } from '@hcengineering/query'
 import { AggregationManager, GrouppingManager } from '@hcengineering/view'
@@ -47,8 +50,15 @@ export const statusStore = writable<StatusManager>(new StatusManager([]))
  */
 export class StatusAggregationManager implements AggregationManager {
   docs: Doc[] | undefined
+
+  docsByName: Map<string, Status[]> = new Map<string, Status[]>()
   mgr: StatusManager | Promise<StatusManager> | undefined
+  statusCategory: IdMap<StatusCategory> = new Map()
   query: (() => void) | undefined
+
+  categoryQuery: (() => void) | undefined
+  categoryPromise!: Promise<void>
+
   lq: LiveQuery
   lqCallback: () => void
 
@@ -68,14 +78,27 @@ export class StatusAggregationManager implements AggregationManager {
       }
       return this.mgr
     }
+    this.categoryPromise = new Promise((resolve) => {
+      this.categoryQuery = this.lq.query(core.class.StatusCategory, {}, (res) => {
+        this.statusCategory = toIdMap(res)
+        resolve()
+      })
+    })
     this.mgr = new Promise<StatusManager>((resolve) => {
       this.query = this.lq.query(
         core.class.Status,
         {},
         (res) => {
           const first = this.docs === undefined
+
           this.docs = res
+          const newMap = new Map<string, Status[]>()
+          for (const d of this.docs as Array<WithLookup<Status>>) {
+            const n = d.name.toLowerCase().trim()
+            newMap.set(n, [...(newMap.get(n) ?? []), d])
+          }
           this.mgr = new StatusManager(res)
+          this.docsByName = newMap
           statusStore.set(this.mgr)
           if (!first) {
             this.lqCallback()
@@ -83,9 +106,6 @@ export class StatusAggregationManager implements AggregationManager {
           resolve(this.mgr)
         },
         {
-          lookup: {
-            category: core.class.StatusCategory
-          },
           sort: {
             rank: SortingOrder.Ascending
           }
@@ -98,6 +118,7 @@ export class StatusAggregationManager implements AggregationManager {
 
   close (): void {
     this.query?.()
+    this.categoryQuery?.()
   }
 
   async notifyTx (tx: Tx): Promise<void> {
@@ -110,15 +131,13 @@ export class StatusAggregationManager implements AggregationManager {
 
   async categorize (target: Array<Ref<Doc>>, attr: AnyAttribute): Promise<Array<Ref<Doc>>> {
     const mgr = await this.getManager()
+    const idMap = mgr.getIdMap()
+
     for (const sid of [...target]) {
-      const s = mgr.getIdMap().get(sid as Ref<Status>) as WithLookup<Status>
+      const s = idMap.get(sid as Ref<Status>) as WithLookup<Status>
       if (s !== undefined) {
-        let statuses = mgr.getDocs()
-        statuses = statuses.filter(
-          (it) =>
-            it.ofAttribute === attr._id &&
-            it.name.toLowerCase().trim() === s.name.toLowerCase().trim() &&
-            it._id !== s._id
+        const statuses = (this.docsByName.get(s.name.toLowerCase().trim()) ?? []).filter(
+          (it) => it.ofAttribute === attr._id && it._id !== s._id
         )
         target.push(...statuses.map((it) => it._id))
       }
@@ -140,10 +159,11 @@ export class StatusAggregationManager implements AggregationManager {
       // Fill custom sorting.
       let statuses = (await this.getManager()).getDocs()
       statuses = statuses.filter((it) => it.ofAttribute === attr._id)
+      await this.categoryPromise
       statuses.sort((a, b) => {
         let ret = 0
         if (a.category !== undefined && b.category !== undefined) {
-          ret = (a.$lookup?.category?.order ?? 0) - (b.$lookup?.category?.order ?? 0)
+          ret = (this.statusCategory.get(a.category)?.order ?? 0) - (this.statusCategory.get(b.category)?.order ?? 0)
         }
         if (ret === 0) {
           if (a.name.toLowerCase().trim() === b.name.toLowerCase().trim()) {

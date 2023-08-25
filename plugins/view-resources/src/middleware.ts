@@ -96,8 +96,8 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
     const statusFields: Array<Attribute<Doc>> = []
     const allAttrs = h.getAllAttributes(_class)
 
-    const updatedQuery: DocumentQuery<T> = { ...(ret.query ?? query) }
-    const finalOptions = { ...(ret.options ?? options ?? {}) }
+    const updatedQuery: DocumentQuery<T> = h.clone(ret.query ?? query)
+    const finalOptions = h.clone(ret.options ?? options ?? {})
 
     await this.updateQueryOptions<T>(allAttrs, h, statusFields, updatedQuery, finalOptions)
 
@@ -139,11 +139,13 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
     const docFields: Array<Attribute<Doc>> = []
     const h = this.client.getHierarchy()
     const allAttrs = h.getAllAttributes(_class)
-    const finalOptions = options ?? {}
+    const finalOptions = h.clone(options ?? {})
 
-    await this.updateQueryOptions<T>(allAttrs, h, docFields, query, finalOptions)
+    const fquery = h.clone(query ?? {})
 
-    const result = await this.provideFindAll(_class, query, finalOptions)
+    await this.updateQueryOptions<T>(allAttrs, h, docFields, fquery, finalOptions)
+
+    const result = await this.provideFindAll(_class, fquery, finalOptions)
     // We need to add $
     if (docFields.length > 0) {
       // We need to update $lookup for doc fields and provide $doc group fields.
