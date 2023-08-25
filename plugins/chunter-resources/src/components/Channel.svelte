@@ -105,11 +105,11 @@
   function newMessagesStart (messages: Message[], docUpdates: Map<Ref<Doc>, DocUpdates>): number {
     if (space === undefined) return -1
     const docUpdate = docUpdates.get(space)
-    const lastView = docUpdate?.txes?.[0]?.modifiedOn
+    const lastView = docUpdate?.txes?.findLast((tx) => !tx.isNew)
     if (docUpdate === undefined || lastView === undefined) return -1
     for (let index = 0; index < messages.length; index++) {
       const message = messages[index]
-      if ((message.createdOn ?? 0) >= lastView) return index
+      if ((message.createdOn ?? 0) >= lastView.modifiedOn) return index
     }
     return -1
   }

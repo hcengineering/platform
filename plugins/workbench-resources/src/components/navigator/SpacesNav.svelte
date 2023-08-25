@@ -105,7 +105,7 @@
   function isChanged (space: Space, docUpdates: Map<Ref<Doc>, DocUpdates>): boolean {
     const update = docUpdates.get(space._id)
     if (update === undefined) return false
-    return update.txes.length > 0 && update.hidden !== true
+    return update.txes.filter((tx) => tx.isNew).length > 0 && update.hidden !== true
   }
 
   function getParentActions (): Action[] {
