@@ -224,14 +224,14 @@ export class LiveQuery {
 
     const unsub = liveQuery.query(
       _class,
-      piplineQuery.query ?? query,
+      query,
       (result) => {
         // If we have one more request after this one, no need to do something.
         if (id === this.reqId) {
           callback(result)
         }
       },
-      piplineQuery.options ?? options
+      options
     )
     this.unsubscribe = () => {
       unsub()
