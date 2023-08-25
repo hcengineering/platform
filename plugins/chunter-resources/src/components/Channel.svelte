@@ -15,7 +15,7 @@
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
   import type { ChunterMessage, Message } from '@hcengineering/chunter'
-  import core, { Doc, Ref, Space, Timestamp, WithLookup, getCurrentAccount } from '@hcengineering/core'
+  import core, { Doc, Ref, Space, Timestamp, WithLookup } from '@hcengineering/core'
   import { DocUpdates } from '@hcengineering/notification'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { createQuery } from '@hcengineering/presentation'
@@ -102,8 +102,6 @@
     )
   }
 
-  const me = getCurrentAccount()._id
-
   function newMessagesStart (messages: Message[], docUpdates: Map<Ref<Doc>, DocUpdates>): number {
     if (space === undefined) return -1
     const docUpdate = docUpdates.get(space)
@@ -112,7 +110,7 @@
     if (docUpdate === undefined || lastView === undefined) return -1
     for (let index = 0; index < messages.length; index++) {
       const message = messages[index]
-      if (message.createdBy !== me && (message.createdOn ?? 0) >= lastView.modifiedOn) return index
+      if ((message.createdOn ?? 0) >= lastView.modifiedOn) return index
     }
     return -1
   }
