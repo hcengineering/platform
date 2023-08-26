@@ -25,20 +25,46 @@
   import { onMount } from 'svelte'
 
   const fields = [
-    { id: 'given-name', name: 'first', i18n: login.string.FirstName, short: true },
-    { id: 'family-name', name: 'last', i18n: login.string.LastName, short: true },
     {
       name: 'workspace',
       i18n: login.string.Workspace,
-      rule: /^[0-9a-z][0-9a-z-]{2,62}[0-9a-z]$/,
-      ruleDescr: login.string.WorkspaceNameRule
+      rules: [
+        {
+          rule: /^-/,
+          notMatch: true,
+          ruleDescr: login.string.WorkspaceNameRuleHyphen
+        },
+        {
+          rule: /-$/,
+          notMatch: true,
+          ruleDescr: login.string.WorkspaceNameRuleHyphenEnd
+        },
+        {
+          rule: /[A-Z]/,
+          notMatch: true,
+          ruleDescr: login.string.WorkspaceNameRuleCapital
+        },
+        {
+          rule: /^[0-9a-z-]+$/,
+          notMatch: false,
+          ruleDescr: login.string.WorkspaceNameRule
+        },
+        {
+          rule: /^[0-9a-z-]{3,}$/,
+          notMatch: false,
+          ruleDescr: login.string.WorkspaceNameRuleLengthLow
+        },
+        {
+          rule: /^[0-9a-z-]{3,63}$/,
+          notMatch: false,
+          ruleDescr: login.string.WorkspaceNameRuleLengthHigh
+        }
+      ]
     }
   ]
 
   const object = {
-    workspace: '',
-    first: '',
-    last: ''
+    workspace: ''
   }
 
   let status: Status<any> = OK
@@ -58,7 +84,7 @@
     func: async () => {
       status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
-      const [loginStatus, result] = await createWorkspace(object.workspace, object.first, object.last)
+      const [loginStatus, result] = await createWorkspace(object.workspace)
       status = loginStatus
 
       if (result !== undefined) {

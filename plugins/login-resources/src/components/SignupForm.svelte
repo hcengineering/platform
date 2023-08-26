@@ -22,6 +22,8 @@
   import Form from './Form.svelte'
 
   const fields = [
+    { id: 'given-name', name: 'first', i18n: login.string.FirstName, short: true },
+    { id: 'family-name', name: 'last', i18n: login.string.LastName, short: true },
     { id: 'email', name: 'username', i18n: login.string.Email },
     { id: 'new-password', name: 'password', i18n: login.string.Password, password: true },
     { id: 'new-password', name: 'password2', i18n: login.string.PasswordRepeat, password: true }
@@ -42,7 +44,7 @@
     func: async () => {
       status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
-      const [loginStatus, result] = await signUp(object.username, object.password)
+      const [loginStatus, result] = await signUp(object.username, object.password, object.first, object.last)
 
       status = loginStatus
 

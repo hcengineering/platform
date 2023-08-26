@@ -13,7 +13,7 @@ node ../dev/tool/bundle.js backup-restore ./sanity-ws sanity-ws
 node ../dev/tool/bundle.js upgrade-workspace sanity-ws
 
 # Re-assign user to workspace.
-node ../dev/tool/bundle.js assign-workspace user1 sanity-ws -f John -l Appleseed
+node ../dev/tool/bundle.js assign-workspace user1 sanity-ws
 
 node ../dev/tool/bundle.js configure sanity-ws --enable=*
 node ../dev/tool/bundle.js configure sanity-ws --list
