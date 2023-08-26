@@ -35,6 +35,11 @@
           ruleDescr: login.string.WorkspaceNameRuleHyphen
         },
         {
+          rule: /-$/,
+          notMatch: true,
+          ruleDescr: login.string.WorkspaceNameRuleHyphenEnd
+        },
+        {
           rule: /[A-Z]/,
           notMatch: true,
           ruleDescr: login.string.WorkspaceNameRuleCapital
@@ -43,6 +48,16 @@
           rule: /^[0-9a-z-]+$/,
           notMatch: false,
           ruleDescr: login.string.WorkspaceNameRule
+        },
+        {
+          rule: /^[0-9a-z-]{3,}$/,
+          notMatch: false,
+          ruleDescr: login.string.WorkspaceNameRuleLengthLow
+        },
+        {
+          rule: /^[0-9a-z-]{3,63}$/,
+          notMatch: false,
+          ruleDescr: login.string.WorkspaceNameRuleLengthHigh
         }
       ]
     }
