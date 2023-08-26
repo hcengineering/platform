@@ -38,8 +38,11 @@
     password?: boolean
     optional?: boolean
     short?: boolean
-    rule?: RegExp
-    ruleDescr?: IntlString
+    rules?: {
+      rule: RegExp
+      notMatch: boolean
+      ruleDescr: IntlString
+    }[]
   }
 
   interface Action {
@@ -89,12 +92,12 @@
           }
         }
       }
-      if (f.rule !== undefined) {
-        if (!f.rule.test(v)) {
-          status = new Status(Severity.INFO, login.status.IncorrectValue, {
-            field: await translate(field.i18n, {}, language)
-          })
-          return false
+      if (f.rules !== undefined) {
+        for (const rule of f.rules) {
+          if (rule.rule.test(v) === rule.notMatch) {
+            status = new Status(Severity.INFO, rule.ruleDescr, {})
+            return false
+          }
         }
       }
     }
@@ -185,11 +188,6 @@
             trim(field.name)
           }}
         />
-        {#if field.ruleDescr}
-          <div class="hint">
-            <Label label={field.ruleDescr} />
-          </div>
-        {/if}
       </div>
     {/each}
 

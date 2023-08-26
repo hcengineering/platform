@@ -76,7 +76,12 @@ export async function doLogin (email: string, password: string): Promise<[Status
   }
 }
 
-export async function signUp (email: string, password: string): Promise<[Status, LoginInfo | undefined]> {
+export async function signUp (
+  email: string,
+  password: string,
+  first: string,
+  last: string
+): Promise<[Status, LoginInfo | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -93,7 +98,7 @@ export async function signUp (email: string, password: string): Promise<[Status,
 
   const request = {
     method: 'createAccount',
-    params: [email, password]
+    params: [email, password, first, last]
   }
 
   try {
@@ -111,11 +116,7 @@ export async function signUp (email: string, password: string): Promise<[Status,
   }
 }
 
-export async function createWorkspace (
-  workspace: string,
-  firstName: string,
-  lastName: string
-): Promise<[Status, LoginInfo | undefined]> {
+export async function createWorkspace (workspace: string): Promise<[Status, LoginInfo | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -142,7 +143,7 @@ export async function createWorkspace (
 
   const request = {
     method: 'createWorkspace',
-    params: [workspace, firstName, lastName]
+    params: [workspace]
   }
 
   try {
@@ -425,8 +426,6 @@ export async function getInviteLink (expHours: number = 1, emailMask: string = '
 export async function join (
   email: string,
   password: string,
-  first: string,
-  last: string,
   inviteId: string
 ): Promise<[Status, WorkspaceLoginInfo | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
@@ -445,7 +444,7 @@ export async function join (
 
   const request = {
     method: 'join',
-    params: [email, password, first, last, inviteId]
+    params: [email, password, inviteId]
   }
 
   try {

@@ -87,7 +87,7 @@ describe('server', () => {
     })
     await methods.assignWorkspace(db, '', {
       method: 'assignWorkspace',
-      params: ['andrey', workspace, 'firstName', 'lastName']
+      params: ['andrey', workspace]
     })
 
     const request: any = {
@@ -140,7 +140,7 @@ describe('server', () => {
     })
     await methods.assignWorkspace(db, '', {
       method: 'assignWorkspace',
-      params: ['andrey', workspace, 'first', 'last']
+      params: ['andrey', workspace]
     })
 
     // Check we had one

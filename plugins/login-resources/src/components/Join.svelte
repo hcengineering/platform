@@ -30,8 +30,6 @@
   $: fields =
     page === 'login'
       ? [
-          { id: 'given-name', name: 'first', i18n: login.string.FirstName, short: true },
-          { id: 'family-name', name: 'last', i18n: login.string.LastName, short: true },
           { id: 'email', name: 'username', i18n: login.string.Email },
           {
             id: 'current-password',
@@ -65,7 +63,7 @@
 
       const [loginStatus, result] =
         page === 'login'
-          ? await join(object.username, object.password, object.first, object.last, location.query?.inviteId ?? '')
+          ? await join(object.username, object.password, location.query?.inviteId ?? '')
           : await signUpJoin(
             object.username,
             object.password,

@@ -49,6 +49,8 @@ export default mergeIds(loginId, login, {
     NotSeeingWorkspace: '' as IntlString,
     ChangeAccount: '' as IntlString,
     WorkspaceNameRule: '' as IntlString,
+    WorkspaceNameRuleHyphen: '' as IntlString,
+    WorkspaceNameRuleCapital: '' as IntlString,
     ForgotPassword: '' as IntlString,
     Recover: '' as IntlString,
     KnowPassword: '' as IntlString,
