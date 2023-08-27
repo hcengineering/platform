@@ -377,7 +377,7 @@
   }
   &:focus-within:not(.disabled) {
     &::before { content: ''; }
-    label { color: var(--theme-caption-color) }
+    label { color: var(--theme-caption-color); }
     &.checked {
       label::after { opacity: 1; }
       &:active::after { background-color: var(--theme-primary-pressed); }
