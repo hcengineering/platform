@@ -20,6 +20,7 @@
     DropdownIntlItem,
     DropdownLabelsIntl,
     Grid,
+    Row,
     Label,
     NumberInput,
     RadioButton
@@ -121,10 +122,10 @@
     {#if periodType === 'WEEKLY'}
       <div class="flex-row-center mt-3">
         <span class="min-w-12"><Label label={calendar.string.On} /></span>
-        <div class="flex-row-center flex-gap-2 ml-1-5">
+        <div class="flex-row-center gap-1-5 ml-1-5">
           {#each weekdays as day}
             <CircleButton
-              size="medium"
+              size={'medium'}
               accented={isActive(day.id, selectedWeekdays)}
               on:click={() => weekdayClick(day.id)}
             >
@@ -139,16 +140,17 @@
     <div class="flex-row-center mt-3 mb-3 min-h-8">
       <Label label={calendar.string.Ends} />
     </div>
-    <Grid columnGap={0.375} rowGap={0.75}>
-      <RadioButton
-        labelIntl={calendar.string.Never}
-        value={'never'}
-        group={selected}
-        action={() => {
-          selected = 'never'
-        }}
-      />
-      <div />
+    <Grid columnGap={0.375} rowGap={0.75} equalHeight>
+      <Row>
+        <RadioButton
+          labelIntl={calendar.string.Never}
+          value={'never'}
+          group={selected}
+          action={() => {
+            selected = 'never'
+          }}
+        />
+      </Row>
       <RadioButton
         labelIntl={calendar.string.OnUntil}
         value={'on'}
@@ -215,7 +217,7 @@
 
     .weekday {
       overflow: hidden;
-      font-size: 0.75rem;
+      font-size: 0.6875rem;
     }
 
     .pool {
