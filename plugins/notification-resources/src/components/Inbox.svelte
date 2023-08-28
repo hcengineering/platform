@@ -18,7 +18,17 @@
   import { Class, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
   import { DocUpdates } from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
-  import { AnyComponent, Button, Component, IconAdd, Tabs, eventToHTMLElement, getLocation, navigate, showPopup } from '@hcengineering/ui'
+  import {
+    AnyComponent,
+    Button,
+    Component,
+    IconAdd,
+    Tabs,
+    eventToHTMLElement,
+    getLocation,
+    navigate,
+    showPopup
+  } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import contact from '@hcengineering/contact'
   import { UsersPopup } from '@hcengineering/contact-resources'

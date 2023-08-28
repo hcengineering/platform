@@ -27,7 +27,7 @@
   export let disabled = false
 
   const client = getClient()
-  let isThreadMessage = client.getHierarchy().isDerived(value._class, chunter.class.ThreadMessage)
+  const isThreadMessage = client.getHierarchy().isDerived(value._class, chunter.class.ThreadMessage)
 
   let presenter: AttributeModel | undefined
   getObjectPresenter(client, value.attachedToClass, { key: '' }).then((p) => {

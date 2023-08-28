@@ -71,9 +71,14 @@ export function createModel (builder: Builder): void {
     func: serverChunter.function.IsDirectMessage
   })
 
-  builder.mixin(chunter.ids.ThreadNotification, notification.class.NotificationType, serverNotification.mixin.TypeMatch, {
-    func: serverChunter.function.IsThreadMessage
-  })
+  builder.mixin(
+    chunter.ids.ThreadNotification,
+    notification.class.NotificationType,
+    serverNotification.mixin.TypeMatch,
+    {
+      func: serverChunter.function.IsThreadMessage
+    }
+  )
 
   builder.mixin(
     chunter.ids.ChannelNotification,

@@ -13,7 +13,15 @@
 // limitations under the License.
 //
 
-import chunter, { Backlink, chunterId, ChunterSpace, Comment, DirectMessage, Message, ThreadMessage } from '@hcengineering/chunter'
+import chunter, {
+  Backlink,
+  chunterId,
+  ChunterSpace,
+  Comment,
+  DirectMessage,
+  Message,
+  ThreadMessage
+} from '@hcengineering/chunter'
 import contact, { Employee, PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
@@ -511,7 +519,8 @@ export async function IsChannelMessage (
 /**
  * @public
  */
-export async function IsThreadMessage (tx: Tx,
+export async function IsThreadMessage (
+  tx: Tx,
   doc: Doc,
   user: Ref<Account>,
   type: NotificationType,
