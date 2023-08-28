@@ -47,14 +47,14 @@ import {
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
 import core, { TAttachedDoc, TDoc, TStatus, TType } from '@hcengineering/model-core'
-import { TSpaceWithStates, TTask } from '@hcengineering/model-task'
+import task, { TSpaceWithStates, TTask } from '@hcengineering/model-task'
 import view, { actionTemplates, classPresenter, createAction, showColorsViewOption } from '@hcengineering/model-view'
 import workbench, { createNavigateAction } from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import { IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import tags, { TagElement } from '@hcengineering/tags'
-import task, { DoneState } from '@hcengineering/task'
+import { DoneState } from '@hcengineering/task'
 import {
   Component,
   Issue,
@@ -1173,6 +1173,7 @@ export function createModel (builder: Builder): void {
       input: 'focus',
       category: tracker.category.Tracker,
       target: tracker.class.Project,
+      override: [task.action.EditStatuses],
       query: {},
       context: {
         mode: ['context', 'browser'],
