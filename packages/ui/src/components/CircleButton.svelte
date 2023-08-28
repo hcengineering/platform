@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import type { Asset } from '@hcengineering/platform'
   import type { AnySvelteComponent, ButtonSize } from '../types'
   import Icon from './Icon.svelte'
@@ -22,16 +23,30 @@
   export let ghost: boolean = false
   export let selected: boolean = false
   export let accented: boolean = false
+  export let disabled: boolean = false
   export let id: string | undefined = undefined
+
+  const dispatch = createEventDispatcher()
+
+  function onKeydown (key: KeyboardEvent): void {
+    if (key.code === 'Space') {
+      key.preventDefault()
+      key.stopPropagation()
+      dispatch('selected')
+    }
+  }
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <div
   {id}
   class="flex-center icon-button icon-{size}"
   class:selected
   class:ghost
   class:accented
+  class:disabled
+  tabindex="0"
+  on:keydown={onKeydown}
   on:click|stopPropagation
   on:mousemove
 >
@@ -46,14 +61,39 @@
 
 <style lang="scss">
   .icon-button {
+    position: relative;
     flex-shrink: 0;
-    color: var(--caption-color);
-    border: 1px solid var(--trans-content-20);
+    color: var(--theme-content-color);
+    background-color: var(--theme-button-default);
+    border: 1px solid var(--theme-divider-color);
     border-radius: 50%;
+    outline: none;
     cursor: pointer;
 
+    &::before {
+      position: absolute;
+      top: -0.25rem;
+      bottom: -0.25rem;
+      left: -0.25rem;
+      right: -0.25rem;
+      border: 1px solid var(--theme-primary-default);
+      border-radius: 50%;
+    }
     &:hover {
-      border-color: var(--button-border-hover);
+      background-color: var(--theme-button-hovered);
+    }
+    &:active {
+      background-color: var(--theme-button-pressed);
+    }
+    &:focus {
+      background-color: var(--theme-button-focused);
+
+      &::before {
+        content: '';
+      }
+    }
+    &.disabled {
+      background-color: transparent;
     }
     .content {
       pointer-events: none;
@@ -69,14 +109,18 @@
       }
     }
     &.accented {
-      color: var(--accented-button-color);
-      background-color: var(--accented-button-default);
-      border-color: var(--accented-button-border);
+      background-color: var(--theme-primary-accented-default);
       &:hover {
-        background-color: var(--accented-button-hovered);
+        background-color: var(--theme-primary-accented-hovered);
       }
       &:active {
-        background-color: var(--accented-button-pressed);
+        background-color: var(--theme-primary-accented-pressed);
+      }
+      &:focus {
+        background-color: var(--theme-primary-accented-focused);
+      }
+      &.disabled {
+        background-color: var(--theme-primary-disabled);
       }
     }
   }
