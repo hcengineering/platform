@@ -111,6 +111,7 @@
 </script>
 
 {#if object !== undefined}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <Panel
     icon={board.icon.Card}
     title={object?.title}

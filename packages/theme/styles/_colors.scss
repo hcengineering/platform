@@ -38,6 +38,15 @@
   --negative-button-pressed: #BF3636;
   --negative-button-focused: #CA4242;
 
+  --theme-primary-default: #205DC2;
+  --theme-primary-hovered: #3575DE;
+  --theme-primary-pressed: #1C52AB;
+  --theme-primary-disabled: #0000001F;
+  --theme-primary-accented-default: #D3E1F8;
+  --theme-primary-accented-hovered: #BDD2F5;
+  --theme-primary-accented-pressed: #A7C3F1;
+  --theme-primary-accented-focused: #BDD2F5;
+
   --white-color: #fff;
   --duotone-color: rgba(126, 134, 158, .25);
 
@@ -144,7 +153,6 @@
 
   --theme-editbox-focus-color: rgba(255, 255, 255, .04);
   --theme-editbox-focus-border: #5190EC;
-  --theme-editbox-default-focus-border: #205DC2; // Light
   --theme-tablist-color: rgba(0, 0, 0, .02);
   --theme-tablist-plain-color: #2A64C4; // Light
   --theme-tablist-plain-divider: rgba(255, 255, 255, .07); // Light invert
@@ -340,7 +348,6 @@
 
   --theme-editbox-focus-color: rgba(0, 0, 0, .08);
   --theme-editbox-focus-border: #5190EC;
-  --theme-editbox-default-focus-border: #205DC2;
   --theme-tablist-color: rgba(0, 0, 0, .02);
   --theme-tablist-plain-color: #2A64C4;
   --theme-tablist-plain-divider: rgba(0, 0, 0, .07);

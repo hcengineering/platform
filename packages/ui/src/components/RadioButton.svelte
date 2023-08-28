@@ -21,6 +21,7 @@
   export let group: any
   export let value: any
   export let disabled: boolean = false
+  export let labelOverflow: boolean = false
   export let label: string | undefined = undefined
   export let labelIntl: IntlString | undefined = undefined
   export let labelParams: Record<string, any> | undefined = undefined
@@ -28,22 +29,32 @@
   export let gap: 'small' | 'medium' | 'none' = 'none'
 </script>
 
-<input
-  class="antiRadio"
-  {id}
-  type="radio"
-  bind:group
-  {value}
-  {disabled}
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<div
+  class="antiRadio gap-{gap}"
+  class:disabled
+  class:checked={group === value}
+  tabindex="-1"
   on:click={() => {
     if (!disabled && group !== value) action()
   }}
-/>
-<label for={id} class="gap-{gap}">
-  <slot />
-  {#if labelIntl}
-    <Label label={labelIntl} params={labelParams} />
-  {:else}
-    {label}
-  {/if}
-</label>
+>
+  <input
+    {id}
+    type="radio"
+    bind:group
+    {value}
+    {disabled}
+    on:click={() => {
+      if (!disabled && group !== value) action()
+    }}
+  />
+  <label for={id} class:overflow-label={labelOverflow}>
+    <slot />
+    {#if labelIntl}
+      <Label label={labelIntl} params={labelParams} />
+    {:else}
+      {label}
+    {/if}
+  </label>
+</div>
