@@ -18,7 +18,7 @@
   import { Class, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
   import { DocUpdates } from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
-  import { AnyComponent, Button, Component, IconAdd, Tabs, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { AnyComponent, Button, Component, IconAdd, Tabs, eventToHTMLElement, getLocation, navigate, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import contact from '@hcengineering/contact'
   import { UsersPopup } from '@hcengineering/contact-resources'
@@ -69,11 +69,16 @@
         await client.update(prevValue, { txes })
       }
     }
-    const targetClass = hierarchy.getClass(value.attachedToClass)
-    const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)
-    component = panelComponent.component ?? view.component.EditDoc
-    _id = value.attachedTo
-    _class = value.attachedToClass
+    if (hierarchy.isDerived(value.attachedToClass, chunter.class.ChunterSpace)) {
+      openDM(value.attachedTo)
+    } else {
+      const targetClass = hierarchy.getClass(value.attachedToClass)
+      const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)
+      component = panelComponent.component ?? view.component.EditDoc
+      _id = value.attachedTo
+      _class = value.attachedToClass
+    }
+
     prevValue = value
   }
 
@@ -84,6 +89,9 @@
       component = panelComponent.component ?? view.component.EditDoc
       _id = value
       _class = chunter.class.DirectMessage
+      const loc = getLocation()
+      loc.path[3] = _id
+      navigate(loc)
     }
   }
 

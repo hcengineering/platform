@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import chunter, { Backlink, chunterId, ChunterSpace, Comment, Message, ThreadMessage } from '@hcengineering/chunter'
+import chunter, { Backlink, chunterId, ChunterSpace, Comment, DirectMessage, Message, ThreadMessage } from '@hcengineering/chunter'
 import contact, { Employee, PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
@@ -455,8 +455,8 @@ export async function IsDirectMessage (
   type: NotificationType,
   control: TriggerControl
 ): Promise<boolean> {
-  const space = (await control.findAll(chunter.class.DirectMessage, { _id: doc.space }))[0]
-  return space !== undefined
+  const dm = (await control.findAll(chunter.class.DirectMessage, { _id: doc._id as Ref<DirectMessage> }))[0]
+  return dm !== undefined
 }
 
 function isBacklink (ptx: TxCollectionCUD<Doc, Backlink>, hierarchy: Hierarchy): boolean {
@@ -508,6 +508,19 @@ export async function IsChannelMessage (
   return space !== undefined
 }
 
+/**
+ * @public
+ */
+export async function IsThreadMessage (tx: Tx,
+  doc: Doc,
+  user: Ref<Account>,
+  type: NotificationType,
+  control: TriggerControl
+): Promise<boolean> {
+  const space = (await control.findAll(chunter.class.DirectMessage, { _id: doc.space }))[0]
+  return space !== undefined
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
@@ -520,6 +533,7 @@ export default async () => ({
     ChannelHTMLPresenter: channelHTMLPresenter,
     ChannelTextPresenter: channelTextPresenter,
     IsDirectMessage,
+    IsThreadMessage,
     IsMeMentioned,
     IsChannelMessage
   }

@@ -760,7 +760,7 @@
           <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
         {/if}
       </div>
-      {#if asideId}
+      {#if asideId && currentSpace}
         {@const asideComponent = navigatorModel?.aside ?? currentApplication?.aside}
         {#if asideComponent !== undefined}
           <div class="splitter" class:hovered={isResizing} on:mousedown={startResize} />

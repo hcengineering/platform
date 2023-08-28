@@ -721,7 +721,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
       },
       group: chunter.ids.ChunterNotificationGroup
     },
-    chunter.ids.ThreadNotification
+    chunter.ids.ChannelNotification
   )
 
   builder.createDoc(
@@ -738,7 +738,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
       },
       group: chunter.ids.ChunterNotificationGroup
     },
-    chunter.ids.ChannelNotification
+    chunter.ids.ThreadNotification
   )
 
   createAction(builder, {

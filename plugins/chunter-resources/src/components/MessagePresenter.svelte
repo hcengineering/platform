@@ -20,11 +20,14 @@
   import { AttributeModel } from '@hcengineering/view'
   import { getObjectPresenter } from '@hcengineering/view-resources'
 
+  import chunterResources from '../plugin'
+
   export let value: Message
   export let inline: boolean = false
   export let disabled = false
 
   const client = getClient()
+  let isThreadMessage = client.getHierarchy().isDerived(value._class, chunter.class.ThreadMessage)
 
   let presenter: AttributeModel | undefined
   getObjectPresenter(client, value.attachedToClass, { key: '' }).then((p) => {
@@ -40,14 +43,16 @@
 
 {#if inline}
   {#if presenter && doc}
-    <div class="flex-presenter inline-presenter">
-      <div class="icon">
-        <Icon icon={chunter.icon.Thread} size={'small'} />
-      </div>
-      <span class="labels-row" style:text-transform={'lowercase'}>
-        <Label label={chunter.string.MessageOn} />
-      </span>
-      &nbsp;
+    <div class="flex-presenter">
+      {#if isThreadMessage}
+        <div class="icon">
+          <Icon icon={chunter.icon.Thread} size="small" />
+        </div>
+        <span class="labels-row" style:text-transform="lowercase">
+          <Label label={chunterResources.string.On} />
+        </span>
+        &nbsp;
+      {/if}
       <svelte:component this={presenter.presenter} value={doc} inline {disabled} />
     </div>
   {/if}

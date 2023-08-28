@@ -16,19 +16,32 @@
   import { Message } from '@hcengineering/chunter'
   import { Person } from '@hcengineering/contact'
   import { personByIdStore } from '@hcengineering/contact-resources'
-  import { IdMap, Ref } from '@hcengineering/core'
+  import { Doc, IdMap, Ref } from '@hcengineering/core'
   import { Avatar } from '@hcengineering/contact-resources'
   import { Label, TimeSince } from '@hcengineering/ui'
+  import { NotificationClientImpl } from '@hcengineering/notification-resources'
+  import { DocUpdates } from '@hcengineering/notification'
+
   import chunter from '../plugin'
 
   export let message: Message
   $: lastReply = message.lastReply ?? new Date().getTime()
   $: employees = new Set(message.replies)
 
+  const notificationClient = NotificationClientImpl.getClient()
+  const docUpdates = notificationClient.docUpdatesStore
+
   const shown: number = 4
   let showReplies: Person[] = []
 
+  $: hasNew = checkNewReplies(message, $docUpdates)
   $: updateQuery(employees, $personByIdStore)
+
+  function checkNewReplies (message: Message, docUpdates: Map<Ref<Doc>, DocUpdates>): boolean {
+    const docUpdate = docUpdates.get(message._id)
+    if (docUpdate === undefined) return false
+    return docUpdate.txes.filter((tx) => tx.isNew).length > 0
+  }
 
   function updateQuery (employees: Set<Ref<Person>>, map: IdMap<Person>) {
     showReplies = []
@@ -55,6 +68,9 @@
   <div class="whitespace-nowrap ml-2 mr-2 over-underline">
     <Label label={chunter.string.RepliesCount} params={{ replies: message.replies?.length ?? 0 }} />
   </div>
+  {#if hasNew}
+    <div class="marker" />
+  {/if}
   {#if (message.replies?.length ?? 0) > 1}
     <div class="mr-1">
       <Label label={chunter.string.LastReply} />
@@ -100,5 +116,13 @@
       border: 1px solid var(--button-border-hover);
       background-color: var(--theme-bg-color);
     }
+  }
+
+  .marker {
+    margin: 0 0.25rem 0 -0.25rem;
+    width: 0.425rem;
+    height: 0.425rem;
+    border-radius: 50%;
+    background-color: var(--highlight-red);
   }
 </style>
