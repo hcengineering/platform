@@ -16,10 +16,8 @@
   import type { Backlink } from '@hcengineering/chunter'
   import type { Doc } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Label } from '@hcengineering/ui'
   import { AttributeModel } from '@hcengineering/view'
   import { getObjectPresenter } from '@hcengineering/view-resources'
-  import chunter from '../../plugin'
 
   export let value: Backlink
 
@@ -49,7 +47,6 @@
 
 {#if presenter}
   <span class="labels-row">
-    <span style:text-transform={'lowercase'}><Label label={chunter.string.In} /></span>
     <svelte:component this={presenter.presenter} value={doc} inline disabled />
   </span>
 {/if}

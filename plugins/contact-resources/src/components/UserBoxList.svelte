@@ -14,8 +14,9 @@
 -->
 <script lang="ts">
   import contact, { Employee } from '@hcengineering/contact'
-  import type { Class, DocumentQuery, Ref, Doc } from '@hcengineering/core'
+  import type { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
   import type { ButtonKind, ButtonSize, TooltipAlignment } from '@hcengineering/ui'
   import { Button, Label, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -25,7 +26,6 @@
   import UserInfo from './UserInfo.svelte'
   import UsersPopup from './UsersPopup.svelte'
   import Members from './icons/Members.svelte'
-  import { getClient } from '@hcengineering/presentation'
 
   export let items: Ref<Employee>[] = []
   export let _class: Ref<Class<Employee>> = contact.mixin.Employee
@@ -40,8 +40,16 @@
   export let emptyLabel = plugin.string.Members
   export let readonly: boolean = false
 
-  let persons: Employee[] = items.map((p) => $employeeByIdStore.get(p)).filter((p) => p !== undefined) as Employee[]
-  $: persons = items.map((p) => $employeeByIdStore.get(p)).filter((p) => p !== undefined) as Employee[]
+  function filter (items: Ref<Employee>[]): Ref<Employee>[] {
+    return items.filter((it, idx, arr) => arr.indexOf(it) === idx)
+  }
+
+  let persons: Employee[] = filter(items)
+    .map((p) => $employeeByIdStore.get(p))
+    .filter((p) => p !== undefined) as Employee[]
+  $: persons = filter(items)
+    .map((p) => $employeeByIdStore.get(p))
+    .filter((p) => p !== undefined) as Employee[]
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -55,7 +63,7 @@
         docQuery,
         multiSelect: true,
         allowDeselect: false,
-        selectedUsers: items,
+        selectedUsers: filter(items),
         filter: (it: Doc) => {
           const h = client.getHierarchy()
           if (h.hasMixin(it, contact.mixin.Employee)) {
@@ -68,7 +76,7 @@
       undefined,
       (result) => {
         if (result != null) {
-          items = result
+          items = filter(result)
           dispatch('update', items)
         }
       }

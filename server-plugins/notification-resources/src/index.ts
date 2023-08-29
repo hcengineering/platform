@@ -15,7 +15,7 @@
 //
 
 import chunter, { Backlink } from '@hcengineering/chunter'
-import contact, { Employee, PersonAccount, formatName } from '@hcengineering/contact'
+import contact, { Employee, Person, PersonAccount, formatName } from '@hcengineering/contact'
 import core, {
   Account,
   AnyAttribute,
@@ -68,7 +68,7 @@ export async function OnBacklinkCreate (tx: Tx, control: TriggerControl): Promis
   const ptx = tx as TxCollectionCUD<Doc, Backlink>
   let res: Tx[] = []
 
-  if (!checkTx(ptx, hierarchy)) return []
+  if (!(await checkTx(ptx, hierarchy, control))) return []
 
   const receiver = await getPersonAccount(ptx.objectId as Ref<Employee>, control)
   if (receiver === undefined) return []
@@ -79,7 +79,7 @@ export async function OnBacklinkCreate (tx: Tx, control: TriggerControl): Promis
   const doc = await getBacklinkDoc(backlink, control)
   if (doc !== undefined) {
     const collab = hierarchy.as(doc, notification.mixin.Collaborators)
-    if (!collab.collaborators.includes(receiver._id)) {
+    if (collab.collaborators === undefined || !collab.collaborators.includes(receiver._id)) {
       const collabTx = control.txFactory.createTxMixin(
         doc._id,
         doc._class,
@@ -98,18 +98,24 @@ export async function OnBacklinkCreate (tx: Tx, control: TriggerControl): Promis
   return res
 }
 
-function checkTx (ptx: TxCollectionCUD<Doc, Backlink>, hierarchy: Hierarchy): boolean {
+async function checkTx (
+  ptx: TxCollectionCUD<Doc, Backlink>,
+  hierarchy: Hierarchy,
+  control: TriggerControl
+): Promise<boolean> {
   if (ptx._class !== core.class.TxCollectionCUD) {
     return false
   }
 
-  if (
-    ptx.tx._class !== core.class.TxCreateDoc ||
-    !hierarchy.isDerived(ptx.tx.objectClass, chunter.class.Backlink) ||
-    !hierarchy.isDerived(ptx.objectClass, contact.mixin.Employee)
-  ) {
+  if (ptx.tx._class !== core.class.TxCreateDoc || !hierarchy.isDerived(ptx.tx.objectClass, chunter.class.Backlink)) {
     return false
   }
+  if (ptx.objectClass === contact.class.Person) {
+    // We need to check if person is employee.
+    const [person] = await control.findAll(contact.class.Person, { _id: ptx.objectId as Ref<Person> })
+    return person !== undefined ? hierarchy.hasMixin(person, contact.mixin.Employee) : false
+  }
+
   return true
 }
 
