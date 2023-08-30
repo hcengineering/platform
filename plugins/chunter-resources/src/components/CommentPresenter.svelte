@@ -16,24 +16,19 @@
 <script lang="ts">
   import { AttachmentDocList } from '@hcengineering/attachment-resources'
   import type { Comment } from '@hcengineering/chunter'
-  import chunter from '@hcengineering/chunter'
   import { Person, PersonAccount, getName } from '@hcengineering/contact'
-  import { Avatar, personByIdStore, personAccountByIdStore } from '@hcengineering/contact-resources'
-  import { Doc, IdMap, Ref } from '@hcengineering/core'
-  import { MessageViewer, createQuery, getClient } from '@hcengineering/presentation'
-  import { Icon, Label, ShowMore, TimeSince } from '@hcengineering/ui'
-  import { AttributeModel } from '@hcengineering/view'
-  import { LinkPresenter, getObjectPresenter } from '@hcengineering/view-resources'
+  import { Avatar, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
+  import { IdMap, Ref } from '@hcengineering/core'
+  import { MessageViewer, getClient } from '@hcengineering/presentation'
+  import { ShowMore, TimeSince } from '@hcengineering/ui'
+  import { LinkPresenter, ObjectPresenter } from '@hcengineering/view-resources'
 
   export let value: Comment
   export let inline: boolean = false
   export let disabled = false
+  export let inbox: boolean = false
 
   const client = getClient()
-
-  const cutId = (str: string): string => {
-    return str.slice(0, 4) + '...' + str.slice(-4)
-  }
 
   async function getEmployee (
     value: Comment,
@@ -48,17 +43,6 @@
   }
 
   $: links = getLinks(value.message)
-
-  let presenter: AttributeModel | undefined
-  getObjectPresenter(client, value.attachedToClass, { key: '' }).then((p) => {
-    presenter = p
-  })
-
-  let doc: Doc | undefined = undefined
-  const docQuery = createQuery()
-  $: docQuery.query(value.attachedToClass, { _id: value.attachedTo }, (res) => {
-    ;[doc] = res
-  })
 
   function getLinks (content: string): HTMLLinkElement[] {
     const parser = new DOMParser()
@@ -82,18 +66,10 @@
 
 {#if inline}
   <div class="flex-presenter inline-presenter">
-    {#if presenter && doc}
-      <span class="labels-row" style:text-transform={'lowercase'}><Label label={chunter.string.MessageOn} /></span>
-      &nbsp;
-      <div class="icon">
-        <Icon icon={chunter.icon.Thread} size={'small'} />
-      </div>
-      &nbsp;
-      <svelte:component this={presenter.presenter} value={doc} {inline} {disabled} />
+    {#if !inbox}
+      <ObjectPresenter _class={value.attachedToClass} objectId={value.attachedTo} />
     {:else}
-      <Label label={chunter.string.Message} />
-      &nbsp;
-      <span class="content-dark-color">#{cutId(value._id.toString())}</span>
+      <MessageViewer message={value.message} />
     {/if}
   </div>
 {:else}

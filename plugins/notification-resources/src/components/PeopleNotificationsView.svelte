@@ -111,7 +111,7 @@
       </div>
       <div class="clear-mins flex-no-shrink mt-4">
         {#if presenter}
-          <svelte:component this={presenter} value={doc} inline disabled />
+          <svelte:component this={presenter} value={doc} inline disabled inbox />
         {/if}
       </div>
       <div class="flex-between flex-baseline mt-3">
