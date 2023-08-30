@@ -288,6 +288,7 @@
       grid-auto-rows: minmax(12.5rem, auto);
       grid-gap: 1.5rem;
       padding: 3rem;
+      overflow: auto ;
     }
     &__space-3 {
       flex-shrink: 0;

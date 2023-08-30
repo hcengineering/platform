@@ -13,11 +13,14 @@
 // limitations under the License.
 //
 
-import {
+import core, {
+  AttachedDoc,
   Class,
+  ClassifierKind,
   Client,
   Doc,
   DocumentQuery,
+  DOMAIN_MODEL,
   getCurrentAccount,
   Ref,
   RelatedDocument,
@@ -29,6 +32,7 @@ import { getClient, MessageBox, ObjectSearchResult } from '@hcengineering/presen
 import { Issue, Milestone, Project } from '@hcengineering/tracker'
 import { showPopup, themeStore } from '@hcengineering/ui'
 import ComponentEditor from './components/components/ComponentEditor.svelte'
+import ComponentFilterValuePresenter from './components/components/ComponentFilterValuePresenter.svelte'
 import ComponentPresenter from './components/components/ComponentPresenter.svelte'
 import ComponentRefPresenter from './components/components/ComponentRefPresenter.svelte'
 import Components from './components/components/Components.svelte'
@@ -66,7 +70,6 @@ import MyIssues from './components/myissues/MyIssues.svelte'
 import NewIssueHeader from './components/NewIssueHeader.svelte'
 import NopeComponent from './components/NopeComponent.svelte'
 import ProjectFilterValuePresenter from './components/projects/ProjectFilterValuePresenter.svelte'
-import ComponentFilterValuePresenter from './components/components/ComponentFilterValuePresenter.svelte'
 import RelationsPopup from './components/RelationsPopup.svelte'
 import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
@@ -141,7 +144,7 @@ import { get } from 'svelte/store'
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 export { default as IssueStatusIcon } from './components/issues/IssueStatusIcon.svelte'
 
-export { IssuePresenter, TitlePresenter, CreateProject }
+export { CreateProject, IssuePresenter, TitlePresenter }
 
 export async function queryIssue<D extends Issue> (
   _class: Ref<Class<D>>,
@@ -251,37 +254,93 @@ async function deleteIssue (issue: Issue | Issue[]): Promise<void> {
 async function deleteProject (project: Project | undefined): Promise<void> {
   if (project !== undefined) {
     const client = getClient()
-    const anyIssue = await client.findOne(tracker.class.Issue, { space: project._id })
-    if (anyIssue !== undefined) {
+
+    if (project.archived) {
+      // Clean project and all issues
       showPopup(
         MessageBox,
         {
-          label: tracker.string.ArchiveProjectName,
-          labelProps: { name: project.name },
-          message: tracker.string.ProjectHasIssues
-        },
-        undefined,
-        (result?: boolean) => {
-          if (result === true) {
-            void client.update(project, { archived: true })
-          }
-        }
-      )
-    } else {
-      showPopup(
-        MessageBox,
-        {
-          label: tracker.string.ArchiveProjectName,
+          label: tracker.string.DeleteProject,
           labelProps: { name: project.name },
           message: tracker.string.ArchiveProjectConfirm
         },
         undefined,
-        (result?: boolean) => {
+        async (result?: boolean) => {
           if (result === true) {
-            void client.update(project, { archived: true })
+            // void client.update(project, { archived: true })
+            const client = getClient()
+            const classes = await client.findAll(core.class.Class, {})
+            const h = client.getHierarchy()
+            for (const c of classes) {
+              if (c.kind !== ClassifierKind.CLASS) {
+                continue
+              }
+              const d = h.findDomain(c._id)
+              if (d !== undefined && d !== DOMAIN_MODEL) {
+                while (true) {
+                  const docs = await client.findAll(c._id, { space: project._id }, { limit: 50 })
+                  if (docs.length === 0) {
+                    break
+                  }
+                  const ops = client.apply('delete')
+                  for (const object of docs) {
+                    if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
+                      const adoc = object as AttachedDoc
+                      await ops
+                        .removeCollection(
+                          object._class,
+                          object.space,
+                          adoc._id,
+                          adoc.attachedTo,
+                          adoc.attachedToClass,
+                          adoc.collection
+                        )
+                        .catch((err) => console.error(err))
+                    } else {
+                      await ops.removeDoc(object._class, object.space, object._id).catch((err) => console.error(err))
+                    }
+                  }
+                  await ops.commit()
+                }
+              }
+            }
+            await client.remove(project)
           }
         }
       )
+    } else {
+      const anyIssue = await client.findOne(tracker.class.Issue, { space: project._id })
+      if (anyIssue !== undefined) {
+        showPopup(
+          MessageBox,
+          {
+            label: tracker.string.ArchiveProjectName,
+            labelProps: { name: project.name },
+            message: tracker.string.ProjectHasIssues
+          },
+          undefined,
+          (result?: boolean) => {
+            if (result === true) {
+              void client.update(project, { archived: true })
+            }
+          }
+        )
+      } else {
+        showPopup(
+          MessageBox,
+          {
+            label: tracker.string.ArchiveProjectName,
+            labelProps: { name: project.name },
+            message: tracker.string.ArchiveProjectConfirm
+          },
+          undefined,
+          (result?: boolean) => {
+            if (result === true) {
+              void client.update(project, { archived: true })
+            }
+          }
+        )
+      }
     }
   }
 }

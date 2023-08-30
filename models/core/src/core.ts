@@ -174,6 +174,10 @@ export class TType extends TObj implements Type<any> {
 export class TTypeString extends TType {}
 
 @UX(core.string.String)
+@Model(core.class.TypeRecord, core.class.Type)
+export class TTypeRecord extends TType {}
+
+@UX(core.string.String)
 @Model(core.class.TypeAttachment, core.class.Type)
 export class TTypeAttachment extends TType {}
 
