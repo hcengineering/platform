@@ -228,6 +228,27 @@ export function fillDefaults<T extends Doc> (
 /**
  * @public
  */
+export function splitObjectAttributes<T extends object> (
+  obj: T,
+  takeKeys: Set<String>
+): { take: Partial<T>, omit: Partial<T> } {
+  const take = {}
+  const omit = {}
+
+  for (const [key, value] of Object.entries(obj)) {
+    if (takeKeys.has(key)) {
+      ;(take as any)[key] = value
+    } else {
+      ;(omit as any)[key] = value
+    }
+  }
+
+  return { take, omit }
+}
+
+/**
+ * @public
+ */
 export class AggregateValueData {
   constructor (
     readonly name: string,

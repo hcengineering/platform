@@ -17,6 +17,7 @@ import { Client } from './client'
 import core from './component'
 import type { DocumentQuery, FindOptions, FindResult, TxResult, WithLookup } from './storage'
 import { DocumentClassQuery, Tx, TxCUD, TxFactory, TxProcessor } from './tx'
+import { splitObjectAttributes } from './utils'
 
 /**
  * @public
@@ -229,9 +230,18 @@ export class TxOperations implements Omit<Client, 'notify'> {
     const hierarchy = this.client.getHierarchy()
     const mixClass = Hierarchy.mixinOrClass(doc)
     if (hierarchy.isMixin(mixClass)) {
-      // TODO: Rework it is wrong, we need to split values to mixin update and original document update if mixed.
+      const { docUpdate, mixinUpdate } = this.splitMixinUpdate(update, mixClass)
+
       const baseClass = hierarchy.getBaseClass(doc._class)
-      return this.updateMixin(doc._id, baseClass, doc.space, mixClass, update, modifiedOn, modifiedBy)
+
+      const result: Promise<TxResult>[] = []
+      if (Object.keys(docUpdate).length > 0) {
+        result.push(this.updateDoc(baseClass, doc.space, doc._id, docUpdate, retrieve, modifiedOn, modifiedBy))
+      }
+      if (Object.keys(mixinUpdate).length > 0) {
+        result.push(this.updateMixin(doc._id, baseClass, doc.space, mixClass, mixinUpdate, modifiedOn, modifiedBy))
+      }
+      return Promise.all(result)
     }
     if (hierarchy.isDerived(doc._class, core.class.AttachedDoc)) {
       const adoc = doc as unknown as AttachedDoc
@@ -321,6 +331,40 @@ export class TxOperations implements Omit<Client, 'notify'> {
       TxProcessor.applyUpdate(this.getHierarchy().as(doc, mixin), documentUpdate)
     }
     return doc
+  }
+
+  private splitMixinUpdate<T extends Doc>(
+    update: DocumentUpdate<T>,
+    mixClass: Ref<Class<T>>
+  ): {
+      docUpdate: DocumentUpdate<T>
+      mixinUpdate: DocumentUpdate<T>
+    } {
+    const docUpdate: DocumentUpdate<T> = {}
+    const mixinUpdate: DocumentUpdate<T> = {}
+
+    const mixinAttrs = this.getHierarchy().getOwnAttributes(mixClass)
+    const attrs = new Set(Object.keys(mixinAttrs))
+
+    for (const [key, value] of Object.entries(update)) {
+      if (key.startsWith('$')) {
+        const { take, omit } = splitObjectAttributes(value as object, attrs)
+        if (Object.keys(take).length > 0) {
+          ;(mixinUpdate as any)[key] = take
+        }
+        if (Object.keys(omit).length > 0) {
+          ;(docUpdate as any)[key] = omit
+        }
+      } else {
+        if (key in mixinAttrs) {
+          ;(mixinUpdate as any)[key] = value
+        } else {
+          ;(docUpdate as any)[key] = value
+        }
+      }
+    }
+
+    return { docUpdate, mixinUpdate }
   }
 }
 
