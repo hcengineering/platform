@@ -17,7 +17,6 @@ import { Client } from './client'
 import core from './component'
 import type { DocumentQuery, FindOptions, FindResult, TxResult, WithLookup } from './storage'
 import { DocumentClassQuery, Tx, TxCUD, TxFactory, TxProcessor } from './tx'
-import { splitObjectAttributes } from './utils'
 
 /**
  * @public
@@ -220,7 +219,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     return this.client.tx(tx)
   }
 
-  update<T extends Doc>(
+  async update<T extends Doc>(
     doc: T,
     update: DocumentUpdate<T>,
     retrieve?: boolean,
@@ -230,22 +229,22 @@ export class TxOperations implements Omit<Client, 'notify'> {
     const hierarchy = this.client.getHierarchy()
     const mixClass = Hierarchy.mixinOrClass(doc)
     if (hierarchy.isMixin(mixClass)) {
-      const { docUpdate, mixinUpdate } = this.splitMixinUpdate(update, mixClass)
-
       const baseClass = hierarchy.getBaseClass(doc._class)
 
-      const result: Promise<TxResult>[] = []
-      if (Object.keys(docUpdate).length > 0) {
-        result.push(this.updateDoc(baseClass, doc.space, doc._id, docUpdate, retrieve, modifiedOn, modifiedBy))
+      const byClass = this.splitMixinUpdate(update, mixClass, baseClass)
+      const ops = this.apply(doc._id)
+      for (const it of byClass) {
+        if (hierarchy.isMixin(it[0])) {
+          await ops.updateMixin(doc._id, baseClass, doc.space, it[0], it[1], modifiedOn, modifiedBy)
+        } else {
+          await ops.updateDoc(it[0], doc.space, doc._id, it[1], retrieve, modifiedOn, modifiedBy)
+        }
       }
-      if (Object.keys(mixinUpdate).length > 0) {
-        result.push(this.updateMixin(doc._id, baseClass, doc.space, mixClass, mixinUpdate, modifiedOn, modifiedBy))
-      }
-      return Promise.all(result)
+      return await ops.commit()
     }
     if (hierarchy.isDerived(doc._class, core.class.AttachedDoc)) {
       const adoc = doc as unknown as AttachedDoc
-      return this.updateCollection(
+      return await this.updateCollection(
         doc._class,
         doc.space,
         adoc._id,
@@ -258,7 +257,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
         modifiedBy
       )
     }
-    return this.updateDoc(doc._class, doc.space, doc._id, update, retrieve, modifiedOn, modifiedBy)
+    return await this.updateDoc(doc._class, doc.space, doc._id, update, retrieve, modifiedOn, modifiedBy)
   }
 
   remove<T extends Doc>(doc: T, modifiedOn?: Timestamp, modifiedBy?: Ref<Account>): Promise<TxResult> {
@@ -335,36 +334,52 @@ export class TxOperations implements Omit<Client, 'notify'> {
 
   private splitMixinUpdate<T extends Doc>(
     update: DocumentUpdate<T>,
-    mixClass: Ref<Class<T>>
-  ): {
-      docUpdate: DocumentUpdate<T>
-      mixinUpdate: DocumentUpdate<T>
-    } {
-    const docUpdate: DocumentUpdate<T> = {}
-    const mixinUpdate: DocumentUpdate<T> = {}
+    mixClass: Ref<Class<T>>,
+    baseClass: Ref<Class<T>>
+  ): Map<Ref<Class<Doc>>, DocumentUpdate<T>> {
+    const hierarchy = this.getHierarchy()
+    const attributes = hierarchy.getAllAttributes(mixClass)
 
-    const mixinAttrs = this.getHierarchy().getOwnAttributes(mixClass)
-    const attrs = new Set(Object.keys(mixinAttrs))
+    const updateAttrs = Object.fromEntries(
+      Object.entries(update).filter((it) => !it[0].startsWith('$'))
+    ) as DocumentUpdate<T>
+    const updateOps = Object.fromEntries(
+      Object.entries(update).filter((it) => it[0].startsWith('$'))
+    ) as DocumentUpdate<T>
 
-    for (const [key, value] of Object.entries(update)) {
-      if (key.startsWith('$')) {
-        const { take, omit } = splitObjectAttributes(value as object, attrs)
-        if (Object.keys(take).length > 0) {
-          ;(mixinUpdate as any)[key] = take
-        }
-        if (Object.keys(omit).length > 0) {
-          ;(docUpdate as any)[key] = omit
-        }
-      } else {
-        if (key in mixinAttrs) {
-          ;(mixinUpdate as any)[key] = value
-        } else {
-          ;(docUpdate as any)[key] = value
-        }
+    const result: Map<Ref<Class<Doc>>, DocumentUpdate<T>> = this.splitObjectAttributes(
+      updateAttrs,
+      baseClass,
+      attributes
+    )
+
+    for (const [key, value] of Object.entries(updateOps)) {
+      const updates = this.splitObjectAttributes(value as object, baseClass, attributes)
+
+      for (const [opsClass, opsUpdate] of updates) {
+        const upd: DocumentUpdate<T> = result.get(opsClass) ?? {}
+        result.set(opsClass, { ...upd, [key]: opsUpdate })
       }
     }
 
-    return { docUpdate, mixinUpdate }
+    return result
+  }
+
+  private splitObjectAttributes<T extends object>(
+    obj: T,
+    objClass: Ref<Class<Doc>>,
+    attributes: Map<String, AnyAttribute>
+  ): Map<Ref<Class<Doc>>, object> {
+    const hierarchy = this.getHierarchy()
+
+    const result: Map<Ref<Class<Doc>>, any> = new Map()
+    for (const [key, value] of Object.entries(obj)) {
+      const attributeOf = attributes.get(key)?.attributeOf
+      const clazz = attributeOf !== undefined && hierarchy.isMixin(attributeOf) ? attributeOf : objClass
+      result.set(clazz, { ...(result.get(clazz) ?? {}), [key]: value })
+    }
+
+    return result
   }
 }
 
