@@ -202,12 +202,12 @@ export async function queryIssue<D extends Issue> (
 }
 
 async function move (issues: Issue | Issue[]): Promise<void> {
-  showPopup(MoveIssues, { selected: issues })
+  showPopup(MoveIssues, { selected: issues }, 'top')
 }
 
 async function editWorkflowStatuses (project: Project | undefined): Promise<void> {
   if (project !== undefined) {
-    showPopup(Statuses, { projectId: project._id, projectClass: project._class }, 'float')
+    showPopup(Statuses, { projectId: project._id, projectClass: project._class }, 'top')
   }
 }
 

@@ -121,7 +121,7 @@
     on:dragend={resetDrag}
   >
     <div class="draggable-container">
-      <div class="draggable-mark"><IconCircles /></div>
+      <IconCircles size={'small'} />
     </div>
     <div class="flex-row-center ml-6 clear-mins gap-2">
       <StatusEditor
@@ -209,23 +209,18 @@
       position: absolute;
       display: flex;
       align-items: center;
-      height: 100%;
-      width: 1.5rem;
+      top: 50%;
+      left: 0.125rem;
+      width: 1rem;
+      height: 1rem;
+      opacity: 0;
+      transform: translateY(-50%);
+      transition: opacity 0.1s;
       cursor: grabbing;
-
-      .draggable-mark {
-        opacity: 0;
-        width: 0.375rem;
-        height: 1rem;
-        margin-left: 0.75rem;
-        transition: opacity 0.1s;
-      }
     }
 
-    &:hover {
-      .draggable-mark {
-        opacity: 0.4;
-      }
+    &:hover .draggable-container {
+      opacity: 0.4;
     }
 
     &.is-dragging::before {

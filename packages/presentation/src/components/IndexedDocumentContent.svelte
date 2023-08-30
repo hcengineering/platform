@@ -45,7 +45,7 @@
 
 {#if summary}
   {#if search.length > 0}
-    Result:
+    <span class="font-medium">Result:</span>
     {#each summary.split('\n').filter((line, idx, arr) => {
       return line.toLowerCase().includes(search.toLowerCase()) || arr[idx - 1]
           ?.toLowerCase()
@@ -55,7 +55,7 @@
     {/each}
     <br />
   {/if}
-  Summary:
+  <span class="font-medium">Summary:</span>
   {#each summary.split('\n') as line}
     {@const hl = search.length > 0 && line.toLowerCase().includes(search.toLowerCase())}
     <span class:text-md={!hl} class:highlight={hl}>{line}</span>
@@ -75,7 +75,7 @@
       {#each attr[1] as doc}
         <div class="p-1" class:flex-col={doc.length > 1}>
           {#if search.length > 0}
-            Result:
+            <span class="font-medium">Result:</span>
             {#each doc.filter((line) => line.toLowerCase().includes(search.toLowerCase())) as line}
               <span class:highlight={true}>{line}</span>
             {/each}
@@ -93,6 +93,6 @@
 
 <style lang="scss">
   .highlight {
-    color: blue;
+    color: var(--theme-link-color);
   }
 </style>

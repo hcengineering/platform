@@ -173,13 +173,11 @@
   }}
   on:changeContent
 >
-  <div on:keydown={onKeydown}>
-    <div class="mb-2">
-      <EditBox bind:value={name} placeholder={core.string.Name} />
-    </div>
-    <div class="flex-between mb-2">
-      <EditBox placeholder={presentation.string.Search} kind="large-style" bind:value={newValue} />
-      <div class="flex gap-2">
+  <div class="flex-col" on:keydown={onKeydown}>
+    <EditBox bind:value={name} placeholder={core.string.Name} kind={'large-style'} fullSize />
+    <div class="flex-between my-4">
+      <EditBox placeholder={presentation.string.Search} kind={'large-style'} bind:value={newValue} fullSize />
+      <div class="flex-row-center flex-no-shrink gap-2 ml-4">
         <ActionIcon icon={IconAdd} label={presentation.string.Add} action={add} size={'small'} />
         <ActionIcon
           icon={Copy}
@@ -207,7 +205,7 @@
   </div>
   <svelte:fragment slot="footer">
     <div
-      class="resume flex gap-2"
+      class="resume flex-center"
       class:solid={dragover}
       on:dragover|preventDefault={() => {
         dragover = true

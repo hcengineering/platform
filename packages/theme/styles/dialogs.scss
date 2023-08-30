@@ -40,8 +40,10 @@
     align-items: center;
     flex-shrink: 0;
 
-    &.withSub { padding: 1.5rem 1.5rem 0; }
-    &:not(.withSub) { padding: 1.5rem 1.5rem 1rem; }
+    &.withSub:not(.thinHeader) { padding: 1.5rem 1.5rem 0; }
+    &.withSub.thinHeader { padding: 1rem 1.5rem 0; }
+    &.thinHeader:not(.withSub) { padding: 1rem 1.5rem; }
+    &:not(.withSub, .thinHeader) { padding: 1.5rem; }
 
     &__title-wrap {
       display: flex;
@@ -81,7 +83,7 @@
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    padding: .5rem 1.5rem 1rem;
+    padding: .5rem 1.5rem 1.5rem;
     min-width: 0;
     min-height: 0;
   }
@@ -124,11 +126,24 @@
       order: 1;
     }
   }
-  
-  .antiCard-attachments {
-    background-color: var(--theme-bg-accent-color);
-    border-top: 1px solid var(--theme-popup-divider);
 
+  .antiCard-attachments,
+  .antiCard-block,
+  .antiCard-blocks { border-top: 1px solid var(--theme-popup-divider); }
+
+  .antiCard-block,
+  .antiCard-blocks {
+    display: flex;
+    flex-direction: column;
+    height: fit-content;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .antiCard-attachments,
+  .antiCard-blocks { background-color: var(--theme-bg-accent-color); }
+
+  .antiCard-attachments {
     &__container {
       display: flex;
       align-items: center;
@@ -138,6 +153,8 @@
       & > *:last-child { margin-right: 1.5rem; }
     }
   }
+  .antiCard-block { padding: 1.5rem; }
+  .antiCard-blocks { padding: .75rem 1.5rem; }
 
   .antiCard-footer {
     overflow: hidden;

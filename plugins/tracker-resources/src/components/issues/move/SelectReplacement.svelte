@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Ref, Status } from '@hcengineering/core'
-  import { Button, Label, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { Button, Label, Grid, IconArrowRight, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { Component, Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import { statusStore } from '@hcengineering/view-resources'
 
@@ -81,114 +81,91 @@
 </script>
 
 {#if issues[0]?.space !== targetProject._id && (Object.keys(statusToUpdate).length > 0 || missingComponents.length > 0)}
-  <div class="mt-4 mb-4">
-    <span class="caption-color">
-      <Label label={tracker.string.SelectReplacement} />
-    </span>
-
-    <div class="mt-4">
-      <div class="missing-items">
-        <span class="side-columns">
-          <Label label={tracker.string.MissingItem} />
-        </span>
-        <span class="middle-column" />
-        <span class="side-columns">
-          <Label label={tracker.string.Replacement} />
-        </span>
-      </div>
-      <div class="mt-4">
-        {#each Object.keys(statusToUpdate) as status}
-          {@const newStatus = statusToUpdate[status]}
-          <div class="missing-items mt-4">
-            <div class="side-columns aligned-text">
-              <StatusRefPresenter value={getStatusRef(status)} kind={'list-header'} />
-            </div>
-            <span class="middle-column aligned-text">-></span>
-            <div class="side-columns">
-              <Button
-                on:click={(event) => {
-                  showPopup(
-                    StatusReplacementPopup,
-                    {
-                      statuses,
-                      original: $statusStore.get(getStatusRef(status)),
-                      selected: getStatusRef(newStatus.ref)
-                    },
-                    eventToHTMLElement(event),
-                    (value) => {
-                      if (value) {
-                        const createStatus = typeof value === 'object'
-                        const s = createStatus ? value.create : value
-                        statusToUpdate = { ...statusToUpdate, [status]: { ref: s, create: createStatus } }
-                      }
-                    }
-                  )
-                }}
-              >
-                <span slot="content" class="flex-row-center pointer-events-none">
-                  <StatusRefPresenter value={getStatusRef(newStatus.ref)} />
-                </span>
-              </Button>
-            </div>
-          </div>
-        {/each}
-      </div>
-      <div class="mt-4">
-        {#each missingComponents as component}
-          {@const componentRef = componentToUpdate[component._id]?.ref}
-          <div class="missing-items mt-4">
-            <div class="side-columns aligned-text">
-              <ComponentPresenter value={component} disabled />
-            </div>
-            <span class="middle-column aligned-text">-></span>
-            <div class="side-columns aligned-text">
-              <Button
-                on:click={(event) => {
-                  showPopup(
-                    ComponentReplacementPopup,
-                    {
-                      components: components.filter((it) => it.space === targetProject._id),
-                      original: component,
-                      selected: componentRef
-                    },
-                    eventToHTMLElement(event),
-                    (value) => {
-                      if (value !== undefined) {
-                        const createComponent = typeof value === 'object'
-                        const c = createComponent ? value.create : value
-                        componentToUpdate = {
-                          ...componentToUpdate,
-                          [component._id]: { ref: c, create: createComponent }
-                        }
-                      }
-                    }
-                  )
-                }}
-              >
-                <span slot="content" class="flex-row-center pointer-events-none">
-                  <ComponentRefPresenter value={componentRef} />
-                </span>
-              </Button>
-            </div>
-          </div>
-        {/each}
-      </div>
-    </div>
+  <div class="caption-color mb-4">
+    <Label label={tracker.string.SelectReplacement} />
   </div>
-{/if}
 
-<style lang="scss">
-  .missing-items {
-    display: flex;
-  }
-  .side-columns {
-    width: 40%;
-  }
-  .middle-column {
-    width: 10%;
-  }
-  .aligned-text {
-    display: flex;
-    align-items: center;
-  }
-</style>
+  <Grid rowGap={0.25} columnGap={2}>
+    <div class="flex-row-center min-h-8 content-dark-color text-xs font-medium tracking-1px uppercase">
+      <Label label={tracker.string.MissingItem} />
+    </div>
+    <div class="flex-row-center min-h-8 content-dark-color text-xs font-medium tracking-1px uppercase">
+      <Label label={tracker.string.Replacement} />
+    </div>
+    {#each Object.keys(statusToUpdate) as status}
+      {@const newStatus = statusToUpdate[status]}
+      <div class="flex-between min-h-11">
+        <StatusRefPresenter value={getStatusRef(status)} kind={'list-header'} />
+        <IconArrowRight size={'small'} fill={'var(--theme-halfcontent-color)'} />
+      </div>
+      <div class="flex-row-center min-h-11">
+        <Button
+          size={'large'}
+          shape={'round-sm'}
+          width={'min-content'}
+          on:click={(event) => {
+            showPopup(
+              StatusReplacementPopup,
+              {
+                statuses,
+                original: $statusStore.get(getStatusRef(status)),
+                selected: getStatusRef(newStatus.ref)
+              },
+              eventToHTMLElement(event),
+              (value) => {
+                if (value) {
+                  const createStatus = typeof value === 'object'
+                  const s = createStatus ? value.create : value
+                  statusToUpdate = { ...statusToUpdate, [status]: { ref: s, create: createStatus } }
+                }
+              }
+            )
+          }}
+        >
+          <span slot="content" class="flex-row-center pointer-events-none">
+            <StatusRefPresenter value={getStatusRef(newStatus.ref)} />
+          </span>
+        </Button>
+      </div>
+    {/each}
+    {#each missingComponents as component}
+      {@const componentRef = componentToUpdate[component._id]?.ref}
+      <div class="flex-between min-h-11">
+        <ComponentPresenter value={component} disabled />
+        <IconArrowRight size={'small'} fill={'var(--theme-halfcontent-color)'} />
+      </div>
+      <div class="flex-row-center min-h-11">
+        <Button
+          size={'large'}
+          shape={'round-sm'}
+          width={'min-content'}
+          on:click={(event) => {
+            showPopup(
+              ComponentReplacementPopup,
+              {
+                components: components.filter((it) => it.space === targetProject._id),
+                original: component,
+                selected: componentRef
+              },
+              eventToHTMLElement(event),
+              (value) => {
+                if (value !== undefined) {
+                  const createComponent = typeof value === 'object'
+                  const c = createComponent ? value.create : value
+                  componentToUpdate = {
+                    ...componentToUpdate,
+                    [component._id]: { ref: c, create: createComponent }
+                  }
+                }
+              }
+            )
+          }}
+        >
+          <span slot="content" class="flex-row-center pointer-events-none">
+            <ComponentRefPresenter value={componentRef} />
+          </span>
+        </Button>
+      </div>
+    {/each}
+  </Grid>
+{/if}

@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Class, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
-  import { AnySvelteComponent, ButtonKind, ButtonSize } from '@hcengineering/ui'
+  import { AnySvelteComponent, ButtonKind, ButtonSize, ButtonShape } from '@hcengineering/ui'
   import { ObjectCreate } from '../types'
   import SpaceSelect from './SpaceSelect.svelte'
   import { createEventDispatcher } from 'svelte'
@@ -28,6 +28,7 @@
   export let label: IntlString
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
+  export let shape: ButtonShape = undefined
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
   export let allowDeselect = false
@@ -54,6 +55,7 @@
   {label}
   {size}
   {kind}
+  {shape}
   {justify}
   {width}
   {component}

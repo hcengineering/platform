@@ -25,7 +25,7 @@
   export let disabled = false
   export let onClick: (() => void) | undefined = undefined
   export let shouldShowAvatar: boolean = false
-  export let noUnderline = false
+  export let noUnderline = disabled
   export let inline = false
   export let kind: 'list' | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
@@ -58,7 +58,7 @@
     component={tracker.component.EditIssue}
     shrink={0}
   >
-    <span class="issuePresenterRoot" class:inline class:list={kind === 'list'}>
+    <span class="issuePresenterRoot" class:inline class:list={kind === 'list'} class:cursor-pointer={!disabled}>
       {#if !inline && shouldShowAvatar}
         <div class="icon" use:tooltip={{ label: tracker.string.Issue }}>
           <Icon icon={icon ?? tracker.icon.Issues} size={'small'} />
@@ -81,7 +81,6 @@
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    cursor: pointer;
 
     &:not(.list) {
       color: var(--theme-content-color);

@@ -51,13 +51,13 @@
   $: canSave = !isSaving && (value.name ?? '').length > 0
 </script>
 
-<div class="flex-between background-button-bg-color border-radius-1 p-2 root">
+<div class="flex-between border-radius-1 statusEditor-container">
   <div class="flex flex-grow items-center clear-mins inputs">
     <div class="flex-no-shrink draggable-mark">
-      {#if !isSingle}<IconCircles />{/if}
+      {#if !isSingle}<IconCircles size={'small'} />{/if}
     </div>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="flex-no-shrink ml-2 color" on:click={pickColor}>
+    <div class="flex-no-shrink color" on:click={pickColor}>
       <div class="dot" style="background-color: {getPlatformColorDef(value.color ?? 0, $themeStore.dark).color}" />
     </div>
     <div class="ml-2 w-full name">
@@ -67,61 +67,74 @@
       <StatusInput bind:value={value.description} placeholder={tracker.string.Description} fill />
     </div>
   </div>
-  <div class="buttons-group small-gap flex-no-shrink ml-2 mr-1">
-    <Button label={presentation.string.Cancel} kind="regular" on:click={() => dispatch('cancel')} />
-    <Button label={presentation.string.Save} kind="accented" disabled={!canSave} on:click={() => dispatch('save')} />
+  <div class="buttons-group small-gap flex-no-shrink ml-2">
+    <Button label={presentation.string.Cancel} size={'small'} kind={'regular'} on:click={() => dispatch('cancel')} />
+    <Button
+      label={presentation.string.Save}
+      size={'small'}
+      kind={'accented'}
+      disabled={!canSave}
+      on:click={() => dispatch('save')}
+    />
   </div>
 </div>
 
 <style lang="scss">
-  .root {
+  .statusEditor-container {
+    padding: 0.75rem 1.125rem;
     line-height: 1.125rem;
+    background-color: var(--theme-button-default);
+
+    .draggable-mark {
+      position: absolute;
+      top: 50%;
+      left: 0.125rem;
+      width: 1rem;
+      height: 1rem;
+      transform: translateY(-50%);
+      opacity: 0;
+
+      &.draggable {
+        transition: opacity 0.15s;
+
+        &::before {
+          position: absolute;
+          content: '';
+          inset: -0.5rem;
+        }
+      }
+    }
+    .color {
+      position: relative;
+      width: 1.75rem;
+      height: 1.75rem;
+      background-color: var(--theme-bg-dark-color);
+      border: 1px solid transparent;
+      border-radius: 0.25rem;
+      cursor: pointer;
+
+      .dot {
+        position: absolute;
+        content: '';
+        border-radius: 50%;
+        inset: 30%;
+      }
+    }
+    .inputs {
+      overflow: hidden;
+      white-space: nowrap;
+
+      .name {
+        max-width: 10rem;
+      }
+    }
 
     &:hover {
+      background-color: var(--theme-button-hovered);
+
       .draggable-mark {
         opacity: 0.4;
       }
-    }
-  }
-
-  .inputs {
-    overflow: hidden;
-    white-space: nowrap;
-
-    .name {
-      max-width: 10rem;
-    }
-  }
-
-  .draggable-mark {
-    position: relative;
-    opacity: 0;
-    width: 0.375rem;
-    height: 1rem;
-    margin-left: 0.25rem;
-    transition: opacity 0.1s;
-
-    &::before {
-      position: absolute;
-      content: '';
-      inset: -0.5rem;
-    }
-  }
-
-  .color {
-    position: relative;
-    width: 1.75rem;
-    height: 1.75rem;
-    background-color: var(--accent-bg-color);
-    border: 1px solid transparent;
-    border-radius: 0.25rem;
-    cursor: pointer;
-
-    .dot {
-      position: absolute;
-      content: '';
-      border-radius: 50%;
-      inset: 30%;
     }
   }
 </style>

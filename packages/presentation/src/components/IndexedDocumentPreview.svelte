@@ -1,7 +1,7 @@
 <script lang="ts">
   import core, { Doc, DocIndexState, Ref } from '@hcengineering/core'
 
-  import { EditBox, Label, Panel } from '@hcengineering/ui'
+  import { EditBox, Label, Dialog } from '@hcengineering/ui'
   import { createQuery } from '../utils'
   import IndexedDocumentContent from './IndexedDocumentContent.svelte'
   import presentation from '../plugin'
@@ -25,39 +25,29 @@
 {#if noPanel}
   <div class="p-1 flex-col">
     <Label label={presentation.string.DocumentPreview} />
-    <EditBox autoFocus bind:value={search} kind="search-style" />
+    <EditBox autoFocus bind:value={search} kind={'default-large'} fullSize />
   </div>
-  <div class="indexed-background">
-    <div class="indexed-doc text-base max-h-125">
+  <div class="indexed-doc flex-col px-3 mt-4 text-base">
+    {#if indexDoc}
+      <IndexedDocumentContent {indexDoc} {search} />
+    {/if}
+  </div>
+{:else}
+  <Dialog isFullSize on:changeContent on:close on:fullsize>
+    <EditBox autoFocus bind:value={search} kind={'default-large'} fullSize />
+    <div class="indexed-doc flex-col px-3 mt-4 text-base">
       {#if indexDoc}
         <IndexedDocumentContent {indexDoc} {search} />
       {/if}
     </div>
-  </div>
-{:else}
-  <Panel on:changeContent on:close>
-    <EditBox autoFocus bind:value={search} kind="search-style" />
-    <div class="indexed-background">
-      <div class="indexed-doc text-base max-h-125">
-        {#if indexDoc}
-          <IndexedDocumentContent {indexDoc} {search} />
-        {/if}
-      </div>
-    </div>
-  </Panel>
+  </Dialog>
 {/if}
 
 <style lang="scss">
   .indexed-doc {
-    padding: 2.5rem;
-    display: grid;
     overflow: auto;
-    min-width: 50rem;
-    max-width: 80rem;
-  }
-  .indexed-background {
-    background-color: white;
-    color: black;
-    user-select: text;
+    flex-basis: 100%;
+    height: fit-content;
+    max-height: 100%;
   }
 </style>

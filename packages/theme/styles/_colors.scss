@@ -108,6 +108,7 @@
   // Be aware to update defineAlpha() function in colors.ts
   --theme-bg-color: #1A1A28;
   --theme-bg-accent-color: rgba(0, 0, 0, .08);
+  --theme-bg-dark-color: rgba(0, 0, 0, .2);
   --theme-back-color: #0f0f18;
   --theme-overlay-color: rgba(0, 0, 0, .3);
   --theme-statusbar-color: #2C2C35;
@@ -303,6 +304,7 @@
   // Be aware to update defineAlpha() function in colors.ts
   --theme-bg-color: #F1F1F4;
   --theme-bg-accent-color: rgba(255, 255, 255, .08);
+  --theme-bg-dark-color: rgba(255, 255, 255, .8);
   --theme-back-color: #D9D9DD;
   --theme-overlay-color: rgba(0, 0, 0, .2);
   --theme-statusbar-color: #bfbfc6;

@@ -15,111 +15,128 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
-
   import { createEventDispatcher } from 'svelte'
+  import { resizeObserver, Button, Label, IconClose, IconScale, IconScaleFull } from '..'
 
-  import Close from './icons/Close.svelte'
-  import ScrollBox from './ScrollBox.svelte'
-  import Button from './Button.svelte'
-  import Label from './Label.svelte'
-
-  import ui from '../plugin'
-
-  export let label: IntlString
-  export let okLabel: IntlString
-  export let okAction: () => void
+  export let label: IntlString | undefined = undefined
+  export let isFullSize: boolean = false
 
   const dispatch = createEventDispatcher()
+
+  let fullSize: boolean = false
 </script>
 
-<div class="dialog-container">
-  <form
-    class="dialog"
-    on:submit|preventDefault={() => {
-      okAction()
-      dispatch('close')
-    }}
-  >
-    <div class="flex-between header">
-      <div class="title"><Label {label} /></div>
-      <div
-        class="tool"
-        on:click={() => {
-          dispatch('close')
-        }}
-      >
-        <Close size={'small'} />
+<form
+  class="dialog-container"
+  class:fullsize={fullSize}
+  on:submit|preventDefault={() => {}}
+  use:resizeObserver={() => {
+    dispatch('changeContent')
+  }}
+>
+  <div class="flex-between header">
+    <div class="flex-row-center gap-1-5">
+      <Button icon={IconClose} kind={'ghost'} size={'medium'} on:click={() => dispatch('close')} />
+      <div class="title">
+        {#if label}<Label {label} />{/if}
+        {#if $$slots.title}<slot name="title" />{/if}
       </div>
     </div>
-    <div class="content">
-      <ScrollBox vertical stretch><slot /></ScrollBox>
+    <div class="flex-row-center gap-1-5">
+      {#if $$slots.utils}
+        <slot name="utils" />
+      {/if}
+      {#if $$slots.utils && isFullSize}
+        <div class="buttons-divider" />
+      {/if}
+      {#if isFullSize}
+        <Button
+          focusIndex={100010}
+          icon={fullSize ? IconScale : IconScaleFull}
+          kind={'ghost'}
+          size={'medium'}
+          selected={fullSize}
+          on:click={() => {
+            fullSize = !fullSize
+            dispatch('fullsize')
+          }}
+        />
+      {/if}
     </div>
+  </div>
+  <div class="content" class:rounded={!($$slots.footerLeft || $$slots.footerRight)}>
+    <slot />
+  </div>
+  {#if $$slots.footerLeft || $$slots.footerRight}
     <div class="footer">
-      <Button label={okLabel} kind={'accented'} />
-      <Button
-        label={ui.string.Cancel}
-        on:click={() => {
-          dispatch('close')
-        }}
-      />
+      {#if $$slots.footerLeft}
+        <div class="flex-row-center gap-2">
+          <slot name="footerLeft" />
+        </div>
+      {:else}<div />{/if}
+      {#if $$slots.footerRight}
+        <div class="flex-row-center gap-2">
+          <slot name="footerRight" />
+        </div>
+      {:else}<div />{/if}
     </div>
-  </form>
-</div>
+  {/if}
+</form>
 
 <style lang="scss">
-  .dialog {
+  .dialog-container {
     display: flex;
     flex-direction: column;
-    width: 45rem;
-    height: 100vh;
-    min-height: 100vh;
-    max-height: 100vh;
-    background-color: var(--theme-bg-color);
-    border-radius: 1.875rem 0 0 1.875rem;
-    box-shadow: 0px 3.125rem 7.5rem rgba(0, 0, 0, 0.4);
+    min-width: 25rem;
+    max-width: calc(100vw - 2rem);
+    min-height: 0;
+    max-height: 80vh;
+    background-color: var(--theme-popup-color);
+    border-radius: 0.5rem;
+
+    &:not(.fullsize) {
+      border: 1px solid var(--theme-popup-divider);
+      box-shadow: var(--theme-popup-shadow);
+    }
+    &.fullsize {
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+    }
 
     .header {
       flex-shrink: 0;
-      padding: 0 2rem 0 2.5rem;
-      height: 4.5rem;
+      padding: 0.5rem;
+      background-color: var(--theme-popup-header);
+      border-bottom: 1px solid var(--theme-popup-divider);
+      border-radius: 0.5rem 0.5rem 0 0;
 
       .title {
         flex-grow: 1;
-        font-weight: 500;
-        font-size: 1.125rem;
-        color: var(--caption-color);
-        user-select: none;
-      }
-
-      .tool {
-        margin-left: 0.75rem;
-        opacity: 0.4;
-        cursor: pointer;
-        &:hover {
-          opacity: 1;
-        }
+        font-size: 1rem;
+        color: var(--theme-caption-color);
       }
     }
-
     .content {
-      flex-shrink: 0;
-      flex-grow: 1;
-      margin: 0 2.5rem;
-      height: max-content;
-    }
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      min-width: 0;
+      min-height: 0;
 
+      &.rounded {
+        border-radius: 0 0 0.5rem 0.5rem;
+      }
+    }
     .footer {
-      flex-shrink: 0;
-      display: grid;
-      grid-auto-flow: column;
-      direction: rtl;
-      justify-content: start;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-      column-gap: 0.75rem;
-      padding: 0 2.5rem;
-      height: 6rem;
-      mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 1.25rem, rgba(0, 0, 0, 1) 2.5rem);
-      overflow: hidden;
+      flex-shrink: 0;
+      padding: 0.25rem 0.5rem;
+      border-top: 1px solid var(--theme-popup-divider);
+      border-radius: 0 0 0.5rem 0.5rem;
     }
   }
 </style>

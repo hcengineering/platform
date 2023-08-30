@@ -21,10 +21,11 @@
 
   export let value: WithLookup<Issue>
   export let shouldUseMargin: boolean = false
-  export let showParent = true
+  export let showParent: boolean = true
   export let kind: 'list' | undefined = undefined
   export let onClick: (() => void) | undefined = undefined
-  export let disabled = false
+  export let disabled: boolean = false
+  export let maxWidth: string | undefined = undefined
 </script>
 
 {#if value}
@@ -32,6 +33,7 @@
     class="name overflow-label select-text"
     class:with-margin={shouldUseMargin}
     class:list={kind === 'list'}
+    style:max-width={maxWidth}
     title={value.title}
   >
     <DocNavLink

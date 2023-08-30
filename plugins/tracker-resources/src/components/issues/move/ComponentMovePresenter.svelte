@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
-  import { Button, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { Button, Grid, IconArrowRight, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { Component, Issue, Project } from '@hcengineering/tracker'
 
   import { IssueToUpdate } from '../../../utils'
@@ -31,13 +31,16 @@
 </script>
 
 {#if current !== undefined}
-  <div class="flex-row-center p-1">
-    <div class="side-columns aligned-text">
+  <Grid rowGap={0.25} topGap>
+    <div class="flex-between min-h-11">
       <ComponentPresenter value={current} disabled />
+      <IconArrowRight size={'small'} fill={'var(--theme-halfcontent-color)'} />
     </div>
-    <span class="middle-column aligned-text">-></span>
-    <div class="side-columns">
+    <div class="flex-row-center min-h-11">
       <Button
+        size={'large'}
+        shape={'round-sm'}
+        width={'min-content'}
         on:click={(event) => {
           showPopup(
             ComponentReplacementPopup,
@@ -67,7 +70,7 @@
         </span>
       </Button>
     </div>
-  </div>
+  </Grid>
 {/if}
 
 <style lang="scss">

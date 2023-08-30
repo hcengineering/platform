@@ -1,7 +1,6 @@
 <script lang="ts">
   import { DocIndexState } from '@hcengineering/core'
-
-  import { EditBox, Panel } from '@hcengineering/ui'
+  import { EditBox, Dialog } from '@hcengineering/ui'
   import IndexedDocumentContent from './IndexedDocumentContent.svelte'
 
   export let left: DocIndexState
@@ -10,46 +9,25 @@
   let search: string = ''
 </script>
 
-<Panel on:changeContent on:close>
-  <EditBox autoFocus bind:value={search} kind="search-style" />
-  <div class="indexed-background">
-    <div class="indexed-doc text-base max-h-125">
-      <div class="flex">
-        <div class="indexed-doc-part">
-          <IndexedDocumentContent indexDoc={left} {search} />
-        </div>
-        {#if right !== undefined}
-          <div class="indexed-doc-part">
-            <IndexedDocumentContent indexDoc={right} {search} />
-          </div>
-        {/if}
-      </div>
+<Dialog isFullSize on:changeContent on:close on:fullsize>
+  <EditBox autoFocus bind:value={search} kind={'default-large'} fullSize />
+  <div class="flex-row-top px-3 mt-4 text-base">
+    <div class="indexed-doc-part flex-col">
+      <IndexedDocumentContent indexDoc={left} {search} />
     </div>
+    {#if right !== undefined}
+      <div class="indexed-doc-part flex-col ml-4">
+        <IndexedDocumentContent indexDoc={right} {search} />
+      </div>
+    {/if}
   </div>
-</Panel>
+</Dialog>
 
 <style lang="scss">
-  .indexed-doc {
-    padding: 2.5rem;
-    display: flex;
-    overflow: auto;
-    min-width: 50rem;
-    max-width: 100rem;
-  }
   .indexed-doc-part {
-    padding: 0.5rem;
-    display: grid;
     overflow: auto;
-    min-width: 25rem;
-    max-width: 50rem;
-  }
-  .indexed-background {
-    background-color: white;
-    color: black;
-    user-select: text;
-    // width: 200rem;
-    .highlight {
-      color: blue;
-    }
+    flex-basis: 100%;
+    height: fit-content;
+    max-height: 100%;
   }
 </style>

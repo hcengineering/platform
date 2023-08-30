@@ -57,7 +57,7 @@
 <Scroller>
   {#each filtered as item, i}
     <div
-      class="flex-between flex-nowrap item mb-2"
+      class="flex-between flex-nowrap item step-tb25"
       draggable={true}
       bind:this={elements[i]}
       on:dragover|preventDefault={(ev) => {
@@ -71,9 +71,9 @@
         selected = undefined
       }}
     >
-      <div class="flex">
-        <div class="circles-mark"><IconCircles /></div>
-        <span class="overflow-label">{item}</span>
+      <div class="flex-row-center">
+        <div class="circles-mark"><IconCircles size={'small'} /></div>
+        <span class="overflow-label mx-2">{item}</span>
       </div>
       <ActionIcon
         icon={IconDelete}
@@ -85,6 +85,7 @@
       />
     </div>
   {/each}
+  {#if filtered.length}<div class="antiVSpacer x4" />{/if}
 </Scroller>
 {#if filtered.length === 0}
   <Label label={presentation.string.NoMatchesFound} />
@@ -92,26 +93,35 @@
 
 <style lang="scss">
   .item {
+    padding: 0.5rem 0.5rem 0.5rem 0.125rem;
+    height: 2.25rem;
+    background-color: var(--theme-button-default);
+    border-radius: 0.25rem;
+
+    .circles-mark {
+      position: relative;
+      width: 1rem;
+      height: 1rem;
+      opacity: 0.4;
+      transition: opacity 0.1s;
+      cursor: grab;
+
+      &::before {
+        position: absolute;
+        content: '';
+        inset: -0.5rem;
+      }
+    }
     &:hover {
+      background-color: var(--theme-button-hovered);
+
       .circles-mark {
         cursor: grab;
         opacity: 1;
       }
     }
-  }
-  .circles-mark {
-    position: relative;
-    opacity: 0.4;
-    width: 0.375rem;
-    height: 1rem;
-    transition: opacity 0.1s;
-    margin-right: 0.5rem;
-    cursor: grab;
-
-    &::before {
-      position: absolute;
-      content: '';
-      inset: -0.5rem;
+    &:active {
+      background-color: var(--theme-button-pressed);
     }
   }
 </style>

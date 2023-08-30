@@ -151,6 +151,7 @@
     "CreatedOne": "Created",
     "MoveIssues": "Move issues",
     "MoveIssuesDescription": "Select the project you want to move issues to",
+    "ManageAttributes": "Manage attributes",
     "KeepOriginalAttributes": "Keep original attributes",
     "KeepOriginalAttributesTooltip": "Original issue statuses and components will be kept in the new project",
     "SelectReplacement": "The following items are not available in the new project. Select a replacement.",

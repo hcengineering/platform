@@ -110,7 +110,7 @@
     }}
   />
 </div>
-<div class="mt-3">
+<div class="flex-col mt-3">
   {#each states as state, i}
     {@const color = getPlatformColorDef(state.color ?? getColorNumberByText(state.name), $themeStore.dark)}
     {#if state}
@@ -133,7 +133,7 @@
           selected = undefined
         }}
       >
-        <div class="bar"><IconCircles /></div>
+        <div class="bar"><IconCircles size={'small'} /></div>
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="color"
@@ -169,7 +169,7 @@
     {/if}
   {/each}
 </div>
-<div class="mt-9">
+<div class="flex-col mt-9">
   <div class="flex-no-shrink flex-between trans-title uppercase">
     <Label label={task.string.DoneStatesWon} />
     <CircleButton
@@ -188,7 +188,7 @@
       }}
     />
   </div>
-  <div class="mt-4">
+  <div class="flex-col mt-4">
     {#each wonStates as state}
       {@const color = getPlatformColorDef(PaletteColorIndexes.Crocodile, $themeStore.dark)}
       {#if state}
@@ -294,7 +294,7 @@
 
 <style lang="scss">
   .states {
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 1rem 0.5rem 0.25rem;
     color: var(--theme-caption-color);
     background-color: var(--theme-button-default);
     border: 1px solid var(--theme-button-border);
@@ -302,8 +302,8 @@
     user-select: none;
 
     .bar {
-      margin-right: 0.375rem;
-      width: 0.375rem;
+      margin-right: 0.25rem;
+      width: 1rem;
       height: 1rem;
       opacity: 0.4;
       cursor: grabbing;

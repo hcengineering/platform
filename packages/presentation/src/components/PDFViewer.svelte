@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Doc } from '@hcengineering/core'
-  import { Button, deviceOptionsStore as deviceInfo, Panel, PopupOptions } from '@hcengineering/ui'
+  import { Button, Dialog, PopupOptions } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
   import { getFileUrl } from '../utils'
@@ -42,9 +42,7 @@
 </script>
 
 <ActionContext context={{ mode: 'browser' }} />
-<Panel
-  isHeader={false}
-  isAside={popupOptions && popupOptions.fullSize}
+<Dialog
   isFullSize
   on:fullsize
   on:close={() => {
@@ -76,19 +74,13 @@
   </svelte:fragment>
 
   {#if contentType && contentType.startsWith('image/')}
-    <div class="pdfviewer-content img" style:margin={$deviceInfo.minWidth ? '.5rem' : '1.5rem'}>
+    <div class="pdfviewer-content img">
       <img class="img-fit" src={getFileUrl(file, 'full', name)} alt="" />
     </div>
-    <div class="space" />
   {:else}
-    <iframe
-      class="pdfviewer-content"
-      style:margin={$deviceInfo.minWidth ? '.5rem' : '1.5rem'}
-      src={getFileUrl(file, 'full', name) + '#view=FitH&navpanes=0'}
-      title=""
-    />
+    <iframe class="pdfviewer-content" src={getFileUrl(file, 'full', name) + '#view=FitH&navpanes=0'} title="" />
   {/if}
-</Panel>
+</Dialog>
 
 <style lang="scss">
   .icon {

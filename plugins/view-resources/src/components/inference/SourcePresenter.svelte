@@ -26,7 +26,7 @@
 <span
   use:tooltip={{ label: plugin.string.ShowPreviewOnClick }}
   on:click={() => {
-    showPopup(IndexedDocumentPreview, { objectId: value._id, search })
+    showPopup(IndexedDocumentPreview, { objectId: value._id, search }, 'centered')
   }}
 >
   {#if value.$source?.$score}

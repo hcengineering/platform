@@ -33,10 +33,12 @@
 <div
   class="root flex background-button-bg-color border-radius-1"
   {style}
+  style:background={'red'}
   on:dblclick|preventDefault={isEditable && !isEditing ? () => dispatch('edit') : undefined}
 >
   <div class="flex-center ml-2">
-    <div class="flex-no-shrink circles-mark" class:isDraggable><IconCircles /></div>
+    <div class="flex-no-shrink circles-mark" class:isDraggable><IconCircles size={'small'} /></div>
+    !!!
   </div>
 
   <div class="root flex flex-between items-center w-full p-2">
