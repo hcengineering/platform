@@ -240,9 +240,11 @@
     const resolvedSpace = resolved.loc.path[3]
     const resolvedSpecial = resolved.loc.path[4]
     if (resolvedApp === undefined) {
+      const isSameApp = currentAppAlias === loc.path[2]
       loc.path[2] = (currentAppAlias as string) ?? resolved.defaultLocation.path[2]
       loc.path[3] = currentSpace ?? (currentSpecial as string) ?? resolved.defaultLocation.path[3]
-      if (loc.path[3] !== undefined) {
+      if (loc.path[3] !== undefined && isSameApp) {
+        // setting space special/aside only if it belongs to the same app
         if (loc.path[3] === resolved.defaultLocation.path[3]) {
           loc.path[4] = resolved.defaultLocation.path[4]
         } else {
