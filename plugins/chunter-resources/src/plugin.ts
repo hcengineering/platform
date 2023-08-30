@@ -90,6 +90,7 @@ export default mergeIds(chunterId, chunter, {
     CopyLink: '' as IntlString,
     You: '' as IntlString,
     YouHaveJoinedTheConversation: '' as IntlString,
-    NoMessages: '' as IntlString
+    NoMessages: '' as IntlString,
+    On: '' as IntlString
   }
 })

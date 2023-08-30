@@ -18,7 +18,17 @@
   import { Class, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
   import { DocUpdates } from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
-  import { AnyComponent, Button, Component, IconAdd, Tabs, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import {
+    AnyComponent,
+    Button,
+    Component,
+    IconAdd,
+    Tabs,
+    eventToHTMLElement,
+    getLocation,
+    navigate,
+    showPopup
+  } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import contact from '@hcengineering/contact'
   import { UsersPopup } from '@hcengineering/contact-resources'
@@ -53,7 +63,6 @@
   let _id: Ref<Doc> | undefined
   let _class: Ref<Class<Doc>> | undefined
   let selectedEmployee: Ref<PersonAccount> | undefined = undefined
-  let prevValue: DocUpdates | undefined = undefined
 
   async function select (value: DocUpdates | undefined) {
     if (!value) {
@@ -62,19 +71,27 @@
       _class = undefined
       return
     }
-    if (prevValue !== undefined) {
-      if (prevValue.txes.some((p) => p.isNew)) {
-        prevValue.txes.forEach((p) => (p.isNew = false))
-        const txes = prevValue.txes
-        await client.update(prevValue, { txes })
+
+    const isDmOpened = hierarchy.isDerived(value.attachedToClass, chunter.class.ChunterSpace)
+    if (!isDmOpened && value !== undefined) {
+      // chats messages are marked as read explicitly, but
+      // other notifications should be marked as read upon opening
+      if (value.txes.some((p) => p.isNew)) {
+        value.txes.forEach((p) => (p.isNew = false))
+        const txes = value.txes
+        await client.update(value, { txes })
       }
     }
-    const targetClass = hierarchy.getClass(value.attachedToClass)
-    const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)
-    component = panelComponent.component ?? view.component.EditDoc
-    _id = value.attachedTo
-    _class = value.attachedToClass
-    prevValue = value
+
+    if (hierarchy.isDerived(value.attachedToClass, chunter.class.ChunterSpace)) {
+      openDM(value.attachedTo)
+    } else {
+      const targetClass = hierarchy.getClass(value.attachedToClass)
+      const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)
+      component = panelComponent.component ?? view.component.EditDoc
+      _id = value.attachedTo
+      _class = value.attachedToClass
+    }
   }
 
   function openDM (value: Ref<Doc>) {
@@ -84,6 +101,9 @@
       component = panelComponent.component ?? view.component.EditDoc
       _id = value
       _class = chunter.class.DirectMessage
+      const loc = getLocation()
+      loc.path[3] = _id
+      navigate(loc)
     }
   }
 

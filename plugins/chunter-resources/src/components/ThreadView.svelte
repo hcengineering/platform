@@ -156,11 +156,12 @@
 
   function newMessagesStart (comments: ThreadMessage[], docUpdates: Map<Ref<Doc>, DocUpdates>): number {
     const docUpdate = docUpdates.get(_id)
-    const lastView = docUpdate?.txes?.[0]?.modifiedOn
+    const lastView = docUpdate?.txes?.findLast((tx) => !tx.isNew)
+    if (!docUpdate?.txes.some((tx) => tx.isNew)) return -1
     if (docUpdate === undefined || lastView === undefined) return -1
     for (let index = 0; index < comments.length; index++) {
       const comment = comments[index]
-      if ((comment.createdOn ?? 0) >= lastView) return index
+      if ((comment.createdOn ?? 0) >= lastView.modifiedOn) return index
     }
     return -1
   }

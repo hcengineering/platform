@@ -58,16 +58,25 @@ export function createModel (builder: Builder): void {
     }
   })
 
-  builder.mixin(chunter.ids.DMNotification, notification.class.NotificationType, serverNotification.mixin.TypeMatch, {
-    func: serverChunter.function.IsDirectMessage
-  })
-
   builder.mixin(
     chunter.ids.MentionNotification,
     notification.class.NotificationType,
     serverNotification.mixin.TypeMatch,
     {
       func: serverChunter.function.IsMeMentioned
+    }
+  )
+
+  builder.mixin(chunter.ids.DMNotification, notification.class.NotificationType, serverNotification.mixin.TypeMatch, {
+    func: serverChunter.function.IsDirectMessage
+  })
+
+  builder.mixin(
+    chunter.ids.ThreadNotification,
+    notification.class.NotificationType,
+    serverNotification.mixin.TypeMatch,
+    {
+      func: serverChunter.function.IsThreadMessage
     }
   )
 
