@@ -41,6 +41,8 @@ export const FORMAT_MODES = [
   'code',
   'codeBlock',
   'heading',
+  'heading1',
+  'heading2',
   'table',
   'underline'
 ] as const

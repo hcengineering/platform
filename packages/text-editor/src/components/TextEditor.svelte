@@ -67,6 +67,10 @@
   export function clear (): void {
     content = ''
     editor.commands.clearContent(false)
+
+    // editor.commands.clearContent false as argument prevent from onUpdate
+    // so if we want to stay in sync with editor.isEmpty we need to do this manually
+    isEmpty = true
   }
   export function insertText (text: string): void {
     editor.commands.insertContent(text as HTMLContent)
@@ -292,7 +296,9 @@
   })
 
   function onEditorClick () {
-    showContextMenu = true
+    if (!editor.isEmpty) {
+      showContextMenu = true
+    }
   }
 
   /**
