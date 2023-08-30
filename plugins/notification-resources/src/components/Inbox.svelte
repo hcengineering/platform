@@ -63,7 +63,6 @@
   let _id: Ref<Doc> | undefined
   let _class: Ref<Class<Doc>> | undefined
   let selectedEmployee: Ref<PersonAccount> | undefined = undefined
-  let prevValue: DocUpdates | undefined = undefined
 
   async function select (value: DocUpdates | undefined) {
     if (!value) {
@@ -72,13 +71,18 @@
       _class = undefined
       return
     }
-    if (prevValue !== undefined) {
-      if (prevValue.txes.some((p) => p.isNew)) {
-        prevValue.txes.forEach((p) => (p.isNew = false))
-        const txes = prevValue.txes
-        await client.update(prevValue, { txes })
+
+    const isDmOpened = hierarchy.isDerived(value.attachedToClass, chunter.class.ChunterSpace)
+    if (!isDmOpened && value !== undefined) {
+      // chats messages are marked as read explicitly, but
+      // other notifications should be marked as read upon opening
+      if (value.txes.some((p) => p.isNew)) {
+        value.txes.forEach((p) => (p.isNew = false))
+        const txes = value.txes
+        await client.update(value, { txes })
       }
     }
+
     if (hierarchy.isDerived(value.attachedToClass, chunter.class.ChunterSpace)) {
       openDM(value.attachedTo)
     } else {
@@ -88,8 +92,6 @@
       _id = value.attachedTo
       _class = value.attachedToClass
     }
-
-    prevValue = value
   }
 
   function openDM (value: Ref<Doc>) {
