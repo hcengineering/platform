@@ -14,7 +14,8 @@
 -->
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
-  import type { NotificationGroup, NotificationSetting, NotificationType } from '@hcengineering/notification'
+  import { getResource } from '@hcengineering/platform'
+  import type { NotificationGroup, NotificationPreferencesGroup, NotificationSetting, NotificationType } from '@hcengineering/notification'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
   import notification from '../plugin'
@@ -23,9 +24,10 @@
 
   const client = getClient()
   let groups: NotificationGroup[] = []
+  let preferencesGroups: NotificationPreferencesGroup[] = []
+  
   client.findAll(notification.class.NotificationGroup, {}).then((res) => {
     groups = res
-    group = res[0]._id
   })
 
   let settings: Map<Ref<NotificationType>, NotificationSetting[]> = new Map()
@@ -33,7 +35,6 @@
   const query = createQuery()
 
   query.query(notification.class.NotificationSetting, {}, (res) => {
-    console.log('settings updated')
     settings = new Map()
     for (const value of res) {
       const arr = settings.get(value.type) ?? []
@@ -44,6 +45,19 @@
   })
 
   let group: Ref<NotificationGroup> | undefined = undefined
+  let currentPreferenceGroup: NotificationPreferencesGroup | undefined = undefined
+  
+  client.findAll(notification.class.NotificationPreferencesGroup, {}).then((res) => {
+    preferencesGroups = res
+  })
+
+  $: if (!group && !currentPreferenceGroup) {
+    if (preferencesGroups.length > 0) {
+      currentPreferenceGroup = preferencesGroups[0]
+    } else if (groups.length > 0) {
+      group = groups[0]._id
+    }
+  }
 </script>
 
 <div class="flex h-full">
@@ -53,6 +67,20 @@
         <Label label={notification.string.Notifications} />
       </span>
     </div>
+    {#each preferencesGroups as preferenceGroup}
+      <GroupElement
+        icon={preferenceGroup.icon}
+        label={preferenceGroup.label}
+        selected={preferenceGroup === currentPreferenceGroup}
+        on:click={() => {
+          currentPreferenceGroup = preferenceGroup
+          group = undefined
+        }}
+      />
+    {/each}
+    {#if preferencesGroups.length > 0 && groups.length > 0}
+      <div class="antiNav-divider short line"></div>
+    {/if}
     {#each groups as gr}
       <GroupElement
         icon={gr.icon}
@@ -60,6 +88,7 @@
         selected={gr._id === group}
         on:click={() => {
           group = gr._id
+          currentPreferenceGroup = undefined
         }}
       />
     {/each}
@@ -68,6 +97,11 @@
   <div class="antiPanel-component border-left filled">
     {#if group}
       <NotificationGroupSetting {group} {settings} />
+    {/if}
+    {#if currentPreferenceGroup}
+      {#await getResource(currentPreferenceGroup.presenter) then presenter}
+        <svelte:component this={presenter} />
+      {/await}
     {/if}
   </div>
 </div>
