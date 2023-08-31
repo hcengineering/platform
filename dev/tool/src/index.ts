@@ -54,6 +54,7 @@ import { openAIConfigDefaults } from '@hcengineering/openai'
 import { benchmark } from './benchmark'
 import { cleanArchivedSpaces, cleanRemovedTransactions, cleanWorkspace, fixCommentDoubleIdCreate } from './clean'
 import { changeConfiguration } from './configuration'
+import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { openAIConfig } from './openai'
 
 /**
@@ -465,6 +466,25 @@ export function devTool (
     .description('chunter-fix-comments')
     .action(async (workspace: string, cmd: any) => {
       await fixCommentDoubleIdCreate(getWorkspaceId(workspace, productId), transactorUrl)
+    })
+
+  program
+    .command('mixin-show-foreign-attributes <workspace>')
+    .description('mixin-show-foreign-attributes')
+    .option('--mixin <mixin>', 'Mixin class', '')
+    .option('--property <property>', 'Property name', '')
+    .action(async (workspace: string, cmd: { mixin: string, property: string }) => {
+      await showMixinForeignAttributes(getWorkspaceId(workspace, productId), transactorUrl, cmd)
+    })
+
+  program
+    .command('mixin-fix-foreign-attributes <workspace>')
+    .description('mixin-fix-foreign-attributes')
+    .option('--mixin <mixin>', 'Mixin class', '')
+    .option('--property <property>', 'Property name', '')
+    .action(async (workspace: string, cmd: { mixin: string, property: string }) => {
+      const { mongodbUri } = prepareTools()
+      await fixMixinForeignAttributes(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl, cmd)
     })
 
   program
