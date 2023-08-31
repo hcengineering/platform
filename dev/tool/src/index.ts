@@ -473,7 +473,8 @@ export function devTool (
     .description('mixin-show-foreign-attributes')
     .option('--mixin <mixin>', 'Mixin class', '')
     .option('--property <property>', 'Property name', '')
-    .action(async (workspace: string, cmd: { mixin: string, property: string }) => {
+    .option('--detail <detail>', 'Show details', false)
+    .action(async (workspace: string, cmd: { detail: boolean, mixin: string, property: string }) => {
       await showMixinForeignAttributes(getWorkspaceId(workspace, productId), transactorUrl, cmd)
     })
 

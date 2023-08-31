@@ -49,7 +49,7 @@ interface ObjectPropertyInfo {
 export async function showMixinForeignAttributes (
   workspaceId: WorkspaceId,
   transactorUrl: string,
-  cmd: { mixin: string, property: string }
+  cmd: { detail: boolean, mixin: string, property: string }
 ): Promise<void> {
   console.log(`Running mixin attribute check with ${JSON.stringify(cmd)}`)
 
@@ -60,8 +60,20 @@ export async function showMixinForeignAttributes (
     const result = await getMixinWithForeignProperties(connection, cmd.mixin, cmd.property)
 
     console.log(`Found ${result.size} mixin(s)\n`)
+
+    // print summary
     for (const [mixin, objects] of result) {
-      console.log(mixin, '\n', JSON.stringify(objects, undefined, 2), '\n')
+      const properties = [...new Set(objects.map((o) => o.properties.map((p) => p.name)).flat())].sort()
+
+      console.log('*', mixin)
+      console.log('  -', properties.join(', '))
+    }
+
+    // print details
+    if (cmd.detail) {
+      for (const [mixin, objects] of result) {
+        console.log(mixin, '\n', JSON.stringify(objects, undefined, 2), '\n')
+      }
     }
   } catch (err: any) {
     console.trace(err)
@@ -194,23 +206,30 @@ async function getMixinWithForeignProperties (
             const mValue = (_doc as any)[mixin._id]?.[property]
 
             // check class and mixin transactions for the property
-            const cModifiedOn =
-              (
-                await connection.findAll(
-                  core.class.TxUpdateDoc,
-                  { objectId: doc._id, [`operations.${property}`]: { $exists: true } },
-                  { limit: 1, sort: { modifiedOn: SortingOrder.Descending } }
-                )
-              )[0]?.modifiedOn ?? 0
+            const updateDocTx = await connection.findAll(
+              core.class.TxUpdateDoc,
+              { objectId: doc._id, [`operations.${property}`]: { $exists: true } },
+              { limit: 1, sort: { modifiedOn: SortingOrder.Descending } }
+            )
 
-            const mModifiedOn =
-              (
-                await connection.findAll(
-                  core.class.TxMixin,
-                  { objectId: doc._id, [`attributes.${property}`]: { $exists: true } },
-                  { limit: 1, sort: { modifiedOn: SortingOrder.Descending } }
-                )
-              )[0]?.modifiedOn ?? 0
+            const mixinTx = await connection.findAll(
+              core.class.TxMixin,
+              { objectId: doc._id, [`attributes.${property}`]: { $exists: true } },
+              { limit: 1, sort: { modifiedOn: SortingOrder.Descending } }
+            )
+
+            const collectionTx = await connection.findAll(
+              core.class.TxCollectionCUD,
+              {
+                'tx._class': core.class.TxUpdateDoc,
+                'tx.objectId': doc._id,
+                [`tx.operations.${property}`]: { $exists: true }
+              },
+              { limit: 1, sort: { modifiedOn: SortingOrder.Descending } }
+            )
+
+            const cModifiedOn = Math.max(updateDocTx[0]?.modifiedOn ?? 0, collectionTx[0]?.modifiedOn ?? 0)
+            const mModifiedOn = mixinTx[0]?.modifiedOn ?? 0
 
             properties.push({ name: property, cValue, mValue, cModifiedOn, mModifiedOn })
           }
