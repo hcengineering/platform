@@ -159,7 +159,9 @@
           ...extensions,
           BubbleMenu.configure({
             element: textEditorToolbar,
-
+            tippyOptions: {
+              maxWidth: '38rem'
+            },
             // to override shouldShow behaviour a little
             // I need to copypaste original function and make a little change
             // with showContextMenu falg
