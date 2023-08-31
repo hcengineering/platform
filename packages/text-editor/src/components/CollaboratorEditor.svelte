@@ -15,59 +15,31 @@
 //
 -->
 <script lang="ts">
-  import { getEmbeddedLabel, IntlString, translate } from '@hcengineering/platform'
+  import { IntlString, translate } from '@hcengineering/platform'
 
   import { Editor, Extension, HTMLContent } from '@tiptap/core'
   import Collaboration from '@tiptap/extension-collaboration'
   import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
-  import { Level } from '@tiptap/extension-heading'
   import Placeholder from '@tiptap/extension-placeholder'
 
   import { Plugin, PluginKey, Transaction } from 'prosemirror-state'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 
   import { getCurrentAccount, Markup } from '@hcengineering/core'
-  import {
-    getEventPositionElement,
-    getPlatformColorForText,
-    IconObjects,
-    IconSize,
-    SelectPopup,
-    showPopup,
-    themeStore
-  } from '@hcengineering/ui'
+  import { getPlatformColorForText, IconObjects, IconSize, themeStore } from '@hcengineering/ui'
   import { WebsocketProvider } from 'y-websocket'
   import * as Y from 'yjs'
   import StyleButton from './StyleButton.svelte'
 
-  import presentation from '@hcengineering/presentation'
-
   import { DecorationSet } from 'prosemirror-view'
   import textEditorPlugin from '../plugin'
-  import { CollaborationIds, FORMAT_MODES, FormatMode } from '../types'
-  import Bold from './icons/Bold.svelte'
-  import Code from './icons/Code.svelte'
-  import CodeBlock from './icons/CodeBlock.svelte'
+  import { CollaborationIds, FormatMode, TextFormatCategory, TextFormatState } from '../types'
 
   import { getContext } from 'svelte'
   import { calculateDecorations } from './diff/decorations'
-  import { defaultExtensions, headingLevels, mInsertTable } from './extensions'
-  import Header from './icons/Header.svelte'
-  import IconTable from './icons/IconTable.svelte'
-  import Italic from './icons/Italic.svelte'
-  import LinkEl from './icons/Link.svelte'
-  import ListBullet from './icons/ListBullet.svelte'
-  import ListNumber from './icons/ListNumber.svelte'
-  import Quote from './icons/Quote.svelte'
-  import Strikethrough from './icons/Strikethrough.svelte'
-  import AddColAfter from './icons/table/AddColAfter.svelte'
-  import AddColBefore from './icons/table/AddColBefore.svelte'
-  import AddRowAfter from './icons/table/AddRowAfter.svelte'
-  import AddRowBefore from './icons/table/AddRowBefore.svelte'
-  import DeleteCol from './icons/table/DeleteCol.svelte'
-  import DeleteRow from './icons/table/DeleteRow.svelte'
-  import DeleteTable from './icons/table/DeleteTable.svelte'
-  import LinkPopup from './LinkPopup.svelte'
+  import { defaultExtensions } from './extensions'
+  import StyledTextEditorToolbar from './StyledTextEditorToolbar.svelte'
+  import { generateFormattingState } from '../utils'
 
   export let documentId: string
   export let readonly = false
@@ -127,50 +99,16 @@
     editor.commands.insertContent(text as HTMLContent)
   }
 
-  export function toggleBold () {
-    editor.commands.toggleBold()
-  }
-  export function toggleItalic () {
-    editor.commands.toggleItalic()
-  }
-  export function toggleStrike () {
-    editor.commands.toggleStrike()
-  }
-
   export function getHTML (): string | undefined {
     if (editor) {
       return editor.getHTML()
     }
   }
 
-  export function getLink () {
-    return editor.getAttributes('link').href
-  }
-  export function unsetLink () {
-    editor.chain().focus().extendMarkRange('link').unsetLink().run()
-  }
-  export function setLink (link: string) {
-    editor.chain().focus().extendMarkRange('link').setLink({ href: link }).run()
-  }
-
   export function checkIsSelectionEmpty () {
     return editor.view.state.selection.empty
   }
-  export function toggleOrderedList () {
-    editor.commands.toggleOrderedList()
-  }
-  export function toggleBulletList () {
-    editor.commands.toggleBulletList()
-  }
-  export function toggleBlockquote () {
-    editor.commands.toggleBlockquote()
-  }
-  export function toggleCode () {
-    editor.commands.toggleCode()
-  }
-  export function toggleCodeBlock () {
-    editor.commands.toggleCodeBlock()
-  }
+
   let needFocus = false
 
   let focused = false
@@ -291,192 +229,19 @@
     }
   })
 
-  let activeModes = new Set<FormatMode>()
-  let isSelectionEmpty = true
-
-  export function checkIsActive (formatMode: FormatMode) {
-    return editor.isActive(formatMode)
+  let formattingState: TextFormatState = {
+    headingLevel: 0,
+    activeModes: new Set<FormatMode>()
   }
-
-  let headingLevel = 0
 
   function updateFormattingState () {
-    activeModes = new Set(FORMAT_MODES.filter(checkIsActive))
-    for (const l of headingLevels) {
-      if (editor.isActive('heading', { level: l })) {
-        headingLevel = l
-        activeModes.add('heading')
-      }
+    if (!editor) {
+      return
     }
-    if (!activeModes.has('heading')) {
-      headingLevel = 0
-    }
-    isSelectionEmpty = editor.view.state.selection.empty
+
+    formattingState = generateFormattingState(editor, formattingState)
   }
 
-  function getToggler (toggle: () => void) {
-    return () => {
-      toggle()
-      needFocus = true
-      updateFormattingState()
-    }
-  }
-
-  function toggleHeader (event: MouseEvent) {
-    if (activeModes.has('heading')) {
-      editor.commands.toggleHeading({ level: headingLevel as Level })
-      needFocus = true
-      updateFormattingState()
-    } else {
-      showPopup(
-        SelectPopup,
-        {
-          value: Array.from(headingLevels).map((it) => ({ id: it.toString(), text: it.toString() }))
-        },
-        getEventPositionElement(event),
-        (val) => {
-          if (val !== undefined) {
-            editor.commands.toggleHeading({ level: parseInt(val) as Level })
-            needFocus = true
-            updateFormattingState()
-          }
-        }
-      )
-    }
-  }
-
-  function insertTable (event: MouseEvent) {
-    showPopup(
-      SelectPopup,
-      {
-        value: [
-          { id: '#delete', label: presentation.string.Remove },
-          ...mInsertTable.map((it) => ({ id: it.label, text: it.label }))
-        ]
-      },
-      getEventPositionElement(event),
-      (val) => {
-        if (val !== undefined) {
-          if (val === '#delete') {
-            editor.commands.deleteTable()
-            needFocus = true
-            updateFormattingState()
-            return
-          }
-          const tab = mInsertTable.find((it) => it.label === val)
-          if (tab) {
-            editor.commands.insertTable({
-              cols: tab.cols,
-              rows: tab.rows,
-              withHeaderRow: tab.header
-            })
-
-            needFocus = true
-            updateFormattingState()
-          }
-        }
-      }
-    )
-  }
-
-  function tableOptions (event: MouseEvent) {
-    const ops = [
-      {
-        id: '#addColumnBefore',
-        icon: AddColBefore,
-        label: textEditorPlugin.string.AddColumnBefore,
-        action: () => editor.commands.addColumnBefore(),
-        category: {
-          label: textEditorPlugin.string.CategoryColumn
-        }
-      },
-      {
-        id: '#addColumnAfter',
-        icon: AddColAfter,
-        label: textEditorPlugin.string.AddColumnAfter,
-        action: () => editor.commands.addColumnAfter(),
-        category: {
-          label: textEditorPlugin.string.CategoryColumn
-        }
-      },
-
-      {
-        id: '#deleteColumn',
-        icon: DeleteCol,
-        label: textEditorPlugin.string.DeleteColumn,
-        action: () => editor.commands.deleteColumn(),
-        category: {
-          label: textEditorPlugin.string.CategoryColumn
-        }
-      },
-      {
-        id: '#addRowBefore',
-        icon: AddRowBefore,
-        label: textEditorPlugin.string.AddRowBefore,
-        action: () => editor.commands.addRowBefore(),
-        category: {
-          label: textEditorPlugin.string.CategoryRow
-        }
-      },
-      {
-        id: '#addRowAfter',
-        icon: AddRowAfter,
-        label: textEditorPlugin.string.AddRowAfter,
-        action: () => editor.commands.addRowAfter(),
-        category: {
-          label: textEditorPlugin.string.CategoryRow
-        }
-      },
-      {
-        id: '#deleteRow',
-        icon: DeleteRow,
-        label: textEditorPlugin.string.DeleteRow,
-        action: () => editor.commands.deleteRow(),
-        category: {
-          label: textEditorPlugin.string.CategoryRow
-        }
-      },
-      {
-        id: '#deleteTable',
-        icon: DeleteTable,
-        label: textEditorPlugin.string.DeleteTable,
-        action: () => editor.commands.deleteTable(),
-        category: {
-          label: textEditorPlugin.string.Table
-        }
-      }
-    ]
-
-    showPopup(
-      SelectPopup,
-      {
-        value: ops
-      },
-      getEventPositionElement(event),
-      (val) => {
-        if (val !== undefined) {
-          const op = ops.find((it) => it.id === val)
-          if (op) {
-            op.action()
-            needFocus = true
-            updateFormattingState()
-          }
-        }
-      }
-    )
-  }
-
-  async function formatLink (): Promise<void> {
-    const link = editor.getAttributes('link').href
-
-    showPopup(LinkPopup, { link }, undefined, undefined, (newLink) => {
-      if (newLink === '') {
-        editor.chain().focus().extendMarkRange('link').unsetLink().run()
-      } else {
-        editor.chain().focus().extendMarkRange('link').setLink({ href: newLink }).run()
-      }
-    })
-  }
   let showDiff = true
 </script>
 
@@ -485,99 +250,25 @@
     {#if isFormatting && !readonly}
       <div class="formatPanelRef formatPanel flex-between clear-mins">
         <div class="flex-row-center buttons-group xsmall-gap">
-          <StyleButton
-            icon={Header}
-            size={buttonSize}
-            selected={activeModes.has('heading')}
-            showTooltip={{ label: getEmbeddedLabel(`H${headingLevel}`) }}
-            on:click={toggleHeader}
+          <StyledTextEditorToolbar
+            textEditor={editor}
+            textFormatCategories={[
+              TextFormatCategory.Heading,
+              TextFormatCategory.TextDecoration,
+              TextFormatCategory.Link,
+              TextFormatCategory.List,
+              TextFormatCategory.Quote,
+              TextFormatCategory.Code,
+              TextFormatCategory.Table
+            ]}
+            formatButtonSize={buttonSize}
+            {formattingState}
+            on:focus={() => focus()}
+            on:update={() => {
+              needFocus = true
+              updateFormattingState()
+            }}
           />
-
-          <StyleButton
-            icon={Bold}
-            size={buttonSize}
-            selected={activeModes.has('bold')}
-            showTooltip={{ label: textEditorPlugin.string.Bold }}
-            on:click={getToggler(toggleBold)}
-          />
-          <StyleButton
-            icon={Italic}
-            size={buttonSize}
-            selected={activeModes.has('italic')}
-            showTooltip={{ label: textEditorPlugin.string.Italic }}
-            on:click={getToggler(toggleItalic)}
-          />
-          <StyleButton
-            icon={Strikethrough}
-            size={buttonSize}
-            selected={activeModes.has('strike')}
-            showTooltip={{ label: textEditorPlugin.string.Strikethrough }}
-            on:click={getToggler(toggleStrike)}
-          />
-          <StyleButton
-            icon={LinkEl}
-            size={buttonSize}
-            selected={activeModes.has('link')}
-            disabled={isSelectionEmpty && !activeModes.has('link')}
-            showTooltip={{ label: textEditorPlugin.string.Link }}
-            on:click={formatLink}
-          />
-          <div class="buttons-divider" />
-          <StyleButton
-            icon={ListNumber}
-            size={buttonSize}
-            selected={activeModes.has('orderedList')}
-            showTooltip={{ label: textEditorPlugin.string.OrderedList }}
-            on:click={getToggler(toggleOrderedList)}
-          />
-          <StyleButton
-            icon={ListBullet}
-            size={buttonSize}
-            selected={activeModes.has('bulletList')}
-            showTooltip={{ label: textEditorPlugin.string.BulletedList }}
-            on:click={getToggler(toggleBulletList)}
-          />
-          <div class="buttons-divider" />
-          <StyleButton
-            icon={Quote}
-            size={buttonSize}
-            selected={activeModes.has('blockquote')}
-            showTooltip={{ label: textEditorPlugin.string.Blockquote }}
-            on:click={getToggler(toggleBlockquote)}
-          />
-          <div class="buttons-divider" />
-          <StyleButton
-            icon={Code}
-            size={buttonSize}
-            selected={activeModes.has('code')}
-            showTooltip={{ label: textEditorPlugin.string.Code }}
-            on:click={getToggler(toggleCode)}
-          />
-          <StyleButton
-            icon={CodeBlock}
-            size={buttonSize}
-            selected={activeModes.has('codeBlock')}
-            showTooltip={{ label: textEditorPlugin.string.CodeBlock }}
-            on:click={getToggler(toggleCodeBlock)}
-          />
-
-          <StyleButton
-            icon={IconTable}
-            iconProps={{ style: 'table' }}
-            size={buttonSize}
-            selected={activeModes.has('table')}
-            on:click={insertTable}
-            showTooltip={{ label: textEditorPlugin.string.InsertTable }}
-          />
-          {#if activeModes.has('table')}
-            <StyleButton
-              icon={IconTable}
-              iconProps={{ style: 'tableProps' }}
-              size={buttonSize}
-              on:click={tableOptions}
-              showTooltip={{ label: textEditorPlugin.string.TableOptions }}
-            />
-          {/if}
         </div>
         <div class="flex-grow" />
         {#if comparedVersion !== undefined}

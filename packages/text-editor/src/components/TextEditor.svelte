@@ -18,28 +18,43 @@
 
   import { FocusPosition } from '@tiptap/core'
   import { AnyExtension, Editor, Extension, HTMLContent, isTextSelection } from '@tiptap/core'
-  import { Level } from '@tiptap/extension-heading'
+
   import Placeholder from '@tiptap/extension-placeholder'
   import BubbleMenu from '@tiptap/extension-bubble-menu'
 
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import textEditorPlugin from '../plugin'
-  import { FormatMode } from '../types'
   import { defaultExtensions } from './extensions'
   import { Node as ProseMirrorNode } from '@tiptap/pm/model'
   import { themeStore } from '@hcengineering/ui'
+  import StyledTextEditorToolbar from './StyledTextEditorToolbar.svelte'
+  import { FormatMode, TextFormatCategory, TextFormatState } from '../types'
+  import { generateFormattingState } from '../utils'
 
   export let content: string = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let extensions: AnyExtension[] = []
+  export let textFormatCategories: TextFormatCategory[] = []
   export let supportSubmit = true
   export let isEmpty = true
-  export let textEditorToolbar: HTMLElement | null = null
 
   let element: HTMLElement
   let editor: Editor
 
   let placeHolderStr: string = ''
+
+  let formattingState: TextFormatState = {
+    headingLevel: 0,
+    activeModes: new Set<FormatMode>()
+  }
+
+  function updateFormattingState () {
+    if (!editor) {
+      return
+    }
+
+    formattingState = generateFormattingState(editor, formattingState)
+  }
 
   $: ph = translate(placeholder, {}, $themeStore.language).then((r) => {
     placeHolderStr = r
@@ -75,79 +90,6 @@
   export function insertText (text: string): void {
     editor.commands.insertContent(text as HTMLContent)
   }
-  export function checkIsActive (formatMode: FormatMode, attributes?: {} | undefined) {
-    return editor.isActive(formatMode, attributes)
-  }
-  export function toggleBold () {
-    editor.commands.toggleBold()
-  }
-  export function toggleItalic () {
-    editor.commands.toggleItalic()
-  }
-  export function toggleStrike () {
-    editor.commands.toggleStrike()
-  }
-  export function toggleUnderline () {
-    editor.commands.toggleUnderline()
-  }
-  export function getLink () {
-    return editor.getAttributes('link').href
-  }
-  export function unsetLink () {
-    editor.chain().focus().extendMarkRange('link').unsetLink().run()
-  }
-  export function setLink (link: string) {
-    editor.chain().focus().extendMarkRange('link').setLink({ href: link }).run()
-  }
-  export function checkIsSelectionEmpty () {
-    return editor.view.state.selection.empty
-  }
-  export function toggleOrderedList () {
-    editor.commands.toggleOrderedList()
-  }
-  export function toggleBulletList () {
-    editor.commands.toggleBulletList()
-  }
-  export function toggleBlockquote () {
-    editor.commands.toggleBlockquote()
-  }
-  export function toggleCode () {
-    editor.commands.toggleCode()
-  }
-  export function toggleCodeBlock () {
-    editor.commands.toggleCodeBlock()
-  }
-  export function toggleHeading (attributes: { level: Level }) {
-    editor.commands.toggleHeading(attributes)
-  }
-  export function addColumnBefore () {
-    editor.commands.addColumnBefore()
-  }
-  export function addColumnAfter () {
-    editor.commands.addColumnAfter()
-  }
-  export function deleteColumn () {
-    editor.commands.deleteColumn()
-  }
-  export function addRowBefore () {
-    editor.commands.addRowBefore()
-  }
-  export function addRowAfter () {
-    editor.commands.addRowAfter()
-  }
-  export function deleteRow () {
-    editor.commands.deleteRow()
-  }
-  export function deleteTable () {
-    editor.commands.deleteTable()
-  }
-  export function insertTable (options?: { rows?: number; cols?: number; withHeaderRow?: boolean }) {
-    editor.commands.insertTable({
-      cols: options?.cols ?? 2,
-      rows: options?.rows ?? 1,
-      withHeaderRow: options?.withHeaderRow
-    })
-  }
 
   export function isEmptyContent (): boolean {
     return isEmpty
@@ -157,6 +99,7 @@
   let focused = false
   let posFocus: FocusPosition | undefined = undefined
   let showContextMenu = false
+  let textEditorToolbar: HTMLElement
 
   export function focus (position?: FocusPosition): void {
     posFocus = position
@@ -283,6 +226,7 @@
         onSelectionUpdate: () => {
           showContextMenu = false
 
+          updateFormattingState()
           dispatch('selection-update')
         }
       })
@@ -318,6 +262,18 @@
   }
 </script>
 
+<div class="formatPanel buttons-group xsmall-gap mb-4" bind:this={textEditorToolbar}>
+  <StyledTextEditorToolbar
+    textEditor={editor}
+    {textFormatCategories}
+    {formattingState}
+    on:focus={() => focus()}
+    on:update={() => {
+      needFocus = true
+      updateFormattingState()
+    }}
+  />
+</div>
 <div class="select-text" style="width: 100%;" on:mousedown={onEditorClick} bind:this={element} />
 
 <style lang="scss" global>
@@ -362,5 +318,14 @@
     &::-webkit-scrollbar-track {
       margin: 0;
     }
+  }
+
+  .formatPanel {
+    margin: -0.5rem -0.25rem 0.5rem;
+    padding: 0.375rem;
+    background-color: var(--theme-comp-header-color);
+    border-radius: 0.5rem;
+    box-shadow: var(--theme-popup-shadow);
+    z-index: 1;
   }
 </style>
