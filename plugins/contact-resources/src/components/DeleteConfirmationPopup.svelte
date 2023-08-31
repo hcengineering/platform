@@ -22,6 +22,7 @@
   import ui, { Button, Label } from '@hcengineering/ui'
   import PersonAccountRefPresenter from './PersonAccountRefPresenter.svelte'
   import PersonAccountPresenter from './PersonAccountPresenter.svelte'
+  import { ObjectPresenter } from '@hcengineering/view-resources'
 
   export let object: Doc | Doc[]
   export let deleteAction: () => void
@@ -53,6 +54,9 @@
     {#if canDelete}
       <div class="mb-2">
         <Label label={view.string.DeleteObjectConfirm} params={{ count: objectArray.length }} />
+        {#if objectArray.length === 1}
+          <ObjectPresenter _class={objectArray[0]._class} objectId={objectArray[0]._id} value={objectArray[0]} />
+        {/if}
       </div>
     {:else}
       <div class="mb-2">

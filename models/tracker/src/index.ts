@@ -1221,6 +1221,26 @@ export function createModel (builder: Builder): void {
     },
     tracker.action.DeleteProject
   )
+  createAction(
+    builder,
+    {
+      action: tracker.actionImpl.DeleteProject,
+      label: workbench.string.Delete,
+      icon: view.icon.Delete,
+      input: 'focus',
+      category: tracker.category.Tracker,
+      target: tracker.class.Project,
+      query: {
+        archived: true
+      },
+      context: {
+        mode: ['context', 'browser'],
+        group: 'edit'
+      },
+      override: [view.action.Archive, view.action.Delete]
+    },
+    tracker.action.DeleteProjectClean
+  )
   createAction(builder, {
     label: tracker.string.Unarchive,
     icon: view.icon.Archive,
