@@ -32,15 +32,16 @@
   import { headingLevels, mInsertTable } from './extensions'
   import Attach from './icons/Attach.svelte'
   import CodeBlock from './icons/CodeBlock.svelte'
-  import Header from './icons/Header.svelte'
+  import Header1 from './icons/Header1.svelte'
+  import Header2 from './icons/Header2.svelte'
   import IconTable from './icons/IconTable.svelte'
   import ListBullet from './icons/ListBullet.svelte'
   import ListNumber from './icons/ListNumber.svelte'
   import Quote from './icons/Quote.svelte'
-  import RIBold from './icons/RIBold.svelte'
-  import RICode from './icons/RICode.svelte'
-  import RIItalic from './icons/RIItalic.svelte'
-  import RILink from './icons/RILink.svelte'
+  import Bold from './icons/Bold.svelte'
+  import Code from './icons/Code.svelte'
+  import Italic from './icons/Italic.svelte'
+  import Link from './icons/Link.svelte'
   import RIStrikethrough from './icons/RIStrikethrough.svelte'
   import Underline from './icons/Underline.svelte'
   import { AnyExtension } from '@tiptap/core'
@@ -182,19 +183,16 @@
     activeModes = new Set(FORMAT_MODES.filter(textEditor.checkIsActive))
     for (const l of headingLevels) {
       if (textEditor.checkIsActive('heading', { level: l })) {
-        headingLevel = l
         activeModes.add('heading')
+        if (l === 1) {
+          activeModes.add('heading1')
+        } else if (l === 2) {
+          activeModes.add('heading2')
+        }
       }
-    }
-    if (!activeModes.has('heading')) {
-      headingLevel = 0
     }
     isSelectionEmpty = textEditor.checkIsSelectionEmpty()
   }
-  // function updateFormattingState () {
-  //   activeModes = new Set(FORMAT_MODES.filter(textEditor.checkIsActive))
-  //   isSelectionEmpty = textEditor.checkIsSelectionEmpty()
-  // }
 
   function getToggler (toggle: () => void) {
     return () => {
@@ -236,28 +234,11 @@
     needFocus = false
   }
 
-  let headingLevel = 0
-
-  function toggleHeader (event: MouseEvent) {
-    if (activeModes.has('heading')) {
-      textEditor.toggleHeading({ level: headingLevel as Level })
+  function getHeaderToggler (level: Level) {
+    return () => {
+      textEditor.toggleHeading({ level })
       needFocus = true
       updateFormattingState()
-    } else {
-      showPopup(
-        SelectPopup,
-        {
-          value: Array.from(headingLevels).map((it) => ({ id: it.toString(), text: it.toString() }))
-        },
-        getEventPositionElement(event),
-        (val) => {
-          if (val !== undefined) {
-            textEditor.toggleHeading({ level: parseInt(val) as Level })
-            needFocus = true
-            updateFormattingState()
-          }
-        }
-      )
     }
   }
 
@@ -408,21 +389,28 @@
 >
   <div class="formatPanel buttons-group xsmall-gap mb-4" class:withoutTopBorder bind:this={textEditorToolbar}>
     <StyleButton
-      icon={Header}
+      icon={Header1}
       size={formatButtonSize}
-      selected={activeModes.has('heading')}
-      showTooltip={{ label: getEmbeddedLabel(`H${headingLevel}`) }}
-      on:click={toggleHeader}
+      selected={activeModes.has('heading1')}
+      showTooltip={{ label: getEmbeddedLabel('H1') }}
+      on:click={getHeaderToggler(1)}
     />
     <StyleButton
-      icon={RIBold}
+      icon={Header2}
+      size={formatButtonSize}
+      selected={activeModes.has('heading2')}
+      showTooltip={{ label: getEmbeddedLabel('H2') }}
+      on:click={getHeaderToggler(2)}
+    />
+    <StyleButton
+      icon={Bold}
       size={formatButtonSize}
       selected={activeModes.has('bold')}
       showTooltip={{ label: textEditorPlugin.string.Bold }}
       on:click={getToggler(textEditor.toggleBold)}
     />
     <StyleButton
-      icon={RIItalic}
+      icon={Italic}
       size={formatButtonSize}
       selected={activeModes.has('italic')}
       showTooltip={{ label: textEditorPlugin.string.Italic }}
@@ -443,7 +431,7 @@
       on:click={getToggler(textEditor.toggleUnderline)}
     />
     <StyleButton
-      icon={RILink}
+      icon={Link}
       size={formatButtonSize}
       selected={activeModes.has('link')}
       disabled={isSelectionEmpty && !activeModes.has('link')}
@@ -475,7 +463,7 @@
     />
     <div class="buttons-divider" />
     <StyleButton
-      icon={RICode}
+      icon={Code}
       size={formatButtonSize}
       selected={activeModes.has('code')}
       showTooltip={{ label: textEditorPlugin.string.Code }}

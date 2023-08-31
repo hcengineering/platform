@@ -41,10 +41,10 @@
   import ListBullet from './icons/ListBullet.svelte'
   import ListNumber from './icons/ListNumber.svelte'
   import Quote from './icons/Quote.svelte'
-  import RIBold from './icons/RIBold.svelte'
-  import RICode from './icons/RICode.svelte'
-  import RIItalic from './icons/RIItalic.svelte'
-  import RILink from './icons/RILink.svelte'
+  import Bold from './icons/Bold.svelte'
+  import Code from './icons/Code.svelte'
+  import Italic from './icons/Italic.svelte'
+  import Link from './icons/Link.svelte'
   import RIMention from './icons/RIMention.svelte'
   import RIStrikethrough from './icons/RIStrikethrough.svelte'
   import Underline from './icons/Underline.svelte'
@@ -200,7 +200,7 @@
 <div class="ref-container">
   <div class="formatPanel buttons-group xsmall-gap mb-4" class:withoutTopBorder bind:this={textEditorToolbar}>
     <Button
-      icon={RIBold}
+      icon={Bold}
       kind={'ghost'}
       size={'small'}
       selected={activeModes.has('bold')}
@@ -208,7 +208,7 @@
       on:click={getToggler(textEditor.toggleBold)}
     />
     <Button
-      icon={RIItalic}
+      icon={Italic}
       kind={'ghost'}
       size={'small'}
       selected={activeModes.has('italic')}
@@ -232,7 +232,7 @@
       on:click={getToggler(textEditor.toggleUnderline)}
     />
     <Button
-      icon={RILink}
+      icon={Link}
       kind={'ghost'}
       size={'small'}
       selected={activeModes.has('link')}
@@ -268,7 +268,7 @@
     />
     <div class="buttons-divider" />
     <Button
-      icon={RICode}
+      icon={Code}
       kind={'ghost'}
       size={'small'}
       selected={activeModes.has('code')}
