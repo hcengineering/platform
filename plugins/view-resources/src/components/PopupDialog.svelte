@@ -30,18 +30,18 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    padding: 2rem 1.75rem 1.75rem;
-    border-radius: 0.75rem;
-    background: var(--popup-bg-color);
-    box-shadow: var(--popup-shadow);
+    padding: 1rem 1.5rem 1.5rem;
+    border-radius: 0.5rem;
+    background-color: var(--theme-popup-color);
+    border: 1px solid var(--theme-popup-divider);
+    box-shadow: var(--theme-popup-shadow);
 
     .label {
       flex-shrink: 0;
-      margin-bottom: 1.25rem;
-      text-transform: uppercase;
-      font-weight: 600;
-      font-size: 0.75rem;
-      color: var(--dark-color);
+      margin-bottom: 1rem;
+      min-height: 1.75rem;
+      font-size: 1rem;
+      color: var(--theme-caption-color);
     }
 
     .content {

@@ -296,7 +296,7 @@ export function fitPopupElement (
       show = false
     } else if (element === 'full' && contentPanel !== undefined) {
       const rect = contentPanel.getBoundingClientRect()
-      newProps.top = `${rect.top + 1}px`
+      newProps.top = `${rect.top + 4}px`
       newProps.bottom = '4px'
       newProps.left = '4px'
       newProps.right = '4px'

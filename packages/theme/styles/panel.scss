@@ -178,7 +178,7 @@
         margin-left: auto;
         margin-right: auto;
         width: calc(100% - 7.5rem);
-        max-width: 860px;
+        max-width: 54rem;
 
         &.max {
           max-width: 100%;
@@ -337,10 +337,9 @@
 
   .popupPanel-title,
   .popupPanel-body {
-    border-radius: 0;
+    // border-radius: 0;
     border: none;
   }
-  // .popupPanel-title { border-bottom: 1px solid var(--divider-color); }
 }
 .popup.fullsize {
   transition-timing-function: cubic-bezier(0.55, 0.055, 0.675, 0.19) !important;

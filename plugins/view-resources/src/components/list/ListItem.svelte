@@ -91,9 +91,7 @@
 >
   <div class="draggable-container">
     <div class="draggable-mark">
-      <IconCircles />
-      <div class="space" />
-      <IconCircles />
+      <IconCircles size={'small'} />
     </div>
   </div>
   <div class="flex-center relative mr-1" use:tooltip={{ label: view.string.Select, direction: 'bottom' }}>
@@ -168,16 +166,12 @@
   {/each}
   {#if compactMode}
     <div class="panel-trigger" tabindex="-1">
-      <IconCircles />
-      <div class="space" />
-      <IconCircles />
+      <IconCircles size={'small'} />
     </div>
     <div class="hidden-panel" tabindex="-1">
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div class="header" on:click={(ev) => ev.currentTarget.blur()}>
-        <IconCircles />
-        <div class="space" />
-        <IconCircles />
+        <IconCircles size={'small'} />
       </div>
       <div class="scroll-box gap-2">
         {#if mobile}

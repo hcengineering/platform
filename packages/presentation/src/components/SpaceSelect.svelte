@@ -22,6 +22,7 @@
     Button,
     ButtonKind,
     ButtonSize,
+    ButtonShape,
     eventToHTMLElement,
     getEventPositionElement,
     getFocusManager,
@@ -50,6 +51,7 @@
   export let size: ButtonSize = 'large'
   export let itemSize: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'
+  export let shape: ButtonShape = undefined
   export let width: string | undefined = undefined
   export let allowDeselect = false
   export let component: AnySvelteComponent | undefined = undefined
@@ -119,6 +121,7 @@
   <Button
     id="space.selector"
     {focus}
+    {shape}
     disabled={readonly}
     {focusIndex}
     icon={selected?.icon === iconWithEmoji && iconWithEmoji ? IconWithEmoji : selected?.icon ?? defaultIcon}

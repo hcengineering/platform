@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
-  import { deviceOptionsStore as deviceInfo, checkAdaptiveMatching, embeddedPlatform, IconBack } from '../../'
+  import { deviceOptionsStore as deviceInfo, checkAdaptiveMatching, IconBack } from '../../'
   import { resizeObserver } from '../resize'
   import Button from './Button.svelte'
   import Scroller from './Scroller.svelte'
@@ -96,20 +96,19 @@
     class:embedded
   >
     <div class="popupPanel-title {twoRows && !withoutTitle ? 'row-top' : 'row'}">
-      {#if allowClose && !embedded}
-        {#if embeddedPlatform}
-          <Button
-            focusIndex={10000}
-            icon={IconBack}
-            kind={'ghost'}
-            size={'medium'}
-            on:click={() => {
-              history.back()
-            }}
-          />
-        {/if}
+      <Button
+        focusIndex={10000}
+        icon={IconBack}
+        kind={'ghost'}
+        size={'medium'}
+        on:click={() => {
+          history.back()
+        }}
+      />
+      {#if allowClose}
+        <div class="antiHSpacer" />
         <Button
-          focusIndex={10000}
+          focusIndex={10001}
           icon={IconClose}
           kind={'ghost'}
           size={'medium'}

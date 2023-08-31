@@ -123,7 +123,7 @@
       kind="large-style"
       bind:value={newValue}
     />
-    <div class="flex gap-2">
+    <div class="flex-row-center gap-2">
       <ActionIcon
         icon={IconAdd}
         label={setting.string.Add}
@@ -131,7 +131,6 @@
         size={'small'}
         disabled={value.enumValues.includes(newValue.trim())}
       />
-
       <ActionIcon
         icon={IconAttachment}
         label={setting.string.ImportEnum}

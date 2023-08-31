@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
-  import { Button, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { Button, Grid, IconArrowRight, eventToHTMLElement, showPopup } from '@hcengineering/ui'
 
   import { IssueToUpdate } from '../../../utils'
   import StatusRefPresenter from '../StatusRefPresenter.svelte'
@@ -31,13 +31,16 @@
   $: original = $statusStore.get(issue.status)
 </script>
 
-<div class="flex-row-center p-1">
-  <div class="side-columns aligned-text">
+<Grid rowGap={0.25} topGap>
+  <div class="flex-between min-h-11">
     <StatusRefPresenter value={issue.status} size={'small'} />
+    <IconArrowRight size={'small'} fill={'var(--theme-halfcontent-color)'} />
   </div>
-  <span class="middle-column aligned-text">-></span>
-  <div class="side-columns">
+  <div class="flex-row-center min-h-11">
     <Button
+      size={'large'}
+      shape={'round-sm'}
+      width={'min-content'}
       on:click={(event) => {
         showPopup(
           StatusReplacementPopup,
@@ -63,17 +66,4 @@
       </span>
     </Button>
   </div>
-</div>
-
-<style lang="scss">
-  .side-columns {
-    width: 45%;
-  }
-  .middle-column {
-    width: 10%;
-  }
-  .aligned-text {
-    display: flex;
-    align-items: center;
-  }
-</style>
+</Grid>

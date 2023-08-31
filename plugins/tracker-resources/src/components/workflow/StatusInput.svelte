@@ -57,8 +57,6 @@
 
 <style lang="scss">
   .root {
-    font-weight: 500;
-
     &.fill {
       width: 100%;
 
@@ -69,7 +67,7 @@
 
     input {
       padding: 0.25rem 0.5rem;
-      background-color: var(--accent-bg-color);
+      background-color: var(--theme-bg-dark-color);
       border: 1px solid transparent;
       border-radius: 0.25rem;
 

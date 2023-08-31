@@ -238,7 +238,7 @@ test('report-time-from-main-view', async ({ page }) => {
     await page.waitForSelector('text="Estimation"')
 
     await page.click('button:has-text("Add time report")')
-    await page.waitForSelector('.antiCard-header >> .antiCard-header__title-wrap >> span:has-text("Add time report")')
+    await page.waitForSelector('[id="tracker\\:string\\:TimeSpendReportAdd"] >> text=Add time report')
     await expect(page.locator('button:has-text("Create")')).toBeDisabled()
     await page.fill('[placeholder="Reported\\ days"]', `${time}`)
     await expect(page.locator('button:has-text("Create")')).toBeEnabled()

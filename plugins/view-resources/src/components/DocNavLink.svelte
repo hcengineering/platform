@@ -22,7 +22,7 @@
   export let object: Doc | undefined
   export let disabled = false
   export let onClick: ((event: MouseEvent) => void) | undefined = undefined
-  export let noUnderline = false
+  export let noUnderline = disabled
   export let inline = false
   export let colorInherit: boolean = false
   export let component: AnyComponent = view.component.EditDoc

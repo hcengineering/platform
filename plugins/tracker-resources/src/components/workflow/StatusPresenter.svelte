@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { IssueStatus } from '@hcengineering/tracker'
-  import { Icon, IconCircles, IconClose, IconEdit, Label, tooltip } from '@hcengineering/ui'
+  import { Icon, IconCircles, IconDelete, IconEdit, Label, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import IssueStatusIcon from '../issues/IssueStatusIcon.svelte'
@@ -30,12 +30,12 @@
   }
 </script>
 
-<div class="flex-between background-button-bg-color border-radius-1 p-2 root" on:dblclick|preventDefault={edit}>
-  <div class="flex flex-grow items-center">
-    <div class="flex-no-shrink draggable-mark" class:draggable={!isSingle}>
-      <IconCircles />
+<div class="flex-between border-radius-1 px-6 h-8 status-container" on:dblclick|preventDefault={edit}>
+  <div class="flex-row-center flex-grow">
+    <div class="draggable-mark" class:draggable={!isSingle}>
+      <IconCircles size={'small'} />
     </div>
-    <div class="flex-no-shrink ml-2">
+    <div class="flex-no-shrink">
       <IssueStatusIcon {value} size="small" />
     </div>
     <span class="caption-color ml-2">{value.name}</span>
@@ -43,7 +43,7 @@
       <span>&nbsp;·&nbsp;{value.description}</span>
     {/if}
   </div>
-  <div class="buttons-group flex-no-shrink mr-1">
+  <div class="buttons-group flex-no-shrink">
     {#if isDefault}
       <Label label={tracker.string.Default} />
     {:else if value.category === tracker.issueStatusCategory.Backlog || value.category === tracker.issueStatusCategory.Unstarted}
@@ -58,7 +58,7 @@
       use:tooltip={{ label: tracker.string.EditWorkflowStatus, direction: 'bottom' }}
       on:click|preventDefault={edit}
     >
-      <Icon icon={IconEdit} size="small" />
+      <Icon icon={IconEdit} size={'small'} />
     </div>
     {#if !isDefault}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -67,60 +67,68 @@
         use:tooltip={{ label: tracker.string.DeleteWorkflowStatus, direction: 'bottom' }}
         on:click|preventDefault={() => dispatch('delete', value)}
       >
-        <Icon icon={IconClose} size="small" />
+        <Icon icon={IconDelete} size={'small'} />
       </div>
     {/if}
   </div>
 </div>
 
 <style lang="scss">
-  .root {
-    &:hover {
-      .btn {
-        opacity: 1;
-      }
+  .status-container {
+    background-color: var(--theme-button-default);
 
-      .draggable-mark.draggable {
-        cursor: grab;
-        opacity: 0.4;
-      }
-    }
-  }
-
-  .btn {
-    position: relative;
-    opacity: 0;
-    cursor: pointer;
-    color: var(--content-color);
-    transition: color 0.15s;
-    transition: opacity 0.15s;
-
-    &:hover {
-      color: var(--caption-color);
-    }
-
-    &::before {
+    .draggable-mark {
       position: absolute;
-      content: '';
-      inset: -0.5rem;
+      top: 0.5rem;
+      left: 0.125rem;
+      width: 1rem;
+      height: 1rem;
+      opacity: 0;
+
+      &.draggable {
+        transition: opacity 0.15s;
+
+        &::before {
+          position: absolute;
+          content: '';
+          inset: -0.5rem;
+        }
+      }
     }
-  }
-
-  .draggable-mark {
-    opacity: 0;
-    position: relative;
-    width: 0.375rem;
-    height: 1rem;
-    margin-left: 0.25rem;
-
-    &.draggable {
+    .btn {
+      position: relative;
+      color: var(--theme-dark-color);
+      transition: color 0.15s;
       transition: opacity 0.15s;
+      opacity: 0;
+      cursor: pointer;
+
+      &:hover {
+        color: var(--theme-content-color);
+      }
 
       &::before {
         position: absolute;
         content: '';
         inset: -0.5rem;
       }
+    }
+
+    &:hover,
+    &:active {
+      .btn {
+        opacity: 1;
+      }
+      .draggable-mark.draggable {
+        opacity: 0.4;
+        cursor: grab;
+      }
+    }
+    &:hover {
+      background-color: var(--theme-button-hovered);
+    }
+    &:active {
+      background-color: var(--theme-button-pressed);
     }
   }
 </style>

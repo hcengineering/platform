@@ -140,7 +140,7 @@
     )
   }
   async function showSummary (left: DocIndexState, right?: DocIndexState): Promise<void> {
-    showPopup(IndexedDocumentCompare, { left, right }, 'top')
+    showPopup(IndexedDocumentCompare, { left, right }, 'centered')
   }
 </script>
 

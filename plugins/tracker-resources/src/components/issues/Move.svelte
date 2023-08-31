@@ -17,12 +17,11 @@
   import { createEventDispatcher } from 'svelte'
 
   import { Ref, Status } from '@hcengineering/core'
-  import { SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
+  import { SpaceSelector, createQuery, getClient, Card } from '@hcengineering/presentation'
   import { Component, Issue, IssueStatus, Milestone, Project } from '@hcengineering/tracker'
-  import ui, { Button, IconClose, Label, Spinner, Toggle, tooltip } from '@hcengineering/ui'
+  import ui, { Button, IconForward, Label, Spinner, Toggle, tooltip } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { statusStore } from '@hcengineering/view-resources'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
 
   import tracker from '../../plugin'
   import {
@@ -265,198 +264,140 @@
   }
 </script>
 
-<div class="container">
-  {#if !showManageAttributes}
-    <div class="space-between">
-      <span class="fs-title aligned-text">
-        <Label label={tracker.string.MoveIssues} />
+<Card
+  label={showManageAttributes ? tracker.string.ManageAttributes : tracker.string.MoveIssues}
+  okLabel={view.string.Move}
+  okAction={moveAll}
+  canSave={docs[0]?.space !== currentSpace?._id}
+  onCancel={() => dispatch('close')}
+  backAction={() => {
+    showManageAttributes = !showManageAttributes
+  }}
+  isBack={showManageAttributes}
+  thinHeader
+  accentHeader
+  hideSubheader={showManageAttributes}
+  hideContent={showManageAttributes}
+  hideAttachments
+  numberOfBlocks={showManageAttributes
+    ? toMove.length
+    : currentSpace !== undefined && !keepOriginalAttribytes && docs[0]?.space !== currentSpace?._id
+    ? 1
+    : 0}
+  on:changeContent
+>
+  <svelte:fragment slot="title" let:label>
+    {#if !showManageAttributes}
+      <Label {label} />
+      {#if Array.isArray(selected) && selected.length}
+        <span class="content-dark-color ml-1-5">{selected.length}</span>
+      {/if}
+    {:else}
+      <Label {label} />
+    {/if}
+  </svelte:fragment>
+  <svelte:fragment slot="subheader">
+    {#if !showManageAttributes}
+      <span class="content-halfcontent-color overflow-label" style:margin-top={'-.5rem'}>
+        <Label label={tracker.string.MoveIssuesDescription} />
       </span>
-      <Button icon={IconClose} iconProps={{ size: 'medium' }} kind="ghost" on:click={() => dispatch('close')} />
-    </div>
+    {/if}
+  </svelte:fragment>
 
-    <div>
-      <Label label={tracker.string.MoveIssuesDescription} />
-    </div>
-
-    <div class="space-between mt-6 mb-4">
+  {#if !showManageAttributes}
+    <div class="flex-between">
       {#if currentSpace !== undefined}
         <SpaceSelector
           _class={currentSpace._class}
           label={hierarchy.getClass(tracker.class.Project).label}
           bind:space
           kind={'regular'}
-          size={'small'}
+          size={'large'}
           component={ProjectPresenter}
           iconWithEmoji={tracker.component.IconWithEmoji}
           defaultIcon={tracker.icon.Home}
         />
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <span
-          class="aligned-text"
-          class:disabled={!isManageAttributesAvailable}
-          on:click|stopPropagation={() => {
+        <Button
+          label={tracker.string.ManageAttributes}
+          iconRight={IconForward}
+          kind={'ghost'}
+          size={'small'}
+          padding={'0 1rem'}
+          disabled={!isManageAttributesAvailable}
+          on:click={() => {
             if (!isManageAttributesAvailable) {
               return
             }
             showManageAttributes = !showManageAttributes
           }}
-        >
-          Manage attributes >
-        </span>
+        />
       {/if}
     </div>
+  {:else if loading}<Spinner />{/if}
 
-    <div class="divider" />
-    {#if currentSpace !== undefined && !keepOriginalAttribytes}
-      <SelectReplacement
-        {statuses}
-        {components}
-        targetProject={currentSpace}
-        issues={toMove}
-        bind:statusToUpdate
-        bind:componentToUpdate
-      />
-      <div class="divider" />
-    {/if}
-  {:else}
-    <div class="space-between pb-4">
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <span
-        class="fs-title aligned-text"
-        on:click|stopPropagation={() => (showManageAttributes = !showManageAttributes)}
-      >
-        <Label label={getEmbeddedLabel('<    Manage attributes')} />
-      </span>
-      <Button icon={IconClose} iconProps={{ size: 'medium' }} kind="ghost" on:click={() => dispatch('close')} />
-    </div>
-    <div class="divider" />
-
-    <div class="issues-move flex-col">
-      {#if loading}
-        <Spinner />
-      {:else if toMove.length > 0 && currentSpace}
-        {#each toMove as issue}
-          {@const upd = issueToUpdate.get(issue._id) ?? {}}
-          {@const originalComponent = components.find((it) => it._id === issue.component)}
-          {@const targetComponent = components.find(
-            (it) => it.space === currentSpace?._id && it.label === originalComponent?.label
-          )}
-          {#key keepOriginalAttribytes}
-            {#if issue.space !== currentSpace._id && (upd.status !== undefined || upd.component !== undefined)}
-              <div class="issue-move pb-2">
-                <div class="flex-row-center pl-1">
-                  <PriorityEditor value={issue} isEditable={false} />
-                  <IssuePresenter value={issue} disabled kind={'list'} />
-                  <div class="ml-2 max-w-30">
-                    <TitlePresenter disabled value={issue} showParent={false} />
-                  </div>
-                </div>
-                <div class="pl-4">
-                  {#key upd.status}
-                    <StatusMovePresenter {issue} bind:issueToUpdate targetProject={currentSpace} {statuses} />
-                  {/key}
-                  {#if targetComponent === undefined}
-                    {#key upd.component}
-                      <ComponentMovePresenter {issue} bind:issueToUpdate targetProject={currentSpace} {components} />
-                    {/key}
-                  {/if}
-                </div>
-              </div>
-            {/if}
+  <svelte:fragment slot="blocks" let:block>
+    {#if !showManageAttributes}
+      {#if currentSpace !== undefined && !keepOriginalAttribytes}
+        <SelectReplacement
+          {statuses}
+          {components}
+          targetProject={currentSpace}
+          issues={toMove}
+          bind:statusToUpdate
+          bind:componentToUpdate
+        />
+      {/if}
+    {:else if toMove.length > 0 && currentSpace}
+      {@const issue = toMove[block]}
+      {@const upd = issueToUpdate.get(issue._id) ?? {}}
+      {@const originalComponent = components.find((it) => it._id === issue.component)}
+      {@const targetComponent = components.find(
+        (it) => it.space === currentSpace?._id && it.label === originalComponent?.label
+      )}
+      {#key keepOriginalAttribytes}
+        {#if issue.space !== currentSpace._id && (upd.status !== undefined || upd.component !== undefined)}
+          <div class="flex-row-center min-h-9 gap-1-5 content-color">
+            <PriorityEditor value={issue} isEditable={false} kind={'list'} size={'small'} shouldShowLabel={false} />
+            <IssuePresenter value={issue} disabled kind={'list'} />
+            <TitlePresenter disabled value={issue} showParent={false} maxWidth={'7.5rem'} />
+          </div>
+          {#key upd.status}
+            <StatusMovePresenter {issue} bind:issueToUpdate targetProject={currentSpace} {statuses} />
           {/key}
-        {/each}
-      {/if}
-    </div>
-  {/if}
+          {#if targetComponent === undefined}
+            {#key upd.component}
+              <ComponentMovePresenter {issue} bind:issueToUpdate targetProject={currentSpace} {components} />
+            {/key}
+          {/if}
+        {/if}
+      {/key}
+    {/if}
+  </svelte:fragment>
 
-  <div class="space-between mt-4">
+  <svelte:fragment slot="footer">
     <div
-      class="aligned-text"
+      class="flex-row-center gap-2"
       use:tooltip={{
         component: Label,
         props: { label: tracker.string.KeepOriginalAttributesTooltip }
       }}
     >
-      <div class="mr-2">
-        <Toggle
-          disabled={!isManageAttributesAvailable}
-          on:change={() => {
-            keepOriginalAttribytes = !keepOriginalAttribytes
-            if (!keepOriginalAttribytes) {
-              statusToUpdate = {}
-              componentToUpdate = {}
-            }
-          }}
-        />
-      </div>
-      <Label label={tracker.string.KeepOriginalAttributes} />
-    </div>
-    <div class="buttons">
-      <Button
-        label={view.string.Move}
-        size={'small'}
-        disabled={docs[0]?.space === currentSpace?._id}
-        kind={'accented'}
-        on:click={moveAll}
-        loading={processing}
-      />
-      <Button
-        size={'small'}
-        label={ui.string.Cancel}
-        on:click={() => {
-          dispatch('close')
+      <Toggle
+        disabled={!isManageAttributesAvailable}
+        on:change={() => {
+          keepOriginalAttribytes = !keepOriginalAttribytes
+          if (!keepOriginalAttribytes) {
+            statusToUpdate = {}
+            componentToUpdate = {}
+          }
         }}
-        disabled={processing}
       />
+      <span class="lines-limit-2">
+        <Label label={tracker.string.KeepOriginalAttributes} />
+      </span>
     </div>
-  </div>
-</div>
-
-<style lang="scss">
-  .container {
-    display: flex;
-    flex-direction: column;
-    padding: 1.25rem 1.5rem 1rem;
-    width: 480px;
-    max-width: 40rem;
-    background: var(--popup-bg-color);
-    border-radius: 8px;
-    user-select: none;
-
-    .aligned-text {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .space-between {
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .buttons {
-      flex-shrink: 0;
-      display: grid;
-      grid-auto-flow: column;
-      direction: rtl;
-      justify-content: start;
-      align-items: center;
-      column-gap: 0.5rem;
-    }
-    .issues-move {
-      overflow: auto;
-    }
-    .issue-move {
-      border-bottom: 1px solid var(--popup-divider);
-    }
-  }
-
-  .divider {
-    border-bottom: 1px solid var(--theme-divider-color);
-  }
-
-  .disabled {
-    cursor: not-allowed;
-    color: var(--dark-color);
-  }
-</style>
+  </svelte:fragment>
+  <svelte:fragment slot="buttons">
+    <Button label={ui.string.Cancel} size={'large'} disabled={processing} on:click={() => dispatch('close')} />
+  </svelte:fragment>
+</Card>

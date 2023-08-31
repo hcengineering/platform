@@ -14,20 +14,9 @@
 -->
 <script lang="ts">
   import core, { Class, Data, Ref, SortingOrder, StatusCategory } from '@hcengineering/core'
-  import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
+  import { createQuery, getClient, MessageBox, Card } from '@hcengineering/presentation'
   import { calcRank, IssueStatus, Project } from '@hcengineering/tracker'
-  import {
-    Button,
-    closeTooltip,
-    ExpandCollapse,
-    Icon,
-    IconAdd,
-    Label,
-    Loading,
-    Panel,
-    Scroller,
-    showPopup
-  } from '@hcengineering/ui'
+  import { Button, closeTooltip, ExpandCollapse, IconAdd, Label, Loading, Scroller, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { flip } from 'svelte/animate'
   import tracker from '../../plugin'
@@ -241,28 +230,25 @@
   $: projectStatuses = $statusStore.getDocs().filter((status) => status.space === projectId)
 </script>
 
-<Panel isHeader={false} isAside={false} on:fullsize on:close={() => dispatch('close')}>
-  <svelte:fragment slot="title">
-    <div class="antiTitle icon-wrapper">
-      <div class="wrapped-icon">
-        <Icon icon={tracker.icon.Issue} size="small" />
-      </div>
-      <div class="title-wrapper">
-        <span class="wrapped-title">
-          <Label label={tracker.string.ManageWorkflowStatuses} />
-        </span>
-        {#if project}
-          <span class="wrapped-subtitle">{project.name}</span>
-        {/if}
-      </div>
-    </div>
+<Card
+  label={tracker.string.ManageWorkflowStatuses}
+  onCancel={() => dispatch('close')}
+  okAction={() => {}}
+  accentHeader
+  hideAttachments
+  hideFooter
+>
+  <svelte:fragment slot="subheader">
+    {#if project}
+      <span class="content-halfcontent-color overflow-label" style:margin-top={'-.5rem'}>{project.name}</span>
+    {/if}
   </svelte:fragment>
 
   {#if project === undefined || statusCategories === undefined || projectStatuses.length === 0}
     <Loading />
   {:else}
     <Scroller>
-      <div class="popupPanel-body__main-content py-10 clear-mins flex-no-shrink">
+      <div class="content">
         {#each statusCategories as category}
           {@const statuses = projectStatuses.filter((s) => s.category === category._id) ?? []}
           {@const isSingle = statuses.length === 1}
@@ -270,10 +256,9 @@
             <Label label={category.label} />
             <Button
               showTooltip={{ label: tracker.string.AddWorkflowStatus }}
-              width="min-content"
               icon={IconAdd}
-              size="small"
-              kind="ghost"
+              size={'medium'}
+              kind={'ghost'}
               on:click={() => {
                 closeTooltip()
                 editingStatus = { category: category._id, color: category.color }
@@ -320,43 +305,60 @@
                 {/if}
               </div>
             {/each}
-            <ExpandCollapse isExpanded>
-              {#if editingStatus && !('_id' in editingStatus) && editingStatus.category === category._id}
+            {#if editingStatus && !('_id' in editingStatus) && editingStatus.category === category._id}
+              <ExpandCollapse isExpanded>
                 <StatusEditor value={editingStatus} on:cancel={cancelEditing} on:save={addStatus} {isSaving} isSingle />
-              {/if}
-            </ExpandCollapse>
+              </ExpandCollapse>
+            {/if}
           </div>
         {/each}
       </div>
     </Scroller>
   {/if}
-</Panel>
+</Card>
 
 <style lang="scss">
-  .row {
-    position: relative;
-    margin-bottom: 0.25rem;
+  .content {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    max-width: 54rem;
+    min-width: 0;
+    min-height: 0;
 
-    &.is-dragged-over-up::before {
-      position: absolute;
-      content: '';
-      inset: 0;
-      border-top: 1px solid var(--theme-caret-color);
+    .category-name {
+      margin: 1rem 0 0.25rem 0;
+      text-transform: uppercase;
+      font-weight: 500;
+      font-size: 0.625rem;
+      letter-spacing: 1px;
+      color: var(--theme-dark-color);
+
+      &:first-child {
+        margin: 0 0 0.25rem 0;
+      }
     }
+    .row {
+      position: relative;
 
-    &.is-dragged-over-down::before {
-      position: absolute;
-      content: '';
-      inset: 0;
-      border-bottom: 1px solid var(--theme-caret-color);
+      &.is-dragged-over-up::before {
+        position: absolute;
+        content: '';
+        inset: 0;
+        border-top: 1px solid var(--theme-caret-color);
+      }
+      &.is-dragged-over-down::before {
+        position: absolute;
+        content: '';
+        inset: 0;
+        border-bottom: 1px solid var(--theme-caret-color);
+      }
     }
-  }
-
-  .category-name {
-    margin: 1rem 0 0.5rem 0;
-
-    &:first-child {
-      margin: 0 0 0.5rem 0;
+    .row + .row {
+      margin-top: 0.25rem;
     }
   }
 </style>
