@@ -17,7 +17,6 @@
   import { getClient } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,
-    Button,
     EmojiPopup,
     Icon,
     IconEmoji,
@@ -32,22 +31,11 @@
   import { createEventDispatcher } from 'svelte'
   import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
-  import { FORMAT_MODES, FormatMode, RefAction, RefInputActionItem, TextEditorHandler } from '../types'
-  import LinkPopup from './LinkPopup.svelte'
+  import { RefAction, RefInputActionItem, TextEditorHandler, TextFormatCategory } from '../types'
   import TextEditor from './TextEditor.svelte'
   import { completionConfig } from './extensions'
   import Attach from './icons/Attach.svelte'
-  import CodeBlock from './icons/CodeBlock.svelte'
-  import ListBullet from './icons/ListBullet.svelte'
-  import ListNumber from './icons/ListNumber.svelte'
-  import Quote from './icons/Quote.svelte'
-  import Bold from './icons/Bold.svelte'
-  import Code from './icons/Code.svelte'
-  import Italic from './icons/Italic.svelte'
-  import Link from './icons/Link.svelte'
   import RIMention from './icons/RIMention.svelte'
-  import RIStrikethrough from './icons/RIStrikethrough.svelte'
-  import Underline from './icons/Underline.svelte'
   import Send from './icons/Send.svelte'
 
   const dispatch = createEventDispatcher()
@@ -64,10 +52,7 @@
   const client = getClient()
 
   let textEditor: TextEditor
-  let textEditorToolbar: HTMLElement
 
-  let activeModes = new Set<FormatMode>()
-  let isSelectionEmpty = true
   let isEmpty = true
 
   $: setContent(content)
@@ -142,34 +127,6 @@
     a.action(evt?.target as HTMLElement, editorHandler)
   }
 
-  function updateFormattingState () {
-    if (textEditor?.checkIsActive === undefined) {
-      return
-    }
-    activeModes = new Set(FORMAT_MODES.filter(textEditor.checkIsActive))
-    isSelectionEmpty = textEditor.checkIsSelectionEmpty()
-  }
-
-  function getToggler (toggle: () => void) {
-    return () => {
-      toggle()
-      textEditor.focus()
-      updateFormattingState()
-    }
-  }
-
-  async function formatLink (): Promise<void> {
-    const link = textEditor.getLink()
-
-    showPopup(LinkPopup, { link }, undefined, undefined, (newLink) => {
-      if (newLink === '') {
-        textEditor.unsetLink()
-      } else {
-        textEditor.setLink(newLink)
-      }
-    })
-  }
-
   // Focusable control with index
   let focused = false
   export let focusIndex = -1
@@ -198,92 +155,6 @@
 </script>
 
 <div class="ref-container">
-  <div class="formatPanel buttons-group xsmall-gap mb-4" class:withoutTopBorder bind:this={textEditorToolbar}>
-    <Button
-      icon={Bold}
-      kind={'ghost'}
-      size={'small'}
-      selected={activeModes.has('bold')}
-      showTooltip={{ label: textEditorPlugin.string.Bold }}
-      on:click={getToggler(textEditor.toggleBold)}
-    />
-    <Button
-      icon={Italic}
-      kind={'ghost'}
-      size={'small'}
-      selected={activeModes.has('italic')}
-      showTooltip={{ label: textEditorPlugin.string.Italic }}
-      on:click={getToggler(textEditor.toggleItalic)}
-    />
-    <Button
-      icon={RIStrikethrough}
-      kind={'ghost'}
-      size={'small'}
-      selected={activeModes.has('strike')}
-      showTooltip={{ label: textEditorPlugin.string.Strikethrough }}
-      on:click={getToggler(textEditor.toggleStrike)}
-    />
-    <Button
-      icon={Underline}
-      kind={'ghost'}
-      size={'small'}
-      selected={activeModes.has('underline')}
-      showTooltip={{ label: textEditorPlugin.string.Underlined }}
-      on:click={getToggler(textEditor.toggleUnderline)}
-    />
-    <Button
-      icon={Link}
-      kind={'ghost'}
-      size={'small'}
-      selected={activeModes.has('link')}
-      disabled={isSelectionEmpty && !activeModes.has('link')}
-      showTooltip={{ label: textEditorPlugin.string.Link }}
-      on:click={formatLink}
-    />
-    <div class="buttons-divider" />
-    <Button
-      icon={ListNumber}
-      kind={'ghost'}
-      size={'small'}
-      selected={activeModes.has('orderedList')}
-      showTooltip={{ label: textEditorPlugin.string.OrderedList }}
-      on:click={getToggler(textEditor.toggleOrderedList)}
-    />
-    <Button
-      icon={ListBullet}
-      kind={'ghost'}
-      size={'small'}
-      selected={activeModes.has('bulletList')}
-      showTooltip={{ label: textEditorPlugin.string.BulletedList }}
-      on:click={getToggler(textEditor.toggleBulletList)}
-    />
-    <div class="buttons-divider" />
-    <Button
-      icon={Quote}
-      kind={'ghost'}
-      size={'small'}
-      selected={activeModes.has('blockquote')}
-      showTooltip={{ label: textEditorPlugin.string.Blockquote }}
-      on:click={getToggler(textEditor.toggleBlockquote)}
-    />
-    <div class="buttons-divider" />
-    <Button
-      icon={Code}
-      kind={'ghost'}
-      size={'small'}
-      selected={activeModes.has('code')}
-      showTooltip={{ label: textEditorPlugin.string.Code }}
-      on:click={getToggler(textEditor.toggleCode)}
-    />
-    <Button
-      icon={CodeBlock}
-      kind={'ghost'}
-      size={'small'}
-      selected={activeModes.has('codeBlock')}
-      showTooltip={{ label: textEditorPlugin.string.CodeBlock }}
-      on:click={getToggler(textEditor.toggleCodeBlock)}
-    />
-  </div>
   <div class="textInput" class:withoutTopBorder>
     <div class="inputMsg">
       <TextEditor
@@ -307,10 +178,15 @@
           dispatch('focus', focused)
         }}
         extensions={[completionPlugin]}
-        on:selection-update={updateFormattingState}
         on:update
         placeholder={placeholder ?? textEditorPlugin.string.EditorPlaceholder}
-        {textEditorToolbar}
+        textFormatCategories={[
+          TextFormatCategory.TextDecoration,
+          TextFormatCategory.Link,
+          TextFormatCategory.List,
+          TextFormatCategory.Quote,
+          TextFormatCategory.Code
+        ]}
       />
     </div>
     {#if showSend}
@@ -371,10 +247,6 @@
 </div>
 
 <style lang="scss">
-  .buttons-divider {
-    height: 1rem;
-    max-height: 1rem;
-  }
   .icon-button {
     display: flex;
     justify-content: center;
@@ -399,21 +271,6 @@
     display: flex;
     flex-direction: column;
     min-height: 4.5rem;
-
-    .formatPanelRef {
-      padding: 0.5rem;
-      background-color: var(--theme-comp-header-color);
-      border: 1px solid var(--theme-refinput-divider);
-      border-radius: 0.5rem 0.5rem 0 0;
-      border-bottom: 0;
-
-      &.withoutTopBorder {
-        border-radius: 0;
-      }
-      & + .textInput {
-        border-top: none;
-      }
-    }
 
     .textInput {
       display: flex;
@@ -483,15 +340,6 @@
           }
         }
       }
-    }
-
-    .formatPanel {
-      margin: -0.5rem -0.25rem 0.5rem;
-      padding: 0.375rem;
-      background-color: var(--theme-comp-header-color);
-      border-radius: 0.5rem;
-      box-shadow: var(--theme-popup-shadow);
-      z-index: 1;
     }
   }
 </style>

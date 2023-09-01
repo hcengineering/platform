@@ -42,7 +42,7 @@ export const taskListExtensions = [
   })
 ]
 
-export const headingLevels: Level[] = [1, 2, 3, 4, 5, 6]
+export const supportedHeadingLevels: Level[] = [1, 2]
 
 export const defaultExtensions: AnyExtension[] = [
   StarterKit.configure({
@@ -60,7 +60,7 @@ export const defaultExtensions: AnyExtension[] = [
       }
     },
     heading: {
-      levels: headingLevels
+      levels: supportedHeadingLevels
     }
   }),
   Highlight.configure({
