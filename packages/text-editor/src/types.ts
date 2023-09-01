@@ -30,14 +30,6 @@ export interface RefInputActionItem extends Doc {
 /**
  * @public
  */
-export interface TextFormatState {
-  headingLevel: number
-  activeModes: Set<FormatMode>
-}
-
-/**
- * @public
- */
 export enum TextFormatCategory {
   Heading = 'heading',
   TextDecoration = 'text-decoration', // bold, italic, strike, underline
@@ -47,31 +39,6 @@ export enum TextFormatCategory {
   Code = 'code', // code, codeBlock
   Table = 'table'
 }
-
-/**
- * @public
- */
-export const FORMAT_MODES = [
-  'bold',
-  'italic',
-  'strike',
-  'link',
-  'orderedList',
-  'bulletList',
-  'blockquote',
-  'code',
-  'codeBlock',
-  'heading',
-  'heading1',
-  'heading2',
-  'table',
-  'underline'
-] as const
-
-/**
- * @public
- */
-export type FormatMode = (typeof FORMAT_MODES)[number]
 
 /**
  * @public

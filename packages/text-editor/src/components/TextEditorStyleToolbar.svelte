@@ -20,7 +20,7 @@
   import { Editor } from '@tiptap/core'
   import { Level } from '@tiptap/extension-heading'
   import textEditorPlugin from '../plugin'
-  import { FormatMode, TextFormatCategory, TextFormatState } from '../types'
+  import { TextFormatCategory } from '../types'
   import { mInsertTable } from './extensions'
   import Bold from './icons/Bold.svelte'
   import Code from './icons/Code.svelte'
@@ -46,7 +46,6 @@
   import StyleButton from './StyleButton.svelte'
 
   export let formatButtonSize: IconSize = 'small'
-  export let formattingState: TextFormatState = { headingLevel: 0, activeModes: new Set<FormatMode>() }
   export let textEditor: Editor
   export let textFormatCategories: TextFormatCategory[] = []
 
@@ -56,7 +55,6 @@
     return () => {
       toggle()
       dispatch('focus')
-      dispatch('update')
     }
   }
 
@@ -75,7 +73,7 @@
   function getHeaderToggler (level: Level) {
     return () => {
       textEditor.commands.toggleHeading({ level })
-      dispatch('update')
+      dispatch('focus')
     }
   }
 
@@ -93,7 +91,7 @@
         if (val !== undefined) {
           if (val === '#delete') {
             textEditor.commands.deleteTable()
-            dispatch('update')
+            dispatch('focus')
             return
           }
           const tab = mInsertTable.find((it) => it.label === val)
@@ -104,7 +102,7 @@
               withHeaderRow: tab.header
             })
 
-            dispatch('update')
+            dispatch('focus')
           }
         }
       }
@@ -190,7 +188,7 @@
           const op = ops.find((it) => it.id === val)
           if (op) {
             op.action()
-            dispatch('update')
+            dispatch('focus')
           }
         }
       }
@@ -204,14 +202,14 @@
       <StyleButton
         icon={Header1}
         size={formatButtonSize}
-        selected={formattingState.activeModes.has('heading1')}
+        selected={textEditor.isActive('heading', { level: 1 })}
         showTooltip={{ label: getEmbeddedLabel('H1') }}
         on:click={getHeaderToggler(1)}
       />
       <StyleButton
         icon={Header2}
         size={formatButtonSize}
-        selected={formattingState.activeModes.has('heading2')}
+        selected={textEditor.isActive('heading', { level: 2 })}
         showTooltip={{ label: getEmbeddedLabel('H2') }}
         on:click={getHeaderToggler(2)}
       />
@@ -220,28 +218,28 @@
       <StyleButton
         icon={Bold}
         size={formatButtonSize}
-        selected={formattingState.activeModes.has('bold')}
+        selected={textEditor.isActive('bold')}
         showTooltip={{ label: textEditorPlugin.string.Bold }}
         on:click={getToggler(textEditor.commands.toggleBold)}
       />
       <StyleButton
         icon={Italic}
         size={formatButtonSize}
-        selected={formattingState.activeModes.has('italic')}
+        selected={textEditor.isActive('italic')}
         showTooltip={{ label: textEditorPlugin.string.Italic }}
         on:click={getToggler(textEditor.commands.toggleItalic)}
       />
       <StyleButton
         icon={RIStrikethrough}
         size={formatButtonSize}
-        selected={formattingState.activeModes.has('strike')}
+        selected={textEditor.isActive('strike')}
         showTooltip={{ label: textEditorPlugin.string.Strikethrough }}
         on:click={getToggler(textEditor.commands.toggleStrike)}
       />
       <StyleButton
         icon={Underline}
         size={formatButtonSize}
-        selected={formattingState.activeModes.has('underline')}
+        selected={textEditor.isActive('underline')}
         showTooltip={{ label: textEditorPlugin.string.Underlined }}
         on:click={getToggler(textEditor.commands.toggleUnderline)}
       />
@@ -250,8 +248,8 @@
       <StyleButton
         icon={Link}
         size={formatButtonSize}
-        selected={formattingState.activeModes.has('link')}
-        disabled={textEditor.view.state.selection.empty && !formattingState.activeModes.has('link')}
+        selected={textEditor.isActive('link')}
+        disabled={textEditor.view.state.selection.empty && !textEditor.isActive('link')}
         showTooltip={{ label: textEditorPlugin.string.Link }}
         on:click={formatLink}
       />
@@ -260,14 +258,14 @@
       <StyleButton
         icon={ListNumber}
         size={formatButtonSize}
-        selected={formattingState.activeModes.has('orderedList')}
+        selected={textEditor.isActive('orderedList')}
         showTooltip={{ label: textEditorPlugin.string.OrderedList }}
         on:click={getToggler(textEditor.commands.toggleOrderedList)}
       />
       <StyleButton
         icon={ListBullet}
         size={formatButtonSize}
-        selected={formattingState.activeModes.has('bulletList')}
+        selected={textEditor.isActive('bulletList')}
         showTooltip={{ label: textEditorPlugin.string.BulletedList }}
         on:click={getToggler(textEditor.commands.toggleBulletList)}
       />
@@ -276,7 +274,7 @@
       <StyleButton
         icon={Quote}
         size={formatButtonSize}
-        selected={formattingState.activeModes.has('blockquote')}
+        selected={textEditor.isActive('blockquote')}
         showTooltip={{ label: textEditorPlugin.string.Blockquote }}
         on:click={getToggler(textEditor.commands.toggleBlockquote)}
       />
@@ -285,14 +283,14 @@
       <StyleButton
         icon={Code}
         size={formatButtonSize}
-        selected={formattingState.activeModes.has('code')}
+        selected={textEditor.isActive('code')}
         showTooltip={{ label: textEditorPlugin.string.Code }}
         on:click={getToggler(textEditor.commands.toggleCode)}
       />
       <StyleButton
         icon={CodeBlock}
         size={formatButtonSize}
-        selected={formattingState.activeModes.has('codeBlock')}
+        selected={textEditor.isActive('codeBlock')}
         showTooltip={{ label: textEditorPlugin.string.CodeBlock }}
         on:click={getToggler(textEditor.commands.toggleCodeBlock)}
       />
@@ -302,11 +300,11 @@
         icon={IconTable}
         iconProps={{ style: 'table' }}
         size={formatButtonSize}
-        selected={formattingState.activeModes.has('table')}
+        selected={textEditor.isActive('table')}
         on:click={insertTable}
         showTooltip={{ label: textEditorPlugin.string.InsertTable }}
       />
-      {#if formattingState.activeModes.has('table')}
+      {#if textEditor.isActive('table')}
         <StyleButton
           icon={IconTable}
           iconProps={{ style: 'tableProps' }}

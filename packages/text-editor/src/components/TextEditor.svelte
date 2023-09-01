@@ -27,9 +27,8 @@
   import { defaultExtensions } from './extensions'
   import { Node as ProseMirrorNode } from '@tiptap/pm/model'
   import { themeStore } from '@hcengineering/ui'
-  import StyledTextEditorToolbar from './StyledTextEditorToolbar.svelte'
-  import { FormatMode, TextFormatCategory, TextFormatState } from '../types'
-  import { generateFormattingState } from '../utils'
+  import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
+  import { TextFormatCategory } from '../types'
 
   export let content: string = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
@@ -42,19 +41,6 @@
   let editor: Editor
 
   let placeHolderStr: string = ''
-
-  let formattingState: TextFormatState = {
-    headingLevel: 0,
-    activeModes: new Set<FormatMode>()
-  }
-
-  function updateFormattingState () {
-    if (!editor) {
-      return
-    }
-
-    formattingState = generateFormattingState(editor, formattingState)
-  }
 
   $: ph = translate(placeholder, {}, $themeStore.language).then((r) => {
     placeHolderStr = r
@@ -228,7 +214,6 @@
         onSelectionUpdate: () => {
           showContextMenu = false
 
-          updateFormattingState()
           dispatch('selection-update')
         }
       })
@@ -265,14 +250,11 @@
 </script>
 
 <div class="formatPanel buttons-group xsmall-gap mb-4" bind:this={textEditorToolbar}>
-  <StyledTextEditorToolbar
+  <TextEditorStyleToolbar
     textEditor={editor}
     {textFormatCategories}
-    {formattingState}
-    on:focus={() => focus()}
-    on:update={() => {
+    on:focus={() => {
       needFocus = true
-      updateFormattingState()
     }}
   />
 </div>

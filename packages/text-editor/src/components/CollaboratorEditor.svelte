@@ -33,13 +33,12 @@
 
   import { DecorationSet } from 'prosemirror-view'
   import textEditorPlugin from '../plugin'
-  import { CollaborationIds, FormatMode, TextFormatCategory, TextFormatState } from '../types'
+  import { CollaborationIds, TextFormatCategory } from '../types'
 
   import { getContext } from 'svelte'
   import { calculateDecorations } from './diff/decorations'
   import { defaultExtensions } from './extensions'
-  import StyledTextEditorToolbar from './StyledTextEditorToolbar.svelte'
-  import { generateFormattingState } from '../utils'
+  import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
 
   export let documentId: string
   export let readonly = false
@@ -204,11 +203,9 @@
         },
         onUpdate: (op: { editor: Editor; transaction: Transaction }) => {
           dispatch('content', editor.getHTML())
-          updateFormattingState()
         },
         onSelectionUpdate: () => {
           dispatch('selection-update')
-          updateFormattingState()
         }
       })
 
@@ -229,19 +226,6 @@
     }
   })
 
-  let formattingState: TextFormatState = {
-    headingLevel: 0,
-    activeModes: new Set<FormatMode>()
-  }
-
-  function updateFormattingState () {
-    if (!editor) {
-      return
-    }
-
-    formattingState = generateFormattingState(editor, formattingState)
-  }
-
   let showDiff = true
 </script>
 
@@ -250,7 +234,7 @@
     {#if isFormatting && !readonly}
       <div class="formatPanelRef formatPanel flex-between clear-mins">
         <div class="flex-row-center buttons-group xsmall-gap">
-          <StyledTextEditorToolbar
+          <TextEditorStyleToolbar
             textEditor={editor}
             textFormatCategories={[
               TextFormatCategory.Heading,
@@ -262,11 +246,8 @@
               TextFormatCategory.Table
             ]}
             formatButtonSize={buttonSize}
-            {formattingState}
-            on:focus={() => focus()}
-            on:update={() => {
+            on:focus={() => {
               needFocus = true
-              updateFormattingState()
             }}
           />
         </div>
