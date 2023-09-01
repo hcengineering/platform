@@ -17,10 +17,9 @@
   import { IntlString, translate } from '@hcengineering/platform'
 
   import { FocusPosition } from '@tiptap/core'
-  import { AnyExtension, Editor, Extension, HTMLContent, isTextSelection } from '@tiptap/core'
+  import { AnyExtension, Editor, Extension, HTMLContent } from '@tiptap/core'
 
   import Placeholder from '@tiptap/extension-placeholder'
-  import BubbleMenu from '@tiptap/extension-bubble-menu'
 
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import textEditorPlugin from '../plugin'
@@ -29,6 +28,7 @@
   import { themeStore } from '@hcengineering/ui'
   import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
   import { TextFormatCategory } from '../types'
+  import { InlineStyleToolbar } from './extension/inlineStyleToolbar'
 
   export let content: string = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
@@ -143,47 +143,10 @@
           ...(supportSubmit ? [Handle] : []), // order important
           Placeholder.configure({ placeholder: placeHolderStr }),
           ...extensions,
-          BubbleMenu.configure({
+          InlineStyleToolbar.configure({
             element: textEditorToolbar,
-            tippyOptions: {
-              maxWidth: '38rem'
-            },
-            // to override shouldShow behaviour a little
-            // I need to copypaste original function and make a little change
-            // with showContextMenu falg
-            shouldShow: ({ editor, view, state, oldState, from, to }) => {
-              // For some reason shouldShow might be called after dismount and
-              // after destroing the editor. We should handle this just no to have
-              // any errors in runtime
-              if (!element) {
-                return false
-              }
-
-              const { doc, selection } = state
-              const { empty } = selection
-
-              // Sometime check for `empty` is not enough.
-              // Doubleclick an empty paragraph returns a node size of 2.
-              // So we check also for an empty text size.
-              const isEmptyTextBlock = !doc.textBetween(from, to).length && isTextSelection(state.selection)
-
-              // When clicking on a element inside the bubble menu the editor "blur" event
-              // is called and the bubble menu item is focussed. In this case we should
-              // consider the menu as part of the editor and keep showing the menu
-              const isChildOfMenu = element.contains(document.activeElement)
-
-              const hasEditorFocus = view.hasFocus() || isChildOfMenu
-
-              if (showContextMenu) {
-                return true
-              }
-
-              if (!hasEditorFocus || empty || isEmptyTextBlock || !editor.isEditable) {
-                return false
-              }
-
-              return true
-            }
+            getEditorElement: () => element,
+            isShown: () => showContextMenu
           })
         ],
         parseOptions: {
