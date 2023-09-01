@@ -229,9 +229,8 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Reso
   }
   if (hierarchy.isDerived(doc._class, chunter.class.Comment)) {
     const comment = doc as Comment
-    const targetClass = hierarchy.getClass(comment.attachedToClass)
-    const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)
-    const component = panelComponent.component ?? view.component.EditDoc
+    const panelComponent = hierarchy.classHierarchyMixin(comment.attachedToClass, view.mixin.ObjectPanel)
+    const component = panelComponent?.component ?? view.component.EditDoc
     return {
       loc: {
         path: [appComponent, workspace],

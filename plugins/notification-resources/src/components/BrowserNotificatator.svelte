@@ -133,9 +133,8 @@
     })
 
     notification.onclick = () => {
-      const targetClass = hierarchy.getClass(notifyInstance.attachedToClass)
-      const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)
-      const component = panelComponent.component ?? view.component.EditDoc
+      const panelComponent = hierarchy.classHierarchyMixin(notifyInstance.attachedToClass, view.mixin.ObjectPanel)
+      const component = panelComponent?.component ?? view.component.EditDoc
       showPanel(component, notifyInstance.attachedTo, notifyInstance.attachedToClass, 'content')
     }
   }
