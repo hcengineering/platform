@@ -86,9 +86,8 @@
     if (hierarchy.isDerived(value.attachedToClass, chunter.class.ChunterSpace)) {
       openDM(value.attachedTo)
     } else {
-      const targetClass = hierarchy.getClass(value.attachedToClass)
-      const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)
-      component = panelComponent.component ?? view.component.EditDoc
+      const panelComponent = hierarchy.classHierarchyMixin(value.attachedToClass, view.mixin.ObjectPanel)
+      component = panelComponent?.component ?? view.component.EditDoc
       _id = value.attachedTo
       _class = value.attachedToClass
     }
@@ -96,9 +95,11 @@
 
   function openDM (value: Ref<Doc>) {
     if (value) {
-      const targetClass = hierarchy.getClass(chunter.class.DirectMessage)
-      const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)
-      component = panelComponent.component ?? view.component.EditDoc
+      const panelComponent = hierarchy.classHierarchyMixin(
+        chunter.class.DirectMessage as Ref<Class<Doc>>,
+        view.mixin.ObjectPanel
+      )
+      component = panelComponent?.component ?? view.component.EditDoc
       _id = value
       _class = chunter.class.DirectMessage
       const loc = getLocation()
