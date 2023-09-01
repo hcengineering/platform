@@ -275,7 +275,7 @@
     .textInput {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      align-items: flex-end;
       min-height: 2.75rem;
       padding: 0.75rem 1rem;
       background-color: var(--theme-refinput-color);

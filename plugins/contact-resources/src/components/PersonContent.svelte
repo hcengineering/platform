@@ -69,28 +69,33 @@
 
 {#if value}
   <DocNavLink object={value} onClick={onEdit} {disabled} noUnderline={disabled} {inline} {colorInherit} {accent}>
-    <span
-      use:tooltip={disabled ? undefined : showTooltip}
-      class="contentPresenter"
-      class:text-base={enlargedText}
-      class:inline-presenter={inline}
-      style:max-width={maxWidth}
-    >
-      {#if !inline && shouldShowAvatar}
-        <span
-          class="eContentPresenterIcon"
-          class:mr-2={shouldShowName && !enlargedText}
-          class:mr-3={shouldShowName && enlargedText}
-        >
-          <Avatar size={avatarSize} avatar={value.avatar} />
-        </span>
-      {/if}
-      {#if shouldShowName}
-        <span class="eContentPresenterLabel" class:colorInherit class:fs-bold={accent}
-          >{getName(client.getHierarchy(), value)}</span
-        >
-      {/if}
-    </span>
+    {#if inline}
+      <span class="antiMention" use:tooltip={disabled ? undefined : showTooltip}>
+        @{getName(client.getHierarchy(), value)}
+      </span>
+    {:else}
+      <span
+        use:tooltip={disabled ? undefined : showTooltip}
+        class="contentPresenter"
+        class:text-base={enlargedText}
+        style:max-width={maxWidth}
+      >
+        {#if shouldShowAvatar}
+          <span
+            class="eContentPresenterIcon"
+            class:mr-2={shouldShowName && !enlargedText}
+            class:mr-3={shouldShowName && enlargedText}
+          >
+            <Avatar size={avatarSize} avatar={value.avatar} />
+          </span>
+        {/if}
+        {#if shouldShowName}
+          <span class="eContentPresenterLabel" class:colorInherit class:fs-bold={accent}
+            >{getName(client.getHierarchy(), value)}</span
+          >
+        {/if}
+      </span>
+    {/if}
   </DocNavLink>
   {#if statusLabel}
     <span class="status">
@@ -128,10 +133,6 @@
     align-items: center;
     flex-wrap: nowrap;
 
-    &.inline-presenter {
-      display: inline-flex;
-      align-items: baseline;
-    }
     .eContentPresenterIcon {
       color: var(--theme-dark-color);
     }

@@ -73,9 +73,9 @@
     {:else if node.nodeName === 'BLOCKQUOTE'}
       <blockquote><svelte:self nodes={node.childNodes} /></blockquote>
     {:else if node.nodeName === 'CODE'}
-      <code><svelte:self nodes={node.childNodes} /></code>
+      <code class="proseCode"><svelte:self nodes={node.childNodes} /></code>
     {:else if node.nodeName === 'PRE'}
-      <pre><svelte:self nodes={node.childNodes} /></pre>
+      <pre class="proseCodeBlock"><svelte:self nodes={node.childNodes} /></pre>
     {:else if node.nodeName === 'BR'}
       {@const pName = prevName(ni, nodes)}
       {#if pName !== 'P' && pName !== 'BR' && pName !== undefined}
@@ -118,23 +118,23 @@
         </div>
       {/if}
     {:else if node.nodeName === 'SPAN'}
-      <span style:margin={'0 .25rem'} style={node.getAttribute('style')}>
-        <!-- <svelte:self nodes={node.childNodes} /> -->
-        {#if node.getAttribute('data-objectclass') !== undefined && node.getAttribute('data-id') !== undefined}
-          <Component
-            is={view.component.ObjectPresenter}
-            inline
-            props={{
-              objectId: node.getAttribute('data-id'),
-              title: node.getAttribute('data-label'),
-              _class: correctClass(node.getAttribute('data-objectclass')),
-              inline: true
-            }}
-          />
-        {:else}
-          <svelte:self nodes={node.childNodes} />
-        {/if}
-      </span>
+      <!-- <span class="antiMention" style={node.getAttribute('style')}> -->
+      <!-- <svelte:self nodes={node.childNodes} /> -->
+      {#if node.getAttribute('data-objectclass') !== undefined && node.getAttribute('data-id') !== undefined}
+        <Component
+          is={view.component.ObjectPresenter}
+          inline
+          props={{
+            objectId: node.getAttribute('data-id'),
+            title: node.getAttribute('data-label'),
+            _class: correctClass(node.getAttribute('data-objectclass')),
+            inline: true
+          }}
+        />
+      {:else}
+        <svelte:self nodes={node.childNodes} />
+      {/if}
+      <!-- </span> -->
     {:else if node.nodeName === 'TABLE'}
       <table class={node.className}><svelte:self nodes={node.childNodes} /></table>
     {:else if node.nodeName === 'TBODY'}
@@ -182,13 +182,5 @@
   .checkboxContainer,
   s {
     color: var(--theme-accent-color);
-  }
-  code {
-    padding: 0 0.25rem;
-    font-family: var(--mono-font);
-    color: var(--theme-content-color);
-    background-color: var(--theme-button-default);
-    border: 1px solid var(--theme-button-border);
-    border-radius: 0.25rem;
   }
 </style>
