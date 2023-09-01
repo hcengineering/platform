@@ -47,14 +47,18 @@
 </script>
 
 <DocNavLink object={value} {onClick} {disabled} {noUnderline} {inline} {accent} component={view.component.EditDoc}>
-  <span class="flex-presenter" class:inline-presenter={inline} class:list={kind === 'list'}>
-    {#if !inline && shouldShowAvatar}
-      <div class="icon" use:tooltip={{ label: tracker.string.Component }}>
-        <Icon icon={tracker.icon.Component} size={'small'} />
-      </div>
-    {/if}
-    <span title={label} class="label nowrap" class:no-underline={disabled || noUnderline} class:fs-bold={accent}>
-      {label}
+  {#if inline}
+    <span class="antiMention" use:tooltip={{ label: tracker.string.Component }}>@{label}</span>
+  {:else}
+    <span class="flex-presenter" class:list={kind === 'list'}>
+      {#if shouldShowAvatar}
+        <div class="icon" use:tooltip={{ label: tracker.string.Component }}>
+          <Icon icon={tracker.icon.Component} size={'small'} />
+        </div>
+      {/if}
+      <span title={label} class="label nowrap" class:no-underline={disabled || noUnderline} class:fs-bold={accent}>
+        {label}
+      </span>
     </span>
-  </span>
+  {/if}
 </DocNavLink>

@@ -61,5 +61,17 @@ table.proseTable {
   background-color: var(--theme-button-default);
   border: 1px solid var(--theme-button-border);
   border-radius: .25rem;
-  padding: 0.5rem;  
+  padding: 0.5rem;
+
+  code { white-space: normal; }
 }
+
+// Fixes for MessageViewer
+pre.proseCodeBlock > code.proseCode {
+  padding: 0;
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+}
+
+.proseHeading { line-height: 110%; }

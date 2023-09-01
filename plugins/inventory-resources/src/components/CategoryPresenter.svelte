@@ -15,7 +15,9 @@
 -->
 <script lang="ts">
   import { Category } from '@hcengineering/inventory'
+  import { tooltip } from '@hcengineering/ui'
   import { DocNavLink } from '@hcengineering/view-resources'
+  import inventory from '../plugin'
 
   export let value: Category
   export let inline: boolean = false
@@ -23,8 +25,12 @@
 
 {#if value}
   <DocNavLink object={value} {inline}>
-    <div class="flex-presenter overflow-label sm-tool-icon">
-      {value.name}
-    </div>
+    {#if inline}
+      <span class="antiMention" use:tooltip={{ label: inventory.string.Category }}>@{value.name}</span>
+    {:else}
+      <div class="flex-presenter overflow-label sm-tool-icon">
+        {value.name}
+      </div>
+    {/if}
   </DocNavLink>
 {/if}

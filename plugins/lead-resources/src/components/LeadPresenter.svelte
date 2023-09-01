@@ -15,9 +15,9 @@
 -->
 <script lang="ts">
   import type { Lead } from '@hcengineering/lead'
-  import { Icon } from '@hcengineering/ui'
+  import lead from '@hcengineering/lead'
+  import { Icon, tooltip } from '@hcengineering/ui'
   import { DocNavLink } from '@hcengineering/view-resources'
-  import lead from '../plugin'
 
   export let value: Lead
   export let inline: boolean = false
@@ -27,13 +27,13 @@
 
 {#if value}
   <DocNavLink object={value} {inline} {disabled} noUnderline={disabled} {accent}>
-    <div class="flex-presenter" class:inline-presenter={inline}>
-      {#if !inline}
-        <div class="icon">
-          <Icon icon={lead.icon.Lead} size={'small'} />
-        </div>
-      {/if}
-      <span class="label nowrap" class:no-underline={disabled} class:fs-bold={accent}>LEAD-{value.number}</span>
-    </div>
+    {#if inline}
+      <span class="antiMention" use:tooltip={{ label: lead.string.Lead }}>@LEAD-{value.number}</span>
+    {:else}
+      <div class="flex-presenter">
+        <div class="icon"><Icon icon={lead.icon.Lead} size={'small'} /></div>
+        <span class="label nowrap" class:no-underline={disabled} class:fs-bold={accent}>LEAD-{value.number}</span>
+      </div>
+    {/if}
   </DocNavLink>
 {/if}
