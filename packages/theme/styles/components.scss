@@ -1081,11 +1081,20 @@
 
   &:not(.only-icon) .btn-icon,
   &:not(.only-icon) .icon { margin-right: .375rem !important; }
-  .icon, .btn-icon { color: var(--theme-halfcontent-color) !important; }
   .label {
     font-size: 0.8125rem !important;
     color: var(--theme-halfcontent-color) !important;
   }
+}
+.list-container .listitems-container,
+.list-container .listitems-container:hover,
+.list-container .antiButton.list,
+.list-container .antiButton.list:hover {
+  .icon, .btn-icon { color: var(--theme-halfcontent-color) !important; }
+}
+.list-container .datetime-button .btn-icon.normal,
+.list-container .datetime-button:hover .btn-icon.normal {
+  color: var(--theme-halfcontent-color) !important;
 }
 
 /* Kanban - global style */

@@ -11,7 +11,7 @@
   export let editable: boolean = true
 
   const client = getClient()
-  $: shouldIgnoreOverdue = object.doneState != null
+  $: shouldIgnoreOverdue = object.doneState !== null
 
   const handleDueDateChanged = async (newDueDate: number | undefined | null) => {
     if (newDueDate === undefined || object.dueDate === newDueDate) {

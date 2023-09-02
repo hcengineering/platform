@@ -23,12 +23,14 @@
   import IconClose from '../icons/Close.svelte'
   import DatePopup from './DatePopup.svelte'
   import DPCalendar from './icons/DPCalendar.svelte'
+  import DPCalendarOver from './icons/DPCalendarOver.svelte'
   import { daysInMonth, getMonthName } from './internal/DateUtils'
 
   export let value: number | null | undefined = null
   export let mode: DateRangeMode = DateRangeMode.DATE
   export let editable: boolean = false
-  export let iconModifier: 'normal' | 'warning' | 'overdue' = 'normal'
+  export let iconModifier: 'overdue' | 'critical' | 'warning' | 'normal' = 'normal'
+  export let shouldIgnoreOverdue: boolean = false
   export let labelNull: IntlString = ui.string.NoDate
   export let kind: 'default' | 'no-border' | 'link' | 'regular' = 'default'
   export let size: 'small' | 'medium' | 'large' = 'small'
@@ -397,7 +399,7 @@
     {/if}
   {:else}
     <div class="btn-icon {iconModifier}">
-      <Icon icon={DPCalendar} size={'full'} />
+      <Icon icon={iconModifier === 'overdue' && !shouldIgnoreOverdue ? DPCalendarOver : DPCalendar} size={'full'} />
     </div>
     {#if value !== undefined && value !== null && value.toString() !== ''}
       {#if withDate}
@@ -469,6 +471,9 @@
       &.overdue {
         color: var(--theme-error-color);
       }
+      &.critical {
+        color: var(--theme-error-color);
+      }
     }
 
     &.default {
@@ -523,6 +528,9 @@
               color: var(--theme-warning-color);
             }
             &.overdue {
+              color: var(--theme-error-color);
+            }
+            &.critical {
               color: var(--theme-error-color);
             }
           }
