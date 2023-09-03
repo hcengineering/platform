@@ -22,7 +22,7 @@
   export let formattedDate: string = ''
   export let daysDifference: number = 0
   export let isOverdue: boolean = false
-  export let iconModifier: 'warning' | 'critical' | 'overdue' | undefined = undefined
+  export let iconModifier: 'warning' | 'critical' | 'overdue' | 'normal' = 'normal'
   export let shouldIgnoreOverdue: boolean = false
 </script>
 
@@ -42,14 +42,14 @@
           params={{ value: formattedDate }}
         />
       </div>
-      <div class="description">
-        {#if !shouldIgnoreOverdue}
+      {#if !shouldIgnoreOverdue}
+        <div class="description">
           <Label
             label={isOverdue ? ui.string.DueDatePopupOverdueDescription : ui.string.DueDatePopupDescription}
             params={{ value: daysDifference }}
           />
-        {/if}
-      </div>
+        </div>
+      {/if}
     </div>
   </div>
 {/if}
@@ -58,11 +58,13 @@
   .root {
     display: flex;
     width: 10rem;
+    min-width: 0;
   }
 
   .iconContainer {
-    color: var(--content-color);
-    margin-right: 1rem;
+    margin-top: 0.125rem;
+    margin-right: 0.5rem;
+    color: var(--theme-caption-color);
 
     &.mIconContainerWarning {
       color: var(--theme-warning-color);
@@ -80,12 +82,12 @@
   }
 
   .title {
-    color: var(--caption-color);
+    color: var(--theme-caption-color);
     font-weight: 500;
   }
 
   .description {
     margin-top: 0.25rem;
-    color: var(--dark-color);
+    color: var(--theme-dark-color);
   }
 </style>
