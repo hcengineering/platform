@@ -28,7 +28,7 @@
   import { Card, createQuery, getClient, InlineAttributeBar, MessageBox } from '@hcengineering/presentation'
   import { Vacancy as VacancyClass } from '@hcengineering/recruit'
   import tags from '@hcengineering/tags'
-  import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
+  import task, { createStates, KanbanTemplate } from '@hcengineering/task'
   import tracker, {
     calcRank,
     Issue,
@@ -76,7 +76,8 @@
     comments: 0,
     company: '' as Ref<Organization>,
     fullDescription: '',
-    location: ''
+    location: '',
+    states: []
   }
   export function canClose (): boolean {
     return name === '' && templateId !== undefined
@@ -142,7 +143,8 @@
       estimation: template.estimation,
       reports: 0,
       relations: [{ _id: id, _class: recruit.class.Vacancy }],
-      childInfo: []
+      childInfo: [],
+      doneState: null
     })
     if ((template.labels?.length ?? 0) > 0) {
       const tagElements = await client.findAll(tags.class.TagElement, { _id: { $in: template.labels } })
@@ -172,6 +174,8 @@
 
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
+    const [states, doneStates] = await createStates(client, templateId)
+
     const id = await client.createDoc(
       recruit.class.Vacancy,
       core.space.Space,
@@ -185,7 +189,9 @@
         number: (incResult as any).object.sequence,
         company,
         members: [getCurrentAccount()._id],
-        templateId
+        templateId,
+        states,
+        doneStates
       },
       objectId
     )
@@ -198,8 +204,6 @@
         }
       }
     }
-
-    await createKanban(client, id, templateId)
 
     await descriptionBox.createAttachments()
     objectId = generateId()

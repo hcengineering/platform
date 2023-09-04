@@ -1,23 +1,23 @@
-import { readable } from 'svelte/store'
 import board, { Board, CommonBoardPreference } from '@hcengineering/board'
-import core, { getCurrentAccount, Ref, TxOperations } from '@hcengineering/core'
-import type { KanbanTemplate, TodoItem } from '@hcengineering/task'
+import core, { Ref, TxOperations, getCurrentAccount } from '@hcengineering/core'
 import preference from '@hcengineering/preference'
-import { createKanban } from '@hcengineering/task'
 import { createQuery, getClient } from '@hcengineering/presentation'
+import type { KanbanTemplate, TodoItem } from '@hcengineering/task'
+import { createStates } from '@hcengineering/task'
 import {
+  EastSideColor,
+  FeijoaColor,
   FernColor,
   FlamingoColor,
   MalibuColor,
   MediumTurquoiseColor,
   MoodyBlueColor,
-  SeaBuckthornColor,
-  FeijoaColor,
-  EastSideColor,
   SalmonColor,
+  SeaBuckthornColor,
   SeagullColor,
   areDatesEqual
 } from '@hcengineering/ui'
+import { readable } from 'svelte/store'
 
 export async function createBoard (
   client: TxOperations,
@@ -25,16 +25,19 @@ export async function createBoard (
   description: string,
   templateId?: Ref<KanbanTemplate>
 ): Promise<Ref<Board>> {
+  const [states, doneStates] = await createStates(client, templateId)
+
   const boardRef = await client.createDoc(board.class.Board, core.space.Space, {
     name,
     description,
     private: false,
     archived: false,
     members: [getCurrentAccount()._id],
-    templateId
+    templateId,
+    states,
+    doneStates
   })
 
-  await Promise.all([createKanban(client, boardRef, templateId)])
   return boardRef
 }
 

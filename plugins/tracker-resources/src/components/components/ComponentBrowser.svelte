@@ -105,6 +105,7 @@
 
 <FilterBar
   _class={tracker.class.Component}
+  {space}
   query={searchQuery}
   {viewOptions}
   on:change={({ detail }) => (resultQuery = detail)}

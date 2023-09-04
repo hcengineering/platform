@@ -16,11 +16,12 @@
 <script lang="ts">
   import { Ref, Status, StatusValue } from '@hcengineering/core'
   import { statusStore } from '@hcengineering/view-resources'
-  import type { DoneState } from '@hcengineering/task'
+  import type { DoneState, SpaceWithStates } from '@hcengineering/task'
   import DoneStatePresenter from './DoneStatePresenter.svelte'
   import DoneStateEditor from './DoneStateEditor.svelte'
 
   export let value: Ref<DoneState> | StatusValue
+  export let space: Ref<SpaceWithStates> | undefined
   export let showTitle: boolean = true
   export let onChange: ((value: Ref<DoneState>) => void) | undefined = undefined
 
@@ -29,7 +30,7 @@
 
 {#if value}
   {#if onChange !== undefined && state !== undefined}
-    <DoneStateEditor value={state._id} space={state.space} {onChange} kind="link" size="medium" />
+    <DoneStateEditor value={state._id} {space} {onChange} kind="link" size="medium" />
   {:else}
     <DoneStatePresenter value={state} {showTitle} />
   {/if}

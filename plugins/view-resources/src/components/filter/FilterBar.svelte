@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, Ref, getCurrentAccount } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, Ref, Space, getCurrentAccount } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Button, IconAdd, eventToHTMLElement, getCurrentLocation, showPopup } from '@hcengineering/ui'
@@ -28,6 +28,7 @@
   import { getViewOptions, viewOptionStore } from '../../viewOptions'
 
   export let _class: Ref<Class<Doc>>
+  export let space: Ref<Space> | undefined
   export let query: DocumentQuery<Doc>
   export let viewOptions: ViewOptions | undefined = undefined
 
@@ -49,6 +50,7 @@
       {
         _class,
         target,
+        space,
         index: ++maxIndex,
         onChange
       },
@@ -172,6 +174,7 @@
     <div class="filters">
       {#each $filterStore as filter, i}
         <FilterSection
+          {space}
           {filter}
           on:change={() => {
             makeQuery(query, $filterStore)

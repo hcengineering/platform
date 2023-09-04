@@ -194,7 +194,7 @@
     if (attribute.attribute?.type._class === core.class.EnumOf) {
       return { ...attribute.props, type: attribute.attribute.type }
     }
-    return attribute.props
+    return { ...attribute.props, space: object.space }
   }
   function getValue (attribute: AttributeModel, object: Doc): any {
     if (attribute.castRequest) {

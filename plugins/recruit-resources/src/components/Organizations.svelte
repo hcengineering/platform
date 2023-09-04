@@ -228,6 +228,7 @@
 
 <FilterBar
   _class={recruit.mixin.VacancyList}
+  space={undefined}
   {viewOptions}
   query={searchQuery}
   on:change={(e) => (resultQuery = e.detail)}

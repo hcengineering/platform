@@ -1,12 +1,12 @@
 import { MeasureContext, Ref, TxOperations } from '@hcengineering/core'
-import task, { DoneState, genRanks, Kanban, SpaceWithStates, State } from '@hcengineering/task'
+import task, { DoneState, SpaceWithStates, State } from '@hcengineering/task'
 import { findOrUpdate } from './utils'
 
 export async function createUpdateSpaceKanban (
   ctx: MeasureContext,
   spaceId: Ref<SpaceWithStates>,
   client: TxOperations
-): Promise<Ref<State>[]> {
+): Promise<[Ref<State>[], Ref<DoneState>[]]> {
   const rawStates = [
     { color: 9, name: 'Initial' },
     { color: 10, name: 'Intermidiate' },
@@ -15,55 +15,34 @@ export async function createUpdateSpaceKanban (
     { color: 11, name: 'Invalid' }
   ]
   const states: Array<Ref<State>> = []
-  const stateRanks = genRanks(rawStates.length)
   for (const st of rawStates) {
-    const rank = stateRanks.next().value
-
-    if (rank === undefined) {
-      console.error('Failed to generate rank')
-      break
-    }
-
     const sid = ('generated-' + spaceId + '.state.' + st.name.toLowerCase().replace(' ', '_')) as Ref<State>
 
     await ctx.with('find-or-update', {}, (ctx) =>
-      findOrUpdate(ctx, client, spaceId, task.class.State, sid, {
+      findOrUpdate(ctx, client, task.space.Statuses, task.class.State, sid, {
         ofAttribute: task.attribute.State,
         name: st.name,
-        color: st.color,
-        rank
+        color: st.color
       })
     )
     states.push(sid)
   }
 
+  const done: Array<Ref<DoneState>> = []
+
   const doneStates = [
     { class: task.class.WonState, name: 'Won' },
     { class: task.class.LostState, name: 'Lost' }
   ]
-  const doneStateRanks = genRanks(doneStates.length)
   for (const st of doneStates) {
-    const rank = doneStateRanks.next().value
-
-    if (rank === undefined) {
-      console.error('Failed to generate rank')
-      break
-    }
-
     const sid = `generated-${spaceId}.done-state.${st.name.toLowerCase().replace(' ', '_')}` as Ref<DoneState>
     await ctx.with('gen-done-state', {}, (ctx) =>
-      findOrUpdate(ctx, client, spaceId, st.class, sid, {
+      findOrUpdate(ctx, client, task.space.Statuses, st.class, sid, {
         ofAttribute: task.attribute.DoneState,
-        name: st.name,
-        rank
+        name: st.name
       })
     )
+    done.push(sid)
   }
-
-  await ctx.with('create-kanban', {}, (ctx) =>
-    findOrUpdate(ctx, client, spaceId, task.class.Kanban, ('generated-' + spaceId + '.kanban') as Ref<Kanban>, {
-      attachedTo: spaceId
-    })
-  )
-  return states
+  return [states, done]
 }

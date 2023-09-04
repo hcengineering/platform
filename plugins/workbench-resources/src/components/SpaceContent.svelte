@@ -60,6 +60,7 @@
       {:else}
         <FilterBar
           {_class}
+          {space}
           query={searchQuery}
           {viewOptions}
           on:change={(e) => (resultQuery = { ...e.detail, ...query })}

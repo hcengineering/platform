@@ -84,7 +84,7 @@
     displaySt = result
   }
 
-  $: updateStatus(txes, $statusStore.getIdMap(), $ticker)
+  $: updateStatus(txes, $statusStore, $ticker)
 </script>
 
 <Row>
@@ -93,6 +93,6 @@
   </span>
 </Row>
 {#each displaySt as st}
-  <StatusPresenter value={st.status} />
+  <StatusPresenter value={st.status} space={issue.space} />
   <Duration value={st.duration} />
 {/each}

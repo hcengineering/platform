@@ -13,13 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IssueStatus } from '@hcengineering/tracker'
+  import { Ref } from '@hcengineering/core'
+  import { IssueStatus, Project } from '@hcengineering/tracker'
   import { Icon, IconCircles, IconDelete, IconEdit, Label, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import IssueStatusIcon from '../issues/IssueStatusIcon.svelte'
 
   export let value: IssueStatus
+  export let space: Ref<Project>
   export let isDefault = false
   export let isSingle = true
 
@@ -36,7 +38,7 @@
       <IconCircles size={'small'} />
     </div>
     <div class="flex-no-shrink">
-      <IssueStatusIcon {value} size="small" />
+      <IssueStatusIcon {value} size="small" {space} />
     </div>
     <span class="caption-color ml-2">{value.name}</span>
     {#if value.description}

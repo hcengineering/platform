@@ -15,10 +15,10 @@
 -->
 <script lang="ts">
   import { Ref, Space } from '@hcengineering/core'
-  import task, { State } from '@hcengineering/task'
-  import { createQuery } from '@hcengineering/presentation'
+  import { State } from '@hcengineering/task'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
-  import { showPopup, Button, eventToHTMLElement } from '@hcengineering/ui'
+  import { Button, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { statusStore } from '@hcengineering/view-resources'
   import StatePresenter from './StatePresenter.svelte'
   import StatesPopup from './StatesPopup.svelte'
 
@@ -32,18 +32,9 @@
   export let shouldShowName: boolean = true
   export let shrink: number = 0
 
-  let state: State
+  $: state = $statusStore.get(value)
   let opened: boolean = false
 
-  const query = createQuery()
-  $: query.query(
-    task.class.State,
-    { _id: value },
-    (res) => {
-      state = res[0]
-    },
-    { limit: 1 }
-  )
   const handleClick = (ev: MouseEvent) => {
     if (!opened) {
       opened = true

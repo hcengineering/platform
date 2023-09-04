@@ -14,28 +14,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, SortingOrder } from '@hcengineering/core'
+  import { Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import task, { SpaceWithStates, State } from '@hcengineering/task'
+  import task, { SpaceWithStates, getStates } from '@hcengineering/task'
   import { getColorNumberByText, getPlatformColorDef, resizeObserver, themeStore } from '@hcengineering/ui'
+  import { statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
 
   export let space: Ref<SpaceWithStates>
-  let states: State[] = []
+  $: states = getStates(_space, $statusStore)
   const dispatch = createEventDispatcher()
-  const statesQuery = createQuery()
-  statesQuery.query(
-    task.class.State,
-    { space },
-    (res) => {
-      states = res
-    },
-    {
-      sort: {
-        rank: SortingOrder.Ascending
-      }
-    }
-  )
+
+  let _space: SpaceWithStates | undefined = undefined
+
+  const query = createQuery()
+  $: query.query(task.class.SpaceWithStates, { _id: space }, (res) => {
+    _space = res[0]
+  })
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>

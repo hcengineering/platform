@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachedData, Ref, StatusManager, WithLookup } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
+  import { AttachedData, IdMap, Ref, Status, WithLookup } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { Issue, IssueDraft, IssueStatus, Project } from '@hcengineering/tracker'
   import {
     ButtonKind,
@@ -31,7 +31,6 @@
   import tracker from '../../plugin'
   import IssueStatusIcon from './IssueStatusIcon.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
-
   type ValueType = Issue | (AttachedData<Issue> & { space: Ref<Project> }) | IssueDraft
 
   export let value: ValueType
@@ -82,11 +81,19 @@
     )
   }
 
-  function getStatuses (statusStore: StatusManager, value: ValueType): WithLookup<IssueStatus>[] {
-    return statusStore.filter((it) => it.space === value?.space)
+  let space: Project | undefined = undefined
+
+  const query = createQuery()
+  $: query.query(tracker.class.Project, { _id: value.space }, (res) => {
+    space = res[0]
+  })
+
+  function getStatuses (statuses: IdMap<Status>, space: Project | undefined): IssueStatus[] {
+    if (space === undefined) return []
+    return space.states.map((p) => statuses.get(p) as IssueStatus).filter((p) => p !== undefined)
   }
 
-  $: statuses = getStatuses($statusStore, value)
+  $: statuses = getStatuses($statusStore, space)
 
   function getSelectedStatus (
     statuses: WithLookup<IssueStatus>[] | undefined,
@@ -127,7 +134,11 @@
       on:click={handleStatusEditorOpened}
     >
       <div class="flex-center flex-no-shrink square-4">
-        {#if selectedStatus}<IssueStatusIcon value={selectedStatus} size={kind === 'list' ? 'small' : 'medium'} />{/if}
+        {#if selectedStatus}<IssueStatusIcon
+            value={selectedStatus}
+            size={kind === 'list' ? 'small' : 'medium'}
+            space={value.space}
+          />{/if}
       </div>
       {#if selectedStatusLabel}
         <span
@@ -152,7 +163,7 @@
     >
       <svelte:fragment slot="icon">
         {#if selectedStatus}
-          <IssueStatusIcon value={selectedStatus} size={iconSize} />
+          <IssueStatusIcon value={selectedStatus} size={iconSize} space={value.space} />
         {/if}
       </svelte:fragment>
       <svelte:fragment slot="content">

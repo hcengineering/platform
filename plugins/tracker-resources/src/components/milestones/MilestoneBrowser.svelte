@@ -118,6 +118,7 @@
 <FilterBar
   _class={tracker.class.Milestone}
   query={searchQuery}
+  {space}
   {viewOptions}
   on:change={(e) => (resultQuery = e.detail)}
 />

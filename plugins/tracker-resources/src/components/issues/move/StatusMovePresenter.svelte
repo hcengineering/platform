@@ -24,6 +24,7 @@
 
   export let issue: Issue
   export let targetProject: Project
+  export let currentProject: Ref<Project>
   export let issueToUpdate: Map<Ref<Issue>, IssueToUpdate> = new Map()
   export let statuses: IssueStatus[]
 
@@ -33,7 +34,7 @@
 
 <Grid rowGap={0.25} topGap>
   <div class="flex-between min-h-11">
-    <StatusRefPresenter value={issue.status} size={'small'} />
+    <StatusRefPresenter space={currentProject} value={issue.status} size={'small'} />
     <IconArrowRight size={'small'} fill={'var(--theme-halfcontent-color)'} />
   </div>
   <div class="flex-row-center min-h-11">
@@ -62,7 +63,7 @@
       }}
     >
       <span slot="content" class="flex-row-center pointer-events-none">
-        <StatusRefPresenter value={replace} />
+        <StatusRefPresenter space={targetProject._id} value={replace} />
       </span>
     </Button>
   </div>

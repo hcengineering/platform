@@ -91,6 +91,7 @@
 
   <FilterBar
     _class={contact.class.Contact}
+    space={undefined}
     {viewOptions}
     query={searchQuery}
     on:change={(e) => (resultQuery = e.detail)}

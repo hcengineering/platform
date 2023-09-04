@@ -13,9 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { StatusCategory, WithLookup } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
-  import { IssueStatus } from '@hcengineering/tracker'
+  import core, { Ref, StatusCategory, WithLookup } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { getStates } from '@hcengineering/task'
+  import { IssueStatus, Project } from '@hcengineering/tracker'
   import { IconSize } from '@hcengineering/ui'
   import { statusStore } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
@@ -23,6 +24,7 @@
 
   export let value: WithLookup<IssueStatus>
   export let size: IconSize
+  export let space: Ref<Project> | undefined
 
   const dynamicFillCategories = [tracker.issueStatusCategory.Started]
 
@@ -35,17 +37,16 @@
     count: number | undefined
   } = { index: undefined, count: undefined }
 
+  const spaceQuery = createQuery()
+  let _space: Project | undefined = undefined
+  $: space
+    ? spaceQuery.query(tracker.class.Project, { _id: space }, (res) => {
+      _space = res[0]
+    })
+    : (_space = undefined)
+
   $: if (value.category === tracker.issueStatusCategory.Started) {
-    const _s = [
-      ...$statusStore.filter(
-        (it) =>
-          it.ofAttribute === value.ofAttribute &&
-          it.category === tracker.issueStatusCategory.Started &&
-          it.space === value.space
-      )
-    ]
-    _s.sort((a, b) => a.rank.localeCompare(b.rank))
-    statuses = _s
+    statuses = getStates(_space, $statusStore).filter((p) => p.category === tracker.issueStatusCategory.Started)
   }
 
   async function updateCategory (status: WithLookup<IssueStatus>, statuses: IssueStatus[]) {

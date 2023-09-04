@@ -13,60 +13,66 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Class, Data, Ref } from '@hcengineering/core'
+  import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
+  import { DoneState, SpaceWithStates, State, createState } from '@hcengineering/task'
   import { EditBox, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import task from '../plugin'
-  import presentation, { Card, getClient } from '@hcengineering/presentation'
-  import { calcRank, DoneState, Kanban, KanbanTemplate, KanbanTemplateSpace, State } from '@hcengineering/task'
-  import { Class, Data, generateId, Ref, SortingOrder } from '@hcengineering/core'
 
   const dispatch = createEventDispatcher()
   const client = getClient()
   const hierarchy = client.getHierarchy()
   export let status: State | undefined = undefined
   export let _class: Ref<Class<State | DoneState>> | undefined = status?._class
-  export let template: KanbanTemplate | undefined = undefined
   export let value = status?.name ?? ''
-  const isTemplate = template !== undefined
-  export let space: Kanban | KanbanTemplateSpace | undefined
+  export let space: Ref<SpaceWithStates>
 
-  let canSave = true
+  let _space: SpaceWithStates | undefined = undefined
+  const query = createQuery()
+  $: query.query(task.class.SpaceWithStates, { _id: space }, (res) => {
+    _space = res[0]
+  })
+
+  const canSave = true
   async function save () {
-    if (space === undefined && template === undefined && status?.space === undefined) return
-    const attachedTo = isTemplate && template?._id ? { attachedTo: template._id } : {}
-    const kanban = space as Kanban
-    if (_class !== undefined && status === undefined) {
-      const query = isTemplate ? { ...attachedTo } : kanban?.attachedTo ? { space: kanban.attachedTo } : {}
-      const lastOne = await client.findOne(_class, query, { sort: { rank: SortingOrder.Descending } })
-      let newDoc: Data<State> = {
-        ofAttribute: task.attribute.State,
-        name: value.trim(),
-        rank: calcRank(lastOne, undefined),
-        ...attachedTo
-      }
+    if (_space === undefined || _class === undefined) return
+    if (status === undefined) {
       if (!hierarchy.isDerived(_class, task.class.DoneState)) {
-        newDoc = {
+        const newDoc: Data<State> = {
           ofAttribute: task.attribute.State,
           name: value.trim(),
-          color: 9,
-          rank: calcRank(lastOne, undefined),
-          ...attachedTo
+          color: 9
+        }
+        const id = await createState(client, _class, newDoc)
+        await client.update(_space, { $push: { states: id } })
+      } else {
+        const newDoc: Data<DoneState> = {
+          ofAttribute: task.attribute.DoneState,
+          name: value.trim()
+        }
+        const id = await createState(client, _class, newDoc)
+        await client.update(_space, { $push: { states: id } })
+      }
+    } else {
+      const id = await createState(client, _class, { ...status, name: value.trim() })
+      if (!hierarchy.isDerived(_class, task.class.DoneState)) {
+        const states = _space.states
+        const index = states.findIndex((x) => x === status?._id)
+        if (index !== -1) {
+          states[index] = id
+          await client.update(_space, { states })
+        }
+      } else {
+        const states = _space.doneStates ?? []
+        const index = states.findIndex((x) => x === status?._id)
+        if (index !== -1) {
+          states[index] = id
+          await client.update(_space, { doneStates: states })
         }
       }
-      const ops = client.apply(template?.space ?? kanban?.attachedTo ?? generateId()).notMatch(_class, {
-        space: isTemplate && template ? template.space : kanban?.attachedTo,
-        name: value.trim(),
-        ...attachedTo
-      })
-      await ops.createDoc(_class, isTemplate && template ? template.space : kanban?.attachedTo, newDoc)
-      canSave = await ops.commit()
     }
-    if (status !== undefined && _class !== undefined) {
-      const ops = client.apply(status._id).notMatch(_class, { space: status.space, name: value.trim(), ...attachedTo })
-      await ops.update(status, { name: value.trim() })
-      canSave = await ops.commit()
-    }
-    if (canSave) dispatch('close')
+    dispatch('close')
   }
 </script>
 

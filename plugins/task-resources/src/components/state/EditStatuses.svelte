@@ -14,64 +14,67 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, DocumentQuery, Obj, Ref } from '@hcengineering/core'
-  import core from '@hcengineering/core'
-  import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
-  import type { DoneState, Kanban, SpaceWithStates, State } from '@hcengineering/task'
-  import task from '../../plugin'
-  import KanbanEditor from '../kanban/KanbanEditor.svelte'
-  import { Icon, Label, showPopup, Panel, Scroller } from '@hcengineering/ui'
+  import type { Doc, DocumentQuery, IdMap, Ref, Status } from '@hcengineering/core'
+  import { MessageBox, createQuery, getClient } from '@hcengineering/presentation'
+  import type { DoneState, LostState, SpaceWithStates, State, WonState } from '@hcengineering/task'
+  import { Icon, Label, Panel, Scroller, showPopup } from '@hcengineering/ui'
+  import { statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import workbench from '@hcengineering/workbench'
+  import task from '../../plugin'
+  import StatesEditor from './StatesEditor.svelte'
 
   export let _id: Ref<SpaceWithStates>
-  export let spaceClass: Ref<Class<Obj>>
 
-  let kanban: Kanban | undefined
-  let spaceClassInstance: Class<SpaceWithStates> | undefined
   let spaceInstance: SpaceWithStates | undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
 
-  const kanbanQ = createQuery()
-  $: kanbanQ.query(task.class.Kanban, { attachedTo: _id }, (result) => {
-    kanban = result[0]
-  })
-
-  const spaceQ = createQuery()
-  $: spaceQ.query<Class<SpaceWithStates>>(core.class.Class, { _id: spaceClass }, (result) => {
-    spaceClassInstance = result.shift()
-  })
-
   const spaceI = createQuery()
-  $: spaceI.query<SpaceWithStates>(spaceClass, { _id }, (result) => {
-    spaceInstance = result.shift()
+  $: spaceI.query<SpaceWithStates>(task.class.SpaceWithStates, { _id }, (result) => {
+    spaceInstance = result[0]
   })
+
+  $: spaceClass = spaceInstance ? hierarchy.getClass(spaceInstance._class) : undefined
+
+  $: [states, doneStates] = getStates(spaceInstance, $statusStore)
+
+  $: wonStates = doneStates.filter((x) => x._class === task.class.WonState) as WonState[]
+  $: lostStates = doneStates.filter((x) => x._class === task.class.LostState) as LostState[]
+
+  function getStates (space: SpaceWithStates | undefined, statusStore: IdMap<Status>): [Status[], DoneState[]] {
+    if (space === undefined) {
+      return [[], []]
+    }
+
+    const states = space.states.map((x) => statusStore.get(x) as Status).filter((p) => p !== undefined)
+    const doneStates = space.doneStates
+      ? space.doneStates.map((x) => statusStore.get(x) as DoneState).filter((p) => p !== undefined)
+      : []
+
+    return [states, doneStates]
+  }
 
   async function deleteState ({ state }: { state: State | DoneState }) {
     if (spaceInstance === undefined) {
       return
     }
 
-    const spaceClassInstance = client.getHierarchy().getClass(spaceInstance._class)
-    const spaceView = client.getHierarchy().as(spaceClassInstance, workbench.mixin.SpaceView)
-    const containingClass = spaceView.view.class
-
     let query: DocumentQuery<Doc>
     if (hierarchy.isDerived(state._class, task.class.DoneState)) {
-      query = { doneState: state._id }
+      query = { doneState: state._id, space: _id }
     } else {
-      query = { status: state._id }
+      query = { status: state._id, space: _id }
     }
 
-    const objectsInThisState = await client.findAll(containingClass, query)
+    const objectsInThisState = await client.findAll(task.class.Task, query)
 
     if (objectsInThisState.length > 0) {
       showPopup(MessageBox, {
         label: task.string.CantStatusDelete,
-        message: task.string.CantStatusDeleteError
+        message: task.string.CantStatusDeleteError,
+        canSubmit: false
       })
     } else {
       showPopup(
@@ -82,11 +85,41 @@
         },
         undefined,
         async (result) => {
-          if (result && kanban !== undefined) {
-            client.removeDoc(state._class, state.space, state._id)
+          if (result !== undefined) {
+            if (hierarchy.isDerived(state._class, task.class.DoneState)) {
+              const index = doneStates.findIndex((x) => x._id === state._id)
+              if (index === -1) {
+                return
+              }
+              states.splice(index, 1)
+              if (spaceInstance) {
+                await client.update(spaceInstance, { doneStates: states.map((x) => x._id) })
+              }
+            } else {
+              const index = states.findIndex((x) => x._id === state._id)
+              if (index === -1) {
+                return
+              }
+              states.splice(index, 1)
+              if (spaceInstance) {
+                await client.update(spaceInstance, { states: states.map((x) => x._id) })
+              }
+            }
           }
         }
       )
+    }
+  }
+
+  async function onMove (stateID: Ref<State>, position: number) {
+    const index = states.findIndex((x) => x._id === stateID)
+    if (index === -1) {
+      return
+    }
+    const elem = states.splice(index, 1)
+    states = [...states.slice(0, position), elem[0], ...states.slice(position)]
+    if (spaceInstance) {
+      await client.update(spaceInstance, { states: states.map((x) => x._id) })
     }
   }
 </script>
@@ -108,7 +141,7 @@
       <div class="title-wrapper">
         <span class="wrapped-title">
           <Label label={task.string.ManageStatusesWithin} />
-          {#if spaceClassInstance}<Label label={spaceClassInstance?.label} />{:else}...{/if}
+          {#if spaceClass}<Label label={spaceClass?.label} />{:else}...{/if}
         </span>
         {#if spaceInstance?.name}<span class="wrapped-subtitle">{spaceInstance?.name}</span>{/if}
       </div>
@@ -117,9 +150,13 @@
 
   <Scroller>
     <div class="popupPanel-body__main-content py-10 clear-mins">
-      {#if kanban !== undefined}
-        <KanbanEditor {kanban} on:delete={(e) => deleteState(e.detail)} />
-      {/if}
+      <StatesEditor
+        {states}
+        {wonStates}
+        {lostStates}
+        on:delete={(e) => deleteState(e.detail)}
+        on:move={(e) => onMove(e.detail.stateID, e.detail.position)}
+      />
     </div>
   </Scroller>
 </Panel>

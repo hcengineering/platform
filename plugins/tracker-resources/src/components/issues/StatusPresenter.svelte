@@ -13,10 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IssueStatus } from '@hcengineering/tracker'
+  import { Ref } from '@hcengineering/core'
+  import { IssueStatus, Project } from '@hcengineering/tracker'
   import IssueStatusIcon from './IssueStatusIcon.svelte'
 
   export let value: IssueStatus | undefined
+  export let space: Ref<Project>
   export let size: 'small' | 'medium' = 'small'
   export let kind: 'list-header' | undefined = undefined
   export let colorInherit: boolean = false
@@ -27,7 +29,7 @@
 {#if value}
   <div class="flex-presenter cursor-default" style:color={'inherit'}>
     {#if !inline}
-      <IssueStatusIcon {value} {size} on:accent-color />
+      <IssueStatusIcon {value} {size} {space} on:accent-color />
     {/if}
     <span
       class="overflow-label"

@@ -47,7 +47,7 @@ export async function OnTemplateStateUpdate (tx: Tx, control: TriggerControl): P
     await control.findAll(classToChange, { space: { $in: ids }, name: prevDoc.name })
   ) as Array<State | DoneState>
   return statesToChange.map((it) => {
-    const newAttributes = it._class === task.class.State ? { color: newDoc.color, rank: newDoc.rank } : {}
+    const newAttributes = it._class === task.class.State ? { color: newDoc.color } : {}
     return control.txFactory.createTxUpdateDoc(it._class, it.space, it._id, {
       name: newDoc.name,
       ...newAttributes
@@ -75,7 +75,7 @@ export async function OnTemplateStateCreate (tx: Tx, control: TriggerControl): P
   const doc = TxProcessor.createDoc2Doc(actualTx)
   const ofAttribute = classToChange === task.class.State ? task.attribute.State : task.attribute.DoneState
   return ids.map((it) => {
-    const newAttributes = classToChange === task.class.State ? { color: doc.color, rank: doc.rank } : {}
+    const newAttributes = classToChange === task.class.State ? { color: doc.color } : {}
     return control.txFactory.createTxCreateDoc(classToChange, it, {
       ofAttribute,
       name: doc.name,

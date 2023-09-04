@@ -15,11 +15,11 @@
 <script lang="ts">
   import contact from '@hcengineering/contact'
   import ExpandRightDouble from '@hcengineering/contact-resources/src/components/icons/ExpandRightDouble.svelte'
-  import { FindOptions, SortingOrder } from '@hcengineering/core'
+  import { FindOptions } from '@hcengineering/core'
   import { OK, Severity, Status } from '@hcengineering/platform'
   import presentation, { Card, SpaceSelect, createQuery, getClient } from '@hcengineering/presentation'
   import type { Applicant, Vacancy } from '@hcengineering/recruit'
-  import task, { State } from '@hcengineering/task'
+  import task, { State, getStates } from '@hcengineering/task'
   import ui, {
     Button,
     ColorPopup,
@@ -28,13 +28,14 @@
     ListView,
     Status as StatusControl,
     createFocusManager,
+    defaultBackground,
     deviceOptionsStore as deviceInfo,
     getColorNumberByText,
     getPlatformColorDef,
-    defaultBackground,
     showPopup,
     themeStore
   } from '@hcengineering/ui'
+  import { statusStore } from '@hcengineering/view-resources'
   import { moveToSpace } from '@hcengineering/view-resources/src/utils'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
@@ -79,24 +80,17 @@
   let states: Array<{ id: number | string; color: number; label: string }> = []
   let selectedState: State | undefined
   let rawStates: State[] = []
-  const statesQuery = createQuery()
   const spaceQuery = createQuery()
 
   let vacancy: Vacancy | undefined
 
   $: if (_space) {
-    statesQuery.query(
-      task.class.State,
-      { space: _space },
-      (res) => {
-        rawStates = res
-      },
-      { sort: { rank: SortingOrder.Ascending } }
-    )
     spaceQuery.query(recruit.class.Vacancy, { _id: _space }, (res) => {
       vacancy = res.shift()
     })
   }
+
+  $: rawStates = getStates(vacancy, $statusStore)
 
   $: if (rawStates.findIndex((it) => it._id === selectedState?._id) === -1) {
     selectedState = rawStates[0]

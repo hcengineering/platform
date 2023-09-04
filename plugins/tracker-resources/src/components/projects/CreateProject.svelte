@@ -28,7 +28,7 @@
   import { Asset } from '@hcengineering/platform'
   import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
-  import { IssueStatus, Project, TimeReportDayType, createStatuses } from '@hcengineering/tracker'
+  import { Project, TimeReportDayType, createStatuses } from '@hcengineering/tracker'
   import {
     Button,
     EditBox,
@@ -54,11 +54,9 @@
   export let descriptionPlaceholder: string = ''
   export let statusFactory: (
     client: TxOperations | ApplyOperations,
-    spaceId: Status['space'],
     statusClass: Status['_class'],
-    categoryOfAttribute: Status['ofAttribute'],
-    defaultStatusId: Status['_id']
-  ) => Promise<void> = createStatuses
+    categoryOfAttribute: Status['ofAttribute']
+  ) => Promise<Ref<Status>[]> = createStatuses
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -92,8 +90,6 @@
 
   let identifier: string = project?.identifier ?? 'TSK'
 
-  const defaultStatusId: Ref<IssueStatus> = generateId()
-
   function getProjectData () {
     return {
       name,
@@ -103,7 +99,6 @@
       archived: false,
       identifier: identifier.toUpperCase(),
       sequence: 0,
-      defaultIssueStatus: defaultStatusId,
       defaultAssignee: defaultAssignee ?? undefined,
       icon,
       color,
@@ -116,7 +111,7 @@
       return
     }
 
-    const { sequence, defaultIssueStatus, ...projectData } = getProjectData()
+    const { sequence, ...projectData } = getProjectData()
     const update: DocumentUpdate<Project> = {}
     if (projectData.name !== project?.name) {
       update.name = projectData.name
@@ -168,10 +163,15 @@
     const ops = client
       .apply(projectId)
       .notMatch(tracker.class.Project, { identifier: projectData.identifier.toUpperCase() })
+    const statuses = await statusFactory(ops, tracker.class.IssueStatus, tracker.attribute.IssueStatus)
 
     isSaving = true
-    await ops.createDoc(tracker.class.Project, core.space.Space, projectData, projectId)
-    await statusFactory(ops, projectId, tracker.class.IssueStatus, tracker.attribute.IssueStatus, defaultStatusId)
+    await ops.createDoc(
+      tracker.class.Project,
+      core.space.Space,
+      { ...projectData, states: statuses, defaultIssueStatus: statuses[0] },
+      projectId
+    )
     const succeeded = await ops.commit()
     isSaving = false
 

@@ -17,29 +17,11 @@ import { Ref, TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import { createKanbanTemplate, createSequence } from '@hcengineering/model-task'
-import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
-import lead from './plugin'
+import task, { KanbanTemplate, createStates } from '@hcengineering/task'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
+import lead from './plugin'
 
 async function createSpace (tx: TxOperations): Promise<void> {
-  const current = await tx.findOne(core.class.Space, {
-    _id: lead.space.DefaultFunnel
-  })
-  if (current === undefined) {
-    await tx.createDoc(
-      lead.class.Funnel,
-      core.space.Space,
-      {
-        name: 'Funnel',
-        description: 'Default funnel',
-        private: false,
-        archived: false,
-        members: []
-      },
-      lead.space.DefaultFunnel
-    )
-  }
-
   const currentTemplate = await tx.findOne(core.class.Space, {
     _id: lead.space.FunnelTemplates
   })
@@ -57,6 +39,28 @@ async function createSpace (tx: TxOperations): Promise<void> {
         attachedToClass: lead.class.Funnel
       },
       lead.space.FunnelTemplates
+    )
+  }
+
+  const current = await tx.findOne(core.class.Space, {
+    _id: lead.space.DefaultFunnel
+  })
+  if (current === undefined) {
+    const defaultTmpl = await createDefaultKanbanTemplate(tx)
+    const [states, doneStates] = await createStates(tx, defaultTmpl)
+    await tx.createDoc(
+      lead.class.Funnel,
+      core.space.Space,
+      {
+        name: 'Funnel',
+        description: 'Default funnel',
+        private: false,
+        archived: false,
+        members: [],
+        states,
+        doneStates
+      },
+      lead.space.DefaultFunnel
     )
   }
 }
@@ -86,15 +90,6 @@ async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<Kanba
   })
 }
 
-async function createDefaultKanban (tx: TxOperations): Promise<void> {
-  const current = await tx.findOne(task.class.Kanban, {
-    attachedTo: lead.space.DefaultFunnel
-  })
-  if (current !== undefined) return
-  const defaultTmpl = await createDefaultKanbanTemplate(tx)
-  await createKanban(tx, lead.space.DefaultFunnel, defaultTmpl)
-}
-
 async function fixTemplateSpace (tx: TxOperations): Promise<void> {
   const templateSpace = await tx.findOne(task.class.KanbanTemplateSpace, { _id: lead.space.FunnelTemplates })
   if (templateSpace !== undefined && templateSpace?.attachedToClass === undefined) {
@@ -105,7 +100,6 @@ async function fixTemplateSpace (tx: TxOperations): Promise<void> {
 async function createDefaults (tx: TxOperations): Promise<void> {
   await createSpace(tx)
   await createSequence(tx, lead.class.Lead)
-  await createDefaultKanban(tx)
   await fixTemplateSpace(tx)
 }
 

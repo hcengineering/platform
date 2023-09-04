@@ -17,7 +17,7 @@
 import { IntlString, Resource, mergeIds } from '@hcengineering/platform'
 import { PresentationMiddlewareCreator } from '@hcengineering/presentation'
 import { AnyComponent } from '@hcengineering/ui'
-import view, { CreateAggregationManagerFunc, GrouppingManagerResource, SortFunc, viewId } from '@hcengineering/view'
+import view, { viewId } from '@hcengineering/view'
 
 export default mergeIds(viewId, view, {
   component: {
@@ -25,6 +25,7 @@ export default mergeIds(viewId, view, {
     DateFilter: '' as AnyComponent,
     ValueFilter: '' as AnyComponent,
     ArrayFilter: '' as AnyComponent,
+    StatusFilter: '' as AnyComponent,
     StringFilter: '' as AnyComponent,
     TimestampFilter: '' as AnyComponent,
     FilterTypePopup: '' as AnyComponent,
@@ -96,11 +97,6 @@ export default mergeIds(viewId, view, {
     Show: '' as IntlString
   },
   function: {
-    StatusSort: '' as SortFunc,
     CreateDocMiddleware: '' as Resource<PresentationMiddlewareCreator>
-  },
-  aggregation: {
-    CreateStatusAggregationManager: '' as CreateAggregationManagerFunc,
-    GrouppingStatusManager: '' as GrouppingManagerResource
   }
 })

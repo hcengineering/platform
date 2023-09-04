@@ -93,6 +93,7 @@
       <StateRefPresenter
         size={'small'}
         kind={'link-bordered'}
+        space={object.space}
         shrink={1}
         value={object.status}
         onChange={(status) => {

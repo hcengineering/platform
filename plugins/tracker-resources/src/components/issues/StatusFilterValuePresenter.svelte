@@ -13,13 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IssueStatus } from '@hcengineering/tracker'
+  import { IssueStatus, Project } from '@hcengineering/tracker'
   import IssueStatusIcon from './IssueStatusIcon.svelte'
   import { createQuery } from '@hcengineering/presentation'
   import core, { IdMap, Ref, StatusCategory, toIdMap } from '@hcengineering/core'
   import { statusStore } from '@hcengineering/view-resources'
 
   export let value: Ref<IssueStatus>[]
+  export let space: Ref<Project> | undefined
 
   let statuses: IssueStatus[] = []
 
@@ -31,7 +32,6 @@
 
   function sort (value: IssueStatus[], categories: IdMap<StatusCategory>): IssueStatus[] {
     return value.sort((a, b) => {
-      if (a.category === b.category) return a.rank.localeCompare(b.rank)
       if (a.category === undefined) return -1
       if (b.category === undefined) return 1
       const aCat = categories.get(a.category)
@@ -42,14 +42,14 @@
     })
   }
 
-  $: statuses = sort(value.map((p) => $statusStore.getIdMap().get(p)) as IssueStatus[], categories)
+  $: statuses = sort(value.map((p) => $statusStore.get(p)) as IssueStatus[], categories)
 </script>
 
 <div class="flex-presenter flex-gap-1-5">
   {#each statuses as value, i}
     {#if value && i < 5}
       <div>
-        <IssueStatusIcon {value} size={'small'} />
+        <IssueStatusIcon {space} {value} size={'small'} />
       </div>
     {/if}
   {/each}

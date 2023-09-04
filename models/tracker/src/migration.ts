@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-import core, { Ref, TxOperations, generateId } from '@hcengineering/core'
+import core, { TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient, createOrUpdate } from '@hcengineering/model'
-import tags from '@hcengineering/tags'
-import { IssueStatus, Project, TimeReportDayType, createStatuses } from '@hcengineering/tracker'
-import tracker from './plugin'
-import { DOMAIN_TRACKER } from '.'
 import { DOMAIN_TASK } from '@hcengineering/model-task'
+import tags from '@hcengineering/tags'
+import { Project, TimeReportDayType, createStatuses } from '@hcengineering/tracker'
+import { DOMAIN_TRACKER } from '.'
+import tracker from './plugin'
 
 async function createDefaultProject (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(tracker.class.Project, {
@@ -32,7 +32,7 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
 
   // Create new if not deleted by customers.
   if (current === undefined && currentDeleted === undefined) {
-    const defaultStatusId: Ref<IssueStatus> = generateId()
+    const states = await createStatuses(tx, tracker.class.IssueStatus, tracker.attribute.IssueStatus)
 
     await tx.createDoc<Project>(
       tracker.class.Project,
@@ -45,18 +45,12 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
         archived: false,
         identifier: 'TSK',
         sequence: 0,
-        defaultIssueStatus: defaultStatusId,
+        defaultIssueStatus: states[0],
         defaultTimeReportDay: TimeReportDayType.PreviousWorkDay,
-        defaultAssignee: undefined
+        defaultAssignee: undefined,
+        states
       },
       tracker.project.DefaultProject
-    )
-    await createStatuses(
-      tx,
-      tracker.project.DefaultProject,
-      tracker.class.IssueStatus,
-      tracker.attribute.IssueStatus,
-      defaultStatusId
     )
   }
 }

@@ -19,7 +19,7 @@
   import { statusStore } from '@hcengineering/view-resources'
 
   import tracker from '../../../plugin'
-  import { ComponentToUpdate, StatusToUpdate, findTargetStatus } from '../../../utils'
+  import { ComponentToUpdate, StatusToUpdate } from '../../../utils'
   import ComponentPresenter from '../../components/ComponentPresenter.svelte'
   import ComponentRefPresenter from '../../components/ComponentRefPresenter.svelte'
   import StatusRefPresenter from '../StatusRefPresenter.svelte'
@@ -27,6 +27,7 @@
   import ComponentReplacementPopup from './ComponentReplacementPopup.svelte'
 
   export let targetProject: Project
+  export let currentProject: Ref<Project>
   export let issues: Issue[]
   export let statuses: IssueStatus[] = []
   export let components: Component[] = []
@@ -36,14 +37,16 @@
   $: if (targetProject !== undefined) {
     for (const i of issues) {
       const status = statusToUpdate[i.status]
-      if (status !== undefined && !status.create) {
-        if ($statusStore.get(status.ref)?.space !== targetProject._id) {
-          statusToUpdate[i.status] = undefined
+      if (status?.create !== true) {
+        if (!targetProject.states.includes(i.status)) {
+          if (status?.ref === undefined) {
+            statusToUpdate[i.status] = { ref: targetProject.defaultIssueStatus }
+          } else if (!targetProject.states.includes(status.ref)) {
+            statusToUpdate[i.status] = { ref: targetProject.defaultIssueStatus }
+          }
+        } else {
+          delete statusToUpdate[i.status]
         }
-      }
-      if (statusToUpdate[i.status] === undefined) {
-        const targetStatus = findTargetStatus($statusStore, i.status, targetProject._id, true)
-        statusToUpdate[i.status] = { ref: targetStatus ?? targetProject.defaultIssueStatus }
       }
 
       if (i.component !== undefined && i.component !== null) {
@@ -95,7 +98,7 @@
     {#each Object.keys(statusToUpdate) as status}
       {@const newStatus = statusToUpdate[status]}
       <div class="flex-between min-h-11">
-        <StatusRefPresenter value={getStatusRef(status)} kind={'list-header'} />
+        <StatusRefPresenter value={getStatusRef(status)} space={currentProject} kind={'list-header'} />
         <IconArrowRight size={'small'} fill={'var(--theme-halfcontent-color)'} />
       </div>
       <div class="flex-row-center min-h-11">
@@ -108,6 +111,7 @@
               StatusReplacementPopup,
               {
                 statuses,
+                space: targetProject._id,
                 original: $statusStore.get(getStatusRef(status)),
                 selected: getStatusRef(newStatus.ref)
               },
@@ -123,7 +127,7 @@
           }}
         >
           <span slot="content" class="flex-row-center pointer-events-none">
-            <StatusRefPresenter value={getStatusRef(newStatus.ref)} />
+            <StatusRefPresenter space={targetProject._id} value={getStatusRef(newStatus.ref)} />
           </span>
         </Button>
       </div>

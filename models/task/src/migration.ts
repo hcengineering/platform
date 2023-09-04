@@ -13,12 +13,26 @@
 // limitations under the License.
 //
 
-import { Class, DOMAIN_TX, Doc, Domain, Ref, Space, TxOperations } from '@hcengineering/core'
+import {
+  Class,
+  DOMAIN_STATUS,
+  DOMAIN_TX,
+  Doc,
+  Domain,
+  Ref,
+  Space,
+  Status,
+  TxCollectionCUD,
+  TxCreateDoc,
+  TxOperations,
+  TxUpdateDoc
+} from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient, createOrUpdate } from '@hcengineering/model'
-import core from '@hcengineering/model-core'
+import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import tags from '@hcengineering/model-tags'
-import { DoneStateTemplate, KanbanTemplate, StateTemplate, genRanks } from '@hcengineering/task'
-import view, { Filter } from '@hcengineering/view'
+import { DOMAIN_VIEW } from '@hcengineering/model-view'
+import { DoneStateTemplate, KanbanTemplate, StateTemplate, Task, genRanks } from '@hcengineering/task'
+import view, { Filter, FilteredView } from '@hcengineering/view'
 import { DOMAIN_TASK } from '.'
 import task from './plugin'
 
@@ -26,6 +40,8 @@ import task from './plugin'
  * @public
  */
 export const DOMAIN_STATE = 'state' as Domain
+
+type OldStatus = Status & { rank: string }
 
 /**
  * @public
@@ -123,8 +139,29 @@ async function createDefaultSequence (tx: TxOperations): Promise<void> {
   }
 }
 
+async function createDefaultStatesSpace (tx: TxOperations): Promise<void> {
+  const current = await tx.findOne(core.class.Space, {
+    _id: task.space.Statuses
+  })
+  if (current === undefined) {
+    await tx.createDoc(
+      core.class.Space,
+      core.space.Space,
+      {
+        name: 'Statuses',
+        description: 'Internal space to store all Statuses',
+        members: [],
+        private: false,
+        archived: false
+      },
+      task.space.Statuses
+    )
+  }
+}
+
 async function createDefaults (tx: TxOperations): Promise<void> {
   await createDefaultSequence(tx)
+  await createDefaultStatesSpace(tx)
 }
 
 async function renameState (client: MigrationClient): Promise<void> {
@@ -189,9 +226,122 @@ async function renameStatePrefs (client: MigrationUpgradeClient): Promise<void> 
   }
 }
 
+async function migrateStatuses (client: MigrationClient): Promise<void> {
+  const oldStatuses = await client.find<OldStatus>(DOMAIN_STATUS, { space: { $ne: task.space.Statuses } })
+  const newStatuses: Map<string, Status> = new Map()
+  const oldStatusesMap = new Map<Ref<Status>, Ref<Status>>()
+  oldStatuses.sort((a, b) => a.rank.localeCompare(b.rank))
+  for (const oldStatus of oldStatuses) {
+    const name = oldStatus.name.toLowerCase().trim()
+    const mapId = `${oldStatus.ofAttribute}_${name}`
+    const current = newStatuses.get(mapId)
+    if (current !== undefined) {
+      oldStatusesMap.set(oldStatus._id, current._id)
+      if (client.hierarchy.isDerived(oldStatus._class, task.class.DoneState)) {
+        await client.update(DOMAIN_SPACE, { _id: oldStatus.space }, { $addToSet: { doneStates: current._id } })
+      } else {
+        await client.update(DOMAIN_SPACE, { _id: oldStatus.space }, { $addToSet: { states: current._id } })
+      }
+    } else {
+      newStatuses.set(mapId, oldStatus)
+      if (client.hierarchy.isDerived(oldStatus._class, task.class.DoneState)) {
+        await client.update(DOMAIN_SPACE, { _id: oldStatus.space }, { $addToSet: { doneStates: oldStatus._id } })
+      } else {
+        await client.update(DOMAIN_SPACE, { _id: oldStatus.space }, { $addToSet: { states: oldStatus._id } })
+      }
+    }
+  }
+  if (oldStatusesMap.size > 0) {
+    const tasks = await client.find<Task>(DOMAIN_TASK, {})
+    for (const task of tasks) {
+      const update: any = {}
+      const newStatus = oldStatusesMap.get(task.status)
+      if (newStatus !== undefined) {
+        update.status = newStatus
+      }
+      if (task.doneState != null) {
+        const newDoneStatus = oldStatusesMap.get(task.doneState)
+        if (newStatus !== undefined) {
+          update.doneState = newDoneStatus
+        }
+      }
+      if (Object.keys(update).length > 0) {
+        await client.update(DOMAIN_TASK, { _id: task._id }, update)
+      }
+      const txes = await client.find(DOMAIN_TX, { 'tx.objectId': task._id })
+      for (const tx of txes) {
+        const update: any = {}
+        const ctx = tx as TxCollectionCUD<Doc, Task>
+        if (ctx.tx._class === core.class.TxCreateDoc) {
+          const createTx = ctx.tx as TxCreateDoc<Task>
+          const newStatus = oldStatusesMap.get(createTx.attributes.status)
+          if (newStatus !== undefined) {
+            update['tx.attributes.status'] = newStatus
+          }
+          if (createTx.attributes.doneState != null) {
+            const newDoneStatus = oldStatusesMap.get(createTx.attributes.doneState)
+            if (newStatus !== undefined) {
+              update['tx.attributes.doneState'] = newDoneStatus
+            }
+          }
+        } else if (ctx.tx._class === core.class.TxUpdateDoc) {
+          const updateTx = ctx.tx as TxUpdateDoc<Task>
+          if (updateTx.operations.status !== undefined) {
+            const newStatus = oldStatusesMap.get(updateTx.operations.status)
+            if (newStatus !== undefined) {
+              update['tx.operations.status'] = newStatus
+            }
+          }
+          if (updateTx.operations.doneState != null) {
+            const newDoneStatus = oldStatusesMap.get(updateTx.operations.doneState)
+            if (newStatus !== undefined) {
+              update['tx.operations.doneState'] = newDoneStatus
+            }
+          }
+        }
+        if (Object.keys(update).length > 0) {
+          await client.update(DOMAIN_TX, { _id: tx._id }, update)
+        }
+      }
+    }
+
+    const descendants = client.hierarchy.getDescendants(task.class.Task)
+    const filters = await client.find<FilteredView>(DOMAIN_VIEW, {
+      _class: view.class.FilteredView,
+      filterClass: { $in: descendants }
+    })
+    for (const filter of filters) {
+      const filters = JSON.parse(filter.filters) as Filter[]
+      let changed = false
+      for (const filter of filters) {
+        if (['status, doneStatus'].includes(filter.key.key)) {
+          for (let index = 0; index < filter.value.length; index++) {
+            const val = filter.value[index]
+            const newVal = oldStatusesMap.get(val)
+            if (newVal !== undefined) {
+              filter.value[index] = newVal
+              changed = true
+            }
+          }
+        }
+      }
+      if (changed) {
+        await client.update(DOMAIN_VIEW, { _id: filter._id }, { filters: JSON.stringify(filters) })
+      }
+    }
+  }
+  const toRemove = Array.from(oldStatusesMap.keys())
+  for (const remove of toRemove) {
+    await client.delete(DOMAIN_STATUS, remove)
+  }
+  await client.update(DOMAIN_STATUS, { rank: { $exists: true } }, { $unset: { rank: '' } })
+  await client.update(DOMAIN_STATUS, { space: { $ne: task.space.Statuses } }, { space: task.space.Statuses })
+}
+
 export const taskOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await renameState(client)
+    await migrateStatuses(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)

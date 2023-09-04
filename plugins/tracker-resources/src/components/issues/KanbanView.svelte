@@ -196,7 +196,7 @@
     viewOptions: ViewOptions,
     viewOptionsModel: ViewOptionModel[] | undefined
   ) {
-    categories = await getCategories(client, _class, docs, groupByKey, viewlet.descriptor)
+    categories = await getCategories(client, _class, space, docs, groupByKey, viewlet.descriptor)
     for (const viewOption of viewOptionsModel ?? []) {
       if (viewOption.actionTarget !== 'category') continue
       const categoryFunc = viewOption as CategoryOption
@@ -210,6 +210,7 @@
         const res = await categoryAction(
           _class,
           spaces.length > 0 ? { space: { $in: Array.from(spaces.values()) } } : {},
+          space,
           groupByKey,
           update,
           queryId,

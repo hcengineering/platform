@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
+  import { Class, Doc, IdMap, Ref, Status } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { DoneState, SpaceWithStates } from '@hcengineering/task'
   import { Label, PaletteColorIndexes, getPlatformColor, resizeObserver, themeStore } from '@hcengineering/ui'
@@ -23,24 +23,29 @@
   import Lost from '../icons/Lost.svelte'
   import Unknown from '../icons/Unknown.svelte'
   import Won from '../icons/Won.svelte'
+  import { statusStore } from '@hcengineering/view-resources'
 
   export let space: Ref<SpaceWithStates>
   let states: DoneState[] = []
   const dispatch = createEventDispatcher()
-  const statesQuery = createQuery()
-  statesQuery.query(
-    task.class.DoneState,
-    { space },
-    (res) => {
-      states = res
-    },
-    {
-      sort: {
-        _class: SortingOrder.Descending,
-        rank: SortingOrder.Ascending
-      }
-    }
-  )
+
+  let _space: SpaceWithStates
+
+  function getStates (space: SpaceWithStates | undefined, statesStore: IdMap<Status>): void {
+    if (space === undefined) return
+    const res: Status[] =
+      (space.doneStates?.map((p) => statesStore.get(p))?.filter((p) => p !== undefined) as Status[]) ?? []
+    res.sort((a, b) => a._class.localeCompare(b._class))
+    states = res
+  }
+
+  $: getStates(_space, $statusStore)
+
+  const spaceQuery = createQuery()
+  spaceQuery.query(task.class.SpaceWithStates, { _id: space }, (res) => {
+    _space = res[0]
+  })
+
   function getColor (_class: Ref<Class<Doc>>): string {
     return _class === task.class.WonState
       ? getPlatformColor(PaletteColorIndexes.Crocodile, $themeStore.dark)

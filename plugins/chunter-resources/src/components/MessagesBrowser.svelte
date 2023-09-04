@@ -10,7 +10,7 @@
   import MessageComponent from './Message.svelte'
 
   export let withHeader: boolean = true
-
+  export let filterClass = chunter.class.ChunterMessage
   export let search: string = ''
 
   let searchQuery: DocumentQuery<ChunterMessage> = { $search: search }
@@ -22,7 +22,6 @@
   $: updateSearchQuery(search)
 
   const client = getClient()
-  export let filterClass = chunter.class.ChunterMessage
   let messages: ChunterMessage[] = []
 
   let resultQuery: DocumentQuery<ChunterMessage> = { ...searchQuery }
@@ -90,7 +89,7 @@
     />
   </div>
 {/if}
-<FilterBar _class={filterClass} query={searchQuery} on:change={(e) => (resultQuery = e.detail)} />
+<FilterBar _class={filterClass} space={undefined} query={searchQuery} on:change={(e) => (resultQuery = e.detail)} />
 {#if messages.length > 0}
   <Scroller>
     {#each messages as message}

@@ -14,16 +14,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, DocumentQuery, FindOptions, Ref, SortingOrder } from '@hcengineering/core'
+  import { Class, DocumentQuery, FindOptions, IdMap, Ref, Status } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { DoneState, SpaceWithStates, State, Task } from '@hcengineering/task'
   import type { TabItem } from '@hcengineering/ui'
   import { TabList } from '@hcengineering/ui'
-  import { TableBrowser } from '@hcengineering/view-resources'
+  import { TableBrowser, statusStore } from '@hcengineering/view-resources'
   import task from '../plugin'
+  import StatesBar from './state/StatesBar.svelte'
   import Lost from './icons/Lost.svelte'
   import Won from './icons/Won.svelte'
-  import StatesBar from './state/StatesBar.svelte'
 
   export let _class: Ref<Class<Task>>
   export let space: Ref<SpaceWithStates>
@@ -33,13 +33,27 @@
 
   let doneStatusesView: boolean = false
   let state: Ref<State> | undefined = undefined
+  let _space: SpaceWithStates | undefined = undefined
   const selectedDoneStates: Set<Ref<DoneState>> = new Set<Ref<DoneState>>()
   $: resConfig = updateConfig(config)
-  let doneStates: DoneState[] = []
-  let itemsDS: TabItem[] = []
+  $: doneStates = getDoneStates(_space, $statusStore)
+  $: itemsDS = getItems(doneStates)
   let selectedDS: string[] = []
   let withoutDone: boolean = false
   let resultQuery: DocumentQuery<Task>
+
+  function getItems (doneStates: DoneState[]): TabItem[] {
+    const itemsDS: TabItem[] = doneStates.map((s) => {
+      return {
+        id: s._id,
+        label: s.name,
+        icon: s._class === task.class.WonState ? Won : Lost,
+        color: s._class === task.class.WonState ? 'var(--theme-won-color)' : 'var(--theme-lost-color)'
+      }
+    })
+    itemsDS.unshift({ id: 'NoDoneState', labelIntl: task.string.NoDoneState })
+    return itemsDS
+  }
 
   function updateConfig (config: string[]): string[] {
     if (state !== undefined) {
@@ -51,33 +65,27 @@
     return config
   }
 
-  const doneStateQuery = createQuery()
-  doneStateQuery.query(
-    task.class.DoneState,
-    space != null
-      ? {
-          space
-        }
-      : {},
-    (res) => {
-      doneStates = res
-      itemsDS = doneStates.map((s) => {
-        return {
-          id: s._id,
-          label: s.name,
-          icon: s._class === task.class.WonState ? Won : Lost,
-          color: s._class === task.class.WonState ? 'var(--theme-won-color)' : 'var(--theme-lost-color)'
-        }
-      })
-      itemsDS.unshift({ id: 'NoDoneState', labelIntl: task.string.NoDoneState })
-    },
+  const spaceQuery = createQuery()
+
+  $: spaceQuery.query(
+    task.class.SpaceWithStates,
     {
-      sort: {
-        _class: SortingOrder.Descending,
-        rank: SortingOrder.Descending
-      }
+      _id: space
+    },
+    (res) => {
+      _space = res[0]
     }
   )
+
+  function getDoneStates (space: SpaceWithStates | undefined, statusStore: IdMap<Status>): DoneState[] {
+    if (space === undefined) {
+      return []
+    }
+    const doneStates = space.doneStates
+      ? space.doneStates.map((x) => statusStore.get(x) as DoneState).filter((p) => p !== undefined)
+      : []
+    return doneStates
+  }
 
   const client = getClient()
 

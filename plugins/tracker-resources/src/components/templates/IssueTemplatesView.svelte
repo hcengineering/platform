@@ -86,6 +86,7 @@
 <slot name="afterHeader" />
 <FilterBar
   _class={tracker.class.IssueTemplate}
+  {space}
   {viewOptions}
   query={searchQuery}
   on:change={(e) => (resultQuery = e.detail)}

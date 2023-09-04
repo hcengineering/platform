@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import { boardId } from '@hcengineering/board'
+import { Board, boardId } from '@hcengineering/board'
 import board from '@hcengineering/board-resources/src/plugin'
-import type { Ref, Space } from '@hcengineering/core'
+import type { Ref } from '@hcengineering/core'
 import { IntlString, mergeIds } from '@hcengineering/platform'
 import { KanbanTemplate, Sequence } from '@hcengineering/task'
 import type { AnyComponent } from '@hcengineering/ui'
@@ -42,7 +42,7 @@ export default mergeIds(boardId, board, {
     CardCoverEditor: '' as AnyComponent
   },
   space: {
-    DefaultBoard: '' as Ref<Space>
+    DefaultBoard: '' as Ref<Board>
   },
   template: {
     DefaultBoard: '' as Ref<KanbanTemplate>
