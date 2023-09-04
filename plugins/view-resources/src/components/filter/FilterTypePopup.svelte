@@ -23,7 +23,7 @@
   import view from '../../plugin'
 
   export let _class: Ref<Class<Doc>>
-  export let space: Ref<Space> | undefined = undefined
+  export let space: Ref<Space> | undefined
   export let target: HTMLElement
   export let filter: Filter | undefined
   export let index: number

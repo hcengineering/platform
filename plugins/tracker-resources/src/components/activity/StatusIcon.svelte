@@ -13,19 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { TxUpdateDoc } from '@hcengineering/core'
-  import { Issue } from '@hcengineering/tracker'
+  import { Ref, TxUpdateDoc } from '@hcengineering/core'
+  import { Issue, Project } from '@hcengineering/tracker'
   import { statusStore } from '@hcengineering/view-resources'
   import IssueStatusIcon from '../issues/IssueStatusIcon.svelte'
 
   export let tx: TxUpdateDoc<Issue>
   $: value = tx.operations.status
 
-  $: status = value && $statusStore.getIdMap().get(value)
+  $: status = value && $statusStore.get(value)
+
+  $: space = tx.objectSpace as Ref<Project>
 </script>
 
 <div class="icon">
   {#if status}
-    <IssueStatusIcon value={status} size="small" on:accent-color />
+    <IssueStatusIcon value={status} {space} size="small" on:accent-color />
   {/if}
 </div>

@@ -14,9 +14,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@hcengineering/core'
+  import { Class, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import type { DoneState, KanbanTemplate, KanbanTemplateSpace, State } from '@hcengineering/task'
+  import type {
+    DoneStateTemplate,
+    KanbanTemplate,
+    KanbanTemplateSpace,
+    State,
+    StateTemplate
+  } from '@hcengineering/task'
   import {
     CircleButton,
     Component,
@@ -39,11 +45,11 @@
   import Won from '../icons/Won.svelte'
   import StatusesPopup from './StatusesPopup.svelte'
 
-  export let template: KanbanTemplate | undefined = undefined
-  export let space: KanbanTemplateSpace | undefined = undefined
-  export let states: State[] = []
-  export let wonStates: DoneState[] = []
-  export let lostStates: DoneState[] = []
+  export let template: KanbanTemplate
+  export let space: KanbanTemplateSpace
+  export let states: StateTemplate[] = []
+  export let wonStates: DoneStateTemplate[] = []
+  export let lostStates: DoneStateTemplate[] = []
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -86,7 +92,19 @@
 
         await client.updateDoc(state._class, state.space, state._id, { color })
       }
-  const spaceEditor = (space as KanbanTemplateSpace)?.editor
+  const spaceEditor = space.editor
+
+  function add (_class: Ref<Class<StateTemplate | DoneStateTemplate>>) {
+    showPopup(task.component.CreateStateTemplatePopup, {
+      space,
+      template,
+      _class
+    })
+  }
+
+  function edit (status: StateTemplate) {
+    showPopup(task.component.CreateStateTemplatePopup, { status, template, space })
+  }
 </script>
 
 {#if spaceEditor}
@@ -98,15 +116,7 @@
     icon={IconAdd}
     size={'medium'}
     on:click={() => {
-      showPopup(
-        task.component.CreateStatePopup,
-        {
-          space,
-          template,
-          _class: template !== undefined ? task.class.StateTemplate : task.class.State
-        },
-        undefined
-      )
+      add(task.class.StateTemplate)
     }}
   />
 </div>
@@ -154,9 +164,7 @@
               {
                 onDelete: () => dispatch('delete', { state }),
                 showDelete: states.length > 1,
-                onUpdate: () => {
-                  showPopup(task.component.CreateStatePopup, { status: state, template }, undefined)
-                }
+                onUpdate: () => edit(state)
               },
               eventToHTMLElement(ev),
               () => {}
@@ -176,15 +184,7 @@
       icon={IconAdd}
       size={'medium'}
       on:click={() => {
-        showPopup(
-          task.component.CreateStatePopup,
-          {
-            space,
-            template,
-            _class: template !== undefined ? task.class.WonStateTemplate : task.class.WonState
-          },
-          undefined
-        )
+        add(task.class.WonStateTemplate)
       }}
     />
   </div>
@@ -214,9 +214,7 @@
                 {
                   onDelete: () => dispatch('delete', { state }),
                   showDelete: wonStates.length > 1,
-                  onUpdate: () => {
-                    showPopup(task.component.CreateStatePopup, { status: state, template }, undefined)
-                  }
+                  onUpdate: () => edit(state)
                 },
                 eventToHTMLElement(ev),
                 () => {}
@@ -237,15 +235,7 @@
       icon={IconAdd}
       size={'medium'}
       on:click={() => {
-        showPopup(
-          task.component.CreateStatePopup,
-          {
-            space,
-            template,
-            _class: template !== undefined ? task.class.LostStateTemplate : task.class.LostState
-          },
-          undefined
-        )
+        add(task.class.LostStateTemplate)
       }}
     />
   </div>
@@ -275,9 +265,7 @@
                 {
                   onDelete: () => dispatch('delete', { state }),
                   showDelete: lostStates.length > 1,
-                  onUpdate: () => {
-                    showPopup(task.component.CreateStatePopup, { status: state, template }, undefined)
-                  }
+                  onUpdate: () => edit(state)
                 },
                 eventToHTMLElement(ev),
                 () => {}

@@ -36,6 +36,7 @@ import {
   Space,
   StatusValue,
   Tx,
+  TxOperations,
   Type,
   UXObject,
   WithLookup
@@ -290,7 +291,12 @@ export interface ListHeaderExtra extends Class<Doc> {
  * @public
  */
 export type SortFunc = Resource<
-(values: (PrimitiveType | StatusValue)[], viewletDescriptorId?: Ref<ViewletDescriptor>) => Promise<any[]>
+(
+  client: TxOperations,
+  values: (PrimitiveType | StatusValue)[],
+  space: Ref<Space> | undefined,
+  viewletDescriptorId?: Ref<ViewletDescriptor>
+) => Promise<any[]>
 >
 
 /**
@@ -638,6 +644,7 @@ export interface ViewOption {
 export type ViewCategoryActionFunc = (
   _class: Ref<Class<Doc>>,
   query: DocumentQuery<Doc> | undefined,
+  space: Ref<Space> | undefined,
   key: string,
   onUpdate: () => void,
   queryId: Ref<Doc>,

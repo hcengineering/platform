@@ -165,6 +165,7 @@
 
 <FilterBar
   _class={recruit.class.Vacancy}
+  space={undefined}
   {viewOptions}
   query={searchQuery}
   on:change={(e) => (resultQuery = e.detail)}

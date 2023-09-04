@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import { Ref, SortingOrder, Status, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Issue, Project } from '@hcengineering/tracker'
   import {
@@ -79,13 +79,17 @@
   }
 
   $: if (subIssues) {
-    const doneStatuses = $statusStore
-      .getDocs()
-      .filter(
-        (s) =>
-          s.category === tracker.issueStatusCategory.Completed || s.category === tracker.issueStatusCategory.Canceled
-      )
-      .map((p) => p._id)
+    const doneStatuses = project
+      ? project.states
+        .map((p) => $statusStore.get(p))
+        .filter((p) => p !== undefined)
+        .filter(
+          (s) =>
+            s?.category === tracker.issueStatusCategory.Completed ||
+              s?.category === tracker.issueStatusCategory.Canceled
+        )
+        .map((p) => (p as Status)._id)
+      : []
     countComplete = subIssues.filter((si) => doneStatuses.includes(si.status)).length
   }
   $: hasSubIssues = (subIssues?.length ?? 0) > 0

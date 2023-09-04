@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref, RefTo } from '@hcengineering/core'
+  import { Class, Doc, Ref, RefTo, Space } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import { getAttributePresenterClass, getClient } from '@hcengineering/presentation'
   import type { State } from '@hcengineering/task'
@@ -34,6 +34,7 @@
   import ModeSelector from './ModeSelector.svelte'
 
   export let filter: Filter
+  export let space: Ref<Space> | undefined
 
   let currentFilter = filter.nested ? filter.nested : filter
   $: currentFilter = filter.nested ? filter.nested : filter
@@ -158,6 +159,7 @@
             {
               _class: currentFilter.key._class,
               filter: currentFilter,
+              space,
               onChange
             },
             eventToHTMLElement(e)
@@ -165,7 +167,10 @@
         }}
       >
         {#if valueComponent}
-          <Component is={valueComponent} props={{ value: currentFilter.value, onChange, filter: currentFilter }} />
+          <Component
+            is={valueComponent}
+            props={{ value: currentFilter.value, onChange, filter: currentFilter, space }}
+          />
         {:else}
           <span>{countLabel}</span>
         {/if}

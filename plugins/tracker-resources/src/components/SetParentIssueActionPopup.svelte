@@ -102,7 +102,7 @@
       <div class="flex-center clear-mins w-full h-9">
         {#if issue?.$lookup?.status}
           <div class="icon mr-4 h-8">
-            <IssueStatusIcon value={issue.$lookup.status} size="small" />
+            <IssueStatusIcon value={issue.$lookup.status} space={issue.space} size="small" />
           </div>
         {/if}
         <span class="overflow-label flex-no-shrink mr-3">{issueId}</span>

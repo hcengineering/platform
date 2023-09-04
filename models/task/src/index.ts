@@ -15,9 +15,7 @@
 
 import type { Employee, Person } from '@hcengineering/contact'
 import contact from '@hcengineering/contact'
-import attachment from '@hcengineering/model-attachment'
-import chunter from '@hcengineering/model-chunter'
-import { Arr, Attribute, Class, Doc, Domain, IndexKind, Ref, Space, Status, Timestamp } from '@hcengineering/core'
+import { Arr, Attribute, Class, Doc, Domain, IndexKind, Ref, Status, Timestamp } from '@hcengineering/core'
 import {
   Builder,
   Collection,
@@ -34,6 +32,8 @@ import {
   TypeString,
   UX
 } from '@hcengineering/model'
+import attachment from '@hcengineering/model-attachment'
+import chunter from '@hcengineering/model-chunter'
 import core, { TAttachedDoc, TClass, TDoc, TSpace, TStatus } from '@hcengineering/model-core'
 import view, { createAction, template, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import {} from '@hcengineering/notification'
@@ -42,7 +42,6 @@ import tags from '@hcengineering/tags'
 import {
   DoneState,
   DoneStateTemplate,
-  Kanban,
   KanbanCard,
   KanbanTemplate,
   KanbanTemplateSpace,
@@ -146,16 +145,11 @@ export class TKanbanCard extends TClass implements KanbanCard {
   card!: AnyComponent
 }
 
-@Model(task.class.Kanban, core.class.Doc, DOMAIN_KANBAN)
-export class TKanban extends TDoc implements Kanban {
-  states!: Arr<Ref<State>>
-  doneStates!: Arr<Ref<DoneState>>
-  attachedTo!: Ref<Space>
-}
-
 @Model(task.class.SpaceWithStates, core.class.Space)
 export class TSpaceWithStates extends TSpace {
   templateId!: Ref<KanbanTemplate>
+  states!: Arr<Ref<State>>
+  doneStates!: Arr<Ref<DoneState>>
 }
 
 @Model(task.class.KanbanTemplateSpace, core.class.Space)
@@ -171,7 +165,6 @@ export class TKanbanTemplateSpace extends TSpace implements KanbanTemplateSpace 
 export class TStateTemplate extends TDoc implements StateTemplate {
   // We attach to attribute, so we could distinguish between
   ofAttribute!: Ref<Attribute<Status>>
-
   attachedTo!: Ref<KanbanTemplate>
 
   @Prop(TypeString(), task.string.StateTemplateTitle)
@@ -187,7 +180,6 @@ export class TStateTemplate extends TDoc implements StateTemplate {
 export class TDoneStateTemplate extends TDoc implements DoneStateTemplate {
   // We attach to attribute, so we could distinguish between
   ofAttribute!: Ref<Attribute<Status>>
-
   attachedTo!: Ref<KanbanTemplate>
 
   @Prop(TypeString(), task.string.StateTemplateTitle)
@@ -298,7 +290,6 @@ export function createModel (builder: Builder): void {
     TWonState,
     TLostState,
     TKanbanCard,
-    TKanban,
     TKanbanTemplateSpace,
     TStateTemplate,
     TDoneStateTemplate,

@@ -14,14 +14,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, Status, StatusValue } from '@hcengineering/core'
-  import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
+  import { Ref, Space, Status, StatusValue } from '@hcengineering/core'
   import { State } from '@hcengineering/task'
+  import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { statusStore } from '@hcengineering/view-resources'
   import StateEditor from './StateEditor.svelte'
   import StatePresenter from './StatePresenter.svelte'
 
   export let value: Ref<State> | StatusValue
+  export let space: Ref<Space>
   export let onChange: ((value: Ref<State>) => void) | undefined = undefined
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'medium'
@@ -33,7 +34,7 @@
 
 {#if value}
   {#if onChange !== undefined && state !== undefined}
-    <StateEditor value={state._id} space={state.space} {onChange} {kind} {size} {shouldShowName} {shrink} />
+    <StateEditor value={state._id} {space} {onChange} {kind} {size} {shouldShowName} {shrink} />
   {:else}
     <StatePresenter value={state} {shouldShowName} on:accent-color />
   {/if}

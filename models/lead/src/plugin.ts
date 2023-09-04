@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-import type { Ref, Space } from '@hcengineering/core'
-import { leadId } from '@hcengineering/lead'
-import { NotificationGroup, NotificationType } from '@hcengineering/notification'
+import type { Ref } from '@hcengineering/core'
+import { Funnel, leadId } from '@hcengineering/lead'
 import lead from '@hcengineering/lead-resources/src/plugin'
+import { NotificationGroup, NotificationType } from '@hcengineering/notification'
 import type { IntlString } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { KanbanTemplate } from '@hcengineering/task'
@@ -45,7 +45,7 @@ export default mergeIds(leadId, lead, {
     NewItemsHeader: '' as AnyComponent
   },
   space: {
-    DefaultFunnel: '' as Ref<Space>
+    DefaultFunnel: '' as Ref<Funnel>
   },
   template: {
     DefaultFunnel: '' as Ref<KanbanTemplate>

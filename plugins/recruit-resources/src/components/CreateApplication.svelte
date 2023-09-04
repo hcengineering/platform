@@ -40,7 +40,7 @@
     getClient
   } from '@hcengineering/presentation'
   import type { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
-  import task, { State, calcRank } from '@hcengineering/task'
+  import task, { State, calcRank, getStates } from '@hcengineering/task'
   import ui, {
     Button,
     ColorPopup,
@@ -60,6 +60,7 @@
   import CandidateCard from './CandidateCard.svelte'
   import VacancyCard from './VacancyCard.svelte'
   import VacancyOrgPresenter from './VacancyOrgPresenter.svelte'
+  import { statusStore } from '@hcengineering/view-resources'
 
   export let space: Ref<Vacancy>
   export let candidate: Ref<Candidate>
@@ -193,21 +194,12 @@
 
   let states: Array<{ id: number | string; color: number; label: string }> = []
   let selectedState: State | undefined
-  let rawStates: State[] = []
-  const statesQuery = createQuery()
+  $: rawStates = getStates(vacancy, $statusStore)
   const spaceQuery = createQuery()
 
   let vacancy: Vacancy | undefined
 
   $: if (_space) {
-    statesQuery.query(
-      task.class.State,
-      { space: _space },
-      (res) => {
-        rawStates = res
-      },
-      { sort: { rank: SortingOrder.Ascending } }
-    )
     spaceQuery.query(recruit.class.Vacancy, { _id: _space }, (res) => {
       vacancy = res.shift()
     })

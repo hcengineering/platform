@@ -40,6 +40,7 @@
   import StatusMovePresenter from './move/StatusMovePresenter.svelte'
   import SelectReplacement from './move/SelectReplacement.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
+  import { getStates } from '@hcengineering/task'
 
   export let selected: Issue | Issue[]
   $: docs = Array.isArray(selected) ? selected : [selected]
@@ -48,7 +49,7 @@
   const dispatch = createEventDispatcher()
   const hierarchy = client.getHierarchy()
 
-  let currentSpace: Project | undefined
+  let targetProject: Project | undefined
   let space: Ref<Project>
 
   $: {
@@ -61,32 +62,22 @@
   let processing = false
 
   async function createMissingStatus (st: Ref<Status>): Promise<void> {
-    const cur = $statusStore.get(st)
-    const statuses = $statusStore.filter((it) => it.space === currentSpace?._id)
-    if (cur === undefined || currentSpace === undefined || statuses.find((s) => s.name === cur.name) !== undefined) {
-      return
+    if (targetProject) {
+      await client.update(targetProject, { $push: { states: st } })
     }
-    await client.createDoc(cur._class, currentSpace._id, {
-      name: cur.name,
-      ofAttribute: cur.ofAttribute,
-      category: cur.category,
-      color: cur.color,
-      description: cur.description,
-      rank: cur.rank
-    })
   }
 
   async function createMissingComponent (c: Ref<Component>): Promise<void> {
     const cur = $componentStore.get(c)
-    const components = $componentStore.filter((it) => it.space === currentSpace?._id)
+    const components = $componentStore.filter((it) => it.space === targetProject?._id)
     if (
       cur === undefined ||
-      currentSpace === undefined ||
+      targetProject === undefined ||
       components.find((c) => c.label === cur.label) !== undefined
     ) {
       return
     }
-    await client.createDoc(cur._class, currentSpace._id, {
+    await client.createDoc(cur._class, targetProject._id, {
       label: cur.label,
       attachments: 0,
       description: cur.description,
@@ -96,7 +87,7 @@
   }
 
   const moveAll = async () => {
-    if (currentSpace === undefined) {
+    if (targetProject === undefined) {
       return
     }
     processing = true
@@ -133,7 +124,7 @@
       issueToUpdate.set(issue._id, upd)
     }
 
-    await moveIssueToSpace(client, docs, currentSpace, issueToUpdate)
+    await moveIssueToSpace(client, docs, targetProject, issueToUpdate)
     processing = false
     dispatch('close')
   }
@@ -145,7 +136,7 @@
   let componentToUpdate: Record<Ref<Component>, ComponentToUpdate | undefined> = {}
 
   $: targetSpaceQuery.query(tracker.class.Project, { _id: space }, (res) => {
-    ;[currentSpace] = res
+    ;[targetProject] = res
   })
 
   let toMove: Issue[] = []
@@ -159,8 +150,8 @@
 
   $: if (keepOriginalAttribytes) {
     setOriginalAttributes()
-  } else if (currentSpace !== undefined) {
-    setReplacementAttributres(currentSpace)
+  } else if (targetProject !== undefined) {
+    setReplacementAttributres(targetProject)
   }
 
   const componentQuery = createQuery()
@@ -175,11 +166,11 @@
     milestones = res
   })
 
-  $: statuses = $statusStore.filter((it) => it.space === currentSpace?._id)
+  $: statuses = getStates(targetProject, $statusStore)
 
   let keepOriginalAttribytes: boolean = false
   let showManageAttributes: boolean = false
-  $: isManageAttributesAvailable = issueToUpdate.size > 0 && docs[0]?.space !== currentSpace?._id
+  $: isManageAttributesAvailable = issueToUpdate.size > 0 && docs[0]?.space !== targetProject?._id
 
   function setOriginalAttributes () {
     for (const issue of toMove) {
@@ -225,7 +216,7 @@
         upd.status = undefined
       }
       if (upd.status === undefined) {
-        upd.status = findTargetStatus($statusStore, issue.status, space, true) ?? currentSpace.defaultIssueStatus
+        upd.status = findTargetStatus(issue.status, currentSpace, $statusStore, true) ?? currentSpace.defaultIssueStatus
       }
 
       if (issue.component !== undefined) {
@@ -268,7 +259,7 @@
   label={showManageAttributes ? tracker.string.ManageAttributes : tracker.string.MoveIssues}
   okLabel={view.string.Move}
   okAction={moveAll}
-  canSave={docs[0]?.space !== currentSpace?._id}
+  canSave={docs[0]?.space !== targetProject?._id}
   onCancel={() => dispatch('close')}
   backAction={() => {
     showManageAttributes = !showManageAttributes
@@ -281,7 +272,7 @@
   hideAttachments
   numberOfBlocks={showManageAttributes
     ? toMove.length
-    : currentSpace !== undefined && !keepOriginalAttribytes && docs[0]?.space !== currentSpace?._id
+    : targetProject !== undefined && !keepOriginalAttribytes && docs[0]?.space !== targetProject?._id
     ? 1
     : 0}
   on:changeContent
@@ -306,9 +297,9 @@
 
   {#if !showManageAttributes}
     <div class="flex-between">
-      {#if currentSpace !== undefined}
+      {#if targetProject !== undefined}
         <SpaceSelector
-          _class={currentSpace._class}
+          _class={targetProject._class}
           label={hierarchy.getClass(tracker.class.Project).label}
           bind:space
           kind={'regular'}
@@ -337,36 +328,37 @@
 
   <svelte:fragment slot="blocks" let:block>
     {#if !showManageAttributes}
-      {#if currentSpace !== undefined && !keepOriginalAttribytes}
+      {#if targetProject !== undefined && !keepOriginalAttribytes}
         <SelectReplacement
+          currentProject={space}
           {statuses}
           {components}
-          targetProject={currentSpace}
+          {targetProject}
           issues={toMove}
           bind:statusToUpdate
           bind:componentToUpdate
         />
       {/if}
-    {:else if toMove.length > 0 && currentSpace}
+    {:else if toMove.length > 0 && targetProject}
       {@const issue = toMove[block]}
       {@const upd = issueToUpdate.get(issue._id) ?? {}}
       {@const originalComponent = components.find((it) => it._id === issue.component)}
       {@const targetComponent = components.find(
-        (it) => it.space === currentSpace?._id && it.label === originalComponent?.label
+        (it) => it.space === targetProject?._id && it.label === originalComponent?.label
       )}
       {#key keepOriginalAttribytes}
-        {#if issue.space !== currentSpace._id && (upd.status !== undefined || upd.component !== undefined)}
+        {#if issue.space !== targetProject._id && (upd.status !== undefined || upd.component !== undefined)}
           <div class="flex-row-center min-h-9 gap-1-5 content-color">
             <PriorityEditor value={issue} isEditable={false} kind={'list'} size={'small'} shouldShowLabel={false} />
             <IssuePresenter value={issue} disabled kind={'list'} />
             <TitlePresenter disabled value={issue} showParent={false} maxWidth={'7.5rem'} />
           </div>
           {#key upd.status}
-            <StatusMovePresenter {issue} bind:issueToUpdate targetProject={currentSpace} {statuses} />
+            <StatusMovePresenter currentProject={space} {issue} bind:issueToUpdate {targetProject} {statuses} />
           {/key}
           {#if targetComponent === undefined}
             {#key upd.component}
-              <ComponentMovePresenter {issue} bind:issueToUpdate targetProject={currentSpace} {components} />
+              <ComponentMovePresenter {issue} bind:issueToUpdate {targetProject} {components} />
             {/key}
           {/if}
         {/if}

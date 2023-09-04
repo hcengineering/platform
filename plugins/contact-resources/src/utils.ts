@@ -28,7 +28,17 @@ import {
   getName,
   Person
 } from '@hcengineering/contact'
-import { Client, Doc, IdMap, ObjQueryType, Ref, Timestamp, getCurrentAccount, toIdMap } from '@hcengineering/core'
+import {
+  Client,
+  Doc,
+  IdMap,
+  ObjQueryType,
+  Ref,
+  Timestamp,
+  TxOperations,
+  getCurrentAccount,
+  toIdMap
+} from '@hcengineering/core'
 import notification, { DocUpdateTx, DocUpdates } from '@hcengineering/notification'
 import { getResource } from '@hcengineering/platform'
 import { createQuery, getClient } from '@hcengineering/presentation'
@@ -48,7 +58,7 @@ export function formatDate (dueDateMs: Timestamp): string {
   })
 }
 
-export async function employeeSort (value: Array<Ref<Employee>>): Promise<Array<Ref<Employee>>> {
+export async function employeeSort (client: TxOperations, value: Array<Ref<Employee>>): Promise<Array<Ref<Employee>>> {
   const h = getClient().getHierarchy()
   return value.sort((a, b) => {
     const employeeId1 = a as Ref<Employee> | null | undefined

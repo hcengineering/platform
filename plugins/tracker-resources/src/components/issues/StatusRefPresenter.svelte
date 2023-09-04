@@ -14,10 +14,12 @@
 -->
 <script lang="ts">
   import { Ref, Status, StatusValue } from '@hcengineering/core'
+  import { Project } from '@hcengineering/tracker'
   import { statusStore } from '@hcengineering/view-resources'
   import StatusPresenter from './StatusPresenter.svelte'
 
   export let value: Ref<Status> | StatusValue | undefined
+  export let space: Ref<Project>
   export let size: 'small' | 'medium' = 'medium'
   export let kind: 'list-header' | undefined = undefined
   export let colorInherit: boolean = false
@@ -27,5 +29,5 @@
 </script>
 
 {#if value}
-  <StatusPresenter value={statusValue} {size} {kind} {colorInherit} {accent} on:accent-color />
+  <StatusPresenter {space} value={statusValue} {size} {kind} {colorInherit} {accent} on:accent-color />
 {/if}

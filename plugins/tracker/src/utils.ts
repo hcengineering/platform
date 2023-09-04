@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import core, { ApplyOperations, SortingOrder, Status, TxOperations, generateId } from '@hcengineering/core'
-import { genRanks } from '@hcengineering/task'
+import core, { ApplyOperations, Ref, SortingOrder, Status, TxOperations } from '@hcengineering/core'
+import { createState } from '@hcengineering/task'
 export { calcRank, genRanks } from '@hcengineering/task'
 
 /**
@@ -24,32 +24,26 @@ export { calcRank, genRanks } from '@hcengineering/task'
  */
 export async function createStatuses (
   client: TxOperations | ApplyOperations,
-  spaceId: Status['space'],
   statusClass: Status['_class'],
-  categoryOfAttribute: Status['ofAttribute'],
-  defaultStatusId: Status['_id']
-): Promise<void> {
+  categoryOfAttribute: Status['ofAttribute']
+): Promise<Ref<Status>[]> {
   const categories = await client.findAll(
     core.class.StatusCategory,
     { ofAttribute: categoryOfAttribute },
     { sort: { order: SortingOrder.Ascending } }
   )
-  const ranks = [...genRanks(categories.length)]
 
-  for (const [i, category] of categories.entries()) {
-    const statusId = i === 0 ? defaultStatusId : generateId<Status>()
-    const rank = ranks[i]
+  const states: Ref<Status>[] = []
 
-    await client.createDoc(
-      statusClass,
-      spaceId,
-      {
+  for (const category of categories) {
+    states.push(
+      await createState(client, statusClass, {
         ofAttribute: categoryOfAttribute,
         name: category.defaultStatusName,
-        category: category._id,
-        rank
-      },
-      statusId
+        category: category._id
+      })
     )
   }
+
+  return states
 }

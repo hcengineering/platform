@@ -23,13 +23,12 @@ import core, {
   Doc,
   DocumentQuery,
   DocumentUpdate,
+  IdMap,
   Ref,
   SortingOrder,
   Space,
   Status,
   StatusCategory,
-  StatusManager,
-  StatusValue,
   toIdMap,
   TxCollectionCUD,
   TxOperations,
@@ -62,9 +61,16 @@ import {
   PaletteColorIndexes
 } from '@hcengineering/ui'
 import { KeyFilter, ViewletDescriptor } from '@hcengineering/view'
-import { CategoryQuery, groupBy, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
+import {
+  CategoryQuery,
+  groupBy,
+  ListSelectionProvider,
+  SelectDirection,
+  statusStore
+} from '@hcengineering/view-resources'
+import { get } from 'svelte/store'
 import tracker from './plugin'
-import { defaultPriorities, defaultMilestoneStatuses } from './types'
+import { defaultMilestoneStatuses, defaultPriorities } from './types'
 
 export * from './types'
 
@@ -281,28 +287,51 @@ const listIssueKanbanStatusOrder = [
 ] as const
 
 export async function issueStatusSort (
-  value: StatusValue[],
+  client: TxOperations,
+  value: Array<Ref<IssueStatus>>,
+  space: Ref<Project> | undefined,
   viewletDescriptorId?: Ref<ViewletDescriptor>
-): Promise<StatusValue[]> {
+): Promise<Array<Ref<IssueStatus>>> {
+  let _space: Project | undefined
+  if (space !== undefined) {
+    _space = await client.findOne(tracker.class.Project, { _id: space })
+  }
+  const statuses = get(statusStore)
   // TODO: How we track category updates.
 
   if (viewletDescriptorId === tracker.viewlet.Kanban) {
     value.sort((a, b) => {
+      const aVal = statuses.get(a) as IssueStatus
+      const bVal = statuses.get(b) as IssueStatus
       const res =
-        listIssueKanbanStatusOrder.indexOf(a.values[0].category as Ref<StatusCategory>) -
-        listIssueKanbanStatusOrder.indexOf(b.values[0].category as Ref<StatusCategory>)
+        listIssueKanbanStatusOrder.indexOf(aVal?.category as Ref<StatusCategory>) -
+        listIssueKanbanStatusOrder.indexOf(bVal?.category as Ref<StatusCategory>)
       if (res === 0) {
-        return a.values[0].getRank().localeCompare(b.values[0].getRank())
+        if (_space != null) {
+          const aIndex = _space.states.findIndex((s) => s === a)
+          const bIndex = _space.states.findIndex((s) => s === b)
+          return aIndex - bIndex
+        } else {
+          return aVal.name.localeCompare(bVal.name)
+        }
       }
       return res
     })
   } else {
     value.sort((a, b) => {
+      const aVal = statuses.get(a) as IssueStatus
+      const bVal = statuses.get(b) as IssueStatus
       const res =
-        listIssueStatusOrder.indexOf(a.values[0].category as Ref<StatusCategory>) -
-        listIssueStatusOrder.indexOf(b.values[0].category as Ref<StatusCategory>)
+        listIssueStatusOrder.indexOf(aVal?.category as Ref<StatusCategory>) -
+        listIssueStatusOrder.indexOf(bVal?.category as Ref<StatusCategory>)
       if (res === 0) {
-        return a.values[0].getRank().localeCompare(b.values[0].getRank())
+        if (_space != null) {
+          const aIndex = _space.states.findIndex((s) => s === a)
+          const bIndex = _space.states.findIndex((s) => s === b)
+          return aIndex - bIndex
+        } else {
+          return aVal.name.localeCompare(bVal.name)
+        }
       }
       return res
     })
@@ -310,7 +339,7 @@ export async function issueStatusSort (
   return value
 }
 
-export async function issuePrioritySort (value: IssuePriority[]): Promise<IssuePriority[]> {
+export async function issuePrioritySort (client: TxOperations, value: IssuePriority[]): Promise<IssuePriority[]> {
   value.sort((a, b) => {
     const i1 = defaultPriorities.indexOf(a)
     const i2 = defaultPriorities.indexOf(b)
@@ -320,7 +349,10 @@ export async function issuePrioritySort (value: IssuePriority[]): Promise<IssueP
   return value
 }
 
-export async function milestoneSort (value: Array<Ref<Milestone>>): Promise<Array<Ref<Milestone>>> {
+export async function milestoneSort (
+  client: TxOperations,
+  value: Array<Ref<Milestone>>
+): Promise<Array<Ref<Milestone>>> {
   return await new Promise((resolve) => {
     const query = createQuery(true)
     query.query(tracker.class.Milestone, { _id: { $in: value } }, (res) => {
@@ -610,26 +642,20 @@ export async function collectIssues (client: TxOperations, docs: Doc[]): Promise
  * @public
  */
 export function findTargetStatus (
-  mgr: StatusManager,
   status: Ref<Status>,
-  targetProject: Ref<Project>,
+  targetProject: Project,
+  statusStore: IdMap<Status>,
   useCategory = false
 ): Ref<Status> | undefined {
-  const s = mgr.get(status)
-  let targetStatus = mgr
-    .filter(
-      (it) =>
-        it.space === targetProject &&
-        it.ofAttribute === s?.ofAttribute &&
-        (it.name ?? '').trim().toLowerCase() === (s?.name ?? '').trim().toLowerCase()
-    )
-    .shift()
-  if (targetStatus === undefined && useCategory) {
-    targetStatus = mgr
-      .filter((it) => it.space === targetProject && it.ofAttribute === s?.ofAttribute && s?.category === it.category)
-      .shift()
+  if (targetProject.states.includes(status)) return status
+
+  if (useCategory) {
+    const currentCategroy = statusStore.get(status)?.category
+    for (const status of targetProject.states) {
+      const st = statusStore.get(status)
+      if (st?.category === currentCategroy) return st?._id
+    }
   }
-  return targetStatus?._id
 }
 
 /**

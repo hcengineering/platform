@@ -35,16 +35,16 @@ import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
 import contact, { TContact } from '@hcengineering/model-contact'
 import core from '@hcengineering/model-core'
+import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import task, { TSpaceWithStates, TTask, actionTemplates } from '@hcengineering/model-task'
+import tracker from '@hcengineering/model-tracker'
 import view, { createAction, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
-import setting from '@hcengineering/setting'
-import { ViewOptionsModel } from '@hcengineering/view'
-import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import notification from '@hcengineering/notification'
-import lead from './plugin'
-import tracker from '@hcengineering/model-tracker'
+import setting from '@hcengineering/setting'
 import { State } from '@hcengineering/task'
+import { ViewOptionsModel } from '@hcengineering/view'
+import lead from './plugin'
 
 export { leadId } from '@hcengineering/lead'
 export { leadOperation } from './migration'
@@ -83,6 +83,8 @@ export class TLead extends TTask implements Lead {
 
   @Prop(TypeRef(task.class.State), task.string.TaskState, { _id: task.attribute.State })
   declare status: Ref<State>
+
+  declare space: Ref<Funnel>
 }
 
 @Mixin(lead.mixin.Customer, contact.class.Contact)

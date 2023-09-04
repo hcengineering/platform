@@ -93,6 +93,7 @@
 {:else if viewOptions && viewlet}
   <FilterBar
     {_class}
+    {space}
     query={searchQuery}
     {viewOptions}
     on:change={(e) => {

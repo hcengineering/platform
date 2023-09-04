@@ -17,8 +17,8 @@
   import { Asset } from '@hcengineering/platform'
   import { AnySvelteComponent } from '@hcengineering/ui'
 
-  import StatusPresenter from './StatusPresenter.svelte'
   import { statusStore } from '../../status'
+  import StatusPresenter from './StatusPresenter.svelte'
 
   export let value: Ref<Status> | StatusValue | undefined
   export let size: 'small' | 'medium' = 'medium'

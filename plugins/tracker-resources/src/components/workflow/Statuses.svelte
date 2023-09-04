@@ -14,16 +14,17 @@
 -->
 <script lang="ts">
   import core, { Class, Data, Ref, SortingOrder, StatusCategory } from '@hcengineering/core'
-  import { createQuery, getClient, MessageBox, Card } from '@hcengineering/presentation'
-  import { calcRank, IssueStatus, Project } from '@hcengineering/tracker'
-  import { Button, closeTooltip, ExpandCollapse, IconAdd, Label, Loading, Scroller, showPopup } from '@hcengineering/ui'
+  import { Card, MessageBox, createQuery, getClient } from '@hcengineering/presentation'
+  import { createState, getStates } from '@hcengineering/task'
+  import { IssueStatus, Project } from '@hcengineering/tracker'
+  import { Button, ExpandCollapse, IconAdd, Label, Loading, Scroller, closeTooltip, showPopup } from '@hcengineering/ui'
+  import { statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import { flip } from 'svelte/animate'
   import tracker from '../../plugin'
+  import RemoveStatus from './RemoveStatus.svelte'
   import StatusEditor from './StatusEditor.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
-  import RemoveStatus from './RemoveStatus.svelte'
-  import { statusStore } from '@hcengineering/view-resources'
 
   export let projectId: Ref<Project>
   export let projectClass: Ref<Class<Project>>
@@ -56,18 +57,16 @@
   }
 
   async function addStatus () {
-    if (editingStatus?.name && editingStatus?.category) {
-      const [prevStatus, nextStatus] = getSiblingsForNewStatus(editingStatus.category)
-
+    if (editingStatus?.name && editingStatus?.category && project) {
       isSaving = true
-      await client.createDoc(tracker.class.IssueStatus, projectId, {
+      const id = await createState(client, tracker.class.IssueStatus, {
         ofAttribute: tracker.attribute.IssueStatus,
         name: editingStatus.name,
         description: editingStatus.description,
         color: editingStatus.color,
-        category: editingStatus.category,
-        rank: calcRank(prevStatus, nextStatus)
+        category: editingStatus.category
       })
+      await client.update(project, { $push: { states: id } })
       isSaving = false
     }
 
@@ -77,16 +76,13 @@
   async function editStatus () {
     if (statusCategories && editingStatus?.name && editingStatus?.category && '_id' in editingStatus) {
       const statusId = '_id' in editingStatus ? editingStatus._id : undefined
-      const status = statusId && $statusStore.getIdMap().get(statusId)
+      const status = statusId && $statusStore.get(statusId)
 
       if (!status) {
         return
       }
 
       const updates: Partial<Data<IssueStatus>> = {}
-      if (status.name !== editingStatus.name) {
-        updates.name = editingStatus.name
-      }
       if (status.description !== editingStatus.description) {
         updates.description = editingStatus.description
       }
@@ -101,8 +97,29 @@
           updates.color = editingStatus.color
         }
       }
-
-      if (Object.keys(updates).length > 0) {
+      if (status.name !== editingStatus.name) {
+        isSaving = true
+        const newId = await createState(client, tracker.class.IssueStatus, {
+          ofAttribute: tracker.attribute.IssueStatus,
+          name: editingStatus.name,
+          description: editingStatus.description,
+          color: editingStatus.color,
+          category: editingStatus.category
+        })
+        projectStatuses = projectStatuses.map((s) => (s._id === statusId ? { ...s, _id: newId } : s))
+        if (project) {
+          const issues = await client.findAll(tracker.class.Issue, { status: status._id, space: projectId })
+          await Promise.all(
+            issues.map(async (p) => {
+              await client.update(p, {
+                status: newId
+              })
+            })
+          )
+          await client.update(project, { states: projectStatuses.map((s) => s._id) })
+        }
+        isSaving = false
+      } else if (Object.keys(updates).length > 0) {
         isSaving = true
         await client.update(status, updates)
         isSaving = false
@@ -136,7 +153,7 @@
         async (result) => {
           if (result && project) {
             isSaving = true
-            await client.removeDoc(status._class, status.space, status._id)
+            await client.update(project, { $pull: { states: status._id } })
 
             if (project.defaultIssueStatus === status._id) {
               const newDefaultStatus = projectStatuses.find(
@@ -166,23 +183,22 @@
   }
 
   function handleDragOver (ev: DragEvent, status: IssueStatus) {
-    hoveringStatus = status
-    ev.preventDefault()
+    if (status.category === draggingStatus?.category) {
+      hoveringStatus = status
+      ev.preventDefault()
+    }
   }
 
   async function handleDrop (toItem: IssueStatus) {
     if (draggingStatus != null && draggingStatus?._id !== toItem._id) {
       const fromIndex = getStatusIndex(draggingStatus)
       const toIndex = getStatusIndex(toItem)
-      const [prev, next] = [
-        projectStatuses[fromIndex < toIndex ? toIndex : toIndex - 1],
-        projectStatuses[fromIndex < toIndex ? toIndex + 1 : toIndex]
-      ]
-
+      const item = projectStatuses.splice(fromIndex, 1)
       isSaving = true
-      let newCategory = {}
-      if (draggingStatus?.category !== toItem.category) newCategory = { category: toItem.category }
-      await client.update(draggingStatus, { rank: calcRank(prev, next), ...newCategory })
+      projectStatuses = [...projectStatuses.slice(0, toIndex), ...item, ...projectStatuses.slice(toIndex)]
+      if (project) {
+        await client.update(project, { states: projectStatuses.map((s) => s._id) })
+      }
       isSaving = false
     }
 
@@ -193,33 +209,6 @@
     return projectStatuses.findIndex(({ _id }) => _id === status._id) ?? -1
   }
 
-  function getSiblingsForNewStatus (
-    categoryId: StatusCategory['_id']
-  ): readonly [] | readonly [IssueStatus | undefined, IssueStatus | undefined] {
-    const categoryStatuses = projectStatuses.filter((s) => s.category === categoryId)
-    if (categoryStatuses.length > 0) {
-      const prev = categoryStatuses[categoryStatuses.length - 1]
-      const next = projectStatuses[getStatusIndex(prev) + 1]
-
-      return [prev, next]
-    }
-
-    const category = statusCategories?.find(({ _id }) => _id === categoryId)
-    if (!category) {
-      return []
-    }
-
-    const { order } = category
-    const prev = projectStatuses.findLast(
-      (s) => s.$lookup?.category?.order !== undefined && s.$lookup.category.order < order
-    )
-    const next = projectStatuses.find(
-      (s) => s.$lookup?.category?.order !== undefined && s.$lookup.category.order > order
-    )
-
-    return [prev, next]
-  }
-
   function resetDrag () {
     draggingStatus = null
     hoveringStatus = null
@@ -227,7 +216,7 @@
 
   $: projectQuery.query(projectClass, { _id: projectId }, (result) => ([project] = result), { limit: 1 })
   $: updateStatusCategories()
-  $: projectStatuses = $statusStore.getDocs().filter((status) => status.space === projectId)
+  $: projectStatuses = getStates(project, $statusStore)
 </script>
 
 <Card
@@ -266,15 +255,17 @@
             />
           </div>
           <div class="flex-col">
-            {#each statuses as status, _ (status._id)}
+            {#each statuses as status (status._id)}
               <div
                 class="row"
                 class:is-dragged-over-up={draggingStatus &&
                   status._id === hoveringStatus?._id &&
-                  status.rank < draggingStatus.rank}
+                  draggingStatus.category === status.category &&
+                  getStatusIndex(status) < getStatusIndex(draggingStatus)}
                 class:is-dragged-over-down={draggingStatus &&
                   status._id === hoveringStatus?._id &&
-                  status.rank > draggingStatus.rank}
+                  draggingStatus.category === status.category &&
+                  getStatusIndex(status) > getStatusIndex(draggingStatus)}
                 draggable={!isSingle}
                 animate:flip={{ duration: 200 }}
                 on:dragstart={(ev) => handleDragStart(ev, status)}
@@ -292,6 +283,7 @@
                   />
                 {:else}
                   <StatusPresenter
+                    space={projectId}
                     value={status}
                     isDefault={status._id === project.defaultIssueStatus}
                     {isSingle}

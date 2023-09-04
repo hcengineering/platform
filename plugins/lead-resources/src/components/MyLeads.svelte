@@ -120,7 +120,7 @@
   />
   <ViewletSettingButton bind:viewOptions bind:viewlet />
 </div>
-<FilterBar {_class} query={searchQuery} {viewOptions} on:change={(e) => (resultQuery = e.detail)} />
+<FilterBar {_class} query={searchQuery} {viewOptions} space={undefined} on:change={(e) => (resultQuery = e.detail)} />
 
 {#if viewlet}
   {#if loading}

@@ -1,7 +1,7 @@
 import { Organization } from '@hcengineering/contact'
 import core, { Account, Client, Data, Doc, Ref, SortingOrder, TxOperations } from '@hcengineering/core'
 import recruit, { Applicant, Vacancy } from '@hcengineering/recruit'
-import task, { KanbanTemplate, State, calcRank, createKanban } from '@hcengineering/task'
+import task, { KanbanTemplate, State, calcRank, createStates } from '@hcengineering/task'
 
 export async function createVacancy (
   rawClient: Client,
@@ -23,6 +23,8 @@ export async function createVacancy (
 
   const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
+  const [states, doneStates] = await createStates(client, templateId)
+
   const id = await client.createDoc(recruit.class.Vacancy, core.space.Space, {
     name,
     description: template.shortDescription ?? '',
@@ -31,10 +33,11 @@ export async function createVacancy (
     archived: false,
     company,
     number: (incResult as any).object.sequence,
-    members: []
+    members: [],
+    states,
+    doneStates
   })
 
-  await createKanban(client, id, templateId)
   return id
 }
 

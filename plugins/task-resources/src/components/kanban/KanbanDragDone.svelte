@@ -13,28 +13,35 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@hcengineering/core'
+  import { IdMap, Ref, Status } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import type { Kanban } from '@hcengineering/task'
+  import type { SpaceWithStates } from '@hcengineering/task'
   import task, { DoneState, LostState, WonState } from '@hcengineering/task'
   import { createEventDispatcher } from 'svelte'
   import Won from '../icons/Won.svelte'
   import Lost from '../icons/Lost.svelte'
+  import { statusStore } from '@hcengineering/view-resources'
 
-  export let kanban: Kanban
+  export let space: Ref<SpaceWithStates>
   let wonStates: WonState[] = []
   let lostStates: LostState[] = []
+  let _space: SpaceWithStates | undefined = undefined
   const dispatch = createEventDispatcher()
 
-  const doneStatesQ = createQuery()
-  $: if (kanban !== undefined) {
-    doneStatesQ.query(task.class.DoneState, { space: kanban.space }, (result) => {
-      wonStates = result.filter((x) => x._class === task.class.WonState)
-      lostStates = result.filter((x) => x._class === task.class.LostState)
-    })
-  } else {
-    doneStatesQ.unsubscribe()
+  const query = createQuery()
+  query.query(task.class.SpaceWithStates, { _id: space }, (result) => {
+    _space = result[0]
+  })
+
+  function getStates (space: SpaceWithStates | undefined, statusStore: IdMap<Status>): void {
+    if (space === undefined) return
+    const result: Status[] =
+      (space.doneStates?.map((p) => statusStore.get(p))?.filter((p) => p !== undefined) as Status[]) ?? []
+    wonStates = result.filter((x) => x._class === task.class.WonState)
+    lostStates = result.filter((x) => x._class === task.class.LostState)
   }
+
+  $: getStates(_space, $statusStore)
 
   let hoveredDoneState: Ref<DoneState> | undefined
 

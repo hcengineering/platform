@@ -13,27 +13,18 @@
 // limitations under the License.
 //
 
-import Core, {
-  DOMAIN_MODEL,
-  Account,
-  Class,
-  Client,
-  Data,
-  Doc,
-  DocumentQuery,
-  Domain,
-  Ref,
-  Space
-} from '@hcengineering/core'
+import { Account, Class, Client, DOMAIN_MODEL, Data, Doc, DocumentQuery, Domain, Ref, Space } from '@hcengineering/core'
 import { Builder, Mixin, Model } from '@hcengineering/model'
 import core, { TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
+import presentation from '@hcengineering/model-presentation'
 import { Asset, IntlString, Resource, Status } from '@hcengineering/platform'
 import { AnyComponent, Location } from '@hcengineering/ui'
 import {
   Action,
   ActionCategory,
   ActivityAttributePresenter,
+  Aggregation,
   AllValuesFunc,
   ArrayEditor,
   AttributeEditor,
@@ -45,10 +36,13 @@ import {
   ClassSortFuncs,
   CollectionEditor,
   CollectionPresenter,
+  CreateAggregationManagerFunc,
   Filter,
   FilterMode,
   FilteredView,
   GetAllValuesFunc,
+  Groupping,
+  GrouppingManagerResource,
   IgnoreActions,
   InlineAttributEditor,
   KeyBinding,
@@ -79,13 +73,8 @@ import {
   ViewOptionsModel,
   Viewlet,
   ViewletDescriptor,
-  ViewletPreference,
-  Aggregation,
-  CreateAggregationManagerFunc,
-  GrouppingManagerResource,
-  Groupping
+  ViewletPreference
 } from '@hcengineering/view'
-import presentation from '@hcengineering/model-presentation'
 import view from './plugin'
 
 export { viewId } from '@hcengineering/view'
@@ -765,6 +754,10 @@ export function createModel (builder: Builder): void {
     component: view.component.ObjectFilter
   })
 
+  builder.mixin(core.class.Status, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.StatusFilter
+  })
+
   builder.mixin(core.class.TypeTimestamp, core.class.Class, view.mixin.AttributeFilter, {
     component: view.component.DateFilter,
     group: 'bottom'
@@ -1019,24 +1012,12 @@ export function createModel (builder: Builder): void {
     view.action.Open
   )
 
-  builder.mixin(core.class.Status, core.class.Class, view.mixin.SortFuncs, {
-    func: view.function.StatusSort
-  })
-
   builder.mixin(core.class.Status, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: view.component.StatusPresenter
   })
 
   builder.mixin(core.class.Status, core.class.Class, view.mixin.AttributePresenter, {
     presenter: view.component.StatusRefPresenter
-  })
-
-  builder.mixin(Core.class.Status, core.class.Class, view.mixin.Aggregation, {
-    createAggregationManager: view.aggregation.CreateStatusAggregationManager
-  })
-
-  builder.mixin(Core.class.Status, core.class.Class, view.mixin.Groupping, {
-    grouppingManager: view.aggregation.GrouppingStatusManager
   })
 }
 

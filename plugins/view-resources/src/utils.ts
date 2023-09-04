@@ -16,16 +16,14 @@
 
 import core, {
   AccountRole,
-  AttachedDoc,
   AggregateValue,
+  AttachedDoc,
   CategoryType,
   Class,
   Client,
   Collection,
   Doc,
   DocumentUpdate,
-  getCurrentAccount,
-  getObjectValue,
   Hierarchy,
   Lookup,
   Obj,
@@ -34,25 +32,20 @@ import core, {
   ReverseLookup,
   ReverseLookups,
   Space,
-  Status,
-  TxOperations
+  TxOperations,
+  getCurrentAccount,
+  getObjectValue
 } from '@hcengineering/core'
 import type { IntlString } from '@hcengineering/platform'
 import { getResource } from '@hcengineering/platform'
-import {
-  AttributeCategory,
-  createQuery,
-  getAttributePresenterClass,
-  hasResource,
-  KeyedAttribute
-} from '@hcengineering/presentation'
+import { AttributeCategory, KeyedAttribute, getAttributePresenterClass, hasResource } from '@hcengineering/presentation'
 import {
   AnyComponent,
   ErrorPresenter,
+  Location,
   getCurrentResolvedLocation,
   getPanelURI,
   getPlatformColorForText,
-  Location,
   locationToUrl
 } from '@hcengineering/ui'
 import type { BuildModelOptions, Viewlet, ViewletDescriptor } from '@hcengineering/view'
@@ -624,6 +617,7 @@ export function setGroupByValues (
 export async function groupByCategory (
   client: TxOperations,
   _class: Ref<Class<Doc>>,
+  space: Ref<Space> | undefined,
   key: string,
   categories: CategoryType[],
   viewletDescriptorId?: Ref<ViewletDescriptor>
@@ -649,12 +643,13 @@ export async function groupByCategory (
       }
     }
   }
-  return await sortCategories(h, attrClass, existingCategories, viewletDescriptorId)
+  return await sortCategories(client, attrClass, space, existingCategories, viewletDescriptorId)
 }
 
 export async function getCategories (
   client: TxOperations,
   _class: Ref<Class<Doc>>,
+  space: Ref<Space> | undefined,
   docs: Doc[],
   key: string,
   viewletDescriptorId?: Ref<ViewletDescriptor>
@@ -664,6 +659,7 @@ export async function getCategories (
   return await groupByCategory(
     client,
     _class,
+    space,
     key,
     docs.map((it) => getObjectValue(key, it) ?? undefined),
     viewletDescriptorId
@@ -713,30 +709,20 @@ export function concatCategories (arr1: CategoryType[], arr2: CategoryType[]): C
  * @public
  */
 export async function sortCategories (
-  hierarchy: Hierarchy,
+  client: TxOperations,
   attrClass: Ref<Class<Doc>>,
+  space: Ref<Space> | undefined,
   existingCategories: any[],
   viewletDescriptorId?: Ref<ViewletDescriptor>
 ): Promise<any[]> {
+  const hierarchy = client.getHierarchy()
   const clazz = hierarchy.getClass(attrClass)
   const sortFunc = hierarchy.as(clazz, view.mixin.SortFuncs)
   if (sortFunc?.func === undefined) {
-    const isStatusField = hierarchy.isDerived(attrClass, core.class.Status)
-    if (isStatusField) {
-      existingCategories.sort((a, b) => {
-        return a.values[0].rank.localeCompare(b.values[0].rank)
-      })
-    } else {
-      existingCategories.sort((a, b) => {
-        return JSON.stringify(a).localeCompare(JSON.stringify(b))
-      })
-    }
-
     return existingCategories
   }
   const f = await getResource(sortFunc.func)
-
-  return await f(existingCategories, viewletDescriptorId)
+  return await f(client, existingCategories, space, viewletDescriptorId)
 }
 
 export function getKeyLabel<T extends Doc> (
@@ -874,37 +860,6 @@ export async function getObjectLinkFragment (
     loc.fragment = getPanelURI(component, object._id, Hierarchy.mixinOrClass(object), 'content')
   }
   return loc
-}
-
-export async function statusSort (
-  value: Array<Ref<Status>>,
-  viewletDescriptorId?: Ref<ViewletDescriptor>
-): Promise<Array<Ref<Status>>> {
-  return await new Promise((resolve) => {
-    // TODO: How we track category updates.
-    const query = createQuery(true)
-    query.query(
-      core.class.Status,
-      { _id: { $in: value } },
-      (res) => {
-        res.sort((a, b) => {
-          const res = (a.$lookup?.category?.order ?? 0) - (b.$lookup?.category?.order ?? 0)
-          if (res === 0) {
-            return a.rank.localeCompare(b.rank)
-          }
-          return res
-        })
-
-        resolve(res.map((p) => p._id))
-        query.unsubscribe()
-      },
-      {
-        sort: {
-          rank: 1
-        }
-      }
-    )
-  })
 }
 
 export function isAttachedDoc (doc: Doc | AttachedDoc): doc is AttachedDoc {

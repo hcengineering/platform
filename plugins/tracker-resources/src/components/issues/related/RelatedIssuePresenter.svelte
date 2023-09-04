@@ -23,7 +23,7 @@
   export let issue: Issue
   export let size: 'small' | 'medium' | 'large' = 'small'
 
-  $: status = $statusStore.getIdMap().get(issue.status)
+  $: status = $statusStore.get(issue.status)
   $: huge = size === 'medium' || size === 'large'
   $: text = project ? `${getIssueId(project, issue)} ${issue.title}` : issue.title
 </script>
@@ -31,7 +31,7 @@
 <div class="flex-row-center">
   {#if status}
     <div class="icon mr-2">
-      <IssueStatusIcon value={status} {size} />
+      <IssueStatusIcon value={status} {size} space={issue.space} />
     </div>
   {/if}
   <span class="label" class:text-base={huge}>

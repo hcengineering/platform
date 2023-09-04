@@ -39,6 +39,7 @@ import DoneStateRefPresenter from './components/state/DoneStateRefPresenter.svel
 import StateRefPresenter from './components/state/StateRefPresenter.svelte'
 import DueDateEditor from './components/DueDateEditor.svelte'
 import CreateStatePopup from './components/CreateStatePopup.svelte'
+import CreateStateTemplatePopup from './components/CreateStateTemplatePopup.svelte'
 
 export { default as AssigneePresenter } from './components/AssigneePresenter.svelte'
 export { StateRefPresenter }
@@ -71,7 +72,8 @@ export default async (): Promise<Resources> => ({
     StateRefPresenter,
     TodoItemsPopup,
     DueDateEditor,
-    CreateStatePopup
+    CreateStatePopup,
+    CreateStateTemplatePopup
   },
   actionImpl: {
     EditStatuses: editStatuses

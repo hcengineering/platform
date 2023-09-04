@@ -167,7 +167,7 @@
   />
   <ViewletSettingButton bind:viewOptions bind:viewlet />
 </div>
-<FilterBar {_class} query={searchQuery} {viewOptions} on:change={(e) => (resultQuery = e.detail)} />
+<FilterBar {_class} query={searchQuery} space={undefined} {viewOptions} on:change={(e) => (resultQuery = e.detail)} />
 
 <Component is={tags.component.TagsCategoryBar} props={{ targetClass: _class, category }} on:change={handleChange} />
 

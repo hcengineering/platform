@@ -1,4 +1,4 @@
-import { Class, Doc, DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
+import { Class, Doc, DocumentQuery, Ref, SortingOrder, Space } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { LiveQuery, createQuery, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
 import { locationToUrl, getCurrentResolvedLocation } from '@hcengineering/ui'
@@ -114,6 +114,7 @@ export function migrateViewOpttions (): void {
 export async function showEmptyGroups (
   _class: Ref<Class<Doc>>,
   query: DocumentQuery<Doc> | undefined,
+  space: Ref<Space> | undefined,
   key: string,
   onUpdate: () => void,
   queryId: Ref<Doc>,
@@ -139,7 +140,7 @@ export async function showEmptyGroups (
   if (groupMixin?.grouppingManager !== undefined) {
     const grouppingManager = await getResource(groupMixin.grouppingManager)
     const docs = grouppingManager.groupValuesWithEmpty(hierarchy, _class, key, query)
-    return await groupByCategory(client, _class, key, docs, viewletDescriptorId)
+    return await groupByCategory(client, _class, space, key, docs, viewletDescriptorId)
   }
 
   const allValuesMixin = hierarchy.as(attributeClass, view.mixin.AllValuesFunc)
@@ -147,7 +148,7 @@ export async function showEmptyGroups (
     const f = await getResource(allValuesMixin.func)
     const res = await f(query, onUpdate, queryId)
     if (res !== undefined) {
-      return await groupByCategory(client, _class, key, res, viewletDescriptorId)
+      return await groupByCategory(client, _class, space, key, res, viewletDescriptorId)
     }
   }
 }

@@ -29,7 +29,7 @@
   <!-- <Icon icon={tracker.icon.TrackerApplication} size={'medium'} /> -->
   <FixedColumn key="object-popup-issue-status">
     {#if st}
-      <IssueStatusIcon value={st} size={'small'} />
+      <IssueStatusIcon value={st} size={'small'} space={value.space} />
     {/if}
   </FixedColumn>
   <span class="ml-2 max-w-120 overflow-label">

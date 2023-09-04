@@ -14,31 +14,14 @@
 //
 
 import { Ref, TxOperations } from '@hcengineering/core'
-import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import { MigrateOperation, MigrationClient, MigrationUpgradeClient, createOrUpdate } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import { createKanbanTemplate, createSequence } from '@hcengineering/model-task'
 import tags from '@hcengineering/tags'
-import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
+import task, { KanbanTemplate, createStates } from '@hcengineering/task'
 import board from './plugin'
 
 async function createSpace (tx: TxOperations): Promise<void> {
-  const current = await tx.findOne(core.class.Space, {
-    _id: board.space.DefaultBoard
-  })
-  if (current === undefined) {
-    await tx.createDoc(
-      board.class.Board,
-      core.space.Space,
-      {
-        name: 'Default',
-        description: 'Default board',
-        private: false,
-        archived: false,
-        members: []
-      },
-      board.space.DefaultBoard
-    )
-  }
   const currentTemplate = await tx.findOne(core.class.Space, {
     _id: board.space.BoardTemplates
   })
@@ -56,6 +39,28 @@ async function createSpace (tx: TxOperations): Promise<void> {
         attachedToClass: board.class.Board
       },
       board.space.BoardTemplates
+    )
+  }
+
+  const current = await tx.findOne(core.class.Space, {
+    _id: board.space.DefaultBoard
+  })
+  if (current === undefined) {
+    const defaultTmpl = await createDefaultKanbanTemplate(tx)
+    const [states, doneStates] = await createStates(tx, defaultTmpl)
+    await tx.createDoc(
+      board.class.Board,
+      core.space.Space,
+      {
+        name: 'Default',
+        description: 'Default board',
+        private: false,
+        archived: false,
+        members: [],
+        states,
+        doneStates
+      },
+      board.space.DefaultBoard
     )
   }
 }
@@ -80,20 +85,9 @@ async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<Kanba
     doneStates: defaultKanban.doneStates
   })
 }
-
-async function createDefaultKanban (tx: TxOperations): Promise<void> {
-  const current = await tx.findOne(task.class.Kanban, {
-    attachedTo: board.space.DefaultBoard
-  })
-  if (current !== undefined) return
-  const defaultTmpl = await createDefaultKanbanTemplate(tx)
-  await createKanban(tx, board.space.DefaultBoard, defaultTmpl)
-}
-
 async function createDefaults (tx: TxOperations): Promise<void> {
   await createSpace(tx)
   await createSequence(tx, board.class.Card)
-  await createDefaultKanban(tx)
   await createOrUpdate(
     tx,
     tags.class.TagCategory,
