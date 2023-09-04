@@ -2,26 +2,3 @@
   cursor: pointer;
   object-fit: contain;
 }
-
-.proseH1 {
-  margin-block-start: 1.25rem;
-  margin-block-end: 1.25rem;
-  font-weight: 700;
-  font-size: 1.75rem;
-  // line-height: 1.75rem;
-  color: red;
-}
-.proseH2 {
-  margin-block-start: 1rem;
-  margin-block-end: 1.125rem;
-  font-weight: 700;
-  font-size: 1.25rem;
-  // line-height: 1.75rem;
-  color: green;
-}
-
-// need to override editor's bubble max-width
-// due to https://github.com/atomiks/tippyjs/issues/451
-.tippy-box {
-  max-width: 30rem !important;
-}

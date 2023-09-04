@@ -17,8 +17,7 @@
   import { getClient } from '@hcengineering/presentation'
   import type { Applicant } from '@hcengineering/recruit'
   import recruit from '@hcengineering/recruit'
-  import recruitPlg from '../plugin'
-  import { Icon, tooltip } from '@hcengineering/ui'
+  import { Icon } from '@hcengineering/ui'
   import { DocNavLink } from '@hcengineering/view-resources'
 
   export let value: Applicant
@@ -32,19 +31,15 @@
 
 {#if value && shortLabel}
   <DocNavLink object={value} {inline} {disabled} noUnderline={disabled} {accent}>
-    {#if inline}
-      <span class="antiMention" use:tooltip={{ label: recruitPlg.string.Application }}>
-        @{#if shortLabel}{shortLabel}-{/if}{value.number}
-      </span>
-    {:else}
-      <div class="flex-presenter">
+    <div class="flex-presenter" class:inline-presenter={inline}>
+      {#if !inline}
         <div class="icon">
           <Icon icon={recruit.icon.Application} size={'small'} />
         </div>
-        <span class="label nowrap" class:no-underline={disabled} class:fs-bold={accent}>
-          {#if shortLabel}{shortLabel}-{/if}{value.number}
-        </span>
-      </div>
-    {/if}
+      {/if}
+      <span class="label nowrap" class:no-underline={disabled} class:fs-bold={accent}>
+        {#if shortLabel}{shortLabel}-{/if}{value.number}
+      </span>
+    </div>
   </DocNavLink>
 {/if}

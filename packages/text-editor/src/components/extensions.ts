@@ -60,10 +60,7 @@ export const defaultExtensions: AnyExtension[] = [
       }
     },
     heading: {
-      levels: supportedHeadingLevels,
-      HTMLAttributes: {
-        class: 'proseHeading'
-      }
+      levels: supportedHeadingLevels
     }
   }),
   Highlight.configure({

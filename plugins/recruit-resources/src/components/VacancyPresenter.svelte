@@ -45,15 +45,11 @@
     noUnderline={disabled}
     component={recruit.component.EditVacancy}
   >
-    {#if inline}
-      <span class="antiMention" use:tooltip={{ label: recruit.string.Vacancy }}>
-        @{value.name}
-      </span>
-    {:else}
-      <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
+    <div class="flex-presenter" class:inline-presenter={inline} use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
+      {#if !inline}
         <div class="icon"><Icon icon={recruit.icon.Vacancy} size={'small'} /></div>
-        <span class="label nowrap" class:no-underline={disabled} class:fs-bold={accent}>{value.name}</span>
-      </div>
-    {/if}
+      {/if}
+      <span class="label nowrap" class:no-underline={disabled} class:fs-bold={accent}>{value.name}</span>
+    </div>
   </DocNavLink>
 {/if}

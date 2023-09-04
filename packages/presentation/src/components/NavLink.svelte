@@ -97,18 +97,15 @@
     &.inline {
       display: inline-flex;
       align-items: center;
-      text-decoration: none;
-      color: inherit;
     }
 
     &.noUnderline {
-      text-decoration: none;
       &:not(.colorInherit) {
         color: var(--theme-caption-color);
       }
     }
 
-    &:not(.noUnderline, .inline) {
+    &:not(.noUnderline) {
       &:hover {
         text-decoration: underline;
         &:not(.colorInherit) {

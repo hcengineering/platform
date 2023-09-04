@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { Product } from '@hcengineering/inventory'
-  import { Icon, tooltip } from '@hcengineering/ui'
+  import { Icon } from '@hcengineering/ui'
   import { DocNavLink } from '@hcengineering/view-resources'
   import inventory from '../plugin'
 
@@ -25,13 +25,11 @@
 
 {#if value}
   <DocNavLink {inline} object={value}>
-    {#if inline}
-      <span class="antiMention" use:tooltip={{ label: inventory.string.Product }}>@{value.name}</span>
-    {:else}
-      <div class="flex-presenter">
+    <div class="flex-presenter" class:inline-presenter={inline}>
+      {#if !inline}
         <div class="icon"><Icon icon={inventory.icon.Products} size={'small'} /></div>
-        <span class="label">{value.name}</span>
-      </div>
-    {/if}
+      {/if}
+      <span class="label">{value.name}</span>
+    </div>
   </DocNavLink>
 {/if}
