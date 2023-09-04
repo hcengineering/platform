@@ -29,17 +29,16 @@
 
 {#if value}
   <DocNavLink {disabled} {inline} object={value} {accent} noUnderline={disabled}>
-    {#if inline}
-      <span class="antiMention" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
-        @{value.name}
-      </span>
-    {:else}
-      <div class="flex-presenter" style:max-width={maxWidth} use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
-        {#if !inline}
-          <div class="icon circle"><Company size={'small'} /></div>
-        {/if}
-        <span class="overflow-label label" class:no-underline={disabled} class:fs-bold={accent}>{value.name}</span>
-      </div>
-    {/if}
+    <div
+      class="flex-presenter"
+      style:max-width={maxWidth}
+      class:inline-presenter={inline}
+      use:tooltip={{ label: getEmbeddedLabel(value.name) }}
+    >
+      {#if !inline}
+        <div class="icon circle"><Company size={'small'} /></div>
+      {/if}
+      <span class="overflow-label label" class:no-underline={disabled} class:fs-bold={accent}>{value.name}</span>
+    </div>
   </DocNavLink>
 {/if}

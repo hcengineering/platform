@@ -58,21 +58,17 @@
     component={tracker.component.EditIssue}
     shrink={0}
   >
-    {#if inline}
-      <span class="antiMention" use:tooltip={{ label: tracker.string.Issue }}>@{title}</span>
-    {:else}
-      <span class="issuePresenterRoot" class:list={kind === 'list'} class:cursor-pointer={!disabled}>
-        {#if shouldShowAvatar}
-          <div class="icon" use:tooltip={{ label: tracker.string.Issue }}>
-            <Icon icon={icon ?? tracker.icon.Issues} size={'small'} />
-          </div>
-        {/if}
-        <span class="select-text" title={value?.title}>
-          {title}
-          <slot name="details" />
-        </span>
+    <span class="issuePresenterRoot" class:inline class:list={kind === 'list'} class:cursor-pointer={!disabled}>
+      {#if !inline && shouldShowAvatar}
+        <div class="icon" use:tooltip={{ label: tracker.string.Issue }}>
+          <Icon icon={icon ?? tracker.icon.Issues} size={'small'} />
+        </div>
+      {/if}
+      <span class="select-text" title={value?.title}>
+        {title}
+        <slot name="details" />
       </span>
-    {/if}
+    </span>
   </DocNavLink>
 {/if}
 
@@ -95,6 +91,19 @@
     .icon {
       margin-right: 0.5rem;
       color: var(--theme-dark-color);
+    }
+
+    &.inline {
+      display: inline-flex;
+      align-items: baseline;
+
+      .icon {
+        transform: translateY(0.2rem);
+      }
+      .select-text {
+        font-weight: 500;
+        color: var(--theme-caption-color);
+      }
     }
   }
 </style>
