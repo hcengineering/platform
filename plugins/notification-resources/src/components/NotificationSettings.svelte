@@ -15,7 +15,12 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
-  import type { NotificationGroup, NotificationPreferencesGroup, NotificationSetting, NotificationType } from '@hcengineering/notification'
+  import type {
+    NotificationGroup,
+    NotificationPreferencesGroup,
+    NotificationSetting,
+    NotificationType
+  } from '@hcengineering/notification'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
   import notification from '../plugin'
@@ -25,7 +30,7 @@
   const client = getClient()
   let groups: NotificationGroup[] = []
   let preferencesGroups: NotificationPreferencesGroup[] = []
-  
+
   client.findAll(notification.class.NotificationGroup, {}).then((res) => {
     groups = res
   })
@@ -46,7 +51,7 @@
 
   let group: Ref<NotificationGroup> | undefined = undefined
   let currentPreferenceGroup: NotificationPreferencesGroup | undefined = undefined
-  
+
   client.findAll(notification.class.NotificationPreferencesGroup, {}).then((res) => {
     preferencesGroups = res
   })
@@ -79,7 +84,7 @@
       />
     {/each}
     {#if preferencesGroups.length > 0 && groups.length > 0}
-      <div class="antiNav-divider short line"></div>
+      <div class="antiNav-divider short line" />
     {/if}
     {#each groups as gr}
       <GroupElement
