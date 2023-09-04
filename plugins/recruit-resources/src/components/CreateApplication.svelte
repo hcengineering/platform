@@ -109,10 +109,6 @@
     if (selectedState === undefined) {
       throw new Error(`Please select initial state:${_space}`)
     }
-    const state = await client.findOne(task.class.State, { space: _space, _id: selectedState?._id })
-    if (state === undefined) {
-      throw new Error(`create application: state not found space:${_space}`)
-    }
     const sequence = await client.findOne(task.class.Sequence, { attachedTo: recruit.class.Applicant })
     if (sequence === undefined) {
       throw new Error('sequence object not found')
@@ -143,7 +139,7 @@
       'applications',
       {
         ...doc,
-        status: state._id,
+        status: selectedState._id,
         doneState: null,
         number: (incResult as any).object.sequence,
         assignee: doc.assignee,
