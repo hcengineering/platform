@@ -71,7 +71,7 @@
   let component: AnyComponent
   $: getComponent(loading, comment)
 
-  async function getComponent(loading: boolean, comment?: Comment): Promise<void> {
+  async function getComponent (loading: boolean, comment?: Comment): Promise<void> {
     if (comment == null || loading) {
       return
     }
@@ -91,9 +91,5 @@
 {#if loading}
   <Loading />
 {:else if component && attachedDocId && attachedDocClass}
-  <Component
-    is={component}
-    props={{ _id: attachedDocId, _class: attachedDocClass, embedded }}
-    on:close
-  />
+  <Component is={component} props={{ _id: attachedDocId, _class: attachedDocClass, embedded }} on:close />
 {/if}
