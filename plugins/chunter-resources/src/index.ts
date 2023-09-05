@@ -38,6 +38,7 @@ import CommentInput from './components/CommentInput.svelte'
 import CommentPopup from './components/CommentPopup.svelte'
 import CommentPresenter from './components/CommentPresenter.svelte'
 import CommentsPresenter from './components/CommentsPresenter.svelte'
+import CommentPanel from './components/CommentPanel.svelte'
 import ConvertDmToPrivateChannelModal from './components/ConvertDmToPrivateChannel.svelte'
 import CreateChannel from './components/CreateChannel.svelte'
 import CreateDirectMessage from './components/CreateDirectMessage.svelte'
@@ -292,7 +293,8 @@ export default async (): Promise<Resources> => ({
     EditChannel,
     Threads,
     ThreadView,
-    SavedMessages
+    SavedMessages,
+    CommentPanel
   },
   function: {
     GetDmName: getDmName,
