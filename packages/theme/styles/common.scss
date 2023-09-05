@@ -334,13 +334,13 @@
 
   .wrapped-icon, &.wrapped-icon {
     margin-right: .75rem;
-    color: var(--content-color);
+    color: var(--theme-content-color);
   }
   .wrapped-title, &.wrapped-title {
     min-width: 0;
     font-weight: 500;
     font-size: 1rem;
-    color: var(--caption-color);
+    color: var(--theme-caption-color);
 
     overflow: hidden;
     text-overflow: ellipsis;
@@ -349,7 +349,7 @@
   .wrapped-subtitle, &.wrapped-subtitle {
     min-width: 0;
     font-size: 0.75rem;
-    color: var(--dark-color);
+    color: var(--theme-dark-color);
 
     overflow: hidden;
     visibility: visible;
@@ -360,7 +360,7 @@
     line-clamp: 2;
     user-select: text;
 
-    b { color: var(--content-color); }
+    b { color: var(--theme-content-color); }
   }
 }
 

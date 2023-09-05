@@ -133,7 +133,7 @@
   }
   .message {
     padding: 0.5rem 0.75rem;
-    max-width: 66%;
+    max-width: 90%;
     width: fit-content;
     background-color: var(--incoming-msg);
     border-radius: 0.75rem 0.75rem 0.75rem 0.125rem;

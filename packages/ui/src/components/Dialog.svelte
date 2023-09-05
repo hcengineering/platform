@@ -20,6 +20,7 @@
 
   export let label: IntlString | undefined = undefined
   export let isFullSize: boolean = false
+  export let padding: string = '1rem'
 
   const dispatch = createEventDispatcher()
 
@@ -27,7 +28,7 @@
 </script>
 
 <form
-  class="dialog-container"
+  class="antiDialog"
   class:fullsize={fullSize}
   on:submit|preventDefault={() => {}}
   use:resizeObserver={() => {
@@ -37,10 +38,10 @@
   <div class="flex-between header">
     <div class="flex-row-center gap-1-5">
       <Button icon={IconClose} kind={'ghost'} size={'medium'} on:click={() => dispatch('close')} />
-      <div class="title">
-        {#if label}<Label {label} />{/if}
-        {#if $$slots.title}<slot name="title" />{/if}
-      </div>
+      {#if label}
+        <span class="title"><Label {label} /></span>
+      {/if}
+      {#if $$slots.title}<slot name="title" />{/if}
     </div>
     <div class="flex-row-center gap-1-5">
       {#if $$slots.utils}
@@ -64,7 +65,7 @@
       {/if}
     </div>
   </div>
-  <div class="content" class:rounded={!($$slots.footerLeft || $$slots.footerRight)}>
+  <div class="content" class:rounded={!($$slots.footerLeft || $$slots.footerRight)} style:padding>
     <slot />
   </div>
   {#if $$slots.footerLeft || $$slots.footerRight}
@@ -82,61 +83,3 @@
     </div>
   {/if}
 </form>
-
-<style lang="scss">
-  .dialog-container {
-    display: flex;
-    flex-direction: column;
-    min-width: 25rem;
-    max-width: calc(100vw - 2rem);
-    min-height: 0;
-    max-height: 80vh;
-    background-color: var(--theme-popup-color);
-    border-radius: 0.5rem;
-
-    &:not(.fullsize) {
-      border: 1px solid var(--theme-popup-divider);
-      box-shadow: var(--theme-popup-shadow);
-    }
-    &.fullsize {
-      width: 100%;
-      height: 100%;
-      max-width: 100%;
-      max-height: 100%;
-    }
-
-    .header {
-      flex-shrink: 0;
-      padding: 0.5rem;
-      background-color: var(--theme-popup-header);
-      border-bottom: 1px solid var(--theme-popup-divider);
-      border-radius: 0.5rem 0.5rem 0 0;
-
-      .title {
-        flex-grow: 1;
-        font-size: 1rem;
-        color: var(--theme-caption-color);
-      }
-    }
-    .content {
-      display: flex;
-      flex-direction: column;
-      padding: 1rem;
-      min-width: 0;
-      min-height: 0;
-
-      &.rounded {
-        border-radius: 0 0 0.5rem 0.5rem;
-      }
-    }
-    .footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-shrink: 0;
-      padding: 0.25rem 0.5rem;
-      border-top: 1px solid var(--theme-popup-divider);
-      border-radius: 0 0 0.5rem 0.5rem;
-    }
-  }
-</style>

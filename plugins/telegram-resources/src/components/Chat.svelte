@@ -30,7 +30,7 @@
     Icon,
     IconShare,
     Label,
-    Panel,
+    Dialog,
     Scroller,
     eventToHTMLElement,
     showPopup,
@@ -215,10 +215,7 @@
 </script>
 
 {#if object !== undefined}
-  <Panel
-    isHeader={true}
-    isAside={false}
-    {embedded}
+  <Dialog
     isFullSize
     on:fullsize
     on:close={() => {
@@ -226,21 +223,19 @@
     }}
   >
     <svelte:fragment slot="title">
-      <div class="antiTitle icon-wrapper">
-        <div class="wrapped-icon"><Icon icon={TelegramIcon} size={'medium'} /></div>
-        <div class="title-wrapper">
-          <div class="wrapped-title flex">
-            Telegram
-            {#each participants as participant}
-              <div
-                class="ml-2"
-                use:tooltip={{ label: getEmbeddedLabel(getContactName(client.getHierarchy(), participant)) }}
-              >
-                <Avatar size="x-small" avatar={participant.avatar} />
-              </div>
-            {/each}
-          </div>
+      <div class="antiTitle icon-wrapper ml-2">
+        <div class="wrapped-icon"><Icon icon={TelegramIcon} size={'small'} /></div>
+        <div class="title-wrapper mr-2">
+          <div class="wrapped-title flex-row-center">Telegram</div>
         </div>
+        {#each participants as participant}
+          <div
+            class="ml-2"
+            use:tooltip={{ label: getEmbeddedLabel(getContactName(client.getHierarchy(), participant)) }}
+          >
+            <Avatar size="small" avatar={participant.avatar} />
+          </div>
+        {/each}
       </div>
     </svelte:fragment>
     <svelte:fragment slot="utils">
@@ -307,17 +302,18 @@
         />
       {/if}
     </div>
-  </Panel>
+  </Dialog>
 {/if}
 
 <style lang="scss">
   .ref-input {
-    padding: 0.5rem 0 1.5rem;
+    padding-top: 0.5rem;
 
     &.selectable {
-      padding: 1rem;
-      color: var(--caption-color);
-      border-top: 1px solid var(--divider-color);
+      margin-top: 0.5rem;
+      padding-top: 1rem;
+      color: var(--theme-caption-color);
+      border-top: 1px solid var(--theme-divider-color);
     }
   }
 </style>
