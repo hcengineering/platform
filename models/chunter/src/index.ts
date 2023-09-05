@@ -467,6 +467,10 @@ export function createModel (builder: Builder, options = { addApplication: true 
     presenter: chunter.component.CommentsPresenter
   })
 
+  builder.mixin(chunter.class.Comment, core.class.Class, view.mixin.ObjectPanel, {
+    component: chunter.component.CommentPanel
+  })
+
   builder.createDoc(
     activity.class.TxViewlet,
     core.space.Model,

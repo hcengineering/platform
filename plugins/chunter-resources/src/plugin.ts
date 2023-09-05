@@ -31,7 +31,8 @@ export default mergeIds(chunterId, chunter, {
     EditChannel: '' as AnyComponent,
     ChannelPreview: '' as AnyComponent,
     MessagePreview: '' as AnyComponent,
-    DirectMessageInput: '' as AnyComponent
+    DirectMessageInput: '' as AnyComponent,
+    CommentPanel: '' as AnyComponent
   },
   function: {
     GetDmName: '' as Resource<(client: Client, space: Space) => Promise<string>>
