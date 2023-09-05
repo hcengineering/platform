@@ -1,6 +1,6 @@
 import { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { Doc } from '@hcengineering/core'
-import type { AnySvelteComponent } from '@hcengineering/ui'
+import type { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
 
 /**
  * @public
@@ -55,4 +55,11 @@ export interface RefAction {
   order: number
   fill?: string
   disabled?: boolean
+}
+
+export interface TextNodeAction {
+  id: string
+  label?: IntlString
+  icon: Asset | AnySvelteComponent
+  panel: AnyComponent
 }

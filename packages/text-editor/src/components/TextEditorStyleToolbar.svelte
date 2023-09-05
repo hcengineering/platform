@@ -20,7 +20,7 @@
   import { Editor } from '@tiptap/core'
   import { Level } from '@tiptap/extension-heading'
   import textEditorPlugin from '../plugin'
-  import { TextFormatCategory } from '../types'
+  import { TextFormatCategory, TextNodeAction } from '../types'
   import { mInsertTable } from './extensions'
   import Bold from './icons/Bold.svelte'
   import Code from './icons/Code.svelte'
@@ -48,6 +48,7 @@
   export let formatButtonSize: IconSize = 'small'
   export let textEditor: Editor
   export let textFormatCategories: TextFormatCategory[] = []
+  export let textNodeActions: TextNodeAction[] = []
 
   const dispatch = createEventDispatcher()
 
@@ -317,5 +318,20 @@
     {#if index < textFormatCategories.length - 1}
       <div class="buttons-divider" />
     {/if}
+  {/each}
+  {#if textFormatCategories.length > 0 && textNodeActions.length > 0}
+    <div class="buttons-divider" />
+  {/if}
+  {#each textNodeActions as action}
+    <StyleButton
+      icon={action.icon}
+      size={formatButtonSize}
+      selected={false}
+      disabled={textEditor.view.state.selection.empty}
+      showTooltip={{ label: action.label }}
+      on:click={() => {
+        dispatch('action', action.id)
+      }}
+    />
   {/each}
 {/if}

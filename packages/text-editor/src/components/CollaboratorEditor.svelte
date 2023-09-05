@@ -15,30 +15,31 @@
 //
 -->
 <script lang="ts">
-  import { IntlString, translate } from '@hcengineering/platform'
-
-  import { Editor, Extension, HTMLContent } from '@tiptap/core'
+  import { Plugin, PluginKey, TextSelection, Transaction } from 'prosemirror-state'
+  import { DecorationSet } from 'prosemirror-view'
+  import { getContext, createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import { v4 as generateUuid } from 'uuid'
+  import { WebsocketProvider } from 'y-websocket'
+  import * as Y from 'yjs'
+  import { Editor, Extension, getMarkRange } from '@tiptap/core'
   import Collaboration from '@tiptap/extension-collaboration'
   import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
   import Placeholder from '@tiptap/extension-placeholder'
-
-  import { Plugin, PluginKey, Transaction } from 'prosemirror-state'
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
-
+  import BubbleMenu from '@tiptap/extension-bubble-menu'
   import { getCurrentAccount, Markup } from '@hcengineering/core'
-  import { getPlatformColorForText, IconObjects, IconSize, themeStore } from '@hcengineering/ui'
-  import { WebsocketProvider } from 'y-websocket'
-  import * as Y from 'yjs'
-  import StyleButton from './StyleButton.svelte'
+  import { IntlString, translate } from '@hcengineering/platform'
+  import { Component, getPlatformColorForText, IconObjects, IconSize, themeStore } from '@hcengineering/ui'
 
-  import { DecorationSet } from 'prosemirror-view'
   import textEditorPlugin from '../plugin'
-  import { CollaborationIds, TextFormatCategory } from '../types'
+  import { CollaborationIds, TextFormatCategory, TextNodeAction } from '../types'
 
-  import { getContext } from 'svelte'
   import { calculateDecorations } from './diff/decorations'
   import { defaultExtensions } from './extensions'
+  import { NodeHighlightExtension, NodeHighlightType } from './extension/nodeHighlight'
   import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
+
+  import StyleButton from './StyleButton.svelte'
+  import { NodeUuidExtension } from './extension/nodeUuid'
 
   export let documentId: string
   export let readonly = false
@@ -59,6 +60,9 @@
 
   export let autoOverflow = false
   export let initialContent: string | undefined = undefined
+  export let textNodeActions: TextNodeAction[] = []
+  export let isNodeHighlightModeOn: boolean = false
+  export let onNodeHighlightType: (uuid: string) => NodeHighlightType = () => NodeHighlightType.WARNING
 
   const ydoc = (getContext(CollaborationIds.Doc) as Y.Doc | undefined) ?? new Y.Doc()
   const contextProvider = getContext(CollaborationIds.Provider) as WebsocketProvider | undefined
@@ -80,6 +84,9 @@
 
   const currentUser = getCurrentAccount()
 
+  let currentTextNodeAction: TextNodeAction | undefined | null
+  let selectedNodeUuid: string | null | undefined
+  let textNodeActionMenuElement: HTMLElement
   let element: HTMLElement
   let editor: Editor
 
@@ -91,21 +98,46 @@
 
   const dispatch = createEventDispatcher()
 
-  export function clear (): void {
-    editor.commands.clearContent(false)
-  }
-  export function insertText (text: string): void {
-    editor.commands.insertContent(text as HTMLContent)
-  }
-
   export function getHTML (): string | undefined {
     if (editor) {
       return editor.getHTML()
     }
   }
 
-  export function checkIsSelectionEmpty () {
-    return editor.view.state.selection.empty
+  export function selectNode (uuid: string) {
+    if (!editor) {
+      return
+    }
+
+    const { doc, schema, tr } = editor.view.state
+    let foundNode = false
+    doc.descendants((node, pos) => {
+      if (foundNode) {
+        return false
+      }
+
+      const nodeUuidMark = node.marks.find(
+        (mark) => mark.type.name === NodeUuidExtension.name && mark.attrs[NodeUuidExtension.name] === uuid
+      )
+
+      if (!nodeUuidMark) {
+        return
+      }
+
+      foundNode = true
+
+      // the first pos does not contain the mark, so we need to add 1 (pos + 1) to get the correct range
+      const range = getMarkRange(doc.resolve(pos + 1), schema.marks[NodeUuidExtension.name])
+
+      if (!range) {
+        return false
+      }
+
+      const [$start, $end] = [doc.resolve(range.from), doc.resolve(range.to)]
+
+      editor.view.dispatch(tr.setSelection(new TextSelection($start, $end)))
+      needFocus = true
+    })
   }
 
   let needFocus = false
@@ -145,6 +177,18 @@
     }
   }
 
+  const getNodeUuid = () => {
+    if (editor.view.state.selection.empty) {
+      return null
+    }
+    if (!selectedNodeUuid) {
+      selectedNodeUuid = generateUuid()
+      editor.chain().setUuid(selectedNodeUuid!).run()
+    }
+
+    return selectedNodeUuid
+  }
+
   const DecorationExtension = Extension.create({
     addProseMirrorPlugins () {
       return [
@@ -170,7 +214,6 @@
     ph.then(() => {
       editor = new Editor({
         element,
-        // content: 'Hello world<br/> This is simple text<br/>Some more text<br/>Yahoo <br/>Cool <br/><br/> Done',
         editable: true,
         extensions: [
           ...defaultExtensions,
@@ -187,7 +230,34 @@
               color: getPlatformColorForText(currentUser.email, $themeStore.dark)
             }
           }),
-          DecorationExtension
+          DecorationExtension,
+          NodeHighlightExtension.configure({
+            isHighlightModeOn: () => isNodeHighlightModeOn,
+            getNodeHighlightType: onNodeHighlightType,
+            onNodeSelected: (uuid: string | null) => {
+              if (selectedNodeUuid !== uuid) {
+                selectedNodeUuid = uuid
+                dispatch('node-selected', selectedNodeUuid)
+              }
+            }
+          }),
+          BubbleMenu.configure({
+            pluginKey: 'text-node-action-menu',
+            element: textNodeActionMenuElement,
+            tippyOptions: {
+              maxWidth: '38rem',
+              onClickOutside: () => {
+                currentTextNodeAction = undefined
+              }
+            },
+            shouldShow: (editor) => {
+              if (!editor) {
+                return false
+              }
+
+              return !!currentTextNodeAction
+            }
+          })
           // ...extensions
         ],
         onTransaction: () => {
@@ -203,9 +273,6 @@
         },
         onUpdate: (op: { editor: Editor; transaction: Transaction }) => {
           dispatch('content', editor.getHTML())
-        },
-        onSelectionUpdate: () => {
-          dispatch('selection-update')
         }
       })
 
@@ -229,6 +296,24 @@
   let showDiff = true
 </script>
 
+<div class="actionPanel" bind:this={textNodeActionMenuElement}>
+  {#if !!currentTextNodeAction}
+    <Component
+      is={currentTextNodeAction.panel}
+      props={{
+        documentId,
+        field,
+        editor,
+        action: currentTextNodeAction,
+        disabled: editor.view.state.selection.empty,
+        onNodeUuid: getNodeUuid
+      }}
+      on:close={() => {
+        currentTextNodeAction = undefined
+      }}
+    />
+  {/if}
+</div>
 {#if visible}
   <div class="ref-container" class:autoOverflow>
     {#if isFormatting && !readonly}
@@ -246,7 +331,12 @@
               TextFormatCategory.Table
             ]}
             formatButtonSize={buttonSize}
+            {textNodeActions}
             on:focus={() => {
+              needFocus = true
+            }}
+            on:action={(event) => {
+              currentTextNodeAction = textNodeActions.find((action) => action.id === event.detail)
               needFocus = true
             }}
           />
@@ -422,8 +512,18 @@
     box-shadow: var(--button-shadow);
     z-index: 1;
   }
+
   .ref-container:focus-within .formatPanel {
     position: sticky;
     top: 1.25rem;
+  }
+
+  .actionPanel {
+    margin: -0.5rem -0.25rem 0.5rem;
+    padding: 0.375rem;
+    background-color: var(--theme-comp-header-color);
+    border-radius: 0.5rem;
+    box-shadow: var(--theme-popup-shadow);
+    z-index: 1;
   }
 </style>
