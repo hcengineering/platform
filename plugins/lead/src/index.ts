@@ -43,6 +43,7 @@ export interface Customer extends Contact {
  * @public
  */
 export interface Lead extends Task {
+  space: Ref<Funnel>
   attachedTo: Ref<Customer>
   status: Ref<State>
   startDate: Timestamp | null

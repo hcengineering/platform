@@ -42,8 +42,7 @@
   $: activeStatusQuery.query(
     tracker.class.IssueStatus,
     {
-      category: { $in: [tracker.issueStatusCategory.Unstarted, tracker.issueStatusCategory.Started] },
-      ...spaceQuery
+      category: { $in: [tracker.issueStatusCategory.Unstarted, tracker.issueStatusCategory.Started] }
     },
     (result) => {
       active = { status: { $in: result.map(({ _id }) => _id) }, ...spaceQuery }
@@ -54,7 +53,7 @@
   let backlog: DocumentQuery<Issue> = {}
   $: backlogStatusQuery.query(
     tracker.class.IssueStatus,
-    { category: tracker.issueStatusCategory.Backlog, ...spaceQuery },
+    { category: tracker.issueStatusCategory.Backlog },
     (result) => {
       backlog = { status: { $in: result.map(({ _id }) => _id) }, ...spaceQuery }
     }

@@ -15,8 +15,7 @@
 
 import { Asset, IntlString } from '@hcengineering/platform'
 import { Attribute, Doc, Domain, Ref } from './classes'
-import { AggregateValue, AggregateValueData, DocManager, IdMap } from './utils'
-import { WithLookup } from './storage'
+import { AggregateValue, AggregateValueData } from './utils'
 
 /**
  * @public
@@ -53,8 +52,6 @@ export interface Status extends Doc {
   color?: number
   // Optional description
   description?: string
-  // Lexorank rank for ordering.
-  rank: string
 }
 
 /**
@@ -67,28 +64,5 @@ export class StatusValue extends AggregateValue {
     readonly values: AggregateValueData[]
   ) {
     super(name, values)
-  }
-}
-
-/**
- * @public
- *
- * Allow to query for status keys/values.
- */
-export class StatusManager extends DocManager {
-  get (ref: Ref<WithLookup<Status>>): WithLookup<Status> | undefined {
-    return this.getIdMap().get(ref) as WithLookup<Status>
-  }
-
-  getDocs (): Array<WithLookup<Status>> {
-    return this.docs as Status[]
-  }
-
-  getIdMap (): IdMap<WithLookup<Status>> {
-    return this.byId as IdMap<WithLookup<Status>>
-  }
-
-  filter (predicate: (value: Status) => boolean): Status[] {
-    return this.getDocs().filter(predicate)
   }
 }

@@ -108,3 +108,21 @@ export const getDaysDifference = (from: Date, to: Date): number => {
 export const getMillisecondsInMonth = (date: Date): number => {
   return daysInMonth(date) * MILLISECONDS_IN_DAY
 }
+
+const WARNING_DAYS = 7
+
+export const getDueDateIconModifier = (
+  isOverdue: boolean,
+  daysDifference: number | null,
+  shouldIgnoreOverdue: boolean
+): 'overdue' | 'critical' | 'warning' | 'normal' => {
+  if (shouldIgnoreOverdue) return 'normal'
+  if (isOverdue) return 'overdue'
+  if (daysDifference === 0) return 'critical'
+  if (daysDifference !== null && daysDifference <= WARNING_DAYS) return 'warning'
+  return 'normal'
+}
+
+export function getFormattedDate (value: number | null): string {
+  return value === null ? '' : new Date(value).toLocaleString('default', { month: 'short', day: 'numeric' })
+}

@@ -1,8 +1,7 @@
 <script lang="ts">
-  import presentation, { copyTextToClipboard, createQuery } from '@hcengineering/presentation'
   import { getMetadata } from '@hcengineering/platform'
+  import presentation, { copyTextToClipboard, createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus } from '@hcengineering/tracker'
-  import view from '@hcengineering/view'
   import {
     AnySvelteComponent,
     Button,
@@ -15,8 +14,10 @@
     navigate,
     parseLocation
   } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { fade } from 'svelte/transition'
 
+  import { statusStore } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import IssuePresenter from './IssuePresenter.svelte'
   import IssueStatusIcon from './IssueStatusIcon.svelte'
@@ -25,7 +26,6 @@
   export let onRemove: () => void
 
   const issueQuery = createQuery()
-  const statusQuery = createQuery()
 
   let issue: Issue | undefined
   let status: IssueStatus | undefined
@@ -42,14 +42,7 @@
   )
 
   $: if (issue?.status !== undefined) {
-    statusQuery.query(
-      tracker.class.IssueStatus,
-      { _id: issue.status },
-      (res) => {
-        status = res[0]
-      },
-      { limit: 1 }
-    )
+    status = $statusStore.get(issue.status)
   }
 
   const getIcon = (): AnySvelteComponent | undefined => {
@@ -107,8 +100,8 @@
   </div>
 
   <div class="content flex-row-center flex-wrap gap-2 reverse">
-    {#if status}
-      <IssueStatusIcon value={status} size="small" />
+    {#if status && issue}
+      <IssueStatusIcon value={status} space={issue.space} size="small" />
     {/if}
     {#if issue}
       <IssuePresenter value={issue} />

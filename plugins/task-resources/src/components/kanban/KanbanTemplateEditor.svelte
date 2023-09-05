@@ -14,21 +14,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import { Ref, Space, SortingOrder } from '@hcengineering/core'
-  import core from '@hcengineering/core'
+  import core, { Ref, SortingOrder, Space } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import type {
-    State,
+    DoneState,
     DoneStateTemplate,
     KanbanTemplate,
-    StateTemplate,
-    DoneState,
-    KanbanTemplateSpace
+    KanbanTemplateSpace,
+    State,
+    StateTemplate
   } from '@hcengineering/task'
   import task, { calcRank } from '@hcengineering/task'
+  import { createEventDispatcher } from 'svelte'
 
-  import StatesEditor from '../state/StatesEditor.svelte'
+  import StatesTemplateEditor from '../state/StatesTemplateEditor.svelte'
 
   export let kanban: KanbanTemplate
   export let folder: KanbanTemplateSpace
@@ -103,7 +102,7 @@
   }
 </script>
 
-<StatesEditor
+<StatesTemplateEditor
   template={kanban}
   space={folder}
   {states}

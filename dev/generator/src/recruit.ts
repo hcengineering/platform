@@ -1,4 +1,4 @@
-import contact, { Channel, PersonAccount, Person, Employee } from '@hcengineering/contact'
+import contact, { Channel, Employee, Person, PersonAccount } from '@hcengineering/contact'
 import core, {
   AttachedData,
   Data,
@@ -87,6 +87,10 @@ async function genVacansyApplicants (
   candidates: Ref<Candidate>[],
   emoloyeeIds: Ref<Employee>[]
 ): Promise<void> {
+  const [states, doneStates] = await ctx.with('create-kanbad', {}, (ctx) =>
+    createUpdateSpaceKanban(ctx, vacancyId, client)
+  )
+
   const vacancy: Data<Vacancy> = {
     name: faker.company.companyName(),
     description: faker.lorem.sentences(2),
@@ -95,7 +99,9 @@ async function genVacansyApplicants (
     members: accountIds,
     number: faker.datatype.number(),
     private: false,
-    archived: false
+    archived: false,
+    states,
+    doneStates
   }
   const vacancyId = (options.random ? `vacancy-${generateId()}-${i}` : `vacancy-genid-${i}`) as Ref<Vacancy>
 
@@ -124,10 +130,6 @@ async function genVacansyApplicants (
   }
 
   console.log('Vacancy attachments generated', vacancy.name)
-
-  const states = await ctx.with('create-kanbad', {}, (ctx) => createUpdateSpaceKanban(ctx, vacancyId, client))
-
-  console.log('States generated', vacancy.name)
 
   const applicantsForCount = options.applicants.min + faker.datatype.number(options.applicants.max)
 

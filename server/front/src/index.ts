@@ -230,7 +230,7 @@ export function start (
   const filesHandler = async (req: any, res: Response): Promise<void> => {
     try {
       console.log(req.headers)
-      const cookies = ((req?.headers?.cookie as string) ?? '').split(';').map((it) => it.split('='))
+      const cookies = ((req?.headers?.cookie as string) ?? '').split(';').map((it) => it.trim().split('='))
 
       const token = cookies.find((it) => it[0] === 'presentation-metadata-Token')?.[1]
       const payload =

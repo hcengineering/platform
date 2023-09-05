@@ -76,7 +76,13 @@
     {/if}
   </svelte:fragment>
 </SpaceHeader>
-<FilterBar _class={tracker.class.Issue} query={searchQuery} {viewOptions} on:change={(e) => (resultQuery = e.detail)} />
+<FilterBar
+  _class={tracker.class.Issue}
+  {space}
+  query={searchQuery}
+  {viewOptions}
+  on:change={(e) => (resultQuery = e.detail)}
+/>
 <slot name="afterHeader" />
 <div class="popupPanel rowContent">
   {#if viewlet && viewOptions}

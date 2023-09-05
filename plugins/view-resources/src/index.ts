@@ -39,6 +39,7 @@ import FilterTypePopup from './components/filter/FilterTypePopup.svelte'
 import ObjectFilter from './components/filter/ObjectFilter.svelte'
 import StringFilter from './components/filter/StringFilter.svelte'
 import StringFilterPresenter from './components/filter/StringFilterPresenter.svelte'
+import StatusFilter from './components/filter/StatusFilter.svelte'
 import TimestampFilter from './components/filter/TimestampFilter.svelte'
 import ValueFilter from './components/filter/ValueFilter.svelte'
 import HTMLEditor from './components/HTMLEditor.svelte'
@@ -106,10 +107,8 @@ import {
 } from './filter'
 
 import { IndexedDocumentPreview } from '@hcengineering/presentation'
-import { statusSort } from './utils'
 import { showEmptyGroups } from './viewOptions'
 import { AggregationMiddleware } from './middleware'
-import { grouppingStatusManager, StatusAggregationManager } from './status'
 export { getActions, invokeAction } from './actions'
 export { default as ActionHandler } from './components/ActionHandler.svelte'
 export { default as FilterButton } from './components/filter/FilterButton.svelte'
@@ -201,6 +200,7 @@ export default async (): Promise<Resources> => ({
     DateFilter,
     ValueFilter,
     StringFilter,
+    StatusFilter,
     TimestampFilter,
     TableBrowser,
     SpacePresenter,
@@ -262,7 +262,6 @@ export default async (): Promise<Resources> => ({
     FilterNestedMatchResult: nestedMatchResult,
     FilterNestedDontMatchResult: nestedDontMatchResult,
     ShowEmptyGroups: showEmptyGroups,
-    StatusSort: statusSort,
     FilterDateOutdated: dateOutdated,
     FilterDateToday: dateToday,
     FilterDateYesterday: dateYesterday,
@@ -273,9 +272,5 @@ export default async (): Promise<Resources> => ({
     FilterDateNotSpecified: dateNotSpecified,
     FilterDateCustom: dateCustom,
     CreateDocMiddleware: AggregationMiddleware.create
-  },
-  aggregation: {
-    CreateStatusAggregationManager: StatusAggregationManager.create,
-    GrouppingStatusManager: grouppingStatusManager
   }
 })

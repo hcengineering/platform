@@ -15,8 +15,8 @@
 -->
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
-  import { BreadcrumbsElement } from '@hcengineering/presentation'
-  import task, { SpaceWithStates, State } from '@hcengineering/task'
+  import { BreadcrumbsElement, createQuery } from '@hcengineering/presentation'
+  import task, { SpaceWithStates, State, getStates } from '@hcengineering/task'
   import { ScrollerBar, getColorNumberByText, getPlatformColor, themeStore } from '@hcengineering/ui'
   import { statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -26,7 +26,20 @@
   export let state: Ref<State> | undefined = undefined
   export let gap: 'none' | 'small' | 'big' = 'small'
 
-  $: states = $statusStore.filter((it) => it.space === space && it.ofAttribute === task.attribute.State)
+  let _space: SpaceWithStates | undefined = undefined
+
+  const spaceQuery = createQuery()
+  spaceQuery.query(
+    task.class.SpaceWithStates,
+    {
+      _id: space
+    },
+    (res) => {
+      _space = res[0]
+    }
+  )
+
+  $: states = getStates(_space, $statusStore)
   let divScroll: HTMLElement
 
   const dispatch = createEventDispatcher()

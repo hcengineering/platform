@@ -26,7 +26,7 @@
 
   export let value: Ref<DoneState> | null | undefined
   export let onChange: (value: any) => void
-  export let space: Ref<SpaceWithStates>
+  export let space: Ref<SpaceWithStates> | undefined
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'

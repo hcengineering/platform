@@ -83,7 +83,7 @@
 
   $: groupByKey = viewOptions.groupBy[level] ?? noCategory
   let categories: CategoryType[] = []
-  $: updateCategories(_class, docs, groupByKey, viewOptions, viewOptionsConfig)
+  $: updateCategories(_class, space, docs, groupByKey, viewOptions, viewOptionsConfig)
 
   $: groupByDocs = groupBy(docs, groupByKey, categories)
 
@@ -96,24 +96,25 @@
   })
 
   function update () {
-    updateCategories(_class, docs, groupByKey, viewOptions, viewOptionsConfig)
+    updateCategories(_class, space, docs, groupByKey, viewOptions, viewOptionsConfig)
   }
 
   async function updateCategories (
     _class: Ref<Class<Doc>>,
+    space: Ref<Space> | undefined,
     docs: Doc[],
     groupByKey: string,
     viewOptions: ViewOptions,
     viewOptionsModel: ViewOptionModel[] | undefined
   ) {
-    categories = await getCategories(client, _class, docs, groupByKey)
+    categories = await getCategories(client, _class, space, docs, groupByKey)
     if (level === 0) {
       for (const viewOption of viewOptionsModel ?? []) {
         if (viewOption.actionTarget !== 'category') continue
         const categoryFunc = viewOption as CategoryOption
         if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
           const f = await getResource(categoryFunc.action)
-          const res = hierarchy.clone(await f(_class, query, groupByKey, update, queryId))
+          const res = hierarchy.clone(await f(_class, query, space, groupByKey, update, queryId))
           if (res !== undefined) {
             categories = concatCategories(res, categories)
             return

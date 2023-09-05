@@ -25,15 +25,13 @@ import {
   Ref,
   Space,
   Status,
-  Timestamp,
-  TxOperations
+  Timestamp
 } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 import { Action, ViewletDescriptor } from '@hcengineering/view'
-import { genRanks } from './utils'
 
 /**
  * @public
@@ -47,6 +45,8 @@ export interface DocWithRank extends Doc {
  */
 export interface SpaceWithStates extends Space {
   templateId?: Ref<KanbanTemplate>
+  states: Ref<State>[]
+  doneStates?: Ref<DoneState>[]
 }
 
 // S T A T E
@@ -61,9 +61,7 @@ export interface State extends Status {
 /**
  * @public
  */
-export interface DoneState extends Status {
-  name: string
-}
+export interface DoneState extends Status {}
 
 /**
  * @public
@@ -111,13 +109,6 @@ export interface KanbanCard extends Class<Doc> {
 /**
  * @public
  */
-export interface Kanban extends Doc {
-  attachedTo: Ref<Space>
-}
-
-/**
- * @public
- */
 export interface Sequence extends Doc {
   attachedTo: Ref<Class<Doc>>
   sequence: number
@@ -128,6 +119,7 @@ export interface Sequence extends Doc {
  */
 export interface StateTemplate extends Doc, State {
   attachedTo: Ref<KanbanTemplate>
+  rank: string
 }
 
 /**
@@ -135,6 +127,7 @@ export interface StateTemplate extends Doc, State {
  */
 export interface DoneStateTemplate extends Doc, DoneState {
   attachedTo: Ref<KanbanTemplate>
+  rank: string
 }
 
 /**
@@ -248,7 +241,6 @@ const task = plugin(taskId, {
     LostState: '' as Ref<Class<LostState>>,
     SpaceWithStates: '' as Ref<Class<SpaceWithStates>>,
     Task: '' as Ref<Class<Task>>,
-    Kanban: '' as Ref<Class<Kanban>>,
     Sequence: '' as Ref<Class<Sequence>>,
     StateTemplate: '' as Ref<Class<StateTemplate>>,
     DoneStateTemplate: '' as Ref<Class<DoneStateTemplate>>,
@@ -277,13 +269,15 @@ const task = plugin(taskId, {
     Task: '' as Ref<Task>
   },
   space: {
-    Sequence: '' as Ref<Space>
+    Sequence: '' as Ref<Space>,
+    Statuses: '' as Ref<Space>
   },
   component: {
     KanbanTemplateEditor: '' as AnyComponent,
     KanbanTemplateSelector: '' as AnyComponent,
     TodoItemsPopup: '' as AnyComponent,
-    CreateStatePopup: '' as AnyComponent
+    CreateStatePopup: '' as AnyComponent,
+    CreateStateTemplatePopup: '' as AnyComponent
   },
   ids: {
     AssigneedNotification: '' as Ref<NotificationType>
@@ -292,84 +286,3 @@ const task = plugin(taskId, {
 
 export default task
 export * from './utils'
-
-/**
- * @public
- */
-export async function createKanban (
-  client: TxOperations,
-  attachedTo: Ref<Space>,
-  templateId?: Ref<KanbanTemplate>
-): Promise<Ref<Kanban>> {
-  if (templateId === undefined) {
-    await client.createDoc(task.class.State, attachedTo, {
-      ofAttribute: task.attribute.State,
-      name: 'New State',
-      color: 9,
-      rank: [...genRanks(1)][0]
-    })
-
-    const ranks = [...genRanks(2)]
-    await Promise.all([
-      client.createDoc(task.class.WonState, attachedTo, {
-        ofAttribute: task.attribute.DoneState,
-        name: 'Won',
-        rank: ranks[0]
-      }),
-      client.createDoc(task.class.LostState, attachedTo, {
-        ofAttribute: task.attribute.DoneState,
-        name: 'Lost',
-        rank: ranks[1]
-      })
-    ])
-    return await client.createDoc(task.class.Kanban, attachedTo, {
-      attachedTo
-    })
-  }
-
-  const template = await client.findOne(task.class.KanbanTemplate, { _id: templateId })
-
-  if (template === undefined) {
-    throw Error(`Failed to find target kanban template: ${templateId}`)
-  }
-
-  const tmplStates = await client.findAll(task.class.StateTemplate, { attachedTo: template._id })
-  await Promise.all(
-    tmplStates.map(
-      async (state) =>
-        await client.createDoc(task.class.State, attachedTo, {
-          ofAttribute: task.attribute.State,
-          color: state.color,
-          description: state.description,
-          name: state.name,
-          rank: state.rank
-        })
-    )
-  )
-
-  const doneClassMap = new Map<Ref<Class<DoneStateTemplate>>, Ref<Class<DoneState>>>([
-    [task.class.WonStateTemplate, task.class.WonState],
-    [task.class.LostStateTemplate, task.class.LostState]
-  ])
-  const tmplDoneStates = await client.findAll(task.class.DoneStateTemplate, { attachedTo: template._id })
-  await Promise.all(
-    tmplDoneStates.map(async (state) => {
-      const cl = doneClassMap.get(state._class)
-
-      if (cl === undefined) {
-        return
-      }
-
-      return await client.createDoc(cl, attachedTo, {
-        ofAttribute: task.attribute.DoneState,
-        description: state.description,
-        name: state.name,
-        rank: state.rank
-      })
-    })
-  )
-
-  return await client.createDoc(task.class.Kanban, attachedTo, {
-    attachedTo
-  })
-}

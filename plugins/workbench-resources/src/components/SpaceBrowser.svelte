@@ -146,7 +146,7 @@
     </div>
   </div>
 {/if}
-<FilterBar {_class} query={searchQuery} on:change={(e) => (resultQuery = e.detail)} />
+<FilterBar {_class} query={searchQuery} space={undefined} on:change={(e) => (resultQuery = e.detail)} />
 <Scroller padding={'2.5rem'}>
   <div class="spaces-container">
     {#each spaces as space (space._id)}

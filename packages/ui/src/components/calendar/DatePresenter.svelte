@@ -24,6 +24,7 @@
   import Label from '../Label.svelte'
   import DatePopup from './DatePopup.svelte'
   import DPCalendar from './icons/DPCalendar.svelte'
+  import DPCalendarOver from './icons/DPCalendarOver.svelte'
   import { getMonthName } from './internal/DateUtils'
   import { ComponentType } from 'svelte'
 
@@ -33,6 +34,7 @@
   export let editable: boolean = false
   export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
   export let iconModifier: 'normal' | 'warning' | 'critical' | 'overdue' = 'normal'
+  export let shouldIgnoreOverdue: boolean = false
   export let labelNull: IntlString = ui.string.NoDate
   export let showIcon = true
   export let shouldShowLabel: boolean = true
@@ -94,7 +96,10 @@
 >
   {#if showIcon}
     <div class="btn-icon {iconModifier}" class:buttonIconNoLabel={!shouldShowLabel}>
-      <Icon icon={icon ?? DPCalendar} size="full" />
+      <Icon
+        icon={icon ?? (iconModifier === 'overdue' && !shouldIgnoreOverdue) ? DPCalendarOver : DPCalendar}
+        size={'full'}
+      />
     </div>
   {/if}
   {#if value !== null && value !== undefined}

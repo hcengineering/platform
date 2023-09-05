@@ -118,7 +118,7 @@
     subIssuesQeury.unsubscribe()
   }
 
-  $: parentStatus = parentIssue ? $statusStore.getIdMap().get(parentIssue.status) : undefined
+  $: parentStatus = parentIssue ? $statusStore.get(parentIssue.status) : undefined
 </script>
 
 {#if parentIssue}
@@ -132,7 +132,7 @@
       >
         {#if parentStatus}
           <div class="pr-2">
-            <IssueStatusIcon value={parentStatus} size="small" />
+            <IssueStatusIcon space={parentIssue.space} value={parentStatus} size="small" />
           </div>
         {/if}
         {#if issue.$lookup?.space}

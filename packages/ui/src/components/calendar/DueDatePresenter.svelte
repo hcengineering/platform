@@ -17,7 +17,7 @@
   import DueDatePopup from './DueDatePopup.svelte'
   import { tooltip } from '../../tooltips'
   import DatePresenter from './DatePresenter.svelte'
-  import { getDaysDifference } from './internal/DateUtils'
+  import { getDaysDifference, getDueDateIconModifier, getFormattedDate } from './internal/DateUtils'
   import { ButtonKind, ButtonSize } from '../../types'
 
   export let value: number | null = null
@@ -33,13 +33,9 @@
   $: isOverdue = value !== null && value < today.getTime()
   $: dueDate = value === null ? null : new Date(value)
   $: daysDifference = dueDate === null ? null : getDaysDifference(today, dueDate)
-  $: iconModifier = getDueDateIconModifier(isOverdue, daysDifference)
+  $: iconModifier = getDueDateIconModifier(isOverdue, daysDifference, shouldIgnoreOverdue)
   let formattedDate = getFormattedDate(value)
   $: formattedDate = getFormattedDate(value)
-
-  function getFormattedDate (value: number | null): string {
-    return !value ? '' : new Date(value).toLocaleString('default', { month: 'short', day: 'numeric' })
-  }
 
   const handleDueDateChanged = async (event: CustomEvent<Timestamp>) => {
     const newDate = event.detail
@@ -49,29 +45,6 @@
     }
 
     onChange(newDate)
-  }
-
-  const WARNING_DAYS = 7
-
-  const getDueDateIconModifier = (
-    isOverdue: boolean,
-    daysDifference: number | null
-  ): 'overdue' | 'critical' | 'warning' | undefined => {
-    if (shouldIgnoreOverdue) {
-      return
-    }
-
-    if (isOverdue) {
-      return 'overdue'
-    }
-
-    if (daysDifference === 0) {
-      return 'critical'
-    }
-
-    if (daysDifference !== null && daysDifference <= WARNING_DAYS) {
-      return 'warning'
-    }
   }
 </script>
 
@@ -93,6 +66,15 @@
         }
       : undefined}
   >
-    <DatePresenter {value} {editable} {iconModifier} {kind} {size} {width} on:change={handleDueDateChanged} />
+    <DatePresenter
+      {value}
+      {editable}
+      {iconModifier}
+      {kind}
+      {size}
+      {width}
+      {shouldIgnoreOverdue}
+      on:change={handleDueDateChanged}
+    />
   </div>
 {/if}

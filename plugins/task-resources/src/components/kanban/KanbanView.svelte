@@ -27,7 +27,7 @@
   import { Item, Kanban as KanbanUI } from '@hcengineering/kanban'
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient, ActionContext } from '@hcengineering/presentation'
-  import { Kanban, SpaceWithStates, Task, TaskGrouping, TaskOrdering } from '@hcengineering/task'
+  import { SpaceWithStates, Task, TaskGrouping, TaskOrdering } from '@hcengineering/task'
   import {
     ColorDefinition,
     defaultBackground,
@@ -75,7 +75,6 @@
 
   export let options: FindOptions<Task> | undefined
 
-  $: currentSpace = space
   $: groupByKey = (viewOptions.groupBy[0] ?? noCategory) as TaskGrouping
   $: orderBy = viewOptions.orderBy
   $: sort = { [orderBy[0]]: orderBy[1] }
@@ -87,13 +86,6 @@
     accentColors.set(`${n}${$themeStore.dark}${groupByKey}`, ev.detail)
     accentColors = accentColors
   }
-
-  const spaceQuery = createQuery()
-
-  let currentProject: SpaceWithStates | undefined
-  $: spaceQuery.query(task.class.SpaceWithStates, { _id: currentSpace }, (res) => {
-    currentProject = res.shift()
-  })
 
   let resultQuery: DocumentQuery<any> = { ...query }
   $: getResultQuery(query, viewOptionsConfig, viewOptions).then((p) => (resultQuery = { ...p, ...query }))
@@ -160,20 +152,21 @@
 
   const queryId = generateId()
 
-  $: updateCategories(_class, tasks, groupByKey, viewOptions, viewOptionsConfig)
+  $: updateCategories(_class, space, tasks, groupByKey, viewOptions, viewOptionsConfig)
 
   function update () {
-    updateCategories(_class, tasks, groupByKey, viewOptions, viewOptionsConfig)
+    updateCategories(_class, space, tasks, groupByKey, viewOptions, viewOptionsConfig)
   }
 
   async function updateCategories (
     _class: Ref<Class<Doc>>,
+    space: Ref<SpaceWithStates> | undefined,
     docs: Doc[],
     groupByKey: string,
     viewOptions: ViewOptions,
     viewOptionsModel: ViewOptionModel[] | undefined
   ) {
-    categories = await getCategories(client, _class, docs, groupByKey, viewlet.descriptor)
+    categories = await getCategories(client, _class, space, docs, groupByKey, viewlet.descriptor)
     for (const viewOption of viewOptionsModel ?? []) {
       if (viewOption.actionTarget !== 'category') continue
       const categoryFunc = viewOption as CategoryOption
@@ -188,6 +181,7 @@
         const res = await categoryAction(
           _class,
           spaces.length > 0 ? { space: { $in: Array.from(spaces.values()) } } : {},
+          space,
           groupByKey,
           update,
           queryId,
@@ -230,13 +224,6 @@
   $: clazz = client.getHierarchy().getClass(_class)
   $: presenterMixin = client.getHierarchy().as(clazz, task.mixin.KanbanCard)
   $: cardPresenter = getResource(presenterMixin.card)
-
-  let kanban: Kanban
-
-  const kanbanQuery = createQuery()
-  $: kanbanQuery.query(task.class.Kanban, { attachedTo: space }, (result) => {
-    kanban = result[0]
-  })
 
   const getDoneUpdate = (e: any) => ({ doneState: e.detail._id } as DocumentUpdate<Doc>)
 </script>
@@ -301,13 +288,15 @@
     </svelte:fragment>
     <!-- eslint-disable-next-line no-undef -->
     <svelte:fragment slot="doneBar" let:onDone>
-      <KanbanDragDone
-        {kanban}
-        on:done={(e) => {
-          // eslint-disable-next-line no-undef
-          onDone(getDoneUpdate(e))
-        }}
-      />
+      {#if space}
+        <KanbanDragDone
+          {space}
+          on:done={(e) => {
+            // eslint-disable-next-line no-undef
+            onDone(getDoneUpdate(e))
+          }}
+        />
+      {/if}
     </svelte:fragment>
   </KanbanUI>
 {/await}

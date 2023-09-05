@@ -1,12 +1,13 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
+  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+  import { getStates } from '@hcengineering/task'
   import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import { Button, Label, SelectPopup, eventToHTMLElement, showPopup } from '@hcengineering/ui'
-  import presentation, { getClient } from '@hcengineering/presentation'
-  import tracker from '../../plugin'
-  import { createEventDispatcher } from 'svelte'
-  import IssueStatusIcon from '../issues/IssueStatusIcon.svelte'
   import { StatusPresenter, statusStore } from '@hcengineering/view-resources'
+  import { createEventDispatcher } from 'svelte'
+  import tracker from '../../plugin'
+  import IssueStatusIcon from '../issues/IssueStatusIcon.svelte'
 
   export let projectId: Ref<Project>
   export let issues: Issue[]
@@ -14,13 +15,18 @@
 
   let processing = false
 
+  let _space: Project | undefined = undefined
+
+  const query = createQuery()
+  $: query.query(tracker.class.Project, { space: projectId }, (result) => {
+    _space = result[0]
+  })
+
   const client = getClient()
 
-  let newStatus: IssueStatus =
-    $statusStore
-      .getDocs()
-      .find((s) => s._id !== status._id && s.category === status.category && s.space === projectId) ??
-    $statusStore.getDocs().find((s) => s._id !== status._id && s.space === projectId) ??
+  $: newStatus =
+    statuses.find((s) => s._id !== status._id && s.category === status.category && s.space === projectId) ??
+    statuses.find((s) => s._id !== status._id && s.space === projectId) ??
     status
 
   async function remove () {
@@ -32,12 +38,14 @@
         })
       })
     )
-    await client.remove(status)
+    if (_space) {
+      await client.update(_space, { $pull: { states: status._id } })
+    }
     processing = false
     dispatch('close')
   }
 
-  $: statuses = $statusStore.filter((it) => it.space === projectId && it._id !== status._id)
+  $: statuses = getStates(_space, $statusStore).filter((p) => p._id !== status._id)
   $: statusesInfo = statuses?.map((s) => {
     return {
       id: s._id,
@@ -55,7 +63,7 @@
       { value: statusesInfo, placeholder: tracker.string.SetStatus, searchable: true },
       eventToHTMLElement(event),
       (val) => {
-        newStatus = $statusStore.getIdMap().get(val) ?? newStatus
+        newStatus = $statusStore.get(val) ?? newStatus
       }
     )
   }
@@ -74,9 +82,7 @@
     <Button kind={'link'} justify={'left'} width={'10rem'} on:click={handleStatusEditorOpened}>
       <span slot="content" class="flex-row-center pointer-events-none">
         {#if newStatus}
-          <IssueStatusIcon value={newStatus} size="inline" />
-        {/if}
-        {#if newStatus}
+          <IssueStatusIcon value={newStatus} space={projectId} size="inline" />
           <span class="overflow-label disabled ml-1">
             {newStatus.name}
           </span>

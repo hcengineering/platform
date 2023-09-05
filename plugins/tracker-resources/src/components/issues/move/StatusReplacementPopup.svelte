@@ -15,7 +15,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
 
-  import { IssueStatus } from '@hcengineering/tracker'
+  import { IssueStatus, Project } from '@hcengineering/tracker'
   import tracker from '../../../plugin'
   import { StatusPresenter } from '@hcengineering/view-resources'
   import { Ref } from '@hcengineering/core'
@@ -26,6 +26,7 @@
   export let statuses: IssueStatus[] | undefined
   export let original: IssueStatus | undefined
   export let selected: Ref<IssueStatus>
+  export let space: Ref<Project>
 
   const dispatch = createEventDispatcher()
 </script>
@@ -50,7 +51,7 @@
               <div class="flex-between w-full">
                 <div class="flex-row-center">
                   <div class="pr-2">
-                    <IssueStatusIcon value={status} size={'small'} />
+                    <IssueStatusIcon value={status} size={'small'} {space} />
                   </div>
                   <StatusPresenter value={status} />
                 </div>
@@ -83,7 +84,7 @@
               <div class="flex-between w-full">
                 <div class="flex-row-center">
                   <div class="pr-2">
-                    <IssueStatusIcon value={original} size={'small'} />
+                    <IssueStatusIcon value={original} size={'small'} {space} />
                   </div>
                   <StatusPresenter value={original} />
                 </div>

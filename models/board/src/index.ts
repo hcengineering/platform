@@ -265,8 +265,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       ofAttribute: task.attribute.DoneState,
-      name: board.string.Completed,
-      rank: '0'
+      name: board.string.Completed
     },
     board.state.Completed
   )
