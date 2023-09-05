@@ -22088,7 +22088,7 @@ packages:
     dev: false
 
   file:projects/text-editor.tgz_1e646fd62a3adc9d0b41f256dafe3d38:
-    resolution: {integrity: sha512-SrrRMrnBkTux45Yxd7I/b8z/XQe0JvC4HfURRkvBM3HGpTE1ycjGQkrQ/DMp+n3KKGQdDlv1QJBY5NlO0xjT0Q==, tarball: file:projects/text-editor.tgz}
+    resolution: {integrity: sha512-ZDG1PxhqUTBMF2PV+vbRgcF8fULXMJAJEOwJFZEa3fk1aUAJvOfIitRgHJVj94tHE2PrIZ1exd4QsJMifT/Nyw==, tarball: file:projects/text-editor.tgz}
     id: file:projects/text-editor.tgz
     name: '@rush-temp/text-editor'
     version: 0.0.0
@@ -22149,7 +22149,7 @@ packages:
       svelte-loader: 3.1.4_svelte@3.55.1
       svelte-preprocess: 5.0.3_6420a3eba9d5580d9c2f627c17e61722
       typescript: 4.8.4
-      uuid: 9.0.0
+      uuid: 8.3.2
       y-prosemirror: 1.2.1_4b437ae61db91263defb65d2247376eb
       y-websocket: 1.5.0_yjs@13.5.52
       yjs: 13.5.52
