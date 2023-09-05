@@ -30,8 +30,9 @@
   const dispatch = createEventDispatcher()
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
-  class="flex-row-center clear-mins message-conatiner"
+  class="flex-row-center clear-mins message-conatiner step-tb5"
   on:click|preventDefault={() => {
     dispatch('select', message)
   }}
@@ -42,8 +43,8 @@
         <Label label={gmail.string.From} />
         <span class="content-color">{message.sender}</span>
       </div>
-      <div class="content-dark-color flex">
-        <AttachmentsPresenter value={message.attachments} object={message} />
+      <div class="content-dark-color flex-row-center gap-3">
+        <AttachmentsPresenter value={message.attachments} object={message} size={'x-small'} />
         <span class="content-color">{!isError ? getTime(message.sendOn) : getTime(message.modifiedOn)}</span>
       </div>
     </div>
@@ -75,7 +76,6 @@
 <style lang="scss">
   .message-conatiner {
     flex-shrink: 0;
-    margin: 0.25rem 0;
     cursor: pointer;
   }
 

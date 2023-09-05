@@ -92,6 +92,8 @@
   }
 
   function fileDrop (e: DragEvent) {
+    e.preventDefault()
+    e.stopPropagation()
     const list = e.dataTransfer?.files
     if (list === undefined || list.length === 0) return
     for (let index = 0; index < list.length; index++) {
@@ -167,94 +169,74 @@
   style="display: none"
   on:change={fileSelected}
 />
-<div class="popupPanel-body__main-header bottom-divider p-2">
-  <div class="flex-between">
-    <div class="buttons-group">
-      <Button
-        icon={IconArrowLeft}
-        kind={'ghost'}
-        on:click={() => {
-          dispatch('close')
-        }}
-      />
-      <div class="flex-grow flex-col">
-        <Label label={plugin.string.NewMessage} />
-        <span class="content-color"><b>{getName(client.getHierarchy(), object)} ({channel.value})</b></span>
-      </div>
+<div class="flex-between bottom-divider min-h-12 px-2">
+  <div class="buttons-group">
+    <Button
+      icon={IconArrowLeft}
+      kind={'ghost'}
+      on:click={() => {
+        dispatch('close')
+      }}
+    />
+    <div class="flex-grow flex-col">
+      <Label label={plugin.string.NewMessage} />
+      <span class="content-color"><b>{getName(client.getHierarchy(), object)} ({channel.value})</b></span>
     </div>
-    <div class="buttons-group small-gap">
-      <Button
-        icon={IconAttachment}
-        kind={'ghost'}
-        on:click={() => {
-          inputFile.click()
-        }}
-      />
-      <Button label={plugin.string.Send} size={'small'} kind={'accented'} on:click={sendMsg} />
-    </div>
+  </div>
+  <div class="buttons-group small-gap">
+    <Button
+      icon={IconAttachment}
+      kind={'ghost'}
+      on:click={() => {
+        inputFile.click()
+      }}
+    />
+    <Button label={plugin.string.Send} kind={'accented'} on:click={sendMsg} />
   </div>
 </div>
-<Scroller>
-  <div
-    class="popupPanel-body__main-content py-4 h-full"
-    on:dragover|preventDefault={() => {}}
-    on:dragleave={() => {}}
-    on:drop|preventDefault|stopPropagation={fileDrop}
-  >
-    <div class="mb-2">
-      <EditBox label={plugin.string.Subject} bind:value={obj.subject} placeholder={plugin.string.SubjectPlaceholder} />
-    </div>
-    <div>
-      <EditBox label={plugin.string.Copy} bind:value={copy} placeholder={plugin.string.CopyPlaceholder} />
-    </div>
-    {#if attachments.length}
-      <div class="flex-row-center list mt-2 scroll-divider-color">
-        {#each attachments as attachment}
-          <div class="item flex-row-center flex-no-shrink">
-            <AttachmentPresenter
-              value={attachment}
-              showPreview
-              removable
-              on:remove={(result) => {
-                if (result !== undefined) removeAttachment(attachment)
-              }}
-            />
-          </div>
-        {/each}
-      </div>
-    {/if}
-    <div class="input mt-4 clear-mins">
-      <StyledTextEditor full bind:content={obj.content} maxHeight="panel" on:template={onTemplate} />
-    </div>
+{#if attachments.length}
+  <div class="flex-row-center background-bg-accent-color bottom-divider">
+    <Scroller padding={'.5rem'} gap={'gap-2'} horizontal contentDirection={'horizontal'} noFade={false}>
+      {#each attachments as attachment}
+        <AttachmentPresenter
+          value={attachment}
+          showPreview
+          removable
+          on:remove={(result) => {
+            if (result !== undefined) removeAttachment(attachment)
+          }}
+        />
+      {/each}
+    </Scroller>
+    {#if attachments.length}<div class="antiHSpacer x2" />{/if}
+  </div>
+{/if}
+
+<div class="antiVSpacer x2" />
+<Scroller padding={'.5rem 1rem'} on:drop={fileDrop}>
+  <div class="mb-2">
+    <EditBox label={plugin.string.Subject} bind:value={obj.subject} placeholder={plugin.string.SubjectPlaceholder} />
+  </div>
+  <div>
+    <EditBox label={plugin.string.Copy} bind:value={copy} placeholder={plugin.string.CopyPlaceholder} />
+  </div>
+  <div class="input clear-mins">
+    <StyledTextEditor full bind:content={obj.content} maxHeight={'max'} on:template={onTemplate} />
   </div>
 </Scroller>
+<div class="antiVSpacer x2" />
 
 <style lang="scss">
-  .list {
-    padding: 0.5rem;
-    color: var(--caption-color);
-    overflow-x: auto;
-    overflow-y: hidden;
-    background-color: var(--accent-bg-color);
-    border: 1px solid var(--divider-color);
-    border-radius: 0.25rem;
-
-    .item + .item {
-      padding-left: 1rem;
-      border-left: 1px solid var(--divider-color);
-    }
-  }
-
   .input {
     overflow: auto;
+    margin-top: 1rem;
     padding: 1rem;
-    background-color: var(--outcoming-msg);
-    color: #d6d6d6;
-    caret-color: var(--theme-caret-color);
-    min-height: 0;
-    margin-bottom: 2rem;
     height: 100%;
+    min-height: 0;
+    color: #d6d6d6;
+    background-color: var(--theme-bg-color);
     border-radius: 0.25rem;
+    caret-color: var(--theme-caret-color);
 
     :global(.ProseMirror) {
       min-height: 0;

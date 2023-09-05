@@ -94,61 +94,51 @@
   }
 </script>
 
-<div class="popupPanel-body__main-header bottom-divider p-2">
-  <div class="flex-between">
-    {#if selectable}
-      <span><b>{selected.size}</b> <Label label={gmail.string.MessagesSelected} /></span>
-      <div class="flex">
-        <div>
-          <Button label={gmail.string.Cancel} size={'small'} on:click={clear} />
-        </div>
-        <div class="ml-3">
-          <Button
-            label={gmail.string.PublishSelected}
-            size={'small'}
-            kind={'accented'}
-            disabled={!selected.size}
-            on:click={share}
-          />
-        </div>
-      </div>
-    {:else}
-      {#if enabled}
-        <Button
-          label={gmail.string.CreateMessage}
-          size={'small'}
-          kind={'accented'}
-          on:click={() => {
-            newMessage = true
-          }}
-        />
-      {/if}
+<div class="flex-between bottom-divider min-h-12 px-2">
+  {#if selectable}
+    <span class="pl-2"><b>{selected.size}</b> <Label label={gmail.string.MessagesSelected} /></span>
+    <div class="flex-row-center gap-3">
+      <Button label={gmail.string.Cancel} on:click={clear} />
+      <Button label={gmail.string.PublishSelected} kind={'accented'} disabled={!selected.size} on:click={share} />
+    </div>
+  {:else}
+    {#if enabled}
       <Button
-        icon={IconShare}
-        kind={'ghost'}
-        showTooltip={{ label: gmail.string.ShareMessages }}
-        on:click={async () => {
-          selectable = !selectable
+        label={gmail.string.CreateMessage}
+        kind={'accented'}
+        on:click={() => {
+          newMessage = true
         }}
       />
-    {/if}
-  </div>
-</div>
-<Scroller>
-  <div class="popupPanel-body__main-content py-4 clear-mins flex-no-shrink">
-    {#if messages && messages.length > 0}
-      <Messages
-        messages={convertMessages(object, channel, messages, $personAccountByIdStore, $employeeByIdStore)}
-        {selectable}
-        bind:selected
-        on:select
-      />
-      <div class="clear-mins h-4 flex-no-shrink" />
     {:else}
-      <div class="flex-col-center justify-center h-full">
-        <Icon icon={IconInbox} size={'full'} />
-        <div class="mt-4 fs-bold content-dark-color"><Label label={plugin.string.Incoming} /></div>
-      </div>
+      <div />
     {/if}
+    <Button
+      icon={IconShare}
+      kind={'ghost'}
+      showTooltip={{ label: gmail.string.ShareMessages }}
+      on:click={async () => {
+        selectable = !selectable
+      }}
+    />
+  {/if}
+</div>
+
+{#if messages && messages.length > 0}
+  <div class="antiVSpacer x2" />
+  <Scroller padding={'.5rem 1rem'}>
+    <Messages
+      messages={convertMessages(object, channel, messages, $personAccountByIdStore, $employeeByIdStore)}
+      {selectable}
+      bind:selected
+      on:select
+    />
+    <div class="antiVSpacer x2" />
+  </Scroller>
+  <div class="antiVSpacer x2" />
+{:else}
+  <div class="flex-col-center justify-center h-full">
+    <Icon icon={IconInbox} size={'full'} />
+    <div class="mt-4 fs-bold content-dark-color"><Label label={plugin.string.Incoming} /></div>
   </div>
-</Scroller>
+{/if}

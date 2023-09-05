@@ -23,7 +23,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { Integration } from '@hcengineering/setting'
   import templates, { TemplateDataProvider } from '@hcengineering/templates'
-  import { Button, Icon, Label, Panel, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { Button, Icon, Label, Dialog, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import gmail from '../plugin'
   import { convertMessage } from '../utils'
@@ -94,23 +94,21 @@
 </script>
 
 {#if channel && object}
-  <Panel
-    isHeader={true}
-    isAside={false}
+  <Dialog
     isFullSize
-    {embedded}
+    padding={'0'}
     on:fullsize
     on:close={() => {
       dispatch('close')
     }}
   >
     <svelte:fragment slot="title">
-      <div class="antiTitle icon-wrapper">
-        <div class="wrapped-icon"><Icon icon={contact.icon.Email} size={'medium'} /></div>
+      <div class="antiTitle icon-wrapper ml-2">
+        <div class="wrapped-icon"><Icon icon={contact.icon.Email} size={'small'} /></div>
         <div class="title-wrapper">
           <span class="wrapped-title">Email</span>
           <span class="wrapped-subtitle">
-            <b>{getName(client.getHierarchy(), object)}</b>
+            {getName(client.getHierarchy(), object)}
           </span>
         </div>
       </div>
@@ -121,13 +119,14 @@
         <Button
           label={gmail.string.Connect}
           kind={'accented'}
+          size={'medium'}
           on:click={(e) => {
             showPopup(Connect, {}, eventToHTMLElement(e))
           }}
         />
       {:else}
-        <Label label={gmail.string.From} />
-        <IntegrationSelector bind:selected={selectedIntegration} {integrations} />
+        <span class="content-darker-color text-sm mr-1-5"><Label label={gmail.string.From} /></span>
+        <IntegrationSelector bind:selected={selectedIntegration} {integrations} size={'medium'} kind={'ghost'} />
       {/if}
     </svelte:fragment>
 
@@ -138,5 +137,5 @@
     {:else}
       <Chats {object} {channel} bind:newMessage enabled={integrations.length > 0} on:select={selectHandler} />
     {/if}
-  </Panel>
+  </Dialog>
 {/if}

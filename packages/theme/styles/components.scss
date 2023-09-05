@@ -1098,7 +1098,7 @@
 }
 
 /* Kanban - global style */
-.kanban-container .card-container .antiButton.link-bordered { padding: 0 .5rem; }
+.kanban-container .card-container .antiButton.link-bordered { padding: 0 .5rem !important; }
 .kanban-container .card-container .card-labels > *:not(.labels-container),
 .kanban-container .card-container .card-labels.labels .labels-container > * {
   margin: .25rem .25rem 0 0;

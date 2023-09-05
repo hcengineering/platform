@@ -57,81 +57,56 @@
   $: user = currentMessage.incoming ? currentMessage.receiver : currentMessage.sender
 </script>
 
-<div class="popupPanel-body__main-header bottom-divider">
-  <div class="flex-between p-2">
-    <div class="flex-row-center clear-mins">
-      <Button
-        icon={IconArrowLeft}
-        kind={'ghost'}
-        on:click={() => {
-          dispatch('close')
-        }}
-      />
-      <div class="flex-grow flex-col clear-mins ml-2 mr-2">
-        <div class="overflow-label" use:tooltip={{ label: getEmbeddedLabel(currentMessage.subject) }}>
-          {currentMessage.subject}
-        </div>
-        <span class="content-color">
-          <Label label={currentMessage.incoming ? gmail.string.From : gmail.string.To} />
-          <b>{title}</b>
-        </span>
+<div class="flex-between min-h-12 px-2">
+  <div class="flex-row-center clear-mins">
+    <Button
+      icon={IconArrowLeft}
+      kind={'ghost'}
+      on:click={() => {
+        dispatch('close')
+      }}
+    />
+    <div class="flex-grow flex-col clear-mins ml-2 mr-2">
+      <div class="overflow-label" use:tooltip={{ label: getEmbeddedLabel(currentMessage.subject) }}>
+        {currentMessage.subject}
       </div>
-    </div>
-    <div class="buttons-group small-gap">
-      <Button
-        label={hasError ? gmail.string.Resend : gmail.string.Reply}
-        size={'small'}
-        kind={'accented'}
-        on:click={() => {
-          if (hasError) {
-            resendMessage()
-            dispatch('close')
-          } else newMessage = true
-        }}
-      />
+      <span class="content-color">
+        <Label label={currentMessage.incoming ? gmail.string.From : gmail.string.To} />
+        <b>{title}</b>
+      </span>
     </div>
   </div>
+  <Button
+    label={hasError ? gmail.string.Resend : gmail.string.Reply}
+    on:click={() => {
+      if (hasError) {
+        resendMessage()
+        dispatch('close')
+      } else newMessage = true
+    }}
+  />
 </div>
-<Scroller>
-  <div class="popupPanel-body__main-content py-4 h-full">
-    <Label label={currentMessage.incoming ? gmail.string.To : gmail.string.From} />
-    {user}
-    {#if currentMessage.copy?.length}
-      <Label label={gmail.string.Copy} />: {currentMessage.copy.join(', ')}
-    {/if}
-    {#if attachments.length}
-      <div class="flex-row-center list mt-2">
-        {#each attachments as attachment}
-          <div class="item flex">
-            <AttachmentPresenter value={attachment} showPreview />
-          </div>
-        {/each}
-      </div>
-    {/if}
-    <div class="flex-col content clear-mins h-full">
-      <FullMessageContent content={currentMessage.content} />
-    </div>
+
+<div class="flex-col justify-center bottom-divider min-h-8 pl-12 pt-2 pb-2 pr-2">
+  <div class="flex-row-center gap-2">
+    <Label label={currentMessage.incoming ? gmail.string.To : gmail.string.From} />&nbsp;
+    <b>{user}</b>
   </div>
+  {#if currentMessage.copy?.length}
+    <Label label={gmail.string.Copy} />: {currentMessage.copy.join(', ')}
+  {/if}
+</div>
+{#if attachments.length}
+  <div class="flex-row-center background-bg-accent-color bottom-divider">
+    <Scroller padding={'.5rem'} gap={'gap-2'} horizontal contentDirection={'horizontal'} noFade={false}>
+      {#each attachments as attachment}
+        <AttachmentPresenter value={attachment} showPreview />
+      {/each}
+    </Scroller>
+    {#if attachments.length}<div class="antiHSpacer x2" />{/if}
+  </div>
+{/if}
+
+<Scroller padding={'1rem'}>
+  <FullMessageContent content={currentMessage.content} />
 </Scroller>
-
-<style lang="scss">
-  .list {
-    padding: 0.5rem;
-    color: var(--caption-color);
-    overflow-x: auto;
-    overflow-y: hidden;
-    background-color: var(--accent-bg-color);
-    border: 1px solid var(--divider-color);
-    border-radius: 0.25rem;
-
-    .item + .item {
-      padding-left: 1rem;
-      border-left: 1px solid var(--divider-color);
-    }
-  }
-  .content {
-    margin-top: 1rem;
-    background-color: var(--incoming-msg);
-    border-radius: 0.25rem;
-  }
-</style>
