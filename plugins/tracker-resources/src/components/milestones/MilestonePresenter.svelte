@@ -15,7 +15,13 @@
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
   import { Milestone } from '@hcengineering/tracker'
-  import { Icon, getPlatformAvatarColorDef, getPlatformAvatarColorForTextDef, themeStore } from '@hcengineering/ui'
+  import {
+    Icon,
+    getPlatformAvatarColorDef,
+    getPlatformAvatarColorForTextDef,
+    themeStore,
+    tooltip
+  } from '@hcengineering/ui'
   import { DocNavLink } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../plugin'
@@ -41,15 +47,19 @@
 
 {#if value}
   <DocNavLink object={value} {disabled} {inline} {accent} noUnderline={disabled} {onClick}>
-    <div class="flex-presenter" class:inline-presenter={inline}>
-      {#if !inline && shouldShowAvatar}
-        <div class="icon">
-          <Icon icon={tracker.icon.Milestone} size="small" />
-        </div>
-      {/if}
-      <span title={value.label} class="overflow-label label" class:no-underline={disabled} class:fs-bold={accent}>
-        {value.label}
-      </span>
-    </div>
+    {#if inline}
+      <span class="antiMention" use:tooltip={{ label: tracker.string.Milestone }}>@{value.label}</span>
+    {:else}
+      <div class="flex-presenter">
+        {#if shouldShowAvatar}
+          <div class="icon">
+            <Icon icon={tracker.icon.Milestone} size="small" />
+          </div>
+        {/if}
+        <span title={value.label} class="overflow-label label" class:no-underline={disabled} class:fs-bold={accent}>
+          {value.label}
+        </span>
+      </div>
+    {/if}
   </DocNavLink>
 {/if}

@@ -58,7 +58,7 @@
       if (attributeModel) {
         const breadcrumbsModel: BreadcrumbsModel = {
           component: attributeModel.presenter,
-          props: { inline: true, ...(attributeModel.props ?? {}), value: parent }
+          props: { shouldShowAvatar: false, ...(attributeModel.props ?? {}), value: parent }
         }
 
         models.push(breadcrumbsModel)

@@ -70,6 +70,7 @@ const lead = plugin(leadId, {
     Customer: '' as Ref<Mixin<Customer>>
   },
   string: {
+    Lead: '' as IntlString,
     ConfigLabel: '' as IntlString
   },
   icon: {

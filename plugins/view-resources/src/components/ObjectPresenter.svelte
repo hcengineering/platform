@@ -22,7 +22,7 @@
   export let _class: Ref<Class<Doc>> | undefined = undefined
   export let value: Doc | RelatedDocument | undefined = undefined
   export let props: Record<string, any> = {}
-  export let inline: boolean = true
+  export let inline: boolean = false
   export let accent: boolean = false
   export let shouldShowAvatar: boolean = true
   export let noUnderline: boolean = false

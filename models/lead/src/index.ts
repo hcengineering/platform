@@ -324,7 +324,6 @@ export function createModel (builder: Builder): void {
           sortingKey: '$lookup.attachedTo.name',
           props: {
             _class: lead.mixin.Customer,
-            inline: true,
             maxWidth: '10rem'
           }
         },

@@ -208,7 +208,7 @@
   <div class="message clear-mins">
     <div class="header clear-mins">
       {#if employee}
-        <EmployeePresenter value={employee} shouldShowAvatar={false} inline />
+        <EmployeePresenter value={employee} shouldShowAvatar={false} />
       {/if}
       <span>{getTime(message.createdOn ?? 0)}</span>
       {#if message.editedOn}
