@@ -41,6 +41,7 @@ import {
   EmailNotification,
   Notification,
   NotificationGroup,
+  NotificationPreferencesGroup,
   notificationId,
   NotificationObjectPresenter,
   NotificationPreview,
@@ -118,6 +119,13 @@ export class TNotificationGroup extends TDoc implements NotificationGroup {
   objectClass?: Ref<Class<Doc>>
 }
 
+@Model(notification.class.NotificationPreferencesGroup, core.class.Doc, DOMAIN_MODEL)
+export class TNotificationPreferencesGroup extends TDoc implements NotificationPreferencesGroup {
+  label!: IntlString
+  icon!: Asset
+  presenter!: AnyComponent
+}
+
 @Model(notification.class.NotificationProvider, core.class.Doc, DOMAIN_MODEL)
 export class TNotificationProvider extends TDoc implements NotificationProvider {
   label!: IntlString
@@ -178,6 +186,7 @@ export function createModel (builder: Builder): void {
     TNotificationProvider,
     TNotificationSetting,
     TNotificationGroup,
+    TNotificationPreferencesGroup,
     TClassCollaborators,
     TCollaborators,
     TDocUpdates,

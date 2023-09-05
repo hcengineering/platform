@@ -80,6 +80,15 @@ export interface NotificationGroup extends Doc {
 /**
  * @public
  */
+export interface NotificationPreferencesGroup extends Doc {
+  label: IntlString
+  icon: Asset
+  presenter: AnyComponent
+}
+
+/**
+ * @public
+ */
 export interface NotificationTemplate {
   textTemplate: string
   htmlTemplate: string
@@ -218,7 +227,8 @@ const notification = plugin(notificationId, {
     NotificationProvider: '' as Ref<Class<NotificationProvider>>,
     NotificationSetting: '' as Ref<Class<NotificationSetting>>,
     DocUpdates: '' as Ref<Class<DocUpdates>>,
-    NotificationGroup: '' as Ref<Class<NotificationGroup>>
+    NotificationGroup: '' as Ref<Class<NotificationGroup>>,
+    NotificationPreferencesGroup: '' as Ref<Class<NotificationPreferencesGroup>>
   },
   ids: {
     NotificationSettings: '' as Ref<Doc>,
