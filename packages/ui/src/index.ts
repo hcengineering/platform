@@ -115,6 +115,7 @@ export { default as Timeline } from './components/Timeline.svelte'
 export { default as TimeShiftPresenter } from './components/TimeShiftPresenter.svelte'
 
 export { default as IconAdd } from './components/icons/Add.svelte'
+export { default as IconCopy } from './components/icons/Copy.svelte'
 export { default as IconStart } from './components/icons/Start.svelte'
 export { default as IconStop } from './components/icons/Stop.svelte'
 export { default as IconBack } from './components/icons/Back.svelte'
