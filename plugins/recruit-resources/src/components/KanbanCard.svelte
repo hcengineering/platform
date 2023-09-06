@@ -50,7 +50,10 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="flex-col pt-3 pb-3 pr-4 pl-4" on:click={showCandidate}>
   {#if enabledConfig(config, 'space') || enabledConfig(config, 'company')}
-    <div class="flex-between mb-3">
+    <div
+      class="flex-between gap-2 mb-3"
+      class:flex-between-half-content={enabledConfig(config, 'space') && company && enabledConfig(config, 'company')}
+    >
       {#if enabledConfig(config, 'space')}
         <ObjectPresenter _class={recruit.class.Vacancy} objectId={object.space} value={object.$lookup?.space} />
       {/if}
@@ -118,7 +121,7 @@
   <div class="flex-between">
     <div class="flex-row-center gap-3 reverse mr-4">
       {#if enabledConfig(config, '')}
-        <ApplicationPresenter value={object} inline />
+        <ApplicationPresenter value={object} />
       {/if}
       {#if (object.attachments ?? 0) > 0 && enabledConfig(config, 'attachments')}
         <AttachmentsPresenter value={object.attachments} {object} />

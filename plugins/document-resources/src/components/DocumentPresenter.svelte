@@ -17,7 +17,8 @@
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
   import { Document } from '@hcengineering/document'
-  import { getPanelURI, Icon } from '@hcengineering/ui'
+  import { tooltip, Icon } from '@hcengineering/ui'
+  import { DocNavLink } from '@hcengineering/view-resources'
   import document from '../plugin'
 
   export let value: WithLookup<Document>
@@ -27,16 +28,17 @@
 </script>
 
 {#if value}
-  <a
-    class="flex-presenter"
-    href="#{getPanelURI(document.component.EditDoc, value._id, value._class, 'content')}"
-    class:inline-presenter={inline}
-  >
-    {#if !inline}
+  <DocNavLink {disabled} object={value} {inline} {accent} noUnderline={disabled} component={document.component.EditDoc}>
+    {#if inline}
+      <span class="antiMention" use:tooltip={{ label: document.string.Document }}>
+        @{value.name}-{value.version}
+      </span>
+    {:else}
       <div class="icon">
         <Icon icon={document.icon.Document} size={'small'} />
       </div>
+      <span class="label nowrap" class:no-underline={disabled} class:fs-bold={accent}>{value.name}-{value.version}</span
+      >
     {/if}
-    <span class="label nowrap" class:no-underline={disabled} class:fs-bold={accent}>{value.name}-{value.version}</span>
-  </a>
+  </DocNavLink>
 {/if}

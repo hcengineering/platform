@@ -695,8 +695,7 @@ export function createModel (builder: Builder): void {
           label: recruit.string.Talent,
           sortingKey: '$lookup.attachedTo.name',
           props: {
-            _class: recruit.mixin.Candidate,
-            inline: true
+            _class: recruit.mixin.Candidate
           }
         },
         { key: 'attachments', displayProps: { key: 'attachments', suffix: true } },
@@ -712,7 +711,6 @@ export function createModel (builder: Builder): void {
           key: '$lookup.space.company',
           displayProps: { fixed: 'left', key: 'company' },
           props: {
-            inline: true,
             maxWidth: '10rem'
           }
         },

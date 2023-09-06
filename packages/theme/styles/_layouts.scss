@@ -278,6 +278,12 @@ input.search {
 .flex-gap-1-5 { gap: .375rem; }
 .flex-gap-1 { gap: .25rem; }
 
+.flex-between-half-content > * {
+  flex-basis: 50%;
+
+  &:last-child { justify-content: flex-end; }
+}
+
 .flex-break {  
   flex-basis: 100%;
   height: 0;
