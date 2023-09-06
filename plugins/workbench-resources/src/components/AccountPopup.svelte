@@ -15,9 +15,8 @@
 <script lang="ts">
   import contact, { Employee, PersonAccount, formatName } from '@hcengineering/contact'
   import { AccountRole, getCurrentAccount, Ref } from '@hcengineering/core'
-  import login, { loginId } from '@hcengineering/login'
-  import { setMetadata } from '@hcengineering/platform'
-  import presentation, { closeClient, createQuery } from '@hcengineering/presentation'
+  import login from '@hcengineering/login'
+  import { createQuery } from '@hcengineering/presentation'
   import setting, { SettingsCategory, settingId } from '@hcengineering/setting'
   import {
     Action,
@@ -26,17 +25,15 @@
     closePanel,
     closePopup,
     deviceOptionsStore as deviceInfo,
-    fetchMetadataLocalStorage,
-    getCurrentLocation,
     getCurrentResolvedLocation,
     locationToUrl,
     navigate,
-    setMetadataLocalStorage,
     showPopup
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import workbench from '../plugin'
   import HelpAndSupport from './HelpAndSupport.svelte'
+  import { signOut } from '../utils'
 
   let items: SettingsCategory[] = []
 
@@ -75,20 +72,6 @@
     if (sp) loc.path[3] = sp.name
     loc.path.length = 4
     navigate(loc)
-  }
-
-  function signOut (): void {
-    const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
-    if (tokens !== null) {
-      const loc = getCurrentLocation()
-      delete tokens[loc.path[1]]
-      setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
-    }
-    setMetadata(presentation.metadata.Token, null)
-    setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
-    setMetadataLocalStorage(login.metadata.LoginEmail, null)
-    closeClient()
-    navigate({ path: [loginId] })
   }
 
   function inviteWorkspace (): void {

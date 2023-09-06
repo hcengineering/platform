@@ -18,14 +18,22 @@ import type { Class, Client, Doc, Obj, Ref, Space, TxOperations } from '@hcengin
 import core from '@hcengineering/core'
 import type { Workspace } from '@hcengineering/login'
 import type { Asset } from '@hcengineering/platform'
-import { getResource } from '@hcengineering/platform'
+import { getResource, setMetadata } from '@hcengineering/platform'
 import preference from '@hcengineering/preference'
-import { getClient } from '@hcengineering/presentation'
-import { closePanel, getCurrentLocation, navigate } from '@hcengineering/ui'
+import { closeClient, getClient } from '@hcengineering/presentation'
+import {
+  closePanel,
+  fetchMetadataLocalStorage,
+  getCurrentLocation,
+  navigate,
+  setMetadataLocalStorage
+} from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import type { Application } from '@hcengineering/workbench'
 import workbench, { NavigatorModel } from '@hcengineering/workbench'
 import { writable } from 'svelte/store'
+import login, { loginId } from '@hcengineering/login'
+import presentation from '@hcengineering/presentation/src/plugin'
 
 export function classIcon (client: Client, _class: Ref<Class<Obj>>): Asset | undefined {
   return client.getHierarchy().getClass(_class).icon
@@ -180,4 +188,20 @@ export async function buildNavModel (
     }
   }
   return newNavModel
+}
+
+export function signOut (): void {
+  const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
+  if (tokens !== null) {
+    const loc = getCurrentLocation()
+    const l = loc.path[1]
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+    delete tokens[l]
+    setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
+  }
+  setMetadata(presentation.metadata.Token, null)
+  setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
+  setMetadataLocalStorage(login.metadata.LoginEmail, null)
+  void closeClient()
+  navigate({ path: [loginId] })
 }

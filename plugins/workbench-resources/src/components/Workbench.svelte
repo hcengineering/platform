@@ -22,7 +22,7 @@
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import support, { SupportStatus } from '@hcengineering/support'
-  import { locationStorageKeyId } from '@hcengineering/ui'
+  import { locationStorageKeyId, Button } from '@hcengineering/ui'
   import {
     AnyComponent,
     CompAndProps,
@@ -64,7 +64,7 @@
   import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { subscribeMobile } from '../mobile'
   import workbench from '../plugin'
-  import { buildNavModel, workspacesStore } from '../utils'
+  import { buildNavModel, workspacesStore, signOut } from '../utils'
   import AccountPopup from './AccountPopup.svelte'
   import AppItem from './AppItem.svelte'
   import AppSwitcher from './AppSwitcher.svelte'
@@ -796,6 +796,7 @@
   <div class="flex-col-center justify-center h-full flex-grow">
     <h1><Label label={workbench.string.AccountDisabled} /></h1>
     <Label label={workbench.string.AccountDisabledDescr} />
+    <Button label={setting.string.Signout} kind={'link'} size={'small'} on:click={() => signOut()} />
   </div>
 {/if}
 
