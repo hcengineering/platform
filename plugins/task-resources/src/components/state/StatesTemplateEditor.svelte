@@ -53,6 +53,7 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
+  const hierarchy = client.getHierarchy()
 
   const elements: HTMLElement[] = []
   let selected: number | undefined
@@ -95,7 +96,11 @@
   const spaceEditor = space.editor
 
   function add (_class: Ref<Class<StateTemplate | DoneStateTemplate>>) {
+    const ofAttribute = hierarchy.isDerived(_class, task.class.DoneStateTemplate)
+      ? space.doneAttribute
+      : space.ofAttribute
     showPopup(task.component.CreateStateTemplatePopup, {
+      ofAttribute,
       space,
       template,
       _class
@@ -103,7 +108,10 @@
   }
 
   function edit (status: StateTemplate) {
-    showPopup(task.component.CreateStateTemplatePopup, { status, template, space })
+    const ofAttribute = hierarchy.isDerived(status._class, task.class.DoneStateTemplate)
+      ? space.doneAttribute
+      : space.ofAttribute
+    showPopup(task.component.CreateStateTemplatePopup, { status, template, space, ofAttribute })
   }
 </script>
 

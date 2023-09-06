@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Data, Ref } from '@hcengineering/core'
+  import { Attribute, Class, Data, Ref, Status } from '@hcengineering/core'
   import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
   import { DoneState, SpaceWithStates, State, createState } from '@hcengineering/task'
   import { EditBox, Label } from '@hcengineering/ui'
@@ -25,6 +25,7 @@
   const hierarchy = client.getHierarchy()
   export let status: State | undefined = undefined
   export let _class: Ref<Class<State | DoneState>> | undefined = status?._class
+  export let ofAttribute: Ref<Attribute<Status>>
   export let value = status?.name ?? ''
   export let space: Ref<SpaceWithStates>
 
@@ -40,7 +41,7 @@
     if (status === undefined) {
       if (!hierarchy.isDerived(_class, task.class.DoneState)) {
         const newDoc: Data<State> = {
-          ofAttribute: task.attribute.State,
+          ofAttribute,
           name: value.trim(),
           color: 9
         }
@@ -48,7 +49,7 @@
         await client.update(_space, { $push: { states: id } })
       } else {
         const newDoc: Data<DoneState> = {
-          ofAttribute: task.attribute.DoneState,
+          ofAttribute,
           name: value.trim()
         }
         const id = await createState(client, _class, newDoc)

@@ -15,7 +15,7 @@
 //
 
 import { Employee } from '@hcengineering/contact'
-import type { Class, Doc, Markup, Ref, Timestamp, Type } from '@hcengineering/core'
+import type { Attribute, Class, Doc, Markup, Ref, Timestamp, Type } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
@@ -119,6 +119,10 @@ const boards = plugin(boardId, {
   },
   string: {
     ConfigLabel: '' as IntlString
+  },
+  attribute: {
+    State: '' as Ref<Attribute<State>>,
+    DoneState: '' as Ref<Attribute<DoneState>>
   },
   icon: {
     Board: '' as Asset,

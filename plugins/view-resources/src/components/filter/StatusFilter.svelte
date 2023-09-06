@@ -13,27 +13,27 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Doc, FindResult, IdMap, Ref, RefTo, Space, Status } from '@hcengineering/core'
+  import core, { Doc, FindResult, IdMap, Ref, RefTo, Space, Status, toIdMap } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import task, { SpaceWithStates } from '@hcengineering/task'
   import ui, {
-    addNotification,
-    deviceOptionsStore,
     EditWithIcon,
     Icon,
     IconCheck,
     IconSearch,
     Label,
     Loading,
+    addNotification,
+    deviceOptionsStore,
     resizeObserver,
     themeStore
   } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
-  import { buildConfigLookup, getPresenter } from '../../utils'
-  import view from '../../plugin'
   import { FILTER_DEBOUNCE_MS, FilterRemovedNotification, sortFilterValues, statusStore } from '../..'
+  import view from '../../plugin'
+  import { buildConfigLookup, getPresenter } from '../../utils'
 
   export let filter: Filter
   export let space: Ref<Space> | undefined = undefined
@@ -76,11 +76,11 @@
     }
 
     if (space !== undefined) {
-      const _space = await client.findOne(core.class.Space, { _id: space })
+      const _space = await client.findOne(task.class.SpaceWithStates, { _id: space as Ref<SpaceWithStates> })
       if (_space) {
-        values = (_space as any)[filter.key.key]
-          .map((p: Ref<Status>) => statusStore.get(p))
-          .filter((p: Status) => p !== undefined)
+        const targetClass = (filter.key.attribute.type as RefTo<Status>).to
+        const key = hierarchy.isDerived(targetClass, task.class.DoneState) ? 'doneStates' : 'states'
+        values = (_space as any)[key].map((p: Ref<Status>) => statusStore.get(p)).filter((p: Status) => p !== undefined)
         for (const value of values) {
           targets.add(value?._id)
         }
@@ -89,13 +89,14 @@
         }
       }
     } else {
-      values = []
+      const statuses: Status[] = []
       for (const status of statusStore.values()) {
-        if (hierarchy.isDerived(status._class, targetClass)) {
-          values.push(status)
+        if (hierarchy.isDerived(status._class, targetClass) && status.ofAttribute === filter.key.attribute._id) {
+          statuses.push(status)
           targets.add(status._id)
         }
       }
+      values = await sort(statuses)
     }
     if (targets.has(undefined)) {
       values.unshift(undefined)
@@ -118,6 +119,26 @@
     }
     values = sortFilterValues(values, (v) => isSelected(v, filter.value))
     objectsPromise = undefined
+  }
+
+  async function sort (statuses: Status[]): Promise<Status[]> {
+    const categories = toIdMap(await client.findAll(core.class.StatusCategory, {}))
+    statuses.sort((a, b) => {
+      if (a.category !== undefined && b.category !== undefined && a.category !== b.category) {
+        const aCat = categories.get(a.category)
+        const bCat = categories.get(b.category)
+        if (aCat !== undefined && bCat !== undefined) {
+          return aCat.order - bCat.order
+        }
+      }
+      if (_space != null) {
+        const aIndex = _space.states.findIndex((s) => s === a._id)
+        const bIndex = _space.states.findIndex((s) => s === b._id)
+        return aIndex - bIndex
+      }
+      return a.name.localeCompare(b.name)
+    })
+    return statuses
   }
 
   function isSelected (value: Doc | undefined | null, values: any[]): boolean {
@@ -182,7 +203,14 @@
                 <div class="flex-row-center">
                   {#if value}
                     {#key value._id}
-                      <svelte:component this={attribute.presenter} {value} {...attribute.props} disabled oneLine />
+                      <svelte:component
+                        this={attribute.presenter}
+                        {value}
+                        {...attribute.props}
+                        {space}
+                        disabled
+                        oneLine
+                      />
                     {/key}
                   {:else}
                     <Label label={ui.string.NotSelected} />

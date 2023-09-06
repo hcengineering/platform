@@ -60,6 +60,7 @@ export default mergeIds(leadId, lead, {
     Lead: '' as Ref<ActionCategory>
   },
   action: {
+    EditStatuses: '' as Ref<Action>,
     CreateGlobalLead: '' as Ref<Action>
   },
   ids: {

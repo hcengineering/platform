@@ -22,7 +22,7 @@ import task, { KanbanTemplate, createStates } from '@hcengineering/task'
 import board from './plugin'
 
 async function createSpace (tx: TxOperations): Promise<void> {
-  const currentTemplate = await tx.findOne(core.class.Space, {
+  const currentTemplate = await tx.findOne(task.class.KanbanTemplateSpace, {
     _id: board.space.BoardTemplates
   })
   if (currentTemplate === undefined) {
@@ -36,10 +36,17 @@ async function createSpace (tx: TxOperations): Promise<void> {
         private: false,
         archived: false,
         members: [],
-        attachedToClass: board.class.Board
+        attachedToClass: board.class.Board,
+        ofAttribute: board.attribute.State,
+        doneAttribute: board.attribute.DoneState
       },
       board.space.BoardTemplates
     )
+  } else if (currentTemplate.ofAttribute === undefined) {
+    await tx.update(currentTemplate, {
+      ofAttribute: board.attribute.State,
+      doneAttribute: board.attribute.DoneState
+    })
   }
 
   const current = await tx.findOne(core.class.Space, {
@@ -47,7 +54,7 @@ async function createSpace (tx: TxOperations): Promise<void> {
   })
   if (current === undefined) {
     const defaultTmpl = await createDefaultKanbanTemplate(tx)
-    const [states, doneStates] = await createStates(tx, defaultTmpl)
+    const [states, doneStates] = await createStates(tx, board.attribute.State, board.attribute.DoneState, defaultTmpl)
     await tx.createDoc(
       board.class.Board,
       core.space.Space,
@@ -77,13 +84,18 @@ async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<Kanba
     ]
   }
 
-  return await createKanbanTemplate(tx, {
-    kanbanId: board.template.DefaultBoard,
-    space: board.space.BoardTemplates,
-    title: 'Default board',
-    states: defaultKanban.states,
-    doneStates: defaultKanban.doneStates
-  })
+  return await createKanbanTemplate(
+    tx,
+    {
+      kanbanId: board.template.DefaultBoard,
+      space: board.space.BoardTemplates,
+      title: 'Default board',
+      states: defaultKanban.states,
+      doneStates: defaultKanban.doneStates
+    },
+    board.attribute.State,
+    board.attribute.DoneState
+  )
 }
 async function createDefaults (tx: TxOperations): Promise<void> {
   await createSpace(tx)

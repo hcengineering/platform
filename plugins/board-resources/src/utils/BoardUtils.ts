@@ -25,7 +25,7 @@ export async function createBoard (
   description: string,
   templateId?: Ref<KanbanTemplate>
 ): Promise<Ref<Board>> {
-  const [states, doneStates] = await createStates(client, templateId)
+  const [states, doneStates] = await createStates(client, board.attribute.State, board.attribute.DoneState, templateId)
 
   const boardRef = await client.createDoc(board.class.Board, core.space.Space, {
     name,

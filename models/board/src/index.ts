@@ -35,12 +35,13 @@ import contact from '@hcengineering/model-contact'
 import core, { TDoc, TType } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import tags from '@hcengineering/model-tags'
-import task, { TSpaceWithStates, TTask } from '@hcengineering/model-task'
+import task, { TSpaceWithStates, TTask, actionTemplates as taskActionTemplates } from '@hcengineering/model-task'
 import view, { actionTemplates, createAction, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import workbench, { Application } from '@hcengineering/model-workbench'
 import { IntlString } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 import board from './plugin'
+import { State } from '@hcengineering/task'
 
 export { boardId } from '@hcengineering/board'
 export { boardOperation } from './migration'
@@ -99,6 +100,9 @@ export class TCard extends TTask implements Card {
 
   @Prop(TypeDate(), task.string.StartDate)
     startDate!: Timestamp | null
+
+  @Prop(TypeRef(task.class.State), task.string.TaskState, { _id: board.attribute.State })
+  declare status: Ref<State>
 }
 
 @Model(board.class.MenuPage, core.class.Doc, DOMAIN_MODEL)
@@ -165,6 +169,27 @@ export function createModel (builder: Builder): void {
       }
     },
     board.app.Board
+  )
+
+  createAction(
+    builder,
+    {
+      ...taskActionTemplates.editStatus,
+      target: board.class.Board,
+      actionProps: {
+        ofAttribute: board.attribute.State,
+        doneOfAttribute: board.attribute.DoneState
+      },
+      query: {
+        archived: false
+      },
+      context: {
+        mode: ['context', 'browser'],
+        group: 'edit'
+      },
+      override: [task.action.EditStatuses]
+    },
+    board.action.EditStatuses
   )
 
   // const leadLookup: Lookup<Card> =

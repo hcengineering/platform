@@ -158,6 +158,8 @@ export class TKanbanTemplateSpace extends TSpace implements KanbanTemplateSpace 
   description!: IntlString
   icon!: AnyComponent
   editor!: AnyComponent
+  ofAttribute!: Ref<Attribute<State>>
+  doneAttribute!: Ref<Attribute<DoneState>>
   attachedToClass!: Ref<Class<Doc>>
 }
 
@@ -337,6 +339,10 @@ export function createModel (builder: Builder): void {
     {
       ...actionTemplates.editStatus,
       target: task.class.SpaceWithStates,
+      actionProps: {
+        ofAttribute: task.attribute.State,
+        doneOfAttribute: task.attribute.DoneState
+      },
       query: {
         archived: false
       },

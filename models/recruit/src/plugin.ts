@@ -31,7 +31,8 @@ export default mergeIds(recruitId, recruit, {
     CopyApplicationLink: '' as Ref<Action>,
     CopyCandidateLink: '' as Ref<Action>,
     MoveApplicant: '' as Ref<Action>,
-    GetTalentIds: '' as Ref<Action>
+    GetTalentIds: '' as Ref<Action>,
+    EditStatuses: '' as Ref<Action>
   },
   actionImpl: {
     CreateOpinion: '' as ViewAction,

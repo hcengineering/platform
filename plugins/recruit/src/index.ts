@@ -15,11 +15,21 @@
 
 import { Event } from '@hcengineering/calendar'
 import type { Channel, Organization, Person } from '@hcengineering/contact'
-import type { AttachedData, AttachedDoc, Class, Doc, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
+import type {
+  AttachedData,
+  AttachedDoc,
+  Attribute,
+  Class,
+  Doc,
+  Mixin,
+  Ref,
+  Space,
+  Timestamp
+} from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { TagReference } from '@hcengineering/tags'
-import type { KanbanTemplateSpace, SpaceWithStates, State, Task } from '@hcengineering/task'
+import type { DoneState, KanbanTemplateSpace, SpaceWithStates, State, Task } from '@hcengineering/task'
 import { AnyComponent, ResolvedLocation } from '@hcengineering/ui'
 
 /**
@@ -154,6 +164,10 @@ const recruit = plugin(recruitId, {
   mixin: {
     Candidate: '' as Ref<Mixin<Candidate>>,
     VacancyList: '' as Ref<Mixin<VacancyList>>
+  },
+  attribute: {
+    State: '' as Ref<Attribute<State>>,
+    DoneState: '' as Ref<Attribute<DoneState>>
   },
   component: {
     EditVacancy: '' as AnyComponent

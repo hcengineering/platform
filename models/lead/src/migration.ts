@@ -22,7 +22,7 @@ import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import lead from './plugin'
 
 async function createSpace (tx: TxOperations): Promise<void> {
-  const currentTemplate = await tx.findOne(core.class.Space, {
+  const currentTemplate = await tx.findOne(task.class.KanbanTemplateSpace, {
     _id: lead.space.FunnelTemplates
   })
   if (currentTemplate === undefined) {
@@ -36,10 +36,17 @@ async function createSpace (tx: TxOperations): Promise<void> {
         private: false,
         members: [],
         archived: false,
-        attachedToClass: lead.class.Funnel
+        attachedToClass: lead.class.Funnel,
+        ofAttribute: lead.attribute.State,
+        doneAttribute: lead.attribute.DoneState
       },
       lead.space.FunnelTemplates
     )
+  } else if (currentTemplate.ofAttribute === undefined) {
+    await tx.update(currentTemplate, {
+      ofAttribute: lead.attribute.State,
+      doneAttribute: lead.attribute.DoneState
+    })
   }
 
   const current = await tx.findOne(core.class.Space, {
@@ -47,7 +54,7 @@ async function createSpace (tx: TxOperations): Promise<void> {
   })
   if (current === undefined) {
     const defaultTmpl = await createDefaultKanbanTemplate(tx)
-    const [states, doneStates] = await createStates(tx, defaultTmpl)
+    const [states, doneStates] = await createStates(tx, lead.attribute.State, lead.attribute.DoneState, defaultTmpl)
     await tx.createDoc(
       lead.class.Funnel,
       core.space.Space,
@@ -81,13 +88,18 @@ async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<Kanba
     ]
   }
 
-  return await createKanbanTemplate(tx, {
-    kanbanId: lead.template.DefaultFunnel,
-    space: lead.space.FunnelTemplates,
-    title: 'Default funnel',
-    states: defaultKanban.states,
-    doneStates: defaultKanban.doneStates
-  })
+  return await createKanbanTemplate(
+    tx,
+    {
+      kanbanId: lead.template.DefaultFunnel,
+      space: lead.space.FunnelTemplates,
+      title: 'Default funnel',
+      states: defaultKanban.states,
+      doneStates: defaultKanban.doneStates
+    },
+    lead.attribute.State,
+    lead.attribute.DoneState
+  )
 }
 
 async function fixTemplateSpace (tx: TxOperations): Promise<void> {

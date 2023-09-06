@@ -62,6 +62,7 @@ export default mergeIds(boardId, board, {
     ConfigDescription: '' as IntlString
   },
   action: {
+    EditStatuses: '' as Ref<Action>,
     ConvertToCard: '' as Ref<Action>
   },
   actionImpl: {
