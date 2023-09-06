@@ -158,6 +158,8 @@ export interface KanbanTemplateSpace extends Space {
   name: IntlString
   description: IntlString
   icon: AnyComponent
+  ofAttribute: Ref<Attribute<State>>
+  doneAttribute?: Ref<Attribute<DoneState>>
   editor?: AnyComponent
   attachedToClass: Ref<Class<Doc>>
 }

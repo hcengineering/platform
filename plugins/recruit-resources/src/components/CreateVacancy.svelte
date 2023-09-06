@@ -174,7 +174,12 @@
 
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
-    const [states, doneStates] = await createStates(client, templateId)
+    const [states, doneStates] = await createStates(
+      client,
+      recruit.attribute.State,
+      recruit.attribute.DoneState,
+      templateId
+    )
 
     const id = await client.createDoc(
       recruit.class.Vacancy,

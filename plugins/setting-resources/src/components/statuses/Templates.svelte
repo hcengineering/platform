@@ -28,7 +28,7 @@
   let templateMap = new Map<Ref<KanbanTemplate>, KanbanTemplate>()
   const templatesQ = createQuery()
   $: if (folder !== undefined) {
-    templatesQ.query(task.class.KanbanTemplate, { space: folder._id as Ref<Doc> as Ref<Space> }, (result) => {
+    templatesQ.query(task.class.KanbanTemplate, { space: folder._id }, (result) => {
       templates = result
     })
   } else {
@@ -81,7 +81,7 @@
 
     await Promise.all(
       doneStates.map(async (ds) => {
-        await client.createDoc(ds.class, space as Ref<Doc> as Ref<Space>, {
+        await client.createDoc(ds.class, space, {
           attachedTo: template,
           ofAttribute: task.attribute.DoneState,
           name: ds.name,

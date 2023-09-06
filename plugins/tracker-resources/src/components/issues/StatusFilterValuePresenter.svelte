@@ -46,7 +46,7 @@
 </script>
 
 <div class="flex-presenter flex-gap-1-5">
-  {#each statuses as value, i}
+  {#each statuses as value, i (value._id)}
     {#if value && i < 5}
       <div>
         <IssueStatusIcon {space} {value} size={'small'} />

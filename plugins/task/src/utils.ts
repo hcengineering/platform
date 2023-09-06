@@ -13,7 +13,17 @@
 // limitations under the License.
 //
 
-import { Class, Data, DocumentQuery, IdMap, Ref, SortingOrder, Status, TxOperations } from '@hcengineering/core'
+import {
+  Attribute,
+  Class,
+  Data,
+  DocumentQuery,
+  IdMap,
+  Ref,
+  SortingOrder,
+  Status,
+  TxOperations
+} from '@hcengineering/core'
 import { LexoDecimal, LexoNumeralSystem36, LexoRank } from 'lexorank'
 import LexoRankBucket from 'lexorank/lib/lexoRank/lexoRankBucket'
 import task, { DoneState, DoneStateTemplate, KanbanTemplate, SpaceWithStates, State } from '.'
@@ -86,11 +96,13 @@ export async function createState<T extends Status> (
  */
 export async function createStates (
   client: TxOperations,
+  ofAttribute: Ref<Attribute<Status>>,
+  doneAtrtribute?: Ref<Attribute<DoneState>>,
   templateId?: Ref<KanbanTemplate>
 ): Promise<[Ref<Status>[], Ref<DoneState>[]]> {
   if (templateId === undefined) {
     const state = await createState(client, task.class.State, {
-      ofAttribute: task.attribute.State,
+      ofAttribute,
       name: 'New State',
       color: 9
     })
@@ -99,13 +111,13 @@ export async function createStates (
 
     doneStates.push(
       await createState(client, task.class.WonState, {
-        ofAttribute: task.attribute.DoneState,
+        ofAttribute: doneAtrtribute ?? ofAttribute,
         name: 'Won'
       })
     )
     doneStates.push(
       await createState(client, task.class.LostState, {
-        ofAttribute: task.attribute.DoneState,
+        ofAttribute: doneAtrtribute ?? ofAttribute,
         name: 'Lost'
       })
     )
@@ -131,7 +143,7 @@ export async function createStates (
   for (const state of tmplStates) {
     states.push(
       await createState(client, task.class.State, {
-        ofAttribute: task.attribute.State,
+        ofAttribute,
         color: state.color,
         description: state.description,
         name: state.name
@@ -157,7 +169,7 @@ export async function createStates (
 
     doneStates.push(
       await createState(client, cl, {
-        ofAttribute: task.attribute.DoneState,
+        ofAttribute: doneAtrtribute ?? ofAttribute,
         description: state.description,
         name: state.name
       })

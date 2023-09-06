@@ -55,7 +55,6 @@
       clip-rule="evenodd"
       d="M8 14C11.3137 14 14 11.3137 14 8C14 4.68629 11.3137 2 8 2C4.68629 2 2 4.68629 2 8C2 11.3137 4.68629 14 8 14ZM8 15C11.866 15 15 11.866 15 8C15 4.13401 11.866 1 8 1C4.13401 1 1 4.13401 1 8C1 11.866 4.13401 15 8 15Z"
     />
-
     {#if statusIcon.count && statusIcon.index}
       <path
         d="M 4.5 4.5 L 9 4.5 A 4.5 4.5 0 {statusIcon.index > (statusIcon.count - 1) / 2 ? 1 : 0} 1 {Math.cos(
@@ -66,7 +65,11 @@
         transform="translate(3.5,3.5)"
       />
     {:else}
-      <circle cx="8" cy="8" r="4" fill="var(--theme-error-color)" opacity=".15" />
+      <path
+        d="M 4.5 4.5 L 9 4.5 A 4.5 4.5 0 1 1 {Math.cos(Math.PI - 0.01) * 4.5 + 4.5} {Math.sin(Math.PI - 0.01) * 4.5 +
+          4.5} Z"
+        transform="translate(3.5,3.5)"
+      />
     {/if}
   {:else if category._id === tracker.issueStatusCategory.Completed}
     <path

@@ -92,15 +92,20 @@ async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<Kanba
     ]
   }
 
-  return await createKanbanTemplate(tx, {
-    kanbanId: recruit.template.DefaultVacancy,
-    space: recruit.space.VacancyTemplates as Ref<Doc> as Ref<Space>,
-    title: 'Default vacancy',
-    description: '',
-    shortDescription: '',
-    states: defaultKanban.states,
-    doneStates: defaultKanban.doneStates
-  })
+  return await createKanbanTemplate(
+    tx,
+    {
+      kanbanId: recruit.template.DefaultVacancy,
+      space: recruit.space.VacancyTemplates as Ref<Doc> as Ref<Space>,
+      title: 'Default vacancy',
+      description: '',
+      shortDescription: '',
+      states: defaultKanban.states,
+      doneStates: defaultKanban.doneStates
+    },
+    recruit.attribute.State,
+    recruit.attribute.DoneState
+  )
 }
 
 async function createSpaces (tx: TxOperations): Promise<void> {
@@ -142,7 +147,7 @@ async function createSpaces (tx: TxOperations): Promise<void> {
     await tx.update(currentReviews, { private: false })
   }
 
-  const currentTemplate = await tx.findOne(core.class.Space, {
+  const currentTemplate = await tx.findOne(task.class.KanbanTemplateSpace, {
     _id: recruit.space.VacancyTemplates
   })
   if (currentTemplate === undefined) {
@@ -157,9 +162,16 @@ async function createSpaces (tx: TxOperations): Promise<void> {
         private: false,
         members: [],
         archived: false,
-        attachedToClass: recruit.class.Vacancy
+        attachedToClass: recruit.class.Vacancy,
+        ofAttribute: recruit.attribute.State,
+        doneAttribute: recruit.attribute.DoneState
       },
       recruit.space.VacancyTemplates
     )
+  } else if (currentTemplate.ofAttribute === undefined) {
+    await tx.update(currentTemplate, {
+      ofAttribute: recruit.attribute.State,
+      doneAttribute: recruit.attribute.DoneState
+    })
   }
 }

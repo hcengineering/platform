@@ -15,11 +15,11 @@
 //
 
 import type { Contact } from '@hcengineering/contact'
-import type { Class, Doc, Ref, Timestamp } from '@hcengineering/core'
+import type { Attribute, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
 import { Mixin } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import type { KanbanTemplateSpace, SpaceWithStates, State, Task } from '@hcengineering/task'
+import type { DoneState, KanbanTemplateSpace, SpaceWithStates, State, Task } from '@hcengineering/task'
 
 /**
  * @public
@@ -72,6 +72,10 @@ const lead = plugin(leadId, {
   string: {
     Lead: '' as IntlString,
     ConfigLabel: '' as IntlString
+  },
+  attribute: {
+    State: '' as Ref<Attribute<State>>,
+    DoneState: '' as Ref<Attribute<DoneState>>
   },
   icon: {
     Funnel: '' as Asset,

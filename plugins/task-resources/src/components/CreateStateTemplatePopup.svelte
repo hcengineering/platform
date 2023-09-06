@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Data, Ref, SortingOrder } from '@hcengineering/core'
+  import { Attribute, Class, Data, Ref, SortingOrder, Status } from '@hcengineering/core'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
   import { DoneStateTemplate, KanbanTemplate, KanbanTemplateSpace, StateTemplate, calcRank } from '@hcengineering/task'
   import { EditBox, Label } from '@hcengineering/ui'
@@ -26,6 +26,7 @@
   export let status: StateTemplate | undefined = undefined
   export let _class: Ref<Class<StateTemplate | DoneStateTemplate>> | undefined = status?._class
   export let template: KanbanTemplate
+  export let ofAttribute: Ref<Attribute<Status>>
   export let space: KanbanTemplateSpace
   export let value = status?.name ?? ''
 
@@ -36,14 +37,14 @@
     if (_class !== undefined && status === undefined) {
       const lastOne = await client.findOne(_class, attachedTo, { sort: { rank: SortingOrder.Descending } })
       let newDoc: Data<StateTemplate> = {
-        ofAttribute: task.attribute.State,
+        ofAttribute,
         name: value.trim(),
         rank: calcRank(lastOne, undefined),
         ...attachedTo
       }
       if (!hierarchy.isDerived(_class, task.class.DoneState)) {
         newDoc = {
-          ofAttribute: task.attribute.State,
+          ofAttribute,
           name: value.trim(),
           color: 9,
           rank: calcRank(lastOne, undefined),

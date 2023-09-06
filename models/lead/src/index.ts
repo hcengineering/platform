@@ -81,7 +81,7 @@ export class TLead extends TTask implements Lead {
   @Prop(TypeRef(contact.mixin.Employee), lead.string.Assignee)
   declare assignee: Ref<Employee> | null
 
-  @Prop(TypeRef(task.class.State), task.string.TaskState, { _id: task.attribute.State })
+  @Prop(TypeRef(task.class.State), task.string.TaskState, { _id: lead.attribute.State })
   declare status: Ref<State>
 
   declare space: Ref<Funnel>
@@ -364,6 +364,27 @@ export function createModel (builder: Builder): void {
       attachedTo: lead.mixin.Customer
     }
   }
+
+  createAction(
+    builder,
+    {
+      ...actionTemplates.editStatus,
+      target: lead.class.Funnel,
+      actionProps: {
+        ofAttribute: lead.attribute.State,
+        doneOfAttribute: lead.attribute.DoneState
+      },
+      query: {
+        archived: false
+      },
+      context: {
+        mode: ['context', 'browser'],
+        group: 'edit'
+      },
+      override: [task.action.EditStatuses]
+    },
+    lead.action.EditStatuses
+  )
 
   builder.createDoc(
     notification.class.NotificationGroup,

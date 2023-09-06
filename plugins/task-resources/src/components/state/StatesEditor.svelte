@@ -14,12 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@hcengineering/core'
+  import { Attribute, Ref, Status } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import type { DoneState, KanbanTemplate, KanbanTemplateSpace, State } from '@hcengineering/task'
+  import type { DoneState, SpaceWithStates, State } from '@hcengineering/task'
   import {
     CircleButton,
-    Component,
     IconAdd,
     IconCircles,
     IconMoreH,
@@ -39,8 +38,9 @@
   import Won from '../icons/Won.svelte'
   import StatusesPopup from './StatusesPopup.svelte'
 
-  export let template: KanbanTemplate | undefined = undefined
-  export let space: KanbanTemplateSpace | undefined = undefined
+  export let space: Ref<SpaceWithStates>
+  export let ofAttribute: Ref<Attribute<Status>> = task.attribute.State
+  export let doneOfAttribute: Ref<Attribute<Status>> = task.attribute.DoneState
   export let states: State[] = []
   export let wonStates: DoneState[] = []
   export let lostStates: DoneState[] = []
@@ -86,12 +86,8 @@
 
         await client.updateDoc(state._class, state.space, state._id, { color })
       }
-  const spaceEditor = (space as KanbanTemplateSpace)?.editor
 </script>
 
-{#if spaceEditor}
-  <Component is={spaceEditor} props={{ template }} />
-{/if}
 <div class="flex-no-shrink flex-between trans-title uppercase">
   <Label label={task.string.ActiveStates} />
   <CircleButton
@@ -102,15 +98,15 @@
         task.component.CreateStatePopup,
         {
           space,
-          template,
-          _class: template !== undefined ? task.class.StateTemplate : task.class.State
+          ofAttribute,
+          _class: task.class.State
         },
         undefined
       )
     }}
   />
 </div>
-<div class="flex-col mt-3">
+<div class="flex-col flex-no-shrink mt-3">
   {#each states as state, i}
     {@const color = getPlatformColorDef(state.color ?? getColorNumberByText(state.name), $themeStore.dark)}
     {#if state}
@@ -155,7 +151,7 @@
                 onDelete: () => dispatch('delete', { state }),
                 showDelete: states.length > 1,
                 onUpdate: () => {
-                  showPopup(task.component.CreateStatePopup, { status: state, template }, undefined)
+                  showPopup(task.component.CreateStatePopup, { status: state, space, ofAttribute }, undefined)
                 }
               },
               eventToHTMLElement(ev),
@@ -169,7 +165,7 @@
     {/if}
   {/each}
 </div>
-<div class="flex-col mt-9">
+<div class="flex-col flex-no-shrink mt-9">
   <div class="flex-no-shrink flex-between trans-title uppercase">
     <Label label={task.string.DoneStatesWon} />
     <CircleButton
@@ -180,8 +176,8 @@
           task.component.CreateStatePopup,
           {
             space,
-            template,
-            _class: template !== undefined ? task.class.WonStateTemplate : task.class.WonState
+            ofAttribute: doneOfAttribute,
+            _class: task.class.WonState
           },
           undefined
         )
@@ -215,7 +211,11 @@
                   onDelete: () => dispatch('delete', { state }),
                   showDelete: wonStates.length > 1,
                   onUpdate: () => {
-                    showPopup(task.component.CreateStatePopup, { status: state, template }, undefined)
+                    showPopup(
+                      task.component.CreateStatePopup,
+                      { status: state, space, ofAttribute: doneOfAttribute },
+                      undefined
+                    )
                   }
                 },
                 eventToHTMLElement(ev),
@@ -230,7 +230,7 @@
     {/each}
   </div>
 </div>
-<div class="mt-9">
+<div class="mt-9 flex-no-shrink">
   <div class="flex-no-shrink flex-between trans-title uppercase">
     <Label label={task.string.DoneStatesLost} />
     <CircleButton
@@ -241,8 +241,8 @@
           task.component.CreateStatePopup,
           {
             space,
-            template,
-            _class: template !== undefined ? task.class.LostStateTemplate : task.class.LostState
+            ofAttribute: doneOfAttribute,
+            _class: task.class.LostState
           },
           undefined
         )
@@ -276,7 +276,11 @@
                   onDelete: () => dispatch('delete', { state }),
                   showDelete: lostStates.length > 1,
                   onUpdate: () => {
-                    showPopup(task.component.CreateStatePopup, { status: state, template }, undefined)
+                    showPopup(
+                      task.component.CreateStatePopup,
+                      { status: state, space, ofAttribute: doneOfAttribute },
+                      undefined
+                    )
                   }
                 },
                 eventToHTMLElement(ev),

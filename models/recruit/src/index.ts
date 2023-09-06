@@ -165,7 +165,7 @@ export class TApplicant extends TTask implements Applicant {
   @Prop(TypeRef(contact.mixin.Employee), recruit.string.AssignedRecruiter)
   declare assignee: Ref<Employee> | null
 
-  @Prop(TypeRef(task.class.State), task.string.TaskState, { _id: task.attribute.State })
+  @Prop(TypeRef(task.class.State), task.string.TaskState, { _id: recruit.attribute.State })
   declare status: Ref<State>
 }
 
@@ -366,6 +366,27 @@ export function createModel (builder: Builder): void {
       navHeaderComponent: recruit.component.NewCandidateHeader
     },
     recruit.app.Recruit
+  )
+
+  createAction(
+    builder,
+    {
+      ...actionTemplates.editStatus,
+      target: recruit.class.Vacancy,
+      actionProps: {
+        ofAttribute: recruit.attribute.State,
+        doneOfAttribute: recruit.attribute.DoneState
+      },
+      query: {
+        archived: false
+      },
+      context: {
+        mode: ['context', 'browser'],
+        group: 'edit'
+      },
+      override: [task.action.EditStatuses]
+    },
+    recruit.action.EditStatuses
   )
 
   builder.createDoc(

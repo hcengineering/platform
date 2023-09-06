@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Doc, DocumentQuery, IdMap, Ref, Status } from '@hcengineering/core'
+  import type { Attribute, Doc, DocumentQuery, IdMap, Ref, Status } from '@hcengineering/core'
   import { MessageBox, createQuery, getClient } from '@hcengineering/presentation'
   import type { DoneState, LostState, SpaceWithStates, State, WonState } from '@hcengineering/task'
   import { Icon, Label, Panel, Scroller, showPopup } from '@hcengineering/ui'
@@ -24,6 +24,8 @@
   import StatesEditor from './StatesEditor.svelte'
 
   export let _id: Ref<SpaceWithStates>
+  export let ofAttribute: Ref<Attribute<Status>>
+  export let doneOfAttribute: Ref<Attribute<Status>>
 
   let spaceInstance: SpaceWithStates | undefined
 
@@ -150,13 +152,18 @@
 
   <Scroller>
     <div class="popupPanel-body__main-content py-10 clear-mins">
-      <StatesEditor
-        {states}
-        {wonStates}
-        {lostStates}
-        on:delete={(e) => deleteState(e.detail)}
-        on:move={(e) => onMove(e.detail.stateID, e.detail.position)}
-      />
+      {#if spaceInstance}
+        <StatesEditor
+          space={_id}
+          {ofAttribute}
+          {doneOfAttribute}
+          {states}
+          {wonStates}
+          {lostStates}
+          on:delete={(e) => deleteState(e.detail)}
+          on:move={(e) => onMove(e.detail.stateID, e.detail.position)}
+        />
+      {/if}
     </div>
   </Scroller>
 </Panel>

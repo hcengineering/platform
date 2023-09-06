@@ -49,7 +49,7 @@
     statuses = getStates(_space, $statusStore).filter((p) => p.category === tracker.issueStatusCategory.Started)
   }
 
-  async function updateCategory (status: WithLookup<IssueStatus>, statuses: IssueStatus[]) {
+  async function updateCategory (_space: Project | undefined, status: WithLookup<IssueStatus>, statuses: IssueStatus[]) {
     if (status.$lookup?.category) {
       category = status.$lookup.category
     }
@@ -68,7 +68,7 @@
     }
   }
 
-  $: updateCategory(value, statuses)
+  $: updateCategory(_space, value, statuses)
   $: icon = category?.icon
   $: color = value.color !== undefined ? value.color : category !== undefined ? category.color : -1
 </script>

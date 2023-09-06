@@ -117,7 +117,7 @@
     return {
       id: s._id,
       component: StatusPresenter,
-      props: { value: s, size: 'small' },
+      props: { value: s, size: 'small', space: value.space },
       isSelected: selectedStatus?._id === s._id ?? false
     }
   })
