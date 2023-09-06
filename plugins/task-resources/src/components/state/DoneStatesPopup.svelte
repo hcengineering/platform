@@ -54,6 +54,7 @@
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
+  <div class="menu-space" />
   <div class="scroll">
     <div class="box">
       {#each states as state}
@@ -80,4 +81,5 @@
       </button>
     </div>
   </div>
+  <div class="menu-space" />
 </div>

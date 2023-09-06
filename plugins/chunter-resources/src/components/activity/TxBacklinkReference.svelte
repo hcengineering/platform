@@ -47,6 +47,6 @@
 
 {#if presenter}
   <span class="labels-row">
-    <svelte:component this={presenter.presenter} value={doc} inline disabled />
+    <svelte:component this={presenter.presenter} value={doc} disabled />
   </span>
 {/if}

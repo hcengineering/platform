@@ -247,7 +247,7 @@
                     {#if value.isObjectAdded}
                       <ObjectPresenter value={cvalue} inline accent />
                     {:else}
-                      <svelte:component this={m.presenter} value={cvalue} inline accent />
+                      <svelte:component this={m.presenter} value={cvalue} accent />
                     {/if}
                   {/each}
                 {:else if value.removed.length}
@@ -256,9 +256,9 @@
                   <span class="lower"><Label label={m.label} /></span>
                   {#each value.removed as cvalue}
                     {#if value.isObjectRemoved}
-                      <ObjectPresenter value={cvalue} inline accent />
+                      <ObjectPresenter value={cvalue} accent />
                     {:else}
-                      <svelte:component this={m.presenter} value={cvalue} inline accent />
+                      <svelte:component this={m.presenter} value={cvalue} accent />
                     {/if}
                   {/each}
                 {:else if value.set === null || value.set === undefined || value.set === ''}
@@ -272,9 +272,9 @@
                     <span class="lower"><Label label={activity.string.To} /></span>
                     <span class="strong overflow-label">
                       {#if value.isObjectSet}
-                        <ObjectPresenter value={value.set} inline accent />
+                        <ObjectPresenter value={value.set} accent />
                       {:else}
-                        <svelte:component this={m.presenter} value={value.set} inline accent />
+                        <svelte:component this={m.presenter} value={value.set} accent />
                       {/if}
                     </span>
                   {:else}
@@ -300,9 +300,9 @@
                   {#if !hasMessageType}
                     <div class="strong overflow-label">
                       {#if value.isObjectSet}
-                        <ObjectPresenter value={value.set} inline accent />
+                        <ObjectPresenter value={value.set} accent />
                       {:else}
-                        <svelte:component this={m.presenter} value={value.set} inline accent />
+                        <svelte:component this={m.presenter} value={value.set} accent />
                       {/if}
                     </div>
                   {/if}
@@ -313,9 +313,9 @@
             {#if tx.collectionAttribute !== undefined && (tx.txDocIds?.size ?? 0) > 1}
               <TxViewTx {tx} {onCancelEdit} {edit} {viewlet} />
             {:else if typeof viewlet.component === 'string'}
-              <Component is={viewlet.component} {props} on:close={onCancelEdit} inline />
+              <Component is={viewlet.component} {props} on:close={onCancelEdit} />
             {:else}
-              <svelte:component this={viewlet.component} {...props} on:close={onCancelEdit} inline />
+              <svelte:component this={viewlet.component} {...props} on:close={onCancelEdit} />
             {/if}
           {/if}
         </div>
@@ -355,9 +355,9 @@
           <div class="activity-content content" class:indent={isAttached} class:contentHidden>
             <ShowMore ignore={edit || prevValue !== undefined}>
               {#if value.isObjectSet}
-                <ObjectPresenter value={value.set} inline />
+                <ObjectPresenter value={value.set} />
               {:else if showDiff}
-                <svelte:component this={model[0].presenter} value={value.set} inline {prevValue} showOnlyDiff />
+                <svelte:component this={model[0].presenter} value={value.set} {prevValue} showOnlyDiff />
               {/if}
             </ShowMore>
           </div>
@@ -410,7 +410,7 @@
       }
       .msgactivity-content__title {
         display: inline-flex;
-        align-items: baseline;
+        align-items: center;
         flex-grow: 1;
         min-width: 0;
       }

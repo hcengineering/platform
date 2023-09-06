@@ -28,5 +28,5 @@
   <Label label={isSub ? tracker.string.CreatedSubIssue : tracker.string.CreatedIssue} />
 </div>
 {#if !isOwnTx}
-  <IssuePresenter {value} inline />
+  <IssuePresenter {value} />
 {/if}
