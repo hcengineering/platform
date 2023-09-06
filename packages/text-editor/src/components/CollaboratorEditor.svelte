@@ -18,15 +18,14 @@
   import { Plugin, PluginKey, TextSelection, Transaction } from 'prosemirror-state'
   import { DecorationSet } from 'prosemirror-view'
   import { getContext, createEventDispatcher, onDestroy, onMount } from 'svelte'
-  import { v4 as generateUuid } from 'uuid'
   import { WebsocketProvider } from 'y-websocket'
   import * as Y from 'yjs'
-  import { Editor, Extension, getMarkRange } from '@tiptap/core'
+  import { Editor, Extension, HTMLContent, getMarkRange } from '@tiptap/core'
   import Collaboration from '@tiptap/extension-collaboration'
   import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
   import Placeholder from '@tiptap/extension-placeholder'
   import BubbleMenu from '@tiptap/extension-bubble-menu'
-  import { getCurrentAccount, Markup } from '@hcengineering/core'
+  import { generateId, getCurrentAccount, Markup } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
   import { Component, getPlatformColorForText, IconObjects, IconSize, themeStore } from '@hcengineering/ui'
 
@@ -182,7 +181,7 @@
       return null
     }
     if (!selectedNodeUuid) {
-      selectedNodeUuid = generateUuid()
+      selectedNodeUuid = generateId()
       editor.chain().setUuid(selectedNodeUuid!).run()
     }
 
@@ -277,7 +276,7 @@
       })
 
       if (initialContent) {
-        insertText(initialContent)
+        editor.commands.insertContent(initialContent as HTMLContent)
       }
     })
   })

@@ -78,7 +78,6 @@
     "@tiptap/extension-table-row": "^2.0.3",
     "@tiptap/extension-code": "^2.0.3",
     "@tiptap/extension-bubble-menu": "^2.0.4",
-    "@tiptap/extension-underline": "^2.0.4",
-    "uuid": "^8.3.2"
+    "@tiptap/extension-underline": "^2.0.4"
   }
 }
