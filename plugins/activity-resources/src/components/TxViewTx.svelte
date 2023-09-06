@@ -27,9 +27,9 @@
     <IconAdd size={'x-small'} fill={'var(--theme-trans-color)'} />
   {/if}
   {#if typeof viewlet?.component === 'string'}
-    <Component is={viewlet?.component} props={getProps(ctx, edit)} disabled inline on:close={onCancelEdit} />
+    <Component is={viewlet?.component} props={getProps(ctx, edit)} disabled on:close={onCancelEdit} />
   {:else}
-    <svelte:component this={viewlet?.component} {...getProps(ctx, edit)} disabled inline on:close={onCancelEdit} />
+    <svelte:component this={viewlet?.component} {...getProps(ctx, edit)} disabled on:close={onCancelEdit} />
   {/if}
   <div class="antiHSpacer" />
 {/each}
@@ -38,9 +38,9 @@
     <IconDelete size={'x-small'} fill={'var(--theme-trans-color)'} />
   {/if}
   {#if typeof viewlet?.component === 'string'}
-    <Component is={viewlet?.component} props={getProps(ctx, edit)} disabled inline on:close={onCancelEdit} />
+    <Component is={viewlet?.component} props={getProps(ctx, edit)} disabled on:close={onCancelEdit} />
   {:else}
-    <svelte:component this={viewlet?.component} {...getProps(ctx, edit)} disabled inline on:close={onCancelEdit} />
+    <svelte:component this={viewlet?.component} {...getProps(ctx, edit)} disabled on:close={onCancelEdit} />
   {/if}
   <div class="antiHSpacer" />
 {/each}
