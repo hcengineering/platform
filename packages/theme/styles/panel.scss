@@ -299,11 +299,11 @@
           height: 1px;
           background-color: var(--theme-divider-color);
         }
-        .label,
+        .labelOnPanel,
         .labelTop { color: var(--theme-dark-color); }
         .labelTop {
           align-self: start;
-          margin-top: 0.625rem;
+          margin-top: .4rem;
         }
         .textPadding { margin-left: .875rem; }
       }

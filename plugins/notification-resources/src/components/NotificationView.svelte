@@ -96,7 +96,7 @@
     >
       <div class="flex-row-center flex-no-shrink mr-8">
         {#if presenter}
-          <svelte:component this={presenter} value={doc} inline accent disabled inbox />
+          <svelte:component this={presenter} value={doc} accent disabled inbox />
         {/if}
         {#if newTxes > 0 && !selected}
           <div class="counter float">{newTxes}</div>

@@ -70,11 +70,11 @@
   <svelte:component
     this={presenter.presenter}
     value={doc}
-    {...props}
     {inline}
     {accent}
     {shouldShowAvatar}
     {noUnderline}
+    {...props}
     on:accent-color
   />
 {/if}

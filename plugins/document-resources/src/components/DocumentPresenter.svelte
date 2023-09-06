@@ -25,20 +25,25 @@
   export let inline: boolean = false
   export let disabled: boolean = false
   export let accent: boolean = false
+  export let noUnderline: boolean = false
+  export let maxWidth = ''
 </script>
 
 {#if value}
-  <DocNavLink {disabled} object={value} {inline} {accent} noUnderline={disabled} component={document.component.EditDoc}>
+  <DocNavLink {disabled} object={value} {inline} {accent} {noUnderline} component={document.component.EditDoc}>
     {#if inline}
       <span class="antiMention" use:tooltip={{ label: document.string.Document }}>
         @{value.name}-{value.version}
       </span>
     {:else}
-      <div class="icon">
-        <Icon icon={document.icon.Document} size={'small'} />
+      <div class="flex-presenter" style:max-width={maxWidth} use:tooltip={{ label: document.string.Document }}>
+        <div class="icon">
+          <Icon icon={document.icon.Document} size={'small'} />
+        </div>
+        <span class="label nowrap" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>
+          {value.name}-{value.version}
+        </span>
       </div>
-      <span class="label nowrap" class:no-underline={disabled} class:fs-bold={accent}>{value.name}-{value.version}</span
-      >
     {/if}
   </DocNavLink>
 {/if}

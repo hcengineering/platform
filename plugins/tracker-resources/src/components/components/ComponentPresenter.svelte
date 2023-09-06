@@ -50,9 +50,9 @@
   {#if inline}
     <span class="antiMention" use:tooltip={{ label: tracker.string.Component }}>@{label}</span>
   {:else}
-    <span class="flex-presenter" class:list={kind === 'list'}>
+    <span class="flex-presenter" class:list={kind === 'list'} use:tooltip={{ label: tracker.string.Component }}>
       {#if shouldShowAvatar}
-        <div class="icon" use:tooltip={{ label: tracker.string.Component }}>
+        <div class="icon">
           <Icon icon={tracker.icon.Component} size={'small'} />
         </div>
       {/if}

@@ -31,6 +31,7 @@
   export let disabled = false
   export let inline = false
   export let accent: boolean = false
+  export let noUnderline: boolean = false
   export let onClick: (() => void) | undefined = undefined
 
   const dispatch = createEventDispatcher()
@@ -46,17 +47,22 @@
 </script>
 
 {#if value}
-  <DocNavLink object={value} {disabled} {inline} {accent} noUnderline={disabled} {onClick}>
+  <DocNavLink object={value} {disabled} {inline} {accent} {noUnderline} {onClick}>
     {#if inline}
       <span class="antiMention" use:tooltip={{ label: tracker.string.Milestone }}>@{value.label}</span>
     {:else}
-      <div class="flex-presenter">
+      <div class="flex-presenter" use:tooltip={{ label: tracker.string.Milestone }}>
         {#if shouldShowAvatar}
           <div class="icon">
             <Icon icon={tracker.icon.Milestone} size="small" />
           </div>
         {/if}
-        <span title={value.label} class="overflow-label label" class:no-underline={disabled} class:fs-bold={accent}>
+        <span
+          title={value.label}
+          class="overflow-label label"
+          class:no-underline={noUnderline || disabled}
+          class:fs-bold={accent}
+        >
           {value.label}
         </span>
       </div>

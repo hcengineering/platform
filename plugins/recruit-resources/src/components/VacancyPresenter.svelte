@@ -26,6 +26,7 @@
   export let inline: boolean = false
   export let disabled: boolean = false
   export let accent: boolean = false
+  export let noUnderline: boolean = false
 
   const dispatch = createEventDispatcher()
   $: accentColor = getPlatformAvatarColorForTextDef(value.name, $themeStore.dark)
@@ -37,14 +38,7 @@
 </script>
 
 {#if value}
-  <DocNavLink
-    {disabled}
-    object={value}
-    {inline}
-    {accent}
-    noUnderline={disabled}
-    component={recruit.component.EditVacancy}
-  >
+  <DocNavLink {disabled} object={value} {inline} {accent} {noUnderline} component={recruit.component.EditVacancy}>
     {#if inline}
       <span class="antiMention" use:tooltip={{ label: recruit.string.Vacancy }}>
         @{value.name}
@@ -52,7 +46,9 @@
     {:else}
       <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
         <div class="icon"><Icon icon={recruit.icon.Vacancy} size={'small'} /></div>
-        <span class="label nowrap" class:no-underline={disabled} class:fs-bold={accent}>{value.name}</span>
+        <span class="label nowrap" class:no-underline={noUnderline || disabled} class:fs-bold={accent}
+          >{value.name}</span
+        >
       </div>
     {/if}
   </DocNavLink>

@@ -65,12 +65,12 @@
 </script>
 
 <div class="popupPanel-body__aside-grid">
-  <span class="label">
+  <span class="labelOnPanel">
     <Label label={tracker.string.Priority} />
   </span>
   <PriorityEditor value={issue} size={'medium'} shouldShowLabel />
 
-  <span class="label">
+  <span class="labelOnPanel">
     <Label label={tracker.string.Assignee} />
   </span>
   <AssigneeEditor object={issue} size={'medium'} width="100%" />
@@ -99,13 +99,13 @@
 
   <div class="divider" />
 
-  <span class="label">
+  <span class="labelOnPanel">
     <Label label={tracker.string.Component} />
   </span>
   <ComponentEditor value={issue} size={'medium'} />
 
   {#if issue.milestone}
-    <span class="label">
+    <span class="labelOnPanel">
       <Label label={tracker.string.Milestone} />
     </span>
     <MilestoneEditor value={issue} size={'medium'} />

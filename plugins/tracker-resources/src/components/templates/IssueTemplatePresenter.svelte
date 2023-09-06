@@ -65,7 +65,9 @@
       cursor: pointer;
     }
 
-    &.noUnderline {
+    &.noUnderline,
+    &.noUnderline:hover {
+      text-decoration: none;
       color: var(--theme-caption-color);
     }
 

@@ -36,6 +36,7 @@
   export let shouldShowName = true
   export let element: HTMLElement | undefined = undefined
   export let shouldShowPlaceholder = false
+  export let noUnderline: boolean = false
   export let defaultName: IntlString | undefined = undefined
   export let statusLabel: IntlString | undefined = undefined
   export let avatarSize: IconSize = 'x-small'
@@ -68,7 +69,7 @@
 </script>
 
 {#if value}
-  <DocNavLink object={value} onClick={onEdit} {disabled} noUnderline={disabled} {inline} {colorInherit} {accent}>
+  <DocNavLink object={value} onClick={onEdit} {disabled} {noUnderline} {inline} {colorInherit} {accent} noOverflow>
     {#if inline}
       <span class="antiMention" use:tooltip={disabled ? undefined : showTooltip}>
         @{getName(client.getHierarchy(), value)}
@@ -90,7 +91,7 @@
           </span>
         {/if}
         {#if shouldShowName}
-          <span class="eContentPresenterLabel" class:colorInherit class:fs-bold={accent}
+          <span class="eContentPresenterLabel overflow-label" class:colorInherit class:fs-bold={accent}
             >{getName(client.getHierarchy(), value)}</span
           >
         {/if}
@@ -132,6 +133,7 @@
     display: flex;
     align-items: center;
     flex-wrap: nowrap;
+    min-width: 0;
 
     .eContentPresenterIcon {
       color: var(--theme-dark-color);
@@ -141,13 +143,13 @@
       text-align: left;
       color: var(--theme-caption-color);
 
-      overflow: hidden;
-      display: -webkit-box;
-      /* autoprefixer: ignore next */
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
-      line-clamp: 2;
-      user-select: none;
+      // overflow: hidden;
+      // display: -webkit-box;
+      // /* autoprefixer: ignore next */
+      // -webkit-box-orient: vertical;
+      // -webkit-line-clamp: 2;
+      // line-clamp: 2;
+      // user-select: none;
 
       &.colorInherit {
         color: inherit;

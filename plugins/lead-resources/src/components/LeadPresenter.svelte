@@ -23,16 +23,19 @@
   export let inline: boolean = false
   export let disabled: boolean = false
   export let accent: boolean = false
+  export let noUnderline: boolean = false
 </script>
 
 {#if value}
-  <DocNavLink object={value} {inline} {disabled} noUnderline={disabled} {accent}>
+  <DocNavLink object={value} {inline} {disabled} {noUnderline} {accent}>
     {#if inline}
       <span class="antiMention" use:tooltip={{ label: lead.string.Lead }}>@LEAD-{value.number}</span>
     {:else}
       <div class="flex-presenter">
         <div class="icon"><Icon icon={lead.icon.Lead} size={'small'} /></div>
-        <span class="label nowrap" class:no-underline={disabled} class:fs-bold={accent}>LEAD-{value.number}</span>
+        <span class="label nowrap" class:no-underline={noUnderline || disabled} class:fs-bold={accent}
+          >LEAD-{value.number}</span
+        >
       </div>
     {/if}
   </DocNavLink>

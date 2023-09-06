@@ -24,6 +24,7 @@
   export let inline: boolean = false
   export let disabled: boolean = false
   export let accent: boolean = false
+  export let noUnderline: boolean = false
 
   const client = getClient()
 
@@ -31,12 +32,12 @@
 </script>
 
 {#if value && label}
-  <DocNavLink object={value} {inline} {disabled} {accent} noUnderline={disabled}>
+  <DocNavLink object={value} {inline} {disabled} {accent} {noUnderline}>
     <div class="flex-presenter" class:inline-presenter={inline}>
       <div class="icon">
         <Icon icon={recruit.icon.Review} size={'small'} />
       </div>
-      <span class="label nowrap" class:no-underline={disabled} class:fs-bold={accent}>
+      <span class="label nowrap" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>
         {label}-{value.number}
       </span>
     </div>

@@ -142,7 +142,7 @@
               objectId={selected._id}
               _class={selected._class}
               value={selected}
-              props={{ ...docProps, disabled: true, noUnderline: true, size: 'x-small' }}
+              props={{ ...docProps, disabled: true, noUnderline: true, size: 'x-small', shouldShowAvatar: false }}
             />
           {:else}
             <Label {label} />

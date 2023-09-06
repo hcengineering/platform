@@ -24,6 +24,7 @@
   export let value: Applicant
   export let inline: boolean = false
   export let disabled: boolean = false
+  export let noUnderline: boolean = false
   export let accent: boolean = false
 
   const client = getClient()
@@ -31,7 +32,7 @@
 </script>
 
 {#if value && shortLabel}
-  <DocNavLink object={value} {inline} {disabled} noUnderline={disabled} {accent}>
+  <DocNavLink object={value} {inline} {disabled} {noUnderline} {accent}>
     {#if inline}
       <span class="antiMention" use:tooltip={{ label: recruitPlg.string.Application }}>
         @{#if shortLabel}{shortLabel}-{/if}{value.number}
@@ -41,7 +42,7 @@
         <div class="icon">
           <Icon icon={recruit.icon.Application} size={'small'} />
         </div>
-        <span class="label nowrap" class:no-underline={disabled} class:fs-bold={accent}>
+        <span class="label nowrap" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>
           {#if shortLabel}{shortLabel}-{/if}{value.number}
         </span>
       </div>
