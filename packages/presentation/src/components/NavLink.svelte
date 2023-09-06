@@ -23,6 +23,7 @@
   export let colorInherit: boolean = false
   export let shrink: number = 1
   export let accent: boolean = false
+  export let noOverflow: boolean = false
 
   function clickHandler (e: MouseEvent) {
     if (disabled) return
@@ -54,6 +55,7 @@
   <span
     class:cursor-pointer={!disabled}
     class:noUnderline
+    class:noOverflow
     class:inline
     class:colorInherit
     class:fs-bold={accent}
@@ -66,6 +68,7 @@
   <a
     {href}
     class:noUnderline
+    class:noOverflow
     class:inline
     class:colorInherit
     class:fs-bold={accent}
@@ -82,12 +85,14 @@
     display: flex;
     align-items: center;
     min-width: 0;
-    // overflow: hidden;
-    white-space: nowrap;
-    word-break: break-all;
-    text-overflow: ellipsis;
     font-weight: inherit;
 
+    &:not(.noOverflow) {
+      overflow: hidden;
+      white-space: nowrap;
+      word-break: break-all;
+      text-overflow: ellipsis;
+    }
     &:not(.colorInherit) {
       color: var(--theme-content-color);
     }

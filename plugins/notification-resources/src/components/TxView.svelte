@@ -161,9 +161,9 @@
                   <span class="lower"><Label label={m.label} /></span>
                   {#each value.added as cvalue}
                     {#if value.isObjectAdded}
-                      <ObjectPresenter value={cvalue} inline />
+                      <ObjectPresenter value={cvalue} />
                     {:else}
-                      <svelte:component this={m.presenter} value={cvalue} inline />
+                      <svelte:component this={m.presenter} value={cvalue} />
                     {/if}
                   {/each}
                 {:else if value.removed.length}
@@ -172,9 +172,9 @@
                   <span class="lower"><Label label={m.label} /></span>
                   {#each value.removed as cvalue}
                     {#if value.isObjectRemoved}
-                      <ObjectPresenter value={cvalue} inline />
+                      <ObjectPresenter value={cvalue} />
                     {:else}
-                      <svelte:component this={m.presenter} value={cvalue} inline />
+                      <svelte:component this={m.presenter} value={cvalue} />
                     {/if}
                   {/each}
                 {:else if value.set === null || value.set === undefined || value.set === ''}
@@ -188,9 +188,9 @@
                   {#if !hasMessageType}
                     <span class="strong">
                       {#if value.isObjectSet}
-                        <ObjectPresenter value={value.set} inline accent />
+                        <ObjectPresenter value={value.set} accent />
                       {:else}
-                        <svelte:component this={m.presenter} value={value.set} inline accent />
+                        <svelte:component this={m.presenter} value={value.set} accent />
                       {/if}
                     </span>
                   {/if}
@@ -211,9 +211,9 @@
                   {#if !hasMessageType}
                     <div class="strong">
                       {#if value.isObjectSet}
-                        <ObjectPresenter value={value.set} inline accent />
+                        <ObjectPresenter value={value.set} accent />
                       {:else}
-                        <svelte:component this={m.presenter} value={value.set} inline accent />
+                        <svelte:component this={m.presenter} value={value.set} accent />
                       {/if}
                     </div>
                   {/if}
@@ -222,9 +222,9 @@
             {/each}
           {:else if viewlet && viewlet.display === 'inline' && viewlet.component}
             {#if typeof viewlet.component === 'string'}
-              <Component is={viewlet.component} {props} inline />
+              <Component is={viewlet.component} {props} />
             {:else}
-              <svelte:component this={viewlet.component} {...props} inline />
+              <svelte:component this={viewlet.component} {...props} />
             {/if}
           {/if}
         </div>

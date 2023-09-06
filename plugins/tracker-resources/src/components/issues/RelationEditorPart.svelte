@@ -87,7 +87,7 @@
         <Icon {icon} size={'small'} />
         <div class="flex-grow">
           <button on:click|stopPropagation={() => handleRedirect(issue)}>
-            <span class="overflow-label ml-1-5 caption-color">{getIssueId(issue.$lookup.space, issue)}</span>
+            <span class="overflow-label ml-1-5 content-color">{getIssueId(issue.$lookup.space, issue)}</span>
           </button>
         </div>
         <button class="btn-close" on:click|stopPropagation={() => handleClick(issue)}>
@@ -96,15 +96,11 @@
       </div>
     {/if}
   {:else}
-    <div class="tag-container">
-      <div class="flex-grow">
-        <div class="overflow-label max-w-30">
-          <Component
-            is={view.component.ObjectPresenter}
-            props={{ objectId: doc._id, _class: doc._class, value: doc, inline: true }}
-          />
-        </div>
-      </div>
+    <div class="tag-container between">
+      <Component
+        is={view.component.ObjectPresenter}
+        props={{ objectId: doc._id, _class: doc._class, value: doc, noUnderline: true, props: { avatarSize: 'card' } }}
+      />
       <button class="btn-close" on:click|stopPropagation={() => handleClick(doc)}>
         <Icon icon={IconClose} size={'x-small'} />
       </button>
@@ -118,14 +114,20 @@
     display: flex;
     align-items: center;
     // flex-shrink: 0;
-    padding-left: 0.5rem;
+    padding-left: 0.75rem;
     height: 2rem;
     min-width: 0;
     min-height: 0;
+    font-size: 0.8125rem;
     border-radius: 0.25rem;
     // width: fit-content;
     border: 1px solid transparent;
+
+    &.between {
+      justify-content: space-between;
+    }
     &:hover {
+      background-color: var(--theme-button-hovered);
       border-color: var(--theme-divider-color);
     }
 

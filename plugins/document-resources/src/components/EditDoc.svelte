@@ -535,7 +535,7 @@
 
       <div class="doc-divider" />
       <div class="popupPanel-body__aside-grid">
-        <span class="label labelTop">
+        <span class="labelTop">
           <Label label={document.string.Labels} />
         </span>
         <div class="flex">
@@ -545,7 +545,7 @@
           />
         </div>
         <div class="divider" />
-        <span class="label">
+        <span class="labelOnPanel">
           <Label label={document.string.LastRevision} />
         </span>
         <span>{documentObject?.latest}</span>

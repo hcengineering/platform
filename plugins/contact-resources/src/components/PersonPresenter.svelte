@@ -29,6 +29,7 @@
   export let shouldShowAvatar = true
   export let shouldShowName = true
   export let shouldShowPlaceholder = false
+  export let noUnderline = false
   export let defaultName: IntlString | undefined = ui.string.NotSelected
   export let statusLabel: IntlString | undefined = undefined
   export let tooltipLabels: PersonLabelTooltip | undefined = undefined
@@ -88,6 +89,7 @@
     {shouldShowAvatar}
     {shouldShowName}
     {shouldShowPlaceholder}
+    {noUnderline}
     {enlargedText}
     {statusLabel}
     {colorInherit}

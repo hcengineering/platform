@@ -29,6 +29,7 @@
   export let props: Record<string, any> = {}
   export let shrink: number = 1
   export let accent: boolean = false
+  export let noOverflow: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -50,4 +51,6 @@
   $: if (object !== undefined) getHref(object)
 </script>
 
-<NavLink {disabled} {onClick} {noUnderline} {inline} {shrink} {href} {colorInherit} {accent}><slot /></NavLink>
+<NavLink {disabled} {onClick} {noUnderline} {inline} {shrink} {href} {colorInherit} {accent} {noOverflow}
+  ><slot /></NavLink
+>

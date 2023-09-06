@@ -66,7 +66,7 @@
 {#if editor}
   {#if showHeader}
     <span
-      class="label"
+      class="labelOnPanel"
       use:tooltip={{
         component: Label,
         props: { label: attribute.label }

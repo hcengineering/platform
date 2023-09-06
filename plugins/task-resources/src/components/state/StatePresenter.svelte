@@ -31,6 +31,7 @@
   export let oneLine: boolean = false
   export let shouldShowName: boolean = true
   export let shouldShowTooltip: boolean = false
+  export let noUnderline: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -57,7 +58,9 @@
       />
     {/if}
     {#if shouldShowName}
-      <span class="overflow-label label" class:nowrap={oneLine} class:no-underline={disabled}>{value.name}</span>
+      <span class="overflow-label label" class:nowrap={oneLine} class:no-underline={noUnderline || disabled}
+        >{value.name}</span
+      >
     {/if}
   </div>
 {/if}

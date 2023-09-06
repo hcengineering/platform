@@ -24,21 +24,22 @@
   export let inline: boolean = false
   export let disabled: boolean = false
   export let accent: boolean = false
+  export let noUnderline: boolean = false
   export let maxWidth = ''
 </script>
 
 {#if value}
-  <DocNavLink {disabled} {inline} object={value} {accent} noUnderline={disabled}>
+  <DocNavLink {disabled} {inline} object={value} {accent} {noUnderline}>
     {#if inline}
       <span class="antiMention" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
         @{value.name}
       </span>
     {:else}
       <div class="flex-presenter" style:max-width={maxWidth} use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
-        {#if !inline}
-          <div class="icon circle"><Company size={'small'} /></div>
-        {/if}
-        <span class="overflow-label label" class:no-underline={disabled} class:fs-bold={accent}>{value.name}</span>
+        <div class="icon circle"><Company size={'small'} /></div>
+        <span class="overflow-label label" class:no-underline={noUnderline || disabled} class:fs-bold={accent}
+          >{value.name}</span
+        >
       </div>
     {/if}
   </DocNavLink>

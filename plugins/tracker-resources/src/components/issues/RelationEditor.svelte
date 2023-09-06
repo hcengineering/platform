@@ -21,7 +21,7 @@
   $: classes = Array.from(valueGroup.keys())
 </script>
 
-<div class="flex-column flex-grow">
+<div class="flex-column flex-grow clear-mins">
   {#each classes as classCategory}
     {@const vals = valueGroup.get(classCategory)}
     {#if vals}

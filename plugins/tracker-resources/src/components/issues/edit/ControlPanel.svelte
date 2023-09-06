@@ -95,7 +95,7 @@
 
 <div class="popupPanel-body__aside-grid">
   {#if issue.template?.template}
-    <span class="label">
+    <span class="labelOnPanel">
       <Label label={tracker.string.IssueTemplate} />
     </span>
     <ObjectBox
@@ -114,7 +114,7 @@
     />
   {/if}
 
-  <span class="label">
+  <span class="labelOnPanel">
     <Label label={tracker.string.Status} />
   </span>
 
@@ -139,12 +139,12 @@
     <RelationEditor value={issue} type="relations" />
   {/if}
 
-  <span class="label">
+  <span class="labelOnPanel">
     <Label label={tracker.string.Priority} />
   </span>
   <PriorityEditor value={issue} size={'medium'} shouldShowLabel />
 
-  <span class="label">
+  <span class="labelOnPanel">
     <Label label={core.string.CreatedBy} />
   </span>
   <EmployeeBox
@@ -158,7 +158,7 @@
     readonly
   />
 
-  <span class="label">
+  <span class="labelOnPanel">
     <Label label={tracker.string.Assignee} />
   </span>
   <AssigneeEditor object={issue} size={'medium'} avatarSize={'card'} width="100%" />
@@ -170,12 +170,12 @@
 
   <div class="divider" />
 
-  <span class="label">
+  <span class="labelOnPanel">
     <Label label={tracker.string.Component} />
   </span>
   <ComponentEditor value={issue} space={issue.space} size={'medium'} />
 
-  <span class="label">
+  <span class="labelOnPanel">
     <Label label={tracker.string.Milestone} />
   </span>
   <MilestoneEditor value={issue} space={issue.space} size={'medium'} />
@@ -183,7 +183,7 @@
   {#if issue.dueDate !== null}
     <div class="divider" />
 
-    <span class="label">
+    <span class="labelOnPanel">
       <Label label={tracker.string.DueDate} />
     </span>
     <DueDateEditor value={issue} width={'100%'} />
