@@ -3,6 +3,17 @@
   object-fit: contain;
 }
 
+.text-editor-highlighted-node-warning {
+  background-color: var(--theme-warning-color);
+}
+
+.text-editor-highlighted-node-error {
+  background-color: var(--theme-error-color);
+}
+
+.text-editor-highlighted-node-success {
+  background-color: var(--theme-won-color);
+}
 .proseH1 {
   margin-block-start: 1.25rem;
   margin-block-end: 1.25rem;
@@ -19,9 +30,3 @@
   // line-height: 1.75rem;
   color: green;
 }
-
-// need to override editor's bubble max-width
-// due to https://github.com/atomiks/tippyjs/issues/451
-// .tippy-box {
-//   max-width: 30rem !important;
-// }

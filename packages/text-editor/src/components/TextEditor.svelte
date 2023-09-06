@@ -176,8 +176,6 @@
         },
         onSelectionUpdate: () => {
           showContextMenu = false
-
-          dispatch('selection-update')
         }
       })
     })
