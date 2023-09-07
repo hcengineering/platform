@@ -14,7 +14,7 @@
   })
 </script>
 
-<div class="ac-header tabs-start full">
+<div class="ac-header withoutBackground tabs-start full">
   <TabList
     items={modeList}
     selected={props.mode}

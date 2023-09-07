@@ -31,7 +31,7 @@
     getWeekDayName,
     resizeObserver
   } from '@hcengineering/ui'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import calendar from '../plugin'
   import EventElement from './EventElement.svelte'
 
@@ -50,8 +50,13 @@
 
   const todayDate = new Date()
   const ampm = new Intl.DateTimeFormat([], { hour: 'numeric' }).resolvedOptions().hour12
-  const getTimeFormat = (hour: number): string => {
-    return ampm ? `${hour > 12 ? hour - 12 : hour}${hour < 12 ? 'am' : 'pm'}` : `${addZero(hour)}:00`
+  const getTimeFormat = (hour: number, min: number = 0): string => {
+    if (min === 0) return ampm ? `${hour > 12 ? hour - 12 : hour}${hour < 12 ? 'am' : 'pm'}` : `${addZero(hour)}:00`
+    else {
+      return ampm
+        ? `${hour > 12 ? hour - 12 : hour}:${addZero(min)}${hour < 12 ? 'am' : 'pm'}`
+        : `${addZero(hour)}:${addZero(min)}`
+    }
   }
   const rem = (n: number): number => n * fontSize
 
@@ -137,11 +142,15 @@
     endCol: number
   }
 
+  let timer: any
   let container: HTMLElement
   let scroller: HTMLElement
   let calendarWidth: number = 0
   let calendarRect: DOMRect
   let colWidth: number = 0
+  let nowLineTop: number = -1
+  let timeNow: string = '--:--'
+  let nowLineStyle: string = ''
   let newEvents = calendarEvents
   let grid: CalendarGrid[] = Array<CalendarGrid>(displayedDaysCount)
   let alldays: CalendarItem[] = []
@@ -317,7 +326,7 @@
 
   const getGridOffset = (mins: number, end: boolean = false): number => {
     if (mins === 0) return end ? 2 + cellBorder : 2
-    return mins < 3 ? (end ? 1 : 2) : mins > 57 ? (end ? 2 + cellBorder : 1) : 1
+    return mins < 2 ? (end ? 1 : 2) : mins >= 57 ? (end ? 1 + cellBorder : 1) : 1
   }
 
   const getRect = (
@@ -424,9 +433,53 @@
     return new Intl.DateTimeFormat([], { timeZoneName: 'short' }).format(Date.now()).split(' ')[1]
   }
 
+  const getTopOffset = (date: Date): number => {
+    const d = convertToTime(date)
+    return (
+      (showHeader ? rem(3.5) : 0) +
+      styleAD +
+      cellHeight * d.hours +
+      (d.mins / 60) * cellHeight +
+      (d.mins > 50 ? -getGridOffset(d.mins, true) : d.mins < 10 ? getGridOffset(d.mins) : 0)
+    )
+  }
+  const renderNow = (): void => {
+    const d = new Date()
+    const n = convertToTime(d)
+    nowLineStyle =
+      n.hours <= startHour && n.mins < 10
+        ? ' lowerLabel'
+        : n.hours >= displayedHours + startHour - 1 && n.mins > 50
+          ? ' upperLabel'
+          : ''
+    timeNow = getTimeFormat(n.hours, n.mins)
+    nowLineTop = getTopOffset(d)
+  }
+  const checkNowLine = (): void => {
+    if (timer) clearInterval(timer)
+    let equal = false
+    for (let i = 0; i < displayedDaysCount; i++) if (areDatesEqual(getDay(weekMonday, i), todayDate)) equal = true
+    if (equal) {
+      renderNow()
+      timer = setInterval(() => renderNow(), 1000)
+    } else nowLineTop = -1
+  }
+  export const scrollToTime = (date: Date): void => {
+    const top = getTopOffset(date)
+    const offset = (scroller.getBoundingClientRect().height - rem(heightAD + 0.25)) / 2
+    scroller.scrollTo({ top: top - offset })
+  }
+  $: if (currentDate) checkNowLine()
+
   onMount(() => {
-    if (container) checkSizes(container)
     minHeightAD = rem((heightAD + 0.125) * minAD + 0.25)
+    if (container) {
+      checkSizes(container)
+      scrollToTime(todayDate)
+    }
+  })
+  onDestroy(() => {
+    if (timer) clearInterval(timer)
   })
 
   const checkSizes = (element: HTMLElement | Element) => {
@@ -667,10 +720,63 @@
         {/if}
       {/each}
     {/key}
+    {#key currentDate}
+      {#if nowLineTop !== -1}
+        <div data-now={timeNow} class="now-line{nowLineStyle}" style:top={`${nowLineTop}px`} />
+      {/if}
+    {/key}
   </div>
 </Scroller>
 
 <style lang="scss">
+  .calendar-container {
+    will-change: transform;
+    position: relative;
+    display: grid;
+
+    .now-line,
+    .now-line::before {
+      position: absolute;
+      background-color: var(--highlight-red);
+    }
+    .now-line {
+      left: 3rem;
+      right: 0;
+      width: 100%;
+      height: 1px;
+      min-height: 1px;
+      max-height: 1px;
+      pointer-events: none;
+      z-index: 2;
+
+      &::before {
+        content: '';
+        top: -0.5rem;
+        left: -2.75rem;
+        right: calc(100% - 0.25rem);
+        height: 1rem;
+        border-radius: 0.125rem;
+      }
+      &::after {
+        position: absolute;
+        content: attr(data-now);
+        top: -0.5rem;
+        left: -1.25rem;
+        font-weight: 500;
+        font-size: 0.75rem;
+        color: var(--accented-button-color);
+        transform: translateX(-50%);
+      }
+      &.upperLabel::before,
+      &.upperLabel::after {
+        top: -0.875rem;
+      }
+      &.lowerLabel::before,
+      &.lowerLabel::after {
+        top: -0.125rem;
+      }
+    }
+  }
   .empty-cell {
     border-left: 1px solid var(--theme-divider-color);
     border-bottom: 1px solid var(--theme-divider-color);
@@ -710,6 +816,8 @@
     }
     &.zm {
       top: var(--calendar-ad-height, 2.25rem);
+      mask-image: linear-gradient(to top, #0000, #000f 0.5rem, #000f calc(100% - 0.5rem), #0000 100%);
+      z-index: 1;
     }
     &.center {
       justify-content: center;
@@ -777,10 +885,5 @@
         padding: 0.125rem;
       }
     }
-  }
-  .calendar-container {
-    will-change: transform;
-    position: relative;
-    display: grid;
   }
 </style>
