@@ -111,7 +111,7 @@
       await client.update(targetPerson, update)
     }
     for (const channel of resultChannels.values()) {
-      if (channel.attachedTo !== targetPerson._id) continue
+      if (channel.attachedTo === targetPerson._id) continue
       await client.update(channel, { attachedTo: targetPerson._id })
     }
     for (const old of oldChannels) {

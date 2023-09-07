@@ -289,7 +289,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
         continue
       }
       const dv = (doc as any)[k]
-      if (!deepEqual(dv, v) && v != null) {
+      if (!deepEqual(dv, v) && v !== undefined) {
         ;(documentUpdate as any)[k] = v
       }
     }

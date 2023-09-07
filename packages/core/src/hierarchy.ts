@@ -92,6 +92,24 @@ export class Hierarchy {
     }
   }
 
+  findClassOrMixinMixin<D extends Doc, M extends D>(doc: Doc, mixin: Ref<Mixin<M>>): M | undefined {
+    const cc = this.classHierarchyMixin(doc._class, mixin)
+    if (cc !== undefined) {
+      return cc
+    }
+
+    const _doc = _toDoc(doc)
+    // Find all potential mixins of doc
+    for (const [k, v] of Object.entries(_doc)) {
+      if (typeof v === 'object' && this.classifiers.has(k as Ref<Classifier>)) {
+        const cc = this.classHierarchyMixin(k as Ref<Mixin<Doc>>, mixin)
+        if (cc !== undefined) {
+          return cc
+        }
+      }
+    }
+  }
+
   isMixin (_class: Ref<Class<Doc>>): boolean {
     const data = this.classifiers.get(_class)
     return data !== undefined && this._isMixin(data)

@@ -26,6 +26,7 @@
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = 'fit-content'
+  export let title: string | undefined
 
   let shown: boolean = false
 </script>
@@ -53,10 +54,14 @@
   }}
 >
   <svelte:fragment slot="content">
-    {#if value}
+    {#if title}
+      <span class="caption-color overflow-label pointer-events-none">{title}</span>
+    {:else if value}
       <span class="caption-color overflow-label pointer-events-none">{value}</span>
     {:else}
-      <span class="content-dark-color pointer-events-none"><Label label={placeholder} /></span>
+      <span class="content-dark-color pointer-events-none">
+        <Label label={placeholder} />
+      </span>
     {/if}
   </svelte:fragment>
 </Button>

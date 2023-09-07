@@ -16,7 +16,7 @@
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import chunter from '@hcengineering/chunter'
   import { Employee } from '@hcengineering/contact'
-  import core, { Account, AttachedData, Doc, fillDefaults, generateId, Ref, SortingOrder } from '@hcengineering/core'
+  import core, { Account, DocData, Class, Doc, fillDefaults, generateId, Ref, SortingOrder } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
   import {
     Card,
@@ -38,7 +38,8 @@
     IssueStatus,
     IssueTemplate,
     Milestone,
-    Project
+    Project,
+    ProjectIssueTargetOptions
   } from '@hcengineering/tracker'
   import {
     addNotification,
@@ -299,6 +300,18 @@
     currentProject = res.shift()
   })
 
+  $: targetSettings =
+    currentProject !== undefined
+      ? client
+        .getHierarchy()
+        .findClassOrMixinMixin<Class<Doc>, ProjectIssueTargetOptions>(
+          currentProject,
+          tracker.mixin.ProjectIssueTargetOptions
+        )
+      : undefined
+
+  let targetSettingOptions: Record<string, any> = {}
+
   async function updateIssueStatusId (object: IssueDraft, currentProject: Project | undefined) {
     if (currentProject?.defaultIssueStatus && object.status === undefined) {
       object.status = currentProject.defaultIssueStatus
@@ -340,7 +353,7 @@
     }
   }
 
-  async function createIssue () {
+  async function createIssue (): Promise<void> {
     const _id: Ref<Issue> = generateId()
     if (!canSave || object.status === undefined) {
       return
@@ -357,7 +370,7 @@
       true
     )
 
-    const value: AttachedData<Issue> = {
+    const value: DocData<Issue> = {
       doneState: null,
       title: getTitle(object.title),
       description: object.description,
@@ -379,6 +392,11 @@
       reports: 0,
       relations: relatedTo !== undefined ? [{ _id: relatedTo._id, _class: relatedTo._class }] : [],
       childInfo: []
+    }
+
+    if (targetSettings !== undefined) {
+      const updateOp = await getResource(targetSettings.update)
+      updateOp?.(_id, _space, value, targetSettingOptions)
     }
 
     await client.addCollection(
@@ -569,6 +587,15 @@
       docProps={{ disabled: true, noUnderline: true }}
       focusIndex={20000}
     />
+    {#if targetSettings?.headerComponent && currentProject}
+      <Component
+        is={targetSettings.headerComponent}
+        props={{ targetSettingOptions, project: currentProject }}
+        on:change={(evt) => {
+          targetSettingOptions = evt.detail
+        }}
+      />
+    {/if}
   </svelte:fragment>
   <svelte:fragment slot="title" let:label>
     <div class="flex-row-center gap-1">
@@ -649,6 +676,15 @@
     component={object.component}
     bind:subIssues={object.subIssues}
   />
+  {#if targetSettings?.bodyComponent && currentProject}
+    <Component
+      is={targetSettings.bodyComponent}
+      props={{ targetSettingOptions, project: currentProject }}
+      on:change={(evt) => {
+        targetSettingOptions = evt.detail
+      }}
+    />
+  {/if}
   <svelte:fragment slot="pool">
     <div id="status-editor">
       <StatusEditor
@@ -759,6 +795,15 @@
         on:click={object.parentIssue ? clearParentIssue : setParentIssue}
       />
     </div>
+    {#if targetSettings?.poolComponent && currentProject}
+      <Component
+        is={targetSettings.poolComponent}
+        props={{ targetSettingOptions, project: currentProject }}
+        on:change={(evt) => {
+          targetSettingOptions = evt.detail
+        }}
+      />
+    {/if}
   </svelte:fragment>
   <svelte:fragment slot="attachments">
     {#if attachments.size > 0}
@@ -785,5 +830,14 @@
         descriptionBox.attach()
       }}
     />
+    {#if targetSettings?.footerComponent && currentProject}
+      <Component
+        is={targetSettings.footerComponent}
+        props={{ targetSettingOptions, project: currentProject }}
+        on:change={(evt) => {
+          targetSettingOptions = evt.detail
+        }}
+      />
+    {/if}
   </svelte:fragment>
 </Card>

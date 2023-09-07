@@ -15,7 +15,7 @@
 <script lang="ts">
   import { PersonAccount } from '@hcengineering/contact'
   import { EmployeeBox, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-  import core, { ClassifierKind, Doc, Mixin, Ref } from '@hcengineering/core'
+  import core, { Class, ClassifierKind, Doc, Mixin, Ref } from '@hcengineering/core'
   import { AttributeBarEditor, KeyedAttribute, createQuery, getClient } from '@hcengineering/presentation'
 
   import tags from '@hcengineering/tags'
@@ -68,7 +68,13 @@
   }
 
   function getMixinKeys (mixin: Ref<Mixin<Doc>>): KeyedAttribute[] {
-    const filtredKeys = getFiltredKeys(hierarchy, mixin, [], issue._class)
+    const mixinClass = hierarchy.getClass(mixin)
+    const filtredKeys = getFiltredKeys(
+      hierarchy,
+      mixin,
+      [],
+      hierarchy.isMixin(mixinClass.extends as Ref<Class<Doc>>) ? mixinClass.extends : issue._class
+    )
     const res = filtredKeys.filter((key) => !isCollectionAttr(hierarchy, key))
     return res
   }

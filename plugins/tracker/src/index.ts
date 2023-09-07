@@ -19,11 +19,14 @@ import {
   Attribute,
   Class,
   Doc,
+  DocData,
   DocManager,
   IdMap,
   Markup,
+  Mixin,
   Ref,
   RelatedDocument,
+  Space,
   Status,
   StatusCategory,
   Timestamp,
@@ -50,6 +53,33 @@ export interface Project extends SpaceWithStates, IconProps {
   defaultIssueStatus: Ref<IssueStatus>
   defaultAssignee?: Ref<Employee>
   defaultTimeReportDay: TimeReportDayType
+}
+
+/**
+ * @public
+ */
+export type IssueUpdateFunction = (
+  id: Ref<Issue>,
+  space: Ref<Space>,
+  issue: DocData<Issue>,
+  data: Record<string, any>
+) => Promise<void>
+
+/**
+ * @public
+ *
+ * Customization mixin for project class.
+ *
+ * Allow to customize create issue/move issue dialogs, in case of selecting project of special kind.
+ */
+export interface ProjectIssueTargetOptions extends Class<Doc> {
+  // Component receiving project and context data.
+  headerComponent?: AnyComponent
+  bodyComponent?: AnyComponent
+  footerComponent?: AnyComponent
+  poolComponent?: AnyComponent
+
+  update: Resource<IssueUpdateFunction>
 }
 
 /**
@@ -452,5 +482,8 @@ export default plugin(trackerId, {
   string: {
     ConfigLabel: '' as IntlString,
     NewRelatedIssue: '' as IntlString
+  },
+  mixin: {
+    ProjectIssueTargetOptions: '' as Ref<Mixin<ProjectIssueTargetOptions>>
   }
 })

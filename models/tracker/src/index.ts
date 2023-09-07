@@ -34,6 +34,7 @@ import {
   Collection,
   Hidden,
   Index,
+  Mixin,
   Model,
   Prop,
   ReadOnly,
@@ -46,12 +47,12 @@ import {
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
-import core, { TAttachedDoc, TDoc, TStatus, TType } from '@hcengineering/model-core'
+import core, { TAttachedDoc, TClass, TDoc, TStatus, TType } from '@hcengineering/model-core'
 import task, { TSpaceWithStates, TTask } from '@hcengineering/model-task'
 import view, { actionTemplates, classPresenter, createAction, showColorsViewOption } from '@hcengineering/model-view'
 import workbench, { createNavigateAction } from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
-import { IntlString } from '@hcengineering/platform'
+import { IntlString, Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import tags, { TagElement } from '@hcengineering/tags'
 import { DoneState } from '@hcengineering/task'
@@ -64,9 +65,11 @@ import {
   IssueStatus,
   IssueTemplate,
   IssueTemplateChild,
+  IssueUpdateFunction,
   Milestone,
   MilestoneStatus,
   Project,
+  ProjectIssueTargetOptions,
   TimeReportDayType,
   TimeSpendReport,
   trackerId
@@ -77,6 +80,7 @@ import tracker from './plugin'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import presentation from '@hcengineering/model-presentation'
 import { defaultPriorities, issuePriorities } from '@hcengineering/tracker-resources/src/types'
+import { AnyComponent } from '@hcengineering/ui'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 
 export { trackerId } from '@hcengineering/tracker'
@@ -336,6 +340,14 @@ export class TComponent extends TDoc implements Component {
   declare space: Ref<Project>
 }
 
+@Mixin(tracker.mixin.ProjectIssueTargetOptions, core.class.Class)
+export class TProjectIssueTargetOptions extends TClass implements ProjectIssueTargetOptions {
+  headerComponent!: AnyComponent
+  bodyComponent!: AnyComponent
+  footerComponent!: AnyComponent
+
+  update!: Resource<IssueUpdateFunction>
+}
 /**
  * @public
  */
@@ -410,7 +422,8 @@ export function createModel (builder: Builder): void {
     TMilestone,
     TTypeMilestoneStatus,
     TTimeSpendReport,
-    TTypeReportedTime
+    TTypeReportedTime,
+    TProjectIssueTargetOptions
   )
 
   builder.createDoc(
