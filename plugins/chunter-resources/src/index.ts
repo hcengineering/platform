@@ -21,9 +21,20 @@ import chunter, {
   ChunterSpace,
   DirectMessage,
   Message,
-  ThreadMessage
+  ThreadMessage,
+  getBacklinks
 } from '@hcengineering/chunter'
-import core, { Data, Doc, DocumentQuery, Ref, RelatedDocument, Space, getCurrentAccount } from '@hcengineering/core'
+import core, {
+  Class,
+  Data,
+  Doc,
+  DocumentQuery,
+  Ref,
+  RelatedDocument,
+  Space,
+  TxOperations,
+  getCurrentAccount
+} from '@hcengineering/core'
 import { NotificationClientImpl } from '@hcengineering/notification-resources'
 import { IntlString, Resources, translate } from '@hcengineering/platform'
 import preference from '@hcengineering/preference'
@@ -263,6 +274,26 @@ export function commentsFilter (tx: DisplayTx, _class?: Ref<Doc>): boolean {
 
 export function backlinksFilter (tx: DisplayTx, _class?: Ref<Doc>): boolean {
   return tx.tx.objectClass === chunter.class.Backlink
+}
+
+/**
+ * @public
+ * used in ezqms
+ */
+export async function updateBacklinks (
+  client: TxOperations,
+  backlinkId: Ref<Doc>,
+  backlinkClass: Ref<Class<Doc>>,
+  attachedDocId: Ref<Doc> | undefined,
+  content: string
+): Promise<void> {
+  const q: DocumentQuery<Backlink> = { backlinkId, backlinkClass, collection: 'backlinks' }
+  if (attachedDocId !== undefined) {
+    q.attachedDocId = attachedDocId
+  }
+  const backlinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, content)
+
+  await updateBacklinksList(client, q, backlinks)
 }
 
 export default async (): Promise<Resources> => ({
