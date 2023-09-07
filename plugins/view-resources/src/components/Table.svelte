@@ -234,6 +234,10 @@
       total: true
     }
   )
+
+  function rerender (_: Element) {
+    dispatch('rerender')
+  }
 </script>
 
 {#await buildModel({ client, _class, keys: config, lookup })}
@@ -288,7 +292,7 @@
       </thead>
     {/if}
     {#if objects.length || objectsRecieved}
-      <tbody>
+      <tbody use:rerender>
         {#each objects as object, row (object._id)}
           <tr
             class="antiTable-body__row"

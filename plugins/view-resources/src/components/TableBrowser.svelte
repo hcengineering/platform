@@ -78,6 +78,12 @@
   }
 
   $: updateConfig(config, query.$search)
+
+  let scroll: HTMLElement
+  let scrollTop = 0
+  function restoreScrollPosition () {
+    scroll.scrollTop = scrollTop
+  }
 </script>
 
 <svelte:window />
@@ -87,7 +93,12 @@
     mode: 'browser'
   }}
 />
-<Scroller {fade} horizontal={true}>
+<Scroller
+  bind:divScroll={scroll}
+  on:divScrollTop={(event) => {
+    scrollTop = event.detail
+  }}
+>
   <Table
     bind:this={table}
     {_class}
@@ -114,5 +125,6 @@
     on:check={(evt) => {
       listProvider.updateSelection(evt.detail.docs, evt.detail.value)
     }}
+    on:rerender={restoreScrollPosition}
   />
 </Scroller>
