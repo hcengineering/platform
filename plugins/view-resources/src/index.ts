@@ -183,7 +183,8 @@ export {
   StringPresenter,
   EditBoxPopup,
   SpaceHeader,
-  ViewletContentView
+  ViewletContentView,
+  HyperlinkEditor
 }
 
 function PositionElementAlignment (e?: Event): PopupAlignment | undefined {

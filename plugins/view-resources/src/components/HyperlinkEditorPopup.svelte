@@ -59,20 +59,20 @@
       <span class="content-dark-color"><Label label={placeholder} /></span>
     {/if}
   </div>
-  <Button
-    focusIndex={2}
-    kind={'ghost'}
-    size={'small'}
-    icon={IconClose}
-    disabled={value === ''}
-    on:click={() => {
-      if (input) {
-        value = ''
-        input.focus()
-      }
-    }}
-  />
   {#if editable}
+    <Button
+      focusIndex={2}
+      kind={'ghost'}
+      size={'small'}
+      icon={IconClose}
+      disabled={value === ''}
+      on:click={() => {
+        if (input) {
+          value = ''
+          input.focus()
+        }
+      }}
+    />
     <Button
       id="channel-ok"
       focusIndex={3}
@@ -89,6 +89,7 @@
     kind={'ghost'}
     size={'small'}
     icon={IconArrowRight}
+    showTooltip={{ label: view.string.Open }}
     on:click={() => {
       dispatch('update', value)
       dispatch('close', 'open')
