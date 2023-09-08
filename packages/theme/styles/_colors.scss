@@ -181,6 +181,14 @@
   --theme-calendar-event-unavailable-color: rgba(244, 119, 88, .2);
   --theme-calendar-event-unavailable-bgcolor: #fdece7;
 
+  --theme-diffview-block-header-color: rgba(56,139,253,0.1);
+  --theme-diffview-line-color: var(--theme-content-color);
+  --theme-diffview-insert-line-color: rgba(46, 160, 67, 0.15);
+  --theme-diffview-delete-line-color: rgba(248, 81, 73, 0.1);
+  --theme-diffview-empty-line-color: rgba(110, 118, 129, 0.1);
+  --theme-diffview-insert-color: rgb(63, 185, 80);
+  --theme-diffview-delete-color: rgb(248, 81, 73);
+
   --theme-tooltip-color: rgba(255, 255, 255, .8);
   --theme-tooltip-bg: #353347;
   --theme-tooltip-key-bg: rgba(255, 255, 255, .08);
@@ -376,6 +384,14 @@
   --theme-calendar-event-available-bgcolor: #f6f9fe;
   --theme-calendar-event-unavailable-color: rgba(244, 119, 88, .2);
   --theme-calendar-event-unavailable-bgcolor: #fdece7;
+
+  --theme-diffview-block-header-color: rgb(221, 244, 255);
+  --theme-diffview-line-color: var(--theme-content-color);
+  --theme-diffview-insert-line-color: rgb(230, 255, 236);
+  --theme-diffview-delete-line-color: rgb(255, 235, 233);
+  --theme-diffview-empty-line-color: rgba(234, 238, 242, 0.5);
+  --theme-diffview-insert-color: rgb(26, 127, 55);
+  --theme-diffview-delete-color: rgb(209, 36, 47);
 
   --theme-tooltip-color: #FFF;
   --theme-tooltip-bg: #444248;
