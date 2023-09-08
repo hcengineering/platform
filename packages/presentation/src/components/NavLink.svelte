@@ -60,7 +60,7 @@
     class:colorInherit
     class:fs-bold={accent}
     style:flex-shrink={shrink}
-    on:click={clickHandler}
+    on:click|stopPropagation={clickHandler}
   >
     <slot />
   </span>
@@ -73,7 +73,7 @@
     class:colorInherit
     class:fs-bold={accent}
     style:flex-shrink={shrink}
-    on:click={clickHandler}
+    on:click|stopPropagation={clickHandler}
   >
     <slot />
   </a>

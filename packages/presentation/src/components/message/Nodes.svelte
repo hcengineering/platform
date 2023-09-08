@@ -64,6 +64,8 @@
       <em><svelte:self nodes={node.childNodes} /></em>
     {:else if node.nodeName === 'STRONG' || node.nodeName === 'B'}
       <strong><svelte:self nodes={node.childNodes} /></strong>
+    {:else if node.nodeName === 'U'}
+      <u><svelte:self nodes={node.childNodes} /></u>
     {:else if node.nodeName === 'P'}
       {#if node.childNodes.length > 0}
         <p class="p-inline contrast">
