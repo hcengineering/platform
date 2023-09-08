@@ -23,13 +23,11 @@
 
   .ac-header {
     padding: 0.5rem 2.25rem;
-    background-color: var(--theme-comp-header-color);
     // height: 3.5rem;
     // min-height: 2.5rem;
 
-    &.caption-height {
-      min-height: 3.25rem;
-    }
+    &:not(.withoutBackground) { background-color: var(--theme-comp-header-color); }
+    &.caption-height { min-height: 3.25rem; }
     &.search-start { padding-left: 1.75rem; }
     &.tabs-start { padding: 0 2.25rem; }
     &.short {

@@ -65,6 +65,7 @@
   let currentDate: Date = new Date()
   let selectedDate: Date = new Date()
 
+  let dayCalendar: DayCalendar
   let raw: Event[] = []
   let visible: Event[] = []
   let objects: Event[] = []
@@ -170,6 +171,7 @@
   function inc (val: number): void {
     if (val === 0) {
       currentDate = new Date()
+      dayCalendar.scrollToTime(currentDate)
       return
     }
     switch (mode) {
@@ -379,6 +381,7 @@
   </MonthCalendar>
 {:else if mode === CalendarMode.Week}
   <DayCalendar
+    bind:this={dayCalendar}
     events={objects}
     {mondayStart}
     displayedDaysCount={7}
@@ -392,6 +395,7 @@
 {:else if mode === CalendarMode.Day || mode === CalendarMode.Days}
   {#key mode}
     <DayCalendar
+      bind:this={dayCalendar}
       events={objects}
       {mondayStart}
       displayedDaysCount={mode === CalendarMode.Days ? 3 : 1}
@@ -412,6 +416,8 @@
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem 1.75rem 0.75rem 2.25rem;
+    min-width: 0;
+    min-height: 0;
 
     .title {
       font-size: 1.25rem;
