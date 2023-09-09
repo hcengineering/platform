@@ -13,13 +13,14 @@
 // limitations under the License.
 //
 
-import core, { TxOperations } from '@hcengineering/core'
+import core, { DOMAIN_STATUS, DOMAIN_TX, Status, TxCUD, TxOperations, TxProcessor } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient, createOrUpdate } from '@hcengineering/model'
 import { DOMAIN_TASK } from '@hcengineering/model-task'
 import tags from '@hcengineering/tags'
 import { Project, TimeReportDayType, createStatuses } from '@hcengineering/tracker'
 import { DOMAIN_TRACKER } from '.'
 import tracker from './plugin'
+import { DOMAIN_SPACE } from '@hcengineering/model-core'
 
 async function createDefaultProject (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(tracker.class.Project, {
@@ -89,9 +90,32 @@ async function moveIssues (client: MigrationClient): Promise<void> {
   }
 }
 
+async function fixProjectDefaultStatuses (client: MigrationClient): Promise<void> {
+  const projects = await client.find<Project>(DOMAIN_SPACE, { _class: tracker.class.Project })
+  for (const project of projects) {
+    const state = await client.find(DOMAIN_STATUS, { _id: project.defaultIssueStatus })
+    if (state.length === 0) {
+      const oldStateTxes = await client.find<TxCUD<Status>>(DOMAIN_TX, { objectId: project.defaultIssueStatus })
+      const oldState = TxProcessor.buildDoc2Doc<Status>(oldStateTxes)
+      if (oldState !== undefined) {
+        const newState = await client.find<Status>(DOMAIN_STATUS, {
+          name: oldState.name.trim(),
+          ofAttribute: tracker.attribute.IssueStatus
+        })
+        if (newState.length > 0) {
+          await client.update(DOMAIN_SPACE, { _id: project._id }, { defaultIssueStatus: newState[0]._id })
+        }
+      } else {
+        await client.update(DOMAIN_SPACE, { _id: project._id }, { defaultIssueStatus: project.states[0] })
+      }
+    }
+  }
+}
+
 export const trackerOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await moveIssues(client)
+    await fixProjectDefaultStatuses(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
