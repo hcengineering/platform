@@ -19,7 +19,6 @@ import {
   DOMAIN_MODEL,
   DateRangeMode,
   Domain,
-  FindOptions,
   IndexKind,
   Markup,
   Ref,
@@ -1518,13 +1517,6 @@ export function createModel (builder: Builder): void {
     tracker.completion.IssueCategory
   )
 
-  const statusOptions: FindOptions<IssueStatus> = {
-    lookup: {
-      category: core.class.StatusCategory
-    },
-    sort: { rank: SortingOrder.Ascending }
-  }
-
   createAction(builder, {
     action: view.actionImpl.ShowPopup,
     actionProps: {
@@ -1549,20 +1541,8 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: view.actionImpl.ValueSelector,
-      actionPopup: view.component.ValueSelector,
-      actionProps: {
-        attribute: 'status',
-        _class: tracker.class.IssueStatus,
-        placeholder: tracker.string.SetStatus,
-        query: {
-          ofAttribute: tracker.attribute.IssueStatus
-        },
-        fillQuery: {
-          space: 'space'
-        },
-        queryOptions: statusOptions
-      },
+      action: tracker.actionImpl.SelectStatus,
+      actionPopup: tracker.component.StatusSelector,
       label: tracker.string.Status,
       icon: tracker.icon.CategoryBacklog,
       keyBinding: ['keyS->keyS'],
@@ -1577,6 +1557,7 @@ export function createModel (builder: Builder): void {
     },
     tracker.action.SetStatus
   )
+
   createAction(
     builder,
     {
