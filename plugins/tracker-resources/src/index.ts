@@ -75,7 +75,7 @@ import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
 import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
 import Statuses from './components/workflow/Statuses.svelte'
-
+import StatusSelector from './components/issues/StatusSelector.svelte'
 import {
   getIssueId,
   getIssueTitle,
@@ -206,6 +206,10 @@ export async function queryIssue<D extends Issue> (
 
 async function move (issues: Issue | Issue[]): Promise<void> {
   showPopup(MoveIssues, { selected: issues }, 'top')
+}
+
+async function selectStatus (doc: Issue | Issue[]): Promise<void> {
+  showPopup(StatusSelector, { value: doc }, 'top')
 }
 
 async function editWorkflowStatuses (project: Project | undefined): Promise<void> {
@@ -474,7 +478,8 @@ export default async (): Promise<Resources> => ({
     PriorityFilterValuePresenter,
     StatusFilterValuePresenter,
     ProjectFilterValuePresenter,
-    ComponentFilterValuePresenter
+    ComponentFilterValuePresenter,
+    StatusSelector
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>
@@ -497,6 +502,7 @@ export default async (): Promise<Resources> => ({
     IsProjectJoined: async (project: Project) => !project.private || project.members.includes(getCurrentAccount()._id)
   },
   actionImpl: {
+    SelectStatus: selectStatus,
     Move: move,
     EditWorkflowStatuses: editWorkflowStatuses,
     EditProject: editProject,
