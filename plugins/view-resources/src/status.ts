@@ -18,7 +18,7 @@ import { createQuery, getClient } from '@hcengineering/presentation'
 import { writable } from 'svelte/store'
 
 // Issue status live query
-export const statusStore = writable<IdMap<Status>>()
+export const statusStore = writable<IdMap<Status>>(new Map())
 
 function fillStores (): void {
   const client = getClient()
