@@ -31,7 +31,6 @@
   })
 
   function sort (value: Ref<IssueStatus>[], store: IdMap<Status>, categories: IdMap<StatusCategory>): IssueStatus[] {
-    console.log(value)
     const result: IssueStatus[] = []
     for (const val of new Set(value)) {
       const res = store.get(val)
@@ -39,7 +38,6 @@
         result.push(res)
       }
     }
-    console.log(result)
     return result.sort((a, b) => {
       if (a.category === undefined) return -1
       if (b.category === undefined) return 1
