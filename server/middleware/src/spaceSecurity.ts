@@ -376,7 +376,8 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     const newQuery = query
     const account = await getUser(this.storage, ctx)
     const field = this.getKey(_class)
-    if (!isOwner(account)) {
+
+    if (!isOwner(account) || !this.storage.hierarchy.isDerived(_class, core.class.Space)) {
       if (query[field] !== undefined) {
         ;(newQuery as any)[field] = await this.mergeQuery(account, query[field])
       } else {
