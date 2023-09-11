@@ -14,7 +14,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AnyAttribute, Class, Doc, DocumentQuery, FindOptions, Lookup, Ref } from '@hcengineering/core'
+  import { deepEqual } from 'fast-equals'
+  import { createEventDispatcher } from 'svelte'
+  import core, {
+    AnyAttribute,
+    Class,
+    Doc,
+    DocumentQuery,
+    FindOptions,
+    Lookup,
+    Ref,
+    TxOperations
+  } from '@hcengineering/core'
   import { getObjectValue, SortingOrder } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { createQuery, getClient, updateAttribute } from '@hcengineering/presentation'
@@ -30,8 +41,7 @@
     showPopup,
     Spinner
   } from '@hcengineering/ui'
-  import { AttributeModel, BuildModelKey } from '@hcengineering/view'
-  import { createEventDispatcher } from 'svelte'
+  import { AttributeModel, BuildModelKey, BuildModelOptions } from '@hcengineering/view'
   import view from '../plugin'
   import { buildConfigLookup, buildModel, LoadingProps } from '../utils'
   import Menu from './Menu.svelte'
@@ -234,11 +244,35 @@
       total: true
     }
   )
+
+  let isBuildingModel = true
+  let model: AttributeModel[] | undefined
+  let modelOptions: BuildModelOptions | undefined
+
+  $: updateModelOptions(client, _class, config, lookup)
+  async function updateModelOptions (
+    client: TxOperations,
+    _class: Ref<Class<Doc>>,
+    config: (string | BuildModelKey)[],
+    lookup?: Lookup<Doc>
+  ) {
+    const newModelOpts = { client, _class, keys: config, lookup }
+    if (modelOptions == null || !deepEqual(modelOptions, newModelOpts)) {
+      modelOptions = newModelOpts
+      await build(modelOptions)
+    }
+  }
+
+  async function build (modelOptions: BuildModelOptions) {
+    isBuildingModel = true
+    model = await buildModel(modelOptions)
+    isBuildingModel = false
+  }
 </script>
 
-{#await buildModel({ client, _class, keys: config, lookup })}
+{#if !model || isBuildingModel}
   <Loading />
-{:then model}
+{:else}
   <table
     id={tableId}
     use:resizeObserver={(element) => {
@@ -376,7 +410,7 @@
     {/if}
   </table>
   {#if loading > 0}<Loading />{/if}
-{/await}
+{/if}
 {#if showFooter}
   <div class="space" />
   <div class="footer" style="width: {width}px;">
