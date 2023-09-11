@@ -16,20 +16,20 @@
   import core, { Class, Doc, FindResult, getObjectValue, Ref, SortingOrder, Space } from '@hcengineering/core'
   import presentation, { getClient } from '@hcengineering/presentation'
   import ui, {
+    deviceOptionsStore,
     EditWithIcon,
     Icon,
-    IconSearch,
     IconCheck,
+    IconSearch,
     Label,
     Loading,
-    resizeObserver,
-    deviceOptionsStore
+    resizeObserver
   } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
-  import { getPresenter } from '../../utils'
   import { FILTER_DEBOUNCE_MS, sortFilterValues } from '../../filter'
   import view from '../../plugin'
+  import { getPresenter } from '../../utils'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined
@@ -79,34 +79,47 @@
         ? []
         : (await client.findAll(core.class.Space, { archived: true }, { projection: { _id: 1 } })).map((it) => it._id)
 
-    objectsPromise = client.findAll(
-      _class,
-      {
-        ...resultQuery,
-        ...(space ? { space } : isDerivedFromSpace ? { archived: false } : { space: { $nin: archived } })
-      },
-      {
-        sort: { [filter.key.key]: SortingOrder.Ascending },
-        projection: { [prefix + filter.key.key]: 1, space: 1 },
-        ...(space || isDerivedFromSpace ? {} : { lookup: { space: core.class.Space } })
+    async function doQuery (limit: number | undefined, first1000?: any[]): Promise<void> {
+      const p = client.findAll(
+        _class,
+        {
+          ...resultQuery,
+          ...(space ? { space } : isDerivedFromSpace ? { archived: false } : { space: { $nin: archived } }),
+          ...(first1000 ? { [filter.key.key]: { $nin: first1000 } } : {})
+        },
+        {
+          sort: { modifiedOn: SortingOrder.Descending },
+          projection: { [prefix + filter.key.key]: 1 },
+          ...(limit !== undefined ? { limit } : {})
+        }
+      )
+      if (limit !== undefined) {
+        objectsPromise = p
       }
-    )
-    const res = await objectsPromise
+      const res = await p
 
-    for (const object of res) {
-      let asDoc = object
-      if (hierarchy.isMixin(filter.key._class)) {
-        asDoc = hierarchy.as(object, filter.key._class)
+      for (const object of res) {
+        let asDoc = object
+        if (hierarchy.isMixin(filter.key._class)) {
+          asDoc = hierarchy.as(object, filter.key._class)
+        }
+        const realValue = getObjectValue(filter.key.key, asDoc)
+        const value = getValue(realValue)
+        values.add(value)
+        realValues.set(value, (realValues.get(value) ?? new Set()).add(realValue))
       }
-      const realValue = getObjectValue(filter.key.key, asDoc)
-      const value = getValue(realValue)
-      values.add(value)
-      realValues.set(value, (realValues.get(value) ?? new Set()).add(realValue))
+      for (const object of filter.value.map((p) => p[0])) {
+        values.add(object)
+      }
     }
-    for (const object of filter.value.map((p) => p[0])) {
-      values.add(object)
-    }
+    await doQuery(1000)
     values = values
+    sortedValues = sortFilterValues([...values.keys()], (v) => isSelected(v, selectedValues))
+    objectsPromise = undefined
+
+    // Check if we have all possible values, in case of enumeration
+    await doQuery(undefined, Array.from(values))
+
     sortedValues = sortFilterValues([...values.keys()], (v) => isSelected(v, selectedValues))
     objectsPromise = undefined
   }
