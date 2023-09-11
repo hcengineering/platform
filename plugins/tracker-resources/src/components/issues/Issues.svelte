@@ -33,7 +33,7 @@
   let query: DocumentQuery<Issue> | undefined = undefined
   let modeSelectorProps: IModeSelector | undefined = undefined
 
-  $: spaceQuery = currentSpace ? { space: currentSpace } : {}
+  $: spaceQuery = currentSpace ? { space: currentSpace } : { space: { $nin: archived } }
 
   $: all = { ...baseQuery, ...spaceQuery }
 
@@ -78,9 +78,6 @@
   }
   $: if (mode !== undefined) {
     query = { ...queries[mode] }
-    if (query?.space === undefined) {
-      query = { ...query, space: { $nin: archived } }
-    }
     modeSelectorProps = {
       config,
       mode,
