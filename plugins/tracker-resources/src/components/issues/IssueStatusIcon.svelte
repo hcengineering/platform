@@ -52,11 +52,9 @@
   async function updateCategory (_space: Project | undefined, status: WithLookup<IssueStatus>, statuses: IssueStatus[]) {
     if (status.$lookup?.category) {
       category = status.$lookup.category
-    } else if (status.category) {
-      category = await client.findOne(core.class.StatusCategory, { _id: status.category })
     }
     if (category === undefined) {
-      category = await client.findOne(core.class.StatusCategory, { _id: value.category })
+      category = await client.findOne(core.class.StatusCategory, { _id: value.category ?? status.category })
     }
     if (value.category !== undefined && dynamicFillCategories.includes(value.category)) {
       const index = statuses.findIndex((p) => p._id === value._id)
