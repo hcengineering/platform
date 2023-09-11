@@ -82,8 +82,6 @@
 <style lang="scss">
   span,
   a {
-    display: flex;
-    align-items: center;
     min-width: 0;
     font-weight: inherit;
 
