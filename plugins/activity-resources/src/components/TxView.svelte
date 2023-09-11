@@ -245,7 +245,7 @@
                   <span class="lower"><Label label={m.label} /></span>
                   {#each value.added as cvalue}
                     {#if value.isObjectAdded}
-                      <ObjectPresenter value={cvalue} inline accent />
+                      <ObjectPresenter value={cvalue} accent />
                     {:else}
                       <svelte:component this={m.presenter} value={cvalue} accent />
                     {/if}

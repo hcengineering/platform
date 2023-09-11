@@ -104,7 +104,7 @@ export const whitePalette = Object.freeze<ColorDefinition[]>([
   define('Lavander', 'DC85F5', 'DC85F5', 'CE55F1', 'CE55F1', 'CE55F1', [60, 20]),
   define('Mauve', '925CB1', '925CB1', '784794', '784794', '784794', [60, 20]),
   define('Heather', '7B86C6', '7B86C6', '5866B7', '5866B7', '5866B7', [60, 20]),
-  define('Orchid', '8458E3 ', '8458E3', '6A3ACF', '6A3ACF', '6A3ACF', [60, 20]),
+  define('Orchid', '8458E3', '8458E3', '6A3ACF', '6A3ACF', '6A3ACF', [60, 20]),
   define('Blueberry', '6260C2', '6260C2', '4542AD', '4542AD', '4542AD', [60, 20]),
   define('Arctic', '8BB0F9', '8BB0F9', '5A8FF6', '5A8FF6', '5A8FF6', [60, 20]),
   define('Sky', '4CA6EE', '4CA6EE', '1F90EA', '1F90EA', '1F90EA', [60, 20]),
