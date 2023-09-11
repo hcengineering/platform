@@ -23,9 +23,11 @@ import {
   Ref,
   Space,
   Status,
+  Tx,
   TxCollectionCUD,
   TxCreateDoc,
   TxOperations,
+  TxProcessor,
   TxUpdateDoc,
   toIdMap
 } from '@hcengineering/core'
@@ -357,7 +359,7 @@ async function migrateStatuses (client: MigrationClient): Promise<void> {
       const filters = JSON.parse(filter.filters) as Filter[]
       let changed = false
       for (const filter of filters) {
-        if (['status, doneStatus'].includes(filter.key.key)) {
+        if (['status', 'doneStatus'].includes(filter.key.key)) {
           for (let index = 0; index < filter.value.length; index++) {
             const val = filter.value[index]
             const newVal = oldStatusesMap.get(val)
@@ -381,10 +383,60 @@ async function migrateStatuses (client: MigrationClient): Promise<void> {
   await client.update(DOMAIN_STATUS, { space: { $ne: task.space.Statuses } }, { space: task.space.Statuses })
 }
 
+async function fixFilters (client: MigrationClient): Promise<void> {
+  const currentStatuses = await client.find<Status>(DOMAIN_STATUS, {})
+  const currentStatusesMap = toIdMap(currentStatuses)
+  const cacheMap = new Map<Ref<Status>, Ref<Status>>()
+  const descendants = client.hierarchy.getDescendants(task.class.Task)
+  const filters = await client.find<FilteredView>(DOMAIN_VIEW, {
+    _class: view.class.FilteredView,
+    filterClass: { $in: descendants }
+  })
+  for (const filter of filters) {
+    const filters = JSON.parse(filter.filters) as Filter[]
+    let changed = false
+    for (const filter of filters) {
+      if (['status', 'doneStatus'].includes(filter.key.key)) {
+        for (let index = 0; index < filter.value.length; index++) {
+          const val = filter.value[index]
+          if (!currentStatusesMap.has(val)) {
+            const newVal = cacheMap.get(val)
+            if (newVal !== undefined) {
+              filter.value[index] = newVal
+              changed = true
+            } else {
+              const ownTxes = await client.find<Tx>(DOMAIN_TX, { objectId: val })
+              const attachedTxes = await client.find<Tx>(DOMAIN_TX, { 'tx.objectId': val })
+              const txes = [...ownTxes, ...attachedTxes].sort((a, b) => a.modifiedOn - b.modifiedOn)
+              const oldStatus = TxProcessor.buildDoc2Doc<Status>(txes)
+              if (oldStatus !== undefined) {
+                const newStatus = currentStatuses.find(
+                  (p) =>
+                    p.ofAttribute === oldStatus.ofAttribute &&
+                    p.name.toLowerCase().trim() === oldStatus.name.toLowerCase().trim()
+                )
+                if (newStatus !== undefined) {
+                  filter.value[index] = newStatus._id
+                  cacheMap.set(val, newStatus._id)
+                  changed = true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    if (changed) {
+      await client.update(DOMAIN_VIEW, { _id: filter._id }, { filters: JSON.stringify(filters) })
+    }
+  }
+}
+
 export const taskOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await renameState(client)
     await migrateStatuses(client)
+    await fixFilters(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)

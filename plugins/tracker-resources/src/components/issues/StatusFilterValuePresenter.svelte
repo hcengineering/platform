@@ -16,7 +16,7 @@
   import { IssueStatus, Project } from '@hcengineering/tracker'
   import IssueStatusIcon from './IssueStatusIcon.svelte'
   import { createQuery } from '@hcengineering/presentation'
-  import core, { IdMap, Ref, StatusCategory, toIdMap } from '@hcengineering/core'
+  import core, { IdMap, Ref, Status, StatusCategory, toIdMap } from '@hcengineering/core'
   import { statusStore } from '@hcengineering/view-resources'
 
   export let value: Ref<IssueStatus>[]
@@ -30,8 +30,15 @@
     categories = toIdMap(res)
   })
 
-  function sort (value: IssueStatus[], categories: IdMap<StatusCategory>): IssueStatus[] {
-    return value.sort((a, b) => {
+  function sort (value: Ref<IssueStatus>[], store: IdMap<Status>, categories: IdMap<StatusCategory>): IssueStatus[] {
+    const result: IssueStatus[] = []
+    for (const val of new Set(value)) {
+      const res = store.get(val)
+      if (res) {
+        result.push(res)
+      }
+    }
+    return result.sort((a, b) => {
       if (a.category === undefined) return -1
       if (b.category === undefined) return 1
       const aCat = categories.get(a.category)
@@ -42,7 +49,7 @@
     })
   }
 
-  $: statuses = sort(value.map((p) => $statusStore.get(p)) as IssueStatus[], categories)
+  $: statuses = sort(value, $statusStore, categories)
 </script>
 
 <div class="flex-presenter flex-gap-1-5">
