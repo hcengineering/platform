@@ -30,21 +30,13 @@
 
 {#if value}
   <span
-    class="name overflow-label select-text"
+    class="presenter-label select-text"
     class:with-margin={shouldUseMargin}
     class:list={kind === 'list'}
     style:max-width={maxWidth}
     title={value.title}
   >
-    <DocNavLink
-      object={value}
-      {disabled}
-      {onClick}
-      component={tracker.component.EditIssue}
-      inline
-      shrink={1}
-      colorInherit
-    >
+    <DocNavLink object={value} {onClick} component={tracker.component.EditIssue} shrink={1} colorInherit>
       {value.title}
     </DocNavLink>
   </span>
@@ -55,7 +47,10 @@
 {/if}
 
 <style lang="scss">
-  .name {
+  .presenter-label {
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
     flex-shrink: 1;
     min-width: 1rem;
 

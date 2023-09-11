@@ -1052,7 +1052,6 @@
     border-radius: 1.625rem;
     transition: flex-shrink 0.25s cubic-bezier(0.38, 0.01, 0.33, 1) 0s;
     
-    &:not(:empty) { min-width: 7.5rem; }
     &:hover {
       flex-shrink: .5;
       min-width: initial;
