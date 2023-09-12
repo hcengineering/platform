@@ -33,7 +33,10 @@
       e.stopPropagation()
       onClick(e)
     } else if (href !== undefined) {
-      if (e.metaKey || e.ctrlKey) return
+      if (e.metaKey || e.ctrlKey) {
+        e.stopPropagation()
+        return
+      }
 
       // we need to close popups and tooltips
       closePopup()
@@ -60,7 +63,7 @@
     class:colorInherit
     class:fs-bold={accent}
     style:flex-shrink={shrink}
-    on:click|stopPropagation={clickHandler}
+    on:click={clickHandler}
   >
     <slot />
   </span>
@@ -73,7 +76,7 @@
     class:colorInherit
     class:fs-bold={accent}
     style:flex-shrink={shrink}
-    on:click|stopPropagation={clickHandler}
+    on:click={clickHandler}
   >
     <slot />
   </a>

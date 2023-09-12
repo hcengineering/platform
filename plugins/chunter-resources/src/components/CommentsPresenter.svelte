@@ -15,8 +15,7 @@
 -->
 <script lang="ts">
   import type { Doc } from '@hcengineering/core'
-  import { Button, ButtonKind, ButtonSize, IconThread, tooltip } from '@hcengineering/ui'
-  import { DocNavLink } from '@hcengineering/view-resources'
+  import { Button, ButtonKind, ButtonSize, IconThread } from '@hcengineering/ui'
   import CommentPopup from './CommentPopup.svelte'
 
   export let value: number | undefined
@@ -29,35 +28,17 @@
 </script>
 
 {#if value && value > 0}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <DocNavLink {object} inline noUnderline={true} shrink={0}>
-    {#if kind === 'list'}
-      <Button
-        {kind}
-        {size}
-        showTooltip={{
-          component: CommentPopup,
-          props: { objectId: object._id, object, withInput }
-        }}
-      >
-        <div slot="icon"><IconThread {size} /></div>
-        <div slot="content" style:margin-left={showCounter && !compactMode ? '.375rem' : '0'}>
-          {#if showCounter && !compactMode}{value ?? 0}{/if}
-        </div>
-      </Button>
-    {:else}
-      <div
-        use:tooltip={{
-          component: CommentPopup,
-          props: { objectId: object._id, object, withInput }
-        }}
-        class="sm-tool-icon"
-      >
-        <span class="icon"><IconThread {size} /></span>
-        {#if showCounter && value && value !== 0}
-          {value}
-        {/if}
-      </div>
-    {/if}
-  </DocNavLink>
+  <Button
+    {kind}
+    {size}
+    showTooltip={{
+      component: CommentPopup,
+      props: { objectId: object._id, object, withInput }
+    }}
+  >
+    <div slot="icon"><IconThread {size} /></div>
+    <div slot="content" style:margin-left={showCounter && !compactMode ? '.375rem' : '0'}>
+      {#if showCounter && !compactMode}{value ?? 0}{/if}
+    </div>
+  </Button>
 {/if}
