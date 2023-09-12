@@ -275,31 +275,79 @@ export function start (
   app.get('/files/*', filesHandler)
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.post('/files', async (req, res) => {
-    const file = req.files?.file as UploadedFile
+  // app.post('/files', async (req, res) => {
+  //   const file = req.files?.file as UploadedFile
+  //
+  //   if (file === undefined) {
+  //     res.status(400).send()
+  //     return
+  //   }
+  //
+  //   const authHeader = req.headers.authorization
+  //   if (authHeader === undefined) {
+  //     res.status(403).send()
+  //     return
+  //   }
+  //
+  //   try {
+  //     const token = authHeader.split(' ')[1]
+  //     const payload = decodeToken(token)
+  //     const uuid = await minioUpload(config.minio, payload.workspace, file)
+  //
+  //     res.status(200).send(uuid)
+  //   } catch (error) {
+  //     console.log(error)
+  //     res.status(500).send()
+  //   }
+  // })
 
-    if (file === undefined) {
-      res.status(400).send()
-      return
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.post('/files', async (req, res) => {
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // For example, 10 MB
+    const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'application/pdf']; // For example
+
+    function isValidFile(file: UploadedFile): boolean {
+      return file.size <= MAX_FILE_SIZE && ALLOWED_MIME_TYPES.includes(file.mimetype);
     }
 
-    const authHeader = req.headers.authorization
-    if (authHeader === undefined) {
-      res.status(403).send()
-      return
+    const file = req.files?.file as UploadedFile;
+
+    if (!file) {
+      return res.status(400).send('File not provided.');
+    }
+
+    if (!isValidFile(file)) {
+      return res.status(400).send('Invalid file.');
+    }
+
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(403).send('Authorization header missing or malformed.');
+    }
+
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+      return res.status(403).send('Invalid token.');
+    }
+
+    // If the token exists, it is decoded. In case of an error, the server sends
+    // an error message. If there is no token, the guest payload is used.
+    let payload;
+    try {
+      payload = decodeToken(token);
+    } catch (error) {
+      console.log('Error decoding token:', error);
+      return res.status(403).send('Invalid token.');
     }
 
     try {
-      const token = authHeader.split(' ')[1]
-      const payload = decodeToken(token)
-      const uuid = await minioUpload(config.minio, payload.workspace, file)
-
-      res.status(200).send(uuid)
+      const uuid = await minioUpload(config.minio, payload.workspace, file);
+      res.status(200).send(uuid);
     } catch (error) {
-      console.log(error)
-      res.status(500).send()
+      console.log('Error uploading file:', error);
+      res.status(500).send('Server error.');
     }
-  })
+  });
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.delete('/files', async (req, res) => {
