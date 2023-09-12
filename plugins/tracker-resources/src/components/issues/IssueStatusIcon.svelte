@@ -53,7 +53,7 @@
     if (status.$lookup?.category) {
       category = status.$lookup.category
     }
-    if (category === undefined) {
+    if (category === undefined || category._id !== value.category) {
       category = await client.findOne(core.class.StatusCategory, { _id: value.category })
     }
     if (value.category !== undefined && dynamicFillCategories.includes(value.category)) {
