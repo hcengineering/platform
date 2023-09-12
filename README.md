@@ -5,6 +5,9 @@ The current exemplary applications include Chat, Issue Management (Tracker), App
 
 ## Installation
 
+First install [volta](https://volta.sh/) with the command `curl https://get.volta.sh | bash`, this step is important to ensure that the project uses the correct node version when starting. 
+After installing volta, if you run `node --version` from the project root, the version should match the one specified in package.json in the `volta.node` field.
+
 You need Microsoft's [rush](https://rushjs.io) to install application.
 
 Install [rush](https://rushjs.io) with `$ npm install -g @microsoft/rush` command and run `$ rush install` from the repository root, followed by `$ rush build`.
