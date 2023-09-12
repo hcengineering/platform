@@ -283,7 +283,7 @@
       try {
         const newRank = calcRank(prev, next)
         if ((dragItem.doc as DocWithRank)?.rank !== newRank) {
-          ;(update as any).rank = newRank
+          (update as any).rank = newRank
         }
       } catch {}
     }
@@ -312,7 +312,7 @@
     dragItemIndex = undefined
   }
 
-  const dragEndListener: any = (ev: DragEvent, initIndex: number) => {
+  const dragEndListener = (ev: DragEvent, initIndex: number): void => {
     ev.preventDefault()
     const rect = listDiv.getBoundingClientRect()
     const inRect = ev.clientY > rect.top && ev.clientY < rect.top + rect.height
@@ -325,12 +325,13 @@
         dragItem.revert = undefined
       }
     }
+
   }
 
   function dragStartHandler (e: CustomEvent<any>) {
     const { target, index } = e.detail
     dragItemIndex = index
-    ;(target as EventTarget).addEventListener('dragend', (e) => dragEndListener(e, index))
+    (target as EventTarget).addEventListener('dragend', (e: DragEvent) => dragEndListener(e, index), { once: true })
   }
 
   function dragStart (ev: DragEvent, docObject: Doc, i: number) {
@@ -338,7 +339,7 @@
       ev.dataTransfer.effectAllowed = 'move'
       ev.dataTransfer.dropEffect = 'move'
     }
-    ev.target?.addEventListener('dragend', (e) => dragEndListener(e, i))
+    ev.target?.addEventListener('dragend', (e: Event) => dragEndListener(e as DragEvent, i), { once: true })
     dragItem = {
       doc: docObject,
       revert: () => {
