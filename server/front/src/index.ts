@@ -144,6 +144,8 @@ export function start (
     title?: string
     languages: string
     defaultLanguage: string
+    uploadMaxFileSize: string
+    uploadAllowedMimeTypes: string[]
   },
   port: number,
   extraConfig?: Record<string, string>
@@ -275,39 +277,9 @@ export function start (
   app.get('/files/*', filesHandler)
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  // app.post('/files', async (req, res) => {
-  //   const file = req.files?.file as UploadedFile
-  //
-  //   if (file === undefined) {
-  //     res.status(400).send()
-  //     return
-  //   }
-  //
-  //   const authHeader = req.headers.authorization
-  //   if (authHeader === undefined) {
-  //     res.status(403).send()
-  //     return
-  //   }
-  //
-  //   try {
-  //     const token = authHeader.split(' ')[1]
-  //     const payload = decodeToken(token)
-  //     const uuid = await minioUpload(config.minio, payload.workspace, file)
-  //
-  //     res.status(200).send(uuid)
-  //   } catch (error) {
-  //     console.log(error)
-  //     res.status(500).send()
-  //   }
-  // })
-
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.post('/files', async (req, res) => {
-    const MAX_FILE_SIZE = 10 * 1024 * 1024; // For example, 10 MB
-    const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'application/pdf']; // For example
-
     function isValidFile(file: UploadedFile): boolean {
-      return file.size <= MAX_FILE_SIZE && ALLOWED_MIME_TYPES.includes(file.mimetype);
+      return file.size <= config.uploadMaxFileSize && config.uploadAllowedMimeTypes.includes(file.mimetype);
     }
 
     const file = req.files?.file as UploadedFile;
@@ -330,8 +302,6 @@ export function start (
       return res.status(403).send('Invalid token.');
     }
 
-    // If the token exists, it is decoded. In case of an error, the server sends
-    // an error message. If there is no token, the guest payload is used.
     let payload;
     try {
       payload = decodeToken(token);

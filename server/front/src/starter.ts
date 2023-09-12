@@ -116,6 +116,20 @@ export function startFront (extraConfig?: Record<string, string>): void {
     process.exit(1)
   }
 
+  const uploadMaxFileSize = process.env.MAX_FILE_SIZE
+  if (uploadMaxFileSize === undefined) {
+    console.log('Please provide max file size for uploads')
+    process.exit(1)
+  }
+
+  let uploadAllowedMimeTypes = process.env.ALLOWED_MIME_TYPES
+  if (uploadAllowedMimeTypes === undefined) {
+    console.log('Please provide allowed MIME types for uploads')
+    process.exit(1)
+  }
+
+  uploadAllowedMimeTypes = uploadAllowedMimeTypes.split(',').map((item) => item.trim())
+
   const title = process.env.TITLE
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
@@ -134,7 +148,9 @@ export function startFront (extraConfig?: Record<string, string>): void {
     calendarUrl,
     title,
     languages,
-    defaultLanguage
+    defaultLanguage,
+    uploadMaxFileSize,
+    uploadAllowedMimeTypes
   }
   console.log('Starting Front service with', config)
   const shutdown = start(config, SERVER_PORT, extraConfig)
