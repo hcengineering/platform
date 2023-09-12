@@ -157,7 +157,13 @@
             }}
           >
             <div class="clear-mins flex-grow">
-              <EmployeePresenter {value} shouldShowPlaceholder defaultName={ui.string.NotSelected} disabled />
+              <EmployeePresenter
+                {value}
+                shouldShowPlaceholder
+                defaultName={ui.string.NotSelected}
+                disabled
+                noUnderline
+              />
             </div>
             <div class="check pointer-events-none">
               {#if isSelected(value, filter.value)}
