@@ -1,4 +1,4 @@
-import { Extension, getMarkRange, mergeAttributes, Range } from '@tiptap/core'
+import { Extension, getMarkRange, mergeAttributes } from '@tiptap/core'
 import { Plugin, TextSelection } from 'prosemirror-state'
 import { NodeUuidExtension, NodeUuidOptions } from './nodeUuid'
 
@@ -10,11 +10,6 @@ export enum NodeHighlightType {
 interface NodeHighlightExtensionOptions extends NodeUuidOptions {
   getNodeHighlightType: (uuid: string) => NodeHighlightType | undefined | null
   isHighlightModeOn: () => boolean
-}
-
-// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-function isRange (range: Range | undefined | null | void): range is Range {
-  return range !== null && range !== undefined
 }
 
 /**
@@ -34,7 +29,7 @@ export const NodeHighlightExtension = Extension.create<NodeHighlightExtensionOpt
 
             const range = getMarkRange(doc.resolve(pos), schema.marks[NodeUuidExtension.name])
 
-            if (!isRange(range)) {
+            if (range === null || range === undefined) {
               return false
             }
 
