@@ -20,7 +20,7 @@
   import { getContext, createEventDispatcher, onDestroy, onMount } from 'svelte'
   import { WebsocketProvider } from 'y-websocket'
   import * as Y from 'yjs'
-  import { Editor, Extension, HTMLContent, getMarkRange } from '@tiptap/core'
+  import { AnyExtension, Editor, Extension, HTMLContent, getMarkRange } from '@tiptap/core'
   import Collaboration from '@tiptap/extension-collaboration'
   import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
   import Placeholder from '@tiptap/extension-placeholder'
@@ -60,6 +60,7 @@
   export let autoOverflow = false
   export let initialContent: string | undefined = undefined
   export let textNodeActions: TextNodeAction[] = []
+  export let extensions: AnyExtension[] = []
   export let isNodeHighlightModeOn: boolean = false
   export let onNodeHighlightType: (uuid: string) => NodeHighlightType = () => NodeHighlightType.WARNING
 
@@ -256,8 +257,8 @@
 
               return !!currentTextNodeAction
             }
-          })
-          // ...extensions
+          }),
+          ...extensions
         ],
         onTransaction: () => {
           // force re-render so `editor.isActive` works as expected
