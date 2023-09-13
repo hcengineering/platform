@@ -751,6 +751,13 @@ export function createModel (builder: Builder): void {
           key: 'assignee',
           props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' },
           displayProps: { key: 'assignee', fixed: 'right' }
+        },
+        {
+          key: '',
+          label: recruit.string.DueDate,
+          presenter: tracker.component.DueDatePresenter,
+          displayProps: { key: 'dueDate', compression: true },
+          props: { kind: 'list' }
         }
       ],
       options: {
@@ -763,7 +770,7 @@ export function createModel (builder: Builder): void {
       },
       configOptions: {
         strict: true,
-        hiddenKeys: ['name', 'attachedTo']
+        hiddenKeys: ['name', 'attachedTo', 'dueDate']
       },
       baseQuery: {
         doneState: null,
