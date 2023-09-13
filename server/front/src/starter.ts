@@ -116,19 +116,19 @@ export function startFront (extraConfig?: Record<string, string>): void {
     process.exit(1)
   }
 
-  const uploadMaxFileSize = process.env.MAX_FILE_SIZE
-  if (uploadMaxFileSize === undefined) {
-    console.log('Please provide max file size for uploads')
-    process.exit(1)
+  const uploadMaxFileSize = Number(process.env.MAX_FILE_SIZE);
+  if (isNaN(uploadMaxFileSize)) {
+    console.log('Please provide a valid max file size for uploads');
+    process.exit(1);
   }
 
-  let uploadAllowedMimeTypes = process.env.ALLOWED_MIME_TYPES
-  if (uploadAllowedMimeTypes === undefined) {
-    console.log('Please provide allowed MIME types for uploads')
-    process.exit(1)
+  const rawMimeTypes = process.env.ALLOWED_MIME_TYPES;
+  if (rawMimeTypes === undefined || rawMimeTypes.trim() === "") {
+    console.log('Please provide allowed MIME types for uploads');
+    process.exit(1);
   }
+  const uploadAllowedMimeTypes = rawMimeTypes.split(',').map((item) => item.trim());
 
-  uploadAllowedMimeTypes = uploadAllowedMimeTypes.split(',').map((item) => item.trim())
 
   const title = process.env.TITLE
 

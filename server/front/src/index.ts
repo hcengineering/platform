@@ -278,13 +278,17 @@ export function start (
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.post('/files', async (req, res) => {
-    function isValidFile(file: UploadedFile): boolean {
-      return file.size <= config.uploadMaxFileSize && config.uploadAllowedMimeTypes.includes(file.mimetype);
+    function isValidFile (file: UploadedFile): boolean {
+      const maxSize = Number(config.uploadMaxFileSize);
+      if (isNaN(maxSize)) {
+        throw new Error("Invalid uploadMaxFileSize value");
+      }
+      return file.size <= maxSize && config.uploadAllowedMimeTypes.includes(file.mimetype);
     }
 
-    const file = req.files?.file as UploadedFile;
+    const file = req.files?.file as UploadedFile
 
-    if (!file) {
+    if (file === undefined) {
       return res.status(400).send('File not provided.');
     }
 
@@ -302,22 +306,22 @@ export function start (
       return res.status(403).send('Invalid token.');
     }
 
-    let payload;
+    let payload
     try {
-      payload = decodeToken(token);
+      payload = decodeToken(token)
     } catch (error) {
-      console.log('Error decoding token:', error);
-      return res.status(403).send('Invalid token.');
+      console.log('Error decoding token:', error)
+      return res.status(403).send('Invalid token.')
     }
 
     try {
-      const uuid = await minioUpload(config.minio, payload.workspace, file);
-      res.status(200).send(uuid);
+      const uuid = await minioUpload(config.minio, payload.workspace, file)
+      res.status(200).send(uuid)
     } catch (error) {
-      console.log('Error uploading file:', error);
-      res.status(500).send('Server error.');
+      console.log('Error uploading file:', error)
+      res.status(500).send('Server error.')
     }
-  });
+  })
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.delete('/files', async (req, res) => {
