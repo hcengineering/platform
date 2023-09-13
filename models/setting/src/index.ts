@@ -359,7 +359,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(core.class.Class, core.class.Class, view.mixin.IgnoreActions, {
-    actions: [view.action.Delete]
+    actions: [view.action.Delete, view.action.Open]
   })
   builder.mixin(core.class.Attribute, core.class.Class, view.mixin.IgnoreActions, {
     actions: [view.action.Delete]
