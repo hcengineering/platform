@@ -55,7 +55,7 @@ import {
   recruitId
 } from '@hcengineering/recruit'
 import setting from '@hcengineering/setting'
-import { State } from '@hcengineering/task'
+import { DoneState, State } from '@hcengineering/task'
 import { KeyBinding, ViewOptionsModel } from '@hcengineering/view'
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
@@ -167,6 +167,9 @@ export class TApplicant extends TTask implements Applicant {
 
   @Prop(TypeRef(task.class.State), task.string.TaskState, { _id: recruit.attribute.State })
   declare status: Ref<State>
+
+  @Prop(TypeRef(task.class.DoneState), task.string.TaskStateDone, { _id: recruit.attribute.DoneState })
+  declare doneState: Ref<DoneState>
 }
 
 @Model(recruit.class.ApplicantMatch, core.class.AttachedDoc, DOMAIN_TASK)
@@ -1189,23 +1192,17 @@ export function createModel (builder: Builder): void {
   })
 
   createAction(builder, {
-    action: view.actionImpl.ValueSelector,
-    actionPopup: view.component.ValueSelector,
+    action: task.actionImpl.SelectStatus,
+    actionPopup: task.component.StatusSelector,
     actionProps: {
-      attribute: 'status',
       _class: task.class.State,
-      query: {},
-      searchField: 'name',
-      // should match space
-      fillQuery: { space: 'space' },
-      // Only apply for same vacancy
-      docMatches: ['space'],
+      ofAttribute: recruit.attribute.State,
       placeholder: task.string.TaskState
     },
     label: task.string.TaskState,
     icon: task.icon.TaskState,
-    keyBinding: [],
-    input: 'none',
+    keyBinding: ['keyS->keyS'],
+    input: 'any',
     category: recruit.category.Recruit,
     target: recruit.class.Applicant,
     context: {
@@ -1214,24 +1211,19 @@ export function createModel (builder: Builder): void {
       group: 'edit'
     }
   })
+
   createAction(builder, {
-    action: view.actionImpl.ValueSelector,
-    actionPopup: view.component.ValueSelector,
+    action: task.actionImpl.SelectStatus,
+    actionPopup: task.component.StatusSelector,
     actionProps: {
-      attribute: 'doneState',
       _class: task.class.DoneState,
-      query: {},
-      searchField: 'name',
-      // should match space
-      fillQuery: { space: 'space' },
-      // Only apply for same vacancy
-      docMatches: ['space'],
+      ofAttribute: recruit.attribute.DoneState,
       placeholder: task.string.DoneState
     },
     label: task.string.DoneState,
     icon: task.icon.TaskState,
-    keyBinding: [],
-    input: 'none',
+    keyBinding: ['keyS->keyD'],
+    input: 'any',
     category: recruit.category.Recruit,
     target: recruit.class.Applicant,
     context: {
@@ -1240,6 +1232,7 @@ export function createModel (builder: Builder): void {
       group: 'edit'
     }
   })
+
   createAction(
     builder,
     {

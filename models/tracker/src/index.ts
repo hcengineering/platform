@@ -1541,8 +1541,13 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: tracker.actionImpl.SelectStatus,
-      actionPopup: tracker.component.StatusSelector,
+      action: task.actionImpl.SelectStatus,
+      actionPopup: task.component.StatusSelector,
+      actionProps: {
+        _class: tracker.class.IssueStatus,
+        ofAttribute: tracker.attribute.IssueStatus,
+        placeholder: tracker.string.Status
+      },
       label: tracker.string.Status,
       icon: tracker.icon.CategoryBacklog,
       keyBinding: ['keyS->keyS'],

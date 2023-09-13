@@ -1,24 +1,29 @@
 <script lang="ts">
-  import core, { DocumentQuery, FindOptions, SortingOrder } from '@hcengineering/core'
+  import core, { Attribute, Class, DocumentQuery, FindOptions, Ref, SortingOrder, Status } from '@hcengineering/core'
   import { ObjectPopup, createQuery, getClient } from '@hcengineering/presentation'
-  import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import { Label, resizeObserver } from '@hcengineering/ui'
   import { ObjectPresenter } from '@hcengineering/view-resources'
   import view from '@hcengineering/view-resources/src/plugin'
   import { createEventDispatcher } from 'svelte'
-  import tracker from '../../plugin'
+  import task from '../plugin'
+  import { SpaceWithStates, Task } from '@hcengineering/task'
+  import { IntlString } from '@hcengineering/platform'
 
-  export let value: Issue | Issue[]
-  const queryOptions: FindOptions<IssueStatus> = {
+  export let value: Task | Task[]
+  export let placeholder: IntlString
+  export let ofAttribute: Ref<Attribute<Status>>
+  export let _class: Ref<Class<Status>>
+
+  const queryOptions: FindOptions<Status> = {
     lookup: {
       category: core.class.StatusCategory
     },
     sort: { category: SortingOrder.Ascending, name: SortingOrder.Ascending }
   }
-  const placeholder = tracker.string.SetStatus
 
   const dispatch = createEventDispatcher()
   const client = getClient()
+  const h = client.getHierarchy()
   const changeStatus = async (newStatus: any) => {
     if (newStatus === undefined) {
       dispatch('close', undefined)
@@ -26,10 +31,11 @@
     }
     const docs = Array.isArray(value) ? value : [value]
 
-    const changed = (d: Issue) => d.status !== newStatus
+    const changed = (d: Task) => d.status !== newStatus
+    const field = h.isDerived(_class, task.class.DoneState) ? 'doneState' : 'status'
     await Promise.all(
       docs.filter(changed).map((it) => {
-        return client.update(it, { status: newStatus })
+        return client.update(it, { [field]: newStatus })
       })
     )
 
@@ -37,31 +43,36 @@
   }
 
   $: current = Array.isArray(value)
-    ? value.every((v) => v.status === (value as Array<Issue>)[0].status)
-      ? (value as Array<Issue>)[0].status
+    ? value.every((v) => v.status === (value as Array<Task>)[0].status)
+      ? (value as Array<Task>)[0].status
       : undefined
     : value.status
 
-  let finalQuery: DocumentQuery<IssueStatus> = {}
+  let finalQuery: DocumentQuery<Status> = {}
 
   let docMatch = true
 
   $: _space = Array.isArray(value)
-    ? value.every((v) => v.space === (value as Array<Issue>)[0].space)
-      ? (value as Array<Issue>)[0].space
+    ? value.every((v) => v.space === (value as Array<Task>)[0].space)
+      ? (value as Array<Task>)[0].space
       : undefined
     : value.space
 
-  let project: Project | undefined
+  let project: SpaceWithStates | undefined
 
   const query = createQuery()
-  $: _space ? query.query(tracker.class.Project, { _id: _space }, (res) => (project = res[0])) : (project = undefined)
+  $: _space
+    ? query.query(task.class.SpaceWithStates, { _id: _space as Ref<SpaceWithStates> }, (res) => (project = res[0]))
+    : (project = undefined)
 
-  function updateQuery (space: Project | undefined): void {
+  function updateQuery (space: SpaceWithStates | undefined): void {
     if (space === undefined) {
-      finalQuery = { ofAttribute: tracker.attribute.IssueStatus }
+      finalQuery = { ofAttribute }
     } else {
-      finalQuery = { ofAttribute: tracker.attribute.IssueStatus, _id: { $in: space.states } }
+      finalQuery = {
+        ofAttribute,
+        _id: { $in: !h.isDerived(_class, task.class.DoneState) ? space.states : space?.doneStates }
+      }
     }
     docMatch = true
   }
@@ -71,7 +82,7 @@
 
 {#if docMatch}
   <ObjectPopup
-    _class={tracker.class.IssueStatus}
+    {_class}
     docQuery={finalQuery}
     options={queryOptions}
     allowDeselect={true}

@@ -42,7 +42,7 @@ import view, { createAction, actionTemplates as viewTemplates } from '@hcenginee
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
-import { State } from '@hcengineering/task'
+import { DoneState, State } from '@hcengineering/task'
 import { ViewOptionsModel } from '@hcengineering/view'
 import lead from './plugin'
 
@@ -83,6 +83,9 @@ export class TLead extends TTask implements Lead {
 
   @Prop(TypeRef(task.class.State), task.string.TaskState, { _id: lead.attribute.State })
   declare status: Ref<State>
+
+  @Prop(TypeRef(task.class.DoneState), task.string.TaskStateDone, { _id: lead.attribute.DoneState })
+  declare doneState: Ref<DoneState>
 
   declare space: Ref<Funnel>
 }
