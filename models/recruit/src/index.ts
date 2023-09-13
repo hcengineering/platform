@@ -770,7 +770,7 @@ export function createModel (builder: Builder): void {
       },
       configOptions: {
         strict: true,
-        hiddenKeys: ['name', 'attachedTo', 'dueDate']
+        hiddenKeys: ['name', 'attachedTo']
       },
       baseQuery: {
         doneState: null,
