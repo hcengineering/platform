@@ -787,6 +787,7 @@ export function createModel (builder: Builder): void {
           label: recruit.string.Applications
         },
         'description',
+        { key: 'comments', displayProps: { key: 'comments', suffix: true } },
         { key: '', displayProps: { grow: true } },
         {
           key: '$lookup.company',
