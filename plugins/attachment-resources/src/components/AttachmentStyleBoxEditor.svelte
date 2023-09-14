@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref, updateAttribute } from '@hcengineering/core'
+  import { Doc, updateAttribute } from '@hcengineering/core'
 
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getAttribute, getClient, KeyedAttribute } from '@hcengineering/presentation'
@@ -27,27 +27,27 @@
   export let key: KeyedAttribute
   export let placeholder: IntlString
   export let focusIndex = -1
-  let _id: Ref<Doc> | undefined = undefined
-  let _class: Ref<Class<Doc>> | undefined = undefined
   const client = getClient()
 
   const queryClient = createQuery()
 
-  let description = ''
+  let description: string
+  let haveUnsavedChanges = false
 
-  let doc: Doc | undefined
-  function checkForNewObject (object: Doc) {
-    if (object._id !== _id) return true
-    if (object._class !== _class) return true
-    return false
+  $: if (description === undefined) {
+    description = getAttribute(client, object, key)
   }
+
+  // We need to query the document one more time
+  // To make a difference between update of description from the bottom
+  // And update to if from another tab.
   $: object &&
-    queryClient.query(object._class, { _id: object._id }, async (result) => {
-      ;[doc] = result
-      if (doc && checkForNewObject(object)) {
-        _class = object._class
-        _id = object._id
-        description = getAttribute(client, object, key)
+    queryClient.query(object._class, { _id: object._id }, async (result: Doc[]) => {
+      if (result.length > 0) {
+        if (!haveUnsavedChanges) {
+          const doc = result[0]
+          description = getAttribute(client, doc, key)
+        }
       }
     })
 
@@ -64,6 +64,7 @@
     const old = getAttribute(client, object, key)
     if (description !== old) {
       await updateAttribute(client, object, object._class, key, description)
+      haveUnsavedChanges = false
       dispatch('saved', true)
       setTimeout(() => {
         dispatch('saved', false)
@@ -75,6 +76,7 @@
 
   let saveTrigger: any
   function triggerSave (): void {
+    haveUnsavedChanges = true
     clearTimeout(saveTrigger)
     saveTrigger = setTimeout(save, 2500)
   }
@@ -84,7 +86,7 @@
   }
 </script>
 
-{#key doc?._id}
+{#key object?._id}
   <AttachmentStyledBox
     {focusIndex}
     enableBackReferences={true}

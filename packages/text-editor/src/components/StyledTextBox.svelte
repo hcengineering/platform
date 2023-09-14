@@ -69,7 +69,10 @@
 
   $: if (oldContent !== content) {
     oldContent = content
-    rawValue = content
+    if (rawValue !== content) {
+      rawValue = content
+      textEditor?.setContent(content)
+    }
     modified = false
   }
   $: if (!modified && rawValue !== content) modified = true
