@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import { Attribute, Ref, Status } from '@hcengineering/core'
-import { Resources } from '@hcengineering/platform'
-import { SpaceWithStates } from '@hcengineering/task'
+import { Attribute, Class, Ref, Status } from '@hcengineering/core'
+import { IntlString, Resources } from '@hcengineering/platform'
+import { SpaceWithStates, Task } from '@hcengineering/task'
 import { showPopup } from '@hcengineering/ui'
 import AssignedTasks from './components/AssignedTasks.svelte'
 import CreateStatePopup from './components/CreateStatePopup.svelte'
@@ -41,6 +41,7 @@ import TodoItemPresenter from './components/todos/TodoItemPresenter.svelte'
 import TodoItemsPopup from './components/todos/TodoItemsPopup.svelte'
 import TodoStatePresenter from './components/todos/TodoStatePresenter.svelte'
 import Todos from './components/todos/Todos.svelte'
+import StatusSelector from './components/StatusSelector.svelte'
 
 export { default as AssigneePresenter } from './components/AssigneePresenter.svelte'
 export { StateRefPresenter }
@@ -57,6 +58,22 @@ async function editStatuses (
     EditStatuses,
     { _id: object._id, ofAttribute: props.ofAttribute, doneOfAttribute: props.doneOfAttribute },
     'float'
+  )
+}
+
+async function selectStatus (
+  doc: Task | Task[],
+  ev: any,
+  props: {
+    ofAttribute: Ref<Attribute<Status>>
+    placeholder: IntlString
+    _class: Ref<Class<Status>>
+  }
+): Promise<void> {
+  showPopup(
+    StatusSelector,
+    { value: doc, ofAttribute: props.ofAttribute, _class: props._class, placeholder: props.placeholder },
+    'top'
   )
 }
 
@@ -85,9 +102,11 @@ export default async (): Promise<Resources> => ({
     TodoItemsPopup,
     DueDateEditor,
     CreateStatePopup,
-    CreateStateTemplatePopup
+    CreateStateTemplatePopup,
+    StatusSelector
   },
   actionImpl: {
-    EditStatuses: editStatuses
+    EditStatuses: editStatuses,
+    SelectStatus: selectStatus
   }
 })

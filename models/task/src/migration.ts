@@ -240,21 +240,21 @@ async function fixStatusAttributes (client: MigrationClient): Promise<void> {
     const space = map.get(oldStatus.space)
     if (space !== undefined) {
       try {
-        const isDone = oldStatus._class === task.class.DoneState
+        const isDone = client.hierarchy.isDerived(oldStatus._class, task.class.DoneState)
         let ofAttribute = task.attribute.State
         if (space._class === ('recruit:class:Vacancy' as Ref<Class<Space>>)) {
           ofAttribute = isDone
-            ? ('recruit.attribute.DoneState' as Ref<Attribute<State>>)
+            ? ('recruit:attribute:DoneState' as Ref<Attribute<State>>)
             : ('recruit:attribute:State' as Ref<Attribute<State>>)
         }
         if (space._class === ('lead:class:Funnel' as Ref<Class<Space>>)) {
           ofAttribute = isDone
-            ? ('lead.attribute.DoneState' as Ref<Attribute<State>>)
+            ? ('lead:attribute:DoneState' as Ref<Attribute<State>>)
             : ('lead:attribute:State' as Ref<Attribute<State>>)
         }
         if (space._class === ('board:class:Board' as Ref<Class<Space>>)) {
           ofAttribute = isDone
-            ? ('board.attribute.DoneState' as Ref<Attribute<State>>)
+            ? ('board:attribute:DoneState' as Ref<Attribute<State>>)
             : ('board:attribute:State' as Ref<Attribute<State>>)
         }
         if (space._class === ('tracker:class:Project' as Ref<Class<Space>>)) {
