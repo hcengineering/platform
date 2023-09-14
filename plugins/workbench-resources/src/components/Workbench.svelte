@@ -590,6 +590,19 @@
     await supportClient?.then((support) => support.destroy())
   })
 
+  let supportWidgetLoading = false
+  async function handleToggleSupportWidget (): Promise<void> {
+    const timer = setTimeout(() => {
+      supportWidgetLoading = true
+    }, 100)
+
+    const support = await supportClient
+    await support.toggleWidget()
+
+    clearTimeout(timer)
+    supportWidgetLoading = false
+  }
+
   $: checkInbox($popupstore)
 
   let inboxPopup: PopupResult | undefined = undefined
@@ -682,7 +695,8 @@
               size={appsMini ? 'small' : 'large'}
               notify={supportStatus?.hasUnreadMessages}
               selected={supportStatus?.visible}
-              on:click={() => client.toggleWidget()}
+              loading={supportWidgetLoading}
+              on:click={() => handleToggleSupportWidget()}
             />
           {/if}
         {/await}
