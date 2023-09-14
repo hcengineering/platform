@@ -89,11 +89,7 @@
 {#if doc}
   <div bind:this={div} class="inbox-activity__container" class:selected tabindex="-1" on:keydown on:click>
     {#if newTxes > 0 && !selected}<div class="notify" />{/if}
-    <div
-      class="inbox-activity__content"
-      class:read={newTxes === 0}
-      on:contextmenu|preventDefault={showMenu}
-    >
+    <div class="inbox-activity__content" class:read={newTxes === 0} on:contextmenu|preventDefault={showMenu}>
       <div class="flex-row-center flex-no-shrink mr-8">
         {#if presenter}
           <svelte:component this={presenter} value={doc} accent disabled inbox />
