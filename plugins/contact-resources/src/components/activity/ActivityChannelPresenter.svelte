@@ -22,6 +22,7 @@
   import { channelProviders } from '../../utils'
 
   export let value: Channel
+  export let disabled: boolean = false
   $: provider = $channelProviders.find((it) => it._id === value.provider)
 
   let target: Contact | undefined
@@ -37,7 +38,7 @@
   {/if}
   {#if target}
     <div class="ml-1">
-      <DocNavLink object={target}>
+      <DocNavLink object={target} {disabled}>
         {getName(client.getHierarchy(), target)}
       </DocNavLink>
     </div>

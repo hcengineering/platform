@@ -18,12 +18,14 @@
   export let value: TelegramMessage
 </script>
 
-<div class="overflow-label content">
+<div class="content lines-limit-2">
   <MessageViewer message={value.content} />
 </div>
 
 <style lang="scss">
   .content {
-    height: 1rem;
+    min-width: 0;
+    min-height: 1rem;
+    max-height: 2.125rem;
   }
 </style>

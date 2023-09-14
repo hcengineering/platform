@@ -133,101 +133,99 @@
         {/if}
       </div>
     {/if}
-    <div class="msgactivity-content clear-mins" class:content={isColumn} class:comment={isComment}>
-      <div class="msgactivity-content__header clear-mins">
-        <div class="msgactivity-content__title labels-row">
-          {#if viewlet && viewlet?.editable}
-            {#if viewlet.label}
-              <span class="lower"><Label label={viewlet.label} params={viewlet.labelParams ?? {}} /></span>
-            {/if}
-            {#if ptx?.updated}
-              <span class="lower"><Label label={activity.string.Edited} /></span>
-            {/if}
-          {:else if viewlet && viewlet.label}
-            <span class="lower whitespace-nowrap">
-              <Label label={viewlet.label} params={viewlet.labelParams ?? {}} />
-            </span>
+    <div class="msgactivity-content" class:content={isColumn} class:comment={isComment}>
+      <div class="msgactivity-content__title labels-row">
+        {#if viewlet && viewlet?.editable}
+          {#if viewlet.label}
+            <span class="lower"><Label label={viewlet.label} params={viewlet.labelParams ?? {}} /></span>
           {/if}
-          {#if viewlet && viewlet.labelComponent}
-            <Component is={viewlet.labelComponent} {props} />
+          {#if ptx?.updated}
+            <span class="lower"><Label label={activity.string.Edited} /></span>
           {/if}
+        {:else if viewlet && viewlet.label}
+          <span class="lower whitespace-nowrap">
+            <Label label={viewlet.label} params={viewlet.labelParams ?? {}} />
+          </span>
+        {/if}
+        {#if viewlet && viewlet.labelComponent}
+          <Component is={viewlet.labelComponent} {props} />
+        {/if}
 
-          {#if viewlet === undefined && model.length > 0 && ptx?.updateTx}
-            {#each model as m}
-              {#await getValue(client, m, ptx) then value}
-                {#if value.added.length}
-                  <span class="lower"><Label label={activity.string.Added} /></span>
-                  <span class="lower"><Label label={activity.string.To} /></span>
-                  <span class="lower"><Label label={m.label} /></span>
-                  {#each value.added as cvalue}
-                    {#if value.isObjectAdded}
-                      <ObjectPresenter value={cvalue} />
-                    {:else}
-                      <svelte:component this={m.presenter} value={cvalue} />
-                    {/if}
-                  {/each}
-                {:else if value.removed.length}
-                  <span class="lower"><Label label={activity.string.Removed} /></span>
-                  <span class="lower"><Label label={activity.string.From} /></span>
-                  <span class="lower"><Label label={m.label} /></span>
-                  {#each value.removed as cvalue}
-                    {#if value.isObjectRemoved}
-                      <ObjectPresenter value={cvalue} />
-                    {:else}
-                      <svelte:component this={m.presenter} value={cvalue} />
-                    {/if}
-                  {/each}
-                {:else if value.set === null || value.set === undefined || value.set === ''}
-                  <span class="lower"><Label label={activity.string.Unset} /></span>
-                  <span class="lower"><Label label={m.label} /></span>
-                {:else}
-                  <span class="lower"><Label label={activity.string.Changed} /></span>
-                  <span class="lower"><Label label={m.label} /></span>
-                  <span class="lower"><Label label={activity.string.To} /></span>
-
-                  {#if !hasMessageType}
-                    <span class="strong">
-                      {#if value.isObjectSet}
-                        <ObjectPresenter value={value.set} accent />
-                      {:else}
-                        <svelte:component this={m.presenter} value={value.set} accent />
-                      {/if}
-                    </span>
+        {#if viewlet === undefined && model.length > 0 && ptx?.updateTx}
+          {#each model as m}
+            {#await getValue(client, m, ptx) then value}
+              {#if value.added.length}
+                <span class="lower"><Label label={activity.string.Added} /></span>
+                <span class="lower"><Label label={activity.string.To} /></span>
+                <span class="lower"><Label label={m.label} /></span>
+                {#each value.added as cvalue}
+                  {#if value.isObjectAdded}
+                    <ObjectPresenter value={cvalue} />
+                  {:else}
+                    <svelte:component this={m.presenter} value={cvalue} />
                   {/if}
-                {/if}
-              {/await}
-            {/each}
-          {:else if viewlet === undefined && model.length > 0 && ptx?.mixinTx}
-            {#each model as m}
-              {#await getValue(client, m, ptx) then value}
-                {#if value.set === null || value.set === ''}
-                  <span class="lower"><Label label={activity.string.Unset} /></span>
-                  <span class="lower"><Label label={m.label} /></span>
-                {:else}
-                  <span class="lower"><Label label={activity.string.Changed} /></span>
-                  <span class="lower"><Label label={m.label} /></span>
-                  <span class="lower"><Label label={activity.string.To} /></span>
-
-                  {#if !hasMessageType}
-                    <div class="strong">
-                      {#if value.isObjectSet}
-                        <ObjectPresenter value={value.set} accent />
-                      {:else}
-                        <svelte:component this={m.presenter} value={value.set} accent />
-                      {/if}
-                    </div>
+                {/each}
+              {:else if value.removed.length}
+                <span class="lower"><Label label={activity.string.Removed} /></span>
+                <span class="lower"><Label label={activity.string.From} /></span>
+                <span class="lower"><Label label={m.label} /></span>
+                {#each value.removed as cvalue}
+                  {#if value.isObjectRemoved}
+                    <ObjectPresenter value={cvalue} />
+                  {:else}
+                    <svelte:component this={m.presenter} value={cvalue} />
                   {/if}
+                {/each}
+              {:else if value.set === null || value.set === undefined || value.set === ''}
+                <span class="lower"><Label label={activity.string.Unset} /></span>
+                <span class="lower"><Label label={m.label} /></span>
+              {:else}
+                <span class="lower"><Label label={activity.string.Changed} /></span>
+                <span class="lower"><Label label={m.label} /></span>
+                <span class="lower"><Label label={activity.string.To} /></span>
+
+                {#if !hasMessageType}
+                  <span class="strong">
+                    {#if value.isObjectSet}
+                      <ObjectPresenter value={value.set} accent />
+                    {:else}
+                      <svelte:component this={m.presenter} value={value.set} accent />
+                    {/if}
+                  </span>
                 {/if}
-              {/await}
-            {/each}
-          {:else if viewlet && viewlet.display === 'inline' && viewlet.component}
-            {#if typeof viewlet.component === 'string'}
-              <Component is={viewlet.component} {props} />
-            {:else}
-              <svelte:component this={viewlet.component} {...props} />
-            {/if}
+              {/if}
+            {/await}
+          {/each}
+        {:else if viewlet === undefined && model.length > 0 && ptx?.mixinTx}
+          {#each model as m}
+            {#await getValue(client, m, ptx) then value}
+              {#if value.set === null || value.set === ''}
+                <span class="lower"><Label label={activity.string.Unset} /></span>
+                <span class="lower"><Label label={m.label} /></span>
+              {:else}
+                <span class="lower"><Label label={activity.string.Changed} /></span>
+                <span class="lower"><Label label={m.label} /></span>
+                <span class="lower"><Label label={activity.string.To} /></span>
+
+                {#if !hasMessageType}
+                  <div class="strong">
+                    {#if value.isObjectSet}
+                      <ObjectPresenter value={value.set} accent />
+                    {:else}
+                      <svelte:component this={m.presenter} value={value.set} accent />
+                    {/if}
+                  </div>
+                {/if}
+              {/if}
+            {/await}
+          {/each}
+        {:else if viewlet && viewlet.display === 'inline' && viewlet.component}
+          {#if typeof viewlet.component === 'string'}
+            <Component is={viewlet.component} {props} />
+          {:else}
+            <svelte:component this={viewlet.component} {...props} />
           {/if}
-        </div>
+        {/if}
       </div>
     </div>
   </div>
@@ -237,13 +235,16 @@
   .msgactivity-container {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    min-width: 0;
+    min-height: 0;
 
     .msgactivity-content {
       display: flex;
       flex-grow: 1;
       margin-left: 0.5rem;
       margin-right: 1rem;
+      min-width: 0;
+      min-height: 0;
     }
   }
   .msgactivity-icon,
@@ -251,5 +252,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-shrink: 0;
+    min-width: 0;
   }
 </style>
