@@ -676,7 +676,7 @@ export function createModel (builder: Builder): void {
 
   const applicantViewOptions = (colors: boolean): ViewOptionsModel => {
     const model: ViewOptionsModel = {
-      groupBy: ['status', 'assignee', 'space', 'createdBy', 'modifiedBy'],
+      groupBy: ['status', 'doneState', 'assignee', 'space', 'createdBy', 'modifiedBy'],
       orderBy: [
         ['status', SortingOrder.Ascending],
         ['modifiedOn', SortingOrder.Descending],
@@ -782,6 +782,105 @@ export function createModel (builder: Builder): void {
       viewOptions: applicantViewOptions(true)
     },
     recruit.viewlet.ListApplicant
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: recruit.mixin.Candidate,
+      descriptor: view.viewlet.List,
+      config: [
+        { key: '', displayProps: { fixed: 'left', key: 'app' } },
+        {
+          key: 'title',
+          props: { kind: 'list', size: 'small', shouldShowName: false }
+        },
+        { key: 'comments', displayProps: { key: 'comments', suffix: true } },
+        { key: '', displayProps: { grow: true } },
+        {
+          key: '$lookup.channels',
+          label: contact.string.ContactInfo,
+          sortingKey: ['$lookup.channels.lastMessage', '$lookup.attachedTo.channels'],
+          props: {
+            length: 'full',
+            size: 'small',
+            kind: 'list'
+          },
+          displayProps: { compression: true }
+        },
+        { key: 'modifiedOn', displayProps: { key: 'modified', fixed: 'right', dividerBefore: true } }
+      ],
+      configOptions: {
+        strict: true,
+        hiddenKeys: ['name']
+      },
+      viewOptions: {
+        groupBy: ['createdBy', 'modifiedBy'],
+        orderBy: [
+          ['modifiedOn', SortingOrder.Descending],
+          ['createdOn', SortingOrder.Descending],
+          ['rank', SortingOrder.Ascending]
+        ],
+        other: [showColorsViewOption]
+      }
+    },
+    recruit.viewlet.ListTalent
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: recruit.mixin.VacancyList,
+      descriptor: view.viewlet.List,
+      config: [
+        { key: '', displayProps: { fixed: 'left', key: 'app' } },
+        {
+          key: '@vacancies',
+          label: recruit.string.Vacancies,
+          props: { kind: 'list', size: 'small', shouldShowName: false }
+        },
+        {
+          key: '@applications',
+          label: recruit.string.Applications,
+          props: { kind: 'list', size: 'small', shouldShowName: false }
+        },
+        { key: 'comments', displayProps: { key: 'comments', suffix: true } },
+        {
+          key: '$lookup.channels',
+          label: contact.string.ContactInfo,
+          sortingKey: ['$lookup.channels.lastMessage', '$lookup.attachedTo.channels'],
+          props: {
+            length: 'full',
+            size: 'small',
+            kind: 'list'
+          },
+          displayProps: { compression: true }
+        },
+        { key: '', displayProps: { grow: true } },
+        {
+          key: '@applications.modifiedOn',
+          label: core.string.ModifiedDate,
+          displayProps: { key: 'modified', fixed: 'right', dividerBefore: true }
+        }
+      ],
+      configOptions: {
+        strict: true,
+        sortable: true,
+        hiddenKeys: ['name', 'space', 'modifiedOn']
+      },
+      viewOptions: {
+        groupBy: ['createdBy', 'modifiedBy'],
+        orderBy: [
+          ['modifiedOn', SortingOrder.Descending],
+          ['createdOn', SortingOrder.Descending],
+          ['rank', SortingOrder.Ascending]
+        ],
+        other: [showColorsViewOption]
+      }
+    },
+    recruit.viewlet.ListCompanies
   )
 
   builder.createDoc(

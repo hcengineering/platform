@@ -21,6 +21,7 @@
     FindOptions,
     generateId,
     Lookup,
+    RateLimitter,
     Ref,
     Space
   } from '@hcengineering/core'
@@ -50,6 +51,7 @@
   import ListCategory from './ListCategory.svelte'
 
   export let docs: Doc[]
+  export let docKeys: Partial<DocumentQuery<Doc>> = {}
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined
   export let query: DocumentQuery<Doc> | undefined
@@ -80,6 +82,7 @@
 
   export let resultQuery: DocumentQuery<Doc>
   export let resultOptions: FindOptions<Doc>
+  export let limiter: RateLimitter
 
   $: groupByKey = viewOptions.groupBy[level] ?? noCategory
   let categories: CategoryType[] = []
@@ -138,7 +141,7 @@
   $: getHeader(_class, groupByKey)
 
   let updateCounter = 0
-
+  let configurationsVersion = 0
   async function buildModels (
     _class: Ref<Class<Doc>>,
     config: (string | BuildModelKey)[],
@@ -161,6 +164,7 @@
 
     if (id === updateCounter) {
       itemModels = newItemModels
+      configurationsVersion = updateCounter
       for (const [, v] of Object.entries(newItemModels)) {
         // itemModels = itemModels
         ;(v as AttributeModel[]).forEach((m: AttributeModel) => {
@@ -341,6 +345,7 @@
 
 {#each categories as category, i (typeof category === 'object' ? category.name : category)}
   {@const items = groupByKey === noCategory ? docs : getGroupByValues(groupByDocs, category)}
+  {@const categoryDocKeys = { ...docKeys, [groupByKey]: category }}
   <ListCategory
     bind:this={listListCategory[i]}
     {extraHeaders}
@@ -355,14 +360,17 @@
     index={i}
     {config}
     {configurations}
+    {configurationsVersion}
     {itemModels}
     {_class}
+    parentCategories={categories.length}
     groupPersistKey={`${groupPersistKey}_${level}_${typeof category === 'object' ? category.name : category}`}
     singleCat={level === 0 && categories.length === 1}
     oneCat={viewOptions.groupBy.length === 1}
     lastCat={i === categories.length - 1}
     {category}
     itemProj={items}
+    docKeys={categoryDocKeys}
     {newObjectProps}
     {createItemDialog}
     {createItemDialogProps}
@@ -371,6 +379,7 @@
     {compactMode}
     {resultQuery}
     {resultOptions}
+    {limiter}
     on:check
     on:uncheckAll
     on:row-focus
@@ -423,12 +432,14 @@
         {flatHeaders}
         {props}
         {level}
+        docKeys={categoryDocKeys}
         groupPersistKey={`${groupPersistKey}_${level}_${typeof category === 'object' ? category.name : category}`}
         {initIndex}
         {viewOptionsConfig}
         {listDiv}
         {resultQuery}
         {resultOptions}
+        {limiter}
         bind:dragItem
         on:dragItem
         on:check

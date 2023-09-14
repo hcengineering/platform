@@ -111,9 +111,9 @@
     on:click={() => dispatch('collapse')}
   >
     <div class="flex-row-center flex-grow" style:color={headerComponent ? headerTextColor : 'inherit'}>
-      {#if level === 0}
-        <div class="chevron"><IconCollapseArrow size={'small'} /></div>
-      {/if}
+      <!-- {#if level === 0} -->
+      <div class="chevron"><IconCollapseArrow size={level === 0 ? 'small' : 'tiny'} /></div>
+      <!-- {/if} -->
       {#if groupByKey === noCategory}
         <span class="text-base fs-bold overflow-label pointer-events-none">
           <Label label={view.string.NoGrouping} />
