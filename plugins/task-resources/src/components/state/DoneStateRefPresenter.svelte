@@ -15,10 +15,13 @@
 -->
 <script lang="ts">
   import { Ref, Status, StatusValue } from '@hcengineering/core'
+  import { DoneState, SpaceWithStates } from '@hcengineering/task'
+  import { Label } from '@hcengineering/ui'
   import { statusStore } from '@hcengineering/view-resources'
-  import type { DoneState, SpaceWithStates } from '@hcengineering/task'
-  import DoneStatePresenter from './DoneStatePresenter.svelte'
+  import task from '../../plugin'
+  import Unknown from '../icons/Unknown.svelte'
   import DoneStateEditor from './DoneStateEditor.svelte'
+  import DoneStatePresenter from './DoneStatePresenter.svelte'
 
   export let value: Ref<DoneState> | StatusValue
   export let space: Ref<SpaceWithStates> | undefined
@@ -34,4 +37,9 @@
   {:else}
     <DoneStatePresenter value={state} {showTitle} />
   {/if}
+{:else}
+  <div class="flex-row-center pointer-events-none">
+    <div class="content-dark-color mr-2"><Unknown size={'small'} /></div>
+    <span class="overflow-label"><Label label={task.string.NoDoneState} /></span>
+  </div>
 {/if}

@@ -33,7 +33,7 @@
     if (attribute.attribute?.type._class === core.class.EnumOf) {
       return { ...clearAttributeProps, type: attribute.attribute.type, ...props }
     }
-    return { object, ...clearAttributeProps, ...props }
+    return { object, ...clearAttributeProps, space: object.space, ...props }
   }
 </script>
 
