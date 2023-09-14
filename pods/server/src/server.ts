@@ -94,7 +94,6 @@ import { boardId } from '@hcengineering/board'
 import { calendarId } from '@hcengineering/calendar'
 import { chunterId } from '@hcengineering/chunter'
 import { contactId } from '@hcengineering/contact'
-import { documentId } from '@hcengineering/document'
 import { gmailId } from '@hcengineering/gmail'
 import { hrId } from '@hcengineering/hr'
 import { inventoryId } from '@hcengineering/inventory'
@@ -126,7 +125,6 @@ import boardEn from '@hcengineering/board-assets/lang/en.json'
 import calendarEn from '@hcengineering/calendar-assets/lang/en.json'
 import chunterEn from '@hcengineering/chunter-assets/lang/en.json'
 import contactEn from '@hcengineering/contact-assets/lang/en.json'
-import documentEn from '@hcengineering/document-assets/lang/en.json'
 import gmailEn from '@hcengineering/gmail-assets/lang/en.json'
 import hrEn from '@hcengineering/hr-assets/lang/en.json'
 import inventoryEn from '@hcengineering/inventory-assets/lang/en.json'
@@ -171,7 +169,6 @@ addStringsLoader(trackerId, async (lang: string) => trackerEn)
 addStringsLoader(boardId, async (lang: string) => boardEn)
 addStringsLoader(preferenceId, async (lang: string) => preferenceEn)
 addStringsLoader(hrId, async (lang: string) => hrEn)
-addStringsLoader(documentId, async (lang: string) => documentEn)
 addStringsLoader(bitrixId, async (lang: string) => bitrixEn)
 addStringsLoader(requestId, async (lang: string) => requestEn)
 /**
