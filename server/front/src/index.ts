@@ -144,7 +144,7 @@ export function start (
     title?: string
     languages: string
     defaultLanguage: string
-    uploadMaxFileSize: string
+    uploadMaxFileSize: number
     uploadAllowedMimeTypes: string[]
   },
   port: number,
@@ -279,31 +279,31 @@ export function start (
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.post('/files', async (req, res) => {
     function isValidFile (file: UploadedFile): boolean {
-      const maxSize = Number(config.uploadMaxFileSize);
+      const maxSize = Number(config.uploadMaxFileSize)
       if (isNaN(maxSize)) {
-        throw new Error("Invalid uploadMaxFileSize value");
+        throw new Error('Invalid uploadMaxFileSize value')
       }
-      return file.size <= maxSize && config.uploadAllowedMimeTypes.includes(file.mimetype);
+      return file.size <= maxSize && config.uploadAllowedMimeTypes.includes(file.mimetype)
     }
 
     const file = req.files?.file as UploadedFile
 
     if (file === undefined) {
-      return res.status(400).send('File not provided.');
+      return res.status(400).send('File not provided.')
     }
 
     if (!isValidFile(file)) {
-      return res.status(400).send('Invalid file.');
+      return res.status(400).send('Invalid file.')
     }
 
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(403).send('Authorization header missing or malformed.');
+    const authHeader = req.headers.authorization
+    if (authHeader === undefined || authHeader.trim() === '' || !authHeader.startsWith('Bearer ')) {
+      return res.status(403).send('Authorization header missing or malformed.')
     }
 
-    const token = authHeader.split(' ')[1];
-    if (!token) {
-      return res.status(403).send('Invalid token.');
+    const token = authHeader.split(' ')[1]
+    if (token === undefined || token.trim() === '') {
+      return res.status(403).send('Invalid token.')
     }
 
     let payload
