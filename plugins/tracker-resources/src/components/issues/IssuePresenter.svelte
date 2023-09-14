@@ -67,7 +67,7 @@
             <Icon icon={icon ?? tracker.icon.Issues} size={'small'} />
           </div>
         {/if}
-        <span class="select-text" title={value?.title}>
+        <span class="overflow-label select-text" title={value?.title}>
           {title}
           <slot name="details" />
         </span>
@@ -81,10 +81,6 @@
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    max-width: 5rem;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
 
     &:not(.list) {
       color: var(--theme-content-color);
