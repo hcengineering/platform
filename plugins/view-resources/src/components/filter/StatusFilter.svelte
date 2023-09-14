@@ -74,12 +74,12 @@
     for (const object of filter.value) {
       targets.add(object)
     }
+    const isDone = hierarchy.isDerived(targetClass, task.class.DoneState)
 
     if (space !== undefined) {
       const _space = await client.findOne(task.class.SpaceWithStates, { _id: space as Ref<SpaceWithStates> })
       if (_space) {
-        const targetClass = (filter.key.attribute.type as RefTo<Status>).to
-        const key = hierarchy.isDerived(targetClass, task.class.DoneState) ? 'doneStates' : 'states'
+        const key = isDone ? 'doneStates' : 'states'
         values = (_space as any)[key].map((p: Ref<Status>) => statusStore.get(p)).filter((p: Status) => p !== undefined)
         for (const value of values) {
           targets.add(value?._id)
@@ -98,7 +98,7 @@
       }
       values = await sort(statuses)
     }
-    if (targets.has(undefined)) {
+    if (targets.has(undefined) || isDone) {
       values.unshift(undefined)
     }
     if (values.length !== targets.size) {
