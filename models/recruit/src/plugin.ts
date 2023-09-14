@@ -120,6 +120,8 @@ export default mergeIds(recruitId, recruit, {
     ApplicantTable: '' as Ref<Viewlet>,
     ApplicantKanban: '' as Ref<Viewlet>,
     ListApplicant: '' as Ref<Viewlet>,
+    ListTalent: '' as Ref<Viewlet>,
+    ListCompanies: '' as Ref<Viewlet>,
     TableApplicant: '' as Ref<Viewlet>,
     TableApplicantMatch: '' as Ref<Viewlet>,
     CalendarReview: '' as Ref<Viewlet>,

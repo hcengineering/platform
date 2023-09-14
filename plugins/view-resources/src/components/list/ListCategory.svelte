@@ -20,8 +20,10 @@
     DocumentQuery,
     DocumentUpdate,
     FindOptions,
+    Hierarchy,
     Lookup,
     PrimitiveType,
+    RateLimitter,
     Ref,
     Space
   } from '@hcengineering/core'
@@ -37,7 +39,7 @@
     mouseAttractor,
     showPopup
   } from '@hcengineering/ui'
-  import { AttributeModel, BuildModelKey, Viewlet, ViewOptionModel, ViewOptions } from '@hcengineering/view'
+  import { AttributeModel, BuildModelKey, ViewOptionModel, ViewOptions, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { fade } from 'svelte/transition'
   import { FocusSelection, focusStore } from '../../selection'
@@ -54,6 +56,7 @@
   export let space: Ref<Space> | undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined
   export let itemProj: Doc[]
+  export let docKeys: Partial<DocumentQuery<Doc>> = {}
   export let createItemDialog: AnyComponent | AnySvelteComponent | undefined
   export let createItemDialogProps: Record<string, any> | undefined
   export let createItemLabel: IntlString | undefined
@@ -68,6 +71,7 @@
   export let _class: Ref<Class<Doc>>
   export let config: (string | BuildModelKey)[]
   export let configurations: Record<Ref<Class<Doc>>, Viewlet['config']> | undefined
+  export let configurationsVersion: number
   export let viewOptions: ViewOptions
   export let newObjectProps: (doc: Doc | undefined) => Record<string, any> | undefined
   export let viewOptionsConfig: ViewOptionModel[] | undefined
@@ -81,6 +85,8 @@
   export let compactMode: boolean = false
   export let resultQuery: DocumentQuery<Doc>
   export let resultOptions: FindOptions<Doc>
+  export let parentCategories: number = 0
+  export let limiter: RateLimitter
 
   $: lastLevel = level + 1 >= viewOptions.groupBy.length
 
@@ -95,14 +101,16 @@
   $: limit = initialLimit
 
   $: if (lastLevel) {
-    docsQuery.query(
-      _class,
-      { ...resultQuery, _id: { $in: itemProj.map((it) => it._id) } },
-      (res) => {
-        items = res
-      },
-      { ...resultOptions, limit: limit ?? 200 }
-    )
+    limiter.add(async () => {
+      docsQuery.query(
+        _class,
+        { ...resultQuery, ...docKeys },
+        (res) => {
+          items = res
+        },
+        { ...resultOptions, limit: limit ?? 200 }
+      )
+    })
   } else {
     docsQuery.unsubscribe()
   }
@@ -120,13 +128,18 @@
     return res
   }
 
-  function initCollapsed (singleCat: boolean, lastLevel: boolean): void {
+  function initCollapsed (singleCat: boolean, lastLevel: boolean, level: number): void {
     if (localStorage.getItem(categoryCollapseKey) === null) {
-      collapsed = !disableHeader && !singleCat && itemProj.length > (lastLevel ? autoFoldLimit : singleCategoryLimit)
+      collapsed =
+        (!disableHeader &&
+          !singleCat &&
+          itemProj.length > (lastLevel ? autoFoldLimit : singleCategoryLimit) / (level + 1)) ||
+        parentCategories > 10 ||
+        (level > 1 && parentCategories > 5)
     }
   }
 
-  $: initCollapsed(singleCat, lastLevel)
+  $: initCollapsed(singleCat, lastLevel, level)
 
   const handleRowFocused = (object: Doc) => {
     dispatch('row-focus', object)
@@ -463,6 +476,7 @@
         {createItemDialog}
         {createItemLabel}
         {viewOptions}
+        {docKeys}
         newObjectProps={_newObjectProps}
         {flatHeaders}
         {props}
@@ -475,38 +489,40 @@
       />
     {:else if itemModels && itemModels.size > 0 && (!collapsed || wasLoaded || dragItemIndex !== undefined)}
       {#if limited && !loading}
-        {#each limited as docObject, i (docObject._id)}
-          <ListItem
-            bind:this={listItems[i]}
-            {docObject}
-            model={getDocItemModel(docObject._class)}
-            {groupByKey}
-            selected={isSelected(docObject, $focusStore)}
-            checked={selectedObjectIdsSet.has(docObject._id)}
-            last={i === limited.length - 1}
-            lastCat={i === limited.length - 1 && (oneCat || lastCat)}
-            on:dragstart={(e) => dragStart(e, docObject, i)}
-            on:dragenter={(e) => {
-              if (dragItemIndex !== undefined) {
-                e.stopPropagation()
-                e.preventDefault()
-              }
-            }}
-            on:dragleave={(e) => dragItemLeave(e, i)}
-            on:dragover={(e) => dragover(e, i)}
-            on:drop={dropItemHandle}
-            on:check={(ev) => dispatch('check', { docs: ev.detail.docs, value: ev.detail.value })}
-            on:contextmenu={(event) => handleMenuOpened(event, docObject)}
-            on:focus={() => {}}
-            on:mouseover={mouseAttractor(() => handleRowFocused(docObject))}
-            on:mouseenter={mouseAttractor(() => handleRowFocused(docObject))}
-            {props}
-            {compactMode}
-            on:on-mount={() => {
-              wasLoaded = true
-            }}
-          />
-        {/each}
+        {#key configurationsVersion}
+          {#each limited as docObject, i (docObject._id)}
+            <ListItem
+              bind:this={listItems[i]}
+              {docObject}
+              model={getDocItemModel(Hierarchy.mixinOrClass(docObject))}
+              {groupByKey}
+              selected={isSelected(docObject, $focusStore)}
+              checked={selectedObjectIdsSet.has(docObject._id)}
+              last={i === limited.length - 1}
+              lastCat={i === limited.length - 1 && (oneCat || lastCat)}
+              on:dragstart={(e) => dragStart(e, docObject, i)}
+              on:dragenter={(e) => {
+                if (dragItemIndex !== undefined) {
+                  e.stopPropagation()
+                  e.preventDefault()
+                }
+              }}
+              on:dragleave={(e) => dragItemLeave(e, i)}
+              on:dragover={(e) => dragover(e, i)}
+              on:drop={dropItemHandle}
+              on:check={(ev) => dispatch('check', { docs: ev.detail.docs, value: ev.detail.value })}
+              on:contextmenu={(event) => handleMenuOpened(event, docObject)}
+              on:focus={() => {}}
+              on:mouseover={mouseAttractor(() => handleRowFocused(docObject))}
+              on:mouseenter={mouseAttractor(() => handleRowFocused(docObject))}
+              {props}
+              {compactMode}
+              on:on-mount={() => {
+                wasLoaded = true
+              }}
+            />
+          {/each}
+        {/key}
       {/if}
     {:else if loading}
       <Spinner size="small" />

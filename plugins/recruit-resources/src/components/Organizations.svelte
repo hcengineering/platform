@@ -14,18 +14,12 @@
 -->
 <script lang="ts">
   import { Organization } from '@hcengineering/contact'
-  import core, { Doc, DocumentQuery, Ref } from '@hcengineering/core'
+  import core, { Doc, DocumentQuery, Ref, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Applicant, Vacancy } from '@hcengineering/recruit'
-  import { Button, IconAdd, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
-  import view, { BuildModelKey, Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
-  import {
-    FilterBar,
-    FilterButton,
-    TableBrowser,
-    ViewletSelector,
-    ViewletSettingButton
-  } from '@hcengineering/view-resources'
+  import { Button, Component, IconAdd, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
+  import view, { BuildModelKey, ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { FilterBar, FilterButton, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import CreateOrganization from './CreateOrganization.svelte'
   import VacancyListApplicationsPopup from './organizations/VacancyListApplicationsPopup.svelte'
@@ -175,14 +169,17 @@
     ]
   ])
 
-  let viewlet: Viewlet | undefined
+  let viewlet: WithLookup<Viewlet> | undefined
   let loading = true
 
   let preference: ViewletPreference | undefined
   let viewOptions: ViewOptions | undefined
 
-  function createConfig (descr: Viewlet, preference: ViewletPreference | undefined): (string | BuildModelKey)[] {
-    const base = preference?.config ?? descr.config
+  function createConfig (
+    descr: Viewlet | undefined,
+    preference: ViewletPreference | undefined
+  ): (string | BuildModelKey)[] {
+    const base = preference?.config ?? descr?.config ?? []
     const result: (string | BuildModelKey)[] = []
     for (const key of base) {
       if (typeof key === 'string') {
@@ -193,13 +190,24 @@
     }
     return result
   }
+
+  $: finalConfig = createConfig(viewlet, preference)
 </script>
 
 <div class="ac-header full divide">
   <div class="ac-header__wrap-title mr-3">
     <span class="ac-header__title"><Label label={recruit.string.Organizations} /></span>
   </div>
-  <div class="clear-mins mb-1">
+  <div class="ac-header-full medium-gap mb-1">
+    <ViewletSelector
+      bind:loading
+      bind:viewlet
+      bind:preference
+      viewletQuery={{
+        attachTo: recruit.mixin.VacancyList,
+        descriptor: { $in: [view.viewlet.Table, view.viewlet.List] }
+      }}
+    />
     <Button icon={IconAdd} label={recruit.string.CompanyCreateLabel} kind={'accented'} on:click={showCreateDialog} />
   </div>
 </div>
@@ -211,16 +219,6 @@
     <FilterButton _class={recruit.mixin.VacancyList} />
   </div>
   <div class="ac-header-full medium-gap">
-    <ViewletSelector
-      hidden
-      viewletQuery={{
-        attachTo: recruit.mixin.VacancyList,
-        descriptor: view.viewlet.Table
-      }}
-      bind:preference
-      bind:loading
-      bind:viewlet
-    />
     <ViewletSettingButton bind:viewOptions bind:viewlet />
     <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
   </div>
@@ -234,19 +232,22 @@
   on:change={(e) => (resultQuery = e.detail)}
 />
 
-{#if viewlet}
-  {#if loading}
-    <Loading />
-  {:else}
-    <TableBrowser
-      _class={recruit.mixin.VacancyList}
-      config={createConfig(viewlet, preference)}
-      options={viewlet.options}
-      query={{
+{#if loading}
+  <Loading />
+{:else if viewlet && viewlet?.$lookup?.descriptor?.component}
+  <Component
+    is={viewlet.$lookup.descriptor.component}
+    props={{
+      _class: recruit.mixin.VacancyList,
+      options: viewlet.options,
+      config: finalConfig,
+      viewlet,
+      viewOptions,
+      viewOptionsConfig: viewlet.viewOptions?.other,
+      query: {
         ...resultQuery
-      }}
-      totalQuery={{}}
-      showNotification
-    />
-  {/if}
+      },
+      totalQuery: {}
+    }}
+  />
 {/if}

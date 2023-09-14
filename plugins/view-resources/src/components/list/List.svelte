@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, FindOptions, Ref, Space, RateLimitter } from '@hcengineering/core'
   import { IntlString, getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
@@ -43,11 +43,16 @@
 
   export let documents: Doc[] | undefined = undefined
 
+  const limiter = new RateLimitter(() => ({ rate: 10 }))
+
   let docs: Doc[] = []
+  let fastDocs: Doc[] = []
+  let slowDocs: Doc[] = []
 
   $: orderBy = viewOptions.orderBy
 
   const docsQuery = createQuery()
+  const docsQuerySlow = createQuery()
 
   $: lookup = buildConfigLookup(client.getHierarchy(), _class, config, options?.lookup)
   $: resultOptions = { ...options, lookup, ...(orderBy !== undefined ? { sort: { [orderBy[0]]: orderBy[1] } } : {}) }
@@ -59,12 +64,35 @@
 
   $: queryNoLookup = noLookup(resultQuery)
 
+  let fastQueryIds: Ref<Doc>[] = []
   $: if (documents === undefined) {
     docsQuery.query(
       _class,
       queryNoLookup,
       (res) => {
-        docs = res
+        fastDocs = res
+        fastQueryIds = res.map((it) => it._id)
+      },
+      {
+        ...resultOptions,
+        projection: {
+          ...resultOptions.projection,
+          _id: 1,
+          _class: 1,
+          ...getProjection(viewOptions.groupBy, queryNoLookup)
+        },
+        limit: 1000
+      }
+    )
+  } else {
+    docsQuery.unsubscribe()
+  }
+  $: if (fastQueryIds.length > 0) {
+    docsQuerySlow.query(
+      _class,
+      { ...queryNoLookup, _id: { $nin: fastQueryIds } },
+      (res) => {
+        slowDocs = res
       },
       {
         ...resultOptions,
@@ -77,7 +105,12 @@
       }
     )
   } else {
-    docsQuery.unsubscribe()
+    docsQuerySlow.unsubscribe()
+  }
+
+  $: if (documents === undefined) {
+    docs = [...fastDocs, ...slowDocs]
+  } else {
     docs = documents
   }
 
@@ -170,6 +203,7 @@
     {viewOptions}
     {viewOptionsConfig}
     {selectedObjectIds}
+    {limiter}
     level={0}
     groupPersistKey={''}
     {createItemDialog}
