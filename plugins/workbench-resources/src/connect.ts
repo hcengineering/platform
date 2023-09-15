@@ -64,7 +64,10 @@ export async function connect (title: string): Promise<Client | undefined> {
   let clientSet = false
 
   let version: Version | undefined
-
+  let serverEndpoint = endpoint.replace(/^ws/g, 'http')
+  if (serverEndpoint.endsWith('/')) {
+    serverEndpoint = serverEndpoint.substring(0, serverEndpoint.length - 1)
+  }
   const clientFactory = await getResource(client.function.GetClient)
   _client = await clientFactory(
     token,
@@ -87,24 +90,28 @@ export async function connect (title: string): Promise<Client | undefined> {
         }
 
         void (async () => {
-          const newVersion = await _client?.findOne<Version>(core.class.Version, {})
-          console.log('Reconnect Model version', newVersion)
+          if (_client !== undefined) {
+            const newVersion = await _client.findOne<Version>(core.class.Version, {})
+            console.log('Reconnect Model version', newVersion)
 
-          const currentVersionStr = versionToString(version as Version)
-          const reconnectVersionStr = versionToString(newVersion as Version)
+            const currentVersionStr = versionToString(version as Version)
+            const reconnectVersionStr = versionToString(newVersion as Version)
 
-          if (currentVersionStr !== reconnectVersionStr) {
-            // It seems upgrade happened
-            location.reload()
-          }
-          const serverVersion: { version: string } = await (await fetch(serverEndpoint + '/api/v1/version', {})).json()
+            if (currentVersionStr !== reconnectVersionStr) {
+              // It seems upgrade happened
+              location.reload()
+            }
+            const serverVersion: { version: string } = await (
+              await fetch(serverEndpoint + '/api/v1/version', {})
+            ).json()
 
-          console.log('Server version', serverVersion.version)
-          if (serverVersion.version !== '' && serverVersion.version !== currentVersionStr) {
-            versionError = `${currentVersionStr} => ${serverVersion.version}`
-            setTimeout(() => {
-              window.location.reload()
-            }, 5000)
+            console.log('Server version', serverVersion.version)
+            if (serverVersion.version !== '' && serverVersion.version !== currentVersionStr) {
+              versionError = `${currentVersionStr} => ${serverVersion.version}`
+              setTimeout(() => {
+                window.location.reload()
+              }, 5000)
+            }
           }
         })()
       } catch (err) {
@@ -131,12 +138,6 @@ export async function connect (title: string): Promise<Client | undefined> {
     clientSet = true
     return
   }
-
-  let serverEndpoint = endpoint.replace(/^ws/g, 'http')
-  if (serverEndpoint.endsWith('/')) {
-    serverEndpoint = serverEndpoint.substring(0, serverEndpoint.length - 1)
-  }
-
   try {
     version = await _client.findOne<Version>(core.class.Version, {})
     console.log('Model version', version)
