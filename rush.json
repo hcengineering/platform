@@ -802,11 +802,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/pod-collaborator",
-      "projectFolder": "pods/collaborator",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/panel",
       "projectFolder": "packages/panel",
       "shouldPublish": true
@@ -1386,27 +1381,6 @@
     {
       "packageName": "@hcengineering/server-hr-resources",
       "projectFolder": "server-plugins/hr-resources",
-      "shouldPublish": false
-    },
-
-    {
-      "packageName": "@hcengineering/document",
-      "projectFolder": "plugins/document",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/document-assets",
-      "projectFolder": "plugins/document-assets",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/document-resources",
-      "projectFolder": "plugins/document-resources",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/model-document",
-      "projectFolder": "models/document",
       "shouldPublish": false
     },
     {

@@ -41,9 +41,6 @@ specifiers:
   '@rush-temp/dev-storage': file:./projects/dev-storage.tgz
   '@rush-temp/devmodel': file:./projects/devmodel.tgz
   '@rush-temp/devmodel-resources': file:./projects/devmodel-resources.tgz
-  '@rush-temp/document': file:./projects/document.tgz
-  '@rush-temp/document-assets': file:./projects/document-assets.tgz
-  '@rush-temp/document-resources': file:./projects/document-resources.tgz
   '@rush-temp/elastic': file:./projects/elastic.tgz
   '@rush-temp/front': file:./projects/front.tgz
   '@rush-temp/generator': file:./projects/generator.tgz
@@ -78,7 +75,6 @@ specifiers:
   '@rush-temp/model-chunter': file:./projects/model-chunter.tgz
   '@rush-temp/model-contact': file:./projects/model-contact.tgz
   '@rush-temp/model-core': file:./projects/model-core.tgz
-  '@rush-temp/model-document': file:./projects/model-document.tgz
   '@rush-temp/model-gmail': file:./projects/model-gmail.tgz
   '@rush-temp/model-hr': file:./projects/model-hr.tgz
   '@rush-temp/model-inventory': file:./projects/model-inventory.tgz
@@ -129,7 +125,6 @@ specifiers:
   '@rush-temp/platform-rig': file:./projects/platform-rig.tgz
   '@rush-temp/pod-account': file:./projects/pod-account.tgz
   '@rush-temp/pod-backup': file:./projects/pod-backup.tgz
-  '@rush-temp/pod-collaborator': file:./projects/pod-collaborator.tgz
   '@rush-temp/pod-front': file:./projects/pod-front.tgz
   '@rush-temp/pod-server': file:./projects/pod-server.tgz
   '@rush-temp/preference': file:./projects/preference.tgz
@@ -334,7 +329,6 @@ specifiers:
   koa-bodyparser: ^4.3.0
   koa-router: ^10.1.1
   lexorank: ~1.0.4
-  lib0: ~0.2.52
   libphonenumber-js: ^1.9.46
   mime-types: ~2.1.34
   mini-css-extract-plugin: ^2.2.0
@@ -394,7 +388,6 @@ specifiers:
   ws: ^8.10.0
   xml2js: ~0.4.23
   y-prosemirror: ^1.2.1
-  y-protocols: ^1.0.5
   y-websocket: ^1.5.0
   yjs: ^13.5.52
 
@@ -439,9 +432,6 @@ dependencies:
   '@rush-temp/dev-storage': file:projects/dev-storage.tgz
   '@rush-temp/devmodel': file:projects/devmodel.tgz_typescript@4.8.4
   '@rush-temp/devmodel-resources': file:projects/devmodel-resources.tgz_ed2e4f4d904d50838e5f15c036f084b4
-  '@rush-temp/document': file:projects/document.tgz
-  '@rush-temp/document-assets': file:projects/document-assets.tgz_typescript@4.8.4
-  '@rush-temp/document-resources': file:projects/document-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
   '@rush-temp/elastic': file:projects/elastic.tgz_@types+node@16.11.68
   '@rush-temp/front': file:projects/front.tgz
   '@rush-temp/generator': file:projects/generator.tgz_bufferutil@4.0.7
@@ -476,7 +466,6 @@ dependencies:
   '@rush-temp/model-chunter': file:projects/model-chunter.tgz_typescript@4.8.4
   '@rush-temp/model-contact': file:projects/model-contact.tgz_typescript@4.8.4
   '@rush-temp/model-core': file:projects/model-core.tgz_typescript@4.8.4
-  '@rush-temp/model-document': file:projects/model-document.tgz_typescript@4.8.4
   '@rush-temp/model-gmail': file:projects/model-gmail.tgz_typescript@4.8.4
   '@rush-temp/model-hr': file:projects/model-hr.tgz_typescript@4.8.4
   '@rush-temp/model-inventory': file:projects/model-inventory.tgz_typescript@4.8.4
@@ -527,7 +516,6 @@ dependencies:
   '@rush-temp/platform-rig': file:projects/platform-rig.tgz_c5e43dc15df4ac7868d10b0872442df4
   '@rush-temp/pod-account': file:projects/pod-account.tgz
   '@rush-temp/pod-backup': file:projects/pod-backup.tgz
-  '@rush-temp/pod-collaborator': file:projects/pod-collaborator.tgz_bufferutil@4.0.7
   '@rush-temp/pod-front': file:projects/pod-front.tgz
   '@rush-temp/pod-server': file:projects/pod-server.tgz
   '@rush-temp/preference': file:projects/preference.tgz
@@ -605,7 +593,7 @@ dependencies:
   '@rush-temp/templates-resources': file:projects/templates-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
   '@rush-temp/tests-sanity': file:projects/tests-sanity.tgz
   '@rush-temp/text': file:projects/text.tgz_a7abb371f17d2bc77abec7bc53398db5
-  '@rush-temp/text-editor': file:projects/text-editor.tgz_1e646fd62a3adc9d0b41f256dafe3d38
+  '@rush-temp/text-editor': file:projects/text-editor.tgz_a1d864769aaf53d09b76fe134ab55e60
   '@rush-temp/theme': file:projects/theme.tgz_a1d864769aaf53d09b76fe134ab55e60
   '@rush-temp/tool': file:projects/tool.tgz_bufferutil@4.0.7
   '@rush-temp/tracker': file:projects/tracker.tgz
@@ -732,7 +720,6 @@ dependencies:
   koa-bodyparser: 4.3.0
   koa-router: 10.1.1
   lexorank: 1.0.5
-  lib0: 0.2.53
   libphonenumber-js: 1.10.14
   mime-types: 2.1.35
   mini-css-extract-plugin: 2.6.1_webpack@5.75.0
@@ -791,8 +778,7 @@ dependencies:
   webpack-dev-server: 4.11.1_5f7427e5f586f1bfc73e23d8c6331293
   ws: 8.11.0_bufferutil@4.0.7
   xml2js: 0.4.23
-  y-prosemirror: 1.2.1_4b437ae61db91263defb65d2247376eb
-  y-protocols: 1.0.5
+  y-prosemirror: 1.2.1_709ebdfd1c5bc23c335c8dea11286d09
   y-websocket: 1.5.0_yjs@13.5.52
   yjs: 13.5.52
 
@@ -6365,7 +6351,7 @@ packages:
       y-prosemirror: 1.0.20
     dependencies:
       '@tiptap/core': 2.0.3_@tiptap+pm@2.0.3
-      y-prosemirror: 1.2.1_4b437ae61db91263defb65d2247376eb
+      y-prosemirror: 1.2.1_709ebdfd1c5bc23c335c8dea11286d09
     dev: false
 
   /@tiptap/extension-collaboration/2.0.3_9d93b21d48f6156ab534bd7bbcc15ccc:
@@ -6377,7 +6363,7 @@ packages:
     dependencies:
       '@tiptap/core': 2.0.3_@tiptap+pm@2.0.3
       '@tiptap/pm': 2.0.3_@tiptap+core@2.0.3
-      y-prosemirror: 1.2.1_4b437ae61db91263defb65d2247376eb
+      y-prosemirror: 1.2.1_709ebdfd1c5bc23c335c8dea11286d09
     dev: false
 
   /@tiptap/extension-document/2.0.3_@tiptap+core@2.0.3:
@@ -17134,7 +17120,7 @@ packages:
     dev: false
     optional: true
 
-  /y-prosemirror/1.2.1_4b437ae61db91263defb65d2247376eb:
+  /y-prosemirror/1.2.1_709ebdfd1c5bc23c335c8dea11286d09:
     resolution: {integrity: sha512-czMBfB1eL2awqmOSxQM8cS/fsUOGE6fjvyPLInrh4crPxFiw67wDpwIW+EGBYKRa04sYbS0ScGj7ZgvWuDrmBQ==}
     peerDependencies:
       prosemirror-model: ^1.7.1
@@ -17147,7 +17133,6 @@ packages:
       prosemirror-model: 1.19.2
       prosemirror-state: 1.4.3
       prosemirror-view: 1.31.4
-      y-protocols: 1.0.5
       yjs: 13.5.52
     dev: false
 
@@ -18123,82 +18108,6 @@ packages:
       - typescript
     dev: false
 
-  file:projects/document-assets.tgz_typescript@4.8.4:
-    resolution: {integrity: sha512-O2pojKbUHyYRybsghngPaWxbgKhXwf9mf5aNSOSb+Kj04bERRLmle3fW59SaTAuqQw2efYKbfLO9baeVzQSp1A==, tarball: file:projects/document-assets.tgz}
-    id: file:projects/document-assets.tgz
-    name: '@rush-temp/document-assets'
-    version: 0.0.0
-    dependencies:
-      '@rushstack/heft': 0.47.11
-      '@types/heft-jest': 1.0.3
-      '@types/node': 16.11.68
-      '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
-      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
-      eslint: 8.27.0
-      eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
-      eslint-plugin-import: 2.26.0_eslint@8.27.0
-      eslint-plugin-n: 15.5.1_eslint@8.27.0
-      eslint-plugin-promise: 6.1.1_eslint@8.27.0
-      prettier: 2.8.8
-    transitivePeerDependencies:
-      - supports-color
-      - typescript
-    dev: false
-
-  file:projects/document-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-qvUetpakwin4/2798Kzg0mZYjTOxzszP2okTsYE0/10yCECZ1q+m+CmPhYZqsnOdKJVxr1GiYSUluWmeXeI+ig==, tarball: file:projects/document-resources.tgz}
-    id: file:projects/document-resources.tgz
-    name: '@rush-temp/document-resources'
-    version: 0.0.0
-    dependencies:
-      '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
-      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
-      eslint: 8.27.0
-      eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
-      eslint-plugin-import: 2.26.0_eslint@8.27.0
-      eslint-plugin-n: 15.5.1_eslint@8.27.0
-      eslint-plugin-promise: 6.1.1_eslint@8.27.0
-      eslint-plugin-svelte3: 4.0.0_eslint@8.27.0+svelte@3.55.1
-      prettier: 2.8.8
-      prettier-plugin-svelte: 2.8.0_prettier@2.8.8+svelte@3.55.1
-      sass: 1.56.1
-      svelte: 3.55.1
-      svelte-check: 3.2.0_ae2e9904602215f07e0b815d3fa1ffe9
-      svelte-loader: 3.1.4_svelte@3.55.1
-      svelte-preprocess: 5.0.3_6420a3eba9d5580d9c2f627c17e61722
-      typescript: 4.8.4
-    transitivePeerDependencies:
-      - '@babel/core'
-      - coffeescript
-      - less
-      - postcss
-      - postcss-load-config
-      - pug
-      - stylus
-      - sugarss
-      - supports-color
-    dev: false
-
-  file:projects/document.tgz:
-    resolution: {integrity: sha512-JLRtzVrQ7j6bnJ466wZwLrh+FZiniq/4jxnV2cchVxvwffQ1Nsjd5pqEN4tRpSvl+mRdzEHPaXX/XysW3Ay9gQ==, tarball: file:projects/document.tgz}
-    name: '@rush-temp/document'
-    version: 0.0.0
-    dependencies:
-      '@rushstack/heft': 0.47.11
-      '@types/heft-jest': 1.0.3
-      '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
-      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
-      eslint: 8.27.0
-      eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
-      eslint-plugin-import: 2.26.0_eslint@8.27.0
-      eslint-plugin-n: 15.5.1_eslint@8.27.0
-      eslint-plugin-promise: 6.1.1_eslint@8.27.0
-      prettier: 2.8.8
-      typescript: 4.8.4
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
-
   file:projects/elastic.tgz_@types+node@16.11.68:
     resolution: {integrity: sha512-PY7mQyOCUoEgFlhhSs3lYKHUBwIHNsNOQzOgojlTo+YreJOUeTQFo8/1nqlva6uq5B0+l85QUiqiV3YYHOytOQ==, tarball: file:projects/elastic.tgz}
     id: file:projects/elastic.tgz
@@ -18840,7 +18749,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz_typescript@4.8.4:
-    resolution: {integrity: sha512-g6cNmmiQ8u2RKGeoHFUfJZpwv3ANw9G+eL5w9ugE1641qM35z4Mc98pCVvC4qo7KxEUkf71fEAkVn1PYEhd1Zw==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-4l1yEr88a5e6IOcEXjJn6RdM26DoIb8wwpdwk4a0UBk0fbp8O/kmo7+jKGmf0kFL+ibLgKNvFm5BYVpue+hA1g==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -19017,27 +18926,6 @@ packages:
     resolution: {integrity: sha512-oqp478+1+HXnSxTq1uAFrQHvM0qQ3A4R3FFYUu1mmYs/ijCidjnd8PB5OwwD7vLmBVis3VTF4xQPJhYmRtiHTw==, tarball: file:projects/model-core.tgz}
     id: file:projects/model-core.tgz
     name: '@rush-temp/model-core'
-    version: 0.0.0
-    dependencies:
-      '@rushstack/heft': 0.47.11
-      '@types/heft-jest': 1.0.3
-      '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
-      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
-      eslint: 8.27.0
-      eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
-      eslint-plugin-import: 2.26.0_eslint@8.27.0
-      eslint-plugin-n: 15.5.1_eslint@8.27.0
-      eslint-plugin-promise: 6.1.1_eslint@8.27.0
-      prettier: 2.8.8
-    transitivePeerDependencies:
-      - supports-color
-      - typescript
-    dev: false
-
-  file:projects/model-document.tgz_typescript@4.8.4:
-    resolution: {integrity: sha512-0+DwgNfG3I1w8ZwQYeq7y8oTHniKJuvXKruBT4PM89y2bXZ+PcdL/DS2iHzfIQ2DtOatbIHd33mR7kgR1JZwCQ==, tarball: file:projects/model-document.tgz}
-    id: file:projects/model-document.tgz
-    name: '@rush-temp/model-document'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.47.11
@@ -20209,41 +20097,6 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/pod-collaborator.tgz_bufferutil@4.0.7:
-    resolution: {integrity: sha512-1/aln2xUZfGeRUlzGkjmMklZF/d4eaiAleHSuT8Z5SE7+AlI3sUoIZU9Pqfm/xtX2pI5zAQzduQtMfjNyiV5YA==, tarball: file:projects/pod-collaborator.tgz}
-    id: file:projects/pod-collaborator.tgz
-    name: '@rush-temp/pod-collaborator'
-    version: 0.0.0
-    dependencies:
-      '@rushstack/heft': 0.47.11
-      '@types/heft-jest': 1.0.3
-      '@types/node': 16.11.68
-      '@types/ws': 8.5.3
-      '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
-      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
-      cross-env: 7.0.3
-      esbuild: 0.16.14
-      eslint: 8.27.0
-      eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
-      eslint-plugin-import: 2.26.0_eslint@8.27.0
-      eslint-plugin-n: 15.5.1_eslint@8.27.0
-      eslint-plugin-promise: 6.1.1_eslint@8.27.0
-      lib0: 0.2.73
-      lodash.debounce: 4.0.8
-      prettier: 2.8.8
-      ts-node: 10.9.1_867af3484524ae72fe2b1aa24b40f5ee
-      typescript: 4.8.4
-      ws: 8.11.0_bufferutil@4.0.7
-      y-protocols: 1.0.5
-      yjs: 13.5.52
-    transitivePeerDependencies:
-      - '@swc/core'
-      - '@swc/wasm'
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-    dev: false
-
   file:projects/pod-front.tgz:
     resolution: {integrity: sha512-7RjucQVYaMbYBJEUo6gC6sAepQUPSxoErDAM22zx68541Ds2Jx6FmD/kHEDJSqk5ve1ECKPTL2xmMuStWiTn7A==, tarball: file:projects/pod-front.tgz}
     name: '@rush-temp/pod-front'
@@ -20287,7 +20140,7 @@ packages:
     dev: false
 
   file:projects/pod-server.tgz:
-    resolution: {integrity: sha512-SWB1f4OdOIZosUoV511VmwfS+cawaMdX+W/PdpsAOHHRG17St/PLy4+IpVec0B3xeFLXq9pdXiBXq5J73LwWKA==, tarball: file:projects/pod-server.tgz}
+    resolution: {integrity: sha512-0g+8yGEuBrExc15sVQk2hZKTF1KVrcU6VVtUU8GdUxBN07HJb9l8luuYXsbHMwW+FU/e7FKiVK9VJh2FVmzuSw==, tarball: file:projects/pod-server.tgz}
     name: '@rush-temp/pod-server'
     version: 0.0.0
     dependencies:
@@ -20395,7 +20248,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_91152849c259b1b3925f7bb3d415bc80:
-    resolution: {integrity: sha512-wZWIAN+CPlPommWoqqH2yf11giIQ+B7Gbx6NQ8hkQ3PeZS2zJWsN3Ki+4vYu+BOZHwthzEJn3Y9LhKsyTL9m2A==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-crJHAbNcTU2tnkH30njWj7LLUQbPQXdgDc6tGxZESKmARWrC2GxJ3PIIryN1iK3vO21qE7vBPO6oDoXpIOUjSQ==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -22087,7 +21940,7 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/text-editor.tgz_1e646fd62a3adc9d0b41f256dafe3d38:
+  file:projects/text-editor.tgz_a1d864769aaf53d09b76fe134ab55e60:
     resolution: {integrity: sha512-mZ+9T1R2k5X+qEj4fXliwEVDzmBbGEggRReeFSTver56sVbuZQrbnAeeHEa1kMX6rD/O5kKTn8Bwk+S97y3jkw==, tarball: file:projects/text-editor.tgz}
     id: file:projects/text-editor.tgz
     name: '@rush-temp/text-editor'
@@ -22121,7 +21974,6 @@ packages:
       '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
       '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
       diff: 5.1.0
-      emoji-regex: 10.2.1
       eslint: 8.27.0
       eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
       eslint-plugin-import: 2.26.0_eslint@8.27.0
@@ -22149,7 +22001,7 @@ packages:
       svelte-loader: 3.1.4_svelte@3.55.1
       svelte-preprocess: 5.0.3_6420a3eba9d5580d9c2f627c17e61722
       typescript: 4.8.4
-      y-prosemirror: 1.2.1_4b437ae61db91263defb65d2247376eb
+      y-prosemirror: 1.2.1_709ebdfd1c5bc23c335c8dea11286d09
       y-websocket: 1.5.0_yjs@13.5.52
       yjs: 13.5.52
     transitivePeerDependencies:

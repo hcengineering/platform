@@ -147,22 +147,6 @@
       "cwd": "${workspaceRoot}/dev/tool"
     },
     {
-      "name": "Debug Collaborator",
-      "type": "node",
-      "request": "launch",
-      "args": ["src/__start.ts"],
-      "env": {
-        "SECRET": "secret",
-        "MINIO_ACCESS_KEY": "minioadmin",
-        "MINIO_SECRET_KEY": "minioadmin",
-        "MINIO_ENDPOINT": "localhost"
-      },
-      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
-      "sourceMaps": true,
-      "cwd": "${workspaceRoot}/pods/collaborator",
-      "protocol": "inspector"
-    },
-    {
       "name": "Debug backup",
       "type": "node",
       "request": "launch",

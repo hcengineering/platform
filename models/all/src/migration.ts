@@ -35,7 +35,6 @@ import { viewOperation } from '@hcengineering/model-view'
 import { trackerOperation } from '@hcengineering/model-tracker'
 import { boardOperation } from '@hcengineering/model-board'
 import { hrOperation } from '@hcengineering/model-hr'
-import { documentOperation } from '@hcengineering/model-document'
 import { bitrixOperation } from '@hcengineering/model-bitrix'
 import { calendarOperation } from '@hcengineering/model-calendar'
 
@@ -60,7 +59,6 @@ export const migrateOperations: [string, MigrateOperation][] = [
   ['tracker', trackerOperation],
   ['board', boardOperation],
   ['hr', hrOperation],
-  ['document', documentOperation],
   ['bitrix', bitrixOperation],
   ['inventiry', inventoryOperation]
 ]
