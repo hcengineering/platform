@@ -13,10 +13,99 @@
 // limitations under the License.
 //
 
-import { Class, Doc, Ref, Space, Tx, TxCreateDoc, TxProcessor, TxUpdateDoc } from '@hcengineering/core'
-import { TriggerControl } from '@hcengineering/server-core'
+import {
+  Attribute,
+  Class,
+  Data,
+  Doc,
+  Ref,
+  Space,
+  Status,
+  Tx,
+  TxCreateDoc,
+  TxProcessor,
+  TxUpdateDoc,
+  generateId
+} from '@hcengineering/core'
 import core from '@hcengineering/core/lib/component'
-import task, { KanbanTemplateSpace, KanbanTemplate, StateTemplate, State, DoneState } from '@hcengineering/task'
+import { TriggerControl } from '@hcengineering/server-core'
+import task, {
+  DoneState,
+  KanbanTemplate,
+  KanbanTemplateSpace,
+  SpaceWithStates,
+  State,
+  StateTemplate,
+  Task
+} from '@hcengineering/task'
+
+async function updateStatesName (
+  tx: Tx,
+  isDone: boolean,
+  templateSpace: KanbanTemplateSpace,
+  doc: StateTemplate,
+  classToChange: Ref<Class<State | DoneState>>,
+  ofAttribute: Ref<Attribute<Status>>,
+  txes: Tx[],
+  exists: Status,
+  control: TriggerControl
+): Promise<Tx[]> {
+  const result: Tx[] = []
+  const prevDoc = TxProcessor.buildDoc2Doc(txes.filter((t) => t._id !== tx._id)) as StateTemplate
+  if (prevDoc === undefined) return []
+  const query = { name: doc.name ?? (doc as any).title, ofAttribute }
+  const field = isDone ? 'doneStates' : ('states' as keyof Pick<SpaceWithStates, 'doneStates' | 'states'>)
+  const template = (await control.findAll(task.class.KanbanTemplate, { _id: prevDoc.attachedTo }))[0] as KanbanTemplate
+  const spacesWithStatesToChange = await control.findAll(templateSpace.attachedToClass, { templateId: template._id })
+  const taskField = isDone ? 'doneState' : ('status' as keyof Pick<Task, 'doneState' | 'status'>)
+  // for outdated transaction (they were not migrated)
+  const oldQuery = { name: prevDoc.name ?? (prevDoc as any).title, ofAttribute }
+  const oldStatus = (await control.findAll(classToChange, oldQuery))[0]
+  if (oldStatus === undefined) return []
+  const id = exists?._id ?? generateId()
+  if (exists === undefined) {
+    const data: Data<State> = {
+      ...query,
+      ...(!isDone ? { color: doc.color } : {})
+    }
+    result.push(control.txFactory.createTxCreateDoc(classToChange, task.space.Statuses, data, id))
+  }
+  const spaces = Array.from(spacesWithStatesToChange.map((x) => x._id)) as Array<Ref<Space>>
+  for (const space of spacesWithStatesToChange) {
+    if (space[field]?.includes(oldStatus._id) === true && space[field]?.includes(id) !== true) {
+      result.push(
+        control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
+          $pull: { [field]: oldStatus._id }
+        })
+      )
+      result.push(
+        control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
+          $push: { [field]: id }
+        })
+      )
+    }
+  }
+  const tasks = await control.findAll(task.class.Task, { [taskField]: oldStatus._id, space: { $in: spaces } })
+  tasks.forEach((task) => {
+    result.push(
+      control.txFactory.createTxUpdateDoc(task._class, task.space, task._id, {
+        [taskField]: id
+      })
+    )
+  })
+  return result
+}
+
+async function updateStatesColor (exists: Status, control: TriggerControl, color: number): Promise<Tx[]> {
+  if (exists !== undefined) {
+    return [
+      control.txFactory.createTxUpdateDoc(exists._class, exists.space, exists._id, {
+        color
+      })
+    ]
+  }
+  return []
+}
 
 /**
  * @public
@@ -28,31 +117,28 @@ export async function OnTemplateStateUpdate (tx: Tx, control: TriggerControl): P
   })
   const createTxes = await control.findAll(core.class.TxCreateDoc, { objectId: actualTx.objectId })
   const updateTxes = await control.findAll(core.class.TxUpdateDoc, { objectId: actualTx.objectId })
-  const prevDoc = TxProcessor.buildDoc2Doc(
-    [...createTxes, ...txes, ...updateTxes].filter((t) => t._id !== tx._id)
-  ) as StateTemplate
-  if (prevDoc === undefined) return []
+
   const templateSpace = (
     await control.findAll(task.class.KanbanTemplateSpace, {
       _id: actualTx.objectSpace as Ref<KanbanTemplateSpace>
     })
   )[0] as KanbanTemplateSpace
   if (templateSpace === undefined) return []
-  const template = (await control.findAll(task.class.KanbanTemplate, { _id: prevDoc.attachedTo }))[0] as KanbanTemplate
+  const allTxes = [...createTxes, ...txes, ...updateTxes]
+  const doc = TxProcessor.buildDoc2Doc(allTxes) as StateTemplate
+
   const classToChange = getClassToChangeOrCreate(actualTx.objectClass)
-  const objectWithStatesToChange = await control.findAll(templateSpace.attachedToClass, { templateId: template._id })
-  const ids = Array.from(objectWithStatesToChange.map((x) => x._id)) as Array<Ref<Space>>
-  const newDoc = TxProcessor.buildDoc2Doc([...createTxes, ...txes, ...updateTxes]) as StateTemplate
-  const statesToChange = Array.from(
-    await control.findAll(classToChange, { space: { $in: ids }, name: prevDoc.name })
-  ) as Array<State | DoneState>
-  return statesToChange.map((it) => {
-    const newAttributes = it._class === task.class.State ? { color: newDoc.color } : {}
-    return control.txFactory.createTxUpdateDoc(it._class, it.space, it._id, {
-      name: newDoc.name,
-      ...newAttributes
-    })
-  })
+  const isDone = control.hierarchy.isDerived(classToChange, task.class.DoneState)
+  const ofAttribute =
+    doc.ofAttribute ?? (isDone ? templateSpace.doneAttribute ?? templateSpace.ofAttribute : templateSpace.ofAttribute)
+  const query = { name: doc.name ?? (doc as any).title, ofAttribute }
+  const exists = (await control.findAll(classToChange, query))[0]
+  if (actualTx.operations.name !== undefined) {
+    return await updateStatesName(tx, isDone, templateSpace, doc, classToChange, ofAttribute, allTxes, exists, control)
+  } else if (actualTx.operations.color !== undefined) {
+    return await updateStatesColor(exists, control, actualTx.operations.color)
+  }
+  return []
 }
 
 /**
@@ -70,21 +156,41 @@ export async function OnTemplateStateCreate (tx: Tx, control: TriggerControl): P
     await control.findAll(task.class.KanbanTemplate, { _id: actualTx.attributes.attachedTo })
   )[0] as KanbanTemplate
   const classToChange = getClassToChangeOrCreate(actualTx.objectClass)
-  const objectWithStatesToChange = await control.findAll(templateSpace.attachedToClass, { templateId: template?._id })
-  const ids = Array.from(objectWithStatesToChange.map((x) => x._id)) as Array<Ref<Space>>
+  const spacesWithStatesToChange = await control.findAll(templateSpace.attachedToClass, { templateId: template?._id })
   const doc = TxProcessor.createDoc2Doc(actualTx)
-  const ofAttribute = classToChange === task.class.State ? task.attribute.State : task.attribute.DoneState
-  return ids.map((it) => {
-    const newAttributes = classToChange === task.class.State ? { color: doc.color } : {}
-    return control.txFactory.createTxCreateDoc(classToChange, it, {
-      ofAttribute,
-      name: doc.name,
-      ...newAttributes
+  const isDone = control.hierarchy.isDerived(classToChange, task.class.DoneState)
+  const query = { name: doc.name, ofAttribute: doc.ofAttribute }
+  const field = isDone ? 'doneStates' : 'states'
+  const exists = (await control.findAll(classToChange, query))[0]
+  if (exists !== undefined) {
+    return spacesWithStatesToChange
+      .filter((it) => it[field]?.includes(exists._id) !== true)
+      .map((it) => {
+        return control.txFactory.createTxUpdateDoc(it._class, it.space, it._id, {
+          $push: { [field]: exists._id }
+        })
+      })
+  } else {
+    const id = generateId()
+    const stateTx = control.txFactory.createTxCreateDoc(
+      classToChange,
+      task.space.Statuses,
+      {
+        ...query,
+        ...(!isDone ? { color: doc.color } : {})
+      },
+      id
+    )
+    const spaceTxes = spacesWithStatesToChange.map((it) => {
+      return control.txFactory.createTxUpdateDoc(it._class, it.space, it._id, {
+        $push: { [field]: id }
+      })
     })
-  })
+    return [stateTx, ...spaceTxes]
+  }
 }
 
-function getClassToChangeOrCreate (check: Ref<Class<Doc>>): Ref<Class<Doc>> {
+function getClassToChangeOrCreate (check: Ref<Class<Doc>>): Ref<Class<State | DoneState>> {
   let classToChange = task.class.State
   switch (check) {
     case task.class.WonStateTemplate:

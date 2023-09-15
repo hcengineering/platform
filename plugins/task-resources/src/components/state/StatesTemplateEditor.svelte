@@ -128,7 +128,7 @@
     }}
   />
 </div>
-<div class="flex-col mt-3">
+<div class="flex-col flex-no-shrink mt-3">
   {#each states as state, i}
     {@const color = getPlatformColorDef(state.color ?? getColorNumberByText(state.name), $themeStore.dark)}
     {#if state}
@@ -185,7 +185,7 @@
     {/if}
   {/each}
 </div>
-<div class="flex-col mt-9">
+<div class="flex-col flex-no-shrink mt-9">
   <div class="flex-no-shrink flex-between trans-title uppercase">
     <Label label={task.string.DoneStatesWon} />
     <CircleButton
@@ -236,7 +236,7 @@
     {/each}
   </div>
 </div>
-<div class="mt-9">
+<div class="mt-9 flex-no-shrink">
   <div class="flex-no-shrink flex-between trans-title uppercase">
     <Label label={task.string.DoneStatesLost} />
     <CircleButton
