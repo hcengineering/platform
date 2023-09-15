@@ -306,7 +306,7 @@ async function migrateStatuses (client: MigrationClient): Promise<void> {
       }
       if (task.doneState != null) {
         const newDoneStatus = oldStatusesMap.get(task.doneState)
-        if (newStatus !== undefined) {
+        if (newDoneStatus !== undefined) {
           update.doneState = newDoneStatus
         }
       }
@@ -325,7 +325,7 @@ async function migrateStatuses (client: MigrationClient): Promise<void> {
           }
           if (createTx.attributes.doneState != null) {
             const newDoneStatus = oldStatusesMap.get(createTx.attributes.doneState)
-            if (newStatus !== undefined) {
+            if (newDoneStatus !== undefined) {
               update['tx.attributes.doneState'] = newDoneStatus
             }
           }
@@ -339,7 +339,7 @@ async function migrateStatuses (client: MigrationClient): Promise<void> {
           }
           if (updateTx.operations.doneState != null) {
             const newDoneStatus = oldStatusesMap.get(updateTx.operations.doneState)
-            if (newStatus !== undefined) {
+            if (newDoneStatus !== undefined) {
               update['tx.operations.doneState'] = newDoneStatus
             }
           }
