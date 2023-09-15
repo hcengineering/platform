@@ -34,7 +34,7 @@
   let description: string
   let haveUnsavedChanges = false
 
-  $: if (description === undefined) {
+  $: if (object && description === undefined) {
     description = getAttribute(client, object, key)
   }
 
@@ -69,6 +69,8 @@
       setTimeout(() => {
         dispatch('saved', false)
       }, 2500)
+    } else {
+      haveUnsavedChanges = false
     }
 
     await descriptionBox.createAttachments()
