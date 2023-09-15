@@ -56,7 +56,7 @@ import {
 } from '@hcengineering/recruit'
 import setting from '@hcengineering/setting'
 import { DoneState, State } from '@hcengineering/task'
-import { KeyBinding, ViewOptionsModel } from '@hcengineering/view'
+import { KeyBinding, ViewOptionModel, ViewOptionsModel } from '@hcengineering/view'
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
 import { TOpinion, TReview } from './review-model'
@@ -674,7 +674,25 @@ export function createModel (builder: Builder): void {
     }
   }
 
-  const applicantViewOptions = (colors: boolean): ViewOptionsModel => {
+  const applicationDoneOption: ViewOptionModel = {
+    key: 'hideDoneState',
+    type: 'toggle',
+    defaultValue: true,
+    actionTarget: 'query',
+    action: recruit.function.HideDoneState,
+    label: recruit.string.HideDoneState
+  }
+
+  const vacancyHideOption: ViewOptionModel = {
+    key: 'hideArchivedVacancies',
+    type: 'toggle',
+    defaultValue: true,
+    actionTarget: 'query',
+    action: recruit.function.HideArchivedVacancies,
+    label: recruit.string.HideArchivedVacancies
+  }
+
+  const applicantViewOptions = (colors: boolean, hides: boolean): ViewOptionsModel => {
     const model: ViewOptionsModel = {
       groupBy: ['status', 'doneState', 'assignee', 'space', 'createdBy', 'modifiedBy'],
       orderBy: [
@@ -697,6 +715,9 @@ export function createModel (builder: Builder): void {
     }
     if (colors) {
       model.other.push(showColorsViewOption)
+    }
+    if (hides) {
+      model.other.push(...[applicationDoneOption, vacancyHideOption])
     }
     return model
   }
@@ -775,11 +796,7 @@ export function createModel (builder: Builder): void {
         strict: true,
         hiddenKeys: ['name', 'attachedTo']
       },
-      baseQuery: {
-        doneState: null,
-        '$lookup.space.archived': false
-      },
-      viewOptions: applicantViewOptions(true)
+      viewOptions: applicantViewOptions(true, true)
     },
     recruit.viewlet.ListApplicant
   )
@@ -912,7 +929,6 @@ export function createModel (builder: Builder): void {
         hiddenKeys: ['name', 'space', 'modifiedOn']
       },
       baseQuery: {
-        doneState: null,
         '$lookup.space.archived': false
       },
       viewOptions: {
@@ -941,7 +957,7 @@ export function createModel (builder: Builder): void {
         '$lookup.space.archived': false
       },
       viewOptions: {
-        ...applicantViewOptions(false),
+        ...applicantViewOptions(false, false),
         groupDepth: 1
       },
       options: {

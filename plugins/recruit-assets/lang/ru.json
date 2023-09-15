@@ -118,7 +118,9 @@
     "MyApplications": "Мои кандидаты",
 
     "ShowApplications": "Показать кандидатов",
-    "GetTalentIds": "Получить ID талантов"
+    "GetTalentIds": "Получить ID талантов",
+    "HideDoneState": "Скрыть завершенных кандидатов",
+    "HideArchivedVacancies": "Скрыть архивные вакансии"
   },
   "status": {
     "ApplicationExists": "Кандидат уже существует",

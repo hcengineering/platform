@@ -74,17 +74,19 @@
     }
     const isDerivedFromSpace = hierarchy.isDerived(_class, core.class.Space)
 
-    const archived =
+    const notArchived =
       space === undefined || isDerivedFromSpace
         ? []
-        : (await client.findAll(core.class.Space, { archived: true }, { projection: { _id: 1 } })).map((it) => it._id)
+        : (await client.findAll(core.class.Space, { archived: { $ne: true } }, { projection: { _id: 1 } })).map(
+            (it) => it._id
+          )
 
-    async function doQuery (limit: number | undefined, first1000?: any[]): Promise<void> {
+    async function doQuery (limit: number | undefined, first1000?: any[]): Promise<boolean> {
       const p = client.findAll(
         _class,
         {
           ...resultQuery,
-          ...(space ? { space } : isDerivedFromSpace ? { archived: false } : { space: { $nin: archived } }),
+          ...(space ? { space } : isDerivedFromSpace ? { archived: false } : { space: { $in: notArchived } }),
           ...(first1000 ? { [filter.key.key]: { $nin: first1000 } } : {})
         },
         {
@@ -111,17 +113,19 @@
       for (const object of filter.value.map((p) => p[0])) {
         values.add(object)
       }
+      return res.length >= (limit ?? 0)
     }
-    await doQuery(1000)
+    const hasMore = await doQuery(1000)
     values = values
     sortedValues = sortFilterValues([...values.keys()], (v) => isSelected(v, selectedValues))
     objectsPromise = undefined
 
     // Check if we have all possible values, in case of enumeration
-    await doQuery(undefined, Array.from(values))
-
-    sortedValues = sortFilterValues([...values.keys()], (v) => isSelected(v, selectedValues))
-    objectsPromise = undefined
+    if (hasMore) {
+      await doQuery(undefined, Array.from(values))
+      sortedValues = sortFilterValues([...values.keys()], (v) => isSelected(v, selectedValues))
+      objectsPromise = undefined
+    }
   }
 
   function getValue (obj: any): any {
