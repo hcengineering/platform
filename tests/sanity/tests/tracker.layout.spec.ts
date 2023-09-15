@@ -12,11 +12,13 @@ import {
   setViewGroup,
   setViewOrder,
   ViewletSelectors
-} from './tracker.utils'
-import { fillSearch, generateId, PlatformSetting } from './utils'
+} from '../src/utils/tracker.utils'
+import { fillSearch, generateId, PlatformSetting } from '../src/utils/utils'
 test.use({
   storageState: PlatformSetting
 })
+
+
 
 const getIssueName = (postfix: string = generateId(5)): string => `issue-${postfix}`
 
@@ -26,7 +28,7 @@ async function createIssues (
   components?: string[],
   milestones?: string[]
 ): Promise<IssueProps[]> {
-  const issuesProps = []
+  const issuesProps : IssueProps[]= [] ;
   for (let index = 0; index < 5; index++) {
     const shiftedIndex = 4 - index
     const name =
@@ -50,7 +52,7 @@ async function createIssues (
 }
 
 async function createComponents (page: Page): Promise<string[]> {
-  const components = []
+  const components: string[] = []
 
   for (let index = 0; index < 5; index++) {
     const prjId = `component-${generateId()}-${index}`
@@ -63,7 +65,7 @@ async function createComponents (page: Page): Promise<string[]> {
 }
 
 async function createMilestones (page: Page): Promise<string[]> {
-  const milestones = []
+  const milestones: string[] = []
 
   for (let index = 0; index < 5; index++) {
     const milestoneId = `milestone-${generateId()}-${index}`

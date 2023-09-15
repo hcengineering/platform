@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { PlatformURI, PlatformUser } from './utils'
+import { PlatformURI, PlatformUser } from '../src/utils/utils'
 
 test.describe('login test', () => {
   test('check login', async ({ page }) => {

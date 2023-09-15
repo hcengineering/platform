@@ -9,8 +9,8 @@ import {
   fillIssueForm,
   navigate,
   openIssue
-} from './tracker.utils'
-import { PlatformSetting, fillSearch, generateId } from './utils'
+} from '../src/utils/tracker.utils'
+import { PlatformSetting, fillSearch, generateId } from '../src/utils/utils'
 test.use({
   storageState: PlatformSetting
 })

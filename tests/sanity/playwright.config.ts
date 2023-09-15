@@ -11,6 +11,7 @@ const config: PlaywrightTestConfig = {
       screenshots: true,
       sources: true
     }
+    
   },
   retries: 1,
   timeout: 60000,
@@ -18,5 +19,6 @@ const config: PlaywrightTestConfig = {
   expect: {
     timeout: 15000
   }
+  
 }
 export default config

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { PlatformSetting, PlatformURI } from './utils'
+import { PlatformSetting, PlatformURI } from '../src/utils/utils'
 test.use({
   storageState: PlatformSetting
 })
