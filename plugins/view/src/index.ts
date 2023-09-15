@@ -666,7 +666,9 @@ export interface CategoryOption extends ViewOption {
 /**
  * @public
  */
-export type ViewQueryAction = Resource<(value: any, query: DocumentQuery<Doc>) => DocumentQuery<Doc>>
+export type ViewQueryAction = Resource<
+(value: any, query: DocumentQuery<Doc>) => DocumentQuery<Doc> | Promise<DocumentQuery<Doc>>
+>
 
 /**
  * @public

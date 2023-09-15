@@ -118,6 +118,10 @@
         <span class="text-base fs-bold overflow-label pointer-events-none">
           <Label label={view.string.NoGrouping} />
         </span>
+      {:else if category === undefined}
+        <span class="overflow-label pointer-events-none">
+          <Label label={view.string.NotSpecified} />
+        </span>
       {:else if headerComponent}
         <svelte:component
           this={headerComponent.presenter}

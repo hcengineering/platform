@@ -69,10 +69,14 @@
     targets.clear()
 
     const spaces = (
-      await client.findAll(core.class.Space, { archived: true }, { projection: { _id: 1, archived: 1, _class: 1 } })
+      await client.findAll(
+        core.class.Space,
+        { archived: { $ne: true } },
+        { projection: { _id: 1, archived: 1, _class: 1 } }
+      )
     ).map((it) => it._id)
 
-    const baseObjects = await client.findAll(filter.key._class, space ? { space } : { space: { $nin: spaces } }, {
+    const baseObjects = await client.findAll(filter.key._class, space ? { space } : { space: { $in: spaces } }, {
       projection: { [filter.key.key]: 1, space: 1 }
     })
     for (const object of baseObjects) {

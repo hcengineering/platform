@@ -118,7 +118,9 @@
     "MyApplications": "My applications",
 
     "ShowApplications": "Show applications",
-    "GetTalentIds": "Get talents' ids"
+    "GetTalentIds": "Get talents' ids",
+    "HideDoneState": "Hide complete applications",
+    "HideArchivedVacancies": "Hide from archived Vacancies"
   },
   "status": {
     "ApplicationExists": "Application already exists",

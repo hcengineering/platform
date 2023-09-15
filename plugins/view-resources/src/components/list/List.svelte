@@ -157,12 +157,17 @@
     viewOptionsStore: ViewOptions
   ): Promise<DocumentQuery<Doc>> {
     if (viewOptions === undefined) return query
-    let result = hierarchy.clone(query)
+    let result: DocumentQuery<Doc> = hierarchy.clone(query)
     for (const viewOption of viewOptions) {
       if (viewOption.actionTarget !== 'query') continue
       const queryOption = viewOption as ViewQueryOption
       const f = await getResource(queryOption.action)
-      result = f(viewOptionsStore[queryOption.key] ?? queryOption.defaultValue, query)
+      const resultP = f(viewOptionsStore[queryOption.key] ?? queryOption.defaultValue, result)
+      if (resultP instanceof Promise) {
+        result = await resultP
+      } else {
+        result = resultP
+      }
     }
     return result
   }

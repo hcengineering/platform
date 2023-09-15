@@ -24,7 +24,7 @@ import {
   toIdMap
 } from '@hcengineering/core'
 import { OK, Resources, Severity, Status } from '@hcengineering/platform'
-import { ObjectSearchResult } from '@hcengineering/presentation'
+import { ObjectSearchResult, createQuery } from '@hcengineering/presentation'
 import { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
 import task from '@hcengineering/task'
 import { showPopup } from '@hcengineering/ui'
@@ -277,6 +277,40 @@ async function noneApplicant (filter: Filter, onUpdate: () => void): Promise<Obj
   return { $in: result }
 }
 
+export function hideDoneState (value: any, query: DocumentQuery<Doc>): DocumentQuery<Doc> {
+  if (value as boolean) {
+    return { ...query, doneState: null }
+  }
+  return query
+}
+
+const activeVacancyQuery = createQuery(true)
+
+let activeVacancies: Promise<Array<Ref<Vacancy>>> | Array<Ref<Vacancy>> | undefined
+
+export async function hideArchivedVacancies (value: any, query: DocumentQuery<Doc>): Promise<DocumentQuery<Doc>> {
+  if (activeVacancies === undefined) {
+    activeVacancies = new Promise<Array<Ref<Vacancy>>>((resolve) => {
+      activeVacancyQuery.query(
+        recruit.class.Vacancy,
+        { archived: { $ne: true } },
+        (res) => {
+          activeVacancies = res.map((it) => it._id)
+          resolve(activeVacancies)
+        },
+        { projection: { _id: 1 } }
+      )
+    })
+  }
+  if (value as boolean) {
+    if (activeVacancies instanceof Promise) {
+      activeVacancies = await activeVacancies
+    }
+    return { ...query, space: { $in: activeVacancies } }
+  }
+  return query
+}
+
 export default async (): Promise<Resources> => ({
   actionImpl: {
     CreateOpinion: createOpinion,
@@ -342,7 +376,9 @@ export default async (): Promise<Resources> => ({
     NoneApplications: noneApplicant,
     GetObjectLink: objectLinkProvider,
     GetObjectLinkFragment: getSequenceLink,
-    GetIdObjectLinkFragment: getObjectLink
+    GetIdObjectLinkFragment: getObjectLink,
+    HideDoneState: hideDoneState,
+    HideArchivedVacancies: hideArchivedVacancies
   },
   resolver: {
     Location: resolveLocation
