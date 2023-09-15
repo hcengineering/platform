@@ -516,9 +516,13 @@
       hourOfDay,
       minutes: getMinutes(e)
     }
-    if (dragOn === dragOnOld) return
+    if (
+      dragOnOld !== null &&
+      dragOn.day === dragOnOld.day &&
+      dragOn.hourOfDay === dragOnOld.hourOfDay &&
+      dragOn.minutes === dragOnOld.minutes
+    ) { return }
     dragOnOld = dragOn
-    console.log('[!!!] dragOn: ', dragOn, ' - event: ', e)
     dispatch('dragenter', {
       date: new Date(day.setHours(hourOfDay + startHour, dragOn.minutes, 0, 0))
     })
