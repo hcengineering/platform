@@ -38,7 +38,7 @@
   export let kind: ButtonKind = 'link-bordered'
   export let size: ButtonSize = 'inline'
   export let justify: 'left' | 'center' = 'left'
-  export let width: string | undefined = 'min-contet'
+  export let width: string | undefined = 'min-content'
   export let compactMode: boolean = false
 
   let btn: HTMLElement

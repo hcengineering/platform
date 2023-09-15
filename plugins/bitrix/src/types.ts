@@ -1,6 +1,6 @@
 import { ChannelProvider } from '@hcengineering/contact'
 import { AnyAttribute, AttachedDoc, Class, Doc, Mixin, Ref } from '@hcengineering/core'
-import { ExpertKnowledge, InitialKnowledge, MeaningfullKnowledge } from '@hcengineering/tags'
+import { ExpertKnowledge, InitialKnowledge, MeaningfulKnowledge } from '@hcengineering/tags'
 import { KanbanTemplate } from '@hcengineering/task'
 
 /**
@@ -198,7 +198,7 @@ export interface CopyValueOperation {
  * @public
  */
 export interface TagField {
-  weight: InitialKnowledge | MeaningfullKnowledge | ExpertKnowledge
+  weight: InitialKnowledge | MeaningfulKnowledge | ExpertKnowledge
 
   field: string
   split: string // If defined values from field will be split to check for multiple values.

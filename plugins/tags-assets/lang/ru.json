@@ -36,7 +36,7 @@
     "ApplyTags": "Применить",
     "Weight": "Вес",
     "Expert": "Эксперт",
-    "Meaningfull": "Значимый",
+    "Meaningful": "Значимый",
     "Initial": "Начальный",
     "NumberLabels": "{count, plural, =0 {нет меток} one {# метка} few {# метки} other {# меток}}"
   }

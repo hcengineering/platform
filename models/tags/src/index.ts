@@ -20,7 +20,7 @@ import { Asset, IntlString } from '@hcengineering/platform'
 import type {
   ExpertKnowledge,
   InitialKnowledge,
-  MeaningfullKnowledge,
+  MeaningfulKnowledge,
   TagCategory,
   TagElement,
   TagReference
@@ -72,7 +72,7 @@ export class TTagReference extends TAttachedDoc implements TagReference {
     color!: number
 
   @Prop(TypeNumber(), tags.string.Weight)
-    weight!: InitialKnowledge | MeaningfullKnowledge | ExpertKnowledge
+    weight!: InitialKnowledge | MeaningfulKnowledge | ExpertKnowledge
 }
 
 @Model(tags.class.TagCategory, core.class.Doc, DOMAIN_TAGS)

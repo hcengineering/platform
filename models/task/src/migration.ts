@@ -79,7 +79,7 @@ export async function createKanbanTemplate (
   client: TxOperations,
   data: KanbanTemplateData,
   ofAttribute: Ref<Attribute<Status>>,
-  doneAtrtribute?: Ref<Attribute<DoneState>>
+  doneAttribute?: Ref<Attribute<DoneState>>
 ): Promise<Ref<KanbanTemplate>> {
   const current = await client.findOne(task.class.KanbanTemplate, { _id: data.kanbanId })
   if (current !== undefined) {
@@ -102,7 +102,7 @@ export async function createKanbanTemplate (
     data.doneStates.map((st, i) =>
       client.createDoc(st.isWon ? task.class.WonStateTemplate : task.class.LostStateTemplate, data.space, {
         rank: doneStateRanks[i],
-        ofAttribute: doneAtrtribute ?? ofAttribute,
+        ofAttribute: doneAttribute ?? ofAttribute,
         name: st.name,
         attachedTo: data.kanbanId
       })

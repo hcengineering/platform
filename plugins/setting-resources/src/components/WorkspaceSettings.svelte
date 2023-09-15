@@ -27,7 +27,7 @@
   let categories: SettingsCategory[] = []
   const account = getCurrentAccount() as PersonAccount
 
-  export let visibileNav = true
+  export let visibleNav = true
 
   const settingsQuery = createQuery()
   settingsQuery.query(
@@ -60,7 +60,7 @@
 </script>
 
 <div class="flex h-full">
-  {#if visibileNav}
+  {#if visibleNav}
     <div class="antiPanel-navigator filledNav indent">
       <div class="antiNav-header">
         <span class="fs-title overflow-label">

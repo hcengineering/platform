@@ -57,7 +57,7 @@
 
   const taskKeys = ['status', 'assignee', 'doneState']
 
-  $: filtredKeys = keys.filter((p) => !taskKeys.includes(p.key)) // todo
+  $: filteredKeys = keys.filter((p) => !taskKeys.includes(p.key)) // todo
 </script>
 
 {#if !vertical}
@@ -73,7 +73,7 @@
         titleDeselect={task.string.TaskUnAssign}
       />
       <div class="column">
-        <AttributesBar {object} _class={object._class} keys={filtredKeys} />
+        <AttributesBar {object} _class={object._class} keys={filteredKeys} />
       </div>
     </div>
     <AttributesBar {object} _class={object._class} keys={['doneState', 'status']} showHeader={false} />

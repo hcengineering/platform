@@ -97,7 +97,7 @@ export async function createState<T extends Status> (
 export async function createStates (
   client: TxOperations,
   ofAttribute: Ref<Attribute<Status>>,
-  doneAtrtribute?: Ref<Attribute<DoneState>>,
+  doneAttribute?: Ref<Attribute<DoneState>>,
   templateId?: Ref<KanbanTemplate>
 ): Promise<[Ref<Status>[], Ref<DoneState>[]]> {
   if (templateId === undefined) {
@@ -111,13 +111,13 @@ export async function createStates (
 
     doneStates.push(
       await createState(client, task.class.WonState, {
-        ofAttribute: doneAtrtribute ?? ofAttribute,
+        ofAttribute: doneAttribute ?? ofAttribute,
         name: 'Won'
       })
     )
     doneStates.push(
       await createState(client, task.class.LostState, {
-        ofAttribute: doneAtrtribute ?? ofAttribute,
+        ofAttribute: doneAttribute ?? ofAttribute,
         name: 'Lost'
       })
     )
@@ -169,7 +169,7 @@ export async function createStates (
 
     doneStates.push(
       await createState(client, cl, {
-        ofAttribute: doneAtrtribute ?? ofAttribute,
+        ofAttribute: doneAttribute ?? ofAttribute,
         description: state.description,
         name: state.name
       })

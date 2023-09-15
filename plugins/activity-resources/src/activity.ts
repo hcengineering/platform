@@ -56,7 +56,7 @@ const createCombineThreshold = 10 * 1000
 /**
  * Define activity.
  *
- * Allow to recieve a list of transactions and notify client about it.
+ * Allow to receive a list of transactions and notify client about it.
  */
 export interface Activity {
   update: (
@@ -183,7 +183,7 @@ class ActivityImpl implements Activity {
     for (const tx of ownTxes) {
       if (!this.filterUpdateTx(tx)) continue
       const [result] = this.createDisplayTx(tx, parents, true)
-      // Combine previous update transaction for same field and if same operation and time treshold is ok
+      // Combine previous update transaction for same field and if same operation and time threshold is ok
       results = this.integrateTxWithResults(results, result, editable)
       this.updateRemovedState(result, results)
     }
@@ -199,7 +199,7 @@ class ActivityImpl implements Activity {
         }
         const [result, isUpdated, isMixin] = this.createDisplayTx(tx, parents, false)
         if (!(isUpdated || isMixin)) {
-          // Combine previous update transaction for same field and if same operation and time treshold is ok
+          // Combine previous update transaction for same field and if same operation and time threshold is ok
           results = this.integrateTxWithResults(results, result, editable)
           this.updateRemovedState(result, results)
         }
@@ -459,7 +459,7 @@ export function newDisplayTx (
 }
 
 /**
- * Construct an new activity, to listend for displayed transactions in UI.
+ * Construct an new activity, to listen for displayed transactions in UI.
  * @param client
  */
 export function newActivity (client: Client, attributes: Map<string, AnyAttribute>): Activity {

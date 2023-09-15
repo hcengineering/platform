@@ -46,13 +46,13 @@
     }
   }
 
-  function setHeigh (emb: HTMLElement): void {
+  function setHeight (emb: HTMLElement): void {
     const child = emb.firstElementChild as HTMLElement
     child.style.height = `${height}px`
     child.setAttribute('height', `${height}px`)
   }
 
-  $: emb && setHeigh(emb)
+  $: emb && setHeight(emb)
 </script>
 
 <div class="flex mt-2">

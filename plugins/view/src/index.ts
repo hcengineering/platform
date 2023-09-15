@@ -161,7 +161,7 @@ export interface CollectionEditor extends Class<Doc> {
 /**
  * @public
  */
-export interface InlineAttributEditor extends Class<Doc> {
+export interface InlineAttributeEditor extends Class<Doc> {
   editor: AnyComponent
 }
 
@@ -323,7 +323,7 @@ export interface AllValuesFunc extends Class<Doc> {
 /**
  * @public
  */
-export interface GrouppingManager {
+export interface GroupingManager {
   groupByCategories: (categories: any[]) => AggregateValue[]
   groupValues: (val: Doc[], targets: Set<any>) => Doc[]
   groupValuesWithEmpty: (
@@ -338,13 +338,13 @@ export interface GrouppingManager {
 /**
  * @public
  */
-export type GrouppingManagerResource = Resource<GrouppingManager>
+export type GroupingManagerResource = Resource<GroupingManager>
 
 /**
  * @public
  */
-export interface Groupping extends Class<Doc> {
-  grouppingManager: GrouppingManagerResource
+export interface Grouping extends Class<Doc> {
+  groupingManager: GroupingManagerResource
 }
 
 /**
@@ -471,7 +471,7 @@ export interface Action<T extends Doc = Doc, P = Record<string, any>> extends Do
   // If defined, types should be matched to proposed list
   inputProps?: Record<string, Ref<Class<Doc>>>
 
-  // Kayboard bindings
+  // Keyboard bindings
   keyBinding?: KeyBinding[]
 
   // short description for action.
@@ -487,7 +487,7 @@ export interface Action<T extends Doc = Doc, P = Record<string, any>> extends Do
   // For example it could be global action and action for focus class, second one fill override first one.
   override?: Ref<Action>[]
 
-  // Avaible only for workspace owners
+  // Available only for workspace owners
   secured?: boolean
 }
 
@@ -511,7 +511,7 @@ export interface ViewContext {
   // Active application
   application?: Ref<Doc>
 
-  // Optional groupping
+  // Optional grouping
   group?: ActionGroup
 }
 
@@ -747,7 +747,7 @@ const view = plugin(viewId, {
     AttributeEditor: '' as Ref<Mixin<AttributeEditor>>,
     CollectionPresenter: '' as Ref<Mixin<CollectionPresenter>>,
     CollectionEditor: '' as Ref<Mixin<CollectionEditor>>,
-    InlineAttributEditor: '' as Ref<Mixin<InlineAttributEditor>>,
+    InlineAttributeEditor: '' as Ref<Mixin<InlineAttributeEditor>>,
     ArrayEditor: '' as Ref<Mixin<ArrayEditor>>,
     AttributePresenter: '' as Ref<Mixin<AttributePresenter>>,
     ActivityAttributePresenter: '' as Ref<Mixin<ActivityAttributePresenter>>,
@@ -771,7 +771,7 @@ const view = plugin(viewId, {
     SpacePresenter: '' as Ref<Mixin<SpacePresenter>>,
     AttributeFilterPresenter: '' as Ref<Mixin<AttributeFilterPresenter>>,
     Aggregation: '' as Ref<Mixin<Aggregation>>,
-    Groupping: '' as Ref<Mixin<Groupping>>
+    Grouping: '' as Ref<Mixin<Grouping>>
   },
   class: {
     ViewletPreference: '' as Ref<Class<ViewletPreference>>,

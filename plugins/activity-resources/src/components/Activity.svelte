@@ -26,7 +26,7 @@
   import TxView from './TxView.svelte'
 
   export let object: Doc
-  export let showCommenInput: boolean = true
+  export let showCommentInput: boolean = true
   export let transparent: boolean = false
   export let shouldScroll: boolean = false
   export let focusIndex: number = -1
@@ -160,7 +160,7 @@
     </Grid>
   {/if}
 </div>
-{#if showCommenInput}
+{#if showCommentInput}
   <div class="ref-input">
     <Component is={chunter.component.CommentInput} props={{ object, focusIndex }} />
   </div>

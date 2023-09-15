@@ -123,7 +123,7 @@ import {
   subIssueQuery
 } from './utils'
 
-import { ComponentAggregationManager, grouppingComponentManager } from './component'
+import { ComponentAggregationManager, groupingComponentManager } from './component'
 import PriorityIcon from './components/activity/PriorityIcon.svelte'
 import StatusIcon from './components/activity/StatusIcon.svelte'
 import TxIssueCreated from './components/activity/TxIssueCreated.svelte'
@@ -508,6 +508,6 @@ export default async (): Promise<Resources> => ({
   },
   aggregation: {
     CreateComponentAggregationManager: ComponentAggregationManager.create,
-    GrouppingComponentManager: grouppingComponentManager
+    GroupingComponentManager: groupingComponentManager
   }
 })

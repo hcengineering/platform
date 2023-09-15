@@ -409,12 +409,12 @@ function filterCollectionTx (tx: DisplayTx): DisplayTx | undefined {
   if (tx.collectionAttribute === undefined) return tx
   const txes = tx.txes.reduceRight(
     (txes, ctx) => {
-      const filtredTxes = txes.filter(
+      const filteredTxes = txes.filter(
         ({ tx: { _class }, doc }) => doc?._id !== ctx.doc?._id || _class === core.class.TxUpdateDoc
       )
-      return ctx.tx._class === core.class.TxUpdateDoc || filtredTxes.length === txes.length
+      return ctx.tx._class === core.class.TxUpdateDoc || filteredTxes.length === txes.length
         ? [ctx, ...txes]
-        : filtredTxes
+        : filteredTxes
     },
     [tx]
   )

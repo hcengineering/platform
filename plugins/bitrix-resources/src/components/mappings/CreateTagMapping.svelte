@@ -62,7 +62,7 @@
   $: items = getItems(fields)
 
   const tagLevel = [tags.icon.Level1, tags.icon.Level2, tags.icon.Level3]
-  const labels = [getEmbeddedLabel('Initial'), getEmbeddedLabel('Meaningfull'), getEmbeddedLabel('Expert')]
+  const labels = [getEmbeddedLabel('Initial'), getEmbeddedLabel('Meaningful'), getEmbeddedLabel('Expert')]
 </script>
 
 <div class="flex-col flex-wrap">

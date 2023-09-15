@@ -20,7 +20,7 @@ import { AnyComponent, Location } from '@hcengineering/ui'
 import {
   CreateAggregationManagerFunc,
   GetAllValuesFunc,
-  GrouppingManagerResource,
+  GroupingManagerResource,
   KeyFilter,
   SortFunc,
   ViewQueryAction,
@@ -389,6 +389,6 @@ export default mergeIds(trackerId, tracker, {
   },
   aggregation: {
     CreateComponentAggregationManager: '' as CreateAggregationManagerFunc,
-    GrouppingComponentManager: '' as GrouppingManagerResource
+    GroupingComponentManager: '' as GroupingManagerResource
   }
 })

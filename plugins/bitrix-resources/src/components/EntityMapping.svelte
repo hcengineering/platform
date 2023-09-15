@@ -43,9 +43,9 @@
     statusList: StatusValue[]
   ): Promise<void> {
     if (deepEqual(fields, {})) {
-      return // no value resieved yet.
+      return // no value received yet.
     }
-    // Update fields with status valies if missing.
+    // Update fields with status values if missing.
     for (const f of Object.values(fields)) {
       if (f.type === 'crm_status') {
         f.items = statusList

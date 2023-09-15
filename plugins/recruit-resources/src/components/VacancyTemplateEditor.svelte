@@ -18,7 +18,7 @@
   import { StyledTextBox } from '@hcengineering/text-editor'
   import tracker from '@hcengineering/tracker'
   import { Button, Component, EditBox, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
-  import { getFiltredKeys } from '@hcengineering/view-resources'
+  import { getFilteredKeys } from '@hcengineering/view-resources'
   import recruit from '../plugin'
 
   export let template: KanbanTemplate
@@ -26,7 +26,7 @@
   const client = getClient()
 
   const hierarchy = client.getHierarchy()
-  const customKeys = getFiltredKeys(hierarchy, template._class, []).filter((key) => key.attr.isCustom)
+  const customKeys = getFilteredKeys(hierarchy, template._class, []).filter((key) => key.attr.isCustom)
 
   async function onDescriptionChange (value: string) {
     await client.update(template, { description: value })

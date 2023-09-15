@@ -29,7 +29,7 @@
   import ScheduleView from './ScheduleView.svelte'
   import Sidebar from './sidebar/Sidebar.svelte'
 
-  export let visibileNav = true
+  export let visibleNav = true
 
   const accountEmployee = $employeeByIdStore.get((getCurrentAccount() as PersonAccount).person as Ref<Employee>)
   let accountStaff: Staff | undefined
@@ -113,7 +113,7 @@
 </script>
 
 <div class="flex h-full">
-  {#if visibileNav}
+  {#if visibleNav}
     <Sidebar
       {department}
       {descendants}

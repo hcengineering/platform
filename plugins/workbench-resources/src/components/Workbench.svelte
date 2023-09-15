@@ -57,7 +57,7 @@
     ActionHandler,
     ListSelectionProvider,
     NavLink,
-    migrateViewOpttions,
+    migrateViewOptions,
     updateFocus
   } from '@hcengineering/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
@@ -96,7 +96,7 @@
   let createItemDialog: AnyComponent | undefined
   let createItemLabel: IntlString | undefined
 
-  migrateViewOpttions()
+  migrateViewOptions()
 
   const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
 
@@ -110,9 +110,9 @@
   let panelInstance: PanelInstance
   let popupInstance: Popup
 
-  let visibileNav: boolean = getMetadata(workbench.metadata.NavigationExpandedDefault) ?? true
+  let visibleNav: boolean = getMetadata(workbench.metadata.NavigationExpandedDefault) ?? true
   async function toggleNav (): Promise<void> {
-    visibileNav = !visibileNav
+    visibleNav = !visibleNav
     closeTooltip()
     if (currentApplication && navigatorModel && navigator) {
       await tick()
@@ -516,16 +516,16 @@
 
   let navFloat: boolean = !($deviceInfo.docWidth < 1024)
   $: if ($deviceInfo.docWidth <= 1024 && !navFloat) {
-    visibileNav = false
+    visibleNav = false
     navFloat = true
   } else if ($deviceInfo.docWidth > 1024 && navFloat) {
     if (getMetadata(workbench.metadata.NavigationExpandedDefault) === undefined) {
       navFloat = false
-      visibileNav = true
+      visibleNav = true
     }
   }
   const checkOnHide = (): void => {
-    if (visibileNav && $deviceInfo.docWidth <= 1024) visibileNav = false
+    if (visibleNav && $deviceInfo.docWidth <= 1024) visibleNav = false
   }
   let appsDirection: 'vertical' | 'horizontal'
   $: appsDirection = $deviceInfo.isMobile && $deviceInfo.isPortrait ? 'horizontal' : 'vertical'
@@ -632,7 +632,7 @@
     </clipPath>
   </svg>
   <div class="workbench-container" style:flex-direction={appsDirection === 'horizontal' ? 'column-reverse' : 'row'}>
-    <div class="antiPanel-application {appsDirection}" class:lastDivider={!visibileNav}>
+    <div class="antiPanel-application {appsDirection}" class:lastDivider={!visibleNav}>
       <div
         class="hamburger-container clear-mins"
         class:portrait={appsDirection === 'horizontal'}
@@ -651,8 +651,8 @@
         <div class="topmenu-container clear-mins flex-no-shrink" class:mini={appsMini}>
           <AppItem
             icon={TopMenu}
-            label={visibileNav ? workbench.string.HideMenu : workbench.string.ShowMenu}
-            selected={!visibileNav}
+            label={visibleNav ? workbench.string.HideMenu : workbench.string.ShowMenu}
+            selected={!visibleNav}
             size={appsMini ? 'small' : 'medium'}
             on:click={toggleNav}
           />
@@ -719,9 +719,9 @@
       }}
     />
     <div class="workbench-container">
-      {#if currentApplication && navigatorModel && navigator && visibileNav}
+      {#if currentApplication && navigatorModel && navigator && visibleNav}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
-        {#if visibileNav && navFloat}<div class="cover shown" on:click={() => (visibileNav = false)} />{/if}
+        {#if visibleNav && navFloat}<div class="cover shown" on:click={() => (visibleNav = false)} />{/if}
         <div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
           {#if currentApplication}
             <NavHeader label={currentApplication.label} />
@@ -757,11 +757,11 @@
         }}
       >
         {#if currentApplication && currentApplication.component}
-          <Component is={currentApplication.component} props={{ currentSpace, visibileNav }} />
+          <Component is={currentApplication.component} props={{ currentSpace, visibleNav }} />
         {:else if specialComponent}
           <Component
             is={specialComponent.component}
-            props={{ model: navigatorModel, ...specialComponent.componentProps, currentSpace, visibileNav }}
+            props={{ model: navigatorModel, ...specialComponent.componentProps, currentSpace, visibleNav }}
             on:action={(e) => {
               if (e?.detail) {
                 const loc = getCurrentLocation()
@@ -771,7 +771,7 @@
             }}
           />
         {:else if currentView?.component !== undefined}
-          <Component is={currentView.component} props={{ ...currentView.componentProps, currentView, visibileNav }} />
+          <Component is={currentView.component} props={{ ...currentView.componentProps, currentView, visibleNav }} />
         {:else}
           <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
         {/if}

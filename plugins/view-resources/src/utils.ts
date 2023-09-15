@@ -55,7 +55,7 @@ import { get, writable } from 'svelte/store'
 import plugin from './plugin'
 import { noCategory } from './viewOptions'
 
-export { getFiltredKeys, isCollectionAttr } from '@hcengineering/presentation'
+export { getFilteredKeys, isCollectionAttr } from '@hcengineering/presentation'
 
 /**
  * Define some properties to be used to show component until data is properly loaded.
@@ -628,12 +628,12 @@ export async function groupByCategory (
   if (key === noCategory) return [undefined]
 
   const attrClass = getAttributePresenterClass(h, attr).attrClass
-  const mixin = h.classHierarchyMixin(attrClass, view.mixin.Groupping)
+  const mixin = h.classHierarchyMixin(attrClass, view.mixin.Grouping)
   let existingCategories: any[] = []
 
-  if (mixin?.grouppingManager !== undefined) {
-    const grouppingManager = await getResource(mixin.grouppingManager)
-    existingCategories = grouppingManager.groupByCategories(categories)
+  if (mixin?.groupingManager !== undefined) {
+    const groupingManager = await getResource(mixin.groupingManager)
+    existingCategories = groupingManager.groupByCategories(categories)
   } else {
     const valueSet = new Set<any>()
     for (const v of categories) {

@@ -144,7 +144,7 @@ export {
   getAdditionalHeader,
   getCategories,
   getCollectionCounter,
-  getFiltredKeys,
+  getFilteredKeys,
   getObjectPresenter,
   getObjectPreview,
   groupBy,

@@ -44,12 +44,12 @@
   )
 
   $: expert = items.filter((it) => (it.weight ?? 0) >= 6 && (it.weight ?? 0) <= 8)
-  $: meaningfull = items.filter((it) => (it.weight ?? 0) >= 3 && (it.weight ?? 0) <= 5)
+  $: meaningful = items.filter((it) => (it.weight ?? 0) >= 3 && (it.weight ?? 0) <= 5)
   $: initial = items.filter((it) => (it.weight ?? 1) >= 0 && (it.weight ?? 0) <= 2)
 
   $: categories = [
     { items: expert, label: tags.string.Expert },
-    { items: meaningfull, label: tags.string.Meaningfull },
+    { items: meaningful, label: tags.string.Meaningful },
     { items: initial, label: tags.string.Initial }
   ]
 </script>

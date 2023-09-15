@@ -667,7 +667,7 @@ async function updateCollaboratorsMixin (
           await isAllowed(
             control,
             collab as Ref<PersonAccount>,
-            notification.ids.CollaboratoAddNotification,
+            notification.ids.CollaboratorAddNotification,
             notification.providers.PlatformNotification
           )
         ) {

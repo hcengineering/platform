@@ -471,7 +471,7 @@ export function createModel (builder: Builder): void {
       },
       variant: 'embedded'
     },
-    recruit.viewlet.VacancyApplicationsEmbeddeed
+    recruit.viewlet.VacancyApplicationsEmbedded
   )
 
   builder.createDoc(

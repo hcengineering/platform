@@ -25,8 +25,8 @@
   export let greenColor: string = FernColor
   export let overdueColor = FlamingoColor
 
-  const lenghtC: number = Math.PI * 14 - 1
-  $: procC = lenghtC / (max - min)
+  const lengthC: number = Math.PI * 14 - 1
+  $: procC = lengthC / (max - min)
   $: dashOffset = (Math.min(value, max) - min) * procC
 
   $: color = value > max ? overdueColor : value < max ? color : greenColor
@@ -40,8 +40,8 @@
     class="progress-circle"
     style:stroke={'var(--theme-caption-color)'}
     style:opacity={'.15'}
-    style:transform={`rotate(${-78 + ((dashOffset + 1) * 360) / (lenghtC + 1)}deg)`}
-    style:stroke-dasharray={lenghtC}
+    style:transform={`rotate(${-78 + ((dashOffset + 1) * 360) / (lengthC + 1)}deg)`}
+    style:stroke-dasharray={lengthC}
     style:stroke-dashoffset={dashOffset === 0 ? 0 : dashOffset + 3}
   />
   {#if min !== max && min !== value}
@@ -53,8 +53,8 @@
       style:stroke={accented ? 'var(--primary-bg-color)' : color}
       style:opacity={dashOffset === 0 ? 0 : 1}
       style:transform={'rotate(-82deg)'}
-      style:stroke-dasharray={lenghtC}
-      style:stroke-dashoffset={dashOffset === 0 ? lenghtC : lenghtC - dashOffset + 1}
+      style:stroke-dasharray={lengthC}
+      style:stroke-dashoffset={dashOffset === 0 ? lengthC : lengthC - dashOffset + 1}
     />
   {/if}
 </svg>

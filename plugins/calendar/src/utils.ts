@@ -271,7 +271,7 @@ function getYearDay (date: Date): number {
   return Math.floor(diff / 86400000)
 }
 
-function getReccuringEventInstances (
+function getRecurringEventInstances (
   event: ReccuringEvent,
   instances: ReccuringInstance[],
   from: Timestamp,
@@ -326,7 +326,7 @@ export function getAllEvents (events: Event[], from: Timestamp, to: Timestamp): 
     }
   }
   for (const rec of recur) {
-    recurData.push(...getReccuringEventInstances(rec, instancesMap.get(rec.eventId) ?? [], from, to))
+    recurData.push(...getRecurringEventInstances(rec, instancesMap.get(rec.eventId) ?? [], from, to))
   }
   const res = [
     ...base,

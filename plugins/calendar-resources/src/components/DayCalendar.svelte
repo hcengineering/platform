@@ -505,7 +505,7 @@
 
 <Scroller
   bind:divScroll={scroller}
-  fade={{ multipler: { top: (showHeader ? 3.5 : 0) + styleAD / fontSize, bottom: 0 } }}
+  fade={{ multiplier: { top: (showHeader ? 3.5 : 0) + styleAD / fontSize, bottom: 0 } }}
 >
   <div
     bind:this={container}

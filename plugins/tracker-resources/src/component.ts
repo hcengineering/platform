@@ -32,7 +32,7 @@ import {
 } from '@hcengineering/core'
 import { LiveQuery } from '@hcengineering/query'
 import tracker, { Component, ComponentManager } from '@hcengineering/tracker'
-import { AggregationManager, GrouppingManager } from '@hcengineering/view'
+import { AggregationManager, GroupingManager } from '@hcengineering/view'
 import { get, writable } from 'svelte/store'
 
 export const componentStore = writable<ComponentManager>(new ComponentManager([]))
@@ -127,7 +127,7 @@ export class ComponentAggregationManager implements AggregationManager {
 /**
  * @public
  */
-export const grouppingComponentManager: GrouppingManager = {
+export const groupingComponentManager: GroupingManager = {
   groupByCategories: groupByComponentCategories,
   groupValues: groupComponentValues,
   groupValuesWithEmpty: groupComponentValuesWithEmpty,

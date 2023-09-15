@@ -40,7 +40,7 @@
   import People from './People.svelte'
   import { subscribe } from '../utils'
 
-  export let visibileNav: boolean
+  export let visibleNav: boolean
   let filter: 'all' | 'read' | 'unread' = 'all'
 
   const client = getClient()
@@ -135,7 +135,7 @@
 </script>
 
 <div class="flex-row-top h-full">
-  {#if visibileNav}
+  {#if visibleNav}
     <div class="antiPanel-component header border-right aside min-w-100 flex-no-shrink">
       <Tabs
         bind:selected={selectedTab}

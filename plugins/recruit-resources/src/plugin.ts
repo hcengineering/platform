@@ -25,7 +25,7 @@ import { FilterFunction, FilterMode, Viewlet } from '@hcengineering/view'
 export default mergeIds(recruitId, recruit, {
   viewlet: {
     VacancyApplicationsShort: '' as Ref<Viewlet>,
-    VacancyApplicationsEmbeddeed: '' as Ref<Viewlet>
+    VacancyApplicationsEmbedded: '' as Ref<Viewlet>
   },
   status: {
     ApplicationExists: '' as StatusCode,

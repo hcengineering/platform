@@ -52,7 +52,7 @@
   <Scroller
     bind:this={scroll}
     bind:divScroll
-    fade={{ multipler: { top: 2.75 * viewOptions.groupBy.length, bottom: 0 } }}
+    fade={{ multiplier: { top: 2.75 * viewOptions.groupBy.length, bottom: 0 } }}
     padding={'0 1rem'}
     noFade
     checkForHeaders

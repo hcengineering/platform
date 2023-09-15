@@ -82,10 +82,10 @@
   let hasLastCategories: boolean = false
 
   $: fz = $themeOptions.fontSize
-  $: shiftTop = fade.multipler?.top ? fade.multipler?.top * fz : 0
-  $: shiftBottom = fade.multipler?.bottom ? fade.multipler?.bottom * fz : 0
-  $: shiftLeft = fade.multipler?.left ? fade.multipler?.left * fz : 0
-  $: shiftRight = fade.multipler?.right ? fade.multipler?.right * fz : 0
+  $: shiftTop = fade.multiplier?.top ? fade.multiplier?.top * fz : 0
+  $: shiftBottom = fade.multiplier?.bottom ? fade.multiplier?.bottom * fz : 0
+  $: shiftLeft = fade.multiplier?.left ? fade.multiplier?.left * fz : 0
+  $: shiftRight = fade.multiplier?.right ? fade.multiplier?.right * fz : 0
   $: orientir = contentDirection === 'horizontal' ? 'horizontal' : 'vertical'
 
   const checkBar = (): void => {
@@ -348,7 +348,7 @@
   const checkIntersectionFade = () => {
     topCrop = 'none'
     topCropValue = 0
-    if (!fade.multipler?.top || !divScroll) return
+    if (!fade.multiplier?.top || !divScroll) return
     const offset = divScroll.getBoundingClientRect().top
     inter.forEach((el) => {
       const rect = el.getBoundingClientRect()
@@ -464,10 +464,10 @@
   class:thin={thinScrollBars}
   class:shrink
   style:user-select={isScrolling ? 'none' : 'inherit'}
-  style:--scroller-header-height={`${(fade.multipler?.top ?? 0) * fz + 2}px`}
-  style:--scroller-footer-height={`${(fade.multipler?.bottom ?? 0) * fz + (stickedScrollBars ? 0 : 2)}px`}
-  style:--scroller-left-offset={`${(fade.multipler?.left ?? 0) * fz + 2}px`}
-  style:--scroller-right-offset={`${(fade.multipler?.right ?? 0) * fz + (mask !== 'none' ? 12 : 2)}px`}
+  style:--scroller-header-height={`${(fade.multiplier?.top ?? 0) * fz + 2}px`}
+  style:--scroller-footer-height={`${(fade.multiplier?.bottom ?? 0) * fz + (stickedScrollBars ? 0 : 2)}px`}
+  style:--scroller-left-offset={`${(fade.multiplier?.left ?? 0) * fz + 2}px`}
+  style:--scroller-right-offset={`${(fade.multiplier?.right ?? 0) * fz + (mask !== 'none' ? 12 : 2)}px`}
 >
   <div bind:this={divHScroll} class="horizontalBox flex-col flex-shrink">
     <div

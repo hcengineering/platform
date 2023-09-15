@@ -17,7 +17,7 @@ export async function createCard (
   client: Client,
   space: Ref<Space>,
   status: Ref<State>,
-  attribues: Partial<AttachedData<Card>>
+  attributes: Partial<AttachedData<Card>>
 ): Promise<Ref<Card>> {
   const sequence = await client.findOne(task.class.Sequence, { attachedTo: board.class.Card })
   if (sequence === undefined) {
@@ -37,7 +37,7 @@ export async function createCard (
     rank: calcRank(lastOne, undefined),
     assignee: null,
     description: '',
-    ...attribues
+    ...attributes
   }
 
   return await client.addCollection(board.class.Card, space, space, board.class.Board, 'cards', value)

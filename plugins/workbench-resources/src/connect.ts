@@ -181,10 +181,10 @@ export async function connect (title: string): Promise<Client | undefined> {
     }
   } catch (err: any) {
     console.log(err)
-    const requirdVersion = getMetadata(presentation.metadata.RequiredVersion)
-    console.log('checking min model version', requirdVersion)
-    if (requirdVersion !== undefined) {
-      versionError = `'unknown' => ${requirdVersion}`
+    const requiredVersion = getMetadata(presentation.metadata.RequiredVersion)
+    console.log('checking min model version', requiredVersion)
+    if (requiredVersion !== undefined) {
+      versionError = `'unknown' => ${requiredVersion}`
       return undefined
     }
   }

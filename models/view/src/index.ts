@@ -41,10 +41,10 @@ import {
   FilterMode,
   FilteredView,
   GetAllValuesFunc,
-  Groupping,
-  GrouppingManagerResource,
+  Grouping,
+  GroupingManagerResource,
   IgnoreActions,
-  InlineAttributEditor,
+  InlineAttributeEditor,
   KeyBinding,
   KeyFilter,
   KeyFilterPreset,
@@ -168,8 +168,8 @@ export class TCollectionEditor extends TClass implements CollectionEditor {
   inlineEditor?: AnyComponent
 }
 
-@Mixin(view.mixin.InlineAttributEditor, core.class.Class)
-export class TInlineAttributEditor extends TClass implements InlineAttributEditor {
+@Mixin(view.mixin.InlineAttributeEditor, core.class.Class)
+export class TInlineAttributEditor extends TClass implements InlineAttributeEditor {
   editor!: AnyComponent
 }
 
@@ -266,9 +266,9 @@ export class TAllValuesFunc extends TClass implements AllValuesFunc {
   func!: GetAllValuesFunc
 }
 
-@Mixin(view.mixin.Groupping, core.class.Class)
-export class TGroupping extends TClass implements Groupping {
-  grouppingManager!: GrouppingManagerResource
+@Mixin(view.mixin.Grouping, core.class.Class)
+export class TGroupping extends TClass implements Grouping {
+  groupingManager!: GroupingManagerResource
 }
 
 @Mixin(view.mixin.Aggregation, core.class.Class)
@@ -455,7 +455,7 @@ export function createModel (builder: Builder): void {
     view.component.MarkupDiffPresenter
   )
 
-  builder.mixin(core.class.TypeMarkup, core.class.Class, view.mixin.InlineAttributEditor, {
+  builder.mixin(core.class.TypeMarkup, core.class.Class, view.mixin.InlineAttributeEditor, {
     editor: view.component.HTMLEditor
   })
 

@@ -18,7 +18,7 @@
   import { AttributesBar, KeyedAttribute, getAttribute, getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
   import { Button, Label, getCurrentResolvedLocation, navigate } from '@hcengineering/ui'
-  import { getFiltredKeys, isCollectionAttr } from '../utils'
+  import { getFilteredKeys, isCollectionAttr } from '../utils'
 
   export let object: Doc | Record<string, any>
   export let _class: Ref<Class<Doc>>
@@ -36,8 +36,8 @@
   let keys: KeyedAttribute[] = []
 
   function updateKeys (_class: Ref<Class<Doc>>, ignoreKeys: string[], to: Ref<Class<Doc>> | undefined): void {
-    const filtredKeys = getFiltredKeys(hierarchy, _class, ignoreKeys, to)
-    keys = filtredKeys.filter((key) => !isCollectionAttr(hierarchy, key) || allowedCollections.includes(key.key))
+    const filteredKeys = getFilteredKeys(hierarchy, _class, ignoreKeys, to)
+    keys = filteredKeys.filter((key) => !isCollectionAttr(hierarchy, key) || allowedCollections.includes(key.key))
   }
 
   $: updateKeys(_class, ignoreKeys, to)

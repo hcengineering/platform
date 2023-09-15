@@ -38,12 +38,12 @@
   async function getUsers (accounts: Ref<Account>[], search: string): Promise<Person[]> {
     const query: DocumentQuery<PersonAccount> =
       isSearch > 0 ? { name: { $like: '%' + search + '%' } } : { _id: { $in: accounts as Ref<PersonAccount>[] } }
-    const employess = await client.findAll(contact.class.PersonAccount, query)
-    members = new Set(employess.filter((p) => accounts.includes(p._id)).map((p) => p.person))
+    const employees = await client.findAll(contact.class.PersonAccount, query)
+    members = new Set(employees.filter((p) => accounts.includes(p._id)).map((p) => p.person))
     return await client.findAll(
       contact.mixin.Employee,
       {
-        _id: { $in: employess.map((e) => e.person as Ref<Employee>) }
+        _id: { $in: employees.map((e) => e.person as Ref<Employee>) }
       },
       { sort: { name: SortingOrder.Descending } }
     )

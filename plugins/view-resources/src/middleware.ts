@@ -21,7 +21,7 @@ import { getResource } from '@hcengineering/platform'
 /**
  * @public
  */
-export interface DocSubScriber<T extends Doc = Doc> {
+export interface DocSubscriber<T extends Doc = Doc> {
   attributes: Array<Ref<AnyAttribute>>
 
   _class: Ref<Class<T>>
@@ -38,7 +38,7 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
   mgrs: Map<Ref<Class<Doc>>, AggregationManager> = new Map<Ref<Class<Doc>>, AggregationManager>()
   docs: Doc[] | undefined
 
-  subscribers: Map<string, DocSubScriber> = new Map<string, DocSubScriber>()
+  subscribers: Map<string, DocSubscriber> = new Map<string, DocSubscriber>()
   private constructor (client: Client, next?: PresentationMiddleware) {
     super(client, next)
   }
@@ -86,7 +86,7 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
     const h = this.client.getHierarchy()
 
     const id = generateId()
-    const s: DocSubScriber<T> = {
+    const s: DocSubscriber<T> = {
       _class,
       query,
       refresh,

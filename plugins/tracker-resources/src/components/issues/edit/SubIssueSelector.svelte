@@ -36,7 +36,7 @@
 
   export let issue: WithLookup<Issue>
 
-  const subIssuesQeury = createQuery()
+  const subIssuesQuery = createQuery()
 
   let subIssues: WithLookup<Issue>[] | undefined
   let subIssuesElement: Element
@@ -102,7 +102,7 @@
   $: areSubIssuesLoading = !subIssues
   $: parentIssue = issue.$lookup?.attachedTo ? (issue.$lookup?.attachedTo as Issue) : null
   $: if (parentIssue && parentIssue.subIssues > 0) {
-    subIssuesQeury.query(
+    subIssuesQuery.query(
       tracker.class.Issue,
       { space: issue.space, attachedTo: parentIssue._id },
       (res) => (subIssues = res),
@@ -115,7 +115,7 @@
       }
     )
   } else {
-    subIssuesQeury.unsubscribe()
+    subIssuesQuery.unsubscribe()
   }
 
   $: parentStatus = parentIssue ? $statusStore.get(parentIssue.status) : undefined

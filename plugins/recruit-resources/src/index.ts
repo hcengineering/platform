@@ -201,7 +201,7 @@ export async function queryVacancy (
   }))
 }
 
-async function getActiveTalants (filter: Filter, onUpdate: () => void): Promise<Array<Ref<Doc>>> {
+async function getActiveTalents (filter: Filter, onUpdate: () => void): Promise<Array<Ref<Doc>>> {
   const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
     let refresh: boolean = false
     const lq = FilterQuery.getLiveQuery(filter.index)
@@ -265,11 +265,11 @@ async function getNoApplicantCandidates (filter: Filter, onUpdate: () => void): 
 }
 
 async function hasActiveApplicant (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
-  const result = await getActiveTalants(filter, onUpdate)
+  const result = await getActiveTalents(filter, onUpdate)
   return { $in: result }
 }
 async function hasNoActiveApplicant (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
-  const result = await getActiveTalants(filter, onUpdate)
+  const result = await getActiveTalents(filter, onUpdate)
   return { $nin: result }
 }
 async function noneApplicant (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {

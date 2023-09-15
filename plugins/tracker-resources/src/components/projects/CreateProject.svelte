@@ -248,7 +248,7 @@
     </div>
 
     <div class="antiGrid-row">
-      <div class="antiGrid-row__header withDesciption">
+      <div class="antiGrid-row__header withDescription">
         <Label label={tracker.string.Identifier} />
         <span><Label label={tracker.string.UsedInIssueIDs} /></span>
       </div>
@@ -308,7 +308,7 @@
     </div>
 
     <div class="antiGrid-row">
-      <div class="antiGrid-row__header withDesciption">
+      <div class="antiGrid-row__header withDescription">
         <Label label={presentation.string.MakePrivate} />
         <span><Label label={presentation.string.MakePrivateDescription} /></span>
       </div>

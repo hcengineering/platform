@@ -208,7 +208,7 @@ export interface NotificationPreview extends Class<Doc> {
 /**
  * @public
  */
-export type NotificationClientFactoy = () => NotificationClient
+export type NotificationClientFactory = () => NotificationClient
 
 /**
  * @public
@@ -233,7 +233,7 @@ const notification = plugin(notificationId, {
   ids: {
     NotificationSettings: '' as Ref<Doc>,
     NotificationGroup: '' as Ref<NotificationGroup>,
-    CollaboratoAddNotification: '' as Ref<NotificationType>
+    CollaboratorAddNotification: '' as Ref<NotificationType>
   },
   providers: {
     PlatformNotification: '' as Ref<NotificationProvider>,
@@ -264,7 +264,7 @@ const notification = plugin(notificationId, {
     Inbox: '' as IntlString
   },
   function: {
-    GetNotificationClient: '' as Resource<NotificationClientFactoy>
+    GetNotificationClient: '' as Resource<NotificationClientFactory>
   }
 })
 

@@ -25,7 +25,7 @@
   export let query: DocumentQuery<Task>
 
   const client = getClient()
-  const hieararchy = client.getHierarchy()
+  const hierarchy = client.getHierarchy()
 
   let states: State[] = []
   const statesQuery = createQuery()
@@ -52,7 +52,7 @@
 
   function updateDoneStates (space: Ref<SpaceWithStates>): void {
     doneStatesQuery.query(task.class.DoneState, { space }, (result) => {
-      wonStates = new Set(result.filter((p) => hieararchy.isDerived(p._class, task.class.WonState)).map((p) => p._id))
+      wonStates = new Set(result.filter((p) => hierarchy.isDerived(p._class, task.class.WonState)).map((p) => p._id))
     })
   }
 

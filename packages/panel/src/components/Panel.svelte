@@ -195,7 +195,7 @@
         {#key object._id}
           <Component
             is={activity.component.Activity}
-            props={{ object, showCommenInput: !withoutInput, shouldScroll: embedded, focusIndex: 1000 }}
+            props={{ object, showCommentInput: !withoutInput, shouldScroll: embedded, focusIndex: 1000 }}
           />
         {/key}
       {/if}
@@ -215,7 +215,7 @@
           {#key object._id}
             <Component
               is={activity.component.Activity}
-              props={{ object, showCommenInput: !withoutInput, shouldScroll: embedded, focusIndex: 1000 }}
+              props={{ object, showCommentInput: !withoutInput, shouldScroll: embedded, focusIndex: 1000 }}
             />
           {/key}
         {/if}

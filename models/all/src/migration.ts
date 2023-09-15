@@ -60,5 +60,5 @@ export const migrateOperations: [string, MigrateOperation][] = [
   ['board', boardOperation],
   ['hr', hrOperation],
   ['bitrix', bitrixOperation],
-  ['inventiry', inventoryOperation]
+  ['inventory', inventoryOperation]
 ]

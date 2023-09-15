@@ -433,7 +433,7 @@ function filterKeys (hierarchy: Hierarchy, keys: KeyedAttribute[], ignoreKeys: s
 /**
  * @public
  */
-export function getFiltredKeys (
+export function getFilteredKeys (
   hierarchy: Hierarchy,
   objectClass: Ref<Class<Doc>>,
   ignoreKeys: string[],

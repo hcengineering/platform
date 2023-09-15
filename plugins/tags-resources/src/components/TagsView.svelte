@@ -27,7 +27,7 @@
   export let title: IntlString = tags.string.Tags
   export let icon: Asset | AnySvelteComponent = tags.icon.Tags
   export let item: IntlString = tags.string.Tag
-  export let сreateItemLabel: IntlString = tags.string.TagCreateLabel
+  export let createItemLabel: IntlString = tags.string.TagCreateLabel
   export let targetClass: Ref<Class<Doc>>
   export let onTag: ((tag: TagElement) => void) | undefined = undefined
 
@@ -95,7 +95,7 @@
   </div>
 
   <div class="clear-mins mb-1">
-    <Button icon={IconAdd} label={сreateItemLabel} kind={'accented'} on:click={showCreateDialog} />
+    <Button icon={IconAdd} label={createItemLabel} kind={'accented'} on:click={showCreateDialog} />
   </div>
 </div>
 <div class="ac-header full divide search-start">

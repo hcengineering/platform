@@ -32,7 +32,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
-  class="flex-row-center clear-mins message-conatiner step-tb5"
+  class="flex-row-center clear-mins message-container step-tb5"
   on:click|preventDefault={() => {
     dispatch('select', message)
   }}
@@ -74,7 +74,7 @@
 </div>
 
 <style lang="scss">
-  .message-conatiner {
+  .message-container {
     flex-shrink: 0;
     cursor: pointer;
   }

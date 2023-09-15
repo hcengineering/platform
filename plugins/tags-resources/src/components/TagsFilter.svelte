@@ -142,7 +142,7 @@
   getValues(search)
 
   $: tagLevelIcon = schema === '3' ? undefined : tagLevel[((level % 3) + 1) as 1 | 2 | 3]
-  $: tagLevelLabel = [tags.string.Initial, tags.string.Meaningfull, tags.string.Expert][Math.floor(level / 3)]
+  $: tagLevelLabel = [tags.string.Initial, tags.string.Meaningful, tags.string.Expert][Math.floor(level / 3)]
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>

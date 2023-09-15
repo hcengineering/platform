@@ -21,7 +21,7 @@
   import tags from '@hcengineering/tags'
   import type { Issue } from '@hcengineering/tracker'
   import { Component, Label } from '@hcengineering/ui'
-  import { ObjectBox, getFiltredKeys, isCollectionAttr } from '@hcengineering/view-resources'
+  import { ObjectBox, getFilteredKeys, isCollectionAttr } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
   import ComponentEditor from '../../components/ComponentEditor.svelte'
   import MilestoneEditor from '../../milestones/MilestoneEditor.svelte'
@@ -48,8 +48,8 @@
   let keys: KeyedAttribute[] = []
 
   function updateKeys (ignoreKeys: string[]): void {
-    const filtredKeys = getFiltredKeys(hierarchy, issue._class, ignoreKeys)
-    keys = filtredKeys.filter((key) => !isCollectionAttr(hierarchy, key))
+    const filteredKeys = getFilteredKeys(hierarchy, issue._class, ignoreKeys)
+    keys = filteredKeys.filter((key) => !isCollectionAttr(hierarchy, key))
   }
 
   let mixins: Mixin<Doc>[] = []
@@ -69,13 +69,13 @@
 
   function getMixinKeys (mixin: Ref<Mixin<Doc>>): KeyedAttribute[] {
     const mixinClass = hierarchy.getClass(mixin)
-    const filtredKeys = getFiltredKeys(
+    const filteredKeys = getFilteredKeys(
       hierarchy,
       mixin,
       [],
       hierarchy.isMixin(mixinClass.extends as Ref<Class<Doc>>) ? mixinClass.extends : issue._class
     )
-    const res = filtredKeys.filter((key) => !isCollectionAttr(hierarchy, key))
+    const res = filteredKeys.filter((key) => !isCollectionAttr(hierarchy, key))
     return res
   }
 

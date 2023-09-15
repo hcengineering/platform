@@ -650,10 +650,10 @@ export function findTargetStatus (
   if (targetProject.states.includes(status)) return status
 
   if (useCategory) {
-    const currentCategroy = statusStore.get(status)?.category
+    const currentCategory = statusStore.get(status)?.category
     for (const status of targetProject.states) {
       const st = statusStore.get(status)
-      if (st?.category === currentCategroy) return st?._id
+      if (st?.category === currentCategory) return st?._id
     }
   }
 }

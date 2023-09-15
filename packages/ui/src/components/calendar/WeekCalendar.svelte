@@ -35,7 +35,7 @@
     : new Date(new Date(currentDate).setHours(0, 0, 0, 0))
 </script>
 
-<Scroller fade={{ multipler: { top: 3, bottom: 0 } }}>
+<Scroller fade={{ multiplier: { top: 3, bottom: 0 } }}>
   <table>
     <thead class="scroller-thead">
       <tr class="scroller-thead__tr">

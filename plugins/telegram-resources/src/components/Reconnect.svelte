@@ -127,12 +127,12 @@
   const client = getClient()
 
   async function getCurrent () {
-    const cuurent = await client.findOne(setting.class.Integration, {
+    const current = await client.findOne(setting.class.Integration, {
       type: telegram.integrationType.Telegram,
       createdBy: getCurrentAccount()._id
     })
-    if (cuurent !== undefined) {
-      phone = cuurent.value
+    if (current !== undefined) {
+      phone = current.value
     }
   }
 </script>

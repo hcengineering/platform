@@ -344,7 +344,7 @@ export function createModel (builder: Builder): void {
         [notification.providers.PlatformNotification]: true
       }
     },
-    notification.ids.CollaboratoAddNotification
+    notification.ids.CollaboratorAddNotification
   )
 
   builder.createDoc(

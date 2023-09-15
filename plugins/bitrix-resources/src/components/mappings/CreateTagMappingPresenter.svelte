@@ -10,7 +10,8 @@
   $: op = value.operation as CreateTagOperation
 
   const tagLevel = [tags.icon.Level1, tags.icon.Level2, tags.icon.Level3]
-  const labels = [getEmbeddedLabel('Initial'), getEmbeddedLabel('Meaningfull'), getEmbeddedLabel('Expert')]
+  // TODO: fix 'Meaningful' to 'Meaningful'?
+  const labels = [getEmbeddedLabel('Initial'), getEmbeddedLabel('Meaningful'), getEmbeddedLabel('Expert')]
 </script>
 
 <div class="flex flex-wrap">

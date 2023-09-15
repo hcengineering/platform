@@ -2,7 +2,7 @@
   import { Class, Data, Doc, Ref } from '@hcengineering/core'
   import { InlineAttributeBarEditor } from '..'
   import { KeyedAttribute } from '../attributes'
-  import { getClient, getFiltredKeys, isCollectionAttr } from '../utils'
+  import { getClient, getFilteredKeys, isCollectionAttr } from '../utils'
 
   export let object: Doc | Data<Doc>
   export let _class: Ref<Class<Doc>>
@@ -16,8 +16,8 @@
   const client = getClient()
 
   function updateKeys (_class: Ref<Class<Doc>>, ignoreKeys: string[], to: Ref<Class<Doc>> | undefined): void {
-    const filtredKeys = getFiltredKeys(client.getHierarchy(), _class, ignoreKeys, to)
-    keys = filtredKeys.filter(
+    const filteredKeys = getFilteredKeys(client.getHierarchy(), _class, ignoreKeys, to)
+    keys = filteredKeys.filter(
       (key) => (extraKeys.includes(key.key) || !isCollectionAttr(client.getHierarchy(), key)) && !key.attr.readonly
     )
   }

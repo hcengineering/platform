@@ -32,7 +32,7 @@
   import { onDestroy } from 'svelte'
   import CategoryElement from './CategoryElement.svelte'
 
-  export let visibileNav = true
+  export let visibleNav = true
   let category: SettingsCategory | undefined
   let categoryId: string = ''
 
@@ -88,7 +88,7 @@
 </script>
 
 <div class="flex h-full">
-  {#if visibileNav}
+  {#if visibleNav}
     <div class="antiPanel-navigator filledNav indent">
       <div class="antiNav-header">
         <span class="fs-title overflow-label">
@@ -130,7 +130,7 @@
       <Component
         is={category.component}
         props={{
-          visibileNav
+          visibleNav
         }}
       />
     {/if}

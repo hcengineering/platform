@@ -45,7 +45,7 @@
     </span>
     <div class="flex-row-center gap-2 reverse">
       <ViewletsSettingButton
-        viewletQuery={{ _id: recruit.viewlet.VacancyApplicationsEmbeddeed }}
+        viewletQuery={{ _id: recruit.viewlet.VacancyApplicationsEmbedded }}
         kind={'ghost'}
         bind:viewlet
         bind:loading

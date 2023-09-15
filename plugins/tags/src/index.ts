@@ -40,7 +40,7 @@ export type InitialKnowledge = 0 | 1 | 2
 /**
  * @public
  */
-export type MeaningfullKnowledge = 3 | 4 | 5
+export type MeaningfulKnowledge = 3 | 4 | 5
 
 /**
  * @public
@@ -55,8 +55,8 @@ export interface TagReference extends AttachedDoc {
   title: string // Copy of title for full text search, updated with trigger.
   color: number // Copy of color from tagElement. Updated with trigger.
 
-  // If set in [8-10] it is speciality, [5-7] - meaningfull, [1-4] - initial
-  weight?: InitialKnowledge | MeaningfullKnowledge | ExpertKnowledge
+  // If set in [8-10] it is speciality, [5-7] - meaningful, [1-4] - initial
+  weight?: InitialKnowledge | MeaningfulKnowledge | ExpertKnowledge
 }
 
 /**

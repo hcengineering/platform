@@ -23,7 +23,7 @@
 
   const dispatch = createEventDispatcher()
 
-  const labels = [tags.string.Initial, tags.string.Meaningfull, tags.string.Expert]
+  const labels = [tags.string.Initial, tags.string.Meaningful, tags.string.Expert]
 </script>
 
 <div class="selectPopup max-width-40" use:resizeObserver={() => dispatch('changeContent')}>

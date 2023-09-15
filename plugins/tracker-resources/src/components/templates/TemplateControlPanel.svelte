@@ -18,7 +18,7 @@
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import type { IssueTemplate } from '@hcengineering/tracker'
   import { Component, Label } from '@hcengineering/ui'
-  import { getFiltredKeys, isCollectionAttr } from '@hcengineering/view-resources'
+  import { getFilteredKeys, isCollectionAttr } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import ComponentEditor from '../components/ComponentEditor.svelte'
   import AssigneeEditor from '../issues/AssigneeEditor.svelte'
@@ -33,8 +33,8 @@
   let keys: KeyedAttribute[] = []
 
   function updateKeys (ignoreKeys: string[]): void {
-    const filtredKeys = getFiltredKeys(hierarchy, issue._class, ignoreKeys)
-    keys = filtredKeys.filter((key) => !isCollectionAttr(hierarchy, key))
+    const filteredKeys = getFilteredKeys(hierarchy, issue._class, ignoreKeys)
+    keys = filteredKeys.filter((key) => !isCollectionAttr(hierarchy, key))
   }
 
   $: updateKeys(['title', 'description', 'priority', 'number', 'assignee', 'component', 'milestone'])

@@ -27,6 +27,6 @@
     }}
   />
   {#if object}
-    <Component is={activity.component.Activity} props={{ object, showCommenInput: false, transparent: true }} />
+    <Component is={activity.component.Activity} props={{ object, showCommentInput: false, transparent: true }} />
   {/if}
 </div>

@@ -12,6 +12,6 @@
     icon: tags.icon.Tags,
     item: board.string.Labels,
     key: 'labels',
-    сreateItemLabel: board.string.Labels
+    createItemLabel: board.string.Labels
   }}
 />

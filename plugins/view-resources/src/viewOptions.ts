@@ -4,7 +4,7 @@ import { LiveQuery, createQuery, getAttributePresenterClass, getClient } from '@
 import { locationToUrl, getCurrentResolvedLocation } from '@hcengineering/ui'
 import {
   DropdownViewOption,
-  Groupping,
+  Grouping,
   ToggleViewOption,
   ViewOptionModel,
   ViewOptions,
@@ -18,7 +18,7 @@ import { groupByCategory } from './utils'
 
 export const noCategory = '#no_category'
 
-export const defaulOptions: ViewOptions = {
+export const defaultOptions: ViewOptions = {
   groupBy: [noCategory],
   orderBy: ['modifiedBy', SortingOrder.Descending]
 }
@@ -78,7 +78,7 @@ function getDefaults (viewOptions: ViewOptionsModel): ViewOptions {
 export function getViewOptions (
   viewlet: Viewlet | undefined,
   viewOptionStore: Map<string, ViewOptions>,
-  defaults = defaulOptions
+  defaults = defaultOptions
 ): ViewOptions {
   if (viewlet === undefined) {
     return { ...defaults }
@@ -88,7 +88,7 @@ export function getViewOptions (
   return viewlet.viewOptions != null ? getDefaults(viewlet.viewOptions) : defaults
 }
 
-export function migrateViewOpttions (): void {
+export function migrateViewOptions (): void {
   for (let index = 0; index < localStorage.length; index++) {
     const key = localStorage.key(index)
     if (key === null) continue
@@ -128,18 +128,18 @@ export async function showEmptyGroups (
   const { attrClass } = getAttributePresenterClass(hierarchy, attr)
   const attributeClass = hierarchy.getClass(attrClass)
 
-  let groupMixin: Groupping | undefined
-  if (hierarchy.hasMixin(attributeClass, view.mixin.Groupping)) {
-    groupMixin = hierarchy.as(attributeClass, view.mixin.Groupping)
+  let groupMixin: Grouping | undefined
+  if (hierarchy.hasMixin(attributeClass, view.mixin.Grouping)) {
+    groupMixin = hierarchy.as(attributeClass, view.mixin.Grouping)
   } else {
-    const _attributeClass = hierarchy.classHierarchyMixin(attrClass, view.mixin.Groupping)
+    const _attributeClass = hierarchy.classHierarchyMixin(attrClass, view.mixin.Grouping)
     if (_attributeClass !== undefined) {
-      groupMixin = hierarchy.as(_attributeClass, view.mixin.Groupping)
+      groupMixin = hierarchy.as(_attributeClass, view.mixin.Grouping)
     }
   }
-  if (groupMixin?.grouppingManager !== undefined) {
-    const grouppingManager = await getResource(groupMixin.grouppingManager)
-    const docs = grouppingManager.groupValuesWithEmpty(hierarchy, _class, key, query)
+  if (groupMixin?.groupingManager !== undefined) {
+    const groupingManager = await getResource(groupMixin.groupingManager)
+    const docs = groupingManager.groupValuesWithEmpty(hierarchy, _class, key, query)
     return await groupByCategory(client, _class, space, key, docs, viewletDescriptorId)
   }
 

@@ -28,7 +28,7 @@
     resizeObserver,
     themeStore
   } from '@hcengineering/ui'
-  import { Filter, GrouppingManager } from '@hcengineering/view'
+  import { Filter, GroupingManager } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { FILTER_DEBOUNCE_MS, sortFilterValues } from '../../filter'
   import view from '../../plugin'
@@ -50,14 +50,14 @@
 
   let values: (Doc | undefined | null)[] = []
   let objectsPromise: Promise<FindResult<Doc>> | undefined
-  let grouppingManager: GrouppingManager | undefined
+  let groupingManager: GroupingManager | undefined
 
   const targets = new Set<any>()
   $: targetClass = (filter.key.attribute.type as RefTo<Doc>).to
   $: clazz = hierarchy.getClass(targetClass)
-  $: mixin = hierarchy.classHierarchyMixin(targetClass, view.mixin.Groupping)
-  $: if (mixin?.grouppingManager !== undefined) {
-    getResource(mixin.grouppingManager).then((mgr) => (grouppingManager = mgr))
+  $: mixin = hierarchy.classHierarchyMixin(targetClass, view.mixin.Grouping)
+  $: if (mixin?.groupingManager !== undefined) {
+    getResource(mixin.groupingManager).then((mgr) => (groupingManager = mgr))
   }
 
   let filterUpdateTimeout: number | undefined
@@ -99,8 +99,8 @@
     const options = clazz.sortingKey !== undefined ? { sort: { [clazz.sortingKey]: SortingOrder.Ascending } } : {}
     objectsPromise = client.findAll(targetClass, resultQuery, options)
     values = await objectsPromise
-    if (grouppingManager !== undefined) {
-      values = grouppingManager.groupValues(values as Doc[], targets)
+    if (groupingManager !== undefined) {
+      values = groupingManager.groupValues(values as Doc[], targets)
     }
     if (targets.has(undefined)) {
       values.unshift(undefined)
@@ -126,8 +126,8 @@
   }
 
   function isSelected (value: Doc | undefined | null, values: any[]): boolean {
-    if (value != null && grouppingManager !== undefined) {
-      return grouppingManager.hasValue(value, values)
+    if (value != null && groupingManager !== undefined) {
+      return groupingManager.hasValue(value, values)
     }
     return values.includes(value?._id ?? value)
   }

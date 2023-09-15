@@ -34,7 +34,7 @@
   import view from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { ContextMenu, ParentsNavigator } from '..'
-  import { categorizeFields, getCollectionCounter, getFiltredKeys } from '../utils'
+  import { categorizeFields, getCollectionCounter, getFilteredKeys } from '../utils'
   import DocAttributeBar from './DocAttributeBar.svelte'
   import UpDownNavigator from './UpDownNavigator.svelte'
 
@@ -120,15 +120,15 @@
   let ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
 
   async function updateKeys (): Promise<void> {
-    const keysMap = new Map(getFiltredKeys(hierarchy, realObjectClass, ignoreKeys).map((p) => [p.attr._id, p]))
+    const keysMap = new Map(getFilteredKeys(hierarchy, realObjectClass, ignoreKeys).map((p) => [p.attr._id, p]))
     for (const m of mixins) {
-      const mkeys = getFiltredKeys(hierarchy, m._id, ignoreKeys)
+      const mkeys = getFilteredKeys(hierarchy, m._id, ignoreKeys)
       for (const key of mkeys) {
         keysMap.set(key.attr._id, key)
       }
     }
-    const filtredKeys = Array.from(keysMap.values())
-    const { attributes, collections } = categorizeFields(hierarchy, filtredKeys, collectionArrays, allowedCollections)
+    const filteredKeys = Array.from(keysMap.values())
+    const { attributes, collections } = categorizeFields(hierarchy, filteredKeys, collectionArrays, allowedCollections)
 
     keys = attributes.map((it) => it.key)
 
@@ -186,7 +186,7 @@
     const mix = {
       array: view.mixin.ArrayEditor,
       collection: view.mixin.CollectionEditor,
-      inplace: view.mixin.InlineAttributEditor,
+      inplace: view.mixin.InlineAttributeEditor,
       attribute: view.mixin.AttributeEditor,
       object: undefined
     }

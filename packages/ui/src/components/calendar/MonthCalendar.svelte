@@ -38,7 +38,7 @@
   const todayDate = new Date()
 </script>
 
-<Scroller fade={{ multipler: { top: 2.25, bottom: 0 } }}>
+<Scroller fade={{ multiplier: { top: 2.25, bottom: 0 } }}>
   <div class="days-of-week-header scroller-header">
     {#each [...Array(7).keys()] as dayOfWeek}
       <div class="day-name">
