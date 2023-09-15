@@ -521,7 +521,9 @@
       dragOn.day === dragOnOld.day &&
       dragOn.hourOfDay === dragOnOld.hourOfDay &&
       dragOn.minutes === dragOnOld.minutes
-    ) { return }
+    ) {
+      return
+    }
     dragOnOld = dragOn
     dispatch('dragenter', {
       date: new Date(day.setHours(hourOfDay + startHour, dragOn.minutes, 0, 0))
