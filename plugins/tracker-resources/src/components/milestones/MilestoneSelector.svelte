@@ -81,7 +81,7 @@
       {
         id: null,
         icon: tracker.icon.Milestone,
-        label: tracker.string.Milestone,
+        label: tracker.string.NoMilestone,
         isSelected: sp === undefined
       },
       ...rawMilestones.map((p) => ({
