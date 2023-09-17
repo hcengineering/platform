@@ -141,6 +141,11 @@
     startCol: number
     endCol: number
   }
+  interface CalendarCell {
+    day: Date
+    hourOfDay: number
+    minutes: number
+  }
 
   let timer: any
   let container: HTMLElement
@@ -501,6 +506,29 @@
       ? rem((heightAD + 0.125) * (adMaxRow <= minAD ? adMaxRow : minAD) + 0.25)
       : rem((heightAD + 0.125) * (adMaxRow <= maxAD ? adMaxRow : maxAD) + 0.25)
   $: showArrowAD = (!minimizedAD && adMaxRow > maxAD) || (minimizedAD && adMaxRow > minAD)
+
+  let dragOnOld: CalendarCell | null = null
+
+  const getMinutes = (e: MouseEvent): number => (e.offsetY >= cellHeight / 2 ? 30 : 0)
+  const dragOver = (e: MouseEvent, day: Date, hourOfDay: number) => {
+    const dragOn: CalendarCell = {
+      day,
+      hourOfDay,
+      minutes: getMinutes(e)
+    }
+    if (
+      dragOnOld !== null &&
+      dragOn.day === dragOnOld.day &&
+      dragOn.hourOfDay === dragOnOld.hourOfDay &&
+      dragOn.minutes === dragOnOld.minutes
+    ) {
+      return
+    }
+    dragOnOld = dragOn
+    dispatch('dragenter', {
+      date: new Date(day.setHours(hourOfDay + startHour, dragOn.minutes, 0, 0))
+    })
+  }
 </script>
 
 <Scroller
@@ -663,16 +691,12 @@
           style:width={`${colWidth}px`}
           style:grid-column={`col-start ${dayOfWeek + 1} / ${dayOfWeek + 2}`}
           style:grid-row={`row-start ${hourOfDay * 2 + 1} / row-start ${hourOfDay * 2 + 3}`}
-          on:dragenter={(e) => {
-            dispatch('dragenter', {
-              date: new Date(day.setHours(hourOfDay + startHour, 0, 0, 0))
-            })
-          }}
+          on:dragover={(e) => dragOver(e, day, hourOfDay)}
           on:drop|preventDefault={(e) => {
             dispatch('drop', {
               day,
               hour: hourOfDay + startHour,
-              date: new Date(day.setHours(hourOfDay + startHour, 0, 0, 0))
+              date: new Date(day.setHours(hourOfDay + startHour, getMinutes(e), 0, 0))
             })
           }}
           on:click|stopPropagation={() => {
