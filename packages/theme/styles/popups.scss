@@ -49,6 +49,7 @@
     max-width: 40rem !important;
   }
   .header {
+    flex-shrink: 0;
     padding: .5rem;
     
     &:not(.no-border) {
