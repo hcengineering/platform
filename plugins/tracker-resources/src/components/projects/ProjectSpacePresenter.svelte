@@ -65,6 +65,7 @@
 {#if specials}
   <TreeNode
     {collapsed}
+    _id={space?._id}
     icon={space?.icon === tracker.component.IconWithEmoji ? IconWithEmoji : space?.icon ?? model.icon}
     iconProps={space?.icon === tracker.component.IconWithEmoji
       ? { icon: space.color }
