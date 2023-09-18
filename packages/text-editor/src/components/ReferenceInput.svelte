@@ -48,6 +48,7 @@
   export let placeholder: IntlString | undefined = undefined
   export let extraActions: RefAction[] | undefined = undefined
   export let loading: boolean = false
+  export let basicInput: boolean = false
 
   const client = getClient()
 
@@ -110,6 +111,7 @@
     }
     actions = defActions.concat(...cont).sort((a, b) => a.order - b.order)
   })
+  $: actionsToShow = basicInput ? [defActions[0]] : actions
 
   export function submit (): void {
     textEditor.submit()
@@ -210,7 +212,7 @@
   </div>
   <div class="flex-between clear-mins" style:margin={'.75rem .75rem 0'}>
     <div class="buttons-group medium-gap">
-      {#each actions as a}
+      {#each actionsToShow as a}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="icon-button"
@@ -224,7 +226,7 @@
         {/if}
       {/each}
     </div>
-    {#if extraActions && extraActions.length > 0}
+    {#if extraActions && extraActions.length > 0 && !basicInput}
       <div class="buttons-group {shrinkButtons ? 'medium-gap' : 'large-gap'}">
         {#each extraActions as a}
           <!-- svelte-ignore a11y-click-events-have-key-events -->

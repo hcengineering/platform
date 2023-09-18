@@ -41,6 +41,7 @@
   }
   export let placeholder: IntlString | undefined = undefined
   export let extraActions: RefAction[] | undefined = undefined
+  export let basicInput: boolean = false
 
   let refInput: ReferenceInput
 
@@ -286,6 +287,7 @@
       {labelSend}
       {showSend}
       {loading}
+      {basicInput}
       on:focus
       on:blur
       on:message={onMessage}

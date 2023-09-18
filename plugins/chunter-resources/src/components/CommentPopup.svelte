@@ -87,6 +87,7 @@
   {#if withInput}
     <div class="max-w-120 input">
       <CommentInput
+        basicInput
         {object}
         on:focus={(evt) => {
           commentMode = true

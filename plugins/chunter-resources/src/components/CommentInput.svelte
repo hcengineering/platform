@@ -23,6 +23,7 @@
   export let object: Doc
   export let shouldSaveDraft: boolean = true
   export let focusIndex: number = -1
+  export let basicInput: boolean = false
 
   const client = getClient()
   const _class = chunter.class.Comment
@@ -124,6 +125,7 @@
   space={object.space}
   bind:objectId={_id}
   {shouldSaveDraft}
+  {basicInput}
   on:message={onMessage}
   on:update={onUpdate}
   on:focus
