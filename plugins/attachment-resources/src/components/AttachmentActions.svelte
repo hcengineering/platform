@@ -25,6 +25,8 @@
   export let attachment: Attachment
   export let isSaved = false
 
+  let download: HTMLAnchorElement
+
   $: saveAttachmentAction = isSaved
     ? ({
         label: attachmentPlugin.string.RemoveAttachmentFromSaved,
@@ -67,9 +69,10 @@
     class="mr-1"
     href={getFileUrl(attachment.file, 'full', attachment.name)}
     download={attachment.name}
+    bind:this={download}
     on:click|stopPropagation
   >
-    <ActionIcon icon={FileDownload} size={'small'} action={() => {}} />
+    <ActionIcon icon={FileDownload} size={'small'} action={() => download.click()} />
   </a>
   <ActionIcon icon={IconMoreH} size={'small'} action={showMenu} />
 </div>
