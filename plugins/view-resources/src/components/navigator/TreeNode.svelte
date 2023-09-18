@@ -13,10 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Doc, Ref } from '@hcengineering/core'
   import type { Asset, IntlString } from '@hcengineering/platform'
   import type { Action, AnySvelteComponent } from '@hcengineering/ui'
   import TreeElement from './TreeElement.svelte'
 
+  export let _id: Ref<Doc> | undefined = undefined
   export let title: string | undefined = undefined
   export let label: IntlString | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
@@ -30,6 +32,7 @@
 </script>
 
 <TreeElement
+  {_id}
   {title}
   {label}
   {iconProps}
