@@ -142,6 +142,8 @@ import { get } from 'svelte/store'
 
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 export { default as IssueStatusIcon } from './components/issues/IssueStatusIcon.svelte'
+export { default as StatusPresenter } from './components/issues/StatusPresenter.svelte'
+export { default as AssigneeEditor } from './components/issues/AssigneeEditor.svelte'
 
 export { CreateProject, IssuePresenter, TitlePresenter }
 

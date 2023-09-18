@@ -34,6 +34,7 @@
   export let focusIndex: number | undefined = undefined
   export let short: boolean = false
   export let shouldShowName = true
+  export let shrink: number = 0
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -102,6 +103,7 @@
     {avatarSize}
     {width}
     {short}
+    {shrink}
     {shouldShowName}
     showNavigate={false}
     justify={'left'}
