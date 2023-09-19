@@ -1,5 +1,19 @@
+<!--
+// Copyright © 2023 Hardcore Engineering Inc.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
 <script lang="ts">
-  import { Metadata } from '@hcengineering/platform'
+  import { Asset, Metadata } from '@hcengineering/platform'
   import presentation, { Card } from '@hcengineering/presentation'
   import {
     Button,
@@ -12,15 +26,16 @@
     showPopup,
     themeStore
   } from '@hcengineering/ui'
-  import { ColorsPopup } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import tracker from '../../plugin'
+  import view from '../plugin'
+  import ColorsPopup from './ColorsPopup.svelte'
 
   export let icon: Metadata<string> | undefined = undefined
+  export let icons: Asset[]
+  export let emoji: Asset = view.ids.IconWithEmoji
   export let color: number = 0
 
   const dispatch = createEventDispatcher()
-  const icons = [tracker.icon.Home, tracker.icon.RedCircle]
 
   let _color = color
   let _icon = icon ?? icons[0]
@@ -43,7 +58,7 @@
 </script>
 
 <Card
-  label={tracker.string.ChooseIcon}
+  label={view.string.ChooseIcon}
   okLabel={presentation.string.Save}
   okAction={save}
   canSave={_icon !== undefined}
@@ -54,13 +69,11 @@
 >
   <div class="float-left-box">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <TabsControl
-      model={[{ label: tracker.string.ProjectIconCategory }, { label: tracker.string.ProjectEmojiCategory }]}
-    >
+    <TabsControl size={'small'} model={[{ label: view.string.IconCategory }, { label: view.string.EmojiCategory }]}>
       <svelte:fragment slot="content" let:selected>
         {#if selected === 0}
           <div class="flex-row-center">
-            <Label label={tracker.string.ProjectColor} />
+            <Label label={view.string.IconColor} />
             <div class="flex-no-shrink ml-2 color" on:click={pickColor}>
               <div class="dot" style="background-color: {getPlatformColor(_color ?? 0, $themeStore.dark)}" />
             </div>
@@ -82,7 +95,7 @@
           <EmojiPopup
             embedded
             on:close={(evt) => {
-              dispatch('close', { icon: tracker.component.IconWithEmoji, color: evt.detail.codePointAt(0) })
+              dispatch('close', { icon: emoji, color: evt.detail.codePointAt(0) })
             }}
           />
         {/if}

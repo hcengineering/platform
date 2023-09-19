@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -816,7 +816,11 @@ const view = plugin(viewId, {
     BooleanTruePresenter: '' as AnyComponent,
     ValueSelector: '' as AnyComponent,
     GrowPresenter: '' as AnyComponent,
-    DividerPresenter: '' as AnyComponent
+    DividerPresenter: '' as AnyComponent,
+    IconWithEmoji: '' as AnyComponent
+  },
+  ids: {
+    IconWithEmoji: '' as Asset
   },
   string: {
     CustomizeView: '' as IntlString,
