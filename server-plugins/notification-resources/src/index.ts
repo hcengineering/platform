@@ -513,18 +513,19 @@ async function getNotificationTxes (
   const acc = await getPersonAccountById(target, control)
   if (acc === undefined) return res
   const emp = await getEmployee(acc.person as Ref<Employee>, control)
-  if (emp?.active === false) return res
-  for (const type of allowed.emails) {
-    const emailTx = await createEmailNotificationTxes(
-      control,
-      originTx,
-      type._id,
-      object,
-      originTx.modifiedBy as Ref<PersonAccount>,
-      target as Ref<PersonAccount>
-    )
-    if (emailTx !== undefined) {
-      res.push(emailTx)
+  if (emp?.active === true) {
+    for (const type of allowed.emails) {
+      const emailTx = await createEmailNotificationTxes(
+        control,
+        originTx,
+        type._id,
+        object,
+        originTx.modifiedBy as Ref<PersonAccount>,
+        target as Ref<PersonAccount>
+      )
+      if (emailTx !== undefined) {
+        res.push(emailTx)
+      }
     }
   }
   return res
