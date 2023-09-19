@@ -91,11 +91,15 @@
 
   let exists: PersonAccount | undefined
   const query = createQuery()
-  $: query.query(contact.class.PersonAccount, {
-    email: email.trim()
-    }, (p) => {
+  $: query.query(
+    contact.class.PersonAccount,
+    {
+      email: email.trim()
+    },
+    (p) => {
       exists = p[0]
-    })
+    }
+  )
 
   const manager = createFocusManager()
 
