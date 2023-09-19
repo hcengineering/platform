@@ -43,10 +43,10 @@
     showPopup,
     themeStore
   } from '@hcengineering/ui'
+  import { IconPicker } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import ChangeIdentity from './ChangeIdentity.svelte'
-  import ProjectIconChooser from './ProjectIconChooser.svelte'
 
   export let project: Project | undefined = undefined
 
@@ -183,7 +183,8 @@
   }
 
   function chooseIcon (ev: MouseEvent) {
-    showPopup(ProjectIconChooser, { icon, color }, 'top', (result) => {
+    const icons = [tracker.icon.Home, tracker.icon.RedCircle]
+    showPopup(IconPicker, { icon, color, icons, emoji: tracker.component.IconWithEmoji }, 'top', (result) => {
       if (result !== undefined && result !== null) {
         icon = result.icon
         color = result.color

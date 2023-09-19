@@ -296,11 +296,6 @@ export default mergeIds(trackerId, tracker, {
     CreatedIssue: '' as IntlString,
     CreatedSubIssue: '' as IntlString,
 
-    ProjectColor: '' as IntlString,
-
-    ProjectIconCategory: '' as IntlString,
-    ProjectEmojiCategory: '' as IntlString,
-
     NoStatusFound: '' as IntlString,
     CreateMissingStatus: '' as IntlString,
     UnsetParent: '' as IntlString

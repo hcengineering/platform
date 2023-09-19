@@ -105,6 +105,11 @@
     "FilterArrayAny": "includes any",
     "Or": "Or",
     "HyperlinkPlaceholder": "https://jappleseed.com",
-    "CopyToClipboard": "Copy to clipboard"
+    "CopyToClipboard": "Copy to clipboard",
+
+    "ChooseIcon": "Choose icon",
+    "IconColor": "Choose icon color",
+    "IconCategory": "Icon",
+    "EmojiCategory": "Emoji"
   }
 }

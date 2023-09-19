@@ -269,10 +269,6 @@
     "ChangeStatus": "Change status",
     "ConfigLabel": "Tracker",
     "ConfigDescription": "Extension to manage work items and do all jobs done.",
-    "ProjectColor": "Choose project icon color",
-    "ProjectIconCategory": "Icon",
-    "ProjectEmojiCategory": "Emoji",
-
     "NoStatusFound": "No matching status found",
     "CreateMissingStatus": "Create missing status",
     "UnsetParent": "Parent issue will be unset",
