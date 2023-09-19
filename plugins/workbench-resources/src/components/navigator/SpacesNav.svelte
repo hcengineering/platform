@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, Ref, Space } from '@hcengineering/core'
+  import type { Doc, Ref, Space } from '@hcengineering/core'
   import core from '@hcengineering/core'
   import { DocUpdates } from '@hcengineering/notification'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
@@ -23,7 +24,6 @@
   import {
     Action,
     AnyComponent,
-    AnySvelteComponent,
     IconAdd,
     IconEdit,
     IconSearch,
@@ -31,12 +31,11 @@
     navigate,
     showPopup
   } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
   import { NavLink, TreeItem, TreeNode, getActions as getContributedActions } from '@hcengineering/view-resources'
   import { SpacesNavModel } from '@hcengineering/workbench'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
-  import { classIcon, getSpaceName } from '../../utils'
+  import { classIcon, getSpaceName, getSpacePresenter } from '../../utils'
   import TreeSeparator from './TreeSeparator.svelte'
 
   export let model: SpacesNavModel
@@ -100,7 +99,6 @@
 
   const notificationClient = NotificationClientImpl.getClient()
   const docUpdates = notificationClient.docUpdatesStore
-  const hierarchy = client.getHierarchy()
 
   function isChanged (space: Space, docUpdates: Map<Ref<Doc>, DocUpdates>): boolean {
     const update = docUpdates.get(space._id)
@@ -114,13 +112,6 @@
       result.push(addSpace(model.addSpaceLabel, model.createComponent))
     }
     return result
-  }
-
-  async function getPresenter (_class: Ref<Class<Doc>>): Promise<AnySvelteComponent | undefined> {
-    const value = hierarchy.classHierarchyMixin(_class, view.mixin.SpacePresenter)
-    if (value?.presenter !== undefined) {
-      return await getResource(value.presenter)
-    }
   }
 
   let visibleIf: ((space: Space) => Promise<boolean>) | undefined
@@ -157,7 +148,7 @@
   shortDropbox={model.specials !== undefined}
 >
   {#each filteredSpaces as space, i (space._id)}
-    {#await getPresenter(space._class) then presenter}
+    {#await getSpacePresenter(client, space._class) then presenter}
       {#if separate && model.specials && i !== 0}<TreeSeparator line />{/if}
       {#if model.specials && presenter}
         <svelte:component this={presenter} {space} {model} {currentSpace} {currentSpecial} {getActions} {deselect} />

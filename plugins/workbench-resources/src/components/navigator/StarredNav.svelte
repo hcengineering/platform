@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -23,11 +23,16 @@
   import { Action, IconEdit } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { NavLink, TreeItem, TreeNode, getActions as getContributedActions } from '@hcengineering/view-resources'
-  import { classIcon, getSpaceName } from '../../utils'
+  import { SpacesNavModel } from '@hcengineering/workbench'
+  import { classIcon, getSpaceName, getSpacePresenter } from '../../utils'
 
   export let label: IntlString
-  export let currentSpace: Ref<Space> | undefined
   export let spaces: Space[]
+  export let models: SpacesNavModel[]
+  export let currentSpace: Ref<Space> | undefined
+  export let currentSpecial: string | undefined
+  export let deselect: boolean = false
+
   const client = getClient()
 
   const unStarSpace: Action = {
@@ -85,18 +90,25 @@
 
 <TreeNode {label} parent actions={async () => [unStarAll]}>
   {#each spaces as space (space._id)}
-    {#await getSpaceName(client, space) then name}
-      <NavLink space={space._id}>
-        <TreeItem
-          indent={'ml-2'}
-          _id={space._id}
-          title={name}
-          icon={classIcon(client, space._class)}
-          selected={currentSpace === space._id}
-          actions={() => getActions(space)}
-          bold={isChanged(space, $docUpdates)}
-        />
-      </NavLink>
+    {@const model = models.find((p) => p.spaceClass === space._class)}
+    {#await getSpacePresenter(client, space._class) then presenter}
+      {#if presenter && model}
+        <svelte:component this={presenter} {space} {model} {currentSpace} {currentSpecial} {getActions} {deselect} />
+      {:else}
+        {#await getSpaceName(client, space) then name}
+          <NavLink space={space._id}>
+            <TreeItem
+              indent={'ml-2'}
+              _id={space._id}
+              title={name}
+              icon={classIcon(client, space._class)}
+              selected={currentSpace === space._id}
+              actions={() => getActions(space)}
+              bold={isChanged(space, $docUpdates)}
+            />
+          </NavLink>
+        {/await}
+      {/if}
     {/await}
   {/each}
 </TreeNode>
