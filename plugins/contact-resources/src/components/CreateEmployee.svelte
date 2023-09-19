@@ -60,11 +60,22 @@
       active: true
     })
 
-    await client.createDoc(contact.class.PersonAccount, core.space.Model, {
-      email: email.trim(),
-      person: id,
-      role: AccountRole.User
+    const mail = email.trim()
+
+    const exists = await client.findOne(contact.class.PersonAccount, {
+      email: mail
     })
+    if (exists === undefined) {
+      await client.createDoc(contact.class.PersonAccount, core.space.Model, {
+        email: mail,
+        person: id,
+        role: AccountRole.User
+      })
+    } else {
+      await client.update(exists, {
+        person: id
+      })
+    }
 
     const sendInvite = await getResource(login.function.SendInvite)
     await sendInvite(email.trim())

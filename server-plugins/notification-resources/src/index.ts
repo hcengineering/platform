@@ -54,6 +54,7 @@ import type { TriggerControl } from '@hcengineering/server-core'
 import serverNotification, {
   HTMLPresenter,
   TextPresenter,
+  getEmployee,
   getPersonAccount,
   getPersonAccountById
 } from '@hcengineering/server-notification'
@@ -366,7 +367,7 @@ function isTypeMatched (
 ): boolean {
   const h = control.hierarchy
   const targetClass = h.getBaseClass(type.objectClass)
-  if (!type.txClasses.includes(extractedTx._class)) return false
+  if (!type.txClasses.includes(tx._class)) return false
   if (!control.hierarchy.isDerived(h.getBaseClass(extractedTx.objectClass), targetClass)) return false
   if (tx._class === core.class.TxCollectionCUD && type.attachedToClass !== undefined) {
     if (!control.hierarchy.isDerived(h.getBaseClass(tx.objectClass), h.getBaseClass(type.attachedToClass))) return false
@@ -508,6 +509,11 @@ async function getNotificationTxes (
   if (allowed.allowed) {
     pushNotification(control, res, target, object, originTx, docUpdates)
   }
+  if (allowed.emails.length === 0) return res
+  const acc = await getPersonAccountById(target, control)
+  if (acc === undefined) return res
+  const emp = await getEmployee(acc.person as Ref<Employee>, control)
+  if (emp?.active === false) return res
   for (const type of allowed.emails) {
     const emailTx = await createEmailNotificationTxes(
       control,
@@ -847,7 +853,7 @@ export async function isUserEmployeeInFieldValue (
 ): Promise<boolean> {
   if (type.field === undefined) return false
   const value = (doc as any)[type.field]
-  if (value === undefined) return false
+  if (value == null) return false
   const employee = (await control.modelDb.findAll(contact.class.PersonAccount, { _id: user as Ref<PersonAccount> }))[0]
   if (employee === undefined) return false
   if (Array.isArray(value)) {

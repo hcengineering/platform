@@ -67,7 +67,7 @@
       "env": {
         "MONGO_URL": "mongodb://localhost:27017",
         "SERVER_SECRET": "secret",
-        "TRANSACTOR_URL": "ws:/localhost:3333",
+        "TRANSACTOR_URL": "ws://localhost:3333",
         "ACCOUNT_PORT": "3000",
         "FRONT_URL": "http://localhost:8080",
         "SES_URL": "http://localhost:8091",
@@ -97,7 +97,7 @@
       "request": "launch",
       "args": ["src/index.ts", "gen-recruit", "ws1", "20"],
       "env": {
-        "TRANSACTOR_URL": "ws:/localhost:3333",
+        "TRANSACTOR_URL": "ws://localhost:3333",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost"
@@ -117,7 +117,7 @@
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost",
         "MONGO_URL": "mongodb://localhost:27017",
-        "TRANSACTOR_URL": "ws:/localhost:3333",
+        "TRANSACTOR_URL": "ws://localhost:3333",
         "TELEGRAM_DATABASE": "telegram-service",
         "ELASTIC_URL": "http://localhost:9200"
       },
@@ -137,7 +137,7 @@
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost",
         "MONGO_URL": "mongodb://localhost:27017",
-        "TRANSACTOR_URL": "ws:/localhost:3333",
+        "TRANSACTOR_URL": "ws://localhost:3333",
         "TELEGRAM_DATABASE": "telegram-service",
         "ELASTIC_URL": "http://localhost:9200",
         "REKONI_URL": "http://localhost:4004"
@@ -157,7 +157,7 @@
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "SECRET": "secret",
-        "TRANSACTOR_URL": "ws:/localhost:3333",
+        "TRANSACTOR_URL": "ws://localhost:3333",
         "BUCKET_NAME":"test_backups",
         "INTERVAL":"30"
       },

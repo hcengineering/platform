@@ -13,7 +13,7 @@
     "docker:build": "docker build -t hardcoreeng/backup .",
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/backup staging",
     "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/backup",
-    "run-local": "cross-env ACCOUNTS_URL=http://localhost:3000/ SECRET=secret MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost TRANSACTOR_URL=ws:/localhost:3333 BUCKET_NAME=backups INTERVAL=30 ts-node src/index.ts",
+    "run-local": "cross-env ACCOUNTS_URL=http://localhost:3000/ SECRET=secret MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost TRANSACTOR_URL=ws://localhost:3333 BUCKET_NAME=backups INTERVAL=30 ts-node src/index.ts",
     "lint": "eslint src",
     "format": "prettier --write src && eslint --fix src"
   },

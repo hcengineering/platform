@@ -218,22 +218,6 @@ async function kickEmployee (doc: Person): Promise<void> {
 
   const employee = client.getHierarchy().as(doc, contact.mixin.Employee)
   const email = await client.findOne(contact.class.PersonAccount, { person: doc._id })
-  if (!employee.active) {
-    showPopup(
-      MessageBox,
-      {
-        label: contact.string.DeleteEmployee,
-        message: contact.string.DeleteEmployeeDescr
-      },
-      undefined,
-      (res?: boolean) => {
-        if (res === true) {
-          void client.remove(doc)
-        }
-      }
-    )
-    return
-  }
   if (email === undefined) {
     await client.update(employee, { active: false })
   } else {
