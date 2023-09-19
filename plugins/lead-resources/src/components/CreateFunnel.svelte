@@ -16,7 +16,7 @@
 <script lang="ts">
   import core, { getCurrentAccount, Ref } from '@hcengineering/core'
   import presentation, { getClient, SpaceCreateCard } from '@hcengineering/presentation'
-  import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
+  import task, { createStates, KanbanTemplate } from '@hcengineering/task'
   import { Component, EditBox, Grid, IconFolder, ToggleWithLabel } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
@@ -42,15 +42,18 @@
       throw Error(`Failed to find target kanban template: ${templateId}`)
     }
 
-    const id = await client.createDoc(lead.class.Funnel, core.space.Space, {
+    const [states, doneStates] = await createStates(client, lead.attribute.State, lead.attribute.DoneState, templateId)
+
+    await client.createDoc(lead.class.Funnel, core.space.Space, {
       name,
       description,
       private: isPrivate,
       archived: false,
-      members: [getCurrentAccount()._id]
+      members: [getCurrentAccount()._id],
+      templateId,
+      states,
+      doneStates
     })
-
-    await createKanban(client, id, templateId)
   }
 </script>
 

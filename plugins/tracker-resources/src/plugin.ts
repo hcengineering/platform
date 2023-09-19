@@ -15,7 +15,7 @@
 import { Client, Doc, Ref, Space } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
-import { IssueDraft } from '@hcengineering/tracker'
+import tracker, { trackerId, IssueDraft } from '@hcengineering/tracker'
 import { AnyComponent, Location } from '@hcengineering/ui'
 import {
   CreateAggregationManagerFunc,
@@ -27,7 +27,6 @@ import {
   Viewlet,
   ViewletDescriptor
 } from '@hcengineering/view'
-import tracker, { trackerId } from '../../tracker/lib'
 
 export default mergeIds(trackerId, tracker, {
   viewlet: {

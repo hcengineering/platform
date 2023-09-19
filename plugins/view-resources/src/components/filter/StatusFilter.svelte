@@ -16,7 +16,7 @@
   import core, { Doc, FindResult, IdMap, Ref, RefTo, Space, Status, toIdMap } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
-  import task, { SpaceWithStates } from '@hcengineering/task'
+  import task, { SpaceWithStates, calcRank } from '@hcengineering/task'
   import ui, {
     EditWithIcon,
     Icon,
@@ -122,6 +122,31 @@
   }
 
   async function sort (statuses: Status[]): Promise<Status[]> {
+    if (_space === undefined) {
+      let space: SpaceWithStates | undefined = undefined
+      const res: Map<Ref<Status>, string> = new Map()
+      for (const state of statuses) {
+        if (res.has(state._id)) continue
+        space = await client.findOne(task.class.SpaceWithStates, { states: state._id })
+        if (space === undefined) continue
+        for (let index = 0; index < space.states.length; index++) {
+          const st = space.states[index]
+          const prev = index > 0 ? res.get(space.states[index - 1]) : undefined
+          const next = index < space.states.length - 1 ? res.get(space.states[index + 1]) : undefined
+          res.set(st, calcRank(prev ? { rank: prev } : undefined, next ? { rank: next } : undefined))
+        }
+      }
+      const result: Array<{
+        _id: Ref<Status>
+        rank: string
+      }> = []
+      for (const [key, value] of res.entries()) {
+        result.push({ _id: key, rank: value })
+      }
+      result.sort((a, b) => a.rank.localeCompare(b.rank))
+      statuses = result.map((p) => statuses.find((s) => s._id === p._id)).filter((p) => p !== undefined) as Status[]
+    }
+
     const categories = toIdMap(await client.findAll(core.class.StatusCategory, {}))
     statuses.sort((a, b) => {
       if (a.category !== undefined && b.category !== undefined && a.category !== b.category) {
@@ -135,9 +160,11 @@
         const aIndex = _space.states.findIndex((s) => s === a._id)
         const bIndex = _space.states.findIndex((s) => s === b._id)
         return aIndex - bIndex
+      } else {
+        return 0
       }
-      return a.name.localeCompare(b.name)
     })
+
     return statuses
   }
 
