@@ -23,7 +23,6 @@
   import tracker from '../../../plugin'
 
   export let query: DocumentQuery<Issue> | undefined = undefined
-  export let issues: Issue[] | undefined = undefined
   export let viewlet: Viewlet
   export let viewOptions: ViewOptions
   export let disableHeader: boolean = false
@@ -83,7 +82,6 @@
     viewOptionsConfig={viewlet.viewOptions?.other}
     config={preference.find((it) => it.attachedTo === viewlet._id)?.config ?? viewlet.config}
     {configurations}
-    documents={issues}
     {query}
     flatHeaders={true}
     props={{ projects }}

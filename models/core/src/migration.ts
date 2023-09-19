@@ -13,9 +13,30 @@
 // limitations under the License.
 //
 
+import core, { TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 
 export const coreOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {}
+  async upgrade (client: MigrationUpgradeClient): Promise<void> {
+    const tx = new TxOperations(client, core.account.System)
+
+    const spaceSpace = await tx.findOne(core.class.Space, {
+      _id: core.space.Space
+    })
+    if (spaceSpace === undefined) {
+      await tx.createDoc(
+        core.class.Space,
+        core.space.Space,
+        {
+          name: 'Space for all spaces',
+          description: 'Spaces',
+          private: false,
+          archived: false,
+          members: []
+        },
+        core.space.Space
+      )
+    }
+  }
 }
