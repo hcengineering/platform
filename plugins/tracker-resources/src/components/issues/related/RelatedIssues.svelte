@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
+  import { Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Issue, Project } from '@hcengineering/tracker'
   import { Label, Spinner } from '@hcengineering/ui'
@@ -35,15 +35,7 @@
   let query: DocumentQuery<Issue>
   $: query = { 'relations._id': object._id, 'relations._class': object._class }
 
-  const subIssuesQuery = createQuery()
-
-  let subIssues: Issue[] = []
-
   let projects: Map<Ref<Project>, Project> | undefined
-
-  $: subIssuesQuery.query(tracker.class.Issue, query, async (result) => (subIssues = result), {
-    sort: { rank: SortingOrder.Ascending }
-  })
 
   const projectsQuery = createQuery()
 
@@ -52,12 +44,12 @@
   })
 </script>
 
-{#if subIssues !== undefined && viewlet !== undefined}
-  {#if projects && subIssues.length > 0}
+{#if viewlet !== undefined}
+  {#if projects}
     <SubIssueList
       bind:viewOptions
       {viewlet}
-      issues={subIssues}
+      {query}
       {projects}
       {disableHeader}
       {compactMode}
