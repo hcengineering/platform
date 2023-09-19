@@ -42,6 +42,7 @@
   export let currentSpace: Ref<Space> | undefined
   export let spaces: Space[]
   export let currentSpecial: string | undefined
+  export let currentFragment: string | undefined
   export let hasSpaceBrowser: boolean = false
   export let deselect: boolean = false
   export let separate: boolean = false
@@ -151,7 +152,16 @@
     {#await getSpacePresenter(client, space._class) then presenter}
       {#if separate && model.specials && i !== 0}<TreeSeparator line />{/if}
       {#if model.specials && presenter}
-        <svelte:component this={presenter} {space} {model} {currentSpace} {currentSpecial} {getActions} {deselect} />
+        <svelte:component
+          this={presenter}
+          {space}
+          {model}
+          {currentSpace}
+          {currentSpecial}
+          {currentFragment}
+          {getActions}
+          {deselect}
+        />
       {:else}
         <NavLink space={space._id}>
           {#await getSpaceName(client, space) then name}

@@ -31,6 +31,7 @@
   export let models: SpacesNavModel[]
   export let currentSpace: Ref<Space> | undefined
   export let currentSpecial: string | undefined
+  export let currentFragment: string | undefined
   export let deselect: boolean = false
 
   const client = getClient()
@@ -93,7 +94,16 @@
     {@const model = models.find((p) => p.spaceClass === space._class)}
     {#await getSpacePresenter(client, space._class) then presenter}
       {#if presenter && model}
-        <svelte:component this={presenter} {space} {model} {currentSpace} {currentSpecial} {getActions} {deselect} />
+        <svelte:component
+          this={presenter}
+          {space}
+          {model}
+          {currentSpace}
+          {currentSpecial}
+          {currentFragment}
+          {getActions}
+          {deselect}
+        />
       {:else}
         {#await getSpaceName(client, space) then name}
           <NavLink space={space._id}>

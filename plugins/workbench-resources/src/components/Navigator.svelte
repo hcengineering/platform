@@ -30,6 +30,7 @@
   export let model: NavigatorModel | undefined
   export let currentSpace: Ref<Space> | undefined
   export let currentSpecial: string | undefined
+  export let currentFragment: string | undefined
   export let currentApplication: Application | undefined
 
   const client = getClient()
@@ -169,6 +170,7 @@
         on:space
         {currentSpace}
         {currentSpecial}
+        {currentFragment}
         deselect={menuSelection}
       />
     {/if}
@@ -182,6 +184,7 @@
         model={m}
         on:open
         {currentSpecial}
+        {currentFragment}
         deselect={menuSelection}
         separate
       />
