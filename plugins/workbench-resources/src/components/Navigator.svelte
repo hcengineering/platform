@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -162,7 +162,15 @@
       on:select={(res) => (menuSelection = res.detail)}
     />
     {#if starred.length}
-      <StarredNav label={preference.string.Starred} spaces={starred} on:space {currentSpace} />
+      <StarredNav
+        label={preference.string.Starred}
+        spaces={starred}
+        models={model.spaces}
+        on:space
+        {currentSpace}
+        {currentSpecial}
+        deselect={menuSelection}
+      />
     {/if}
 
     {#each model.spaces as m, i (m.label)}
