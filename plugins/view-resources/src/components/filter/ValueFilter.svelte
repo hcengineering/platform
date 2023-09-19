@@ -74,19 +74,29 @@
     }
     const isDerivedFromSpace = hierarchy.isDerived(_class, core.class.Space)
 
-    const notArchived =
-      space === undefined || isDerivedFromSpace
+    const spaces =
+      space !== undefined || isDerivedFromSpace
         ? []
-        : (await client.findAll(core.class.Space, { archived: { $ne: true } }, { projection: { _id: 1 } })).map(
-            (it) => it._id
-          )
+        : (
+            await client.findAll(
+              core.class.Space,
+              { archived: { $ne: true } },
+              {
+                projection: {
+                  _id: 1,
+                  archived: 1,
+                  _class: 1
+                }
+              }
+            )
+          ).map((it) => it._id)
 
     async function doQuery (limit: number | undefined, first1000?: any[]): Promise<boolean> {
       const p = client.findAll(
         _class,
         {
           ...resultQuery,
-          ...(space ? { space } : isDerivedFromSpace ? { archived: false } : { space: { $in: notArchived } }),
+          ...(space ? { space } : isDerivedFromSpace ? { archived: false } : { space: { $in: spaces } }),
           ...(first1000 ? { [filter.key.key]: { $nin: first1000 } } : {})
         },
         {
