@@ -492,6 +492,14 @@ export function createModel (builder: Builder): void {
     task.action.ArchiveState
   )
 
+  builder.mixin(task.class.State, core.class.Class, view.mixin.SortFuncs, {
+    func: task.function.StatusSort
+  })
+
+  builder.mixin(task.class.State, core.class.Class, view.mixin.AllValuesFunc, {
+    func: task.function.GetAllStates
+  })
+
   // builder.createDoc(
   //   notification.class.NotificationType,
   //   core.space.Model,

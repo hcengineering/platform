@@ -310,7 +310,12 @@ export interface ClassSortFuncs extends Class<Doc> {
  * @public
  */
 export type GetAllValuesFunc = Resource<
-(query: DocumentQuery<Doc> | undefined, onUpdate: () => void, queryId: Ref<Doc>) => Promise<any[] | undefined>
+(
+  query: DocumentQuery<Doc> | undefined,
+  onUpdate: () => void,
+  queryId: Ref<Doc>,
+  attr: AnyAttribute
+) => Promise<any[] | undefined>
 >
 
 /**
