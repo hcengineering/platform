@@ -13,17 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Channel, combineName, Employee, findPerson, Person } from '@hcengineering/contact'
+  import { Channel, combineName, Employee, Person, PersonAccount } from '@hcengineering/contact'
   import core, { AccountRole, AttachedData, Data, generateId, Ref } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
-  import { Card, getClient } from '@hcengineering/presentation'
+  import { Card, createQuery, getClient } from '@hcengineering/presentation'
   import { createFocusManager, EditBox, FocusHandler, IconInfo, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { ChannelsDropdown } from '..'
   import contact from '../plugin'
   import EditableAvatar from './EditableAvatar.svelte'
-  import PersonPresenter from './PersonPresenter.svelte'
 
   export let canSave: boolean = true
   export let onCreate: ((id: Ref<Employee>) => Promise<void>) | undefined = undefined
@@ -60,8 +59,10 @@
       active: true
     })
 
+    const mail = email.trim()
+
     await client.createDoc(contact.class.PersonAccount, core.space.Model, {
-      email: email.trim(),
+      email: mail,
       person: id,
       role: AccountRole.User
     })
@@ -88,10 +89,17 @@
     }
   ]
 
-  let matches: Person[] = []
-  $: findPerson(client, combineName(firstName, lastName), channels).then((p) => {
-    matches = p
-  })
+  let exists: PersonAccount | undefined
+  const query = createQuery()
+  $: query.query(
+    contact.class.PersonAccount,
+    {
+      email: email.trim()
+    },
+    (p) => {
+      exists = p[0]
+    }
+  )
 
   const manager = createFocusManager()
 
@@ -116,8 +124,8 @@
   okAction={createPerson}
   canSave={firstName.trim().length > 0 &&
     lastName.trim().length > 0 &&
-    matches.length === 0 &&
     email.trim().length > 0 &&
+    exists === undefined &&
     canSave}
   on:close={() => {
     dispatch('close')
@@ -125,13 +133,12 @@
   on:changeContent
 >
   <svelte:fragment slot="error">
-    {#if matches.length > 0}
+    {#if exists !== undefined}
       <div class="flex-row-center error-color">
         <IconInfo size={'small'} />
         <span class="text-sm overflow-label ml-2">
           <Label label={contact.string.PersonAlreadyExists} />
         </span>
-        <div class="ml-4"><PersonPresenter value={matches[0]} /></div>
       </div>
     {/if}
   </svelte:fragment>

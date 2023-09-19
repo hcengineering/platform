@@ -10,7 +10,7 @@
     "lint:fix": "eslint --fix src",
     "start": "ts-node src/index.ts",
     "bundle": "esbuild src/index.ts --bundle --minify --platform=node > bundle.js",
-    "run-local": "TRANSACTOR_URL=ws:/localhost:3333 MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost ts-node ./src/index.ts",
+    "run-local": "TRANSACTOR_URL=ws://localhost:3333 MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost ts-node ./src/index.ts",
     "lint": "eslint src",
     "format": "prettier --write src && eslint --fix src"
   },

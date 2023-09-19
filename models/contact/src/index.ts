@@ -760,26 +760,6 @@ export function createModel (builder: Builder): void {
     },
     contact.action.KickEmployee
   )
-  createAction(
-    builder,
-    {
-      action: contact.actionImpl.KickEmployee,
-      label: contact.string.DeleteEmployee,
-      icon: contact.icon.KickUser,
-      query: {
-        active: false
-      },
-      category: contact.category.Contact,
-      target: contact.mixin.Employee,
-      input: 'focus',
-      context: {
-        mode: ['context'],
-        group: 'remove'
-      },
-      secured: true
-    },
-    contact.action.DeleteEmployee
-  )
 
   createAction(
     builder,
