@@ -25,6 +25,7 @@ import chunter, {
 import contact, { Employee, PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
+  AttachedDoc,
   Class,
   concatLink,
   Doc,
@@ -49,11 +50,15 @@ import { getDocCollaborators, getMixinTx, pushNotification } from '@hcengineerin
 import { workbenchId } from '@hcengineering/workbench'
 import { getBacklinks } from './backlinks'
 
-function getCreateBacklinksTxes (control: TriggerControl, txFactory: TxFactory, doc: Doc): Tx[] {
+function getCreateBacklinksTxes (
+  control: TriggerControl,
+  txFactory: TxFactory,
+  doc: Doc,
+  backlinkId: Ref<Doc>,
+  backlinkClass: Ref<Class<Doc>>
+): Tx[] {
   const txes: Tx[] = []
 
-  const backlinkId = doc._id
-  const backlinkClass = doc._class
   const attachedDocId = doc._id
 
   const attributes = control.hierarchy.getAllAttributes(doc._class)
@@ -334,8 +339,9 @@ async function BacklinksCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> 
 
   const txFactory = new TxFactory(control.txFactory.account)
   const doc = TxProcessor.createDoc2Doc(ctx)
+  const collTx = tx as TxCollectionCUD<Doc, AttachedDoc>
 
-  const txes: Tx[] = getCreateBacklinksTxes(control, txFactory, doc)
+  const txes: Tx[] = getCreateBacklinksTxes(control, txFactory, doc, collTx.objectId, collTx.objectClass)
   if (txes.length !== 0) {
     await control.apply(txes, true)
   }
