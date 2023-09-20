@@ -105,7 +105,11 @@
     {/if}
     <img class="ava-{size} ava-mask" src={url[0]} {srcset} alt={''} bind:this={imageElement} />
   {:else if name && displayName && displayName !== ''}
-    <div class="ava-text" data-name={displayName.toLocaleUpperCase()} />
+    <div
+      class="ava-text"
+      style:color={color ? color.title : 'var(--accented-button-color)'}
+      data-name={displayName.toLocaleUpperCase()}
+    />
   {:else}
     <div class="icon">
       <Icon icon={icon ?? AvatarIcon} size={'full'} />
