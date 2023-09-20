@@ -52,7 +52,7 @@
     <div class="message">
       <div class="header">
         <div class="avatar">
-          <Avatar size={'medium'} avatar={employee?.avatar} />
+          <Avatar size={'medium'} avatar={employee?.avatar} name={employee?.name} />
         </div>
         <span class="name">
           {employee ? getName(client.getHierarchy(), employee) : ''}

@@ -233,7 +233,7 @@
             class="ml-2"
             use:tooltip={{ label: getEmbeddedLabel(getContactName(client.getHierarchy(), participant)) }}
           >
-            <Avatar size="small" avatar={participant.avatar} />
+            <Avatar size={'small'} avatar={participant.avatar} name={participant.name} />
           </div>
         {/each}
       </div>

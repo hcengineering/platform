@@ -118,7 +118,7 @@
   <div class="msgactivity-container">
     {#if withAvatar}
       <div class="msgactivity-avatar">
-        <Avatar avatar={employee?.avatar} size="x-small" />
+        <Avatar avatar={employee?.avatar} size={'x-small'} name={employee?.name} />
       </div>
     {:else}
       <div class="msgactivity-icon">

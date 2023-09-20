@@ -16,24 +16,33 @@
   import { createEventDispatcher } from 'svelte'
   import attachment from '@hcengineering/attachment'
   import { AnySvelteComponent, IconSize, showPopup } from '@hcengineering/ui'
-  import { AvatarType } from '@hcengineering/contact'
+  import { AvatarType, getAvatarColorForId } from '@hcengineering/contact'
   import { Asset, getResource } from '@hcengineering/platform'
 
   import AvatarComponent from './Avatar.svelte'
   import SelectAvatarPopup from './SelectAvatarPopup.svelte'
 
   export let avatar: string | null | undefined
+  export let name: string | null | undefined = undefined
   export let email: string | undefined = undefined
-  export let id: string
   export let size: IconSize
   export let direct: Blob | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let disabled: boolean = false
 
-  const [schema, uri] = avatar?.split('://') || []
+  $: [schema, uri] = avatar?.split('://') || []
 
-  let selectedAvatarType: AvatarType | undefined = avatar?.includes('://') ? (schema as AvatarType) : AvatarType.IMAGE
-  let selectedAvatar: string | null | undefined = selectedAvatarType === AvatarType.IMAGE ? avatar : uri
+  let selectedAvatarType: AvatarType | undefined
+  let selectedAvatar: string | null | undefined
+  $: selectedAvatarType = avatar?.includes('://')
+    ? (schema as AvatarType)
+    : avatar === undefined
+      ? AvatarType.COLOR
+      : AvatarType.IMAGE
+  $: selectedAvatar = selectedAvatarType === AvatarType.IMAGE ? avatar : uri
+  $: if (selectedAvatar === undefined && selectedAvatarType === AvatarType.COLOR) {
+    selectedAvatar = getAvatarColorForId(name)
+  }
 
   export async function createAvatar (): Promise<string | undefined> {
     if (selectedAvatarType === AvatarType.IMAGE && direct !== undefined) {
@@ -58,13 +67,26 @@
     selectedAvatarType = submittedAvatarType
     selectedAvatar = submittedAvatar
     direct = submittedDirect
+    avatar = selectedAvatarType === AvatarType.IMAGE ? selectedAvatar : `${selectedAvatarType}://${selectedAvatar}`
     dispatch('done')
   }
   const dispatch = createEventDispatcher()
 
   async function showSelectionPopup (e: MouseEvent) {
     if (!disabled) {
-      showPopup(SelectAvatarPopup, { avatar, email, id, file: direct, icon, onSubmit: handlePopupSubmit })
+      showPopup(SelectAvatarPopup, {
+        avatar:
+          selectedAvatarType === AvatarType.IMAGE
+            ? selectedAvatar
+            : selectedAvatarType === AvatarType.COLOR && avatar == null
+              ? undefined
+              : `${selectedAvatarType}://${selectedAvatar}`,
+        email,
+        name,
+        file: direct,
+        icon,
+        onSubmit: handlePopupSubmit
+      })
     }
   }
 </script>
@@ -72,9 +94,14 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="cursor-pointer" on:click|self={showSelectionPopup}>
   <AvatarComponent
-    avatar={selectedAvatarType === AvatarType.IMAGE ? selectedAvatar : `${selectedAvatarType}://${selectedAvatar}`}
     {direct}
     {size}
     {icon}
+    avatar={selectedAvatarType === AvatarType.IMAGE
+      ? selectedAvatar
+      : selectedAvatarType === AvatarType.COLOR && avatar == null
+      ? undefined
+      : `${selectedAvatarType}://${selectedAvatar}`}
+    {name}
   />
 </div>

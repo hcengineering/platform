@@ -38,7 +38,6 @@
 >
   <div class="flex-center ml-2">
     <div class="flex-no-shrink circles-mark" class:isDraggable><IconCircles size={'small'} /></div>
-    !!!
   </div>
 
   <div class="root flex flex-between items-center w-full p-2">
