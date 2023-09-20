@@ -204,7 +204,9 @@
 </script>
 
 <div class="container clear-mins" class:highlighted={isHighlighted} id={message._id}>
-  <div class="avatar"><Avatar size={'medium'} avatar={employee?.avatar} /></div>
+  <div class="avatar">
+    <Avatar size={'medium'} value={employee?.avatar} nameId={employee?.name} id={employee?._id} />
+  </div>
   <div class="message clear-mins">
     <div class="header clear-mins">
       {#if employee}

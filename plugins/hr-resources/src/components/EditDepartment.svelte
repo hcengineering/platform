@@ -73,7 +73,7 @@
     <div class="mr-8">
       {#key object}
         <EditableAvatar
-          avatar={object.avatar}
+          value={object.avatar}
           id={object._id}
           size={'x-large'}
           icon={hr.icon.Department}

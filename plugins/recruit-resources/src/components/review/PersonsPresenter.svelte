@@ -37,6 +37,7 @@
 {#if value}
   <div class="flex persons">
     {#each persons as p}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
         class="flex-presenter"
         class:inline-presenter={inline}
@@ -44,7 +45,7 @@
         on:click={() => onClick(p)}
       >
         <div class="icon">
-          <Avatar size={'x-small'} avatar={p.avatar} />
+          <Avatar size={'x-small'} value={p.avatar} nameId={p.name} id={p._id} />
         </div>
       </div>
     {/each}

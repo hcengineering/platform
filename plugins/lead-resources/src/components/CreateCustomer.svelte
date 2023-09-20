@@ -188,9 +188,10 @@
       </div>
       <div class="ml-4 flex">
         <EditableAvatar
-          avatar={object.avatar}
+          value={object.avatar}
           id={customerId}
           size={'large'}
+          nameId={object.name}
           bind:this={avatarEditor}
           bind:direct={avatar}
         />

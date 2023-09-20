@@ -41,7 +41,7 @@
 <div class="antiContactCard">
   <div class="label uppercase"><Label label={contact.string.Organization} /></div>
   <div class="flex-center logo">
-    <Avatar avatar={organization.avatar} size={'large'} icon={contact.icon.Company} />
+    <Avatar value={organization.avatar} size={'large'} icon={contact.icon.Company} id={organization._id} />
   </div>
   {#if organization}
     <!-- svelte-ignore a11y-click-events-have-key-events -->

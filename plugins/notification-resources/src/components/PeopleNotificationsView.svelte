@@ -88,7 +88,7 @@
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="inbox-activity__content shrink flex-grow clear-mins" class:read={newTxes === 0}>
       <div class="flex-row-center gap-2">
-        <Avatar avatar={employee?.avatar} size="small" />
+        <Avatar value={employee?.avatar} size={'small'} nameId={employee?.name} id={employee?._id} />
         {#if employee}
           <span class="font-medium">{getName(client.getHierarchy(), employee)}</span>
         {:else}

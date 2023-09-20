@@ -58,7 +58,7 @@
 >
   {#if employee}
     <div class="flex-col-center pb-2">
-      <Avatar size="x-large" avatar={employee.avatar} />
+      <Avatar size={'x-large'} value={employee.avatar} nameId={employee.name} id={employee._id} />
     </div>
     <div class="pb-2">{getName(client.getHierarchy(), employee)}</div>
     <DocNavLink object={employee}>
@@ -79,6 +79,7 @@
         </div>
       </div>
     {:else if editable}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div class="flex-row-stretch over-underline pb-2" on:click={onEdit}>
         <Label label={contact.string.SetStatus} />
       </div>

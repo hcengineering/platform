@@ -27,7 +27,7 @@
 </script>
 
 <script lang="ts">
-  import contact, { AvatarProvider, AvatarType } from '@hcengineering/contact'
+  import contact, { AvatarProvider, AvatarType, getAvatarColorForId } from '@hcengineering/contact'
   import { Client, Ref } from '@hcengineering/core'
   import { Asset, getResource } from '@hcengineering/platform'
   import { getBlobURL, getClient } from '@hcengineering/presentation'
@@ -35,13 +35,21 @@
   import { getAvatarProviderId } from '../utils'
   import AvatarIcon from './icons/Avatar.svelte'
 
-  export let avatar: string | null | undefined = undefined
+  export let value: string | null | undefined = undefined
+  export let nameId: string | null | undefined = undefined
   export let direct: Blob | undefined = undefined
+  export let id: string | undefined = undefined
   export let size: IconSize
   export let icon: Asset | AnySvelteComponent | undefined = undefined
 
   let url: string[] | undefined
   let avatarProvider: AvatarProvider | undefined
+  let color: string | undefined = undefined
+
+  let displayName: string = ''
+  $: [lname, fname] = (nameId && nameId !== '' ? nameId : ',').split(',')
+  $: displayName =
+    (lname && lname !== '' ? `${lname.trim()[0]}` : '') + (fname && fname !== '' ? `${fname.trim()[0]}` : '')
 
   async function update (size: IconSize, avatar?: string | null, direct?: Blob) {
     if (direct !== undefined) {
@@ -55,32 +63,46 @@
 
       if (!avatarProvider || avatarProvider.type === AvatarType.COLOR) {
         url = undefined
+        color = avatar.split('://')[1]
       } else if (avatarProvider?.type === AvatarType.IMAGE) {
         url = (await getResource(avatarProvider.getUrl))(avatar, size)
       } else {
         const uri = avatar.split('://')[1]
         url = (await getResource(avatarProvider.getUrl))(uri, size)
       }
+    } else if (id) {
+      color = getAvatarColorForId(id)
+      url = undefined
+      avatarProvider = undefined
     } else {
       url = undefined
       avatarProvider = undefined
     }
   }
-  $: update(size, avatar, direct)
+  $: update(size, value, direct)
 
   let imageElement: HTMLImageElement | undefined = undefined
 
   $: srcset = url?.slice(1)?.join(', ')
 </script>
 
-<div class="ava-{size} flex-center avatar-container" class:no-img={!url}>
+<div
+  class="ava-{size} flex-center avatar-container"
+  class:no-img={!url && color}
+  class:bordered={!url && color === undefined}
+  style:background-color={url ? 'var(--theme-button-default)' : color}
+>
   {#if url}
     {#if size === 'large' || size === 'x-large' || size === '2x-large'}
       <img class="ava-{size} ava-blur" src={url[0]} {srcset} alt={''} bind:this={imageElement} />
     {/if}
     <img class="ava-{size} ava-mask" src={url[0]} {srcset} alt={''} bind:this={imageElement} />
+  {:else if nameId && displayName !== ''}
+    <div class="ava-text" data-name={displayName.toLocaleUpperCase()} />
   {:else}
-    <Icon icon={icon ?? AvatarIcon} size={size === 'card' ? 'x-small' : size} />
+    <div class="icon">
+      <Icon icon={icon ?? AvatarIcon} size={'full'} />
+    </div>
   {/if}
 </div>
 
@@ -89,60 +111,139 @@
     flex-shrink: 0;
     position: relative;
     overflow: hidden;
-    background-color: var(--avatar-bg-color);
+    background-color: var(--theme-button-default);
     border-radius: 50%;
     pointer-events: none;
 
+    &.no-img {
+      color: var(--accented-button-color);
+      border-color: transparent;
+    }
+    &.bordered {
+      color: var(--theme-dark-color);
+      border: 1px solid var(--theme-button-border);
+    }
     img {
       object-fit: cover;
       border: 1px solid var(--avatar-border-color);
     }
-    &.no-img {
-      border-color: transparent;
+    .icon,
+    .ava-text::after {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+    }
+    .icon {
+      width: 100%;
+      height: 100%;
+      color: inherit;
+      transform-origin: center;
+      transform: translate(-50%, -50%) scale(0.6);
+    }
+    .ava-text::after {
+      content: attr(data-name);
+      transform: translate(-50%, -50%);
     }
   }
 
   .ava-inline {
     width: 0.875rem; // 24
     height: 0.875rem;
+
+    .ava-text {
+      font-weight: 500;
+      font-size: 0.525rem;
+      letter-spacing: -0.05em;
+    }
   }
 
   .ava-tiny {
     width: 1.13rem; // ~18
     height: 1.13rem;
+
+    .ava-text {
+      font-weight: 500;
+      font-size: 0.625rem;
+      letter-spacing: -0.05em;
+    }
   }
 
   .ava-card {
     width: 1.25rem; // 20
     height: 1.25rem;
+
+    .ava-text {
+      font-weight: 500;
+      font-size: 0.625rem;
+      letter-spacing: -0.05em;
+    }
   }
   .ava-x-small {
     width: 1.5rem; // 24
     height: 1.5rem;
+
+    .ava-text {
+      font-weight: 500;
+      font-size: 0.75rem;
+      letter-spacing: -0.05em;
+    }
   }
   .ava-smaller {
     width: 1.75rem; // 28
     height: 1.75rem;
+
+    .ava-text {
+      font-weight: 500;
+      font-size: 0.8125rem;
+      letter-spacing: -0.05em;
+    }
   }
   .ava-small {
     width: 2rem; // 32
     height: 2rem;
+
+    .ava-text {
+      font-weight: 500;
+      font-size: 0.875rem;
+      letter-spacing: -0.05em;
+    }
   }
   .ava-medium {
     width: 2.25rem; // 36
     height: 2.25rem;
+
+    .ava-text {
+      font-weight: 500;
+      font-size: 0.875rem;
+      letter-spacing: -0.05em;
+    }
   }
   .ava-large {
     width: 4.5rem; // 72
     height: 4.5rem;
+
+    .ava-text {
+      font-weight: 500;
+      font-size: 2rem;
+    }
   }
   .ava-x-large {
     width: 7.5rem; // 120
     height: 7.5rem;
+
+    .ava-text {
+      font-weight: 500;
+      font-size: 3.5rem;
+    }
   }
   .ava-2x-large {
     width: 10rem; // 120
     height: 10rem;
+
+    .ava-text {
+      font-weight: 500;
+      font-size: 4.75rem;
+    }
   }
 
   .ava-blur {

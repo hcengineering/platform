@@ -93,10 +93,11 @@
       <div class="flex flex-grow w-full">
         <div class="mr-8">
           <EditableAvatar
-            avatar={employee.avatar}
+            value={employee.avatar}
             email={account.email}
             id={employee._id}
             size={'x-large'}
+            nameId={employee.name}
             bind:this={avatarEditor}
             on:done={onAvatarDone}
           />

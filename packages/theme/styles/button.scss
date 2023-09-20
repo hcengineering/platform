@@ -194,7 +194,9 @@
   &.accented, &.brand, &.positive, &.negative {
     &:hover, &:active, &:focus {
       color: var(--accented-button-color);
-      .btn-icon { color: var(--accented-button-color); }
+
+      .btn-icon,
+      .btn-right-icon { color: var(--accented-button-color); }
     }
   }
   &.regular, &.ghost {
@@ -208,7 +210,8 @@
     color: var(--accented-button-content-color);
     border-color: var(--accented-button-border);
 
-    .btn-icon { color: var(--accented-button-content-color); }
+    .btn-icon,
+    .btn-right-icon { color: var(--accented-button-content-color); }
   }
   &.accented {
     background-color: var(--accented-button-default);
@@ -257,7 +260,8 @@
     background-color: var(--theme-button-contrast-enabled);
     border-color: var(--theme-button-contrast-border);
 
-    .btn-icon { color: var(--theme-button-contrast-color); }
+    .btn-icon,
+    .btn-right-icon { color: var(--theme-button-contrast-color); }
 
     &:hover { background-color: var(--theme-button-contrast-hovered); }
     &:active { background-color: var(--theme-button-contrast-pressed); }
@@ -298,7 +302,8 @@
     border-color: transparent;
     cursor: not-allowed;
 
-    .btn-icon { opacity: .5; }
+    .btn-icon,
+    .btn-right-icon { opacity: .5; }
   }
 
   .resetIconSize { font-size: 16px; }

@@ -61,7 +61,12 @@
     {/if}
     <div class="flex-between mb-1">
       <div class="flex-row-center">
-        <Avatar avatar={object.$lookup?.attachedTo?.avatar} size={'medium'} />
+        <Avatar
+          value={object.$lookup?.attachedTo?.avatar}
+          size={'medium'}
+          nameId={object.$lookup?.attachedTo?.name}
+          id={object.$lookup?.attachedTo?._id}
+        />
         <div class="flex-grow flex-col min-w-0 ml-2">
           <div class="fs-title over-underline lines-limit-2">
             {object.$lookup?.attachedTo ? getName(client.getHierarchy(), object.$lookup.attachedTo) : ''}

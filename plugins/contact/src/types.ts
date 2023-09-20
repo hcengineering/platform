@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 
+import { ColorDefinition } from '@hcengineering/ui'
+
 /**
  * @public
  */
@@ -29,17 +31,17 @@ export type GravatarPlaceholderType =
 /**
  * @public
  */
-export const AVATAR_COLORS = [
-  '#4674ca', // blue
-  '#315cac', // blue_dark
-  '#57be8c', // green
-  '#3fa372', // green_dark
-  '#f9a66d', // yellow_orange
-  '#ec5e44', // red
-  '#e63717', // red_dark
-  '#f868bc', // pink
-  '#6c5fc7', // purple
-  '#4e3fb4', // purple_dark
-  '#57b1be', // teal
-  '#847a8c' // gray
+export const AVATAR_COLORS: ColorDefinition[] = [
+  { name: 'blue', color: '#4674ca' }, // blue
+  { name: 'blue_dark', color: '#315cac' }, // blue_dark
+  { name: 'green', color: '#57be8c' }, // green
+  { name: 'green_dark', color: '#3fa372' }, // green_dark
+  { name: 'yellow_orange', color: '#f9a66d' }, // yellow_orange
+  { name: 'red', color: '#ec5e44' }, // red
+  { name: 'red_dark', color: '#e63717' }, // red_dark
+  { name: 'pink', color: '#f868bc' }, // pink
+  { name: 'purple', color: '#6c5fc7' }, // purple
+  { name: 'purple_dark', color: '#4e3fb4' }, // purple_dark
+  { name: 'teal', color: '#57b1be' }, // teal
+  { name: 'gray', color: '#847a8c' } // gray
 ]

@@ -59,7 +59,7 @@
 <div class="flex-row-center container cursor-pointer" on:click>
   <div class="flex-row-center">
     {#each showReplies as reply}
-      <div class="reply"><Avatar size={'x-small'} avatar={reply.avatar} /></div>
+      <div class="reply"><Avatar size={'x-small'} value={reply.avatar} nameId={reply.name} id={reply._id} /></div>
     {/each}
     {#if employees.size > shown}
       <div class="reply"><span>+{employees.size - shown}</span></div>

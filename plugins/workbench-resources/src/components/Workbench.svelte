@@ -707,7 +707,10 @@
             class="cursor-pointer"
             on:click|stopPropagation={() => showPopup(AccountPopup, {}, popupPosition)}
           >
-            <Component is={contact.component.Avatar} props={{ avatar: employee?.avatar, size: 'small' }} />
+            <Component
+              is={contact.component.Avatar}
+              props={{ value: employee?.avatar, size: 'small', nameId: employee?.name, id: employee?._id }}
+            />
           </div>
         </div>
       </div>
