@@ -366,7 +366,9 @@ function isTypeMatched (control: TriggerControl, type: NotificationType, tx: TxC
   if (!type.txClasses.includes(tx._class)) return false
   if (!control.hierarchy.isDerived(h.getBaseClass(tx.objectClass), targetClass)) return false
   if (originTx._class === core.class.TxCollectionCUD && type.attachedToClass !== undefined) {
-    if (!control.hierarchy.isDerived(h.getBaseClass(originTx.objectClass), h.getBaseClass(type.attachedToClass))) { return false }
+    if (!control.hierarchy.isDerived(h.getBaseClass(originTx.objectClass), h.getBaseClass(type.attachedToClass))) {
+      return false
+    }
   }
   if (type.field !== undefined) {
     if (tx._class === core.class.TxUpdateDoc) {
