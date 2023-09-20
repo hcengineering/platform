@@ -75,7 +75,7 @@
           }
         : { targetClass: _class }
     objectsPromise = client.findAll(tags.class.TagElement, resultQuery)
-    const _objects = await objectsPromise
+    const _objects = sortFilterValues(await objectsPromise, isSelected)
     if (qid !== queryId) {
       return
     }
@@ -87,7 +87,6 @@
     categories.sort((a, b) => {
       const alen = objects.filter((el) => el.category === a._id && isSelected(el))
       const blen = objects.filter((el) => el.category === b._id && isSelected(el))
-      console.log(alen.length, blen.length, selected.length)
       return blen.length - alen.length
     })
     categories = categories
@@ -182,10 +181,7 @@
         <Loading />
       {:else}
         {#each categories as cat, i}
-          {@const values = sortFilterValues(
-            objects.filter((el) => el.category === cat._id),
-            isSelected
-          )}
+          {@const values = objects.filter((el) => el.category === cat._id)}
           {#if values.length > 0}
             {#if i > 0}<div class="menu-separator" />{/if}
             <div class="sticky-wrapper">
