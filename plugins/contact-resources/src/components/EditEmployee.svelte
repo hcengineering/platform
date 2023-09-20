@@ -108,16 +108,15 @@
       {#key object}
         {#if editable}
           <EditableAvatar
-            value={object.avatar}
+            avatar={object.avatar}
             {email}
-            id={object._id}
             size={'x-large'}
-            nameId={object.name}
+            name={object.name}
             bind:this={avatarEditor}
             on:done={onAvatarDone}
           />
         {:else}
-          <Avatar value={object.avatar} size={'x-large'} nameId={object.name} id={object._id} />
+          <Avatar avatar={object.avatar} size={'x-large'} name={object.name} />
         {/if}
       {/key}
     </div>

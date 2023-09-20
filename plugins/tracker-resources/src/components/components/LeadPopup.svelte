@@ -23,7 +23,7 @@
 
 <div class="root">
   <div class="icon">
-    <Avatar value={lead.avatar} size={'medium'} nameId={lead.name} id={lead._id} />
+    <Avatar avatar={lead.avatar} size={'medium'} name={lead.name} />
   </div>
   <div class="textContainer">
     <div class="title">

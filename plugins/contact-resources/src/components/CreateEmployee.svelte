@@ -163,10 +163,9 @@
     </div>
     <div class="ml-4">
       <EditableAvatar
-        value={object.avatar}
-        nameId={combineName(firstName, lastName)}
+        avatar={object.avatar}
+        name={combineName(firstName, lastName)}
         {email}
-        {id}
         size={'large'}
         bind:this={avatarEditor}
       />

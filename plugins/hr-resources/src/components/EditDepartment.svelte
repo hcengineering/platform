@@ -73,8 +73,7 @@
     <div class="mr-8">
       {#key object}
         <EditableAvatar
-          value={object.avatar}
-          id={object._id}
+          avatar={object.avatar}
           size={'x-large'}
           icon={hr.icon.Department}
           bind:this={avatarEditor}

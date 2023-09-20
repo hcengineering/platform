@@ -28,7 +28,7 @@
 </script>
 
 <div class="flex-nowrap">
-  <div class="avatar"><Avatar size={'medium'} value={user.avatar} nameId={user.name} id={user._id} /></div>
+  <div class="avatar"><Avatar size={'medium'} avatar={user.avatar} name={user.name} /></div>
   <div class="flex-col-stretch message">
     <div class="header">{getName(client.getHierarchy(), user)}<span>{message.createDate}</span></div>
     <div class="text">{message.text}</div>

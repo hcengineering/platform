@@ -84,10 +84,9 @@
     <div class="flex-no-shrink mr-8">
       {#key object}
         <EditableAvatar
-          value={object.avatar}
-          id={object._id}
+          avatar={object.avatar}
           size={'x-large'}
-          nameId={object.name}
+          name={object.name}
           bind:this={avatarEditor}
           on:done={onAvatarDone}
         />

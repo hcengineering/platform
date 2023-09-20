@@ -45,7 +45,7 @@
         on:click={() => onClick(p)}
       >
         <div class="icon">
-          <Avatar size={'x-small'} value={p.avatar} nameId={p.name} id={p._id} />
+          <Avatar size={'x-small'} avatar={p.avatar} name={p.name} />
         </div>
       </div>
     {/each}

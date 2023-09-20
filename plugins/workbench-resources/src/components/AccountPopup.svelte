@@ -165,7 +165,7 @@
       {#if employee}
         <Component
           is={contact.component.Avatar}
-          props={{ value: employee.avatar, size: 'medium', nameId: employee.name, id: employee._id }}
+          props={{ avatar: employee.avatar, size: 'medium', name: employee.name }}
         />
       {/if}
       <div class="ml-2 flex-col">

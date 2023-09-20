@@ -27,7 +27,13 @@
 </script>
 
 <script lang="ts">
-  import contact, { AvatarProvider, AvatarType, getAvatarColorForId } from '@hcengineering/contact'
+  import contact, {
+    AvatarProvider,
+    AvatarType,
+    getAvatarColorForId,
+    getFirstName,
+    getLastName
+  } from '@hcengineering/contact'
   import { Client, Ref } from '@hcengineering/core'
   import { Asset, getResource } from '@hcengineering/platform'
   import { getBlobURL, getClient } from '@hcengineering/presentation'
@@ -35,10 +41,9 @@
   import { getAvatarProviderId } from '../utils'
   import AvatarIcon from './icons/Avatar.svelte'
 
-  export let value: string | null | undefined = undefined
-  export let nameId: string | null | undefined = undefined
+  export let avatar: string | null | undefined = undefined
+  export let name: string | null | undefined = undefined
   export let direct: Blob | undefined = undefined
-  export let id: string | undefined = undefined
   export let size: IconSize
   export let icon: Asset | AnySvelteComponent | undefined = undefined
 
@@ -46,12 +51,12 @@
   let avatarProvider: AvatarProvider | undefined
   let color: string | undefined = undefined
 
-  let displayName: string = ''
-  $: [lname, fname] = (nameId && nameId !== '' ? nameId : ',').split(',')
+  $: fname = getFirstName(name ?? '')
+  $: lname = getLastName(name ?? '')
   $: displayName =
-    (lname && lname !== '' ? `${lname.trim()[0]}` : '') + (fname && fname !== '' ? `${fname.trim()[0]}` : '')
+    name != null ? (lname.length > 1 ? lname.trim()[0] : lname) + (fname.length > 1 ? fname.trim()[0] : fname) : ''
 
-  async function update (size: IconSize, avatar?: string | null, direct?: Blob) {
+  async function update (size: IconSize, avatar?: string | null, direct?: Blob, name?: string | null) {
     if (direct !== undefined) {
       getBlobURL(direct).then((blobURL) => {
         url = [blobURL]
@@ -70,8 +75,8 @@
         const uri = avatar.split('://')[1]
         url = (await getResource(avatarProvider.getUrl))(uri, size)
       }
-    } else if (id) {
-      color = getAvatarColorForId(id)
+    } else if (name != null) {
+      color = getAvatarColorForId(name)
       url = undefined
       avatarProvider = undefined
     } else {
@@ -79,7 +84,7 @@
       avatarProvider = undefined
     }
   }
-  $: update(size, value, direct)
+  $: update(size, avatar, direct, name)
 
   let imageElement: HTMLImageElement | undefined = undefined
 
@@ -97,7 +102,7 @@
       <img class="ava-{size} ava-blur" src={url[0]} {srcset} alt={''} bind:this={imageElement} />
     {/if}
     <img class="ava-{size} ava-mask" src={url[0]} {srcset} alt={''} bind:this={imageElement} />
-  {:else if nameId && displayName !== ''}
+  {:else if name && displayName && displayName !== ''}
     <div class="ava-text" data-name={displayName.toLocaleUpperCase()} />
   {:else}
     <div class="icon">

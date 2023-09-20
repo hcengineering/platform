@@ -126,7 +126,7 @@
       <div class="mr-2">
         <Button icon={IconAdd} kind={'list'} on:click={createChild} />
       </div>
-      <Avatar size={'medium'} value={value.avatar} icon={hr.icon.Department} nameId={value.name} id={value._id} />
+      <Avatar size={'medium'} avatar={value.avatar} icon={hr.icon.Department} name={value.name} />
       <div class="flex-row ml-2 mr-4">
         <div class="fs-title">
           {value.name}

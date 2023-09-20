@@ -22,7 +22,8 @@ import { AVATAR_COLORS, GravatarPlaceholderType } from './types'
 /**
  * @public
  */
-export function getAvatarColorForId (id: string): string {
+export function getAvatarColorForId (id: string | null | undefined): string {
+  if (id == null) return AVATAR_COLORS[0].color
   let hash = 0
 
   for (let i = 0; i < id.length; i++) {

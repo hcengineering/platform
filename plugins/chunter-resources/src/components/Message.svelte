@@ -205,7 +205,7 @@
 
 <div class="container clear-mins" class:highlighted={isHighlighted} id={message._id}>
   <div class="avatar">
-    <Avatar size={'medium'} value={employee?.avatar} nameId={employee?.name} id={employee?._id} />
+    <Avatar size={'medium'} avatar={employee?.avatar} name={employee?.name} />
   </div>
   <div class="message clear-mins">
     <div class="header clear-mins">

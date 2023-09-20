@@ -359,7 +359,7 @@
           selected={update.avatar !== undefined}
         >
           <svelte:fragment slot="item" let:item>
-            <Avatar value={item.avatar} size={'x-large'} icon={contact.icon.Person} nameId={item.name} id={item._id} />
+            <Avatar avatar={item.avatar} size={'x-large'} icon={contact.icon.Person} name={item.name} />
           </svelte:fragment>
         </MergeComparer>
         <MergeComparer

@@ -22,27 +22,26 @@
   import AvatarComponent from './Avatar.svelte'
   import SelectAvatarPopup from './SelectAvatarPopup.svelte'
 
-  export let value: string | null | undefined
-  export let nameId: string | null | undefined = undefined
+  export let avatar: string | null | undefined
+  export let name: string | null | undefined = undefined
   export let email: string | undefined = undefined
-  export let id: string
   export let size: IconSize
   export let direct: Blob | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let disabled: boolean = false
 
-  $: [schema, uri] = value?.split('://') || []
+  $: [schema, uri] = avatar?.split('://') || []
 
   let selectedAvatarType: AvatarType | undefined
   let selectedAvatar: string | null | undefined
-  $: selectedAvatarType = value?.includes('://')
+  $: selectedAvatarType = avatar?.includes('://')
     ? (schema as AvatarType)
-    : value === undefined
+    : avatar === undefined
       ? AvatarType.COLOR
       : AvatarType.IMAGE
-  $: selectedAvatar = selectedAvatarType === AvatarType.IMAGE ? value : uri
+  $: selectedAvatar = selectedAvatarType === AvatarType.IMAGE ? avatar : uri
   $: if (selectedAvatar === undefined && selectedAvatarType === AvatarType.COLOR) {
-    selectedAvatar = getAvatarColorForId(id)
+    selectedAvatar = getAvatarColorForId(name)
   }
 
   export async function createAvatar (): Promise<string | undefined> {
@@ -68,7 +67,7 @@
     selectedAvatarType = submittedAvatarType
     selectedAvatar = submittedAvatar
     direct = submittedDirect
-    value = selectedAvatarType === AvatarType.IMAGE ? selectedAvatar : `${selectedAvatarType}://${selectedAvatar}`
+    avatar = selectedAvatarType === AvatarType.IMAGE ? selectedAvatar : `${selectedAvatarType}://${selectedAvatar}`
     dispatch('done')
   }
   const dispatch = createEventDispatcher()
@@ -76,10 +75,14 @@
   async function showSelectionPopup (e: MouseEvent) {
     if (!disabled) {
       showPopup(SelectAvatarPopup, {
-        value: selectedAvatarType === AvatarType.IMAGE ? selectedAvatar : `${selectedAvatarType}://${selectedAvatar}`,
+        avatar:
+          selectedAvatarType === AvatarType.IMAGE
+            ? selectedAvatar
+            : selectedAvatarType === AvatarType.COLOR && avatar == null
+              ? undefined
+              : `${selectedAvatarType}://${selectedAvatar}`,
         email,
-        nameId,
-        id,
+        name,
         file: direct,
         icon,
         onSubmit: handlePopupSubmit
@@ -94,7 +97,11 @@
     {direct}
     {size}
     {icon}
-    value={selectedAvatarType === AvatarType.IMAGE ? selectedAvatar : `${selectedAvatarType}://${selectedAvatar}`}
-    {nameId}
+    avatar={selectedAvatarType === AvatarType.IMAGE
+      ? selectedAvatar
+      : selectedAvatarType === AvatarType.COLOR && avatar == null
+      ? undefined
+      : `${selectedAvatarType}://${selectedAvatar}`}
+    {name}
   />
 </div>

@@ -561,10 +561,9 @@
         disabled={loading}
         bind:this={avatarEditor}
         bind:direct={object.avatar}
-        value={undefined}
-        id={object._id}
+        avatar={undefined}
         size={'large'}
-        nameId={combineName(object?.firstName?.trim() ?? '', object?.lastName?.trim() ?? '')}
+        name={combineName(object?.firstName?.trim() ?? '', object?.lastName?.trim() ?? '')}
       />
     </div>
   </div>

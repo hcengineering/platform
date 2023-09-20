@@ -32,15 +32,14 @@
   import AvatarComponent from './Avatar.svelte'
   import EditAvatarPopup from './EditAvatarPopup.svelte'
 
-  export let value: string | null | undefined = undefined
-  export let nameId: string | null | undefined = undefined
+  export let avatar: string | null | undefined = undefined
+  export let name: string | null | undefined = undefined
   export let email: string | undefined
-  export let id: string
   export let file: Blob | undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let onSubmit: (avatarType?: AvatarType, avatar?: string, file?: Blob) => void
 
-  const [schema, uri] = value?.split('://') || []
+  const [schema, uri] = avatar?.split('://') || []
   const colors = getAvatarColors()
   let color: string | undefined = (schema as AvatarType) === AvatarType.COLOR ? uri : undefined
 
@@ -48,19 +47,19 @@
     if (file) {
       return AvatarType.IMAGE
     }
-    if (!value) {
+    if (!avatar) {
       return AvatarType.COLOR
     }
 
-    return value.includes('://') ? (schema as AvatarType) : AvatarType.IMAGE
+    return avatar.includes('://') ? (schema as AvatarType) : AvatarType.IMAGE
   })()
 
   const initialSelectedAvatar = (() => {
-    if (!value) {
-      return getAvatarColorForId(id)
+    if (!avatar) {
+      return getAvatarColorForId(name)
     }
 
-    return value.includes('://') ? uri : value
+    return avatar.includes('://') ? uri : avatar
   })()
 
   let selectedAvatarType: AvatarType = initialSelectedType
@@ -90,14 +89,14 @@
       }
       if (file) {
         selectedFile = file
-      } else if (value && !value.includes('://')) {
-        selectedAvatar = value
+      } else if (avatar && !avatar.includes('://')) {
+        selectedAvatar = avatar
       } else {
         selectedAvatar = ''
         inputRef.click()
       }
     } else {
-      selectedAvatar = color ?? getAvatarColorForId(id)
+      selectedAvatar = color ?? getAvatarColorForId(name)
     }
   }
 
@@ -118,15 +117,15 @@
   function showCropper (editableFile: Blob) {
     showPopup(EditAvatarPopup, { file: editableFile }, undefined, (blob) => {
       if (blob === undefined) {
-        if (!selectedFile && (!value || value.includes('://'))) {
+        if (!selectedFile && (!avatar || avatar.includes('://'))) {
           selectedAvatarType = AvatarType.COLOR
-          selectedAvatar = getAvatarColorForId(id)
+          selectedAvatar = getAvatarColorForId(name)
         }
         return
       }
       if (blob === null) {
         selectedAvatarType = AvatarType.COLOR
-        selectedAvatar = getAvatarColorForId(id)
+        selectedAvatar = getAvatarColorForId(name)
         selectedFile = undefined
       } else {
         selectedFile = blob
@@ -152,7 +151,7 @@
     if (!inputRef.value.length) {
       if (!selectedFile) {
         selectedAvatarType = AvatarType.COLOR
-        selectedAvatar = getAvatarColorForId(id)
+        selectedAvatar = getAvatarColorForId(name)
       }
     }
   }
@@ -179,7 +178,7 @@
   canSave={selectedAvatarType !== initialSelectedType ||
     selectedAvatar !== initialSelectedAvatar ||
     selectedFile !== file ||
-    !value}
+    !avatar}
   okAction={submit}
   on:close={() => {
     dispatch('close')
@@ -196,7 +195,7 @@
       }}
     >
       <AvatarComponent
-        value={selectedAvatarType === AvatarType.IMAGE
+        avatar={selectedAvatarType === AvatarType.IMAGE
           ? selectedAvatar === ''
             ? `${AvatarType.COLOR}://${color}`
             : selectedAvatar
@@ -204,8 +203,7 @@
         direct={selectedAvatarType === AvatarType.IMAGE ? selectedFile : undefined}
         size={'2x-large'}
         {icon}
-        {id}
-        {nameId}
+        {name}
       />
     </div>
     <TabList

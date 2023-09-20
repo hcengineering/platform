@@ -193,7 +193,7 @@
         <div class="msgactivity-avatar">
           <Component
             is={contact.component.Avatar}
-            props={{ value: person?.avatar, size: 'medium', nameId: person?.name, id: person?._id }}
+            props={{ avatar: person?.avatar, size: 'medium', name: person?.name }}
           />
         </div>
       {:else}

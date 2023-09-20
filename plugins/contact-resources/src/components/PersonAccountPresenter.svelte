@@ -43,7 +43,7 @@
     <PersonPresenter value={person} {disabled} {inline} {accent} {avatarSize} on:accent-color />
   {:else}
     <div class="flex-row-center">
-      <Avatar size={avatarSize} id={value._id} />
+      <Avatar size={avatarSize} />
       <span class="overflow-label user" class:fs-bold={accent} use:tooltip={{ label: valueLabel }}>
         <Label label={valueLabel} />
       </span>
