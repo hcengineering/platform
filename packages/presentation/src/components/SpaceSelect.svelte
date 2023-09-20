@@ -15,6 +15,7 @@
 <script lang="ts">
   import { createEventDispatcher, ComponentType } from 'svelte'
 
+  import { Class, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
   import { getPlatformColorDef, getPlatformColorForTextDef, IconWithEmoji, themeStore } from '@hcengineering/ui'
   import {
@@ -31,8 +32,7 @@
     showPopup,
     TooltipAlignment
   } from '@hcengineering/ui'
-  import { Class, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
-  import { IconProps } from '@hcengineering/view'
+  import view, { IconProps } from '@hcengineering/view'
 
   import SpacesPopup from './SpacesPopup.svelte'
   import { ObjectCreate } from '../types'
@@ -58,7 +58,7 @@
   export let componentProps: any | undefined = undefined
   export let autoSelect = true
   export let readonly = false
-  export let iconWithEmoji: AnySvelteComponent | Asset | ComponentType | undefined = undefined
+  export let iconWithEmoji: AnySvelteComponent | Asset | ComponentType | undefined = view.ids.IconWithEmoji
   export let defaultIcon: AnySvelteComponent | Asset | ComponentType = IconFolder
 
   let selected: (Space & IconProps) | undefined
@@ -98,7 +98,9 @@
         spaceQuery,
         create,
         component,
-        componentProps
+        componentProps,
+        iconWithEmoji,
+        defaultIcon
       },
       !$$slots.content ? eventToHTMLElement(ev) : getEventPositionElement(ev),
       (result) => {

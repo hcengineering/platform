@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -32,6 +32,7 @@
   export let isFullSize: boolean = false
   export let withoutTitle: boolean = false
   export let floatAside = false
+  export let allowBack = true
   export let allowClose = true
   export let useMaxWidth: boolean | undefined = undefined
   export let embedded = false
@@ -96,15 +97,17 @@
     class:embedded
   >
     <div class="popupPanel-title {twoRows && !withoutTitle ? 'row-top' : 'row'}">
-      <Button
-        focusIndex={10000}
-        icon={IconBack}
-        kind={'ghost'}
-        size={'medium'}
-        on:click={() => {
-          history.back()
-        }}
-      />
+      {#if allowBack}
+        <Button
+          focusIndex={10000}
+          icon={IconBack}
+          kind={'ghost'}
+          size={'medium'}
+          on:click={() => {
+            history.back()
+          }}
+        />
+      {/if}
       {#if allowClose}
         <div class="antiHSpacer" />
         <Button
