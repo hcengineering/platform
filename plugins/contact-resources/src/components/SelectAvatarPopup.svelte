@@ -15,16 +15,20 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
 
-  import {
-    AvatarType,
-    buildGravatarId,
-    checkHasGravatar,
-    getAvatarColorForId,
-    getAvatarColors,
-    getAvatarColorName
-  } from '@hcengineering/contact'
+  import { AvatarType, buildGravatarId, checkHasGravatar } from '@hcengineering/contact'
   import { Asset } from '@hcengineering/platform'
-  import { AnySvelteComponent, Label, showPopup, TabList, eventToHTMLElement } from '@hcengineering/ui'
+  import {
+    AnySvelteComponent,
+    Label,
+    showPopup,
+    TabList,
+    eventToHTMLElement,
+    getPlatformAvatarColorForTextDef,
+    getPlatformAvatarColorByName,
+    getPlatformAvatarColors,
+    ColorDefinition,
+    themeStore
+  } from '@hcengineering/ui'
   import { ColorsPopup } from '@hcengineering/view-resources'
   import presentation, { Card, getFileUrl } from '@hcengineering/presentation'
   import contact from '../plugin'
@@ -40,8 +44,9 @@
   export let onSubmit: (avatarType?: AvatarType, avatar?: string, file?: Blob) => void
 
   const [schema, uri] = avatar?.split('://') || []
-  const colors = getAvatarColors()
-  let color: string | undefined = (schema as AvatarType) === AvatarType.COLOR ? uri : undefined
+  const colors = getPlatformAvatarColors($themeStore.dark)
+  let color: ColorDefinition | undefined =
+    (schema as AvatarType) === AvatarType.COLOR ? getPlatformAvatarColorByName(uri, $themeStore.dark) : undefined
 
   const initialSelectedType = (() => {
     if (file) {
@@ -56,7 +61,7 @@
 
   const initialSelectedAvatar = (() => {
     if (!avatar) {
-      return getAvatarColorForId(name)
+      return getPlatformAvatarColorForTextDef(name ?? '', $themeStore.dark).name
     }
 
     return avatar.includes('://') ? uri : avatar
@@ -96,7 +101,7 @@
         inputRef.click()
       }
     } else {
-      selectedAvatar = color ?? getAvatarColorForId(name)
+      selectedAvatar = color ? color.name : getPlatformAvatarColorForTextDef(name ?? '', $themeStore.dark).name
     }
   }
 
@@ -119,13 +124,13 @@
       if (blob === undefined) {
         if (!selectedFile && (!avatar || avatar.includes('://'))) {
           selectedAvatarType = AvatarType.COLOR
-          selectedAvatar = getAvatarColorForId(name)
+          selectedAvatar = getPlatformAvatarColorForTextDef(name ?? '', $themeStore.dark).name
         }
         return
       }
       if (blob === null) {
         selectedAvatarType = AvatarType.COLOR
-        selectedAvatar = getAvatarColorForId(name)
+        selectedAvatar = getPlatformAvatarColorForTextDef(name ?? '', $themeStore.dark).name
         selectedFile = undefined
       } else {
         selectedFile = blob
@@ -151,7 +156,7 @@
     if (!inputRef.value.length) {
       if (!selectedFile) {
         selectedAvatarType = AvatarType.COLOR
-        selectedAvatar = getAvatarColorForId(name)
+        selectedAvatar = getPlatformAvatarColorForTextDef(name ?? '', $themeStore.dark).name
       }
     }
   }
@@ -159,11 +164,17 @@
   const showColorPopup = (event: MouseEvent) => {
     showPopup(
       ColorsPopup,
-      { colors, columns: 6, selected: getAvatarColorName(selectedAvatar) },
+      {
+        colors,
+        columns: 6,
+        selected: getPlatformAvatarColorByName(selectedAvatar, $themeStore.dark),
+        key: 'icon'
+      },
       eventToHTMLElement(event),
       (col) => {
         if (col != null) {
-          color = selectedAvatar = colors[col].color
+          color = colors[col]
+          selectedAvatar = color.name
         }
       }
     )

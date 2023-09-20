@@ -22,6 +22,7 @@
   export let colors: readonly ColorDefinition[] = getPlatformColors($themeStore.dark)
   export let columns: number = 8
   export let selected: string | undefined = undefined
+  export let key: 'color' | 'icon' = 'color'
 
   const dispatch = createEventDispatcher()
 </script>
@@ -29,11 +30,12 @@
 <PopupDialog label={view.string.ChooseAColor}>
   <div class="color-grid" style="grid-template-columns: repeat({columns}, 1.5rem)">
     {#each colors as color, i}
+      {@const col = key === 'color' ? color.color : color.icon}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
         class="color"
         class:selected={selected === color.name}
-        style="background-color: {color.color}"
+        style="background-color: {col}"
         on:click={() => {
           dispatch('close', i)
         }}

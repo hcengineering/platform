@@ -27,17 +27,19 @@
 </script>
 
 <script lang="ts">
-  import contact, {
-    AvatarProvider,
-    AvatarType,
-    getAvatarColorForId,
-    getFirstName,
-    getLastName
-  } from '@hcengineering/contact'
+  import contact, { AvatarProvider, AvatarType, getFirstName, getLastName } from '@hcengineering/contact'
   import { Client, Ref } from '@hcengineering/core'
   import { Asset, getResource } from '@hcengineering/platform'
   import { getBlobURL, getClient } from '@hcengineering/presentation'
-  import { AnySvelteComponent, Icon, IconSize } from '@hcengineering/ui'
+  import {
+    AnySvelteComponent,
+    Icon,
+    IconSize,
+    getPlatformAvatarColorForTextDef,
+    getPlatformAvatarColorByName,
+    themeStore,
+    ColorDefinition
+  } from '@hcengineering/ui'
   import { getAvatarProviderId } from '../utils'
   import AvatarIcon from './icons/Avatar.svelte'
 
@@ -49,7 +51,7 @@
 
   let url: string[] | undefined
   let avatarProvider: AvatarProvider | undefined
-  let color: string | undefined = undefined
+  let color: ColorDefinition | undefined = undefined
 
   $: fname = getFirstName(name ?? '')
   $: lname = getLastName(name ?? '')
@@ -68,7 +70,7 @@
 
       if (!avatarProvider || avatarProvider.type === AvatarType.COLOR) {
         url = undefined
-        color = avatar.split('://')[1]
+        color = getPlatformAvatarColorByName(avatar.split('://')[1], $themeStore.dark)
       } else if (avatarProvider?.type === AvatarType.IMAGE) {
         url = (await getResource(avatarProvider.getUrl))(avatar, size)
       } else {
@@ -76,7 +78,7 @@
         url = (await getResource(avatarProvider.getUrl))(uri, size)
       }
     } else if (name != null) {
-      color = getAvatarColorForId(name)
+      color = getPlatformAvatarColorForTextDef(name, $themeStore.dark)
       url = undefined
       avatarProvider = undefined
     } else {
@@ -95,7 +97,7 @@
   class="ava-{size} flex-center avatar-container"
   class:no-img={!url && color}
   class:bordered={!url && color === undefined}
-  style:background-color={url ? 'var(--theme-button-default)' : color}
+  style:background-color={color && !url ? color.icon : 'var(--theme-button-default)'}
 >
   {#if url}
     {#if size === 'large' || size === 'x-large' || size === '2x-large'}

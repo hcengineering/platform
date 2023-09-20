@@ -15,8 +15,14 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import attachment from '@hcengineering/attachment'
-  import { AnySvelteComponent, IconSize, showPopup } from '@hcengineering/ui'
-  import { AvatarType, getAvatarColorForId } from '@hcengineering/contact'
+  import {
+    AnySvelteComponent,
+    IconSize,
+    showPopup,
+    getPlatformAvatarColorForTextDef,
+    themeStore
+  } from '@hcengineering/ui'
+  import { AvatarType } from '@hcengineering/contact'
   import { Asset, getResource } from '@hcengineering/platform'
 
   import AvatarComponent from './Avatar.svelte'
@@ -41,7 +47,7 @@
       : AvatarType.IMAGE
   $: selectedAvatar = selectedAvatarType === AvatarType.IMAGE ? avatar : uri
   $: if (selectedAvatar === undefined && selectedAvatarType === AvatarType.COLOR) {
-    selectedAvatar = getAvatarColorForId(name)
+    selectedAvatar = getPlatformAvatarColorForTextDef(name ?? '', $themeStore.dark).name
   }
 
   export async function createAvatar (): Promise<string | undefined> {
