@@ -102,6 +102,7 @@ export interface NotificationPresentation {
   title: IntlString
   body: IntlString
   intlParams: Record<string, string | number>
+  intlParamsNotLocalized?: Record<string, string | number>
 }
 
 /**
@@ -183,6 +184,7 @@ export interface DocUpdateTx {
   title?: IntlString
   body?: IntlString
   intlParams?: Record<string, string | number>
+  intlParamsNotLocalized?: Record<string, string | number>
 }
 
 /**

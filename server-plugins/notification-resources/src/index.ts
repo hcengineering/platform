@@ -505,6 +505,7 @@ export async function pushNotification (
   let title: IntlString = notification.string.CommonNotificationTitle
   let body: IntlString = notification.string.CommonNotificationBody
   let intlParams: Record<string, string | number> = await getFallbackNotificationFullfillment(object, originTx, control)
+  let intlParamsNotLocalized: Record<string, string | number> | undefined
 
   const notificationPresenter = getNotificationPresenter(object._class, control.hierarchy)
   if (notificationPresenter !== undefined) {
@@ -515,6 +516,9 @@ export async function pushNotification (
     intlParams = {
       ...intlParams,
       ...updateIntlParams.intlParams
+    }
+    if (updateIntlParams.intlParamsNotLocalized) {
+      intlParamsNotLocalized = updateIntlParams.intlParamsNotLocalized
     }
   }
 
@@ -532,6 +536,9 @@ export async function pushNotification (
   }
   if (intlParams !== undefined) {
     tx.intlParams = intlParams
+  }
+  if (intlParamsNotLocalized !== undefined) {
+    tx.intlParamsNotLocalized = intlParamsNotLocalized
   }
 
   const current = docUpdates.find((p) => p.user === target)

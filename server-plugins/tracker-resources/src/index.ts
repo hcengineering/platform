@@ -95,6 +95,7 @@ export async function getIssueFullfilmentPrarams (doc: Doc, tx: TxCUD<Doc>, targ
   const intlParams: Record<string, string | number> = {
     issueTitle
   }
+  const intlParamsNotLocalized: Record<string, string | number> = {}
 
   if (tx._class === core.class.TxCollectionCUD) {
     const ptx = tx as TxCollectionCUD<Doc, AttachedDoc>
@@ -123,7 +124,7 @@ export async function getIssueFullfilmentPrarams (doc: Doc, tx: TxCUD<Doc>, targ
 
           const attr = attributes.get(attrName)
           if (attr !== null && attr !== undefined) {
-            intlParams.property = attr.label
+            intlParamsNotLocalized.property = attr.label
             if (attr.type._class === core.class.TypeString) {
               body = tracker.string.IssueNotificationChangedProperty
               intlParams.newValue = (issue as any)[attr.name]?.toString()
@@ -140,7 +141,8 @@ export async function getIssueFullfilmentPrarams (doc: Doc, tx: TxCUD<Doc>, targ
   return {
     title,
     body,
-    intlParams
+    intlParams,
+    intlParamsNotLocalized
   }
 }
 
