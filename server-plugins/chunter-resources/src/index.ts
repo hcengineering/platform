@@ -541,10 +541,15 @@ const NOTIFICATION_BODY_SIZE = 50
 /**
  * @public
  */
-export async function getChunterFullfilmentPrarams (doc: Doc, tx: TxCUD<Doc>, target: Ref<Account>, control: TriggerControl): Promise<NotificationPresentation> {
-  let title: IntlString = chunter.string.DirectNotificationTitle
+export async function getChunterFullfilmentPrarams (
+  doc: Doc,
+  tx: TxCUD<Doc>,
+  target: Ref<Account>,
+  control: TriggerControl
+): Promise<NotificationPresentation> {
+  const title: IntlString = chunter.string.DirectNotificationTitle
   let body: IntlString = chunter.string.Message
-  let intlParams: Record<string, string | number> = {}
+  const intlParams: Record<string, string | number> = {}
 
   if (tx._class === core.class.TxCollectionCUD) {
     const ptx = tx as TxCollectionCUD<Doc, AttachedDoc>

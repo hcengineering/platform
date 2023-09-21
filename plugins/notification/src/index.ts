@@ -98,7 +98,7 @@ export interface NotificationTemplate {
 /**
  * @public
  */
-export type NotificationPresentation = {
+export interface NotificationPresentation {
   title: IntlString
   body: IntlString
   intlParams: Record<string, string | number>

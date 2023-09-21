@@ -1,12 +1,42 @@
-import { SaxesParser } from "saxes"
+import { SaxesParser } from 'saxes'
 
-const blockTags = [ 'address', 'article', 'aside', 'blockquote', 'canvas', 'dd', 'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'header', 'hr', 'li', 'main', 'nav', 'ol', 'p', 'pre', 'section', 'table', 'tfoot', 'ul', 'video' ]
+const blockTags = [
+  'address',
+  'article',
+  'aside',
+  'blockquote',
+  'canvas',
+  'dd',
+  'div',
+  'dl',
+  'dt',
+  'fieldset',
+  'figcaption',
+  'figure',
+  'footer',
+  'form',
+  'h1',
+  'h2',
+  'header',
+  'hr',
+  'li',
+  'main',
+  'nav',
+  'ol',
+  'p',
+  'pre',
+  'section',
+  'table',
+  'tfoot',
+  'ul',
+  'video'
+]
 const ELLIPSIS_CHAR = '…'
 const WHITESPACE = ' '
 
-export function stripTags(htmlString: string, textLimit = 0): string {
+export function stripTags (htmlString: string, textLimit = 0): string {
   const parser = new SaxesParser()
-  let plainList: string[] = []
+  const plainList: string[] = []
   let charCount = 0
   let isHardStop = false
 
@@ -15,7 +45,7 @@ export function stripTags(htmlString: string, textLimit = 0): string {
       return
     }
 
-    if (textLimit > 0 && (charCount + text.length) > textLimit) {
+    if (textLimit > 0 && charCount + text.length > textLimit) {
       const toAddCount = textLimit - charCount
       const textPart = text.substring(0, toAddCount)
       plainList.push(textPart)
@@ -28,13 +58,13 @@ export function stripTags(htmlString: string, textLimit = 0): string {
     plainList.push(text)
   })
 
-  parser.on("opentag", (node) => {
+  parser.on('opentag', (node) => {
     if (isHardStop) {
       return
     }
 
     const tagName = node.name.toLowerCase()
-    if (blockTags.indexOf(tagName) > -1) {
+    if (blockTags.includes(tagName)) {
       if (plainList.length > 0 && plainList[plainList.length - 1] !== WHITESPACE) {
         plainList.push(WHITESPACE)
         charCount++

@@ -115,7 +115,12 @@ export interface TypeMatch extends NotificationType {
 /**
  * @public
  */
-export type IntlFullfilmentFunction = (doc: Doc, tx: TxCUD<Doc>, target: Ref<Account>, control: TriggerControl) => Promise<NotificationPresentation>
+export type IntlFullfilmentFunction = (
+  doc: Doc,
+  tx: TxCUD<Doc>,
+  target: Ref<Account>,
+  control: TriggerControl
+) => Promise<NotificationPresentation>
 
 /**
  * @public
