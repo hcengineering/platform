@@ -15,17 +15,18 @@
 -->
 <script lang="ts">
   import contact, { Contact } from '@hcengineering/contact'
-  import { AttachedData, generateId, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import { AttachedData, generateId, Ref, SortingOrder, Status as TaskStatus } from '@hcengineering/core'
   import type { Customer, Funnel, Lead } from '@hcengineering/lead'
   import { OK, Status } from '@hcengineering/platform'
   import { Card, createQuery, getClient, InlineAttributeBar, SpaceSelector } from '@hcengineering/presentation'
   import { UserBox } from '@hcengineering/contact-resources'
-  import task, { calcRank } from '@hcengineering/task'
+  import task, { calcRank, getStates, State } from '@hcengineering/task'
   import { Button, createFocusManager, EditBox, FocusHandler, Label, Status as StatusControl } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
+  import { statusStore } from '@hcengineering/view-resources'
 
-  export let space: Ref<Space>
+  export let space: Ref<Funnel>
   export let customer: Ref<Contact> | null = null
   export let preserveCustomer = false
 
@@ -46,6 +47,18 @@
   let funnels: Funnel[] = []
   const funnelQuery = createQuery()
   funnelQuery.query(lead.class.Funnel, {}, (res) => (funnels = res))
+  $: rawStates = getStates(funnel, $statusStore)
+
+  let state: Ref<TaskStatus>
+
+  $: setStatus(rawStates, object.status)
+
+  function setStatus (rawStates: TaskStatus[], status: Ref<State> | undefined) {
+    if (status === undefined || rawStates.findIndex((it) => it._id === status) === -1) {
+      state = rawStates[0]?._id
+      object.status = state
+    }
+  }
 
   $: {
     if (funnels.find((it) => it._id === _space) === undefined) {
@@ -53,11 +66,9 @@
     }
   }
 
+  $: funnel = funnels.find((it) => it._id === _space)
+
   async function createLead () {
-    const state = await client.findOne(task.class.State, { space: _space }, { sort: { rank: SortingOrder.Ascending } })
-    if (state === undefined) {
-      throw new Error('create application: state not found')
-    }
     const sequence = await client.findOne(task.class.Sequence, { attachedTo: lead.class.Lead })
     if (sequence === undefined) {
       throw new Error('sequence object not found')
@@ -67,7 +78,7 @@
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
     const value: AttachedData<Lead> = {
-      status: state._id,
+      status: state,
       doneState: null,
       number: (incResult as any).object.sequence,
       title,
@@ -97,6 +108,8 @@
   }
 
   const manager = createFocusManager()
+
+  $: object.space = _space
 </script>
 
 <FocusHandler {manager} />
