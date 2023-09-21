@@ -75,7 +75,7 @@ export async function issueTextPresenter (doc: Doc, control: TriggerControl): Pr
   return issueName
 }
 
-function isTheSamePerson(control: TriggerControl, assignee: Ref<Person>, target: Ref<Account>) {  
+function isTheSamePerson (control: TriggerControl, assignee: Ref<Person>, target: Ref<Account>): boolean {
   const targetAccount = control.modelDb.getObject(target) as PersonAccount
   return assignee === targetAccount?.person
 }
@@ -87,12 +87,12 @@ const NOTIFICATION_BODY_SIZE = 50
 export async function getIssueFullfilmentPrarams (doc: Doc, tx: TxCUD<Doc>, target: Ref<Account>, control: TriggerControl): Promise<NotificationPresentation> {
   const issue = doc as Issue
 
-  let issueShortName = await issueTextPresenter(doc, control)
+  const issueShortName = await issueTextPresenter(doc, control)
   const issueTitle = `${issueShortName}: ${issue.title}`
 
-  let title = tracker.string.IssueNotificationTitle
+  const title = tracker.string.IssueNotificationTitle
   let body = tracker.string.IssueNotificationBody
-  let intlParams: Record<string, string | number> = {
+  const intlParams: Record<string, string | number> = {
     issueTitle
   }
 
@@ -109,9 +109,9 @@ export async function getIssueFullfilmentPrarams (doc: Doc, tx: TxCUD<Doc>, targ
     } else if (ptx.tx._class === core.class.TxUpdateDoc) {
       const updateTx = ptx.tx as TxUpdateDoc<Issue>
 
-      if (updateTx.operations.assignee !== null
-        && updateTx.operations.assignee !== undefined
-        && isTheSamePerson(control, updateTx.operations.assignee, target)
+      if (updateTx.operations.assignee !== null &&
+        updateTx.operations.assignee !== undefined &&
+        isTheSamePerson(control, updateTx.operations.assignee, target)
       ) {
         body = tracker.string.IssueAssigneedToYou
       } else {
@@ -122,7 +122,7 @@ export async function getIssueFullfilmentPrarams (doc: Doc, tx: TxCUD<Doc>, targ
           }
 
           const attr = attributes.get(attrName)
-          if (attr) {
+          if (attr !== null && attr !== undefined) {
             intlParams.property = attr.label
             if (attr.type._class === core.class.TypeString) {
               body = tracker.string.IssueNotificationChangedProperty

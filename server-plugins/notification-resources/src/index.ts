@@ -457,8 +457,7 @@ async function isShouldNotify (
   }
 }
 
-
-async function findPersonForAccount(control: TriggerControl, personId: Ref<Person>) {
+async function findPersonForAccount (control: TriggerControl, personId: Ref<Person>): Promise<Person | null> {
   const persons = await control.findAll(contact.class.Person, { _id: personId })
   if (persons !== undefined && persons.length > 0) {
     return persons[0]
@@ -466,12 +465,12 @@ async function findPersonForAccount(control: TriggerControl, personId: Ref<Perso
   return null
 }
 
-async function getFallbackNotificationFullfillment(
+async function getFallbackNotificationFullfillment (
   object: Doc,
   originTx: TxCUD<Doc>,
   control: TriggerControl
-) {
-  let intlParams: Record<string, string | number> = {}
+): Promise<Record<string, string | number>> {
+  const intlParams: Record<string, string | number> = {}
 
   const textPresenter = getTextPresenter(object._class, control.hierarchy)
   if (textPresenter !== undefined) {
@@ -507,7 +506,7 @@ export async function pushNotification (
   let body: IntlString = notification.string.CommonNotificationBody
   let intlParams: Record<string, string | number> = await getFallbackNotificationFullfillment(object, originTx, control)
 
-  const notificationPresenter = getNotificationPresenter(object._class, control.hierarchy)  
+  const notificationPresenter = getNotificationPresenter(object._class, control.hierarchy)
   if (notificationPresenter !== undefined) {
     const getFuillfillmentParams = await getResource(notificationPresenter.presenter)
     const updateIntlParams = await getFuillfillmentParams(object, originTx, target, control)
