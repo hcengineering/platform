@@ -60,6 +60,10 @@
   }
   const rem = (n: number): number => n * fontSize
 
+  export function getCalendarRect (): DOMRect | undefined {
+    return container ? calendarRect : undefined
+  }
+
   const offsetTZ = new Date().getTimezoneOffset() * 60 * 1000
 
   const toCalendar = (
@@ -510,7 +514,7 @@
   let dragOnOld: CalendarCell | null = null
 
   const getMinutes = (e: MouseEvent): number => (e.offsetY >= cellHeight / 2 ? 30 : 0)
-  const dragOver = (e: MouseEvent, day: Date, hourOfDay: number) => {
+  const dragOver = (e: DragEvent & { currentTarget: EventTarget & HTMLDivElement }, day: Date, hourOfDay: number) => {
     const dragOn: CalendarCell = {
       day,
       hourOfDay,
@@ -528,6 +532,7 @@
     dispatch('dragenter', {
       date: new Date(day.setHours(hourOfDay + startHour, dragOn.minutes, 0, 0))
     })
+    e.preventDefault()
   }
 </script>
 
@@ -537,6 +542,7 @@
 >
   <div
     bind:this={container}
+    on:dragleave
     class="calendar-container"
     style:--calendar-ad-height={styleAD + 'px'}
     style:grid={`${showHeader ? '[header] 3.5rem ' : ''}[all-day] ${styleAD}px repeat(${
