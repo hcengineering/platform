@@ -50,11 +50,13 @@ const defineAvatarColor = (
   dark: boolean = false
 ): ColorDefinition => {
   const background = rgbToHex(hslToRgb(h / 360, s / 100, l / 100))
+  const icon = rgbToHex(hslToRgb(h / 360, 0.5, 0.6))
+  const title = rgbToHex(hslToRgb(h / 360, 0.9, 0.9))
   return {
     name,
     color: background,
-    icon: undefined,
-    title: undefined,
+    icon,
+    title,
     number: undefined,
     background:
       gradient.length === 1
@@ -262,6 +264,21 @@ export function getPlatformAvatarColorDef (hash: number, darkTheme: boolean): Co
  */
 export function getPlatformAvatarColorForTextDef (text: string, darkTheme: boolean): ColorDefinition {
   return getPlatformAvatarColorDef(hashCode(text), darkTheme)
+}
+
+/**
+ * @public
+ */
+export function getPlatformAvatarColorByName (name: string, darkTheme: boolean): ColorDefinition {
+  const palette = darkTheme ? avatarDarkColors : avatarWhiteColors
+  return palette.find((col) => col.name === name) ?? palette[0]
+}
+
+/**
+ * @public
+ */
+export function getPlatformAvatarColors (darkTheme: boolean): readonly ColorDefinition[] {
+  return darkTheme ? avatarDarkColors : avatarWhiteColors
 }
 
 /**
