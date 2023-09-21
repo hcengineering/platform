@@ -88,7 +88,7 @@
     "SubIssues": "Подзадачи",
     "SubIssuesList": "Подзадачи ({subIssues})",
     "OpenSubIssues": "Открыть подзадачи",
-    "AddSubIssues": "{subIssues, plural, =1 {Добавить подзадачу} other {+ Добавить подзадачи}}",
+    "AddSubIssues": "Добавить подзадачу",
     "BlockedBy": "Блокируется",
     "RelatedTo": "Связано",
     "Comments": "Комментарии",

@@ -32,7 +32,9 @@ export default mergeIds(trackerId, tracker, {
   viewlet: {
     SubIssues: '' as Ref<Viewlet>,
     List: '' as Ref<ViewletDescriptor>,
-    Kanban: '' as Ref<ViewletDescriptor>
+    Kanban: '' as Ref<ViewletDescriptor>,
+    MilestoneIssuesList: '' as Ref<Viewlet>,
+    ComponentIssuesList: '' as Ref<Viewlet>
   },
   string: {
     More: '' as IntlString,

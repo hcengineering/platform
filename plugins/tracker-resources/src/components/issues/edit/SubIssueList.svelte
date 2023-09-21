@@ -21,6 +21,7 @@
   import { ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { List, ListSelectionProvider, SelectDirection, selectionStore } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
+  import { createEventDispatcher } from 'svelte'
 
   export let query: DocumentQuery<Issue> | undefined = undefined
   export let viewlet: Viewlet
@@ -66,6 +67,8 @@
   export let createItemDialog: AnySvelteComponent | AnyComponent | undefined = undefined
   export let createItemLabel: IntlString | undefined = undefined
   export let createItemDialogProps: Record<string, any> | undefined = undefined
+
+  const dispatch = createEventDispatcher()
 </script>
 
 <ActionContext
@@ -100,6 +103,7 @@
     on:content={(evt) => {
       docs = evt.detail
       listProvider.update(evt.detail)
+      dispatch('docs', docs)
     }}
   />
 {/if}

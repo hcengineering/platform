@@ -53,7 +53,7 @@ async function createComponents (page: Page): Promise<string[]> {
   const components = []
 
   for (let index = 0; index < 5; index++) {
-    const prjId = `component-${generateId()}-${index}`
+    const prjId = `c-${generateId(5)}-${index}`
     components.push(prjId)
 
     await createComponent(page, prjId)
@@ -66,7 +66,7 @@ async function createMilestones (page: Page): Promise<string[]> {
   const milestones = []
 
   for (let index = 0; index < 5; index++) {
-    const milestoneId = `milestone-${generateId()}-${index}`
+    const milestoneId = `m-${generateId(5)}-${index}`
     milestones.push(milestoneId)
 
     await createMilestone(page, milestoneId)

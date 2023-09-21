@@ -88,7 +88,7 @@
     "SubIssues": "Sub-issues",
     "SubIssuesList": "Sub-issues ({subIssues})",
     "OpenSubIssues": "Open sub-issues",
-    "AddSubIssues": "{subIssues, plural, =1 {Add sub-issue} other {+ Add sub-issues}}",
+    "AddSubIssues": "Add sub-issue",
     "BlockedBy": "Blocked by",
     "RelatedTo": "Related to",
     "Comments": "Comments",

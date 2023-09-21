@@ -39,7 +39,7 @@
 
   const projectsQuery = createQuery()
 
-  $: projectsQuery.query(tracker.class.Project, {}, async (result) => {
+  $: projectsQuery.query(tracker.class.Project, { archived: false }, async (result) => {
     projects = new Map(result.map((it) => [it._id, it]))
   })
 </script>
