@@ -49,6 +49,9 @@ const blockTags = [
 const ELLIPSIS_CHAR = '…'
 const WHITESPACE = ' '
 
+/**
+ * @public
+ */
 export function stripTags (htmlString: string, textLimit = 0): string {
   const parser = new SaxesParser()
   const plainList: string[] = []

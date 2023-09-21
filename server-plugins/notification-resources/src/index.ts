@@ -505,7 +505,7 @@ export async function pushNotification (
   let title: IntlString = notification.string.CommonNotificationTitle
   let body: IntlString = notification.string.CommonNotificationBody
   let intlParams: Record<string, string | number> = await getFallbackNotificationFullfillment(object, originTx, control)
-  let intlParamsNotLocalized: Record<string, string | number> | undefined
+  let intlParamsNotLocalized: Record<string, IntlString> | undefined
 
   const notificationPresenter = getNotificationPresenter(object._class, control.hierarchy)
   if (notificationPresenter !== undefined) {

@@ -278,7 +278,7 @@
     "IssueNotificationTitle": "{issueTitle}",
     "IssueNotificationBody": "Обновлено {senderName}",
     "IssueNotificationChanged": "{senderName} изменил {property}",
-    "IssueNotificationChangedProperty": "{senderName} изменил {property} на {newValue}",
+    "IssueNotificationChangedProperty": "{senderName} изменил {property} на \"{newValue}\"",
     "IssueNotificationMessage": "{senderName}: {message}",
     "IssueAssigneedToYou": "Назначено вам"
   },

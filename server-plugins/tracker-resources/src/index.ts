@@ -30,7 +30,7 @@ import core, {
   TxUpdateDoc,
   WithLookup
 } from '@hcengineering/core'
-import { getMetadata } from '@hcengineering/platform'
+import { getMetadata, IntlString } from '@hcengineering/platform'
 import { Person, PersonAccount } from '@hcengineering/contact'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import tracker, { Component, Issue, IssueParentInfo, TimeSpendReport, trackerId } from '@hcengineering/tracker'
@@ -100,7 +100,7 @@ export async function getIssueFullfilmentPrarams (
   const intlParams: Record<string, string | number> = {
     issueTitle
   }
-  const intlParamsNotLocalized: Record<string, string | number> = {}
+  const intlParamsNotLocalized: Record<string, IntlString> = {}
 
   if (tx._class === core.class.TxCollectionCUD) {
     const ptx = tx as TxCollectionCUD<Doc, AttachedDoc>
