@@ -16,15 +16,19 @@
   import { DateRangeMode } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
+  import {
+    ActionIcon,
+    Button,
+    Scroller,
+    deviceOptionsStore as deviceInfo,
+    checkAdaptiveMatching,
+    Label,
+    IconClose
+  } from '../..'
   import ui from '../../plugin'
-  import ActionIcon from '../ActionIcon.svelte'
-  import Button from '../Button.svelte'
-  import Label from '../Label.svelte'
-  import IconClose from '../icons/Close.svelte'
   import DateInputBox from './DateInputBox.svelte'
   import MonthSquare from './MonthSquare.svelte'
   import Shifts from './Shifts.svelte'
-  import { Scroller, deviceOptionsStore as deviceInfo } from '../..'
 
   export let currentDate: Date | null
   export let withTime: boolean = false
@@ -36,7 +40,12 @@
   const dispatch = createEventDispatcher()
 
   const today: Date = new Date(Date.now())
+  $: devSize = $deviceInfo.size
+  $: oneMonth = checkAdaptiveMatching(devSize, 'sm')
+
   $: docHeight = $deviceInfo.docHeight
+  const rem = (n: number, fs: number): number => n * fs
+  $: scrolled = docHeight < rem(39, $deviceInfo.fontSize)
 
   let viewDate: Date = currentDate ?? today
   let viewDateSec: Date
@@ -93,51 +102,74 @@
     />
   </div>
   <div class="content">
-    <Scroller padding={'1.5rem 2rem'} thinScrollBars>
-      <div class="label">
-        <span class="bold"><Label {label} /></span>
-        {#if detail}
-          <span class="divider">-</span>
-          <Label label={detail} />
-        {/if}
-      </div>
+    {#if detail}
+      <div class="label"><Label label={detail} /></div>
+    {/if}
 
-      <DateInputBox
-        bind:this={dateInput}
-        bind:currentDate
-        {withTime}
-        on:close={() => closeDP(withTime)}
-        on:save={() => saveDate(withTime)}
-      />
-
+    <DateInputBox
+      bind:this={dateInput}
+      bind:currentDate
+      {withTime}
+      kind={'plain'}
+      on:close={() => closeDP(withTime)}
+      on:save={() => saveDate(withTime)}
+    />
+    <div class="divider" class:x2={!scrolled} />
+    {#if scrolled}
+      <Scroller thinScrollBars>
+        <div class="divider" />
+        <div class="month-group">
+          <MonthSquare
+            bind:currentDate
+            {viewDate}
+            {mondayStart}
+            viewUpdate={false}
+            hideNavigator={'all'}
+            noPadding
+            on:update={(result) => updateDate(result.detail)}
+          />
+          {#if !oneMonth}
+            <div class="space" />
+            <MonthSquare
+              bind:currentDate
+              viewDate={viewDateSec}
+              {mondayStart}
+              viewUpdate={false}
+              noPadding
+              on:update={(result) => updateDate(result.detail)}
+              on:navigation={(result) => navigateMonth(result.detail)}
+            />
+          {/if}
+        </div>
+      </Scroller>
+    {:else}
       <div class="month-group">
         <MonthSquare
           bind:currentDate
           {viewDate}
           {mondayStart}
           viewUpdate={false}
-          hideNavigator="all"
+          hideNavigator={'all'}
+          noPadding
           on:update={(result) => updateDate(result.detail)}
         />
-        <MonthSquare
-          bind:currentDate
-          viewDate={viewDateSec}
-          {mondayStart}
-          viewUpdate={false}
-          on:update={(result) => updateDate(result.detail)}
-          on:navigation={(result) => navigateMonth(result.detail)}
-        />
+        {#if !oneMonth}
+          <div class="space" />
+          <MonthSquare
+            bind:currentDate
+            viewDate={viewDateSec}
+            {mondayStart}
+            viewUpdate={false}
+            noPadding
+            on:update={(result) => updateDate(result.detail)}
+            on:navigation={(result) => navigateMonth(result.detail)}
+          />
+        {/if}
       </div>
-    </Scroller>
+    {/if}
   </div>
   <div class="footer">
-    <Button
-      kind={'accented'}
-      label={ui.string.Save}
-      size={'x-large'}
-      width={'100%'}
-      on:click={() => closeDP(withTime)}
-    />
+    <Button kind={'accented'} label={ui.string.Save} size={'large'} on:click={() => closeDP(withTime)} />
   </div>
 </div>
 <Shifts
@@ -159,7 +191,7 @@
     max-height: calc(100vh - 2rem);
     width: max-content;
     height: max-content;
-    color: var(--caption-color);
+    color: var(--theme-caption-color);
     background: var(--theme-popup-color);
     border-radius: 0.5rem;
     box-shadow: var(--theme-popup-shadow);
@@ -168,42 +200,46 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1rem 1.5rem 1rem 2rem;
-      border-bottom: 1px solid var(--theme-popup-divider);
+      padding: 1.5rem;
     }
 
     .content {
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      padding: 0 1.5rem 1.5rem;
       min-height: 0;
 
       .label {
-        padding-left: 2px;
         margin-bottom: 0.25rem;
-        font-size: 0.8125rem;
-        color: var(--theme-content-color);
-
-        .bold {
-          font-weight: 500;
-          color: var(--theme-caption-color);
-        }
-        .divider {
-          margin: 0 0.25rem;
-          line-height: 1.4375rem;
-          color: var(--theme-darker-color);
-        }
+        font-size: 0.875rem;
+        color: var(--theme-dark-color);
       }
 
       .month-group {
         display: flex;
         flex-wrap: nowrap;
-        margin: 0.5rem -0.5rem 0;
+
+        .space {
+          flex-shrink: 0;
+          width: 2rem;
+        }
+      }
+    }
+    .divider {
+      flex-shrink: 0;
+      height: 0.75rem;
+
+      &.x2 {
+        height: 1.5rem;
       }
     }
 
     .footer {
-      padding: 1rem 2rem;
+      display: flex;
+      flex-direction: row-reverse;
+      align-items: center;
+      padding: 1rem 1.5rem;
       border-top: 1px solid var(--theme-popup-divider);
     }
   }

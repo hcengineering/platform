@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import { afterUpdate, createEventDispatcher } from 'svelte'
-  import IconNavPrev from '../icons/NavPrev.svelte'
-  import IconNavNext from '../icons/NavNext.svelte'
-  import Icon from '../Icon.svelte'
+  import IconArrowLeft from '../icons/ArrowLeft.svelte'
+  import IconArrowRight from '../icons/ArrowRight.svelte'
+  import Button from '../Button.svelte'
   import { firstDay, day, getWeekDayName, areDatesEqual, getMonthName, weekday, isWeekend } from './internal/DateUtils'
   import { capitalizeFirstLetter } from '../../utils'
 
@@ -25,6 +25,7 @@
   export let mondayStart: boolean = true
   export let hideNavigator: 'all' | 'left' | 'right' | 'none' = 'none'
   export let viewUpdate: boolean = true
+  export let noPadding: boolean = false
   export let displayedWeeksCount = 6
   export let selectedTo: Date | null | undefined = undefined
 
@@ -81,32 +82,36 @@
 <div class="month-container">
   <div class="header">
     {#if viewDate}
-      <div
-        class="btn"
-        class:hideNavigator={hideNavigator === 'left' || hideNavigator === 'all'}
-        on:click={() => {
-          if (viewUpdate) viewDate.setMonth(viewDate.getMonth() - 1)
-          dispatch('navigation', -1)
-        }}
-      >
-        <div class="icon-btn"><Icon icon={IconNavPrev} size={'full'} /></div>
-      </div>
       <div class="monthYear">{monthYear}</div>
-      <div
-        class="btn"
-        class:hideNavigator={hideNavigator === 'right' || hideNavigator === 'all'}
-        on:click={() => {
-          if (viewUpdate) viewDate.setMonth(viewDate.getMonth() + 1)
-          dispatch('navigation', 1)
-        }}
-      >
-        <div class="icon-btn"><Icon icon={IconNavNext} size={'full'} /></div>
+      <div class="flex-row-center gap-1-5 mr-1">
+        {#if !(hideNavigator === 'left' || hideNavigator === 'all')}
+          <Button
+            kind={'ghost'}
+            size={'medium'}
+            icon={IconArrowLeft}
+            on:click={() => {
+              if (viewUpdate) viewDate.setMonth(viewDate.getMonth() - 1)
+              dispatch('navigation', -1)
+            }}
+          />
+        {/if}
+        {#if !(hideNavigator === 'right' || hideNavigator === 'all')}
+          <Button
+            kind={'ghost'}
+            size={'medium'}
+            icon={IconArrowRight}
+            on:click={() => {
+              if (viewUpdate) viewDate.setMonth(viewDate.getMonth() + 1)
+              dispatch('navigation', 1)
+            }}
+          />
+        {/if}
       </div>
     {/if}
   </div>
 
   {#if viewDate}
-    <div class="calendar">
+    <div class="calendar" class:noPadding>
       {#each [...Array(7).keys()] as dayOfWeek}
         <span class="caption"
           >{capitalizeFirstLetter(getWeekDayName(day(firstDayOfCurrentMonth, dayOfWeek), 'short'))}</span
@@ -125,6 +130,7 @@
             class:endRow={dayOfWeek === 6 || isNextDateWrong(date) || isEnd(currentDate, selectedTo, date)}
             class:wrongMonth={wrongM}
           >
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div
               class="day"
               class:weekend={isWeekend(date)}
@@ -161,43 +167,22 @@
     flex-direction: column;
     min-height: 0;
     height: 100%;
-    color: var(--caption-color);
+    color: var(--theme-caption-color);
 
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1rem 0.5rem 0.75rem;
-      color: var(--caption-color);
+      flex-shrink: 0;
+      margin-bottom: 0.25rem;
+      height: 2.25rem;
+      color: var(--theme-caption-color);
 
       .monthYear {
         font-weight: 500;
         font-size: 1rem;
         &::first-letter {
           text-transform: capitalize;
-        }
-      }
-      .hideNavigator {
-        visibility: hidden;
-      }
-
-      .btn {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 2rem;
-        height: 2rem;
-        color: var(--dark-color);
-        border-radius: 0.25rem;
-        background-color: var(--theme-refinput-color);
-        border: 1px solid var(--theme-refinput-color);
-        cursor: pointer;
-
-        .icon-btn {
-          height: 0.75rem;
-        }
-        &:hover {
-          color: var(--accent-color);
         }
       }
     }
@@ -207,7 +192,6 @@
     position: relative;
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    padding: 0 1rem 1rem;
 
     .caption,
     .day {
@@ -217,15 +201,21 @@
       width: 2rem;
       height: 2rem;
       font-size: 1rem;
-      color: var(--content-color);
+      color: var(--theme-content-color);
     }
     .caption {
-      align-items: start;
-      height: 2rem;
-      padding: 0.25rem;
-      color: var(--dark-color);
+      margin-bottom: 0.5rem;
+      height: 2.25rem;
+      color: var(--theme-dark-color);
       &::first-letter {
         text-transform: capitalize;
+      }
+    }
+    &:not(.noPadding) {
+      padding: 0 1rem 1rem;
+
+      .caption {
+        padding: 0.25rem;
       }
     }
 
@@ -236,8 +226,7 @@
 
       &.range:not(.wrongMonth),
       &.selected:not(.wrongMonth) {
-        color: var(--caption-color);
-        background-color: var(--accented-button-transparent);
+        color: var(--theme-caption-color);
       }
       &.startRow:not(.wrongMonth) {
         border-top-left-radius: 0.25rem;
@@ -255,24 +244,24 @@
 
     .day {
       position: relative;
-      color: var(--accent-color);
-      background-color: rgba(var(--accent-color), 0.05);
+      color: var(--theme-content-color);
+      // background-color: rgba(var(--theme-content-color), 0.05);
       border: 1px solid transparent;
       border-radius: 0.25rem;
 
       cursor: pointer;
 
       &.weekend {
-        color: var(--content-color);
+        color: var(--theme-content-color);
       }
       &.wrongMonth {
-        color: var(--dark-color);
+        color: var(--theme-trans-color);
         cursor: default;
       }
       &.today:not(.worngMonth, .selected, .range) {
         font-weight: 500;
-        background-color: rgba(76, 56, 188, 0.2);
-        border-radius: 50%;
+        background-color: var(--theme-button-focused);
+        border-color: var(--theme-button-border);
       }
       &.selected:not(.wrongMonth) {
         color: var(--accented-button-color);
@@ -280,7 +269,7 @@
       }
 
       &:not(.wrongMonth):hover {
-        color: var(--caption-color);
+        color: var(--theme-caption-color);
         background-color: var(--accented-button-transparent);
       }
     }
@@ -288,11 +277,11 @@
     &::before {
       position: absolute;
       content: '';
-      top: 2rem;
+      top: 2.25rem;
       left: 0;
       width: 100%;
       height: 1px;
-      background-color: var(--button-bg-color);
+      background-color: var(--theme-divider-color);
     }
   }
 </style>
