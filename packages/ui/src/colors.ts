@@ -13,6 +13,7 @@ export interface ColorDefinition {
   name: string
   color: string
   icon?: string
+  iconText?: string
   title?: string
   number?: string
   background?: string
@@ -50,13 +51,14 @@ const defineAvatarColor = (
   dark: boolean = false
 ): ColorDefinition => {
   const background = rgbToHex(hslToRgb(h / 360, s / 100, l / 100))
-  const icon: string | undefined = rgbToHex(hslToRgb(h / 360, 0.5, 0.6))
-  const title: string | undefined = rgbToHex(hslToRgb(h / 360, 0.9, 0.9))
+  const icon = rgbToHex(hslToRgb(h / 360, 0.5, 0.6))
+  const iconText = rgbToHex(hslToRgb(h / 360, 0.9, 0.9))
   return {
     name,
     color: background,
     icon,
-    title,
+    iconText,
+    title: undefined,
     number: undefined,
     background:
       gradient.length === 1

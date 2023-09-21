@@ -107,7 +107,7 @@
   {:else if name && displayName && displayName !== ''}
     <div
       class="ava-text"
-      style:color={color ? color.title : 'var(--accented-button-color)'}
+      style:color={color ? color.iconText : 'var(--accented-button-color)'}
       data-name={displayName.toLocaleUpperCase()}
     />
   {:else}
