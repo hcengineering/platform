@@ -84,7 +84,12 @@ const NOTIFICATION_BODY_SIZE = 50
 /**
  * @public
  */
-export async function getIssueFullfilmentPrarams (doc: Doc, tx: TxCUD<Doc>, target: Ref<Account>, control: TriggerControl): Promise<NotificationPresentation> {
+export async function getIssueFullfilmentPrarams (
+  doc: Doc,
+  tx: TxCUD<Doc>,
+  target: Ref<Account>,
+  control: TriggerControl
+): Promise<NotificationPresentation> {
   const issue = doc as Issue
 
   const issueShortName = await issueTextPresenter(doc, control)
@@ -110,7 +115,8 @@ export async function getIssueFullfilmentPrarams (doc: Doc, tx: TxCUD<Doc>, targ
     } else if (ptx.tx._class === core.class.TxUpdateDoc) {
       const updateTx = ptx.tx as TxUpdateDoc<Issue>
 
-      if (updateTx.operations.assignee !== null &&
+      if (
+        updateTx.operations.assignee !== null &&
         updateTx.operations.assignee !== undefined &&
         isTheSamePerson(control, updateTx.operations.assignee, target)
       ) {

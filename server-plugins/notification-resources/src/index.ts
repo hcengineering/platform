@@ -517,7 +517,7 @@ export async function pushNotification (
       ...intlParams,
       ...updateIntlParams.intlParams
     }
-    if (updateIntlParams.intlParamsNotLocalized) {
+    if (updateIntlParams.intlParamsNotLocalized != null) {
       intlParamsNotLocalized = updateIntlParams.intlParamsNotLocalized
     }
   }
