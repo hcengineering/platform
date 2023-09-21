@@ -275,7 +275,7 @@
     "Unarchive": "Разархивировать",
     "UnarchiveConfirm": "Вы действительно хотите разархивировать?",
     "AllProjects": "All projects",
-    "IssueNotificationTitle": "{title}: {name}",
+    "IssueNotificationTitle": "{issueTitle}",
     "IssueNotificationBody": "Обновлено {senderName}",
     "IssueNotificationChanged": "{senderName} изменил {property}",
     "IssueNotificationChangedProperty": "{senderName} изменил {property} на {newValue}",

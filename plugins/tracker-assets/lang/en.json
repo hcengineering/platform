@@ -275,7 +275,7 @@
     "Unarchive": "Unarchive",
     "UnarchiveConfirm": "Do you want to unarchive project?",
     "AllProjects": "All projects",
-    "IssueNotificationTitle": "{title}: {name}",
+    "IssueNotificationTitle": "{issueTitle}",
     "IssueNotificationBody": "Updated by {senderName}",
     "IssueNotificationChanged": "{senderName} changed {property}",
     "IssueNotificationChangedProperty": "{senderName} changed {property} to {newValue}",
