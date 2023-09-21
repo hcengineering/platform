@@ -36,7 +36,7 @@ import {
 import { Asset, IntlString, Plugin, Resource, plugin } from '@hcengineering/platform'
 import { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
 import { SpaceWithStates, Task } from '@hcengineering/task'
-import { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui'
+import { AnyComponent, ComponentExtensionId, Location, ResolvedLocation } from '@hcengineering/ui'
 import { Action, ActionCategory, IconProps } from '@hcengineering/view'
 
 /**
@@ -485,5 +485,8 @@ export default plugin(trackerId, {
   },
   mixin: {
     ProjectIssueTargetOptions: '' as Ref<Mixin<ProjectIssueTargetOptions>>
+  },
+  extensions: {
+    IssueListHeader: '' as ComponentExtensionId
   }
 })

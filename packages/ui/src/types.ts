@@ -60,6 +60,13 @@ export type Component<C extends AnySvelteComponent> = Resource<C>
 export type AnyComponent = Resource<AnySvelteComponent>
 
 /**
+ * @public
+ *
+ * Component extension points.
+ */
+export type ComponentExtensionId = string & { __componentPointId: true }
+
+/**
  * Allow to pass component with some predefined properties.
  * @public
  */
