@@ -24,9 +24,11 @@ import { Resource } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import serverNotification, {
   HTMLPresenter,
+  NotificationPresenter,
   Presenter,
   TextPresenter,
-  TypeMatch
+  TypeMatch,
+  IntlFullfilmentFunction
 } from '@hcengineering/server-notification'
 
 export { serverNotificationId } from '@hcengineering/server-notification'
@@ -41,6 +43,11 @@ export class TTextPresenter extends TClass implements TextPresenter {
   presenter!: Resource<Presenter>
 }
 
+@Mixin(serverNotification.mixin.NotificationPresenter, core.class.Class)
+export class TNotificationPresenter extends TClass implements NotificationPresenter {
+  presenter!: Resource<IntlFullfilmentFunction>
+}
+
 @Mixin(serverNotification.mixin.TypeMatch, notification.class.NotificationType)
 export class TTypeMatch extends TNotificationType implements TypeMatch {
   func!: Resource<
@@ -49,7 +56,7 @@ export class TTypeMatch extends TNotificationType implements TypeMatch {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(THTMLPresenter, TTextPresenter, TTypeMatch)
+  builder.createModel(THTMLPresenter, TTextPresenter, TTypeMatch, TNotificationPresenter)
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverNotification.trigger.OnBacklinkCreate

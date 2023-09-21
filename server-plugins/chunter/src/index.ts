@@ -17,7 +17,7 @@ import { Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref } fr
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { TriggerFunc } from '@hcengineering/server-core'
-import { Presenter, TypeMatchFunc } from '@hcengineering/server-notification'
+import { Presenter, TypeMatchFunc, IntlFullfilmentFunction } from '@hcengineering/server-notification'
 
 /**
  * @public
@@ -50,6 +50,7 @@ export default plugin(serverChunterId, {
     IsDirectMessage: '' as TypeMatchFunc,
     IsChannelMessage: '' as TypeMatchFunc,
     IsThreadMessage: '' as TypeMatchFunc,
-    IsMeMentioned: '' as TypeMatchFunc
+    IsMeMentioned: '' as TypeMatchFunc,
+    ChunterIntlFullfilmentFunction: '' as Resource<IntlFullfilmentFunction>
   }
 })

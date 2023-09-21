@@ -45,16 +45,18 @@ import notification, {
   ClassCollaborators,
   Collaborators,
   DocUpdates,
+  DocUpdateTx,
   EmailNotification,
   NotificationProvider,
   NotificationType
 } from '@hcengineering/notification'
-import { getResource } from '@hcengineering/platform'
+import { IntlString, getResource } from '@hcengineering/platform'
 import type { TriggerControl } from '@hcengineering/server-core'
 import serverNotification, {
   HTMLPresenter,
   TextPresenter,
   getEmployee,
+  NotificationPresenter,
   getPersonAccount,
   getPersonAccountById
 } from '@hcengineering/server-notification'
@@ -180,6 +182,10 @@ export function getHTMLPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy)
  */
 export function getTextPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy): TextPresenter | undefined {
   return hierarchy.classHierarchyMixin(_class, serverNotification.mixin.TextPresenter)
+}
+
+function getNotificationPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy): NotificationPresenter | undefined {
+  return hierarchy.classHierarchyMixin(_class, serverNotification.mixin.NotificationPresenter)
 }
 
 function fillTemplate (template: string, sender: string, doc: string, data: string): string {
@@ -451,10 +457,44 @@ async function isShouldNotify (
   }
 }
 
+
+async function findPersonForAccount(control: TriggerControl, personId: Ref<Person>) {
+  const persons = await control.findAll(contact.class.Person, { _id: personId })
+  if (persons !== undefined && persons.length > 0) {
+    return persons[0]
+  }
+  return null
+}
+
+async function getFallbackNotificationFullfillment(
+  object: Doc,
+  originTx: TxCUD<Doc>,
+  control: TriggerControl
+) {
+  let intlParams: Record<string, string | number> = {}
+
+  const textPresenter = getTextPresenter(object._class, control.hierarchy)
+  if (textPresenter !== undefined) {
+    const textPresenterFunc = await getResource(textPresenter.presenter)
+    intlParams.title = await textPresenterFunc(object, control)
+  }
+
+  const account = control.modelDb.getObject(originTx.modifiedBy) as PersonAccount
+  if (account !== undefined) {
+    const senderPerson = await findPersonForAccount(control, account.person)
+    if (senderPerson !== null) {
+      const senderName = formatName(senderPerson.name)
+      intlParams.senderName = senderName
+    }
+  }
+
+  return intlParams
+}
+
 /**
  * @public
  */
-export function pushNotification (
+export async function pushNotification (
   control: TriggerControl,
   res: Tx[],
   target: Ref<Account>,
@@ -462,7 +502,39 @@ export function pushNotification (
   originTx: TxCUD<Doc>,
   docUpdates: DocUpdates[],
   modifiedBy?: Ref<Account>
-): void {
+): Promise<void> {
+  let title: IntlString = notification.string.CommonNotificationTitle
+  let body: IntlString = notification.string.CommonNotificationBody
+  let intlParams: Record<string, string | number> = await getFallbackNotificationFullfillment(object, originTx, control)
+
+  const notificationPresenter = getNotificationPresenter(object._class, control.hierarchy)  
+  if (notificationPresenter !== undefined) {
+    const getFuillfillmentParams = await getResource(notificationPresenter.presenter)
+    const updateIntlParams = await getFuillfillmentParams(object, originTx, target, control)
+    title = updateIntlParams.title
+    body = updateIntlParams.body
+    intlParams = {
+      ...intlParams,
+      ...updateIntlParams.intlParams
+    }
+  }
+
+  const tx: DocUpdateTx = {
+    _id: originTx._id,
+    modifiedOn: originTx.modifiedOn,
+    modifiedBy: modifiedBy ?? originTx.modifiedBy,
+    isNew: true
+  }
+  if (title !== undefined) {
+    tx.title = title
+  }
+  if (body !== undefined) {
+    tx.body = body
+  }
+  if (intlParams !== undefined) {
+    tx.intlParams = intlParams
+  }
+
   const current = docUpdates.find((p) => p.user === target)
   if (current === undefined) {
     res.push(
@@ -472,27 +544,13 @@ export function pushNotification (
         attachedToClass: object._class,
         hidden: false,
         lastTxTime: originTx.modifiedOn,
-        txes: [
-          {
-            _id: originTx._id,
-            modifiedOn: originTx.modifiedOn,
-            modifiedBy: modifiedBy ?? originTx.modifiedBy,
-            isNew: true
-          }
-        ]
+        txes: [tx]
       })
     )
   } else {
     res.push(
       control.txFactory.createTxUpdateDoc(current._class, current.space, current._id, {
-        $push: {
-          txes: {
-            _id: originTx._id,
-            modifiedOn: originTx.modifiedOn,
-            modifiedBy: modifiedBy ?? originTx.modifiedBy,
-            isNew: true
-          }
-        }
+        $push: { txes: tx }
       })
     )
     res.push(
@@ -517,7 +575,7 @@ async function getNotificationTxes (
   const res: Tx[] = []
   const allowed = await isShouldNotify(control, tx, originTx, object, target, isOwn, isSpace)
   if (allowed.allowed) {
-    pushNotification(control, res, target, object, originTx, docUpdates)
+    await pushNotification(control, res, target, object, originTx, docUpdates)
   }
   if (allowed.emails.length === 0) return res
   const acc = await getPersonAccountById(target, control)
@@ -700,7 +758,7 @@ async function updateCollaboratorsMixin (
         attachedTo: tx.objectId
       })
       for (const collab of newCollabs) {
-        pushNotification(control, res, collab, prevDoc, originTx, docUpdates)
+        await pushNotification(control, res, collab, prevDoc, originTx, docUpdates)
       }
     }
   }

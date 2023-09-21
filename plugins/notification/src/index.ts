@@ -98,6 +98,15 @@ export interface NotificationTemplate {
 /**
  * @public
  */
+export type NotificationPresentation = {
+  title: IntlString
+  body: IntlString
+  intlParams: Record<string, string | number>
+}
+
+/**
+ * @public
+ */
 export interface NotificationType extends Doc {
   // For show/hide with attributes
   attribute?: Ref<AnyAttribute>
@@ -171,6 +180,9 @@ export interface DocUpdateTx {
   modifiedBy: Ref<Account>
   modifiedOn: Timestamp
   isNew: boolean
+  title?: IntlString
+  body?: IntlString
+  intlParams?: Record<string, string | number>
 }
 
 /**
@@ -263,7 +275,9 @@ const notification = plugin(notificationId, {
     Notification: '' as IntlString,
     Notifications: '' as IntlString,
     DontTrack: '' as IntlString,
-    Inbox: '' as IntlString
+    Inbox: '' as IntlString,
+    CommonNotificationTitle: '' as IntlString,
+    CommonNotificationBody: '' as IntlString
   },
   function: {
     GetNotificationClient: '' as Resource<NotificationClientFactoy>

@@ -14,6 +14,7 @@
 //
 
 import core, {
+  Account,
   AttachedDoc,
   concatLink,
   Doc,
@@ -30,9 +31,14 @@ import core, {
   WithLookup
 } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
+import { Person, PersonAccount } from '@hcengineering/contact'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import tracker, { Component, Issue, IssueParentInfo, TimeSpendReport, trackerId } from '@hcengineering/tracker'
+import { NotificationPresentation } from '@hcengineering/notification'
 import { workbenchId } from '@hcengineering/workbench'
+
+import chunter, { Comment } from '@hcengineering/chunter'
+import { stripTags } from '@hcengineering/text'
 
 async function updateSubIssues (
   updateTx: TxUpdateDoc<Issue>,
@@ -67,6 +73,75 @@ export async function issueTextPresenter (doc: Doc, control: TriggerControl): Pr
   const issueName = `${project?.identifier ?? '?'}-${issue.number}`
 
   return issueName
+}
+
+function isTheSamePerson(control: TriggerControl, assignee: Ref<Person>, target: Ref<Account>) {  
+  const targetAccount = control.modelDb.getObject(target) as PersonAccount
+  return assignee === targetAccount?.person
+}
+
+const NOTIFICATION_BODY_SIZE = 50
+/**
+ * @public
+ */
+export async function getIssueFullfilmentPrarams (doc: Doc, tx: TxCUD<Doc>, target: Ref<Account>, control: TriggerControl): Promise<NotificationPresentation> {
+  const issue = doc as Issue
+
+  let issueShortName = await issueTextPresenter(doc, control)
+  const issueTitle = `${issueShortName}: ${issue.title}`
+
+  let title = tracker.string.IssueNotificationTitle
+  let body = tracker.string.IssueNotificationBody
+  let intlParams: Record<string, string | number> = {
+    issueTitle
+  }
+
+  if (tx._class === core.class.TxCollectionCUD) {
+    const ptx = tx as TxCollectionCUD<Doc, AttachedDoc>
+
+    if (ptx.tx._class === core.class.TxCreateDoc) {
+      if (ptx.tx.objectClass === chunter.class.Comment) {
+        const createTx = ptx.tx as TxCreateDoc<Comment>
+        const message = createTx.attributes.message
+        const plainTextMessage = stripTags(message, NOTIFICATION_BODY_SIZE)
+        intlParams.message = plainTextMessage
+      }
+    } else if (ptx.tx._class === core.class.TxUpdateDoc) {
+      const updateTx = ptx.tx as TxUpdateDoc<Issue>
+
+      if (updateTx.operations.assignee !== null
+        && updateTx.operations.assignee !== undefined
+        && isTheSamePerson(control, updateTx.operations.assignee, target)
+      ) {
+        body = tracker.string.IssueAssigneedToYou
+      } else {
+        const attributes = control.hierarchy.getAllAttributes(doc._class)
+        for (const attrName in updateTx.operations) {
+          if (!Object.prototype.hasOwnProperty.call(updateTx.operations, attrName)) {
+            continue
+          }
+
+          const attr = attributes.get(attrName)
+          if (attr) {
+            intlParams.property = attr.label
+            if (attr.type._class === core.class.TypeString) {
+              body = tracker.string.IssueNotificationChangedProperty
+              intlParams.newValue = (issue as any)[attr.name]?.toString()
+            } else {
+              body = tracker.string.IssueNotificationChanged
+            }
+          }
+          break
+        }
+      }
+    }
+  }
+
+  return {
+    title,
+    body,
+    intlParams
+  }
 }
 
 /**
@@ -157,7 +232,8 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
 export default async () => ({
   function: {
     IssueHTMLPresenter: issueHTMLPresenter,
-    IssueTextPresenter: issueTextPresenter
+    IssueTextPresenter: issueTextPresenter,
+    IssueIntlFullfilmentFunction: getIssueFullfilmentPrarams
   },
   trigger: {
     OnIssueUpdate,

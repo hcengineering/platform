@@ -44,7 +44,8 @@
     "@tiptap/extension-task-list": "^2.0.3",
     "@tiptap/extension-typography": "^2.0.3",
     "@tiptap/suggestion": "^2.0.3",
-    "@tiptap/prosemirror-tables": "^1.1.4"
+    "@tiptap/prosemirror-tables": "^1.1.4",
+    "saxes": "^6.0.0"
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {

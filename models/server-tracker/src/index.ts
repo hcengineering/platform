@@ -32,6 +32,10 @@ export function createModel (builder: Builder): void {
     presenter: serverTracker.function.IssueTextPresenter
   })
 
+  builder.mixin(tracker.class.Issue, core.class.Class, serverNotification.mixin.NotificationPresenter, {
+    presenter: serverTracker.function.IssueIntlFullfilmentFunction
+  })
+
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverTracker.trigger.OnIssueUpdate
   })
