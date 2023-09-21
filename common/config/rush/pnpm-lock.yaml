@@ -362,6 +362,7 @@ specifiers:
   rfc6902: ^5.0.1
   sass: ^1.53.0
   sass-loader: ^13.2.0
+  saxes: ^6.0.0
   sharp: ~0.30.7
   simplytyped: ^3.3.0
   smartcrop: ~2.0.5
@@ -753,6 +754,7 @@ dependencies:
   rfc6902: 5.0.1
   sass: 1.56.1
   sass-loader: 13.2.0_sass@1.56.1+webpack@5.75.0
+  saxes: 6.0.0
   sharp: 0.30.7
   simplytyped: 3.3.0_typescript@4.8.4
   smartcrop: 2.0.5
@@ -15128,6 +15130,13 @@ packages:
       xmlchars: 2.2.0
     dev: false
 
+  /saxes/6.0.0:
+    resolution: {integrity: sha512-xAg7SOnEhrm5zI3puOOKyy1OMcMlIJZYNJY7xLBwSze0UjhPLnWfj2GF2EpT0jmzaJKIWKHLsaSSajf35bcYnA==}
+    engines: {node: '>=v12.22.7'}
+    dependencies:
+      xmlchars: 2.2.0
+    dev: false
+
   /scheduler/0.23.0:
     resolution: {integrity: sha512-CtuThmgHNg7zIZWAXi3AsyIzA3n4xx7aNyjwC2VJldO2LMVDhFK+63xGqq6CsJH4rTAt6/M+N4GhZiDYPx9eUw==}
     dependencies:
@@ -21263,7 +21272,7 @@ packages:
     dev: false
 
   file:projects/server-tracker-resources.tgz:
-    resolution: {integrity: sha512-t7nGyhfhEjSqEWWptyy3dts4WixZayRj/3aGr66LWM1JXQaGfBgGOTjBD1FKFJptRcAJngE3+39D6vqPOqx0VQ==, tarball: file:projects/server-tracker-resources.tgz}
+    resolution: {integrity: sha512-T7YWkcgBG3DOJu188v9G42cTL0oSlOViSqtPuG9BPbwpFiojMA859qmciaZK1tdYvqgq+4XnUgHmRCslNSEKYg==, tarball: file:projects/server-tracker-resources.tgz}
     name: '@rush-temp/server-tracker-resources'
     version: 0.0.0
     dependencies:
@@ -22018,7 +22027,7 @@ packages:
     dev: false
 
   file:projects/text.tgz_a7abb371f17d2bc77abec7bc53398db5:
-    resolution: {integrity: sha512-QfLKyYxcLXLoqBMnbP4k2ND5871b+ycKCz7+NZ7xBtPtEb3Ee6jPdFrf8wbmnIYX/dLV0VThNKXcJ4ZiWxNvbA==, tarball: file:projects/text.tgz}
+    resolution: {integrity: sha512-G5lQZT9m9iBfZJlr+/pwyq5NCU5bEG+JMbxjf2npi9wSxa0/1EwWMAAk4WJ+AAKBq51GI+uAHVhXYhDEQzMHDA==, tarball: file:projects/text.tgz}
     id: file:projects/text.tgz
     name: '@rush-temp/text'
     version: 0.0.0
@@ -22051,6 +22060,7 @@ packages:
       eslint-plugin-n: 15.5.1_eslint@8.27.0
       eslint-plugin-promise: 6.1.1_eslint@8.27.0
       prettier: 2.8.8
+      saxes: 6.0.0
       typescript: 4.8.4
     transitivePeerDependencies:
       - prosemirror-keymap
