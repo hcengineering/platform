@@ -1124,3 +1124,14 @@
   align-items: center;
   min-width: 0;
 }
+
+/* Tasks in Calendar (WorkSlot) */
+.tasksGroup-container .task-item.dragged {
+  overflow: hidden;
+  background-color: var(--theme-bg-color);
+  border-color: var(--theme-divider-color);
+  border-radius: .125rem;
+  opacity: .75;
+
+  .task-icon { opacity: 0; }
+}
