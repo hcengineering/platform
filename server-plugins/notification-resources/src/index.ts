@@ -95,7 +95,7 @@ export async function OnBacklinkCreate (tx: Tx, control: TriggerControl): Promis
       res.push(collabTx)
     }
     const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
-    res = res.concat(await createCollabDocInfo([receiver._id], control, actualTx, tx as TxCUD<Doc>, doc))
+    res = res.concat(await createCollabDocInfo([receiver._id], control, actualTx, tx as TxCUD<Doc>, doc, true))
   }
   return res
 }
@@ -360,9 +360,16 @@ function fieldUpdated (field: string, ops: DocumentUpdate<Doc> | MixinUpdate<Doc
   return false
 }
 
-function isTypeMatched (control: TriggerControl, type: NotificationType, tx: TxCUD<Doc>, originTx: TxCUD<Doc>): boolean {
+function isTypeMatched (
+  control: TriggerControl,
+  type: NotificationType,
+  tx: TxCUD<Doc>,
+  originTx: TxCUD<Doc>,
+  isOwn: boolean
+): boolean {
   const h = control.hierarchy
   const targetClass = h.getBaseClass(type.objectClass)
+  if (type.onlyOwn === true && !isOwn) return false
   if (!type.txClasses.includes(tx._class)) return false
   if (!control.hierarchy.isDerived(h.getBaseClass(tx.objectClass), targetClass)) return false
   if (originTx._class === core.class.TxCollectionCUD && type.attachedToClass !== undefined) {
@@ -389,14 +396,15 @@ async function getMatchedTypes (
   control: TriggerControl,
   tx: TxCUD<Doc>,
   originTx: TxCUD<Doc>,
-  isSpace: boolean = false
+  isOwn: boolean,
+  isSpace: boolean
 ): Promise<NotificationType[]> {
   const allTypes = (await control.modelDb.findAll(notification.class.NotificationType, {})).filter((p) =>
     isSpace ? p.spaceSubscribe === true : p.spaceSubscribe !== true
   )
   const filtered: NotificationType[] = []
   for (const type of allTypes) {
-    if (isTypeMatched(control, type, tx, originTx)) {
+    if (isTypeMatched(control, type, tx, originTx, isOwn)) {
       filtered.push(type)
     }
   }
@@ -414,11 +422,12 @@ async function isShouldNotify (
   originTx: TxCUD<Doc>,
   object: Doc,
   user: Ref<Account>,
+  isOwn: boolean,
   isSpace: boolean
 ): Promise<NotifyResult> {
   let allowed = false
   const emailTypes: NotificationType[] = []
-  const types = await getMatchedTypes(control, tx, originTx, isSpace)
+  const types = await getMatchedTypes(control, tx, originTx, isOwn, isSpace)
   for (const type of types) {
     if (type.allowedForAuthor !== true && tx.modifiedBy === user) continue
     if (control.hierarchy.hasMixin(type, serverNotification.mixin.TypeMatch)) {
@@ -502,10 +511,11 @@ async function getNotificationTxes (
   originTx: TxCUD<Doc>,
   target: Ref<Account>,
   docUpdates: DocUpdates[],
+  isOwn: boolean,
   isSpace: boolean
 ): Promise<Tx[]> {
   const res: Tx[] = []
-  const allowed = await isShouldNotify(control, tx, originTx, object, target, isSpace)
+  const allowed = await isShouldNotify(control, tx, originTx, object, target, isOwn, isSpace)
   if (allowed.allowed) {
     pushNotification(control, res, target, object, originTx, docUpdates)
   }
@@ -537,6 +547,7 @@ async function createCollabDocInfo (
   tx: TxCUD<Doc>,
   originTx: TxCUD<Doc>,
   object: Doc,
+  isOwn: boolean,
   isSpace: boolean = false
 ): Promise<Tx[]> {
   let res: Tx[] = []
@@ -544,7 +555,7 @@ async function createCollabDocInfo (
   const targets = new Set(collaborators)
   const docUpdates = await control.findAll(notification.class.DocUpdates, { attachedTo: object._id })
   for (const target of targets) {
-    res = res.concat(await getNotificationTxes(control, object, tx, originTx, target, docUpdates, isSpace))
+    res = res.concat(await getNotificationTxes(control, object, tx, originTx, target, docUpdates, isOwn, isSpace))
   }
   return res
 }
@@ -584,7 +595,7 @@ async function getSpaceCollabTxes (
   if (mixin !== undefined) {
     const collabs = control.hierarchy.as<Doc, Collaborators>(space, notification.mixin.Collaborators)
     if (collabs.collaborators !== undefined) {
-      return await createCollabDocInfo(collabs.collaborators, control, tx, originTx, doc, true)
+      return await createCollabDocInfo(collabs.collaborators, control, tx, originTx, doc, false, true)
     }
   }
   return []
@@ -606,7 +617,7 @@ export async function createCollaboratorDoc (
     const collaborators = await getDocCollaborators(doc, mixin, control)
 
     const mixinTx = getMixinTx(tx, control, collaborators)
-    const notificationTxes = await createCollabDocInfo(collaborators, control, tx, originTx, doc)
+    const notificationTxes = await createCollabDocInfo(collaborators, control, tx, originTx, doc, true)
     res.push(mixinTx)
     res.push(...notificationTxes)
   }
@@ -697,14 +708,14 @@ async function updateCollaboratorsMixin (
 }
 
 async function collectionCollabDoc (tx: TxCollectionCUD<Doc, AttachedDoc>, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx)
-  let res = await collaboratorDocHandler(actualTx as TxCUD<Doc>, control, tx)
+  const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
+  let res = await collaboratorDocHandler(actualTx, control, tx)
   if ([core.class.TxCreateDoc, core.class.TxRemoveDoc].includes(actualTx._class)) {
     const doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
     if (doc !== undefined) {
       if (control.hierarchy.hasMixin(doc, notification.mixin.Collaborators)) {
         const collabMixin = control.hierarchy.as(doc, notification.mixin.Collaborators)
-        res = res.concat(await createCollabDocInfo(collabMixin.collaborators, control, tx, tx, doc))
+        res = res.concat(await createCollabDocInfo(collabMixin.collaborators, control, actualTx, tx, doc, false))
       }
     }
   }
@@ -808,12 +819,12 @@ async function updateCollaboratorDoc (
       )
     }
     res = res.concat(
-      await createCollabDocInfo([...collabMixin.collaborators, ...newCollaborators], control, tx, originTx, doc)
+      await createCollabDocInfo([...collabMixin.collaborators, ...newCollaborators], control, tx, originTx, doc, true)
     )
   } else {
     const collaborators = await getDocCollaborators(doc, mixin, control)
     res.push(getMixinTx(tx, control, collaborators))
-    res = res.concat(await createCollabDocInfo(collaborators, control, tx, originTx, doc))
+    res = res.concat(await createCollabDocInfo(collaborators, control, tx, originTx, doc, true))
   }
 
   res = res.concat(await getSpaceCollabTxes(control, doc, tx, originTx))
