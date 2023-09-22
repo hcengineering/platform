@@ -1125,13 +1125,13 @@
   min-width: 0;
 }
 
-/* Tasks in Calendar (WorkSlot) */
-.tasksGroup-container .task-item.dragged {
+/* ToDos in Calendar (WorkSlot) */
+.toDos-container .task-item.dragged {
   overflow: hidden;
-  background-color: var(--theme-bg-color);
+  background-color: var(--theme-bg-dark-color);
   border-color: var(--theme-divider-color);
   border-radius: .125rem;
   opacity: .75;
 
-  .task-icon { opacity: 0; }
+  .hideOnDrag { opacity: 0 !important; }
 }
