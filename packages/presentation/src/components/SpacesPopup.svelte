@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,11 +15,13 @@
 -->
 <script lang="ts">
   import { Class, Doc, DocumentQuery, FindOptions, Ref, Space, getCurrentAccount } from '@hcengineering/core'
+  import { Asset } from '@hcengineering/platform'
   import { AnySvelteComponent, ButtonSize } from '@hcengineering/ui'
   import { ObjectCreate } from '../types'
   import { createQuery } from '../utils'
   import DocPopup from './DocPopup.svelte'
   import SpaceInfo from './SpaceInfo.svelte'
+  import { ComponentType } from 'svelte'
 
   export let _class: Ref<Class<Space>>
   export let selected: Ref<Space> | undefined
@@ -29,6 +32,8 @@
   export let allowDeselect = false
   export let component: AnySvelteComponent | undefined = undefined
   export let componentProps: any | undefined = undefined
+  export let iconWithEmoji: AnySvelteComponent | Asset | ComponentType | undefined = undefined
+  export let defaultIcon: AnySvelteComponent | Asset | ComponentType | undefined = undefined
 
   let search: string | undefined = undefined
 
@@ -78,7 +83,7 @@
     {#if component}
       <svelte:component this={component} {...componentProps} {size} value={space} />
     {:else}
-      <SpaceInfo {size} value={space} />
+      <SpaceInfo {size} value={space} {iconWithEmoji} {defaultIcon} />
     {/if}
   </svelte:fragment>
 </DocPopup>

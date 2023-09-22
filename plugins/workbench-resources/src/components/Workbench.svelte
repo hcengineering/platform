@@ -707,10 +707,7 @@
             class="cursor-pointer"
             on:click|stopPropagation={() => showPopup(AccountPopup, {}, popupPosition)}
           >
-            <Component
-              is={contact.component.Avatar}
-              props={{ avatar: employee?.avatar, size: 'small', name: employee?.name }}
-            />
+            <Component is={contact.component.Avatar} props={{ avatar: employee?.avatar, size: 'small' }} />
           </div>
         </div>
       </div>
@@ -732,7 +729,16 @@
               {#await checkIsHeaderHidden(currentApplication) then isHidden}
                 {#if !isHidden}
                   {#await checkIsHeaderDisabled(currentApplication) then disabled}
-                    <Component is={currentApplication.navHeaderComponent} props={{ currentSpace, disabled }} shrink />
+                    <Component
+                      is={currentApplication.navHeaderComponent}
+                      props={{
+                        currentSpace,
+                        currentSpecial,
+                        currentFragment,
+                        disabled
+                      }}
+                      shrink
+                    />
                   {/await}
                 {/if}
               {/await}
@@ -741,6 +747,7 @@
           <Navigator
             {currentSpace}
             {currentSpecial}
+            {currentFragment}
             model={navigatorModel}
             {currentApplication}
             on:open={checkOnHide}

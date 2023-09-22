@@ -1,6 +1,6 @@
 <!--
     // Copyright © 2020, 2021 Anticrm Platform Contributors.
-    // Copyright © 2021 Hardcore Engineering Inc.
+    // Copyright © 2021, 2023 Hardcore Engineering Inc.
     // 
     // Licensed under the Eclipse Public License, Version 2.0 (the "License");
     // you may not use this file except in compliance with the License. You may
@@ -45,6 +45,7 @@
   export let isUtils: boolean = true
   export let isCustomAttr: boolean = true
   export let floatAside = false
+  export let allowBack = true
   export let allowClose = true
   export let useMaxWidth: boolean | undefined = undefined
   export let isFullSize = false
@@ -96,6 +97,7 @@
   bind:withoutTitle
   on:open
   on:close
+  {allowBack}
   {allowClose}
   {floatAside}
   {embedded}

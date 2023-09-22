@@ -32,7 +32,7 @@
 
   export let icon: Metadata<string> | undefined = undefined
   export let icons: Asset[]
-  export let emoji: Asset = view.ids.IconWithEmoji
+  export let iconWithEmoji: Asset = view.ids.IconWithEmoji
   export let color: number = 0
 
   const dispatch = createEventDispatcher()
@@ -95,7 +95,7 @@
           <EmojiPopup
             embedded
             on:close={(evt) => {
-              dispatch('close', { icon: emoji, color: evt.detail.codePointAt(0) })
+              dispatch('close', { icon: iconWithEmoji, color: evt.detail.codePointAt(0) })
             }}
           />
         {/if}

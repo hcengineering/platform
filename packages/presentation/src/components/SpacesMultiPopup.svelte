@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,9 +15,17 @@
 -->
 <script lang="ts">
   import core, { Class, Ref, Space } from '@hcengineering/core'
-  import type { IntlString } from '@hcengineering/platform'
-  import { CheckBox, deviceOptionsStore, resizeObserver, tooltip, EditWithIcon, IconSearch } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+  import type { Asset, IntlString } from '@hcengineering/platform'
+  import {
+    AnySvelteComponent,
+    CheckBox,
+    deviceOptionsStore,
+    resizeObserver,
+    tooltip,
+    EditWithIcon,
+    IconSearch
+  } from '@hcengineering/ui'
+  import { ComponentType, createEventDispatcher } from 'svelte'
   import presentation from '..'
   import { createQuery } from '../utils'
   import SpaceInfo from './SpaceInfo.svelte'
@@ -28,6 +37,8 @@
   export let placeholderParam: any | undefined = undefined
   export let selected: Ref<Space> | undefined
   export let selectedSpaces: Ref<Space>[] = []
+  export let iconWithEmoji: AnySvelteComponent | Asset | ComponentType | undefined = undefined
+  export let defaultIcon: AnySvelteComponent | Asset | ComponentType | undefined = undefined
 
   let searchQuery: string = ''
   let spaces: Space[] = []
@@ -97,7 +108,7 @@
           <div class="check pointer-events-none">
             <CheckBox checked={isSelected(space)} accented />
           </div>
-          <SpaceInfo size={'medium'} value={space} />
+          <SpaceInfo size={'medium'} value={space} {iconWithEmoji} {defaultIcon} />
           {#if allowDeselect && space._id === selected}
             <div class="check pointer-events-none">
               {#if titleDeselect}

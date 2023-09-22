@@ -184,7 +184,7 @@
 
   function chooseIcon (ev: MouseEvent) {
     const icons = [tracker.icon.Home, tracker.icon.RedCircle]
-    showPopup(IconPicker, { icon, color, icons, emoji: tracker.component.IconWithEmoji }, 'top', (result) => {
+    showPopup(IconPicker, { icon, color, icons, iconWithEmoji: tracker.component.IconWithEmoji }, 'top', (result) => {
       if (result !== undefined && result !== null) {
         icon = result.icon
         color = result.color
