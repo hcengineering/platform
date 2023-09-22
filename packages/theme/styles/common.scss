@@ -176,6 +176,7 @@
     }
   }
   .an-element__icon-arrow {
+    flex-shrink: 0;
     margin-left: .25rem;
     width: 1rem;
     height: 1rem;
