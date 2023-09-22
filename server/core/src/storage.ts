@@ -249,7 +249,7 @@ class TServerStorage implements ServerStorage {
     const oldAttachedTo = (await findAll(ctx, _class, { _id }, { limit: 1 }))[0]
     let oldTx: Tx | null = null
     if (oldAttachedTo !== undefined) {
-      const attr = this.hierarchy.getAttribute(oldAttachedTo._class, colTx.collection)
+      const attr = this.hierarchy.findAttribute(oldAttachedTo._class, colTx.collection)
 
       if (attr !== undefined) {
         oldTx = await this.getCollectionUpdateTx(_id, _class, tx.modifiedBy, colTx.modifiedOn, oldAttachedTo, {
@@ -262,7 +262,7 @@ class TServerStorage implements ServerStorage {
     const newAttachedToCollection = operations.collection ?? colTx.collection
     const newAttachedTo = (await findAll(ctx, newAttachedToClass, { _id: operations.attachedTo }, { limit: 1 }))[0]
     let newTx: Tx | null = null
-    const newAttr = this.hierarchy.getAttribute(newAttachedToClass, newAttachedToCollection)
+    const newAttr = this.hierarchy.findAttribute(newAttachedToClass, newAttachedToCollection)
     if (newAttachedTo !== undefined && newAttr !== undefined) {
       newTx = await this.getCollectionUpdateTx(
         newAttachedTo._id,
