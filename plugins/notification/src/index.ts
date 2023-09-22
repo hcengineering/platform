@@ -109,6 +109,8 @@ export interface NotificationType extends Doc {
   group: Ref<NotificationGroup>
   txClasses: Ref<Class<Tx>>[]
   objectClass: Ref<Class<Doc>>
+  // not allowed to parent doc
+  onlyOwn?: boolean
   // check parent doc class
   attachedToClass?: Ref<Class<Doc>>
   // use for update/mixin txes
