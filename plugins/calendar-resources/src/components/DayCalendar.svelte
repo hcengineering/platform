@@ -44,7 +44,8 @@
   export let startHour = 0
   export let startFromWeekStart = true
   export let weekFormat: 'narrow' | 'short' | 'long' | undefined = displayedDaysCount > 4 ? 'short' : 'long'
-  export let showHeader = true
+  export let showHeader: boolean = true
+  export let clearCells: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -59,6 +60,7 @@
     }
   }
   const rem = (n: number): number => n * fontSize
+  const initDisplayedDaysCount = displayedDaysCount
 
   export function getCalendarRect (): DOMRect | undefined {
     return container ? calendarRect : undefined
@@ -494,6 +496,9 @@
   const checkSizes = (element: HTMLElement | Element) => {
     calendarRect = element.getBoundingClientRect()
     calendarWidth = calendarRect.width
+    if (calendarWidth < 356 && initDisplayedDaysCount >= 1) displayedDaysCount = 1
+    else if (calendarWidth < 512 && initDisplayedDaysCount >= 2) displayedDaysCount = 2
+    else if (calendarWidth >= 512 && displayedDaysCount < initDisplayedDaysCount) displayedDaysCount = 3
     colWidth = (calendarWidth - 3.5 * fontSize) / displayedDaysCount
   }
   $: if (docHeight && calendarRect?.top) {
@@ -534,6 +539,8 @@
     })
     e.preventDefault()
   }
+
+  const dragOn = (e: DragEvent) => e.preventDefault()
 </script>
 
 <Scroller
@@ -543,7 +550,9 @@
   <div
     bind:this={container}
     on:dragleave
+    on:dragover={dragOn}
     class="calendar-container"
+    class:clearCells
     style:--calendar-ad-height={styleAD + 'px'}
     style:grid={`${showHeader ? '[header] 3.5rem ' : ''}[all-day] ${styleAD}px repeat(${
       (displayedHours - startHour) * 2
@@ -764,6 +773,15 @@
     position: relative;
     display: grid;
 
+    &.clearCells .empty-cell {
+      position: relative;
+      &::after {
+        position: absolute;
+        content: '';
+        inset: 0;
+        z-index: 5;
+      }
+    }
     .now-line,
     .now-line::before {
       position: absolute;
