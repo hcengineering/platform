@@ -16,4 +16,3 @@
 export * from './extensions'
 export * from './html'
 export * from './nodes'
-export * from './plain-text'
