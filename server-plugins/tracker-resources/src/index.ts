@@ -34,7 +34,7 @@ import { getMetadata, IntlString } from '@hcengineering/platform'
 import { Person, PersonAccount } from '@hcengineering/contact'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import tracker, { Component, Issue, IssueParentInfo, TimeSpendReport, trackerId } from '@hcengineering/tracker'
-import { NotificationPresentation } from '@hcengineering/notification'
+import { NotificationContent } from '@hcengineering/notification'
 import { workbenchId } from '@hcengineering/workbench'
 
 import chunter, { Comment } from '@hcengineering/chunter'
@@ -75,7 +75,7 @@ export async function issueTextPresenter (doc: Doc, control: TriggerControl): Pr
   return issueName
 }
 
-function isTheSamePerson (control: TriggerControl, assignee: Ref<Person>, target: Ref<Account>): boolean {
+function isSamePerson (control: TriggerControl, assignee: Ref<Person>, target: Ref<Account>): boolean {
   const targetAccount = control.modelDb.getObject(target) as PersonAccount
   return assignee === targetAccount?.person
 }
@@ -84,12 +84,12 @@ const NOTIFICATION_BODY_SIZE = 50
 /**
  * @public
  */
-export async function getIssueFullfilmentPrarams (
+export async function getIssueNotificationContent (
   doc: Doc,
   tx: TxCUD<Doc>,
   target: Ref<Account>,
   control: TriggerControl
-): Promise<NotificationPresentation> {
+): Promise<NotificationContent> {
   const issue = doc as Issue
 
   const issueShortName = await issueTextPresenter(doc, control)
@@ -118,7 +118,7 @@ export async function getIssueFullfilmentPrarams (
       if (
         updateTx.operations.assignee !== null &&
         updateTx.operations.assignee !== undefined &&
-        isTheSamePerson(control, updateTx.operations.assignee, target)
+        isSamePerson(control, updateTx.operations.assignee, target)
       ) {
         body = tracker.string.IssueAssigneedToYou
       } else {
@@ -241,7 +241,7 @@ export default async () => ({
   function: {
     IssueHTMLPresenter: issueHTMLPresenter,
     IssueTextPresenter: issueTextPresenter,
-    IssueIntlFullfilmentFunction: getIssueFullfilmentPrarams
+    IssueNotificationContentProvider: getIssueNotificationContent
   },
   trigger: {
     OnIssueUpdate,

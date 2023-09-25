@@ -33,7 +33,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, serverNotification.mixin.NotificationPresenter, {
-    presenter: serverTracker.function.IssueIntlFullfilmentFunction
+    presenter: serverTracker.function.IssueNotificationContentProvider
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {

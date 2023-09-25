@@ -16,7 +16,7 @@
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { TriggerFunc } from '@hcengineering/server-core'
-import { Presenter, IntlFullfilmentFunction } from '@hcengineering/server-notification'
+import { Presenter, NotificationContentProvider } from '@hcengineering/server-notification'
 
 /**
  * @public
@@ -30,7 +30,7 @@ export default plugin(serverTrackerId, {
   function: {
     IssueHTMLPresenter: '' as Resource<Presenter>,
     IssueTextPresenter: '' as Resource<Presenter>,
-    IssueIntlFullfilmentFunction: '' as Resource<IntlFullfilmentFunction>
+    IssueNotificationContentProvider: '' as Resource<NotificationContentProvider>
   },
   trigger: {
     OnIssueUpdate: '' as Resource<TriggerFunc>,

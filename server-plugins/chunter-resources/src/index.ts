@@ -43,7 +43,7 @@ import core, {
   TxRemoveDoc,
   TxUpdateDoc
 } from '@hcengineering/core'
-import notification, { Collaborators, NotificationType, NotificationPresentation } from '@hcengineering/notification'
+import notification, { Collaborators, NotificationType, NotificationContent } from '@hcengineering/notification'
 import { getMetadata, IntlString } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { getDocCollaborators, getMixinTx, pushNotification } from '@hcengineering/server-notification-resources'
@@ -541,12 +541,12 @@ const NOTIFICATION_BODY_SIZE = 50
 /**
  * @public
  */
-export async function getChunterFullfilmentPrarams (
+export async function getChunterNotificationContent (
   doc: Doc,
   tx: TxCUD<Doc>,
   target: Ref<Account>,
   control: TriggerControl
-): Promise<NotificationPresentation> {
+): Promise<NotificationContent> {
   const title: IntlString = chunter.string.DirectNotificationTitle
   let body: IntlString = chunter.string.Message
   const intlParams: Record<string, string | number> = {}
@@ -582,7 +582,7 @@ export default async () => ({
     CommentRemove,
     ChannelHTMLPresenter: channelHTMLPresenter,
     ChannelTextPresenter: channelTextPresenter,
-    ChunterIntlFullfilmentFunction: getChunterFullfilmentPrarams,
+    ChunterNotificationContentProvider: getChunterNotificationContent,
     IsDirectMessage,
     IsThreadMessage,
     IsMeMentioned,

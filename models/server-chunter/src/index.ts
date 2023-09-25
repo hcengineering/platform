@@ -42,7 +42,7 @@ export function createModel (builder: Builder): void {
   )
 
   builder.mixin(chunter.class.DirectMessage, core.class.Class, serverNotification.mixin.NotificationPresenter, {
-    presenter: serverChunter.function.ChunterIntlFullfilmentFunction
+    presenter: serverChunter.function.ChunterNotificationContentProvider
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {

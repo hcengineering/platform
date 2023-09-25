@@ -16,7 +16,7 @@
 
 import contact, { Employee, Person, PersonAccount } from '@hcengineering/contact'
 import { Account, Class, Doc, Mixin, Ref, Tx, TxCUD } from '@hcengineering/core'
-import { NotificationType, NotificationPresentation } from '@hcengineering/notification'
+import { NotificationType, NotificationContent } from '@hcengineering/notification'
 import { Plugin, Resource, plugin } from '@hcengineering/platform'
 import type { TriggerControl, TriggerFunc } from '@hcengineering/server-core'
 
@@ -115,18 +115,18 @@ export interface TypeMatch extends NotificationType {
 /**
  * @public
  */
-export type IntlFullfilmentFunction = (
+export type NotificationContentProvider = (
   doc: Doc,
   tx: TxCUD<Doc>,
   target: Ref<Account>,
   control: TriggerControl
-) => Promise<NotificationPresentation>
+) => Promise<NotificationContent>
 
 /**
  * @public
  */
 export interface NotificationPresenter extends Class<Doc> {
-  presenter: Resource<IntlFullfilmentFunction>
+  presenter: Resource<NotificationContentProvider>
 }
 
 /**

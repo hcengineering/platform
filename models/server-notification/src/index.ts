@@ -28,7 +28,7 @@ import serverNotification, {
   Presenter,
   TextPresenter,
   TypeMatch,
-  IntlFullfilmentFunction
+  NotificationContentProvider
 } from '@hcengineering/server-notification'
 
 export { serverNotificationId } from '@hcengineering/server-notification'
@@ -45,7 +45,7 @@ export class TTextPresenter extends TClass implements TextPresenter {
 
 @Mixin(serverNotification.mixin.NotificationPresenter, core.class.Class)
 export class TNotificationPresenter extends TClass implements NotificationPresenter {
-  presenter!: Resource<IntlFullfilmentFunction>
+  presenter!: Resource<NotificationContentProvider>
 }
 
 @Mixin(serverNotification.mixin.TypeMatch, notification.class.NotificationType)
