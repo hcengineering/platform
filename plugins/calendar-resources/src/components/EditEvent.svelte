@@ -47,8 +47,8 @@
 
   let rules: RecurringRule[] = (object as ReccuringEvent).rules ?? []
 
-  let participants: Ref<Person>[] = object.participants
-  let externalParticipants: string[] = object.externalParticipants ?? []
+  let participants: Ref<Person>[] = [...object.participants]
+  let externalParticipants: string[] = [...(object.externalParticipants ?? [])]
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -79,6 +79,12 @@
       if (object.dueDate !== dueDate) {
         update.dueDate = allDay ? saveUTC(dueDate) : dueDate
       }
+    }
+    if (deepEqual(object.participants, participants) === false) {
+      update.participants = participants
+    }
+    if (deepEqual(object.externalParticipants, externalParticipants) === false) {
+      update.externalParticipants = externalParticipants
     }
     if (deepEqual(object.reminders, reminders) === false) {
       update.reminders = reminders
