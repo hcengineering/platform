@@ -40,7 +40,7 @@ const WHITESPACE = ' '
 
 /**
  * @public
-*/
+ */
 export function stripTags (htmlString: string, textLimit = 0, extensions: Extensions | undefined = undefined): string {
   const effectiveExtensions = extensions ?? defaultExtensions
   const parsed = parseHTML(htmlString, effectiveExtensions)
