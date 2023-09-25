@@ -20,8 +20,7 @@ import {
   Event,
   ReccuringEvent,
   ReccuringInstance,
-  RecurringRule,
-  calendarId
+  RecurringRule
 } from '@hcengineering/calendar'
 import { Contact } from '@hcengineering/contact'
 import { DateRangeMode, Domain, IndexKind, Markup, Ref, Timestamp } from '@hcengineering/core'
@@ -47,7 +46,6 @@ import contact from '@hcengineering/model-contact'
 import core, { TAttachedDoc, TClass } from '@hcengineering/model-core'
 import { TSpaceWithStates } from '@hcengineering/model-task'
 import view, { createAction } from '@hcengineering/model-view'
-import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
 import { AnyComponent } from '@hcengineering/ui'
