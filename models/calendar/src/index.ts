@@ -138,19 +138,6 @@ export class TCalendarEventPresenter extends TClass implements CalendarEventPres
 export function createModel (builder: Builder): void {
   builder.createModel(TCalendar, TReccuringEvent, TReccuringInstance, TEvent, TCalendarEventPresenter)
 
-  builder.createDoc(
-    workbench.class.Application,
-    core.space.Model,
-    {
-      label: calendar.string.ApplicationLabelCalendar,
-      icon: calendar.icon.Calendar,
-      alias: calendarId,
-      hidden: false,
-      component: calendar.component.Events
-    },
-    calendar.app.Calendar
-  )
-
   builder.mixin(calendar.class.Event, core.class.Class, calendar.mixin.CalendarEventPresenter, {
     presenter: calendar.component.CalendarEventPresenter
   })
