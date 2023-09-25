@@ -20,8 +20,7 @@ import {
   Event,
   ReccuringEvent,
   ReccuringInstance,
-  RecurringRule,
-  calendarId
+  RecurringRule
 } from '@hcengineering/calendar'
 import { Contact } from '@hcengineering/contact'
 import { DateRangeMode, Domain, IndexKind, Markup, Ref, Timestamp } from '@hcengineering/core'
@@ -47,7 +46,6 @@ import contact from '@hcengineering/model-contact'
 import core, { TAttachedDoc, TClass } from '@hcengineering/model-core'
 import { TSpaceWithStates } from '@hcengineering/model-task'
 import view, { createAction } from '@hcengineering/model-view'
-import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
 import { AnyComponent } from '@hcengineering/ui'
@@ -137,19 +135,6 @@ export class TCalendarEventPresenter extends TClass implements CalendarEventPres
 
 export function createModel (builder: Builder): void {
   builder.createModel(TCalendar, TReccuringEvent, TReccuringInstance, TEvent, TCalendarEventPresenter)
-
-  builder.createDoc(
-    workbench.class.Application,
-    core.space.Model,
-    {
-      label: calendar.string.ApplicationLabelCalendar,
-      icon: calendar.icon.Calendar,
-      alias: calendarId,
-      hidden: false,
-      component: calendar.component.Events
-    },
-    calendar.app.Calendar
-  )
 
   builder.mixin(calendar.class.Event, core.class.Class, calendar.mixin.CalendarEventPresenter, {
     presenter: calendar.component.CalendarEventPresenter
