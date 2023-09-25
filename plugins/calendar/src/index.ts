@@ -144,6 +144,8 @@ const calendarPlugin = plugin(calendarId, {
     Calendar: '' as Ref<Doc>
   },
   component: {
+    CreateEvent: '' as AnyComponent,
+    EditEvent: '' as AnyComponent,
     CalendarView: '' as AnyComponent,
     PersonsPresenter: '' as AnyComponent,
     Events: '' as AnyComponent,
