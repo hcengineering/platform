@@ -13,17 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, SortingOrder } from '@hcengineering/core'
-  import { getEmbeddedLabel, IntlString, translate } from '@hcengineering/platform'
+  import { DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
+  import { IntlString, getEmbeddedLabel, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import { Milestone, Project } from '@hcengineering/tracker'
+  import { Milestone } from '@hcengineering/tracker'
   import type { ButtonKind, ButtonSize, LabelAndProps } from '@hcengineering/ui'
-  import { Button, ButtonShape, eventToHTMLElement, SelectPopup, showPopup, Label, themeStore } from '@hcengineering/ui'
+  import { Button, ButtonShape, Label, SelectPopup, eventToHTMLElement, showPopup, themeStore } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import { milestoneStatusAssets } from '../../types'
 
   export let value: Ref<Milestone> | null | undefined
-  export let space: Ref<Project> | undefined = undefined
+  export let space: DocumentQuery<Milestone>['space'] | undefined = undefined
   export let shouldShowLabel: boolean = true
   export let isEditable: boolean = true
   export let onChange: ((newMilestoneId: Ref<Milestone> | undefined) => void) | undefined = undefined
