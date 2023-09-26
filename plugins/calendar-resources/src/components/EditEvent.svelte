@@ -17,17 +17,18 @@
   import { Person } from '@hcengineering/contact'
   import { DocumentUpdate, Ref } from '@hcengineering/core'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import { Button, DAY, EditBox, Icon, IconClose, IconMoreH, closePopup, showPopup } from '@hcengineering/ui'
+  import { StyledTextBox } from '@hcengineering/text-editor'
+  import { Button, DAY, EditBox, Icon, IconClose, closePopup, showPopup } from '@hcengineering/ui'
+  import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
   import { isReadOnly, saveUTC } from '../utils'
   import EventParticipants from './EventParticipants.svelte'
+  import EventReminders from './EventReminders.svelte'
   import EventTimeEditor from './EventTimeEditor.svelte'
+  import EventTimeExtraButton from './EventTimeExtraButton.svelte'
   import ReccurancePopup from './ReccurancePopup.svelte'
   import UpdateRecInstancePopup from './UpdateRecInstancePopup.svelte'
-  import { deepEqual } from 'fast-equals'
-  import EventReminders from './EventReminders.svelte'
-  import EventTimeExtraButton from './EventTimeExtraButton.svelte'
 
   export let object: Event
   $: readOnly = isReadOnly(object)
@@ -225,7 +226,6 @@
       focusIndex={10001}
     />
     <div class="flex-row-center gap-1 flex-no-shrink ml-3">
-      <Button id="card-more" focusIndex={10002} icon={IconMoreH} kind={'ghost'} size={'small'} on:click={() => {}} />
       <Button
         id="card-close"
         focusIndex={10003}
@@ -248,13 +248,13 @@
   <div class="block flex-no-shrink">
     <div class="flex-row-center gap-1-5">
       <Icon icon={calendar.icon.Description} size={'small'} />
-      <EditBox
-        bind:value={description}
+      <StyledTextBox
+        alwaysEdit={true}
+        kind='indented'
+        maxHeight='limited'
+        showButtons={false}
         placeholder={calendar.string.Description}
-        kind={'ghost'}
-        fullSize
-        focusable
-        disabled={readOnly}
+        bind:content={description}
       />
     </div>
   </div>

@@ -17,15 +17,16 @@
   import { Person, PersonAccount } from '@hcengineering/contact'
   import { Class, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import { Button, EditBox, Icon, IconClose, showPopup, IconMoreH } from '@hcengineering/ui'
+  import { StyledTextBox } from '@hcengineering/text-editor'
+  import { Button, EditBox, Icon, IconClose, IconMoreH, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
   import { saveUTC } from '../utils'
   import EventParticipants from './EventParticipants.svelte'
-  import EventTimeEditor from './EventTimeEditor.svelte'
-  import ReccurancePopup from './ReccurancePopup.svelte'
   import EventReminders from './EventReminders.svelte'
+  import EventTimeEditor from './EventTimeEditor.svelte'
   import EventTimeExtraButton from './EventTimeExtraButton.svelte'
+  import ReccurancePopup from './ReccurancePopup.svelte'
 
   export let attachedTo: Ref<Doc> = calendar.ids.NoAttached
   export let attachedToClass: Ref<Class<Doc>> = calendar.class.Event
@@ -153,7 +154,14 @@
   <div class="block flex-no-shrink">
     <div class="flex-row-center gap-1-5">
       <Icon icon={calendar.icon.Description} size={'small'} />
-      <EditBox bind:value={description} placeholder={calendar.string.Description} kind={'ghost'} fullSize focusable />
+      <StyledTextBox
+        alwaysEdit={true}
+        kind='indented'
+        maxHeight='limited'
+        showButtons={false}
+        placeholder={calendar.string.Description}
+        bind:content={description}
+      />
     </div>
   </div>
   <div class="block rightCropPadding">
