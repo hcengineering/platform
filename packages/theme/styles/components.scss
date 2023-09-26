@@ -1028,6 +1028,25 @@
   }
 }
 
+/* Presenters */
+.antiPresenter {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  min-width: 0;
+
+  .ap-icon { color: var(--theme-dark-color); }
+  .ap-label {
+    min-width: 0;
+    text-align: left;
+    color: var(--theme-caption-color);
+
+    &.colorInherit { color: inherit; }
+  }
+  &:hover .ap-icon,
+  &:hover .ap-label { color: var(--theme-caption-color); }
+}
+
 /* ListView - global style */
 .list-container .category-container .categoryHeader.subLevel.closed {
   border-radius: 0 0 0.25rem 0.25rem;
