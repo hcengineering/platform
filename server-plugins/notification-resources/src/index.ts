@@ -457,12 +457,12 @@ async function isShouldNotify (
   }
 }
 
-async function findPersonForAccount (control: TriggerControl, personId: Ref<Person>): Promise<Person | null> {
+async function findPersonForAccount (control: TriggerControl, personId: Ref<Person>): Promise<Person | undefined> {
   const persons = await control.findAll(contact.class.Person, { _id: personId })
   if (persons !== undefined && persons.length > 0) {
     return persons[0]
   }
-  return null
+  return undefined
 }
 
 async function getFallbackNotificationFullfillment (
@@ -481,7 +481,7 @@ async function getFallbackNotificationFullfillment (
   const account = control.modelDb.getObject(originTx.modifiedBy) as PersonAccount
   if (account !== undefined) {
     const senderPerson = await findPersonForAccount(control, account.person)
-    if (senderPerson !== null) {
+    if (senderPerson !== undefined) {
       const senderName = formatName(senderPerson.name)
       intlParams.senderName = senderName
     }
