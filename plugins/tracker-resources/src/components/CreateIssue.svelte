@@ -452,7 +452,6 @@
       : [{ parentId: _id, parentTitle: value.title }]
     await subIssuesComponent.save(parents, _id)
 
-    console.log(value)
     addNotification(
       await translate(tracker.string.IssueCreated, {}, $themeStore.language),
       getTitle(object.title),
