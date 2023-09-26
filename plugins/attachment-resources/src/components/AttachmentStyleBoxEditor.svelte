@@ -13,7 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { onMount } from 'svelte'
   import { Doc, Class, Ref, updateAttribute } from '@hcengineering/core'
 
   import { IntlString } from '@hcengineering/platform'
@@ -96,8 +95,8 @@
 
     // Need to bind which object to save, because object could
     // change after we have set timeout
-    let saveObject = object
-    let saveDescription = description
+    const saveObject = object
+    const saveDescription = description
 
     saveTrigger = setTimeout(() => save(saveObject, saveDescription), 2500)
   }
