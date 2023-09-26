@@ -16,7 +16,7 @@
    * path segment in the "$schema" field for all your Rush config files.  This will ensure
    * correct error-underlining and tab-completion for editors such as VS Code.
    */
-  "rushVersion": "5.100.1",
+  "rushVersion": "5.108.0",
 
   /**
    * The next field selects which package manager should be installed and determines its version.
@@ -26,92 +26,10 @@
    * Specify one of: "pnpmVersion", "npmVersion", or "yarnVersion".  See the Rush documentation
    * for details about these alternatives.
    */
-  "pnpmVersion": "6.35.1",
+  "pnpmVersion": "8.6.12",
 
-  // "npmVersion": "4.5.0",
+  // "npmVersion": "6.14.15",
   // "yarnVersion": "1.9.4",
-
-  /**
-   * Options that are only used when the PNPM package manager is selected
-   */
-  "pnpmOptions": {
-    /**
-     * Specifies the location of the PNPM store.  There are two possible values:
-     *
-     * - "local" - use the "pnpm-store" folder in the current configured temp folder:
-     *   "common/temp/pnpm-store" by default.
-     * - "global" - use PNPM's global store, which has the benefit of being shared
-     *    across multiple repo folders, but the disadvantage of less isolation for builds
-     *    (e.g. bugs or incompatibilities when two repos use different releases of PNPM)
-     *
-     * RUSH_PNPM_STORE_PATH will override the directory that will be used as the store
-     *
-     * In all cases, the store path will be overridden by the environment variable RUSH_PNPM_STORE_PATH.
-     *
-     * The default value is "local".
-     */
-    // "pnpmStore": "local",
-
-    /**
-     * If true, then Rush will add the "--strict-peer-dependencies" option when invoking PNPM.
-     * This causes "rush install" to fail if there are unsatisfied peer dependencies, which is
-     * an invalid state that can cause build failures or incompatible dependency versions.
-     * (For historical reasons, JavaScript package managers generally do not treat this invalid
-     * state as an error.)
-     *
-     * The default value is false to avoid legacy compatibility issues.
-     * It is strongly recommended to set strictPeerDependencies=true.
-     */
-    "strictPeerDependencies": false,
-
-    /**
-     * Configures the strategy used to select versions during installation.
-     *
-     * This feature requires PNPM version 3.1 or newer.  It corresponds to the "--resolution-strategy" command-line
-     * option for PNPM.  Possible values are "fast" and "fewer-dependencies".  PNPM's default is "fast", but this may
-     * be incompatible with certain packages, for example the "@types" packages from DefinitelyTyped.  Rush's default
-     * is "fewer-dependencies", which causes PNPM to avoid installing a newer version if an already installed version
-     * can be reused; this is more similar to NPM's algorithm.
-     *
-     * After modifying this field, it's recommended to run "rush update --full" so that the package manager
-     * will recalculate all version selections.
-     */
-    // "resolutionStrategy": "fast",
-
-    /**
-     * If true, then `rush install` will report an error if manual modifications
-     * were made to the PNPM shrinkwrap file without running "rush update" afterwards.
-     *
-     * This feature protects against accidental inconsistencies that may be introduced
-     * if the PNPM shrinkwrap file ("pnpm-lock.yaml") is manually edited.  When this
-     * feature is enabled, "rush update" will append a hash to the file as a YAML comment,
-     * and then "rush update" and "rush install" will validate the hash.  Note that this does not prohibit
-     * manual modifications, but merely requires "rush update" be run
-     * afterwards, ensuring that PNPM can report or repair any potential inconsistencies.
-     *
-     * To temporarily disable this validation when invoking "rush install", use the
-     * "--bypass-policy" command-line parameter.
-     *
-     * The default value is false.
-     */
-    // "preventManualShrinkwrapChanges": true,
-
-    /**
-     * If true, then `rush install` will use the PNPM workspaces feature to perform the
-     * install.
-     *
-     * This feature uses PNPM to perform the entire monorepo install. When using workspaces, Rush will
-     * generate a "pnpm-workspace.yaml" file referencing all local projects to install. Rush will
-     * also generate a "pnpmfile.js" which is used to provide preferred versions support. When install
-     * is run, this pnpmfile will be used to replace dependency version ranges with a smaller subset
-     * of the original range. If the preferred version is not fully a subset of the original version
-     * range, it will be left as-is. After this, the pnpmfile.js provided in the repository (if one
-     * exists) will be called to further modify package dependencies.
-     *
-     * This option is experimental. The default value is false.
-     */
-    // "useWorkspaces": true
-  },
 
   /**
    * Older releases of the Node.js engine may be missing features required by your system.
@@ -124,7 +42,15 @@
    * LTS schedule: https://nodejs.org/en/about/releases/
    * LTS versions: https://nodejs.org/en/download/releases/
    */
-  "nodeSupportedVersionRange": ">=12.13.0 <13.0.0 || >=14.15.0 <15.0.0 || >=16.0.0",
+  "nodeSupportedVersionRange": ">=14.15.0 <15.0.0 || >=16.13.0 <17.0.0 || >=18.15.0 <19.0.0",
+
+  /**
+   * If the version check above fails, Rush will display a message showing the current
+   * node version and the supported version range. You can use this setting to provide
+   * additional instructions that will display below the warning, if there's a specific
+   * tool or script you'd like the user to use to get in line with the expected version.
+   */
+  // "nodeSupportedVersionInstructions": "Run 'nvs use' to switch to the expected node version.",
 
   /**
    * Odd-numbered major versions of Node.js are experimental.  Even-numbered releases
@@ -245,7 +171,7 @@
      */
     // "allowedEmailRegExps": [
     //   "[^@]+@users\\.noreply\\.github\\.com",
-    //   "travis@example\\.org"
+    //   "rush-bot@example\\.org"
     // ],
 
     /**
@@ -253,7 +179,7 @@
      * of a recommended email.  Make sure it conforms to one of the allowedEmailRegExps
      * expressions.
      */
-    // "sampleEmail": "mrexample@users.noreply.github.com",
+    // "sampleEmail": "example@users.noreply.github.com",
 
     /**
      * The commit message to use when committing changes during 'rush publish'.
@@ -262,7 +188,7 @@
      * you might configure your system's trigger to look for a special string such as "[skip-ci]"
      * in the commit message, and then customize Rush's message to contain that string.
      */
-    // "versionBumpCommitMessage": "Applying package updates. [skip-ci]",
+    // "versionBumpCommitMessage": "Bump versions [skip ci]", 
 
     /**
      * The commit message to use when committing changes during 'rush version'.
@@ -271,7 +197,14 @@
      * you might configure your system's trigger to look for a special string such as "[skip-ci]"
      * in the commit message, and then customize Rush's message to contain that string.
      */
-    // "changeLogUpdateCommitMessage": "Deleting change files and updating change logs for package updates. [skip-ci]"
+    // "changeLogUpdateCommitMessage": "Update changelogs [skip ci]",
+
+    /**
+     * The commit message to use when commiting changefiles during 'rush change --commit'
+     *
+     * If no commit message is set it will default to 'Rush change'
+     */
+     // "changefilesCommitMessage": "Rush change"
   },
 
   "repository": {
@@ -279,22 +212,22 @@
      * The URL of this Git repository, used by "rush change" to determine the base branch for your PR.
      *
      * The "rush change" command needs to determine which files are affected by your PR diff.
-     * If you merged or cherry-picked commits from the master branch into your PR branch, those commits
+     * If you merged or cherry-picked commits from the main branch into your PR branch, those commits
      * should be excluded from this diff (since they belong to some other PR).  In order to do that,
      * Rush needs to know where to find the base branch for your PR.  This information cannot be
      * determined from Git alone, since the "pull request" feature is not a Git concept.  Ideally
      * Rush would use a vendor-specific protocol to query the information from GitHub, Azure DevOps, etc.
-     * But to keep things simple, "rush change" simply assumes that your PR is against the "master" branch
+     * But to keep things simple, "rush change" simply assumes that your PR is against the "main" branch
      * of the Git remote indicated by the repository.url setting in rush.json.  If you are working in
      * a GitHub "fork" of the real repo, this setting will be different from the repository URL of your
      * your PR branch, and in this situation "rush change" will also automatically invoke "git fetch"
-     * to retrieve the latest activity for the remote master branch.
+     * to retrieve the latest activity for the remote main branch.
      */
     "url": "https://github.com/hcengineering/anticrm",
 
     /**
      * The default branch name. This tells "rush change" which remote branch to compare against.
-     * The default value is "master"
+     * The default value is "main"
      */
     "defaultBranch": "main",
 
@@ -381,6 +314,16 @@
   // "hotfixChangeEnabled": false,
 
   /**
+    * This is an optional, but recommended, list of allowed tags that can be applied to Rush projects
+    * using the "tags" setting in this file.  This list is useful for preventing mistakes such as misspelling,
+    * and it also provides a centralized place to document your tags.  If "allowedProjectTags" list is
+    * not specified, then any valid tag is allowed.  A tag name must be one or more words
+    * separated by hyphens or slashes, where a word may contain lowercase ASCII letters, digits,
+    * ".", and "@" characters.
+    */
+  // "allowedProjectTags": [ "tools", "frontend-team", "1.0.0-release" ],
+
+  /**
    * (Required) This is the inventory of projects to be managed by Rush.
    *
    * Rush does not automatically scan for projects using wildcards, for a few reasons:
@@ -408,11 +351,29 @@
     //   "reviewCategory": "production",
     // 
     //   /**
-    //    * A list of local projects that appear as devDependencies for this project, but cannot be
-    //    * locally linked because it would create a cyclic dependency; instead, the last published
-    //    * version will be installed in the Common folder.
+    //    * A list of Rush project names that are to be installed from NPM
+    //    * instead of linking to the local project.
+    //    *
+    //    * If a project's package.json specifies a dependency that is another Rush project
+    //    * in the monorepo workspace, normally Rush will locally link its folder instead of
+    //    * installing from NPM.  If you are using PNPM workspaces, this is indicated by
+    //    * a SemVer range such as "workspace:^1.2.3".  To prevent mistakes, Rush reports
+    //    * an error if the "workspace:" protocol is missing.
+    //    *
+    //    * Locally linking ensures that regressions are caught as early as possible and is
+    //    * a key benefit of monorepos.  However there are occasional situations where
+    //    * installing from NPM is needed.  A classic example is a cyclic dependency.
+    //    * Imagine three Rush projects: "my-toolchain" depends on "my-tester", which depends
+    //    * on "my-library".  Suppose that we add "my-toolchain" to the "devDependencies"
+    //    * of "my-library" so it can be built by our toolchain.  This cycle creates
+    //    * a problem -- Rush can't build a project using a not-yet-built dependency.
+    //    * We can solve it by adding "my-toolchain" to the "decoupledLocalDependencies"
+    //    * of "my-library", so it builds using the last published release.  Choose carefully
+    //    * which package to decouple; some choices are much easier to manage than others.
+    //    *
+    //    * (In older Rush releases, this setting was called "cyclicDependencyProjects".)
     //    */
-    //   "cyclicDependencyProjects": [
+    //   "decoupledLocalDependencies": [
     //     // "my-toolchain"
     //   ],
     // 
@@ -443,7 +404,16 @@
     //    * in "version-policies.json" file.  See the "rush publish" documentation for more info.
     //    * NOTE: "versionPolicyName" and "shouldPublish" are alternatives; you cannot specify them both.
     //    */
-    //   // "versionPolicyName": ""
+    //   // "versionPolicyName": "",
+    // 
+    //   /**
+    //    * An optional set of custom tags that can be used to select this project.  For example,
+    //    * adding "my-custom-tag" will allow this project to be selected by the
+    //    * command "rush list --only tag:my-custom-tag".  The tag name must be one or more words
+    //    * separated by hyphens or slashes, where a word may contain lowercase ASCII letters, digits,
+    //    * ".", and "@" characters.
+    //    */
+    //   // "tags": [ "1.0.0-release", "frontend-team" ]
     // },
     // 
     {

@@ -29,7 +29,7 @@ import { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
 
 export { presentationId } from '@hcengineering/presentation/src/plugin'
 export { default } from './plugin'
-export { ObjectSearchCategory, ObjectSearchFactory }
+export type { ObjectSearchCategory, ObjectSearchFactory }
 
 @Model(presentation.class.ObjectSearchCategory, core.class.Doc, DOMAIN_MODEL)
 export class TObjectSearchCategory extends TDoc implements ObjectSearchCategory {

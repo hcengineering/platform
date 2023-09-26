@@ -23,7 +23,7 @@ import textEditor from './plugin'
 
 export { textEditorId } from '@hcengineering/text-editor/src/plugin'
 export { default } from './plugin'
-export { RefInputAction, RefInputActionItem }
+export type { RefInputAction, RefInputActionItem }
 
 @Model(textEditor.class.RefInputActionItem, core.class.Doc, DOMAIN_MODEL)
 export class TRefInputActionItem extends TDoc implements RefInputActionItem {

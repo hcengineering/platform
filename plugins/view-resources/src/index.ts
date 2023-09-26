@@ -150,10 +150,10 @@ export {
   getObjectPresenter,
   getObjectPreview,
   groupBy,
-  isCollectionAttr,
-  LoadingProps,
+  isCollectionAttr,  
   setActiveViewletId
 } from './utils'
+export type { LoadingProps } from './utils'
 export * from './viewOptions'
 export {
   HTMLPresenter,

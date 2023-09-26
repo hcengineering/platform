@@ -1,29 +1,71 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/heft/heft.schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/heft/v0/heft.schema.json",
 
-  "eventActions": [
-    {
-      "actionKind": "deleteGlobs",  
-      "heftEvent": "clean",
-      "actionId": "defaultClean",
-      "globsToDelete": ["dist", "lib", "temp"]
-    },
-    {
-      "actionKind": "copyFiles",
-      "heftEvent": "pre-compile",
-      "actionId": "copy-lang",
-      "copyOperations": [
-        {
-          "sourceFolder": "src",
-          "destinationFolders": ["lib"],
-          "includeGlobs": ["lang"]
+  "phasesByName": {
+    // ("build" is a user-defined name, not a schema field)
+    "build": {
+      // 📌 [1] new way of cleaning
+      "cleanFiles": [
+        { "sourcePath": "dist" },
+        { "sourcePath": "lib" },
+        { "sourcePath": "temp" }
+      ],
+      "tasksByName": {
+        // ("typescript" is a user-defined name, not a schema field)
+        "typescript": {
+          "taskPlugin": {
+            "pluginPackage": "@rushstack/heft-typescript-plugin"
+          }
+        },
+        // "lint": {
+        //   "taskDependencies": ["typescript"],
+        //   "taskPlugin": {
+        //     "pluginPackage": "@rushstack/heft-lint-plugin"
+        //   }
+        // },
+        // "api-extractor": {
+        //   "taskDependencies": ["typescript"],
+        //   "taskPlugin": {
+        //     "pluginPackage": "@rushstack/heft-api-extractor-plugin"
+        //   }
+        // },
+        // ("post-compile-copy" is a user-defined name, not a schema field)
+        "post-compile-copy": {
+          // 📌 [3] new way to do a post-compile action, by depending on the relevant task(s)
+
+          // The "post-compile-copy" task should not run until after "typescript" completes
+          "taskDependencies": ["typescript"],
+
+          "taskPlugin": {
+            "pluginName": "copy-files-plugin",
+            "pluginPackage": "@rushstack/heft",
+            "options": {
+              "copyOperations": [
+                {
+                  // 📌 [4] new way of specifying a source folder (or file path)
+                  "sourcePath": "src",
+                  "destinationFolders": ["lib"],
+                  "includeGlobs": ["lang"]
+                }
+              ]
+            }
+          }
         }
-      ]
+      }
+    },
+
+    // ("test" is a user-defined name, not a schema field)
+    "test": {
+      "phaseDependencies": ["build"],
+      "tasksByName": {
+        // ("jest" is a user-defined name for this task)
+        "jest": {
+          // 📌 [2] new way of loading a plugin
+          "taskPlugin": {
+            "pluginPackage": "@rushstack/heft-jest-plugin"
+          }
+        }
+      }
     }
-  ],
-  "heftPlugins": [
-    {
-      "plugin": "@rushstack/heft-jest-plugin"
-    }
-  ]
+  }
 }

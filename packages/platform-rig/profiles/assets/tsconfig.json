@@ -8,6 +8,7 @@
     "resolveJsonModule": true,
     "types": [],
     "skipLibCheck": true,
-    "incremental": true
+    "incremental": true,
+    "isolatedModules": true
   }
 }

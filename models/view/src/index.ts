@@ -79,7 +79,7 @@ import view from './plugin'
 
 export { viewId } from '@hcengineering/view'
 export { viewOperation } from './migration'
-export { ViewAction, Viewlet }
+export type { ViewAction, Viewlet }
 
 export const DOMAIN_VIEW = 'view' as Domain
 

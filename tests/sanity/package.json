@@ -21,7 +21,7 @@
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",
-    "@types/heft-jest": "^1.0.3",
+    "@types/heft-jest": "^1.0.4",
     "@types/node": "~16.11.12",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "eslint-plugin-import": "^2.26.0",
@@ -31,7 +31,6 @@
     "@typescript-eslint/parser": "^5.41.0",
     "eslint-config-standard-with-typescript": "^23.0.0",
     "prettier": "^2.7.1",
-    "typescript": "^4.3.5",
     "@playwright/test": "~1.23.0"
   },
   "dependencies": {

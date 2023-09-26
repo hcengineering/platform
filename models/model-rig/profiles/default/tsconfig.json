@@ -8,7 +8,9 @@
     "resolveJsonModule": true,
     "experimentalDecorators": true,
     "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
     "incremental": true,
-    "declarationMap": true
+    "declarationMap": true,
+    "isolatedModules": true
   }
 }

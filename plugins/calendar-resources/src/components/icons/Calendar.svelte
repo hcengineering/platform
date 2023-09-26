@@ -22,26 +22,6 @@
   style="enable-background:new 0 0 36 36;"
   xml:space="preserve"
 >
-  <style type="text/css">
-    .st0 {
-      fill: #f1bf42;
-    }
-    .st1 {
-      fill: #3265cb;
-    }
-    .st2 {
-      fill: #5383ec;
-    }
-    .st3 {
-      fill: #3c7e40;
-    }
-    .st4 {
-      fill: #58a65c;
-    }
-    .st5 {
-      fill: #e34134;
-    }
-  </style>
   <g>
     <rect x="25.5" y="10.6" class="st0" width="6.6" height="14.8" />
     <path class="st1" d="M32.1,10.6v-4C32.1,5.1,31,4,29.5,4h-4v6.6H32.1z" />
@@ -65,3 +45,24 @@
     </g>
   </g>
 </svg>
+
+<style lang="scss">
+  .st0 {
+    fill: #f1bf42;
+  }
+  .st1 {
+    fill: #3265cb;
+  }
+  .st2 {
+    fill: #5383ec;
+  }
+  .st3 {
+    fill: #3c7e40;
+  }
+  .st4 {
+    fill: #58a65c;
+  }
+  .st5 {
+    fill: #e34134;
+  }
+</style>

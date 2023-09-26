@@ -7,9 +7,11 @@
     "outDir": "./lib",
     "strict": true,
     "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
     "incremental": true,
     "esModuleInterop": true,
     "declarationMap": true,
+    "isolatedModules": true,
     "lib": [
       "esnext",
       "dom"

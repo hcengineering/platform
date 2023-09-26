@@ -15,7 +15,7 @@
 //
 
 import { addStringsLoader } from './i18n'
-import type { Metadata } from './metadata'
+import { Metadata } from './metadata'
 import { platformId } from './platform'
 
 export * from './event'

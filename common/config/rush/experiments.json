@@ -18,6 +18,13 @@
   // "usePnpmPreferFrozenLockfileForRushUpdate": true,
 
   /**
+   * By default, 'rush update' runs as a single operation.
+   * Set this option to true to instead update the lockfile with `--lockfile-only`, then perform a `--frozen-lockfile` install.
+   * Necessary when using the `afterAllResolved` hook in .pnpmfile.cjs.
+   */
+  // "usePnpmLockfileOnlyThenFrozenLockfileForRushUpdate": true,
+
+  /**
    * If using the 'preventManualShrinkwrapChanges' option, restricts the hash to only include the layout of external dependencies.
    * Used to allow links between workspace projects or the addition/removal of references to existing dependency versions to not
    * cause hash changes.
@@ -40,7 +47,7 @@
    * If true, the phased commands feature is enabled. To use this feature, create a "phased" command
    * in common/config/rush/command-line.json.
    */
-  "phasedCommands": true,
+  "phasedCommands": false
 
   /**
    * If true, perform a clean install after when running `rush install` or `rush update` if the

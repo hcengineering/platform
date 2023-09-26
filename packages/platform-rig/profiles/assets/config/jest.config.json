@@ -1,11 +1,5 @@
 {
   "extends": "@rushstack/heft-jest-plugin/includes/jest-shared.config.json",
   "testEnvironment": "node",
-  "roots": [
-      "<rootDir>/src"
-  ],
-  "testMatch": ["**/?(*.)+(spec|test).[jt]s?(x)"],
-  "collectCoverage": true,
-  "coverageDirectory": "coverage",
-  "coverageReporters": ["text", ["lcov", { "projectRoot": "../../" }]]        
+  "testMatch": ["**/?(*.)+(spec|test).[jt]s?(x)"]
 }

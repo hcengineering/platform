@@ -29,7 +29,7 @@
     "eslint": "^8.26.0",
     "prettier": "^2.7.1",
     "svelte-check": "3.2.0",
-    "typescript": "^4.3.5"
+    "typescript": "4.8.4"
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.27",

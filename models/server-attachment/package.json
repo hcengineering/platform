@@ -18,11 +18,15 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-n": "^15.4.0",
     "eslint": "^8.26.0",
-    "@types/heft-jest": "^1.0.3",
+    "@types/heft-jest": "^1.0.4",
     "@typescript-eslint/parser": "^5.41.0",
     "eslint-config-standard-with-typescript": "^23.0.0",
     "prettier": "^2.7.1",
-    "@rushstack/heft": "^0.47.9"
+    "@rushstack/heft": "^0.62.3",
+    "@rushstack/heft-typescript-plugin": "^0.2.9",
+    "@rushstack/heft-api-extractor-plugin": "^0.2.9",
+    "@rushstack/heft-jest-plugin": "^0.9.9",
+    "@rushstack/heft-lint-plugin": "^0.2.9"
   },
   "dependencies": {
     "@hcengineering/attachment": "^0.6.8",

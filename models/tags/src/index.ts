@@ -27,7 +27,8 @@ import type {
 } from '@hcengineering/tags'
 import tags from './plugin'
 
-export { TagCategory, TagElement, TagReference, tagsId } from '@hcengineering/tags'
+export type { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
+export { tagsId } from '@hcengineering/tags'
 export { tagsOperation } from './migration'
 export { tags as default }
 

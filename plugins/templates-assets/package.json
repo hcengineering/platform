@@ -24,9 +24,12 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint": "^8.26.0",
     "prettier": "^2.7.1",
-    "@types/heft-jest": "^1.0.3",
-    "@rushstack/heft": "^0.47.9",
-    "typescript": "^4.3.5",
+    "@types/heft-jest": "^1.0.4",
+    "@rushstack/heft": "^0.62.3",
+    "@rushstack/heft-typescript-plugin": "^0.2.9",
+    "@rushstack/heft-api-extractor-plugin": "^0.2.9",
+    "@rushstack/heft-jest-plugin": "^0.9.9",
+    "@rushstack/heft-lint-plugin": "^0.2.9",
     "@types/node": "~16.11.12"
   },
   "dependencies": {

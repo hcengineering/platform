@@ -28,8 +28,8 @@
     "prettier-plugin-svelte": "^2.8.0",
     "prettier": "^2.7.1",
     "svelte-check": "3.2.0",
-    "typescript": "^4.3.5",
-    "@types/qs": "~6.9.7"
+    "@types/qs": "~6.9.7",
+    "typescript": "4.8.4"
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.9",

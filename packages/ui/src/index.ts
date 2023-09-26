@@ -189,7 +189,7 @@ export { default as Notifications } from './components/notifications/Notificatio
 export { default as notificationsStore } from './components/notifications/store'
 export { NotificationPosition } from './components/notifications/NotificationPosition'
 export { NotificationSeverity } from './components/notifications/NotificationSeverity'
-export { Notification } from './components/notifications/Notification'
+export type { Notification } from './components/notifications/Notification'
 export { default as Wizard } from './components/wizard/Wizard.svelte'
 export { default as StepsDialog } from './components/StepsDialog.svelte'
 export { default as EmojiPopup } from './components/EmojiPopup.svelte'

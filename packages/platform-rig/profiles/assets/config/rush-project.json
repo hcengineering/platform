@@ -1,11 +1,15 @@
 {
-    "incrementalBuildIgnoredGlobs": ["temp/**", "dist_cache/**", "lib/**"],
-    "disableBuildCacheForProject": false,
-  
-    "operationSettings": [
-      {
-        "operationName": "build",
-        "outputFolderNames": ["lib", "dist"]
-      }     
-    ]
-  }
+  "incrementalBuildIgnoredGlobs": ["temp/**", "dist_cache/**", "lib/**", "dist/**", "deploy/**", "rush-logs/**", "coverage/**", ".heft/**", "_api-extractor-temp/**", "*.log", ".rush/**"],
+  "disableBuildCacheForProject": false,
+
+  "operationSettings": [
+    {
+      "operationName": "build",
+      "outputFolderNames": ["lib", "dist", "dist_cache", "temp", "tsconfig.tsbuildinfo"]
+    },
+    {
+      "operationName": "_phase:build",
+      "outputFolderNames": ["dist", "lib", "dist_cache", "temp", "tsconfig.tsbuildinfo"]
+    }
+  ]
+}
