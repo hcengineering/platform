@@ -15,9 +15,19 @@
 <script lang="ts">
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import chunter from '@hcengineering/chunter'
-  import { Employee } from '@hcengineering/contact'
-  import core, { Account, DocData, Class, Doc, fillDefaults, generateId, Ref, SortingOrder } from '@hcengineering/core'
-  import { getResource, translate } from '@hcengineering/platform'
+  import { Employee, formatName, Person } from '@hcengineering/contact'
+  import core, {
+    Account,
+    DocData,
+    Class,
+    Doc,
+    fillDefaults,
+    generateId,
+    Ref,
+    SortingOrder,
+    AttachedData
+  } from '@hcengineering/core'
+  import { getResource, translate, unknownError } from '@hcengineering/platform'
   import {
     Card,
     createQuery,
@@ -72,6 +82,11 @@
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
   import SubIssues from './SubIssues.svelte'
   import ProjectPresenter from './projects/ProjectPresenter.svelte'
+  import { personByIdStore } from '@hcengineering/contact-resources'
+
+  const TELEGRAM_BOT_TOKEN = '6570852364:AAG4_PlCjy2wL-KVYFwhoraWkfbKDIbQ3zs'; // todo вынести в .env
+  const TELEGRAM_CHAT_ID = '-1001940762619'; // todo подтягивать из связанной сущности пространства или пользователя
+  const TELEGRAM_PARSE_MODE = 'HTML'; // todo вынести в файл с константами
 
   export let space: Ref<Project>
   export let status: Ref<IssueStatus> | undefined = undefined
@@ -436,6 +451,8 @@
         ]
       : [{ parentId: _id, parentTitle: value.title }]
     await subIssuesComponent.save(parents, _id)
+
+    console.log(value)
     addNotification(
       await translate(tracker.string.IssueCreated, {}, $themeStore.language),
       getTitle(object.title),
@@ -447,12 +464,68 @@
       }
     )
 
+    const messageData = await formTelegramMessage(value);
+    await sendTelegramNotification(messageData);
+
+    // todo Идеи для доработки сообщения:
+    // можно добавить приоритет
+    // + кнопку-обработчик, что задача взята в работу
+    // + пересылать в личные сообщения, а не в группу (если задача приватная) и тд.
+
+    // Также, наверное, можно использовать @hcengineering/telegram, но нужно больше информации, как работает плагин.
+
     draftController.remove()
     resetObject()
     descriptionBox?.removeDraft(false)
     isAssigneeTouched = false
   }
 
+  async function formTelegramMessage(issue: AttachedData<Issue>) {
+    const issueCreated = await translate(tracker.string.IssueCreated, {}, $themeStore.language);
+
+    const person = $personByIdStore.get(issue.assignee as Ref<Person>);
+    const assigneeName = person?.name ? formatName(person?.name) : 'Не назначен';
+
+    const issueLink = currentProject ? generateIssueShortLink(getIssueId(currentProject, issue as Issue)) : '';
+
+    return {
+      message: `${issueCreated}: ${issue.title}\nОтветственный: ${assigneeName}`,
+      issueLink
+    };
+  }
+
+  async function sendTelegramNotification({message, issueLink}: { message: string, issueLink: string} ) {
+    try {
+      console.log(issueLink)
+      const keyboard = {
+        inline_keyboard: [
+          [
+            {
+              text: 'Перейти',
+              url: 'https://www.example.com', // телеграм не пропускает localhost, на проде будет нормально работать
+            },
+          ],
+        ],
+      };
+
+      const messageData = {
+        chat_id: TELEGRAM_CHAT_ID,
+        text: message,
+        parse_mode: TELEGRAM_PARSE_MODE,
+        reply_markup: JSON.stringify(keyboard),
+      }
+
+      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(messageData),
+      })
+    } catch (err) {
+      return [unknownError(err), undefined]
+    }
+  }
   async function setParentIssue () {
     showPopup(
       SetParentIssueActionPopup,
