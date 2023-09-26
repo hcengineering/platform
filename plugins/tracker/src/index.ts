@@ -487,6 +487,7 @@ export default plugin(trackerId, {
     ProjectIssueTargetOptions: '' as Ref<Mixin<ProjectIssueTargetOptions>>
   },
   extensions: {
-    IssueListHeader: '' as ComponentExtensionId
+    IssueListHeader: '' as ComponentExtensionId,
+    EditIssueHeader: '' as ComponentExtensionId
   }
 })
