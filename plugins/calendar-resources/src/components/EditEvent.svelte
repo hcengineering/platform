@@ -250,8 +250,8 @@
       <Icon icon={calendar.icon.Description} size={'small'} />
       <StyledTextBox
         alwaysEdit={true}
-        kind='indented'
-        maxHeight='limited'
+        kind={'indented'}
+        maxHeight={'limited'}
         showButtons={false}
         placeholder={calendar.string.Description}
         bind:content={description}
