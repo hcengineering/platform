@@ -113,7 +113,8 @@ export { default as TabList } from './components/TabList.svelte'
 export { default as Chevron } from './components/Chevron.svelte'
 export { default as Timeline } from './components/Timeline.svelte'
 export { default as TimeShiftPresenter } from './components/TimeShiftPresenter.svelte'
-
+export { default as MicIcon } from './components/icons/Mic.svelte'
+export { default as RecIcon } from './components/icons/Record.svelte'
 export { default as IconAdd } from './components/icons/Add.svelte'
 export { default as IconCopy } from './components/icons/Copy.svelte'
 export { default as IconStart } from './components/icons/Start.svelte'
@@ -207,7 +208,7 @@ export * from './colors'
 export * from './focus'
 export * from './resize'
 
-export function createApp (target: HTMLElement): SvelteComponent {
+export function createApp(target: HTMLElement): SvelteComponent {
   return new Root({ target })
 }
 

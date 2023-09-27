@@ -21,7 +21,7 @@ import { PlatformError, Severity, Status, getMetadata, setPlatformStatus, unknow
 
 import attachment from './plugin'
 
-export async function uploadFile (file: File): Promise<string> {
+export async function uploadFile(file: File): Promise<string> {
   const uploadUrl = getMetadata(presentation.metadata.UploadURL)
 
   if (uploadUrl === undefined) {
@@ -50,7 +50,7 @@ export async function uploadFile (file: File): Promise<string> {
   return await resp.text()
 }
 
-export async function deleteFile (id: string): Promise<void> {
+export async function deleteFile(id: string): Promise<void> {
   const uploadUrl = getMetadata(presentation.metadata.UploadURL) ?? ''
 
   const url = concatLink(uploadUrl, `?file=${id}`)
@@ -66,7 +66,7 @@ export async function deleteFile (id: string): Promise<void> {
   }
 }
 
-export async function createAttachments (
+export async function createAttachments(
   client: Client,
   list: FileList,
   attachTo: { objectClass: Ref<Class<Doc>>, space: Ref<Space>, objectId: Ref<Doc> },
@@ -94,7 +94,7 @@ export async function createAttachments (
   }
 }
 
-export function getType (type: string): 'image' | 'video' | 'audio' | 'pdf' | 'other' {
+export function getType(type: string): 'image' | 'video' | 'audio' | 'pdf' | 'other' {
   if (type.startsWith('image/')) {
     return 'image'
   }
