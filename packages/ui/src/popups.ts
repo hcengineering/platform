@@ -171,7 +171,7 @@ export function fitPopupPositionedElement(
       direction += '|center'
     }
   }
-  return { props: newProps, showOverlay: false, direction }
+  return { props: newProps, showOverlay: true, direction }
 }
 
 /**
@@ -192,7 +192,6 @@ export function fitPopupElement(
   let show = true
   const newProps: Record<string, string | number> = {}
   if (element != null) {
-    show = false
     newProps.left = newProps.right = newProps.top = newProps.bottom = ''
     newProps.maxHeight = newProps.height = ''
     newProps.maxWidth = newProps.width = newProps.minWidth = ''
@@ -293,7 +292,6 @@ export function fitPopupElement(
       newProps.right = '0'
       // newProps.width = '100vw'
       newProps.height = '100vh'
-      show = false
     } else if (element === 'full' && contentPanel !== undefined) {
       const rect = contentPanel.getBoundingClientRect()
       newProps.top = `${rect.top + 4}px`
