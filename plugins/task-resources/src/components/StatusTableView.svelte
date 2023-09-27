@@ -18,7 +18,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { DoneState, SpaceWithStates, State, Task } from '@hcengineering/task'
   import type { TabItem } from '@hcengineering/ui'
-  import { TabList } from '@hcengineering/ui'
+  import { TabList, ScrollerBar } from '@hcengineering/ui'
   import { TableBrowser, statusStore } from '@hcengineering/view-resources'
   import task from '../plugin'
   import StatesBar from './state/StatesBar.svelte'
@@ -41,6 +41,7 @@
   let selectedDS: string[] = []
   let withoutDone: boolean = false
   let resultQuery: DocumentQuery<Task>
+  let divScroll: HTMLElement
 
   function getItems (doneStates: DoneState[]): TabItem[] {
     const itemsDS: TabItem[] = doneStates.map((s) => {
@@ -163,7 +164,9 @@
     on:select={handleSelect}
   />
   {#if doneStatusesView}
-    <TabList items={itemsDS} bind:selected={selectedDS} multiselect on:select={handleDoneSelect} />
+    <ScrollerBar gap={'none'} bind:scroller={divScroll}>
+      <TabList items={itemsDS} bind:selected={selectedDS} multiselect on:select={handleDoneSelect} />
+    </ScrollerBar>
   {:else}
     <StatesBar bind:state {space} gap={'none'} on:change={() => updateQuery(query, selectedDoneStates)} />
   {/if}
