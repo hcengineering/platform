@@ -53,7 +53,7 @@
       rawMilestones = res
     },
     {
-      sort: { targetDate: SortingOrder.Descending }
+      sort: { status: SortingOrder.Ascending, targetDate: SortingOrder.Descending }
     }
   )
 
