@@ -562,10 +562,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     cursor.maxAwaitTimeMS(30000)
 
     const res = await cursor.toArray()
-    const result = res.map((v) => {
-      return this.hierarchy.updateLookupMixin(_class, v, options)
-    })
-    return toFindResult(result, total)
+    return toFindResult(res, total)
   }
 
   find (domain: Domain): StorageIterator {
