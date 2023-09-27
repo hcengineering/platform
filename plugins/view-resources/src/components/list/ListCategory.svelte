@@ -283,7 +283,7 @@
       try {
         const newRank = calcRank(prev, next)
         if ((dragItem.doc as DocWithRank)?.rank !== newRank) {
-          (update as any).rank = newRank
+          ;(update as any).rank = newRank
         }
       } catch {}
     }
