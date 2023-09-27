@@ -428,8 +428,19 @@ async function isShouldNotify (
   let allowed = false
   const emailTypes: NotificationType[] = []
   const types = await getMatchedTypes(control, tx, originTx, isOwn, isSpace)
+
+  const personAccount = await getPersonAccountById(user, control)
+
   for (const type of types) {
-    if (type.allowedForAuthor !== true && tx.modifiedBy === user) continue
+    const modifiedAccount = await getPersonAccountById(tx.modifiedBy, control)
+    if (
+      type.allowedForAuthor !== true &&
+      (tx.modifiedBy === user ||
+        // Also check if we have different account for same user.
+        (personAccount?.person !== undefined && personAccount?.person === modifiedAccount?.person))
+    ) {
+      continue
+    }
     if (control.hierarchy.hasMixin(type, serverNotification.mixin.TypeMatch)) {
       const mixin = control.hierarchy.as(type, serverNotification.mixin.TypeMatch)
       if (mixin.func !== undefined) {
