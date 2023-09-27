@@ -793,6 +793,7 @@ a.no-line {
 .cursor-pointer { cursor: pointer; }
 .cursor-default { cursor: default; }
 .cursor-inherit { cursor: inherit; }
+.cursor-row-resize { cursor: row-resize; }
 
 .pointer-events-none { pointer-events: none; }
 .content-pointer-events-none > * { pointer-events: none; }

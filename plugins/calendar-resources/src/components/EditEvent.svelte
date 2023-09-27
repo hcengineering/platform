@@ -13,22 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Event, ReccuringEvent, ReccuringInstance, RecurringRule, generateEventId } from '@hcengineering/calendar'
+  import { Event, ReccuringEvent, ReccuringInstance, RecurringRule } from '@hcengineering/calendar'
   import { Person } from '@hcengineering/contact'
   import { DocumentUpdate, Ref } from '@hcengineering/core'
   import presentation, { getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
-  import { Button, DAY, EditBox, Icon, IconClose, closePopup, showPopup } from '@hcengineering/ui'
+  import { Button, EditBox, Icon, IconClose, showPopup } from '@hcengineering/ui'
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
-  import { isReadOnly, saveUTC } from '../utils'
+  import { isReadOnly, saveUTC, updateReccuringInstance } from '../utils'
   import EventParticipants from './EventParticipants.svelte'
   import EventReminders from './EventReminders.svelte'
   import EventTimeEditor from './EventTimeEditor.svelte'
   import EventTimeExtraButton from './EventTimeExtraButton.svelte'
   import ReccurancePopup from './ReccurancePopup.svelte'
-  import UpdateRecInstancePopup from './UpdateRecInstancePopup.svelte'
 
   export let object: Event
   $: readOnly = isReadOnly(object)
@@ -96,7 +95,7 @@
 
     if (Object.keys(update).length > 0) {
       if (object._class === calendar.class.ReccuringInstance) {
-        await updateHandler(update)
+        await updateReccuringInstance(update, object as ReccuringInstance)
       } else {
         await client.update(object, update)
       }
@@ -123,94 +122,6 @@
         rules = res
       }
     })
-  }
-
-  async function updatePast (ops: DocumentUpdate<Event>) {
-    const obj = object as ReccuringInstance
-    const origin = await client.findOne(calendar.class.ReccuringEvent, {
-      eventId: obj.recurringEventId,
-      space: obj.space
-    })
-    if (origin !== undefined) {
-      await client.addCollection(
-        calendar.class.ReccuringEvent,
-        origin.space,
-        origin.attachedTo,
-        origin.attachedToClass,
-        origin.collection,
-        {
-          ...origin,
-          date: obj.date,
-          dueDate: obj.dueDate,
-          ...ops,
-          eventId: generateEventId()
-        }
-      )
-      const targetDate = ops.date ?? obj.date
-      await client.update(origin, {
-        rules: [{ ...origin.rules[0], endDate: targetDate - DAY }],
-        rdate: origin.rdate.filter((p) => p < targetDate)
-      })
-      const instances = await client.findAll(calendar.class.ReccuringInstance, {
-        recurringEventId: origin.eventId,
-        date: { $gte: targetDate }
-      })
-      for (const instance of instances) {
-        await client.remove(instance)
-      }
-    }
-  }
-
-  async function updateHandler (ops: DocumentUpdate<ReccuringEvent>) {
-    const obj = object as ReccuringInstance
-    if (obj.virtual !== true) {
-      await client.update(object, ops)
-    } else {
-      showPopup(UpdateRecInstancePopup, { currentAvailable: ops.rules === undefined }, undefined, async (res) => {
-        if (res !== null) {
-          if (res.mode === 'current') {
-            await client.addCollection(
-              obj._class,
-              obj.space,
-              obj.attachedTo,
-              obj.attachedToClass,
-              obj.collection,
-              {
-                title: obj.title,
-                description: obj.description,
-                date: obj.date,
-                dueDate: obj.dueDate,
-                allDay: obj.allDay,
-                participants: obj.participants,
-                externalParticipants: obj.externalParticipants,
-                originalStartTime: obj.originalStartTime,
-                recurringEventId: obj.recurringEventId,
-                reminders: obj.reminders,
-                location: obj.location,
-                eventId: obj.eventId,
-                access: 'owner',
-                rules: obj.rules,
-                exdate: obj.exdate,
-                rdate: obj.rdate,
-                ...ops
-              },
-              obj._id
-            )
-          } else if (res.mode === 'all') {
-            const base = await client.findOne(calendar.class.ReccuringEvent, {
-              space: obj.space,
-              eventId: obj.recurringEventId
-            })
-            if (base !== undefined) {
-              await client.update(base, ops)
-            }
-          } else if (res.mode === 'next') {
-            await updatePast(ops)
-          }
-        }
-        closePopup()
-      })
-    }
   }
 </script>
 
