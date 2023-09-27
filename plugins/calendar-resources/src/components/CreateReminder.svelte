@@ -37,7 +37,7 @@
   const client = getClient()
 
   export function canClose (): boolean {
-    return _title !== undefined && _title.trim().length === 0 && participants.length === 0
+    return value == null
   }
 
   async function saveReminder () {

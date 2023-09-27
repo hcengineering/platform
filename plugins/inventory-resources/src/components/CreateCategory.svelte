@@ -34,7 +34,7 @@
   const inventoryId = generateId() as Ref<Category>
 
   export function canClose (): boolean {
-    return name !== ''
+    return name === ''
   }
 
   async function create () {

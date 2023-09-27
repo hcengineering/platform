@@ -33,7 +33,7 @@ export interface PopupResult {
 
 export const popupstore = writable<CompAndProps[]>([])
 
-export function updatePopup (id: string, props: Partial<CompAndProps>): void {
+export function updatePopup(id: string, props: Partial<CompAndProps>): void {
   popupstore.update((popups) => {
     const popupIndex = popups.findIndex((p) => p.id === id)
     if (popupIndex !== -1) {
@@ -43,14 +43,14 @@ export function updatePopup (id: string, props: Partial<CompAndProps>): void {
   })
 }
 
-function addPopup (props: CompAndProps): void {
+function addPopup(props: CompAndProps): void {
   popupstore.update((popups) => {
     popups.push(props)
     return popups
   })
 }
 let popupId: number = 0
-export function showPopup (
+export function showPopup(
   component: AnySvelteComponent | AnyComponent | ComponentType,
   props: any,
   element?: PopupAlignment,
@@ -87,7 +87,7 @@ export function showPopup (
   }
 }
 
-export function closePopup (category?: string): void {
+export function closePopup(category?: string): void {
   popupstore.update((popups) => {
     if (category !== undefined) {
       popups = popups.filter((p) => p.options.category !== category)
@@ -105,7 +105,7 @@ export function closePopup (category?: string): void {
  *
  * return boolean to show or not modal overlay.
  */
-export function fitPopupPositionedElement (
+export function fitPopupPositionedElement(
   modalHTML: HTMLElement,
   alignment: PopupPositionElement,
   newProps: Record<string, string | number>
@@ -181,7 +181,7 @@ export function fitPopupPositionedElement (
  *
  * return boolean to show or not modal overlay.
  */
-export function fitPopupElement (
+export function fitPopupElement(
   modalHTML: HTMLElement,
   device: DeviceOptions,
   element?: PopupAlignment,
@@ -345,11 +345,11 @@ export function fitPopupElement (
   return { props: newProps, showOverlay: show, direction: '' }
 }
 
-export function eventToHTMLElement (evt: MouseEvent): HTMLElement {
+export function eventToHTMLElement(evt: MouseEvent): HTMLElement {
   return evt.target as HTMLElement
 }
 
-export function getEventPopupPositionElement (
+export function getEventPopupPositionElement(
   e?: Event,
   position?: { v: VerticalAlignment, h: HorizontalAlignment }
 ): PopupAlignment | undefined {
@@ -360,7 +360,7 @@ export function getEventPopupPositionElement (
   return getPopupPositionElement(target, position)
 }
 
-export function getPopupPositionElement (
+export function getPopupPositionElement(
   el: HTMLElement | undefined,
   position?: { v: VerticalAlignment, h: HorizontalAlignment }
 ): PopupAlignment | undefined {
@@ -374,7 +374,7 @@ export function getPopupPositionElement (
 
   return undefined
 }
-export function getEventPositionElement (evt: MouseEvent): PopupAlignment | undefined {
+export function getEventPositionElement(evt: MouseEvent): PopupAlignment | undefined {
   const rect = DOMRect.fromRect({ width: 1, height: 1, x: evt.clientX, y: evt.clientY })
   return {
     getBoundingClientRect: () => rect
