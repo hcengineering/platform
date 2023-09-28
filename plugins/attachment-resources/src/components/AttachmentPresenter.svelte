@@ -16,13 +16,15 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Attachment } from '@hcengineering/attachment'
-  import { showPopup, closeTooltip, Label, getIconSize2x } from '@hcengineering/ui'
+  import { showPopup, closeTooltip, Label, getIconSize2x, Loading } from '@hcengineering/ui'
   import presentation, { PDFViewer, getFileUrl } from '@hcengineering/presentation'
   import filesize from 'filesize'
 
   export let value: Attachment
   export let removable: boolean = false
   export let showPreview = false
+
+  export let progress: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -100,7 +102,11 @@
         class:image={isImage(value.type)}
         style={imgStyle}
       >
-        {#if !isImage(value.type)}{iconLabel(value.name)}{/if}
+        {#if progress}
+          <div class="flex p-3">
+            <Loading />
+          </div>
+        {:else if !isImage(value.type)}{iconLabel(value.name)}{/if}
       </div>
     {:else}
       <div class="flex-center icon">

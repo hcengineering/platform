@@ -117,8 +117,7 @@
     _class={object._class}
     space={object.space}
     alwaysEdit
-    on:attached={(e) => descriptionBox.saveNewAttachment(e.detail)}
-    on:detached={(e) => descriptionBox.removeAttachmentById(e.detail)}
+    useDirectAttachDelete
     showButtons
     on:blur={() => save(object, description)}
     on:changeContent={triggerSave}

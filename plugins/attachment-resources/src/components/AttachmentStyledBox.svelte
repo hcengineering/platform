@@ -25,6 +25,7 @@
   import AttachmentPresenter from './AttachmentPresenter.svelte'
   import AttachmentPreview from './AttachmentPreview.svelte'
   import { ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
+  import Loading from '@hcengineering/ui/src/components/Loading.svelte'
 
   export let objectId: Ref<Doc> | undefined = undefined
   export let space: Ref<Space> | undefined = undefined
@@ -45,6 +46,10 @@
   export let enableAttachments: boolean = true
   export let enableBackReferences: boolean = false
   export let isScrollable = true
+
+  export let useDirectAttachDelete = false
+
+  let progress = false
 
   let draftKey = objectId ? `${objectId}_attachments` : undefined
   $: draftKey = objectId ? `${objectId}_attachments` : undefined
@@ -164,6 +169,10 @@
       saveDraft()
       dispatch('attach', { action: 'saved', value: attachments.size })
       dispatch('attached', _id)
+
+      if (useDirectAttachDelete) {
+        saveNewAttachment(_id)
+      }
       return { file: uuid, type: file.type }
     } catch (err: any) {
       setPlatformStatus(unknownError(err))
@@ -176,33 +185,48 @@
     await client.addCollection(attachment.class.Attachment, space, objectId, _class, 'attachments', doc, doc._id)
   }
 
-  function fileSelected () {
+  async function fileSelected (): Promise<void> {
+    progress = true
     const list = inputFile.files
     if (list === null || list.length === 0) return
     for (let index = 0; index < list.length; index++) {
       const file = list.item(index)
-      if (file !== null) createAttachment(file)
+      if (file !== null) {
+        await createAttachment(file)
+      }
     }
     inputFile.value = ''
+    progress = false
   }
 
-  export function fileDrop (e: DragEvent) {
+  export async function fileDrop (e: DragEvent): Promise<void> {
+    progress = true
     const list = e.dataTransfer?.files
     if (list !== undefined && list.length !== 0) {
       for (let index = 0; index < list.length; index++) {
         const file = list.item(index)
-        if (file !== null) createAttachment(file)
+        if (file !== null) {
+          await createAttachment(file)
+        }
       }
     }
+    progress = false
   }
 
   async function removeAttachment (attachment: Attachment): Promise<void> {
+    if (useDirectAttachDelete) {
+      progressItems.push(attachment._id)
+      progressItems = progressItems
+      await deleteAttachment(attachment)
+    }
     removedAttachments.add(attachment)
     attachments.delete(attachment._id)
     attachments = attachments
     refInput.removeAttachment(attachment.file)
     saveDraft()
     dispatch('detached', attachment._id)
+
+    progressItems = progressItems.filter((it) => it !== attachment._id)
   }
 
   async function deleteAttachment (attachment: Attachment): Promise<void> {
@@ -299,7 +323,7 @@
     return false
   }
 
-  export function pasteAction (evt: ClipboardEvent): void {
+  export async function pasteAction (evt: ClipboardEvent): Promise<void> {
     if (!isAllowedPaste(evt)) {
       return
     }
@@ -310,7 +334,7 @@
       if (item.kind === 'file') {
         const blob = item.getAsFile()
         if (blob !== null) {
-          createAttachment(blob)
+          await createAttachment(blob)
         }
       }
     }
@@ -323,6 +347,9 @@
     size: attachments.size,
     values: attachments.size === 0 ? true : attachments
   })
+
+  let element: HTMLElement
+  let progressItems: Ref<Doc>[] = []
 </script>
 
 <input
@@ -373,7 +400,7 @@
       }}
     />
   </div>
-  {#if attachments.size && enableAttachments}
+  {#if (attachments.size && enableAttachments) || progress}
     <div class="flex-row-center list scroll-divider-color">
       {#each Array.from(attachments.values()) as attachment, index}
         <div class="item flex-center flex-no-shrink clear-mins">
@@ -384,13 +411,25 @@
               value={attachment}
               removable
               showPreview
+              progress={progressItems.includes(attachment._id)}
               on:remove={(result) => {
-                if (result !== undefined) removeAttachment(attachment)
+                if (result !== undefined) {
+                  removeAttachment(attachment)
+                }
               }}
             />
           {/if}
         </div>
       {/each}
+      {#if progress}
+        <div class="flex p-3" bind:this={element}>
+          <Loading
+            on:progress={() => {
+              element.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' })
+            }}
+          />
+        </div>
+      {/if}
     </div>
   {/if}
 </div>
