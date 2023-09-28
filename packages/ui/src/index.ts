@@ -208,7 +208,7 @@ export * from './colors'
 export * from './focus'
 export * from './resize'
 
-export function createApp(target: HTMLElement): SvelteComponent {
+export function createApp (target: HTMLElement): SvelteComponent {
   return new Root({ target })
 }
 
