@@ -28,7 +28,7 @@
     deviceOptionsStore as deviceInfo,
     checkAdaptiveMatching,
     MicIcon,
-    RecIcon,
+    RecIcon
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { Completion } from '../Completion'
@@ -41,11 +41,7 @@
   import RIMention from './icons/RIMention.svelte'
   import Send from './icons/Send.svelte'
 
-  enum InputModeEnum {
-    MIC,
-    REC,
-    DEFAULT
-  }
+  type InputMode = 'MIC' | 'REC' | 'DEFAULT'
 
   const dispatch = createEventDispatcher()
   export let content: string = ''
@@ -73,34 +69,34 @@
   $: devSize = $deviceInfo.size
   $: shrinkButtons = checkAdaptiveMatching(devSize, 'sm')
 
-  let inputMode: InputModeEnum = InputModeEnum.DEFAULT;
+  let inputMode: InputMode = 'DEFAULT'
 
-  const inputModeIcons = {
-    [InputModeEnum.REC]: RecIcon,
-    [InputModeEnum.MIC]: MicIcon,
-    [InputModeEnum.DEFAULT]: iconSend ?? Send,
-  };
+  const inputModeIcons: Record<InputMode, Asset | AnySvelteComponent | undefined> = {
+    REC: RecIcon,
+    MIC: MicIcon,
+    DEFAULT: iconSend ?? Send
+  }
 
-  function updateInputMode({
-    isEmpty, 
-    isRecording, 
-    haveAttachment, 
+  function updateInputMode ({
+    isEmpty,
+    isRecording,
+    haveAttachment,
     showVoiceControls
   }: {
-    isEmpty: boolean, 
-    haveAttachment: boolean, 
-    isRecording: boolean, 
+    isEmpty: boolean
+    haveAttachment: boolean
+    isRecording: boolean
     showVoiceControls: boolean
   }) {
     if (showVoiceControls && isEmpty && !haveAttachment) {
-      inputMode = isRecording ? InputModeEnum.REC : InputModeEnum.MIC;
+      inputMode = isRecording ? 'REC' : 'MIC'
     } else {
-      inputMode = InputModeEnum.DEFAULT;
+      inputMode = 'DEFAULT'
     }
   }
 
   $: {
-    updateInputMode({ showVoiceControls, isEmpty, haveAttachment, isRecording });
+    updateInputMode({ showVoiceControls, isEmpty, haveAttachment, isRecording })
   }
 
   function setContent (content: string) {
@@ -139,7 +135,7 @@
         )
       },
       order: 4001
-    },
+    }
   ]
 
   let actions: RefAction[] = []
@@ -157,7 +153,7 @@
   })
 
   export function submit (): void {
-      textEditor.submit()
+    textEditor.submit()
   }
 
   const editorHandler: TextEditorHandler = {
@@ -199,18 +195,17 @@
   })
 
   const startRecordHandler = () => {
-    if (inputMode === InputModeEnum.MIC) {
+    if (inputMode === 'MIC') {
       isRecording = true
       audioRecorder.start()
     }
   }
   const stopRecordHandler = () => {
-    if (inputMode === InputModeEnum.REC) {
+    if (inputMode === 'REC') {
       isRecording = false
       audioRecorder.stop()
     }
   }
-
 </script>
 
 <div class="ref-container">
