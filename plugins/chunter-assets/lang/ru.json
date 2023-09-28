@@ -76,6 +76,8 @@
     "LastMessage": "Последнее сообщение",
     "You": "Вы",
     "YouHaveJoinedTheConversation": "Вы присоединились к диалогу",
-    "NoMessages": "Сообщений пока нет"
+    "NoMessages": "Сообщений пока нет",
+    "DirectNotificationTitle": "{senderName}",
+    "DirectNotificationBody": "{message}"
   }
 }

@@ -274,7 +274,13 @@
     "UnsetParent": "Parent issue will be unset",
     "Unarchive": "Unarchive",
     "UnarchiveConfirm": "Do you want to unarchive project?",
-    "AllProjects": "All projects"
+    "AllProjects": "All projects",
+    "IssueNotificationTitle": "{issueTitle}",
+    "IssueNotificationBody": "Updated by {senderName}",
+    "IssueNotificationChanged": "{senderName} changed {property}",
+    "IssueNotificationChangedProperty": "{senderName} changed {property} to \"{newValue}\"",
+    "IssueNotificationMessage": "{senderName}: {message}",
+    "IssueAssigneedToYou": "Assigned to you"
   },
   "status": {}
 }

@@ -481,7 +481,13 @@ export default plugin(trackerId, {
   },
   string: {
     ConfigLabel: '' as IntlString,
-    NewRelatedIssue: '' as IntlString
+    NewRelatedIssue: '' as IntlString,
+    IssueNotificationTitle: '' as IntlString,
+    IssueNotificationBody: '' as IntlString,
+    IssueNotificationChanged: '' as IntlString,
+    IssueNotificationChangedProperty: '' as IntlString,
+    IssueNotificationMessage: '' as IntlString,
+    IssueAssigneedToYou: '' as IntlString
   },
   mixin: {
     ProjectIssueTargetOptions: '' as Ref<Mixin<ProjectIssueTargetOptions>>

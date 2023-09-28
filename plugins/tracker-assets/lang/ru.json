@@ -274,7 +274,13 @@
     "UnsetParent": "Родительская задача будет убрана",
     "Unarchive": "Разархивировать",
     "UnarchiveConfirm": "Вы действительно хотите разархивировать?",
-    "AllProjects": "All projects"
+    "AllProjects": "All projects",
+    "IssueNotificationTitle": "{issueTitle}",
+    "IssueNotificationBody": "Обновлено {senderName}",
+    "IssueNotificationChanged": "{senderName} изменил {property}",
+    "IssueNotificationChangedProperty": "{senderName} изменил {property} на \"{newValue}\"",
+    "IssueNotificationMessage": "{senderName}: {message}",
+    "IssueAssigneedToYou": "Назначено вам"
   },
   "status": {}
 }

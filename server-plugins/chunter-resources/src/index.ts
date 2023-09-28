@@ -43,11 +43,12 @@ import core, {
   TxRemoveDoc,
   TxUpdateDoc
 } from '@hcengineering/core'
-import notification, { Collaborators, NotificationType } from '@hcengineering/notification'
-import { getMetadata } from '@hcengineering/platform'
+import notification, { Collaborators, NotificationType, NotificationContent } from '@hcengineering/notification'
+import { getMetadata, IntlString } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { getDocCollaborators, getMixinTx, pushNotification } from '@hcengineering/server-notification-resources'
 import { workbenchId } from '@hcengineering/workbench'
+import { stripTags } from '@hcengineering/text'
 import { getBacklinks } from './backlinks'
 
 function getCreateBacklinksTxes (
@@ -442,7 +443,7 @@ export async function OnMessageSent (tx: Tx, control: TriggerControl): Promise<T
 
     if (anotherPerson == null) return []
 
-    pushNotification(control, res, sender, channel, dmCreationTx, docUpdates, anotherPerson)
+    await pushNotification(control, res, sender, channel, dmCreationTx, docUpdates, anotherPerson)
   } else if (docUpdate.hidden) {
     res.push(control.txFactory.createTxUpdateDoc(docUpdate._class, docUpdate.space, docUpdate._id, { hidden: false }))
   }
@@ -536,6 +537,40 @@ export async function IsThreadMessage (
   return space !== undefined
 }
 
+const NOTIFICATION_BODY_SIZE = 50
+/**
+ * @public
+ */
+export async function getChunterNotificationContent (
+  doc: Doc,
+  tx: TxCUD<Doc>,
+  target: Ref<Account>,
+  control: TriggerControl
+): Promise<NotificationContent> {
+  const title: IntlString = chunter.string.DirectNotificationTitle
+  let body: IntlString = chunter.string.Message
+  const intlParams: Record<string, string | number> = {}
+
+  if (tx._class === core.class.TxCollectionCUD) {
+    const ptx = tx as TxCollectionCUD<Doc, AttachedDoc>
+    if (ptx.tx._class === core.class.TxCreateDoc) {
+      if (ptx.tx.objectClass === chunter.class.Message) {
+        const createTx = ptx.tx as TxCreateDoc<Message>
+        const message = createTx.attributes.content
+        const plainTextMessage = stripTags(message, NOTIFICATION_BODY_SIZE)
+        intlParams.message = plainTextMessage
+        body = chunter.string.DirectNotificationBody
+      }
+    }
+  }
+
+  return {
+    title,
+    body,
+    intlParams
+  }
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
@@ -547,6 +582,7 @@ export default async () => ({
     CommentRemove,
     ChannelHTMLPresenter: channelHTMLPresenter,
     ChannelTextPresenter: channelTextPresenter,
+    ChunterNotificationContentProvider: getChunterNotificationContent,
     IsDirectMessage,
     IsThreadMessage,
     IsMeMentioned,
