@@ -1,25 +1,29 @@
-import { Mark, mergeAttributes } from '@tiptap/core'
+import { Mark, getMarkAttributes, mergeAttributes } from '@tiptap/core'
+import { Plugin, PluginKey } from 'prosemirror-state'
 
 const NAME = 'node-uuid'
 
 export interface NodeUuidOptions {
   HTMLAttributes: Record<string, any>
-  onNodeSelected?: (uuid: string | null) => any
+  onNodeSelected?: (uuid: string | null) => void
+  onNodeClicked?: (uuid: string) => void
+}
+
+export interface NodeUuidCommands<ReturnType> {
+  [NAME]: {
+    /**
+     * Add uuid mark
+     */
+    setUuid: (uuid: string) => ReturnType
+    /**
+     * Unset uuid mark
+     */
+    unsetUuid: () => ReturnType
+  }
 }
 
 declare module '@tiptap/core' {
-  interface Commands<ReturnType> {
-    [NAME]: {
-      /**
-       * Add uuid mark
-       */
-      setUuid: (uuid: string) => ReturnType
-      /**
-       * Unset uuid mark
-       */
-      unsetUuid: () => ReturnType
-    }
-  }
+  interface Commands<ReturnType> extends NodeUuidCommands<ReturnType> {}
 }
 
 export interface NodeUuidStorage {
@@ -65,6 +69,30 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
 
   renderHTML ({ HTMLAttributes }) {
     return ['span', mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0]
+  },
+
+  addProseMirrorPlugins () {
+    const options = this.options
+    const plugins = [
+      ...(this.parent?.() ?? []),
+      new Plugin({
+        key: new PluginKey('handle-node-uuid-click-plugin'),
+        props: {
+          handleClick (view) {
+            const { schema } = view.state
+
+            const attrs = getMarkAttributes(view.state, schema.marks[NAME])
+            const nodeUuid = attrs?.[NAME]
+
+            if (nodeUuid !== null || nodeUuid !== undefined) {
+              options.onNodeClicked?.(nodeUuid)
+            }
+          }
+        }
+      })
+    ]
+
+    return plugins
   },
 
   addCommands () {

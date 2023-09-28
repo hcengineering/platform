@@ -24,17 +24,15 @@
   import Collaboration from '@tiptap/extension-collaboration'
   import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
   import Placeholder from '@tiptap/extension-placeholder'
-  import BubbleMenu from '@tiptap/extension-bubble-menu'
-  import { generateId, getCurrentAccount, Markup } from '@hcengineering/core'
+  import { getCurrentAccount, Markup } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
-  import { Component, getPlatformColorForText, IconObjects, IconSize, themeStore } from '@hcengineering/ui'
+  import { getPlatformColorForText, IconObjects, IconSize, themeStore } from '@hcengineering/ui'
 
   import textEditorPlugin from '../plugin'
   import { CollaborationIds, TextFormatCategory, TextNodeAction } from '../types'
 
   import { calculateDecorations } from './diff/decorations'
   import { defaultExtensions } from './extensions'
-  import { NodeHighlightExtension, NodeHighlightType } from './extension/nodeHighlight'
   import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
 
   import StyleButton from './StyleButton.svelte'
@@ -60,9 +58,9 @@
   export let autoOverflow = false
   export let initialContent: string | undefined = undefined
   export let textNodeActions: TextNodeAction[] = []
-  export let extensions: AnyExtension[] = []
-  export let isNodeHighlightModeOn: boolean = false
-  export let onNodeHighlightType: (uuid: string) => NodeHighlightType = () => NodeHighlightType.WARNING
+  export let onExtensions: () => AnyExtension[] = () => []
+
+  let element: HTMLElement
 
   const ydoc = (getContext(CollaborationIds.Doc) as Y.Doc | undefined) ?? new Y.Doc()
   const contextProvider = getContext(CollaborationIds.Provider) as WebsocketProvider | undefined
@@ -84,10 +82,6 @@
 
   const currentUser = getCurrentAccount()
 
-  let currentTextNodeAction: TextNodeAction | undefined | null
-  let selectedNodeUuid: string | null | undefined
-  let textNodeActionMenuElement: HTMLElement
-  let element: HTMLElement
   let editor: Editor
 
   let placeHolderStr: string = ''
@@ -177,18 +171,6 @@
     }
   }
 
-  const getNodeUuid = () => {
-    if (editor.view.state.selection.empty) {
-      return null
-    }
-    if (!selectedNodeUuid) {
-      selectedNodeUuid = generateId()
-      editor.chain().setUuid(selectedNodeUuid!).run()
-    }
-
-    return selectedNodeUuid
-  }
-
   const DecorationExtension = Extension.create({
     addProseMirrorPlugins () {
       return [
@@ -231,34 +213,7 @@
             }
           }),
           DecorationExtension,
-          NodeHighlightExtension.configure({
-            isHighlightModeOn: () => isNodeHighlightModeOn,
-            getNodeHighlightType: onNodeHighlightType,
-            onNodeSelected: (uuid: string | null) => {
-              if (selectedNodeUuid !== uuid) {
-                selectedNodeUuid = uuid
-                dispatch('node-selected', selectedNodeUuid)
-              }
-            }
-          }),
-          BubbleMenu.configure({
-            pluginKey: 'text-node-action-menu',
-            element: textNodeActionMenuElement,
-            tippyOptions: {
-              maxWidth: '38rem',
-              onClickOutside: () => {
-                currentTextNodeAction = undefined
-              }
-            },
-            shouldShow: (editor) => {
-              if (!editor) {
-                return false
-              }
-
-              return !!currentTextNodeAction
-            }
-          }),
-          ...extensions
+          ...onExtensions()
         ],
         onTransaction: () => {
           // force re-render so `editor.isActive` works as expected
@@ -296,24 +251,7 @@
   let showDiff = true
 </script>
 
-<div class="actionPanel" bind:this={textNodeActionMenuElement}>
-  {#if !!currentTextNodeAction}
-    <Component
-      is={currentTextNodeAction.panel}
-      props={{
-        documentId,
-        field,
-        editor,
-        action: currentTextNodeAction,
-        disabled: editor.view.state.selection.empty,
-        onNodeUuid: getNodeUuid
-      }}
-      on:close={() => {
-        currentTextNodeAction = undefined
-      }}
-    />
-  {/if}
-</div>
+<slot />
 {#if visible}
   <div class="ref-container" class:autoOverflow>
     {#if isFormatting && !readonly}
@@ -336,7 +274,7 @@
               needFocus = true
             }}
             on:action={(event) => {
-              currentTextNodeAction = textNodeActions.find((action) => action.id === event.detail)
+              dispatch('action', { action: event.detail, editor })
               needFocus = true
             }}
           />
@@ -516,14 +454,5 @@
   .ref-container:focus-within .formatPanel {
     position: sticky;
     top: 1.25rem;
-  }
-
-  .actionPanel {
-    margin: -0.5rem -0.25rem 0.5rem;
-    padding: 0.375rem;
-    background-color: var(--theme-comp-header-color);
-    border-radius: 0.5rem;
-    box-shadow: var(--theme-popup-shadow);
-    z-index: 1;
   }
 </style>

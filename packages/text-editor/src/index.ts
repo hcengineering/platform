@@ -31,6 +31,13 @@ export * from './types'
 export { default as Collaboration } from './components/Collaboration.svelte'
 export { default as StyleButton } from './components/StyleButton.svelte'
 
+export {
+  NodeHighlightExtension,
+  NodeHighlightExtensionOptions,
+  NodeHighlightType
+} from './components/extension/nodeHighlight'
+export { NodeUuidCommands, NodeUuidExtension, NodeUuidOptions, NodeUuidStorage } from './components/extension/nodeUuid'
+
 addStringsLoader(textEditorId, async (lang: string) => {
   return await import(`../lang/${lang}.json`)
 })

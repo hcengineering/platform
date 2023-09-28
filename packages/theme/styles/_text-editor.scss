@@ -14,6 +14,14 @@
 .text-editor-highlighted-node-success {
   background-color: var(--theme-won-color);
 }
+
+.text-editor-popup {
+  background-color: var(--theme-comp-header-color);
+  border-radius: 0.5rem;
+  box-shadow: var(--theme-popup-shadow);
+  z-index: 1;
+}
+
 .proseH1 {
   margin-block-start: 1.25rem;
   margin-block-end: 1.25rem;
