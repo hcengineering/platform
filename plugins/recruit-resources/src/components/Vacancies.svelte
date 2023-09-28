@@ -129,24 +129,26 @@
         descriptor: { $in: [view.viewlet.Table, view.viewlet.List] }
       }}
     />
-    <Button
-      label={recruit.string.Export}
-      on:click={() => {
-        // Download it
-        const filename = 'vacancies' + new Date().toLocaleDateString() + '.csv'
-        const link = document.createElement('a')
-        link.style.display = 'none'
-        link.setAttribute('target', '_blank')
-        link.setAttribute(
-          'href',
-          'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(tableToCSV('vacanciesData'))
-        )
-        link.setAttribute('download', filename)
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-      }}
-    />
+    {#if viewlet?.descriptor === view.viewlet.Table}
+      <Button
+        label={recruit.string.Export}
+        on:click={() => {
+          // Download it
+          const filename = 'vacancies' + new Date().toLocaleDateString() + '.csv'
+          const link = document.createElement('a')
+          link.style.display = 'none'
+          link.setAttribute('target', '_blank')
+          link.setAttribute(
+            'href',
+            'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(tableToCSV('vacanciesData'))
+          )
+          link.setAttribute('download', filename)
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+        }}
+      />
+    {/if}
     <Button icon={IconAdd} label={recruit.string.VacancyCreateLabel} kind={'accented'} on:click={showCreateDialog} />
   </div>
 </div>
@@ -187,7 +189,8 @@
         ...resultQuery,
         archived
       },
-      totalQuery: {}
+      totalQuery: {},
+      tableId: 'vacanciesData'
     }}
   />
 {/if}
