@@ -36,6 +36,8 @@
   const notificationClient = NotificationClientImpl.getClient()
   let objectId = generateId()
 
+  let progress = false
+
   let copy: string = ''
 
   const obj: Data<NewMessage> = {
@@ -82,6 +84,7 @@
   let inputFile: HTMLInputElement
 
   function fileSelected () {
+    progress = true
     const list = inputFile.files
     if (list === null || list.length === 0) return
     for (let index = 0; index < list.length; index++) {
@@ -89,17 +92,20 @@
       if (file !== null) createAttachment(file)
     }
     inputFile.value = ''
+    progress = false
   }
 
   function fileDrop (e: DragEvent) {
     e.preventDefault()
     e.stopPropagation()
+    progress = true
     const list = e.dataTransfer?.files
     if (list === undefined || list.length === 0) return
     for (let index = 0; index < list.length; index++) {
       const file = list.item(index)
       if (file !== null) createAttachment(file)
     }
+    progress = false
   }
 
   async function createAttachment (file: File) {
@@ -187,11 +193,12 @@
     <Button
       icon={IconAttachment}
       kind={'ghost'}
+      loading={progress}
       on:click={() => {
         inputFile.click()
       }}
     />
-    <Button label={plugin.string.Send} kind={'accented'} on:click={sendMsg} />
+    <Button label={plugin.string.Send} kind={'accented'} disabled={progress} on:click={sendMsg} />
   </div>
 </div>
 {#if attachments.length}

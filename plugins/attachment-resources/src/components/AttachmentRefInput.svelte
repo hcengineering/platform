@@ -19,9 +19,9 @@
   import { deleteFile, uploadFile } from '../utils'
   import attachment from '../plugin'
   import { IntlString, setPlatformStatus, unknownError, Asset } from '@hcengineering/platform'
-  import { createEventDispatcher, onDestroy } from 'svelte'
+  import { createEventDispatcher, onDestroy, tick } from 'svelte'
   import { Account, Class, Doc, generateId, IdMap, Ref, Space, toIdMap } from '@hcengineering/core'
-  import type { AnySvelteComponent } from '@hcengineering/ui'
+  import { Loading, type AnySvelteComponent } from '@hcengineering/ui'
   import { Attachment } from '@hcengineering/attachment'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
 
@@ -58,6 +58,8 @@
   let originalAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
   const newAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
   const removedAttachments: Set<Attachment> = new Set<Attachment>()
+
+  let progress = false
 
   let refContainer: HTMLElement
 
@@ -128,23 +130,32 @@
     await client.addCollection(attachment.class.Attachment, space, objectId, _class, 'attachments', doc, doc._id)
   }
 
-  function fileSelected () {
+  async function fileSelected (): Promise<void> {
+    progress = true
+    await tick()
     const list = inputFile.files
     if (list === null || list.length === 0) return
     for (let index = 0; index < list.length; index++) {
       const file = list.item(index)
-      if (file !== null) createAttachment(file)
+      if (file !== null) {
+        await createAttachment(file)
+      }
     }
     inputFile.value = ''
+    progress = false
   }
 
-  function fileDrop (e: DragEvent) {
+  async function fileDrop (e: DragEvent): Promise<void> {
+    progress = true
     const list = e.dataTransfer?.files
     if (list === undefined || list.length === 0) return
     for (let index = 0; index < list.length; index++) {
       const file = list.item(index)
-      if (file !== null) createAttachment(file)
+      if (file !== null) {
+        await createAttachment(file)
+      }
     }
+    progress = false
   }
 
   async function removeAttachment (attachment: Attachment): Promise<void> {
@@ -221,7 +232,7 @@
     dispatch('update', { message: event.detail, attachments: attachments.size })
   }
 
-  function pasteAction (evt: ClipboardEvent): void {
+  async function pasteAction (evt: ClipboardEvent): Promise<void> {
     let t: HTMLElement | null = evt.target as HTMLElement
     let allowed = false
     while (t != null) {
@@ -235,15 +246,17 @@
     }
 
     const items = evt.clipboardData?.items ?? []
+    progress = true
     for (const index in items) {
       const item = items[index]
       if (item.kind === 'file') {
         const blob = item.getAsFile()
         if (blob !== null) {
-          createAttachment(blob)
+          await createAttachment(blob)
         }
       }
     }
+    progress = false
   }
 </script>
 
@@ -263,8 +276,13 @@
     on:dragleave={() => {}}
     on:drop|preventDefault|stopPropagation={fileDrop}
   >
-    {#if attachments.size}
+    {#if attachments.size || progress}
       <div class="flex-row-center list scroll-divider-color">
+        {#if progress}
+          <div class="flex p-3">
+            <Loading />
+          </div>
+        {/if}
         {#each Array.from(attachments.values()) as attachment}
           <div class="item flex">
             <AttachmentPresenter
