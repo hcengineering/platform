@@ -442,6 +442,44 @@
     }
   }
 
+  const clickOnTrack = (
+    ev: MouseEvent & { currentTarget: EventTarget & HTMLDivElement },
+    horizontal: boolean = false
+  ) => {
+    if (!isScrolling && divBar && divScroll) {
+      const rectScroll = divScroll.getBoundingClientRect()
+      if (horizontal) {
+        const x = ev.offsetX
+        const trackWidth = ev.currentTarget.clientWidth
+        const barWidth = divBarH.clientWidth
+        const leftBar =
+          x - barWidth / 2 <= 0
+            ? rectScroll.left + shiftLeft + 2
+            : x + barWidth / 2 >= trackWidth
+              ? rectScroll.right - barWidth - shiftRight - (mask !== 'none' ? 12 : 2)
+              : ev.clientX - barWidth / 2
+        divBarH.style.left = `${leftBar}px`
+        const widthScroll = rectScroll.width - 2 - (mask !== 'none' ? 12 : 2) - barWidth - shiftLeft - shiftRight
+        const procBar = (leftBar - rectScroll.left - shiftLeft - 2) / widthScroll
+        divScroll.scrollLeft = (divScroll.scrollWidth - divScroll.clientWidth) * procBar
+      } else {
+        const y = ev.offsetY
+        const trackHeight = ev.currentTarget.clientHeight
+        const barHeight = divBar.clientHeight
+        const topBar =
+          y - barHeight / 2 <= 0
+            ? rectScroll.top + shiftTop + 2
+            : y + barHeight / 2 >= trackHeight
+              ? rectScroll.bottom - barHeight - shiftBottom - 2
+              : ev.clientY - barHeight / 2
+        divBar.style.top = `${topBar}px`
+        const heightScroll = rectScroll.height - 4 - barHeight - shiftTop - shiftBottom
+        const procBar = (topBar - rectScroll.top - shiftTop - 2) / heightScroll
+        divScroll.scrollTop = (divScroll.scrollHeight - divScroll.clientHeight) * procBar
+      }
+    }
+  }
+
   $: topButton =
     (orientir === 'vertical' && (mask === 'top' || mask === 'both')) ||
     (orientir === 'horizontal' && (maskH === 'right' || maskH === 'both'))
@@ -547,6 +585,8 @@
       </button>
     </div>
   {/if}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <div class="track" class:hovered={isScrolling === 'vertical'} on:click|stopPropagation={(ev) => clickOnTrack(ev)} />
   <div
     class="bar"
     class:hovered={isScrolling === 'vertical'}
@@ -554,8 +594,13 @@
     on:mousedown={(ev) => onScrollStart(ev, 'vertical')}
     on:mouseleave={checkFade}
   />
-  <div class="track" class:hovered={isScrolling === 'vertical'} />
   {#if horizontal}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <div
+      class="track-horizontal"
+      class:hovered={isScrolling === 'horizontal'}
+      on:click|stopPropagation={(ev) => clickOnTrack(ev, true)}
+    />
     <div
       class="bar-horizontal"
       class:hovered={isScrolling === 'horizontal'}
@@ -563,7 +608,6 @@
       on:mousedown={(ev) => onScrollStart(ev, 'horizontal')}
       on:mouseleave={checkFade}
     />
-    <div class="track-horizontal" class:hovered={isScrolling === 'horizontal'} />
   {/if}
 </div>
 
@@ -745,47 +789,19 @@
     justify-content: flex-start;
   }
 
-  .track,
-  .track-horizontal {
-    visibility: hidden;
-    position: absolute;
-    transform-origin: center;
-    transform: scaleX(0);
-    transition: all 0.1s ease-in-out;
-    background-color: var(--scrollbar-track-color);
-    border-radius: 0.5rem;
-  }
-  .track {
-    top: var(--scroller-header-height, 2px);
-    bottom: var(--scroller-footer-height, 2px);
-    width: 8px;
-  }
-  .track-horizontal {
-    bottom: var(--scroller-footer-height, 2px);
-    left: var(--scroller-left-offset, 2px);
-    right: var(--scroller-right-offset, 2px);
-    height: 8px;
-  }
   .bar,
   .bar-horizontal {
     visibility: hidden;
     position: absolute;
-    transform-origin: center;
     background-color: var(--scrollbar-bar-color);
-    border-radius: 0.125rem;
-    opacity: 0;
-    box-shadow: 0 0 1px 1px var(--theme-overlay-color);
-    cursor: pointer;
-    z-index: 1;
+    transform-origin: center;
     transition: all 0.15s;
+    border-radius: 0.125rem;
+    box-shadow: 0 0 1px 1px var(--theme-overlay-color);
+    opacity: 0;
+    z-index: 1;
+    cursor: pointer;
 
-    &:hover,
-    &.hovered {
-      background-color: var(--scrollbar-bar-hover);
-      border-radius: 0.25rem;
-      opacity: 1 !important;
-      box-shadow: 0 0 1px black;
-    }
     &.hovered {
       transition: none;
     }
@@ -801,11 +817,6 @@
     &:hover,
     &.hovered {
       transform: scaleX(1);
-
-      & + .track {
-        visibility: visible;
-        transform: scaleX(1);
-      }
     }
   }
   .bar-horizontal {
@@ -819,12 +830,70 @@
     &:hover,
     &.hovered {
       transform: scaleY(1);
+    }
+  }
+  .track,
+  .track-horizontal {
+    position: absolute;
+    transform-origin: center;
+    transition: all 0.1s ease-in-out;
+    background-color: var(--scrollbar-track-color);
+    border-radius: 0.5rem;
+    opacity: 0;
 
-      & + .track-horizontal {
-        visibility: visible;
+    &::after {
+      position: absolute;
+      content: '';
+      inset: 0;
+      transform-origin: center;
+      transition: all 0.1s ease-in-out;
+    }
+  }
+  .track {
+    top: var(--scroller-header-height, 2px);
+    bottom: var(--scroller-footer-height, 2px);
+    width: 8px;
+    transform: scaleX(0.1);
+    &::after {
+      transform: scaleX(10);
+    }
+    &:hover {
+      transform: scaleX(1);
+      opacity: 1;
+      &::after,
+      & + .bar {
+        transform: scaleX(1);
+      }
+    }
+  }
+  .track-horizontal {
+    bottom: var(--scroller-footer-height, 2px);
+    left: var(--scroller-left-offset, 2px);
+    right: var(--scroller-right-offset, 2px);
+    height: 8px;
+    transform: scaleY(0.1);
+    &::after {
+      transform: scaleY(10);
+    }
+    &:hover {
+      transform: scaleY(1);
+      opacity: 1;
+      &::after,
+      & + .bar-horizontal {
         transform: scaleY(1);
       }
     }
+  }
+  .track:hover + .bar,
+  .track-horizontal:hover + .bar-horizontal,
+  .bar:hover,
+  .bar-horizontal:hover,
+  .bar.hovered,
+  .bar-horizontal.hovered {
+    background-color: var(--scrollbar-bar-hover);
+    border-radius: 0.25rem;
+    opacity: 1 !important;
+    box-shadow: 0 0 1px black;
   }
 
   .scroller-container.sticked,

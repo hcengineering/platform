@@ -167,7 +167,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
-  class="antiComponent styled-box clear-mins"
+  class="flex-col styled-box"
   class:antiEmphasized={kind === 'emphasized'}
   class:antiIndented={kind === 'indented'}
   class:focusable={(mode === Mode.Edit || alwaysEdit) && focused}
