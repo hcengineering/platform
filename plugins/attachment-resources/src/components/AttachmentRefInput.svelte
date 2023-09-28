@@ -310,6 +310,7 @@
       haveAttachment={attachments.size > 0}
       withoutTopBorder={attachments.size > 0}
       on:attach={() => {
+        dispatch('focus')
         inputFile.click()
       }}
       on:update={onUpdate}
