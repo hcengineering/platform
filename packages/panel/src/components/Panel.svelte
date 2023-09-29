@@ -44,12 +44,14 @@
   export let isAside: boolean = true
   export let isUtils: boolean = true
   export let isCustomAttr: boolean = true
+  export let isReminder: boolean = true
   export let floatAside = false
   export let allowBack = true
   export let allowClose = true
   export let useMaxWidth: boolean | undefined = undefined
   export let isFullSize = false
   export let embedded = false
+  export let contentClasses: string | undefined = undefined
 
   let lastHref: string
   let scroll: HTMLDivElement
@@ -139,7 +141,9 @@
 
   <svelte:fragment slot="utils">
     <slot name="pre-utils" />
-    <Component is={calendar.component.DocReminder} props={{ value: object, title, focusIndex: 9000 }} />
+    {#if isReminder}
+      <Component is={calendar.component.DocReminder} props={{ value: object, title, focusIndex: 9000 }} />
+    {/if}
     {#if isUtils && $$slots.utils}
       <div class="buttons-divider" />
       <slot name="utils" />
@@ -211,7 +215,7 @@
         }
       }}
     >
-      <div class="popupPanel-body__main-content py-8 clear-mins" class:max={useMaxWidth}>
+      <div class={contentClasses ?? "popupPanel-body__main-content py-8 clear-mins"} class:max={useMaxWidth}>
         <slot />
         {#if !withoutActivity}
           {#key object._id}
