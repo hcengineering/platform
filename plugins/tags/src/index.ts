@@ -14,7 +14,7 @@
 //
 
 import type { AttachedDoc, Class, Doc, Ref, Space } from '@hcengineering/core'
-import type { Asset, Plugin } from '@hcengineering/platform'
+import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
 import { writable } from 'svelte/store'
@@ -100,6 +100,8 @@ const tagsPlugin = plugin(tagsId, {
     Level3: '' as Asset
   },
   component: {
+    DraftTagsEditor: '' as AnyComponent,
+    DocTagsEditor: '' as AnyComponent,
     TagsView: '' as AnyComponent,
     TagsEditor: '' as AnyComponent,
     TagsDropdownEditor: '' as AnyComponent,
@@ -110,6 +112,11 @@ const tagsPlugin = plugin(tagsId, {
     TagElementPresenter: '' as AnyComponent,
     TagsEditorPopup: '' as AnyComponent,
     ObjectsTagsEditorPopup: '' as AnyComponent
+  },
+  string: {
+    Tags: '' as IntlString,
+    AddLabel: '' as IntlString,
+    TagLabel: '' as IntlString
   },
   category: {
     NoCategory: '' as Ref<TagCategory>

@@ -26,6 +26,7 @@
   export let icon: Asset | AnySvelteComponent
   export let placeholder: IntlString = plugin.string.SearchDots
   export let items: ListItem[]
+  export let withSearch: boolean = true
 
   let search: string = ''
   let phTraslate: string = ''
@@ -74,16 +75,18 @@
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')} on:keydown={onKeydown}>
-  <div class="header">
-    <input
-      bind:this={searchInput}
-      type="text"
-      bind:value={search}
-      placeholder={phTraslate}
-      on:input={(ev) => {}}
-      on:change
-    />
-  </div>
+  {#if withSearch}
+    <div class="header">
+      <input
+        bind:this={searchInput}
+        type="text"
+        bind:value={search}
+        placeholder={phTraslate}
+        on:input={(ev) => {}}
+        on:change
+      />
+    </div>
+  {/if}
   <div class="scroll">
     <div class="box">
       <ListView bind:this={list} count={objects.length} bind:selection>
@@ -97,10 +100,12 @@
               handleSelection(evt, idx)
             }}
           >
-            {#if item.image || icon}
+            {#if item.image || item.icon || icon}
               <div class="flex-center img" class:image={item.image}>
                 {#if item.image}
                   <img src={item.image} alt={item.label} />
+                {:else if item.icon}
+                  <Icon icon={item.icon} size={'medium'} iconProps={item.iconProps} />
                 {:else if typeof icon === 'string'}
                   <Icon {icon} size={'small'} />
                 {:else}
@@ -119,17 +124,17 @@
 <style lang="scss">
   .img {
     margin-right: 0.75rem;
-    flex-shrink: 0;
     width: 1.5rem;
     height: 1.5rem;
+    flex-shrink: 0;
+  }
+  .image {
+    border-color: transparent;
     color: var(--caption-color);
     background-color: var(--popup-bg-hover);
     border-radius: 50%;
     outline: none;
     overflow: hidden;
-  }
-  .image {
-    border-color: transparent;
     img {
       max-width: fit-content;
     }

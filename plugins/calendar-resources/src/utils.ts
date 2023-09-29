@@ -159,6 +159,14 @@ export async function updateReccuringInstance (
             eventId: object.recurringEventId
           })
           if (base !== undefined) {
+            if (ops.date !== undefined) {
+              const diff = object.date - ops.date
+              ops.date = base.date - diff
+            }
+            if (ops.dueDate !== undefined) {
+              const diff = object.dueDate - ops.dueDate
+              ops.dueDate = base.dueDate - diff
+            }
             await client.update(base, ops)
           }
         } else if (res.mode === 'next') {

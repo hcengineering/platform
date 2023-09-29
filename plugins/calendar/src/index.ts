@@ -22,9 +22,16 @@ import { AnyComponent } from '@hcengineering/ui'
 /**
  * @public
  */
+export type Visibility = 'public' | 'freeBusy' | 'private'
+
+/**
+ * @public
+ */
 export interface Calendar extends Space {
-  visibility: 'public' | 'freeBusy' | 'private'
+  visibility: Visibility
   sync?: boolean
+  externalId?: string
+  externalUser?: string
 }
 
 /**
@@ -55,6 +62,7 @@ export interface ReccuringEvent extends Event {
   rules: RecurringRule[]
   exdate: Timestamp[]
   rdate: Timestamp[]
+  originalStartTime: Timestamp
 }
 
 /**
@@ -84,7 +92,7 @@ export interface Event extends AttachedDoc {
 
   reminders?: Timestamp[]
 
-  visibility?: 'public' | 'freeBusy' | 'private'
+  visibility?: Visibility
 
   access: 'freeBusyReader' | 'reader' | 'writer' | 'owner'
 }
@@ -134,7 +142,9 @@ const calendarPlugin = plugin(calendarId, {
     Description: '' as Asset,
     Participants: '' as Asset,
     Repeat: '' as Asset,
-    Globe: '' as Asset
+    Globe: '' as Asset,
+    Public: '' as Asset,
+    Private: '' as Asset
   },
   space: {
     // deprecated
@@ -166,7 +176,11 @@ const calendarPlugin = plugin(calendarId, {
     PersonsLabel: '' as IntlString,
     EventNumber: '' as IntlString,
     Reminders: '' as IntlString,
-    Today: '' as IntlString
+    Today: '' as IntlString,
+    Visibility: '' as IntlString,
+    Public: '' as IntlString,
+    FreeBusy: '' as IntlString,
+    Private: '' as IntlString
   },
   handler: {
     DisconnectHandler: '' as Handler

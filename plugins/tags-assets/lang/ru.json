@@ -11,6 +11,7 @@
     "AddTagTooltip": "Добавить/создать {word}",
     "AddNowTooltip": "Создать {word}",
     "AddTag": "Создать {word}",
+    "AddLabel": "Добавить метку",
     "EditTag": "Редактировать {word}",
     "TagCreateLabel": "Тег",
     "CancelLabel": "Отмена",
