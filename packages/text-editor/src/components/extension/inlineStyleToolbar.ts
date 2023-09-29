@@ -11,7 +11,8 @@ export const InlineStyleToolbar = Extension.create<InlineStyleToolbarOptions>({
     pluginKey: 'inline-style-toolbar',
     element: null,
     tippyOptions: {
-      maxWidth: '38rem'
+      maxWidth: '38rem',
+      appendTo: () => document.body
     },
     getEditorElement: () => null
   },

@@ -152,8 +152,10 @@
     <EventParticipants bind:participants bind:externalParticipants />
   </div>
   <div class="block flex-no-shrink">
-    <div class="flex-row-center gap-1-5">
-      <Icon icon={calendar.icon.Description} size={'small'} />
+    <div class="flex-row-top gap-1-5">
+      <div class="top-icon">
+        <Icon icon={calendar.icon.Description} size={'small'} />
+      </div>
       <StyledTextBox
         alwaysEdit={true}
         kind={'indented'}
@@ -205,6 +207,10 @@
       &.rightCropPadding {
         padding: 0.75rem 1rem 0.75rem 1.25rem;
       }
+    }
+    .top-icon {
+      flex-shrink: 0;
+      margin-top: 0.875rem;
     }
   }
 </style>
