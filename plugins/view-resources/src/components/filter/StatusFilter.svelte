@@ -127,12 +127,19 @@
       const res: Map<Ref<Status>, string> = new Map()
       for (const state of statuses) {
         if (res.has(state._id)) continue
-        space = await client.findOne(task.class.SpaceWithStates, { states: state._id })
+        const query = hierarchy.isDerived(state._class, task.class.DoneState)
+          ? { doneStates: state._id }
+          : { states: state._id }
+        space = (await client.findOne(task.class.SpaceWithStates, query)) as SpaceWithStates | undefined
         if (space === undefined) continue
-        for (let index = 0; index < space.states.length; index++) {
-          const st = space.states[index]
-          const prev = index > 0 ? res.get(space.states[index - 1]) : undefined
-          const next = index < space.states.length - 1 ? res.get(space.states[index + 1]) : undefined
+        const spaceStateArray = hierarchy.isDerived(state._class, task.class.DoneState)
+          ? space.doneStates
+          : space.states
+        if (spaceStateArray === undefined) continue
+        for (let index = 0; index < spaceStateArray.length; index++) {
+          const st = spaceStateArray[index]
+          const prev = index > 0 ? res.get(spaceStateArray[index - 1]) : undefined
+          const next = index < spaceStateArray.length - 1 ? res.get(spaceStateArray[index + 1]) : undefined
           res.set(st, calcRank(prev ? { rank: prev } : undefined, next ? { rank: next } : undefined))
         }
       }
