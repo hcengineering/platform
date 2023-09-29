@@ -38,6 +38,7 @@
   export let autoSelect = true
   export let iconWithEmoji: AnySvelteComponent | Asset | ComponentType | undefined = undefined
   export let defaultIcon: AnySvelteComponent | Asset | ComponentType | undefined = undefined
+  export let readonly: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -61,6 +62,7 @@
   {component}
   {componentProps}
   {autoSelect}
+  {readonly}
   {iconWithEmoji}
   {defaultIcon}
   bind:value={space}

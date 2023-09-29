@@ -78,6 +78,10 @@
     "Busy": "Занято",
     "AddReminder": "Добавить напоминание",
     "SeeAllNumberParticipants": "{value, plural, other {Увидеть всех # участников}}",
-    "SeeAllNumberReminders": "{value, plural, other {Просмотреть все # напоминаний}}"
+    "SeeAllNumberReminders": "{value, plural, other {Просмотреть все # напоминаний}}",
+    "Visibility": "Видимость",
+    "Private": "Видно только Вам",
+    "Public": "Видно всем",
+    "FreeBusy": "Скрыть детали"
   }
 }

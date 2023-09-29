@@ -11,6 +11,7 @@
     "AddTagTooltip": "Add/Create {word}",
     "AddNowTooltip": "Create {word}",
     "AddTag": "Create {word}",
+    "AddLabel": "Add label",
     "EditTag": "Edit {word}",
     "TagCreateLabel": "Tag",
     "CancelLabel": "Cancel",

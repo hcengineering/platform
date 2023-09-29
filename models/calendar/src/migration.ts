@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Calendar, Event } from '@hcengineering/calendar'
+import { Calendar, Event, ReccuringEvent } from '@hcengineering/calendar'
 import core, { Ref, TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import calendar from './plugin'
@@ -76,10 +76,21 @@ async function migrateReminders (client: MigrationClient): Promise<void> {
   }
 }
 
+async function fillOriginalStartTime (client: MigrationClient): Promise<void> {
+  const events = await client.find<ReccuringEvent>(DOMAIN_CALENDAR, {
+    _class: calendar.class.ReccuringEvent,
+    originalStartTime: { $exists: false }
+  })
+  for (const event of events) {
+    await client.update(DOMAIN_CALENDAR, { _id: event._id }, { originalStartTime: event.date })
+  }
+}
+
 export const calendarOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await fixEventDueDate(client)
     await migrateReminders(client)
+    await fillOriginalStartTime(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)

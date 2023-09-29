@@ -27,6 +27,7 @@
   export let placeholder: IntlString
   export let items: ListItem[] = []
   export let selected: ListItem | undefined = undefined
+  export let disabled: boolean = false
 
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
@@ -34,6 +35,8 @@
   export let width: string | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
   export let focusIndex = -1
+
+  export let withSearch: boolean = true
 
   let container: HTMLElement
   let opened: boolean = false
@@ -45,16 +48,18 @@
 <div bind:this={container} class="min-w-0">
   <Button
     {focusIndex}
-    {icon}
+    icon={selected?.icon ?? icon}
+    iconProps={selected?.iconProps}
     width={width ?? 'min-content'}
     {size}
     {kind}
     {justify}
+    {disabled}
     showTooltip={{ label, direction: labelDirection }}
     on:click={() => {
       if (!opened) {
         opened = true
-        showPopup(DropdownPopup, { title: label, items, icon }, container, (result) => {
+        showPopup(DropdownPopup, { title: label, items, icon, withSearch }, container, (result) => {
           if (result) {
             selected = result
             dispatch('selected', result)

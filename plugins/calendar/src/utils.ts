@@ -285,7 +285,7 @@ function getReccuringEventInstances (
   const excludes = new Set(event.exdate ?? [])
   res = res.filter((p) => !excludes.has(p.date))
   res = res.filter((i) => {
-    const override = instances.find((p) => p.originalStartTime === i.date)
+    const override = instances.find((p) => p.originalStartTime === i.originalStartTime)
     return override === undefined
   })
   return res

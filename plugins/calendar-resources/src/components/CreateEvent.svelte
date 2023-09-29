@@ -82,7 +82,8 @@
         participants,
         title,
         allDay,
-        access: 'owner'
+        access: 'owner',
+        originalStartTime: allDay ? saveUTC(date) : date
       })
     } else {
       await client.addCollection(calendar.class.Event, space, attachedTo, attachedToClass, 'events', {

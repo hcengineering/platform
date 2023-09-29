@@ -13,31 +13,33 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import tags, { TagElement } from '@hcengineering/tags'
+  import { AttachedData, Class, Doc, Ref } from '@hcengineering/core'
+  import { TagElement, TagReference } from '@hcengineering/tags'
+  import { createEventDispatcher } from 'svelte'
   import TagsPopup from './TagsPopup.svelte'
 
-  export let object: Doc
-  export let targetClass: Ref<Class<Doc>> = object._class
+  export let targetClass: Ref<Class<Doc>>
+  export let tags: AttachedData<TagReference>[] = []
 
-  let selected: Ref<TagElement>[] = []
-  const query = createQuery()
-  $: query.query(tags.class.TagReference, { attachedTo: object._id }, (result) => {
-    selected = result.map(({ tag }) => tag)
-  })
-  const client = getClient()
+  $: selected = tags.map((p) => p.tag)
+
+  const dispatch = createEventDispatcher()
   async function addRef ({ title, color, _id: tag }: TagElement): Promise<void> {
-    await client.addCollection(tags.class.TagReference, object.space, object._id, object._class, 'labels', {
+    tags.push({
+      tag,
       title,
-      color,
-      tag
+      color
     })
+    tags = tags
+    dispatch('update', tags)
   }
+
   async function removeTag (tag: TagElement): Promise<void> {
-    const tagRef = await client.findOne(tags.class.TagReference, { tag: tag._id, attachedTo: object._id })
-    if (tagRef) await client.remove(tagRef)
+    tags = tags.filter((t) => t.tag !== tag._id)
+    tags = tags
+    dispatch('update', tags)
   }
+
   async function onUpdate (event: CustomEvent<{ action: string; tag: TagElement }>) {
     const result = event.detail
     if (result === undefined) return

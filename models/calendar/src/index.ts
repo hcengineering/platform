@@ -20,7 +20,8 @@ import {
   Event,
   ReccuringEvent,
   ReccuringInstance,
-  RecurringRule
+  RecurringRule,
+  Visibility
 } from '@hcengineering/calendar'
 import { Contact } from '@hcengineering/contact'
 import { DateRangeMode, Domain, IndexKind, Markup, Ref, Timestamp } from '@hcengineering/core'
@@ -60,7 +61,7 @@ export const DOMAIN_CALENDAR = 'calendar' as Domain
 @Model(calendar.class.Calendar, core.class.Space)
 @UX(calendar.string.Calendar, calendar.icon.Calendar)
 export class TCalendar extends TSpaceWithStates implements Calendar {
-  visibility!: 'public' | 'freeBusy' | 'private'
+  visibility!: Visibility
 
   sync?: boolean
 }
@@ -108,7 +109,7 @@ export class TEvent extends TAttachedDoc implements Event {
 
   access!: 'freeBusyReader' | 'reader' | 'writer' | 'owner'
 
-  visibility?: 'public' | 'freeBusy' | 'private'
+  visibility?: Visibility
 }
 
 @Model(calendar.class.ReccuringEvent, calendar.class.Event)
@@ -117,6 +118,7 @@ export class TReccuringEvent extends TEvent implements ReccuringEvent {
   rules!: RecurringRule[]
   exdate!: Timestamp[]
   rdate!: Timestamp[]
+  originalStartTime!: Timestamp
 }
 
 @Model(calendar.class.ReccuringInstance, calendar.class.Event)

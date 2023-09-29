@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Event, ReccuringInstance } from '@hcengineering/calendar'
-  import { Timestamp, Ref, DocumentUpdate } from '@hcengineering/core'
+  import { DocumentUpdate, Ref, Timestamp } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import ui, {
     ActionIcon,
@@ -29,16 +29,16 @@
     closeTooltip,
     deviceOptionsStore as deviceInfo,
     day as getDay,
+    getEventPositionElement,
     getMonday,
     getWeekDayName,
     resizeObserver,
-    showPopup,
-    getEventPositionElement
+    showPopup
   } from '@hcengineering/ui'
   import { Menu } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import calendar from '../plugin'
-  import { updateReccuringInstance, isReadOnly } from '../utils'
+  import { isReadOnly, updateReccuringInstance } from '../utils'
   import EventElement from './EventElement.svelte'
 
   export let events: Event[]
@@ -563,7 +563,11 @@
     if (originDueDate !== event.dueDate) update.dueDate = event.dueDate
     if (Object.keys(update).length > 0) {
       if (event._class === calendar.class.ReccuringInstance) {
-        await updateReccuringInstance(update, event as ReccuringInstance)
+        await updateReccuringInstance(update, {
+          ...event,
+          date: originDate,
+          dueDate: originDueDate
+        } as ReccuringInstance)
       } else {
         await client.update(event, update)
       }

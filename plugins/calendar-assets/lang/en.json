@@ -78,6 +78,10 @@
     "Busy": "Busy",
     "AddReminder": "Add reminder",
     "SeeAllNumberParticipants": "{value, plural, other {See all # participants}}",
-    "SeeAllNumberReminders": "{value, plural, other {See all # reminders}}"
+    "SeeAllNumberReminders": "{value, plural, other {See all # reminders}}",
+    "Visibility": "Visibility",
+    "Private": "Only visible to you",
+    "Public": "Visible to everyone",
+    "FreeBusy": "FreeBusy"
   }
 }

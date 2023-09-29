@@ -17,7 +17,7 @@
 
   export let checked: boolean = false
   export let symbol: 'check' | 'minus' = 'check'
-  export let size: 'small' | 'medium' = 'small'
+  export let size: 'small' | 'medium' | 'large' = 'small'
   export let circle: boolean = false
   export let accented: boolean = false
   export let readonly = false
@@ -65,6 +65,10 @@
     &.medium {
       width: 1rem;
       height: 1rem;
+    }
+    &.large {
+      width: 1.25rem;
+      height: 1.25rem;
     }
     &.circle {
       width: 1rem;
