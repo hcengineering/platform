@@ -76,5 +76,6 @@
     {noUnderline}
     {...props}
     on:accent-color
+    on:close
   />
 {/if}
