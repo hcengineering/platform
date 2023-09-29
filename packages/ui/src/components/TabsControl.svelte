@@ -34,11 +34,11 @@
       }}
     >
       {#if tab.icon !== undefined}
-        <div class="mr-2" class:ml-2={tab.label === ""}>
+        <div class="mr-2" class:ml-2={tab.label === ''}>
           <Icon icon={tab.icon} size={'small'} />
         </div>
       {/if}
-      {#if tab.label !== ""}
+      {#if tab.label !== ''}
         <Label label={tab.label} />
       {/if}
     </div>
