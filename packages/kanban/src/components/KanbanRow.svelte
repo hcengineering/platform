@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { CategoryType, Doc, Ref } from '@hcengineering/core'
-  import ui, { Button, IconMoreH, mouseAttractor } from '@hcengineering/ui'
+  import ui, { Button, IconMoreH, Lazy, mouseAttractor } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { slide } from 'svelte/transition'
   import { CardDragEvent, DocWithRank, Item } from '../types'
@@ -102,7 +102,12 @@
         isDragging = false
       }}
     >
-      <slot name="card" object={toAny(object)} {dragged} />
+      <Lazy>
+        <slot name="card" object={toAny(object)} {dragged} />
+        <svelte:fragment slot="loading">
+          <Spinner />
+        </svelte:fragment>
+      </Lazy>
     </div>
   </div>
 {/each}

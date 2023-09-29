@@ -200,7 +200,10 @@
       </span>
     </svelte:fragment>
     <svelte:fragment slot="pre-utils">
-      <ComponentExtensions extension={tracker.extensions.EditIssueHeader} />
+      <ComponentExtensions
+        extension={tracker.extensions.EditIssueHeader}
+        props={{ size: 'medium', kind: 'ghost', space: issue.space }}
+      />
       {#if saved}
         <Label label={presentation.string.Saved} />
       {/if}
