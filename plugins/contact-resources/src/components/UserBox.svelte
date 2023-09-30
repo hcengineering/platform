@@ -15,31 +15,30 @@
 -->
 <script lang="ts">
   import contact, { Contact, getName } from '@hcengineering/contact'
-  import { Class, DocumentQuery, FindOptions, Hierarchy, Ref, Doc } from '@hcengineering/core'
-  import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
-  import { getClient, ObjectCreate } from '@hcengineering/presentation'
+  import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
+  import { Asset, IntlString, getEmbeddedLabel } from '@hcengineering/platform'
+  import presentation, { ObjectCreate, getClient } from '@hcengineering/presentation'
   import {
     ActionIcon,
     AnySvelteComponent,
     Button,
     ButtonKind,
     ButtonSize,
-    IconSize,
-    getEventPositionElement,
-    getFocusManager,
     Icon,
+    IconSize,
     Label,
     LabelAndProps,
-    showPanel,
+    getEventPositionElement,
+    getFocusManager,
     showPopup,
     tooltip
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import { openDoc } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import presentation from '@hcengineering/presentation'
-  import IconPerson from './icons/Person.svelte'
   import UserInfo from './UserInfo.svelte'
   import UsersPopup from './UsersPopup.svelte'
+  import IconPerson from './icons/Person.svelte'
 
   export let _class: Ref<Class<Contact>>
   export let _previewClass: Ref<Class<Contact>> = contact.class.Contact
@@ -185,7 +184,7 @@
             size={'small'}
             action={() => {
               if (selected) {
-                showPanel(view.component.EditDoc, selected._id, Hierarchy.mixinOrClass(selected), 'content')
+                openDoc(client.getHierarchy(), selected)
               }
             }}
           />

@@ -44,7 +44,9 @@
       href = undefined
       return
     }
-    const loc = await getObjectLinkFragment(hierarchy, object, props, component)
+    const panelComponent = hierarchy.classHierarchyMixin(object._class, view.mixin.ObjectPanel)
+    const comp = panelComponent?.component ?? component
+    const loc = await getObjectLinkFragment(hierarchy, object, props, comp)
     href = `${window.location.origin}${locationToUrl(loc)}`
   }
 

@@ -14,31 +14,31 @@
 -->
 <script lang="ts">
   import contact, { Contact, Employee, Person, getName } from '@hcengineering/contact'
-  import { Class, DocumentQuery, FindOptions, Hierarchy, Ref } from '@hcengineering/core'
-  import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
+  import { Class, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
+  import { IntlString, getEmbeddedLabel } from '@hcengineering/platform'
+  import presentation, { getClient } from '@hcengineering/presentation'
   import {
     ActionIcon,
     Button,
     ButtonKind,
     ButtonSize,
-    IconSize,
-    getEventPositionElement,
-    getFocusManager,
     Icon,
+    IconSize,
     Label,
     LabelAndProps,
-    showPanel,
+    getEventPositionElement,
+    getFocusManager,
     showPopup,
     tooltip
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import { openDoc } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import presentation, { getClient } from '@hcengineering/presentation'
   import { PersonLabelTooltip, personByIdStore } from '..'
   import AssigneePopup from './AssigneePopup.svelte'
-  import IconPerson from './icons/Person.svelte'
-  import UserInfo from './UserInfo.svelte'
   import EmployeePresenter from './EmployeePresenter.svelte'
+  import UserInfo from './UserInfo.svelte'
+  import IconPerson from './icons/Person.svelte'
 
   export let _class: Ref<Class<Employee>> = contact.mixin.Employee
   export let excluded: Ref<Contact>[] | undefined = undefined
@@ -199,7 +199,7 @@
             size={'small'}
             action={() => {
               if (selected) {
-                showPanel(view.component.EditDoc, selected._id, Hierarchy.mixinOrClass(selected), 'content')
+                openDoc(client.getHierarchy(), selected)
               }
             }}
           />
