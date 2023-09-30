@@ -34,11 +34,13 @@
       }}
     >
       {#if tab.icon !== undefined}
-        <div class="mr-2">
+        <div class="mr-2" class:ml-2={tab.label === ''}>
           <Icon icon={tab.icon} size={'small'} />
         </div>
       {/if}
-      <Label label={tab.label} />
+      {#if tab.label !== ''}
+        <Label label={tab.label} />
+      {/if}
     </div>
   {/each}
   <div class="grow" />
