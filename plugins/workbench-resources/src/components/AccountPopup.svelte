@@ -69,8 +69,12 @@
     loc.fragment = undefined
     loc.query = undefined
     loc.path[2] = settingId
-    if (sp) loc.path[3] = sp.name
-    loc.path.length = 4
+    if (sp) {
+      loc.path[3] = sp.name
+      loc.path.length = 4
+    } else {
+      loc.path.length = 3
+    }
     navigate(loc)
   }
 
