@@ -192,6 +192,10 @@ export function createModel (builder: Builder, options = { addApplication: true 
     builder.mixin(spaceClass, core.class.Class, view.mixin.ObjectEditor, {
       editor: chunter.component.EditChannel
     })
+
+    builder.mixin(spaceClass, core.class.Class, view.mixin.ObjectPanel, {
+      component: chunter.component.EditChannel
+    })
   })
 
   builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.SpaceName, {

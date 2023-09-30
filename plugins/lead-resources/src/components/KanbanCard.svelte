@@ -20,13 +20,13 @@
   import { ContactPresenter } from '@hcengineering/contact-resources'
   import type { WithLookup } from '@hcengineering/core'
   import type { Lead } from '@hcengineering/lead'
-  import { ActionIcon, Component, DueDatePresenter, IconMoreH, showPanel, showPopup } from '@hcengineering/ui'
-  import view, { BuildModelKey } from '@hcengineering/view'
-  import { ContextMenu, enabledConfig } from '@hcengineering/view-resources'
-  import lead from '../plugin'
   import notification from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
   import { AssigneePresenter } from '@hcengineering/task-resources'
+  import { ActionIcon, Component, DueDatePresenter, IconMoreH, showPopup } from '@hcengineering/ui'
+  import { BuildModelKey } from '@hcengineering/view'
+  import { ContextMenu, enabledConfig, openDoc } from '@hcengineering/view-resources'
+  import lead from '../plugin'
   import LeadPresenter from './LeadPresenter.svelte'
 
   export let object: WithLookup<Lead>
@@ -40,7 +40,7 @@
   }
 
   function showLead () {
-    showPanel(view.component.EditDoc, object._id, object._class, 'content')
+    openDoc(client.getHierarchy(), object)
   }
 </script>
 

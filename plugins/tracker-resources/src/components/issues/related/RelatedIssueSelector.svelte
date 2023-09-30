@@ -20,9 +20,9 @@
     Button,
     ButtonKind,
     ButtonSize,
-    closeTooltip,
     ProgressCircle,
     SelectPopup,
+    closeTooltip,
     showPanel,
     showPopup
   } from '@hcengineering/ui'

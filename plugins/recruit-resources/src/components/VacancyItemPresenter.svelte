@@ -14,8 +14,10 @@
 -->
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
   import type { Vacancy } from '@hcengineering/recruit'
-  import { ActionIcon, Icon, IconEdit, showPanel } from '@hcengineering/ui'
+  import { ActionIcon, Icon, IconEdit } from '@hcengineering/ui'
+  import { openDoc } from '@hcengineering/view-resources'
   import recruit from '../plugin'
 
   export let value: Vacancy
@@ -23,7 +25,7 @@
   export let action: ((item: Ref<Vacancy>) => void) | undefined = undefined
 
   function editVacancy (): void {
-    showPanel(recruit.component.EditVacancy, value._id, value._class, 'content')
+    openDoc(getClient().getHierarchy(), value)
   }
 </script>
 

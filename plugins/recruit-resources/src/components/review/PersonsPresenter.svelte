@@ -16,20 +16,20 @@
 <script lang="ts">
   import calendar from '@hcengineering/calendar'
   import { getName, Person } from '@hcengineering/contact'
-  import { Hierarchy } from '@hcengineering/core'
   import { Avatar } from '@hcengineering/contact-resources'
-  import { showPanel, tooltip } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
   import { getClient } from '@hcengineering/presentation'
+  import { tooltip } from '@hcengineering/ui'
+  import { openDoc } from '@hcengineering/view-resources'
 
   export let value: Person | Person[]
   export let inline: boolean = false
 
   let persons: Person[] = []
   $: persons = Array.isArray(value) ? value : [value]
+  const hierarchy = getClient().getHierarchy()
 
   async function onClick (p: Person) {
-    showPanel(view.component.EditDoc, p._id, Hierarchy.mixinOrClass(p), 'content')
+    openDoc(hierarchy, p)
   }
   const client = getClient()
 </script>

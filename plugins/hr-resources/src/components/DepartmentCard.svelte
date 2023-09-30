@@ -14,23 +14,20 @@
 -->
 <script lang="ts">
   import contact, { Employee } from '@hcengineering/contact'
-  import { EmployeePresenter } from '@hcengineering/contact-resources'
+  import { Avatar, EmployeePresenter, UsersPopup } from '@hcengineering/contact-resources'
   import { Ref, WithLookup } from '@hcengineering/core'
   import { Department, Staff } from '@hcengineering/hr'
   import { getClient } from '@hcengineering/presentation'
-  import { Avatar, UsersPopup } from '@hcengineering/contact-resources'
   import {
     Button,
+    IconAdd,
+    Label,
     closeTooltip,
     eventToHTMLElement,
     getEventPositionElement,
-    IconAdd,
-    Label,
-    showPanel,
     showPopup
   } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
-  import { Menu } from '@hcengineering/view-resources'
+  import { Menu, openDoc } from '@hcengineering/view-resources'
   import hr from '../plugin'
   import { addMember } from '../utils'
   import CreateDepartment from './CreateDepartment.svelte'
@@ -84,7 +81,7 @@
   }
 
   function edit (e: MouseEvent): void {
-    showPanel(view.component.EditDoc, value._id, value._class, 'content')
+    openDoc(client.getHierarchy(), value)
   }
 
   export let dragPerson: WithLookup<Staff> | undefined

@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import type { PersonAccount } from '@hcengineering/contact'
   import { Doc, DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import type { Issue, Project } from '@hcengineering/tracker'
   import { resolvedLocationStore } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
 
   import { IModeSelector } from '@hcengineering/ui'
   import tracker from '../../plugin'
@@ -81,7 +81,5 @@
 </script>
 
 {#if query !== undefined && modeSelectorProps !== undefined}
-  {#key query}
-    <IssuesView {query} space={undefined} title={tracker.string.MyIssues} {modeSelectorProps} />
-  {/key}
+  <IssuesView {query} space={undefined} title={tracker.string.MyIssues} {modeSelectorProps} />
 {/if}
