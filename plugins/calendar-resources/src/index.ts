@@ -53,6 +53,16 @@ export {
   EventReminders
 }
 
+export type {
+  CalendarElement,
+  CalendarElementRect,
+  CalendarColumn,
+  CalendarGrid,
+  CalendarADGrid,
+  CalendarADRows,
+  CalendarCell
+} from './types'
+
 export * from './utils'
 
 async function saveEventReminder (object: Doc): Promise<void> {

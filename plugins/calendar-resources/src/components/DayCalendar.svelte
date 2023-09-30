@@ -40,6 +40,14 @@
   import calendar from '../plugin'
   import { isReadOnly, updateReccuringInstance } from '../utils'
   import EventElement from './EventElement.svelte'
+  import type {
+    CalendarGrid,
+    CalendarADGrid,
+    CalendarADRows,
+    CalendarElementRect,
+    CalendarElement,
+    CalendarCell
+  } from '..'
 
   export let events: Event[]
   export let mondayStart = true
@@ -133,43 +141,6 @@
     ? getMonday(currentDate, mondayStart)
     : new Date(new Date(currentDate).setHours(0, 0, 0, 0))
 
-  interface CalendarElement {
-    id: string
-    date: Timestamp
-    dueDate: Timestamp
-    cols: number
-  }
-  interface CalendarElementRect {
-    top: number
-    bottom: number
-    left: number
-    right: number
-    width: number
-    height: number
-    fit: boolean
-    visibility: number
-  }
-  interface CalendarColumn {
-    elements: CalendarElement[]
-  }
-  interface CalendarGrid {
-    columns: CalendarColumn[]
-  }
-  interface CalendarADGrid {
-    alldays: (string | null)[]
-  }
-  interface CalendarADRows {
-    id: string
-    row: number
-    startCol: number
-    endCol: number
-  }
-  interface CalendarCell {
-    day: Date
-    hourOfDay: number
-    minutes: number
-  }
-
   let timer: any
   let container: HTMLElement
   let scroller: HTMLElement
@@ -207,8 +178,9 @@
     visibility: 1
   }
 
-  $: if (newEvents !== calendarEvents) {
-    newEvents = calendarEvents
+  $: minimizedAD = maxHeightAD === minHeightAD && maxHeightAD !== 0
+
+  const updateEvents = (events: CalendarItem[]): CalendarItem[] => {
     grid = new Array<CalendarGrid>(displayedDaysCount)
     alldaysGrid = new Array<CalendarADGrid>(displayedDaysCount)
     alldays = []
@@ -216,55 +188,58 @@
     moreCounts = new Array<number>(displayedDaysCount)
     if (shownAD && adMaxRow <= maxAD) shownAD = false
     prepareAllDays()
-  }
-  $: minimizedAD = maxHeightAD === minHeightAD && maxHeightAD !== 0
-  $: newEvents
-    .filter((ev) => !ev.allDay)
-    .forEach((event, i, arr) => {
-      if (grid[event.day] === undefined) {
-        grid[event.day] = {
-          columns: [{ elements: [{ id: event._id, date: event.date, dueDate: event.dueDate, cols: 1 }] }]
-        }
-      } else {
-        const index = grid[event.day].columns.findIndex(
-          (col) => col.elements[col.elements.length - 1].dueDate <= event.date
-        )
-        const intersects = grid[event.day].columns.filter((col) =>
-          checkIntersect(col.elements[col.elements.length - 1], event)
-        )
-        if (index === -1) {
-          const size = intersects.length + 1
-          grid[event.day].columns.forEach((col) => {
-            if (checkIntersect(col.elements[col.elements.length - 1], event)) {
-              col.elements[col.elements.length - 1].cols = size
-            }
-          })
-          grid[event.day].columns.push({
-            elements: [{ id: event._id, date: event.date, dueDate: event.dueDate, cols: size }]
-          })
+
+    events
+      .filter((ev) => !ev.allDay)
+      .forEach((event, i, arr) => {
+        if (grid[event.day] === undefined) {
+          grid[event.day] = {
+            columns: [{ elements: [{ id: event._id, date: event.date, dueDate: event.dueDate, cols: 1 }] }]
+          }
         } else {
-          let maxCols = 1
-          intersects.forEach((col) => {
-            if (col.elements[col.elements.length - 1].cols > maxCols) {
-              maxCols = col.elements[col.elements.length - 1].cols
-            }
-          })
-          if (intersects.length >= maxCols) maxCols = intersects.length + 1
-          grid[event.day].columns.forEach((col) => {
-            if (checkIntersect(col.elements[col.elements.length - 1], event)) {
-              col.elements[col.elements.length - 1].cols = maxCols
-            }
-          })
-          grid[event.day].columns[index].elements.push({
-            id: event._id,
-            date: event.date,
-            dueDate: event.dueDate,
-            cols: maxCols
-          })
+          const index = grid[event.day].columns.findIndex(
+            (col) => col.elements[col.elements.length - 1].dueDate <= event.date
+          )
+          const intersects = grid[event.day].columns.filter((col) =>
+            checkIntersect(col.elements[col.elements.length - 1], event)
+          )
+          if (index === -1) {
+            const size = intersects.length + 1
+            grid[event.day].columns.forEach((col) => {
+              if (checkIntersect(col.elements[col.elements.length - 1], event)) {
+                col.elements[col.elements.length - 1].cols = size
+              }
+            })
+            grid[event.day].columns.push({
+              elements: [{ id: event._id, date: event.date, dueDate: event.dueDate, cols: size }]
+            })
+          } else {
+            let maxCols = 1
+            intersects.forEach((col) => {
+              if (col.elements[col.elements.length - 1].cols > maxCols) {
+                maxCols = col.elements[col.elements.length - 1].cols
+              }
+            })
+            if (intersects.length >= maxCols) maxCols = intersects.length + 1
+            grid[event.day].columns.forEach((col) => {
+              if (checkIntersect(col.elements[col.elements.length - 1], event)) {
+                col.elements[col.elements.length - 1].cols = maxCols
+              }
+            })
+            grid[event.day].columns[index].elements.push({
+              id: event._id,
+              date: event.date,
+              dueDate: event.dueDate,
+              cols: maxCols
+            })
+          }
         }
-      }
-      if (i === arr.length - 1) checkGrid()
-    })
+        if (i === arr.length - 1) checkGrid()
+      })
+    return events
+  }
+  $: newEvents = updateEvents(calendarEvents)
+
   const checkGrid = () => {
     for (let i = 0; i < displayedDaysCount; i++) {
       if (grid[i] === null || typeof grid[i] !== 'object' || grid[i].columns.length === 0) continue
@@ -675,7 +650,7 @@
         events[index].date = originDate + diff
         events[index].dueDate = originDueDate + diff
       }
-      events = events
+      events.sort((a, b) => a.date - b.date)
     } else dispatch('dragEnter', { date: new Date(newTime) })
   }
 
