@@ -19,6 +19,10 @@
         {
           "name": "#platform.notification.logging",
           "value": "false"
+        },
+        {
+          "name": "#platform.lazy.loading",
+          "value": "false"
         }
       ]
     }

@@ -197,6 +197,7 @@ export { default as IconWithEmoji } from './components/IconWithEmoji.svelte'
 export { default as ModeSelector } from './components/ModeSelector.svelte'
 export { default as SimpleTimePopup } from './components/calendar/SimpleTimePopup.svelte'
 export { default as NumberInput } from './components/NumberInput.svelte'
+export { default as Lazy } from './components/Lazy.svelte'
 
 export * from './types'
 export * from './location'
@@ -208,6 +209,7 @@ export * from './components/calendar/internal/DateUtils'
 export * from './colors'
 export * from './focus'
 export * from './resize'
+export * from './lazy'
 
 export function createApp (target: HTMLElement): SvelteComponent {
   return new Root({ target })
