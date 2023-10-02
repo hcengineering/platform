@@ -2,9 +2,9 @@
   import { createEventDispatcher } from 'svelte'
   const dispatch = createEventDispatcher()
 
-  import { lazyObserver, isLazyDisabled } from '../lazy'
+  import { lazyObserver, isLazyEnabled } from '../lazy'
 
-  let visible = isLazyDisabled()
+  let visible = !isLazyEnabled()
 </script>
 
 {#if !visible}

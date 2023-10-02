@@ -53,11 +53,11 @@ function listen (rootMargin: string, element: Element, callback: (isIntersecting
 /**
  * @public
  */
-export const isLazyDisabled = (): boolean => (localStorage.getItem('#platform.lazy.loading') ?? 'true') === 'true'
+export const isLazyEnabled = (): boolean => (localStorage.getItem('#platform.lazy.loading') ?? 'true') === 'true'
 
 export function lazyObserver (node: Element, onVisible: (value: boolean, unsubscribe?: () => void) => void): any {
   let visible = false
-  const lazyEnabled = isLazyDisabled()
+  const lazyEnabled = isLazyEnabled()
   if (!lazyEnabled) {
     visible = true
     onVisible(visible)
