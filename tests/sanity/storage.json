@@ -23,6 +23,10 @@
         {
           "name": "#platform.lazy.loading",
           "value": "false"
+        },
+        {
+          "name": "flagOpenInDesktopApp",
+          "value": "true"
         }
       ]
     }

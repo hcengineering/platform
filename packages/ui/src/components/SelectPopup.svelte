@@ -64,9 +64,9 @@
 
   function sendSelect (id: ValueType['id']): void {
     if (onSelect) {
-      onSelect(value[selection].id)
+      onSelect(id)
     } else {
-      dispatch('close', value[selection].id)
+      dispatch('close', id)
     }
   }
 
