@@ -34,6 +34,7 @@
   import { RefAction, RefInputActionItem, TextEditorHandler, TextFormatCategory } from '../types'
   import TextEditor from './TextEditor.svelte'
   import { completionConfig } from './extensions'
+  import { EmojiExtension } from './extension/emoji'
   import Attach from './icons/Attach.svelte'
   import RIMention from './icons/RIMention.svelte'
   import Send from './icons/Send.svelte'
@@ -177,7 +178,7 @@
           updateFocus()
           dispatch('focus', focused)
         }}
-        extensions={[completionPlugin]}
+        extensions={[completionPlugin, EmojiExtension.configure()]}
         on:update
         placeholder={placeholder ?? textEditorPlugin.string.EditorPlaceholder}
         textFormatCategories={[
