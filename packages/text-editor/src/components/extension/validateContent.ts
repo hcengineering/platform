@@ -1,7 +1,7 @@
 import { Editor, Extension } from '@tiptap/core'
 
 export interface ValidateContentOptions {
-  onEmptyText?: (isEmpty: boolean) => void
+  onEmpty?: (isEmpty: boolean) => void
   onValidate?: (html: string) => void
 }
 
@@ -10,10 +10,10 @@ export interface ValidateContentStorage {
 }
 
 const handleChange = (editor: Editor, options: ValidateContentOptions, storage: ValidateContentStorage): void => {
-  if (options.onEmptyText !== undefined && options.onEmptyText !== null) {
+  if (options.onEmpty !== undefined && options.onEmpty !== null) {
     if (storage.isEmpty !== editor.isEmpty) {
       storage.isEmpty = editor.isEmpty
-      options.onEmptyText(storage.isEmpty)
+      options.onEmpty(storage.isEmpty)
     }
   }
 
