@@ -31,7 +31,7 @@ table.proseTable {
     box-sizing: border-box;
     position: relative;
 
-    >* {
+    > * {
       margin-bottom: 0;
     }
   }
@@ -63,19 +63,15 @@ table.proseTable {
   border-radius: .25rem;
   padding: .5rem;
 
-  code {
-    white-space: normal;
-  }
+  code { white-space: normal; }
 }
 
 // Fixes for MessageViewer
-pre.proseCodeBlock>code.proseCode {
+pre.proseCodeBlock > code.proseCode {
   padding: 0;
   background-color: transparent;
   border: none;
   border-radius: 0;
 }
 
-.proseHeading {
-  line-height: 110%;
-}
+.proseHeading { line-height: 110%; }
