@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/recruit-assets",
-  "version": "0.6.12",
+  "version": "0.6.13",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "template": "@hcengineering/assets-package",
@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/recruit": "^0.6.18"
+    "@hcengineering/recruit": "^0.6.19"
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {

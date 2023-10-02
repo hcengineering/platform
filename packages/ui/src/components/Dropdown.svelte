@@ -48,7 +48,7 @@
 <div bind:this={container} class="min-w-0">
   <Button
     {focusIndex}
-    icon={selected?.icon ?? icon}
+    icon={icon !== undefined ? selected?.icon ?? icon : undefined}
     iconProps={selected?.iconProps}
     width={width ?? 'min-content'}
     {size}

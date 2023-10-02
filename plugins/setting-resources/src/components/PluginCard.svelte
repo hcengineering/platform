@@ -59,7 +59,7 @@
   async function disconnect (): Promise<void> {
     if (integration !== undefined && integrationType.onDisconnect !== undefined) {
       const disconnect = await getResource(integrationType.onDisconnect)
-      await disconnect()
+      await disconnect(integration.value)
     }
   }
   const handleConfigure = async (e: any, component?: AnyComponent, pos?: PopupPosAlignment): Promise<void> => {
@@ -91,7 +91,11 @@
     </div>
   </div>
   <div class="content">
-    <Label label={integrationType.description} />
+    {#if integration}
+      {integration.value}
+    {:else}
+      <Label label={integrationType.description} />
+    {/if}
   </div>
   <div class="footer">
     {#if (integration?.value ?? '') === ''}

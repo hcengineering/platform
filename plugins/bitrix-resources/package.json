@@ -34,7 +34,7 @@
   "dependencies": {
     "@hcengineering/platform": "^0.6.9",
     "svelte": "3.55.1",
-    "@hcengineering/bitrix": "^0.6.41",
+    "@hcengineering/bitrix": "^0.6.42",
     "@hcengineering/ui": "^0.6.10",
     "@hcengineering/presentation": "^0.6.2",
     "@hcengineering/text-editor": "^0.6.0",
@@ -54,7 +54,7 @@
     "@hcengineering/tags": "^0.6.11",
     "@hcengineering/tags-resources": "^0.6.0",
     "fast-equals": "^2.0.3",
-    "@hcengineering/recruit": "^0.6.18",
+    "@hcengineering/recruit": "^0.6.19",
     "@hcengineering/task": "^0.6.11"
   },
   "repository": "https://github.com/hcengineering/anticrm",

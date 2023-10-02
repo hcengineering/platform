@@ -36,7 +36,7 @@
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/contact": "^0.6.19",
     "@hcengineering/model": "^0.6.6",
-    "@hcengineering/panel": "^0.6.12",
+    "@hcengineering/panel": "^0.6.13",
     "@hcengineering/core": "^0.6.27",
     "@hcengineering/view": "^0.6.8",
     "@hcengineering/ui": "^0.6.10",

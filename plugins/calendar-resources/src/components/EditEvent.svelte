@@ -28,6 +28,8 @@
   import EventTimeEditor from './EventTimeEditor.svelte'
   import EventTimeExtraButton from './EventTimeExtraButton.svelte'
   import ReccurancePopup from './ReccurancePopup.svelte'
+  import VisibilityEditor from './VisibilityEditor.svelte'
+  import CalendarSelector from './CalendarSelector.svelte'
 
   export let object: Event
   $: readOnly = isReadOnly(object)
@@ -41,7 +43,9 @@
   const duration = object.dueDate - object.date
   let dueDate = startDate + duration
   let allDay = object.allDay
+  let visibility = object.visibility ?? 'public'
   let reminders = [...(object.reminders ?? [])]
+  let space = object.space
 
   let description = object.description
 
@@ -67,6 +71,12 @@
     }
     if (object.description !== description) {
       update.description = description.trim()
+    }
+    if (object.visibility !== visibility) {
+      update.visibility = visibility
+    }
+    if (object.space !== space) {
+      update.space = space
     }
     if (allDay !== object.allDay) {
       update.date = allDay ? saveUTC(startDate) : startDate
@@ -171,6 +181,11 @@
   </div>
   <div class="divider" />
   <div class="block rightCropPadding">
+    <CalendarSelector bind:value={space} />
+    <div class="flex-row-center flex-gap-1">
+      <Icon icon={calendar.icon.Hidden} size={'small'} />
+      <VisibilityEditor bind:value={visibility} kind={'ghost'} withoutIcon />
+    </div>
     <EventReminders bind:reminders />
   </div>
   <div class="divider" />

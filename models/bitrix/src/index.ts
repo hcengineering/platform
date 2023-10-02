@@ -98,6 +98,7 @@ export function createModel (builder: Builder): void {
       label: bitrix.string.Bitrix,
       description: bitrix.string.BitrixDesc,
       icon: bitrix.component.BitrixIcon,
+      allowMultiple: false,
       createComponent: bitrix.component.BitrixConnect,
       configureComponent: bitrix.component.BitrixConfigure
     },

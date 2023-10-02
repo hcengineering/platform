@@ -29,9 +29,15 @@ export type Visibility = 'public' | 'freeBusy' | 'private'
  */
 export interface Calendar extends Space {
   visibility: Visibility
-  sync?: boolean
-  externalId?: string
-  externalUser?: string
+}
+
+/**
+ * @public
+ */
+export interface ExternalCalendar extends Calendar {
+  default: boolean
+  externalId: string
+  externalUser: string
 }
 
 /**
@@ -126,6 +132,7 @@ export const calendarId = 'calendar' as Plugin
 const calendarPlugin = plugin(calendarId, {
   class: {
     Calendar: '' as Ref<Class<Calendar>>,
+    ExternalCalendar: '' as Ref<Class<ExternalCalendar>>,
     Event: '' as Ref<Class<Event>>,
     ReccuringEvent: '' as Ref<Class<ReccuringEvent>>,
     ReccuringInstance: '' as Ref<Class<ReccuringInstance>>
@@ -144,6 +151,7 @@ const calendarPlugin = plugin(calendarId, {
     Repeat: '' as Asset,
     Globe: '' as Asset,
     Public: '' as Asset,
+    Hidden: '' as Asset,
     Private: '' as Asset
   },
   space: {

@@ -22,7 +22,7 @@ import { TemplateFieldCategory, TemplateField } from '@hcengineering/templates'
 /**
  * @public
  */
-export type Handler = Resource<() => Promise<void>>
+export type Handler = Resource<(value: string) => Promise<void>>
 
 /**
  * @public
@@ -31,6 +31,7 @@ export interface IntegrationType extends Doc {
   label: IntlString
   description: IntlString
   icon: AnyComponent
+  allowMultiple: boolean
 
   createComponent?: AnyComponent
   onDisconnect?: Handler

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getCurrentAccount } from '@hcengineering/core'
+  import { Ref, getCurrentAccount } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import type { Integration, IntegrationType } from '@hcengineering/setting'
   import setting from '@hcengineering/setting'
@@ -28,7 +28,15 @@
   let integrationTypes: IntegrationType[] = []
 
   typeQuery.query(setting.class.IntegrationType, {}, (res) => (integrationTypes = res))
-  integrationQuery.query(setting.class.Integration, { createdBy: accountId }, (res) => (integrations = res))
+  integrationQuery.query(
+    setting.class.Integration,
+    { createdBy: accountId },
+    (res) => (integrations = res.filter((p) => p.value !== ''))
+  )
+
+  function getIntegrations (type: Ref<IntegrationType>, integrations: Integration[]): Integration[] {
+    return integrations.filter((p) => p.type === type)
+  }
 </script>
 
 <div class="antiComponent">
@@ -38,7 +46,14 @@
   </div>
   <div class="ac-body__cards-container">
     {#each integrationTypes as integrationType (integrationType._id)}
-      <PluginCard integration={integrations.find((p) => p.type === integrationType._id)} {integrationType} />
+      {#if integrationType.allowMultiple}
+        {#each getIntegrations(integrationType._id, integrations) as integration (integration._id)}
+          <PluginCard {integration} {integrationType} />
+        {/each}
+        <PluginCard integration={undefined} {integrationType} />
+      {:else}
+        <PluginCard integration={integrations.find((p) => p.type === integrationType._id)} {integrationType} />
+      {/if}
     {/each}
   </div>
 </div>

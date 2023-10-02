@@ -76,6 +76,7 @@ export default mergeIds(calendarId, calendar, {
     Busy: '' as IntlString,
     AddReminder: '' as IntlString,
     SeeAllNumberParticipants: '' as IntlString,
-    SeeAllNumberReminders: '' as IntlString
+    SeeAllNumberReminders: '' as IntlString,
+    DefaultVisibility: '' as IntlString
   }
 })

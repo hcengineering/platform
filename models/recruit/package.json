@@ -34,7 +34,7 @@
     "@hcengineering/model-view": "^0.6.0",
     "@hcengineering/model-workbench": "^0.6.1",
     "@hcengineering/model-contact": "^0.6.1",
-    "@hcengineering/recruit": "^0.6.18",
+    "@hcengineering/recruit": "^0.6.19",
     "@hcengineering/recruit-resources": "^0.6.0",
     "@hcengineering/chunter": "^0.6.10",
     "@hcengineering/notification": "^0.6.14",
