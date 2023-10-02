@@ -224,6 +224,7 @@
   const whileShow = (ev: MouseEvent): void => {
     if ($tooltip.element && tooltipHTML) {
       const rectP = tooltipHTML.getBoundingClientRect()
+      rect = $tooltip.element.getBoundingClientRect()
       const dT: number = dir === 'bottom' && $tooltip.kind !== 'submenu' ? 12 : 0
       const dB: number = dir === 'top' && $tooltip.kind !== 'submenu' ? 12 : 0
       const inTrigger: boolean = ev.x >= rect.left && ev.x <= rect.right && ev.y >= rect.top && ev.y <= rect.bottom
