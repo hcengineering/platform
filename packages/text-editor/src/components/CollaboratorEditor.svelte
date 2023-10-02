@@ -20,7 +20,7 @@
   import { getContext, createEventDispatcher, onDestroy, onMount } from 'svelte'
   import * as Y from 'yjs'
   import { HocuspocusProvider } from '@hocuspocus/provider'
-  import { AnyExtension, Editor, Extension, HTMLContent, getMarkRange } from '@tiptap/core'
+  import { AnyExtension, Editor, Extension, HTMLContent, getMarkRange, mergeAttributes } from '@tiptap/core'
   import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration'
   import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
   import Placeholder from '@tiptap/extension-placeholder'
@@ -37,6 +37,7 @@
   import { NodeUuidExtension } from './extension/nodeUuid'
   import StyleButton from './StyleButton.svelte'
   import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
+  import { defaultEditorAttributes } from './editor/editorProps'
 
   export let documentId: string
   export let readonly = false
@@ -57,6 +58,7 @@
   export let autoOverflow = false
   export let initialContent: string | undefined = undefined
   export let textNodeActions: TextNodeAction[] = []
+  export let editorAttributes: { [name: string]: string } = {}
   export let onExtensions: () => AnyExtension[] = () => []
 
   let element: HTMLElement
@@ -200,6 +202,7 @@
       editor = new Editor({
         element,
         editable: true,
+        editorProps: { attributes: mergeAttributes(defaultEditorAttributes, editorAttributes) },
         extensions: [
           ...defaultExtensions,
           Placeholder.configure({ placeholder: placeHolderStr }),
@@ -336,123 +339,7 @@
   </div>
 {/if}
 
-<style lang="scss" global>
-  .ProseMirror {
-    flex-grow: 1;
-    min-height: inherit !important;
-    max-height: inherit !important;
-    outline: none;
-    line-height: 150%;
-    color: var(--accent-color);
-
-    p:not(:last-child) {
-      margin-block-end: 1em;
-    }
-
-    pre {
-      white-space: pre !important;
-    }
-
-    > * + * {
-      margin-top: 0.75em;
-    }
-
-    /* Placeholder (at the top) */
-    p.is-editor-empty:first-child::before {
-      content: attr(data-placeholder);
-      float: left;
-      color: var(--dark-color);
-      pointer-events: none;
-      height: 0;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background-color: var(--scrollbar-bar-color);
-    }
-    &::-webkit-scrollbar-thumb:hover {
-      background-color: var(--scrollbar-bar-hover);
-    }
-    &::-webkit-scrollbar-corner {
-      background-color: var(--scrollbar-bar-color);
-    }
-    &::-webkit-scrollbar-track {
-      margin: 0;
-    }
-  }
-  /* Placeholder (at the top) */
-  .ProseMirror p.is-editor-empty:first-child::before {
-    color: #adb5bd;
-    content: attr(data-placeholder);
-    float: left;
-    height: 0;
-    pointer-events: none;
-  }
-
-  .lint-icon {
-    display: inline-block;
-    position: absolute;
-    right: 2px;
-    cursor: pointer;
-    border-radius: 100px;
-    // background: #f22;
-    color: white;
-    font-family: times, georgia, serif;
-    font-size: 15px;
-    font-weight: bold;
-    width: 0.7em;
-    height: 0.7em;
-    text-align: center;
-    padding-left: 0.5px;
-    line-height: 1.1em;
-    &.add {
-      background: lightblue;
-    }
-    &.delete {
-      background: orange;
-    }
-  }
-
-  /* Give a remote user a caret */
-  .collaboration-cursor__caret {
-    border-left: 1px solid #0d0d0d;
-    border-right: 1px solid #0d0d0d;
-    margin-left: -1px;
-    margin-right: -1px;
-    pointer-events: none;
-    position: relative;
-    word-break: normal;
-  }
-
-  /* Render the username above the caret */
-  .collaboration-cursor__label {
-    border-radius: 3px 3px 3px 0;
-    color: #0d0d0d;
-    font-size: 12px;
-    font-style: normal;
-    font-weight: 600;
-    left: -1px;
-    line-height: normal;
-    padding: 0.1rem 0.3rem;
-    position: absolute;
-    top: -1.4em;
-    user-select: none;
-    white-space: nowrap;
-  }
-
-  cmark {
-    border-top: 1px solid lightblue;
-    border-bottom: 1px solid lightblue;
-    border-radius: 2px;
-  }
-
-  span.insertion {
-    border-top: 1px solid lightblue;
-    border-bottom: 1px solid lightblue;
-    border-radius: 2px;
-  }
-  span.deletion {
-    text-decoration: line-through;
-  }
+<style lang="scss">
   .autoOverflow {
     overflow: auto;
   }

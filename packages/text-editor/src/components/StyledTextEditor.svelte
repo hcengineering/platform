@@ -20,7 +20,7 @@
   import textEditorPlugin from '../plugin'
   import { RefInputAction, RefInputActionItem, TextEditorHandler, TextFormatCategory } from '../types'
   import Attach from './icons/Attach.svelte'
-  import { AnyExtension } from '@tiptap/core'
+  import { AnyExtension, mergeAttributes } from '@tiptap/core'
   import StyleButton from './StyleButton.svelte'
   import TextEditor from './TextEditor.svelte'
   import { Node as ProseMirrorNode } from '@tiptap/pm/model'
@@ -40,6 +40,7 @@
   export let autofocus = false
   export let full = false
   export let extensions: AnyExtension[] = []
+  export let editorAttributes: { [name: string]: string } = {}
   export let textFormatCategories: TextFormatCategory[] = [
     TextFormatCategory.Heading,
     TextFormatCategory.TextDecoration,
@@ -148,6 +149,12 @@
     actions = defActions.concat(...cont).sort((a, b) => a.order - b.order)
   })
 
+  const mergedEditorAttributes = mergeAttributes(
+    editorAttributes,
+    { class: 'text-editor-view_compact' },
+    full ? { class: 'text-editor-view_full-height' } : {}
+  )
+
   const editorHandler: TextEditorHandler = {
     insertText: (text) => {
       textEditor.insertText(text)
@@ -204,6 +211,7 @@
       {#if isScrollable}
         <Scroller>
           <TextEditor
+            editorAttributes={mergedEditorAttributes}
             bind:content
             {placeholder}
             {extensions}
@@ -223,6 +231,7 @@
         </Scroller>
       {:else}
         <TextEditor
+          editorAttributes={mergedEditorAttributes}
           bind:content
           {placeholder}
           {extensions}
@@ -284,11 +293,6 @@
         color: var(--theme-caption-color);
         background-color: transparent;
 
-        :global(.ProseMirror) {
-          min-height: 0;
-          // max-height: 100%;
-          height: 100%;
-        }
         &.scrollable {
           max-height: var(--texteditor-maxheight);
 

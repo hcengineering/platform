@@ -16,7 +16,7 @@
 <script lang="ts">
   import { IntlString, translate } from '@hcengineering/platform'
 
-  import { FocusPosition } from '@tiptap/core'
+  import { FocusPosition, mergeAttributes } from '@tiptap/core'
   import { AnyExtension, Editor, Extension, HTMLContent } from '@tiptap/core'
 
   import Placeholder from '@tiptap/extension-placeholder'
@@ -29,6 +29,7 @@
   import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
   import { TextFormatCategory } from '../types'
   import { InlineStyleToolbar } from './extension/inlineStyleToolbar'
+  import { defaultEditorAttributes } from './editor/editorProps'
 
   export let content: string = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
@@ -36,6 +37,7 @@
   export let textFormatCategories: TextFormatCategory[] = []
   export let supportSubmit = true
   export let isEmpty = true
+  export let editorAttributes: { [name: string]: string } = {}
 
   let element: HTMLElement
   let editor: Editor
@@ -137,6 +139,7 @@
     ph.then(() => {
       editor = new Editor({
         element,
+        editorProps: { attributes: mergeAttributes(defaultEditorAttributes, editorAttributes) },
         content,
         extensions: [
           ...defaultExtensions,
@@ -221,50 +224,7 @@
 </div>
 <div class="select-text" style="width: 100%;" on:mousedown={onEditorClick} bind:this={element} />
 
-<style lang="scss" global>
-  .ProseMirror {
-    overflow-y: auto;
-    font: inherit;
-    min-height: inherit !important;
-    max-height: inherit !important;
-    outline: none;
-    line-height: 150%;
-    color: var(--theme-caption-color);
-
-    p:not(:last-child) {
-      margin-block-end: 1em;
-    }
-
-    > * + * {
-      margin-top: 0.75em;
-    }
-
-    /* Placeholder (at the top) */
-    p.is-editor-empty:first-child::before {
-      content: attr(data-placeholder);
-      float: left;
-      color: var(--theme-halfcontent-color);
-      pointer-events: none;
-      height: 0;
-    }
-    &:focus-within p.is-editor-empty:first-child::before {
-      color: var(--theme-trans-color);
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background-color: var(--scrollbar-bar-color);
-    }
-    &::-webkit-scrollbar-thumb:hover {
-      background-color: var(--scrollbar-bar-hover);
-    }
-    &::-webkit-scrollbar-corner {
-      background-color: var(--scrollbar-bar-color);
-    }
-    &::-webkit-scrollbar-track {
-      margin: 0;
-    }
-  }
-
+<style lang="scss">
   .formatPanel {
     margin: -0.5rem -0.25rem 0.5rem;
     padding: 0.375rem;
