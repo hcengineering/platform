@@ -1,7 +1,7 @@
 import { Editor, Extension } from '@tiptap/core'
 
 export interface IsEmptyContentOptions {
-  onChange?: (isEmpty: boolean) => void
+  onChange: (isEmpty: boolean) => void
 }
 
 export interface IsEmptyContentStorage {
@@ -12,9 +12,7 @@ const handleChange = (editor: Editor, options: IsEmptyContentOptions, storage: I
   if (storage.isEmpty !== editor.isEmpty) {
     storage.isEmpty = editor.isEmpty
 
-    if (options.onChange !== undefined && options.onChange !== null) {
-      options.onChange(storage.isEmpty)
-    }
+    options.onChange(storage.isEmpty)
   }
 }
 
