@@ -32,16 +32,16 @@ export { default as Collaboration } from './components/Collaboration.svelte'
 export { default as StyleButton } from './components/StyleButton.svelte'
 
 export {
+  IsEmptyContentExtension,
+  IsEmptyContentOptions,
+  IsEmptyContentStorage
+} from './components/extension/isEmptyContent'
+export {
   NodeHighlightExtension,
   NodeHighlightExtensionOptions,
   NodeHighlightType
 } from './components/extension/nodeHighlight'
 export { NodeUuidCommands, NodeUuidExtension, NodeUuidOptions, NodeUuidStorage } from './components/extension/nodeUuid'
-export {
-  ValidateContentExtension,
-  ValidateContentOptions,
-  ValidateContentStorage
-} from './components/extension/validateContent'
 
 addStringsLoader(textEditorId, async (lang: string) => {
   return await import(`../lang/${lang}.json`)
