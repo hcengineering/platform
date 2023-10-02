@@ -57,25 +57,24 @@ const emojiReplaceDict = {
   ':-X': '😶'
 }
 
-function escapeRegExp(text: string) {
-  return text.replace(/[[\]{}()*+?.\\^$|#]/g, '\\$&');
+function escapeRegExp (text: string): string {
+  return text.replace(/[[\]{}()*+?.\\^$|#]/g, '\\$&')
 }
 
 export const EmojiExtension = Extension.create({
-  addInputRules() {
-    return Object.keys(emojiReplaceDict)
-      .map((pattern) => {
-        return {
-          find: new RegExp(escapeRegExp(pattern)),
-          handler: ({ range, match, commands }) => {
-            commands.insertContentAt(range, [
-              {
-                type: 'text',
-                text: emojiReplaceDict[pattern as keyof typeof emojiReplaceDict]
-              }
-            ])
-          }
+  addInputRules () {
+    return Object.keys(emojiReplaceDict).map((pattern) => {
+      return {
+        find: new RegExp(escapeRegExp(pattern)),
+        handler: ({ range, match, commands }) => {
+          commands.insertContentAt(range, [
+            {
+              type: 'text',
+              text: emojiReplaceDict[pattern as keyof typeof emojiReplaceDict]
+            }
+          ])
         }
-      })
-  },
+      }
+    })
+  }
 })

@@ -216,7 +216,7 @@
       {enableFormatting}
       {autofocus}
       {isScrollable}
-      extensions={extensions}
+      {extensions}
       bind:content={rawValue}
       bind:this={textEditor}
       on:attach
