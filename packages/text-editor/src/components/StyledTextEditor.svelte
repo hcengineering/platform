@@ -151,8 +151,7 @@
 
   const mergedEditorAttributes = mergeAttributes(
     editorAttributes,
-    { class: 'text-editor-view_compact' },
-    full ? { class: 'text-editor-view_full-height' } : {}
+    full ? { class: 'text-editor-view_full-height' } : { class: 'text-editor-view_compact' }
   )
 
   const editorHandler: TextEditorHandler = {
