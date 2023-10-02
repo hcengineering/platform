@@ -13,22 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
+  import core, { Doc, IdMap, Ref, SortingOrder, StatusCategory, WithLookup, toIdMap } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { Issue, Project } from '@hcengineering/tracker'
-  import {
-    Button,
-    ButtonKind,
-    ButtonSize,
-    ProgressCircle,
-    SelectPopup,
-    closeTooltip,
-    showPanel,
-    showPopup
-  } from '@hcengineering/ui'
+  import { Button, ButtonKind, ButtonSize, ProgressCircle, SelectPopup, showPanel } from '@hcengineering/ui'
   import { statusStore } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
-  import { subIssueListProvider } from '../../../utils'
+  import { listIssueStatusOrder, subIssueListProvider } from '../../../utils'
   import RelatedIssuePresenter from './RelatedIssuePresenter.svelte'
 
   export let object: WithLookup<Doc & { related: number }> | undefined
@@ -41,8 +32,7 @@
   export let width: string | undefined = 'min-contet'
   export let compactMode: boolean = false
 
-  let btn: HTMLElement
-
+  let _subIssues: Issue[] = []
   let subIssues: Issue[] = []
   let countComplete: number = 0
 
@@ -55,13 +45,12 @@
   function update (value: WithLookup<Doc & { related: number }>): void {
     if (value.$lookup?.related !== undefined) {
       query.unsubscribe()
-      subIssues = value.$lookup.related as Issue[]
-      subIssues.sort((a, b) => (a.rank ?? '').localeCompare(b.rank ?? ''))
+      _subIssues = value.$lookup.related as Issue[]
     } else {
       query.query(
         tracker.class.Issue,
         { 'relations._id': value._id, 'relations._class': value._class },
-        (res) => (subIssues = res),
+        (res) => (_subIssues = res),
         {
           sort: { rank: SortingOrder.Ascending }
         }
@@ -69,9 +58,29 @@
     }
   }
 
+  let categories: IdMap<StatusCategory> = new Map()
+
+  getClient()
+    .findAll(core.class.StatusCategory, {})
+    .then((res) => {
+      categories = toIdMap(res)
+    })
+
+  $: {
+    _subIssues.sort(
+      (a, b) =>
+        listIssueStatusOrder.indexOf($statusStore.get(a.status)?.category ?? tracker.issueStatusCategory.Backlog) -
+        listIssueStatusOrder.indexOf($statusStore.get(b.status)?.category ?? tracker.issueStatusCategory.Backlog)
+    )
+    subIssues = _subIssues
+  }
+
   $: if (subIssues) {
     const doneStatuses = Array.from($statusStore.values())
-      .filter((s) => s.category === tracker.issueStatusCategory.Completed)
+      .filter(
+        (s) =>
+          s.category === tracker.issueStatusCategory.Completed || s.category === tracker.issueStatusCategory.Canceled
+      )
       .map((p) => p._id)
     countComplete = subIssues.filter((si) => doneStatuses.includes(si.status)).length
   }
@@ -82,49 +91,40 @@
     showPanel(tracker.component.EditIssue, target, tracker.class.Issue, 'content')
   }
 
-  function showSubIssues () {
-    if (subIssues) {
-      closeTooltip()
-      showPopup(
-        SelectPopup,
-        {
-          value: subIssues.map((iss) => {
-            return {
-              id: iss._id,
-              isSelected: false,
-              component: RelatedIssuePresenter,
-              props: { project: currentProject, issue: iss }
+  $: selectValue = subIssues.map((iss) => {
+    const c = $statusStore.get(iss.status)?.category
+    const category = c !== undefined ? categories.get(c) : undefined
+    return {
+      id: iss._id,
+      isSelected: false,
+      component: RelatedIssuePresenter,
+      props: { project: currentProject, issue: iss },
+      category:
+        category !== undefined
+          ? {
+              label: category.label,
+              icon: category.icon
             }
-          }),
-          width: 'large'
-        },
-        {
-          getBoundingClientRect: () => {
-            const rect = btn.getBoundingClientRect()
-            const offsetX = 0
-            const offsetY = 0
-
-            return DOMRect.fromRect({ width: 1, height: 1, x: rect.left + offsetX, y: rect.bottom + offsetY })
-          }
-        },
-        (selectedIssue) => {
-          selectedIssue !== undefined && openIssue(selectedIssue)
-        }
-      )
+          : undefined
     }
-  }
+  })
 </script>
 
 {#if hasSubIssues}
-  <div class="flex-center flex-no-shrink" bind:this={btn}>
+  <div class="flex-center flex-no-shrink">
     <Button
       {width}
       {kind}
       {size}
       {justify}
-      on:click={(ev) => {
-        ev.stopPropagation()
-        if (subIssues) showSubIssues()
+      showTooltip={{
+        component: SelectPopup,
+        props: {
+          value: selectValue,
+          onSelect: openIssue,
+          showShadow: false,
+          width: 'large'
+        }
       }}
     >
       <svelte:fragment slot="content">

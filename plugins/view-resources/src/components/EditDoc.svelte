@@ -159,19 +159,23 @@
     return { editor: editorMixin.editor, pinned: editorMixin?.pinned }
   }
 
-  function getEditorFooter (_class: Ref<Class<Doc>>): { footer: AnyComponent; props?: Record<string, any> } | undefined {
-    const clazz = hierarchy.getClass(_class)
-    const editorMixin = hierarchy.as(clazz, view.mixin.ObjectEditorFooter)
-    if (editorMixin?.editor == null && clazz.extends != null) return getEditorFooter(clazz.extends)
-    if (editorMixin.editor) {
-      return { footer: editorMixin.editor, props: editorMixin?.props }
+  function getEditorFooter (
+    _class: Ref<Class<Doc>>,
+    object?: Doc
+  ): { footer: AnyComponent; props?: Record<string, any> } | undefined {
+    if (object !== undefined) {
+      const footer = hierarchy.findClassOrMixinMixin(object, view.mixin.ObjectEditorFooter)
+      if (footer !== undefined) {
+        return { footer: footer.editor, props: footer.props }
+      }
     }
+
     return undefined
   }
 
   let mainEditor: MixinEditor | undefined
 
-  $: editorFooter = getEditorFooter(_class)
+  $: editorFooter = getEditorFooter(_class, object)
 
   $: getEditorOrDefault(realObjectClass, _id)
 

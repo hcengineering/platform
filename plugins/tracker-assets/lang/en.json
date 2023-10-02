@@ -173,6 +173,7 @@
     "RelatedIssueSearchPlaceholder": "Search for issue to reference...",
     "Blocks": "Blocks",
     "Related": "Related",
+    "RelatedIssues": "Related issues",
 
     "EditIssue": "Edit {title}",
     "EditWorkflowStatuses": "Edit issue statuses",

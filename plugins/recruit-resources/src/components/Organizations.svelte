@@ -177,7 +177,8 @@
 
   function createConfig (
     descr: Viewlet | undefined,
-    preference: ViewletPreference | undefined
+    preference: ViewletPreference | undefined,
+    replacedKeys: Map<string, BuildModelKey>
   ): (string | BuildModelKey)[] {
     const base = preference?.config ?? descr?.config ?? []
     const result: (string | BuildModelKey)[] = []
@@ -191,7 +192,7 @@
     return result
   }
 
-  $: finalConfig = createConfig(viewlet, preference)
+  $: finalConfig = createConfig(viewlet, preference, replacedKeys)
 </script>
 
 <div class="ac-header full divide">

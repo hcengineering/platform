@@ -407,6 +407,9 @@ export function createModel (builder: Builder): void {
         {
           key: '',
           presenter: tracker.component.RelatedIssueSelector,
+          props: {
+            kind: 'link'
+          },
           label: tracker.string.Relations
         },
         'comments',
@@ -487,6 +490,14 @@ export function createModel (builder: Builder): void {
           label: recruit.string.Applications
         },
         'comments',
+        {
+          key: '',
+          presenter: tracker.component.RelatedIssueSelector,
+          props: {
+            kind: 'link'
+          },
+          label: tracker.string.Issues
+        },
         '$lookup.company',
         '$lookup.company.$lookup.channels',
         'location',
@@ -523,6 +534,12 @@ export function createModel (builder: Builder): void {
           label: recruit.string.Applications
         },
         'comments',
+        {
+          key: '',
+          presenter: tracker.component.RelatedIssueSelector,
+          label: tracker.string.Issues,
+          props: { size: 'small', kind: 'link' }
+        },
         '$lookup.channels',
         {
           key: '@applications.modifiedOn',
@@ -558,6 +575,9 @@ export function createModel (builder: Builder): void {
         {
           key: '',
           presenter: tracker.component.RelatedIssueSelector,
+          props: {
+            kind: 'link'
+          },
           label: tracker.string.Issues
         },
         'status',
@@ -606,6 +626,9 @@ export function createModel (builder: Builder): void {
         {
           key: '',
           presenter: tracker.component.RelatedIssueSelector,
+          props: {
+            kind: 'link'
+          },
           label: tracker.string.Issues
         },
         'status',
@@ -865,6 +888,12 @@ export function createModel (builder: Builder): void {
         },
         { key: 'comments', displayProps: { key: 'comments', suffix: true } },
         {
+          key: '',
+          presenter: tracker.component.RelatedIssueSelector,
+          label: tracker.string.Issues,
+          props: { size: 'small' }
+        },
+        {
           key: '$lookup.channels',
           label: contact.string.ContactInfo,
           sortingKey: ['$lookup.channels.lastMessage', '$lookup.attachedTo.channels'],
@@ -914,6 +943,11 @@ export function createModel (builder: Builder): void {
         },
         'description',
         { key: 'comments', displayProps: { key: 'comments', suffix: true } },
+        {
+          key: '',
+          presenter: tracker.component.RelatedIssueSelector,
+          label: tracker.string.Issues
+        },
         { key: '', displayProps: { grow: true } },
         {
           key: '$lookup.company',
@@ -1601,19 +1635,19 @@ export function createModel (builder: Builder): void {
   builder.mixin(recruit.mixin.Candidate, core.class.Class, view.mixin.ObjectEditorFooter, {
     editor: tracker.component.RelatedIssuesSection,
     props: {
-      label: recruit.string.RelatedIssues
+      label: tracker.string.RelatedIssues
     }
   })
   builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.ObjectEditorFooter, {
     editor: tracker.component.RelatedIssuesSection,
     props: {
-      label: recruit.string.RelatedIssues
+      label: tracker.string.RelatedIssues
     }
   })
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ObjectEditorFooter, {
     editor: tracker.component.RelatedIssuesSection,
     props: {
-      label: recruit.string.RelatedIssues
+      label: tracker.string.RelatedIssues
     }
   })
 

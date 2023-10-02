@@ -128,21 +128,24 @@
     limit: number,
     options?: FindOptions<Doc>
   ) {
-    q.query(
-      _class,
-      query,
-      (result) => {
-        if (sortingFunction !== undefined) {
-          const sf = sortingFunction
-          objects = result.sort((a, b) => -1 * sortOrder * sf(a, b))
-        } else {
-          objects = result
-        }
-        objectsRecieved = true
-        loading = loading === 1 ? 0 : -1
-      },
-      { sort: getSort(sortKey), limit, ...options, lookup, total: false }
-    )
+    loading +=
+      q.query(
+        _class,
+        query,
+        (result) => {
+          if (sortingFunction !== undefined) {
+            const sf = sortingFunction
+            objects = result.sort((a, b) => -1 * sortOrder * sf(a, b))
+          } else {
+            objects = result
+          }
+          objectsRecieved = true
+          loading = 0
+        },
+        { sort: getSort(sortKey), limit, ...options, lookup, total: false }
+      ) === true
+        ? 1
+        : 0
   }
   $: update(_class, query, _sortKey, sortOrder, lookup, limit, options)
 
@@ -281,9 +284,15 @@
     }
   }
 
+  let buildIndex = 0
+
   async function build (modelOptions: BuildModelOptions) {
     isBuildingModel = true
-    model = await buildModel(modelOptions)
+    const idx = ++buildIndex
+    const res = await buildModel(modelOptions)
+    if (buildIndex === idx) {
+      model = res
+    }
     isBuildingModel = false
   }
 

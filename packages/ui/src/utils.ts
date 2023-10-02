@@ -238,3 +238,21 @@ export function formatKey (key: string): string[][] {
   }
   return result
 }
+
+/**
+ * @public
+ */
+export class DelayedCaller {
+  op?: () => void
+  constructor (readonly delay: number = 10) {}
+  call (op: () => void): void {
+    const needTimeout = this.op !== undefined
+    this.op = op
+    if (needTimeout) {
+      setTimeout(() => {
+        this.op?.()
+        this.op = undefined
+      }, this.delay)
+    }
+  }
+}

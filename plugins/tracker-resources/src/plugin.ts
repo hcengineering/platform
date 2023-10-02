@@ -226,6 +226,7 @@ export default mergeIds(trackerId, tracker, {
     AddRelatedIssue: '' as IntlString,
     RelatedIssuesNotFound: '' as IntlString,
     RelatedIssue: '' as IntlString,
+    RelatedIssues: '' as IntlString,
     BlockedIssue: '' as IntlString,
     BlockingIssue: '' as IntlString,
     BlockedBySearchPlaceholder: '' as IntlString,

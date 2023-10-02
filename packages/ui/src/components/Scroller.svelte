@@ -22,6 +22,7 @@
   import IconUpOutline from './icons/UpOutline.svelte'
   import IconDownOutline from './icons/DownOutline.svelte'
   import HalfUpDown from './icons/HalfUpDown.svelte'
+  import { DelayedCaller } from '../utils'
 
   export let padding: string | undefined = undefined
   export let autoscroll: boolean = false
@@ -249,20 +250,16 @@
     }
   }
 
-  let checkBarTimeout: any | undefined = undefined
-  let checkHBarTimeout: any | undefined = undefined
+  const delayedCaller = new DelayedCaller(25)
 
-  const delayCall = (op: () => void, h?: boolean) => {
-    if (h) {
-      clearTimeout(checkHBarTimeout)
-      checkHBarTimeout = setTimeout(op, 5)
-    } else {
-      clearTimeout(checkBarTimeout)
-      checkBarTimeout = setTimeout(op, 5)
-    }
+  const delayCall = (op: () => void) => {
+    delayedCaller.call(op)
   }
 
   const checkFade = (): void => {
+    delayCall(_checkFade)
+  }
+  const _checkFade = (): void => {
     if (divScroll) {
       beforeContent = divScroll.scrollTop
       belowContent = divScroll.scrollHeight - divScroll.clientHeight - beforeContent
@@ -279,11 +276,18 @@
         else if (rightContent > 2) maskH = 'left'
         else maskH = 'none'
       }
-      if (inter.size) checkIntersectionFade()
+      if (inter.size) {
+        checkIntersectionFade()
+      }
       renderFade()
     }
-    if (!isScrolling) delayCall(checkBar)
-    if (!isScrolling && horizontal) delayCall(checkBarH, true)
+
+    if (!isScrolling) {
+      checkBar()
+    }
+    if (!isScrolling && horizontal) {
+      checkBarH()
+    }
   }
 
   function checkAutoScroll () {
@@ -383,8 +387,12 @@
     if (divScroll && divBox) {
       divScroll.addEventListener('wheel', wheelEvent)
       divScroll.addEventListener('scroll', checkFade)
-      delayCall(checkBar)
-      if (horizontal) delayCall(checkBarH, true)
+      delayCall(() => {
+        checkBar()
+        if (horizontal) {
+          checkBarH()
+        }
+      })
     }
   })
   onDestroy(() => {

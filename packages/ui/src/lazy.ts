@@ -41,9 +41,14 @@ function listen (
   }
 }
 
-export function lazyObserver (node: Element, onVisible: (value: boolean) => void): any {
+/**
+ * @public
+ */
+export const isLazyDisabled = (): boolean => (localStorage.getItem('#platform.lazy.loading') ?? 'true') === 'true'
+
+export function lazyObserver (node: Element, onVisible: (value: boolean, unsubscribe?: () => void) => void): any {
   let visible = false
-  const lazyEnabled = (localStorage.getItem('#platform.lazy.loading') ?? 'true') === 'true'
+  const lazyEnabled = isLazyDisabled()
   if (!lazyEnabled) {
     visible = true
     onVisible(visible)
@@ -55,7 +60,7 @@ export function lazyObserver (node: Element, onVisible: (value: boolean) => void
 
   const destroy = listen('20%', node, ({ isIntersecting }) => {
     visible = isIntersecting
-    onVisible(visible)
+    onVisible(visible, destroy)
   })
 
   return {

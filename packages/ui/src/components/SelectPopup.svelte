@@ -50,6 +50,8 @@
   export let value: Array<ValueType>
   export let width: 'medium' | 'large' | 'full' = 'medium'
   export let size: 'small' | 'medium' | 'large' = 'small'
+  export let onSelect: ((value: ValueType['id']) => void) | undefined = undefined
+  export let showShadow: boolean = true
 
   let search: string = ''
 
@@ -59,6 +61,14 @@
 
   let selection = 0
   let list: ListView
+
+  function sendSelect (id: ValueType['id']): void {
+    if (onSelect) {
+      onSelect(value[selection].id)
+    } else {
+      dispatch('close', value[selection].id)
+    }
+  }
 
   function onKeydown (key: KeyboardEvent): void {
     if (key.code === 'ArrowUp') {
@@ -74,7 +84,7 @@
     if (key.code === 'Enter') {
       key.preventDefault()
       key.stopPropagation()
-      dispatch('close', value[selection].id)
+      sendSelect(value[selection].id)
     }
   }
   const manager = createFocusManager()
@@ -88,6 +98,7 @@
 
 <div
   class="selectPopup"
+  class:noShadow={showShadow === false}
   class:full-width={width === 'full'}
   class:max-width-40={width === 'large'}
   use:resizeObserver={() => {
@@ -121,7 +132,7 @@
       >
         <svelte:fragment slot="item" let:item={itemId}>
           {@const item = filteredObjects[itemId]}
-          <button class="menu-item withList w-full" on:click={() => dispatch('close', item.id)}>
+          <button class="menu-item withList w-full" on:click={() => sendSelect(item.id)}>
             <div class="flex-row-center flex-grow pointer-events-none">
               {#if item.component}
                 <div class="flex-grow clear-mins"><svelte:component this={item.component} {...item.props} /></div>

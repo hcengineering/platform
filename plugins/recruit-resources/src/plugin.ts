@@ -116,7 +116,6 @@ export default mergeIds(recruitId, recruit, {
     HasActiveApplicant: '' as IntlString,
     HasNoActiveApplicant: '' as IntlString,
     NoneApplications: '' as IntlString,
-    RelatedIssues: '' as IntlString,
 
     MatchVacancy: '' as IntlString,
     VacancyMatching: '' as IntlString,

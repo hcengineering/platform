@@ -173,6 +173,7 @@
     "RelatedIssueSearchPlaceholder": "Поиск связанной задачи...",
     "Blocks": "Блокирует",
     "Related": "Связан",
+    "RelatedIssues": "Связанные задачи",
 
     "EditIssue": "Редактирование {title}",
     "EditWorkflowStatuses": "Редактировать статусы задач",

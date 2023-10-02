@@ -9,9 +9,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //
 // See the License for the specific language governing permissions and
+
+import { DelayedCaller } from './utils'
+
 // limitations under the License.
 let observer: ResizeObserver
 let callbacks: WeakMap<Element, (element: Element) => any>
+
+const delayedCaller = new DelayedCaller(10)
 
 /**
  * @public
@@ -19,15 +24,25 @@ let callbacks: WeakMap<Element, (element: Element) => any>
 export function resizeObserver (element: Element, onResize: (element: Element) => any): { destroy: () => void } {
   if (observer === undefined) {
     callbacks = new WeakMap()
-    observer = new ResizeObserver((entries) => {
+    const entriesPending = new Set<Element>()
+
+    const notifyObservers = (): void => {
       window.requestAnimationFrame(() => {
-        for (const entry of entries) {
-          const onResize = callbacks.get(entry.target)
+        for (const target of entriesPending.values()) {
+          const onResize = callbacks.get(target)
           if (onResize != null) {
-            onResize(entry.target)
+            onResize(target)
           }
         }
+        entriesPending.clear()
       })
+    }
+
+    observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        entriesPending.add(entry.target)
+      }
+      delayedCaller.call(notifyObservers)
     })
   }
 

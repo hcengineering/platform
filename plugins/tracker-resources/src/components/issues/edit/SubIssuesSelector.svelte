@@ -13,23 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, SortingOrder, Status, WithLookup } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
+  import core, { IdMap, Ref, SortingOrder, Status, StatusCategory, WithLookup, toIdMap } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { Issue, Project } from '@hcengineering/tracker'
-  import {
-    Button,
-    ButtonKind,
-    ButtonSize,
-    ProgressCircle,
-    SelectPopup,
-    closeTooltip,
-    showPanel,
-    showPopup
-  } from '@hcengineering/ui'
+  import { Button, ButtonKind, ButtonSize, ProgressCircle, SelectPopup, showPanel } from '@hcengineering/ui'
   import { statusStore } from '@hcengineering/view-resources'
   import { getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
-  import { subIssueListProvider } from '../../../utils'
+  import { listIssueStatusOrder, subIssueListProvider } from '../../../utils'
   import IssueStatusIcon from '../IssueStatusIcon.svelte'
 
   export let value: WithLookup<Issue>
@@ -46,6 +37,7 @@
   $: project = currentProject
 
   let subIssues: Issue[] = []
+  let _subIssues: Issue[] = []
   let countComplete: number = 0
 
   const projectQuery = createQuery()
@@ -64,11 +56,18 @@
 
   $: update(value)
 
+  let categories: IdMap<StatusCategory> = new Map()
+
+  getClient()
+    .findAll(core.class.StatusCategory, {})
+    .then((res) => {
+      categories = toIdMap(res)
+    })
+
   function update (value: WithLookup<Issue>): void {
     if (value.$lookup?.subIssues !== undefined) {
       query.unsubscribe()
       subIssues = value.$lookup.subIssues as Issue[]
-      subIssues.sort((a, b) => (a.rank ?? '').localeCompare(b.rank ?? ''))
     } else if (value.subIssues > 0) {
       query.query(tracker.class.Issue, { attachedTo: value._id }, (res) => (subIssues = res), {
         sort: { rank: SortingOrder.Ascending }
@@ -101,43 +100,38 @@
     }
   }
 
-  function showSubIssues () {
-    if (subIssues) {
-      closeTooltip()
-      showPopup(
-        SelectPopup,
-        {
-          value: subIssues.map((iss) => {
-            const text = project ? `${getIssueId(project, iss)} ${iss.title}` : iss.title
-            return {
-              id: iss._id,
-              text,
-              isSelected: iss._id === value._id,
-              icon: IssueStatusIcon,
-              iconProps: {
-                value: $statusStore.get(iss.status),
-                size: 'small',
-                fill: undefined
-              }
-            }
-          }),
-          width: 'large'
-        },
-        {
-          getBoundingClientRect: () => {
-            const rect = btn.getBoundingClientRect()
-            const offsetX = 0
-            const offsetY = 0
-
-            return DOMRect.fromRect({ width: 1, height: 1, x: rect.left + offsetX, y: rect.bottom + offsetY })
-          }
-        },
-        (selectedIssue) => {
-          selectedIssue !== undefined && openIssue(selectedIssue)
-        }
-      )
-    }
+  $: {
+    subIssues.sort(
+      (a, b) =>
+        listIssueStatusOrder.indexOf($statusStore.get(a.status)?.category ?? tracker.issueStatusCategory.Backlog) -
+        listIssueStatusOrder.indexOf($statusStore.get(b.status)?.category ?? tracker.issueStatusCategory.Backlog)
+    )
+    _subIssues = subIssues
   }
+
+  $: subIssuesValue = _subIssues.map((iss) => {
+    const text = project ? `${getIssueId(project, iss)} ${iss.title}` : iss.title
+    const c = $statusStore.get(iss.status)?.category
+    const category = c !== undefined ? categories.get(c) : undefined
+    return {
+      id: iss._id,
+      text,
+      isSelected: iss._id === value._id,
+      icon: IssueStatusIcon,
+      iconProps: {
+        value: $statusStore.get(iss.status),
+        size: 'small',
+        fill: undefined
+      },
+      category:
+        category !== undefined
+          ? {
+              label: category.label,
+              icon: category.icon
+            }
+          : undefined
+    }
+  })
 </script>
 
 {#if hasSubIssues}
@@ -147,9 +141,14 @@
       {kind}
       {size}
       {justify}
-      on:click={(ev) => {
-        ev.stopPropagation()
-        if (subIssues) showSubIssues()
+      showTooltip={{
+        component: SelectPopup,
+        props: {
+          value: subIssuesValue,
+          onSelect: openIssue,
+          showShadow: false,
+          width: 'large'
+        }
       }}
     >
       <svelte:fragment slot="content">

@@ -2,27 +2,28 @@
   import { createEventDispatcher } from 'svelte'
   const dispatch = createEventDispatcher()
 
-  import { lazyObserver } from '../lazy'
+  import { lazyObserver, isLazyDisabled } from '../lazy'
 
-  let visible = false
+  let visible = isLazyDisabled()
 </script>
 
-<div
-  use:lazyObserver={(val) => {
-    if (val) {
-      visible = true
-      dispatch('visible')
-    }
-  }}
->
-  {#if visible}
-    <slot />
-  {:else}
+{#if !visible}
+  <div
+    use:lazyObserver={(val, unsubscribe) => {
+      if (val) {
+        visible = true
+        dispatch('visible')
+        unsubscribe?.()
+      }
+    }}
+  >
     <!-- Zero-width space character -->
     {#if $$slots.loading}
       <slot name="loading" />
     {:else}
       &#8203;
     {/if}
-  {/if}
-</div>
+  </div>
+{:else}
+  <slot />
+{/if}

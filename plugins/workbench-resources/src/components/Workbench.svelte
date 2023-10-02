@@ -22,7 +22,7 @@
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import support, { SupportStatus } from '@hcengineering/support'
-  import { locationStorageKeyId, Button } from '@hcengineering/ui'
+  import { locationStorageKeyId, Button, DelayedCaller } from '@hcengineering/ui'
   import {
     AnyComponent,
     CompAndProps,
@@ -607,6 +607,8 @@
 
   let inboxPopup: PopupResult | undefined = undefined
   let lastLoc: Location | undefined = undefined
+
+  const delayedCaller = new DelayedCaller(15)
 </script>
 
 {#if employee?.active === true || accountId === core.account.System}
@@ -762,8 +764,10 @@
       <div
         class="antiPanel-component antiComponent"
         bind:this={contentPanel}
-        use:resizeObserver={(element) => {
-          componentWidth = element.clientWidth
+        use:resizeObserver={() => {
+          delayedCaller.call(() => {
+            componentWidth = contentPanel.clientWidth
+          })
         }}
       >
         {#if currentApplication && currentApplication.component}
