@@ -3,9 +3,9 @@ import { Plugin, PluginKey, TextSelection } from 'prosemirror-state'
 import { NodeUuidExtension, NodeUuidOptions } from './nodeUuid'
 
 export enum NodeHighlightType {
-  WARNING = 'warning',
-  SUCCESS = 'success',
-  ERROR = 'error'
+  INFO = 'info',
+  ADD = 'add',
+  DELETE = 'delete'
 }
 export interface NodeHighlightExtensionOptions extends NodeUuidOptions {
   getNodeHighlightType: (uuid: string) => NodeHighlightType | undefined | null
@@ -77,12 +77,12 @@ export const NodeHighlightExtension: Extension<NodeHighlightExtensionOptions> =
                   if (options.isHighlightModeOn()) {
                     const type = options.getNodeHighlightType(uuid)
 
-                    if (type === NodeHighlightType.ERROR) {
-                      classAttrs.class = 'text-editor-highlighted-node-error'
-                    } else if (type === NodeHighlightType.WARNING) {
-                      classAttrs.class = 'text-editor-highlighted-node-warning'
-                    } else if (type === NodeHighlightType.SUCCESS) {
-                      classAttrs.class = 'text-editor-highlighted-node-success'
+                    if (type === NodeHighlightType.INFO) {
+                      classAttrs.class = 'text-editor-highlighted-node-info'
+                    } else if (type === NodeHighlightType.ADD) {
+                      classAttrs.class = 'text-editor-highlighted-node-add'
+                    } else if (type === NodeHighlightType.DELETE) {
+                      classAttrs.class = 'text-editor-highlighted-node-delete'
                     }
                   }
 

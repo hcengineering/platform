@@ -108,16 +108,20 @@
   object-fit: contain;
 }
 
-.text-editor-highlighted-node-warning {
-  background-color: var(--theme-warning-color);
+.text-editor-highlighted-node-info {
+  background-color: var(--text-editor-highlighted-node-info-background-color);
+  border-bottom: 0.0625rem solid var(--text-editor-highlighted-node-info-border-color);
 }
 
-.text-editor-highlighted-node-error {
-  background-color: var(--theme-error-color);
+.text-editor-highlighted-node-delete {
+  background-color: var(--text-editor-highlighted-node-delete-background-color);
+  color: var(--text-editor-highlighted-node-delete-font-color);
+  text-decoration: line-through;
 }
 
-.text-editor-highlighted-node-success {
-  background-color: var(--theme-won-color);
+.text-editor-highlighted-node-add {
+  background-color: var(--text-editor-highlighted-node-add-background-color);
+  color: var(--text-editor-highlighted-node-add-font-color)
 }
 
 .text-editor-popup {
