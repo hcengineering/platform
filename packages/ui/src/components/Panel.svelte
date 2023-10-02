@@ -48,7 +48,7 @@
   $: moveUtils = checkAdaptiveMatching(devSize, 'sm')
 
   let oldWidth = ''
-  let hideTimer: number | undefined
+  let hideTimer: any | undefined
 
   const checkPanel = (): void => {
     const k = `${panelWidth}-${asideFloat}`

@@ -1,6 +1,6 @@
 <!--
 //
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,13 +15,13 @@
 //
 -->
 <script lang="ts">
-  import { Plugin, PluginKey, TextSelection, Transaction } from 'prosemirror-state'
+  import { Plugin, PluginKey, TextSelection } from 'prosemirror-state'
   import { DecorationSet } from 'prosemirror-view'
   import { getContext, createEventDispatcher, onDestroy, onMount } from 'svelte'
-  import { WebsocketProvider } from 'y-websocket'
   import * as Y from 'yjs'
+  import { HocuspocusProvider } from '@hocuspocus/provider'
   import { AnyExtension, Editor, Extension, HTMLContent, getMarkRange } from '@tiptap/core'
-  import Collaboration from '@tiptap/extension-collaboration'
+  import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration'
   import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
   import Placeholder from '@tiptap/extension-placeholder'
   import { getCurrentAccount, Markup } from '@hcengineering/core'
@@ -33,10 +33,10 @@
 
   import { calculateDecorations } from './diff/decorations'
   import { defaultExtensions } from './extensions'
-  import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
-
-  import StyleButton from './StyleButton.svelte'
+  import { InlineStyleToolbar } from './extension/inlineStyleToolbar'
   import { NodeUuidExtension } from './extension/nodeUuid'
+  import StyleButton from './StyleButton.svelte'
+  import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
 
   export let documentId: string
   export let readonly = false
@@ -50,7 +50,6 @@
   export let focusable: boolean = false
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let initialContentId: string | undefined = undefined
-  // export let suggestMode = false
   export let comparedVersion: Markup | ArrayBuffer | undefined = undefined
 
   export let field: string | undefined = undefined
@@ -63,19 +62,23 @@
   let element: HTMLElement
 
   const ydoc = (getContext(CollaborationIds.Doc) as Y.Doc | undefined) ?? new Y.Doc()
-  const contextProvider = getContext(CollaborationIds.Provider) as WebsocketProvider | undefined
-  const wsProvider =
+
+  const contextProvider = getContext(CollaborationIds.Provider) as HocuspocusProvider | undefined
+
+  const provider =
     contextProvider ??
-    new WebsocketProvider(collaboratorURL, documentId, ydoc, {
-      params: {
-        token,
-        documentId,
+    new HocuspocusProvider({
+      url: collaboratorURL,
+      name: documentId,
+      document: ydoc,
+      token,
+      parameters: {
         initialContentId: initialContentId ?? ''
       }
     })
 
   if (contextProvider === undefined) {
-    wsProvider?.on('status', (event: any) => {
+    provider?.on('status', (event: any) => {
       console.log(documentId, event.status) // logs "connected" or "disconnected"
     })
   }
@@ -83,6 +86,8 @@
   const currentUser = getCurrentAccount()
 
   let editor: Editor
+  let inlineToolbar: HTMLElement
+  let showInlineToolbar = false
 
   let placeHolderStr: string = ''
 
@@ -152,8 +157,6 @@
     editor.setEditable(!readonly)
   }
 
-  // const isSuggestMode = () => suggestMode
-
   let _decoration = DecorationSet.empty
   let oldContent = ''
 
@@ -200,13 +203,17 @@
         extensions: [
           ...defaultExtensions,
           Placeholder.configure({ placeholder: placeHolderStr }),
-
+          InlineStyleToolbar.configure({
+            element: inlineToolbar,
+            getEditorElement: () => element,
+            isShown: () => !readonly && showInlineToolbar
+          }),
           Collaboration.configure({
             document: ydoc,
             field
           }),
           CollaborationCursor.configure({
-            provider: wsProvider,
+            provider,
             user: {
               name: currentUser.email,
               color: getPlatformColorForText(currentUser.email, $themeStore.dark)
@@ -226,8 +233,22 @@
         onFocus: () => {
           focused = true
         },
-        onUpdate: (op: { editor: Editor; transaction: Transaction }) => {
+        onUpdate: ({ editor, transaction }) => {
+          showInlineToolbar = false
+
+          // ignore non-document changes
+          if (!transaction.docChanged) return
+
+          // TODO this is heavy and should be replaced with more lightweight event
           dispatch('content', editor.getHTML())
+
+          // ignore non-local changes
+          if (!isChangeOrigin(transaction)) return
+
+          dispatch('update')
+        },
+        onSelectionUpdate: () => {
+          showInlineToolbar = false
         }
       })
 
@@ -243,80 +264,74 @@
         editor.destroy()
       } catch (err: any) {}
       if (contextProvider === undefined) {
-        wsProvider.disconnect()
+        provider.configuration.websocketProvider.disconnect()
+        provider.destroy()
       }
     }
   })
+
+  function onEditorClick () {
+    if (!editor.isEmpty) {
+      showInlineToolbar = true
+    }
+  }
 
   let showDiff = true
 </script>
 
 <slot />
 {#if visible}
-  <div class="ref-container" class:autoOverflow>
-    {#if isFormatting && !readonly}
-      <div class="formatPanelRef formatPanel flex-between clear-mins">
+  {#if comparedVersion !== undefined || $$slots.tools}
+    <div class="ref-container" class:autoOverflow>
+      {#if comparedVersion !== undefined}
         <div class="flex-row-center buttons-group xsmall-gap">
-          <TextEditorStyleToolbar
-            textEditor={editor}
-            textFormatCategories={[
-              TextFormatCategory.Heading,
-              TextFormatCategory.TextDecoration,
-              TextFormatCategory.Link,
-              TextFormatCategory.List,
-              TextFormatCategory.Quote,
-              TextFormatCategory.Code,
-              TextFormatCategory.Table
-            ]}
-            formatButtonSize={buttonSize}
-            {textNodeActions}
-            on:focus={() => {
-              needFocus = true
-            }}
-            on:action={(event) => {
-              dispatch('action', { action: event.detail, editor })
-              needFocus = true
+          <StyleButton
+            icon={IconObjects}
+            size={buttonSize}
+            selected={showDiff}
+            showTooltip={{ label: textEditorPlugin.string.EnableDiffMode }}
+            on:click={() => {
+              showDiff = !showDiff
+              editor.chain().focus()
             }}
           />
+          <slot name="tools" />
         </div>
-        <div class="flex-grow" />
-        {#if comparedVersion !== undefined}
-          <div class="flex-row-center buttons-group xsmall-gap">
-            <StyleButton
-              icon={IconObjects}
-              size={buttonSize}
-              selected={showDiff}
-              showTooltip={{ label: textEditorPlugin.string.EnableDiffMode }}
-              on:click={() => {
-                showDiff = !showDiff
-                editor.chain().focus()
-              }}
-            />
-            <slot name="tools" />
-          </div>
-        {:else}
-          <div class="formatPanelRef formatPanel buttons-group xsmall-gap">
-            <slot name="tools" />
-          </div>
-        {/if}
-      </div>
-    {:else if comparedVersion !== undefined}
-      <div class="formatPanelRef formatPanel flex flex-grow flex-reverse">
-        <StyleButton
-          icon={IconObjects}
-          size={buttonSize}
-          selected={showDiff}
-          showTooltip={{ label: textEditorPlugin.string.EnableDiffMode }}
-          on:click={() => {
-            showDiff = !showDiff
-            editor.chain().focus()
-          }}
-        />
-        <slot name="tools" />
-      </div>
-    {/if}
+      {:else}
+        <div class="formatPanelRef formatPanel buttons-group xsmall-gap">
+          <slot name="tools" />
+        </div>
+      {/if}
+    </div>
+  {/if}
+
+  <div class="formatPanel buttons-group xsmall-gap mb-4" bind:this={inlineToolbar}>
+    <TextEditorStyleToolbar
+      textEditor={editor}
+      textFormatCategories={[
+        TextFormatCategory.Heading,
+        TextFormatCategory.TextDecoration,
+        TextFormatCategory.Link,
+        TextFormatCategory.List,
+        TextFormatCategory.Quote,
+        TextFormatCategory.Code,
+        TextFormatCategory.Table
+      ]}
+      formatButtonSize={buttonSize}
+      {textNodeActions}
+      on:focus={() => {
+        needFocus = true
+      }}
+      on:action={(event) => {
+        dispatch('action', { action: event.detail, editor })
+        needFocus = true
+      }}
+    />
+  </div>
+
+  <div class="ref-container" class:autoOverflow>
     <div class="textInput" class:focusable>
-      <div class="select-text" style="width: 100%;" bind:this={element} />
+      <div class="select-text" style="width: 100%;" on:mousedown={onEditorClick} bind:this={element} />
     </div>
   </div>
 {/if}
@@ -454,5 +469,14 @@
   .ref-container:focus-within .formatPanel {
     position: sticky;
     top: 1.25rem;
+  }
+
+  .formatPanel {
+    margin: -0.5rem -0.25rem 0.5rem;
+    padding: 0.375rem;
+    background-color: var(--theme-comp-header-color);
+    border-radius: 0.5rem;
+    box-shadow: var(--theme-popup-shadow);
+    z-index: 1;
   }
 </style>

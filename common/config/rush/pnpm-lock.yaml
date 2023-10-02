@@ -3,6 +3,7 @@ lockfileVersion: 5.3
 specifiers:
   '@anticrm/skillset': ^0.6.0
   '@elastic/elasticsearch': ^7.14.0
+  '@hocuspocus/provider': ^2.5.0
   '@koa/cors': ^3.1.0
   '@microsoft/api-extractor': ^7.28.2
   '@playwright/test': ~1.23.0
@@ -395,6 +396,7 @@ specifiers:
 dependencies:
   '@anticrm/skillset': 0.6.0
   '@elastic/elasticsearch': 7.17.0
+  '@hocuspocus/provider': 2.5.0_bufferutil@4.0.7+yjs@13.5.52
   '@koa/cors': 3.4.3
   '@microsoft/api-extractor': 7.33.6
   '@playwright/test': 1.23.4
@@ -594,7 +596,7 @@ dependencies:
   '@rush-temp/templates-resources': file:projects/templates-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
   '@rush-temp/tests-sanity': file:projects/tests-sanity.tgz
   '@rush-temp/text': file:projects/text.tgz_a7abb371f17d2bc77abec7bc53398db5
-  '@rush-temp/text-editor': file:projects/text-editor.tgz_a1d864769aaf53d09b76fe134ab55e60
+  '@rush-temp/text-editor': file:projects/text-editor.tgz_059b1a2103f9eeec0d8d83eb00dce0c8
   '@rush-temp/theme': file:projects/theme.tgz_a1d864769aaf53d09b76fe134ab55e60
   '@rush-temp/tool': file:projects/tool.tgz_bufferutil@4.0.7
   '@rush-temp/tracker': file:projects/tracker.tgz
@@ -4397,6 +4399,28 @@ packages:
       tslib: 2.4.1
     dev: false
 
+  /@hocuspocus/common/2.5.0:
+    resolution: {integrity: sha512-TpnQAb1Rtff1trwURFWaUEYZwqykaIGo6NNnMr6ZISdDZFWNHMAMUmy7dwJDS9ECnEtcjXhpPxXeLV+MVQXVnw==}
+    dependencies:
+      lib0: 0.2.73
+    dev: false
+
+  /@hocuspocus/provider/2.5.0_bufferutil@4.0.7+yjs@13.5.52:
+    resolution: {integrity: sha512-Du/q0kcVhaSQiKPBha19f+mnFOl4sFybARRWsGp4JIoDG+Vt3r73ZqjalIJmp9h4mBr2tGtS5zK/oQ/Vrv5/Bw==}
+    peerDependencies:
+      y-protocols: ^1.0.5
+      yjs: ^13.6.4
+    dependencies:
+      '@hocuspocus/common': 2.5.0
+      '@lifeomic/attempt': 3.0.3
+      lib0: 0.2.73
+      ws: 7.5.9_bufferutil@4.0.7
+      yjs: 13.5.52
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
+
   /@humanwhocodes/config-array/0.11.7:
     resolution: {integrity: sha512-kBbPWzN8oVMLb0hOUYXhmxggL/1cJE6ydvjDIGi9EnAGUyA7cLVKQg+d/Dsm+KZwx2czGHrCmMVLiyg8s5JPKw==}
     engines: {node: '>=10.10.0'}
@@ -4791,6 +4815,10 @@ packages:
 
   /@leichtgewicht/ip-codec/2.0.4:
     resolution: {integrity: sha512-Hcv+nVC0kZnQ3tD9GVu5xSMR4VVYOteQIr/hwFPVEvPdlXqgGEuRjiheChHgdM+JyqdgNcmzZOX/tnl0JOiI7A==}
+    dev: false
+
+  /@lifeomic/attempt/3.0.3:
+    resolution: {integrity: sha512-GlM2AbzrErd/TmLL3E8hAHmb5Q7VhDJp35vIbyPVA5Rz55LZuRr8pwL3qrwwkVNo05gMX1J44gURKb4MHQZo7w==}
     dev: false
 
   /@linaria/core/3.0.0-beta.13:
@@ -21949,12 +21977,13 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/text-editor.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-mZ+9T1R2k5X+qEj4fXliwEVDzmBbGEggRReeFSTver56sVbuZQrbnAeeHEa1kMX6rD/O5kKTn8Bwk+S97y3jkw==, tarball: file:projects/text-editor.tgz}
+  file:projects/text-editor.tgz_059b1a2103f9eeec0d8d83eb00dce0c8:
+    resolution: {integrity: sha512-oG+Lw0E8wo3+UvCsPdDfLZ8h1jaqO/d6LsIWIqoUEmh9zqAT/43G2oQ2UFVexLwGs0yTmy4TvK4JABU4sArsqQ==, tarball: file:projects/text-editor.tgz}
     id: file:projects/text-editor.tgz
     name: '@rush-temp/text-editor'
     version: 0.0.0
     dependencies:
+      '@hocuspocus/provider': 2.5.0_bufferutil@4.0.7+yjs@13.5.52
       '@tiptap/core': 2.0.3_@tiptap+pm@2.0.3
       '@tiptap/extension-bubble-menu': 2.0.4_fc2f730f0ef238c57ef10dc1abce4607
       '@tiptap/extension-code': 2.0.3_@tiptap+core@2.0.3
@@ -22015,6 +22044,7 @@ packages:
       yjs: 13.5.52
     transitivePeerDependencies:
       - '@babel/core'
+      - bufferutil
       - coffeescript
       - less
       - postcss
@@ -22023,6 +22053,7 @@ packages:
       - stylus
       - sugarss
       - supports-color
+      - utf-8-validate
       - y-protocols
     dev: false
 

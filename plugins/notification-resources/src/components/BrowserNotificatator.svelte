@@ -102,7 +102,7 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  let clearTimer: number | undefined
+  let clearTimer: any | undefined
 
   async function notify (text: string, notifyInstance: PlatformNotification): Promise<void> {
     if (notifyInstance.status !== NotificationStatus.New) {

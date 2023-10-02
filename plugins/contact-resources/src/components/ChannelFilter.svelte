@@ -30,7 +30,7 @@
   let selected: Ref<ChannelProvider>[] = filter.value
   const level: number = filter.props?.level ?? 0
 
-  let filterUpdateTimeout: number | undefined
+  let filterUpdateTimeout: any | undefined
 
   filter.modes = [
     contact.filter.FilterChannelIn,

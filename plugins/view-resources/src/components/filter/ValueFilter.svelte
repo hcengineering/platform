@@ -52,7 +52,7 @@
 
   let objectsPromise: Promise<FindResult<Doc>> | undefined
 
-  let filterUpdateTimeout: number | undefined
+  let filterUpdateTimeout: any | undefined
 
   async function getValues (search: string): Promise<void> {
     if (objectsPromise) {
