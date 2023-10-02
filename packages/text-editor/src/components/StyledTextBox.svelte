@@ -13,10 +13,15 @@
     resizeObserver
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import type { AnyExtension } from '@tiptap/core'
+
   import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
   import StyledTextEditor from './StyledTextEditor.svelte'
+
   import { completionConfig } from './extensions'
+  import { EmojiExtension } from './extension/emoji'
+
   import { ImageRef, FileAttachFunction } from './imageExt'
   import { Node as ProseMirrorNode } from '@tiptap/pm/model'
 
@@ -38,6 +43,7 @@
   export let enableFormatting = false
   export let autofocus = false
   export let enableBackReferences: boolean = false
+  export let enableEmojiReplace: boolean = true
   export let isScrollable: boolean = true
 
   export let attachFile: FileAttachFunction | undefined = undefined
@@ -136,23 +142,8 @@
       focusManager?.setFocus(idx)
     }
   }
-  const completionPlugin = Completion.configure({
-    ...completionConfig,
-    showDoc (event: MouseEvent, _id: string, _class: string) {
-      dispatch('open-document', { event, _id, _class })
-    }
-  })
 
   const attachments = new Map<string, ProseMirrorNode>()
-
-  const imagePlugin = ImageRef.configure({
-    inline: true,
-    HTMLAttributes: {},
-    attachFile,
-    reportNode: (id, node) => {
-      attachments.set(id, node)
-    }
-  })
 
   /**
    * @public
@@ -163,6 +154,36 @@
       textEditor.removeNode(nde)
     }
   }
+
+  function configureExtensions () {
+    const imagePlugin = ImageRef.configure({
+      inline: true,
+      HTMLAttributes: {},
+      attachFile,
+      reportNode: (id, node) => {
+        attachments.set(id, node)
+      }
+    })
+
+    const completionPlugin = Completion.configure({
+      ...completionConfig,
+      showDoc (event: MouseEvent, _id: string, _class: string) {
+        dispatch('open-document', { event, _id, _class })
+      }
+    })
+
+    const extensions: AnyExtension[] = [imagePlugin]
+    if (enableBackReferences) {
+      extensions.unshift(completionPlugin)
+    }
+    if (enableEmojiReplace) {
+      extensions.push(EmojiExtension.configure())
+    }
+
+    return extensions
+  }
+
+  const extensions = configureExtensions()
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -195,7 +216,7 @@
       {enableFormatting}
       {autofocus}
       {isScrollable}
-      extensions={enableBackReferences ? [completionPlugin, imagePlugin] : [imagePlugin]}
+      extensions={extensions}
       bind:content={rawValue}
       bind:this={textEditor}
       on:attach
