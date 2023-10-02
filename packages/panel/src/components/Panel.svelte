@@ -55,7 +55,7 @@
 
   let lastHref: string
   let scroll: HTMLDivElement
-  let timer: number
+  let timer: any
   let lastScrollHeight: number = -1
   let count: number = 0
 

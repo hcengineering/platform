@@ -63,7 +63,7 @@
     })
   }
 
-  let filterUpdateTimeout: number | undefined
+  let filterUpdateTimeout: any | undefined
 
   async function getValues (search: string, statusStore: IdMap<Status>): Promise<void> {
     if (objectsPromise) {

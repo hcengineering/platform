@@ -46,7 +46,7 @@
   let objectsPromise: Promise<FindResult<Employee>> | undefined
   const targets = new Set<any>()
 
-  let filterUpdateTimeout: number | undefined
+  let filterUpdateTimeout: any | undefined
 
   async function getValues (search: string): Promise<void> {
     if (objectsPromise) {

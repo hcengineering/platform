@@ -51,7 +51,7 @@
   filter.modes = [tags.filter.FilterTagsIn, tags.filter.FilterTagsNin]
   filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
 
-  let filterUpdateTimeout: number | undefined
+  let filterUpdateTimeout: any | undefined
 
   let categories: TagCategory[] = []
   let objects: TagElement[] = []

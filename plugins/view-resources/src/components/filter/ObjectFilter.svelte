@@ -60,7 +60,7 @@
     getResource(mixin.grouppingManager).then((mgr) => (grouppingManager = mgr))
   }
 
-  let filterUpdateTimeout: number | undefined
+  let filterUpdateTimeout: any | undefined
 
   async function getValues (search: string): Promise<void> {
     if (objectsPromise) {
