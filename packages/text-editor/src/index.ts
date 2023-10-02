@@ -37,6 +37,11 @@ export {
   NodeHighlightType
 } from './components/extension/nodeHighlight'
 export { NodeUuidCommands, NodeUuidExtension, NodeUuidOptions, NodeUuidStorage } from './components/extension/nodeUuid'
+export {
+  ValidateContentExtension,
+  ValidateContentOptions,
+  ValidateContentStorage
+} from './components/extension/validateContent'
 
 addStringsLoader(textEditorId, async (lang: string) => {
   return await import(`../lang/${lang}.json`)
