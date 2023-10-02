@@ -61,14 +61,14 @@
 
   function update (stateObjects: Item[], limit: number | undefined, index: number): void {
     clearTimeout(loadingTimeout)
-    if (limitedObjects.length > 0 || index * 2 === 0) {
+    if (limitedObjects.length > 0 || index === 0) {
       limitedObjects = stateObjects.slice(0, limit)
     } else {
       loading = true
       loadingTimeout = setTimeout(() => {
         limitedObjects = stateObjects.slice(0, limit)
         loading = false
-      }, index * 2)
+      }, index)
     }
   }
 

@@ -128,24 +128,23 @@
     limit: number,
     options?: FindOptions<Doc>
   ) {
-    loading +=
-      q.query(
-        _class,
-        query,
-        (result) => {
-          if (sortingFunction !== undefined) {
-            const sf = sortingFunction
-            objects = result.sort((a, b) => -1 * sortOrder * sf(a, b))
-          } else {
-            objects = result
-          }
-          objectsRecieved = true
-          loading = 0
-        },
-        { sort: getSort(sortKey), limit, ...options, lookup, total: false }
-      ) === true
-        ? 1
-        : 0
+    loading += q.query(
+      _class,
+      query,
+      (result) => {
+        if (sortingFunction !== undefined) {
+          const sf = sortingFunction
+          objects = result.sort((a, b) => -1 * sortOrder * sf(a, b))
+        } else {
+          objects = result
+        }
+        objectsRecieved = true
+        loading = 0
+      },
+      { sort: getSort(sortKey), limit, ...options, lookup, total: false }
+    )
+      ? 1
+      : 0
   }
   $: update(_class, query, _sortKey, sortOrder, lookup, limit, options)
 

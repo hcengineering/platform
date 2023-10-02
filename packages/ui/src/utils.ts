@@ -246,9 +246,9 @@ export class DelayedCaller {
   op?: () => void
   constructor (readonly delay: number = 10) {}
   call (op: () => void): void {
-    const needTimeout = this.op !== undefined
+    const needTimer = this.op === undefined
     this.op = op
-    if (needTimeout) {
+    if (needTimer) {
       setTimeout(() => {
         this.op?.()
         this.op = undefined

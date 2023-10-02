@@ -22,9 +22,9 @@
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import support, { SupportStatus } from '@hcengineering/support'
-  import { locationStorageKeyId, Button, DelayedCaller } from '@hcengineering/ui'
   import {
     AnyComponent,
+    Button,
     CompAndProps,
     Component,
     Label,
@@ -42,8 +42,9 @@
     closeTooltip,
     deviceOptionsStore as deviceInfo,
     getCurrentLocation,
-    location,
     getLocation,
+    location,
+    locationStorageKeyId,
     navigate,
     openPanel,
     popupstore,
@@ -64,7 +65,7 @@
   import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { subscribeMobile } from '../mobile'
   import workbench from '../plugin'
-  import { buildNavModel, workspacesStore, signOut } from '../utils'
+  import { buildNavModel, signOut, workspacesStore } from '../utils'
   import AccountPopup from './AccountPopup.svelte'
   import AppItem from './AppItem.svelte'
   import AppSwitcher from './AppSwitcher.svelte'
@@ -607,8 +608,6 @@
 
   let inboxPopup: PopupResult | undefined = undefined
   let lastLoc: Location | undefined = undefined
-
-  const delayedCaller = new DelayedCaller(15)
 </script>
 
 {#if employee?.active === true || accountId === core.account.System}
@@ -765,9 +764,7 @@
         class="antiPanel-component antiComponent"
         bind:this={contentPanel}
         use:resizeObserver={() => {
-          delayedCaller.call(() => {
-            componentWidth = contentPanel.clientWidth
-          })
+          componentWidth = contentPanel.clientWidth
         }}
       >
         {#if currentApplication && currentApplication.component}
