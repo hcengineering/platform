@@ -3,12 +3,12 @@
 
   &.text-editor-view {
     font: inherit;
+    line-height: 150%;
   }
 }
 
 .text-editor-view {
   overflow-y: auto;
-  line-height: 150%;
   color: var(--theme-caption-color);
 
   p:not(:last-child) {

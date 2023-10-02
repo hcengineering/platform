@@ -202,7 +202,7 @@
       editor = new Editor({
         element,
         editable: true,
-        editorProps: { attributes: mergeAttributes(defaultEditorAttributes, editorAttributes) },
+        editorProps: { attributes: mergeAttributes(defaultEditorAttributes, editorAttributes, { class: 'flex-grow' }) },
         extensions: [
           ...defaultExtensions,
           Placeholder.configure({ placeholder: placeHolderStr }),

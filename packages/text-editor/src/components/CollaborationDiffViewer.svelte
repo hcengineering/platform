@@ -15,7 +15,7 @@
 //
 -->
 <script lang="ts">
-  import { Editor, Extension } from '@tiptap/core'
+  import { Editor, Extension, mergeAttributes } from '@tiptap/core'
 
   import { Plugin, PluginKey } from 'prosemirror-state'
   import { onDestroy, onMount } from 'svelte'
@@ -80,7 +80,7 @@
 
   onMount(() => {
     editor = new Editor({
-      editorProps: { attributes: defaultEditorAttributes },
+      editorProps: { attributes: mergeAttributes(defaultEditorAttributes, { class: 'flex-grow' }) },
       element,
       content,
       editable: true,
