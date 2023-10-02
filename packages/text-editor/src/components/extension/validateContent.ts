@@ -10,9 +10,10 @@ export interface ValidateContentStorage {
 }
 
 const handleChange = (editor: Editor, options: ValidateContentOptions, storage: ValidateContentStorage): void => {
-  if (options.onEmpty !== undefined && options.onEmpty !== null) {
-    if (storage.isEmpty !== editor.isEmpty) {
-      storage.isEmpty = editor.isEmpty
+  if (storage.isEmpty !== editor.isEmpty) {
+    storage.isEmpty = editor.isEmpty
+
+    if (options.onEmpty !== undefined && options.onEmpty !== null) {
       options.onEmpty(storage.isEmpty)
     }
   }
