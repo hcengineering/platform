@@ -270,7 +270,10 @@ export const milestoneTitleMap: Record<MilestoneViewMode, IntlString> = Object.f
   closed: tracker.string.ClosedMilestones
 })
 
-const listIssueStatusOrder = [
+/**
+ * @public
+ */
+export const listIssueStatusOrder = [
   tracker.issueStatusCategory.Started,
   tracker.issueStatusCategory.Unstarted,
   tracker.issueStatusCategory.Backlog,
@@ -278,7 +281,10 @@ const listIssueStatusOrder = [
   tracker.issueStatusCategory.Canceled
 ] as const
 
-const listIssueKanbanStatusOrder = [
+/**
+ * @public
+ */
+export const listIssueKanbanStatusOrder = [
   tracker.issueStatusCategory.Backlog,
   tracker.issueStatusCategory.Unstarted,
   tracker.issueStatusCategory.Started,

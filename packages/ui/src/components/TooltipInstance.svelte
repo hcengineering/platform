@@ -24,7 +24,7 @@
   let tooltipHTML: HTMLElement
   let nubHTML: HTMLElement
   let dir: TooltipAlignment
-  let rect: DOMRect
+  let rect: DOMRect | undefined
   let rectAnchor: DOMRect
   let tooltipSW: boolean // tooltipSW = true - Label; false - Component
   let nubDirection: 'top' | 'bottom' | 'left' | 'right' | undefined = undefined
@@ -37,18 +37,61 @@
   $: onUpdate = $tooltip.onUpdate
   $: kind = $tooltip.kind
 
-  const clearStyles = (): void => {
-    shown = false
-    tooltipHTML.style.top =
-      tooltipHTML.style.bottom =
-      tooltipHTML.style.left =
-      tooltipHTML.style.right =
-      tooltipHTML.style.height =
-        ''
+  interface TooltipOptions {
+    top: string
+    bottom: string
+    left: string
+    right: string
+    width: string
+    height: string
+    transform: string
+    visibility: string
+    classList: string
   }
 
-  const fitTooltip = (tooltipHTMLToCheck: HTMLElement): void => {
+  let options: TooltipOptions = {
+    top: '',
+    bottom: '',
+    left: '',
+    right: '',
+    width: '',
+    height: '',
+    transform: '',
+    visibility: 'hidden',
+    classList: ''
+  }
+
+  const clearStyles = (): void => {
+    shown = false
+    options = {
+      top: '',
+      bottom: '',
+      left: '',
+      right: '',
+      width: '',
+      height: '',
+      transform: '',
+      visibility: 'hidden',
+      classList: ''
+    }
+  }
+
+  const fitTooltip = (tooltipHTMLToCheck: HTMLElement, clWidth?: number): TooltipOptions => {
+    const options: TooltipOptions = {
+      top: '',
+      bottom: '',
+      left: '',
+      right: '',
+      width: '',
+      height: '',
+      transform: '',
+      visibility: 'visible',
+      classList: ''
+    }
     if (($tooltip.label || $tooltip.component) && tooltipHTML && tooltipHTMLToCheck) {
+      if (clWidth === undefined) {
+        clWidth = tooltipHTML.clientWidth
+      }
       if ($tooltip.element) {
         rect = $tooltip.element.getBoundingClientRect()
         rectAnchor = $tooltip.anchor
@@ -58,28 +101,28 @@
         if ($tooltip.component) {
           clearStyles()
           if (rect.bottom + tooltipHTMLToCheck.clientHeight + 28 < docHeight) {
-            tooltipHTML.style.top = `calc(${rect.bottom}px + 5px + .25rem)`
+            options.top = `calc(${rect.bottom}px + 5px + .25rem)`
             dir = 'bottom'
           } else if (rect.top > docHeight - rect.bottom) {
-            tooltipHTML.style.bottom = `calc(${docHeight - rect.y}px + 5px + .25rem)`
+            options.bottom = `calc(${docHeight - rect.y}px + 5px + .25rem)`
             if (tooltipHTML.clientHeight > rect.top - 28) {
-              tooltipHTML.style.top = '1rem'
-              tooltipHTML.style.height = `calc(${rect.top}px - 5px - 1.25rem)`
+              options.top = '1rem'
+              options.height = `calc(${rect.top}px - 5px - 1.25rem)`
             }
             dir = 'top'
           } else {
-            tooltipHTML.style.top = `calc(${rect.bottom}px + 5px + .25rem)`
+            options.top = `calc(${rect.bottom}px + 5px + .25rem)`
             if (tooltipHTMLToCheck.clientHeight > docHeight - rect.bottom - 28) {
-              tooltipHTML.style.bottom = '1rem'
-              tooltipHTML.style.height = `calc(${docHeight - rect.bottom}px - 5px - 1.25rem)`
+              options.bottom = '1rem'
+              options.height = `calc(${docHeight - rect.bottom}px - 5px - 1.25rem)`
             }
             dir = 'bottom'
           }
 
           const tempLeft = rect.width / 2 + rect.left - clWidth / 2
-          if (tempLeft + clWidth > docWidth - 8) tooltipHTML.style.right = '.5rem'
-          else if (tempLeft < 8) tooltipHTML.style.left = '.5rem'
-          else tooltipHTML.style.left = `${tempLeft}px`
+          if (tempLeft + clWidth > docWidth - 8) options.right = '.5rem'
+          else if (tempLeft < 8) options.left = '.5rem'
+          else options.left = `${tempLeft}px`
 
           if (nubHTML) {
             nubHTML.style.top = rect.top + 'px'
@@ -97,43 +140,53 @@
           } else dir = $tooltip.direction
 
           if (dir === 'right') {
-            tooltipHTML.style.top = rectAnchor.y + rectAnchor.height / 2 + 'px'
-            tooltipHTML.style.left = `calc(${rectAnchor.right}px + .75rem)`
-            tooltipHTML.style.transform = 'translateY(-50%)'
+            options.top = rectAnchor.y + rectAnchor.height / 2 + 'px'
+            options.left = `calc(${rectAnchor.right}px + .75rem)`
+            options.transform = 'translateY(-50%)'
           } else if (dir === 'left') {
-            tooltipHTML.style.top = rectAnchor.y + rectAnchor.height / 2 + 'px'
-            tooltipHTML.style.right = `calc(${docWidth - rectAnchor.x}px + .75rem)`
-            tooltipHTML.style.transform = 'translateY(-50%)'
+            options.top = rectAnchor.y + rectAnchor.height / 2 + 'px'
+            options.right = `calc(${docWidth - rectAnchor.x}px + .75rem)`
+            options.transform = 'translateY(-50%)'
           } else if (dir === 'bottom') {
-            tooltipHTML.style.top = `calc(${rectAnchor.bottom}px + .5rem)`
-            tooltipHTML.style.left = rectAnchor.x + rectAnchor.width / 2 + 'px'
-            tooltipHTML.style.transform = 'translateX(-50%)'
+            options.top = `calc(${rectAnchor.bottom}px + .5rem)`
+            options.left = rectAnchor.x + rectAnchor.width / 2 + 'px'
+            options.transform = 'translateX(-50%)'
           } else if (dir === 'top') {
-            tooltipHTML.style.bottom = `calc(${docHeight - rectAnchor.y}px + .75rem)`
-            tooltipHTML.style.left = rectAnchor.x + rectAnchor.width / 2 + 'px'
-            tooltipHTML.style.transform = 'translateX(-50%)'
+            options.bottom = `calc(${docHeight - rectAnchor.y}px + .75rem)`
+            options.left = rectAnchor.x + rectAnchor.width / 2 + 'px'
+            options.transform = 'translateX(-50%)'
           }
-          tooltipHTML.classList.remove('no-arrow')
         }
       } else {
-        tooltipHTML.style.top = '50%'
-        tooltipHTML.style.left = '50%'
-        tooltipHTML.style.width = 'min-content'
-        tooltipHTML.style.height = 'min-content'
-        tooltipHTML.style.transform = 'translate(-50%, -50%)'
-        tooltipHTML.classList.add('no-arrow')
+        options.top = '50%'
+        options.left = '50%'
+        options.width = 'min-content'
+        options.height = 'min-content'
+        options.transform = 'translate(-50%, -50%)'
+        options.classList = 'no-arrow'
       }
-      tooltipHTML.style.visibility = 'visible'
+      options.visibility = 'visible'
       shown = true
     } else if (tooltipHTML) {
       shown = false
-      tooltipHTML.style.visibility = 'hidden'
+      options.visibility = 'hidden'
     }
+    return options
   }
 
-  const fitSubmenu = (): void => {
+  const fitSubmenu = (): TooltipOptions => {
+    const options: TooltipOptions = {
+      top: '',
+      bottom: '',
+      left: '',
+      right: '',
+      width: '',
+      height: '',
+      visibility: 'visible',
+      transform: '',
+      classList: ''
+    }
     if (($tooltip.label || $tooltip.component) && tooltipHTML) {
-      clearStyles()
       if ($tooltip.element) {
         rect = $tooltip.element.getBoundingClientRect()
         const rectP = tooltipHTML.getBoundingClientRect()
@@ -145,23 +198,33 @@
             : rect.bottom > docHeight - rect.top
               ? 'top'
               : 'bottom'
-        if (dirH === 'right') tooltipHTML.style.left = rect.right - 4 + 'px'
-        else tooltipHTML.style.right = docWidth - rect.left - 4 + 'px'
-        if (dirV === 'bottom') tooltipHTML.style.top = rect.top - 4 + 'px'
-        else tooltipHTML.style.bottom = docHeight - rect.bottom - 4 + 'px'
-        tooltipHTML.style.visibility = 'visible'
+        if (dirH === 'right') {
+          options.left = rect.right - 4 + 'px'
+        } else {
+          options.right = docWidth - rect.left - 4 + 'px'
+        }
+        if (dirV === 'bottom') {
+          options.top = rect.top - 4 + 'px'
+        } else {
+          options.bottom = docHeight - rect.bottom - 4 + 'px'
+        }
+        options.visibility = 'visible'
       }
-    } else if (tooltipHTML) tooltipHTML.style.visibility = 'hidden'
+    } else if (tooltipHTML) {
+      options.visibility = 'hidden'
+    }
+    return options
   }
 
   const hideTooltip = (): void => {
-    if (tooltipHTML) tooltipHTML.style.visibility = 'hidden'
+    if (tooltipHTML) options.visibility = 'hidden'
     closeTooltip()
   }
 
   const whileShow = (ev: MouseEvent): void => {
     if ($tooltip.element && tooltipHTML) {
       const rectP = tooltipHTML.getBoundingClientRect()
+      rect = $tooltip.element.getBoundingClientRect()
       const dT: number = dir === 'bottom' && $tooltip.kind !== 'submenu' ? 12 : 0
       const dB: number = dir === 'top' && $tooltip.kind !== 'submenu' ? 12 : 0
       const inTrigger: boolean = ev.x >= rect.left && ev.x <= rect.right && ev.y >= rect.top && ev.y <= rect.bottom
@@ -174,8 +237,18 @@
     }
   }
 
-  $: kind === 'submenu' ? fitSubmenu() : fitTooltip(tooltipHTML)
-  afterUpdate(() => (kind === 'submenu' ? fitSubmenu() : fitTooltip(tooltipHTML)))
+  $: if (kind === 'submenu') {
+    options = fitSubmenu()
+  } else {
+    options = fitTooltip(tooltipHTML, clWidth)
+  }
+  afterUpdate(() => {
+    if (kind === 'submenu') {
+      options = fitSubmenu()
+    } else {
+      options = fitTooltip(tooltipHTML, clWidth)
+    }
+  })
   onDestroy(() => hideTooltip())
 </script>
 
@@ -208,13 +281,20 @@
 />
 {#if $tooltip.component && $tooltip.kind !== 'submenu'}
   <div
-    class="popup-tooltip"
+    class="popup-tooltip {options.classList}"
     class:shown
     class:doublePadding={$tooltip.label}
     use:resizeObserver={(element) => {
       clWidth = element.clientWidth
-      fitTooltip(tooltipHTML)
+      options = fitTooltip(tooltipHTML, clWidth)
     }}
+    style:top={options.top}
+    style:bottom={options.bottom}
+    style:left={options.left}
+    style:right={options.right}
+    style:width={options.width}
+    style:height={options.height}
+    style:transform={options.transform}
     bind:this={tooltipHTML}
   >
     {#if $tooltip.label}
@@ -241,7 +321,17 @@
   </div>
   <div bind:this={nubHTML} class="nub {nubDirection ?? ''}" class:shown />
 {:else if $tooltip.label && $tooltip.kind !== 'submenu'}
-  <div class="tooltip {dir ?? ''}" bind:this={tooltipHTML}>
+  <div
+    class="tooltip {dir ?? ''} {options.classList}"
+    bind:this={tooltipHTML}
+    style:top={options.top}
+    style:bottom={options.bottom}
+    style:left={options.left}
+    style:right={options.right}
+    style:width={options.width}
+    style:height={options.height}
+    style:transform={options.transform}
+  >
     <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
     {#if $tooltip.keys !== undefined}
       <div class="keys">
@@ -265,10 +355,17 @@
   </div>
 {:else if $tooltip.kind === 'submenu'}
   <div
-    class="submenu-container {dir ?? ''}"
+    class="submenu-container {dir ?? ''} {options.classList}"
     use:resizeObserver={(element) => {
       clWidth = element.clientWidth
     }}
+    style:top={options.top}
+    style:bottom={options.bottom}
+    style:left={options.left}
+    style:right={options.right}
+    style:width={options.width}
+    style:height={options.height}
+    style:transform={options.transform}
     bind:this={tooltipHTML}
   >
     {#if typeof $tooltip.component === 'string'}

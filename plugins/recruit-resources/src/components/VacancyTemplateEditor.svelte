@@ -69,7 +69,7 @@
       <Icon icon={recruit.icon.Issue} size={'small'} />
     </div>
     <span class="antiSection-header__title">
-      <Label label={recruit.string.RelatedIssues} />
+      <Label label={tracker.string.RelatedIssues} />
     </span>
     <div class="buttons-group small-gap">
       <Button

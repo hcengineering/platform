@@ -128,7 +128,7 @@
     limit: number,
     options?: FindOptions<Doc>
   ) {
-    q.query(
+    loading += q.query(
       _class,
       query,
       (result) => {
@@ -139,10 +139,12 @@
           objects = result
         }
         objectsRecieved = true
-        loading = loading === 1 ? 0 : -1
+        loading = 0
       },
       { sort: getSort(sortKey), limit, ...options, lookup, total: false }
     )
+      ? 1
+      : 0
   }
   $: update(_class, query, _sortKey, sortOrder, lookup, limit, options)
 
@@ -281,9 +283,15 @@
     }
   }
 
+  let buildIndex = 0
+
   async function build (modelOptions: BuildModelOptions) {
     isBuildingModel = true
-    model = await buildModel(modelOptions)
+    const idx = ++buildIndex
+    const res = await buildModel(modelOptions)
+    if (buildIndex === idx) {
+      model = res
+    }
     isBuildingModel = false
   }
 

@@ -213,6 +213,9 @@ export function createModel (builder: Builder): void {
         {
           key: '',
           presenter: tracker.component.RelatedIssueSelector,
+          props: {
+            kind: 'link'
+          },
           label: tracker.string.Relations
         },
         'comments',
@@ -252,6 +255,9 @@ export function createModel (builder: Builder): void {
         {
           key: '',
           presenter: tracker.component.RelatedIssueSelector,
+          props: {
+            kind: 'link'
+          },
           label: tracker.string.Issues
         },
         'status',
@@ -549,6 +555,20 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(lead.mixin.Customer, core.class.Class, view.mixin.ClassFilters, {
     filters: ['_class']
+  })
+
+  builder.mixin(lead.mixin.Customer, core.class.Class, view.mixin.ObjectEditorFooter, {
+    editor: tracker.component.RelatedIssuesSection,
+    props: {
+      label: tracker.string.RelatedIssues
+    }
+  })
+
+  builder.mixin(lead.class.Lead, core.class.Class, view.mixin.ObjectEditorFooter, {
+    editor: tracker.component.RelatedIssuesSection,
+    props: {
+      label: tracker.string.RelatedIssues
+    }
   })
 
   createAction(builder, {

@@ -66,7 +66,7 @@
     (applications?.get(b._id as Ref<Vacancy>)?.modifiedOn ?? b.modifiedOn) -
     (applications?.get(a._id as Ref<Vacancy>)?.modifiedOn ?? a.modifiedOn)
 
-  const replacedKeys: Map<string, BuildModelKey> = new Map<string, BuildModelKey>([
+  $: replacedKeys = new Map<string, BuildModelKey>([
     [
       '@applications',
       {
@@ -100,7 +100,8 @@
   function createConfig (
     descr: Viewlet,
     preference: ViewletPreference | undefined,
-    applications: Map<Ref<Vacancy>, ApplicationInfo>
+    applications: Map<Ref<Vacancy>, ApplicationInfo>,
+    replacedKeys: Map<string, BuildModelKey>
   ): (string | BuildModelKey)[] {
     const base = preference?.config ?? descr.config
     const result: (string | BuildModelKey)[] = []
@@ -181,7 +182,7 @@
     props={{
       _class: recruit.class.Vacancy,
       options: viewlet.options,
-      config: createConfig(viewlet, preference, applications),
+      config: createConfig(viewlet, preference, applications, replacedKeys),
       viewlet,
       viewOptions,
       viewOptionsConfig: viewlet.viewOptions?.other,

@@ -199,7 +199,7 @@
       <VacancyApplications objectId={object._id} />
     </div>
     <div class="w-full mt-6">
-      <Component is={tracker.component.RelatedIssuesSection} props={{ object, label: recruit.string.RelatedIssues }} />
+      <Component is={tracker.component.RelatedIssuesSection} props={{ object, label: tracker.string.RelatedIssues }} />
     </div>
   </Panel>
 {/if}
