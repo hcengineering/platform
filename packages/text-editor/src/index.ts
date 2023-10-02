@@ -32,6 +32,11 @@ export { default as Collaboration } from './components/Collaboration.svelte'
 export { default as StyleButton } from './components/StyleButton.svelte'
 
 export {
+  IsEmptyContentExtension,
+  IsEmptyContentOptions,
+  IsEmptyContentStorage
+} from './components/extension/isEmptyContent'
+export {
   NodeHighlightExtension,
   NodeHighlightExtensionOptions,
   NodeHighlightType
