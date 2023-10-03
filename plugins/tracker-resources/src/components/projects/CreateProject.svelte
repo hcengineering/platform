@@ -47,6 +47,7 @@
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import ChangeIdentity from './ChangeIdentity.svelte'
+  import view from '@hcengineering/view'
 
   export let project: Project | undefined = undefined
 
@@ -184,7 +185,7 @@
 
   function chooseIcon (ev: MouseEvent) {
     const icons = [tracker.icon.Home, tracker.icon.RedCircle]
-    showPopup(IconPicker, { icon, color, icons, iconWithEmoji: tracker.component.IconWithEmoji }, 'top', (result) => {
+    showPopup(IconPicker, { icon, color, icons }, 'top', (result) => {
       if (result !== undefined && result !== null) {
         icon = result.icon
         color = result.color
@@ -294,8 +295,8 @@
         <Label label={tracker.string.ChooseIcon} />
       </div>
       <Button
-        icon={icon === tracker.component.IconWithEmoji ? IconWithEmoji : icon ?? tracker.icon.Home}
-        iconProps={icon === tracker.component.IconWithEmoji
+        icon={icon === view.ids.IconWithEmoji ? IconWithEmoji : icon ?? tracker.icon.Home}
+        iconProps={icon === view.ids.IconWithEmoji
           ? { icon: color }
           : {
               fill:
