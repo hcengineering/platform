@@ -36,7 +36,6 @@
   export let isScrollable: boolean = true
   export let focusable: boolean = false
   export let maxHeight: 'max' | 'card' | 'limited' | string | undefined = undefined
-  export let enableFormatting = false
   export let autofocus = false
   export let full = false
   export let extensions: AnyExtension[] = []
@@ -53,7 +52,6 @@
 
   let textEditor: TextEditor
 
-  let isEmpty = true
   let contentHeight: number
 
   export function submit (): void {
@@ -73,9 +71,6 @@
   }
   export function setContent (data: string): void {
     textEditor.setContent(data)
-  }
-  export function isEmptyContent (): boolean {
-    return textEditor.isEmptyContent()
   }
   export function insertText (text: string): void {
     textEditor.insertText(text)
@@ -216,7 +211,6 @@
             {extensions}
             {textFormatCategories}
             bind:this={textEditor}
-            bind:isEmpty
             on:value
             on:content={(ev) => {
               dispatch('message', ev.detail)
@@ -236,7 +230,6 @@
           {extensions}
           {textFormatCategories}
           bind:this={textEditor}
-          bind:isEmpty
           on:value
           on:content={(ev) => {
             dispatch('message', ev.detail)

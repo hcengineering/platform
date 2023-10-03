@@ -16,7 +16,7 @@
   import { createEventDispatcher } from 'svelte'
   import { Doc, Ref, Space, Class } from '@hcengineering/core'
   import { Button, Label, IconDownOutline, tooltip } from '@hcengineering/ui'
-  import textEditorPlugin, { TextEditor } from '@hcengineering/text-editor'
+  import textEditorPlugin, { IsEmptyContentExtension, TextEditor } from '@hcengineering/text-editor'
   import type { AccordionItem } from '..'
   import AttachmentStyledBox from './AttachmentStyledBox.svelte'
 
@@ -87,7 +87,7 @@
             <TextEditor
               bind:content={item.content}
               bind:this={edits[i]}
-              bind:isEmpty={isEmpty[i]}
+              extensions={[IsEmptyContentExtension.configure({ onChange: (value) => (isEmpty[i] = value) })]}
               on:value={(ev) => {
                 dispatch('update', { item, value: ev.detail })
               }}

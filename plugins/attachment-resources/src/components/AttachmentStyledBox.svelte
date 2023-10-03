@@ -339,9 +339,6 @@
       }
     }
   }
-  export function isEmptyContent (): boolean {
-    return refInput.isEmptyContent()
-  }
 
   $: dispatch('attachments', {
     size: attachments.size,
