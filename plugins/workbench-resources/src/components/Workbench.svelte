@@ -304,6 +304,7 @@
       }
       if (app === undefined && !navigateDone) {
         const appShort = getMetadata(workbench.metadata.DefaultApplication) as Ref<Application>
+        if (appShort == null) return
         const spaceRef = getMetadata(workbench.metadata.DefaultSpace) as Ref<Space>
         const specialRef = getMetadata(workbench.metadata.DefaultSpecial) as Ref<Space>
         const loc = getCurrentLocation()

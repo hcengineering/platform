@@ -35,6 +35,7 @@ import type {
   IndexStageState,
   IndexingConfiguration,
   Interface,
+  MigrationState,
   Obj,
   PluginConfiguration,
   Ref,
@@ -118,7 +119,8 @@ export default plugin(coreId, {
     Configuration: '' as Ref<Class<Configuration>>,
 
     Status: '' as Ref<Class<Status>>,
-    StatusCategory: '' as Ref<Class<StatusCategory>>
+    StatusCategory: '' as Ref<Class<StatusCategory>>,
+    MigrationState: '' as Ref<Class<MigrationState>>
   },
   mixin: {
     FullTextSearchContext: '' as Ref<Mixin<FullTextSearchContext>>,
