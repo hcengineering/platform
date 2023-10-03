@@ -28,6 +28,7 @@
     "Overdue": "Просрочено",
     "DueDate": "Срок",
     "AddDueDate": "Установить дату",
+    "SetDueDate": "Установить дату",
     "EditDueDate": "Изменить дату",
     "SaveDueDate": "Сохранить дату",
     "NeedsToBeCompletedByThisDate": "Должно быть завершено к этой дате",
