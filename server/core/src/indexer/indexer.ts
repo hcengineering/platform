@@ -534,7 +534,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
   async checkIndexConsistency (dbStorage: ServerStorage): Promise<void> {
     if (process.env.MODEL_VERSION !== undefined) {
-      const modelVersion = (await this.model.findAll(core.class.Version, {})).shift()
+      const modelVersion = (await this.model.findAll(core.class.Version, {}))[0]
       if (modelVersion !== undefined) {
         const modelVersionString = versionToString(modelVersion)
         if (modelVersionString !== process.env.MODEL_VERSION) {

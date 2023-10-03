@@ -13,11 +13,27 @@
 // limitations under the License.
 //
 
-import core, { DOMAIN_STATUS, DOMAIN_TX, Status, TxCUD, TxOperations, TxProcessor } from '@hcengineering/core'
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient, createOrUpdate } from '@hcengineering/model'
+import core, {
+  DOMAIN_STATUS,
+  DOMAIN_TX,
+  Status,
+  TxCUD,
+  TxCollectionCUD,
+  TxCreateDoc,
+  TxOperations,
+  TxProcessor,
+  TxUpdateDoc
+} from '@hcengineering/core'
+import {
+  MigrateOperation,
+  MigrationClient,
+  MigrationUpgradeClient,
+  createOrUpdate,
+  tryMigrate
+} from '@hcengineering/model'
 import { DOMAIN_TASK } from '@hcengineering/model-task'
 import tags from '@hcengineering/tags'
-import { Project, TimeReportDayType, createStatuses } from '@hcengineering/tracker'
+import { Issue, Project, TimeReportDayType, TimeSpendReport, createStatuses } from '@hcengineering/tracker'
 import { DOMAIN_TRACKER } from '.'
 import tracker from './plugin'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
@@ -83,6 +99,44 @@ async function fixIconsWithEmojis (tx: TxOperations): Promise<void> {
   await Promise.all(promises)
 }
 
+async function fixSpentTime (client: MigrationClient): Promise<void> {
+  const issues = await client.find<Issue>(DOMAIN_TASK, { reportedTime: { $gt: 0 } })
+  for (const issue of issues) {
+    const childInfo = issue.childInfo
+    for (const child of childInfo) {
+      child.reportedTime = child.reportedTime * 8
+    }
+    await client.update(DOMAIN_TASK, { _id: issue._id }, { reportedTime: issue.reportedTime * 8, childInfo })
+  }
+  const reports = await client.find<TimeSpendReport>(DOMAIN_TRACKER, {})
+  for (const report of reports) {
+    await client.update(DOMAIN_TRACKER, { _id: report._id }, { value: report.value * 8 })
+  }
+  const createTxes = await client.find<TxCollectionCUD<Issue, TimeSpendReport>>(DOMAIN_TX, {
+    'tx.objectClass': tracker.class.TimeSpendReport,
+    'tx._class': core.class.TxCreateDoc,
+    'tx.attributes.value': { $exists: true }
+  })
+  for (const tx of createTxes) {
+    await client.update(
+      DOMAIN_TX,
+      { _id: tx._id },
+      { 'tx.attributes.value': (tx.tx as TxCreateDoc<TimeSpendReport>).attributes.value * 8 }
+    )
+  }
+  const updateTxes = await client.find<TxCollectionCUD<Issue, TimeSpendReport>>(DOMAIN_TX, {
+    'tx.objectClass': tracker.class.TimeSpendReport,
+    'tx._class': core.class.TxUpdateDoc,
+    'tx.operations.value': { $exists: true }
+  })
+  for (const tx of updateTxes) {
+    const val = (tx.tx as TxUpdateDoc<TimeSpendReport>).operations.value
+    if (val !== undefined) {
+      await client.update(DOMAIN_TX, { _id: tx._id }, { 'tx.operations.value': val * 8 })
+    }
+  }
+}
+
 async function moveIssues (client: MigrationClient): Promise<void> {
   const docs = await client.find(DOMAIN_TRACKER, { _class: tracker.class.Issue })
   if (docs.length > 0) {
@@ -114,8 +168,20 @@ async function fixProjectDefaultStatuses (client: MigrationClient): Promise<void
 
 export const trackerOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
-    await moveIssues(client)
-    await fixProjectDefaultStatuses(client)
+    await tryMigrate(client, 'tracker', [
+      {
+        state: 'moveIssues',
+        func: moveIssues
+      },
+      {
+        state: 'fixProjectDefaultStatuses',
+        func: fixProjectDefaultStatuses
+      },
+      {
+        state: 'reportTimeDayToHour',
+        func: fixSpentTime
+      }
+    ])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)

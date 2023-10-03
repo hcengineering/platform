@@ -109,22 +109,22 @@
       maxDigitsAfterPoint={3}
       kind={'editbox'}
     />
-    <Button kind={'link-bordered'} on:click={() => (data.value = 0.125)}
+    <Button kind={'link-bordered'} on:click={() => (data.value = 1)}
       ><span slot="content">1<Label label={tracker.string.HourLabel} /></span></Button
     >
-    <Button kind={'link-bordered'} on:click={() => (data.value = 0.25)}
+    <Button kind={'link-bordered'} on:click={() => (data.value = 2)}
       ><span slot="content">2<Label label={tracker.string.HourLabel} /></span></Button
     >
-    <Button kind={'link-bordered'} on:click={() => (data.value = 0.5)}
+    <Button kind={'link-bordered'} on:click={() => (data.value = 4)}
       ><span slot="content">4<Label label={tracker.string.HourLabel} /></span></Button
     >
-    <Button kind={'link-bordered'} on:click={() => (data.value = 0.75)}
+    <Button kind={'link-bordered'} on:click={() => (data.value = 6)}
       ><span slot="content">6<Label label={tracker.string.HourLabel} /></span></Button
     >
-    <Button kind={'link-bordered'} on:click={() => (data.value = 0.875)}
+    <Button kind={'link-bordered'} on:click={() => (data.value = 7)}
       ><span slot="content">7<Label label={tracker.string.HourLabel} /></span></Button
     >
-    <Button kind={'link-bordered'} on:click={() => (data.value = 1)}
+    <Button kind={'link-bordered'} on:click={() => (data.value = 8)}
       ><span slot="content">8<Label label={tracker.string.HourLabel} /></span></Button
     >
   </div>

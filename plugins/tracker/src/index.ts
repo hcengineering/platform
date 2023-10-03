@@ -281,7 +281,7 @@ export interface TimeSpendReport extends AttachedDoc {
   employee: Ref<Employee> | null
 
   date: Timestamp | null
-  // Value in man days
+  // Value in man hours
   value: number
 
   description: string
