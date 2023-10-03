@@ -42,7 +42,8 @@ export default mergeIds(trackerId, tracker, {
     ConfigDescription: '' as IntlString,
     Unarchive: '' as IntlString,
     UnarchiveConfirm: '' as IntlString,
-    AllProjects: '' as IntlString
+    AllProjects: '' as IntlString,
+    RemainingTime: '' as IntlString
   },
   activity: {
     TxIssueCreated: '' as AnyComponent,
