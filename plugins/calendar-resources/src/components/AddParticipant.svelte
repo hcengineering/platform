@@ -143,6 +143,7 @@
       res.add(person._id)
     }
     if (res.size > 0) {
+      closePopup('participants')
       showPopup(
         ParticipantsPopup,
         { participants: Array.from(res) },
