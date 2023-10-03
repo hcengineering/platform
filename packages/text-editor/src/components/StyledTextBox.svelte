@@ -40,7 +40,6 @@
   export let previewLimit: number = 240
   export let previewUnlimit: boolean = false
   export let focusable: boolean = false
-  export let enableFormatting = false
   export let autofocus = false
   export let enableBackReferences: boolean = false
   export let enableEmojiReplace: boolean = true
@@ -209,7 +208,6 @@
       {formatButtonSize}
       {maxHeight}
       {focusable}
-      {enableFormatting}
       {autofocus}
       {isScrollable}
       {extensions}
