@@ -55,7 +55,7 @@
 
   let textEditor: TextEditor
 
-  let isEmpty = content !== ''
+  let isEmpty = true
 
   $: setContent(content)
   $: devSize = $deviceInfo.size
