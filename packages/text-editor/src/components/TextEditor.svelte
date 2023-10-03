@@ -36,7 +36,6 @@
   export let extensions: AnyExtension[] = []
   export let textFormatCategories: TextFormatCategory[] = []
   export let supportSubmit = true
-  export let isEmpty = true
   export let editorAttributes: { [name: string]: string } = {}
 
   let element: HTMLElement
@@ -64,23 +63,15 @@
     if (content !== newContent) {
       content = newContent
       editor.commands.setContent(content)
-      isEmpty = editor.isEmpty
     }
   }
   export function clear (): void {
     content = ''
-    editor.commands.clearContent(false)
 
-    // editor.commands.clearContent false as argument prevent from onUpdate
-    // so if we want to stay in sync with editor.isEmpty we need to do this manually
-    isEmpty = true
+    editor.commands.clearContent(true)
   }
   export function insertText (text: string): void {
     editor.commands.insertContent(text as HTMLContent)
-  }
-
-  export function isEmptyContent (): boolean {
-    return isEmpty
   }
 
   let needFocus = false
@@ -169,13 +160,9 @@
         },
         onUpdate: () => {
           content = editor.getHTML()
-          isEmpty = editor.isEmpty
           showContextMenu = false
           dispatch('value', content)
           dispatch('update', content)
-        },
-        onCreate: () => {
-          isEmpty = editor.isEmpty
         },
         onSelectionUpdate: () => {
           showContextMenu = false

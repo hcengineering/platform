@@ -114,10 +114,6 @@
     needFocus = false
   }
 
-  export function isEmptyContent (): boolean {
-    return textEditor.isEmptyContent()
-  }
-
   // Focusable control with index
   export let focusIndex = -1
   const { idx, focusManager } = registerFocus(focusIndex, {
