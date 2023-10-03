@@ -236,6 +236,13 @@ export class TIssue extends TTask implements Issue {
   @ReadOnly()
     reportedTime!: number
 
+  // A fully virtual property with calculated content.
+  // TODO: Add proper support for this kind of fields
+  @Prop(TypeNumber(), tracker.string.RemainingTime)
+  @ReadOnly()
+  @Hidden()
+    remainingTime!: number
+
   @Prop(Collection(tracker.class.TimeSpendReport), tracker.string.TimeSpendReports)
     reports!: number
 
@@ -298,7 +305,7 @@ export class TIssueTemplate extends TDoc implements IssueTemplate {
 @Model(tracker.class.TimeSpendReport, core.class.AttachedDoc, DOMAIN_TRACKER)
 @UX(tracker.string.TimeSpendReport, tracker.icon.TimeReport)
 export class TTimeSpendReport extends TAttachedDoc implements TimeSpendReport {
-  @Prop(TypeRef(tracker.class.Issue), tracker.string.Parent)
+  @Prop(TypeRef(tracker.class.Issue), tracker.string.Issue)
   declare attachedTo: Ref<Issue>
 
   @Prop(TypeRef(contact.mixin.Employee), contact.string.Employee)
