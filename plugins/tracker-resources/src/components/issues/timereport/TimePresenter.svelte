@@ -37,7 +37,7 @@
   {:else if value > 0 && value < 8}
     <Label label={tracker.string.TimeSpendHours} params={{ value: floorFractionDigits(value, 1) }} />
   {:else}
-    <Label label={tracker.string.TimeSpendValue} params={{ value: floorFractionDigits(value / 8, 4) }} />
+    <Label label={tracker.string.TimeSpendValue} params={{ value: floorFractionDigits(value / 8, 3) }} />
   {/if}
 </span>
 

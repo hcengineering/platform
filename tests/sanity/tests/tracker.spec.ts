@@ -132,10 +132,10 @@ function floorFractionDigits (n: number | string, amount: number): number {
 }
 
 function toTime (value: number): string {
-  if (value > 0 && value < 1) {
-    return `${floorFractionDigits(value * 8, 1)}h`
+  if (value > 0 && value < 8) {
+    return `${floorFractionDigits(value, 1)}h`
   } else {
-    return `${floorFractionDigits(value, 1)}d`
+    return `${floorFractionDigits(value / 8, 3)}d`
   }
 }
 
