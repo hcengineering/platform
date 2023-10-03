@@ -246,7 +246,7 @@
           dispatch('content', editor.getHTML())
 
           // ignore non-local changes
-          if (!isChangeOrigin(transaction)) return
+          if (isChangeOrigin(transaction)) return
 
           dispatch('update')
         },
