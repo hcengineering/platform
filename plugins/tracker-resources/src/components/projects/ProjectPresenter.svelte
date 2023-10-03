@@ -16,6 +16,7 @@
   import { Project } from '@hcengineering/tracker'
   import { Icon, IconWithEmoji, getPlatformColorDef, getPlatformColorForTextDef, themeStore } from '@hcengineering/ui'
   import tracker from '../../plugin'
+  import view from '@hcengineering/view'
 
   export let value: Project | undefined
   export let inline: boolean = false
@@ -24,10 +25,10 @@
 
 {#if value}
   <div class="flex-presenter cursor-default" class:inline-presenter={inline}>
-    <div class="icon" class:emoji={value.icon === tracker.component.IconWithEmoji}>
+    <div class="icon" class:emoji={value.icon === view.ids.IconWithEmoji}>
       <Icon
-        icon={value.icon === tracker.component.IconWithEmoji ? IconWithEmoji : value.icon ?? tracker.icon.Home}
-        iconProps={value.icon === tracker.component.IconWithEmoji
+        icon={value.icon === view.ids.IconWithEmoji ? IconWithEmoji : value.icon ?? tracker.icon.Home}
+        iconProps={value.icon === view.ids.IconWithEmoji
           ? { icon: value.color }
           : {
               fill:

@@ -21,6 +21,7 @@ import { Project, TimeReportDayType, createStatuses } from '@hcengineering/track
 import { DOMAIN_TRACKER } from '.'
 import tracker from './plugin'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
+import view from '@hcengineering/view'
 
 async function createDefaultProject (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(tracker.class.Project, {
@@ -73,12 +74,11 @@ async function createDefaults (tx: TxOperations): Promise<void> {
   )
 }
 
-async function fixProjectIcons (tx: TxOperations): Promise<void> {
-  // @ts-expect-error
-  const projectsWithWrongIcon = await tx.findAll(tracker.class.Project, { icon: 'tracker:component:IconWithEmojii' })
+async function fixIconsWithEmojis (tx: TxOperations): Promise<void> {
+  const projectsWithWrongIcon = await tx.findAll(tracker.class.Project, { icon: tracker.component.IconWithEmoji })
   const promises = []
   for (const project of projectsWithWrongIcon) {
-    promises.push(tx.update(project, { icon: tracker.component.IconWithEmoji }))
+    promises.push(tx.update(project, { icon: view.ids.IconWithEmoji }))
   }
   await Promise.all(promises)
 }
@@ -120,6 +120,6 @@ export const trackerOperation: MigrateOperation = {
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createDefaults(tx)
-    await fixProjectIcons(tx)
+    await fixIconsWithEmojis(tx)
   }
 }

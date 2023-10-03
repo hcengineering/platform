@@ -305,7 +305,6 @@
           kind={'regular'}
           size={'large'}
           component={ProjectPresenter}
-          iconWithEmoji={tracker.component.IconWithEmoji}
           defaultIcon={tracker.icon.Home}
         />
         <Button

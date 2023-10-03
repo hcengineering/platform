@@ -567,7 +567,6 @@
       kind={'regular'}
       size={'small'}
       component={ProjectPresenter}
-      iconWithEmoji={tracker.component.IconWithEmoji}
       defaultIcon={tracker.icon.Home}
     />
     <ObjectBox
