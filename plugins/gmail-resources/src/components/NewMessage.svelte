@@ -245,12 +245,6 @@
     border-radius: 0.25rem;
     caret-color: var(--theme-caret-color);
 
-    :global(.ProseMirror) {
-      min-height: 0;
-      max-height: 100%;
-      height: auto;
-    }
-
     :global(a) {
       font: inherit;
       font-weight: 500;
