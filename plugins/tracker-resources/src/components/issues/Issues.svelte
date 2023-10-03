@@ -16,7 +16,7 @@
   import { DocumentQuery, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import { Issue, Project } from '@hcengineering/tracker'
+  import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import { resolvedLocationStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
@@ -33,32 +33,6 @@
   let query: DocumentQuery<Issue> | undefined = undefined
   let modeSelectorProps: IModeSelector | undefined = undefined
 
-  $: spaceQuery = currentSpace ? { space: currentSpace } : { space: { $nin: archived } }
-
-  $: all = { ...baseQuery, ...spaceQuery }
-
-  const activeStatusQuery = createQuery()
-  let active: DocumentQuery<Issue>
-  $: activeStatusQuery.query(
-    tracker.class.IssueStatus,
-    {
-      category: { $in: [tracker.issueStatusCategory.Unstarted, tracker.issueStatusCategory.Started] }
-    },
-    (result) => {
-      active = { status: { $in: result.map(({ _id }) => _id) }, ...spaceQuery }
-    }
-  )
-
-  const backlogStatusQuery = createQuery()
-  let backlog: DocumentQuery<Issue> = {}
-  $: backlogStatusQuery.query(
-    tracker.class.IssueStatus,
-    { category: tracker.issueStatusCategory.Backlog },
-    (result) => {
-      backlog = { status: { $in: result.map(({ _id }) => _id) }, ...spaceQuery }
-    }
-  )
-
   const archivedProjectQuery = createQuery()
   let archived: Ref<Project>[] = []
 
@@ -70,6 +44,37 @@
     },
     { projection: { _id: 1 } }
   )
+  $: spaceQuery = currentSpace ? { space: currentSpace } : { space: { $nin: archived } }
+
+  $: all = { ...baseQuery, ...spaceQuery }
+
+  const activeStatusQuery = createQuery()
+
+  let activeStatuses: Ref<IssueStatus>[] = []
+
+  $: activeStatusQuery.query(
+    tracker.class.IssueStatus,
+    { category: { $in: [tracker.issueStatusCategory.Unstarted, tracker.issueStatusCategory.Started] } },
+    (result) => {
+      activeStatuses = result.map(({ _id }) => _id)
+    }
+  )
+
+  let active: DocumentQuery<Issue>
+  $: active = { status: { $in: activeStatuses }, ...spaceQuery }
+
+  const backlogStatusQuery = createQuery()
+
+  let backlogStatuses: Ref<IssueStatus>[] = []
+  let backlog: DocumentQuery<Issue> = {}
+  $: backlogStatusQuery.query(
+    tracker.class.IssueStatus,
+    { category: tracker.issueStatusCategory.Backlog },
+    (result) => {
+      backlogStatuses = result.map(({ _id }) => _id)
+    }
+  )
+  $: backlog = { status: { $in: backlogStatuses }, ...spaceQuery }
 
   $: queries = { all, active, backlog }
   $: mode = $resolvedLocationStore.query?.mode ?? undefined
