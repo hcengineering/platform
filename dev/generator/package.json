@@ -47,7 +47,7 @@
     "@hcengineering/client": "^0.6.13",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/model": "^0.6.6",
-    "@hcengineering/recruit": "^0.6.18",
+    "@hcengineering/recruit": "^0.6.19",
     "faker": "~5.5.3",
     "@hcengineering/model-recruit": "^0.6.0",
     "@hcengineering/chunter": "^0.6.10",

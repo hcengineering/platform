@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/bitrix",
-  "version": "0.6.41",
+  "version": "0.6.42",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -37,7 +37,7 @@
     "fast-equals": "^2.0.3",
     "qs": "~6.11.0",
     "@hcengineering/gmail": "^0.6.13",
-    "@hcengineering/recruit": "^0.6.18",
+    "@hcengineering/recruit": "^0.6.19",
     "@hcengineering/task": "^0.6.11"
   },
   "repository": "https://github.com/hcengineering/anticrm",

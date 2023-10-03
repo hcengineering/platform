@@ -34,7 +34,7 @@
 
   async function update (calendar: Calendar, value: boolean) {
     await client.update(calendar, {
-      sync: value
+      archived: !value
     })
   }
 
@@ -63,7 +63,7 @@
       {#each calendars as calendar}
         <div>{calendar.name}</div>
         <div>
-          <Toggle bind:on={calendar.sync} on:change={(res) => update(calendar, res.detail)} />
+          <Toggle on={calendar.archived === false} on:change={(res) => update(calendar, res.detail)} />
         </div>
       {/each}
     </Grid>

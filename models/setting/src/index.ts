@@ -74,6 +74,7 @@ export class TIntegrationType extends TDoc implements IntegrationType {
   label!: IntlString
   description!: IntlString
   icon!: AnyComponent
+  allowMultiple!: boolean
   createComponent!: AnyComponent
   reconnectComponent?: AnyComponent
   onDisconnect!: Handler

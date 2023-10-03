@@ -82,6 +82,7 @@
     "Visibility": "Видимость",
     "Private": "Видно только Вам",
     "Public": "Видно всем",
-    "FreeBusy": "Скрыть детали"
+    "FreeBusy": "Скрыть детали",
+    "DefaultVisibility": "Видимость по умолчанию"
   }
 }

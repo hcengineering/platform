@@ -34,7 +34,7 @@
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/core": "^0.6.27",
     "svelte": "3.55.1",
-    "@hcengineering/recruit": "^0.6.18",
+    "@hcengineering/recruit": "^0.6.19",
     "@hcengineering/ui": "^0.6.10",
     "@hcengineering/presentation": "^0.6.2",
     "@hcengineering/text-editor": "^0.6.0",
@@ -42,7 +42,7 @@
     "@hcengineering/contact": "^0.6.19",
     "@hcengineering/login": "^0.6.7",
     "@hcengineering/workbench": "^0.6.8",
-    "@hcengineering/panel": "^0.6.12",
+    "@hcengineering/panel": "^0.6.13",
     "@hcengineering/activity": "^0.6.0",
     "@hcengineering/attachment": "^0.6.8",
     "@hcengineering/attachment-resources": "^0.6.0",
@@ -55,7 +55,7 @@
     "@hcengineering/rekoni": "^0.6.0",
     "@hcengineering/notification": "^0.6.14",
     "@hcengineering/tags": "^0.6.11",
-    "@hcengineering/calendar": "^0.6.14",
+    "@hcengineering/calendar": "^0.6.15",
     "@hcengineering/tracker": "^0.6.11"
   }
 }

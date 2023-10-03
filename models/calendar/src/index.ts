@@ -18,6 +18,7 @@ import {
   Calendar,
   CalendarEventPresenter,
   Event,
+  ExternalCalendar,
   ReccuringEvent,
   ReccuringInstance,
   RecurringRule,
@@ -62,8 +63,14 @@ export const DOMAIN_CALENDAR = 'calendar' as Domain
 @UX(calendar.string.Calendar, calendar.icon.Calendar)
 export class TCalendar extends TSpaceWithStates implements Calendar {
   visibility!: Visibility
+}
 
-  sync?: boolean
+@Model(calendar.class.ExternalCalendar, calendar.class.Calendar)
+@UX(calendar.string.Calendar, calendar.icon.Calendar)
+export class TExternalCalendar extends TCalendar implements ExternalCalendar {
+  default!: boolean
+  externalId!: string
+  externalUser!: string
 }
 
 @Model(calendar.class.Event, core.class.AttachedDoc, DOMAIN_CALENDAR)
@@ -136,7 +143,14 @@ export class TCalendarEventPresenter extends TClass implements CalendarEventPres
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TCalendar, TReccuringEvent, TReccuringInstance, TEvent, TCalendarEventPresenter)
+  builder.createModel(
+    TCalendar,
+    TExternalCalendar,
+    TReccuringEvent,
+    TReccuringInstance,
+    TEvent,
+    TCalendarEventPresenter
+  )
 
   builder.mixin(calendar.class.Event, core.class.Class, calendar.mixin.CalendarEventPresenter, {
     presenter: calendar.component.CalendarEventPresenter
@@ -164,6 +178,7 @@ export function createModel (builder: Builder): void {
       label: calendar.string.Calendar,
       description: calendar.string.IntegrationDescr,
       icon: calendar.component.CalendarIntegrationIcon,
+      allowMultiple: true,
       createComponent: calendar.component.IntegrationConnect,
       onDisconnect: calendar.handler.DisconnectHandler,
       reconnectComponent: calendar.component.IntegrationConnect,

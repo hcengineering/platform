@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Calendar, RecurringRule, generateEventId } from '@hcengineering/calendar'
+  import { Calendar, RecurringRule, Visibility, generateEventId } from '@hcengineering/calendar'
   import { Person, PersonAccount } from '@hcengineering/contact'
   import { Class, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
-  import presentation, { getClient } from '@hcengineering/presentation'
+  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
   import { Button, EditBox, Icon, IconClose, IconMoreH, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -27,6 +27,8 @@
   import EventTimeEditor from './EventTimeEditor.svelte'
   import EventTimeExtraButton from './EventTimeExtraButton.svelte'
   import ReccurancePopup from './ReccurancePopup.svelte'
+  import VisibilityEditor from './VisibilityEditor.svelte'
+  import CalendarSelector from './CalendarSelector.svelte'
 
   export let attachedTo: Ref<Doc> = calendar.ids.NoAttached
   export let attachedToClass: Ref<Class<Doc>> = calendar.class.Event
@@ -48,6 +50,16 @@
   let reminders = [30 * 60 * 1000]
 
   let description: string = ''
+  let visibility: Visibility = 'private'
+  const me = getCurrentAccount()
+  let space: Ref<Calendar> = `${me._id}_calendar` as Ref<Calendar>
+
+  const q = createQuery()
+  q.query(calendar.class.ExternalCalendar, { default: true, members: me._id, archived: false }, (res) => {
+    if (res.length > 0) {
+      space = res[0]._id
+    }
+  })
 
   let rules: RecurringRule[] = []
 
@@ -67,7 +79,6 @@
     if (startDate != null) date = startDate
     if (date === undefined) return
     if (title === '') return
-    const space = `${getCurrentAccount()._id}_calendar` as Ref<Calendar>
     if (rules.length > 0) {
       await client.addCollection(calendar.class.ReccuringEvent, space, attachedTo, attachedToClass, 'events', {
         eventId: generateEventId(),
@@ -80,6 +91,7 @@
         reminders,
         description,
         participants,
+        visibility,
         title,
         allDay,
         access: 'owner',
@@ -92,6 +104,7 @@
         dueDate: allDay ? saveUTC(dueDate) : dueDate,
         externalParticipants,
         description,
+        visibility,
         participants,
         reminders,
         title,
@@ -168,6 +181,11 @@
     </div>
   </div>
   <div class="block rightCropPadding">
+    <CalendarSelector bind:value={space} />
+    <div class="flex-row-center flex-gap-1">
+      <Icon icon={calendar.icon.Hidden} size={'small'} />
+      <VisibilityEditor bind:value={visibility} kind={'ghost'} withoutIcon />
+    </div>
     <EventReminders bind:reminders />
   </div>
   <div class="flex-between p-5 flex-no-shrink">

@@ -46,7 +46,7 @@
     "@hcengineering/notification-resources": "^0.6.0",
     "@hcengineering/attachment": "^0.6.8",
     "@hcengineering/attachment-resources": "^0.6.0",
-    "@hcengineering/panel": "^0.6.12",
+    "@hcengineering/panel": "^0.6.13",
     "@hcengineering/templates": "^0.6.6"
   }
 }

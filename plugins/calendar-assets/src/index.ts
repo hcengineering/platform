@@ -28,7 +28,8 @@ loadMetadata(calendar.icon, {
   Repeat: `${icons}#repeat`,
   Globe: `${icons}#globe`,
   Private: `${icons}#private`,
-  Public: `${icons}#public`
+  Public: `${icons}#public`,
+  Hidden: `${icons}#eyeCrossed`
 })
 
 addStringsLoader(calendarId, async (lang: string) => await import(`../lang/${lang}.json`))

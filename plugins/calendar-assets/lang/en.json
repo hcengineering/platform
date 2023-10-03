@@ -82,6 +82,7 @@
     "Visibility": "Visibility",
     "Private": "Only visible to you",
     "Public": "Visible to everyone",
-    "FreeBusy": "FreeBusy"
+    "FreeBusy": "FreeBusy",
+    "DefaultVisibility": "Default visibility"
   }
 }
