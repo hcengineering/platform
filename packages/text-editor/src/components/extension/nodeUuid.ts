@@ -73,6 +73,7 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
 
   addProseMirrorPlugins () {
     const options = this.options
+    const storage = this.storage
     const plugins = [
       ...(this.parent?.() ?? []),
       new Plugin({
@@ -83,9 +84,13 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
 
             const attrs = getMarkAttributes(view.state, schema.marks[NAME])
             const nodeUuid = attrs?.[NAME]
-
             if (nodeUuid !== null || nodeUuid !== undefined) {
               options.onNodeClicked?.(nodeUuid)
+            }
+
+            if (storage.activeNodeUuid !== nodeUuid) {
+              storage.activeNodeUuid = nodeUuid
+              options.onNodeSelected?.(storage.activeNodeUuid)
             }
           }
         }
@@ -118,16 +123,19 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
     const { $head } = this.editor.state.selection
 
     const marks = $head.marks()
-    this.storage.activeNodeUuid = null
+    let activeNodeUuid = null
     if (marks.length > 0) {
       const nodeUuidMark = this.editor.schema.marks[NAME]
       const activeNodeUuidMark = marks.find((mark) => mark.type === nodeUuidMark)
 
       if (activeNodeUuidMark !== undefined && activeNodeUuidMark !== null) {
-        this.storage.activeNodeUuid = activeNodeUuidMark.attrs[NAME]
+        activeNodeUuid = activeNodeUuidMark.attrs[NAME]
       }
     }
 
-    this.options.onNodeSelected?.(this.storage.activeNodeUuid)
+    if (this.storage.activeNodeUuid !== activeNodeUuid) {
+      this.storage.activeNodeUuid = activeNodeUuid
+      this.options.onNodeSelected?.(this.storage.activeNodeUuid)
+    }
   }
 })

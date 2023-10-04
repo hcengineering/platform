@@ -108,9 +108,13 @@
   object-fit: contain;
 }
 
-.text-editor-highlighted-node-info {
-  background-color: var(--text-editor-highlighted-node-info-background-color);
-  border-bottom: 0.0625rem solid var(--text-editor-highlighted-node-info-border-color);
+.text-editor-highlighted-node-warning {
+  background-color: var(--text-editor-highlighted-node-warning-background-color);
+  border-bottom: 0.0625rem solid var(--text-editor-highlighted-node-warning-border-color);
+
+  &.active, &:hover {
+    background-color: var(--text-editor-highlighted-node-warning-active-background-color);
+  }
 }
 
 .text-editor-highlighted-node-delete {

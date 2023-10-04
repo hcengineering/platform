@@ -35,7 +35,7 @@
   import { calculateDecorations } from './diff/decorations'
   import { defaultEditorAttributes } from './editor/editorProps'
   import { completionConfig, defaultExtensions } from './extensions'
-  import { InlineStyleToolbar } from './extension/inlineStyleToolbar'
+  import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
   import { NodeUuidExtension } from './extension/nodeUuid'
   import StyleButton from './StyleButton.svelte'
   import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
@@ -47,7 +47,6 @@
   export let token: string
   export let collaboratorURL: string
 
-  export let isFormatting = true
   export let buttonSize: IconSize = 'small'
   export let focusable: boolean = false
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
@@ -90,7 +89,6 @@
 
   let editor: Editor
   let inlineToolbar: HTMLElement
-  let showInlineToolbar = false
 
   let placeHolderStr: string = ''
 
@@ -144,6 +142,23 @@
 
   export function takeSnapshot (snapshotId: string) {
     provider.copyContent(documentId, snapshotId)
+
+  }
+
+  export function unregisterPlugin (nameOrPluginKey: string | PluginKey) {
+    if (!editor) {
+      return
+    }
+
+    editor.unregisterPlugin(nameOrPluginKey)
+  }
+
+  export function registerPlugin (plugin: Plugin) {
+    if (!editor) {
+      return
+    }
+
+    editor.registerPlugin(plugin)
   }
 
   let needFocus = false
@@ -201,6 +216,7 @@
   })
 
   $: updateEditor(editor, field, comparedVersion)
+  $: if (editor) dispatch('editor', editor)
 
   onMount(() => {
     ph.then(() => {
@@ -211,10 +227,10 @@
         extensions: [
           ...defaultExtensions,
           Placeholder.configure({ placeholder: placeHolderStr }),
-          InlineStyleToolbar.configure({
+          InlineStyleToolbarExtension.configure({
             element: inlineToolbar,
-            getEditorElement: () => element,
-            isShown: () => !readonly && showInlineToolbar
+            isSupported: () => !readonly,
+            isSelectionOnly: () => false
           }),
           Collaboration.configure({
             document: ydoc,
@@ -247,22 +263,14 @@
         onFocus: () => {
           focused = true
         },
-        onUpdate: ({ editor, transaction }) => {
-          showInlineToolbar = false
-
+        onUpdate: ({ transaction }) => {
           // ignore non-document changes
           if (!transaction.docChanged) return
-
-          // TODO this is heavy and should be replaced with more lightweight event
-          dispatch('content', editor.getHTML())
 
           // ignore non-local changes
           if (isChangeOrigin(transaction)) return
 
           dispatch('update')
-        },
-        onSelectionUpdate: () => {
-          showInlineToolbar = false
         }
       })
 
@@ -283,16 +291,11 @@
     }
   })
 
-  function onEditorClick () {
-    if (!editor.isEmpty) {
-      showInlineToolbar = true
-    }
-  }
-
   let showDiff = true
 </script>
 
-<slot />
+<slot {editor} />
+
 {#if visible}
   {#if comparedVersion !== undefined || $$slots.tools}
     <div class="ref-container" class:autoOverflow>
@@ -344,7 +347,7 @@
 
   <div class="ref-container" class:autoOverflow>
     <div class="textInput" class:focusable>
-      <div class="select-text" style="width: 100%;" on:mousedown={onEditorClick} bind:this={element} />
+      <div class="select-text" style="width: 100%;" bind:this={element} />
     </div>
   </div>
 {/if}

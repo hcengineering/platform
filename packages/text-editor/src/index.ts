@@ -27,6 +27,7 @@ export { default as StyledTextArea } from './components/StyledTextArea.svelte'
 export { default as StyledTextBox } from './components/StyledTextBox.svelte'
 export { default as StyledTextEditor } from './components/StyledTextEditor.svelte'
 export { default as TextEditor } from './components/TextEditor.svelte'
+export { default as TextEditorStyleToolbar } from './components/TextEditorStyleToolbar.svelte'
 export { default } from './plugin'
 export * from './types'
 
@@ -41,5 +42,11 @@ export {
   NodeHighlightType
 } from './components/extension/nodeHighlight'
 export { NodeUuidCommands, NodeUuidExtension, NodeUuidOptions, NodeUuidStorage } from './components/extension/nodeUuid'
+export { InlinePopupExtension } from './components/extension/inlinePopup'
+export {
+  InlineStyleToolbarExtension,
+  InlineStyleToolbarOptions,
+  InlineStyleToolbarStorage
+} from './components/extension/inlineStyleToolbar'
 
 export { textEditorId }
