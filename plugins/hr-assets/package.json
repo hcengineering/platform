@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/hr-assets",
-  "version": "0.6.10",
+  "version": "0.6.11",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "template": "@hcengineering/assets-package",
@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/hr": "^0.6.10"
+    "@hcengineering/hr": "^0.6.11"
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {

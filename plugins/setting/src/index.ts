@@ -47,6 +47,7 @@ export interface Integration extends Doc {
   type: Ref<IntegrationType>
   disabled: boolean
   value: string
+  error?: IntlString | null
   shared?: Ref<Account>[]
 }
 

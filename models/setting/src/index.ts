@@ -50,6 +50,7 @@ export class TIntegration extends TDoc implements Integration {
   disabled!: boolean
   value!: string
   shared!: Ref<Account>[]
+  error?: IntlString | null
 }
 @Model(setting.class.SettingsCategory, core.class.Doc, DOMAIN_MODEL)
 export class TSettingsCategory extends TDoc implements SettingsCategory {

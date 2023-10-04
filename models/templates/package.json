@@ -36,7 +36,7 @@
     "@hcengineering/model-tracker": "^0.6.0",
     "@hcengineering/templates": "^0.6.6",
     "@hcengineering/templates-resources": "^0.6.0",
-    "@hcengineering/setting": "^0.6.9",
+    "@hcengineering/setting": "^0.6.10",
     "@hcengineering/ui": "^0.6.10",
     "@hcengineering/model-text-editor": "^0.6.0"
   }

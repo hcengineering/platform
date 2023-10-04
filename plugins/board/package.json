@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/board",
-  "version": "0.6.10",
+  "version": "0.6.11",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -30,7 +30,7 @@
     "@hcengineering/core": "^0.6.27",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/view": "^0.6.8",
-    "@hcengineering/task": "^0.6.11",
+    "@hcengineering/task": "^0.6.12",
     "@hcengineering/ui": "^0.6.10",
     "@hcengineering/preference": "^0.6.8",
     "@hcengineering/tags": "^0.6.11"

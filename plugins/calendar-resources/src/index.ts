@@ -41,6 +41,7 @@ import IntegrationConfigure from './components/IntegrationConfigure.svelte'
 import EventReminders from './components/EventReminders.svelte'
 import VisibilityEditor from './components/VisibilityEditor.svelte'
 import CalendarSelector from './components/CalendarSelector.svelte'
+import ConnectApp from './components/ConnectApp.svelte'
 import calendar from './plugin'
 import contact from '@hcengineering/contact'
 import { deleteObjects } from '@hcengineering/view-resources'
@@ -183,7 +184,8 @@ export default async (): Promise<Resources> => ({
     IntegrationConnect,
     CalendarIntegrationIcon,
     CalendarEventPresenter,
-    IntegrationConfigure
+    IntegrationConfigure,
+    ConnectApp
   },
   activity: {
     ReminderViewlet
