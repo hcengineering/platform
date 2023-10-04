@@ -103,7 +103,7 @@ async function fixSpentTime (client: MigrationClient): Promise<void> {
   const issues = await client.find<Issue>(DOMAIN_TASK, { reportedTime: { $gt: 0 } })
   for (const issue of issues) {
     const childInfo = issue.childInfo
-    for (const child of childInfo) {
+    for (const child of childInfo ?? []) {
       child.reportedTime = child.reportedTime * 8
     }
     await client.update(DOMAIN_TASK, { _id: issue._id }, { reportedTime: issue.reportedTime * 8, childInfo })
