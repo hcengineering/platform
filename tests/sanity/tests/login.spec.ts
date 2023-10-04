@@ -1,5 +1,7 @@
-import { expect, test } from '@playwright/test'
-import { PlatformURI, PlatformUser } from './utils'
+import { test } from '@playwright/test'
+import { PlatformUser } from './utils'
+import { LoginPage } from './model/login-page'
+import { SelectWorkspacePage } from './model/select-workspace-page'
 
 test.describe('login test', () => {
   test('check login', async ({ page }) => {
@@ -7,25 +9,11 @@ test.describe('login test', () => {
       console.log('Uncaught exception:')
       console.log(exception.message)
     })
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login(PlatformUser, '1234');
 
-    // Create user and workspace
-    await (
-      await page.goto(`${PlatformURI}/login/login`)
-    )?.finished
-
-    const emaillocator = page.locator('[name=email]')
-    await emaillocator.click()
-    await emaillocator.fill(PlatformUser)
-
-    const password = page.locator('[name=current-password]')
-    await password.click()
-    await password.fill('1234')
-
-    const button = page.locator('button:has-text("Log In")')
-    expect(await button.isEnabled()).toBe(true)
-
-    await button.click()
-
-    await page.click('text=sanity-ws')
+    const selectWorkspacePage = new SelectWorkspacePage(page);
+    await selectWorkspacePage.selectWorkspace('sanity-ws');
   })
 })
