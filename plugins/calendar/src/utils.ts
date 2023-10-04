@@ -322,7 +322,7 @@ export function getAllEvents (events: Event[], from: Timestamp, to: Timestamp): 
     ...base,
     ...recurData,
     ...instances.filter((p) => {
-      return from <= p.dueDate && p.date <= to
+      return from <= p.dueDate && p.date <= to && p.isCancelled !== true
     })
   ]
   res.sort((a, b) => a.date - b.date)
