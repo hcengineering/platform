@@ -137,6 +137,40 @@ async function fixSpentTime (client: MigrationClient): Promise<void> {
   }
 }
 
+async function fixEstimation (client: MigrationClient): Promise<void> {
+  const issues = await client.find<Issue>(DOMAIN_TASK, { estimation: { $gt: 0 } })
+  for (const issue of issues) {
+    const childInfo = issue.childInfo
+    for (const child of childInfo ?? []) {
+      child.estimation = child.estimation * 8
+    }
+    await client.update(DOMAIN_TASK, { _id: issue._id }, { reportedTime: issue.estimation * 8, childInfo })
+  }
+  const createTxes = await client.find<TxCollectionCUD<Issue, Issue>>(DOMAIN_TX, {
+    'tx.objectClass': tracker.class.Issue,
+    'tx._class': core.class.TxCreateDoc,
+    'tx.attributes.estimation': { $gt: 0 }
+  })
+  for (const tx of createTxes) {
+    await client.update(
+      DOMAIN_TX,
+      { _id: tx._id },
+      { 'tx.attributes.estimation': (tx.tx as TxCreateDoc<Issue>).attributes.estimation * 8 }
+    )
+  }
+  const updateTxes = await client.find<TxCollectionCUD<Issue, Issue>>(DOMAIN_TX, {
+    'tx.objectClass': tracker.class.Issue,
+    'tx._class': core.class.TxUpdateDoc,
+    'tx.operations.estimation': { $exists: true }
+  })
+  for (const tx of updateTxes) {
+    const val = (tx.tx as TxUpdateDoc<Issue>).operations.estimation
+    if (val !== undefined) {
+      await client.update(DOMAIN_TX, { _id: tx._id }, { 'tx.operations.value': val * 8 })
+    }
+  }
+}
+
 async function moveIssues (client: MigrationClient): Promise<void> {
   const docs = await client.find(DOMAIN_TRACKER, { _class: tracker.class.Issue })
   if (docs.length > 0) {
@@ -180,6 +214,10 @@ export const trackerOperation: MigrateOperation = {
       {
         state: 'reportTimeDayToHour',
         func: fixSpentTime
+      },
+      {
+        state: 'estimationDayToHour',
+        func: fixEstimation
       }
     ])
   },
