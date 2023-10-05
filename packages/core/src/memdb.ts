@@ -77,6 +77,11 @@ export abstract class MemDb extends TxProcessor implements Storage {
     return doc as T
   }
 
+  findObject<T extends Doc>(_id: Ref<T>): T | undefined {
+    const doc = this.objectById.get(_id)
+    return doc as T
+  }
+
   private async getLookupValue<T extends Doc>(
     _class: Ref<Class<T>>,
     doc: T,

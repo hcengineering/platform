@@ -52,7 +52,13 @@ import { MinioService } from '@hcengineering/minio'
 import { MigrateOperation } from '@hcengineering/model'
 import { openAIConfigDefaults } from '@hcengineering/openai'
 import { benchmark } from './benchmark'
-import { cleanArchivedSpaces, cleanRemovedTransactions, cleanWorkspace, fixCommentDoubleIdCreate } from './clean'
+import {
+  cleanArchivedSpaces,
+  cleanRemovedTransactions,
+  cleanWorkspace,
+  fixCommentDoubleIdCreate,
+  optimizeModel
+} from './clean'
 import { changeConfiguration } from './configuration'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { openAIConfig } from './openai'
@@ -497,6 +503,14 @@ export function devTool (
     .action(async (workspace: string, cmd: { enable: string, disable: string, list: boolean }) => {
       console.log(JSON.stringify(cmd))
       await changeConfiguration(getWorkspaceId(workspace, productId), transactorUrl, cmd)
+    })
+
+  program
+    .command('optimize-model <workspace>')
+    .description('optimize model')
+    .action(async (workspace: string, cmd: { enable: string, disable: string, list: boolean }) => {
+      console.log(JSON.stringify(cmd))
+      await optimizeModel(getWorkspaceId(workspace, productId), transactorUrl)
     })
 
   program
