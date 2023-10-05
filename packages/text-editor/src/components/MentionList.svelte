@@ -51,7 +51,7 @@
     }
   }
 
-  let searchPopup: ObjectSearchPopup
+  let searchPopup: MentionPopup
 
   export function onKeyDown (ev: KeyboardEvent): boolean {
     return searchPopup?.onKeyDown(ev)

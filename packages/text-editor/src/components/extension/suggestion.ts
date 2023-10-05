@@ -24,10 +24,13 @@ export function findSuggestionMatch(config: Trigger): SuggestionMatch {
   } = config
 
   const escapedChar = escapeForRegEx(char)
+
   const suffix = new RegExp(`\\s${escapedChar}$`)
   const prefix = startOfLine ? '^' : ''
+
+  // If allowSpaces: true terminates on at least 2 whitespaces
   const regexp = allowSpaces
-    ? new RegExp(`${prefix}${escapedChar}.*?(?=\\s${escapedChar}|$)`, 'gm')
+    ? new RegExp(`${prefix}${escapedChar}.*?(?=\\s{2}|$)`, 'gm')
     : new RegExp(`${prefix}(?:^)?${escapedChar}[^\\s${escapedChar}]*`, 'gm')
 
   const text = $position.nodeBefore?.isText && $position.nodeBefore.text
