@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, RelatedDocument } from '@hcengineering/core'
+  import { Ref, RelatedDocument, DocumentQuery } from '@hcengineering/core'
 
   import { getResource, IntlString } from '@hcengineering/platform'
   import ui, {
@@ -49,10 +49,17 @@
   const client = getClient()
 
   let category: ObjectSearchCategory | undefined
+  let categoryQuery: DocumentQuery<ObjectSearchCategory> = {
+    context: 'search'
+  }
+  if (allowCategory !== undefined) {
+    categoryQuery._id = { $in: allowCategory }
+  }
+
   client
     .findAll(
       presentation.class.ObjectSearchCategory,
-      allowCategory !== undefined ? { _id: { $in: allowCategory } } : {}
+      categoryQuery
     )
     .then((r) => {
       categories = r.filter((it) => hasResource(it.query))

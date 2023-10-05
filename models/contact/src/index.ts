@@ -713,8 +713,9 @@ export function createModel (builder: Builder): void {
     {
       icon: contact.icon.Person,
       label: contact.string.SearchEmployee,
-      title: contact.string.Employee,
-      query: contact.completion.EmployeeQuery
+      title: contact.string.Employees,
+      query: contact.completion.EmployeeQuery,
+      context: ['search']
     },
     contact.completion.EmployeeCategory
   )
@@ -725,8 +726,9 @@ export function createModel (builder: Builder): void {
     {
       icon: contact.icon.Persona,
       label: contact.string.SearchPerson,
-      title: contact.string.Persons,
-      query: contact.completion.PersonQuery
+      title: contact.string.People,
+      query: contact.completion.PersonQuery,
+      context: ['search', 'mention']
     },
     contact.completion.PersonCategory
   )
@@ -738,7 +740,8 @@ export function createModel (builder: Builder): void {
       icon: contact.icon.Company,
       label: contact.string.SearchOrganization,
       title: contact.string.Organizations,
-      query: contact.completion.OrganizationQuery
+      query: contact.completion.OrganizationQuery,
+      context: ['search', 'mention']
     },
     contact.completion.OrganizationCategory
   )

@@ -97,6 +97,8 @@
     "ConfigLabel": "Контакты",
     "ConfigDescription": "Расширение по работе с сотрудниками и другими контактами.",
     "HasMessagesIn": "имеет сообщения в",
-    "HasNewMessagesIn": "имеет новые сообщения в"
+    "HasNewMessagesIn": "имеет новые сообщения в",
+    "Employees": "Сотрудники",
+    "People": "Люди"
   }
 }

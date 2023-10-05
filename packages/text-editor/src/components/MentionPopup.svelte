@@ -16,7 +16,7 @@
 <script lang="ts">
   import { Ref, RelatedDocument } from '@hcengineering/core'
 
-  import { getResource, IntlString } from '@hcengineering/platform'
+  import { getResource } from '@hcengineering/platform'
   import ui, {
     createFocusManager,
     FocusHandler,
@@ -28,10 +28,6 @@
   import presentation, { getClient, hasResource, ObjectSearchCategory, ObjectSearchResult } from '@hcengineering/presentation'
 
   export let query: string = ''
-  export let relatedDocuments: RelatedDocument[] | undefined = undefined
-  export let ignore: RelatedDocument[] | undefined = undefined
-  export let allowCategory: Ref<ObjectSearchCategory>[] | undefined = undefined
-  export let hideButtons = false
 
   type SearchSection = { category: ObjectSearchCategory, items: ObjectSearchResult[] }
   type SearchItem = { num: number, item: ObjectSearchResult, category: ObjectSearchCategory }
@@ -44,11 +40,11 @@
   client
     .findAll(
       presentation.class.ObjectSearchCategory,
-      allowCategory !== undefined ? { _id: { $in: allowCategory } } : {}
+      { context: 'mention' }
     )
     .then((r) => {
       categories = r.filter((it) => hasResource(it.query))
-      updateItems(query, relatedDocuments)
+      updateItems(query)
     })
 
   const dispatch = createEventDispatcher()
@@ -68,20 +64,12 @@
       return true
     }
     if (key.key === 'ArrowUp') {
+      // TODO: scroll to real top
+
       key.stopPropagation()
       key.preventDefault()
       list?.select(selection - 1)
     }
-    // if (key.key === 'Tab') {
-    //   key.stopPropagation()
-    //   key.preventDefault()
-    //   const visibleCategory = categories.filter((it) => (categoryStatus[it._id] ?? 0) > 0)
-    //   const pos = category !== undefined ? visibleCategory.findIndex((it) => it._id === category?._id) : -1
-    //   if (pos >= 0) {
-    //     category = visibleCategory[(pos + 1) % visibleCategory.length]
-    //     return true
-    //   }
-    // }
     if (key.key === 'Enter') {
       key.preventDefault()
       key.stopPropagation()
@@ -97,8 +85,6 @@
   }
 
   export function done () {}
-
-  
 
   function packSearchResultsForListView(sections: SearchSection[]): SearchItem[] {
     let results: SearchItem[] = []
@@ -118,31 +104,28 @@
     return results
   }
 
-  async function queryCategoryItems(category: ObjectSearchCategory, query: string, relatedDocuments?: RelatedDocument[]): Promise<SearchSection> {
+  async function queryCategoryItems(category: ObjectSearchCategory, query: string): Promise<SearchSection> {
     const f = await getResource(category.query)
     return {
       category,
-      items: await f(client, query, { in: relatedDocuments, nin: ignore })
+      items: await f(client, query)
     }
   }
 
   async function updateItems (
-    query: string,
-    relatedDocuments?: RelatedDocument[]
+    query: string
   ): Promise<void> {
     const queries = []
     for (const cat of categories) {
-      queries.push(queryCategoryItems(cat, query, relatedDocuments))
+      queries.push(queryCategoryItems(cat, query))
     }
     const results = await Promise.all(queries)
     items = packSearchResultsForListView(results)
 
   }
-  $: updateItems(query, relatedDocuments)
+  $: updateItems(query)
 
   const manager = createFocusManager()
-
-  // const isStatusDisabled = (status: number) => status === 0
 </script>
 
 <FocusHandler {manager} />

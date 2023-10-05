@@ -26,6 +26,7 @@ import {
   DocRules,
   DocCreateExtension,
   DocCreateFunction,
+  ObjectSearchContext,
   ObjectSearchCategory,
   ObjectSearchFactory
 } from '@hcengineering/presentation/src/types'
@@ -41,6 +42,7 @@ export class TObjectSearchCategory extends TDoc implements ObjectSearchCategory 
   label!: IntlString
   icon!: Asset
   title!: IntlString
+  context!: ObjectSearchContext[]
 
   // Query for documents with pattern
   query!: Resource<ObjectSearchFactory>

@@ -97,6 +97,8 @@
     "ConfigLabel": "Contacts",
     "ConfigDescription": "Extension to hold information about all Employees and other Person/Organization contacts.",
     "HasMessagesIn": "has messages in",
-    "HasNewMessagesIn": "has new messages in"
+    "HasNewMessagesIn": "has new messages in",
+    "Employees": "Employees",
+    "People": "People"
   }
 }

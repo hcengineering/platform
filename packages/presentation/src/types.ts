@@ -50,11 +50,19 @@ export type ObjectSearchFactory = (
 
 /**
  * @public
+ *  search - show in search popup
+ *  mention - show in mentions
+ */
+export type ObjectSearchContext = 'search' | 'mention'
+
+/**
+ * @public
  */
 export interface ObjectSearchCategory extends Doc {
   label: IntlString
   icon: Asset
   title: IntlString
+  context: ObjectSearchContext[]
 
   // Query for documents with pattern
   query: Resource<ObjectSearchFactory>
