@@ -517,6 +517,7 @@ export function createModel (builder: Builder): void {
       field: 'disabled',
       txClasses: [core.class.TxUpdateDoc],
       objectClass: setting.class.Integration,
+      allowedForAuthor: true,
       templates: {
         textTemplate: 'Integration with {doc} was disabled',
         htmlTemplate: '<p>Integration with {doc} was disabled</p>',
