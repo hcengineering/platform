@@ -1,8 +1,8 @@
 import { Node, mergeAttributes } from '@tiptap/core'
-import Suggestion, { SuggestionOptions } from '@tiptap/suggestion'
-
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { getDataAttribute } from './utils'
+
+import Suggestion, { SuggestionOptions } from './components/extension/suggestion'
 
 export interface CompletionOptions {
   HTMLAttributes: Record<string, any>
