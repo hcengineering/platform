@@ -101,6 +101,10 @@
     "FilterArrayAny": "содержит любое из",
     "Or": "Или",
     "HyperlinkPlaceholder": "https://jappleseed.com",
-    "CopyToClipboard": "Скопировать в буфер обмена"
+    "CopyToClipboard": "Скопировать в буфер обмена",
+    "Messages": "Сообщения",
+    "Mail": "Почта",
+    "Notes": "Заметки",
+    "Activity": "Задача"
   }
 }

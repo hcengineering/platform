@@ -94,7 +94,12 @@ export default mergeIds(viewId, view, {
     And: '' as IntlString,
     Between: '' as IntlString,
     ShowColors: '' as IntlString,
-    Show: '' as IntlString
+    Show: '' as IntlString,
+
+    Mail: '' as IntlString,
+    Messages: '' as IntlString,
+    Notes: '' as IntlString,
+    Activity: '' as IntlString
   },
   function: {
     CreateDocMiddleware: '' as Resource<PresentationMiddlewareCreator>

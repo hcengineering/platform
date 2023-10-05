@@ -31,14 +31,11 @@
     "SelectItem": "Select focused item",
     "SelectItemAll": "Select all items",
     "SelectItemNone": "Deselect all items",
-
     "Assigned": "Assigned",
     "Created": "Created",
     "Subscribed": "Subscribed",
-    
     "ShowPreview": "Show document preview",
     "ShowActions": "Show actions popup",
-
     "ActionPlaceholder": "type to filter...",
     "General": "General",
     "Navigation": "Navigation",
@@ -71,7 +68,6 @@
     "Grouping": "Grouping",
     "Ordering": "Ordering",
     "Manual": "Manual",
-
     "FilteredViews": "Filtered views",
     "NewFilteredView": "New filtered view",
     "FilteredViewName": "Filtered view name",
@@ -105,6 +101,10 @@
     "FilterArrayAny": "includes any",
     "Or": "Or",
     "HyperlinkPlaceholder": "https://jappleseed.com",
-    "CopyToClipboard": "Copy to clipboard"
+    "CopyToClipboard": "Copy to clipboard",
+    "Messages": "Messages",
+    "Mail": "Mail",
+    "Notes": "Notes",
+    "Activity": "Activity"
   }
 }

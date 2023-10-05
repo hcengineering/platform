@@ -1,6 +1,5 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2022 Hardcore Engineering Inc.
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -18,24 +17,34 @@
   import core, { Class, ClassifierKind, Doc, Mixin, Obj, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
+  import { Channel } from '@hcengineering/contact'
   import { Asset, getResource, translate } from '@hcengineering/platform'
   import {
     AttributeCategory,
     AttributeCategoryOrder,
-    AttributesBar,
     KeyedAttribute,
     ActionContext,
     createQuery,
     getAttributePresenterClass,
-    getClient,
-    hasResource
+    getClient
   } from '@hcengineering/presentation'
-  import { AnyComponent, Button, Component, IconMixin, IconMoreH, showPopup, themeStore } from '@hcengineering/ui'
+  import {
+    AnyComponent,
+    AnySvelteComponent,
+    Button,
+    Component,
+    IconMixin,
+    IconMoreH,
+    showPopup,
+    themeStore,
+    TabList,
+    TabItem
+  } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
+  import plugin from '../plugin'
   import { ContextMenu, ParentsNavigator } from '..'
   import { categorizeFields, getCollectionCounter, getFiltredKeys } from '../utils'
-  import DocAttributeBar from './DocAttributeBar.svelte'
   import UpDownNavigator from './UpDownNavigator.svelte'
 
   export let _id: Ref<Doc>
@@ -45,6 +54,9 @@
   let realObjectClass: Ref<Class<Doc>> = _class
   let lastId: Ref<Doc> = _id
   let object: Doc
+  let channels: Channel[] = []
+
+  export let mode: string = 'mail'
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -64,6 +76,8 @@
   })
 
   const query = createQuery()
+  const channelQuery = createQuery()
+
   $: updateQuery(_id, _class)
 
   function updateQuery (_id: Ref<Doc>, _class: Ref<Class<Doc>>) {
@@ -86,7 +100,6 @@
     mainEditor = undefined
   }
 
-  let keys: KeyedAttribute[] = []
   let fieldEditors: { key: KeyedAttribute; editor: AnyComponent; category: AttributeCategory }[] = []
 
   let mixins: Mixin<Doc>[] = []
@@ -112,12 +125,11 @@
 
   $: getMixins(object, showAllMixins)
 
-  let ignoreKeys: string[] = []
-  let activityOptions = { enabled: true, showInput: true }
-  let allowedCollections: string[] = []
-  let collectionArrays: string[] = []
-  let inplaceAttributes: string[] = []
-  let ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
+  const ignoreKeys: string[] = []
+  const activityOptions = { enabled: false, showInput: false }
+  const allowedCollections: string[] = []
+  const collectionArrays: string[] = []
+  const ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
 
   async function updateKeys (): Promise<void> {
     const keysMap = new Map(getFiltredKeys(hierarchy, realObjectClass, ignoreKeys).map((p) => [p.attr._id, p]))
@@ -128,22 +140,15 @@
       }
     }
     const filtredKeys = Array.from(keysMap.values())
-    const { attributes, collections } = categorizeFields(hierarchy, filtredKeys, collectionArrays, allowedCollections)
-
-    keys = attributes.map((it) => it.key)
+    const { collections } = categorizeFields(hierarchy, filtredKeys, collectionArrays, allowedCollections)
 
     const editors: { key: KeyedAttribute; editor: AnyComponent; category: AttributeCategory }[] = []
-    const newInplaceAttributes: string[] = []
     for (const k of collections) {
       if (allowedCollections.includes(k.key.key)) continue
       const editor = await getFieldEditor(k.key)
       if (editor === undefined) continue
-      if (k.category === 'inplace') {
-        newInplaceAttributes.push(k.key.key)
-      }
       editors.push({ key: k.key, editor, category: k.category })
     }
-    inplaceAttributes = newInplaceAttributes
     fieldEditors = editors.sort((a, b) => AttributeCategoryOrder[a.category] - AttributeCategoryOrder[b.category])
   }
 
@@ -159,23 +164,7 @@
     return { editor: editorMixin.editor, pinned: editorMixin?.pinned }
   }
 
-  function getEditorFooter (
-    _class: Ref<Class<Doc>>,
-    object?: Doc
-  ): { footer: AnyComponent; props?: Record<string, any> } | undefined {
-    if (object !== undefined) {
-      const footer = hierarchy.findClassOrMixinMixin(object, view.mixin.ObjectEditorFooter)
-      if (footer !== undefined) {
-        return { footer: footer.editor, props: footer.props }
-      }
-    }
-
-    return undefined
-  }
-
   let mainEditor: MixinEditor | undefined
-
-  $: editorFooter = getEditorFooter(_class, object)
 
   $: getEditorOrDefault(realObjectClass, _id)
 
@@ -218,7 +207,7 @@
 
   $: icon = getIcon(realObjectClass)
 
-  let title: string = ''
+  const title: string = ''
   let rawTitle: string = ''
 
   $: if (object !== undefined) {
@@ -239,23 +228,6 @@
     return await translate(label, {}, $themeStore.language)
   }
 
-  async function getHeaderEditor (_class: Ref<Class<Doc>>): Promise<AnyComponent | undefined> {
-    const editorMixin = hierarchy.classHierarchyMixin(_class, view.mixin.ObjectEditorHeader, (m) =>
-      hasResource(m.editor)
-    )
-    return editorMixin?.editor
-  }
-
-  let headerEditor: AnyComponent | undefined = undefined
-  let headerLoading = false
-  $: {
-    headerLoading = true
-    getHeaderEditor(realObjectClass).then((r) => {
-      headerEditor = r
-      headerLoading = false
-    })
-  }
-
   const _update = (result: any): void => {
     dispatch('update', result)
   }
@@ -267,18 +239,46 @@
       showPopup(ContextMenu, { object, excludedActions: [view.action.Open] }, (ev as MouseEvent).target as HTMLElement)
     }
   }
-  function handleOpen (ev: CustomEvent): void {
-    ignoreKeys = ev.detail.ignoreKeys
-    activityOptions = ev.detail.activityOptions ?? activityOptions
-    ignoreMixins = new Set(ev.detail.ignoreMixins)
-    allowedCollections = ev.detail.allowedCollections ?? []
-    collectionArrays = ev.detail.collectionArrays ?? []
-    title = ev.detail.title
-    getMixins(object, showAllMixins)
-    updateKeys()
-  }
 
   $: finalTitle = title ?? rawTitle
+
+  const handleViewModeChanged = async (newMode: string) => {
+    if (newMode === undefined || (newMode === mode && currentResource !== undefined)) return
+    mode = newMode
+    currentResource = await getResource(presenterList[newMode].presenter)
+  }
+
+  const modeList: TabItem[] = [
+    { id: 'mail', labelIntl: plugin.string.Mail, action: () => handleViewModeChanged('mail') },
+    // { id: 'messages', labelIntl: plugin.string.Messages, action: () => handleViewModeChanged('messages') },
+    // { id: 'notes', labelIntl: plugin.string.Notes, action: () => handleViewModeChanged('notes') },
+    { id: 'activity', labelIntl: plugin.string.Activity, action: () => handleViewModeChanged('activity') }
+  ]
+
+  let currentResource: AnySvelteComponent | undefined
+  let presenterListProps: any = undefined
+
+  $: {
+    handleViewModeChanged(mode)
+    presenterListProps = presenterList[mode]?.props
+  }
+
+  $: if (lastId) {
+    channelQuery.query(contact.class.Channel, { attachedTo: lastId }, (res) => {
+      if (res && res.length > 0) {
+        channels = res
+      }
+    })
+  }
+
+  let presenterList: any = {
+    mail: { presenter: 'gmail:component:Main', props: { channel: {} } },
+    activity: { presenter: 'activity:component:Activity', props: { object: {} } }
+  }
+  $: presenterList = {
+    mail: { presenter: 'gmail:component:Main', props: { channel: channels[0] || {} } },
+    activity: { presenter: 'activity:component:Activity', props: { object: object || {} } }
+  }
 </script>
 
 {#if !embedded}
@@ -326,63 +326,39 @@
       />
     </svelte:fragment>
 
-    <svelte:fragment slot="attributes" let:direction={dir}>
-      {#if !headerLoading}
-        {#if headerEditor !== undefined}
-          <Component
-            is={headerEditor}
-            props={{ object, keys, mixins, ignoreKeys, vertical: dir === 'column', allowedCollections, embedded }}
-            on:update={updateKeys}
-          />
-        {:else if dir === 'column'}
-          <DocAttributeBar
-            {object}
-            {mixins}
-            ignoreKeys={[...ignoreKeys, ...collectionArrays, ...inplaceAttributes]}
-            {allowedCollections}
-            on:update={updateKeys}
-          />
-        {:else}
-          <AttributesBar {object} _class={realObjectClass} {keys} />
+    <TabList selected={mode} items={modeList} on:select={({ detail }) => handleViewModeChanged(detail.id)} />
+
+    <div class="my-component">
+      {#if currentResource && presenterList && (channels.length > 0 || object !== undefined)}
+        <svelte:component this={currentResource} {...presenterListProps} />
+      {/if}
+
+      {#each fieldEditors as collection}
+        {#if collection.editor}
+          <div class="step-tb-6">
+            <Component
+              is={collection.editor}
+              props={{
+                objectId: object._id,
+                _class: collection.key.attr.attributeOf,
+                object,
+                space: object.space,
+                key: collection.key,
+                [collection.key.key]: getCollectionCounter(hierarchy, object, collection.key)
+              }}
+            />
+          </div>
         {/if}
-      {/if}
-    </svelte:fragment>
-
-    <svelte:fragment slot="header">
-      {#if mainEditor && mainEditor.pinned}
-        <div class="flex-col flex-grow my-4">
-          <Component is={mainEditor.editor} props={{ object }} on:open={handleOpen} />
-        </div>
-      {/if}
-    </svelte:fragment>
-
-    {#if mainEditor && !mainEditor.pinned}
-      <div class="flex-col flex-grow flex-no-shrink step-tb-6">
-        <Component is={mainEditor.editor} props={{ object }} on:open={handleOpen} />
-      </div>
-    {/if}
-
-    {#each fieldEditors as collection}
-      {#if collection.editor}
-        <div class="step-tb-6">
-          <Component
-            is={collection.editor}
-            props={{
-              objectId: object._id,
-              _class: collection.key.attr.attributeOf,
-              object,
-              space: object.space,
-              key: collection.key,
-              [collection.key.key]: getCollectionCounter(hierarchy, object, collection.key)
-            }}
-          />
-        </div>
-      {/if}
-    {/each}
-    {#if editorFooter}
-      <div class="step-tb-6">
-        <Component is={editorFooter.footer} props={{ object, _class, ...editorFooter.props }} />
-      </div>
-    {/if}
+      {/each}
+    </div>
   </Panel>
 {/if}
+
+<style lang="scss">
+  .my-component {
+    margin: 1.25rem 0 1.25rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+</style>
