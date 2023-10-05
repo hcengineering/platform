@@ -53,6 +53,8 @@ export function isVisible (value: Event, calendars: IdMap<Calendar>): boolean {
   if (value.createdBy === me) return true
   if (value.visibility === 'freeBusy') {
     return false
+  } else if (value.visibility === 'public') {
+    return true
   }
   const space = calendars.get(value.space)
   if (space == null) {
