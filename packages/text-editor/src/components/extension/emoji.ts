@@ -19,7 +19,6 @@ const emojiReplaceDict = {
   ":'-)": '😂',
   ':)': '😊',
   ':-)': '😄',
-  ':]': '😄',
   ':^)': '😄',
   ':o)': '😄',
   ':}': '😄',
@@ -28,19 +27,12 @@ const emojiReplaceDict = {
   ';)': '😉',
   ';-)': '😉',
   ';-]': '😉',
-  ';]': '😉',
   ';^)': '😉',
   ':-|': '😐',
-  ':|': '😐',
-  ':(': '😞',
   ':-(': '😒',
   ':-<': '😒',
   ':-[': '😒',
   ':-c': '😒',
-  ':<': '😒',
-  ':[': '😒',
-  ':{': '😒',
-  '%)': '😖',
   '%-)': '😖',
   ':-P': '😜',
   ':-p': '😜',
@@ -48,7 +40,6 @@ const emojiReplaceDict = {
   ':-||': '😠',
   ':-.': '😡',
   ':-/': '😡',
-  ':/': '😐',
   ":'(": '😢',
   ":'-(": '😢',
   ':-O': '😲',
@@ -58,16 +49,20 @@ const emojiReplaceDict = {
 }
 
 function escapeRegExp (text: string): string {
-  return text.replace(/[[\]{}()*+?.\\^$|#]/g, '\\$&')
+  return text.replace(/[:[\]{}()*+?.\\^$|#]/g, '\\$&')
 }
 
 export const EmojiExtension = Extension.create({
   addInputRules () {
     return Object.keys(emojiReplaceDict).map((pattern) => {
       return {
-        find: new RegExp(escapeRegExp(pattern)),
+        find: new RegExp(`(?:^|\\s)(${escapeRegExp(pattern)})`),
         handler: ({ range, match, commands }) => {
-          commands.insertContentAt(range, [
+          let replaceRange = range
+          if (match[0] !== match[1]) {
+            replaceRange = { from: range.from + 1, to: range.to }
+          }
+          commands.insertContentAt(replaceRange, [
             {
               type: 'text',
               text: emojiReplaceDict[pattern as keyof typeof emojiReplaceDict]
