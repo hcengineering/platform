@@ -290,7 +290,9 @@ async function loadModel (
     return -1
   }
 
-  atxes = ltxes.concat(atxes)
+  if (atxes.length < modelTransactionThreshold) {
+    atxes = ltxes.concat(atxes)
+  }
 
   await persistence?.store(atxes)
 
