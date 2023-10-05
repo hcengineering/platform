@@ -19,7 +19,7 @@
   export let symbol: 'check' | 'minus' = 'check'
   export let size: 'small' | 'medium' | 'large' = 'small'
   export let circle: boolean = false
-  export let accented: boolean = false
+  export let kind: 'default' | 'accented' | 'positive' = 'default'
   export let readonly = false
 
   const dispatch = createEventDispatcher()
@@ -35,14 +35,34 @@
   }
 </script>
 
-<label class="checkbox {size}" class:circle class:accented class:readonly class:checked>
+<label
+  class="checkbox {size}"
+  class:circle
+  class:accented={kind === 'accented'}
+  class:positive={kind === 'positive'}
+  class:readonly
+  class:checked
+>
   <input class="chBox" disabled={readonly} type="checkbox" bind:checked on:change={handleValueChanged} />
   <svg class="checkSVG" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
     {#if checked}
       {#if symbol === 'minus'}
-        <rect class="check" class:accented x="4" y="7.4" width="8" height="1.2" />
+        <rect
+          class="check"
+          class:accented={kind === 'accented'}
+          class:positive={kind === 'positive'}
+          x="4"
+          y="7.4"
+          width="8"
+          height="1.2"
+        />
       {:else}
-        <polygon class="check" class:accented points="7.3,11.5 4,8.3 5,7.4 7.3,9.7 11.8,5.1 12.7,6.1 " />
+        <polygon
+          class="check"
+          class:accented={kind === 'accented'}
+          class:positive={kind === 'positive'}
+          points="7.3,11.5 4,8.3 5,7.4 7.3,9.7 11.8,5.1 12.7,6.1 "
+        />
       {/if}
     {/if}
   </svg>
@@ -82,6 +102,10 @@
       background-color: var(--accented-button-default);
       border-color: transparent;
     }
+    &.positive.checked {
+      background-color: var(--positive-button-default);
+      border-color: transparent;
+    }
     &.readonly.checked {
       background-color: var(--theme-checkbox-disabled);
     }
@@ -101,6 +125,9 @@
           visibility: visible;
           fill: var(--theme-checkbox-color);
           &.accented {
+            fill: var(--accented-button-color);
+          }
+          &.positive {
             fill: var(--accented-button-color);
           }
         }

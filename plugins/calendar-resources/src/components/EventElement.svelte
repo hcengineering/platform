@@ -98,13 +98,6 @@
     border-left: 0.25rem solid #2b5190;
     border-radius: 0.25rem;
     cursor: pointer;
-
-    &:not(.oneRow, .empty) {
-      padding: 0.25rem 0.5rem 0.25rem 1rem;
-    }
-    &.oneRow:not(.empty) {
-      justify-content: center;
-      padding: 0 0.25rem 0 1rem;
-    }
+    padding: 0.25rem 0.5rem 0.25rem 1rem;
   }
 </style>
