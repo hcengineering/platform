@@ -122,7 +122,8 @@ export async function configurePlatform() {
     uiPlugin.metadata.Routes,
     new Map([
       [workbenchId, workbench.component.WorkbenchApp],
-      [loginId, login.component.LoginApp]
+      [loginId, login.component.LoginApp],
+      [calendarId, calendar.component.ConnectApp]
     ])
   )
 

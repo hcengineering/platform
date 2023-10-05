@@ -182,7 +182,7 @@ export interface Issue extends Task {
 
   milestone?: Ref<Milestone> | null
 
-  // Estimation in man days
+  // Estimation in man hours
   estimation: number
 
   // ReportedTime time, auto updated using trigger.

@@ -31,8 +31,8 @@
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/server-telegram": "^0.6.0",
     "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/telegram": "^0.6.12",
-    "@hcengineering/notification": "^0.6.14",
+    "@hcengineering/telegram": "^0.6.13",
+    "@hcengineering/notification": "^0.6.15",
     "@hcengineering/server-notification": "^0.6.1"
   }
 }

@@ -154,6 +154,9 @@ const calendarPlugin = plugin(calendarId, {
     Hidden: '' as Asset,
     Private: '' as Asset
   },
+  image: {
+    Permissions: '' as Asset
+  },
   space: {
     // deprecated
     PersonalEvents: '' as Ref<Calendar>
@@ -168,7 +171,8 @@ const calendarPlugin = plugin(calendarId, {
     PersonsPresenter: '' as AnyComponent,
     Events: '' as AnyComponent,
     DateTimePresenter: '' as AnyComponent,
-    DocReminder: '' as AnyComponent
+    DocReminder: '' as AnyComponent,
+    ConnectApp: '' as AnyComponent
   },
   string: {
     Title: '' as IntlString,
@@ -188,7 +192,8 @@ const calendarPlugin = plugin(calendarId, {
     Visibility: '' as IntlString,
     Public: '' as IntlString,
     FreeBusy: '' as IntlString,
-    Private: '' as IntlString
+    Private: '' as IntlString,
+    NotAllPermissions: '' as IntlString
   },
   handler: {
     DisconnectHandler: '' as Handler
