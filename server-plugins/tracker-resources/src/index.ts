@@ -58,10 +58,11 @@ async function updateSubIssues (
  */
 export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const issueName = await issueTextPresenter(doc, control)
+  const issue = doc as Issue
   const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const path = `${workbenchId}/${control.workspace.name}/${trackerId}/${issueName}`
   const link = concatLink(front, path)
-  return `<a href="${link}">${issueName}</a>`
+  return `<a href="${link}">${issueName}</a> ${issue.title}`
 }
 
 /**
@@ -72,7 +73,7 @@ export async function issueTextPresenter (doc: Doc, control: TriggerControl): Pr
   const project = (await control.findAll(tracker.class.Project, { _id: issue.space }))[0]
   const issueName = `${project?.identifier ?? '?'}-${issue.number}`
 
-  return issueName
+  return `${issueName} ${issue.title}`
 }
 
 function isSamePerson (control: TriggerControl, assignee: Ref<Person>, target: Ref<Account>): boolean {
