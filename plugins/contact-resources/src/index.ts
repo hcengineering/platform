@@ -319,8 +319,11 @@ export default async (): Promise<Resources> => ({
       query: string,
       options?: { in?: RelatedDocument[], nin?: RelatedDocument[], limit?: number }
     ) => await queryEmployee(client, query, options),
-    PersonQuery: async (client: Client, query: string, options?: { in?: RelatedDocument[], nin?: RelatedDocument[], limit?: number }) =>
-      await queryContact(contact.class.Person, client, query, options),
+    PersonQuery: async (
+      client: Client,
+      query: string,
+      options?: { in?: RelatedDocument[], nin?: RelatedDocument[], limit?: number }
+    ) => await queryContact(contact.class.Person, client, query, options),
     OrganizationQuery: async (
       client: Client,
       query: string,

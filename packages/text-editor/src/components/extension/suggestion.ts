@@ -31,26 +31,31 @@ export function findSuggestionMatch (config: Trigger): SuggestionMatch {
     ? new RegExp(`${prefix}${escapedChar}.*?(?=\\s{2}|$)`, 'gm')
     : new RegExp(`${prefix}(?:^)?${escapedChar}[^\\s${escapedChar}]*`, 'gm')
 
-  const text = $position.nodeBefore?.isText && $position.nodeBefore.text
+  let text
+  if ($position.nodeBefore?.isText !== undefined && $position.nodeBefore?.isText) {
+    text = $position.nodeBefore.text
+  }
 
-  if (!text) {
+  if (text === undefined || text === '') {
     return null
   }
 
   const textFrom = $position.pos - text.length
   const match = Array.from(text.matchAll(regexp)).pop()
 
-  if ((match == null) || match.input === undefined || match.index === undefined) {
+  if (match == null || match.input === undefined || match.index === undefined) {
     return null
   }
 
   // JavaScript doesn't have lookbehinds. This hacks a check that first character
   // is a space or the start of the line
   const matchPrefix = match.input.slice(Math.max(0, match.index - 1), match.index)
-  const matchPrefixIsAllowed = new RegExp(`^[${allowedPrefixes?.join('')}\0]?$`).test(matchPrefix)
 
-  if (allowedPrefixes !== null && !matchPrefixIsAllowed) {
-    return null
+  if (allowedPrefixes !== null) {
+    const matchPrefixIsAllowed = new RegExp(`^[${allowedPrefixes.join('')}\0]?$`).test(matchPrefix)
+    if (!matchPrefixIsAllowed) {
+      return null
+    }
   }
 
   // The absolute position of the match in the document
@@ -133,7 +138,7 @@ export default function Suggestion<I = any> ({
   items = () => [],
   render = () => ({}),
   allow = () => true
-}: SuggestionOptions<I>) {
+}: SuggestionOptions<I>): Plugin<any> {
   let props: SuggestionProps<I> | undefined
   const renderer = render?.()
 
@@ -142,11 +147,13 @@ export default function Suggestion<I = any> ({
 
     view () {
       return {
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         update: async (view, prevState) => {
           const prev = this.key?.getState(prevState)
           const next = this.key?.getState(view.state)
 
           // See how the state changed
+          /* eslint-disable @typescript-eslint/strict-boolean-expressions */
           const moved = prev.active && next.active && prev.range.from !== next.range.from
           const started = !prev.active && next.active
           const stopped = prev.active && !next.active
@@ -161,7 +168,20 @@ export default function Suggestion<I = any> ({
           }
 
           const state = handleExit && !handleStart ? prev : next
+          /* eslint-disable @typescript-eslint/restrict-template-expressions */
           const decorationNode = view.dom.querySelector(`[data-decoration-id="${state.decorationId}"]`)
+          let clientRect = null
+          if (decorationNode !== null) {
+            clientRect = () => {
+              // because of `items` can be asynchrounous we’ll search for the current decoration node
+              const { decorationId } = this.key?.getState(editor.state) // eslint-disable-line
+              const currentDecorationNode = view.dom.querySelector(`[data-decoration-id="${decorationId}"]`)
+              if (currentDecorationNode !== null) {
+                return currentDecorationNode?.getBoundingClientRect()
+              }
+              return null
+            }
+          }
 
           props = {
             editor,
@@ -179,15 +199,7 @@ export default function Suggestion<I = any> ({
             decorationNode,
             // virtual node for popper.js or tippy.js
             // this can be used for building popups without a DOM node
-            clientRect: (decorationNode != null)
-              ? () => {
-                  // because of `items` can be asynchrounous we’ll search for the current decoration node
-                  const { decorationId } = this.key?.getState(editor.state) // eslint-disable-line
-                  const currentDecorationNode = view.dom.querySelector(`[data-decoration-id="${decorationId}"]`)
-
-                  return ((currentDecorationNode?.getBoundingClientRect()) != null) || null
-                }
-              : null
+            clientRect
           }
 
           if (handleStart) {
@@ -282,7 +294,7 @@ export default function Suggestion<I = any> ({
           const decorationId = `id_${Math.floor(Math.random() * 0xffffffff)}`
 
           // If we found a match, update the current state to show it
-          if ((match != null) && allow({ editor, state, range: match.range })) {
+          if (match != null && allow({ editor, state, range: match.range })) {
             next.active = true
             next.decorationId = prev.decorationId ? prev.decorationId : decorationId
             next.range = match.range
@@ -316,7 +328,7 @@ export default function Suggestion<I = any> ({
           return false
         }
 
-        return renderer?.onKeyDown?.({ view, event, range }) || false
+        return renderer?.onKeyDown?.({ view, event, range }) ?? false
       },
 
       // Setup decorator on the currently active suggestion.

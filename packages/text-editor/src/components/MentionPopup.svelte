@@ -14,10 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, RelatedDocument } from '@hcengineering/core'
-
   import { getResource } from '@hcengineering/platform'
-  import ui, { createFocusManager, FocusHandler, Label, ListView, resizeObserver } from '@hcengineering/ui'
+  import { createFocusManager, FocusHandler, Label, ListView, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation, {
     getClient,
@@ -25,7 +23,6 @@
     ObjectSearchCategory,
     ObjectSearchResult
   } from '@hcengineering/presentation'
-  import Label from '@hcengineering/ui/src/components/Label.svelte'
 
   export let query: string = ''
   export let maxItemsPerCategory = 3
@@ -49,11 +46,11 @@
   let scrollContainer: HTMLElement
   let selection = 0
 
-  function dispatchItem(item: ObjectSearchResult): void {
+  function dispatchItem (item: ObjectSearchResult): void {
     dispatch('close', item)
   }
 
-  export function onKeyDown(key: KeyboardEvent): boolean {
+  export function onKeyDown (key: KeyboardEvent): boolean {
     if (key.key === 'ArrowDown') {
       key.stopPropagation()
       key.preventDefault()
@@ -82,13 +79,13 @@
     return false
   }
 
-  export function done() {}
+  export function done () {}
 
-  function packSearchResultsForListView(sections: SearchSection[]): SearchItem[] {
+  function packSearchResultsForListView (sections: SearchSection[]): SearchItem[] {
     let results: SearchItem[] = []
     for (const section of sections) {
       const category = section.category
-      let items = section.items
+      const items = section.items
 
       results = results.concat(
         items.map((item, num) => {
@@ -99,7 +96,7 @@
     return results
   }
 
-  async function queryCategoryItems(category: ObjectSearchCategory, query: string): Promise<SearchSection> {
+  async function queryCategoryItems (category: ObjectSearchCategory, query: string): Promise<SearchSection> {
     const f = await getResource(category.query)
     return {
       category,
@@ -107,7 +104,7 @@
     }
   }
 
-  async function updateItems(query: string): Promise<void> {
+  async function updateItems (query: string): Promise<void> {
     const queries = []
     for (const cat of categories) {
       queries.push(queryCategoryItems(cat, query))
@@ -125,7 +122,7 @@
 <form class="antiPopup mentionPoup" on:keydown={onKeyDown} use:resizeObserver={() => dispatch('changeSize')}>
   <div class="ap-scroll" bind:this={scrollContainer}>
     <div class="ap-box">
-      {#if items.length === 0}
+      {#if items.length === 0 && query !== ''}
         <div class="noResults"><Label label={presentation.string.NoResults} /></div>
       {/if}
       <!-- svelte-ignore a11y-click-events-have-key-events -->

@@ -128,10 +128,7 @@ export async function queryApplication (
   const limit = options?.limit ?? DEFAULT_LIMIT
 
   const named = new Map(
-    (await client.findAll(_class, q, { limit, lookup: { attachedTo: recruit.mixin.Candidate } })).map((e) => [
-      e._id,
-      e
-    ])
+    (await client.findAll(_class, q, { limit, lookup: { attachedTo: recruit.mixin.Candidate } })).map((e) => [e._id, e])
   )
   const nids: number[] = []
   if (sequence > 0) {
@@ -372,8 +369,11 @@ export default async (): Promise<Resources> => ({
       query: string,
       options?: { in?: RelatedDocument[], nin?: RelatedDocument[], limit?: number }
     ) => await queryApplication(client, query, options),
-    VacancyQuery: async (client: Client, query: string, options?: { in?: RelatedDocument[], nin?: RelatedDocument[], limit?: number }) =>
-      await queryVacancy(client, query, options)
+    VacancyQuery: async (
+      client: Client,
+      query: string,
+      options?: { in?: RelatedDocument[], nin?: RelatedDocument[], limit?: number }
+    ) => await queryVacancy(client, query, options)
   },
   function: {
     AppTitleProvider: getAppTitle,

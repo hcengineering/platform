@@ -496,8 +496,11 @@ export default async (): Promise<Resources> => ({
     EstimationValueEditor
   },
   completion: {
-    IssueQuery: async (client: Client, query: string, options?: { in?: RelatedDocument[], nin?: RelatedDocument[], limit?: number }) =>
-      await queryIssue(tracker.class.Issue, client, query, options)
+    IssueQuery: async (
+      client: Client,
+      query: string,
+      options?: { in?: RelatedDocument[], nin?: RelatedDocument[], limit?: number }
+    ) => await queryIssue(tracker.class.Issue, client, query, options)
   },
   function: {
     IssueTitleProvider: getIssueTitle,
