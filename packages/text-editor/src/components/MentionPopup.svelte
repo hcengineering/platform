@@ -17,37 +17,31 @@
   import { Ref, RelatedDocument } from '@hcengineering/core'
 
   import { getResource } from '@hcengineering/platform'
-  import ui, {
-    createFocusManager,
-    FocusHandler,
-    Label,
-    ListView,
-    resizeObserver
-  } from '@hcengineering/ui'
+  import ui, { createFocusManager, FocusHandler, Label, ListView, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import presentation, { getClient, hasResource, ObjectSearchCategory, ObjectSearchResult } from '@hcengineering/presentation'
+  import presentation, {
+    getClient,
+    hasResource,
+    ObjectSearchCategory,
+    ObjectSearchResult
+  } from '@hcengineering/presentation'
   import Label from '@hcengineering/ui/src/components/Label.svelte'
 
   export let query: string = ''
   export let maxItemsPerCategory = 3
 
-  type SearchSection = { category: ObjectSearchCategory, items: ObjectSearchResult[] }
-  type SearchItem = { num: number, item: ObjectSearchResult, category: ObjectSearchCategory }
+  type SearchSection = { category: ObjectSearchCategory; items: ObjectSearchResult[] }
+  type SearchItem = { num: number; item: ObjectSearchResult; category: ObjectSearchCategory }
 
   let items: SearchItem[] = []
   let categories: ObjectSearchCategory[] = []
 
   const client = getClient()
 
-  client
-    .findAll(
-      presentation.class.ObjectSearchCategory,
-      { context: 'mention' }
-    )
-    .then((r) => {
-      categories = r.filter((it) => hasResource(it.query))
-      updateItems(query)
-    })
+  client.findAll(presentation.class.ObjectSearchCategory, { context: 'mention' }).then((r) => {
+    categories = r.filter((it) => hasResource(it.query))
+    updateItems(query)
+  })
 
   const dispatch = createEventDispatcher()
 
@@ -55,11 +49,11 @@
   let scrollContainer: HTMLElement
   let selection = 0
 
-  function dispatchItem (item: ObjectSearchResult): void {
+  function dispatchItem(item: ObjectSearchResult): void {
     dispatch('close', item)
   }
 
-  export function onKeyDown (key: KeyboardEvent): boolean {
+  export function onKeyDown(key: KeyboardEvent): boolean {
     if (key.key === 'ArrowDown') {
       key.stopPropagation()
       key.preventDefault()
@@ -88,7 +82,7 @@
     return false
   }
 
-  export function done () {}
+  export function done() {}
 
   function packSearchResultsForListView(sections: SearchSection[]): SearchItem[] {
     let results: SearchItem[] = []
@@ -97,7 +91,9 @@
       let items = section.items
 
       results = results.concat(
-        items.map((item, num) => { return { num, category, item } })
+        items.map((item, num) => {
+          return { num, category, item }
+        })
       )
     }
     return results
@@ -111,16 +107,13 @@
     }
   }
 
-  async function updateItems (
-    query: string
-  ): Promise<void> {
+  async function updateItems(query: string): Promise<void> {
     const queries = []
     for (const cat of categories) {
       queries.push(queryCategoryItems(cat, query))
     }
     const results = await Promise.all(queries)
     items = packSearchResultsForListView(results)
-
   }
   $: updateItems(query)
 
@@ -130,7 +123,7 @@
 <FocusHandler {manager} />
 
 <form class="antiPopup mentionPoup" on:keydown={onKeyDown} use:resizeObserver={() => dispatch('changeSize')}>
-  <div class="ap-scroll" bind:this={scrollContainer} >
+  <div class="ap-scroll" bind:this={scrollContainer}>
     <div class="ap-box">
       {#if items.length === 0}
         <div class="noResults"><Label label={presentation.string.NoResults} /></div>

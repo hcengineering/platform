@@ -46,8 +46,8 @@ export type ObjectSearchFactory = (
   client: Client,
   query: string,
   options?: {
-    in?: RelatedDocument[],
-    nin?: RelatedDocument[],
+    in?: RelatedDocument[]
+    nin?: RelatedDocument[]
     limit?: number
   }
 ) => Promise<ObjectSearchResult[]>

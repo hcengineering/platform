@@ -49,22 +49,17 @@
   const client = getClient()
 
   let category: ObjectSearchCategory | undefined
-  let categoryQuery: DocumentQuery<ObjectSearchCategory> = {
+  const categoryQuery: DocumentQuery<ObjectSearchCategory> = {
     context: 'search'
   }
   if (allowCategory !== undefined) {
     categoryQuery._id = { $in: allowCategory }
   }
 
-  client
-    .findAll(
-      presentation.class.ObjectSearchCategory,
-      categoryQuery
-    )
-    .then((r) => {
-      categories = r.filter((it) => hasResource(it.query))
-      category = categories[0]
-    })
+  client.findAll(presentation.class.ObjectSearchCategory, categoryQuery).then((r) => {
+    categories = r.filter((it) => hasResource(it.query))
+    category = categories[0]
+  })
 
   const dispatch = createEventDispatcher()
 

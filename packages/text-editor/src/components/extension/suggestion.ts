@@ -18,10 +18,8 @@ export type SuggestionMatch = {
   text: string
 } | null
 
-export function findSuggestionMatch(config: Trigger): SuggestionMatch {
-  const {
-    char, allowSpaces, allowedPrefixes, startOfLine, $position,
-  } = config
+export function findSuggestionMatch (config: Trigger): SuggestionMatch {
+  const { char, allowSpaces, allowedPrefixes, startOfLine, $position } = config
 
   const escapedChar = escapeForRegEx(char)
 
@@ -42,7 +40,7 @@ export function findSuggestionMatch(config: Trigger): SuggestionMatch {
   const textFrom = $position.pos - text.length
   const match = Array.from(text.matchAll(regexp)).pop()
 
-  if (!match || match.input === undefined || match.index === undefined) {
+  if ((match == null) || match.input === undefined || match.index === undefined) {
     return null
   }
 
@@ -71,10 +69,10 @@ export function findSuggestionMatch(config: Trigger): SuggestionMatch {
     return {
       range: {
         from,
-        to,
+        to
       },
       query: match[0].slice(char.length),
-      text: match[0],
+      text: match[0]
     }
   }
 
@@ -90,8 +88,8 @@ export interface SuggestionOptions<I = any> {
   startOfLine?: boolean
   decorationTag?: string
   decorationClass?: string
-  command?: (props: { editor: Editor; range: Range; props: I }) => void
-  items?: (props: { query: string; editor: Editor }) => I[] | Promise<I[]>
+  command?: (props: { editor: Editor, range: Range, props: I }) => void
+  items?: (props: { query: string, editor: Editor }) => I[] | Promise<I[]>
   render?: () => {
     onBeforeStart?: (props: SuggestionProps<I>) => void
     onStart?: (props: SuggestionProps<I>) => void
@@ -100,7 +98,7 @@ export interface SuggestionOptions<I = any> {
     onExit?: (props: SuggestionProps<I>) => void
     onKeyDown?: (props: SuggestionKeyDownProps) => boolean
   }
-  allow?: (props: { editor: Editor; state: EditorState; range: Range }) => boolean
+  allow?: (props: { editor: Editor, state: EditorState, range: Range }) => boolean
 }
 
 export interface SuggestionProps<I = any> {
@@ -122,7 +120,7 @@ export interface SuggestionKeyDownProps {
 
 export const SuggestionPluginKey = new PluginKey('suggestion')
 
-export default function Suggestion<I = any>({
+export default function Suggestion<I = any> ({
   pluginKey = SuggestionPluginKey,
   editor,
   char = '@',
@@ -134,7 +132,7 @@ export default function Suggestion<I = any>({
   command = () => null,
   items = () => [],
   render = () => ({}),
-  allow = () => true,
+  allow = () => true
 }: SuggestionOptions<I>) {
   let props: SuggestionProps<I> | undefined
   const renderer = render?.()
@@ -142,7 +140,7 @@ export default function Suggestion<I = any>({
   const plugin: Plugin<any> = new Plugin({
     key: pluginKey,
 
-    view() {
+    view () {
       return {
         update: async (view, prevState) => {
           const prev = this.key?.getState(prevState)
@@ -163,9 +161,7 @@ export default function Suggestion<I = any>({
           }
 
           const state = handleExit && !handleStart ? prev : next
-          const decorationNode = view.dom.querySelector(
-            `[data-decoration-id="${state.decorationId}"]`,
-          )
+          const decorationNode = view.dom.querySelector(`[data-decoration-id="${state.decorationId}"]`)
 
           props = {
             editor,
@@ -173,27 +169,25 @@ export default function Suggestion<I = any>({
             query: state.query,
             text: state.text,
             items: [],
-            command: commandProps => {
+            command: (commandProps) => {
               command({
                 editor,
                 range: state.range,
-                props: commandProps,
+                props: commandProps
               })
             },
             decorationNode,
             // virtual node for popper.js or tippy.js
             // this can be used for building popups without a DOM node
-            clientRect: decorationNode
+            clientRect: (decorationNode != null)
               ? () => {
-                // because of `items` can be asynchrounous we’ll search for the current decoration node
+                  // because of `items` can be asynchrounous we’ll search for the current decoration node
                   const { decorationId } = this.key?.getState(editor.state) // eslint-disable-line
-                const currentDecorationNode = view.dom.querySelector(
-                  `[data-decoration-id="${decorationId}"]`,
-                )
+                  const currentDecorationNode = view.dom.querySelector(`[data-decoration-id="${decorationId}"]`)
 
-                return currentDecorationNode?.getBoundingClientRect() || null
-              }
-              : null,
+                  return ((currentDecorationNode?.getBoundingClientRect()) != null) || null
+                }
+              : null
           }
 
           if (handleStart) {
@@ -207,7 +201,7 @@ export default function Suggestion<I = any>({
           if (handleChange || handleStart) {
             props.items = await items({
               editor,
-              query: state.query,
+              query: state.query
             })
           }
 
@@ -225,18 +219,18 @@ export default function Suggestion<I = any>({
         },
 
         destroy: () => {
-          if (!props) {
+          if (props == null) {
             return
           }
 
           renderer?.onExit?.(props)
-        },
+        }
       }
     },
 
     state: {
       // Initialize the plugin's internal state.
-      init() {
+      init () {
         const state: {
           active: boolean
           range: Range
@@ -248,18 +242,18 @@ export default function Suggestion<I = any>({
           active: false,
           range: {
             from: 0,
-            to: 0,
+            to: 0
           },
           query: null,
           text: null,
-          composing: false,
+          composing: false
         }
 
         return state
       },
 
       // Apply changes to the plugin state from a view transaction.
-      apply(transaction, prev, oldState, state) {
+      apply (transaction, prev, oldState, state) {
         const { isEditable } = editor
         const { composing } = editor.view
         const { selection } = transaction
@@ -283,12 +277,12 @@ export default function Suggestion<I = any>({
             allowSpaces,
             allowedPrefixes,
             startOfLine,
-            $position: selection.$from,
+            $position: selection.$from
           })
           const decorationId = `id_${Math.floor(Math.random() * 0xffffffff)}`
 
           // If we found a match, update the current state to show it
-          if (match && allow({ editor, state, range: match.range })) {
+          if ((match != null) && allow({ editor, state, range: match.range })) {
             next.active = true
             next.decorationId = prev.decorationId ? prev.decorationId : decorationId
             next.range = match.range
@@ -310,12 +304,12 @@ export default function Suggestion<I = any>({
         }
 
         return next
-      },
+      }
     },
 
     props: {
       // Call the keydown hook if suggestion is active.
-      handleKeyDown(view, event) {
+      handleKeyDown (view, event) {
         const { active, range } = plugin.getState(view.state)
 
         if (!active) {
@@ -326,7 +320,7 @@ export default function Suggestion<I = any>({
       },
 
       // Setup decorator on the currently active suggestion.
-      decorations(state) {
+      decorations (state) {
         const { active, range, decorationId } = plugin.getState(state)
 
         if (!active) {
@@ -337,11 +331,11 @@ export default function Suggestion<I = any>({
           Decoration.inline(range.from, range.to, {
             nodeName: decorationTag,
             class: decorationClass,
-            'data-decoration-id': decorationId,
-          }),
+            'data-decoration-id': decorationId
+          })
         ])
-      },
-    },
+      }
+    }
   })
 
   return plugin
