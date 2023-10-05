@@ -20,11 +20,11 @@ export class ChunterPage {
   }
 
   async createNewChannel (channelName: string, privateChannel: boolean): Promise<void> {
-    await this.inputNewChannelName.fill(channelName);
+    await this.inputNewChannelName.fill(channelName)
     if (privateChannel) {
-      await this.checkboxMakePrivate.click();
+      await this.checkboxMakePrivate.click()
     }
-    await this.buttonCreateChannel.click();
+    await this.buttonCreateChannel.click()
   }
 
   async openChannel (channelName: string): Promise<void> {
