@@ -209,7 +209,7 @@
       "ignoreMissingScript": true,
       "watchForChanges": true,
       "safeForSimultaneousRushProcesses": true,
-      "disableBuildCache": true
+      "disableBuildCache": false
     },
     {
       "commandKind": "bulk",
@@ -228,6 +228,7 @@
       "summary": "test",
       "description": "Perform testing",
       "enableParallelism": true,
+      "allowWarningsInSuccessfulBuild": true,
       "incremental": true,
       "ignoreDependencyOrder": false,
       "ignoreMissingScript": true

@@ -64,11 +64,11 @@
 
   $: queries = { assigned, created, subscribed }
   $: mode = $resolvedLocationStore.query?.mode ?? undefined
-  $: if (mode === undefined || queries[mode] === undefined) {
+  $: if (mode === undefined || (queries as any)[mode] === undefined) {
     ;[[mode]] = config
   }
   $: if (mode !== undefined) {
-    query = { ...queries[mode] }
+    query = { ...(queries as any)[mode] }
     if (query?.space === undefined) {
       query = { ...query, space: { $nin: archived } }
     }

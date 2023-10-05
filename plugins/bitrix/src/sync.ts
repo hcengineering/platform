@@ -407,52 +407,55 @@ async function updateMixins (
  * @public
  */
 export function processComment (comment: string): string {
-  comment = comment.replaceAll('\n', '\n</br>')
-  comment = comment.replaceAll(/\[(\/?[^[\]]+)]/gi, (text: string, args: string) => {
-    if (args.startsWith('/URL')) {
-      return '</a>'
-    }
+  comment = comment.split('\n').join('\n</br>')
+  comment = comment
+    .split(/\[(\/?[^[\]]+)]/gi)
+    .map((args: string) => {
+      if (args.startsWith('/URL')) {
+        return '</a>'
+      }
 
-    if (args.startsWith('URL=')) {
-      return `<a href="${args.substring(4)}">`
-    }
-    if (args.includes('/FONT')) {
-      return '</span>'
-    }
-    if (args.includes('FONT')) {
-      return `<span style="font: ${args.substring(4)};">`
-    }
+      if (args.startsWith('URL=')) {
+        return `<a href="${args.substring(4)}">`
+      }
+      if (args.includes('/FONT')) {
+        return '</span>'
+      }
+      if (args.includes('FONT')) {
+        return `<span style="font: ${args.substring(4)};">`
+      }
 
-    if (args.includes('/SIZE')) {
-      return '</span>'
-    }
-    if (args.includes('SIZE')) {
-      return `<span style="font-size: ${args.substring(4)};">`
-    }
+      if (args.includes('/SIZE')) {
+        return '</span>'
+      }
+      if (args.includes('SIZE')) {
+        return `<span style="font-size: ${args.substring(4)};">`
+      }
 
-    if (args.includes('/COLOR')) {
-      return '</span>'
-    }
-    if (args.includes('COLOR')) {
-      return `<span style="color: ${args.substring(5)};">`
-    }
+      if (args.includes('/COLOR')) {
+        return '</span>'
+      }
+      if (args.includes('COLOR')) {
+        return `<span style="color: ${args.substring(5)};">`
+      }
 
-    if (args.includes('/IMG')) {
-      return '"/>'
-    }
-    if (args.includes('IMG')) {
-      return `<img ${args.substring(3)} src="`
-    }
+      if (args.includes('/IMG')) {
+        return '"/>'
+      }
+      if (args.includes('IMG')) {
+        return `<img ${args.substring(3)} src="`
+      }
 
-    if (args.includes('/TABLE')) {
-      return '</table>'
-    }
-    if (args.includes('TABLE')) {
-      return '<table>'
-    }
+      if (args.includes('/TABLE')) {
+        return '</table>'
+      }
+      if (args.includes('TABLE')) {
+        return '<table>'
+      }
 
-    return `<${args}>`
-  })
+      return `<${args}>`
+    })
+    .join()
   return comment
 }
 

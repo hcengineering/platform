@@ -303,6 +303,9 @@ class TSessionManager implements SessionManager {
     code: number,
     reason: string
   ): Promise<void> {
+    if (this.checkInterval !== undefined) {
+      clearInterval(this.checkInterval)
+    }
     // if (LOGGING_ENABLED) console.log(workspaceId.name, `closing websocket, code: ${code}, reason: ${reason}`)
     const wsid = toWorkspaceString(workspaceId)
     const workspace = this.workspaces.get(wsid)

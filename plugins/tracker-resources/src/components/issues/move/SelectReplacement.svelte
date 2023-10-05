@@ -96,7 +96,7 @@
       <Label label={tracker.string.Replacement} />
     </div>
     {#each Object.keys(statusToUpdate) as status}
-      {@const newStatus = statusToUpdate[status]}
+      {@const newStatus = statusToUpdate[getStatusRef(status)]}
       <div class="flex-between min-h-11">
         <StatusRefPresenter value={getStatusRef(status)} space={currentProject} kind={'list-header'} />
         <IconArrowRight size={'small'} fill={'var(--theme-halfcontent-color)'} />
@@ -107,6 +107,9 @@
           shape={'round-sm'}
           width={'min-content'}
           on:click={(event) => {
+            if (newStatus === undefined) {
+              return
+            }
             showPopup(
               StatusReplacementPopup,
               {
@@ -127,7 +130,9 @@
           }}
         >
           <span slot="content" class="flex-row-center pointer-events-none">
-            <StatusRefPresenter space={targetProject._id} value={getStatusRef(newStatus.ref)} />
+            {#if newStatus !== undefined}
+              <StatusRefPresenter space={targetProject._id} value={getStatusRef(newStatus.ref)} />
+            {/if}
           </span>
         </Button>
       </div>

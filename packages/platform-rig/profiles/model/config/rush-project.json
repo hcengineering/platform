@@ -1,0 +1,19 @@
+{
+  "incrementalBuildIgnoredGlobs": [
+    "temp/**", 
+    "lib/**", 
+    "coverage/**"
+  ],
+  "disableBuildCacheForProject": false,
+
+  "operationSettings": [
+    {
+      "operationName": "build",
+      "outputFolderNames": ["lib"]
+    },
+    {
+      "operationName": "build:watch",
+      "outputFolderNames": ["lib"]
+    }
+  ]
+}

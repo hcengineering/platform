@@ -68,7 +68,7 @@ export class TCardCover extends TType implements CardCover {
 @Model(board.class.CommonBoardPreference, preference.class.Preference)
 export class TCommonBoardPreference extends TPreference implements CommonBoardPreference {
   @Prop(TypeRef(workbench.class.Application), board.string.CommonBoardPreference)
-    attachedTo!: Ref<Application>
+  declare attachedTo: Ref<Application>
 }
 
 @Model(board.class.Card, task.class.Task)

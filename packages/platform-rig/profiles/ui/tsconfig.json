@@ -4,15 +4,18 @@
     "target": "esnext",
     "module": "esnext",
     "declaration": true,
+    "rootDir": "./src",
     "outDir": "./lib",
     "strict": true,
     "skipLibCheck": true,
-    "incremental": true,
+    "skipDefaultLibCheck": true,
+    "incremental": false,
     "esModuleInterop": true,
     "declarationMap": true,
+    "sourceMap": true,
     "lib": [
       "esnext",
       "dom"
-    ]
+    ],
   }
 }
