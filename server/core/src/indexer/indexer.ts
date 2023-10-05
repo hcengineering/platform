@@ -30,6 +30,7 @@ import core, {
   WorkspaceId,
   _getOperator,
   setObjectValue,
+  toFindResult,
   versionToString
 } from '@hcengineering/core'
 import { DbAdapter } from '../adapter'
@@ -371,7 +372,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             .filter((it) => it[1] > 3)
             .map((it) => it[0])
 
-          const result = await this.metrics.with(
+          let result = await this.metrics.with(
             'get-to-index',
             {},
             async () =>
@@ -390,6 +391,31 @@ export class FullTextIndexPipeline implements FullTextPipeline {
                 }
               )
           )
+          const toRemove: DocIndexState[] = []
+          // Check and remove missing class documents.
+          result = toFindResult(
+            result.filter((doc) => {
+              const _class = this.model.findObject(doc.objectClass)
+              if (_class === undefined) {
+                // no _class present, remove doc
+                toRemove.push(doc)
+                return false
+              }
+              return true
+            }),
+            result.total
+          )
+
+          if (toRemove.length > 0) {
+            try {
+              await this.storage.clean(
+                DOMAIN_DOC_INDEX_STATE,
+                toRemove.map((it) => it._id)
+              )
+            } catch (err: any) {
+              // QuotaExceededError, ignore
+            }
+          }
 
           if (result.length > 0) {
             console.log(
