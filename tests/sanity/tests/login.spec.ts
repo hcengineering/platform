@@ -9,11 +9,11 @@ test.describe('login test', () => {
       console.log('Uncaught exception:')
       console.log(exception.message)
     })
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-    await loginPage.login(PlatformUser, '1234');
+    const loginPage = new LoginPage(page)
+    await loginPage.goto()
+    await loginPage.login(PlatformUser, '1234')
 
-    const selectWorkspacePage = new SelectWorkspacePage(page);
-    await selectWorkspacePage.selectWorkspace('sanity-ws');
+    const selectWorkspacePage = new SelectWorkspacePage(page)
+    await selectWorkspacePage.selectWorkspace('sanity-ws')
   })
 })
