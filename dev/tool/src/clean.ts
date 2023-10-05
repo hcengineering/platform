@@ -16,6 +16,7 @@
 import attachment from '@hcengineering/attachment'
 import chunter, { Comment } from '@hcengineering/chunter'
 import contact from '@hcengineering/contact'
+import { deepEqual } from 'fast-equals'
 import core, {
   BackupClient,
   Client as CoreClient,
@@ -23,6 +24,7 @@ import core, {
   Doc,
   Domain,
   Ref,
+  SortingOrder,
   TxCreateDoc,
   TxOperations,
   TxProcessor,
@@ -169,6 +171,78 @@ export async function cleanRemovedTransactions (workspaceId: WorkspaceId, transa
       count += toRemove.length
       console.log('processed', count)
     }
+
+    console.log('total docs with remove', count)
+  } catch (err: any) {
+    console.trace(err)
+  } finally {
+    await connection.close()
+  }
+}
+
+export async function optimizeModel (workspaceId: WorkspaceId, transactorUrl: string): Promise<void> {
+  const connection = (await connect(transactorUrl, workspaceId, undefined, {
+    mode: 'backup',
+    model: 'upgrade'
+  })) as unknown as CoreClient & BackupClient
+  try {
+    let count = 0
+
+    const model = connection.getModel()
+
+    const updateTransactions = await connection.findAll(
+      core.class.TxUpdateDoc,
+      {
+        objectSpace: core.space.Model,
+        _class: core.class.TxUpdateDoc
+      },
+      { sort: { _id: SortingOrder.Ascending, modifiedOn: SortingOrder.Ascending }, limit: 5000 }
+    )
+
+    const toRemove: Ref<Doc>[] = []
+
+    let i = 0
+    for (const tx of updateTransactions) {
+      try {
+        const doc = model.findObject(tx.objectId)
+        if (doc === undefined) {
+          // Document is removed, we could remove update transaction at all
+          toRemove.push(tx._id)
+          console.log('marking update tx to remove', tx)
+          continue
+        }
+        const opt: any = { ...tx.operations }
+        const adoc = doc as any
+
+        let uDoc: any = {}
+
+        // Find next update operations for same doc
+        for (const ops of updateTransactions.slice(i + 1).filter((it) => it.objectId === tx.objectId)) {
+          uDoc = { ...uDoc, ...ops.operations }
+        }
+
+        for (const [k, v] of Object.entries(opt)) {
+          // If value is same as in document or we have more transactions with same value updated.
+          if (!k.startsWith('$') && (!deepEqual(adoc[k], v) || uDoc[k] !== undefined)) {
+            // Current value is not we modify
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete opt[k]
+          }
+        }
+        if (Object.keys(opt).length === 0) {
+          // No operations pending, remove update tx.
+          toRemove.push(tx._id)
+          console.log('marking update tx to remove, since not real update is performed', tx)
+        }
+      } finally {
+        i++
+      }
+    }
+
+    await connection.clean(DOMAIN_TX, toRemove)
+
+    count += toRemove.length
+    console.log('processed', count)
 
     console.log('total docs with remove', count)
   } catch (err: any) {
