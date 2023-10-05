@@ -47,6 +47,7 @@ export const Completion = Node.create<CompletionOptions>({
       },
       suggestion: {
         char: '@',
+        allowSpaces: true,
         // pluginKey: CompletionPluginKey,
         command: ({ editor, range, props }) => {
           // increase range.to by one when the next node is of type "text"

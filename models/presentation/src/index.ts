@@ -40,6 +40,7 @@ export { CreateExtensionKind, DocCreateExtension, DocCreateFunction, ObjectSearc
 export class TObjectSearchCategory extends TDoc implements ObjectSearchCategory {
   label!: IntlString
   icon!: Asset
+  title!: IntlString
 
   // Query for documents with pattern
   query!: Resource<ObjectSearchFactory>

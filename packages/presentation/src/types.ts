@@ -54,6 +54,7 @@ export type ObjectSearchFactory = (
 export interface ObjectSearchCategory extends Doc {
   label: IntlString
   icon: Asset
+  title: IntlString
 
   // Query for documents with pattern
   query: Resource<ObjectSearchFactory>

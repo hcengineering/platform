@@ -1,0 +1,191 @@
+<!--
+// Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2021 Hardcore Engineering Inc.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+<script lang="ts">
+  import { Ref, RelatedDocument } from '@hcengineering/core'
+
+  import { getResource, IntlString } from '@hcengineering/platform'
+  import ui, {
+    createFocusManager,
+    FocusHandler,
+    Label,
+    ListView,
+    resizeObserver
+  } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
+  import presentation, { getClient, hasResource, ObjectSearchCategory, ObjectSearchResult } from '@hcengineering/presentation'
+
+  export let query: string = ''
+  export let relatedDocuments: RelatedDocument[] | undefined = undefined
+  export let ignore: RelatedDocument[] | undefined = undefined
+  export let allowCategory: Ref<ObjectSearchCategory>[] | undefined = undefined
+  export let hideButtons = false
+
+  type SearchSection = { category: ObjectSearchCategory, items: ObjectSearchResult[] }
+  type SearchItem = { num: number, item: ObjectSearchResult, category: ObjectSearchCategory }
+
+  let items: SearchItem[] = []
+  let categories: ObjectSearchCategory[] = []
+
+  const client = getClient()
+
+  client
+    .findAll(
+      presentation.class.ObjectSearchCategory,
+      allowCategory !== undefined ? { _id: { $in: allowCategory } } : {}
+    )
+    .then((r) => {
+      categories = r.filter((it) => hasResource(it.query))
+      updateItems(query, relatedDocuments)
+    })
+
+  const dispatch = createEventDispatcher()
+
+  let list: ListView
+  let selection = 0
+
+  function dispatchItem (item: ObjectSearchResult): void {
+    dispatch('close', item)
+  }
+
+  export function onKeyDown (key: KeyboardEvent): boolean {
+    if (key.key === 'ArrowDown') {
+      key.stopPropagation()
+      key.preventDefault()
+      list?.select(selection + 1)
+      return true
+    }
+    if (key.key === 'ArrowUp') {
+      key.stopPropagation()
+      key.preventDefault()
+      list?.select(selection - 1)
+    }
+    // if (key.key === 'Tab') {
+    //   key.stopPropagation()
+    //   key.preventDefault()
+    //   const visibleCategory = categories.filter((it) => (categoryStatus[it._id] ?? 0) > 0)
+    //   const pos = category !== undefined ? visibleCategory.findIndex((it) => it._id === category?._id) : -1
+    //   if (pos >= 0) {
+    //     category = visibleCategory[(pos + 1) % visibleCategory.length]
+    //     return true
+    //   }
+    // }
+    if (key.key === 'Enter') {
+      key.preventDefault()
+      key.stopPropagation()
+      const searchItem = items[selection]
+      if (searchItem) {
+        dispatchItem(searchItem.item)
+        return true
+      } else {
+        return false
+      }
+    }
+    return false
+  }
+
+  export function done () {}
+
+  
+
+  function packSearchResultsForListView(sections: SearchSection[]): SearchItem[] {
+    let results: SearchItem[] = []
+    for (const section of sections) {
+      const category = section.category
+      let items = section.items
+
+      // TODO: Remove cut on a client: bad bad bad
+      if (items.length > 3) {
+        items = items.slice(0, 3)
+      }
+
+      results = results.concat(
+        items.map((item, num) => { return { num, category, item } })
+      )
+    }
+    return results
+  }
+
+  async function queryCategoryItems(category: ObjectSearchCategory, query: string, relatedDocuments?: RelatedDocument[]): Promise<SearchSection> {
+    const f = await getResource(category.query)
+    return {
+      category,
+      items: await f(client, query, { in: relatedDocuments, nin: ignore })
+    }
+  }
+
+  async function updateItems (
+    query: string,
+    relatedDocuments?: RelatedDocument[]
+  ): Promise<void> {
+    const queries = []
+    for (const cat of categories) {
+      queries.push(queryCategoryItems(cat, query, relatedDocuments))
+    }
+    const results = await Promise.all(queries)
+    items = packSearchResultsForListView(results)
+
+  }
+  $: updateItems(query, relatedDocuments)
+
+  const manager = createFocusManager()
+
+  // const isStatusDisabled = (status: number) => status === 0
+</script>
+
+<FocusHandler {manager} />
+
+<form class="antiPopup mentionPoup" on:keydown={onKeyDown} use:resizeObserver={() => dispatch('changeSize')}>
+  <div class="ap-scroll">
+    <div class="ap-box">
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <ListView bind:this={list} bind:selection count={items.length}>
+        <svelte:fragment slot="category" let:item={num}>
+          {@const item = items[num]}
+          {#if item.num === 0}
+            <div class="mentonCategory">
+              <Label label={item.category.title} />
+            </div>
+            <!-- <div class="ap-subheader">
+              <Label label={item.category.title} />
+            </div> -->
+          {/if}
+        </svelte:fragment>
+        <svelte:fragment slot="item" let:item={num}>
+          {@const doc = items[num].item}
+          <div class="ap-menuItem withComp" on:click={() => dispatchItem(doc)}>
+            <svelte:component this={doc.component} value={doc.doc} {...doc.componentProps ?? {}} />
+          </div>
+        </svelte:fragment>
+      </ListView>
+    </div>
+  </div>
+  <div class="ap-space x2" />
+</form>
+
+<style lang="scss">
+  .mentionPoup {
+    padding-top: 0.5rem;
+  }
+
+  .mentonCategory {
+    padding: 0.5rem 1rem;
+    font-size: 0.625rem;
+    letter-spacing: 0.0625rem;
+    color: var(--theme-dark-color);
+    text-transform: uppercase;
+    line-height: 1rem;
+  }
+</style>

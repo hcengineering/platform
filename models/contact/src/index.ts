@@ -713,6 +713,7 @@ export function createModel (builder: Builder): void {
     {
       icon: contact.icon.Person,
       label: contact.string.SearchEmployee,
+      title: contact.string.Employee,
       query: contact.completion.EmployeeQuery
     },
     contact.completion.EmployeeCategory
@@ -724,6 +725,7 @@ export function createModel (builder: Builder): void {
     {
       icon: contact.icon.Persona,
       label: contact.string.SearchPerson,
+      title: contact.string.Persons,
       query: contact.completion.PersonQuery
     },
     contact.completion.PersonCategory
@@ -735,6 +737,7 @@ export function createModel (builder: Builder): void {
     {
       icon: contact.icon.Company,
       label: contact.string.SearchOrganization,
+      title: contact.string.Organizations,
       query: contact.completion.OrganizationQuery
     },
     contact.completion.OrganizationCategory

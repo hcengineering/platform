@@ -14,9 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ObjectSearchPopup, ObjectSearchResult } from '@hcengineering/presentation'
+  import { ObjectSearchResult } from '@hcengineering/presentation'
   import { showPopup, resizeObserver, deviceOptionsStore as deviceInfo, PopupResult } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
+  import MentionPopup from './MentionPopup.svelte'
   import DummyPopup from './DummyPopup.svelte'
 
   export let query: string = ''
@@ -97,7 +98,7 @@
     updateStyle()
   }}
 >
-  <ObjectSearchPopup bind:this={searchPopup} {query} on:close={(evt) => dispatchItem(evt.detail)} />
+  <MentionPopup bind:this={searchPopup} {query} on:close={(evt) => dispatchItem(evt.detail)} />
 </div>
 
 <style lang="scss">

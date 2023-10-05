@@ -505,6 +505,7 @@ export function createModel (builder: Builder): void {
     {
       icon: tracker.icon.TrackerApplication,
       label: tracker.string.SearchIssue,
+      title: tracker.string.Issues,
       query: tracker.completion.IssueQuery
     },
     tracker.completion.IssueCategory
