@@ -45,7 +45,11 @@ export interface ObjectCreate {
 export type ObjectSearchFactory = (
   client: Client,
   query: string,
-  filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
+  options?: {
+    in?: RelatedDocument[],
+    nin?: RelatedDocument[],
+    limit?: number
+  }
 ) => Promise<ObjectSearchResult[]>
 
 /**

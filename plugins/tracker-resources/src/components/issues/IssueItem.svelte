@@ -32,7 +32,24 @@
       <IssueStatusIcon value={st} size={'small'} space={value.space} />
     {/if}
   </FixedColumn>
-  <span class="ml-2 max-w-120 overflow-label">
-    {title} - {value.title}
+  <span class="ml-2 max-w-120 overflow-label issue">
+    <span class="title">{title}</span><span class="name">{value.title}</span>
   </span>
 </div>
+
+<style lang="scss">
+  .issue {
+    display: flex;
+    flex-direction: row;
+
+    .title {
+      display: flex;
+      padding-right: 0.5rem;
+      color: var(--theme-darker-color);
+    }
+    .name {
+      display: flex;
+      flex: 1;
+    }
+  }
+</style>

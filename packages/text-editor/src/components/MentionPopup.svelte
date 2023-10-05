@@ -26,8 +26,10 @@
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation, { getClient, hasResource, ObjectSearchCategory, ObjectSearchResult } from '@hcengineering/presentation'
+  import Label from '@hcengineering/ui/src/components/Label.svelte'
 
   export let query: string = ''
+  export let maxItemsPerCategory = 3
 
   type SearchSection = { category: ObjectSearchCategory, items: ObjectSearchResult[] }
   type SearchItem = { num: number, item: ObjectSearchResult, category: ObjectSearchCategory }
@@ -50,6 +52,7 @@
   const dispatch = createEventDispatcher()
 
   let list: ListView
+  let scrollContainer: HTMLElement
   let selection = 0
 
   function dispatchItem (item: ObjectSearchResult): void {
@@ -64,10 +67,11 @@
       return true
     }
     if (key.key === 'ArrowUp') {
-      // TODO: scroll to real top
-
       key.stopPropagation()
       key.preventDefault()
+      if (selection === 0 && scrollContainer !== undefined) {
+        scrollContainer.scrollTop = 0
+      }
       list?.select(selection - 1)
     }
     if (key.key === 'Enter') {
@@ -92,11 +96,6 @@
       const category = section.category
       let items = section.items
 
-      // TODO: Remove cut on a client: bad bad bad
-      if (items.length > 3) {
-        items = items.slice(0, 3)
-      }
-
       results = results.concat(
         items.map((item, num) => { return { num, category, item } })
       )
@@ -108,7 +107,7 @@
     const f = await getResource(category.query)
     return {
       category,
-      items: await f(client, query)
+      items: await f(client, query, { limit: maxItemsPerCategory })
     }
   }
 
@@ -131,8 +130,11 @@
 <FocusHandler {manager} />
 
 <form class="antiPopup mentionPoup" on:keydown={onKeyDown} use:resizeObserver={() => dispatch('changeSize')}>
-  <div class="ap-scroll">
+  <div class="ap-scroll" bind:this={scrollContainer} >
     <div class="ap-box">
+      {#if items.length === 0}
+        <div class="noResults"><Label label={presentation.string.NoResults} /></div>
+      {/if}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <ListView bind:this={list} bind:selection count={items.length}>
         <svelte:fragment slot="category" let:item={num}>
@@ -159,6 +161,13 @@
 </form>
 
 <style lang="scss">
+  .noResults {
+    display: flex;
+    padding: 0.25rem 1rem;
+    align-items: center;
+    align-self: stretch;
+  }
+
   .mentionPoup {
     padding-top: 0.5rem;
   }

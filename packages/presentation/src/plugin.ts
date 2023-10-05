@@ -63,7 +63,8 @@ export default plugin(presentationId, {
     MakePrivate: '' as IntlString,
     MakePrivateDescription: '' as IntlString,
     OpenInANewTab: '' as IntlString,
-    Created: '' as IntlString
+    Created: '' as IntlString,
+    NoResults: '' as IntlString
   },
   metadata: {
     RequiredVersion: '' as Metadata<string>,

@@ -11,6 +11,14 @@
   // overflow-y: auto;
   color: var(--theme-text-primary-color);
 
+  .suggestion {
+    display: inline-flex;
+    padding: 0 .25rem;
+    color: var(--theme-link-color);
+    background-color: var(--theme-mention-bg-color);
+    border-radius: .25rem;
+  }
+
   .title,
   h1,
   h2,

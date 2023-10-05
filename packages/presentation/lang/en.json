@@ -27,6 +27,7 @@
     "DocumentPreview": "Preview",
     "MakePrivate": "Make private",
     "MakePrivateDescription": "Only members can see it",
-    "Created": "Created"
+    "Created": "Created",
+    "NoResults": "No results to show"
   }
 }

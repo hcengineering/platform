@@ -27,6 +27,7 @@
     "DocumentPreview": "Предпросмотр",
     "MakePrivate": "Сделать личным",
     "MakePrivateDescription": "Только пользователи могут видеть это",
-    "Created": "Созданные"
+    "Created": "Созданные",
+    "NoResults": "Нет результатов"
   }
 }
