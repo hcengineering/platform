@@ -11,6 +11,7 @@
 // See the License for the specific language governing permissions and
 
 import { DelayedCaller } from './utils'
+import type { SeparatedItem, DefSeparators } from './types'
 
 // limitations under the License.
 let observer: ResizeObserver
@@ -56,3 +57,69 @@ export function resizeObserver (element: Element, onResize: (element: Element) =
     }
   }
 }
+
+/**
+ * @public
+ */
+export const separatorsKeyId = 'separators'
+
+export const nullSeparatedItem: SeparatedItem = {
+  size: 'auto',
+  minSize: 20,
+  maxSize: 'auto',
+  float: undefined
+}
+
+const compareSeparators = (a: SeparatedItem[], b: SeparatedItem[]): boolean => {
+  if (a.length !== b.length) return false
+  return a.every(
+    (sep, index) => sep.minSize === b[index].minSize && sep.maxSize === b[index].maxSize && sep.float === b[index].float
+  )
+}
+
+const generateSeparatorsId = (name: string): string => {
+  return separatorsKeyId + '_' + name
+}
+
+export function defineSeparators (name: string, items: DefSeparators): void {
+  const id = generateSeparatorsId(name)
+  const income = items.map((it) => (it === null ? nullSeparatedItem : it))
+  const saved = localStorage.getItem(id)
+  let needAdd = false
+  if (saved !== null) {
+    const loaded: SeparatedItem[] = JSON.parse(saved)
+    if (!compareSeparators(loaded, income)) {
+      localStorage.removeItem(id)
+      needAdd = true
+    }
+  } else needAdd = true
+  if (needAdd) localStorage.setItem(id, JSON.stringify(income))
+}
+
+export function getSeparators (name: string): SeparatedItem[] | null {
+  const id = generateSeparatorsId(name)
+  const saved = localStorage.getItem(id)
+  return saved !== null ? JSON.parse(saved) : null
+}
+
+export function saveSeparator (name: string, separators: SeparatedItem[]): void {
+  const id = generateSeparatorsId(name)
+  localStorage.setItem(id, JSON.stringify(separators))
+}
+
+export const panelSeparators: DefSeparators = [
+  { minSize: 30, size: 'auto', maxSize: 'auto' },
+  { minSize: 17, size: 25, maxSize: 50, float: 'aside' }
+]
+
+export const workbenchSeparators: DefSeparators = [
+  { minSize: 12, size: 17.5, maxSize: 22, float: 'navigator' },
+  null,
+  { minSize: 20, size: 30, maxSize: 50, float: 'aside' }
+]
+
+export const timeSeparators: DefSeparators = [
+  { minSize: 10, size: 17.5, maxSize: 22, float: 'navigator' },
+  { minSize: 25, size: 35, maxSize: 45 },
+  null
+]

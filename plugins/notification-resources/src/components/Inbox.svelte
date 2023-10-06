@@ -27,7 +27,9 @@
     eventToHTMLElement,
     getLocation,
     navigate,
-    showPopup
+    showPopup,
+    defineSeparators,
+    Separator
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import contact from '@hcengineering/contact'
@@ -132,6 +134,7 @@
       }
     )
   }
+  defineSeparators('inbox', [{ minSize: 20, maxSize: 40, size: 30 }, null])
 </script>
 
 <div class="flex-row-top h-full">
@@ -158,6 +161,7 @@
         </svelte:fragment>
       </Tabs>
     </div>
+    <Separator name={'inbox'} index={0} />
   {/if}
   <div class="antiPanel-component filled w-full">
     {#if selectedEmployee !== undefined && component === undefined}

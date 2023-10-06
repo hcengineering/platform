@@ -14,10 +14,17 @@
 -->
 <script lang="ts">
   import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
-  import { deviceOptionsStore as deviceInfo, checkAdaptiveMatching, IconBack } from '../../'
-  import { resizeObserver } from '../resize'
-  import Button from './Button.svelte'
-  import Scroller from './Scroller.svelte'
+  import {
+    deviceOptionsStore as deviceInfo,
+    checkAdaptiveMatching,
+    IconBack,
+    Separator,
+    defineSeparators,
+    resizeObserver,
+    Button,
+    Scroller,
+    panelSeparators
+  } from '../../'
   import IconClose from './icons/Close.svelte'
   import IconDetails from './icons/Details.svelte'
   import IconMaxWidth from './icons/MaxWidth.svelte'
@@ -82,6 +89,8 @@
   })
 
   onMount(() => dispatch('open'))
+
+  defineSeparators('panel-aside', panelSeparators)
 </script>
 
 <div
@@ -210,6 +219,7 @@
       </div>
     {/if}
     {#if $$slots.aside && isAside && asideShown}
+      <Separator name={'panel-aside'} index={0} />
       <div class="popupPanel-body__aside" class:float={asideFloat} class:shown={asideShown}>
         {#if moveUtils}
           <div class="buttons-group justify-end xsmall-gap" style:margin={'.5rem 2rem 0'}>
