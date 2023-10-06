@@ -59,9 +59,10 @@ export function findSuggestionMatch (config: Trigger): SuggestionMatch {
     }
   }
 
+  /* eslint-disable @typescript-eslint/restrict-plus-operands */
   // The absolute position of the match in the document
-  const from = textFrom + match.index
-  let to = from + match[0].length
+  const from: number = textFrom + match.index
+  let to: number = from + match[0].length
 
   // Edge case handling; if spaces are allowed and we're directly in between
   // two triggers
