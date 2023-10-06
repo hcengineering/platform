@@ -161,10 +161,19 @@ class ClientImpl implements AccountClient, BackupClient {
 /**
  * @public
  */
+export interface TxPersistenceStore {
+  load: () => Promise<Tx[]>
+  store: (tx: Tx[]) => Promise<void>
+}
+
+/**
+ * @public
+ */
 export async function createClient (
   connect: (txHandler: TxHandler) => Promise<ClientConnection>,
   // If set will build model with only allowed plugins.
-  allowedPlugins?: Plugin[]
+  allowedPlugins?: Plugin[],
+  txPersistence?: TxPersistenceStore
 ): Promise<AccountClient> {
   let client: ClientImpl | null = null
 
@@ -193,7 +202,7 @@ export async function createClient (
 
   const conn = await connect(txHandler)
 
-  lastTxTime = await loadModel(conn, lastTxTime, allowedPlugins, configs, hierarchy, model)
+  lastTxTime = await loadModel(conn, lastTxTime, allowedPlugins, configs, hierarchy, model, false, txPersistence)
 
   txBuffer = txBuffer.filter((tx) => tx.space !== core.space.Model || tx.modifiedOn > lastTxTime)
 
@@ -255,11 +264,18 @@ async function loadModel (
   configs: Map<Ref<PluginConfiguration>, PluginConfiguration>,
   hierarchy: Hierarchy,
   model: ModelDb,
-  reload = false
+  reload = false,
+  persistence?: TxPersistenceStore
 ): Promise<Timestamp> {
   const t = Date.now()
 
-  let atxes = []
+  let ltxes: Tx[] = []
+  if (lastTxTime === 0 && persistence !== undefined) {
+    ltxes = await persistence.load()
+    lastTxTime = getLastTxTime(ltxes)
+  }
+
+  let atxes: Tx[] = []
   try {
     atxes = await conn.loadModel(lastTxTime)
   } catch (err: any) {
@@ -273,6 +289,12 @@ async function loadModel (
   if (reload && atxes.length > modelTransactionThreshold) {
     return -1
   }
+
+  if (atxes.length < modelTransactionThreshold) {
+    atxes = ltxes.concat(atxes)
+  }
+
+  await persistence?.store(atxes)
 
   let systemTx: Tx[] = []
   const userTx: Tx[] = []
@@ -302,11 +324,7 @@ async function loadModel (
 
   const txes = systemTx.concat(userTx)
 
-  for (const tx of txes) {
-    if (tx.modifiedOn > lastTxTime) {
-      lastTxTime = tx.modifiedOn
-    }
-  }
+  lastTxTime = getLastTxTime(txes)
 
   for (const tx of txes) {
     try {
@@ -320,6 +338,16 @@ async function loadModel (
       await model.tx(tx)
     } catch (err: any) {
       console.error('failed to apply model transaction, skipping', JSON.stringify(tx), err)
+    }
+  }
+  return lastTxTime
+}
+
+function getLastTxTime (txes: Tx[]): number {
+  let lastTxTime = 0
+  for (const tx of txes) {
+    if (tx.modifiedOn > lastTxTime) {
+      lastTxTime = tx.modifiedOn
     }
   }
   return lastTxTime
