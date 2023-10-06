@@ -102,7 +102,6 @@
   const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
 
   const client = getClient()
-  NotificationClientImpl.createClient()
 
   let apps: Application[] | Promise<Application[]> = client
     .findAll(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
@@ -162,18 +161,10 @@
   )
 
   let hasNotification = false
-  const notificationQuery = createQuery()
-
-  notificationQuery.query(
-    notification.class.DocUpdates,
-    {
-      user: accountId,
-      hidden: false
-    },
-    (res) => {
-      hasNotification = res.some((p) => p.txes.some((p) => p.isNew))
-    }
-  )
+  const noficicationClient = NotificationClientImpl.getClient()
+  noficicationClient.docUpdates.subscribe((res) => {
+    hasNotification = res.some((p) => !p.hidden && p.txes.some((p) => p.isNew))
+  })
 
   const workspaceId = $location.path[1]
 

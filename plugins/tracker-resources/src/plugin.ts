@@ -300,7 +300,8 @@ export default mergeIds(trackerId, tracker, {
 
     NoStatusFound: '' as IntlString,
     CreateMissingStatus: '' as IntlString,
-    UnsetParent: '' as IntlString
+    UnsetParent: '' as IntlString,
+    PreviousAssigned: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,

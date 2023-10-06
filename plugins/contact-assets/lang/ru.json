@@ -92,8 +92,6 @@
     "Assigned": "Назначен",
     "Unassigned": "Не назначен",
     "CategoryCurrentUser": "Текущий пользователь",
-    "CategoryPreviousAssigned": "Ранее назначенные",
-    "CategoryComponentLead": "Ответственный за компонент",
     "CategoryOther": "Прочие",
     "Position": "Должность",
     "ConfigLabel": "Контакты",

@@ -13,15 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee, PersonAccount, Person } from '@hcengineering/contact'
+  import { Employee, Person, PersonAccount } from '@hcengineering/contact'
   import { AssigneeBox, personAccountByIdStore } from '@hcengineering/contact-resources'
+  import { AssigneeCategory } from '@hcengineering/contact-resources/src/assignee'
   import { Doc, DocumentQuery, Ref } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Issue, Project } from '@hcengineering/tracker'
+  import { getClient } from '@hcengineering/presentation'
+  import { Issue } from '@hcengineering/tracker'
   import { ButtonKind, ButtonSize, IconSize, TooltipAlignment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import { getPreviousAssignees } from '../../utils'
+  import { get } from 'svelte/store'
 
   type Object = (Doc | {}) & Pick<Issue, 'space' | 'component' | 'assignee'>
 
@@ -38,37 +40,8 @@
 
   const client = getClient()
   const dispatch = createEventDispatcher()
-  const projectQuery = createQuery()
 
-  let project: Project | undefined
-  let prevAssigned: Ref<Person>[] = []
-  let componentLead: Ref<Employee> | undefined = undefined
-  let members: Ref<Employee>[] = []
-  let docQuery: DocumentQuery<Employee> = {}
-
-  $: '_class' in object &&
-    getPreviousAssignees(object._id).then((res) => {
-      prevAssigned = res
-    })
-
-  async function updateComponentMembers (project: Project, issue: Object) {
-    if (issue.component) {
-      const component = await client.findOne(tracker.class.Component, { _id: issue.component })
-      componentLead = component?.lead || undefined
-    } else {
-      componentLead = undefined
-    }
-    if (project !== undefined) {
-      const accounts = project.members
-        .map((p) => $personAccountByIdStore.get(p as Ref<PersonAccount>))
-        .filter((p) => p !== undefined) as PersonAccount[]
-      members = accounts.map((p) => p.person as Ref<Employee>)
-    } else {
-      members = []
-    }
-
-    docQuery = project?.private ? { _id: { $in: members } } : { active: true }
-  }
+  const docQuery: DocumentQuery<Employee> = { active: true }
 
   const handleAssigneeChanged = async (newAssignee: Ref<Person> | undefined) => {
     if (newAssignee === undefined || object.assignee === newAssignee) {
@@ -82,9 +55,47 @@
     }
   }
 
-  $: projectQuery.query(tracker.class.Project, { _id: object.space }, (res) => ([project] = res))
-  $: project && updateComponentMembers(project, object)
-  $: docQuery = project?.private ? { _id: { $in: members } } : {}
+  let categories: AssigneeCategory[] = []
+
+  function getCategories (object: Object): void {
+    categories = []
+    if ('_class' in object) {
+      const _id = object._id
+      categories.push({
+        label: tracker.string.PreviousAssigned,
+        func: async () => await getPreviousAssignees(_id)
+      })
+    }
+    categories.push({
+      label: tracker.string.ComponentLead,
+      func: async () => {
+        if (!object.component) {
+          return []
+        }
+        const component = await client.findOne(tracker.class.Component, { _id: object.component })
+        return component?.lead ? [component.lead] : []
+      }
+    })
+    categories.push({
+      label: tracker.string.Members,
+      func: async () => {
+        if (!object.space) {
+          return []
+        }
+        const project = await client.findOne(tracker.class.Project, { _id: object.space })
+        if (project === undefined) {
+          return []
+        }
+        const store = get(personAccountByIdStore)
+        const accounts = project.members
+          .map((p) => store.get(p as Ref<PersonAccount>))
+          .filter((p) => p !== undefined) as PersonAccount[]
+        return accounts.map((p) => p.person as Ref<Employee>)
+      }
+    })
+  }
+
+  $: getCategories(object)
 </script>
 
 {#if object}
@@ -94,9 +105,7 @@
     label={tracker.string.Assignee}
     placeholder={tracker.string.Assignee}
     value={object.assignee}
-    {prevAssigned}
-    {componentLead}
-    {members}
+    {categories}
     titleDeselect={tracker.string.Unassigned}
     {size}
     {kind}

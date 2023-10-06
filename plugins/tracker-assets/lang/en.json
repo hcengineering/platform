@@ -282,6 +282,7 @@
     "IssueNotificationChanged": "{senderName} changed {property}",
     "IssueNotificationChangedProperty": "{senderName} changed {property} to \"{newValue}\"",
     "IssueNotificationMessage": "{senderName}: {message}",
+    "PreviousAssigned": "Previously assigned",
     "IssueAssigneedToYou": "Assigned to you"
   },
   "status": {}
