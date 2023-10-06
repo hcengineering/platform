@@ -543,6 +543,14 @@ export class LiveQuery extends TxProcessor implements Client {
       await this.sort(q, tx)
       const udoc = q.result.find((p) => p._id === tx.objectId)
       await this.updatedDocCallback(udoc, q)
+    } else if (
+      this.client.getHierarchy().isDerived(tx.objectClass, q._class) &&
+      q.options?.total === true &&
+      q.options.limit === q.result.length
+    ) {
+      // we can make object is not matching criteria, but it can be in not limited results, total can be changed
+      await this.refresh(q)
+      return
     }
     await this.handleDocUpdateLookup(q, tx)
   }
@@ -632,7 +640,7 @@ export class LiveQuery extends TxProcessor implements Client {
 
   private async refresh (q: Query): Promise<void> {
     const res = await this.client.findAll(q._class, q.query, q.options)
-    if (!deepEqual(res, q.result)) {
+    if (!deepEqual(res, q.result) || (res.total !== q.total && q.options?.total === true)) {
       q.result = res
       q.total = res.total
       await this.callback(q)
