@@ -1,10 +1,12 @@
-import { Mark, getMarkAttributes, mergeAttributes } from '@tiptap/core'
-import { Plugin, PluginKey } from 'prosemirror-state'
+import { CommandProps, Mark, getMarkAttributes, getMarkType, mergeAttributes } from '@tiptap/core'
+import { Mark as ProseMirrorMark } from 'prosemirror-model'
+import { EditorState, Plugin, PluginKey } from 'prosemirror-state'
 
 const NAME = 'node-uuid'
 
 export interface NodeUuidOptions {
   HTMLAttributes: Record<string, any>
+  onNodeAttributes?: (uuid: string) => Record<string, any> | undefined
   onNodeSelected?: (uuid: string | null) => void
   onNodeClicked?: (uuid: string) => void
 }
@@ -14,44 +16,75 @@ export interface NodeUuidCommands<ReturnType> {
     /**
      * Add uuid mark
      */
-    setUuid: (uuid: string) => ReturnType
+    setNodeUuid: (uuid: string) => ReturnType
     /**
-     * Unset uuid mark
-     */
-    unsetUuid: () => ReturnType
+         * Unset uuid mark
+         */
+    unsetNodeUuid: () => ReturnType
   }
 }
 
 declare module '@tiptap/core' {
-  interface Commands<ReturnType> extends NodeUuidCommands<ReturnType> {}
+  interface Commands<ReturnType> extends NodeUuidCommands<ReturnType> { }
 }
 
 export interface NodeUuidStorage {
   activeNodeUuid: string | null
 }
 
+const generateNodeUuidAttributes = (uuid: string | undefined, options: NodeUuidOptions): Record<string, any> => {
+  if (!uuid) {
+    return {}
+  }
+
+  return mergeAttributes(options.onNodeAttributes?.(uuid) ?? {}, { [NAME]: uuid })
+}
+
+const findNodeUuidMark = (state: EditorState): ProseMirrorMark | undefined => {
+  if (!state.selection) {
+    return
+  }
+
+  let nodeUuidMark: ProseMirrorMark | undefined = undefined
+  state.doc.nodesBetween(state.selection.from, state.selection.to, (node) => {
+    if (nodeUuidMark) {
+      return false
+    }
+    nodeUuidMark = node.marks.find(
+      (mark) => mark.type.name === NAME && mark.attrs[NAME]
+    )
+  })
+
+  return nodeUuidMark
+}
+
 /**
- * This mark allows to add node uuid to the selected text
+ * This extension allows to add node uuid to the selected text
  * Creates span node with attribute node-uuid
  */
 export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
   name: NAME,
-  addOptions () {
+  addOptions() {
     return {
       HTMLAttributes: {}
     }
   },
 
-  addAttributes () {
+  addAttributes() {
     return {
       [NAME]: {
         default: null,
-        parseHTML: (el) => (el as HTMLSpanElement).getAttribute(NAME)
+        parseHTML: (el) => (el as HTMLSpanElement).getAttribute(NAME),
+        renderHTML: (attrs) => {
+          const uuid: string | undefined = attrs[NAME]
+
+          return mergeAttributes(attrs, generateNodeUuidAttributes(uuid, this.options))
+        }
       }
     }
   },
 
-  parseHTML () {
+  parseHTML() {
     return [
       {
         tag: `span[${NAME}]`,
@@ -67,22 +100,20 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
     ]
   },
 
-  renderHTML ({ HTMLAttributes }) {
+  renderHTML({ HTMLAttributes }) {
     return ['span', mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0]
   },
 
-  addProseMirrorPlugins () {
+  addProseMirrorPlugins() {
     const options = this.options
-    const storage = this.storage
+    const storage: NodeUuidStorage = this.storage
     const plugins = [
       ...(this.parent?.() ?? []),
       new Plugin({
         key: new PluginKey('handle-node-uuid-click-plugin'),
         props: {
-          handleClick (view) {
-            const { schema } = view.state
-
-            const attrs = getMarkAttributes(view.state, schema.marks[NAME])
+          handleClick(view) {
+            const attrs = getMarkAttributes(view.state, view.state.schema.marks[NAME])
             const nodeUuid = attrs?.[NAME]
             if (nodeUuid !== null || nodeUuid !== undefined) {
               options.onNodeClicked?.(nodeUuid)
@@ -100,38 +131,39 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
     return plugins
   },
 
-  addCommands () {
-    return {
-      setUuid:
+  addCommands() {
+    const result = {
+      setNodeUuid:
         (uuid: string) =>
-          ({ commands }) =>
-            commands.setMark(this.name, { [NAME]: uuid }),
-      unsetUuid:
+          ({ commands, state }: CommandProps) => {
+            const { doc, selection } = state
+            if (selection.empty) {
+              return false
+            }
+            if (doc.rangeHasMark(selection.from, selection.to, getMarkType(NAME, state.schema))) {
+              return false
+            }
+
+            return commands.setMark(this.name, generateNodeUuidAttributes(uuid, this.options))
+          },
+      unsetNodeUuid:
         () =>
-          ({ commands }) =>
+          ({ commands }: CommandProps) =>
             commands.unsetMark(this.name)
     }
+
+    return result
   },
 
-  addStorage () {
+  addStorage() {
     return {
       activeNodeUuid: null
     }
   },
 
-  onSelectionUpdate () {
-    const { $head } = this.editor.state.selection
-
-    const marks = $head.marks()
-    let activeNodeUuid = null
-    if (marks.length > 0) {
-      const nodeUuidMark = this.editor.schema.marks[NAME]
-      const activeNodeUuidMark = marks.find((mark) => mark.type === nodeUuidMark)
-
-      if (activeNodeUuidMark !== undefined && activeNodeUuidMark !== null) {
-        activeNodeUuid = activeNodeUuidMark.attrs[NAME]
-      }
-    }
+  onSelectionUpdate() {
+    const activeNodeUuidMark = findNodeUuidMark(this.editor.state)
+    const activeNodeUuid = activeNodeUuidMark ? activeNodeUuidMark.attrs[NAME]: null
 
     if (this.storage.activeNodeUuid !== activeNodeUuid) {
       this.storage.activeNodeUuid = activeNodeUuid
