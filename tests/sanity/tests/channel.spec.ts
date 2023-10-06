@@ -10,7 +10,6 @@ test.use({
 
 test.describe('channel tests', () => {
   test.beforeEach(async ({ page }) => {
-    // Create user and workspace
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
