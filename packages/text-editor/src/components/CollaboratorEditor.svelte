@@ -38,6 +38,7 @@
   import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
   import StyleButton from './StyleButton.svelte'
   import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
+  import { NodeUuidExtension } from './extension/nodeUuid'
 
   export let documentId: string
   export let readonly = false
@@ -132,8 +133,11 @@
         return false
       }
 
-      const [$start, $end] = [doc.resolve(range.from), doc.resolve(range.to)]
 
+      console.log(range)
+
+      const [$start, $end] = [doc.resolve(range.from), doc.resolve(range.to)]
+      console.log($start + ' ' + $end)
       editor.view.dispatch(tr.setSelection(new TextSelection($start, $end)))
       needFocus = true
     })
@@ -159,6 +163,7 @@
 
     editor.registerPlugin(plugin)
   }
+
 
   let needFocus = false
 

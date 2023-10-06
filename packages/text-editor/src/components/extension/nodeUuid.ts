@@ -1,12 +1,11 @@
 import { Command, CommandProps, Mark, getMarkAttributes, getMarkType, mergeAttributes } from '@tiptap/core'
-import { Mark as ProseMirrorMark } from 'prosemirror-model'
+import { Node, Mark as ProseMirrorMark } from 'prosemirror-model'
 import { EditorState, Plugin, PluginKey } from 'prosemirror-state'
 
 const NAME = 'node-uuid'
 
 export interface NodeUuidOptions {
   HTMLAttributes: Record<string, any>
-  onNodeAttributes?: (uuid: string) => Record<string, any> | undefined
   onNodeSelected?: (uuid: string | null) => void
   onNodeClicked?: (uuid: string) => void
 }
@@ -32,15 +31,7 @@ export interface NodeUuidStorage {
   activeNodeUuid: string | null
 }
 
-const generateNodeUuidAttributes = (uuid: string | undefined, options: NodeUuidOptions): Record<string, any> => {
-  if (!uuid) {
-    return {}
-  }
-
-  return mergeAttributes(options.onNodeAttributes?.(uuid) ?? {}, { [NAME]: uuid })
-}
-
-const findNodeUuidMark = (state: EditorState): ProseMirrorMark | undefined => {
+const findSelectionNodeUuidMark = (state: EditorState): ProseMirrorMark | undefined => {
   if (!state.selection) {
     return
   }
@@ -50,10 +41,18 @@ const findNodeUuidMark = (state: EditorState): ProseMirrorMark | undefined => {
     if (nodeUuidMark != null) {
       return false
     }
-    nodeUuidMark = node.marks.find((mark) => mark.type.name === NAME && mark.attrs[NAME])
+    nodeUuidMark = findNodeUuidMark(node)
   })
 
   return nodeUuidMark
+}
+
+export const findNodeUuidMark = (node: Node): ProseMirrorMark | undefined => {
+  if (!node) {
+    return
+  }
+
+  return node.marks.find((mark) => mark.type.name === NAME && mark.attrs[NAME])
 }
 
 /**
@@ -72,12 +71,7 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
     return {
       [NAME]: {
         default: null,
-        parseHTML: (el) => (el as HTMLSpanElement).getAttribute(NAME),
-        renderHTML: (attrs) => {
-          const uuid: string | undefined = attrs[NAME]
-
-          return mergeAttributes(attrs, generateNodeUuidAttributes(uuid, this.options))
-        }
+        parseHTML: (el) => (el as HTMLSpanElement).getAttribute(NAME)
       }
     }
   },
@@ -142,7 +136,7 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
               return false
             }
 
-            return commands.setMark(this.name, generateNodeUuidAttributes(uuid, this.options))
+            return commands.setMark(this.name, { [NAME]: uuid })
           },
       unsetNodeUuid:
         () =>
@@ -160,7 +154,7 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
   },
 
   onSelectionUpdate () {
-    const activeNodeUuidMark = findNodeUuidMark(this.editor.state)
+    const activeNodeUuidMark = findSelectionNodeUuidMark(this.editor.state)
     const activeNodeUuid = (activeNodeUuidMark != null) ? activeNodeUuidMark.attrs[NAME] : null
 
     if (this.storage.activeNodeUuid !== activeNodeUuid) {

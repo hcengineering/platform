@@ -1,6 +1,7 @@
 import { Extension, Range, getMarkRange, mergeAttributes } from '@tiptap/core'
-import { NodeUuidExtension, NodeUuidOptions } from './nodeUuid'
+import { NodeUuidExtension, NodeUuidOptions, NodeUuidStorage } from './nodeUuid'
 import { Plugin, PluginKey, TextSelection } from 'prosemirror-state'
+import { Decoration, DecorationSet } from 'prosemirror-view'
 
 export enum NodeHighlightType {
   WARNING = 'warning',
@@ -19,31 +20,39 @@ function isRange (range: Range | undefined | null | void): range is Range {
 }
 
 const generateAttributes = (uuid: string, options: NodeHighlightExtensionOptions) => {
-  const parentAttrs = options.onNodeAttributes?.(uuid) ?? {}
-  const classAttrs: { class?: string } = {}
-
-  if (options.isHighlightModeOn()) {
-    const type = options.getNodeHighlightType(uuid)
-
-    if (type === NodeHighlightType.WARNING) {
-      classAttrs.class = 'text-editor-highlighted-node-warning'
-    } else if (type === NodeHighlightType.ADD) {
-      classAttrs.class = 'text-editor-highlighted-node-add'
-    } else if (type === NodeHighlightType.DELETE) {
-      classAttrs.class = 'text-editor-highlighted-node-delete'
-    }
+  if (!options.isHighlightModeOn()) {
+    return undefined
   }
 
-  return mergeAttributes(parentAttrs, classAttrs)
+  const type = options.getNodeHighlightType(uuid)
+  if (!type) {
+    return undefined
+  }
+  const classAttrs: { class?: string } = {}
+
+  if (type === NodeHighlightType.WARNING) {
+    classAttrs.class = 'text-editor-highlighted-node-warning'
+  } else if (type === NodeHighlightType.ADD) {
+    classAttrs.class = 'text-editor-highlighted-node-add'
+  } else if (type === NodeHighlightType.DELETE) {
+    classAttrs.class = 'text-editor-highlighted-node-delete'
+  }
+
+  return classAttrs
 }
 
 /**
  * Extension allows to highlight nodes based on uuid
  */
-export const NodeHighlightExtension: Extension<NodeHighlightExtensionOptions> =
+export const NodeHighlightExtension: Extension<NodeHighlightExtensionOptions, NodeUuidStorage> =
   Extension.create<NodeHighlightExtensionOptions>({
+    addStorage (): NodeUuidStorage {
+      return { activeNodeUuid: null }
+    },
     addProseMirrorPlugins () {
       const options = this.options
+      const storage: NodeUuidStorage = this.storage
+
       const plugins = [
         ...(this.parent?.() ?? []),
         new Plugin({
@@ -69,6 +78,50 @@ export const NodeHighlightExtension: Extension<NodeHighlightExtensionOptions> =
               return true
             }
           }
+        }),
+        new Plugin({
+          key: new PluginKey('node-highlight-click-decorations-plugin'),
+          props: {
+            decorations (state) {
+              if (!options.isHighlightModeOn()) {
+                return undefined
+              }
+              const decorations: Decoration[] = []
+              const { doc, schema } = state
+              doc.descendants((node, pos) => {
+                const nodeUuidMark = node.marks.find(
+                  (mark) => mark.type.name === NodeUuidExtension.name && mark.attrs[NodeUuidExtension.name]
+                )
+
+                if (nodeUuidMark != null) {
+                  const nodeUuid = nodeUuidMark.attrs[NodeUuidExtension.name]
+                  const attributes = generateAttributes(nodeUuid, options)
+                  if (attributes == null) {
+                    return
+                  }
+
+                  // the first pos does not contain the mark, so we need to add 1 (pos + 1) to get the correct range
+                  const range = getMarkRange(doc.resolve(pos + 1), schema.marks[NodeUuidExtension.name])
+                  if (range == null) {
+                    return
+                  }
+
+                  decorations.push(
+                    Decoration.inline(
+                      range.from,
+                      range.to,
+                      mergeAttributes(
+                        attributes,
+                        nodeUuid === storage.activeNodeUuid ? { class: 'text-editor-highlighted-node-selected' } : {}
+                      )
+                    )
+                  )
+                }
+              })
+
+              return DecorationSet.empty.add(doc, decorations)
+            }
+          }
         })
       ]
 
@@ -76,14 +129,17 @@ export const NodeHighlightExtension: Extension<NodeHighlightExtensionOptions> =
     },
     addExtensions () {
       const options: NodeHighlightExtensionOptions = this.options
-
+      const storage: NodeUuidStorage = this.storage
       return [
         NodeUuidExtension.extend({
-          addOptions () {
+          addOptions (): NodeUuidOptions {
             return {
               ...this.parent?.(),
               ...options,
-              onNodeAttributes: (uuid: string) => generateAttributes(uuid, options)
+              onNodeSelected: (uuid: string) => {
+                storage.activeNodeUuid = uuid
+                options.onNodeSelected?.(uuid)
+              }
             }
           }
         })
