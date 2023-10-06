@@ -28,11 +28,12 @@
   import { IntlString, translate } from '@hcengineering/platform'
   import { getPlatformColorForText, IconObjects, IconSize, themeStore } from '@hcengineering/ui'
 
+  import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
   import { CollaborationIds, TextFormatCategory, TextNodeAction } from '../types'
 
   import { calculateDecorations } from './diff/decorations'
-  import { defaultExtensions } from './extensions'
+  import { completionConfig, defaultExtensions } from './extensions'
   import { InlineStyleToolbar } from './extension/inlineStyleToolbar'
   import { NodeUuidExtension } from './extension/nodeUuid'
   import StyleButton from './StyleButton.svelte'
@@ -223,6 +224,12 @@
             }
           }),
           DecorationExtension,
+          Completion.configure({
+            ...completionConfig,
+            showDoc (event: MouseEvent, _id: string, _class: string) {
+              dispatch('open-document', { event, _id, _class })
+            }
+          }),
           ...onExtensions()
         ],
         onTransaction: () => {
@@ -246,7 +253,7 @@
           dispatch('content', editor.getHTML())
 
           // ignore non-local changes
-          if (!isChangeOrigin(transaction)) return
+          if (isChangeOrigin(transaction)) return
 
           dispatch('update')
         },

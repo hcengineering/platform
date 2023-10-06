@@ -28,6 +28,7 @@ import core, {
   AttachedDoc,
   Class,
   concatLink,
+  Data,
   Doc,
   DocumentQuery,
   FindOptions,
@@ -49,7 +50,9 @@ import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { getDocCollaborators, getMixinTx, pushNotification } from '@hcengineering/server-notification-resources'
 import { workbenchId } from '@hcengineering/workbench'
 import { stripTags } from '@hcengineering/text'
-import { getBacklinks } from './backlinks'
+import { getBacklinks, getBacklinksTxes } from './backlinks'
+
+export { getBacklinksTxes } from './backlinks'
 
 function getCreateBacklinksTxes (
   control: TriggerControl,
@@ -58,110 +61,53 @@ function getCreateBacklinksTxes (
   backlinkId: Ref<Doc>,
   backlinkClass: Ref<Class<Doc>>
 ): Tx[] {
-  const txes: Tx[] = []
-
   const attachedDocId = doc._id
 
+  const backlinks: Data<Backlink>[] = []
   const attributes = control.hierarchy.getAllAttributes(doc._class)
   for (const attr of attributes.values()) {
     if (attr.type._class === core.class.TypeMarkup) {
       const content = (doc as any)[attr.name]?.toString() ?? ''
-      const backlinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, content)
-
-      for (const backlink of backlinks) {
-        const innerTx = txFactory.createTxCreateDoc(chunter.class.Backlink, chunter.space.Backlinks, backlink)
-
-        const collectionTx = txFactory.createTxCollectionCUD(
-          backlink.attachedToClass,
-          backlink.attachedTo,
-          chunter.space.Backlinks,
-          backlink.collection,
-          innerTx
-        )
-
-        txes.push(collectionTx)
-      }
+      const attrBacklinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, content)
+      backlinks.push(...attrBacklinks)
     }
   }
 
-  return txes
+  return getBacklinksTxes(txFactory, backlinks, [])
 }
 
 async function getUpdateBacklinksTxes (control: TriggerControl, txFactory: TxFactory, doc: Doc): Promise<Tx[]> {
-  const txes: Tx[] = []
-
   const backlinkId = doc._id
   const backlinkClass = doc._class
   const attachedDocId = doc._id
 
+  // collect attribute backlinks
+  let hasBacklinkAttrs = false
+  const backlinks: Data<Backlink>[] = []
   const attributes = control.hierarchy.getAllAttributes(doc._class)
   for (const attr of attributes.values()) {
     if (attr.type._class === core.class.TypeMarkup) {
+      hasBacklinkAttrs = true
       const content = (doc as any)[attr.name]?.toString() ?? ''
-      const backlinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, content)
-
-      const current = await control.findAll(chunter.class.Backlink, {
-        backlinkId,
-        backlinkClass,
-        attachedDocId,
-        collection: 'backlinks'
-      })
-
-      for (const c of current) {
-        // Find existing and check if we need to update message
-        const pos = backlinks.findIndex(
-          (b) => b.backlinkId === c.backlinkId && b.backlinkClass === c.backlinkClass && b.attachedTo === c.attachedTo
-        )
-        if (pos !== -1) {
-          // Update existing backlinks when message changed
-          const data = backlinks[pos]
-          if (c.message !== data.message) {
-            const innerTx = txFactory.createTxUpdateDoc(c._class, c.space, c._id, {
-              message: data.message
-            })
-            txes.push(
-              txFactory.createTxCollectionCUD(
-                c.attachedToClass,
-                c.attachedTo,
-                chunter.space.Backlinks,
-                c.collection,
-                innerTx
-              )
-            )
-          }
-          backlinks.splice(pos, 1)
-        } else {
-          // Remove not found backlinks
-          const innerTx = txFactory.createTxRemoveDoc(c._class, c.space, c._id)
-          txes.push(
-            txFactory.createTxCollectionCUD(
-              c.attachedToClass,
-              c.attachedTo,
-              chunter.space.Backlinks,
-              c.collection,
-              innerTx
-            )
-          )
-        }
-      }
-
-      // Add missing backlinks
-      for (const backlink of backlinks) {
-        const backlinkTx = txFactory.createTxCreateDoc(chunter.class.Backlink, chunter.space.Backlinks, backlink)
-        txes.push(
-          txFactory.createTxCollectionCUD(
-            backlink.attachedToClass,
-            backlink.attachedTo,
-            chunter.space.Backlinks,
-            backlink.collection,
-            backlinkTx
-          )
-        )
-      }
+      const attrBacklinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, content)
+      backlinks.push(...attrBacklinks)
     }
   }
 
-  return txes
+  // There is a chance that backlinks are managed manually
+  // do not update backlinks if there are no backlink sources in the doc
+  if (hasBacklinkAttrs) {
+    const current = await control.findAll(chunter.class.Backlink, {
+      backlinkId,
+      backlinkClass,
+      attachedDocId,
+      collection: 'backlinks'
+    })
+
+    return getBacklinksTxes(txFactory, backlinks, current)
+  }
+
+  return []
 }
 
 async function getRemoveBacklinksTxes (control: TriggerControl, txFactory: TxFactory, doc: Ref<Doc>): Promise<Tx[]> {

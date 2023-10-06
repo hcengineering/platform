@@ -6,7 +6,6 @@
   "license": "EPL-2.0",
   "scripts": {
     "build": "heft build",
-    "test": "heft test",
     "build:watch": "tsc",
     "lint:fix": "eslint --fix src",
     "lint": "eslint src",

@@ -15,4 +15,5 @@
 
 export * from './extensions'
 export * from './html'
+export * from './node'
 export * from './nodes'
