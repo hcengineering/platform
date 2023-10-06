@@ -1,5 +1,5 @@
 <!-- 
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { IdMap, SortingOrder, StatusCategory, WithLookup, toIdMap } from '@hcengineering/core'
+  import core, { IdMap, Ref, SortingOrder, StatusCategory, WithLookup, toIdMap } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Issue, IssueStatus } from '@hcengineering/tracker'
   import {
@@ -45,6 +45,13 @@
     if (target._id !== issue._id) {
       const loc = await issueLinkFragmentProvider(target)
       navigate(loc)
+    }
+  }
+
+  function openSubIssue (target: Ref<Issue>) {
+    const subIssue = subIssues?.find((p) => p._id === target)
+    if (subIssue !== undefined) {
+      openIssue(subIssue)
     }
   }
 
@@ -159,7 +166,7 @@
             component: SelectPopup,
             props: {
               value: subIssueValue,
-              onSelect: openIssue,
+              onSelect: openSubIssue,
               showShadow: false,
               width: 'large'
             }
