@@ -38,3 +38,31 @@ export function yDocContentToNode (extensions: Extensions, content: ArrayBuffer,
     return schema.node(schema.topNodeType)
   }
 }
+
+/**
+ * Get ProseMirror nodes from Y.Doc content
+ *
+ * @public
+ */
+export function yDocContentToNodes (extensions: Extensions, content: ArrayBuffer): Node[] {
+  const schema = getSchema(extensions)
+
+  const nodes: Node[] = []
+
+  try {
+    const ydoc = new Doc()
+    const uint8arr = new Uint8Array(content)
+    applyUpdate(ydoc, uint8arr)
+
+    for (const field of ydoc.share.keys()) {
+      try {
+        const body = yDocToProsemirrorJSON(ydoc, field)
+        nodes.push(schema.nodeFromJSON(body))
+      } catch {}
+    }
+  } catch (err: any) {
+    console.error(err)
+  }
+
+  return nodes
+}

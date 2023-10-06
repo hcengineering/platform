@@ -19,7 +19,6 @@
   import { DecorationSet } from 'prosemirror-view'
   import { getContext, createEventDispatcher, onDestroy, onMount } from 'svelte'
   import * as Y from 'yjs'
-  import { HocuspocusProvider } from '@hocuspocus/provider'
   import { AnyExtension, Editor, Extension, HTMLContent, getMarkRange, mergeAttributes } from '@tiptap/core'
   import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration'
   import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
@@ -30,15 +29,16 @@
 
   import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
+  import { TiptapCollabProvider } from '../provider'
   import { CollaborationIds, TextFormatCategory, TextNodeAction } from '../types'
 
   import { calculateDecorations } from './diff/decorations'
+  import { defaultEditorAttributes } from './editor/editorProps'
   import { completionConfig, defaultExtensions } from './extensions'
   import { InlineStyleToolbar } from './extension/inlineStyleToolbar'
   import { NodeUuidExtension } from './extension/nodeUuid'
   import StyleButton from './StyleButton.svelte'
   import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
-  import { defaultEditorAttributes } from './editor/editorProps'
 
   export let documentId: string
   export let readonly = false
@@ -66,11 +66,11 @@
 
   const ydoc = (getContext(CollaborationIds.Doc) as Y.Doc | undefined) ?? new Y.Doc()
 
-  const contextProvider = getContext(CollaborationIds.Provider) as HocuspocusProvider | undefined
+  const contextProvider = getContext(CollaborationIds.Provider) as TiptapCollabProvider | undefined
 
   const provider =
     contextProvider ??
-    new HocuspocusProvider({
+    new TiptapCollabProvider({
       url: collaboratorURL,
       name: documentId,
       document: ydoc,
@@ -140,6 +140,10 @@
       editor.view.dispatch(tr.setSelection(new TextSelection($start, $end)))
       needFocus = true
     })
+  }
+
+  export function takeSnapshot (snapshotId: string) {
+    provider.copyContent(documentId, snapshotId)
   }
 
   let needFocus = false
@@ -274,7 +278,6 @@
         editor.destroy()
       } catch (err: any) {}
       if (contextProvider === undefined) {
-        provider.configuration.websocketProvider.disconnect()
         provider.destroy()
       }
     }
