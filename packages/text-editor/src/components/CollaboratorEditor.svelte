@@ -42,7 +42,7 @@
   export let documentId: string
   export let readonly = false
   export let visible = true
-  
+
   export let token: string
   export let collaboratorURL: string
 
@@ -97,7 +97,7 @@
 
   const dispatch = createEventDispatcher()
 
-  export function getHTML(): string | undefined {
+  export function getHTML (): string | undefined {
     if (editor) {
       return editor.getHTML()
     }
@@ -163,7 +163,7 @@
   let needFocus = false
 
   let focused = false
-  export function focus(): void {
+  export function focus (): void {
     needFocus = true
   }
 
@@ -181,7 +181,7 @@
   let _decoration = DecorationSet.empty
   let oldContent = ''
 
-  function updateEditor(editor?: Editor, field?: string, comparedVersion?: Markup | ArrayBuffer): void {
+  function updateEditor (editor?: Editor, field?: string, comparedVersion?: Markup | ArrayBuffer): void {
     const r = calculateDecorations(editor, oldContent, field, comparedVersion)
     if (r !== undefined) {
       oldContent = r.oldContent
@@ -196,12 +196,12 @@
   }
 
   const DecorationExtension = Extension.create({
-    addProseMirrorPlugins() {
+    addProseMirrorPlugins () {
       return [
         new Plugin({
           key: new PluginKey('diffs'),
           props: {
-            decorations(state) {
+            decorations (state) {
               updateDecorations()
               if (showDiff) {
                 return _decoration
@@ -293,7 +293,7 @@
   let showDiff = true
 </script>
 
-<slot editor={editor} />
+<slot {editor} />
 
 {#if visible}
   {#if comparedVersion !== undefined || $$slots.tools}

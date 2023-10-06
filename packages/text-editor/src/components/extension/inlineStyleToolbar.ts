@@ -42,7 +42,7 @@ export const InlineStyleToolbarExtension = Extension.create<InlineStyleToolbarOp
         props: {
           handleClick () {
             handleFocus(editor, options, storage)
-          },
+          }
         }
       })
     ]
@@ -103,8 +103,7 @@ export const InlineStyleToolbarExtension = Extension.create<InlineStyleToolbarOp
 
           return true
         }
-      }),
-      
+      })
     ]
   },
   onFocus () {

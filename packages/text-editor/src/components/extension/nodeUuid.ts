@@ -1,4 +1,4 @@
-import { CommandProps, Mark, getMarkAttributes, getMarkType, mergeAttributes } from '@tiptap/core'
+import { Command, CommandProps, Mark, getMarkAttributes, getMarkType, mergeAttributes } from '@tiptap/core'
 import { Mark as ProseMirrorMark } from 'prosemirror-model'
 import { EditorState, Plugin, PluginKey } from 'prosemirror-state'
 
@@ -18,14 +18,14 @@ export interface NodeUuidCommands<ReturnType> {
      */
     setNodeUuid: (uuid: string) => ReturnType
     /**
-         * Unset uuid mark
-         */
+     * Unset uuid mark
+     */
     unsetNodeUuid: () => ReturnType
   }
 }
 
 declare module '@tiptap/core' {
-  interface Commands<ReturnType> extends NodeUuidCommands<ReturnType> { }
+  interface Commands<ReturnType> extends NodeUuidCommands<ReturnType> {}
 }
 
 export interface NodeUuidStorage {
@@ -45,14 +45,12 @@ const findNodeUuidMark = (state: EditorState): ProseMirrorMark | undefined => {
     return
   }
 
-  let nodeUuidMark: ProseMirrorMark | undefined = undefined
+  let nodeUuidMark: ProseMirrorMark | undefined
   state.doc.nodesBetween(state.selection.from, state.selection.to, (node) => {
-    if (nodeUuidMark) {
+    if (nodeUuidMark != null) {
       return false
     }
-    nodeUuidMark = node.marks.find(
-      (mark) => mark.type.name === NAME && mark.attrs[NAME]
-    )
+    nodeUuidMark = node.marks.find((mark) => mark.type.name === NAME && mark.attrs[NAME])
   })
 
   return nodeUuidMark
@@ -64,13 +62,13 @@ const findNodeUuidMark = (state: EditorState): ProseMirrorMark | undefined => {
  */
 export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
   name: NAME,
-  addOptions() {
+  addOptions () {
     return {
       HTMLAttributes: {}
     }
   },
 
-  addAttributes() {
+  addAttributes () {
     return {
       [NAME]: {
         default: null,
@@ -84,7 +82,7 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
     }
   },
 
-  parseHTML() {
+  parseHTML () {
     return [
       {
         tag: `span[${NAME}]`,
@@ -100,11 +98,11 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
     ]
   },
 
-  renderHTML({ HTMLAttributes }) {
+  renderHTML ({ HTMLAttributes }) {
     return ['span', mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0]
   },
 
-  addProseMirrorPlugins() {
+  addProseMirrorPlugins () {
     const options = this.options
     const storage: NodeUuidStorage = this.storage
     const plugins = [
@@ -112,7 +110,7 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
       new Plugin({
         key: new PluginKey('handle-node-uuid-click-plugin'),
         props: {
-          handleClick(view) {
+          handleClick (view) {
             const attrs = getMarkAttributes(view.state, view.state.schema.marks[NAME])
             const nodeUuid = attrs?.[NAME]
             if (nodeUuid !== null || nodeUuid !== undefined) {
@@ -131,8 +129,8 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
     return plugins
   },
 
-  addCommands() {
-    const result = {
+  addCommands () {
+    const result: NodeUuidCommands<Command>[typeof NAME] = {
       setNodeUuid:
         (uuid: string) =>
           ({ commands, state }: CommandProps) => {
@@ -155,15 +153,15 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
     return result
   },
 
-  addStorage() {
+  addStorage () {
     return {
       activeNodeUuid: null
     }
   },
 
-  onSelectionUpdate() {
+  onSelectionUpdate () {
     const activeNodeUuidMark = findNodeUuidMark(this.editor.state)
-    const activeNodeUuid = activeNodeUuidMark ? activeNodeUuidMark.attrs[NAME]: null
+    const activeNodeUuid = (activeNodeUuidMark != null) ? activeNodeUuidMark.attrs[NAME] : null
 
     if (this.storage.activeNodeUuid !== activeNodeUuid) {
       this.storage.activeNodeUuid = activeNodeUuid

@@ -74,18 +74,18 @@ export const NodeHighlightExtension: Extension<NodeHighlightExtensionOptions> =
 
       return plugins
     },
-    addExtensions() {
+    addExtensions () {
       const options: NodeHighlightExtensionOptions = this.options
 
       return [
         NodeUuidExtension.extend({
-          addOptions() {
+          addOptions () {
             return {
               ...this.parent?.(),
               ...options,
               onNodeAttributes: (uuid: string) => generateAttributes(uuid, options)
             }
-          },
+          }
         })
       ]
     }

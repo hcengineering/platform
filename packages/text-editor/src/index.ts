@@ -42,7 +42,7 @@ export {
   NodeHighlightType
 } from './components/extension/nodeHighlight'
 export { NodeUuidCommands, NodeUuidExtension, NodeUuidOptions, NodeUuidStorage } from './components/extension/nodeUuid'
-export {InlinePopupExtension} from './components/extension/inlinePopup'
+export { InlinePopupExtension } from './components/extension/inlinePopup'
 export {
   InlineStyleToolbarExtension,
   InlineStyleToolbarOptions,
