@@ -105,7 +105,7 @@
   }
 
   async function updateItems (query: string): Promise<void> {
-    const queries = []
+    const queries: Promise<SearchSection>[] = []
     for (const cat of categories) {
       queries.push(queryCategoryItems(cat, query))
     }

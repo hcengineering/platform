@@ -41,9 +41,10 @@ export function findSuggestionMatch (config: Trigger): SuggestionMatch {
   }
 
   const textFrom = $position.pos - text.length
-  const match = Array.from(text.matchAll(regexp)).pop()
 
-  if (match == null || match.input === undefined || match.index === undefined) {
+  const match: any = Array.from(text.matchAll(regexp)).pop()
+
+  if (match === undefined || match === null || match.input === undefined || match.index === undefined) {
     return null
   }
 
@@ -170,7 +171,7 @@ export default function Suggestion<I = any> ({
           const state = handleExit && !handleStart ? prev : next
           /* eslint-disable @typescript-eslint/restrict-template-expressions */
           const decorationNode = view.dom.querySelector(`[data-decoration-id="${state.decorationId}"]`)
-          let clientRect = null
+          let clientRect
           if (decorationNode !== null) {
             clientRect = () => {
               // because of `items` can be asynchrounous we’ll search for the current decoration node
