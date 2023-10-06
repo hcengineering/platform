@@ -216,7 +216,7 @@ export async function createClient (
   const oldOnConnect: ((apply: boolean) => void) | undefined = conn.onConnect
   conn.onConnect = async () => {
     // Find all new transactions and apply
-    lastTxTime = await loadModel(conn, lastTxTime, allowedPlugins, configs, hierarchy, model, true)
+    lastTxTime = await loadModel(conn, lastTxTime, allowedPlugins, configs, hierarchy, model, true, txPersistence)
     if (lastTxTime === -1) {
       // We need full refresh
       await oldOnConnect?.(false)
@@ -257,6 +257,21 @@ export async function createClient (
 
   return client
 }
+
+async function tryLoadModel (conn: ClientConnection, lastTxTime: number): Promise<Tx[]> {
+  let res: Tx[] = []
+  try {
+    res = await conn.loadModel(lastTxTime)
+  } catch (err: any) {
+    res = await conn.findAll(
+      core.class.Tx,
+      { objectSpace: core.space.Model, modifiedOn: { $gt: lastTxTime } },
+      { sort: { _id: SortingOrder.Ascending, modifiedOn: SortingOrder.Ascending } }
+    )
+  }
+  return res
+}
+
 async function loadModel (
   conn: ClientConnection,
   lastTxTime: Timestamp,
@@ -276,22 +291,16 @@ async function loadModel (
   }
 
   let atxes: Tx[] = []
-  try {
-    atxes = await conn.loadModel(lastTxTime)
-  } catch (err: any) {
-    atxes = await conn.findAll(
-      core.class.Tx,
-      { objectSpace: core.space.Model },
-      { sort: { _id: SortingOrder.Ascending, modifiedOn: SortingOrder.Ascending } }
-    )
-  }
+  atxes = await tryLoadModel(conn, lastTxTime)
 
   if (reload && atxes.length > modelTransactionThreshold) {
     return -1
   }
 
-  if (atxes.length < modelTransactionThreshold) {
+  if (atxes.length <= modelTransactionThreshold) {
     atxes = ltxes.concat(atxes)
+  } else {
+    atxes = await tryLoadModel(conn, 0)
   }
 
   await persistence?.store(atxes)
