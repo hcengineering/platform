@@ -47,8 +47,9 @@ export class NotificationClientImpl implements NotificationClient {
     )
   }
 
-  static createClient (): void {
+  static createClient (): NotificationClientImpl {
     NotificationClientImpl._instance = new NotificationClientImpl()
+    return NotificationClientImpl._instance
   }
 
   static getClient (): NotificationClientImpl {

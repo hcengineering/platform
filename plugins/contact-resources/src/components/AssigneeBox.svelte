@@ -39,6 +39,7 @@
   import EmployeePresenter from './EmployeePresenter.svelte'
   import UserInfo from './UserInfo.svelte'
   import IconPerson from './icons/Person.svelte'
+  import { AssigneeCategory } from '../assignee'
 
   export let _class: Ref<Class<Employee>> = contact.mixin.Employee
   export let excluded: Ref<Contact>[] | undefined = undefined
@@ -49,9 +50,7 @@
   export let label: IntlString
   export let placeholder: IntlString = presentation.string.Search
   export let value: Ref<Person> | null | undefined
-  export let prevAssigned: Ref<Person>[] | undefined = []
-  export let componentLead: Ref<Employee> | undefined = undefined
-  export let members: Ref<Employee>[] | undefined = []
+  export let categories: AssigneeCategory[] | undefined = undefined
   export let allowDeselect = true
   export let titleDeselect: IntlString | undefined = undefined
   export let readonly = false
@@ -87,7 +86,7 @@
 
   const mgr = getFocusManager()
 
-  const _click = (ev: MouseEvent): void => {
+  function _click (ev: MouseEvent): void {
     if (!readonly) {
       ev.preventDefault()
       ev.stopPropagation()
@@ -98,9 +97,7 @@
           _class,
           options,
           docQuery,
-          prevAssigned,
-          componentLead,
-          members,
+          categories,
           ignoreUsers: excluded ?? [],
           icon,
           selected: value,

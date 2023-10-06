@@ -56,14 +56,31 @@ export async function getActions (
   derived: Ref<Class<Doc>> = core.class.Doc,
   mode: ViewContextType = 'context'
 ): Promise<Action[]> {
-  const actions: Action[] = await client.findAll(view.class.Action, {
+  let actions: Action[] = await client.findAll(view.class.Action, {
     'context.mode': mode
   })
 
   const categories: Partial<Record<ActionGroup | 'top', number>> = { top: 1, tools: 50, other: 100, remove: 200 }
 
-  let filteredActions: Action[] = []
+  if (Array.isArray(doc)) {
+    for (const d of doc) {
+      actions = filterActions(client, d, actions, derived)
+    }
+  } else {
+    actions = filterActions(client, doc, actions, derived)
+  }
+  const inputVal: ViewActionInput[] = ['none']
+  if (!Array.isArray(doc) || doc.length === 1) {
+    inputVal.push('focus')
+    inputVal.push('any')
+  }
+  if (Array.isArray(doc) && doc.length > 0) {
+    inputVal.push('selection')
+    inputVal.push('any')
+  }
+  actions = actions.filter((it) => inputVal.includes(it.input))
 
+  const filteredActions: Action[] = []
   for (const action of actions) {
     if (action.visibilityTester == null) {
       filteredActions.push(action)
@@ -75,23 +92,6 @@ export async function getActions (
       }
     }
   }
-  if (Array.isArray(doc)) {
-    for (const d of doc) {
-      filteredActions = filterActions(client, d, filteredActions, derived)
-    }
-  } else {
-    filteredActions = filterActions(client, doc, filteredActions, derived)
-  }
-  const inputVal: ViewActionInput[] = ['none']
-  if (!Array.isArray(doc) || doc.length === 1) {
-    inputVal.push('focus')
-    inputVal.push('any')
-  }
-  if (Array.isArray(doc) && doc.length > 0) {
-    inputVal.push('selection')
-    inputVal.push('any')
-  }
-  filteredActions = filteredActions.filter((it) => inputVal.includes(it.input))
   filteredActions.sort((a, b) => {
     const aTarget = categories[a.context.group ?? 'top'] ?? 0
     const bTarget = categories[b.context.group ?? 'top'] ?? 0

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Employee } from '@hcengineering/contact'
+import { Contact } from '@hcengineering/contact'
 import core, {
   ApplyOperations,
   AttachedData,
@@ -29,23 +29,24 @@ import core, {
   Space,
   Status,
   StatusCategory,
-  toIdMap,
   TxCollectionCUD,
+  TxCreateDoc,
   TxOperations,
   TxResult,
-  TxUpdateDoc
+  TxUpdateDoc,
+  toIdMap
 } from '@hcengineering/core'
 import { Asset, IntlString } from '@hcengineering/platform'
-import { createQuery } from '@hcengineering/presentation'
+import { createQuery, getClient } from '@hcengineering/presentation'
 import { calcRank } from '@hcengineering/task'
 import {
   Component,
   Issue,
   IssuePriority,
+  IssueStatus,
   IssuesDateModificationPeriod,
   IssuesGrouping,
   IssuesOrdering,
-  IssueStatus,
   Milestone,
   MilestoneStatus,
   Project,
@@ -54,18 +55,18 @@ import {
 import {
   AnyComponent,
   AnySvelteComponent,
+  MILLISECONDS_IN_WEEK,
+  PaletteColorIndexes,
   areDatesEqual,
   getMillisecondsInMonth,
-  isWeekend,
-  MILLISECONDS_IN_WEEK,
-  PaletteColorIndexes
+  isWeekend
 } from '@hcengineering/ui'
 import { KeyFilter, ViewletDescriptor } from '@hcengineering/view'
 import {
   CategoryQuery,
-  groupBy,
   ListSelectionProvider,
   SelectDirection,
+  groupBy,
   statusStore
 } from '@hcengineering/view-resources'
 import { get } from 'svelte/store'
@@ -497,24 +498,33 @@ export function subIssueListProvider (subIssues: Issue[], target: Ref<Issue>): v
   }
 }
 
-export async function getPreviousAssignees (objectId: Ref<Doc>): Promise<Array<Ref<Employee>>> {
-  return await new Promise((resolve) => {
-    const query = createQuery(true)
-    query.query(
-      core.class.Tx,
-      {
-        'tx.objectId': objectId,
-        'tx.operations.assignee': { $exists: true }
-      },
-      (res) => {
-        const prevAssignee = res
-          .map((t) => ((t as TxCollectionCUD<Doc, Issue>).tx as TxUpdateDoc<Issue>).operations.assignee)
-          .filter((p) => !(p == null)) as Array<Ref<Employee>>
-        resolve(prevAssignee)
-        query.unsubscribe()
-      }
-    )
-  })
+export async function getPreviousAssignees (objectId: Ref<Doc> | undefined): Promise<Array<Ref<Contact>>> {
+  if (objectId === undefined) {
+    return []
+  }
+  const client = getClient()
+  const createTx = (
+    await client.findAll<TxCollectionCUD<Issue, Issue>>(core.class.TxCollectionCUD, {
+      'tx.objectId': objectId,
+      'tx._class': core.class.TxCreateDoc
+    })
+  )[0]
+  const updateTxes = await client.findAll<TxCollectionCUD<Issue, Issue>>(
+    core.class.TxCollectionCUD,
+    { 'tx.objectId': objectId, 'tx._class': core.class.TxUpdateDoc, 'tx.operations.assignee': { $exists: true } },
+    { sort: { modifiedOn: -1 } }
+  )
+  const set: Set<Ref<Contact>> = new Set()
+  const createAssignee = (createTx.tx as TxCreateDoc<Issue>).attributes.assignee
+  for (const tx of updateTxes) {
+    const assignee = (tx.tx as TxUpdateDoc<Issue>).operations.assignee
+    if (assignee == null) continue
+    set.add(assignee)
+  }
+  if (createAssignee != null) {
+    set.add(createAssignee)
+  }
+  return Array.from(set)
 }
 
 async function updateIssuesOnMove (
