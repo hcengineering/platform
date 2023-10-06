@@ -1,20 +1,20 @@
 import { test } from '@playwright/test'
-import { generateId, PlatformUser } from './utils'
-import { LoginPage } from './model/login-page'
-import { SelectWorkspacePage } from './model/select-workspace-page'
+import { generateId, PlatformSetting, PlatformURI } from './utils'
 import { LeftSideMenuPage } from './model/left-side-menu-page'
 import { ChunterPage } from './model/chunter-page'
 import { ChannelPage } from './model/channel-page'
 
+test.use({
+  storageState: PlatformSetting
+})
+
 test.describe('channel tests', () => {
+  test.beforeEach(async ({ page }) => {
+    // Create user and workspace
+    await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
+  })
+
   test('create new private channel tests', async ({ page }) => {
-    const loginPage = new LoginPage(page)
-    await loginPage.goto()
-    await loginPage.login(PlatformUser, '1234')
-
-    const selectWorkspacePage = new SelectWorkspacePage(page)
-    await selectWorkspacePage.selectWorkspace('sanity-ws')
-
     const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.buttonChunter.click()
 
