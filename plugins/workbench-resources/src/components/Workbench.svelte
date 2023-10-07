@@ -51,7 +51,10 @@
     resizeObserver,
     resolvedLocationStore,
     setResolvedLocation,
-    showPopup
+    showPopup,
+    Separator,
+    defineSeparators,
+    workbenchSeparators
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import {
@@ -472,40 +475,8 @@
 
   let aside: HTMLElement
   let cover: HTMLElement
-  let isResizing: boolean = false
   let asideWidth: number
   let componentWidth: number
-  let dX: number
-  let oldX: number
-
-  const resizing = (event: MouseEvent): void => {
-    if (isResizing && aside) {
-      const X = event.clientX - dX
-      const newWidth = asideWidth + oldX - X
-      if (newWidth > 320 && componentWidth - (oldX - X) > 320) {
-        aside.style.width = aside.style.maxWidth = aside.style.minWidth = newWidth + 'px'
-        oldX = X
-      }
-    }
-  }
-  const endResize = (event: MouseEvent): void => {
-    const el: HTMLElement = event.currentTarget as HTMLElement
-    if (el && isResizing) document.removeEventListener('mousemove', resizing)
-    document.removeEventListener('mouseup', endResize)
-    cover.style.display = 'none'
-    isResizing = false
-  }
-  const startResize = (event: MouseEvent): void => {
-    const el: HTMLElement = event.currentTarget as HTMLElement
-    if (el && !isResizing) {
-      oldX = el.getBoundingClientRect().y
-      dX = event.clientX - oldX
-      document.addEventListener('mouseup', endResize)
-      document.addEventListener('mousemove', resizing)
-      cover.style.display = 'block'
-      isResizing = true
-    }
-  }
 
   let navFloat: boolean = !($deviceInfo.docWidth < 1024)
   $: if ($deviceInfo.docWidth <= 1024 && !navFloat) {
@@ -600,6 +571,8 @@
 
   let inboxPopup: PopupResult | undefined = undefined
   let lastLoc: Location | undefined = undefined
+
+  defineSeparators('workbench', workbenchSeparators)
 </script>
 
 {#if employee?.active === true || accountId === core.account.System}
@@ -751,6 +724,7 @@
             {/if}
           </NavFooter>
         </div>
+        <Separator name={'workbench'} index={0} />
       {/if}
       <div
         class="antiPanel-component antiComponent"
@@ -782,7 +756,7 @@
       {#if asideId && currentSpace}
         {@const asideComponent = navigatorModel?.aside ?? currentApplication?.aside}
         {#if asideComponent !== undefined}
-          <div class="splitter" class:hovered={isResizing} on:mousedown={startResize} />
+          <Separator name={'workbench'} index={1} />
           <div
             class="antiPanel-component antiComponent aside"
             use:resizeObserver={(element) => {

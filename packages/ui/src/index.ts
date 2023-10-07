@@ -35,7 +35,11 @@ export type {
   ButtonSize,
   IconSize,
   TabItem,
-  DeviceOptions
+  DeviceOptions,
+  TSeparatedItem,
+  SeparatedItem,
+  DefSeparators,
+  SeparatedElement
 } from './types'
 
 export { themeStore } from '@hcengineering/theme'
@@ -114,6 +118,7 @@ export { default as TabList } from './components/TabList.svelte'
 export { default as Chevron } from './components/Chevron.svelte'
 export { default as Timeline } from './components/Timeline.svelte'
 export { default as TimeShiftPresenter } from './components/TimeShiftPresenter.svelte'
+export { default as Separator } from './components/Separator.svelte'
 
 export { default as IconAdd } from './components/icons/Add.svelte'
 export { default as IconCircleAdd } from './components/icons/CircleAdd.svelte'

@@ -428,3 +428,23 @@ export const HOUR = MINUTE * 60
 export const DAY = HOUR * 24
 export const MONTH = DAY * 30
 export const YEAR = MONTH * 12
+
+export type TSeparatedItem = number | 'auto'
+export interface SeparatedItem {
+  size: TSeparatedItem
+  minSize: TSeparatedItem
+  maxSize: TSeparatedItem
+  float?: string | undefined
+}
+export type DefSeparators = Array<SeparatedItem | null>
+export interface SeparatedElement {
+  id: number
+  element: Element
+  styles: Map<string, string> | null
+  minSize: number
+  size: number
+  maxSize: number
+  begin: boolean
+  resize: boolean
+  float?: string | undefined
+}
