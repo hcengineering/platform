@@ -13,12 +13,10 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
-import bitrix, { bitrixId } from '@hcengineering/bitrix'
+import bitrix from '@hcengineering/bitrix'
+import { loadMetadata } from '@hcengineering/platform'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(bitrix.icon, {
   Bitrix: `${icons}#bitrix`
 })
-
-addStringsLoader(bitrixId, async (lang: string) => await import(`../lang/${lang}.json`))

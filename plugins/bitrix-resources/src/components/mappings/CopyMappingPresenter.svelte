@@ -10,7 +10,7 @@
     field ? mapping.bitrixFields[field]?.formLabel ?? mapping.bitrixFields[field]?.title : field ?? ''
 </script>
 
-<div class="flex-row-center  flex-wrap">
+<div class="flex-row-center flex-wrap">
   {#each op.patterns as p, i}
     <div class="pattern flex-row-center">
       <span>

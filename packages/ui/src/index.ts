@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { addLocation, addStringsLoader } from '@hcengineering/platform'
+import { addLocation } from '@hcengineering/platform'
 import { SvelteComponent } from 'svelte'
 import { readable, writable } from 'svelte/store'
 import Root from './components/internal/Root.svelte'
@@ -224,10 +224,6 @@ export const ticker = readable(Date.now(), (set) => {
   setInterval(() => {
     set(Date.now())
   }, 10000)
-})
-
-addStringsLoader(uiId, async (lang: string) => {
-  return await import(`../lang/${lang}.json`)
 })
 
 addLocation(uiId, async () => ({ default: async () => ({}) }))

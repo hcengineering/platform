@@ -2,7 +2,9 @@
   "incrementalBuildIgnoredGlobs": [
     "temp/**", 
     "dist_cache/**", 
-    "coverage/**"
+    "coverage/**",
+    "**/*.svelte",
+    ".build/**"
   ],
   "disableBuildCacheForProject": false,
 

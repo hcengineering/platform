@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
-import hr, { hrId } from '@hcengineering/hr'
+import hr from '@hcengineering/hr'
+import { loadMetadata } from '@hcengineering/platform'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(hr.icon, {
@@ -27,5 +27,3 @@ loadMetadata(hr.icon, {
   Overtime: `${icons}#overtime`,
   Remote: `${icons}#remote`
 })
-
-addStringsLoader(hrId, async (lang: string) => await import(`../lang/${lang}.json`))

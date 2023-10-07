@@ -11,7 +11,7 @@
   $: op = value.operation as CreateChannelOperation
 </script>
 
-<div class="flex  flex-wrap">
+<div class="flex flex-wrap">
   {#each op.fields as p, i}
     <div class="pattern flex-row-center gap-2">
       <Component

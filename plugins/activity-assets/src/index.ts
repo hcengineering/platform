@@ -13,12 +13,10 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
-import activity, { activityId } from '@hcengineering/activity'
+import activity from '@hcengineering/activity'
+import { loadMetadata } from '@hcengineering/platform'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(activity.icon, {
   Activity: `${icons}#activity`
 })
-
-addStringsLoader(activityId, async (lang: string) => await import(`../lang/${lang}.json`))

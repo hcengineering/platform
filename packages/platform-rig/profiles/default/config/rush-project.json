@@ -3,14 +3,15 @@
     "lib/**", 
     "rush-logs/**",
     "coverage/**",
-    ".rush/**"
+    ".rush/**",
+    ".build/**"
   ],
   "disableBuildCacheForProject": false,
 
   "operationSettings": [
     {
       "operationName": "build",
-      "outputFolderNames": ["lib"]
+      "outputFolderNames": ["lib", ".build"]
     },
     {
       "operationName": "test",
@@ -18,7 +19,7 @@
     },
     {
       "operationName": "build:watch",
-      "outputFolderNames": ["lib"]
+      "outputFolderNames": ["lib", ".build"]
     }
   ]
 }

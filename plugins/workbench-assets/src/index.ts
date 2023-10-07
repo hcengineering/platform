@@ -13,12 +13,10 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
-import workbench, { workbenchId } from '@hcengineering/workbench'
+import { loadMetadata } from '@hcengineering/platform'
+import workbench from '@hcengineering/workbench'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(workbench.icon, {
   Search: `${icons}#search`
 })
-
-addStringsLoader(workbenchId, async (lang: string) => await import(`../lang/${lang}.json`))

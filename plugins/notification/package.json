@@ -6,11 +6,11 @@
   "license": "EPL-2.0",
   "template": "@hcengineering/platform-package",
   "scripts": {
-    "build": "tsc --outDir ./lib",
+    "build": "tsc",
     "lint:fix": "eslint --fix src",
     "lint": "eslint src",
     "format": "prettier --write src && eslint --fix src",
-    "build:watch": "tsc --outDir ./lib",
+    "build:watch": "tsc",
     "test": "jest --passWithNoTests --silent"
   },
   "devDependencies": {

@@ -13,12 +13,10 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
-import preference, { preferenceId } from '@hcengineering/preference'
+import { loadMetadata } from '@hcengineering/platform'
+import preference from '@hcengineering/preference'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(preference.icon, {
   Star: `${icons}#star`
 })
-
-addStringsLoader(preferenceId, async (lang: string) => await import(`../lang/${lang}.json`))

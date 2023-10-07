@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
-import chunter, { chunterId } from '@hcengineering/chunter'
+import chunter from '@hcengineering/chunter'
+import { loadMetadata } from '@hcengineering/platform'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(chunter.icon, {
@@ -25,5 +25,3 @@ loadMetadata(chunter.icon, {
   Bookmark: `${icons}#bookmark`,
   ChannelBrowser: `${icons}#channelbrowser`
 })
-
-addStringsLoader(chunterId, async (lang: string) => await import(`../lang/${lang}.json`))

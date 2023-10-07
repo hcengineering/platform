@@ -2,9 +2,9 @@
   "name": "@hcengineering/node-package",
   "version": "0.6.0",
   "scripts": {
-    "build": "tsc --outDir ./lib",
+    "build": "tsc",
     "test": "jest --passWithNoTests --silent --forceExit",
-    "build:watch": "tsc --outDir ./lib",
+    "build:watch": "tsc",
     "lint:fix": "eslint --fix src",
     "lint": "eslint src",
     "format": "prettier --write src && eslint --fix src"

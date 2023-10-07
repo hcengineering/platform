@@ -9,8 +9,8 @@
     "experimentalDecorators": true,
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
-    "incremental": false,
     "declarationMap": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "incremental": true
   }
 }

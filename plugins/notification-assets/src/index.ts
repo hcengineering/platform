@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { loadMetadata, addStringsLoader } from '@hcengineering/platform'
-import notification, { notificationId } from '@hcengineering/notification'
+import notification from '@hcengineering/notification'
+import { loadMetadata } from '@hcengineering/platform'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(notification.icon, {
@@ -24,5 +24,3 @@ loadMetadata(notification.icon, {
   Hide: `${icons}#hide`,
   DontTrack: `${icons}#donttrack`
 })
-
-addStringsLoader(notificationId, async (lang: string) => await import(`../lang/${lang}.json`))

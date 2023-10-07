@@ -14,12 +14,8 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
-import login, { loginId } from '@hcengineering/login'
-
-addStringsLoader(loginId, async (lang: string) => {
-  return await import(`../lang/${lang}.json`)
-})
+import login from '@hcengineering/login'
+import { loadMetadata } from '@hcengineering/platform'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(login.icon, {
