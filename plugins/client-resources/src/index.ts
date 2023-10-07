@@ -63,19 +63,19 @@ export default async () => {
           filterModel ? [...getPlugins(), ...(getMetadata(clientPlugin.metadata.ExtraPlugins) ?? [])] : undefined,
           {
             load: async () => {
-              // if (typeof localStorage !== 'undefined') {
-              //   const dta = localStorage.getItem('stored_model_' + token) ?? null
-              //   if (dta === null) {
-              //     return []
-              //   }
-              //   return JSON.parse(dta)
-              // }
+              if (typeof localStorage !== 'undefined') {
+                const dta = localStorage.getItem('stored_model_' + token) ?? null
+                if (dta === null) {
+                  return []
+                }
+                return JSON.parse(dta)
+              }
               return []
             },
             store: async (txes) => {
-              // if (typeof localStorage !== 'undefined') {
-              //   localStorage.setItem('stored_model_' + token, JSON.stringify(txes))
-              // }
+              if (typeof localStorage !== 'undefined') {
+                localStorage.setItem('stored_model_' + token, JSON.stringify(txes))
+              }
             }
           }
         )

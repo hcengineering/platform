@@ -216,7 +216,7 @@ export async function createClient (
   const oldOnConnect: ((apply: boolean) => void) | undefined = conn.onConnect
   conn.onConnect = async () => {
     // Find all new transactions and apply
-    lastTxTime = await loadModel(conn, lastTxTime, allowedPlugins, configs, hierarchy, model, true)
+    lastTxTime = await loadModel(conn, lastTxTime, allowedPlugins, configs, hierarchy, model, true, txPersistence)
     if (lastTxTime === -1) {
       // We need full refresh
       await oldOnConnect?.(false)
@@ -257,6 +257,32 @@ export async function createClient (
 
   return client
 }
+
+async function tryLoadModel (conn: ClientConnection, lastTxTime: number): Promise<Tx[]> {
+  let res: Tx[] = []
+  try {
+    res = await conn.loadModel(lastTxTime)
+  } catch (err: any) {
+    res = await conn.findAll(
+      core.class.Tx,
+      { objectSpace: core.space.Model, modifiedOn: { $gt: lastTxTime } },
+      { sort: { _id: SortingOrder.Ascending, modifiedOn: SortingOrder.Ascending } }
+    )
+  }
+  return res
+}
+
+// Ignore Employee accounts.
+function isPersonAccount (tx: Tx): boolean {
+  return (
+    (tx._class === core.class.TxCreateDoc ||
+      tx._class === core.class.TxUpdateDoc ||
+      tx._class === core.class.TxRemoveDoc) &&
+    ((tx as TxCUD<Doc>).objectClass === 'contact:class:PersonAccount' ||
+      (tx as TxCUD<Doc>).objectClass === 'core:class:Account')
+  )
+}
+
 async function loadModel (
   conn: ClientConnection,
   lastTxTime: Timestamp,
@@ -271,45 +297,31 @@ async function loadModel (
 
   let ltxes: Tx[] = []
   if (lastTxTime === 0 && persistence !== undefined) {
-    ltxes = await persistence.load()
-    lastTxTime = getLastTxTime(ltxes)
+    const memTxes = await persistence.load()
+    const systemTx = memTxes.find((it) => it.modifiedBy === core.account.System && !isPersonAccount(it))
+    if (systemTx !== undefined) {
+      const exists = await conn.findAll(systemTx._class, { _id: systemTx._id }, { limit: 1 })
+      if (exists.length > 0) {
+        lastTxTime = getLastTxTime(memTxes)
+        ltxes = memTxes
+      }
+    }
   }
 
   let atxes: Tx[] = []
-  try {
-    atxes = await conn.loadModel(lastTxTime)
-  } catch (err: any) {
-    atxes = await conn.findAll(
-      core.class.Tx,
-      { objectSpace: core.space.Model },
-      { sort: { _id: SortingOrder.Ascending, modifiedOn: SortingOrder.Ascending } }
-    )
-  }
+  atxes = await tryLoadModel(conn, lastTxTime)
 
   if (reload && atxes.length > modelTransactionThreshold) {
     return -1
   }
 
-  if (atxes.length < modelTransactionThreshold) {
-    atxes = ltxes.concat(atxes)
-  }
+  atxes = ltxes.concat(atxes)
 
   await persistence?.store(atxes)
 
   let systemTx: Tx[] = []
   const userTx: Tx[] = []
   console.log('find' + (lastTxTime >= 0 ? 'full model' : 'model diff'), atxes.length, Date.now() - t)
-
-  // Ignore Employee accounts.
-  function isPersonAccount (tx: Tx): boolean {
-    return (
-      (tx._class === core.class.TxCreateDoc ||
-        tx._class === core.class.TxUpdateDoc ||
-        tx._class === core.class.TxRemoveDoc) &&
-      ((tx as TxCUD<Doc>).objectClass === 'contact:class:PersonAccount' ||
-        (tx as TxCUD<Doc>).objectClass === 'contact:class:Account')
-    )
-  }
 
   atxes.forEach((tx) => (tx.modifiedBy === core.account.System && !isPersonAccount(tx) ? systemTx : userTx).push(tx))
 
