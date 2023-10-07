@@ -13,12 +13,10 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
-import automation, { automationId } from '@hcengineering/automation'
+import automation from '@hcengineering/automation'
+import { loadMetadata } from '@hcengineering/platform'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(automation.icon, {
   Automation: `${icons}#automation`
 })
-
-addStringsLoader(automationId, async (lang: string) => await import(`../lang/${lang}.json`))

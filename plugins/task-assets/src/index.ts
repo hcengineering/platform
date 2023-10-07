@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
-import task, { taskId } from '@hcengineering/task'
+import { loadMetadata } from '@hcengineering/platform'
+import task from '@hcengineering/task'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(task.icon, {
@@ -27,4 +27,4 @@ loadMetadata(task.icon, {
   Dashboard: `${icons}#dashboard`
 })
 
-addStringsLoader(taskId, async (lang: string) => await import(`../lang/${lang}.json`))
+

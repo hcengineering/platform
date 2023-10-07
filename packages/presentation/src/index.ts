@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-import { addStringsLoader } from '@hcengineering/platform'
 import { presentationId } from './plugin'
 export * from './attributes'
 export { default as AttributeBarEditor } from './components/AttributeBarEditor.svelte'
@@ -51,7 +50,3 @@ export { presentationId }
 export * from './configuration'
 export * from './context'
 export * from './pipeline'
-
-addStringsLoader(presentationId, async (lang: string) => {
-  return await import(`../lang/${lang}.json`)
-})

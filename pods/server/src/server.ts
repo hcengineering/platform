@@ -113,7 +113,7 @@ import { trackerId } from '@hcengineering/tracker'
 import { viewId } from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 
-import coreEng from '@hcengineering/core/src/lang/en.json'
+import coreEng from '@hcengineering/core/lang/en.json'
 
 import loginEng from '@hcengineering/login-assets/lang/en.json'
 

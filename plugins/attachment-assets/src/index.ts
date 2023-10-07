@@ -13,13 +13,11 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
-import attachment, { attachmentId } from '@hcengineering/attachment'
+import attachment from '@hcengineering/attachment'
+import { loadMetadata } from '@hcengineering/platform'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(attachment.icon, {
   Attachment: `${icons}#attachment`,
   FileBrowser: `${icons}#fileBrowser`
 })
-
-addStringsLoader(attachmentId, async (lang: string) => await import(`../lang/${lang}.json`))

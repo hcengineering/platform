@@ -14,13 +14,11 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
-import board, { boardId } from '@hcengineering/board'
+import board from '@hcengineering/board'
+import { loadMetadata } from '@hcengineering/platform'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(board.icon, {
   Board: `${icons}#board`,
   Card: `${icons}#card`
 })
-
-addStringsLoader(boardId, async (lang: string) => await import(`../lang/${lang}.json`))

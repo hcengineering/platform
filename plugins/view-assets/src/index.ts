@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
-import view, { viewId } from '@hcengineering/view'
+import { loadMetadata } from '@hcengineering/platform'
+import view from '@hcengineering/view'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(view.icon, {
@@ -42,4 +42,4 @@ loadMetadata(view.icon, {
   Configure: `${icons}#configure`
 })
 
-addStringsLoader(viewId, async (lang: string) => await import(`../lang/${lang}.json`))
+

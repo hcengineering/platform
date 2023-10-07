@@ -9,7 +9,6 @@
     "strict": true,
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
-    "incremental": false,
     "esModuleInterop": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -17,5 +16,6 @@
       "esnext",
       "dom"
     ],
+    "incremental": true
   }
 }

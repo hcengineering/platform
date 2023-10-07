@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
-import tags, { tagsId } from '@hcengineering/tags'
+import { loadMetadata } from '@hcengineering/platform'
+import tags from '@hcengineering/tags'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(tags.icon, {
@@ -25,4 +25,4 @@ loadMetadata(tags.icon, {
   Level3: `${icons}#level-3`
 })
 
-addStringsLoader(tagsId, async (lang: string) => await import(`../lang/${lang}.json`))
+

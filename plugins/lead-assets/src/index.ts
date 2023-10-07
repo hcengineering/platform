@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
-import lead, { leadId } from '@hcengineering/lead'
+import lead from '@hcengineering/lead'
+import { loadMetadata } from '@hcengineering/platform'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(lead.icon, {
@@ -24,5 +24,3 @@ loadMetadata(lead.icon, {
   LeadApplication: `${icons}#leadapplication`,
   CreateCustomer: `${icons}#new-customer`
 })
-
-addStringsLoader(leadId, async (lang: string) => await import(`../lang/${lang}.json`))

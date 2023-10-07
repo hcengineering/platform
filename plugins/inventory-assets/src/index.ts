@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
-import inventory, { inventoryId } from '@hcengineering/inventory'
+import inventory from '@hcengineering/inventory'
+import { loadMetadata } from '@hcengineering/platform'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(inventory.icon, {
@@ -24,4 +24,3 @@ loadMetadata(inventory.icon, {
   Variant: `${icons}#variant`,
   Products: `${icons}#products`
 })
-addStringsLoader(inventoryId, async (lang: string) => await import(`../lang/${lang}.json`))

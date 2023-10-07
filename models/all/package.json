@@ -5,8 +5,8 @@
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
-    "build": "tsc --outDir ./lib",
-    "build:watch": "tsc --outDir ./lib",
+    "build": "tsc",
+    "build:watch": "tsc",
     "lint:fix": "eslint --fix src",
     "genmodel": "ts-node src/__genmodel.ts",
     "version": "ts-node src/__showversion.ts",

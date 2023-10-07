@@ -2,8 +2,8 @@
   "name": "@hcengineering/assets-package",
   "version": "0.6.0",
   "scripts": {
-    "build": "tsc --outDir ./lib",
-    "build:watch": "tsc --outDir ./lib",
+    "build": "tsc",
+    "build:watch": "tsc",
     "build:docs": "",
     "test": "jest --passWithNoTests --silent",
     "lint": "eslint src",

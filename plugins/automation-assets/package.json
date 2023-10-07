@@ -6,13 +6,13 @@
   "template": "@hcengineering/assets-package",
   "license": "EPL-2.0",
   "scripts": {
-    "build": "tsc --outDir ./lib",
+    "build": "tsc",
     "test": "jest --passWithNoTests --silent",
     "build:docs": "",
     "lint": "eslint src",
     "lint:fix": "eslint --fix src",
     "format": "prettier --write src && eslint --fix src",
-    "build:watch": "tsc --outDir ./lib"
+    "build:watch": "tsc"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.41.0",

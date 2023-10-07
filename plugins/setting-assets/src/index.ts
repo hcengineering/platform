@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { loadMetadata, addStringsLoader } from '@hcengineering/platform'
-import setting, { settingId } from '@hcengineering/setting'
+import { loadMetadata } from '@hcengineering/platform'
+import setting from '@hcengineering/setting'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(setting.icon, {
@@ -30,5 +30,3 @@ loadMetadata(setting.icon, {
   Clazz: `${icons}#clazz`,
   Enums: `${icons}#enums`
 })
-
-addStringsLoader(settingId, async (lang: string) => await import(`../lang/${lang}.json`))

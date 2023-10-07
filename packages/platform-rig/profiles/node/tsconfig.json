@@ -8,11 +8,11 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
-    "incremental": false,
     "declarationMap": true,
     "esModuleInterop": true,
     "rootDir": "./src",
     "outDir": "./lib",
-    "types": ["node", "jest"]
+    "types": ["node", "jest"],
+    "incremental": true
   }
 }
