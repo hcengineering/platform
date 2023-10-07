@@ -272,6 +272,17 @@ async function tryLoadModel (conn: ClientConnection, lastTxTime: number): Promis
   return res
 }
 
+// Ignore Employee accounts.
+function isPersonAccount (tx: Tx): boolean {
+  return (
+    (tx._class === core.class.TxCreateDoc ||
+      tx._class === core.class.TxUpdateDoc ||
+      tx._class === core.class.TxRemoveDoc) &&
+    ((tx as TxCUD<Doc>).objectClass === 'contact:class:PersonAccount' ||
+      (tx as TxCUD<Doc>).objectClass === 'core:class:Account')
+  )
+}
+
 async function loadModel (
   conn: ClientConnection,
   lastTxTime: Timestamp,
@@ -286,8 +297,15 @@ async function loadModel (
 
   let ltxes: Tx[] = []
   if (lastTxTime === 0 && persistence !== undefined) {
-    ltxes = await persistence.load()
-    lastTxTime = getLastTxTime(ltxes)
+    const memTxes = await persistence.load()
+    const systemTx = memTxes.find((it) => it.modifiedBy === core.account.System && !isPersonAccount(it))
+    if (systemTx !== undefined) {
+      const exists = await conn.findAll(systemTx._class, { _id: systemTx._id }, { limit: 1 })
+      if (exists.length > 0) {
+        lastTxTime = getLastTxTime(memTxes)
+        ltxes = memTxes
+      }
+    }
   }
 
   let atxes: Tx[] = []
@@ -297,28 +315,13 @@ async function loadModel (
     return -1
   }
 
-  if (atxes.length <= modelTransactionThreshold) {
-    atxes = ltxes.concat(atxes)
-  } else {
-    atxes = await tryLoadModel(conn, 0)
-  }
+  atxes = ltxes.concat(atxes)
 
   await persistence?.store(atxes)
 
   let systemTx: Tx[] = []
   const userTx: Tx[] = []
   console.log('find' + (lastTxTime >= 0 ? 'full model' : 'model diff'), atxes.length, Date.now() - t)
-
-  // Ignore Employee accounts.
-  function isPersonAccount (tx: Tx): boolean {
-    return (
-      (tx._class === core.class.TxCreateDoc ||
-        tx._class === core.class.TxUpdateDoc ||
-        tx._class === core.class.TxRemoveDoc) &&
-      ((tx as TxCUD<Doc>).objectClass === 'contact:class:PersonAccount' ||
-        (tx as TxCUD<Doc>).objectClass === 'contact:class:Account')
-    )
-  }
 
   atxes.forEach((tx) => (tx.modifiedBy === core.account.System && !isPersonAccount(tx) ? systemTx : userTx).push(tx))
 
