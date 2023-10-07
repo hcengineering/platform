@@ -125,7 +125,6 @@ export class TFilteredView extends TDoc implements FilteredView {
   filterClass?: Ref<Class<Doc>>
   viewletId?: Ref<Viewlet> | null
   users!: Ref<Account>[]
-  createdBy!: Ref<Account>
   attachedTo!: string
   sharable?: boolean
 }
@@ -278,7 +277,7 @@ export class TAggregation extends TClass implements Aggregation {
 
 @Model(view.class.ViewletPreference, preference.class.Preference)
 export class TViewletPreference extends TPreference implements ViewletPreference {
-  attachedTo!: Ref<Viewlet>
+  declare attachedTo: Ref<Viewlet>
   config!: (BuildModelKey | string)[]
 }
 

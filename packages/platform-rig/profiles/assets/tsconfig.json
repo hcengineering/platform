@@ -1,13 +1,19 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "moduleResolution": "node",
+    "target": "esnext",
     "module": "commonjs",
-    "declaration": true,
-    "strict": true,
     "sourceMap": true,
-    "resolveJsonModule": true,
-    "types": [],
+    "declaration": true,
+    "rootDir": "./src",
+    "outDir": "./lib",
+    "strict": true,
     "skipLibCheck": true,
-    "incremental": true
+    "esModuleInterop": true,
+    "lib": [
+      "esnext",
+      "dom"
+    ],
+    "types": ["node", "jest"]
   }
 }

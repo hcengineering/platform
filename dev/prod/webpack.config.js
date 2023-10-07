@@ -57,7 +57,8 @@ module.exports = {
       crypto: false 
     },
     extensions: ['.mjs', '.js', '.svelte', '.ts'],
-    mainFields: ['svelte', 'browser', 'module', 'main']
+    mainFields: ['svelte', 'browser', 'module', 'main'],
+    conditionNames: ['svelte', 'browser', 'import']
   },
   output: {
     path: __dirname + '/dist',

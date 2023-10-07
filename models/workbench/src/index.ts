@@ -52,7 +52,7 @@ export class TApplicationNavModel extends TDoc implements ApplicationNavModel {
 @Model(workbench.class.HiddenApplication, preference.class.Preference)
 export class THiddenApplication extends TPreference implements HiddenApplication {
   @Prop(TypeRef(workbench.class.Application), workbench.string.HiddenApplication)
-    attachedTo!: Ref<Application>
+  declare attachedTo: Ref<Application>
 }
 
 @Mixin(workbench.mixin.SpaceView, core.class.Class)

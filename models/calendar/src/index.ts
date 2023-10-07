@@ -132,7 +132,7 @@ export class TReccuringEvent extends TEvent implements ReccuringEvent {
 @UX(calendar.string.Event, calendar.icon.Calendar)
 export class TReccuringInstance extends TReccuringEvent implements ReccuringInstance {
   recurringEventId!: Ref<ReccuringEvent>
-  originalStartTime!: number
+  declare originalStartTime: number
   isCancelled?: boolean
   virtual?: boolean
 }

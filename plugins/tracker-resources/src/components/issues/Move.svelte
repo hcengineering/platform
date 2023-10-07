@@ -182,10 +182,10 @@
       issueToUpdate.set(issue._id, upd)
     }
     for (const status in Object.keys(statusToUpdate)) {
-      statusToUpdate[status] = { ref: status, create: true }
+      statusToUpdate[status as Ref<Status>] = { ref: status as Ref<Status>, create: true }
     }
     for (const component in Object.keys(componentToUpdate)) {
-      componentToUpdate[component] = { ref: component, create: true }
+      componentToUpdate[component as Ref<Component>] = { ref: component as Ref<Component>, create: true }
     }
 
     for (const issue of toMove) {

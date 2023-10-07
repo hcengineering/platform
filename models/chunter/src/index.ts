@@ -158,7 +158,7 @@ export class TBacklink extends TComment implements Backlink {
 @Model(chunter.class.SavedMessages, preference.class.Preference)
 export class TSavedMessages extends TPreference implements SavedMessages {
   @Prop(TypeRef(chunter.class.ChunterMessage), chunter.string.SavedMessages)
-    attachedTo!: Ref<ChunterMessage>
+  declare attachedTo: Ref<ChunterMessage>
 }
 
 @Mixin(chunter.mixin.DirectMessageInput, core.class.Class)

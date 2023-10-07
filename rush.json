@@ -597,11 +597,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/model-rig",
-      "projectFolder": "models/model-rig",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/model-all",
       "projectFolder": "models/all",
       "shouldPublish": false

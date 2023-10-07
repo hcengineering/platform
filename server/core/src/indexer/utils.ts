@@ -67,7 +67,8 @@ export function getFullTextAttributes (hierarchy: Hierarchy, clazz: Ref<Class<Ob
   return result
 }
 
-export { docKey, docUpdKey, extractDocKey, IndexKeyOptions, isFullTextAttribute } from '@hcengineering/core'
+export { docKey, docUpdKey, extractDocKey, isFullTextAttribute } from '@hcengineering/core'
+export type { IndexKeyOptions } from '@hcengineering/core'
 
 /**
  * @public

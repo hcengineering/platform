@@ -173,7 +173,7 @@ export class TIssue extends TTask implements Issue {
     iconComponent: tracker.activity.StatusIcon
   })
   @Index(IndexKind.Indexed)
-    status!: Ref<IssueStatus>
+  declare status: Ref<IssueStatus>
 
   @Prop(TypeIssuePriority(), tracker.string.Priority, {
     iconComponent: tracker.activity.PriorityIcon
@@ -184,11 +184,11 @@ export class TIssue extends TTask implements Issue {
   @Prop(TypeNumber(), tracker.string.Number)
   @Index(IndexKind.FullText)
   @ReadOnly()
-    number!: number
+  declare number: number
 
   @Prop(TypeRef(contact.class.Person), tracker.string.Assignee)
   @Index(IndexKind.Indexed)
-    assignee!: Ref<Person> | null
+  declare assignee: Ref<Person> | null
 
   @Prop(TypeRef(tracker.class.Component), tracker.string.Component, { icon: tracker.icon.Component })
   @Index(IndexKind.Indexed)
@@ -219,11 +219,11 @@ export class TIssue extends TTask implements Issue {
   declare space: Ref<Project>
 
   @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.DueDate)
-    dueDate!: Timestamp | null
+  declare dueDate: Timestamp | null
 
   @Prop(TypeString(), tracker.string.Rank)
   @Hidden()
-    rank!: string
+  declare rank: string
 
   @Prop(TypeRef(tracker.class.Milestone), tracker.string.Milestone, { icon: tracker.icon.Milestone })
   @Index(IndexKind.Indexed)

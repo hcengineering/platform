@@ -22,7 +22,7 @@ import { toWorkspaceString, WorkspaceId } from '@hcengineering/core'
 /**
  * @public
  */
-export type MinioWorkspaceItem = BucketItem & { metaData: ItemBucketMetadata }
+export type MinioWorkspaceItem = Required<BucketItem> & { metaData: ItemBucketMetadata }
 
 /**
  * @public
@@ -58,11 +58,13 @@ export class MinioService {
 
   async list (workspaceId: WorkspaceId, prefix?: string): Promise<MinioWorkspaceItem[]> {
     try {
-      const items = new Map<string, BucketItem & { metaData: ItemBucketMetadata }>()
+      const items = new Map<string, MinioWorkspaceItem>()
       const list = await this.client.listObjects(getBucketId(workspaceId), prefix, true)
       await new Promise((resolve) => {
         list.on('data', (data) => {
-          items.set(data.name, { metaData: {}, ...data })
+          if (data.name !== undefined) {
+            items.set(data.name, { metaData: {}, ...data } as any)
+          }
         })
         list.on('end', () => {
           resolve(null)
