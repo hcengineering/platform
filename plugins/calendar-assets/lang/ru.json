@@ -45,7 +45,7 @@
     "ExternalParticipants": "Внешние участники",
     "IntegrationDescr": "Подключить Google Календарь",
     "Connect": "Подключить",
-    "RedirectGoogle": "Вы будете перенаправлены на страницу авторизации Google",
+    "RedirectGoogle": "Вы будете перенаправлены на страницу авторизации Google. Пожалуйста убедитесь что выбрали все разрешения",
     "ConnectCalendar": "Подключить Google Календарь",
     "EditRecEvent": "Изменение повторяющегося события",
     "RemoveRecEvent": "Удаление повторяющегося события",
@@ -78,6 +78,12 @@
     "Busy": "Занято",
     "AddReminder": "Добавить напоминание",
     "SeeAllNumberParticipants": "{value, plural, other {Увидеть всех # участников}}",
-    "SeeAllNumberReminders": "{value, plural, other {Просмотреть все # напоминаний}}"
+    "SeeAllNumberReminders": "{value, plural, other {Просмотреть все # напоминаний}}",
+    "Visibility": "Видимость",
+    "Private": "Видно только Вам",
+    "Public": "Видно всем",
+    "FreeBusy": "Скрыть детали",
+    "DefaultVisibility": "Видимость по умолчанию",
+    "NotAllPermissions": "Были предоставлены не все разрешения"
   }
 }

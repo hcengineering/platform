@@ -73,7 +73,7 @@ import {
   TimeSpendReport,
   trackerId
 } from '@hcengineering/tracker'
-import { KeyBinding, ViewAction, ViewOptionsModel } from '@hcengineering/view'
+import { BuildModelKey, KeyBinding, ViewAction, ViewOptionsModel } from '@hcengineering/view'
 import tracker from './plugin'
 
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
@@ -173,7 +173,7 @@ export class TIssue extends TTask implements Issue {
     iconComponent: tracker.activity.StatusIcon
   })
   @Index(IndexKind.Indexed)
-    status!: Ref<IssueStatus>
+  declare status: Ref<IssueStatus>
 
   @Prop(TypeIssuePriority(), tracker.string.Priority, {
     iconComponent: tracker.activity.PriorityIcon
@@ -184,11 +184,11 @@ export class TIssue extends TTask implements Issue {
   @Prop(TypeNumber(), tracker.string.Number)
   @Index(IndexKind.FullText)
   @ReadOnly()
-    number!: number
+  declare number: number
 
   @Prop(TypeRef(contact.class.Person), tracker.string.Assignee)
   @Index(IndexKind.Indexed)
-    assignee!: Ref<Person> | null
+  declare assignee: Ref<Person> | null
 
   @Prop(TypeRef(tracker.class.Component), tracker.string.Component, { icon: tracker.icon.Component })
   @Index(IndexKind.Indexed)
@@ -219,11 +219,11 @@ export class TIssue extends TTask implements Issue {
   declare space: Ref<Project>
 
   @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.DueDate)
-    dueDate!: Timestamp | null
+  declare dueDate: Timestamp | null
 
   @Prop(TypeString(), tracker.string.Rank)
   @Hidden()
-    rank!: string
+  declare rank: string
 
   @Prop(TypeRef(tracker.class.Milestone), tracker.string.Milestone, { icon: tracker.icon.Milestone })
   @Index(IndexKind.Indexed)
@@ -235,6 +235,13 @@ export class TIssue extends TTask implements Issue {
   @Prop(TypeReportedTime(), tracker.string.ReportedTime)
   @ReadOnly()
     reportedTime!: number
+
+  // A fully virtual property with calculated content.
+  // TODO: Add proper support for this kind of fields
+  @Prop(TypeNumber(), tracker.string.RemainingTime)
+  @ReadOnly()
+  @Hidden()
+    remainingTime!: number
 
   @Prop(Collection(tracker.class.TimeSpendReport), tracker.string.TimeSpendReports)
     reports!: number
@@ -298,7 +305,7 @@ export class TIssueTemplate extends TDoc implements IssueTemplate {
 @Model(tracker.class.TimeSpendReport, core.class.AttachedDoc, DOMAIN_TRACKER)
 @UX(tracker.string.TimeSpendReport, tracker.icon.TimeReport)
 export class TTimeSpendReport extends TAttachedDoc implements TimeSpendReport {
-  @Prop(TypeRef(tracker.class.Issue), tracker.string.Parent)
+  @Prop(TypeRef(tracker.class.Issue), tracker.string.Issue)
   declare attachedTo: Ref<Issue>
 
   @Prop(TypeRef(contact.mixin.Employee), contact.string.Employee)
@@ -425,6 +432,121 @@ export function createModel (builder: Builder): void {
     TProjectIssueTargetOptions
   )
 
+  function issueConfig (
+    key: string = '',
+    compact: boolean = false,
+    milestone: boolean = true,
+    component: boolean = true
+  ): (BuildModelKey | string)[] {
+    return [
+      {
+        key: '',
+        label: tracker.string.Priority,
+        presenter: tracker.component.PriorityEditor,
+        props: { type: 'priority', kind: 'list', size: 'small' },
+        displayProps: { key: 'priority' }
+      },
+      {
+        key: '',
+        label: tracker.string.Identifier,
+        presenter: tracker.component.IssuePresenter,
+        displayProps: { key: key + 'issue', fixed: 'left' }
+      },
+      {
+        key: '',
+        label: tracker.string.Status,
+        presenter: tracker.component.StatusEditor,
+        props: { kind: 'list', size: 'small', justify: 'center' },
+        displayProps: { key: key + 'status' }
+      },
+      {
+        key: '',
+        label: tracker.string.Title,
+        presenter: tracker.component.TitlePresenter,
+        props: compact ? { shouldUseMargin: true, showParent: false } : {},
+        displayProps: { key: key + 'title' }
+      },
+      {
+        key: '',
+        label: tracker.string.SubIssues,
+        presenter: tracker.component.SubIssuesSelector,
+        props: {}
+      },
+      { key: 'comments', displayProps: { key: key + 'comments', suffix: true } },
+      { key: 'attachments', displayProps: { key: key + 'attachments', suffix: true } },
+      { key: '', displayProps: { grow: true } },
+      {
+        key: 'labels',
+        presenter: tags.component.LabelsPresenter,
+        displayProps: { compression: true },
+        props: { kind: 'list', full: false }
+      },
+      ...(milestone
+        ? [
+            {
+              key: '',
+              label: tracker.string.Milestone,
+              presenter: tracker.component.MilestoneEditor,
+              props: {
+                kind: 'list',
+                size: 'small',
+                shouldShowPlaceholder: false
+              },
+              displayProps: {
+                key: key + 'milestone',
+                excludeByKey: 'milestone',
+                compression: true
+              }
+            }
+          ]
+        : []),
+      ...(component
+        ? [
+            {
+              key: '',
+              label: tracker.string.Component,
+              presenter: tracker.component.ComponentEditor,
+              props: {
+                kind: 'list',
+                size: 'small',
+                shouldShowPlaceholder: false
+              },
+              displayProps: {
+                key: key + 'component',
+                excludeByKey: 'component',
+                compression: true
+              }
+            }
+          ]
+        : []),
+      {
+        key: '',
+        label: tracker.string.DueDate,
+        presenter: tracker.component.DueDatePresenter,
+        displayProps: { key: key + 'dueDate', compression: true },
+        props: { kind: 'list' }
+      },
+      {
+        key: '',
+        label: tracker.string.Estimation,
+        presenter: tracker.component.EstimationEditor,
+        props: { kind: 'list', size: 'small' },
+        displayProps: { key: key + 'estimation', fixed: 'left', dividerBefore: true, optional: true }
+      },
+      {
+        key: 'modifiedOn',
+        presenter: tracker.component.ModificationDatePresenter,
+        displayProps: { key: key + 'modified', fixed: 'left', dividerBefore: true }
+      },
+      {
+        key: 'assignee',
+        presenter: tracker.component.AssigneeEditor,
+        displayProps: { key: 'assignee', fixed: 'right' },
+        props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' }
+      }
+    ]
+  }
+
   builder.createDoc(
     view.class.Viewlet,
     core.space.Model,
@@ -453,107 +575,7 @@ export function createModel (builder: Builder): void {
           'modifiedBy'
         ]
       },
-      config: [
-        {
-          key: '',
-          label: tracker.string.Priority,
-          presenter: tracker.component.PriorityEditor,
-          props: { type: 'priority', kind: 'list', size: 'small' },
-          displayProps: { key: 'priority' }
-        },
-        {
-          key: '',
-          label: tracker.string.Identifier,
-          presenter: tracker.component.IssuePresenter,
-          displayProps: { key: 'issue', fixed: 'left' }
-        },
-        {
-          key: '',
-          label: tracker.string.Status,
-          presenter: tracker.component.StatusEditor,
-          props: { kind: 'list', size: 'small', justify: 'center' },
-          displayProps: {
-            key: 'status'
-          }
-        },
-        {
-          key: '',
-          label: tracker.string.Title,
-          presenter: tracker.component.TitlePresenter,
-          props: {},
-          displayProps: { key: 'title' }
-        },
-        {
-          key: '',
-          label: tracker.string.SubIssues,
-          presenter: tracker.component.SubIssuesSelector,
-          props: {}
-        },
-        { key: 'comments', displayProps: { key: 'comments', suffix: true } },
-        { key: 'attachments', displayProps: { key: 'attachments', suffix: true } },
-        { key: '', displayProps: { grow: true } },
-        {
-          key: 'labels',
-          presenter: tags.component.LabelsPresenter,
-          displayProps: { compression: true },
-          props: { kind: 'list', full: false }
-        },
-        {
-          key: '',
-          label: tracker.string.Milestone,
-          presenter: tracker.component.MilestoneEditor,
-          props: {
-            kind: 'list',
-            size: 'small',
-            shouldShowPlaceholder: false
-          },
-          displayProps: {
-            key: 'milestone',
-            excludeByKey: 'milestone',
-            compression: true
-          }
-        },
-        {
-          key: '',
-          label: tracker.string.Component,
-          presenter: tracker.component.ComponentEditor,
-          props: {
-            kind: 'list',
-            size: 'small',
-            shouldShowPlaceholder: false
-          },
-          displayProps: {
-            key: 'component',
-            excludeByKey: 'component',
-            compression: true
-          }
-        },
-        {
-          key: '',
-          label: tracker.string.DueDate,
-          presenter: tracker.component.DueDatePresenter,
-          displayProps: { key: 'dueDate', compression: true },
-          props: { kind: 'list' }
-        },
-        {
-          key: '',
-          label: tracker.string.Estimation,
-          presenter: tracker.component.EstimationEditor,
-          props: { kind: 'list', size: 'small' },
-          displayProps: { key: 'estimation', fixed: 'left', dividerBefore: true, optional: true }
-        },
-        {
-          key: 'modifiedOn',
-          presenter: tracker.component.ModificationDatePresenter,
-          displayProps: { key: 'modified', fixed: 'left', dividerBefore: true }
-        },
-        {
-          key: 'assignee',
-          presenter: tracker.component.AssigneeEditor,
-          displayProps: { key: 'assignee', fixed: 'right' },
-          props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' }
-        }
-      ]
+      config: issueConfig()
     },
     tracker.viewlet.IssueList
   )
@@ -594,78 +616,91 @@ export function createModel (builder: Builder): void {
           'modifiedBy'
         ]
       },
-      config: [
-        {
-          key: '',
-          label: tracker.string.Priority,
-          presenter: tracker.component.PriorityEditor,
-          props: { type: 'priority', kind: 'list', size: 'small' },
-          displayProps: { key: 'subpriority' }
-        },
-        {
-          key: '',
-          label: tracker.string.Issue,
-          presenter: tracker.component.IssuePresenter,
-          props: { type: 'issue' },
-          displayProps: { key: 'subissue', fixed: 'left' }
-        },
-        {
-          key: '',
-          label: tracker.string.Status,
-          presenter: tracker.component.StatusEditor,
-          props: { kind: 'list', size: 'small', justify: 'center' },
-          displayProps: { key: 'substatus' }
-        },
-        {
-          key: '',
-          label: tracker.string.Title,
-          presenter: tracker.component.TitlePresenter,
-          props: { shouldUseMargin: true, showParent: false }
-        },
-        { key: '', label: tracker.string.SubIssues, presenter: tracker.component.SubIssuesSelector, props: {} },
-        { key: '', displayProps: { grow: true } },
-        {
-          key: '',
-          label: tracker.string.Milestone,
-          presenter: tracker.component.MilestoneEditor,
-          props: {
-            kind: 'list',
-            size: 'small',
-            shouldShowPlaceholder: false
-          },
-          displayProps: {
-            excludeByKey: 'milestone',
-            compression: true
-          }
-        },
-        {
-          key: '',
-          label: tracker.string.DueDate,
-          presenter: tracker.component.DueDatePresenter,
-          displayProps: { key: 'dueDate', compression: true },
-          props: { kind: 'list', size: 'small' }
-        },
-        {
-          key: '',
-          label: tracker.string.Estimation,
-          presenter: tracker.component.EstimationEditor,
-          displayProps: { optional: true },
-          props: { kind: 'list', size: 'small' }
-        },
-        {
-          key: 'modifiedOn',
-          presenter: tracker.component.ModificationDatePresenter,
-          displayProps: { key: 'submodified', fixed: 'right' }
-        },
-        {
-          key: 'assignee',
-          presenter: tracker.component.AssigneeEditor,
-          displayProps: { key: 'assignee', fixed: 'right' },
-          props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' }
-        }
-      ]
+      config: issueConfig('sub', true, true)
     },
     tracker.viewlet.SubIssues
+  )
+
+  const milestoneIssueOptions: ViewOptionsModel = {
+    groupBy: ['status', 'assignee', 'priority', 'component', 'createdBy', 'modifiedBy'],
+    orderBy: [
+      ['rank', SortingOrder.Ascending],
+      ['status', SortingOrder.Ascending],
+      ['priority', SortingOrder.Ascending],
+      ['modifiedOn', SortingOrder.Descending],
+      ['createdOn', SortingOrder.Descending],
+      ['dueDate', SortingOrder.Ascending]
+    ],
+    groupDepth: 1,
+    other: [showColorsViewOption]
+  }
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: tracker.class.Issue,
+      descriptor: view.viewlet.List,
+      viewOptions: milestoneIssueOptions,
+      variant: 'milestone',
+      configOptions: {
+        strict: true,
+        hiddenKeys: [
+          'priority',
+          'number',
+          'status',
+          'title',
+          'dueDate',
+          'milestone',
+          'estimation',
+          'createdBy',
+          'modifiedBy'
+        ]
+      },
+      config: issueConfig('sub', true, false, true)
+    },
+    tracker.viewlet.MilestoneIssuesList
+  )
+
+  const componentIssueOptions: ViewOptionsModel = {
+    groupBy: ['status', 'assignee', 'priority', 'milestone', 'createdBy', 'modifiedBy'],
+    orderBy: [
+      ['rank', SortingOrder.Ascending],
+      ['status', SortingOrder.Ascending],
+      ['priority', SortingOrder.Ascending],
+      ['modifiedOn', SortingOrder.Descending],
+      ['createdOn', SortingOrder.Descending],
+      ['dueDate', SortingOrder.Ascending]
+    ],
+    groupDepth: 1,
+    other: [showColorsViewOption]
+  }
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: tracker.class.Issue,
+      descriptor: view.viewlet.List,
+      viewOptions: componentIssueOptions,
+      variant: 'component',
+      configOptions: {
+        strict: true,
+        hiddenKeys: [
+          'priority',
+          'number',
+          'status',
+          'title',
+          'dueDate',
+          'component',
+          'estimation',
+          'createdBy',
+          'modifiedBy'
+        ]
+      },
+      config: issueConfig('sub', true, true, false)
+    },
+    tracker.viewlet.ComponentIssuesList
   )
 
   builder.createDoc(
@@ -1541,8 +1576,13 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: tracker.actionImpl.SelectStatus,
-      actionPopup: tracker.component.StatusSelector,
+      action: task.actionImpl.SelectStatus,
+      actionPopup: task.component.StatusSelector,
+      actionProps: {
+        _class: tracker.class.IssueStatus,
+        ofAttribute: tracker.attribute.IssueStatus,
+        placeholder: tracker.string.Status
+      },
       label: tracker.string.Status,
       icon: tracker.icon.CategoryBacklog,
       keyBinding: ['keyS->keyS'],
@@ -1957,6 +1997,7 @@ export function createModel (builder: Builder): void {
       field: 'assignee',
       txClasses: [core.class.TxCreateDoc, core.class.TxUpdateDoc],
       objectClass: tracker.class.Issue,
+      onlyOwn: true,
       templates: {
         textTemplate: '{doc} was assigned to you by {sender}',
         htmlTemplate: '<p>{doc} was assigned to you by {sender}</p>',

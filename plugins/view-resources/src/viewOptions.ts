@@ -146,7 +146,7 @@ export async function showEmptyGroups (
   const allValuesMixin = hierarchy.as(attributeClass, view.mixin.AllValuesFunc)
   if (allValuesMixin.func !== undefined) {
     const f = await getResource(allValuesMixin.func)
-    const res = await f(query, onUpdate, queryId)
+    const res = await f(query, onUpdate, queryId, attr)
     if (res !== undefined) {
       return await groupByCategory(client, _class, space, key, res, viewletDescriptorId)
     }

@@ -18,10 +18,11 @@ import {
   Calendar,
   CalendarEventPresenter,
   Event,
+  ExternalCalendar,
   ReccuringEvent,
   ReccuringInstance,
   RecurringRule,
-  calendarId
+  Visibility
 } from '@hcengineering/calendar'
 import { Contact } from '@hcengineering/contact'
 import { DateRangeMode, Domain, IndexKind, Markup, Ref, Timestamp } from '@hcengineering/core'
@@ -47,7 +48,6 @@ import contact from '@hcengineering/model-contact'
 import core, { TAttachedDoc, TClass } from '@hcengineering/model-core'
 import { TSpaceWithStates } from '@hcengineering/model-task'
 import view, { createAction } from '@hcengineering/model-view'
-import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
 import { AnyComponent } from '@hcengineering/ui'
@@ -62,9 +62,15 @@ export const DOMAIN_CALENDAR = 'calendar' as Domain
 @Model(calendar.class.Calendar, core.class.Space)
 @UX(calendar.string.Calendar, calendar.icon.Calendar)
 export class TCalendar extends TSpaceWithStates implements Calendar {
-  visibility!: 'public' | 'freeBusy' | 'private'
+  visibility!: Visibility
+}
 
-  sync?: boolean
+@Model(calendar.class.ExternalCalendar, calendar.class.Calendar)
+@UX(calendar.string.Calendar, calendar.icon.Calendar)
+export class TExternalCalendar extends TCalendar implements ExternalCalendar {
+  default!: boolean
+  externalId!: string
+  externalUser!: string
 }
 
 @Model(calendar.class.Event, core.class.AttachedDoc, DOMAIN_CALENDAR)
@@ -110,7 +116,7 @@ export class TEvent extends TAttachedDoc implements Event {
 
   access!: 'freeBusyReader' | 'reader' | 'writer' | 'owner'
 
-  visibility?: 'public' | 'freeBusy' | 'private'
+  visibility?: Visibility
 }
 
 @Model(calendar.class.ReccuringEvent, calendar.class.Event)
@@ -119,13 +125,14 @@ export class TReccuringEvent extends TEvent implements ReccuringEvent {
   rules!: RecurringRule[]
   exdate!: Timestamp[]
   rdate!: Timestamp[]
+  originalStartTime!: Timestamp
 }
 
 @Model(calendar.class.ReccuringInstance, calendar.class.Event)
 @UX(calendar.string.Event, calendar.icon.Calendar)
 export class TReccuringInstance extends TReccuringEvent implements ReccuringInstance {
   recurringEventId!: Ref<ReccuringEvent>
-  originalStartTime!: number
+  declare originalStartTime: number
   isCancelled?: boolean
   virtual?: boolean
 }
@@ -136,19 +143,13 @@ export class TCalendarEventPresenter extends TClass implements CalendarEventPres
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TCalendar, TReccuringEvent, TReccuringInstance, TEvent, TCalendarEventPresenter)
-
-  builder.createDoc(
-    workbench.class.Application,
-    core.space.Model,
-    {
-      label: calendar.string.ApplicationLabelCalendar,
-      icon: calendar.icon.Calendar,
-      alias: calendarId,
-      hidden: false,
-      component: calendar.component.Events
-    },
-    calendar.app.Calendar
+  builder.createModel(
+    TCalendar,
+    TExternalCalendar,
+    TReccuringEvent,
+    TReccuringInstance,
+    TEvent,
+    TCalendarEventPresenter
   )
 
   builder.mixin(calendar.class.Event, core.class.Class, calendar.mixin.CalendarEventPresenter, {
@@ -177,6 +178,7 @@ export function createModel (builder: Builder): void {
       label: calendar.string.Calendar,
       description: calendar.string.IntegrationDescr,
       icon: calendar.component.CalendarIntegrationIcon,
+      allowMultiple: true,
       createComponent: calendar.component.IntegrationConnect,
       onDisconnect: calendar.handler.DisconnectHandler,
       reconnectComponent: calendar.component.IntegrationConnect,

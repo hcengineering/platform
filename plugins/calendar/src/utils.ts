@@ -78,11 +78,11 @@ function generateWeeklyValues (
   to: Timestamp
 ): void {
   const { count, endDate, interval } = rule
-  let { byDay, wkst, bySetPos } = rule
+  let { byDay, bySetPos } = rule
   let i = 0
 
   if (byDay === undefined) {
-    byDay = [getWeekday(currentDate, wkst)]
+    byDay = [getWeekday(currentDate)]
   }
 
   while (true) {
@@ -90,10 +90,7 @@ function generateWeeklyValues (
     const end = new Date(new Date(currentDate).setDate(currentDate.getDate() + 7))
     let date = currentDate
     while (date < end) {
-      if (
-        (byDay == null || matchesByDay(date, byDay, wkst)) &&
-        (bySetPos == null || bySetPos.includes(getSetPos(date)))
-      ) {
+      if ((byDay == null || matchesByDay(date, byDay)) && (bySetPos == null || bySetPos.includes(getSetPos(date)))) {
         const res = date.getTime()
         if (res > from) {
           values.push(res)
@@ -110,8 +107,8 @@ function generateWeeklyValues (
   }
 }
 
-function matchesByDay (date: Date, byDay: string[], wkst: string | undefined): boolean {
-  const weekday = getWeekday(date, wkst)
+function matchesByDay (date: Date, byDay: string[]): boolean {
+  const weekday = getWeekday(date)
   const dayOfMonth = Math.floor((date.getDate() - 1) / 7) + 1
 
   for (const byDayItem of byDay) {
@@ -157,7 +154,7 @@ function generateMonthlyValues (
   to: Timestamp
 ): void {
   const { count, endDate, interval } = rule
-  let { byDay, byMonthDay, bySetPos, wkst } = rule
+  let { byDay, byMonthDay, bySetPos } = rule
   let i = 0
 
   if (byDay == null && byMonthDay == null) {
@@ -170,7 +167,7 @@ function generateMonthlyValues (
     let date = currentDate
     while (date < end) {
       if (
-        (byDay == null || matchesByDay(date, byDay, wkst)) &&
+        (byDay == null || matchesByDay(date, byDay)) &&
         (byMonthDay == null || byMonthDay.includes(new Date(currentDate).getDate())) &&
         (bySetPos == null || bySetPos.includes(getSetPos(currentDate)))
       ) {
@@ -198,7 +195,7 @@ function generateYearlyValues (
   to: Timestamp
 ): void {
   const { count, endDate, interval } = rule
-  const { byDay, byMonthDay, byYearDay, byWeekNo, byMonth, bySetPos, wkst } = rule
+  const { byDay, byMonthDay, byYearDay, byWeekNo, byMonth, bySetPos } = rule
   let i = 0
 
   while (true) {
@@ -207,7 +204,7 @@ function generateYearlyValues (
     let date = currentDate
     while (date < end) {
       if (
-        (byDay == null || matchesByDay(date, byDay, wkst)) &&
+        (byDay == null || matchesByDay(date, byDay)) &&
         (byMonthDay == null || byMonthDay.includes(currentDate.getDate())) &&
         (byYearDay == null || byYearDay.includes(getYearDay(currentDate))) &&
         (byWeekNo == null || byWeekNo.includes(getWeekNumber(currentDate))) &&
@@ -242,16 +239,9 @@ function getSetPos (date: Date): number {
 /**
  * @public
  */
-export function getWeekday (date: Date, wkst?: string): string {
+export function getWeekday (date: Date): string {
   const weekdays = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA']
   const weekday = weekdays[date.getDay()]
-
-  if (wkst !== undefined && wkst !== 'MO') {
-    const wkstIndex = weekdays.indexOf(wkst)
-    const offset = wkstIndex > 0 ? wkstIndex - 1 : 6
-
-    return weekdays[(date.getDay() + offset) % 7]
-  }
 
   return weekday
 }
@@ -295,7 +285,7 @@ function getReccuringEventInstances (
   const excludes = new Set(event.exdate ?? [])
   res = res.filter((p) => !excludes.has(p.date))
   res = res.filter((i) => {
-    const override = instances.find((p) => p.originalStartTime === i.date)
+    const override = instances.find((p) => p.originalStartTime === i.originalStartTime)
     return override === undefined
   })
   return res
@@ -332,7 +322,7 @@ export function getAllEvents (events: Event[], from: Timestamp, to: Timestamp): 
     ...base,
     ...recurData,
     ...instances.filter((p) => {
-      return from <= p.dueDate && p.date <= to
+      return from <= p.dueDate && p.date <= to && p.isCancelled !== true
     })
   ]
   res.sort((a, b) => a.date - b.date)

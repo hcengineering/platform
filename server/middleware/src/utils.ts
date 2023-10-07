@@ -54,3 +54,7 @@ export async function getUser (storage: ServerStorage, ctx: SessionContext): Pro
 export function isOwner (account: Account): boolean {
   return account.role === AccountRole.Owner || account._id === core.account.System
 }
+
+export function isSystem (account: Account): boolean {
+  return account._id === core.account.System
+}

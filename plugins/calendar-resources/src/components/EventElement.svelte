@@ -14,20 +14,19 @@
 -->
 <script lang="ts">
   import calendar, { CalendarEventPresenter, Event } from '@hcengineering/calendar'
-  import { Doc, DocumentUpdate } from '@hcengineering/core'
+  import { Doc } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import {
     Component,
     MILLISECONDS_IN_MINUTE,
-    deviceOptionsStore,
+    closeTooltip,
     getEventPositionElement,
     showPopup,
     tooltip
   } from '@hcengineering/ui'
   import view, { ObjectEditor } from '@hcengineering/view'
   import { Menu } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
-  import { calendarStore, isReadOnly, isVisible } from '../utils'
+  import { calendarStore, isVisible } from '../utils'
   import EventPresenter from './EventPresenter.svelte'
 
   export let event: Event
@@ -56,93 +55,13 @@
 
   let div: HTMLDivElement
 
-  const dispatch = createEventDispatcher()
-
-  $: fontSize = $deviceOptionsStore.fontSize
-
-  function dragStart (e: DragEvent) {
-    if (readOnly) return
-    if (event.allDay) return
-    originDate = event.date
-    originDueDate = event.dueDate
-    const rect = div.getBoundingClientRect()
-    const topThreshold = rect.y + fontSize / 2
-    if (e.dataTransfer) {
-      e.dataTransfer.effectAllowed = 'move'
-      e.dataTransfer.dropEffect = 'move'
-    }
-    dragInitY = e.y
-    if (e.y < topThreshold) {
-      dragDirection = 'top'
-    } else {
-      const bottomThreshold = rect.y + rect.height - fontSize / 2
-      if (e.y > bottomThreshold) {
-        dragDirection = 'bottom'
-      } else {
-        dragDirection = 'mid'
-      }
-    }
-  }
-
-  let originDate = event.date
-  let originDueDate = event.dueDate
-  $: pixelPer15Min = hourHeight / 4
-  let dragInitY: number | undefined
-  let dragDirection: 'bottom' | 'mid' | 'top' | undefined
-
-  function drag (e: DragEvent) {
-    if (readOnly) return
-    if (event.allDay) return
-    if (dragInitY !== undefined) {
-      const diff = Math.floor((e.y - dragInitY) / pixelPer15Min)
-      if (diff) {
-        if (dragDirection !== 'bottom') {
-          const newValue = new Date(originDate).setMinutes(new Date(originDate).getMinutes() + 15 * diff)
-          if (dragDirection === 'top') {
-            if (newValue < event.dueDate) {
-              event.date = newValue
-              dispatch('resize')
-            }
-          } else {
-            const newDue = new Date(originDueDate).setMinutes(new Date(originDueDate).getMinutes() + 15 * diff)
-            event.date = newValue
-            event.dueDate = newDue
-            dispatch('resize')
-          }
-        } else {
-          const newDue = new Date(originDueDate).setMinutes(new Date(originDueDate).getMinutes() + 15 * diff)
-          if (newDue > event.date) {
-            event.dueDate = newDue
-            dispatch('resize')
-          }
-        }
-      }
-    }
-  }
-
-  async function drop () {
-    const update: DocumentUpdate<Event> = {}
-    if (originDate !== event.date) {
-      update.date = event.date
-    }
-    if (originDueDate !== event.dueDate) {
-      update.dueDate = event.dueDate
-    }
-    if (Object.keys(update).length > 0) {
-      await client.update(event, {
-        dueDate: event.dueDate,
-        date: event.date
-      })
-    }
-  }
-
   function showMenu (ev: MouseEvent) {
     ev.preventDefault()
+    closeTooltip()
     showPopup(Menu, { object: event }, getEventPositionElement(ev))
   }
 
   $: visible = isVisible(event, $calendarStore)
-  $: readOnly = isReadOnly(event)
 </script>
 
 {#if event}
@@ -152,14 +71,9 @@
     class="event-container"
     class:oneRow
     class:empty
-    draggable={!event.allDay}
     use:tooltip={{ component: EventPresenter, props: { value: event, hideDetails: !visible } }}
     on:click|stopPropagation={click}
     on:contextmenu={showMenu}
-    on:dragstart={dragStart}
-    on:drag={drag}
-    on:dragend={drop}
-    on:drop
   >
     {#if !empty && presenter?.presenter}
       <Component is={presenter.presenter} props={{ event, narrow, oneRow, hideDetails: !visible }} />
@@ -184,13 +98,6 @@
     border-left: 0.25rem solid #2b5190;
     border-radius: 0.25rem;
     cursor: pointer;
-
-    &:not(.oneRow, .empty) {
-      padding: 0.25rem 0.5rem 0.25rem 1rem;
-    }
-    &.oneRow:not(.empty) {
-      justify-content: center;
-      padding: 0 0.25rem 0 1rem;
-    }
+    padding: 0.25rem 0.5rem 0.25rem 1rem;
   }
 </style>

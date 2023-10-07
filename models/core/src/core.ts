@@ -29,6 +29,7 @@ import {
   Domain,
   DOMAIN_BLOB,
   DOMAIN_CONFIGURATION,
+  DOMAIN_MIGRATION,
   DOMAIN_DOC_INDEX_STATE,
   DOMAIN_FULLTEXT_BLOB,
   DOMAIN_MODEL,
@@ -49,7 +50,8 @@ import {
   Space,
   Timestamp,
   Type,
-  Version
+  Version,
+  MigrationState
 } from '@hcengineering/core'
 import {
   Hidden,
@@ -242,6 +244,12 @@ export class TVersion extends TDoc implements Version {
   major!: number
   minor!: number
   patch!: number
+}
+
+@Model(core.class.MigrationState, core.class.Doc, DOMAIN_MIGRATION)
+export class TMigrationState extends TDoc implements MigrationState {
+  plugin!: string
+  state!: string
 }
 
 @Model(core.class.PluginConfiguration, core.class.Doc, DOMAIN_MODEL)

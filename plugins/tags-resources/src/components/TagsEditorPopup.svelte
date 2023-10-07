@@ -13,12 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref } from '@hcengineering/core'
+  import { Class, Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import tags, { TagElement } from '@hcengineering/tags'
   import TagsPopup from './TagsPopup.svelte'
 
   export let object: Doc
+  export let targetClass: Ref<Class<Doc>> = object._class
 
   let selected: Ref<TagElement>[] = []
   const query = createQuery()
@@ -45,4 +46,4 @@
   }
 </script>
 
-<TagsPopup targetClass={object._class} {selected} on:update={onUpdate} />
+<TagsPopup {targetClass} {selected} on:update={onUpdate} />

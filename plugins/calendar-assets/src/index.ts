@@ -26,7 +26,16 @@ loadMetadata(calendar.icon, {
   Description: `${icons}#description`,
   Participants: `${icons}#participants`,
   Repeat: `${icons}#repeat`,
-  Globe: `${icons}#globe`
+  Globe: `${icons}#globe`,
+  Private: `${icons}#private`,
+  Public: `${icons}#public`,
+  Hidden: `${icons}#eyeCrossed`
+})
+
+const permission = require('../assets/permission.png') as string // eslint-disable-line
+
+loadMetadata(calendar.image, {
+  Permissions: permission
 })
 
 addStringsLoader(calendarId, async (lang: string) => await import(`../lang/${lang}.json`))

@@ -15,8 +15,8 @@
 //
 
 import contact, { Employee, Person, PersonAccount } from '@hcengineering/contact'
-import { Account, Class, Doc, Mixin, Ref, Tx } from '@hcengineering/core'
-import { NotificationType } from '@hcengineering/notification'
+import { Account, Class, Doc, Mixin, Ref, Tx, TxCUD } from '@hcengineering/core'
+import { NotificationType, NotificationContent } from '@hcengineering/notification'
 import { Plugin, Resource, plugin } from '@hcengineering/platform'
 import type { TriggerControl, TriggerFunc } from '@hcengineering/server-core'
 
@@ -76,7 +76,7 @@ export async function getEmployee (employee: Ref<Employee>, control: TriggerCont
       { limit: 1 }
     )
   )[0]
-  return account
+  return account !== undefined ? control.hierarchy.as(account, contact.mixin.Employee) : undefined
 }
 
 /**
@@ -115,11 +115,29 @@ export interface TypeMatch extends NotificationType {
 /**
  * @public
  */
+export type NotificationContentProvider = (
+  doc: Doc,
+  tx: TxCUD<Doc>,
+  target: Ref<Account>,
+  control: TriggerControl
+) => Promise<NotificationContent>
+
+/**
+ * @public
+ */
+export interface NotificationPresenter extends Class<Doc> {
+  presenter: Resource<NotificationContentProvider>
+}
+
+/**
+ * @public
+ */
 export default plugin(serverNotificationId, {
   mixin: {
     HTMLPresenter: '' as Ref<Mixin<HTMLPresenter>>,
     TextPresenter: '' as Ref<Mixin<TextPresenter>>,
-    TypeMatch: '' as Ref<Mixin<TypeMatch>>
+    TypeMatch: '' as Ref<Mixin<TypeMatch>>,
+    NotificationPresenter: '' as Ref<Mixin<NotificationPresenter>>
   },
   trigger: {
     OnBacklinkCreate: '' as Resource<TriggerFunc>,

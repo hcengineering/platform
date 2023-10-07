@@ -30,7 +30,7 @@
    *  - [phaseName:normalize]
    *  - [phaseName:trimPrefix]
    */
-  // "cacheEntryNamePattern": "[projectName:normalize]-[phaseName:normalize]-[hash]"
+  "cacheEntryNamePattern": "[projectName:normalize]-[phaseName:normalize]-[hash]",
 
   /**
    * Use this configuration with "cacheProvider"="azure-blob-storage"

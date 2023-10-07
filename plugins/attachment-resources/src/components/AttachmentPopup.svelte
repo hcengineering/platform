@@ -17,7 +17,7 @@
   import type { Doc } from '@hcengineering/core'
   import { Attachment } from '@hcengineering/attachment'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { ActionIcon, IconAdd, Label } from '@hcengineering/ui'
+  import { ActionIcon, IconAdd, Label, Loading } from '@hcengineering/ui'
   import { AttachmentPresenter } from '..'
   import attachment from '../plugin'
   import { uploadFile } from '../utils'
@@ -30,6 +30,8 @@
   const client = getClient()
 
   let docs: Attachment[] = []
+
+  let progress = false
 
   const query = createQuery()
   $: query.query(
@@ -59,14 +61,19 @@
     })
   }
 
-  function fileSelected () {
+  async function fileSelected (): Promise<void> {
+    progress = true
+
     const list = inputFile.files
     if (list === null || list.length === 0) return
     for (let index = 0; index < list.length; index++) {
       const file = list.item(index)
-      if (file !== null) createAttachment(file)
+      if (file !== null) {
+        await createAttachment(file)
+      }
     }
     inputFile.value = ''
+    progress = false
   }
 
   let inputFile: HTMLInputElement
@@ -94,7 +101,11 @@
     </div>
     {#if canAdd}
       <div>
-        <ActionIcon size={'medium'} icon={IconAdd} action={add} />
+        {#if progress}
+          <Loading />
+        {:else}
+          <ActionIcon size={'medium'} icon={IconAdd} action={add} />
+        {/if}
       </div>
     {/if}
   </div>

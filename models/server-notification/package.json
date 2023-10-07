@@ -5,31 +5,30 @@
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
-    "build": "heft build",
-    "build:watch": "tsc",
+    "build": "tsc --outDir ./lib",
+    "build:watch": "tsc --outDir ./lib",
     "lint:fix": "eslint --fix src",
     "lint": "eslint src",
     "format": "prettier --write src && eslint --fix src"
   },
+  "template": "@hcengineering/model-package",
   "devDependencies": {
-    "@hcengineering/model-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "^0.6.0",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-n": "^15.4.0",
     "eslint": "^8.26.0",
-    "@types/heft-jest": "^1.0.3",
     "@typescript-eslint/parser": "^5.41.0",
     "eslint-config-standard-with-typescript": "^23.0.0",
-    "prettier": "^2.7.1",
-    "@rushstack/heft": "^0.47.9"
+    "prettier": "^2.7.1"
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.27",
     "@hcengineering/model": "^0.6.6",
     "@hcengineering/model-core": "^0.6.0",
     "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/notification": "^0.6.14",
+    "@hcengineering/notification": "^0.6.15",
     "@hcengineering/model-notification": "^0.6.0",
     "@hcengineering/server-notification": "^0.6.1",
     "@hcengineering/server-core": "^0.6.1"

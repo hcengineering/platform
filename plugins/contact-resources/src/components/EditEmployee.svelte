@@ -110,13 +110,13 @@
           <EditableAvatar
             avatar={object.avatar}
             {email}
-            id={object._id}
             size={'x-large'}
+            name={object.name}
             bind:this={avatarEditor}
             on:done={onAvatarDone}
           />
         {:else}
-          <Avatar avatar={object.avatar} size={'x-large'} />
+          <Avatar avatar={object.avatar} size={'x-large'} name={object.name} />
         {/if}
       {/key}
     </div>

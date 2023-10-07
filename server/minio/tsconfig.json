@@ -3,7 +3,6 @@
 
   "compilerOptions": {
     "rootDir": "./src",
-    "outDir": "./lib",
-    "types": ["heft-jest", "node"],
+    "outDir": "./lib"
   }
 }

@@ -55,8 +55,8 @@ import {
   recruitId
 } from '@hcengineering/recruit'
 import setting from '@hcengineering/setting'
-import { State } from '@hcengineering/task'
-import { KeyBinding, ViewOptionsModel } from '@hcengineering/view'
+import { DoneState, State } from '@hcengineering/task'
+import { KeyBinding, ViewOptionModel, ViewOptionsModel } from '@hcengineering/view'
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
 import { TOpinion, TReview } from './review-model'
@@ -167,6 +167,9 @@ export class TApplicant extends TTask implements Applicant {
 
   @Prop(TypeRef(task.class.State), task.string.TaskState, { _id: recruit.attribute.State })
   declare status: Ref<State>
+
+  @Prop(TypeRef(task.class.DoneState), task.string.TaskStateDone, { _id: recruit.attribute.DoneState })
+  declare doneState: Ref<DoneState>
 }
 
 @Model(recruit.class.ApplicantMatch, core.class.AttachedDoc, DOMAIN_TASK)
@@ -404,6 +407,9 @@ export function createModel (builder: Builder): void {
         {
           key: '',
           presenter: tracker.component.RelatedIssueSelector,
+          props: {
+            kind: 'link'
+          },
           label: tracker.string.Relations
         },
         'comments',
@@ -484,6 +490,14 @@ export function createModel (builder: Builder): void {
           label: recruit.string.Applications
         },
         'comments',
+        {
+          key: '',
+          presenter: tracker.component.RelatedIssueSelector,
+          props: {
+            kind: 'link'
+          },
+          label: tracker.string.Issues
+        },
         '$lookup.company',
         '$lookup.company.$lookup.channels',
         'location',
@@ -520,6 +534,12 @@ export function createModel (builder: Builder): void {
           label: recruit.string.Applications
         },
         'comments',
+        {
+          key: '',
+          presenter: tracker.component.RelatedIssueSelector,
+          label: tracker.string.Issues,
+          props: { size: 'small', kind: 'link' }
+        },
         '$lookup.channels',
         {
           key: '@applications.modifiedOn',
@@ -555,6 +575,9 @@ export function createModel (builder: Builder): void {
         {
           key: '',
           presenter: tracker.component.RelatedIssueSelector,
+          props: {
+            kind: 'link'
+          },
           label: tracker.string.Issues
         },
         'status',
@@ -603,6 +626,9 @@ export function createModel (builder: Builder): void {
         {
           key: '',
           presenter: tracker.component.RelatedIssueSelector,
+          props: {
+            kind: 'link'
+          },
           label: tracker.string.Issues
         },
         'status',
@@ -671,9 +697,27 @@ export function createModel (builder: Builder): void {
     }
   }
 
-  const applicantViewOptions = (colors: boolean): ViewOptionsModel => {
+  const applicationDoneOption: ViewOptionModel = {
+    key: 'hideDoneState',
+    type: 'toggle',
+    defaultValue: true,
+    actionTarget: 'query',
+    action: recruit.function.HideDoneState,
+    label: recruit.string.HideDoneState
+  }
+
+  const vacancyHideOption: ViewOptionModel = {
+    key: 'hideArchivedVacancies',
+    type: 'toggle',
+    defaultValue: true,
+    actionTarget: 'query',
+    action: recruit.function.HideArchivedVacancies,
+    label: recruit.string.HideArchivedVacancies
+  }
+
+  const applicantViewOptions = (colors: boolean, hides: boolean): ViewOptionsModel => {
     const model: ViewOptionsModel = {
-      groupBy: ['status', 'assignee', 'space', 'createdBy', 'modifiedBy'],
+      groupBy: ['status', 'doneState', 'assignee', 'space', 'createdBy', 'modifiedBy'],
       orderBy: [
         ['status', SortingOrder.Ascending],
         ['modifiedOn', SortingOrder.Descending],
@@ -694,6 +738,9 @@ export function createModel (builder: Builder): void {
     }
     if (colors) {
       model.other.push(showColorsViewOption)
+    }
+    if (hides) {
+      model.other.push(...[applicationDoneOption, vacancyHideOption])
     }
     return model
   }
@@ -751,6 +798,13 @@ export function createModel (builder: Builder): void {
           key: 'assignee',
           props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' },
           displayProps: { key: 'assignee', fixed: 'right' }
+        },
+        {
+          key: '',
+          label: recruit.string.DueDate,
+          presenter: tracker.component.DueDatePresenter,
+          displayProps: { key: 'dueDate', compression: true },
+          props: { kind: 'list' }
         }
       ],
       options: {
@@ -765,13 +819,114 @@ export function createModel (builder: Builder): void {
         strict: true,
         hiddenKeys: ['name', 'attachedTo']
       },
-      baseQuery: {
-        doneState: null,
-        '$lookup.space.archived': false
-      },
-      viewOptions: applicantViewOptions(true)
+      viewOptions: applicantViewOptions(true, true)
     },
     recruit.viewlet.ListApplicant
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: recruit.mixin.Candidate,
+      descriptor: view.viewlet.List,
+      config: [
+        { key: '', displayProps: { fixed: 'left', key: 'app' } },
+        {
+          key: 'title',
+          props: { kind: 'list', size: 'small', shouldShowName: false }
+        },
+        { key: 'comments', displayProps: { key: 'comments', suffix: true } },
+        { key: '', displayProps: { grow: true } },
+        {
+          key: '$lookup.channels',
+          label: contact.string.ContactInfo,
+          sortingKey: ['$lookup.channels.lastMessage', '$lookup.attachedTo.channels'],
+          props: {
+            length: 'full',
+            size: 'small',
+            kind: 'list'
+          },
+          displayProps: { compression: true }
+        },
+        { key: 'modifiedOn', displayProps: { key: 'modified', fixed: 'right', dividerBefore: true } }
+      ],
+      configOptions: {
+        strict: true,
+        hiddenKeys: ['name']
+      },
+      viewOptions: {
+        groupBy: ['createdBy', 'modifiedBy'],
+        orderBy: [
+          ['modifiedOn', SortingOrder.Descending],
+          ['createdOn', SortingOrder.Descending],
+          ['rank', SortingOrder.Ascending]
+        ],
+        other: [showColorsViewOption]
+      }
+    },
+    recruit.viewlet.ListTalent
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: recruit.mixin.VacancyList,
+      descriptor: view.viewlet.List,
+      config: [
+        { key: '', displayProps: { fixed: 'left', key: 'app' } },
+        {
+          key: '@vacancies',
+          label: recruit.string.Vacancies,
+          props: { kind: 'list', size: 'small', shouldShowName: false }
+        },
+        {
+          key: '@applications',
+          label: recruit.string.Applications,
+          props: { kind: 'list', size: 'small', shouldShowName: false }
+        },
+        { key: 'comments', displayProps: { key: 'comments', suffix: true } },
+        {
+          key: '',
+          presenter: tracker.component.RelatedIssueSelector,
+          label: tracker.string.Issues,
+          props: { size: 'small' }
+        },
+        {
+          key: '$lookup.channels',
+          label: contact.string.ContactInfo,
+          sortingKey: ['$lookup.channels.lastMessage', '$lookup.attachedTo.channels'],
+          props: {
+            length: 'full',
+            size: 'small',
+            kind: 'list'
+          },
+          displayProps: { compression: true }
+        },
+        { key: '', displayProps: { grow: true } },
+        {
+          key: '@applications.modifiedOn',
+          label: core.string.ModifiedDate,
+          displayProps: { key: 'modified', fixed: 'right', dividerBefore: true }
+        }
+      ],
+      configOptions: {
+        strict: true,
+        sortable: true,
+        hiddenKeys: ['name', 'space', 'modifiedOn']
+      },
+      viewOptions: {
+        groupBy: ['createdBy', 'modifiedBy'],
+        orderBy: [
+          ['modifiedOn', SortingOrder.Descending],
+          ['createdOn', SortingOrder.Descending],
+          ['rank', SortingOrder.Ascending]
+        ],
+        other: [showColorsViewOption]
+      }
+    },
+    recruit.viewlet.ListCompanies
   )
 
   builder.createDoc(
@@ -787,6 +942,12 @@ export function createModel (builder: Builder): void {
           label: recruit.string.Applications
         },
         'description',
+        { key: 'comments', displayProps: { key: 'comments', suffix: true } },
+        {
+          key: '',
+          presenter: tracker.component.RelatedIssueSelector,
+          label: tracker.string.Issues
+        },
         { key: '', displayProps: { grow: true } },
         {
           key: '$lookup.company',
@@ -802,7 +963,6 @@ export function createModel (builder: Builder): void {
         hiddenKeys: ['name', 'space', 'modifiedOn']
       },
       baseQuery: {
-        doneState: null,
         '$lookup.space.archived': false
       },
       viewOptions: {
@@ -831,7 +991,7 @@ export function createModel (builder: Builder): void {
         '$lookup.space.archived': false
       },
       viewOptions: {
-        ...applicantViewOptions(false),
+        ...applicantViewOptions(false, false),
         groupDepth: 1
       },
       options: {
@@ -1188,23 +1348,17 @@ export function createModel (builder: Builder): void {
   })
 
   createAction(builder, {
-    action: view.actionImpl.ValueSelector,
-    actionPopup: view.component.ValueSelector,
+    action: task.actionImpl.SelectStatus,
+    actionPopup: task.component.StatusSelector,
     actionProps: {
-      attribute: 'status',
       _class: task.class.State,
-      query: {},
-      searchField: 'name',
-      // should match space
-      fillQuery: { space: 'space' },
-      // Only apply for same vacancy
-      docMatches: ['space'],
+      ofAttribute: recruit.attribute.State,
       placeholder: task.string.TaskState
     },
     label: task.string.TaskState,
     icon: task.icon.TaskState,
-    keyBinding: [],
-    input: 'none',
+    keyBinding: ['keyS->keyS'],
+    input: 'any',
     category: recruit.category.Recruit,
     target: recruit.class.Applicant,
     context: {
@@ -1213,24 +1367,19 @@ export function createModel (builder: Builder): void {
       group: 'edit'
     }
   })
+
   createAction(builder, {
-    action: view.actionImpl.ValueSelector,
-    actionPopup: view.component.ValueSelector,
+    action: task.actionImpl.SelectStatus,
+    actionPopup: task.component.StatusSelector,
     actionProps: {
-      attribute: 'doneState',
       _class: task.class.DoneState,
-      query: {},
-      searchField: 'name',
-      // should match space
-      fillQuery: { space: 'space' },
-      // Only apply for same vacancy
-      docMatches: ['space'],
+      ofAttribute: recruit.attribute.DoneState,
       placeholder: task.string.DoneState
     },
     label: task.string.DoneState,
     icon: task.icon.TaskState,
-    keyBinding: [],
-    input: 'none',
+    keyBinding: ['keyS->keyD'],
+    input: 'any',
     category: recruit.category.Recruit,
     target: recruit.class.Applicant,
     context: {
@@ -1239,6 +1388,7 @@ export function createModel (builder: Builder): void {
       group: 'edit'
     }
   })
+
   createAction(
     builder,
     {
@@ -1485,19 +1635,19 @@ export function createModel (builder: Builder): void {
   builder.mixin(recruit.mixin.Candidate, core.class.Class, view.mixin.ObjectEditorFooter, {
     editor: tracker.component.RelatedIssuesSection,
     props: {
-      label: recruit.string.RelatedIssues
+      label: tracker.string.RelatedIssues
     }
   })
   builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.ObjectEditorFooter, {
     editor: tracker.component.RelatedIssuesSection,
     props: {
-      label: recruit.string.RelatedIssues
+      label: tracker.string.RelatedIssues
     }
   })
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ObjectEditorFooter, {
     editor: tracker.component.RelatedIssuesSection,
     props: {
-      label: recruit.string.RelatedIssues
+      label: tracker.string.RelatedIssues
     }
   })
 

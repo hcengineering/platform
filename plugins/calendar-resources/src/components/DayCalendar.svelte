@@ -13,8 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Event } from '@hcengineering/calendar'
-  import { Timestamp } from '@hcengineering/core'
+  import { Event, ReccuringInstance } from '@hcengineering/calendar'
+  import { DocumentUpdate, Ref, Timestamp } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
   import ui, {
     ActionIcon,
     CalendarItem,
@@ -25,15 +26,28 @@
     Scroller,
     addZero,
     areDatesEqual,
+    closeTooltip,
     deviceOptionsStore as deviceInfo,
     day as getDay,
+    getEventPositionElement,
     getMonday,
     getWeekDayName,
-    resizeObserver
+    resizeObserver,
+    showPopup
   } from '@hcengineering/ui'
+  import { Menu } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import calendar from '../plugin'
+  import { isReadOnly, updateReccuringInstance } from '../utils'
   import EventElement from './EventElement.svelte'
+  import type {
+    CalendarGrid,
+    CalendarADGrid,
+    CalendarADRows,
+    CalendarElementRect,
+    CalendarElement,
+    CalendarCell
+  } from '..'
 
   export let events: Event[]
   export let mondayStart = true
@@ -44,8 +58,10 @@
   export let startHour = 0
   export let startFromWeekStart = true
   export let weekFormat: 'narrow' | 'short' | 'long' | undefined = displayedDaysCount > 4 ? 'short' : 'long'
-  export let showHeader = true
+  export let showHeader: boolean = true
+  export let clearCells: boolean = false
 
+  const client = getClient()
   const dispatch = createEventDispatcher()
 
   const todayDate = new Date()
@@ -59,6 +75,11 @@
     }
   }
   const rem = (n: number): number => n * fontSize
+  const initDisplayedDaysCount = displayedDaysCount
+
+  export function getCalendarRect (): DOMRect | undefined {
+    return container ? calendarRect : undefined
+  }
 
   const offsetTZ = new Date().getTimezoneOffset() * 60 * 1000
 
@@ -120,28 +141,6 @@
     ? getMonday(currentDate, mondayStart)
     : new Date(new Date(currentDate).setHours(0, 0, 0, 0))
 
-  interface CalendarElement {
-    id: string
-    date: Timestamp
-    dueDate: Timestamp
-    cols: number
-  }
-  interface CalendarColumn {
-    elements: CalendarElement[]
-  }
-  interface CalendarGrid {
-    columns: CalendarColumn[]
-  }
-  interface CalendarADGrid {
-    alldays: (string | null)[]
-  }
-  interface CalendarADRows {
-    id: string
-    row: number
-    startCol: number
-    endCol: number
-  }
-
   let timer: any
   let container: HTMLElement
   let scroller: HTMLElement
@@ -158,6 +157,7 @@
   let adMaxRow: number = 1
   let adRows: CalendarADRows[]
   const cellBorder: number = 1
+  const stepsPerHour: number = 4
   const heightAD: number = 2
   const minAD: number = 2
   const maxAD: number = 3
@@ -167,9 +167,20 @@
   let shownAD: boolean = false
   let shortAlldays: { id: string; day: number; fixRow?: boolean }[] = []
   let moreCounts: number[] = Array<number>(displayedDaysCount)
+  const nullCalendarElement: CalendarElementRect = {
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    width: 0,
+    height: rem(heightAD),
+    fit: true,
+    visibility: 1
+  }
 
-  $: if (newEvents !== calendarEvents) {
-    newEvents = calendarEvents
+  $: minimizedAD = maxHeightAD === minHeightAD && maxHeightAD !== 0
+
+  const updateEvents = (events: CalendarItem[]): CalendarItem[] => {
     grid = new Array<CalendarGrid>(displayedDaysCount)
     alldaysGrid = new Array<CalendarADGrid>(displayedDaysCount)
     alldays = []
@@ -177,55 +188,58 @@
     moreCounts = new Array<number>(displayedDaysCount)
     if (shownAD && adMaxRow <= maxAD) shownAD = false
     prepareAllDays()
-  }
-  $: minimizedAD = maxHeightAD === minHeightAD && maxHeightAD !== 0
-  $: newEvents
-    .filter((ev) => !ev.allDay)
-    .forEach((event, i, arr) => {
-      if (grid[event.day] === undefined) {
-        grid[event.day] = {
-          columns: [{ elements: [{ id: event._id, date: event.date, dueDate: event.dueDate, cols: 1 }] }]
-        }
-      } else {
-        const index = grid[event.day].columns.findIndex(
-          (col) => col.elements[col.elements.length - 1].dueDate <= event.date
-        )
-        const intersects = grid[event.day].columns.filter((col) =>
-          checkIntersect(col.elements[col.elements.length - 1], event)
-        )
-        if (index === -1) {
-          const size = intersects.length + 1
-          grid[event.day].columns.forEach((col) => {
-            if (checkIntersect(col.elements[col.elements.length - 1], event)) {
-              col.elements[col.elements.length - 1].cols = size
-            }
-          })
-          grid[event.day].columns.push({
-            elements: [{ id: event._id, date: event.date, dueDate: event.dueDate, cols: size }]
-          })
+
+    events
+      .filter((ev) => !ev.allDay)
+      .forEach((event, i, arr) => {
+        if (grid[event.day] === undefined) {
+          grid[event.day] = {
+            columns: [{ elements: [{ id: event._id, date: event.date, dueDate: event.dueDate, cols: 1 }] }]
+          }
         } else {
-          let maxCols = 1
-          intersects.forEach((col) => {
-            if (col.elements[col.elements.length - 1].cols > maxCols) {
-              maxCols = col.elements[col.elements.length - 1].cols
-            }
-          })
-          if (intersects.length >= maxCols) maxCols = intersects.length + 1
-          grid[event.day].columns.forEach((col) => {
-            if (checkIntersect(col.elements[col.elements.length - 1], event)) {
-              col.elements[col.elements.length - 1].cols = maxCols
-            }
-          })
-          grid[event.day].columns[index].elements.push({
-            id: event._id,
-            date: event.date,
-            dueDate: event.dueDate,
-            cols: maxCols
-          })
+          const index = grid[event.day].columns.findIndex(
+            (col) => col.elements[col.elements.length - 1].dueDate <= event.date
+          )
+          const intersects = grid[event.day].columns.filter((col) =>
+            checkIntersect(col.elements[col.elements.length - 1], event)
+          )
+          if (index === -1) {
+            const size = intersects.length + 1
+            grid[event.day].columns.forEach((col) => {
+              if (checkIntersect(col.elements[col.elements.length - 1], event)) {
+                col.elements[col.elements.length - 1].cols = size
+              }
+            })
+            grid[event.day].columns.push({
+              elements: [{ id: event._id, date: event.date, dueDate: event.dueDate, cols: size }]
+            })
+          } else {
+            let maxCols = 1
+            intersects.forEach((col) => {
+              if (col.elements[col.elements.length - 1].cols > maxCols) {
+                maxCols = col.elements[col.elements.length - 1].cols
+              }
+            })
+            if (intersects.length >= maxCols) maxCols = intersects.length + 1
+            grid[event.day].columns.forEach((col) => {
+              if (checkIntersect(col.elements[col.elements.length - 1], event)) {
+                col.elements[col.elements.length - 1].cols = maxCols
+              }
+            })
+            grid[event.day].columns[index].elements.push({
+              id: event._id,
+              date: event.date,
+              dueDate: event.dueDate,
+              cols: maxCols
+            })
+          }
         }
-      }
-      if (i === arr.length - 1) checkGrid()
-    })
+        if (i === arr.length - 1) checkGrid()
+      })
+    return events
+  }
+  $: newEvents = updateEvents(calendarEvents)
+
   const checkGrid = () => {
     for (let i = 0; i < displayedDaysCount; i++) {
       if (grid[i] === null || typeof grid[i] !== 'object' || grid[i].columns.length === 0) continue
@@ -329,14 +343,12 @@
     return mins < 2 ? (end ? 1 : 2) : mins >= 57 ? (end ? 1 + cellBorder : 1) : 1
   }
 
-  const getRect = (
-    event: CalendarItem
-  ): { top: number; bottom: number; left: number; right: number; width: number; visibility: number } => {
-    const result = { top: 0, bottom: 0, left: 0, right: 0, width: 0, visibility: 1 }
+  const getRect = (event: CalendarItem): CalendarElementRect => {
+    const result = { ...nullCalendarElement }
     const checkDate = new Date(weekMonday.getTime() + MILLISECONDS_IN_DAY * event.day)
     const startDay = checkDate.setHours(startHour, 0, 0, 0)
     const endDay = checkDate.setHours(displayedHours - 1, 59, 59, 999)
-    const startTime = event.date < startDay ? { hours: 0, mins: 0 } : convertToTime(event.date)
+    const startTime = event.date <= startDay ? { hours: startHour, mins: 0 } : convertToTime(event.date)
     const endTime =
       event.dueDate > endDay ? { hours: displayedHours - startHour, mins: 0 } : convertToTime(event.dueDate)
     if (getDay(weekMonday, event.day).setHours(endTime.hours, endTime.mins, 0, 0) <= todayDate.getTime()) {
@@ -372,12 +384,8 @@
       (cols - index - 1) * rem(0.125)
     return result
   }
-  const getADRect = (
-    id: string,
-    day?: number,
-    fixRow?: boolean
-  ): { top: number; left: number; width: number; height: number; fit: boolean; visibility: number } => {
-    const result = { top: 0, left: 0, width: 0, height: rem(heightAD), fit: true, visibility: 1 }
+  const getADRect = (id: string, day?: number, fixRow?: boolean): CalendarElementRect => {
+    const result = { ...nullCalendarElement }
     const index = adRows.findIndex((ev) => ev.id === id)
 
     const checkTime = new Date().setHours(0, 0, 0, 0)
@@ -485,6 +493,9 @@
   const checkSizes = (element: HTMLElement | Element) => {
     calendarRect = element.getBoundingClientRect()
     calendarWidth = calendarRect.width
+    if (calendarWidth < 356 && initDisplayedDaysCount >= 1) displayedDaysCount = 1
+    else if (calendarWidth < 512 && initDisplayedDaysCount >= 2) displayedDaysCount = 2
+    else if (calendarWidth >= 512 && displayedDaysCount < initDisplayedDaysCount) displayedDaysCount = 3
     colWidth = (calendarWidth - 3.5 * fontSize) / displayedDaysCount
   }
   $: if (docHeight && calendarRect?.top) {
@@ -501,6 +512,153 @@
       ? rem((heightAD + 0.125) * (adMaxRow <= minAD ? adMaxRow : minAD) + 0.25)
       : rem((heightAD + 0.125) * (adMaxRow <= maxAD ? adMaxRow : maxAD) + 0.25)
   $: showArrowAD = (!minimizedAD && adMaxRow > maxAD) || (minimizedAD && adMaxRow > minAD)
+
+  const getMinutes = (e: MouseEvent): number => {
+    let mins: number = 0
+    for (let i = 0; i < stepsPerHour; i++) {
+      if (e.offsetY >= (i * cellHeight) / stepsPerHour && e.offsetY < ((i + 1) * cellHeight) / stepsPerHour) {
+        mins = (i * 60) / stepsPerHour
+      }
+    }
+    return mins
+  }
+
+  let dragOnOld: CalendarCell | null = null
+  let dragId: Ref<Event> | null = null
+  let resizeId: Ref<Event> | null = null
+  let directionResize: 'top' | 'bottom' | null
+  let oldMins: number = 0
+  let oldTime: number = -1
+  let originDate: Timestamp = 0
+  let originDueDate: Timestamp = 0
+
+  async function updateHandler (event: Event) {
+    const update: DocumentUpdate<Event> = {}
+    if (originDate !== event.date) update.date = event.date
+    if (originDueDate !== event.dueDate) update.dueDate = event.dueDate
+    if (Object.keys(update).length > 0) {
+      if (event._class === calendar.class.ReccuringInstance) {
+        await updateReccuringInstance(update, {
+          ...event,
+          date: originDate,
+          dueDate: originDueDate
+        } as ReccuringInstance)
+      } else {
+        await client.update(event, update)
+      }
+    }
+  }
+  async function mouseUpElement (e: MouseEvent) {
+    window.removeEventListener('mouseup', mouseUpElement)
+    const event = events.find((ev) => ev._id === resizeId)
+    if (event !== undefined) await updateHandler(event)
+    resizeId = directionResize = null
+  }
+  function mouseDownElement (e: MouseEvent, event: Event, direction: 'top' | 'bottom'): void {
+    if (e.buttons !== 1) return
+    e.stopPropagation()
+    resizeId = event._id
+    directionResize = direction
+    originDate = event.date
+    originDueDate = event.dueDate
+    window.addEventListener('mouseup', mouseUpElement)
+  }
+  function mouseMoveElement (
+    e: MouseEvent & { currentTarget: EventTarget & HTMLDivElement },
+    day: Date,
+    hour: number
+  ): void {
+    if (resizeId == null && directionResize == null) return
+    let mins: number = 0
+    for (let i = 0; i < stepsPerHour; i++) {
+      if (e.offsetY >= (i * cellHeight) / stepsPerHour && e.offsetY < ((i + 1) * cellHeight) / stepsPerHour) mins = i
+    }
+    if (oldMins === mins) return
+    oldMins = mins
+    const newDate = new Date(day).setHours(
+      hour + startHour,
+      (mins * 60) / stepsPerHour + (directionResize === 'top' ? 0 : 60 / stepsPerHour),
+      0,
+      0
+    )
+    const index = events.findIndex((ev) => ev._id === resizeId)
+    if (index === -1) return
+    if (directionResize === 'top') {
+      if (events[index].dueDate - newDate >= 15 * 60000) events[index].date = newDate
+    } else {
+      if (newDate - events[index].date >= 15 * 60000) events[index].dueDate = newDate
+    }
+    events = events
+  }
+  function dragStartElement (e: DragEvent & { currentTarget: EventTarget & HTMLDivElement }, event: Event): void {
+    if (isReadOnly(event) || event.allDay) return
+    if (e.dataTransfer) e.dataTransfer.effectAllowed = 'all'
+    originDate = event.date
+    originDueDate = event.dueDate
+    dragOnOld = null
+    oldTime = -1
+    closeTooltip()
+    setTimeout(() => (dragId = event._id), 50)
+  }
+  async function dragEndElement (e: DragEvent) {
+    const event = events.find((ev) => ev._id === dragId)
+    if (event !== undefined) await updateHandler(event)
+    dragId = null
+  }
+  function dragDrop (e: DragEvent, day: Date, hourOfDay: number): void {
+    const newTime = new Date(day).setHours(hourOfDay + startHour, getMinutes(e), 0, 0)
+    if (dragId) {
+      const index = events.findIndex((ev) => ev._id === dragId)
+      const diff = newTime - oldTime
+      if (diff && index !== -1 && oldTime !== -1) {
+        events[index].date = originDate + diff
+        events[index].dueDate = originDueDate + diff
+        events = events
+      }
+    } else {
+      dispatch('dragDrop', {
+        day,
+        hour: hourOfDay + startHour,
+        date: new Date(newTime)
+      })
+    }
+    dragOnOld = null
+  }
+  function dragOver (e: DragEvent, day: Date, hourOfDay: number): void {
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
+    e.preventDefault()
+    const dragOn: CalendarCell = {
+      day,
+      hourOfDay,
+      minutes: getMinutes(e)
+    }
+    if (
+      dragOnOld !== null &&
+      areDatesEqual(dragOn.day, dragOnOld.day) &&
+      dragOn.hourOfDay === dragOnOld.hourOfDay &&
+      dragOn.minutes === dragOnOld.minutes
+    ) {
+      return
+    }
+    dragOnOld = dragOn
+    const newTime = new Date(day).setHours(hourOfDay + startHour, dragOn.minutes, 0, 0)
+    if (dragId) {
+      if (oldTime === -1) oldTime = newTime
+      const index = events.findIndex((ev) => ev._id === dragId)
+      const diff = newTime - oldTime
+      if (diff && index !== -1) {
+        events[index].date = originDate + diff
+        events[index].dueDate = originDueDate + diff
+      }
+      events.sort((a, b) => a.date - b.date)
+    } else dispatch('dragEnter', { date: new Date(newTime) })
+  }
+
+  function showMenu (ev: MouseEvent, event: Event) {
+    ev.preventDefault()
+    closeTooltip()
+    showPopup(Menu, { object: event }, getEventPositionElement(ev))
+  }
 </script>
 
 <Scroller
@@ -509,7 +667,10 @@
 >
   <div
     bind:this={container}
+    on:dragleave
     class="calendar-container"
+    class:clearCells={clearCells || resizeId !== null || dragId !== null}
+    class:cursor-row-resize={resizeId !== null && directionResize !== null}
     style:--calendar-ad-height={styleAD + 'px'}
     style:grid={`${showHeader ? '[header] 3.5rem ' : ''}[all-day] ${styleAD}px repeat(${
       (displayedHours - startHour) * 2
@@ -663,18 +824,9 @@
           style:width={`${colWidth}px`}
           style:grid-column={`col-start ${dayOfWeek + 1} / ${dayOfWeek + 2}`}
           style:grid-row={`row-start ${hourOfDay * 2 + 1} / row-start ${hourOfDay * 2 + 3}`}
-          on:dragenter={(e) => {
-            dispatch('dragenter', {
-              date: new Date(day.setHours(hourOfDay + startHour, 0, 0, 0))
-            })
-          }}
-          on:drop|preventDefault={(e) => {
-            dispatch('drop', {
-              day,
-              hour: hourOfDay + startHour,
-              date: new Date(day.setHours(hourOfDay + startHour, 0, 0, 0))
-            })
-          }}
+          on:mousemove={(e) => mouseMoveElement(e, day, hourOfDay)}
+          on:dragover={(e) => dragOver(e, day, hourOfDay)}
+          on:drop|preventDefault={(e) => dragDrop(e, day, hourOfDay)}
           on:click|stopPropagation={() => {
             dispatch('create', {
               date: new Date(day.setHours(hourOfDay + startHour, 0, 0, 0)),
@@ -694,14 +846,31 @@
           <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
           <div
             class="calendar-element"
+            class:past={rect.visibility === 0}
             style:top={`${rect.top}px`}
             style:bottom={`${rect.bottom}px`}
             style:left={`${rect.left}px`}
             style:right={`${rect.right}px`}
-            style:opacity={rect.visibility === 0 ? 0.4 : 1}
             style:--mask-image={'none'}
+            draggable={!ev.allDay && !resizeId}
             tabindex={1000 + i}
+            on:dragstart={(e) => dragStartElement(e, ev)}
+            on:dragend={dragEndElement}
           >
+            <div
+              class="calendar-element-start"
+              class:allowed={!resizeId && !dragId && !clearCells}
+              class:hovered={resizeId === ev._id && directionResize === 'top'}
+              on:mousedown={(e) => mouseDownElement(e, ev, 'top')}
+              on:contextmenu={(e) => showMenu(e, ev)}
+            />
+            <div
+              class="calendar-element-end"
+              class:allowed={!resizeId && !dragId && !clearCells}
+              class:hovered={resizeId === ev._id && directionResize === 'bottom'}
+              on:mousedown={(e) => mouseDownElement(e, ev, 'bottom')}
+              on:contextmenu={(e) => showMenu(e, ev)}
+            />
             <EventElement
               event={ev}
               hourHeight={cellHeight}
@@ -709,12 +878,6 @@
                 width: rect.width,
                 height: (calendarRect?.height ?? rect.top + rect.bottom) - rect.top - rect.bottom
               }}
-              on:drop={(e) => {
-                dispatch('drop', {
-                  date: new Date(event.date)
-                })
-              }}
-              on:resize={() => (events = events)}
             />
           </div>
         {/if}
@@ -734,6 +897,15 @@
     position: relative;
     display: grid;
 
+    &.clearCells .empty-cell {
+      position: relative;
+      &::after {
+        position: absolute;
+        content: '';
+        inset: -1px;
+        z-index: 5;
+      }
+    }
     .now-line,
     .now-line::before {
       position: absolute;
@@ -799,7 +971,61 @@
     &:not(.withPointer) {
       pointer-events: none;
     }
+    &-start,
+    &-end {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 0.5rem;
+      border-radius: 0.5rem;
+
+      &::after {
+        position: absolute;
+        content: '';
+        left: -0.25rem;
+        right: -0.25rem;
+        height: 1rem;
+        border: 1px solid transparent;
+        border-radius: 0.5rem;
+        transition-property: opacity, border-width, transform;
+        transition-duration: 0.15s;
+        transition-timing-function: var(--timing-main);
+        transform: scale(0.9);
+        opacity: 0;
+        cursor: row-resize;
+        filter: drop-shadow(0 0 2px var(--primary-edit-border-color));
+        pointer-events: none;
+      }
+      &.allowed::after {
+        pointer-events: all;
+        z-index: 10;
+      }
+      &.allowed:hover::after,
+      &.hovered::after {
+        border-width: 1px;
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    &-start {
+      top: 0;
+      &::after {
+        top: -0.25rem;
+        border-top-color: var(--primary-edit-border-color);
+      }
+    }
+    &-end {
+      bottom: 0;
+      &::after {
+        bottom: -0.25rem;
+        border-bottom-color: var(--primary-edit-border-color);
+      }
+    }
   }
+  :global(.calendar-element.past .event-container) {
+    opacity: 0.4;
+  }
+
   .sticky-header {
     position: sticky;
     background-color: var(--theme-comp-header-color);

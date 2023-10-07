@@ -111,7 +111,7 @@ export interface TriggerControl {
   fulltextFx: (f: (adapter: FullTextAdapter) => Promise<void>) => void
   // Since we don't have other storages let's consider adapter is MinioClient
   // Later can be replaced with generic one with bucket encapsulated inside.
-  storageFx: (f: (adapter: MinioService, workspaceId: WorkspaceId) => Promise<void>) => void
+  storageFx: (f: (adapter: StorageAdapter, workspaceId: WorkspaceId) => Promise<void>) => void
   fx: (f: () => Promise<void>) => void
 
   // Bulk operations in case trigger require some
@@ -159,6 +159,11 @@ export interface EmbeddingSearchOption {
   fulltextBoost?: number // default 10
   minScore?: number // 75 for example.
 }
+
+/**
+ * @public
+ */
+export type StorageAdapter = MinioService
 
 /**
  * @public

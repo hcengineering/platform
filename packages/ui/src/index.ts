@@ -35,7 +35,11 @@ export type {
   ButtonSize,
   IconSize,
   TabItem,
-  DeviceOptions
+  DeviceOptions,
+  TSeparatedItem,
+  SeparatedItem,
+  DefSeparators,
+  SeparatedElement
 } from './types'
 
 export { themeStore } from '@hcengineering/theme'
@@ -101,6 +105,7 @@ export { default as DropdownPopup } from './components/DropdownPopup.svelte'
 export { default as DropdownLabels } from './components/DropdownLabels.svelte'
 export { default as DropdownLabelsPopup } from './components/DropdownLabelsPopup.svelte'
 export { default as DropdownLabelsIntl } from './components/DropdownLabelsIntl.svelte'
+export { default as DropdownLabelsPopupIntl } from './components/DropdownLabelsPopupIntl.svelte'
 export { default as DropdownRecord } from './components/DropdownRecord.svelte'
 export { default as ShowMore } from './components/ShowMore.svelte'
 export { default as Menu } from './components/Menu.svelte'
@@ -113,9 +118,14 @@ export { default as TabList } from './components/TabList.svelte'
 export { default as Chevron } from './components/Chevron.svelte'
 export { default as Timeline } from './components/Timeline.svelte'
 export { default as TimeShiftPresenter } from './components/TimeShiftPresenter.svelte'
+
 export { default as MicIcon } from './components/icons/Mic.svelte'
 export { default as RecIcon } from './components/icons/Record.svelte'
+
+export { default as Separator } from './components/Separator.svelte'
+
 export { default as IconAdd } from './components/icons/Add.svelte'
+export { default as IconCircleAdd } from './components/icons/CircleAdd.svelte'
 export { default as IconCopy } from './components/icons/Copy.svelte'
 export { default as IconStart } from './components/icons/Start.svelte'
 export { default as IconStop } from './components/icons/Stop.svelte'
@@ -196,6 +206,7 @@ export { default as IconWithEmoji } from './components/IconWithEmoji.svelte'
 export { default as ModeSelector } from './components/ModeSelector.svelte'
 export { default as SimpleTimePopup } from './components/calendar/SimpleTimePopup.svelte'
 export { default as NumberInput } from './components/NumberInput.svelte'
+export { default as Lazy } from './components/Lazy.svelte'
 
 export * from './types'
 export * from './location'
@@ -207,6 +218,7 @@ export * from './components/calendar/internal/DateUtils'
 export * from './colors'
 export * from './focus'
 export * from './resize'
+export * from './lazy'
 
 export function createApp (target: HTMLElement): SvelteComponent {
   return new Root({ target })

@@ -47,7 +47,7 @@
   let objectsPromise: Promise<FindResult<Milestone>> | undefined = undefined
   let selectedValues: Set<Ref<Milestone> | undefined | null> = new Set()
 
-  let filterUpdateTimeout: number | undefined
+  let filterUpdateTimeout: any | undefined
 
   const client = getClient()
   async function getValues (search: string): Promise<void> {

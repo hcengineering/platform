@@ -46,6 +46,7 @@
 
         if (url.origin === window.location.origin) {
           e.preventDefault()
+          e.stopPropagation()
           navigate(parseLocation(url))
         }
       } catch {}

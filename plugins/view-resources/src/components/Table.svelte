@@ -39,7 +39,8 @@
     mouseAttractor,
     resizeObserver,
     showPopup,
-    Spinner
+    Spinner,
+    lazyObserver
   } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey, BuildModelOptions } from '@hcengineering/view'
   import view from '../plugin'
@@ -93,6 +94,13 @@
   let objectsRecieved = false
   const refs: HTMLElement[] = []
 
+  let rowLimit = 1
+
+  const oldClass = _class
+  $: if (oldClass !== _class) {
+    rowLimit = 1 // delayed show
+  }
+
   $: refs.length = objects.length
 
   const q = createQuery()
@@ -101,6 +109,15 @@
 
   $: sortingFunction = (config.find((it) => typeof it !== 'string' && it.sortingKey === _sortKey) as BuildModelKey)
     ?.sortingFunction
+
+  function getSort (sortKey: string | string[]) {
+    return Array.isArray(sortKey)
+      ? sortKey.reduce((acc: Record<string, SortingOrder>, val) => {
+        acc[val] = sortOrder
+        return acc
+      }, {})
+      : { ...(options?.sort ?? {}), [sortKey]: sortOrder }
+  }
 
   async function update (
     _class: Ref<Class<Doc>>,
@@ -111,34 +128,37 @@
     limit: number,
     options?: FindOptions<Doc>
   ) {
-    const sort = Array.isArray(sortKey)
-      ? sortKey.reduce((acc: Record<string, SortingOrder>, val) => {
-        acc[val] = sortOrder
-        return acc
-      }, {})
-      : { ...(options?.sort ?? {}), [sortKey]: sortOrder }
-    const update = q.query(
+    loading += q.query(
       _class,
       query,
       (result) => {
-        objects = result
-        total = result.total === -1 ? 0 : result.total
-
-        objectsRecieved = true
         if (sortingFunction !== undefined) {
           const sf = sortingFunction
-          objects.sort((a, b) => -1 * sortOrder * sf(a, b))
+          objects = result.sort((a, b) => -1 * sortOrder * sf(a, b))
+        } else {
+          objects = result
         }
-        dispatch('content', objects)
-        loading = loading === 1 ? 0 : -1
+        objectsRecieved = true
+        loading = 0
       },
-      { sort, limit, ...options, lookup, total: true }
+      { sort: getSort(sortKey), limit, ...options, lookup, total: false }
     )
-    if (update && ++loading > 0) {
-      objects = []
-    }
+      ? 1
+      : 0
   }
   $: update(_class, query, _sortKey, sortOrder, lookup, limit, options)
+
+  $: dispatch('content', objects)
+
+  const qSlow = createQuery()
+  $: qSlow.query(
+    _class,
+    query,
+    (result) => {
+      total = result.total
+    },
+    { sort: getSort(_sortKey), limit: 1, ...options, lookup, total: true }
+  )
 
   const showMenu = async (ev: MouseEvent, object: Doc, row: number): Promise<void> => {
     selection = row
@@ -263,10 +283,24 @@
     }
   }
 
+  let buildIndex = 0
+
   async function build (modelOptions: BuildModelOptions) {
     isBuildingModel = true
-    model = await buildModel(modelOptions)
+    const idx = ++buildIndex
+    const res = await buildModel(modelOptions)
+    if (buildIndex === idx) {
+      model = res
+    }
     isBuildingModel = false
+  }
+
+  function contextHandler (object: Doc, row: number): (ev: MouseEvent) => void {
+    return (ev) => {
+      if (!readonly) {
+        showMenu(ev, object, row)
+      }
+    }
   }
 </script>
 
@@ -333,9 +367,10 @@
             on:mouseenter={mouseAttractor(() => onRow(object))}
             on:focus={() => {}}
             bind:this={refs[row]}
-            on:contextmenu|preventDefault={(ev) => {
-              if (!readonly) {
-                showMenu(ev, object, row)
+            on:contextmenu|preventDefault={contextHandler(object, row)}
+            use:lazyObserver={(val) => {
+              if (val && row >= rowLimit) {
+                rowLimit = row + 10
               }
             }}
           >
@@ -370,19 +405,21 @@
                 {/if}
               </td>
             {/if}
-            {#each model as attribute, cell}
-              <td>
-                <div class:antiTable-cells__firstCell={!cell}>
-                  <!-- {getOnChange(object, attribute) !== undefined} -->
-                  <svelte:component
-                    this={attribute.presenter}
-                    value={getValue(attribute, object)}
-                    onChange={getOnChange(object, attribute)}
-                    {...joinProps(attribute, object)}
-                  />
-                </div>
-              </td>
-            {/each}
+            {#if row < rowLimit}
+              {#each model as attribute, cell}
+                <td>
+                  <div class:antiTable-cells__firstCell={!cell}>
+                    <!-- {getOnChange(object, attribute) !== undefined} -->
+                    <svelte:component
+                      this={attribute.presenter}
+                      value={getValue(attribute, object)}
+                      onChange={getOnChange(object, attribute)}
+                      {...joinProps(attribute, object)}
+                    />
+                  </div>
+                </td>
+              {/each}
+            {/if}
           </tr>
         {/each}
       </tbody>

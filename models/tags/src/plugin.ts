@@ -37,7 +37,6 @@ export default mergeIds(tagsId, tags, {
     ColorLabel: '' as IntlString,
     WeightLabel: '' as IntlString,
     TagReferenceLabel: '' as IntlString,
-    TagLabel: '' as IntlString,
     TargetClassLabel: '' as IntlString,
     TargetCategoryLabel: '' as IntlString,
     TagReference: '' as IntlString,

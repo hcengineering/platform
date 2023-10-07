@@ -132,10 +132,10 @@ function floorFractionDigits (n: number | string, amount: number): number {
 }
 
 function toTime (value: number): string {
-  if (value > 0 && value < 1) {
-    return `${floorFractionDigits(value * 8, 1)}h`
+  if (value > 0 && value < 8) {
+    return `${floorFractionDigits(value, 1)}h`
   } else {
-    return `${floorFractionDigits(value, 1)}d`
+    return `${floorFractionDigits(value / 8, 3)}d`
   }
 }
 
@@ -143,7 +143,7 @@ test('report-time-from-issue-card', async ({ page }) => {
   await navigate(page)
   const assignee = 'Chen Rosamund'
   const status = 'In Progress'
-  const values = [0.25, 0.5, 0.75, 1]
+  const values = [2, 4, 6, 8]
   for (let i = 0; i < 5; i++) {
     const random = Math.floor(Math.random() * values.length)
     const time = values[random]
@@ -159,11 +159,11 @@ test('report-time-from-issue-card', async ({ page }) => {
     }
 
     await page.click('#ReportedTimeEditor')
-    await page.waitForSelector('text="Time spend reports"')
+    await page.waitForSelector('text="Time spent reports"')
     await page.click('#ReportsPopupAddButton')
     await page.waitForSelector('text="Add time report"')
     await expect(page.locator('button:has-text("Create")')).toBeDisabled()
-    await page.fill('[placeholder="Reported\\ days"]', `${time}`)
+    await page.fill('[placeholder="Spent time"]', `${time}`)
     await expect(page.locator('button:has-text("Create")')).toBeEnabled()
     await page.click('button:has-text("Create")')
     await page.click('#card-close')
@@ -194,11 +194,11 @@ test('report-multiple-time-from-issue-card', async ({ page }) => {
 
   for (let i = 0; i < 5; i++) {
     await expect(page.locator('.antiCard-content >> .footer')).toContainText(`Total: ${i}`)
-    await page.waitForSelector('text="Time spend reports"')
+    await page.waitForSelector('text="Time spent reports"')
     await page.click('#ReportsPopupAddButton')
     await page.waitForSelector('text="Add time report"')
     await expect(page.locator('button:has-text("Create")')).toBeDisabled()
-    await page.fill('[placeholder="Reported\\ days"]', `${time}`)
+    await page.fill('[placeholder="Spent time"]', `${time}`)
     await expect(page.locator('button:has-text("Create")')).toBeEnabled()
     await page.click('button:has-text("Create")')
     await expect(page.locator('.antiCard-content >> .footer')).toContainText(`Total: ${i + 1}`)
@@ -214,7 +214,7 @@ test('report-time-from-main-view', async ({ page }) => {
   await page.click('text="Modified date"')
   await page.keyboard.press('Escape')
 
-  const values = [0.25, 0.5, 0.75, 1]
+  const values = [2, 4, 6, 8]
   const assignee = 'Chen Rosamund'
   const status = 'In Progress'
   const name = getIssueName()
@@ -240,7 +240,7 @@ test('report-time-from-main-view', async ({ page }) => {
     await page.click('button:has-text("Add time report")')
     await page.waitForSelector('[id="tracker\\:string\\:TimeSpendReportAdd"] >> text=Add time report')
     await expect(page.locator('button:has-text("Create")')).toBeDisabled()
-    await page.fill('[placeholder="Reported\\ days"]', `${time}`)
+    await page.fill('[placeholder="Spent time"]', `${time}`)
     await expect(page.locator('button:has-text("Create")')).toBeEnabled()
     await page.click('button:has-text("Create")')
     await page.click('#card-close')

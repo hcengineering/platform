@@ -39,7 +39,7 @@
   let lastKey: KeyboardEvent | undefined
   let sequences: Action<Doc, Record<string, any>>[] = []
   let delayedAction: (() => Promise<void>) | undefined
-  let timer: number | undefined
+  let timer: any | undefined
 
   async function getCurrentActions (
     context: {

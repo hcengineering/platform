@@ -21,7 +21,17 @@
   import { Department, Staff } from '@hcengineering/hr'
   import { createQuery } from '@hcengineering/presentation'
   import type { TabItem } from '@hcengineering/ui'
-  import { Button, IconBack, IconForward, Label, SearchEdit, TabList } from '@hcengineering/ui'
+  import {
+    Button,
+    IconBack,
+    IconForward,
+    Label,
+    SearchEdit,
+    TabList,
+    workbenchSeparators,
+    defineSeparators,
+    Separator
+  } from '@hcengineering/ui'
   import view from '@hcengineering/view'
 
   import hr from '../plugin'
@@ -110,6 +120,8 @@
     { id: 'chart', icon: view.icon.Views },
     { id: 'stats', icon: view.icon.Table }
   ]
+
+  defineSeparators('workbench', workbenchSeparators)
 </script>
 
 <div class="flex h-full">
@@ -120,6 +132,7 @@
       departmentById={departments}
       on:selected={(e) => departmentSelected(e.detail)}
     />
+    <Separator name={'workbench'} index={0} />
   {/if}
 
   <div class="antiPanel-component filled">

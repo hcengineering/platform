@@ -67,7 +67,7 @@ export class TDepartment extends TSpace implements Department {
 
   @Prop(TypeString(), core.string.Name)
   @Index(IndexKind.FullText)
-    name!: string
+  declare name: string
 
   @Prop(Collection(contact.class.Channel), contact.string.ContactInfo)
     channels?: number

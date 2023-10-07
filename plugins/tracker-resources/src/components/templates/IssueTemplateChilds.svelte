@@ -75,10 +75,9 @@
     width="min-content"
     icon={hasSubIssues ? IconAdd : undefined}
     label={hasSubIssues ? undefined : tracker.string.AddSubIssues}
-    labelParams={{ subIssues: 0 }}
     kind={'ghost'}
     size={'small'}
-    showTooltip={{ label: tracker.string.AddSubIssues, props: { subIssues: 1 } }}
+    showTooltip={{ label: tracker.string.AddSubIssues }}
     on:click={() => {
       closeTooltip()
       isCreating = true

@@ -65,7 +65,7 @@ export function getStates (space: SpaceWithStates | undefined, statusStore: IdMa
     return []
   }
 
-  const states = space.states.map((x) => statusStore.get(x) as Status).filter((p) => p !== undefined)
+  const states = (space.states ?? []).map((x) => statusStore.get(x) as Status).filter((p) => p !== undefined)
 
   return states
 }

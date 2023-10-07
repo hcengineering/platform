@@ -74,12 +74,6 @@ export function startFront (extraConfig?: Record<string, string>): void {
     process.exit(1)
   }
 
-  const collaboratorUrl = process.env.COLLABORATOR_URL
-  if (collaboratorUrl === undefined) {
-    console.error('please provide collaborator url')
-    process.exit(1)
-  }
-
   const gmailUrl = process.env.GMAIL_URL
   if (gmailUrl === undefined) {
     console.error('please provide gmail url')
@@ -127,7 +121,6 @@ export function startFront (extraConfig?: Record<string, string>): void {
     accountsUrl,
     uploadUrl,
     modelVersion,
-    collaboratorUrl,
     gmailUrl,
     telegramUrl,
     rekoniUrl,

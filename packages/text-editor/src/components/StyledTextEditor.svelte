@@ -20,7 +20,7 @@
   import textEditorPlugin from '../plugin'
   import { RefInputAction, RefInputActionItem, TextEditorHandler, TextFormatCategory } from '../types'
   import Attach from './icons/Attach.svelte'
-  import { AnyExtension } from '@tiptap/core'
+  import { AnyExtension, mergeAttributes } from '@tiptap/core'
   import StyleButton from './StyleButton.svelte'
   import TextEditor from './TextEditor.svelte'
   import { Node as ProseMirrorNode } from '@tiptap/pm/model'
@@ -36,10 +36,10 @@
   export let isScrollable: boolean = true
   export let focusable: boolean = false
   export let maxHeight: 'max' | 'card' | 'limited' | string | undefined = undefined
-  export let enableFormatting = false
   export let autofocus = false
   export let full = false
   export let extensions: AnyExtension[] = []
+  export let editorAttributes: { [name: string]: string } = {}
   export let textFormatCategories: TextFormatCategory[] = [
     TextFormatCategory.Heading,
     TextFormatCategory.TextDecoration,
@@ -52,7 +52,6 @@
 
   let textEditor: TextEditor
 
-  let isEmpty = true
   let contentHeight: number
 
   export function submit (): void {
@@ -72,9 +71,6 @@
   }
   export function setContent (data: string): void {
     textEditor.setContent(data)
-  }
-  export function isEmptyContent (): boolean {
-    return textEditor.isEmptyContent()
   }
   export function insertText (text: string): void {
     textEditor.insertText(text)
@@ -148,6 +144,11 @@
     actions = defActions.concat(...cont).sort((a, b) => a.order - b.order)
   })
 
+  const mergedEditorAttributes = mergeAttributes(
+    editorAttributes,
+    full ? { class: 'text-editor-view_full-height' } : { class: 'text-editor-view_compact' }
+  )
+
   const editorHandler: TextEditorHandler = {
     insertText: (text) => {
       textEditor.insertText(text)
@@ -196,19 +197,20 @@
   <div class="textInput" class:focusable>
     <div
       bind:clientHeight={contentHeight}
-      class="inputMsg showScroll"
+      class="inputMsg"
+      class:showScroll={contentHeight > 32}
       class:scrollable={isScrollable}
       style="--texteditor-maxheight: {varsStyle};"
     >
       {#if isScrollable}
         <Scroller>
           <TextEditor
+            editorAttributes={mergedEditorAttributes}
             bind:content
             {placeholder}
             {extensions}
             {textFormatCategories}
             bind:this={textEditor}
-            bind:isEmpty
             on:value
             on:content={(ev) => {
               dispatch('message', ev.detail)
@@ -222,12 +224,12 @@
         </Scroller>
       {:else}
         <TextEditor
+          editorAttributes={mergedEditorAttributes}
           bind:content
           {placeholder}
           {extensions}
           {textFormatCategories}
           bind:this={textEditor}
-          bind:isEmpty
           on:value
           on:content={(ev) => {
             dispatch('message', ev.detail)
@@ -283,11 +285,6 @@
         color: var(--theme-caption-color);
         background-color: transparent;
 
-        :global(.ProseMirror) {
-          min-height: 0;
-          // max-height: 100%;
-          height: 100%;
-        }
         &.scrollable {
           max-height: var(--texteditor-maxheight);
 
@@ -297,16 +294,6 @@
         }
         &:not(.showScroll) {
           overflow-y: hidden;
-          /* 
-            showScroll was set only when contentHeight > 32
-            But this gave a bad behaviour for editor toolbar
-            in the bubble when there is only one line of text.
-
-            I did the testing and figured out that now
-            we can use showScroll always.
-
-            Please refer UBER-555
-          */
 
           &::-webkit-scrollbar-thumb {
             background-color: transparent;

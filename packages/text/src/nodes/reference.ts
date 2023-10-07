@@ -13,7 +13,40 @@
 // limitations under the License.
 //
 
+import { Class, Doc, Ref } from '@hcengineering/core'
 import { Node, mergeAttributes } from '@tiptap/core'
+import { Node as ProseMirrorNode } from '@tiptap/pm/model'
+
+/**
+ * @public
+ */
+export interface Reference {
+  objectId: Ref<Doc>
+  objectClass: Ref<Class<Doc>>
+  parentNode: ProseMirrorNode | null
+}
+
+/**
+ * @public
+ */
+export function extractReferences (content: ProseMirrorNode): Array<Reference> {
+  const result: Array<Reference> = []
+
+  content.descendants((node, _pos, parent): boolean => {
+    if (node.type.name === ReferenceNode.name) {
+      const objectId = node.attrs.id as Ref<Doc>
+      const objectClass = node.attrs.objectclass as Ref<Class<Doc>>
+      const e = result.find((e) => e.objectId === objectId && e.objectClass === objectClass)
+      if (e === undefined) {
+        result.push({ objectId, objectClass, parentNode: parent })
+      }
+    }
+
+    return true
+  })
+
+  return result
+}
 
 /**
  * @public
@@ -40,16 +73,16 @@ export const ReferenceNode = Node.create({
         }
       },
 
-      objectClass: {
+      objectclass: {
         default: null,
         parseHTML: (element) => element.getAttribute('data-objectclass'),
         renderHTML: (attributes) => {
-          if (attributes.objectClass === null) {
+          if (attributes.objectclass === null) {
             return {}
           }
 
           return {
-            'data-objectclass': attributes.objectClass
+            'data-objectclass': attributes.objectclass
           }
         }
       },

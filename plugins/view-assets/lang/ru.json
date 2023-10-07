@@ -101,6 +101,11 @@
     "FilterArrayAny": "содержит любое из",
     "Or": "Или",
     "HyperlinkPlaceholder": "https://jappleseed.com",
-    "CopyToClipboard": "Скопировать в буфер обмена"
+    "CopyToClipboard": "Скопировать в буфер обмена",
+
+    "ChooseIcon": "Выбрать иконку",
+    "IconColor": "Выберите цвет",
+    "IconCategory": "Иконка",
+    "EmojiCategory": "Эмодзи"
   }
 }

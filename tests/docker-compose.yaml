@@ -50,18 +50,6 @@ services:
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
       - MODEL_ENABLED=*
-  collaborator:
-    image: hardcoreeng/collaborator
-    links:
-      - transactor
-    ports:
-      - 3079:3079
-    environment:
-      - COLLABORATOR_PORT=3079
-      - SECRET=secret
-      - MINIO_ENDPOINT=minio
-      - MINIO_ACCESS_KEY=minioadmin
-      - MINIO_SECRET_KEY=minioadmin      
   front:
     image: hardcoreeng/front
     pull_policy: never
@@ -71,14 +59,12 @@ services:
       - minio
       - elastic
       - transactor
-      - collaborator
     ports:
       - 8083:8083
     environment:
       - SERVER_PORT=8083
       - SERVER_SECRET=secret
       - ACCOUNTS_URL=http://localhost:3003
-      - COLLABORATOR_URL=ws://localhost:3079
       - UPLOAD_URL=/files
       - TRANSACTOR_URL=ws://localhost:3334
       - ELASTIC_URL=http://elastic:9200

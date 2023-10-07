@@ -1,6 +1,6 @@
 import { Client, Doc, RelatedDocument } from '@hcengineering/core'
 import { Asset, IntlString, Resource } from '@hcengineering/platform'
-import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
+import { AnyComponent, AnySvelteComponent, ComponentExtensionId } from '@hcengineering/ui'
 
 export * from './components/breadcrumbs/types'
 
@@ -46,4 +46,23 @@ export interface ObjectSearchCategory extends Doc {
 
   // Query for documents with pattern
   query: Resource<ObjectSearchFactory>
+}
+
+/**
+ * @public
+ *
+ * An component extension to various places of platform.
+ */
+export interface ComponentPointExtension extends Doc {
+  // Extension point we should extend.
+  extension: ComponentExtensionId
+
+  // Component to be instantiated with at least following properties:
+  // size: 'tiny' | 'small' | 'medium' | 'large'
+  component: AnyComponent
+
+  // Extra properties to be passed to the component
+  props?: Record<string, any>
+
+  order?: number // Positioning of elements, into groups.
 }

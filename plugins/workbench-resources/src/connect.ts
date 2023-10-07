@@ -64,7 +64,10 @@ export async function connect (title: string): Promise<Client | undefined> {
   let clientSet = false
 
   let version: Version | undefined
-
+  let serverEndpoint = endpoint.replace(/^ws/g, 'http')
+  if (serverEndpoint.endsWith('/')) {
+    serverEndpoint = serverEndpoint.substring(0, serverEndpoint.length - 1)
+  }
   const clientFactory = await getResource(client.function.GetClient)
   _client = await clientFactory(
     token,
@@ -87,15 +90,28 @@ export async function connect (title: string): Promise<Client | undefined> {
         }
 
         void (async () => {
-          const newVersion = await _client?.findOne<Version>(core.class.Version, {})
-          console.log('Reconnect Model version', newVersion)
+          if (_client !== undefined) {
+            const newVersion = await _client.findOne<Version>(core.class.Version, {})
+            console.log('Reconnect Model version', newVersion)
 
-          const currentVersionStr = versionToString(version as Version)
-          const reconnectVersionStr = versionToString(newVersion as Version)
+            const currentVersionStr = versionToString(version as Version)
+            const reconnectVersionStr = versionToString(newVersion as Version)
 
-          if (currentVersionStr !== reconnectVersionStr) {
-            // It seems upgrade happened
-            location.reload()
+            if (currentVersionStr !== reconnectVersionStr) {
+              // It seems upgrade happened
+              location.reload()
+            }
+            const serverVersion: { version: string } = await (
+              await fetch(serverEndpoint + '/api/v1/version', {})
+            ).json()
+
+            console.log('Server version', serverVersion.version)
+            if (serverVersion.version !== '' && serverVersion.version !== currentVersionStr) {
+              versionError = `${currentVersionStr} => ${serverVersion.version}`
+              setTimeout(() => {
+                window.location.reload()
+              }, 5000)
+            }
           }
         })()
       } catch (err) {
@@ -122,7 +138,6 @@ export async function connect (title: string): Promise<Client | undefined> {
     clientSet = true
     return
   }
-
   try {
     version = await _client.findOne<Version>(core.class.Version, {})
     console.log('Model version', version)
@@ -134,8 +149,35 @@ export async function connect (title: string): Promise<Client | undefined> {
 
       if (version === undefined || requiredVersion !== versionStr) {
         versionError = `${versionStr} => ${requiredVersion}`
+        setTimeout(() => {
+          window.location.reload()
+        }, 5000)
         return undefined
       }
+    }
+
+    try {
+      const serverVersion: { version: string } = await (await fetch(serverEndpoint + '/api/v1/version', {})).json()
+
+      console.log('Server version', serverVersion.version)
+      if (
+        serverVersion.version !== '' &&
+        (version === undefined || serverVersion.version !== versionToString(version))
+      ) {
+        const versionStr = version !== undefined ? versionToString(version) : 'unknown'
+        versionError = `${versionStr} => ${serverVersion.version}`
+
+        setTimeout(() => {
+          window.location.reload()
+        }, 5000)
+        return
+      }
+    } catch (err: any) {
+      versionError = 'server version not available'
+      setTimeout(() => {
+        window.location.reload()
+      }, 5000)
+      return
     }
   } catch (err: any) {
     console.log(err)
@@ -152,10 +194,6 @@ export async function connect (title: string): Promise<Client | undefined> {
   await setClient(_client)
 
   if (me.role === AccountRole.Owner) {
-    let ep = endpoint.replace(/^ws/g, 'http')
-    if (ep.endsWith('/')) {
-      ep = ep.substring(0, ep.length - 1)
-    }
     setMetadata(ui.metadata.ShowNetwork, (evt: MouseEvent) => {
       if (getMetadata(presentation.metadata.Token) == null) {
         return
@@ -164,7 +202,7 @@ export async function connect (title: string): Promise<Client | undefined> {
         showPopup(
           ServerManager,
           {
-            endpoint: ep,
+            endpoint: serverEndpoint,
             token
           },
           'content'

@@ -25,8 +25,10 @@ import chunter, {
 import contact, { Employee, PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
+  AttachedDoc,
   Class,
   concatLink,
+  Data,
   Doc,
   DocumentQuery,
   FindOptions,
@@ -42,120 +44,74 @@ import core, {
   TxRemoveDoc,
   TxUpdateDoc
 } from '@hcengineering/core'
-import notification, { Collaborators, NotificationType } from '@hcengineering/notification'
-import { getMetadata } from '@hcengineering/platform'
+import notification, { Collaborators, NotificationType, NotificationContent } from '@hcengineering/notification'
+import { getMetadata, IntlString } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { getDocCollaborators, getMixinTx, pushNotification } from '@hcengineering/server-notification-resources'
 import { workbenchId } from '@hcengineering/workbench'
-import { getBacklinks } from './backlinks'
+import { stripTags } from '@hcengineering/text'
+import { getBacklinks, getBacklinksTxes } from './backlinks'
 
-function getCreateBacklinksTxes (control: TriggerControl, txFactory: TxFactory, doc: Doc): Tx[] {
-  const txes: Tx[] = []
+export { getBacklinksTxes } from './backlinks'
 
-  const backlinkId = doc._id
-  const backlinkClass = doc._class
+function getCreateBacklinksTxes (
+  control: TriggerControl,
+  txFactory: TxFactory,
+  doc: Doc,
+  backlinkId: Ref<Doc>,
+  backlinkClass: Ref<Class<Doc>>
+): Tx[] {
   const attachedDocId = doc._id
 
+  const backlinks: Data<Backlink>[] = []
   const attributes = control.hierarchy.getAllAttributes(doc._class)
   for (const attr of attributes.values()) {
     if (attr.type._class === core.class.TypeMarkup) {
       const content = (doc as any)[attr.name]?.toString() ?? ''
-      const backlinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, content)
-
-      for (const backlink of backlinks) {
-        const innerTx = txFactory.createTxCreateDoc(chunter.class.Backlink, chunter.space.Backlinks, backlink)
-
-        const collectionTx = txFactory.createTxCollectionCUD(
-          backlink.attachedToClass,
-          backlink.attachedTo,
-          chunter.space.Backlinks,
-          backlink.collection,
-          innerTx
-        )
-
-        txes.push(collectionTx)
-      }
+      const attrBacklinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, content)
+      backlinks.push(...attrBacklinks)
     }
   }
 
-  return txes
+  return getBacklinksTxes(txFactory, backlinks, [])
 }
 
-async function getUpdateBacklinksTxes (control: TriggerControl, txFactory: TxFactory, doc: Doc): Promise<Tx[]> {
-  const txes: Tx[] = []
-
-  const backlinkId = doc._id
-  const backlinkClass = doc._class
+async function getUpdateBacklinksTxes (
+  control: TriggerControl,
+  txFactory: TxFactory,
+  doc: Doc,
+  backlinkId: Ref<Doc>,
+  backlinkClass: Ref<Class<Doc>>
+): Promise<Tx[]> {
   const attachedDocId = doc._id
 
+  // collect attribute backlinks
+  let hasBacklinkAttrs = false
+  const backlinks: Data<Backlink>[] = []
   const attributes = control.hierarchy.getAllAttributes(doc._class)
   for (const attr of attributes.values()) {
     if (attr.type._class === core.class.TypeMarkup) {
+      hasBacklinkAttrs = true
       const content = (doc as any)[attr.name]?.toString() ?? ''
-      const backlinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, content)
-
-      const current = await control.findAll(chunter.class.Backlink, {
-        backlinkId,
-        backlinkClass,
-        attachedDocId,
-        collection: 'backlinks'
-      })
-
-      for (const c of current) {
-        // Find existing and check if we need to update message
-        const pos = backlinks.findIndex(
-          (b) => b.backlinkId === c.backlinkId && b.backlinkClass === c.backlinkClass && b.attachedTo === c.attachedTo
-        )
-        if (pos !== -1) {
-          // Update existing backlinks when message changed
-          const data = backlinks[pos]
-          if (c.message !== data.message) {
-            const innerTx = txFactory.createTxUpdateDoc(c._class, c.space, c._id, {
-              message: data.message
-            })
-            txes.push(
-              txFactory.createTxCollectionCUD(
-                c.attachedToClass,
-                c.attachedTo,
-                chunter.space.Backlinks,
-                c.collection,
-                innerTx
-              )
-            )
-          }
-          backlinks.splice(pos, 1)
-        } else {
-          // Remove not found backlinks
-          const innerTx = txFactory.createTxRemoveDoc(c._class, c.space, c._id)
-          txes.push(
-            txFactory.createTxCollectionCUD(
-              c.attachedToClass,
-              c.attachedTo,
-              chunter.space.Backlinks,
-              c.collection,
-              innerTx
-            )
-          )
-        }
-      }
-
-      // Add missing backlinks
-      for (const backlink of backlinks) {
-        const backlinkTx = txFactory.createTxCreateDoc(chunter.class.Backlink, chunter.space.Backlinks, backlink)
-        txes.push(
-          txFactory.createTxCollectionCUD(
-            backlink.attachedToClass,
-            backlink.attachedTo,
-            chunter.space.Backlinks,
-            backlink.collection,
-            backlinkTx
-          )
-        )
-      }
+      const attrBacklinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, content)
+      backlinks.push(...attrBacklinks)
     }
   }
 
-  return txes
+  // There is a chance that backlinks are managed manually
+  // do not update backlinks if there are no backlink sources in the doc
+  if (hasBacklinkAttrs) {
+    const current = await control.findAll(chunter.class.Backlink, {
+      backlinkId,
+      backlinkClass,
+      attachedDocId,
+      collection: 'backlinks'
+    })
+
+    return getBacklinksTxes(txFactory, backlinks, current)
+  }
+
+  return []
 }
 
 async function getRemoveBacklinksTxes (control: TriggerControl, txFactory: TxFactory, doc: Ref<Doc>): Promise<Tx[]> {
@@ -326,16 +282,29 @@ async function ThreadMessageDelete (tx: Tx, control: TriggerControl): Promise<Tx
   return [updateTx]
 }
 
+function guessBacklinkTx (hierarchy: Hierarchy, tx: TxCUD<Doc>): TxCUD<Doc> {
+  // Try to guess backlink target Tx for TxCollectionCUD txes based on collaborators availability
+  if (hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)) {
+    const cltx = tx as TxCollectionCUD<Doc, AttachedDoc>
+    tx = TxProcessor.extractTx(cltx) as TxCUD<Doc>
+
+    const mixin = hierarchy.classHierarchyMixin(tx.objectClass, notification.mixin.ClassCollaborators)
+    return mixin !== undefined ? tx : cltx
+  }
+  return tx
+}
+
 async function BacklinksCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const hierarchy = control.hierarchy
   const ctx = TxProcessor.extractTx(tx) as TxCreateDoc<Doc>
   if (ctx._class !== core.class.TxCreateDoc) return []
-  if (hierarchy.isDerived(ctx.objectClass, chunter.class.Backlink)) return []
+  if (control.hierarchy.isDerived(ctx.objectClass, chunter.class.Backlink)) return []
 
   const txFactory = new TxFactory(control.txFactory.account)
-  const doc = TxProcessor.createDoc2Doc(ctx)
 
-  const txes: Tx[] = getCreateBacklinksTxes(control, txFactory, doc)
+  const doc = TxProcessor.createDoc2Doc(ctx)
+  const targetTx = guessBacklinkTx(control.hierarchy, tx as TxCUD<Doc>)
+  const txes: Tx[] = getCreateBacklinksTxes(control, txFactory, doc, targetTx.objectId, targetTx.objectClass)
+
   if (txes.length !== 0) {
     await control.apply(txes, true)
   }
@@ -344,19 +313,18 @@ async function BacklinksCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> 
 }
 
 async function BacklinksUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const hierarchy = control.hierarchy
   const ctx = TxProcessor.extractTx(tx) as TxUpdateDoc<Doc>
   if (ctx._class !== core.class.TxUpdateDoc) return []
-  if (hierarchy.isDerived(ctx.objectClass, chunter.class.Backlink)) return []
+  if (control.hierarchy.isDerived(ctx.objectClass, chunter.class.Backlink)) return []
 
   const rawDoc = (await control.findAll(ctx.objectClass, { _id: ctx.objectId }))[0]
-  if (rawDoc === undefined) return []
-
-  const txFactory = new TxFactory(control.txFactory.account)
 
   if (rawDoc !== undefined) {
+    const txFactory = new TxFactory(control.txFactory.account)
+
     const doc = TxProcessor.updateDoc2Doc(rawDoc, ctx)
-    const txes: Tx[] = await getUpdateBacklinksTxes(control, txFactory, doc)
+    const targetTx = guessBacklinkTx(control.hierarchy, tx as TxCUD<Doc>)
+    const txes: Tx[] = await getUpdateBacklinksTxes(control, txFactory, doc, targetTx.objectId, targetTx.objectClass)
 
     if (txes.length !== 0) {
       await control.apply(txes, true)
@@ -436,7 +404,7 @@ export async function OnMessageSent (tx: Tx, control: TriggerControl): Promise<T
 
     if (anotherPerson == null) return []
 
-    pushNotification(control, res, sender, channel, dmCreationTx, docUpdates, anotherPerson)
+    await pushNotification(control, res, sender, channel, dmCreationTx, docUpdates, anotherPerson)
   } else if (docUpdate.hidden) {
     res.push(control.txFactory.createTxUpdateDoc(docUpdate._class, docUpdate.space, docUpdate._id, { hidden: false }))
   }
@@ -530,6 +498,40 @@ export async function IsThreadMessage (
   return space !== undefined
 }
 
+const NOTIFICATION_BODY_SIZE = 50
+/**
+ * @public
+ */
+export async function getChunterNotificationContent (
+  doc: Doc,
+  tx: TxCUD<Doc>,
+  target: Ref<Account>,
+  control: TriggerControl
+): Promise<NotificationContent> {
+  const title: IntlString = chunter.string.DirectNotificationTitle
+  let body: IntlString = chunter.string.Message
+  const intlParams: Record<string, string | number> = {}
+
+  if (tx._class === core.class.TxCollectionCUD) {
+    const ptx = tx as TxCollectionCUD<Doc, AttachedDoc>
+    if (ptx.tx._class === core.class.TxCreateDoc) {
+      if (ptx.tx.objectClass === chunter.class.Message) {
+        const createTx = ptx.tx as TxCreateDoc<Message>
+        const message = createTx.attributes.content
+        const plainTextMessage = stripTags(message, NOTIFICATION_BODY_SIZE)
+        intlParams.message = plainTextMessage
+        body = chunter.string.DirectNotificationBody
+      }
+    }
+  }
+
+  return {
+    title,
+    body,
+    intlParams
+  }
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
@@ -541,6 +543,7 @@ export default async () => ({
     CommentRemove,
     ChannelHTMLPresenter: channelHTMLPresenter,
     ChannelTextPresenter: channelTextPresenter,
+    ChunterNotificationContentProvider: getChunterNotificationContent,
     IsDirectMessage,
     IsThreadMessage,
     IsMeMentioned,

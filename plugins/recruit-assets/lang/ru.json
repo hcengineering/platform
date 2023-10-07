@@ -98,7 +98,6 @@
     "HasActiveApplicant":"Только активные",
     "HasNoActiveApplicant": "Не активные",
     "NoneApplications": "Отсутствуют",
-    "RelatedIssues": "Связанные задачи",
     "VacancyList": "Вакансии",
     "MatchVacancy": "Проверить на вакансию",
     "VacancyMatching": "Подбор кандидатов на вакансию",
@@ -118,7 +117,9 @@
     "MyApplications": "Мои кандидаты",
 
     "ShowApplications": "Показать кандидатов",
-    "GetTalentIds": "Получить ID талантов"
+    "GetTalentIds": "Получить ID талантов",
+    "HideDoneState": "Скрыть завершенных кандидатов",
+    "HideArchivedVacancies": "Скрыть архивные вакансии"
   },
   "status": {
     "ApplicationExists": "Кандидат уже существует",

@@ -65,7 +65,7 @@
       {#each accounts as account (account._id)}
         {@const employee = $personByIdStore.get(account.person)}
         {#if employee?.name?.includes(search)}
-          <div class="flex-row-center p-2">
+          <div class="flex-row-center p-2 flex-no-shrink">
             <div class="p-1 min-w-80">
               {#if employee}
                 <EmployeePresenter value={employee} disabled={false} />

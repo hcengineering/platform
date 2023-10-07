@@ -14,15 +14,16 @@
 -->
 <script lang="ts">
   import { DirectMessage } from '@hcengineering/chunter'
+  import contact, { PersonAccount } from '@hcengineering/contact'
+  import { CombineAvatars } from '@hcengineering/contact-resources'
   import type { Ref } from '@hcengineering/core'
   import { getCurrentAccount } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { CombineAvatars } from '@hcengineering/contact-resources'
-  import contact, { PersonAccount } from '@hcengineering/contact'
-  import { SearchEdit, showPanel } from '@hcengineering/ui'
+  import { SearchEdit } from '@hcengineering/ui'
+  import { openDoc } from '@hcengineering/view-resources'
+  import { userSearch } from '../index'
   import chunter from '../plugin'
   import { getDmName, navigateToSpecial } from '../utils'
-  import { userSearch } from '../index'
 
   export let spaceId: Ref<DirectMessage> | undefined
   export let withSearch: boolean = true
@@ -51,7 +52,7 @@
 
   async function onSpaceEdit (): Promise<void> {
     if (dm === undefined) return
-    showPanel(chunter.component.EditChannel, dm._id, dm._class, 'content')
+    openDoc(client.getHierarchy(), dm)
   }
 </script>
 

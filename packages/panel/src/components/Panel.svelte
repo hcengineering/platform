@@ -1,6 +1,6 @@
 <!--
     // Copyright © 2020, 2021 Anticrm Platform Contributors.
-    // Copyright © 2021 Hardcore Engineering Inc.
+    // Copyright © 2021, 2023 Hardcore Engineering Inc.
     // 
     // Licensed under the Eclipse Public License, Version 2.0 (the "License");
     // you may not use this file except in compliance with the License. You may
@@ -44,15 +44,18 @@
   export let isAside: boolean = true
   export let isUtils: boolean = true
   export let isCustomAttr: boolean = true
+  export let isReminder: boolean = true
   export let floatAside = false
+  export let allowBack = true
   export let allowClose = true
   export let useMaxWidth: boolean | undefined = undefined
   export let isFullSize = false
   export let embedded = false
+  export let contentClasses: string | undefined = undefined
 
   let lastHref: string
   let scroll: HTMLDivElement
-  let timer: number
+  let timer: any
   let lastScrollHeight: number = -1
   let count: number = 0
 
@@ -96,6 +99,7 @@
   bind:withoutTitle
   on:open
   on:close
+  {allowBack}
   {allowClose}
   {floatAside}
   {embedded}
@@ -137,7 +141,9 @@
 
   <svelte:fragment slot="utils">
     <slot name="pre-utils" />
-    <Component is={calendar.component.DocReminder} props={{ value: object, title, focusIndex: 9000 }} />
+    {#if isReminder}
+      <Component is={calendar.component.DocReminder} props={{ value: object, title, focusIndex: 9000 }} />
+    {/if}
     {#if isUtils && $$slots.utils}
       <div class="buttons-divider" />
       <slot name="utils" />
@@ -209,7 +215,7 @@
         }
       }}
     >
-      <div class="popupPanel-body__main-content py-8 clear-mins" class:max={useMaxWidth}>
+      <div class={contentClasses ?? 'popupPanel-body__main-content py-8 clear-mins'} class:max={useMaxWidth}>
         <slot />
         {#if !withoutActivity}
           {#key object._id}

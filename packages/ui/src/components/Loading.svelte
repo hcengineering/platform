@@ -14,10 +14,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher, onMount } from 'svelte'
   import Spinner from './Spinner.svelte'
 
   export let shrink: boolean = false
   export let label: string = ''
+
+  const dispatch = createEventDispatcher()
+  let timer: any
+  onMount(() => {
+    timer = setTimeout(() => {
+      dispatch('progress')
+    }, 50)
+    return () => {
+      clearTimeout(timer)
+    }
+  })
 </script>
 
 <div class="spinner-container" class:fullSize={!shrink}>

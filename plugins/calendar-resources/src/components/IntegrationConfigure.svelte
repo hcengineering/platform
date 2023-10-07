@@ -16,25 +16,29 @@
   import { Calendar } from '@hcengineering/calendar'
   import { getCurrentAccount } from '@hcengineering/core'
   import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
+  import { Integration } from '@hcengineering/setting'
   import { Grid, Label, Toggle } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
+
+  export let integration: Integration
 
   const client = getClient()
 
   let calendars: Calendar[] = []
   const query = createQuery()
   query.query(
-    calendar.class.Calendar,
+    calendar.class.ExternalCalendar,
     {
-      createdBy: getCurrentAccount()._id
+      createdBy: getCurrentAccount()._id,
+      externarUser: integration.value
     },
     (res) => (calendars = res)
   )
 
   async function update (calendar: Calendar, value: boolean) {
     await client.update(calendar, {
-      sync: value
+      archived: !value
     })
   }
 
@@ -63,7 +67,7 @@
       {#each calendars as calendar}
         <div>{calendar.name}</div>
         <div>
-          <Toggle bind:on={calendar.sync} on:change={(res) => update(calendar, res.detail)} />
+          <Toggle on={calendar.archived === false} on:change={(res) => update(calendar, res.detail)} />
         </div>
       {/each}
     </Grid>

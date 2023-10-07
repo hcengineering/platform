@@ -154,8 +154,8 @@ export class TSpaceWithStates extends TSpace {
 
 @Model(task.class.KanbanTemplateSpace, core.class.Space)
 export class TKanbanTemplateSpace extends TSpace implements KanbanTemplateSpace {
-  name!: IntlString
-  description!: IntlString
+  declare name: IntlString
+  declare description: IntlString
   icon!: AnyComponent
   editor!: AnyComponent
   ofAttribute!: Ref<Attribute<State>>
@@ -491,6 +491,14 @@ export function createModel (builder: Builder): void {
     },
     task.action.ArchiveState
   )
+
+  builder.mixin(task.class.State, core.class.Class, view.mixin.SortFuncs, {
+    func: task.function.StatusSort
+  })
+
+  builder.mixin(task.class.State, core.class.Class, view.mixin.AllValuesFunc, {
+    func: task.function.GetAllStates
+  })
 
   // builder.createDoc(
   //   notification.class.NotificationType,

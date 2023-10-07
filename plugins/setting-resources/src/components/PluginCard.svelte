@@ -17,15 +17,7 @@
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import type { Integration, IntegrationType } from '@hcengineering/setting'
-  import {
-    AnyComponent,
-    Button,
-    Component,
-    eventToHTMLElement,
-    Label,
-    PopupPosAlignment,
-    showPopup
-  } from '@hcengineering/ui'
+  import { AnyComponent, Button, Component, Label, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import setting from '../plugin'
 
   export let integrationType: IntegrationType
@@ -59,10 +51,10 @@
   async function disconnect (): Promise<void> {
     if (integration !== undefined && integrationType.onDisconnect !== undefined) {
       const disconnect = await getResource(integrationType.onDisconnect)
-      await disconnect()
+      await disconnect(integration.value)
     }
   }
-  const handleConfigure = async (e: any, component?: AnyComponent, pos?: PopupPosAlignment): Promise<void> => {
+  const handleConfigure = async (component?: AnyComponent): Promise<void> => {
     if (component === undefined) {
       return
     }
@@ -74,7 +66,7 @@
       })
       integration = await client.findOne(setting.class.Integration, { _id: id })
     }
-    showPopup(component, { integration }, pos ?? eventToHTMLElement(e), close)
+    showPopup(component, { integration }, 'top', close)
   }
   const handleReconnect = (e: any) => {
     if (integrationType.reconnectComponent) {
@@ -91,7 +83,16 @@
     </div>
   </div>
   <div class="content">
-    <Label label={integrationType.description} />
+    {#if integration && integration.value !== ''}
+      {integration.value}
+    {:else}
+      <Label label={integrationType.description} />
+    {/if}
+    {#if integration?.disabled === true || integration?.error != null}
+      <div class="error">
+        <Label label={integration.error ?? setting.string.IntegrationDisabledSetting} />
+      </div>
+    {/if}
   </div>
   <div class="footer">
     {#if (integration?.value ?? '') === ''}
@@ -99,7 +100,7 @@
         <Button
           label={setting.string.Add}
           kind={'accented'}
-          on:click={(ev) => handleConfigure(ev, integrationType.createComponent)}
+          on:click={(ev) => handleConfigure(integrationType.createComponent)}
         />
       {/if}
     {:else if (integration?.disabled ?? false) && integrationType.reconnectComponent}
@@ -112,7 +113,7 @@
         <Button
           label={setting.string.Configure}
           kind={'accented'}
-          on:click={(ev) => handleConfigure(ev, integrationType.configureComponent, 'top')}
+          on:click={(ev) => handleConfigure(integrationType.configureComponent)}
         />
       {/if}
     {/if}
@@ -140,6 +141,10 @@
     flex-grow: 1;
     margin: 0 1.5rem 0.25rem;
     color: var(--theme-caption-color);
+
+    .error {
+      color: var(--theme-error-color);
+    }
   }
   .footer {
     flex-shrink: 0;

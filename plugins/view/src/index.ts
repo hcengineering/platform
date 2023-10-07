@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -310,7 +310,12 @@ export interface ClassSortFuncs extends Class<Doc> {
  * @public
  */
 export type GetAllValuesFunc = Resource<
-(query: DocumentQuery<Doc> | undefined, onUpdate: () => void, queryId: Ref<Doc>) => Promise<any[] | undefined>
+(
+  query: DocumentQuery<Doc> | undefined,
+  onUpdate: () => void,
+  queryId: Ref<Doc>,
+  attr: AnyAttribute
+) => Promise<any[] | undefined>
 >
 
 /**
@@ -666,7 +671,9 @@ export interface CategoryOption extends ViewOption {
 /**
  * @public
  */
-export type ViewQueryAction = Resource<(value: any, query: DocumentQuery<Doc>) => DocumentQuery<Doc>>
+export type ViewQueryAction = Resource<
+(value: any, query: DocumentQuery<Doc>) => DocumentQuery<Doc> | Promise<DocumentQuery<Doc>>
+>
 
 /**
  * @public
@@ -814,7 +821,11 @@ const view = plugin(viewId, {
     BooleanTruePresenter: '' as AnyComponent,
     ValueSelector: '' as AnyComponent,
     GrowPresenter: '' as AnyComponent,
-    DividerPresenter: '' as AnyComponent
+    DividerPresenter: '' as AnyComponent,
+    IconWithEmoji: '' as AnyComponent
+  },
+  ids: {
+    IconWithEmoji: '' as Asset
   },
   string: {
     CustomizeView: '' as IntlString,

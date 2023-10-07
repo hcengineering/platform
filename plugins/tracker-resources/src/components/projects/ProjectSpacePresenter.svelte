@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import { Ref, Space } from '@hcengineering/core'
+  import { getResource } from '@hcengineering/platform'
   import { Project } from '@hcengineering/tracker'
   import {
     IconWithEmoji,
@@ -22,11 +23,10 @@
     getPlatformColorForTextDef,
     themeStore
   } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { NavLink, TreeNode } from '@hcengineering/view-resources'
   import { SpacesNavModel, SpecialNavModel } from '@hcengineering/workbench'
   import { SpecialElement } from '@hcengineering/workbench-resources'
-  import tracker from '../../plugin'
-  import { getResource } from '@hcengineering/platform'
 
   export let space: Project
   export let model: SpacesNavModel
@@ -65,8 +65,9 @@
 {#if specials}
   <TreeNode
     {collapsed}
-    icon={space?.icon === tracker.component.IconWithEmoji ? IconWithEmoji : space?.icon ?? model.icon}
-    iconProps={space?.icon === tracker.component.IconWithEmoji
+    _id={space?._id}
+    icon={space?.icon === view.ids.IconWithEmoji ? IconWithEmoji : space?.icon ?? model.icon}
+    iconProps={space?.icon === view.ids.IconWithEmoji
       ? { icon: space.color }
       : {
           fill:

@@ -19,6 +19,7 @@ import Typography from '@tiptap/extension-typography'
 import { CompletionOptions } from '../Completion'
 import MentionList from './MentionList.svelte'
 import { SvelteRenderer } from './SvelteRenderer'
+import { NodeUuidExtension } from './extension/nodeUuid'
 
 export const tableExtensions = [
   Table.configure({
@@ -76,6 +77,7 @@ export const defaultExtensions: AnyExtension[] = [
     openOnClick: true,
     HTMLAttributes: { class: 'cursor-pointer', rel: 'noopener noreferrer', target: '_blank' }
   }),
+  NodeUuidExtension,
   ...tableExtensions
   // ...taskListExtensions // Disable since tasks are not working properly now.
 ]

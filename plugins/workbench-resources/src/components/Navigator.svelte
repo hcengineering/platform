@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -30,6 +30,7 @@
   export let model: NavigatorModel | undefined
   export let currentSpace: Ref<Space> | undefined
   export let currentSpecial: string | undefined
+  export let currentFragment: string | undefined
   export let currentApplication: Application | undefined
 
   const client = getClient()
@@ -162,7 +163,16 @@
       on:select={(res) => (menuSelection = res.detail)}
     />
     {#if starred.length}
-      <StarredNav label={preference.string.Starred} spaces={starred} on:space {currentSpace} />
+      <StarredNav
+        label={preference.string.Starred}
+        spaces={starred}
+        models={model.spaces}
+        on:space
+        {currentSpace}
+        {currentSpecial}
+        {currentFragment}
+        deselect={menuSelection}
+      />
     {/if}
 
     {#each model.spaces as m, i (m.label)}
@@ -174,6 +184,7 @@
         model={m}
         on:open
         {currentSpecial}
+        {currentFragment}
         deselect={menuSelection}
         separate
       />

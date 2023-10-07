@@ -1,5 +1,6 @@
 //
 // Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -47,6 +48,7 @@ import HTMLPresenter from './components/HTMLPresenter.svelte'
 import HyperlinkPresenter from './components/HyperlinkPresenter.svelte'
 import HyperlinkEditor from './components/HyperlinkEditor.svelte'
 import HyperlinkEditorPopup from './components/HyperlinkEditorPopup.svelte'
+import IconPicker from './components/IconPicker.svelte'
 import IntlStringPresenter from './components/IntlStringPresenter.svelte'
 import GithubPresenter from './components/linkPresenters/GithubPresenter.svelte'
 import YoutubePresenter from './components/linkPresenters/YoutubePresenter.svelte'
@@ -184,7 +186,8 @@ export {
   EditBoxPopup,
   SpaceHeader,
   ViewletContentView,
-  HyperlinkEditor
+  HyperlinkEditor,
+  IconPicker
 }
 
 function PositionElementAlignment (e?: Event): PopupAlignment | undefined {

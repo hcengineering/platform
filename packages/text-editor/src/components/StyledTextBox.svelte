@@ -13,10 +13,15 @@
     resizeObserver
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import type { AnyExtension } from '@tiptap/core'
+
   import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
   import StyledTextEditor from './StyledTextEditor.svelte'
+
   import { completionConfig } from './extensions'
+  import { EmojiExtension } from './extension/emoji'
+
   import { ImageRef, FileAttachFunction } from './imageExt'
   import { Node as ProseMirrorNode } from '@tiptap/pm/model'
 
@@ -35,9 +40,9 @@
   export let previewLimit: number = 240
   export let previewUnlimit: boolean = false
   export let focusable: boolean = false
-  export let enableFormatting = false
   export let autofocus = false
   export let enableBackReferences: boolean = false
+  export let enableEmojiReplace: boolean = true
   export let isScrollable: boolean = true
 
   export let attachFile: FileAttachFunction | undefined = undefined
@@ -69,7 +74,10 @@
 
   $: if (oldContent !== content) {
     oldContent = content
-    rawValue = content
+    if (rawValue !== content) {
+      rawValue = content
+      textEditor?.setContent(content)
+    }
     modified = false
   }
   $: if (!modified && rawValue !== content) modified = true
@@ -105,10 +113,6 @@
     needFocus = false
   }
 
-  export function isEmptyContent (): boolean {
-    return textEditor.isEmptyContent()
-  }
-
   // Focusable control with index
   export let focusIndex = -1
   const { idx, focusManager } = registerFocus(focusIndex, {
@@ -133,23 +137,8 @@
       focusManager?.setFocus(idx)
     }
   }
-  const completionPlugin = Completion.configure({
-    ...completionConfig,
-    showDoc (event: MouseEvent, _id: string, _class: string) {
-      dispatch('open-document', { event, _id, _class })
-    }
-  })
 
   const attachments = new Map<string, ProseMirrorNode>()
-
-  const imagePlugin = ImageRef.configure({
-    inline: true,
-    HTMLAttributes: {},
-    attachFile,
-    reportNode: (id, node) => {
-      attachments.set(id, node)
-    }
-  })
 
   /**
    * @public
@@ -160,11 +149,41 @@
       textEditor.removeNode(nde)
     }
   }
+
+  function configureExtensions () {
+    const imagePlugin = ImageRef.configure({
+      inline: true,
+      HTMLAttributes: {},
+      attachFile,
+      reportNode: (id, node) => {
+        attachments.set(id, node)
+      }
+    })
+
+    const completionPlugin = Completion.configure({
+      ...completionConfig,
+      showDoc (event: MouseEvent, _id: string, _class: string) {
+        dispatch('open-document', { event, _id, _class })
+      }
+    })
+
+    const extensions: AnyExtension[] = [imagePlugin]
+    if (enableBackReferences) {
+      extensions.unshift(completionPlugin)
+    }
+    if (enableEmojiReplace) {
+      extensions.push(EmojiExtension.configure())
+    }
+
+    return extensions
+  }
+
+  const extensions = configureExtensions()
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
-  class="antiComponent styled-box clear-mins"
+  class="flex-col styled-box"
   class:antiEmphasized={kind === 'emphasized'}
   class:antiIndented={kind === 'indented'}
   class:focusable={(mode === Mode.Edit || alwaysEdit) && focused}
@@ -189,10 +208,9 @@
       {formatButtonSize}
       {maxHeight}
       {focusable}
-      {enableFormatting}
       {autofocus}
       {isScrollable}
-      extensions={enableBackReferences ? [completionPlugin, imagePlugin] : [imagePlugin]}
+      {extensions}
       bind:content={rawValue}
       bind:this={textEditor}
       on:attach

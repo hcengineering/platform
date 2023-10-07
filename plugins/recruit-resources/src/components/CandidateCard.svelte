@@ -46,7 +46,7 @@
 
 <div class="antiContactCard">
   <div class="label uppercase"><Label label={recruit.string.Talent} /></div>
-  <Avatar avatar={candidate?.avatar} size={'large'} />
+  <Avatar avatar={candidate?.avatar} size={'large'} name={candidate?.name} />
   {#if candidate}
     <DocNavLink object={candidate} {disabled}>
       <div class="name lines-limit-2">

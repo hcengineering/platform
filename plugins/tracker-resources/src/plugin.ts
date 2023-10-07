@@ -15,7 +15,7 @@
 import { Client, Doc, Ref, Space } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
-import { IssueDraft } from '@hcengineering/tracker'
+import tracker, { trackerId, IssueDraft } from '@hcengineering/tracker'
 import { AnyComponent, Location } from '@hcengineering/ui'
 import {
   CreateAggregationManagerFunc,
@@ -27,13 +27,14 @@ import {
   Viewlet,
   ViewletDescriptor
 } from '@hcengineering/view'
-import tracker, { trackerId } from '../../tracker/lib'
 
 export default mergeIds(trackerId, tracker, {
   viewlet: {
     SubIssues: '' as Ref<Viewlet>,
     List: '' as Ref<ViewletDescriptor>,
-    Kanban: '' as Ref<ViewletDescriptor>
+    Kanban: '' as Ref<ViewletDescriptor>,
+    MilestoneIssuesList: '' as Ref<Viewlet>,
+    ComponentIssuesList: '' as Ref<Viewlet>
   },
   string: {
     More: '' as IntlString,
@@ -225,6 +226,7 @@ export default mergeIds(trackerId, tracker, {
     AddRelatedIssue: '' as IntlString,
     RelatedIssuesNotFound: '' as IntlString,
     RelatedIssue: '' as IntlString,
+    RelatedIssues: '' as IntlString,
     BlockedIssue: '' as IntlString,
     BlockingIssue: '' as IntlString,
     BlockedBySearchPlaceholder: '' as IntlString,
@@ -296,14 +298,10 @@ export default mergeIds(trackerId, tracker, {
     CreatedIssue: '' as IntlString,
     CreatedSubIssue: '' as IntlString,
 
-    ProjectColor: '' as IntlString,
-
-    ProjectIconCategory: '' as IntlString,
-    ProjectEmojiCategory: '' as IntlString,
-
     NoStatusFound: '' as IntlString,
     CreateMissingStatus: '' as IntlString,
-    UnsetParent: '' as IntlString
+    UnsetParent: '' as IntlString,
+    PreviousAssigned: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,

@@ -30,6 +30,7 @@
     "Reconnect": "Reconnect",
     "IntegrationDisabled": " has been disabled",
     "IntegrationDisabledSetting": "Integration has been disabled",
+    "IntegrationDisabledDescr": "Integration disabled",
     "IntegrationWith": "Integration with ",
     "ClassSetting": "Class setting",
     "Attributes": "Attributes",

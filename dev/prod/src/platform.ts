@@ -23,7 +23,6 @@ import calendar, { calendarId } from '@hcengineering/calendar'
 import { chunterId } from '@hcengineering/chunter'
 import client, { clientId } from '@hcengineering/client'
 import { contactId } from '@hcengineering/contact'
-import document, { documentId } from '@hcengineering/document'
 import gmail, { gmailId } from '@hcengineering/gmail'
 import { hrId } from '@hcengineering/hr'
 import { imageCropperId } from '@hcengineering/image-cropper'
@@ -55,7 +54,6 @@ import '@hcengineering/board-assets'
 import '@hcengineering/calendar-assets'
 import '@hcengineering/chunter-assets'
 import '@hcengineering/contact-assets'
-import '@hcengineering/document-assets'
 import '@hcengineering/gmail-assets'
 import '@hcengineering/hr-assets'
 import '@hcengineering/inventory-assets'
@@ -86,7 +84,6 @@ interface Config {
   ACCOUNTS_URL: string
   UPLOAD_URL: string
   MODEL_VERSION: string
-  COLLABORATOR_URL: string
   REKONI_URL: string
   TELEGRAM_URL: string
   GMAIL_URL: string
@@ -104,8 +101,6 @@ export async function configurePlatform() {
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
   
-  setMetadata(document.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
-
   if (config.MODEL_VERSION != null) {
     console.log('Minimal Model version requirement', config.MODEL_VERSION)
     setMetadata(presentation.metadata.RequiredVersion, config.MODEL_VERSION)
@@ -127,7 +122,8 @@ export async function configurePlatform() {
     uiPlugin.metadata.Routes,
     new Map([
       [workbenchId, workbench.component.WorkbenchApp],
-      [loginId, login.component.LoginApp]
+      [loginId, login.component.LoginApp],
+      [calendarId, calendar.component.ConnectApp]
     ])
   )
 
@@ -160,7 +156,6 @@ export async function configurePlatform() {
   addLocation(boardId, () => import(/* webpackChunkName: "board" */ '@hcengineering/board-resources'))
   addLocation(automationId, () => import(/* webpackChunkName: "automation" */ '@hcengineering/automation-resources'))
   addLocation(hrId, () => import(/* webpackChunkName: "hr" */ '@hcengineering/hr-resources'))
-  addLocation(documentId, () => import(/* webpackChunkName: "document" */ '@hcengineering/document-resources'))
   addLocation(bitrixId, () => import(/* webpackChunkName: "bitrix" */ '@hcengineering/bitrix-resources'))
   addLocation(requestId, () => import(/* webpackChunkName: "request" */ '@hcengineering/request-resources'))
   addLocation(supportId, () => import(/* webpackChunkName: "support" */ '@hcengineering/support-resources'))

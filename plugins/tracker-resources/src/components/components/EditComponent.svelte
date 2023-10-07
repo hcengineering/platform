@@ -2,9 +2,10 @@
   import { AttachmentStyleBoxEditor } from '@hcengineering/attachment-resources'
   import { getClient } from '@hcengineering/presentation'
   import { Component } from '@hcengineering/tracker'
-  import { EditBox } from '@hcengineering/ui'
+  import { EditBox, Label } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../plugin'
+  import QueryIssuesList from '../issues/edit/QueryIssuesList.svelte'
 
   export let object: Component
 
@@ -52,4 +53,21 @@
     bind:this={descriptionBox}
     placeholder={tracker.string.IssueDescriptionPlaceholder}
   />
+</div>
+
+<div class="w-full mt-6">
+  <QueryIssuesList
+    focusIndex={50}
+    {object}
+    query={{ component: object._id }}
+    shouldSaveDraft
+    hasSubIssues={true}
+    viewletId={tracker.viewlet.ComponentIssuesList}
+    createParams={{ component: object._id }}
+    on:docs
+  >
+    <svelte:fragment slot="header">
+      <Label label={tracker.string.Issues} />
+    </svelte:fragment>
+  </QueryIssuesList>
 </div>

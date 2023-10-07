@@ -19,6 +19,7 @@
   import calendar from '../plugin'
   import { concatLink } from '@hcengineering/core'
   import presentation from '@hcengineering/presentation'
+  import { calendarId } from '@hcengineering/calendar'
 
   const dispatch = createEventDispatcher()
 
@@ -30,7 +31,7 @@
     const link = concatLink(calendarUrl, '/signin')
     const url = new URL(link)
     url.search = new URLSearchParams({
-      redirectURL: (getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin) + window.location.pathname
+      redirectURL: (getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin) + `/${calendarId}`
     }).toString()
 
     const res = await fetch(url.toString(), {
@@ -41,7 +42,7 @@
       }
     })
     const redirectTo = await res.text()
-    window.open(redirectTo)
+    window.open(redirectTo, '_blank', 'location=yes,height=870,width=720,scrollbars=yes,status=yes')
     dispatch('close')
   }
 </script>
@@ -61,6 +62,7 @@
   </div>
   <div class="content">
     <Label label={calendar.string.RedirectGoogle} />
+    <img class="image" src={getMetadata(calendar.image.Permissions)} alt="" />
     <div class="footer">
       <Button label={calendar.string.Connect} kind={'accented'} disabled={connecting} on:click={sendRequest} />
     </div>
@@ -72,9 +74,9 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    width: 20rem;
-    min-width: 20rem;
-    max-width: 20rem;
+    width: 40rem;
+    min-width: 40rem;
+    max-width: 40rem;
     background-color: var(--popup-bg-hover);
     border-radius: 0.75rem;
     box-shadow: var(--popup-shadow);
@@ -99,6 +101,12 @@
       flex-grow: 1;
       height: fit-content;
       margin: 0 1.75rem 0.5rem;
+    }
+
+    .image {
+      width: 100%;
+      height: auto;
+      margin: 1rem;
     }
 
     .footer {

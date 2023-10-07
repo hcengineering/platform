@@ -22,9 +22,9 @@
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import support, { SupportStatus } from '@hcengineering/support'
-  import { locationStorageKeyId, Button } from '@hcengineering/ui'
   import {
     AnyComponent,
+    Button,
     CompAndProps,
     Component,
     Label,
@@ -42,15 +42,19 @@
     closeTooltip,
     deviceOptionsStore as deviceInfo,
     getCurrentLocation,
-    location,
     getLocation,
+    location,
+    locationStorageKeyId,
     navigate,
     openPanel,
     popupstore,
     resizeObserver,
     resolvedLocationStore,
     setResolvedLocation,
-    showPopup
+    showPopup,
+    Separator,
+    defineSeparators,
+    workbenchSeparators
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import {
@@ -64,7 +68,7 @@
   import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { subscribeMobile } from '../mobile'
   import workbench from '../plugin'
-  import { buildNavModel, workspacesStore, signOut } from '../utils'
+  import { buildNavModel, signOut, workspacesStore } from '../utils'
   import AccountPopup from './AccountPopup.svelte'
   import AppItem from './AppItem.svelte'
   import AppSwitcher from './AppSwitcher.svelte'
@@ -101,7 +105,6 @@
   const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
 
   const client = getClient()
-  NotificationClientImpl.createClient()
 
   let apps: Application[] | Promise<Application[]> = client
     .findAll(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
@@ -161,18 +164,10 @@
   )
 
   let hasNotification = false
-  const notificationQuery = createQuery()
-
-  notificationQuery.query(
-    notification.class.DocUpdates,
-    {
-      user: accountId,
-      hidden: false
-    },
-    (res) => {
-      hasNotification = res.some((p) => p.txes.some((p) => p.isNew))
-    }
-  )
+  const noficicationClient = NotificationClientImpl.getClient()
+  noficicationClient.docUpdates.subscribe((res) => {
+    hasNotification = res.some((p) => !p.hidden && p.txes.some((p) => p.isNew))
+  })
 
   const workspaceId = $location.path[1]
 
@@ -303,6 +298,7 @@
       }
       if (app === undefined && !navigateDone) {
         const appShort = getMetadata(workbench.metadata.DefaultApplication) as Ref<Application>
+        if (appShort == null) return
         const spaceRef = getMetadata(workbench.metadata.DefaultSpace) as Ref<Space>
         const specialRef = getMetadata(workbench.metadata.DefaultSpecial) as Ref<Space>
         const loc = getCurrentLocation()
@@ -479,40 +475,8 @@
 
   let aside: HTMLElement
   let cover: HTMLElement
-  let isResizing: boolean = false
   let asideWidth: number
   let componentWidth: number
-  let dX: number
-  let oldX: number
-
-  const resizing = (event: MouseEvent): void => {
-    if (isResizing && aside) {
-      const X = event.clientX - dX
-      const newWidth = asideWidth + oldX - X
-      if (newWidth > 320 && componentWidth - (oldX - X) > 320) {
-        aside.style.width = aside.style.maxWidth = aside.style.minWidth = newWidth + 'px'
-        oldX = X
-      }
-    }
-  }
-  const endResize = (event: MouseEvent): void => {
-    const el: HTMLElement = event.currentTarget as HTMLElement
-    if (el && isResizing) document.removeEventListener('mousemove', resizing)
-    document.removeEventListener('mouseup', endResize)
-    cover.style.display = 'none'
-    isResizing = false
-  }
-  const startResize = (event: MouseEvent): void => {
-    const el: HTMLElement = event.currentTarget as HTMLElement
-    if (el && !isResizing) {
-      oldX = el.getBoundingClientRect().y
-      dX = event.clientX - oldX
-      document.addEventListener('mouseup', endResize)
-      document.addEventListener('mousemove', resizing)
-      cover.style.display = 'block'
-      isResizing = true
-    }
-  }
 
   let navFloat: boolean = !($deviceInfo.docWidth < 1024)
   $: if ($deviceInfo.docWidth <= 1024 && !navFloat) {
@@ -590,10 +554,25 @@
     await supportClient?.then((support) => support.destroy())
   })
 
+  let supportWidgetLoading = false
+  async function handleToggleSupportWidget (): Promise<void> {
+    const timer = setTimeout(() => {
+      supportWidgetLoading = true
+    }, 100)
+
+    const support = await supportClient
+    await support.toggleWidget()
+
+    clearTimeout(timer)
+    supportWidgetLoading = false
+  }
+
   $: checkInbox($popupstore)
 
   let inboxPopup: PopupResult | undefined = undefined
   let lastLoc: Location | undefined = undefined
+
+  defineSeparators('workbench', workbenchSeparators)
 </script>
 
 {#if employee?.active === true || accountId === core.account.System}
@@ -682,7 +661,8 @@
               size={appsMini ? 'small' : 'large'}
               notify={supportStatus?.hasUnreadMessages}
               selected={supportStatus?.visible}
-              on:click={() => client.toggleWidget()}
+              loading={supportWidgetLoading}
+              on:click={() => handleToggleSupportWidget()}
             />
           {/if}
         {/await}
@@ -715,7 +695,16 @@
               {#await checkIsHeaderHidden(currentApplication) then isHidden}
                 {#if !isHidden}
                   {#await checkIsHeaderDisabled(currentApplication) then disabled}
-                    <Component is={currentApplication.navHeaderComponent} props={{ currentSpace, disabled }} shrink />
+                    <Component
+                      is={currentApplication.navHeaderComponent}
+                      props={{
+                        currentSpace,
+                        currentSpecial,
+                        currentFragment,
+                        disabled
+                      }}
+                      shrink
+                    />
                   {/await}
                 {/if}
               {/await}
@@ -724,6 +713,7 @@
           <Navigator
             {currentSpace}
             {currentSpecial}
+            {currentFragment}
             model={navigatorModel}
             {currentApplication}
             on:open={checkOnHide}
@@ -734,12 +724,13 @@
             {/if}
           </NavFooter>
         </div>
+        <Separator name={'workbench'} index={0} />
       {/if}
       <div
         class="antiPanel-component antiComponent"
         bind:this={contentPanel}
-        use:resizeObserver={(element) => {
-          componentWidth = element.clientWidth
+        use:resizeObserver={() => {
+          componentWidth = contentPanel.clientWidth
         }}
       >
         {#if currentApplication && currentApplication.component}
@@ -765,7 +756,7 @@
       {#if asideId && currentSpace}
         {@const asideComponent = navigatorModel?.aside ?? currentApplication?.aside}
         {#if asideComponent !== undefined}
-          <div class="splitter" class:hovered={isResizing} on:mousedown={startResize} />
+          <Separator name={'workbench'} index={1} />
           <div
             class="antiPanel-component antiComponent aside"
             use:resizeObserver={(element) => {

@@ -46,7 +46,8 @@ import {
   getCurrentResolvedLocation,
   getPanelURI,
   getPlatformColorForText,
-  locationToUrl
+  locationToUrl,
+  navigate
 } from '@hcengineering/ui'
 import type { BuildModelOptions, Viewlet, ViewletDescriptor } from '@hcengineering/view'
 import view, { AttributeModel, BuildModelKey } from '@hcengineering/view'
@@ -875,4 +876,11 @@ export function enabledConfig (config: Array<string | BuildModelKey>, key: strin
     }
   }
   return false
+}
+
+export async function openDoc (hierarchy: Hierarchy, object: Doc): Promise<void> {
+  const panelComponent = hierarchy.classHierarchyMixin(object._class, view.mixin.ObjectPanel)
+  const comp = panelComponent?.component ?? view.component.EditDoc
+  const loc = await getObjectLinkFragment(hierarchy, object, {}, comp)
+  navigate(loc)
 }

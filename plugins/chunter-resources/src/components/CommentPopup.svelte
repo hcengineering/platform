@@ -18,7 +18,7 @@
 
   import chunter, { Comment } from '@hcengineering/chunter'
   import { createQuery } from '@hcengineering/presentation'
-  import { Label, resizeObserver, Spinner, closeTooltip } from '@hcengineering/ui'
+  import { Label, resizeObserver, Spinner, closeTooltip, Lazy } from '@hcengineering/ui'
   import { DocNavLink, ObjectPresenter } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import CommentInput from './CommentInput.svelte'
@@ -79,7 +79,9 @@
     {:else}
       {#each comments as comment}
         <div class="item">
-          <CommentPresenter value={comment} />
+          <Lazy>
+            <CommentPresenter value={comment} />
+          </Lazy>
         </div>
       {/each}
     {/if}

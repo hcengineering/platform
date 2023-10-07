@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { CategoryType, Doc, Ref } from '@hcengineering/core'
-  import ui, { Button, IconMoreH, mouseAttractor } from '@hcengineering/ui'
+  import ui, { Button, IconMoreH, Lazy, mouseAttractor } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { slide } from 'svelte/transition'
   import { CardDragEvent, DocWithRank, Item } from '../types'
@@ -61,14 +61,14 @@
 
   function update (stateObjects: Item[], limit: number | undefined, index: number): void {
     clearTimeout(loadingTimeout)
-    if (limitedObjects.length > 0 || index * 2 === 0) {
+    if (limitedObjects.length > 0 || index === 0) {
       limitedObjects = stateObjects.slice(0, limit)
     } else {
       loading = true
       loadingTimeout = setTimeout(() => {
         limitedObjects = stateObjects.slice(0, limit)
         loading = false
-      }, index * 2)
+      }, index)
     }
   }
 
@@ -102,7 +102,9 @@
         isDragging = false
       }}
     >
-      <slot name="card" object={toAny(object)} {dragged} />
+      <Lazy>
+        <slot name="card" object={toAny(object)} {dragged} />
+      </Lazy>
     </div>
   </div>
 {/each}

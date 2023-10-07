@@ -158,7 +158,7 @@ export class TBacklink extends TComment implements Backlink {
 @Model(chunter.class.SavedMessages, preference.class.Preference)
 export class TSavedMessages extends TPreference implements SavedMessages {
   @Prop(TypeRef(chunter.class.ChunterMessage), chunter.string.SavedMessages)
-    attachedTo!: Ref<ChunterMessage>
+  declare attachedTo: Ref<ChunterMessage>
 }
 
 @Mixin(chunter.mixin.DirectMessageInput, core.class.Class)
@@ -191,6 +191,10 @@ export function createModel (builder: Builder, options = { addApplication: true 
 
     builder.mixin(spaceClass, core.class.Class, view.mixin.ObjectEditor, {
       editor: chunter.component.EditChannel
+    })
+
+    builder.mixin(spaceClass, core.class.Class, view.mixin.ObjectPanel, {
+      component: chunter.component.EditChannel
     })
   })
 

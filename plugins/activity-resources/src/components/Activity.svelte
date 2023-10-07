@@ -19,7 +19,7 @@
   import notification, { DocUpdateTx, DocUpdates, Writable } from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Component, Grid, Label, Spinner } from '@hcengineering/ui'
+  import { Component, Grid, Label, Lazy, Spinner } from '@hcengineering/ui'
   import { ActivityKey, activityKey, newActivity } from '../activity'
   import { filterCollectionTxes } from '../utils'
   import ActivityFilter from './ActivityFilter.svelte'
@@ -149,13 +149,15 @@
   {#if filtered}
     <Grid column={1} rowGap={0.75}>
       {#each filtered as tx, i}
-        <TxView
-          {tx}
-          {viewlets}
-          isNew={newTxIndexes.includes(i)}
-          isNextNew={newTxIndexes.includes(i + 1)}
-          shouldScroll={i === scrollIndex}
-        />
+        <Lazy>
+          <TxView
+            {tx}
+            {viewlets}
+            isNew={newTxIndexes.includes(i)}
+            isNextNew={newTxIndexes.includes(i + 1)}
+            shouldScroll={i === scrollIndex}
+          />
+        </Lazy>
       {/each}
     </Grid>
   {/if}

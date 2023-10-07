@@ -59,7 +59,6 @@
       size={'large'}
       bind:space
       component={ProjectPresenter}
-      iconWithEmoji={tracker.component.IconWithEmoji}
       defaultIcon={tracker.icon.Home}
     />
   </svelte:fragment>

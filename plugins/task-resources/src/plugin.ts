@@ -17,6 +17,7 @@ import type { IntlString } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import task, { taskId } from '@hcengineering/task'
 import { AnyComponent } from '@hcengineering/ui'
+import { GetAllValuesFunc, SortFunc } from '@hcengineering/view'
 
 export default mergeIds(taskId, task, {
   string: {
@@ -81,5 +82,9 @@ export default mergeIds(taskId, task, {
     TodoStatePresenter: '' as AnyComponent,
     AssignedTasks: '' as AnyComponent,
     DueDateEditor: '' as AnyComponent
+  },
+  function: {
+    GetAllStates: '' as GetAllValuesFunc,
+    StatusSort: '' as SortFunc
   }
 })

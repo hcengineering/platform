@@ -85,8 +85,8 @@
       {#key object}
         <EditableAvatar
           avatar={object.avatar}
-          id={object._id}
           size={'x-large'}
+          name={object.name}
           bind:this={avatarEditor}
           on:done={onAvatarDone}
         />
@@ -131,7 +131,7 @@
   .name {
     font-weight: 500;
     font-size: 1.25rem;
-    color: var(--caption-color);
+    color: var(--theme-caption-color);
   }
   .location {
     margin-top: 0.25rem;
@@ -141,6 +141,6 @@
   .separator {
     margin: 1rem 0;
     height: 1px;
-    background-color: var(--divider-color);
+    background-color: var(--theme-divider-color);
   }
 </style>

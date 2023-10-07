@@ -22,9 +22,22 @@ import { AnyComponent } from '@hcengineering/ui'
 /**
  * @public
  */
+export type Visibility = 'public' | 'freeBusy' | 'private'
+
+/**
+ * @public
+ */
 export interface Calendar extends Space {
-  visibility: 'public' | 'freeBusy' | 'private'
-  sync?: boolean
+  visibility: Visibility
+}
+
+/**
+ * @public
+ */
+export interface ExternalCalendar extends Calendar {
+  default: boolean
+  externalId: string
+  externalUser: string
 }
 
 /**
@@ -55,6 +68,7 @@ export interface ReccuringEvent extends Event {
   rules: RecurringRule[]
   exdate: Timestamp[]
   rdate: Timestamp[]
+  originalStartTime: Timestamp
 }
 
 /**
@@ -84,7 +98,7 @@ export interface Event extends AttachedDoc {
 
   reminders?: Timestamp[]
 
-  visibility?: 'public' | 'freeBusy' | 'private'
+  visibility?: Visibility
 
   access: 'freeBusyReader' | 'reader' | 'writer' | 'owner'
 }
@@ -118,6 +132,7 @@ export const calendarId = 'calendar' as Plugin
 const calendarPlugin = plugin(calendarId, {
   class: {
     Calendar: '' as Ref<Class<Calendar>>,
+    ExternalCalendar: '' as Ref<Class<ExternalCalendar>>,
     Event: '' as Ref<Class<Event>>,
     ReccuringEvent: '' as Ref<Class<ReccuringEvent>>,
     ReccuringInstance: '' as Ref<Class<ReccuringInstance>>
@@ -134,7 +149,13 @@ const calendarPlugin = plugin(calendarId, {
     Description: '' as Asset,
     Participants: '' as Asset,
     Repeat: '' as Asset,
-    Globe: '' as Asset
+    Globe: '' as Asset,
+    Public: '' as Asset,
+    Hidden: '' as Asset,
+    Private: '' as Asset
+  },
+  image: {
+    Permissions: '' as Asset
   },
   space: {
     // deprecated
@@ -144,11 +165,14 @@ const calendarPlugin = plugin(calendarId, {
     Calendar: '' as Ref<Doc>
   },
   component: {
+    CreateEvent: '' as AnyComponent,
+    EditEvent: '' as AnyComponent,
     CalendarView: '' as AnyComponent,
     PersonsPresenter: '' as AnyComponent,
     Events: '' as AnyComponent,
     DateTimePresenter: '' as AnyComponent,
-    DocReminder: '' as AnyComponent
+    DocReminder: '' as AnyComponent,
+    ConnectApp: '' as AnyComponent
   },
   string: {
     Title: '' as IntlString,
@@ -164,7 +188,12 @@ const calendarPlugin = plugin(calendarId, {
     PersonsLabel: '' as IntlString,
     EventNumber: '' as IntlString,
     Reminders: '' as IntlString,
-    Today: '' as IntlString
+    Today: '' as IntlString,
+    Visibility: '' as IntlString,
+    Public: '' as IntlString,
+    FreeBusy: '' as IntlString,
+    Private: '' as IntlString,
+    NotAllPermissions: '' as IntlString
   },
   handler: {
     DisconnectHandler: '' as Handler

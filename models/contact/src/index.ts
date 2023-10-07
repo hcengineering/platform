@@ -149,8 +149,8 @@ export class TOrganization extends TContact implements Organization {
 @Model(contact.class.Status, core.class.AttachedDoc, DOMAIN_CONTACT)
 @UX(contact.string.Status)
 export class TStatus extends TAttachedDoc implements Status {
-  attachedTo!: Ref<Employee>
-  attachedToClass!: Ref<Class<Employee>>
+  declare attachedTo: Ref<Employee>
+  declare attachedToClass: Ref<Class<Employee>>
   name!: string
   dueDate!: Timestamp
 }
@@ -759,26 +759,6 @@ export function createModel (builder: Builder): void {
       secured: true
     },
     contact.action.KickEmployee
-  )
-  createAction(
-    builder,
-    {
-      action: contact.actionImpl.KickEmployee,
-      label: contact.string.DeleteEmployee,
-      icon: contact.icon.KickUser,
-      query: {
-        active: false
-      },
-      category: contact.category.Contact,
-      target: contact.mixin.Employee,
-      input: 'focus',
-      context: {
-        mode: ['context'],
-        group: 'remove'
-      },
-      secured: true
-    },
-    contact.action.DeleteEmployee
   )
 
   createAction(

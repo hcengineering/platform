@@ -17,7 +17,7 @@
   import { getClient } from '@hcengineering/presentation'
   import { Button, IconFilter, eventToHTMLElement, resolvedLocationStore, showPopup } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
-  import { filterStore, getFilterKey, setFilters } from '../../filter'
+  import { filterStore, getFilterKey, selectedFilterStore, setFilters } from '../../filter'
   import view from '../../plugin'
   import FilterTypePopup from './FilterTypePopup.svelte'
   import IconClose from '../icons/Close.svelte'
@@ -30,7 +30,9 @@
   const hierarchy = client.getHierarchy()
 
   resolvedLocationStore.subscribe(() => {
-    load(_class)
+    if ($selectedFilterStore === undefined) {
+      load(_class)
+    }
   })
 
   function load (_class: Ref<Class<Doc>> | undefined) {

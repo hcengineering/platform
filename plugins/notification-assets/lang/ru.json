@@ -25,6 +25,8 @@
     "People": "Люди",
     "All": "Все",
     "Read": "Прочитанное",
-    "Unread": "Не прочитанное"
+    "Unread": "Не прочитанное",
+    "CommonNotificationTitle": "{title}",
+    "CommonNotificationBody": "Обновление от {senderName}"
   }
 }

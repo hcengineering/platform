@@ -35,7 +35,6 @@ export default mergeIds(tagsId, tags, {
     WeightPlaceholder: '' as IntlString,
     CategoryPlaceholder: '' as IntlString,
     TagTooltip: '' as IntlString,
-    Tags: '' as IntlString,
     Tag: '' as IntlString,
     TagCreateLabel: '' as IntlString,
     TagName: '' as IntlString,

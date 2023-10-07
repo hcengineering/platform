@@ -59,7 +59,7 @@
 
   let objectsPromise: Promise<FindResult<Doc>> | undefined
 
-  let filterUpdateTimeout: number | undefined
+  let filterUpdateTimeout: any | undefined
 
   async function getEnumValues (search: string): Promise<void> {
     const enumId = ((filter.key.attribute.type as ArrOf<Doc>).of as EnumOf).of

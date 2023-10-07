@@ -237,6 +237,21 @@ export class TxOperations implements Omit<Client, 'notify'> {
         if (hierarchy.isMixin(it[0])) {
           await ops.updateMixin(doc._id, baseClass, doc.space, it[0], it[1], modifiedOn, modifiedBy)
         } else {
+          if (hierarchy.isDerived(it[0], core.class.AttachedDoc)) {
+            const adoc = doc as unknown as AttachedDoc
+            return await this.updateCollection(
+              it[0],
+              doc.space,
+              adoc._id,
+              adoc.attachedTo,
+              adoc.attachedToClass,
+              adoc.collection,
+              it[1],
+              retrieve,
+              modifiedOn,
+              modifiedBy
+            )
+          }
           await ops.updateDoc(it[0], doc.space, doc._id, it[1], retrieve, modifiedOn, modifiedBy)
         }
       }

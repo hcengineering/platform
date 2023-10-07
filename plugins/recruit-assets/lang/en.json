@@ -96,7 +96,6 @@
     "HasActiveApplicant":"Active Only",
     "HasNoActiveApplicant": "No Active",
     "NoneApplications": "None",
-    "RelatedIssues": "Related issues",
     "VacancyList": "Vacancies",
     "MatchVacancy": "Match to vacancy",
     "VacancyMatching": "Match Talents to vacancy",
@@ -118,7 +117,9 @@
     "MyApplications": "My applications",
 
     "ShowApplications": "Show applications",
-    "GetTalentIds": "Get talents' ids"
+    "GetTalentIds": "Get talents' ids",
+    "HideDoneState": "Hide complete applications",
+    "HideArchivedVacancies": "Hide from archived Vacancies"
   },
   "status": {
     "ApplicationExists": "Application already exists",

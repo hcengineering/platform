@@ -45,7 +45,7 @@
     "ExternalParticipants": "External participants",
     "IntegrationDescr": "Use Google Calendar integration",
     "Connect": "Connect",
-    "RedirectGoogle": "You will be redirect to google auth page",
+    "RedirectGoogle": "You will be redirect to google auth page. Please make sure to select all permissions.",
     "ConnectCalendar": "Connect Google Calendar account",
     "EditRecEvent": "Edit recurring event",
     "RemoveRecEvent": "Remove recurring event",
@@ -78,6 +78,12 @@
     "Busy": "Busy",
     "AddReminder": "Add reminder",
     "SeeAllNumberParticipants": "{value, plural, other {See all # participants}}",
-    "SeeAllNumberReminders": "{value, plural, other {See all # reminders}}"
+    "SeeAllNumberReminders": "{value, plural, other {See all # reminders}}",
+    "Visibility": "Visibility",
+    "Private": "Only visible to you",
+    "Public": "Visible to everyone",
+    "FreeBusy": "FreeBusy",
+    "DefaultVisibility": "Default visibility",
+    "NotAllPermissions": "Not all permissions were granted"
   }
 }

@@ -90,8 +90,6 @@
     "AddMembersHeader": "Add members to {value}:",
     "Assigned": "Assigned",
     "Unassigned": "Unassigned",
-    "CategoryPreviousAssigned": "Previously assigned",
-    "CategoryComponentLead": "Component lead",
     "CategoryCurrentUser": "Current user",    
     "CategoryOther": "Other",
     "NumberMembers": "{count, plural, =0 {no members} =1 {1 member} other {# members}}",

@@ -24,10 +24,10 @@
     themeStore,
     tooltip
   } from '@hcengineering/ui'
-  import { DocNavLink } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import Avatar from './Avatar.svelte'
   import { getClient } from '@hcengineering/presentation'
+  import PersonElement from './PersonElement.svelte'
 
   export let value: Person | Employee | undefined | null
   export let inline: boolean = false
@@ -56,6 +56,7 @@
   }
   const dispatch = createEventDispatcher()
 
+  $: name = value ? getName(client.getHierarchy(), value) : ''
   $: accentColor =
     value?.name !== undefined
       ? getPlatformAvatarColorForTextDef(value?.name ?? '', $themeStore.dark)
@@ -69,59 +70,61 @@
 </script>
 
 {#if value}
-  <DocNavLink object={value} onClick={onEdit} {disabled} {noUnderline} {inline} {colorInherit} {accent} noOverflow>
-    {#if inline}
-      <span class="antiMention" use:tooltip={disabled ? undefined : showTooltip}>
-        @{getName(client.getHierarchy(), value)}
-      </span>
-    {:else}
-      <span
-        use:tooltip={disabled ? undefined : showTooltip}
-        class="contentPresenter"
-        class:text-base={enlargedText}
-        style:max-width={maxWidth}
-      >
-        {#if shouldShowAvatar}
-          <span
-            class="eContentPresenterIcon"
-            class:mr-2={shouldShowName && !enlargedText}
-            class:mr-3={shouldShowName && enlargedText}
-          >
-            <Avatar size={avatarSize} avatar={value.avatar} />
-          </span>
-        {/if}
-        {#if shouldShowName}
-          <span class="eContentPresenterLabel overflow-label" class:colorInherit class:fs-bold={accent}
-            >{getName(client.getHierarchy(), value)}</span
-          >
-        {/if}
-      </span>
-    {/if}
-  </DocNavLink>
   {#if statusLabel}
-    <span class="status">
-      <Label label={statusLabel} />
-    </span>
+    <div class="inline-flex items-center clear-mins">
+      <PersonElement
+        {value}
+        {name}
+        {inline}
+        {disabled}
+        {shouldShowAvatar}
+        {shouldShowName}
+        {noUnderline}
+        {avatarSize}
+        {onEdit}
+        {showTooltip}
+        {enlargedText}
+        {colorInherit}
+        {accent}
+        {maxWidth}
+      />
+      <span class="status">
+        <Label label={statusLabel} />
+      </span>
+    </div>
+  {:else}
+    <PersonElement
+      {value}
+      {name}
+      {inline}
+      {disabled}
+      {shouldShowAvatar}
+      {shouldShowName}
+      {noUnderline}
+      {avatarSize}
+      {onEdit}
+      {showTooltip}
+      {enlargedText}
+      {colorInherit}
+      {accent}
+      {maxWidth}
+    />
   {/if}
 {:else if shouldShowPlaceholder}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <span
-    class="contentPresenter"
+    class="antiPresenter"
     class:text-base={enlargedText}
     use:tooltip={disabled ? undefined : showTooltip}
     on:click={onEditClick}
   >
     {#if !inline && shouldShowAvatar}
-      <span
-        class="eContentPresenterIcon"
-        class:mr-2={shouldShowName && !enlargedText}
-        class:mr-3={shouldShowName && enlargedText}
-      >
+      <span class="ap-icon" class:mr-2={shouldShowName && !enlargedText} class:mr-3={shouldShowName && enlargedText}>
         <Avatar size={avatarSize} on:accent-color />
       </span>
     {/if}
     {#if shouldShowName && defaultName}
-      <span class="eContentPresenterLabel" class:colorInherit class:fs-bold={accent}>
+      <span class="ap-label" class:colorInherit class:fs-bold={accent}>
         <Label label={defaultName} />
       </span>
     {/if}
@@ -129,44 +132,10 @@
 {/if}
 
 <style lang="scss">
-  .contentPresenter {
-    display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
-    min-width: 0;
-
-    .eContentPresenterIcon {
-      color: var(--theme-dark-color);
-    }
-    .eContentPresenterLabel {
-      min-width: 0;
-      text-align: left;
-      color: var(--theme-caption-color);
-
-      // overflow: hidden;
-      // display: -webkit-box;
-      // /* autoprefixer: ignore next */
-      // -webkit-box-orient: vertical;
-      // -webkit-line-clamp: 2;
-      // line-clamp: 2;
-      // user-select: none;
-
-      &.colorInherit {
-        color: inherit;
-      }
-    }
-    &:hover {
-      .eContentPresenterIcon {
-        color: var(--theme-caption-color);
-      }
-      .eContentPresenterLabel {
-        color: var(--theme-caption-color);
-      }
-    }
-  }
   .status {
     margin-left: 0.25rem;
-    padding: 0.125rem 0.25rem;
+    padding: 0 0.25rem;
+    white-space: nowrap;
     font-size: 0.75rem;
     color: var(--theme-content-color);
     background-color: var(--theme-button-default);
