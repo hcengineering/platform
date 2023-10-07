@@ -144,7 +144,7 @@ async function fixEstimation (client: MigrationClient): Promise<void> {
     for (const child of childInfo ?? []) {
       child.estimation = child.estimation * 8
     }
-    await client.update(DOMAIN_TASK, { _id: issue._id }, { reportedTime: issue.estimation * 8, childInfo })
+    await client.update(DOMAIN_TASK, { _id: issue._id }, { estimation: issue.estimation * 8, childInfo })
   }
   const createTxes = await client.find<TxCollectionCUD<Issue, Issue>>(DOMAIN_TX, {
     'tx.objectClass': tracker.class.Issue,
@@ -166,7 +166,7 @@ async function fixEstimation (client: MigrationClient): Promise<void> {
   for (const tx of updateTxes) {
     const val = (tx.tx as TxUpdateDoc<Issue>).operations.estimation
     if (val !== undefined) {
-      await client.update(DOMAIN_TX, { _id: tx._id }, { 'tx.operations.value': val * 8 })
+      await client.update(DOMAIN_TX, { _id: tx._id }, { 'tx.operations.estimation': val * 8 })
     }
   }
 }
