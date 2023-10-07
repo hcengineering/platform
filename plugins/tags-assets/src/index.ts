@@ -24,5 +24,3 @@ loadMetadata(tags.icon, {
   Level2: `${icons}#level-2`,
   Level3: `${icons}#level-3`
 })
-
-

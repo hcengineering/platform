@@ -23,5 +23,3 @@ loadMetadata(templates.icon, {
   Template: `${icons}#template`,
   Copy: `${icons}#copy`
 })
-
-

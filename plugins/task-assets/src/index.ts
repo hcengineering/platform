@@ -26,5 +26,3 @@ loadMetadata(task.icon, {
   TaskState: `${icons}#task-state`,
   Dashboard: `${icons}#dashboard`
 })
-
-

@@ -41,5 +41,3 @@ loadMetadata(view.icon, {
   Filter: `${icons}#filter`,
   Configure: `${icons}#configure`
 })
-
-

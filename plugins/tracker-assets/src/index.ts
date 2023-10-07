@@ -65,5 +65,3 @@ loadMetadata(tracker.icon, {
   TimeReport: `${icons}#timeReport`,
   Estimation: `${icons}#estimation`
 })
-
-

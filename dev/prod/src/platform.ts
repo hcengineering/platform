@@ -97,7 +97,7 @@ interface Config {
 
 const devConfig = process.env.CLIENT_TYPE === 'dev-production'
 
-function configureI18n() {
+function configureI18n(): void {
    //Add localization
    addStringsLoader(coreId, async (lang: string) => await import(`@hcengineering/core/lang/${lang}.json`))
    addStringsLoader(platformId, async (lang: string) => await import(`@hcengineering/platform/lang/${lang}.json`))

@@ -20,5 +20,3 @@ const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(workbench.icon, {
   Search: `${icons}#search`
 })
-
-
