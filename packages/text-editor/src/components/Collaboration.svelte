@@ -1,6 +1,6 @@
 <!--
 //
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -16,9 +16,11 @@
 -->
 <script lang="ts">
   import { onDestroy, setContext } from 'svelte'
-  import { WebsocketProvider } from 'y-websocket'
   import * as Y from 'yjs'
+
+  import { TiptapCollabProvider } from '../provider'
   import { CollaborationIds } from '../types'
+
   export let documentId: string
   export let token: string
   export let collaboratorURL: string
@@ -27,33 +29,35 @@
 
   let _documentId = ''
 
-  let wsProvider: WebsocketProvider | undefined
+  let provider: TiptapCollabProvider | undefined
 
   $: if (_documentId !== documentId) {
     _documentId = documentId
-    if (wsProvider !== undefined) {
-      wsProvider.disconnect()
+    if (provider !== undefined) {
+      provider.disconnect()
     }
     const ydoc: Y.Doc = new Y.Doc()
-    wsProvider = new WebsocketProvider(collaboratorURL, documentId, ydoc, {
-      params: {
-        token,
-        documentId,
+    provider = new TiptapCollabProvider({
+      url: collaboratorURL,
+      name: documentId,
+      document: ydoc,
+      token,
+      parameters: {
         initialContentId: initialContentId ?? ''
       }
     })
     setContext(CollaborationIds.Doc, ydoc)
-    setContext(CollaborationIds.Provider, wsProvider)
-    wsProvider.on('status', (event: any) => {
+    setContext(CollaborationIds.Provider, provider)
+    provider.on('status', (event: any) => {
       console.log('Collaboration:', documentId, event.status) // logs "connected" or "disconnected"
     })
-    wsProvider.on('synched', (event: any) => {
+    provider.on('synced', (event: any) => {
       console.log('Collaboration:', event) // logs "connected" or "disconnected"
     })
   }
 
   onDestroy(() => {
-    wsProvider?.disconnect()
+    provider?.destroy()
   })
 </script>
 
