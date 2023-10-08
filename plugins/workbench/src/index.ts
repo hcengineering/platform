@@ -28,6 +28,7 @@ export interface Application extends Doc {
   alias: string
   icon: Asset
   hidden: boolean
+  position?: 'top' | 'mid'
 
   // Also attached ApplicationNavModel will be joined after this one main.
   navigatorModel?: NavigatorModel
