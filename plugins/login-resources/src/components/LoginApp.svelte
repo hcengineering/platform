@@ -88,14 +88,15 @@
       />
     </picture>
 
-    <div
+    <a
+      href="https://bold.ru"
       style:position="fixed"
       style:left={$deviceInfo.docWidth <= 480 ? '.75rem' : '1.75rem'}
       style:top={'3rem'}
       class="flex-row-center"
     >
       <LoginIcon /><span class="fs-title">{getMetadata(workbench.metadata.PlatformTitle)}</span>
-    </div>
+    </a>
 
     <div class="panel-base" class:panel={$deviceInfo.docWidth > 768} class:white={!$themeStore.dark}>
       <Scroller padding={'1rem 0'}>
