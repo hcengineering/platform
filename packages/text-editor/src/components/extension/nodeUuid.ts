@@ -155,7 +155,8 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
 
   onSelectionUpdate () {
     const activeNodeUuidMark = findSelectionNodeUuidMark(this.editor.state)
-    const activeNodeUuid = activeNodeUuidMark != null ? activeNodeUuidMark.attrs[NAME] : null
+    const activeNodeUuid =
+      activeNodeUuidMark !== null && activeNodeUuidMark !== undefined ? activeNodeUuidMark.attrs[NAME] : null
 
     if (this.storage.activeNodeUuid !== activeNodeUuid) {
       this.storage.activeNodeUuid = activeNodeUuid

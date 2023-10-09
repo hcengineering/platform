@@ -93,10 +93,10 @@ export const NodeHighlightExtension: Extension<NodeHighlightExtensionOptions, No
                   (mark) => mark.type.name === NodeUuidExtension.name && mark.attrs[NodeUuidExtension.name]
                 )
 
-                if (nodeUuidMark != null) {
+                if (nodeUuidMark !== null && nodeUuidMark !== undefined) {
                   const nodeUuid = nodeUuidMark.attrs[NodeUuidExtension.name]
                   const attributes = generateAttributes(nodeUuid, options)
-                  if (attributes == null) {
+                  if (attributes === null || attributes === undefined) {
                     return
                   }
 
