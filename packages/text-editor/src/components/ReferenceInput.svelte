@@ -48,6 +48,7 @@
   export let placeholder: IntlString | undefined = undefined
   export let extraActions: RefAction[] | undefined = undefined
   export let loading: boolean = false
+  export let kind: 'ghost' | 'accented' = 'ghost'
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -156,7 +157,7 @@
   })
 </script>
 
-<div class="ref-container" class:focused>
+<div class="ref-container" class:focusable={kind === 'accented'}>
   {#if showHeader && $$slots.header}
     <div class="header">
       <slot name="header" />
@@ -243,7 +244,7 @@
           disabled={(isEmpty && !haveAttachment) || loading}
           icon={iconSend ?? Send}
           iconProps={{ size: buttonSize }}
-          kind="ghost"
+          {kind}
           size={buttonSize}
           showTooltip={{
             label: labelSend ?? textEditorPlugin.string.Send
@@ -265,22 +266,24 @@
     border-color: var(--theme-refinput-border);
     border-radius: 0.375rem;
 
-    &.focused {
-      border-color: var(--primary-edit-border-color);
+    &.focusable {
+      &:focus-within {
+        border-color: var(--primary-edit-border-color);
+      }
     }
   }
 
   .header {
-    padding: 0.375rem 0.5rem;
+    padding: 0.325rem 0.75rem;
     border-bottom: 0.0625rem solid var(--theme-refinput-border);
   }
 
   .textInput {
     min-height: 2.75rem;
-    padding: 0.375rem 0.5rem;
+    padding: 0.625rem 0.75rem;
   }
 
   .buttons-panel {
-    padding: 0.375rem 0.5rem;
+    padding: 0.325rem 0.75rem;
   }
 </style>

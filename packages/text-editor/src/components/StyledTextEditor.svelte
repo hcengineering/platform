@@ -284,7 +284,7 @@
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    min-height: 1.25rem;
+    padding: 0.625rem 0.75rem 0.325rem 0.75rem;
 
     .textInput {
       flex-grow: 1;
@@ -298,7 +298,6 @@
         align-self: stretch;
         width: 100%;
         min-height: 0;
-        color: var(--theme-caption-color);
         background-color: transparent;
 
         &.scrollable {
@@ -319,8 +318,6 @@
     }
 
     &.focusable {
-      margin: -0.25rem -0.5rem;
-      padding: 0.25rem 0.5rem;
       border-width: 0.0625rem;
       border-style: solid;
       border-color: transparent;
