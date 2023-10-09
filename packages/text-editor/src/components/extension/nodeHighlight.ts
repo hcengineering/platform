@@ -19,13 +19,13 @@ function isRange (range: Range | undefined | null | void): range is Range {
   return range !== null && range !== undefined
 }
 
-const generateAttributes = (uuid: string, options: NodeHighlightExtensionOptions) => {
+const generateAttributes = (uuid: string, options: NodeHighlightExtensionOptions): Record<string, any> | undefined => {
   if (!options.isHighlightModeOn()) {
     return undefined
   }
 
   const type = options.getNodeHighlightType(uuid)
-  if (!type) {
+  if (type === null || type === undefined) {
     return undefined
   }
   const classAttrs: { class?: string } = {}
@@ -59,7 +59,7 @@ export const NodeHighlightExtension: Extension<NodeHighlightExtensionOptions, No
           key: new PluginKey('handle-node-highlight-click-plugin'),
           props: {
             handleClick (view, pos) {
-              if (!options.isHighlightModeOn() || !options.isAutoSelect?.()) {
+              if (!options.isHighlightModeOn() || options.isAutoSelect?.() !== true) {
                 return
               }
               const { schema, doc, tr } = view.state

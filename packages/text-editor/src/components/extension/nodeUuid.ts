@@ -32,13 +32,13 @@ export interface NodeUuidStorage {
 }
 
 const findSelectionNodeUuidMark = (state: EditorState): ProseMirrorMark | undefined => {
-  if (!state.selection) {
+  if (state.selection === null || state.selection === undefined) {
     return
   }
 
   let nodeUuidMark: ProseMirrorMark | undefined
   state.doc.nodesBetween(state.selection.from, state.selection.to, (node) => {
-    if (nodeUuidMark != null) {
+    if (nodeUuidMark !== null || nodeUuidMark !== undefined) {
       return false
     }
     nodeUuidMark = findNodeUuidMark(node)
@@ -48,7 +48,7 @@ const findSelectionNodeUuidMark = (state: EditorState): ProseMirrorMark | undefi
 }
 
 export const findNodeUuidMark = (node: Node): ProseMirrorMark | undefined => {
-  if (!node) {
+  if (node === null || node === undefined) {
     return
   }
 
@@ -155,7 +155,7 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
 
   onSelectionUpdate () {
     const activeNodeUuidMark = findSelectionNodeUuidMark(this.editor.state)
-    const activeNodeUuid = (activeNodeUuidMark != null) ? activeNodeUuidMark.attrs[NAME] : null
+    const activeNodeUuid = activeNodeUuidMark != null ? activeNodeUuidMark.attrs[NAME] : null
 
     if (this.storage.activeNodeUuid !== activeNodeUuid) {
       this.storage.activeNodeUuid = activeNodeUuid

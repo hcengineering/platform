@@ -133,11 +133,7 @@
         return false
       }
 
-
-      console.log(range)
-
       const [$start, $end] = [doc.resolve(range.from), doc.resolve(range.to)]
-      console.log($start + ' ' + $end)
       editor.view.dispatch(tr.setSelection(new TextSelection($start, $end)))
       needFocus = true
     })
