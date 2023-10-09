@@ -69,7 +69,7 @@
     {/if}
   </div>
   {#if selectable}
-    <div class="ml-4"><CheckBox circle accented bind:checked={selected} /></div>
+    <div class="ml-4"><CheckBox circle kind={'accented'} bind:checked={selected} /></div>
   {/if}
 </div>
 

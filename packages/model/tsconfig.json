@@ -2,10 +2,8 @@
   "extends": "./node_modules/@hcengineering/platform-rig/profiles/default/tsconfig.json",
 
   "compilerOptions": {
-    "target": "ES2019",
     "rootDir": "./src",
     "outDir": "./lib",
-    "experimentalDecorators": true,
-    "esModuleInterop": true
+    "tsBuildInfoFile": ".build/build.tsbuildinfo"
   }
 }

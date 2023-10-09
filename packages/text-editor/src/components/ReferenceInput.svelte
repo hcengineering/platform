@@ -34,6 +34,8 @@
   import { RefAction, RefInputActionItem, TextEditorHandler, TextFormatCategory } from '../types'
   import TextEditor from './TextEditor.svelte'
   import { completionConfig } from './extensions'
+  import { EmojiExtension } from './extension/emoji'
+  import { IsEmptyContentExtension } from './extension/isEmptyContent'
   import Attach from './icons/Attach.svelte'
   import RIMention from './icons/RIMention.svelte'
   import Send from './icons/Send.svelte'
@@ -159,7 +161,6 @@
     <div class="inputMsg">
       <TextEditor
         bind:content
-        bind:isEmpty
         bind:this={textEditor}
         on:content={(ev) => {
           if (!isEmpty || haveAttachment) {
@@ -177,7 +178,11 @@
           updateFocus()
           dispatch('focus', focused)
         }}
-        extensions={[completionPlugin]}
+        extensions={[
+          completionPlugin,
+          EmojiExtension.configure(),
+          IsEmptyContentExtension.configure({ onChange: (value) => (isEmpty = value) })
+        ]}
         on:update
         placeholder={placeholder ?? textEditorPlugin.string.EditorPlaceholder}
         textFormatCategories={[

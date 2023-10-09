@@ -12,7 +12,7 @@
 // limitations under the License.
 
 import { Resources } from '@hcengineering/platform'
-import { TagElement } from '@hcengineering/tags'
+import { TagElement as TagElementType } from '@hcengineering/tags'
 import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
 import TagsCategoryBar from './components/CategoryBar.svelte'
 import CategoryPresenter from './components/CategoryPresenter.svelte'
@@ -32,13 +32,16 @@ import TagsEditorPopup from './components/TagsEditorPopup.svelte'
 import LabelsPresenter from './components/LabelsPresenter.svelte'
 import CreateTagElement from './components/CreateTagElement.svelte'
 import ObjectsTagsEditorPopup from './components/ObjectsTagsEditorPopup.svelte'
+import TagElement from './components/TagElement.svelte'
 import { ObjQueryType } from '@hcengineering/core'
 import { getRefs } from './utils'
 import { Filter } from '@hcengineering/view'
 import WeightPopup from './components/WeightPopup.svelte'
+import DraftTagsEditor from './components/DraftTagsEditor.svelte'
 import TagsFilterPresenter from './components/TagsFilterPresenter.svelte'
+import DocTagsEditor from './components/DocTagsEditor.svelte'
 
-export { WeightPopup }
+export { WeightPopup, TagElement }
 export async function tagsInResult (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
   const result = await getRefs(filter, onUpdate)
   return { $in: result }
@@ -71,10 +74,12 @@ export default async (): Promise<Resources> => ({
     TagsEditorPopup,
     LabelsPresenter,
     ObjectsTagsEditorPopup,
-    TagsFilterPresenter
+    TagsFilterPresenter,
+    DraftTagsEditor,
+    DocTagsEditor
   },
   actionImpl: {
-    Open: (value: TagElement, evt: MouseEvent) => {
+    Open: (value: TagElementType, evt: MouseEvent) => {
       showPopup(EditTagElement, { value, keyTitle: '' }, eventToHTMLElement(evt))
     }
   },

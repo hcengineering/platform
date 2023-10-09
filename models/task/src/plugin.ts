@@ -34,7 +34,8 @@ export default mergeIds(taskId, task, {
     TodoItemMarkDone: '' as ViewAction,
     TodoItemMarkUnDone: '' as ViewAction,
     ArchiveSpace: '' as ViewAction,
-    UnarchiveSpace: '' as ViewAction
+    UnarchiveSpace: '' as ViewAction,
+    SelectStatus: '' as ViewAction
   },
   category: {
     Task: '' as Ref<ActionCategory>,
@@ -57,7 +58,8 @@ export default mergeIds(taskId, task, {
     TaskHeader: '' as AnyComponent,
     Dashboard: '' as AnyComponent,
     StateRefPresenter: '' as AnyComponent,
-    DoneStateRefPresenter: '' as AnyComponent
+    DoneStateRefPresenter: '' as AnyComponent,
+    StatusSelector: '' as AnyComponent
   },
   space: {
     TasksPublic: '' as Ref<Space>

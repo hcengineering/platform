@@ -182,7 +182,9 @@ export default plugin(chunterId, {
     Message: '' as IntlString,
     MessageOn: '' as IntlString,
     UnarchiveConfirm: '' as IntlString,
-    ConvertToPrivate: '' as IntlString
+    ConvertToPrivate: '' as IntlString,
+    DirectNotificationTitle: '' as IntlString,
+    DirectNotificationBody: '' as IntlString
   },
   resolver: {
     Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>

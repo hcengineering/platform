@@ -65,18 +65,16 @@
 </script>
 
 {#if inline}
-  <div class="flex-presenter inline-presenter">
-    {#if !inbox}
-      <ObjectPresenter _class={value.attachedToClass} objectId={value.attachedTo} />
-    {:else}
-      <MessageViewer message={value.message} />
-    {/if}
-  </div>
+  {#if !inbox}
+    <ObjectPresenter _class={value.attachedToClass} objectId={value.attachedTo} accent noUnderline />
+  {:else}
+    <MessageViewer message={value.message} />
+  {/if}
 {:else}
   <div class="flex-row-top">
     {#await getEmployee(value, $personByIdStore, $personAccountByIdStore) then employee}
       <div class="avatar">
-        <Avatar size={'medium'} avatar={employee?.avatar} />
+        <Avatar size={'medium'} avatar={employee?.avatar} name={employee?.name} />
       </div>
       <div class="flex-grow flex-col select-text">
         <div class="header">

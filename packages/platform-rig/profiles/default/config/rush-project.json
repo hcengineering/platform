@@ -1,11 +1,25 @@
 {
-    "incrementalBuildIgnoredGlobs": ["temp/**", "dist_cache/**", "lib/**", "dist/**", "deploy/**"],
-    "disableBuildCacheForProject": false,
-  
-    "operationSettings": [
-      {
-        "operationName": "build",
-        "outputFolderNames": ["lib", "dist", "dist_cache"]
-      }     
-    ]
-  }
+  "incrementalBuildIgnoredGlobs": [
+    "lib/**", 
+    "rush-logs/**",
+    "coverage/**",
+    ".rush/**",
+    ".build/**"
+  ],
+  "disableBuildCacheForProject": false,
+
+  "operationSettings": [
+    {
+      "operationName": "build",
+      "outputFolderNames": ["lib", ".build"]
+    },
+    {
+      "operationName": "test",
+      "outputFolderNames": ["coverage"]
+    },
+    {
+      "operationName": "build:watch",
+      "outputFolderNames": ["lib", ".build"]
+    }
+  ]
+}

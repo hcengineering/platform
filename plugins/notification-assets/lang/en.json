@@ -25,6 +25,8 @@
     "People": "People",
     "All": "All",
     "Read": "Read",
-    "Unread": "Unread"
+    "Unread": "Unread",
+    "CommonNotificationTitle": "{title}",
+    "CommonNotificationBody": "Updated by {senderName}"
   }
 }

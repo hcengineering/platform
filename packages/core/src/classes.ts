@@ -292,6 +292,11 @@ export const DOMAIN_CONFIGURATION = '_configuration' as Domain
 /**
  * @public
  */
+export const DOMAIN_MIGRATION = '_migrations' as Domain
+
+/**
+ * @public
+ */
 export const DOMAIN_TRANSIENT = 'transient' as Domain
 
 /**
@@ -356,6 +361,14 @@ export interface Version extends Doc {
   major: number
   minor: number
   patch: number
+}
+
+/**
+ * @public
+ */
+export interface MigrationState extends Doc {
+  plugin: string
+  state: string
 }
 
 /**

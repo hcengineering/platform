@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { loadMetadata, addStringsLoader } from '@hcengineering/platform'
-import tracker, { trackerId } from '@hcengineering/tracker'
+import { loadMetadata } from '@hcengineering/platform'
+import tracker from '@hcengineering/tracker'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(tracker.icon, {
@@ -65,5 +65,3 @@ loadMetadata(tracker.icon, {
   TimeReport: `${icons}#timeReport`,
   Estimation: `${icons}#estimation`
 })
-
-addStringsLoader(trackerId, async (lang: string) => await import(`../lang/${lang}.json`))

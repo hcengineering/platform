@@ -30,6 +30,7 @@
     "Reconnect": "Переподключить",
     "IntegrationDisabled": " была отключена",
     "IntegrationDisabledSetting": "Интеграция была отключена",
+    "IntegrationDisabledDescr": "Интеграция отключена",
     "IntegrationWith": "Интеграция с ",
     "ClassSetting": "Настройки класса",
     "Attributes": "Атрибуты",

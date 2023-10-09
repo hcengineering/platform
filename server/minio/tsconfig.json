@@ -4,6 +4,6 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./lib",
-    "types": ["heft-jest", "node"],
+    "tsBuildInfoFile": ".build/build.tsbuildinfo"
   }
 }

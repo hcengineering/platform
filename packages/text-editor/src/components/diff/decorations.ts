@@ -85,7 +85,7 @@ export function calculateDecorations (
 
     function lintIcon (color: string): any {
       const icon = document.createElement('div')
-      icon.className = `lint-icon ${color}`
+      icon.className = `text-editor-lint-icon ${color}`
       return icon
     }
 

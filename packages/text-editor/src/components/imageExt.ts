@@ -135,7 +135,7 @@ export const ImageRef = Node.create<ImageOptions>({
         merged.src = getFileUrl(id, width)
         merged.srcset = getFileUrl(id, width) + ' 1x,' + getFileUrl(id, getIconSize2x(width)) + ' 2x'
       }
-      merged.class = 'textEditorImage'
+      merged.class = 'text-editor-image'
       this.options.reportNode?.(id, node)
     }
     return ['img', merged]

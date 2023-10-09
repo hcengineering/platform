@@ -14,9 +14,7 @@
 // limitations under the License.
 //
 
-import { addStringsLoader } from './i18n'
 import type { Metadata } from './metadata'
-import { platformId } from './platform'
 
 export * from './event'
 export * from './i18n'
@@ -26,10 +24,6 @@ export { default } from './platform'
 export * from './resource'
 export * from './status'
 export * from './testUtils'
-
-addStringsLoader(platformId, async (lang: string) => {
-  return await import(`./lang/${lang}.json`)
-})
 
 /**
  * @public

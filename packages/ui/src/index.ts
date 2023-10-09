@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { addLocation, addStringsLoader } from '@hcengineering/platform'
+import { addLocation } from '@hcengineering/platform'
 import { SvelteComponent } from 'svelte'
 import { readable, writable } from 'svelte/store'
 import Root from './components/internal/Root.svelte'
@@ -35,7 +35,11 @@ export type {
   ButtonSize,
   IconSize,
   TabItem,
-  DeviceOptions
+  DeviceOptions,
+  TSeparatedItem,
+  SeparatedItem,
+  DefSeparators,
+  SeparatedElement
 } from './types'
 
 export { themeStore } from '@hcengineering/theme'
@@ -101,6 +105,7 @@ export { default as DropdownPopup } from './components/DropdownPopup.svelte'
 export { default as DropdownLabels } from './components/DropdownLabels.svelte'
 export { default as DropdownLabelsPopup } from './components/DropdownLabelsPopup.svelte'
 export { default as DropdownLabelsIntl } from './components/DropdownLabelsIntl.svelte'
+export { default as DropdownLabelsPopupIntl } from './components/DropdownLabelsPopupIntl.svelte'
 export { default as DropdownRecord } from './components/DropdownRecord.svelte'
 export { default as ShowMore } from './components/ShowMore.svelte'
 export { default as Menu } from './components/Menu.svelte'
@@ -113,8 +118,10 @@ export { default as TabList } from './components/TabList.svelte'
 export { default as Chevron } from './components/Chevron.svelte'
 export { default as Timeline } from './components/Timeline.svelte'
 export { default as TimeShiftPresenter } from './components/TimeShiftPresenter.svelte'
+export { default as Separator } from './components/Separator.svelte'
 
 export { default as IconAdd } from './components/icons/Add.svelte'
+export { default as IconCircleAdd } from './components/icons/CircleAdd.svelte'
 export { default as IconCopy } from './components/icons/Copy.svelte'
 export { default as IconStart } from './components/icons/Start.svelte'
 export { default as IconStop } from './components/icons/Stop.svelte'
@@ -195,6 +202,7 @@ export { default as IconWithEmoji } from './components/IconWithEmoji.svelte'
 export { default as ModeSelector } from './components/ModeSelector.svelte'
 export { default as SimpleTimePopup } from './components/calendar/SimpleTimePopup.svelte'
 export { default as NumberInput } from './components/NumberInput.svelte'
+export { default as Lazy } from './components/Lazy.svelte'
 
 export * from './types'
 export * from './location'
@@ -206,6 +214,7 @@ export * from './components/calendar/internal/DateUtils'
 export * from './colors'
 export * from './focus'
 export * from './resize'
+export * from './lazy'
 
 export function createApp (target: HTMLElement): SvelteComponent {
   return new Root({ target })
@@ -215,10 +224,6 @@ export const ticker = readable(Date.now(), (set) => {
   setInterval(() => {
     set(Date.now())
   }, 10000)
-})
-
-addStringsLoader(uiId, async (lang: string) => {
-  return await import(`../lang/${lang}.json`)
 })
 
 addLocation(uiId, async () => ({ default: async () => ({}) }))

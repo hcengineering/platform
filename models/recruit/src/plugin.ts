@@ -21,7 +21,7 @@ import { recruitId } from '@hcengineering/recruit'
 import recruit from '@hcengineering/recruit-resources/src/plugin'
 import { KanbanTemplate } from '@hcengineering/task'
 import type { AnyComponent, Location } from '@hcengineering/ui'
-import type { Action, ActionCategory, ViewAction, Viewlet } from '@hcengineering/view'
+import type { Action, ActionCategory, ViewAction, ViewQueryAction, Viewlet } from '@hcengineering/view'
 
 export default mergeIds(recruitId, recruit, {
   action: {
@@ -45,7 +45,9 @@ export default mergeIds(recruitId, recruit, {
     GetObjectLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     GetIdObjectLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     GetObjectLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
-    GetTalentId: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>
+    GetTalentId: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
+    HideDoneState: '' as ViewQueryAction,
+    HideArchivedVacancies: '' as ViewQueryAction
   },
   string: {
     ApplicationsShort: '' as IntlString,
@@ -66,7 +68,9 @@ export default mergeIds(recruitId, recruit, {
     GotoRecruitApplication: '' as IntlString,
     VacancyList: '' as IntlString,
     ConfigDescription: '' as IntlString,
-    ShowApplications: '' as IntlString
+    ShowApplications: '' as IntlString,
+    HideDoneState: '' as IntlString,
+    HideArchivedVacancies: '' as IntlString
   },
   validator: {
     ApplicantValidator: '' as Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
@@ -120,6 +124,8 @@ export default mergeIds(recruitId, recruit, {
     ApplicantTable: '' as Ref<Viewlet>,
     ApplicantKanban: '' as Ref<Viewlet>,
     ListApplicant: '' as Ref<Viewlet>,
+    ListTalent: '' as Ref<Viewlet>,
+    ListCompanies: '' as Ref<Viewlet>,
     TableApplicant: '' as Ref<Viewlet>,
     TableApplicantMatch: '' as Ref<Viewlet>,
     CalendarReview: '' as Ref<Viewlet>,

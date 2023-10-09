@@ -36,7 +36,7 @@ import {
 import { Asset, IntlString, Plugin, Resource, plugin } from '@hcengineering/platform'
 import { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
 import { SpaceWithStates, Task } from '@hcengineering/task'
-import { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui'
+import { AnyComponent, ComponentExtensionId, Location, ResolvedLocation } from '@hcengineering/ui'
 import { Action, ActionCategory, IconProps } from '@hcengineering/view'
 
 /**
@@ -182,7 +182,7 @@ export interface Issue extends Task {
 
   milestone?: Ref<Milestone> | null
 
-  // Estimation in man days
+  // Estimation in man hours
   estimation: number
 
   // ReportedTime time, auto updated using trigger.
@@ -281,7 +281,7 @@ export interface TimeSpendReport extends AttachedDoc {
   employee: Ref<Employee> | null
 
   date: Timestamp | null
-  // Value in man days
+  // Value in man hours
   value: number
 
   description: string
@@ -481,9 +481,19 @@ export default plugin(trackerId, {
   },
   string: {
     ConfigLabel: '' as IntlString,
-    NewRelatedIssue: '' as IntlString
+    NewRelatedIssue: '' as IntlString,
+    IssueNotificationTitle: '' as IntlString,
+    IssueNotificationBody: '' as IntlString,
+    IssueNotificationChanged: '' as IntlString,
+    IssueNotificationChangedProperty: '' as IntlString,
+    IssueNotificationMessage: '' as IntlString,
+    IssueAssigneedToYou: '' as IntlString
   },
   mixin: {
     ProjectIssueTargetOptions: '' as Ref<Mixin<ProjectIssueTargetOptions>>
+  },
+  extensions: {
+    IssueListHeader: '' as ComponentExtensionId,
+    EditIssueHeader: '' as ComponentExtensionId
   }
 })

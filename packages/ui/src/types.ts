@@ -60,6 +60,13 @@ export type Component<C extends AnySvelteComponent> = Resource<C>
 export type AnyComponent = Resource<AnySvelteComponent>
 
 /**
+ * @public
+ *
+ * Component extension points.
+ */
+export type ComponentExtensionId = string & { __componentPointId: true }
+
+/**
  * Allow to pass component with some predefined properties.
  * @public
  */
@@ -273,6 +280,8 @@ export interface LabelAndProps {
 export interface ListItem {
   _id: string
   label: string
+  icon?: Asset
+  iconProps?: any
   image?: string
   isSelectable?: boolean
   fontWeight?: 'normal' | 'medium' | 'semi-bold'
@@ -419,3 +428,23 @@ export const HOUR = MINUTE * 60
 export const DAY = HOUR * 24
 export const MONTH = DAY * 30
 export const YEAR = MONTH * 12
+
+export type TSeparatedItem = number | 'auto'
+export interface SeparatedItem {
+  size: TSeparatedItem
+  minSize: TSeparatedItem
+  maxSize: TSeparatedItem
+  float?: string | undefined
+}
+export type DefSeparators = Array<SeparatedItem | null>
+export interface SeparatedElement {
+  id: number
+  element: Element
+  styles: Map<string, string> | null
+  minSize: number
+  size: number
+  maxSize: number
+  begin: boolean
+  resize: boolean
+  float?: string | undefined
+}

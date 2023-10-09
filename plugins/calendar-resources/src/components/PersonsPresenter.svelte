@@ -15,12 +15,11 @@
 -->
 <script lang="ts">
   import { getName, Person } from '@hcengineering/contact'
-  import { Hierarchy } from '@hcengineering/core'
   import { Avatar } from '@hcengineering/contact-resources'
-  import calendar from '../plugin'
-  import { showPanel, tooltip } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
   import { getClient } from '@hcengineering/presentation'
+  import { tooltip } from '@hcengineering/ui'
+  import { openDoc } from '@hcengineering/view-resources'
+  import calendar from '../plugin'
 
   export let value: Person | Person[]
   export let inline: boolean = false
@@ -29,7 +28,7 @@
   $: persons = Array.isArray(value) ? value : [value]
 
   async function onClick (p: Person) {
-    showPanel(view.component.EditDoc, p._id, Hierarchy.mixinOrClass(p), 'content')
+    openDoc(getClient().getHierarchy(), p)
   }
   const client = getClient()
 </script>
@@ -45,7 +44,7 @@
         on:click={() => onClick(p)}
       >
         <div class="icon">
-          <Avatar size={'x-small'} avatar={p.avatar} />
+          <Avatar size={'x-small'} avatar={p.avatar} name={p.name} />
         </div>
       </div>
     {/each}

@@ -562,8 +562,8 @@
         bind:this={avatarEditor}
         bind:direct={object.avatar}
         avatar={undefined}
-        id={object._id}
         size={'large'}
+        name={combineName(object?.firstName?.trim() ?? '', object?.lastName?.trim() ?? '')}
       />
     </div>
   </div>

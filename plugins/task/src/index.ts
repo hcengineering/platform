@@ -161,7 +161,7 @@ export interface KanbanTemplateSpace extends Space {
   ofAttribute: Ref<Attribute<State>>
   doneAttribute?: Ref<Attribute<DoneState>>
   editor?: AnyComponent
-  attachedToClass: Ref<Class<Doc>>
+  attachedToClass: Ref<Class<SpaceWithStates>>
 }
 
 /**

@@ -22,7 +22,7 @@
   let divBar: HTMLElement
   let isScrolling: boolean = false
   let dX: number
-  let timer: number
+  let timer: any
 
   let maskLeft: boolean = false
   let maskRight: boolean = false

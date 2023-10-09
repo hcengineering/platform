@@ -41,7 +41,7 @@ import workbench, { Application } from '@hcengineering/model-workbench'
 import { IntlString } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 import board from './plugin'
-import { State } from '@hcengineering/task'
+import { DoneState, State } from '@hcengineering/task'
 
 export { boardId } from '@hcengineering/board'
 export { boardOperation } from './migration'
@@ -68,7 +68,7 @@ export class TCardCover extends TType implements CardCover {
 @Model(board.class.CommonBoardPreference, preference.class.Preference)
 export class TCommonBoardPreference extends TPreference implements CommonBoardPreference {
   @Prop(TypeRef(workbench.class.Application), board.string.CommonBoardPreference)
-    attachedTo!: Ref<Application>
+  declare attachedTo: Ref<Application>
 }
 
 @Model(board.class.Card, task.class.Task)
@@ -103,6 +103,9 @@ export class TCard extends TTask implements Card {
 
   @Prop(TypeRef(task.class.State), task.string.TaskState, { _id: board.attribute.State })
   declare status: Ref<State>
+
+  @Prop(TypeRef(task.class.DoneState), task.string.TaskStateDone, { _id: board.attribute.DoneState })
+  declare doneState: Ref<DoneState>
 }
 
 @Model(board.class.MenuPage, core.class.Doc, DOMAIN_MODEL)

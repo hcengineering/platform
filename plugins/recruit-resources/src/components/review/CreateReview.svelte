@@ -64,13 +64,16 @@
     modifiedOn: Date.now(),
     modifiedBy: '' as Ref<Account>,
     date: 0,
-    dueDate: undefined,
+    access: 'reader',
+    allDay: false,
     description,
     application,
     company,
     verdict: '',
     title,
-    participants: [currentUser.person]
+    participants: [currentUser.person],
+    eventId: '',
+    dueDate: 0
   }
 
   const dispatch = createEventDispatcher()
@@ -113,7 +116,10 @@
       participants: doc.participants,
       company,
       application,
-      location
+      location,
+      access: 'reader',
+      allDay: false,
+      eventId: ''
     })
   }
 

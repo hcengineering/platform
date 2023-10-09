@@ -15,20 +15,33 @@
 <script lang="ts">
   import type { Asset, IntlString } from '@hcengineering/platform'
   import type { AnySvelteComponent } from '@hcengineering/ui'
-  import { Icon, tooltip } from '@hcengineering/ui'
+  import { Icon, Loading, tooltip } from '@hcengineering/ui'
 
   export let label: IntlString
   export let icon: Asset | AnySvelteComponent
   export let selected: boolean = false
   export let size: 'small' | 'medium' | 'large' = 'large'
+  export let loading: boolean = false
   export let notify: boolean = false
 </script>
 
-<button class="app {size}" class:selected id={'app-' + label} use:tooltip={{ label }} on:click>
-  <div class="flex-center icon-container" class:noty={notify}>
-    <Icon {icon} size={size === 'small' ? 'small' : 'medium'} />
-  </div>
-  {#if notify}<div class="marker" />{/if}
+<button
+  class="app {size}"
+  class:loading
+  class:selected
+  id={'app-' + label}
+  disabled={loading}
+  use:tooltip={{ label }}
+  on:click
+>
+  {#if loading}
+    <Loading />
+  {:else}
+    <div class="flex-center icon-container" class:noty={notify}>
+      <Icon {icon} size={size === 'small' ? 'small' : 'medium'} />
+    </div>
+    {#if notify}<div class="marker" />{/if}
+  {/if}
 </button>
 
 <style lang="scss">
@@ -41,6 +54,10 @@
     border-radius: 0.25rem;
     cursor: pointer;
     outline: none;
+
+    &.loading {
+      pointer-events: none;
+    }
 
     &.large {
       width: 2.25rem;

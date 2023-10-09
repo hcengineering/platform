@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -22,6 +22,7 @@ import { getResource, setMetadata } from '@hcengineering/platform'
 import preference from '@hcengineering/preference'
 import { closeClient, getClient } from '@hcengineering/presentation'
 import {
+  AnySvelteComponent,
   closePanel,
   fetchMetadataLocalStorage,
   getCurrentLocation,
@@ -204,4 +205,14 @@ export function signOut (): void {
   setMetadataLocalStorage(login.metadata.LoginEmail, null)
   void closeClient()
   navigate({ path: [loginId] })
+}
+
+export async function getSpacePresenter (
+  client: Client,
+  _class: Ref<Class<Doc>>
+): Promise<AnySvelteComponent | undefined> {
+  const value = client.getHierarchy().classHierarchyMixin(_class, view.mixin.SpacePresenter)
+  if (value?.presenter !== undefined) {
+    return await getResource(value.presenter)
+  }
 }

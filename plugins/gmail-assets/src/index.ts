@@ -13,8 +13,3 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-import { addStringsLoader } from '@hcengineering/platform'
-import { gmailId } from '@hcengineering/gmail'
-
-addStringsLoader(gmailId, async (lang: string) => await import(`../lang/${lang}.json`))

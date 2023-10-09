@@ -13,12 +13,15 @@
 // limitations under the License.
 //
 
-import { Calendar, Event } from '@hcengineering/calendar'
+import { Calendar, Event, ReccuringEvent } from '@hcengineering/calendar'
+import contact from '@hcengineering/contact'
 import core, { Ref, TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
-import calendar from './plugin'
+import { DOMAIN_SPACE } from '@hcengineering/model-core'
+import { DOMAIN_SETTING } from '@hcengineering/model-setting'
+import { Integration } from '@hcengineering/setting'
 import { DOMAIN_CALENDAR } from '.'
-import contact from '@hcengineering/contact'
+import calendar from './plugin'
 
 async function migrateCalendars (tx: TxOperations): Promise<void> {
   const existCalendars = new Set((await tx.findAll(calendar.class.Calendar, {})).map((p) => p._id))
@@ -57,6 +60,29 @@ async function migrateCalendars (tx: TxOperations): Promise<void> {
   }
 }
 
+async function migrateExternalCalendars (client: MigrationClient): Promise<void> {
+  const calendars = await client.find<Calendar>(DOMAIN_SPACE, { _class: calendar.class.Calendar })
+  const integrations = await client.find<Integration>(DOMAIN_SETTING, {
+    type: calendar.integrationType.Calendar,
+    disabled: false,
+    value: { $ne: '' }
+  })
+  for (const val of calendars) {
+    if (val._id.endsWith('_calendar')) continue
+    const integration = integrations.find((i) => i.createdBy === val.createdBy)
+    await client.update(
+      DOMAIN_SPACE,
+      { _id: val._id },
+      {
+        _class: calendar.class.ExternalCalendar,
+        externalId: val._id,
+        externalUser: integration?.value ?? '',
+        default: val._id === integration?.value
+      }
+    )
+  }
+}
+
 async function fixEventDueDate (client: MigrationClient): Promise<void> {
   const events = await client.find<Event>(DOMAIN_CALENDAR, {
     _class: calendar.class.Event,
@@ -76,10 +102,32 @@ async function migrateReminders (client: MigrationClient): Promise<void> {
   }
 }
 
+async function fillOriginalStartTime (client: MigrationClient): Promise<void> {
+  const events = await client.find<ReccuringEvent>(DOMAIN_CALENDAR, {
+    _class: calendar.class.ReccuringEvent,
+    originalStartTime: { $exists: false }
+  })
+  for (const event of events) {
+    await client.update(DOMAIN_CALENDAR, { _id: event._id }, { originalStartTime: event.date })
+  }
+}
+
+async function migrateSync (client: MigrationClient): Promise<void> {
+  await client.update(DOMAIN_SPACE, { _class: calendar.class.Calendar, sync: false }, { archived: true })
+  await client.update(
+    DOMAIN_SPACE,
+    { _class: calendar.class.Calendar, sync: { $exists: true } },
+    { $unset: { sync: true } }
+  )
+}
+
 export const calendarOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await fixEventDueDate(client)
     await migrateReminders(client)
+    await fillOriginalStartTime(client)
+    await migrateSync(client)
+    await migrateExternalCalendars(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)

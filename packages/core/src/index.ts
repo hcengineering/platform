@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { addStringsLoader } from '@hcengineering/platform'
-import { coreId } from './component'
-
 //
 export * from './classes'
 export * from './client'
@@ -32,7 +29,3 @@ export * from './tx'
 export * from './utils'
 export * from './backup'
 export * from './status'
-
-addStringsLoader(coreId, async (lang: string) => {
-  return await import(`./lang/${lang}.json`)
-})

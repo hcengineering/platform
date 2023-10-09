@@ -50,6 +50,7 @@ export class TIntegration extends TDoc implements Integration {
   disabled!: boolean
   value!: string
   shared!: Ref<Account>[]
+  error?: IntlString | null
 }
 @Model(setting.class.SettingsCategory, core.class.Doc, DOMAIN_MODEL)
 export class TSettingsCategory extends TDoc implements SettingsCategory {
@@ -74,6 +75,7 @@ export class TIntegrationType extends TDoc implements IntegrationType {
   label!: IntlString
   description!: IntlString
   icon!: AnyComponent
+  allowMultiple!: boolean
   createComponent!: AnyComponent
   reconnectComponent?: AnyComponent
   onDisconnect!: Handler
@@ -359,7 +361,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(core.class.Class, core.class.Class, view.mixin.IgnoreActions, {
-    actions: [view.action.Delete]
+    actions: [view.action.Delete, view.action.Open]
   })
   builder.mixin(core.class.Attribute, core.class.Class, view.mixin.IgnoreActions, {
     actions: [view.action.Delete]
@@ -515,6 +517,7 @@ export function createModel (builder: Builder): void {
       field: 'disabled',
       txClasses: [core.class.TxUpdateDoc],
       objectClass: setting.class.Integration,
+      allowedForAuthor: true,
       templates: {
         textTemplate: 'Integration with {doc} was disabled',
         htmlTemplate: '<p>Integration with {doc} was disabled</p>',

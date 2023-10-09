@@ -24,12 +24,12 @@
     DatePresenter,
     deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
   import { activeMilestone } from '../../issues'
   import tracker from '../../plugin'
   import MilestoneSelector from './MilestoneSelector.svelte'
-  import { createEventDispatcher } from 'svelte'
 
-  export let value: Issue | IssueTemplate
+  export let value: Issue | Issue[] | IssueTemplate
   export let space: Ref<Project> | undefined = undefined
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = true
@@ -51,7 +51,7 @@
   const dispatch = createEventDispatcher()
 
   const handleMilestoneIdChanged = async (newMilestoneId: Ref<Milestone> | null | undefined) => {
-    if (!isEditable || newMilestoneId === undefined || value.milestone === newMilestoneId) {
+    if (!isEditable || newMilestoneId === undefined || (!Array.isArray(value) && value.milestone === newMilestoneId)) {
       return
     }
     if (Array.isArray(value)) {
@@ -68,19 +68,19 @@
 
   const milestoneQuery = createQuery()
   let milestone: Milestone | undefined
-  $: if (value.milestone) {
+  $: if (!Array.isArray(value) && value.milestone) {
     milestoneQuery.query(tracker.class.Milestone, { _id: value.milestone }, (res) => {
       milestone = res.shift()
     })
   }
 
-  $: _space = space ?? value.space
+  $: _space = space ?? (!Array.isArray(value) ? value.space : { $in: Array.from(new Set(value.map((it) => it.space))) })
 
   $: twoRows = $deviceInfo.twoRows
 </script>
 
 {#if kind === 'list'}
-  {#if value.milestone}
+  {#if !Array.isArray(value) && value.milestone}
     <div class={compression ? 'label-wrapper' : 'clear-mins'}>
       <MilestoneSelector
         {kind}
@@ -108,7 +108,7 @@
     class:label-wrapper={compression}
     style:flex-direction={twoRows ? 'column' : 'row'}
   >
-    {#if (value.milestone && value.milestone !== $activeMilestone && groupBy !== 'milestone') || shouldShowPlaceholder}
+    {#if (!Array.isArray(value) && value.milestone && value.milestone !== $activeMilestone && groupBy !== 'milestone') || shouldShowPlaceholder}
       <div class="flex-row-center" class:minus-margin-vSpace={kind === 'list-header'} class:compression style:width>
         <MilestoneSelector
           {kind}
@@ -122,8 +122,11 @@
           {onlyIcon}
           {enlargedText}
           space={_space}
-          showTooltip={{ label: value.milestone ? tracker.string.MoveToMilestone : tracker.string.AddToMilestone }}
-          value={value.milestone}
+          showTooltip={{
+            label:
+              !Array.isArray(value) && value.milestone ? tracker.string.MoveToMilestone : tracker.string.AddToMilestone
+          }}
+          value={!Array.isArray(value) ? value.milestone : undefined}
           onChange={handleMilestoneIdChanged}
           {isAction}
         />

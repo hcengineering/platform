@@ -1,11 +1,24 @@
 {
-    "incrementalBuildIgnoredGlobs": ["temp/**", "dist_cache/**", "lib/**"],
+    "incrementalBuildIgnoredGlobs": [
+      "temp/**", 
+      "lib/**",
+      "**/*.svelte",
+      ".build/**"
+    ],
     "disableBuildCacheForProject": false,
   
     "operationSettings": [
       {
         "operationName": "build",
-        "outputFolderNames": ["lib", "dist"]
-      }     
+        "outputFolderNames": ["lib", ".build"]
+      },
+      {
+        "operationName": "test",
+        "outputFolderNames": ["coverage"]
+      },
+      {
+        "operationName": "build:watch",
+        "outputFolderNames": ["lib", ".build"]
+      }
     ]
   }

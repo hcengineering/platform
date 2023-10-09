@@ -14,7 +14,10 @@
 -->
 <script lang="ts">
   import { Event } from '@hcengineering/calendar'
+  import { Doc } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
   import { DatePresenter, DateTimeRangePresenter, Label, showPopup } from '@hcengineering/ui'
+  import view, { ObjectEditor } from '@hcengineering/view'
   import calendar from '../plugin'
 
   export let value: Event
@@ -22,7 +25,14 @@
   export let inline: boolean = false
 
   function click (): void {
-    showPopup(calendar.component.EditEvent, { object: value }, 'content')
+    if (!hideDetails) {
+      const client = getClient()
+      const hierarchy = client.getHierarchy()
+      const editor = hierarchy.classHierarchyMixin<Doc, ObjectEditor>(value._class, view.mixin.ObjectEditor)
+      if (editor?.editor !== undefined) {
+        showPopup(editor.editor, { object: value })
+      }
+    }
   }
 </script>
 

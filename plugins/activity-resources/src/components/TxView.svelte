@@ -191,7 +191,10 @@
     {#if showIcon}
       {#if withAvatar}
         <div class="msgactivity-avatar">
-          <Component is={contact.component.Avatar} props={{ avatar: person?.avatar, size: 'medium' }} />
+          <Component
+            is={contact.component.Avatar}
+            props={{ avatar: person?.avatar, size: 'medium', name: person?.name }}
+          />
         </div>
       {:else}
         <div class="msgactivity-icon">

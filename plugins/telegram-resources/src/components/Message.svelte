@@ -43,7 +43,7 @@
     }}
   >
     <div class="check-box">
-      {#if selectable}<CheckBox circle accented bind:checked={selected} />{/if}
+      {#if selectable}<CheckBox circle kind={'accented'} bind:checked={selected} />{/if}
     </div>
     <div class="message-container" class:out={!message.incoming}>
       <div class="message" class:outcoming={!message.incoming} class:selected>

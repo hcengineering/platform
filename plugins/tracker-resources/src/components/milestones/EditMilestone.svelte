@@ -13,12 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { AttachmentStyleBoxEditor } from '@hcengineering/attachment-resources'
   import { getClient } from '@hcengineering/presentation'
   import { Milestone } from '@hcengineering/tracker'
-  import { EditBox } from '@hcengineering/ui'
+  import { EditBox, Label } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../plugin'
-  import { AttachmentStyleBoxEditor } from '@hcengineering/attachment-resources'
+  import QueryIssuesList from '../issues/edit/QueryIssuesList.svelte'
 
   export let object: Milestone
 
@@ -65,4 +66,20 @@
     bind:this={descriptionBox}
     placeholder={tracker.string.IssueDescriptionPlaceholder}
   />
+</div>
+
+<div class="w-full mt-6">
+  <QueryIssuesList
+    focusIndex={50}
+    {object}
+    query={{ milestone: object._id }}
+    shouldSaveDraft
+    hasSubIssues={true}
+    viewletId={tracker.viewlet.MilestoneIssuesList}
+    createParams={{ milestone: object._id }}
+  >
+    <svelte:fragment slot="header">
+      <Label label={tracker.string.Issues} />
+    </svelte:fragment>
+  </QueryIssuesList>
 </div>

@@ -105,6 +105,10 @@
     "Messages": "Сообщения",
     "Mail": "Почта",
     "Notes": "Заметки",
-    "Activity": "Задача"
+    "Activity": "Задача",
+    "ChooseIcon": "Выбрать иконку",
+    "IconColor": "Выберите цвет",
+    "IconCategory": "Иконка",
+    "EmojiCategory": "Эмодзи"
   }
 }

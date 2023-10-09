@@ -5,7 +5,7 @@
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
-    "build": "heft build",
+    "build": "tsc",
     "build:watch": "tsc",
     "lint:fix": "eslint --fix src",
     "genmodel": "ts-node src/__genmodel.ts",
@@ -14,8 +14,9 @@
     "lint": "eslint src",
     "format": "prettier --write src && eslint --fix src"
   },
+  "template": "@hcengineering/model-package",
   "devDependencies": {
-    "@hcengineering/model-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "^0.6.0",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -23,11 +24,9 @@
     "eslint": "^8.26.0",
     "@types/node": "~16.11.12",
     "ts-node": "^10.8.0",
-    "@types/heft-jest": "^1.0.3",
     "@typescript-eslint/parser": "^5.41.0",
     "eslint-config-standard-with-typescript": "^23.0.0",
-    "prettier": "^2.7.1",
-    "@rushstack/heft": "^0.47.9"
+    "prettier": "^2.7.1"
   },
   "dependencies": {
     "@hcengineering/model": "^0.6.6",
@@ -74,7 +73,6 @@
     "@hcengineering/model-preference": "^0.6.0",
     "@hcengineering/model-hr": "^0.6.0",
     "@hcengineering/model-server-hr": "^0.6.0",
-    "@hcengineering/model-document": "^0.6.0",
     "@hcengineering/model-bitrix": "^0.6.0",
     "@hcengineering/model-request": "^0.6.0",
     "@hcengineering/model-server-request": "^0.6.0",

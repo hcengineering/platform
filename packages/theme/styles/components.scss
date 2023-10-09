@@ -923,6 +923,8 @@
 
 /* Inbox */
 .inbox-activity {
+  display: flex;
+  flex-direction: column;
   height: 100%;
   min-height: 0;
   min-width: 0;
@@ -950,6 +952,9 @@
     .inbox-activity__content {
       display: flex;
       flex-direction: column;
+      flex-grow: 1;
+      min-width: 0;
+      min-height: 0;
       color: var(--theme-caption-color);
 
       &.shrink { padding: .75rem 0; }
@@ -1021,6 +1026,25 @@
       .arrow { right: 1.25rem; }
     }
   }
+}
+
+/* Presenters */
+.antiPresenter {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  min-width: 0;
+
+  .ap-icon { color: var(--theme-dark-color); }
+  .ap-label {
+    min-width: 0;
+    text-align: left;
+    color: var(--theme-caption-color);
+
+    &.colorInherit { color: inherit; }
+  }
+  &:hover .ap-icon,
+  &:hover .ap-label { color: var(--theme-caption-color); }
 }
 
 /* ListView - global style */
@@ -1118,4 +1142,15 @@
   display: flex;
   align-items: center;
   min-width: 0;
+}
+
+/* ToDos in Calendar (WorkSlot) */
+.toDos-container .task-item.dragged {
+  overflow: hidden;
+  background-color: var(--theme-bg-dark-color);
+  border-color: var(--theme-divider-color);
+  border-radius: .125rem;
+  opacity: .75;
+
+  .hideOnDrag { opacity: 0 !important; }
 }

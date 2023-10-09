@@ -43,7 +43,7 @@ import core, {
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { BroadcastFunc, Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
 import { BaseMiddleware } from './base'
-import { getUser, isOwner, mergeTargets } from './utils'
+import { getUser, isOwner, isSystem, mergeTargets } from './utils'
 
 /**
  * @public
@@ -377,12 +377,14 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     const account = await getUser(this.storage, ctx)
     const field = this.getKey(_class)
 
-    if (!isOwner(account) || !this.storage.hierarchy.isDerived(_class, core.class.Space)) {
-      if (query[field] !== undefined) {
-        ;(newQuery as any)[field] = await this.mergeQuery(account, query[field])
-      } else {
-        const spaces = await this.getAllAllowedSpaces(account)
-        ;(newQuery as any)[field] = { $in: spaces }
+    if (!isSystem(account)) {
+      if (!isOwner(account) || !this.storage.hierarchy.isDerived(_class, core.class.Space)) {
+        if (query[field] !== undefined) {
+          ;(newQuery as any)[field] = await this.mergeQuery(account, query[field])
+        } else {
+          const spaces = await this.getAllAllowedSpaces(account)
+          ;(newQuery as any)[field] = { $in: spaces }
+        }
       }
     }
     const findResult = await this.provideFindAll(ctx, _class, newQuery, options)

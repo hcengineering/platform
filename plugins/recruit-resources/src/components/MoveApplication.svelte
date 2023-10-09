@@ -19,7 +19,7 @@
   import { OK, Severity, Status } from '@hcengineering/platform'
   import presentation, { Card, SpaceSelect, createQuery, getClient } from '@hcengineering/presentation'
   import type { Applicant, Vacancy } from '@hcengineering/recruit'
-  import task, { State, getStates } from '@hcengineering/task'
+  import { State, getStates } from '@hcengineering/task'
   import ui, {
     Button,
     ColorPopup,
@@ -62,15 +62,14 @@
     if (selectedState === undefined) {
       throw new Error(`Please select initial state:${_space}`)
     }
-    const state = await client.findOne(task.class.State, { space: _space, _id: selectedState?._id })
-    if (state === undefined) {
+    if (selectedState === undefined) {
       throw new Error(`create application: state not found space:${_space}`)
     }
 
     const op = client.apply('application.states')
 
     for (const a of selected) {
-      await moveToSpace(op, a, _space, { status: state._id, doneState: null })
+      await moveToSpace(op, a, _space, { status: selectedState._id, doneState: null })
     }
     await op.commit()
     loading = false

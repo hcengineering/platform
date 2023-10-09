@@ -2,10 +2,23 @@ const { join } = require("path")
 const { readFileSync, writeFileSync, existsSync, readdirSync, lstatSync, copyFileSync, mkdirSync, rmSync } = require('fs')
 const { spawnSync } = require('child_process')
 
-function update (current, template) {
+/**
+ * 
+ * @param {Record<string, string>} current 
+ * @param {Record<string, string>} template 
+ * @param {string[]|undefined} skip
+ * @returns 
+ */
+function update (current, template, skip) {
   if (template !== undefined && Object.keys(template).length > 0) {
     let value = current ?? {}
     for (const [k, v] of Object.entries(template)) {
+      if(skip !== undefined) {
+        console.log('check ', k, 'in', skip)
+        if( skip?.includes(k)) {
+          continue
+        }
+      }
       if(value[k] !== v) {
         console.log('updating ', k, 'to', v)
       }
@@ -79,7 +92,14 @@ function updatePackage(packageRoot, templates) {
 
   currentPackage.devDependencies = update(currentPackage.devDependencies, packageJson.devDependencies )
   currentPackage.dependencies = update(currentPackage.dependencies, packageJson.dependencies )
-  currentPackage.scripts = update(currentPackage.scripts, packageJson.scripts )
+
+  if( template.package['#clean'] !== undefined ) {
+    for( const d of template.package['#clean'] ) {
+      delete currentPackage.devDependencies[d]
+      delete currentPackage.dependencies[d]
+    }
+  }
+  currentPackage.scripts = update(currentPackage.scripts, packageJson.scripts, currentPackage['#override'] )
 
   const newPackage = JSON.stringify(currentPackage, undefined, 2)
 
@@ -90,6 +110,13 @@ function updatePackage(packageRoot, templates) {
   // Copy missing files.
 
   copyFiles(template.root, packageRoot, (template.package['#replaces'] ?? []).map(f => join(packageRoot, f)) )
+
+  // Clean some folders
+  for( const p of template.package['#removes'] ?? []) {
+    if(existsSync(join(packageRoot, p))) {
+      rmSync(join(packageRoot, p), { recursive: true })
+    }
+  }
 }
 
 function listPackages() {

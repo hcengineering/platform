@@ -61,6 +61,15 @@ export function startHttpServer (
 
   const getUsers = (): any => Array.from(sessions.sessions.entries()).map(([k, v]) => v.session.getUser())
 
+  app.get('/api/v1/version', (req, res) => {
+    res.writeHead(200, { 'Content-Type': 'application/json' })
+    res.end(
+      JSON.stringify({
+        version: process.env.MODEL_VERSION
+      })
+    )
+  })
+
   app.get('/api/v1/statistics', (req, res) => {
     try {
       const token = req.query.token as string

@@ -13,34 +13,33 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Contact, PersonAccount, Person, Employee } from '@hcengineering/contact'
-  import { DocumentQuery, FindOptions, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { Contact, Person, PersonAccount } from '@hcengineering/contact'
+  import { DocumentQuery, FindOptions, Ref, getCurrentAccount } from '@hcengineering/core'
   import type { Asset, IntlString } from '@hcengineering/platform'
+  import presentation, { createQuery } from '@hcengineering/presentation'
   import {
-    createFocusManager,
+    AnySvelteComponent,
     EditWithIcon,
     FocusHandler,
     Icon,
     IconCheck,
     IconSearch,
-    deviceOptionsStore,
-    ListView,
-    resizeObserver,
-    AnySvelteComponent,
     Label,
+    ListView,
+    createFocusManager,
+    deviceOptionsStore,
+    resizeObserver,
     tooltip
   } from '@hcengineering/ui'
-  import presentation, { createQuery } from '@hcengineering/presentation'
   import { createEventDispatcher } from 'svelte'
-  import { AssigneeCategory, assigneeCategoryOrder, getCategoryTitle } from '../assignee'
+  import { AssigneeCategory } from '../assignee'
+  import contact from '../plugin'
   import UserInfo from './UserInfo.svelte'
 
   export let options: FindOptions<Contact> | undefined = undefined
   export let selected: Ref<Person> | undefined
   export let docQuery: DocumentQuery<Contact> | undefined = undefined
-  export let prevAssigned: Ref<Employee>[] | undefined = []
-  export let componentLead: Ref<Employee> | undefined = undefined
-  export let members: Ref<Employee>[] | undefined = []
+  export let categories: AssigneeCategory[] | undefined = undefined
   export let allowDeselect = true
   export let titleDeselect: IntlString | undefined
   export let placeholder: IntlString = presentation.string.Search
@@ -49,16 +48,15 @@
   export let shadows: boolean = true
   export let width: 'medium' | 'large' | 'full' = 'medium'
   export let searchField: string = 'name'
-  export let showCategories: boolean = true
   export let icon: Asset | AnySvelteComponent | undefined = undefined
 
-  const currentEmployee = (getCurrentAccount() as PersonAccount).person
+  $: showCategories = categories !== undefined && categories.length > 0
 
   let search: string = ''
   let objects: Contact[] = []
   let contacts: Contact[] = []
 
-  let categorizedPersons: Map<Ref<Person>, AssigneeCategory>
+  const categorizedPersons: Map<Ref<Person>, AssigneeCategory> = new Map()
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
@@ -79,29 +77,40 @@
     { ...(options ?? {}), limit: 200, sort: { name: 1 } }
   )
 
-  $: updateCategories(objects, currentEmployee, prevAssigned, componentLead, members)
+  $: updateCategories(objects, categories)
 
-  function updateCategories (
-    objects: Contact[],
-    currentEmployee: Ref<Person>,
-    prevAssigned: Ref<Person>[] | undefined,
-    componentLead: Ref<Person> | undefined,
-    members: Ref<Person>[] | undefined
-  ) {
-    const persons = new Map<Ref<Person>, AssigneeCategory>(objects.map((t) => [t._id, 'Other']))
-    if (componentLead) {
-      persons.set(componentLead, 'ComponentLead')
+  const currentUserCategory: AssigneeCategory = {
+    label: contact.string.CategoryCurrentUser,
+    func: async () => {
+      const account = getCurrentAccount() as PersonAccount
+      return [account.person]
     }
-    members?.forEach((p) => persons.set(p, 'Members'))
-    prevAssigned?.forEach((p) => persons.set(p, 'PreviouslyAssigned'))
-    if (selected) {
-      persons.set(selected, 'Assigned')
-    }
-    persons.set(currentEmployee, 'CurrentUser')
+  }
 
-    categorizedPersons = new Map<Ref<Person>, AssigneeCategory>(
-      [...persons].sort((a, b) => assigneeCategoryOrder.indexOf(a[1]) - assigneeCategoryOrder.indexOf(b[1]))
-    )
+  const assigned: AssigneeCategory = {
+    label: contact.string.Assigned,
+    func: async () => {
+      return selected ? [selected] : []
+    }
+  }
+
+  const otherCategory: AssigneeCategory = {
+    label: contact.string.CategoryOther,
+    func: async (val: Ref<Contact>[]) => {
+      return val
+    }
+  }
+
+  async function updateCategories (objects: Contact[], categories: AssigneeCategory[] | undefined) {
+    const refs = objects.map((e) => e._id)
+
+    for (const category of [currentUserCategory, assigned, ...(categories ?? []), otherCategory]) {
+      const res = await category.func(refs)
+      for (const contact of res) {
+        if (categorizedPersons.has(contact)) continue
+        categorizedPersons.set(contact, category)
+      }
+    }
     contacts = []
     categorizedPersons.forEach((p, k) => {
       const c = objects.find((e) => e._id === k)
@@ -176,15 +185,12 @@
             {@const obj = toAny(contacts[item])}
             {@const category = categorizedPersons.get(obj._id)}
             <!-- {@const cl = hierarchy.getClass(contacts[item]._class)} -->
-            {#if item === 0 || (item > 0 && categorizedPersons.get(toAny(contacts[item - 1])._id) !== categorizedPersons.get(obj._id))}
+            {#if category !== undefined && (item === 0 || (item > 0 && categorizedPersons.get(toAny(contacts[item - 1])._id) !== categorizedPersons.get(obj._id)))}
               <!--Category for first item-->
               {#if item > 0}<div class="menu-separator" />{/if}
               <div class="menu-group__header flex-row-center category-box">
-                <!-- {#if cl.icon}
-                  <div class="clear-mins mr-2"><Icon icon={cl.icon} size={'small'} /></div>
-                {/if} -->
                 <span class="overflow-label">
-                  <Label label={getCategoryTitle(category)} />
+                  <Label label={category.label} />
                 </span>
               </div>
             {/if}

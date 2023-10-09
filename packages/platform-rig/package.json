@@ -6,17 +6,13 @@
     "format": ""
   },
   "devDependencies": {
-    "@rushstack/heft-jest-plugin": "^0.3.16",
-    "@rushstack/heft": "^0.47.9",
     "eslint-config-standard-with-typescript": "^23.0.0"
   },
   "peerDependencies": {
     "@typescript-eslint/parser": "^5.41.0",
-    "@rushstack/heft": "^0.47.9",
     "eslint": "^8.26.0"
   },
   "dependencies": {
-    "@microsoft/api-extractor": "^7.28.2",
-    "typescript": "^4.3.5"
+    "typescript": "^5.2.2"
   }
 }

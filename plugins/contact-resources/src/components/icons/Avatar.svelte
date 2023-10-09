@@ -18,33 +18,29 @@
 
   export let size: IconSize
 
-  export let fill: string = 'var(--caption-color)'
+  export let fill: string = 'var(--theme-caption-color)'
 </script>
 
-<svg class="svg-avatar avaicon-{size}" {fill} viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-  <circle class="op" cx="20" cy="13.6" r="6.4" />
+<svg class="svg-avatar avaicon-{size}" {fill} viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
   <path
-    d="M33.1,33.3c-0.8-2.2-2.5-4.2-4.9-5.5c-2.3-1.3-5.2-2.1-8.2-2.1s-5.8,0.7-8.2,2.1c-2.4,1.4-4.1,3.3-4.9,5.5 c-0.1,0.4,0.1,0.8,0.5,1c0.4,0.1,0.8-0.1,1-0.5c0.7-1.9,2.2-3.5,4.2-4.7c2.1-1.2,4.7-1.9,7.4-1.9c2.7,0,5.3,0.7,7.4,1.9 c2.1,1.2,3.6,2.9,4.2,4.7c0.1,0.3,0.4,0.5,0.7,0.5c0.1,0,0.2,0,0.3,0C33,34.1,33.2,33.7,33.1,33.3z"
+    fill-rule="evenodd"
+    clip-rule="evenodd"
+    d="M10 9.99988C12.0711 9.99988 13.75 8.32095 13.75 6.24988C13.75 4.17881 12.0711 2.49988 10 2.49988C7.92893 2.49988 6.25 4.17881 6.25 6.24988C6.25 8.32095 7.92893 9.99988 10 9.99988ZM10 11.2499C12.7614 11.2499 15 9.0113 15 6.24988C15 3.48845 12.7614 1.24988 10 1.24988C7.23858 1.24988 5 3.48845 5 6.24988C5 9.0113 7.23858 11.2499 10 11.2499Z"
   />
   <path
-    d="M20,20.8c3.9,0,7.1-3.2,7.1-7.1S23.9,6.5,20,6.5c-3.9,0-7.1,3.2-7.1,7.1S16.1,20.8,20,20.8z M20,8 c3.1,0,5.6,2.5,5.6,5.6s-2.5,5.6-5.6,5.6c-3.1,0-5.6-2.5-5.6-5.6S16.9,8,20,8z"
+    d="M8.125 12.4999C5.70875 12.4999 3.75 14.4586 3.75 16.8749V18.1249C3.75 18.4701 4.02982 18.7499 4.375 18.7499C4.72018 18.7499 5 18.4701 5 18.1249V16.8749C5 15.149 6.39911 13.7499 8.125 13.7499H11.875C13.6009 13.7499 15 15.149 15 16.8749V18.1249C15 18.4701 15.2798 18.7499 15.625 18.7499C15.9702 18.7499 16.25 18.4701 16.25 18.1249V16.8749C16.25 14.4586 14.2912 12.4999 11.875 12.4999H8.125Z"
   />
 </svg>
 
 <style lang="scss">
-  .svg-avatar {
-    .op {
-      opacity: 0.05;
-    }
-  }
   .avaicon-inline {
-    width: 0.75rem;
-    height: 0.75rem;
+    width: 0.6125rem;
+    height: 0.6125rem;
   }
 
   .avaicon-tiny {
-    width: 0.875rem;
-    height: 0.875rem;
+    width: 0.8125rem;
+    height: 0.8125rem;
   }
 
   .avaicon-x-small {
@@ -64,15 +60,15 @@
     height: 1.5rem;
   }
   .avaicon-large {
-    width: 1.75rem;
-    height: 1.75rem;
+    width: 2.5rem;
+    height: 2.5rem;
   }
   .avaicon-x-large {
-    width: 3rem;
-    height: 3rem;
-  }
-  .avaicon-2x-large {
     width: 4rem;
     height: 4rem;
+  }
+  .avaicon-2x-large {
+    width: 6rem;
+    height: 6rem;
   }
 </style>

@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import { Backlink } from '@hcengineering/chunter'
-import { Class, Data, Doc, Ref } from '@hcengineering/core'
-import { defaultExtensions, getHTML, parseHTML, ReferenceNode } from '@hcengineering/text'
+import chunter, { Backlink } from '@hcengineering/chunter'
+import { Class, Data, Doc, Ref, Tx, TxFactory } from '@hcengineering/core'
+import { defaultExtensions, extractReferences, getHTML, parseHTML, ReferenceNode } from '@hcengineering/text'
 
 const extensions = [...defaultExtensions, ReferenceNode]
 
@@ -29,26 +29,75 @@ export function getBacklinks (
 
   const result: Array<Data<Backlink>> = []
 
-  doc.descendants((node, _pos, parent): boolean => {
-    if (node.type.name === ReferenceNode.name) {
-      const ato = node.attrs.id as Ref<Doc>
-      const atoClass = node.attrs.objectClass as Ref<Class<Doc>>
-      const e = result.find((e) => e.attachedTo === ato && e.attachedToClass === atoClass)
-      if (e === undefined && ato !== attachedDocId && ato !== backlinkId) {
-        result.push({
-          attachedTo: ato,
-          attachedToClass: atoClass,
-          collection: 'backlinks',
-          backlinkId,
-          backlinkClass,
-          message: parent !== null ? getHTML(parent, extensions) : '',
-          attachedDocId
-        })
-      }
+  const references = extractReferences(doc)
+  for (const ref of references) {
+    if (ref.objectId !== attachedDocId && ref.objectId !== backlinkId) {
+      result.push({
+        attachedTo: ref.objectId,
+        attachedToClass: ref.objectClass,
+        collection: 'backlinks',
+        backlinkId,
+        backlinkClass,
+        message: ref.parentNode !== null ? getHTML(ref.parentNode, extensions) : '',
+        attachedDocId
+      })
     }
-
-    return true
-  })
+  }
 
   return result
+}
+
+/**
+ * @public
+ */
+export function getBacklinksTxes (txFactory: TxFactory, backlinks: Data<Backlink>[], current: Backlink[]): Tx[] {
+  const txes: Tx[] = []
+
+  for (const c of current) {
+    // Find existing and check if we need to update message
+    const pos = backlinks.findIndex(
+      (b) => b.backlinkId === c.backlinkId && b.backlinkClass === c.backlinkClass && b.attachedTo === c.attachedTo
+    )
+    if (pos !== -1) {
+      // Update existing backlinks when message changed
+      const data = backlinks[pos]
+      if (c.message !== data.message) {
+        const innerTx = txFactory.createTxUpdateDoc(c._class, c.space, c._id, {
+          message: data.message
+        })
+        txes.push(
+          txFactory.createTxCollectionCUD(
+            c.attachedToClass,
+            c.attachedTo,
+            chunter.space.Backlinks,
+            c.collection,
+            innerTx
+          )
+        )
+      }
+      backlinks.splice(pos, 1)
+    } else {
+      // Remove not found backlinks
+      const innerTx = txFactory.createTxRemoveDoc(c._class, c.space, c._id)
+      txes.push(
+        txFactory.createTxCollectionCUD(c.attachedToClass, c.attachedTo, chunter.space.Backlinks, c.collection, innerTx)
+      )
+    }
+  }
+
+  // Add missing backlinks
+  for (const backlink of backlinks) {
+    const backlinkTx = txFactory.createTxCreateDoc(chunter.class.Backlink, chunter.space.Backlinks, backlink)
+    txes.push(
+      txFactory.createTxCollectionCUD(
+        backlink.attachedToClass,
+        backlink.attachedTo,
+        chunter.space.Backlinks,
+        backlink.collection,
+        backlinkTx
+      )
+    )
+  }
+
+  return txes
 }

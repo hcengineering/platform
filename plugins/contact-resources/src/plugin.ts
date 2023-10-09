@@ -74,8 +74,6 @@ export default mergeIds(contactId, contact, {
     Assigned: '' as IntlString,
     Unassigned: '' as IntlString,
     CategoryCurrentUser: '' as IntlString,
-    CategoryPreviousAssigned: '' as IntlString,
-    CategoryComponentLead: '' as IntlString,
     CategoryOther: '' as IntlString,
     DeleteEmployee: '' as IntlString,
     DeleteEmployeeDescr: '' as IntlString,

@@ -102,7 +102,7 @@ const predicates: Record<string, PredicateFactory> = {
   },
   $ne: (o, propertyKey) => {
     // eslint-disable-next-line eqeqeq
-    return (docs) => execPredicate(docs, propertyKey, (value) => !deepEqual(o, value))
+    return (docs) => execPredicate(docs, propertyKey, (value) => (o != null ? !deepEqual(o, value) : value != null))
   }
 }
 

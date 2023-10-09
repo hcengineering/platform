@@ -14,7 +14,7 @@
 //
 
 import { AttachedData, Class, Client, Doc, FindResult, Ref, Hierarchy } from '@hcengineering/core'
-import { IconSize } from '@hcengineering/ui'
+import { IconSize, ColorDefinition } from '@hcengineering/ui'
 import { MD5 } from 'crypto-js'
 import { Channel, Contact, contactPlugin, Person } from '.'
 import { AVATAR_COLORS, GravatarPlaceholderType } from './types'
@@ -22,14 +22,29 @@ import { AVATAR_COLORS, GravatarPlaceholderType } from './types'
 /**
  * @public
  */
-export function getAvatarColorForId (id: string): string {
+export function getAvatarColorForId (id: string | null | undefined): string {
+  if (id == null) return AVATAR_COLORS[0].color
   let hash = 0
 
   for (let i = 0; i < id.length; i++) {
     hash += id.charCodeAt(i)
   }
 
-  return AVATAR_COLORS[hash % AVATAR_COLORS.length]
+  return AVATAR_COLORS[hash % AVATAR_COLORS.length].color
+}
+
+/**
+ * @public
+ */
+export function getAvatarColors (): readonly ColorDefinition[] {
+  return AVATAR_COLORS
+}
+
+/**
+ * @public
+ */
+export function getAvatarColorName (color: string): string {
+  return AVATAR_COLORS.find((col) => col.color === color)?.name ?? AVATAR_COLORS[0].name
 }
 
 /**

@@ -1,9 +1,9 @@
 {
-  "extends": "./node_modules/@hcengineering/model-rig/profiles/default/tsconfig.json",
+  "extends": "./node_modules/@hcengineering/platform-rig/profiles/model/tsconfig.json",
 
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./lib",
-    "esModuleInterop": true
+    "tsBuildInfoFile": ".build/build.tsbuildinfo"
   }
 }

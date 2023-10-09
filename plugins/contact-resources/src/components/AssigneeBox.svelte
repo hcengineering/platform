@@ -14,31 +14,32 @@
 -->
 <script lang="ts">
   import contact, { Contact, Employee, Person, getName } from '@hcengineering/contact'
-  import { Class, DocumentQuery, FindOptions, Hierarchy, Ref } from '@hcengineering/core'
-  import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
+  import { Class, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
+  import { IntlString, getEmbeddedLabel } from '@hcengineering/platform'
+  import presentation, { getClient } from '@hcengineering/presentation'
   import {
     ActionIcon,
     Button,
     ButtonKind,
     ButtonSize,
-    IconSize,
-    getEventPositionElement,
-    getFocusManager,
     Icon,
+    IconSize,
     Label,
     LabelAndProps,
-    showPanel,
+    getEventPositionElement,
+    getFocusManager,
     showPopup,
     tooltip
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import { openDoc } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import presentation, { getClient } from '@hcengineering/presentation'
   import { PersonLabelTooltip, personByIdStore } from '..'
   import AssigneePopup from './AssigneePopup.svelte'
-  import IconPerson from './icons/Person.svelte'
-  import UserInfo from './UserInfo.svelte'
   import EmployeePresenter from './EmployeePresenter.svelte'
+  import UserInfo from './UserInfo.svelte'
+  import IconPerson from './icons/Person.svelte'
+  import { AssigneeCategory } from '../assignee'
 
   export let _class: Ref<Class<Employee>> = contact.mixin.Employee
   export let excluded: Ref<Contact>[] | undefined = undefined
@@ -49,9 +50,7 @@
   export let label: IntlString
   export let placeholder: IntlString = presentation.string.Search
   export let value: Ref<Person> | null | undefined
-  export let prevAssigned: Ref<Person>[] | undefined = []
-  export let componentLead: Ref<Employee> | undefined = undefined
-  export let members: Ref<Employee>[] | undefined = []
+  export let categories: AssigneeCategory[] | undefined = undefined
   export let allowDeselect = true
   export let titleDeselect: IntlString | undefined = undefined
   export let readonly = false
@@ -60,6 +59,7 @@
   export let avatarSize: IconSize = kind === 'regular' ? 'small' : 'card'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
+  export let shrink: number = 0
   export let focusIndex = -1
   export let showTooltip: LabelAndProps | PersonLabelTooltip | undefined = undefined
   export let showNavigate = true
@@ -86,7 +86,7 @@
 
   const mgr = getFocusManager()
 
-  const _click = (ev: MouseEvent): void => {
+  function _click (ev: MouseEvent): void {
     if (!readonly) {
       ev.preventDefault()
       ev.stopPropagation()
@@ -97,9 +97,7 @@
           _class,
           options,
           docQuery,
-          prevAssigned,
-          componentLead,
-          members,
+          categories,
           ignoreUsers: excluded ?? [],
           icon,
           selected: value,
@@ -129,7 +127,14 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div {id} bind:this={container} class="min-w-0" class:w-full={width === '100%'} class:h-full={$$slots.content}>
+<div
+  {id}
+  bind:this={container}
+  class="min-w-0"
+  class:w-full={width === '100%'}
+  class:h-full={$$slots.content}
+  style:flex-shrink={shrink}
+>
   {#if $$slots.content}
     <div
       class="w-full h-full flex-streatch"
@@ -191,7 +196,7 @@
             size={'small'}
             action={() => {
               if (selected) {
-                showPanel(view.component.EditDoc, selected._id, Hierarchy.mixinOrClass(selected), 'content')
+                openDoc(client.getHierarchy(), selected)
               }
             }}
           />

@@ -63,7 +63,7 @@
   max-width: 17.5rem;
   width: 17.5rem;
   background-color: var(--theme-navpanel-color);
-  border-right: 1px solid var(--theme-navpanel-border);
+  // border-right: 1px solid var(--theme-navpanel-border);
 }
 @media (max-width: 1024px) {
   .antiPanel-navigator {
@@ -176,6 +176,7 @@
     }
   }
   .an-element__icon-arrow {
+    flex-shrink: 0;
     margin-left: .25rem;
     width: 1rem;
     height: 1rem;

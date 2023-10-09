@@ -18,7 +18,13 @@
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
-  import presentation, { createQuery, getClient, ActionContext, contextStore } from '@hcengineering/presentation'
+  import presentation, {
+    createQuery,
+    getClient,
+    ActionContext,
+    contextStore,
+    ComponentExtensions
+  } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
   import { Issue, Project } from '@hcengineering/tracker'
   import {
@@ -194,6 +200,10 @@
       </span>
     </svelte:fragment>
     <svelte:fragment slot="pre-utils">
+      <ComponentExtensions
+        extension={tracker.extensions.EditIssueHeader}
+        props={{ size: 'medium', kind: 'ghost', space: issue.space }}
+      />
       {#if saved}
         <Label label={presentation.string.Saved} />
       {/if}

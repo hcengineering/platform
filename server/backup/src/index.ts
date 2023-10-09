@@ -625,6 +625,12 @@ export async function restore (
     model: 'upgrade'
   })) as unknown as CoreClient & BackupClient
 
+  // We need to find empty domains and clean them.
+  const allDomains = connection.getHierarchy().domains()
+  for (const d of allDomains) {
+    domains.add(d)
+  }
+
   async function processDomain (c: Domain): Promise<void> {
     const changeset = await loadDigest(storage, snapshots, c, date)
     // We need to load full changeset from server

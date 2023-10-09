@@ -93,7 +93,10 @@
       />
     </span>
     <svelte:fragment slot="iconRight">
-      <DropdownIcon size={'small'} fill={'var(--theme-dark-color)'} />
+      <DropdownIcon
+        size={'small'}
+        fill={kind === 'accented' && !disabled ? 'var(--accented-button-content-color)' : 'var(--theme-dark-color)'}
+      />
     </svelte:fragment>
   </Button>
 </div>

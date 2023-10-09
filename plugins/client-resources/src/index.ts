@@ -60,7 +60,24 @@ export default async () => {
 
             return connect(url.href, upgradeHandler, onUpgrade, onUnauthorized, onConnect)
           },
-          filterModel ? [...getPlugins(), ...(getMetadata(clientPlugin.metadata.ExtraPlugins) ?? [])] : undefined
+          filterModel ? [...getPlugins(), ...(getMetadata(clientPlugin.metadata.ExtraPlugins) ?? [])] : undefined,
+          {
+            load: async () => {
+              if (typeof localStorage !== 'undefined') {
+                const dta = localStorage.getItem('stored_model_' + token) ?? null
+                if (dta === null) {
+                  return []
+                }
+                return JSON.parse(dta)
+              }
+              return []
+            },
+            store: async (txes) => {
+              if (typeof localStorage !== 'undefined') {
+                localStorage.setItem('stored_model_' + token, JSON.stringify(txes))
+              }
+            }
+          }
         )
         // Check if we had dev hook for client.
         client = hookClient(client)

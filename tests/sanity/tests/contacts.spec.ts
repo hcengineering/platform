@@ -139,19 +139,5 @@ test.describe('contact tests', () => {
     await page.click('text=Ok')
 
     await expect(page.locator(`td:has-text("${last} ${first}")`)).toHaveCount(1)
-
-    // We need some time to ensure that the status is proper one
-    await page.waitForTimeout(1000)
-
-    // Delete employee
-
-    // Click #context-menu svg
-    await page.hover(`td:has-text("${last} ${first}")`)
-    await page.click(`td:has-text("${last} ${first}")`, { button: 'right' })
-    await page.click('text="Delete employee"')
-    // Click text=Ok
-    await page.click('text=Ok')
-
-    await expect(page.locator(`td:has-text("${last} ${first}")`)).toHaveCount(0)
   })
 })

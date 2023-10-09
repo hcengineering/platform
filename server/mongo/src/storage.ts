@@ -562,6 +562,9 @@ abstract class MongoAdapterBase implements DbAdapter {
     cursor.maxAwaitTimeMS(30000)
 
     const res = await cursor.toArray()
+    if (options?.total === true && options?.limit === undefined) {
+      total = res.length
+    }
     return toFindResult(res, total)
   }
 

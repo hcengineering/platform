@@ -61,7 +61,7 @@
   $: providerItems = providers.map((it) => ({ id: it._id, label: it.label }))
 </script>
 
-<div class="flex-col  flex-wrap">
+<div class="flex-col flex-wrap">
   {#each channelFields as p, i}
     <div class="pattern flex-row-center gap-2">
       <DropdownLabelsIntl

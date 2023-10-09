@@ -16,13 +16,11 @@
 <script lang="ts">
   import contact, { Contact } from '@hcengineering/contact'
   import { UserBox } from '@hcengineering/contact-resources'
-  import { Hierarchy } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import type { Review } from '@hcengineering/recruit'
   import { FullDescriptionBox } from '@hcengineering/text-editor'
-  import { EditBox, Grid, showPanel } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
-  import { ObjectPresenter } from '@hcengineering/view-resources'
+  import { EditBox, Grid } from '@hcengineering/ui'
+  import { ObjectPresenter, openDoc } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import recruit from '../../plugin'
 
@@ -72,7 +70,7 @@
         class="clear-mins flex-row-center"
         on:click={() => {
           if (candidate !== undefined) {
-            showPanel(view.component.EditDoc, candidate._id, Hierarchy.mixinOrClass(candidate), 'content')
+            openDoc(client.getHierarchy(), candidate)
           }
         }}
       >

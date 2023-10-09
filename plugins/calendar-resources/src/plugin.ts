@@ -18,10 +18,6 @@ import { IntlString, mergeIds } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
 
 export default mergeIds(calendarId, calendar, {
-  component: {
-    CreateEvent: '' as AnyComponent,
-    EditEvent: '' as AnyComponent
-  },
   activity: {
     ReminderViewlet: '' as AnyComponent
   },
@@ -80,6 +76,7 @@ export default mergeIds(calendarId, calendar, {
     Busy: '' as IntlString,
     AddReminder: '' as IntlString,
     SeeAllNumberParticipants: '' as IntlString,
-    SeeAllNumberReminders: '' as IntlString
+    SeeAllNumberReminders: '' as IntlString,
+    DefaultVisibility: '' as IntlString
   }
 })

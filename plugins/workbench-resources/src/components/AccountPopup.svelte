@@ -69,8 +69,12 @@
     loc.fragment = undefined
     loc.query = undefined
     loc.path[2] = settingId
-    if (sp) loc.path[3] = sp.name
-    loc.path.length = 4
+    if (sp) {
+      loc.path[3] = sp.name
+      loc.path.length = 4
+    } else {
+      loc.path.length = 3
+    }
     navigate(loc)
   }
 
@@ -163,7 +167,10 @@
       }}
     >
       {#if employee}
-        <Component is={contact.component.Avatar} props={{ avatar: employee.avatar, size: 'medium' }} />
+        <Component
+          is={contact.component.Avatar}
+          props={{ avatar: employee.avatar, size: 'medium', name: employee.name }}
+        />
       {/if}
       <div class="ml-2 flex-col">
         {#if account}

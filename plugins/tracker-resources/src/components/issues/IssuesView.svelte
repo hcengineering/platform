@@ -7,6 +7,7 @@
   import { FilterBar, SpaceHeader, ViewletContentView, ViewletSettingButton } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import CreateIssue from '../CreateIssue.svelte'
+  import { ComponentExtensions } from '@hcengineering/presentation'
 
   export let space: Ref<Space> | undefined = undefined
   export let query: DocumentQuery<Issue> = {}
@@ -51,7 +52,7 @@
   bind:viewlet
   bind:search
   showLabelSelector={$$slots.label_selector}
-  viewletQuery={{ attachTo: tracker.class.Issue, variant: { $ne: 'subissue' } }}
+  viewletQuery={{ attachTo: tracker.class.Issue, variant: { $nin: ['subissue', 'component', 'milestone'] } }}
   {viewlets}
   {label}
   {space}
@@ -61,6 +62,11 @@
     <slot name="label_selector" />
   </svelte:fragment>
   <svelte:fragment slot="extra">
+    <ComponentExtensions
+      extension={tracker.extensions.IssueListHeader}
+      props={{ size: 'medium', kind: 'ghost', space }}
+    />
+
     <ViewletSettingButton bind:viewOptions bind:viewlet />
     {#if asideFloat && $$slots.aside}
       <div class="buttons-divider" />

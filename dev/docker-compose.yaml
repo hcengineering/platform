@@ -63,19 +63,6 @@ services:
       - INIT_WORKSPACE=demo-tracker
       - MODEL_ENABLED=*
     restart: unless-stopped
-  collaborator:
-    image: hardcoreeng/collaborator
-    links:
-      - transactor
-    ports:
-      - 3078:3078
-    environment:
-      - COLLABORATOR_PORT=3078
-      - SECRET=secret
-      - MINIO_ENDPOINT=minio
-      - MINIO_ACCESS_KEY=minioadmin
-      - MINIO_SECRET_KEY=minioadmin      
-    restart: unless-stopped
   front:
     image: hardcoreeng/front
     links:
@@ -90,7 +77,6 @@ services:
       - SERVER_SECRET=secret
       - ACCOUNTS_URL=http://localhost:3000
       - REKONI_URL=http://localhost:4004
-      - COLLABORATOR_URL=ws://localhost:3078
       - CALENDAR_URL=http://localhost:8095
       - GMAIL_URL=http://localhost:8088
       - TELEGRAM_URL=http://localhost:8086

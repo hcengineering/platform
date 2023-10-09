@@ -16,7 +16,7 @@
    * path segment in the "$schema" field for all your Rush config files.  This will ensure
    * correct error-underlining and tab-completion for editors such as VS Code.
    */
-  "rushVersion": "5.100.1",
+  "rushVersion": "5.109.1",
 
   /**
    * The next field selects which package manager should be installed and determines its version.
@@ -26,7 +26,7 @@
    * Specify one of: "pnpmVersion", "npmVersion", or "yarnVersion".  See the Rush documentation
    * for details about these alternatives.
    */
-  "pnpmVersion": "6.35.1",
+  "pnpmVersion": "8.8.0",
 
   // "npmVersion": "4.5.0",
   // "yarnVersion": "1.9.4",
@@ -597,11 +597,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/model-rig",
-      "projectFolder": "models/model-rig",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/model-all",
       "projectFolder": "models/all",
       "shouldPublish": false
@@ -799,11 +794,6 @@
     {
       "packageName": "@hcengineering/pod-account",
       "projectFolder": "pods/account",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/pod-collaborator",
-      "projectFolder": "pods/collaborator",
       "shouldPublish": false
     },
     {
@@ -1386,27 +1376,6 @@
     {
       "packageName": "@hcengineering/server-hr-resources",
       "projectFolder": "server-plugins/hr-resources",
-      "shouldPublish": false
-    },
-
-    {
-      "packageName": "@hcengineering/document",
-      "projectFolder": "plugins/document",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/document-assets",
-      "projectFolder": "plugins/document-assets",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/document-resources",
-      "projectFolder": "plugins/document-resources",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/model-document",
-      "projectFolder": "models/document",
       "shouldPublish": false
     },
     {

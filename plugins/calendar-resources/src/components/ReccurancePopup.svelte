@@ -111,7 +111,6 @@
 <div class="repeatPopup-container">
   <div class="header">
     <Label label={calendar.string.Repeat} />
-    {selected}
   </div>
   <div class="content flex-col">
     <div class="flex-row-center gap-1-5">

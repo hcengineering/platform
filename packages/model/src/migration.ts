@@ -1,6 +1,7 @@
-import {
+import core, {
   Client,
   Doc,
+  DOMAIN_MIGRATION,
   DocumentQuery,
   Domain,
   FindOptions,
@@ -10,7 +11,11 @@ import {
   ObjQueryType,
   PushOptions,
   Ref,
-  UnsetOptions
+  UnsetOptions,
+  MigrationState,
+  generateId,
+  TxOperations,
+  Data
 } from '@hcengineering/core'
 
 /**
@@ -93,4 +98,66 @@ export interface MigrateOperation {
   migrate: (client: MigrationClient) => Promise<void>
   // Perform high level upgrade operations.
   upgrade: (client: MigrationUpgradeClient) => Promise<void>
+}
+
+/**
+ * @public
+ */
+export interface Migrations {
+  state: string
+  func: (client: MigrationClient) => Promise<void>
+}
+
+/**
+ * @public
+ */
+export interface UpgradeOperations {
+  state: string
+  func: (client: MigrationUpgradeClient) => Promise<void>
+}
+
+/**
+ * @public
+ */
+export async function tryMigrate (client: MigrationClient, plugin: string, migrations: Migrations[]): Promise<void> {
+  const states = new Set(
+    (await client.find<MigrationState>(DOMAIN_MIGRATION, { _class: core.class.MigrationState, plugin })).map(
+      (p) => p.state
+    )
+  )
+  for (const migration of migrations) {
+    if (states.has(migration.state)) continue
+    await migration.func(client)
+    const st: MigrationState = {
+      plugin,
+      state: migration.state,
+      space: core.space.Configuration,
+      modifiedBy: core.account.System,
+      modifiedOn: Date.now(),
+      _class: core.class.MigrationState,
+      _id: generateId()
+    }
+    await client.create(DOMAIN_MIGRATION, st)
+  }
+}
+
+/**
+ * @public
+ */
+export async function tryUpgrade (
+  client: MigrationUpgradeClient,
+  plugin: string,
+  migrations: UpgradeOperations[]
+): Promise<void> {
+  const states = new Set((await client.findAll(core.class.MigrationState, { plugin })).map((p) => p.state))
+  for (const migration of migrations) {
+    if (states.has(migration.state)) continue
+    await migration.func(client)
+    const st: Data<MigrationState> = {
+      plugin,
+      state: migration.state
+    }
+    const tx = new TxOperations(client, core.account.System)
+    await tx.createDoc(core.class.MigrationState, core.space.Configuration, st)
+  }
 }

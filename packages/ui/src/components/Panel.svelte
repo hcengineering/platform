@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,10 +14,17 @@
 -->
 <script lang="ts">
   import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
-  import { deviceOptionsStore as deviceInfo, checkAdaptiveMatching, IconBack } from '../../'
-  import { resizeObserver } from '../resize'
-  import Button from './Button.svelte'
-  import Scroller from './Scroller.svelte'
+  import {
+    deviceOptionsStore as deviceInfo,
+    checkAdaptiveMatching,
+    IconBack,
+    Separator,
+    defineSeparators,
+    resizeObserver,
+    Button,
+    Scroller,
+    panelSeparators
+  } from '../../'
   import IconClose from './icons/Close.svelte'
   import IconDetails from './icons/Details.svelte'
   import IconMaxWidth from './icons/MaxWidth.svelte'
@@ -32,6 +39,7 @@
   export let isFullSize: boolean = false
   export let withoutTitle: boolean = false
   export let floatAside = false
+  export let allowBack = true
   export let allowClose = true
   export let useMaxWidth: boolean | undefined = undefined
   export let embedded = false
@@ -47,7 +55,7 @@
   $: moveUtils = checkAdaptiveMatching(devSize, 'sm')
 
   let oldWidth = ''
-  let hideTimer: number | undefined
+  let hideTimer: any | undefined
 
   const checkPanel = (): void => {
     const k = `${panelWidth}-${asideFloat}`
@@ -81,6 +89,8 @@
   })
 
   onMount(() => dispatch('open'))
+
+  defineSeparators('panel-aside', panelSeparators)
 </script>
 
 <div
@@ -96,15 +106,17 @@
     class:embedded
   >
     <div class="popupPanel-title {twoRows && !withoutTitle ? 'row-top' : 'row'}">
-      <Button
-        focusIndex={10000}
-        icon={IconBack}
-        kind={'ghost'}
-        size={'medium'}
-        on:click={() => {
-          history.back()
-        }}
-      />
+      {#if allowBack}
+        <Button
+          focusIndex={10000}
+          icon={IconBack}
+          kind={'ghost'}
+          size={'medium'}
+          on:click={() => {
+            history.back()
+          }}
+        />
+      {/if}
       {#if allowClose}
         <div class="antiHSpacer" />
         <Button
@@ -207,6 +219,7 @@
       </div>
     {/if}
     {#if $$slots.aside && isAside && asideShown}
+      <Separator name={'panel-aside'} index={0} />
       <div class="popupPanel-body__aside" class:float={asideFloat} class:shown={asideShown}>
         {#if moveUtils}
           <div class="buttons-group justify-end xsmall-gap" style:margin={'.5rem 2rem 0'}>

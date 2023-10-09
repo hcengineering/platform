@@ -28,6 +28,7 @@
     "Overdue": "Overdue",
     "DueDate": "Due date",
     "AddDueDate": "Add due date",
+    "SetDueDate": "Set due date",
     "EditDueDate": "Edit due date",
     "SaveDueDate": "Save due date",
     "NeedsToBeCompletedByThisDate": "Needs to be completed by this date",

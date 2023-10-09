@@ -105,6 +105,10 @@
     "Messages": "Messages",
     "Mail": "Mail",
     "Notes": "Notes",
-    "Activity": "Activity"
+    "Activity": "Activity",
+    "ChooseIcon": "Choose icon",
+    "IconColor": "Choose icon color",
+    "IconCategory": "Icon",
+    "EmojiCategory": "Emoji"
   }
 }

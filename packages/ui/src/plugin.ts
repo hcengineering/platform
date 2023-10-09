@@ -53,6 +53,7 @@ export const uis = plugin(uiId, {
     Overdue: '' as IntlString,
     DueDate: '' as IntlString,
     AddDueDate: '' as IntlString,
+    SetDueDate: '' as IntlString,
     EditDueDate: '' as IntlString,
     SaveDueDate: '' as IntlString,
     NeedsToBeCompletedByThisDate: '' as IntlString,

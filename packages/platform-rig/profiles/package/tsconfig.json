@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "commonjs",
+    "declaration": true,
+    "strict": true,
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "types": ["jest"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "declarationMap": true,
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "rootDir": "./src",
+    "outDir": "./lib",
+    "incremental": true
+  }
+}

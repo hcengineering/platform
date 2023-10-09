@@ -75,7 +75,6 @@ import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
 import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
 import Statuses from './components/workflow/Statuses.svelte'
-import StatusSelector from './components/issues/StatusSelector.svelte'
 import {
   getIssueId,
   getIssueTitle,
@@ -143,6 +142,8 @@ import { get } from 'svelte/store'
 
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 export { default as IssueStatusIcon } from './components/issues/IssueStatusIcon.svelte'
+export { default as StatusPresenter } from './components/issues/StatusPresenter.svelte'
+export { default as AssigneeEditor } from './components/issues/AssigneeEditor.svelte'
 
 export { CreateProject, IssuePresenter, TitlePresenter }
 
@@ -206,10 +207,6 @@ export async function queryIssue<D extends Issue> (
 
 async function move (issues: Issue | Issue[]): Promise<void> {
   showPopup(MoveIssues, { selected: issues }, 'top')
-}
-
-async function selectStatus (doc: Issue | Issue[]): Promise<void> {
-  showPopup(StatusSelector, { value: doc }, 'top')
 }
 
 async function editWorkflowStatuses (project: Project | undefined): Promise<void> {
@@ -478,8 +475,7 @@ export default async (): Promise<Resources> => ({
     PriorityFilterValuePresenter,
     StatusFilterValuePresenter,
     ProjectFilterValuePresenter,
-    ComponentFilterValuePresenter,
-    StatusSelector
+    ComponentFilterValuePresenter
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>
@@ -502,7 +498,6 @@ export default async (): Promise<Resources> => ({
     IsProjectJoined: async (project: Project) => !project.private || project.members.includes(getCurrentAccount()._id)
   },
   actionImpl: {
-    SelectStatus: selectStatus,
     Move: move,
     EditWorkflowStatuses: editWorkflowStatuses,
     EditProject: editProject,

@@ -1,5 +1,5 @@
 <!-- 
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { SortingOrder, WithLookup } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
+  import core, { IdMap, Ref, SortingOrder, StatusCategory, WithLookup, toIdMap } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { Issue, IssueStatus } from '@hcengineering/tracker'
   import {
     Icon,
@@ -25,7 +25,6 @@
     closeTooltip,
     getPlatformColorDef,
     navigate,
-    showPopup,
     themeStore,
     tooltip
   } from '@hcengineering/ui'
@@ -33,6 +32,7 @@
   import { getIssueId, issueLinkFragmentProvider } from '../../../issues'
   import tracker from '../../../plugin'
   import IssueStatusIcon from '../IssueStatusIcon.svelte'
+  import { listIssueStatusOrder } from '../../../utils'
 
   export let issue: WithLookup<Issue>
 
@@ -48,54 +48,18 @@
     }
   }
 
+  function openSubIssue (target: Ref<Issue>) {
+    const subIssue = subIssues?.find((p) => p._id === target)
+    if (subIssue !== undefined) {
+      openIssue(subIssue)
+    }
+  }
+
   function openParentIssue () {
     if (parentIssue) {
       closeTooltip()
       ListSelectionProvider.Pop()
       openIssue(parentIssue)
-    }
-  }
-
-  function showSubIssues () {
-    if (subIssues) {
-      closeTooltip()
-      showPopup(
-        SelectPopup,
-        {
-          value: subIssues.map((iss) => {
-            const project = iss.$lookup?.space
-            const status = iss.$lookup?.status as WithLookup<IssueStatus>
-            const icon = status.$lookup?.category?.icon
-            const color = status.color ?? status.$lookup?.category?.color
-
-            return {
-              id: iss._id,
-              icon,
-              isSelected: iss._id === issue._id,
-              ...(project !== undefined ? { text: `${getIssueId(project, iss)} ${iss.title}` } : undefined),
-              ...(color !== undefined ? { iconColor: getPlatformColorDef(color, $themeStore.dark).icon } : undefined)
-            }
-          }),
-          width: 'large'
-        },
-        {
-          getBoundingClientRect: () => {
-            const rect = subIssuesElement.getBoundingClientRect()
-            const offsetX = 5
-            const offsetY = -1
-
-            return DOMRect.fromRect({ width: 1, height: 1, x: rect.right + offsetX, y: rect.top + offsetY })
-          }
-        },
-        (selectedIssue) => {
-          if (selectedIssue !== undefined) {
-            const issue = subIssues?.find((p) => p._id === selectedIssue)
-            if (issue) {
-              openIssue(issue)
-            }
-          }
-        }
-      )
     }
   }
 
@@ -119,6 +83,52 @@
   }
 
   $: parentStatus = parentIssue ? $statusStore.get(parentIssue.status) : undefined
+
+  let categories: IdMap<StatusCategory> = new Map()
+
+  getClient()
+    .findAll(core.class.StatusCategory, {})
+    .then((res) => {
+      categories = toIdMap(res)
+    })
+
+  let sortedSubIssues: WithLookup<Issue>[] = []
+
+  $: {
+    if (subIssues !== undefined) {
+      subIssues.sort(
+        (a, b) =>
+          listIssueStatusOrder.indexOf($statusStore.get(a.status)?.category ?? tracker.issueStatusCategory.Backlog) -
+          listIssueStatusOrder.indexOf($statusStore.get(b.status)?.category ?? tracker.issueStatusCategory.Backlog)
+      )
+      sortedSubIssues = subIssues ?? []
+    }
+  }
+
+  $: subIssueValue = sortedSubIssues.map((iss) => {
+    const project = iss.$lookup?.space
+    const status = iss.$lookup?.status as WithLookup<IssueStatus>
+    const icon = status.$lookup?.category?.icon
+    const color = status.color ?? status.$lookup?.category?.color
+
+    const c = $statusStore.get(iss.status)?.category
+    const category = c !== undefined ? categories.get(c) : undefined
+
+    return {
+      id: iss._id,
+      icon,
+      isSelected: iss._id === issue._id,
+      ...(project !== undefined ? { text: `${getIssueId(project, iss)} ${iss.title}` } : undefined),
+      ...(color !== undefined ? { iconColor: getPlatformColorDef(color, $themeStore.dark).icon } : undefined),
+      category:
+        category !== undefined
+          ? {
+              label: category.label,
+              icon: category.icon
+            }
+          : undefined
+    }
+  })
 </script>
 
 {#if parentIssue}
@@ -152,8 +162,15 @@
         <div
           bind:this={subIssuesElement}
           class="flex-center sub-issues cursor-pointer"
-          use:tooltip={{ label: tracker.string.OpenSubIssues, direction: 'bottom' }}
-          on:click|preventDefault={showSubIssues}
+          use:tooltip={{
+            component: SelectPopup,
+            props: {
+              value: subIssueValue,
+              onSelect: openSubIssue,
+              showShadow: false,
+              width: 'large'
+            }
+          }}
         >
           <span class="overflow-label">{subIssues?.length}</span>
           <div class="ml-2">

@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
-import calendar, { calendarId } from '@hcengineering/calendar'
+import calendar from '@hcengineering/calendar'
+import { loadMetadata } from '@hcengineering/platform'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(calendar.icon, {
@@ -26,7 +26,14 @@ loadMetadata(calendar.icon, {
   Description: `${icons}#description`,
   Participants: `${icons}#participants`,
   Repeat: `${icons}#repeat`,
-  Globe: `${icons}#globe`
+  Globe: `${icons}#globe`,
+  Private: `${icons}#private`,
+  Public: `${icons}#public`,
+  Hidden: `${icons}#eyeCrossed`
 })
 
-addStringsLoader(calendarId, async (lang: string) => await import(`../lang/${lang}.json`))
+const permission = require('../assets/permission.png') as string // eslint-disable-line
+
+loadMetadata(calendar.image, {
+  Permissions: permission
+})

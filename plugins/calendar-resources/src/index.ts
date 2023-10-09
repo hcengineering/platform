@@ -39,6 +39,9 @@ import EventTimeEditor from './components/EventTimeEditor.svelte'
 import EventTimeExtraButton from './components/EventTimeExtraButton.svelte'
 import IntegrationConfigure from './components/IntegrationConfigure.svelte'
 import EventReminders from './components/EventReminders.svelte'
+import VisibilityEditor from './components/VisibilityEditor.svelte'
+import CalendarSelector from './components/CalendarSelector.svelte'
+import ConnectApp from './components/ConnectApp.svelte'
 import calendar from './plugin'
 import contact from '@hcengineering/contact'
 import { deleteObjects } from '@hcengineering/view-resources'
@@ -50,8 +53,20 @@ export {
   EventParticipants,
   EventTimeEditor,
   EventTimeExtraButton,
-  EventReminders
+  EventReminders,
+  VisibilityEditor,
+  CalendarSelector
 }
+
+export type {
+  CalendarElement,
+  CalendarElementRect,
+  CalendarColumn,
+  CalendarGrid,
+  CalendarADGrid,
+  CalendarADRows,
+  CalendarCell
+} from './types'
 
 export * from './utils'
 
@@ -169,7 +184,8 @@ export default async (): Promise<Resources> => ({
     IntegrationConnect,
     CalendarIntegrationIcon,
     CalendarEventPresenter,
-    IntegrationConfigure
+    IntegrationConfigure,
+    ConnectApp
   },
   activity: {
     ReminderViewlet
@@ -179,11 +195,11 @@ export default async (): Promise<Resources> => ({
     DeleteRecEvent: deleteRecEvent
   },
   handler: {
-    DisconnectHandler: async () => {
+    DisconnectHandler: async (value: string) => {
       const url = getMetadata(calendar.metadata.CalendarServiceURL)
       const token = getMetadata(presentation.metadata.Token)
       if (url === undefined || token === undefined) return
-      await fetch(concatLink(url, '/signout'), {
+      await fetch(concatLink(url, `/signout?value=${value}`), {
         method: 'GET',
         headers: {
           Authorization: 'Bearer ' + token,

@@ -1,0 +1,25 @@
+{
+  "incrementalBuildIgnoredGlobs": [
+    "lib/**", 
+    "rush-logs/**",
+    "coverage/**",
+    ".rush/**",
+    ".build/**"
+  ],
+  "disableBuildCacheForProject": false,
+
+  "operationSettings": [
+    {
+      "operationName": "build",
+      "outputFolderNames": ["dist", ".build"]
+    },
+    {
+      "operationName": "test",
+      "outputFolderNames": ["coverage"]
+    },
+    {
+      "operationName": "build:watch",
+      "outputFolderNames": ["dist", ".build"]
+    }
+  ]
+}

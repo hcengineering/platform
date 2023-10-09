@@ -4,7 +4,6 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./lib",
-    "lib": ["esnext", "dom"],
-    "esModuleInterop": true
+    "tsBuildInfoFile": ".build/build.tsbuildinfo"
   }
 }

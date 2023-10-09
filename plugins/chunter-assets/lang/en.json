@@ -76,6 +76,8 @@
     "LastMessage": "Last message",
     "You": "You",
     "YouHaveJoinedTheConversation": "You have joined the conversation",
-    "NoMessages": "There are no messages yet"
+    "NoMessages": "There are no messages yet",
+    "DirectNotificationTitle": "{senderName}",
+    "DirectNotificationBody": "{message}"
   }
 }

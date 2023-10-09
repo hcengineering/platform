@@ -267,7 +267,8 @@ export async function selectWorkspace (
   db: Db,
   productId: string,
   token: string,
-  workspace: string
+  workspace: string,
+  allowAdmin: boolean = true
 ): Promise<WorkspaceLoginInfo> {
   const { email } = decodeToken(token)
   const accountInfo = await getAccount(db, email)
@@ -275,7 +276,7 @@ export async function selectWorkspace (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
 
-  if (accountInfo.admin === true) {
+  if (accountInfo.admin === true && allowAdmin) {
     return {
       endpoint: getEndpoint(),
       email,
@@ -999,7 +1000,7 @@ export async function checkJoin (
   const { email } = decodeToken(token)
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(invite, email)
-  return await selectWorkspace(db, productId, token, workspace.name)
+  return await selectWorkspace(db, productId, token, workspace.name, false)
 }
 
 /**

@@ -16,6 +16,7 @@
   import { Icon, areDatesEqual, IconArrowRight } from '@hcengineering/ui'
   import calendar from '../plugin'
   import DateEditor from './DateEditor.svelte'
+  import { createEventDispatcher } from 'svelte'
 
   export let startDate: number
   export let dueDate: number
@@ -26,10 +27,12 @@
 
   let diff = dueDate - startDate
   const allDayDuration = 24 * 60 * 60 * 1000 - 1
+  const dispatch = createEventDispatcher()
 
   function dateChange () {
     startDate = allDay ? new Date(startDate).setHours(0, 0, 0, 0) : startDate
     dueDate = startDate + (allDay ? allDayDuration : diff)
+    dispatch('change', { startDate, dueDate })
   }
 
   function dueChange () {
@@ -40,6 +43,7 @@
       dueDate = startDate + (allDay ? allDayDuration : diff)
     }
     diff = dueDate - startDate
+    dispatch('dueChange', { dueDate })
   }
 </script>
 

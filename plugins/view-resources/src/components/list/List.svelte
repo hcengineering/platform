@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, FindOptions, Ref, Space, RateLimitter } from '@hcengineering/core'
   import { IntlString, getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
@@ -41,13 +41,16 @@
   export let selection: number | undefined = undefined
   export let compactMode: boolean = false
 
-  export let documents: Doc[] | undefined = undefined
+  const limiter = new RateLimitter(() => ({ rate: 10 }))
 
   let docs: Doc[] = []
+  let fastDocs: Doc[] = []
+  let slowDocs: Doc[] = []
 
   $: orderBy = viewOptions.orderBy
 
   const docsQuery = createQuery()
+  const docsQuerySlow = createQuery()
 
   $: lookup = buildConfigLookup(client.getHierarchy(), _class, config, options?.lookup)
   $: resultOptions = { ...options, lookup, ...(orderBy !== undefined ? { sort: { [orderBy[0]]: orderBy[1] } } : {}) }
@@ -59,27 +62,63 @@
 
   $: queryNoLookup = noLookup(resultQuery)
 
-  $: if (documents === undefined) {
-    docsQuery.query(
-      _class,
-      queryNoLookup,
-      (res) => {
-        docs = res
-      },
-      {
-        ...resultOptions,
-        projection: {
-          ...resultOptions.projection,
-          _id: 1,
-          _class: 1,
-          ...getProjection(viewOptions.groupBy, queryNoLookup)
-        }
-      }
-    )
-  } else {
-    docsQuery.unsubscribe()
-    docs = documents
+  let fastQueryIds: Ref<Doc>[] = []
+
+  let categoryQueryOptions: Partial<FindOptions<Doc>>
+  $: categoryQueryOptions = {
+    ...resultOptions,
+    projection: {
+      ...resultOptions.projection,
+      _id: 1,
+      _class: 1,
+      ...getProjection(viewOptions.groupBy, queryNoLookup)
+    }
   }
+  $: docsQuery.query(
+    _class,
+    queryNoLookup,
+    (res) => {
+      fastDocs = res
+      fastQueryIds = res.map((it) => it._id)
+    },
+    { ...categoryQueryOptions, limit: 1000 }
+  )
+  $: {
+    let doQuery = false
+    let _idQuery: DocumentQuery<Doc>['_id'] = { $nin: fastQueryIds }
+
+    if (fastQueryIds.length > 0) {
+      doQuery = true
+
+      if (typeof resultQuery._id === 'object' && resultQuery._id?.$in !== undefined) {
+        const inIds = new Set(resultQuery._id.$in)
+        fastQueryIds.forEach((it) => inIds.delete(it))
+        _idQuery = { $in: Array.from(inIds) }
+        if (inIds.size === 0) {
+          doQuery = false
+        }
+      } else if (typeof resultQuery._id === 'object' && resultQuery._id?.$nin !== undefined) {
+        const ninIds = new Set(resultQuery._id.$in)
+        fastQueryIds.forEach((it) => ninIds.add(it))
+        _idQuery = { $nin: Array.from(ninIds) }
+      }
+    }
+
+    if (doQuery) {
+      docsQuerySlow.query(
+        _class,
+        { ...queryNoLookup, _id: _idQuery },
+        (res) => {
+          slowDocs = res
+        },
+        categoryQueryOptions
+      )
+    } else {
+      docsQuerySlow.unsubscribe()
+    }
+  }
+
+  $: docs = [...fastDocs, ...slowDocs]
 
   function getProjection (fields: string[], query: DocumentQuery<Doc>): Record<string, number> {
     const res: Record<string, number> = {}
@@ -124,12 +163,17 @@
     viewOptionsStore: ViewOptions
   ): Promise<DocumentQuery<Doc>> {
     if (viewOptions === undefined) return query
-    let result = hierarchy.clone(query)
+    let result: DocumentQuery<Doc> = hierarchy.clone(query)
     for (const viewOption of viewOptions) {
       if (viewOption.actionTarget !== 'query') continue
       const queryOption = viewOption as ViewQueryOption
       const f = await getResource(queryOption.action)
-      result = f(viewOptionsStore[queryOption.key] ?? queryOption.defaultValue, query)
+      const resultP = f(viewOptionsStore[queryOption.key] ?? queryOption.defaultValue, result)
+      if (resultP instanceof Promise) {
+        result = await resultP
+      } else {
+        result = resultP
+      }
     }
     return result
   }
@@ -170,6 +214,7 @@
     {viewOptions}
     {viewOptionsConfig}
     {selectedObjectIds}
+    {limiter}
     level={0}
     groupPersistKey={''}
     {createItemDialog}

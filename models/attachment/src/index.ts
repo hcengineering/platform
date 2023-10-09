@@ -72,7 +72,7 @@ export class TPhoto extends TAttachment implements Photo {}
 @Model(attachment.class.SavedAttachments, preference.class.Preference)
 export class TSavedAttachments extends TPreference implements SavedAttachments {
   @Prop(TypeRef(attachment.class.Attachment), attachment.string.SavedAttachments)
-    attachedTo!: Ref<Attachment>
+  declare attachedTo: Ref<Attachment>
 }
 
 export function createModel (builder: Builder): void {

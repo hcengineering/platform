@@ -14,25 +14,32 @@
 // limitations under the License.
 //
 
-import { addStringsLoader } from '@hcengineering/platform'
 import { textEditorId } from './plugin'
 
 export * from '@hcengineering/presentation/src/types'
+export { default as Collaboration } from './components/Collaboration.svelte'
+export { default as CollaborationDiffViewer } from './components/CollaborationDiffViewer.svelte'
+export { default as CollaboratorEditor } from './components/CollaboratorEditor.svelte'
+export { default as FullDescriptionBox } from './components/FullDescriptionBox.svelte'
 export { default as ReferenceInput } from './components/ReferenceInput.svelte'
-export { default as StyledTextBox } from './components/StyledTextBox.svelte'
+export { default as StyleButton } from './components/StyleButton.svelte'
 export { default as StyledTextArea } from './components/StyledTextArea.svelte'
+export { default as StyledTextBox } from './components/StyledTextBox.svelte'
 export { default as StyledTextEditor } from './components/StyledTextEditor.svelte'
 export { default as TextEditor } from './components/TextEditor.svelte'
-export { default as FullDescriptionBox } from './components/FullDescriptionBox.svelte'
-export { default as CollaboratorEditor } from './components/CollaboratorEditor.svelte'
-export { default as CollaborationDiffViewer } from './components/CollaborationDiffViewer.svelte'
 export { default } from './plugin'
 export * from './types'
-export { default as Collaboration } from './components/Collaboration.svelte'
-export { default as StyleButton } from './components/StyleButton.svelte'
 
-addStringsLoader(textEditorId, async (lang: string) => {
-  return await import(`../lang/${lang}.json`)
-})
+export {
+  IsEmptyContentExtension,
+  IsEmptyContentOptions,
+  IsEmptyContentStorage
+} from './components/extension/isEmptyContent'
+export {
+  NodeHighlightExtension,
+  NodeHighlightExtensionOptions,
+  NodeHighlightType
+} from './components/extension/nodeHighlight'
+export { NodeUuidCommands, NodeUuidExtension, NodeUuidOptions, NodeUuidStorage } from './components/extension/nodeUuid'
 
 export { textEditorId }

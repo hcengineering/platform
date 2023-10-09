@@ -4,8 +4,6 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./lib",
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "types": ["node"]
+    "tsBuildInfoFile": ".build/build.tsbuildinfo"
   }
 }

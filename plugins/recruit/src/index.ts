@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Event } from '@hcengineering/calendar'
+import { Calendar, Event } from '@hcengineering/calendar'
 import type { Channel, Organization, Person } from '@hcengineering/contact'
 import type {
   AttachedData,
@@ -197,7 +197,7 @@ const recruit = plugin(recruitId, {
   },
   space: {
     VacancyTemplates: '' as Ref<KanbanTemplateSpace>,
-    Reviews: '' as Ref<Space>
+    Reviews: '' as Ref<Calendar>
   }
 })
 

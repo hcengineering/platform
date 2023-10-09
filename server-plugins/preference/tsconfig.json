@@ -4,6 +4,6 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./lib",
-    "esModuleInterop": true
+    "tsBuildInfoFile": ".build/build.tsbuildinfo"
   }
 }

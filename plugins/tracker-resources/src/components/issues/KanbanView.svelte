@@ -29,7 +29,7 @@
   import { Item, Kanban } from '@hcengineering/kanban'
   import notification from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
-  import { createQuery, getClient, ActionContext } from '@hcengineering/presentation'
+  import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import { Issue, IssuesGrouping, IssuesOrdering, Project } from '@hcengineering/tracker'
   import {
@@ -41,7 +41,6 @@
     IconAdd,
     Label,
     Loading,
-    showPanel,
     showPopup,
     themeStore
   } from '@hcengineering/ui'
@@ -65,6 +64,7 @@
     ListSelectionProvider,
     Menu,
     noCategory,
+    openDoc,
     SelectDirection,
     selectionStore,
     setGroupByValues
@@ -348,7 +348,7 @@
         <div
           class="tracker-card"
           on:click={() => {
-            showPanel(tracker.component.EditIssue, object._id, object._class, 'content')
+            openDoc(hierarchy, issue)
           }}
         >
           <div class="card-header flex-between">

@@ -109,6 +109,7 @@ export class TNotificationType extends TDoc implements NotificationType {
   objectClass!: Ref<Class<Doc>>
   hidden!: boolean
   templates?: NotificationTemplate
+  onlyOwn?: boolean
 }
 
 @Model(notification.class.NotificationGroup, core.class.Doc, DOMAIN_MODEL)
