@@ -32,6 +32,10 @@
     hiddenAppsIds = res.map((r) => r.attachedTo)
     loaded = true
   })
+
+  $: filteredApps = apps.filter((it) => !hiddenAppsIds.includes(it._id))
+  $: topApps = filteredApps.filter((it) => it.position === 'top')
+  $: bottomdApps = filteredApps.filter((it) => it.position !== 'top')
 </script>
 
 <div class="flex-{direction === 'horizontal' ? 'row-center' : 'col-center'} clear-mins apps-{direction} relative">
@@ -44,7 +48,13 @@
       contentDirection={direction}
       buttons={'union'}
     >
-      {#each apps.filter((it) => !hiddenAppsIds.includes(it._id)) as app}
+      {#each topApps as app}
+        <NavLink app={app.alias} shrink={0}>
+          <AppItem selected={app._id === active} icon={app.icon} label={app.label} />
+        </NavLink>
+      {/each}
+      <div class="divider" />
+      {#each bottomdApps as app}
         <NavLink app={app.alias} shrink={0}>
           <AppItem selected={app._id === active} icon={app.icon} label={app.label} />
         </NavLink>
@@ -60,11 +70,27 @@
     margin: 0 0.5rem 0 0.25rem;
     height: var(--app-panel-width);
     min-height: 4rem;
+
+    .divider {
+      margin-left: 0.5rem;
+      width: 1px;
+      height: 2.25rem;
+    }
   }
   .apps-vertical {
-    margin: 0.5rem 0;
+    margin-bottom: 0.5rem;
     width: var(--app-panel-width);
     min-width: 4rem;
+
+    .divider {
+      margin-top: 1rem;
+      width: 2.25rem;
+      height: 1px;
+    }
+  }
+  .divider {
+    flex-shrink: 0;
+    background-color: var(--theme-navpanel-icons-divider);
   }
   .apps-space {
     &-vertical {
