@@ -141,7 +141,6 @@
 
   export function takeSnapshot (snapshotId: string) {
     provider.copyContent(documentId, snapshotId)
-
   }
 
   export function unregisterPlugin (nameOrPluginKey: string | PluginKey) {
@@ -159,7 +158,6 @@
 
     editor.registerPlugin(plugin)
   }
-
 
   let needFocus = false
 
