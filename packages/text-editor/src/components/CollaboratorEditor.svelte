@@ -36,9 +36,9 @@
   import { defaultEditorAttributes } from './editor/editorProps'
   import { completionConfig, defaultExtensions } from './extensions'
   import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
+  import { NodeUuidExtension } from './extension/nodeUuid'
   import StyleButton from './StyleButton.svelte'
   import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
-  import { NodeUuidExtension } from './extension/nodeUuid'
 
   export let documentId: string
   export let readonly = false

@@ -1,5 +1,5 @@
 import { Extension, Range, getMarkRange, mergeAttributes } from '@tiptap/core'
-import { NodeUuidExtension, NodeUuidOptions, NodeUuidStorage } from './nodeUuid'
+import { NodeUuidExtension, NodeUuidOptions, NodeUuidStorage, findNodeUuidMark } from './nodeUuid'
 import { Plugin, PluginKey, TextSelection } from 'prosemirror-state'
 import { Decoration, DecorationSet } from 'prosemirror-view'
 
@@ -89,9 +89,7 @@ export const NodeHighlightExtension: Extension<NodeHighlightExtensionOptions, No
               const decorations: Decoration[] = []
               const { doc, schema } = state
               doc.descendants((node, pos) => {
-                const nodeUuidMark = node.marks.find(
-                  (mark) => mark.type.name === NodeUuidExtension.name && mark.attrs[NodeUuidExtension.name]
-                )
+                const nodeUuidMark = findNodeUuidMark(node)
 
                 if (nodeUuidMark !== null && nodeUuidMark !== undefined) {
                   const nodeUuid = nodeUuidMark.attrs[NodeUuidExtension.name]
@@ -102,7 +100,7 @@ export const NodeHighlightExtension: Extension<NodeHighlightExtensionOptions, No
 
                   // the first pos does not contain the mark, so we need to add 1 (pos + 1) to get the correct range
                   const range = getMarkRange(doc.resolve(pos + 1), schema.marks[NodeUuidExtension.name])
-                  if (range == null) {
+                  if (!isRange(range)) {
                     return
                   }
 
