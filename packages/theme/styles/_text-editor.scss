@@ -9,7 +9,7 @@
 
 .text-editor-view {
   overflow-y: auto;
-  color: var(--theme-caption-color);
+  color: var(--theme-text-primary-color);
 
   p:not(:last-child) {
     margin-block-end: 1em;
@@ -23,7 +23,7 @@
   p.is-editor-empty:first-child::before {
     content: attr(data-placeholder);
     float: left;
-    color: var(--theme-halfcontent-color);
+    color: var(--theme-text-placeholder-color);
     pointer-events: none;
     height: 0;
   }

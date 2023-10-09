@@ -17,14 +17,12 @@
   import { getClient } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,
+    Button,
     EmojiPopup,
-    Icon,
     IconEmoji,
-    Spinner,
     handler,
     registerFocus,
     showPopup,
-    tooltip,
     deviceOptionsStore as deviceInfo,
     checkAdaptiveMatching
   } from '@hcengineering/ui'
@@ -40,18 +38,20 @@
   import RIMention from './icons/RIMention.svelte'
   import Send from './icons/Send.svelte'
 
-  const dispatch = createEventDispatcher()
   export let content: string = ''
+  export let showHeader = false
+  export let showActions = true
   export let showSend = true
   export let iconSend: Asset | AnySvelteComponent | undefined = undefined
   export let labelSend: IntlString | undefined = undefined
   export let haveAttachment = false
-  export let withoutTopBorder = false
   export let placeholder: IntlString | undefined = undefined
   export let extraActions: RefAction[] | undefined = undefined
   export let loading: boolean = false
 
   const client = getClient()
+  const dispatch = createEventDispatcher()
+  const buttonSize = 'medium'
 
   let textEditor: TextEditor
 
@@ -156,195 +156,131 @@
   })
 </script>
 
-<div class="ref-container">
-  <div class="textInput" class:withoutTopBorder>
-    <div class="inputMsg">
-      <TextEditor
-        bind:content
-        bind:this={textEditor}
-        on:content={(ev) => {
-          if (!isEmpty || haveAttachment) {
-            dispatch('message', ev.detail)
-            content = ''
-            textEditor.clear()
-          }
-        }}
-        on:blur={() => {
-          focused = false
-          dispatch('blur', focused)
-        }}
-        on:focus={() => {
-          focused = true
-          updateFocus()
-          dispatch('focus', focused)
-        }}
-        extensions={[
-          completionPlugin,
-          EmojiExtension.configure(),
-          IsEmptyContentExtension.configure({ onChange: (value) => (isEmpty = value) })
-        ]}
-        on:update
-        placeholder={placeholder ?? textEditorPlugin.string.EditorPlaceholder}
-        textFormatCategories={[
-          TextFormatCategory.TextDecoration,
-          TextFormatCategory.Link,
-          TextFormatCategory.List,
-          TextFormatCategory.Quote,
-          TextFormatCategory.Code
-        ]}
-      />
+<div class="ref-container" class:focused>
+  {#if showHeader && $$slots.header}
+    <div class="header">
+      <slot name="header" />
     </div>
-    {#if showSend}
-      <button
-        class="sendButton"
-        on:click={submit}
-        use:tooltip={{ label: labelSend ?? textEditorPlugin.string.Send }}
-        disabled={(isEmpty && !haveAttachment) || loading}
-      >
-        <div class="icon">
-          {#if loading}
-            <div class="pointer-events-none spinner">
-              <Spinner size={'medium'} />
-            </div>
-          {:else}
-            <Icon icon={iconSend ?? Send} size={'medium'} />
-          {/if}
-        </div>
-      </button>
-    {/if}
+  {/if}
+  <div class="textInput">
+    <TextEditor
+      bind:content
+      bind:this={textEditor}
+      on:content={(ev) => {
+        if (!isEmpty || haveAttachment) {
+          dispatch('message', ev.detail)
+          content = ''
+          textEditor.clear()
+        }
+      }}
+      on:blur={() => {
+        focused = false
+        dispatch('blur', focused)
+      }}
+      on:focus={() => {
+        focused = true
+        updateFocus()
+        dispatch('focus', focused)
+      }}
+      extensions={[
+        completionPlugin,
+        EmojiExtension.configure(),
+        IsEmptyContentExtension.configure({ onChange: (value) => (isEmpty = value) })
+      ]}
+      on:update
+      placeholder={placeholder ?? textEditorPlugin.string.EditorPlaceholder}
+      textFormatCategories={[
+        TextFormatCategory.TextDecoration,
+        TextFormatCategory.Link,
+        TextFormatCategory.List,
+        TextFormatCategory.Quote,
+        TextFormatCategory.Code
+      ]}
+    />
   </div>
-  <div class="flex-between clear-mins" style:margin={'.75rem .75rem 0'}>
-    <div class="buttons-group medium-gap">
-      {#each actions as a}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div
-          class="icon-button"
-          use:tooltip={{ label: a.label }}
-          on:click={handler(a, (a, evt) => handleAction(a, evt))}
-        >
-          <Icon icon={a.icon} size={'medium'} />
+  {#if showActions || showSend}
+    <div class="buttons-panel flex-between clear-mins">
+      {#if showActions}
+        <div class="buttons-group xsmall-gap">
+          {#each actions as a}
+            <Button
+              icon={a.icon}
+              iconProps={{ size: buttonSize }}
+              kind="ghost"
+              showTooltip={{ label: a.label }}
+              size={buttonSize}
+              on:click={handler(a, (a, evt) => handleAction(a, evt))}
+            />
+            {#if a.order % 10 === 1}
+              <div class="buttons-divider" />
+            {/if}
+          {/each}
         </div>
-        {#if a.order % 10 === 1}
-          <div class="buttons-divider" />
-        {/if}
-      {/each}
-    </div>
-    {#if extraActions && extraActions.length > 0}
-      <div class="buttons-group {shrinkButtons ? 'medium-gap' : 'large-gap'}">
-        {#each extraActions as a}
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <div
-            class="icon-button"
-            class:disabled={a.disabled}
-            use:tooltip={{ label: a.label }}
-            on:click={handler(a, (a, evt) => {
-              if (!a.disabled) {
-                handleAction(a, evt)
-              }
-            })}
-          >
-            <Icon icon={a.icon} size={'medium'} fill={a.fill} />
+        {#if extraActions && extraActions.length > 0}
+          <div class="buttons-group {shrinkButtons ? 'xsmall-gap' : 'small-gap'}">
+            {#each extraActions as a}
+              <Button
+                disabled={a.disabled}
+                icon={a.icon}
+                iconProps={{ size: buttonSize }}
+                kind="ghost"
+                showTooltip={{ label: a.label }}
+                size={buttonSize}
+                on:click={handler(a, (a, evt) => {
+                  if (!a.disabled) {
+                    handleAction(a, evt)
+                  }
+                })}
+              />
+            {/each}
           </div>
-        {/each}
-      </div>
-    {/if}
-  </div>
+        {/if}
+      {/if}
+
+      {#if showSend}
+        <Button
+          {loading}
+          disabled={(isEmpty && !haveAttachment) || loading}
+          icon={iconSend ?? Send}
+          iconProps={{ size: buttonSize }}
+          kind="ghost"
+          size={buttonSize}
+          showTooltip={{
+            label: labelSend ?? textEditorPlugin.string.Send
+          }}
+          on:click={submit}
+        />
+      {/if}
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">
-  .icon-button {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 1.25rem;
-    height: 1.25rem;
-    color: var(--theme-darker-color);
-    cursor: pointer;
-
-    &:hover {
-      color: var(--theme-content-color);
-    }
-    &.disabled {
-      color: var(--theme-trans-color);
-      &:hover {
-        color: var(--theme-trans-color);
-        cursor: not-allowed;
-      }
-    }
-  }
   .ref-container {
     display: flex;
     flex-direction: column;
     min-height: 4.5rem;
+    border-width: 0.0625rem;
+    border-style: solid;
+    border-color: var(--theme-refinput-border);
+    border-radius: 0.375rem;
 
-    .textInput {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      min-height: 2.75rem;
-      padding: 0.75rem 1rem;
-      background-color: var(--theme-refinput-color);
-      border: 1px solid var(--theme-refinput-border);
-      border-radius: 0.25rem;
-
-      &.withoutTopBorder {
-        border-top-left-radius: 0;
-        border-top-right-radius: 0;
-      }
-
-      .inputMsg {
-        display: flex;
-        align-self: center;
-        align-items: center;
-        width: calc(100% - 1.75rem);
-        height: 100%;
-        color: var(--theme-content-color);
-        background-color: transparent;
-        border: none;
-        outline: none;
-      }
-      .sendButton {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-shrink: 0;
-        margin-left: 0.5rem;
-        padding: 0;
-        width: 1.25rem;
-        height: 1.25rem;
-        background-color: transparent;
-        border: 1px solid transparent;
-        border-radius: 0.25rem;
-        outline: none;
-        cursor: pointer;
-
-        .icon {
-          width: 1.25rem;
-          height: 1.25rem;
-          color: var(--theme-content-color);
-          cursor: pointer;
-
-          &:hover {
-            color: var(--theme-caption-color);
-          }
-        }
-        &:focus {
-          box-shadow: 0 0 0 2px var(--accented-button-outline);
-
-          & > .icon {
-            color: var(--theme-caption-color);
-          }
-        }
-
-        &:disabled {
-          pointer-events: none;
-
-          .icon {
-            color: var(--theme-trans-color);
-            cursor: not-allowed;
-          }
-        }
-      }
+    &.focused {
+      border-color: var(--primary-edit-border-color);
     }
+  }
+
+  .header {
+    padding: 0.375rem 0.5rem;
+    border-bottom: 0.0625rem solid var(--theme-refinput-border);
+  }
+
+  .textInput {
+    min-height: 2.75rem;
+    padding: 0.375rem 0.5rem;
+  }
+
+  .buttons-panel {
+    padding: 0.375rem 0.5rem;
   }
 </style>

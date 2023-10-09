@@ -15,15 +15,23 @@
 <script lang="ts">
   import { Asset, getResource, IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { AnySvelteComponent, EmojiPopup, IconEmoji, IconSize, Scroller, showPopup } from '@hcengineering/ui'
+  import {
+    AnySvelteComponent,
+    ButtonSize,
+    EmojiPopup,
+    IconEmoji,
+    IconSize,
+    Scroller,
+    showPopup
+  } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import textEditorPlugin from '../plugin'
   import { RefInputAction, RefInputActionItem, TextEditorHandler, TextFormatCategory } from '../types'
   import Attach from './icons/Attach.svelte'
   import { AnyExtension, mergeAttributes } from '@tiptap/core'
-  import StyleButton from './StyleButton.svelte'
   import TextEditor from './TextEditor.svelte'
   import { Node as ProseMirrorNode } from '@tiptap/pm/model'
+  import Button from '@hcengineering/ui/src/components/Button.svelte'
 
   const dispatch = createEventDispatcher()
 
@@ -31,7 +39,7 @@
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let showButtons: boolean = true
   export let hideAttachments: boolean = false
-  export let buttonSize: IconSize = 'medium'
+  export let buttonSize: ButtonSize = 'medium'
   export let formatButtonSize: IconSize = 'small'
   export let isScrollable: boolean = true
   export let focusable: boolean = false
@@ -173,7 +181,7 @@
   const buttonsGap = 'small-gap'
 
   $: buttonsHeight =
-    buttonSize === 'large' || buttonSize === 'x-large' || buttonSize === 'full'
+    buttonSize === 'large' || buttonSize === 'x-large'
       ? 'h-6 max-h-6'
       : buttonSize === 'medium'
         ? 'h-5 max-h-5'
@@ -191,10 +199,11 @@
 <div
   class="ref-container clear-mins"
   class:h-full={full}
+  class:focusable
   tabindex="-1"
   on:click|preventDefault|stopPropagation={() => (needFocus = true)}
 >
-  <div class="textInput" class:focusable>
+  <div class="textInput">
     <div
       bind:clientHeight={contentHeight}
       class="inputMsg"
@@ -247,7 +256,14 @@
     <div class="flex-between">
       <div class="buttons-group {buttonsGap} mt-3">
         {#each actions.filter((it) => it.hidden !== true) as a}
-          <StyleButton icon={a.icon} size={buttonSize} on:click={(evt) => handleAction(a, evt)} />
+          <Button
+            icon={a.icon}
+            iconProps={{ size: buttonSize }}
+            kind="ghost"
+            showTooltip={{ label: a.label }}
+            size={buttonSize}
+            on:click={(evt) => handleAction(a, evt)}
+          />
           {#if a.order % 10 === 1}
             <div class="buttons-divider {buttonsHeight}" />
           {/if}
@@ -300,16 +316,18 @@
           }
         }
       }
+    }
 
-      &.focusable {
-        margin: -0.25rem -0.5rem;
-        padding: 0.25rem 0.5rem;
-        border: 1px solid transparent;
-        border-radius: 0.25rem;
+    &.focusable {
+      margin: -0.25rem -0.5rem;
+      padding: 0.25rem 0.5rem;
+      border-width: 0.0625rem;
+      border-style: solid;
+      border-color: transparent;
+      border-radius: 0.375rem;
 
-        &:focus-within {
-          border-color: var(--primary-edit-border-color);
-        }
+      &:focus-within {
+        border-color: var(--primary-edit-border-color);
       }
     }
   }
