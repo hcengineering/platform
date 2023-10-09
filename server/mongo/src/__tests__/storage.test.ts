@@ -69,7 +69,7 @@ async function createNullFullTextAdapter (): Promise<FullTextAdapter> {
 
 async function createNullContentTextAdapter (): Promise<ContentTextAdapter> {
   return {
-    async fetch (name: string, type: string, doc) {
+    async content (name: string, type: string, doc) {
       return ''
     },
     metrics (): MeasureContext {
@@ -150,8 +150,7 @@ describe('mongo operations', () => {
         stages: () => []
       },
       contentAdapter: {
-        factory: createNullContentTextAdapter,
-        url: ''
+        factory: createNullContentTextAdapter
       },
       workspace: getWorkspaceId(dbId, ''),
       storageFactory: () => createNullStorageFactory()

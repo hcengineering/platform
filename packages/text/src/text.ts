@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2022 Hardcore Engineering Inc.
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,8 +13,11 @@
 // limitations under the License.
 //
 
-export * from './server'
-export * from './apm'
-export * from './minio'
-export * from './backup'
-export * from './metrics'
+import { Node as ProseMirrorNode } from '@tiptap/pm/model'
+
+/**
+ * @public
+ */
+export function getText (node: ProseMirrorNode): string {
+  return node.textBetween(0, node.content.size, '\n', '')
+}

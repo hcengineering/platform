@@ -31,7 +31,7 @@ async function createNullFullTextAdapter (): Promise<FullTextAdapter> {
 }
 async function createNullContentTextAdapter (): Promise<ContentTextAdapter> {
   return {
-    async fetch (name: string, type: string, doc) {
+    async content (name: string, type: string, doc) {
       return ''
     },
     metrics: () => new MeasureMetricsContext('', {})
@@ -67,7 +67,6 @@ export async function start (port: number, host?: string): Promise<void> {
         },
         metrics: new MeasureMetricsContext('', {}),
         contentAdapter: {
-          url: '',
           factory: createNullContentTextAdapter
         },
         workspace: getWorkspaceId('')

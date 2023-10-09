@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2022 Hardcore Engineering Inc.
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,8 +13,23 @@
 // limitations under the License.
 //
 
-export * from './server'
-export * from './apm'
-export * from './minio'
-export * from './backup'
-export * from './metrics'
+import type { Metadata, Plugin, Resource } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
+import { ContentAdapterCreator } from '@hcengineering/server-core'
+
+/**
+ * @public
+ */
+export const serverRekoniId = 'server-rekoni' as Plugin
+
+/**
+ * @public
+ */
+export default plugin(serverRekoniId, {
+  function: {
+    RekoniContentAdapterFactory: '' as Resource<ContentAdapterCreator>
+  },
+  metadata: {
+    RekoniUrl: '' as Metadata<string>
+  }
+})

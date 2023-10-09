@@ -1,5 +1,5 @@
 //
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -245,14 +245,6 @@ export class DummyFullTextAdapter implements FullTextAdapter {
 /**
  * @public
  */
-export interface ContentTextAdapter {
-  fetch: (name: string, type: string, doc: Readable | Buffer | string) => Promise<string>
-  metrics: () => MeasureContext
-}
-
-/**
- * @public
- */
 export type FullTextAdapterFactory = (
   url: string,
   workspace: WorkspaceId,
@@ -262,11 +254,37 @@ export type FullTextAdapterFactory = (
 /**
  * @public
  */
-export type ContentAdapterFactory = (
-  url: string,
+export type ContentAdapter = (name: string, type: string, doc: Readable | Buffer | string) => Promise<string>
+
+/**
+ * @public
+ */
+export type ContentAdapterCreator = (workspace: WorkspaceId, context: MeasureContext) => Promise<ContentAdapter>
+
+/**
+ * @public
+ */
+export interface ContentAdapterFactory extends Doc {
+  factory: Resource<ContentAdapterCreator>
+  contentType: string
+}
+
+/**
+ * @public
+ */
+export type ContentTextAdapterFactory = (
+  model: Tx[],
   workspace: WorkspaceId,
   context: MeasureContext
 ) => Promise<ContentTextAdapter>
+
+/**
+ * @public
+ */
+export interface ContentTextAdapter {
+  content: ContentAdapter
+  metrics: () => MeasureContext
+}
 
 /**
  * @public

@@ -101,7 +101,7 @@ async function createNullFullTextAdapter (): Promise<FullTextAdapter> {
 }
 async function createNullContentTextAdapter (): Promise<ContentTextAdapter> {
   return {
-    async fetch (name: string, type: string, doc) {
+    async content (name: string, type: string, doc) {
       return ''
     },
     metrics () {
@@ -133,7 +133,6 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
       stages: () => []
     },
     contentAdapter: {
-      url: '',
       factory: createNullContentTextAdapter
     },
     workspace: getWorkspaceId('')

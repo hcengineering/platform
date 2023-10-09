@@ -1,5 +1,5 @@
 //
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -116,7 +116,7 @@ export class ContentRetrievalStage implements FullTextPipelineStage {
                     let textContent = await this.metrics.with(
                       'fetch',
                       {},
-                      async () => await this.contentAdapter.fetch(ref, contentType, readable)
+                      async () => await this.contentAdapter.content(ref, contentType, readable)
                     )
 
                     textContent = textContent

@@ -46,6 +46,7 @@ import { serverInventoryId, createModel as serverInventoryModel } from '@hcengin
 import { serverLeadId, createModel as serverLeadModel } from '@hcengineering/model-server-lead'
 import { serverNotificationId, createModel as serverNotificationModel } from '@hcengineering/model-server-notification'
 import { serverRecruitId, createModel as serverRecruitModel } from '@hcengineering/model-server-recruit'
+import { serverRekoniId, createModel as serverRekoniModel } from '@hcengineering/model-server-rekoni'
 import { serverRequestId, createModel as serverRequestModel } from '@hcengineering/model-server-request'
 import { serverSettingId, createModel as serveSettingModel } from '@hcengineering/model-server-setting'
 import { serverTagsId, createModel as serverTagsModel } from '@hcengineering/model-server-tags'
@@ -275,6 +276,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [serverTrackerModel, serverTrackerId],
     [serverCalendarModel, serverCalendarId],
     [serverRecruitModel, serverRecruitId],
+    [serverRekoniModel, serverRekoniId],
     [serverGmailModel, serverGmailId],
     [serverTelegramModel, serverTelegramId],
     [serverHrModel, serverHrId],

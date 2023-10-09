@@ -17,7 +17,7 @@
 import { Metadata, Plugin, plugin } from '@hcengineering/platform'
 
 import type { Class, Ref, Space } from '@hcengineering/core'
-import type { ObjectDDParticipant, Trigger } from './types'
+import type { ContentAdapterFactory, ObjectDDParticipant, Trigger } from './types'
 
 /**
  * @public
@@ -29,7 +29,8 @@ export const serverCoreId = 'server-core' as Plugin
  */
 const serverCore = plugin(serverCoreId, {
   class: {
-    Trigger: '' as Ref<Class<Trigger>>
+    Trigger: '' as Ref<Class<Trigger>>,
+    ContentAdapterFactory: '' as Ref<Class<ContentAdapterFactory>>
   },
   mixin: {
     ObjectDDParticipant: '' as Ref<ObjectDDParticipant>

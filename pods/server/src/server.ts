@@ -40,7 +40,6 @@ import {
   BackupClientSession,
   createMinioDataAdapter,
   createNullAdapter,
-  createRekoniAdapter,
   getMetricsContext,
   MinioConfig
 } from '@hcengineering/server'
@@ -52,6 +51,7 @@ import {
   ContentRetrievalStage,
   ContentTextAdapter,
   createInMemoryAdapter,
+  createModelContentAdapter,
   createPipeline,
   DbConfiguration,
   FullSummaryStage,
@@ -69,6 +69,7 @@ import { serverInventoryId } from '@hcengineering/server-inventory'
 import { serverLeadId } from '@hcengineering/server-lead'
 import { serverNotificationId } from '@hcengineering/server-notification'
 import { serverRecruitId } from '@hcengineering/server-recruit'
+import { serverRekoniId } from '@hcengineering/server-rekoni'
 import { serverRequestId } from '@hcengineering/server-request'
 import { serverSettingId } from '@hcengineering/server-setting'
 import { serverTagsId } from '@hcengineering/server-tags'
@@ -198,6 +199,7 @@ export function start (
   addLocation(serverInventoryId, () => import('@hcengineering/server-inventory-resources'))
   addLocation(serverLeadId, () => import('@hcengineering/server-lead-resources'))
   addLocation(serverRecruitId, () => import('@hcengineering/server-recruit-resources'))
+  addLocation(serverRekoniId, () => import('@hcengineering/server-rekoni-resources'))
   addLocation(serverTaskId, () => import('@hcengineering/server-task-resources'))
   addLocation(serverTrackerId, () => import('@hcengineering/server-tracker-resources'))
   addLocation(serverTagsId, () => import('@hcengineering/server-tags-resources'))
@@ -312,8 +314,7 @@ export function start (
           createIndexStages(metrics.newChild('stages', {}), workspace, adapter, storage, storageAdapter, contentAdapter)
       },
       contentAdapter: {
-        factory: createRekoniAdapter,
-        url: opt.rekoniUrl
+        factory: createModelContentAdapter
       },
       storageFactory: () =>
         new MinioService({

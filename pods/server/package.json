@@ -79,6 +79,8 @@
     "@hcengineering/server-telegram-resources": "^0.6.0",
     "@hcengineering/server-hr": "^0.6.0",
     "@hcengineering/server-hr-resources": "^0.6.0",
+    "@hcengineering/server-rekoni": "^0.6.0",
+    "@hcengineering/server-rekoni-resources": "^0.6.0",
     "@hcengineering/server-request": "^0.6.0",
     "@hcengineering/server-request-resources": "^0.6.0",
     "@hcengineering/server-view": "^0.6.0",

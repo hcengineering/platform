@@ -61,8 +61,8 @@ import { FullTextPipelineStage } from './indexer/types'
 import serverCore from './plugin'
 import { Triggers } from './triggers'
 import type {
-  ContentAdapterFactory,
   ContentTextAdapter,
+  ContentTextAdapterFactory,
   FullTextAdapter,
   FullTextAdapterFactory,
   ObjectDDParticipant,
@@ -95,8 +95,7 @@ export interface DbConfiguration {
     stages: FullTextPipelineStageFactory
   }
   contentAdapter: {
-    factory: ContentAdapterFactory
-    url: string
+    factory: ContentTextAdapterFactory
   }
   storageFactory?: () => MinioService
 }
@@ -809,11 +808,7 @@ export async function createServerStorage (
 
   const metrics = conf.metrics.newChild('server-storage', {})
 
-  const contentAdapter = await conf.contentAdapter.factory(
-    conf.contentAdapter.url,
-    conf.workspace,
-    metrics.newChild('content', {})
-  )
+  const contentAdapter = await conf.contentAdapter.factory(model, conf.workspace, metrics.newChild('content', {}))
 
   console.timeLog(conf.workspace.name, 'finish content adapter')
 

@@ -1117,6 +1117,21 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/model-server-rekoni",
+      "projectFolder": "models/server-rekoni",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-rekoni",
+      "projectFolder": "server-plugins/rekoni",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-rekoni-resources",
+      "projectFolder": "server-plugins/rekoni-resources",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/server-task",
       "projectFolder": "server-plugins/task",
       "shouldPublish": false
