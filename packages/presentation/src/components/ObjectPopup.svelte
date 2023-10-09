@@ -46,6 +46,7 @@
   export let create: ObjectCreate | undefined = undefined
   export let readonly = false
   export let disallowDeselect: Ref<Doc>[] | undefined = undefined
+  export let embedded: boolean = false
 
   export let filter: (it: Doc) => boolean = () => {
     return true
@@ -108,6 +109,7 @@
   {create}
   {readonly}
   {disallowDeselect}
+  {embedded}
   on:update
   on:close
   on:changeContent

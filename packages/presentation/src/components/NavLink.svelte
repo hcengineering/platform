@@ -58,7 +58,7 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <span
     class:cursor-pointer={!disabled}
-    class:noUnderline
+    class:noUnderline={noUnderline || disabled}
     class:noOverflow
     class:inline
     class:colorInherit
@@ -71,7 +71,7 @@
 {:else}
   <a
     {href}
-    class:noUnderline
+    class:noUnderline={noUnderline || disabled}
     class:noOverflow
     class:inline
     class:colorInherit

@@ -10,9 +10,11 @@
   import { IntlString } from '@hcengineering/platform'
 
   export let value: Task | Task[]
+  export let width: 'medium' | 'large' | 'full' = 'medium'
   export let placeholder: IntlString
   export let ofAttribute: Ref<Attribute<Status>>
   export let _class: Ref<Class<Status>>
+  export let embedded: boolean = false
 
   const queryOptions: FindOptions<Status> = {
     lookup: {
@@ -91,6 +93,8 @@
       changeStatus(evt.detail === null ? null : evt.detail?._id)
     }}
     {placeholder}
+    {width}
+    {embedded}
     on:changeContent
   >
     <svelte:fragment slot="item" let:item>

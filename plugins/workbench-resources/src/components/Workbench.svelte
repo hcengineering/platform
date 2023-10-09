@@ -723,7 +723,7 @@
             {/if}
           </NavFooter>
         </div>
-        <Separator name={'workbench'} index={0} />
+        <Separator name={'workbench'} index={0} color={'var(--theme-navpanel-border)'} />
       {/if}
       <div
         class="antiPanel-component antiComponent"

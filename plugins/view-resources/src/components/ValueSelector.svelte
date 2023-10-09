@@ -30,6 +30,7 @@
   export let placeholder: IntlString | undefined
   export let width: 'medium' | 'large' | 'full' = 'medium'
   export let size: 'small' | 'medium' | 'large' = 'small'
+  export let embedded: boolean = false
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -133,6 +134,7 @@
       searchable
       {width}
       {size}
+      {embedded}
       on:changeContent
     />
   {:else if _class !== undefined}
@@ -149,6 +151,7 @@
       placeholder={placeholder ?? view.string.Filter}
       {width}
       {size}
+      {embedded}
       on:changeContent
     >
       <svelte:fragment slot="item" let:item>

@@ -28,14 +28,15 @@
   export let size: ButtonSize = 'medium'
   export let shouldShowName: boolean = true
   export let shrink: number = 0
+  export let disabled: boolean = false
 
   $: state = $statusStore.get(typeof value === 'string' ? value : (value?.values?.[0]?._id as Ref<Status>))
 </script>
 
 {#if value}
   {#if onChange !== undefined && state !== undefined}
-    <StateEditor value={state._id} {space} {onChange} {kind} {size} {shouldShowName} {shrink} />
+    <StateEditor value={state._id} {space} {onChange} {kind} {size} {shouldShowName} {shrink} {disabled} />
   {:else}
-    <StatePresenter value={state} {shouldShowName} on:accent-color />
+    <StatePresenter value={state} {shouldShowName} {disabled} {shrink} on:accent-color />
   {/if}
 {/if}
