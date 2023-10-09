@@ -412,7 +412,7 @@
     &::before {
       position: absolute;
       content: '';
-      z-index: 999;
+      z-index: 402;
     }
     &::after {
       background-color: var(--theme-primary-default);
