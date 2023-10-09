@@ -39,7 +39,7 @@ export class TApplication extends TDoc implements Application {
   label!: IntlString
   icon!: Asset
   alias!: string
-  position?: 'top' | 'bottom'
+  position?: 'top' | 'mid'
   hidden!: boolean
 }
 

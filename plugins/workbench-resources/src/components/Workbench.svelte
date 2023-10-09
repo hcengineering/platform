@@ -643,7 +643,6 @@
             notify={hasNotification}
           />
         </NavLink>
-        <div class="divider" />
         <Applications apps={getApps(apps)} active={currentApplication?._id} direction={appsDirection} />
       </div>
       <div class="info-box {appsDirection}" class:vertical-mobile={appsDirection === 'vertical'} class:mini={appsMini}>
@@ -814,11 +813,6 @@
       .topmenu-container {
         margin-right: 0.5rem;
       }
-      .divider {
-        margin-left: 0.5rem;
-        width: 1px;
-        height: 2.25rem;
-      }
     }
     &.landscape {
       flex-direction: column;
@@ -830,16 +824,10 @@
       .topmenu-container {
         margin-bottom: 1rem;
       }
-      .divider {
-        margin-top: 1rem;
-        width: 2.25rem;
-        height: 1px;
-      }
     }
 
     .logo-container,
     .topmenu-container,
-    .divider,
     .spacer {
       flex-shrink: 0;
     }
@@ -859,10 +847,6 @@
     }
     .topmenu-container.mini {
       left: calc(1.5rem + 8px);
-    }
-    .divider {
-      flex-shrink: 0;
-      background-color: var(--theme-navpanel-icons-divider);
     }
   }
 
