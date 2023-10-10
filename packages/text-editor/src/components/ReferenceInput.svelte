@@ -18,6 +18,7 @@
   import {
     AnySvelteComponent,
     Button,
+    ButtonKind,
     EmojiPopup,
     IconEmoji,
     handler,
@@ -44,11 +45,12 @@
   export let showSend = true
   export let iconSend: Asset | AnySvelteComponent | undefined = undefined
   export let labelSend: IntlString | undefined = undefined
+  export let kindSend: ButtonKind = 'ghost'
   export let haveAttachment = false
   export let placeholder: IntlString | undefined = undefined
   export let extraActions: RefAction[] | undefined = undefined
   export let loading: boolean = false
-  export let kind: 'ghost' | 'accented' = 'ghost'
+  export let focusable: boolean = false
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -157,13 +159,13 @@
   })
 </script>
 
-<div class="ref-container" class:focusable={kind === 'accented'}>
+<div class="ref-container" class:focusable>
   {#if showHeader && $$slots.header}
     <div class="header">
       <slot name="header" />
     </div>
   {/if}
-  <div class="textInput">
+  <div class="text-input">
     <TextEditor
       bind:content
       bind:this={textEditor}
@@ -176,12 +178,12 @@
       }}
       on:blur={() => {
         focused = false
-        dispatch('blur', focused)
+        dispatch('blur')
       }}
       on:focus={() => {
         focused = true
         updateFocus()
-        dispatch('focus', focused)
+        dispatch('focus')
       }}
       extensions={[
         completionPlugin,
@@ -244,7 +246,7 @@
           disabled={(isEmpty && !haveAttachment) || loading}
           icon={iconSend ?? Send}
           iconProps={{ size: buttonSize }}
-          {kind}
+          kind={kindSend}
           size={buttonSize}
           showTooltip={{
             label: labelSend ?? textEditorPlugin.string.Send
@@ -261,9 +263,7 @@
     display: flex;
     flex-direction: column;
     min-height: 4.5rem;
-    border-width: 0.0625rem;
-    border-style: solid;
-    border-color: var(--theme-refinput-border);
+    border: 0.0625rem solid var(--theme-refinput-border);
     border-radius: 0.375rem;
 
     &.focusable {
@@ -278,7 +278,7 @@
     border-bottom: 0.0625rem solid var(--theme-refinput-border);
   }
 
-  .textInput {
+  .text-input {
     min-height: 2.75rem;
     padding: 0.625rem 0.75rem;
   }

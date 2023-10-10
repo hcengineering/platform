@@ -13,10 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
+  import { AnyExtension, mergeAttributes } from '@tiptap/core'
+  import { Node as ProseMirrorNode } from '@tiptap/pm/model'
   import { Asset, getResource, IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,
+    Button,
     ButtonSize,
     EmojiPopup,
     IconEmoji,
@@ -24,14 +28,11 @@
     Scroller,
     showPopup
   } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+
   import textEditorPlugin from '../plugin'
   import { RefInputAction, RefInputActionItem, TextEditorHandler, TextFormatCategory } from '../types'
   import Attach from './icons/Attach.svelte'
-  import { AnyExtension, mergeAttributes } from '@tiptap/core'
   import TextEditor from './TextEditor.svelte'
-  import { Node as ProseMirrorNode } from '@tiptap/pm/model'
-  import Button from '@hcengineering/ui/src/components/Button.svelte'
 
   const dispatch = createEventDispatcher()
 
@@ -284,7 +285,6 @@
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    padding: 0.625rem 0.75rem 0.325rem 0.75rem;
 
     .textInput {
       flex-grow: 1;
@@ -318,10 +318,10 @@
     }
 
     &.focusable {
-      border-width: 0.0625rem;
-      border-style: solid;
-      border-color: transparent;
+      border: 0.0625rem solid transparent;
       border-radius: 0.375rem;
+      margin: -0.25rem -0.5rem;
+      padding: 0.25rem 0.5rem;
 
       &:focus-within {
         border-color: var(--primary-edit-border-color);
