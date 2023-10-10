@@ -55,6 +55,7 @@ import core, {
 import { MinioService } from '@hcengineering/minio'
 import { getResource } from '@hcengineering/platform'
 import { DbAdapter, DbAdapterConfiguration, TxAdapter } from './adapter'
+import { createContentAdapter } from './content'
 import { FullTextIndex } from './fulltext'
 import { FullTextIndexPipeline } from './indexer'
 import { FullTextPipelineStage } from './indexer/types'
@@ -62,7 +63,7 @@ import serverCore from './plugin'
 import { Triggers } from './triggers'
 import type {
   ContentTextAdapter,
-  ContentTextAdapterFactory,
+  ContentTextAdapterConfiguration,
   FullTextAdapter,
   FullTextAdapterFactory,
   ObjectDDParticipant,
@@ -94,9 +95,8 @@ export interface DbConfiguration {
     url: string
     stages: FullTextPipelineStageFactory
   }
-  contentAdapter: {
-    factory: ContentTextAdapterFactory
-  }
+  contentAdapters: Record<string, ContentTextAdapterConfiguration>
+  defaultContentAdapter: string
   storageFactory?: () => MinioService
 }
 
@@ -808,8 +808,12 @@ export async function createServerStorage (
 
   const metrics = conf.metrics.newChild('server-storage', {})
 
-  const contentAdapter = await conf.contentAdapter.factory(model, conf.workspace, metrics.newChild('content', {}))
-
+  const contentAdapter = await createContentAdapter(
+    conf.contentAdapters,
+    conf.defaultContentAdapter,
+    conf.workspace,
+    metrics.newChild('content', {})
+  )
   console.timeLog(conf.workspace.name, 'finish content adapter')
 
   const defaultAdapter = adapters.get(conf.defaultAdapter)

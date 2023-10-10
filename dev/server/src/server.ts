@@ -66,9 +66,14 @@ export async function start (port: number, host?: string): Promise<void> {
           stages: () => []
         },
         metrics: new MeasureMetricsContext('', {}),
-        contentAdapter: {
-          factory: createNullContentTextAdapter
+        contentAdapters: {
+          default: {
+            factory: createNullContentTextAdapter,
+            contentType: '',
+            url: ''
+          }
         },
+        defaultContentAdapter: 'default',
         workspace: getWorkspaceId('')
       }
       return createPipeline(ctx, conf, [], false, () => {})

@@ -254,37 +254,28 @@ export type FullTextAdapterFactory = (
 /**
  * @public
  */
-export type ContentAdapter = (name: string, type: string, doc: Readable | Buffer | string) => Promise<string>
-
-/**
- * @public
- */
-export type ContentAdapterCreator = (workspace: WorkspaceId, context: MeasureContext) => Promise<ContentAdapter>
-
-/**
- * @public
- */
-export interface ContentAdapterFactory extends Doc {
-  factory: Resource<ContentAdapterCreator>
+export interface ContentTextAdapterConfiguration {
+  factory: ContentTextAdapterFactory
   contentType: string
+  url: string
+}
+
+/**
+ * @public
+ */
+export interface ContentTextAdapter {
+  content: (name: string, type: string, doc: Readable | Buffer | string) => Promise<string>
+  metrics: () => MeasureContext
 }
 
 /**
  * @public
  */
 export type ContentTextAdapterFactory = (
-  model: Tx[],
+  url: string,
   workspace: WorkspaceId,
   context: MeasureContext
 ) => Promise<ContentTextAdapter>
-
-/**
- * @public
- */
-export interface ContentTextAdapter {
-  content: ContentAdapter
-  metrics: () => MeasureContext
-}
 
 /**
  * @public

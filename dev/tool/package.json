@@ -89,8 +89,6 @@
     "@hcengineering/server-inventory-resources": "^0.6.0",
     "@hcengineering/server-lead": "^0.6.0",
     "@hcengineering/server-lead-resources": "^0.6.0",
-    "@hcengineering/server-rekoni": "^0.6.0",
-    "@hcengineering/server-rekoni-resources": "^0.6.0",
     "@hcengineering/server-recruit": "^0.6.0",
     "@hcengineering/server-recruit-resources": "^0.6.0",
     "@hcengineering/server-task": "^0.6.0",

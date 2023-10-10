@@ -132,9 +132,14 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
       url: '',
       stages: () => []
     },
-    contentAdapter: {
-      factory: createNullContentTextAdapter
+    contentAdapters: {
+      default: {
+        factory: createNullContentTextAdapter,
+        contentType: '',
+        url: ''
+      }
     },
+    defaultContentAdapter: 'default',
     workspace: getWorkspaceId('')
   }
   const serverStorage = await createServerStorage(conf, {

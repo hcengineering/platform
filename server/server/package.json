@@ -41,6 +41,8 @@
     "elastic-apm-node": "~3.26.0",
     "@hcengineering/server-token": "^0.6.6",
     "@hcengineering/middleware": "^0.6.0",
-    "@hcengineering/minio": "^0.6.0"
+    "@hcengineering/minio": "^0.6.0",
+    "@hcengineering/text": "^0.6.0",
+    "got": "^11.8.3"
   }
 }

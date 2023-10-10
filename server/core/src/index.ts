@@ -16,7 +16,6 @@
 
 export * from './adapter'
 export * from './types'
-export * from './content'
 export * from './fulltext'
 export * from './storage'
 export * from './pipeline'

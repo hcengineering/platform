@@ -149,9 +149,14 @@ describe('mongo operations', () => {
         url: '',
         stages: () => []
       },
-      contentAdapter: {
-        factory: createNullContentTextAdapter
+      contentAdapters: {
+        default: {
+          factory: createNullContentTextAdapter,
+          contentType: '',
+          url: ''
+        }
       },
+      defaultContentAdapter: 'default',
       workspace: getWorkspaceId(dbId, ''),
       storageFactory: () => createNullStorageFactory()
     }

@@ -17,7 +17,6 @@
 // Add this to the VERY top of the first file loaded in your app
 import { setMetadata } from '@hcengineering/platform'
 import serverCore from '@hcengineering/server-core'
-import serverRekoni from '@hcengineering/server-rekoni'
 import serverToken from '@hcengineering/server-token'
 import { serverFactories } from '@hcengineering/server-ws'
 import { start } from '.'
@@ -84,7 +83,6 @@ if (frontUrl === undefined) {
 
 setMetadata(serverCore.metadata.FrontUrl, frontUrl)
 setMetadata(serverToken.metadata.Secret, serverSecret)
-setMetadata(serverRekoni.metadata.RekoniUrl, rekoniUrl)
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 console.log(
