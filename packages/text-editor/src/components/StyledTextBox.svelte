@@ -3,6 +3,7 @@
   import presentation, { MessageViewer } from '@hcengineering/presentation'
   import {
     ActionIcon,
+    ButtonSize,
     IconCheck,
     IconClose,
     IconEdit,
@@ -33,7 +34,7 @@
   export let alwaysEdit: boolean = false
   export let showButtons: boolean = true
   export let hideAttachments: boolean = false
-  export let buttonSize: IconSize = 'medium'
+  export let buttonSize: ButtonSize = 'medium'
   export let formatButtonSize: IconSize = 'small'
   export let hideExtraButtons: boolean = false
   export let maxHeight: 'max' | 'card' | 'limited' | string = 'max'
