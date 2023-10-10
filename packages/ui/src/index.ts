@@ -118,6 +118,10 @@ export { default as TabList } from './components/TabList.svelte'
 export { default as Chevron } from './components/Chevron.svelte'
 export { default as Timeline } from './components/Timeline.svelte'
 export { default as TimeShiftPresenter } from './components/TimeShiftPresenter.svelte'
+
+export { default as MicIcon } from './components/icons/Mic.svelte'
+export { default as RecIcon } from './components/icons/Record.svelte'
+
 export { default as Separator } from './components/Separator.svelte'
 
 export { default as IconAdd } from './components/icons/Add.svelte'

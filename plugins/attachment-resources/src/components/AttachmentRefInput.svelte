@@ -313,6 +313,7 @@
         dispatch('focus')
         inputFile.click()
       }}
+      on:complete-recording={({ detail: voice }) => createAttachment(voice)}
       on:update={onUpdate}
       {placeholder}
       {extraActions}

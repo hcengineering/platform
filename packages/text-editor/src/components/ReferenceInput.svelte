@@ -26,11 +26,14 @@
     showPopup,
     tooltip,
     deviceOptionsStore as deviceInfo,
-    checkAdaptiveMatching
+    checkAdaptiveMatching,
+    MicIcon,
+    RecIcon
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
+  import AudioRecorder from '../AudioRecorder'
   import { RefAction, RefInputActionItem, TextEditorHandler, TextFormatCategory } from '../types'
   import TextEditor from './TextEditor.svelte'
   import { completionConfig } from './extensions'
@@ -39,6 +42,8 @@
   import Attach from './icons/Attach.svelte'
   import RIMention from './icons/RIMention.svelte'
   import Send from './icons/Send.svelte'
+
+  type InputMode = 'MIC' | 'REC' | 'DEFAULT'
 
   const dispatch = createEventDispatcher()
   export let content: string = ''
@@ -50,6 +55,7 @@
   export let placeholder: IntlString | undefined = undefined
   export let extraActions: RefAction[] | undefined = undefined
   export let loading: boolean = false
+  export let showVoiceControls: boolean = false
 
   const client = getClient()
 
@@ -57,13 +63,48 @@
 
   let isEmpty = true
 
+  let isRecording = false
+  const audioRecorder = new AudioRecorder()
+
+  audioRecorder.onComplete((file) => dispatch('complete-recording', file))
   $: setContent(content)
   $: devSize = $deviceInfo.size
   $: shrinkButtons = checkAdaptiveMatching(devSize, 'sm')
 
+  let inputMode: InputMode = 'DEFAULT'
+
+  const inputModeIcons: Record<InputMode, Asset | AnySvelteComponent | undefined> = {
+    REC: RecIcon,
+    MIC: MicIcon,
+    DEFAULT: iconSend ?? Send
+  }
+
+  function updateInputMode ({
+    isEmpty,
+    isRecording,
+    haveAttachment,
+    showVoiceControls
+  }: {
+    isEmpty: boolean
+    haveAttachment: boolean
+    isRecording: boolean
+    showVoiceControls: boolean
+  }) {
+    if (showVoiceControls && isEmpty && !haveAttachment) {
+      inputMode = isRecording ? 'REC' : 'MIC'
+    } else {
+      inputMode = 'DEFAULT'
+    }
+  }
+
+  $: {
+    updateInputMode({ showVoiceControls, isEmpty, haveAttachment, isRecording })
+  }
+
   function setContent (content: string) {
     textEditor?.setContent(content)
   }
+
   const defActions: RefAction[] = [
     {
       label: textEditorPlugin.string.Attach,
@@ -154,6 +195,19 @@
       dispatch('open-document', { event, _id, _class })
     }
   })
+
+  const startRecordHandler = () => {
+    if (inputMode === 'MIC') {
+      isRecording = true
+      audioRecorder.start()
+    }
+  }
+  const stopRecordHandler = () => {
+    if (inputMode === 'REC') {
+      isRecording = false
+      audioRecorder.stop()
+    }
+  }
 </script>
 
 <div class="ref-container">
@@ -198,8 +252,10 @@
       <button
         class="sendButton"
         on:click={submit}
+        disabled={loading}
+        on:mouseup={stopRecordHandler}
+        on:mousedown={startRecordHandler}
         use:tooltip={{ label: labelSend ?? textEditorPlugin.string.Send }}
-        disabled={(isEmpty && !haveAttachment) || loading}
       >
         <div class="icon">
           {#if loading}
@@ -207,7 +263,7 @@
               <Spinner size={'medium'} />
             </div>
           {:else}
-            <Icon icon={iconSend ?? Send} size={'medium'} />
+            <Icon icon={inputModeIcons[inputMode]} size={'medium'} />
           {/if}
         </div>
       </button>
