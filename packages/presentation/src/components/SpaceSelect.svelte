@@ -60,6 +60,7 @@
   export let readonly = false
   export let iconWithEmoji: AnySvelteComponent | Asset | ComponentType | undefined = view.ids.IconWithEmoji
   export let defaultIcon: AnySvelteComponent | Asset | ComponentType = IconFolder
+  export let findDefaultSpace: (() => Promise<Space | undefined>) | undefined = undefined
 
   let selected: (Space & IconProps) | undefined
 
@@ -71,7 +72,7 @@
     selected = value !== undefined ? await client.findOne(_class, { ...(spaceQuery ?? {}), _id: value }) : undefined
 
     if (selected === undefined && autoSelect) {
-      selected = await client.findOne(_class, { ...(spaceQuery ?? {}) })
+      selected = (await findDefaultSpace?.()) ?? (await client.findOne(_class, { ...(spaceQuery ?? {}) }))
       if (selected !== undefined) {
         value = selected._id ?? undefined
         dispatch('change', value)

@@ -43,7 +43,8 @@ export default mergeIds(trackerId, tracker, {
     Unarchive: '' as IntlString,
     UnarchiveConfirm: '' as IntlString,
     AllProjects: '' as IntlString,
-    RemainingTime: '' as IntlString
+    RemainingTime: '' as IntlString,
+    MapRelatedIssues: '' as IntlString
   },
   activity: {
     TxIssueCreated: '' as AnyComponent,
@@ -55,7 +56,9 @@ export default mergeIds(trackerId, tracker, {
     IssueStatistics: '' as AnyComponent,
     TimeSpendReportPopup: '' as AnyComponent,
     NotificationIssuePresenter: '' as AnyComponent,
-    MilestoneFilter: '' as AnyComponent
+    MilestoneFilter: '' as AnyComponent,
+    EditRelatedTargets: '' as AnyComponent,
+    EditRelatedTargetsPopup: '' as AnyComponent
   },
   app: {
     Tracker: '' as Ref<Application>

@@ -14,800 +14,121 @@
 //
 
 import activity from '@hcengineering/activity'
-import contact, { Employee, Person } from '@hcengineering/contact'
-import {
-  DOMAIN_MODEL,
-  DateRangeMode,
-  Domain,
-  IndexKind,
-  Markup,
-  Ref,
-  RelatedDocument,
-  SortingOrder,
-  Timestamp,
-  Type
-} from '@hcengineering/core'
-import {
-  ArrOf,
-  Builder,
-  Collection,
-  Hidden,
-  Index,
-  Mixin,
-  Model,
-  Prop,
-  ReadOnly,
-  TypeDate,
-  TypeMarkup,
-  TypeNumber,
-  TypeRef,
-  TypeString,
-  UX
-} from '@hcengineering/model'
-import attachment from '@hcengineering/model-attachment'
-import chunter from '@hcengineering/model-chunter'
-import core, { TAttachedDoc, TClass, TDoc, TStatus, TType } from '@hcengineering/model-core'
-import task, { TSpaceWithStates, TTask } from '@hcengineering/model-task'
-import view, { actionTemplates, classPresenter, createAction, showColorsViewOption } from '@hcengineering/model-view'
-import workbench, { createNavigateAction } from '@hcengineering/model-workbench'
+import { Builder } from '@hcengineering/model'
+import core from '@hcengineering/model-core'
+import task from '@hcengineering/model-task'
+import view from '@hcengineering/model-view'
+import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
-import { IntlString, Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
-import tags, { TagElement } from '@hcengineering/tags'
-import { DoneState } from '@hcengineering/task'
-import {
-  Component,
-  Issue,
-  IssueChildInfo,
-  IssueParentInfo,
-  IssuePriority,
-  IssueStatus,
-  IssueTemplate,
-  IssueTemplateChild,
-  IssueUpdateFunction,
-  Milestone,
-  MilestoneStatus,
-  Project,
-  ProjectIssueTargetOptions,
-  TimeReportDayType,
-  TimeSpendReport,
-  trackerId
-} from '@hcengineering/tracker'
-import { BuildModelKey, KeyBinding, ViewAction, ViewOptionsModel } from '@hcengineering/view'
+import { trackerId } from '@hcengineering/tracker'
 import tracker from './plugin'
 
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import presentation from '@hcengineering/model-presentation'
-import { defaultPriorities, issuePriorities } from '@hcengineering/tracker-resources/src/types'
-import { AnyComponent } from '@hcengineering/ui'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
+import { createActions as defineActions } from './actions'
+import { definePresenters } from './presenters'
+import {
+  TComponent,
+  TIssue,
+  TIssueStatus,
+  TIssueTemplate,
+  TMilestone,
+  TProject,
+  TProjectIssueTargetOptions,
+  TRelatedIssueTarget,
+  TTimeSpendReport,
+  TTypeIssuePriority,
+  TTypeMilestoneStatus,
+  TTypeReportedTime
+} from './types'
+import { defineViewlets } from './viewlets'
+
+export * from './types'
+export { issuesOptions } from './viewlets'
 
 export { trackerId } from '@hcengineering/tracker'
 export { trackerOperation } from './migration'
 export { default } from './plugin'
 
-export const DOMAIN_TRACKER = 'tracker' as Domain
-
-/**
- * @public
- */
-@Model(tracker.class.IssueStatus, core.class.Status)
-@UX(tracker.string.IssueStatuses, undefined, undefined, 'rank', 'name')
-export class TIssueStatus extends TStatus implements IssueStatus {}
-
-/**
- * @public
- */
-export function TypeIssuePriority (): Type<IssuePriority> {
-  return { _class: tracker.class.TypeIssuePriority, label: tracker.string.TypeIssuePriority }
-}
-
-/**
- * @public
- */
-@Model(tracker.class.TypeIssuePriority, core.class.Type, DOMAIN_MODEL)
-export class TTypeIssuePriority extends TType {}
-
-/**
- * @public
- */
-export function TypeMilestoneStatus (): Type<MilestoneStatus> {
-  return { _class: tracker.class.TypeMilestoneStatus, label: 'TypeMilestoneStatus' as IntlString }
-}
-
-/**
- * @public
- */
-@Model(tracker.class.TypeMilestoneStatus, core.class.Type, DOMAIN_MODEL)
-export class TTypeMilestoneStatus extends TType {}
-
-/**
- * @public
- */
-@Model(tracker.class.Project, task.class.SpaceWithStates)
-@UX(tracker.string.Project, tracker.icon.Issues, 'Project', 'name')
-export class TProject extends TSpaceWithStates implements Project {
-  @Prop(TypeString(), tracker.string.ProjectIdentifier)
-  @Index(IndexKind.FullText)
-    identifier!: IntlString
-
-  @Prop(TypeNumber(), tracker.string.Number)
-  @Hidden()
-    sequence!: number
-
-  @Prop(TypeRef(tracker.class.IssueStatus), tracker.string.DefaultIssueStatus)
-    defaultIssueStatus!: Ref<IssueStatus>
-
-  @Prop(TypeRef(contact.mixin.Employee), tracker.string.DefaultAssignee)
-    defaultAssignee!: Ref<Employee>
-
-  declare defaultTimeReportDay: TimeReportDayType
-}
-
-/**
- * @public
- */
-export function TypeReportedTime (): Type<number> {
-  return { _class: tracker.class.TypeReportedTime, label: core.string.Number }
-}
-
-/**
- * @public
- */
-@Model(tracker.class.Issue, task.class.Task)
-@UX(tracker.string.Issue, tracker.icon.Issue, 'TSK', 'title')
-export class TIssue extends TTask implements Issue {
-  @Prop(TypeRef(tracker.class.Issue), tracker.string.Parent)
-  declare attachedTo: Ref<Issue>
-
-  @Prop(TypeString(), tracker.string.Title)
-  @Index(IndexKind.FullText)
-    title!: string
-
-  @Prop(TypeMarkup(), tracker.string.Description)
-  @Index(IndexKind.FullText)
-    description!: Markup
-
-  @Prop(TypeRef(tracker.class.IssueStatus), tracker.string.Status, {
-    _id: tracker.attribute.IssueStatus,
-    iconComponent: tracker.activity.StatusIcon
+function defineSortAndGrouping (builder: Builder): void {
+  builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.SortFuncs, {
+    func: tracker.function.IssueStatusSort
   })
-  @Index(IndexKind.Indexed)
-  declare status: Ref<IssueStatus>
 
-  @Prop(TypeIssuePriority(), tracker.string.Priority, {
-    iconComponent: tracker.activity.PriorityIcon
+  builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.SortFuncs, {
+    func: tracker.function.IssuePrioritySort
   })
-  @Index(IndexKind.Indexed)
-    priority!: IssuePriority
 
-  @Prop(TypeNumber(), tracker.string.Number)
-  @Index(IndexKind.FullText)
-  @ReadOnly()
-  declare number: number
+  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.SortFuncs, {
+    func: tracker.function.MilestoneSort
+  })
 
-  @Prop(TypeRef(contact.class.Person), tracker.string.Assignee)
-  @Index(IndexKind.Indexed)
-  declare assignee: Ref<Person> | null
+  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.Aggregation, {
+    createAggregationManager: tracker.aggregation.CreateComponentAggregationManager
+  })
 
-  @Prop(TypeRef(tracker.class.Component), tracker.string.Component, { icon: tracker.icon.Component })
-  @Index(IndexKind.Indexed)
-    component!: Ref<Component> | null
+  builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AllValuesFunc, {
+    func: tracker.function.GetAllPriority
+  })
 
-  @Prop(Collection(tracker.class.Issue), tracker.string.SubIssues)
-    subIssues!: number
+  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.AllValuesFunc, {
+    func: tracker.function.GetAllComponents
+  })
 
-  @Prop(ArrOf(TypeRef(core.class.TypeRelatedDocument)), tracker.string.BlockedBy)
-    blockedBy!: RelatedDocument[]
-
-  @Prop(ArrOf(TypeRef(core.class.TypeRelatedDocument)), tracker.string.RelatedTo)
-  @Index(IndexKind.Indexed)
-    relations!: RelatedDocument[]
-
-  parents!: IssueParentInfo[]
-
-  @Prop(Collection(tags.class.TagReference), tracker.string.Labels)
-  declare labels: number
-
-  @Prop(TypeRef(task.class.DoneState), task.string.TaskStateDone, { _id: task.attribute.DoneState })
-  @Hidden()
-  declare doneState: Ref<DoneState> | null
-
-  @Prop(TypeRef(tracker.class.Project), tracker.string.Project, { icon: tracker.icon.Issues })
-  @Index(IndexKind.Indexed)
-  @ReadOnly()
-  declare space: Ref<Project>
-
-  @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.DueDate)
-  declare dueDate: Timestamp | null
-
-  @Prop(TypeString(), tracker.string.Rank)
-  @Hidden()
-  declare rank: string
-
-  @Prop(TypeRef(tracker.class.Milestone), tracker.string.Milestone, { icon: tracker.icon.Milestone })
-  @Index(IndexKind.Indexed)
-    milestone!: Ref<Milestone> | null
-
-  @Prop(TypeNumber(), tracker.string.Estimation)
-    estimation!: number
-
-  @Prop(TypeReportedTime(), tracker.string.ReportedTime)
-  @ReadOnly()
-    reportedTime!: number
-
-  // A fully virtual property with calculated content.
-  // TODO: Add proper support for this kind of fields
-  @Prop(TypeNumber(), tracker.string.RemainingTime)
-  @ReadOnly()
-  @Hidden()
-    remainingTime!: number
-
-  @Prop(Collection(tracker.class.TimeSpendReport), tracker.string.TimeSpendReports)
-    reports!: number
-
-  declare childInfo: IssueChildInfo[]
+  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.AllValuesFunc, {
+    func: tracker.function.GetAllMilestones
+  })
 }
 
-/**
- * @public
- */
-@Model(tracker.class.IssueTemplate, core.class.Doc, DOMAIN_TRACKER)
-@UX(tracker.string.IssueTemplate, tracker.icon.Issue, 'PROCESS')
-export class TIssueTemplate extends TDoc implements IssueTemplate {
-  @Prop(TypeString(), tracker.string.Title)
-  @Index(IndexKind.FullText)
-    title!: string
-
-  @Prop(TypeMarkup(), tracker.string.Description)
-  @Index(IndexKind.FullText)
-    description!: Markup
-
-  @Prop(TypeIssuePriority(), tracker.string.Priority)
-    priority!: IssuePriority
-
-  @Prop(TypeRef(contact.class.Person), tracker.string.Assignee)
-    assignee!: Ref<Person> | null
-
-  @Prop(TypeRef(tracker.class.Component), tracker.string.Component)
-    component!: Ref<Component> | null
-
-  @Prop(ArrOf(TypeRef(tags.class.TagElement)), tracker.string.Labels)
-    labels?: Ref<TagElement>[]
-
-  declare space: Ref<Project>
-
-  @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.DueDate)
-    dueDate!: Timestamp | null
-
-  @Prop(TypeRef(tracker.class.Milestone), tracker.string.Milestone)
-    milestone!: Ref<Milestone> | null
-
-  @Prop(TypeNumber(), tracker.string.Estimation)
-    estimation!: number
-
-  @Prop(ArrOf(TypeRef(tracker.class.IssueTemplate)), tracker.string.IssueTemplate)
-    children!: IssueTemplateChild[]
-
-  @Prop(Collection(chunter.class.Comment), tracker.string.Comments)
-    comments!: number
-
-  @Prop(Collection(attachment.class.Attachment), tracker.string.Attachments)
-    attachments!: number
-
-  @Prop(ArrOf(TypeRef(core.class.TypeRelatedDocument)), tracker.string.RelatedTo)
-    relations!: RelatedDocument[]
-}
-
-/**
- * @public
- */
-@Model(tracker.class.TimeSpendReport, core.class.AttachedDoc, DOMAIN_TRACKER)
-@UX(tracker.string.TimeSpendReport, tracker.icon.TimeReport)
-export class TTimeSpendReport extends TAttachedDoc implements TimeSpendReport {
-  @Prop(TypeRef(tracker.class.Issue), tracker.string.Issue)
-  declare attachedTo: Ref<Issue>
-
-  @Prop(TypeRef(contact.mixin.Employee), contact.string.Employee)
-    employee!: Ref<Employee>
-
-  @Prop(TypeDate(), tracker.string.TimeSpendReportDate)
-    date!: Timestamp | null
-
-  @Prop(TypeNumber(), tracker.string.TimeSpendReportValue)
-    value!: number
-
-  @Prop(TypeString(), tracker.string.TimeSpendReportDescription)
-    description!: string
-}
-
-/**
- * @public
- */
-@Model(tracker.class.Component, core.class.Doc, DOMAIN_TRACKER)
-@UX(tracker.string.Component, tracker.icon.Component, 'COMPONENT', 'label')
-export class TComponent extends TDoc implements Component {
-  @Prop(TypeString(), tracker.string.Title)
-  @Index(IndexKind.FullText)
-    label!: string
-
-  @Prop(TypeMarkup(), tracker.string.Description)
-    description?: Markup
-
-  @Prop(TypeRef(contact.mixin.Employee), tracker.string.ComponentLead)
-    lead!: Ref<Employee> | null
-
-  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
-    comments!: number
-
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
-    attachments?: number
-
-  declare space: Ref<Project>
-}
-
-@Mixin(tracker.mixin.ProjectIssueTargetOptions, core.class.Class)
-export class TProjectIssueTargetOptions extends TClass implements ProjectIssueTargetOptions {
-  headerComponent!: AnyComponent
-  bodyComponent!: AnyComponent
-  footerComponent!: AnyComponent
-
-  update!: Resource<IssueUpdateFunction>
-}
-/**
- * @public
- */
-@Model(tracker.class.Milestone, core.class.Doc, DOMAIN_TRACKER)
-@UX(tracker.string.Milestone, tracker.icon.Milestone, '', 'label')
-export class TMilestone extends TDoc implements Milestone {
-  @Prop(TypeString(), tracker.string.Title)
-  // @Index(IndexKind.FullText)
-    label!: string
-
-  @Prop(TypeMarkup(), tracker.string.Description)
-    description?: Markup
-
-  @Prop(TypeMilestoneStatus(), tracker.string.Status)
-  @Index(IndexKind.Indexed)
-    status!: MilestoneStatus
-
-  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
-    comments!: number
-
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
-    attachments?: number
-
-  @Prop(TypeDate(), tracker.string.TargetDate)
-    targetDate!: Timestamp
-
-  declare space: Ref<Project>
-}
-
-@UX(core.string.Number)
-@Model(tracker.class.TypeReportedTime, core.class.Type)
-export class TTypeReportedTime extends TType {}
-
-export const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
-  groupBy: ['status', 'assignee', 'priority', 'component', 'milestone', 'createdBy', 'modifiedBy'],
-  orderBy: [
-    ['status', SortingOrder.Ascending],
-    ['priority', SortingOrder.Descending],
-    ['modifiedOn', SortingOrder.Descending],
-    ['createdOn', SortingOrder.Descending],
-    ['dueDate', SortingOrder.Ascending],
-    ['rank', SortingOrder.Ascending]
-  ],
-  other: [
+function defineNotifications (builder: Builder): void {
+  builder.createDoc(
+    notification.class.NotificationGroup,
+    core.space.Model,
     {
-      key: 'shouldShowSubIssues',
-      type: 'toggle',
-      defaultValue: true,
-      actionTarget: 'query',
-      action: tracker.function.SubIssueQuery,
-      label: tracker.string.SubIssues
+      label: tracker.string.Issues,
+      icon: tracker.icon.Issues,
+      objectClass: tracker.class.Issue
     },
-    {
-      key: 'shouldShowAll',
-      type: 'toggle',
-      defaultValue: false,
-      actionTarget: 'category',
-      action: view.function.ShowEmptyGroups,
-      label: view.string.ShowEmptyGroups
-    },
-    ...(!kanban ? [showColorsViewOption] : [])
-  ]
-})
-export function createModel (builder: Builder): void {
-  builder.createModel(
-    TProject,
-    TComponent,
-    TIssue,
-    TIssueTemplate,
-    TIssueStatus,
-    TTypeIssuePriority,
-    TMilestone,
-    TTypeMilestoneStatus,
-    TTimeSpendReport,
-    TTypeReportedTime,
-    TProjectIssueTargetOptions
+    tracker.ids.TrackerNotificationGroup
   )
 
-  function issueConfig (
-    key: string = '',
-    compact: boolean = false,
-    milestone: boolean = true,
-    component: boolean = true
-  ): (BuildModelKey | string)[] {
-    return [
-      {
-        key: '',
-        label: tracker.string.Priority,
-        presenter: tracker.component.PriorityEditor,
-        props: { type: 'priority', kind: 'list', size: 'small' },
-        displayProps: { key: 'priority' }
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: false,
+      generated: false,
+      label: task.string.AssignedToMe,
+      group: tracker.ids.TrackerNotificationGroup,
+      field: 'assignee',
+      txClasses: [core.class.TxCreateDoc, core.class.TxUpdateDoc],
+      objectClass: tracker.class.Issue,
+      onlyOwn: true,
+      templates: {
+        textTemplate: '{doc} was assigned to you by {sender}',
+        htmlTemplate: '<p>{doc} was assigned to you by {sender}</p>',
+        subjectTemplate: '{doc} was assigned to you'
       },
-      {
-        key: '',
-        label: tracker.string.Identifier,
-        presenter: tracker.component.IssuePresenter,
-        displayProps: { key: key + 'issue', fixed: 'left' }
-      },
-      {
-        key: '',
-        label: tracker.string.Status,
-        presenter: tracker.component.StatusEditor,
-        props: { kind: 'list', size: 'small', justify: 'center' },
-        displayProps: { key: key + 'status' }
-      },
-      {
-        key: '',
-        label: tracker.string.Title,
-        presenter: tracker.component.TitlePresenter,
-        props: compact ? { shouldUseMargin: true, showParent: false } : {},
-        displayProps: { key: key + 'title' }
-      },
-      {
-        key: '',
-        label: tracker.string.SubIssues,
-        presenter: tracker.component.SubIssuesSelector,
-        props: {}
-      },
-      { key: 'comments', displayProps: { key: key + 'comments', suffix: true } },
-      { key: 'attachments', displayProps: { key: key + 'attachments', suffix: true } },
-      { key: '', displayProps: { grow: true } },
-      {
-        key: 'labels',
-        presenter: tags.component.LabelsPresenter,
-        displayProps: { compression: true },
-        props: { kind: 'list', full: false }
-      },
-      ...(milestone
-        ? [
-            {
-              key: '',
-              label: tracker.string.Milestone,
-              presenter: tracker.component.MilestoneEditor,
-              props: {
-                kind: 'list',
-                size: 'small',
-                shouldShowPlaceholder: false
-              },
-              displayProps: {
-                key: key + 'milestone',
-                excludeByKey: 'milestone',
-                compression: true
-              }
-            }
-          ]
-        : []),
-      ...(component
-        ? [
-            {
-              key: '',
-              label: tracker.string.Component,
-              presenter: tracker.component.ComponentEditor,
-              props: {
-                kind: 'list',
-                size: 'small',
-                shouldShowPlaceholder: false
-              },
-              displayProps: {
-                key: key + 'component',
-                excludeByKey: 'component',
-                compression: true
-              }
-            }
-          ]
-        : []),
-      {
-        key: '',
-        label: tracker.string.DueDate,
-        presenter: tracker.component.DueDatePresenter,
-        displayProps: { key: key + 'dueDate', compression: true },
-        props: { kind: 'list' }
-      },
-      {
-        key: '',
-        label: tracker.string.Estimation,
-        presenter: tracker.component.EstimationEditor,
-        props: { kind: 'list', size: 'small' },
-        displayProps: { key: key + 'estimation', fixed: 'left', dividerBefore: true, optional: true }
-      },
-      {
-        key: 'modifiedOn',
-        presenter: tracker.component.ModificationDatePresenter,
-        displayProps: { key: key + 'modified', fixed: 'left', dividerBefore: true }
-      },
-      {
-        key: 'assignee',
-        presenter: tracker.component.AssigneeEditor,
-        displayProps: { key: 'assignee', fixed: 'right' },
-        props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' }
+      providers: {
+        [notification.providers.PlatformNotification]: true,
+        [notification.providers.EmailNotification]: true
       }
-    ]
-  }
-
-  builder.createDoc(
-    view.class.Viewlet,
-    core.space.Model,
-    {
-      attachTo: tracker.class.Issue,
-      descriptor: view.viewlet.List,
-      viewOptions: issuesOptions(false),
-      configOptions: {
-        strict: true,
-        hiddenKeys: [
-          'title',
-          'blockedBy',
-          'relations',
-          'description',
-          'number',
-          'reportedTime',
-          'reports',
-          'priority',
-          'component',
-          'milestone',
-          'estimation',
-          'status',
-          'dueDate',
-          'attachedTo',
-          'createdBy',
-          'modifiedBy'
-        ]
-      },
-      config: issueConfig()
     },
-    tracker.viewlet.IssueList
+    tracker.ids.AssigneeNotification
   )
 
-  const subIssuesOptions: ViewOptionsModel = {
-    groupBy: ['status', 'assignee', 'priority', 'milestone', 'createdBy', 'modifiedBy'],
-    orderBy: [
-      ['rank', SortingOrder.Ascending],
-      ['status', SortingOrder.Ascending],
-      ['priority', SortingOrder.Ascending],
-      ['modifiedOn', SortingOrder.Descending],
-      ['createdOn', SortingOrder.Descending],
-      ['dueDate', SortingOrder.Ascending]
-    ],
-    groupDepth: 1,
-    other: [showColorsViewOption]
-  }
-
-  builder.createDoc(
-    view.class.Viewlet,
-    core.space.Model,
-    {
-      attachTo: tracker.class.Issue,
-      descriptor: view.viewlet.List,
-      viewOptions: subIssuesOptions,
-      variant: 'subissue',
-      configOptions: {
-        strict: true,
-        hiddenKeys: [
-          'priority',
-          'number',
-          'status',
-          'title',
-          'dueDate',
-          'milestone',
-          'estimation',
-          'createdBy',
-          'modifiedBy'
-        ]
-      },
-      config: issueConfig('sub', true, true)
-    },
-    tracker.viewlet.SubIssues
+  generateClassNotificationTypes(
+    builder,
+    tracker.class.Issue,
+    tracker.ids.TrackerNotificationGroup,
+    [],
+    ['comments', 'status', 'priority', 'assignee', 'subIssues', 'blockedBy', 'milestone', 'dueDate']
   )
+}
 
-  const milestoneIssueOptions: ViewOptionsModel = {
-    groupBy: ['status', 'assignee', 'priority', 'component', 'createdBy', 'modifiedBy'],
-    orderBy: [
-      ['rank', SortingOrder.Ascending],
-      ['status', SortingOrder.Ascending],
-      ['priority', SortingOrder.Ascending],
-      ['modifiedOn', SortingOrder.Descending],
-      ['createdOn', SortingOrder.Descending],
-      ['dueDate', SortingOrder.Ascending]
-    ],
-    groupDepth: 1,
-    other: [showColorsViewOption]
-  }
-
-  builder.createDoc(
-    view.class.Viewlet,
-    core.space.Model,
-    {
-      attachTo: tracker.class.Issue,
-      descriptor: view.viewlet.List,
-      viewOptions: milestoneIssueOptions,
-      variant: 'milestone',
-      configOptions: {
-        strict: true,
-        hiddenKeys: [
-          'priority',
-          'number',
-          'status',
-          'title',
-          'dueDate',
-          'milestone',
-          'estimation',
-          'createdBy',
-          'modifiedBy'
-        ]
-      },
-      config: issueConfig('sub', true, false, true)
-    },
-    tracker.viewlet.MilestoneIssuesList
-  )
-
-  const componentIssueOptions: ViewOptionsModel = {
-    groupBy: ['status', 'assignee', 'priority', 'milestone', 'createdBy', 'modifiedBy'],
-    orderBy: [
-      ['rank', SortingOrder.Ascending],
-      ['status', SortingOrder.Ascending],
-      ['priority', SortingOrder.Ascending],
-      ['modifiedOn', SortingOrder.Descending],
-      ['createdOn', SortingOrder.Descending],
-      ['dueDate', SortingOrder.Ascending]
-    ],
-    groupDepth: 1,
-    other: [showColorsViewOption]
-  }
-
-  builder.createDoc(
-    view.class.Viewlet,
-    core.space.Model,
-    {
-      attachTo: tracker.class.Issue,
-      descriptor: view.viewlet.List,
-      viewOptions: componentIssueOptions,
-      variant: 'component',
-      configOptions: {
-        strict: true,
-        hiddenKeys: [
-          'priority',
-          'number',
-          'status',
-          'title',
-          'dueDate',
-          'component',
-          'estimation',
-          'createdBy',
-          'modifiedBy'
-        ]
-      },
-      config: issueConfig('sub', true, true, false)
-    },
-    tracker.viewlet.ComponentIssuesList
-  )
-
-  builder.createDoc(
-    view.class.Viewlet,
-    core.space.Model,
-    {
-      attachTo: tracker.class.IssueTemplate,
-      descriptor: view.viewlet.List,
-      viewOptions: {
-        groupBy: ['assignee', 'priority', 'component', 'milestone', 'createdBy', 'modifiedBy'],
-        orderBy: [
-          ['priority', SortingOrder.Ascending],
-          ['modifiedOn', SortingOrder.Descending],
-          ['dueDate', SortingOrder.Ascending],
-          ['rank', SortingOrder.Ascending]
-        ],
-        other: [showColorsViewOption]
-      },
-      configOptions: {
-        strict: true,
-        hiddenKeys: ['milestone', 'estimation', 'component', 'title', 'description', 'createdBy', 'modifiedBy']
-      },
-      config: [
-        // { key: '', presenter: tracker.component.PriorityEditor, props: { kind: 'list', size: 'small' } },
-        {
-          key: '',
-          presenter: tracker.component.IssueTemplatePresenter,
-          props: { type: 'issue', shouldUseMargin: true }
-        },
-        // { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list' } },
-        {
-          key: '',
-          presenter: tracker.component.ComponentEditor,
-          label: tracker.string.Component,
-          props: {
-            kind: 'list',
-            size: 'small',
-            shouldShowPlaceholder: false
-          },
-          displayProps: { key: 'component', compression: true }
-        },
-        {
-          key: '',
-          label: tracker.string.Milestone,
-          presenter: tracker.component.MilestoneEditor,
-          props: {
-            kind: 'list',
-            size: 'small',
-            shouldShowPlaceholder: false
-          },
-          displayProps: { key: 'milestone', compression: true }
-        },
-        {
-          key: '',
-          label: tracker.string.Estimation,
-          presenter: tracker.component.TemplateEstimationEditor,
-          props: {
-            kind: 'list',
-            size: 'small'
-          },
-          displayProps: { key: 'estimation', compression: true }
-        },
-        { key: '', displayProps: { grow: true } },
-        {
-          key: 'modifiedOn',
-          presenter: tracker.component.ModificationDatePresenter,
-          displayProps: { fixed: 'right', dividerBefore: true }
-        },
-        {
-          key: 'assignee',
-          presenter: tracker.component.AssigneeEditor,
-          props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' }
-        }
-      ]
-    },
-    tracker.viewlet.IssueTemplateList
-  )
-
-  builder.createDoc(
-    view.class.Viewlet,
-    core.space.Model,
-    {
-      attachTo: tracker.class.Issue,
-      descriptor: tracker.viewlet.Kanban,
-      viewOptions: {
-        ...issuesOptions(true),
-        groupDepth: 1
-      },
-      configOptions: {
-        strict: true
-      },
-      config: ['subIssues', 'priority', 'component', 'dueDate', 'labels', 'estimation', 'attachments', 'comments']
-    },
-    tracker.viewlet.IssueKanban
-  )
-
-  builder.createDoc(
-    view.class.ViewletDescriptor,
-    core.space.Model,
-    {
-      label: tracker.string.Board,
-      icon: task.icon.Kanban,
-      component: tracker.component.KanbanView
-    },
-    tracker.viewlet.Kanban
-  )
-
+function defineStatusCategories (builder: Builder): void {
   builder.createDoc(
     core.class.StatusCategory,
     core.space.Model,
@@ -877,187 +198,117 @@ export function createModel (builder: Builder): void {
     },
     tracker.issueStatusCategory.Canceled
   )
+}
 
-  const issuesId = 'issues'
-  const componentsId = 'components'
-  const milestonesId = 'milestones'
-  const templatesId = 'templates'
-  const myIssuesId = 'my-issues'
-  const allIssuesId = 'all-issues'
-  // const scrumsId = 'scrums'
-
-  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ObjectPresenter, {
-    presenter: tracker.component.IssuePresenter
+/**
+ * Define filters
+ */
+function defineFilters (builder: Builder): void {
+  //
+  // Issue
+  //
+  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ClassFilters, {
+    filters: [
+      'status',
+      'priority',
+      'space',
+      'createdBy',
+      'assignee',
+      {
+        _class: tracker.class.Issue,
+        key: 'component',
+        component: view.component.ObjectFilter,
+        showNested: false
+      },
+      {
+        _class: tracker.class.Issue,
+        key: 'milestone',
+        component: view.component.ObjectFilter,
+        showNested: false
+      }
+    ],
+    ignoreKeys: ['number', 'estimation', 'attachedTo'],
+    getVisibleFilters: tracker.function.GetVisibleFilters
   })
 
-  builder.mixin(tracker.class.Issue, core.class.Class, notification.mixin.NotificationObjectPresenter, {
-    presenter: tracker.component.NotificationIssuePresenter
-  })
-
-  builder.mixin(tracker.class.IssueTemplate, core.class.Class, view.mixin.ObjectPresenter, {
-    presenter: tracker.component.IssueTemplatePresenter
-  })
-
-  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.PreviewPresenter, {
-    presenter: tracker.component.IssuePreview
-  })
-
-  builder.mixin(tracker.class.TimeSpendReport, core.class.Class, view.mixin.ObjectPresenter, {
-    presenter: tracker.component.TimeSpendReport
-  })
-
-  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ObjectTitle, {
-    titleProvider: tracker.function.IssueTitleProvider
-  })
-
-  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ListHeaderExtra, {
-    presenters: [tracker.component.IssueStatistics]
-  })
-
-  builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.ObjectPresenter, {
-    presenter: tracker.component.StatusPresenter
-  })
-
-  builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: tracker.component.StatusRefPresenter
-  })
-
-  builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.SortFuncs, {
-    func: tracker.function.IssueStatusSort
-  })
-
-  builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.SortFuncs, {
-    func: tracker.function.IssuePrioritySort
-  })
-
-  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.SortFuncs, {
-    func: tracker.function.MilestoneSort
-  })
-
-  builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.ObjectPresenter, {
-    presenter: tracker.component.PriorityPresenter
-  })
-
+  //
+  // Issue Status
+  //
   builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.AttributeFilterPresenter, {
     presenter: tracker.component.StatusFilterValuePresenter
   })
 
-  builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AttributeFilterPresenter, {
-    presenter: tracker.component.PriorityFilterValuePresenter
+  //
+  // Issue Template
+  //
+  builder.mixin(tracker.class.IssueTemplate, core.class.Class, view.mixin.ClassFilters, {
+    filters: []
   })
 
-  builder.mixin(tracker.class.Issue, core.class.Class, notification.mixin.ClassCollaborators, {
-    fields: ['createdBy', 'assignee']
+  //
+  // Milestone
+  //
+  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.ClassFilters, {
+    filters: ['status'],
+    strict: true
+  })
+
+  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.AttributeFilter, {
+    component: tracker.component.MilestoneFilter
+  })
+
+  //
+  // Project
+  //
+  builder.mixin(tracker.class.Project, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.ValueFilter
+  })
+  builder.mixin(tracker.class.Project, core.class.Class, view.mixin.AttributeFilterPresenter, {
+    presenter: tracker.component.ProjectFilterValuePresenter
+  })
+
+  //
+  // Component
+  //
+  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.AttributeFilterPresenter, {
+    presenter: tracker.component.ComponentFilterValuePresenter
+  })
+
+  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.ClassFilters, {
+    filters: []
+  })
+
+  //
+  // Type Milestone Status
+  //
+
+  builder.mixin(tracker.class.TypeMilestoneStatus, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.ValueFilter
+  })
+
+  //
+  // Type Issue Priority
+  //
+  builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AttributeFilterPresenter, {
+    presenter: tracker.component.PriorityFilterValuePresenter
   })
 
   builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AttributeFilter, {
     component: view.component.ValueFilter
   })
+}
 
-  builder.mixin(tracker.class.Project, core.class.Class, view.mixin.AttributeFilter, {
-    component: view.component.ValueFilter
-  })
-
-  builder.mixin(tracker.class.Project, core.class.Class, view.mixin.AttributeFilterPresenter, {
-    presenter: tracker.component.ProjectFilterValuePresenter
-  })
-
-  builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: tracker.component.PriorityRefPresenter
-  })
-
-  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.ObjectEditor, {
-    editor: tracker.component.EditComponent
-  })
-
-  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.ObjectPresenter, {
-    presenter: tracker.component.ComponentPresenter
-  })
-
-  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.AttributeFilterPresenter, {
-    presenter: tracker.component.ComponentFilterValuePresenter
-  })
-
-  builder.mixin(tracker.class.Project, core.class.Class, view.mixin.ObjectPresenter, {
-    presenter: tracker.component.ProjectPresenter
-  })
-
-  builder.mixin(tracker.class.Project, core.class.Class, view.mixin.SpacePresenter, {
-    presenter: tracker.component.ProjectSpacePresenter
-  })
-
-  classPresenter(
-    builder,
-    tracker.class.Component,
-    tracker.component.ComponentSelector,
-    tracker.component.ComponentSelector
-  )
-
-  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.AttributeEditor, {
-    inlineEditor: tracker.component.ComponentSelector
-  })
-
-  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: tracker.component.ComponentRefPresenter
-  })
-
-  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.Aggregation, {
-    createAggregationManager: tracker.aggregation.CreateComponentAggregationManager
-  })
-
-  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.ObjectPresenter, {
-    presenter: tracker.component.MilestonePresenter
-  })
-
-  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: tracker.component.MilestoneRefPresenter
-  })
-
-  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.ObjectEditor, {
-    editor: tracker.component.EditMilestone
-  })
-
-  builder.mixin(tracker.class.Issue, core.class.Class, setting.mixin.Editable, {
-    value: true
-  })
-
-  builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AllValuesFunc, {
-    func: tracker.function.GetAllPriority
-  })
-
-  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.AllValuesFunc, {
-    func: tracker.function.GetAllComponents
-  })
-
-  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.AllValuesFunc, {
-    func: tracker.function.GetAllMilestones
-  })
-
-  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.LinkProvider, {
-    encode: tracker.function.GetIssueLinkFragment
-  })
-
-  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ObjectPanel, {
-    component: tracker.component.EditIssue
-  })
-
-  builder.mixin(tracker.class.IssueTemplate, core.class.Class, view.mixin.ObjectPanel, {
-    component: tracker.component.EditIssueTemplate
-  })
-
-  builder.createDoc(
-    activity.class.TxViewlet,
-    core.space.Model,
-    {
-      objectClass: tracker.class.Issue,
-      icon: tracker.icon.Issue,
-      txClass: core.class.TxCreateDoc,
-      labelComponent: tracker.activity.TxIssueCreated,
-      display: 'inline'
-    },
-    tracker.ids.TxIssueCreated
-  )
-
+function defineApplication (
+  builder: Builder,
+  opt: {
+    myIssuesId: string
+    allIssuesId: string
+    issuesId: string
+    componentsId: string
+    milestonesId: string
+    templatesId: string
+  }
+): void {
   builder.createDoc(
     workbench.class.Application,
     core.space.Model,
@@ -1070,7 +321,7 @@ export function createModel (builder: Builder): void {
       navigatorModel: {
         specials: [
           {
-            id: myIssuesId,
+            id: opt.myIssuesId,
             position: 'top',
             label: tracker.string.MyIssues,
             icon: tracker.icon.MyIssues,
@@ -1084,7 +335,7 @@ export function createModel (builder: Builder): void {
             }
           },
           {
-            id: allIssuesId,
+            id: opt.allIssuesId,
             position: 'top',
             label: tracker.string.AllIssues,
             icon: tracker.icon.Issues,
@@ -1125,7 +376,7 @@ export function createModel (builder: Builder): void {
             icon: tracker.icon.Home,
             specials: [
               {
-                id: issuesId,
+                id: opt.issuesId,
                 label: tracker.string.Issues,
                 icon: tracker.icon.Issues,
                 component: tracker.component.Issues,
@@ -1139,19 +390,19 @@ export function createModel (builder: Builder): void {
                 }
               },
               {
-                id: componentsId,
+                id: opt.componentsId,
                 label: tracker.string.Components,
                 icon: tracker.icon.Components,
                 component: tracker.component.ProjectComponents
               },
               {
-                id: milestonesId,
+                id: opt.milestonesId,
                 label: tracker.string.Milestones,
                 icon: tracker.icon.Milestone,
                 component: tracker.component.Milestones
               },
               {
-                id: templatesId,
+                id: opt.templatesId,
                 label: tracker.string.IssueTemplates,
                 icon: tracker.icon.IssueTemplates,
                 component: tracker.component.IssueTemplates
@@ -1164,382 +415,86 @@ export function createModel (builder: Builder): void {
     },
     tracker.app.Tracker
   )
+}
 
-  function createGotoSpecialAction (
-    builder: Builder,
-    id: string,
-    key: KeyBinding,
-    label: IntlString,
-    query?: Record<string, string | null>
-  ): void {
-    createNavigateAction(builder, key, label, tracker.app.Tracker, {
-      application: trackerId,
-      mode: 'space',
-      spaceSpecial: id,
-      spaceClass: tracker.class.Project,
-      query
-    })
-  }
+export function createModel (builder: Builder): void {
+  builder.createModel(
+    TProject,
+    TComponent,
+    TIssue,
+    TIssueTemplate,
+    TIssueStatus,
+    TTypeIssuePriority,
+    TMilestone,
+    TTypeMilestoneStatus,
+    TTimeSpendReport,
+    TTypeReportedTime,
+    TProjectIssueTargetOptions,
+    TRelatedIssueTarget
+  )
 
-  createGotoSpecialAction(builder, issuesId, 'keyG->keyE', tracker.string.GotoIssues)
-  createGotoSpecialAction(builder, issuesId, 'keyG->keyA', tracker.string.GotoActive, { mode: 'active' })
-  createGotoSpecialAction(builder, issuesId, 'keyG->keyB', tracker.string.GotoBacklog, { mode: 'backlog' })
-  createGotoSpecialAction(builder, componentsId, 'keyG->keyC', tracker.string.GotoComponents)
-  createNavigateAction(builder, 'keyG->keyM', tracker.string.GotoMyIssues, tracker.app.Tracker, {
-    application: trackerId,
-    mode: 'special',
-    special: myIssuesId
+  defineViewlets(builder)
+
+  defineStatusCategories(builder)
+
+  const issuesId = 'issues'
+  const componentsId = 'components'
+  const milestonesId = 'milestones'
+  const templatesId = 'templates'
+  const myIssuesId = 'my-issues'
+  const allIssuesId = 'all-issues'
+  // const scrumsId = 'scrums'
+
+  definePresenters(builder)
+
+  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: tracker.function.IssueTitleProvider
   })
 
-  createAction(builder, {
-    action: workbench.actionImpl.Navigate,
-    actionProps: {
-      mode: 'app',
-      application: trackerId
-    },
-    label: tracker.string.GotoTrackerApplication,
-    icon: view.icon.ArrowRight,
-    input: 'none',
-    category: view.category.Navigation,
-    target: core.class.Doc,
-    context: {
-      mode: ['workbench', 'browser', 'editor', 'panel', 'popup']
-    }
+  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ListHeaderExtra, {
+    presenters: [tracker.component.IssueStatistics]
   })
 
-  createAction(
-    builder,
-    {
-      action: tracker.actionImpl.EditWorkflowStatuses,
-      label: tracker.string.EditWorkflowStatuses,
-      icon: view.icon.Statuses,
-      input: 'focus',
-      category: tracker.category.Tracker,
-      target: tracker.class.Project,
-      override: [task.action.EditStatuses],
-      query: {},
-      context: {
-        mode: ['context', 'browser'],
-        group: 'edit'
-      }
-    },
-    tracker.action.EditWorkflowStatuses
-  )
+  defineSortAndGrouping(builder)
 
-  createAction(
-    builder,
-    {
-      action: tracker.actionImpl.EditProject,
-      label: tracker.string.EditProject,
-      icon: contact.icon.Edit,
-      input: 'focus',
-      category: tracker.category.Tracker,
-      target: tracker.class.Project,
-      query: {},
-      context: {
-        mode: ['context', 'browser'],
-        group: 'edit'
-      }
-    },
-    tracker.action.EditProject
-  )
-
-  createAction(
-    builder,
-    {
-      action: tracker.actionImpl.DeleteProject,
-      label: workbench.string.Archive,
-      icon: view.icon.Archive,
-      input: 'focus',
-      category: tracker.category.Tracker,
-      target: tracker.class.Project,
-      query: {
-        archived: false
-      },
-      context: {
-        mode: ['context', 'browser'],
-        group: 'edit'
-      },
-      override: [view.action.Archive, view.action.Delete]
-    },
-    tracker.action.DeleteProject
-  )
-  createAction(
-    builder,
-    {
-      action: tracker.actionImpl.DeleteProject,
-      label: workbench.string.Delete,
-      icon: view.icon.Delete,
-      input: 'focus',
-      category: tracker.category.Tracker,
-      target: tracker.class.Project,
-      query: {
-        archived: true
-      },
-      context: {
-        mode: ['context', 'browser'],
-        group: 'edit'
-      },
-      override: [view.action.Archive, view.action.Delete]
-    },
-    tracker.action.DeleteProjectClean
-  )
-  createAction(builder, {
-    label: tracker.string.Unarchive,
-    icon: view.icon.Archive,
-    action: view.actionImpl.UpdateDocument as ViewAction,
-    actionProps: {
-      key: 'archived',
-      ask: true,
-      value: false,
-      label: tracker.string.Unarchive,
-      message: tracker.string.UnarchiveConfirm
-    },
-    input: 'any',
-    category: tracker.category.Tracker,
-    query: {
-      archived: true
-    },
-    context: {
-      mode: ['context', 'browser'],
-      group: 'tools'
-    },
-    target: tracker.class.Project
+  builder.mixin(tracker.class.Issue, core.class.Class, notification.mixin.ClassCollaborators, {
+    fields: ['createdBy', 'assignee']
   })
 
-  createAction(
-    builder,
-    {
-      action: tracker.actionImpl.DeleteIssue,
-      label: workbench.string.Delete,
-      icon: view.icon.Delete,
-      input: 'any',
-      category: tracker.category.Tracker,
-      target: tracker.class.Issue,
-      context: {
-        mode: ['context', 'browser'],
-        group: 'remove'
-      },
-      override: [view.action.Delete]
-    },
-    tracker.action.DeleteIssue
-  )
+  builder.mixin(tracker.class.Issue, core.class.Class, setting.mixin.Editable, {
+    value: true
+  })
+
+  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.LinkProvider, {
+    encode: tracker.function.GetIssueLinkFragment
+  })
+
+  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ObjectPanel, {
+    component: tracker.component.EditIssue
+  })
+
+  builder.mixin(tracker.class.IssueTemplate, core.class.Class, view.mixin.ObjectPanel, {
+    component: tracker.component.EditIssueTemplate
+  })
 
   builder.createDoc(
-    view.class.ActionCategory,
+    activity.class.TxViewlet,
     core.space.Model,
-    { label: tracker.string.TrackerApplication, visible: true },
-    tracker.category.Tracker
-  )
-
-  createAction(
-    builder,
     {
-      action: view.actionImpl.ShowPopup,
-      actionProps: {
-        component: tracker.component.CreateIssue,
-        element: 'top'
-      },
-      label: tracker.string.NewIssue,
-      icon: tracker.icon.NewIssue,
-      keyBinding: ['keyC'],
-      input: 'none',
-      category: tracker.category.Tracker,
-      target: tracker.class.Issue,
-      context: {
-        mode: ['browser'],
-        application: tracker.app.Tracker,
-        group: 'create'
-      }
+      objectClass: tracker.class.Issue,
+      icon: tracker.icon.Issue,
+      txClass: core.class.TxCreateDoc,
+      labelComponent: tracker.activity.TxIssueCreated,
+      display: 'inline'
     },
-    tracker.action.NewIssue
+    tracker.ids.TxIssueCreated
   )
 
-  createAction(
-    builder,
-    {
-      action: view.actionImpl.ShowPopup,
-      actionProps: {
-        component: tracker.component.CreateIssue,
-        element: 'top',
-        fillProps: {
-          _object: 'parentIssue',
-          space: 'space'
-        }
-      },
-      label: tracker.string.NewSubIssue,
-      icon: tracker.icon.Subissue,
-      keyBinding: [],
-      input: 'focus',
-      category: tracker.category.Tracker,
-      target: tracker.class.Issue,
-      context: {
-        mode: ['context', 'browser'],
-        application: tracker.app.Tracker,
-        group: 'associate'
-      }
-    },
-    tracker.action.NewSubIssue
-  )
+  defineApplication(builder, { myIssuesId, allIssuesId, issuesId, componentsId, milestonesId, templatesId })
 
-  createAction(
-    builder,
-    {
-      action: view.actionImpl.ShowPopup,
-      actionProps: {
-        component: tracker.component.SetParentIssueActionPopup,
-        element: 'top',
-        fillProps: {
-          _objects: 'value'
-        }
-      },
-      label: tracker.string.SetParent,
-      icon: tracker.icon.Parent,
-      keyBinding: [],
-      input: 'none',
-      category: tracker.category.Tracker,
-      target: tracker.class.Issue,
-      context: {
-        mode: ['context'],
-        application: tracker.app.Tracker,
-        group: 'associate'
-      }
-    },
-    tracker.action.SetParent
-  )
+  defineActions(builder, issuesId, componentsId, myIssuesId)
 
-  createAction(
-    builder,
-    {
-      action: view.actionImpl.ShowPopup,
-      actionProps: {
-        component: tracker.component.CreateIssue,
-        element: 'top',
-        fillProps: {
-          _object: 'relatedTo',
-          space: 'space'
-        }
-      },
-      label: tracker.string.NewRelatedIssue,
-      icon: tracker.icon.NewIssue,
-      keyBinding: [],
-      input: 'focus',
-      category: tracker.category.Tracker,
-      target: core.class.Doc,
-      context: {
-        mode: ['context', 'browser', 'editor'],
-        group: 'associate'
-      }
-    },
-    tracker.action.NewRelatedIssue
-  )
-
-  createAction(builder, {
-    action: view.actionImpl.ShowPopup,
-    actionPopup: tracker.component.SetParentIssueActionPopup,
-    actionProps: {
-      component: tracker.component.SetParentIssueActionPopup,
-      element: 'top',
-      fillProps: {
-        _object: 'value'
-      }
-    },
-    label: tracker.string.SetParent,
-    icon: tracker.icon.Parent,
-    keyBinding: [],
-    input: 'none',
-    category: tracker.category.Tracker,
-    target: tracker.class.Issue,
-    override: [tracker.action.SetParent],
-    context: {
-      mode: ['browser'],
-      application: tracker.app.Tracker,
-      group: 'associate'
-    }
-  })
-
-  createAction(builder, {
-    ...actionTemplates.open,
-    actionProps: {
-      component: tracker.component.EditIssue
-    },
-    target: tracker.class.Issue,
-    context: {
-      mode: ['browser', 'context'],
-      group: 'create'
-    },
-    override: [view.action.Open]
-  })
-
-  createAction(builder, {
-    ...actionTemplates.open,
-    actionProps: {
-      component: tracker.component.EditIssueTemplate
-    },
-    target: tracker.class.IssueTemplate,
-    context: {
-      mode: ['browser', 'context'],
-      group: 'create'
-    },
-    override: [view.action.Open]
-  })
-
-  builder.mixin(tracker.class.Project, core.class.Class, view.mixin.IgnoreActions, {
-    actions: [view.action.Open]
-  })
-
-  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ClassFilters, {
-    filters: [
-      'status',
-      'priority',
-      'space',
-      'createdBy',
-      'assignee',
-      {
-        _class: tracker.class.Issue,
-        key: 'component',
-        component: view.component.ObjectFilter,
-        showNested: false
-      },
-      {
-        _class: tracker.class.Issue,
-        key: 'milestone',
-        component: view.component.ObjectFilter,
-        showNested: false
-      }
-    ],
-    ignoreKeys: ['number', 'estimation', 'attachedTo'],
-    getVisibleFilters: tracker.function.GetVisibleFilters
-  })
-
-  builder.mixin(tracker.class.IssueTemplate, core.class.Class, view.mixin.ClassFilters, {
-    filters: []
-  })
-
-  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['status'],
-    strict: true
-  })
-
-  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.AttributeFilter, {
-    component: tracker.component.MilestoneFilter
-  })
-
-  builder.mixin(tracker.class.TypeMilestoneStatus, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: tracker.component.MilestoneStatusPresenter
-  })
-
-  builder.mixin(tracker.class.TypeMilestoneStatus, core.class.Class, view.mixin.AttributeEditor, {
-    inlineEditor: tracker.component.MilestoneStatusEditor
-  })
-
-  builder.mixin(tracker.class.TypeMilestoneStatus, core.class.Class, view.mixin.AttributeFilter, {
-    component: view.component.ValueFilter
-  })
-
-  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.ClassFilters, {
-    filters: []
-  })
+  defineFilters(builder)
 
   builder.createDoc(
     presentation.class.ObjectSearchCategory,
@@ -1552,540 +507,15 @@ export function createModel (builder: Builder): void {
     tracker.completion.IssueCategory
   )
 
-  createAction(builder, {
-    action: view.actionImpl.ShowPopup,
-    actionProps: {
-      component: tracker.component.TimeSpendReportPopup,
-      fillProps: {
-        _object: 'issue'
-      }
-    },
-    label: tracker.string.TimeSpendReportAdd,
-    icon: tracker.icon.TimeReport,
-    input: 'focus',
-    keyBinding: ['keyT'],
-    category: tracker.category.Tracker,
-    target: tracker.class.Issue,
-    context: {
-      mode: ['context', 'browser'],
-      application: tracker.app.Tracker,
-      group: 'edit'
-    }
+  defineNotifications(builder)
+
+  builder.createDoc(setting.class.WorkspaceSettingCategory, core.space.Model, {
+    name: 'relations',
+    label: tracker.string.RelatedIssues,
+    icon: tracker.icon.Relations,
+    component: tracker.component.EditRelatedTargets,
+    group: 'settings-editor',
+    secured: false,
+    order: 4000
   })
-
-  createAction(
-    builder,
-    {
-      action: task.actionImpl.SelectStatus,
-      actionPopup: task.component.StatusSelector,
-      actionProps: {
-        _class: tracker.class.IssueStatus,
-        ofAttribute: tracker.attribute.IssueStatus,
-        placeholder: tracker.string.Status
-      },
-      label: tracker.string.Status,
-      icon: tracker.icon.CategoryBacklog,
-      keyBinding: ['keyS->keyS'],
-      input: 'any',
-      category: tracker.category.Tracker,
-      target: tracker.class.Issue,
-      context: {
-        mode: ['context', 'browser'],
-        application: tracker.app.Tracker,
-        group: 'edit'
-      }
-    },
-    tracker.action.SetStatus
-  )
-
-  createAction(
-    builder,
-    {
-      action: view.actionImpl.ValueSelector,
-      actionPopup: view.component.ValueSelector,
-      actionProps: {
-        attribute: 'priority',
-        values: defaultPriorities.map((p) => ({ id: p, ...issuePriorities[p] })),
-        placeholder: tracker.string.SetPriority
-      },
-      label: tracker.string.Priority,
-      icon: tracker.icon.PriorityHigh,
-      keyBinding: ['keyP->keyR'],
-      input: 'any',
-      category: tracker.category.Tracker,
-      target: tracker.class.Issue,
-      context: {
-        mode: ['context', 'browser'],
-        application: tracker.app.Tracker,
-        group: 'edit'
-      }
-    },
-    tracker.action.SetPriority
-  )
-  createAction(
-    builder,
-    {
-      action: view.actionImpl.ValueSelector,
-      actionPopup: view.component.ValueSelector,
-      actionProps: {
-        attribute: 'assignee',
-        _class: contact.mixin.Employee,
-        query: {},
-        placeholder: tracker.string.AssignTo
-      },
-      label: tracker.string.Assignee,
-      icon: contact.icon.Person,
-      keyBinding: ['keyA'],
-      input: 'any',
-      category: tracker.category.Tracker,
-      target: tracker.class.Issue,
-      context: {
-        mode: ['context', 'browser'],
-        application: tracker.app.Tracker,
-        group: 'edit'
-      }
-    },
-    tracker.action.SetAssignee
-  )
-
-  createAction(
-    builder,
-    {
-      action: view.actionImpl.ValueSelector,
-      actionPopup: view.component.ValueSelector,
-      actionProps: {
-        attribute: 'component',
-        _class: tracker.class.Component,
-        query: {},
-        fillQuery: { space: 'space' },
-        docMatches: ['space'],
-        searchField: 'label',
-        placeholder: tracker.string.Component
-      },
-      label: tracker.string.Component,
-      icon: tracker.icon.Component,
-      keyBinding: ['keyM->keyT'],
-      input: 'any',
-      category: tracker.category.Tracker,
-      target: tracker.class.Issue,
-      context: {
-        mode: ['context', 'browser'],
-        application: tracker.app.Tracker,
-        group: 'edit'
-      }
-    },
-    tracker.action.SetComponent
-  )
-
-  createAction(
-    builder,
-    {
-      action: view.actionImpl.AttributeSelector,
-      actionPopup: tracker.component.MilestoneEditor,
-      actionProps: {
-        attribute: 'milestone',
-        isAction: true
-      },
-      label: tracker.string.Milestone,
-      icon: tracker.icon.Milestone,
-      keyBinding: ['keyS->keyP'],
-      input: 'any',
-      category: tracker.category.Tracker,
-      target: tracker.class.Issue,
-      context: {
-        mode: ['context', 'browser'],
-        application: tracker.app.Tracker,
-        group: 'edit'
-      }
-    },
-    tracker.action.SetMilestone
-  )
-
-  createAction(
-    builder,
-    {
-      action: view.actionImpl.ShowPopup,
-      actionProps: {
-        component: tags.component.TagsEditorPopup,
-        element: 'top',
-        fillProps: {
-          _object: 'object'
-        }
-      },
-      label: tracker.string.Labels,
-      icon: tags.icon.Tags,
-      keyBinding: ['keyL'],
-      input: 'focus',
-      category: tracker.category.Tracker,
-      target: tracker.class.Issue,
-      context: {
-        mode: ['context', 'browser'],
-        application: tracker.app.Tracker,
-        group: 'edit'
-      }
-    },
-    tracker.action.SetLabels
-  )
-
-  createAction(
-    builder,
-    {
-      action: view.actionImpl.ShowPopup,
-      actionProps: {
-        component: tags.component.ObjectsTagsEditorPopup,
-        element: 'top',
-        fillProps: {
-          _objects: 'value'
-        }
-      },
-      label: tracker.string.Labels,
-      icon: tags.icon.Tags,
-      keyBinding: ['keyL'],
-      input: 'selection',
-      category: tracker.category.Tracker,
-      target: tracker.class.Issue,
-      context: {
-        mode: ['context', 'browser'],
-        application: tracker.app.Tracker,
-        group: 'edit'
-      }
-    },
-    tracker.action.SetLabels
-  )
-
-  createAction(
-    builder,
-    {
-      action: view.actionImpl.ShowPopup,
-      actionProps: {
-        component: tracker.component.SetDueDateActionPopup,
-        props: { mondayStart: true, withTime: false },
-        element: 'top',
-        fillProps: {
-          _objects: 'value'
-        }
-      },
-      label: tracker.string.SetDueDate,
-      icon: tracker.icon.DueDate,
-      keyBinding: ['keyD'],
-      input: 'any',
-      category: tracker.category.Tracker,
-      target: tracker.class.Issue,
-      context: {
-        mode: ['context', 'browser'],
-        application: tracker.app.Tracker,
-        group: 'edit'
-      }
-    },
-    tracker.action.SetDueDate
-  )
-  createAction(
-    builder,
-    {
-      action: view.actionImpl.CopyTextToClipboard,
-      actionProps: {
-        textProvider: tracker.function.GetIssueId
-      },
-      label: tracker.string.CopyIssueId,
-      icon: view.icon.CopyId,
-      keyBinding: [],
-      input: 'focus',
-      category: tracker.category.Tracker,
-      target: tracker.class.Issue,
-      context: {
-        mode: ['context', 'browser'],
-        application: tracker.app.Tracker,
-        group: 'copy'
-      }
-    },
-    tracker.action.CopyIssueId
-  )
-  createAction(
-    builder,
-    {
-      action: view.actionImpl.CopyTextToClipboard,
-      actionProps: {
-        textProvider: tracker.function.GetIssueTitle
-      },
-      label: tracker.string.CopyIssueTitle,
-      icon: tracker.icon.CopyBranch,
-      keyBinding: [],
-      input: 'focus',
-      category: tracker.category.Tracker,
-      target: tracker.class.Issue,
-      context: {
-        mode: ['context', 'browser'],
-        application: tracker.app.Tracker,
-        group: 'copy'
-      }
-    },
-    tracker.action.CopyIssueTitle
-  )
-  createAction(
-    builder,
-    {
-      action: view.actionImpl.CopyTextToClipboard,
-      actionProps: {
-        textProvider: tracker.function.GetIssueLink
-      },
-      label: tracker.string.CopyIssueUrl,
-      icon: view.icon.CopyLink,
-      keyBinding: [],
-      input: 'focus',
-      category: tracker.category.Tracker,
-      target: tracker.class.Issue,
-      context: {
-        mode: ['context', 'browser'],
-        application: tracker.app.Tracker,
-        group: 'copy'
-      }
-    },
-    tracker.action.CopyIssueLink
-  )
-  createAction(
-    builder,
-    {
-      action: tracker.actionImpl.Move,
-      label: tracker.string.MoveToProject,
-      icon: view.icon.Move,
-      keyBinding: [],
-      input: 'any',
-      category: tracker.category.Tracker,
-      target: tracker.class.Issue,
-      context: {
-        mode: ['context', 'browser'],
-        application: tracker.app.Tracker,
-        group: 'associate'
-      },
-      override: [task.action.Move]
-    },
-    tracker.action.MoveToProject
-  )
-  createAction(
-    builder,
-    {
-      action: view.actionImpl.ValueSelector,
-      actionPopup: tracker.component.RelationsPopup,
-      actionProps: {
-        attribute: ''
-      },
-      label: tracker.string.Relations,
-      icon: tracker.icon.Relations,
-      keyBinding: [],
-      input: 'focus',
-      category: tracker.category.Tracker,
-      target: tracker.class.Issue,
-      context: {
-        mode: ['context', 'browser'],
-        application: tracker.app.Tracker,
-        group: 'associate'
-      }
-    },
-    tracker.action.Relations
-  )
-  createAction(
-    builder,
-    {
-      action: view.actionImpl.ShowPopup,
-      actionProps: {
-        component: tracker.component.CreateIssue,
-        element: 'top',
-        fillProps: {
-          _object: 'originalIssue',
-          space: 'space'
-        }
-      },
-      label: tracker.string.Duplicate,
-      icon: tracker.icon.Duplicate,
-      keyBinding: [],
-      input: 'focus',
-      category: tracker.category.Tracker,
-      target: tracker.class.Issue,
-      context: {
-        mode: ['context', 'browser'],
-        application: tracker.app.Tracker,
-        group: 'associate'
-      }
-    },
-    tracker.action.Duplicate
-  )
-
-  createAction(
-    builder,
-    {
-      action: tracker.actionImpl.DeleteMilestone,
-      label: view.string.Delete,
-      icon: view.icon.Delete,
-      keyBinding: ['Meta + Backspace'],
-      category: tracker.category.Tracker,
-      input: 'any',
-      target: tracker.class.Milestone,
-      context: { mode: ['context', 'browser'], group: 'remove' }
-    },
-    tracker.action.DeleteMilestone
-  )
-
-  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.IgnoreActions, {
-    actions: [view.action.Delete]
-  })
-
-  classPresenter(
-    builder,
-    tracker.class.TypeReportedTime,
-    view.component.NumberPresenter,
-    tracker.component.ReportedTimeEditor
-  )
-
-  const milestoneOptions: ViewOptionsModel = {
-    groupBy: ['status', 'createdBy', 'modifiedBy'],
-    orderBy: [
-      ['modifiedOn', SortingOrder.Descending],
-      ['targetDate', SortingOrder.Descending],
-      ['createdOn', SortingOrder.Descending]
-    ],
-    other: [showColorsViewOption]
-  }
-
-  builder.createDoc(
-    view.class.Viewlet,
-    core.space.Model,
-    {
-      attachTo: tracker.class.Milestone,
-      descriptor: view.viewlet.List,
-      viewOptions: milestoneOptions,
-      configOptions: {
-        strict: true,
-        hiddenKeys: ['targetDate', 'label', 'description']
-      },
-      config: [
-        {
-          key: 'status',
-          props: { width: '1rem', kind: 'list', size: 'small', justify: 'center' }
-        },
-        { key: '', presenter: tracker.component.MilestonePresenter, props: { shouldUseMargin: true } },
-        { key: '', displayProps: { grow: true } },
-        {
-          key: '',
-          label: tracker.string.TargetDate,
-          presenter: tracker.component.MilestoneDatePresenter,
-          props: { field: 'targetDate' }
-        }
-      ]
-    },
-    tracker.viewlet.MilestoneList
-  )
-
-  builder.createDoc(
-    notification.class.NotificationGroup,
-    core.space.Model,
-    {
-      label: tracker.string.Issues,
-      icon: tracker.icon.Issues,
-      objectClass: tracker.class.Issue
-    },
-    tracker.ids.TrackerNotificationGroup
-  )
-
-  builder.createDoc(
-    notification.class.NotificationType,
-    core.space.Model,
-    {
-      hidden: false,
-      generated: false,
-      label: task.string.AssignedToMe,
-      group: tracker.ids.TrackerNotificationGroup,
-      field: 'assignee',
-      txClasses: [core.class.TxCreateDoc, core.class.TxUpdateDoc],
-      objectClass: tracker.class.Issue,
-      onlyOwn: true,
-      templates: {
-        textTemplate: '{doc} was assigned to you by {sender}',
-        htmlTemplate: '<p>{doc} was assigned to you by {sender}</p>',
-        subjectTemplate: '{doc} was assigned to you'
-      },
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.EmailNotification]: true
-      }
-    },
-    tracker.ids.AssigneeNotification
-  )
-
-  generateClassNotificationTypes(
-    builder,
-    tracker.class.Issue,
-    tracker.ids.TrackerNotificationGroup,
-    [],
-    ['comments', 'status', 'priority', 'assignee', 'subIssues', 'blockedBy', 'milestone', 'dueDate']
-  )
-
-  const componentListViewOptions: ViewOptionsModel = {
-    groupBy: ['lead', 'createdBy', 'modifiedBy'],
-    orderBy: [
-      ['modifiedOn', SortingOrder.Descending],
-      ['createdOn', SortingOrder.Descending]
-    ],
-    other: [showColorsViewOption]
-  }
-
-  builder.createDoc(
-    view.class.Viewlet,
-    core.space.Model,
-    {
-      attachTo: tracker.class.Component,
-      descriptor: view.viewlet.List,
-      viewOptions: componentListViewOptions,
-      configOptions: {
-        strict: true,
-        hiddenKeys: ['label', 'description']
-      },
-      config: [
-        {
-          key: '',
-          presenter: tracker.component.ComponentPresenter,
-          props: { kind: 'list' }
-        },
-        { key: '', displayProps: { grow: true } },
-        {
-          key: '$lookup.lead',
-          presenter: tracker.component.LeadPresenter,
-          displayProps: {
-            dividerBefore: true,
-            key: 'lead'
-          },
-          props: { _class: tracker.class.Component, defaultClass: contact.mixin.Employee, shouldShowLabel: false }
-        }
-      ]
-    },
-    tracker.viewlet.ComponentList
-  )
-
-  builder.createDoc(
-    view.class.Viewlet,
-    core.space.Model,
-    {
-      attachTo: tracker.class.Project,
-      descriptor: view.viewlet.List,
-      viewOptions: {
-        groupBy: ['createdBy'],
-        orderBy: [
-          ['modifiedOn', SortingOrder.Descending],
-          ['createdOn', SortingOrder.Descending]
-        ],
-        other: [showColorsViewOption]
-      },
-      configOptions: {
-        strict: true,
-        hiddenKeys: ['label', 'description']
-      },
-      config: [
-        {
-          key: '',
-          props: { kind: 'list' }
-        },
-        { key: '', displayProps: { grow: true } }
-      ]
-    },
-    tracker.viewlet.ProjectList
-  )
 }

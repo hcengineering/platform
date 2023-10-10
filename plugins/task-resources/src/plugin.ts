@@ -66,7 +66,6 @@ export default mergeIds(taskId, task, {
     CantStatusDeleteError: '' as IntlString,
     Archive: '' as IntlString,
     Unarchive: '' as IntlString,
-    RelatedIssues: '' as IntlString,
 
     Tasks: '' as IntlString,
     Task: '' as IntlString,

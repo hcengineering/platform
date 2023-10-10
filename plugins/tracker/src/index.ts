@@ -55,6 +55,29 @@ export interface Project extends SpaceWithStates, IconProps {
   defaultTimeReportDay: TimeReportDayType
 }
 
+export type RelatedIssueKind = 'classRule' | 'spaceRule'
+
+export interface RelatedClassRule {
+  kind: 'classRule'
+  ofClass: Ref<Class<Doc>>
+}
+
+export interface RelatedSpaceRule {
+  kind: 'spaceRule'
+  space: Ref<Space>
+}
+
+/**
+ * @public
+ *
+ * If defined, will be used to set a default project for this kind of document's related issues.
+ */
+export interface RelatedIssueTarget extends Doc {
+  // Attached to project.
+  target?: Ref<Project> | null
+  rule: RelatedClassRule | RelatedSpaceRule
+}
+
 /**
  * @public
  */
@@ -369,7 +392,8 @@ export default plugin(trackerId, {
     Milestone: '' as Ref<Class<Milestone>>,
     TypeMilestoneStatus: '' as Ref<Class<Type<MilestoneStatus>>>,
     TimeSpendReport: '' as Ref<Class<TimeSpendReport>>,
-    TypeReportedTime: '' as Ref<Class<Type<number>>>
+    TypeReportedTime: '' as Ref<Class<Type<number>>>,
+    RelatedIssueTarget: '' as Ref<Class<RelatedIssueTarget>>
   },
   ids: {
     NoParent: '' as Ref<Issue>,
@@ -471,7 +495,8 @@ export default plugin(trackerId, {
     EditWorkflowStatuses: '' as Ref<Action>,
     EditProject: '' as Ref<Action>,
     SetMilestone: '' as Ref<Action>,
-    SetLabels: '' as Ref<Action>
+    SetLabels: '' as Ref<Action>,
+    EditRelatedTargets: '' as Ref<Action>
   },
   project: {
     DefaultProject: '' as Ref<Project>
@@ -487,7 +512,8 @@ export default plugin(trackerId, {
     IssueNotificationChanged: '' as IntlString,
     IssueNotificationChangedProperty: '' as IntlString,
     IssueNotificationMessage: '' as IntlString,
-    IssueAssigneedToYou: '' as IntlString
+    IssueAssigneedToYou: '' as IntlString,
+    RelatedIssues: '' as IntlString
   },
   mixin: {
     ProjectIssueTargetOptions: '' as Ref<Mixin<ProjectIssueTargetOptions>>

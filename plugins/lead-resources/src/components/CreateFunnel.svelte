@@ -14,25 +14,34 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { getCurrentAccount, Ref } from '@hcengineering/core'
+  import { AccountArrayEditor } from '@hcengineering/contact-resources'
+  import core, { Account, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { Funnel } from '@hcengineering/lead'
   import presentation, { getClient, SpaceCreateCard } from '@hcengineering/presentation'
   import task, { createStates, KanbanTemplate } from '@hcengineering/task'
-  import { Component, EditBox, Grid, IconFolder, ToggleWithLabel } from '@hcengineering/ui'
+  import ui, { Component, EditBox, Grid, IconFolder, Label, ToggleWithLabel } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
 
+  export let funnel: Funnel | undefined = undefined
   const dispatch = createEventDispatcher()
 
-  let name: string = ''
-  const description: string = ''
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  $: isNew = !funnel
+
+  let name: string = funnel?.name ?? ''
+  const description: string = funnel?.description ?? ''
   let templateId: Ref<KanbanTemplate> | undefined
-  let isPrivate: boolean = false
+  let isPrivate: boolean = funnel?.private ?? false
+
+  let members: Ref<Account>[] =
+    funnel?.members !== undefined ? hierarchy.clone(funnel.members) : [getCurrentAccount()._id]
 
   export function canClose (): boolean {
     return name === '' && templateId !== undefined
   }
-
-  const client = getClient()
 
   async function createFunnel (): Promise<void> {
     if (
@@ -49,17 +58,25 @@
       description,
       private: isPrivate,
       archived: false,
-      members: [getCurrentAccount()._id],
+      members,
       templateId,
       states,
       doneStates
     })
   }
+  async function save (): Promise<void> {
+    if (isNew) {
+      await createFunnel()
+    } else if (funnel !== undefined) {
+      await client.diffUpdate<Funnel>(funnel, { name, description, members, private: isPrivate }, Date.now())
+    }
+  }
 </script>
 
 <SpaceCreateCard
   label={lead.string.CreateFunnel}
-  okAction={createFunnel}
+  okAction={save}
+  okLabel={!isNew ? ui.string.Save : undefined}
   canSave={name.length > 0}
   on:close={() => {
     dispatch('close')
@@ -89,5 +106,17 @@
         templateId = evt.detail
       }}
     />
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header">
+        <Label label={lead.string.Members} />
+      </div>
+      <AccountArrayEditor
+        value={members}
+        label={lead.string.Members}
+        onChange={(refs) => (members = refs)}
+        kind={'regular'}
+        size={'large'}
+      />
+    </div>
   </Grid>
 </SpaceCreateCard>

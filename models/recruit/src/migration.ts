@@ -15,12 +15,20 @@
 
 import { getCategories } from '@anticrm/skillset'
 import core, { Doc, Ref, Space, TxOperations } from '@hcengineering/core'
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient, createOrUpdate } from '@hcengineering/model'
+import {
+  MigrateOperation,
+  MigrationClient,
+  MigrationUpgradeClient,
+  createOrUpdate,
+  tryUpgrade
+} from '@hcengineering/model'
 import tags, { TagCategory } from '@hcengineering/model-tags'
 import { createKanbanTemplate, createSequence } from '@hcengineering/model-task'
 import task, { KanbanTemplate } from '@hcengineering/task'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import recruit from './plugin'
+import { recruitId } from '@hcengineering/recruit'
+import tracker from '@hcengineering/model-tracker'
 
 export const recruitOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
@@ -28,6 +36,28 @@ export const recruitOperation: MigrateOperation = {
     const tx = new TxOperations(client, core.account.System)
     await createDefaults(tx)
     await fixTemplateSpace(tx)
+
+    await tryUpgrade(client, recruitId, [
+      {
+        state: 'related-targets',
+        func: async (client): Promise<void> => {
+          const ops = new TxOperations(client, core.account.ConfigUser)
+          await ops.createDoc(tracker.class.RelatedIssueTarget, core.space.Configuration, {
+            rule: {
+              kind: 'classRule',
+              ofClass: recruit.class.Vacancy
+            }
+          })
+
+          await ops.createDoc(tracker.class.RelatedIssueTarget, core.space.Configuration, {
+            rule: {
+              kind: 'classRule',
+              ofClass: recruit.class.Applicant
+            }
+          })
+        }
+      }
+    ])
   }
 }
 

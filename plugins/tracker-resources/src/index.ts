@@ -75,6 +75,8 @@ import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
 import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
 import Statuses from './components/workflow/Statuses.svelte'
+import EditRelatedTargets from './components/EditRelatedTargets.svelte'
+import EditRelatedTargetsPopup from './components/EditRelatedTargetsPopup.svelte'
 import {
   getIssueId,
   getIssueTitle,
@@ -475,7 +477,9 @@ export default async (): Promise<Resources> => ({
     PriorityFilterValuePresenter,
     StatusFilterValuePresenter,
     ProjectFilterValuePresenter,
-    ComponentFilterValuePresenter
+    ComponentFilterValuePresenter,
+    EditRelatedTargets,
+    EditRelatedTargetsPopup
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>

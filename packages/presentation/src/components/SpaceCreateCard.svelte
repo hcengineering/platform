@@ -22,6 +22,7 @@
 
   export let label: IntlString
   export let okAction: () => void
+  export let okLabel: IntlString | undefined = undefined
   export let canSave: boolean = false
 
   const dispatch = createEventDispatcher()
@@ -40,7 +41,7 @@
   <div class="antiCard-footer">
     <Button
       disabled={!canSave}
-      label={presentation.string.Create}
+      label={okLabel ?? presentation.string.Create}
       kind={'accented'}
       on:click={() => {
         okAction()
