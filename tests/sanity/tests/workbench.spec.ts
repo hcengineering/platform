@@ -43,8 +43,8 @@ test.describe('workbench tests', () => {
 
     await page.click('text=general')
 
-    // Click .textInput
-    await expect(page.locator('.textInput')).toBeVisible()
+    // Click .text-input
+    await expect(page.locator('.text-input')).toBeVisible()
 
     await page.click('[id="app-contact\\:string\\:Contacts"]')
     await page.click('.antiNav-element:has-text("Employee")')
