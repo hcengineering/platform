@@ -27,6 +27,7 @@
   import CodeBlock from './icons/CodeBlock.svelte'
   import Header1 from './icons/Header1.svelte'
   import Header2 from './icons/Header2.svelte'
+  import Header3 from './icons/Header3.svelte'
   import IconTable from './icons/IconTable.svelte'
   import Italic from './icons/Italic.svelte'
   import Link from './icons/Link.svelte'
@@ -213,6 +214,13 @@
         selected={textEditor.isActive('heading', { level: 2 })}
         showTooltip={{ label: getEmbeddedLabel('H2') }}
         on:click={getHeaderToggler(2)}
+      />
+      <StyleButton
+        icon={Header3}
+        size={formatButtonSize}
+        selected={textEditor.isActive('heading', { level: 3 })}
+        showTooltip={{ label: getEmbeddedLabel('H3') }}
+        on:click={getHeaderToggler(3)}
       />
     {/if}
     {#if category === TextFormatCategory.TextDecoration}
