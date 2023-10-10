@@ -33,6 +33,7 @@
   import { CollaborationIds, TextFormatCategory, TextNodeAction } from '../types'
 
   import { calculateDecorations } from './diff/decorations'
+  import { noSelectionRender } from './editor/collaboration'
   import { defaultEditorAttributes } from './editor/editorProps'
   import { completionConfig, defaultExtensions } from './extensions'
   import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
@@ -239,7 +240,8 @@
             user: {
               name: currentUser.email,
               color: getPlatformColorForText(currentUser.email, $themeStore.dark)
-            }
+            },
+            selectionRender: noSelectionRender
           }),
           DecorationExtension,
           Completion.configure({
