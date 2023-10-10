@@ -132,7 +132,7 @@
       departmentById={departments}
       on:selected={(e) => departmentSelected(e.detail)}
     />
-    <Separator name={'workbench'} index={0} />
+    <Separator name={'workbench'} index={0} color={'var(--theme-navpanel-border)'} />
   {/if}
 
   <div class="antiPanel-component filled">

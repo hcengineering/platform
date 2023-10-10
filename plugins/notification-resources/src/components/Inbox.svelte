@@ -139,7 +139,7 @@
 
 <div class="flex-row-top h-full">
   {#if visibileNav}
-    <div class="antiPanel-component header border-right aside min-w-100 flex-no-shrink">
+    <div class="antiPanel-component header aside min-w-100 flex-no-shrink">
       <Tabs
         bind:selected={selectedTab}
         model={tabs}

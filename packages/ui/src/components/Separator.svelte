@@ -26,7 +26,7 @@
   export let prevElementSize: SeparatedItem | undefined = undefined
   export let nextElementSize: SeparatedItem | undefined = undefined
   export let separatorSize: number = 1
-  export let color: string = 'var(--theme-navpanel-border)'
+  export let color: string = 'var(--theme-divider-color)'
   export let name: string
   export let index: number // index = -1 ; for custom sizes without saving to a localStorage
 
@@ -412,7 +412,7 @@
     &::before {
       position: absolute;
       content: '';
-      z-index: 10;
+      z-index: 402;
     }
     &::after {
       background-color: var(--theme-primary-default);

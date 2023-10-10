@@ -46,9 +46,9 @@
     {:else}
       <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
         <div class="icon"><Icon icon={recruit.icon.Vacancy} size={'small'} /></div>
-        <span class="label nowrap" class:no-underline={noUnderline || disabled} class:fs-bold={accent}
-          >{value.name}</span
-        >
+        <span class="label nowrap" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>
+          {value.name}
+        </span>
       </div>
     {/if}
   </DocNavLink>

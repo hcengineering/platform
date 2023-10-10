@@ -19,7 +19,7 @@
 
   import { closePanel, PanelProps, panelstore } from '../panelup'
   import { fitPopupElement, popupstore } from '../popups'
-  import { deviceOptionsStore as deviceInfo } from '..'
+  import { deviceOptionsStore as deviceInfo, resizeObserver } from '..'
   import type { AnySvelteComponent, PopupOptions, DeviceOptions } from '../types'
   import Spinner from './Spinner.svelte'
 
@@ -45,6 +45,7 @@
   }
 
   let component: AnySvelteComponent | undefined
+  let keepSize: boolean = false
 
   let props: PanelProps | undefined
   function _close () {
@@ -107,8 +108,16 @@
     }
   }
 
+  const checkResize = (el: Element) => {
+    if (props) fitPopup(props, contentPanel)
+  }
+
   afterUpdate(() => {
     if (props) fitPopup(props, contentPanel)
+    if (!keepSize && props?.element === 'content' && contentPanel !== undefined) {
+      keepSize = true
+      resizeObserver(contentPanel, checkResize)
+    }
   })
   export function fitPopupInstance (): void {
     if (props) fitPopup(props, contentPanel)

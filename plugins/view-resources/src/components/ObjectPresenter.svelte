@@ -26,6 +26,9 @@
   export let accent: boolean = false
   export let shouldShowAvatar: boolean = true
   export let noUnderline: boolean = false
+  export let disabled: boolean = false
+  export let shouldShowName: boolean = true
+  export let shrink: number = 0
 
   const client = getClient()
   let presenter: AttributeModel | undefined
@@ -73,7 +76,10 @@
     {inline}
     {accent}
     {shouldShowAvatar}
+    {shouldShowName}
     {noUnderline}
+    {disabled}
+    {shrink}
     {...props}
     on:accent-color
     on:close

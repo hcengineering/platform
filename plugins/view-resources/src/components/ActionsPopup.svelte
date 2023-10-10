@@ -194,10 +194,10 @@
   use:resizeObserver={() => dispatch('changeContent')}
 >
   {#if $selectionStore.length > 0 || $focusStore.focus !== undefined || (activeAction && activeAction?.actionPopup !== undefined)}
-    <div class="mt-2 ml-2 flex-between">
+    <div class="mt-2 ml-2 flex-between flex-no-shrink">
       {#if $selectionStore.length > 0}
         <div class="item-box">
-          {$selectionStore.length} items
+          <Label label={view.string.NumberItems} params={{ count: $selectionStore.length }} />
         </div>
       {:else if $focusStore.focus !== undefined}
         <div class="item-box">
@@ -205,15 +205,17 @@
             objectId={$focusStore.focus._id}
             _class={$focusStore.focus._class}
             value={$focusStore.focus}
-            props={{ inline: true }}
+            disabled
           />
         </div>
       {/if}
       {#if activeAction && activeAction?.actionPopup !== undefined}
-        <div class="mt-2 mb-2 mr-2">
+        <div class="mr-2">
           <Button
             icon={IconArrowLeft}
             label={ui.string.Back}
+            kind={'ghost'}
+            size={'small'}
             on:click={() => {
               activeAction = undefined
             }}
@@ -230,7 +232,8 @@
         ...activeAction.actionProps,
         value: getSelection($focusStore, $selectionStore),
         width: 'full',
-        size: 'medium'
+        size: 'medium',
+        embedded: true
       }}
       on:close={async () => {
         activeAction = undefined
@@ -305,6 +308,7 @@
       </div>
     </div>
   {/if}
+  <div class="menu-space" />
 </div>
 
 <style lang="scss">

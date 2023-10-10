@@ -37,7 +37,7 @@
   })
 </script>
 
-<div class="flex-presenter cursor-default">
+<div class="flex-presenter">
   {#if !inline && icon}
     <Icon {icon} {size} fill={'var(--theme-caption-color)'} />
   {/if}
