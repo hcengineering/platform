@@ -96,10 +96,6 @@ export default mergeIds(viewId, view, {
     ShowColors: '' as IntlString,
     Show: '' as IntlString,
 
-    Mail: '' as IntlString,
-    Messages: '' as IntlString,
-    Notes: '' as IntlString,
-    Activity: '' as IntlString,
     ChooseIcon: '' as IntlString,
     IconColor: '' as IntlString,
     IconCategory: '' as IntlString,
