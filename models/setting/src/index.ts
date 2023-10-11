@@ -516,6 +516,9 @@ export function createModel (builder: Builder): void {
       group: setting.ids.SettingNotificationGroup,
       field: 'disabled',
       txClasses: [core.class.TxUpdateDoc],
+      txMatch: {
+        'operations.disabled': true
+      },
       objectClass: setting.class.Integration,
       allowedForAuthor: true,
       templates: {
