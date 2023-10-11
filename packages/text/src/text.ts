@@ -13,8 +13,11 @@
 // limitations under the License.
 //
 
-export * from './extensions'
-export * from './html'
-export * from './node'
-export * from './nodes'
-export * from './text'
+import { Node as ProseMirrorNode } from '@tiptap/pm/model'
+
+/**
+ * @public
+ */
+export function getText (node: ProseMirrorNode): string {
+  return node.textBetween(0, node.content.size, '\n', '')
+}

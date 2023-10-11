@@ -22087,7 +22087,7 @@ packages:
     dev: false
 
   file:projects/server.tgz(esbuild@0.16.17):
-    resolution: {integrity: sha512-F5vPayuIg/XetPchRjf7nZfQx94qPAVqlSDxF4n05hfitEqNYIAReEwCYweF4vn1ffNnyFKG/K2KYtdilte+QQ==, tarball: file:projects/server.tgz}
+    resolution: {integrity: sha512-JcHQRXWF7KNRinn91dPMFPhF2ZyfxgASxU1DSKhR5Lzh4NnJhKNkNNaKNYGiJrG4+tBypfwIuqwzgkbxiab86A==, tarball: file:projects/server.tgz}
     id: file:projects/server.tgz
     name: '@rush-temp/server'
     version: 0.0.0
