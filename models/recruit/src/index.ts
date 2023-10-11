@@ -88,8 +88,6 @@ export class TVacancy extends TSpaceWithStates implements Vacancy {
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
     comments?: number
 
-  relations!: number
-
   @Prop(TypeString(), recruit.string.Vacancy)
   @Index(IndexKind.FullText)
   @Hidden()

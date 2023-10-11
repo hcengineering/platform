@@ -14,9 +14,11 @@
 //
 
 import { Ref, TxOperations } from '@hcengineering/core'
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import { leadId } from '@hcengineering/lead'
+import { MigrateOperation, MigrationClient, MigrationUpgradeClient, tryUpgrade } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import { createKanbanTemplate, createSequence } from '@hcengineering/model-task'
+import tracker from '@hcengineering/model-tracker'
 import task, { KanbanTemplate, createStates } from '@hcengineering/task'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import lead from './plugin'
@@ -120,5 +122,20 @@ export const leadOperation: MigrateOperation = {
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const ops = new TxOperations(client, core.account.System)
     await createDefaults(ops)
+
+    await tryUpgrade(client, leadId, [
+      {
+        state: 'related-targets',
+        func: async (client): Promise<void> => {
+          const ops = new TxOperations(client, core.account.ConfigUser)
+          await ops.createDoc(tracker.class.RelatedIssueTarget, core.space.Configuration, {
+            rule: {
+              kind: 'classRule',
+              ofClass: lead.class.Lead
+            }
+          })
+        }
+      }
+    ])
   }
 }

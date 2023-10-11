@@ -31,6 +31,7 @@
     "Members": "Пользователи",
     "UnAssign": "Отменить назначение",
     "ConfigLabel": "CRM",
-    "ConfigDescription": "Расширение по работе с клиентами"
+    "ConfigDescription": "Расширение по работе с клиентами",
+    "EditFunnel": "Редактировать воронку"
   }
 }

@@ -39,6 +39,7 @@
   export let iconWithEmoji: AnySvelteComponent | Asset | ComponentType | undefined = undefined
   export let defaultIcon: AnySvelteComponent | Asset | ComponentType | undefined = undefined
   export let readonly: boolean = false
+  export let findDefaultSpace: (() => Promise<Space | undefined>) | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -71,4 +72,5 @@
     dispatch('change', space)
   }}
   on:space
+  {findDefaultSpace}
 />

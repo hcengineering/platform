@@ -34,7 +34,7 @@ import {
 import { DOMAIN_TASK } from '@hcengineering/model-task'
 import tags from '@hcengineering/tags'
 import { Issue, Project, TimeReportDayType, TimeSpendReport, createStatuses } from '@hcengineering/tracker'
-import { DOMAIN_TRACKER } from '.'
+import { DOMAIN_TRACKER } from './types'
 import tracker from './plugin'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import view from '@hcengineering/view'
