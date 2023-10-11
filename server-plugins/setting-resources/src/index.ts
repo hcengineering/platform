@@ -40,6 +40,8 @@ export async function integrationTextPresenter (doc: Doc, control: TriggerContro
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
-  IntegrationHTMLPresenter: integrationHTMLPresenter,
-  IntegrationTextPresenter: integrationTextPresenter
+  function: {
+    IntegrationHTMLPresenter: integrationHTMLPresenter,
+    IntegrationTextPresenter: integrationTextPresenter
+  }
 })
