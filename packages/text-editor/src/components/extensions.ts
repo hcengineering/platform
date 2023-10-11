@@ -43,7 +43,7 @@ export const taskListExtensions = [
   })
 ]
 
-export const supportedHeadingLevels: Level[] = [1, 2]
+export const supportedHeadingLevels: Level[] = [1, 2, 3]
 
 export const defaultExtensions: AnyExtension[] = [
   StarterKit.configure({
