@@ -33,20 +33,25 @@ export * from './types'
 
 export {
   IsEmptyContentExtension,
-  IsEmptyContentOptions,
-  IsEmptyContentStorage
+  type IsEmptyContentOptions,
+  type IsEmptyContentStorage
 } from './components/extension/isEmptyContent'
 export {
   NodeHighlightExtension,
-  NodeHighlightExtensionOptions,
-  NodeHighlightType
+  NodeHighlightType,
+  type NodeHighlightExtensionOptions
 } from './components/extension/nodeHighlight'
-export { NodeUuidCommands, NodeUuidExtension, NodeUuidOptions, NodeUuidStorage } from './components/extension/nodeUuid'
+export {
+  NodeUuidExtension,
+  type NodeUuidCommands,
+  type NodeUuidOptions,
+  type NodeUuidStorage
+} from './components/extension/nodeUuid'
 export { InlinePopupExtension } from './components/extension/inlinePopup'
 export {
   InlineStyleToolbarExtension,
-  InlineStyleToolbarOptions,
-  InlineStyleToolbarStorage
+  type InlineStyleToolbarOptions,
+  type InlineStyleToolbarStorage
 } from './components/extension/inlineStyleToolbar'
 
 export { textEditorId }
