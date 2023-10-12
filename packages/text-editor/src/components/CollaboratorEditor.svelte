@@ -25,7 +25,7 @@
   import Placeholder from '@tiptap/extension-placeholder'
   import { getCurrentAccount, Markup } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
-  import { getPlatformColorForText, IconObjects, IconSize, themeStore } from '@hcengineering/ui'
+  import { getPlatformColorForText, IconObjects, IconSize, registerFocus, themeStore } from '@hcengineering/ui'
 
   import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
@@ -278,6 +278,8 @@
         },
         onFocus: () => {
           focused = true
+          updateFocus()
+          dispatch('focus')
         },
         onUpdate: ({ transaction }) => {
           // ignore non-document changes
@@ -308,6 +310,26 @@
   })
 
   let showDiff = true
+
+  export let focusIndex = -1
+  const { idx, focusManager } = registerFocus(focusIndex, {
+    focus: () => {
+      if (visible) {
+        element?.focus()
+      }
+      return visible && element !== null
+    },
+    isFocus: () => document.activeElement === element,
+    canBlur: () => false
+  })
+  const updateFocus = () => {
+    if (focusIndex !== -1) {
+      focusManager?.setFocus(idx)
+    }
+  }
+  $: if (element) {
+    element.addEventListener('focus', updateFocus, { once: true })
+  }
 </script>
 
 <slot {editor} />
