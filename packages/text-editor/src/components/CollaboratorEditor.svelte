@@ -31,6 +31,7 @@
   import textEditorPlugin from '../plugin'
   import { TiptapCollabProvider } from '../provider'
   import { CollaborationIds, TextFormatCategory, TextNodeAction } from '../types'
+  import { copyDocumentContent, copyDocumentField } from '../utils'
 
   import { calculateDecorations } from './diff/decorations'
   import { noSelectionRender } from './editor/collaboration'
@@ -142,7 +143,11 @@
   }
 
   export function takeSnapshot (snapshotId: string) {
-    provider.copyContent(documentId, snapshotId)
+    copyDocumentContent(documentId, snapshotId, { provider }, initialContentId)
+  }
+
+  export function copyField (srcFieldId: string, dstFieldId: string) {
+    copyDocumentField(documentId, srcFieldId, dstFieldId, { provider }, initialContentId)
   }
 
   export function unregisterPlugin (nameOrPluginKey: string | PluginKey) {

@@ -30,6 +30,7 @@ export { default as TextEditor } from './components/TextEditor.svelte'
 export { default as TextEditorStyleToolbar } from './components/TextEditorStyleToolbar.svelte'
 export { default } from './plugin'
 export * from './types'
+export * from './utils'
 
 export {
   IsEmptyContentExtension,

@@ -17,13 +17,14 @@
   import { generateId, Ref, Doc } from '@hcengineering/core'
   import ui from '../plugin'
   import { closePopup, showPopup } from '../popups'
-  import { Action } from '../types'
+  import { Action, MenuItem, MenuComponent } from '../types'
   import Icon from './Icon.svelte'
   import Label from './Label.svelte'
   import MouseSpeedTracker from './MouseSpeedTracker.svelte'
   import { resizeObserver } from '../resize'
+  import Component from './Component.svelte'
 
-  export let actions: Action[] = []
+  export let items: MenuItem[] = []
   export let ctx: any = undefined
   export let popupCategory: Ref<Doc> | undefined = undefined
   export let addClass: string | undefined = undefined
@@ -63,7 +64,7 @@
     }
     if (ev.key === 'ArrowRight') {
       dispatch('update', 'right')
-      showActionPopup(actions[n], activeElement)
+      showActionPopup(items[n], activeElement)
       ev.preventDefault()
       ev.stopPropagation()
     }
@@ -79,9 +80,23 @@
     closePopup(category)
   })
 
-  function showActionPopup (action: Action, target: HTMLElement, isPopupHidden?: boolean): void {
+  function isAction(item: MenuItem): item is Action {
+    const actionKey: keyof Action = 'action'
+    return actionKey in item
+  }
+
+  function isComponent(item: MenuItem): item is MenuComponent {
+    const itemComponentKey: keyof MenuComponent = 'itemComponent'
+    return itemComponentKey in item
+  }
+
+  function showActionPopup (action: MenuItem, target: HTMLElement, isPopupHidden?: boolean): void {
     closePopup(category)
     closePopup(nextCategory)
+
+    if (!isAction(action)) {
+      return
+    }
 
     if (action.component !== undefined && !isPopupHidden) {
       showPopup(
@@ -96,7 +111,7 @@
       )
     }
   }
-  function focusTarget (action: Action, target: HTMLElement, isPopupHidden?: boolean): void {
+  function focusTarget (action: MenuItem, target: HTMLElement, isPopupHidden?: boolean): void {
     if (focusSpeed && target !== activeElement) {
       activeElement = target
       showActionPopup(action, target, isPopupHidden)
@@ -125,74 +140,92 @@
   <slot name="header" />
   <div class="ap-scroll">
     <div class="ap-box" bind:this={popup}>
-      {#if actions.length === 0}
+      {#if items.length === 0}
         <div class="p-6 error-color">
           <Label label={ui.string.NoActionsDefined} />
         </div>
       {/if}
-      {#each actions as action, i}
-        {#if i > 0 && actions[i - 1].group !== action.group}
+      {#each items as item, i}
+        {#if i > 0 && items[i - 1].group !== item.group}
           <span class="ap-menuItem separator" />
         {/if}
-        {#if action.link}
-          <a class="stealth" href={action.link}>
+
+        {#if isAction(item)}
+          {@const action = item}
+          {#if action.link}
+            <a class="stealth" href={action.link}>
+              <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+              <button
+                bind:this={btns[i]}
+                class="ap-menuItem flex-row-center withIcon w-full"
+                class:hover={btns[i] === activeElement}
+                on:mousemove={() => {
+                  if (btns[i] !== activeElement) focusTarget(action, btns[i])
+                }}
+                on:click|preventDefault|stopPropagation={(evt) => {
+                  if (!action.inline) dispatch('close')
+                  action.action(ctx, evt)
+                }}
+              >
+                {#if action.icon}<div class="icon mr-2"><Icon icon={action.icon} size={'small'} /></div>{/if}
+                <span class="overflow-label pr-4 flex-grow"><Label label={action.label} /></span>
+              </button>
+            </a>
+          {:else if (action.component && !action.isSubmenuRightClicking)}
             <!-- svelte-ignore a11y-mouse-events-have-key-events -->
             <button
               bind:this={btns[i]}
-              class="ap-menuItem flex-row-center withIcon w-full"
+              class="ap-menuItem withIconHover antiPopup-submenu"
               class:hover={btns[i] === activeElement}
               on:mousemove={() => {
                 if (btns[i] !== activeElement) focusTarget(action, btns[i])
               }}
-              on:click|preventDefault|stopPropagation={(evt) => {
+              on:click={() => focusTarget(action, btns[i])}
+            >
+              {#if action.icon}
+                <div class="icon mr-2"><Icon icon={action.icon} size={'small'} /></div>
+              {/if}
+              <span class="overflow-label pr-4 flex-grow"><Label label={action.label} /></span>
+            </button>
+          {:else}
+            <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+            <button
+              bind:this={btns[i]}
+              class="ap-menuItem flex-row-center withIcon"
+              class:hover={btns[i] === activeElement}
+              on:mousemove={() => {
+                if (btns[i] !== activeElement) focusTarget(action, btns[i], action.isSubmenuRightClicking)
+              }}
+              on:click={(evt) => {
                 if (!action.inline) dispatch('close')
                 action.action(ctx, evt)
               }}
+              on:contextmenu={(evt) => {
+                if (action.component) {
+                  evt.preventDefault()
+                  showActionPopup(action, btns[i])
+                }
+              }}
             >
-              {#if action.icon}<div class="icon mr-2"><Icon icon={action.icon} size={'small'} /></div>{/if}
+              {#if action.icon}
+                <div class="icon mr-2"><Icon icon={action.icon} size={'small'} /></div>
+              {/if}
               <span class="overflow-label pr-4 flex-grow"><Label label={action.label} /></span>
             </button>
-          </a>
-        {:else if action.component !== undefined && !action.isSubmenuRightClicking}
-          <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+          {/if}
+        {:else if isComponent(item)}
           <button
             bind:this={btns[i]}
-            class="ap-menuItem antiPopup-submenu withIconHover"
-            class:hover={btns[i] === activeElement}
+            class="ap-menuItem withIconHover"
             on:mousemove={() => {
-              if (btns[i] !== activeElement) focusTarget(action, btns[i])
+              if (btns[i] !== activeElement) focusTarget(item, btns[i], false)
             }}
-            on:click={() => focusTarget(action, btns[i])}
+            on:click={() => focusTarget(item, btns[i], false)}
           >
-            {#if action.icon}
-              <div class="icon mr-2"><Icon icon={action.icon} size={'small'} /></div>
-            {/if}
-            <span class="overflow-label pr-4 flex-grow"><Label label={action.label} /></span>
-          </button>
-        {:else}
-          <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-          <button
-            bind:this={btns[i]}
-            class="ap-menuItem flex-row-center withIcon"
-            class:hover={btns[i] === activeElement}
-            on:mousemove={() => {
-              if (btns[i] !== activeElement) focusTarget(action, btns[i], action.isSubmenuRightClicking)
-            }}
-            on:click={(evt) => {
-              if (!action.inline) dispatch('close')
-              action.action(ctx, evt)
-            }}
-            on:contextmenu={(evt) => {
-              if (action.component) {
-                evt.preventDefault()
-                showActionPopup(action, btns[i])
-              }
-            }}
-          >
-            {#if action.icon}
-              <div class="icon mr-2"><Icon icon={action.icon} size={'small'} /></div>
-            {/if}
-            <span class="overflow-label pr-4 flex-grow"><Label label={action.label} /></span>
+            <Component
+              is={item.itemComponent}
+              props={item.itemProps}
+            />
           </button>
         {/if}
       {/each}

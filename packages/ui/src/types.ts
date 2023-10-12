@@ -75,7 +75,11 @@ export interface AnySvelteComponentWithProps {
   props?: Record<string, any>
 }
 
-export interface Action {
+export interface MenuItem {
+  group?: string
+}
+
+export interface Action extends MenuItem {
   label: IntlString
   icon?: Asset | AnySvelteComponent
   action: (props: any, ev: Event) => Promise<void>
@@ -86,8 +90,11 @@ export interface Action {
   component?: AnyComponent | AnySvelteComponent
   props?: Record<string, any>
   isSubmenuRightClicking?: boolean
+}
 
-  group?: string
+export interface MenuComponent extends MenuItem {
+  itemComponent: AnyComponent
+  itemProps?: Record<string, any>
 }
 
 export interface IPopupItem {
