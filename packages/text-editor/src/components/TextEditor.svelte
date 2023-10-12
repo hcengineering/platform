@@ -165,13 +165,13 @@
           // force re-render so `editor.isActive` works as expected
           editor = editor
         },
-        onBlur: ({ event }) => {
+        onBlur: () => {
           focused = false
-          dispatch('blur', event)
+          dispatch('blur')
         },
         onFocus: () => {
           focused = true
-          dispatch('focus', editor.getHTML())
+          dispatch('focus')
         },
         onUpdate: () => {
           content = editor.getHTML()
