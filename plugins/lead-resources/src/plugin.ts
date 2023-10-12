@@ -47,7 +47,7 @@ export default mergeIds(leadId, lead, {
     Mail: '' as IntlString,
     Messages: '' as IntlString,
     Notes: '' as IntlString,
-    Activity: '' as IntlString,
+    Activity: '' as IntlString
   },
   component: {
     CreateCustomer: '' as AnyComponent,

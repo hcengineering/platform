@@ -17,18 +17,12 @@
   import { getClient, createQuery } from '@hcengineering/presentation'
   import { UserBox } from '@hcengineering/contact-resources'
   import type { Lead } from '@hcengineering/lead'
-  import {
-    TabList,
-    TabItem,
-    EditBox,
-    Grid
-  } from '@hcengineering/ui'
+  import { TabList, TabItem, EditBox, Grid } from '@hcengineering/ui'
   import { Channel } from '@hcengineering/contact'
   import contact from '@hcengineering/contact'
   import { getResource } from '@hcengineering/platform'
   import { createEventDispatcher, onMount } from 'svelte'
   import lead from '../plugin'
-
 
   export let object: Lead
 
@@ -53,10 +47,8 @@
   onMount(() => {
     dispatch('open', { ignoreKeys: ['comments', 'number', 'title', 'customer'] })
   })
-  
-  export let mode: string = 'mail'
 
-  let loading = false
+  export let mode: string = 'mail'
 
   let channel: Partial<Channel> = {}
 
@@ -65,11 +57,8 @@
   }
 
   $: if (object.attachedTo) {
-      channelQuery.query(
-      contact.class.Channel,
-      { attachedTo: object.attachedTo },
-      ([c]: Channel[]) => {
-        if (c) channel = c
+    channelQuery.query(contact.class.Channel, { attachedTo: object.attachedTo }, ([c]: Channel[]) => {
+      if (c) channel = c
     })
   }
 
@@ -86,27 +75,25 @@
     activity: { ...tabSource.activity, props: { object } }
   }
 
-  const modes: TabItem[] = Object
-    .keys(tabSource)
-    .map((id: string) => ({ id, labelIntl: tabSource[id].labelIntl }))
+  const modes: TabItem[] = Object.keys(tabSource).map((id: string) => ({ id, labelIntl: tabSource[id].labelIntl }))
 
-  let resources: any = Object.keys(tabSource)
-  .reduce((a, c) => Object.assign(a, {[c as NavEditLeadKey]: null}), {})
+  const resources: any = Object.keys(tabSource).reduce((a, c) => Object.assign(a, { [c as NavEditLeadKey]: null }), {})
 
-  function fetchResources() {
-    Object.keys(resources)
-          .forEach((key: string) => Object.assign(resources, { [key]: getResource(tabSource[key].presenter) }))
+  function fetchResources () {
+    Object.keys(resources).forEach((key: string) =>
+      Object.assign(resources, { [key]: getResource(tabSource[key].presenter) })
+    )
   }
 
   $: fetchResources()
-  
+
   let props: unknown
 
   $: if (tabSource[mode].props !== undefined) {
     props = tabSource[mode].props
   }
-
 </script>
+
 {#if object !== undefined}
   <Grid column={2} rowGap={1}>
     <EditBox
@@ -139,8 +126,8 @@
       {#if props !== undefined}
         {#await resources[mode]}
           ...
-          {:then instance}
-              <svelte:component this={instance} {...props} />
+        {:then instance}
+          <svelte:component this={instance} {...props} />
         {/await}
       {/if}
     </div>
@@ -154,4 +141,3 @@
     flex-direction: column;
   }
 </style>
-
