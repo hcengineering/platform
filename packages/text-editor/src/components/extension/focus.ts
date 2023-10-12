@@ -2,7 +2,7 @@ import { Editor, Extension } from '@tiptap/core'
 
 const canBlur = (editor: Editor, options: FocusOptions): boolean => {
   return (
-    options.onCheckCanBlur?.(editor) ??
+    options.canBlur?.(editor) ??
     (!editor.isActive('bulletList') &&
       !editor.isActive('orderedList') &&
       !editor.isActive('code') &&
@@ -11,7 +11,7 @@ const canBlur = (editor: Editor, options: FocusOptions): boolean => {
 }
 
 export interface FocusOptions {
-  onCheckCanBlur?: (editor: Editor) => boolean
+  canBlur?: (editor: Editor) => boolean
   onCanBlur?: (canBlur: boolean) => void
   onFocus?: (focused: boolean) => void
 }
