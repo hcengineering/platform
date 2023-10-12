@@ -85,14 +85,6 @@
   export function insertText (text: string): void {
     textEditor.insertText(text)
   }
-  export function catHandleTab (): boolean {
-    return (
-      textEditor.checkIsActive('bulletList') ||
-      textEditor.checkIsActive('orderedList') ||
-      textEditor.checkIsActive('code') ||
-      textEditor.checkIsActive('codeBlock')
-    )
-  }
 
   $: varsStyle =
     maxHeight === 'card'
