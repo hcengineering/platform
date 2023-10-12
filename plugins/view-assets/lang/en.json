@@ -31,6 +31,7 @@
     "SelectItem": "Select focused item",
     "SelectItemAll": "Select all items",
     "SelectItemNone": "Deselect all items",
+    "NumberItems": "{count, plural, =0 {no items} =1 {1 item} other {# items}}",
     "Assigned": "Assigned",
     "Created": "Created",
     "Subscribed": "Subscribed",

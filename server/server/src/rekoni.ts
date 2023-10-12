@@ -13,7 +13,7 @@ export async function createRekoniAdapter (
 ): Promise<ContentTextAdapter> {
   const token = generateToken('anticrm-hcenginnering', workspace)
   return {
-    fetch: async (name: string, type: string, doc): Promise<string> => {
+    content: async (name: string, type: string, doc): Promise<string> => {
       try {
         const resContent = await got.post(
           `${url}/toText?name=${encodeURIComponent(name)}&type=${encodeURIComponent(type)}`,

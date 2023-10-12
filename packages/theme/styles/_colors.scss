@@ -73,8 +73,9 @@
   --highlight-red-hover: #ff967e;
   --highlight-red-press: #f96f50bd;
 
-  --text-editor-highlighted-node-info-background-color: #F2D7AE;
-  --text-editor-highlighted-node-info-border-color: #DE9B35;
+  --text-editor-highlighted-node-warning-active-background-color: #F2D7AE;
+  --text-editor-highlighted-node-warning-background-color: #F8EBD7;
+  --text-editor-highlighted-node-warning-border-color: #DE9B35;
 
   --text-editor-highlighted-node-add-background-color: #DAEDDC;
   --text-editor-highlighted-node-add-font-color: #1C4220;
@@ -86,6 +87,9 @@
 
 /* Dark Theme */
 .theme-dark {
+  --theme-text-primary-color: rgba(255, 255, 255, .8);
+  --theme-text-placeholder-color: rgba(255, 255, 255, .4);
+
   --accented-button-disabled: rgba(255, 255, 255, .12);
   --accented-button-disabled-color: rgba(255, 255, 255, .4);
   --brand-button-disabled: rgba(255, 255, 255, .12);
@@ -111,9 +115,8 @@
   --theme-button-contrast-disabled-color: rgba(0, 0, 0, .5);
   --theme-button-contrast-border: rgba(255, 255, 255, .2);
 
-  --theme-refinput-color: rgba(255, 255, 255, .03);
   --theme-refinput-divider: rgba(255, 255, 255, .07);
-  --theme-refinput-border: rgba(255, 255, 255, .03);
+  --theme-refinput-border: rgba(255, 255, 255, .1);
 
   // Be aware to update defineAlpha() function in colors.ts
   --theme-bg-color: #1A1A28;
@@ -290,6 +293,9 @@
 
 /* Light Theme */
 .theme-light {
+  --theme-text-primary-color: rgba(0, 0, 0, .8);
+  --theme-text-placeholder-color: rgba(0, 0, 0, .4);
+
   --accented-button-disabled: rgba(0, 0, 0, .12);
   --accented-button-disabled-color: rgba(0, 0, 0, .4);
   --brand-button-disabled: rgba(0, 0, 0, .12);
@@ -315,9 +321,8 @@
   --theme-button-contrast-disabled-color: rgba(255, 255, 255, .5);
   --theme-button-contrast-border: rgba(0, 0, 0, .2);
 
-  --theme-refinput-color: rgba(0, 0, 0, .03);
   --theme-refinput-divider: rgba(0, 0, 0, .07);
-  --theme-refinput-border: rgba(0, 0, 0, .03);
+  --theme-refinput-border: rgba(0, 0, 0, .1);
 
   // Be aware to update defineAlpha() function in colors.ts
   --theme-bg-color: #F1F1F4;

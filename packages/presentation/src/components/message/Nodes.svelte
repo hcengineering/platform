@@ -75,7 +75,7 @@
     {:else if node.nodeName === 'BLOCKQUOTE'}
       <blockquote><svelte:self nodes={node.childNodes} /></blockquote>
     {:else if node.nodeName === 'CODE'}
-      <code class="proseCode"><svelte:self nodes={node.childNodes} /></code>
+      <pre class="proseCode"><svelte:self nodes={node.childNodes} /></pre>
     {:else if node.nodeName === 'PRE'}
       <pre class="proseCodeBlock"><svelte:self nodes={node.childNodes} /></pre>
     {:else if node.nodeName === 'BR'}

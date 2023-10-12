@@ -41,6 +41,7 @@ import {
   createMinioDataAdapter,
   createNullAdapter,
   createRekoniAdapter,
+  createYDocAdapter,
   getMetricsContext,
   MinioConfig
 } from '@hcengineering/server'
@@ -311,10 +312,19 @@ export function start (
         stages: (adapter, storage, storageAdapter, contentAdapter) =>
           createIndexStages(metrics.newChild('stages', {}), workspace, adapter, storage, storageAdapter, contentAdapter)
       },
-      contentAdapter: {
-        factory: createRekoniAdapter,
-        url: opt.rekoniUrl
+      contentAdapters: {
+        Rekoni: {
+          factory: createRekoniAdapter,
+          contentType: '*',
+          url: opt.rekoniUrl
+        },
+        YDoc: {
+          factory: createYDocAdapter,
+          contentType: 'application/ydoc',
+          url: ''
+        }
       },
+      defaultContentAdapter: 'Rekoni',
       storageFactory: () =>
         new MinioService({
           ...opt.minioConf,

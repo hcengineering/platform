@@ -25,7 +25,7 @@
   import Placeholder from '@tiptap/extension-placeholder'
   import { getCurrentAccount, Markup } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
-  import { getPlatformColorForText, IconObjects, IconSize, themeStore } from '@hcengineering/ui'
+  import { getPlatformColorForText, IconObjects, IconSize, registerFocus, themeStore } from '@hcengineering/ui'
 
   import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
@@ -33,9 +33,10 @@
   import { CollaborationIds, TextFormatCategory, TextNodeAction } from '../types'
 
   import { calculateDecorations } from './diff/decorations'
+  import { noSelectionRender } from './editor/collaboration'
   import { defaultEditorAttributes } from './editor/editorProps'
   import { completionConfig, defaultExtensions } from './extensions'
-  import { InlineStyleToolbar } from './extension/inlineStyleToolbar'
+  import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
   import { NodeUuidExtension } from './extension/nodeUuid'
   import StyleButton from './StyleButton.svelte'
   import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
@@ -47,7 +48,6 @@
   export let token: string
   export let collaboratorURL: string
 
-  export let isFormatting = true
   export let buttonSize: IconSize = 'small'
   export let focusable: boolean = false
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
@@ -61,6 +61,7 @@
   export let textNodeActions: TextNodeAction[] = []
   export let editorAttributes: { [name: string]: string } = {}
   export let onExtensions: () => AnyExtension[] = () => []
+  export let boundary: HTMLElement | undefined = undefined
 
   let element: HTMLElement
 
@@ -90,7 +91,6 @@
 
   let editor: Editor
   let inlineToolbar: HTMLElement
-  let showInlineToolbar = false
 
   let placeHolderStr: string = ''
 
@@ -136,7 +136,6 @@
       }
 
       const [$start, $end] = [doc.resolve(range.from), doc.resolve(range.to)]
-
       editor.view.dispatch(tr.setSelection(new TextSelection($start, $end)))
       needFocus = true
     })
@@ -144,6 +143,22 @@
 
   export function takeSnapshot (snapshotId: string) {
     provider.copyContent(documentId, snapshotId)
+  }
+
+  export function unregisterPlugin (nameOrPluginKey: string | PluginKey) {
+    if (!editor) {
+      return
+    }
+
+    editor.unregisterPlugin(nameOrPluginKey)
+  }
+
+  export function registerPlugin (plugin: Plugin) {
+    if (!editor) {
+      return
+    }
+
+    editor.registerPlugin(plugin)
   }
 
   let needFocus = false
@@ -201,6 +216,7 @@
   })
 
   $: updateEditor(editor, field, comparedVersion)
+  $: if (editor) dispatch('editor', editor)
 
   onMount(() => {
     ph.then(() => {
@@ -211,10 +227,25 @@
         extensions: [
           ...defaultExtensions,
           Placeholder.configure({ placeholder: placeHolderStr }),
-          InlineStyleToolbar.configure({
+          InlineStyleToolbarExtension.configure({
+            tippyOptions: {
+              popperOptions: {
+                modifiers: [
+                  {
+                    name: 'preventOverflow',
+                    options: {
+                      boundary,
+                      padding: 8,
+                      altAxis: true,
+                      tether: false
+                    }
+                  }
+                ]
+              }
+            },
             element: inlineToolbar,
-            getEditorElement: () => element,
-            isShown: () => !readonly && showInlineToolbar
+            isSupported: () => !readonly,
+            isSelectionOnly: () => false
           }),
           Collaboration.configure({
             document: ydoc,
@@ -225,7 +256,8 @@
             user: {
               name: currentUser.email,
               color: getPlatformColorForText(currentUser.email, $themeStore.dark)
-            }
+            },
+            selectionRender: noSelectionRender
           }),
           DecorationExtension,
           Completion.configure({
@@ -246,23 +278,17 @@
         },
         onFocus: () => {
           focused = true
+          updateFocus()
+          dispatch('focus')
         },
-        onUpdate: ({ editor, transaction }) => {
-          showInlineToolbar = false
-
+        onUpdate: ({ transaction }) => {
           // ignore non-document changes
           if (!transaction.docChanged) return
-
-          // TODO this is heavy and should be replaced with more lightweight event
-          dispatch('content', editor.getHTML())
 
           // ignore non-local changes
           if (isChangeOrigin(transaction)) return
 
           dispatch('update')
-        },
-        onSelectionUpdate: () => {
-          showInlineToolbar = false
         }
       })
 
@@ -283,16 +309,31 @@
     }
   })
 
-  function onEditorClick () {
-    if (!editor.isEmpty) {
-      showInlineToolbar = true
+  let showDiff = true
+
+  export let focusIndex = -1
+  const { idx, focusManager } = registerFocus(focusIndex, {
+    focus: () => {
+      if (visible) {
+        element?.focus()
+      }
+      return visible && element !== null
+    },
+    isFocus: () => document.activeElement === element,
+    canBlur: () => false
+  })
+  const updateFocus = () => {
+    if (focusIndex !== -1) {
+      focusManager?.setFocus(idx)
     }
   }
-
-  let showDiff = true
+  $: if (element) {
+    element.addEventListener('focus', updateFocus, { once: true })
+  }
 </script>
 
-<slot />
+<slot {editor} />
+
 {#if visible}
   {#if comparedVersion !== undefined || $$slots.tools}
     <div class="ref-container" class:autoOverflow>
@@ -336,7 +377,7 @@
         needFocus = true
       }}
       on:action={(event) => {
-        dispatch('action', { action: event.detail, editor })
+        dispatch('action', event.detail)
         needFocus = true
       }}
     />
@@ -344,7 +385,7 @@
 
   <div class="ref-container" class:autoOverflow>
     <div class="textInput" class:focusable>
-      <div class="select-text" style="width: 100%;" on:mousedown={onEditorClick} bind:this={element} />
+      <div class="select-text" style="width: 100%;" bind:this={element} />
     </div>
   </div>
 {/if}

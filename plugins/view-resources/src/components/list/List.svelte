@@ -62,7 +62,7 @@
 
   $: queryNoLookup = noLookup(resultQuery)
 
-  let fastQueryIds: Ref<Doc>[] = []
+  let fastQueryIds: Set<Ref<Doc>> = new Set()
 
   let categoryQueryOptions: Partial<FindOptions<Doc>>
   $: categoryQueryOptions = {
@@ -79,46 +79,20 @@
     queryNoLookup,
     (res) => {
       fastDocs = res
-      fastQueryIds = res.map((it) => it._id)
+      fastQueryIds = new Set(res.map((it) => it._id))
     },
     { ...categoryQueryOptions, limit: 1000 }
   )
-  $: {
-    let doQuery = false
-    let _idQuery: DocumentQuery<Doc>['_id'] = { $nin: fastQueryIds }
+  $: docsQuerySlow.query(
+    _class,
+    queryNoLookup,
+    (res) => {
+      slowDocs = res
+    },
+    categoryQueryOptions
+  )
 
-    if (fastQueryIds.length > 0) {
-      doQuery = true
-
-      if (typeof resultQuery._id === 'object' && resultQuery._id?.$in !== undefined) {
-        const inIds = new Set(resultQuery._id.$in)
-        fastQueryIds.forEach((it) => inIds.delete(it))
-        _idQuery = { $in: Array.from(inIds) }
-        if (inIds.size === 0) {
-          doQuery = false
-        }
-      } else if (typeof resultQuery._id === 'object' && resultQuery._id?.$nin !== undefined) {
-        const ninIds = new Set(resultQuery._id.$in)
-        fastQueryIds.forEach((it) => ninIds.add(it))
-        _idQuery = { $nin: Array.from(ninIds) }
-      }
-    }
-
-    if (doQuery) {
-      docsQuerySlow.query(
-        _class,
-        { ...queryNoLookup, _id: _idQuery },
-        (res) => {
-          slowDocs = res
-        },
-        categoryQueryOptions
-      )
-    } else {
-      docsQuerySlow.unsubscribe()
-    }
-  }
-
-  $: docs = [...fastDocs, ...slowDocs]
+  $: docs = [...fastDocs, ...slowDocs.filter((it) => !fastQueryIds.has(it._id))]
 
   function getProjection (fields: string[], query: DocumentQuery<Doc>): Record<string, number> {
     const res: Record<string, number> = {}

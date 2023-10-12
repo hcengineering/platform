@@ -53,6 +53,6 @@
   $: if (object !== undefined) getHref(object)
 </script>
 
-<NavLink {disabled} {onClick} {noUnderline} {inline} {shrink} {href} {colorInherit} {accent} {noOverflow}
-  ><slot /></NavLink
->
+<NavLink {disabled} {onClick} {noUnderline} {inline} {shrink} {href} {colorInherit} {accent} {noOverflow}>
+  <slot />
+</NavLink>

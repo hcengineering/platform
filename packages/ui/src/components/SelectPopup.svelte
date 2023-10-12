@@ -52,6 +52,7 @@
   export let size: 'small' | 'medium' | 'large' = 'small'
   export let onSelect: ((value: ValueType['id']) => void) | undefined = undefined
   export let showShadow: boolean = true
+  export let embedded: boolean = false
 
   let search: string = ''
 
@@ -101,6 +102,7 @@
   class:noShadow={showShadow === false}
   class:full-width={width === 'full'}
   class:max-width-40={width === 'large'}
+  class:embedded
   use:resizeObserver={() => {
     dispatch('changeContent')
   }}
@@ -179,5 +181,5 @@
       </ListView>
     </div>
   </div>
-  <div class="menu-space" />
+  {#if !embedded}<div class="menu-space" />{/if}
 </div>

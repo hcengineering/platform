@@ -12,6 +12,7 @@ import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
 
 import Gapcursor from '@tiptap/extension-gapcursor'
+import ListKeymap from '@tiptap/extension-list-keymap'
 
 import { AnyExtension } from '@tiptap/core'
 import Link from '@tiptap/extension-link'
@@ -43,7 +44,7 @@ export const taskListExtensions = [
   })
 ]
 
-export const supportedHeadingLevels: Level[] = [1, 2]
+export const supportedHeadingLevels: Level[] = [1, 2, 3]
 
 export const defaultExtensions: AnyExtension[] = [
   StarterKit.configure({
@@ -77,6 +78,7 @@ export const defaultExtensions: AnyExtension[] = [
     openOnClick: true,
     HTMLAttributes: { class: 'cursor-pointer', rel: 'noopener noreferrer', target: '_blank' }
   }),
+  ListKeymap.configure({}),
   NodeUuidExtension,
   ...tableExtensions
   // ...taskListExtensions // Disable since tasks are not working properly now.

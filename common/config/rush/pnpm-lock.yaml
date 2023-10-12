@@ -6608,6 +6608,14 @@ packages:
       '@tiptap/core': 2.1.11(@tiptap/pm@2.1.11)
     dev: false
 
+  /@tiptap/extension-list-keymap@2.1.12(@tiptap/core@2.1.11):
+    resolution: {integrity: sha512-f19nGaqhIZhssM2k8nYR+zcoMc7UCLcW6YCNhTXSrybUsb6SMFVob9OL7+sy1x2n5Was5IqsvyAGakLjdTEwAw==}
+    peerDependencies:
+      '@tiptap/core': ^2.0.0
+    dependencies:
+      '@tiptap/core': 2.1.11(@tiptap/pm@2.1.11)
+    dev: false
+
   /@tiptap/extension-mention@2.1.11(@tiptap/core@2.1.11)(@tiptap/pm@2.1.11)(@tiptap/suggestion@2.1.11):
     resolution: {integrity: sha512-QMHmAkhiDQEgAdUHdKRfVna0AINcbSbQCrpgwKLIHGWcpbi1zJbAPpm+xngbl0I9ZNxaMzbP4utTAzeQ92pJkw==}
     peerDependencies:
@@ -22087,7 +22095,7 @@ packages:
     dev: false
 
   file:projects/server.tgz(esbuild@0.16.17):
-    resolution: {integrity: sha512-F5vPayuIg/XetPchRjf7nZfQx94qPAVqlSDxF4n05hfitEqNYIAReEwCYweF4vn1ffNnyFKG/K2KYtdilte+QQ==, tarball: file:projects/server.tgz}
+    resolution: {integrity: sha512-JcHQRXWF7KNRinn91dPMFPhF2ZyfxgASxU1DSKhR5Lzh4NnJhKNkNNaKNYGiJrG4+tBypfwIuqwzgkbxiab86A==, tarball: file:projects/server.tgz}
     id: file:projects/server.tgz
     name: '@rush-temp/server'
     version: 0.0.0
@@ -22823,7 +22831,7 @@ packages:
     dev: false
 
   file:projects/text-editor.tgz(@types/node@16.11.68)(bufferutil@4.0.7)(esbuild@0.16.17)(postcss-load-config@4.0.1)(postcss@8.4.31)(ts-node@10.9.1):
-    resolution: {integrity: sha512-A8GMRWDl/8wZvvR2RbR4ydEkDjF/NwPNJSaI8po5tAfcaq/n4a4p5lTLLTd5JfSJYdk7+ZmRiOQdZpQOg/MJ7A==, tarball: file:projects/text-editor.tgz}
+    resolution: {integrity: sha512-gFt4pWS+w2BvcKvPgGEGDjUrGAjzVk2GT49u+mb+xekNK+Efy+0hjVUioA1fgQ5imSJNjWCEZKB4eZioBlhaVA==, tarball: file:projects/text-editor.tgz}
     id: file:projects/text-editor.tgz
     name: '@rush-temp/text-editor'
     version: 0.0.0
@@ -22839,6 +22847,7 @@ packages:
       '@tiptap/extension-heading': 2.1.11(@tiptap/core@2.1.11)
       '@tiptap/extension-highlight': 2.1.11(@tiptap/core@2.1.11)
       '@tiptap/extension-link': 2.1.11(@tiptap/core@2.1.11)(@tiptap/pm@2.1.11)
+      '@tiptap/extension-list-keymap': 2.1.12(@tiptap/core@2.1.11)
       '@tiptap/extension-mention': 2.1.11(@tiptap/core@2.1.11)(@tiptap/pm@2.1.11)(@tiptap/suggestion@2.1.11)
       '@tiptap/extension-placeholder': 2.1.11(@tiptap/core@2.1.11)(@tiptap/pm@2.1.11)
       '@tiptap/extension-table': 2.1.11(@tiptap/core@2.1.11)(@tiptap/pm@2.1.11)
@@ -23095,7 +23104,7 @@ packages:
     dev: false
 
   file:projects/tracker-resources.tgz(@types/node@16.11.68)(esbuild@0.16.17)(postcss-load-config@4.0.1)(postcss@8.4.31)(ts-node@10.9.1):
-    resolution: {integrity: sha512-gc8Lofv1m1ZC0J1ATe4loePxjNQU1c836J4PHRu+brrhOSIClbUKR/weLckcxsOtrn6imVkCEs3pisrOTQ+MvA==, tarball: file:projects/tracker-resources.tgz}
+    resolution: {integrity: sha512-Ikg4KXyZO5fRqMu1KSfX76R2HmkLbG2wC0JQUTkmIOgy7K/1/mzp8kQ33se2ljNYybz6Qj2csqZhD4Ptya4DUQ==, tarball: file:projects/tracker-resources.tgz}
     id: file:projects/tracker-resources.tgz
     name: '@rush-temp/tracker-resources'
     version: 0.0.0

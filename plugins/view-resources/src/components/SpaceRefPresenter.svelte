@@ -17,6 +17,24 @@
   import { ObjectPresenter } from '..'
 
   export let value: Ref<Space>
+  export let inline: boolean = false
+  export let accent: boolean = false
+  export let shouldShowAvatar: boolean = true
+  export let noUnderline: boolean = false
+  export let disabled: boolean = false
+  export let shouldShowName: boolean = true
+  export let shrink: number = 0
 </script>
 
-<ObjectPresenter objectId={value} _class={core.class.Space} on:accent-color />
+<ObjectPresenter
+  objectId={value}
+  _class={core.class.Space}
+  {shouldShowAvatar}
+  {shouldShowName}
+  {disabled}
+  {inline}
+  {noUnderline}
+  {shrink}
+  {accent}
+  on:accent-color
+/>

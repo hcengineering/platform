@@ -41,6 +41,7 @@
   }
   export let placeholder: IntlString | undefined = undefined
   export let extraActions: RefAction[] | undefined = undefined
+  export let boundary: HTMLElement | undefined = undefined
 
   let refInput: ReferenceInput
 
@@ -276,26 +277,6 @@
     on:dragleave={() => {}}
     on:drop|preventDefault|stopPropagation={fileDrop}
   >
-    {#if attachments.size || progress}
-      <div class="flex-row-center list scroll-divider-color">
-        {#if progress}
-          <div class="flex p-3">
-            <Loading />
-          </div>
-        {/if}
-        {#each Array.from(attachments.values()) as attachment}
-          <div class="item flex">
-            <AttachmentPresenter
-              value={attachment}
-              removable
-              on:remove={(result) => {
-                if (result !== undefined) removeAttachment(attachment)
-              }}
-            />
-          </div>
-        {/each}
-      </div>
-    {/if}
     <ReferenceInput
       {focusIndex}
       bind:this={refInput}
@@ -303,12 +284,13 @@
       {iconSend}
       {labelSend}
       {showSend}
+      showHeader={attachments.size > 0 || progress}
       {loading}
+      {boundary}
       on:focus
       on:blur
       on:message={onMessage}
       haveAttachment={attachments.size > 0}
-      withoutTopBorder={attachments.size > 0}
       on:attach={() => {
         dispatch('focus')
         inputFile.click()
@@ -316,20 +298,38 @@
       on:update={onUpdate}
       {placeholder}
       {extraActions}
-    />
+    >
+      <div slot="header">
+        {#if attachments.size || progress}
+          <div class="flex-row-center list scroll-divider-color">
+            {#if progress}
+              <div class="flex p-3">
+                <Loading />
+              </div>
+            {/if}
+            {#each Array.from(attachments.values()) as attachment}
+              <div class="item flex">
+                <AttachmentPresenter
+                  value={attachment}
+                  removable
+                  on:remove={(result) => {
+                    if (result !== undefined) removeAttachment(attachment)
+                  }}
+                />
+              </div>
+            {/each}
+          </div>
+        {/if}
+      </div>
+    </ReferenceInput>
   </div>
 </div>
 
 <style lang="scss">
   .list {
     padding: 0.5rem;
-    color: var(--theme-caption-color);
     overflow-x: auto;
     overflow-y: hidden;
-    background-color: var(--theme-refinput-color);
-    border: 1px solid var(--theme-divider-color);
-    border-radius: 0.5rem 0.5rem 0 0;
-    border-bottom: none;
 
     .item + .item {
       padding-left: 1rem;

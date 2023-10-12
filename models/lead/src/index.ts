@@ -190,6 +190,9 @@ export function createModel(builder: Builder): void {
   createAction(builder, {
     ...viewTemplates.open,
     target: lead.class.Funnel,
+    query: {
+      archived: true
+    },
     context: {
       mode: ['browser', 'context'],
       group: 'create'
@@ -646,4 +649,26 @@ export function createModel(builder: Builder): void {
     },
     lead.action.CreateGlobalLead
   )
+
+  createAction(builder, {
+    action: view.actionImpl.ShowPopup,
+    actionProps: {
+      component: lead.component.CreateFunnel,
+      _id: 'customer',
+      element: 'top',
+      fillProps: {
+        _object: 'funnel'
+      }
+    },
+    label: lead.string.EditFunnel,
+    icon: lead.icon.Funnel,
+    input: 'focus',
+    category: lead.category.Lead,
+    target: lead.class.Funnel,
+    override: [view.action.Open],
+    context: {
+      mode: ['context', 'browser'],
+      group: 'associate'
+    }
+  })
 }

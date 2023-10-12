@@ -279,6 +279,7 @@
   }
 
   $: finalTitle = title ?? rawTitle
+  let content: HTMLElement
 </script>
 
 {#if !embedded}
@@ -297,6 +298,7 @@
     {embedded}
     isHeader={mainEditor?.pinned ?? false}
     isAside={true}
+    bind:content
     bind:panelWidth
     bind:innerWidth
     on:open

@@ -43,6 +43,7 @@ import {
   TIndexConfiguration,
   TIndexStageState,
   TInterface,
+  TMigrationState,
   TMixin,
   TObj,
   TPluginConfiguration,
@@ -133,7 +134,8 @@ export function createModel (builder: Builder): void {
     TConfigurationElement,
     TIndexConfiguration,
     TStatus,
-    TStatusCategory
+    TStatusCategory,
+    TMigrationState
   )
 
   builder.createDoc(

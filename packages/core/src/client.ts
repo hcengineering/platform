@@ -306,6 +306,9 @@ async function loadModel (
         ltxes = memTxes
       }
     }
+    if (ltxes.length < modelTransactionThreshold) {
+      lastTxTime = 0
+    }
   }
 
   let atxes: Tx[] = []

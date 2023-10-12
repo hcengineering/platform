@@ -10,6 +10,7 @@
 //
 // See the License for the specific language governing permissions and
 
+import { writable } from 'svelte/store'
 import { DelayedCaller } from './utils'
 import type { SeparatedItem, DefSeparators } from './types'
 
@@ -123,3 +124,5 @@ export const timeSeparators: DefSeparators = [
   { minSize: 25, size: 35, maxSize: 45 },
   null
 ]
+
+export const separatorsStore = writable<string[]>([])

@@ -13,24 +13,25 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
+  import { Attachment } from '@hcengineering/attachment'
+  import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import chunter from '@hcengineering/chunter'
   import { Employee } from '@hcengineering/contact'
-  import core, { Account, DocData, Class, Doc, fillDefaults, generateId, Ref, SortingOrder } from '@hcengineering/core'
+  import core, { Account, Class, Doc, DocData, Ref, SortingOrder, fillDefaults, generateId } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
+  import preference, { SpacePreference } from '@hcengineering/preference'
   import {
     Card,
-    createQuery,
     DraftController,
-    getClient,
     KeyedAttribute,
     MessageBox,
     MultipleDraftController,
-    SpaceSelector
+    SpaceSelector,
+    createQuery,
+    getClient
   } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import {
-    calcRank,
     Component as ComponentType,
     Issue,
     IssueDraft,
@@ -39,29 +40,30 @@
     IssueTemplate,
     Milestone,
     Project,
-    ProjectIssueTargetOptions
+    ProjectIssueTargetOptions,
+    calcRank
   } from '@hcengineering/tracker'
   import {
-    addNotification,
     Button,
     Component,
-    createFocusManager,
     DatePresenter,
     EditBox,
     FocusHandler,
     IconAttachment,
     Label,
+    addNotification,
+    createFocusManager,
     showPopup,
     themeStore
   } from '@hcengineering/ui'
-  import { Attachment } from '@hcengineering/attachment'
-  import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import view from '@hcengineering/view'
   import { ObjectBox } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { activeComponent, activeMilestone, generateIssueShortLink, getIssueId, updateIssueRelation } from '../issues'
   import tracker from '../plugin'
   import ComponentSelector from './ComponentSelector.svelte'
+  import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
+  import SubIssues from './SubIssues.svelte'
   import AssigneeEditor from './issues/AssigneeEditor.svelte'
   import IssueNotification from './issues/IssueNotification.svelte'
   import ParentIssue from './issues/ParentIssue.svelte'
@@ -69,11 +71,9 @@
   import StatusEditor from './issues/StatusEditor.svelte'
   import EstimationEditor from './issues/timereport/EstimationEditor.svelte'
   import MilestoneSelector from './milestones/MilestoneSelector.svelte'
-  import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
-  import SubIssues from './SubIssues.svelte'
   import ProjectPresenter from './projects/ProjectPresenter.svelte'
 
-  export let space: Ref<Project>
+  export let space: Ref<Project> | undefined
   export let status: Ref<IssueStatus> | undefined = undefined
   export let priority: IssuePriority | undefined = undefined
   export let assignee: Ref<Employee> | null = null
@@ -150,7 +150,7 @@
       title: '',
       description: '',
       priority: priority ?? IssuePriority.NoPriority,
-      space: _space,
+      space: _space as Ref<Project>,
       component: component ?? $activeComponent ?? null,
       dueDate: null,
       attachments: 0,
@@ -209,7 +209,7 @@
     space: _space
   }
 
-  $: if (object.space !== _space) {
+  $: if (_space !== undefined && object.space !== _space) {
     object.space = _space
   }
 
@@ -261,7 +261,7 @@
       return {
         ...p,
         _id: p.id,
-        space: _space,
+        space: _space as Ref<Project>,
         subIssues: [],
         dueDate: null,
         labels: [],
@@ -355,7 +355,7 @@
 
   async function createIssue (): Promise<void> {
     const _id: Ref<Issue> = generateId()
-    if (!canSave || object.status === undefined) {
+    if (!canSave || object.status === undefined || _space === undefined) {
       return
     }
 
@@ -363,7 +363,7 @@
     const incResult = await client.updateDoc(
       tracker.class.Project,
       core.space.Space,
-      _space,
+      _space as Ref<Project>,
       {
         $inc: { sequence: 1 }
       },
@@ -396,7 +396,7 @@
 
     if (targetSettings !== undefined) {
       const updateOp = await getResource(targetSettings.update)
-      updateOp?.(_id, _space, value, targetSettingOptions)
+      updateOp?.(_id, _space as Ref<Project>, value, targetSettingOptions)
     }
 
     await client.addCollection(
@@ -543,6 +543,47 @@
   const manager = createFocusManager()
 
   let attachments: Map<Ref<Attachment>, Attachment> = new Map<Ref<Attachment>, Attachment>()
+
+  async function findDefaultSpace (): Promise<Project | undefined> {
+    let targetRef: Ref<Project> | undefined
+    if (relatedTo !== undefined) {
+      const targets = await client.findAll(tracker.class.RelatedIssueTarget, {})
+      // Find a space target first
+      targetRef =
+        targets.find((t) => t.rule.kind === 'spaceRule' && t.rule.space === relatedTo?.space && t.target !== undefined)
+          ?.target ?? undefined
+      // Find a class target as second
+      targetRef =
+        targetRef ??
+        targets.find(
+          (t) =>
+            t.rule.kind === 'classRule' &&
+            client.getHierarchy().isDerived(relatedTo?._class as Ref<Class<Doc>>, t.rule.ofClass)
+        )?.target ??
+        undefined
+    }
+
+    // Find first starred project
+    if (targetRef === undefined) {
+      const prefs = await client.findAll<SpacePreference>(
+        preference.class.SpacePreference,
+        {},
+        { sort: { modifiedOn: SortingOrder.Ascending } }
+      )
+      const projects = await client.findAll<Project>(tracker.class.Project, {
+        _id: {
+          $in: Array.from(prefs.map((it) => it.attachedTo as Ref<Project>).filter((it) => it != null))
+        }
+      })
+      if (projects.length > 0) {
+        return projects[0]
+      }
+    }
+
+    if (targetRef !== undefined) {
+      return client.findOne(tracker.class.Project, { _id: targetRef })
+    }
+  }
 </script>
 
 <FocusHandler {manager} />
@@ -568,6 +609,7 @@
       size={'small'}
       component={ProjectPresenter}
       defaultIcon={tracker.icon.Home}
+      {findDefaultSpace}
     />
     <ObjectBox
       _class={tracker.class.IssueTemplate}
@@ -667,14 +709,16 @@
       />
     {/key}
   </div>
-  <SubIssues
-    bind:this={subIssuesComponent}
-    projectId={_space}
-    project={currentProject}
-    milestone={object.milestone}
-    component={object.component}
-    bind:subIssues={object.subIssues}
-  />
+  {#if _space}
+    <SubIssues
+      bind:this={subIssuesComponent}
+      projectId={_space}
+      project={currentProject}
+      milestone={object.milestone}
+      component={object.component}
+      bind:subIssues={object.subIssues}
+    />
+  {/if}
   {#if targetSettings?.bodyComponent && currentProject}
     <Component
       is={targetSettings.bodyComponent}

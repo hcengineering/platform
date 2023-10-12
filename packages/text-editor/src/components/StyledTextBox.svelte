@@ -3,6 +3,7 @@
   import presentation, { MessageViewer } from '@hcengineering/presentation'
   import {
     ActionIcon,
+    ButtonSize,
     IconCheck,
     IconClose,
     IconEdit,
@@ -21,6 +22,7 @@
 
   import { completionConfig } from './extensions'
   import { EmojiExtension } from './extension/emoji'
+  import { FocusExtension } from './extension/focus'
 
   import { ImageRef, FileAttachFunction } from './imageExt'
   import { Node as ProseMirrorNode } from '@tiptap/pm/model'
@@ -33,7 +35,7 @@
   export let alwaysEdit: boolean = false
   export let showButtons: boolean = true
   export let hideAttachments: boolean = false
-  export let buttonSize: IconSize = 'medium'
+  export let buttonSize: ButtonSize = 'medium'
   export let formatButtonSize: IconSize = 'small'
   export let hideExtraButtons: boolean = false
   export let maxHeight: 'max' | 'card' | 'limited' | string = 'max'
@@ -44,6 +46,7 @@
   export let enableBackReferences: boolean = false
   export let enableEmojiReplace: boolean = true
   export let isScrollable: boolean = true
+  export let boundary: HTMLElement | undefined = undefined
 
   export let attachFile: FileAttachFunction | undefined = undefined
 
@@ -68,6 +71,8 @@
     mode = Mode.View
   }
 
+  let canBlur = true
+  let focused = false
   let rawValue: string
   let oldContent = ''
   let modified: boolean = false
@@ -101,7 +106,6 @@
     textEditor.setContent(data)
   }
   const dispatch = createEventDispatcher()
-  let focused = false
 
   export function isFocused (): boolean {
     return focused
@@ -127,7 +131,7 @@
     isFocus: () => focused,
     canBlur: () => {
       if (focused) {
-        return !textEditor.catHandleTab()
+        return canBlur
       }
       return true
     }
@@ -135,6 +139,20 @@
   const updateFocus = () => {
     if (focusIndex !== -1) {
       focusManager?.setFocus(idx)
+    }
+  }
+
+  const handleFocus = (value: boolean) => {
+    focused = value
+    if (focused) {
+      updateFocus()
+      dispatch('focus')
+    } else {
+      dispatch('blur', rawValue)
+      if (alwaysEdit) {
+        dispatch('value', rawValue)
+        content = rawValue
+      }
     }
   }
 
@@ -167,10 +185,14 @@
       }
     })
 
-    const extensions: AnyExtension[] = [imagePlugin]
+    const extensions: AnyExtension[] = []
     if (enableBackReferences) {
-      extensions.unshift(completionPlugin)
+      extensions.push(completionPlugin)
     }
+    extensions.push(
+      imagePlugin,
+      FocusExtension.configure({ onCanBlur: (value: boolean) => (canBlur = value), onFocus: handleFocus })
+    )
     if (enableEmojiReplace) {
       extensions.push(EmojiExtension.configure())
     }
@@ -211,22 +233,10 @@
       {autofocus}
       {isScrollable}
       {extensions}
+      {boundary}
       bind:content={rawValue}
       bind:this={textEditor}
       on:attach
-      on:focus={() => {
-        focused = true
-        updateFocus()
-        dispatch('focus')
-      }}
-      on:blur={() => {
-        focused = false
-        dispatch('blur', rawValue)
-        if (alwaysEdit) {
-          dispatch('value', rawValue)
-          content = rawValue
-        }
-      }}
       on:value={(evt) => {
         rawValue = evt.detail
         if (alwaysEdit) {

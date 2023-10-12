@@ -1,5 +1,6 @@
-import { Mark, getMarkAttributes, mergeAttributes } from '@tiptap/core'
-import { Plugin, PluginKey } from 'prosemirror-state'
+import { Command, CommandProps, Mark, getMarkAttributes, getMarkType, mergeAttributes } from '@tiptap/core'
+import { Node, Mark as ProseMirrorMark } from 'prosemirror-model'
+import { EditorState, Plugin, PluginKey } from 'prosemirror-state'
 
 const NAME = 'node-uuid'
 
@@ -14,11 +15,11 @@ export interface NodeUuidCommands<ReturnType> {
     /**
      * Add uuid mark
      */
-    setUuid: (uuid: string) => ReturnType
+    setNodeUuid: (uuid: string) => ReturnType
     /**
      * Unset uuid mark
      */
-    unsetUuid: () => ReturnType
+    unsetNodeUuid: () => ReturnType
   }
 }
 
@@ -30,8 +31,32 @@ export interface NodeUuidStorage {
   activeNodeUuid: string | null
 }
 
+const findSelectionNodeUuidMark = (state: EditorState): ProseMirrorMark | undefined => {
+  if (state.selection === null || state.selection === undefined) {
+    return
+  }
+
+  let nodeUuidMark: ProseMirrorMark | undefined
+  state.doc.nodesBetween(state.selection.from, state.selection.to, (node) => {
+    if (nodeUuidMark !== null || nodeUuidMark !== undefined) {
+      return false
+    }
+    nodeUuidMark = findNodeUuidMark(node)
+  })
+
+  return nodeUuidMark
+}
+
+export const findNodeUuidMark = (node: Node): ProseMirrorMark | undefined => {
+  if (node === null || node === undefined) {
+    return
+  }
+
+  return node.marks.find((mark) => mark.type.name === NAME && mark.attrs[NAME])
+}
+
 /**
- * This mark allows to add node uuid to the selected text
+ * This extension allows to add node uuid to the selected text
  * Creates span node with attribute node-uuid
  */
 export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
@@ -73,19 +98,22 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
 
   addProseMirrorPlugins () {
     const options = this.options
+    const storage: NodeUuidStorage = this.storage
     const plugins = [
       ...(this.parent?.() ?? []),
       new Plugin({
         key: new PluginKey('handle-node-uuid-click-plugin'),
         props: {
           handleClick (view) {
-            const { schema } = view.state
-
-            const attrs = getMarkAttributes(view.state, schema.marks[NAME])
+            const attrs = getMarkAttributes(view.state, view.state.schema.marks[NAME])
             const nodeUuid = attrs?.[NAME]
-
             if (nodeUuid !== null || nodeUuid !== undefined) {
               options.onNodeClicked?.(nodeUuid)
+            }
+
+            if (storage.activeNodeUuid !== nodeUuid) {
+              storage.activeNodeUuid = nodeUuid
+              options.onNodeSelected?.(storage.activeNodeUuid)
             }
           }
         }
@@ -96,16 +124,27 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
   },
 
   addCommands () {
-    return {
-      setUuid:
+    const result: NodeUuidCommands<Command>[typeof NAME] = {
+      setNodeUuid:
         (uuid: string) =>
-          ({ commands }) =>
-            commands.setMark(this.name, { [NAME]: uuid }),
-      unsetUuid:
+          ({ commands, state }: CommandProps) => {
+            const { doc, selection } = state
+            if (selection.empty) {
+              return false
+            }
+            if (doc.rangeHasMark(selection.from, selection.to, getMarkType(NAME, state.schema))) {
+              return false
+            }
+
+            return commands.setMark(this.name, { [NAME]: uuid })
+          },
+      unsetNodeUuid:
         () =>
-          ({ commands }) =>
+          ({ commands }: CommandProps) =>
             commands.unsetMark(this.name)
     }
+
+    return result
   },
 
   addStorage () {
@@ -115,19 +154,13 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
   },
 
   onSelectionUpdate () {
-    const { $head } = this.editor.state.selection
+    const activeNodeUuidMark = findSelectionNodeUuidMark(this.editor.state)
+    const activeNodeUuid =
+      activeNodeUuidMark !== null && activeNodeUuidMark !== undefined ? activeNodeUuidMark.attrs[NAME] : null
 
-    const marks = $head.marks()
-    this.storage.activeNodeUuid = null
-    if (marks.length > 0) {
-      const nodeUuidMark = this.editor.schema.marks[NAME]
-      const activeNodeUuidMark = marks.find((mark) => mark.type === nodeUuidMark)
-
-      if (activeNodeUuidMark !== undefined && activeNodeUuidMark !== null) {
-        this.storage.activeNodeUuid = activeNodeUuidMark.attrs[NAME]
-      }
+    if (this.storage.activeNodeUuid !== activeNodeUuid) {
+      this.storage.activeNodeUuid = activeNodeUuid
+      this.options.onNodeSelected?.(this.storage.activeNodeUuid)
     }
-
-    this.options.onNodeSelected?.(this.storage.activeNodeUuid)
   }
 })

@@ -9,7 +9,7 @@
 
 .text-editor-view {
   overflow-y: auto;
-  color: var(--theme-caption-color);
+  color: var(--theme-text-primary-color);
 
   p:not(:last-child) {
     margin-block-end: 1em;
@@ -23,7 +23,7 @@
   p.is-editor-empty:first-child::before {
     content: attr(data-placeholder);
     float: left;
-    color: var(--theme-halfcontent-color);
+    color: var(--theme-text-placeholder-color);
     pointer-events: none;
     height: 0;
   }
@@ -108,9 +108,13 @@
   object-fit: contain;
 }
 
-.text-editor-highlighted-node-info {
-  background-color: var(--text-editor-highlighted-node-info-background-color);
-  border-bottom: 0.0625rem solid var(--text-editor-highlighted-node-info-border-color);
+.text-editor-highlighted-node-warning {
+  background-color: var(--text-editor-highlighted-node-warning-background-color);
+  border-bottom: 0.0625rem solid var(--text-editor-highlighted-node-warning-border-color);
+
+  &.text-editor-highlighted-node-selected, &:hover {
+    background-color: var(--text-editor-highlighted-node-warning-active-background-color);
+  }
 }
 
 .text-editor-highlighted-node-delete {

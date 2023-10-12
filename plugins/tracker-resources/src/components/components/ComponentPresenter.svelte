@@ -24,7 +24,7 @@
   export let value: WithLookup<Component> | undefined
   export let shouldShowAvatar = true
   export let onClick: (() => void) | undefined = undefined
-  export let disabled = false
+  export let disabled: boolean = false
   export let inline: boolean = false
   export let accent: boolean = false
   export let noUnderline = false

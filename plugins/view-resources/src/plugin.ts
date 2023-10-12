@@ -99,7 +99,8 @@ export default mergeIds(viewId, view, {
     ChooseIcon: '' as IntlString,
     IconColor: '' as IntlString,
     IconCategory: '' as IntlString,
-    EmojiCategory: '' as IntlString
+    EmojiCategory: '' as IntlString,
+    NumberItems: '' as IntlString
   },
   function: {
     CreateDocMiddleware: '' as Resource<PresentationMiddlewareCreator>

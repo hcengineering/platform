@@ -18,7 +18,7 @@
   import { IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
-  import { IconSize, updatePopup } from '@hcengineering/ui'
+  import { ButtonSize, IconSize, updatePopup } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import attachment from '../plugin'
   import { deleteFile, uploadFile } from '../utils'
@@ -35,7 +35,7 @@
   export let alwaysEdit = false
   export let showButtons = false
   export let kind: 'normal' | 'emphasized' | 'indented' = 'normal'
-  export let buttonSize: IconSize = 'medium'
+  export let buttonSize: ButtonSize = 'medium'
   export let formatButtonSize: IconSize = 'small'
   export let maxHeight: 'max' | 'card' | 'limited' | string = 'max'
   export let focusable: boolean = false
@@ -48,6 +48,7 @@
   export let isScrollable = true
 
   export let useDirectAttachDelete = false
+  export let boundary: HTMLElement | undefined = undefined
 
   let progress = false
 
@@ -384,6 +385,7 @@
       {kind}
       {enableBackReferences}
       {isScrollable}
+      {boundary}
       on:changeSize
       on:changeContent
       on:blur
