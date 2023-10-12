@@ -49,6 +49,7 @@
   export let full = false
   export let extensions: AnyExtension[] = []
   export let editorAttributes: { [name: string]: string } = {}
+  export let boundary: HTMLElement | undefined = undefined
   export let textFormatCategories: TextFormatCategory[] = [
     TextFormatCategory.Heading,
     TextFormatCategory.TextDecoration,
@@ -249,6 +250,7 @@
           on:blur
           on:focus
           supportSubmit={false}
+          {boundary}
         />
       {/if}
     </div>

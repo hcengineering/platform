@@ -48,6 +48,7 @@
   export let isScrollable = true
 
   export let useDirectAttachDelete = false
+  export let boundary: HTMLElement | undefined = undefined
 
   let progress = false
 
@@ -384,6 +385,7 @@
       {kind}
       {enableBackReferences}
       {isScrollable}
+      {boundary}
       on:changeSize
       on:changeContent
       on:blur

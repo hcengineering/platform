@@ -161,6 +161,8 @@
     return undefined
   }
   $: editorFooter = getEditorFooter(issue?._class)
+
+  let content: HTMLElement
 </script>
 
 {#if !embedded}
@@ -180,6 +182,7 @@
     isSub={false}
     withoutActivity={false}
     withoutTitle
+    bind:content
     {embedded}
     bind:innerWidth
     on:open
@@ -233,6 +236,7 @@
         key={{ key: 'description', attr: descriptionKey }}
         bind:this={descriptionBox}
         placeholder={tracker.string.IssueDescriptionPlaceholder}
+        boundary={content}
         on:saved={(evt) => {
           saved = evt.detail
         }}

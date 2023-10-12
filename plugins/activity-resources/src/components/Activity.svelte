@@ -30,6 +30,7 @@
   export let transparent: boolean = false
   export let shouldScroll: boolean = false
   export let focusIndex: number = -1
+  export let boundary: HTMLElement | undefined = undefined
 
   getResource(notification.function.GetNotificationClient).then((res) => {
     updatesStore = res().docUpdatesStore
@@ -156,6 +157,7 @@
             isNew={newTxIndexes.includes(i)}
             isNextNew={newTxIndexes.includes(i + 1)}
             shouldScroll={i === scrollIndex}
+            {boundary}
           />
         </Lazy>
       {/each}
@@ -164,7 +166,7 @@
 </div>
 {#if showCommenInput}
   <div class="ref-input">
-    <Component is={chunter.component.CommentInput} props={{ object, focusIndex }} />
+    <Component is={chunter.component.CommentInput} props={{ object, focusIndex, boundary }} />
   </div>
 {/if}
 

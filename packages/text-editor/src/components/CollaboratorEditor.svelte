@@ -61,6 +61,7 @@
   export let textNodeActions: TextNodeAction[] = []
   export let editorAttributes: { [name: string]: string } = {}
   export let onExtensions: () => AnyExtension[] = () => []
+  export let boundary: HTMLElement | undefined = undefined
 
   let element: HTMLElement
 
@@ -227,6 +228,21 @@
           ...defaultExtensions,
           Placeholder.configure({ placeholder: placeHolderStr }),
           InlineStyleToolbarExtension.configure({
+            tippyOptions: {
+              popperOptions: {
+                modifiers: [
+                  {
+                    name: 'preventOverflow',
+                    options: {
+                      boundary,
+                      padding: 8,
+                      altAxis: true,
+                      tether: false
+                    }
+                  }
+                ]
+              }
+            },
             element: inlineToolbar,
             isSupported: () => !readonly,
             isSelectionOnly: () => false
