@@ -1,15 +1,14 @@
 import { EmojiPopup, IconEmoji, showPopup } from '@hcengineering/ui'
-import TextEditor from '../TextEditor.svelte'
 import RiMention from '../icons/RIMention.svelte'
 import textEditorPlugin from '../../plugin'
-import { RefAction } from '../../types'
+import { RefAction, TextEditorHandler } from '../../types'
 
-export const generateDefaultActions = (textEditor: TextEditor | undefined): RefAction[] => {
+export const generateDefaultActions = (editorHandler: TextEditorHandler): RefAction[] => {
   return [
     {
       label: textEditorPlugin.string.Mention,
       icon: RiMention,
-      action: () => textEditor?.insertText('@'),
+      action: () => editorHandler.insertText('@'),
       order: 3000
     },
     {
@@ -25,8 +24,8 @@ export const generateDefaultActions = (textEditor: TextEditor | undefined): RefA
               return
             }
 
-            textEditor?.insertText(emoji)
-            textEditor?.focus()
+            editorHandler.insertText(emoji)
+            editorHandler.focus()
           },
           () => {}
         )

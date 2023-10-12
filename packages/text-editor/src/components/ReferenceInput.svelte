@@ -65,7 +65,19 @@
     textEditor?.setContent(content)
   }
 
-  let actions: RefAction[] = generateDefaultActions(textEditor)
+  const editorHandler: TextEditorHandler = {
+    insertText: (text) => {
+      textEditor?.insertText(text)
+    },
+    insertTemplate: (name, text) => {
+      textEditor?.insertText(text)
+    },
+    focus: () => {
+      textEditor?.focus()
+    }
+  }
+
+  let actions: RefAction[] = generateDefaultActions(editorHandler)
     .concat(...extraActions)
     .sort((a, b) => a.order - b.order)
   client.findAll<RefInputActionItem>(textEditorPlugin.class.RefInputActionItem, {}).then(async (res) => {
@@ -85,14 +97,6 @@
     textEditor?.submit()
   }
 
-  const editorHandler: TextEditorHandler = {
-    insertText: (text) => {
-      textEditor?.insertText(text)
-    },
-    insertTemplate: (name, text) => {
-      textEditor?.insertText(text)
-    }
-  }
   function handleAction (a: RefAction, evt?: Event): void {
     a.action(evt?.target as HTMLElement, editorHandler)
   }
