@@ -16,22 +16,12 @@
   import { createEventDispatcher } from 'svelte'
   import { AnyExtension, mergeAttributes } from '@tiptap/core'
   import { Node as ProseMirrorNode } from '@tiptap/pm/model'
-  import { Asset, getResource, IntlString } from '@hcengineering/platform'
+  import { getResource, IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import {
-    AnySvelteComponent,
-    Button,
-    ButtonSize,
-    EmojiPopup,
-    IconEmoji,
-    IconSize,
-    Scroller,
-    showPopup
-  } from '@hcengineering/ui'
-
+  import { Button, ButtonSize, IconSize, Scroller } from '@hcengineering/ui'
   import textEditorPlugin from '../plugin'
-  import { RefInputAction, RefInputActionItem, TextEditorHandler, TextFormatCategory } from '../types'
-  import Attach from './icons/Attach.svelte'
+  import { RefAction, RefInputActionItem, TextEditorHandler, TextFormatCategory } from '../types'
+  import { generateDefaultActions } from './editor/actions'
   import TextEditor from './TextEditor.svelte'
 
   const dispatch = createEventDispatcher()
@@ -39,7 +29,6 @@
   export let content: string = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let showButtons: boolean = true
-  export let hideAttachments: boolean = false
   export let buttonSize: ButtonSize = 'medium'
   export let formatButtonSize: IconSize = 'small'
   export let isScrollable: boolean = true
@@ -49,6 +38,7 @@
   export let full = false
   export let extensions: AnyExtension[] = []
   export let editorAttributes: { [name: string]: string } = {}
+  export let extraActions: RefAction[] = []
   export let boundary: HTMLElement | undefined = undefined
   export let textFormatCategories: TextFormatCategory[] = [
     TextFormatCategory.Heading,
@@ -60,30 +50,30 @@
     TextFormatCategory.Table
   ]
 
-  let textEditor: TextEditor
+  let textEditor: TextEditor | undefined = undefined
 
   let contentHeight: number
 
   export function submit (): void {
-    textEditor.submit()
+    textEditor?.submit()
   }
   export function focus (): void {
-    textEditor.focus()
+    textEditor?.focus()
   }
   export function isEditable (): boolean {
-    return textEditor.isEditable()
+    return textEditor?.isEditable() ?? false
   }
   export function setEditable (editable: boolean): void {
-    textEditor.setEditable(editable)
+    textEditor?.setEditable(editable)
   }
   export function getContent (): string {
     return content
   }
   export function setContent (data: string): void {
-    textEditor.setContent(data)
+    textEditor?.setContent(data)
   }
   export function insertText (text: string): void {
-    textEditor.insertText(text)
+    textEditor?.insertText(text)
   }
 
   $: varsStyle =
@@ -95,44 +85,10 @@
           ? 'max-content'
           : maxHeight
 
-  interface RefAction {
-    label: IntlString
-    icon: Asset | AnySvelteComponent
-    action: RefInputAction
-    order: number
-    hidden?: boolean
-  }
-  const defActions: RefAction[] = [
-    {
-      label: textEditorPlugin.string.Attach,
-      icon: Attach,
-      action: () => {
-        dispatch('attach')
-      },
-      order: 1001
-    },
-    {
-      label: textEditorPlugin.string.Emoji,
-      icon: IconEmoji,
-      action: (element) => {
-        showPopup(
-          EmojiPopup,
-          {},
-          element,
-          (emoji) => {
-            if (!emoji) return
-            textEditor.insertText(emoji)
-            textEditor.focus()
-          },
-          () => {}
-        )
-      },
-      order: 4001
-    }
-  ]
-
   const client = getClient()
-  let actions: RefAction[] = []
+  let actions: RefAction[] = generateDefaultActions(textEditor)
+    .concat(...extraActions)
+    .sort((a, b) => a.order - b.order)
   client.findAll<RefInputActionItem>(textEditorPlugin.class.RefInputActionItem, {}).then(async (res) => {
     const cont: RefAction[] = []
     for (const r of res) {
@@ -143,7 +99,7 @@
         action: await getResource(r.action)
       })
     }
-    actions = defActions.concat(...cont).sort((a, b) => a.order - b.order)
+    actions = actions.concat(...cont).sort((a, b) => a.order - b.order)
   })
 
   const mergedEditorAttributes = mergeAttributes(
@@ -153,10 +109,10 @@
 
   const editorHandler: TextEditorHandler = {
     insertText: (text) => {
-      textEditor.insertText(text)
+      textEditor?.insertText(text)
     },
     insertTemplate: (name, text) => {
-      textEditor.insertText(text)
+      textEditor?.insertText(text)
       dispatch('template', name)
     }
   }
@@ -185,7 +141,7 @@
    * @public
    */
   export function removeNode (nde: ProseMirrorNode): void {
-    textEditor.removeNode(nde)
+    textEditor?.removeNode(nde)
   }
 </script>
 
@@ -218,7 +174,7 @@
             on:content={(ev) => {
               dispatch('message', ev.detail)
               content = ''
-              textEditor.clear()
+              textEditor?.clear()
             }}
             on:blur
             on:focus
@@ -237,7 +193,7 @@
           on:content={(ev) => {
             dispatch('message', ev.detail)
             content = ''
-            textEditor.clear()
+            textEditor?.clear()
           }}
           on:blur
           on:focus
@@ -250,7 +206,7 @@
   {#if showButtons}
     <div class="flex-between">
       <div class="buttons-group {buttonsGap} mt-3">
-        {#each actions.filter((it) => it.hidden !== true) as a}
+        {#each actions as a}
           <Button
             icon={a.icon}
             iconProps={{ size: buttonSize }}
@@ -265,11 +221,6 @@
         {/each}
         <slot />
       </div>
-      {#if $$slots.right}
-        <div class="buttons-group {buttonsGap} mt-3">
-          <slot name="right" />
-        </div>
-      {/if}
     </div>
   {/if}
 </div>

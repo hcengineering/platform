@@ -13,19 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import { Attachment } from '@hcengineering/attachment'
   import { Account, Class, Doc, generateId, Ref, Space, toIdMap } from '@hcengineering/core'
   import { IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
-  import { StyledTextBox } from '@hcengineering/text-editor'
-  import { ButtonSize, IconSize, updatePopup } from '@hcengineering/ui'
-  import { createEventDispatcher, onDestroy } from 'svelte'
+  import textEditor, { AttachIcon, type RefAction, StyledTextBox } from '@hcengineering/text-editor'
+  import { ButtonSize, IconSize, Loading, updatePopup } from '@hcengineering/ui'
+  import { ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
   import attachment from '../plugin'
   import { deleteFile, uploadFile } from '../utils'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
   import AttachmentPreview from './AttachmentPreview.svelte'
-  import { ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
-  import Loading from '@hcengineering/ui/src/components/Loading.svelte'
 
   export let objectId: Ref<Doc> | undefined = undefined
   export let space: Ref<Space> | undefined = undefined
@@ -84,7 +83,7 @@
   export function setContent (data: string): void {
     refInput.setContent(data)
   }
-  export function attach (): void {
+  export function handleAttach (): void {
     inputFile.click()
   }
 
@@ -92,6 +91,7 @@
     refInput.submit()
   }
   let refInput: StyledTextBox
+  let extraActions: RefAction[] = []
 
   let inputFile: HTMLInputElement
   let saved = false
@@ -346,6 +346,19 @@
     values: attachments.size === 0 ? true : attachments
   })
 
+  $: if (enableAttachments) {
+    extraActions = [
+      {
+        label: textEditor.string.Attach,
+        icon: AttachIcon,
+        action: handleAttach,
+        order: 1001
+      }
+    ]
+  } else {
+    extraActions = []
+  }
+
   let element: HTMLElement
   let progressItems: Ref<Doc>[] = []
 </script>
@@ -377,7 +390,6 @@
       {placeholder}
       {alwaysEdit}
       {showButtons}
-      hideAttachments={!enableAttachments}
       {buttonSize}
       {formatButtonSize}
       {maxHeight}
@@ -386,14 +398,12 @@
       {enableBackReferences}
       {isScrollable}
       {boundary}
+      {extraActions}
       on:changeSize
       on:changeContent
       on:blur
       on:focus
       on:open-document
-      on:attach={() => {
-        attach()
-      }}
       attachFile={async (file) => {
         return createAttachment(file)
       }}

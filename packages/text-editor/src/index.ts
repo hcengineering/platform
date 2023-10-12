@@ -28,6 +28,7 @@ export { default as StyledTextBox } from './components/StyledTextBox.svelte'
 export { default as StyledTextEditor } from './components/StyledTextEditor.svelte'
 export { default as TextEditor } from './components/TextEditor.svelte'
 export { default as TextEditorStyleToolbar } from './components/TextEditorStyleToolbar.svelte'
+export { default as AttachIcon } from './components/icons/Attach.svelte'
 export { default } from './plugin'
 export * from './types'
 
