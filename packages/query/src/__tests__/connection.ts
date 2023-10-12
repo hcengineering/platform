@@ -22,6 +22,7 @@ import type {
   Domain,
   FindOptions,
   FindResult,
+  LoadModelResponse,
   Ref,
   Timestamp,
   Tx,
@@ -33,7 +34,7 @@ import { genMinModel } from './minmodel'
 export async function connect (handler: (tx: Tx) => void): Promise<
 AccountClient &
 BackupClient & {
-  loadModel: (lastTxTime: Timestamp) => Promise<Tx[]>
+  loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
 }
 > {
   const txes = genMinModel()
