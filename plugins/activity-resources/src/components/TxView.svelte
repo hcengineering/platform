@@ -49,6 +49,7 @@
   export let isNextNew: boolean = false
   export let contentHidden: boolean = false
   export let shouldScroll: boolean = false
+  export let boundary: HTMLElement | undefined = undefined
   // export let showDocument = false
 
   let ptx: DisplayTx | undefined
@@ -80,7 +81,7 @@
   const employeeQuery = createQuery()
 
   function getProps (props: any, edit: boolean): any {
-    return { ...props, edit, attr: tx.collectionAttribute }
+    return { ...props, edit, attr: tx.collectionAttribute, boundary }
   }
 
   $: updateViewlet(client, viewlets, tx).then((result) => {
@@ -501,7 +502,6 @@
   }
 
   .activity-content {
-    overflow: hidden;
     visibility: visible;
     min-width: 0;
     max-height: max-content;

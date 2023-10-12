@@ -51,6 +51,7 @@
   export let extraActions: RefAction[] | undefined = undefined
   export let loading: boolean = false
   export let focusable: boolean = false
+  export let boundary: HTMLElement | undefined = undefined
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -169,6 +170,7 @@
     <TextEditor
       bind:content
       bind:this={textEditor}
+      {boundary}
       on:content={(ev) => {
         if (!isEmpty || haveAttachment) {
           dispatch('message', ev.detail)

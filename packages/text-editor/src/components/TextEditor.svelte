@@ -37,6 +37,7 @@
   export let textFormatCategories: TextFormatCategory[] = []
   export let supportSubmit = true
   export let editorAttributes: { [name: string]: string } = {}
+  export let boundary: HTMLElement | undefined = undefined
 
   let element: HTMLElement
   let editor: Editor
@@ -137,6 +138,21 @@
           Placeholder.configure({ placeholder: placeHolderStr }),
           ...extensions,
           InlineStyleToolbarExtension.configure({
+            tippyOptions: {
+              popperOptions: {
+                modifiers: [
+                  {
+                    name: 'preventOverflow',
+                    options: {
+                      boundary,
+                      padding: 8,
+                      altAxis: true,
+                      tether: false
+                    }
+                  }
+                ]
+              }
+            },
             element: textEditorToolbar,
             isSupported: () => true,
             isSelectionOnly: () => false

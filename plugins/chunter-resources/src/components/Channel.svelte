@@ -32,8 +32,8 @@
   export let savedMessagesIds: Ref<ChunterMessage>[]
   export let savedAttachmentsIds: Ref<Attachment>[]
   export let isScrollForced = false
+  export let content: HTMLElement | undefined = undefined
 
-  let div: HTMLDivElement | undefined
   let autoscroll: boolean = false
 
   const unsubscribe = locationStore.subscribe((newLocation) => {
@@ -54,7 +54,7 @@
   onDestroy(unsubscribe)
 
   beforeUpdate(() => {
-    autoscroll = div !== undefined && div.offsetHeight + div.scrollTop > div.scrollHeight - 20
+    autoscroll = content !== undefined && content.offsetHeight + content.scrollTop > content.scrollHeight - 20
   })
 
   afterUpdate(() => {
@@ -63,8 +63,8 @@
 
       return
     }
-    if (div && (autoscroll || isScrollForced)) {
-      div.scrollTo(0, div.scrollHeight)
+    if (content && (autoscroll || isScrollForced)) {
+      content.scrollTo(0, content.scrollHeight)
       isScrollForced = false
     }
   })
@@ -135,7 +135,7 @@
       return
     }
 
-    const dateSelectors = div?.getElementsByClassName('dateSelector')
+    const dateSelectors = content?.getElementsByClassName('dateSelector')
     if (!dateSelectors) return
 
     let closestDate: Timestamp | undefined = parseInt(dateSelectors[dateSelectors.length - 1].id)
@@ -161,7 +161,7 @@
     if (offset) {
       offset = offset - headerHeight - dateSelectorHeight / 2
       if (pinnedIds.length > 0) offset = offset - pinnedHeight
-      div?.scrollTo({ left: 0, top: offset })
+      content?.scrollTo({ left: 0, top: offset })
     }
   }
 
@@ -176,10 +176,10 @@
 
   const dateSelectorHeight = 30
   function getFirstVisible (): Element | undefined {
-    if (!div) return
+    if (!content) return
 
-    const clientRect = div.getBoundingClientRect()
-    const dateSelectors = div.getElementsByClassName('dateSelector')
+    const clientRect = content.getBoundingClientRect()
+    const dateSelectors = content.getElementsByClassName('dateSelector')
     const firstVisible = Array.from(dateSelectors)
       .reverse()
       .find((child) => {
@@ -198,7 +198,7 @@
   }
 </script>
 
-<div class="flex-col vScroll" bind:this={div} on:scroll={handleScroll}>
+<div class="flex-col vScroll" bind:this={content} on:scroll={handleScroll}>
   <div class="grower" />
   {#if showFixed}
     <div class="ml-2 pr-2 fixed">

@@ -45,6 +45,7 @@
   export let enableBackReferences: boolean = false
   export let enableEmojiReplace: boolean = true
   export let isScrollable: boolean = true
+  export let boundary: HTMLElement | undefined = undefined
 
   export let attachFile: FileAttachFunction | undefined = undefined
 
@@ -212,6 +213,7 @@
       {autofocus}
       {isScrollable}
       {extensions}
+      {boundary}
       bind:content={rawValue}
       bind:this={textEditor}
       on:attach

@@ -41,6 +41,7 @@
   }
   export let placeholder: IntlString | undefined = undefined
   export let extraActions: RefAction[] | undefined = undefined
+  export let boundary: HTMLElement | undefined = undefined
 
   let refInput: ReferenceInput
 
@@ -285,6 +286,7 @@
       {showSend}
       showHeader={attachments.size > 0 || progress}
       {loading}
+      {boundary}
       on:focus
       on:blur
       on:message={onMessage}
