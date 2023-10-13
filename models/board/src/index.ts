@@ -14,10 +14,9 @@
 //
 
 // To help typescript locate view plugin properly
-import automation, { AutomationSupport } from '@hcengineering/automation'
 import { Board, boardId, Card, CardCover, CommonBoardPreference, MenuPage } from '@hcengineering/board'
 import type { Employee } from '@hcengineering/contact'
-import { Class, DOMAIN_MODEL, IndexKind, Markup, Ref, Timestamp, Type } from '@hcengineering/core'
+import { DOMAIN_MODEL, IndexKind, Markup, Ref, Timestamp, Type } from '@hcengineering/core'
 import {
   ArrOf,
   Builder,
@@ -35,13 +34,13 @@ import contact from '@hcengineering/model-contact'
 import core, { TDoc, TType } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import tags from '@hcengineering/model-tags'
-import task, { TSpaceWithStates, TTask, actionTemplates as taskActionTemplates } from '@hcengineering/model-task'
+import task, { actionTemplates as taskActionTemplates, TSpaceWithStates, TTask } from '@hcengineering/model-task'
 import view, { actionTemplates, createAction, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import workbench, { Application } from '@hcengineering/model-workbench'
 import { IntlString } from '@hcengineering/platform'
+import { DoneState, State } from '@hcengineering/task'
 import type { AnyComponent } from '@hcengineering/ui'
 import board from './plugin'
-import { DoneState, State } from '@hcengineering/task'
 
 export { boardId } from '@hcengineering/board'
 export { boardOperation } from './migration'
@@ -487,56 +486,6 @@ export function createModel (builder: Builder): void {
   builder.mixin(board.class.Card, core.class.Class, view.mixin.IgnoreActions, {
     actions: [view.action.Delete, task.action.Move]
   })
-  builder.mixin<Class<Card>, AutomationSupport<Card>>(
-    board.class.Card,
-    core.class.Class,
-    automation.mixin.AutomationSupport,
-    {
-      attributes: [
-        {
-          name: 'isArchived'
-        },
-        {
-          name: 'title'
-        },
-        {
-          name: 'description'
-        }
-      ],
-      trigger: {
-        action: {
-          mode: ['context', 'editor']
-        }
-      }
-    }
-  )
-
-  builder.mixin<Class<Board>, AutomationSupport<Board>>(
-    board.class.Board,
-    core.class.Class,
-    automation.mixin.AutomationSupport,
-    {
-      attributes: [
-        {
-          name: 'name'
-        },
-        {
-          name: 'description'
-        },
-        {
-          name: 'private'
-        },
-        {
-          name: 'archived'
-        }
-      ],
-      trigger: {
-        action: {
-          mode: ['context']
-        }
-      }
-    }
-  )
 
   // TODO: update query when nested query is available
   createAction(

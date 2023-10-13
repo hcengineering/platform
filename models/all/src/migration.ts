@@ -16,7 +16,6 @@
 // Import migrate operations.
 import { MigrateOperation } from '@hcengineering/model'
 import { attachmentOperation } from '@hcengineering/model-attachment'
-import { automationOperation } from '@hcengineering/model-automation'
 import { chunterOperation } from '@hcengineering/model-chunter'
 import { contactOperation } from '@hcengineering/model-contact'
 import { coreOperation } from '@hcengineering/model-core'
@@ -47,7 +46,6 @@ export const migrateOperations: [string, MigrateOperation][] = [
   ['telegram', telegramOperation],
   ['task', taskOperation],
   ['attachment', attachmentOperation],
-  ['automation', automationOperation],
   ['lead', leadOperation],
   ['preference', preferenceOperation],
   ['recruit', recruitOperation],
