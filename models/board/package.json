@@ -35,7 +35,6 @@
     "@hcengineering/model-contact": "^0.6.1",
     "@hcengineering/model-chunter": "^0.6.0",
     "@hcengineering/model-attachment": "^0.6.0",
-    "@hcengineering/automation": "^0.6.0",
     "@hcengineering/board": "^0.6.11",
     "@hcengineering/board-resources": "^0.6.0",
     "@hcengineering/view": "^0.6.8",

@@ -89,7 +89,6 @@ import {
 
 import { activityId } from '@hcengineering/activity'
 import { attachmentId } from '@hcengineering/attachment'
-import { automationId } from '@hcengineering/automation'
 import { bitrixId } from '@hcengineering/bitrix'
 import { boardId } from '@hcengineering/board'
 import { calendarId } from '@hcengineering/calendar'
@@ -120,7 +119,6 @@ import loginEng from '@hcengineering/login-assets/lang/en.json'
 
 import activityEn from '@hcengineering/activity-assets/lang/en.json'
 import attachmentEn from '@hcengineering/attachment-assets/lang/en.json'
-import automationEn from '@hcengineering/automation-assets/lang/en.json'
 import bitrixEn from '@hcengineering/bitrix-assets/lang/en.json'
 import boardEn from '@hcengineering/board-assets/lang/en.json'
 import calendarEn from '@hcengineering/calendar-assets/lang/en.json'
@@ -154,7 +152,6 @@ addStringsLoader(attachmentId, async (lang: string) => attachmentEn)
 addStringsLoader(contactId, async (lang: string) => contactEn)
 addStringsLoader(recruitId, async (lang: string) => recruitEn)
 addStringsLoader(activityId, async (lang: string) => activityEn)
-addStringsLoader(automationId, async (lang: string) => automationEn)
 addStringsLoader(settingId, async (lang: string) => settingEn)
 addStringsLoader(supportId, async (lang: string) => supportEn)
 addStringsLoader(telegramId, async (lang: string) => telegramEn)
