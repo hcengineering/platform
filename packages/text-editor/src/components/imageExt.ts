@@ -1,6 +1,6 @@
 import { getEmbeddedLabel, getMetadata } from '@hcengineering/platform'
 import presentation, { getFileUrl } from '@hcengineering/presentation'
-import { Action, IconSize, Menu, getEventPositionElement, getIconSize2x, showPopup } from '@hcengineering/ui'
+import { Action, IconSize, Menu, MenuProps, getEventPositionElement, getIconSize2x, showPopup } from '@hcengineering/ui'
 import { Node, createNodeFromContent, mergeAttributes, nodeInputRule } from '@tiptap/core'
 import { Plugin, PluginKey } from 'prosemirror-state'
 import plugin from '../plugin'
@@ -338,7 +338,7 @@ export const ImageRef = Node.create<ImageOptions>({
               ]
               event.preventDefault()
               event.stopPropagation()
-              showPopup(Menu, { actions }, getEventPositionElement(event))
+              showPopup<MenuProps>(Menu, { items: actions }, getEventPositionElement(event))
             }
             return false
           }

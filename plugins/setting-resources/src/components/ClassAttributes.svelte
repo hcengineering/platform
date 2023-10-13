@@ -42,6 +42,7 @@
     IconMoreV,
     Label,
     Menu,
+    MenuProps,
     showPopup
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -150,7 +151,7 @@
         }
       }))
     )
-    showPopup(Menu, { actions }, getEventPositionElement(ev))
+    showPopup<MenuProps>(Menu, { items: actions }, getEventPositionElement(ev))
   }
 
   function getAttrType (type: Type<any>): IntlString | undefined {

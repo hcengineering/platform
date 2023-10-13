@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { Timestamp } from '@hcengineering/core'
+import { Doc, Ref, Timestamp } from '@hcengineering/core'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import { /* Metadata, Plugin, plugin, */ Resource /*, Service */ } from '@hcengineering/platform'
 import { /* getContext, */ ComponentType } from 'svelte'
@@ -95,6 +95,13 @@ export interface Action extends MenuItem {
 export interface MenuComponent extends MenuItem {
   itemComponent: AnyComponent
   itemProps?: Record<string, any>
+}
+
+export interface MenuProps {
+  items?: MenuItem[]
+  ctx?: any
+  popupCategory?: Ref<Doc>
+  addClass?: string
 }
 
 export interface IPopupItem {

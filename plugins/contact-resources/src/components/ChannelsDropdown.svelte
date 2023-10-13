@@ -27,6 +27,7 @@
     ButtonKind,
     ButtonSize,
     Menu,
+    MenuProps,
     closeTooltip,
     eventToHTMLElement,
     getFocusManager,
@@ -170,7 +171,7 @@
   }
 
   const showMenu = (ev: MouseEvent): void => {
-    showPopup(Menu, { actions }, ev.target as HTMLElement, (result) => {
+    showPopup<MenuProps>(Menu, { items: actions }, ev.target as HTMLElement, (result) => {
       if (result == null) {
         focusManager?.setFocusPos(focusIndex + 2 + displayItems.length)
       }

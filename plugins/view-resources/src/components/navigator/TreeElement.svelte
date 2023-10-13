@@ -16,7 +16,7 @@
 <script lang="ts">
   import type { Doc, Ref } from '@hcengineering/core'
   import type { Asset, IntlString } from '@hcengineering/platform'
-  import type { Action, AnySvelteComponent } from '@hcengineering/ui'
+  import type { Action, AnySvelteComponent, MenuProps } from '@hcengineering/ui'
   import { ActionIcon, Icon, IconChevronDown, IconMoreH, Label, Menu, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
@@ -37,7 +37,7 @@
 
   let hovered = false
   async function onMenuClick (ev: MouseEvent) {
-    showPopup(Menu, { actions: await actions(ev), ctx: _id }, ev.target as HTMLElement, () => {
+    showPopup<MenuProps>(Menu, { items: await actions(ev), ctx: _id }, ev.target as HTMLElement, () => {
       hovered = false
     })
     hovered = true

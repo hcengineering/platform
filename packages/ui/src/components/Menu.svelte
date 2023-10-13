@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
-  import { generateId, Ref, Doc } from '@hcengineering/core'
+  import { Doc, Ref, generateId } from '@hcengineering/core'
   import ui from '../plugin'
   import { closePopup, showPopup } from '../popups'
   import { Action, MenuItem, MenuComponent } from '../types'
