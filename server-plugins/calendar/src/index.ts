@@ -45,7 +45,6 @@ export default plugin(serverCalendarId, {
     >
   },
   trigger: {
-    OnEvent: '' as Resource<TriggerFunc>,
     OnPersonAccountCreate: '' as Resource<TriggerFunc>
   }
 })
