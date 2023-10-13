@@ -25,7 +25,6 @@ import { Tx, TxCUD, TxCollectionCUD, TxCreateDoc, TxProcessor, TxUpdateDoc } fro
 import { toFindResult } from './utils'
 
 const transactionThreshold = 500
-const modelTransactionThreshold = 50
 
 /**
  * @public
@@ -57,21 +56,48 @@ export interface AccountClient extends Client {
 /**
  * @public
  */
+export interface LoadModelResponse {
+  // A diff or a full set of transactions.
+  transactions: Tx[]
+  // A current hash chain
+  hash: string
+  // If full model is returned, on hash diff for request
+  full: boolean
+}
+
+/**
+ * @public
+ */
+export enum ClientConnectEvent {
+  Connected, // In case we just connected to server, and receive a full model
+  Reconnected, // In case we re-connected to server and receive and apply diff.
+
+  // Client could cause back a few more states.
+  Upgraded, // In case client code receive a full new model and need to be rebuild.
+  Refresh // In case we detect query refresh is required
+}
+/**
+ * @public
+ */
 export interface ClientConnection extends Storage, BackupClient {
   close: () => Promise<void>
-  onConnect?: (apply: boolean) => Promise<void>
-  loadModel: (last: Timestamp) => Promise<Tx[]>
+  onConnect?: (event: ClientConnectEvent) => Promise<void>
+
+  // If hash is passed, will return LoadModelResponse
+  loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
   getAccount: () => Promise<Account>
 }
 
 class ClientImpl implements AccountClient, BackupClient {
   notify?: (tx: Tx) => void
+  hierarchy!: Hierarchy
+  model!: ModelDb
+  constructor (private readonly conn: ClientConnection) {}
 
-  constructor (
-    private readonly hierarchy: Hierarchy,
-    private readonly model: ModelDb,
-    private readonly conn: ClientConnection
-  ) {}
+  setModel (hierarchy: Hierarchy, model: ModelDb): void {
+    this.hierarchy = hierarchy
+    this.model = model
+  }
 
   getHierarchy (): Hierarchy {
     return this.hierarchy
@@ -162,8 +188,8 @@ class ClientImpl implements AccountClient, BackupClient {
  * @public
  */
 export interface TxPersistenceStore {
-  load: () => Promise<Tx[]>
-  store: (tx: Tx[]) => Promise<void>
+  load: () => Promise<LoadModelResponse>
+  store: (model: LoadModelResponse) => Promise<void>
 }
 
 /**
@@ -179,10 +205,9 @@ export async function createClient (
 
   // Temporal buffer, while we apply model
   let txBuffer: Tx[] | undefined = []
-  let lastTxTime: Timestamp = 0
 
-  const hierarchy = new Hierarchy()
-  const model = new ModelDb(hierarchy)
+  let hierarchy = new Hierarchy()
+  let model = new ModelDb(hierarchy)
 
   let lastTx: number
 
@@ -202,24 +227,39 @@ export async function createClient (
 
   const conn = await connect(txHandler)
 
-  lastTxTime = await loadModel(conn, lastTxTime, allowedPlugins, configs, hierarchy, model, false, txPersistence)
+  await loadModel(conn, allowedPlugins, configs, hierarchy, model, false, txPersistence)
 
-  txBuffer = txBuffer.filter((tx) => tx.space !== core.space.Model || tx.modifiedOn > lastTxTime)
+  txBuffer = txBuffer.filter((tx) => tx.space !== core.space.Model)
 
-  client = new ClientImpl(hierarchy, model, conn)
+  client = new ClientImpl(conn)
+  client.setModel(hierarchy, model)
 
   for (const tx of txBuffer) {
     txHandler(tx)
   }
   txBuffer = undefined
 
-  const oldOnConnect: ((apply: boolean) => void) | undefined = conn.onConnect
-  conn.onConnect = async () => {
+  const oldOnConnect: ((event: ClientConnectEvent) => void) | undefined = conn.onConnect
+  conn.onConnect = async (event) => {
+    console.log('Client: onConnect', event)
     // Find all new transactions and apply
-    lastTxTime = await loadModel(conn, lastTxTime, allowedPlugins, configs, hierarchy, model, true, txPersistence)
-    if (lastTxTime === -1) {
-      // We need full refresh
-      await oldOnConnect?.(false)
+    const loadModelResponse = await loadModel(conn, allowedPlugins, configs, hierarchy, model, true, txPersistence)
+
+    if (event === ClientConnectEvent.Reconnected && loadModelResponse.full) {
+      // We have upgrade procedure and need rebuild all stuff.
+      hierarchy = new Hierarchy()
+      model = new ModelDb(hierarchy)
+
+      await buildModel(loadModelResponse, allowedPlugins, configs, hierarchy, model)
+      await oldOnConnect?.(ClientConnectEvent.Upgraded)
+
+      // No need to fetch more stuff since upgrade was happened.
+      return
+    }
+
+    if (event === ClientConnectEvent.Connected) {
+      // No need to do anything here since we connected.
+      await oldOnConnect?.(event)
       return
     }
 
@@ -248,28 +288,46 @@ export async function createClient (
       for (const tx of atxes) {
         txHandler(tx)
       }
-      await oldOnConnect?.(true)
+      await oldOnConnect?.(ClientConnectEvent.Reconnected)
     } else {
       // We need to trigger full refresh on queries, etc.
-      await oldOnConnect?.(false)
+      await oldOnConnect?.(ClientConnectEvent.Refresh)
     }
   }
 
   return client
 }
 
-async function tryLoadModel (conn: ClientConnection, lastTxTime: number): Promise<Tx[]> {
-  let res: Tx[] = []
-  try {
-    res = await conn.loadModel(lastTxTime)
-  } catch (err: any) {
-    res = await conn.findAll(
-      core.class.Tx,
-      { objectSpace: core.space.Model, modifiedOn: { $gt: lastTxTime } },
-      { sort: { _id: SortingOrder.Ascending, modifiedOn: SortingOrder.Ascending } }
-    )
+async function tryLoadModel (
+  conn: ClientConnection,
+  reload: boolean,
+  persistence?: TxPersistenceStore
+): Promise<LoadModelResponse> {
+  const current = (await persistence?.load()) ?? { full: true, transactions: [], hash: '' }
+
+  const lastTxTime = getLastTxTime(current.transactions)
+  const result = await conn.loadModel(lastTxTime, current.hash)
+
+  if (Array.isArray(result)) {
+    // Fallback to old behavior, only for tests
+    return {
+      full: true,
+      transactions: result,
+      hash: ''
+    }
   }
-  return res
+
+  // Save concatenated
+  await persistence?.store({
+    ...result,
+    transactions: !result.full ? current.transactions.concat(result.transactions) : result.transactions
+  })
+
+  if (!result.full && !reload) {
+    result.transactions = current.transactions.concat(result.transactions)
+  }
+
+  return result
 }
 
 // Ignore Employee accounts.
@@ -285,47 +343,42 @@ function isPersonAccount (tx: Tx): boolean {
 
 async function loadModel (
   conn: ClientConnection,
-  lastTxTime: Timestamp,
   allowedPlugins: Plugin[] | undefined,
   configs: Map<Ref<PluginConfiguration>, PluginConfiguration>,
   hierarchy: Hierarchy,
   model: ModelDb,
   reload = false,
   persistence?: TxPersistenceStore
-): Promise<Timestamp> {
+): Promise<LoadModelResponse> {
   const t = Date.now()
 
-  let ltxes: Tx[] = []
-  if (lastTxTime === 0 && persistence !== undefined) {
-    const memTxes = await persistence.load()
-    const systemTx = memTxes.find((it) => it.modifiedBy === core.account.System && !isPersonAccount(it))
-    if (systemTx !== undefined) {
-      const exists = await conn.findAll(systemTx._class, { _id: systemTx._id }, { limit: 1 })
-      if (exists.length > 0) {
-        lastTxTime = getLastTxTime(memTxes)
-        ltxes = memTxes
-      }
-    }
-    if (ltxes.length < modelTransactionThreshold) {
-      lastTxTime = 0
-    }
+  const modelResponse = await tryLoadModel(conn, reload, persistence)
+
+  if (reload && modelResponse.full) {
+    return modelResponse
   }
 
-  let atxes: Tx[] = []
-  atxes = await tryLoadModel(conn, lastTxTime)
+  console.log(
+    'find' + (modelResponse.full ? 'full model' : 'model diff'),
+    modelResponse.transactions.length,
+    Date.now() - t
+  )
 
-  if (reload && atxes.length > modelTransactionThreshold) {
-    return -1
-  }
+  await buildModel(modelResponse, allowedPlugins, configs, hierarchy, model)
+  return modelResponse
+}
 
-  atxes = ltxes.concat(atxes)
-
-  await persistence?.store(atxes)
-
+async function buildModel (
+  modelResponse: LoadModelResponse,
+  allowedPlugins: Plugin[] | undefined,
+  configs: Map<Ref<PluginConfiguration>, PluginConfiguration>,
+  hierarchy: Hierarchy,
+  model: ModelDb
+): Promise<void> {
   let systemTx: Tx[] = []
   const userTx: Tx[] = []
-  console.log('find' + (lastTxTime >= 0 ? 'full model' : 'model diff'), atxes.length, Date.now() - t)
 
+  const atxes = modelResponse.transactions
   atxes.forEach((tx) => (tx.modifiedBy === core.account.System && !isPersonAccount(tx) ? systemTx : userTx).push(tx))
 
   if (allowedPlugins != null) {
@@ -338,8 +391,6 @@ async function loadModel (
   }
 
   const txes = systemTx.concat(userTx)
-
-  lastTxTime = getLastTxTime(txes)
 
   for (const tx of txes) {
     try {
@@ -355,7 +406,6 @@ async function loadModel (
       console.error('failed to apply model transaction, skipping', JSON.stringify(tx), err)
     }
   }
-  return lastTxTime
 }
 
 function getLastTxTime (txes: Tx[]): number {

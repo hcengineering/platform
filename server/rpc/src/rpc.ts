@@ -44,6 +44,7 @@ export interface HelloRequest extends Request<any[]> {
  */
 export interface HelloResponse extends Response<any> {
   binary: boolean
+  reconnect?: boolean
 }
 
 /**

@@ -18,6 +18,7 @@ import client, { ClientSocket, ClientSocketReadyState } from '@hcengineering/cli
 import core, {
   Account,
   Class,
+  ClientConnectEvent,
   ClientConnection,
   Doc,
   DocChunk,
@@ -25,6 +26,7 @@ import core, {
   Domain,
   FindOptions,
   FindResult,
+  LoadModelResponse,
   Ref,
   Timestamp,
   Tx,
@@ -64,7 +66,7 @@ class Connection implements ClientConnection {
   private readonly requests = new Map<ReqId, RequestPromise>()
   private lastId = 0
   private readonly interval: number
-  private readonly sessionId = generateId() as string
+  private sessionId: string | undefined
   private closed = false
 
   private pingResponse: number = Date.now()
@@ -74,7 +76,7 @@ class Connection implements ClientConnection {
     private readonly handler: TxHandler,
     private readonly onUpgrade?: () => void,
     private readonly onUnauthorized?: () => void,
-    readonly onConnect?: (apply: boolean) => Promise<void>
+    readonly onConnect?: (event: ClientConnectEvent) => Promise<void>
   ) {
     console.log('connection created')
     this.interval = setInterval(() => {
@@ -163,6 +165,18 @@ class Connection implements ClientConnection {
           return s as ClientSocket
         })
 
+      if (this.sessionId === undefined) {
+        // Find local session id in session storage.
+        this.sessionId =
+          typeof sessionStorage !== 'undefined'
+            ? sessionStorage.getItem('session.id.' + this.url) ?? undefined
+            : undefined
+        console.log('find sessionId', this.sessionId)
+        this.sessionId = this.sessionId ?? generateId()
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.setItem('session.id.' + this.url, this.sessionId)
+        }
+      }
       const websocket = clientSocketFactory(this.url + `?sessionId=${this.sessionId}`)
       const opened = false
       const socketId = this.sockets++
@@ -189,8 +203,11 @@ class Connection implements ClientConnection {
             v.reconnect?.()
           }
           resolve(websocket)
-          void this.onConnect?.(false)
+          console.log('reconnect info', (resp as HelloResponse).reconnect)
 
+          void this.onConnect?.(
+            (resp as HelloResponse).reconnect === true ? ClientConnectEvent.Reconnected : ClientConnectEvent.Connected
+          )
           return
         }
         if (resp.id !== undefined) {
@@ -337,8 +354,8 @@ class Connection implements ClientConnection {
     return await promise.promise
   }
 
-  async loadModel (lastTxTime: Timestamp): Promise<Tx[]> {
-    return await this.sendRequest({ method: 'loadModel', params: [lastTxTime] })
+  async loadModel (last: Timestamp, hash?: string): Promise<Tx[] | LoadModelResponse> {
+    return await this.sendRequest({ method: 'loadModel', params: [last, hash] })
   }
 
   async getAccount (): Promise<Account> {
@@ -398,9 +415,9 @@ export async function connect (
   handler: TxHandler,
   onUpgrade?: () => void,
   onUnauthorized?: () => void,
-  onConnect?: (apply: boolean) => void
+  onConnect?: (event: ClientConnectEvent) => void
 ): Promise<ClientConnection> {
-  return new Connection(url, handler, onUpgrade, onUnauthorized, async (apply) => {
-    onConnect?.(apply)
+  return new Connection(url, handler, onUpgrade, onUnauthorized, async (event) => {
+    onConnect?.(event)
   })
 }

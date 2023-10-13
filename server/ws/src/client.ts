@@ -21,6 +21,7 @@ import core, {
   DocumentQuery,
   FindOptions,
   FindResult,
+  LoadModelResponse,
   MeasureContext,
   Ref,
   Timestamp,
@@ -63,8 +64,8 @@ export class ClientSession implements Session {
     return 'pong!'
   }
 
-  async loadModel (ctx: MeasureContext, lastModelTx: Timestamp): Promise<Tx[]> {
-    return await this._pipeline.storage.loadModel(lastModelTx)
+  async loadModel (ctx: MeasureContext, lastModelTx: Timestamp, hash?: string): Promise<Tx[] | LoadModelResponse> {
+    return await this._pipeline.storage.loadModel(lastModelTx, hash)
   }
 
   async getAccount (ctx: MeasureContext): Promise<Account> {
