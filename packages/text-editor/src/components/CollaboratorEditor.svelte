@@ -19,7 +19,15 @@
   import { DecorationSet } from 'prosemirror-view'
   import { getContext, createEventDispatcher, onDestroy, onMount } from 'svelte'
   import * as Y from 'yjs'
-  import { AnyExtension, Editor, Extension, HTMLContent, getMarkRange, mergeAttributes } from '@tiptap/core'
+  import {
+    AnyExtension,
+    Editor,
+    Extension,
+    FocusPosition,
+    HTMLContent,
+    getMarkRange,
+    mergeAttributes
+  } from '@tiptap/core'
   import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration'
   import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
   import Placeholder from '@tiptap/extension-placeholder'
@@ -162,15 +170,18 @@
   }
 
   let needFocus = false
-
   let focused = false
-  export function focus (): void {
+  let posFocus: FocusPosition | undefined = undefined
+
+  export function focus (position?: FocusPosition): void {
+    posFocus = position
     needFocus = true
   }
 
   $: if (editor && needFocus) {
     if (!focused) {
-      editor.commands.focus()
+      editor.commands.focus(posFocus)
+      posFocus = undefined
     }
     needFocus = false
   }
@@ -315,7 +326,7 @@
   const { idx, focusManager } = registerFocus(focusIndex, {
     focus: () => {
       if (visible) {
-        element?.focus()
+        focus('start')
       }
       return visible && element !== null
     },
@@ -384,7 +395,7 @@
   </div>
 
   <div class="ref-container" class:autoOverflow>
-    <div class="textInput" class:focusable>
+    <div class="text-input" class:focusable>
       <div class="select-text" style="width: 100%;" bind:this={element} />
     </div>
   </div>
@@ -416,5 +427,10 @@
     border-radius: 0.5rem;
     box-shadow: var(--theme-popup-shadow);
     z-index: 1;
+  }
+
+  .text-input {
+    font-size: 0.9375rem;
+    padding-bottom: 30vh;
   }
 </style>
