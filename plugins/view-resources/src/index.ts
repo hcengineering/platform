@@ -31,6 +31,7 @@ import DocAttributeBar from './components/DocAttributeBar.svelte'
 import DocNavLink from './components/DocNavLink.svelte'
 import EditBoxPopup from './components/EditBoxPopup.svelte'
 import EditDoc from './components/EditDoc.svelte'
+import EditLead from './components/EditLead.svelte'
 import EnumArrayEditor from './components/EnumArrayEditor.svelte'
 import EnumEditor from './components/EnumEditor.svelte'
 import EnumPresenter from './components/EnumPresenter.svelte'
@@ -161,6 +162,7 @@ export {
   DateEditor,
   DocAttributeBar,
   EditDoc,
+  EditLead,
   ColorsPopup,
   Menu,
   SpacePresenter,
@@ -190,7 +192,7 @@ export {
   IconPicker
 }
 
-function PositionElementAlignment (e?: Event): PopupAlignment | undefined {
+function PositionElementAlignment(e?: Event): PopupAlignment | undefined {
   return getEventPopupPositionElement(e)
 }
 
@@ -223,6 +225,7 @@ export default async (): Promise<Resources> => ({
     RolePresenter,
     ObjectPresenter,
     EditDoc,
+    EditLead,
     HTMLPresenter,
     IntlStringPresenter,
     GithubPresenter,

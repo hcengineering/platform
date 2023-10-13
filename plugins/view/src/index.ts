@@ -817,6 +817,7 @@ const view = plugin(viewId, {
   component: {
     ObjectPresenter: '' as AnyComponent,
     EditDoc: '' as AnyComponent,
+    EditLead: '' as AnyComponent,
     SpacePresenter: '' as AnyComponent,
     BooleanTruePresenter: '' as AnyComponent,
     ValueSelector: '' as AnyComponent,

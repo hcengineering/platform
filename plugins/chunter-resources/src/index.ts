@@ -69,17 +69,17 @@ export { default as Header } from './components/Header.svelte'
 export { classIcon } from './utils'
 export { CommentPopup, CommentsPresenter }
 
-async function MarkUnread (object: Message): Promise<void> {
+async function MarkUnread(object: Message): Promise<void> {
   const client = NotificationClientImpl.getClient()
   await client.forceRead(object.space, chunter.class.ChunterSpace)
 }
 
-async function MarkCommentUnread (object: ThreadMessage): Promise<void> {
+async function MarkCommentUnread(object: ThreadMessage): Promise<void> {
   const client = NotificationClientImpl.getClient()
   await client.forceRead(object.attachedTo, object.attachedToClass)
 }
 
-async function SubscribeMessage (object: Message): Promise<void> {
+async function SubscribeMessage(object: Message): Promise<void> {
   const client = getClient()
   const acc = getCurrentAccount()
   const hierarchy = client.getHierarchy()
@@ -104,7 +104,7 @@ async function SubscribeMessage (object: Message): Promise<void> {
   }
 }
 
-async function UnsubscribeMessage (object: ChunterMessage): Promise<void> {
+async function UnsubscribeMessage(object: ChunterMessage): Promise<void> {
   const client = getClient()
   const acc = getCurrentAccount()
   const hierarchy = client.getHierarchy()
@@ -140,7 +140,7 @@ async function UnsubscribeMessage (object: ChunterMessage): Promise<void> {
 
 type PinnedChunterSpace = ChunterSpace
 
-async function PinMessage (message: ChunterMessage): Promise<void> {
+async function PinMessage(message: ChunterMessage): Promise<void> {
   const client = getClient()
 
   await client.updateDoc<PinnedChunterSpace>(
@@ -153,7 +153,7 @@ async function PinMessage (message: ChunterMessage): Promise<void> {
   )
 }
 
-export async function UnpinMessage (message: ChunterMessage): Promise<void> {
+export async function UnpinMessage(message: ChunterMessage): Promise<void> {
   const client = getClient()
 
   await client.updateDoc<PinnedChunterSpace>(
@@ -166,7 +166,7 @@ export async function UnpinMessage (message: ChunterMessage): Promise<void> {
   )
 }
 
-export async function ArchiveChannel (channel: Channel, evt: any, afterArchive?: () => void): Promise<void> {
+export async function ArchiveChannel(channel: Channel, evt: any, afterArchive?: () => void): Promise<void> {
   showPopup(
     MessageBox,
     {
@@ -192,7 +192,7 @@ export async function ArchiveChannel (channel: Channel, evt: any, afterArchive?:
   )
 }
 
-async function UnarchiveChannel (channel: Channel): Promise<void> {
+async function UnarchiveChannel(channel: Channel): Promise<void> {
   showPopup(
     MessageBox,
     {
@@ -211,14 +211,14 @@ async function UnarchiveChannel (channel: Channel): Promise<void> {
   )
 }
 
-async function ConvertDmToPrivateChannel (dm: DirectMessage): Promise<void> {
+async function ConvertDmToPrivateChannel(dm: DirectMessage): Promise<void> {
   showPopup(ConvertDmToPrivateChannelModal, {
     label: chunter.string.ConvertToPrivate,
     dm
   })
 }
 
-export async function AddMessageToSaved (message: ChunterMessage): Promise<void> {
+export async function AddMessageToSaved(message: ChunterMessage): Promise<void> {
   const client = getClient()
 
   await client.createDoc(chunter.class.SavedMessages, preference.space.Preference, {
@@ -226,7 +226,7 @@ export async function AddMessageToSaved (message: ChunterMessage): Promise<void>
   })
 }
 
-export async function DeleteMessageFromSaved (message: ChunterMessage): Promise<void> {
+export async function DeleteMessageFromSaved(message: ChunterMessage): Promise<void> {
   const client = getClient()
 
   const current = await client.findOne(chunter.class.SavedMessages, { attachedTo: message._id })
@@ -237,11 +237,11 @@ export async function DeleteMessageFromSaved (message: ChunterMessage): Promise<
 
 export const userSearch = writable('')
 
-export async function chunterBrowserVisible (spaces: Space[]): Promise<boolean> {
+export async function chunterBrowserVisible(spaces: Space[]): Promise<boolean> {
   return false
 }
 
-async function update (source: Doc, key: string, target: RelatedDocument[], msg: IntlString): Promise<void> {
+async function update(source: Doc, key: string, target: RelatedDocument[], msg: IntlString): Promise<void> {
   const message = await translate(msg, {})
   const backlinks: Array<Data<Backlink>> = target.map((it) => ({
     backlinkId: source._id,
@@ -257,11 +257,11 @@ async function update (source: Doc, key: string, target: RelatedDocument[], msg:
   await updateBacklinksList(getClient(), q, backlinks)
 }
 
-export function commentsFilter (tx: DisplayTx, _class?: Ref<Doc>): boolean {
+export function commentsFilter(tx: DisplayTx, _class?: Ref<Doc>): boolean {
   return tx.tx.objectClass === chunter.class.Comment
 }
 
-export function backlinksFilter (tx: DisplayTx, _class?: Ref<Doc>): boolean {
+export function backlinksFilter(tx: DisplayTx, _class?: Ref<Doc>): boolean {
   return tx.tx.objectClass === chunter.class.Backlink
 }
 
@@ -280,6 +280,7 @@ export default async (): Promise<Resources> => ({
     ChannelView,
     ChannelViewPanel,
     CommentPresenter,
+    CommentPopup,
     CommentsPresenter,
     ChannelPresenter,
     DirectMessagePresenter,

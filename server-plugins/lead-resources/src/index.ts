@@ -23,10 +23,10 @@ import { workbenchId } from '@hcengineering/workbench'
 /**
  * @public
  */
-export async function leadHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
+export async function leadHTMLPresenter(doc: Doc, control: TriggerControl): Promise<string> {
   const lead = doc as Lead
   const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.name}/${leadId}/${lead.space}/#${view.component.EditDoc}|${lead._id}|${lead._class}|content`
+  const path = `${workbenchId}/${control.workspace.name}/${leadId}/${lead.space}/#${view.component.EditLead}|${lead._id}|${lead._class}|content`
   const link = concatLink(front, path)
   return `<a href="${link}">${lead.title}</a>`
 }
@@ -34,7 +34,7 @@ export async function leadHTMLPresenter (doc: Doc, control: TriggerControl): Pro
 /**
  * @public
  */
-export async function leadTextPresenter (doc: Doc): Promise<string> {
+export async function leadTextPresenter(doc: Doc): Promise<string> {
   const lead = doc as Lead
   return `LEAD-${lead.number}`
 }

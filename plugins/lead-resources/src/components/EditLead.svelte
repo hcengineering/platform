@@ -64,15 +64,13 @@
 
   let tabSource: { [index: string]: any } = {
     mail: { labelIntl: lead.string.Mail, presenter: 'gmail:component:Main' },
-    messages: { labelIntl: lead.string.Messages, presenter: 'chunter:component:ChannelView' },
-    activity: { labelIntl: lead.string.Activity, presenter: 'activity:component:Activity' }
+    messages: { labelIntl: lead.string.Messages, presenter: 'chunter:component:CommentPopup' },
   }
 
   $: tabSource = {
     ...tabSource,
     mail: { ...tabSource.mail, props: { channel } },
-    messages: { ...tabSource.messages, props: { space: object } },
-    activity: { ...tabSource.activity, props: { object } }
+    messages: { ...tabSource.messages, props: { objectId: object._id, object, withInput: true, withHeader: false } },
   }
 
   const modes: TabItem[] = Object.keys(tabSource).map((id: string) => ({ id, labelIntl: tabSource[id].labelIntl }))
@@ -92,6 +90,7 @@
   $: if (tabSource[mode].props !== undefined) {
     props = tabSource[mode].props
   }
+  console.log('EditLead component called')
 </script>
 
 {#if object !== undefined}

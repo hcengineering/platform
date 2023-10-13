@@ -27,6 +27,7 @@
   export let objectId: Ref<Doc>
   export let object: Doc
   export let withInput: boolean = true
+  export let withHeader: boolean = true
 
   let loading = true
 
@@ -50,6 +51,7 @@
 </script>
 
 <div class="container">
+  {#if withHeader}
   <div
     class="flex-between header"
     use:resizeObserver={() => {
@@ -71,6 +73,7 @@
       <ObjectPresenter _class={object._class} objectId={object._id} value={object} />
     </DocNavLink>
   </div>
+  {/if}
   <div class="comments">
     {#if loading}
       <div class="flex-center">
