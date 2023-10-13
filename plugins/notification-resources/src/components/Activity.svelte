@@ -56,7 +56,8 @@
     if (filter === 'read') {
       filtered = docs.filter((p) => !p.txes.some((p) => p.isNew) && p.txes.length > 0)
     } else if (filter === 'unread') {
-      if (previousFilter !== 'unread') filtered = docs.filter((p) => p.txes.some((p) => p.isNew) && p.txes.length > 0)
+      const current = previousFilter === 'unread' ? new Set(filtered.map((p) => p._id)) : new Set()
+      filtered = docs.filter((p) => (current.has(p._id) || p.txes.some((p) => p.isNew)) && p.txes.length > 0)
     } else {
       filtered = docs.filter((p) => p.txes.length > 0)
     }
