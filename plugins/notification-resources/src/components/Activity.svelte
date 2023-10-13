@@ -110,8 +110,21 @@
 
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
     if (dir === 'vertical') {
-      let value = offset + docs.findIndex((p) => p._id === of?._id)
-      if (value < 0) value = 0
+      let value = (of != null ? filtered.findIndex((p) => p._id === of._id) : selected) ?? -1
+      if (value === -1) {
+        // keep the current index if the document does not exist anymore
+        value = selected
+      } else {
+        value += offset
+      }
+
+      if (value < 0) {
+        value = 0
+      }
+      if (value >= filtered.length) {
+        value = filtered.length - 1
+      }
+
       if (filtered[value] !== undefined) {
         selected = value
         changeSelected(selected)
