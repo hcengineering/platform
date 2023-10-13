@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import calendar, { Calendar, Event, ReccuringEvent } from '@hcengineering/calendar'
+import calendar, { Calendar, Event } from '@hcengineering/calendar'
+import { PersonAccount } from '@hcengineering/contact'
 import core, {
   Class,
   Doc,
@@ -23,16 +24,12 @@ import core, {
   Hierarchy,
   Ref,
   Tx,
-  TxCUD,
   TxCreateDoc,
-  TxProcessor,
-  TxRemoveDoc,
-  TxUpdateDoc
+  TxProcessor
 } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { TriggerControl } from '@hcengineering/server-core'
 import { getHTMLPresenter, getTextPresenter } from '@hcengineering/server-notification-resources'
-import contact, { PersonAccount } from '@hcengineering/contact'
 
 /**
  * @public
