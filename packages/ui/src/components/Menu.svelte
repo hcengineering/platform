@@ -80,12 +80,12 @@
     closePopup(category)
   })
 
-  function isAction(item: MenuItem): item is Action {
+  function isAction (item: MenuItem): item is Action {
     const actionKey: keyof Action = 'action'
     return actionKey in item
   }
 
-  function isComponent(item: MenuItem): item is MenuComponent {
+  function isComponent (item: MenuItem): item is MenuComponent {
     const itemComponentKey: keyof MenuComponent = 'itemComponent'
     return itemComponentKey in item
   }
@@ -171,7 +171,7 @@
                 <span class="overflow-label pr-4 flex-grow"><Label label={action.label} /></span>
               </button>
             </a>
-          {:else if (action.component && !action.isSubmenuRightClicking)}
+          {:else if action.component && !action.isSubmenuRightClicking}
             <!-- svelte-ignore a11y-mouse-events-have-key-events -->
             <button
               bind:this={btns[i]}
@@ -222,10 +222,7 @@
             }}
             on:click={() => focusTarget(item, btns[i], false)}
           >
-            <Component
-              is={item.itemComponent}
-              props={item.itemProps}
-            />
+            <Component is={item.itemComponent} props={item.itemProps} />
           </button>
         {/if}
       {/each}

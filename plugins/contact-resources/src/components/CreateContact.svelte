@@ -39,4 +39,4 @@
     })
 </script>
 
-<Menu {actions} on:changeContent />
+<Menu items={actions} on:changeContent />

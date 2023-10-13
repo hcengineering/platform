@@ -13,19 +13,20 @@
 // limitations under the License.
 //
 
-import { TiptapCollabProvider } from "./provider";
+import { TiptapCollabProvider } from './provider'
 import * as Y from 'yjs'
 
-type ProviderData = ({
-  provider: TiptapCollabProvider
-} | {
-  collaboratorURL: string
-  token: string
-}) & { ydoc?: Y.Doc }
+type ProviderData = (
+  | {
+    provider: TiptapCollabProvider
+  }
+  | {
+    collaboratorURL: string
+    token: string
+  }
+) & { ydoc?: Y.Doc }
 
 function getProvider (documentId: string, providerData: ProviderData, initialContentId?: string): TiptapCollabProvider {
-  let provider: TiptapCollabProvider
-
   if (!('provider' in providerData)) {
     return new TiptapCollabProvider({
       url: providerData.collaboratorURL,
@@ -41,12 +42,23 @@ function getProvider (documentId: string, providerData: ProviderData, initialCon
   }
 }
 
-export function copyDocumentField (documentId: string, srcFieldId: string, dstFieldId: string, providerData: ProviderData, initialContentId?: string): void {
+export function copyDocumentField (
+  documentId: string,
+  srcFieldId: string,
+  dstFieldId: string,
+  providerData: ProviderData,
+  initialContentId?: string
+): void {
   const provider = getProvider(documentId, providerData, initialContentId)
   provider.copyField(documentId, srcFieldId, dstFieldId)
 }
 
-export function copyDocumentContent (documentId: string, snapshotId: string, providerData: ProviderData, initialContentId?: string): void {
+export function copyDocumentContent (
+  documentId: string,
+  snapshotId: string,
+  providerData: ProviderData,
+  initialContentId?: string
+): void {
   const provider = getProvider(documentId, providerData, initialContentId)
   provider.copyContent(documentId, snapshotId)
 }

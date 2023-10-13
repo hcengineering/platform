@@ -31,7 +31,7 @@ export class TiptapCollabProvider extends HocuspocusProvider {
     this.sendStateless(JSON.stringify(payload))
   }
 
-  copyField(documentId: string, srcFieldId: string, dstFieldId: string): void {
+  copyField (documentId: string, srcFieldId: string, dstFieldId: string): void {
     const payload = {
       action: 'document.field.copy',
       params: { documentId, srcFieldId, dstFieldId }
