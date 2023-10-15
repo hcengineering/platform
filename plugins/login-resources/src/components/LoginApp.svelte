@@ -46,7 +46,7 @@
 
   let navigateUrl: string | undefined
 
-  function getToken(timer: number): string | undefined {
+  function getToken (timer: number): string | undefined {
     return getMetadata(presentation.metadata.Token)
   }
   $: token = getToken($ticker)
