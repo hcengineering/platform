@@ -64,7 +64,7 @@
 
   export let field: string | undefined = undefined
 
-  export let autoOverflow = false
+  export let overflow: 'auto' | 'none' = 'auto'
   export let initialContent: string | undefined = undefined
   export let textNodeActions: TextNodeAction[] = []
   export let editorAttributes: { [name: string]: string } = {}
@@ -347,7 +347,7 @@
 
 {#if visible}
   {#if comparedVersion !== undefined || $$slots.tools}
-    <div class="ref-container" class:autoOverflow>
+    <div class="ref-container" style:overflow>
       {#if comparedVersion !== undefined}
         <div class="flex-row-center buttons-group xsmall-gap">
           <StyleButton
@@ -394,7 +394,7 @@
     />
   </div>
 
-  <div class="ref-container" class:autoOverflow>
+  <div class="ref-container" style:overflow>
     <div class="text-input" class:focusable>
       <div class="select-text" style="width: 100%;" bind:this={element} />
     </div>
@@ -402,10 +402,6 @@
 {/if}
 
 <style lang="scss">
-  .autoOverflow {
-    overflow: auto;
-  }
-
   .ref-container .formatPanel {
     margin: -0.5rem -0.25rem 0.5rem;
     padding: 0.375rem;
