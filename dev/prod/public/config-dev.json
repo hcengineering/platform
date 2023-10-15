@@ -1,9 +1,10 @@
 {
-  "ACCOUNTS_URL":"https://account.hc.engineering",
-  "UPLOAD_URL":"/files",
+  "ACCOUNTS_URL": "https://account.hc.engineering",
+  "UPLOAD_URL": "/files",
   "MODEL_VERSION": null,
   "TELEGRAM_URL": "https://telegram.hc.engineering",
   "GMAIL_URL": "https://gmail.hc.engineering",
   "CALENDAR_URL": "https://calendar.hc.engineering",
-  "REKONI_URL": "https://rekoni.hc.engineering"
+  "REKONI_URL": "https://rekoni.hc.engineering",
+  "LOGO_WAY_URL": "https://bold.hc.engineering"
 }

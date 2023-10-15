@@ -1,5 +1,6 @@
 {
   "ACCOUNTS_URL":"http://localhost:3000",
   "UPLOAD_URL":"/files",
-  "REKONI_URL": "http://localhost:4004"
+  "REKONI_URL": "http://localhost:4004",
+  "LOGO_WAY_URL": "https://bold.ru/"
 }

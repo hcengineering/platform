@@ -40,12 +40,13 @@
 
   import loginBackWebp from '../../img/login_back.webp'
   import loginBack2xWebp from '../../img/login_back_2x.webp'
+  import login from '@hcengineering/login'
 
   export let page: string = 'login'
 
   let navigateUrl: string | undefined
 
-  function getToken (timer: number): string | undefined {
+  function getToken(timer: number): string | undefined {
     return getMetadata(presentation.metadata.Token)
   }
   $: token = getToken($ticker)
@@ -89,7 +90,7 @@
     </picture>
 
     <a
-      href="https://bold.ru"
+      href={getMetadata(login.metadata.LogoWayUrl)}
       style:position="fixed"
       style:left={$deviceInfo.docWidth <= 480 ? '.75rem' : '1.75rem'}
       style:top={'3rem'}

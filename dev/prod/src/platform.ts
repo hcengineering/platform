@@ -84,6 +84,7 @@ import { preferenceId } from '@hcengineering/preference'
 
 interface Config {
   ACCOUNTS_URL: string
+  LOGO_WAY_URL: string
   UPLOAD_URL: string
   MODEL_VERSION: string
   REKONI_URL: string
@@ -138,6 +139,7 @@ export async function configurePlatform() {
   const config: Config = await (await fetch(devConfig? '/config-dev.json' : '/config.json')).json()
   console.log('loading configuration', config)
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
+  setMetadata(login.metadata.LogoWayUrl, config.LOGO_WAY_URL)
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
   
   if (config.MODEL_VERSION != null) {
