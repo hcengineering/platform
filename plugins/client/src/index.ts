@@ -79,7 +79,8 @@ export default plugin(clientId, {
     FilterModel: '' as Metadata<boolean>,
     ExtraPlugins: '' as Metadata<Plugin[]>,
     UseBinaryProtocol: '' as Metadata<boolean>,
-    UseProtocolCompression: '' as Metadata<boolean>
+    UseProtocolCompression: '' as Metadata<boolean>,
+    LogoWayUrl: '' as Metadata<string>
   },
   function: {
     GetClient: '' as Resource<ClientFactory>
