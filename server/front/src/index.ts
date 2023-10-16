@@ -131,6 +131,7 @@ async function getFile (client: MinioService, workspace: WorkspaceId, uuid: stri
 export function start (
   config: {
     transactorEndpoint: string
+    logoWayUrl: string
     elasticUrl: string
     minio: MinioService
     accountsUrl: string
@@ -174,6 +175,7 @@ export function start (
     res.set('Cache-Control', 'no-cache')
     res.json({
       ACCOUNTS_URL: config.accountsUrl,
+      LOGO_WAY_URL: config.logoWayUrl,
       UPLOAD_URL: config.uploadUrl,
       MODEL_VERSION: config.modelVersion,
       REKONI_URL: config.rekoniUrl,

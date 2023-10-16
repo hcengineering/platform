@@ -30,6 +30,12 @@ export function startFront (extraConfig?: Record<string, string>): void {
     process.exit(1)
   }
 
+  const logoWayUrl = process.env.LOGOWAY_URL
+  if (logoWayUrl === undefined) {
+    console.error('please provide logoway url')
+    process.exit(1)
+  }
+
   const elasticUrl = process.env.ELASTIC_URL
   if (elasticUrl === undefined) {
     console.error('please provide elastic url')
@@ -116,6 +122,7 @@ export function startFront (extraConfig?: Record<string, string>): void {
 
   const config = {
     transactorEndpoint,
+    logoWayUrl,
     elasticUrl,
     minio,
     accountsUrl,
