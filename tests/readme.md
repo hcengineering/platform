@@ -18,7 +18,7 @@ To purge content of sanity workspace following command could be used.
 ./restore-workspace.sh
 ```
 
-## Prepare local dev enviornment
+## Prepare local dev environment
 
 ```bash
 rush update
