@@ -1,4 +1,4 @@
-import { Command, CommandProps, Mark, getMarkType, mergeAttributes } from '@tiptap/core'
+import { Command, CommandProps, Mark, getMarkType, getMarksBetween, mergeAttributes } from '@tiptap/core'
 import { Node, Mark as ProseMirrorMark } from 'prosemirror-model'
 import { EditorState, Plugin, PluginKey } from 'prosemirror-state'
 
@@ -111,11 +111,16 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
         key: new PluginKey('handle-node-uuid-click-plugin'),
         props: {
           handleClick (view, pos) {
-            const { doc } = view.state
-            const node = doc.nodeAt(pos)
-            const nodeUuidMark = node != null ? findNodeUuidMark(node) : undefined
+            const markRanges =
+              getMarksBetween(Math.max(0, pos - 1), pos + 1, view.state.doc)?.filter(
+                (markRange) => markRange.mark.type.name === NAME && markRange.from <= pos && markRange.to >= pos
+              ) ?? []
+            let nodeUuid: string | null = null
 
-            const nodeUuid = nodeUuidMark != null ? nodeUuidMark.attrs[NAME] : null
+            if (markRanges.length > 0) {
+              nodeUuid = markRanges[0].mark.attrs[NAME]
+            }
+
             if (nodeUuid !== null) {
               options.onNodeClicked?.(nodeUuid)
             }
