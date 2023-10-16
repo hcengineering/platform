@@ -116,10 +116,7 @@
   {/if}
 
   {#if currentProject}
-    <TimeSpendReports
-      issue={object}
-      query={{ attachedTo: { $in: [object._id, ...childIds] } }}
-    />
+    <TimeSpendReports issue={object} query={{ attachedTo: { $in: [object._id, ...childIds] } }} />
   {/if}
   <svelte:fragment slot="buttons">
     <Button
