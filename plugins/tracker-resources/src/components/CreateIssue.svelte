@@ -388,6 +388,7 @@
         ? [{ parentId: parentIssue._id, parentTitle: parentIssue.title }, ...parentIssue.parents]
         : [],
       reportedTime: 0,
+      remainingTime: 0,
       estimation: object.estimation,
       reports: 0,
       relations: relatedTo !== undefined ? [{ _id: relatedTo._id, _class: relatedTo._class }] : [],

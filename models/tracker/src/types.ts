@@ -143,17 +143,31 @@ export class TRelatedIssueTarget extends TDoc implements RelatedIssueTarget {
 
   rule!: RelatedClassRule | RelatedSpaceRule
 }
+
 /**
  * @public
  */
-
 export function TypeReportedTime (): Type<number> {
-  return { _class: tracker.class.TypeReportedTime, label: core.string.Number }
+  return { _class: tracker.class.TypeReportedTime, label: tracker.string.ReportedTime }
 }
+
 /**
  * @public
  */
+export function TypeRemainingTime (): Type<number> {
+  return { _class: tracker.class.TypeRemainingTime, label: tracker.string.RemainingTime }
+}
 
+/**
+ * @public
+ */
+export function TypeEstimation (): Type<number> {
+  return { _class: tracker.class.TypeEstimation, label: tracker.string.Estimation }
+}
+
+/**
+ * @public
+ */
 @Model(tracker.class.Issue, task.class.Task)
 @UX(tracker.string.Issue, tracker.icon.Issue, 'TSK', 'title')
 export class TIssue extends TTask implements Issue {
@@ -229,18 +243,15 @@ export class TIssue extends TTask implements Issue {
   @Index(IndexKind.Indexed)
     milestone!: Ref<Milestone> | null
 
-  @Prop(TypeNumber(), tracker.string.Estimation)
+  @Prop(TypeEstimation(), tracker.string.Estimation)
     estimation!: number
 
   @Prop(TypeReportedTime(), tracker.string.ReportedTime)
   @ReadOnly()
     reportedTime!: number
 
-  // A fully virtual property with calculated content.
-  // TODO: Add proper support for this kind of fields
-  @Prop(TypeNumber(), tracker.string.RemainingTime)
+  @Prop(TypeRemainingTime(), tracker.string.RemainingTime)
   @ReadOnly()
-  @Hidden()
     remainingTime!: number
 
   @Prop(Collection(tracker.class.TimeSpendReport), tracker.string.TimeSpendReports)
@@ -283,7 +294,7 @@ export class TIssueTemplate extends TDoc implements IssueTemplate {
   @Prop(TypeRef(tracker.class.Milestone), tracker.string.Milestone)
     milestone!: Ref<Milestone> | null
 
-  @Prop(TypeNumber(), tracker.string.Estimation)
+  @Prop(TypeEstimation(), tracker.string.Estimation)
     estimation!: number
 
   @Prop(ArrOf(TypeRef(tracker.class.IssueTemplate)), tracker.string.IssueTemplate)
@@ -386,3 +397,11 @@ export class TMilestone extends TDoc implements Milestone {
 @UX(core.string.Number)
 @Model(tracker.class.TypeReportedTime, core.class.Type)
 export class TTypeReportedTime extends TType {}
+
+@UX(core.string.Number)
+@Model(tracker.class.TypeEstimation, core.class.Type)
+export class TTypeEstimation extends TType {}
+
+@UX(core.string.Number)
+@Model(tracker.class.TypeRemainingTime, core.class.Type)
+export class TTypeRemainingTime extends TType {}

@@ -62,9 +62,13 @@
 
 {#if kind === 'link'}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div id="ReportedTimeEditor" class="link-container {size} flex-between" on:click={showReports}>
+  <div
+    id="ReportedTimeEditor"
+    class="link-container antiButton link {size} flex-grow flex-between"
+    on:click={showReports}
+  >
     {#if value !== undefined}
-      <span class="overflow-label">
+      <span class="flex-row-center">
         <TimePresenter {value} />
         {#if childTime !== 0}
           / <TimePresenter value={childTime} />
@@ -78,7 +82,7 @@
     </div>
   </div>
 {:else if value !== undefined}
-  <span class="overflow-label">
+  <span class="flex-row-center">
     <TimePresenter {value} />
     {#if childTime !== 0}
       / <TimePresenter value={childTime} />
@@ -90,24 +94,7 @@
 
 <style lang="scss">
   .link-container {
-    display: flex;
-    align-items: center;
-    padding: 0 0.875rem;
-    width: 100%;
-    color: var(--theme-caption-color);
-    border: 1px solid transparent;
-    border-radius: 0.25rem;
-    cursor: pointer;
-
-    &.small {
-      height: 1.5rem;
-    }
-    &.medium {
-      height: 2rem;
-    }
-    &.large {
-      height: 2.25rem;
-    }
+    padding: 0px 0.75rem;
     .add-action {
       visibility: hidden;
     }

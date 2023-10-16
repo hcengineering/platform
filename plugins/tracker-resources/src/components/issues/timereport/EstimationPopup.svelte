@@ -25,6 +25,7 @@
   import SubIssuesEstimations from './SubIssuesEstimations.svelte'
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
   import TimeSpendReports from './TimeSpendReports.svelte'
+  import TimePresenter from './TimePresenter.svelte'
 
   export let format: 'text' | 'password' | 'number'
   export let kind: EditStyle = 'search-style'
@@ -103,6 +104,10 @@
         }}
       >
         <EstimationStatsPresenter value={object} estimation={_value} />
+      </div>
+      <Label label={tracker.string.RemainingTime} />
+      <div class="ml-2 mr-4">
+        <TimePresenter value={object.remainingTime} />
       </div>
     </div>
   </svelte:fragment>

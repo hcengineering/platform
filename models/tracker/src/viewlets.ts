@@ -24,14 +24,28 @@ import tracker from './plugin'
 import tags from '@hcengineering/tags'
 
 export const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
-  groupBy: ['status', 'assignee', 'priority', 'component', 'milestone', 'createdBy', 'modifiedBy'],
+  groupBy: [
+    'status',
+    'assignee',
+    'priority',
+    'component',
+    'milestone',
+    'createdBy',
+    'modifiedBy',
+    'estimation',
+    'remainingTime',
+    'reportedTime'
+  ],
   orderBy: [
     ['status', SortingOrder.Ascending],
     ['priority', SortingOrder.Descending],
     ['modifiedOn', SortingOrder.Descending],
     ['createdOn', SortingOrder.Descending],
     ['dueDate', SortingOrder.Ascending],
-    ['rank', SortingOrder.Ascending]
+    ['rank', SortingOrder.Ascending],
+    ['estimation', SortingOrder.Descending],
+    ['remainingTime', SortingOrder.Descending],
+    ['reportedTime', SortingOrder.Descending]
   ],
   other: [
     {
@@ -202,6 +216,7 @@ export function defineViewlets (builder: Builder): void {
           'component',
           'milestone',
           'estimation',
+          'remainingTime',
           'status',
           'dueDate',
           'attachedTo',
@@ -246,6 +261,7 @@ export function defineViewlets (builder: Builder): void {
           'dueDate',
           'milestone',
           'estimation',
+          'remainingTime',
           'createdBy',
           'modifiedBy'
         ]
@@ -287,6 +303,7 @@ export function defineViewlets (builder: Builder): void {
           'dueDate',
           'milestone',
           'estimation',
+          'remainingTime',
           'createdBy',
           'modifiedBy'
         ]
@@ -328,6 +345,7 @@ export function defineViewlets (builder: Builder): void {
           'dueDate',
           'component',
           'estimation',
+          'remainingTime',
           'createdBy',
           'modifiedBy'
         ]
@@ -355,7 +373,17 @@ export function defineViewlets (builder: Builder): void {
       },
       configOptions: {
         strict: true,
-        hiddenKeys: ['milestone', 'estimation', 'component', 'title', 'description', 'createdBy', 'modifiedBy']
+        hiddenKeys: [
+          'milestone',
+          'estimation',
+          'remainingTime',
+          'reportedTime',
+          'component',
+          'title',
+          'description',
+          'createdBy',
+          'modifiedBy'
+        ]
       },
       config: [
         // { key: '', presenter: tracker.component.PriorityEditor, props: { kind: 'list', size: 'small' } },
