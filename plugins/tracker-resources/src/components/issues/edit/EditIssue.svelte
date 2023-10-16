@@ -246,12 +246,7 @@
     <div class="mt-6">
       {#key issue._id && currentProject !== undefined}
         {#if currentProject !== undefined}
-          <SubIssues
-            focusIndex={50}
-            {issue}
-            shouldSaveDraft
-            projects={new Map([[currentProject?._id, currentProject]])}
-          />
+          <SubIssues focusIndex={50} {issue} shouldSaveDraft />
         {/if}
       {/key}
     </div>

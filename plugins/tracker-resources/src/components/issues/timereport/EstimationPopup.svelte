@@ -112,15 +112,11 @@
   </svelte:fragment>
 
   {#if currentProject}
-    <SubIssuesEstimations issue={object} projects={new Map([[currentProject?._id, currentProject]])} />
+    <SubIssuesEstimations issue={object} />
   {/if}
 
   {#if currentProject}
-    <TimeSpendReports
-      issue={object}
-      projects={new Map([[currentProject?._id, currentProject]])}
-      query={{ attachedTo: { $in: [object._id, ...childIds] } }}
-    />
+    <TimeSpendReports issue={object} query={{ attachedTo: { $in: [object._id, ...childIds] } }} />
   {/if}
   <svelte:fragment slot="buttons">
     <Button

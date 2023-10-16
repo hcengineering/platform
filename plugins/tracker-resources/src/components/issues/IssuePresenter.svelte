@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, WithLookup } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
+  import { WithLookup } from '@hcengineering/core'
+  import { Asset } from '@hcengineering/platform'
   import type { Issue, Project } from '@hcengineering/tracker'
   import { AnySvelteComponent, Icon, tooltip } from '@hcengineering/ui'
   import { DocNavLink } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
-  import { Asset } from '@hcengineering/platform'
+  import { activeProjects } from '../../utils'
 
   export let value: WithLookup<Issue>
   export let disabled = false
@@ -30,19 +30,10 @@
   export let kind: 'list' | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
 
-  // Extra properties
-  export let projects: Map<Ref<Project>, Project> | undefined = undefined
-
-  const spaceQuery = createQuery()
   let currentProject: Project | undefined = value?.$lookup?.space
 
   $: if (value !== undefined) {
-    if (value.$lookup?.space === undefined && !projects?.has(value.space)) {
-      spaceQuery.query(tracker.class.Project, { _id: value.space }, (res) => ([currentProject] = res))
-    } else {
-      currentProject = value?.$lookup?.space ?? projects?.get(value?.space)
-      spaceQuery.unsubscribe()
-    }
+    currentProject = $activeProjects.get(value?.space)
   }
 
   $: title = currentProject ? `${currentProject.identifier}-${value?.number}` : `${value?.number}`

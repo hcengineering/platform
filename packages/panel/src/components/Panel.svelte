@@ -52,7 +52,7 @@
   export let isFullSize = false
   export let embedded = false
   export let contentClasses: string | undefined = undefined
-  export let content: HTMLElement | undefined = undefined
+  export let content: HTMLElement | undefined | null = undefined
 
   let lastHref: string
   let timer: any

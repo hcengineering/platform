@@ -13,15 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@hcengineering/core'
-  import { Issue, Project, trackerId } from '@hcengineering/tracker'
+  import { Issue, trackerId } from '@hcengineering/tracker'
   import { Button, IconScaleFull, Label, closeTooltip, getCurrentResolvedLocation, navigate } from '@hcengineering/ui'
   import { createFilter, setFilters } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
   import QueryIssuesList from './QueryIssuesList.svelte'
 
   export let issue: Issue
-  export let projects: Map<Ref<Project>, Project> | undefined
   export let shouldSaveDraft: boolean = false
 
   // showPopup(tracker.component.CreateIssue, { space: issue.space, parentIssue: issue, shouldSaveDraft }, 'top')
@@ -37,7 +35,6 @@
   createLabel={tracker.string.AddSubIssues}
   hasSubIssues={issue.subIssues > 0}
   {focusIndex}
-  {projects}
   {shouldSaveDraft}
   on:docs={(evt) => {
     size = evt.detail.length

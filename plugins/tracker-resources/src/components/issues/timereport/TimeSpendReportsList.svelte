@@ -30,10 +30,9 @@
   import tracker from '../../../plugin'
   import TimePresenter from './TimePresenter.svelte'
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
+  import { activeProjects } from '../../../utils'
 
   export let reports: WithLookup<TimeSpendReport>[]
-
-  export let projects: Map<Ref<Project>, Project>
 
   function showContextMenu (ev: MouseEvent, object: TimeSpendReport) {
     showPopup(ContextMenu, { object }, getEventPositionElement(ev))
@@ -65,10 +64,11 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <ListView count={reports.length} addClass={'step-tb-2-accent'}>
   <svelte:fragment slot="item" let:item>
     {@const report = reports[item]}
-    {@const currentProject = projects.get(toProjectId(report.space))}
+    {@const currentProject = $activeProjects.get(toProjectId(report.space))}
     <div
       class="{twoRows ? 'flex-col' : 'flex-between'} p-text-2 clear-mins"
       on:contextmenu|preventDefault={(ev) => showContextMenu(ev, report)}

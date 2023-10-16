@@ -15,9 +15,9 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
-  import { createQuery } from '@hcengineering/presentation'
-  import tracker, { Issue, Project } from '@hcengineering/tracker'
-  import { ActionIcon, eventToHTMLElement, floorFractionDigits, IconAdd, Label, showPopup } from '@hcengineering/ui'
+  import { Issue, Project } from '@hcengineering/tracker'
+  import { ActionIcon, IconAdd, Label, eventToHTMLElement, floorFractionDigits, showPopup } from '@hcengineering/ui'
+  import { activeProjects } from '../../../utils'
   import ReportsPopup from './ReportsPopup.svelte'
   import TimePresenter from './TimePresenter.svelte'
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
@@ -30,13 +30,8 @@
   export let size: 'small' | 'medium' | 'large' = 'large'
   export let currentProject: Project | undefined
 
-  const spaceQuery = createQuery()
   $: if (currentProject === undefined) {
-    spaceQuery.query(tracker.class.Project, { _id: object.space }, (res) => {
-      currentProject = res.shift()
-    })
-  } else {
-    spaceQuery.unsubscribe()
+    currentProject = $activeProjects.get(object.space)
   }
 
   $: defaultTimeReportDay = currentProject?.defaultTimeReportDay
