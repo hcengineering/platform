@@ -197,7 +197,7 @@
 
   {#if keys.length > 0}
     <div class="divider" />
-    {#each keys as key (typeof key === 'string' ? key : key.key)}      
+    {#each keys as key (typeof key === 'string' ? key : key.key)}
       <AttributeBarEditor {key} _class={issue._class} object={issue} showHeader={true} size={'medium'} />
     {/each}
   {/if}
