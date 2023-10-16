@@ -90,13 +90,17 @@
     "AddMembersHeader": "Add members to {value}:",
     "Assigned": "Assigned",
     "Unassigned": "Unassigned",
-    "CategoryCurrentUser": "Current user",    
+    "CategoryCurrentUser": "Current user",
     "CategoryOther": "Other",
     "NumberMembers": "{count, plural, =0 {no members} =1 {1 member} other {# members}}",
     "Position": "Position",
     "ConfigLabel": "Contacts",
     "ConfigDescription": "Extension to hold information about all Employees and other Person/Organization contacts.",
     "HasMessagesIn": "has messages in",
-    "HasNewMessagesIn": "has new messages in"
+    "HasNewMessagesIn": "has new messages in",
+    "Messages": "Messages",
+    "Mail": "Mail",
+    "Issue": "Issue",
+    "Activity": "Activity"
   }
 }

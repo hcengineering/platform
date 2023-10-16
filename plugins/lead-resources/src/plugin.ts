@@ -42,12 +42,7 @@ export default mergeIds(leadId, lead, {
     FunnelPlaceholder: '' as IntlString,
     Members: '' as IntlString,
     Assignee: '' as IntlString,
-    UnAssign: '' as IntlString,
-
-    Mail: '' as IntlString,
-    Messages: '' as IntlString,
-    Notes: '' as IntlString,
-    Activity: '' as IntlString
+    UnAssign: '' as IntlString
   },
   component: {
     CreateCustomer: '' as AnyComponent,

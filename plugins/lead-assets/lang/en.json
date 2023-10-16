@@ -32,10 +32,6 @@
     "UnAssign": "Unassign",
     "ConfigLabel": "CRM",
     "ConfigDescription": "Extension for Customer relation management",
-    "EditFunnel": "Edit Funnel",
-    "Messages": "Messages",
-    "Mail": "Mail",
-    "Notes": "Notes",
-    "Activity": "Activity"
+    "EditFunnel": "Edit Funnel"
   }
 }

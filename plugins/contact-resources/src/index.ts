@@ -54,6 +54,7 @@ import EditEmployee from './components/EditEmployee.svelte'
 import EditMember from './components/EditMember.svelte'
 import EditOrganization from './components/EditOrganization.svelte'
 import EditPerson from './components/EditPerson.svelte'
+import EditLead from './components/EditLead.svelte'
 import EditableAvatar from './components/EditableAvatar.svelte'
 import PersonAccountFilterValuePresenter from './components/PersonAccountFilterValuePresenter.svelte'
 import PersonAccountPresenter from './components/PersonAccountPresenter.svelte'
@@ -126,6 +127,7 @@ export {
   PersonAccountRefPresenter,
   MembersPresenter,
   EditPerson,
+  EditLead,
   EmployeeRefPresenter,
   AccountArrayEditor,
   AccountBox,
@@ -275,6 +277,7 @@ export default async (): Promise<Resources> => ({
     CreatePerson,
     CreateOrganization,
     EditPerson,
+    EditLead,
     EditEmployee,
     EditOrganization,
     SocialEditor,

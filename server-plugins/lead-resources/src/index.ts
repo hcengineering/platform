@@ -20,13 +20,14 @@ import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import view from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 
+// http://localhost:8081/workbench/ws1/lead/my-leads?mode=created#contact:component:EditLead|61f1093d3a1b1a24cfdef404|lead:class:Lead|content
 /**
  * @public
  */
 export async function leadHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const lead = doc as Lead
   const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.name}/${leadId}/${lead.space}/#${view.component.EditLead}|${lead._id}|${lead._class}|content`
+  const path = `${workbenchId}/${control.workspace.name}/${leadId}/${lead.space}/#${view.component.EditDoc}|${lead._id}|${lead._class}|content`
   const link = concatLink(front, path)
   return `<a href="${link}">${lead.title}</a>`
 }

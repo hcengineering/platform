@@ -73,7 +73,7 @@
     "UseGravatar": "Граватар",
     "UseColor": "Цвет",
     "AvatarProvider": "Тип аватара",
-    "NotSpecified": "Не указан",    
+    "NotSpecified": "Не указан",
     "Whatsapp": "Whatsapp",
     "WhatsappPlaceholder": "Whatsapp",
     "Skype": "Skype",
@@ -97,6 +97,10 @@
     "ConfigLabel": "Контакты",
     "ConfigDescription": "Расширение по работе с сотрудниками и другими контактами.",
     "HasMessagesIn": "имеет сообщения в",
-    "HasNewMessagesIn": "имеет новые сообщения в"
+    "HasNewMessagesIn": "имеет новые сообщения в",
+    "Messages": "Сообщения",
+    "Mail": "Почта",
+    "Issue": "Задача",
+    "Activity": "Активность"
   }
 }

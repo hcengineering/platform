@@ -32,10 +32,6 @@
     "UnAssign": "Отменить назначение",
     "ConfigLabel": "CRM",
     "ConfigDescription": "Расширение по работе с клиентами",
-    "EditFunnel": "Редактировать воронку",
-    "Messages": "Сообщения",
-    "Mail": "Почта",
-    "Notes": "Заметки",
-    "Activity": "Активность"
+    "EditFunnel": "Редактировать воронку"
   }
 }

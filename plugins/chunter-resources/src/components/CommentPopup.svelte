@@ -28,6 +28,7 @@
   export let object: Doc
   export let withInput: boolean = true
   export let withHeader: boolean = true
+  export let fullWidth: boolean = false
 
   let loading = true
 
@@ -58,7 +59,6 @@
         dispatch('changeContent')
       }}
       on:keydown={(evt) => {
-        console.log(evt)
         if (commentMode) {
           evt.preventDefault()
           evt.stopImmediatePropagation()
@@ -74,14 +74,14 @@
       </DocNavLink>
     </div>
   {/if}
-  <div class="comments">
+  <div class="comments" class:no-padding={fullWidth}>
     {#if loading}
       <div class="flex-center">
         <Spinner />
       </div>
     {:else}
       {#each comments as comment}
-        <div class="item">
+        <div class="item" class:max-w-120={!fullWidth}>
           <Lazy>
             <CommentPresenter value={comment} />
           </Lazy>
@@ -90,7 +90,7 @@
     {/if}
   </div>
   {#if withInput}
-    <div class="max-w-120 input">
+    <div class="input" class:max-w-120={!fullWidth}>
       <CommentInput
         {object}
         on:focus={() => {
@@ -102,23 +102,31 @@
 </div>
 
 <style lang="scss">
-  .item {
-    max-width: 30rem;
-  }
   .item + .item {
     margin-top: 0.75rem;
   }
 
   .input {
-    padding: 1rem;
     padding-top: 0;
+  }
+
+  .input:not(.max-w-120) {
+    padding: 1rem 0;
+  }
+
+  .input.max-w-120 {
+    padding: 1rem;
   }
 
   .comments {
     overflow: auto;
-    flex: 1;
     padding: 1rem;
+    flex: 1;
     padding-top: 0;
+  }
+
+  .no-padding {
+    padding: 0;
   }
 
   .container {
