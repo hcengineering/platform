@@ -52,27 +52,27 @@
 
 <div class="container">
   {#if withHeader}
-  <div
-    class="flex-between header"
-    use:resizeObserver={() => {
-      dispatch('changeContent')
-    }}
-    on:keydown={(evt) => {
-      console.log(evt)
-      if (commentMode) {
-        evt.preventDefault()
-        evt.stopImmediatePropagation()
-        closeTooltip()
-      }
-    }}
-  >
-    <div class="fs-title mr-2">
-      <Label label={chunter.string.Comments} />
+    <div
+      class="flex-between header"
+      use:resizeObserver={() => {
+        dispatch('changeContent')
+      }}
+      on:keydown={(evt) => {
+        console.log(evt)
+        if (commentMode) {
+          evt.preventDefault()
+          evt.stopImmediatePropagation()
+          closeTooltip()
+        }
+      }}
+    >
+      <div class="fs-title mr-2">
+        <Label label={chunter.string.Comments} />
+      </div>
+      <DocNavLink {object}>
+        <ObjectPresenter _class={object._class} objectId={object._id} value={object} />
+      </DocNavLink>
     </div>
-    <DocNavLink {object}>
-      <ObjectPresenter _class={object._class} objectId={object._id} value={object} />
-    </DocNavLink>
-  </div>
   {/if}
   <div class="comments">
     {#if loading}

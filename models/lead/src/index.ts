@@ -31,8 +31,6 @@ import {
   TypeString,
   UX
 } from '@hcengineering/model'
-import attachment from '@hcengineering/model-attachment'
-import chunter from '@hcengineering/model-chunter'
 import contact, { TContact } from '@hcengineering/model-contact'
 import core from '@hcengineering/model-core'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
@@ -55,7 +53,7 @@ export { default } from './plugin'
 export class TFunnel extends TSpaceWithStates implements Funnel {
   @Prop(TypeMarkup(), lead.string.FullDescription)
   @Index(IndexKind.FullText)
-  fullDescription?: string
+    fullDescription?: string
 
   // @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
   //   attachments?: number
@@ -72,11 +70,11 @@ export class TLead extends TTask implements Lead {
   declare attachedTo: Ref<Customer>
 
   @Prop(TypeDate(), task.string.StartDate)
-  startDate!: Timestamp | null
+    startDate!: Timestamp | null
 
   @Prop(TypeString(), lead.string.Title)
   @Index(IndexKind.FullText)
-  title!: string
+    title!: string
 
   @Prop(TypeRef(contact.mixin.Employee), lead.string.Assignee)
   declare assignee: Ref<Employee> | null
@@ -94,14 +92,14 @@ export class TLead extends TTask implements Lead {
 @UX(lead.string.Customer, lead.icon.LeadApplication)
 export class TCustomer extends TContact implements Customer {
   @Prop(Collection(lead.class.Lead), lead.string.Leads)
-  leads?: number
+    leads?: number
 
   @Prop(TypeMarkup(), core.string.Description)
   @Index(IndexKind.FullText)
-  description!: string
+    description!: string
 }
 
-export function createModel(builder: Builder): void {
+export function createModel (builder: Builder): void {
   const archiveId = 'archive'
 
   builder.createModel(TFunnel, TLead, TCustomer)

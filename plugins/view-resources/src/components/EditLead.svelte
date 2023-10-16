@@ -281,7 +281,6 @@
   $: finalTitle = title ?? rawTitle
   let content: HTMLElement
   console.log('EditLead called')
-
 </script>
 
 {#if !embedded}

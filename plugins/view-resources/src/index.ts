@@ -192,7 +192,7 @@ export {
   IconPicker
 }
 
-function PositionElementAlignment(e?: Event): PopupAlignment | undefined {
+function PositionElementAlignment (e?: Event): PopupAlignment | undefined {
   return getEventPopupPositionElement(e)
 }
 

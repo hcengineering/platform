@@ -64,13 +64,13 @@
 
   let tabSource: { [index: string]: any } = {
     mail: { labelIntl: lead.string.Mail, presenter: 'gmail:component:Main' },
-    messages: { labelIntl: lead.string.Messages, presenter: 'chunter:component:CommentPopup' },
+    messages: { labelIntl: lead.string.Messages, presenter: 'chunter:component:CommentPopup' }
   }
 
   $: tabSource = {
     ...tabSource,
     mail: { ...tabSource.mail, props: { channel } },
-    messages: { ...tabSource.messages, props: { objectId: object._id, object, withInput: true, withHeader: false } },
+    messages: { ...tabSource.messages, props: { objectId: object._id, object, withInput: true, withHeader: false } }
   }
 
   const modes: TabItem[] = Object.keys(tabSource).map((id: string) => ({ id, labelIntl: tabSource[id].labelIntl }))
