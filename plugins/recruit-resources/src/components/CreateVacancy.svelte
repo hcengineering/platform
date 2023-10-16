@@ -140,6 +140,7 @@
       dueDate: null,
       parents: [],
       reportedTime: 0,
+      remainingTime: 0,
       estimation: template.estimation,
       reports: 0,
       relations: [{ _id: id, _class: recruit.class.Vacancy }],

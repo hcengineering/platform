@@ -77,7 +77,7 @@
     }
     mergedModel.groupBy = Array.from(new Set([...mergedModel.groupBy, ...customAttributes]))
     mergedModel.groupBy = mergedModel.groupBy.filter((it, idx, arr) => arr.indexOf(it) === idx)
-    mergedModel.orderBy = mergedModel.orderBy.filter((it, idx, arr) => arr.indexOf(it) === idx)
+    mergedModel.orderBy = mergedModel.orderBy.filter((it, idx, arr) => arr.findIndex((q) => it[0] === q[0]) === idx)
     mergedModel.other = mergedModel.other.filter((it, idx, arr) => arr.findIndex((q) => q.key === it.key) === idx)
 
     showPopup(

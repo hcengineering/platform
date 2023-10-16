@@ -46,7 +46,7 @@
         <Label label={tracker.string.ReportedTime} />:
         <span class="caption-color"><TimePresenter value={reportedTime} /></span>.
         <Label label={tracker.string.TimeSpendReports} />:
-        <span class="caption-color"><TimePresenter value={floorFractionDigits(total / 8, 3)} /></span>
+        <span class="caption-color"><TimePresenter value={floorFractionDigits(total, 3)} /></span>
       </span>
     </svelte:fragment>
     <TimeSpendReportsList {reports} />
