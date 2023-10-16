@@ -72,6 +72,7 @@
   import view from '@hcengineering/view-resources/src/plugin'
   import { onMount } from 'svelte'
   import tracker from '../../plugin'
+  import { activeProjects } from '../../utils'
   import ComponentEditor from '../components/ComponentEditor.svelte'
   import CreateIssue from '../CreateIssue.svelte'
   import AssigneeEditor from './AssigneeEditor.svelte'
@@ -104,12 +105,8 @@
 
   $: dontUpdateRank = orderBy[0] !== IssuesOrdering.Manual
 
-  const spaceQuery = createQuery()
-
   let currentProject: Project | undefined
-  $: spaceQuery.query(tracker.class.Project, { _id: currentSpace }, (res) => {
-    currentProject = res.shift()
-  })
+  $: currentProject = $activeProjects.get(currentSpace)
 
   let resultQuery: DocumentQuery<any> = query
   $: getResultQuery(query, viewOptionsConfig, viewOptions).then((p) => (resultQuery = p))

@@ -13,16 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery } from '@hcengineering/presentation'
   import type { Issue, Project } from '@hcengineering/tracker'
-  import tracker from '../../plugin'
+  import { activeProjects } from '../../utils'
 
   export let value: Issue
 
-  const spaceQuery = createQuery()
   let currentProject: Project | undefined = undefined
 
-  $: spaceQuery.query(tracker.class.Project, { _id: value.space }, (res) => ([currentProject] = res))
+  $: currentProject = $activeProjects.get(value.space)
 
   $: title = currentProject ? `${currentProject.identifier}-${value?.number}` : `${value?.number}`
 </script>

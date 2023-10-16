@@ -14,13 +14,13 @@
 -->
 <script lang="ts">
   import { AttachedData, IdMap, Ref, Status, WithLookup } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { Issue, IssueDraft, IssueStatus, Project } from '@hcengineering/tracker'
   import {
+    Button,
     ButtonKind,
     ButtonSize,
     IconSize,
-    Button,
     SelectPopup,
     TooltipAlignment,
     eventToHTMLElement,
@@ -29,6 +29,7 @@
   import { statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
+  import { activeProjects } from '../../utils'
   import IssueStatusIcon from './IssueStatusIcon.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
   type ValueType = Issue | (AttachedData<Issue> & { space: Ref<Project> }) | IssueDraft
@@ -83,10 +84,7 @@
 
   let space: Project | undefined = undefined
 
-  const query = createQuery()
-  $: query.query(tracker.class.Project, { _id: value.space }, (res) => {
-    space = res[0]
-  })
+  $: space = $activeProjects.get(value.space)
 
   function getStatuses (statuses: IdMap<Status>, space: Project | undefined): IssueStatus[] {
     if (space === undefined) return []

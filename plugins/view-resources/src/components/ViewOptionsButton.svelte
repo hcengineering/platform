@@ -82,7 +82,7 @@
 
     showPopup(
       ViewOptionsEditor,
-      { viewlet, config: mergedModel, viewOptions },
+      { viewlet, config: mergedModel, viewOptions: getClient().getHierarchy().clone(viewOptions) },
       eventToHTMLElement(event),
       undefined,
       (result) => {
@@ -93,8 +93,8 @@
           // Clear selection on view settings change.
           focusStore.set({})
 
-          dispatch('viewOptions', viewOptions)
           setViewOptions(viewlet, viewOptions)
+          dispatch('viewOptions', viewOptions)
         }
       }
     )

@@ -250,7 +250,6 @@
             focusIndex={50}
             {issue}
             shouldSaveDraft
-            projects={new Map([[currentProject?._id, currentProject]])}
           />
         {/if}
       {/key}

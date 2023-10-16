@@ -14,18 +14,16 @@
 -->
 <script lang="ts">
   import contact from '@hcengineering/contact'
-  import { Ref } from '@hcengineering/core'
   import { AssigneeBox } from '@hcengineering/contact-resources'
-  import { Issue, Project } from '@hcengineering/tracker'
-  import { deviceOptionsStore as deviceInfo, getEventPositionElement, ListView, showPopup } from '@hcengineering/ui'
+  import { Issue } from '@hcengineering/tracker'
+  import { ListView, deviceOptionsStore as deviceInfo, getEventPositionElement, showPopup } from '@hcengineering/ui'
   import { ContextMenu, FixedColumn, ListSelectionProvider } from '@hcengineering/view-resources'
   import { getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
+  import { activeProjects } from '../../../utils'
   import EstimationEditor from './EstimationEditor.svelte'
 
   export let issues: Issue[]
-
-  export let projects: Map<Ref<Project>, Project>
 
   function showContextMenu (ev: MouseEvent, object: Issue) {
     showPopup(ContextMenu, { object }, $deviceInfo.isMobile ? 'top' : getEventPositionElement(ev))
@@ -35,10 +33,11 @@
   $: twoRows = $deviceInfo.twoRows
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <ListView count={issues.length} addClass={'step-tb-2-accent'}>
   <svelte:fragment slot="item" let:item>
     {@const issue = issues[item]}
-    {@const currentProject = projects.get(issue.space)}
+    {@const currentProject = $activeProjects.get(issue.space)}
     <div
       class="{twoRows ? 'flex-col' : 'flex-between'} p-text-2 clear-mins"
       on:contextmenu|preventDefault={(ev) => showContextMenu(ev, issue)}
