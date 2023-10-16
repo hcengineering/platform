@@ -26,6 +26,7 @@
 
   import { ImageRef, FileAttachFunction } from './imageExt'
   import { Node as ProseMirrorNode } from '@tiptap/pm/model'
+  import { RefAction } from '../types'
 
   export let label: IntlString | undefined = undefined
   export let content: string
@@ -33,8 +34,8 @@
 
   export let kind: 'normal' | 'emphasized' | 'indented' = 'normal'
   export let alwaysEdit: boolean = false
+  export let extraActions: RefAction[] = []
   export let showButtons: boolean = true
-  export let hideAttachments: boolean = false
   export let buttonSize: ButtonSize = 'medium'
   export let formatButtonSize: IconSize = 'small'
   export let hideExtraButtons: boolean = false
@@ -225,7 +226,6 @@
     <StyledTextEditor
       {placeholder}
       {showButtons}
-      {hideAttachments}
       {buttonSize}
       {formatButtonSize}
       {maxHeight}
@@ -233,10 +233,10 @@
       {autofocus}
       {isScrollable}
       {extensions}
+      {extraActions}
       {boundary}
       bind:content={rawValue}
       bind:this={textEditor}
-      on:attach
       on:value={(evt) => {
         rawValue = evt.detail
         if (alwaysEdit) {
