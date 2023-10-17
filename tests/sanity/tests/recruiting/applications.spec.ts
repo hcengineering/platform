@@ -1,17 +1,20 @@
 import { expect, test } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI } from '../utils'
+import { NavigationMenuPage } from '../model/recruiting/navigation-menu-page'
+import { ApplicationsPage } from '../model/recruiting/applications-page'
+import { ApplicationsDetailsPage } from '../model/recruiting/applications-details-page'
 
 test.use({
   storageState: PlatformSetting
 })
 
-test.describe('recruit tests', () => {
+test.describe('Application tests', () => {
   test.beforeEach(async ({ page }) => {
     // Create user and workspace
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
   })
 
-  test('create-application', async ({ page }) => {
+  test('create application', async ({ page }) => {
     await page.locator('[id="app-recruit\\:string\\:RecruitApplication"]').click()
     await page.waitForLoadState('load')
 
@@ -53,5 +56,16 @@ test.describe('recruit tests', () => {
     await page.click(`tr:has-text("${vacancyId}") >> text=APP-`)
     await page.click('button:has-text("Assigned recruiter")')
     await page.click('button:has-text("Chen Rosamund")')
+  })
+
+  test('Edit an Application', async ({ page }) => {
+    const navigationMenuPage = new NavigationMenuPage(page)
+    await navigationMenuPage.buttonApplications.click()
+
+    const applicationsPage = new ApplicationsPage(page)
+    const talentName = await applicationsPage.createNewApplicationWithNewTalent({ vacancy: 'first', recruiterName: 'first' })
+    await applicationsPage.openApplicationByTalentName(talentName)
+
+    const applicationsDetailsPage = new ApplicationsDetailsPage(page)
   })
 })

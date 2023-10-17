@@ -1,13 +1,11 @@
 import { type Locator, type Page } from '@playwright/test'
 
-export class LeftSideMenuPage {
+export class NavigationMenuPage {
   readonly page: Page
-  readonly buttonChunter: Locator
-  readonly buttonContacts: Locator
+  readonly buttonApplications: Locator
 
   constructor (page: Page) {
     this.page = page
-    this.buttonChunter = page.locator('button[id$="ApplicationLabelChunter"]')
-    this.buttonContacts = page.locator('button[id$="Contacts"]')
+    this.buttonApplications = page.locator('a[href$="candidates"]', { hasText: 'Applications' })
   }
 }
