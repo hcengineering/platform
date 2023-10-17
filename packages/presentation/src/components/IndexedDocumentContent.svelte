@@ -58,7 +58,7 @@
   <span class="font-medium">Summary:</span>
   {#each summary.split('\n') as line}
     {@const hl = search.length > 0 && line.toLowerCase().includes(search.toLowerCase())}
-    <span class:text-md={!hl} class:highlight={hl}>{line}</span>
+    <span class="select-text" class:text-md={!hl} class:highlight={hl}>{line}</span>
   {/each}
 {:else if indexDoc}
   {#each attributes as attr}
@@ -77,13 +77,13 @@
           {#if search.length > 0}
             <span class="font-medium">Result:</span>
             {#each doc.filter((line) => line.toLowerCase().includes(search.toLowerCase())) as line}
-              <span class:highlight={true}>{line}</span>
+              <span class="select-text" class:highlight={true}>{line}</span>
             {/each}
             <br />
           {/if}
           {#each doc as line}
             {@const hl = search.length > 0 && line.toLowerCase().includes(search.toLowerCase())}
-            <span class:text-md={!hl} class:highlight={hl}>{line}</span>
+            <span class="select-text" class:text-md={!hl} class:highlight={hl}>{line}</span>
           {/each}
         </div>
       {/each}
