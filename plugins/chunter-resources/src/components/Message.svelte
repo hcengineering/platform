@@ -204,15 +204,15 @@
 </script>
 
 <div class="container clear-mins" class:highlighted={isHighlighted} id={message._id}>
-  <div class="min-w-6">
-    <Avatar size="x-small" avatar={employee?.avatar} name={employee?.name} />
+  <div class="avatar">
+    <Avatar size={'medium'} avatar={employee?.avatar} name={employee?.name} />
   </div>
-  <div class="message ml-2 w-full clear-mins">
+  <div class="message clear-mins">
     <div class="header clear-mins">
       {#if employee}
         <EmployeePresenter value={employee} shouldShowAvatar={false} />
       {/if}
-      <span class="text-sm">{getTime(message.createdOn ?? 0)}</span>
+      <span>{getTime(message.createdOn ?? 0)}</span>
       {#if message.editedOn}
         <span use:tooltip={{ label: ui.string.TimeTooltip, props: { value: getTime(message.editedOn) } }}>
           <Label label={chunter.string.Edited} />
@@ -290,30 +290,36 @@
     position: relative;
     display: flex;
     flex-shrink: 0;
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 2rem;
 
     &.highlighted {
       animation: highlight 2000ms ease-in-out;
     }
 
+    .avatar {
+      min-width: 2.25rem;
+    }
+
     .message {
       display: flex;
       flex-direction: column;
+      width: 100%;
+      margin-left: 1rem;
 
       .header {
         display: flex;
         align-items: baseline;
         font-weight: 500;
-        font-size: 0.875rem;
+        font-size: 1rem;
         line-height: 150%;
         color: var(--theme-caption-color);
         margin-bottom: 0.25rem;
 
         span {
-          margin-left: 0.25rem;
+          margin-left: 0.5rem;
           font-weight: 400;
 
-          line-height: 1.25rem;
+          line-height: 1.125rem;
           opacity: 0.4;
         }
       }
