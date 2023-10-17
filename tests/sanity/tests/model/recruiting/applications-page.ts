@@ -1,24 +1,77 @@
-import { expect, type Locator, type Page } from '@playwright/test'
+import { type Locator, type Page } from '@playwright/test'
+import { NewApplication, TalentName } from './types'
+import { CommonPage } from '../common-page'
+import { generateId } from '../../utils'
 
-export class ChannelPage {
+export class ApplicationsPage extends CommonPage {
   readonly page: Page
-  readonly inputMessage: Locator
-  readonly buttonSendMessage: Locator
-  readonly textMessage: Locator
+  readonly pageHeader: Locator
+  readonly buttonCreateApplication: Locator
+  readonly buttonTalentSelector: Locator
+  readonly buttonSpaceSelector: Locator
+  readonly buttonAssignedRecruiter: Locator
+  readonly buttonCreateNewApplication: Locator
 
   constructor (page: Page) {
+    super()
     this.page = page
-    this.inputMessage = page.locator('div[class~="text-editor-view"]')
-    this.buttonSendMessage = page.locator('g#Send')
-    this.textMessage = page.locator('div.message > div.text')
+    this.pageHeader = page.locator('span[class*="header"]', { hasText: 'Applications' })
+    this.buttonCreateApplication = page.locator('button > span', { hasText: 'Application' })
+    this.buttonTalentSelector = page.locator('div[id="vacancy.talant.selector"]')
+    this.buttonSpaceSelector = page.locator('div[id="space.selector"]')
+    this.buttonAssignedRecruiter = page.locator('button div.label', { hasText: 'Assigned recruiter' })
+    this.buttonCreateNewApplication = page.locator('form[id="recruit:string:CreateApplication"] button[type="submit"]')
   }
 
-  async sendMessage (message: string): Promise<void> {
-    await this.inputMessage.fill(message)
-    await this.buttonSendMessage.click()
+  async createNewApplication (data: NewApplication): Promise<void> {
+    await this.buttonCreateApplication.click()
+
+    await this.selectTalent(data.talentsName != null ? data.talentsName : 'first')
+    await this.selectVacancy(data.vacancy)
+    await this.selectRecruiter(data.recruiterName)
+
+    await this.buttonCreateNewApplication.click()
   }
 
-  async checkMessageExist (message: string): Promise<void> {
-    await expect(await this.textMessage.filter({ hasText: message })).toBeVisible()
+  async createNewApplicationWithNewTalent (data: NewApplication): Promise<TalentName> {
+    const talentName: TalentName = {
+      firstName: `TestFirst-${generateId(4)}`,
+      lastName: `TestLast-${generateId(4)}`
+    }
+
+    await this.buttonCreateApplication.click()
+
+    await this.buttonTalentSelector.click()
+    await this.pressCreateButtonSelectPopup(this.page)
+    await this.createNewTalentPopup(this.page, talentName.firstName, talentName.lastName)
+
+    await this.selectVacancy(data.vacancy)
+    await this.selectRecruiter(data.recruiterName)
+
+    await this.buttonCreateNewApplication.click()
+
+    return talentName
+  }
+
+  async selectTalent (name: string): Promise<void> {
+    await this.buttonTalentSelector.click()
+    await this.fillSelectPopup(this.page, name)
+  }
+
+  async selectVacancy (name: string): Promise<void> {
+    await this.buttonSpaceSelector.click()
+    await this.fillSelectPopup(this.page, name)
+  }
+
+  async selectRecruiter (name: string): Promise<void> {
+    await this.buttonAssignedRecruiter.click()
+    await this.fillSelectPopup(this.page, name)
+  }
+
+  async openApplicationByTalentName (data: TalentName): Promise<void> {
+    await this.page.locator('span.ap-label', { hasText: `${data.lastName} ${data.firstName}` })
+      .locator('xpath=../../../../..')
+      .locator('div[class*="firstCell"]')
+      .click()
   }
 }
