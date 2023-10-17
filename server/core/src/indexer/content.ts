@@ -27,7 +27,7 @@ import core, {
 import { MinioService } from '@hcengineering/minio'
 import { ContentTextAdapter, IndexedDoc } from '../types'
 import { contentStageId, DocUpdateHandler, fieldStateId, FullTextPipeline, FullTextPipelineStage } from './types'
-import { docKey, docUpdKey, getFullTextIndexableAttributes } from './utils'
+import { docKey, docUpdKey, getFullTextAttributes } from './utils'
 
 /**
  * @public
@@ -80,7 +80,7 @@ export class ContentRetrievalStage implements FullTextPipelineStage {
   }
 
   async updateContent (doc: DocIndexState, pipeline: FullTextPipeline): Promise<void> {
-    const attributes = getFullTextIndexableAttributes(pipeline.hierarchy, doc.objectClass)
+    const attributes = getFullTextAttributes(pipeline.hierarchy, doc.objectClass)
     // Copy content attributes as well.
     const update: DocumentUpdate<DocIndexState> = {}
 

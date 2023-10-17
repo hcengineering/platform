@@ -182,13 +182,6 @@ export function isFullTextAttribute (attr: AnyAttribute): boolean {
 /**
  * @public
  */
-export function isIndexedAttribute (attr: AnyAttribute): boolean {
-  return attr.index === IndexKind.Indexed
-}
-
-/**
- * @public
- */
 export interface IdMap<T extends Doc> extends Map<Ref<T>, T> {}
 
 /**
