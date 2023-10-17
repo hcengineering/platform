@@ -19,13 +19,11 @@ import core, {
   Class,
   Doc,
   DocIndexState,
-  docKey,
   DocumentQuery,
   FindOptions,
   FindResult,
   Hierarchy,
-  isFullTextAttribute,
-  isIndexedAttribute,
+  IndexKind,
   MeasureContext,
   ObjQueryType,
   Ref,
@@ -137,22 +135,10 @@ export class FullTextIndex implements WithFind {
     }
     try {
       for (const [k, attr] of attrs) {
-        if (isFullTextAttribute(attr) || isIndexedAttribute(attr)) {
+        if (attr.index === IndexKind.FullText) {
           const vv = (query as any)[k]
           if (vv != null) {
-            if (
-              k === '_class' ||
-              k === 'modifiedBy' ||
-              k === 'modifiedOn' ||
-              k === 'space' ||
-              k === 'attachedTo' ||
-              k === 'attachedToClass'
-            ) {
-              findQuery[k] = vv
-            } else {
-              const docKeyValue = docKey(attr.name, { _class: attr.attributeOf })
-              findQuery[docKeyValue] = vv
-            }
+            findQuery[k] = vv
           }
         }
         if (attr.type._class === core.class.Collection) {
@@ -179,12 +165,12 @@ export class FullTextIndex implements WithFind {
       return true
     })
 
-    const fullTextLimit = Math.min(5000, (options?.limit ?? 200) * 100)
+    const fullTextLimit = options?.limit ?? 200
 
     let { docs, pass } = await this.indexer.search(classes, findQuery, fullTextLimit)
 
     if (docs.length === 0 && pass) {
-      docs = await this.adapter.search(classes, findQuery, fullTextLimit)
+      docs = await this.adapter.search(classes, query, fullTextLimit)
     }
     const indexedDocMap = new Map<Ref<Doc>, IndexedDoc>()
 
