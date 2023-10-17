@@ -9,7 +9,6 @@ test.describe('login test', () => {
       console.log('Uncaught exception:')
       console.log(exception.message)
     })
-
     const loginPage = new LoginPage(page)
     await loginPage.goto()
     await loginPage.login(PlatformUser, '1234')
