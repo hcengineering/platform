@@ -151,7 +151,6 @@ export default plugin(chunterId, {
     DmHeader: '' as AnyComponent,
     ChannelView: '' as AnyComponent,
     ThreadView: '' as AnyComponent,
-    Thread: '' as AnyComponent,
     CommentsPresenter: '' as AnyComponent
   },
   class: {
@@ -185,8 +184,7 @@ export default plugin(chunterId, {
     UnarchiveConfirm: '' as IntlString,
     ConvertToPrivate: '' as IntlString,
     DirectNotificationTitle: '' as IntlString,
-    DirectNotificationBody: '' as IntlString,
-    AddCommentPlaceholder: '' as IntlString
+    DirectNotificationBody: '' as IntlString
   },
   resolver: {
     Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>

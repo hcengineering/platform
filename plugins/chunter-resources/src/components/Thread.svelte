@@ -15,14 +15,14 @@
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import chunter, { type ChunterSpace, type Message, type ThreadMessage } from '@hcengineering/chunter'
+  import { type ChunterSpace, type Message, type ThreadMessage } from '@hcengineering/chunter'
   import contact, { Person, PersonAccount, getName } from '@hcengineering/contact'
-  import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
+  import { personByIdStore } from '@hcengineering/contact-resources'
   import core, { FindOptions, IdMap, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
-  import plugin from '../plugin'
+  import chunter from '../plugin'
   import ChannelPresenter from './ChannelPresenter.svelte'
   import DmPresenter from './DmPresenter.svelte'
   import MsgView from './Message.svelte'
@@ -30,12 +30,9 @@
   const client = getClient()
   const query = createQuery()
   const messageQuery = createQuery()
-  const currentPerson = (getCurrentAccount() as PersonAccount)?.person
-  const currentEmployee = currentPerson !== undefined ? $personByIdStore.get(currentPerson) : undefined
 
   export let savedAttachmentsIds: Ref<Attachment>[]
   export let _id: Ref<Message>
-  export let showHeader = true
   let parent: Message | undefined
   let commentId = generateId() as Ref<ThreadMessage>
 
@@ -54,7 +51,7 @@
 
   function updateQuery (id: Ref<Message>) {
     messageQuery.query(
-      plugin.class.Message,
+      chunter.class.Message,
       {
         _id: id
       },
@@ -80,7 +77,7 @@
       options.limit = 4
     }
     query.query(
-      plugin.class.ThreadMessage,
+      chunter.class.ThreadMessage,
       {
         attachedTo: id
       },
@@ -125,11 +122,11 @@
     const { message, attachments } = event.detail
     const me = getCurrentAccount()._id
     await client.createDoc(
-      plugin.class.ThreadMessage,
+      chunter.class.ThreadMessage,
       parent.space,
       {
         attachedTo: _id,
-        attachedToClass: plugin.class.Message,
+        attachedToClass: chunter.class.Message,
         collection: 'repliesCount',
         content: message,
         createBy: me,
@@ -144,29 +141,27 @@
   let comments: ThreadMessage[] = []
 
   async function getChannel (_id: Ref<ChunterSpace>): Promise<ChunterSpace | undefined> {
-    return await client.findOne(plugin.class.ChunterSpace, { _id })
+    return await client.findOne(chunter.class.ChunterSpace, { _id })
   }
   let loading = false
 </script>
 
-<div class="flex-col ml-4 mt-4 flex-no-shrink">
-  {#if showHeader && parent}
+<div class="flex-col ml-8 mt-4 flex-no-shrink">
+  {#if parent}
     {#await getChannel(parent.space) then channel}
-      {#if channel?._class === plugin.class.Channel}
+      {#if channel?._class === chunter.class.Channel}
         <ChannelPresenter value={channel} />
       {:else if channel}
         <DmPresenter value={channel} />
       {/if}
     {/await}
-    <div class="text-sm">
-      {#await getParticipants(comments, parent, $personByIdStore) then participants}
-        {participants.join(', ')}
-        <Label label={plugin.string.AndYou} params={{ participants: participants.length }} />
-      {/await}
-    </div>
+    {#await getParticipants(comments, parent, $personByIdStore) then participants}
+      {participants.join(', ')}
+      <Label label={chunter.string.AndYou} params={{ participants: participants.length }} />
+    {/await}
   {/if}
 </div>
-<div class="flex-col content mt-2 flex-no-shrink">
+<div class="flex-col content flex-no-shrink">
   {#if parent}
     <MsgView message={parent} thread {savedAttachmentsIds} />
     {#if total > comments.length}
@@ -177,33 +172,33 @@
           showAll = true
         }}
       >
-        <Label label={plugin.string.ShowMoreReplies} params={{ count: total - comments.length }} />
+        <Label label={chunter.string.ShowMoreReplies} params={{ count: total - comments.length }} />
       </div>
     {/if}
     {#each comments as comment (comment._id)}
       <MsgView message={comment} thread {savedAttachmentsIds} />
     {/each}
-    <div class="flex mr-4 ml-4 pb-4 mt-2 clear-mins">
-      <div class="min-w-6">
-        <Avatar size="x-small" avatar={currentEmployee?.avatar} name={currentEmployee?.name} />
-      </div>
-      <div class="ml-2 w-full">
-        <AttachmentRefInput
-          space={parent.space}
-          _class={plugin.class.ThreadMessage}
-          objectId={commentId}
-          placeholder={chunter.string.AddCommentPlaceholder}
-          on:message={onMessage}
-          bind:loading
-        />
-      </div>
+    <div class="mr-4 ml-4 pb-4 mt-2 clear-mins">
+      <AttachmentRefInput
+        space={parent.space}
+        _class={chunter.class.ThreadMessage}
+        objectId={commentId}
+        on:message={onMessage}
+        bind:loading
+      />
     </div>
   {/if}
 </div>
+<div class="min-h-4 max-h-4 h-4 flex-no-shrink" />
 
 <style lang="scss">
   .content {
     overflow: hidden;
+    margin: 1rem 1rem 0;
+    padding-top: 0.5rem;
+    background-color: var(--theme-list-row-color);
+    border: 1px solid var(--theme-divider-color);
+    border-radius: 0.75rem;
   }
 
   .label:hover {

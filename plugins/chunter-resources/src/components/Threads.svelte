@@ -54,12 +54,9 @@
     <span class="ac-header__title"><Label label={chunter.string.Threads} /></span>
   </div>
 </div>
-
 <Scroller>
   {#each threads as thread, i (thread)}
-    <div class="ml-4 mr-4">
-      <Thread _id={thread} {savedAttachmentsIds} />
-    </div>
+    <Thread _id={thread} {savedAttachmentsIds} />
     {#if i < threads.length - 1}
       <div class="antiDivider" />
     {/if}

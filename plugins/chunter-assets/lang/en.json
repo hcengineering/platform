@@ -78,7 +78,6 @@
     "YouHaveJoinedTheConversation": "You have joined the conversation",
     "NoMessages": "There are no messages yet",
     "DirectNotificationTitle": "{senderName}",
-    "DirectNotificationBody": "{message}",
-    "AddCommentPlaceholder": "Add comment..."
+    "DirectNotificationBody": "{message}"
   }
 }
