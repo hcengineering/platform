@@ -9,6 +9,7 @@ export const InlinePopupExtension: Extension<BubbleMenuOptions> = BubbleMenu.ext
       element: null,
       tippyOptions: {
         maxWidth: '38rem',
+        zIndex: 500,
         appendTo: () => document.body
       }
     }
