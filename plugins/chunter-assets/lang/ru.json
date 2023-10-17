@@ -78,6 +78,7 @@
     "YouHaveJoinedTheConversation": "Вы присоединились к диалогу",
     "NoMessages": "Сообщений пока нет",
     "DirectNotificationTitle": "{senderName}",
-    "DirectNotificationBody": "{message}"
+    "DirectNotificationBody": "{message}",
+    "AddCommentPlaceholder": "Добавить комментарий..."
   }
 }
