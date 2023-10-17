@@ -53,6 +53,7 @@ class TSessionManager implements SessionManager {
   checkInterval: any
 
   sessions: Map<string, { session: Session, socket: ConnectionSocket }> = new Map()
+  reconnectIds: Set<string> = new Set()
 
   maintenanceTimer: any
   timeMinutes = 0
@@ -320,6 +321,11 @@ class TSessionManager implements SessionManager {
       }
       this.sessions.delete(ws.id)
       workspace.sessions.delete(sessionRef.session.sessionId)
+      this.reconnectIds.add(sessionRef.session.sessionId)
+
+      setTimeout(() => {
+        this.reconnectIds.delete(sessionRef.session.sessionId)
+      }, 3000)
       try {
         sessionRef.socket.close()
       } catch (err) {
@@ -331,7 +337,7 @@ class TSessionManager implements SessionManager {
         await this.setStatus(ctx, sessionRef.session, false)
       }
       if (!workspace.upgrade) {
-        // Wait 10 second for new client to appear before closing workspace.
+        // Wait few second's for new client to appear before closing workspace.
         if (workspace.sessions.size === 0) {
           setTimeout(() => {
             void this.performWorkspaceCloseCheck(workspace, workspaceId, wsid)
@@ -501,7 +507,12 @@ class TSessionManager implements SessionManager {
               this.sessions.size
             )
           }
-          const helloResponse: HelloResponse = { id: -1, result: 'hello', binary: service.binaryResponseMode }
+          const helloResponse: HelloResponse = {
+            id: -1,
+            result: 'hello',
+            binary: service.binaryResponseMode,
+            reconnect: this.reconnectIds.has(service.sessionId)
+          }
           await ws.send(ctx, helloResponse, false, false)
           return
         }

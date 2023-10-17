@@ -16,12 +16,12 @@
   import { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { ActionContext } from '@hcengineering/presentation'
-  import { Issue, Project } from '@hcengineering/tracker'
+  import { Issue } from '@hcengineering/tracker'
   import { AnyComponent, AnySvelteComponent, registerFocus } from '@hcengineering/ui'
   import { ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { List, ListSelectionProvider, SelectDirection, selectionStore } from '@hcengineering/view-resources'
-  import tracker from '../../../plugin'
   import { createEventDispatcher } from 'svelte'
+  import tracker from '../../../plugin'
 
   export let query: DocumentQuery<Issue> | undefined = undefined
   export let viewlet: Viewlet
@@ -30,9 +30,6 @@
   export let compactMode: boolean = false
   export let configurations: Record<Ref<Class<Doc>>, Viewlet['config']> = {}
   export let preference: ViewletPreference[] = []
-
-  // Extra properties
-  export let projects: Map<Ref<Project>, Project> | undefined
 
   let list: List
 
@@ -87,7 +84,6 @@
     {configurations}
     {query}
     flatHeaders={true}
-    props={{ projects }}
     {disableHeader}
     {createItemDialog}
     {createItemDialogProps}

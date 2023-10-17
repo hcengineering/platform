@@ -13,22 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery } from '@hcengineering/presentation'
-  import { Project, Issue } from '@hcengineering/tracker'
-  import { Spinner, IconClose, Button } from '@hcengineering/ui'
+  import { Issue, Project } from '@hcengineering/tracker'
+  import { Button, IconClose, Spinner } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import tracker from '../../plugin'
   import { getIssueId } from '../../issues'
+  import tracker from '../../plugin'
+  import { activeProjects } from '../../utils'
   import PriorityRefPresenter from './PriorityRefPresenter.svelte'
 
   export let issue: Issue
 
   const dispatch = createEventDispatcher()
-  const spaceQuery = createQuery()
 
   let project: Project | undefined
 
-  $: spaceQuery.query(tracker.class.Project, { _id: issue.space }, (res) => ([project] = res))
+  $: project = $activeProjects.get(issue.space)
   $: issueId = project && getIssueId(project, issue)
 </script>
 

@@ -31,7 +31,7 @@
     calendar.class.ExternalCalendar,
     {
       createdBy: getCurrentAccount()._id,
-      externarUser: integration.value
+      externalUser: integration.value
     },
     (res) => (calendars = res)
   )

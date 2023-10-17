@@ -8,6 +8,7 @@ import type { AnySvelteComponent } from '@hcengineering/ui'
 export interface TextEditorHandler {
   insertText: (html: string) => void
   insertTemplate: (name: string, html: string) => void
+  focus: () => void
 }
 /**
  * @public

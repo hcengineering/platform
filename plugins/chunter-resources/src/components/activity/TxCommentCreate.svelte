@@ -26,6 +26,7 @@
   export let tx: TxCreateDoc<Comment>
   export let value: Comment
   export let edit: boolean = false
+  export let boundary: HTMLElement | undefined = undefined
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -89,15 +90,16 @@
       content={value.message}
       on:message={onMessage}
       showSend={false}
+      {boundary}
     />
-    <div class="flex-row-reverse gap-2 reverse">
+    <div class="flex-row-center gap-2 justify-end mt-2">
       <Button
         label={chunter.string.EditCancel}
         on:click={() => {
           dispatch('close', false)
         }}
       />
-      <Button label={chunter.string.EditUpdate} on:click={() => refInput.submit()} />
+      <Button label={chunter.string.EditUpdate} accent on:click={() => refInput.submit()} />
     </div>
   {:else}
     <MessageViewer message={value.message} />

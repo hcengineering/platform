@@ -48,7 +48,6 @@ export interface Session {
   // Session restore information
   sessionId: string
   sessionInstanceId?: string
-  closeTimeout?: any
   workspaceClosed?: boolean
 
   requests: Map<string, SessionRequest>

@@ -57,12 +57,21 @@ async function updateSubIssues (
  * @public
  */
 export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
-  const issueName = await issueTextPresenter(doc, control)
   const issue = doc as Issue
+  const issueId = await getIssueId(issue, control)
   const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.name}/${trackerId}/${issueName}`
+  const path = `${workbenchId}/${control.workspace.name}/${trackerId}/${issueId}`
   const link = concatLink(front, path)
-  return `<a href="${link}">${issueName}</a> ${issue.title}`
+  return `<a href="${link}">${issueId}</a> ${issue.title}`
+}
+
+/**
+ * @public
+ */
+export async function getIssueId (doc: Issue, control: TriggerControl): Promise<string> {
+  const issue = doc
+  const project = (await control.findAll(tracker.class.Project, { _id: issue.space }))[0]
+  return `${project?.identifier ?? '?'}-${issue.number}`
 }
 
 /**
@@ -70,10 +79,9 @@ export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Pr
  */
 export async function issueTextPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const issue = doc as Issue
-  const project = (await control.findAll(tracker.class.Project, { _id: issue.space }))[0]
-  const issueName = `${project?.identifier ?? '?'}-${issue.number}`
+  const issueId = await getIssueId(issue, control)
 
-  return `${issueName} ${issue.title}`
+  return `${issueId} ${issue.title}`
 }
 
 function isSamePerson (control: TriggerControl, assignee: Ref<Person>, target: Ref<Account>): boolean {
@@ -262,6 +270,7 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
       ]
       const [currentIssue] = await control.findAll(tracker.class.Issue, { _id: parentTx.objectId }, { limit: 1 })
       currentIssue.reportedTime += ccud.attributes.value
+      currentIssue.remainingTime = Math.max(0, currentIssue.estimation - currentIssue.reportedTime)
       updateIssueParentEstimations(currentIssue, res, control, currentIssue.parents, currentIssue.parents)
       return res
     }
@@ -286,6 +295,7 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
           )
           currentIssue.reportedTime -= doc.value
           currentIssue.reportedTime += upd.operations.value
+          currentIssue.remainingTime = Math.max(0, currentIssue.estimation - currentIssue.reportedTime)
         }
 
         updateIssueParentEstimations(currentIssue, res, control, currentIssue.parents, currentIssue.parents)
@@ -309,6 +319,7 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
         ]
         const [currentIssue] = await control.findAll(tracker.class.Issue, { _id: parentTx.objectId }, { limit: 1 })
         currentIssue.reportedTime -= doc.value
+        currentIssue.remainingTime = Math.max(0, currentIssue.estimation - currentIssue.reportedTime)
         updateIssueParentEstimations(currentIssue, res, control, currentIssue.parents, currentIssue.parents)
         return res
       }
@@ -369,12 +380,23 @@ async function doIssueUpdate (
 
   if (
     Object.prototype.hasOwnProperty.call(updateTx.operations, 'estimation') ||
-    Object.prototype.hasOwnProperty.call(updateTx.operations, 'reportedTime')
+    Object.prototype.hasOwnProperty.call(updateTx.operations, 'reportedTime') ||
+    (Object.prototype.hasOwnProperty.call(updateTx.operations, '$inc') &&
+      Object.prototype.hasOwnProperty.call(updateTx.operations.$inc, 'reportedTime')) ||
+    (Object.prototype.hasOwnProperty.call(updateTx.operations, '$dec') &&
+      Object.prototype.hasOwnProperty.call(updateTx.operations.$inc, 'reportedTime'))
   ) {
     const issue = await getCurrentIssue()
 
     issue.estimation = updateTx.operations.estimation ?? issue.estimation
     issue.reportedTime = updateTx.operations.reportedTime ?? issue.reportedTime
+    issue.remainingTime = Math.max(0, issue.estimation - issue.reportedTime)
+
+    res.push(
+      control.txFactory.createTxUpdateDoc(tracker.class.Issue, issue.space, issue._id, {
+        remainingTime: issue.remainingTime
+      })
+    )
 
     updateIssueParentEstimations(issue, res, control, issue.parents, issue.parents)
   }

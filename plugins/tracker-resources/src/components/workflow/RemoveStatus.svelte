@@ -1,12 +1,13 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
-  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+  import presentation, { getClient } from '@hcengineering/presentation'
   import { getStates } from '@hcengineering/task'
   import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import { Button, Label, SelectPopup, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { StatusPresenter, statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
+  import { activeProjects } from '../../utils'
   import IssueStatusIcon from '../issues/IssueStatusIcon.svelte'
 
   export let projectId: Ref<Project>
@@ -17,10 +18,7 @@
 
   let _space: Project | undefined = undefined
 
-  const query = createQuery()
-  $: query.query(tracker.class.Project, { space: projectId }, (result) => {
-    _space = result[0]
-  })
+  $: _space = $activeProjects.get(projectId)
 
   const client = getClient()
 

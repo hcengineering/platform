@@ -20,14 +20,16 @@
     deviceOptionsStore as deviceInfo,
     getSeparators,
     saveSeparator,
-    SeparatedElement
+    SeparatedElement,
+    separatorsStore
   } from '..'
 
   export let prevElementSize: SeparatedItem | undefined = undefined
   export let nextElementSize: SeparatedItem | undefined = undefined
   export let separatorSize: number = 1
-  export let color: string = 'var(--theme-navpanel-border)'
+  export let color: string = 'var(--theme-divider-color)'
   export let name: string
+  export let disabledWhen: string[] = []
   export let index: number // index = -1 ; for custom sizes without saving to a localStorage
 
   const direction: 'horizontal' | 'vertical' = 'horizontal'
@@ -52,6 +54,7 @@
     maxEnd: -1
   }
   let parentSize: { start: number; end: number; size: number } | null = null
+  let disabled: boolean = false
 
   const fetchSeparators = (): void => {
     separators = getSeparators(name)
@@ -384,9 +387,14 @@
       mounted = true
     }
     document.addEventListener('resize', checkSizes)
+    if ($separatorsStore.filter((f) => f === name).length === 0) $separatorsStore = [...$separatorsStore, name]
+    disabled = $separatorsStore.filter((f) => disabledWhen.findIndex((d) => d === f) !== -1).length > 0
   })
   onDestroy(() => {
     document.removeEventListener('resize', checkSizes)
+    if ($separatorsStore.filter((f) => f === name).length > 0) {
+      $separatorsStore = $separatorsStore.filter((f) => f !== name)
+    }
   })
   afterUpdate(() => {
     if (mounted) checkSibling()
@@ -397,6 +405,7 @@
   bind:this={separator}
   style:--separator-size={`${separatorSize}px`}
   style:background-color={color}
+  style:pointer-events={disabled ? 'none' : 'all'}
   class="antiSeparator {direction}"
   class:hovered={isSeparate}
   data-size={separatorSize}
@@ -412,7 +421,7 @@
     &::before {
       position: absolute;
       content: '';
-      z-index: 10;
+      z-index: 402;
     }
     &::after {
       background-color: var(--theme-primary-default);

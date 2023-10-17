@@ -19,7 +19,6 @@ import jsonVersion from './version.json'
 import { Builder } from '@hcengineering/model'
 import { activityId, createModel as activityModel } from '@hcengineering/model-activity'
 import { attachmentId, createModel as attachmentModel } from '@hcengineering/model-attachment'
-import { automationId, createModel as automationModel } from '@hcengineering/model-automation'
 import bitrix, { bitrixId, createModel as bitrixModel } from '@hcengineering/model-bitrix'
 import board, { boardId, createModel as boardModel } from '@hcengineering/model-board'
 import calendar, { calendarId, createModel as calendarModel } from '@hcengineering/model-calendar'
@@ -260,7 +259,6 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         classFilter: defaultFilter
       }
     ],
-    [automationModel, automationId],
     [supportModel, supportId],
 
     [serverCoreModel, serverCoreId],

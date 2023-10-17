@@ -60,7 +60,7 @@
     }
   }
 
-  $: {
+  $: if (_space === undefined) {
     if (funnels.find((it) => it._id === _space) === undefined) {
       _space = funnels[0]?._id
     }

@@ -21,10 +21,12 @@
 
   export let value: Ref<Component> | AggregateValue | undefined
   export let kind: 'list' | undefined = undefined
+  export let disabled: boolean = false
+  export let accent: boolean = false
 
   $: componentValue = $componentStore.get(
     typeof value === 'string' ? value : (value?.values?.[0]?._id as Ref<Component>)
   )
 </script>
 
-<ComponentPresenter value={componentValue} {kind} on:accent-color />
+<ComponentPresenter value={componentValue} {kind} {disabled} {accent} on:accent-color />

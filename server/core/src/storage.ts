@@ -32,6 +32,7 @@ import core, {
   generateId,
   Hierarchy,
   IndexingUpdateEvent,
+  LoadModelResponse,
   MeasureContext,
   Mixin,
   ModelDb,
@@ -54,15 +55,17 @@ import core, {
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { getResource } from '@hcengineering/platform'
+import crypto from 'node:crypto'
 import { DbAdapter, DbAdapterConfiguration, TxAdapter } from './adapter'
+import { createContentAdapter } from './content'
 import { FullTextIndex } from './fulltext'
 import { FullTextIndexPipeline } from './indexer'
 import { FullTextPipelineStage } from './indexer/types'
 import serverCore from './plugin'
 import { Triggers } from './triggers'
 import type {
-  ContentAdapterFactory,
   ContentTextAdapter,
+  ContentTextAdapterConfiguration,
   FullTextAdapter,
   FullTextAdapterFactory,
   ObjectDDParticipant,
@@ -94,10 +97,8 @@ export interface DbConfiguration {
     url: string
     stages: FullTextPipelineStageFactory
   }
-  contentAdapter: {
-    factory: ContentAdapterFactory
-    url: string
-  }
+  contentAdapters: Record<string, ContentTextAdapterConfiguration>
+  defaultContentAdapter: string
   storageFactory?: () => MinioService
 }
 
@@ -106,6 +107,8 @@ class TServerStorage implements ServerStorage {
   hierarchy: Hierarchy
 
   scopes = new Map<string, Promise<any>>()
+
+  hashes!: string[]
 
   constructor (
     private readonly _domains: Record<string, string>,
@@ -124,6 +127,8 @@ class TServerStorage implements ServerStorage {
   ) {
     this.hierarchy = hierarchy
     this.fulltext = indexFactory(this)
+
+    this.setModel(model)
   }
 
   async close (): Promise<void> {
@@ -318,7 +323,41 @@ class TServerStorage implements ServerStorage {
     return result
   }
 
-  async loadModel (lastModelTx: Timestamp): Promise<Tx[]> {
+  private addModelTx (tx: Tx): void {
+    this.model.push(tx)
+    const h = crypto.createHash('sha1')
+    h.update(this.hashes[this.hashes.length - 1])
+    h.update(JSON.stringify(tx))
+    this.hashes.push(h.digest('hex'))
+  }
+
+  private setModel (model: Tx[]): void {
+    let prev = ''
+    this.hashes = model.map((it) => {
+      const h = crypto.createHash('sha1')
+      h.update(prev)
+      h.update(JSON.stringify(it))
+      prev = h.digest('hex')
+      return prev
+    })
+  }
+
+  async loadModel (lastModelTx: Timestamp, hash?: string): Promise<Tx[] | LoadModelResponse> {
+    if (hash !== undefined) {
+      const pos = this.hashes.indexOf(hash)
+      if (pos >= 0) {
+        return {
+          full: false,
+          hash: this.hashes[this.hashes.length - 1],
+          transactions: this.model.slice(pos + 1)
+        }
+      }
+      return {
+        full: true,
+        hash: this.hashes[this.hashes.length - 1],
+        transactions: [...this.model]
+      }
+    }
     return this.model.filter((it) => it.modifiedOn > lastModelTx)
   }
 
@@ -662,11 +701,12 @@ class TServerStorage implements ServerStorage {
         }
       }
       for (const tx of modelTx) {
+        this.addModelTx(tx)
+
         // maintain hierarchy and triggers
         this.hierarchy.tx(tx)
         await this.triggers.tx(tx)
         await this.modelDb.tx(tx)
-        this.model.push(tx)
       }
       await ctx.with('domain-tx', {}, async () => await this.getAdapter(DOMAIN_TX).tx(...txToStore))
       result = await ctx.with('apply', {}, (ctx) => this.routeTx(ctx, removedMap, ...txToProcess))
@@ -809,12 +849,12 @@ export async function createServerStorage (
 
   const metrics = conf.metrics.newChild('server-storage', {})
 
-  const contentAdapter = await conf.contentAdapter.factory(
-    conf.contentAdapter.url,
+  const contentAdapter = await createContentAdapter(
+    conf.contentAdapters,
+    conf.defaultContentAdapter,
     conf.workspace,
     metrics.newChild('content', {})
   )
-
   console.timeLog(conf.workspace.name, 'finish content adapter')
 
   const defaultAdapter = adapters.get(conf.defaultAdapter)

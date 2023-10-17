@@ -83,11 +83,13 @@
     savedAttachmentsIds = res.map((r) => r.attachedTo)
   })
   let loading = false
+  let content: HTMLElement
 </script>
 
 <PinnedMessages {space} {pinnedIds} />
 <Channel
   bind:isScrollForced
+  bind:content
   {space}
   on:openThread={(e) => {
     openThread(e.detail)
@@ -97,7 +99,7 @@
   {savedAttachmentsIds}
 />
 <div class="reference">
-  <AttachmentRefInput bind:loading {space} {_class} objectId={_id} on:message={onMessage} />
+  <AttachmentRefInput bind:loading {space} {_class} objectId={_id} boundary={content} on:message={onMessage} />
 </div>
 
 <style lang="scss">

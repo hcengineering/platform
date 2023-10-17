@@ -13,19 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import { Attachment } from '@hcengineering/attachment'
   import { Account, Class, Doc, generateId, Ref, Space, toIdMap } from '@hcengineering/core'
   import { IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
-  import { StyledTextBox } from '@hcengineering/text-editor'
-  import { IconSize, updatePopup } from '@hcengineering/ui'
-  import { createEventDispatcher, onDestroy } from 'svelte'
+  import textEditor, { AttachIcon, type RefAction, StyledTextBox } from '@hcengineering/text-editor'
+  import { ButtonSize, IconSize, Loading, updatePopup } from '@hcengineering/ui'
+  import { ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
   import attachment from '../plugin'
   import { deleteFile, uploadFile } from '../utils'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
   import AttachmentPreview from './AttachmentPreview.svelte'
-  import { ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
-  import Loading from '@hcengineering/ui/src/components/Loading.svelte'
 
   export let objectId: Ref<Doc> | undefined = undefined
   export let space: Ref<Space> | undefined = undefined
@@ -35,7 +34,7 @@
   export let alwaysEdit = false
   export let showButtons = false
   export let kind: 'normal' | 'emphasized' | 'indented' = 'normal'
-  export let buttonSize: IconSize = 'medium'
+  export let buttonSize: ButtonSize = 'medium'
   export let formatButtonSize: IconSize = 'small'
   export let maxHeight: 'max' | 'card' | 'limited' | string = 'max'
   export let focusable: boolean = false
@@ -48,6 +47,7 @@
   export let isScrollable = true
 
   export let useDirectAttachDelete = false
+  export let boundary: HTMLElement | undefined = undefined
 
   let progress = false
 
@@ -83,7 +83,7 @@
   export function setContent (data: string): void {
     refInput.setContent(data)
   }
-  export function attach (): void {
+  export function handleAttach (): void {
     inputFile.click()
   }
 
@@ -91,6 +91,7 @@
     refInput.submit()
   }
   let refInput: StyledTextBox
+  let extraActions: RefAction[] = []
 
   let inputFile: HTMLInputElement
   let saved = false
@@ -345,6 +346,19 @@
     values: attachments.size === 0 ? true : attachments
   })
 
+  $: if (enableAttachments) {
+    extraActions = [
+      {
+        label: textEditor.string.Attach,
+        icon: AttachIcon,
+        action: handleAttach,
+        order: 1001
+      }
+    ]
+  } else {
+    extraActions = []
+  }
+
   let element: HTMLElement
   let progressItems: Ref<Doc>[] = []
 </script>
@@ -376,7 +390,6 @@
       {placeholder}
       {alwaysEdit}
       {showButtons}
-      hideAttachments={!enableAttachments}
       {buttonSize}
       {formatButtonSize}
       {maxHeight}
@@ -384,14 +397,13 @@
       {kind}
       {enableBackReferences}
       {isScrollable}
+      {boundary}
+      {extraActions}
       on:changeSize
       on:changeContent
       on:blur
       on:focus
       on:open-document
-      on:attach={() => {
-        attach()
-      }}
       attachFile={async (file) => {
         return createAttachment(file)
       }}

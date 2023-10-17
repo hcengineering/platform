@@ -1324,26 +1324,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/automation",
-      "projectFolder": "plugins/automation",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/automation-resources",
-      "projectFolder": "plugins/automation-resources",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/automation-assets",
-      "projectFolder": "plugins/automation-assets",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/model-automation",
-      "projectFolder": "models/automation",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/hr",
       "projectFolder": "plugins/hr",
       "shouldPublish": true

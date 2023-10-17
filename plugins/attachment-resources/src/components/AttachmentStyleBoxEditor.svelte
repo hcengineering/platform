@@ -27,6 +27,7 @@
   export let key: KeyedAttribute
   export let placeholder: IntlString
   export let focusIndex = -1
+  export let boundary: HTMLElement | undefined = undefined
   const client = getClient()
 
   const queryClient = createQuery()
@@ -125,6 +126,7 @@
     focusable
     bind:content={description}
     {placeholder}
+    {boundary}
     on:open-document={async (event) => {
       save(object, description)
       const doc = await client.findOne(event.detail._class, { _id: event.detail._id })

@@ -52,9 +52,9 @@
   export let isFullSize = false
   export let embedded = false
   export let contentClasses: string | undefined = undefined
+  export let content: HTMLElement | undefined | null = undefined
 
   let lastHref: string
-  let scroll: HTMLDivElement
   let timer: any
   let lastScrollHeight: number = -1
   let count: number = 0
@@ -65,19 +65,19 @@
   const startScrollHeightCheck = () => {
     clearTimeout(timer)
     timer = setTimeout(() => {
-      if (scroll == null) {
+      if (content == null) {
         return
       }
-      if (lastScrollHeight <= scroll.scrollHeight && count <= waitCount) {
-        count = lastScrollHeight < scroll.scrollHeight ? 0 : count + 1
-        lastScrollHeight = scroll.scrollHeight
+      if (lastScrollHeight <= content?.scrollHeight && count <= waitCount) {
+        count = lastScrollHeight < content.scrollHeight ? 0 : count + 1
+        lastScrollHeight = content.scrollHeight
 
         startScrollHeightCheck()
       } else {
         lastScrollHeight = -1
         count = 0
 
-        scroll.scrollTop = $PanelScrollTop[window.location.href]
+        content.scrollTop = $PanelScrollTop[window.location.href]
         $PanelScrollTop[window.location.href] = 0
         lastHref = window.location.href
       }
@@ -195,7 +195,7 @@
   </svelte:fragment>
 
   {#if $deviceInfo.isMobile}
-    <div class="popupPanel-body__mobile-content clear-mins" class:max={useMaxWidth}>
+    <div bind:this={content} class="popupPanel-body__mobile-content clear-mins" class:max={useMaxWidth}>
       <slot />
       {#if !withoutActivity}
         {#key object._id}
@@ -208,7 +208,7 @@
     </div>
   {:else}
     <Scroller
-      bind:divScroll={scroll}
+      bind:divScroll={content}
       on:divScrollTop={(event) => {
         if (lastHref === window.location.href && event && event.detail !== $PanelScrollTop[lastHref]) {
           $PanelScrollTop[lastHref] = event.detail
@@ -221,7 +221,13 @@
           {#key object._id}
             <Component
               is={activity.component.Activity}
-              props={{ object, showCommenInput: !withoutInput, shouldScroll: embedded, focusIndex: 1000 }}
+              props={{
+                object,
+                showCommenInput: !withoutInput,
+                shouldScroll: embedded,
+                focusIndex: 1000,
+                boundary: content
+              }}
             />
           {/key}
         {/if}

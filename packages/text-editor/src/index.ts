@@ -27,19 +27,32 @@ export { default as StyledTextArea } from './components/StyledTextArea.svelte'
 export { default as StyledTextBox } from './components/StyledTextBox.svelte'
 export { default as StyledTextEditor } from './components/StyledTextEditor.svelte'
 export { default as TextEditor } from './components/TextEditor.svelte'
+export { default as TextEditorStyleToolbar } from './components/TextEditorStyleToolbar.svelte'
+export { default as AttachIcon } from './components/icons/Attach.svelte'
 export { default } from './plugin'
 export * from './types'
 
 export {
   IsEmptyContentExtension,
-  IsEmptyContentOptions,
-  IsEmptyContentStorage
+  type IsEmptyContentOptions,
+  type IsEmptyContentStorage
 } from './components/extension/isEmptyContent'
 export {
   NodeHighlightExtension,
-  NodeHighlightExtensionOptions,
-  NodeHighlightType
+  NodeHighlightType,
+  type NodeHighlightExtensionOptions
 } from './components/extension/nodeHighlight'
-export { NodeUuidCommands, NodeUuidExtension, NodeUuidOptions, NodeUuidStorage } from './components/extension/nodeUuid'
+export {
+  NodeUuidExtension,
+  type NodeUuidCommands,
+  type NodeUuidOptions,
+  type NodeUuidStorage
+} from './components/extension/nodeUuid'
+export { InlinePopupExtension } from './components/extension/inlinePopup'
+export {
+  InlineStyleToolbarExtension,
+  type InlineStyleToolbarOptions,
+  type InlineStyleToolbarStorage
+} from './components/extension/inlineStyleToolbar'
 
 export { textEditorId }

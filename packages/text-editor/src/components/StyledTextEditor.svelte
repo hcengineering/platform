@@ -13,25 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Asset, getResource, IntlString } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
-  import { AnySvelteComponent, EmojiPopup, IconEmoji, IconSize, Scroller, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import textEditorPlugin from '../plugin'
-  import { RefInputAction, RefInputActionItem, TextEditorHandler, TextFormatCategory } from '../types'
-  import Attach from './icons/Attach.svelte'
   import { AnyExtension, mergeAttributes } from '@tiptap/core'
-  import StyleButton from './StyleButton.svelte'
-  import TextEditor from './TextEditor.svelte'
   import { Node as ProseMirrorNode } from '@tiptap/pm/model'
+  import { getResource, IntlString } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
+  import { Button, ButtonSize, IconSize, Scroller } from '@hcengineering/ui'
+  import textEditorPlugin from '../plugin'
+  import { RefAction, RefInputActionItem, TextEditorHandler, TextFormatCategory } from '../types'
+  import { generateDefaultActions } from './editor/actions'
+  import TextEditor from './TextEditor.svelte'
 
   const dispatch = createEventDispatcher()
 
   export let content: string = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let showButtons: boolean = true
-  export let hideAttachments: boolean = false
-  export let buttonSize: IconSize = 'medium'
+  export let buttonSize: ButtonSize = 'medium'
   export let formatButtonSize: IconSize = 'small'
   export let isScrollable: boolean = true
   export let focusable: boolean = false
@@ -40,6 +38,8 @@
   export let full = false
   export let extensions: AnyExtension[] = []
   export let editorAttributes: { [name: string]: string } = {}
+  export let extraActions: RefAction[] = []
+  export let boundary: HTMLElement | undefined = undefined
   export let textFormatCategories: TextFormatCategory[] = [
     TextFormatCategory.Heading,
     TextFormatCategory.TextDecoration,
@@ -50,38 +50,30 @@
     TextFormatCategory.Table
   ]
 
-  let textEditor: TextEditor
+  let textEditor: TextEditor | undefined = undefined
 
   let contentHeight: number
 
   export function submit (): void {
-    textEditor.submit()
+    textEditor?.submit()
   }
   export function focus (): void {
-    textEditor.focus()
+    textEditor?.focus()
   }
   export function isEditable (): boolean {
-    return textEditor.isEditable()
+    return textEditor?.isEditable() ?? false
   }
   export function setEditable (editable: boolean): void {
-    textEditor.setEditable(editable)
+    textEditor?.setEditable(editable)
   }
   export function getContent (): string {
     return content
   }
   export function setContent (data: string): void {
-    textEditor.setContent(data)
+    textEditor?.setContent(data)
   }
   export function insertText (text: string): void {
-    textEditor.insertText(text)
-  }
-  export function catHandleTab (): boolean {
-    return (
-      textEditor.checkIsActive('bulletList') ||
-      textEditor.checkIsActive('orderedList') ||
-      textEditor.checkIsActive('code') ||
-      textEditor.checkIsActive('codeBlock')
-    )
+    textEditor?.insertText(text)
   }
 
   $: varsStyle =
@@ -93,44 +85,22 @@
           ? 'max-content'
           : maxHeight
 
-  interface RefAction {
-    label: IntlString
-    icon: Asset | AnySvelteComponent
-    action: RefInputAction
-    order: number
-    hidden?: boolean
-  }
-  const defActions: RefAction[] = [
-    {
-      label: textEditorPlugin.string.Attach,
-      icon: Attach,
-      action: () => {
-        dispatch('attach')
-      },
-      order: 1001
-    },
-    {
-      label: textEditorPlugin.string.Emoji,
-      icon: IconEmoji,
-      action: (element) => {
-        showPopup(
-          EmojiPopup,
-          {},
-          element,
-          (emoji) => {
-            if (!emoji) return
-            textEditor.insertText(emoji)
-            textEditor.focus()
-          },
-          () => {}
-        )
-      },
-      order: 4001
-    }
-  ]
-
   const client = getClient()
-  let actions: RefAction[] = []
+  const editorHandler: TextEditorHandler = {
+    insertText: (text) => {
+      textEditor?.insertText(text)
+    },
+    insertTemplate: (name, text) => {
+      textEditor?.insertText(text)
+      dispatch('template', name)
+    },
+    focus: () => {
+      textEditor?.focus()
+    }
+  }
+  let actions: RefAction[] = generateDefaultActions(editorHandler)
+    .concat(...extraActions)
+    .sort((a, b) => a.order - b.order)
   client.findAll<RefInputActionItem>(textEditorPlugin.class.RefInputActionItem, {}).then(async (res) => {
     const cont: RefAction[] = []
     for (const r of res) {
@@ -141,7 +111,7 @@
         action: await getResource(r.action)
       })
     }
-    actions = defActions.concat(...cont).sort((a, b) => a.order - b.order)
+    actions = actions.concat(...cont).sort((a, b) => a.order - b.order)
   })
 
   const mergedEditorAttributes = mergeAttributes(
@@ -149,15 +119,6 @@
     full ? { class: 'text-editor-view_full-height' } : { class: 'text-editor-view_compact' }
   )
 
-  const editorHandler: TextEditorHandler = {
-    insertText: (text) => {
-      textEditor.insertText(text)
-    },
-    insertTemplate: (name, text) => {
-      textEditor.insertText(text)
-      dispatch('template', name)
-    }
-  }
   function handleAction (a: RefAction, evt?: Event): void {
     a.action(evt?.target as HTMLElement, editorHandler)
   }
@@ -173,7 +134,7 @@
   const buttonsGap = 'small-gap'
 
   $: buttonsHeight =
-    buttonSize === 'large' || buttonSize === 'x-large' || buttonSize === 'full'
+    buttonSize === 'large' || buttonSize === 'x-large'
       ? 'h-6 max-h-6'
       : buttonSize === 'medium'
         ? 'h-5 max-h-5'
@@ -183,7 +144,7 @@
    * @public
    */
   export function removeNode (nde: ProseMirrorNode): void {
-    textEditor.removeNode(nde)
+    textEditor?.removeNode(nde)
   }
 </script>
 
@@ -191,10 +152,11 @@
 <div
   class="ref-container clear-mins"
   class:h-full={full}
+  class:focusable
   tabindex="-1"
   on:click|preventDefault|stopPropagation={() => (needFocus = true)}
 >
-  <div class="textInput" class:focusable>
+  <div class="textInput">
     <div
       bind:clientHeight={contentHeight}
       class="inputMsg"
@@ -215,7 +177,7 @@
             on:content={(ev) => {
               dispatch('message', ev.detail)
               content = ''
-              textEditor.clear()
+              textEditor?.clear()
             }}
             on:blur
             on:focus
@@ -234,11 +196,12 @@
           on:content={(ev) => {
             dispatch('message', ev.detail)
             content = ''
-            textEditor.clear()
+            textEditor?.clear()
           }}
           on:blur
           on:focus
           supportSubmit={false}
+          {boundary}
         />
       {/if}
     </div>
@@ -246,19 +209,21 @@
   {#if showButtons}
     <div class="flex-between">
       <div class="buttons-group {buttonsGap} mt-3">
-        {#each actions.filter((it) => it.hidden !== true) as a}
-          <StyleButton icon={a.icon} size={buttonSize} on:click={(evt) => handleAction(a, evt)} />
+        {#each actions as a}
+          <Button
+            icon={a.icon}
+            iconProps={{ size: buttonSize }}
+            kind="ghost"
+            showTooltip={{ label: a.label }}
+            size={buttonSize}
+            on:click={(evt) => handleAction(a, evt)}
+          />
           {#if a.order % 10 === 1}
             <div class="buttons-divider {buttonsHeight}" />
           {/if}
         {/each}
         <slot />
       </div>
-      {#if $$slots.right}
-        <div class="buttons-group {buttonsGap} mt-3">
-          <slot name="right" />
-        </div>
-      {/if}
     </div>
   {/if}
 </div>
@@ -268,7 +233,6 @@
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    min-height: 1.25rem;
 
     .textInput {
       flex-grow: 1;
@@ -282,7 +246,6 @@
         align-self: stretch;
         width: 100%;
         min-height: 0;
-        color: var(--theme-caption-color);
         background-color: transparent;
 
         &.scrollable {
@@ -300,16 +263,16 @@
           }
         }
       }
+    }
 
-      &.focusable {
-        margin: -0.25rem -0.5rem;
-        padding: 0.25rem 0.5rem;
-        border: 1px solid transparent;
-        border-radius: 0.25rem;
+    &.focusable {
+      border: 0.0625rem solid transparent;
+      border-radius: 0.375rem;
+      margin: -0.25rem -0.5rem;
+      padding: 0.25rem 0.5rem;
 
-        &:focus-within {
-          border-color: var(--primary-edit-border-color);
-        }
+      &:focus-within {
+        border-color: var(--primary-edit-border-color);
       }
     }
   }

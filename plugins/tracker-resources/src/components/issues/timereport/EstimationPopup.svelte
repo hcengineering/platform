@@ -25,6 +25,7 @@
   import SubIssuesEstimations from './SubIssuesEstimations.svelte'
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
   import TimeSpendReports from './TimeSpendReports.svelte'
+  import TimePresenter from './TimePresenter.svelte'
 
   export let format: 'text' | 'password' | 'number'
   export let kind: EditStyle = 'search-style'
@@ -104,6 +105,10 @@
       >
         <EstimationStatsPresenter value={object} estimation={_value} />
       </div>
+      <Label label={tracker.string.RemainingTime} />
+      <div class="ml-2 mr-4">
+        <TimePresenter value={object.remainingTime} />
+      </div>
     </div>
   </svelte:fragment>
 
@@ -112,15 +117,11 @@
   </svelte:fragment>
 
   {#if currentProject}
-    <SubIssuesEstimations issue={object} projects={new Map([[currentProject?._id, currentProject]])} />
+    <SubIssuesEstimations issue={object} />
   {/if}
 
   {#if currentProject}
-    <TimeSpendReports
-      issue={object}
-      projects={new Map([[currentProject?._id, currentProject]])}
-      query={{ attachedTo: { $in: [object._id, ...childIds] } }}
-    />
+    <TimeSpendReports issue={object} query={{ attachedTo: { $in: [object._id, ...childIds] } }} />
   {/if}
   <svelte:fragment slot="buttons">
     <Button

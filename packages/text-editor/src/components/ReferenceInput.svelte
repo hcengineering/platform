@@ -17,14 +17,10 @@
   import { getClient } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,
-    EmojiPopup,
-    Icon,
-    IconEmoji,
-    Spinner,
+    Button,
+    ButtonKind,
     handler,
     registerFocus,
-    showPopup,
-    tooltip,
     deviceOptionsStore as deviceInfo,
     checkAdaptiveMatching
   } from '@hcengineering/ui'
@@ -36,24 +32,28 @@
   import { completionConfig } from './extensions'
   import { EmojiExtension } from './extension/emoji'
   import { IsEmptyContentExtension } from './extension/isEmptyContent'
-  import Attach from './icons/Attach.svelte'
-  import RIMention from './icons/RIMention.svelte'
   import Send from './icons/Send.svelte'
+  import { generateDefaultActions } from './editor/actions'
 
-  const dispatch = createEventDispatcher()
   export let content: string = ''
+  export let showHeader = false
+  export let showActions = true
   export let showSend = true
   export let iconSend: Asset | AnySvelteComponent | undefined = undefined
   export let labelSend: IntlString | undefined = undefined
+  export let kindSend: ButtonKind = 'ghost'
   export let haveAttachment = false
-  export let withoutTopBorder = false
   export let placeholder: IntlString | undefined = undefined
-  export let extraActions: RefAction[] | undefined = undefined
+  export let extraActions: RefAction[] = []
   export let loading: boolean = false
+  export let focusable: boolean = false
+  export let boundary: HTMLElement | undefined = undefined
 
   const client = getClient()
+  const dispatch = createEventDispatcher()
+  const buttonSize = 'medium'
 
-  let textEditor: TextEditor
+  let textEditor: TextEditor | undefined = undefined
 
   let isEmpty = true
 
@@ -64,42 +64,22 @@
   function setContent (content: string) {
     textEditor?.setContent(content)
   }
-  const defActions: RefAction[] = [
-    {
-      label: textEditorPlugin.string.Attach,
-      icon: Attach,
-      action: () => {
-        dispatch('attach')
-      },
-      order: 1001
-    },
-    {
-      label: textEditorPlugin.string.Mention,
-      icon: RIMention,
-      action: () => textEditor.insertText('@'),
-      order: 3000
-    },
-    {
-      label: textEditorPlugin.string.Emoji,
-      icon: IconEmoji,
-      action: (element) => {
-        showPopup(
-          EmojiPopup,
-          {},
-          element,
-          (emoji) => {
-            if (!emoji) return
-            textEditor.insertText(emoji)
-            textEditor.focus()
-          },
-          () => {}
-        )
-      },
-      order: 4001
-    }
-  ]
 
-  let actions: RefAction[] = []
+  const editorHandler: TextEditorHandler = {
+    insertText: (text) => {
+      textEditor?.insertText(text)
+    },
+    insertTemplate: (name, text) => {
+      textEditor?.insertText(text)
+    },
+    focus: () => {
+      textEditor?.focus()
+    }
+  }
+
+  let actions: RefAction[] = generateDefaultActions(editorHandler)
+    .concat(...extraActions)
+    .sort((a, b) => a.order - b.order)
   client.findAll<RefInputActionItem>(textEditorPlugin.class.RefInputActionItem, {}).then(async (res) => {
     const cont: RefAction[] = []
     for (const r of res) {
@@ -110,21 +90,13 @@
         action: await getResource(r.action)
       })
     }
-    actions = defActions.concat(...cont).sort((a, b) => a.order - b.order)
+    actions = actions.concat(...cont).sort((a, b) => a.order - b.order)
   })
 
   export function submit (): void {
-    textEditor.submit()
+    textEditor?.submit()
   }
 
-  const editorHandler: TextEditorHandler = {
-    insertText: (text) => {
-      textEditor.insertText(text)
-    },
-    insertTemplate: (name, text) => {
-      textEditor.insertText(text)
-    }
-  }
   function handleAction (a: RefAction, evt?: Event): void {
     a.action(evt?.target as HTMLElement, editorHandler)
   }
@@ -134,10 +106,10 @@
   export let focusIndex = -1
   const { idx, focusManager } = registerFocus(focusIndex, {
     focus: () => {
-      const editable = textEditor?.isEditable()
+      const editable = textEditor?.isEditable() ?? false
       if (editable) {
         focused = true
-        textEditor.focus()
+        textEditor?.focus()
       }
       return editable
     },
@@ -156,195 +128,118 @@
   })
 </script>
 
-<div class="ref-container">
-  <div class="textInput" class:withoutTopBorder>
-    <div class="inputMsg">
-      <TextEditor
-        bind:content
-        bind:this={textEditor}
-        on:content={(ev) => {
-          if (!isEmpty || haveAttachment) {
-            dispatch('message', ev.detail)
-            content = ''
-            textEditor.clear()
-          }
-        }}
-        on:blur={() => {
-          focused = false
-          dispatch('blur', focused)
-        }}
-        on:focus={() => {
-          focused = true
-          updateFocus()
-          dispatch('focus', focused)
-        }}
-        extensions={[
-          completionPlugin,
-          EmojiExtension.configure(),
-          IsEmptyContentExtension.configure({ onChange: (value) => (isEmpty = value) })
-        ]}
-        on:update
-        placeholder={placeholder ?? textEditorPlugin.string.EditorPlaceholder}
-        textFormatCategories={[
-          TextFormatCategory.TextDecoration,
-          TextFormatCategory.Link,
-          TextFormatCategory.List,
-          TextFormatCategory.Quote,
-          TextFormatCategory.Code
-        ]}
-      />
+<div class="ref-container" class:focusable>
+  {#if showHeader && $$slots.header}
+    <div class="header">
+      <slot name="header" />
     </div>
-    {#if showSend}
-      <button
-        class="sendButton"
-        on:click={submit}
-        use:tooltip={{ label: labelSend ?? textEditorPlugin.string.Send }}
-        disabled={(isEmpty && !haveAttachment) || loading}
-      >
-        <div class="icon">
-          {#if loading}
-            <div class="pointer-events-none spinner">
-              <Spinner size={'medium'} />
-            </div>
-          {:else}
-            <Icon icon={iconSend ?? Send} size={'medium'} />
-          {/if}
-        </div>
-      </button>
-    {/if}
+  {/if}
+  <div class="text-input">
+    <TextEditor
+      bind:content
+      bind:this={textEditor}
+      {boundary}
+      on:content={(ev) => {
+        if (!isEmpty || haveAttachment) {
+          dispatch('message', ev.detail)
+          content = ''
+          textEditor?.clear()
+        }
+      }}
+      on:blur={() => {
+        focused = false
+        dispatch('blur')
+      }}
+      on:focus={() => {
+        focused = true
+        updateFocus()
+        dispatch('focus')
+      }}
+      extensions={[
+        completionPlugin,
+        EmojiExtension.configure(),
+        IsEmptyContentExtension.configure({ onChange: (value) => (isEmpty = value) })
+      ]}
+      on:update
+      placeholder={placeholder ?? textEditorPlugin.string.EditorPlaceholder}
+      textFormatCategories={[
+        TextFormatCategory.TextDecoration,
+        TextFormatCategory.Link,
+        TextFormatCategory.List,
+        TextFormatCategory.Quote,
+        TextFormatCategory.Code
+      ]}
+    />
   </div>
-  <div class="flex-between clear-mins" style:margin={'.75rem .75rem 0'}>
-    <div class="buttons-group medium-gap">
-      {#each actions as a}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div
-          class="icon-button"
-          use:tooltip={{ label: a.label }}
-          on:click={handler(a, (a, evt) => handleAction(a, evt))}
-        >
-          <Icon icon={a.icon} size={'medium'} />
-        </div>
-        {#if a.order % 10 === 1}
-          <div class="buttons-divider" />
+  {#if showActions || showSend}
+    <div class="buttons-panel flex-between clear-mins">
+      <div class="buttons-group {shrinkButtons ? 'xxsmall-gap' : 'xsmall-gap'}">
+        {#if showActions}
+          {#each actions as a}
+            <Button
+              disabled={a.disabled}
+              icon={a.icon}
+              iconProps={{ size: buttonSize }}
+              kind="ghost"
+              showTooltip={{ label: a.label }}
+              size={buttonSize}
+              on:click={handler(a, (a, evt) => {
+                if (!a.disabled) {
+                  handleAction(a, evt)
+                }
+              })}
+            />
+            {#if a.order % 10 === 1}
+              <div class="buttons-divider" />
+            {/if}
+          {/each}
         {/if}
-      {/each}
-    </div>
-    {#if extraActions && extraActions.length > 0}
-      <div class="buttons-group {shrinkButtons ? 'medium-gap' : 'large-gap'}">
-        {#each extraActions as a}
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <div
-            class="icon-button"
-            class:disabled={a.disabled}
-            use:tooltip={{ label: a.label }}
-            on:click={handler(a, (a, evt) => {
-              if (!a.disabled) {
-                handleAction(a, evt)
-              }
-            })}
-          >
-            <Icon icon={a.icon} size={'medium'} fill={a.fill} />
-          </div>
-        {/each}
       </div>
-    {/if}
-  </div>
+
+      {#if showSend}
+        <Button
+          {loading}
+          disabled={(isEmpty && !haveAttachment) || loading}
+          icon={iconSend ?? Send}
+          iconProps={{ size: buttonSize }}
+          kind={kindSend}
+          size={buttonSize}
+          showTooltip={{
+            label: labelSend ?? textEditorPlugin.string.Send
+          }}
+          on:click={submit}
+        />
+      {/if}
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">
-  .icon-button {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 1.25rem;
-    height: 1.25rem;
-    color: var(--theme-darker-color);
-    cursor: pointer;
-
-    &:hover {
-      color: var(--theme-content-color);
-    }
-    &.disabled {
-      color: var(--theme-trans-color);
-      &:hover {
-        color: var(--theme-trans-color);
-        cursor: not-allowed;
-      }
-    }
-  }
   .ref-container {
     display: flex;
     flex-direction: column;
     min-height: 4.5rem;
+    border: 0.0625rem solid var(--theme-refinput-border);
+    border-radius: 0.375rem;
 
-    .textInput {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      min-height: 2.75rem;
-      padding: 0.75rem 1rem;
-      background-color: var(--theme-refinput-color);
-      border: 1px solid var(--theme-refinput-border);
-      border-radius: 0.25rem;
-
-      &.withoutTopBorder {
-        border-top-left-radius: 0;
-        border-top-right-radius: 0;
-      }
-
-      .inputMsg {
-        display: flex;
-        align-self: center;
-        align-items: center;
-        width: calc(100% - 1.75rem);
-        height: 100%;
-        color: var(--theme-content-color);
-        background-color: transparent;
-        border: none;
-        outline: none;
-      }
-      .sendButton {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-shrink: 0;
-        margin-left: 0.5rem;
-        padding: 0;
-        width: 1.25rem;
-        height: 1.25rem;
-        background-color: transparent;
-        border: 1px solid transparent;
-        border-radius: 0.25rem;
-        outline: none;
-        cursor: pointer;
-
-        .icon {
-          width: 1.25rem;
-          height: 1.25rem;
-          color: var(--theme-content-color);
-          cursor: pointer;
-
-          &:hover {
-            color: var(--theme-caption-color);
-          }
-        }
-        &:focus {
-          box-shadow: 0 0 0 2px var(--accented-button-outline);
-
-          & > .icon {
-            color: var(--theme-caption-color);
-          }
-        }
-
-        &:disabled {
-          pointer-events: none;
-
-          .icon {
-            color: var(--theme-trans-color);
-            cursor: not-allowed;
-          }
-        }
+    &.focusable {
+      &:focus-within {
+        border-color: var(--primary-edit-border-color);
       }
     }
+  }
+
+  .header {
+    padding: 0.325rem 0.75rem;
+    border-bottom: 0.0625rem solid var(--theme-refinput-border);
+  }
+
+  .text-input {
+    min-height: 2.75rem;
+    padding: 0.625rem 0.75rem;
+  }
+
+  .buttons-panel {
+    padding: 0.325rem 0.75rem;
   }
 </style>

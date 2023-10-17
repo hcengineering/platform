@@ -226,7 +226,6 @@ export default mergeIds(trackerId, tracker, {
     AddRelatedIssue: '' as IntlString,
     RelatedIssuesNotFound: '' as IntlString,
     RelatedIssue: '' as IntlString,
-    RelatedIssues: '' as IntlString,
     BlockedIssue: '' as IntlString,
     BlockingIssue: '' as IntlString,
     BlockedBySearchPlaceholder: '' as IntlString,
@@ -262,6 +261,7 @@ export default mergeIds(trackerId, tracker, {
 
     Estimation: '' as IntlString,
     ReportedTime: '' as IntlString,
+    RemainingTime: '' as IntlString,
     TimeSpendReport: '' as IntlString,
     TimeSpendReportAdd: '' as IntlString,
     TimeSpendReports: '' as IntlString,
@@ -301,7 +301,9 @@ export default mergeIds(trackerId, tracker, {
     NoStatusFound: '' as IntlString,
     CreateMissingStatus: '' as IntlString,
     UnsetParent: '' as IntlString,
-    PreviousAssigned: '' as IntlString
+    PreviousAssigned: '' as IntlString,
+    EditRelatedTargets: '' as IntlString,
+    RelatedIssueTargetDescription: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,
@@ -354,6 +356,8 @@ export default mergeIds(trackerId, tracker, {
     MilestoneDatePresenter: '' as AnyComponent,
     EditMilestone: '' as AnyComponent,
     ReportedTimeEditor: '' as AnyComponent,
+    TimePresenter: '' as AnyComponent,
+    EstimationValueEditor: '' as AnyComponent,
     TimeSpendReport: '' as AnyComponent,
     EstimationEditor: '' as AnyComponent,
     TemplateEstimationEditor: '' as AnyComponent,

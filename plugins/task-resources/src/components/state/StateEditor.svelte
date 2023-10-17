@@ -31,6 +31,7 @@
   export let justify: 'left' | 'center' = 'center'
   export let shouldShowName: boolean = true
   export let shrink: number = 0
+  export let disabled: boolean = false
 
   $: state = $statusStore.get(value)
   let opened: boolean = false
@@ -50,13 +51,13 @@
 </script>
 
 {#if kind === 'list' || kind === 'list-header'}
-  <StatePresenter value={state} {shouldShowName} shouldShowTooltip on:click={handleClick} />
+  <StatePresenter value={state} {shouldShowName} {disabled} shouldShowTooltip on:click={handleClick} />
 {:else}
   <Button {kind} {size} {width} {justify} {shrink} on:click={handleClick}>
     <svelte:fragment slot="content">
       {#if state}
         <div class="pointer-events-none clear-mins">
-          <StatePresenter value={state} {shouldShowName} />
+          <StatePresenter value={state} {shouldShowName} {disabled} />
         </div>
       {/if}
     </svelte:fragment>

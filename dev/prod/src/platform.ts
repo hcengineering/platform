@@ -17,7 +17,6 @@ import { Plugin, addLocation, addStringsLoader, platformId } from '@hcengineerin
 
 import { activityId } from '@hcengineering/activity'
 import { attachmentId } from '@hcengineering/attachment'
-import { automationId } from '@hcengineering/automation'
 import { boardId } from '@hcengineering/board'
 import calendar, { calendarId } from '@hcengineering/calendar'
 import { chunterId } from '@hcengineering/chunter'
@@ -48,7 +47,6 @@ import { bitrixId } from '@hcengineering/bitrix'
 
 import '@hcengineering/activity-assets'
 import '@hcengineering/attachment-assets'
-import '@hcengineering/automation-assets'
 import '@hcengineering/bitrix-assets'
 import '@hcengineering/board-assets'
 import '@hcengineering/calendar-assets'
@@ -107,7 +105,6 @@ function configureI18n(): void {
    addStringsLoader(uiId, async (lang: string) => await import(`@hcengineering/ui/lang/${lang}.json`))
    addStringsLoader(activityId, async (lang: string) => await import(`@hcengineering/activity-assets/lang/${lang}.json`))
    addStringsLoader(attachmentId, async (lang: string) => await import(`@hcengineering/attachment-assets/lang/${lang}.json`))
-   addStringsLoader(automationId, async (lang: string) => await import(`@hcengineering/automation-assets/lang/${lang}.json`))
    addStringsLoader(bitrixId, async (lang: string) => await import(`@hcengineering/bitrix-assets/lang/${lang}.json`))
    addStringsLoader(boardId, async (lang: string) => await import(`@hcengineering/board-assets/lang/${lang}.json`))
    addStringsLoader(calendarId, async (lang: string) => await import(`@hcengineering/calendar-assets/lang/${lang}.json`))
@@ -195,7 +192,6 @@ export async function configurePlatform() {
 
   addLocation(trackerId, () => import(/* webpackChunkName: "tracker" */ '@hcengineering/tracker-resources'))
   addLocation(boardId, () => import(/* webpackChunkName: "board" */ '@hcengineering/board-resources'))
-  addLocation(automationId, () => import(/* webpackChunkName: "automation" */ '@hcengineering/automation-resources'))
   addLocation(hrId, () => import(/* webpackChunkName: "hr" */ '@hcengineering/hr-resources'))
   addLocation(bitrixId, () => import(/* webpackChunkName: "bitrix" */ '@hcengineering/bitrix-resources'))
   addLocation(requestId, () => import(/* webpackChunkName: "request" */ '@hcengineering/request-resources'))

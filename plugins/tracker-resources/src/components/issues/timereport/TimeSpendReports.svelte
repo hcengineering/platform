@@ -13,16 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
+  import { DocumentQuery, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Issue, Project, TimeSpendReport } from '@hcengineering/tracker'
-  import { Expandable, floorFractionDigits, Label, Spinner } from '@hcengineering/ui'
+  import { Issue, TimeSpendReport } from '@hcengineering/tracker'
+  import { Expandable, Label, Spinner, floorFractionDigits } from '@hcengineering/ui'
   import tracker from '../../../plugin'
   import TimePresenter from './TimePresenter.svelte'
   import TimeSpendReportsList from './TimeSpendReportsList.svelte'
 
   export let issue: Issue
-  export let projects: Map<Ref<Project>, Project>
   export let query: DocumentQuery<TimeSpendReport>
 
   const subIssuesQuery = createQuery()
@@ -47,10 +46,10 @@
         <Label label={tracker.string.ReportedTime} />:
         <span class="caption-color"><TimePresenter value={reportedTime} /></span>.
         <Label label={tracker.string.TimeSpendReports} />:
-        <span class="caption-color"><TimePresenter value={floorFractionDigits(total / 8, 3)} /></span>
+        <span class="caption-color"><TimePresenter value={floorFractionDigits(total, 3)} /></span>
       </span>
     </svelte:fragment>
-    <TimeSpendReportsList {reports} {projects} />
+    <TimeSpendReportsList {reports} />
   </Expandable>
 {:else}
   <div class="flex-center">

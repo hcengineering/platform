@@ -419,7 +419,7 @@ export class LiveQuery extends TxProcessor implements Client {
 
     for (const queries of this.queries) {
       const isTx = hierarchy.isDerived(queries[0], core.class.Tx)
-      const isMixin = hierarchy.isDerived(tx.mixin, queries[0])
+
       for (const q of queries[1]) {
         if (isTx) {
           // handle add since Txes are immutable
@@ -455,9 +455,9 @@ export class LiveQuery extends TxProcessor implements Client {
           await this.sort(q, tx)
           const udoc = q.result.find((p) => p._id === tx.objectId)
           await this.updatedDocCallback(udoc, q)
-        } else if (isMixin) {
+        } else if (queries[0] === tx.mixin) {
           // Mixin potentially added to object we doesn't have in out results
-          const doc = await this.client.findOne(q._class, { _id: tx.objectId }, q.options)
+          const doc = await this.client.findOne(q._class, { ...q.query, _id: tx.objectId }, q.options)
           if (doc !== undefined) {
             await this.handleDocAdd(q, doc, false)
           }

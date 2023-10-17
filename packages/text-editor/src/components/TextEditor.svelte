@@ -28,7 +28,7 @@
   import { themeStore } from '@hcengineering/ui'
   import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
   import { TextFormatCategory } from '../types'
-  import { InlineStyleToolbar } from './extension/inlineStyleToolbar'
+  import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
   import { defaultEditorAttributes } from './editor/editorProps'
 
   export let content: string = ''
@@ -37,6 +37,7 @@
   export let textFormatCategories: TextFormatCategory[] = []
   export let supportSubmit = true
   export let editorAttributes: { [name: string]: string } = {}
+  export let boundary: HTMLElement | undefined = undefined
 
   let element: HTMLElement
   let editor: Editor
@@ -77,7 +78,6 @@
   let needFocus = false
   let focused = false
   let posFocus: FocusPosition | undefined = undefined
-  let showContextMenu = false
   let textEditorToolbar: HTMLElement
 
   export function focus (position?: FocusPosition): void {
@@ -137,10 +137,25 @@
           ...(supportSubmit ? [Handle] : []), // order important
           Placeholder.configure({ placeholder: placeHolderStr }),
           ...extensions,
-          InlineStyleToolbar.configure({
+          InlineStyleToolbarExtension.configure({
+            tippyOptions: {
+              popperOptions: {
+                modifiers: [
+                  {
+                    name: 'preventOverflow',
+                    options: {
+                      boundary,
+                      padding: 8,
+                      altAxis: true,
+                      tether: false
+                    }
+                  }
+                ]
+              }
+            },
             element: textEditorToolbar,
-            getEditorElement: () => element,
-            isShown: () => showContextMenu
+            isSupported: () => true,
+            isSelectionOnly: () => false
           })
         ],
         parseOptions: {
@@ -150,22 +165,18 @@
           // force re-render so `editor.isActive` works as expected
           editor = editor
         },
-        onBlur: ({ event }) => {
+        onBlur: () => {
           focused = false
-          dispatch('blur', event)
+          dispatch('blur')
         },
         onFocus: () => {
           focused = true
-          dispatch('focus', editor.getHTML())
+          dispatch('focus')
         },
         onUpdate: () => {
           content = editor.getHTML()
-          showContextMenu = false
           dispatch('value', content)
           dispatch('update', content)
-        },
-        onSelectionUpdate: () => {
-          showContextMenu = false
         }
       })
     })
@@ -176,12 +187,6 @@
       editor.destroy()
     }
   })
-
-  function onEditorClick () {
-    if (!editor.isEmpty) {
-      showContextMenu = true
-    }
-  }
 
   /**
    * @public
@@ -209,7 +214,7 @@
     }}
   />
 </div>
-<div class="select-text" style="width: 100%;" on:mousedown={onEditorClick} bind:this={element} />
+<div class="select-text" style="width: 100%;" bind:this={element} />
 
 <style lang="scss">
   .formatPanel {

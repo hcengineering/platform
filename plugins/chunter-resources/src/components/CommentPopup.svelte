@@ -90,7 +90,7 @@
     <div class="max-w-120 input">
       <CommentInput
         {object}
-        on:focus={(evt) => {
+        on:focus={() => {
           commentMode = true
         }}
       />

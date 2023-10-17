@@ -1,5 +1,5 @@
 //
-// Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,16 +13,11 @@
 // limitations under the License.
 //
 
-import automation, { automationId } from '@hcengineering/automation'
-import { mergeIds } from '@hcengineering/platform'
-import type { AnyComponent } from '@hcengineering/ui'
+import { Node as ProseMirrorNode } from '@tiptap/pm/model'
 
-const automations = mergeIds(automationId, automation, {
-  component: {
-    AutomationSettingsElement: '' as AnyComponent
-  }
-})
-
-export type PluginType = typeof automations
-
-export default automations
+/**
+ * @public
+ */
+export function getText (node: ProseMirrorNode): string {
+  return node.textBetween(0, node.content.size, '\n', '')
+}

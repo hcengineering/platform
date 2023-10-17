@@ -34,7 +34,7 @@ import {
 import { DOMAIN_TASK } from '@hcengineering/model-task'
 import tags from '@hcengineering/tags'
 import { Issue, Project, TimeReportDayType, TimeSpendReport, createStatuses } from '@hcengineering/tracker'
-import { DOMAIN_TRACKER } from '.'
+import { DOMAIN_TRACKER } from './types'
 import tracker from './plugin'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import view from '@hcengineering/view'
@@ -171,6 +171,22 @@ async function fixEstimation (client: MigrationClient): Promise<void> {
   }
 }
 
+async function fixRemainingTime (client: MigrationClient): Promise<void> {
+  while (true) {
+    const issues = await client.find<Issue>(DOMAIN_TASK, { remainingTime: { $exists: false } }, { limit: 1000 })
+    for (const issue of issues) {
+      await client.update(
+        DOMAIN_TASK,
+        { _id: issue._id },
+        { remainingTime: Math.max(0, issue.estimation - issue.reportedTime) }
+      )
+    }
+    if (issues.length === 0) {
+      break
+    }
+  }
+}
+
 async function moveIssues (client: MigrationClient): Promise<void> {
   const docs = await client.find(DOMAIN_TRACKER, { _class: tracker.class.Issue })
   if (docs.length > 0) {
@@ -218,6 +234,10 @@ export const trackerOperation: MigrateOperation = {
       {
         state: 'estimationDayToHour',
         func: fixEstimation
+      },
+      {
+        state: 'fixRemainingTime',
+        func: fixRemainingTime
       }
     ])
   },

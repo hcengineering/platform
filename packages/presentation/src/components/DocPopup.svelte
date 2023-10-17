@@ -58,6 +58,7 @@
   export let readonly = false
   export let disallowDeselect: Ref<Doc>[] | undefined = undefined
   export let created: Doc[] = []
+  export let embedded: boolean = false
 
   let search: string = ''
 
@@ -158,6 +159,7 @@
   class:full-width={width === 'full'}
   class:plainContainer={!shadows}
   class:width-40={width === 'large'}
+  class:embedded
   on:keydown={onKeydown}
   use:resizeObserver={() => {
     dispatch('changeContent')
@@ -230,7 +232,7 @@
       </ListView>
     </div>
   </div>
-  <div class="menu-space" />
+  {#if !embedded}<div class="menu-space" />{/if}
 </div>
 
 <style lang="scss">

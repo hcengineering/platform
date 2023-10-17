@@ -69,7 +69,7 @@ import {
   groupBy,
   statusStore
 } from '@hcengineering/view-resources'
-import { get } from 'svelte/store'
+import { get, writable } from 'svelte/store'
 import tracker from './plugin'
 import { defaultMilestoneStatuses, defaultPriorities } from './types'
 
@@ -370,6 +370,13 @@ export async function milestoneSort (
     })
   })
 }
+
+export const activeProjects = writable<IdMap<Project>>(new Map())
+const activeProjectsQuery = createQuery(true)
+
+activeProjectsQuery.query(tracker.class.Project, { archived: false }, (projects) => {
+  activeProjects.set(toIdMap(projects))
+})
 
 export async function moveIssuesToAnotherMilestone (
   client: TxOperations,

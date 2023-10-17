@@ -32,6 +32,7 @@
   export let shouldShowName: boolean = true
   export let shouldShowTooltip: boolean = false
   export let noUnderline: boolean = false
+  export let shrink: number = 0
 
   const dispatch = createEventDispatcher()
 
@@ -47,7 +48,12 @@
 
 {#if value}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="flex-presenter" class:inline-presenter={inline} on:click>
+  <div
+    class="flex-presenter"
+    class:inline-presenter={inline}
+    class:flex-no-shrink={!shouldShowName || shrink === 0}
+    on:click
+  >
     {#if shouldShowAvatar}
       <div
         class="state-container"
@@ -58,9 +64,9 @@
       />
     {/if}
     {#if shouldShowName}
-      <span class="overflow-label label" class:nowrap={oneLine} class:no-underline={noUnderline || disabled}
-        >{value.name}</span
-      >
+      <span class="overflow-label label" class:nowrap={oneLine} class:no-underline={noUnderline || disabled}>
+        {value.name}
+      </span>
     {/if}
   </div>
 {/if}

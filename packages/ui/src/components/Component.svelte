@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { SvelteComponent } from 'svelte'
   import { getResource } from '@hcengineering/platform'
+  import { deepEqual } from 'fast-equals'
+  import { SvelteComponent } from 'svelte'
   import type { AnyComponent } from '../types'
-  // import Icon from './Icon.svelte'
   import ErrorPresenter from './ErrorPresenter.svelte'
-  import ErrorBoundary from './internal/ErrorBoundary'
   import Loading from './Loading.svelte'
+  import ErrorBoundary from './internal/ErrorBoundary'
 
   // Reference to rendered component instance
   export let innerRef: SvelteComponent | undefined = undefined
@@ -30,10 +30,20 @@
   export let inline: boolean = false
   export let disabled: boolean = false
 
-  $: component = is != null ? getResource(is) : Promise.reject(new Error('is not defined'))
+  let _is: any = is
+  let _props: any = props
+
+  $: if (!deepEqual(_is, is)) {
+    _is = is
+  }
+  $: if (!deepEqual(_props, props)) {
+    _props = props
+  }
+
+  $: component = _is != null ? getResource<any>(_is) : Promise.reject(new Error('is not defined'))
 </script>
 
-{#if is}
+{#if _is}
   {#await component}
     {#if showLoading}
       <Loading {shrink} />
@@ -43,7 +53,7 @@
       {#if $$slots.default !== undefined}
         <Ctor
           bind:this={innerRef}
-          {...props}
+          {..._props}
           {inline}
           {disabled}
           on:change
@@ -59,7 +69,7 @@
       {:else}
         <Ctor
           bind:this={innerRef}
-          {...props}
+          {..._props}
           {inline}
           {disabled}
           on:change

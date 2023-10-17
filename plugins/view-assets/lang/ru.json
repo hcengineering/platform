@@ -35,6 +35,7 @@
     "SelectItem": "Выбрать",
     "SelectItemAll": "Выбрать все",
     "SelectItemNone": "Снять все выделения",
+    "NumberItems": "{count, plural, =0 {нет объектов} one {# объект} few {# объекта} other {# объектов}}",
     "Assigned": "Назначенные",
     "Created": "Созданные",
     "Subscribed": "Отслеживаемые",

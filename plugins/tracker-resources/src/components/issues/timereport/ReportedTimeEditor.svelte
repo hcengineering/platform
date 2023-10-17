@@ -15,9 +15,9 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
-  import { createQuery } from '@hcengineering/presentation'
-  import tracker, { Issue, Project } from '@hcengineering/tracker'
-  import { ActionIcon, eventToHTMLElement, floorFractionDigits, IconAdd, Label, showPopup } from '@hcengineering/ui'
+  import { Issue, Project } from '@hcengineering/tracker'
+  import { ActionIcon, IconAdd, Label, eventToHTMLElement, floorFractionDigits, showPopup } from '@hcengineering/ui'
+  import { activeProjects } from '../../../utils'
   import ReportsPopup from './ReportsPopup.svelte'
   import TimePresenter from './TimePresenter.svelte'
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
@@ -30,13 +30,8 @@
   export let size: 'small' | 'medium' | 'large' = 'large'
   export let currentProject: Project | undefined
 
-  const spaceQuery = createQuery()
   $: if (currentProject === undefined) {
-    spaceQuery.query(tracker.class.Project, { _id: object.space }, (res) => {
-      currentProject = res.shift()
-    })
-  } else {
-    spaceQuery.unsubscribe()
+    currentProject = $activeProjects.get(object.space)
   }
 
   $: defaultTimeReportDay = currentProject?.defaultTimeReportDay
@@ -67,9 +62,13 @@
 
 {#if kind === 'link'}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div id="ReportedTimeEditor" class="link-container {size} flex-between" on:click={showReports}>
+  <div
+    id="ReportedTimeEditor"
+    class="link-container antiButton link {size} flex-grow flex-between"
+    on:click={showReports}
+  >
     {#if value !== undefined}
-      <span class="overflow-label">
+      <span class="flex-row-center">
         <TimePresenter {value} />
         {#if childTime !== 0}
           / <TimePresenter value={childTime} />
@@ -83,7 +82,7 @@
     </div>
   </div>
 {:else if value !== undefined}
-  <span class="overflow-label">
+  <span class="flex-row-center">
     <TimePresenter {value} />
     {#if childTime !== 0}
       / <TimePresenter value={childTime} />
@@ -95,24 +94,7 @@
 
 <style lang="scss">
   .link-container {
-    display: flex;
-    align-items: center;
-    padding: 0 0.875rem;
-    width: 100%;
-    color: var(--theme-caption-color);
-    border: 1px solid transparent;
-    border-radius: 0.25rem;
-    cursor: pointer;
-
-    &.small {
-      height: 1.5rem;
-    }
-    &.medium {
-      height: 2rem;
-    }
-    &.large {
-      height: 2.25rem;
-    }
+    padding: 0px 0.75rem;
     .add-action {
       visibility: hidden;
     }

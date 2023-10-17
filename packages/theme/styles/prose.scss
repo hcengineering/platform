@@ -47,6 +47,8 @@ table.proseTable {
 }
 
 .proseCode {
+  display: inline-block;
+  margin: 0;
   padding: 0 .25rem;
   font-family: var(--mono-font);
   color: var(--theme-content-color);
@@ -63,11 +65,11 @@ table.proseTable {
   border-radius: .25rem;
   padding: .5rem;
 
-  code { white-space: normal; }
+  pre { white-space: pre-wrap; }
 }
 
 // Fixes for MessageViewer
-pre.proseCodeBlock > code.proseCode {
+pre.proseCodeBlock > pre.proseCode {
   padding: 0;
   background-color: transparent;
   border: none;

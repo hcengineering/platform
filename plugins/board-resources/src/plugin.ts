@@ -68,7 +68,6 @@ export default mergeIds(boardId, board, {
     AttachmentTip: '' as IntlString,
     Computer: '' as IntlString,
     CustomFields: '' as IntlString,
-    Automation: '' as IntlString,
     AddButton: '' as IntlString,
     Actions: '' as IntlString,
     Cover: '' as IntlString,

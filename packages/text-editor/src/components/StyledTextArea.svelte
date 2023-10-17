@@ -1,6 +1,6 @@
 <script lang="ts">
   import { IntlString } from '@hcengineering/platform'
-  import { IconSize, Label } from '@hcengineering/ui'
+  import { ButtonSize, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import textEditorPlugin from '../plugin'
   import StyledTextEditor from './StyledTextEditor.svelte'
@@ -10,7 +10,7 @@
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
 
   export let showButtons = true
-  export let buttonSize: IconSize = 'small'
+  export let buttonSize: ButtonSize = 'small'
   export let focus = false
   export let kind: 'normal' | 'emphasized' | 'indented' = 'normal'
   export let isScrollable: boolean = false
@@ -84,9 +84,6 @@
     }}
   >
     <slot />
-    <svelte:fragment slot="right">
-      <slot name="right" />
-    </svelte:fragment>
   </StyledTextEditor>
 </div>
 

@@ -19,13 +19,21 @@
   import { DecorationSet } from 'prosemirror-view'
   import { getContext, createEventDispatcher, onDestroy, onMount } from 'svelte'
   import * as Y from 'yjs'
-  import { AnyExtension, Editor, Extension, HTMLContent, getMarkRange, mergeAttributes } from '@tiptap/core'
+  import {
+    AnyExtension,
+    Editor,
+    Extension,
+    FocusPosition,
+    HTMLContent,
+    getMarkRange,
+    mergeAttributes
+  } from '@tiptap/core'
   import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration'
   import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
   import Placeholder from '@tiptap/extension-placeholder'
   import { getCurrentAccount, Markup } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
-  import { getPlatformColorForText, IconObjects, IconSize, themeStore } from '@hcengineering/ui'
+  import { getPlatformColorForText, IconObjects, IconSize, registerFocus, themeStore } from '@hcengineering/ui'
 
   import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
@@ -33,9 +41,10 @@
   import { CollaborationIds, TextFormatCategory, TextNodeAction } from '../types'
 
   import { calculateDecorations } from './diff/decorations'
+  import { noSelectionRender } from './editor/collaboration'
   import { defaultEditorAttributes } from './editor/editorProps'
   import { completionConfig, defaultExtensions } from './extensions'
-  import { InlineStyleToolbar } from './extension/inlineStyleToolbar'
+  import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
   import { NodeUuidExtension } from './extension/nodeUuid'
   import StyleButton from './StyleButton.svelte'
   import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
@@ -47,7 +56,6 @@
   export let token: string
   export let collaboratorURL: string
 
-  export let isFormatting = true
   export let buttonSize: IconSize = 'small'
   export let focusable: boolean = false
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
@@ -56,11 +64,12 @@
 
   export let field: string | undefined = undefined
 
-  export let autoOverflow = false
+  export let overflow: 'auto' | 'none' = 'auto'
   export let initialContent: string | undefined = undefined
   export let textNodeActions: TextNodeAction[] = []
   export let editorAttributes: { [name: string]: string } = {}
   export let onExtensions: () => AnyExtension[] = () => []
+  export let boundary: HTMLElement | undefined = undefined
 
   let element: HTMLElement
 
@@ -90,7 +99,6 @@
 
   let editor: Editor
   let inlineToolbar: HTMLElement
-  let showInlineToolbar = false
 
   let placeHolderStr: string = ''
 
@@ -136,7 +144,6 @@
       }
 
       const [$start, $end] = [doc.resolve(range.from), doc.resolve(range.to)]
-
       editor.view.dispatch(tr.setSelection(new TextSelection($start, $end)))
       needFocus = true
     })
@@ -146,16 +153,35 @@
     provider.copyContent(documentId, snapshotId)
   }
 
-  let needFocus = false
+  export function unregisterPlugin (nameOrPluginKey: string | PluginKey) {
+    if (!editor) {
+      return
+    }
 
+    editor.unregisterPlugin(nameOrPluginKey)
+  }
+
+  export function registerPlugin (plugin: Plugin) {
+    if (!editor) {
+      return
+    }
+
+    editor.registerPlugin(plugin)
+  }
+
+  let needFocus = false
   let focused = false
-  export function focus (): void {
+  let posFocus: FocusPosition | undefined = undefined
+
+  export function focus (position?: FocusPosition): void {
+    posFocus = position
     needFocus = true
   }
 
   $: if (editor && needFocus) {
     if (!focused) {
-      editor.commands.focus()
+      editor.commands.focus(posFocus)
+      posFocus = undefined
     }
     needFocus = false
   }
@@ -201,6 +227,7 @@
   })
 
   $: updateEditor(editor, field, comparedVersion)
+  $: if (editor) dispatch('editor', editor)
 
   onMount(() => {
     ph.then(() => {
@@ -211,10 +238,25 @@
         extensions: [
           ...defaultExtensions,
           Placeholder.configure({ placeholder: placeHolderStr }),
-          InlineStyleToolbar.configure({
+          InlineStyleToolbarExtension.configure({
+            tippyOptions: {
+              popperOptions: {
+                modifiers: [
+                  {
+                    name: 'preventOverflow',
+                    options: {
+                      boundary,
+                      padding: 8,
+                      altAxis: true,
+                      tether: false
+                    }
+                  }
+                ]
+              }
+            },
             element: inlineToolbar,
-            getEditorElement: () => element,
-            isShown: () => !readonly && showInlineToolbar
+            isSupported: () => !readonly,
+            isSelectionOnly: () => false
           }),
           Collaboration.configure({
             document: ydoc,
@@ -225,7 +267,8 @@
             user: {
               name: currentUser.email,
               color: getPlatformColorForText(currentUser.email, $themeStore.dark)
-            }
+            },
+            selectionRender: noSelectionRender
           }),
           DecorationExtension,
           Completion.configure({
@@ -246,23 +289,17 @@
         },
         onFocus: () => {
           focused = true
+          updateFocus()
+          dispatch('focus')
         },
-        onUpdate: ({ editor, transaction }) => {
-          showInlineToolbar = false
-
+        onUpdate: ({ transaction }) => {
           // ignore non-document changes
           if (!transaction.docChanged) return
-
-          // TODO this is heavy and should be replaced with more lightweight event
-          dispatch('content', editor.getHTML())
 
           // ignore non-local changes
           if (isChangeOrigin(transaction)) return
 
           dispatch('update')
-        },
-        onSelectionUpdate: () => {
-          showInlineToolbar = false
         }
       })
 
@@ -283,19 +320,34 @@
     }
   })
 
-  function onEditorClick () {
-    if (!editor.isEmpty) {
-      showInlineToolbar = true
+  let showDiff = true
+
+  export let focusIndex = -1
+  const { idx, focusManager } = registerFocus(focusIndex, {
+    focus: () => {
+      if (visible) {
+        focus('start')
+      }
+      return visible && element !== null
+    },
+    isFocus: () => document.activeElement === element,
+    canBlur: () => false
+  })
+  const updateFocus = () => {
+    if (focusIndex !== -1) {
+      focusManager?.setFocus(idx)
     }
   }
-
-  let showDiff = true
+  $: if (element) {
+    element.addEventListener('focus', updateFocus, { once: true })
+  }
 </script>
 
-<slot />
+<slot {editor} />
+
 {#if visible}
   {#if comparedVersion !== undefined || $$slots.tools}
-    <div class="ref-container" class:autoOverflow>
+    <div class="ref-container" style:overflow>
       {#if comparedVersion !== undefined}
         <div class="flex-row-center buttons-group xsmall-gap">
           <StyleButton
@@ -336,24 +388,20 @@
         needFocus = true
       }}
       on:action={(event) => {
-        dispatch('action', { action: event.detail, editor })
+        dispatch('action', event.detail)
         needFocus = true
       }}
     />
   </div>
 
-  <div class="ref-container" class:autoOverflow>
-    <div class="textInput" class:focusable>
-      <div class="select-text" style="width: 100%;" on:mousedown={onEditorClick} bind:this={element} />
+  <div class="ref-container" style:overflow>
+    <div class="text-input" class:focusable>
+      <div class="select-text" style="width: 100%;" bind:this={element} />
     </div>
   </div>
 {/if}
 
 <style lang="scss">
-  .autoOverflow {
-    overflow: auto;
-  }
-
   .ref-container .formatPanel {
     margin: -0.5rem -0.25rem 0.5rem;
     padding: 0.375rem;
@@ -375,5 +423,10 @@
     border-radius: 0.5rem;
     box-shadow: var(--theme-popup-shadow);
     z-index: 1;
+  }
+
+  .text-input {
+    font-size: 0.9375rem;
+    padding-bottom: 30vh;
   }
 </style>

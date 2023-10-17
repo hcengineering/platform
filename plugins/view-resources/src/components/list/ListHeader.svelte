@@ -96,6 +96,7 @@
     class:collapsed
     class:subLevel={level !== 0}
     class:lastCat
+    class:cursor-pointer={items.length > 0}
     on:focus={() => {
       mouseOver = true
     }}
@@ -131,6 +132,7 @@
           kind={'list-header'}
           colorInherit={!$themeStore.dark && level === 0}
           accent={level === 0}
+          disabled
           on:accent-color={(evt) => {
             accentColor = evt.detail
           }}
