@@ -1,4 +1,4 @@
-import { Command, CommandProps, Mark, getMarkType, getMarksBetween, mergeAttributes } from '@tiptap/core'
+import { Command, CommandProps, Mark, getMarkAttributes, getMarkType, mergeAttributes } from '@tiptap/core'
 import { Node, Mark as ProseMirrorMark } from 'prosemirror-model'
 import { EditorState, Plugin, PluginKey } from 'prosemirror-state'
 
@@ -32,23 +32,17 @@ export interface NodeUuidStorage {
 }
 
 const findSelectionNodeUuidMark = (state: EditorState): ProseMirrorMark | undefined => {
-  const { doc, selection } = state
-
-  if (selection === null || selection === undefined) {
+  if (state.selection === null || state.selection === undefined) {
     return
   }
 
   let nodeUuidMark: ProseMirrorMark | undefined
-  for (const range of selection.ranges) {
-    if (nodeUuidMark === undefined) {
-      doc.nodesBetween(range.$from.pos, range.$to.pos, (node) => {
-        if (nodeUuidMark !== undefined) {
-          return false
-        }
-        nodeUuidMark = findNodeUuidMark(node)
-      })
+  state.doc.nodesBetween(state.selection.from, state.selection.to, (node) => {
+    if (nodeUuidMark !== null || nodeUuidMark !== undefined) {
+      return false
     }
-  }
+    nodeUuidMark = findNodeUuidMark(node)
+  })
 
   return nodeUuidMark
 }
@@ -110,18 +104,10 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
       new Plugin({
         key: new PluginKey('handle-node-uuid-click-plugin'),
         props: {
-          handleClick (view, pos) {
-            const markRanges =
-              getMarksBetween(Math.max(0, pos - 1), pos + 1, view.state.doc)?.filter(
-                (markRange) => markRange.mark.type.name === NAME && markRange.from <= pos && markRange.to >= pos
-              ) ?? []
-            let nodeUuid: string | null = null
-
-            if (markRanges.length > 0) {
-              nodeUuid = markRanges[0].mark.attrs[NAME]
-            }
-
-            if (nodeUuid !== null) {
+          handleClick (view) {
+            const attrs = getMarkAttributes(view.state, view.state.schema.marks[NAME])
+            const nodeUuid = attrs?.[NAME]
+            if (nodeUuid !== null || nodeUuid !== undefined) {
               options.onNodeClicked?.(nodeUuid)
             }
 
