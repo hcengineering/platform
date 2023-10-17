@@ -5,13 +5,13 @@ test.use({
   storageState: PlatformSetting
 })
 
-test.describe('recruit tests', () => {
+test.describe('skill tests', () => {
   test.beforeEach(async ({ page }) => {
     // Create user and workspace
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
   })
 
-  test('test-create-skill', async ({ page }) => {
+  test('create skill', async ({ page }) => {
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
     await page.click('text=Skills')
     await page.click('button:has-text("Skill")')
