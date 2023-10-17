@@ -33,6 +33,7 @@ import core, {
   Hierarchy,
   IndexStageState,
   isFullTextAttribute,
+  isIndexedAttribute,
   Obj,
   Ref,
   Space,
@@ -45,11 +46,11 @@ import { FullTextPipeline } from './types'
 /**
  * @public
  */
-export function getFullTextAttributes (hierarchy: Hierarchy, clazz: Ref<Class<Obj>>): AnyAttribute[] {
+export function getFullTextIndexableAttributes (hierarchy: Hierarchy, clazz: Ref<Class<Obj>>): AnyAttribute[] {
   const allAttributes = hierarchy.getAllAttributes(clazz)
   const result: AnyAttribute[] = []
   for (const [, attr] of allAttributes) {
-    if (isFullTextAttribute(attr)) {
+    if (isFullTextAttribute(attr) || isIndexedAttribute(attr)) {
       result.push(attr)
     }
   }
@@ -59,7 +60,7 @@ export function getFullTextAttributes (hierarchy: Hierarchy, clazz: Ref<Class<Ob
     .filter((m) => hierarchy.getClass(m).kind === ClassifierKind.MIXIN)
     .forEach((m) => {
       for (const [, v] of hierarchy.getAllAttributes(m, clazz)) {
-        if (isFullTextAttribute(v)) {
+        if (isFullTextAttribute(v) || isIndexedAttribute(v)) {
           result.push(v)
         }
       }
@@ -119,10 +120,10 @@ export function isClassIndexable (hierarchy: Hierarchy, c: Ref<Class<Doc>>): boo
     hierarchy.setClassifierProp(c, 'class_indexed', false)
     return false
   }
-  const attrs = getFullTextAttributes(hierarchy, c)
+  const attrs = getFullTextIndexableAttributes(hierarchy, c)
   for (const d of hierarchy.getDescendants(c)) {
     if (hierarchy.isMixin(d)) {
-      attrs.push(...getFullTextAttributes(hierarchy, d))
+      attrs.push(...getFullTextIndexableAttributes(hierarchy, d))
     }
   }
 
