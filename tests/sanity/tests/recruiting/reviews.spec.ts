@@ -5,7 +5,7 @@ test.use({
   storageState: PlatformSetting
 })
 
-test.describe('recruit review tests', () => {
+test.describe('review tests', () => {
   test.beforeEach(async ({ page }) => {
     // Create user and workspace
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
