@@ -34,7 +34,7 @@ import {
   docKey,
   docUpdKey,
   getContent,
-  getFullTextAttributes,
+  getFullTextIndexableAttributes,
   getFullTextContext,
   isFullTextAttribute,
   loadIndexStageStage
@@ -112,7 +112,7 @@ export class IndexedFieldStage implements FullTextPipelineStage {
       const docs = await this.dbStorage.findAll(metrics, objClass, {
         _id: { $in: Array.from(valueIds.keys()) }
       })
-      const attributes = getFullTextAttributes(pipeline.hierarchy, objClass)
+      const attributes = getFullTextIndexableAttributes(pipeline.hierarchy, objClass)
 
       // Child docs.
 
