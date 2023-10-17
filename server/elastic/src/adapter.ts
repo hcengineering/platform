@@ -133,26 +133,28 @@ class ElasticAdapter implements FullTextAdapter {
       }
     }
 
-    if (query.space != null) {
-      if (typeof query.space === 'object') {
-        if (query.space.$in !== undefined) {
+    for (const [q, v] of Object.entries(query)) {
+      if (!q.startsWith('$')) {
+        if (typeof v === 'object') {
+          if (v.$in !== undefined) {
+            request.bool.should.push({
+              terms: {
+                [q]: v.$in,
+                boost: 100.0
+              }
+            })
+          }
+        } else {
           request.bool.should.push({
-            terms: {
-              space: query.space.$in.map((c) => c.toLowerCase()),
-              boost: 2.0
+            term: {
+              [q]: {
+                value: v,
+                boost: 100.0,
+                case_insensitive: true
+              }
             }
           })
         }
-      } else {
-        request.bool.should.push({
-          term: {
-            space: {
-              value: query.space,
-              boost: 2.0,
-              case_insensitive: true
-            }
-          }
-        })
       }
     }
 

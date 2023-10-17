@@ -90,9 +90,11 @@ export class TLostState extends TDoneState implements LostState {}
 @UX(task.string.Task, task.icon.Task, task.string.Task)
 export class TTask extends TAttachedDoc implements Task {
   @Prop(TypeRef(core.class.Status), task.string.TaskState, { _id: task.attribute.State })
+  @Index(IndexKind.Indexed)
     status!: Ref<Status>
 
   @Prop(TypeRef(task.class.DoneState), task.string.TaskStateDone, { _id: task.attribute.DoneState })
+  @Index(IndexKind.Indexed)
     doneState!: Ref<DoneState> | null
 
   @Prop(TypeString(), task.string.TaskNumber)

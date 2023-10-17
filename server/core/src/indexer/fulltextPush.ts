@@ -22,7 +22,8 @@ import core, {
   DocumentQuery,
   DocumentUpdate,
   extractDocKey,
-  IndexKind,
+  isFullTextAttribute,
+  isIndexedAttribute,
   MeasureContext,
   Ref,
   ServerStorage,
@@ -110,7 +111,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
       if (
         attrObj !== null &&
         attrObj !== undefined &&
-        attrObj.index === IndexKind.FullText &&
+        (isFullTextAttribute(attrObj) || isIndexedAttribute(attrObj)) &&
         (attrObj.type._class === core.class.RefTo ||
           (attrObj.type._class === core.class.ArrOf && (attrObj.type as ArrOf<any>).of._class === core.class.RefTo))
       ) {
