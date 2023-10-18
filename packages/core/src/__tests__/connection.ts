@@ -53,7 +53,7 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
     findAll,
 
     searchFulltext: async (query: FulltextQuery, options: FulltextQueryOptions): Promise<FulltextSearchResult> => {
-      return []
+      return { hits: { hits: [] } }
     },
 
     tx: async (tx: Tx): Promise<TxResult> => {
