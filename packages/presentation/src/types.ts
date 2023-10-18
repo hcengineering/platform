@@ -73,7 +73,7 @@ export interface ObjectSearchCategory extends Doc {
   context: ObjectSearchContext[]
 
   // Query for documents with pattern
-  query: Resource<ObjectSearchFactory>,
+  query: Resource<ObjectSearchFactory>
   classToSearch?: Ref<Class<Doc>>
 }
 

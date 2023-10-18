@@ -112,11 +112,8 @@ export class PresentationPipelineImpl implements PresentationPipeline {
       : await this.client.findAll(_class, query, options)
   }
 
-  async searchFulltext (
-    query: FulltextQuery,
-    options: FulltextQueryOptions
-  ): Promise<FulltextSearchResult> {
-    return this.client.searchFulltext(query, options)
+  async searchFulltext (query: FulltextQuery, options: FulltextQueryOptions): Promise<FulltextSearchResult> {
+    return await this.client.searchFulltext(query, options)
   }
 
   async findOne<T extends Doc>(

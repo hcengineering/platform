@@ -19,7 +19,15 @@ import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
 import { TxOperations } from '../operations'
-import { DocumentQuery, FindOptions, SortingOrder, WithLookup, FulltextQuery, FulltextQueryOptions, FulltextSearchResult } from '../storage'
+import {
+  DocumentQuery,
+  FindOptions,
+  SortingOrder,
+  WithLookup,
+  FulltextQuery,
+  FulltextQueryOptions,
+  FulltextSearchResult
+} from '../storage'
 import { Tx } from '../tx'
 import { genMinModel, test, TestMixin } from './minmodel'
 

@@ -21,7 +21,7 @@ import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
 import { TxOperations } from '../operations'
-import type { 
+import type {
   DocumentQuery,
   FindResult,
   TxResult,

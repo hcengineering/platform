@@ -14,15 +14,7 @@
 //
 
 import type { KeysByType } from 'simplytyped'
-import type {
-  AttachedDoc,
-  Class,
-  Doc,
-  Ref,
-  Account,
-  Space,
-  Timestamp,
-} from './classes'
+import type { AttachedDoc, Class, Doc, Ref, Account, Space, Timestamp } from './classes'
 import type { Tx } from './tx'
 
 /**
@@ -247,7 +239,7 @@ export interface FulltextSearchResult {
   suggest?: any
   aggregations?: any
   hits: {
-    hits: IndexedDoc[],
+    hits: IndexedDoc[]
     [key: string]: any
   }
 }
@@ -269,8 +261,5 @@ export interface Storage {
  * @public
  */
 export interface FulltextStorage {
-  searchFulltext: (
-    query: FulltextQuery,
-    options: FulltextQueryOptions
-  ) => Promise<FulltextSearchResult>
+  searchFulltext: (query: FulltextQuery, options: FulltextQueryOptions) => Promise<FulltextSearchResult>
 }

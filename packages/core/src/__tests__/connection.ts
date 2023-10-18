@@ -18,7 +18,7 @@ import { ClientConnection } from '../client'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
-import type { 
+import type {
   DocumentQuery,
   FindResult,
   TxResult,

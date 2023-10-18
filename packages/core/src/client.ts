@@ -127,11 +127,8 @@ class ClientImpl implements AccountClient, BackupClient {
     return toFindResult(result, data.total)
   }
 
-  async searchFulltext(
-    query: FulltextQuery,
-    options: FulltextQueryOptions
-  ): Promise<FulltextSearchResult> {
-    return this.conn.searchFulltext(query, options)
+  async searchFulltext (query: FulltextQuery, options: FulltextQueryOptions): Promise<FulltextSearchResult> {
+    return await this.conn.searchFulltext(query, options)
   }
 
   async findOne<T extends Doc>(
