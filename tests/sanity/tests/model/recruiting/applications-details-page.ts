@@ -1,11 +1,51 @@
-import { type Locator, type Page } from '@playwright/test'
+import { expect, type Locator, type Page } from '@playwright/test'
+import path from 'path'
+import { CommonPage } from '../common-page'
 
-export class ApplicationsDetailsPage {
+export class ApplicationsDetailsPage extends CommonPage {
   readonly page: Page
-  readonly inputCommentMessage: Locator
+  readonly inputCommentComment: Locator
+  readonly buttonSendComment: Locator
+  readonly textComment: Locator
+  readonly inputAddAttachment: Locator
+  readonly textAttachmentName: Locator
+  readonly buttonCreateFirstReview: Locator
+  readonly buttonChangeStatusDone: Locator
 
   constructor (page: Page) {
+    super()
     this.page = page
-    this.inputCommentMessage = page.locator('div.tiptap')
+    this.inputCommentComment = page.locator('div.tiptap')
+    this.buttonSendComment = page.locator('g#Send')
+    this.textComment = page.locator('div.msgactivity-container p')
+    this.inputAddAttachment = page.locator('div.antiSection #file')
+    this.textAttachmentName = page.locator('div.name a')
+    this.buttonCreateFirstReview = page.locator('span:has-text("Create review")')
+    this.buttonChangeStatusDone = page.locator('div[class*="aside-grid"] > div:nth-of-type(2) > button')
+  }
+
+  async addComment (comment: string): Promise<void> {
+    await this.inputCommentComment.fill(comment)
+    await this.buttonSendComment.click()
+  }
+
+  async checkCommentExist (comment: string): Promise<void> {
+    await expect(await this.textComment.filter({ hasText: comment })).toBeVisible()
+  }
+
+  async addAttachments (filePath: string): Promise<void> {
+    console.log(`__dirname: ${__dirname}`)
+    await this.inputAddAttachment.setInputFiles(path.join(__dirname, `../../files/${filePath}`))
+    await expect(await this.textAttachmentName.filter({ hasText: filePath })).toBeVisible()
+  }
+
+  async addFirstReview (): Promise<void> {
+    await this.buttonCreateFirstReview.click()
+    await this.createNewReviewPopup(this.page, 'First Review', 'First review description')
+  }
+
+  async changeDoneStatus (status: string): Promise<void> {
+    await this.buttonChangeStatusDone.click()
+    await this.selectFromDropdown(this.page, status)
   }
 }

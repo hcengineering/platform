@@ -67,5 +67,37 @@ test.describe('Application tests', () => {
     await applicationsPage.openApplicationByTalentName(talentName)
 
     const applicationsDetailsPage = new ApplicationsDetailsPage(page)
+    await applicationsDetailsPage.addComment('Test Comment 123')
+    await applicationsDetailsPage.checkCommentExist('Test Comment 123')
+
+    await applicationsDetailsPage.addAttachments('cat.jpeg')
+
+    await applicationsDetailsPage.addFirstReview()
+  })
+
+  test('Change Done status', async ({ page }) => {
+    const navigationMenuPage = new NavigationMenuPage(page)
+    await navigationMenuPage.buttonApplications.click()
+
+    let applicationsPage = new ApplicationsPage(page)
+    const talentName = await applicationsPage.createNewApplicationWithNewTalent({ vacancy: 'first', recruiterName: 'first' })
+    await applicationsPage.openApplicationByTalentName(talentName)
+
+    let applicationsDetailsPage = new ApplicationsDetailsPage(page)
+    await applicationsDetailsPage.changeDoneStatus('Lost')
+
+    await navigationMenuPage.buttonMyApplications.click()
+    applicationsPage = new ApplicationsPage(page)
+    await applicationsPage.buttonTabCreated.click()
+    await applicationsPage.checkApplicationDoneStatus(talentName, 'Lost')
+    await applicationsPage.openApplicationByTalentName(talentName)
+
+    applicationsDetailsPage = new ApplicationsDetailsPage(page)
+    await applicationsDetailsPage.changeDoneStatus('Won')
+
+    await navigationMenuPage.buttonMyApplications.click()
+    applicationsPage = new ApplicationsPage(page)
+    await applicationsPage.buttonTabCreated.click()
+    await applicationsPage.checkApplicationDoneStatus(talentName, 'Won')
   })
 })

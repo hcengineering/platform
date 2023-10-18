@@ -1,4 +1,4 @@
-import { type Locator, type Page } from '@playwright/test'
+import { expect, type Locator, type Page } from '@playwright/test'
 import { NewApplication, TalentName } from './types'
 import { CommonPage } from '../common-page'
 import { generateId } from '../../utils'
@@ -11,6 +11,7 @@ export class ApplicationsPage extends CommonPage {
   readonly buttonSpaceSelector: Locator
   readonly buttonAssignedRecruiter: Locator
   readonly buttonCreateNewApplication: Locator
+  readonly buttonTabCreated: Locator
 
   constructor (page: Page) {
     super()
@@ -21,6 +22,7 @@ export class ApplicationsPage extends CommonPage {
     this.buttonSpaceSelector = page.locator('div[id="space.selector"]')
     this.buttonAssignedRecruiter = page.locator('button div.label', { hasText: 'Assigned recruiter' })
     this.buttonCreateNewApplication = page.locator('form[id="recruit:string:CreateApplication"] button[type="submit"]')
+    this.buttonTabCreated = page.locator('div[data-id="tab-created"]')
   }
 
   async createNewApplication (data: NewApplication): Promise<void> {
@@ -68,10 +70,18 @@ export class ApplicationsPage extends CommonPage {
     await this.fillSelectPopup(this.page, name)
   }
 
-  async openApplicationByTalentName (data: TalentName): Promise<void> {
-    await this.page.locator('span.ap-label', { hasText: `${data.lastName} ${data.firstName}` })
+  async openApplicationByTalentName (talentName: TalentName): Promise<void> {
+    await this.page.locator('span.ap-label', { hasText: `${talentName.lastName} ${talentName.firstName}` })
       .locator('xpath=../../../../..')
       .locator('div[class*="firstCell"]')
       .click()
+  }
+
+  async checkApplicationDoneStatus (talentName: TalentName, done: string): Promise<void> {
+    await expect(await this.page.locator('span.ap-label', { hasText: `${talentName.lastName} ${talentName.firstName}` })
+      .locator('xpath=../../../../..')
+      .locator('td')
+      .nth(6))
+      .toHaveText(done)
   }
 }
