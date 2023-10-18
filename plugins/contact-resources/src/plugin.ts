@@ -83,7 +83,11 @@ export default mergeIds(contactId, contact, {
     Mail: '' as IntlString,
     Messages: '' as IntlString,
     Issue: '' as IntlString,
-    Activity: '' as IntlString
+    Activity: '' as IntlString,
+
+    LeadInfo: '' as IntlString,
+    LeadContacts: '' as IntlString,
+    LeadOrg: '' as IntlString
   },
   function: {
     GetContactLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,

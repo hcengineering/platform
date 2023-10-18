@@ -101,6 +101,9 @@
     "Messages": "Messages",
     "Mail": "Mail",
     "Issue": "Issue",
-    "Activity": "Activity"
+    "Activity": "Activity",
+    "LeadInfo": "Lead Info",
+    "LeadContacts": "Contacts",
+    "LeadOrg": "Organizations"
   }
 }

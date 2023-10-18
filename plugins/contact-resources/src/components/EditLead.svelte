@@ -13,14 +13,25 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, Class, Doc, WithLookup } from '@hcengineering/core'
+  import core, { Ref, Class, Doc, WithLookup, Mixin, ClassifierKind } from '@hcengineering/core'
   import { getClient, createQuery } from '@hcengineering/presentation'
   import lead, { Lead, Funnel } from '@hcengineering/lead'
   import setting, { settingId } from '@hcengineering/setting'
   import { Panel } from '@hcengineering/panel'
   import notification from '@hcengineering/notification'
-  import { TabList, TabItem, EditBox, Grid, Button, IconMoreH, showPopup, getCurrentResolvedLocation, navigate, IconMixin } from '@hcengineering/ui'
-  import { ContextMenu, UpDownNavigator, ParentsNavigator, SpacePresenter, DocNavLink, ObjectPresenter } from '@hcengineering/view-resources'
+  import {
+    TabList,
+    TabItem,
+    EditBox,
+    Grid,
+    Button,
+    IconMoreH,
+    showPopup,
+    getCurrentResolvedLocation,
+    navigate,
+    IconMixin
+  } from '@hcengineering/ui'
+  import { ContextMenu, UpDownNavigator, ObjectPresenter, DocAttributeBar } from '@hcengineering/view-resources'
   import { Channel } from '@hcengineering/contact'
   import view from '@hcengineering/view'
   import contact from '@hcengineering/contact'
@@ -39,16 +50,41 @@
   const channelQuery = createQuery()
   const dispatch = createEventDispatcher()
   const client = getClient()
+  const hierarchy = client.getHierarchy()
 
   let object: WithLookup<Lead> | undefined
   let title = ''
   let space: Funnel | undefined
   let innerWidth: number
   let showAllMixins: boolean
+  let mixins: Mixin<Doc>[] = []
+  const allowedCollections = ['labels']
+  const ignoreKeys = ['isArchived']
+  const ignoreMixins = new Set()
 
   const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
 
   $: read(_id)
+
+  $: if (object !== undefined) {
+    getMixins(object, true)
+    console.log({ mixins })
+  }
+
+  function getMixins (object: Doc, showAllMixins: boolean): void {
+    if (object === undefined) return
+    const descendants = hierarchy.getDescendants(core.class.Doc).map((p) => hierarchy.getClass(p))
+
+    mixins = descendants.filter(
+      (m) =>
+        m.kind === ClassifierKind.MIXIN &&
+        !ignoreMixins.has(m._id) &&
+        (hierarchy.hasMixin(object, m._id) ||
+          (showAllMixins &&
+            hierarchy.isDerived(object._class, hierarchy.getBaseClass(m._id)) &&
+            (m.extends && hierarchy.isMixin(m.extends) ? hierarchy.hasMixin(object, m.extends) : true)))
+    )
+  }
 
   function read (_id: Ref<Doc>) {
     if (lastId !== _id) {
@@ -86,7 +122,7 @@
     }
   }
 
-  export let mode: string = 'mail'
+  export let mode: string = 'messages'
 
   let channel: Partial<Channel> = {}
   const activityOptions = { enabled: true, showInput: false }
@@ -103,22 +139,22 @@
 
   let tabSource: { [index: string]: any } = {
     mail: { labelIntl: plugin.string.Mail, presenter: 'gmail:component:Main' },
-    messages: { labelIntl: plugin.string.Messages, presenter: 'chunter:component:CommentPopup' },
+    messages: { labelIntl: plugin.string.Messages, presenter: 'chunter:component:CommentPopup' }
     // issue: { labelIntl: plugin.string.Issue, presenter: 'task:component:' }
   }
 
   $: if (object?._id) {
     tabSource = {
-      mail: { 
-        ...tabSource.mail, 
-        props: { channel } 
+      mail: {
+        ...tabSource.mail,
+        props: { channel }
       },
-      messages: { 
+      messages: {
         ...tabSource.messages,
         props: { objectId: object._id, object, withInput: true, withHeader: false, fullWidth: true }
-      },
-      // issue: { 
-      //   ...tabSource.issue, 
+      }
+      // issue: {
+      //   ...tabSource.issue,
       //   props: {}
       // },
     }
@@ -151,13 +187,8 @@
 
   function showMenu (ev?: Event): void {
     if (!object) return
-    showPopup(
-      ContextMenu,
-      { object, excludedActions: [view.action.Open] },
-      (ev as MouseEvent).target as HTMLElement
-    )
+    showPopup(ContextMenu, { object, excludedActions: [view.action.Open] }, (ev as MouseEvent).target as HTMLElement)
   }
-
 </script>
 
 {#if object !== undefined}
@@ -210,9 +241,6 @@
     </div>
     <svelte:fragment slot="utils">
       <Button icon={IconMoreH} kind={'ghost'} size={'medium'} on:click={showMenu} />
-      {#if lastId}
-        <!-- <CopyToClipboard issueUrl={generateIssueShortLink(lastId)} {lastId} /> -->
-      {/if}
       <Button
         icon={setting.icon.Setting}
         kind={'ghost'}
@@ -240,12 +268,8 @@
     </svelte:fragment>
     <svelte:fragment slot="custom-attributes">
       {#if object && space}
-        <div class="space-divider" />
+        <DocAttributeBar {object} {mixins} {ignoreKeys} {allowedCollections} showLabel={plugin.string.LeadInfo} />
       {/if}
-
-      <div class="popupPanel-body__aside-grid">
-        <div class="divider" />
-      </div>
     </svelte:fragment>
   </Panel>
 {/if}
