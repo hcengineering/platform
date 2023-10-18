@@ -13,8 +13,10 @@
 // limitations under the License.
 //
 
-import { TiptapCollabProvider } from './provider'
+import { onStatelessParameters } from '@hocuspocus/provider'
 import * as Y from 'yjs'
+
+import { TiptapCollabProvider } from './provider'
 
 type ProviderData = (
   | {
@@ -30,7 +32,7 @@ function getProvider (
   documentId: string,
   providerData: ProviderData,
   initialContentId?: string
-): { provider: TiptapCollabProvider, dispose?: () => void } {
+): TiptapCollabProvider {
   if (!('provider' in providerData)) {
     const provider = new TiptapCollabProvider({
       url: providerData.collaboratorURL,
@@ -39,17 +41,22 @@ function getProvider (
       token: providerData.token,
       parameters: {
         initialContentId: initialContentId ?? ''
+      },
+      onStateless (data: onStatelessParameters) {
+        try {
+          const payload = JSON.parse(data.payload)
+          if ('status' in payload && payload.status === 'completed') {
+            provider.destroy()
+          }
+        } catch (e) {
+          console.error('Failed to check provider operation status', e)
+        }
       }
     })
 
-    return {
-      provider,
-      dispose: () => {
-        provider.destroy()
-      }
-    }
+    return provider
   } else {
-    return { provider: providerData.provider }
+    return providerData.provider
   }
 }
 
@@ -60,9 +67,8 @@ export function copyDocumentField (
   providerData: ProviderData,
   initialContentId?: string
 ): void {
-  const { provider, dispose } = getProvider(documentId, providerData, initialContentId)
+  const provider = getProvider(documentId, providerData, initialContentId)
   provider.copyField(documentId, srcFieldId, dstFieldId)
-  dispose?.()
 }
 
 export function copyDocumentContent (
@@ -71,7 +77,6 @@ export function copyDocumentContent (
   providerData: ProviderData,
   initialContentId?: string
 ): void {
-  const { provider, dispose } = getProvider(documentId, providerData, initialContentId)
+  const provider = getProvider(documentId, providerData, initialContentId)
   provider.copyContent(documentId, snapshotId)
-  dispose?.()
 }
