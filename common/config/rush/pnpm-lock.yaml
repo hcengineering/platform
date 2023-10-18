@@ -18868,7 +18868,7 @@ packages:
     dev: false
 
   file:projects/middleware.tgz(@types/node@16.11.68)(esbuild@0.16.17)(ts-node@10.9.1):
-    resolution: {integrity: sha512-TT4uLU1UvoXXmVb3OHUhCemx34agLPzeNhwbHmAyPXREt7phuCSwYy2TkRJl/9F0QryvgBR+C2n99jqSqSAaXg==, tarball: file:projects/middleware.tgz}
+    resolution: {integrity: sha512-gSuvnAq/78PHhS/K116OxI+McFyaXSly7OUaNxgGbYIXtwPJlNHLPqFXxGjATRzBr4M3dplOeEs+4odQGn8AhQ==, tarball: file:projects/middleware.tgz}
     id: file:projects/middleware.tgz
     name: '@rush-temp/middleware'
     version: 0.0.0
@@ -18883,6 +18883,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.51.0)
       fast-equals: 2.0.4
       jest: 29.7.0(@types/node@16.11.68)(ts-node@10.9.1)
+      just-clone: 6.2.0
       prettier: 2.8.8
       ts-jest: 29.1.1(esbuild@0.16.17)(jest@29.7.0)(typescript@5.2.2)
       typescript: 5.2.2
