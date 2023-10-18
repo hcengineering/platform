@@ -26,7 +26,11 @@ type ProviderData = (
   }
 ) & { ydoc?: Y.Doc }
 
-function getProvider (documentId: string, providerData: ProviderData, initialContentId?: string): { provider: TiptapCollabProvider, dispose?: () => void } {
+function getProvider (
+  documentId: string,
+  providerData: ProviderData,
+  initialContentId?: string
+): { provider: TiptapCollabProvider, dispose?: () => void } {
   if (!('provider' in providerData)) {
     const provider = new TiptapCollabProvider({
       url: providerData.collaboratorURL,
@@ -38,7 +42,12 @@ function getProvider (documentId: string, providerData: ProviderData, initialCon
       }
     })
 
-    return { provider, dispose: () => { provider.destroy() } }
+    return {
+      provider,
+      dispose: () => {
+        provider.destroy()
+      }
+    }
   } else {
     return { provider: providerData.provider }
   }
