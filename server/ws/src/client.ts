@@ -33,7 +33,10 @@ import core, {
   TxResult,
   TxWorkspaceEvent,
   WorkspaceEvent,
-  generateId
+  generateId,
+  FulltextQuery,
+  FulltextQueryOptions,
+  FulltextSearchResult
 } from '@hcengineering/core'
 import { Pipeline, SessionContext } from '@hcengineering/server-core'
 import { Token } from '@hcengineering/server-token'
@@ -108,6 +111,16 @@ export class ClientSession implements Session {
     const context = ctx as SessionContext
     context.userEmail = this.token.email
     return await this._pipeline.findAll(context, _class, query, options)
+  }
+
+  async searchFulltext(
+    ctx: MeasureContext,
+    query: FulltextQuery,
+    options: FulltextQueryOptions
+  ): Promise<FulltextSearchResult> {
+    const context = ctx as SessionContext
+    context.userEmail = this.token.email
+    return await this._pipeline.searchFulltext(context, query, options)
   }
 
   async tx (ctx: MeasureContext, tx: Tx): Promise<TxResult> {

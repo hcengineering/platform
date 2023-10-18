@@ -24,7 +24,8 @@ import core, {
   MeasureContext,
   Ref,
   Storage,
-  WorkspaceId
+  WorkspaceId,
+  IndexedDoc
 } from '@hcengineering/core'
 import {
   contentStageId,
@@ -35,7 +36,6 @@ import {
   FullTextAdapter,
   FullTextPipeline,
   FullTextPipelineStage,
-  IndexedDoc,
   isIndexingRequired,
   loadIndexStageStage,
   RateLimitter

@@ -14,7 +14,15 @@
 //
 
 import type { KeysByType } from 'simplytyped'
-import type { AttachedDoc, Class, Doc, Ref } from './classes'
+import type {
+  AttachedDoc,
+  Class,
+  Doc,
+  Ref,
+  Account,
+  Space,
+  Timestamp,
+} from './classes'
 import type { Tx } from './tx'
 
 /**
@@ -211,11 +219,58 @@ export interface TxResult {}
 /**
  * @public
  */
+export interface IndexedDoc {
+  id: Ref<Doc>
+  _class: Ref<Class<Doc>>
+  space: Ref<Space>
+  modifiedOn: Timestamp
+  modifiedBy: Ref<Account>
+  attachedTo?: Ref<Doc>
+  attachedToClass?: Ref<Class<Doc>>
+  [key: string]: any
+}
+
+/**
+ * @public
+ */
+export type FulltextQuery = any
+
+/**
+ * @public
+ */
+export type FulltextQueryOptions = any
+
+/**
+ * @public
+ */
+export interface FulltextSearchResult {
+  suggest?: any
+  aggregations?: any
+  hits: {
+    hits: IndexedDoc[],
+    [key: string]: any
+  }
+}
+
+/**
+ * @public
+ */
 export interface Storage {
   findAll: <T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
+
   tx: (tx: Tx) => Promise<TxResult>
+}
+
+/**
+ * @public
+ */
+export interface FulltextStorage {
+  searchFulltext: (
+    query: FulltextQuery,
+    options: FulltextQueryOptions
+  ) => Promise<FulltextSearchResult>
 }

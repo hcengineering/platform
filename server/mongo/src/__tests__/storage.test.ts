@@ -166,6 +166,7 @@ describe('mongo operations', () => {
       const st: ClientConnection = {
         findAll: async (_class, query, options) => await serverStorage.findAll(ctx, _class, query, options),
         tx: async (tx) => (await serverStorage.tx(ctx, tx))[0],
+        searchFulltext: async () => [],
         close: async () => {},
         loadChunk: async (domain): Promise<DocChunk> => await Promise.reject(new Error('unsupported')),
         closeChunk: async (idx) => {},

@@ -26,14 +26,19 @@ import type {
   Ref,
   Timestamp,
   Tx,
-  TxResult
+  TxResult,
+  FulltextStorage,
+  FulltextQuery,
+  FulltextQueryOptions,
+  FulltextSearchResult
 } from '@hcengineering/core'
 import core, { DOMAIN_TX, Hierarchy, ModelDb, TxDb } from '@hcengineering/core'
 import { genMinModel } from './minmodel'
 
 export async function connect (handler: (tx: Tx) => void): Promise<
 AccountClient &
-BackupClient & {
+BackupClient &
+FulltextStorage & {
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
 }
 > {
@@ -86,6 +91,10 @@ BackupClient & {
     closeChunk: async (idx: number) => {},
     loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => [],
     upload: async (domain: Domain, docs: Doc[]) => {},
-    clean: async (domain: Domain, docs: Ref<Doc>[]) => {}
+    clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
+
+    searchFulltext: async (query: FulltextQuery, options: FulltextQueryOptions): Promise<FulltextSearchResult> => {
+      return { hits: { hits: [] } }
+    }
   }
 }

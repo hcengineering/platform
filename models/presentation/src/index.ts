@@ -46,6 +46,7 @@ export class TObjectSearchCategory extends TDoc implements ObjectSearchCategory 
 
   // Query for documents with pattern
   query!: Resource<ObjectSearchFactory>
+  classToSearch!: Ref<Class<Doc>>
 }
 
 @Model(presentation.class.PresentationMiddlewareFactory, core.class.Doc, DOMAIN_MODEL)

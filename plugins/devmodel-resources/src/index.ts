@@ -27,7 +27,10 @@ import core, {
   Ref,
   Tx,
   TxResult,
-  WithLookup
+  WithLookup,
+  FulltextQuery,
+  FulltextQueryOptions,
+  FulltextSearchResult
 } from '@hcengineering/core'
 import { devModelId } from '@hcengineering/devmodel'
 import { Builder } from '@hcengineering/model'
@@ -118,6 +121,23 @@ class ModelClient implements AccountClient {
         ' =>model',
         this.client.getModel(),
         getMetadata(devmodel.metadata.DevModel)
+      )
+    }
+    return result
+  }
+
+  async searchFulltext (
+    query: FulltextQuery,
+    options: FulltextQueryOptions
+  ): Promise<FulltextSearchResult> {
+    const result = await this.client.searchFulltext(query, options)
+    if (this.notifyEnabled) {
+      console.debug(
+        'devmodel# searchFulltext=>',
+        query,
+        options,
+        'result => ',
+        result
       )
     }
     return result

@@ -15,7 +15,7 @@ import type {
 } from './classes'
 import { Client } from './client'
 import core from './component'
-import type { DocumentQuery, FindOptions, FindResult, TxResult, WithLookup } from './storage'
+import type { DocumentQuery, FindOptions, FindResult, FulltextSearchResult, TxResult, WithLookup } from './storage'
 import { DocumentClassQuery, Tx, TxCUD, TxFactory, TxProcessor } from './tx'
 
 /**
@@ -58,6 +58,10 @@ export class TxOperations implements Omit<Client, 'notify'> {
     options?: FindOptions<T> | undefined
   ): Promise<WithLookup<T> | undefined> {
     return this.client.findOne(_class, query, options)
+  }
+
+  searchFulltext (query: any, options: any): Promise<FulltextSearchResult> {
+    return this.client.searchFulltext(query, options)
   }
 
   tx (tx: Tx): Promise<TxResult> {

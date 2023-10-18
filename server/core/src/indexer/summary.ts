@@ -27,11 +27,11 @@ import core, {
   MeasureContext,
   Ref,
   ServerStorage,
-  Storage
+  Storage,
+  IndexedDoc
 } from '@hcengineering/core'
 import { translate } from '@hcengineering/platform'
 import { convert } from 'html-to-text'
-import { IndexedDoc } from '../types'
 import { contentStageId, DocUpdateHandler, fieldStateId, FullTextPipeline, FullTextPipelineStage } from './types'
 import { collectPropagate, collectPropagateClasses, getFullTextContext, loadIndexStageStage } from './utils'
 

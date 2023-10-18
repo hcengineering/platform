@@ -36,12 +36,16 @@ import core, {
   TxCUD,
   TxFactory,
   TxResult,
-  WorkspaceId
+  WorkspaceId,
+  IndexedDoc,
+  FulltextQuery,
+  FulltextQueryOptions,
+  FulltextSearchResult
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { FullTextIndexPipeline } from './indexer'
 import { createStateDoc, isClassIndexable } from './indexer/utils'
-import type { FullTextAdapter, IndexedDoc, WithFind } from './types'
+import type { FullTextAdapter, WithFind } from './types'
 
 /**
  * @public
@@ -239,6 +243,14 @@ export class FullTextIndex implements WithFind {
       }
     }
     return result
+  }
+
+  async searchFulltext (
+    ctx: MeasureContext,
+    query: FulltextQuery,
+    options: FulltextQueryOptions
+  ): Promise<FulltextSearchResult> {
+    return this.adapter.searchRaw(query, options)
   }
 
   submitting: Promise<void> | undefined

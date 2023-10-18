@@ -23,9 +23,9 @@ import {
   MeasureContext,
   ModelDb,
   Ref,
-  Storage
+  Storage,
+  IndexedDoc
 } from '@hcengineering/core'
-import type { IndexedDoc } from '../types'
 
 /**
  * @public

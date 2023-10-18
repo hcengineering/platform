@@ -14,7 +14,6 @@
 //
 
 import {
-  Account,
   Class,
   Doc,
   DocumentQuery,
@@ -28,13 +27,15 @@ import {
   Obj,
   Ref,
   ServerStorage,
-  Space,
   Storage,
-  Timestamp,
   Tx,
   TxFactory,
   TxResult,
-  WorkspaceId
+  WorkspaceId,
+  IndexedDoc,
+  FulltextQuery,
+  FulltextQueryOptions,
+  FulltextSearchResult
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import type { Resource } from '@hcengineering/platform'
@@ -59,6 +60,11 @@ export interface Middleware {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
+  searchFulltext: (
+    ctx: SessionContext,
+    query: FulltextQuery,
+    options: FulltextQueryOptions
+  ) => Promise<FulltextSearchResult>
 }
 
 /**
@@ -93,6 +99,11 @@ export interface Pipeline extends LowLevelStorage {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
+  searchFulltext: (
+    ctx: SessionContext,
+    query: FulltextQuery,
+    options: FulltextQueryOptions
+  ) => Promise<FulltextSearchResult>
   tx: (ctx: SessionContext, tx: Tx) => Promise<[TxResult, Tx[], string[] | undefined]>
   close: () => Promise<void>
 }
@@ -136,20 +147,6 @@ export interface Trigger extends Doc {
 /**
  * @public
  */
-export interface IndexedDoc {
-  id: Ref<Doc>
-  _class: Ref<Class<Doc>>
-  space: Ref<Space>
-  modifiedOn: Timestamp
-  modifiedBy: Ref<Account>
-  attachedTo?: Ref<Doc>
-  attachedToClass?: Ref<Class<Doc>>
-  [key: string]: any
-}
-
-/**
- * @public
- */
 export interface EmbeddingSearchOption {
   field: string
   field_enable: string
@@ -173,6 +170,12 @@ export interface FullTextAdapter {
   update: (id: Ref<Doc>, update: Record<string, any>) => Promise<TxResult>
   remove: (id: Ref<Doc>[]) => Promise<void>
   updateMany: (docs: IndexedDoc[]) => Promise<TxResult[]>
+
+  searchRaw: (
+    query: FulltextQuery,
+    options: FulltextQueryOptions
+  ) => Promise<FulltextSearchResult>
+
   search: (
     _classes: Ref<Class<Doc>>[],
     search: DocumentQuery<Doc>,
@@ -218,6 +221,10 @@ export class DummyFullTextAdapter implements FullTextAdapter {
 
   async updateMany (docs: IndexedDoc[]): Promise<TxResult[]> {
     return []
+  }
+
+  async searchRaw (query: FulltextQuery, options: FulltextQueryOptions): Promise<FulltextSearchResult> {
+    return { hits: { hits: [] } }
   }
 
   async search (query: any): Promise<IndexedDoc[]> {

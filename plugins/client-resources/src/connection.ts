@@ -35,7 +35,10 @@ import core, {
   TxResult,
   TxWorkspaceEvent,
   WorkspaceEvent,
-  generateId
+  generateId,
+  FulltextQuery,
+  FulltextQueryOptions,
+  FulltextSearchResult
 } from '@hcengineering/core'
 import { PlatformError, UNAUTHORIZED, broadcastEvent, getMetadata, unknownError } from '@hcengineering/platform'
 
@@ -406,6 +409,13 @@ class Connection implements ClientConnection {
 
   clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {
     return this.sendRequest({ method: 'clean', params: [domain, docs] })
+  }
+
+  searchFulltext(
+    query: FulltextQuery,
+    options: FulltextQueryOptions
+  ): Promise<FulltextSearchResult> {
+    return this.sendRequest({ method: 'searchFulltext', params: [query, options] })
   }
 }
 

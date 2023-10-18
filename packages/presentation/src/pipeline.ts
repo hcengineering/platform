@@ -12,6 +12,10 @@ import {
   TxResult,
   WithLookup,
   toFindResult
+  WithLookup,
+  FulltextQuery,
+  FulltextQueryOptions,
+  FulltextSearchResult
 } from '@hcengineering/core'
 import { Resource } from '@hcengineering/platform'
 
@@ -106,6 +110,13 @@ export class PresentationPipelineImpl implements PresentationPipeline {
     return this.head !== undefined
       ? await this.head.findAll(_class, query, options)
       : await this.client.findAll(_class, query, options)
+  }
+
+  async searchFulltext (
+    query: FulltextQuery,
+    options: FulltextQueryOptions
+  ): Promise<FulltextSearchResult> {
+    return this.client.searchFulltext(query, options)
   }
 
   async findOne<T extends Doc>(

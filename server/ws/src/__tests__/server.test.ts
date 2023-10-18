@@ -80,7 +80,10 @@ describe('server', () => {
       }),
       load: async (domain: Domain, docs: Ref<Doc>[]) => [],
       upload: async (domain: Domain, docs: Doc[]) => {},
-      clean: async (domain: Domain, docs: Ref<Doc>[]) => {}
+      clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
+      searchFulltext: async (ctx, query, options) => {
+        return { hits: { hits: [] } }
+      },
     }),
     sessionFactory: (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
     port: 3335,
@@ -175,7 +178,10 @@ describe('server', () => {
         }),
         load: async (domain: Domain, docs: Ref<Doc>[]) => [],
         upload: async (domain: Domain, docs: Doc[]) => {},
-        clean: async (domain: Domain, docs: Ref<Doc>[]) => {}
+        clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
+        searchFulltext: async (ctx, query, options) => {
+          return { hits: { hits: [] } }
+        }
       }),
       sessionFactory: (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
       port: 3336,

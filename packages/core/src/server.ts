@@ -17,7 +17,15 @@ import { MeasureContext } from './measurements'
 import type { Doc, Class, Ref, Domain, Timestamp } from './classes'
 import { Hierarchy } from './hierarchy'
 import { ModelDb } from './memdb'
-import type { DocumentQuery, FindOptions, FindResult, TxResult } from './storage'
+import type {
+  DocumentQuery,
+  FindOptions,
+  FindResult,
+  TxResult,
+  FulltextQuery,
+  FulltextQueryOptions,
+  FulltextSearchResult
+} from './storage'
 import type { Tx } from './tx'
 import { LoadModelResponse } from '.'
 
@@ -66,6 +74,11 @@ export interface ServerStorage extends LowLevelStorage {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
+  searchFulltext: (
+    ctx: MeasureContext,
+    query: FulltextQuery,
+    options: FulltextQueryOptions
+  ) => Promise<FulltextSearchResult>
   tx: (ctx: MeasureContext, tx: Tx) => Promise<[TxResult, Tx[]]>
   apply: (ctx: MeasureContext, tx: Tx[], broadcast: boolean) => Promise<Tx[]>
   close: () => Promise<void>

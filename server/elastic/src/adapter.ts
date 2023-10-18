@@ -23,9 +23,13 @@ import {
   Ref,
   toWorkspaceString,
   TxResult,
-  WorkspaceId
+  WorkspaceId,
+  IndexedDoc,
+  FulltextQuery,
+  FulltextQueryOptions,
+  FulltextSearchResult
 } from '@hcengineering/core'
-import type { EmbeddingSearchOption, FullTextAdapter, IndexedDoc } from '@hcengineering/server-core'
+import type { EmbeddingSearchOption, FullTextAdapter } from '@hcengineering/server-core'
 
 import { Client, errors as esErr } from '@elastic/elasticsearch'
 import { Domain } from 'node:domain'
@@ -98,6 +102,39 @@ class ElasticAdapter implements FullTextAdapter {
 
   metrics (): MeasureContext {
     return this._metrics
+  }
+
+  async searchRaw (
+    query: FulltextQuery,
+    options: FulltextQueryOptions
+  ): Promise<FulltextSearchResult> {
+    try {
+      const result = await this.client.search({
+        index: toWorkspaceString(this.workspaceId),
+        body: query
+      })
+
+      const resp: FulltextSearchResult =  { hits: { hits: [] } }
+      if (result.body.hits !== undefined) {
+        // 1-lvl merge, but preserve hits in a case there are no hits inside response
+        resp.hits = {
+          hits: [],
+          ...result.body.hits
+        }
+        resp.hits.hits = resp.hits.hits.map((hit) => ({ ...hit._source, _score: hit._score }))
+      }
+      if (result.body.suggest !== undefined) {
+        resp.suggest = result.body.suggest
+      }
+      if (result.body.aggregations !== undefined) {
+        resp.aggregations = result.body.aggregations
+      }
+
+      return resp
+    } catch (err) {
+      console.error(JSON.stringify(err, null, 2))
+      return { hits: { hits: [] } }
+    }
   }
 
   async search (

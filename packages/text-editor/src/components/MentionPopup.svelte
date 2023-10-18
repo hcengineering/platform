@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getResource } from '@hcengineering/platform'
+  import { getResource, getMetadata } from '@hcengineering/platform'
   import { createFocusManager, FocusHandler, Label, ListView, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation, {
@@ -23,6 +23,8 @@
     ObjectSearchCategory,
     ObjectSearchResult
   } from '@hcengineering/presentation'
+
+  import { Class, Ref, Doc } from '@hcengineering/core'
 
   export let query: string = ''
   export let maxItemsPerCategory = 3
@@ -39,6 +41,27 @@
     categories = r.filter((it) => hasResource(it.query))
     updateItems(query)
   })
+
+  // const fulltextQuery = {
+  //   "aggs": {
+  //     "class_count": {
+  //       "terms": {
+  //         "field": "_class.keyword"
+  //       }
+  //     }
+  //   },
+
+  //   "query": {
+  //     "query_string": {
+  //       "query": "software"
+  //     }
+  //   }
+  // }
+
+  // conn.searchFulltext(fulltextQuery, {})
+  // .then((r) => {
+  //   console.log('searchFulltext @ r', r)
+  // })
 
   const dispatch = createEventDispatcher()
 
@@ -104,11 +127,46 @@
     }
   }
 
+  async function doFulltextSearch(classes: Ref<Class<Doc>>[], query: string) {
+    const fulltextQuery = {
+      aggs: {
+        class_count: {
+          terms: {
+            field: '_class.keyword'
+          }
+        }
+      },
+      query: {
+        bool: {
+          must: {
+            query_string: { query }
+          },
+          filter: {
+            terms: {
+              '_class.keyword': classes
+            }
+          }
+        }
+      }
+    }
+    const result = await client.searchFulltext(fulltextQuery, {})
+    console.log('mention @ Fulltext Results', result)
+  }
+
   async function updateItems (query: string): Promise<void> {
+    const classesToSearch: Ref<Class<Doc>>[] = []
+
     const queries: Promise<SearchSection>[] = []
     for (const cat of categories) {
+      if (cat.classToSearch !== undefined) {
+        classesToSearch.push(cat.classToSearch)
+      }
       queries.push(queryCategoryItems(cat, query))
     }
+
+    // // WIP: Demo request in a new Fulltext Search API
+    // await doFulltextSearch(classesToSearch, query)
+
     const results = await Promise.all(queries)
     items = packSearchResultsForListView(results)
   }

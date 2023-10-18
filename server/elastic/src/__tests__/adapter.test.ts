@@ -14,8 +14,7 @@
 // limitations under the License.
 //
 
-import { Account, Class, Doc, getWorkspaceId, MeasureMetricsContext, Ref, Space } from '@hcengineering/core'
-import type { IndexedDoc } from '@hcengineering/server-core'
+import { Account, Class, Doc, getWorkspaceId, MeasureMetricsContext, Ref, Space, IndexedDoc } from '@hcengineering/core'
 import { createElasticAdapter } from '../adapter'
 
 describe('client', () => {
@@ -38,7 +37,18 @@ describe('client', () => {
     console.log(hits)
   })
 
-  // it('should find document', async () => {
-  //   const adapter = await createElasticAdapter('http://localhost:9200/', 'ws1')
-  // })
+  it('should find document with raw search', async () => {
+    const adapter = await createElasticAdapter(
+      'http://localhost:9200/',
+      getWorkspaceId('ws1', ''),
+      new MeasureMetricsContext('-', {})
+    )
+    const hits = await adapter.searchRaw({
+      query: {
+        query_string: {
+          query: 'hey'
+        }
+      }
+    }, {})
+  })
 })

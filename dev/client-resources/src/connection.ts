@@ -31,7 +31,10 @@ import core, {
   Timestamp,
   Tx,
   TxHandler,
-  TxResult
+  TxResult,
+  FulltextQuery,
+  FulltextQueryOptions,
+  FulltextSearchResult
 } from '@hcengineering/core'
 import { createInMemoryTxAdapter } from '@hcengineering/dev-storage'
 import devmodel from '@hcengineering/devmodel'
@@ -57,6 +60,10 @@ class ServerStorageWrapper implements ClientConnection {
   ): Promise<FindResult<T>> {
     const [c, q, o] = protoDeserialize(protoSerialize([_class, query, options], false), false)
     return this.storage.findAll(this.measureCtx, c, q, o)
+  }
+
+  async searchFulltext (query: FulltextQuery, options: FulltextQueryOptions): Promise<FulltextSearchResult> {
+    return { hits: { hits: [] } }
   }
 
   async loadModel (lastModelTx: Timestamp): Promise<Tx[]> {

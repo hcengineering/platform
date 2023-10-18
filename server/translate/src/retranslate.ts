@@ -23,7 +23,8 @@ import {
   MeasureContext,
   Ref,
   Storage,
-  WorkspaceId
+  WorkspaceId,
+  IndexedDoc
 } from '@hcengineering/core'
 import {
   contentStageId,
@@ -33,7 +34,6 @@ import {
   extractDocKey,
   fieldStateId,
   FullTextPipeline,
-  IndexedDoc,
   loadIndexStageStage
 } from '@hcengineering/server-core'
 

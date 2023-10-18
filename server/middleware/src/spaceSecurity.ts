@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import justClone from 'just-clone'
 
 import core, {
   Account,
@@ -38,7 +39,11 @@ import core, {
   TxRemoveDoc,
   TxUpdateDoc,
   TxWorkspaceEvent,
-  WorkspaceEvent
+  WorkspaceEvent,
+  FulltextSearchResult,
+  FulltextQuery,
+  FulltextQueryOptions,
+  IndexedDoc
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { BroadcastFunc, Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
@@ -398,6 +403,53 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       }
     }
     return findResult
+  }
+
+  override async searchFulltext(ctx: SessionContext, query: FulltextQuery, options: FulltextQueryOptions): Promise<FulltextSearchResult> {
+    let newQuery = justClone(query)
+    const account = await getUser(this.storage, ctx)
+    let spaces: string[] = []
+    if (!isSystem(account)) {
+      spaces = await this.getAllAllowedSpaces(account)
+      const spacesFilter = {
+        terms: {
+          'space.keyword': spaces
+        }
+      }
+
+      if (query.query === undefined) {
+        newQuery.query = spacesFilter
+      } else if (query.query.bool === undefined) {
+        newQuery.query = {
+          bool: {
+            must: query.query,
+            filter: spacesFilter
+          }
+        }
+      } else if (query.query.bool.filter === undefined) {
+        newQuery.query.bool.filter = spacesFilter
+      } else if (Array.isArray(query.query.bool.filter)) {
+        newQuery.query.bool.filter.push(spacesFilter)
+      } else {
+        newQuery.query.bool.filter = [
+          query.query.bool.filter,
+          spacesFilter
+        ]
+      }
+    }
+
+    const result = await this.provideSearchFulltext(ctx, newQuery, options)
+
+    if (spaces.length > 0) {
+      /*
+        We did our best at trying to filter out spaces in the query.
+        But the elastic request syntax is soo deep We should have a plan-B
+        filter in a case some query will break our filter.
+      */
+
+      result.hits.hits = result.hits.hits.filter((doc: IndexedDoc) => spaces.indexOf(doc.space) >= 0)
+    }
+    return result
   }
 
   async isUnavailable (ctx: SessionContext, space: Ref<Space>): Promise<boolean> {

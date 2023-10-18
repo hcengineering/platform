@@ -31,11 +31,11 @@ import core, {
   _getOperator,
   setObjectValue,
   toFindResult,
-  versionToString
+  versionToString,
+  IndexedDoc
 } from '@hcengineering/core'
 import { DbAdapter } from '../adapter'
 import { RateLimitter } from '../limitter'
-import type { IndexedDoc } from '../types'
 import { FullTextPipeline, FullTextPipelineStage } from './types'
 import { createStateDoc, isClassIndexable } from './utils'
 

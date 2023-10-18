@@ -28,9 +28,10 @@ import core, {
   Ref,
   ServerStorage,
   Storage,
-  WorkspaceId
+  WorkspaceId,
+  IndexedDoc
 } from '@hcengineering/core'
-import { FullTextAdapter, IndexedDoc } from '../types'
+import { FullTextAdapter } from '../types'
 import { summaryStageId } from './summary'
 import {
   contentStageId,
