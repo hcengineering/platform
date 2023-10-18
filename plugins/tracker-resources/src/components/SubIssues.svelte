@@ -92,6 +92,7 @@
         dueDate: null,
         parents,
         reportedTime: 0,
+        remainingTime: 0,
         estimation: subIssue.estimation,
         reports: 0,
         relations: [],

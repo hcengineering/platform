@@ -13,16 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher, onDestroy, tick } from 'svelte'
+  import { Attachment } from '@hcengineering/attachment'
+  import { Account, Class, Doc, generateId, IdMap, Ref, Space, toIdMap } from '@hcengineering/core'
+  import { IntlString, setPlatformStatus, unknownError, Asset } from '@hcengineering/platform'
   import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
-  import { ReferenceInput } from '@hcengineering/text-editor'
-  import type { RefAction } from '@hcengineering/text-editor'
+  import textEditor, { AttachIcon, type RefAction, ReferenceInput } from '@hcengineering/text-editor'
+  import { Loading, type AnySvelteComponent } from '@hcengineering/ui'
   import { deleteFile, uploadFile } from '../utils'
   import attachment from '../plugin'
-  import { IntlString, setPlatformStatus, unknownError, Asset } from '@hcengineering/platform'
-  import { createEventDispatcher, onDestroy, tick } from 'svelte'
-  import { Account, Class, Doc, generateId, IdMap, Ref, Space, toIdMap } from '@hcengineering/core'
-  import { Loading, type AnySvelteComponent } from '@hcengineering/ui'
-  import { Attachment } from '@hcengineering/attachment'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
 
   export let objectId: Ref<Doc>
@@ -40,7 +39,7 @@
     refInput.submit()
   }
   export let placeholder: IntlString | undefined = undefined
-  export let extraActions: RefAction[] | undefined = undefined
+  export let extraActions: RefAction[] = []
   export let boundary: HTMLElement | undefined = undefined
 
   let refInput: ReferenceInput
@@ -284,20 +283,27 @@
       {iconSend}
       {labelSend}
       {showSend}
-      showHeader={attachments.size > 0 || progress}
       {loading}
       {boundary}
+      extraActions={[
+        ...extraActions,
+        {
+          label: textEditor.string.Attach,
+          icon: AttachIcon,
+          action: () => {
+            dispatch('focus')
+            inputFile.click()
+          },
+          order: 1001
+        }
+      ]}
+      showHeader={attachments.size > 0 || progress}
+      haveAttachment={attachments.size > 0}
       on:focus
       on:blur
       on:message={onMessage}
-      haveAttachment={attachments.size > 0}
-      on:attach={() => {
-        dispatch('focus')
-        inputFile.click()
-      }}
       on:update={onUpdate}
       {placeholder}
-      {extraActions}
     >
       <div slot="header">
         {#if attachments.size || progress}

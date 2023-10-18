@@ -34,6 +34,7 @@ const object: AttachedData<Issue> = {
   subIssues: 0,
   parents: [],
   reportedTime: 0,
+  remainingTime: 0,
   estimation: 0,
   reports: 0,
   childInfo: []
@@ -96,6 +97,7 @@ async function genIssue (client: TxOperations, statuses: Ref<IssueStatus>[]): Pr
     dueDate: object.dueDate,
     parents: [],
     reportedTime: 0,
+    remainingTime: 0,
     estimation: object.estimation,
     reports: 0,
     relations: [],

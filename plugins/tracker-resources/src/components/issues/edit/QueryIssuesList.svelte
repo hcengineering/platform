@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, Ref, toIdMap } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Issue, Project } from '@hcengineering/tracker'
+  import { Issue } from '@hcengineering/tracker'
   import { Button, Chevron, ExpandCollapse, IconAdd, closeTooltip, showPopup } from '@hcengineering/ui'
   import view, { ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { ViewletsSettingButton } from '@hcengineering/view-resources'
@@ -24,7 +24,6 @@
   import CreateIssue from '../../CreateIssue.svelte'
   import SubIssueList from './SubIssueList.svelte'
 
-  export let projects: Map<Ref<Project>, Project> | undefined = undefined
   export let shouldSaveDraft: boolean = false
   export let object: Doc
   export let query: DocumentQuery<Issue> = {}
@@ -39,21 +38,10 @@
 
   let viewlet: Viewlet | undefined
   let viewOptions: ViewOptions | undefined
-  let _projects = projects
   export let focusIndex = -1
-
-  const projectsQuery = createQuery()
 
   function openNewIssueDialog (): void {
     showPopup(tracker.component.CreateIssue, { space: object.space, ...createParams, shouldSaveDraft }, 'top')
-  }
-
-  $: if (projects === undefined) {
-    projectsQuery.query(tracker.class.Project, { archived: false }, async (result) => {
-      _projects = toIdMap(result)
-    })
-  } else {
-    projectsQuery.unsubscribe()
   }
 
   let lastIssueId: Ref<Doc>
@@ -178,7 +166,6 @@
           createItemLabel={tracker.string.AddIssueTooltip}
           createItemDialogProps={{ space: object.space, ...createParams, shouldSaveDraft }}
           focusIndex={focusIndex === -1 ? -1 : focusIndex + 1}
-          projects={_projects}
           {configurations}
           {preference}
           {viewlet}

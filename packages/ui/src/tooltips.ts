@@ -25,7 +25,7 @@ export function tooltip (node: HTMLElement, options?: LabelAndProps): any {
   const show = (): void => {
     const shown = !!(storedValue.label !== undefined || storedValue.component !== undefined)
     if (!shown) {
-      if (opt.kind !== 'submenu') {
+      if (opt?.kind !== 'submenu') {
         clearTimeout(toHandler)
         toHandler = setTimeout(() => {
           showTooltip(

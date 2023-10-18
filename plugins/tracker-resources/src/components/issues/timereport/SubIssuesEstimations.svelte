@@ -13,15 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, SortingOrder } from '@hcengineering/core'
+  import { SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Issue, Project } from '@hcengineering/tracker'
+  import { Issue } from '@hcengineering/tracker'
   import { Expandable, Spinner } from '@hcengineering/ui'
   import tracker from '../../../plugin'
   import EstimationSubIssueList from './EstimationSubIssueList.svelte'
 
   export let issue: Issue
-  export let projects: Map<Ref<Project>, Project>
 
   const subIssuesQuery = createQuery()
 
@@ -38,7 +37,7 @@
   {#if hasSubIssues}
     <Expandable label={tracker.string.ChildEstimation} contentColor bordered>
       <svelte:fragment slot="title">: <span class="caption-color">{total}</span></svelte:fragment>
-      <EstimationSubIssueList issues={subIssues} {projects} />
+      <EstimationSubIssueList issues={subIssues} />
     </Expandable>
   {/if}
 {:else}

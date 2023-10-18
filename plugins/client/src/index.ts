@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { AccountClient } from '@hcengineering/core'
+import type { AccountClient, ClientConnectEvent } from '@hcengineering/core'
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { Metadata, plugin } from '@hcengineering/platform'
 // import type { LiveQuery } from '@hcengineering/query'
@@ -69,7 +69,7 @@ export type ClientFactory = (
   endpoint: string,
   onUpgrade?: () => void,
   onUnauthorized?: () => void,
-  onConnect?: (apply: boolean) => void
+  onConnect?: (event: ClientConnectEvent) => void
 ) => Promise<AccountClient>
 
 export default plugin(clientId, {

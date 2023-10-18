@@ -43,7 +43,6 @@ export default mergeIds(trackerId, tracker, {
     Unarchive: '' as IntlString,
     UnarchiveConfirm: '' as IntlString,
     AllProjects: '' as IntlString,
-    RemainingTime: '' as IntlString,
     MapRelatedIssues: '' as IntlString
   },
   activity: {

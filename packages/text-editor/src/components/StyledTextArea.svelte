@@ -84,9 +84,6 @@
     }}
   >
     <slot />
-    <svelte:fragment slot="right">
-      <slot name="right" />
-    </svelte:fragment>
   </StyledTextEditor>
 </div>
 

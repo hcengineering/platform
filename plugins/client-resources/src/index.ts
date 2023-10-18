@@ -14,7 +14,14 @@
 //
 
 import clientPlugin from '@hcengineering/client'
-import core, { AccountClient, TxHandler, TxWorkspaceEvent, WorkspaceEvent, createClient } from '@hcengineering/core'
+import core, {
+  AccountClient,
+  ClientConnectEvent,
+  TxHandler,
+  TxWorkspaceEvent,
+  WorkspaceEvent,
+  createClient
+} from '@hcengineering/core'
 import platform, {
   Severity,
   Status,
@@ -36,14 +43,14 @@ export default async () => {
         endpoint: string,
         onUpgrade?: () => void,
         onUnauthorized?: () => void,
-        onConnect?: (apply: boolean) => void
+        onConnect?: (event: ClientConnectEvent) => void
       ): Promise<AccountClient> => {
         const filterModel = getMetadata(clientPlugin.metadata.FilterModel) ?? false
 
         let client = createClient(
           (handler: TxHandler) => {
             const url = new URL(`/${token}`, endpoint)
-            console.log('connecting to', url.href)
+
             const upgradeHandler: TxHandler = (tx) => {
               if (tx?._class === core.class.TxWorkspaceEvent) {
                 const event = tx as TxWorkspaceEvent
@@ -64,17 +71,26 @@ export default async () => {
           {
             load: async () => {
               if (typeof localStorage !== 'undefined') {
-                const dta = localStorage.getItem('stored_model_' + token) ?? null
-                if (dta === null) {
-                  return []
+                const storedValue = localStorage.getItem('platform.model') ?? null
+                const model = storedValue != null ? JSON.parse(storedValue) : undefined
+                if (token !== model?.token) {
+                  return {
+                    full: false,
+                    transactions: [],
+                    hash: []
+                  }
                 }
-                return JSON.parse(dta)
+                return model.model
               }
-              return []
+              return {
+                full: true,
+                transactions: [],
+                hash: []
+              }
             },
-            store: async (txes) => {
+            store: async (model) => {
               if (typeof localStorage !== 'undefined') {
-                localStorage.setItem('stored_model_' + token, JSON.stringify(txes))
+                localStorage.setItem('platform.model', JSON.stringify({ token, model }))
               }
             }
           }

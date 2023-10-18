@@ -39,8 +39,10 @@ import {
   TProjectIssueTargetOptions,
   TRelatedIssueTarget,
   TTimeSpendReport,
+  TTypeEstimation,
   TTypeIssuePriority,
   TTypeMilestoneStatus,
+  TTypeRemainingTime,
   TTypeReportedTime
 } from './types'
 import { defineViewlets } from './viewlets'
@@ -430,7 +432,9 @@ export function createModel (builder: Builder): void {
     TTimeSpendReport,
     TTypeReportedTime,
     TProjectIssueTargetOptions,
-    TRelatedIssueTarget
+    TRelatedIssueTarget,
+    TTypeEstimation,
+    TTypeRemainingTime
   )
 
   defineViewlets(builder)

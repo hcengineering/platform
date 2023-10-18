@@ -19,11 +19,8 @@
     AnySvelteComponent,
     Button,
     ButtonKind,
-    EmojiPopup,
-    IconEmoji,
     handler,
     registerFocus,
-    showPopup,
     deviceOptionsStore as deviceInfo,
     checkAdaptiveMatching
   } from '@hcengineering/ui'
@@ -35,9 +32,8 @@
   import { completionConfig } from './extensions'
   import { EmojiExtension } from './extension/emoji'
   import { IsEmptyContentExtension } from './extension/isEmptyContent'
-  import Attach from './icons/Attach.svelte'
-  import RIMention from './icons/RIMention.svelte'
   import Send from './icons/Send.svelte'
+  import { generateDefaultActions } from './editor/actions'
 
   export let content: string = ''
   export let showHeader = false
@@ -48,7 +44,7 @@
   export let kindSend: ButtonKind = 'ghost'
   export let haveAttachment = false
   export let placeholder: IntlString | undefined = undefined
-  export let extraActions: RefAction[] | undefined = undefined
+  export let extraActions: RefAction[] = []
   export let loading: boolean = false
   export let focusable: boolean = false
   export let boundary: HTMLElement | undefined = undefined
@@ -57,7 +53,7 @@
   const dispatch = createEventDispatcher()
   const buttonSize = 'medium'
 
-  let textEditor: TextEditor
+  let textEditor: TextEditor | undefined = undefined
 
   let isEmpty = true
 
@@ -68,42 +64,22 @@
   function setContent (content: string) {
     textEditor?.setContent(content)
   }
-  const defActions: RefAction[] = [
-    {
-      label: textEditorPlugin.string.Attach,
-      icon: Attach,
-      action: () => {
-        dispatch('attach')
-      },
-      order: 1001
-    },
-    {
-      label: textEditorPlugin.string.Mention,
-      icon: RIMention,
-      action: () => textEditor.insertText('@'),
-      order: 3000
-    },
-    {
-      label: textEditorPlugin.string.Emoji,
-      icon: IconEmoji,
-      action: (element) => {
-        showPopup(
-          EmojiPopup,
-          {},
-          element,
-          (emoji) => {
-            if (!emoji) return
-            textEditor.insertText(emoji)
-            textEditor.focus()
-          },
-          () => {}
-        )
-      },
-      order: 4001
-    }
-  ]
 
-  let actions: RefAction[] = []
+  const editorHandler: TextEditorHandler = {
+    insertText: (text) => {
+      textEditor?.insertText(text)
+    },
+    insertTemplate: (name, text) => {
+      textEditor?.insertText(text)
+    },
+    focus: () => {
+      textEditor?.focus()
+    }
+  }
+
+  let actions: RefAction[] = generateDefaultActions(editorHandler)
+    .concat(...extraActions)
+    .sort((a, b) => a.order - b.order)
   client.findAll<RefInputActionItem>(textEditorPlugin.class.RefInputActionItem, {}).then(async (res) => {
     const cont: RefAction[] = []
     for (const r of res) {
@@ -114,21 +90,13 @@
         action: await getResource(r.action)
       })
     }
-    actions = defActions.concat(...cont).sort((a, b) => a.order - b.order)
+    actions = actions.concat(...cont).sort((a, b) => a.order - b.order)
   })
 
   export function submit (): void {
-    textEditor.submit()
+    textEditor?.submit()
   }
 
-  const editorHandler: TextEditorHandler = {
-    insertText: (text) => {
-      textEditor.insertText(text)
-    },
-    insertTemplate: (name, text) => {
-      textEditor.insertText(text)
-    }
-  }
   function handleAction (a: RefAction, evt?: Event): void {
     a.action(evt?.target as HTMLElement, editorHandler)
   }
@@ -138,10 +106,10 @@
   export let focusIndex = -1
   const { idx, focusManager } = registerFocus(focusIndex, {
     focus: () => {
-      const editable = textEditor?.isEditable()
+      const editable = textEditor?.isEditable() ?? false
       if (editable) {
         focused = true
-        textEditor.focus()
+        textEditor?.focus()
       }
       return editable
     },
@@ -175,7 +143,7 @@
         if (!isEmpty || haveAttachment) {
           dispatch('message', ev.detail)
           content = ''
-          textEditor.clear()
+          textEditor?.clear()
         }
       }}
       on:blur={() => {
@@ -205,42 +173,28 @@
   </div>
   {#if showActions || showSend}
     <div class="buttons-panel flex-between clear-mins">
-      {#if showActions}
-        <div class="buttons-group xsmall-gap">
+      <div class="buttons-group {shrinkButtons ? 'xxsmall-gap' : 'xsmall-gap'}">
+        {#if showActions}
           {#each actions as a}
             <Button
+              disabled={a.disabled}
               icon={a.icon}
               iconProps={{ size: buttonSize }}
               kind="ghost"
               showTooltip={{ label: a.label }}
               size={buttonSize}
-              on:click={handler(a, (a, evt) => handleAction(a, evt))}
+              on:click={handler(a, (a, evt) => {
+                if (!a.disabled) {
+                  handleAction(a, evt)
+                }
+              })}
             />
             {#if a.order % 10 === 1}
               <div class="buttons-divider" />
             {/if}
           {/each}
-        </div>
-        {#if extraActions && extraActions.length > 0}
-          <div class="buttons-group {shrinkButtons ? 'xsmall-gap' : 'small-gap'}">
-            {#each extraActions as a}
-              <Button
-                disabled={a.disabled}
-                icon={a.icon}
-                iconProps={{ size: buttonSize }}
-                kind="ghost"
-                showTooltip={{ label: a.label }}
-                size={buttonSize}
-                on:click={handler(a, (a, evt) => {
-                  if (!a.disabled) {
-                    handleAction(a, evt)
-                  }
-                })}
-              />
-            {/each}
-          </div>
         {/if}
-      {/if}
+      </div>
 
       {#if showSend}
         <Button

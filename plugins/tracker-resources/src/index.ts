@@ -142,6 +142,9 @@ import ProjectSpacePresenter from './components/projects/ProjectSpacePresenter.s
 
 import { get } from 'svelte/store'
 
+import TimePresenter from './components/issues/timereport/TimePresenter.svelte'
+import EstimationValueEditor from './components/issues/timereport/EstimationValueEditor.svelte'
+
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 export { default as IssueStatusIcon } from './components/issues/IssueStatusIcon.svelte'
 export { default as StatusPresenter } from './components/issues/StatusPresenter.svelte'
@@ -479,7 +482,9 @@ export default async (): Promise<Resources> => ({
     ProjectFilterValuePresenter,
     ComponentFilterValuePresenter,
     EditRelatedTargets,
-    EditRelatedTargetsPopup
+    EditRelatedTargetsPopup,
+    TimePresenter,
+    EstimationValueEditor
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>

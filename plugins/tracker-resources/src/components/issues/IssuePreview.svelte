@@ -18,10 +18,11 @@
   import chunter from '@hcengineering/chunter'
   import { CommentPopup } from '@hcengineering/chunter-resources'
   import { Ref } from '@hcengineering/core'
-  import { createQuery, getClient, MessageViewer, IconForward } from '@hcengineering/presentation'
+  import { IconForward, MessageViewer, createQuery, getClient } from '@hcengineering/presentation'
   import { Issue, Project } from '@hcengineering/tracker'
   import { Label, Scroller, resizeObserver } from '@hcengineering/ui'
   import tracker from '../../plugin'
+  import { activeProjects } from '../../utils'
   import AssigneeEditor from './AssigneeEditor.svelte'
   import IssueStatusActivity from './IssueStatusActivity.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
@@ -33,7 +34,6 @@
   const client = getClient()
   $: space = object.space
   const issueQuery = createQuery()
-  const spaceQuery = createQuery()
 
   $: issueQuery.query(
     object._class,
@@ -46,7 +46,7 @@
 
   let currentProject: Project | undefined
 
-  $: spaceQuery.query(tracker.class.Project, { _id: space }, (res) => ([currentProject] = res))
+  $: currentProject = $activeProjects.get(space)
   $: issueName = currentProject && issue && `${currentProject.identifier}-${issue.number}`
 
   const limit: number = 350

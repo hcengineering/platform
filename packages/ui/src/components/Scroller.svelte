@@ -36,7 +36,7 @@
   export let noStretch: boolean = autoscroll
   export let buttons: 'normal' | 'union' | false = false
   export let shrink: boolean = false
-  export let divScroll: HTMLElement | undefined = undefined
+  export let divScroll: HTMLElement | undefined | null = undefined
   export let checkForHeaders: boolean = false
   export let stickedScrollBars: boolean = false
   export let thinScrollBars: boolean = false

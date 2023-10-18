@@ -208,6 +208,9 @@ export interface Issue extends Task {
   // Estimation in man hours
   estimation: number
 
+  // Remaining time in man hours
+  remainingTime: number
+
   // ReportedTime time, auto updated using trigger.
   reportedTime: number
   // Collection of reportedTime entries, for proper time estimations per person.
@@ -393,6 +396,8 @@ export default plugin(trackerId, {
     TypeMilestoneStatus: '' as Ref<Class<Type<MilestoneStatus>>>,
     TimeSpendReport: '' as Ref<Class<TimeSpendReport>>,
     TypeReportedTime: '' as Ref<Class<Type<number>>>,
+    TypeEstimation: '' as Ref<Class<Type<number>>>,
+    TypeRemainingTime: '' as Ref<Class<Type<number>>>,
     RelatedIssueTarget: '' as Ref<Class<RelatedIssueTarget>>
   },
   ids: {

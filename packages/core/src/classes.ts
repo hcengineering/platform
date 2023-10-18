@@ -102,6 +102,8 @@ export enum IndexKind {
   FullText,
   /**
    * For attribute with this annotation should be created an index in mongo database
+   *
+   * Also mean to include into Elastic search.
    */
   Indexed
 }
@@ -374,7 +376,7 @@ export interface MigrationState extends Doc {
 /**
  * @public
  */
-export function versionToString (version: Version): string {
+export function versionToString (version: Version | Data<Version>): string {
   return `${version?.major}.${version?.minor}.${version?.patch}`
 }
 

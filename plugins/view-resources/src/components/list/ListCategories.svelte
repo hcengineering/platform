@@ -76,7 +76,7 @@
     revert?: () => void
   }
   export let listDiv: HTMLDivElement
-  export let selection: number | undefined = undefined
+  export let selection: number | undefined
   export let groupPersistKey: string
   export let compactMode: boolean = false
 

@@ -19,6 +19,7 @@ import { Hierarchy } from './hierarchy'
 import { ModelDb } from './memdb'
 import type { DocumentQuery, FindOptions, FindResult, TxResult } from './storage'
 import type { Tx } from './tx'
+import { LoadModelResponse } from '.'
 
 /**
  * @public
@@ -68,5 +69,5 @@ export interface ServerStorage extends LowLevelStorage {
   tx: (ctx: MeasureContext, tx: Tx) => Promise<[TxResult, Tx[]]>
   apply: (ctx: MeasureContext, tx: Tx[], broadcast: boolean) => Promise<Tx[]>
   close: () => Promise<void>
-  loadModel: (lastModelTx: Timestamp) => Promise<Tx[]>
+  loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
 }

@@ -161,12 +161,15 @@ export class TApplicant extends TTask implements Applicant {
     startDate!: Timestamp | null
 
   @Prop(TypeRef(contact.mixin.Employee), recruit.string.AssignedRecruiter)
+  @Index(IndexKind.Indexed)
   declare assignee: Ref<Employee> | null
 
   @Prop(TypeRef(task.class.State), task.string.TaskState, { _id: recruit.attribute.State })
+  @Index(IndexKind.Indexed)
   declare status: Ref<State>
 
   @Prop(TypeRef(task.class.DoneState), task.string.TaskStateDone, { _id: recruit.attribute.DoneState })
+  @Index(IndexKind.Indexed)
   declare doneState: Ref<DoneState>
 }
 

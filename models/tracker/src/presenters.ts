@@ -138,7 +138,21 @@ export function definePresenters (builder: Builder): void {
   classPresenter(
     builder,
     tracker.class.TypeReportedTime,
-    view.component.NumberPresenter,
+    tracker.component.TimePresenter,
     tracker.component.ReportedTimeEditor
+  )
+
+  classPresenter(
+    builder,
+    tracker.class.TypeEstimation,
+    tracker.component.TimePresenter,
+    tracker.component.EstimationValueEditor
+  )
+
+  classPresenter(
+    builder,
+    tracker.class.TypeRemainingTime,
+    tracker.component.TimePresenter,
+    tracker.component.EstimationValueEditor
   )
 }

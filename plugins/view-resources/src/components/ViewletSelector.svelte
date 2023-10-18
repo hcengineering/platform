@@ -84,7 +84,7 @@
   }
 </script>
 
-{#if viewlets.length > 1 && !hidden}
+{#if viewlets?.length > 1 && !hidden}
   <TabList
     items={viewslist}
     multiselect={false}

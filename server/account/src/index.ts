@@ -32,9 +32,10 @@ import core, {
   Tx,
   TxOperations,
   Version,
+  versionToString,
   WorkspaceId
 } from '@hcengineering/core'
-import { MigrateOperation } from '@hcengineering/model'
+import { consoleModelLogger, MigrateOperation, ModelLogger } from '@hcengineering/model'
 import platform, {
   getMetadata,
   Metadata,
@@ -118,6 +119,7 @@ export interface Workspace {
   accounts: ObjectId[]
   productId: string
   disabled?: boolean
+  version?: Data<Version>
 }
 
 /**
@@ -609,7 +611,9 @@ export async function upgradeWorkspace (
   migrationOperation: [string, MigrateOperation][],
   productId: string,
   db: Db,
-  workspace: string
+  workspace: string,
+  logger: ModelLogger = consoleModelLogger,
+  forceUpdate: boolean = true
 ): Promise<string> {
   const ws = await getWorkspace(db, productId, workspace)
   if (ws === null) {
@@ -620,14 +624,26 @@ export async function upgradeWorkspace (
       throw new PlatformError(new Status(Severity.ERROR, platform.status.ProductIdMismatch, { productId }))
     }
   }
+  const versionStr = versionToString(version)
+
+  const currentVersion = await db.collection<Workspace>(WORKSPACE_COLLECTION).findOne({ workspace })
+  console.log(
+    `${forceUpdate ? 'force-' : ''}upgrade from "${
+      currentVersion?.version !== undefined ? versionToString(currentVersion.version) : ''
+    }" to "${versionStr}"`
+  )
+
+  if (currentVersion?.version !== undefined && !forceUpdate && versionStr === versionToString(currentVersion.version)) {
+    return versionStr
+  }
   await db.collection(WORKSPACE_COLLECTION).updateOne(
     { workspace },
     {
       $set: { version }
     }
   )
-  await upgradeModel(getTransactor(), getWorkspaceId(workspace, productId), txes, migrationOperation)
-  return `${version.major}.${version.minor}.${version.patch}`
+  await upgradeModel(getTransactor(), getWorkspaceId(workspace, productId), txes, migrationOperation, logger)
+  return versionStr
 }
 
 /**

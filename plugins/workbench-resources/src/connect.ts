@@ -3,6 +3,7 @@ import core, {
   AccountClient,
   AccountRole,
   Client,
+  ClientConnectEvent,
   Version,
   getCurrentAccount,
   setCurrentAccount,
@@ -26,6 +27,7 @@ export let versionError: string | undefined = ''
 
 let _token: string | undefined
 let _client: AccountClient | undefined
+let _clientSet: boolean = false
 
 addEventListener(client.event.NetworkRequests, async (event: string, val: number) => {
   networkStatus.set(val)
@@ -61,8 +63,6 @@ export async function connect (title: string): Promise<Client | undefined> {
   }
   _token = token
 
-  let clientSet = false
-
   let version: Version | undefined
   let serverEndpoint = endpoint.replace(/^ws/g, 'http')
   if (serverEndpoint.endsWith('/')) {
@@ -83,10 +83,15 @@ export async function connect (title: string): Promise<Client | undefined> {
       })
     },
     // We need to refresh all active live queries and clear old queries.
-    (apply: boolean) => {
+    (event: ClientConnectEvent) => {
+      console.log('WorkbenchClient: onConnect', event)
       try {
-        if (clientSet && !apply) {
+        if ((_clientSet && event === ClientConnectEvent.Connected) || event === ClientConnectEvent.Refresh) {
           void refreshClient()
+        }
+
+        if (event === ClientConnectEvent.Upgraded) {
+          window.location.reload()
         }
 
         void (async () => {
@@ -108,9 +113,6 @@ export async function connect (title: string): Promise<Client | undefined> {
             console.log('Server version', serverVersion.version)
             if (serverVersion.version !== '' && serverVersion.version !== currentVersionStr) {
               versionError = `${currentVersionStr} => ${serverVersion.version}`
-              setTimeout(() => {
-                window.location.reload()
-              }, 5000)
             }
           }
         })()
@@ -134,8 +136,8 @@ export async function connect (title: string): Promise<Client | undefined> {
     })
 
     // Update on connect, so it will be triggered
+    _clientSet = true
     await setClient(_client)
-    clientSet = true
     return
   }
   try {
@@ -191,6 +193,7 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   // Update window title
   document.title = [ws, title].filter((it) => it).join(' - ')
+  _clientSet = true
   await setClient(_client)
 
   if (me.role === AccountRole.Owner) {
