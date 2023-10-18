@@ -218,7 +218,7 @@
   .ref-container {
     display: flex;
     flex-direction: column;
-    min-height: 4.5rem;
+    min-height: 2.5rem;
     border: 0.0625rem solid var(--theme-refinput-border);
     border-radius: 0.375rem;
 
@@ -236,7 +236,7 @@
 
   .text-input {
     min-height: 2.75rem;
-    padding: 0.625rem 0.75rem;
+    padding: 0.125rem 0.75rem;
   }
 
   .buttons-panel {
