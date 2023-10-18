@@ -1,7 +1,7 @@
 import { Doc, Ref } from '@hcengineering/core'
 import { panelstore } from '@hcengineering/ui'
 import { onDestroy } from 'svelte'
-import { Unsubscriber, derived, writable } from 'svelte/store'
+import { Unsubscriber, Writable, derived, writable } from 'svelte/store'
 
 /**
  * @public
@@ -32,6 +32,9 @@ export interface SelectionFocusProvider {
 
   // Return all selectable documents
   docs: () => Doc[]
+
+  // All selected documents
+  selection: Writable<Doc[]>
 }
 /**
  * @public
@@ -108,6 +111,7 @@ const providers: ListSelectionProvider[] = []
 export class ListSelectionProvider implements SelectionFocusProvider {
   private _docs: Doc[] = []
   _current?: FocusSelection
+  selection: Writable<Doc[]> = writable([])
   private readonly unsubscribe: Unsubscriber
   constructor (
     private readonly delegate: (offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection, noScroll?: boolean) => void,
@@ -189,7 +193,7 @@ export class ListSelectionProvider implements SelectionFocusProvider {
   }
 
   updateSelection (docs: Doc[], value: boolean): void {
-    selectionStore.update((selection) => {
+    this.selection.update((selection) => {
       const docsSet = new Set(docs.map((it) => it._id))
       const noDocs = selection.filter((it) => !docsSet.has(it._id))
       return value ? [...noDocs, ...docs] : noDocs

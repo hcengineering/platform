@@ -38,7 +38,6 @@
     groupBy,
     ListSelectionProvider,
     SelectDirection,
-    selectionStore,
     setGroupByValues
   } from '@hcengineering/view-resources'
   import { onMount } from 'svelte'
@@ -100,6 +99,8 @@
     ;(document.activeElement as HTMLElement)?.blur()
   })
 
+  const selection = listProvider.selection
+
   const showMenu = async (ev: MouseEvent, object: Doc): Promise<void> => {
     ev.preventDefault()
     if (object._class !== board.class.Card) {
@@ -156,7 +157,7 @@
   }}
   {groupByDocs}
   {getUpdateProps}
-  checked={$selectionStore ?? []}
+  checked={$selection ?? []}
   on:check={(evt) => {
     listProvider.updateSelection(evt.detail.docs, evt.detail.value)
   }}

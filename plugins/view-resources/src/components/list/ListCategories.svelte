@@ -37,6 +37,7 @@
     ViewOptions
   } from '@hcengineering/view'
   import { createEventDispatcher, onDestroy, SvelteComponentTyped } from 'svelte'
+  import { SelectionFocusProvider } from '../../selection'
   import {
     buildModel,
     concatCategories,
@@ -83,6 +84,7 @@
   export let resultQuery: DocumentQuery<Doc>
   export let resultOptions: FindOptions<Doc>
   export let limiter: RateLimitter
+  export let listProvider: SelectionFocusProvider
 
   $: groupByKey = viewOptions.groupBy[level] ?? noCategory
   let categories: CategoryType[] = []
@@ -380,6 +382,7 @@
     {resultQuery}
     {resultOptions}
     {limiter}
+    {listProvider}
     on:check
     on:uncheckAll
     on:row-focus

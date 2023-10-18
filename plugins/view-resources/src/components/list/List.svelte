@@ -19,6 +19,7 @@
   import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
   import { BuildModelKey, ViewOptionModel, ViewOptions, ViewQueryOption, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
+  import { SelectionFocusProvider } from '../../selection'
   import { buildConfigLookup } from '../../utils'
   import ListCategories from './ListCategories.svelte'
 
@@ -40,6 +41,7 @@
   export let props: Record<string, any> = {}
   export let selection: number | undefined = undefined
   export let compactMode: boolean = false
+  export let listProvider: SelectionFocusProvider
 
   const limiter = new RateLimitter(() => ({ rate: 10 }))
 
@@ -189,6 +191,7 @@
     {viewOptionsConfig}
     {selectedObjectIds}
     {limiter}
+    {listProvider}
     level={0}
     groupPersistKey={''}
     {createItemDialog}

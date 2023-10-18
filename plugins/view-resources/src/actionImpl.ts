@@ -14,7 +14,7 @@ import {
 } from '@hcengineering/ui'
 import MoveView from './components/Move.svelte'
 import view from './plugin'
-import { FocusSelection, SelectDirection, focusStore, previewDocument, selectionStore } from './selection'
+import { FocusSelection, SelectDirection, SelectionStore, focusStore, previewDocument, selectionStore } from './selection'
 import { deleteObjects, getObjectLinkFragment } from './utils'
 import contact from '@hcengineering/contact'
 
@@ -107,6 +107,11 @@ contextStore.subscribe((it) => {
   $contextStore = it
 })
 
+let $selectionStore: SelectionStore
+selectionStore.subscribe((it) => {
+  $selectionStore = it
+})
+
 export function select (
   evt: Event | undefined,
   offset: 1 | -1 | 0,
@@ -128,8 +133,9 @@ export function select (
 
 function SelectItem (doc: Doc | Doc[] | undefined, evt: Event): void {
   const focus = $focusStore.focus
+  const provider = $selectionStore.provider ?? $focusStore.provider
   if (focus !== undefined) {
-    selectionStore.update((selection) => {
+    provider?.selection.update((selection) => {
       const ind = selection.findIndex((it) => it._id === focus._id)
       if (ind === -1) {
         selection.push(focus)
@@ -142,15 +148,21 @@ function SelectItem (doc: Doc | Doc[] | undefined, evt: Event): void {
   evt.preventDefault()
 }
 function SelectItemNone (doc: Doc | undefined, evt: Event): void {
-  selectionStore.set([])
-  previewDocument.set(undefined)
-  evt.preventDefault()
+  const provider = $selectionStore.provider ?? $focusStore.provider
+  if (provider !== undefined) {
+    provider.selection.set([])
+    previewDocument.set(undefined)
+    evt.preventDefault()
+  }
 }
 function SelectItemAll (doc: Doc | undefined, evt: Event): void {
-  const docs = $focusStore.provider?.docs() ?? []
-  selectionStore.set(docs)
-  previewDocument.set(undefined)
-  evt.preventDefault()
+  const provider = $selectionStore.provider ?? $focusStore.provider
+  if (provider !== undefined) {
+    const docs = provider.docs() ?? []
+    provider.selection.set(docs)
+    previewDocument.set(undefined)
+    evt.preventDefault()
+  }
 }
 
 const MoveUp = (doc: Doc | undefined, evt: Event): void => select(evt, -1, $focusStore.focus, 'vertical')
