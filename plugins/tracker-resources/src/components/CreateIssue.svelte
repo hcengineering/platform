@@ -871,7 +871,7 @@
       size={'large'}
       kind={'ghost'}
       on:click={() => {
-        descriptionBox.attach()
+        descriptionBox.handleAttach()
       }}
     />
     {#if targetSettings?.footerComponent && currentProject}
