@@ -65,6 +65,8 @@
   let edit: boolean = false
   let showDiff: boolean = false
 
+  const currentAccount = getCurrentAccount() as PersonAccount
+
   $: if (tx.tx._id !== ptx?.tx._id) {
     if (tx.tx.modifiedBy !== account?._id) {
       account = undefined
@@ -326,7 +328,7 @@
         {#if isComment}
           <div class="buttons-group">
             <!-- <Like /> -->
-            {#if tx.tx.modifiedBy === getCurrentAccount()._id}
+            {#if account?.person === currentAccount?.person}
               <ActionIcon icon={IconMoreH} size={'small'} action={showMenu} />
             {/if}
           </div>
