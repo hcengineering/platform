@@ -139,6 +139,7 @@
           ...extensions,
           InlineStyleToolbarExtension.configure({
             tippyOptions: {
+              zIndex: 100000,
               popperOptions: {
                 modifiers: [
                   {
