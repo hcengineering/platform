@@ -50,9 +50,9 @@ function addPopup (props: CompAndProps): void {
   })
 }
 let popupId: number = 0
-export function showPopup<P = any> (
+export function showPopup (
   component: AnySvelteComponent | AnyComponent | ComponentType,
-  props: P,
+  props: any,
   element?: PopupAlignment,
   onClose?: (result: any) => void | Promise<void>,
   onUpdate?: (result: any) => void | Promise<void>,

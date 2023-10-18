@@ -16,16 +16,16 @@
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { Action, Menu, MenuItem } from '@hcengineering/ui'
+  import { Action, Menu } from '@hcengineering/ui'
   import { ActionGroup, ViewContextType } from '@hcengineering/view'
   import { getActions, invokeAction } from '../actions'
 
   export let object: Doc | Doc[]
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
-  export let items: MenuItem[] = []
+  export let actions: Action[] = []
   export let excludedActions: string[] = []
   export let mode: ViewContextType | undefined = undefined
-  let resItems = items
+  let resActions = actions
 
   const client = getClient()
 
@@ -62,15 +62,15 @@
       component: a.actionPopup,
       props: { ...a.actionProps, value: object }
     }))
-    resItems = [...newActions, ...items].sort(
+    resActions = [...newActions, ...actions].sort(
       (a, b) => (order as any)[a.group ?? 'other'] - (order as any)[b.group ?? 'other']
     )
-    if (resItems.length > 0) {
+    if (resActions.length > 0) {
       loaded = true
     }
   })
 </script>
 
 {#if loaded}
-  <Menu items={resItems} on:close on:changeContent />
+  <Menu actions={resActions} on:close on:changeContent />
 {/if}

@@ -155,7 +155,7 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<svelte:component this={Menu} bind:this={menu} items={actions} {addClass} on:close>
+<svelte:component this={Menu} bind:this={menu} {actions} {addClass} on:close>
   <svelte:fragment slot="header">
     <div
       class="ap-menuItem hoverable flex-row-center withIcon flex-grow"

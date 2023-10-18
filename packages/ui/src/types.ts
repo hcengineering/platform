@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { Doc, Ref, Timestamp } from '@hcengineering/core'
+import { Timestamp } from '@hcengineering/core'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import { /* Metadata, Plugin, plugin, */ Resource /*, Service */ } from '@hcengineering/platform'
 import { /* getContext, */ ComponentType } from 'svelte'
@@ -75,11 +75,7 @@ export interface AnySvelteComponentWithProps {
   props?: Record<string, any>
 }
 
-export interface MenuItem {
-  group?: string
-}
-
-export interface Action extends MenuItem {
+export interface Action {
   label: IntlString
   icon?: Asset | AnySvelteComponent
   action: (props: any, ev: Event) => Promise<void>
@@ -90,18 +86,8 @@ export interface Action extends MenuItem {
   component?: AnyComponent | AnySvelteComponent
   props?: Record<string, any>
   isSubmenuRightClicking?: boolean
-}
 
-export interface MenuComponent extends MenuItem {
-  itemComponent: AnyComponent
-  itemProps?: Record<string, any>
-}
-
-export interface MenuProps {
-  items?: MenuItem[]
-  ctx?: any
-  popupCategory?: Ref<Doc>
-  addClass?: string
+  group?: string
 }
 
 export interface IPopupItem {

@@ -26,9 +26,9 @@ type ProviderData = (
   }
 ) & { ydoc?: Y.Doc }
 
-function getProvider (documentId: string, providerData: ProviderData, initialContentId?: string): TiptapCollabProvider {
+function getProvider (documentId: string, providerData: ProviderData, initialContentId?: string): { provider: TiptapCollabProvider, dispose?: () => void } {
   if (!('provider' in providerData)) {
-    return new TiptapCollabProvider({
+    const provider = new TiptapCollabProvider({
       url: providerData.collaboratorURL,
       name: documentId,
       document: providerData.ydoc ?? new Y.Doc(),
@@ -37,8 +37,10 @@ function getProvider (documentId: string, providerData: ProviderData, initialCon
         initialContentId: initialContentId ?? ''
       }
     })
+
+    return { provider, dispose: () => { provider.destroy() } }
   } else {
-    return providerData.provider
+    return { provider: providerData.provider }
   }
 }
 
@@ -49,8 +51,9 @@ export function copyDocumentField (
   providerData: ProviderData,
   initialContentId?: string
 ): void {
-  const provider = getProvider(documentId, providerData, initialContentId)
+  const { provider, dispose } = getProvider(documentId, providerData, initialContentId)
   provider.copyField(documentId, srcFieldId, dstFieldId)
+  dispose?.()
 }
 
 export function copyDocumentContent (
@@ -59,6 +62,7 @@ export function copyDocumentContent (
   providerData: ProviderData,
   initialContentId?: string
 ): void {
-  const provider = getProvider(documentId, providerData, initialContentId)
+  const { provider, dispose } = getProvider(documentId, providerData, initialContentId)
   provider.copyContent(documentId, snapshotId)
+  dispose?.()
 }
