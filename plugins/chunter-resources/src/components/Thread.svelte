@@ -49,6 +49,9 @@
   let showAll = false
   let total = 0
 
+  let showActions = false
+  let showSend = false
+
   $: updateQuery(_id)
   $: updateThreadQuery(_id, showAll)
 
@@ -149,8 +152,8 @@
   let loading = false
 </script>
 
-<div class="flex-col ml-4 mt-4 flex-no-shrink">
-  {#if showHeader && parent}
+{#if showHeader && parent}
+  <div class="flex-col ml-4 mt-4 flex-no-shrink">
     {#await getChannel(parent.space) then channel}
       {#if channel?._class === plugin.class.Channel}
         <ChannelPresenter value={channel} />
@@ -164,8 +167,8 @@
         <Label label={plugin.string.AndYou} params={{ participants: participants.length }} />
       {/await}
     </div>
-  {/if}
-</div>
+  </div>
+{/if}
 <div class="flex-col content mt-2 flex-no-shrink">
   {#if parent}
     <MsgView message={parent} thread {savedAttachmentsIds} />
@@ -193,7 +196,13 @@
           _class={plugin.class.ThreadMessage}
           objectId={commentId}
           placeholder={chunter.string.AddCommentPlaceholder}
+          {showActions}
+          {showSend}
           on:message={onMessage}
+          on:focus={() => {
+            showSend = true
+            showActions = true
+          }}
           bind:loading
         />
       </div>
