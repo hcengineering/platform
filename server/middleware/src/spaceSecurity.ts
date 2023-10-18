@@ -405,8 +405,12 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     return findResult
   }
 
-  override async searchFulltext(ctx: SessionContext, query: FulltextQuery, options: FulltextQueryOptions): Promise<FulltextSearchResult> {
-    let newQuery = justClone(query)
+  override async searchFulltext (
+    ctx: SessionContext,
+    query: FulltextQuery,
+    options: FulltextQueryOptions
+  ): Promise<FulltextSearchResult> {
+    const newQuery = justClone(query)
     const account = await getUser(this.storage, ctx)
     let spaces: string[] = []
     if (!isSystem(account)) {
@@ -431,10 +435,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       } else if (Array.isArray(query.query.bool.filter)) {
         newQuery.query.bool.filter.push(spacesFilter)
       } else {
-        newQuery.query.bool.filter = [
-          query.query.bool.filter,
-          spacesFilter
-        ]
+        newQuery.query.bool.filter = [query.query.bool.filter, spacesFilter]
       }
     }
 
@@ -447,7 +448,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
         filter in a case some query will break our filter.
       */
 
-      result.hits.hits = result.hits.hits.filter((doc: IndexedDoc) => spaces.indexOf(doc.space) >= 0)
+      result.hits.hits = result.hits.hits.filter((doc: IndexedDoc) => spaces.includes(doc.space))
     }
     return result
   }

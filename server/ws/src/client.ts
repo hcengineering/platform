@@ -113,7 +113,7 @@ export class ClientSession implements Session {
     return await this._pipeline.findAll(context, _class, query, options)
   }
 
-  async searchFulltext(
+  async searchFulltext (
     ctx: MeasureContext,
     query: FulltextQuery,
     options: FulltextQueryOptions

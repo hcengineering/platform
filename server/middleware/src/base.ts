@@ -71,7 +71,7 @@ export abstract class BaseMiddleware {
     return await this.storage.findAll(ctx, _class, query, options)
   }
 
-  protected async provideSearchFulltext(
+  protected async provideSearchFulltext (
     ctx: SessionContext,
     query: FulltextQuery,
     options: FulltextQueryOptions

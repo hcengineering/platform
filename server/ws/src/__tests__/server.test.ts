@@ -83,7 +83,7 @@ describe('server', () => {
       clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
       searchFulltext: async (ctx, query, options) => {
         return { hits: { hits: [] } }
-      },
+      }
     }),
     sessionFactory: (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
     port: 3335,
