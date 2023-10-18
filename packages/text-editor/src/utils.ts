@@ -28,11 +28,7 @@ type ProviderData = (
   }
 ) & { ydoc?: Y.Doc }
 
-function getProvider (
-  documentId: string,
-  providerData: ProviderData,
-  initialContentId?: string
-): TiptapCollabProvider {
+function getProvider (documentId: string, providerData: ProviderData, initialContentId?: string): TiptapCollabProvider {
   if (!('provider' in providerData)) {
     const provider = new TiptapCollabProvider({
       url: providerData.collaboratorURL,
