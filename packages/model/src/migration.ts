@@ -17,6 +17,7 @@ import core, {
   TxOperations,
   Data
 } from '@hcengineering/core'
+import { ModelLogger } from './utils'
 
 /**
  * @public
@@ -95,9 +96,9 @@ export type MigrationUpgradeClient = Client
  */
 export interface MigrateOperation {
   // Perform low level migration
-  migrate: (client: MigrationClient) => Promise<void>
+  migrate: (client: MigrationClient, logger: ModelLogger) => Promise<void>
   // Perform high level upgrade operations.
-  upgrade: (client: MigrationUpgradeClient) => Promise<void>
+  upgrade: (client: MigrationUpgradeClient, logger: ModelLogger) => Promise<void>
 }
 
 /**

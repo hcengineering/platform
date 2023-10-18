@@ -51,3 +51,19 @@ export async function createOrUpdate<T extends Doc> (
     await client.createDoc<T>(_class, space, data, _id)
   }
 }
+
+/**
+ * @public
+ */
+export interface ModelLogger {
+  log: (...data: any[]) => void
+}
+
+/**
+ * @public
+ */
+export const consoleModelLogger: ModelLogger = {
+  log (...data: any[]): void {
+    console.log(...data)
+  }
+}

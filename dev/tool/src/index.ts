@@ -29,7 +29,8 @@ import {
   replacePassword,
   setAccountAdmin,
   setRole,
-  upgradeWorkspace
+  upgradeWorkspace,
+  WorkspaceInfoOnly
 } from '@hcengineering/account'
 import { setMetadata } from '@hcengineering/platform'
 import {
@@ -40,17 +41,18 @@ import {
   restore
 } from '@hcengineering/server-backup'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
-import toolPlugin from '@hcengineering/server-tool'
+import toolPlugin, { FileModelLogger } from '@hcengineering/server-tool'
 
 import { program } from 'commander'
 import { Db, MongoClient } from 'mongodb'
 import { clearTelegramHistory } from './telegram'
 import { diffWorkspace } from './workspace'
 
-import { Data, getWorkspaceId, Tx, Version } from '@hcengineering/core'
+import { Data, getWorkspaceId, RateLimitter, Tx, Version } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { MigrateOperation } from '@hcengineering/model'
 import { openAIConfigDefaults } from '@hcengineering/openai'
+import path from 'path'
 import { benchmark } from './benchmark'
 import {
   cleanArchivedSpaces,
@@ -232,19 +234,47 @@ export function devTool (
   program
     .command('upgrade')
     .description('upgrade')
-    .option('-p|--parallel', 'Parallel upgrade', false)
-    .action(async (cmd: { parallel: boolean }) => {
+    .option('-p|--parallel <parallel>', 'Parallel upgrade', '0')
+    .option('-l|--logs <logs>', 'Default logs folder', './logs')
+    .option('-r|--retry <retry>', 'Number of apply retries', '0')
+    .option('-f|--force [force]', 'Force update', false)
+    .action(async (cmd: { parallel: string, logs: string, retry: string, force: boolean }) => {
       const { mongodbUri, version, txes, migrateOperations } = prepareTools()
       return await withDatabase(mongodbUri, async (db) => {
         const workspaces = await listWorkspaces(db, productId)
-        if (cmd.parallel) {
-          await Promise.all(
-            workspaces.map((ws) => upgradeWorkspace(version, txes, migrateOperations, productId, db, ws.workspace))
-          )
-        } else {
+        const withError: string[] = []
+
+        async function _upgradeWorkspace (ws: WorkspaceInfoOnly): Promise<void> {
+          const t = Date.now()
+          const logger = new FileModelLogger(path.join(cmd.logs, `${ws.workspace}.log`))
+          console.log('---UPGRADING----', ws.workspace, logger.file)
+          try {
+            await upgradeWorkspace(version, txes, migrateOperations, productId, db, ws.workspace, logger, cmd.force)
+            console.log('---UPGRADING-DONE----', ws.workspace, Date.now() - t)
+          } catch (err: any) {
+            withError.push(ws.workspace)
+            logger.log('error', JSON.stringify(err))
+            console.log('---UPGRADING-FAILED----', ws.workspace, Date.now() - t)
+          } finally {
+            logger.close()
+          }
+        }
+        if (cmd.parallel !== '0') {
+          const parallel = parseInt(cmd.parallel) ?? 1
+          const rateLimit = new RateLimitter(() => ({ rate: parallel }))
+          console.log('parallel upgrade', parallel, cmd.parallel)
           for (const ws of workspaces) {
-            console.log('---UPGRADING----', ws.workspace)
-            await upgradeWorkspace(version, txes, migrateOperations, productId, db, ws.workspace)
+            await rateLimit.exec(() => {
+              return _upgradeWorkspace(ws)
+            })
+          }
+        } else {
+          console.log('UPGRADE write logs at:', cmd.logs)
+          for (const ws of workspaces) {
+            await _upgradeWorkspace(ws)
+          }
+          if (withError.length > 0) {
+            console.log('Failed workspaces', withError)
           }
         }
       })
