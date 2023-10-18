@@ -29,16 +29,36 @@ import core, {
   WorkspaceId
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
-import { MigrateOperation } from '@hcengineering/model'
+import { consoleModelLogger, MigrateOperation, ModelLogger } from '@hcengineering/model'
 import { getWorkspaceDB } from '@hcengineering/mongo'
 import { Db, Document, MongoClient } from 'mongodb'
 import { connect } from './connect'
 import toolPlugin from './plugin'
 import { MigrateClientImpl } from './upgrade'
 
+import fs from 'fs'
+import path from 'path'
+
 export * from './connect'
 export * from './plugin'
 export { toolPlugin as default }
+
+export class FileModelLogger implements ModelLogger {
+  handle: fs.WriteStream
+  constructor (readonly file: string) {
+    fs.mkdirSync(path.dirname(this.file), { recursive: true })
+
+    this.handle = fs.createWriteStream(this.file, { flags: 'a' })
+  }
+
+  log (...data: any[]): void {
+    this.handle.write(data.map((it: any) => JSON.stringify(it)).join(' ') + '\n')
+  }
+
+  close (): void {
+    this.handle.close()
+  }
+}
 
 /**
  * @public
@@ -93,7 +113,8 @@ export async function initModel (
   transactorUrl: string,
   workspaceId: WorkspaceId,
   rawTxes: Tx[],
-  migrateOperations: [string, MigrateOperation][]
+  migrateOperations: [string, MigrateOperation][],
+  logger: ModelLogger = consoleModelLogger
 ): Promise<void> {
   const { mongodbUri, minio, txes } = prepareTools(rawTxes)
   if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
@@ -105,33 +126,33 @@ export async function initModel (
     await client.connect()
     const db = getWorkspaceDB(client, workspaceId)
 
-    console.log('dropping database...')
+    logger.log('dropping database...')
     await db.dropDatabase()
 
-    console.log('creating model...')
+    logger.log('creating model...')
     const model = txes
     const result = await db.collection(DOMAIN_TX).insertMany(model as Document[])
-    console.log(`${result.insertedCount} model transactions inserted.`)
+    logger.log(`${result.insertedCount} model transactions inserted.`)
 
-    console.log('creating data...')
+    logger.log('creating data...')
     const connection = (await connect(transactorUrl, workspaceId, undefined, {
       model: 'upgrade'
     })) as unknown as CoreClient & BackupClient
     try {
       for (const op of migrateOperations) {
-        console.log('Migrage', op[0])
-        await op[1].upgrade(connection)
+        logger.log('Migrage', op[0])
+        await op[1].upgrade(connection, logger)
       }
     } catch (e) {
-      console.log(e)
+      logger.log(e)
     } finally {
       await connection.close()
     }
 
     // Create update indexes
-    await createUpdateIndexes(connection, db)
+    await createUpdateIndexes(connection, db, logger)
 
-    console.log('create minio bucket')
+    logger.log('create minio bucket')
     if (!(await minio.exists(workspaceId))) {
       await minio.make(workspaceId)
     }
@@ -147,7 +168,8 @@ export async function upgradeModel (
   transactorUrl: string,
   workspaceId: WorkspaceId,
   rawTxes: Tx[],
-  migrateOperations: [string, MigrateOperation][]
+  migrateOperations: [string, MigrateOperation][],
+  logger: ModelLogger = consoleModelLogger
 ): Promise<void> {
   const { mongodbUri, txes } = prepareTools(rawTxes)
 
@@ -160,19 +182,19 @@ export async function upgradeModel (
     await client.connect()
     const db = getWorkspaceDB(client, workspaceId)
 
-    console.log(`${workspaceId.name}: removing model...`)
+    logger.log(`${workspaceId.name}: removing model...`)
     // we're preserving accounts (created by core.account.System).
     const result = await db.collection(DOMAIN_TX).deleteMany({
       objectSpace: core.space.Model,
       modifiedBy: core.account.System,
       objectClass: { $nin: [contact.class.PersonAccount, 'contact:class:EmployeeAccount'] }
     })
-    console.log(`${workspaceId.name}: ${result.deletedCount} transactions deleted.`)
+    logger.log(`${workspaceId.name}: ${result.deletedCount} transactions deleted.`)
 
-    console.log(`${workspaceId.name}: creating model...`)
+    logger.log(`${workspaceId.name}: creating model...`)
     const model = txes
     const insert = await db.collection(DOMAIN_TX).insertMany(model as Document[])
-    console.log(`${workspaceId.name}: ${insert.insertedCount} model transactions inserted.`)
+    logger.log(`${workspaceId.name}: ${insert.insertedCount} model transactions inserted.`)
 
     const hierarchy = new Hierarchy()
     const modelDb = new ModelDb(hierarchy)
@@ -189,20 +211,20 @@ export async function upgradeModel (
 
     const migrateClient = new MigrateClientImpl(db, hierarchy, modelDb)
     for (const op of migrateOperations) {
-      console.log(`${workspaceId.name}: migrate:`, op[0])
-      await op[1].migrate(migrateClient)
+      logger.log(`${workspaceId.name}: migrate:`, op[0])
+      await op[1].migrate(migrateClient, logger)
     }
 
-    console.log(`${workspaceId.name}: Apply upgrade operations`)
+    logger.log(`${workspaceId.name}: Apply upgrade operations`)
 
     const connection = await connect(transactorUrl, workspaceId, undefined, { mode: 'backup', model: 'upgrade' })
 
     // Create update indexes
-    await createUpdateIndexes(connection, db)
+    await createUpdateIndexes(connection, db, logger)
 
     for (const op of migrateOperations) {
-      console.log(`${workspaceId.name}: upgrade:`, op[0])
-      await op[1].upgrade(connection)
+      logger.log(`${workspaceId.name}: upgrade:`, op[0])
+      await op[1].upgrade(connection, logger)
     }
 
     await connection.close()
@@ -211,7 +233,7 @@ export async function upgradeModel (
   }
 }
 
-async function createUpdateIndexes (connection: CoreClient, db: Db): Promise<void> {
+async function createUpdateIndexes (connection: CoreClient, db: Db, logger: ModelLogger): Promise<void> {
   const classes = await connection.findAll(core.class.Class, {})
 
   const hierarchy = connection.getHierarchy()
@@ -252,12 +274,12 @@ async function createUpdateIndexes (connection: CoreClient, db: Db): Promise<voi
       try {
         await collection.createIndex(vv)
       } catch (err: any) {
-        console.error(err)
+        logger.log('error', JSON.stringify(err))
       }
       bb.push(vv)
     }
     if (bb.length > 0) {
-      console.log('created indexes', d, bb)
+      logger.log('created indexes', d, bb)
     }
   }
 }

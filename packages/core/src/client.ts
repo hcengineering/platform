@@ -358,11 +358,13 @@ async function loadModel (
     return modelResponse
   }
 
-  console.log(
-    'find' + (modelResponse.full ? 'full model' : 'model diff'),
-    modelResponse.transactions.length,
-    Date.now() - t
-  )
+  if (typeof window !== 'undefined') {
+    console.log(
+      'find' + (modelResponse.full ? 'full model' : 'model diff'),
+      modelResponse.transactions.length,
+      Date.now() - t
+    )
+  }
 
   await buildModel(modelResponse, allowedPlugins, configs, hierarchy, model)
   return modelResponse
