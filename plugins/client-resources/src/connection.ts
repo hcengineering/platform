@@ -411,10 +411,7 @@ class Connection implements ClientConnection {
     return this.sendRequest({ method: 'clean', params: [domain, docs] })
   }
 
-  searchFulltext(
-    query: FulltextQuery,
-    options: FulltextQueryOptions
-  ): Promise<FulltextSearchResult> {
+  searchFulltext (query: FulltextQuery, options: FulltextQueryOptions): Promise<FulltextSearchResult> {
     return this.sendRequest({ method: 'searchFulltext', params: [query, options] })
   }
 }

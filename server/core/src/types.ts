@@ -171,10 +171,7 @@ export interface FullTextAdapter {
   remove: (id: Ref<Doc>[]) => Promise<void>
   updateMany: (docs: IndexedDoc[]) => Promise<TxResult[]>
 
-  searchRaw: (
-    query: FulltextQuery,
-    options: FulltextQueryOptions
-  ) => Promise<FulltextSearchResult>
+  searchRaw: (query: FulltextQuery, options: FulltextQueryOptions) => Promise<FulltextSearchResult>
 
   search: (
     _classes: Ref<Class<Doc>>[],

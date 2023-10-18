@@ -250,7 +250,7 @@ export class FullTextIndex implements WithFind {
     query: FulltextQuery,
     options: FulltextQueryOptions
   ): Promise<FulltextSearchResult> {
-    return this.adapter.searchRaw(query, options)
+    return await this.adapter.searchRaw(query, options)
   }
 
   submitting: Promise<void> | undefined

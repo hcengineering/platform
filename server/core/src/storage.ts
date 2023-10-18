@@ -384,7 +384,7 @@ class TServerStorage implements ServerStorage {
     query: FulltextQuery,
     options: FulltextQueryOptions
   ): Promise<FulltextSearchResult> {
-    return ctx.with('full-text-search', {}, (ctx) => {
+    return await ctx.with('full-text-search', {}, (ctx) => {
       return this.fulltext.searchFulltext(ctx, query, options)
     })
   }

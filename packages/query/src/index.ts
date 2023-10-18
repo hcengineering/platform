@@ -181,10 +181,7 @@ export class LiveQuery extends TxProcessor implements Client {
     return toFindResult(this.clone(q.result), q.total) as FindResult<T>
   }
 
-  searchFulltext (
-    query: FulltextQuery,
-    options: FulltextQueryOptions
-  ): Promise<FulltextSearchResult> {
+  searchFulltext (query: FulltextQuery, options: FulltextQueryOptions): Promise<FulltextSearchResult> {
     return this.client.searchFulltext(query, options)
   }
 

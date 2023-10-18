@@ -43,12 +43,16 @@ describe('client', () => {
       getWorkspaceId('ws1', ''),
       new MeasureMetricsContext('-', {})
     )
-    const hits = await adapter.searchRaw({
-      query: {
-        query_string: {
-          query: 'hey'
+    const result = await adapter.searchRaw(
+      {
+        query: {
+          query_string: {
+            query: 'hey'
+          }
         }
-      }
-    }, {})
+      },
+      {}
+    )
+    console.log(result)
   })
 })

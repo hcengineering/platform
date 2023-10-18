@@ -126,19 +126,10 @@ class ModelClient implements AccountClient {
     return result
   }
 
-  async searchFulltext (
-    query: FulltextQuery,
-    options: FulltextQueryOptions
-  ): Promise<FulltextSearchResult> {
+  async searchFulltext (query: FulltextQuery, options: FulltextQueryOptions): Promise<FulltextSearchResult> {
     const result = await this.client.searchFulltext(query, options)
     if (this.notifyEnabled) {
-      console.debug(
-        'devmodel# searchFulltext=>',
-        query,
-        options,
-        'result => ',
-        result
-      )
+      console.debug('devmodel# searchFulltext=>', query, options, 'result => ', result)
     }
     return result
   }

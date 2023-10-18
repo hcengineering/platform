@@ -104,17 +104,14 @@ class ElasticAdapter implements FullTextAdapter {
     return this._metrics
   }
 
-  async searchRaw (
-    query: FulltextQuery,
-    options: FulltextQueryOptions
-  ): Promise<FulltextSearchResult> {
+  async searchRaw (query: FulltextQuery, options: FulltextQueryOptions): Promise<FulltextSearchResult> {
     try {
       const result = await this.client.search({
         index: toWorkspaceString(this.workspaceId),
         body: query
       })
 
-      const resp: FulltextSearchResult =  { hits: { hits: [] } }
+      const resp: FulltextSearchResult = { hits: { hits: [] } }
       if (result.body.hits !== undefined) {
         // 1-lvl merge, but preserve hits in a case there are no hits inside response
         resp.hits = {

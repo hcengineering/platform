@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getResource, getMetadata } from '@hcengineering/platform'
+  import { getResource } from '@hcengineering/platform'
   import { createFocusManager, FocusHandler, Label, ListView, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation, {
@@ -127,31 +127,32 @@
     }
   }
 
-  async function doFulltextSearch(classes: Ref<Class<Doc>>[], query: string) {
-    const fulltextQuery = {
-      aggs: {
-        class_count: {
-          terms: {
-            field: '_class.keyword'
-          }
-        }
-      },
-      query: {
-        bool: {
-          must: {
-            query_string: { query }
-          },
-          filter: {
-            terms: {
-              '_class.keyword': classes
-            }
-          }
-        }
-      }
-    }
-    const result = await client.searchFulltext(fulltextQuery, {})
-    console.log('mention @ Fulltext Results', result)
-  }
+  // WIP: Future search implementation with a new API
+  // async function doFulltextSearch (classes: Ref<Class<Doc>>[], query: string) {
+  //   const fulltextQuery = {
+  //     aggs: {
+  //       class_count: {
+  //         terms: {
+  //           field: '_class.keyword'
+  //         }
+  //       }
+  //     },
+  //     query: {
+  //       bool: {
+  //         must: {
+  //           query_string: { query }
+  //         },
+  //         filter: {
+  //           terms: {
+  //             '_class.keyword': classes
+  //           }
+  //         }
+  //       }
+  //     }
+  //   }
+  //   const result = await client.searchFulltext(fulltextQuery, {})
+  //   console.log('mention @ Fulltext Results', result)
+  // }
 
   async function updateItems (query: string): Promise<void> {
     const classesToSearch: Ref<Class<Doc>>[] = []
