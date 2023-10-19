@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { Ref, Class, Doc, WithLookup, Mixin, ClassifierKind } from '@hcengineering/core'
   import { getClient, createQuery } from '@hcengineering/presentation'
-  import lead, { Lead, Funnel, Customer } from '@hcengineering/lead'
+  import lead, { Lead, Funnel } from '@hcengineering/lead'
   import setting, { settingId } from '@hcengineering/setting'
   import { Panel } from '@hcengineering/panel'
   import notification from '@hcengineering/notification'
@@ -29,15 +29,29 @@
     showPopup,
     getCurrentResolvedLocation,
     navigate,
-    IconMixin
+    IconMixin,
+    AnyComponent
   } from '@hcengineering/ui'
-  import { ContextMenu, UpDownNavigator, ObjectPresenter, DocAttributeBar } from '@hcengineering/view-resources'
+  import { 
+    ContextMenu, 
+    UpDownNavigator, 
+    ObjectPresenter, 
+    DocAttributeBar,
+    groupBy,
+  } from '@hcengineering/view-resources'
+  import task, { State } from '@hcengineering/task'
   import { Channel } from '@hcengineering/contact'
-  import view from '@hcengineering/view'
+  import view, {AttributeModel} from '@hcengineering/view'
   import contact from '@hcengineering/contact'
   import { getResource } from '@hcengineering/platform'
+  import LeadStateColumn from './LeadStateColumn.svelte'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import plugin from '../plugin'
+
+  interface MixinEditor {
+    editor: AnyComponent
+    pinned?: boolean
+  }
 
   export let _id: Ref<Lead>
   export let _class: Ref<Class<Lead>>
@@ -51,7 +65,6 @@
   const queryClient = createQuery()
   const channelQuery = createQuery()
   const customerQuery = createQuery()
-  const statesQuery = createQuery()
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -61,11 +74,13 @@
   let customer: WithLookup<Doc> | undefined
   let title = ''
   let space: Funnel | undefined
-  let states: Ref<Doc>[] = []
+  let statesIds: Ref<Doc>[] = []
+  let states: Record<any, WithLookup<State>[]> = {}
 
   let innerWidth: number
   let showAllMixins: boolean
   let mixins: Mixin<Doc>[] = []
+
   const allowedCollections = ['labels']
   const ignoreKeys = ['isArchived']
   const ignoreMixins = new Set()
@@ -76,7 +91,6 @@
 
   $: if (customer !== undefined) {
     getMixins(customer, true)
-    console.log({ mixins })
   }
 
   function getMixins (object: Doc, showAllMixins: boolean): void {
@@ -117,7 +131,7 @@
         if (object) {
           title = object.title
           space = object.$lookup?.space
-          states = space?.states !== undefined ? space?.states : []
+          statesIds = space?.states !== undefined ? space?.states : []
         }
       },
       { lookup: { space: lead.class.Funnel } }
@@ -134,8 +148,7 @@
     )
   }
 
-  $: if (states.length > 0) {
-  }
+  $: fetchStates(statesIds)
 
   async function save () {
     if (!object) return
@@ -143,6 +156,14 @@
     if (trimmedTitle.length > 0 && trimmedTitle !== object.title?.trim()) {
       await client.update(object, { title: trimmedTitle })
     }
+  }
+
+  async function fetchStates (ids: any[]) {
+    if (ids.length === 0) return
+    try {
+      const result = await client.findAll(task.class.State, { _id: { $in: Array.from(ids) } }, {})
+      states = groupBy(result, '_id')
+    } catch { }
   }
 
 
@@ -177,10 +198,6 @@
         ...tabSource.messages,
         props: { objectId: object._id, object, withInput: true, withHeader: false, fullWidth: true }
       }
-      // issue: {
-      //   ...tabSource.issue,
-      //   props: {}
-      // },
     }
   }
 
@@ -213,10 +230,10 @@
     if (!object) return
     showPopup(ContextMenu, { object, excludedActions: [view.action.Open] }, (ev as MouseEvent).target as HTMLElement)
   }
+  console.log($$props)
 </script>
 
 {#if object !== undefined}
-  {@debug states}
   <Panel
     on:open
     {object}
@@ -248,12 +265,22 @@
         {/if}
       {/if}
     </svelte:fragment>
+
+    <div class="mt-3 container">
+      {#each statesIds as ref (ref)}
+        {#if Array.isArray(states[ref])}
+          {@const [stateObject] = states[ref]}
+          <LeadStateColumn object={stateObject} />
+        {/if}
+      {/each}
+    </div>
+
     <Grid column={2} rowGap={1}>
       <EditBox
-        placeholder={lead.string.Lead}
+        focusable
         bind:value={title}
         kind={'large-style'}
-        focusable
+        placeholder={lead.string.Lead}
         on:blur={() => {
           if (object !== undefined && title !== object.title) change('title', title)
         }}
@@ -276,9 +303,7 @@
         {/await}
       {/if}
     </div>
-    <p>
-      {JSON.stringify({ states })}
-    </p>
+
     <svelte:fragment slot="utils">
       <Button 
         icon={IconMoreH}
@@ -324,3 +349,12 @@
     </svelte:fragment>
   </Panel>
 {/if}
+
+<style lang="scss">
+  .container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+</style>

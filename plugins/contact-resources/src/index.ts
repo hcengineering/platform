@@ -90,6 +90,7 @@ import ActivityChannelPresenter from './components/activity/ActivityChannelPrese
 import ExpandRightDouble from './components/icons/ExpandRightDouble.svelte'
 import IconMembers from './components/icons/Members.svelte'
 import TxNameChange from './components/activity/TxNameChange.svelte'
+import LeadHeader from './components/LeadHeader.svelte'
 
 import contact from './plugin'
 import {
@@ -160,7 +161,7 @@ const toObjectSearchResult = (e: WithLookup<Contact>): ObjectSearchResult => ({
   componentProps: { size: 'smaller' }
 })
 
-async function queryContact (
+async function queryContact(
   _class: Ref<Class<Contact>>,
   client: Client,
   search: string,
@@ -170,7 +171,7 @@ async function queryContact (
   return await doContactQuery(_class, q, filter, client)
 }
 
-async function queryEmployee (
+async function queryEmployee(
   client: Client,
   search: string,
   filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
@@ -194,7 +195,7 @@ async function queryEmployee (
   return q1.concat(q2)
 }
 
-async function doContactQuery<T extends Contact> (
+async function doContactQuery<T extends Contact>(
   _class: Ref<Class<T>>,
   q: DocumentQuery<T>,
   filter: { in?: RelatedDocument[] | undefined, nin?: RelatedDocument[] | undefined } | undefined,
@@ -215,7 +216,7 @@ async function doContactQuery<T extends Contact> (
   return (await client.findAll(_class, q, { limit: 200 })).map(toObjectSearchResult)
 }
 
-async function kickEmployee (doc: Person): Promise<void> {
+async function kickEmployee(doc: Person): Promise<void> {
   const client = getClient()
 
   const employee = client.getHierarchy().as(doc, contact.mixin.Employee)
@@ -241,7 +242,7 @@ async function kickEmployee (doc: Person): Promise<void> {
     )
   }
 }
-async function openChannelURL (doc: Channel): Promise<void> {
+async function openChannelURL(doc: Channel): Promise<void> {
   const url = parseURL(doc.value)
   if (url.startsWith('http://') || url.startsWith('https://')) {
     window.open(url)
