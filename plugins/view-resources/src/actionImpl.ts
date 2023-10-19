@@ -14,7 +14,14 @@ import {
 } from '@hcengineering/ui'
 import MoveView from './components/Move.svelte'
 import view from './plugin'
-import { FocusSelection, SelectDirection, SelectionStore, focusStore, previewDocument, selectionStore } from './selection'
+import {
+  FocusSelection,
+  SelectDirection,
+  SelectionStore,
+  focusStore,
+  previewDocument,
+  selectionStore
+} from './selection'
 import { deleteObjects, getObjectLinkFragment } from './utils'
 import contact from '@hcengineering/contact'
 
