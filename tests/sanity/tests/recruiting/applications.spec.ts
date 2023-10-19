@@ -63,7 +63,10 @@ test.describe('Application tests', () => {
     await navigationMenuPage.buttonApplications.click()
 
     const applicationsPage = new ApplicationsPage(page)
-    const talentName = await applicationsPage.createNewApplicationWithNewTalent({ vacancy: 'first', recruiterName: 'first' })
+    const talentName = await applicationsPage.createNewApplicationWithNewTalent({
+      vacancy: 'first',
+      recruiterName: 'first'
+    })
     await applicationsPage.openApplicationByTalentName(talentName)
 
     const applicationsDetailsPage = new ApplicationsDetailsPage(page)
@@ -80,7 +83,10 @@ test.describe('Application tests', () => {
     await navigationMenuPage.buttonApplications.click()
 
     let applicationsPage = new ApplicationsPage(page)
-    const talentName = await applicationsPage.createNewApplicationWithNewTalent({ vacancy: 'first', recruiterName: 'first' })
+    const talentName = await applicationsPage.createNewApplicationWithNewTalent({
+      vacancy: 'first',
+      recruiterName: 'first'
+    })
     await applicationsPage.openApplicationByTalentName(talentName)
 
     let applicationsDetailsPage = new ApplicationsDetailsPage(page)

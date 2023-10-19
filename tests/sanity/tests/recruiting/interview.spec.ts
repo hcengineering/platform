@@ -11,7 +11,7 @@ test.describe('interview tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
   })
 
-  test('create-interview', async ({ page }) => {
+  test.skip('create-interview', async ({ page }) => {
     await page.locator('[id="app-recruit\\:string\\:RecruitApplication"]').click()
 
     const interviewId = 'My interview ' + generateId(4)

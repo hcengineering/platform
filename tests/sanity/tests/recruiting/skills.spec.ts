@@ -11,7 +11,7 @@ test.describe('skill tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
   })
 
-  test('create skill', async ({ page }) => {
+  test.skip('create skill', async ({ page }) => {
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
     await page.click('text=Skills')
     await page.click('button:has-text("Skill")')

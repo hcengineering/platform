@@ -71,17 +71,20 @@ export class ApplicationsPage extends CommonPage {
   }
 
   async openApplicationByTalentName (talentName: TalentName): Promise<void> {
-    await this.page.locator('span.ap-label', { hasText: `${talentName.lastName} ${talentName.firstName}` })
+    await this.page
+      .locator('span.ap-label', { hasText: `${talentName.lastName} ${talentName.firstName}` })
       .locator('xpath=../../../../..')
       .locator('div[class*="firstCell"]')
       .click()
   }
 
   async checkApplicationDoneStatus (talentName: TalentName, done: string): Promise<void> {
-    await expect(await this.page.locator('span.ap-label', { hasText: `${talentName.lastName} ${talentName.firstName}` })
-      .locator('xpath=../../../../..')
-      .locator('td')
-      .nth(6))
-      .toHaveText(done)
+    await expect(
+      await this.page
+        .locator('span.ap-label', { hasText: `${talentName.lastName} ${talentName.firstName}` })
+        .locator('xpath=../../../../..')
+        .locator('td')
+        .nth(6)
+    ).toHaveText(done)
   }
 }
