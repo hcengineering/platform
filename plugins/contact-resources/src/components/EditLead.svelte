@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { Ref, Class, Doc, WithLookup, Mixin, ClassifierKind } from '@hcengineering/core'
   import { getClient, createQuery } from '@hcengineering/presentation'
-  import lead, { Lead, Funnel } from '@hcengineering/lead'
+  import lead, { Lead, Funnel, Customer } from '@hcengineering/lead'
   import setting, { settingId } from '@hcengineering/setting'
   import { Panel } from '@hcengineering/panel'
   import notification from '@hcengineering/notification'
@@ -42,19 +42,27 @@
   export let _id: Ref<Lead>
   export let _class: Ref<Class<Lead>>
   export let embedded: boolean = false
+  export let mode: string = 'messages'
 
   type NavEditLeadKey = 'mail' | 'messages' | 'notes' | 'activity'
 
   let lastId: Ref<Doc> = _id
+
   const queryClient = createQuery()
   const channelQuery = createQuery()
+  const customerQuery = createQuery()
+  const statesQuery = createQuery()
+
   const dispatch = createEventDispatcher()
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
   let object: WithLookup<Lead> | undefined
+  let customer: WithLookup<Doc> | undefined
   let title = ''
   let space: Funnel | undefined
+  let states: Ref<Doc>[] = []
+
   let innerWidth: number
   let showAllMixins: boolean
   let mixins: Mixin<Doc>[] = []
@@ -66,8 +74,8 @@
 
   $: read(_id)
 
-  $: if (object !== undefined) {
-    getMixins(object, true)
+  $: if (customer !== undefined) {
+    getMixins(customer, true)
     console.log({ mixins })
   }
 
@@ -109,10 +117,25 @@
         if (object) {
           title = object.title
           space = object.$lookup?.space
+          states = space?.states !== undefined ? space?.states : []
         }
       },
       { lookup: { space: lead.class.Funnel } }
     )
+
+  $: if (object !== undefined) {
+    customerQuery.query(
+      object.attachedToClass,
+      { _id: object.attachedTo },
+      async ([res]) => {
+        if (!res) return
+        customer = res
+      }
+    )
+  }
+
+  $: if (states.length > 0) {
+  }
 
   async function save () {
     if (!object) return
@@ -122,7 +145,6 @@
     }
   }
 
-  export let mode: string = 'messages'
 
   let channel: Partial<Channel> = {}
   const activityOptions = { enabled: true, showInput: false }
@@ -131,10 +153,12 @@
     mode = newMode
   }
 
-  $: if (object?.attachedTo) {
-    channelQuery.query(contact.class.Channel, { attachedTo: object.attachedTo }, ([c]: Channel[]) => {
-      if (c) channel = c
-    })
+  $: if (object !== undefined) {
+    channelQuery.query(
+      contact.class.Channel, 
+      { attachedTo: object.attachedTo }, 
+      ([c]: Channel[]) => { if (c) channel = c }
+    )
   }
 
   let tabSource: { [index: string]: any } = {
@@ -192,6 +216,7 @@
 </script>
 
 {#if object !== undefined}
+  {@debug states}
   <Panel
     on:open
     {object}
@@ -209,9 +234,17 @@
     <svelte:fragment slot="navigator">
       {#if !embedded}
         <UpDownNavigator element={object} />
-        <ObjectPresenter _class={object._class} objectId={object._id} value={object} />
+        <ObjectPresenter 
+          _class={object._class} 
+          objectId={object._id} 
+          value={object}
+        />
         {#if space !== undefined}
-          <ObjectPresenter _class={space._class} objectId={space._id} value={space} />
+          <ObjectPresenter 
+            _class={space._class}
+            objectId={space._id}
+            value={space}
+          />
         {/if}
       {/if}
     </svelte:fragment>
@@ -227,7 +260,11 @@
       />
     </Grid>
     <div class="mt-3">
-      <TabList selected={mode} items={modes} on:select={({ detail }) => handleViewModeChanged(detail.id)} />
+      <TabList 
+        items={modes}
+        selected={mode}
+        on:select={({ detail }) => handleViewModeChanged(detail.id)}
+      />
     </div>
     <!-- render tab content in this conditon -->
     <div class="mt-3">
@@ -239,8 +276,16 @@
         {/await}
       {/if}
     </div>
+    <p>
+      {JSON.stringify({ states })}
+    </p>
     <svelte:fragment slot="utils">
-      <Button icon={IconMoreH} kind={'ghost'} size={'medium'} on:click={showMenu} />
+      <Button 
+        icon={IconMoreH}
+        kind={'ghost'} 
+        size={'medium'} 
+        on:click={showMenu}
+      />
       <Button
         icon={setting.icon.Setting}
         kind={'ghost'}
@@ -267,8 +312,14 @@
       />
     </svelte:fragment>
     <svelte:fragment slot="custom-attributes">
-      {#if object && space}
-        <DocAttributeBar {object} {mixins} {ignoreKeys} {allowedCollections} showLabel={plugin.string.LeadInfo} />
+      {#if customer !== undefined}
+        <DocAttributeBar 
+          {mixins} 
+          {ignoreKeys} 
+          object={customer}
+          {allowedCollections} 
+          showLabel={plugin.string.LeadInfo} 
+        />
       {/if}
     </svelte:fragment>
   </Panel>
