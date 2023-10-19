@@ -27,17 +27,17 @@ import core, {
 import { getResource } from '@hcengineering/platform'
 import { Action, ActionGroup, ViewAction, ViewActionInput, ViewContextType } from '@hcengineering/view'
 import view from './plugin'
-import { FocusSelection } from './selection'
+import { FocusSelection, SelectionStore } from './selection'
 
 /**
  * @public
  */
-export function getSelection (focusStore: FocusSelection, selectionStore: Doc[]): Doc[] {
+export function getSelection (focus: FocusSelection, selection: SelectionStore): Doc[] {
   let docs: Doc[] = []
-  if (selectionStore.length > 0) {
-    docs = selectionStore
-  } else if (focusStore.focus !== undefined) {
-    docs = [focusStore.focus]
+  if (selection.docs.length > 0) {
+    docs = selection.docs
+  } else if (focus.focus !== undefined) {
+    docs = [focus.focus]
   }
   return docs
 }

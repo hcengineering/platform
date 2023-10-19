@@ -20,7 +20,7 @@
   import { Action, ViewContextType } from '@hcengineering/view'
   import { fly } from 'svelte/transition'
   import { getContextActions, getSelection } from '../actions'
-  import { focusStore, previewDocument, selectionStore } from '../selection'
+  import { ListSelectionProvider, SelectionStore, focusStore, previewDocument, selectionStore } from '../selection'
   import { getObjectPreview } from '../utils'
 
   const client = getClient()
@@ -28,8 +28,9 @@
   addTxListener((tx) => {
     if (tx._class === core.class.TxRemoveDoc) {
       const docId = (tx as TxRemoveDoc<Doc>).objectId
-      if ($selectionStore.find((it) => it._id === docId) !== undefined) {
-        selectionStore.update((old) => {
+      const provider = ListSelectionProvider.Find(docId)
+      if (provider !== undefined) {
+        provider.selection.update((old) => {
           return old.filter((it) => it._id !== docId)
         })
       }
@@ -47,13 +48,13 @@
       application?: Ref<Doc>
     },
     focus: Doc | undefined | null,
-    selection: Doc[]
+    selection: SelectionStore
   ): Promise<Action[]> {
     let docs: Doc | Doc[] = []
-    if (selection.find((it) => it._id === focus?._id) === undefined && focus != null) {
+    if (selection.docs.find((it) => it._id === focus?._id) === undefined && focus != null) {
       docs = focus
     } else {
-      docs = selection
+      docs = selection.docs
     }
 
     return await getContextActions(client, docs, context)

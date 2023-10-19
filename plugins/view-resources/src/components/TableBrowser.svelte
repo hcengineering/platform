@@ -18,7 +18,7 @@
   import { Scroller, tableSP, FadeOptions } from '@hcengineering/ui'
   import { BuildModelKey } from '@hcengineering/view'
   import { onMount } from 'svelte'
-  import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '../selection'
+  import { focusStore, ListSelectionProvider, SelectDirection } from '../selection'
   import { LoadingProps } from '../utils'
   import SourcePresenter from './inference/SourcePresenter.svelte'
   import Table from './Table.svelte'
@@ -48,6 +48,7 @@
       }
     }
   )
+  const selection = listProvider.selection
 
   onMount(() => {
     ;(document.activeElement as HTMLElement)?.blur()
@@ -101,7 +102,7 @@
     highlightRows={true}
     {enableChecking}
     showFooter
-    checked={$selectionStore ?? []}
+    checked={$selection ?? []}
     {prefferedSorting}
     {tableId}
     selection={listProvider.current($focusStore)}

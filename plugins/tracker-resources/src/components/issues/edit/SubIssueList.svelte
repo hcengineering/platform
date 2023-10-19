@@ -1,5 +1,5 @@
 <!-- 
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -19,7 +19,7 @@
   import { Issue } from '@hcengineering/tracker'
   import { AnyComponent, AnySvelteComponent, registerFocus } from '@hcengineering/ui'
   import { ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { List, ListSelectionProvider, SelectDirection, selectionStore } from '@hcengineering/view-resources'
+  import { List, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../../plugin'
 
@@ -47,6 +47,7 @@
     listProvider.updateFocus(docs[0])
     list?.select(0, undefined)
   }
+  const selection = listProvider.selection
 
   // Focusable control with index
   let focused = false
@@ -88,7 +89,8 @@
     {createItemDialog}
     {createItemDialogProps}
     {createItemLabel}
-    selectedObjectIds={$selectionStore ?? []}
+    {listProvider}
+    selectedObjectIds={$selection ?? []}
     {compactMode}
     on:row-focus={(event) => {
       listProvider.updateFocus(event.detail ?? undefined)

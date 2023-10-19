@@ -42,7 +42,7 @@
   import { AttributeModel, BuildModelKey, ViewOptionModel, ViewOptions, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { fade } from 'svelte/transition'
-  import { FocusSelection, focusStore } from '../../selection'
+  import { FocusSelection, SelectionFocusProvider, focusStore } from '../../selection'
   import Menu from '../Menu.svelte'
   import ListHeader from './ListHeader.svelte'
   import ListItem from './ListItem.svelte'
@@ -87,6 +87,7 @@
   export let resultOptions: FindOptions<Doc>
   export let parentCategories: number = 0
   export let limiter: RateLimitter
+  export let listProvider: SelectionFocusProvider
 
   $: lastLevel = level + 1 >= viewOptions.groupBy.length
 
@@ -432,6 +433,7 @@
       limited={lastLevel ? limited.length : itemProj.length}
       itemsProj={itemProj}
       items={limited}
+      {listProvider}
       {headerComponent}
       {createItemDialog}
       {createItemDialogProps}
