@@ -2,11 +2,10 @@ import { getEmbeddedLabel, getMetadata } from '@hcengineering/platform'
 import presentation, { getFileUrl } from '@hcengineering/presentation'
 import { Action, IconSize, Menu, getEventPositionElement, getIconSize2x, showPopup } from '@hcengineering/ui'
 import { Node, createNodeFromContent, mergeAttributes, nodeInputRule } from '@tiptap/core'
-import { Plugin, PluginKey } from 'prosemirror-state'
-import plugin from '../plugin'
-
 import { Fragment, Node as ProseMirrorNode } from '@tiptap/pm/model'
-import { EditorView } from 'prosemirror-view'
+import { Plugin, PluginKey } from '@tiptap/pm/state'
+import { EditorView } from '@tiptap/pm/view'
+import plugin from '../../plugin'
 
 /**
  * @public
@@ -52,7 +51,7 @@ function getType (type: string): 'image' | 'other' {
 /**
  * @public
  */
-export const ImageRef = Node.create<ImageOptions>({
+export const ImageExtension = Node.create<ImageOptions>({
   name: 'image',
 
   addOptions () {

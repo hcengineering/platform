@@ -46,6 +46,7 @@
   import { defaultEditorAttributes } from './editor/editorProps'
   import { completionConfig, defaultExtensions } from './extensions'
   import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
+  import { FileAttachFunction, ImageExtension } from './extension/imageExt'
   import { NodeUuidExtension } from './extension/nodeUuid'
   import StyleButton from './StyleButton.svelte'
   import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
@@ -71,6 +72,8 @@
   export let editorAttributes: { [name: string]: string } = {}
   export let onExtensions: () => AnyExtension[] = () => []
   export let boundary: HTMLElement | undefined = undefined
+
+  export let attachFile: FileAttachFunction | undefined = undefined
 
   let element: HTMLElement
 
@@ -234,6 +237,17 @@
   $: updateEditor(editor, field, comparedVersion)
   $: if (editor) dispatch('editor', editor)
 
+  const optionalExtensions: AnyExtension[] = []
+
+  if (attachFile !== undefined) {
+    optionalExtensions.push(
+      ImageExtension.configure({
+        inline: true,
+        attachFile
+      })
+    )
+  }
+
   onMount(() => {
     ph.then(() => {
       editor = new Editor({
@@ -242,6 +256,7 @@
         editorProps: { attributes: mergeAttributes(defaultEditorAttributes, editorAttributes, { class: 'flex-grow' }) },
         extensions: [
           ...defaultExtensions,
+          ...optionalExtensions,
           Placeholder.configure({ placeholder: placeHolderStr }),
           InlineStyleToolbarExtension.configure({
             tippyOptions: {
@@ -331,7 +346,7 @@
   const { idx, focusManager } = registerFocus(focusIndex, {
     focus: () => {
       if (visible) {
-        focus('start')
+        focus()
       }
       return visible && element !== null
     },

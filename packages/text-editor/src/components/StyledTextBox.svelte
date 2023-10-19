@@ -15,6 +15,7 @@
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import type { AnyExtension } from '@tiptap/core'
+  import { Node as ProseMirrorNode } from '@tiptap/pm/model'
 
   import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
@@ -23,9 +24,7 @@
   import { completionConfig } from './extensions'
   import { EmojiExtension } from './extension/emoji'
   import { FocusExtension } from './extension/focus'
-
-  import { ImageRef, FileAttachFunction } from './imageExt'
-  import { Node as ProseMirrorNode } from '@tiptap/pm/model'
+  import { ImageExtension, FileAttachFunction } from './extension/imageExt'
   import { RefAction } from '../types'
 
   export let label: IntlString | undefined = undefined
@@ -170,7 +169,7 @@
   }
 
   function configureExtensions () {
-    const imagePlugin = ImageRef.configure({
+    const imagePlugin = ImageExtension.configure({
       inline: true,
       HTMLAttributes: {},
       attachFile,
