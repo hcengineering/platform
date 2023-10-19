@@ -29,4 +29,8 @@ export class CommonPage {
     await page.locator('div.popup form[id="recruit:string:CreateReviewParams"] div.text-editor-view').fill(description)
     await page.locator('div.popup form[id="recruit:string:CreateReviewParams"] button[type="submit"]').click()
   }
+
+  async pressYesDeletePopup (page: Page): Promise<void> {
+    await page.locator('form[id="view:string:DeleteObject"] button.accented').click()
+  }
 }

@@ -12,6 +12,7 @@ export class ApplicationsPage extends CommonPage {
   readonly buttonAssignedRecruiter: Locator
   readonly buttonCreateNewApplication: Locator
   readonly buttonTabCreated: Locator
+  readonly textTableFirstCell: Locator
 
   constructor (page: Page) {
     super()
@@ -23,6 +24,7 @@ export class ApplicationsPage extends CommonPage {
     this.buttonAssignedRecruiter = page.locator('button div.label', { hasText: 'Assigned recruiter' })
     this.buttonCreateNewApplication = page.locator('form[id="recruit:string:CreateApplication"] button[type="submit"]')
     this.buttonTabCreated = page.locator('div[data-id="tab-created"]')
+    this.textTableFirstCell = page.locator('div[class$="firstCell"]')
   }
 
   async createNewApplication (data: NewApplication): Promise<void> {
@@ -86,5 +88,9 @@ export class ApplicationsPage extends CommonPage {
         .locator('td')
         .nth(6)
     ).toHaveText(done)
+  }
+
+  async checkApplicationNotExist (applicationId: string): Promise<void> {
+    await expect(await this.textTableFirstCell.filter({ hasText: applicationId })).toHaveCount(0)
   }
 }
