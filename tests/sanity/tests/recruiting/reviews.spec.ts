@@ -1,11 +1,11 @@
 import { test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI } from './utils'
+import { generateId, PlatformSetting, PlatformURI } from '../utils'
 
 test.use({
   storageState: PlatformSetting
 })
 
-test.describe('recruit review tests', () => {
+test.describe('review tests', () => {
   test.beforeEach(async ({ page }) => {
     // Create user and workspace
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
