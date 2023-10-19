@@ -47,6 +47,7 @@ test.describe('Application tests', () => {
     await expect(
       await page.locator('[id="recruit:string:CreateApplication"] button:has-text("HR Interview")')
     ).toBeVisible()
+
     // We need to be sure state is proper one, no other way to do it.
     await page.waitForTimeout(100)
 
