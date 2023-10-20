@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import contact, { Contact, getName } from '@hcengineering/contact'
-  import core, { Class, ClassifierKind, Doc, Mixin, Obj, Ref } from '@hcengineering/core'
+  import { Class, Doc, Mixin, Obj, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { Asset, getResource, translate } from '@hcengineering/platform'
@@ -30,6 +30,7 @@
     getClient,
     hasResource
   } from '@hcengineering/presentation'
+  import { getMixins } from '../utils'
   import { AnyComponent, Button, Component, IconMixin, IconMoreH, showPopup, themeStore } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
@@ -95,29 +96,16 @@
 
   const dispatch = createEventDispatcher()
 
-  function getMixins (object: Doc, showAllMixins: boolean): void {
-    if (object === undefined) return
-    const descendants = hierarchy.getDescendants(core.class.Doc).map((p) => hierarchy.getClass(p))
-
-    mixins = descendants.filter(
-      (m) =>
-        m.kind === ClassifierKind.MIXIN &&
-        !ignoreMixins.has(m._id) &&
-        (hierarchy.hasMixin(object, m._id) ||
-          (showAllMixins &&
-            hierarchy.isDerived(realObjectClass, hierarchy.getBaseClass(m._id)) &&
-            (m.extends && hierarchy.isMixin(m.extends) ? hierarchy.hasMixin(object, m.extends) : true)))
-    )
-  }
-
-  $: getMixins(object, showAllMixins)
-
   let ignoreKeys: string[] = []
   let activityOptions = { enabled: true, showInput: true }
   let allowedCollections: string[] = []
   let collectionArrays: string[] = []
   let inplaceAttributes: string[] = []
   let ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
+
+  $: if (object !== undefined) {
+    mixins = getMixins({ object, showAllMixins, ignoreMixins, _class: realObjectClass, hierarchy })
+  }
 
   async function updateKeys (): Promise<void> {
     const keysMap = new Map(getFiltredKeys(hierarchy, realObjectClass, ignoreKeys).map((p) => [p.attr._id, p]))
@@ -274,7 +262,7 @@
     allowedCollections = ev.detail.allowedCollections ?? []
     collectionArrays = ev.detail.collectionArrays ?? []
     title = ev.detail.title
-    getMixins(object, showAllMixins)
+    mixins = getMixins({ object, showAllMixins, ignoreMixins, _class: realObjectClass, hierarchy })
     updateKeys()
   }
 

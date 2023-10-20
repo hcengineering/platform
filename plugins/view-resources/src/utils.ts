@@ -34,7 +34,9 @@ import core, {
   Space,
   TxOperations,
   getCurrentAccount,
-  getObjectValue
+  getObjectValue,
+  ClassifierKind,
+  Mixin
 } from '@hcengineering/core'
 import type { IntlString } from '@hcengineering/platform'
 import { getResource } from '@hcengineering/platform'
@@ -883,4 +885,30 @@ export async function openDoc (hierarchy: Hierarchy, object: Doc): Promise<void>
   const comp = panelComponent?.component ?? view.component.EditDoc
   const loc = await getObjectLinkFragment(hierarchy, object, {}, comp)
   navigate(loc)
+}
+
+export function getMixins ({
+  showAllMixins = true,
+  ignoreMixins = new Set(),
+  hierarchy,
+  _class,
+  object
+}: {
+  showAllMixins?: boolean
+  ignoreMixins?: Set<Ref<Doc>>
+  hierarchy: Hierarchy
+  _class: Ref<Class<Doc>>
+  object: Doc
+}): Array<Mixin<Doc>> {
+  if (object === undefined) return []
+  const descendants = hierarchy.getDescendants(core.class.Doc).map((p) => hierarchy.getClass(p))
+  return descendants.filter(
+    (m) =>
+      m.kind === ClassifierKind.MIXIN &&
+      !ignoreMixins.has(m._id) &&
+      (hierarchy.hasMixin(object, m._id) ||
+        (showAllMixins &&
+          hierarchy.isDerived(_class, hierarchy.getBaseClass(m._id)) &&
+          (m.extends != null && hierarchy.isMixin(m.extends) ? hierarchy.hasMixin(object, m.extends) : true)))
+  )
 }

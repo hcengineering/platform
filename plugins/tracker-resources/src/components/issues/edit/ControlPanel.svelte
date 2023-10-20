@@ -15,13 +15,13 @@
 <script lang="ts">
   import { PersonAccount } from '@hcengineering/contact'
   import { EmployeeBox, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-  import core, { Class, ClassifierKind, Doc, Mixin, Ref } from '@hcengineering/core'
+  import core, { Class, Doc, Mixin, Ref } from '@hcengineering/core'
   import { AttributeBarEditor, KeyedAttribute, createQuery, getClient } from '@hcengineering/presentation'
 
   import tags from '@hcengineering/tags'
   import type { Issue } from '@hcengineering/tracker'
   import { Component, Label } from '@hcengineering/ui'
-  import { ObjectBox, getFiltredKeys, isCollectionAttr } from '@hcengineering/view-resources'
+  import { ObjectBox, getFiltredKeys, isCollectionAttr, getMixins } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
   import ComponentEditor from '../../components/ComponentEditor.svelte'
   import MilestoneEditor from '../../milestones/MilestoneEditor.svelte'
@@ -54,18 +54,10 @@
 
   let mixins: Mixin<Doc>[] = []
 
-  $: getMixins(issue, showAllMixins)
-
-  function getMixins (object: Issue, showAllMixins: boolean): void {
-    const descendants = hierarchy.getDescendants(core.class.Doc).map((p) => hierarchy.getClass(p))
-
-    mixins = descendants.filter(
-      (m) =>
-        m.kind === ClassifierKind.MIXIN &&
-        (hierarchy.hasMixin(object, m._id) ||
-          (showAllMixins && hierarchy.isDerived(tracker.class.Issue, hierarchy.getBaseClass(m._id))))
-    )
+  $: if (issue !== undefined) {
+    mixins = getMixins({ object: issue, _class: tracker.class.Issue, showAllMixins, hierarchy })
   }
+
 
   function getMixinKeys (mixin: Ref<Mixin<Doc>>): KeyedAttribute[] {
     const mixinClass = hierarchy.getClass(mixin)
