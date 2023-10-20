@@ -14,6 +14,7 @@ export class ApplicationsDetailsPage extends CommonPage {
   readonly textApplicationId: Locator
   readonly buttonMoreActions: Locator
   readonly buttonDelete: Locator
+  readonly buttonState: Locator
 
   constructor (page: Page) {
     super()
@@ -28,6 +29,7 @@ export class ApplicationsDetailsPage extends CommonPage {
     this.textApplicationId = page.locator('div.popupPanel-title div.title-wrapper > span')
     this.buttonMoreActions = page.locator('div.popupPanel-title div.buttons-group > button:nth-of-type(2)')
     this.buttonDelete = page.locator('button[class*="menuItem"] span', { hasText: 'Delete' })
+    this.buttonState = page.locator('div[class*="aside-grid"] > div:nth-of-type(1) > button')
   }
 
   async addComment (comment: string): Promise<void> {
@@ -56,7 +58,7 @@ export class ApplicationsDetailsPage extends CommonPage {
 
   async getApplicationId (): Promise<string> {
     const applicationId = await this.textApplicationId.textContent()
-    expect(applicationId !== null).toBeTruthy()
+    await expect(applicationId !== null).toBeTruthy()
     return applicationId != null ? applicationId : ''
   }
 
@@ -64,5 +66,11 @@ export class ApplicationsDetailsPage extends CommonPage {
     await this.buttonMoreActions.click()
     await this.buttonDelete.click()
     await this.pressYesDeletePopup(this.page)
+  }
+
+  async changeState (status: string): Promise<void> {
+    await this.buttonState.click()
+    await this.selectFromDropdown(this.page, status)
+    await expect(await this.buttonState).toContainText(status)
   }
 }

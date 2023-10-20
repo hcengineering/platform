@@ -90,7 +90,27 @@ export class ApplicationsPage extends CommonPage {
     ).toHaveText(done)
   }
 
+  async checkApplicationState (talentName: TalentName, done: string): Promise<void> {
+    await expect(
+      await this.page
+        .locator('span.ap-label', { hasText: `${talentName.lastName} ${talentName.firstName}` })
+        .locator('xpath=../../../../..')
+        .locator('td')
+        .nth(5)
+    ).toHaveText(done)
+  }
+
   async checkApplicationNotExist (applicationId: string): Promise<void> {
     await expect(await this.textTableFirstCell.filter({ hasText: applicationId })).toHaveCount(0)
+  }
+
+  async changeApplicationStatus (talentName: TalentName, status: string): Promise<void> {
+    await this.page
+      .locator('span.ap-label', { hasText: `${talentName.lastName} ${talentName.firstName}` })
+      .locator('xpath=../../../../..')
+      .locator('td')
+      .nth(5)
+      .click()
+    await this.selectFromDropdown(this.page, status)
   }
 }
