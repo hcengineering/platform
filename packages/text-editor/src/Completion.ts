@@ -2,6 +2,7 @@ import { Node, mergeAttributes } from '@tiptap/core'
 import Suggestion, { SuggestionOptions } from '@tiptap/suggestion'
 
 import { Plugin, PluginKey } from '@tiptap/pm/state'
+import { getDataAttribute } from './utils'
 
 export interface CompletionOptions {
   HTMLAttributes: Record<string, any>
@@ -96,49 +97,9 @@ export const Completion = Node.create<CompletionOptions>({
 
   addAttributes () {
     return {
-      id: {
-        default: null,
-        parseHTML: (element) => element.getAttribute('data-id'),
-        renderHTML: (attributes) => {
-          // eslint-disable-next-line
-          if (!attributes.id) {
-            return {}
-          }
-
-          return {
-            'data-id': attributes.id
-          }
-        }
-      },
-
-      label: {
-        default: null,
-        parseHTML: (element) => element.getAttribute('data-label'),
-        renderHTML: (attributes) => {
-          // eslint-disable-next-line
-          if (!attributes.label) {
-            return {}
-          }
-
-          return {
-            'data-label': attributes.label
-          }
-        }
-      },
-      objectclass: {
-        default: null,
-        parseHTML: (element) => element.getAttribute('data-objectclass'),
-        renderHTML: (attributes) => {
-          // eslint-disable-next-line
-          if (!attributes.objectclass) {
-            return {}
-          }
-
-          return {
-            'data-objectclass': attributes.objectclass
-          }
-        }
-      }
+      id: getDataAttribute('id', null),
+      label: getDataAttribute('label', null),
+      objectclass: getDataAttribute('objectclass', null)
     }
   },
 

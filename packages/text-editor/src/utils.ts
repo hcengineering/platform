@@ -14,6 +14,7 @@
 //
 
 import { onStatelessParameters } from '@hocuspocus/provider'
+import { Attribute } from '@tiptap/core'
 import * as Y from 'yjs'
 
 import { TiptapCollabProvider } from './provider'
@@ -75,4 +76,23 @@ export function copyDocumentContent (
 ): void {
   const provider = getProvider(documentId, providerData, initialContentId)
   provider.copyContent(documentId, snapshotId)
+}
+
+export function getDataAttribute (name: string, def?: unknown | null): Partial<Attribute> {
+  const dataName = `data-${name}`
+
+  return {
+    default: def,
+    parseHTML: (element) => element.getAttribute(dataName),
+    renderHTML: (attributes) => {
+      // eslint-disable-next-line
+      if (!attributes[name]) {
+        return {}
+      }
+
+      return {
+        [dataName]: attributes[name]
+      }
+    }
+  }
 }

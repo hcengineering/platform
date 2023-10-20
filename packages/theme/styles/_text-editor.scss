@@ -169,9 +169,33 @@
   }
 }
 
+.text-editor-image-container {
+  display: flex;
+  flex-direction: row;
+
+  &[data-align="center"] {
+    justify-content: center;
+  }
+
+  &[data-align="left"] {
+    justify-content: left;
+  }
+
+  &[data-align="right"] {
+    justify-content: right;
+  }
+}
+
 .text-editor-image {
   cursor: pointer;
   object-fit: contain;
+}
+
+.ProseMirror-selectednode {
+  img {
+    box-shadow: 0 0 0 2px var(--text-editor-selected-node-color);
+    border-radius: 0.125rem;
+  }
 }
 
 .text-editor-highlighted-node-warning {

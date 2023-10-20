@@ -1,6 +1,6 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,21 +15,23 @@
 -->
 <script lang="ts">
   import { IntlString, translate } from '@hcengineering/platform'
+  import { themeStore } from '@hcengineering/ui'
 
   import { FocusPosition, mergeAttributes } from '@tiptap/core'
   import { AnyExtension, Editor, Extension, HTMLContent } from '@tiptap/core'
-
   import Placeholder from '@tiptap/extension-placeholder'
-
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
-  import textEditorPlugin from '../plugin'
-  import { defaultExtensions } from './extensions'
   import { Node as ProseMirrorNode } from '@tiptap/pm/model'
-  import { themeStore } from '@hcengineering/ui'
-  import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
+
+  import textEditorPlugin from '../plugin'
   import { TextFormatCategory } from '../types'
-  import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
+
   import { defaultEditorAttributes } from './editor/editorProps'
+  import { defaultExtensions } from './extensions'
+  import { InlinePopupExtension } from './extension/inlinePopup'
+  import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
+  import ImageStyleToolbar from './ImageStyleToolbar.svelte'
+  import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
 
   export let content: string = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
@@ -78,7 +80,25 @@
   let needFocus = false
   let focused = false
   let posFocus: FocusPosition | undefined = undefined
-  let textEditorToolbar: HTMLElement
+  let textToolbarElement: HTMLElement
+  let imageToolbarElement: HTMLElement
+
+  const tippyOptions = {
+    zIndex: 100000,
+    popperOptions: {
+      modifiers: [
+        {
+          name: 'preventOverflow',
+          options: {
+            boundary,
+            padding: 8,
+            altAxis: true,
+            tether: false
+          }
+        }
+      ]
+    }
+  }
 
   export function focus (position?: FocusPosition): void {
     posFocus = position
@@ -138,25 +158,16 @@
           Placeholder.configure({ placeholder: placeHolderStr }),
           ...extensions,
           InlineStyleToolbarExtension.configure({
-            tippyOptions: {
-              zIndex: 100000,
-              popperOptions: {
-                modifiers: [
-                  {
-                    name: 'preventOverflow',
-                    options: {
-                      boundary,
-                      padding: 8,
-                      altAxis: true,
-                      tether: false
-                    }
-                  }
-                ]
-              }
-            },
-            element: textEditorToolbar,
+            tippyOptions,
+            element: textToolbarElement,
             isSupported: () => true,
             isSelectionOnly: () => false
+          }),
+          InlinePopupExtension.configure({
+            pluginKey: 'show-image-actions-popup',
+            element: imageToolbarElement,
+            tippyOptions,
+            shouldShow: () => editor?.isActive('image')
           })
         ],
         parseOptions: {
@@ -206,7 +217,7 @@
   }
 </script>
 
-<div class="formatPanel buttons-group xsmall-gap mb-4" bind:this={textEditorToolbar}>
+<div class="formatPanel buttons-group xsmall-gap mb-4" bind:this={textToolbarElement}>
   <TextEditorStyleToolbar
     textEditor={editor}
     {textFormatCategories}
@@ -215,6 +226,16 @@
     }}
   />
 </div>
+
+<div class="formatPanel buttons-group xsmall-gap mb-4" bind:this={imageToolbarElement}>
+  <ImageStyleToolbar
+    textEditor={editor}
+    on:focus={() => {
+      needFocus = true
+    }}
+  />
+</div>
+
 <div class="select-text" style="width: 100%;" bind:this={element} />
 
 <style lang="scss">

@@ -101,6 +101,10 @@ export const InlineStyleToolbarExtension = Extension.create<InlineStyleToolbarOp
             return false
           }
 
+          if (editor.isActive('image')) {
+            return false
+          }
+
           return true
         }
       })
