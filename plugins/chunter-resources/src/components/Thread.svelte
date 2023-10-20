@@ -36,6 +36,8 @@
   export let savedAttachmentsIds: Ref<Attachment>[]
   export let _id: Ref<Message>
   export let showHeader = true
+  export let readOnly = false
+
   let parent: Message | undefined
   let commentId = generateId() as Ref<ThreadMessage>
 
@@ -171,7 +173,7 @@
 {/if}
 <div class="flex-col content mt-2 flex-no-shrink">
   {#if parent}
-    <MsgView message={parent} thread {savedAttachmentsIds} />
+    <MsgView message={parent} thread {savedAttachmentsIds} {readOnly} />
     {#if total > comments.length}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
@@ -184,29 +186,31 @@
       </div>
     {/if}
     {#each comments as comment (comment._id)}
-      <MsgView message={comment} thread {savedAttachmentsIds} />
+      <MsgView message={comment} thread {savedAttachmentsIds} {readOnly} />
     {/each}
-    <div class="flex mr-4 ml-4 pb-4 mt-2 clear-mins">
-      <div class="min-w-6">
-        <Avatar size="x-small" avatar={currentEmployee?.avatar} name={currentEmployee?.name} />
+    {#if !readOnly}
+      <div class="flex mr-4 ml-4 pb-4 mt-2 clear-mins">
+        <div class="min-w-6">
+          <Avatar size="x-small" avatar={currentEmployee?.avatar} name={currentEmployee?.name} />
+        </div>
+        <div class="ml-2 w-full">
+          <AttachmentRefInput
+            space={parent.space}
+            _class={plugin.class.ThreadMessage}
+            objectId={commentId}
+            placeholder={chunter.string.AddCommentPlaceholder}
+            {showActions}
+            {showSend}
+            on:message={onMessage}
+            on:focus={() => {
+              showSend = true
+              showActions = true
+            }}
+            bind:loading
+          />
+        </div>
       </div>
-      <div class="ml-2 w-full">
-        <AttachmentRefInput
-          space={parent.space}
-          _class={plugin.class.ThreadMessage}
-          objectId={commentId}
-          placeholder={chunter.string.AddCommentPlaceholder}
-          {showActions}
-          {showSend}
-          on:message={onMessage}
-          on:focus={() => {
-            showSend = true
-            showActions = true
-          }}
-          bind:loading
-        />
-      </div>
-    </div>
+    {/if}
   {/if}
 </div>
 

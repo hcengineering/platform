@@ -43,6 +43,7 @@
   export let isPinned: boolean = false
   export let isSaved: boolean = false
   export let isHighlighted = false
+  export let readOnly = false
 
   let refInput: AttachmentRefInput
 
@@ -254,30 +255,32 @@
       </div>
     {/if}
   </div>
-  <div class="buttons clear-mins" class:menuShowed>
-    <div class="tool">
-      <ActionIcon
-        icon={IconMoreH}
-        size={'medium'}
-        action={(e) => {
-          showMenu(e)
-        }}
-      />
+  {#if !readOnly}
+    <div class="buttons clear-mins" class:menuShowed>
+      <div class="tool">
+        <ActionIcon
+          icon={IconMoreH}
+          size={'medium'}
+          action={(e) => {
+            showMenu(e)
+          }}
+        />
+      </div>
+      {#if !thread}
+        <div class="tool"><ActionIcon icon={Thread} size={'medium'} action={openThread} /></div>
+      {/if}
+      <div class="tool book">
+        <ActionIcon
+          icon={Bookmark}
+          size={'medium'}
+          action={addToSaved}
+          label={isSaved ? chunter.string.RemoveFromSaved : chunter.string.AddToSaved}
+        />
+      </div>
+      <!-- <div class="tool"><ActionIcon icon={Share} size={'medium'}/></div> -->
+      <div class="tool"><ActionIcon icon={Emoji} size={'medium'} action={openEmojiPalette} /></div>
     </div>
-    {#if !thread}
-      <div class="tool"><ActionIcon icon={Thread} size={'medium'} action={openThread} /></div>
-    {/if}
-    <div class="tool book">
-      <ActionIcon
-        icon={Bookmark}
-        size={'medium'}
-        action={addToSaved}
-        label={isSaved ? chunter.string.RemoveFromSaved : chunter.string.AddToSaved}
-      />
-    </div>
-    <!-- <div class="tool"><ActionIcon icon={Share} size={'medium'}/></div> -->
-    <div class="tool"><ActionIcon icon={Emoji} size={'medium'} action={openEmojiPalette} /></div>
-  </div>
+  {/if}
 </div>
 
 <style lang="scss">
