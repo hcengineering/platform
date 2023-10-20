@@ -29,7 +29,7 @@ export class ApplicationsDetailsPage extends CommonPage {
     this.textApplicationId = page.locator('div.popupPanel-title div.title-wrapper > span')
     this.buttonMoreActions = page.locator('div.popupPanel-title div.buttons-group > button:nth-of-type(2)')
     this.buttonDelete = page.locator('button[class*="menuItem"] span', { hasText: 'Delete' })
-    this.buttonState = page.locator('div[class*="aside-grid"] > div:nth-of-type(1) > button')
+    this.buttonState = page.locator('div[class*="collapsed-container"]').nth(0).locator('div[class*="aside-grid"] > div:nth-of-type(1) > button')
   }
 
   async addComment (comment: string): Promise<void> {
