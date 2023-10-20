@@ -186,6 +186,12 @@
   }
 }
 
+.text-editor-image-container {
+  img {
+    max-width: 100%;
+  }
+}
+
 .text-editor-image {
   cursor: pointer;
   object-fit: contain;

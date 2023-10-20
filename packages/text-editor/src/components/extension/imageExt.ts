@@ -118,6 +118,9 @@ export const ImageExtension = Node.create<ImageOptions>({
     return [
       {
         tag: `img[data-type="${this.name}"]`
+      },
+      {
+        tag: 'img[src]'
       }
     ]
   },
@@ -214,6 +217,7 @@ export const ImageExtension = Node.create<ImageOptions>({
       })
     ]
   },
+
   addProseMirrorPlugins () {
     const opt = this.options
     function handleDrop (
