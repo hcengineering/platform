@@ -129,13 +129,13 @@
     if (parent === undefined) return
     const { message, attachments } = event.detail
     const me = getCurrentAccount()._id
-    await client.createDoc(
-      plugin.class.ThreadMessage,
+    await client.addCollection(
+      chunter.class.ThreadMessage,
       parent.space,
+      _id,
+      chunter.class.Message,
+      'repliesCount',
       {
-        attachedTo: _id,
-        attachedToClass: plugin.class.Message,
-        collection: 'repliesCount',
         content: message,
         createBy: me,
         attachments
