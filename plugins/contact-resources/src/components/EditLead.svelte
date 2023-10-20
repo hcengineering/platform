@@ -29,29 +29,23 @@
     showPopup,
     getCurrentResolvedLocation,
     navigate,
-    IconMixin,
-    AnyComponent
+    IconMixin
   } from '@hcengineering/ui'
-  import { 
-    ContextMenu, 
-    UpDownNavigator, 
-    ObjectPresenter, 
+  import {
+    ContextMenu,
+    UpDownNavigator,
+    ObjectPresenter,
     DocAttributeBar,
-    groupBy,
+    groupBy
   } from '@hcengineering/view-resources'
   import task, { State } from '@hcengineering/task'
   import { Channel } from '@hcengineering/contact'
-  import view, {AttributeModel} from '@hcengineering/view'
+  import view from '@hcengineering/view'
   import contact from '@hcengineering/contact'
   import { getResource } from '@hcengineering/platform'
   import LeadStateColumn from './LeadStateColumn.svelte'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import plugin from '../plugin'
-
-  interface MixinEditor {
-    editor: AnyComponent
-    pinned?: boolean
-  }
 
   export let _id: Ref<Lead>
   export let _class: Ref<Class<Lead>>
@@ -138,14 +132,10 @@
     )
 
   $: if (object !== undefined) {
-    customerQuery.query(
-      object.attachedToClass,
-      { _id: object.attachedTo },
-      async ([res]) => {
-        if (!res) return
-        customer = res
-      }
-    )
+    customerQuery.query(object.attachedToClass, { _id: object.attachedTo }, async ([res]) => {
+      if (!res) return
+      customer = res
+    })
   }
 
   $: fetchStates(statesIds)
@@ -163,9 +153,8 @@
     try {
       const result = await client.findAll(task.class.State, { _id: { $in: Array.from(ids) } }, {})
       states = groupBy(result, '_id')
-    } catch { }
+    } catch {}
   }
-
 
   let channel: Partial<Channel> = {}
   const activityOptions = { enabled: true, showInput: false }
@@ -175,11 +164,9 @@
   }
 
   $: if (object !== undefined) {
-    channelQuery.query(
-      contact.class.Channel, 
-      { attachedTo: object.attachedTo }, 
-      ([c]: Channel[]) => { if (c) channel = c }
-    )
+    channelQuery.query(contact.class.Channel, { attachedTo: object.attachedTo }, ([c]: Channel[]) => {
+      if (c) channel = c
+    })
   }
 
   let tabSource: { [index: string]: any } = {
@@ -251,17 +238,9 @@
     <svelte:fragment slot="navigator">
       {#if !embedded}
         <UpDownNavigator element={object} />
-        <ObjectPresenter 
-          _class={object._class} 
-          objectId={object._id} 
-          value={object}
-        />
+        <ObjectPresenter _class={object._class} objectId={object._id} value={object} />
         {#if space !== undefined}
-          <ObjectPresenter 
-            _class={space._class}
-            objectId={space._id}
-            value={space}
-          />
+          <ObjectPresenter _class={space._class} objectId={space._id} value={space} />
         {/if}
       {/if}
     </svelte:fragment>
@@ -287,11 +266,7 @@
       />
     </Grid>
     <div class="mt-3">
-      <TabList 
-        items={modes}
-        selected={mode}
-        on:select={({ detail }) => handleViewModeChanged(detail.id)}
-      />
+      <TabList items={modes} selected={mode} on:select={({ detail }) => handleViewModeChanged(detail.id)} />
     </div>
     <!-- render tab content in this conditon -->
     <div class="mt-3">
@@ -305,12 +280,7 @@
     </div>
 
     <svelte:fragment slot="utils">
-      <Button 
-        icon={IconMoreH}
-        kind={'ghost'} 
-        size={'medium'} 
-        on:click={showMenu}
-      />
+      <Button icon={IconMoreH} kind={'ghost'} size={'medium'} on:click={showMenu} />
       <Button
         icon={setting.icon.Setting}
         kind={'ghost'}
@@ -338,12 +308,12 @@
     </svelte:fragment>
     <svelte:fragment slot="custom-attributes">
       {#if customer !== undefined}
-        <DocAttributeBar 
-          {mixins} 
-          {ignoreKeys} 
+        <DocAttributeBar
+          {mixins}
+          {ignoreKeys}
           object={customer}
-          {allowedCollections} 
-          showLabel={plugin.string.LeadInfo} 
+          {allowedCollections}
+          showLabel={plugin.string.LeadInfo}
         />
       {/if}
     </svelte:fragment>
@@ -356,5 +326,4 @@
     justify-content: space-between;
     width: 100%;
   }
-
 </style>

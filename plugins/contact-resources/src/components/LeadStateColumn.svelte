@@ -15,13 +15,7 @@
 -->
 <script lang="ts">
   import type { State } from '@hcengineering/task'
-  import {
-    ColorDefinition,
-    defaultBackground,
-    getColorNumberByText,
-    getPlatformColorDef,
-    themeStore
-  } from '@hcengineering/ui'
+  import { ColorDefinition, getColorNumberByText, getPlatformColorDef, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
 
   export let object: State | undefined
@@ -34,7 +28,9 @@
 
   const dispatch = createEventDispatcher()
 
-  $: color = object ? getPlatformColorDef(object.color ?? getColorNumberByText(object.name), $themeStore.dark) : undefined
+  $: color = object
+    ? getPlatformColorDef(object.color ?? getColorNumberByText(object.name), $themeStore.dark)
+    : undefined
   const dispatchAccentColor = (color?: ColorDefinition) => dispatch('accent-color', color)
 
   $: dispatchAccentColor(color)
@@ -42,19 +38,13 @@
   onMount(() => {
     dispatchAccentColor(color)
   })
-
-  let accentColors: Map<string, ColorDefinition> = new Map()
 </script>
 
 {#if object}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div
-    class="flex-presenter"
-    class:inline-presenter={inline}
-    class:flex-no-shrink={!shouldShowName || shrink === 0}
-  >
-      <span class="overflow-label label" class:nowrap={oneLine} class:no-underline={noUnderline || disabled}>
-        {object.name}
-      </span>
+  <div class="flex-presenter" class:inline-presenter={inline} class:flex-no-shrink={!shouldShowName || shrink === 0}>
+    <span class="overflow-label label" class:nowrap={oneLine} class:no-underline={noUnderline || disabled}>
+      {object.name}
+    </span>
   </div>
 {/if}
