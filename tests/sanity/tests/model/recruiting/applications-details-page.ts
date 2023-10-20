@@ -11,6 +11,9 @@ export class ApplicationsDetailsPage extends CommonPage {
   readonly textAttachmentName: Locator
   readonly buttonCreateFirstReview: Locator
   readonly buttonChangeStatusDone: Locator
+  readonly textApplicationId: Locator
+  readonly buttonMoreActions: Locator
+  readonly buttonDelete: Locator
 
   constructor (page: Page) {
     super()
@@ -22,6 +25,9 @@ export class ApplicationsDetailsPage extends CommonPage {
     this.textAttachmentName = page.locator('div.name a')
     this.buttonCreateFirstReview = page.locator('span:has-text("Create review")')
     this.buttonChangeStatusDone = page.locator('div[class*="aside-grid"] > div:nth-of-type(2) > button')
+    this.textApplicationId = page.locator('div.popupPanel-title div.title-wrapper > span')
+    this.buttonMoreActions = page.locator('div.popupPanel-title div.buttons-group > button:nth-of-type(2)')
+    this.buttonDelete = page.locator('button[class*="menuItem"] span', { hasText: 'Delete' })
   }
 
   async addComment (comment: string): Promise<void> {
@@ -34,7 +40,6 @@ export class ApplicationsDetailsPage extends CommonPage {
   }
 
   async addAttachments (filePath: string): Promise<void> {
-    console.log(`__dirname: ${__dirname}`)
     await this.inputAddAttachment.setInputFiles(path.join(__dirname, `../../files/${filePath}`))
     await expect(await this.textAttachmentName.filter({ hasText: filePath })).toBeVisible()
   }
@@ -47,5 +52,17 @@ export class ApplicationsDetailsPage extends CommonPage {
   async changeDoneStatus (status: string): Promise<void> {
     await this.buttonChangeStatusDone.click()
     await this.selectFromDropdown(this.page, status)
+  }
+
+  async getApplicationId (): Promise<string> {
+    const applicationId = await this.textApplicationId.textContent()
+    expect(applicationId !== null).toBeTruthy()
+    return applicationId != null ? applicationId : ''
+  }
+
+  async deleteApplication (): Promise<void> {
+    await this.buttonMoreActions.click()
+    await this.buttonDelete.click()
+    await this.pressYesDeletePopup(this.page)
   }
 }

@@ -47,6 +47,7 @@ test.describe('Application tests', () => {
     await expect(
       await page.locator('[id="recruit:string:CreateApplication"] button:has-text("HR Interview")')
     ).toBeVisible()
+
     // We need to be sure state is proper one, no other way to do it.
     await page.waitForTimeout(100)
 
@@ -105,5 +106,26 @@ test.describe('Application tests', () => {
     applicationsPage = new ApplicationsPage(page)
     await applicationsPage.buttonTabCreated.click()
     await applicationsPage.checkApplicationDoneStatus(talentName, 'Won')
+  })
+
+  test('Delete an Application', async ({ page }) => {
+    const navigationMenuPage = new NavigationMenuPage(page)
+    await navigationMenuPage.buttonApplications.click()
+
+    const applicationsPage = new ApplicationsPage(page)
+    const talentName = await applicationsPage.createNewApplicationWithNewTalent({
+      vacancy: 'first',
+      recruiterName: 'first'
+    })
+    await applicationsPage.openApplicationByTalentName(talentName)
+
+    const applicationsDetailsPage = new ApplicationsDetailsPage(page)
+    const applicationId = await applicationsDetailsPage.getApplicationId()
+
+    await applicationsDetailsPage.deleteApplication()
+    expect(page.url()).toContain(applicationId)
+
+    await navigationMenuPage.buttonApplications.click()
+    await applicationsPage.checkApplicationNotExist(applicationId)
   })
 })
