@@ -16,9 +16,8 @@
   import { createEventDispatcher } from 'svelte'
   import { Doc, Ref } from '@hcengineering/core'
   import type { Asset, IntlString } from '@hcengineering/platform'
-  import type { AnySvelteComponent } from '@hcengineering/ui'
+  import type { AnySvelteComponent, Action } from '@hcengineering/ui'
   import { Icon, IconChevronDown, IconMoreH, Label, Menu, showPopup } from '@hcengineering/ui'
-  import { Action } from '@hcengineering/view'
 
   export let _id: Ref<Doc> | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined

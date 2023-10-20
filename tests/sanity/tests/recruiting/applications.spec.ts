@@ -14,7 +14,7 @@ test.describe('Application tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
   })
 
-  test.skip('create application', async ({ page }) => {
+  test('create application', async ({ page }) => {
     await page.locator('[id="app-recruit\\:string\\:RecruitApplication"]').click()
     await page.waitForLoadState('load')
 
@@ -59,7 +59,7 @@ test.describe('Application tests', () => {
     await page.click('button:has-text("Chen Rosamund")')
   })
 
-  test.skip('Edit an Application', async ({ page }) => {
+  test('Edit an Application', async ({ page }) => {
     const navigationMenuPage = new NavigationMenuPage(page)
     await navigationMenuPage.buttonApplications.click()
 
@@ -79,7 +79,7 @@ test.describe('Application tests', () => {
     await applicationsDetailsPage.addFirstReview()
   })
 
-  test.skip('Change Done status', async ({ page }) => {
+  test('Change Done status', async ({ page }) => {
     const navigationMenuPage = new NavigationMenuPage(page)
     await navigationMenuPage.buttonApplications.click()
 
@@ -108,7 +108,7 @@ test.describe('Application tests', () => {
     await applicationsPage.checkApplicationDoneStatus(talentName, 'Won')
   })
 
-  test.skip('Delete an Application', async ({ page }) => {
+  test('Delete an Application', async ({ page }) => {
     const navigationMenuPage = new NavigationMenuPage(page)
     await navigationMenuPage.buttonApplications.click()
 
