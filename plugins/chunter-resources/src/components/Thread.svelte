@@ -132,8 +132,8 @@
     await client.addCollection(
       chunter.class.ThreadMessage,
       parent.space,
-      _id,
-      chunter.class.Message,
+      parent._id,
+      parent._class,
       'repliesCount',
       {
         content: message,
