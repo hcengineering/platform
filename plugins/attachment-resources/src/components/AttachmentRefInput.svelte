@@ -31,6 +31,7 @@
   export let iconSend: Asset | AnySvelteComponent | undefined = undefined
   export let labelSend: IntlString | undefined = undefined
   export let showSend = true
+  export let showActions = true
   export let shouldSaveDraft: boolean = false
   export let attachments: IdMap<Attachment> = new Map()
   export let loading = false
@@ -283,6 +284,7 @@
       {iconSend}
       {labelSend}
       {showSend}
+      {showActions}
       {loading}
       {boundary}
       extraActions={[

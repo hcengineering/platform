@@ -36,7 +36,7 @@
   import { AttributeModel, ViewOptions } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../../plugin'
-  import { selectionStore, selectionStoreMap } from '../../selection'
+  import { SelectionFocusProvider } from '../../selection'
   import { noCategory } from '../../viewOptions'
 
   export let groupByKey: string
@@ -50,6 +50,7 @@
   export let collapsed = false
   export let lastCat = false
   export let level: number
+  export let listProvider: SelectionFocusProvider
 
   export let createItemDialog: AnyComponent | AnySvelteComponent | undefined
   export let createItemDialogProps: Record<string, any> | undefined
@@ -82,7 +83,10 @@
   }
   let mouseOver = false
 
-  $: selected = items.filter((it) => $selectionStoreMap.has(it._id))
+  const selection = listProvider.selection
+
+  $: selectionIds = new Set($selection.map((it) => it._id))
+  $: selected = items.filter((it) => selectionIds.has(it._id))
 </script>
 
 {#if headerComponent || groupByKey === noCategory}
@@ -177,18 +181,18 @@
           kind={'ghost'}
           showTooltip={{ label: view.string.Select }}
           on:click={() => {
-            let newSelection = [...$selectionStore]
+            let newSelection = [...$selection]
             if (selected.length > 0) {
               const smap = new Map(selected.map((it) => [it._id, it]))
               newSelection = newSelection.filter((it) => !smap.has(it._id))
             } else {
               for (const s of items) {
-                if (!$selectionStoreMap.has(s._id)) {
+                if (!selectionIds.has(s._id)) {
                   newSelection.push(s)
                 }
               }
             }
-            selectionStore.set(newSelection)
+            listProvider.selection.set(newSelection)
           }}
         />
       </div>

@@ -24,7 +24,6 @@
   import { afterUpdate, beforeUpdate, createEventDispatcher } from 'svelte'
   import chunter from '../plugin'
   import { isMessageHighlighted, messageIdForScroll, scrollAndHighLight, shouldScrollToMessage } from '../utils'
-  import ChannelSeparator from './ChannelSeparator.svelte'
   import MsgView from './Message.svelte'
 
   const client = getClient()
@@ -193,13 +192,7 @@
 <div class="flex-col vScroll content" bind:this={div}>
   {#if message}
     <MsgView {message} thread isSaved={savedMessagesIds.includes(message._id)} {savedAttachmentsIds} />
-    {#if comments.length}
-      <ChannelSeparator title={chunter.string.RepliesCount} line params={{ replies: comments.length }} />
-    {/if}
-    {#each comments as comment, i (comment._id)}
-      {#if newMessagesPos === i}
-        <ChannelSeparator title={chunter.string.New} line reverse isNew />
-      {/if}
+    {#each comments as comment}
       <MsgView
         isHighlighted={$messageIdForScroll === comment._id && $isMessageHighlighted}
         message={comment}
@@ -216,6 +209,7 @@
     space={currentSpace}
     _class={chunter.class.ThreadMessage}
     objectId={commentId}
+    placeholder={chunter.string.AddCommentPlaceholder}
     on:message={onMessage}
     bind:loading
   />
@@ -226,7 +220,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 1.75rem 0 2.5rem;
+    padding: 0 1.75rem 0 1rem;
     height: 4rem;
     min-height: 4rem;
 
@@ -247,6 +241,6 @@
     }
   }
   .ref-input {
-    margin: 1.25rem 2.5rem;
+    margin: 1.25rem 1rem;
   }
 </style>

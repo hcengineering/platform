@@ -1,7 +1,7 @@
 import { Doc, Ref } from '@hcengineering/core'
 import { panelstore } from '@hcengineering/ui'
 import { onDestroy } from 'svelte'
-import { Unsubscriber, derived, writable } from 'svelte/store'
+import { Unsubscriber, Writable, writable } from 'svelte/store'
 
 /**
  * @public
@@ -32,7 +32,11 @@ export interface SelectionFocusProvider {
 
   // Return all selectable documents
   docs: () => Doc[]
+
+  // All selected documents
+  selection: Writable<Doc[]>
 }
+
 /**
  * @public
  *
@@ -48,24 +52,35 @@ export interface FocusSelection {
 
 /**
  * @public
+ *
+ * Define document selection inside platform.
+ */
+export interface SelectionStore {
+  // Selected documents
+  docs: Doc[]
+  // Provider where documents are selected
+  provider?: SelectionFocusProvider
+}
+
+/**
+ * @public
  */
 export const focusStore = writable<FocusSelection>({})
 
 /**
  * @public
  */
-export const selectionStore = writable<Doc[]>([])
+export const selectionStore = writable<SelectionStore>({ docs: [] })
 
 /**
  * @public
  */
-export const selectionStoreMap = derived(selectionStore, (it) => new Set(it.map((it) => it._id)))
-
 export const previewDocument = writable<Doc | undefined>()
 
 panelstore.subscribe((val) => {
   previewDocument.set(undefined)
 })
+
 /**
  * @public
  */
@@ -88,17 +103,23 @@ export function updateFocus (selection?: FocusSelection): void {
 
     return cur
   })
-
-  // We need to clear selection items not belong to passed provider.
-  if (selection?.provider !== undefined) {
-    const docs = new Set(selection?.provider.docs().map((it) => it._id))
-    selectionStore.update((old) => {
-      return old.filter((it) => docs.has(it._id))
-    })
-  }
 }
 
-const providers: ListSelectionProvider[] = []
+interface ProviderSelection {
+  docs: Doc[]
+  provider: ListSelectionProvider
+}
+
+const providers: ProviderSelection[] = []
+
+function updateSelection (selection: ProviderSelection): void {
+  const index = providers.findIndex((p) => p.provider === selection.provider)
+  if (index !== -1) {
+    providers[index] = selection
+  }
+
+  selectionStore.set(selection)
+}
 
 /**
  * @public
@@ -108,15 +129,27 @@ const providers: ListSelectionProvider[] = []
 export class ListSelectionProvider implements SelectionFocusProvider {
   private _docs: Doc[] = []
   _current?: FocusSelection
-  private readonly unsubscribe: Unsubscriber
+  selection: Writable<Doc[]> = writable([])
+  private readonly unsubscribe: Unsubscriber[]
+
   constructor (
     private readonly delegate: (offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection, noScroll?: boolean) => void,
     autoDestroy = true
   ) {
-    this.unsubscribe = focusStore.subscribe((doc) => {
-      this._current = doc
-    })
-    providers.push(this)
+    this.unsubscribe = [
+      // keep track of current focus
+      focusStore.subscribe((focus) => {
+        this._current = focus
+      }),
+      // update global selection when current changes
+      this.selection.subscribe((docs) => {
+        updateSelection({ docs, provider: this })
+      })
+    ]
+
+    providers.push({ docs: [], provider: this })
+    selectionStore.set({ docs: [], provider: this })
+
     if (autoDestroy) {
       onDestroy(() => {
         this.destroy()
@@ -125,9 +158,11 @@ export class ListSelectionProvider implements SelectionFocusProvider {
   }
 
   static Find (_id: Ref<Doc>): ListSelectionProvider | undefined {
-    for (const provider of providers) {
-      if (provider.docs().findIndex((p) => p._id === _id) !== -1) {
-        return provider
+    for (const { provider } of providers) {
+      if (provider !== undefined) {
+        if (provider.docs().findIndex((p) => p._id === _id) !== -1) {
+          return provider
+        }
       }
     }
   }
@@ -135,23 +170,35 @@ export class ListSelectionProvider implements SelectionFocusProvider {
   static Pop (): void {
     if (providers.length === 0) return
     const last = providers[providers.length - 1]
-    last.destroy()
+    last.provider.destroy()
   }
 
   destroy (): void {
-    const thisIndex = providers.findIndex((p) => p === this)
+    const thisIndex = providers.findIndex((p) => p.provider === this)
     providers.splice(thisIndex, 1)
+
+    // switch selection to the last provider if lost selection
     if (thisIndex === providers.length) {
       if (providers.length > 0) {
-        const current = providers[providers.length - 1]
-        const index = current.current()
-        const target = index !== undefined ? current.docs()[index] : undefined
-        updateFocus({ focus: target, provider: current })
+        const next = providers[providers.length - 1].provider
+        const index = next.current()
+        const target = index !== undefined ? next.docs()[index] : undefined
+        updateFocus({ focus: target, provider: next })
       } else {
         updateFocus()
       }
     }
-    this.unsubscribe()
+
+    // switch selection to the last provider if lost selection
+    selectionStore.update((selection) => {
+      if (selection.provider === this) {
+        const next = providers[providers.length - 1]
+        return next ?? { docs: selection.docs }
+      }
+      return selection
+    })
+
+    this.unsubscribe.forEach((p) => p())
   }
 
   select (offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection, noScroll?: boolean): void {
@@ -162,7 +209,8 @@ export class ListSelectionProvider implements SelectionFocusProvider {
   update (docs: Doc[]): void {
     this._docs = docs
 
-    selectionStore.update((docs) => {
+    // remove missing documents from selection
+    this.selection.update((docs) => {
       const ids = new Set(docs.map((it) => it._id))
       return this._docs.filter((it) => ids.has(it._id))
     })
@@ -174,6 +222,7 @@ export class ListSelectionProvider implements SelectionFocusProvider {
         // Check if we don't have object, we need to select first one.
         this.delegate(0, this._current?.focus, 'vertical', true)
       }
+      // focus current provider if nothing focused
       if (this._current?.focus === undefined) {
         updateFocus({ focus: this._current?.focus, provider: this })
       }
@@ -189,7 +238,7 @@ export class ListSelectionProvider implements SelectionFocusProvider {
   }
 
   updateSelection (docs: Doc[], value: boolean): void {
-    selectionStore.update((selection) => {
+    this.selection.update((selection) => {
       const docsSet = new Set(docs.map((it) => it._id))
       const noDocs = selection.filter((it) => !docsSet.has(it._id))
       return value ? [...noDocs, ...docs] : noDocs

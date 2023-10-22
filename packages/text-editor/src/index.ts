@@ -31,6 +31,7 @@ export { default as TextEditorStyleToolbar } from './components/TextEditorStyleT
 export { default as AttachIcon } from './components/icons/Attach.svelte'
 export { default } from './plugin'
 export * from './types'
+export * from './utils'
 
 export {
   IsEmptyContentExtension,

@@ -78,7 +78,6 @@ class Connection implements ClientConnection {
     private readonly onUnauthorized?: () => void,
     readonly onConnect?: (event: ClientConnectEvent) => Promise<void>
   ) {
-    console.log('connection created')
     this.interval = setInterval(() => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
 
@@ -171,7 +170,6 @@ class Connection implements ClientConnection {
           typeof sessionStorage !== 'undefined'
             ? sessionStorage.getItem('session.id.' + this.url) ?? undefined
             : undefined
-        console.log('find sessionId', this.sessionId)
         this.sessionId = this.sessionId ?? generateId()
         if (typeof sessionStorage !== 'undefined') {
           sessionStorage.setItem('session.id.' + this.url, this.sessionId)
@@ -203,7 +201,6 @@ class Connection implements ClientConnection {
             v.reconnect?.()
           }
           resolve(websocket)
-          console.log('reconnect info', (resp as HelloResponse).reconnect)
 
           void this.onConnect?.(
             (resp as HelloResponse).reconnect === true ? ClientConnectEvent.Reconnected : ClientConnectEvent.Connected
@@ -289,7 +286,6 @@ class Connection implements ClientConnection {
       websocket.onopen = () => {
         const useBinary = getMetadata(client.metadata.UseBinaryProtocol) ?? true
         const useCompression = getMetadata(client.metadata.UseProtocolCompression) ?? false
-        console.log('connection opened...', socketId, useBinary, useCompression)
         clearTimeout(dialTimer)
         const helloRequest: HelloRequest = {
           method: 'hello',

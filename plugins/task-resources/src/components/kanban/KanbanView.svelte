@@ -56,7 +56,6 @@
     Menu,
     noCategory,
     SelectDirection,
-    selectionStore,
     setGroupByValues
   } from '@hcengineering/view-resources'
   import view from '@hcengineering/view-resources/src/plugin'
@@ -113,6 +112,8 @@
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
     kanbanUI?.select(offset, of, dir)
   })
+  const selection = listProvider.selection
+
   onMount(() => {
     ;(document.activeElement as HTMLElement)?.blur()
   })
@@ -248,7 +249,7 @@
       listProvider.updateFocus(evt.detail)
     }}
     selection={listProvider.current($focusStore)}
-    checked={$selectionStore ?? []}
+    checked={$selection ?? []}
     on:check={(evt) => {
       listProvider.updateSelection(evt.detail.docs, evt.detail.value)
     }}

@@ -43,6 +43,7 @@
   export let isPinned: boolean = false
   export let isSaved: boolean = false
   export let isHighlighted = false
+  export let readOnly = false
 
   let refInput: AttachmentRefInput
 
@@ -204,15 +205,15 @@
 </script>
 
 <div class="container clear-mins" class:highlighted={isHighlighted} id={message._id}>
-  <div class="avatar">
-    <Avatar size={'medium'} avatar={employee?.avatar} name={employee?.name} />
+  <div class="min-w-6">
+    <Avatar size="x-small" avatar={employee?.avatar} name={employee?.name} />
   </div>
-  <div class="message clear-mins">
+  <div class="message ml-2 w-full clear-mins">
     <div class="header clear-mins">
       {#if employee}
         <EmployeePresenter value={employee} shouldShowAvatar={false} />
       {/if}
-      <span>{getTime(message.createdOn ?? 0)}</span>
+      <span class="text-sm">{getTime(message.createdOn ?? 0)}</span>
       {#if message.editedOn}
         <span use:tooltip={{ label: ui.string.TimeTooltip, props: { value: getTime(message.editedOn) } }}>
           <Label label={chunter.string.Edited} />
@@ -254,30 +255,32 @@
       </div>
     {/if}
   </div>
-  <div class="buttons clear-mins" class:menuShowed>
-    <div class="tool">
-      <ActionIcon
-        icon={IconMoreH}
-        size={'medium'}
-        action={(e) => {
-          showMenu(e)
-        }}
-      />
+  {#if !readOnly}
+    <div class="buttons clear-mins" class:menuShowed>
+      <div class="tool">
+        <ActionIcon
+          icon={IconMoreH}
+          size={'medium'}
+          action={(e) => {
+            showMenu(e)
+          }}
+        />
+      </div>
+      {#if !thread}
+        <div class="tool"><ActionIcon icon={Thread} size={'medium'} action={openThread} /></div>
+      {/if}
+      <div class="tool book">
+        <ActionIcon
+          icon={Bookmark}
+          size={'medium'}
+          action={addToSaved}
+          label={isSaved ? chunter.string.RemoveFromSaved : chunter.string.AddToSaved}
+        />
+      </div>
+      <!-- <div class="tool"><ActionIcon icon={Share} size={'medium'}/></div> -->
+      <div class="tool"><ActionIcon icon={Emoji} size={'medium'} action={openEmojiPalette} /></div>
     </div>
-    {#if !thread}
-      <div class="tool"><ActionIcon icon={Thread} size={'medium'} action={openThread} /></div>
-    {/if}
-    <div class="tool book">
-      <ActionIcon
-        icon={Bookmark}
-        size={'medium'}
-        action={addToSaved}
-        label={isSaved ? chunter.string.RemoveFromSaved : chunter.string.AddToSaved}
-      />
-    </div>
-    <!-- <div class="tool"><ActionIcon icon={Share} size={'medium'}/></div> -->
-    <div class="tool"><ActionIcon icon={Emoji} size={'medium'} action={openEmojiPalette} /></div>
-  </div>
+  {/if}
 </div>
 
 <style lang="scss">
@@ -290,36 +293,30 @@
     position: relative;
     display: flex;
     flex-shrink: 0;
-    padding: 0.5rem 2rem;
+    padding: 0.5rem 1rem;
 
     &.highlighted {
       animation: highlight 2000ms ease-in-out;
     }
 
-    .avatar {
-      min-width: 2.25rem;
-    }
-
     .message {
       display: flex;
       flex-direction: column;
-      width: 100%;
-      margin-left: 1rem;
 
       .header {
         display: flex;
         align-items: baseline;
         font-weight: 500;
-        font-size: 1rem;
+        font-size: 0.875rem;
         line-height: 150%;
         color: var(--theme-caption-color);
         margin-bottom: 0.25rem;
 
         span {
-          margin-left: 0.5rem;
+          margin-left: 0.25rem;
           font-weight: 400;
 
-          line-height: 1.125rem;
+          line-height: 1.25rem;
           opacity: 0.4;
         }
       }

@@ -376,7 +376,7 @@ export interface MigrationState extends Doc {
 /**
  * @public
  */
-export function versionToString (version: Version): string {
+export function versionToString (version: Version | Data<Version>): string {
   return `${version?.major}.${version?.minor}.${version?.patch}`
 }
 

@@ -193,11 +193,11 @@
   on:keydown={onKeydown}
   use:resizeObserver={() => dispatch('changeContent')}
 >
-  {#if $selectionStore.length > 0 || $focusStore.focus !== undefined || (activeAction && activeAction?.actionPopup !== undefined)}
+  {#if $selectionStore.docs.length > 0 || $focusStore.focus !== undefined || (activeAction && activeAction?.actionPopup !== undefined)}
     <div class="mt-2 ml-2 flex-between flex-no-shrink">
-      {#if $selectionStore.length > 0}
+      {#if $selectionStore.docs.length > 0}
         <div class="item-box">
-          <Label label={view.string.NumberItems} params={{ count: $selectionStore.length }} />
+          <Label label={view.string.NumberItems} params={{ count: $selectionStore.docs.length }} />
         </div>
       {:else if $focusStore.focus !== undefined}
         <div class="item-box">

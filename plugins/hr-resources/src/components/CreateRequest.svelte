@@ -164,7 +164,7 @@
       icon={IconAttachment}
       size={'large'}
       on:click={() => {
-        descriptionBox.attach()
+        descriptionBox.handleAttach()
       }}
     />
   </svelte:fragment>

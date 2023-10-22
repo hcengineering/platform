@@ -29,7 +29,11 @@ export default async () => {
           client = await createClient(connect)
           for (const op of migrateOperations) {
             console.log('Migrate', op[0])
-            await op[1].upgrade(client)
+            await op[1].upgrade(client, {
+              log (...data) {
+                console.log(...data)
+              }
+            })
           }
         }
         // Check if we had dev hook for client.
