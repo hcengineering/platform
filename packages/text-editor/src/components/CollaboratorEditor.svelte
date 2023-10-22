@@ -45,8 +45,11 @@
   import { noSelectionRender } from './editor/collaboration'
   import { defaultEditorAttributes } from './editor/editorProps'
   import { completionConfig, defaultExtensions } from './extensions'
+  import { InlinePopupExtension } from './extension/inlinePopup'
   import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
+  import { FileAttachFunction, ImageExtension } from './extension/imageExt'
   import { NodeUuidExtension } from './extension/nodeUuid'
+  import ImageStyleToolbar from './ImageStyleToolbar.svelte'
   import StyleButton from './StyleButton.svelte'
   import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
 
@@ -71,6 +74,8 @@
   export let editorAttributes: { [name: string]: string } = {}
   export let onExtensions: () => AnyExtension[] = () => []
   export let boundary: HTMLElement | undefined = undefined
+
+  export let attachFile: FileAttachFunction | undefined = undefined
 
   let element: HTMLElement
 
@@ -99,7 +104,8 @@
   const currentUser = getCurrentAccount()
 
   let editor: Editor
-  let inlineToolbar: HTMLElement
+  let textToolbarElement: HTMLElement
+  let imageToolbarElement: HTMLElement
 
   let placeHolderStr: string = ''
 
@@ -234,6 +240,34 @@
   $: updateEditor(editor, field, comparedVersion)
   $: if (editor) dispatch('editor', editor)
 
+  const tippyOptions = {
+    zIndex: 100000,
+    popperOptions: {
+      modifiers: [
+        {
+          name: 'preventOverflow',
+          options: {
+            boundary,
+            padding: 8,
+            altAxis: true,
+            tether: false
+          }
+        }
+      ]
+    }
+  }
+
+  const optionalExtensions: AnyExtension[] = []
+
+  if (attachFile !== undefined) {
+    optionalExtensions.push(
+      ImageExtension.configure({
+        inline: true,
+        attachFile
+      })
+    )
+  }
+
   onMount(() => {
     ph.then(() => {
       editor = new Editor({
@@ -242,26 +276,24 @@
         editorProps: { attributes: mergeAttributes(defaultEditorAttributes, editorAttributes, { class: 'flex-grow' }) },
         extensions: [
           ...defaultExtensions,
+          ...optionalExtensions,
           Placeholder.configure({ placeholder: placeHolderStr }),
           InlineStyleToolbarExtension.configure({
-            tippyOptions: {
-              popperOptions: {
-                modifiers: [
-                  {
-                    name: 'preventOverflow',
-                    options: {
-                      boundary,
-                      padding: 8,
-                      altAxis: true,
-                      tether: false
-                    }
-                  }
-                ]
-              }
-            },
-            element: inlineToolbar,
+            tippyOptions,
+            element: textToolbarElement,
             isSupported: () => !readonly,
             isSelectionOnly: () => false
+          }),
+          InlinePopupExtension.configure({
+            pluginKey: 'show-image-actions-popup',
+            element: imageToolbarElement,
+            tippyOptions,
+            shouldShow: () => {
+              if (!visible && !readonly) {
+                return false
+              }
+              return editor?.isActive('image')
+            }
           }),
           Collaboration.configure({
             document: ydoc,
@@ -331,7 +363,7 @@
   const { idx, focusManager } = registerFocus(focusIndex, {
     focus: () => {
       if (visible) {
-        focus('start')
+        focus()
       }
       return visible && element !== null
     },
@@ -345,6 +377,10 @@
   }
   $: if (element) {
     element.addEventListener('focus', updateFocus, { once: true })
+  }
+
+  function handleFocus () {
+    needFocus = true
   }
 </script>
 
@@ -375,7 +411,7 @@
     </div>
   {/if}
 
-  <div class="formatPanel buttons-group xsmall-gap mb-4" bind:this={inlineToolbar}>
+  <div class="formatPanel buttons-group xsmall-gap mb-4" bind:this={textToolbarElement}>
     <TextEditorStyleToolbar
       textEditor={editor}
       textFormatCategories={[
@@ -397,6 +433,10 @@
         needFocus = true
       }}
     />
+  </div>
+
+  <div class="formatPanel buttons-group xsmall-gap mb-4" bind:this={imageToolbarElement}>
+    <ImageStyleToolbar textEditor={editor} formatButtonSize={buttonSize} on:focus={handleFocus} />
   </div>
 
   <div class="ref-container" style:overflow>

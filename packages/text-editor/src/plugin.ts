@@ -53,6 +53,13 @@ export default plugin(textEditorId, {
     NoFullDescription: '' as IntlString,
     EnableDiffMode: '' as IntlString,
 
+    AlignCenter: '' as IntlString,
+    AlignLeft: '' as IntlString,
+    AlignRight: '' as IntlString,
+    ViewImage: '' as IntlString,
+    ViewOriginal: '' as IntlString,
+    MoreActions: '' as IntlString,
+
     InsertTable: '' as IntlString,
     AddColumnBefore: '' as IntlString,
     AddColumnAfter: '' as IntlString,

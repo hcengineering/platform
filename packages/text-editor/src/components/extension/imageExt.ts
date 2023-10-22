@@ -1,12 +1,11 @@
-import { getEmbeddedLabel, getMetadata } from '@hcengineering/platform'
+import { getMetadata } from '@hcengineering/platform'
 import presentation, { getFileUrl } from '@hcengineering/presentation'
-import { Action, IconSize, Menu, getEventPositionElement, getIconSize2x, showPopup } from '@hcengineering/ui'
+import { IconSize, getIconSize2x } from '@hcengineering/ui'
 import { Node, createNodeFromContent, mergeAttributes, nodeInputRule } from '@tiptap/core'
-import { Plugin, PluginKey } from 'prosemirror-state'
-import plugin from '../plugin'
-
 import { Fragment, Node as ProseMirrorNode } from '@tiptap/pm/model'
-import { EditorView } from 'prosemirror-view'
+import { Plugin, PluginKey } from '@tiptap/pm/state'
+import { EditorView } from '@tiptap/pm/view'
+import { getDataAttribute } from '../../utils'
 
 /**
  * @public
@@ -25,6 +24,15 @@ export interface ImageOptions {
   reportNode?: (id: string, node: ProseMirrorNode) => void
 }
 
+export interface ImageAlignmentOptions {
+  align?: 'center' | 'left' | 'right'
+}
+
+export interface ImageSizeOptions {
+  height?: number | string
+  width?: number | string
+}
+
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     image: {
@@ -32,6 +40,14 @@ declare module '@tiptap/core' {
        * Add an image
        */
       setImage: (options: { src: string, alt?: string, title?: string }) => ReturnType
+      /**
+       * Set image alignment
+       */
+      setImageAlignment: (options: ImageAlignmentOptions) => ReturnType
+      /**
+       * Set image size
+       */
+      setImageSize: (options: ImageSizeOptions) => ReturnType
     }
   }
 }
@@ -52,7 +68,7 @@ function getType (type: string): 'image' | 'other' {
 /**
  * @public
  */
-export const ImageRef = Node.create<ImageOptions>({
+export const ImageExtension = Node.create<ImageOptions>({
   name: 'image',
 
   addOptions () {
@@ -71,6 +87,7 @@ export const ImageRef = Node.create<ImageOptions>({
   },
 
   draggable: true,
+
   selectable: true,
 
   addAttributes () {
@@ -92,7 +109,8 @@ export const ImageRef = Node.create<ImageOptions>({
       },
       title: {
         default: null
-      }
+      },
+      align: getDataAttribute('align')
     }
   },
 
@@ -100,23 +118,33 @@ export const ImageRef = Node.create<ImageOptions>({
     return [
       {
         tag: `img[data-type="${this.name}"]`
+      },
+      {
+        tag: 'img[src]'
       }
     ]
   },
 
   renderHTML ({ node, HTMLAttributes }) {
-    const merged = mergeAttributes(
+    const divAttributes = {
+      class: 'text-editor-image-container',
+      'data-type': this.name,
+      'data-align': node.attrs.align ?? 'center'
+    }
+
+    const imgAttributes = mergeAttributes(
       {
         'data-type': this.name
       },
       this.options.HTMLAttributes,
       HTMLAttributes
     )
-    const id = merged['file-id']
+
+    const id = imgAttributes['file-id']
     if (id != null) {
-      merged.src = getFileUrl(id, 'full')
+      imgAttributes.src = getFileUrl(id, 'full')
       let width: IconSize | undefined
-      switch (merged.width) {
+      switch (imgAttributes.width) {
         case '32px':
           width = 'small'
           break
@@ -132,13 +160,15 @@ export const ImageRef = Node.create<ImageOptions>({
           break
       }
       if (width !== undefined) {
-        merged.src = getFileUrl(id, width)
-        merged.srcset = getFileUrl(id, width) + ' 1x,' + getFileUrl(id, getIconSize2x(width)) + ' 2x'
+        imgAttributes.src = getFileUrl(id, width)
+        imgAttributes.srcset = getFileUrl(id, width) + ' 1x,' + getFileUrl(id, getIconSize2x(width)) + ' 2x'
       }
-      merged.class = 'text-editor-image'
+      imgAttributes.class = 'text-editor-image'
+      imgAttributes.contentEditable = false
       this.options.reportNode?.(id, node)
     }
-    return ['img', merged]
+
+    return ['div', divAttributes, ['img', imgAttributes]]
   },
 
   addCommands () {
@@ -150,6 +180,26 @@ export const ImageRef = Node.create<ImageOptions>({
               type: this.name,
               attrs: options
             })
+          },
+
+      setImageAlignment:
+        (options) =>
+          ({ chain, tr }) => {
+            const { from } = tr.selection
+            return chain()
+              .updateAttributes(this.name, { ...options })
+              .setNodeSelection(from)
+              .run()
+          },
+
+      setImageSize:
+        (options) =>
+          ({ chain, tr }) => {
+            const { from } = tr.selection
+            return chain()
+              .updateAttributes(this.name, { ...options })
+              .setNodeSelection(from)
+              .run()
           }
     }
   },
@@ -167,6 +217,7 @@ export const ImageRef = Node.create<ImageOptions>({
       })
     ]
   },
+
   addProseMirrorPlugins () {
     const opt = this.options
     function handleDrop (
@@ -246,7 +297,7 @@ export const ImageRef = Node.create<ImageOptions>({
       new Plugin({
         key: new PluginKey('handle-image-paste'),
         props: {
-          handlePaste (view, event, slice) {
+          handlePaste (view, event) {
             const dataTransfer = event.clipboardData
             if (dataTransfer !== null) {
               const res = handleDrop(view, { pos: view.state.selection.$from.pos, inside: 0 }, dataTransfer)
@@ -257,90 +308,13 @@ export const ImageRef = Node.create<ImageOptions>({
               return res
             }
           },
-          handleDrop (view, event, slice) {
+          handleDrop (view, event) {
             event.preventDefault()
             event.stopPropagation()
             const dataTransfer = event.dataTransfer
             if (dataTransfer !== null) {
               return handleDrop(view, view.posAtCoords({ left: event.x, top: event.y }), dataTransfer)
             }
-          },
-          handleClick: (view, pos, event) => {
-            if (event.button !== 0) {
-              return false
-            }
-
-            const node = event.target as unknown as HTMLElement
-            if (node != null) {
-              const fileId = (node as any).attributes['file-id']?.value
-              if (fileId === undefined) {
-                return false
-              }
-              const pos = view.posAtDOM(node, 0)
-
-              const actions: Action[] = [
-                {
-                  label: plugin.string.Width,
-                  action: async (props, event) => {},
-                  component: Menu,
-                  props: {
-                    actions: [
-                      '32px',
-                      '64px',
-                      '128px',
-                      '256px',
-                      '512px',
-                      '25%',
-                      '50%',
-                      '75%',
-                      '100%',
-                      plugin.string.Unset
-                    ].map((it) => {
-                      return {
-                        label: it === plugin.string.Unset ? it : getEmbeddedLabel(it),
-                        action: async () => {
-                          view.dispatch(
-                            view.state.tr.setNodeAttribute(pos, 'width', it === plugin.string.Unset ? null : it)
-                          )
-                        }
-                      }
-                    })
-                  }
-                },
-                {
-                  label: plugin.string.Height,
-                  action: async (props, event) => {},
-                  component: Menu,
-                  props: {
-                    actions: [
-                      '32px',
-                      '64px',
-                      '128px',
-                      '256px',
-                      '512px',
-                      '25%',
-                      '50%',
-                      '75%',
-                      '100%',
-                      plugin.string.Unset
-                    ].map((it) => {
-                      return {
-                        label: it === plugin.string.Unset ? it : getEmbeddedLabel(it),
-                        action: async () => {
-                          view.dispatch(
-                            view.state.tr.setNodeAttribute(pos, 'height', it === plugin.string.Unset ? null : it)
-                          )
-                        }
-                      }
-                    })
-                  }
-                }
-              ]
-              event.preventDefault()
-              event.stopPropagation()
-              showPopup(Menu, { actions }, getEventPositionElement(event))
-            }
-            return false
           }
         }
       })

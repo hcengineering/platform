@@ -26,6 +26,7 @@
   export let contentType: string | undefined
   export let popupOptions: PopupOptions
   export let value: Doc
+  export let showIcon = true
 
   const dispatch = createEventDispatcher()
   // let imgView: 'img-horizontal-fit' | 'img-vertical-fit' | 'img-original-fit' = 'img-vertical-fit'
@@ -51,11 +52,13 @@
 >
   <svelte:fragment slot="title">
     <div class="antiTitle icon-wrapper">
-      <div class="wrapped-icon">
-        <div class="flex-center icon">
-          {iconLabel(name)}
+      {#if showIcon}
+        <div class="wrapped-icon">
+          <div class="flex-center icon">
+            {iconLabel(name)}
+          </div>
         </div>
-      </div>
+      {/if}
       <span class="wrapped-title">{name}</span>
     </div>
   </svelte:fragment>

@@ -55,5 +55,6 @@ export {
   type InlineStyleToolbarOptions,
   type InlineStyleToolbarStorage
 } from './components/extension/inlineStyleToolbar'
+export { ImageExtension, type ImageOptions } from './components/extension/imageExt'
 
 export { textEditorId }
