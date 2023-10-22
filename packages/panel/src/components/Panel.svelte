@@ -53,6 +53,7 @@
   export let embedded = false
   export let contentClasses: string | undefined = undefined
   export let content: HTMLElement | undefined | null = undefined
+  export let withoutContentScroll: boolean = false
 
   let lastHref: string
   let timer: any
@@ -202,6 +203,24 @@
           <Component
             is={activity.component.Activity}
             props={{ object, showCommenInput: !withoutInput, shouldScroll: embedded, focusIndex: 1000 }}
+          />
+        {/key}
+      {/if}
+    </div>
+  {:else if withoutContentScroll}
+    <div class={contentClasses ?? 'popupPanel-body__main-content py-8 clear-mins'} class:max={useMaxWidth}>
+      <slot />
+      {#if !withoutActivity}
+        {#key object._id}
+          <Component
+            is={activity.component.Activity}
+            props={{
+              object,
+              showCommenInput: !withoutInput,
+              shouldScroll: embedded,
+              focusIndex: 1000,
+              boundary: content
+            }}
           />
         {/key}
       {/if}
