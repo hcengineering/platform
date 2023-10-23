@@ -443,6 +443,7 @@
         {resultQuery}
         {resultOptions}
         {limiter}
+        {listProvider}
         bind:dragItem
         on:dragItem
         on:check
