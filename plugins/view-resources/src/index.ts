@@ -64,6 +64,7 @@ import MarkupPresenter from './components/MarkupPresenter.svelte'
 import Menu from './components/Menu.svelte'
 import TreeItem from './components/navigator/TreeItem.svelte'
 import TreeNode from './components/navigator/TreeNode.svelte'
+import TreeElement from './components/navigator/TreeElement.svelte'
 import NumberEditor from './components/NumberEditor.svelte'
 import NumberPresenter from './components/NumberPresenter.svelte'
 import ObjectPresenter from './components/ObjectPresenter.svelte'
@@ -179,6 +180,7 @@ export {
   MarkupEditor,
   TreeNode,
   TreeItem,
+  TreeElement,
   StringEditor,
   DocNavLink,
   EnumEditor,

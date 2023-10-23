@@ -56,9 +56,9 @@
     justify={'left'}
     kind={'accented'}
     width={'100%'}
-    size={'large'}
+    gap={'large'}
     on:click={newIssue}
-    id="new-issue"
+    id={'new-issue'}
     showTooltip={{
       direction: 'bottom',
       label,

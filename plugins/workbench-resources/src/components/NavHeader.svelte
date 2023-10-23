@@ -14,16 +14,11 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
-  import { Label, resolvedLocationStore } from '@hcengineering/ui'
+  import { Label } from '@hcengineering/ui'
 
   export let label: IntlString
 </script>
 
-<div class="antiNav-header">
-  <span class="top overflow-label">
-    <Label {label} />
-  </span>
-  <span class="bottom overflow-label">
-    {$resolvedLocationStore.path[1]}
-  </span>
+<div class="antiNav-header overflow-label">
+  <Label {label} />
 </div>

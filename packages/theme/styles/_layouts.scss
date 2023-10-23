@@ -135,14 +135,12 @@ p:last-child { margin-block-end: 0; }
 }
 
 a.noUnderline {
-  &:hover {
-    color: var(--theme-caption-color);
-    text-decoration: none;
-  }
-  &:active {
-    color: var(--theme-caption-color);
-    text-decoration: none;
-  }
+  text-decoration: none;
+  &:hover, &:active, &:visited { text-decoration: none; }
+}
+a.noBold {
+  font-weight: 400;
+  &:hover, &:active, &:visited { font-weight: 400; }
 }
 
 .firstLetter span{

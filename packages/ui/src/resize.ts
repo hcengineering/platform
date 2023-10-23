@@ -114,13 +114,18 @@ export const panelSeparators: DefSeparators = [
 ]
 
 export const workbenchSeparators: DefSeparators = [
-  { minSize: 12, size: 17.5, maxSize: 22, float: 'navigator' },
+  { minSize: 12.5, size: 17.5, maxSize: 22.5, float: 'navigator' },
   null,
   { minSize: 20, size: 30, maxSize: 50, float: 'aside' }
 ]
 
+export const settingsSeparators: DefSeparators = [
+  { minSize: 12.5, size: 17.5, maxSize: 22.5, float: 'navigator' },
+  null
+]
+
 export const timeSeparators: DefSeparators = [
-  { minSize: 10, size: 17.5, maxSize: 22, float: 'navigator' },
+  { minSize: 12.5, size: 17.5, maxSize: 22.5, float: 'navigator' },
   { minSize: 25, size: 35, maxSize: 45 },
   null
 ]

@@ -24,25 +24,21 @@
   export let actions: Action[] = []
   export let selected: boolean = false
   export let disabled: boolean = false
-  export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' = 'default'
+  export let indent: boolean = false
 </script>
 
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="antiNav-element special" class:selected class:disabled>
-  <div
-    class="an-element__icon"
-    class:indent-2={indent === 'ml-2'}
-    class:indent-4={indent === 'ml-4'}
-    class:indent-8={indent === 'ml-8'}
-  >
+<div class="antiNav-element" class:selected class:disabled class:indent>
+  <div class="an-element__icon">
     {#if icon}
       <Icon {icon} size={'small'} {iconProps} />
     {/if}
   </div>
-  <span class="an-element__label title">
-    {#if label}<Label {label} />{:else}{label}{/if}
+  <span class="an-element__label">
+    {#if label}<Label {label} />{/if}
   </span>
+  <div class="an-element__grow" />
   {#each actions as action}
     {#if action.icon}
       <div class="an-element__tool">

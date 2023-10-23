@@ -26,14 +26,15 @@
   export let label: IntlString | undefined = undefined
   export let title: string | undefined = undefined
   export let notifications = 0
-  export let node = false
-  export let parent = false
-  export let collapsed = false
-  export let selected = false
-  export let bold = false
-  export let shortDropbox = false
+  export let parent: boolean = false
+  export let node: boolean = false
+  export let indent: boolean = false
+  export let folder: boolean = false
+  export let level: number = 0
+  export let collapsed: boolean = false
+  export let selected: boolean = false
+  export let bold: boolean = false
   export let actions: (originalEvent?: MouseEvent) => Promise<Action[]> = async () => []
-  export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' = 'default'
 
   let hovered = false
   async function onMenuClick (ev: MouseEvent) {
@@ -53,35 +54,31 @@
   class:hovered
   class:parent
   class:collapsed
-  class:child={!node}
+  style:padding-left={`${level > 0 ? level * 1.25 + 0.125 : indent ? 2.5 : 0.75}rem`}
   on:click={() => {
     collapsed = !collapsed
     dispatch('click')
   }}
 >
-  <span class="an-element__label" class:bold class:title={node}>
-    {#if icon && !parent}
-      <div
-        class="an-element__icon"
-        class:indent-2={indent === 'ml-2'}
-        class:indent-4={indent === 'ml-4'}
-        class:indent-8={indent === 'ml-8'}
-      >
-        <Icon {icon} {iconProps} size={'small'} />
-      </div>
-    {/if}
-    <span class="overflow-label">
-      {#if label}<Label {label} />{:else}{title}{/if}
-    </span>
-
-    {#if node}
-      <div class="an-element__icon-arrow" class:collapsed>
-        <IconChevronDown size={'small'} />
-      </div>
-    {/if}
+  {#if icon && !node}
+    <div class="an-element__icon" class:folder>
+      <Icon {icon} {iconProps} size={'small'} />
+    </div>
+  {/if}
+  <span class="an-element__label" class:title={node} class:bold>
+    {#if label}<Label {label} />{:else}{title}{/if}
   </span>
-  {#if node === false}
-    <div class="an-element__tool" on:click|preventDefault|stopPropagation={onMenuClick}>
+
+  {#if parent}
+    <div class="an-element__tool arrow hidden">
+      <IconChevronDown size={'small'} />
+    </div>
+  {/if}
+
+  <div class="an-element__grow" />
+
+  {#if parent === false}
+    <div class="an-element__tool" class:pressed={hovered} on:click|preventDefault|stopPropagation={onMenuClick}>
       <IconMoreH size={'small'} />
     </div>
   {:else}
@@ -92,13 +89,13 @@
             label={actionItems[0].label}
             icon={actionItems[0].icon}
             size={'small'}
-            action={(ev) => {
+            action={async (ev) => {
               actionItems[0].action(_id, ev)
             }}
           />
         </div>
       {:else if actionItems.length > 1}
-        <div class="an-element__tool" on:click|preventDefault|stopPropagation={onMenuClick}>
+        <div class="an-element__tool" class:pressed={hovered} on:click|preventDefault|stopPropagation={onMenuClick}>
           <IconMoreH size={'small'} />
         </div>
       {/if}
@@ -108,6 +105,6 @@
     <div class="an-element__counter">{notifications}</div>
   {/if}
 </div>
-{#if node && !collapsed}
-  <div class="antiNav-element__dropbox" class:short={shortDropbox}><slot /></div>
+{#if parent && !collapsed}
+  <div class="antiNav-element__dropbox"><slot /></div>
 {/if}

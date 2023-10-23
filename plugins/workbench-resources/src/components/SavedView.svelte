@@ -203,7 +203,7 @@
 </script>
 
 {#if shown}
-  <TreeNode label={view.string.FilteredViews} parent actions={async () => getActions(availableFilteredViews)}>
+  <TreeNode label={view.string.FilteredViews} node actions={async () => getActions(availableFilteredViews)}>
     {#each myFilteredViews as fv}
       <TreeItem
         _id={fv._id}

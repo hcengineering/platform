@@ -153,7 +153,6 @@ export type ButtonShape =
   | 'rectangle-left'
   | 'rectangle-right'
   | 'circle'
-  | 'round-sm'
   | 'round'
   | 'round2'
   | 'filter'

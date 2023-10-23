@@ -22,7 +22,7 @@
     NotificationType
   } from '@hcengineering/notification'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Label } from '@hcengineering/ui'
+  import { Label, Scroller, Separator, defineSeparators, settingsSeparators } from '@hcengineering/ui'
   import notification from '../plugin'
   import GroupElement from './GroupElement.svelte'
   import NotificationGroupSetting from './NotificationGroupSetting.svelte'
@@ -63,43 +63,47 @@
       group = groups[0]._id
     }
   }
+
+  defineSeparators('settingNotify', settingsSeparators)
 </script>
 
-<div class="flex h-full">
-  <div class="antiPanel-navigator filled indent">
-    <div class="antiNav-header">
-      <span class="fs-title overflow-label">
-        <Label label={notification.string.Notifications} />
-      </span>
+<div class="flex h-full clear-mins">
+  <div class="antiPanel-navigator">
+    <div class="antiNav-header overflow-label">
+      <Label label={notification.string.Notifications} />
     </div>
-    {#each preferencesGroups as preferenceGroup}
-      <GroupElement
-        icon={preferenceGroup.icon}
-        label={preferenceGroup.label}
-        selected={preferenceGroup === currentPreferenceGroup}
-        on:click={() => {
-          currentPreferenceGroup = preferenceGroup
-          group = undefined
-        }}
-      />
-    {/each}
-    {#if preferencesGroups.length > 0 && groups.length > 0}
-      <div class="antiNav-divider short line" />
-    {/if}
-    {#each groups as gr}
-      <GroupElement
-        icon={gr.icon}
-        label={gr.label}
-        selected={gr._id === group}
-        on:click={() => {
-          group = gr._id
-          currentPreferenceGroup = undefined
-        }}
-      />
-    {/each}
+    <Scroller shrink>
+      {#each preferencesGroups as preferenceGroup}
+        <GroupElement
+          icon={preferenceGroup.icon}
+          label={preferenceGroup.label}
+          selected={preferenceGroup === currentPreferenceGroup}
+          on:click={() => {
+            currentPreferenceGroup = preferenceGroup
+            group = undefined
+          }}
+        />
+      {/each}
+      {#if preferencesGroups.length > 0 && groups.length > 0}
+        <div class="antiNav-divider short line" />
+      {/if}
+      {#each groups as gr}
+        <GroupElement
+          icon={gr.icon}
+          label={gr.label}
+          selected={gr._id === group}
+          on:click={() => {
+            group = gr._id
+            currentPreferenceGroup = undefined
+          }}
+        />
+      {/each}
+      <div class="antiNav-space" />
+    </Scroller>
   </div>
+  <Separator name={'settingNotify'} index={0} color={'var(--theme-navpanel-border)'} />
 
-  <div class="antiPanel-component border-left filled">
+  <div class="antiPanel-component filled">
     {#if group}
       <NotificationGroupSetting {group} {settings} />
     {/if}

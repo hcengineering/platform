@@ -30,15 +30,14 @@
   const departments = [hr.ids.Head]
 </script>
 
-<div class="antiPanel-navigator filledNav indent">
+<div class="antiPanel-navigator">
   <NavHeader label={hr.string.HRApplication} />
 
   <Scroller shrink>
-    <div class="antiNav-divider short line" />
-
-    <TreeNode label={hr.string.Departments} parent>
+    <TreeNode label={hr.string.Departments} node>
       <DepartmentsHierarchy {departments} {descendants} {departmentById} selected={department} on:selected />
     </TreeNode>
+    <div class="antiNav-space" />
   </Scroller>
 
   <NavFooter />

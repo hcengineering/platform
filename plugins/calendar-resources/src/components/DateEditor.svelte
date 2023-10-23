@@ -77,14 +77,14 @@
   class:gap-1-5={direction === 'horizontal'}
 >
   {#if showDate || withoutTime}
-    <Button {kind} {size} padding={'0 .5rem'} shape={'round-sm'} on:click={dateClick} {disabled}>
+    <Button {kind} {size} padding={'0 .5rem'} on:click={dateClick} {disabled}>
       <svelte:fragment slot="content">
         <DateLocalePresenter date={currentDate.getTime()} />
       </svelte:fragment>
     </Button>
   {/if}
   {#if !withoutTime}
-    <Button {kind} {size} padding={'0 .5rem'} shape={'round-sm'} on:click={timeClick} {disabled}>
+    <Button {kind} {size} padding={'0 .5rem'} on:click={timeClick} {disabled}>
       <svelte:fragment slot="content">
         <TimeInputBox bind:currentDate noBorder size={'small'} on:update={(date) => updateTime(date.detail)} />
         {#if difference > 0}

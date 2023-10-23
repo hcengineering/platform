@@ -24,8 +24,8 @@
   export let notifications = 0
   export let actions: (originalEvent?: MouseEvent) => Promise<Action[]> = async () => []
   export let selected: boolean = false
-  export let bold = false
-  export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' = 'default'
+  export let bold: boolean = false
+  export let indent: boolean = false
 </script>
 
-<TreeElement {_id} {icon} {title} {notifications} {selected} {actions} {bold} collapsed {indent} on:click />
+<TreeElement {_id} {icon} {title} {notifications} {selected} {actions} {bold} {indent} collapsed on:click />

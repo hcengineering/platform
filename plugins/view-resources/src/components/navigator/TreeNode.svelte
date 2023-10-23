@@ -24,11 +24,11 @@
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let iconProps: Record<string, any> | undefined = undefined
   export let actions: () => Promise<Action[]> = async () => []
-  export let notifications = 0
-  export let parent = false
-  export let collapsed = false
-  export let shortDropbox = false
-  export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' = 'default'
+  export let notifications: number = 0
+  export let parent: boolean = true
+  export let node: boolean = false
+  export let folder: boolean = false
+  export let collapsed: boolean = false
 </script>
 
 <TreeElement
@@ -40,10 +40,9 @@
   {notifications}
   {collapsed}
   {actions}
-  node
+  {node}
+  {folder}
   {parent}
-  {indent}
-  {shortDropbox}
   on:click
 >
   <slot />
