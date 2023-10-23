@@ -28,6 +28,7 @@ export default plugin(textEditorId, {
     RefInputActionItem: '' as Ref<Class<RefInputActionItem>>
   },
   string: {
+    TableOfContents: '' as IntlString,
     Suggested: '' as IntlString,
     NoItems: '' as IntlString,
     Attach: '' as IntlString,
