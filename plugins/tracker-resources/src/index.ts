@@ -104,7 +104,7 @@ import TimeSpendReport from './components/issues/timereport/TimeSpendReport.svel
 import RelatedIssues from './components/issues/related/RelatedIssues.svelte'
 import RelatedIssueTemplates from './components/issues/related/RelatedIssueTemplates.svelte'
 
-import ComponentSelector from './components/ComponentSelector.svelte'
+import ComponentSelector from './components/components/ComponentSelector.svelte'
 
 import IssueTemplatePresenter from './components/templates/IssueTemplatePresenter.svelte'
 import IssueTemplates from './components/templates/IssueTemplates.svelte'

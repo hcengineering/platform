@@ -30,7 +30,6 @@ import {
   Collection,
   Hidden,
   Index,
-  Mixin,
   Model,
   Prop,
   ReadOnly,
@@ -43,9 +42,9 @@ import {
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
-import core, { TAttachedDoc, TClass, TDoc, TStatus, TType } from '@hcengineering/model-core'
+import core, { TAttachedDoc, TDoc, TStatus, TType } from '@hcengineering/model-core'
 import task, { TSpaceWithStates, TTask } from '@hcengineering/model-task'
-import { IntlString, Resource } from '@hcengineering/platform'
+import { IntlString } from '@hcengineering/platform'
 import tags, { TagElement } from '@hcengineering/tags'
 import { DoneState } from '@hcengineering/task'
 import {
@@ -57,18 +56,15 @@ import {
   IssueStatus,
   IssueTemplate,
   IssueTemplateChild,
-  IssueUpdateFunction,
   Milestone,
   MilestoneStatus,
   Project,
-  ProjectIssueTargetOptions,
   RelatedClassRule,
   RelatedIssueTarget,
   RelatedSpaceRule,
   TimeReportDayType,
   TimeSpendReport
 } from '@hcengineering/tracker'
-import { AnyComponent } from '@hcengineering/ui'
 import tracker from './plugin'
 
 export const DOMAIN_TRACKER = 'tracker' as Domain
@@ -357,14 +353,6 @@ export class TComponent extends TDoc implements Component {
   declare space: Ref<Project>
 }
 
-@Mixin(tracker.mixin.ProjectIssueTargetOptions, core.class.Class)
-export class TProjectIssueTargetOptions extends TClass implements ProjectIssueTargetOptions {
-  headerComponent!: AnyComponent
-  bodyComponent!: AnyComponent
-  footerComponent!: AnyComponent
-
-  update!: Resource<IssueUpdateFunction>
-}
 /**
  * @public
  */

@@ -47,7 +47,8 @@ import {
   getPanelURI,
   getPlatformColorForText,
   locationToUrl,
-  navigate
+  navigate,
+  resolvedLocationStore
 } from '@hcengineering/ui'
 import type { BuildModelOptions, Viewlet, ViewletDescriptor } from '@hcengineering/view'
 import view, { AttributeModel, BuildModelKey } from '@hcengineering/view'
@@ -561,6 +562,10 @@ export function updateActiveViewlet (
 export type FixedWidthStore = Record<string, number>
 
 export const fixedWidthStore = writable<FixedWidthStore>({})
+
+resolvedLocationStore.subscribe(() => {
+  fixedWidthStore.set({})
+})
 
 export function groupBy<T extends Doc> (docs: T[], key: string, categories?: CategoryType[]): Record<any, T[]> {
   return docs.reduce((storage: { [key: string]: T[] }, item: T) => {

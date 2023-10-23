@@ -13,15 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { EmployeeBox } from '@hcengineering/contact-resources'
   import { Data, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { Card, getClient, SpaceSelector } from '@hcengineering/presentation'
-  import { EmployeeBox } from '@hcengineering/contact-resources'
+  import { Card, SpaceSelector, getClient } from '@hcengineering/presentation'
+  import { StyledTextArea } from '@hcengineering/text-editor'
   import { Component, Project } from '@hcengineering/tracker'
   import { EditBox } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
-  import { StyledTextArea } from '@hcengineering/text-editor'
   import ProjectPresenter from '../projects/ProjectPresenter.svelte'
 
   export let space: Ref<Project>
@@ -36,8 +36,10 @@
     attachments: 0
   }
 
+  let _space = space
+
   async function onSave () {
-    await client.createDoc(tracker.class.Component, space, object)
+    await client.createDoc(tracker.class.Component, _space, object)
   }
 </script>
 
@@ -54,7 +56,7 @@
     <SpaceSelector
       _class={tracker.class.Project}
       label={tracker.string.Project}
-      bind:space
+      bind:space={_space}
       kind={'regular'}
       size={'large'}
       component={ProjectPresenter}

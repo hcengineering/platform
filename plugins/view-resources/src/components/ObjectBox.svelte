@@ -42,6 +42,7 @@
   export let label: IntlString
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let placeholder: IntlString = presentation.string.Search
+  export let placeholderIcon: Asset | undefined = undefined
   export let value: Ref<Doc> | null | undefined
   export let allowDeselect = false
   export let titleDeselect: IntlString | undefined = undefined
@@ -56,6 +57,7 @@
   export let id: string | undefined = undefined
   export let searchField: string = 'name'
   export let docProps: Record<string, any> = {}
+  export let shouldShowAvatar = false
 
   export let create: ObjectCreate | undefined = undefined
 
@@ -107,8 +109,6 @@
       )
     }
   }
-
-  $: hideIcon = size === 'x-large' || (size === 'large' && kind !== 'link')
 </script>
 
 <div {id} bind:this={container} class="min-w-0" class:w-full={width === '100%'} class:h-full={$$slots.content}>
@@ -121,7 +121,7 @@
     <Button
       {focusIndex}
       width={width ?? 'min-content'}
-      {icon}
+      icon={icon ?? value === undefined ? placeholderIcon : undefined}
       iconProps={{ size: kind === 'link' || kind === 'regular' ? 'small' : size }}
       {size}
       {kind}
@@ -142,7 +142,7 @@
               objectId={selected._id}
               _class={selected._class}
               value={selected}
-              props={{ ...docProps, disabled: true, noUnderline: true, size: 'x-small', shouldShowAvatar: false }}
+              props={{ ...docProps, disabled: true, noUnderline: true, size: 'x-small', shouldShowAvatar }}
             />
           {:else}
             <Label {label} />

@@ -483,7 +483,8 @@ export function defineViewlets (builder: Builder): void {
         {
           key: '',
           presenter: tracker.component.ComponentPresenter,
-          props: { kind: 'list' }
+          props: { kind: 'list' },
+          displayProps: { key: 'component', fixed: 'left' }
         },
         { key: '', displayProps: { grow: true } },
         {

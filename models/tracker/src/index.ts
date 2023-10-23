@@ -36,7 +36,6 @@ import {
   TIssueTemplate,
   TMilestone,
   TProject,
-  TProjectIssueTargetOptions,
   TRelatedIssueTarget,
   TTimeSpendReport,
   TTypeEstimation,
@@ -431,7 +430,6 @@ export function createModel (builder: Builder): void {
     TTypeMilestoneStatus,
     TTimeSpendReport,
     TTypeReportedTime,
-    TProjectIssueTargetOptions,
     TRelatedIssueTarget,
     TTypeEstimation,
     TTypeRemainingTime

@@ -18,7 +18,7 @@ import { Class, Ref } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { PresentationMiddlewareFactory } from './pipeline'
-import { ComponentPointExtension, ObjectSearchCategory } from './types'
+import { ComponentPointExtension, DocRules, DocCreateExtension, ObjectSearchCategory } from './types'
 
 /**
  * @public
@@ -29,7 +29,9 @@ export default plugin(presentationId, {
   class: {
     ObjectSearchCategory: '' as Ref<Class<ObjectSearchCategory>>,
     PresentationMiddlewareFactory: '' as Ref<Class<PresentationMiddlewareFactory>>,
-    ComponentPointExtension: '' as Ref<Class<ComponentPointExtension>>
+    ComponentPointExtension: '' as Ref<Class<ComponentPointExtension>>,
+    DocCreateExtension: '' as Ref<Class<DocCreateExtension>>,
+    DocRules: '' as Ref<Class<DocRules>>
   },
   string: {
     Create: '' as IntlString,

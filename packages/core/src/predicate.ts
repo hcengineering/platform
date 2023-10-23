@@ -98,7 +98,7 @@ const predicates: Record<string, PredicateFactory> = {
     return (docs) => execPredicate(docs, propertyKey, (value) => value <= o)
   },
   $exists: (o, propertyKey) => {
-    return (docs) => execPredicate(docs, propertyKey, (value) => (value !== undefined) === o)
+    return (docs) => execPredicate(docs, propertyKey, (value) => (value != null) === o)
   },
   $ne: (o, propertyKey) => {
     // eslint-disable-next-line eqeqeq

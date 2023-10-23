@@ -1,8 +1,8 @@
 <script lang="ts">
   import { Component, ComponentExtensionId } from '@hcengineering/ui'
-  import plugin from '../plugin'
-  import { ComponentPointExtension } from '../types'
-  import { getClient } from '../utils'
+  import plugin from '../../plugin'
+  import { ComponentPointExtension } from '../../types'
+  import { getClient } from '../../utils'
 
   export let extension: ComponentExtensionId
   export let props: Record<string, any> = {}

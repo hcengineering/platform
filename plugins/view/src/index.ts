@@ -523,8 +523,19 @@ export interface ViewContext {
 /**
  * @public
  */
+export interface ActionIgnore {
+  _class: Ref<Class<Doc>>
+  // Action to be ignored
+  action: Ref<Action>
+  // Document match to ignore if matching at least one document.
+  query: DocumentQuery<Doc>
+}
+
+/**
+ * @public
+ */
 export interface IgnoreActions extends Class<Doc> {
-  actions: Ref<Action>[]
+  actions: (Ref<Action> | ActionIgnore)[]
 }
 
 /**
@@ -976,6 +987,9 @@ const view = plugin(viewId, {
 
       // Or list of values to select from
       values?: { icon?: Asset, label: IntlString, id: number | string }[]
+
+      // If defined, documents will be set into value
+      valueKey?: string
     }>
   }
 })

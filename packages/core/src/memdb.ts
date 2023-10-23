@@ -14,11 +14,11 @@
 //
 
 import { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { getObjectValue, Lookup, ReverseLookups } from '.'
+import { Lookup, ReverseLookups, getObjectValue } from '.'
 import type { Class, Doc, Ref } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
-import { matchQuery, resultSort, checkMixinKey } from './query'
+import { checkMixinKey, matchQuery, resultSort } from './query'
 import type { DocumentQuery, FindOptions, FindResult, LookupData, Storage, TxResult, WithLookup } from './storage'
 import type { Tx, TxCreateDoc, TxMixin, TxRemoveDoc, TxUpdateDoc } from './tx'
 import { TxProcessor } from './tx'
@@ -168,6 +168,34 @@ export abstract class MemDb extends TxProcessor implements Storage {
     }
 
     if (options?.sort !== undefined) await resultSort(result, options?.sort, _class, this.hierarchy, this)
+    const total = result.length
+    result = result.slice(0, options?.limit)
+    const tresult = this.hierarchy.clone(result) as WithLookup<T>[]
+    const res = tresult.map((it) => this.hierarchy.updateLookupMixin(_class, it, options))
+    return toFindResult(res, total)
+  }
+
+  /**
+   * Only in model find without lookups and sorting.
+   */
+  findAllSync<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): FindResult<T> {
+    let result: WithLookup<Doc>[]
+    const baseClass = this.hierarchy.getBaseClass(_class)
+    if (
+      Object.prototype.hasOwnProperty.call(query, '_id') &&
+      (typeof query._id === 'string' || query._id?.$in !== undefined || query._id === undefined || query._id === null)
+    ) {
+      result = this.getByIdQuery(query, baseClass)
+    } else {
+      result = this.getObjectsByClass(baseClass)
+    }
+
+    result = matchQuery(result, query, _class, this.hierarchy, true)
+
+    if (baseClass !== _class) {
+      // We need to filter instances without mixin was set
+      result = result.filter((r) => (r as any)[_class] !== undefined)
+    }
     const total = result.length
     result = result.slice(0, options?.limit)
     const tresult = this.hierarchy.clone(result) as WithLookup<T>[]

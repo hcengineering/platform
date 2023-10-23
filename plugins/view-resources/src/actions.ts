@@ -16,16 +16,17 @@
 
 import core, {
   AccountRole,
-  Doc,
-  getCurrentAccount,
-  WithLookup,
   Class,
   Client,
-  matchQuery,
-  Ref
+  Doc,
+  Ref,
+  WithLookup,
+  getCurrentAccount,
+  matchQuery
 } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
-import { Action, ActionGroup, ViewAction, ViewActionInput, ViewContextType } from '@hcengineering/view'
+import { getClient } from '@hcengineering/presentation'
+import { Action, ActionGroup, ActionIgnore, ViewAction, ViewActionInput, ViewContextType } from '@hcengineering/view'
 import view from './plugin'
 import { FocusSelection, SelectionStore } from './selection'
 
@@ -126,6 +127,21 @@ export async function getContextActions (
   return result
 }
 
+function getIgnoreActions (ignoreActions: Array<Ref<Action> | ActionIgnore>, doc: Doc): Array<Ref<Action>> {
+  const ignore: Array<Ref<Action>> = []
+  const h = getClient().getHierarchy()
+  for (const a of ignoreActions) {
+    if (typeof a === 'string') {
+      ignore.push(a)
+    } else {
+      if (matchQuery([doc], a.query, a._class, h).length === 1) {
+        ignore.push(a.action)
+      }
+    }
+  }
+  return ignore
+}
+
 /**
  * @public
  */
@@ -140,7 +156,7 @@ export function filterActions (
   const role = getCurrentAccount().role
   const clazz = hierarchy.getClass(doc._class)
   const ignoreActions = hierarchy.as(clazz, view.mixin.IgnoreActions)
-  const ignore: Array<Ref<Action>> = Array.from(ignoreActions?.actions ?? [])
+  const ignore: Array<Ref<Action>> = getIgnoreActions(ignoreActions?.actions ?? [], doc)
 
   // Collect ignores from parent
   const ancestors = hierarchy.getAncestors(clazz._id)
@@ -148,14 +164,14 @@ export function filterActions (
   for (const cl of ancestors) {
     const ignoreActions = hierarchy.as(hierarchy.getClassOrInterface(cl), view.mixin.IgnoreActions)
     if (ignoreActions?.actions !== undefined) {
-      ignore.push(...ignoreActions.actions)
+      ignore.push(...getIgnoreActions(ignoreActions.actions, doc))
     }
   }
   for (const cl of hierarchy.getDescendants(clazz._id)) {
     if (hierarchy.isMixin(cl) && hierarchy.hasMixin(doc, cl)) {
       const ignoreActions = hierarchy.as(hierarchy.getClassOrInterface(cl), view.mixin.IgnoreActions)
       if (ignoreActions?.actions !== undefined) {
-        ignore.push(...ignoreActions.actions)
+        ignore.push(...getIgnoreActions(ignoreActions.actions, doc))
       }
     }
   }

@@ -274,7 +274,13 @@ export async function cloneWorkspace (
           docs = await sourceConnection.loadDocs(c, needRetrieve)
           if (clearTime) {
             docs = docs.map((p) => {
-              if (sourceConnection.getHierarchy().isDerived(p._class, core.class.TxCollectionCUD)) {
+              let collectionCud = false
+              try {
+                collectionCud = sourceConnection.getHierarchy().isDerived(p._class, core.class.TxCollectionCUD)
+              } catch (err: any) {
+                console.log(err)
+              }
+              if (collectionCud) {
                 return {
                   ...p,
                   createdBy: core.account.System,

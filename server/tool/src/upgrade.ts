@@ -9,14 +9,14 @@ import {
   Ref,
   SortingOrder
 } from '@hcengineering/core'
-import { MigrateUpdate, MigrationClient, MigrationResult } from '@hcengineering/model'
+import { MigrateUpdate, MigrationClient, MigrationResult, ModelLogger } from '@hcengineering/model'
 import { Db, Document, Filter, Sort, UpdateFilter } from 'mongodb'
 
 /**
  * Upgrade client implementation.
  */
 export class MigrateClientImpl implements MigrationClient {
-  constructor (readonly db: Db, readonly hierarchy: Hierarchy, readonly model: ModelDb) {}
+  constructor (readonly db: Db, readonly hierarchy: Hierarchy, readonly model: ModelDb, readonly logger: ModelLogger) {}
 
   private translateQuery<T extends Doc>(query: DocumentQuery<T>): Filter<Document> {
     const translated: any = {}
@@ -65,15 +65,22 @@ export class MigrateClientImpl implements MigrationClient {
     query: DocumentQuery<T>,
     operations: MigrateUpdate<T>
   ): Promise<MigrationResult> {
-    if (isOperator(operations)) {
-      const result = await this.db
-        .collection(domain)
-        .updateMany(this.translateQuery(query), { ...operations } as unknown as UpdateFilter<Document>)
+    const t = Date.now()
+    try {
+      if (isOperator(operations)) {
+        const result = await this.db
+          .collection(domain)
+          .updateMany(this.translateQuery(query), { ...operations } as unknown as UpdateFilter<Document>)
 
-      return { matched: result.matchedCount, updated: result.modifiedCount }
-    } else {
-      const result = await this.db.collection(domain).updateMany(this.translateQuery(query), { $set: operations })
-      return { matched: result.matchedCount, updated: result.modifiedCount }
+        return { matched: result.matchedCount, updated: result.modifiedCount }
+      } else {
+        const result = await this.db.collection(domain).updateMany(this.translateQuery(query), { $set: operations })
+        return { matched: result.matchedCount, updated: result.modifiedCount }
+      }
+    } finally {
+      if (Date.now() - t > 1000) {
+        this.logger.log(`update${Date.now() - t > 5000 ? 'slow' : ''}`, domain, query, Date.now() - t)
+      }
     }
   }
 
@@ -98,6 +105,7 @@ export class MigrateClientImpl implements MigrationClient {
     query: DocumentQuery<T>,
     targetDomain: Domain
   ): Promise<MigrationResult> {
+    this.logger.log('move', sourceDomain, query)
     const q = this.translateQuery(query)
     const cursor = this.db.collection(sourceDomain).find<T>(q)
     const target = this.db.collection(targetDomain)

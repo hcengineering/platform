@@ -113,7 +113,7 @@ It may also be necessary to upgrade the running database.
 
 ```bash
 cd ./dev/tool
-rushx upgrade
+rushx upgrade -f
 ```
 
 In cases where the project fails to build for any logical reason, try the following steps:

@@ -31,6 +31,7 @@ import {
 import AccountArrayEditor from './components/AccountArrayEditor.svelte'
 import AccountBox from './components/AccountBox.svelte'
 import AssigneeBox from './components/AssigneeBox.svelte'
+import AssigneePopup from './components/AssigneePopup.svelte'
 import Avatar from './components/Avatar.svelte'
 import ChannelFilter from './components/ChannelFilter.svelte'
 import ChannelPanel from './components/ChannelPanel.svelte'
@@ -134,6 +135,7 @@ export {
   EditableAvatar,
   UserBox,
   AssigneeBox,
+  AssigneePopup,
   Avatar,
   UsersPopup,
   EmployeeBox,

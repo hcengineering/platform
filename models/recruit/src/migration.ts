@@ -35,7 +35,15 @@ export const recruitOperation: MigrateOperation = {
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createDefaults(tx)
-    await fixTemplateSpace(tx)
+
+    await tryUpgrade(client, recruitId, [
+      {
+        state: 'fix-template-space',
+        func: async (client) => {
+          await fixTemplateSpace(tx)
+        }
+      }
+    ])
 
     await tryUpgrade(client, recruitId, [
       {

@@ -16,9 +16,11 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
   import Spinner from './Spinner.svelte'
+  import { ButtonSize } from '../types'
 
   export let shrink: boolean = false
   export let label: string = ''
+  export let size: ButtonSize = 'medium'
 
   const dispatch = createEventDispatcher()
   let timer: any
@@ -34,7 +36,7 @@
 
 <div class="spinner-container" class:fullSize={!shrink}>
   <div data-label={label} class="inner" class:labeled={label !== ''}>
-    <Spinner />
+    <Spinner {size} />
   </div>
 </div>
 

@@ -28,6 +28,7 @@
     IconCollapseArrow,
     IconMoreH,
     Label,
+    Loading,
     defaultBackground,
     eventToHTMLElement,
     showPopup,
@@ -60,6 +61,7 @@
   export let newObjectProps: (doc: Doc | undefined) => Record<string, any> | undefined
 
   export let viewOptions: ViewOptions
+  export let loading: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -143,35 +145,41 @@
         />
       {/if}
 
-      {#if selected.length > 0}
-        <span class="antiSection-header__counter ml-2">
-          <span class="caption-color">
-            ({selected.length})
-          </span>
-        </span>
-      {/if}
-      {#if limited < itemsProj.length}
-        <div class="antiSection-header__counter flex-row-center mx-2">
-          <span class="caption-color">{limited}</span>
-          <span class="text-xs mx-0-5">/</span>
-          {itemsProj.length}
+      {#if loading}
+        <div class="p-1">
+          <Loading shrink size={'small'} />
         </div>
-        <ActionIcon
-          size={'small'}
-          icon={IconMoreH}
-          label={ui.string.ShowMore}
-          action={() => {
-            dispatch('more')
-          }}
-        />
       {:else}
-        <span class="antiSection-header__counter ml-2">{itemsProj.length}</span>
+        {#if selected.length > 0}
+          <span class="antiSection-header__counter ml-2">
+            <span class="caption-color">
+              ({selected.length})
+            </span>
+          </span>
+        {/if}
+        {#if limited < itemsProj.length}
+          <div class="antiSection-header__counter flex-row-center mx-2">
+            <span class="caption-color">{limited}</span>
+            <span class="text-xs mx-0-5">/</span>
+            {itemsProj.length}
+          </div>
+          <ActionIcon
+            size={'small'}
+            icon={IconMoreH}
+            label={ui.string.ShowMore}
+            action={() => {
+              dispatch('more')
+            }}
+          />
+        {:else}
+          <span class="antiSection-header__counter ml-2">{itemsProj.length}</span>
+        {/if}
+        <div class="flex-row-center flex-reverse flex-grow mr-2 gap-2 reverse">
+          {#each extraHeaders ?? [] as extra}
+            <Component is={extra} props={{ ...props, value: category, category: groupByKey, docs: items }} />
+          {/each}
+        </div>
       {/if}
-      <div class="flex-row-center flex-reverse flex-grow mr-2 gap-2 reverse">
-        {#each extraHeaders ?? [] as extra}
-          <Component is={extra} props={{ ...props, value: category, category: groupByKey, docs: items }} />
-        {/each}
-      </div>
     </div>
     {#if createItemDialog !== undefined && createItemLabel !== undefined}
       <div class:on-hover={!mouseOver} class="flex-row-center">

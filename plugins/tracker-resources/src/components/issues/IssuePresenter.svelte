@@ -15,8 +15,10 @@
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
   import type { Issue, Project } from '@hcengineering/tracker'
-  import { AnySvelteComponent, Icon, tooltip } from '@hcengineering/ui'
+  import { AnySvelteComponent, Component, Icon, tooltip } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { DocNavLink } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import { activeProjects } from '../../utils'
@@ -37,34 +39,47 @@
   }
 
   $: title = currentProject ? `${currentProject.identifier}-${value?.number}` : `${value?.number}`
+
+  $: presenters =
+    value !== undefined ? getClient().getHierarchy().findMixinMixins(value, view.mixin.ObjectPresenter) : []
 </script>
 
 {#if value}
-  <DocNavLink
-    object={value}
-    {onClick}
-    {disabled}
-    {noUnderline}
-    {inline}
-    component={tracker.component.EditIssue}
-    shrink={0}
-  >
-    {#if inline}
-      <span class="antiMention" use:tooltip={{ label: tracker.string.Issue }}>@{title}</span>
-    {:else}
-      <span class="issuePresenterRoot" class:list={kind === 'list'} class:cursor-pointer={!disabled}>
-        {#if shouldShowAvatar}
-          <div class="icon" use:tooltip={{ label: tracker.string.Issue }}>
-            <Icon icon={icon ?? tracker.icon.Issues} size={'small'} />
-          </div>
-        {/if}
-        <span class="overflow-label select-text" title={value?.title}>
-          {title}
-          <slot name="details" />
+  <div class="flex-row-center flex-between">
+    <DocNavLink
+      object={value}
+      {onClick}
+      {disabled}
+      {noUnderline}
+      {inline}
+      component={tracker.component.EditIssue}
+      shrink={0}
+    >
+      {#if inline}
+        <span class="antiMention" use:tooltip={{ label: tracker.string.Issue }}>@{title}</span>
+      {:else}
+        <span class="issuePresenterRoot" class:list={kind === 'list'} class:cursor-pointer={!disabled}>
+          {#if shouldShowAvatar}
+            <div class="icon" use:tooltip={{ label: tracker.string.Issue }}>
+              <Icon icon={icon ?? tracker.icon.Issues} size={'small'} />
+            </div>
+          {/if}
+          <span class="overflow-label select-text" title={value?.title}>
+            {title}
+            <slot name="details" />
+          </span>
         </span>
-      </span>
+      {/if}
+    </DocNavLink>
+    {#if presenters.length > 0}
+      <div class="flex-row-center">
+        {#each presenters as mixinPresenter}
+          {mixinPresenter.presenter}
+          <Component is={mixinPresenter.presenter} props={{ value }} />
+        {/each}
+      </div>
     {/if}
-  </DocNavLink>
+  </div>
 {/if}
 
 <style lang="scss">
