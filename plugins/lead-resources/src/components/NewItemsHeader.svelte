@@ -29,7 +29,7 @@
     justify={'left'}
     width={'100%'}
     kind={'accented'}
-    size={'large'}
+    gap={'large'}
     on:click={newIssue}
   />
 </div>

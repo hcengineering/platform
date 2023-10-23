@@ -39,7 +39,7 @@
       <Icon {icon} size={'small'} />
     {/if}
   </div>
-  <span class="an-element__label title">
+  <span class="an-element__label">
     {#if label}<Label {label} />{/if}
   </span>
 </div>

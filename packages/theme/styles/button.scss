@@ -53,13 +53,14 @@
     transition: color .15s;
     pointer-events: none;
   }
-  &:not(.only-icon) .btn-icon:not(.spinner) { margin-right: .375rem; }
-  &:not(.only-icon) .btn-right-icon { margin-left: .375rem; }
+  &.gap-large:not(.only-icon, .gap-medium) .btn-icon:not(.spinner) { margin-right: .5rem; }
+  &.gap-large:not(.only-icon, .gap-medium) .btn-right-icon { margin-left: .5rem; }
+  &.gap-medium:not(.only-icon, .gap-large) .btn-icon:not(.spinner) { margin-right: .375rem; }
+  &.gap-medium:not(.only-icon, .gap-large) .btn-right-icon { margin-left: .375rem; }
 
   &.short { max-width: 8.5rem; }
   &.accent { font-weight: 500; }
-  &.sh-no-shape { border-radius: .25rem; }
-  &.sh-round-sm { border-radius: .375rem; }
+  &.sh-no-shape { border-radius: .375rem; }
   &.sh-round { border-radius: .5rem; }
   &.sh-round2 { border-radius: .75rem; }
   &.sh-circle { border-radius: 1rem; }

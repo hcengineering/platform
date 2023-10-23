@@ -162,18 +162,13 @@
 
       <div class="flex-col overflow-y-auto">
         {#each spaces as space (space._id)}
-          <TreeNode
-            label={getEmbeddedLabel(space.name)}
-            actions={async () => getSpaceActions(space)}
-            parent
-            indent={'ml-2'}
-          >
+          <TreeNode label={getEmbeddedLabel(space.name)} actions={async () => getSpaceActions(space)} parent>
             {#each getTemplates(templates, space._id) as t (t._id)}
               <TreeItem
-                indent={'ml-4'}
                 _id={space._id}
                 title={t.title}
                 actions={async () => getActions(t)}
+                indent
                 on:click={() => {
                   selected = t._id
                   newTemplate = { title: t.title, message: t.message }

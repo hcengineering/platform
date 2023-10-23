@@ -14,9 +14,14 @@
 -->
 <script lang="ts">
   export let size: 'small' | 'medium' | 'large'
+  export let filled: boolean = false
   const fill: string = 'currentColor'
 </script>
 
 <svg class="svg-{size}" {fill} viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-  <polygon points="11.3,5.8 8,9.1 4.7,5.8 4,6.5 8,10.5 12,6.5 " />
+  {#if filled}
+    <polygon points="5.5,6.1 8.5,9.9 11.5,6.1" />
+  {:else}
+    <polygon points="11.3,5.8 8,9.1 4.7,5.8 4,6.5 8,10.5 12,6.5" />
+  {/if}
 </svg>

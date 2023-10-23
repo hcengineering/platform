@@ -89,7 +89,7 @@
   }
 </script>
 
-<TreeNode {label} parent actions={async () => [unStarAll]}>
+<TreeNode {label} node actions={async () => [unStarAll]}>
   {#each spaces as space (space._id)}
     {@const model = models.find((p) => p.spaceClass === space._class)}
     {#await getSpacePresenter(client, space._class) then presenter}
@@ -108,7 +108,6 @@
         {#await getSpaceName(client, space) then name}
           <NavLink space={space._id}>
             <TreeItem
-              indent={'ml-2'}
               _id={space._id}
               title={name}
               icon={classIcon(client, space._class)}

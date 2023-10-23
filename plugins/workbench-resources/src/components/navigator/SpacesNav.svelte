@@ -142,12 +142,7 @@
   }
 </script>
 
-<TreeNode
-  label={model.label}
-  parent
-  actions={async () => getParentActions()}
-  shortDropbox={model.specials !== undefined}
->
+<TreeNode label={model.label} node actions={async () => getParentActions()}>
   {#each filteredSpaces as space, i (space._id)}
     {#await getSpacePresenter(client, space._class) then presenter}
       {#if separate && model.specials && i !== 0}<TreeSeparator line />{/if}
@@ -166,13 +161,13 @@
         <NavLink space={space._id}>
           {#await getSpaceName(client, space) then name}
             <TreeItem
-              indent={'ml-2'}
               _id={space._id}
               title={name}
               icon={classIcon(client, space._class)}
               selected={deselect ? false : currentSpace === space._id}
               actions={() => getActions(space)}
               bold={isChanged(space, $docUpdates)}
+              indent
             />
           {/await}
         </NavLink>

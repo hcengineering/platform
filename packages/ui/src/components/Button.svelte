@@ -62,6 +62,7 @@
   export let accent: boolean = false
   export let noFocus: boolean = false
   export let adaptiveShrink: WidthType | null = null
+  export let gap: 'medium' | 'large' = 'medium'
 
   $: iconSize =
     iconProps && iconProps.size !== undefined ? iconProps.size : size && size === 'inline' ? 'inline' : 'small'
@@ -115,7 +116,7 @@
 <button
   use:tooltip={showTooltip}
   bind:this={input}
-  class="antiButton {kind} {size} jf-{justify} sh-{shape ?? 'no-shape'} bs-{borderStyle}"
+  class="antiButton {kind} {size} jf-{justify} sh-{shape ?? 'no-shape'} bs-{borderStyle} gap-{gap}"
   class:only-icon={iconOnly || adaptive}
   class:no-focus={noFocus}
   class:accent

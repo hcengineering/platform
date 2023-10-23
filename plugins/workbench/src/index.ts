@@ -104,7 +104,6 @@ export interface SpecialNavModel {
   // If defined, will be used to find spaces for visibleIf
   spaceClass?: Ref<Class<Space>>
   checkIsDisabled?: Resource<() => Promise<boolean>>
-  nestingLevel?: number
 }
 
 /**

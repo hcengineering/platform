@@ -45,8 +45,8 @@ test.describe('contact tests', () => {
     // await page.hover('button:has-text("Settings")')
     await page.click('button:has-text("Settings")')
     // Click text=Workspace Notifications >> button
-    await page.click('.antiPanel-navigator > div:nth-child(5)')
-    await page.click('text=Templates')
+    await page.click('.box > div:nth-child(4)')
+    await page.click('text="Text Templates"')
     // Click .flex-center.icon-button
     await page.click('#create-template')
     // Click [placeholder="New\ template"]
@@ -78,7 +78,7 @@ test.describe('contact tests', () => {
     // await page.hover('button:has-text("Settings")')
     await page.click('button:has-text("Settings")')
     // Click text=Workspace Notifications >> button
-    await page.click('.antiPanel-navigator > div:nth-child(5)')
+    await page.click('.box > div:nth-child(4)')
     // Click button:has-text("Manage Templates")
     await page.click('text="Manage Templates"')
     // Click text=Vacancies

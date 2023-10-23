@@ -39,7 +39,6 @@
     <div class="flex-row-center min-h-11">
       <Button
         size={'large'}
-        shape={'round-sm'}
         width={'min-content'}
         on:click={(event) => {
           showPopup(

@@ -124,7 +124,7 @@
   defineSeparators('workbench', workbenchSeparators)
 </script>
 
-<div class="flex h-full">
+<div class="flex h-full clear-mins">
   {#if visibileNav}
     <Sidebar
       {department}

@@ -16,7 +16,7 @@ export class ChunterPage {
     this.inputNewChannelName = page.locator('form.antiCard input[type="text"]')
     this.checkboxMakePrivate = page.locator('span.toggle-switch')
     this.buttonCreateChannel = page.locator('button[type="submit"] span', { hasText: 'Create' })
-    this.buttonOpenChannel = page.locator('div.antiNav-element__dropbox span.overflow-label')
+    this.buttonOpenChannel = page.locator('div.antiNav-element__dropbox span.an-element__label')
   }
 
   async createNewChannel (channelName: string, privateChannel: boolean): Promise<void> {

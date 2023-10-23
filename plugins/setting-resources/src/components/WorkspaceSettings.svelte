@@ -17,7 +17,17 @@
   import { AccountRole, getCurrentAccount } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import setting, { SettingsCategory } from '@hcengineering/setting'
-  import { Component, Label, getCurrentResolvedLocation, resolvedLocationStore, navigate } from '@hcengineering/ui'
+  import {
+    Component,
+    Label,
+    getCurrentResolvedLocation,
+    resolvedLocationStore,
+    navigate,
+    Separator,
+    defineSeparators,
+    settingsSeparators,
+    Scroller
+  } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import CategoryElement from './CategoryElement.svelte'
 
@@ -57,27 +67,31 @@
     loc.path.length = 5
     navigate(loc)
   }
+
+  defineSeparators('settingWorkspace', settingsSeparators)
 </script>
 
-<div class="flex h-full">
+<div class="flex h-full clear-mins">
   {#if visibileNav}
     <div class="antiPanel-navigator filledNav indent">
-      <div class="antiNav-header">
-        <span class="fs-title overflow-label">
-          <Label label={setting.string.WorkspaceSetting} />
-        </span>
+      <div class="antiNav-header overflow-label">
+        <Label label={setting.string.WorkspaceSetting} />
       </div>
-      {#each categories as category}
-        <CategoryElement
-          icon={category.icon}
-          label={category.label}
-          selected={category.name === categoryId}
-          on:click={() => {
-            selectCategory(category.name)
-          }}
-        />
-      {/each}
+      <Scroller shrink>
+        {#each categories as category}
+          <CategoryElement
+            icon={category.icon}
+            label={category.label}
+            selected={category.name === categoryId}
+            on:click={() => {
+              selectCategory(category.name)
+            }}
+          />
+        {/each}
+        <div class="antiNav-space" />
+      </Scroller>
     </div>
+    <Separator name={'settingWorkspace'} index={0} color={'var(--theme-navpanel-border)'} />
   {/if}
 
   <div class="antiPanel-component filled">

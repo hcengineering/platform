@@ -19,17 +19,17 @@
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Action, IconEdit } from '@hcengineering/ui'
-  import { getActions as getContributedActions } from '@hcengineering/view-resources'
+  import { getActions as getContributedActions, TreeElement } from '@hcengineering/view-resources'
 
   import hr from '../../plugin'
 
-  import TreeElement from './TreeElement.svelte'
+  // import TreeElement from './TreeElement.svelte'
 
   export let departments: Ref<Department>[]
   export let descendants: Map<Ref<Department>, Department[]>
   export let departmentById: Map<Ref<Department>, Department>
   export let selected: Ref<Department> | undefined
-  export let level = 0
+  export let level = 1
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -71,7 +71,7 @@
       icon={hr.icon.Department}
       title={department.name}
       selected={selected === department._id}
-      node={desc.length > 0}
+      parent={desc.length > 0}
       actions={() => getActions(department)}
       {level}
       on:click={() => handleDepartmentSelected(department._id)}

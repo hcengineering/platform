@@ -76,13 +76,14 @@
               : getPlatformColorForTextDef(space.name, $themeStore.dark).icon
         }}
     title={space.name}
+    folder
     actions={() => getActions(space)}
     on:click={() => localStorage.setItem(getSpaceCollapsedKey(), collapsed ? '' : COLLAPSED)}
   >
     {#each specials as special}
       <NavLink space={space._id} special={special.id}>
         <SpecialElement
-          indent={'ml-2'}
+          indent
           label={special.label}
           icon={special.icon}
           selected={deselect ? false : currentSpace === space._id && special.id === currentSpecial}

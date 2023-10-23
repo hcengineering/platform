@@ -40,7 +40,7 @@
     justify={'left'}
     kind={'accented'}
     width={'100%'}
-    size={'large'}
+    gap={'large'}
     on:click={newCandidate}
   >
     <div slot="content" class="draft-circle-container">

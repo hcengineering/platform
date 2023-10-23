@@ -29,7 +29,7 @@
 </script>
 
 {#if !allDay && rules.length === 0}
-  <div class="antiButton ghost x-small sh-round-sm text-11px pl-2 pr-2 pt-1 pb-1 mt-1 ml-5-5 gap-3 w-min">
+  <div class="antiButton ghost x-small sh-no-shape text-11px pl-2 pr-2 pt-1 pb-1 mt-1 ml-5-5 gap-3 w-min">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="overflow-label cursor-pointer" on:click={() => (allDay = true)}>
       <Label label={calendar.string.AllDay} />
@@ -51,7 +51,6 @@
       label={calendar.string.AllDay}
       kind={'ghost'}
       padding={'0 .5rem'}
-      shape={'round-sm'}
       justify={'left'}
       on:click={() => {
         allDay = !allDay
@@ -61,7 +60,7 @@
   </div>
   <div class="flex-row-center gap-1-5 mt-1">
     <Icon icon={calendar.icon.Globe} size={'small'} fill={'var(--theme-dark-color)'} />
-    <Button label={calendar.string.TimeZone} kind={'ghost'} padding={'0 .5rem'} shape={'round-sm'} justify={'left'}>
+    <Button label={calendar.string.TimeZone} kind={'ghost'} padding={'0 .5rem'} justify={'left'}>
       <svelte:fragment slot="content">
         <span class="ml-2 content-darker-color">
           GMT{(offsetTZ > 0 ? '-' : '+') + Math.abs(offsetTZ / MILLISECONDS_IN_MINUTE / 60)}
@@ -76,7 +75,6 @@
         label={rules.length > 0 ? undefined : calendar.string.Repeat}
         kind={'ghost'}
         padding={'0 .5rem'}
-        shape={'round-sm'}
         justify={'left'}
         on:click={() => dispatch('repeat')}
       >

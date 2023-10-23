@@ -47,7 +47,6 @@
   <Button
     label={reminders.length ? calendar.string.AddReminder : calendar.string.Reminders}
     kind={'ghost'}
-    shape={'round-sm'}
     on:click={(e) => addReminder(e)}
   />
 </div>
