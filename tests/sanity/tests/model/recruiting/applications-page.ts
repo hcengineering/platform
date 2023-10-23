@@ -74,8 +74,7 @@ export class ApplicationsPage extends CommonPage {
 
   async openApplicationByTalentName (talentName: TalentName): Promise<void> {
     await this.page
-      .locator('span.ap-label', { hasText: `${talentName.lastName} ${talentName.firstName}` })
-      .locator('xpath=../../../../..')
+      .locator('tr', { hasText: `${talentName.lastName} ${talentName.firstName}` })
       .locator('div[class*="firstCell"]')
       .click()
   }
@@ -83,8 +82,7 @@ export class ApplicationsPage extends CommonPage {
   async checkApplicationDoneStatus (talentName: TalentName, done: string): Promise<void> {
     await expect(
       await this.page
-        .locator('span.ap-label', { hasText: `${talentName.lastName} ${talentName.firstName}` })
-        .locator('xpath=../../../../..')
+        .locator('tr', { hasText: `${talentName.lastName} ${talentName.firstName}` })
         .locator('td')
         .nth(6)
     ).toHaveText(done)
@@ -93,8 +91,7 @@ export class ApplicationsPage extends CommonPage {
   async checkApplicationState (talentName: TalentName, done: string): Promise<void> {
     await expect(
       await this.page
-        .locator('span.ap-label', { hasText: `${talentName.lastName} ${talentName.firstName}` })
-        .locator('xpath=../../../../..')
+        .locator('tr', { hasText: `${talentName.lastName} ${talentName.firstName}` })
         .locator('td')
         .nth(5)
     ).toHaveText(done)
@@ -106,8 +103,7 @@ export class ApplicationsPage extends CommonPage {
 
   async changeApplicationStatus (talentName: TalentName, status: string): Promise<void> {
     await this.page
-      .locator('span.ap-label', { hasText: `${talentName.lastName} ${talentName.firstName}` })
-      .locator('xpath=../../../../..')
+      .locator('tr', { hasText: `${talentName.lastName} ${talentName.firstName}` })
       .locator('td')
       .nth(5)
       .click()
