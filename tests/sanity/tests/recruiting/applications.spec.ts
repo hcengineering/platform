@@ -76,7 +76,7 @@ test.describe('Application tests', () => {
 
     await applicationsDetailsPage.addAttachments('cat.jpeg')
 
-    await applicationsDetailsPage.addFirstReview()
+    await applicationsDetailsPage.addFirstReview('First Application Review', 'First Application review description')
   })
 
   test('Change Done status', async ({ page }) => {

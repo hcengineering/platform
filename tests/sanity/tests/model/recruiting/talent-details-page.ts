@@ -1,80 +1,61 @@
 import { expect, type Locator, type Page } from '@playwright/test'
-import path from 'path'
-import { CommonPage } from '../common-page'
 import { CommonRecruitingPage } from './common-recruiting-page'
 
-export class ApplicationsDetailsPage extends CommonRecruitingPage {
+export class TalentDetailsPage extends CommonRecruitingPage {
   readonly page: Page
-  readonly inputCommentComment: Locator
-  readonly buttonSendComment: Locator
-  readonly textComment: Locator
-  readonly inputAddAttachment: Locator
-  readonly textAttachmentName: Locator
-  readonly buttonCreateFirstReview: Locator
-  readonly buttonChangeStatusDone: Locator
-  readonly textApplicationId: Locator
-  readonly buttonMoreActions: Locator
-  readonly buttonDelete: Locator
-  readonly buttonState: Locator
+  readonly buttonAddSkill: Locator
+  readonly textTagItem: Locator
+  readonly buttonAddSocialLinks: Locator
+  readonly buttonContactPhone: Locator
+  readonly inputLocation: Locator
+  readonly buttonInputTitle: Locator
 
   constructor (page: Page) {
-    super()
+    super(page)
     this.page = page
-    this.inputCommentComment = page.locator('div.tiptap')
-    this.buttonSendComment = page.locator('g#Send')
-    this.textComment = page.locator('div.msgactivity-container p')
-    this.inputAddAttachment = page.locator('div.antiSection #file')
-    this.textAttachmentName = page.locator('div.name a')
-    this.buttonCreateFirstReview = page.locator('span:has-text("Create review")')
-    this.buttonChangeStatusDone = page.locator('div[class*="aside-grid"] > div:nth-of-type(2) > button')
-    this.textApplicationId = page.locator('div.popupPanel-title div.title-wrapper > span')
-    this.buttonMoreActions = page.locator('div.popupPanel-title div.buttons-group > button:nth-of-type(2)')
-    this.buttonDelete = page.locator('button[class*="menuItem"] span', { hasText: 'Delete' })
-    this.buttonState = page
-      .locator('div[class*="collapsed-container"]')
-      .nth(0)
-      .locator('div[class*="aside-grid"] > div:nth-of-type(1) > button')
+    this.buttonAddSkill = page.locator('button#add-tag')
+    this.textTagItem = page.locator('div.tag-item')
+    this.buttonAddSocialLinks = page.locator('button[id="presentation:string:AddSocialLinks"]')
+    this.buttonContactPhone = page.locator(
+      'div[class^="popupPanel-body"] div.horizontal button[id="contact:string:Phone"]'
+    )
+    this.inputLocation = page.locator('div.location input')
+    this.buttonInputTitle = page.locator('button > span', { hasText: 'Title' })
   }
 
-  async addComment (comment: string): Promise<void> {
-    await this.inputCommentComment.fill(comment)
-    await this.buttonSendComment.click()
+  async addSkill (skillTag: string, skillDescription: string): Promise<void> {
+    await this.buttonAddSkill.click()
+    await this.pressCreateButtonSelectPopup(this.page)
+    await this.addNewTagPopup(this.page, skillTag, skillDescription)
+
+    await this.pressShowAllButtonSelectPopup(this.page)
+    await this.checkFromDropdown(this.page, skillTag)
+
+    await this.page.keyboard.press('Escape')
   }
 
-  async checkCommentExist (comment: string): Promise<void> {
-    await expect(await this.textComment.filter({ hasText: comment })).toBeVisible()
+  async checkSkill (skillTag: string): Promise<void> {
+    await expect(await this.textTagItem).toContainText(skillTag)
   }
 
-  async addAttachments (filePath: string): Promise<void> {
-    await this.inputAddAttachment.setInputFiles(path.join(__dirname, `../../files/${filePath}`))
-    await expect(await this.textAttachmentName.filter({ hasText: filePath })).toBeVisible()
+  async addSocialLinks (link: string, linkDescription: string): Promise<void> {
+    await this.buttonAddSocialLinks.click()
+    await this.selectFromDropdown(this.page, link)
+    await this.fillToDropdown(this.page, linkDescription)
   }
 
-  async addFirstReview (): Promise<void> {
-    await this.buttonCreateFirstReview.click()
-    await this.createNewReviewPopup(this.page, 'First Review', 'First review description')
+  async checkSocialLinks (link: string): Promise<void> {
+    switch (link) {
+      case 'Phone':
+        await expect(this.buttonContactPhone).toBeVisible()
+        break
+      default:
+        throw new Error(`Unknown case ${link}`)
+    }
   }
 
-  async changeDoneStatus (status: string): Promise<void> {
-    await this.buttonChangeStatusDone.click()
-    await this.selectFromDropdown(this.page, status)
-  }
-
-  async getApplicationId (): Promise<string> {
-    const applicationId = await this.textApplicationId.textContent()
-    await expect(applicationId !== null).toBeTruthy()
-    return applicationId != null ? applicationId : ''
-  }
-
-  async deleteApplication (): Promise<void> {
-    await this.buttonMoreActions.click()
-    await this.buttonDelete.click()
-    await this.pressYesDeletePopup(this.page)
-  }
-
-  async changeState (status: string): Promise<void> {
-    await this.buttonState.click()
-    await this.selectFromDropdown(this.page, status)
-    await expect(await this.buttonState).toContainText(status)
+  async addTitle (title: string): Promise<void> {
+    await this.buttonInputTitle.click()
+    await this.fillToSelectPopup(this.page, title)
   }
 }

@@ -1,9 +1,9 @@
 import { expect, type Locator, type Page } from '@playwright/test'
 import { NewApplication, TalentName } from './types'
-import { CommonPage } from '../common-page'
 import { generateId } from '../../utils'
+import { CommonRecruitingPage } from './common-recruiting-page'
 
-export class ApplicationsPage extends CommonPage {
+export class ApplicationsPage extends CommonRecruitingPage {
   readonly page: Page
   readonly pageHeader: Locator
   readonly buttonCreateApplication: Locator
@@ -15,7 +15,7 @@ export class ApplicationsPage extends CommonPage {
   readonly textTableFirstCell: Locator
 
   constructor (page: Page) {
-    super()
+    super(page)
     this.page = page
     this.pageHeader = page.locator('span[class*="header"]', { hasText: 'Applications' })
     this.buttonCreateApplication = page.locator('button > span', { hasText: 'Application' })
@@ -59,17 +59,17 @@ export class ApplicationsPage extends CommonPage {
 
   async selectTalent (name: string): Promise<void> {
     await this.buttonTalentSelector.click()
-    await this.fillSelectPopup(this.page, name)
+    await this.selectMenuItem(this.page, name)
   }
 
   async selectVacancy (name: string): Promise<void> {
     await this.buttonSpaceSelector.click()
-    await this.fillSelectPopup(this.page, name)
+    await this.selectMenuItem(this.page, name)
   }
 
   async selectRecruiter (name: string): Promise<void> {
     await this.buttonAssignedRecruiter.click()
-    await this.fillSelectPopup(this.page, name)
+    await this.selectMenuItem(this.page, name)
   }
 
   async openApplicationByTalentName (talentName: TalentName): Promise<void> {

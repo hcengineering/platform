@@ -1,15 +1,19 @@
 import { expect, test } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI } from '../utils'
+import { NavigationMenuPage } from '../model/recruiting/navigation-menu-page'
+import { TalentsPage } from '../model/recruiting/talents-page'
+import { TalentDetailsPage } from '../model/recruiting/talent-details-page'
 
 test.use({
   storageState: PlatformSetting
 })
 
-test.describe('candidate tests', () => {
+test.describe('candidate/talents tests', () => {
   test.beforeEach(async ({ page }) => {
     // Create user and workspace
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
   })
+
   test('create-candidate', async ({ page, context }) => {
     await page.locator('[id="app-recruit\\:string\\:RecruitApplication"]').click()
 
@@ -57,5 +61,34 @@ test.describe('candidate tests', () => {
     await panel.locator('[id="gmail\\:string\\:Email"]').scrollIntoViewIfNeeded()
     await panel.locator('[id="gmail\\:string\\:Email"]').click()
     expect(await page.locator('.cover-channel >> input').inputValue()).toEqual(email)
+  })
+
+  test('Edit the Talent', async ({ page, context }) => {
+    const navigationMenuPage = new NavigationMenuPage(page)
+    await navigationMenuPage.buttonTalents.click()
+
+    const talentsPage = new TalentsPage(page)
+    const talentName = await talentsPage.createNewTalent()
+
+    await talentsPage.openTalentByTalentName(talentName)
+
+    const talentDetailsPage = new TalentDetailsPage(page)
+    await talentDetailsPage.addComment('Test Talent Detail 123')
+    await talentDetailsPage.checkCommentExist('Test Talent Detail 123')
+
+    await talentDetailsPage.addAttachments('cat.jpeg')
+
+    await talentDetailsPage.addFirstReview('First Talent Review', 'First Talent review description')
+
+    const skillTag = `React-${generateId(4)}`
+    await talentDetailsPage.addSkill(skillTag, 'Description Java from Talent Description page')
+    await talentDetailsPage.checkSkill(skillTag)
+
+    await talentDetailsPage.addSocialLinks('Phone', '123123213213')
+    await talentDetailsPage.checkSocialLinks('Phone')
+
+    await talentDetailsPage.inputLocation.fill('Awesome Location')
+    const title = `Title-${generateId(4)}`
+    await talentDetailsPage.addTitle(title)
   })
 })

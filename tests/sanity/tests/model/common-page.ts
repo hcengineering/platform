@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test'
 
 export class CommonPage {
-  async fillSelectPopup (page: Page, name: string): Promise<void> {
+  async selectMenuItem (page: Page, name: string): Promise<void> {
     if (name !== 'first') {
       await page.locator('div.selectPopup input').fill(name)
     }
@@ -9,25 +9,29 @@ export class CommonPage {
   }
 
   async pressCreateButtonSelectPopup (page: Page): Promise<void> {
-    await page.locator('div.selectPopup div.header button').click()
+    await page.locator('div.selectPopup div.header button:last-child').click()
+  }
+
+  async pressShowAllButtonSelectPopup (page: Page): Promise<void> {
+    await page.locator('div.selectPopup div.header button:nth-of-type(1)').click()
   }
 
   async selectFromDropdown (page: Page, point: string): Promise<void> {
-    await page.locator('div.selectPopup span[class*="label"]', { hasText: point }).click()
+    await page.locator('div[class$="opup"] span[class*="label"]', { hasText: point }).click()
   }
 
-  async createNewTalentPopup (page: Page, firstName: string, lastName: string): Promise<void> {
-    await page
-      .locator('div.popup form[id="recruit:string:CreateTalent"] input[placeholder="First name"]')
-      .fill(firstName)
-    await page.locator('div.popup form[id="recruit:string:CreateTalent"] input[placeholder="Last name"]').fill(lastName)
-    await page.locator('div.popup form[id="recruit:string:CreateTalent"] button[type="submit"]').click()
+  async fillToDropdown (page: Page, input: string): Promise<void> {
+    await page.locator('div.popup input.search').fill(input)
+    await page.locator('div.popup button#channel-ok').click()
   }
 
-  async createNewReviewPopup (page: Page, title: string, description: string): Promise<void> {
-    await page.locator('div.popup form[id="recruit:string:CreateReviewParams"] input[placeholder="Title"]').fill(title)
-    await page.locator('div.popup form[id="recruit:string:CreateReviewParams"] div.text-editor-view').fill(description)
-    await page.locator('div.popup form[id="recruit:string:CreateReviewParams"] button[type="submit"]').click()
+  async fillToSelectPopup (page: Page, input: string): Promise<void> {
+    await page.locator('div.selectPopup input').fill(input)
+    await page.locator('div.selectPopup button').click()
+  }
+
+  async checkFromDropdown (page: Page, point: string): Promise<void> {
+    await page.locator('div.selectPopup span[class^="lines"]', { hasText: point }).click()
   }
 
   async pressYesDeletePopup (page: Page): Promise<void> {
