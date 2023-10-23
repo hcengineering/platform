@@ -24,7 +24,6 @@
   }
   &.small {
     height: 1.75rem;
-    font-size: .8125rem;
     &.only-icon { width: 1.75rem; }
   }
   &.medium:not(.stepper) {
@@ -75,14 +74,14 @@
   &.sh-filter { border-radius: 0 0 .5rem .5rem; }
 
   &.highlight {
-    box-shadow: inset 0 0 1px 1px var(--accented-button-outline);
-    &:hover { box-shadow: inset 0 0 1px 2px var(--accented-button-outline); }
+    box-shadow: inset 0 0 1px 1px var(--primary-button-outline);
+    &:hover { box-shadow: inset 0 0 1px 2px var(--primary-button-outline); }
   }
 
   &:hover .btn-icon { color: var(--theme-caption-color); }
   &:not(.no-focus):focus {
-    &:not(.sh-filter) { box-shadow: 0 0 0 2px var(--accented-button-outline); }
-    &.sh-filter { border-color: var(--accented-button-outline); }
+    &:not(.sh-filter) { box-shadow: 0 0 0 2px var(--primary-button-outline); }
+    &.sh-filter { border-color: var(--primary-button-outline); }
   }
 
   &.bs-solid { border-style: solid; }
@@ -192,46 +191,48 @@
     }
     &:not(.no-focus):focus { box-shadow: none; }
   }
-  &.accented, &.brand, &.positive, &.negative {
+  &.primary, &.secondary, &.positive, &.negative {
     &:hover, &:active, &:focus {
-      color: var(--accented-button-color);
+      color: var(--primary-button-color);
 
       .btn-icon,
-      .btn-right-icon { color: var(--accented-button-color); }
+      .btn-right-icon { color: var(--primary-button-color); }
     }
   }
   &.regular, &.ghost {
     &:hover, &:active, &:focus { color: var(--theme-caption-color); }
   }
-  &.accented,
-  &.brand,
+  &.primary,
+  &.secondary,
   &.positive,
   &.negative {
     padding: 0 1.5rem;
-    color: var(--accented-button-content-color);
-    border-color: var(--accented-button-border);
+    color: var(--primary-button-content-color);
+    border-color: var(--primary-button-border);
 
     .btn-icon,
-    .btn-right-icon { color: var(--accented-button-content-color); }
+    .btn-right-icon { color: var(--primary-button-content-color); }
   }
-  &.accented {
-    background-color: var(--accented-button-default);
-    &:hover { background-color: var(--accented-button-hovered); }
-    &:active { background-color: var(--accented-button-pressed); }
-    &:focus { background-color: var(--accented-button-focused); }
+  &.primary {
+    color: var(--primary-button-color);
+    background-color: var(--primary-button-default);
+
+    &:hover { background-color: var(--primary-button-hovered); }
+    &:active { background-color: var(--primary-button-pressed); }
+    &:focus { background-color: var(--primary-button-focused); }
     &:disabled {
-      color: var(--accented-button-disabled-color);
-      background-color: var(--accented-button-disabled);
+      color: var(--primary-button-disabled-color);
+      background-color: var(--primary-button-disabled);
     }
   }
-  &.brand {
-    background-color: var(--brand-button-default);
-    &:hover { background-color: var(--brand-button-hovered); }
-    &:active { background-color: var(--brand-button-pressed); }
-    &:focus { background-color: var(--brand-button-focused); }
+  &.secondary {
+    background-color: var(--secondary-button-default);
+    &:hover { background-color: var(--secondary-button-hovered); }
+    &:active { background-color: var(--secondary-button-pressed); }
+    &:focus { background-color: var(--secondary-button-focused); }
     &:disabled {
-      color: var(--brand-button-disabled-color);
-      background-color: var(--brand-button-disabled);
+      color: var(--secondary-button-disabled-color);
+      background-color: var(--secondary-button-disabled);
     }
   }
   &.positive {
@@ -278,7 +279,7 @@
     height: .8125rem;
     min-width: 1rem;
 
-    &:focus { box-shadow: 0 0 0 1px var(--accented-button-outline); }
+    &:focus { box-shadow: 0 0 0 1px var(--primary-button-outline); }
   }
 
   &.notSelected {

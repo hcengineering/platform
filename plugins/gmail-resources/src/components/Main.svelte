@@ -118,7 +118,7 @@
       {#if integrations.length === 0}
         <Button
           label={gmail.string.Connect}
-          kind={'accented'}
+          kind={'primary'}
           size={'medium'}
           on:click={(e) => {
             showPopup(Connect, {}, eventToHTMLElement(e))

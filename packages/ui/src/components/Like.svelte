@@ -58,13 +58,13 @@
 
     &.voted {
       .icon {
-        color: var(--accented-button-default);
+        color: var(--primary-button-default);
 
         &:hover {
-          color: var(--accented-button-hovered);
+          color: var(--primary-button-hovered);
         }
         &:active {
-          color: var(--accented-button-pressed);
+          color: var(--primary-button-pressed);
         }
       }
     }

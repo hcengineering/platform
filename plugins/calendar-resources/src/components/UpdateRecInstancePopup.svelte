@@ -68,7 +68,7 @@
       focusIndex={1}
       label={presentation.string.Ok}
       size={'large'}
-      kind={'accented'}
+      kind={'primary'}
       on:click={() => {
         dispatch('close', { mode: selected })
       }}

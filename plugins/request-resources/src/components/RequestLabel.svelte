@@ -51,12 +51,7 @@
         {:else}
           <div class="flex-row-center content-color text-sm pointer-events-none">
             <div class="mr-1">
-              <ProgressCircle
-                max={value.requiredApprovesCount}
-                value={value.approved.length}
-                size={'inline'}
-                accented
-              />
+              <ProgressCircle max={value.requiredApprovesCount} value={value.approved.length} size={'inline'} primary />
             </div>
             {value.approved.length}/{value.requiredApprovesCount}
           </div>

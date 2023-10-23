@@ -148,7 +148,7 @@
       height: 2.25rem;
     }
 
-    &.accented {
+    &.primary {
       padding: 0 0.5rem;
       min-width: 1.5rem;
       background-color: var(--noborder-bg-color);

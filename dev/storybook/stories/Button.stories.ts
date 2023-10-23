@@ -17,7 +17,7 @@ const meta = {
     },
     kind: {
       control: 'select',
-      options: ['accented', 'regular', 'no-border', 'ghost', 'link', 'link-bordered', 'dangerous', 'list', 'list-header'],
+      options: ['primary', 'regular', 'no-border', 'ghost', 'link', 'link-bordered', 'dangerous', 'list', 'list-header'],
       description: 'kind description',
       table: {
         type: { summary: 'ButtonKind' },
@@ -109,7 +109,7 @@ type Story = StoryObj<typeof meta>;
 export const Ok: Story = {
   args: {
     label: uiPlugin.string.Ok,
-    kind: 'accented',
+    kind: 'primary',
     size: 'medium',
     shape: undefined,
     justify: 'left',
@@ -125,7 +125,7 @@ export const Ok: Story = {
 export const Cancel: Story = {
   args: {
     label: uiPlugin.string.Cancel,
-    kind: 'accented',
+    kind: 'primary',
     size: 'medium',
     shape: undefined,
     justify: 'left',

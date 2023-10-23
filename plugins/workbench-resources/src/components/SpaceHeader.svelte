@@ -62,7 +62,7 @@
     <div class="ac-header-full medium-gap mb-1">
       <ViewletSelector {viewletQuery} bind:viewlet bind:viewlets />
       {#if createItemDialog}
-        <Button icon={IconAdd} label={createItemLabel} kind={'accented'} on:click={(ev) => showCreateDialog(ev)} />
+        <Button icon={IconAdd} label={createItemLabel} kind={'primary'} on:click={(ev) => showCreateDialog(ev)} />
       {/if}
     </div>
   </div>

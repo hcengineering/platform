@@ -95,7 +95,7 @@
   </div>
 
   <div class="clear-mins mb-1">
-    <Button icon={IconAdd} label={сreateItemLabel} kind={'accented'} on:click={showCreateDialog} />
+    <Button icon={IconAdd} label={сreateItemLabel} kind={'primary'} on:click={showCreateDialog} />
   </div>
 </div>
 <div class="ac-header full divide search-start">

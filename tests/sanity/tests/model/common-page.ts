@@ -31,6 +31,6 @@ export class CommonPage {
   }
 
   async pressYesDeletePopup (page: Page): Promise<void> {
-    await page.locator('form[id="view:string:DeleteObject"] button.accented').click()
+    await page.locator('form[id="view:string:DeleteObject"] button.primary').click()
   }
 }

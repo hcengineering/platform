@@ -19,7 +19,7 @@
   export let symbol: 'check' | 'minus' = 'check'
   export let size: 'small' | 'medium' | 'large' = 'small'
   export let circle: boolean = false
-  export let kind: 'default' | 'accented' | 'positive' = 'default'
+  export let kind: 'default' | 'primary' | 'positive' = 'default'
   export let readonly = false
 
   const dispatch = createEventDispatcher()
@@ -38,7 +38,7 @@
 <label
   class="checkbox {size}"
   class:circle
-  class:accented={kind === 'accented'}
+  class:primary={kind === 'primary'}
   class:positive={kind === 'positive'}
   class:readonly
   class:checked
@@ -50,7 +50,7 @@
       {#if symbol === 'minus'}
         <rect
           class="check"
-          class:accented={kind === 'accented'}
+          class:primary={kind === 'primary'}
           class:positive={kind === 'positive'}
           x="4"
           y="7.4"
@@ -60,7 +60,7 @@
       {:else}
         <polygon
           class="check"
-          class:accented={kind === 'accented'}
+          class:primary={kind === 'primary'}
           class:positive={kind === 'positive'}
           points="7.3,11.5 4,8.3 5,7.4 7.3,9.7 11.8,5.1 12.7,6.1 "
         />
@@ -99,8 +99,8 @@
     &.checked {
       background-color: var(--theme-checkbox-bg-color);
     }
-    &.accented.checked {
-      background-color: var(--accented-button-default);
+    &.primary.checked {
+      background-color: var(--primary-button-default);
       border-color: transparent;
     }
     &.positive.checked {
@@ -125,11 +125,11 @@
         & .check {
           visibility: visible;
           fill: var(--theme-checkbox-color);
-          &.accented {
-            fill: var(--accented-button-color);
+          &.primary {
+            fill: var(--primary-button-color);
           }
           &.positive {
-            fill: var(--accented-button-color);
+            fill: var(--primary-button-color);
           }
         }
       }

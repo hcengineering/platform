@@ -99,12 +99,12 @@
       {#if integrationType.createComponent}
         <Button
           label={setting.string.Add}
-          kind={'accented'}
+          kind={'primary'}
           on:click={(ev) => handleConfigure(integrationType.createComponent)}
         />
       {/if}
     {:else if (integration?.disabled ?? false) && integrationType.reconnectComponent}
-      <Button label={setting.string.Reconnect} kind={'accented'} on:click={handleReconnect} />
+      <Button label={setting.string.Reconnect} kind={'primary'} on:click={handleReconnect} />
     {:else if integration?.value !== ''}
       {#if integrationType.onDisconnect}
         <Button label={setting.string.Disconnect} on:click={disconnect} />
@@ -112,7 +112,7 @@
       {#if integrationType.configureComponent !== undefined}
         <Button
           label={setting.string.Configure}
-          kind={'accented'}
+          kind={'primary'}
           on:click={(ev) => handleConfigure(integrationType.configureComponent)}
         />
       {/if}

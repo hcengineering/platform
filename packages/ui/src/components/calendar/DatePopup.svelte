@@ -169,7 +169,7 @@
     {/if}
   </div>
   <div class="footer">
-    <Button kind={'accented'} label={ui.string.Save} size={'large'} on:click={() => closeDP(withTime)} />
+    <Button kind={'primary'} label={ui.string.Save} size={'large'} on:click={() => closeDP(withTime)} />
   </div>
 </div>
 <Shifts

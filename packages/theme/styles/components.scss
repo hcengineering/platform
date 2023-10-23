@@ -335,7 +335,7 @@
       left: .25rem;
       width: .5rem;
       height: .5rem;
-      background-color: var(--accented-button-color);
+      background-color: var(--primary-button-color);
       border-radius: 50%;
       opacity: .8;
       z-index: 1;
@@ -352,7 +352,7 @@
     left: -.1875rem;
     width: 1.375rem;
     height: 1.375rem;
-    border: 1px solid var(--theme-primary-default);
+    border: 1px solid var(--primary-button-default);
   }
   &::after {
     content: '';
@@ -368,7 +368,7 @@
     label { color: var(--theme-caption-color); }
   }
   &.checked:not(.disabled):hover {
-    &::after { background-color: var(--theme-primary-hovered); }
+    &::after { background-color: var(--primary-button-hovered); }
     label {
       color: var(--theme-caption-color);
       &::after { opacity: 1; }
@@ -379,18 +379,18 @@
     label { color: var(--theme-caption-color); }
     &.checked {
       label::after { opacity: 1; }
-      &:active::after { background-color: var(--theme-primary-pressed); }
+      &:active::after { background-color: var(--primary-button-pressed); }
     }
   }
   &.checked:not(.disabled) {
-    &::after { background-color: var(--theme-primary-default); }
+    &::after { background-color: var(--primary-button-default); }
     label::after { content: ''; }
   }
   &.disabled {
     cursor: not-allowed;
 
     &::after {
-      background-color: var(--theme-primary-disabled);
+      background-color: var(--primary-button-disabled);
       border-color: transparent;
     }
     label {
@@ -405,7 +405,7 @@
   &:not(.disabled),
   &:not(.disabled) label { cursor: pointer; }
   &:not(.disabled):active {
-    &::after { background-color: var(--theme-primary-pressed); }
+    &::after { background-color: var(--primary-button-pressed); }
     label::after {
       content: '';
       opacity: 1;
@@ -509,8 +509,8 @@
   .logo {
     width: 4.5rem;
     height: 4.5rem;
-    color: var(--accented-button-color);
-    background-color: var(--accented-button-default);
+    color: var(--primary-button-color);
+    background-color: var(--primary-button-default);
     border-radius: 50%;
   }
   .label {
@@ -801,7 +801,7 @@
       border-color: transparent;
     }
     &:focus {
-      box-shadow: 0 0 0 3px var(--accented-button-outline);
+      box-shadow: 0 0 0 3px var(--primary-button-outline);
       & > .icon { color: var(--caption-color); }
     }
   }
@@ -855,7 +855,7 @@
     bottom: -.125rem;
     left: -.125rem;
     right: -.125rem;
-    border: 1px solid var(--theme-primary-default);
+    border: 1px solid var(--primary-button-default);
     border-radius: .5rem;
     z-index: -1;
   }
@@ -880,7 +880,7 @@
       position: absolute;
       width: 6px;
       height: 6px;
-      background-color: var(--accented-button-default);
+      background-color: var(--primary-button-default);
     }
     &::before {
       top: -2px;

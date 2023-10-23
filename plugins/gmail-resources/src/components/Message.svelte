@@ -69,7 +69,7 @@
     {/if}
   </div>
   {#if selectable}
-    <div class="ml-4"><CheckBox circle kind={'accented'} bind:checked={selected} /></div>
+    <div class="ml-4"><CheckBox circle kind={'primary'} bind:checked={selected} /></div>
   {/if}
 </div>
 
@@ -88,7 +88,7 @@
     flex-grow: 1;
 
     &.selected {
-      background-color: var(--accented-button-default);
+      background-color: var(--primary-button-default);
     }
   }
 </style>

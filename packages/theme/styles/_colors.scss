@@ -15,20 +15,20 @@
 
 /* Common Colors */
 * {
-  --accented-button-color: #fff;
-  --accented-button-content-color: rgba(255, 255, 255, .8);
-  --accented-button-border: rgba(255, 255, 255, .09);
-  --accented-button-outline: #5190EC;
-  --accented-button-transparent: rgba(43, 81, 144, 0.2);
+  --primary-button-color: #fff;
+  --primary-button-content-color: rgba(255, 255, 255, .8);
+  --primary-button-border: rgba(255, 255, 255, .09);
+  --primary-button-outline: #5190EC;
+  --primary-button-transparent: rgba(43, 81, 144, 0.2);
 
-  --accented-button-default: #2B5190;
-  --accented-button-hovered: #325FA9;
-  --accented-button-pressed: #284B86;
-  --accented-button-focused: #2B5190;
-  --brand-button-default: #4169E1;
-  --brand-button-hovered: #587BE5;
-  --brand-button-pressed: #2C58DE;
-  --brand-button-focused: #4169E1;
+  --primary-button-default: #205DC2;
+  --primary-button-hovered: #3575DE;
+  --primary-button-pressed: #1C52AB;
+  --primary-button-focused: #205DC2;
+  --secondary-button-default: #D3E1F8;
+  --secondary-button-hovered: #BDD2F5;
+  --secondary-button-pressed: #A7C3F1;
+  --secondary-button-focused: #BDD2F5;
   --positive-button-default: #26A869;
   --positive-button-hovered: #2BBB75;
   --positive-button-pressed: #21915B;
@@ -37,15 +37,6 @@
   --negative-button-hovered: #D05858;
   --negative-button-pressed: #BF3636;
   --negative-button-focused: #CA4242;
-
-  --theme-primary-default: #205DC2;
-  --theme-primary-hovered: #3575DE;
-  --theme-primary-pressed: #1C52AB;
-  --theme-primary-disabled: #0000001F;
-  --theme-primary-accented-default: #D3E1F8;
-  --theme-primary-accented-hovered: #BDD2F5;
-  --theme-primary-accented-pressed: #A7C3F1;
-  --theme-primary-accented-focused: #BDD2F5;
 
   --white-color: #fff;
   --duotone-color: rgba(126, 134, 158, .25);
@@ -92,10 +83,10 @@
   --theme-text-primary-color: rgba(255, 255, 255, .8);
   --theme-text-placeholder-color: rgba(255, 255, 255, .4);
 
-  --accented-button-disabled: rgba(255, 255, 255, .12);
-  --accented-button-disabled-color: rgba(255, 255, 255, .4);
-  --brand-button-disabled: rgba(255, 255, 255, .12);
-  --brand-button-disabled-color: rgba(255, 255, 255, .4);
+  --primary-button-disabled: rgba(255, 255, 255, .12);
+  --primary-button-disabled-color: rgba(255, 255, 255, .4);
+  --secondary-button-disabled: rgba(255, 255, 255, .12);
+  --secondary-button-disabled-color: rgba(255, 255, 255, .4);
   --positive-button-disabled: rgba(38, 168, 105, .2);
   --positive-button-disabled-color: rgba(38, 168, 105, .6);
   --negative-button-disabled: rgba(202, 66, 66, .2);
@@ -298,10 +289,10 @@
   --theme-text-primary-color: rgba(0, 0, 0, .8);
   --theme-text-placeholder-color: rgba(0, 0, 0, .4);
 
-  --accented-button-disabled: rgba(0, 0, 0, .12);
-  --accented-button-disabled-color: rgba(0, 0, 0, .4);
-  --brand-button-disabled: rgba(0, 0, 0, .12);
-  --brand-button-disabled-color: rgba(0, 0, 0, .4);
+  --primary-button-disabled: rgba(0, 0, 0, .12);
+  --primary-button-disabled-color: rgba(0, 0, 0, .4);
+  --secondary-button-disabled: rgba(0, 0, 0, .12);
+  --secondary-button-disabled-color: rgba(0, 0, 0, .4);
   --positive-button-disabled: rgba(38, 168, 105, .2);
   --positive-button-disabled-color: rgba(33, 145, 91, .6);
   --negative-button-disabled: rgba(202, 66, 66, .2);

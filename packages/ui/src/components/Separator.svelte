@@ -424,7 +424,7 @@
       z-index: 402;
     }
     &::after {
-      background-color: var(--theme-primary-default);
+      background-color: var(--primary-button-default);
       transform-origin: center;
       transition-property: transform;
       transition-timing-function: ease-in-out;

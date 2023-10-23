@@ -248,7 +248,7 @@
     {#if integrations.length === 0}
       <Button
         label={plugin.string.Connect}
-        kind={'accented'}
+        kind={'primary'}
         on:click={(e) => {
           showPopup(Connect, {}, eventToHTMLElement(e))
         }}
@@ -297,7 +297,7 @@
           <Button
             label={plugin.string.Send}
             size={'small'}
-            kind={'accented'}
+            kind={'primary'}
             disabled={channels.length === 0}
             on:click={sendMsg}
           />

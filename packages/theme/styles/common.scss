@@ -151,6 +151,7 @@
       letter-spacing: 1px;
       text-transform: uppercase;
     }
+    &:not(.title) { font-size: .8125rem; }
     &.bold {
       font-weight: 600;
       color: var(--theme-caption-color);
@@ -257,7 +258,7 @@
 .antiNav-footer {
   display: flex;
   flex-direction: column;
-  padding: .5rem 0 .75rem;
+  padding: .5rem 0 1.25rem;
 }
 
 /* Basic */
@@ -642,8 +643,8 @@
 
     &:hover,
     &:focus-within { background-color: var(--theme-bg-color); }
-    // &:focus-within .caption { box-shadow: 0 0 2px 1px var(--accented-button-outline); }
-    &:focus-within .caption { border-color: var(--accented-button-outline); }
+    // &:focus-within .caption { box-shadow: 0 0 2px 1px var(--primary-button-outline); }
+    &:focus-within .caption { border-color: var(--primary-button-outline); }
   }
 }
 

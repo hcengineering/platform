@@ -51,7 +51,7 @@
           <Button label={presentation.string.Cancel} kind="regular" on:click={() => dispatch('cancel')} />
           <Button
             label={presentation.string.Save}
-            kind="accented"
+            kind="primary"
             loading={isSaving}
             disabled={!canSave}
             on:click={() => dispatch('save')}

@@ -42,7 +42,7 @@
     <Button
       disabled={!canSave}
       label={okLabel ?? presentation.string.Create}
-      kind={'accented'}
+      kind={'primary'}
       on:click={() => {
         okAction()
         dispatch('close')

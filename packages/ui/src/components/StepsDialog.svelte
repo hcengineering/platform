@@ -114,7 +114,7 @@
       />
     {/if}
     <Button
-      kind="accented"
+      kind="primary"
       label={isDone ? doneLabel : ui.string.Next}
       disabled={!isStepValid}
       loading={isSaving}
@@ -231,7 +231,7 @@
       background-color: var(--accent-bg-color);
 
       &::before {
-        background-color: var(--accented-button-outline);
+        background-color: var(--primary-button-outline);
       }
     }
 

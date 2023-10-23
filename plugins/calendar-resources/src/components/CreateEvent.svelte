@@ -190,7 +190,7 @@
   </div>
   <div class="flex-between p-5 flex-no-shrink">
     <div />
-    <Button kind="accented" label={presentation.string.Create} on:click={saveEvent} disabled={title === ''} />
+    <Button kind="primary" label={presentation.string.Create} on:click={saveEvent} disabled={title === ''} />
   </div>
 </div>
 

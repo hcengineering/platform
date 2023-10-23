@@ -264,13 +264,13 @@
         border-color: var(--theme-button-border);
       }
       &.selected:not(.wrongMonth) {
-        color: var(--accented-button-color);
-        background-color: var(--accented-button-default);
+        color: var(--primary-button-color);
+        background-color: var(--primary-button-default);
       }
 
       &:not(.wrongMonth):hover {
         color: var(--theme-caption-color);
-        background-color: var(--accented-button-transparent);
+        background-color: var(--primary-button-transparent);
       }
     }
 

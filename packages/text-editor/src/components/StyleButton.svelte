@@ -51,7 +51,7 @@
     }
     &:focus {
       color: var(--theme-caption-color);
-      box-shadow: 0 0 0 2px var(--accented-button-outline);
+      box-shadow: 0 0 0 2px var(--primary-button-outline);
     }
     &.selected {
       background-color: var(--theme-button-pressed);

@@ -65,7 +65,7 @@
 
   <div class="ac-header-full medium-gap mb-1">
     <ViewletSelector bind:viewlet bind:loading bind:preference bind:viewlets viewletQuery={{ attachTo: _class }} />
-    <Button icon={IconAdd} label={createLabel} kind={'accented'} on:click={showCreateDialog} />
+    <Button icon={IconAdd} label={createLabel} kind={'primary'} on:click={showCreateDialog} />
   </div>
 </div>
 <div class="flex-col w-full h-full background-comp-header-color">

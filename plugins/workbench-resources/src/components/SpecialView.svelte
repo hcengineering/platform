@@ -68,7 +68,7 @@
       <Button
         icon={IconAdd}
         label={createLabel}
-        kind={'accented'}
+        kind={'primary'}
         disabled={isCreationDisabled}
         on:click={() => showCreateDialog()}
       />

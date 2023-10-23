@@ -65,7 +65,7 @@
     <slot name="label_selector" />
   </svelte:fragment>
   <svelte:fragment slot="header-tools">
-    <Button icon={IconAdd} label={tracker.string.IssueTemplate} kind={'accented'} on:click={showCreateDialog} />
+    <Button icon={IconAdd} label={tracker.string.IssueTemplate} kind={'primary'} on:click={showCreateDialog} />
   </svelte:fragment>
   <svelte:fragment slot="extra">
     {#if asideFloat && $$slots.aside}

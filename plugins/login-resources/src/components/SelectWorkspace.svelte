@@ -131,7 +131,7 @@
         {/each}
         {#if !workspaces.length && account?.confirmed === true}
           <div class="form-row send">
-            <Button label={login.string.CreateWorkspace} kind={'accented'} width="100%" on:click={createWorkspace} />
+            <Button label={login.string.CreateWorkspace} kind={'primary'} width="100%" on:click={createWorkspace} />
           </div>
         {/if}
       </div>

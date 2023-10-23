@@ -339,8 +339,8 @@
       border-radius: 0.125rem;
 
       &:focus {
-        color: var(--accented-button-color);
-        background-color: var(--accented-button-default);
+        color: var(--primary-button-color);
+        background-color: var(--primary-button-default);
       }
       &::after {
         position: absolute;

@@ -54,7 +54,7 @@
     icon={IconAdd}
     {label}
     justify={'left'}
-    kind={'accented'}
+    kind={'primary'}
     width={'100%'}
     gap={'large'}
     on:click={newIssue}

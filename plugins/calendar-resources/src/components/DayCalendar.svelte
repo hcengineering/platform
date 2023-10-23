@@ -936,7 +936,7 @@
         left: -1.25rem;
         font-weight: 500;
         font-size: 0.75rem;
-        color: var(--accented-button-color);
+        color: var(--primary-button-color);
         transform: translateX(-50%);
       }
       &.upperLabel::before,
@@ -1065,7 +1065,7 @@
         align-items: center;
         min-width: 2.25rem;
         padding: 0.375rem;
-        color: var(--accented-button-color);
+        color: var(--primary-button-color);
         background-color: #3871e0;
         border-radius: 0.375rem;
       }

@@ -722,12 +722,12 @@
 
 <style lang="scss">
   .resume {
-    box-shadow: 0 0 0 0 var(--accented-button-outline);
+    box-shadow: 0 0 0 0 var(--primary-button-outline);
     border-radius: 0.25rem;
     transition: box-shadow 0.15s ease-in-out;
 
     &.solid {
-      box-shadow: 0 0 0 2px var(--accented-button-outline);
+      box-shadow: 0 0 0 2px var(--primary-button-outline);
     }
   }
   .skills-box {

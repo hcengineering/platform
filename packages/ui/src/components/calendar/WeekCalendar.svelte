@@ -105,7 +105,7 @@
     width: calc(calc(100% - 50px) / 7);
   }
   .cell:hover {
-    color: var(--accented-button-color);
+    color: var(--primary-button-color);
     background-color: var(--highlight-hover);
   }
 </style>

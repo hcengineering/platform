@@ -84,7 +84,7 @@
                 icon={obj}
                 iconProps={{ fill: getPlatformColor(_color ?? 0, $themeStore.dark) }}
                 size="medium"
-                kind={obj === _icon ? 'accented' : 'ghost'}
+                kind={obj === _icon ? 'primary' : 'ghost'}
                 on:click={() => {
                   _icon = obj
                 }}
