@@ -128,4 +128,29 @@ test.describe('Application tests', () => {
     await navigationMenuPage.buttonApplications.click()
     await applicationsPage.checkApplicationNotExist(applicationId)
   })
+
+  test('Change & Save all States', async ({ page }) => {
+    const navigationMenuPage = new NavigationMenuPage(page)
+    await navigationMenuPage.buttonApplications.click()
+
+    const applicationsPage = new ApplicationsPage(page)
+    const talentName = await applicationsPage.createNewApplicationWithNewTalent({
+      vacancy: 'first',
+      recruiterName: 'first'
+    })
+    await applicationsPage.checkApplicationState(talentName, 'HR Interview')
+    await applicationsPage.openApplicationByTalentName(talentName)
+
+    let applicationsDetailsPage = new ApplicationsDetailsPage(page)
+    await applicationsDetailsPage.changeState('Technical Interview')
+
+    await navigationMenuPage.buttonApplications.click()
+    await applicationsPage.checkApplicationState(talentName, 'Technical Interview')
+    await applicationsPage.changeApplicationStatus(talentName, 'Test task')
+    await applicationsPage.checkApplicationState(talentName, 'Test task')
+
+    await applicationsPage.openApplicationByTalentName(talentName)
+    applicationsDetailsPage = new ApplicationsDetailsPage(page)
+    await applicationsDetailsPage.changeState('Offer')
+  })
 })
