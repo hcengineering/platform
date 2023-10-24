@@ -50,7 +50,7 @@ import { diffWorkspace } from './workspace'
 
 import { Data, getWorkspaceId, RateLimitter, Tx, Version } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
-import { MigrateOperation } from '@hcengineering/model'
+import { consoleModelLogger, MigrateOperation } from '@hcengineering/model'
 import { openAIConfigDefaults } from '@hcengineering/openai'
 import path from 'path'
 import { benchmark } from './benchmark'
@@ -237,8 +237,13 @@ export function devTool (
     .option('-p|--parallel <parallel>', 'Parallel upgrade', '0')
     .option('-l|--logs <logs>', 'Default logs folder', './logs')
     .option('-r|--retry <retry>', 'Number of apply retries', '0')
+    .option(
+      '-c|--console',
+      'Display all information into console(default will create logs folder with {workspace}.log files',
+      false
+    )
     .option('-f|--force [force]', 'Force update', false)
-    .action(async (cmd: { parallel: string, logs: string, retry: string, force: boolean }) => {
+    .action(async (cmd: { parallel: string, logs: string, retry: string, force: boolean, console: boolean }) => {
       const { mongodbUri, version, txes, migrateOperations } = prepareTools()
       return await withDatabase(mongodbUri, async (db) => {
         const workspaces = await listWorkspaces(db, productId)
@@ -246,8 +251,10 @@ export function devTool (
 
         async function _upgradeWorkspace (ws: WorkspaceInfoOnly): Promise<void> {
           const t = Date.now()
-          const logger = new FileModelLogger(path.join(cmd.logs, `${ws.workspace}.log`))
-          console.log('---UPGRADING----', ws.workspace, logger.file)
+          const logger = cmd.console
+            ? consoleModelLogger
+            : new FileModelLogger(path.join(cmd.logs, `${ws.workspace}.log`))
+          console.log('---UPGRADING----', ws.workspace, !cmd.console ? (logger as FileModelLogger).file : '')
           try {
             await upgradeWorkspace(version, txes, migrateOperations, productId, db, ws.workspace, logger, cmd.force)
             console.log('---UPGRADING-DONE----', ws.workspace, Date.now() - t)
@@ -256,7 +263,9 @@ export function devTool (
             logger.log('error', JSON.stringify(err))
             console.log('---UPGRADING-FAILED----', ws.workspace, Date.now() - t)
           } finally {
-            logger.close()
+            if (!cmd.console) {
+              ;(logger as FileModelLogger).close()
+            }
           }
         }
         if (cmd.parallel !== '0') {

@@ -406,7 +406,7 @@ export async function confirm (db: Db, productId: string, token: string): Promis
 async function sendConfirmation (productId: string, account: Account): Promise<void> {
   const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
   if (sesURL === undefined || sesURL === '') {
-    throw new Error('Please provide email service url')
+    console.info('Please provide email service url to enable email confirmations.')
   }
   const front = getMetadata(accountPlugin.metadata.FrontURL)
   if (front === undefined || front === '') {
@@ -443,19 +443,21 @@ async function sendConfirmation (productId: string, account: Account): Promise<v
     subject = 'Confirm your email address to sign up for ezQMS'
   }
 
-  const to = account.email
-  await fetch(concatLink(sesURL, '/send'), {
-    method: 'post',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      text,
-      html,
-      subject,
-      to
+  if (sesURL !== undefined) {
+    const to = account.email
+    await fetch(concatLink(sesURL, '/send'), {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        text,
+        html,
+        subject,
+        to
+      })
     })
-  })
+  }
 }
 
 /**

@@ -19,11 +19,9 @@ import {
   Attribute,
   Class,
   Doc,
-  DocData,
   DocManager,
   IdMap,
   Markup,
-  Mixin,
   Ref,
   RelatedDocument,
   Space,
@@ -76,33 +74,6 @@ export interface RelatedIssueTarget extends Doc {
   // Attached to project.
   target?: Ref<Project> | null
   rule: RelatedClassRule | RelatedSpaceRule
-}
-
-/**
- * @public
- */
-export type IssueUpdateFunction = (
-  id: Ref<Issue>,
-  space: Ref<Space>,
-  issue: DocData<Issue>,
-  data: Record<string, any>
-) => Promise<void>
-
-/**
- * @public
- *
- * Customization mixin for project class.
- *
- * Allow to customize create issue/move issue dialogs, in case of selecting project of special kind.
- */
-export interface ProjectIssueTargetOptions extends Class<Doc> {
-  // Component receiving project and context data.
-  headerComponent?: AnyComponent
-  bodyComponent?: AnyComponent
-  footerComponent?: AnyComponent
-  poolComponent?: AnyComponent
-
-  update: Resource<IssueUpdateFunction>
 }
 
 /**
@@ -519,9 +490,6 @@ export default plugin(trackerId, {
     IssueNotificationMessage: '' as IntlString,
     IssueAssigneedToYou: '' as IntlString,
     RelatedIssues: '' as IntlString
-  },
-  mixin: {
-    ProjectIssueTargetOptions: '' as Ref<Mixin<ProjectIssueTargetOptions>>
   },
   extensions: {
     IssueListHeader: '' as ComponentExtensionId,

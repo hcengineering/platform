@@ -110,6 +110,26 @@ export class Hierarchy {
     }
   }
 
+  findMixinMixins<D extends Doc, M extends D>(doc: Doc, mixin: Ref<Mixin<M>>): M[] {
+    const _doc = _toDoc(doc)
+    const result: M[] = []
+    const resultSet = new Set<string>()
+    // Find all potential mixins of doc
+    for (const [k, v] of Object.entries(_doc)) {
+      if (typeof v === 'object' && this.classifiers.has(k as Ref<Classifier>)) {
+        const clazz = this.getClass(k as Ref<Classifier>)
+        if (this.hasMixin(clazz, mixin)) {
+          const cc = this.as(clazz, mixin) as any as M
+          if (cc !== undefined && !resultSet.has(cc._id)) {
+            result.push(cc)
+            resultSet.add(cc._id)
+          }
+        }
+      }
+    }
+    return result
+  }
+
   isMixin (_class: Ref<Class<Doc>>): boolean {
     const data = this.classifiers.get(_class)
     return data !== undefined && this._isMixin(data)

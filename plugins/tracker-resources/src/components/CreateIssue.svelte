@@ -22,6 +22,8 @@
   import preference, { SpacePreference } from '@hcengineering/preference'
   import {
     Card,
+    DocCreateExtComponent,
+    DocCreateExtensionManager,
     DraftController,
     KeyedAttribute,
     MessageBox,
@@ -40,7 +42,6 @@
     IssueTemplate,
     Milestone,
     Project,
-    ProjectIssueTargetOptions,
     calcRank
   } from '@hcengineering/tracker'
   import {
@@ -61,7 +62,7 @@
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { activeComponent, activeMilestone, generateIssueShortLink, getIssueId, updateIssueRelation } from '../issues'
   import tracker from '../plugin'
-  import ComponentSelector from './ComponentSelector.svelte'
+  import ComponentSelector from './components/ComponentSelector.svelte'
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
   import SubIssues from './SubIssues.svelte'
   import AssigneeEditor from './issues/AssigneeEditor.svelte'
@@ -300,17 +301,7 @@
     currentProject = res.shift()
   })
 
-  $: targetSettings =
-    currentProject !== undefined
-      ? client
-        .getHierarchy()
-        .findClassOrMixinMixin<Class<Doc>, ProjectIssueTargetOptions>(
-          currentProject,
-          tracker.mixin.ProjectIssueTargetOptions
-        )
-      : undefined
-
-  let targetSettingOptions: Record<string, any> = {}
+  const docCreateManager = DocCreateExtensionManager.create(tracker.class.Issue)
 
   async function updateIssueStatusId (object: IssueDraft, currentProject: Project | undefined) {
     if (currentProject?.defaultIssueStatus && object.status === undefined) {
@@ -359,6 +350,8 @@
       return
     }
 
+    const operations = client.apply(_id)
+
     const lastOne = await client.findOne<Issue>(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
     const incResult = await client.updateDoc(
       tracker.class.Project,
@@ -395,12 +388,9 @@
       childInfo: []
     }
 
-    if (targetSettings !== undefined) {
-      const updateOp = await getResource(targetSettings.update)
-      updateOp?.(_id, _space as Ref<Project>, value, targetSettingOptions)
-    }
+    await docCreateManager.commit(operations, _id, _space, value)
 
-    await client.addCollection(
+    await operations.addCollection(
       tracker.class.Issue,
       _space,
       parentIssue?._id ?? tracker.ids.NoParent,
@@ -410,7 +400,7 @@
       _id
     )
     for (const label of object.labels) {
-      await client.addCollection(label._class, label.space, _id, tracker.class.Issue, 'labels', {
+      await operations.addCollection(label._class, label.space, _id, tracker.class.Issue, 'labels', {
         title: label.title,
         color: label.color,
         tag: label.tag
@@ -418,11 +408,13 @@
     }
     await descriptionBox.createAttachments(_id)
 
+    await operations.commit()
+
     if (relatedTo !== undefined) {
       const doc = await client.findOne(tracker.class.Issue, { _id })
       if (doc !== undefined) {
         if (client.getHierarchy().isDerived(relatedTo._class, tracker.class.Issue)) {
-          await updateIssueRelation(client, relatedTo as Issue, doc, 'relations', '$push')
+          await updateIssueRelation(operations, relatedTo as Issue, doc, 'relations', '$push')
         } else {
           const update = await getResource(chunter.backreference.Update)
           await update(doc, 'relations', [relatedTo], tracker.string.AddedReference)
@@ -585,6 +577,17 @@
       return client.findOne(tracker.class.Project, { _id: targetRef })
     }
   }
+
+  $: extraProps = {
+    status: object.status,
+    priority: object.priority,
+    assignee: object.assignee,
+    component: object.component,
+    milestone: object.milestone,
+    relatedTo,
+    parentIssue,
+    originalIssue
+  }
 </script>
 
 <FocusHandler {manager} />
@@ -629,15 +632,7 @@
       docProps={{ disabled: true, noUnderline: true }}
       focusIndex={20000}
     />
-    {#if targetSettings?.headerComponent && currentProject}
-      <Component
-        is={targetSettings.headerComponent}
-        props={{ targetSettingOptions, project: currentProject }}
-        on:change={(evt) => {
-          targetSettingOptions = evt.detail
-        }}
-      />
-    {/if}
+    <DocCreateExtComponent manager={docCreateManager} kind={'header'} space={currentProject} props={extraProps} />
   </svelte:fragment>
   <svelte:fragment slot="title" let:label>
     <div class="flex-row-center gap-1">
@@ -660,6 +655,7 @@
           }}
         />
       {/if}
+      <DocCreateExtComponent manager={docCreateManager} kind={'title'} space={currentProject} props={extraProps} />
     </div>
   </svelte:fragment>
   <svelte:fragment slot="subheader">
@@ -720,15 +716,7 @@
       bind:subIssues={object.subIssues}
     />
   {/if}
-  {#if targetSettings?.bodyComponent && currentProject}
-    <Component
-      is={targetSettings.bodyComponent}
-      props={{ targetSettingOptions, project: currentProject }}
-      on:change={(evt) => {
-        targetSettingOptions = evt.detail
-      }}
-    />
-  {/if}
+  <DocCreateExtComponent manager={docCreateManager} kind={'body'} space={currentProject} props={extraProps} />
   <svelte:fragment slot="pool">
     <div id="status-editor">
       <StatusEditor
@@ -804,7 +792,6 @@
       isEditable={true}
       kind={'regular'}
       size={'large'}
-      short
     />
     <div id="estimation-editor" class="new-line">
       <EstimationEditor focusIndex={7} kind={'regular'} size={'large'} value={object} />
@@ -839,15 +826,7 @@
         on:click={object.parentIssue ? clearParentIssue : setParentIssue}
       />
     </div>
-    {#if targetSettings?.poolComponent && currentProject}
-      <Component
-        is={targetSettings.poolComponent}
-        props={{ targetSettingOptions, project: currentProject }}
-        on:change={(evt) => {
-          targetSettingOptions = evt.detail
-        }}
-      />
-    {/if}
+    <DocCreateExtComponent manager={docCreateManager} kind={'pool'} space={currentProject} props={extraProps} />
   </svelte:fragment>
   <svelte:fragment slot="attachments">
     {#if attachments.size > 0}
@@ -874,14 +853,9 @@
         descriptionBox.handleAttach()
       }}
     />
-    {#if targetSettings?.footerComponent && currentProject}
-      <Component
-        is={targetSettings.footerComponent}
-        props={{ targetSettingOptions, project: currentProject }}
-        on:change={(evt) => {
-          targetSettingOptions = evt.detail
-        }}
-      />
-    {/if}
+    <DocCreateExtComponent manager={docCreateManager} kind={'footer'} space={currentProject} props={extraProps} />
+  </svelte:fragment>
+  <svelte:fragment slot="buttons">
+    <DocCreateExtComponent manager={docCreateManager} kind={'buttons'} space={currentProject} props={extraProps} />
   </svelte:fragment>
 </Card>

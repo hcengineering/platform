@@ -27,9 +27,10 @@
   } from '@hcengineering/view-resources'
   import { onDestroy } from 'svelte'
   import tracker from '../../plugin'
-  import { ComponentsFilterMode, componentsTitleMap } from '../../utils'
+  import { ComponentsFilterMode, activeProjects, componentsTitleMap } from '../../utils'
   import ComponentsContent from './ComponentsContent.svelte'
   import NewComponent from './NewComponent.svelte'
+  import { isCreateAllowed } from '@hcengineering/presentation'
 
   export let label: IntlString
   export let query: DocumentQuery<Component> = {}
@@ -38,6 +39,8 @@
   export let panelWidth: number = 0
 
   const space = typeof query.space === 'string' ? query.space : tracker.project.DefaultProject
+
+  $: project = $activeProjects.get(space)
 
   let viewlet: WithLookup<Viewlet> | undefined
   let viewlets: WithLookup<Viewlet>[] | undefined
@@ -87,7 +90,9 @@
 
   <div class="ac-header-full medium-gap mb-1">
     <ViewletSelector bind:viewlet bind:viewlets viewletQuery={{ attachTo: tracker.class.Component }} />
-    <Button icon={IconAdd} label={tracker.string.Component} kind="primary" on:click={showCreateDialog} />
+    {#if project !== undefined && isCreateAllowed(tracker.class.Component, project)}
+      <Button icon={IconAdd} label={tracker.string.Component} kind="primary" on:click={showCreateDialog} />
+    {/if}
   </div>
 </div>
 <div class="ac-header full divide search-start">

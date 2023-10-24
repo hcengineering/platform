@@ -419,13 +419,15 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
   createAction(
     builder,
     {
-      action: view.actionImpl.ValueSelector,
-      actionPopup: view.component.ValueSelector,
+      action: view.actionImpl.AttributeSelector,
+      actionPopup: tracker.component.AssigneeEditor,
       actionProps: {
         attribute: 'assignee',
-        _class: contact.mixin.Employee,
-        query: {},
-        placeholder: tracker.string.AssignTo
+        isAction: true,
+        valueKey: 'object'
+        // _class: contact.mixin.Employee,
+        // query: {},
+        // placeholder: tracker.string.AssignTo
       },
       label: tracker.string.Assignee,
       icon: contact.icon.Person,
@@ -445,16 +447,11 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
   createAction(
     builder,
     {
-      action: view.actionImpl.ValueSelector,
-      actionPopup: view.component.ValueSelector,
+      action: view.actionImpl.AttributeSelector,
+      actionPopup: tracker.component.ComponentEditor,
       actionProps: {
         attribute: 'component',
-        _class: tracker.class.Component,
-        query: {},
-        fillQuery: { space: 'space' },
-        docMatches: ['space'],
-        searchField: 'label',
-        placeholder: tracker.string.Component
+        isAction: true
       },
       label: tracker.string.Component,
       icon: tracker.icon.Component,

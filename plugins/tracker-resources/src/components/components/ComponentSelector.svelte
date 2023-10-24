@@ -13,17 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, SortingOrder } from '@hcengineering/core'
-  import { IntlString, getEmbeddedLabel, translate } from '@hcengineering/platform'
+  import { DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
+  import { IntlString, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import { Component, Project } from '@hcengineering/tracker'
-  import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
-  import { Button, ButtonShape, Label, SelectPopup, eventToHTMLElement, showPopup, themeStore } from '@hcengineering/ui'
-  import tracker from '../plugin'
+  import { Component } from '@hcengineering/tracker'
+  import type { ButtonKind, ButtonSize, LabelAndProps, SelectPopupValueType } from '@hcengineering/ui'
+  import { Button, ButtonShape, SelectPopup, eventToHTMLElement, showPopup, themeStore } from '@hcengineering/ui'
+  import tracker from '../../plugin'
+  import ComponentPresenter from './ComponentPresenter.svelte'
 
   export let value: Ref<Component> | null | undefined
+  export let space: DocumentQuery<Component>['space'] | undefined = undefined
+  export let query: DocumentQuery<Component> = {}
   export let shouldShowLabel: boolean = true
-  export let isEditable: boolean = false
+  export let isEditable: boolean = true
   export let onChange: ((newComponentId: Ref<Component> | undefined) => void) | undefined = undefined
   export let popupPlaceholder: IntlString = tracker.string.AddToComponent
   export let kind: ButtonKind = 'no-border'
@@ -34,22 +37,21 @@
   export let onlyIcon: boolean = false
   export let enlargedText: boolean = false
   export let short: boolean = false
-  export let shrink: number = 0
   export let focusIndex: number | undefined = undefined
-  export let space: Ref<Project> | undefined = undefined
+  export let isAction: boolean = false
+  export let isAllowUnset = true
 
+  export let showTooltip: LabelAndProps | undefined = undefined
   let selectedComponent: Component | undefined
   let defaultComponentLabel = ''
 
-  const query = createQuery()
+  const queryQuery = createQuery()
   let rawComponents: Component[] = []
-  let loading = true
-  $: query.query(
+  $: queryQuery.query(
     tracker.class.Component,
-    space !== undefined ? { space } : {},
+    { ...query, ...(space ? { space } : {}) },
     (res) => {
       rawComponents = res
-      loading = false
     },
     {
       sort: { modifiedOn: SortingOrder.Ascending }
@@ -59,7 +61,6 @@
   $: handleSelectedComponentIdUpdated(value, rawComponents)
 
   $: translate(tracker.string.NoComponent, {}, $themeStore.language).then((result) => (defaultComponentLabel = result))
-  $: componentText = shouldShowLabel ? selectedComponent?.label ?? defaultComponentLabel : undefined
 
   const handleSelectedComponentIdUpdated = async (
     newComponentId: Ref<Component> | null | undefined,
@@ -74,45 +75,57 @@
     selectedComponent = components.find((it) => it._id === newComponentId)
   }
 
+  function getComponentInfo (rawComponents: Component[], sp: Component | undefined): SelectPopupValueType[] {
+    return [
+      ...(isAllowUnset
+        ? [
+            {
+              id: null,
+              icon: tracker.icon.Component,
+              label: tracker.string.NoComponent,
+              isSelected: sp === undefined
+            }
+          ]
+        : []),
+      ...rawComponents.map((p) => ({
+        id: p._id,
+        icon: tracker.icon.Component,
+        text: p.label,
+        isSelected: sp ? p._id === sp._id : false,
+        component: ComponentPresenter,
+        props: {
+          value: p
+        }
+      }))
+    ]
+  }
+
+  let components: SelectPopupValueType[] = []
+  $: components = getComponentInfo(rawComponents, selectedComponent)
+
   const handleComponentEditorOpened = async (event: MouseEvent): Promise<void> => {
     event.stopPropagation()
     if (!isEditable) {
       return
     }
 
-    const componentsInfo = [
-      { id: null, icon: tracker.icon.Components, label: tracker.string.NoComponent, isSelected: !selectedComponent },
-      ...rawComponents.map((p) => ({
-        id: p._id,
-        icon: tracker.icon.Components,
-        text: p.label,
-        isSelected: selectedComponent ? p._id === selectedComponent._id : false
-      }))
-    ]
-
     showPopup(
       SelectPopup,
-      { value: componentsInfo, placeholder: popupPlaceholder, searchable: true },
+      { value: components, placeholder: popupPlaceholder, searchable: true },
       eventToHTMLElement(event),
       onChange
     )
   }
 </script>
 
-{#if onlyIcon || componentText === undefined}
-  <Button
-    {focusIndex}
-    {kind}
-    {size}
-    {shape}
-    {width}
-    {justify}
-    icon={tracker.icon.Components}
-    disabled={!isEditable}
-    {loading}
-    {short}
-    {shrink}
-    on:click={handleComponentEditorOpened}
+{#if isAction}
+  <SelectPopup
+    value={components}
+    placeholder={popupPlaceholder}
+    searchable
+    on:close={(evt) => {
+      if (onChange !== undefined) onChange(evt.detail)
+    }}
   />
 {:else}
   <Button
@@ -122,17 +135,15 @@
     {shape}
     {width}
     {justify}
-    icon={tracker.icon.Components}
+    {showTooltip}
     disabled={!isEditable}
-    {loading}
     notSelected={!value}
     {short}
-    {shrink}
     on:click={handleComponentEditorOpened}
   >
     <svelte:fragment slot="content">
-      <span class="label {enlargedText ? 'ml-1 text-base' : 'text-md'} overflow-label pointer-events-none">
-        <Label label={getEmbeddedLabel(componentText)} />
+      <span class="label {enlargedText ? 'text-base' : 'text-md'} overflow-label pointer-events-none">
+        <svelte:component this={ComponentPresenter} value={selectedComponent} />
       </span>
     </svelte:fragment>
   </Button>

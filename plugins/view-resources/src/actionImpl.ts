@@ -416,14 +416,15 @@ function AttributeSelector (
     values?: Array<{ icon?: Asset, label: IntlString, id: number | string }>
 
     isAction?: boolean
+
+    valueKey?: string
   }
 ): void {
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const docArray = Array.isArray(doc) ? doc : [doc]
   const attribute = hierarchy.getAttribute(docArray[0]._class, props.attribute)
-  showPopup(props.actionPopup, { ...props, value: docArray, width: 'large' }, 'top', (result) => {
-    console.log(result)
+  showPopup(props.actionPopup, { ...props, [props.valueKey ?? 'value']: docArray, width: 'large' }, 'top', (result) => {
     if (result != null) {
       for (const docEl of docArray) {
         void updateAttribute(client, docEl, docEl._class, { key: props.attribute, attr: attribute }, result)

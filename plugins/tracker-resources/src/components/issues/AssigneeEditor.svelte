@@ -13,21 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee, Person, PersonAccount } from '@hcengineering/contact'
-  import { AssigneeBox, personAccountByIdStore } from '@hcengineering/contact-resources'
+  import contact, { Employee, Person, PersonAccount } from '@hcengineering/contact'
+  import { AssigneeBox, AssigneePopup, personAccountByIdStore } from '@hcengineering/contact-resources'
   import { AssigneeCategory } from '@hcengineering/contact-resources/src/assignee'
-  import { Doc, DocumentQuery, Ref } from '@hcengineering/core'
+  import { Account, Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Issue } from '@hcengineering/tracker'
+  import { Component, Issue } from '@hcengineering/tracker'
   import { ButtonKind, ButtonSize, IconSize, TooltipAlignment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import { get } from 'svelte/store'
   import tracker from '../../plugin'
   import { getPreviousAssignees } from '../../utils'
-  import { get } from 'svelte/store'
 
   type Object = (Doc | {}) & Pick<Issue, 'space' | 'component' | 'assignee'>
 
-  export let object: Object
+  export let object: Object | Object[] | undefined = undefined
+  export let value: Object | Object[] | undefined = undefined
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
   export let avatarSize: IconSize = 'card'
@@ -37,57 +38,83 @@
   export let short: boolean = false
   export let shouldShowName = true
   export let shrink: number = 0
+  export let isAction: boolean = false
+
+  $: _object = object ?? value ?? []
 
   const client = getClient()
   const dispatch = createEventDispatcher()
 
   const docQuery: DocumentQuery<Employee> = { active: true }
 
-  const handleAssigneeChanged = async (newAssignee: Ref<Person> | undefined) => {
-    if (newAssignee === undefined || object.assignee === newAssignee) {
+  const handleAssigneeChanged = async (newAssignee: Ref<Person> | undefined | null) => {
+    if (newAssignee === undefined || (!Array.isArray(_object) && _object.assignee === newAssignee)) {
       return
     }
 
-    dispatch('change', newAssignee)
-
-    if ('_class' in object) {
-      await client.update(object, { assignee: newAssignee })
+    if (Array.isArray(_object)) {
+      await Promise.all(
+        _object.map(async (p) => {
+          if ('_class' in p) {
+            await client.update(p, { assignee: newAssignee })
+          }
+        })
+      )
+    } else {
+      if ('_class' in _object) {
+        await client.update(_object as any, { assignee: newAssignee })
+      }
     }
+
+    dispatch('change', newAssignee)
+    if (isAction) dispatch('close')
   }
 
   let categories: AssigneeCategory[] = []
 
-  function getCategories (object: Object): void {
+  function getCategories (object: Object | Object[]): void {
     categories = []
-    if ('_class' in object) {
-      const _id = object._id
+    const docs = Array.isArray(object) ? object : [object]
+    const cdocs = docs.filter((d) => '_class' in d) as Doc[]
+    if (cdocs.length > 0) {
       categories.push({
         label: tracker.string.PreviousAssigned,
-        func: async () => await getPreviousAssignees(_id)
+        func: async () => {
+          const r: Ref<Person>[] = []
+          for (const d of cdocs) {
+            r.push(...(await getPreviousAssignees(d._id)))
+          }
+          return r
+        }
       })
     }
     categories.push({
       label: tracker.string.ComponentLead,
       func: async () => {
-        if (!object.component) {
+        const components = Array.from(docs.map((it) => it.component).filter((it) => it)) as Ref<Component>[]
+        if (components.length === 0) {
           return []
         }
-        const component = await client.findOne(tracker.class.Component, { _id: object.component })
-        return component?.lead ? [component.lead] : []
+        const component = await client.findAll(tracker.class.Component, { _id: { $in: components } })
+        return component.map((it) => it.lead).filter((it) => it) as Ref<Person>[]
       }
     })
     categories.push({
       label: tracker.string.Members,
       func: async () => {
-        if (!object.space) {
+        const spaces = Array.from(docs.map((it) => it.space).filter((it) => it)) as Ref<Space>[]
+        if (spaces.length === 0) {
           return []
         }
-        const project = await client.findOne(tracker.class.Project, { _id: object.space })
-        if (project === undefined) {
+        const projects = await client.findAll(tracker.class.Project, {
+          _id: !Array.isArray(object) ? object.space : { $in: Array.from(object.map((it) => it.space)) }
+        })
+        if (projects === undefined) {
           return []
         }
         const store = get(personAccountByIdStore)
-        const accounts = project.members
+        const allMembers = projects.reduce((arr, p) => arr.concat(p.members), [] as Ref<Account>[])
+        const accounts = allMembers
           .map((p) => store.get(p as Ref<PersonAccount>))
           .filter((p) => p !== undefined) as PersonAccount[]
         return accounts.map((p) => p.person as Ref<Employee>)
@@ -95,33 +122,59 @@
     })
   }
 
-  $: getCategories(object)
+  $: getCategories(_object)
+
+  $: sel =
+    (!Array.isArray(_object)
+      ? _object.assignee
+      : _object.reduce((v, it) => (v != null && v === it.assignee ? it.assignee : null), _object[0]?.assignee) ??
+        undefined) ?? undefined
 </script>
 
-{#if object}
-  <AssigneeBox
-    {docQuery}
-    {focusIndex}
-    label={tracker.string.Assignee}
-    placeholder={tracker.string.Assignee}
-    value={object.assignee}
-    {categories}
-    titleDeselect={tracker.string.Unassigned}
-    {size}
-    {kind}
-    {avatarSize}
-    {width}
-    {short}
-    {shrink}
-    {shouldShowName}
-    showNavigate={false}
-    justify={'left'}
-    showTooltip={{
-      label: tracker.string.AssignTo,
-      personLabel: tracker.string.AssignedTo,
-      placeholderLabel: tracker.string.Unassigned,
-      direction: tooltipAlignment
-    }}
-    on:change={({ detail }) => handleAssigneeChanged(detail)}
-  />
+{#if _object}
+  {#if isAction}
+    <AssigneePopup
+      {docQuery}
+      {categories}
+      icon={contact.icon.Person}
+      selected={sel}
+      allowDeselect={true}
+      titleDeselect={undefined}
+      on:close={(evt) => {
+        const result = evt.detail
+        if (result === null) {
+          handleAssigneeChanged(null)
+        } else if (result !== undefined && result._id !== value) {
+          value = result._id
+          handleAssigneeChanged(result._id)
+        }
+      }}
+    />
+  {:else}
+    <AssigneeBox
+      {docQuery}
+      {focusIndex}
+      label={tracker.string.Assignee}
+      placeholder={tracker.string.Assignee}
+      value={sel}
+      {categories}
+      titleDeselect={tracker.string.Unassigned}
+      {size}
+      {kind}
+      {avatarSize}
+      {width}
+      {short}
+      {shrink}
+      {shouldShowName}
+      showNavigate={false}
+      justify={'left'}
+      showTooltip={{
+        label: tracker.string.AssignTo,
+        personLabel: tracker.string.AssignedTo,
+        placeholderLabel: tracker.string.Unassigned,
+        direction: tooltipAlignment
+      }}
+      on:change={({ detail }) => handleAssigneeChanged(detail)}
+    />
+  {/if}
 {/if}

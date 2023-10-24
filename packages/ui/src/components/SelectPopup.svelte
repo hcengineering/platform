@@ -13,44 +13,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Asset, IntlString } from '@hcengineering/platform'
+  import type { IntlString } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
   import { deviceOptionsStore, resizeObserver } from '..'
   import { createFocusManager } from '../focus'
-  import type { AnySvelteComponent } from '../types'
+  import type { SelectPopupValueType } from '../types'
   import EditWithIcon from './EditWithIcon.svelte'
   import FocusHandler from './FocusHandler.svelte'
   import Icon from './Icon.svelte'
-  import IconCheck from './icons/Check.svelte'
-  import IconSearch from './icons/Search.svelte'
   import Label from './Label.svelte'
   import ListView from './ListView.svelte'
-
-  interface ValueType {
-    id: number | string | null
-    icon?: Asset | AnySvelteComponent
-    iconProps?: Record<string, any>
-    iconColor?: string
-    label?: IntlString
-    text?: string
-    isSelected?: boolean
-
-    component?: AnySvelteComponent
-    props?: Record<string, any>
-
-    category?: {
-      icon?: Asset
-      label: IntlString
-    }
-  }
+  import IconCheck from './icons/Check.svelte'
+  import IconSearch from './icons/Search.svelte'
 
   export let placeholder: IntlString | undefined = undefined
   export let placeholderParam: any | undefined = undefined
   export let searchable: boolean = false
-  export let value: Array<ValueType>
+  export let value: Array<SelectPopupValueType>
   export let width: 'medium' | 'large' | 'full' = 'medium'
   export let size: 'small' | 'medium' | 'large' = 'small'
-  export let onSelect: ((value: ValueType['id']) => void) | undefined = undefined
+  export let onSelect: ((value: SelectPopupValueType['id']) => void) | undefined = undefined
   export let showShadow: boolean = true
   export let embedded: boolean = false
 
@@ -63,7 +45,7 @@
   let selection = 0
   let list: ListView
 
-  function sendSelect (id: ValueType['id']): void {
+  function sendSelect (id: SelectPopupValueType['id']): void {
     if (onSelect) {
       onSelect(id)
     } else {

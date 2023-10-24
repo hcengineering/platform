@@ -102,11 +102,9 @@
       return
     }
 
-    const milestoneInfo = milestones
-
     showPopup(
       SelectPopup,
-      { value: milestoneInfo, placeholder: popupPlaceholder, searchable: true },
+      { value: milestones, placeholder: popupPlaceholder, searchable: true },
       eventToHTMLElement(event),
       onChange
     )

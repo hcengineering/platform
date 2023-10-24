@@ -76,6 +76,7 @@
       ...getProjection(viewOptions.groupBy, queryNoLookup)
     }
   }
+
   $: docsQuery.query(
     _class,
     queryNoLookup,

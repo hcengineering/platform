@@ -23,7 +23,7 @@
   import { createEventDispatcher } from 'svelte'
   import { activeComponent, activeMilestone } from '../../issues'
   import tracker from '../../plugin'
-  import ComponentSelector from '../ComponentSelector.svelte'
+  import ComponentSelector from '../components/ComponentSelector.svelte'
   import AssigneeEditor from '../issues/AssigneeEditor.svelte'
   import PriorityEditor from '../issues/PriorityEditor.svelte'
   import MilestoneSelector from '../milestones/MilestoneSelector.svelte'

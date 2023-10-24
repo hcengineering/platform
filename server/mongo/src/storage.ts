@@ -141,7 +141,7 @@ abstract class MongoAdapterBase implements DbAdapter {
       if (!classes.includes(translated._class)) {
         translated._class = { $in: classes }
       }
-    } else if (typeof translated._class === 'object') {
+    } else if (typeof translated._class === 'object' && translated._class !== null) {
       let descendants: Ref<Class<Doc>>[] = classes
 
       if (Array.isArray(translated._class.$in)) {
@@ -149,7 +149,7 @@ abstract class MongoAdapterBase implements DbAdapter {
         descendants = translated._class.$in.filter((c: Ref<Class<Doc>>) => classesIds.has(c))
       }
 
-      if (Array.isArray(translated._class.$nin)) {
+      if (translated._class != null && Array.isArray(translated._class.$nin)) {
         const excludedClassesIds = new Set<Ref<Class<Doc>>>(translated._class.$nin)
         descendants = descendants.filter((c) => !excludedClassesIds.has(c))
       }

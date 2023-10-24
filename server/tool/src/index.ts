@@ -209,10 +209,11 @@ export async function upgradeModel (
       } catch (err: any) {}
     }
 
-    const migrateClient = new MigrateClientImpl(db, hierarchy, modelDb)
+    const migrateClient = new MigrateClientImpl(db, hierarchy, modelDb, logger)
     for (const op of migrateOperations) {
-      logger.log(`${workspaceId.name}: migrate:`, op[0])
+      const t = Date.now()
       await op[1].migrate(migrateClient, logger)
+      logger.log(`${workspaceId.name}: migrate:`, op[0], Date.now() - t)
     }
 
     logger.log(`${workspaceId.name}: Apply upgrade operations`)
@@ -223,8 +224,9 @@ export async function upgradeModel (
     await createUpdateIndexes(connection, db, logger)
 
     for (const op of migrateOperations) {
-      logger.log(`${workspaceId.name}: upgrade:`, op[0])
+      const t = Date.now()
       await op[1].upgrade(connection, logger)
+      logger.log(`${workspaceId.name}: upgrade:`, op[0], Date.now() - t)
     }
 
     await connection.close()
@@ -279,7 +281,7 @@ async function createUpdateIndexes (connection: CoreClient, db: Db, logger: Mode
       bb.push(vv)
     }
     if (bb.length > 0) {
-      logger.log('created indexes', d, bb)
+      logger.log('created indexes', d, JSON.stringify(bb))
     }
   }
 }

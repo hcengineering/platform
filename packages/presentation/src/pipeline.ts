@@ -10,7 +10,8 @@ import {
   Ref,
   Tx,
   TxResult,
-  WithLookup
+  WithLookup,
+  toFindResult
 } from '@hcengineering/core'
 import { Resource } from '@hcengineering/platform'
 
@@ -239,4 +240,54 @@ export abstract class BasePresentationMiddleware {
  */
 export interface PresentationMiddlewareFactory extends Doc {
   createPresentationMiddleware: Resource<PresentationMiddlewareCreator>
+}
+
+/**
+ * @public
+ */
+export class OptimizeQueryMiddleware extends BasePresentationMiddleware implements PresentationMiddleware {
+  private constructor (client: Client, next?: PresentationMiddleware) {
+    super(client, next)
+  }
+
+  static create (client: Client, next?: PresentationMiddleware): OptimizeQueryMiddleware {
+    return new OptimizeQueryMiddleware(client, next)
+  }
+
+  async notifyTx (tx: Tx): Promise<void> {
+    await this.provideNotifyTx(tx)
+  }
+
+  async close (): Promise<void> {
+    return await this.provideClose()
+  }
+
+  async tx (tx: Tx): Promise<TxResult> {
+    return await this.provideTx(tx)
+  }
+
+  async subscribe<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options: FindOptions<T> | undefined,
+    refresh: () => void
+  ): Promise<{
+      unsubscribe: () => void
+      query?: DocumentQuery<T>
+      options?: FindOptions<T>
+    }> {
+    return await this.provideSubscribe(_class, query, options, refresh)
+  }
+
+  async findAll<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T> | undefined
+  ): Promise<FindResult<T>> {
+    if (_class == null || typeof query !== 'object' || ('_class' in query && query._class == null)) {
+      console.error('_class must be specified in query', query)
+      return toFindResult([], 0)
+    }
+    return await this.provideFindAll(_class, query, options)
+  }
 }

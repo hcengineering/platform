@@ -15,8 +15,8 @@
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
   import { translate } from '@hcengineering/platform'
-  import { themeStore, Label } from '@hcengineering/ui'
-  import { Button, IconArrowRight, IconBlueCheck, IconClose } from '@hcengineering/ui'
+  import { copyTextToClipboard } from '@hcengineering/presentation'
+  import { Button, IconArrowRight, IconBlueCheck, IconClose, IconCopy, Label, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import view from '../plugin'
 
@@ -32,6 +32,9 @@
   onMount(() => {
     if (input) input.focus()
   })
+  const copyLink = (): void => {
+    copyTextToClipboard(value)
+  }
 </script>
 
 <div class="editor-container buttons-group xsmall-gap">
@@ -86,6 +89,16 @@
   {/if}
   <Button
     focusIndex={4}
+    kind={'ghost'}
+    size={'small'}
+    icon={IconCopy}
+    showTooltip={{ label: view.string.CopyToClipboard }}
+    on:click={() => {
+      copyLink()
+    }}
+  />
+  <Button
+    focusIndex={5}
     kind={'ghost'}
     size={'small'}
     icon={IconArrowRight}

@@ -14,12 +14,13 @@
 -->
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
+  import { translate } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
   import { Component } from '@hcengineering/tracker'
-  import { Icon, tooltip, themeStore } from '@hcengineering/ui'
-  import tracker from '../../plugin'
+  import { Icon, Component as UIComponent, themeStore, tooltip } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { DocNavLink } from '@hcengineering/view-resources'
-  import { translate } from '@hcengineering/platform'
+  import tracker from '../../plugin'
 
   export let value: WithLookup<Component> | undefined
   export let shouldShowAvatar = true
@@ -44,21 +45,46 @@
       })
   }
   $: disabled = disabled || value === undefined
+
+  $: presenters =
+    value !== undefined ? getClient().getHierarchy().findMixinMixins(value, view.mixin.ObjectPresenter) : []
+
+  $: icon = tracker.icon.Component
 </script>
 
-<DocNavLink object={value} {onClick} {disabled} {noUnderline} {inline} {accent} component={view.component.EditDoc}>
-  {#if inline}
-    <span class="antiMention" use:tooltip={{ label: tracker.string.Component }}>@{label}</span>
-  {:else}
-    <span class="flex-presenter" class:list={kind === 'list'} use:tooltip={{ label: tracker.string.Component }}>
-      {#if shouldShowAvatar}
-        <div class="icon">
-          <Icon icon={tracker.icon.Component} size={'small'} />
+<div class="flex-row-center">
+  <DocNavLink object={value} {onClick} {disabled} {noUnderline} {inline} {accent} component={view.component.EditDoc}>
+    {#if inline}
+      <span class="antiMention" use:tooltip={{ label: tracker.string.Component }}>@{label}</span>
+    {:else}
+      <span class="flex-presenter flex-row-center" class:list={kind === 'list'}>
+        <div class="flex-row-center">
+          {#if shouldShowAvatar}
+            <div class="icon">
+              <Icon icon={presenters.length === 0 ? tracker.icon.Component : icon} size={'small'} />
+            </div>
+          {/if}
+          <span title={label} class="label nowrap" class:no-underline={disabled || noUnderline} class:fs-bold={accent}>
+            {label}
+          </span>
         </div>
-      {/if}
-      <span title={label} class="label nowrap" class:no-underline={disabled || noUnderline} class:fs-bold={accent}>
-        {label}
       </span>
-    </span>
+    {/if}
+  </DocNavLink>
+
+  {#if presenters.length > 0}
+    <div class="flex-row-center">
+      {#each presenters as mixinPresenter}
+        <UIComponent
+          is={mixinPresenter.presenter}
+          props={{ value }}
+          on:open={(evt) => {
+            if (evt.detail.icon !== undefined) {
+              icon = evt.detail.icon
+            }
+          }}
+        />
+      {/each}
+    </div>
   {/if}
-</DocNavLink>
+</div>

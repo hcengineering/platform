@@ -447,3 +447,24 @@ export interface SeparatedElement {
   resize: boolean
   float?: string | undefined
 }
+
+/**
+ * @public
+ */
+export interface SelectPopupValueType {
+  id: number | string | null
+  icon?: Asset | AnySvelteComponent
+  iconProps?: Record<string, any>
+  iconColor?: string
+  label?: IntlString
+  text?: string
+  isSelected?: boolean
+
+  component?: AnySvelteComponent
+  props?: Record<string, any>
+
+  category?: {
+    icon?: Asset
+    label: IntlString
+  }
+}

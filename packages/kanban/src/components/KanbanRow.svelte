@@ -18,17 +18,14 @@
   import { createEventDispatcher } from 'svelte'
   import { slide } from 'svelte/transition'
   import { CardDragEvent, DocWithRank, Item } from '../types'
-  import Spinner from '@hcengineering/ui/src/components/Spinner.svelte'
 
   export let stateObjects: Item[]
   export let isDragging: boolean
   export let dragCard: Item | undefined
   export let objects: Item[]
-  export let groupByDocs: Record<string | number, Item[]>
   export let selection: number | undefined = undefined
   export let checkedSet: Set<Ref<Doc>>
   export let state: CategoryType
-  export let index: number
 
   export let cardDragOver: (evt: CardDragEvent, object: Item) => void
   export let cardDrop: (evt: CardDragEvent, object: Item) => void
@@ -56,23 +53,7 @@
   let limit = 50
 
   let limitedObjects: DocWithRank[] = []
-  let loading = false
-  let loadingTimeout: any | undefined = undefined
-
-  function update (stateObjects: Item[], limit: number | undefined, index: number): void {
-    clearTimeout(loadingTimeout)
-    if (limitedObjects.length > 0 || index === 0) {
-      limitedObjects = stateObjects.slice(0, limit)
-    } else {
-      loading = true
-      loadingTimeout = setTimeout(() => {
-        limitedObjects = stateObjects.slice(0, limit)
-        loading = false
-      }, index)
-    }
-  }
-
-  $: update(stateObjects, limit, index)
+  $: limitedObjects = stateObjects.slice(0, limit)
 </script>
 
 {#each limitedObjects as object, i (object._id)}
@@ -110,21 +91,17 @@
 {/each}
 {#if stateObjects.length > limitedObjects.length}
   <div class="p-1 flex-no-shrink clear-mins">
-    {#if loading}
-      <Spinner />
-    {:else}
-      <div class="card-container flex-between p-4">
-        <span class="caption-color">{limitedObjects.length}</span> / {stateObjects.length}
-        <Button
-          size={'small'}
-          icon={IconMoreH}
-          label={ui.string.ShowMore}
-          on:click={() => {
-            limit = limit + 20
-          }}
-        />
-      </div>
-    {/if}
+    <div class="card-container flex-between p-4">
+      <span class="caption-color">{limitedObjects.length}</span> / {stateObjects.length}
+      <Button
+        size={'small'}
+        icon={IconMoreH}
+        label={ui.string.ShowMore}
+        on:click={() => {
+          limit = limit + 20
+        }}
+      />
+    </div>
   </div>
 {/if}
 
@@ -133,11 +110,7 @@
     background-color: var(--theme-kanban-card-bg-color);
     border: 1px solid var(--theme-kanban-card-border);
     border-radius: 0.25rem;
-    // transition: box-shadow .15s ease-in-out;
 
-    // &:hover {
-    //   background-color: var(--highlight-hover);
-    // }
     &.checked {
       background-color: var(--highlight-select);
       box-shadow: 0 0 1px 1px var(--highlight-select-border);

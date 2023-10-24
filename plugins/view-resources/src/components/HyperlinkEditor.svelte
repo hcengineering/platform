@@ -13,9 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString } from '@hcengineering/platform'
-  import type { ButtonSize, ButtonKind } from '@hcengineering/ui'
-  import { Label, showPopup, eventToHTMLElement, Button, parseURL } from '@hcengineering/ui'
+  import type { Asset, IntlString } from '@hcengineering/platform'
+  import type { AnySvelteComponent, ButtonKind, ButtonSize, IconProps } from '@hcengineering/ui'
+  import { Button, Label, eventToHTMLElement, parseURL, showPopup } from '@hcengineering/ui'
+  import { ComponentType } from 'svelte'
   import HyperlinkEditorPopup from './HyperlinkEditorPopup.svelte'
 
   export let placeholder: IntlString
@@ -27,6 +28,8 @@
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = 'fit-content'
   export let title: string | undefined
+  export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
+  export let iconProps: IconProps = {}
 
   let shown: boolean = false
 </script>
@@ -36,6 +39,8 @@
   {size}
   {justify}
   {width}
+  {icon}
+  {iconProps}
   on:click={(ev) => {
     if (!shown) {
       showPopup(HyperlinkEditorPopup, { value, editable: !readonly }, eventToHTMLElement(ev), (res) => {

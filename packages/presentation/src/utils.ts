@@ -43,7 +43,7 @@ import view, { AttributeEditor } from '@hcengineering/view'
 import { deepEqual } from 'fast-equals'
 import { onDestroy } from 'svelte'
 import { KeyedAttribute } from '..'
-import { PresentationPipeline, PresentationPipelineImpl } from './pipeline'
+import { OptimizeQueryMiddleware, PresentationPipeline, PresentationPipelineImpl } from './pipeline'
 import plugin from './plugin'
 
 let liveQuery: LQ
@@ -115,7 +115,7 @@ export async function setClient (_client: Client): Promise<void> {
   const factories = await _client.findAll(plugin.class.PresentationMiddlewareFactory, {})
   const promises = factories.map(async (it) => await getResource(it.createPresentationMiddleware))
   const creators = await Promise.all(promises)
-  pipeline = PresentationPipelineImpl.create(_client, creators)
+  pipeline = PresentationPipelineImpl.create(_client, [OptimizeQueryMiddleware.create, ...creators])
 
   const needRefresh = liveQuery !== undefined
   liveQuery = new LQ(pipeline)

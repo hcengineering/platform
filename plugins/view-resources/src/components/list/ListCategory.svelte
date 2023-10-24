@@ -98,16 +98,18 @@
   const autoFoldLimit = 20
   const defaultLimit = 20
   const singleCategoryLimit = 50
+  let loading = false
   $: initialLimit = !lastLevel ? undefined : singleCat ? singleCategoryLimit : defaultLimit
   $: limit = initialLimit
 
   $: if (lastLevel) {
     limiter.add(async () => {
-      docsQuery.query(
+      loading = docsQuery.query(
         _class,
         { ...resultQuery, ...docKeys },
         (res) => {
           items = res
+          loading = false
         },
         { ...resultOptions, limit: limit ?? 200 }
       )
@@ -159,25 +161,7 @@
     showPopup(Menu, { object: items, baseMenuClass }, getEventPositionElement(event))
   }
 
-  let limited: Doc[] = []
-
-  let loading = false
-  let loadingTimeout: any | undefined = undefined
-
-  function update (items: Doc[], limit: number | undefined, index: number): void {
-    clearTimeout(loadingTimeout)
-    if (limited.length > 0 || index * 2 === 0) {
-      limited = limitGroup(items, limit)
-    } else {
-      loading = true
-      loadingTimeout = setTimeout(() => {
-        limited = limitGroup(items, limit)
-        loading = false
-      }, index * 2)
-    }
-  }
-
-  $: update(items, limit, index)
+  $: limited = limitGroup(items, limit)
 
   $: selectedObjectIdsSet = new Set<Ref<Doc>>(selectedObjectIds.map((it) => it._id))
 
@@ -445,6 +429,7 @@
       {props}
       {lastCat}
       {viewOptions}
+      {loading}
       on:more={() => {
         if (limit !== undefined) limit += 20
       }}
