@@ -29,13 +29,15 @@ import core, {
   TxOperations,
   TxProcessor,
   WorkspaceId,
-  generateId
+  generateId,
+  getObjectValue
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { getWorkspaceDB } from '@hcengineering/mongo'
 import recruit from '@hcengineering/recruit'
 import { connect } from '@hcengineering/server-tool'
 import tracker from '@hcengineering/tracker'
+import tags, { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
 import { MongoClient } from 'mongodb'
 
 export const DOMAIN_COMMENT = 'comment' as Domain
@@ -343,4 +345,274 @@ export async function fixCommentDoubleIdCreate (workspaceId: WorkspaceId, transa
   } finally {
     await connection.close()
   }
+}
+
+const DOMAIN_TAGS = 'tags' as Domain
+export async function fixSkills (
+  mongoUrl: string,
+  workspaceId: WorkspaceId,
+  transactorUrl: string,
+  step: string
+): Promise<void> {
+  const connection = (await connect(transactorUrl, workspaceId, undefined, {
+    mode: 'backup'
+  })) as unknown as CoreClient & BackupClient
+  const client = new MongoClient(mongoUrl)
+  try {
+    await client.connect()
+    const db = getWorkspaceDB(client, workspaceId)
+
+    async function fixCount (): Promise<void> {
+      console.log('fixing ref-count...')
+      const allTags = (await connection.findAll(tags.class.TagElement, {})) as TagElement[]
+      for (const tag of allTags) {
+        console.log('progress: ', ((allTags.indexOf(tag) + 1) * 100) / allTags.length)
+        const references = await connection.findAll(tags.class.TagReference, { tag: tag._id }, { total: true })
+        if (references.total >= 0) {
+          await db.collection(DOMAIN_TAGS).updateOne({ _id: tag._id }, { $set: { refCount: references.total } })
+        }
+      }
+      console.log('DONE: fixing ref-count')
+    }
+
+    // STEP 1: all to Upper Case
+    if (step === '1') {
+      console.log('converting case')
+      const tagsToClean = (await connection.findAll(tags.class.TagElement, {
+        category: {
+          $in: ['recruit:category:Other', 'document:category:Other', 'tracker:category:Other'] as Ref<TagCategory>[]
+        }
+      })) as TagElement[]
+      for (const tag of tagsToClean) {
+        await db
+          .collection(DOMAIN_TAGS)
+          .updateOne({ _id: tag._id }, { $set: { title: tag.title.trim().toUpperCase() } })
+      }
+      console.log('DONE: converting case')
+    }
+    // STEP 2: Replace with same titles
+    if (step === '2') {
+      console.log('fixing titles')
+      const tagsToClean = (await connection.findAll(tags.class.TagElement, {
+        category: {
+          $in: ['recruit:category:Other', 'document:category:Other', 'tracker:category:Other'] as Ref<TagCategory>[]
+        }
+      })) as TagElement[]
+      const groupped = groupBy(tagsToClean, 'title')
+      console.log('STEP2: Done grouping')
+      for (const key in groupped) {
+        const values = groupped[key]
+        if (values.length === 1) continue
+        // console.log('duplicates: ', values)
+        const goodTag = values[0]
+        for (const t of values) {
+          if (t._id === goodTag._id) continue
+          const references = await connection.findAll(tags.class.TagReference, {
+            attachedToClass: recruit.mixin.Candidate,
+            tag: t._id
+          })
+          goodTag.refCount = (goodTag.refCount ?? 0) + references.length
+          for (const reference of references) {
+            await db
+              .collection(DOMAIN_TAGS)
+              .updateOne(
+                { _id: reference._id },
+                { $set: { tag: goodTag._id, color: goodTag.color, title: goodTag.title } }
+              )
+          }
+          await db.collection(DOMAIN_TAGS).deleteOne({ _id: t._id })
+        }
+        await db.collection(DOMAIN_TAGS).updateOne({ _id: goodTag._id }, { $set: { refCount: goodTag.refCount } })
+      }
+      console.log('STEP2 DONE')
+    }
+    // fix skills with + and -
+    if (step === '3') {
+      console.log('STEP 3')
+      const ops = new TxOperations(connection, core.account.System)
+      const regex = /\S+(?:[-+]\S+)+/g
+      const tagsToClean = (await connection.findAll(tags.class.TagElement, {
+        category: {
+          $in: ['recruit:category:Other', 'document:category:Other', 'tracker:category:Other'] as Ref<TagCategory>[]
+        }
+      })) as TagElement[]
+      const tagsMatchingRegex = tagsToClean.filter((tag) => regex.test(tag.title))
+      let goodTags = (await connection.findAll(tags.class.TagElement, {
+        category: {
+          $nin: ['recruit:category:Other', 'document:category:Other', 'tracker:category:Other'] as Ref<TagCategory>[]
+        }
+      })) as TagElement[]
+      goodTags = goodTags.sort((a, b) => b.title.length - a.title.length).filter((t) => t.title.length > 2)
+      for (const wrongTag of tagsMatchingRegex) {
+        const incorrectStrings = wrongTag.title.match(regex)
+        if (incorrectStrings == null) continue
+        for (const str of incorrectStrings) {
+          const goodTag = goodTags.find((t) => t.title.toUpperCase() === str.replaceAll(/[+-]/g, ''))
+          if (goodTag === undefined) continue
+          const references = (await connection.findAll(tags.class.TagReference, {
+            attachedToClass: recruit.mixin.Candidate,
+            tag: wrongTag._id
+          })) as TagReference[]
+          for (const ref of references) {
+            await ops.addCollection(
+              tags.class.TagReference,
+              ref.space,
+              ref.attachedTo,
+              ref.attachedToClass,
+              ref.collection,
+              {
+                title: goodTag.title,
+                tag: goodTag._id,
+                color: ref.color
+              }
+            )
+            await db
+              .collection(DOMAIN_TAGS)
+              .updateOne({ _id: ref._id }, { $set: { title: ref.title.replace(str, '') } })
+          }
+          await db
+            .collection(DOMAIN_TAGS)
+            .updateOne({ _id: wrongTag._id }, { $set: { title: wrongTag.title.replace(str, goodTag.title) } })
+        }
+      }
+      console.log('DONE: STEP 3')
+    }
+    // change incorrect skills and add good one
+    if (step === '4') {
+      console.log('step 4')
+      let goodTags = (await connection.findAll(tags.class.TagElement, {
+        category: {
+          $nin: ['recruit:category:Other', 'document:category:Other', 'tracker:category:Other'] as Ref<TagCategory>[]
+        }
+      })) as TagElement[]
+      goodTags = goodTags.sort((a, b) => b.title.length - a.title.length).filter((t) => t.title.length > 2)
+      const ops = new TxOperations(connection, core.account.System)
+      const tagsToClean = (await connection.findAll(tags.class.TagElement, {
+        category: {
+          $in: ['recruit:category:Other', 'document:category:Other', 'tracker:category:Other'] as Ref<TagCategory>[]
+        }
+      })) as TagElement[]
+      for (const incorrectTag of tagsToClean) {
+        console.log('tag progress: ', ((tagsToClean.indexOf(incorrectTag) + 1) * 100) / tagsToClean.length)
+        const toReplace = goodTags.filter((t) => incorrectTag.title.includes(t.title.toUpperCase()))
+        if (toReplace.length === 0) continue
+        const references = (await connection.findAll(tags.class.TagReference, {
+          attachedToClass: recruit.mixin.Candidate,
+          tag: incorrectTag._id
+        })) as TagReference[]
+        let title = incorrectTag.title
+        for (const ref of references) {
+          const refsForCand = (
+            (await connection.findAll(tags.class.TagReference, {
+              attachedToClass: recruit.mixin.Candidate,
+              attachedTo: ref.attachedTo
+            })) as TagReference[]
+          ).map((r) => r.tag)
+          for (const gTag of toReplace) {
+            title = title.replace(gTag.title.toUpperCase(), '')
+            if ((refsForCand ?? []).includes(gTag._id)) continue
+            await ops.addCollection(
+              tags.class.TagReference,
+              ref.space,
+              ref.attachedTo,
+              ref.attachedToClass,
+              ref.collection,
+              {
+                title: gTag.title,
+                tag: gTag._id,
+                color: ref.color
+              }
+            )
+          }
+          await db.collection(DOMAIN_TAGS).updateOne({ _id: ref._id }, { $set: { title } })
+        }
+        await db.collection(DOMAIN_TAGS).updateOne({ _id: incorrectTag._id }, { $set: { title } })
+      }
+      console.log('STEP4 DONE')
+    }
+
+    // remove skills with space or empty string
+    if (step === '5') {
+      console.log('STEP 5')
+      const tagsToClean = (await connection.findAll(tags.class.TagElement, {
+        category: {
+          $in: ['recruit:category:Other', 'document:category:Other', 'tracker:category:Other'] as Ref<TagCategory>[]
+        },
+        title: { $in: [' ', ''] }
+      })) as TagElement[]
+      if (tagsToClean.length > 0) {
+        for (const t of tagsToClean) {
+          const references = (await connection.findAll(tags.class.TagReference, {
+            attachedToClass: recruit.mixin.Candidate,
+            tag: t._id
+          })) as TagReference[]
+          const ids = references.map((r) => r._id)
+          await db.collection(DOMAIN_TAGS).deleteMany({ _id: { $in: ids } })
+          await db.collection(DOMAIN_TAGS).deleteOne({ _id: t._id })
+        }
+      }
+      await fixCount()
+      console.log('DONE 5 STEP')
+    }
+    // remove skills with ref count less or equal to 10
+    if (step === '6') {
+      console.log('STEP 6')
+      const tagsToClean = (await connection.findAll(tags.class.TagElement, {
+        category: {
+          $in: ['recruit:category:Other', 'document:category:Other', 'tracker:category:Other'] as Ref<TagCategory>[]
+        }
+      })) as TagElement[]
+      for (const t of tagsToClean) {
+        if ((t?.refCount ?? 0) >= 10) continue
+        const references = (await connection.findAll(tags.class.TagReference, {
+          attachedToClass: recruit.mixin.Candidate,
+          tag: t._id
+        })) as TagReference[]
+        const ids = references.map((r) => r._id)
+        await db.collection(DOMAIN_TAGS).deleteMany({ _id: { $in: ids } })
+        await db.collection(DOMAIN_TAGS).deleteOne({ _id: t._id })
+      }
+      console.log('DONE 6 STEP')
+    }
+    // remove all skills that don't have letters in it
+    if (step === '7') {
+      console.log('STEP 7')
+      const tagsToClean = (await connection.findAll(tags.class.TagElement, {
+        category: {
+          $in: ['recruit:category:Other', 'document:category:Other', 'tracker:category:Other'] as Ref<TagCategory>[]
+        }
+      })) as TagElement[]
+      const regex = /^((?![a-zA-Zа-яА-Я]).)*$/g
+      if (tagsToClean.length > 0) {
+        for (const t of tagsToClean) {
+          if (!regex.test(t.title)) continue
+          const references = (await connection.findAll(tags.class.TagReference, {
+            attachedToClass: recruit.mixin.Candidate,
+            tag: t._id
+          })) as TagReference[]
+          const ids = references.map((r) => r._id)
+          await db.collection(DOMAIN_TAGS).deleteMany({ _id: { $in: ids } })
+          await db.collection(DOMAIN_TAGS).deleteOne({ _id: t._id })
+        }
+      }
+      await fixCount()
+      console.log('DONE 7 STEP')
+    }
+  } catch (err: any) {
+    console.trace(err)
+  } finally {
+    await client.close()
+    await connection.close()
+  }
+}
+
+function groupBy<T extends Doc> (docs: T[], key: string): Record<any, T[]> {
+  return docs.reduce((storage: { [key: string]: T[] }, item: T) => {
+    const group = getObjectValue(key, item) ?? undefined
+
+    storage[group] = storage[group] ?? []
+    storage[group].push(item)
+
+    return storage
+  }, {})
 }

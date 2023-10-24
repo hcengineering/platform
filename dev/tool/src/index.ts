@@ -59,6 +59,7 @@ import {
   cleanRemovedTransactions,
   cleanWorkspace,
   fixCommentDoubleIdCreate,
+  fixSkills,
   optimizeModel
 } from './clean'
 import { changeConfiguration } from './configuration'
@@ -578,6 +579,14 @@ export function devTool (
         )
       }
     )
+
+  program
+    .command('fix-skills <workspace> <step>')
+    .description('fix skills for workspace')
+    .action(async (workspace: string, step: string) => {
+      const { mongodbUri } = prepareTools()
+      await fixSkills(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl, step)
+    })
 
   program.parse(process.argv)
 }
