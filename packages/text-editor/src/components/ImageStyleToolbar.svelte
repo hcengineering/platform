@@ -39,7 +39,7 @@
 
   function openImage () {
     const attributes = textEditor.getAttributes('image')
-    const fileId = attributes['file-id']
+    const fileId = attributes['file-id'] ?? attributes.src
     const fileName = attributes.alt ?? ''
     showPopup(PDFViewer, { file: fileId, name: fileName, contentType: 'image/*', showIcon: false }, 'centered', () => {
       dispatch('focus')
@@ -48,7 +48,8 @@
 
   function openOriginalImage () {
     const attributes = textEditor.getAttributes('image')
-    const url = getFileUrl(attributes['file-id'], 'full')
+    const fileId = attributes['file-id'] ?? attributes.src
+    const url = getFileUrl(fileId, 'full')
     window.open(url, '_blank')
   }
 

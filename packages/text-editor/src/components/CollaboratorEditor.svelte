@@ -240,7 +240,7 @@
   $: updateEditor(editor, field, comparedVersion)
   $: if (editor) dispatch('editor', editor)
 
-  const tippyOptions = {
+  $: tippyOptions = {
     zIndex: 100000,
     popperOptions: {
       modifiers: [
