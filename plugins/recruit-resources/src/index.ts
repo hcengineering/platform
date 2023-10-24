@@ -100,11 +100,10 @@ export async function applicantValidator (applicant: Applicant, client: Client):
   return OK
 }
 
-const DEFAULT_LIMIT = 200
 export async function queryApplication (
   client: Client,
   search: string,
-  options?: { in?: RelatedDocument[], nin?: RelatedDocument[], limit?: number }
+  filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
 ): Promise<ObjectSearchResult[]> {
   const _class = recruit.class.Applicant
   const cl = client.getHierarchy().getClass(_class)
@@ -115,20 +114,20 @@ export async function queryApplication (
   const sequence = (await client.findOne(task.class.Sequence, { attachedTo: _class }))?.sequence ?? 0
 
   const q: DocumentQuery<Applicant> = { $search: search }
-  if (options?.in !== undefined || options?.nin !== undefined) {
+  if (filter?.in !== undefined || filter?.nin !== undefined) {
     q._id = {}
-    if (options.in !== undefined) {
-      q._id.$in = options.in?.map((it) => it._id as Ref<Applicant>)
+    if (filter.in !== undefined) {
+      q._id.$in = filter.in?.map((it) => it._id as Ref<Applicant>)
     }
-    if (options.nin !== undefined) {
-      q._id.$nin = options.nin?.map((it) => it._id as Ref<Applicant>)
+    if (filter.nin !== undefined) {
+      q._id.$nin = filter.nin?.map((it) => it._id as Ref<Applicant>)
     }
   }
-
-  const limit = options?.limit ?? DEFAULT_LIMIT
-
   const named = new Map(
-    (await client.findAll(_class, q, { limit, lookup: { attachedTo: recruit.mixin.Candidate } })).map((e) => [e._id, e])
+    (await client.findAll(_class, q, { limit: 200, lookup: { attachedTo: recruit.mixin.Candidate } })).map((e) => [
+      e._id,
+      e
+    ])
   )
   const nids: number[] = []
   if (sequence > 0) {
@@ -143,7 +142,7 @@ export async function queryApplication (
       q2._id = q._id
     }
     const numbered = await client.findAll<Applicant>(_class, q2, {
-      limit,
+      limit: 200,
       lookup: { attachedTo: recruit.mixin.Candidate }
     })
     for (const d of numbered) {
@@ -163,23 +162,21 @@ export async function queryApplication (
 export async function queryVacancy (
   client: Client,
   search: string,
-  options?: { in?: RelatedDocument[], nin?: RelatedDocument[], limit?: number }
+  filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
 ): Promise<ObjectSearchResult[]> {
   const _class = recruit.class.Vacancy
 
   const q: DocumentQuery<Vacancy> = { $search: search }
-  if (options?.in !== undefined || options?.nin !== undefined) {
+  if (filter?.in !== undefined || filter?.nin !== undefined) {
     q._id = {}
-    if (options.in !== undefined) {
-      q._id.$in = options.in?.map((it) => it._id as Ref<Vacancy>)
+    if (filter.in !== undefined) {
+      q._id.$in = filter.in?.map((it) => it._id as Ref<Vacancy>)
     }
-    if (options.nin !== undefined) {
-      q._id.$nin = options.nin?.map((it) => it._id as Ref<Vacancy>)
+    if (filter.nin !== undefined) {
+      q._id.$nin = filter.nin?.map((it) => it._id as Ref<Vacancy>)
     }
   }
-
-  const limit = options?.limit ?? DEFAULT_LIMIT
-  const named = toIdMap(await client.findAll(_class, q, { limit }))
+  const named = toIdMap(await client.findAll(_class, q, { limit: 200 }))
 
   if (named.size === 0) {
     const q2: DocumentQuery<Vacancy> = {}
@@ -195,7 +192,6 @@ export async function queryVacancy (
         icon: recruit.icon.Vacancy,
         component: VacancyItem
       }))
-      .slice(0, limit)
   }
 
   return Array.from(named.values()).map((e) => ({
@@ -367,13 +363,10 @@ export default async (): Promise<Resources> => ({
     ApplicationQuery: async (
       client: Client,
       query: string,
-      options?: { in?: RelatedDocument[], nin?: RelatedDocument[], limit?: number }
-    ) => await queryApplication(client, query, options),
-    VacancyQuery: async (
-      client: Client,
-      query: string,
-      options?: { in?: RelatedDocument[], nin?: RelatedDocument[], limit?: number }
-    ) => await queryVacancy(client, query, options)
+      filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
+    ) => await queryApplication(client, query, filter),
+    VacancyQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>
+      await queryVacancy(client, query, filter)
   },
   function: {
     AppTitleProvider: getAppTitle,

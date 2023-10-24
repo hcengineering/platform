@@ -153,31 +153,28 @@ export { default as StatusPresenter } from './components/issues/StatusPresenter.
 
 export { CreateProject, IssuePresenter, TitlePresenter }
 
-const DEFAULT_LIMIT = 200
 export async function queryIssue<D extends Issue> (
   _class: Ref<Class<D>>,
   client: Client,
   search: string,
-  options?: { in?: RelatedDocument[], nin?: RelatedDocument[], limit?: number }
+  filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
 ): Promise<ObjectSearchResult[]> {
   const projects = await client.findAll<Project>(tracker.class.Project, {})
 
   const q: DocumentQuery<Issue> = { title: { $like: `%${search}%` } }
-  if (options?.in !== undefined || options?.nin !== undefined) {
+  if (filter?.in !== undefined || filter?.nin !== undefined) {
     q._id = {}
-    if (options.in !== undefined) {
-      q._id.$in = options.in?.map((it) => it._id as Ref<Issue>)
+    if (filter.in !== undefined) {
+      q._id.$in = filter.in?.map((it) => it._id as Ref<Issue>)
     }
-    if (options.nin !== undefined) {
-      q._id.$nin = options.nin?.map((it) => it._id as Ref<Issue>)
+    if (filter.nin !== undefined) {
+      q._id.$nin = filter.nin?.map((it) => it._id as Ref<Issue>)
     }
   }
 
-  const limit = options?.limit ?? DEFAULT_LIMIT
-
   const named = toIdMap(
     await client.findAll<Issue>(_class, q, {
-      limit,
+      limit: 200,
       lookup: { space: tracker.class.Project }
     })
   )
@@ -194,7 +191,7 @@ export async function queryIssue<D extends Issue> (
       if (q._id !== undefined) {
         q2._id = q._id
       }
-      const numbered = await client.findAll<Issue>(_class, q2, { limit, lookup: { space: tracker.class.Project } })
+      const numbered = await client.findAll<Issue>(_class, q2, { limit: 200, lookup: { space: tracker.class.Project } })
       for (const d of numbered) {
         const shortId = `${projects.find((it) => it._id === d.space)?.identifier ?? ''}-${d.number}`
         if (shortId.includes(search) || d.title.includes(search)) {
@@ -498,11 +495,8 @@ export default async (): Promise<Resources> => ({
     IssueSearchResult
   },
   completion: {
-    IssueQuery: async (
-      client: Client,
-      query: string,
-      options?: { in?: RelatedDocument[], nin?: RelatedDocument[], limit?: number }
-    ) => await queryIssue(tracker.class.Issue, client, query, options)
+    IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>
+      await queryIssue(tracker.class.Issue, client, query, filter)
   },
   function: {
     IssueTitleProvider: getIssueTitle,

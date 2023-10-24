@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import justClone from 'just-clone'
-
 import core, {
   Account,
   AttachedDoc,
@@ -410,7 +408,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     query: SearchQuery,
     options: SearchOptions
   ): Promise<SearchResult> {
-    const newQuery = justClone(query)
+    const newQuery = { ...query }
     const account = await getUser(this.storage, ctx)
     let spaces: string[] = []
     if (!isSystem(account)) {
