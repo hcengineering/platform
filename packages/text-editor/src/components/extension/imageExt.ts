@@ -1,8 +1,8 @@
 import { getMetadata } from '@hcengineering/platform'
 import presentation, { getFileUrl } from '@hcengineering/presentation'
 import { IconSize, getIconSize2x } from '@hcengineering/ui'
-import { Node, createNodeFromContent, mergeAttributes, nodeInputRule } from '@tiptap/core'
-import { Fragment, Node as ProseMirrorNode } from '@tiptap/pm/model'
+import { Node, mergeAttributes, nodeInputRule } from '@tiptap/core'
+import { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { EditorView } from '@tiptap/pm/view'
 import { getDataAttribute } from '../../utils'
@@ -11,6 +11,11 @@ import { getDataAttribute } from '../../utils'
  * @public
  */
 export type FileAttachFunction = (file: File) => Promise<{ file: string, type: string } | undefined>
+
+/**
+ * @public
+ */
+export type ImageAlignment = 'center' | 'left' | 'right'
 
 /**
  * @public
@@ -25,7 +30,7 @@ export interface ImageOptions {
 }
 
 export interface ImageAlignmentOptions {
-  align?: 'center' | 'left' | 'right'
+  align?: ImageAlignment
 }
 
 export interface ImageSizeOptions {
@@ -129,7 +134,7 @@ export const ImageExtension = Node.create<ImageOptions>({
     const divAttributes = {
       class: 'text-editor-image-container',
       'data-type': this.name,
-      'data-align': node.attrs.align ?? 'center'
+      'data-align': node.attrs.align
     }
 
     const imgAttributes = mergeAttributes(
@@ -244,20 +249,10 @@ export const ImageExtension = Node.create<ImageOptions>({
           const ctype = dataTransfer.getData('application/contentType')
           const type = getType(ctype ?? 'other')
 
-          let content: ProseMirrorNode | Fragment | undefined
           if (type === 'image') {
-            content = createNodeFromContent(
-              `<img data-type='image' width='75%' file-id='${_file}'></img>`,
-              view.state.schema,
-              {
-                parseOptions: {
-                  preserveWhitespace: 'full'
-                }
-              }
-            )
-          }
-          if (content !== undefined) {
-            view.dispatch(view.state.tr.insert(pos?.pos ?? 0, content))
+            const node = view.state.schema.nodes.image.create({ 'file-id': _file })
+            const transaction = view.state.tr.insert(pos?.pos ?? 0, node)
+            view.dispatch(transaction)
             result = true
           }
         }
@@ -275,16 +270,9 @@ export const ImageExtension = Node.create<ImageOptions>({
             void opt.attachFile(file).then((id) => {
               if (id !== undefined) {
                 if (id.type.includes('image')) {
-                  const content = createNodeFromContent(
-                    `<img data-type='image' width='75%' file-id='${id.file}'></img>`,
-                    view.state.schema,
-                    {
-                      parseOptions: {
-                        preserveWhitespace: 'full'
-                      }
-                    }
-                  )
-                  view.dispatch(view.state.tr.insert(pos?.pos ?? 0, content))
+                  const node = view.state.schema.nodes.image.create({ 'file-id': id.file })
+                  const transaction = view.state.tr.insert(pos?.pos ?? 0, node)
+                  view.dispatch(transaction)
                 }
               }
             })
