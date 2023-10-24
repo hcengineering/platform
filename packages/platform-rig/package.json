@@ -5,6 +5,9 @@
     "build": "",
     "format": ""
   },
+  "bin": {
+    "format": "./bin/format.js"
+  },
   "devDependencies": {
     "eslint-config-standard-with-typescript": "^23.0.0"
   },

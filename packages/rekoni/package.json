@@ -9,7 +9,7 @@
     "build:docs": "api-extractor run --local",
     "lint": "eslint src",
     "lint:fix": "eslint --fix src",
-    "format": "prettier --write src && eslint --fix src && mkdir -p .rush/temp/.format",
+    "format": "format src",
     "build:watch": "tsc",
     "test": "jest --passWithNoTests --silent"
   },

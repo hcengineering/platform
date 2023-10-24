@@ -10,7 +10,7 @@
     "build:docs": "api-extractor run --local",
     "lint": "svelte-check && eslint",
     "lint:fix": "eslint --fix src",
-    "format": "prettier --write --plugin-search-dir=. src && eslint --fix src && mkdir -p .rush/temp/.format",
+    "format": "format src",
     "svelte-check": "svelte-check --output human  && mkdir -p .rush/temp/.svelte-check"
   },
   "devDependencies": {

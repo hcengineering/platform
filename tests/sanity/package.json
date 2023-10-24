@@ -9,7 +9,7 @@
     "build:watch": "",
     "lint:fix": "eslint --fix tests",
     "lint": "eslint tests",
-    "format": "prettier --write tests && eslint --fix tests",
+    "format": "format tests",
     "ci": "playwright install --with-deps chromium",
     "test": "",
     "uitest": "playwright test --browser chromium --reporter list,html -c ./tests/playwright.config.ts",

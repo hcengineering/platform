@@ -9,7 +9,7 @@
     "build": "tsc",
     "lint:fix": "eslint --fix src",
     "lint": "eslint src",
-    "format": "prettier --write src && eslint --fix src && mkdir -p .rush/temp/.format",
+    "format": "format src",
     "build:watch": "tsc",
     "test": "jest --passWithNoTests --silent"
   },

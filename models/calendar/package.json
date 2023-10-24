@@ -9,7 +9,7 @@
     "build:watch": "tsc",
     "lint:fix": "eslint --fix src",
     "lint": "eslint src",
-    "format": "prettier --write src && eslint --fix src && mkdir -p .rush/temp/.format"
+    "format": "format src"
   },
   "template": "@hcengineering/model-package",
   "devDependencies": {

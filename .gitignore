@@ -84,3 +84,4 @@ metrics.txt
 dev/tool/report*.csv
 tests/db_dump
 .build
+.format
