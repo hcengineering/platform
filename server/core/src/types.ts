@@ -60,11 +60,7 @@ export interface Middleware {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
-  searchFulltext: (
-    ctx: SessionContext,
-    query: SearchQuery,
-    options: SearchOptions
-  ) => Promise<SearchResult>
+  searchFulltext: (ctx: SessionContext, query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
 }
 
 /**
@@ -99,11 +95,7 @@ export interface Pipeline extends LowLevelStorage {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
-  searchFulltext: (
-    ctx: SessionContext,
-    query: SearchQuery,
-    options: SearchOptions
-  ) => Promise<SearchResult>
+  searchFulltext: (ctx: SessionContext, query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
   tx: (ctx: SessionContext, tx: Tx) => Promise<[TxResult, Tx[], string[] | undefined]>
   close: () => Promise<void>
 }

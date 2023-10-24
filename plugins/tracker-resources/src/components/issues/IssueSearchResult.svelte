@@ -28,7 +28,7 @@
     title: docKey('title', { _class: tracker.class.Issue }),
     number: docKey('number', { _class: tracker.class.Issue }),
     status: docKey('status', { _class: tracker.class.Issue }),
-    identifier: '|' +docKey('identifier', { _class: tracker.class.Project })
+    identifier: '|' + docKey('identifier', { _class: tracker.class.Project })
   }
 
   $: title = `${value[keys.identifier][0]}-${value[keys.number]}`

@@ -43,11 +43,7 @@ export abstract class BaseMiddleware {
     return await this.provideFindAll(ctx, _class, query, options)
   }
 
-  async searchFulltext (
-    ctx: SessionContext,
-    query: SearchQuery,
-    options: SearchOptions
-  ): Promise<SearchResult> {
+  async searchFulltext (ctx: SessionContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
     return await this.provideSearchFulltext(ctx, query, options)
   }
 

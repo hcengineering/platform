@@ -94,11 +94,7 @@ class PipelineImpl implements Pipeline {
       : await this.storage.findAll(ctx, _class, query, options)
   }
 
-  async searchFulltext (
-    ctx: SessionContext,
-    query: SearchQuery,
-    options: SearchOptions
-  ): Promise<SearchResult> {
+  async searchFulltext (ctx: SessionContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
     return this.head !== undefined
       ? await this.head.searchFulltext(ctx, query, options)
       : await this.storage.searchFulltext(ctx, query, options)

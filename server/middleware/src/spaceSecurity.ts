@@ -40,8 +40,7 @@ import core, {
   WorkspaceEvent,
   SearchResult,
   SearchQuery,
-  SearchOptions,
-  IndexedDoc
+  SearchOptions
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { BroadcastFunc, Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'

@@ -119,10 +119,10 @@ class ElasticAdapter implements FullTextAdapter {
                 flags: 'OR|PREFIX|PHRASE|FUZZY|NOT|ESCAPE',
                 default_operator: 'and'
               }
-            },
+            }
           }
         },
-        size: options.limit ?? DEFAULT_LIMIT,
+        size: options.limit ?? DEFAULT_LIMIT
       }
       if (options.offset !== undefined) {
         elasticQuery.from = options.offset

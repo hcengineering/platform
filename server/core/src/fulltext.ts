@@ -245,11 +245,7 @@ export class FullTextIndex implements WithFind {
     return result
   }
 
-  async searchFulltext (
-    ctx: MeasureContext,
-    query: SearchQuery,
-    options: SearchOptions
-  ): Promise<SearchResult> {
+  async searchFulltext (ctx: MeasureContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
     return await this.adapter.searchRaw(query, options)
   }
 

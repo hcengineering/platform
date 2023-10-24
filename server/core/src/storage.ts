@@ -379,11 +379,7 @@ class TServerStorage implements ServerStorage {
     })
   }
 
-  async searchFulltext (
-    ctx: MeasureContext,
-    query: SearchQuery,
-    options: SearchOptions
-  ): Promise<SearchResult> {
+  async searchFulltext (ctx: MeasureContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
     return await ctx.with('full-text-search', {}, (ctx) => {
       return this.fulltext.searchFulltext(ctx, query, options)
     })

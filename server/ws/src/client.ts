@@ -113,11 +113,7 @@ export class ClientSession implements Session {
     return await this._pipeline.findAll(context, _class, query, options)
   }
 
-  async searchFulltext (
-    ctx: MeasureContext,
-    query: SearchQuery,
-    options: SearchOptions
-  ): Promise<SearchResult> {
+  async searchFulltext (ctx: MeasureContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
     const context = ctx as SessionContext
     context.userEmail = this.token.email
     return await this._pipeline.searchFulltext(context, query, options)
