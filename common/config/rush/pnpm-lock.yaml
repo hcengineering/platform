@@ -1076,6 +1076,9 @@ dependencies:
   simplytyped:
     specifier: ^3.3.0
     version: 3.3.0(typescript@5.2.2)
+  slugify:
+    specifier: ^1.6.6
+    version: 1.6.6
   smartcrop:
     specifier: ~2.0.5
     version: 2.0.5
@@ -15003,6 +15006,11 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
+  /slugify@1.6.6:
+    resolution: {integrity: sha512-h+z7HKHYXj6wJU+AnS/+IH8Uh9fdcX1Lrhg1/VMdf9PwoBQXFcXiAdsy2tSK0P6gKwJLXp02r90ahUCqHk9rrw==}
+    engines: {node: '>=8.0.0'}
+    dev: false
+
   /smart-buffer@4.2.0:
     resolution: {integrity: sha512-94hK0Hh8rPqQl2xXc3HsaBoOXKV20MToPkcXvwbISWLEs+64sBq5kFgn2kJDHb1Pry9yrP0dxrCI9RRci7RXKg==}
     engines: {node: '>= 6.0.0', npm: '>= 3.0.0'}
@@ -22698,7 +22706,7 @@ packages:
     dev: false
 
   file:projects/text-editor.tgz(@types/node@16.11.68)(bufferutil@4.0.7)(esbuild@0.16.17)(postcss-load-config@4.0.1)(postcss@8.4.31)(ts-node@10.9.1):
-    resolution: {integrity: sha512-J3QznelWi3nYzEv3ijunCv6XZll2NhN+mPlU92LVs7uY5zImg+5g7hvjygdc9J/WJp3iYoljomiKP0y8iiTpeA==, tarball: file:projects/text-editor.tgz}
+    resolution: {integrity: sha512-OzXa/nYb9KYZcR07KJ2MZdeQEKBuy5eV3AO4OPDsvlZZpy7o6Tl3osEImE4kiRgT31bnLs39SD8KNzM1EJhU6g==, tarball: file:projects/text-editor.tgz}
     id: file:projects/text-editor.tgz
     name: '@rush-temp/text-editor'
     version: 0.0.0
@@ -22757,6 +22765,7 @@ packages:
       prosemirror-view: 1.32.0
       rfc6902: 5.0.1
       sass: 1.69.0
+      slugify: 1.6.6
       svelte: 3.55.1
       svelte-check: 3.5.2(postcss-load-config@4.0.1)(postcss@8.4.31)(sass@1.69.0)(svelte@3.55.1)
       svelte-loader: 3.1.9(svelte@3.55.1)

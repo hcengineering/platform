@@ -83,6 +83,7 @@
     "@tiptap/extension-bubble-menu": "^2.1.12",
     "@tiptap/extension-underline": "^2.1.12",
     "@hocuspocus/provider": "^2.5.0",
-    "@tiptap/extension-list-keymap": "^2.1.12"
+    "@tiptap/extension-list-keymap": "^2.1.12",
+    "slugify": "^1.6.6"
   }
 }

@@ -34,6 +34,7 @@ export { default } from './plugin'
 export * from './types'
 export * from './utils'
 
+export { HeadingsExtension, type HeadingsOptions, type HeadingsStorage } from './components/extension/headings'
 export {
   IsEmptyContentExtension,
   type IsEmptyContentOptions,
