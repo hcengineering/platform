@@ -197,7 +197,7 @@
       "incremental": true,
       "ignoreDependencyOrder": true,
       "ignoreMissingScript": true,
-      "disableBuildCache": true
+      "disableBuildCache": false
     },
     {
       "commandKind": "bulk",
@@ -220,7 +220,7 @@
       "incremental": true,
       "ignoreDependencyOrder": true,
       "ignoreMissingScript": true,
-      "disableBuildCache": true
+      "disableBuildCache": false
     },
     {
       "commandKind": "bulk",

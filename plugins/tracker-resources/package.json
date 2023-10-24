@@ -9,8 +9,8 @@
     "build:docs": "api-extractor run --local",
     "lint": "svelte-check && eslint",
     "lint:fix": "eslint --fix src",
-    "svelte-check": "svelte-check --output human",
-    "format": "prettier --write --plugin-search-dir=. src && eslint --fix src",
+    "svelte-check": "svelte-check --output human  && mkdir -p .rush/temp/.svelte-check",
+    "format": "prettier --write --plugin-search-dir=. src && eslint --fix src && mkdir -p .rush/temp/.format",
     "build:watch": "tsc  --noEmit --outDir ./dist_cache"
   },
   "devDependencies": {

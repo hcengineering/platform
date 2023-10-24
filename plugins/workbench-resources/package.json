@@ -9,7 +9,7 @@
     "build:docs": "api-extractor run --local",
     "lint": "svelte-check && eslint",
     "lint:fix": "eslint --fix src",
-    "format": "prettier --write --plugin-search-dir=. src && eslint --fix src",
+    "format": "prettier --write --plugin-search-dir=. src && eslint --fix src && mkdir -p .rush/temp/.format",
     "build:watch": "tsc  --noEmit --outDir ./dist_cache"
   },
   "devDependencies": {
