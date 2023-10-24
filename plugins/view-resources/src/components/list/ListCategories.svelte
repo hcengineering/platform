@@ -301,8 +301,9 @@
           } else {
             const obj = stateObjs[statePos - 1]
             if (obj !== undefined) {
-              if (!noScroll) scrollInto(objState, obj)
-              dispatch('row-focus', obj)
+              const focusDoc = listListCategory[objState]?.getLimited().find((it) => it._id === obj._id) ?? obj
+              if (!noScroll) scrollInto(objState, focusDoc)
+              dispatch('row-focus', focusDoc)
             }
           }
           return
@@ -321,16 +322,18 @@
           } else {
             const obj = stateObjs[statePos + 1]
             if (obj !== undefined) {
-              if (!noScroll) scrollInto(objState, obj)
-              dispatch('row-focus', obj)
+              const focusDoc = listListCategory[objState]?.getLimited().find((it) => it._id === obj._id) ?? obj
+              if (!noScroll) scrollInto(objState, focusDoc)
+              dispatch('row-focus', focusDoc)
             }
           }
           return
         }
       }
       if (offset === 0) {
-        if (!noScroll) scrollInto(objState, obj)
-        dispatch('row-focus', obj)
+        const focusDoc = listListCategory[objState]?.getLimited().find((it) => it._id === obj._id) ?? obj
+        if (!noScroll) scrollInto(objState, focusDoc)
+        dispatch('row-focus', focusDoc)
       }
     } else {
       listCategory[objState]?.select(offset, of, dir, noScroll)

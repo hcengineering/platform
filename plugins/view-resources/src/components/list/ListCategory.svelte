@@ -110,6 +110,10 @@
         (res) => {
           items = res
           loading = false
+          const focusDoc = items.find((it) => it._id === $focusStore.focus?._id)
+          if (focusDoc) {
+            handleRowFocused(focusDoc)
+          }
         },
         { ...resultOptions, limit: limit ?? 200 }
       )
