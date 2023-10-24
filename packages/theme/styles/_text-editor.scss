@@ -19,6 +19,14 @@
     font-weight: 600;
   }
 
+  h1,
+  h2,
+  h3 {
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
   .title {
     font-size: 2.25rem;
     margin-top: 3.75rem;
