@@ -15,12 +15,16 @@
 -->
 <script lang="ts">
   import { getResource } from '@hcengineering/platform'
-  import { AnySvelteComponent, createFocusManager, FocusHandler, Label, ListView, resizeObserver } from '@hcengineering/ui'
+  import {
+    AnySvelteComponent,
+    createFocusManager,
+    FocusHandler,
+    Label,
+    ListView,
+    resizeObserver
+  } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import presentation, {
-    getClient,
-    ObjectSearchCategory
-  } from '@hcengineering/presentation'
+  import presentation, { getClient, ObjectSearchCategory } from '@hcengineering/presentation'
 
   import { Class, Ref, Doc, IndexedDoc } from '@hcengineering/core'
 
@@ -36,22 +40,20 @@
 
   let items: SearchItem[] = []
   let categories: ObjectSearchCategory[] = []
-  let components: Map<Ref<Class<Doc>>, AnySvelteComponent> = new Map()
+  const components: Map<Ref<Class<Doc>>, AnySvelteComponent> = new Map()
 
   const client = getClient()
 
-  client.findAll(presentation.class.ObjectSearchCategory, { context: 'mention' }).then(
-    async (results) => {
-      for (const cat of results) {
-        if (cat.classToSearch !== undefined && cat.component !== undefined) {
-          components.set(cat.classToSearch, await getResource(cat.component))
-        }
+  client.findAll(presentation.class.ObjectSearchCategory, { context: 'mention' }).then(async (results) => {
+    for (const cat of results) {
+      if (cat.classToSearch !== undefined && cat.component !== undefined) {
+        components.set(cat.classToSearch, await getResource(cat.component))
       }
+    }
 
-      categories = results
-      updateItems(query)
-    })
-
+    categories = results
+    updateItems(query)
+  })
 
   const dispatch = createEventDispatcher()
 
@@ -114,7 +116,10 @@
     return results
   }
 
-  function findCategoryByClass(categories: ObjectSearchCategory[], _class: Ref<Class<Doc>>): ObjectSearchCategory | undefined {
+  function findCategoryByClass (
+    categories: ObjectSearchCategory[],
+    _class: Ref<Class<Doc>>
+  ): ObjectSearchCategory | undefined {
     for (const category of categories) {
       if (category.classToSearch === _class) {
         return category
@@ -124,14 +129,17 @@
   }
 
   async function doFulltextSearch (classes: Ref<Class<Doc>>[], query: string): Promise<SearchSection[]> {
-    const result = await client.searchFulltext({
-      query: `${query}*`,
-      filter: {
-        _class: classes
+    const result = await client.searchFulltext(
+      {
+        query: `${query}*`,
+        filter: {
+          _class: classes
+        }
+      },
+      {
+        limit: 10
       }
-    }, {
-      limit: 10
-    })
+    )
 
     const itemsByClass = new Map<Ref<Class<Doc>>, IndexedDoc[]>()
     for (const item of result.docs) {
@@ -146,7 +154,8 @@
     const sections: SearchSection[] = []
     for (const [_class, items] of itemsByClass.entries()) {
       const category = findCategoryByClass(categories, _class)
-      if (category !== undefined) { // && category.component !== undefined
+      if (category !== undefined) {
+        // && category.component !== undefined
         sections.push({ category, items })
       }
     }

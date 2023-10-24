@@ -15,10 +15,9 @@
 <script lang="ts">
   import Avatar from './Avatar.svelte'
 
-  import contact, { Person, formatName } from '@hcengineering/contact'
-  import { IndexedDoc, Ref, docKey } from '@hcengineering/core'
+  import contact, { formatName } from '@hcengineering/contact'
+  import { IndexedDoc, docKey } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
   import { AnySvelteComponent, IconSize } from '@hcengineering/ui'
 
   export let value: IndexedDoc
@@ -27,7 +26,7 @@
   export let short: boolean = false
 
   const keys = {
-    name: docKey('name', { _class: contact.class.Contact }),
+    name: docKey('name', { _class: contact.class.Contact })
   }
 </script>
 

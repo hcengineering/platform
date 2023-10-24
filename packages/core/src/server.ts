@@ -74,11 +74,7 @@ export interface ServerStorage extends LowLevelStorage {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
-  searchFulltext: (
-    ctx: MeasureContext,
-    query: SearchQuery,
-    options: SearchOptions
-  ) => Promise<SearchResult>
+  searchFulltext: (ctx: MeasureContext, query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
   tx: (ctx: MeasureContext, tx: Tx) => Promise<[TxResult, Tx[]]>
   apply: (ctx: MeasureContext, tx: Tx[], broadcast: boolean) => Promise<Tx[]>
   close: () => Promise<void>

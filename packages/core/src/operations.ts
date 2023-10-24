@@ -15,7 +15,16 @@ import type {
 } from './classes'
 import { Client } from './client'
 import core from './component'
-import type { DocumentQuery, FindOptions, FindResult, SearchQuery, SearchOptions, SearchResult, TxResult, WithLookup } from './storage'
+import type {
+  DocumentQuery,
+  FindOptions,
+  FindResult,
+  SearchQuery,
+  SearchOptions,
+  SearchResult,
+  TxResult,
+  WithLookup
+} from './storage'
 import { DocumentClassQuery, Tx, TxCUD, TxFactory, TxProcessor } from './tx'
 
 /**

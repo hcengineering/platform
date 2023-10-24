@@ -11,8 +11,7 @@ import {
   Tx,
   TxResult,
   WithLookup,
-  toFindResult
-  WithLookup,
+  toFindResult,
   SearchQuery,
   SearchOptions,
   SearchResult

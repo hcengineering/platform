@@ -225,9 +225,9 @@ export interface IndexedDoc {
 /**
  * @public
  */
-export type SearchQuery = {
-  query: string,
-  aggregateBy?: string,
+export interface SearchQuery {
+  query: string
+  aggregateBy?: string
   filter?: {
     [key: string]: any
   }
@@ -236,7 +236,7 @@ export type SearchQuery = {
 /**
  * @public
  */
-export type SearchOptions = {
+export interface SearchOptions {
   limit?: number
   offset?: number
 }

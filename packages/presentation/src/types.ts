@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import {
   Class,
   Client,
@@ -11,9 +10,6 @@ import {
   Space,
   TxOperations
 } from '@hcengineering/core'
-=======
-import { Client, Doc, RelatedDocument, Ref, Class } from '@hcengineering/core'
->>>>>>> 5a6824abe (UBER-911: Move fullltext search to a new method)
 import { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { AnyComponent, AnySvelteComponent, ComponentExtensionId } from '@hcengineering/ui'
 
@@ -74,7 +70,7 @@ export interface ObjectSearchCategory extends Doc {
 
   // Query for documents with pattern
   query: Resource<ObjectSearchFactory>
-  classToSearch?: Ref<Class<Doc>>,
+  classToSearch?: Ref<Class<Doc>>
   component?: AnyComponent
 }
 
