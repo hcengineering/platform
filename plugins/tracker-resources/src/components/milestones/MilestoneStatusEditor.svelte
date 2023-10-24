@@ -17,7 +17,16 @@
   import { Data } from '@hcengineering/core'
   import { Milestone } from '@hcengineering/tracker'
   import { getClient } from '@hcengineering/presentation'
-  import { Button, ButtonKind, ButtonSize, Icon, SelectPopup, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import {
+    Button,
+    ButtonKind,
+    ButtonSize,
+    Icon,
+    SelectPopup,
+    eventToHTMLElement,
+    showPopup,
+    Label
+  } from '@hcengineering/ui'
   import { defaultMilestoneStatuses, milestoneStatusAssets } from '../../utils'
   import tracker from '../../plugin'
 
@@ -72,6 +81,11 @@
   >
     <Icon {icon} {size} />
   </button>
+{:else if kind === 'list-header'}
+  <div class="flex-row-center pl-0-5">
+    <Icon {icon} {size} />
+    <span class="overflow-label ml-1-5"><Label {label} /></span>
+  </div>
 {:else}
   <Button
     {label}

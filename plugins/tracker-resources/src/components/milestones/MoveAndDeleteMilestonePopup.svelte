@@ -35,7 +35,7 @@
 <Card
   canSave
   label={tracker.string.MoveAndDeleteMilestone}
-  labelProps={{ newMilestone: selectedMilestoneLabel, deleteMilestone: milestones.map((p) => p.label) }}
+  labelProps={{ newMilestone: selectedMilestoneLabel, deleteMilestone: milestones.map((p) => p.label).join(', ') }}
   okLabel={tracker.string.Delete}
   okAction={() => moveAndDeleteMilestone(selectedMilestone)}
   on:close
