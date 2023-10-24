@@ -16,7 +16,7 @@
     "test": "jest --passWithNoTests --silent",
     "lint:fix": "eslint --fix src",
     "lint": "eslint src",
-    "format": "prettier --write src && eslint --fix src && mkdir -p .rush/temp/.format"
+    "format": "format src"
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",

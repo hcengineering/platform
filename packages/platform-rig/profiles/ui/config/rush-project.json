@@ -20,14 +20,6 @@
     {
       "operationName": "build:watch",
       "outputFolderNames": ["lib", "dist_cache"]
-    },
-    {
-      "operationName": "format",
-      "outputFolderNames": [".rush/temp/.format"]
-    },
-    {
-      "operationName": "svelte-check",
-      "outputFolderNames": [".rush/temp/.svelte-check"]
     }   
   ]
 }
