@@ -15,7 +15,7 @@ import type {
 } from './classes'
 import { Client } from './client'
 import core from './component'
-import type { DocumentQuery, FindOptions, FindResult, FulltextSearchResult, TxResult, WithLookup } from './storage'
+import type { DocumentQuery, FindOptions, FindResult, SearchQuery, SearchOptions, SearchResult, TxResult, WithLookup } from './storage'
 import { DocumentClassQuery, Tx, TxCUD, TxFactory, TxProcessor } from './tx'
 
 /**
@@ -60,7 +60,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     return this.client.findOne(_class, query, options)
   }
 
-  searchFulltext (query: any, options: any): Promise<FulltextSearchResult> {
+  searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
     return this.client.searchFulltext(query, options)
   }
 
@@ -479,7 +479,7 @@ export class TxBuilder extends TxOperations {
       close: async () => {},
       findOne: async (_class, query, options?) => undefined,
       findAll: async (_class, query, options?) => toFindResult([]),
-      searchFulltext: async (query, options) => ({ hits: { hits: [] } }),
+      searchFulltext: async (query, options) => ({ docs: [] }),
       tx: async (tx): Promise<TxResult> => {
         if (this.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
           this.txes.push(tx as TxCUD<Doc>)

@@ -40,9 +40,9 @@ import core, {
   TxUpdateDoc,
   TxWorkspaceEvent,
   WorkspaceEvent,
-  FulltextSearchResult,
-  FulltextQuery,
-  FulltextQueryOptions,
+  SearchResult,
+  SearchQuery,
+  SearchOptions,
   IndexedDoc
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
@@ -407,49 +407,22 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
 
   override async searchFulltext (
     ctx: SessionContext,
-    query: FulltextQuery,
-    options: FulltextQueryOptions
-  ): Promise<FulltextSearchResult> {
+    query: SearchQuery,
+    options: SearchOptions
+  ): Promise<SearchResult> {
     const newQuery = justClone(query)
     const account = await getUser(this.storage, ctx)
     let spaces: string[] = []
     if (!isSystem(account)) {
       spaces = await this.getAllAllowedSpaces(account)
-      const spacesFilter = {
-        terms: {
-          'space.keyword': spaces
-        }
-      }
-
-      if (query.query === undefined) {
-        newQuery.query = spacesFilter
-      } else if (query.query.bool === undefined) {
-        newQuery.query = {
-          bool: {
-            must: query.query,
-            filter: spacesFilter
-          }
-        }
-      } else if (query.query.bool.filter === undefined) {
-        newQuery.query.bool.filter = spacesFilter
-      } else if (Array.isArray(query.query.bool.filter)) {
-        newQuery.query.bool.filter.push(spacesFilter)
+      if (newQuery.filter === undefined) {
+        newQuery.filter = { space: spaces }
       } else {
-        newQuery.query.bool.filter = [query.query.bool.filter, spacesFilter]
+        newQuery.filter.space = spaces
       }
     }
 
     const result = await this.provideSearchFulltext(ctx, newQuery, options)
-
-    if (spaces.length > 0) {
-      /*
-        We did our best at trying to filter out spaces in the query.
-        But the elastic request syntax is soo deep We should have a plan-B
-        filter in a case some query will break our filter.
-      */
-
-      result.hits.hits = result.hits.hits.filter((doc: IndexedDoc) => spaces.includes(doc.space))
-    }
     return result
   }
 

@@ -225,23 +225,30 @@ export interface IndexedDoc {
 /**
  * @public
  */
-export type FulltextQuery = any
-
-/**
- * @public
- */
-export type FulltextQueryOptions = any
-
-/**
- * @public
- */
-export interface FulltextSearchResult {
-  suggest?: any
-  aggregations?: any
-  hits: {
-    hits: IndexedDoc[]
+export type SearchQuery = {
+  query: string,
+  aggregateBy?: string,
+  filter?: {
     [key: string]: any
   }
+}
+
+/**
+ * @public
+ */
+export type SearchOptions = {
+  limit?: number
+  offset?: number
+}
+
+/**
+ * @public
+ */
+export interface SearchResult {
+  // suggest?: any
+  // aggregations?: any
+  docs: IndexedDoc[]
+  total?: number
 }
 
 /**
@@ -261,5 +268,5 @@ export interface Storage {
  * @public
  */
 export interface FulltextStorage {
-  searchFulltext: (query: FulltextQuery, options: FulltextQueryOptions) => Promise<FulltextSearchResult>
+  searchFulltext: (query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
 }

@@ -24,9 +24,9 @@ import {
   FindOptions,
   SortingOrder,
   WithLookup,
-  FulltextQuery,
-  FulltextQueryOptions,
-  FulltextSearchResult
+  SearchQuery,
+  SearchOptions,
+  SearchResult
 } from '../storage'
 import { Tx } from '../tx'
 import { genMinModel, test, TestMixin } from './minmodel'
@@ -52,8 +52,8 @@ class ClientModel extends ModelDb implements Client {
     return (await this.findAll(_class, query, options)).shift()
   }
 
-  async searchFulltext (query: FulltextQuery, options: FulltextQueryOptions): Promise<FulltextSearchResult> {
-    return { hits: { hits: [] } }
+  async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
+    return { docs: [] }
   }
 
   async close (): Promise<void> {}

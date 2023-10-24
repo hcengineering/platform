@@ -35,9 +35,9 @@ import core, {
   TxOperations,
   TxResult,
   WithLookup,
-  FulltextQuery,
-  FulltextQueryOptions,
-  FulltextSearchResult
+  SearchQuery,
+  SearchOptions,
+  SearchResult
 } from '@hcengineering/core'
 import { getMetadata, getResource } from '@hcengineering/platform'
 import { LiveQuery as LQ } from '@hcengineering/query'
@@ -97,7 +97,7 @@ class UIClient extends TxOperations implements Client {
     return await this.client.tx(tx)
   }
 
-  async searchFulltext (query: FulltextQuery, options: FulltextQueryOptions): Promise<FulltextSearchResult> {
+  async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
     return await this.client.searchFulltext(query, options)
   }
 }

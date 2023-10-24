@@ -28,9 +28,9 @@ import type {
   Tx,
   TxResult,
   FulltextStorage,
-  FulltextQuery,
-  FulltextQueryOptions,
-  FulltextSearchResult
+  SearchQuery,
+  SearchOptions,
+  SearchResult
 } from '@hcengineering/core'
 import core, { DOMAIN_TX, Hierarchy, ModelDb, TxDb } from '@hcengineering/core'
 import { genMinModel } from './minmodel'
@@ -93,8 +93,8 @@ FulltextStorage & {
     upload: async (domain: Domain, docs: Doc[]) => {},
     clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
 
-    searchFulltext: async (query: FulltextQuery, options: FulltextQueryOptions): Promise<FulltextSearchResult> => {
-      return { hits: { hits: [] } }
+    searchFulltext: async (query: SearchQuery, options: SearchOptions): Promise<SearchResult> => {
+      return { docs: [] }
     }
   }
 }

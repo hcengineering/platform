@@ -52,9 +52,9 @@ import core, {
   TxWorkspaceEvent,
   WorkspaceEvent,
   WorkspaceId,
-  FulltextQuery,
-  FulltextQueryOptions,
-  FulltextSearchResult
+  SearchQuery,
+  SearchOptions,
+  SearchResult
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { getResource } from '@hcengineering/platform'
@@ -381,9 +381,9 @@ class TServerStorage implements ServerStorage {
 
   async searchFulltext (
     ctx: MeasureContext,
-    query: FulltextQuery,
-    options: FulltextQueryOptions
-  ): Promise<FulltextSearchResult> {
+    query: SearchQuery,
+    options: SearchOptions
+  ): Promise<SearchResult> {
     return await ctx.with('full-text-search', {}, (ctx) => {
       return this.fulltext.searchFulltext(ctx, query, options)
     })

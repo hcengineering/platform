@@ -82,7 +82,7 @@ describe('server', () => {
       upload: async (domain: Domain, docs: Doc[]) => {},
       clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
       searchFulltext: async (ctx, query, options) => {
-        return { hits: { hits: [] } }
+        return { docs: [] }
       }
     }),
     sessionFactory: (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
@@ -180,7 +180,7 @@ describe('server', () => {
         upload: async (domain: Domain, docs: Doc[]) => {},
         clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
         searchFulltext: async (ctx, query, options) => {
-          return { hits: { hits: [] } }
+          return { docs: [] }
         }
       }),
       sessionFactory: (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),

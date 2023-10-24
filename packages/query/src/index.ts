@@ -49,9 +49,9 @@ import core, {
   TxWorkspaceEvent,
   WithLookup,
   WorkspaceEvent,
-  FulltextQuery,
-  FulltextQueryOptions,
-  FulltextSearchResult
+  SearchQuery,
+  SearchOptions,
+  SearchResult
 } from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
 
@@ -181,7 +181,7 @@ export class LiveQuery extends TxProcessor implements Client {
     return toFindResult(this.clone(q.result), q.total) as FindResult<T>
   }
 
-  searchFulltext (query: FulltextQuery, options: FulltextQueryOptions): Promise<FulltextSearchResult> {
+  searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
     return this.client.searchFulltext(query, options)
   }
 

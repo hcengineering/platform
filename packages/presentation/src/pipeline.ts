@@ -13,9 +13,9 @@ import {
   WithLookup,
   toFindResult
   WithLookup,
-  FulltextQuery,
-  FulltextQueryOptions,
-  FulltextSearchResult
+  SearchQuery,
+  SearchOptions,
+  SearchResult
 } from '@hcengineering/core'
 import { Resource } from '@hcengineering/platform'
 
@@ -112,7 +112,7 @@ export class PresentationPipelineImpl implements PresentationPipeline {
       : await this.client.findAll(_class, query, options)
   }
 
-  async searchFulltext (query: FulltextQuery, options: FulltextQueryOptions): Promise<FulltextSearchResult> {
+  async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
     return await this.client.searchFulltext(query, options)
   }
 

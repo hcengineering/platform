@@ -22,9 +22,9 @@ import {
   Ref,
   ServerStorage,
   Tx,
-  FulltextQuery,
-  FulltextQueryOptions,
-  FulltextSearchResult
+  SearchQuery,
+  SearchOptions,
+  SearchResult
 } from '@hcengineering/core'
 import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
 
@@ -45,9 +45,9 @@ export abstract class BaseMiddleware {
 
   async searchFulltext (
     ctx: SessionContext,
-    query: FulltextQuery,
-    options: FulltextQueryOptions
-  ): Promise<FulltextSearchResult> {
+    query: SearchQuery,
+    options: SearchOptions
+  ): Promise<SearchResult> {
     return await this.provideSearchFulltext(ctx, query, options)
   }
 
@@ -73,9 +73,9 @@ export abstract class BaseMiddleware {
 
   protected async provideSearchFulltext (
     ctx: SessionContext,
-    query: FulltextQuery,
-    options: FulltextQueryOptions
-  ): Promise<FulltextSearchResult> {
+    query: SearchQuery,
+    options: SearchOptions
+  ): Promise<SearchResult> {
     if (this.next !== undefined) {
       return await this.next.searchFulltext(ctx, query, options)
     }

@@ -92,7 +92,8 @@ export class TContact extends TDoc implements Contact {
   @Index(IndexKind.FullText)
     name!: string
 
-  avatar?: string | null
+  @Index(IndexKind.Indexed)
+    avatar?: string | null
 
   @Prop(Collection(contact.class.Channel), contact.string.ContactInfo)
     channels?: number
@@ -729,7 +730,8 @@ export function createModel (builder: Builder): void {
       title: contact.string.People,
       query: contact.completion.PersonQuery,
       context: ['search', 'mention'],
-      classToSearch: contact.class.Person
+      classToSearch: contact.class.Person,
+      component: contact.component.UserSearchResult
     },
     contact.completion.PersonCategory
   )
@@ -743,7 +745,8 @@ export function createModel (builder: Builder): void {
       title: contact.string.Organizations,
       query: contact.completion.OrganizationQuery,
       context: ['search', 'mention'],
-      classToSearch: contact.class.Organization
+      classToSearch: contact.class.Organization,
+      component: contact.component.UserSearchResult
     },
     contact.completion.OrganizationCategory
   )

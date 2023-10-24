@@ -25,9 +25,9 @@ import type {
   DocumentQuery,
   FindResult,
   TxResult,
-  FulltextQuery,
-  FulltextQueryOptions,
-  FulltextSearchResult
+  SearchQuery,
+  SearchOptions,
+  SearchResult
 } from '../storage'
 import { Tx, TxFactory, TxProcessor } from '../tx'
 import { connect } from './connection'
@@ -101,8 +101,8 @@ describe('client', () => {
       return {
         findAll,
 
-        searchFulltext: async (query: FulltextQuery, options: FulltextQueryOptions): Promise<FulltextSearchResult> => {
-          return { hits: { hits: [] } }
+        searchFulltext: async (query: SearchQuery, options: SearchOptions): Promise<SearchResult> => {
+          return { docs: [] }
         },
 
         tx: async (tx: Tx): Promise<TxResult> => {

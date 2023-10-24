@@ -45,11 +45,7 @@ describe('client', () => {
     )
     const result = await adapter.searchRaw(
       {
-        query: {
-          query_string: {
-            query: 'hey'
-          }
-        }
+        query: 'hey'
       },
       {}
     )

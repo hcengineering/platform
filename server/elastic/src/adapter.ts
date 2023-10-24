@@ -25,14 +25,17 @@ import {
   TxResult,
   WorkspaceId,
   IndexedDoc,
-  FulltextQuery,
-  FulltextQueryOptions,
-  FulltextSearchResult
+  SearchQuery,
+  SearchOptions,
+  SearchResult
 } from '@hcengineering/core'
 import type { EmbeddingSearchOption, FullTextAdapter } from '@hcengineering/server-core'
 
 import { Client, errors as esErr } from '@elastic/elasticsearch'
 import { Domain } from 'node:domain'
+
+const DEFAULT_LIMIT = 200
+
 class ElasticAdapter implements FullTextAdapter {
   constructor (
     private readonly client: Client,
@@ -104,33 +107,71 @@ class ElasticAdapter implements FullTextAdapter {
     return this._metrics
   }
 
-  async searchRaw (query: FulltextQuery, options: FulltextQueryOptions): Promise<FulltextSearchResult> {
+  async searchRaw (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
     try {
+      const elasticQuery: any = {
+        query: {
+          bool: {
+            must: {
+              simple_query_string: {
+                query: query.query,
+                analyze_wildcard: true,
+                flags: 'OR|PREFIX|PHRASE|FUZZY|NOT|ESCAPE',
+                default_operator: 'and'
+              }
+            },
+          }
+        },
+        size: options.limit ?? DEFAULT_LIMIT,
+      }
+      if (options.offset !== undefined) {
+        elasticQuery.from = options.offset
+      }
+      if (query.aggregateBy !== undefined) {
+        elasticQuery.aggs = {
+          aggr_count: {
+            terms: {
+              field: `${query.aggregateBy}.keyword`
+            }
+          }
+        }
+      }
+      if (query.filter !== undefined) {
+        const filter = []
+        for (const [key, value] of Object.entries(query.filter)) {
+          const term = Array.isArray(value) ? 'terms' : 'term'
+          filter.push({
+            [term]: {
+              [`${key}.keyword`]: value
+            }
+          })
+        }
+        elasticQuery.query.bool.filter = filter
+      }
       const result = await this.client.search({
         index: toWorkspaceString(this.workspaceId),
-        body: query
+        body: elasticQuery
       })
 
-      const resp: FulltextSearchResult = { hits: { hits: [] } }
+      const resp: SearchResult = { docs: [] }
       if (result.body.hits !== undefined) {
-        // 1-lvl merge, but preserve hits in a case there are no hits inside response
-        resp.hits = {
-          hits: [],
-          ...result.body.hits
+        if (result.body.hits.total?.value !== undefined) {
+          resp.total = result.body.hits.total?.value
         }
-        resp.hits.hits = resp.hits.hits.map((hit) => ({ ...hit._source, _score: hit._score }))
+        resp.docs = result.body.hits.hits.map((hit: any) => ({ ...hit._source, _score: hit._score }))
       }
-      if (result.body.suggest !== undefined) {
-        resp.suggest = result.body.suggest
-      }
-      if (result.body.aggregations !== undefined) {
-        resp.aggregations = result.body.aggregations
-      }
+
+      // if (result.body.suggest !== undefined) {
+      //   resp.suggest = result.body.suggest
+      // }
+      // if (result.body.aggregations !== undefined) {
+      //   resp.aggregations = result.body.aggregations
+      // }
 
       return resp
     } catch (err) {
-      console.error(JSON.stringify(err, null, 2))
-      return { hits: { hits: [] } }
+      console.error('elastic error', JSON.stringify(err, null, 2))
+      return { docs: [] }
     }
   }
 

@@ -194,7 +194,8 @@ export const contactPlugin = plugin(contactId, {
     UserBoxList: '' as AnyComponent,
     ChannelPresenter: '' as AnyComponent,
     SpaceMembers: '' as AnyComponent,
-    DeleteConfirmationPopup: '' as AnyComponent
+    DeleteConfirmationPopup: '' as AnyComponent,
+    UserSearchResult: '' as AnyComponent
   },
   channelProvider: {
     Email: '' as Ref<ChannelProvider>,

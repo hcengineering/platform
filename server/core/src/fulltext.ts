@@ -38,9 +38,9 @@ import core, {
   TxResult,
   WorkspaceId,
   IndexedDoc,
-  FulltextQuery,
-  FulltextQueryOptions,
-  FulltextSearchResult
+  SearchQuery,
+  SearchOptions,
+  SearchResult
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { FullTextIndexPipeline } from './indexer'
@@ -247,9 +247,9 @@ export class FullTextIndex implements WithFind {
 
   async searchFulltext (
     ctx: MeasureContext,
-    query: FulltextQuery,
-    options: FulltextQueryOptions
-  ): Promise<FulltextSearchResult> {
+    query: SearchQuery,
+    options: SearchOptions
+  ): Promise<SearchResult> {
     return await this.adapter.searchRaw(query, options)
   }
 

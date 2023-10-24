@@ -20,7 +20,7 @@ import core from './component'
 import { Hierarchy } from './hierarchy'
 import { ModelDb } from './memdb'
 import type { DocumentQuery, FindOptions, FindResult, Storage, FulltextStorage, TxResult, WithLookup } from './storage'
-import { SortingOrder, FulltextQuery, FulltextQueryOptions, FulltextSearchResult } from './storage'
+import { SortingOrder, SearchQuery, SearchOptions, SearchResult } from './storage'
 import { Tx, TxCUD, TxCollectionCUD, TxCreateDoc, TxProcessor, TxUpdateDoc } from './tx'
 import { toFindResult } from './utils'
 
@@ -127,7 +127,7 @@ class ClientImpl implements AccountClient, BackupClient {
     return toFindResult(result, data.total)
   }
 
-  async searchFulltext (query: FulltextQuery, options: FulltextQueryOptions): Promise<FulltextSearchResult> {
+  async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
     return await this.conn.searchFulltext(query, options)
   }
 

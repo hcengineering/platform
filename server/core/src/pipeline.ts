@@ -27,9 +27,9 @@ import {
   StorageIterator,
   Tx,
   TxResult,
-  FulltextQuery,
-  FulltextQueryOptions,
-  FulltextSearchResult
+  SearchQuery,
+  SearchOptions,
+  SearchResult
 } from '@hcengineering/core'
 import { DbConfiguration, createServerStorage } from './storage'
 import { BroadcastFunc, Middleware, MiddlewareCreator, Pipeline, SessionContext } from './types'
@@ -96,9 +96,9 @@ class PipelineImpl implements Pipeline {
 
   async searchFulltext (
     ctx: SessionContext,
-    query: FulltextQuery,
-    options: FulltextQueryOptions
-  ): Promise<FulltextSearchResult> {
+    query: SearchQuery,
+    options: SearchOptions
+  ): Promise<SearchResult> {
     return this.head !== undefined
       ? await this.head.searchFulltext(ctx, query, options)
       : await this.storage.searchFulltext(ctx, query, options)

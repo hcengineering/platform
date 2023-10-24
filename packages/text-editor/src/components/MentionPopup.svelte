@@ -15,53 +15,43 @@
 -->
 <script lang="ts">
   import { getResource } from '@hcengineering/platform'
-  import { createFocusManager, FocusHandler, Label, ListView, resizeObserver } from '@hcengineering/ui'
+  import { AnySvelteComponent, createFocusManager, FocusHandler, Label, ListView, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation, {
     getClient,
-    hasResource,
-    ObjectSearchCategory,
-    ObjectSearchResult
+    ObjectSearchCategory
   } from '@hcengineering/presentation'
 
-  import { Class, Ref, Doc } from '@hcengineering/core'
+  import { Class, Ref, Doc, IndexedDoc } from '@hcengineering/core'
 
   export let query: string = ''
-  export let maxItemsPerCategory = 3
 
-  type SearchSection = { category: ObjectSearchCategory; items: ObjectSearchResult[] }
-  type SearchItem = { num: number; item: ObjectSearchResult; category: ObjectSearchCategory }
+  type SearchSection = { category: ObjectSearchCategory; items: IndexedDoc[] }
+  type SearchItem = {
+    num: number
+    item: IndexedDoc
+    category: ObjectSearchCategory
+    component: AnySvelteComponent
+  }
 
   let items: SearchItem[] = []
   let categories: ObjectSearchCategory[] = []
+  let components: Map<Ref<Class<Doc>>, AnySvelteComponent> = new Map()
 
   const client = getClient()
 
-  client.findAll(presentation.class.ObjectSearchCategory, { context: 'mention' }).then((r) => {
-    categories = r.filter((it) => hasResource(it.query))
-    updateItems(query)
-  })
+  client.findAll(presentation.class.ObjectSearchCategory, { context: 'mention' }).then(
+    async (results) => {
+      for (const cat of results) {
+        if (cat.classToSearch !== undefined && cat.component !== undefined) {
+          components.set(cat.classToSearch, await getResource(cat.component))
+        }
+      }
 
-  // const fulltextQuery = {
-  //   "aggs": {
-  //     "class_count": {
-  //       "terms": {
-  //         "field": "_class.keyword"
-  //       }
-  //     }
-  //   },
+      categories = results
+      updateItems(query)
+    })
 
-  //   "query": {
-  //     "query_string": {
-  //       "query": "software"
-  //     }
-  //   }
-  // }
-
-  // conn.searchFulltext(fulltextQuery, {})
-  // .then((r) => {
-  //   console.log('searchFulltext @ r', r)
-  // })
 
   const dispatch = createEventDispatcher()
 
@@ -69,8 +59,8 @@
   let scrollContainer: HTMLElement
   let selection = 0
 
-  function dispatchItem (item: ObjectSearchResult): void {
-    dispatch('close', item)
+  function dispatchItem (item: IndexedDoc): void {
+    // dispatch('close', item)
   }
 
   export function onKeyDown (key: KeyboardEvent): boolean {
@@ -110,66 +100,70 @@
       const category = section.category
       const items = section.items
 
-      results = results.concat(
-        items.map((item, num) => {
-          return { num, category, item }
-        })
-      )
+      if (category.classToSearch !== undefined) {
+        const component = components.get(category.classToSearch)
+        if (component !== undefined) {
+          results = results.concat(
+            items.map((item, num) => {
+              return { num, category, component, item }
+            })
+          )
+        }
+      }
     }
     return results
   }
 
-  async function queryCategoryItems (category: ObjectSearchCategory, query: string): Promise<SearchSection> {
-    const f = await getResource(category.query)
-    return {
-      category,
-      items: await f(client, query, { limit: maxItemsPerCategory })
+  function findCategoryByClass(categories: ObjectSearchCategory[], _class: Ref<Class<Doc>>): ObjectSearchCategory | undefined {
+    for (const category of categories) {
+      if (category.classToSearch === _class) {
+        return category
+      }
     }
+    return undefined
   }
 
-  // WIP: Future search implementation with a new API
-  // async function doFulltextSearch (classes: Ref<Class<Doc>>[], query: string) {
-  //   const fulltextQuery = {
-  //     aggs: {
-  //       class_count: {
-  //         terms: {
-  //           field: '_class.keyword'
-  //         }
-  //       }
-  //     },
-  //     query: {
-  //       bool: {
-  //         must: {
-  //           query_string: { query }
-  //         },
-  //         filter: {
-  //           terms: {
-  //             '_class.keyword': classes
-  //           }
-  //         }
-  //       }
-  //     }
-  //   }
-  //   const result = await client.searchFulltext(fulltextQuery, {})
-  //   console.log('mention @ Fulltext Results', result)
-  // }
+  async function doFulltextSearch (classes: Ref<Class<Doc>>[], query: string): Promise<SearchSection[]> {
+    const result = await client.searchFulltext({
+      query: `${query}*`,
+      filter: {
+        _class: classes
+      }
+    }, {
+      limit: 10
+    })
+
+    const itemsByClass = new Map<Ref<Class<Doc>>, IndexedDoc[]>()
+    for (const item of result.docs) {
+      const list = itemsByClass.get(item._class)
+      if (list === undefined) {
+        itemsByClass.set(item._class, [item])
+      } else {
+        list.push(item)
+      }
+    }
+
+    const sections: SearchSection[] = []
+    for (const [_class, items] of itemsByClass.entries()) {
+      const category = findCategoryByClass(categories, _class)
+      if (category !== undefined) { // && category.component !== undefined
+        sections.push({ category, items })
+      }
+    }
+
+    return sections
+  }
 
   async function updateItems (query: string): Promise<void> {
     const classesToSearch: Ref<Class<Doc>>[] = []
-
-    const queries: Promise<SearchSection>[] = []
     for (const cat of categories) {
       if (cat.classToSearch !== undefined) {
         classesToSearch.push(cat.classToSearch)
       }
-      queries.push(queryCategoryItems(cat, query))
     }
 
-    // // WIP: Demo request in a new Fulltext Search API
-    // await doFulltextSearch(classesToSearch, query)
-
-    const results = await Promise.all(queries)
-    items = packSearchResultsForListView(results)
+    const sections = await doFulltextSearch(classesToSearch, query)
+    items = packSearchResultsForListView(sections)
   }
   $: updateItems(query)
 
@@ -198,9 +192,10 @@
           {/if}
         </svelte:fragment>
         <svelte:fragment slot="item" let:item={num}>
-          {@const doc = items[num].item}
+          {@const item = items[num]}
+          {@const doc = item.item}
           <div class="ap-menuItem withComp" on:click={() => dispatchItem(doc)}>
-            <svelte:component this={doc.component} value={doc.doc} {...doc.componentProps ?? {}} />
+            <svelte:component this={item.component} value={doc} />
           </div>
         </svelte:fragment>
       </ListView>

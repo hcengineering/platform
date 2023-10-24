@@ -33,9 +33,9 @@ import {
   TxResult,
   WorkspaceId,
   IndexedDoc,
-  FulltextQuery,
-  FulltextQueryOptions,
-  FulltextSearchResult
+  SearchQuery,
+  SearchOptions,
+  SearchResult
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import type { Resource } from '@hcengineering/platform'
@@ -62,9 +62,9 @@ export interface Middleware {
   ) => Promise<FindResult<T>>
   searchFulltext: (
     ctx: SessionContext,
-    query: FulltextQuery,
-    options: FulltextQueryOptions
-  ) => Promise<FulltextSearchResult>
+    query: SearchQuery,
+    options: SearchOptions
+  ) => Promise<SearchResult>
 }
 
 /**
@@ -101,9 +101,9 @@ export interface Pipeline extends LowLevelStorage {
   ) => Promise<FindResult<T>>
   searchFulltext: (
     ctx: SessionContext,
-    query: FulltextQuery,
-    options: FulltextQueryOptions
-  ) => Promise<FulltextSearchResult>
+    query: SearchQuery,
+    options: SearchOptions
+  ) => Promise<SearchResult>
   tx: (ctx: SessionContext, tx: Tx) => Promise<[TxResult, Tx[], string[] | undefined]>
   close: () => Promise<void>
 }
@@ -171,7 +171,7 @@ export interface FullTextAdapter {
   remove: (id: Ref<Doc>[]) => Promise<void>
   updateMany: (docs: IndexedDoc[]) => Promise<TxResult[]>
 
-  searchRaw: (query: FulltextQuery, options: FulltextQueryOptions) => Promise<FulltextSearchResult>
+  searchRaw: (query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
 
   search: (
     _classes: Ref<Class<Doc>>[],
@@ -220,8 +220,8 @@ export class DummyFullTextAdapter implements FullTextAdapter {
     return []
   }
 
-  async searchRaw (query: FulltextQuery, options: FulltextQueryOptions): Promise<FulltextSearchResult> {
-    return { hits: { hits: [] } }
+  async searchRaw (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
+    return { docs: [] }
   }
 
   async search (query: any): Promise<IndexedDoc[]> {

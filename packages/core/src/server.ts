@@ -22,9 +22,9 @@ import type {
   FindOptions,
   FindResult,
   TxResult,
-  FulltextQuery,
-  FulltextQueryOptions,
-  FulltextSearchResult
+  SearchQuery,
+  SearchOptions,
+  SearchResult
 } from './storage'
 import type { Tx } from './tx'
 import { LoadModelResponse } from '.'
@@ -76,9 +76,9 @@ export interface ServerStorage extends LowLevelStorage {
   ) => Promise<FindResult<T>>
   searchFulltext: (
     ctx: MeasureContext,
-    query: FulltextQuery,
-    options: FulltextQueryOptions
-  ) => Promise<FulltextSearchResult>
+    query: SearchQuery,
+    options: SearchOptions
+  ) => Promise<SearchResult>
   tx: (ctx: MeasureContext, tx: Tx) => Promise<[TxResult, Tx[]]>
   apply: (ctx: MeasureContext, tx: Tx[], broadcast: boolean) => Promise<Tx[]>
   close: () => Promise<void>
