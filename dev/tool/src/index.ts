@@ -237,7 +237,7 @@ export function devTool (
     .option('-p|--parallel <parallel>', 'Parallel upgrade', '0')
     .option('-l|--logs <logs>', 'Default logs folder', './logs')
     .option('-r|--retry <retry>', 'Number of apply retries', '0')
-    .option('-c|--console', 'Number of apply retries', false)
+    .option('-c|--console', 'Display all information into console(default will create logs folder with {workspace}.log files', false)
     .option('-f|--force [force]', 'Force update', false)
     .action(async (cmd: { parallel: string, logs: string, retry: string, force: boolean, console: boolean }) => {
       const { mongodbUri, version, txes, migrateOperations } = prepareTools()
