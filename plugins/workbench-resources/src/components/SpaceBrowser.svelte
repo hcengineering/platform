@@ -119,7 +119,7 @@
     </div>
     {#if createItemDialog}
       <div class="mb-1 clear-mins">
-        <Button label={createItemLabel} kind={'accented'} size={'medium'} on:click={(ev) => showCreateDialog(ev)} />
+        <Button label={createItemLabel} kind={'primary'} size={'medium'} on:click={(ev) => showCreateDialog(ev)} />
       </div>
     {/if}
   </div>
@@ -176,7 +176,7 @@
             <Button size={'x-large'} label={plugin.string.Leave} on:click={() => leave(space)} />
           {:else}
             <Button size={'x-large'} label={plugin.string.View} on:click={() => view(space)} />
-            <Button size={'x-large'} kind={'accented'} label={plugin.string.Join} on:click={() => join(space)} />
+            <Button size={'x-large'} kind={'primary'} label={plugin.string.Join} on:click={() => join(space)} />
           {/if}
         </div>
       </div>
@@ -184,7 +184,7 @@
   </div>
   {#if createItemDialog}
     <div class="flex-center mt-10">
-      <Button size={'x-large'} kind={'accented'} label={createItemLabel} on:click={(ev) => showCreateDialog(ev)} />
+      <Button size={'x-large'} kind={'primary'} label={createItemLabel} on:click={(ev) => showCreateDialog(ev)} />
     </div>
   {/if}
 </Scroller>

@@ -149,7 +149,7 @@
           focusIndex={10001}
           disabled={!canSave}
           label={okLabel}
-          kind={'accented'}
+          kind={'primary'}
           size={'large'}
           on:click={() => {
             if (okProcessing) {

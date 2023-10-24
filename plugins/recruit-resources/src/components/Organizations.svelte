@@ -209,7 +209,7 @@
         descriptor: { $in: [view.viewlet.Table, view.viewlet.List] }
       }}
     />
-    <Button icon={IconAdd} label={recruit.string.CompanyCreateLabel} kind={'accented'} on:click={showCreateDialog} />
+    <Button icon={IconAdd} label={recruit.string.CompanyCreateLabel} kind={'primary'} on:click={showCreateDialog} />
   </div>
 </div>
 <div class="ac-header full divide search-start">

@@ -154,7 +154,7 @@
       <EditBox label={telegram.string.Phone} placeholder={telegram.string.PhonePlaceholder} bind:value={phone} />
     {/if}
     <div class="footer">
-      <Button {label} kind={'accented'} {disabled} on:click={click} />
+      <Button {label} kind={'primary'} {disabled} on:click={click} />
       {#if requested || secondFactor}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div class="link over-underline" on:click={back}><Label label={telegram.string.Back} /></div>

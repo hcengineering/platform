@@ -66,7 +66,7 @@
       <Cropper bind:this={cropper} image={file} />
     </div>
     <div class="footer">
-      <Button label={presentation.string.Save} kind={'accented'} size={'large'} on:click={onCrop} />
+      <Button label={presentation.string.Save} kind={'primary'} size={'large'} on:click={onCrop} />
       <div class="mx-3 clear-mins">
         <Button label={presentation.string.Change} size={'large'} on:click={selectAnother} />
       </div>

@@ -19,7 +19,7 @@
   export let min: number = 0
   export let max: number = 100
   export let size: IconSize = 'small'
-  export let accented: boolean = false
+  export let primary: boolean = false
 
   export let color: string = 'var(--theme-progress-color)'
   export let greenColor: string = FernColor
@@ -50,7 +50,7 @@
       cy={8}
       r={7}
       class="progress-circle"
-      style:stroke={accented ? 'var(--primary-bg-color)' : color}
+      style:stroke={primary ? 'var(--primary-bg-color)' : color}
       style:opacity={dashOffset === 0 ? 0 : 1}
       style:transform={'rotate(-82deg)'}
       style:stroke-dasharray={lenghtC}

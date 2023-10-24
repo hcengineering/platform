@@ -85,7 +85,7 @@
     &:hover { background-color: var(--theme-button-hovered); }
     &.focusable:focus-within {
       background-color: var(--theme-button-focused);
-      border-color: var(--theme-primary-default);
+      border-color: var(--primary-button-default);
     }
     &.disabled {
       color: var(--theme-dark-color);

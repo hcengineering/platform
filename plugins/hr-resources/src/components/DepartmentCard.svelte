@@ -169,7 +169,7 @@
       cursor: pointer;
     }
     &.dragging {
-      border-color: var(--accented-button-outline);
+      border-color: var(--primary-button-outline);
     }
   }
 </style>

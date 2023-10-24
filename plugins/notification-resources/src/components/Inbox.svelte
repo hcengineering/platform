@@ -154,7 +154,7 @@
         <svelte:fragment slot="rightButtons">
           <div class="flex flex-gap-2">
             {#if selectedTab > 0}
-              <Button label={chunter.string.Message} icon={IconAdd} kind="accented" on:click={openUsersPopup} />
+              <Button label={chunter.string.Message} icon={IconAdd} kind="primary" on:click={openUsersPopup} />
             {/if}
             <Filter bind:filter />
           </div>

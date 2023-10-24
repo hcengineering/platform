@@ -191,7 +191,7 @@
   <div class="divider" />
   <div class="flex-between p-5 flex-no-shrink">
     <div />
-    <Button kind="accented" label={presentation.string.Save} disabled={readOnly} on:click={saveEvent} />
+    <Button kind="primary" label={presentation.string.Save} disabled={readOnly} on:click={saveEvent} />
   </div>
 </div>
 

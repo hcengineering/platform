@@ -89,7 +89,7 @@
           <div class="buttonContent">
             {#if i !== 0 || (i === 0 && !onBack)}
               <div class="flex check pointer-events-none">
-                <CheckBox checked={selectedElementsMap[i]} kind={'accented'} />
+                <CheckBox checked={selectedElementsMap[i]} kind={'primary'} />
               </div>
             {/if}
             {#if action.icon}

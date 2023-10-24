@@ -112,6 +112,6 @@
 
 <style lang="scss">
   .editing {
-    border: 1px solid var(--accented-button-outline);
+    border: 1px solid var(--primary-button-outline);
   }
 </style>

@@ -46,7 +46,7 @@
   </div>
 {:else}
   <div class="flex-row-center gap-1-5 mt-1">
-    <CheckBox bind:checked={allDay} kind={'accented'} on:value={() => dispatch('allday')} />
+    <CheckBox bind:checked={allDay} kind={'primary'} on:value={() => dispatch('allday')} />
     <Button
       label={calendar.string.AllDay}
       kind={'ghost'}

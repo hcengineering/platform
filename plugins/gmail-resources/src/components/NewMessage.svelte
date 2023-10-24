@@ -198,7 +198,7 @@
         inputFile.click()
       }}
     />
-    <Button label={plugin.string.Send} kind={'accented'} disabled={progress} on:click={sendMsg} />
+    <Button label={plugin.string.Send} kind={'primary'} disabled={progress} on:click={sendMsg} />
   </div>
 </div>
 {#if attachments.length}

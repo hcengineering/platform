@@ -60,7 +60,7 @@
     <div class="mb-1 clear-mins">
       <Button
         label={contact.string.ContactCreateLabel}
-        kind={'accented'}
+        kind={'primary'}
         size={'medium'}
         on:click={(ev) => showCreateDialog(ev)}
       />

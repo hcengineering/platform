@@ -22,7 +22,7 @@
   export let size: ButtonSize = 'large'
   export let ghost: boolean = false
   export let selected: boolean = false
-  export let accented: boolean = false
+  export let primary: boolean = false
   export let disabled: boolean = false
   export let id: string | undefined = undefined
 
@@ -43,7 +43,7 @@
   class="flex-center icon-button icon-{size}"
   class:selected
   class:ghost
-  class:accented
+  class:primary
   class:disabled
   tabindex="0"
   on:keydown={onKeydown}
@@ -76,7 +76,7 @@
       bottom: -0.25rem;
       left: -0.25rem;
       right: -0.25rem;
-      border: 1px solid var(--theme-primary-default);
+      border: 1px solid var(--primary-button-default);
       border-radius: 50%;
     }
     &:hover {
@@ -108,19 +108,19 @@
         background-color: var(--menu-bg-select);
       }
     }
-    &.accented {
-      background-color: var(--theme-primary-accented-default);
+    &.primary {
+      background-color: var(--secondary-button-default);
       &:hover {
-        background-color: var(--theme-primary-accented-hovered);
+        background-color: var(--secondary-button-hovered);
       }
       &:active {
-        background-color: var(--theme-primary-accented-pressed);
+        background-color: var(--secondary-button-pressed);
       }
       &:focus {
-        background-color: var(--theme-primary-accented-focused);
+        background-color: var(--secondary-button-focused);
       }
       &.disabled {
-        background-color: var(--theme-primary-disabled);
+        background-color: var(--primary-button-disabled);
       }
     }
   }

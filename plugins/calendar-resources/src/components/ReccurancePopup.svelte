@@ -125,7 +125,7 @@
           {#each weekdays as day}
             <CircleButton
               size={'medium'}
-              accented={isActive(day.id, selectedWeekdays)}
+              primary={isActive(day.id, selectedWeekdays)}
               on:click={() => weekdayClick(day.id)}
               on:selected={() => weekdayClick(day.id)}
             >
@@ -188,7 +188,7 @@
     <Button
       label={ui.string.Save}
       on:click={save}
-      kind="accented"
+      kind="primary"
       disabled={periodType === 'MONTHLY' && selectedWeekdays.length === 0}
     />
     <Button label={ui.string.Cancel} on:click={() => dispatch('close')} />

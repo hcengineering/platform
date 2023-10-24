@@ -87,7 +87,7 @@
 
   <div class="ac-header-full medium-gap mb-1">
     <ViewletSelector bind:viewlet bind:viewlets viewletQuery={{ attachTo: tracker.class.Component }} />
-    <Button icon={IconAdd} label={tracker.string.Component} kind="accented" on:click={showCreateDialog} />
+    <Button icon={IconAdd} label={tracker.string.Component} kind="primary" on:click={showCreateDialog} />
   </div>
 </div>
 <div class="ac-header full divide search-start">

@@ -147,7 +147,7 @@
                 }}
               >
                 <div class="check pointer-events-none">
-                  <CheckBox checked={isSelected(element, selected)} kind={'accented'} />
+                  <CheckBox checked={isSelected(element, selected)} kind={'primary'} />
                 </div>
                 <div class="tag" style="background-color: {color.background};" />
                 <span style:color={color.title}>

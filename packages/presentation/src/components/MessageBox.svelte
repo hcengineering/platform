@@ -43,7 +43,7 @@
       focusIndex={1}
       label={okLabel ?? presentation.string.Ok}
       size={'large'}
-      kind={'accented'}
+      kind={'primary'}
       loading={processing}
       on:click={() => {
         processing = true

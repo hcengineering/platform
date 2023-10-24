@@ -72,7 +72,7 @@
     <Button
       label={presentation.string.Save}
       size={'small'}
-      kind={'accented'}
+      kind={'primary'}
       disabled={!canSave}
       on:click={() => dispatch('save')}
     />

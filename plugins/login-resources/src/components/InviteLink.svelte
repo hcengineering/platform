@@ -167,7 +167,7 @@
       <Button
         label={login.string.Close}
         size={'medium'}
-        kind={'accented'}
+        kind={'primary'}
         on:click={() => {
           dispatch('close')
         }}
@@ -179,7 +179,7 @@
       <Button
         label={login.string.GetLink}
         size={'medium'}
-        kind={'accented'}
+        kind={'primary'}
         on:click={() => {
           ;((limit !== undefined && limit > 0) || noLimit) && getLink(expHours, emailMask, limit)
         }}

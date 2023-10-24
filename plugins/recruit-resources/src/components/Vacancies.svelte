@@ -150,7 +150,7 @@
         }}
       />
     {/if}
-    <Button icon={IconAdd} label={recruit.string.VacancyCreateLabel} kind={'accented'} on:click={showCreateDialog} />
+    <Button icon={IconAdd} label={recruit.string.VacancyCreateLabel} kind={'primary'} on:click={showCreateDialog} />
   </div>
 </div>
 <div class="ac-header full divide search-start">

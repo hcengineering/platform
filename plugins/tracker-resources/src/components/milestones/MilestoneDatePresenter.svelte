@@ -21,7 +21,7 @@
 
   export let value: Milestone
   export let field = 'targetDate'
-  export let kind: 'ghost' | 'accented' | 'link' | 'list' = 'accented'
+  export let kind: 'ghost' | 'primary' | 'link' | 'list' = 'primary'
   export let size: ButtonSize | 'x-small' = 'small'
 
   const client = getClient()

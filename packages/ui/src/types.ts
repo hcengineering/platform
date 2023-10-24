@@ -133,8 +133,8 @@ export interface RadioItem {
 }
 
 export type ButtonKind =
-  | 'accented'
-  | 'brand'
+  | 'primary'
+  | 'secondary'
   | 'positive'
   | 'negative'
   | 'regular'

@@ -99,13 +99,13 @@
     <span class="pl-2"><b>{selected.size}</b> <Label label={gmail.string.MessagesSelected} /></span>
     <div class="flex-row-center gap-3">
       <Button label={gmail.string.Cancel} on:click={clear} />
-      <Button label={gmail.string.PublishSelected} kind={'accented'} disabled={!selected.size} on:click={share} />
+      <Button label={gmail.string.PublishSelected} kind={'primary'} disabled={!selected.size} on:click={share} />
     </div>
   {:else}
     {#if enabled}
       <Button
         label={gmail.string.CreateMessage}
-        kind={'accented'}
+        kind={'primary'}
         on:click={() => {
           newMessage = true
         }}

@@ -274,8 +274,8 @@
       }
     }
     &:not(.disabled) .digit:focus {
-      color: var(--accented-button-color);
-      background-color: var(--accented-button-default);
+      color: var(--primary-button-color);
+      background-color: var(--primary-button-default);
     }
     .time-divider {
       flex-shrink: 0;

@@ -72,7 +72,7 @@
     label === undefined &&
     $$slots.content === undefined &&
     (icon !== undefined || iconRight !== undefined || $$slots.icon || $$slots.iconRight)
-  $: primary = ['accented', 'brand', 'positive', 'negative'].some((p) => p === kind)
+  $: primary = ['primary', 'secondary', 'positive', 'negative'].some((p) => p === kind)
 
   $: devSize = $deviceInfo.size
   $: adaptive = adaptiveShrink !== null ? checkAdaptiveMatching(devSize, adaptiveShrink) : false
@@ -132,7 +132,7 @@
   style:flex-shrink={shrink}
   style:padding
   {title}
-  type={kind === 'accented' ? 'submit' : 'button'}
+  type={kind === 'primary' ? 'submit' : 'button'}
   on:click|stopPropagation|preventDefault
   on:focus
   on:blur
@@ -149,7 +149,7 @@
     <div
       class="btn-icon pointer-events-none spinner"
       class:resetIconSize
-      style:color={primary ? 'var(--accented-button-color)' : 'var(--theme-caption-color)'}
+      style:color={primary ? 'var(--primary-button-color)' : 'var(--theme-caption-color)'}
     >
       <Spinner size={iconSize === 'inline' ? 'inline' : 'small'} />
     </div>
