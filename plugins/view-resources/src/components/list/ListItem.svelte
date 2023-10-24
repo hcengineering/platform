@@ -262,7 +262,8 @@
       background-color: var(--highlight-select);
       // border-bottom-color: var(--highlight-select);
 
-      &:hover {
+      &:hover,
+      &.mListGridSelected {
         background-color: var(--highlight-select-hover);
         // border-bottom-color: var(--highlight-select-hover);
       }
