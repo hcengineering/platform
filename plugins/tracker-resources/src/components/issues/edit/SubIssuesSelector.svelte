@@ -20,7 +20,7 @@
   import { statusStore } from '@hcengineering/view-resources'
   import { getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
-  import { listIssueStatusOrder, subIssueListProvider } from '../../../utils'
+  import { listIssueStatusOrder } from '../../../utils'
   import IssueStatusIcon from '../IssueStatusIcon.svelte'
 
   export let value: WithLookup<Issue>
@@ -95,7 +95,6 @@
 
   function openIssue (target: Ref<Issue>) {
     if (target !== value._id) {
-      subIssueListProvider(subIssues, target)
       showPanel(tracker.component.EditIssue, target, value._class, 'content')
     }
   }
