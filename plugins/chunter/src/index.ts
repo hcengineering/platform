@@ -65,6 +65,13 @@ export interface ChunterMessage extends AttachedDoc {
 /**
  * @public
  */
+export interface ChunterMessageExtension extends ChunterMessage {
+  mixinClass: Ref<Class<Doc>>
+}
+
+/**
+ * @public
+ */
 export interface ThreadMessage extends ChunterMessage {
   attachedTo: Ref<Message>
   attachedToClass: Ref<Class<Message>>
@@ -167,7 +174,8 @@ export default plugin(chunterId, {
     Reaction: '' as Ref<Class<Reaction>>
   },
   mixin: {
-    DirectMessageInput: '' as Ref<Mixin<DirectMessageInput>>
+    DirectMessageInput: '' as Ref<Mixin<DirectMessageInput>>,
+    ChunterMessageExtension: '' as Ref<Mixin<ChunterMessageExtension>>
   },
   space: {
     Backlinks: '' as Ref<Space>

@@ -20,6 +20,7 @@
 
   export let objectId: Ref<Doc> | undefined = undefined
   export let _class: Ref<Class<Doc>> | undefined = undefined
+  export let presenterClass: Ref<Class<Doc>> | undefined = undefined
   export let value: Doc | RelatedDocument | undefined = undefined
   export let props: Record<string, any> = {}
   export let inline: boolean = false
@@ -56,7 +57,7 @@
   }
 
   $: if (doc !== undefined) {
-    getObjectPresenter(client, doc._class, { key: '' })
+    getObjectPresenter(client, presenterClass ?? doc._class, { key: '' })
       .then((p) => {
         presenter = p
       })
