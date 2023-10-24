@@ -12,7 +12,7 @@
     "version": "ts-node src/__showversion.ts",
     "bumpversion": "ts-node src/__bumpversion.ts",
     "lint": "eslint src",
-    "format": "prettier --write src && eslint --fix src"
+    "format": "prettier --write src && eslint --fix src && mkdir -p .rush/temp/.format"
   },
   "template": "@hcengineering/model-package",
   "devDependencies": {

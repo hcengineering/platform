@@ -6,7 +6,7 @@
     "build:watch": "tsc  --noEmit --outDir ./dist_cache",
     "lint:fix": "eslint --fix src",
     "lint": "svelte-check && eslint",
-    "format": "prettier --write --plugin-search-dir=. src && eslint --fix src"
+    "format": "prettier --write --plugin-search-dir=. src && eslint --fix src && mkdir -p .rush/temp/.format"
   },
   "devDependencies": {    
     "@hcengineering/platform-rig": "^0.6.0",

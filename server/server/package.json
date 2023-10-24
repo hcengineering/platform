@@ -9,7 +9,7 @@
     "lint:fix": "eslint --fix src",
     "build:watch": "tsc",
     "lint": "eslint src",
-    "format": "prettier --write src && eslint --fix src",
+    "format": "prettier --write src && eslint --fix src && mkdir -p .rush/temp/.format",
     "test": "jest --passWithNoTests --silent"
   },
   "devDependencies": {

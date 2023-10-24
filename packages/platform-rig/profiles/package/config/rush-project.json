@@ -20,6 +20,10 @@
     {
       "operationName": "build:watch",
       "outputFolderNames": ["dist", ".build"]
+    },
+    {
+      "operationName": "format",
+      "outputFolderNames": [".rush/temp/.format"]
     }
   ]
 }
