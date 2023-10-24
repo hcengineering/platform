@@ -223,6 +223,9 @@
     &:disabled {
       color: var(--primary-button-disabled-color);
       background-color: var(--primary-button-disabled);
+
+      .btn-icon,
+      .btn-right-icon { color: var(--primary-button-disabled-color); }
     }
   }
   &.secondary {
