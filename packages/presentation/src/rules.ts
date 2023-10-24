@@ -32,7 +32,7 @@ export function getDocRules<T extends Doc> (documents: Doc | Doc[], field: strin
     }
   }
 
-  const rulesSet = getClient().getModel().findAllSync(presentation.class.DocRules, { ofClass: _class })
+  const rulesSet = c.getModel().findAllSync(presentation.class.DocRules, { ofClass: { $in: h.getAncestors(_class) } })
   let fieldQuery: DocumentQuery<T> = {}
   let disableUnset = false
   let disableEdit = false

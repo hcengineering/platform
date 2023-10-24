@@ -15,11 +15,10 @@
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
   import { translate } from '@hcengineering/platform'
-  import { themeStore, Label, closeTooltip, IconCopy } from '@hcengineering/ui'
-  import { Button, IconArrowRight, IconBlueCheck, IconClose } from '@hcengineering/ui'
+  import { copyTextToClipboard } from '@hcengineering/presentation'
+  import { Button, IconArrowRight, IconBlueCheck, IconClose, IconCopy, Label, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import view from '../plugin'
-  import { copyTextToClipboard } from '@hcengineering/presentation'
 
   export let value: string = ''
   export let editable: boolean | undefined = true
