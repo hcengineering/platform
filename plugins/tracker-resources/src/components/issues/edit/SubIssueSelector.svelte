@@ -28,11 +28,11 @@
     themeStore,
     tooltip
   } from '@hcengineering/ui'
-  import { ListSelectionProvider, statusStore } from '@hcengineering/view-resources'
+  import { statusStore } from '@hcengineering/view-resources'
   import { getIssueId, issueLinkFragmentProvider } from '../../../issues'
   import tracker from '../../../plugin'
-  import IssueStatusIcon from '../IssueStatusIcon.svelte'
   import { listIssueStatusOrder } from '../../../utils'
+  import IssueStatusIcon from '../IssueStatusIcon.svelte'
 
   export let issue: WithLookup<Issue>
 
@@ -58,7 +58,6 @@
   function openParentIssue () {
     if (parentIssue) {
       closeTooltip()
-      ListSelectionProvider.Pop()
       openIssue(parentIssue)
     }
   }
