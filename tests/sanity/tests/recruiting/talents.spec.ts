@@ -91,4 +91,20 @@ test.describe('candidate/talents tests', () => {
     const title = `Title-${generateId(4)}`
     await talentDetailsPage.addTitle(title)
   })
+
+  test('Delete the Talent', async ({ page, context }) => {
+    const navigationMenuPage = new NavigationMenuPage(page)
+    await navigationMenuPage.buttonTalents.click()
+
+    const talentsPage = new TalentsPage(page)
+    const talentName = await talentsPage.createNewTalent()
+    await talentsPage.openTalentByTalentName(talentName)
+
+    const talentDetailsPage = new TalentDetailsPage(page)
+    await talentDetailsPage.inputLocation.fill('Awesome Location')
+    await talentDetailsPage.deleteEntity()
+
+    await navigationMenuPage.buttonTalents.click()
+    await talentsPage.checkTalentNotExist(talentName)
+  })
 })
