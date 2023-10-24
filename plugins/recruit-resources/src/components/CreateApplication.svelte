@@ -140,7 +140,6 @@
       {
         ...doc,
         status: selectedState._id,
-        doneState: null,
         number: (incResult as any).object.sequence,
         assignee: doc.assignee,
         rank: calcRank(lastOne, undefined),
@@ -398,8 +397,8 @@
           _class={recruit.class.Applicant}
           object={doc}
           toClass={task.class.Task}
-          ignoreKeys={['assignee']}
-          extraProps={{ showNavigate: false }}
+          ignoreKeys={['assignee', 'status']}
+          extraProps={{ showNavigate: false, space: vacancy._id }}
         />
       {/if}
     {/key}
