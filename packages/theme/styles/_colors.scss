@@ -282,6 +282,9 @@
   --trans-content-05: rgba(138, 143, 152, .05);
   --trans-content-10: rgba(138, 143, 152, .1);
   --trans-content-20: rgba(138, 143, 152, .2);
+
+  --text-editor-toc-default-color: rgba(255, 255, 255, 0.1);
+  --text-editor-toc-hovered-color: rgba(255, 255, 255, 0.4);
 }
 
 /* Light Theme */
@@ -488,4 +491,7 @@
   --trans-content-05: rgba(60, 65, 73, .05);
   --trans-content-10: rgba(60, 65, 73, .1);
   --trans-content-20: rgba(60, 65, 73, .2);
+
+  --text-editor-toc-default-color: rgba(0, 0, 0, 0.1);
+  --text-editor-toc-hovered-color: rgba(0, 0, 0, 0.4);
 }

@@ -63,3 +63,12 @@ export interface TextNodeAction {
   label?: IntlString
   icon: Asset | AnySvelteComponent
 }
+
+/**
+ * @public
+ */
+export interface Heading {
+  id: string
+  level: number
+  title: string
+}
