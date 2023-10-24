@@ -85,10 +85,10 @@
     .toc-item {
       display: inline-block;
       height: 0;
-      border: 1px solid rgba(0, 0, 0, 0.1);
+      border: 1px solid var(--text-editor-toc-default-color);
 
       &.selected {
-        border: 1px solid rgba(0, 0, 0, 0.4);
+        border: 1px solid var(--text-editor-toc-hovered-color);
       }
     }
 
@@ -96,7 +96,7 @@
     &.hovered {
       cursor: pointer;
       .toc-item {
-        border: 1px solid rgba(0, 0, 0, 0.4);
+        border: 1px solid var(--text-editor-toc-hovered-color);
       }
     }
   }
