@@ -122,7 +122,7 @@ test.describe('Application tests', () => {
     const applicationsDetailsPage = new ApplicationsDetailsPage(page)
     const applicationId = await applicationsDetailsPage.getApplicationId()
 
-    await applicationsDetailsPage.deleteApplication()
+    await applicationsDetailsPage.deleteEntity()
     expect(page.url()).toContain(applicationId)
 
     await navigationMenuPage.buttonApplications.click()

@@ -81,7 +81,7 @@ export class ApplicationsPage extends CommonRecruitingPage {
 
   async checkApplicationDoneStatus (talentName: TalentName, done: string): Promise<void> {
     await expect(
-      await this.page
+      this.page
         .locator('tr', { hasText: `${talentName.lastName} ${talentName.firstName}` })
         .locator('td')
         .nth(6)
@@ -90,7 +90,7 @@ export class ApplicationsPage extends CommonRecruitingPage {
 
   async checkApplicationState (talentName: TalentName, done: string): Promise<void> {
     await expect(
-      await this.page
+      this.page
         .locator('tr', { hasText: `${talentName.lastName} ${talentName.firstName}` })
         .locator('td')
         .nth(5)
@@ -98,7 +98,7 @@ export class ApplicationsPage extends CommonRecruitingPage {
   }
 
   async checkApplicationNotExist (applicationId: string): Promise<void> {
-    await expect(await this.textTableFirstCell.filter({ hasText: applicationId })).toHaveCount(0)
+    await expect(this.textTableFirstCell.filter({ hasText: applicationId })).toHaveCount(0)
   }
 
   async changeApplicationStatus (talentName: TalentName, status: string): Promise<void> {

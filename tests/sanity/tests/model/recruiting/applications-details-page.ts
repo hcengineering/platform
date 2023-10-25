@@ -29,12 +29,6 @@ export class ApplicationsDetailsPage extends CommonRecruitingPage {
     return applicationId != null ? applicationId : ''
   }
 
-  async deleteApplication (): Promise<void> {
-    await this.buttonMoreActions.click()
-    await this.buttonDelete.click()
-    await this.pressYesDeletePopup(this.page)
-  }
-
   async changeState (status: string): Promise<void> {
     await this.buttonState.click()
     await this.selectFromDropdown(this.page, status)
