@@ -8,6 +8,7 @@
   import calendar from '../plugin'
 
   export let value: Ref<Calendar> | undefined
+  export let disabled: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -45,6 +46,7 @@
       {items}
       withSearch={false}
       {selected}
+      {disabled}
       on:selected={(e) => change(e.detail._id)}
     />
   </div>

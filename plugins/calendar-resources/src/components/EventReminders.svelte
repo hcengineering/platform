@@ -19,6 +19,7 @@
   import EventReminderItem from './EventReminderItem.svelte'
 
   export let reminders: number[]
+  export let disabled: boolean = false
 
   const maxReminders: number = 4
   let shown: boolean = false
@@ -46,6 +47,7 @@
   <Icon icon={calendar.icon.Notifications} size="small" />
   <Button
     label={reminders.length ? calendar.string.AddReminder : calendar.string.Reminders}
+    {disabled}
     kind={'ghost'}
     on:click={(e) => addReminder(e)}
   />
@@ -56,6 +58,7 @@
       {#each reminders.slice(0, maxReminders - 2) as reminder, i}
         <EventReminderItem
           {reminder}
+          {disabled}
           on:edit={(event) => {
             if (event.detail) edit(event.detail, reminder, i)
           }}
@@ -69,6 +72,7 @@
           kind={'ghost'}
           size={'x-small'}
           padding={'0 .5rem'}
+          {disabled}
           focusIndex={-1}
           on:click={() => (shown = true)}
         />
@@ -77,6 +81,7 @@
         </span>
       </div>
       <EventReminderItem
+        {disabled}
         reminder={reminders[reminders.length - 1]}
         on:edit={(event) => {
           if (event.detail) edit(event.detail, reminders[reminders.length - 1], reminders.length - 1)
@@ -87,6 +92,7 @@
       {#each reminders as reminder, i}
         <EventReminderItem
           {reminder}
+          {disabled}
           on:edit={(event) => {
             if (event.detail) edit(event.detail, reminder, i)
           }}

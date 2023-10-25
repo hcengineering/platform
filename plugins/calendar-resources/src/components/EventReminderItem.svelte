@@ -17,6 +17,7 @@
   import { Button, IconClose, IconMoreH, TimeShiftPresenter } from '@hcengineering/ui'
 
   export let reminder: number
+  export let disabled: boolean = false
 
   const dispatch = createEventDispatcher()
 </script>
@@ -31,6 +32,7 @@
       size={'x-small'}
       padding={'0 .5rem'}
       focusIndex={-1}
+      {disabled}
       noFocus
       on:click={(e) => dispatch('edit', e)}
     />
@@ -40,6 +42,7 @@
       size={'x-small'}
       padding={'0 .5rem'}
       focusIndex={-1}
+      {disabled}
       noFocus
       on:click={() => dispatch('remove')}
     />
