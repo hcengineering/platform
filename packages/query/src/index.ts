@@ -469,6 +469,7 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   protected async txCollectionCUD (tx: TxCollectionCUD<Doc, AttachedDoc>): Promise<TxResult> {
+    const docCache = new Map<Ref<Doc>, Doc>()
     for (const queries of this.queries) {
       const isTx = this.client.getHierarchy().isDerived(queries[0], core.class.Tx)
       for (const q of queries[1]) {
@@ -491,7 +492,7 @@ export class LiveQuery extends TxProcessor implements Client {
           }
           await this.handleDocAdd(q, TxProcessor.createDoc2Doc(d))
         } else if (tx.tx._class === core.class.TxUpdateDoc) {
-          await this.handleDocUpdate(q, tx.tx as unknown as TxUpdateDoc<Doc>)
+          await this.handleDocUpdate(q, tx.tx as unknown as TxUpdateDoc<Doc>, docCache)
         } else if (tx.tx._class === core.class.TxRemoveDoc) {
           await this.handleDocRemove(q, tx.tx as unknown as TxRemoveDoc<Doc>)
         }
@@ -501,6 +502,7 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   protected async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult> {
+    const docCache = new Map<Ref<Doc>, Doc>()
     for (const queries of this.queries) {
       const isTx = this.client.getHierarchy().isDerived(queries[0], core.class.Tx)
       for (const q of queries[1]) {
@@ -509,13 +511,13 @@ export class LiveQuery extends TxProcessor implements Client {
           await this.handleDocAdd(q, tx)
           continue
         }
-        await this.handleDocUpdate(q, tx)
+        await this.handleDocUpdate(q, tx, docCache)
       }
     }
     return {}
   }
 
-  private async handleDocUpdate (q: Query, tx: TxUpdateDoc<Doc>): Promise<void> {
+  private async handleDocUpdate (q: Query, tx: TxUpdateDoc<Doc>, docCache?: Map<Ref<Doc>, Doc>): Promise<void> {
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
@@ -539,7 +541,7 @@ export class LiveQuery extends TxProcessor implements Client {
       await this.sort(q, tx)
       const udoc = q.result.find((p) => p._id === tx.objectId)
       await this.updatedDocCallback(udoc, q)
-    } else if (await this.matchQuery(q, tx)) {
+    } else if (await this.matchQuery(q, tx, docCache)) {
       await this.sort(q, tx)
       const udoc = q.result.find((p) => p._id === tx.objectId)
       await this.updatedDocCallback(udoc, q)
@@ -648,7 +650,7 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   // Check if query is partially matched.
-  private async matchQuery (q: Query, tx: TxUpdateDoc<Doc>): Promise<boolean> {
+  private async matchQuery (q: Query, tx: TxUpdateDoc<Doc>, docCache?: Map<Ref<Doc>, Doc>): Promise<boolean> {
     if (!this.client.getHierarchy().isDerived(tx.objectClass, q._class)) {
       return false
     }
@@ -677,7 +679,11 @@ export class LiveQuery extends TxProcessor implements Client {
     }
 
     if (matched) {
-      const realDoc = await this.client.findOne(q._class, { _id: doc._id }, q.options)
+      const realDoc = docCache?.get(doc._id) ?? (await this.client.findOne(q._class, { _id: doc._id }, q.options))
+
+      if (realDoc != null && docCache != null) {
+        docCache?.set(realDoc._id, realDoc)
+      }
       if (realDoc === undefined) return false
       const res = matchQuery([realDoc], q.query, q._class, this.client.getHierarchy())
       if (res.length === 1) {
