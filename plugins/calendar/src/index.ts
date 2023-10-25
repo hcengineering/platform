@@ -192,6 +192,7 @@ const calendarPlugin = plugin(calendarId, {
     Visibility: '' as IntlString,
     Public: '' as IntlString,
     FreeBusy: '' as IntlString,
+    Busy: '' as IntlString,
     Private: '' as IntlString,
     NotAllPermissions: '' as IntlString
   },
