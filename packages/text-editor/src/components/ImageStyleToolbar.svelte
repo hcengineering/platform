@@ -41,9 +41,12 @@
     const attributes = textEditor.getAttributes('image')
     const fileId = attributes['file-id'] ?? attributes.src
     const fileName = attributes.alt ?? ''
-    showPopup(PDFViewer, { file: fileId, name: fileName, contentType: 'image/*', showIcon: false }, 'centered', () => {
-      dispatch('focus')
-    })
+    showPopup(
+      PDFViewer,
+      { file: fileId, name: fileName, contentType: 'image/*', fullSize: true, showIcon: false },
+      'centered',
+      () => { dispatch('focus') }
+    )
   }
 
   function openOriginalImage () {
@@ -66,18 +69,6 @@
     })
 
     const actions = [
-      {
-        id: '#imageOpen',
-        icon: IconScaleOut,
-        label: plugin.string.ViewImage,
-        action: openImage
-      },
-      {
-        id: '#imageOriginal',
-        icon: IconExpand,
-        label: plugin.string.ViewOriginal,
-        action: openOriginalImage
-      },
       ...widthActions
     ]
 
@@ -122,6 +113,19 @@
       selected={textEditor.isActive('image', { align: 'right' })}
       showTooltip={{ label: plugin.string.AlignRight }}
       on:click={getImageAlignmentToggler('right')}
+    />
+    <div class="buttons-divider" />
+    <StyleButton
+      icon={IconScaleOut}
+      size={formatButtonSize}
+      on:click={openImage}
+      showTooltip={{ label: plugin.string.ViewImage }}
+    />
+    <StyleButton
+      icon={IconExpand}
+      size={formatButtonSize}
+      on:click={openOriginalImage}
+      showTooltip={{ label: plugin.string.ViewOriginal }}
     />
     <div class="buttons-divider" />
     <StyleButton
