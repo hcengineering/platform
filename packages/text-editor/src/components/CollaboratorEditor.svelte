@@ -240,7 +240,7 @@
   $: updateEditor(editor, field, comparedVersion)
   $: if (editor) dispatch('editor', editor)
 
-  const tippyOptions = {
+  $: tippyOptions = {
     zIndex: 100000,
     popperOptions: {
       modifiers: [
@@ -287,7 +287,10 @@
           InlinePopupExtension.configure({
             pluginKey: 'show-image-actions-popup',
             element: imageToolbarElement,
-            tippyOptions,
+            tippyOptions: {
+              ...tippyOptions,
+              appendTo: () => boundary ?? element
+            },
             shouldShow: () => {
               if (!visible && !readonly) {
                 return false

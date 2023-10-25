@@ -1,4 +1,4 @@
-import { Editor, Extension, isTextSelection } from '@tiptap/core'
+import { Extension, isTextSelection } from '@tiptap/core'
 import { BubbleMenuOptions } from '@tiptap/extension-bubble-menu'
 import { Plugin, PluginKey } from 'prosemirror-state'
 import { InlinePopupExtension } from './inlinePopup'
@@ -9,39 +9,23 @@ export type InlineStyleToolbarOptions = BubbleMenuOptions & {
 }
 
 export interface InlineStyleToolbarStorage {
-  isShown: boolean
-}
-
-const handleFocus = (editor: Editor, options: InlineStyleToolbarOptions, storage: InlineStyleToolbarStorage): void => {
-  if (!options.isSupported()) {
-    return
-  }
-
-  if (editor.isEmpty) {
-    return
-  }
-
-  if (options.isSelectionOnly?.() === true && editor.view.state.selection.empty) {
-    return
-  }
-
-  storage.isShown = true
+  canShowWithoutSelection: boolean
 }
 
 export const InlineStyleToolbarExtension = Extension.create<InlineStyleToolbarOptions, InlineStyleToolbarStorage>({
   pluginKey: new PluginKey('inline-style-toolbar'),
   addProseMirrorPlugins () {
-    const options = this.options
     const storage = this.storage
-    const editor = this.editor
 
     const plugins = [
       ...(this.parent?.() ?? []),
       new Plugin({
         key: new PluginKey('inline-style-toolbar-click-plugin'),
         props: {
-          handleClick () {
-            handleFocus(editor, options, storage)
+          handleClickOn (view, pos, node, nodePos, event, direct) {
+            if (direct) {
+              storage.canShowWithoutSelection = node.type.name !== 'image'
+            }
           }
         }
       })
@@ -51,7 +35,7 @@ export const InlineStyleToolbarExtension = Extension.create<InlineStyleToolbarOp
   },
   addStorage () {
     return {
-      isShown: false
+      canShowWithoutSelection: false
     }
   },
   addExtensions () {
@@ -67,10 +51,6 @@ export const InlineStyleToolbarExtension = Extension.create<InlineStyleToolbarOp
 
           if (editor.isDestroyed || !editor.isEditable) {
             return false
-          }
-
-          if (this.storage.isShown) {
-            return true
           }
 
           // For some reason shouldShow might be called after dismount and
@@ -93,30 +73,25 @@ export const InlineStyleToolbarExtension = Extension.create<InlineStyleToolbarOp
           const { doc, selection } = state
           const { empty } = selection
 
+          const textSelection = isTextSelection(state.selection)
+
           // Sometime check for `empty` is not enough.
           // Doubleclick an empty paragraph returns a node size of 2.
           // So we check also for an empty text size.
-          const isEmptyTextBlock = doc.textBetween(from, to).length === 0 && isTextSelection(state.selection)
+          const isEmptyTextBlock = doc.textBetween(from, to).length === 0 && textSelection
           if (empty || isEmptyTextBlock) {
-            return false
+            return this.storage.canShowWithoutSelection
           }
 
-          if (editor.isActive('image')) {
-            return false
-          }
-
-          return true
+          return textSelection
         }
       })
     ]
   },
-  onFocus () {
-    handleFocus(this.editor, this.options, this.storage)
-  },
   onSelectionUpdate () {
-    this.storage.isShown = false
+    this.storage.canShowWithoutSelection = false
   },
   onUpdate () {
-    this.storage.isShown = false
+    this.storage.canShowWithoutSelection = false
   }
 })
