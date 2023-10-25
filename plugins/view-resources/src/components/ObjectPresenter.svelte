@@ -29,6 +29,7 @@
   export let disabled: boolean = false
   export let shouldShowName: boolean = true
   export let shrink: number = 0
+  export let exact = false
 
   const client = getClient()
   let presenter: AttributeModel | undefined
@@ -56,7 +57,7 @@
   }
 
   $: if (doc !== undefined) {
-    getObjectPresenter(client, doc._class, { key: '' })
+    getObjectPresenter(client, exact && _class ? _class : doc._class, { key: '' })
       .then((p) => {
         presenter = p
       })

@@ -19,6 +19,7 @@ import {
   Channel,
   chunterId,
   ChunterMessage,
+  ChunterMessageExtension,
   ChunterSpace,
   Comment,
   DirectMessage,
@@ -101,6 +102,9 @@ export class TChunterMessage extends TAttachedDoc implements ChunterMessage {
     reactions?: number
 }
 
+@Mixin(chunter.mixin.ChunterMessageExtension, chunter.class.ChunterMessage)
+export class TChunterMessageExtension extends TChunterMessage implements ChunterMessageExtension {}
+
 @Model(chunter.class.ThreadMessage, chunter.class.ChunterMessage)
 @UX(chunter.string.ThreadMessage, undefined, 'TMSG')
 export class TThreadMessage extends TChunterMessage implements ThreadMessage {
@@ -173,6 +177,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
     TMessage,
     TThreadMessage,
     TChunterMessage,
+    TChunterMessageExtension,
     TComment,
     TBacklink,
     TDirectMessage,

@@ -15,16 +15,15 @@
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
   import { AttachmentList, AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import type { ChunterMessage, Message, Reaction } from '@hcengineering/chunter'
+  import type { ChunterMessage, ChunterMessageExtension, Message, Reaction } from '@hcengineering/chunter'
   import { PersonAccount } from '@hcengineering/contact'
   import { Avatar, personByIdStore, EmployeePresenter } from '@hcengineering/contact-resources'
-  import { getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
+  import { getCurrentAccount, Mixin, Ref, WithLookup } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { getClient, MessageViewer } from '@hcengineering/presentation'
-  import { EmojiPopup } from '@hcengineering/ui'
-  import ui, { ActionIcon, Button, IconMoreH, Label, showPopup, tooltip } from '@hcengineering/ui'
+  import ui, { ActionIcon, Button, EmojiPopup, IconMoreV, Label, showPopup, tooltip } from '@hcengineering/ui'
   import { Action } from '@hcengineering/view'
-  import { LinkPresenter, Menu } from '@hcengineering/view-resources'
+  import { LinkPresenter, Menu, ObjectPresenter } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import { AddMessageToSaved, DeleteMessageFromSaved, UnpinMessage } from '../index'
   import chunter from '../plugin'
@@ -52,14 +51,14 @@
   $: attachments = (message.$lookup?.attachments ?? []) as Attachment[]
 
   const client = getClient()
-  const hieararchy = client.getHierarchy()
+  const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
   const me = getCurrentAccount()._id
 
   $: reactions = message.$lookup?.reactions as Reaction[] | undefined
 
   $: subscribed = (
-    hieararchy.as(message, notification.mixin.Collaborators) as any as Collaborators
+    hierarchy.as(message, notification.mixin.Collaborators) as any as Collaborators
   ).collaborators?.includes(me)
   $: subscribeAction = subscribed
     ? ({
@@ -82,6 +81,16 @@
       } as Action)
 
   $: isEditing = false
+
+  let extensions: Ref<Mixin<ChunterMessageExtension>>[] = []
+  $: if (message) {
+    extensions = []
+    for (const extension of hierarchy.getDescendants(chunter.mixin.ChunterMessageExtension)) {
+      if (hierarchy.hasMixin(message, extension)) {
+        extensions.push(extension as Ref<Mixin<ChunterMessageExtension>>)
+      }
+    }
+  }
 
   const editAction = {
     label: chunter.string.EditMessage,
@@ -255,21 +264,14 @@
       </div>
     {/if}
   </div>
-  {#if !readOnly}
-    <div class="buttons clear-mins" class:menuShowed>
-      <div class="tool">
-        <ActionIcon
-          icon={IconMoreH}
-          size={'medium'}
-          action={(e) => {
-            showMenu(e)
-          }}
-        />
-      </div>
-      {#if !thread}
-        <div class="tool"><ActionIcon icon={Thread} size={'medium'} action={openThread} /></div>
-      {/if}
-      <div class="tool book">
+
+  <div class="buttons clear-mins flex flex-gap-1 items-center" class:menuShowed>
+    {#each extensions as mixinClass}
+      <ObjectPresenter _class={mixinClass} value={hierarchy.as(message, mixinClass)} exact />
+    {/each}
+    {#if !readOnly}
+      <ActionIcon icon={Emoji} size={'medium'} action={openEmojiPalette} />
+      <div class="book">
         <ActionIcon
           icon={Bookmark}
           size={'medium'}
@@ -277,10 +279,19 @@
           label={isSaved ? chunter.string.RemoveFromSaved : chunter.string.AddToSaved}
         />
       </div>
-      <!-- <div class="tool"><ActionIcon icon={Share} size={'medium'}/></div> -->
-      <div class="tool"><ActionIcon icon={Emoji} size={'medium'} action={openEmojiPalette} /></div>
-    </div>
-  {/if}
+      {#if !thread}
+        <ActionIcon icon={Thread} size={'medium'} action={openThread} />
+      {/if}
+
+      <ActionIcon
+        icon={IconMoreV}
+        size={'medium'}
+        action={(e) => {
+          showMenu(e)
+        }}
+      />
+    {/if}
+  </div>
 </div>
 
 <style lang="scss">
@@ -343,13 +354,8 @@
       visibility: hidden;
       top: 0.5rem;
       right: 1rem;
-      display: flex;
-      flex-direction: row-reverse;
       user-select: none;
-
-      .tool + .tool {
-        margin-right: 0.5rem;
-      }
+      color: var(--theme-halfcontent-color);
 
       &.menuShowed {
         visibility: visible;
