@@ -83,7 +83,7 @@
   let textToolbarElement: HTMLElement
   let imageToolbarElement: HTMLElement
 
-  const tippyOptions = {
+  $: tippyOptions = {
     zIndex: 100000,
     popperOptions: {
       modifiers: [
@@ -166,7 +166,10 @@
           InlinePopupExtension.configure({
             pluginKey: 'show-image-actions-popup',
             element: imageToolbarElement,
-            tippyOptions,
+            tippyOptions: {
+              ...tippyOptions,
+              appendTo: () => boundary ?? element
+            },
             shouldShow: () => editor?.isActive('image')
           })
         ],

@@ -1,8 +1,22 @@
+//
+// Copyright © 2023 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 import { getMetadata } from '@hcengineering/platform'
-import presentation, { getFileUrl } from '@hcengineering/presentation'
-import { IconSize, getIconSize2x } from '@hcengineering/ui'
-import { Node, createNodeFromContent, mergeAttributes, nodeInputRule } from '@tiptap/core'
-import { Fragment, Node as ProseMirrorNode } from '@tiptap/pm/model'
+import presentation, { PDFViewer, getFileUrl } from '@hcengineering/presentation'
+import { IconSize, getIconSize2x, showPopup } from '@hcengineering/ui'
+import { Node, mergeAttributes, nodeInputRule } from '@tiptap/core'
+import { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { EditorView } from '@tiptap/pm/view'
 import { getDataAttribute } from '../../utils'
@@ -11,6 +25,11 @@ import { getDataAttribute } from '../../utils'
  * @public
  */
 export type FileAttachFunction = (file: File) => Promise<{ file: string, type: string } | undefined>
+
+/**
+ * @public
+ */
+export type ImageAlignment = 'center' | 'left' | 'right'
 
 /**
  * @public
@@ -25,7 +44,7 @@ export interface ImageOptions {
 }
 
 export interface ImageAlignmentOptions {
-  align?: 'center' | 'left' | 'right'
+  align?: ImageAlignment
 }
 
 export interface ImageSizeOptions {
@@ -129,7 +148,7 @@ export const ImageExtension = Node.create<ImageOptions>({
     const divAttributes = {
       class: 'text-editor-image-container',
       'data-type': this.name,
-      'data-align': node.attrs.align ?? 'center'
+      'data-align': node.attrs.align
     }
 
     const imgAttributes = mergeAttributes(
@@ -244,20 +263,10 @@ export const ImageExtension = Node.create<ImageOptions>({
           const ctype = dataTransfer.getData('application/contentType')
           const type = getType(ctype ?? 'other')
 
-          let content: ProseMirrorNode | Fragment | undefined
           if (type === 'image') {
-            content = createNodeFromContent(
-              `<img data-type='image' width='75%' file-id='${_file}'></img>`,
-              view.state.schema,
-              {
-                parseOptions: {
-                  preserveWhitespace: 'full'
-                }
-              }
-            )
-          }
-          if (content !== undefined) {
-            view.dispatch(view.state.tr.insert(pos?.pos ?? 0, content))
+            const node = view.state.schema.nodes.image.create({ 'file-id': _file })
+            const transaction = view.state.tr.insert(pos?.pos ?? 0, node)
+            view.dispatch(transaction)
             result = true
           }
         }
@@ -275,16 +284,9 @@ export const ImageExtension = Node.create<ImageOptions>({
             void opt.attachFile(file).then((id) => {
               if (id !== undefined) {
                 if (id.type.includes('image')) {
-                  const content = createNodeFromContent(
-                    `<img data-type='image' width='75%' file-id='${id.file}'></img>`,
-                    view.state.schema,
-                    {
-                      parseOptions: {
-                        preserveWhitespace: 'full'
-                      }
-                    }
-                  )
-                  view.dispatch(view.state.tr.insert(pos?.pos ?? 0, content))
+                  const node = view.state.schema.nodes.image.create({ 'file-id': id.file })
+                  const transaction = view.state.tr.insert(pos?.pos ?? 0, node)
+                  view.dispatch(transaction)
                 }
               }
             })
@@ -315,6 +317,26 @@ export const ImageExtension = Node.create<ImageOptions>({
             if (dataTransfer !== null) {
               return handleDrop(view, view.posAtCoords({ left: event.x, top: event.y }), dataTransfer)
             }
+          },
+          handleDoubleClickOn (view, pos, node, nodePos, event) {
+            if (node.type.name !== 'image') {
+              return
+            }
+
+            const fileId = node.attrs['file-id'] ?? node.attrs.src
+            const fileName = node.attrs.alt ?? ''
+
+            showPopup(
+              PDFViewer,
+              {
+                file: fileId,
+                name: fileName,
+                contentType: 'image/*',
+                fullSize: true,
+                showIcon: false
+              },
+              'centered'
+            )
           }
         }
       })

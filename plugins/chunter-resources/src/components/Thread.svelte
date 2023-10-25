@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import chunter, { type ChunterSpace, type Message, type ThreadMessage } from '@hcengineering/chunter'
@@ -42,6 +43,7 @@
   let commentId = generateId() as Ref<ThreadMessage>
 
   const notificationClient = NotificationClientImpl.getClient()
+  const dispatch = createEventDispatcher()
 
   const lookup = {
     _id: { attachments: attachment.class.Attachment },
@@ -142,6 +144,7 @@
       },
       commentId
     )
+    dispatch('added', commentId)
 
     commentId = generateId()
     loading = false
