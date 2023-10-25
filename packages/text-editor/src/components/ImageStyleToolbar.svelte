@@ -45,7 +45,9 @@
       PDFViewer,
       { file: fileId, name: fileName, contentType: 'image/*', fullSize: true, showIcon: false },
       'centered',
-      () => { dispatch('focus') }
+      () => {
+        dispatch('focus')
+      }
     )
   }
 
@@ -68,9 +70,7 @@
       }
     })
 
-    const actions = [
-      ...widthActions
-    ]
+    const actions = [...widthActions]
 
     showPopup(
       SelectPopup,

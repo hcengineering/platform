@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Doc } from '@hcengineering/core'
   import { Button, Dialog, PopupOptions } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
   import presentation from '..'
   import { getFileUrl } from '../utils'
   import Download from './icons/Download.svelte'
@@ -27,6 +27,7 @@
   export let popupOptions: PopupOptions
   export let value: Doc
   export let showIcon = true
+  export let fullSize = false
 
   const dispatch = createEventDispatcher()
   // let imgView: 'img-horizontal-fit' | 'img-vertical-fit' | 'img-original-fit' = 'img-vertical-fit'
@@ -36,9 +37,11 @@
     const ext = parts[parts.length - 1]
     return ext.substring(0, 4).toUpperCase()
   }
-  // onMount(() => {
-  //   dispatch('fullsize')
-  // })
+  onMount(() => {
+    if (fullSize) {
+      dispatch('fullsize')
+    }
+  })
   let download: HTMLAnchorElement
 </script>
 

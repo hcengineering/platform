@@ -287,7 +287,10 @@
           InlinePopupExtension.configure({
             pluginKey: 'show-image-actions-popup',
             element: imageToolbarElement,
-            tippyOptions,
+            tippyOptions: {
+              ...tippyOptions,
+              appendTo: () => boundary ?? element
+            },
             shouldShow: () => {
               if (!visible && !readonly) {
                 return false

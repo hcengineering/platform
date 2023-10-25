@@ -1,6 +1,20 @@
+//
+// Copyright © 2023 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 import { getMetadata } from '@hcengineering/platform'
-import presentation, { getFileUrl } from '@hcengineering/presentation'
-import { IconSize, getIconSize2x } from '@hcengineering/ui'
+import presentation, { PDFViewer, getFileUrl } from '@hcengineering/presentation'
+import { IconSize, getIconSize2x, showPopup } from '@hcengineering/ui'
 import { Node, mergeAttributes, nodeInputRule } from '@tiptap/core'
 import { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
@@ -303,6 +317,26 @@ export const ImageExtension = Node.create<ImageOptions>({
             if (dataTransfer !== null) {
               return handleDrop(view, view.posAtCoords({ left: event.x, top: event.y }), dataTransfer)
             }
+          },
+          handleDoubleClickOn (view, pos, node, nodePos, event) {
+            if (node.type.name !== 'image') {
+              return
+            }
+
+            const fileId = node.attrs['file-id'] ?? node.attrs.src
+            const fileName = node.attrs.alt ?? ''
+
+            showPopup(
+              PDFViewer,
+              {
+                file: fileId,
+                name: fileName,
+                contentType: 'image/*',
+                fullSize: true,
+                showIcon: false
+              },
+              'centered'
+            )
           }
         }
       })
