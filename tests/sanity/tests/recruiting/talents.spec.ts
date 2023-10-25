@@ -107,4 +107,62 @@ test.describe('candidate/talents tests', () => {
     await navigationMenuPage.buttonTalents.click()
     await talentsPage.checkTalentNotExist(talentName)
   })
+
+  test('Merge contacts', async ({ page, context }) => {
+    const navigationMenuPage = new NavigationMenuPage(page)
+    await navigationMenuPage.buttonTalents.click()
+    const talentsPage = new TalentsPage(page)
+
+    // talent1
+    const talentNameFirst = await talentsPage.createNewTalent()
+    await talentsPage.openTalentByTalentName(talentNameFirst)
+    let talentDetailsPage = new TalentDetailsPage(page)
+    await talentDetailsPage.inputLocation.fill('Awesome Location Merge1')
+    // const titleTalent1 = `TitleMerge1-${generateId(4)}`
+    const titleTalent1 = 'TitleMerge1'
+    await talentDetailsPage.addTitle(titleTalent1)
+    // const sourceTalent1 = `SourceTalent1-${generateId(4)}`
+    const sourceTalent1 = 'SourceTalent1'
+    await talentDetailsPage.addSource(sourceTalent1)
+    await talentDetailsPage.addSocialLinks('Phone', '123123213213')
+    await talentDetailsPage.checkSocialLinks('Phone')
+
+    // talent 2
+    await navigationMenuPage.buttonTalents.click()
+    const talentNameSecond = await talentsPage.createNewTalent()
+    await talentsPage.openTalentByTalentName(talentNameSecond)
+    talentDetailsPage = new TalentDetailsPage(page)
+    await talentDetailsPage.inputLocation.fill('Awesome Location Merge2')
+    // const titleTalent2 = `TitleMerge2-${generateId(4)}`
+    const titleTalent2 = 'TitleMerge2'
+    await talentDetailsPage.addTitle(titleTalent2)
+    // const sourceTalent2 = `SourceTalent2-${generateId(4)}`
+    const sourceTalent2 = 'SourceTalent2'
+    await talentDetailsPage.addSource(sourceTalent2)
+    await talentDetailsPage.addSocialLinks('Email', 'test-merge-2@gmail.com')
+    await talentDetailsPage.checkSocialLinks('Email')
+
+    // merge
+    await navigationMenuPage.buttonTalents.click()
+    await talentsPage.openTalentByTalentName(talentNameFirst)
+
+    await talentDetailsPage.mergeContacts({
+      finalContactName: talentNameSecond.lastName,
+      name: `${talentNameFirst.lastName} ${talentNameFirst.firstName}`,
+      mergeLocation: true,
+      location: 'Awesome Location Merge1',
+      mergeTitle: true,
+      title: titleTalent1,
+      mergeSource: true,
+      source: sourceTalent1
+    })
+
+    await navigationMenuPage.buttonTalents.click()
+    await talentsPage.openTalentByTalentName(talentNameFirst)
+    await talentDetailsPage.checkSocialLinks('Phone')
+    await talentDetailsPage.checkSocialLinks('Email')
+    await expect(talentDetailsPage.inputLocation).toHaveValue('Awesome Location Merge1')
+    await expect(talentDetailsPage.page.locator('button > span', { hasText: titleTalent2 })).toBeVisible()
+    await expect(talentDetailsPage.page.locator('button > span', { hasText: sourceTalent2 })).toBeVisible()
+  })
 })
