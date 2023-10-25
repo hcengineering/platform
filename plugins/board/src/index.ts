@@ -15,30 +15,21 @@
 //
 
 import { Employee } from '@hcengineering/contact'
-import type { Attribute, Class, Doc, Markup, Ref, Timestamp, Type } from '@hcengineering/core'
+import type { Attribute, Class, Doc, Markup, Ref, Status, Timestamp, Type } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
-import type { DoneState, KanbanTemplateSpace, SpaceWithStates, State, Task } from '@hcengineering/task'
+import { TagCategory } from '@hcengineering/tags'
+import type { Project, ProjectTypeCategory, Task } from '@hcengineering/task'
 import type { AnyComponent } from '@hcengineering/ui'
 import { Action, ActionCategory } from '@hcengineering/view'
-import { TagCategory } from '@hcengineering/tags'
 
 /**
  * @public
  */
-export interface Board extends SpaceWithStates {
+export interface Board extends Project {
   color?: number
   background?: string
-}
-
-/**
- * @public
- */
-export interface BoardView extends SpaceWithStates {
-  title: string
-  type: 'table' | 'calendar'
-  boards: Ref<Board>[]
 }
 
 /**
@@ -63,7 +54,6 @@ export interface Card extends Task {
   location?: string
 
   cover?: CardCover | null
-  status: Ref<State>
   startDate: Timestamp | null
 }
 
@@ -101,10 +91,11 @@ const boards = plugin(boardId, {
   },
   category: {
     Card: '' as Ref<ActionCategory>,
-    Other: '' as Ref<TagCategory>
+    Other: '' as Ref<TagCategory>,
+    BoardType: '' as Ref<ProjectTypeCategory>
   },
-  state: {
-    Completed: '' as Ref<DoneState>
+  attribute: {
+    State: '' as Ref<Attribute<Status>>
   },
   action: {
     Open: '' as Ref<Action>,
@@ -120,16 +111,9 @@ const boards = plugin(boardId, {
   string: {
     ConfigLabel: '' as IntlString
   },
-  attribute: {
-    State: '' as Ref<Attribute<State>>,
-    DoneState: '' as Ref<Attribute<DoneState>>
-  },
   icon: {
     Board: '' as Asset,
     Card: '' as Asset
-  },
-  space: {
-    BoardTemplates: '' as Ref<KanbanTemplateSpace>
   },
   menuPageId: {
     Main: 'main',

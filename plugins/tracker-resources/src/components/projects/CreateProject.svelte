@@ -15,22 +15,15 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { AccountArrayEditor, AssigneeBox } from '@hcengineering/contact-resources'
-  import core, {
-    Account,
-    ApplyOperations,
-    DocumentUpdate,
-    Ref,
-    Status,
-    TxOperations,
-    generateId,
-    getCurrentAccount
-  } from '@hcengineering/core'
+  import core, { Account, DocumentUpdate, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
+  import task, { ProjectType } from '@hcengineering/task'
   import { StyledTextBox } from '@hcengineering/text-editor'
-  import { Project, TimeReportDayType, createStatuses } from '@hcengineering/tracker'
+  import { Project, TimeReportDayType } from '@hcengineering/tracker'
   import {
     Button,
+    Component,
     EditBox,
     IconEdit,
     IconWithEmoji,
@@ -43,21 +36,16 @@
     showPopup,
     themeStore
   } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { IconPicker } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import ChangeIdentity from './ChangeIdentity.svelte'
-  import view from '@hcengineering/view'
 
   export let project: Project | undefined = undefined
 
   export let namePlaceholder: string = ''
   export let descriptionPlaceholder: string = ''
-  export let statusFactory: (
-    client: TxOperations | ApplyOperations,
-    statusClass: Status['_class'],
-    categoryOfAttribute: Status['ofAttribute']
-  ) => Promise<Ref<Status>[]> = createStatuses
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -158,28 +146,36 @@
     close()
   }
 
+  let typeId: Ref<ProjectType> | undefined = project?.type
+
   async function createProject () {
     const projectId = generateId<Project>()
     const projectData = getProjectData()
-    const ops = client
-      .apply(projectId)
-      .notMatch(tracker.class.Project, { identifier: projectData.identifier.toUpperCase() })
-    const statuses = await statusFactory(ops, tracker.class.IssueStatus, tracker.attribute.IssueStatus)
-
-    isSaving = true
-    await ops.createDoc(
-      tracker.class.Project,
-      core.space.Space,
-      { ...projectData, states: statuses, defaultIssueStatus: statuses[0] },
-      projectId
+    const status = await client.findOne(
+      tracker.class.IssueStatus,
+      { space: typeId },
+      { sort: { rank: SortingOrder.Ascending } }
     )
-    const succeeded = await ops.commit()
-    isSaving = false
+    if (status !== undefined && typeId !== undefined) {
+      const ops = client
+        .apply(projectId)
+        .notMatch(tracker.class.Project, { identifier: projectData.identifier.toUpperCase() })
 
-    if (succeeded) {
-      close(projectId)
-    } else {
-      changeIdentity(changeIdentityRef)
+      isSaving = true
+      await ops.createDoc(
+        tracker.class.Project,
+        core.space.Space,
+        { ...projectData, type: typeId, defaultIssueStatus: status._id },
+        projectId
+      )
+      const succeeded = await ops.commit()
+      isSaving = false
+
+      if (succeeded) {
+        close(projectId)
+      } else {
+        changeIdentity(changeIdentityRef)
+      }
     }
   }
 
@@ -211,6 +207,10 @@
     (res) => (projectsIdentifiers = new Set(res.map(({ identifier }) => identifier)))
   )
 
+  function handleTypeChange (evt: CustomEvent<Ref<ProjectType>>): void {
+    typeId = evt.detail
+  }
+
   $: identifier = identifier.toLocaleUpperCase().replaceAll('-', '_').replaceAll(' ', '_').substring(0, 5)
 </script>
 
@@ -229,6 +229,23 @@
   on:changeContent
 >
   <div class="antiGrid">
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header">
+        <Label label={task.string.ProjectType} />
+      </div>
+      <Component
+        is={task.component.ProjectTypeSelector}
+        props={{
+          categories: [tracker.category.ProjectTypeCategory],
+          type: typeId,
+          disabled: !isNew,
+          focusIndex: 4,
+          kind: 'regular',
+          size: 'large'
+        }}
+        on:change={handleTypeChange}
+      />
+    </div>
     <div class="antiGrid-row">
       <div class="antiGrid-row__header">
         <Label label={tracker.string.ProjectTitle} />

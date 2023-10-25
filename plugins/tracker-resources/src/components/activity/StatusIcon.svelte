@@ -21,7 +21,7 @@
   export let tx: TxUpdateDoc<Issue>
   $: value = tx.operations.status
 
-  $: status = value && $statusStore.get(value)
+  $: status = value && $statusStore.byId.get(value)
 
   $: space = tx.objectSpace as Ref<Project>
 </script>

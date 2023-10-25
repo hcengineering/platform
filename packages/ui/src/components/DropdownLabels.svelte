@@ -40,6 +40,7 @@
   export let autoSelect: boolean = true
   export let useFlexGrow = false
   export let minW0 = true
+  export let disabled: boolean = false
 
   let container: HTMLElement
   let opened: boolean = false
@@ -61,6 +62,7 @@
     {size}
     {kind}
     {justify}
+    {disabled}
     showTooltip={{ label, direction: labelDirection }}
     on:click={() => {
       if (!opened) {

@@ -18,7 +18,7 @@
   import core, { Account, getCurrentAccount, Ref } from '@hcengineering/core'
   import { Funnel } from '@hcengineering/lead'
   import presentation, { getClient, SpaceCreateCard } from '@hcengineering/presentation'
-  import task, { createStates, KanbanTemplate } from '@hcengineering/task'
+  import task, { ProjectType } from '@hcengineering/task'
   import ui, { Component, EditBox, Grid, IconFolder, Label, ToggleWithLabel } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
@@ -33,35 +33,25 @@
 
   let name: string = funnel?.name ?? ''
   const description: string = funnel?.description ?? ''
-  let templateId: Ref<KanbanTemplate> | undefined
+  let type: Ref<ProjectType> | undefined
   let isPrivate: boolean = funnel?.private ?? false
 
   let members: Ref<Account>[] =
     funnel?.members !== undefined ? hierarchy.clone(funnel.members) : [getCurrentAccount()._id]
 
   export function canClose (): boolean {
-    return name === '' && templateId !== undefined
+    return name === '' && type !== undefined
   }
 
   async function createFunnel (): Promise<void> {
-    if (
-      templateId !== undefined &&
-      (await client.findOne(task.class.KanbanTemplate, { _id: templateId })) === undefined
-    ) {
-      throw Error(`Failed to find target kanban template: ${templateId}`)
-    }
-
-    const [states, doneStates] = await createStates(client, lead.attribute.State, lead.attribute.DoneState, templateId)
-
+    if (type === undefined) return
     await client.createDoc(lead.class.Funnel, core.space.Space, {
       name,
       description,
       private: isPrivate,
       archived: false,
       members,
-      templateId,
-      states,
-      doneStates
+      type
     })
   }
   async function save (): Promise<void> {
@@ -97,13 +87,14 @@
     />
 
     <Component
-      is={task.component.KanbanTemplateSelector}
+      is={task.component.ProjectTypeSelector}
       props={{
-        folders: [lead.space.FunnelTemplates],
-        template: templateId
+        categories: [lead.category.FunnelTypeCategory],
+        type,
+        disabled: funnel !== undefined
       }}
       on:change={(evt) => {
-        templateId = evt.detail
+        type = evt.detail
       }}
     />
     <div class="antiGrid-row">

@@ -18,47 +18,40 @@ import {
   Class,
   DOMAIN_STATUS,
   DOMAIN_TX,
+  Data,
   Doc,
-  Domain,
   Ref,
   Space,
   Status,
-  Tx,
-  TxCollectionCUD,
-  TxCreateDoc,
   TxOperations,
-  TxProcessor,
-  TxUpdateDoc,
+  generateId,
   toIdMap
 } from '@hcengineering/core'
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient, createOrUpdate } from '@hcengineering/model'
+import {
+  MigrateOperation,
+  MigrationClient,
+  MigrationUpgradeClient,
+  createOrUpdate,
+  tryMigrate,
+  tryUpgrade
+} from '@hcengineering/model'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import tags from '@hcengineering/model-tags'
-import { DOMAIN_VIEW } from '@hcengineering/model-view'
-import { DoneState, DoneStateTemplate, KanbanTemplate, State, StateTemplate, Task, genRanks } from '@hcengineering/task'
-import view, { Filter, FilteredView } from '@hcengineering/view'
-import { DOMAIN_TASK } from '.'
+import {
+  Project,
+  ProjectStatus,
+  ProjectType,
+  ProjectTypeCategory,
+  Task,
+  createState,
+  taskId
+} from '@hcengineering/task'
+import view, { Filter } from '@hcengineering/view'
+import { DOMAIN_KANBAN, DOMAIN_TASK } from '.'
 import task from './plugin'
 
-/**
- * @public
- */
-export const DOMAIN_STATE = 'state' as Domain
-
+type ProjectData = Omit<Data<ProjectType>, 'statuses' | 'private' | 'members' | 'archived'>
 type OldStatus = Status & { rank: string }
-
-/**
- * @public
- */
-export interface KanbanTemplateData {
-  kanbanId: Ref<KanbanTemplate>
-  space: Ref<Space>
-  title: KanbanTemplate['title']
-  description?: string
-  shortDescription?: string
-  states: Pick<StateTemplate, 'name' | 'color'>[]
-  doneStates: (Pick<DoneStateTemplate, 'name'> & { isWon: boolean })[]
-}
 
 /**
  * @public
@@ -75,51 +68,39 @@ export async function createSequence (tx: TxOperations, _class: Ref<Class<Doc>>)
 /**
  * @public
  */
-export async function createKanbanTemplate (
+export async function createProjectType (
   client: TxOperations,
-  data: KanbanTemplateData,
-  ofAttribute: Ref<Attribute<Status>>,
-  doneAtrtribute?: Ref<Attribute<DoneState>>
-): Promise<Ref<KanbanTemplate>> {
-  const current = await client.findOne(task.class.KanbanTemplate, { _id: data.kanbanId })
+  data: ProjectData,
+  states: Data<Status>[],
+  _id: Ref<ProjectType>,
+  stateClass: Ref<Class<Status>> = core.class.Status
+): Promise<Ref<ProjectType>> {
+  const current = await client.findOne(task.class.ProjectType, { _id })
   if (current !== undefined) {
     return current._id
   }
 
+  const statuses: Ref<Status>[] = []
+  for (const st of states) {
+    statuses.push(await createState(client, stateClass, st))
+  }
+
   const tmpl = await client.createDoc(
-    task.class.KanbanTemplate,
-    data.space,
+    task.class.ProjectType,
+    core.space.Model,
     {
-      doneStatesC: 0,
-      statesC: 0,
-      title: data.title
+      description: data.description,
+      shortDescription: data.shortDescription,
+      category: data.category,
+      statuses: statuses.map((p) => {
+        return { _id: p }
+      }),
+      name: data.name,
+      private: false,
+      members: [],
+      archived: false
     },
-    data.kanbanId
-  )
-
-  const doneStateRanks = [...genRanks(data.doneStates.length)]
-  await Promise.all(
-    data.doneStates.map((st, i) =>
-      client.createDoc(st.isWon ? task.class.WonStateTemplate : task.class.LostStateTemplate, data.space, {
-        rank: doneStateRanks[i],
-        ofAttribute: doneAtrtribute ?? ofAttribute,
-        name: st.name,
-        attachedTo: data.kanbanId
-      })
-    )
-  )
-
-  const stateRanks = [...genRanks(data.states.length)]
-  await Promise.all(
-    data.states.map((st, i) =>
-      client.createDoc(task.class.StateTemplate, data.space, {
-        attachedTo: data.kanbanId,
-        ofAttribute,
-        rank: stateRanks[i],
-        name: st.name,
-        color: st.color
-      })
-    )
+    _id
   )
 
   return tmpl
@@ -235,30 +216,23 @@ async function renameStatePrefs (client: MigrationUpgradeClient): Promise<void> 
 async function fixStatusAttributes (client: MigrationClient): Promise<void> {
   const spaces = await client.find<Space>(DOMAIN_SPACE, {})
   const map = toIdMap(spaces)
-  const oldStatuses = await client.find<OldStatus>(DOMAIN_STATUS, { space: { $ne: task.space.Statuses } })
+  const oldStatuses = await client.find<OldStatus>(DOMAIN_STATUS, { ofAttribute: { $exists: false } })
   for (const oldStatus of oldStatuses) {
     const space = map.get(oldStatus.space)
     if (space !== undefined) {
       try {
-        const isDone = client.hierarchy.isDerived(oldStatus._class, task.class.DoneState)
         let ofAttribute = task.attribute.State
         if (space._class === ('recruit:class:Vacancy' as Ref<Class<Space>>)) {
-          ofAttribute = isDone
-            ? ('recruit:attribute:DoneState' as Ref<Attribute<State>>)
-            : ('recruit:attribute:State' as Ref<Attribute<State>>)
+          ofAttribute = 'recruit:attribute:State' as Ref<Attribute<Status>>
         }
         if (space._class === ('lead:class:Funnel' as Ref<Class<Space>>)) {
-          ofAttribute = isDone
-            ? ('lead:attribute:DoneState' as Ref<Attribute<State>>)
-            : ('lead:attribute:State' as Ref<Attribute<State>>)
+          ofAttribute = 'lead:attribute:State' as Ref<Attribute<Status>>
         }
         if (space._class === ('board:class:Board' as Ref<Class<Space>>)) {
-          ofAttribute = isDone
-            ? ('board:attribute:DoneState' as Ref<Attribute<State>>)
-            : ('board:attribute:State' as Ref<Attribute<State>>)
+          ofAttribute = 'board:attribute:State' as Ref<Attribute<Status>>
         }
         if (space._class === ('tracker:class:Project' as Ref<Class<Space>>)) {
-          ofAttribute = 'tracker:attribute:IssueStatus' as Ref<Attribute<State>>
+          ofAttribute = 'tracker:attribute:IssueStatus' as Ref<Attribute<Status>>
         }
         if (ofAttribute !== oldStatus.ofAttribute) {
           await client.update(DOMAIN_STATUS, { _id: oldStatus._id }, { ofAttribute })
@@ -270,173 +244,341 @@ async function fixStatusAttributes (client: MigrationClient): Promise<void> {
   }
 }
 
-async function migrateStatuses (client: MigrationClient): Promise<void> {
-  await fixStatusAttributes(client)
-  const oldStatuses = await client.find<OldStatus>(DOMAIN_STATUS, { space: { $ne: task.space.Statuses } })
-  const newStatuses: Map<string, Status> = new Map()
-  const oldStatusesMap = new Map<Ref<Status>, Ref<Status>>()
-  oldStatuses.sort((a, b) => a.rank.localeCompare(b.rank))
-  for (const oldStatus of oldStatuses) {
-    const name = oldStatus.name.toLowerCase().trim()
-    const mapId = `${oldStatus.ofAttribute}_${name}`
-    const current = newStatuses.get(mapId)
-    if (current !== undefined) {
-      oldStatusesMap.set(oldStatus._id, current._id)
-      if (client.hierarchy.isDerived(oldStatus._class, task.class.DoneState)) {
-        await client.update(DOMAIN_SPACE, { _id: oldStatus.space }, { $addToSet: { doneStates: current._id } })
-      } else {
-        await client.update(DOMAIN_SPACE, { _id: oldStatus.space }, { $addToSet: { states: current._id } })
-      }
-    } else {
-      newStatuses.set(mapId, oldStatus)
-      if (client.hierarchy.isDerived(oldStatus._class, task.class.DoneState)) {
-        await client.update(DOMAIN_SPACE, { _id: oldStatus.space }, { $addToSet: { doneStates: oldStatus._id } })
-      } else {
-        await client.update(DOMAIN_SPACE, { _id: oldStatus.space }, { $addToSet: { states: oldStatus._id } })
-      }
+async function removeDoneStatuses (client: MigrationClient): Promise<void> {
+  const tasks = await client.find<Task>(DOMAIN_TASK, { doneState: { $exists: true } })
+  for (const task of tasks) {
+    if ((task as any).doneState != null) {
+      await client.update(DOMAIN_TASK, { _id: task._id }, { status: (task as any).doneState, isDone: true })
     }
+    await client.update(DOMAIN_TASK, { _id: task._id }, { $unset: { doneState: '' } })
   }
-  if (oldStatusesMap.size > 0) {
-    const tasks = await client.find<Task>(DOMAIN_TASK, {})
-    for (const task of tasks) {
-      const update: any = {}
-      const newStatus = oldStatusesMap.get(task.status)
-      if (newStatus !== undefined) {
-        update.status = newStatus
-      }
-      if (task.doneState != null) {
-        const newDoneStatus = oldStatusesMap.get(task.doneState)
-        if (newDoneStatus !== undefined) {
-          update.doneState = newDoneStatus
-        }
-      }
-      if (Object.keys(update).length > 0) {
-        await client.update(DOMAIN_TASK, { _id: task._id }, update)
-      }
-      const txes = await client.find(DOMAIN_TX, { 'tx.objectId': task._id })
-      for (const tx of txes) {
-        const update: any = {}
-        const ctx = tx as TxCollectionCUD<Doc, Task>
-        if (ctx.tx._class === core.class.TxCreateDoc) {
-          const createTx = ctx.tx as TxCreateDoc<Task>
-          const newStatus = oldStatusesMap.get(createTx.attributes.status)
-          if (newStatus !== undefined) {
-            update['tx.attributes.status'] = newStatus
-          }
-          if (createTx.attributes.doneState != null) {
-            const newDoneStatus = oldStatusesMap.get(createTx.attributes.doneState)
-            if (newDoneStatus !== undefined) {
-              update['tx.attributes.doneState'] = newDoneStatus
-            }
-          }
-        } else if (ctx.tx._class === core.class.TxUpdateDoc) {
-          const updateTx = ctx.tx as TxUpdateDoc<Task>
-          if (updateTx.operations.status !== undefined) {
-            const newStatus = oldStatusesMap.get(updateTx.operations.status)
-            if (newStatus !== undefined) {
-              update['tx.operations.status'] = newStatus
-            }
-          }
-          if (updateTx.operations.doneState != null) {
-            const newDoneStatus = oldStatusesMap.get(updateTx.operations.doneState)
-            if (newDoneStatus !== undefined) {
-              update['tx.operations.doneState'] = newDoneStatus
-            }
-          }
-        }
-        if (Object.keys(update).length > 0) {
-          await client.update(DOMAIN_TX, { _id: tx._id }, update)
-        }
-      }
-    }
+  await client.update(
+    DOMAIN_TX,
+    { 'tx.operations.doneState': { $exists: true } },
+    { $rename: { 'tx.operations.doneState': 'tx.operations.status' } }
+  )
+  await client.update(
+    DOMAIN_TX,
+    { 'tx.attributes.doneState': { $exists: true } },
+    { $rename: { 'tx.attributes.doneState': 'tx.attributes.status' } }
+  )
 
-    const descendants = client.hierarchy.getDescendants(task.class.Task)
-    const filters = await client.find<FilteredView>(DOMAIN_VIEW, {
-      _class: view.class.FilteredView,
-      filterClass: { $in: descendants }
-    })
-    for (const filter of filters) {
-      const filters = JSON.parse(filter.filters) as Filter[]
-      let changed = false
-      for (const filter of filters) {
-        if (['status', 'doneStatus'].includes(filter.key.key)) {
-          for (let index = 0; index < filter.value.length; index++) {
-            const val = filter.value[index]
-            const newVal = oldStatusesMap.get(val)
-            if (newVal !== undefined) {
-              filter.value[index] = newVal
-              changed = true
-            }
-          }
-        }
-      }
-      if (changed) {
-        await client.update(DOMAIN_VIEW, { _id: filter._id }, { filters: JSON.stringify(filters) })
-      }
-    }
+  // we need join doneStates to states for all projects
+  const classes = client.hierarchy.getDescendants(task.class.Project)
+  const projects = await client.find<Project>(DOMAIN_SPACE, { _class: { $in: classes }, doneStates: { $exists: true } })
+  for (const project of projects) {
+    await client.update(
+      DOMAIN_SPACE,
+      { _id: project._id },
+      { states: (project as any).states.concat((project as any).doneStates) }
+    )
+    await client.update(DOMAIN_SPACE, { _id: project._id }, { $unset: { doneStates: '' } })
   }
-  const toRemove = Array.from(oldStatusesMap.keys())
-  for (const remove of toRemove) {
-    await client.delete(DOMAIN_STATUS, remove)
-  }
-  await client.update(DOMAIN_STATUS, { rank: { $exists: true } }, { $unset: { rank: '' } })
-  await client.update(DOMAIN_STATUS, { space: { $ne: task.space.Statuses } }, { space: task.space.Statuses })
 }
 
-async function fixFilters (client: MigrationClient): Promise<void> {
-  const currentStatuses = await client.find<Status>(DOMAIN_STATUS, {})
-  const currentStatusesMap = toIdMap(currentStatuses)
-  const cacheMap = new Map<Ref<Status>, Ref<Status>>()
-  const descendants = client.hierarchy.getDescendants(task.class.Task)
-  const filters = await client.find<FilteredView>(DOMAIN_VIEW, {
-    _class: view.class.FilteredView,
-    filterClass: { $in: descendants }
+async function removeStateClass (client: MigrationClient): Promise<void> {
+  await client.update<Status>(
+    DOMAIN_STATUS,
+    { _class: 'task:class:State' as Ref<Class<Doc>> },
+    { _class: core.class.Status, category: task.statusCategory.Active }
+  )
+  await client.update(DOMAIN_TX, { objectClass: 'task:class:State' }, { objectClass: core.class.Status })
+  await client.update(
+    DOMAIN_STATUS,
+    { _class: 'task:class:WonState' as Ref<Class<Doc>> },
+    { _class: core.class.Status, category: task.statusCategory.Won }
+  )
+  await client.update(DOMAIN_TX, { objectClass: 'task:class:WonState' }, { objectClass: core.class.Status })
+  await client.update(
+    DOMAIN_STATUS,
+    { _class: 'task:class:LostState' as Ref<Class<Doc>> },
+    { _class: core.class.Status, category: task.statusCategory.Lost }
+  )
+  await client.update(DOMAIN_TX, { objectClass: 'task:class:LostState' }, { objectClass: core.class.Status })
+  await client.update(
+    DOMAIN_STATUS,
+    { _class: 'task:class:DoneState' as Ref<Class<Doc>> },
+    { _class: core.class.Status }
+  )
+  await client.update(DOMAIN_TX, { objectClass: 'task:class:DoneState' }, { objectClass: core.class.Status })
+}
+
+async function migrateTemplatesToTypes (client: MigrationClient): Promise<void> {
+  interface KanbanTemplate extends Doc {
+    title: string
+    description?: string
+    shortDescription?: string
+  }
+
+  interface StateTemplate extends Doc, Status {
+    attachedTo: Ref<KanbanTemplate>
+    rank: string
+  }
+
+  const classes = client.hierarchy.getDescendants(task.class.Project)
+  const templates = await client.find<KanbanTemplate>(DOMAIN_KANBAN, {
+    _class: 'task:class:KanbanTemplate' as Ref<Class<Doc>>
   })
-  for (const filter of filters) {
-    const filters = JSON.parse(filter.filters) as Filter[]
-    let changed = false
-    for (const filter of filters) {
-      if (['status', 'doneStatus'].includes(filter.key.key)) {
-        for (let index = 0; index < filter.value.length; index++) {
-          const val = filter.value[index]
-          if (!currentStatusesMap.has(val)) {
-            const newVal = cacheMap.get(val)
-            if (newVal !== undefined) {
-              filter.value[index] = newVal
-              changed = true
-            } else {
-              const ownTxes = await client.find<Tx>(DOMAIN_TX, { objectId: val })
-              const attachedTxes = await client.find<Tx>(DOMAIN_TX, { 'tx.objectId': val })
-              const txes = [...ownTxes, ...attachedTxes].sort((a, b) => a.modifiedOn - b.modifiedOn)
-              const oldStatus = TxProcessor.buildDoc2Doc<Status>(txes)
-              if (oldStatus !== undefined) {
-                const newStatus = currentStatuses.find(
-                  (p) =>
-                    p.ofAttribute === oldStatus.ofAttribute &&
-                    p.name.toLowerCase().trim() === oldStatus.name.toLowerCase().trim()
-                )
-                if (newStatus !== undefined) {
-                  filter.value[index] = newStatus._id
-                  cacheMap.set(val, newStatus._id)
-                  changed = true
-                }
-              }
-            }
-          }
-        }
+  for (const template of templates) {
+    const states = await client.find<StateTemplate>(
+      DOMAIN_KANBAN,
+      { _class: 'task:class:StateTemplate' as Ref<Class<Doc>>, attachedTo: template._id },
+      { sort: { rank: 1 } }
+    )
+    const wonStates = await client.find<StateTemplate>(
+      DOMAIN_KANBAN,
+      { _class: 'task:class:WonStateTemplate' as Ref<Class<Doc>>, attachedTo: template._id },
+      { sort: { rank: 1 } }
+    )
+    const lostStates = await client.find<StateTemplate>(
+      DOMAIN_KANBAN,
+      { _class: 'task:class:LostStateTemplate' as Ref<Class<Doc>>, attachedTo: template._id },
+      { sort: { rank: 1 } }
+    )
+
+    const statuses: ProjectStatus[] = []
+    const currentStates = await client.find<Status>(DOMAIN_STATUS, {})
+    for (const st of states) {
+      const exists = currentStates.find(
+        (p) =>
+          p.name.toLocaleLowerCase() === st.name.toLocaleLowerCase() &&
+          p.ofAttribute === st.ofAttribute &&
+          p.category === st.category
+      )
+      if (exists !== undefined) {
+        statuses.push({ _id: exists._id, color: st.color })
+      } else {
+        const id = generateId<Status>()
+        await client.create<Status>(DOMAIN_STATUS, {
+          ofAttribute: st.ofAttribute,
+          name: st.name,
+          _id: id,
+          space: task.space.Statuses,
+          modifiedOn: st.modifiedOn,
+          modifiedBy: st.modifiedBy,
+          _class: core.class.Status,
+          color: st.color,
+          createdBy: st.createdBy,
+          createdOn: st.createdOn,
+          category: task.statusCategory.Active
+        })
+        statuses.push({ _id: id, color: st.color })
       }
     }
-    if (changed) {
-      await client.update(DOMAIN_VIEW, { _id: filter._id }, { filters: JSON.stringify(filters) })
+
+    for (const st of wonStates) {
+      const exists = currentStates.find(
+        (p) =>
+          p.name.toLocaleLowerCase() === st.name.toLocaleLowerCase() &&
+          p.ofAttribute === st.ofAttribute &&
+          p.category === st.category
+      )
+      if (exists !== undefined) {
+        statuses.push({ _id: exists._id, color: st.color })
+      } else {
+        const id = generateId<Status>()
+        await client.create<Status>(DOMAIN_STATUS, {
+          ofAttribute: st.ofAttribute,
+          name: st.name,
+          _id: id,
+          space: task.space.Statuses,
+          modifiedOn: st.modifiedOn,
+          modifiedBy: st.modifiedBy,
+          _class: core.class.Status,
+          color: st.color,
+          createdBy: st.createdBy,
+          createdOn: st.createdOn,
+          category: task.statusCategory.Won
+        })
+        statuses.push({ _id: id, color: st.color })
+      }
+    }
+
+    for (const st of lostStates) {
+      const exists = currentStates.find(
+        (p) =>
+          p.name.toLocaleLowerCase() === st.name.toLocaleLowerCase() &&
+          p.ofAttribute === st.ofAttribute &&
+          p.category === st.category
+      )
+      if (exists !== undefined) {
+        statuses.push({ _id: exists._id, color: st.color })
+      } else {
+        const id = generateId<Status>()
+        await client.create<Status>(DOMAIN_STATUS, {
+          ofAttribute: st.ofAttribute,
+          name: st.name,
+          _id: id,
+          space: task.space.Statuses,
+          modifiedOn: st.modifiedOn,
+          modifiedBy: st.modifiedBy,
+          _class: core.class.Status,
+          color: st.color,
+          createdBy: st.createdBy,
+          createdOn: st.createdOn,
+          category: task.statusCategory.Lost
+        })
+        statuses.push({ _id: id, color: st.color })
+      }
+    }
+
+    await client.create<ProjectType>(DOMAIN_SPACE, {
+      name: template.title,
+      description: template.description ?? '',
+      shortDescription: template.shortDescription,
+      category: template.space as Ref<Doc> as Ref<ProjectTypeCategory>,
+      private: false,
+      members: [],
+      archived: false,
+      _id: template._id as Ref<Doc> as Ref<ProjectType>,
+      space: core.space.Space,
+      modifiedOn: template.modifiedOn,
+      modifiedBy: template.modifiedBy,
+      _class: task.class.ProjectType,
+      statuses
+    })
+    await client.delete(DOMAIN_KANBAN, template._id)
+  }
+
+  // we should found all projects without types and has templateID we should just rename it to type (if it exists)
+  const projectsWithTemplate = await client.find<Project>(DOMAIN_SPACE, {
+    _class: { $in: classes },
+    type: { $exists: false },
+    templateId: { $exists: true }
+  })
+  for (const project of projectsWithTemplate) {
+    await client.update(DOMAIN_SPACE, { _id: project._id }, { type: (project as any).templateId })
+  }
+
+  // we should remove all state templates
+  const stateClasses = [
+    'task:class:StateTemplate' as Ref<Class<Doc>>,
+    'task:class:WonStateTemplate' as Ref<Class<Doc>>,
+    'task:class:LostStateTemplate' as Ref<Class<Doc>>
+  ]
+  const states = await client.find(DOMAIN_KANBAN, { _class: { $in: stateClasses } })
+  for (const st of states) {
+    await client.delete(DOMAIN_KANBAN, st._id)
+  }
+}
+
+async function getProjectTypeCategory (
+  client: MigrationClient,
+  _class: Ref<Class<Project>>
+): Promise<Ref<ProjectTypeCategory> | undefined> {
+  let clazz = _class
+  while (true) {
+    const res = await client.model.findAll(task.class.ProjectTypeCategory, { attachedToClass: clazz })
+    if (res[0] !== undefined) return res[0]._id
+    const parent = client.hierarchy.getClass(clazz)
+    if (parent.extends === undefined) return
+    clazz = parent.extends
+  }
+}
+
+async function migrateProjectTypes (client: MigrationClient): Promise<void> {
+  const classes = client.hierarchy.getDescendants(task.class.Project)
+  // we should found all projects without types and group by class and then by statuses and create new type
+  const projects = await client.find<Project>(DOMAIN_SPACE, { _class: { $in: classes }, type: { $exists: false } })
+  const projectsByCategory: Map<Ref<ProjectTypeCategory>, Project[]> = new Map()
+  for (const project of projects) {
+    const category = await getProjectTypeCategory(client, project._class)
+    if (category === undefined) continue
+    const arr = projectsByCategory.get(category) ?? []
+    arr.push(project)
+    projectsByCategory.set(category, arr)
+  }
+  for (const [category, projects] of projectsByCategory) {
+    const gouped = group(projects)
+    for (const gr of gouped) {
+      await client.create<ProjectType>(DOMAIN_SPACE, {
+        category,
+        name: gr.projects[0].name,
+        description: '',
+        private: false,
+        members: [],
+        archived: false,
+        _id: gr.type,
+        space: core.space.Space,
+        modifiedOn: Date.now(),
+        modifiedBy: core.account.System,
+        _class: task.class.ProjectType,
+        statuses: gr.statuses.map((p) => {
+          return { _id: p }
+        })
+      })
+
+      await client.update(DOMAIN_SPACE, { _id: { $in: gr.projects.map((p) => p._id) } }, { type: gr.type })
     }
   }
+
+  // we need remove states from all projects
+  const allProjects = await client.find<Project>(DOMAIN_SPACE, { _class: { $in: classes } })
+  await Promise.all(
+    allProjects.map(async (project) => {
+      await client.update(
+        DOMAIN_SPACE,
+        { _id: project._id },
+        { $unset: { states: '', templateId: '', doneStates: '' } }
+      )
+    })
+  )
+}
+
+interface ProjectTypeGroup {
+  statuses: Ref<Status>[]
+  projects: Project[]
+  type: Ref<ProjectType>
+}
+
+function group (projects: Project[]): ProjectTypeGroup[] {
+  const map: Map<string, ProjectTypeGroup> = new Map()
+
+  for (const project of projects) {
+    const ids = getIds((project as any).states ?? [])
+    const obj: ProjectTypeGroup = map.get(ids) ?? {
+      statuses: (project as any).states ?? [],
+      projects: [],
+      type: generateId<ProjectType>()
+    }
+    obj.projects.push(project)
+    map.set(ids, obj)
+  }
+  return Array.from(map.values())
+}
+
+function getIds (states: Ref<Status>[]): string {
+  return states.join(',')
 }
 
 export const taskOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
-    await renameState(client)
-    await migrateStatuses(client)
-    await fixFilters(client)
+    await tryMigrate(client, taskId, [
+      {
+        state: 'fixStatusAttributes',
+        func: fixStatusAttributes
+      },
+      {
+        state: 'renameState',
+        func: renameState
+      },
+      {
+        state: 'removeDoneStatuses',
+        func: removeDoneStatuses
+      },
+      {
+        state: 'removeStateClass',
+        func: removeStateClass
+      },
+      {
+        state: 'migrateTemplatesToTypes',
+        func: migrateTemplatesToTypes
+      },
+      {
+        state: 'migrateProjectTypes',
+        func: migrateProjectTypes
+      }
+    ])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
@@ -455,6 +597,12 @@ export const taskOperation: MigrateOperation = {
       },
       task.category.TaskTag
     )
-    await renameStatePrefs(client)
+
+    await tryUpgrade(client, taskId, [
+      {
+        state: 'renameStatePrefs',
+        func: renameStatePrefs
+      }
+    ])
   }
 }

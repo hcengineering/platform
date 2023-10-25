@@ -14,14 +14,28 @@
 -->
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
-  import { Asset, IntlString } from '@hcengineering/platform'
-  import { AnyComponent, Button, Component, IconAdd, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
+  import { IntlString, getEmbeddedLabel } from '@hcengineering/platform'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Project, ProjectType, ProjectTypeCategory } from '@hcengineering/task'
+  import {
+    AnyComponent,
+    Button,
+    Component,
+    IModeSelector,
+    IconAdd,
+    Label,
+    Loading,
+    ModeSelector,
+    SearchEdit,
+    resolvedLocationStore,
+    showPopup
+  } from '@hcengineering/ui'
   import { ViewOptions, Viewlet, ViewletDescriptor, ViewletPreference } from '@hcengineering/view'
   import { FilterBar, FilterButton, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
+  import task from '../plugin'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined
-  export let icon: Asset
   export let label: IntlString
   export let createLabel: IntlString | undefined
   export let createComponent: AnyComponent | undefined
@@ -29,6 +43,7 @@
   export let isCreationDisabled = false
   export let descriptors: Ref<ViewletDescriptor>[] | undefined = undefined
   export let baseQuery: DocumentQuery<Doc> | undefined = undefined
+  export let category: Ref<ProjectTypeCategory>
 
   let search = ''
   let viewlet: WithLookup<Viewlet> | undefined
@@ -36,8 +51,20 @@
   let preference: ViewletPreference | undefined
   let viewlets: WithLookup<Viewlet>[] = []
   let viewOptions: ViewOptions | undefined
+  let types: ProjectType[] = []
 
-  $: query = { ...(baseQuery ?? {}), ...(viewlet?.baseQuery ?? {}) }
+  const typeQ = createQuery()
+  $: typeQ.query(task.class.ProjectType, { category, archived: false }, (result) => {
+    types = result
+  })
+
+  const spacesQ = createQuery()
+  let spaces: Project[] = []
+  $: spacesQ.query(task.class.Project, { type: mode as Ref<ProjectType> }, (result) => {
+    spaces = result
+  })
+
+  $: query = { ...(baseQuery ?? {}), ...(viewlet?.baseQuery ?? {}), space: { $in: spaces.map((it) => it._id) } }
   $: searchQuery = search === '' ? query : { ...query, $search: search }
   $: resultQuery = searchQuery
 
@@ -45,11 +72,34 @@
     if (createComponent === undefined) return
     showPopup(createComponent, createComponentProps, 'top')
   }
+
+  $: mode = $resolvedLocationStore.query?.mode ?? undefined
+
+  let config: Array<[string, IntlString, object]> = []
+  $: config = types.map((p) => {
+    return [p._id, getEmbeddedLabel(p.name), {}]
+  })
+  let modeSelectorProps: IModeSelector | undefined = undefined
+  $: if (mode === undefined && config.length > 0) {
+    ;[[mode]] = config
+  }
+  $: if (mode !== undefined) {
+    modeSelectorProps = {
+      mode,
+      config,
+      onChange: (_mode: string) => {
+        mode = _mode
+      }
+    }
+  }
 </script>
 
 <div class="ac-header full divide caption-height">
   <div class="ac-header__wrap-title mr-3">
     <span class="ac-header__title"><Label {label} /></span>
+    {#if modeSelectorProps !== undefined}
+      <ModeSelector props={modeSelectorProps} />
+    {/if}
   </div>
 
   <div class="ac-header-full medium-gap mb-1">

@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import board, { Card } from '@hcengineering/board'
-  import {
+  import core, {
     CategoryType,
     Class,
     Doc,
@@ -24,46 +24,46 @@
     FindOptions,
     Ref,
     SortingOrder,
+    Status,
     WithLookup
   } from '@hcengineering/core'
   import { Kanban as KanbanUI } from '@hcengineering/kanban'
-  import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
-  import type { DocWithRank, Kanban, SpaceWithStates, State } from '@hcengineering/task'
-  import task, { calcRank } from '@hcengineering/task'
+  import { ActionContext, createQuery } from '@hcengineering/presentation'
+  import type { DocWithRank, Project } from '@hcengineering/task'
+  import task from '@hcengineering/task'
   import { getEventPositionElement, showPopup } from '@hcengineering/ui'
   import {
     ContextMenu,
+    ListSelectionProvider,
+    SelectDirection,
     focusStore,
     getGroupByValues,
     groupBy,
-    ListSelectionProvider,
-    SelectDirection,
     setGroupByValues
   } from '@hcengineering/view-resources'
   import { onMount } from 'svelte'
-  import AddCard from './add-card/AddCard.svelte'
-  import AddPanel from './AddPanel.svelte'
   import KanbanCard from './KanbanCard.svelte'
   import ListHeader from './ListHeader.svelte'
+  import AddCard from './add-card/AddCard.svelte'
 
   export let _class: Ref<Class<Card>>
-  export let space: Ref<SpaceWithStates>
+  export let space: Ref<Project>
   export let query: DocumentQuery<Card>
   export let options: FindOptions<Card> | undefined
 
-  let kanban: Kanban
-  let states: State[] = []
+  let _space: Project
+  let states: Status[] = []
 
-  const kanbanQuery = createQuery()
-  $: kanbanQuery.query(task.class.Kanban, { attachedTo: space }, (result) => {
-    kanban = result[0]
+  const spaceQuery = createQuery()
+  $: spaceQuery.query(task.class.Project, { _id: space }, (result) => {
+    _space = result[0]
   })
 
   const statesQuery = createQuery()
-  $: if (kanban !== undefined) {
+  $: if (_space !== undefined) {
     statesQuery.query(
-      task.class.State,
-      { space: kanban.space, isArchived: { $nin: [true] } },
+      core.class.Status,
+      { space: _space.type },
       (result) => {
         states = result
       },
@@ -77,19 +77,6 @@
   function castObject (object: any): WithLookup<Card> {
     return object as WithLookup<Card>
   }
-
-  const client = getClient()
-
-  async function addItem (title: any) {
-    const lastOne = await client.findOne(task.class.State, {}, { sort: { rank: SortingOrder.Descending } })
-    await client.createDoc(task.class.State, space, {
-      name: title,
-      ofAttribute: task.attribute.State,
-      color: 9,
-      rank: calcRank(lastOne, undefined)
-    })
-  }
-  /* eslint-disable no-undef */
 
   let kanbanUI: KanbanUI
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
@@ -110,7 +97,7 @@
     showPopup(ContextMenu, { object }, getEventPositionElement(ev))
   }
 
-  $: resultQuery = { ...query, doneState: null, isArchived: { $nin: [true] }, space }
+  $: resultQuery = { ...query, isArchived: { $nin: [true] }, space }
 
   const cardQuery = createQuery()
   let cards: DocWithRank[] = []
@@ -166,14 +153,6 @@
 >
   <svelte:fragment slot="card" let:object>
     <KanbanCard object={castObject(object)} />
-  </svelte:fragment>
-
-  <svelte:fragment slot="afterPanel">
-    <AddPanel
-      on:add={(e) => {
-        addItem(e.detail)
-      }}
-    />
   </svelte:fragment>
 
   <svelte:fragment slot="header" let:state>

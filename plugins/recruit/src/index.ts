@@ -24,18 +24,19 @@ import type {
   Mixin,
   Ref,
   Space,
+  Status,
   Timestamp
 } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { TagReference } from '@hcengineering/tags'
-import type { DoneState, KanbanTemplateSpace, SpaceWithStates, State, Task } from '@hcengineering/task'
+import type { Project, ProjectTypeCategory, Task } from '@hcengineering/task'
 import { AnyComponent, ResolvedLocation } from '@hcengineering/ui'
 
 /**
  * @public
  */
-export interface Vacancy extends SpaceWithStates {
+export interface Vacancy extends Project {
   fullDescription?: string
   attachments?: number
   dueTo?: Timestamp
@@ -97,7 +98,7 @@ export interface CandidateDraft {
 export interface Applicant extends Task {
   space: Ref<Vacancy>
   attachedTo: Ref<Candidate>
-  status: Ref<State>
+  status: Ref<Status>
   startDate: Timestamp | null
 }
 
@@ -161,13 +162,15 @@ const recruit = plugin(recruitId, {
     Review: '' as Ref<Class<Review>>,
     Opinion: '' as Ref<Class<Opinion>>
   },
+  category: {
+    VacancyTypeCategories: '' as Ref<ProjectTypeCategory>
+  },
   mixin: {
     Candidate: '' as Ref<Mixin<Candidate>>,
     VacancyList: '' as Ref<Mixin<VacancyList>>
   },
   attribute: {
-    State: '' as Ref<Attribute<State>>,
-    DoneState: '' as Ref<Attribute<DoneState>>
+    State: '' as Ref<Attribute<Status>>
   },
   component: {
     EditVacancy: '' as AnyComponent
@@ -196,7 +199,6 @@ const recruit = plugin(recruitId, {
     Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
   },
   space: {
-    VacancyTemplates: '' as Ref<KanbanTemplateSpace>,
     Reviews: '' as Ref<Calendar>
   }
 })

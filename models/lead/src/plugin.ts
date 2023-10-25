@@ -20,7 +20,7 @@ import lead from '@hcengineering/lead-resources/src/plugin'
 import { NotificationGroup, NotificationType } from '@hcengineering/notification'
 import type { IntlString } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
-import { KanbanTemplate } from '@hcengineering/task'
+import { ProjectType } from '@hcengineering/task'
 import type { AnyComponent } from '@hcengineering/ui'
 import { Action, ActionCategory, Viewlet } from '@hcengineering/view'
 
@@ -48,7 +48,7 @@ export default mergeIds(leadId, lead, {
     DefaultFunnel: '' as Ref<Funnel>
   },
   template: {
-    DefaultFunnel: '' as Ref<KanbanTemplate>
+    DefaultFunnel: '' as Ref<ProjectType>
   },
   viewlet: {
     TableCustomer: '' as Ref<Viewlet>,

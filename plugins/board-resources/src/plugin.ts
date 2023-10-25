@@ -14,6 +14,7 @@
 //
 
 import board, { boardId } from '@hcengineering/board'
+import { Ref, StatusCategory } from '@hcengineering/core'
 import { IntlString, mergeIds } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 
@@ -121,6 +122,9 @@ export default mergeIds(boardId, board, {
     RemoveCover: '' as IntlString,
     DeleteChecklist: '' as IntlString,
     DeleteChecklistConfirm: '' as IntlString
+  },
+  statusCategory: {
+    Completed: '' as Ref<StatusCategory>
   },
   component: {
     EditCard: '' as AnyComponent,

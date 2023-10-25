@@ -38,6 +38,8 @@ export class TStatus extends TDoc implements Status {
 
   @Prop(TypeString(), core.string.Description)
     description!: string
+
+  rank!: string
 }
 
 @Model(core.class.StatusCategory, core.class.Doc, DOMAIN_MODEL)

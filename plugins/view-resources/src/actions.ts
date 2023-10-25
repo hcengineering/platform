@@ -48,7 +48,7 @@ export function getSelection (focus: FocusSelection, selection: SelectionStore):
  *
  * Find all action contributions applicable for specified _class.
  * If derivedFrom is specified, only actions applicable to derivedFrom class will be used.
- * So if we have contribution for Doc, Space and we ask for SpaceWithStates and derivedFrom=Space,
+ * So if we have contribution for Doc, Space and we ask for Project and derivedFrom=Space,
  * we won't receive Doc contribution but receive Space ones.
  */
 export async function getActions (

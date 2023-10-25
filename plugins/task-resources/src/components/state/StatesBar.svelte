@@ -14,23 +14,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@hcengineering/core'
+  import core, { IdMap, Ref, Status, StatusCategory, toIdMap } from '@hcengineering/core'
   import { BreadcrumbsElement, createQuery } from '@hcengineering/presentation'
-  import task, { SpaceWithStates, State, getStates } from '@hcengineering/task'
+  import task, { Project, ProjectType, getStates } from '@hcengineering/task'
   import { ScrollerBar, getColorNumberByText, getPlatformColor, themeStore } from '@hcengineering/ui'
   import { statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import type { StatesBarPosition } from '../..'
+  import { typeStore, type StatesBarPosition } from '../..'
 
-  export let space: Ref<SpaceWithStates>
-  export let state: Ref<State> | undefined = undefined
+  export let space: Ref<Project>
+  export let state: Ref<Status> | undefined = undefined
   export let gap: 'none' | 'small' | 'big' = 'small'
 
-  let _space: SpaceWithStates | undefined = undefined
+  let _space: Project | undefined = undefined
 
   const spaceQuery = createQuery()
   spaceQuery.query(
-    task.class.SpaceWithStates,
+    task.class.Project,
     {
       _id: space
     },
@@ -39,12 +39,14 @@
     }
   )
 
-  $: states = getStates(_space, $statusStore)
+  $: states = getStates(_space, $typeStore, $statusStore.byId).filter(
+    (p) => p.category !== task.statusCategory.Lost && p.category !== task.statusCategory.Won
+  )
   let divScroll: HTMLElement
 
   const dispatch = createEventDispatcher()
 
-  const selectItem = (ev: Event, item: State): void => {
+  const selectItem = (ev: Event, item: Status): void => {
     const el: HTMLElement = ev.currentTarget as HTMLElement
     const rect = el.getBoundingClientRect()
     const rectScroll = divScroll.getBoundingClientRect()
@@ -66,6 +68,25 @@
     else if (n === states.length - 1) return 'end'
     else return 'middle'
   }
+
+  let categories: IdMap<StatusCategory> = new Map()
+
+  const q = createQuery()
+  q.query(core.class.StatusCategory, {}, (res) => {
+    categories = toIdMap(res)
+  })
+
+  function getColor (
+    state: Status,
+    _space: Project | undefined,
+    typeStore: IdMap<ProjectType>,
+    categories: IdMap<StatusCategory>
+  ): string {
+    const type = _space ? typeStore.get(_space.type) : undefined
+    const category = state.category ? categories.get(state.category) : undefined
+    const targetColor = type?.statuses?.find((p) => p._id === state._id)?.color ?? state.color ?? category?.color
+    return getPlatformColor(targetColor ?? getColorNumberByText(state.name), $themeStore.dark)
+  }
 </script>
 
 <ScrollerBar {gap} bind:scroller={divScroll}>
@@ -74,7 +95,7 @@
       label={item.name}
       position={getPosition(i)}
       selected={item._id === state}
-      color={getPlatformColor(item.color ?? getColorNumberByText(item.name), $themeStore.dark)}
+      color={getColor(item, _space, $typeStore, categories)}
       on:click={(ev) => {
         ev.stopPropagation()
         if (item._id !== state) selectItem(ev, item)

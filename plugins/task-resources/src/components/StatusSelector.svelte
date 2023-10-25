@@ -1,13 +1,23 @@
 <script lang="ts">
-  import core, { Attribute, Class, DocumentQuery, FindOptions, Ref, SortingOrder, Status } from '@hcengineering/core'
+  import core, {
+    Attribute,
+    Class,
+    DocumentQuery,
+    FindOptions,
+    IdMap,
+    Ref,
+    SortingOrder,
+    Status
+  } from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
   import { ObjectPopup, createQuery, getClient } from '@hcengineering/presentation'
+  import { Project, ProjectType, Task, getStates } from '@hcengineering/task'
   import { Label, resizeObserver } from '@hcengineering/ui'
-  import { ObjectPresenter } from '@hcengineering/view-resources'
+  import { ObjectPresenter, statusStore } from '@hcengineering/view-resources'
   import view from '@hcengineering/view-resources/src/plugin'
   import { createEventDispatcher } from 'svelte'
+  import { typeStore } from '..'
   import task from '../plugin'
-  import { SpaceWithStates, Task } from '@hcengineering/task'
-  import { IntlString } from '@hcengineering/platform'
 
   export let value: Task | Task[]
   export let width: 'medium' | 'large' | 'full' = 'medium'
@@ -25,7 +35,6 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const h = client.getHierarchy()
   const changeStatus = async (newStatus: any) => {
     if (newStatus === undefined) {
       dispatch('close', undefined)
@@ -34,10 +43,9 @@
     const docs = Array.isArray(value) ? value : [value]
 
     const changed = (d: Task) => d.status !== newStatus
-    const field = h.isDerived(_class, task.class.DoneState) ? 'doneState' : 'status'
     await Promise.all(
       docs.filter(changed).map((it) => {
-        return client.update(it, { [field]: newStatus })
+        return client.update(it, { status: newStatus })
       })
     )
 
@@ -60,26 +68,26 @@
       : undefined
     : value.space
 
-  let project: SpaceWithStates | undefined
+  let project: Project | undefined
 
   const query = createQuery()
   $: _space
-    ? query.query(task.class.SpaceWithStates, { _id: _space as Ref<SpaceWithStates> }, (res) => (project = res[0]))
+    ? query.query(task.class.Project, { _id: _space as Ref<Project> }, (res) => (project = res[0]))
     : (project = undefined)
 
-  function updateQuery (space: SpaceWithStates | undefined): void {
+  function updateQuery (space: Project | undefined, types: IdMap<ProjectType>, store: IdMap<Status>): void {
     if (space === undefined) {
       finalQuery = { ofAttribute }
     } else {
       finalQuery = {
         ofAttribute,
-        _id: { $in: !h.isDerived(_class, task.class.DoneState) ? space.states : space?.doneStates }
+        _id: { $in: getStates(space, types, store).map((p) => p._id) }
       }
     }
     docMatch = true
   }
 
-  $: updateQuery(project)
+  $: updateQuery(project, $typeStore, $statusStore.byId)
 </script>
 
 {#if docMatch}

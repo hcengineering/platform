@@ -42,7 +42,7 @@
   )
 
   $: if (issue?.status !== undefined) {
-    status = $statusStore.get(issue.status)
+    status = $statusStore.byId.get(issue.status)
   }
 
   const getIcon = (): AnySvelteComponent | undefined => {

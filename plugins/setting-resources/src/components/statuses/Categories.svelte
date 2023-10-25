@@ -16,34 +16,39 @@
 <script lang="ts">
   import { createQuery, hasResource } from '@hcengineering/presentation'
   import { Label, Component } from '@hcengineering/ui'
-  import task, { KanbanTemplateSpace } from '@hcengineering/task'
+  import task, { ProjectTypeCategory } from '@hcengineering/task'
   import setting from '@hcengineering/setting'
   import IconArrowRight from '../icons/ArrowRight.svelte'
+  import { Ref } from '@hcengineering/core'
 
-  export let folder: KanbanTemplateSpace | undefined
-  let folders: KanbanTemplateSpace[] = []
+  export let category: ProjectTypeCategory | undefined
+  export let categoryId: Ref<ProjectTypeCategory> | undefined
+  let categories: ProjectTypeCategory[] = []
   const query = createQuery()
-  $: query.query(task.class.KanbanTemplateSpace, {}, (result) => {
-    folders = result
+  $: query.query(task.class.ProjectTypeCategory, {}, (result) => {
+    categories = result
+    if (categoryId !== undefined) {
+      category = categories.find((p) => p._id === categoryId)
+    }
   })
 
-  $: if (folder === undefined && folders.length > 0) {
-    folder = folders.filter((f) => hasResource(f.icon))[0]
+  $: if (category === undefined && categories.length > 0) {
+    category = categories.filter((f) => hasResource(f.icon))[0]
   }
 
-  function select (item: KanbanTemplateSpace) {
-    folder = item
+  function select (item: ProjectTypeCategory) {
+    category = item
   }
 </script>
 
 <div class="flex-between trans-title header mb-3">
-  <Label label={setting.string.Folders} />
+  <Label label={setting.string.Categories} />
 </div>
 <div class="flex-col overflow-y-auto">
-  {#each folders as f (f._id)}
+  {#each categories as f (f._id)}
     {#if hasResource(f.icon)}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <div class="flex-between item" class:selected={f._id === folder?._id} on:click={() => select(f)}>
+      <div class="flex-between item" class:selected={f._id === category?._id} on:click={() => select(f)}>
         <div class="icon flex-no-shrink mr-4">
           <Component is={f.icon} />
         </div>
@@ -55,7 +60,7 @@
             <Label label={f.description} />
           </div>
         </div>
-        {#if f._id === folder?._id}
+        {#if f._id === category?._id}
           <div class="caption-color ml-4"><IconArrowRight size={'small'} /></div>
         {/if}
       </div>

@@ -81,7 +81,7 @@
     subIssuesQeury.unsubscribe()
   }
 
-  $: parentStatus = parentIssue ? $statusStore.get(parentIssue.status) : undefined
+  $: parentStatus = parentIssue ? $statusStore.byId.get(parentIssue.status) : undefined
 
   let categories: IdMap<StatusCategory> = new Map()
 
@@ -95,11 +95,14 @@
 
   $: {
     if (subIssues !== undefined) {
-      subIssues.sort(
-        (a, b) =>
-          listIssueStatusOrder.indexOf($statusStore.get(a.status)?.category ?? tracker.issueStatusCategory.Backlog) -
-          listIssueStatusOrder.indexOf($statusStore.get(b.status)?.category ?? tracker.issueStatusCategory.Backlog)
-      )
+      subIssues.sort((a, b) => {
+        const aStatus = $statusStore.byId.get(a.status)
+        const bStatus = $statusStore.byId.get(b.status)
+        const res =
+          listIssueStatusOrder.indexOf(aStatus?.category ?? tracker.issueStatusCategory.Backlog) -
+          listIssueStatusOrder.indexOf(bStatus?.category ?? tracker.issueStatusCategory.Backlog)
+        return res
+      })
       sortedSubIssues = subIssues ?? []
     }
   }
@@ -110,7 +113,7 @@
     const icon = status.$lookup?.category?.icon
     const color = status.color ?? status.$lookup?.category?.color
 
-    const c = $statusStore.get(iss.status)?.category
+    const c = $statusStore.byId.get(iss.status)?.category
     const category = c !== undefined ? categories.get(c) : undefined
 
     return {

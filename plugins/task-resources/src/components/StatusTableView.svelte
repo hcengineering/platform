@@ -14,42 +14,45 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, DocumentQuery, FindOptions, IdMap, Ref, Status } from '@hcengineering/core'
+  import { Class, DocumentQuery, FindOptions, Ref, Status } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { DoneState, SpaceWithStates, State, Task } from '@hcengineering/task'
+  import { Project, Task, getStates } from '@hcengineering/task'
   import type { TabItem } from '@hcengineering/ui'
-  import { TabList, ScrollerBar } from '@hcengineering/ui'
+  import { ScrollerBar, TabList } from '@hcengineering/ui'
   import { TableBrowser, statusStore } from '@hcengineering/view-resources'
+  import { typeStore } from '..'
   import task from '../plugin'
-  import StatesBar from './state/StatesBar.svelte'
   import Lost from './icons/Lost.svelte'
   import Won from './icons/Won.svelte'
+  import StatesBar from './state/StatesBar.svelte'
 
   export let _class: Ref<Class<Task>>
-  export let space: Ref<SpaceWithStates>
+  export let space: Ref<Project>
   export let query: DocumentQuery<Task>
   export let options: FindOptions<Task> | undefined
   export let config: string[]
 
   let doneStatusesView: boolean = false
-  let state: Ref<State> | undefined = undefined
-  let _space: SpaceWithStates | undefined = undefined
-  const selectedDoneStates: Set<Ref<DoneState>> = new Set<Ref<DoneState>>()
+  let state: Ref<Status> | undefined = undefined
+  let _space: Project | undefined = undefined
+  const selectedDoneStates: Set<Ref<Status>> = new Set<Ref<Status>>()
   $: resConfig = updateConfig(config)
-  $: doneStates = getDoneStates(_space, $statusStore)
+  $: doneStates = getStates(_space, $typeStore, $statusStore.byId).filter(
+    (p) => p.category && [task.statusCategory.Won, task.statusCategory.Lost].includes(p.category)
+  )
   $: itemsDS = getItems(doneStates)
   let selectedDS: string[] = []
   let withoutDone: boolean = false
   let resultQuery: DocumentQuery<Task>
   let divScroll: HTMLElement
 
-  function getItems (doneStates: DoneState[]): TabItem[] {
+  function getItems (doneStates: Status[]): TabItem[] {
     const itemsDS: TabItem[] = doneStates.map((s) => {
       return {
         id: s._id,
         label: s.name,
-        icon: s._class === task.class.WonState ? Won : Lost,
-        color: s._class === task.class.WonState ? 'var(--theme-won-color)' : 'var(--theme-lost-color)'
+        icon: s.category === task.statusCategory.Won ? Won : Lost,
+        color: s.category === task.statusCategory.Won ? 'var(--theme-won-color)' : 'var(--theme-lost-color)'
       }
     })
     itemsDS.unshift({ id: 'NoDoneState', labelIntl: task.string.NoDoneState })
@@ -69,7 +72,7 @@
   const spaceQuery = createQuery()
 
   $: spaceQuery.query(
-    task.class.SpaceWithStates,
+    task.class.Project,
     {
       _id: space
     },
@@ -78,35 +81,28 @@
     }
   )
 
-  function getDoneStates (space: SpaceWithStates | undefined, statusStore: IdMap<Status>): DoneState[] {
-    if (space === undefined) {
-      return []
-    }
-    const doneStates = space.doneStates
-      ? space.doneStates.map((x) => statusStore.get(x) as DoneState).filter((p) => p !== undefined)
-      : []
-    return doneStates
-  }
-
   const client = getClient()
 
-  async function updateQuery (query: DocumentQuery<Task>, selectedDoneStates: Set<Ref<DoneState>>): Promise<void> {
+  async function updateQuery (query: DocumentQuery<Task>, selectedDoneStates: Set<Ref<Status>>): Promise<void> {
     resConfig = updateConfig(config)
     const result = client.getHierarchy().clone(query)
     if (state) {
       result.status = state
-    }
-    if (selectedDoneStates.size > 0) {
-      result.doneState = {
-        $in: Array.from(selectedDoneStates)
+    } else {
+      if (selectedDoneStates.size > 0) {
+        result.status = {
+          $in: Array.from(selectedDoneStates)
+        }
+      } else if (withoutDone) {
+        result.status = {
+          $nin: doneStates.map((p) => p._id)
+        }
       }
-    } else if (withoutDone) {
-      result.doneState = null
     }
     resultQuery = result
   }
 
-  function doneStateClick (id: Ref<DoneState>): void {
+  function doneStateClick (id: Ref<Status>): void {
     withoutDone = false
     if (selectedDoneStates.has(id)) selectedDoneStates.delete(id)
     else selectedDoneStates.add(id)

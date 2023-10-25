@@ -1,7 +1,7 @@
 import { ChannelProvider } from '@hcengineering/contact'
 import { AnyAttribute, AttachedDoc, Class, Doc, Mixin, Ref } from '@hcengineering/core'
 import { ExpertKnowledge, InitialKnowledge, MeaningfullKnowledge } from '@hcengineering/tags'
-import { KanbanTemplate } from '@hcengineering/task'
+import { ProjectType } from '@hcengineering/task'
 
 /**
  * @public
@@ -278,8 +278,6 @@ export interface BitrixStateMapping {
   sourceName: string
   targetName: string // if empty will not create application
 
-  doneState: string // Alternative is to set doneState to value
-
   // Allow to put some values, in case of some statues
   updateCandidate: { attr: string, value: any }[]
 }
@@ -293,7 +291,7 @@ export interface CreateHRApplication {
   vacancyField: string // Name of vacancy in bitrix.
   stateField: string // Name of status in bitrix.
 
-  defaultTemplate: Ref<KanbanTemplate>
+  defaultTemplate: Ref<ProjectType>
 
   copyTalentFields?: { candidate: Ref<AnyAttribute>, applicant: Ref<AnyAttribute> }[]
 

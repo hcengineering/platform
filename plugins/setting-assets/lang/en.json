@@ -1,14 +1,13 @@
 {
   "string": {
     "Setting": "Setting",
-    "ManageTemplates": "Manage Templates",
+    "ManageProjects": "Manage Projects",
     "Integrations": "Integrations",
     "Support": "Support",
     "Privacy": "Privacy",
     "Terms": "Terms",
     "EditProfile": "Edit profile",
-    "Folders": "Folders",
-    "Templates": "Templates",
+    "Categories": "Categories",
     "Delete": "Delete",
     "ChangePassword": "Change password",
     "CurrentPassword": "Current password",

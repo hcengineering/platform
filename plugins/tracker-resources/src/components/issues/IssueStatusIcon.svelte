@@ -15,7 +15,8 @@
 <script lang="ts">
   import core, { Ref, StatusCategory, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { getStates } from '@hcengineering/task'
+  import { ProjectType, getStates } from '@hcengineering/task'
+  import { typeStore } from '@hcengineering/task-resources'
   import { IssueStatus, Project } from '@hcengineering/tracker'
   import { IconSize } from '@hcengineering/ui'
   import { statusStore } from '@hcengineering/view-resources'
@@ -46,7 +47,9 @@
     : (_space = undefined)
 
   $: if (value.category === tracker.issueStatusCategory.Started) {
-    statuses = getStates(_space, $statusStore).filter((p) => p.category === tracker.issueStatusCategory.Started)
+    statuses = getStates(_space, $typeStore, $statusStore.byId).filter(
+      (p) => p.category === tracker.issueStatusCategory.Started
+    )
   }
 
   async function updateCategory (_space: Project | undefined, status: WithLookup<IssueStatus>, statuses: IssueStatus[]) {
@@ -68,9 +71,23 @@
     }
   }
 
+  function getViewState (type: ProjectType | undefined, state: IssueStatus): IssueStatus {
+    if (type === undefined) return state
+    const targetColor = type.statuses.find((p) => p._id === state._id)?.color
+    if (targetColor === undefined) return state
+    return {
+      ...state,
+      color: targetColor
+    }
+  }
+
+  $: type = _space ? $typeStore.get(_space.type) : undefined
+
+  $: viewState = getViewState(type, value)
+
   $: updateCategory(_space, value, statuses)
   $: icon = category?.icon
-  $: color = value.color !== undefined ? value.color : category !== undefined ? category.color : -1
+  $: color = viewState.color !== undefined ? viewState.color : category !== undefined ? category.color : -1
 </script>
 
 {#if icon !== undefined && color !== undefined && category !== undefined}

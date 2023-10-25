@@ -15,7 +15,6 @@
 <script lang="ts">
   import core, { Doc, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
   import recruit, { Applicant } from '@hcengineering/recruit'
-  import task from '@hcengineering/task'
   import { Table } from '@hcengineering/view-resources'
 
   export let value: Ref<Space>[]
@@ -23,9 +22,8 @@
 
   const options: FindOptions<Applicant> = {
     lookup: {
-      status: task.class.State,
+      status: core.class.Status,
       space: core.class.Space,
-      doneState: task.class.DoneState,
       attachedTo: recruit.mixin.Candidate
     },
     limit: 200
@@ -35,7 +33,7 @@
 <div class="popup-table">
   <Table
     _class={recruit.class.Applicant}
-    config={['', 'attachedTo', 'status', 'doneState', 'modifiedOn']}
+    config={['', 'attachedTo', 'status', 'modifiedOn']}
     {options}
     query={{ ...(resultQuery ?? {}), space: { $in: value } }}
     loadingProps={{ length: 0 }}

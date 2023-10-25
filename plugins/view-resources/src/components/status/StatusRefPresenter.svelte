@@ -13,18 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, Status, StatusValue } from '@hcengineering/core'
+  import { Ref, Status } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { AnySvelteComponent } from '@hcengineering/ui'
 
   import { statusStore } from '../../status'
   import StatusPresenter from './StatusPresenter.svelte'
 
-  export let value: Ref<Status> | StatusValue | undefined
+  export let value: Ref<Status> | undefined
   export let size: 'small' | 'medium' = 'medium'
   export let icon: Asset | AnySvelteComponent | undefined = undefined
 
-  $: statusValue = $statusStore.get(typeof value === 'string' ? value : (value?.values?.[0]?._id as Ref<Status>))
+  $: statusValue = value ? $statusStore.byId.get(value) : undefined
 </script>
 
 {#if value}

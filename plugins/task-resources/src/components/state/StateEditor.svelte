@@ -14,16 +14,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, Space } from '@hcengineering/core'
-  import { State } from '@hcengineering/task'
+  import { Ref, Status } from '@hcengineering/core'
+  import { Project } from '@hcengineering/task'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { Button, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { statusStore } from '@hcengineering/view-resources'
   import StatePresenter from './StatePresenter.svelte'
   import StatesPopup from './StatesPopup.svelte'
 
-  export let value: Ref<State>
-  export let space: Ref<Space>
+  export let value: Ref<Status>
+  export let space: Ref<Project>
   export let onChange: (value: any) => void
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
@@ -33,7 +33,7 @@
   export let shrink: number = 0
   export let disabled: boolean = false
 
-  $: state = $statusStore.get(value)
+  $: state = $statusStore.byId.get(value)
   let opened: boolean = false
 
   const handleClick = (ev: MouseEvent) => {
@@ -51,13 +51,13 @@
 </script>
 
 {#if kind === 'list' || kind === 'list-header'}
-  <StatePresenter value={state} {shouldShowName} {disabled} shouldShowTooltip on:click={handleClick} />
+  <StatePresenter value={state} {space} {shouldShowName} {disabled} shouldShowTooltip on:click={handleClick} />
 {:else}
   <Button {kind} {size} {width} {justify} {shrink} on:click={handleClick}>
     <svelte:fragment slot="content">
       {#if state}
         <div class="pointer-events-none clear-mins">
-          <StatePresenter value={state} {shouldShowName} {disabled} />
+          <StatePresenter value={state} {space} {shouldShowName} {disabled} />
         </div>
       {/if}
     </svelte:fragment>

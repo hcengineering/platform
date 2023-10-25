@@ -14,11 +14,11 @@
 -->
 <script lang="ts">
   import { PersonAccount } from '@hcengineering/contact'
-  import { Class, Doc, DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, getCurrentAccount, Ref, Status } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import tags, { selectedTagElements, TagCategory, TagElement } from '@hcengineering/tags'
-  import { DoneState, Task } from '@hcengineering/task'
+  import { Task } from '@hcengineering/task'
   import {
     Component,
     IModeSelector,
@@ -32,6 +32,7 @@
   import {
     FilterBar,
     FilterButton,
+    statusStore,
     TableBrowser,
     ViewletSelector,
     ViewletSettingButton
@@ -70,17 +71,16 @@
   let preference: ViewletPreference | undefined
 
   let documentIds: Ref<Task>[] = []
-  function updateResultQuery (search: string, documentIds: Ref<Task>[], doneStates: DoneState[]): void {
-    resultQuery.doneState = { $nin: doneStates.map((it) => it._id) }
+  function updateResultQuery (search: string, documentIds: Ref<Task>[], doneStates: Status[]): void {
+    resultQuery.status = { $nin: doneStates.map((it) => it._id) }
     if (documentIds.length > 0) {
       resultQuery._id = { $in: documentIds }
     }
   }
 
-  let doneStates: DoneState[] = []
-
-  const doneStateQuery = createQuery()
-  doneStateQuery.query(task.class.DoneState, {}, (res) => (doneStates = res))
+  $: doneStates = $statusStore.array.filter(
+    (it) => it.category === task.statusCategory.Lost || it.category === task.statusCategory.Won
+  )
 
   // Find all tags for object class with matched elements
   const query = createQuery()

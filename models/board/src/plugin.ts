@@ -18,7 +18,7 @@ import { Board, boardId } from '@hcengineering/board'
 import board from '@hcengineering/board-resources/src/plugin'
 import type { Ref } from '@hcengineering/core'
 import { IntlString, mergeIds } from '@hcengineering/platform'
-import { KanbanTemplate, Sequence } from '@hcengineering/task'
+import { ProjectType, Sequence } from '@hcengineering/task'
 import type { AnyComponent } from '@hcengineering/ui'
 import { Action, ViewAction, Viewlet, ViewletDescriptor } from '@hcengineering/view'
 
@@ -45,7 +45,7 @@ export default mergeIds(boardId, board, {
     DefaultBoard: '' as Ref<Board>
   },
   template: {
-    DefaultBoard: '' as Ref<KanbanTemplate>
+    DefaultBoard: '' as Ref<ProjectType>
   },
   ids: {
     Sequence: '' as Ref<Sequence>

@@ -183,7 +183,7 @@
     "ArchiveProjectConfirm": "Вы действительно хотите заархивировать этот проект?",
     "DeleteProjectConfirm": "Вы действительно хотите удалить этот проект со всем содержимым?",
     "ProjectHasIssues": "Для данного проекта существуют задачи, уверены, что хотите заархивировать?",
-    "ManageWorkflowStatuses": "Управлять статусами задач для команды",
+    "ManageWorkflowStatuses": "Управлять типами проекта",
     "AddWorkflowStatus": "Добавить статус задачи",
     "EditWorkflowStatus": "Редактировать статус задачи",
     "DeleteWorkflowStatus": "Удалить статус задачи",

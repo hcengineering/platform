@@ -14,29 +14,29 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, Space, Status, StatusValue } from '@hcengineering/core'
-  import { State } from '@hcengineering/task'
+  import { Ref, Status } from '@hcengineering/core'
+  import { Project } from '@hcengineering/task'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { statusStore } from '@hcengineering/view-resources'
   import StateEditor from './StateEditor.svelte'
   import StatePresenter from './StatePresenter.svelte'
 
-  export let value: Ref<State> | StatusValue
-  export let space: Ref<Space>
-  export let onChange: ((value: Ref<State>) => void) | undefined = undefined
+  export let value: Ref<Status>
+  export let space: Ref<Project>
+  export let onChange: ((value: Ref<Status>) => void) | undefined = undefined
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'medium'
   export let shouldShowName: boolean = true
   export let shrink: number = 0
   export let disabled: boolean = false
 
-  $: state = $statusStore.get(typeof value === 'string' ? value : (value?.values?.[0]?._id as Ref<Status>))
+  $: state = $statusStore.byId.get(value)
 </script>
 
 {#if value}
   {#if onChange !== undefined && state !== undefined}
     <StateEditor value={state._id} {space} {onChange} {kind} {size} {shouldShowName} {shrink} {disabled} />
   {:else}
-    <StatePresenter value={state} {shouldShowName} {disabled} {shrink} on:accent-color />
+    <StatePresenter value={state} {space} {shouldShowName} {disabled} {shrink} on:accent-color />
   {/if}
 {/if}

@@ -43,10 +43,9 @@ import {
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
 import core, { TAttachedDoc, TDoc, TStatus, TType } from '@hcengineering/model-core'
-import task, { TSpaceWithStates, TTask } from '@hcengineering/model-task'
+import task, { TTask, TProject as TTaskProject } from '@hcengineering/model-task'
 import { IntlString } from '@hcengineering/platform'
 import tags, { TagElement } from '@hcengineering/tags'
-import { DoneState } from '@hcengineering/task'
 import {
   Component,
   Issue,
@@ -68,9 +67,6 @@ import {
 import tracker from './plugin'
 
 export const DOMAIN_TRACKER = 'tracker' as Domain
-/**
- * @public
- */
 
 @Model(tracker.class.IssueStatus, core.class.Status)
 @UX(tracker.string.IssueStatuses, undefined, undefined, 'rank', 'name')
@@ -105,9 +101,9 @@ export class TTypeMilestoneStatus extends TType {}
  * @public
  */
 
-@Model(tracker.class.Project, task.class.SpaceWithStates)
+@Model(tracker.class.Project, task.class.Project)
 @UX(tracker.string.Project, tracker.icon.Issues, 'Project', 'name')
-export class TProject extends TSpaceWithStates implements Project {
+export class TProject extends TTaskProject implements Project {
   @Prop(TypeString(), tracker.string.ProjectIdentifier)
   @Index(IndexKind.FullText)
     identifier!: IntlString
@@ -218,10 +214,6 @@ export class TIssue extends TTask implements Issue {
 
   @Prop(Collection(tags.class.TagReference), tracker.string.Labels)
   declare labels: number
-
-  @Prop(TypeRef(task.class.DoneState), task.string.TaskStateDone, { _id: task.attribute.DoneState })
-  @Hidden()
-  declare doneState: Ref<DoneState> | null
 
   @Prop(TypeRef(tracker.class.Project), tracker.string.Project, { icon: tracker.icon.Issues })
   @Index(IndexKind.Indexed)

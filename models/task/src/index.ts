@@ -15,12 +15,21 @@
 
 import type { Employee, Person } from '@hcengineering/contact'
 import contact from '@hcengineering/contact'
-import { Arr, Attribute, Class, Doc, Domain, IndexKind, Ref, Status, Timestamp } from '@hcengineering/core'
+import {
+  Class,
+  DOMAIN_MODEL,
+  Doc,
+  Domain,
+  IndexKind,
+  Ref,
+  Status,
+  StatusCategory,
+  Timestamp
+} from '@hcengineering/core'
 import {
   Builder,
   Collection,
   Hidden,
-  Implements,
   Index,
   Mixin,
   Model,
@@ -34,52 +43,31 @@ import {
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
-import core, { TAttachedDoc, TClass, TDoc, TSpace, TStatus } from '@hcengineering/model-core'
+import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@hcengineering/model-core'
 import view, { createAction, template, actionTemplates as viewTemplates } from '@hcengineering/model-view'
-import {} from '@hcengineering/notification'
 import { IntlString } from '@hcengineering/platform'
+import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import tags from '@hcengineering/tags'
 import {
-  DoneState,
-  DoneStateTemplate,
   KanbanCard,
-  KanbanTemplate,
-  KanbanTemplateSpace,
-  LostState,
-  LostStateTemplate,
+  Project,
+  ProjectStatus,
+  ProjectType,
+  ProjectTypeCategory,
   Sequence,
-  State,
-  StateTemplate,
   Task,
-  TodoItem,
-  WonState,
-  WonStateTemplate
+  TodoItem
 } from '@hcengineering/task'
-import { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent } from '@hcengineering/ui'
 import { ViewAction } from '@hcengineering/view'
 import task from './plugin'
 
 export { taskId } from '@hcengineering/task'
-export { createKanbanTemplate, createSequence, taskOperation } from './migration'
+export { createProjectType, createSequence, taskOperation } from './migration'
 export { default } from './plugin'
 
 export const DOMAIN_TASK = 'task' as Domain
 export const DOMAIN_KANBAN = 'kanban' as Domain
-@Model(task.class.State, core.class.Status)
-@UX(task.string.TaskState, task.icon.TaskState, undefined, 'rank', 'name')
-export class TState extends TStatus implements State {
-  isArchived!: boolean
-}
-
-@Model(task.class.DoneState, core.class.Status)
-@UX(task.string.TaskStateDone, task.icon.TaskState, undefined, 'name')
-export class TDoneState extends TStatus implements DoneState {}
-
-@Model(task.class.WonState, task.class.DoneState)
-export class TWonState extends TDoneState implements WonState {}
-
-@Model(task.class.LostState, task.class.DoneState)
-export class TLostState extends TDoneState implements LostState {}
 
 /**
  * @public
@@ -92,10 +80,6 @@ export class TTask extends TAttachedDoc implements Task {
   @Prop(TypeRef(core.class.Status), task.string.TaskState, { _id: task.attribute.State })
   @Index(IndexKind.Indexed)
     status!: Ref<Status>
-
-  @Prop(TypeRef(task.class.DoneState), task.string.TaskStateDone, { _id: task.attribute.DoneState })
-  @Index(IndexKind.Indexed)
-    doneState!: Ref<DoneState> | null
 
   @Prop(TypeString(), task.string.TaskNumber)
   @Index(IndexKind.FullText)
@@ -118,6 +102,8 @@ export class TTask extends TAttachedDoc implements Task {
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
+
+  isDone?: boolean
 }
 
 @Model(task.class.TodoItem, core.class.AttachedDoc, DOMAIN_TASK)
@@ -147,87 +133,33 @@ export class TKanbanCard extends TClass implements KanbanCard {
   card!: AnyComponent
 }
 
-@Model(task.class.SpaceWithStates, core.class.Space)
-export class TSpaceWithStates extends TSpace {
-  templateId!: Ref<KanbanTemplate>
-  states!: Arr<Ref<State>>
-  doneStates!: Arr<Ref<DoneState>>
+@Model(task.class.Project, core.class.Space)
+export class TProject extends TSpace implements Project {
+  type!: Ref<ProjectType>
 }
 
-@Model(task.class.KanbanTemplateSpace, core.class.Space)
-export class TKanbanTemplateSpace extends TSpace implements KanbanTemplateSpace {
-  declare name: IntlString
-  declare description: IntlString
+@Model(task.class.ProjectType, core.class.Space)
+export class TProjectType extends TSpace implements ProjectType {
+  statuses!: ProjectStatus[]
+  shortDescription?: string
+  category!: Ref<ProjectTypeCategory>
+}
+
+@Model(task.class.ProjectTypeCategory, core.class.Doc, DOMAIN_MODEL)
+export class TProjectTypeCategory extends TDoc implements ProjectTypeCategory {
+  name!: IntlString
+  description!: IntlString
   icon!: AnyComponent
-  editor!: AnyComponent
-  ofAttribute!: Ref<Attribute<State>>
-  doneAttribute!: Ref<Attribute<DoneState>>
-  attachedToClass!: Ref<Class<Doc>>
-}
-
-@Model(task.class.StateTemplate, core.class.Doc, DOMAIN_KANBAN)
-export class TStateTemplate extends TDoc implements StateTemplate {
-  // We attach to attribute, so we could distinguish between
-  ofAttribute!: Ref<Attribute<Status>>
-  attachedTo!: Ref<KanbanTemplate>
-
-  @Prop(TypeString(), task.string.StateTemplateTitle)
-    name!: string
-
-  @Prop(TypeString(), task.string.StateTemplateColor)
-    color!: number
-
-  declare rank: string
-}
-
-@Model(task.class.DoneStateTemplate, core.class.Doc, DOMAIN_KANBAN)
-export class TDoneStateTemplate extends TDoc implements DoneStateTemplate {
-  // We attach to attribute, so we could distinguish between
-  ofAttribute!: Ref<Attribute<Status>>
-  attachedTo!: Ref<KanbanTemplate>
-
-  @Prop(TypeString(), task.string.StateTemplateTitle)
-    name!: string
-
-  declare rank: string
-}
-
-@Model(task.class.WonStateTemplate, task.class.DoneStateTemplate)
-export class TWonStateTemplate extends TDoneStateTemplate implements WonStateTemplate {}
-
-@Model(task.class.LostStateTemplate, task.class.DoneStateTemplate)
-export class TLostStateTemplate extends TDoneStateTemplate implements LostStateTemplate {}
-
-@Model(task.class.KanbanTemplate, core.class.Doc, DOMAIN_KANBAN)
-export class TKanbanTemplate extends TDoc implements KanbanTemplate {
-  @Prop(TypeString(), task.string.KanbanTemplateTitle)
-  @Index(IndexKind.FullText)
-    title!: string
-
-  @Prop(TypeString(), task.string.Description)
-    description!: string
-
-  @Prop(TypeString(), task.string.ShortDescription)
-    shortDescription!: string
-
-  @Prop(Collection(task.class.StateTemplate), task.string.States)
-    statesC!: number
-
-  @Prop(Collection(task.class.DoneStateTemplate), task.string.DoneStates)
-    doneStatesC!: number
+  editor?: AnyComponent
+  attachedToClass!: Ref<Class<Project>>
+  statusClass!: Ref<Class<Status>>
+  statusCategories!: Ref<StatusCategory>[]
 }
 
 @Model(task.class.Sequence, core.class.Doc, DOMAIN_KANBAN)
 export class TSequence extends TDoc implements Sequence {
   attachedTo!: Ref<Class<Doc>>
   sequence!: number
-}
-
-@Implements(task.interface.DocWithRank)
-export class TDocWithRank extends TDoc {
-  @Prop(TypeString(), task.string.Rank)
-  @Hidden()
-    rank!: string
 }
 
 /**
@@ -287,24 +219,7 @@ export const actionTemplates = template({
 })
 
 export function createModel (builder: Builder): void {
-  builder.createModel(
-    TDocWithRank,
-    TState,
-    TDoneState,
-    TWonState,
-    TLostState,
-    TKanbanCard,
-    TKanbanTemplateSpace,
-    TStateTemplate,
-    TDoneStateTemplate,
-    TWonStateTemplate,
-    TLostStateTemplate,
-    TKanbanTemplate,
-    TSequence,
-    TTask,
-    TTodoItem,
-    TSpaceWithStates
-  )
+  builder.createModel(TKanbanCard, TSequence, TTask, TTodoItem, TProject, TProjectType, TProjectTypeCategory)
 
   builder.createDoc(
     view.class.ViewletDescriptor,
@@ -321,7 +236,7 @@ export function createModel (builder: Builder): void {
     presenter: view.component.ObjectPresenter
   })
 
-  builder.mixin(task.class.KanbanTemplate, core.class.Class, view.mixin.ObjectPresenter, {
+  builder.mixin(task.class.ProjectType, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: task.component.KanbanTemplatePresenter
   })
 
@@ -340,11 +255,7 @@ export function createModel (builder: Builder): void {
     builder,
     {
       ...actionTemplates.editStatus,
-      target: task.class.SpaceWithStates,
-      actionProps: {
-        ofAttribute: task.attribute.State,
-        doneOfAttribute: task.attribute.DoneState
-      },
+      target: task.class.Project,
       query: {
         archived: false
       },
@@ -356,32 +267,20 @@ export function createModel (builder: Builder): void {
     task.action.EditStatuses
   )
 
-  builder.mixin(task.class.State, core.class.Class, view.mixin.AttributeEditor, {
+  builder.mixin(core.class.Status, core.class.Class, view.mixin.AttributeEditor, {
     inlineEditor: task.component.StateEditor
   })
 
-  builder.mixin(task.class.State, core.class.Class, view.mixin.ObjectPresenter, {
+  builder.mixin(core.class.Status, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: task.component.StatePresenter
   })
 
-  builder.mixin(task.class.State, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(core.class.Status, core.class.Class, view.mixin.AttributePresenter, {
     presenter: task.component.StateRefPresenter
   })
 
-  builder.mixin(task.class.State, core.class.Class, view.mixin.IgnoreActions, {
+  builder.mixin(core.class.Status, core.class.Class, view.mixin.IgnoreActions, {
     actions: [view.action.Delete]
-  })
-
-  builder.mixin(task.class.DoneState, core.class.Class, view.mixin.AttributeEditor, {
-    inlineEditor: task.component.DoneStateEditor
-  })
-
-  builder.mixin(task.class.DoneState, core.class.Class, view.mixin.ObjectPresenter, {
-    presenter: task.component.DoneStatePresenter
-  })
-
-  builder.mixin(task.class.DoneState, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: task.component.DoneStateRefPresenter
   })
 
   builder.createDoc(
@@ -467,38 +366,53 @@ export function createModel (builder: Builder): void {
     task.action.Move
   )
 
-  createAction(
-    builder,
+  builder.createDoc(
+    core.class.StatusCategory,
+    core.space.Model,
     {
-      action: view.actionImpl.UpdateDocument,
-      actionProps: {
-        key: 'isArchived',
-        value: true,
-        ask: true,
-        label: task.string.Archive,
-        message: task.string.ArchiveConfirm
-      },
-      query: {
-        isArchived: { $nin: [true] }
-      },
-      label: task.string.Archive,
-      icon: view.icon.Archive,
-      input: 'any',
-      category: task.category.Task,
-      target: task.class.State,
-      context: {
-        mode: ['context', 'browser'],
-        group: 'tools'
-      }
+      ofAttribute: task.attribute.State,
+      label: core.string.Status,
+      icon: task.icon.TaskState,
+      color: PaletteColorIndexes.Blueberry,
+      defaultStatusName: 'Backlog',
+      order: 0
     },
-    task.action.ArchiveState
+    task.statusCategory.Active
   )
 
-  builder.mixin(task.class.State, core.class.Class, view.mixin.SortFuncs, {
+  builder.createDoc(
+    core.class.StatusCategory,
+    core.space.Model,
+    {
+      ofAttribute: task.attribute.State,
+      label: task.string.DoneStatesWon,
+      icon: task.icon.TaskState,
+      color: PaletteColorIndexes.Houseplant,
+      defaultStatusName: 'Won',
+      order: 0
+    },
+    task.statusCategory.Won
+  )
+
+  builder.createDoc(
+    core.class.StatusCategory,
+    core.space.Model,
+    {
+      ofAttribute: task.attribute.State,
+      label: task.string.DoneStatesLost,
+      icon: task.icon.TaskState,
+      color: PaletteColorIndexes.Firework,
+      defaultStatusName: 'Lost',
+      order: 0
+    },
+    task.statusCategory.Lost
+  )
+
+  builder.mixin(core.class.Status, core.class.Class, view.mixin.SortFuncs, {
     func: task.function.StatusSort
   })
 
-  builder.mixin(task.class.State, core.class.Class, view.mixin.AllValuesFunc, {
+  builder.mixin(core.class.Status, core.class.Class, view.mixin.AllValuesFunc, {
     func: task.function.GetAllStates
   })
 

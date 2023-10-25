@@ -14,16 +14,17 @@
 // limitations under the License.
 //
 
+import { TxViewlet } from '@hcengineering/activity'
 import { Doc, Ref } from '@hcengineering/core'
 import { ObjectSearchCategory, ObjectSearchFactory } from '@hcengineering/model-presentation'
-import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
+import { NotificationGroup, NotificationType } from '@hcengineering/notification'
+import { IntlString, Resource, mergeIds } from '@hcengineering/platform'
+import { ProjectType } from '@hcengineering/task'
 import { trackerId } from '@hcengineering/tracker'
 import tracker from '@hcengineering/tracker-resources/src/plugin'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { Action, ViewAction, Viewlet } from '@hcengineering/view'
 import { Application } from '@hcengineering/workbench'
-import { TxViewlet } from '@hcengineering/activity'
-import { NotificationGroup, NotificationType } from '@hcengineering/notification'
 
 export default mergeIds(trackerId, tracker, {
   string: {
@@ -73,7 +74,8 @@ export default mergeIds(trackerId, tracker, {
   ids: {
     TxIssueCreated: '' as Ref<TxViewlet>,
     TrackerNotificationGroup: '' as Ref<NotificationGroup>,
-    AssigneeNotification: '' as Ref<NotificationType>
+    AssigneeNotification: '' as Ref<NotificationType>,
+    BaseProjectType: '' as Ref<ProjectType>
   },
   completion: {
     IssueQuery: '' as Resource<ObjectSearchFactory>,

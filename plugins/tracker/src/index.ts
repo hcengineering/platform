@@ -33,7 +33,7 @@ import {
 } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, Resource, plugin } from '@hcengineering/platform'
 import { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
-import { SpaceWithStates, Task } from '@hcengineering/task'
+import { ProjectTypeCategory, Task, Project as TaskProject } from '@hcengineering/task'
 import { AnyComponent, ComponentExtensionId, Location, ResolvedLocation } from '@hcengineering/ui'
 import { Action, ActionCategory, IconProps } from '@hcengineering/view'
 
@@ -45,7 +45,7 @@ export interface IssueStatus extends Status {}
 /**
  * @public
  */
-export interface Project extends SpaceWithStates, IconProps {
+export interface Project extends TaskProject, IconProps {
   identifier: string // Project identifier
   sequence: number
   defaultIssueStatus: Ref<IssueStatus>
@@ -353,8 +353,6 @@ export class ComponentManager extends DocManager {
  */
 export const trackerId = 'tracker' as Plugin
 
-export * from './utils'
-
 export default plugin(trackerId, {
   class: {
     Project: '' as Ref<Class<Project>>,
@@ -451,7 +449,8 @@ export default plugin(trackerId, {
   },
   category: {
     Other: '' as Ref<TagCategory>,
-    Tracker: '' as Ref<ActionCategory>
+    Tracker: '' as Ref<ActionCategory>,
+    ProjectTypeCategory: '' as Ref<ProjectTypeCategory>
   },
   action: {
     SetDueDate: '' as Ref<Action>,

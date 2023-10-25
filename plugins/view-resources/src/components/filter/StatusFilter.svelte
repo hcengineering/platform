@@ -16,7 +16,7 @@
   import core, { Doc, FindResult, IdMap, Ref, RefTo, Space, Status, toIdMap } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
-  import task, { SpaceWithStates, calcRank } from '@hcengineering/task'
+  import task, { Project, ProjectType, getStates } from '@hcengineering/task'
   import ui, {
     EditWithIcon,
     Icon,
@@ -55,17 +55,17 @@
   $: targetClass = (filter.key.attribute.type as RefTo<Status>).to
   $: clazz = hierarchy.getClass(targetClass)
 
-  let _space: SpaceWithStates | undefined = undefined
+  let _space: Project | undefined = undefined
   const query = createQuery()
   if (space !== undefined) {
-    query.query(task.class.SpaceWithStates, { _id: space as Ref<SpaceWithStates> }, (res) => {
+    query.query(task.class.Project, { _id: space as Ref<Project> }, (res) => {
       _space = res[0]
     })
   }
 
   let filterUpdateTimeout: any | undefined
 
-  async function getValues (search: string, statusStore: IdMap<Status>): Promise<void> {
+  async function getValues (search: string, typeStore: IdMap<ProjectType>, statusStore: IdMap<Status>): Promise<void> {
     if (objectsPromise) {
       await objectsPromise
     }
@@ -74,13 +74,10 @@
     for (const object of filter.value) {
       targets.add(object)
     }
-    const isDone = hierarchy.isDerived(targetClass, task.class.DoneState)
-
     if (space !== undefined) {
-      const _space = await client.findOne(task.class.SpaceWithStates, { _id: space as Ref<SpaceWithStates> })
+      const _space = await client.findOne(task.class.Project, { _id: space as Ref<Project> })
       if (_space) {
-        const key = isDone ? 'doneStates' : 'states'
-        values = (_space as any)[key].map((p: Ref<Status>) => statusStore.get(p)).filter((p: Status) => p !== undefined)
+        values = getStates(_space, typeStore, statusStore)
         for (const value of values) {
           targets.add(value?._id)
         }
@@ -98,7 +95,7 @@
       }
       values = await sort(statuses)
     }
-    if (targets.has(undefined) || isDone) {
+    if (targets.has(undefined)) {
       values.unshift(undefined)
     }
     if (values.length !== targets.size) {
@@ -122,38 +119,6 @@
   }
 
   async function sort (statuses: Status[]): Promise<Status[]> {
-    if (_space === undefined) {
-      let space: SpaceWithStates | undefined = undefined
-      const res: Map<Ref<Status>, string> = new Map()
-      for (const state of statuses) {
-        if (res.has(state._id)) continue
-        const query = hierarchy.isDerived(state._class, task.class.DoneState)
-          ? { doneStates: state._id }
-          : { states: state._id }
-        space = (await client.findOne(task.class.SpaceWithStates, query)) as SpaceWithStates | undefined
-        if (space === undefined) continue
-        const spaceStateArray = hierarchy.isDerived(state._class, task.class.DoneState)
-          ? space.doneStates
-          : space.states
-        if (spaceStateArray === undefined) continue
-        for (let index = 0; index < spaceStateArray.length; index++) {
-          const st = spaceStateArray[index]
-          const prev = index > 0 ? res.get(spaceStateArray[index - 1]) : undefined
-          const next = index < spaceStateArray.length - 1 ? res.get(spaceStateArray[index + 1]) : undefined
-          res.set(st, calcRank(prev ? { rank: prev } : undefined, next ? { rank: next } : undefined))
-        }
-      }
-      const result: Array<{
-        _id: Ref<Status>
-        rank: string
-      }> = []
-      for (const [key, value] of res.entries()) {
-        result.push({ _id: key, rank: value })
-      }
-      result.sort((a, b) => a.rank.localeCompare(b.rank))
-      statuses = result.map((p) => statuses.find((s) => s._id === p._id)).filter((p) => p !== undefined) as Status[]
-    }
-
     const categories = toIdMap(await client.findAll(core.class.StatusCategory, {}))
     statuses.sort((a, b) => {
       if (a.category !== undefined && b.category !== undefined && a.category !== b.category) {
@@ -163,13 +128,7 @@
           return aCat.order - bCat.order
         }
       }
-      if (_space != null) {
-        const aIndex = _space.states.findIndex((s) => s === a._id)
-        const bIndex = _space.states.findIndex((s) => s === b._id)
-        return aIndex - bIndex
-      } else {
-        return 0
-      }
+      return a.name.localeCompare(b.name)
     })
 
     return statuses
@@ -202,7 +161,14 @@
   let search: string = ''
 
   const dispatch = createEventDispatcher()
-  $: if (targetClass) getValues(search, $statusStore)
+
+  const typesQuery = createQuery()
+  let types: IdMap<ProjectType> = new Map()
+  typesQuery.query(task.class.ProjectType, {}, (res) => {
+    types = toIdMap(res)
+  })
+
+  $: if (targetClass) getValues(search, types, $statusStore.byId)
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>

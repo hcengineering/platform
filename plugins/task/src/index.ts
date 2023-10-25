@@ -19,12 +19,12 @@ import {
   Attribute,
   Class,
   Doc,
-  Interface,
   Markup,
   Mixin,
   Ref,
   Space,
   Status,
+  StatusCategory,
   Timestamp
 } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
@@ -40,45 +40,16 @@ export interface DocWithRank extends Doc {
   rank: string
 }
 
-/**
- * @public
- */
-export interface SpaceWithStates extends Space {
-  templateId?: Ref<KanbanTemplate>
-  states: Ref<State>[]
-  doneStates?: Ref<DoneState>[]
+export interface Project extends Space {
+  type: Ref<ProjectType>
 }
-
-// S T A T E
-
-/**
- * @public
- */
-export interface State extends Status {
-  isArchived?: boolean
-}
-
-/**
- * @public
- */
-export interface DoneState extends Status {}
-
-/**
- * @public
- */
-export interface WonState extends DoneState {}
-
-/**
- * @public
- */
-export interface LostState extends DoneState {}
 
 /**
  * @public
  */
 export interface Task extends AttachedDoc, DocWithRank {
   status: Ref<Status>
-  doneState: Ref<DoneState> | null
+  isDone?: boolean
   number: number
   assignee: Ref<Person> | null
   dueDate: Timestamp | null
@@ -114,54 +85,26 @@ export interface Sequence extends Doc {
   sequence: number
 }
 
-/**
- * @public
- */
-export interface StateTemplate extends Doc, State {
-  attachedTo: Ref<KanbanTemplate>
-  rank: string
+export interface ProjectStatus {
+  _id: Ref<Status>
+  // Optional color
+  color?: number
 }
 
-/**
- * @public
- */
-export interface DoneStateTemplate extends Doc, DoneState {
-  attachedTo: Ref<KanbanTemplate>
-  rank: string
-}
-
-/**
- * @public
- */
-export interface WonStateTemplate extends DoneStateTemplate, WonState {}
-
-/**
- * @public
- */
-export interface LostStateTemplate extends DoneStateTemplate, LostState {}
-
-/**
- * @public
- */
-export interface KanbanTemplate extends Doc {
-  title: string
-  description?: string
+export interface ProjectType extends Space {
   shortDescription?: string
-  statesC: number
-  doneStatesC: number
+  category: Ref<ProjectTypeCategory>
+  statuses: ProjectStatus[]
 }
 
-/**
- * @public
- */
-export interface KanbanTemplateSpace extends Space {
+export interface ProjectTypeCategory extends Doc {
   name: IntlString
   description: IntlString
   icon: AnyComponent
-  ofAttribute: Ref<Attribute<State>>
-  doneAttribute?: Ref<Attribute<DoneState>>
   editor?: AnyComponent
-  attachedToClass: Ref<Class<SpaceWithStates>>
+  attachedToClass: Ref<Class<Project>>
+  statusClass: Ref<Class<Status>>
+  statusCategories: Ref<StatusCategory>[]
 }
 
 /**
@@ -169,7 +112,6 @@ export interface KanbanTemplateSpace extends Space {
  */
 export enum TaskGrouping {
   State = 'state',
-  DoneStatus = 'doneState',
   Assignee = 'assignee',
   NoGrouping = '#no_category'
 }
@@ -202,12 +144,8 @@ const task = plugin(taskId, {
   mixin: {
     KanbanCard: '' as Ref<Mixin<KanbanCard>>
   },
-  interface: {
-    DocWithRank: '' as Ref<Interface<DocWithRank>>
-  },
   attribute: {
-    State: '' as Ref<Attribute<State>>,
-    DoneState: '' as Ref<Attribute<DoneState>>
+    State: '' as Ref<Attribute<Status>>
   },
   string: {
     StartDate: '' as IntlString,
@@ -223,9 +161,6 @@ const task = plugin(taskId, {
     IssueName: '' as IntlString,
     TaskComments: '' as IntlString,
     TaskLabels: '' as IntlString,
-    StateTemplateTitle: '' as IntlString,
-    StateTemplateColor: '' as IntlString,
-    KanbanTemplateTitle: '' as IntlString,
     Rank: '' as IntlString,
     EditStates: '' as IntlString,
     MarkAsDone: '' as IntlString,
@@ -234,23 +169,17 @@ const task = plugin(taskId, {
     ApplicationLabelTask: '' as IntlString,
     TodoItems: '' as IntlString,
     AssignedToMe: '' as IntlString,
-    Dashboard: '' as IntlString
+    Dashboard: '' as IntlString,
+    ProjectTypes: '' as IntlString,
+    ProjectType: '' as IntlString
   },
   class: {
-    State: '' as Ref<Class<State>>,
-    DoneState: '' as Ref<Class<DoneState>>,
-    WonState: '' as Ref<Class<WonState>>,
-    LostState: '' as Ref<Class<LostState>>,
-    SpaceWithStates: '' as Ref<Class<SpaceWithStates>>,
     Task: '' as Ref<Class<Task>>,
     Sequence: '' as Ref<Class<Sequence>>,
-    StateTemplate: '' as Ref<Class<StateTemplate>>,
-    DoneStateTemplate: '' as Ref<Class<DoneStateTemplate>>,
-    WonStateTemplate: '' as Ref<Class<WonStateTemplate>>,
-    LostStateTemplate: '' as Ref<Class<LostStateTemplate>>,
-    KanbanTemplate: '' as Ref<Class<KanbanTemplate>>,
-    KanbanTemplateSpace: '' as Ref<Class<KanbanTemplateSpace>>,
-    TodoItem: '' as Ref<Class<TodoItem>>
+    TodoItem: '' as Ref<Class<TodoItem>>,
+    ProjectType: '' as Ref<Class<ProjectType>>,
+    ProjectTypeCategory: '' as Ref<Class<ProjectTypeCategory>>,
+    Project: '' as Ref<Class<Project>>
   },
   viewlet: {
     Kanban: '' as Ref<ViewletDescriptor>,
@@ -274,12 +203,16 @@ const task = plugin(taskId, {
     Sequence: '' as Ref<Space>,
     Statuses: '' as Ref<Space>
   },
+  statusCategory: {
+    Active: '' as Ref<StatusCategory>,
+    Won: '' as Ref<StatusCategory>,
+    Lost: '' as Ref<StatusCategory>
+  },
   component: {
-    KanbanTemplateEditor: '' as AnyComponent,
-    KanbanTemplateSelector: '' as AnyComponent,
+    ProjectEditor: '' as AnyComponent,
+    ProjectTypeSelector: '' as AnyComponent,
     TodoItemsPopup: '' as AnyComponent,
-    CreateStatePopup: '' as AnyComponent,
-    CreateStateTemplatePopup: '' as AnyComponent
+    CreateStatePopup: '' as AnyComponent
   },
   ids: {
     AssigneedNotification: '' as Ref<NotificationType>

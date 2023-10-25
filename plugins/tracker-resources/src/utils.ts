@@ -27,7 +27,6 @@ import core, {
   Ref,
   SortingOrder,
   Space,
-  Status,
   StatusCategory,
   TxCollectionCUD,
   TxCreateDoc,
@@ -38,7 +37,7 @@ import core, {
 } from '@hcengineering/core'
 import { Asset, IntlString } from '@hcengineering/platform'
 import { createQuery, getClient } from '@hcengineering/presentation'
-import { calcRank } from '@hcengineering/task'
+import task, { ProjectType, calcRank } from '@hcengineering/task'
 import {
   Component,
   Issue,
@@ -299,11 +298,20 @@ export async function issueStatusSort (
   space: Ref<Project> | undefined,
   viewletDescriptorId?: Ref<ViewletDescriptor>
 ): Promise<Array<Ref<IssueStatus>>> {
-  let _space: Project | undefined
+  let type: ProjectType | undefined
   if (space !== undefined) {
-    _space = await client.findOne(tracker.class.Project, { _id: space })
+    const _space = await client.findOne(
+      task.class.Project,
+      { _id: space },
+      {
+        lookup: {
+          type: task.class.ProjectType
+        }
+      }
+    )
+    type = _space?.$lookup?.type
   }
-  const statuses = get(statusStore)
+  const statuses = get(statusStore).byId
   // TODO: How we track category updates.
 
   if (viewletDescriptorId === tracker.viewlet.Kanban) {
@@ -314,9 +322,9 @@ export async function issueStatusSort (
         listIssueKanbanStatusOrder.indexOf(aVal?.category as Ref<StatusCategory>) -
         listIssueKanbanStatusOrder.indexOf(bVal?.category as Ref<StatusCategory>)
       if (res === 0) {
-        if (_space != null) {
-          const aIndex = _space.states.findIndex((s) => s === a)
-          const bIndex = _space.states.findIndex((s) => s === b)
+        if (type != null) {
+          const aIndex = type.statuses.findIndex((s) => s._id === a)
+          const bIndex = type.statuses.findIndex((s) => s._id === b)
           return aIndex - bIndex
         } else {
           return aVal.name.localeCompare(bVal.name)
@@ -332,9 +340,9 @@ export async function issueStatusSort (
         listIssueStatusOrder.indexOf(aVal?.category as Ref<StatusCategory>) -
         listIssueStatusOrder.indexOf(bVal?.category as Ref<StatusCategory>)
       if (res === 0) {
-        if (_space != null) {
-          const aIndex = _space.states.findIndex((s) => s === a)
-          const bIndex = _space.states.findIndex((s) => s === b)
+        if (type != null) {
+          const aIndex = type.statuses.findIndex((s) => s._id === a)
+          const bIndex = type.statuses.findIndex((s) => s._id === b)
           return aIndex - bIndex
         } else {
           return aVal.name.localeCompare(bVal.name)
@@ -664,26 +672,6 @@ export async function collectIssues (client: TxOperations, docs: Doc[]): Promise
 /**
  * @public
  */
-export function findTargetStatus (
-  status: Ref<Status>,
-  targetProject: Project,
-  statusStore: IdMap<Status>,
-  useCategory = false
-): Ref<Status> | undefined {
-  if (targetProject.states.includes(status)) return status
-
-  if (useCategory) {
-    const currentCategroy = statusStore.get(status)?.category
-    for (const status of targetProject.states) {
-      const st = statusStore.get(status)
-      if (st?.category === currentCategroy) return st?._id
-    }
-  }
-}
-
-/**
- * @public
- */
 export function issueToAttachedData (issue: Issue): AttachedData<Issue> {
   const { _id, _class, space, ...data } = issue
   return { ...data }
@@ -712,11 +700,6 @@ interface ManualUpdates {
   createComponent: boolean
 }
 export type IssueToUpdate = DocumentUpdate<Issue> & Partial<ManualUpdates>
-
-export interface StatusToUpdate {
-  ref: Ref<IssueStatus>
-  create?: boolean
-}
 
 export interface ComponentToUpdate {
   ref: Ref<Component>

@@ -1,5 +1,14 @@
 <script lang="ts">
-  import core, { Ref, Timestamp, Tx, TxCollectionCUD, TxCreateDoc, TxUpdateDoc, WithLookup } from '@hcengineering/core'
+  import core, {
+    IdMap,
+    Ref,
+    Timestamp,
+    Tx,
+    TxCollectionCUD,
+    TxCreateDoc,
+    TxUpdateDoc,
+    WithLookup
+  } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus } from '@hcengineering/tracker'
   import { Label, ticker, Row } from '@hcengineering/ui'
@@ -30,11 +39,7 @@
   )
 
   let displaySt: WithTime[] = []
-  async function updateStatus (
-    txes: Tx[],
-    statuses: Map<Ref<IssueStatus>, WithLookup<IssueStatus>>,
-    _: number
-  ): Promise<void> {
+  async function updateStatus (txes: Tx[], statuses: IdMap<IssueStatus>, _: number): Promise<void> {
     const result: WithTime[] = []
 
     let current: Ref<IssueStatus> | undefined
@@ -84,7 +89,7 @@
     displaySt = result
   }
 
-  $: updateStatus(txes, $statusStore, $ticker)
+  $: updateStatus(txes, $statusStore.byId, $ticker)
 </script>
 
 <Row>

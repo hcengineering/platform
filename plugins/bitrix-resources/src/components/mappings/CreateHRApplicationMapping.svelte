@@ -7,12 +7,12 @@
     MappingOperation,
     getAllAttributes
   } from '@hcengineering/bitrix'
-  import { AnyAttribute } from '@hcengineering/core'
+  import { AnyAttribute, Status } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import InlineAttributeBarEditor from '@hcengineering/presentation/src/components/InlineAttributeBarEditor.svelte'
   import recruit from '@hcengineering/recruit'
-  import task, { DoneStateTemplate, StateTemplate } from '@hcengineering/task'
+  import task from '@hcengineering/task'
   import {
     Button,
     DropdownIntlItem,
@@ -83,22 +83,9 @@
     (it) => ({ id: it.VALUE, label: it.VALUE } as DropdownTextItem)
   )
 
-  const statusQuery = createQuery()
-  const doneQuery = createQuery()
+  const states: Status[] = []
 
-  let stateTemplates: StateTemplate[] = []
-  let doneStateTemplates: DoneStateTemplate[] = []
-
-  $: statusQuery.query(task.class.StateTemplate, { attachedTo: defaultTemplate }, (res) => {
-    stateTemplates = res
-  })
-
-  $: doneQuery.query(task.class.DoneStateTemplate, { attachedTo: defaultTemplate }, (res) => {
-    doneStateTemplates = res
-  })
-
-  $: stateTitles = [{ id: '', label: 'None' }, ...stateTemplates.map((it) => ({ id: it.name, label: it.name }))]
-  $: doneStateTitles = [{ id: '', label: 'None' }, ...doneStateTemplates.map((it) => ({ id: it.name, label: it.name }))]
+  $: stateTitles = [{ id: '', label: 'None' }, ...states.map((it) => ({ id: it.name, label: it.name }))]
 </script>
 
 <div class="flex-col flex-wrap">
@@ -123,8 +110,8 @@
           width={'10rem'}
           label={getEmbeddedLabel('Template')}
           searchField={'title'}
-          _class={task.class.KanbanTemplate}
-          docQuery={{ space: recruit.space.VacancyTemplates }}
+          _class={task.class.ProjectType}
+          docQuery={{ category: recruit.category.VacancyTypeCategories }}
           bind:value={defaultTemplate}
         />
       </div>
@@ -166,7 +153,7 @@
           icon={IconAdd}
           size={'small'}
           on:click={() => {
-            stateMapping = [...stateMapping, { sourceName: '', targetName: '', updateCandidate: [], doneState: '' }]
+            stateMapping = [...stateMapping, { sourceName: '', targetName: '', updateCandidate: [] }]
           }}
         />
       </div>
@@ -186,14 +173,6 @@
               label={getEmbeddedLabel('Final state')}
               items={stateTitles}
               bind:selected={m.targetName}
-            />
-            <span class="ml-4"> Done state: </span>
-            <DropdownLabels
-              width={'10rem'}
-              kind={m.doneState !== '' ? 'primary' : 'regular'}
-              label={getEmbeddedLabel('Done state')}
-              items={doneStateTitles}
-              bind:selected={m.doneState}
             />
             {#each m.updateCandidate as c}
               {@const attribute = allAttrs.find((it) => it.name === c.attr)}
