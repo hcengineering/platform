@@ -19,7 +19,7 @@
   import Icon from './Icon.svelte'
   import Label from './Label.svelte'
   import DropdownLabelsIntl from './DropdownLabelsIntl.svelte'
-  import { checkAdaptiveMatching, deviceOptionsStore as deviceInfo } from '..'
+  import { Scroller, checkAdaptiveMatching, deviceOptionsStore as deviceInfo } from '..'
 
   export let selected: string | string[] = ''
   export let multiselect: boolean = false
@@ -66,49 +66,51 @@
       }}
     />
   {:else}
-    <div class="tablist-container {kind} {size}">
-      {#each items as item, i}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div
-          bind:this={tabs[i]}
-          class={kind === 'normal' || kind === 'regular' ? 'button' : 'plain'}
-          class:separated={kind === 'separated' || kind === 'separated-free'}
-          class:free={kind === 'separated-free'}
-          class:onlyIcons
-          class:selected={getSelected(item.id, selected)}
-          data-view={item.tooltip}
-          data-id={`tab-${item.id}`}
-          use:tooltip={{ label: item.tooltip ?? undefined, element: tabs[i] ?? undefined }}
-          on:click={() => {
-            if (multiselect) {
-              if (Array.isArray(selected)) {
-                if (selected.includes(item.id)) selected = selected.filter((it) => it !== item.id)
-                else selected.push(item.id)
-              }
-            } else selected = item.id
-            dispatch('select', item)
-            items = items
-          }}
-        >
-          {#if item.icon}
-            <div class="icon">
-              <Icon icon={item.icon} size={iconSize} fill={item.color ?? 'currentColor'} />
-            </div>
-          {:else if item.color}
-            <div class="color" style:background-color={item.color} />
-          {/if}
-          {#if item.label || item.labelIntl}
-            <span class="overflow-label" class:ml-1-5={item.icon || item.color}>
-              {#if item.label}
-                {item.label}
-              {:else if item.labelIntl}
-                <Label label={item.labelIntl} params={item.labelParams} />
-              {/if}
-            </span>
-          {/if}
-        </div>
-      {/each}
-    </div>
+    <Scroller horizontal>
+      <div class="tablist-container {kind} {size}">
+        {#each items as item, i}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <div
+            bind:this={tabs[i]}
+            class={kind === 'normal' || kind === 'regular' ? 'button' : 'plain'}
+            class:separated={kind === 'separated' || kind === 'separated-free'}
+            class:free={kind === 'separated-free'}
+            class:onlyIcons
+            class:selected={getSelected(item.id, selected)}
+            data-view={item.tooltip}
+            data-id={`tab-${item.id}`}
+            use:tooltip={{ label: item.tooltip ?? undefined, element: tabs[i] ?? undefined }}
+            on:click={() => {
+              if (multiselect) {
+                if (Array.isArray(selected)) {
+                  if (selected.includes(item.id)) selected = selected.filter((it) => it !== item.id)
+                  else selected.push(item.id)
+                }
+              } else selected = item.id
+              dispatch('select', item)
+              items = items
+            }}
+          >
+            {#if item.icon}
+              <div class="icon">
+                <Icon icon={item.icon} size={iconSize} fill={item.color ?? 'currentColor'} />
+              </div>
+            {:else if item.color}
+              <div class="color" style:background-color={item.color} />
+            {/if}
+            {#if item.label || item.labelIntl}
+              <span class="overflow-label" class:ml-1-5={item.icon || item.color}>
+                {#if item.label}
+                  {item.label}
+                {:else if item.labelIntl}
+                  <Label label={item.labelIntl} params={item.labelParams} />
+                {/if}
+              </span>
+            {/if}
+          </div>
+        {/each}
+      </div>
+    </Scroller>
   {/if}
 {/if}
 

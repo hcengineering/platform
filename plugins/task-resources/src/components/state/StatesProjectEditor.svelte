@@ -126,8 +126,6 @@
     const targetColor = type.statuses.find((p) => p._id === state._id)?.color ?? state.color ?? category?.color
     return getPlatformColorDef(targetColor ?? getColorNumberByText(state.name), $themeStore.dark)
   }
-
-  $: console.log(states)
 </script>
 
 {#if categoryEditor}

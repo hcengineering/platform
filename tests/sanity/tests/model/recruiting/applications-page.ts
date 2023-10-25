@@ -100,4 +100,12 @@ export class ApplicationsPage extends CommonRecruitingPage {
       .click()
     await this.selectFromDropdown(this.page, status)
   }
+
+  async selectType (type: string): Promise<void> {
+    await this.page
+      .locator('div[class*=header]')
+      .locator('div[class*=tablist-container]')
+      .locator('div', { hasText: type })
+      .click()
+  }
 }

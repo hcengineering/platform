@@ -63,11 +63,13 @@ test.describe('Application tests', () => {
     const navigationMenuPage = new NavigationMenuPage(page)
     await navigationMenuPage.buttonApplications.click()
 
+    const vacancyName = 'Software Engineer'
     const applicationsPage = new ApplicationsPage(page)
     const talentName = await applicationsPage.createNewApplicationWithNewTalent({
-      vacancy: 'first',
+      vacancy: vacancyName,
       recruiterName: 'first'
     })
+    await applicationsPage.selectType(vacancyName)
     await applicationsPage.openApplicationByTalentName(talentName)
 
     const applicationsDetailsPage = new ApplicationsDetailsPage(page)
