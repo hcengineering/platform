@@ -65,9 +65,7 @@ export interface ChunterMessage extends AttachedDoc {
 /**
  * @public
  */
-export interface ChunterMessageExtension extends ChunterMessage {
-  mixinClass: Ref<Class<Doc>>
-}
+export interface ChunterMessageExtension extends ChunterMessage {}
 
 /**
  * @public

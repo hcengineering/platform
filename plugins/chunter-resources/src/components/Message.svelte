@@ -18,12 +18,12 @@
   import type { ChunterMessage, ChunterMessageExtension, Message, Reaction } from '@hcengineering/chunter'
   import { PersonAccount } from '@hcengineering/contact'
   import { Avatar, personByIdStore, EmployeePresenter } from '@hcengineering/contact-resources'
-  import { getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
+  import { getCurrentAccount, Mixin, Ref, WithLookup } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { getClient, MessageViewer } from '@hcengineering/presentation'
   import ui, { ActionIcon, Button, EmojiPopup, IconMoreV, Label, showPopup, tooltip } from '@hcengineering/ui'
   import { Action } from '@hcengineering/view'
-  import { LinkPresenter, Menu, ObjectPresenter } from '@hcengineering/view-resources'
+  import { LinkPresenter, Menu, MixinPresenter } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import { AddMessageToSaved, DeleteMessageFromSaved, UnpinMessage } from '../index'
   import chunter from '../plugin'
@@ -82,13 +82,12 @@
 
   $: isEditing = false
 
-  let extensions: ChunterMessageExtension[] = []
+  let extensions: Ref<Mixin<ChunterMessageExtension>>[] = []
   $: if (message) {
     extensions = []
-    for (const ext of hierarchy.getDescendants(chunter.mixin.ChunterMessageExtension)) {
-      if (hierarchy.hasMixin(message, ext)) {
-        const extension = hierarchy.as(message, ext) as ChunterMessageExtension
-        extensions.push(extension)
+    for (const extension of hierarchy.getDescendants(chunter.mixin.ChunterMessageExtension)) {
+      if (hierarchy.hasMixin(message, extension)) {
+        extensions.push(extension as Ref<Mixin<ChunterMessageExtension>>)
       }
     }
   }
@@ -267,8 +266,8 @@
   </div>
 
   <div class="buttons clear-mins flex flex-gap-1 items-center" class:menuShowed>
-    {#each extensions as ext}
-      <ObjectPresenter presenterClass={ext.mixinClass} value={ext} />
+    {#each extensions as mixinClass}
+      <MixinPresenter {mixinClass} value={message} />
     {/each}
     {#if !readOnly}
       <ActionIcon icon={Emoji} size={'medium'} action={openEmojiPalette} />

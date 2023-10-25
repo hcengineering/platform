@@ -103,10 +103,7 @@ export class TChunterMessage extends TAttachedDoc implements ChunterMessage {
 }
 
 @Mixin(chunter.mixin.ChunterMessageExtension, chunter.class.ChunterMessage)
-export class TChunterMessageExtension extends TChunterMessage implements ChunterMessageExtension {
-  @Prop(TypeRef(core.class.Class), core.string.ClassLabel)
-    mixinClass!: Ref<Class<Doc>>
-}
+export class TChunterMessageExtension extends TChunterMessage implements ChunterMessageExtension {}
 
 @Model(chunter.class.ThreadMessage, chunter.class.ChunterMessage)
 @UX(chunter.string.ThreadMessage, undefined, 'TMSG')
