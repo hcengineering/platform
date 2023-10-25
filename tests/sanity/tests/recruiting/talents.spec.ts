@@ -118,10 +118,8 @@ test.describe('candidate/talents tests', () => {
     await talentsPage.openTalentByTalentName(talentNameFirst)
     let talentDetailsPage = new TalentDetailsPage(page)
     await talentDetailsPage.inputLocation.fill('Awesome Location Merge1')
-    // const titleTalent1 = `TitleMerge1-${generateId(4)}`
     const titleTalent1 = 'TitleMerge1'
     await talentDetailsPage.addTitle(titleTalent1)
-    // const sourceTalent1 = `SourceTalent1-${generateId(4)}`
     const sourceTalent1 = 'SourceTalent1'
     await talentDetailsPage.addSource(sourceTalent1)
     await talentDetailsPage.addSocialLinks('Phone', '123123213213')
@@ -133,10 +131,8 @@ test.describe('candidate/talents tests', () => {
     await talentsPage.openTalentByTalentName(talentNameSecond)
     talentDetailsPage = new TalentDetailsPage(page)
     await talentDetailsPage.inputLocation.fill('Awesome Location Merge2')
-    // const titleTalent2 = `TitleMerge2-${generateId(4)}`
     const titleTalent2 = 'TitleMerge2'
     await talentDetailsPage.addTitle(titleTalent2)
-    // const sourceTalent2 = `SourceTalent2-${generateId(4)}`
     const sourceTalent2 = 'SourceTalent2'
     await talentDetailsPage.addSource(sourceTalent2)
     await talentDetailsPage.addSocialLinks('Email', 'test-merge-2@gmail.com')
