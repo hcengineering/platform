@@ -145,7 +145,7 @@
         />
       {/if}
 
-      {#if loading}
+      {#if loading && items.length === 0}
         <div class="p-1">
           <Loading shrink size={'small'} />
         </div>
@@ -163,14 +163,20 @@
             <span class="text-xs mx-0-5">/</span>
             {itemsProj.length}
           </div>
-          <ActionIcon
-            size={'small'}
-            icon={IconMoreH}
-            label={ui.string.ShowMore}
-            action={() => {
-              dispatch('more')
-            }}
-          />
+          {#if loading}
+            <div class="p-1">
+              <Loading shrink size={'small'} />
+            </div>
+          {:else}
+            <ActionIcon
+              size={'small'}
+              icon={IconMoreH}
+              label={ui.string.ShowMore}
+              action={() => {
+                dispatch('more')
+              }}
+            />
+          {/if}
         {:else}
           <span class="antiSection-header__counter ml-2">{itemsProj.length}</span>
         {/if}

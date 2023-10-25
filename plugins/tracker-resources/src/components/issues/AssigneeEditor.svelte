@@ -40,7 +40,8 @@
   export let shrink: number = 0
   export let isAction: boolean = false
 
-  $: _object = object ?? value ?? []
+  $: _object =
+    (typeof object !== 'string' ? object : undefined) ?? (typeof value !== 'string' ? value : undefined) ?? []
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -48,7 +49,7 @@
   const docQuery: DocumentQuery<Employee> = { active: true }
 
   const handleAssigneeChanged = async (newAssignee: Ref<Person> | undefined | null) => {
-    if (newAssignee === undefined || (!Array.isArray(_object) && _object.assignee === newAssignee)) {
+    if (newAssignee === undefined || (!Array.isArray(_object) && _object?.assignee === newAssignee)) {
       return
     }
 
