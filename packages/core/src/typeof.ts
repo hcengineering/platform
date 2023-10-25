@@ -1,7 +1,7 @@
 const se = typeof Symbol !== 'undefined'
 const ste = se && typeof Symbol.toStringTag !== 'undefined'
 
-export default function getTypeOf (obj: any): string {
+export function getTypeOf (obj: any): string {
   const typeofObj = typeof obj
   if (typeofObj !== 'object') {
     return typeofObj
