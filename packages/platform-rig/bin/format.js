@@ -45,7 +45,7 @@ function calcHash(source, msg) {
 
 for( const v of process.argv.slice(2)) {
   if( existsSync(v) ) {
-    console.log('checking:', join( process.cwd(), v) )
+    console.info('checking:', join( process.cwd(), v) )
     calcHash(join(process.cwd(), v), 'changed')
   }
 }
@@ -55,30 +55,44 @@ if( process.argv.includes('-f')) {
 }
 
 if( filesToCheck.length > 0 ) {
-  console.log(`running prettier ${filesToCheck.length}`)
+  console.info(`running prettier ${filesToCheck.length}`)
   // Changes detected.
   const prettier = spawnSync(join(process.cwd(), 'node_modules/.bin/prettier'), ["--color", "--plugin-search-dir=.", "--write", ...filesToCheck],)
   if( prettier.stdout != null) {
     writeFileSync('.format/prettier.log', prettier.stdout)
-    console.log(prettier.stdout.toString())
+    if( prettier.status === null || prettier.status === 0) {
+      console.info(prettier.stdout.toString())
+    } else {
+      console.error(prettier.stdout.toString())
+    }
   }
   if( prettier.stderr != null) {
     writeFileSync('.format/prettier.err', prettier.stderr)
-    console.error(prettier.stderr.toString())
+    const data = prettier.stderr.toString()
+    if( data.length > 0) {
+      console.error(data)
+    }
   }
 
   console.log(`running eslint ${filesToCheck.length}`)
   const eslint = spawnSync(join(process.cwd(), 'node_modules/.bin/eslint'), ["--color", "--fix", ...filesToCheck])
   if(eslint.stdout != null) {
     writeFileSync('.format/eslint.log', eslint.stdout)
-    console.log(eslint.stdout.toString())
+    if( prettier.status === null || prettier.status === 0) {
+      console.info(eslint.stdout.toString())
+    } else {
+      console.error(eslint.stdout.toString())
+    }
   }
   if( eslint.stderr != null) {
     writeFileSync('.format/eslint.err', eslint.stderr)
-    console.error(eslint.stderr.toString())
+    const data = eslint.stderr.toString()
+    if( data.length > 0) {
+      console.error(data)
+    }
   }
   if( prettier.status || eslint.status) {
-    console.log('prettier and eslint failed', prettier.status, eslint.status)
+    console.info('prettier and eslint failed', prettier.status, eslint.status)
     process.exit(1)
   }
 
@@ -90,7 +104,7 @@ if( filesToCheck.length > 0 ) {
   }
   writeFileSync('.format/format.json', JSON.stringify(newHash, undefined, 2))
 } else {
-  console.log('No changes detected.')
+  console.info('No changes detected.')
 }
 
 process.exit(0)
