@@ -23,7 +23,7 @@
   import { getClient, MessageViewer } from '@hcengineering/presentation'
   import ui, { ActionIcon, Button, EmojiPopup, IconMoreV, Label, showPopup, tooltip } from '@hcengineering/ui'
   import { Action } from '@hcengineering/view'
-  import { LinkPresenter, Menu, MixinPresenter } from '@hcengineering/view-resources'
+  import { LinkPresenter, Menu, ObjectPresenter } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import { AddMessageToSaved, DeleteMessageFromSaved, UnpinMessage } from '../index'
   import chunter from '../plugin'
@@ -267,7 +267,7 @@
 
   <div class="buttons clear-mins flex flex-gap-1 items-center" class:menuShowed>
     {#each extensions as mixinClass}
-      <MixinPresenter {mixinClass} value={message} />
+      <ObjectPresenter _class={mixinClass} value={hierarchy.as(message, mixinClass)} exact />
     {/each}
     {#if !readOnly}
       <ActionIcon icon={Emoji} size={'medium'} action={openEmojiPalette} />
