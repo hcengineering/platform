@@ -51,7 +51,7 @@
     </div>
     <div class="ac-column">
       {#if category !== undefined}
-        <Types category={category._id} bind:type {typeId} />
+        <Types {category} bind:type {typeId} />
       {/if}
     </div>
     <div class="ac-column max">

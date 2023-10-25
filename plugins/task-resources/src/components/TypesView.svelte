@@ -97,7 +97,7 @@
 <div class="ac-header full divide caption-height">
   <div class="ac-header__wrap-title mr-3">
     <span class="ac-header__title"><Label {label} /></span>
-    {#if modeSelectorProps !== undefined}
+    {#if modeSelectorProps !== undefined && modeSelectorProps.config.length > 1}
       <ModeSelector props={modeSelectorProps} />
     {/if}
   </div>

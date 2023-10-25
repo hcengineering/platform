@@ -79,14 +79,14 @@ test.describe('contact tests', () => {
     await page.click('button:has-text("Settings")')
     // Click text=Workspace Notifications >> button
     await page.click('.box > div:nth-child(4)')
-    // Click button:has-text("Manage Templates")
-    await page.click('text="Manage Templates"')
+    // Click button:has-text("Manage Projects")
+    await page.click('text="Manage Projects"')
     // Click text=Vacancies
     await page.click('text=Vacancies')
     // Click #create-template div
     await page.click('#create-template div')
     const tid = 'template-' + generateId()
-    const t = page.locator('#templates div:has-text("New Template")').first()
+    const t = page.locator('#templates div:has-text("New project type")').first()
     await t.click()
     await t.locator('input').fill(tid)
     // await page.locator(`#templates >> .container:has-text("${tid}")`).type('Enter')

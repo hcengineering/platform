@@ -79,15 +79,6 @@ export class ApplicationsPage extends CommonRecruitingPage {
       .click()
   }
 
-  async checkApplicationDoneStatus (talentName: TalentName, done: string): Promise<void> {
-    await expect(
-      this.page
-        .locator('tr', { hasText: `${talentName.lastName} ${talentName.firstName}` })
-        .locator('td')
-        .nth(6)
-    ).toHaveText(done)
-  }
-
   async checkApplicationState (talentName: TalentName, done: string): Promise<void> {
     await expect(
       this.page

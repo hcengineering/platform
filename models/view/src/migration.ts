@@ -26,6 +26,17 @@ async function removeDoneStatePref (client: MigrationClient): Promise<void> {
   for (const pref of prefs) {
     await client.update(DOMAIN_PREFERENCE, { _id: pref._id }, { config: pref.config.filter((p) => p !== 'doneState') })
   }
+  const lookupPrefs = await client.find<ViewletPreference>(DOMAIN_PREFERENCE, {
+    _class: view.class.ViewletPreference,
+    config: '$lookup.doneState'
+  })
+  for (const pref of lookupPrefs) {
+    await client.update(
+      DOMAIN_PREFERENCE,
+      { _id: pref._id },
+      { config: pref.config.filter((p) => p !== '$lookup.doneState') }
+    )
+  }
 }
 
 async function removeDoneStateFilter (client: MigrationClient): Promise<void> {

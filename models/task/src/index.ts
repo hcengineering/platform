@@ -374,7 +374,7 @@ export function createModel (builder: Builder): void {
       label: core.string.Status,
       icon: task.icon.TaskState,
       color: PaletteColorIndexes.Blueberry,
-      defaultStatusName: 'Backlog',
+      defaultStatusName: 'New state',
       order: 0
     },
     task.statusCategory.Active

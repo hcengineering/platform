@@ -15,12 +15,12 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { AccountArrayEditor, AssigneeBox } from '@hcengineering/contact-resources'
-  import core, { Account, DocumentUpdate, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
+  import core, { Account, DocumentUpdate, Ref, generateId, getCurrentAccount } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
   import task, { ProjectType } from '@hcengineering/task'
   import { StyledTextBox } from '@hcengineering/text-editor'
-  import { Project, TimeReportDayType } from '@hcengineering/tracker'
+  import { IssueStatus, Project, TimeReportDayType } from '@hcengineering/tracker'
   import {
     Button,
     Component,
@@ -40,6 +40,7 @@
   import { IconPicker } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
+  import StatusSelector from '../issues/StatusSelector.svelte'
   import ChangeIdentity from './ChangeIdentity.svelte'
 
   export let project: Project | undefined = undefined
@@ -62,6 +63,7 @@
     project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount()._id]
   let projectsIdentifiers: Set<string> = new Set()
   let isSaving = false
+  const defaultStatus: Ref<IssueStatus> | undefined = project?.defaultIssueStatus
 
   let changeIdentityRef: HTMLElement
 
@@ -91,6 +93,7 @@
       defaultAssignee: defaultAssignee ?? undefined,
       icon,
       color,
+      defaultIssueStatus: defaultStatus ?? ('' as Ref<IssueStatus>),
       defaultTimeReportDay: project?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay
     }
   }
@@ -151,23 +154,13 @@
   async function createProject () {
     const projectId = generateId<Project>()
     const projectData = getProjectData()
-    const status = await client.findOne(
-      tracker.class.IssueStatus,
-      { space: typeId },
-      { sort: { rank: SortingOrder.Ascending } }
-    )
-    if (status !== undefined && typeId !== undefined) {
+    if (typeId !== undefined) {
       const ops = client
         .apply(projectId)
         .notMatch(tracker.class.Project, { identifier: projectData.identifier.toUpperCase() })
 
       isSaving = true
-      await ops.createDoc(
-        tracker.class.Project,
-        core.space.Space,
-        { ...projectData, type: typeId, defaultIssueStatus: status._id },
-        projectId
-      )
+      await ops.createDoc(tracker.class.Project, core.space.Space, { ...projectData, type: typeId }, projectId)
       const succeeded = await ops.commit()
       isSaving = false
 
@@ -362,6 +355,12 @@
         showNavigate={false}
         showTooltip={{ label: tracker.string.DefaultAssignee }}
       />
+    </div>
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header">
+        <Label label={tracker.string.DefaultIssueStatus} />
+      </div>
+      <StatusSelector value={defaultStatus} type={typeId} kind={'regular'} size={'large'} />
     </div>
   </div>
 </Card>

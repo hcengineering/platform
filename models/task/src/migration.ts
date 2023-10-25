@@ -254,13 +254,23 @@ async function removeDoneStatuses (client: MigrationClient): Promise<void> {
   }
   await client.update(
     DOMAIN_TX,
-    { 'tx.operations.doneState': { $exists: true } },
+    { 'tx.operations.doneState': { $ne: null } },
     { $rename: { 'tx.operations.doneState': 'tx.operations.status' } }
   )
   await client.update(
     DOMAIN_TX,
-    { 'tx.attributes.doneState': { $exists: true } },
+    { 'tx.attributes.doneState': { $ne: null } },
     { $rename: { 'tx.attributes.doneState': 'tx.attributes.status' } }
+  )
+  await client.update(
+    DOMAIN_TX,
+    { 'tx.operations.doneState': { $exists: true } },
+    { $unset: { 'tx.operations.doneState': '' } }
+  )
+  await client.update(
+    DOMAIN_TX,
+    { 'tx.attributes.doneState': { $exists: true } },
+    { $unset: { 'tx.attributes.doneState': '' } }
   )
 
   // we need join doneStates to states for all projects
@@ -308,6 +318,10 @@ async function migrateTemplatesToTypes (client: MigrationClient): Promise<void> 
     title: string
     description?: string
     shortDescription?: string
+  }
+
+  interface KanbanTemplateSpace extends Space {
+    attachedToClass: Ref<Class<Doc>>
   }
 
   interface StateTemplate extends Doc, Status {
@@ -422,11 +436,16 @@ async function migrateTemplatesToTypes (client: MigrationClient): Promise<void> 
       }
     }
 
+    const space = (
+      await client.find<KanbanTemplateSpace>(DOMAIN_SPACE, { _id: template.space as Ref<KanbanTemplateSpace> })
+    )[0]
+
+    const category = await getProjectTypeCategory(client, space?.attachedToClass ?? 'recruit:class:Vacancy')
     await client.create<ProjectType>(DOMAIN_SPACE, {
       name: template.title,
       description: template.description ?? '',
       shortDescription: template.shortDescription,
-      category: template.space as Ref<Doc> as Ref<ProjectTypeCategory>,
+      category: category ?? (template.space as Ref<Doc> as Ref<ProjectTypeCategory>),
       private: false,
       members: [],
       archived: false,

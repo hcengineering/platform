@@ -1,20 +1,9 @@
 <script lang="ts">
-  import core, {
-    Attribute,
-    Class,
-    DocumentQuery,
-    FindOptions,
-    IdMap,
-    Ref,
-    SortingOrder,
-    Status
-  } from '@hcengineering/core'
+  import { Attribute, Class, IdMap, Ref, Status } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { ObjectPopup, createQuery, getClient } from '@hcengineering/presentation'
+  import { DocPopup, createQuery, getClient } from '@hcengineering/presentation'
   import { Project, ProjectType, Task, getStates } from '@hcengineering/task'
-  import { Label, resizeObserver } from '@hcengineering/ui'
   import { ObjectPresenter, statusStore } from '@hcengineering/view-resources'
-  import view from '@hcengineering/view-resources/src/plugin'
   import { createEventDispatcher } from 'svelte'
   import { typeStore } from '..'
   import task from '../plugin'
@@ -25,13 +14,6 @@
   export let ofAttribute: Ref<Attribute<Status>>
   export let _class: Ref<Class<Status>>
   export let embedded: boolean = false
-
-  const queryOptions: FindOptions<Status> = {
-    lookup: {
-      category: core.class.StatusCategory
-    },
-    sort: { category: SortingOrder.Ascending, name: SortingOrder.Ascending }
-  }
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -58,10 +40,6 @@
       : undefined
     : value.status
 
-  let finalQuery: DocumentQuery<Status> = {}
-
-  let docMatch = true
-
   $: _space = Array.isArray(value)
     ? value.every((v) => v.space === (value as Array<Task>)[0].space)
       ? (value as Array<Task>)[0].space
@@ -75,53 +53,47 @@
     ? query.query(task.class.Project, { _id: _space as Ref<Project> }, (res) => (project = res[0]))
     : (project = undefined)
 
-  function updateQuery (space: Project | undefined, types: IdMap<ProjectType>, store: IdMap<Status>): void {
+  function updateStatuses (
+    space: Project | undefined,
+    types: IdMap<ProjectType>,
+    store: IdMap<Status>,
+    allStatuses: Status[]
+  ): void {
     if (space === undefined) {
-      finalQuery = { ofAttribute }
+      statuses = allStatuses.filter((p) => p.ofAttribute === ofAttribute)
     } else {
-      finalQuery = {
-        ofAttribute,
-        _id: { $in: getStates(space, types, store).map((p) => p._id) }
-      }
+      statuses = getStates(space, types, store)
     }
-    docMatch = true
   }
 
-  $: updateQuery(project, $typeStore, $statusStore.byId)
+  $: updateStatuses(project, $typeStore, $statusStore.byId, $statusStore.array)
+
+  let statuses: Status[] = []
 </script>
 
-{#if docMatch}
-  <ObjectPopup
-    {_class}
-    docQuery={finalQuery}
-    options={queryOptions}
-    allowDeselect={true}
-    selected={current}
-    on:close={(evt) => {
-      changeStatus(evt.detail === null ? null : evt.detail?._id)
-    }}
-    {placeholder}
-    {width}
-    {embedded}
-    on:changeContent
-  >
-    <svelte:fragment slot="item" let:item>
-      <div class="flex-row-center flex-grow overflow-label">
-        <ObjectPresenter
-          objectId={item._id}
-          _class={item._class}
-          value={item}
-          inline={false}
-          noUnderline
-          props={{ disabled: true, inline: false, size: 'small', avatarSize: 'smaller' }}
-        />
-      </div>
-    </svelte:fragment>
-  </ObjectPopup>
-{:else}
-  <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
-    <div class="flex-center w-60 h-18">
-      <Label label={view.string.DontMatchCriteria} />
+<DocPopup
+  {_class}
+  objects={statuses}
+  allowDeselect={true}
+  selected={current}
+  on:close={(evt) => {
+    changeStatus(evt.detail === null ? null : evt.detail?._id)
+  }}
+  {placeholder}
+  {width}
+  {embedded}
+  on:changeContent
+>
+  <svelte:fragment slot="item" let:item>
+    <div class="flex-row-center flex-grow overflow-label">
+      <ObjectPresenter
+        objectId={item._id}
+        _class={item._class}
+        value={item}
+        inline={false}
+        noUnderline
+        props={{ disabled: true, inline: false, size: 'small', avatarSize: 'smaller' }}
+      />
     </div>
-  </div>
-{/if}
+  </svelte:fragment>
+</DocPopup>

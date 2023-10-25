@@ -126,6 +126,8 @@
     const targetColor = type.statuses.find((p) => p._id === state._id)?.color ?? state.color ?? category?.color
     return getPlatformColorDef(targetColor ?? getColorNumberByText(state.name), $themeStore.dark)
   }
+
+  $: console.log(states)
 </script>
 
 {#if categoryEditor}
@@ -139,44 +141,42 @@
   <div class="flex-col flex-no-shrink mt-3">
     {#each states.filter((p) => p.category === cat._id) as state, i}
       {@const color = getColor(state, categoriesMap)}
-      {#if state}
+      <div
+        bind:this={elements[i]}
+        class="flex-between states"
+        style:background={color.background ?? defaultBackground($themeStore.dark)}
+        draggable={true}
+        on:dragover|preventDefault={(ev) => {
+          dragover(ev, i)
+        }}
+        on:drop|preventDefault={() => {
+          onMove(i)
+        }}
+        on:dragstart={() => {
+          selected = i
+          dragState = states[i]._id
+        }}
+        on:dragend={() => {
+          selected = undefined
+        }}
+      >
+        <div class="bar"><IconCircles size={'small'} /></div>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
-          bind:this={elements[i]}
-          class="flex-between states"
-          style:background={color.background ?? defaultBackground($themeStore.dark)}
-          draggable={true}
-          on:dragover|preventDefault={(ev) => {
-            dragover(ev, i)
+          class="color"
+          style:background-color={color.color}
+          on:click={() => {
+            onColor(state, color, elements[i])
           }}
-          on:drop|preventDefault={() => {
-            onMove(i)
-          }}
-          on:dragstart={() => {
-            selected = i
-            dragState = states[i]._id
-          }}
-          on:dragend={() => {
-            selected = undefined
-          }}
-        >
-          <div class="bar"><IconCircles size={'small'} /></div>
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <div
-            class="color"
-            style:background-color={color.color}
-            on:click={() => {
-              onColor(state, color, elements[i])
-            }}
-          />
-          <div class="flex-grow caption-color">
-            <StringPresenter value={state.name} oneLine />
-          </div>
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <div class="tool hover-trans" on:click={(e) => click(e, state)}>
-            <IconMoreH size={'medium'} />
-          </div>
+        />
+        <div class="flex-grow caption-color">
+          <StringPresenter value={state.name} oneLine />
         </div>
-      {/if}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <div class="tool hover-trans" on:click={(e) => click(e, state)}>
+          <IconMoreH size={'medium'} />
+        </div>
+      </div>
     {/each}
   </div>
 {/each}

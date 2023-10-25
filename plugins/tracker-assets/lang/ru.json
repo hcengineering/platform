@@ -285,7 +285,8 @@
     "PreviousAssigned": "Ранее назначенные",
     "IssueAssigneedToYou": "Назначено вам",
     "RelatedIssueTargetDescription": "Настройка проекта по умолчанию для Класса или пространства",
-    "MapRelatedIssues": "Настроить проекты по умолчанию для связанных задач"
+    "MapRelatedIssues": "Настроить проекты по умолчанию для связанных задач",
+    "DefaultIssueStatus": "Статус по умолчанию"
   },
   "status": {}
 }

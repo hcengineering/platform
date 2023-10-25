@@ -16,11 +16,11 @@
 <script lang="ts">
   import core, { IdMap, Ref, toIdMap } from '@hcengineering/core'
   import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
-  import task, { ProjectType, ProjectTypeCategory } from '@hcengineering/task'
+  import task, { ProjectStatus, ProjectType, ProjectTypeCategory, createState } from '@hcengineering/task'
   import { CircleButton, IconAdd, IconMoreH, Label, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { ContextMenu } from '@hcengineering/view-resources'
 
-  export let category: Ref<ProjectTypeCategory>
+  export let category: ProjectTypeCategory
   export let type: ProjectType | undefined
   export let typeId: Ref<ProjectType> | undefined
 
@@ -28,7 +28,7 @@
   let typeMap: IdMap<ProjectType> = new Map()
   const query = createQuery()
   $: if (category !== undefined) {
-    query.query(task.class.ProjectType, { category, archived: false }, (result) => {
+    query.query(task.class.ProjectType, { category: category._id, archived: false }, (result) => {
       types = result
     })
   } else {
@@ -48,14 +48,29 @@
       return
     }
 
+    const statuses: ProjectStatus[] = []
+    for (const cat of category.statusCategories) {
+      const statusCategory = await client.findOne(core.class.StatusCategory, {
+        _id: cat
+      })
+      if (statusCategory !== undefined) {
+        const id = await createState(client, category.statusClass, {
+          name: statusCategory.defaultStatusName,
+          ofAttribute: statusCategory.ofAttribute,
+          category: statusCategory._id
+        })
+        statuses.push({ _id: id })
+      }
+    }
+
     await client.createDoc(task.class.ProjectType, core.space.Space, {
-      category,
+      category: category._id,
       name: 'New project type',
       description: '',
       private: false,
       members: [],
       archived: false,
-      statuses: []
+      statuses
     })
   }
 

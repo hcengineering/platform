@@ -79,6 +79,8 @@
   }
 
   $: updateConfig(config, query.$search)
+
+  $: console.log(config)
 </script>
 
 <svelte:window />
