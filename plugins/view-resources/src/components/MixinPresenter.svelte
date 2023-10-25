@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, Ref } from '@hcengineering/core'
+  import type { Doc, Mixin, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { AttributeModel } from '@hcengineering/view'
   import { getObjectPresenter } from '../utils'
 
-  export let mixinClass: Ref<Class<Doc>>
+  export let mixinClass: Ref<Mixin<Doc>>
   export let value: Doc
   export let props: Record<string, any> = {}
   export let disabled: boolean = false
