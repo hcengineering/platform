@@ -62,7 +62,7 @@
   let selection = 0
 
   const titles = new Map<string, string>()
-  function titleHandler(doc: IndexedDoc) {
+  function titleHandler (doc: IndexedDoc) {
     return (event: CustomEvent) => {
       const title = event.detail
       titles.set(doc.id, title)

@@ -131,14 +131,13 @@ export function docUpdKey (name: string, opt?: IndexKeyOptions): string {
  */
 export function docKey (name: string, opt?: IndexKeyOptions): string {
   const extra = opt?.extra !== undefined && opt?.extra?.length > 0 ? `#${opt.extra?.join('#') ?? ''}` : ''
-  let key = (
+  let key =
     (opt?.docId !== undefined ? opt.docId.split('.').join('_') + '|' : '') +
     (opt?._class === undefined ? name : `${opt?._class}%${name}${extra}`)
-  )
   if (opt?.refAttribute !== undefined) {
     key = `${opt?.refAttribute}->${key}`
   }
-  if (opt?.refAttribute !== undefined || opt?.relative) {
+  if (opt?.refAttribute !== undefined || (opt?.relative !== undefined && opt?.relative)) {
     key = '|' + key
   }
   return key
@@ -406,12 +405,12 @@ function getInNiN (query1: any, query2: any): Object {
 /**
  * @public
  */
-export type IndexedReaderGet<T> = (attribute: keyof T & string) => any;
+export type IndexedReaderGet<T> = (attribute: keyof T & string) => any
 
 /**
  * @public
  */
-export type IndexedReader<T> = {
+export interface IndexedReader<T> {
   get: IndexedReaderGet<T>
   getDoc: IndexedReaderGet<T>
 }
@@ -419,7 +418,7 @@ export type IndexedReader<T> = {
 /**
  * @public
  */
-export function createIndexedReader<T extends Obj>(
+export function createIndexedReader<T extends Obj> (
   _class: Ref<Class<T>>,
   hierarchy: Hierarchy,
   doc: IndexedDoc,
@@ -437,14 +436,9 @@ export function createIndexedReader<T extends Obj>(
       const realAttr = hierarchy.getAttribute(_class, attr)
       if (realAttr !== undefined) {
         const refAtrr = realAttr.type as RefTo<Doc>
-        return createIndexedReader(
-          refAtrr.to,
-          hierarchy,
-          doc,
-          docKey(attr, { _class })
-        )
+        return createIndexedReader(refAtrr.to, hierarchy, doc, docKey(attr, { _class }))
       }
       return undefined
-    },
+    }
   }
 }

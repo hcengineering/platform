@@ -14,7 +14,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ObjectSearchResult } from '@hcengineering/presentation'
   import { showPopup, resizeObserver, deviceOptionsStore as deviceInfo, PopupResult } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
   import MentionPopup from './MentionPopup.svelte'
@@ -43,7 +42,7 @@
     dummyPopup.close()
   })
 
-  function dispatchItem (item: { id: string, label: string, objectclass: string }): void {
+  function dispatchItem (item: { id: string; label: string; objectclass: string }): void {
     if (item == null) {
       close()
     } else {
