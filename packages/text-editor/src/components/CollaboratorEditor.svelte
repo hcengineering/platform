@@ -475,6 +475,5 @@
 
   .text-input {
     font-size: 0.9375rem;
-    padding-bottom: 30vh;
   }
 </style>

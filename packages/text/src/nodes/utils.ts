@@ -13,6 +13,26 @@
 // limitations under the License.
 //
 
-export * from './image'
-export * from './reference'
-export { getDataAttribute } from './utils'
+import { Attribute } from '@tiptap/core'
+
+/**
+ * @public
+ */
+export function getDataAttribute (name: string, def?: unknown | null): Partial<Attribute> {
+  const dataName = `data-${name}`
+
+  return {
+    default: def,
+    parseHTML: (element) => element.getAttribute(dataName),
+    renderHTML: (attributes) => {
+      // eslint-disable-next-line
+      if (!attributes[name]) {
+        return {}
+      }
+
+      return {
+        [dataName]: attributes[name]
+      }
+    }
+  }
+}

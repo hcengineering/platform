@@ -14,12 +14,12 @@
 //
 import { getMetadata } from '@hcengineering/platform'
 import presentation, { PDFViewer, getFileUrl } from '@hcengineering/presentation'
+import { ImageNode, ImageOptions as ImageNodeOptions } from '@hcengineering/text'
 import { IconSize, getIconSize2x, showPopup } from '@hcengineering/ui'
-import { Node, mergeAttributes, nodeInputRule } from '@tiptap/core'
+import { mergeAttributes, nodeInputRule } from '@tiptap/core'
 import { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { EditorView } from '@tiptap/pm/view'
-import { getDataAttribute } from '../../utils'
 
 /**
  * @public
@@ -34,12 +34,8 @@ export type ImageAlignment = 'center' | 'left' | 'right'
 /**
  * @public
  */
-export interface ImageOptions {
-  inline: boolean
-  HTMLAttributes: Record<string, any>
-
+export interface ImageOptions extends ImageNodeOptions {
   attachFile?: FileAttachFunction
-
   reportNode?: (id: string, node: ProseMirrorNode) => void
 }
 
@@ -87,49 +83,11 @@ function getType (type: string): 'image' | 'other' {
 /**
  * @public
  */
-export const ImageExtension = Node.create<ImageOptions>({
-  name: 'image',
-
+export const ImageExtension = ImageNode.extend<ImageOptions>({
   addOptions () {
     return {
       inline: true,
       HTMLAttributes: {}
-    }
-  },
-
-  inline () {
-    return this.options.inline
-  },
-
-  group () {
-    return this.options.inline ? 'inline' : 'block'
-  },
-
-  draggable: true,
-
-  selectable: true,
-
-  addAttributes () {
-    return {
-      'file-id': {
-        default: null
-      },
-      width: {
-        default: null
-      },
-      height: {
-        default: null
-      },
-      src: {
-        default: null
-      },
-      alt: {
-        default: null
-      },
-      title: {
-        default: null
-      },
-      align: getDataAttribute('align')
     }
   },
 
