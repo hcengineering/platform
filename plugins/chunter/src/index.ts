@@ -92,8 +92,8 @@ export interface Message extends ChunterMessage {
 export interface Reaction extends AttachedDoc {
   emoji: string
   createBy: Ref<Account>
-  attachedTo: Ref<ChunterMessage>
-  attachedToClass: Ref<Class<ChunterMessage>>
+  attachedTo: Ref<Doc>
+  attachedToClass: Ref<Class<Doc>>
 }
 
 /**
@@ -102,6 +102,7 @@ export interface Reaction extends AttachedDoc {
 export interface Comment extends AttachedDoc {
   message: string
   attachments?: number
+  reactions?: number
 }
 
 /**
@@ -157,7 +158,8 @@ export default plugin(chunterId, {
     ChannelView: '' as AnyComponent,
     ThreadView: '' as AnyComponent,
     Thread: '' as AnyComponent,
-    CommentsPresenter: '' as AnyComponent
+    CommentsPresenter: '' as AnyComponent,
+    Reactions: '' as AnyComponent
   },
   class: {
     Message: '' as Ref<Class<Message>>,

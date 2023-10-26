@@ -162,47 +162,30 @@
     else AddMessageToSaved(message)
   }
 
-  function openEmojiPalette (ev: Event) {
-    showPopup(
-      EmojiPopup,
-      {},
-      ev.target as HTMLElement,
-      async (emoji) => {
-        if (!emoji) return
-        const me = getCurrentAccount()._id
+  async function updateReactions (emoji?: string) {
+    if (!emoji) return
+    const me = getCurrentAccount()._id
 
-        const reaction = reactions?.find((r) => r.emoji === emoji && r.createBy === me)
-        if (!reaction) {
-          await client.addCollection(
-            chunter.class.Reaction,
-            message.space,
-            message._id,
-            chunter.class.ChunterMessage,
-            'reactions',
-            {
-              emoji,
-              createBy: me
-            }
-          )
-        } else {
-          await client.removeDoc(chunter.class.Reaction, message.space, reaction._id)
+    const reaction = reactions?.find((r) => r.emoji === emoji && r.createBy === me)
+    if (!reaction) {
+      await client.addCollection(
+        chunter.class.Reaction,
+        message.space,
+        message._id,
+        chunter.class.ChunterMessage,
+        'reactions',
+        {
+          emoji,
+          createBy: me
         }
-      },
-      () => {}
-    )
+      )
+    } else {
+      await client.removeDoc(chunter.class.Reaction, message.space, reaction._id)
+    }
   }
 
-  async function removeReaction (ev: CustomEvent) {
-    if (!ev.detail) return
-    const me = getCurrentAccount()._id
-    const reaction = await client.findOne(chunter.class.Reaction, {
-      attachedTo: message._id,
-      emoji: ev.detail,
-      createBy: me
-    })
-    if (reaction?._id) {
-      client.removeDoc(chunter.class.Reaction, reaction.space, reaction._id)
-    }
+  function openEmojiPalette (ev: Event) {
+    showPopup(EmojiPopup, {}, ev.target as HTMLElement, updateReactions, () => {})
   }
 
   $: parentMessage = message as Message
@@ -257,7 +240,7 @@
     {/if}
     {#if reactions?.length || (!thread && hasReplies)}
       <div class="footer flex-col">
-        {#if reactions?.length}<Reactions {reactions} on:remove={removeReaction} />{/if}
+        {#if reactions?.length}<Reactions {reactions} on:click={(ev) => updateReactions(ev.detail)} />{/if}
         {#if !thread && hasReplies}
           <Replies message={parentMessage} on:click={openThread} />
         {/if}

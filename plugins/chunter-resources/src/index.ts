@@ -38,6 +38,7 @@ import CommentInput from './components/CommentInput.svelte'
 import CommentPopup from './components/CommentPopup.svelte'
 import CommentPresenter from './components/CommentPresenter.svelte'
 import CommentsPresenter from './components/CommentsPresenter.svelte'
+import Reactions from './components/Reactions.svelte'
 import CommentPanel from './components/CommentPanel.svelte'
 import ConvertDmToPrivateChannelModal from './components/ConvertDmToPrivateChannel.svelte'
 import CreateChannel from './components/CreateChannel.svelte'
@@ -282,6 +283,7 @@ export default async (): Promise<Resources> => ({
     ChannelViewPanel,
     CommentPresenter,
     CommentsPresenter,
+    Reactions,
     ChannelPresenter,
     DirectMessagePresenter,
     MessagePresenter,

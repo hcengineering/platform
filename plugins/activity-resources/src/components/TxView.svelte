@@ -16,7 +16,7 @@
 <script lang="ts">
   import type { DisplayTx, TxViewlet } from '@hcengineering/activity'
   import attachment from '@hcengineering/attachment'
-  import chunter from '@hcengineering/chunter'
+  import chunter, { Reaction } from '@hcengineering/chunter'
   import contact, { Person, PersonAccount, getName } from '@hcengineering/contact'
   import core, { AnyAttribute, Class, Doc, Ref, TxCUD, getCurrentAccount } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
@@ -32,7 +32,9 @@
     Label,
     ShowMore,
     TimeSince,
-    showPopup
+    showPopup,
+    EmojiPopup,
+    IconEmoji
   } from '@hcengineering/ui'
   import type { AttributeModel } from '@hcengineering/view'
   import { Menu, ObjectPresenter } from '@hcengineering/view-resources'
@@ -141,14 +143,47 @@
     edit = false
     props = getProps(props, edit)
   }
+
   function isMessageType (attr?: AnyAttribute): boolean {
     return attr?.type._class === core.class.TypeMarkup
   }
+
   function isAttachment (tx: TxCUD<Doc>): boolean {
     return tx.objectClass === attachment.class.Attachment && tx._class === core.class.TxCreateDoc
   }
+
   function isMention (_class?: Ref<Class<Doc>>): boolean {
     return _class === chunter.class.Backlink
+  }
+
+  const reactionsQuery = createQuery()
+  let reactions: Reaction[] = []
+
+  $: if (isComment && tx?.doc) {
+    reactionsQuery.query(chunter.class.Reaction, { attachedTo: tx.doc._id }, (res?: Reaction[]) => {
+      reactions = res || []
+    })
+  }
+
+  async function updateReactions (emoji?: string) {
+    if (!emoji || tx.doc === undefined) {
+      return
+    }
+
+    const reaction = reactions.find((r) => r.emoji === emoji && r.createBy === currentAccount._id)
+
+    if (!reaction) {
+      await client.addCollection(chunter.class.Reaction, tx.doc.space, tx.doc._id, chunter.class.Comment, 'reactions', {
+        emoji,
+        createBy: currentAccount._id
+      })
+    } else {
+      await client.removeDoc(chunter.class.Reaction, tx.doc!.space, reaction._id)
+    }
+  }
+
+  function openEmojiPalette (ev: Event) {
+    showPopup(EmojiPopup, {}, ev.target as HTMLElement, updateReactions, () => {})
   }
 
   async function updateMessageType (model: AttributeModel[], tx: DisplayTx): Promise<boolean> {
@@ -163,6 +198,7 @@
     }
     return false
   }
+
   let hasMessageType = false
   $: updateMessageType(model, tx).then((res) => {
     hasMessageType = res
@@ -327,6 +363,7 @@
         </div>
         {#if isComment}
           <div class="buttons-group">
+            <ActionIcon icon={IconEmoji} size={'medium'} action={openEmojiPalette} />
             <!-- <Like /> -->
             {#if account?.person === currentAccount?.person}
               <ActionIcon icon={IconMoreH} size={'small'} action={showMenu} />
@@ -369,6 +406,15 @@
           </div>
         {/await}
       {/if}
+      <div class="footer flex-col p-inline contrast mt-2">
+        {#if reactions?.length}
+          <Component
+            is={chunter.component.Reactions}
+            props={{ reactions }}
+            on:click={(ev) => updateReactions(ev.detail)}
+          />
+        {/if}
+      </div>
     </div>
   </div>
 {/if}
@@ -390,9 +436,11 @@
       min-width: 2.25rem;
       color: var(--theme-darker-color);
     }
+
     .msgactivity-icon {
       height: 1.75rem;
     }
+
     .msgactivity-avatar {
       height: 2.25rem;
       // background-color: var(--theme-darker-color);
@@ -414,6 +462,7 @@
         flex-grow: 1;
         min-width: 0;
       }
+
       .msgactivity-content__title {
         display: inline-flex;
         align-items: center;
@@ -425,11 +474,13 @@
         flex-direction: column;
         padding-bottom: 0.25rem;
       }
+
       &:not(.comment) {
         .msgactivity-content__header {
           min-height: 1.75rem;
         }
       }
+
       &:not(.content) {
         align-items: center;
 
@@ -449,34 +500,41 @@
       background-color: var(--divider-trans-color);
       z-index: 1;
     }
+
     &.isNew {
       &::before {
         background-color: var(--highlight-red);
       }
+
       .icon {
         border: 1px solid var(--highlight-red);
       }
     }
+
     &.isNextNew {
       &::after {
         background-color: var(--highlight-red);
       }
     }
+
     &::before {
       top: -0.75rem;
       height: 0.75rem;
     }
+
     &.withAvatar::after {
       content: '';
       top: 2.25rem;
       bottom: 0;
     }
+
     &:not(.withAvatar)::after {
       content: '';
       top: 1.75rem;
       bottom: 0;
     }
   }
+
   :global(.msgactivity-container + .msgactivity-container::before) {
     content: '';
   }
@@ -485,6 +543,7 @@
     margin-left: 0.5rem;
     opacity: 0.8;
     cursor: pointer;
+
     &:hover {
       opacity: 1;
     }
@@ -508,6 +567,7 @@
     min-width: 0;
     max-height: max-content;
     opacity: 1;
+    position: relative;
     transition-property: max-height, opacity;
     transition-timing-function: ease-in-out;
     transition-duration: 0.15s;
@@ -519,6 +579,7 @@
       max-height: 0;
       opacity: 0;
     }
+
     &.indent {
       margin-top: 0.5rem;
     }
@@ -527,9 +588,11 @@
   .show-diff {
     color: var(--theme-content-color);
     cursor: pointer;
+
     &:hover {
       color: var(--theme-caption-color);
     }
+
     &:active {
       color: var(--theme-content-color);
     }
