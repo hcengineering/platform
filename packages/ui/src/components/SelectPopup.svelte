@@ -82,7 +82,7 @@
 
   $: huge = size === 'medium' || size === 'large'
 
-  $: if (popupElement)  {
+  $: if (popupElement) {
     popupElement.focus()
   }
 </script>
