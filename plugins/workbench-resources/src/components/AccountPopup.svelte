@@ -64,7 +64,6 @@
 
   function selectCategory (sp?: SettingsCategory): void {
     closePopup()
-    closePanel()
     const loc = getCurrentResolvedLocation()
     loc.fragment = undefined
     loc.query = undefined
