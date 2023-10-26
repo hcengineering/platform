@@ -48,6 +48,7 @@ import {
   TypeRef,
   TypeString,
   TypeTimestamp,
+  TypeAttachment,
   UX
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
@@ -92,7 +93,7 @@ export class TContact extends TDoc implements Contact {
   @Index(IndexKind.FullText)
     name!: string
 
-  @Index(IndexKind.Indexed)
+  @Prop(TypeAttachment(), contact.string.Avatar)
     avatar?: string | null
 
   @Prop(Collection(contact.class.Channel), contact.string.ContactInfo)

@@ -85,6 +85,7 @@
     "MergePersonsFrom": "Исходный контакт",
     "MergePersonsTo": "Финальный контакт",
     "SelectAvatar": "Выбрать аватар",
+    "Avatar": "Аватар",
     "GravatarsManaged": "Граватары управляются",
     "Through": "через",
     "AddMembersHeader": "Добавить пользователей в {value}:",

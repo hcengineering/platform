@@ -26,13 +26,14 @@
   export let short: boolean = false
 
   const keys = {
-    name: docKey('name', { _class: contact.class.Contact })
+    name: docKey('name', { _class: contact.class.Contact }),
+    avatar: docKey('avatar', { _class: contact.class.Contact }),
   }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="flex-row-center" on:click>
-  <Avatar avatar={undefined} {size} {icon} name={value[keys.name]} on:accent-color />
+  <Avatar avatar={value[keys.avatar]} {size} {icon} name={value[keys.name]} on:accent-color />
   <div class="flex-col min-w-0 {size === 'tiny' || size === 'inline' ? 'ml-1' : 'ml-2'}" class:max-w-20={short}>
     <div class="label overflow-label text-left">
       {formatName(value[keys.name])}

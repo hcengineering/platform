@@ -84,6 +84,7 @@
     "MergePersonsFrom": "Source contact",
     "MergePersonsTo": "Final contact",
     "SelectAvatar": "Select avatar",
+    "Avatar": "Avatar",
     "AvatarProvider": "Avatar provider",
     "GravatarsManaged": "Gravatars are managed",
     "Through": "through",
