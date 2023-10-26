@@ -1,6 +1,5 @@
 import { expect, type Locator, type Page } from '@playwright/test'
-import { NewVacancy, TalentName } from './types'
-import { generateId } from '../../utils'
+import { NewVacancy } from './types'
 import { CommonRecruitingPage } from './common-recruiting-page'
 
 export class VacanciesPage extends CommonRecruitingPage {
@@ -21,7 +20,9 @@ export class VacanciesPage extends CommonRecruitingPage {
     this.textTableFirstCell = page.locator('div[class$="firstCell"]')
     this.inputCreateVacancyTitle = page.locator('form[id="recruit:string:CreateVacancy"] input[type="text"]')
     this.inputCreateVacancyDescription = page.locator('form[id="recruit:string:CreateVacancy"] div.text-editor-view')
-    this.buttonCreateVacancyLocation = page.locator('form[id="recruit:string:CreateVacancy"] button span', { hasText: 'Location' })
+    this.buttonCreateVacancyLocation = page.locator('form[id="recruit:string:CreateVacancy"] button span', {
+      hasText: 'Location'
+    })
     this.buttonCreateVacancy = page.locator('form[id="recruit:string:CreateVacancy"] button[type="submit"]')
   }
 
@@ -39,14 +40,10 @@ export class VacanciesPage extends CommonRecruitingPage {
   }
 
   async openVacancyByName (vacancyName: string): Promise<void> {
-    await this.page
-      .locator('tr', { hasText: vacancyName })
-      .locator('div[class$="firstCell"]')
-      .click()
+    await this.page.locator('tr', { hasText: vacancyName }).locator('div[class$="firstCell"]').click()
   }
 
   async checkVacancyNotExist (vacancyName: string): Promise<void> {
     await expect(this.page.locator('tr', { hasText: vacancyName })).toHaveCount(0)
   }
 }
-
