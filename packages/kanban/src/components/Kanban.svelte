@@ -58,7 +58,7 @@
       }
     }
     if (Object.keys(updates).length > 0) {
-      await client.update(dragCard, updates)
+      await client.diffUpdate(dragCard, updates)
     }
     dragCard = undefined
   }
