@@ -36,6 +36,7 @@
   export let showShadow: boolean = true
   export let embedded: boolean = false
 
+  let popupElement: HTMLDivElement | undefined = undefined
   let search: string = ''
 
   const dispatch = createEventDispatcher()
@@ -54,6 +55,11 @@
   }
 
   function onKeydown (key: KeyboardEvent): void {
+    if (key.code === 'Tab') {
+      dispatch('close')
+      key.preventDefault()
+      key.stopPropagation()
+    }
     if (key.code === 'ArrowUp') {
       key.stopPropagation()
       key.preventDefault()
@@ -75,12 +81,19 @@
   $: filteredObjects = value.filter((el) => (el.label ?? el.text ?? '').toLowerCase().includes(search.toLowerCase()))
 
   $: huge = size === 'medium' || size === 'large'
+
+  $: if (popupElement) {
+    popupElement.focus()
+  }
 </script>
 
 <FocusHandler {manager} />
 
+<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <div
   class="selectPopup"
+  bind:this={popupElement}
+  tabindex="0"
   class:noShadow={showShadow === false}
   class:full-width={width === 'full'}
   class:max-width-40={width === 'large'}

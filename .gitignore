@@ -2,6 +2,7 @@
 lib/
 _api-extractor-temp/
 temp/
+.idea
 
 # Logs
 *.log
