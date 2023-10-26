@@ -16,6 +16,7 @@
 import { Class, Doc, Ref } from '@hcengineering/core'
 import { Node, mergeAttributes } from '@tiptap/core'
 import { Node as ProseMirrorNode } from '@tiptap/pm/model'
+import { getDataAttribute } from './utils'
 
 /**
  * @public
@@ -59,47 +60,11 @@ export const ReferenceNode = Node.create({
 
   addAttributes () {
     return {
-      id: {
-        default: null,
-        parseHTML: (element) => element.getAttribute('data-id'),
-        renderHTML: (attributes) => {
-          if (attributes.id === null) {
-            return {}
-          }
+      id: getDataAttribute('id'),
 
-          return {
-            'data-id': attributes.id
-          }
-        }
-      },
+      objectclass: getDataAttribute('objectclass'),
 
-      objectclass: {
-        default: null,
-        parseHTML: (element) => element.getAttribute('data-objectclass'),
-        renderHTML: (attributes) => {
-          if (attributes.objectclass === null) {
-            return {}
-          }
-
-          return {
-            'data-objectclass': attributes.objectclass
-          }
-        }
-      },
-
-      label: {
-        default: null,
-        parseHTML: (element) => element.getAttribute('data-label'),
-        renderHTML: (attributes) => {
-          if (attributes.label === null) {
-            return {}
-          }
-
-          return {
-            'data-label': attributes.label
-          }
-        }
-      },
+      label: getDataAttribute('label'),
 
       class: {
         default: null

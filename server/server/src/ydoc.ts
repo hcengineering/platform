@@ -1,9 +1,9 @@
 import { MeasureContext, WorkspaceId } from '@hcengineering/core'
 import { ContentTextAdapter } from '@hcengineering/server-core'
-import { ReferenceNode, defaultExtensions, getText, yDocContentToNodes } from '@hcengineering/text'
+import { getText, serverExtensions, yDocContentToNodes } from '@hcengineering/text'
 import { Readable } from 'stream'
 
-const extensions = [...defaultExtensions, ReferenceNode]
+const extensions = serverExtensions
 
 /**
  * @public
