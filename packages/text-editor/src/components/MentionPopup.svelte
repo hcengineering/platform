@@ -61,8 +61,23 @@
   let scrollContainer: HTMLElement
   let selection = 0
 
+  const titles = new Map<string, string>()
+  function titleHandler(doc: IndexedDoc) {
+    return (event: CustomEvent) => {
+      const title = event.detail
+      titles.set(doc.id, title)
+    }
+  }
+
   function dispatchItem (item: IndexedDoc): void {
-    // dispatch('close', item)
+    const title = titles.get(item.id)
+    if (title !== undefined) {
+      dispatch('close', {
+        id: item.id,
+        label: title,
+        objectclass: item._class
+      })
+    }
   }
 
   export function onKeyDown (key: KeyboardEvent): boolean {
@@ -204,7 +219,7 @@
           {@const item = items[num]}
           {@const doc = item.item}
           <div class="ap-menuItem withComp" on:click={() => dispatchItem(doc)}>
-            <svelte:component this={item.component} value={doc} />
+            <svelte:component this={item.component} value={doc} on:title={titleHandler(doc, num)} />
           </div>
         </svelte:fragment>
       </ListView>

@@ -14,6 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher, onMount } from 'svelte'
   import { IndexedDoc, Ref, docKey, Status } from '@hcengineering/core'
   // import type { Issue, Project } from '@hcengineering/tracker'
   import { FixedColumn, statusStore } from '@hcengineering/view-resources'
@@ -23,6 +24,8 @@
   import IssueStatusIcon from './IssueStatusIcon.svelte'
 
   export let value: IndexedDoc
+  
+  const dispatch = createEventDispatcher()
 
   const keys = {
     title: docKey('title', { _class: tracker.class.Issue }),
@@ -36,6 +39,11 @@
   $: status = `${value[keys.status]}`
   $: st = $statusStore.get(status as Ref<Status>)
   $: space = value.space as Ref<Project>
+
+  $: dispatch('title', title)
+  onMount(() => {
+    dispatch('title', title)
+  })
 </script>
 
 <div class="flex-row-center h-8">

@@ -13,27 +13,36 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher, onMount } from 'svelte'
+
   import Avatar from './Avatar.svelte'
 
   import contact, { formatName } from '@hcengineering/contact'
   import { IndexedDoc, docKey } from '@hcengineering/core'
-  import { Asset } from '@hcengineering/platform'
-  import { AnySvelteComponent, IconSize } from '@hcengineering/ui'
+  import { IconSize } from '@hcengineering/ui'
 
   export let value: IndexedDoc
+
   export let size: IconSize = 'smaller'
-  export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let short: boolean = false
+
+  const dispatch = createEventDispatcher()
 
   const keys = {
     name: docKey('name', { _class: contact.class.Contact }),
     avatar: docKey('avatar', { _class: contact.class.Contact }),
   }
+
+  $: title = formatName(value[keys.name])
+  $: dispatch('title', title)
+  onMount(() => {
+    dispatch('title', title)
+  })
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="flex-row-center" on:click>
-  <Avatar avatar={value[keys.avatar]} {size} {icon} name={value[keys.name]} on:accent-color />
+  <Avatar avatar={value[keys.avatar]} {size} name={value[keys.name]} on:accent-color />
   <div class="flex-col min-w-0 {size === 'tiny' || size === 'inline' ? 'ml-1' : 'ml-2'}" class:max-w-20={short}>
     <div class="label overflow-label text-left">
       {formatName(value[keys.name])}

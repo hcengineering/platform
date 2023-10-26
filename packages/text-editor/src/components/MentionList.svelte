@@ -43,11 +43,11 @@
     dummyPopup.close()
   })
 
-  function dispatchItem (item: ObjectSearchResult): void {
+  function dispatchItem (item: { id: string, label: string, objectclass: string }): void {
     if (item == null) {
       close()
     } else {
-      command({ id: item.doc._id, label: item.title, objectclass: item.doc._class })
+      command(item)
     }
   }
 

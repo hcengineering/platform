@@ -153,7 +153,9 @@ export default mergeIds(recruitId, recruit, {
     OpinionsPresenter: '' as AnyComponent,
     VacancyModifiedPresenter: '' as AnyComponent,
     CreateVacancy: '' as AnyComponent,
-    CreateCandidate: '' as AnyComponent
+    CreateCandidate: '' as AnyComponent,
+    VacancySearchResult: '' as AnyComponent,
+    ApplicationSearchResult: '' as AnyComponent
   },
   function: {
     IdProvider: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
