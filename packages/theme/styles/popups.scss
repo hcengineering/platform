@@ -23,6 +23,10 @@
   max-width: 17rem;
   max-height: 22rem;
 
+  &:focus {
+    outline: 0;
+  }
+
   &:not(.embedded) {
     background: var(--theme-popup-color);
     border: 1px solid var(--theme-popup-divider);
