@@ -30,6 +30,7 @@
   import ReccurancePopup from './ReccurancePopup.svelte'
   import VisibilityEditor from './VisibilityEditor.svelte'
   import CalendarSelector from './CalendarSelector.svelte'
+  import LocationEditor from './LocationEditor.svelte'
 
   export let object: Event
   $: readOnly = isReadOnly(object)
@@ -48,6 +49,7 @@
   let space = object.space
 
   let description = object.description
+  let location = object.location
 
   let rules: RecurringRule[] = (object as ReccuringEvent).rules ?? []
 
@@ -77,6 +79,9 @@
     }
     if (object.space !== space) {
       update.space = space
+    }
+    if (object.location !== location) {
+      update.location = location
     }
     if (allDay !== object.allDay) {
       update.date = allDay ? saveUTC(startDate) : startDate
@@ -164,6 +169,7 @@
     <EventTimeExtraButton bind:allDay bind:rules on:repeat={setRecurrance} on:allday={allDayChangeHandler} noRepeat />
   </div>
   <div class="block rightCropPadding">
+    <LocationEditor bind:value={location} />
     <EventParticipants bind:participants bind:externalParticipants disabled={readOnly} />
   </div>
   <div class="block flex-no-shrink">
