@@ -389,17 +389,20 @@
       &::before {
         content: '';
       }
+    }
 
-      &.checked {
-        &:active {
+    &.checked {
+      &:active {
+        .marker {
           background-color: var(--primary-button-pressed);
-        }
+        } 
+      }
 
-        &::after {
-          opacity: 1;
-        }
+      .marker::after {
+        opacity: 1;
       }
     }
+    
     label {
       color: var(--theme-caption-color);
     }
@@ -419,12 +422,15 @@
     .marker {
       background-color: var(--primary-button-disabled);
       border-color: transparent;
+    }
 
-      &.checked::after {
+    &.checked {
+      marker::after {
         content: '';
         opacity: 0.4;
       }
     }
+
     label {
       color: var(--theme-darker-color);
       cursor: not-allowed;
