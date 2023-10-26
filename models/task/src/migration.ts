@@ -244,6 +244,29 @@ async function fixStatusAttributes (client: MigrationClient): Promise<void> {
   }
 }
 
+function getTemplateOfAttribute (space: Ref<Space>): Ref<Attribute<Status>> {
+  let ofAttribute = task.attribute.State
+  if (space === ('recruit:space:VacancyTemplates' as Ref<Space>)) {
+    ofAttribute = 'recruit:attribute:State' as Ref<Attribute<Status>>
+  }
+  if (space === ('lead:space:FunnelTemplates' as Ref<Space>)) {
+    ofAttribute = 'lead:attribute:State' as Ref<Attribute<Status>>
+  }
+  if (space === ('board:space:BoardTemplates' as Ref<Space>)) {
+    ofAttribute = 'board:attribute:State' as Ref<Attribute<Status>>
+  }
+  return ofAttribute
+}
+
+async function fixStatusDoneAttributes (client: MigrationClient): Promise<void> {
+  const oldStatuses = await client.find<OldStatus>(DOMAIN_STATUS, {})
+  for (const oldStatus of oldStatuses) {
+    if (!oldStatus.ofAttribute.includes('DoneState')) continue
+    const ofAttribute = oldStatus.ofAttribute.replace('DoneState', 'State')
+    await client.update(DOMAIN_STATUS, { _id: oldStatus._id }, { ofAttribute })
+  }
+}
+
 async function removeDoneStatuses (client: MigrationClient): Promise<void> {
   const tasks = await client.find<Task>(DOMAIN_TASK, { doneState: { $exists: true } })
   for (const task of tasks) {
@@ -334,6 +357,15 @@ async function migrateTemplatesToTypes (client: MigrationClient): Promise<void> 
     _class: 'task:class:KanbanTemplate' as Ref<Class<Doc>>
   })
   for (const template of templates) {
+    const used = await client.find(DOMAIN_SPACE, { templateId: template._id })
+    if (used.length === 0) {
+      await client.delete(DOMAIN_KANBAN, template._id)
+      continue
+    }
+    const space = (
+      await client.find<KanbanTemplateSpace>(DOMAIN_SPACE, { _id: template.space as Ref<KanbanTemplateSpace> })
+    )[0]
+    if (space === undefined) continue
     const states = await client.find<StateTemplate>(
       DOMAIN_KANBAN,
       { _class: 'task:class:StateTemplate' as Ref<Class<Doc>>, attachedTo: template._id },
@@ -353,25 +385,20 @@ async function migrateTemplatesToTypes (client: MigrationClient): Promise<void> 
     const statuses: ProjectStatus[] = []
     const currentStates = await client.find<Status>(DOMAIN_STATUS, {})
     for (const st of states) {
-      const exists = currentStates.find(
-        (p) =>
-          p.name.toLocaleLowerCase() === st.name.toLocaleLowerCase() &&
-          p.ofAttribute === st.ofAttribute &&
-          p.category === st.category
-      )
+      const exists = currentStates.find((p) => p.name.toLocaleLowerCase() === st.name.toLocaleLowerCase())
       if (exists !== undefined) {
         statuses.push({ _id: exists._id, color: st.color })
       } else {
         const id = generateId<Status>()
         await client.create<Status>(DOMAIN_STATUS, {
-          ofAttribute: st.ofAttribute,
+          ofAttribute: getTemplateOfAttribute(st.space),
           name: st.name,
           _id: id,
           space: task.space.Statuses,
           modifiedOn: st.modifiedOn,
           modifiedBy: st.modifiedBy,
           _class: core.class.Status,
-          color: st.color,
+          color: st.color ?? 9,
           createdBy: st.createdBy,
           createdOn: st.createdOn,
           category: task.statusCategory.Active
@@ -381,25 +408,20 @@ async function migrateTemplatesToTypes (client: MigrationClient): Promise<void> 
     }
 
     for (const st of wonStates) {
-      const exists = currentStates.find(
-        (p) =>
-          p.name.toLocaleLowerCase() === st.name.toLocaleLowerCase() &&
-          p.ofAttribute === st.ofAttribute &&
-          p.category === st.category
-      )
+      const exists = currentStates.find((p) => p.name.toLocaleLowerCase() === st.name.toLocaleLowerCase())
       if (exists !== undefined) {
         statuses.push({ _id: exists._id, color: st.color })
       } else {
         const id = generateId<Status>()
         await client.create<Status>(DOMAIN_STATUS, {
-          ofAttribute: st.ofAttribute,
+          ofAttribute: getTemplateOfAttribute(st.space),
           name: st.name,
           _id: id,
           space: task.space.Statuses,
           modifiedOn: st.modifiedOn,
           modifiedBy: st.modifiedBy,
           _class: core.class.Status,
-          color: st.color,
+          color: st.color ?? 15,
           createdBy: st.createdBy,
           createdOn: st.createdOn,
           category: task.statusCategory.Won
@@ -409,25 +431,20 @@ async function migrateTemplatesToTypes (client: MigrationClient): Promise<void> 
     }
 
     for (const st of lostStates) {
-      const exists = currentStates.find(
-        (p) =>
-          p.name.toLocaleLowerCase() === st.name.toLocaleLowerCase() &&
-          p.ofAttribute === st.ofAttribute &&
-          p.category === st.category
-      )
+      const exists = currentStates.find((p) => p.name.toLocaleLowerCase() === st.name.toLocaleLowerCase())
       if (exists !== undefined) {
         statuses.push({ _id: exists._id, color: st.color })
       } else {
         const id = generateId<Status>()
         await client.create<Status>(DOMAIN_STATUS, {
-          ofAttribute: st.ofAttribute,
+          ofAttribute: getTemplateOfAttribute(st.space),
           name: st.name,
           _id: id,
           space: task.space.Statuses,
           modifiedOn: st.modifiedOn,
           modifiedBy: st.modifiedBy,
           _class: core.class.Status,
-          color: st.color,
+          color: st.color ?? 0,
           createdBy: st.createdBy,
           createdOn: st.createdOn,
           category: task.statusCategory.Lost
@@ -436,11 +453,7 @@ async function migrateTemplatesToTypes (client: MigrationClient): Promise<void> 
       }
     }
 
-    const space = (
-      await client.find<KanbanTemplateSpace>(DOMAIN_SPACE, { _id: template.space as Ref<KanbanTemplateSpace> })
-    )[0]
-
-    const category = await getProjectTypeCategory(client, space?.attachedToClass ?? 'recruit:class:Vacancy')
+    const category = await getProjectTypeCategory(client, space.attachedToClass)
     await client.create<ProjectType>(DOMAIN_SPACE, {
       name: template.title,
       description: template.description ?? '',
@@ -584,6 +597,10 @@ export const taskOperation: MigrateOperation = {
       {
         state: 'removeDoneStatuses',
         func: removeDoneStatuses
+      },
+      {
+        state: 'fixStatusDoneAttributes',
+        func: fixStatusDoneAttributes
       },
       {
         state: 'removeStateClass',
