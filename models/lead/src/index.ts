@@ -36,7 +36,11 @@ import chunter from '@hcengineering/model-chunter'
 import contact, { TContact } from '@hcengineering/model-contact'
 import core from '@hcengineering/model-core'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
-import task, { TSpaceWithStates, TTask, actionTemplates } from '@hcengineering/model-task'
+import task, {
+  TSpaceWithStates,
+  TTask,
+  actionTemplates,
+} from '@hcengineering/model-task'
 import tracker from '@hcengineering/model-tracker'
 import view, { createAction, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
@@ -55,13 +59,13 @@ export { default } from './plugin'
 export class TFunnel extends TSpaceWithStates implements Funnel {
   @Prop(TypeMarkup(), lead.string.FullDescription)
   @Index(IndexKind.FullText)
-    fullDescription?: string
+  fullDescription?: string
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
-    attachments?: number
+  attachments?: number
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
-    comments?: number
+  comments?: number
 }
 
 @Model(lead.class.Lead, task.class.Task)
@@ -72,11 +76,11 @@ export class TLead extends TTask implements Lead {
   declare attachedTo: Ref<Customer>
 
   @Prop(TypeDate(), task.string.StartDate)
-    startDate!: Timestamp | null
+  startDate!: Timestamp | null
 
   @Prop(TypeString(), lead.string.Title)
   @Index(IndexKind.FullText)
-    title!: string
+  title!: string
 
   @Prop(TypeRef(contact.mixin.Employee), lead.string.Assignee)
   declare assignee: Ref<Employee> | null
@@ -94,14 +98,14 @@ export class TLead extends TTask implements Lead {
 @UX(lead.string.Customer, lead.icon.LeadApplication)
 export class TCustomer extends TContact implements Customer {
   @Prop(Collection(lead.class.Lead), lead.string.Leads)
-    leads?: number
+  leads?: number
 
   @Prop(TypeMarkup(), core.string.Description)
   @Index(IndexKind.FullText)
-    description!: string
+  description!: string
 }
 
-export function createModel (builder: Builder): void {
+export function createModel(builder: Builder): void {
   const archiveId = 'archive'
 
   builder.createModel(TFunnel, TLead, TCustomer)
@@ -529,7 +533,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(lead.class.Lead, core.class.Class, view.mixin.ObjectEditor, {
-    editor: lead.component.EditLead
+    editor: lead.component.LeadHeader
   })
 
   builder.mixin(lead.class.Lead, core.class.Class, view.mixin.ObjectPresenter, {
@@ -560,19 +564,10 @@ export function createModel (builder: Builder): void {
     filters: ['_class']
   })
 
-  builder.mixin(lead.mixin.Customer, core.class.Class, view.mixin.ObjectEditorFooter, {
-    editor: tracker.component.RelatedIssuesSection,
-    props: {
-      label: tracker.string.RelatedIssues
-    }
+  builder.mixin(lead.class.Lead, core.class.Class, view.mixin.ObjectPanel, {
+    component: contact.component.EditLead
   })
 
-  builder.mixin(lead.class.Lead, core.class.Class, view.mixin.ObjectEditorFooter, {
-    editor: tracker.component.RelatedIssuesSection,
-    props: {
-      label: tracker.string.RelatedIssues
-    }
-  })
 
   createAction(builder, {
     action: workbench.actionImpl.Navigate,

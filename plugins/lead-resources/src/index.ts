@@ -17,7 +17,7 @@
 import { Resources } from '@hcengineering/platform'
 import CreateFunnel from './components/CreateFunnel.svelte'
 import CreateLead from './components/CreateLead.svelte'
-import EditLead from './components/EditLead.svelte'
+import LeadHeader from './components/LeadHeader.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
 import LeadPresenter from './components/LeadPresenter.svelte'
 import Leads from './components/Leads.svelte'
@@ -34,7 +34,7 @@ export default async (): Promise<Resources> => ({
   component: {
     CreateFunnel,
     CreateLead,
-    EditLead,
+    LeadHeader,
     KanbanCard,
     LeadPresenter,
     TemplatesIcon,

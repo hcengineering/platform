@@ -95,6 +95,7 @@ export default mergeIds(viewId, view, {
     Between: '' as IntlString,
     ShowColors: '' as IntlString,
     Show: '' as IntlString,
+
     ChooseIcon: '' as IntlString,
     IconColor: '' as IntlString,
     IconCategory: '' as IntlString,

@@ -281,6 +281,7 @@ export default async (): Promise<Resources> => ({
     ChannelView,
     ChannelViewPanel,
     CommentPresenter,
+    CommentPopup,
     CommentsPresenter,
     ChannelPresenter,
     DirectMessagePresenter,
