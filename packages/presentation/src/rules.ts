@@ -41,9 +41,12 @@ export function getDocRules<T extends Doc> (documents: Doc | Doc[], field: strin
       // Check individual rules and form a result query
       for (const r of rules.fieldRules) {
         if (r.field === field) {
-          const _docs = docs.map((doc) =>
-            r.mixin !== undefined && h.hasMixin(doc, r.mixin) ? h.as(doc, r.mixin) : doc
-          )
+          const _docs = docs
+            .map((doc) => (r.mixin !== undefined ? (h.hasMixin(doc, r.mixin) ? h.as(doc, r.mixin) : undefined) : doc))
+            .filter((it) => it) as Doc[]
+          if (_docs.length === 0) {
+            continue
+          }
           if (matchQuery(_docs, r.query, r.mixin ?? rules.ofClass, h).length === _docs.length) {
             // We have rule match.
             if (r.disableUnset === true) {
