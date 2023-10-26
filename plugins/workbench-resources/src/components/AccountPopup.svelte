@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact, { Employee, PersonAccount, formatName } from '@hcengineering/contact'
-  import { AccountRole, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { AccountRole, Ref, getCurrentAccount } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { createQuery } from '@hcengineering/presentation'
   import setting, { SettingsCategory, settingId } from '@hcengineering/setting'
@@ -22,7 +22,6 @@
     Action,
     Component,
     Menu,
-    closePanel,
     closePopup,
     deviceOptionsStore as deviceInfo,
     getCurrentResolvedLocation,
@@ -32,8 +31,8 @@
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import workbench from '../plugin'
-  import HelpAndSupport from './HelpAndSupport.svelte'
   import { signOut } from '../utils'
+  import HelpAndSupport from './HelpAndSupport.svelte'
 
   let items: SettingsCategory[] = []
 
@@ -64,7 +63,6 @@
 
   function selectCategory (sp?: SettingsCategory): void {
     closePopup()
-    closePanel()
     const loc = getCurrentResolvedLocation()
     loc.fragment = undefined
     loc.query = undefined
