@@ -643,8 +643,8 @@
       }
       &:nth-child(2) { padding-left: 0; }
       &:last-child { padding-right: 1.5rem; }
-      }
-        }
+    }
+  }
 
   .antiTable-cells {
     display: flex;
@@ -1119,8 +1119,8 @@
     }
     & > *:not(:first-child) { margin-left: .25rem; }
     & > * > *:not(.only-icon) { min-width: fit-content; }
-    }
-    }
+  }
+}
 // Labels on the ListView
 .list-container .listitems-container,
 .list-container .listitems-container:hover,
