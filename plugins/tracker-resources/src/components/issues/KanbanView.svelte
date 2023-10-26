@@ -245,8 +245,7 @@
       return
     }
     return {
-      [groupByKey]: groupValue,
-      space: doc.space
+      [groupByKey]: groupValue
     }
   }
 
