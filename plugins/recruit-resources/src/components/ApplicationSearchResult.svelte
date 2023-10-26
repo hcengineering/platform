@@ -16,12 +16,12 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
 
-  import contact, { formatName } from '@hcengineering/contact'
-  import { IndexedDoc, docKey } from '@hcengineering/core'
+  import { Contact, formatName } from '@hcengineering/contact'
+  import { IndexedDoc, createIndexedReader, IndexedReader } from '@hcengineering/core'
   import Avatar from '@hcengineering/contact-resources/src/components/Avatar.svelte'
   import { getClient } from '@hcengineering/presentation'
-  import task from '@hcengineering/task'
   import { IconSize } from '@hcengineering/ui'
+  import recruit from '@hcengineering/recruit'
 
   export let value: IndexedDoc
 
@@ -29,26 +29,32 @@
 
   export let size: IconSize = 'smaller'
 
-  const keys = {
-    number: docKey('number', { _class: task.class.Task }),
-    name: '|' + docKey('name', { _class: contact.class.Contact }),
-    avatar: '|' + docKey('avatar', { _class: contact.class.Contact })
-  }
-
   const client = getClient()
-  const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
+  const hierarchy = client.getHierarchy()
+
+  const valueReader = createIndexedReader(recruit.class.Applicant, hierarchy, value)
+  const attachToReader = valueReader.getDoc('attachedTo') as IndexedReader<Contact>
+
+  const shortLabel = hierarchy.getClass(value._class).shortLabel
 
   let title: string = ''
   let avatar: string | undefined
+  let name: string = ''
 
   $: if (shortLabel !== undefined) {
-    title = `${shortLabel}-${value[keys.number]}`
+    title = `${shortLabel}-${valueReader.get('number')}`
   } else {
-    title = value[keys.number]
+    title = valueReader.get('number')
   }
 
-  $: if (value[keys.avatar] !== undefined) {
-    avatar = value[keys.avatar][0]
+  $: if (attachToReader.get('name') !== undefined) {
+    name = attachToReader.get('name')[0]
+  } else {
+    name = ''
+  }
+
+  $: if (attachToReader.get('avatar') !== undefined) {
+    avatar = attachToReader.get('avatar')[0]
   } else {
     avatar = undefined
   }
@@ -60,11 +66,11 @@
 </script>
 
 <div class="flex-row-center">
-  <Avatar avatar={avatar} {size} name={value[keys.name][0]} on:accent-color />
+  <Avatar avatar={avatar} {size} {name} on:accent-color />
   <span class="ml-2 title">
     {title}
   </span>
-  <span>{formatName(value[keys.name][0])}</span>
+  <span>{formatName(name)}</span>
 </div>
 
 <style lang="scss">

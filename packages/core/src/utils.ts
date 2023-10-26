@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import { Account, AnyAttribute, Class, Doc, DocData, DocIndexState, IndexKind, Obj, Ref, Space } from './classes'
+import { Account, AnyAttribute, Class, Doc, RefTo, DocData, DocIndexState, IndexKind, Obj, Ref, Space } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
-import { DocumentQuery, FindResult } from './storage'
 import { isPredicate } from './predicate'
+import { FindResult, IndexedDoc, DocumentQuery, FindResult } from './storage'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -116,6 +116,8 @@ export interface IndexKeyOptions {
   _class?: Ref<Class<Obj>>
   docId?: Ref<DocIndexState>
   extra?: string[]
+  relative?: boolean
+  refAttribute?: string
 }
 /**
  * @public
@@ -129,10 +131,17 @@ export function docUpdKey (name: string, opt?: IndexKeyOptions): string {
  */
 export function docKey (name: string, opt?: IndexKeyOptions): string {
   const extra = opt?.extra !== undefined && opt?.extra?.length > 0 ? `#${opt.extra?.join('#') ?? ''}` : ''
-  return (
+  let key = (
     (opt?.docId !== undefined ? opt.docId.split('.').join('_') + '|' : '') +
     (opt?._class === undefined ? name : `${opt?._class}%${name}${extra}`)
   )
+  if (opt?.refAttribute !== undefined) {
+    key = `${opt?.refAttribute}->${key}`
+  }
+  if (opt?.refAttribute !== undefined || opt?.relative) {
+    key = '|' + key
+  }
+  return key
 }
 
 /**
@@ -392,4 +401,50 @@ function getInNiN (query1: any, query2: any): Object {
   }
   if (aIn.length === 1 && bIn.length === 1) return []
   return res
+}
+
+/**
+ * @public
+ */
+export type IndexedReaderGet<T> = (attribute: keyof T & string) => any;
+
+/**
+ * @public
+ */
+export type IndexedReader<T> = {
+  get: IndexedReaderGet<T>
+  getDoc: IndexedReaderGet<T>
+}
+
+/**
+ * @public
+ */
+export function createIndexedReader<T extends Obj>(
+  _class: Ref<Class<T>>,
+  hierarchy: Hierarchy,
+  doc: IndexedDoc,
+  refAttribute?: string
+): IndexedReader<T> {
+  return {
+    get: (attr: keyof T & string) => {
+      const realAttr = hierarchy.getAttribute(_class, attr)
+      if (realAttr !== undefined) {
+        return doc[docKey(attr, { refAttribute, _class: realAttr.attributeOf })]
+      }
+      return undefined
+    },
+    getDoc: (attr: keyof T & string) => {
+      const realAttr = hierarchy.getAttribute(_class, attr)
+      if (realAttr !== undefined) {
+        const refAtrr = realAttr.type as RefTo<Doc>
+        return createIndexedReader(
+          refAtrr.to,
+          hierarchy,
+          doc,
+          docKey(attr, { _class })
+        )
+      }
+      return undefined
+    },
+  }
 }

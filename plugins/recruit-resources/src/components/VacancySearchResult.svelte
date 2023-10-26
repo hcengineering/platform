@@ -17,19 +17,20 @@
   import { createEventDispatcher, onMount } from 'svelte'
 
   import { Icon } from '@hcengineering/ui'
-  import core, { IndexedDoc, docKey } from '@hcengineering/core'
+  import { IndexedDoc, createIndexedReader } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
 
   import recruit from '../plugin'
 
   export let value: IndexedDoc
 
-  const dispatch = createEventDispatcher()
-  
-  const keys = {
-    name: docKey('name', { _class: core.class.Space })
-  }
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const valueReader = createIndexedReader(recruit.class.Vacancy, hierarchy, value)
 
-  $: title = value[keys.name]
+  const dispatch = createEventDispatcher()
+
+  $: title = valueReader.get('name')
   $: dispatch('title', title)
   onMount(() => {
     dispatch('title', title)

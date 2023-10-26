@@ -18,7 +18,8 @@
   import Avatar from './Avatar.svelte'
 
   import contact, { formatName } from '@hcengineering/contact'
-  import { IndexedDoc, docKey } from '@hcengineering/core'
+  import { IndexedDoc, createIndexedReader } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
   import { IconSize } from '@hcengineering/ui'
 
   export let value: IndexedDoc
@@ -28,12 +29,11 @@
 
   const dispatch = createEventDispatcher()
 
-  const keys = {
-    name: docKey('name', { _class: contact.class.Contact }),
-    avatar: docKey('avatar', { _class: contact.class.Contact }),
-  }
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const valueReader = createIndexedReader(contact.class.Contact, hierarchy, value)
 
-  $: title = formatName(value[keys.name])
+  $: title = formatName(valueReader.get('name'))
   $: dispatch('title', title)
   onMount(() => {
     dispatch('title', title)
@@ -42,10 +42,10 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="flex-row-center" on:click>
-  <Avatar avatar={value[keys.avatar]} {size} name={value[keys.name]} on:accent-color />
+  <Avatar avatar={valueReader.get('avatar')} {size} name={valueReader.get('name')} on:accent-color />
   <div class="flex-col min-w-0 {size === 'tiny' || size === 'inline' ? 'ml-1' : 'ml-2'}" class:max-w-20={short}>
     <div class="label overflow-label text-left">
-      {formatName(value[keys.name])}
+      {formatName(valueReader.get('name'))}
     </div>
   </div>
 </div>

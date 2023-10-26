@@ -15,8 +15,8 @@
 -->
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
-  import { IndexedDoc, Ref, docKey, Status } from '@hcengineering/core'
-  // import type { Issue, Project } from '@hcengineering/tracker'
+  import { IndexedDoc, createIndexedReader, IndexedReader, Ref, Status } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
   import { FixedColumn, statusStore } from '@hcengineering/view-resources'
   import tracker, { Project } from '@hcengineering/tracker'
 
@@ -24,19 +24,23 @@
   import IssueStatusIcon from './IssueStatusIcon.svelte'
 
   export let value: IndexedDoc
-  
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const valueReader = createIndexedReader(tracker.class.Issue, hierarchy, value)
+  const projectReader = valueReader.getDoc('space') as IndexedReader<Project>
+
   const dispatch = createEventDispatcher()
 
-  const keys = {
-    title: docKey('title', { _class: tracker.class.Issue }),
-    number: docKey('number', { _class: tracker.class.Issue }),
-    status: docKey('status', { _class: tracker.class.Issue }),
-    identifier: '|' + docKey('identifier', { _class: tracker.class.Project })
+  let title: string
+
+  $: if (projectReader.get('identifier') !== undefined) {
+    title = `${projectReader.get('identifier')[0]}-${valueReader.get('number')}`
+  } else {
+    title = valueReader.get('number')
   }
 
-  $: title = `${value[keys.identifier][0]}-${value[keys.number]}`
-  $: name = `${value[keys.title]}`
-  $: status = `${value[keys.status]}`
+  $: status = valueReader.get('status')
   $: st = $statusStore.get(status as Ref<Status>)
   $: space = value.space as Ref<Project>
 
@@ -54,7 +58,7 @@
     {/if}
   </FixedColumn>
   <span class="ml-2 max-w-120 overflow-label issue">
-    <span class="title">{title}</span><span class="name">{name}</span>
+    <span class="title">{title}</span><span class="name">{valueReader.get('title')}</span>
   </span>
 </div>
 
