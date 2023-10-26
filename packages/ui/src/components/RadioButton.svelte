@@ -49,12 +49,14 @@
       if (!disabled && group !== value) action()
     }}
   />
+  <div class="marker" />
   <label for={id} class:overflow-label={labelOverflow}>
-    <slot />
-    {#if labelIntl}
-      <Label label={labelIntl} params={labelParams} />
-    {:else}
-      {label}
-    {/if}
+    <slot>
+      {#if labelIntl}
+        <Label label={labelIntl} params={labelParams} />
+      {:else}
+        {label}
+      {/if}
+    </slot>
   </label>
 </div>
