@@ -34,6 +34,9 @@ export async function connect (
   // eslint-disable-next-line
   const WebSocket = require('ws')
 
+  setMetadata(client.metadata.UseBinaryProtocol, true)
+  setMetadata(client.metadata.UseProtocolCompression, true)
+
   setMetadata(client.metadata.ClientSocketFactory, (url) => new WebSocket(url))
   addLocation(clientId, () => import('@hcengineering/client-resources'))
 
