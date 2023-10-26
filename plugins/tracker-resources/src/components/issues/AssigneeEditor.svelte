@@ -17,7 +17,7 @@
   import { AssigneeBox, AssigneePopup, personAccountByIdStore } from '@hcengineering/contact-resources'
   import { AssigneeCategory } from '@hcengineering/contact-resources/src/assignee'
   import { Account, Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
+  import { RuleApplyResult, getClient, getDocRules } from '@hcengineering/presentation'
   import { Component, Issue } from '@hcengineering/tracker'
   import { ButtonKind, ButtonSize, IconSize, TooltipAlignment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -43,10 +43,11 @@
   $: _object =
     (typeof object !== 'string' ? object : undefined) ?? (typeof value !== 'string' ? value : undefined) ?? []
 
+  $: docs = Array.isArray(_object) ? _object : [_object]
+  $: cdocs = docs.filter((d) => '_class' in d) as Doc[]
+
   const client = getClient()
   const dispatch = createEventDispatcher()
-
-  const docQuery: DocumentQuery<Employee> = { active: true }
 
   const handleAssigneeChanged = async (newAssignee: Ref<Person> | undefined | null) => {
     if (newAssignee === undefined || (!Array.isArray(_object) && _object?.assignee === newAssignee)) {
@@ -75,8 +76,6 @@
 
   function getCategories (object: Object | Object[]): void {
     categories = []
-    const docs = Array.isArray(object) ? object : [object]
-    const cdocs = docs.filter((d) => '_class' in d) as Doc[]
     if (cdocs.length > 0) {
       categories.push({
         label: tracker.string.PreviousAssigned,
@@ -130,12 +129,28 @@
       ? _object.assignee
       : _object.reduce((v, it) => (v != null && v === it.assignee ? it.assignee : null), _object[0]?.assignee) ??
         undefined) ?? undefined
+
+  let rulesQuery: RuleApplyResult<Employee> | undefined
+  let query: DocumentQuery<Employee>
+  $: if (cdocs.length > 0) {
+    rulesQuery = getDocRules<Employee>(cdocs, 'assignee')
+    if (rulesQuery !== undefined) {
+      query = { ...(rulesQuery?.fieldQuery ?? {}), active: true }
+    } else {
+      query = { _id: 'none' as Ref<Employee>, active: true }
+      rulesQuery = {
+        disableEdit: true,
+        disableUnset: true,
+        fieldQuery: {}
+      }
+    }
+  }
 </script>
 
 {#if _object}
   {#if isAction}
     <AssigneePopup
-      {docQuery}
+      docQuery={query}
       {categories}
       icon={contact.icon.Person}
       selected={sel}
@@ -153,7 +168,7 @@
     />
   {:else}
     <AssigneeBox
-      {docQuery}
+      docQuery={query}
       {focusIndex}
       label={tracker.string.Assignee}
       placeholder={tracker.string.Assignee}
