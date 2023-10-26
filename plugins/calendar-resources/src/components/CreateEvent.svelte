@@ -29,6 +29,7 @@
   import ReccurancePopup from './ReccurancePopup.svelte'
   import VisibilityEditor from './VisibilityEditor.svelte'
   import CalendarSelector from './CalendarSelector.svelte'
+  import LocationEditor from './LocationEditor.svelte'
 
   export let attachedTo: Ref<Doc> = calendar.ids.NoAttached
   export let attachedToClass: Ref<Class<Doc>> = calendar.class.Event
@@ -46,6 +47,7 @@
   const duration = defaultDuration
   let dueDate = startDate + duration
   let allDay = false
+  let location = ''
 
   let reminders = [30 * 60 * 1000]
 
@@ -93,6 +95,7 @@
         participants,
         visibility,
         title,
+        location,
         allDay,
         access: 'owner',
         originalStartTime: allDay ? saveUTC(date) : date
@@ -108,6 +111,7 @@
         participants,
         reminders,
         title,
+        location,
         allDay,
         access: 'owner'
       })
@@ -163,6 +167,7 @@
     <EventTimeExtraButton bind:allDay bind:rules on:repeat={setRecurrance} on:allday={allDayChangeHandler} />
   </div>
   <div class="block rightCropPadding">
+    <LocationEditor bind:value={location} />
     <EventParticipants bind:participants bind:externalParticipants />
   </div>
   <div class="block flex-no-shrink">
