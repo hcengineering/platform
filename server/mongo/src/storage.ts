@@ -53,7 +53,8 @@ import core, {
   TxResult,
   TxUpdateDoc,
   WithLookup,
-  WorkspaceId
+  WorkspaceId,
+  getTypeOf
 } from '@hcengineering/core'
 import type { DbAdapter, TxAdapter } from '@hcengineering/server-core'
 import { AnyBulkWriteOperation, Collection, Db, Document, Filter, MongoClient, Sort, UpdateFilter } from 'mongodb'
@@ -61,7 +62,7 @@ import { createHash } from 'node:crypto'
 import { getMongoClient, getWorkspaceDB } from './utils'
 
 function translateDoc (doc: Doc): Document {
-  return doc as Document
+  return { ...doc, '%hash%': null }
 }
 
 function isLookupQuery<T extends Doc> (query: DocumentQuery<T>): boolean {
@@ -409,6 +410,8 @@ abstract class MongoAdapterBase implements DbAdapter {
         projection[ckey] = options.projection[key]
       }
       resultPipeline.push({ $project: projection })
+    } else {
+      resultPipeline.push({ $project: { '%hash%': 0 } })
     }
     pipeline.push({
       $facet: {
@@ -429,7 +432,7 @@ abstract class MongoAdapterBase implements DbAdapter {
       await this.fillLookupValue(clazz, options?.lookup, row)
       this.clearExtraLookups(row)
     }
-    return toFindResult(result, total)
+    return toFindResult(this.stripHash(result), total)
   }
 
   private translateKey<T extends Doc>(key: string, clazz: Ref<Class<T>>): string {
@@ -537,6 +540,8 @@ abstract class MongoAdapterBase implements DbAdapter {
         projection[ckey] = options.projection[key]
       }
       cursor = cursor.project(projection)
+    } else {
+      cursor = cursor.project({ '%hash%': 0 })
     }
     let total: number = -1
     if (options !== null && options !== undefined) {
@@ -565,7 +570,17 @@ abstract class MongoAdapterBase implements DbAdapter {
     if (options?.total === true && options?.limit === undefined) {
       total = res.length
     }
-    return toFindResult(res, total)
+    return toFindResult(this.stripHash(res), total)
+  }
+
+  stripHash<T extends Doc>(docs: T[]): T[] {
+    docs.forEach((it) => {
+      if ('%hash%' in it) {
+        delete it['%hash%']
+      }
+      return it
+    })
+    return docs
   }
 
   find (domain: Domain): StorageIterator {
@@ -578,14 +593,21 @@ abstract class MongoAdapterBase implements DbAdapter {
         if (d === null) {
           return undefined
         }
-        const doc = JSON.stringify(d)
-        const hash = createHash('sha256')
-        hash.update(doc)
-        const digest = hash.digest('base64')
+        let digest = (d as any)['%hash%']
+        if (digest == null) {
+          if ('%hash%' in d) {
+            delete d['%hash%']
+          }
+          const doc = JSON.stringify(d)
+          const hash = createHash('sha256')
+          hash.update(doc)
+          digest = hash.digest('base64')
+          await coll.updateOne({ _id: d._id }, { $set: { '%hash%': digest } })
+        }
         return {
           id: d._id,
           hash: digest,
-          size: doc.length // Some approx size for document.
+          size: this.calcSize(d) // Some approx size for document.
         }
       },
       close: async () => {
@@ -594,11 +616,41 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
   }
 
+  calcSize (obj: any): number {
+    if (typeof obj === 'undefined') {
+      return 0
+    }
+    if (typeof obj === 'function') {
+      return 0
+    }
+    let result = 0
+    for (const key in obj) {
+      // include prototype properties
+      const value = obj[key]
+      const type = getTypeOf(value)
+      if (type === 'Array') {
+        result += this.calcSize(value)
+      } else if (type === 'Object') {
+        result += this.calcSize(value)
+      } else if (type === 'Date') {
+        result += new Date(value.getTime()).toString().length
+      }
+      if (type === 'string') {
+        result += (value as string).length
+      } else {
+        result += JSON.stringify(value).length
+      }
+    }
+    return result
+  }
+
   async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
-    return await this.db
-      .collection(domain)
-      .find<Doc>({ _id: { $in: docs } })
-      .toArray()
+    return this.stripHash(
+      await this.db
+        .collection(domain)
+        .find<Doc>({ _id: { $in: docs } })
+        .toArray()
+    )
   }
 
   async upload (domain: Domain, docs: Doc[]): Promise<void> {
@@ -883,6 +935,9 @@ class MongoAdapter extends MongoAdapterBase {
             updateOne: {
               filter: { _id: tx.objectId },
               update: {
+                $set: {
+                  '%hash%': null
+                },
                 $pull: {
                   [arr]: desc.$value
                 }
@@ -895,7 +950,8 @@ class MongoAdapter extends MongoAdapterBase {
               update: {
                 $set: {
                   modifiedBy: tx.modifiedBy,
-                  modifiedOn: tx.modifiedOn
+                  modifiedOn: tx.modifiedOn,
+                  '%hash%': null
                 },
                 $push: {
                   [arr]: {
@@ -925,7 +981,8 @@ class MongoAdapter extends MongoAdapterBase {
               },
               update: {
                 $set: {
-                  ...Object.fromEntries(Object.entries(desc.$update).map((it) => [arr + '.$.' + it[0], it[1]]))
+                  ...Object.fromEntries(Object.entries(desc.$update).map((it) => [arr + '.$.' + it[0], it[1]])),
+                  '%hash%': null
                 }
               }
             }
@@ -936,7 +993,8 @@ class MongoAdapter extends MongoAdapterBase {
               update: {
                 $set: {
                   modifiedBy: tx.modifiedBy,
-                  modifiedOn: tx.modifiedOn
+                  modifiedOn: tx.modifiedOn,
+                  '%hash%': null
                 }
               }
             }
@@ -956,7 +1014,8 @@ class MongoAdapter extends MongoAdapterBase {
                 ...tx.operations,
                 $set: {
                   modifiedBy: tx.modifiedBy,
-                  modifiedOn: tx.modifiedOn
+                  modifiedOn: tx.modifiedOn,
+                  '%hash%': null
                 }
               } as unknown as UpdateFilter<Document>,
               { returnDocument: 'after' }
@@ -974,7 +1033,8 @@ class MongoAdapter extends MongoAdapterBase {
             ...tx.operations,
             $set: {
               modifiedBy: tx.modifiedBy,
-              modifiedOn: tx.modifiedOn
+              modifiedOn: tx.modifiedOn,
+              '%hash%': null
             }
           }
           return {
@@ -986,7 +1046,14 @@ class MongoAdapter extends MongoAdapterBase {
       }
     } else {
       const filter = { _id: tx.objectId }
-      const update = { $set: { ...tx.operations, modifiedBy: tx.modifiedBy, modifiedOn: tx.modifiedOn } }
+      const update = {
+        $set: {
+          ...tx.operations,
+          modifiedBy: tx.modifiedBy,
+          modifiedOn: tx.modifiedOn,
+          '%hash%': null
+        }
+      }
       const raw =
         tx.retrieve === true
           ? async (): Promise<TxResult> => {

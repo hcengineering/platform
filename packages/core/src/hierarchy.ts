@@ -20,7 +20,7 @@ import core from './component'
 import { _createMixinProxy, _mixinClass, _toDoc } from './proxy'
 import type { Tx, TxCreateDoc, TxMixin, TxRemoveDoc, TxUpdateDoc } from './tx'
 import { TxProcessor } from './tx'
-import getTypeOf from './typeof'
+import { getTypeOf } from './typeof'
 
 /**
  * @public

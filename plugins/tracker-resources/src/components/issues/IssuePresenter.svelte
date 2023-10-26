@@ -74,7 +74,6 @@
     {#if presenters.length > 0}
       <div class="flex-row-center">
         {#each presenters as mixinPresenter}
-          {mixinPresenter.presenter}
           <Component is={mixinPresenter.presenter} props={{ value }} />
         {/each}
       </div>

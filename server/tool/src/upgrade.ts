@@ -68,13 +68,20 @@ export class MigrateClientImpl implements MigrationClient {
     const t = Date.now()
     try {
       if (isOperator(operations)) {
+        if (operations?.$set !== undefined) {
+          operations.$set['%hash%'] = null
+        } else {
+          operations = { ...operations, $set: { '%hash%': null } }
+        }
         const result = await this.db
           .collection(domain)
           .updateMany(this.translateQuery(query), { ...operations } as unknown as UpdateFilter<Document>)
 
         return { matched: result.matchedCount, updated: result.modifiedCount }
       } else {
-        const result = await this.db.collection(domain).updateMany(this.translateQuery(query), { $set: operations })
+        const result = await this.db
+          .collection(domain)
+          .updateMany(this.translateQuery(query), { $set: { ...operations, '%hash%': null } })
         return { matched: result.matchedCount, updated: result.modifiedCount }
       }
     } finally {
@@ -92,7 +99,7 @@ export class MigrateClientImpl implements MigrationClient {
       operations.map((it) => ({
         updateOne: {
           filter: this.translateQuery(it.filter),
-          update: { $set: it.update }
+          update: { $set: { ...it.update, '%hash%': null } }
         }
       }))
     )
@@ -115,6 +122,9 @@ export class MigrateClientImpl implements MigrationClient {
     }
     let doc: Document | null
     while ((doc = await cursor.next()) != null) {
+      if ('%hash%' in doc) {
+        delete doc['%hash%']
+      }
       await target.insertOne(doc)
       result.matched++
       result.updated++
