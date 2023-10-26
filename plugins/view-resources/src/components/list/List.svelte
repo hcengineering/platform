@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, FindOptions, Ref, Space, RateLimitter } from '@hcengineering/core'
+  import core, { Class, Doc, DocumentQuery, FindOptions, Ref, Space, RateLimitter } from '@hcengineering/core'
   import { IntlString, getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
@@ -73,7 +73,7 @@
       ...resultOptions.projection,
       _id: 1,
       _class: 1,
-      ...getProjection(viewOptions.groupBy, queryNoLookup)
+      ...getProjection(viewOptions.groupBy, queryNoLookup, _class)
     }
   }
 
@@ -97,7 +97,7 @@
 
   $: docs = [...fastDocs, ...slowDocs.filter((it) => !fastQueryIds.has(it._id))]
 
-  function getProjection (fields: string[], query: DocumentQuery<Doc>): Record<string, number> {
+  function getProjection (fields: string[], query: DocumentQuery<Doc>, _class: Ref<Class<Doc>>): Record<string, number> {
     const res: Record<string, number> = {}
     for (const f of fields) {
       /*
@@ -113,6 +113,11 @@
       if (!f.startsWith('$')) {
         res[f] = 1
       }
+    }
+    if (client.getHierarchy().isDerived(_class, core.class.AttachedDoc)) {
+      res.attachedTo = 1
+      res.attachedToClass = 1
+      res.collection = 1
     }
     return res
   }

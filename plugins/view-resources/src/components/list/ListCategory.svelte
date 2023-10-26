@@ -34,7 +34,6 @@
     AnyComponent,
     AnySvelteComponent,
     ExpandCollapse,
-    Spinner,
     getEventPositionElement,
     mouseAttractor,
     showPopup
@@ -479,7 +478,7 @@
         dragstart={dragStartHandler}
       />
     {:else if itemModels && itemModels.size > 0 && (!collapsed || wasLoaded || dragItemIndex !== undefined)}
-      {#if limited && !loading}
+      {#if limited}
         {#key configurationsVersion}
           {#each limited as docObject, i (docObject._id)}
             <ListItem
@@ -515,8 +514,6 @@
           {/each}
         {/key}
       {/if}
-    {:else if loading}
-      <Spinner size="small" />
     {/if}
   </ExpandCollapse>
 </div>
