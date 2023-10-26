@@ -147,9 +147,7 @@
     const result = await client.searchFulltext(
       {
         query: `${query}*`,
-        filter: {
-          _class: classes
-        }
+        classes
       },
       {
         limit: 10

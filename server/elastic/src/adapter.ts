@@ -124,30 +124,32 @@ class ElasticAdapter implements FullTextAdapter {
         },
         size: options.limit ?? DEFAULT_LIMIT
       }
-      if (options.offset !== undefined) {
-        elasticQuery.from = options.offset
+      // if (query.aggregateBy !== undefined) {
+      //   elasticQuery.aggs = {
+      //     aggr_count: {
+      //       terms: {
+      //         field: `${query.aggregateBy}.keyword`
+      //       }
+      //     }
+      //   }
+      // }
+
+      const filter = []
+      if (query.spaces !== undefined) {
+        filter.push({
+          terms: { 'space.keyword': query.spaces }
+        })
       }
-      if (query.aggregateBy !== undefined) {
-        elasticQuery.aggs = {
-          aggr_count: {
-            terms: {
-              field: `${query.aggregateBy}.keyword`
-            }
-          }
-        }
+      if (query.classes !== undefined) {
+        filter.push({
+          terms: { '_class.keyword': query.classes }
+        })
       }
-      if (query.filter !== undefined) {
-        const filter = []
-        for (const [key, value] of Object.entries(query.filter)) {
-          const term = Array.isArray(value) ? 'terms' : 'term'
-          filter.push({
-            [term]: {
-              [`${key}.keyword`]: value
-            }
-          })
-        }
+
+      if (filter.length > 0) {
         elasticQuery.query.bool.filter = filter
       }
+
       const result = await this.client.search({
         index: toWorkspaceString(this.workspaceId),
         body: elasticQuery

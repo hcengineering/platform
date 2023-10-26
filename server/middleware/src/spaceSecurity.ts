@@ -409,16 +409,9 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
   ): Promise<SearchResult> {
     const newQuery = { ...query }
     const account = await getUser(this.storage, ctx)
-    let spaces: string[] = []
     if (!isSystem(account)) {
-      spaces = await this.getAllAllowedSpaces(account)
-      if (newQuery.filter === undefined) {
-        newQuery.filter = { space: spaces }
-      } else {
-        newQuery.filter.space = spaces
-      }
+      newQuery.spaces = await this.getAllAllowedSpaces(account)
     }
-
     const result = await this.provideSearchFulltext(ctx, newQuery, options)
     return result
   }

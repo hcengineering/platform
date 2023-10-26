@@ -227,10 +227,9 @@ export interface IndexedDoc {
  */
 export interface SearchQuery {
   query: string
-  aggregateBy?: string
-  filter?: {
-    [key: string]: any
-  }
+  // aggregateBy?: string
+  classes?: Ref<Class<Doc>>[]
+  spaces?: Ref<Space>[]
 }
 
 /**
@@ -238,7 +237,6 @@ export interface SearchQuery {
  */
 export interface SearchOptions {
   limit?: number
-  offset?: number
 }
 
 /**
