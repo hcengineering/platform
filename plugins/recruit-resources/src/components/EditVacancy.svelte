@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { AttachmentStyleBoxEditor } from '@hcengineering/attachment-resources'
-  import core, { ClassifierKind, Data, Doc, Mixin, Ref } from '@hcengineering/core'
+  import { Data, Doc, Mixin, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
@@ -24,7 +24,7 @@
   import tracker from '@hcengineering/tracker'
   import view from '@hcengineering/view'
   import { Button, Component, EditBox, IconMixin, IconMoreH, Label, LinkWrapper, showPopup } from '@hcengineering/ui'
-  import { ContextMenu, DocAttributeBar } from '@hcengineering/view-resources'
+  import { ContextMenu, DocAttributeBar, getMixins } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import recruit from '../plugin'
   import VacancyApplications from './VacancyApplications.svelte'
@@ -80,20 +80,9 @@
   const hierarchy = client.getHierarchy()
   let mixins: Mixin<Doc>[] = []
 
-  function getMixins (object: Doc, showAllMixins: boolean): void {
-    if (object === undefined) return
-    const descendants = hierarchy.getDescendants(core.class.Doc).map((p) => hierarchy.getClass(p))
-
-    mixins = descendants.filter(
-      (m) =>
-        m.kind === ClassifierKind.MIXIN &&
-        !ignoreMixins.has(m._id) &&
-        (hierarchy.hasMixin(object, m._id) ||
-          (showAllMixins && hierarchy.isDerived(object._class, hierarchy.getBaseClass(m._id))))
-    )
+  $: if (object !== undefined) {
+    mixins = getMixins({ object, showAllMixins, ignoreMixins, _class: object._class, hierarchy })
   }
-
-  $: getMixins(object, showAllMixins)
 
   let descriptionBox: AttachmentStyleBoxEditor
   $: descriptionKey = client.getHierarchy().getAttribute(recruit.class.Vacancy, 'fullDescription')
