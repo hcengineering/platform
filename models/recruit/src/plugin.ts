@@ -70,7 +70,8 @@ export default mergeIds(recruitId, recruit, {
     ConfigDescription: '' as IntlString,
     ShowApplications: '' as IntlString,
     HideDoneState: '' as IntlString,
-    HideArchivedVacancies: '' as IntlString
+    HideArchivedVacancies: '' as IntlString,
+    Interviews: '' as IntlString
   },
   validator: {
     ApplicantValidator: '' as Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
@@ -111,7 +112,9 @@ export default mergeIds(recruitId, recruit, {
     ApplicationMatchPresenter: '' as AnyComponent,
 
     MatchVacancy: '' as AnyComponent,
-    NotificationApplicantPresenter: '' as AnyComponent
+    NotificationApplicantPresenter: '' as AnyComponent,
+
+    Interviews: '' as AnyComponent
   },
   template: {
     DefaultVacancy: '' as Ref<KanbanTemplate>,

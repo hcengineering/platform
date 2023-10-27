@@ -247,6 +247,7 @@ export function createModel (builder: Builder): void {
   const archiveId = 'archive'
   const myApplicationsId = 'my-applications'
   const organizationsId = 'organizations'
+  const interviewId = 'interviews'
 
   builder.createDoc(
     workbench.class.Application,
@@ -276,6 +277,13 @@ export function createModel (builder: Builder): void {
             component: recruit.component.Organizations,
             icon: contact.icon.Company,
             label: recruit.string.Organizations,
+            position: 'vacancy'
+          },
+          {
+            id: interviewId,
+            component: recruit.component.Interviews,
+            icon: recruit.icon.Interview,
+            label: recruit.string.Interviews,
             position: 'vacancy'
           },
           {

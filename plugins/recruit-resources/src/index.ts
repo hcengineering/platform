@@ -63,6 +63,7 @@ import Opinions from './components/review/Opinions.svelte'
 import OpinionsPresenter from './components/review/OpinionsPresenter.svelte'
 import ReviewPresenter from './components/review/ReviewPresenter.svelte'
 import Reviews from './components/review/Reviews.svelte'
+import Interviews from './components/Interviews.svelte'
 import recruit from './plugin'
 import {
   getAppTitle,
@@ -354,7 +355,9 @@ export default async (): Promise<Resources> => ({
     VacancyTemplateEditor,
 
     MatchVacancy,
-    NotificationApplicantPresenter
+    NotificationApplicantPresenter,
+
+    Interviews
   },
   completion: {
     ApplicationQuery: async (

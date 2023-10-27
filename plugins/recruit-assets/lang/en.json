@@ -119,7 +119,9 @@
     "ShowApplications": "Show applications",
     "GetTalentIds": "Get talents' ids",
     "HideDoneState": "Hide complete applications",
-    "HideArchivedVacancies": "Hide from archived Vacancies"
+    "HideArchivedVacancies": "Hide from archived Vacancies",
+
+    "Interviews": "Interviewing"
   },
   "status": {
     "ApplicationExists": "Application already exists",
