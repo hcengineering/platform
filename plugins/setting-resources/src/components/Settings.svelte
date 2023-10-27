@@ -36,7 +36,10 @@
   import { onDestroy } from 'svelte'
   import CategoryElement from './CategoryElement.svelte'
 
-  export let visibileNav = true
+  export let visibileNav: boolean = true
+  export let navFloat: boolean = false
+  export let appsDirection: 'vertical' | 'horizontal' = 'horizontal'
+
   let category: SettingsCategory | undefined
   let categoryId: string = ''
 
@@ -95,42 +98,50 @@
 
 <div class="flex h-full clear-mins">
   {#if visibileNav}
-    <div class="antiPanel-navigator">
-      <NavHeader label={setting.string.Settings} />
+    <div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
+      <div class="antiPanel-wrap__content">
+        <NavHeader label={setting.string.Settings} />
 
-      <Scroller shrink>
-        {#each categories as category, i}
-          {#if i > 0 && categories[i - 1].group !== category.group}
-            <div class="antiNav-divider short line" />
-          {/if}
+        <Scroller shrink>
+          {#each categories as category, i}
+            {#if i > 0 && categories[i - 1].group !== category.group}
+              <div class="antiNav-divider short line" />
+            {/if}
+            <CategoryElement
+              icon={category.icon}
+              label={category.label}
+              selected={category.name === categoryId}
+              expandable={category._id === setting.ids.Setting}
+              on:click={() => {
+                selectCategory(category.name)
+              }}
+            />
+          {/each}
+          <div class="antiNav-space" />
+        </Scroller>
+
+        <NavFooter split>
           <CategoryElement
-            icon={category.icon}
-            label={category.label}
-            selected={category.name === categoryId}
-            expandable={category._id === setting.ids.Setting}
-            on:click={() => {
-              selectCategory(category.name)
-            }}
+            icon={setting.icon.SelectWorkspace}
+            label={setting.string.SelectWorkspace}
+            on:click={selectWorkspace}
           />
-        {/each}
-        <div class="antiNav-space" />
-      </Scroller>
-
-      <NavFooter split>
-        <CategoryElement
-          icon={setting.icon.SelectWorkspace}
-          label={setting.string.SelectWorkspace}
-          on:click={selectWorkspace}
-        />
-        <CategoryElement
-          icon={login.icon.InviteWorkspace}
-          label={setting.string.InviteWorkspace}
-          on:click={inviteWorkspace}
-        />
-        <CategoryElement icon={setting.icon.Signout} label={setting.string.Signout} on:click={signOut} />
-      </NavFooter>
+          <CategoryElement
+            icon={login.icon.InviteWorkspace}
+            label={setting.string.InviteWorkspace}
+            on:click={inviteWorkspace}
+          />
+          <CategoryElement icon={setting.icon.Signout} label={setting.string.Signout} on:click={signOut} />
+        </NavFooter>
+      </div>
+      <Separator
+        name={'setting'}
+        float={navFloat ? 'navigator' : true}
+        index={0}
+        color={'var(--theme-navpanel-border)'}
+      />
     </div>
-    <Separator name={'setting'} index={0} color={'var(--theme-navpanel-border)'} />
+    <Separator name={'setting'} float={navFloat} index={0} color={'var(--theme-navpanel-border)'} />
   {/if}
 
   <div class="antiPanel-component filled">
