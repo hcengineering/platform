@@ -16,7 +16,7 @@ export class CommonRecruitingPage extends CommonPage {
   constructor (page: Page) {
     super()
     this.page = page
-    this.inputComment = page.locator('div.tiptap')
+    this.inputComment = page.locator('div.text-input div.tiptap')
     this.buttonSendComment = page.locator('g#Send')
     this.textComment = page.locator('div.msgactivity-container p')
     this.inputAddAttachment = page.locator('div.antiSection #file')
