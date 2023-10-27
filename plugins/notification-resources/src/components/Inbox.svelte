@@ -42,7 +42,9 @@
   import People from './People.svelte'
   import { subscribe } from '../utils'
 
-  export let visibileNav: boolean
+  export let visibileNav: boolean = true
+  export let navFloat: boolean = false
+  export let appsDirection: 'vertical' | 'horizontal' = 'horizontal'
   let filter: 'all' | 'read' | 'unread' = 'all'
 
   const client = getClient()
@@ -134,34 +136,45 @@
       }
     )
   }
-  defineSeparators('inbox', [{ minSize: 20, maxSize: 40, size: 30 }, null])
+  defineSeparators('inbox', [
+    { minSize: 20, maxSize: 40, size: 30, float: 'navigator' },
+    { size: 'auto', minSize: 30, maxSize: 'auto', float: undefined }
+  ])
 </script>
 
 <div class="flex-row-top h-full">
   {#if visibileNav}
-    <div class="antiPanel-component header aside min-w-100 flex-no-shrink">
-      <Tabs
-        bind:selected={selectedTab}
-        model={tabs}
-        on:change={(e) => select(e.detail)}
-        on:open={(e) => {
-          selectedEmployee = e.detail
-          select(undefined)
-        }}
-        padding={'0 1.75rem'}
-        size="small"
-      >
-        <svelte:fragment slot="rightButtons">
-          <div class="flex flex-gap-2">
-            {#if selectedTab > 0}
-              <Button label={chunter.string.Message} icon={IconAdd} kind="primary" on:click={openUsersPopup} />
-            {/if}
-            <Filter bind:filter />
-          </div>
-        </svelte:fragment>
-      </Tabs>
+    <div
+      class="antiPanel-navigator {appsDirection === 'horizontal'
+        ? 'portrait'
+        : 'landscape'} background-comp-header-color"
+    >
+      <div class="antiPanel-wrap__content">
+        <Tabs
+          bind:selected={selectedTab}
+          model={tabs}
+          on:change={(e) => select(e.detail)}
+          on:open={(e) => {
+            selectedEmployee = e.detail
+            select(undefined)
+          }}
+          padding={'0 1.75rem'}
+          size={'small'}
+          noMargin
+        >
+          <svelte:fragment slot="rightButtons">
+            <div class="flex flex-gap-2">
+              {#if selectedTab > 0}
+                <Button label={chunter.string.Message} icon={IconAdd} kind="primary" on:click={openUsersPopup} />
+              {/if}
+              <Filter bind:filter />
+            </div>
+          </svelte:fragment>
+        </Tabs>
+      </div>
+      <Separator name={'inbox'} float={navFloat ? 'navigator' : true} index={0} />
     </div>
-    <Separator name={'inbox'} index={0} />
+    <Separator name={'inbox'} float={navFloat} index={0} />
   {/if}
   <div class="antiPanel-component filled w-full">
     {#if selectedEmployee !== undefined && component === undefined}
@@ -174,11 +187,7 @@
         }}
       />
     {:else if component && _id && _class}
-      <Component
-        is={component}
-        props={{ _id, _class, embedded: selectedTab === 0 }}
-        on:close={() => select(undefined)}
-      />
+      <Component is={component} props={{ _id, _class, embedded: true }} on:close={() => select(undefined)} />
     {/if}
   </div>
 </div>
