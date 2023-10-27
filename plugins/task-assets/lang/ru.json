@@ -20,9 +20,6 @@
     "TaskComments": "Комментарии",
     "TaskLabels": "Ярлыки",
     "TaskAssignee": "Назначен",
-    "StateTemplateTitle": "Заголовок",
-    "StateTemplateColor": "Цвет",
-    "KanbanTemplateTitle": "Заголовок",
     "Rank": "Ранк",
     "TaskCreateLabel": "Задача",
     "EditStates": "Редактировать статусы",
@@ -76,6 +73,8 @@
     "RelatedIssues": "Связанные процессы",
     "StatusName": "Имя статуса",
     "StatusPopupTitle": "Создание статуса и изменение имени существующего",
-    "NameAlreadyExists": "Данное имя уже используется другим статусом этого типа"
+    "NameAlreadyExists": "Данное имя уже используется другим статусом этого типа",
+    "ProjectType": "Тип проекта",
+    "ProjectTypes": "Типы проектов"
   }
 }

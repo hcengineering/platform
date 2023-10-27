@@ -16,7 +16,7 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { getClient, SpaceCreateCard } from '@hcengineering/presentation'
-  import task, { KanbanTemplate } from '@hcengineering/task'
+  import task, { ProjectType } from '@hcengineering/task'
   import { Component, EditBox, Grid, IconFolder } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import board from '../plugin'
@@ -26,30 +26,26 @@
 
   let name: string = ''
   const description: string = ''
-  let templateId: Ref<KanbanTemplate> | undefined
+  let typeId: Ref<ProjectType> | undefined
 
   export function canClose (): boolean {
-    return name === '' && templateId !== undefined
+    return name === '' && typeId !== undefined
   }
 
   const client = getClient()
 
   async function onCreateBoard (): Promise<void> {
-    if (
-      templateId !== undefined &&
-      (await client.findOne(task.class.KanbanTemplate, { _id: templateId })) === undefined
-    ) {
-      throw Error(`Failed to find target kanban template: ${templateId}`)
+    if (typeId === undefined) {
+      return
     }
-
-    await createBoard(client, name, description, templateId)
+    await createBoard(client, name, description, typeId)
   }
 </script>
 
 <SpaceCreateCard
   label={board.string.CreateBoard}
   okAction={onCreateBoard}
-  canSave={name.length > 0}
+  canSave={name.length > 0 && typeId !== undefined}
   on:close={() => {
     dispatch('close')
   }}
@@ -65,13 +61,13 @@
     <!-- <ToggleWithLabel label={board.string.MakePrivate} description={board.string.MakePrivateDescription} /> -->
 
     <Component
-      is={task.component.KanbanTemplateSelector}
+      is={task.component.ProjectTypeSelector}
       props={{
-        folders: [board.space.BoardTemplates],
-        template: templateId
+        categories: [board.category.BoardType],
+        type: typeId
       }}
       on:change={(evt) => {
-        templateId = evt.detail
+        typeId = evt.detail
       }}
     />
   </Grid>

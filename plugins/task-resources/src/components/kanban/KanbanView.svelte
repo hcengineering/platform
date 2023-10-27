@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import {
+  import core, {
     CategoryType,
     Class,
     Doc,
@@ -27,7 +27,7 @@
   import { Item, Kanban as KanbanUI } from '@hcengineering/kanban'
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient, ActionContext } from '@hcengineering/presentation'
-  import { SpaceWithStates, Task, TaskGrouping, TaskOrdering } from '@hcengineering/task'
+  import { Project, Task, TaskGrouping, TaskOrdering } from '@hcengineering/task'
   import {
     ColorDefinition,
     defaultBackground,
@@ -64,7 +64,7 @@
   import KanbanDragDone from './KanbanDragDone.svelte'
 
   export let _class: Ref<Class<Task>>
-  export let space: Ref<SpaceWithStates> | undefined = undefined
+  export let space: Ref<Project> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let query: DocumentQuery<Task> = {}
   export let viewOptionsConfig: ViewOptionModel[] | undefined
@@ -137,9 +137,8 @@
       ...options,
       lookup: {
         ...options?.lookup,
-        space: task.class.SpaceWithStates,
-        status: task.class.State,
-        doneState: task.class.DoneState
+        space: task.class.Project,
+        status: core.class.Status
       },
       sort: {
         ...options?.sort,
@@ -161,7 +160,7 @@
 
   async function updateCategories (
     _class: Ref<Class<Doc>>,
-    space: Ref<SpaceWithStates> | undefined,
+    space: Ref<Project> | undefined,
     docs: Doc[],
     groupByKey: string,
     viewOptions: ViewOptions,
@@ -226,7 +225,7 @@
   $: presenterMixin = client.getHierarchy().as(clazz, task.mixin.KanbanCard)
   $: cardPresenter = getResource(presenterMixin.card)
 
-  const getDoneUpdate = (e: any) => ({ doneState: e.detail._id } as DocumentUpdate<Doc>)
+  const getDoneUpdate = (e: any) => ({ status: e.detail._id } as DocumentUpdate<Doc>)
 </script>
 
 {#await cardPresenter then presenter}

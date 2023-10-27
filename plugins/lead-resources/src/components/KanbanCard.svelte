@@ -25,9 +25,10 @@
   import { AssigneePresenter } from '@hcengineering/task-resources'
   import { ActionIcon, Component, DueDatePresenter, IconMoreH, showPopup } from '@hcengineering/ui'
   import { BuildModelKey } from '@hcengineering/view'
-  import { ContextMenu, enabledConfig, openDoc } from '@hcengineering/view-resources'
+  import { ContextMenu, enabledConfig, openDoc, statusStore } from '@hcengineering/view-resources'
   import lead from '../plugin'
   import LeadPresenter from './LeadPresenter.svelte'
+  import task from '@hcengineering/task'
 
   export let object: WithLookup<Lead>
   export let config: (string | BuildModelKey)[]
@@ -42,6 +43,10 @@
   function showLead () {
     openDoc(client.getHierarchy(), object)
   }
+
+  $: status = $statusStore.byId.get(object.status)
+
+  $: isDone = status?.category === task.statusCategory.Lost || status?.category === task.statusCategory.Won
 </script>
 
 <div class="flex-col pt-3 pb-3 pr-4 pl-4">
@@ -75,7 +80,7 @@
         width={'fit-content'}
         value={object.dueDate}
         shouldRender={object.dueDate !== null && object.dueDate !== undefined}
-        shouldIgnoreOverdue={object.doneState !== null}
+        shouldIgnoreOverdue={isDone}
         onChange={async (e) => {
           await client.update(object, { dueDate: e })
         }}

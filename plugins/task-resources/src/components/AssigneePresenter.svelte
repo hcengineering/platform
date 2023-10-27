@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, getName } from '@hcengineering/contact'
+  import contact, { Employee, Person, getName } from '@hcengineering/contact'
   import { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { Task } from '@hcengineering/task'
   import { getClient } from '@hcengineering/presentation'
@@ -24,7 +24,7 @@
   import { IntlString, getEmbeddedLabel } from '@hcengineering/platform'
   import task from '../plugin'
 
-  export let value: Ref<Employee> | Employee | null | undefined
+  export let value: Ref<Person> | Person | null | undefined
   export let issueId: Ref<Task>
   export let defaultClass: Ref<Class<Doc>> | undefined = undefined
   export let currentSpace: Ref<Space> | undefined = undefined
@@ -33,7 +33,7 @@
   export let defaultName: IntlString | undefined = undefined
   export let placeholderLabel: IntlString | undefined = undefined
 
-  $: employeeValue = typeof value === 'string' ? $employeeByIdStore.get(value) : value
+  $: employeeValue = typeof value === 'string' ? $employeeByIdStore.get(value as Ref<Employee>) : value
 
   const client = getClient()
 

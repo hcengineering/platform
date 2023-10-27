@@ -415,6 +415,11 @@ export async function convert (
         return
       }
 
+      const type = await client.findOne(task.class.ProjectType, { _id: operation.defaultTemplate })
+      if (type === undefined) {
+        return
+      }
+
       const vacancies = (extraDocs.get(recruit.class.Vacancy) ?? []) as Vacancy[]
       const applications = (extraDocs.get(recruit.class.Applicant) ?? []) as Applicant[]
 
@@ -501,21 +506,9 @@ export async function convert (
             }
           }
 
-          const states = await client.findAll(task.class.State, { space: vacancyId })
+          const states = await client.findAll(core.class.Status, { _id: { $in: type.statuses.map((p) => p._id) } })
           const state = states.find((it) => it.name.toLowerCase().trim() === statusName.toLowerCase().trim())
           if (state !== undefined) {
-            if (mapping?.doneState !== '') {
-              const doneStates = await client.findAll(task.class.DoneState, { space: vacancyId })
-              const doneState = doneStates.find(
-                (it) => it.name.toLowerCase().trim() === mapping?.doneState.toLowerCase().trim()
-              )
-              if (doneState !== undefined) {
-                if (doneState !== undefined && existing?.doneState !== doneState._id) {
-                  update.doneState = doneState._id
-                }
-              }
-            }
-
             if (existing !== undefined) {
               if (existing.status !== state?._id) {
                 update.status = state._id

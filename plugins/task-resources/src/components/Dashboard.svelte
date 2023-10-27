@@ -13,46 +13,29 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Class, DocumentQuery, Ref, SortingOrder, Timestamp } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import type { DoneState, SpaceWithStates, State, Task } from '@hcengineering/task'
-  import task from '@hcengineering/task'
+  import core, { Class, DocumentQuery, IdMap, Ref, Status, Timestamp } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import type { Project, Task } from '@hcengineering/task'
+  import task, { getStates } from '@hcengineering/task'
   import { BarDashboard, DashboardItem } from '@hcengineering/ui'
+  import { statusStore } from '@hcengineering/view-resources'
   import CreateFilter from './CreateFilter.svelte'
+  import { typeStore } from '..'
 
   export let _class: Ref<Class<Task>>
-  export let space: Ref<SpaceWithStates>
+  export let space: Ref<Project>
   export let query: DocumentQuery<Task>
 
-  const client = getClient()
-  const hieararchy = client.getHierarchy()
-
-  let states: State[] = []
+  let project: Project | undefined = undefined
+  let states: Status[] = []
   const statesQuery = createQuery()
   $: updateStates(space)
 
-  function updateStates (space: Ref<SpaceWithStates>): void {
-    statesQuery.query(
-      task.class.State,
-      { space },
-      (result) => {
-        states = result
-      },
-      {
-        sort: {
-          rank: SortingOrder.Ascending
-        }
-      }
-    )
-  }
+  $: states = getStates(project, $typeStore, $statusStore.byId)
 
-  let wonStates: Set<Ref<DoneState>> = new Set<Ref<DoneState>>()
-  const doneStatesQuery = createQuery()
-  $: updateDoneStates(space)
-
-  function updateDoneStates (space: Ref<SpaceWithStates>): void {
-    doneStatesQuery.query(task.class.DoneState, { space }, (result) => {
-      wonStates = new Set(result.filter((p) => hieararchy.isDerived(p._class, task.class.WonState)).map((p) => p._id))
+  function updateStates (space: Ref<Project>): void {
+    statesQuery.query(task.class.Project, { _id: space }, (result) => {
+      project = result[0]
     })
   }
 
@@ -60,7 +43,7 @@
   let ids: Ref<Task>[] = []
   const txQuery = createQuery()
 
-  function updateTxes (_class: Ref<Class<Task>>, space: Ref<SpaceWithStates>, modified: Timestamp | undefined): void {
+  function updateTxes (_class: Ref<Class<Task>>, space: Ref<Project>, modified: Timestamp | undefined): void {
     if (modified === undefined) {
       ids = []
       return
@@ -80,6 +63,7 @@
   }
 
   let items: DashboardItem[] = []
+  let tasks: Task[] = []
 
   $: updateTxes(_class, space, modified)
 
@@ -92,7 +76,41 @@
       }
     : query
 
-  function updateDocs (_class: Ref<Class<Task>>, states: State[], query: DocumentQuery<Task>): void {
+  $: group(tasks, $statusStore.byId)
+
+  function group (tasks: Task[], statuses: IdMap<Status>): void {
+    const template: Map<Ref<Status>, DashboardItem> = new Map(
+      states.map((p) => {
+        return [
+          p._id,
+          {
+            _id: p._id,
+            label: p.name,
+            values: [
+              { color: 10, value: 0 },
+              { color: 0, value: 0 },
+              { color: 11, value: 0 }
+            ]
+          }
+        ]
+      })
+    )
+    for (const value of tasks) {
+      const group = template.get(value.status)
+      if (group === undefined) continue
+      const status = statuses.get(value.status)
+      if (status === undefined) continue
+      if (status.category === task.statusCategory.Won) {
+        group.values[1].value++
+      } else if (status.category === task.statusCategory.Lost) {
+        group.values[2].value++
+      } else group.values[0].value++
+      template.set(value.status, group)
+    }
+    items = Array.from(template.values())
+  }
+
+  function updateDocs (_class: Ref<Class<Task>>, states: Status[], query: DocumentQuery<Task>): void {
     if (states.length === 0) {
       return
     }
@@ -100,41 +118,11 @@
       _class,
       query,
       (result) => {
-        const template: Map<Ref<State>, DashboardItem> = new Map(
-          states.map((p) => {
-            return [
-              p._id,
-              {
-                _id: p._id,
-                label: p.name,
-                values: [
-                  { color: 10, value: 0 },
-                  { color: 0, value: 0 },
-                  { color: 11, value: 0 }
-                ]
-              }
-            ]
-          })
-        )
-        for (const value of result) {
-          const group = template.get(value.status)
-          if (group === undefined) continue
-          if (value.doneState === null) {
-            group.values[0].value++
-          } else {
-            const won = wonStates.has(value.doneState)
-            if (won === undefined) continue
-            const index = won ? 1 : 2
-            group.values[index].value++
-          }
-          template.set(value.status, group)
-        }
-        items = Array.from(template.values())
+        tasks = result
       },
       {
         projection: {
-          status: 1,
-          doneState: 1
+          status: 1
         }
       }
     )

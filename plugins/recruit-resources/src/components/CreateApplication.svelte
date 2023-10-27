@@ -29,7 +29,8 @@
     SortingOrder,
     Space,
     fillDefaults,
-    generateId
+    generateId,
+    Status as TaskStatus
   } from '@hcengineering/core'
   import { OK, Resource, Severity, Status, getResource } from '@hcengineering/platform'
   import presentation, {
@@ -40,7 +41,7 @@
     getClient
   } from '@hcengineering/presentation'
   import type { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
-  import task, { State, calcRank, getStates } from '@hcengineering/task'
+  import task, { calcRank, getStates } from '@hcengineering/task'
   import ui, {
     Button,
     ColorPopup,
@@ -55,12 +56,13 @@
     themeStore
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import { statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
   import CandidateCard from './CandidateCard.svelte'
   import VacancyCard from './VacancyCard.svelte'
   import VacancyOrgPresenter from './VacancyOrgPresenter.svelte'
-  import { statusStore } from '@hcengineering/view-resources'
+  import { typeStore } from '@hcengineering/task-resources'
 
   export let space: Ref<Vacancy>
   export let candidate: Ref<Candidate>
@@ -79,8 +81,7 @@
   $: _candidate = candidate
 
   const doc: Applicant = {
-    status: '' as Ref<State>,
-    doneState: null,
+    status: '' as Ref<TaskStatus>,
     number: 0,
     assignee,
     rank: '',
@@ -188,8 +189,8 @@
   $: validate(doc, _space, doc._class, _candidate)
 
   let states: Array<{ id: number | string; color: number; label: string }> = []
-  let selectedState: State | undefined
-  $: rawStates = getStates(vacancy, $statusStore)
+  let selectedState: TaskStatus | undefined
+  $: rawStates = getStates(vacancy, $typeStore, $statusStore.byId)
   const spaceQuery = createQuery()
 
   let vacancy: Vacancy | undefined

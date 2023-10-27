@@ -61,6 +61,7 @@
     "@hcengineering/workbench": "^0.6.8",
     "@hcengineering/attachment": "^0.6.8",
     "@hcengineering/chunter-resources": "^0.6.0",
+    "@hcengineering/task-resources": "^0.6.0",
     "@hcengineering/workbench-resources": "^0.6.1",
     "@hcengineering/activity-resources": "^0.6.1",
     "@hcengineering/activity": "^0.6.0",

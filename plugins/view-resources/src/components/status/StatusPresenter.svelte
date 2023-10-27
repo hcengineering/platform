@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Status, StatusValue, WithLookup } from '@hcengineering/core'
+  import { Status, WithLookup } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { AnySvelteComponent, Icon } from '@hcengineering/ui'
 
   export let icon: Asset | AnySvelteComponent | undefined = undefined
 
-  export let value: Status | WithLookup<Status> | StatusValue | undefined
+  export let value: Status | WithLookup<Status> | undefined
   export let size: 'small' | 'medium' = 'small'
 </script>
 

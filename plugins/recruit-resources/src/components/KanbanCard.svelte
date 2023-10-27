@@ -21,11 +21,12 @@
   import notification from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
   import recruit, { Applicant, Candidate } from '@hcengineering/recruit'
+  import task from '@hcengineering/task'
   import { AssigneePresenter, StateRefPresenter } from '@hcengineering/task-resources'
   import tracker from '@hcengineering/tracker'
   import { Component, DueDatePresenter } from '@hcengineering/ui'
   import { BuildModelKey } from '@hcengineering/view'
-  import { DocNavLink, ObjectPresenter, enabledConfig } from '@hcengineering/view-resources'
+  import { DocNavLink, ObjectPresenter, enabledConfig, statusStore } from '@hcengineering/view-resources'
   import ApplicationPresenter from './ApplicationPresenter.svelte'
 
   export let object: WithLookup<Applicant>
@@ -41,6 +42,10 @@
   $: channels = (object.$lookup?.attachedTo as WithLookup<Candidate>)?.$lookup?.channels
 
   $: company = object?.$lookup?.space?.company
+
+  $: status = $statusStore.byId.get(object.status)
+
+  $: isDone = status?.category === task.statusCategory.Lost || status?.category === task.statusCategory.Won
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -112,7 +117,7 @@
           kind={'link-bordered'}
           value={object.dueDate}
           shouldRender={object.dueDate !== null && object.dueDate !== undefined}
-          shouldIgnoreOverdue={object.doneState !== null}
+          shouldIgnoreOverdue={isDone}
           onChange={async (e) => {
             await client.update(object, { dueDate: e })
           }}

@@ -67,16 +67,19 @@
     })
 
   $: {
-    _subIssues.sort(
-      (a, b) =>
-        listIssueStatusOrder.indexOf($statusStore.get(a.status)?.category ?? tracker.issueStatusCategory.Backlog) -
-        listIssueStatusOrder.indexOf($statusStore.get(b.status)?.category ?? tracker.issueStatusCategory.Backlog)
-    )
+    _subIssues.sort((a, b) => {
+      const aStatus = $statusStore.byId.get(a.status)
+      const bStatus = $statusStore.byId.get(b.status)
+      return (
+        listIssueStatusOrder.indexOf(aStatus?.category ?? tracker.issueStatusCategory.Backlog) -
+        listIssueStatusOrder.indexOf(bStatus?.category ?? tracker.issueStatusCategory.Backlog)
+      )
+    })
     subIssues = _subIssues
   }
 
   $: if (subIssues) {
-    const doneStatuses = Array.from($statusStore.values())
+    const doneStatuses = $statusStore.array
       .filter(
         (s) =>
           s.category === tracker.issueStatusCategory.Completed || s.category === tracker.issueStatusCategory.Canceled
@@ -92,7 +95,7 @@
   }
 
   $: selectValue = subIssues.map((iss) => {
-    const c = $statusStore.get(iss.status)?.category
+    const c = $statusStore.byId.get(iss.status)?.category
     const category = c !== undefined ? categories.get(c) : undefined
     return {
       id: iss._id,

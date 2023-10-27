@@ -16,7 +16,7 @@
 // To help typescript locate view plugin properly
 import { Board, boardId, Card, CardCover, CommonBoardPreference, MenuPage } from '@hcengineering/board'
 import type { Employee } from '@hcengineering/contact'
-import { DOMAIN_MODEL, IndexKind, Markup, Ref, Timestamp, Type } from '@hcengineering/core'
+import { DOMAIN_MODEL, IndexKind, Markup, Ref, Status, Timestamp, Type } from '@hcengineering/core'
 import {
   ArrOf,
   Builder,
@@ -34,11 +34,10 @@ import contact from '@hcengineering/model-contact'
 import core, { TDoc, TType } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import tags from '@hcengineering/model-tags'
-import task, { actionTemplates as taskActionTemplates, TSpaceWithStates, TTask } from '@hcengineering/model-task'
+import task, { actionTemplates as taskActionTemplates, TProject, TTask } from '@hcengineering/model-task'
 import view, { actionTemplates, createAction, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import workbench, { Application } from '@hcengineering/model-workbench'
 import { IntlString } from '@hcengineering/platform'
-import { DoneState, State } from '@hcengineering/task'
 import type { AnyComponent } from '@hcengineering/ui'
 import board from './plugin'
 
@@ -46,9 +45,9 @@ export { boardId } from '@hcengineering/board'
 export { boardOperation } from './migration'
 export { default } from './plugin'
 
-@Model(board.class.Board, task.class.SpaceWithStates)
+@Model(board.class.Board, task.class.Project)
 @UX(board.string.Board, board.icon.Board)
-export class TBoard extends TSpaceWithStates implements Board {
+export class TBoard extends TProject implements Board {
   color!: number
   background!: string
 }
@@ -100,11 +99,8 @@ export class TCard extends TTask implements Card {
   @Prop(TypeDate(), task.string.StartDate)
     startDate!: Timestamp | null
 
-  @Prop(TypeRef(task.class.State), task.string.TaskState, { _id: board.attribute.State })
-  declare status: Ref<State>
-
-  @Prop(TypeRef(task.class.DoneState), task.string.TaskStateDone, { _id: board.attribute.DoneState })
-  declare doneState: Ref<DoneState>
+  @Prop(TypeRef(core.class.Status), task.string.TaskState, { _id: board.attribute.State })
+  declare status: Ref<Status>
 }
 
 @Model(board.class.MenuPage, core.class.Doc, DOMAIN_MODEL)
@@ -178,10 +174,6 @@ export function createModel (builder: Builder): void {
     {
       ...taskActionTemplates.editStatus,
       target: board.class.Board,
-      actionProps: {
-        ofAttribute: board.attribute.State,
-        doneOfAttribute: board.attribute.DoneState
-      },
       query: {
         archived: false
       },
@@ -285,16 +277,6 @@ export function createModel (builder: Builder): void {
       component: board.component.TableView
     },
     board.viewlet.Table
-  )
-
-  builder.createDoc(
-    task.class.WonState,
-    core.space.Model,
-    {
-      ofAttribute: task.attribute.DoneState,
-      name: board.string.Completed
-    },
-    board.state.Completed
   )
 
   // card actions
@@ -517,4 +499,18 @@ export function createModel (builder: Builder): void {
       mode: 'space'
     }
   })
+
+  builder.createDoc(
+    task.class.ProjectTypeCategory,
+    core.space.Model,
+    {
+      name: board.string.Boards,
+      description: board.string.ManageBoardStatuses,
+      icon: board.component.TemplatesIcon,
+      attachedToClass: board.class.Board,
+      statusClass: core.class.Status,
+      statusCategories: [task.statusCategory.Active, task.statusCategory.Won, task.statusCategory.Lost]
+    },
+    board.category.BoardType
+  )
 }

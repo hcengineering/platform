@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import view from '@hcengineering/view'
-  import { Label, IconDelete as Delete, IconEdit } from '@hcengineering/ui'
   import task from '../../plugin'
+  import { IconDelete, IconEdit, Label } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
+  import { createEventDispatcher } from 'svelte'
 
   export let onDelete: () => void
   export let showDelete = true
@@ -27,21 +27,6 @@
 
 <div class="antiPopup">
   <div class="ap-space x2" />
-  {#if showDelete}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div
-      class="ap-menuItem hoverable flex-row-center redlight"
-      on:click={() => {
-        dispatch('close')
-        onDelete()
-      }}
-    >
-      <div class="mr-2">
-        <Delete size={'small'} />
-      </div>
-      <Label label={task.string.Delete} />
-    </div>
-  {/if}
   <div
     class="ap-menuItem hoverable flex-row-center"
     on:click={() => {
@@ -54,5 +39,20 @@
     </div>
     <Label label={view.string.Rename} />
   </div>
+  {#if showDelete}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <div
+      class="ap-menuItem hoverable flex-row-center redlight"
+      on:click={() => {
+        dispatch('close')
+        onDelete()
+      }}
+    >
+      <div class="mr-2">
+        <IconDelete size={'small'} />
+      </div>
+      <Label label={task.string.Delete} />
+    </div>
+  {/if}
   <div class="ap-space x2" />
 </div>

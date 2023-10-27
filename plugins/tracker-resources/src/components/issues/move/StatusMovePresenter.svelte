@@ -29,7 +29,7 @@
   export let statuses: IssueStatus[]
 
   $: replace = issueToUpdate.get(issue._id)?.status ?? targetProject.defaultIssueStatus
-  $: original = $statusStore.get(issue.status)
+  $: original = $statusStore.byId.get(issue.status)
 </script>
 
 <Grid rowGap={0.25} topGap>

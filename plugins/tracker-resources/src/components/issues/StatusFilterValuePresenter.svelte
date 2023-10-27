@@ -49,7 +49,7 @@
     })
   }
 
-  $: statuses = sort(value, $statusStore, categories)
+  $: statuses = sort(value, $statusStore.byId, categories)
 </script>
 
 <div class="flex-presenter flex-gap-1-5">

@@ -2,8 +2,7 @@ import board, { Board, CommonBoardPreference } from '@hcengineering/board'
 import core, { Ref, TxOperations, getCurrentAccount } from '@hcengineering/core'
 import preference from '@hcengineering/preference'
 import { createQuery, getClient } from '@hcengineering/presentation'
-import type { KanbanTemplate, TodoItem } from '@hcengineering/task'
-import { createStates } from '@hcengineering/task'
+import type { ProjectType, TodoItem } from '@hcengineering/task'
 import {
   EastSideColor,
   FeijoaColor,
@@ -23,19 +22,15 @@ export async function createBoard (
   client: TxOperations,
   name: string,
   description: string,
-  templateId?: Ref<KanbanTemplate>
+  type: Ref<ProjectType>
 ): Promise<Ref<Board>> {
-  const [states, doneStates] = await createStates(client, board.attribute.State, board.attribute.DoneState, templateId)
-
   const boardRef = await client.createDoc(board.class.Board, core.space.Space, {
     name,
     description,
     private: false,
     archived: false,
     members: [getCurrentAccount()._id],
-    templateId,
-    states,
-    doneStates
+    type
   })
 
   return boardRef

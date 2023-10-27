@@ -18,7 +18,8 @@
   import core, { AttachedData, Doc, Ref, SortingOrder } from '@hcengineering/core'
   import { DraftController, draftsStore, getClient } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
-  import { Component, Issue, IssueDraft, IssueParentInfo, Project, Milestone, calcRank } from '@hcengineering/tracker'
+  import { calcRank } from '@hcengineering/task'
+  import { Component, Issue, IssueDraft, IssueParentInfo, Milestone, Project } from '@hcengineering/tracker'
   import { Button, ExpandCollapse, Scroller } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import tracker from '../plugin'
@@ -77,7 +78,6 @@
       )
       const childId = subIssue._id
       const cvalue: AttachedData<Issue> = {
-        doneState: null,
         title: subIssue.title.trim(),
         description: subIssue.description,
         assignee: subIssue.assignee,

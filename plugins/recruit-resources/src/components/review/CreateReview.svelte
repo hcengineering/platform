@@ -30,7 +30,7 @@
   import recruit from '../../plugin'
   import IconCompany from '../icons/Company.svelte'
 
-  // export let space: Ref<SpaceWithStates>
+  // export let space: Ref<Project>
   export let candidate: Ref<Person>
   export let date: Date | undefined = undefined
   export let preserveCandidate = false

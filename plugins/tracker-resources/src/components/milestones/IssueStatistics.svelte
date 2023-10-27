@@ -30,13 +30,13 @@
   $: noParents = docs?.filter((it) => !ids.has(it.attachedTo as Ref<Issue>))
 
   $: rootNoBacklogIssues = noParents?.filter(
-    (it) => $statusStore.get(it.status)?.category !== tracker.issueStatusCategory.Backlog
+    (it) => $statusStore.byId.get(it.status)?.category !== tracker.issueStatusCategory.Backlog
   )
 
   $: totalEstimation = floorFractionDigits(
     (rootNoBacklogIssues ?? [{ estimation: 0, childInfo: [] } as unknown as Issue])
       .map((it) => {
-        const cat = $statusStore.get(it.status)?.category
+        const cat = $statusStore.byId.get(it.status)?.category
 
         let retEst = it.estimation
         if (it.childInfo?.length > 0) {

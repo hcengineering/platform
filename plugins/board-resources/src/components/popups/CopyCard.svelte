@@ -40,7 +40,6 @@
 
     const copy: AttachedData<Card> = {
       status: selected.status,
-      doneState: null,
       number: (incResult as any).object.sequence,
       title,
       rank: selected.rank,

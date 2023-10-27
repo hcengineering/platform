@@ -79,15 +79,6 @@ export class ApplicationsPage extends CommonRecruitingPage {
       .click()
   }
 
-  async checkApplicationDoneStatus (talentName: TalentName, done: string): Promise<void> {
-    await expect(
-      this.page
-        .locator('tr', { hasText: `${talentName.lastName} ${talentName.firstName}` })
-        .locator('td')
-        .nth(6)
-    ).toHaveText(done)
-  }
-
   async checkApplicationState (talentName: TalentName, done: string): Promise<void> {
     await expect(
       this.page
@@ -108,5 +99,13 @@ export class ApplicationsPage extends CommonRecruitingPage {
       .nth(5)
       .click()
     await this.selectFromDropdown(this.page, status)
+  }
+
+  async selectType (type: string): Promise<void> {
+    await this.page
+      .locator('div[class*=header]')
+      .locator('div[class*=tablist-container]')
+      .locator('div', { hasText: type })
+      .click()
   }
 }

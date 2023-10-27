@@ -33,6 +33,7 @@
     getClient
   } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
+  import { calcRank } from '@hcengineering/task'
   import {
     Component as ComponentType,
     Issue,
@@ -41,8 +42,7 @@
     IssueStatus,
     IssueTemplate,
     Milestone,
-    Project,
-    calcRank
+    Project
   } from '@hcengineering/tracker'
   import {
     Button,
@@ -364,7 +364,6 @@
     )
 
     const value: DocData<Issue> = {
-      doneState: null,
       title: getTitle(object.title),
       description: object.description,
       assignee: object.assignee,

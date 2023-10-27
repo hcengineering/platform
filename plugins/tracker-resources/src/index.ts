@@ -30,7 +30,7 @@ import core, {
 import { Resources, translate } from '@hcengineering/platform'
 import { getClient, MessageBox, ObjectSearchResult } from '@hcengineering/presentation'
 import { Issue, Milestone, Project } from '@hcengineering/tracker'
-import { showPopup, themeStore } from '@hcengineering/ui'
+import { getCurrentLocation, navigate, showPopup, themeStore } from '@hcengineering/ui'
 import ComponentEditor from './components/components/ComponentEditor.svelte'
 import ComponentFilterValuePresenter from './components/components/ComponentFilterValuePresenter.svelte'
 import ComponentPresenter from './components/components/ComponentPresenter.svelte'
@@ -42,6 +42,8 @@ import IconPresenter from './components/components/IconComponent.svelte'
 import LeadPresenter from './components/components/LeadPresenter.svelte'
 import ProjectComponents from './components/components/ProjectComponents.svelte'
 import CreateIssue from './components/CreateIssue.svelte'
+import EditRelatedTargets from './components/EditRelatedTargets.svelte'
+import EditRelatedTargetsPopup from './components/EditRelatedTargetsPopup.svelte'
 import Inbox from './components/inbox/Inbox.svelte'
 import AssigneeEditor from './components/issues/AssigneeEditor.svelte'
 import DueDatePresenter from './components/issues/DueDatePresenter.svelte'
@@ -74,9 +76,6 @@ import RelationsPopup from './components/RelationsPopup.svelte'
 import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
 import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
-import Statuses from './components/workflow/Statuses.svelte'
-import EditRelatedTargets from './components/EditRelatedTargets.svelte'
-import EditRelatedTargetsPopup from './components/EditRelatedTargetsPopup.svelte'
 import {
   getIssueId,
   getIssueTitle,
@@ -142,13 +141,14 @@ import ProjectSpacePresenter from './components/projects/ProjectSpacePresenter.s
 
 import { get } from 'svelte/store'
 
-import TimePresenter from './components/issues/timereport/TimePresenter.svelte'
 import EstimationValueEditor from './components/issues/timereport/EstimationValueEditor.svelte'
+import TimePresenter from './components/issues/timereport/TimePresenter.svelte'
+import { settingId } from '@hcengineering/setting'
 
+export { default as AssigneeEditor } from './components/issues/AssigneeEditor.svelte'
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 export { default as IssueStatusIcon } from './components/issues/IssueStatusIcon.svelte'
 export { default as StatusPresenter } from './components/issues/StatusPresenter.svelte'
-export { default as AssigneeEditor } from './components/issues/AssigneeEditor.svelte'
 
 export { CreateProject, IssuePresenter, TitlePresenter }
 
@@ -214,10 +214,16 @@ async function move (issues: Issue | Issue[]): Promise<void> {
   showPopup(MoveIssues, { selected: issues }, 'top')
 }
 
-async function editWorkflowStatuses (project: Project | undefined): Promise<void> {
-  if (project !== undefined) {
-    showPopup(Statuses, { projectId: project._id, projectClass: project._class }, 'top')
+async function editWorkflowStatuses (project: Project): Promise<void> {
+  const loc = getCurrentLocation()
+  loc.path[2] = settingId
+  loc.path[3] = settingId
+  loc.path[4] = 'statuses'
+  loc.query = {
+    categoryId: tracker.category.ProjectTypeCategory,
+    typeId: project.type
   }
+  navigate(loc)
 }
 
 async function editProject (project: Project | undefined): Promise<void> {

@@ -14,33 +14,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-
-  import { Ref, Status } from '@hcengineering/core'
-  import { SpaceSelector, createQuery, getClient, Card } from '@hcengineering/presentation'
-  import { Component, Issue, IssueStatus, Milestone, Project } from '@hcengineering/tracker'
+  import { Ref } from '@hcengineering/core'
+  import { Card, SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
+  import { Component, Issue, Milestone, Project } from '@hcengineering/tracker'
   import ui, { Button, IconForward, Label, Spinner, Toggle, tooltip } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { statusStore } from '@hcengineering/view-resources'
-
-  import tracker from '../../plugin'
-  import {
-    ComponentToUpdate,
-    IssueToUpdate,
-    StatusToUpdate,
-    collectIssues,
-    findTargetStatus,
-    moveIssueToSpace
-  } from '../../utils'
+  import { createEventDispatcher } from 'svelte'
   import { componentStore } from '../../component'
+  import tracker from '../../plugin'
+  import { ComponentToUpdate, IssueToUpdate, collectIssues, moveIssueToSpace } from '../../utils'
   import ProjectPresenter from '../projects/ProjectPresenter.svelte'
   import IssuePresenter from './IssuePresenter.svelte'
+  import PriorityEditor from './PriorityEditor.svelte'
   import TitlePresenter from './TitlePresenter.svelte'
   import ComponentMovePresenter from './move/ComponentMovePresenter.svelte'
-  import StatusMovePresenter from './move/StatusMovePresenter.svelte'
   import SelectReplacement from './move/SelectReplacement.svelte'
-  import PriorityEditor from './PriorityEditor.svelte'
-  import { getStates } from '@hcengineering/task'
 
   export let selected: Issue | Issue[]
   $: docs = Array.isArray(selected) ? selected : [selected]
@@ -50,6 +38,7 @@
   const hierarchy = client.getHierarchy()
 
   let targetProject: Project | undefined
+  let originProject: Project | undefined
   let space: Ref<Project>
 
   $: {
@@ -60,12 +49,6 @@
   }
 
   let processing = false
-
-  async function createMissingStatus (st: Ref<Status>): Promise<void> {
-    if (targetProject) {
-      await client.update(targetProject, { $push: { states: st } })
-    }
-  }
 
   async function createMissingComponent (c: Ref<Component>): Promise<void> {
     const cur = $componentStore.get(c)
@@ -93,19 +76,6 @@
     processing = true
     for (const issue of toMove) {
       const upd = issueToUpdate.get(issue._id) ?? {}
-      if (issue.status !== undefined) {
-        if (!upd.useStatus) {
-          const newStatus = statusToUpdate[issue.status]
-          if (newStatus !== undefined) {
-            if (newStatus.create) {
-              await createMissingStatus(newStatus.ref)
-            }
-            upd.status = newStatus.ref
-          }
-        } else if (upd.createStatus) {
-          await createMissingStatus(issue.status)
-        }
-      }
 
       if (issue.component !== undefined && issue.component !== null) {
         if (!upd.useComponent) {
@@ -130,13 +100,17 @@
   }
 
   const targetSpaceQuery = createQuery()
+  const originSpaceQuery = createQuery()
 
   let issueToUpdate: Map<Ref<Issue>, IssueToUpdate> = new Map()
-  let statusToUpdate: Record<Ref<IssueStatus>, StatusToUpdate | undefined> = {}
   let componentToUpdate: Record<Ref<Component>, ComponentToUpdate | undefined> = {}
 
   $: targetSpaceQuery.query(tracker.class.Project, { _id: space }, (res) => {
     ;[targetProject] = res
+  })
+
+  $: originSpaceQuery.query(tracker.class.Project, { _id: docs[0].space }, (res) => {
+    ;[originProject] = res
   })
 
   let toMove: Issue[] = []
@@ -166,8 +140,6 @@
     milestones = res
   })
 
-  $: statuses = getStates(targetProject, $statusStore)
-
   let keepOriginalAttribytes: boolean = false
   let showManageAttributes: boolean = false
   $: isManageAttributesAvailable = issueToUpdate.size > 0 && docs[0]?.space !== targetProject?._id
@@ -175,14 +147,9 @@
   function setOriginalAttributes () {
     for (const issue of toMove) {
       const upd = issueToUpdate.get(issue._id) ?? {}
-      upd.createStatus = false
-      upd.useStatus = false
       upd.createComponent = false
       upd.useComponent = false
       issueToUpdate.set(issue._id, upd)
-    }
-    for (const status in Object.keys(statusToUpdate)) {
-      statusToUpdate[status as Ref<Status>] = { ref: status as Ref<Status>, create: true }
     }
     for (const component in Object.keys(componentToUpdate)) {
       componentToUpdate[component as Ref<Component>] = { ref: component as Ref<Component>, create: true }
@@ -190,12 +157,6 @@
 
     for (const issue of toMove) {
       let upd = issueToUpdate.get(issue._id) ?? {}
-      if (issue.status !== undefined) {
-        upd = {
-          ...upd,
-          status: issue.status
-        }
-      }
 
       if (issue.component !== undefined && issue.component !== null) {
         upd = {
@@ -210,14 +171,6 @@
   function setReplacementAttributres (currentSpace: Project) {
     for (const issue of toMove) {
       const upd = issueToUpdate.get(issue._id) ?? {}
-
-      // In case of target space change
-      if (upd.status !== undefined && $statusStore.get(upd.status)?.space !== currentSpace._id && !upd.createStatus) {
-        upd.status = undefined
-      }
-      if (upd.status === undefined) {
-        upd.status = findTargetStatus(issue.status, currentSpace, $statusStore, true) ?? currentSpace.defaultIssueStatus
-      }
 
       if (issue.component !== undefined) {
         const cur = components.find((it) => it._id === issue.component)
@@ -253,6 +206,8 @@
       issueToUpdate.set(issue._id, upd)
     }
   }
+
+  $: spaceQuery = originProject ? { type: originProject.type, archived: false } : { archived: false }
 </script>
 
 <Card
@@ -300,6 +255,7 @@
       {#if targetProject !== undefined}
         <SpaceSelector
           _class={targetProject._class}
+          query={spaceQuery}
           label={hierarchy.getClass(tracker.class.Project).label}
           bind:space
           kind={'regular'}
@@ -328,15 +284,7 @@
   <svelte:fragment slot="blocks" let:block>
     {#if !showManageAttributes}
       {#if targetProject !== undefined && !keepOriginalAttribytes}
-        <SelectReplacement
-          currentProject={space}
-          {statuses}
-          {components}
-          {targetProject}
-          issues={toMove}
-          bind:statusToUpdate
-          bind:componentToUpdate
-        />
+        <SelectReplacement {components} {targetProject} issues={toMove} bind:componentToUpdate />
       {/if}
     {:else if toMove.length > 0 && targetProject}
       {@const issue = toMove[block]}
@@ -346,15 +294,12 @@
         (it) => it.space === targetProject?._id && it.label === originalComponent?.label
       )}
       {#key keepOriginalAttribytes}
-        {#if issue.space !== targetProject._id && (upd.status !== undefined || upd.component !== undefined)}
+        {#if issue.space !== targetProject._id && upd.component !== undefined}
           <div class="flex-row-center min-h-9 gap-1-5 content-color">
             <PriorityEditor value={issue} isEditable={false} kind={'list'} size={'small'} shouldShowLabel={false} />
             <IssuePresenter value={issue} disabled kind={'list'} />
             <TitlePresenter disabled value={issue} showParent={false} maxWidth={'7.5rem'} />
           </div>
-          {#key upd.status}
-            <StatusMovePresenter currentProject={space} {issue} bind:issueToUpdate {targetProject} {statuses} />
-          {/key}
           {#if targetComponent === undefined}
             {#key upd.component}
               <ComponentMovePresenter {issue} bind:issueToUpdate {targetProject} {components} />
@@ -378,7 +323,6 @@
         on:change={() => {
           keepOriginalAttribytes = !keepOriginalAttribytes
           if (!keepOriginalAttribytes) {
-            statusToUpdate = {}
             componentToUpdate = {}
           }
         }}

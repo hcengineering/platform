@@ -1,22 +1,37 @@
 <script lang="ts">
   import { Card } from '@hcengineering/board'
-  import { Ref, SortingOrder, Space } from '@hcengineering/core'
+  import core, { Ref, SortingOrder, Space, Status } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import task, { State } from '@hcengineering/task'
   import { DropdownLabels, DropdownTextItem, themeStore } from '@hcengineering/ui'
   import board from '../../plugin'
+  import task, { Project } from '@hcengineering/task'
 
   export let object: Card
   export let label: IntlString
-  export let selected: Ref<State>
+  export let selected: Ref<Status>
   export let space: Ref<Space>
 
+  let _space: Project | undefined
+
   let states: DropdownTextItem[] = []
+  const spaceQuery = createQuery()
+  spaceQuery.query(
+    task.class.Project,
+    {
+      _id: space as Ref<Project>
+    },
+    (result) => {
+      _space = result[0]
+    }
+  )
+
   const statesQuery = createQuery()
   statesQuery.query(
-    task.class.State,
-    { space, isArchived: { $nin: [true] } },
+    core.class.Status,
+    {
+      space: _space?.type
+    },
     async (result) => {
       if (!result) return
       states = result.map(({ _id, name }) => ({ id: _id, label: name }))

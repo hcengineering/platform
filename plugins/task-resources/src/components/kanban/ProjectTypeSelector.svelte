@@ -13,40 +13,38 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Doc, Ref, Space } from '@hcengineering/core'
+  import type { Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import type { KanbanTemplate, KanbanTemplateSpace } from '@hcengineering/task'
+  import type { ProjectType, ProjectTypeCategory } from '@hcengineering/task'
   import task from '@hcengineering/task'
   import type { DropdownTextItem } from '@hcengineering/ui'
-  import { DropdownLabels, ButtonKind, ButtonSize } from '@hcengineering/ui'
+  import { ButtonKind, ButtonSize, DropdownLabels } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
 
-  export let folders: Ref<KanbanTemplateSpace>[]
-  export let template: Ref<KanbanTemplate> | undefined = undefined
+  export let categories: Ref<ProjectTypeCategory>[]
+  export let type: Ref<ProjectType> | undefined = undefined
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
   export let focusIndex = -1
+  export let disabled: boolean = false
 
-  let templates: KanbanTemplate[] = []
-  const templatesQ = createQuery()
-  $: templatesQ.query(
-    task.class.KanbanTemplate,
-    { space: { $in: folders as Ref<Doc>[] as Ref<Space>[] } },
-    (result) => {
-      templates = result
-    }
-  )
+  let types: ProjectType[] = []
+  const typesQ = createQuery()
+  const query = disabled ? { category: { $in: categories } } : { category: { $in: categories }, archived: false }
+  $: typesQ.query(task.class.ProjectType, query, (result) => {
+    types = result
+  })
 
   let items: DropdownTextItem[] = []
-  $: items = templates.map((x) => ({ id: x._id, label: x.title }))
+  $: items = types.map((x) => ({ id: x._id, label: x.name }))
 
-  let selectedItem: string | undefined
+  let selectedItem: string | undefined = type
 
   const dispatch = createEventDispatcher()
   $: {
-    template = selectedItem === undefined ? undefined : (selectedItem as Ref<KanbanTemplate>)
-    dispatch('change', template)
+    type = selectedItem === undefined ? undefined : (selectedItem as Ref<ProjectType>)
+    dispatch('change', type)
   }
 </script>
 
@@ -55,6 +53,7 @@
   {items}
   {kind}
   {size}
+  {disabled}
   icon={task.icon.ManageTemplates}
   bind:selected={selectedItem}
   label={plugin.string.States}

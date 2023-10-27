@@ -14,26 +14,26 @@
 -->
 <script lang="ts">
   import { AttributesBar, getClient } from '@hcengineering/presentation'
-  import { KanbanTemplate } from '@hcengineering/task'
+  import { ProjectType } from '@hcengineering/task'
   import { StyledTextBox } from '@hcengineering/text-editor'
   import tracker from '@hcengineering/tracker'
   import { Button, Component, EditBox, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
   import { getFiltredKeys } from '@hcengineering/view-resources'
   import recruit from '../plugin'
 
-  export let template: KanbanTemplate
+  export let type: ProjectType
 
   const client = getClient()
 
   const hierarchy = client.getHierarchy()
-  const customKeys = getFiltredKeys(hierarchy, template._class, []).filter((key) => key.attr.isCustom)
+  const customKeys = getFiltredKeys(hierarchy, type._class, []).filter((key) => key.attr.isCustom)
 
   async function onDescriptionChange (value: string) {
-    await client.update(template, { description: value })
+    await client.update(type, { description: value })
   }
 
   async function onShortDescriptionChange (value: string) {
-    await client.update(template, { shortDescription: value })
+    await client.update(type, { shortDescription: value })
   }
 </script>
 
@@ -43,8 +43,8 @@
 <div class="mt-3">
   <EditBox
     kind={'small-style'}
-    bind:value={template.shortDescription}
-    on:change={() => onShortDescriptionChange(template.shortDescription ?? '')}
+    bind:value={type.shortDescription}
+    on:change={() => onShortDescriptionChange(type.shortDescription ?? '')}
   />
 </div>
 <div class="mt-9">
@@ -52,12 +52,12 @@
     <Label label={recruit.string.FullDescription} />
   </div>
   <div class="mt-3">
-    {#key template._id}
+    {#key type._id}
       <StyledTextBox
         kind={'emphasized'}
         alwaysEdit
         showButtons={false}
-        content={template.description ?? ''}
+        content={type.description ?? ''}
         on:value={(evt) => onDescriptionChange(evt.detail)}
       />
     {/key}
@@ -80,16 +80,16 @@
         labelParams={{ subIssues: 0 }}
         kind={'ghost'}
         size={'small'}
-        on:click={() => showPopup(tracker.component.CreateIssueTemplate, { relatedTo: template })}
+        on:click={() => showPopup(tracker.component.CreateIssueTemplate, { relatedTo: type })}
       />
     </div>
   </div>
   <div class="flex-row">
-    <Component is={tracker.component.RelatedIssueTemplates} props={{ object: template }} />
+    <Component is={tracker.component.RelatedIssueTemplates} props={{ object: type }} />
   </div>
 </div>
 {#if customKeys && customKeys.length > 0}
   <div class="antiSection mb-9">
-    <AttributesBar object={template} _class={template._class} keys={customKeys} />
+    <AttributesBar object={type} _class={type._class} keys={customKeys} />
   </div>
 {/if}

@@ -107,6 +107,14 @@ export function migrateViewOpttions (): void {
     if (res.orderBy[0] === 'state') {
       res.orderBy[0] = 'status'
     }
+    let ind2 = res.groupBy.findIndex((p) => p === 'doneState')
+    while (ind2 !== -1) {
+      res.groupBy[ind2] = 'status'
+      ind2 = res.groupBy.findIndex((p) => p === 'doneState')
+    }
+    if (res.orderBy[0] === 'doneState') {
+      res.orderBy[0] = 'status'
+    }
     localStorage.setItem(key, JSON.stringify(res))
   }
 }

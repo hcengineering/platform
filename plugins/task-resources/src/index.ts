@@ -14,16 +14,15 @@
 // limitations under the License.
 //
 
-import { Attribute, Class, Doc, DocumentQuery, Ref, Status, TxOperations } from '@hcengineering/core'
+import { Attribute, Class, Doc, DocumentQuery, IdMap, Ref, Status, TxOperations, toIdMap } from '@hcengineering/core'
 import { IntlString, Resources } from '@hcengineering/platform'
-import task, { SpaceWithStates, State, Task, calcRank } from '@hcengineering/task'
-import { showPopup } from '@hcengineering/ui'
+import task, { Project, ProjectType, Task, calcRank } from '@hcengineering/task'
+import { getCurrentLocation, navigate, showPopup } from '@hcengineering/ui'
 import { ViewletDescriptor } from '@hcengineering/view'
 import { CategoryQuery, statusStore } from '@hcengineering/view-resources'
-import { get } from 'svelte/store'
+import { get, writable } from 'svelte/store'
 import AssignedTasks from './components/AssignedTasks.svelte'
 import CreateStatePopup from './components/CreateStatePopup.svelte'
-import CreateStateTemplatePopup from './components/CreateStateTemplatePopup.svelte'
 import Dashboard from './components/Dashboard.svelte'
 import DueDateEditor from './components/DueDateEditor.svelte'
 import KanbanTemplatePresenter from './components/KanbanTemplatePresenter.svelte'
@@ -31,13 +30,10 @@ import StatusSelector from './components/StatusSelector.svelte'
 import StatusTableView from './components/StatusTableView.svelte'
 import TaskHeader from './components/TaskHeader.svelte'
 import TaskPresenter from './components/TaskPresenter.svelte'
-import KanbanTemplateEditor from './components/kanban/KanbanTemplateEditor.svelte'
-import KanbanTemplateSelector from './components/kanban/KanbanTemplateSelector.svelte'
+import TemplatesIcon from './components/TemplatesIcon.svelte'
 import KanbanView from './components/kanban/KanbanView.svelte'
-import DoneStateEditor from './components/state/DoneStateEditor.svelte'
-import DoneStatePresenter from './components/state/DoneStatePresenter.svelte'
-import DoneStateRefPresenter from './components/state/DoneStateRefPresenter.svelte'
-import EditStatuses from './components/state/EditStatuses.svelte'
+import ProjectEditor from './components/kanban/ProjectEditor.svelte'
+import ProjectTypeSelector from './components/kanban/ProjectTypeSelector.svelte'
 import StateEditor from './components/state/StateEditor.svelte'
 import StatePresenter from './components/state/StatePresenter.svelte'
 import StateRefPresenter from './components/state/StateRefPresenter.svelte'
@@ -45,23 +41,29 @@ import TodoItemPresenter from './components/todos/TodoItemPresenter.svelte'
 import TodoItemsPopup from './components/todos/TodoItemsPopup.svelte'
 import TodoStatePresenter from './components/todos/TodoStatePresenter.svelte'
 import Todos from './components/todos/Todos.svelte'
+import TypesView from './components/TypesView.svelte'
+import { createQuery, getClient } from '@hcengineering/presentation'
 
 export { default as AssigneePresenter } from './components/AssigneePresenter.svelte'
 export { StateRefPresenter }
 
-async function editStatuses (
-  object: SpaceWithStates,
-  ev: Event,
-  props: {
-    ofAttribute: Ref<Attribute<Status>>
-    doneOfAttribute: Ref<Attribute<Status>>
-  }
-): Promise<void> {
-  showPopup(
-    EditStatuses,
-    { _id: object._id, ofAttribute: props.ofAttribute, doneOfAttribute: props.doneOfAttribute },
-    'float'
-  )
+async function editStatuses (object: Project, ev: Event): Promise<void> {
+  const client = getClient()
+  const category = await client.findOne(task.class.ProjectTypeCategory, { attachedToClass: object._class })
+  const loc = getCurrentLocation()
+  loc.path[2] = 'setting'
+  loc.path[3] = 'setting'
+  loc.path[4] = 'statuses'
+  loc.query =
+    category != null
+      ? {
+          categoryId: category._id,
+          typeId: object.type
+        }
+      : {
+          typeId: object.type
+        }
+  navigate(loc)
 }
 
 async function selectStatus (
@@ -90,23 +92,21 @@ export default async (): Promise<Resources> => ({
     KanbanView,
     StatePresenter,
     StateEditor,
-    DoneStatePresenter,
     Todos,
     TodoItemPresenter,
     TodoStatePresenter,
     StatusTableView,
     TaskHeader,
-    DoneStateEditor,
-    KanbanTemplateEditor,
-    KanbanTemplateSelector,
+    ProjectEditor,
+    ProjectTypeSelector,
     AssignedTasks,
-    DoneStateRefPresenter,
     StateRefPresenter,
     TodoItemsPopup,
     DueDateEditor,
     CreateStatePopup,
-    CreateStateTemplatePopup,
-    StatusSelector
+    StatusSelector,
+    TemplatesIcon,
+    TypesView
   },
   actionImpl: {
     EditStatuses: editStatuses,
@@ -122,15 +122,21 @@ async function getAllStates (
   query: DocumentQuery<Doc> | undefined,
   onUpdate: () => void,
   queryId: Ref<Doc>,
-  attr: Attribute<State>
+  attr: Attribute<Status>
 ): Promise<any[]> {
   const _space = query?.space
   if (_space !== undefined) {
     const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
       let refresh: boolean = false
       const lq = CategoryQuery.getLiveQuery(queryId)
-      refresh = lq.query(task.class.SpaceWithStates, { _id: _space as Ref<SpaceWithStates> }, (res) => {
-        const result = res[0]?.states ?? []
+      refresh = lq.query(task.class.Project, { _id: _space as Ref<Project> }, (res) => {
+        const typeId = res[0]?.type
+        const type = get(typeStore).get(typeId)
+        const statusMap = get(statusStore).byId
+        const statuses = (type?.statuses?.map((p) => statusMap.get(p._id)) as Status[]) ?? []
+        const result = statuses
+          .filter((p) => p?.category !== task.statusCategory.Lost && p?.category !== task.statusCategory.Won)
+          .map((p) => p?._id)
         CategoryQuery.results.set(queryId, result)
         resolve(result)
         onUpdate()
@@ -142,57 +148,71 @@ async function getAllStates (
     })
     return await promise
   }
-  // statusStore.subscribe(onUpdate)
-  return Array.from(get(statusStore).values())
-    .filter((p) => p.ofAttribute === attr._id)
+  return get(statusStore)
+    .array.filter(
+      (p) =>
+        p.ofAttribute === attr._id && p.category !== task.statusCategory.Lost && p.category !== task.statusCategory.Won
+    )
     .map((p) => p._id)
 }
 
 async function statusSort (
   client: TxOperations,
-  value: Array<Ref<State>>,
-  space: Ref<SpaceWithStates> | undefined,
+  value: Array<Ref<Status>>,
+  space: Ref<Project> | undefined,
   viewletDescriptorId?: Ref<ViewletDescriptor>
-): Promise<Array<Ref<State>>> {
-  let _space: SpaceWithStates | undefined
+): Promise<Array<Ref<Status>>> {
+  let type: ProjectType | undefined
   if (space !== undefined) {
-    _space = await client.findOne(task.class.SpaceWithStates, { _id: space })
+    const _space = await client.findOne(
+      task.class.Project,
+      { _id: space },
+      {
+        lookup: {
+          type: task.class.ProjectType
+        }
+      }
+    )
+    type = _space?.$lookup?.type
   }
-  const statuses = get(statusStore)
+  const statuses = get(statusStore).byId
 
-  if (_space !== undefined) {
+  if (type !== undefined) {
     value.sort((a, b) => {
-      const aVal = statuses.get(a) as State
-      const bVal = statuses.get(b) as State
-      if (_space != null) {
-        const aIndex = _space.states.findIndex((s) => s === a)
-        const bIndex = _space.states.findIndex((s) => s === b)
+      const aVal = statuses.get(a) as Status
+      const bVal = statuses.get(b) as Status
+      if (type != null) {
+        const aIndex = type.statuses.findIndex((s) => s._id === a)
+        const bIndex = type.statuses.findIndex((s) => s._id === b)
         return aIndex - bIndex
       } else {
         return aVal.name.localeCompare(bVal.name)
       }
     })
   } else {
-    const res: Map<Ref<State>, string> = new Map()
+    const res: Map<Ref<Status>, string> = new Map()
     let prevRank: string | undefined
+    const types = await client.findAll(task.class.ProjectType, {})
     for (const state of value) {
       if (res.has(state)) continue
-      _space = await client.findOne(task.class.SpaceWithStates, { states: state })
-      if (_space === undefined) continue
-      for (let index = 0; index < _space.states.length; index++) {
-        const st = _space.states[index]
-        const prev = index > 0 ? res.get(_space.states[index - 1]) : prevRank
-        const next = index < _space.states.length - 1 ? res.get(_space.states[index + 1]) : undefined
+      const index = types.findIndex((p) => p.statuses.some((s) => s._id === state))
+      if (index === -1) break
+      const type = types.splice(index, 1)[0]
+      for (let index = 0; index < type.statuses.length; index++) {
+        const st = type.statuses[index]
+        if (!value.includes(st._id)) continue
+        const prev = index > 0 ? res.get(type.statuses[index - 1]._id) : prevRank
+        const next = index < type.statuses.length - 1 ? res.get(type.statuses[index + 1]._id) : undefined
         const rank = calcRank(
           prev !== undefined ? { rank: prev } : undefined,
           next !== undefined ? { rank: next } : undefined
         )
-        res.set(st, rank)
+        res.set(st._id, rank)
         prevRank = rank
       }
     }
     const result: Array<{
-      _id: Ref<State>
+      _id: Ref<Status>
       rank: string
     }> = []
     for (const [key, value] of res.entries()) {
@@ -201,6 +221,21 @@ async function statusSort (
     result.sort((a, b) => a.rank.localeCompare(b.rank))
     return result.filter((p) => value.includes(p._id)).map((p) => p._id)
   }
-
   return value
 }
+
+export const typeStore = writable<IdMap<ProjectType>>(new Map())
+function fillStores (): void {
+  const client = getClient()
+
+  if (client !== undefined) {
+    const query = createQuery(true)
+    query.query(task.class.ProjectType, {}, (res) => {
+      typeStore.set(toIdMap(res))
+    })
+  } else {
+    setTimeout(() => fillStores(), 50)
+  }
+}
+
+fillStores()

@@ -29,7 +29,7 @@ import Password from './components/Password.svelte'
 import Privacy from './components/Privacy.svelte'
 import Profile from './components/Profile.svelte'
 import Settings from './components/Settings.svelte'
-import ManageTemplates from './components/statuses/ManageTemplates.svelte'
+import ManageProjects from './components/statuses/ManageProjects.svelte'
 import Support from './components/Support.svelte'
 import Terms from './components/Terms.svelte'
 import BooleanTypeEditor from './components/typeEditors/BooleanTypeEditor.svelte'
@@ -84,7 +84,7 @@ export default async (): Promise<Resources> => ({
     Support,
     Privacy,
     Terms,
-    ManageTemplates,
+    ManageProjects,
     ClassSetting,
     StringTypeEditor,
     HyperlinkTypeEditor,

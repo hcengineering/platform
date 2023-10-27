@@ -15,7 +15,6 @@
 
 import { Asset, IntlString } from '@hcengineering/platform'
 import { Attribute, Doc, Domain, Ref } from './classes'
-import { AggregateValue, AggregateValueData } from './utils'
 
 /**
  * @public
@@ -41,7 +40,6 @@ export const DOMAIN_STATUS = 'status' as Domain
 export interface Status extends Doc {
   // We attach to attribute, so we could distinguish between
   ofAttribute: Ref<Attribute<Status>>
-
   // Optional category.
   category?: Ref<StatusCategory>
 
@@ -52,17 +50,4 @@ export interface Status extends Doc {
   color?: number
   // Optional description
   description?: string
-}
-
-/**
- * @public
- */
-export class StatusValue extends AggregateValue {
-  constructor (
-    readonly name: string | undefined,
-    readonly color: number | undefined,
-    readonly values: AggregateValueData[]
-  ) {
-    super(name, values)
-  }
 }

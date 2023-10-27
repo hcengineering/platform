@@ -7,16 +7,17 @@ import {
   Ref,
   Space,
   AttachedData,
-  SortingOrder
+  SortingOrder,
+  Status
 } from '@hcengineering/core'
 import { showPanel } from '@hcengineering/ui'
-import task, { calcRank, State, TodoItem } from '@hcengineering/task'
+import task, { calcRank, TodoItem } from '@hcengineering/task'
 import board from '../plugin'
 
 export async function createCard (
   client: Client,
   space: Ref<Space>,
-  status: Ref<State>,
+  status: Ref<Status>,
   attribues: Partial<AttachedData<Card>>
 ): Promise<Ref<Card>> {
   const sequence = await client.findOne(task.class.Sequence, { attachedTo: board.class.Card })
@@ -30,7 +31,6 @@ export async function createCard (
   const value: AttachedData<Card> = {
     title: '',
     status,
-    doneState: null,
     startDate: null,
     dueDate: null,
     number: (incResult as any).object.sequence,

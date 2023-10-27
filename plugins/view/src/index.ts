@@ -34,7 +34,6 @@ import {
   Ref,
   SortingOrder,
   Space,
-  StatusValue,
   Tx,
   TxOperations,
   Type,
@@ -293,7 +292,7 @@ export interface ListHeaderExtra extends Class<Doc> {
 export type SortFunc = Resource<
 (
   client: TxOperations,
-  values: (PrimitiveType | StatusValue)[],
+  values: PrimitiveType[],
   space: Ref<Space> | undefined,
   viewletDescriptorId?: Ref<ViewletDescriptor>
 ) => Promise<any[]>

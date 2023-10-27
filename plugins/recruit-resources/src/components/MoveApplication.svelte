@@ -15,11 +15,10 @@
 <script lang="ts">
   import contact from '@hcengineering/contact'
   import ExpandRightDouble from '@hcengineering/contact-resources/src/components/icons/ExpandRightDouble.svelte'
-  import { FindOptions } from '@hcengineering/core'
+  import { FindOptions, Status as TaskStatus } from '@hcengineering/core'
   import { OK, Severity, Status } from '@hcengineering/platform'
   import presentation, { Card, SpaceSelect, createQuery, getClient } from '@hcengineering/presentation'
   import type { Applicant, Vacancy } from '@hcengineering/recruit'
-  import { State, getStates } from '@hcengineering/task'
   import ui, {
     Button,
     ColorPopup,
@@ -42,6 +41,8 @@
   import ApplicationPresenter from './ApplicationPresenter.svelte'
   import VacancyCard from './VacancyCard.svelte'
   import VacancyOrgPresenter from './VacancyOrgPresenter.svelte'
+  import { getStates } from '@hcengineering/task'
+  import { typeStore } from '@hcengineering/task-resources'
 
   export let selected: Applicant[]
 
@@ -69,7 +70,7 @@
     const op = client.apply('application.states')
 
     for (const a of selected) {
-      await moveToSpace(op, a, _space, { status: selectedState._id, doneState: null })
+      await moveToSpace(op, a, _space, { status: selectedState._id })
     }
     await op.commit()
     loading = false
@@ -77,8 +78,8 @@
   }
 
   let states: Array<{ id: number | string; color: number; label: string }> = []
-  let selectedState: State | undefined
-  let rawStates: State[] = []
+  let selectedState: TaskStatus | undefined
+  let rawStates: TaskStatus[] = []
   const spaceQuery = createQuery()
 
   let vacancy: Vacancy | undefined
@@ -89,7 +90,7 @@
     })
   }
 
-  $: rawStates = getStates(vacancy, $statusStore)
+  $: rawStates = getStates(vacancy, $typeStore, $statusStore.byId)
 
   $: if (rawStates.findIndex((it) => it._id === selectedState?._id) === -1) {
     selectedState = rawStates[0]
