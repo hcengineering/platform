@@ -39,7 +39,9 @@
   import ScheduleView from './ScheduleView.svelte'
   import Sidebar from './sidebar/Sidebar.svelte'
 
-  export let visibileNav = true
+  export let visibileNav: boolean = true
+  export let navFloat: boolean = false
+  export let appsDirection: 'vertical' | 'horizontal' = 'horizontal'
 
   const accountEmployee = $employeeByIdStore.get((getCurrentAccount() as PersonAccount).person as Ref<Employee>)
   let accountStaff: Staff | undefined
@@ -130,9 +132,17 @@
       {department}
       {descendants}
       departmentById={departments}
+      {navFloat}
+      {appsDirection}
       on:selected={(e) => departmentSelected(e.detail)}
     />
-    <Separator name={'workbench'} disabledWhen={['panel-aside']} index={0} color={'var(--theme-navpanel-border)'} />
+    <Separator
+      name={'workbench'}
+      float={navFloat}
+      disabledWhen={['panel-aside']}
+      index={0}
+      color={'var(--theme-navpanel-border)'}
+    />
   {/if}
 
   <div class="antiPanel-component filled">

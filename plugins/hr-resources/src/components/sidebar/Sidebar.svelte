@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { Department } from '@hcengineering/hr'
-  import { Scroller } from '@hcengineering/ui'
+  import { Scroller, Separator } from '@hcengineering/ui'
   import { TreeNode } from '@hcengineering/view-resources'
   import { NavFooter, NavHeader } from '@hcengineering/workbench-resources'
 
@@ -26,19 +26,29 @@
   export let department: Ref<Department>
   export let descendants: Map<Ref<Department>, Department[]>
   export let departmentById: Map<Ref<Department>, Department>
+  export let navFloat: boolean = false
+  export let appsDirection: 'horizontal' | 'vertical' = 'horizontal'
 
   const departments = [hr.ids.Head]
 </script>
 
-<div class="antiPanel-navigator">
-  <NavHeader label={hr.string.HRApplication} />
+<div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
+  <div class="antiPanel-wrap__content">
+    <NavHeader label={hr.string.HRApplication} />
 
-  <Scroller shrink>
-    <TreeNode label={hr.string.Departments} node>
-      <DepartmentsHierarchy {departments} {descendants} {departmentById} selected={department} on:selected />
-    </TreeNode>
-    <div class="antiNav-space" />
-  </Scroller>
+    <Scroller shrink>
+      <TreeNode label={hr.string.Departments} node>
+        <DepartmentsHierarchy {departments} {descendants} {departmentById} selected={department} on:selected />
+      </TreeNode>
+      <div class="antiNav-space" />
+    </Scroller>
 
-  <NavFooter />
+    <NavFooter />
+  </div>
+  <Separator
+    name={'workbench'}
+    float={navFloat ? 'navigator' : true}
+    index={0}
+    color={'var(--theme-navpanel-border)'}
+  />
 </div>

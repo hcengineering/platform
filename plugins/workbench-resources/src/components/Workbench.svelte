@@ -686,44 +686,52 @@
     <div class="workbench-container">
       {#if currentApplication && navigatorModel && navigator && visibileNav}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
-        {#if visibileNav && navFloat}<div class="cover shown" on:click={() => (visibileNav = false)} />{/if}
+        {#if navFloat}<div class="cover shown" on:click={() => (visibileNav = false)} />{/if}
         <div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
-          {#if currentApplication}
-            <NavHeader label={currentApplication.label} />
-            {#if currentApplication.navHeaderComponent}
-              {#await checkIsHeaderHidden(currentApplication) then isHidden}
-                {#if !isHidden}
-                  {#await checkIsHeaderDisabled(currentApplication) then disabled}
-                    <Component
-                      is={currentApplication.navHeaderComponent}
-                      props={{
-                        currentSpace,
-                        currentSpecial,
-                        currentFragment,
-                        disabled
-                      }}
-                      shrink
-                    />
-                  {/await}
-                {/if}
-              {/await}
+          <div class="antiPanel-wrap__content">
+            {#if currentApplication}
+              <NavHeader label={currentApplication.label} />
+              {#if currentApplication.navHeaderComponent}
+                {#await checkIsHeaderHidden(currentApplication) then isHidden}
+                  {#if !isHidden}
+                    {#await checkIsHeaderDisabled(currentApplication) then disabled}
+                      <Component
+                        is={currentApplication.navHeaderComponent}
+                        props={{
+                          currentSpace,
+                          currentSpecial,
+                          currentFragment,
+                          disabled
+                        }}
+                        shrink
+                      />
+                    {/await}
+                  {/if}
+                {/await}
+              {/if}
             {/if}
-          {/if}
-          <Navigator
-            {currentSpace}
-            {currentSpecial}
-            {currentFragment}
-            model={navigatorModel}
-            {currentApplication}
-            on:open={checkOnHide}
+            <Navigator
+              {currentSpace}
+              {currentSpecial}
+              {currentFragment}
+              model={navigatorModel}
+              {currentApplication}
+              on:open={checkOnHide}
+            />
+            <NavFooter>
+              {#if currentApplication.navFooterComponent}
+                <Component is={currentApplication.navFooterComponent} props={{ currentSpace }} />
+              {/if}
+            </NavFooter>
+          </div>
+          <Separator
+            name={'workbench'}
+            float={navFloat ? 'navigator' : true}
+            index={0}
+            color={'var(--theme-navpanel-border)'}
           />
-          <NavFooter>
-            {#if currentApplication.navFooterComponent}
-              <Component is={currentApplication.navFooterComponent} props={{ currentSpace }} />
-            {/if}
-          </NavFooter>
         </div>
-        <Separator name={'workbench'} index={0} color={'var(--theme-navpanel-border)'} />
+        <Separator name={'workbench'} float={navFloat} index={0} color={'var(--theme-navpanel-border)'} />
       {/if}
       <div
         class="antiPanel-component antiComponent"
@@ -733,11 +741,18 @@
         }}
       >
         {#if currentApplication && currentApplication.component}
-          <Component is={currentApplication.component} props={{ currentSpace, visibileNav }} />
+          <Component is={currentApplication.component} props={{ currentSpace, visibileNav, navFloat, appsDirection }} />
         {:else if specialComponent}
           <Component
             is={specialComponent.component}
-            props={{ model: navigatorModel, ...specialComponent.componentProps, currentSpace, visibileNav }}
+            props={{
+              model: navigatorModel,
+              ...specialComponent.componentProps,
+              currentSpace,
+              visibileNav,
+              navFloat,
+              appsDirection
+            }}
             on:action={(e) => {
               if (e?.detail) {
                 const loc = getCurrentLocation()
@@ -747,7 +762,10 @@
             }}
           />
         {:else if currentView?.component !== undefined}
-          <Component is={currentView.component} props={{ ...currentView.componentProps, currentView, visibileNav }} />
+          <Component
+            is={currentView.component}
+            props={{ ...currentView.componentProps, currentView, visibileNav, navFloat, appsDirection }}
+          />
         {:else}
           <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
         {/if}

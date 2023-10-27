@@ -179,7 +179,7 @@
     mode: 'browser'
   }}
 />
-<div class="inbox-activity">
+<div class="inbox-activity py-2">
   <Scroller noStretch>
     {#if loading}
       <Loading />

@@ -44,12 +44,9 @@
 
 .antiPanel-navigator,
 .antiPanel-component {
-  flex-grow: 1;
   display: flex;
-  flex-direction: column;
   height: 100%;
   min-height: 0;
-  overflow: hidden;
   
   &.header { background-color: var(--theme-comp-header-color); }
   &.filled { background-color: var(--theme-bg-color); }
@@ -63,8 +60,8 @@
   max-width: 22.5rem;
   width: 17.5rem;
   background-color: var(--theme-navpanel-color);
-  // border-right: 1px solid var(--theme-navpanel-border);
 }
+
 @media (max-width: 1024px) {
   .antiPanel-navigator {
     position: fixed;
@@ -82,14 +79,27 @@
     }
   }
 }
-.antiPanel-component:not(.aside) {
+.antiPanel-component {
+  overflow: hidden;
+  flex-direction: column;
   flex-grow: 1;
-  background-color: var(--theme-bg-color);
 }
+.antiPanel-component:not(.aside) { background-color: var(--theme-bg-color); }
 .antiPanel-component.aside {
   min-width: 30rem;
   width: 30rem;
   max-width: 30rem;
+}
+
+.antiPanel-wrap__content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+
+  &.hidden { overflow: hidden; }
 }
 
 /* Navigation */

@@ -74,22 +74,24 @@
 <div class="flex h-full clear-mins">
   {#if visibileNav}
     <div class="antiPanel-navigator filledNav indent">
-      <div class="antiNav-header overflow-label">
-        <Label label={setting.string.WorkspaceSetting} />
+      <div class="antiPanel-wrap__content">
+        <div class="antiNav-header overflow-label">
+          <Label label={setting.string.WorkspaceSetting} />
+        </div>
+        <Scroller shrink>
+          {#each categories as category}
+            <CategoryElement
+              icon={category.icon}
+              label={category.label}
+              selected={category.name === categoryId}
+              on:click={() => {
+                selectCategory(category.name)
+              }}
+            />
+          {/each}
+          <div class="antiNav-space" />
+        </Scroller>
       </div>
-      <Scroller shrink>
-        {#each categories as category}
-          <CategoryElement
-            icon={category.icon}
-            label={category.label}
-            selected={category.name === categoryId}
-            on:click={() => {
-              selectCategory(category.name)
-            }}
-          />
-        {/each}
-        <div class="antiNav-space" />
-      </Scroller>
     </div>
     <Separator name={'settingWorkspace'} index={0} color={'var(--theme-navpanel-border)'} />
   {/if}

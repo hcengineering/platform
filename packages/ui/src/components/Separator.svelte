@@ -21,7 +21,8 @@
     getSeparators,
     saveSeparator,
     SeparatedElement,
-    separatorsStore
+    separatorsStore,
+    SeparatorState
   } from '..'
 
   export let prevElementSize: SeparatedItem | undefined = undefined
@@ -31,15 +32,22 @@
   export let name: string
   export let disabledWhen: string[] = []
   export let index: number // index = -1 ; for custom sizes without saving to a localStorage
+  export let float: string | boolean = false // false - default state, true - hidden state for float, name - panel name for resize (float state)
+
+  let sState: SeparatorState
+  $: sState =
+    typeof float === 'string' ? SeparatorState.FLOAT : float === true ? SeparatorState.HIDDEN : SeparatorState.NORMAL
 
   const direction: 'horizontal' | 'vertical' = 'horizontal'
   let separators: SeparatedItem[] | null = null
   let separatorMap: SeparatedElement[]
   let prevElSize: SeparatedItem
   let nextElSize: SeparatedItem
+  let panel: SeparatedItem
   let separator: HTMLElement
   let prevElement: HTMLElement | null
   let nextElement: HTMLElement | null
+  let parentElement: HTMLElement | null
   let mounted: boolean = false
   let isSeparate: boolean = false
   let excludedIndexes: number[] = []
@@ -55,16 +63,28 @@
   }
   let parentSize: { start: number; end: number; size: number } | null = null
   let disabled: boolean = false
+  let side: 'start' | 'end' | undefined = undefined
 
   const fetchSeparators = (): void => {
-    separators = getSeparators(name)
-    prevElSize = separators !== null ? separators[index] : nullSeparatedItem
-    nextElSize = separators !== null ? separators[index + 1] : nullSeparatedItem
+    const res = getSeparators(name, float)
+    if (res !== null && !Array.isArray(res)) panel = res
+    else if (Array.isArray(res)) {
+      separators = res
+      prevElSize = separators !== null ? separators[index] : nullSeparatedItem
+      nextElSize = separators !== null ? separators[index + 1] : nullSeparatedItem
+    }
   }
-  $: if (name) {
+  $: if (name || float) {
     fetchSeparators()
-    if (prevElementSize !== undefined) prevElSize = prevElementSize
-    if (nextElementSize !== undefined) nextElSize = nextElementSize
+    if (sState === SeparatorState.NORMAL) {
+      if (prevElementSize !== undefined) prevElSize = prevElementSize
+      if (nextElementSize !== undefined) nextElSize = nextElementSize
+      setTimeout(() => {
+        if (!parentElement && separator) parentElement = separator.parentElement
+        checkSibling(true)
+        calculateSeparators()
+      })
+    }
     checkSizes()
   }
 
@@ -87,21 +107,17 @@
     }
     const sizePx = direction === 'horizontal' ? element.clientWidth : element.clientHeight
     element.setAttribute('data-size', `${sizePx}`)
-    if (separators) separators[index + (next ? 1 : 0)].size = pxToRem(sizePx)
-    if (next) nextElSize.size = typeof size === 'number' ? pxToRem(sizePx) : size
-    else prevElSize.size = typeof size === 'number' ? pxToRem(sizePx) : size
+    if (sState === SeparatorState.NORMAL) {
+      if (separators) separators[index + (next ? 1 : 0)].size = pxToRem(sizePx)
+      if (next) nextElSize.size = typeof size === 'number' ? pxToRem(sizePx) : size
+      else prevElSize.size = typeof size === 'number' ? pxToRem(sizePx) : size
+    }
   }
 
   const generateMap = (): void => {
-    const parent = separator.parentElement
-    if (parent === null) return
-    const p = parent.getBoundingClientRect()
-    parentSize =
-      direction === 'horizontal'
-        ? { start: p.left, end: p.right, size: p.width }
-        : { start: p.top, end: p.bottom, size: p.height }
-    const children: Element[] = Array.from(parent.children)
-    if (children.length > 1 && separators !== null) {
+    if (parentElement === null) return
+    const children: Element[] = Array.from(parentElement.children)
+    if (children.length > 1 && separators !== null && separatorsSizes !== null) {
       const elements = children.filter(
         (el) =>
           !el.classList.contains('antiSeparator') && (el.hasAttribute('data-size') || el.hasAttribute('data-auto'))
@@ -162,6 +178,7 @@
           ? -1
           : endBoxes.map((box) => box.maxSize).reduce((prev, a) => prev + a, 0)
     }
+    isSeparate = true
   }
 
   const initSize = (element: HTMLElement, props: SeparatedItem, next: boolean = false): void => {
@@ -187,12 +204,16 @@
   }
 
   const checkSizes = (): void => {
-    if (prevElement) initSize(prevElement, prevElSize)
-    if (nextElement) initSize(nextElement, nextElSize, true)
+    if (sState === SeparatorState.FLOAT) {
+      if (parentElement) initSize(parentElement, panel)
+    } else if (sState === SeparatorState.NORMAL) {
+      if (prevElement) initSize(prevElement, prevElSize)
+      if (nextElement) initSize(nextElement, nextElSize, true)
+    }
   }
 
   const applyStyles = (final: boolean = false): void => {
-    if (separatorMap === null) return
+    if (separatorMap == null) return
     const side = direction === 'horizontal' ? 'width' : 'height'
     const sum = separatorMap
       .filter((f) => f.maxSize !== -1)
@@ -234,6 +255,50 @@
   }
 
   function mouseMove (event: MouseEvent) {
+    if (sState === SeparatorState.NORMAL) normalMouseMove(event)
+    else if (sState === SeparatorState.FLOAT) floatMouseMove(event)
+  }
+
+  const preparePanel = (): void => {
+    if (!parentElement || parentSize === null) return
+    setSize(parentElement, panel.size === 'auto' ? 'auto' : remToPx(panel.size))
+    const s = separator.getBoundingClientRect()
+    if (s) {
+      const currentPoint = direction === 'horizontal' ? s.x : s.y
+      side =
+        parentSize.end - separatorSize === currentPoint
+          ? 'end'
+          : parentSize.start === currentPoint
+            ? 'start'
+            : undefined
+    }
+    if (side !== undefined) isSeparate = true
+    parentElement.style.pointerEvents = 'none'
+  }
+
+  function floatMouseMove (event: MouseEvent) {
+    if (!isSeparate || parentSize === null || parentElement === null) return
+    const coord: number = direction === 'horizontal' ? event.x - offset : event.y - offset
+    const parentCoord: number = coord - parentSize.start
+    const min = remToPx(panel.minSize === 'auto' ? 10 : panel.minSize)
+    const max = remToPx(panel.maxSize === 'auto' ? 30 : panel.maxSize)
+    const newCoord =
+      side === 'start'
+        ? parentSize.size - parentCoord < min - separatorSize
+          ? min
+          : parentSize.size - parentCoord > max - separatorSize
+            ? max
+            : parentSize.size - parentCoord
+        : parentCoord < min - separatorSize
+          ? min
+          : parentCoord > max - separatorSize
+            ? max
+            : parentCoord - separatorSize
+    panel.size = pxToRem(newCoord)
+    setSize(parentElement, newCoord)
+  }
+
+  function normalMouseMove (event: MouseEvent) {
     if (!isSeparate || separatorMap === null || parentSize === null || separatorsSizes === null) return
     const coord: number = direction === 'horizontal' ? event.x - offset : event.y - offset
     let parentCoord: number = coord - parentSize.start
@@ -314,48 +379,59 @@
 
   function mouseUp () {
     isSeparate = false
-    applyStyles(true)
-    if (index !== -1 && separators && separatorMap) {
-      let ind: number = 0
-      const sep: SeparatedItem[] = []
-      separators.forEach((sm, i) => {
-        let save = false
-        if (excludedIndexes.includes(i)) {
-          save = true
-          ind++
-        }
-        if (save) sep.push(sm)
-        else {
-          sep.push({
-            size: separatorMap[i - ind].maxSize === -1 ? 'auto' : pxToRem(separatorMap[i - ind].size),
-            minSize: pxToRem(separatorMap[i - ind].minSize),
-            maxSize: separatorMap[i - ind].maxSize === -1 ? 'auto' : pxToRem(separatorMap[i - ind].maxSize),
-            float: separatorMap[i - ind].float
-          })
-        }
-      })
-      saveSeparator(name, sep)
+    if (sState === SeparatorState.NORMAL) {
+      applyStyles(true)
+      if (index !== -1 && separators && separatorMap) {
+        let ind: number = 0
+        const sep: SeparatedItem[] = []
+        separators.forEach((sm, i) => {
+          let save = false
+          if (excludedIndexes.includes(i)) {
+            save = true
+            ind++
+          }
+          if (save) sep.push(sm)
+          else {
+            sep.push({
+              size: separatorMap[i - ind].maxSize === -1 ? 'auto' : pxToRem(separatorMap[i - ind].size),
+              minSize: pxToRem(separatorMap[i - ind].minSize),
+              maxSize: separatorMap[i - ind].maxSize === -1 ? 'auto' : pxToRem(separatorMap[i - ind].maxSize),
+              float: separatorMap[i - ind].float
+            })
+          }
+        })
+        saveSeparator(name, false, sep)
+      }
+    } else if (sState === SeparatorState.FLOAT && parentElement) {
+      parentElement.style.pointerEvents = 'all'
+      saveSeparator(name, float, panel)
     }
-    document.body.style.userSelect = 'auto'
-    document.body.style.webkitUserSelect = 'auto'
     document.body.style.cursor = ''
     document.removeEventListener('mousemove', mouseMove)
     document.removeEventListener('mouseup', mouseUp)
   }
 
   function mouseDown (event: MouseEvent) {
-    if (prevElement === null || nextElement === null) {
+    if (!parentElement) return
+    if (sState === SeparatorState.FLOAT && parentElement === null) {
+      checkParent()
+      return
+    } else if (sState === SeparatorState.NORMAL && (prevElement === null || nextElement === null)) {
       checkSibling()
       return
     }
     offset = direction === 'horizontal' ? event.offsetX : event.offsetY
-    generateMap()
-    isSeparate = true
-    applyStyles(true)
+    const p = parentElement.getBoundingClientRect()
+    parentSize =
+      direction === 'horizontal'
+        ? { start: p.left, end: p.right, size: p.width }
+        : { start: p.top, end: p.bottom, size: p.height }
+    if (sState === SeparatorState.NORMAL) {
+      generateMap()
+      applyStyles(true)
+    } else if (sState === SeparatorState.FLOAT) preparePanel()
     document.addEventListener('mousemove', mouseMove)
     document.addEventListener('mouseup', mouseUp)
-    document.body.style.userSelect = 'none'
-    document.body.style.webkitUserSelect = 'none'
     document.body.style.cursor = direction === 'horizontal' ? 'col-resize' : 'row-resize'
   }
 
@@ -369,48 +445,66 @@
       nextElement.setAttribute('data-float', separators[index + 1].float ?? '')
     }
   }
+  const checkParent = (): void => {
+    if (parentElement === null) parentElement = separator.parentElement as HTMLElement
+    if (parentElement && typeof float === 'string') parentElement.setAttribute('data-float', float)
+  }
+
+  const calculateSeparators = (): void => {
+    if (parentElement) {
+      const elements: Element[] = Array.from(parentElement.children)
+      separatorsSizes = elements
+        .filter((el) => el.classList.contains('antiSeparator'))
+        .map((el) => parseInt(el.getAttribute('data-size') ?? '0', 10))
+      separatorsWide.total = separatorsSizes.reduce((prev, a) => prev + a, 0)
+      separatorsWide.start = separatorsSizes.slice(0, index).reduce((prev, a) => prev + a, 0)
+      separatorsWide.end = separatorsSizes.slice(index + 1, separatorsSizes.length).reduce((prev, a) => prev + a, 0)
+    }
+  }
 
   onMount(() => {
     if (separator) {
-      checkSibling(true)
-      const parent = separator.parentElement
-      if (parent) {
-        const elements: Element[] = Array.from(parent.children)
-        separatorsSizes = elements
-          .filter((el) => el.classList.contains('antiSeparator'))
-          .map((el) => parseInt(el.getAttribute('data-size') ?? '0', 10))
-        separatorsWide.total = separatorsSizes.reduce((prev, a) => prev + a, 0)
-        separatorsWide.start = separatorsSizes.slice(0, index).reduce((prev, a) => prev + a, 0)
-        separatorsWide.end = separatorsSizes.slice(index + 1, separatorsSizes.length).reduce((prev, a) => prev + a, 0)
+      parentElement = separator.parentElement as HTMLElement
+      if (sState === SeparatorState.FLOAT) checkParent()
+      else if (sState === SeparatorState.NORMAL) {
+        checkSibling(true)
+        calculateSeparators()
       }
       checkSizes()
       mounted = true
     }
     document.addEventListener('resize', checkSizes)
-    if ($separatorsStore.filter((f) => f === name).length === 0) $separatorsStore = [...$separatorsStore, name]
-    disabled = $separatorsStore.filter((f) => disabledWhen.findIndex((d) => d === f) !== -1).length > 0
+    if (sState !== SeparatorState.FLOAT && $separatorsStore.filter((f) => f === name).length === 0) {
+      $separatorsStore = [...$separatorsStore, name]
+    }
   })
   onDestroy(() => {
     document.removeEventListener('resize', checkSizes)
-    if ($separatorsStore.filter((f) => f === name).length > 0) {
+    if (sState !== SeparatorState.FLOAT && $separatorsStore.filter((f) => f === name).length > 0) {
       $separatorsStore = $separatorsStore.filter((f) => f !== name)
     }
   })
   afterUpdate(() => {
-    if (mounted) checkSibling()
+    if (mounted) {
+      if (sState === SeparatorState.FLOAT) checkParent()
+      else if (sState === SeparatorState.NORMAL) checkSibling()
+    }
   })
+  $: disabled = $separatorsStore.filter((f) => disabledWhen.findIndex((d) => d === f) !== -1).length > 0
 </script>
 
-<div
-  bind:this={separator}
-  style:--separator-size={`${separatorSize}px`}
-  style:background-color={color}
-  style:pointer-events={disabled ? 'none' : 'all'}
-  class="antiSeparator {direction}"
-  class:hovered={isSeparate}
-  data-size={separatorSize}
-  on:mousedown|stopPropagation={mouseDown}
-/>
+{#if sState !== SeparatorState.HIDDEN}
+  <div
+    bind:this={separator}
+    style:--separator-size={`${separatorSize}px`}
+    style:background-color={color}
+    style:pointer-events={disabled ? 'none' : 'all'}
+    class="antiSeparator {direction}"
+    class:hovered={isSeparate}
+    data-size={separatorSize}
+    on:mousedown|stopPropagation={mouseDown}
+  />
+{/if}
 
 <style lang="scss">
   .antiSeparator {
