@@ -1130,6 +1130,10 @@ export function createModel (builder: Builder): void {
     presenter: recruit.component.ApplicationPresenter
   })
 
+  builder.mixin(recruit.class.Interview, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: recruit.component.InterviewPresenter
+  })
+
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.CollectionPresenter, {
     presenter: recruit.component.ApplicationsPresenter
   })
@@ -1766,5 +1770,29 @@ export function createModel (builder: Builder): void {
       }
     },
     recruit.action.GetTalentIds
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: recruit.class.Interview,
+      descriptor: view.viewlet.Table,
+      options: {},
+      config: [
+        '',
+        {
+          key: '$lookup.attachedTo',
+          presenter: contact.component.PersonPresenter,
+          label: recruit.string.Talent,
+          sortingKey: '$lookup.attachedTo.name',
+          props: {
+            _class: recruit.mixin.Candidate
+          }
+        },
+        'assignee'
+      ]
+    },
+    recruit.viewlet.TableInterview
   )
 }

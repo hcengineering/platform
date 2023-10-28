@@ -71,7 +71,6 @@ export default mergeIds(recruitId, recruit, {
     ShowApplications: '' as IntlString,
     HideDoneState: '' as IntlString,
     HideArchivedVacancies: '' as IntlString,
-    Interviews: '' as IntlString,
     InterviewTask: '' as IntlString
   },
   validator: {
@@ -135,6 +134,7 @@ export default mergeIds(recruitId, recruit, {
     CalendarReview: '' as Ref<Viewlet>,
     TableReview: '' as Ref<Viewlet>,
     TableVacancyList: '' as Ref<Viewlet>,
-    ApplicantDashboard: '' as Ref<Viewlet>
+    ApplicantDashboard: '' as Ref<Viewlet>,
+    TableInterview: '' as Ref<Viewlet>
   }
 })

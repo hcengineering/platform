@@ -71,8 +71,6 @@
 
   }
 
-  function showConfirmationDialog() {}
-
   let loading = true;
 </script>
 
@@ -83,7 +81,6 @@
   on:close={() => {
     dispatch('close')
   }}
-  onCancel={showConfirmationDialog}
   on:changeContent
 >
 

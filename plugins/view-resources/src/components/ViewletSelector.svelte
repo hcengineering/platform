@@ -20,6 +20,7 @@
     viewletQuery,
     (res) => {
       viewlets = res
+      console.log('recieved viewlets', viewlets)
       dispatch('viewlets', viewlets)
     },
     {
@@ -46,6 +47,7 @@
     activeViewlet: Record<string, Ref<Viewlet> | null>,
     key: string
   ) {
+    console.log('getActiveViewlet', viewlets, viewlet)
     if (viewlets == null || viewlets.length === 0) return
     const newViewlet = viewlets.find((viewlet) => viewlet?._id === activeViewlet[key]) ?? viewlets[0]
     if (viewlet?._id !== newViewlet?._id) {
