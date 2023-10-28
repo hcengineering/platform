@@ -121,7 +121,10 @@
     "HideDoneState": "Скрыть завершенных кандидатов",
     "HideArchivedVacancies": "Скрыть архивные вакансии",
 
-    "Interviews": "Интервьюшница"
+    "Interviews": "Интервьюшница",
+    "InterviewCreateLabel": "Секция",
+    "CreateInterview": "Новая секция",
+    "InterviewTask": "Задачи"
   },
   "status": {
     "ApplicationExists": "Кандидат уже существует",

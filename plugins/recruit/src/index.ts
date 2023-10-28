@@ -14,7 +14,7 @@
 //
 
 import { Calendar, Event } from '@hcengineering/calendar'
-import type { Channel, Organization, Person } from '@hcengineering/contact'
+import type { Channel, Employee, Organization, Person } from '@hcengineering/contact'
 import type {
   AttachedData,
   AttachedDoc,
@@ -24,7 +24,8 @@ import type {
   Mixin,
   Ref,
   Space,
-  Timestamp
+  Timestamp,
+  Markup
 } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -144,6 +145,41 @@ export interface Opinion extends AttachedDoc {
 /**
  * @public
  */
+export interface Interview extends Doc {
+  title: string
+  date: Timestamp
+  summary?: Markup
+  attachedTo: Ref<Candidate>
+  assignee: Ref<Employee>
+  tasks: number
+  // don't know if this fields will be extended in future
+  status: string | 'scheduled' | 'cancelled' | 'finished'
+  verdict: string | 'dont hire' | 'intern' | 'junior' | 'junior+' | 'middle' | 'middle+' | 'senior' | 'expert'
+}
+
+/**
+ * @public
+ */
+export interface InterviewTaskTemplate extends Doc {
+  name: string
+  description: Markup
+  tags?: number
+  comments?: number
+}
+
+/**
+ * @public
+ */
+export interface InterviewTask extends AttachedDoc {
+  attachedTo: Ref<Interview>
+  task: Ref<InterviewTaskTemplate>
+  summary?: Markup
+  verdict: string | 'bad' | 'ok' | 'good'
+}
+
+/**
+ * @public
+ */
 export const recruitId = 'recruit' as Plugin
 
 /**
@@ -159,7 +195,10 @@ const recruit = plugin(recruitId, {
     Candidates: '' as Ref<Class<Candidates>>,
     Vacancy: '' as Ref<Class<Vacancy>>,
     Review: '' as Ref<Class<Review>>,
-    Opinion: '' as Ref<Class<Opinion>>
+    Opinion: '' as Ref<Class<Opinion>>,
+    Interview: '' as Ref<Class<Interview>>,
+    InterviewTask: '' as Ref<Class<InterviewTask>>,
+    InterviewTaskTemplate: '' as Ref<Class<InterviewTaskTemplate>>
   },
   mixin: {
     Candidate: '' as Ref<Mixin<Candidate>>,

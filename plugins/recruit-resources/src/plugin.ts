@@ -131,7 +131,11 @@ export default mergeIds(recruitId, recruit, {
     Apply: '' as IntlString,
     OpenVacancyList: '' as IntlString,
     Export: '' as IntlString,
-    GetTalentIds: '' as IntlString
+    GetTalentIds: '' as IntlString,
+
+    Interviews: '' as IntlString,
+    InterviewCreateLabel: '' as IntlString,
+    CreateInterview: '' as IntlString
   },
   space: {
     CandidatesPublic: '' as Ref<Space>

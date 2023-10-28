@@ -29,13 +29,14 @@ import {
   TypeMarkup,
   TypeRef,
   TypeString,
+  TypeTimestamp,
   UX
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import calendar from '@hcengineering/model-calendar'
 import chunter from '@hcengineering/model-chunter'
 import contact, { TOrganization, TPerson } from '@hcengineering/model-contact'
-import core, { TAttachedDoc, TSpace } from '@hcengineering/model-core'
+import core, { TAttachedDoc, TSpace, TDoc } from '@hcengineering/model-core'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import presentation from '@hcengineering/model-presentation'
 import tags from '@hcengineering/model-tags'
@@ -52,7 +53,10 @@ import {
   Candidates,
   Vacancy,
   VacancyList,
-  recruitId
+  recruitId,
+  Interview,
+  InterviewTaskTemplate,
+  InterviewTask
 } from '@hcengineering/recruit'
 import setting from '@hcengineering/setting'
 import { DoneState, State } from '@hcengineering/task'
@@ -198,8 +202,72 @@ export class TApplicantMatch extends TAttachedDoc implements ApplicantMatch {
     response!: string
 }
 
+@Model(recruit.class.Interview, core.class.Doc)
+export class TInterview extends TDoc implements Interview {
+  @Prop(TypeRef(recruit.mixin.Candidate), recruit.string.Talent)
+  @Index(IndexKind.Indexed)
+  declare attachedTo: Ref<Candidate>
+
+  @Prop(TypeRef(contact.mixin.Employee), recruit.string.AssignedRecruiter)
+  @Index(IndexKind.Indexed)
+  declare assignee: Ref<Employee>
+
+  @Prop(TypeString(), getEmbeddedLabel('Title'))
+    title!: string
+
+  @Prop(TypeMarkup(), getEmbeddedLabel('Summary'))
+    summary!: string
+
+  @Prop(TypeTimestamp(), getEmbeddedLabel('Date'))
+    date!: Timestamp
+
+  @Prop(Collection(recruit.class.InterviewTask, recruit.string.InterviewTask), recruit.string.InterviewTask)
+    tasks!: number
+
+  @Prop(TypeString(), getEmbeddedLabel('Status'))
+    status!: string
+
+  @Prop(TypeString(), getEmbeddedLabel('Verdict'))
+    verdict!: string
+}
+
+@Model(recruit.class.InterviewTaskTemplate, core.class.Doc)
+export class TInterviewTaskTemplate extends TDoc implements InterviewTaskTemplate {
+  @Prop(TypeString(), getEmbeddedLabel('Name'))
+  declare name: string
+
+  @Prop(TypeMarkup(), getEmbeddedLabel('description'))
+  declare description: string
+
+  @Prop(Collection(tags.class.TagReference, getEmbeddedLabel('Tags')), getEmbeddedLabel('Tags'))
+    tags?: number
+
+  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
+    comments?: number
+}
+
+@Model(recruit.class.InterviewTask, core.class.AttachedDoc)
+export class TInterviewTask extends TAttachedDoc implements InterviewTask {
+  @Prop(TypeRef(recruit.class.Interview), recruit.string.Interviews)
+  @Index(IndexKind.Indexed)
+  declare attachedTo: Ref<Interview>
+
+  @Prop(TypeRef(recruit.class.InterviewTaskTemplate), recruit.string.InterviewTask)
+  @Index(IndexKind.Indexed)
+  declare task: Ref<InterviewTaskTemplate>
+
+  @Prop(TypeMarkup(), getEmbeddedLabel('Summary'))
+    summary!: string
+
+  @Prop(TypeString(), getEmbeddedLabel('Verdict'))
+    verdict!: string
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TVacancy, TCandidates, TCandidate, TApplicant, TReview, TOpinion, TVacancyList, TApplicantMatch)
+  builder.createModel(
+    TVacancy, TCandidates, TCandidate, TApplicant, TReview, TOpinion, TVacancyList, TApplicantMatch,
+    TInterview, TInterviewTask, TInterviewTaskTemplate
+  )
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, workbench.mixin.SpaceView, {
     view: {

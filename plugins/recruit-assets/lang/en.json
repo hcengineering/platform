@@ -121,7 +121,10 @@
     "HideDoneState": "Hide complete applications",
     "HideArchivedVacancies": "Hide from archived Vacancies",
 
-    "Interviews": "Interviewing"
+    "Interviews": "Interviewing",
+    "InterviewCreateLabel": "Interview",
+    "CreateInterview": "New interview",
+    "InterviewTask": "Interview question"
   },
   "status": {
     "ApplicationExists": "Application already exists",

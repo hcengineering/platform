@@ -71,7 +71,8 @@ export default mergeIds(recruitId, recruit, {
     ShowApplications: '' as IntlString,
     HideDoneState: '' as IntlString,
     HideArchivedVacancies: '' as IntlString,
-    Interviews: '' as IntlString
+    Interviews: '' as IntlString,
+    InterviewTask: '' as IntlString
   },
   validator: {
     ApplicantValidator: '' as Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
