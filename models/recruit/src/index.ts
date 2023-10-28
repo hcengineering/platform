@@ -14,7 +14,7 @@
 //
 
 import type { Employee, Organization } from '@hcengineering/contact'
-import { IndexKind, Lookup, Ref, SortingOrder, Timestamp } from '@hcengineering/core'
+import { Domain, IndexKind, Lookup, Ref, SortingOrder, Timestamp } from '@hcengineering/core'
 import {
   Builder,
   Collection,
@@ -202,7 +202,7 @@ export class TApplicantMatch extends TAttachedDoc implements ApplicantMatch {
     response!: string
 }
 
-@Model(recruit.class.Interview, core.class.Doc)
+@Model(recruit.class.Interview, core.class.Doc, 'interview' as Domain)
 export class TInterview extends TDoc implements Interview {
   @Prop(TypeRef(recruit.mixin.Candidate), recruit.string.Talent)
   @Index(IndexKind.Indexed)
