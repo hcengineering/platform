@@ -46,7 +46,7 @@ async function removeDoneStateFilter (client: MigrationClient): Promise<void> {
   for (const filter of filters) {
     let changed = false
     const options = filter.viewOptions
-    if (options !== undefined) {
+    if (options != null) {
       if (options.orderBy[0] === 'doneState') {
         options.orderBy[0] = 'status'
         changed = true
