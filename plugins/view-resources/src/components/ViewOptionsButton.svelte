@@ -55,7 +55,15 @@
     })
 
     const customAttributes = classes
-      .flatMap((c) => Array.from(client.getHierarchy().getOwnAttributes(c).values()))
+      .flatMap((c) => {
+        const hierarchy = client.getHierarchy()
+        return hierarchy.isMixin(c)
+          ? [
+              ...Array.from(hierarchy.getOwnAttributes(c).values()),
+              ...Array.from(hierarchy.getOwnAttributes(hierarchy.getBaseClass(c)).values())
+            ]
+          : Array.from(client.getHierarchy().getOwnAttributes(c).values())
+      })
       .filter(
         (attr) => attr.isCustom && !attr.isHidden && [core.class.RefTo, core.class.EnumOf].includes(attr.type._class)
       )
