@@ -1,5 +1,5 @@
 import { expect, Page } from '@playwright/test'
-import { PlatformURI } from './utils'
+import { PlatformURI } from '../utils'
 
 export interface IssueProps {
   name: string
@@ -202,4 +202,16 @@ export async function openIssue (page: Page, name: string): Promise<void> {
   await page.click(`.antiList__row:has-text("${name}") .presenter-label a`, {
     timeout: 15000
   })
+}
+
+export async function floorFractionDigits (n: number | string, amount: number): Promise<number> {
+  return Number(Number(n).toFixed(amount))
+}
+
+export async function toTime (value: number): Promise<string> {
+  if (value > 0 && value < 8) {
+    return `${await floorFractionDigits(value, 2)}h`
+  } else {
+    return `${await floorFractionDigits(value / 8, 3)}d`
+  }
 }

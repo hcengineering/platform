@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { navigate } from './tracker.utils'
-import { generateId, PlatformSetting, PlatformURI, fillSearch } from './utils'
+import { generateId, PlatformSetting, PlatformURI, fillSearch } from '../utils'
 
 test.use({
   storageState: PlatformSetting
