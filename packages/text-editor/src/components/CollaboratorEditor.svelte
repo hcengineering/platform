@@ -33,7 +33,7 @@
   import Placeholder from '@tiptap/extension-placeholder'
   import { getCurrentAccount, Markup } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
-  import { getPlatformColorForText, IconObjects, IconSize, registerFocus, themeStore } from '@hcengineering/ui'
+  import { getPlatformColorForText, IconObjects, IconSize, Loading, registerFocus, themeStore } from '@hcengineering/ui'
 
   import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
@@ -95,9 +95,11 @@
       }
     })
 
+  let loading = true
+
   if (contextProvider === undefined) {
-    provider?.on('status', (event: any) => {
-      console.log(documentId, event.status) // logs "connected" or "disconnected"
+    provider?.on('synced', () => {
+      loading = false
     })
   }
 
@@ -389,6 +391,12 @@
 
 <slot {editor} />
 
+{#if loading}
+  <div class="flex p-3">
+    <Loading />
+  </div>
+{/if}
+
 {#if visible}
   {#if comparedVersion !== undefined || $$slots.tools}
     <div class="ref-container" style:overflow>
@@ -407,14 +415,18 @@
           <slot name="tools" />
         </div>
       {:else}
-        <div class="formatPanelRef formatPanel buttons-group xsmall-gap">
+        <div class="text-editor-toolbar buttons-group xsmall-gap">
           <slot name="tools" />
         </div>
       {/if}
     </div>
   {/if}
 
-  <div class="formatPanel buttons-group xsmall-gap mb-4" bind:this={textToolbarElement}>
+  <div
+    class="text-editor-toolbar buttons-group xsmall-gap mb-4"
+    bind:this={textToolbarElement}
+    style="visibility: hidden;"
+  >
     <TextEditorStyleToolbar
       textEditor={editor}
       textFormatCategories={[
@@ -438,19 +450,21 @@
     />
   </div>
 
-  <div class="formatPanel buttons-group xsmall-gap mb-4" bind:this={imageToolbarElement}>
+  <div
+    class="text-editor-toolbar buttons-group xsmall-gap mb-4"
+    bind:this={imageToolbarElement}
+    style="visibility: hidden;"
+  >
     <ImageStyleToolbar textEditor={editor} formatButtonSize={buttonSize} on:focus={handleFocus} />
   </div>
 
-  <div class="ref-container" style:overflow>
-    <div class="text-input" class:focusable>
-      <div class="select-text" style="width: 100%;" bind:this={element} />
-    </div>
+  <div class="text-input" style:overflow class:focusable class:hidden={loading}>
+    <div class="select-text" style="width: 100%;" bind:this={element} />
   </div>
 {/if}
 
 <style lang="scss">
-  .ref-container .formatPanel {
+  .ref-container .text-editor-toolbar {
     margin: -0.5rem -0.25rem 0.5rem;
     padding: 0.375rem;
     background-color: var(--theme-comp-header-color);
@@ -459,12 +473,12 @@
     z-index: 1;
   }
 
-  .ref-container:focus-within .formatPanel {
+  .ref-container:focus-within .text-editor-toolbar {
     position: sticky;
     top: 1.25rem;
   }
 
-  .formatPanel {
+  .text-editor-toolbar {
     margin: -0.5rem -0.25rem 0.5rem;
     padding: 0.375rem;
     background-color: var(--theme-comp-header-color);
@@ -475,5 +489,9 @@
 
   .text-input {
     font-size: 0.9375rem;
+  }
+
+  .hidden {
+    display: none;
   }
 </style>
