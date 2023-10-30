@@ -24,6 +24,7 @@
     "prettier": "^2.7.1"
   },
   "dependencies": {
+    "@hcengineering/activity": "^0.6.0",
     "@hcengineering/core": "^0.6.27",
     "@hcengineering/model": "^0.6.6",
     "@hcengineering/ui": "^0.6.10",

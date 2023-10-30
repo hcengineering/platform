@@ -916,6 +916,30 @@ export function createModel (builder: Builder): void {
     contact.templateField.ContactLastName
   )
 
+  builder.createDoc(
+    activity.class.ActivityExtension,
+    core.space.Model,
+    {
+      ofClass: contact.class.Person,
+      components: {
+        input: chunter.component.CommentInput
+      }
+    },
+    contact.ids.PersonActivityExtension
+  )
+
+  builder.createDoc(
+    activity.class.ActivityExtension,
+    core.space.Model,
+    {
+      ofClass: contact.class.Organization,
+      components: {
+        input: chunter.component.CommentInput
+      }
+    },
+    contact.ids.OrganizationActivityExtension
+  )
+
   builder.mixin(contact.class.Contact, core.class.Class, activity.mixin.ExtraActivityComponent, {
     component: contact.component.ActivityChannelMessage
   })

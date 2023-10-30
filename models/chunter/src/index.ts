@@ -741,6 +741,29 @@ export function createModel (builder: Builder, options = { addApplication: true 
   )
 
   builder.createDoc(
+    activity.class.ActivityExtension,
+    core.space.Model,
+    {
+      ofClass: chunter.class.Comment,
+      components: {
+        footer: chunter.component.CommentReactions,
+        action: chunter.component.ReactionsAction
+      }
+    },
+    chunter.ids.ActivityExtension
+  )
+
+  builder.createDoc(
+    activity.class.ActivityExtension,
+    core.space.Model,
+    {
+      ofClass: chunter.class.Backlink,
+      isMention: true
+    },
+    chunter.ids.BackLinkActivityExtension
+  )
+
+  builder.createDoc(
     notification.class.NotificationType,
     core.space.Model,
     {

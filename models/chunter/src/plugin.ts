@@ -22,6 +22,7 @@ import type { IntlString, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import type { AnyComponent, Location } from '@hcengineering/ui'
 import type { Action, ActionCategory, ViewAction, ViewletDescriptor } from '@hcengineering/view'
+import { ActivityExtension } from '@hcengineering/activity'
 
 export default mergeIds(chunterId, chunter, {
   component: {
@@ -32,7 +33,9 @@ export default mergeIds(chunterId, chunter, {
     DmPresenter: '' as AnyComponent,
     Threads: '' as AnyComponent,
     SavedMessages: '' as AnyComponent,
-    ChunterBrowser: '' as AnyComponent
+    ChunterBrowser: '' as AnyComponent,
+    CommentReactions: '' as AnyComponent,
+    ReactionsAction: '' as AnyComponent
   },
   action: {
     MarkCommentUnread: '' as Ref<Action>,
@@ -89,7 +92,9 @@ export default mergeIds(chunterId, chunter, {
     TxCommentRemove: '' as Ref<TxViewlet>,
     TxBacklinkRemove: '' as Ref<TxViewlet>,
     TxMessageCreate: '' as Ref<TxViewlet>,
-    ChunterNotificationGroup: '' as Ref<NotificationGroup>
+    ChunterNotificationGroup: '' as Ref<NotificationGroup>,
+    ActivityExtension: '' as Ref<ActivityExtension>,
+    BackLinkActivityExtension: '' as Ref<ActivityExtension>
   },
   activity: {
     TxCommentCreate: '' as AnyComponent,

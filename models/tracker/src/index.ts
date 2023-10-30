@@ -18,6 +18,7 @@ import { Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import task from '@hcengineering/model-task'
 import view from '@hcengineering/model-view'
+import chunter from '@hcengineering/model-chunter'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
@@ -520,4 +521,52 @@ export function createModel (builder: Builder): void {
     secured: false,
     order: 4000
   })
+
+  builder.createDoc(
+    activity.class.ActivityExtension,
+    core.space.Model,
+    {
+      ofClass: tracker.class.Issue,
+      components: {
+        input: chunter.component.CommentInput
+      }
+    },
+    tracker.ids.IssueActivityExtension
+  )
+
+  builder.createDoc(
+    activity.class.ActivityExtension,
+    core.space.Model,
+    {
+      ofClass: tracker.class.IssueTemplate,
+      components: {
+        input: chunter.component.CommentInput
+      }
+    },
+    tracker.ids.IssueTemplateActivityExtension
+  )
+
+  builder.createDoc(
+    activity.class.ActivityExtension,
+    core.space.Model,
+    {
+      ofClass: tracker.class.Component,
+      components: {
+        input: chunter.component.CommentInput
+      }
+    },
+    tracker.ids.ComponentActivityExtension
+  )
+
+  builder.createDoc(
+    activity.class.ActivityExtension,
+    core.space.Model,
+    {
+      ofClass: tracker.class.Milestone,
+      components: {
+        input: chunter.component.CommentInput
+      }
+    },
+    tracker.ids.MilestoneActivityExtension
+  )
 }

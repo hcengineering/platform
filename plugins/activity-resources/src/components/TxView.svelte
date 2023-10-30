@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { DisplayTx, TxViewlet } from '@hcengineering/activity'
+  import { tick } from 'svelte'
+  import type { ActivityExtension, DisplayTx, TxViewlet } from '@hcengineering/activity'
   import attachment from '@hcengineering/attachment'
-  import chunter, { Reaction } from '@hcengineering/chunter'
   import contact, { Person, PersonAccount, getName } from '@hcengineering/contact'
-  import core, { AnyAttribute, Class, Doc, Ref, TxCUD, getCurrentAccount } from '@hcengineering/core'
+  import core, { AnyAttribute, Doc, Ref, TxCUD, getCurrentAccount } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import ui, {
@@ -32,17 +32,17 @@
     Label,
     ShowMore,
     TimeSince,
-    showPopup,
-    EmojiPopup,
-    IconEmoji
+    showPopup
   } from '@hcengineering/ui'
   import type { AttributeModel } from '@hcengineering/view'
   import { Menu, ObjectPresenter } from '@hcengineering/view-resources'
-  import { tick } from 'svelte'
+
+  import TxViewTx from './TxViewTx.svelte'
+  import ActivityExtensionComponent from './ActivityExtensionComponent.svelte'
+
   import { ActivityKey } from '../activity'
   import activity from '../plugin'
-  import { TxDisplayViewlet, getPrevValue, getValue, updateViewlet } from '../utils'
-  import TxViewTx from './TxViewTx.svelte'
+  import { TxDisplayViewlet, getPrevValue, getValue, updateViewlet, getExtensions } from '../utils'
 
   export let tx: DisplayTx
   export let viewlets: Map<ActivityKey, TxViewlet[]>
@@ -63,11 +63,18 @@
   let model: AttributeModel[] = []
   let modelIcon: Asset | undefined = undefined
   let iconComponent: AnyComponent | undefined = undefined
+  let extensions: ActivityExtension[] = []
 
   let edit: boolean = false
   let showDiff: boolean = false
 
   const currentAccount = getCurrentAccount() as PersonAccount
+
+  $: if (tx.doc?._class) {
+    getExtensions(client, tx.doc._class).then((res?: ActivityExtension[]) => {
+      extensions = res || []
+    })
+  }
 
   $: if (tx.tx._id !== ptx?.tx._id) {
     if (tx.tx.modifiedBy !== account?._id) {
@@ -152,38 +159,8 @@
     return tx.objectClass === attachment.class.Attachment && tx._class === core.class.TxCreateDoc
   }
 
-  function isMention (_class?: Ref<Class<Doc>>): boolean {
-    return _class === chunter.class.Backlink
-  }
-
-  const reactionsQuery = createQuery()
-  let reactions: Reaction[] = []
-
-  $: if (isComment && tx?.doc) {
-    reactionsQuery.query(chunter.class.Reaction, { attachedTo: tx.doc._id }, (res?: Reaction[]) => {
-      reactions = res || []
-    })
-  }
-
-  async function updateReactions (emoji?: string) {
-    if (!emoji || tx.doc === undefined) {
-      return
-    }
-
-    const reaction = reactions.find((r) => r.emoji === emoji && r.createBy === currentAccount._id)
-
-    if (!reaction) {
-      await client.addCollection(chunter.class.Reaction, tx.doc.space, tx.doc._id, chunter.class.Comment, 'reactions', {
-        emoji,
-        createBy: currentAccount._id
-      })
-    } else {
-      await client.removeDoc(chunter.class.Reaction, tx.doc!.space, reaction._id)
-    }
-  }
-
-  function openEmojiPalette (ev: Event) {
-    showPopup(EmojiPopup, {}, ev.target as HTMLElement, updateReactions, () => {})
+  function isMention (): boolean {
+    return extensions.some(({ isMention }) => !!isMention)
   }
 
   async function updateMessageType (model: AttributeModel[], tx: DisplayTx): Promise<boolean> {
@@ -205,7 +182,7 @@
   })
   $: isComment = viewlet && viewlet?.editable
   $: isAttached = isAttachment(tx.tx)
-  $: isMentioned = isMention(tx.tx.objectClass)
+  $: isMentioned = isMention()
   $: withAvatar = isComment || isMentioned || isAttached
   $: isEmphasized = viewlet?.display === 'emphasized' || model.every((m) => isMessageType(m.attribute))
   $: isColumn = isComment || isEmphasized || hasMessageType
@@ -363,7 +340,7 @@
         </div>
         {#if isComment}
           <div class="buttons-group">
-            <ActionIcon icon={IconEmoji} size={'medium'} action={openEmojiPalette} />
+            <ActivityExtensionComponent {extensions} kind="action" props={{ object: tx.doc }} />
             <!-- <Like /> -->
             {#if account?.person === currentAccount?.person}
               <ActionIcon icon={IconMoreH} size={'small'} action={showMenu} />
@@ -406,15 +383,7 @@
           </div>
         {/await}
       {/if}
-      <div class="footer flex-col p-inline contrast mt-2">
-        {#if reactions?.length}
-          <Component
-            is={chunter.component.Reactions}
-            props={{ reactions }}
-            on:click={(ev) => updateReactions(ev.detail)}
-          />
-        {/if}
-      </div>
+      <ActivityExtensionComponent {extensions} kind="footer" props={{ object: tx.doc }} />
     </div>
   </div>
 {/if}

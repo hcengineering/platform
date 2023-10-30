@@ -20,6 +20,7 @@ import inventory from '@hcengineering/inventory-resources/src/plugin'
 import { IntlString, mergeIds } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 import { Action, ActionCategory, ViewAction, Viewlet } from '@hcengineering/view'
+import { ActivityExtension } from '@hcengineering/activity'
 
 export default mergeIds(inventoryId, inventory, {
   action: {
@@ -47,5 +48,9 @@ export default mergeIds(inventoryId, inventory, {
   string: {
     ConfigLabel: '' as IntlString,
     ConfigDescription: '' as IntlString
+  },
+  ids: {
+    ProductActivityExtension: '' as Ref<ActivityExtension>,
+    CategoryActivityExtension: '' as Ref<ActivityExtension>
   }
 })

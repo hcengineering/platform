@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import { Attachment } from '@hcengineering/attachment'
   import { AttachmentList, AttachmentRefInput } from '@hcengineering/attachment-resources'
   import type { ChunterMessage, ChunterMessageExtension, Message, Reaction } from '@hcengineering/chunter'
@@ -24,17 +25,17 @@
   import ui, { ActionIcon, Button, EmojiPopup, IconMoreV, Label, showPopup, tooltip } from '@hcengineering/ui'
   import { Action } from '@hcengineering/view'
   import { LinkPresenter, Menu, ObjectPresenter } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
-  import { AddMessageToSaved, DeleteMessageFromSaved, UnpinMessage } from '../index'
-  import chunter from '../plugin'
-  import { getLinks, getTime } from '../utils'
-  // import Share from './icons/Share.svelte'
   import notification, { Collaborators } from '@hcengineering/notification'
+
   import Bookmark from './icons/Bookmark.svelte'
   import Emoji from './icons/Emoji.svelte'
   import Thread from './icons/Thread.svelte'
   import Reactions from './Reactions.svelte'
   import Replies from './Replies.svelte'
+
+  import { AddMessageToSaved, DeleteMessageFromSaved, UnpinMessage } from '../index'
+  import chunter from '../plugin'
+  import { getLinks, getTime, updateDocReactions } from '../utils'
 
   export let message: WithLookup<ChunterMessage>
   export let savedAttachmentsIds: Ref<Attachment>[]
@@ -162,26 +163,8 @@
     else AddMessageToSaved(message)
   }
 
-  async function updateReactions (emoji?: string) {
-    if (!emoji) return
-    const me = getCurrentAccount()._id
-
-    const reaction = reactions?.find((r) => r.emoji === emoji && r.createBy === me)
-    if (!reaction) {
-      await client.addCollection(
-        chunter.class.Reaction,
-        message.space,
-        message._id,
-        chunter.class.ChunterMessage,
-        'reactions',
-        {
-          emoji,
-          createBy: me
-        }
-      )
-    } else {
-      await client.removeDoc(chunter.class.Reaction, message.space, reaction._id)
-    }
+  function updateReactions (emoji?: string) {
+    updateDocReactions(client, reactions || [], message, emoji)
   }
 
   function openEmojiPalette (ev: Event) {

@@ -22,7 +22,7 @@ import tracker from '@hcengineering/tracker-resources/src/plugin'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { Action, ViewAction, Viewlet } from '@hcengineering/view'
 import { Application } from '@hcengineering/workbench'
-import { TxViewlet } from '@hcengineering/activity'
+import { ActivityExtension, TxViewlet } from '@hcengineering/activity'
 import { NotificationGroup, NotificationType } from '@hcengineering/notification'
 
 export default mergeIds(trackerId, tracker, {
@@ -73,7 +73,11 @@ export default mergeIds(trackerId, tracker, {
   ids: {
     TxIssueCreated: '' as Ref<TxViewlet>,
     TrackerNotificationGroup: '' as Ref<NotificationGroup>,
-    AssigneeNotification: '' as Ref<NotificationType>
+    AssigneeNotification: '' as Ref<NotificationType>,
+    IssueActivityExtension: '' as Ref<ActivityExtension>,
+    IssueTemplateActivityExtension: '' as Ref<ActivityExtension>,
+    ComponentActivityExtension: '' as Ref<ActivityExtension>,
+    MilestoneActivityExtension: '' as Ref<ActivityExtension>
   },
   completion: {
     IssueQuery: '' as Resource<ObjectSearchFactory>,

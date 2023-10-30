@@ -61,6 +61,8 @@ import TxBacklinkCreate from './components/activity/TxBacklinkCreate.svelte'
 import TxBacklinkReference from './components/activity/TxBacklinkReference.svelte'
 import TxCommentCreate from './components/activity/TxCommentCreate.svelte'
 import TxMessageCreate from './components/activity/TxMessageCreate.svelte'
+import ReactionsAction from './components/ReactionsAction.svelte'
+import CommentReactions from './components/CommentReactions.svelte'
 
 import notification from '@hcengineering/notification'
 import { writable } from 'svelte/store'
@@ -298,7 +300,9 @@ export default async (): Promise<Resources> => ({
     Threads,
     ThreadView,
     SavedMessages,
-    CommentPanel
+    CommentPanel,
+    ReactionsAction,
+    CommentReactions
   },
   function: {
     GetDmName: getDmName,

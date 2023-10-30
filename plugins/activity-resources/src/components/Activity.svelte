@@ -13,17 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import activity, { DisplayTx, TxViewlet } from '@hcengineering/activity'
-  import chunter from '@hcengineering/chunter'
+  import activity, { ActivityExtension, DisplayTx, TxViewlet } from '@hcengineering/activity'
   import core, { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
   import notification, { DocUpdateTx, DocUpdates, Writable } from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Component, Grid, Label, Lazy, Spinner } from '@hcengineering/ui'
+  import { Grid, Label, Lazy, Spinner } from '@hcengineering/ui'
   import { ActivityKey, activityKey, newActivity } from '../activity'
-  import { filterCollectionTxes } from '../utils'
+  import { filterCollectionTxes, getExtensions } from '../utils'
   import ActivityFilter from './ActivityFilter.svelte'
   import TxView from './TxView.svelte'
+  import ActivityExtensionComponent from './ActivityExtensionComponent.svelte'
 
   export let object: Doc
   export let showCommenInput: boolean = true
@@ -31,6 +31,14 @@
   export let shouldScroll: boolean = false
   export let focusIndex: number = -1
   export let boundary: HTMLElement | undefined = undefined
+
+  let extensions: ActivityExtension[] = []
+
+  $: if (object) {
+    getExtensions(client, object._class).then((res?: ActivityExtension[]) => {
+      extensions = res || []
+    })
+  }
 
   getResource(notification.function.GetNotificationClient).then((res) => {
     updatesStore = res().docUpdatesStore
@@ -166,7 +174,7 @@
 </div>
 {#if showCommenInput}
   <div class="ref-input">
-    <Component is={chunter.component.CommentInput} props={{ object, focusIndex, boundary }} />
+    <ActivityExtensionComponent {extensions} kind="input" props={{ object, focusIndex, boundary }} />
   </div>
 {/if}
 
