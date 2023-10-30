@@ -13,7 +13,7 @@ import {
   setViewOrder,
   ViewletSelectors
 } from './tracker.utils'
-import { fillSearch, generateId, PlatformSetting } from './utils'
+import { fillSearch, generateId, PlatformSetting } from '../utils'
 test.use({
   storageState: PlatformSetting
 })
