@@ -37,7 +37,7 @@
     <NavHeader label={hr.string.HRApplication} />
 
     <Scroller shrink>
-      <TreeNode label={hr.string.Departments} node>
+      <TreeNode _id={'tree-hr'} label={hr.string.Departments} node>
         <DepartmentsHierarchy {departments} {descendants} {departmentById} selected={department} on:selected />
       </TreeNode>
       <div class="antiNav-space" />

@@ -186,3 +186,16 @@ export function navigate (location: PlatformLocation, store = true): boolean {
   }
   return false
 }
+
+const COLLAPSED = 'COLLAPSED'
+export const getCollapsedKey = (_id: string): string => `${getCurrentLocation().path[1]}_${_id}_collapsed`
+
+export const getTreeCollapsed = (_id: any): boolean => {
+  if (_id === undefined || _id === 'undefined') return false
+  return localStorage.getItem(getCollapsedKey(_id as string)) === COLLAPSED
+}
+
+export const setTreeCollapsed = (_id: any, collapsed: boolean): void => {
+  if (_id === undefined || _id === 'undefined') return
+  localStorage.setItem(getCollapsedKey(_id), collapsed ? COLLAPSED : '')
+}

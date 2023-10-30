@@ -89,7 +89,7 @@
   }
 </script>
 
-<TreeNode {label} node actions={async () => [unStarAll]}>
+<TreeNode _id={'tree-stared'} {label} node actions={async () => [unStarAll]}>
   {#each spaces as space (space._id)}
     {@const model = models.find((p) => p.spaceClass === space._class)}
     {#await getSpacePresenter(client, space._class) then presenter}
