@@ -19,7 +19,7 @@
   export let items: RadioItem[]
   export let selected: any | undefined = undefined
   export let disabled: boolean = false
-  export let gap: 'small' | 'medium' | 'none' = 'small'
+  export let gap: 'large' | 'small' | 'medium' | 'none' = 'small'
 </script>
 
 {#if items && items.length > 0}
@@ -29,6 +29,7 @@
         bind:group={selected}
         id={item.id}
         label={item.label}
+        labelGap={item.labelGap}
         labelIntl={item.labelIntl}
         labelParams={item.labelParams}
         value={item.value}
