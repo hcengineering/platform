@@ -16,7 +16,6 @@
   import core, { FindOptions, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Applicant, Vacancy } from '@hcengineering/recruit'
-  import task from '@hcengineering/task'
   import { Button, Label, Loading } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
   import { DocNavLink, ObjectPresenter, Table } from '@hcengineering/view-resources'
@@ -27,9 +26,8 @@
 
   const options: FindOptions<Applicant> = {
     lookup: {
-      status: task.class.State,
+      status: core.class.Status,
       space: core.class.Space,
-      doneState: task.class.DoneState,
       attachedTo: recruit.mixin.Candidate
     },
     sort: {

@@ -14,14 +14,13 @@
 //
 
 import core, {
-  DOMAIN_STATUS,
   DOMAIN_TX,
+  Data,
+  SortingOrder,
   Status,
-  TxCUD,
   TxCollectionCUD,
   TxCreateDoc,
   TxOperations,
-  TxProcessor,
   TxUpdateDoc
 } from '@hcengineering/core'
 import {
@@ -31,13 +30,12 @@ import {
   createOrUpdate,
   tryMigrate
 } from '@hcengineering/model'
-import { DOMAIN_TASK } from '@hcengineering/model-task'
+import { DOMAIN_TASK, createProjectType } from '@hcengineering/model-task'
 import tags from '@hcengineering/tags'
-import { Issue, Project, TimeReportDayType, TimeSpendReport, createStatuses } from '@hcengineering/tracker'
-import { DOMAIN_TRACKER } from './types'
-import tracker from './plugin'
-import { DOMAIN_SPACE } from '@hcengineering/model-core'
+import { Issue, TimeReportDayType, TimeSpendReport } from '@hcengineering/tracker'
 import view from '@hcengineering/view'
+import tracker from './plugin'
+import { DOMAIN_TRACKER } from './types'
 
 async function createDefaultProject (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(tracker.class.Project, {
@@ -50,26 +48,59 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
 
   // Create new if not deleted by customers.
   if (current === undefined && currentDeleted === undefined) {
-    const states = await createStatuses(tx, tracker.class.IssueStatus, tracker.attribute.IssueStatus)
-
-    await tx.createDoc<Project>(
-      tracker.class.Project,
-      core.space.Space,
-      {
-        name: 'Default',
-        description: 'Default project',
-        private: false,
-        members: [],
-        archived: false,
-        identifier: 'TSK',
-        sequence: 0,
-        defaultIssueStatus: states[0],
-        defaultTimeReportDay: TimeReportDayType.PreviousWorkDay,
-        defaultAssignee: undefined,
-        states
-      },
-      tracker.project.DefaultProject
+    const categories = await tx.findAll(
+      core.class.StatusCategory,
+      { ofAttribute: tracker.attribute.IssueStatus },
+      { sort: { order: SortingOrder.Ascending } }
     )
+
+    const states: Omit<Data<Status>, 'rank'>[] = []
+
+    for (const category of categories) {
+      states.push({
+        ofAttribute: tracker.attribute.IssueStatus,
+        name: category.defaultStatusName,
+        category: category._id
+      })
+    }
+
+    const typeId = await createProjectType(
+      tx,
+      {
+        name: 'Base project',
+        category: tracker.category.ProjectTypeCategory,
+        description: ''
+      },
+      states,
+      tracker.ids.BaseProjectType,
+      tracker.class.IssueStatus
+    )
+
+    const state = await tx.findOne(
+      tracker.class.IssueStatus,
+      { space: typeId },
+      { sort: { rank: SortingOrder.Ascending } }
+    )
+    if (state !== undefined) {
+      await tx.createDoc(
+        tracker.class.Project,
+        core.space.Space,
+        {
+          name: 'Default',
+          description: 'Default project',
+          private: false,
+          members: [],
+          archived: false,
+          identifier: 'TSK',
+          sequence: 0,
+          defaultIssueStatus: state._id,
+          defaultTimeReportDay: TimeReportDayType.PreviousWorkDay,
+          defaultAssignee: undefined,
+          type: typeId
+        },
+        tracker.project.DefaultProject
+      )
+    }
   }
 }
 
@@ -173,7 +204,11 @@ async function fixEstimation (client: MigrationClient): Promise<void> {
 
 async function fixRemainingTime (client: MigrationClient): Promise<void> {
   while (true) {
-    const issues = await client.find<Issue>(DOMAIN_TASK, { remainingTime: { $exists: false } }, { limit: 1000 })
+    const issues = await client.find<Issue>(
+      DOMAIN_TASK,
+      { _class: tracker.class.Issue, remainingTime: { $exists: false } },
+      { limit: 1000 }
+    )
     for (const issue of issues) {
       await client.update(
         DOMAIN_TASK,
@@ -185,6 +220,11 @@ async function fixRemainingTime (client: MigrationClient): Promise<void> {
       break
     }
   }
+  await client.update(
+    DOMAIN_TASK,
+    { _class: { $ne: tracker.class.Issue }, remainingTime: { $exists: true } },
+    { $unset: { remainingTime: '' } }
+  )
 }
 
 async function moveIssues (client: MigrationClient): Promise<void> {
@@ -194,38 +234,12 @@ async function moveIssues (client: MigrationClient): Promise<void> {
   }
 }
 
-async function fixProjectDefaultStatuses (client: MigrationClient): Promise<void> {
-  const projects = await client.find<Project>(DOMAIN_SPACE, { _class: tracker.class.Project })
-  for (const project of projects) {
-    const state = await client.find(DOMAIN_STATUS, { _id: project.defaultIssueStatus })
-    if (state.length === 0) {
-      const oldStateTxes = await client.find<TxCUD<Status>>(DOMAIN_TX, { objectId: project.defaultIssueStatus })
-      const oldState = TxProcessor.buildDoc2Doc<Status>(oldStateTxes)
-      if (oldState !== undefined) {
-        const newState = await client.find<Status>(DOMAIN_STATUS, {
-          name: oldState.name.trim(),
-          ofAttribute: tracker.attribute.IssueStatus
-        })
-        if (newState.length > 0) {
-          await client.update(DOMAIN_SPACE, { _id: project._id }, { defaultIssueStatus: newState[0]._id })
-        }
-      } else {
-        await client.update(DOMAIN_SPACE, { _id: project._id }, { defaultIssueStatus: project.states[0] })
-      }
-    }
-  }
-}
-
 export const trackerOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, 'tracker', [
       {
         state: 'moveIssues',
         func: moveIssues
-      },
-      {
-        state: 'fixProjectDefaultStatuses',
-        func: fixProjectDefaultStatuses
       },
       {
         state: 'reportTimeDayToHour',

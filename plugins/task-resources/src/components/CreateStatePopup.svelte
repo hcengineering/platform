@@ -13,65 +13,74 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Attribute, Class, Data, Ref, Status } from '@hcengineering/core'
-  import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
-  import { DoneState, SpaceWithStates, State, createState } from '@hcengineering/task'
-  import { EditBox, Label } from '@hcengineering/ui'
+  import { Attribute, Class, Ref, Status, StatusCategory } from '@hcengineering/core'
+  import presentation, { Card, getClient } from '@hcengineering/presentation'
+  import { ProjectType, createState } from '@hcengineering/task'
+  import { EditBox } from '@hcengineering/ui'
+  import { statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import task from '../plugin'
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const hierarchy = client.getHierarchy()
-  export let status: State | undefined = undefined
-  export let _class: Ref<Class<State | DoneState>> | undefined = status?._class
+  export let status: Status | undefined = undefined
+  export let _class: Ref<Class<Status>> | undefined = status?._class
+  export let type: ProjectType
   export let ofAttribute: Ref<Attribute<Status>>
+  export let category: Ref<StatusCategory> | undefined = status?.category
   export let value = status?.name ?? ''
-  export let space: Ref<SpaceWithStates>
 
-  let _space: SpaceWithStates | undefined = undefined
-  const query = createQuery()
-  $: query.query(task.class.SpaceWithStates, { _id: space }, (res) => {
-    _space = res[0]
-  })
-
-  const canSave = true
   async function save () {
-    if (_space === undefined || _class === undefined) return
+    if (type === undefined || _class === undefined) return
     if (status === undefined) {
-      if (!hierarchy.isDerived(_class, task.class.DoneState)) {
-        const newDoc: Data<State> = {
-          ofAttribute,
-          name: value.trim(),
+      const _id = await createState(client, _class, {
+        ofAttribute,
+        name: value.trim(),
+        category,
+        color: 9
+      })
+
+      const states = type.statuses.map((p) => $statusStore.byId.get(p._id)).filter((p) => p !== undefined) as Status[]
+      const lastIndex = states.findLastIndex((p) => p.category === category)
+      const statuses = [
+        ...type.statuses.slice(0, lastIndex + 1),
+        {
+          _id,
           color: 9
-        }
-        const id = await createState(client, _class, newDoc)
-        await client.update(_space, { $push: { states: id } })
-      } else {
-        const newDoc: Data<DoneState> = {
-          ofAttribute,
-          name: value.trim()
-        }
-        const id = await createState(client, _class, newDoc)
-        await client.update(_space, { $push: { states: id } })
-      }
-    } else {
-      const id = await createState(client, _class, { ...status, name: value.trim() })
-      if (!hierarchy.isDerived(_class, task.class.DoneState)) {
-        const states = _space.states
-        const index = states.findIndex((x) => x === status?._id)
-        if (index !== -1) {
-          states[index] = id
-          await client.update(_space, { states })
-        }
-      } else {
-        const states = _space.doneStates ?? []
-        const index = states.findIndex((x) => x === status?._id)
-        if (index !== -1) {
-          states[index] = id
-          await client.update(_space, { doneStates: states })
-        }
-      }
+        },
+        ...type.statuses.slice(lastIndex + 1)
+      ]
+      await client.update(type, {
+        statuses
+      })
+    } else if (status.name.trim() !== value.trim()) {
+      const _id = await createState(client, _class, {
+        ofAttribute,
+        name: value.trim(),
+        category,
+        color: 9
+      })
+      const index = type.statuses.findIndex((p) => p._id === status?._id)
+      const oldStatus = type.statuses[index]
+      const statuses = [
+        ...type.statuses.slice(0, index),
+        {
+          _id,
+          color: oldStatus.color
+        },
+        ...type.statuses.slice(index + 1)
+      ]
+      const projects = await client.findAll(task.class.Project, { type: type._id })
+      const docs = await client.findAll(task.class.Task, {
+        status: status._id,
+        space: { $in: projects.map((p) => p._id) }
+      })
+      const op = client.apply(_id)
+      await op.update(type, {
+        statuses
+      })
+      docs.map((p) => op.update(p, { status: _id }))
+      await op.commit()
     }
     dispatch('close')
   }
@@ -86,9 +95,4 @@
   onCancel={() => dispatch('close')}
 >
   <EditBox focusIndex={1} bind:value placeholder={task.string.StatusName} kind={'large-style'} autoFocus fullSize />
-  <svelte:fragment slot="error">
-    {#if !canSave}
-      <Label label={task.string.NameAlreadyExists} />
-    {/if}
-  </svelte:fragment>
 </Card>

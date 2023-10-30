@@ -55,7 +55,7 @@
     return contact.mixin.Employee
   }
 
-  const taskKeys = ['status', 'assignee', 'doneState']
+  const taskKeys = ['status', 'assignee']
 
   $: filtredKeys = keys.filter((p) => !taskKeys.includes(p.key)) // todo
 </script>
@@ -76,7 +76,7 @@
         <AttributesBar {object} _class={object._class} keys={filtredKeys} />
       </div>
     </div>
-    <AttributesBar {object} _class={object._class} keys={['doneState', 'status']} showHeader={false} />
+    <AttributesBar {object} _class={object._class} keys={['status']} showHeader={false} />
   </div>
 {:else}
   <DocAttributeBar {object} {ignoreKeys} {mixins} {allowedCollections} on:update />

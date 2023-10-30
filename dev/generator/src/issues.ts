@@ -11,9 +11,10 @@ import core, {
   TxOperations,
   WorkspaceId
 } from '@hcengineering/core'
-import tracker, { calcRank, Issue, IssuePriority, IssueStatus } from '@hcengineering/tracker'
+import tracker, { Issue, IssuePriority, IssueStatus } from '@hcengineering/tracker'
 
 import { connect } from './connect'
+import { calcRank } from '@hcengineering/task'
 
 let objectId: Ref<Issue> = generateId()
 const space = tracker.project.DefaultProject
@@ -26,7 +27,6 @@ const object: AttachedData<Issue> = {
   milestone: null,
   number: 0,
   rank: '',
-  doneState: null,
   status: '' as Ref<IssueStatus>,
   priority: IssuePriority.NoPriority,
   dueDate: null,
@@ -88,7 +88,6 @@ async function genIssue (client: TxOperations, statuses: Ref<IssueStatus>[]): Pr
     component: object.component,
     milestone: object.milestone,
     number: (incResult as any).object.sequence,
-    doneState: null,
     status: faker.random.arrayElement(statuses),
     priority: faker.random.arrayElement(Object.values(IssuePriority)) as IssuePriority,
     rank: calcRank(lastOne, undefined),

@@ -64,6 +64,15 @@ export function resizeObserver (element: Element, onResize: (element: Element) =
  */
 export const separatorsKeyId = 'separators'
 
+/**
+ * @public
+ */
+export enum SeparatorState {
+  FLOAT = 'float',
+  HIDDEN = 'hidden',
+  NORMAL = 'normal'
+}
+
 export const nullSeparatedItem: SeparatedItem = {
   size: 'auto',
   minSize: 20,
@@ -71,46 +80,76 @@ export const nullSeparatedItem: SeparatedItem = {
   float: undefined
 }
 
-const compareSeparators = (a: SeparatedItem[], b: SeparatedItem[]): boolean => {
+const compareSeparators = (a: SeparatedItem[] | SeparatedItem, b: SeparatedItem[] | SeparatedItem): boolean => {
+  if (!Array.isArray(a) && !Array.isArray(b)) {
+    return a.minSize === b.minSize && a.maxSize === b.maxSize && a.float === b.float
+  }
+  if (!Array.isArray(a) || !Array.isArray(b)) return false
   if (a.length !== b.length) return false
   return a.every(
     (sep, index) => sep.minSize === b[index].minSize && sep.maxSize === b[index].maxSize && sep.float === b[index].float
   )
 }
 
-const generateSeparatorsId = (name: string): string => {
-  return separatorsKeyId + '_' + name
+const generateSeparatorsId = (name: string, float: string | boolean): string => {
+  return separatorsKeyId + '_' + name + (typeof float === 'string' ? '-float-' + float : '')
 }
 
 export function defineSeparators (name: string, items: DefSeparators): void {
-  const id = generateSeparatorsId(name)
+  const id = generateSeparatorsId(name, false)
   const income = items.map((it) => (it === null ? nullSeparatedItem : it))
+  let needAdd = true
   const saved = localStorage.getItem(id)
-  let needAdd = false
-  if (saved !== null) {
-    const loaded: SeparatedItem[] = JSON.parse(saved)
-    if (!compareSeparators(loaded, income)) {
-      localStorage.removeItem(id)
-      needAdd = true
+  if (typeof saved === 'string') {
+    if (saved === 'undefined') localStorage.removeItem(id)
+    else {
+      const loaded: SeparatedItem[] = JSON.parse(saved)
+      if (!compareSeparators(loaded, income)) localStorage.removeItem(id)
+      else needAdd = false
     }
-  } else needAdd = true
+  }
   if (needAdd) localStorage.setItem(id, JSON.stringify(income))
+  items.forEach((it) => {
+    if (typeof it?.float === 'string') {
+      const idF = generateSeparatorsId(name, it.float)
+      let needAdd = true
+      const savedF = localStorage.getItem(idF)
+      if (typeof savedF === 'string') {
+        if (savedF === 'undefined') localStorage.removeItem(idF)
+        else {
+          const loadedF: SeparatedItem = JSON.parse(savedF)
+          if (!compareSeparators(loadedF, it)) localStorage.removeItem(idF)
+          else needAdd = false
+        }
+      }
+      if (needAdd) localStorage.setItem(idF, JSON.stringify(it))
+    }
+  })
 }
 
-export function getSeparators (name: string): SeparatedItem[] | null {
-  const id = generateSeparatorsId(name)
+export function getSeparators (name: string, float: string | boolean): SeparatedItem[] | SeparatedItem | null {
+  const id = generateSeparatorsId(name, float)
   const saved = localStorage.getItem(id)
-  return saved !== null ? JSON.parse(saved) : null
+  if (saved === null) return null
+  const result = JSON.parse(saved)
+  return Array.isArray(result) ? (result as SeparatedItem[]) : (result as SeparatedItem)
 }
 
-export function saveSeparator (name: string, separators: SeparatedItem[]): void {
-  const id = generateSeparatorsId(name)
-  localStorage.setItem(id, JSON.stringify(separators))
+export function saveSeparator (
+  name: string,
+  float: string | boolean,
+  separators: SeparatedItem | SeparatedItem[]
+): void {
+  const id = generateSeparatorsId(name, float)
+  localStorage.setItem(
+    id,
+    Array.isArray(separators) && typeof float === 'string' ? JSON.stringify(separators[0]) : JSON.stringify(separators)
+  )
 }
 
 export const panelSeparators: DefSeparators = [
   { minSize: 30, size: 'auto', maxSize: 'auto' },
-  { minSize: 17, size: 25, maxSize: 50, float: 'aside' }
+  { minSize: 17, size: 25, maxSize: 35, float: 'aside' }
 ]
 
 export const workbenchSeparators: DefSeparators = [

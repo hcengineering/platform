@@ -219,14 +219,17 @@
       </div>
     {/if}
     {#if $$slots.aside && isAside && asideShown}
-      <Separator name={'panel-aside'} index={0} />
+      <Separator name={'panel-aside'} float={asideFloat} index={0} />
       <div class="popupPanel-body__aside" class:float={asideFloat} class:shown={asideShown}>
-        {#if moveUtils}
-          <div class="buttons-group justify-end xsmall-gap" style:margin={'.5rem 2rem 0'}>
-            <slot name="utils" />
-          </div>
-        {/if}
-        <slot name="aside" />
+        <Separator name={'panel-aside'} float={asideFloat ? 'aside' : true} index={0} />
+        <div class="antiPanel-wrap__content">
+          {#if moveUtils}
+            <div class="buttons-group justify-end xsmall-gap" style:margin={'.5rem 2rem 0'}>
+              <slot name="utils" />
+            </div>
+          {/if}
+          <slot name="aside" />
+        </div>
       </div>
     {/if}
   </div>

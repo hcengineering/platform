@@ -21,6 +21,7 @@ import { taskId } from '@hcengineering/task'
 import task from '@hcengineering/task-resources/src/plugin'
 import type { AnyComponent } from '@hcengineering/ui'
 import type { Action, ActionCategory, ViewAction, Viewlet } from '@hcengineering/view'
+import {} from '@hcengineering/notification'
 
 export default mergeIds(taskId, task, {
   action: {
@@ -48,9 +49,7 @@ export default mergeIds(taskId, task, {
     KanbanTemplatePresenter: '' as AnyComponent,
     KanbanCard: '' as AnyComponent,
     StatePresenter: '' as AnyComponent,
-    DoneStatePresenter: '' as AnyComponent,
     StateEditor: '' as AnyComponent,
-    DoneStateEditor: '' as AnyComponent,
     KanbanView: '' as AnyComponent,
     Todos: '' as AnyComponent,
     TodoItemPresenter: '' as AnyComponent,
@@ -58,8 +57,9 @@ export default mergeIds(taskId, task, {
     TaskHeader: '' as AnyComponent,
     Dashboard: '' as AnyComponent,
     StateRefPresenter: '' as AnyComponent,
-    DoneStateRefPresenter: '' as AnyComponent,
-    StatusSelector: '' as AnyComponent
+    StatusSelector: '' as AnyComponent,
+    TemplatesIcon: '' as AnyComponent,
+    TypesView: '' as AnyComponent
   },
   space: {
     TasksPublic: '' as Ref<Space>

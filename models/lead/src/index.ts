@@ -15,7 +15,7 @@
 
 // To help typescript locate view plugin properly
 import type { Employee } from '@hcengineering/contact'
-import { FindOptions, IndexKind, Ref, SortingOrder, Timestamp } from '@hcengineering/core'
+import { FindOptions, IndexKind, Ref, SortingOrder, Status, Timestamp } from '@hcengineering/core'
 import { Customer, Funnel, Lead, leadId } from '@hcengineering/lead'
 import {
   Builder,
@@ -36,13 +36,12 @@ import chunter from '@hcengineering/model-chunter'
 import contact, { TContact } from '@hcengineering/model-contact'
 import core from '@hcengineering/model-core'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
-import task, { TSpaceWithStates, TTask, actionTemplates } from '@hcengineering/model-task'
+import task, { TProject, TTask, actionTemplates } from '@hcengineering/model-task'
 import tracker from '@hcengineering/model-tracker'
 import view, { createAction, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
-import { DoneState, State } from '@hcengineering/task'
 import { ViewOptionsModel } from '@hcengineering/view'
 import activity from '@hcengineering/activity'
 import lead from './plugin'
@@ -51,9 +50,9 @@ export { leadId } from '@hcengineering/lead'
 export { leadOperation } from './migration'
 export { default } from './plugin'
 
-@Model(lead.class.Funnel, task.class.SpaceWithStates)
+@Model(lead.class.Funnel, task.class.Project)
 @UX(lead.string.Funnel, lead.icon.Funnel)
-export class TFunnel extends TSpaceWithStates implements Funnel {
+export class TFunnel extends TProject implements Funnel {
   @Prop(TypeMarkup(), lead.string.FullDescription)
   @Index(IndexKind.FullText)
     fullDescription?: string
@@ -82,11 +81,8 @@ export class TLead extends TTask implements Lead {
   @Prop(TypeRef(contact.mixin.Employee), lead.string.Assignee)
   declare assignee: Ref<Employee> | null
 
-  @Prop(TypeRef(task.class.State), task.string.TaskState, { _id: lead.attribute.State })
-  declare status: Ref<State>
-
-  @Prop(TypeRef(task.class.DoneState), task.string.TaskStateDone, { _id: lead.attribute.DoneState })
-  declare doneState: Ref<DoneState>
+  @Prop(TypeRef(core.class.Status), task.string.TaskState, { _id: lead.attribute.State })
+  declare status: Ref<Status>
 
   declare space: Ref<Funnel>
 }
@@ -265,7 +261,6 @@ export function createModel (builder: Builder): void {
           label: tracker.string.Issues
         },
         'status',
-        'doneState',
         'attachments',
         'comments',
         'modifiedOn',
@@ -383,10 +378,6 @@ export function createModel (builder: Builder): void {
     {
       ...actionTemplates.editStatus,
       target: lead.class.Funnel,
-      actionProps: {
-        ofAttribute: lead.attribute.State,
-        doneOfAttribute: lead.attribute.DoneState
-      },
       query: {
         archived: false
       },
@@ -434,13 +425,7 @@ export function createModel (builder: Builder): void {
     lead.ids.AssigneeNotification
   )
 
-  generateClassNotificationTypes(
-    builder,
-    lead.class.Lead,
-    lead.ids.LeadNotificationGroup,
-    [],
-    ['comments', 'status', 'doneState']
-  )
+  generateClassNotificationTypes(builder, lead.class.Lead, lead.ids.LeadNotificationGroup, [], ['comments', 'status'])
 
   builder.createDoc(
     notification.class.NotificationGroup,
@@ -683,4 +668,18 @@ export function createModel (builder: Builder): void {
       group: 'associate'
     }
   })
+
+  builder.createDoc(
+    task.class.ProjectTypeCategory,
+    core.space.Model,
+    {
+      name: lead.string.Funnels,
+      description: lead.string.ManageFunnelStatuses,
+      icon: lead.component.TemplatesIcon,
+      attachedToClass: lead.class.Funnel,
+      statusClass: core.class.Status,
+      statusCategories: [task.statusCategory.Active, task.statusCategory.Won, task.statusCategory.Lost]
+    },
+    lead.category.FunnelTypeCategory
+  )
 }

@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import type { KanbanTemplate } from '@hcengineering/task'
+  import type { ProjectType } from '@hcengineering/task'
 
-  export let value: KanbanTemplate
+  export let value: ProjectType
 
   const client = getClient()
   const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
@@ -24,5 +24,5 @@
 
 <span class="label nowrap">
   {#if shortLabel}
-    {shortLabel}-{/if}{value.title}</span
+    {shortLabel}-{/if}{value.name}</span
 >

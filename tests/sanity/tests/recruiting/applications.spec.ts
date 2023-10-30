@@ -63,11 +63,13 @@ test.describe('Application tests', () => {
     const navigationMenuPage = new NavigationMenuPage(page)
     await navigationMenuPage.buttonApplications.click()
 
+    const vacancyName = 'Software Engineer'
     const applicationsPage = new ApplicationsPage(page)
     const talentName = await applicationsPage.createNewApplicationWithNewTalent({
-      vacancy: 'first',
+      vacancy: vacancyName,
       recruiterName: 'first'
     })
+    await applicationsPage.selectType(vacancyName)
     await applicationsPage.openApplicationByTalentName(talentName)
 
     const applicationsDetailsPage = new ApplicationsDetailsPage(page)
@@ -91,21 +93,21 @@ test.describe('Application tests', () => {
     await applicationsPage.openApplicationByTalentName(talentName)
 
     let applicationsDetailsPage = new ApplicationsDetailsPage(page)
-    await applicationsDetailsPage.changeDoneStatus('Lost')
+    await applicationsDetailsPage.changeState('Lost')
 
     await navigationMenuPage.buttonMyApplications.click()
     applicationsPage = new ApplicationsPage(page)
     await applicationsPage.buttonTabCreated.click()
-    await applicationsPage.checkApplicationDoneStatus(talentName, 'Lost')
+    await applicationsPage.checkApplicationState(talentName, 'Lost')
     await applicationsPage.openApplicationByTalentName(talentName)
 
     applicationsDetailsPage = new ApplicationsDetailsPage(page)
-    await applicationsDetailsPage.changeDoneStatus('Won')
+    await applicationsDetailsPage.changeState('Won')
 
     await navigationMenuPage.buttonMyApplications.click()
     applicationsPage = new ApplicationsPage(page)
     await applicationsPage.buttonTabCreated.click()
-    await applicationsPage.checkApplicationDoneStatus(talentName, 'Won')
+    await applicationsPage.checkApplicationState(talentName, 'Won')
   })
 
   test('Delete an Application', async ({ page }) => {

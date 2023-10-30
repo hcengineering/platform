@@ -2,7 +2,8 @@
   import { getClient } from '@hcengineering/presentation'
   import { DueDatePresenter, ButtonSize, ButtonKind } from '@hcengineering/ui'
   import { WithLookup } from '@hcengineering/core'
-  import { Task } from '@hcengineering/task'
+  import task, { Task } from '@hcengineering/task'
+  import { statusStore } from '@hcengineering/view-resources'
 
   export let object: WithLookup<Task>
   export let width: string | undefined = undefined
@@ -11,7 +12,9 @@
   export let editable: boolean = true
 
   const client = getClient()
-  $: shouldIgnoreOverdue = object.doneState !== null
+  $: status = $statusStore.byId.get(object.status)
+
+  $: shouldIgnoreOverdue = status?.category === task.statusCategory.Lost || status?.category === task.statusCategory.Won
 
   const handleDueDateChanged = async (newDueDate: number | undefined | null) => {
     if (newDueDate === undefined || object.dueDate === newDueDate) {

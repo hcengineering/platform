@@ -1,14 +1,13 @@
 {
   "string": {
     "Setting": "Настройки",
-    "ManageTemplates": "Управление шаблонами",
+    "ManageProjects": "Управление проектами",
     "Integrations": "Интеграции",
     "Support": "Поддержка",
     "Privacy": "Конфиденциальность",
     "Terms": "Условия",
     "EditProfile": "Редактировать профиль",
-    "Folders": "Папки",
-    "Templates": "Шаблоны",
+    "Categories": "Категории",
     "Delete": "Удалить",
     "ChangePassword": "Изменить пароль",
     "CurrentPassword": "Текущий пароль",

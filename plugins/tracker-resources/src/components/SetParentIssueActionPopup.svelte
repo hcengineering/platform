@@ -14,12 +14,13 @@
 -->
 <script lang="ts">
   import core, { AttachedData, FindOptions, Ref, SortingOrder } from '@hcengineering/core'
-  import { getClient, ObjectPopup } from '@hcengineering/presentation'
-  import { calcRank, Issue, IssueDraft } from '@hcengineering/tracker'
+  import { ObjectPopup, getClient } from '@hcengineering/presentation'
+  import { Issue, IssueDraft } from '@hcengineering/tracker'
   import { createEventDispatcher } from 'svelte'
-  import tracker from '../plugin'
   import { getIssueId } from '../issues'
+  import tracker from '../plugin'
   import IssueStatusIcon from './issues/IssueStatusIcon.svelte'
+  import { calcRank } from '@hcengineering/task'
 
   export let value: Issue | AttachedData<Issue> | Issue[] | IssueDraft
   export let width: 'medium' | 'large' | 'full' = 'large'

@@ -183,7 +183,7 @@
     "ArchiveProjectConfirm": "Вы действительно хотите заархивировать этот проект?",
     "DeleteProjectConfirm": "Вы действительно хотите удалить этот проект со всем содержимым?",
     "ProjectHasIssues": "Для данного проекта существуют задачи, уверены, что хотите заархивировать?",
-    "ManageWorkflowStatuses": "Управлять статусами задач для команды",
+    "ManageWorkflowStatuses": "Управлять типами проекта",
     "AddWorkflowStatus": "Добавить статус задачи",
     "EditWorkflowStatus": "Редактировать статус задачи",
     "DeleteWorkflowStatus": "Удалить статус задачи",
@@ -285,7 +285,8 @@
     "PreviousAssigned": "Ранее назначенные",
     "IssueAssigneedToYou": "Назначено вам",
     "RelatedIssueTargetDescription": "Настройка проекта по умолчанию для Класса или пространства",
-    "MapRelatedIssues": "Настроить проекты по умолчанию для связанных задач"
+    "MapRelatedIssues": "Настроить проекты по умолчанию для связанных задач",
+    "DefaultIssueStatus": "Статус по умолчанию"
   },
   "status": {}
 }

@@ -13,8 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachedData, IdMap, Ref, Status, WithLookup } from '@hcengineering/core'
+  import { AttachedData, Ref, WithLookup } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
+  import { getStates } from '@hcengineering/task'
   import { Issue, IssueDraft, IssueStatus, Project } from '@hcengineering/tracker'
   import {
     Button,
@@ -32,6 +33,7 @@
   import { activeProjects } from '../../utils'
   import IssueStatusIcon from './IssueStatusIcon.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
+  import { typeStore } from '@hcengineering/task-resources'
   type ValueType = Issue | (AttachedData<Issue> & { space: Ref<Project> }) | IssueDraft
 
   export let value: ValueType
@@ -86,12 +88,7 @@
 
   $: space = $activeProjects.get(value.space)
 
-  function getStatuses (statuses: IdMap<Status>, space: Project | undefined): IssueStatus[] {
-    if (space === undefined) return []
-    return space.states.map((p) => statuses.get(p) as IssueStatus).filter((p) => p !== undefined)
-  }
-
-  $: statuses = getStatuses($statusStore, space)
+  $: statuses = getStates(space, $typeStore, $statusStore.byId)
 
   function getSelectedStatus (
     statuses: WithLookup<IssueStatus>[] | undefined,

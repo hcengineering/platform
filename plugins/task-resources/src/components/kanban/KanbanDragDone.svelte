@@ -13,39 +13,34 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IdMap, Ref, Status } from '@hcengineering/core'
+  import { Ref, Status } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import type { SpaceWithStates } from '@hcengineering/task'
-  import task, { DoneState, LostState, WonState } from '@hcengineering/task'
-  import { createEventDispatcher } from 'svelte'
-  import Won from '../icons/Won.svelte'
-  import Lost from '../icons/Lost.svelte'
+  import type { Project } from '@hcengineering/task'
+  import task, { getStates } from '@hcengineering/task'
   import { statusStore } from '@hcengineering/view-resources'
+  import { createEventDispatcher } from 'svelte'
+  import { typeStore } from '../..'
+  import Lost from '../icons/Lost.svelte'
+  import Won from '../icons/Won.svelte'
 
-  export let space: Ref<SpaceWithStates>
-  let wonStates: WonState[] = []
-  let lostStates: LostState[] = []
-  let _space: SpaceWithStates | undefined = undefined
+  export let space: Ref<Project>
+  let wonStates: Status[] = []
+  let lostStates: Status[] = []
+  let _space: Project | undefined = undefined
   const dispatch = createEventDispatcher()
 
   const query = createQuery()
-  query.query(task.class.SpaceWithStates, { _id: space }, (result) => {
+  query.query(task.class.Project, { _id: space }, (result) => {
     _space = result[0]
   })
 
-  function getStates (space: SpaceWithStates | undefined, statusStore: IdMap<Status>): void {
-    if (space === undefined) return
-    const result: Status[] =
-      (space.doneStates?.map((p) => statusStore.get(p))?.filter((p) => p !== undefined) as Status[]) ?? []
-    wonStates = result.filter((x) => x._class === task.class.WonState)
-    lostStates = result.filter((x) => x._class === task.class.LostState)
-  }
+  $: states = getStates(_space, $typeStore, $statusStore.byId)
+  $: wonStates = states.filter((x) => x.category === task.statusCategory.Won)
+  $: lostStates = states.filter((x) => x.category === task.statusCategory.Lost)
 
-  $: getStates(_space, $statusStore)
+  let hoveredDoneState: Ref<Status> | undefined
 
-  let hoveredDoneState: Ref<DoneState> | undefined
-
-  const onDone = (state: DoneState) => async () => {
+  const onDone = (state: Status) => async () => {
     hoveredDoneState = undefined
     dispatch('done', state)
   }

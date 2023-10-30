@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
 import { Doc, Ref } from '@hcengineering/core'
 import { ObjectSearchCategory, ObjectSearchFactory } from '@hcengineering/model-presentation'
-import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
+import { IntlString, Resource, mergeIds } from '@hcengineering/platform'
+import { ProjectType } from '@hcengineering/task'
 import { trackerId } from '@hcengineering/tracker'
 import tracker from '@hcengineering/tracker-resources/src/plugin'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
@@ -77,7 +77,8 @@ export default mergeIds(trackerId, tracker, {
     IssueActivityExtension: '' as Ref<ActivityExtension>,
     IssueTemplateActivityExtension: '' as Ref<ActivityExtension>,
     ComponentActivityExtension: '' as Ref<ActivityExtension>,
-    MilestoneActivityExtension: '' as Ref<ActivityExtension>
+    MilestoneActivityExtension: '' as Ref<ActivityExtension>,
+    BaseProjectType: '' as Ref<ProjectType>
   },
   completion: {
     IssueQuery: '' as Resource<ObjectSearchFactory>,

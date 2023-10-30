@@ -14,7 +14,7 @@
 //
 
 import { getCategories } from '@anticrm/skillset'
-import core, { Doc, Ref, Space, TxOperations } from '@hcengineering/core'
+import core, { Ref, TxOperations } from '@hcengineering/core'
 import {
   MigrateOperation,
   MigrationClient,
@@ -23,27 +23,18 @@ import {
   tryUpgrade
 } from '@hcengineering/model'
 import tags, { TagCategory } from '@hcengineering/model-tags'
-import { createKanbanTemplate, createSequence } from '@hcengineering/model-task'
-import task, { KanbanTemplate } from '@hcengineering/task'
+import { createProjectType, createSequence } from '@hcengineering/model-task'
+import tracker from '@hcengineering/model-tracker'
+import { recruitId } from '@hcengineering/recruit'
+import task, { ProjectType } from '@hcengineering/task'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import recruit from './plugin'
-import { recruitId } from '@hcengineering/recruit'
-import tracker from '@hcengineering/model-tracker'
 
 export const recruitOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createDefaults(tx)
-
-    await tryUpgrade(client, recruitId, [
-      {
-        state: 'fix-template-space',
-        func: async (client) => {
-          await fixTemplateSpace(tx)
-        }
-      }
-    ])
 
     await tryUpgrade(client, recruitId, [
       {
@@ -66,13 +57,6 @@ export const recruitOperation: MigrateOperation = {
         }
       }
     ])
-  }
-}
-
-async function fixTemplateSpace (tx: TxOperations): Promise<void> {
-  const templateSpace = await tx.findOne(task.class.KanbanTemplateSpace, { _id: recruit.space.VacancyTemplates })
-  if (templateSpace !== undefined && templateSpace?.attachedToClass === undefined) {
-    await tx.update(templateSpace, { attachedToClass: recruit.class.Vacancy })
   }
 }
 
@@ -116,33 +100,43 @@ async function createDefaults (tx: TxOperations): Promise<void> {
   await createDefaultKanbanTemplate(tx)
 }
 
-async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<KanbanTemplate>> {
-  const defaultKanban = {
-    states: [
-      { color: PaletteColorIndexes.Coin, name: 'HR Interview' },
-      { color: PaletteColorIndexes.Cerulean, name: 'Technical Interview' },
-      { color: PaletteColorIndexes.Waterway, name: 'Test task' },
-      { color: PaletteColorIndexes.Grass, name: 'Offer' }
-    ],
-    doneStates: [
-      { isWon: true, name: 'Won' },
-      { isWon: false, name: 'Lost' }
-    ]
-  }
-
-  return await createKanbanTemplate(
+async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<ProjectType>> {
+  return await createProjectType(
     tx,
     {
-      kanbanId: recruit.template.DefaultVacancy,
-      space: recruit.space.VacancyTemplates as Ref<Doc> as Ref<Space>,
-      title: 'Default vacancy',
-      description: '',
-      shortDescription: '',
-      states: defaultKanban.states,
-      doneStates: defaultKanban.doneStates
+      name: 'Default vacancy',
+      category: recruit.category.VacancyTypeCategories,
+      description: ''
     },
-    recruit.attribute.State,
-    recruit.attribute.DoneState
+    [
+      {
+        color: PaletteColorIndexes.Coin,
+        name: 'HR Interview',
+        ofAttribute: recruit.attribute.State,
+        category: task.statusCategory.Active
+      },
+      {
+        color: PaletteColorIndexes.Cerulean,
+        name: 'Technical Interview',
+        ofAttribute: recruit.attribute.State,
+        category: task.statusCategory.Active
+      },
+      {
+        color: PaletteColorIndexes.Waterway,
+        name: 'Test task',
+        ofAttribute: recruit.attribute.State,
+        category: task.statusCategory.Active
+      },
+      {
+        color: PaletteColorIndexes.Grass,
+        name: 'Offer',
+        ofAttribute: recruit.attribute.State,
+        category: task.statusCategory.Active
+      },
+      { name: 'Won', ofAttribute: recruit.attribute.State, category: task.statusCategory.Won },
+      { name: 'Lost', ofAttribute: recruit.attribute.State, category: task.statusCategory.Lost }
+    ],
+    recruit.template.DefaultVacancy
   )
 }
 
@@ -183,33 +177,5 @@ async function createSpaces (tx: TxOperations): Promise<void> {
     )
   } else if (currentReviews.private) {
     await tx.update(currentReviews, { private: false })
-  }
-
-  const currentTemplate = await tx.findOne(task.class.KanbanTemplateSpace, {
-    _id: recruit.space.VacancyTemplates
-  })
-  if (currentTemplate === undefined) {
-    await tx.createDoc(
-      task.class.KanbanTemplateSpace,
-      core.space.Space,
-      {
-        name: recruit.string.Vacancies,
-        description: recruit.string.ManageVacancyStatuses,
-        icon: recruit.component.TemplatesIcon,
-        editor: recruit.component.VacancyTemplateEditor,
-        private: false,
-        members: [],
-        archived: false,
-        attachedToClass: recruit.class.Vacancy,
-        ofAttribute: recruit.attribute.State,
-        doneAttribute: recruit.attribute.DoneState
-      },
-      recruit.space.VacancyTemplates
-    )
-  } else if (currentTemplate.ofAttribute === undefined) {
-    await tx.update(currentTemplate, {
-      ofAttribute: recruit.attribute.State,
-      doneAttribute: recruit.attribute.DoneState
-    })
   }
 }

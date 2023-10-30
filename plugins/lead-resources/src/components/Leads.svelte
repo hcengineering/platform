@@ -40,20 +40,10 @@
   {#if leads !== undefined && leads > 0}
     {#if wSection < 640}
       <Scroller horizontal>
-        <Table
-          _class={lead.class.Lead}
-          config={['', 'status', 'doneState']}
-          query={{ attachedTo: objectId }}
-          {loadingProps}
-        />
+        <Table _class={lead.class.Lead} config={['', 'status']} query={{ attachedTo: objectId }} {loadingProps} />
       </Scroller>
     {:else}
-      <Table
-        _class={lead.class.Lead}
-        config={['', 'status', 'doneState']}
-        query={{ attachedTo: objectId }}
-        {loadingProps}
-      />
+      <Table _class={lead.class.Lead} config={['', 'status']} query={{ attachedTo: objectId }} {loadingProps} />
     {/if}
   {:else}
     <div class="antiSection-empty solid flex-col-center mt-3">

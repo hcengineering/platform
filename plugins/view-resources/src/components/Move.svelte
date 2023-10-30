@@ -18,9 +18,9 @@
   import { Button, Label, Status as StatusControl, themeStore } from '@hcengineering/ui'
 
   import core, { Class, Client, Doc, Ref, SortingOrder, Space } from '@hcengineering/core'
-  import { getResource, OK, Resource, Status, translate } from '@hcengineering/platform'
+  import { OK, Resource, Status, getResource, translate } from '@hcengineering/platform'
   import { SpaceSelect } from '@hcengineering/presentation'
-  import task, { calcRank, Task } from '@hcengineering/task'
+  import task, { Project, Task, calcRank } from '@hcengineering/task'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
   import { moveToSpace } from '../utils'
@@ -48,15 +48,10 @@
   $: _class && translate(_class, {}, $themeStore.language).then((res) => (classLabel = res.toLocaleLowerCase()))
 
   async function move (doc: Doc): Promise<void> {
-    const needStates = currentSpace ? hierarchy.isDerived(currentSpace._class, task.class.SpaceWithStates) : false
-    if (needStates) {
-      const status = await client.findOne(task.class.State, { space: doc.space })
-      if (status === undefined) {
-        throw new Error('Move: status not found')
-      }
-      const lastOne = await client.findOne((doc as Task)._class, {}, { sort: { rank: SortingOrder.Descending } })
+    const needRank = currentSpace ? hierarchy.isDerived(currentSpace._class, task.class.Project) : false
+    if (needRank) {
+      const lastOne = await client.findOne((doc as Task)._class, { space }, { sort: { rank: SortingOrder.Descending } })
       await moveToSpace(client, doc, space, {
-        status: status._id,
         rank: calcRank(lastOne, undefined)
       })
     } else {
@@ -99,6 +94,11 @@
       validate(doc, doc._class)
     })
   }
+
+  $: spaceQuery =
+    currentSpace && hierarchy.isDerived(currentSpace._class, task.class.Project)
+      ? { type: (currentSpace as Project).type, archived: false }
+      : { archived: false }
 </script>
 
 <div class="container">
@@ -112,7 +112,7 @@
   <div class="spaceSelect">
     {#await getSpace() then}
       {#if currentSpace && _class}
-        <SpaceSelect _class={currentSpace._class} label={_class} bind:value={space} />
+        <SpaceSelect {spaceQuery} _class={currentSpace._class} label={_class} bind:value={space} />
       {/if}
     {/await}
   </div>

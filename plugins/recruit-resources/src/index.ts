@@ -29,7 +29,7 @@ import { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
 import task from '@hcengineering/task'
 import { showPopup } from '@hcengineering/ui'
 import { Filter } from '@hcengineering/view'
-import { FilterQuery } from '@hcengineering/view-resources'
+import { FilterQuery, statusStore } from '@hcengineering/view-resources'
 import ApplicantFilter from './components/ApplicantFilter.svelte'
 import ApplicationItem from './components/ApplicationItem.svelte'
 import ApplicationPresenter from './components/ApplicationPresenter.svelte'
@@ -77,6 +77,7 @@ import {
 } from './utils'
 
 import { MoveApplicant } from './actionImpl'
+import { get } from 'svelte/store'
 
 async function createOpinion (object: Doc): Promise<void> {
   showPopup(CreateOpinion, { space: object.space, review: object._id })
@@ -202,13 +203,16 @@ export async function queryVacancy (
 }
 
 async function getActiveTalants (filter: Filter, onUpdate: () => void): Promise<Array<Ref<Doc>>> {
+  const doneStates = get(statusStore)
+    .array.filter((p) => p.category === task.statusCategory.Lost || p.category === task.statusCategory.Won)
+    .map((p) => p._id)
   const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
     let refresh: boolean = false
     const lq = FilterQuery.getLiveQuery(filter.index)
     refresh = lq.query(
       recruit.class.Applicant,
       {
-        doneState: undefined
+        status: { $nin: doneStates }
       },
       (refs: FindResult<Applicant>) => {
         const result = Array.from(new Set(refs.map((p) => p.attachedTo)))
@@ -220,7 +224,6 @@ async function getActiveTalants (filter: Filter, onUpdate: () => void): Promise<
         projection: {
           _id: 1,
           _class: 1,
-          doneState: 1,
           attachedTo: 1
         }
       }
@@ -279,7 +282,7 @@ async function noneApplicant (filter: Filter, onUpdate: () => void): Promise<Obj
 
 export function hideDoneState (value: any, query: DocumentQuery<Doc>): DocumentQuery<Doc> {
   if (value as boolean) {
-    return { ...query, doneState: null }
+    return { ...query, isDone: { $ne: true } }
   }
   return query
 }

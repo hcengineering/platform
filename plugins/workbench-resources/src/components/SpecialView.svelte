@@ -17,8 +17,7 @@
   import { Asset, IntlString } from '@hcengineering/platform'
   import { AnyComponent, Button, Component, IconAdd, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
   import { ViewOptions, Viewlet, ViewletDescriptor, ViewletPreference } from '@hcengineering/view'
-  import { FilterBar, FilterButton, ViewletSettingButton } from '@hcengineering/view-resources'
-  import ViewletSelector from '@hcengineering/view-resources/src/components/ViewletSelector.svelte'
+  import { FilterBar, FilterButton, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined

@@ -13,8 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { IdMap, Ref, SortingOrder, Status, StatusCategory, WithLookup, toIdMap } from '@hcengineering/core'
+  import core, { IdMap, Ref, SortingOrder, StatusCategory, WithLookup, toIdMap } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
+  import { getStates } from '@hcengineering/task'
   import { Issue, Project } from '@hcengineering/tracker'
   import { Button, ButtonKind, ButtonSize, ProgressCircle, SelectPopup, showPanel } from '@hcengineering/ui'
   import { statusStore } from '@hcengineering/view-resources'
@@ -22,6 +23,7 @@
   import tracker from '../../../plugin'
   import { listIssueStatusOrder } from '../../../utils'
   import IssueStatusIcon from '../IssueStatusIcon.svelte'
+  import { typeStore } from '@hcengineering/task-resources'
 
   export let value: WithLookup<Issue>
   export let currentProject: Project | undefined = undefined
@@ -78,17 +80,12 @@
   }
 
   $: if (subIssues) {
-    const doneStatuses = project
-      ? project.states
-        .map((p) => $statusStore.get(p))
-        .filter((p) => p !== undefined)
-        .filter(
-          (s) =>
-            s?.category === tracker.issueStatusCategory.Completed ||
-              s?.category === tracker.issueStatusCategory.Canceled
-        )
-        .map((p) => (p as Status)._id)
-      : []
+    const doneStatuses = getStates(project, $typeStore, $statusStore.byId)
+      .filter(
+        (s) =>
+          s?.category === tracker.issueStatusCategory.Completed || s?.category === tracker.issueStatusCategory.Canceled
+      )
+      .map((p) => p._id)
     countComplete = subIssues.filter((si) => doneStatuses.includes(si.status)).length
   }
   $: hasSubIssues = (subIssues?.length ?? 0) > 0
@@ -100,17 +97,20 @@
   }
 
   $: {
-    subIssues.sort(
-      (a, b) =>
-        listIssueStatusOrder.indexOf($statusStore.get(a.status)?.category ?? tracker.issueStatusCategory.Backlog) -
-        listIssueStatusOrder.indexOf($statusStore.get(b.status)?.category ?? tracker.issueStatusCategory.Backlog)
-    )
+    subIssues.sort((a, b) => {
+      const aStatus = $statusStore.byId.get(a.status)
+      const bStatus = $statusStore.byId.get(b.status)
+      const res =
+        listIssueStatusOrder.indexOf(aStatus?.category ?? tracker.issueStatusCategory.Backlog) -
+        listIssueStatusOrder.indexOf(bStatus?.category ?? tracker.issueStatusCategory.Backlog)
+      return res
+    })
     _subIssues = subIssues
   }
 
   $: subIssuesValue = _subIssues.map((iss) => {
     const text = project ? `${getIssueId(project, iss)} ${iss.title}` : iss.title
-    const c = $statusStore.get(iss.status)?.category
+    const c = $statusStore.byId.get(iss.status)?.category
     const category = c !== undefined ? categories.get(c) : undefined
     return {
       id: iss._id,
@@ -118,7 +118,7 @@
       isSelected: iss._id === value._id,
       icon: IssueStatusIcon,
       iconProps: {
-        value: $statusStore.get(iss.status),
+        value: $statusStore.byId.get(iss.status),
         size: 'small',
         fill: undefined
       },

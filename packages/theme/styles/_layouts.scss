@@ -569,6 +569,7 @@ input.search {
 .px-10 { padding: 0 2.5rem; }
 .py-0-5 { padding: 0.125rem 0; }
 .py-1 { padding: 0.25rem 0; }
+.py-2 { padding: 0.5rem 0; }
 .py-4 { padding: 1rem 0; }
 .py-8 { padding: 2rem 0; }
 .py-10 { padding: 2.5rem 0; }
@@ -942,7 +943,7 @@ a.no-line {
 .background-button-noborder-bg-hover { background-color: var(--noborder-bg-hover); }
 .background-primary-color { background-color: var(--primary-button-default); }
 .background-content-accent-color { background-color: var(--accent-color); }
-.background-comp-header-color { background-color: var(--theme-comp-header-color); }
+.background-comp-header-color { background-color: var(--theme-comp-header-color) !important; }
 
 .content-trans-color { color: var(--theme-trans-color); }
 .content-darker-color { color: var(--theme-darker-color); }

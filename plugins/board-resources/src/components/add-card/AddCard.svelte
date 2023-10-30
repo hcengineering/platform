@@ -41,7 +41,6 @@
 
     const value: AttachedData<BoardCard> = {
       status: state._id,
-      doneState: null,
       number: (incResult as any).object.sequence,
       title,
       rank: calcRank(lastOne, undefined),

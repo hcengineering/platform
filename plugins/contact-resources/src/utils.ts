@@ -18,15 +18,15 @@ import {
   AvatarProvider,
   AvatarType,
   ChannelProvider,
-  Employee,
   Contact,
+  Employee,
+  Person,
   PersonAccount,
   contactId,
   formatName,
   getFirstName,
   getLastName,
-  getName,
-  Person
+  getName
 } from '@hcengineering/contact'
 import {
   Client,
@@ -59,7 +59,7 @@ export function formatDate (dueDateMs: Timestamp): string {
 }
 
 export async function employeeSort (client: TxOperations, value: Array<Ref<Employee>>): Promise<Array<Ref<Employee>>> {
-  const h = getClient().getHierarchy()
+  const h = client.getHierarchy()
   return value.sort((a, b) => {
     const employeeId1 = a as Ref<Employee> | null | undefined
     const employeeId2 = b as Ref<Employee> | null | undefined

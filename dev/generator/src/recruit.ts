@@ -6,6 +6,7 @@ import core, {
   MeasureMetricsContext,
   MixinUpdate,
   Ref,
+  Status,
   TxOperations,
   WorkspaceId,
   generateId,
@@ -14,7 +15,7 @@ import core, {
 import { MinioService } from '@hcengineering/minio'
 import recruit from '@hcengineering/model-recruit'
 import { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
-import { State, genRanks } from '@hcengineering/task'
+import task, { ProjectType, genRanks } from '@hcengineering/task'
 import faker from 'faker'
 import jpeg, { BufferRet } from 'jpeg-js'
 import { AttachmentOptions, addAttachments } from './attachments'
@@ -87,8 +88,26 @@ async function genVacansyApplicants (
   candidates: Ref<Candidate>[],
   emoloyeeIds: Ref<Employee>[]
 ): Promise<void> {
-  const [states, doneStates] = await ctx.with('create-kanbad', {}, (ctx) =>
-    createUpdateSpaceKanban(ctx, vacancyId, client)
+  const vacancyId = (options.random ? `vacancy-${generateId()}-${i}` : `vacancy-genid-${i}`) as Ref<Vacancy>
+
+  const typeId = (options.random ? `vacancy-type-${generateId()}-${i}` : `vacancy-type-genid-${i}`) as Ref<ProjectType>
+
+  const states = await ctx.with('create-kanbad', {}, (ctx) => createUpdateSpaceKanban(ctx, vacancyId, client))
+  const type: Data<ProjectType> = {
+    name: faker.name.title(),
+    description: faker.lorem.sentences(2),
+    shortDescription: faker.lorem.sentences(1),
+    category: recruit.category.VacancyTypeCategories,
+    private: false,
+    members: [],
+    archived: false,
+    statuses: states.map((s) => {
+      return { _id: s }
+    })
+  }
+
+  await ctx.with('update', {}, (ctx) =>
+    findOrUpdate(ctx, client, core.space.Space, task.class.ProjectType, typeId, type)
   )
 
   const vacancy: Data<Vacancy> = {
@@ -100,10 +119,8 @@ async function genVacansyApplicants (
     number: faker.datatype.number(),
     private: false,
     archived: false,
-    states,
-    doneStates
+    type: typeId
   }
-  const vacancyId = (options.random ? `vacancy-${generateId()}-${i}` : `vacancy-genid-${i}`) as Ref<Vacancy>
 
   console.log('Creating vacandy', vacancy.name)
 
@@ -134,10 +151,11 @@ async function genVacansyApplicants (
   const applicantsForCount = options.applicants.min + faker.datatype.number(options.applicants.max)
 
   const applicantsFor = faker.random.arrayElements(candidates, applicantsForCount)
-  const rankGen = genRanks(candidates.length)
-  for (const candidateId of applicantsFor) {
+  const ranks = genRanks(candidates.length)
+  for (let index = 0; index < applicantsFor.length; index++) {
+    const candidateId = applicantsFor[index]
     await ctx.with('applicant', {}, (ctx) =>
-      genApplicant(ctx, vacancyId, candidateId, emoloyeeIds, states, client, options, minio, workspaceId, rankGen)
+      genApplicant(ctx, vacancyId, candidateId, emoloyeeIds, states, client, options, minio, workspaceId, ranks[i])
     )
   }
 }
@@ -147,22 +165,20 @@ async function genApplicant (
   vacancyId: Ref<Vacancy>,
   candidateId: Ref<Candidate>,
   emoloyeeIds: Ref<Employee>[],
-  states: Ref<State>[],
+  states: Ref<Status>[],
   client: TxOperations,
   options: RecruitOptions,
   minio: MinioService,
   workspaceId: WorkspaceId,
-  rankGen: Generator<string, void, unknown>
+  rank: string
 ): Promise<void> {
   const applicantId = `vacancy-${vacancyId}-${candidateId}` as Ref<Applicant>
-  const rank = rankGen.next().value
 
   const applicant: AttachedData<Applicant> = {
     number: faker.datatype.number(),
     assignee: faker.random.arrayElement(emoloyeeIds),
     status: faker.random.arrayElement(states),
-    doneState: null,
-    rank: rank as string,
+    rank,
     startDate: null,
     dueDate: null
   }

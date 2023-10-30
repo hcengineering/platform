@@ -1,19 +1,19 @@
 import { Organization } from '@hcengineering/contact'
-import core, { Account, Client, Data, Doc, Ref, SortingOrder, TxOperations } from '@hcengineering/core'
+import core, { Account, Client, Data, Doc, Ref, SortingOrder, Status, TxOperations } from '@hcengineering/core'
 import recruit, { Applicant, Vacancy } from '@hcengineering/recruit'
-import task, { KanbanTemplate, State, calcRank, createStates } from '@hcengineering/task'
+import task, { ProjectType, calcRank } from '@hcengineering/task'
 
 export async function createVacancy (
   rawClient: Client,
   name: string,
-  templateId: Ref<KanbanTemplate>,
+  typeId: Ref<ProjectType>,
   account: Ref<Account>,
   company?: Ref<Organization>
 ): Promise<Ref<Vacancy>> {
   const client = new TxOperations(rawClient, account)
-  const template = await client.findOne(task.class.KanbanTemplate, { _id: templateId })
-  if (template === undefined) {
-    throw Error(`Failed to find target kanban template: ${templateId}`)
+  const type = await client.findOne(task.class.ProjectType, { _id: typeId })
+  if (type === undefined) {
+    throw Error(`Failed to find target project type: ${typeId}`)
   }
 
   const sequence = await client.findOne(task.class.Sequence, { attachedTo: recruit.class.Vacancy })
@@ -23,24 +23,16 @@ export async function createVacancy (
 
   const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
-  const [states, doneStates] = await createStates(
-    client,
-    recruit.attribute.State,
-    recruit.attribute.DoneState,
-    templateId
-  )
-
   const id = await client.createDoc(recruit.class.Vacancy, core.space.Space, {
     name,
-    description: template.shortDescription ?? '',
-    fullDescription: template.description,
+    description: type.shortDescription ?? '',
+    fullDescription: type.description,
     private: false,
     archived: false,
     company,
     number: (incResult as any).object.sequence,
     members: [],
-    states,
-    doneStates
+    type: typeId
   })
 
   return id
@@ -48,17 +40,13 @@ export async function createVacancy (
 
 export async function createApplication (
   client: TxOperations,
-  selectedState: State,
+  selectedState: Status,
   _space: Ref<Vacancy>,
   doc: Doc,
   data: Data<Applicant>
 ): Promise<void> {
   if (selectedState === undefined) {
     throw new Error(`Please select initial state:${_space}`)
-  }
-  const state = await client.findOne(task.class.State, { space: _space, _id: selectedState?._id })
-  if (state === undefined) {
-    throw new Error(`create application: state not found space:${_space}`)
   }
   const sequence = await client.findOne(task.class.Sequence, { attachedTo: recruit.class.Applicant })
   if (sequence === undefined) {
@@ -70,7 +58,7 @@ export async function createApplication (
 
   await client.addCollection(recruit.class.Applicant, _space, doc._id, recruit.mixin.Candidate, 'applications', {
     ...data,
-    status: state._id,
+    status: selectedState._id,
     number: (incResult as any).object.sequence,
     rank: calcRank(lastOne, undefined)
   })

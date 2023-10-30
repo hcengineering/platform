@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { Button, Label } from '@hcengineering/ui'
+  import { DocumentQuery, SortingOrder, Status } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { DocumentQuery, SortingOrder } from '@hcengineering/core'
-  import task, { State } from '@hcengineering/task'
+  import task from '@hcengineering/task'
+  import { Button, Label } from '@hcengineering/ui'
   import board from '../plugin'
 
-  export let query: DocumentQuery<State> = {}
+  export let query: DocumentQuery<Status> = {}
 
-  let archivedLists: State[]
+  let archivedLists: Status[]
   const client = getClient()
   const cardQuery = createQuery()
   $: cardQuery.query(

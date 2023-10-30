@@ -46,7 +46,7 @@ import {
 import attachment from '@hcengineering/model-attachment'
 import contact from '@hcengineering/model-contact'
 import core, { TAttachedDoc, TClass } from '@hcengineering/model-core'
-import { TSpaceWithStates } from '@hcengineering/model-task'
+import { TProject } from '@hcengineering/model-task'
 import view, { createAction } from '@hcengineering/model-view'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
@@ -61,7 +61,7 @@ export const DOMAIN_CALENDAR = 'calendar' as Domain
 
 @Model(calendar.class.Calendar, core.class.Space)
 @UX(calendar.string.Calendar, calendar.icon.Calendar)
-export class TCalendar extends TSpaceWithStates implements Calendar {
+export class TCalendar extends TProject implements Calendar {
   visibility!: Visibility
 }
 

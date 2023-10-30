@@ -19,7 +19,7 @@ import type { IntlString, Resource, Status } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { recruitId } from '@hcengineering/recruit'
 import recruit from '@hcengineering/recruit-resources/src/plugin'
-import { KanbanTemplate } from '@hcengineering/task'
+import { ProjectType } from '@hcengineering/task'
 import type { AnyComponent, Location } from '@hcengineering/ui'
 import type { Action, ActionCategory, ViewAction, ViewQueryAction, Viewlet } from '@hcengineering/view'
 import { ActivityExtension } from '@hcengineering/activity'
@@ -118,8 +118,7 @@ export default mergeIds(recruitId, recruit, {
     NotificationApplicantPresenter: '' as AnyComponent
   },
   template: {
-    DefaultVacancy: '' as Ref<KanbanTemplate>,
-    Task: '' as Ref<KanbanTemplate>
+    DefaultVacancy: '' as Ref<ProjectType>
   },
   viewlet: {
     TableCandidate: '' as Ref<Viewlet>,

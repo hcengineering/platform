@@ -1,12 +1,12 @@
-import { MeasureContext, Ref, TxOperations } from '@hcengineering/core'
-import task, { DoneState, SpaceWithStates, State } from '@hcengineering/task'
+import core, { MeasureContext, Ref, Status, TxOperations } from '@hcengineering/core'
+import task, { Project } from '@hcengineering/task'
 import { findOrUpdate } from './utils'
 
 export async function createUpdateSpaceKanban (
   ctx: MeasureContext,
-  spaceId: Ref<SpaceWithStates>,
+  spaceId: Ref<Project>,
   client: TxOperations
-): Promise<[Ref<State>[], Ref<DoneState>[]]> {
+): Promise<Ref<Status>[]> {
   const rawStates = [
     { color: 9, name: 'Initial' },
     { color: 10, name: 'Intermidiate' },
@@ -14,35 +14,40 @@ export async function createUpdateSpaceKanban (
     { color: 0, name: 'Done' },
     { color: 11, name: 'Invalid' }
   ]
-  const states: Array<Ref<State>> = []
-  for (const st of rawStates) {
-    const sid = ('generated-' + spaceId + '.state.' + st.name.toLowerCase().replace(' ', '_')) as Ref<State>
-
-    await ctx.with('find-or-update', {}, (ctx) =>
-      findOrUpdate(ctx, client, task.space.Statuses, task.class.State, sid, {
-        ofAttribute: task.attribute.State,
-        name: st.name,
-        color: st.color
-      })
-    )
-    states.push(sid)
-  }
-
-  const done: Array<Ref<DoneState>> = []
-
   const doneStates = [
-    { class: task.class.WonState, name: 'Won' },
-    { class: task.class.LostState, name: 'Lost' }
+    { category: task.statusCategory.Won, name: 'Won' },
+    { category: task.statusCategory.Lost, name: 'Lost' }
   ]
-  for (const st of doneStates) {
-    const sid = `generated-${spaceId}.done-state.${st.name.toLowerCase().replace(' ', '_')}` as Ref<DoneState>
-    await ctx.with('gen-done-state', {}, (ctx) =>
-      findOrUpdate(ctx, client, task.space.Statuses, st.class, sid, {
-        ofAttribute: task.attribute.DoneState,
-        name: st.name
-      })
-    )
-    done.push(sid)
-  }
-  return [states, done]
+  const states: Ref<Status>[] = []
+  await Promise.all(
+    rawStates.map(async (st, i) => {
+      const sid = ('generated-' + spaceId + '.state.' + st.name.toLowerCase().replace(' ', '_')) as Ref<Status>
+
+      await ctx.with('find-or-update', {}, (ctx) =>
+        findOrUpdate(ctx, client, task.space.Statuses, core.class.Status, sid, {
+          ofAttribute: task.attribute.State,
+          name: st.name,
+          color: st.color,
+          category: task.statusCategory.Active
+        })
+      )
+      states.push(sid)
+    })
+  )
+
+  await Promise.all(
+    doneStates.map(async (st, i) => {
+      const sid = `generated-${spaceId}.state.${st.name.toLowerCase().replace(' ', '_')}` as Ref<Status>
+      await ctx.with('gen-done-state', {}, (ctx) =>
+        findOrUpdate(ctx, client, task.space.Statuses, core.class.Status, sid, {
+          ofAttribute: task.attribute.State,
+          name: st.name,
+          category: st.category
+        })
+      )
+      states.push(sid)
+    })
+  )
+
+  return states
 }

@@ -15,19 +15,44 @@
 -->
 <script lang="ts">
   import type { Card } from '@hcengineering/board'
-  import board from '@hcengineering/board'
   import { getClient } from '@hcengineering/presentation'
   import { CheckBox, Label } from '@hcengineering/ui'
-  import plugin from '../../plugin'
+  import { statusStore } from '@hcengineering/view-resources'
+  import core, { Status, TxProcessor } from '@hcengineering/core'
+  import board from '../../plugin'
 
   export let value: Card
   const client = getClient()
 
-  function updateState (e: CustomEvent<boolean>) {
-    if (e.detail) {
-      client.update(value, { doneState: board.state.Completed })
-    } else {
-      client.update(value, { doneState: null })
+  $: currentState = $statusStore.byId.get(value.status)
+
+  $: store = $statusStore
+
+  async function updateState (e: CustomEvent<boolean>): Promise<void> {
+    if (currentState !== undefined) {
+      if (e.detail) {
+        const targetState = store.byType
+          .get(currentState.space)
+          ?.find((s) => s.category === board.statusCategory.Completed)
+        if (targetState) {
+          await client.update(value, { status: targetState._id })
+        }
+      } else {
+        let targetState: Status | undefined = undefined
+        const txes = await client.findAll(core.class.Tx, { 'tx.objectId': value._id })
+        while (txes.length) {
+          const doc = TxProcessor.buildDoc2Doc<Card>(txes)
+          if (doc === undefined) {
+            break
+          }
+          targetState = store.byId.get(doc.status)
+          if (targetState !== undefined && targetState.category !== board.statusCategory.Completed) {
+            await client.update(value, { status: targetState._id })
+            return
+          }
+          txes.pop()
+        }
+      }
     }
   }
 </script>
@@ -35,10 +60,10 @@
 {#if value}
   <div class="attributes-bar-container">
     <div class="label fs-bold">
-      <Label label={plugin.string.Completed} />
+      <Label label={board.string.Completed} />
     </div>
     <div class="ml-4">
-      <CheckBox checked={value.doneState === board.state.Completed} on:value={updateState} />
+      <CheckBox checked={currentState?.category === board.statusCategory.Completed} on:value={updateState} />
     </div>
   </div>
 {/if}

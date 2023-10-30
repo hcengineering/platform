@@ -569,4 +569,24 @@ export function createModel (builder: Builder): void {
     },
     tracker.ids.MilestoneActivityExtension
   )
+
+  builder.createDoc(
+    task.class.ProjectTypeCategory,
+    core.space.Model,
+    {
+      name: tracker.string.Projects,
+      description: tracker.string.ManageWorkflowStatuses,
+      icon: task.component.TemplatesIcon,
+      attachedToClass: tracker.class.Project,
+      statusClass: tracker.class.IssueStatus,
+      statusCategories: [
+        tracker.issueStatusCategory.Backlog,
+        tracker.issueStatusCategory.Unstarted,
+        tracker.issueStatusCategory.Started,
+        tracker.issueStatusCategory.Completed,
+        tracker.issueStatusCategory.Canceled
+      ]
+    },
+    tracker.category.ProjectTypeCategory
+  )
 }

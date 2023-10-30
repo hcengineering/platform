@@ -14,7 +14,7 @@
 //
 
 import type { Employee, Organization } from '@hcengineering/contact'
-import { IndexKind, Lookup, Ref, SortingOrder, Timestamp } from '@hcengineering/core'
+import { IndexKind, Lookup, Ref, SortingOrder, Status, Timestamp } from '@hcengineering/core'
 import {
   Builder,
   Collection,
@@ -39,7 +39,7 @@ import core, { TAttachedDoc, TSpace } from '@hcengineering/model-core'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import presentation from '@hcengineering/model-presentation'
 import tags from '@hcengineering/model-tags'
-import task, { DOMAIN_TASK, TSpaceWithStates, TTask, actionTemplates } from '@hcengineering/model-task'
+import task, { DOMAIN_TASK, TProject, TTask, actionTemplates } from '@hcengineering/model-task'
 import tracker from '@hcengineering/model-tracker'
 import view, { createAction, showColorsViewOption, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import workbench, { Application, createNavigateAction } from '@hcengineering/model-workbench'
@@ -55,7 +55,6 @@ import {
   recruitId
 } from '@hcengineering/recruit'
 import setting from '@hcengineering/setting'
-import { DoneState, State } from '@hcengineering/task'
 import { KeyBinding, ViewOptionModel, ViewOptionsModel } from '@hcengineering/view'
 import activity from '@hcengineering/activity'
 import recruit from './plugin'
@@ -66,9 +65,9 @@ export { recruitId } from '@hcengineering/recruit'
 export { recruitOperation } from './migration'
 export { default } from './plugin'
 
-@Model(recruit.class.Vacancy, task.class.SpaceWithStates)
+@Model(recruit.class.Vacancy, task.class.Project)
 @UX(recruit.string.Vacancy, recruit.icon.Vacancy, 'VCN', 'name')
-export class TVacancy extends TSpaceWithStates implements Vacancy {
+export class TVacancy extends TProject implements Vacancy {
   @Prop(TypeMarkup(), recruit.string.FullDescription)
   @Index(IndexKind.FullText)
     fullDescription?: string
@@ -165,13 +164,9 @@ export class TApplicant extends TTask implements Applicant {
   @Index(IndexKind.Indexed)
   declare assignee: Ref<Employee> | null
 
-  @Prop(TypeRef(task.class.State), task.string.TaskState, { _id: recruit.attribute.State })
+  @Prop(TypeRef(core.class.Status), task.string.TaskState, { _id: recruit.attribute.State })
   @Index(IndexKind.Indexed)
-  declare status: Ref<State>
-
-  @Prop(TypeRef(task.class.DoneState), task.string.TaskStateDone, { _id: recruit.attribute.DoneState })
-  @Index(IndexKind.Indexed)
-  declare doneState: Ref<DoneState>
+  declare status: Ref<Status>
 }
 
 @Model(recruit.class.ApplicantMatch, core.class.AttachedDoc, DOMAIN_TASK)
@@ -281,15 +276,15 @@ export function createModel (builder: Builder): void {
           },
           {
             id: candidatesId,
-            component: workbench.component.SpecialView,
+            component: task.component.TypesView,
             icon: recruit.icon.Application,
             label: recruit.string.Applications,
             componentProps: {
               _class: recruit.class.Applicant,
-              icon: recruit.icon.Application,
               label: recruit.string.Applications,
               createLabel: recruit.string.ApplicationCreateLabel,
               createComponent: recruit.component.CreateApplication,
+              category: recruit.category.VacancyTypeCategories,
               descriptors: [
                 view.viewlet.Table,
                 view.viewlet.List,
@@ -378,10 +373,6 @@ export function createModel (builder: Builder): void {
     {
       ...actionTemplates.editStatus,
       target: recruit.class.Vacancy,
-      actionProps: {
-        ofAttribute: recruit.attribute.State,
-        doneOfAttribute: recruit.attribute.DoneState
-      },
       query: {
         archived: false
       },
@@ -455,7 +446,7 @@ export function createModel (builder: Builder): void {
     {
       attachTo: recruit.class.Applicant,
       descriptor: view.viewlet.Table,
-      config: ['', '$lookup.attachedTo', 'status', 'doneState', 'modifiedOn'],
+      config: ['', '$lookup.attachedTo', 'status', 'modifiedOn'],
       configOptions: {
         sortable: true
       },
@@ -470,7 +461,7 @@ export function createModel (builder: Builder): void {
     {
       attachTo: recruit.class.Applicant,
       descriptor: view.viewlet.Table,
-      config: ['', '$lookup.space.name', '$lookup.space.$lookup.company', 'status', 'comments', 'doneState'],
+      config: ['', '$lookup.space.name', '$lookup.space.$lookup.company', 'status', 'comments'],
       configOptions: {
         sortable: true
       },
@@ -583,7 +574,6 @@ export function createModel (builder: Builder): void {
           label: tracker.string.Issues
         },
         'status',
-        'doneState',
         'attachments',
         'comments',
         'modifiedOn',
@@ -657,7 +647,7 @@ export function createModel (builder: Builder): void {
         sortable: true
       },
       baseQuery: {
-        doneState: null,
+        isDone: { $ne: true },
         '$lookup.space.archived': false
       }
     },
@@ -677,7 +667,7 @@ export function createModel (builder: Builder): void {
         }
       },
       baseQuery: {
-        doneState: null,
+        isDone: { $ne: true },
         '$lookup.space.archived': false
       }
     },
@@ -719,7 +709,7 @@ export function createModel (builder: Builder): void {
 
   const applicantViewOptions = (colors: boolean, hides: boolean): ViewOptionsModel => {
     const model: ViewOptionsModel = {
-      groupBy: ['status', 'doneState', 'assignee', 'space', 'createdBy', 'modifiedBy'],
+      groupBy: ['status', 'assignee', 'space', 'createdBy', 'modifiedBy'],
       orderBy: [
         ['status', SortingOrder.Ascending],
         ['modifiedOn', SortingOrder.Descending],
@@ -989,7 +979,7 @@ export function createModel (builder: Builder): void {
       descriptor: task.viewlet.Kanban,
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       baseQuery: {
-        doneState: null,
+        isDone: { $ne: true },
         '$lookup.space.archived': false
       },
       viewOptions: {
@@ -1353,34 +1343,13 @@ export function createModel (builder: Builder): void {
     action: task.actionImpl.SelectStatus,
     actionPopup: task.component.StatusSelector,
     actionProps: {
-      _class: task.class.State,
+      _class: core.class.Status,
       ofAttribute: recruit.attribute.State,
       placeholder: task.string.TaskState
     },
     label: task.string.TaskState,
     icon: task.icon.TaskState,
     keyBinding: ['keyS->keyS'],
-    input: 'any',
-    category: recruit.category.Recruit,
-    target: recruit.class.Applicant,
-    context: {
-      mode: ['context'],
-      application: recruit.app.Recruit,
-      group: 'edit'
-    }
-  })
-
-  createAction(builder, {
-    action: task.actionImpl.SelectStatus,
-    actionPopup: task.component.StatusSelector,
-    actionProps: {
-      _class: task.class.DoneState,
-      ofAttribute: recruit.attribute.DoneState,
-      placeholder: task.string.DoneState
-    },
-    label: task.string.DoneState,
-    icon: task.icon.TaskState,
-    keyBinding: ['keyS->keyD'],
     input: 'any',
     category: recruit.category.Recruit,
     target: recruit.class.Applicant,
@@ -1503,7 +1472,7 @@ export function createModel (builder: Builder): void {
     recruit.class.Applicant,
     recruit.ids.ApplicationNotificationGroup,
     [],
-    ['comments', 'status', 'doneState', 'dueDate']
+    ['comments', 'status', 'dueDate']
   )
 
   builder.createDoc(
@@ -1727,5 +1696,20 @@ export function createModel (builder: Builder): void {
       }
     },
     recruit.action.GetTalentIds
+  )
+
+  builder.createDoc(
+    task.class.ProjectTypeCategory,
+    core.space.Model,
+    {
+      name: recruit.string.Vacancies,
+      description: recruit.string.ManageVacancyStatuses,
+      icon: recruit.component.TemplatesIcon,
+      editor: recruit.component.VacancyTemplateEditor,
+      attachedToClass: recruit.class.Vacancy,
+      statusClass: core.class.Status,
+      statusCategories: [task.statusCategory.Active, task.statusCategory.Won, task.statusCategory.Lost]
+    },
+    recruit.category.VacancyTypeCategories
   )
 }

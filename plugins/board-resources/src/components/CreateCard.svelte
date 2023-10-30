@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Card as BoardCard } from '@hcengineering/board'
-  import { AttachedData, generateId, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import type { Board, Card as BoardCard } from '@hcengineering/board'
+  import core, { AttachedData, Ref, SortingOrder, Space, generateId } from '@hcengineering/core'
   import { OK, Status } from '@hcengineering/platform'
-  import { Card, getClient, SpaceSelector } from '@hcengineering/presentation'
+  import { Card, SpaceSelector, getClient } from '@hcengineering/presentation'
   import task, { calcRank } from '@hcengineering/task'
   import { EditBox, Grid, Status as StatusControl } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -39,9 +39,17 @@
   }
 
   async function createCard () {
-    const state = await client.findOne(task.class.State, { space: _space })
-    if (state === undefined) {
-      throw new Error('create application: state not found')
+    const sp = await client.findOne(board.class.Board, { _id: _space as Ref<Board> })
+    if (sp === undefined) {
+      throw new Error('Board not found')
+    }
+    const status = await client.findOne(
+      core.class.Status,
+      { space: sp.type },
+      { sort: { rank: SortingOrder.Ascending } }
+    )
+    if (status === undefined) {
+      throw new Error('Status not found')
     }
     const sequence = await client.findOne(task.class.Sequence, { attachedTo: board.class.Card })
     if (sequence === undefined) {
@@ -52,8 +60,7 @@
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
     const value: AttachedData<BoardCard> = {
-      status: state._id,
-      doneState: null,
+      status: status._id,
       number: (incResult as any).object.sequence,
       title,
       rank: calcRank(lastOne, undefined),
@@ -65,7 +72,7 @@
       dueDate: null
     }
 
-    await client.addCollection(board.class.Card, _space, space, board.class.Board, 'cards', value, cardId)
+    await client.addCollection(board.class.Card, _space, _space, board.class.Board, 'cards', value, cardId)
     dispatch('close')
   }
 </script>

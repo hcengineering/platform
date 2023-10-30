@@ -318,7 +318,9 @@
           }}
         >
           {#if $$slots.header !== undefined}
-            <slot name="header" state={toAny(state)} count={stateObjects.length} index={si} />
+            {#key si}
+              <slot name="header" state={toAny(state)} count={stateObjects.length} index={si} />
+            {/key}
           {/if}
           <Scroller padding={'.25rem .5rem'} on:dragover on:drop>
             <slot name="beforeCard" {state} />

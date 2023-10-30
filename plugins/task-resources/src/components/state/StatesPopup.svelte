@@ -14,23 +14,56 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
-  import task, { SpaceWithStates, getStates } from '@hcengineering/task'
-  import { getColorNumberByText, getPlatformColorDef, resizeObserver, themeStore } from '@hcengineering/ui'
+  import core, { IdMap, Ref, Status, StatusCategory, toIdMap } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import task, { Project, ProjectType } from '@hcengineering/task'
+  import {
+    ColorDefinition,
+    getColorNumberByText,
+    getPlatformColorDef,
+    resizeObserver,
+    themeStore
+  } from '@hcengineering/ui'
   import { statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
+  import { typeStore } from '../..'
 
-  export let space: Ref<SpaceWithStates>
-  $: states = getStates(_space, $statusStore)
+  export let space: Ref<Project>
+
+  $: states = type
+    ? ($typeStore
+        .get(type._id)
+        ?.statuses?.map((p) => $statusStore.byId.get(p._id))
+        .filter((p) => p !== undefined) as Status[]) ?? []
+    : []
   const dispatch = createEventDispatcher()
 
-  let _space: SpaceWithStates | undefined = undefined
+  function getColor (state: Status, type: ProjectType | undefined, categories: IdMap<StatusCategory>): ColorDefinition {
+    const category = state.category ? categories.get(state.category) : undefined
+    const targetColor = type?.statuses?.find((p) => p._id === state._id)?.color ?? state.color ?? category?.color
+    return getPlatformColorDef(targetColor ?? getColorNumberByText(state.name), $themeStore.dark)
+  }
 
-  const query = createQuery()
-  $: query.query(task.class.SpaceWithStates, { _id: space }, (res) => {
-    _space = res[0]
+  let categories: IdMap<StatusCategory> = new Map()
+
+  const q = createQuery()
+  q.query(core.class.StatusCategory, {}, (res) => {
+    categories = toIdMap(res)
   })
+
+  $: getType(space, $typeStore)
+
+  const client = getClient()
+
+  async function getType (space: Ref<Project>, types: IdMap<ProjectType>): Promise<ProjectType | undefined> {
+    const _space = await client.findOne(task.class.Project, { _id: space })
+    if (_space === undefined) {
+      type = undefined
+      return
+    }
+    type = types.get(_space.type)
+  }
+  let type: ProjectType | undefined = undefined
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
@@ -38,7 +71,7 @@
   <div class="scroll">
     <div class="box">
       {#each states as state}
-        {@const color = getPlatformColorDef(state.color ?? getColorNumberByText(state.name), $themeStore.dark)}
+        {@const color = getColor(state, type, categories)}
         <button
           class="menu-item"
           on:click={() => {

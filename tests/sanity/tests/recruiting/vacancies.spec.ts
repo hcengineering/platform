@@ -1,5 +1,8 @@
 import { expect, test } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI } from '../utils'
+import { NavigationMenuPage } from '../model/recruiting/navigation-menu-page'
+import { VacanciesPage } from '../model/recruiting/vacancies-page'
+import { VacancyDetailsPage } from '../model/recruiting/vacancy-details-page'
 
 test.use({
   storageState: PlatformSetting
@@ -52,7 +55,7 @@ test.describe('recruit tests', () => {
   })
 
   // test('application-search', async ({ page }) => {
-  // TODO: Application search is brokeb, since indexer now index from child to parent.
+  // TODO: Application search is broken, since indexer now index from child to parent.
   //   await page.locator('[id="app-recruit\\:string\\:RecruitApplication"]').click()
 
   //   await page.locator('text=Vacancies').click()
@@ -73,4 +76,33 @@ test.describe('recruit tests', () => {
   //   await expect(page.locator('text=M. Marina')).toBeVisible()
   //   expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThan(2)
   // })
+
+  test('Edit a Vacancy', async ({ page }) => {
+    const vacancyName = 'Edit Vacancy ' + generateId(4)
+
+    const navigationMenuPage = new NavigationMenuPage(page)
+    await navigationMenuPage.buttonVacancies.click()
+    const vacanciesPage = new VacanciesPage(page)
+    await vacanciesPage.createNewVacancy({
+      title: vacancyName,
+      description: 'Vacancy description from Edit a Vacancy test',
+      location: 'Edit a Vacancy location'
+    })
+
+    await vacanciesPage.openVacancyByName(vacancyName)
+
+    const vacancyDetailsPage = new VacancyDetailsPage(page)
+    await vacancyDetailsPage.addComment('Test Vacancy Comment 12345')
+    await vacancyDetailsPage.checkCommentExist('Test Vacancy Comment 12345')
+
+    await vacancyDetailsPage.inputDescription.fill('Edit a Vacancy description')
+    await expect(vacancyDetailsPage.inputDescription).toHaveText('Edit a Vacancy description')
+
+    await vacancyDetailsPage.addAttachments('cat.jpeg')
+
+    await vacancyDetailsPage.addDescription('Vacancy Description left-side menu')
+    await vacancyDetailsPage.addLocation('Edit Vacancy Location')
+    await vacancyDetailsPage.addCompany('Apple')
+    await vacancyDetailsPage.addDueDateToday()
+  })
 })

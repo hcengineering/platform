@@ -13,11 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref, RefTo, Space } from '@hcengineering/core'
+  import core, { Class, Doc, Ref, RefTo, Space, Status } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import { getAttributePresenterClass, getClient } from '@hcengineering/presentation'
-  import type { State } from '@hcengineering/task'
-  import task from '@hcengineering/task'
   import {
     AnyComponent,
     Component,
@@ -50,7 +48,7 @@
     }
   }
   const targetClass = getTargetClass()
-  $: isState = targetClass === task.class.State ?? false
+  $: isState = targetClass === core.class.Status ?? false
   const dispatch = createEventDispatcher()
 
   async function getCountStates (ids: Ref<Doc>[]): Promise<number> {
@@ -58,7 +56,7 @@
       return 0
     }
     const selectStates = await client.findAll(targetClass, { _id: { $in: Array.from(ids) } }, {})
-    const unique = new Set(selectStates.map((s) => (s as State).name))
+    const unique = new Set(selectStates.map((s) => (s as Status).name))
     return unique.size
   }
 

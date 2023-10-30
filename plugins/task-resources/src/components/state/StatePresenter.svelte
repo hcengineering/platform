@@ -14,7 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { State } from '@hcengineering/task'
+  import core, { IdMap, Ref, Status, StatusCategory } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import task, { Project, ProjectType } from '@hcengineering/task'
   import {
     ColorDefinition,
     defaultBackground,
@@ -23,8 +25,9 @@
     themeStore
   } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
+  import { typeStore } from '../..'
 
-  export let value: State | undefined
+  export let value: Status | undefined
   export let shouldShowAvatar = true
   export let inline: boolean = false
   export let disabled: boolean = false
@@ -33,17 +36,58 @@
   export let shouldShowTooltip: boolean = false
   export let noUnderline: boolean = false
   export let shrink: number = 0
+  export let space: Ref<Project>
 
   const dispatch = createEventDispatcher()
 
-  $: color = value ? getPlatformColorDef(value.color ?? getColorNumberByText(value.name), $themeStore.dark) : undefined
-  const dispatchAccentColor = (color?: ColorDefinition) => dispatch('accent-color', color)
+  $: color = viewState
+    ? getPlatformColorDef(viewState.color ?? category?.color ?? getColorNumberByText(viewState.name), $themeStore.dark)
+    : undefined
+  const dispatchAccentColor = (color?: ColorDefinition) => {
+    dispatch('accent-color', color)
+  }
 
   $: dispatchAccentColor(color)
 
   onMount(() => {
     dispatchAccentColor(color)
   })
+
+  function getViewState (type: ProjectType | undefined, state: Status | undefined): Status | undefined {
+    if (state === undefined) return
+    if (type === undefined) return state
+    const targetColor = type.statuses.find((p) => p._id === state._id)?.color
+    if (targetColor === undefined) return state
+    return {
+      ...state,
+      color: targetColor
+    }
+  }
+
+  let category: StatusCategory | undefined
+  $: updateCategory(value)
+
+  async function updateCategory (value: Status | undefined) {
+    if (value === undefined) return
+    category = await client.findOne(core.class.StatusCategory, { _id: value.category })
+  }
+
+  $: viewState = getViewState(type, value)
+
+  let type: ProjectType | undefined = undefined
+
+  $: getType(space, $typeStore)
+
+  const client = getClient()
+
+  async function getType (space: Ref<Project>, types: IdMap<ProjectType>): Promise<ProjectType | undefined> {
+    const _space = await client.findOne(task.class.Project, { _id: space })
+    if (_space === undefined) {
+      type = undefined
+      return
+    }
+    type = types.get(_space.type)
+  }
 </script>
 
 {#if value}

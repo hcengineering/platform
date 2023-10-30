@@ -2,13 +2,13 @@
   import { Card } from '@hcengineering/board'
   import { Class, FindOptions, Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import task, { SpaceWithStates, State } from '@hcengineering/task'
+  import task, { Project, State } from '@hcengineering/task'
   import tags from '@hcengineering/tags'
   import { TableBrowser } from '@hcengineering/view-resources'
   import board from '../plugin'
 
   export let _class: Ref<Class<Card>>
-  export let space: Ref<SpaceWithStates>
+  export let space: Ref<Project>
   export let options: FindOptions<Card> | undefined
 
   const isArchived = { $nin: [true] }

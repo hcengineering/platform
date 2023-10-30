@@ -194,6 +194,7 @@
     const el: HTMLElement = event.currentTarget as HTMLElement
     if (el && isScrolling) {
       document.removeEventListener('mousemove', onScroll)
+      // document.body.style.pointerEvents = 'all'
       document.body.style.userSelect = 'auto'
       document.body.style.webkitUserSelect = 'auto'
     }
@@ -210,6 +211,7 @@
           : event.clientX - el.getBoundingClientRect().x
       document.addEventListener('mouseup', onScrollEnd)
       document.addEventListener('mousemove', onScroll)
+      // document.body.style.pointerEvents = 'none'
       document.body.style.userSelect = 'none'
       document.body.style.webkitUserSelect = 'none'
       isScrolling = direction
@@ -593,16 +595,18 @@
       </button>
     </div>
   {/if}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="track" class:hovered={isScrolling === 'vertical'} on:click|stopPropagation={(ev) => clickOnTrack(ev)} />
-  <div
-    class="bar"
-    class:hovered={isScrolling === 'vertical'}
-    bind:this={divBar}
-    on:mousedown={(ev) => onScrollStart(ev, 'vertical')}
-    on:mouseleave={checkFade}
-  />
-  {#if horizontal}
+  {#if mask !== 'none'}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <div class="track" class:hovered={isScrolling === 'vertical'} on:click|stopPropagation={(ev) => clickOnTrack(ev)} />
+    <div
+      class="bar"
+      class:hovered={isScrolling === 'vertical'}
+      bind:this={divBar}
+      on:mousedown={(ev) => onScrollStart(ev, 'vertical')}
+      on:mouseleave={checkFade}
+    />
+  {/if}
+  {#if horizontal && maskH !== 'none'}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
       class="track-horizontal"

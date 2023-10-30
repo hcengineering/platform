@@ -28,15 +28,8 @@
   import { Card, createQuery, getClient, InlineAttributeBar, MessageBox } from '@hcengineering/presentation'
   import { Vacancy as VacancyClass } from '@hcengineering/recruit'
   import tags from '@hcengineering/tags'
-  import task, { createStates, KanbanTemplate } from '@hcengineering/task'
-  import tracker, {
-    calcRank,
-    Issue,
-    IssueStatus,
-    IssueTemplate,
-    IssueTemplateData,
-    Project
-  } from '@hcengineering/tracker'
+  import task, { calcRank, ProjectType } from '@hcengineering/task'
+  import tracker, { Issue, IssueStatus, IssueTemplate, IssueTemplateData, Project } from '@hcengineering/tracker'
   import {
     Button,
     Component,
@@ -54,9 +47,9 @@
   const dispatch = createEventDispatcher()
 
   let name: string = ''
-  let template: KanbanTemplate | undefined
-  let templateId: Ref<KanbanTemplate> | undefined
-  let appliedTemplateId: Ref<KanbanTemplate> | undefined
+  let template: ProjectType | undefined
+  let typeId: Ref<ProjectType> | undefined
+  let appliedTemplateId: Ref<ProjectType> | undefined
   let objectId: Ref<VacancyClass> = generateId()
   let issueTemplates: FindResult<IssueTemplate>
 
@@ -77,29 +70,29 @@
     company: '' as Ref<Organization>,
     fullDescription: '',
     location: '',
-    states: []
+    type: typeId as Ref<ProjectType>
   }
   export function canClose (): boolean {
-    return name === '' && templateId !== undefined
+    return name === '' && typeId !== undefined
   }
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const templateQ = createQuery()
   fillDefaults(hierarchy, vacancyData, recruit.class.Vacancy)
-  $: templateId &&
-    templateQ.query(task.class.KanbanTemplate, { _id: templateId }, (result) => {
+  $: typeId &&
+    templateQ.query(task.class.ProjectType, { _id: typeId }, (result) => {
       const { _class, _id, description, ...templateData } = result[0]
       vacancyData = { ...(templateData as unknown as Data<VacancyClass>), fullDescription: description }
-      if (appliedTemplateId !== templateId) {
+      if (appliedTemplateId !== typeId) {
         fullDescription = description ?? ''
-        appliedTemplateId = templateId
+        appliedTemplateId = typeId
       }
       fillDefaults(hierarchy, vacancyData, recruit.class.Vacancy)
     })
 
   const issueTemplatesQ = createQuery()
-  $: issueTemplatesQ.query(tracker.class.IssueTemplate, { 'relations._id': templateId }, async (result) => {
+  $: issueTemplatesQ.query(tracker.class.IssueTemplate, { 'relations._id': typeId }, async (result) => {
     issueTemplates = result
   })
 
@@ -144,8 +137,7 @@
       estimation: template.estimation,
       reports: 0,
       relations: [{ _id: id, _class: recruit.class.Vacancy }],
-      childInfo: [],
-      doneState: null
+      childInfo: []
     })
     if ((template.labels?.length ?? 0) > 0) {
       const tagElements = await client.findAll(tags.class.TagElement, { _id: { $in: template.labels } })
@@ -161,11 +153,8 @@
   }
 
   async function createVacancy () {
-    if (
-      templateId !== undefined &&
-      (await client.findOne(task.class.KanbanTemplate, { _id: templateId })) === undefined
-    ) {
-      throw Error(`Failed to find target kanban template: ${templateId}`)
+    if (typeId === undefined) {
+      throw Error(`Failed to find target project type: ${typeId}`)
     }
 
     const sequence = await client.findOne(task.class.Sequence, { attachedTo: recruit.class.Vacancy })
@@ -174,13 +163,6 @@
     }
 
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
-
-    const [states, doneStates] = await createStates(
-      client,
-      recruit.attribute.State,
-      recruit.attribute.DoneState,
-      templateId
-    )
 
     const id = await client.createDoc(
       recruit.class.Vacancy,
@@ -195,9 +177,7 @@
         number: (incResult as any).object.sequence,
         company,
         members: [getCurrentAccount()._id],
-        templateId,
-        states,
-        doneStates
+        type: typeId
       },
       objectId
     )
@@ -220,9 +200,9 @@
 
   let descriptionBox: AttachmentStyledBox
 
-  function handleTemplateChange (evt: CustomEvent<Ref<KanbanTemplate>>): void {
-    if (templateId == null) {
-      templateId = evt.detail
+  function handleTypeChange (evt: CustomEvent<Ref<ProjectType>>): void {
+    if (typeId == null) {
+      typeId = evt.detail
       return
     }
     // Template is already specified, ask to replace.
@@ -236,7 +216,7 @@
       'top',
       (result?: boolean) => {
         if (result === true) {
-          templateId = evt.detail ?? undefined
+          typeId = evt.detail ?? undefined
         }
       }
     )
@@ -301,15 +281,15 @@
       create={{ component: contact.component.CreateOrganization, label: contact.string.CreateOrganization }}
     />
     <Component
-      is={task.component.KanbanTemplateSelector}
+      is={task.component.ProjectTypeSelector}
       props={{
-        folders: [recruit.space.VacancyTemplates],
-        template: templateId,
+        categories: [recruit.category.VacancyTypeCategories],
+        type: typeId,
         focusIndex: 4,
         kind: 'regular',
         size: 'large'
       }}
-      on:change={handleTemplateChange}
+      on:change={handleTypeChange}
     />
   </svelte:fragment>
 

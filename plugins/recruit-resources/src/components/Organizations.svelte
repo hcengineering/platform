@@ -69,9 +69,7 @@
   const applicantQuery = createQuery()
   $: applicantQuery.query(
     recruit.class.Applicant,
-    {
-      doneState: null
-    },
+    {},
     (res) => {
       applicationsList = res
     },
@@ -148,9 +146,7 @@
           label: recruit.string.Applications,
           component: VacancyListApplicationsPopup,
           icon: recruit.icon.Application,
-          resultQuery: {
-            doneState: null
-          }
+          resultQuery: {}
         },
         sortingKey: '@applications',
         sortingFunction: applicationSorting

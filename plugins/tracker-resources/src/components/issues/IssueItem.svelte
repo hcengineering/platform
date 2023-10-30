@@ -22,7 +22,7 @@
 
   export let value: WithLookup<Issue>
   $: title = getIssueId(value.$lookup?.space as Project, value)
-  $: st = $statusStore.get(value.status)
+  $: st = $statusStore.byId.get(value.status)
 </script>
 
 <div class="flex-row-center h-8">

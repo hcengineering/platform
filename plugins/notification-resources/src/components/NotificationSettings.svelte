@@ -69,37 +69,39 @@
 
 <div class="flex h-full clear-mins">
   <div class="antiPanel-navigator">
-    <div class="antiNav-header overflow-label">
-      <Label label={notification.string.Notifications} />
+    <div class="antiPanel-wrap__content">
+      <div class="antiNav-header overflow-label">
+        <Label label={notification.string.Notifications} />
+      </div>
+      <Scroller shrink>
+        {#each preferencesGroups as preferenceGroup}
+          <GroupElement
+            icon={preferenceGroup.icon}
+            label={preferenceGroup.label}
+            selected={preferenceGroup === currentPreferenceGroup}
+            on:click={() => {
+              currentPreferenceGroup = preferenceGroup
+              group = undefined
+            }}
+          />
+        {/each}
+        {#if preferencesGroups.length > 0 && groups.length > 0}
+          <div class="antiNav-divider short line" />
+        {/if}
+        {#each groups as gr}
+          <GroupElement
+            icon={gr.icon}
+            label={gr.label}
+            selected={gr._id === group}
+            on:click={() => {
+              group = gr._id
+              currentPreferenceGroup = undefined
+            }}
+          />
+        {/each}
+        <div class="antiNav-space" />
+      </Scroller>
     </div>
-    <Scroller shrink>
-      {#each preferencesGroups as preferenceGroup}
-        <GroupElement
-          icon={preferenceGroup.icon}
-          label={preferenceGroup.label}
-          selected={preferenceGroup === currentPreferenceGroup}
-          on:click={() => {
-            currentPreferenceGroup = preferenceGroup
-            group = undefined
-          }}
-        />
-      {/each}
-      {#if preferencesGroups.length > 0 && groups.length > 0}
-        <div class="antiNav-divider short line" />
-      {/if}
-      {#each groups as gr}
-        <GroupElement
-          icon={gr.icon}
-          label={gr.label}
-          selected={gr._id === group}
-          on:click={() => {
-            group = gr._id
-            currentPreferenceGroup = undefined
-          }}
-        />
-      {/each}
-      <div class="antiNav-space" />
-    </Scroller>
   </div>
   <Separator name={'settingNotify'} index={0} color={'var(--theme-navpanel-border)'} />
 

@@ -20,9 +20,6 @@
     "TaskComments": "Comments",
     "TaskLabels": "Labels",
     "TaskAssignee": "Assignee",
-    "StateTemplateTitle": "Title",
-    "StateTemplateColor": "Color",
-    "KanbanTemplateTitle": "Title",
     "Rank": "Rank",
     "TaskCreateLabel": "Task",
     "EditStates": "Edit states",
@@ -76,6 +73,8 @@
     "RelatedIssues": "Related processes",
     "StatusName": "Status name",
     "StatusPopupTitle": "Create new status or edit name for existing",
-    "NameAlreadyExists": "This name already exists for this status type"
+    "NameAlreadyExists": "This name already exists for this status type",
+    "ProjectType": "Project type",
+    "ProjectTypes": "Project types"
   }
 }
