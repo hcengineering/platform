@@ -41,7 +41,7 @@
   }
 
   $: status = valueReader.get('status')
-  $: st = $statusStore.get(status as Ref<Status>)
+  $: st = $statusStore.byId.get(status as Ref<Status>)
   $: space = value.space as Ref<Project>
 
   $: dispatch('title', title)
