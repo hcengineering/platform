@@ -4,6 +4,8 @@ import { EditorState, Plugin, PluginKey } from 'prosemirror-state'
 
 const NAME = 'node-uuid'
 
+export const nodeElementQuerySelector = (nodeUuid: string): string => `span[${NAME}='${nodeUuid}']`
+
 export interface NodeUuidOptions {
   HTMLAttributes: Record<string, any>
   onNodeSelected?: (uuid: string | null) => void
