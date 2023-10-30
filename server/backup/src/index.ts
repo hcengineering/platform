@@ -240,7 +240,7 @@ export async function cloneWorkspace (
 
           for (const [k, v] of Object.entries(it.docs)) {
             processed++
-            if (processed % 10000 === 0) {
+            if (Date.now() - st > 2500) {
               console.log('processed', processed, Date.now() - st)
               st = Date.now()
             }
@@ -419,7 +419,7 @@ export async function backup (transactorUrl: string, workspaceId: WorkspaceId, s
 
           for (const [k, v] of Object.entries(it.docs)) {
             processed++
-            if (processed % 10000 === 0) {
+            if (Date.now() - st > 2500) {
               console.log('processed', processed, digest.size, Date.now() - st)
               st = Date.now()
             }
