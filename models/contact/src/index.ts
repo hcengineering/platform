@@ -94,6 +94,7 @@ export class TContact extends TDoc implements Contact {
     name!: string
 
   @Prop(TypeAttachment(), contact.string.Avatar)
+  @Hidden()
     avatar?: string | null
 
   @Prop(Collection(contact.class.Channel), contact.string.ContactInfo)
@@ -680,7 +681,8 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(contact.class.Contact, core.class.Class, view.mixin.ClassFilters, {
-    filters: []
+    filters: [],
+    ignoreKeys: ['avatar']
   })
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.ClassFilters, {

@@ -94,6 +94,7 @@
         scrollContainer.scrollTop = 0
       }
       list?.select(selection - 1)
+      return true
     }
     if (key.key === 'Enter') {
       key.preventDefault()
@@ -217,7 +218,7 @@
           {@const item = items[num]}
           {@const doc = item.item}
           <div class="ap-menuItem withComp" on:click={() => dispatchItem(doc)}>
-            <svelte:component this={item.component} value={doc} on:title={titleHandler(doc, num)} />
+            <svelte:component this={item.component} value={doc} on:title={titleHandler(doc)} />
           </div>
         </svelte:fragment>
       </ListView>
