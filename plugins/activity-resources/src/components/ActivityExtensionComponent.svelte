@@ -19,12 +19,10 @@
   export let kind: ActivityExtensionKind
   export let extensions: ActivityExtension[] = []
   export let props: Record<string, any> = {}
-
-  $: filteredExtensions = extensions.filter((extension) => !!extension.components?.[kind])
 </script>
 
-{#each filteredExtensions as extension}
-  {@const component = extension.components[kind]}
+{#each extensions as extension}
+  {@const component = extension.components?.[kind]}
   {#if component}
     <Component is={component} {props} />
   {/if}

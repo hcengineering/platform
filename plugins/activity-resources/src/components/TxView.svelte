@@ -508,16 +508,6 @@
     content: '';
   }
 
-  .menuOptions {
-    margin-left: 0.5rem;
-    opacity: 0.8;
-    cursor: pointer;
-
-    &:hover {
-      opacity: 1;
-    }
-  }
-
   .time {
     font-size: 0.75rem;
     color: var(--theme-trans-color);
@@ -525,10 +515,6 @@
     &.top {
       align-self: flex-start;
     }
-  }
-
-  .message {
-    flex-basis: 100%;
   }
 
   .activity-content {
