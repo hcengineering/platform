@@ -59,14 +59,6 @@ export class CommonRecruitingPage extends CommonPage {
     await page.locator('div.popup form[id="recruit:string:CreateReviewParams"] button[type="submit"]').click()
   }
 
-  async addNewTagPopup (page: Page, title: string, description: string): Promise<void> {
-    await page.locator('div.popup form[id="tags:string:AddTag"] input[placeholder$="title"]').fill(title)
-    await page
-      .locator('div.popup form[id="tags:string:AddTag"] input[placeholder="Please type description here"]')
-      .fill(description)
-    await page.locator('div.popup form[id="tags:string:AddTag"] button[type="submit"]').click()
-  }
-
   async deleteEntity (): Promise<void> {
     await this.buttonMoreActions.click()
     await this.buttonDelete.click()
