@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { IntlString } from '@hcengineering/platform'
   import emojiRegex from 'emoji-regex'
   import { createEventDispatcher, getContext } from 'svelte'
-  import { tooltip } from '../tooltips'
-  import { AnySvelteComponent, emojiSP } from '../types'
+  import { IntlString } from '@hcengineering/platform'
+
   import Label from './Label.svelte'
   import Scroller from './Scroller.svelte'
   import Emoji from './icons/Emoji.svelte'
@@ -13,22 +12,12 @@
   import Places from './icons/Places.svelte'
   import Symbols from './icons/Symbols.svelte'
   import Work from './icons/Work.svelte'
+
+  import { tooltip } from '../tooltips'
+  import { AnySvelteComponent, emojiSP } from '../types'
   import plugin from '../plugin'
 
   export let embedded = false
-
-  let div: HTMLDivElement
-  const regex = emojiRegex()
-
-  const { currentFontSize } = getContext('fontsize') as { currentFontSize: string }
-
-  function getEmojis (startCode: number, endCode: number, postfix?: number[]): (string | undefined)[] {
-    return [...Array(endCode - startCode + 1).keys()].map((v) => {
-      const str = postfix ? String.fromCodePoint(v + startCode, ...postfix) : String.fromCodePoint(v + startCode)
-      if ([...str.matchAll(regex)].length > 0) return str
-      return undefined
-    })
-  }
 
   interface Category {
     id: string
@@ -36,6 +25,13 @@
     emojis: (string | undefined)[]
     icon: AnySvelteComponent
   }
+
+  let scrollElement: HTMLDivElement
+
+  const regex = emojiRegex()
+  const dispatch = createEventDispatcher()
+  const { currentFontSize } = getContext('fontsize') as { currentFontSize: string }
+  const emojiRowHeightPx = (currentFontSize === 'small-font' ? 14 : 16) * 2
 
   const categories: Category[] = [
     {
@@ -106,21 +102,41 @@
       icon: Symbols
     }
   ]
-  const dispatch = createEventDispatcher()
+
+  let currentCategory = categories[0]
+
+  function getEmojis (startCode: number, endCode: number, postfix?: number[]): (string | undefined)[] {
+    return [...Array(endCode - startCode + 1).keys()].map((v) => {
+      const str = postfix ? String.fromCodePoint(v + startCode, ...postfix) : String.fromCodePoint(v + startCode)
+      if ([...str.matchAll(regex)].length > 0) return str
+      return undefined
+    })
+  }
 
   function handleScrollToCategory (categoryId: string) {
-    const el = document.getElementById(categoryId)
-    if (el) {
-      const next = el.nextElementSibling as HTMLElement
-      div.scroll(0, next.offsetTop - (currentFontSize === 'small-font' ? 14 : 16) * 1.75)
+    const labelElement = document.getElementById(categoryId)
+
+    if (labelElement) {
+      const emojisElement = labelElement.nextElementSibling as HTMLElement
+      scrollElement.scroll(0, emojisElement.offsetTop - (currentFontSize === 'small-font' ? 14 : 16) * 1.75)
     }
   }
 
-  let currentCategory = categories[0]
-  function handleScrolled (catId?: CustomEvent) {
-    if (catId) {
-      const curCat = categories.find((it) => it.id === catId.detail[catId.detail.length - 1])
-      if (curCat) currentCategory = curCat
+  function handleCategoryScrolled () {
+    const selectedCategory = categories.find((category) => {
+      const labelElement = document.getElementById(category.id)
+
+      if (!labelElement) {
+        return false
+      }
+
+      const emojisElement = labelElement.nextElementSibling as HTMLElement
+
+      return emojisElement.offsetTop + emojisElement.offsetHeight - emojiRowHeightPx > scrollElement.scrollTop
+    })
+
+    if (selectedCategory) {
+      currentCategory = selectedCategory
     }
   }
 </script>
@@ -130,17 +146,27 @@
     {#each categories as category}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
-        use:tooltip={{ label: category.label }}
         class="element"
-        class:selected={currentCategory === category}
+        class:selected={currentCategory.id === category.id}
+        use:tooltip={{ label: category.label }}
         on:click={() => handleScrollToCategory(category.id)}
       >
-        <svelte:component this={category.icon} size={'medium'} opacity={currentCategory === category ? '1' : '0.3'} />
+        <svelte:component
+          this={category.icon}
+          size="medium"
+          opacity={currentCategory.id === category.id ? '1' : '0.3'}
+        />
       </div>
     {/each}
   </div>
   <div class="scrolling">
-    <Scroller bind:divScroll={div} on:scrolledCategories={handleScrolled} fade={emojiSP} noStretch checkForHeaders>
+    <Scroller
+      bind:divScroll={scrollElement}
+      fade={emojiSP}
+      noStretch
+      checkForHeaders
+      on:scrolledCategories={handleCategoryScrolled}
+    >
       {#each categories as category}
         <div id={category.id} class="scroll-header categoryHeader">
           <Label label={category.label} />
@@ -163,14 +189,17 @@
   .popup {
     height: 21.25rem;
   }
+
   .scrolling {
     min-height: 0;
     height: 16.5rem;
     max-height: 16.5rem;
   }
+
   .popup-header {
     margin: 0.75rem 0.75rem 0.5rem;
   }
+
   .scroll-header {
     position: sticky;
     flex-shrink: 0;
@@ -184,16 +213,19 @@
     color: var(--theme-caption-color);
     background-color: var(--theme-popup-header);
     border-radius: 0.25rem;
+
     &:first-child {
       margin-top: 0;
     }
   }
+
   .palette {
     display: flex;
     flex-wrap: wrap;
     // width: 19.25rem;
     font-size: 1.25rem;
   }
+
   .element {
     display: flex;
     justify-content: center;
