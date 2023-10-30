@@ -66,7 +66,7 @@
 </script>
 
 <div class="flex-row-center">
-  <Avatar avatar={avatar} {size} {name} on:accent-color />
+  <Avatar {avatar} {size} {name} on:accent-color />
   <span class="ml-2 title">
     {title}
   </span>

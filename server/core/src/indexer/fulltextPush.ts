@@ -259,7 +259,12 @@ export function createElasticDoc (upd: DocIndexState): IndexedDoc {
   }
   return doc
 }
-function updateDoc2Elastic (attributes: Record<string, any>, doc: IndexedDoc, docIdOverride?: Ref<DocIndexState>, refAttribute?: string): void {
+function updateDoc2Elastic (
+  attributes: Record<string, any>,
+  doc: IndexedDoc,
+  docIdOverride?: Ref<DocIndexState>,
+  refAttribute?: string
+): void {
   for (const [k, v] of Object.entries(attributes)) {
     if (v == null) {
       continue
