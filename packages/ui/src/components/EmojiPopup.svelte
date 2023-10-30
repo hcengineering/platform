@@ -114,20 +114,25 @@
   }
 
   function handleScrollToCategory (categoryId: string) {
-    const categoryLabel = document.getElementById(categoryId)
+    const labelElement = document.getElementById(categoryId)
 
-    if (categoryLabel) {
-      const emojisContent = categoryLabel.nextElementSibling as HTMLElement
-      scrollElement.scroll(0, emojisContent.offsetTop - (currentFontSize === 'small-font' ? 14 : 16) * 1.75)
+    if (labelElement) {
+      const emojisElement = labelElement.nextElementSibling as HTMLElement
+      scrollElement.scroll(0, emojisElement.offsetTop - (currentFontSize === 'small-font' ? 14 : 16) * 1.75)
     }
   }
 
   function handleCategoryScrolled () {
     const selectedCategory = categories.find((category) => {
-      const categoryLabel = document.getElementById(category.id)
-      const emojisContent = categoryLabel.nextElementSibling as HTMLElement
+      const labelElement = document.getElementById(category.id)
 
-      return emojisContent.offsetTop + emojisContent.offsetHeight - emojiRowHeightPx > scrollElement.scrollTop
+      if (!labelElement) {
+        return false
+      }
+
+      const emojisElement = labelElement.nextElementSibling as HTMLElement
+
+      return emojisElement.offsetTop + emojisElement.offsetHeight - emojiRowHeightPx > scrollElement.scrollTop
     })
 
     if (selectedCategory) {
