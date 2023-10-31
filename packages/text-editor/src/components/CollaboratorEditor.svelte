@@ -101,6 +101,8 @@
     provider?.on('synced', () => {
       loading = false
     })
+  } else {
+    loading = false
   }
 
   const currentUser = getCurrentAccount()
