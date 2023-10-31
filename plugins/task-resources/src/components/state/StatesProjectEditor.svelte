@@ -102,6 +102,7 @@
 
   let categories: StatusCategory[] = []
   let categoriesMap: IdMap<StatusCategory> = new Map()
+  let groups: Map<Ref<StatusCategory>, Status[]> = new Map()
   const query = createQuery()
   $: query.query(core.class.StatusCategory, { _id: { $in: category.statusCategories } }, (res) => {
     categories = res
@@ -126,32 +127,58 @@
     const targetColor = type.statuses.find((p) => p._id === state._id)?.color ?? state.color ?? category?.color
     return getPlatformColorDef(targetColor ?? getColorNumberByText(state.name), $themeStore.dark)
   }
+
+  function group (categories: StatusCategory[], states: Status[]): Map<Ref<StatusCategory>, Status[]> {
+    const map = new Map<Ref<StatusCategory>, Status[]>(categories.map((p) => [p._id, []]))
+    for (const state of states) {
+      if (state.category === undefined) continue
+      const arr = map.get(state.category) ?? []
+      arr.push(state)
+      map.set(state.category, arr)
+    }
+    return map
+  }
+
+  $: groups = group(categories, states)
+
+  function getPrevIndex (groups: Map<Ref<StatusCategory>, Status[]>, categories: Ref<StatusCategory>): number {
+    let index = 0
+    for (const [cat, states] of groups) {
+      if (cat === categories) {
+        return index
+      }
+      index += states.length
+    }
+    return index
+  }
 </script>
 
 {#if categoryEditor}
   <Component is={categoryEditor} props={{ type }} />
 {/if}
 {#each categories as cat, i}
+  {@const states = groups.get(cat._id) ?? []}
+  {@const prevIndex = getPrevIndex(groups, cat._id)}
   <div class="flex-no-shrink flex-between trans-title uppercase" class:mt-4={i > 0}>
     <Label label={cat.label} />
     <CircleButton icon={IconAdd} size={'medium'} on:click={() => add(cat.ofAttribute, cat._id)} />
   </div>
   <div class="flex-col flex-no-shrink mt-3">
-    {#each states.filter((p) => p.category === cat._id) as state, i}
+    {#each states as state, i}
       {@const color = getColor(state, categoriesMap)}
       <div
-        bind:this={elements[i]}
+        bind:this={elements[prevIndex + i]}
         class="flex-between states"
         style:background={color.background ?? defaultBackground($themeStore.dark)}
         draggable={true}
         on:dragover|preventDefault={(ev) => {
-          dragover(ev, i)
+          dragover(ev, i + prevIndex)
         }}
         on:drop|preventDefault={() => {
-          onMove(i)
+          onMove(prevIndex + i)
         }}
         on:dragstart={() => {
-          selected = i
+          selected = i + prevIndex
           dragState = states[i]._id
         }}
         on:dragend={() => {
@@ -164,7 +191,7 @@
           class="color"
           style:background-color={color.color}
           on:click={() => {
-            onColor(state, color, elements[i])
+            onColor(state, color, elements[i + prevIndex])
           }}
         />
         <div class="flex-grow caption-color">
