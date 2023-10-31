@@ -377,7 +377,10 @@
       subIssues: 0,
       dueDate: object.dueDate,
       parents: parentIssue
-        ? [{ parentId: parentIssue._id, parentTitle: parentIssue.title }, ...parentIssue.parents]
+        ? [
+            { parentId: parentIssue._id, parentTitle: parentIssue.title, space: parentIssue.space },
+            ...parentIssue.parents
+          ]
         : [],
       reportedTime: 0,
       remainingTime: 0,

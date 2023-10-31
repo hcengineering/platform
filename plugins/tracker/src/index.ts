@@ -290,6 +290,7 @@ export interface TimeSpendReport extends AttachedDoc {
 export interface IssueParentInfo {
   parentId: Ref<Issue>
   parentTitle: string
+  space: Ref<Space>
 }
 
 /**

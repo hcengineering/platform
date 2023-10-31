@@ -897,17 +897,18 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   private async handleDocRemove (q: Query, tx: TxRemoveDoc<Doc>): Promise<void> {
+    const h = this.client.getHierarchy()
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
     if (
       q.options?.limit !== undefined &&
       q.options.limit === q.result.length &&
-      this.client.getHierarchy().isDerived(q._class, tx.objectClass)
+      h.isDerived(q._class, tx.objectClass)
     ) {
       return await this.refresh(q)
     }
-    const index = q.result.findIndex((p) => p._id === tx.objectId)
+    const index = q.result.findIndex((p) => p._id === tx.objectId && h.isDerived(p._class, tx.objectClass))
     if (index > -1) {
       q.result.splice(index, 1)
       if (q.options?.total === true) {

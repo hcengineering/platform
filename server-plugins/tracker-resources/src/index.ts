@@ -226,7 +226,11 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
         'childInfo.childId': removeTx.objectId
       })
       const res: Tx[] = []
-      const parents: IssueParentInfo[] = parentIssue.map((it) => ({ parentId: it._id, parentTitle: it.title }))
+      const parents: IssueParentInfo[] = parentIssue.map((it) => ({
+        parentId: it._id,
+        parentTitle: it.title,
+        space: it.space
+      }))
       await updateIssueParentEstimations(
         {
           _id: removeTx.objectId,
@@ -354,7 +358,9 @@ async function doIssueUpdate (
     )
 
     const updatedParents =
-      newParent !== undefined ? [{ parentId: newParent._id, parentTitle: newParent.title }, ...newParent.parents] : []
+      newParent !== undefined
+        ? [{ parentId: newParent._id, parentTitle: newParent.title, space: newParent.space }, ...newParent.parents]
+        : []
 
     function update (issue: Issue): DocumentUpdate<Issue> {
       const parentInfoIndex = issue.parents.findIndex(({ parentId }) => parentId === updateTx.objectId)
@@ -431,7 +437,7 @@ function updateIssueParentEstimations (
 ): void {
   for (const pinfo of sourceParents) {
     res.push(
-      control.txFactory.createTxUpdateDoc(tracker.class.Issue, issue.space, pinfo.parentId, {
+      control.txFactory.createTxUpdateDoc(tracker.class.Issue, pinfo.space, pinfo.parentId, {
         $pull: {
           childInfo: { childId: issue._id }
         }
@@ -440,7 +446,7 @@ function updateIssueParentEstimations (
   }
   for (const pinfo of targetParents) {
     res.push(
-      control.txFactory.createTxUpdateDoc(tracker.class.Issue, issue.space, pinfo.parentId, {
+      control.txFactory.createTxUpdateDoc(tracker.class.Issue, pinfo.space, pinfo.parentId, {
         $push: {
           childInfo: {
             childId: issue._id,
