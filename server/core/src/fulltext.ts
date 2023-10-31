@@ -260,7 +260,7 @@ export class FullTextIndex implements WithFind {
 
         const valueReader = createIndexedReader(raw._class, this.hierarchy, raw)
 
-        const attrList: (keyof SearchResultDoc)[] = ['name', 'title', 'number', 'status', 'avatar']
+        const attrList: (keyof SearchResultDoc)[] = ['name', 'title', 'number', 'status', 'avatar', 'icon', 'color']
         for (const attr of attrList) {
           const val = valueReader.get(attr)
           if (val !== undefined) {

@@ -254,6 +254,8 @@ export interface SearchResultDoc {
   spaceIdentifier?: string
   attachedToName?: string
   attachedToAvatar?: string
+  icon?: string
+  color?: number
 }
 
 /**
