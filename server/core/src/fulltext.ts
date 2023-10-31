@@ -40,7 +40,9 @@ import core, {
   IndexedDoc,
   SearchQuery,
   SearchOptions,
-  SearchResult
+  SearchResult,
+  SearchResultDoc,
+  createIndexedReader
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { FullTextIndexPipeline } from './indexer'
@@ -246,7 +248,34 @@ export class FullTextIndex implements WithFind {
   }
 
   async searchFulltext (ctx: MeasureContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
-    return await this.adapter.searchRaw(query, options)
+    const resultRaw = await this.adapter.searchRaw(query, options)
+    const result: SearchResult = {
+      ...resultRaw,
+      docs: resultRaw.docs.map((raw) => {
+        const doc: SearchResultDoc = {
+          id: raw.id,
+          _class: raw._class,
+          space: raw.space
+        }
+
+        const valueReader = createIndexedReader(raw._class, this.hierarchy, raw)
+
+        const attrList: (keyof SearchResultDoc)[] = ['name', 'title', 'number', 'status', 'avatar']
+        for (const attr of attrList) {
+          const val = valueReader.get(attr)
+          if (val !== undefined) {
+            (doc as any)[attr] = val
+          }
+        }
+
+        doc.spaceIdentifier = valueReader.getDoc('space')?.get('identifier')?.[0]
+        doc.attachedToName = valueReader.getDoc('attachedTo')?.get('name')?.[0]
+        doc.attachedToAvatar = valueReader.getDoc('attachedTo')?.get('avatar')?.[0]
+
+        return doc
+      })
+    }
+    return result
   }
 
   submitting: Promise<void> | undefined

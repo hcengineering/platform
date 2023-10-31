@@ -15,32 +15,26 @@
 -->
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
-  import { IndexedDoc, createIndexedReader, IndexedReader, Ref, Status } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
+  import { Ref, Status, SearchResultDoc } from '@hcengineering/core'
   import { FixedColumn, statusStore } from '@hcengineering/view-resources'
-  import tracker, { Project } from '@hcengineering/tracker'
+  import { Project } from '@hcengineering/tracker'
 
   // import { getIssueId } from '../../issues'
   import IssueStatusIcon from './IssueStatusIcon.svelte'
 
-  export let value: IndexedDoc
-
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-  const valueReader = createIndexedReader(tracker.class.Issue, hierarchy, value)
-  const projectReader = valueReader.getDoc('space') as IndexedReader<Project>
-
+  export let value: SearchResultDoc
+  
   const dispatch = createEventDispatcher()
 
   let title: string
 
-  $: if (projectReader.get('identifier') !== undefined) {
-    title = `${projectReader.get('identifier')[0]}-${valueReader.get('number')}`
+  $: if (value.spaceIdentifier !== undefined) {
+    title = `${value.spaceIdentifier}-${value.number}`
   } else {
-    title = valueReader.get('number')
+    title = `${value.number}`
   }
 
-  $: status = valueReader.get('status')
+  $: status = value.status
   $: st = $statusStore.byId.get(status as Ref<Status>)
   $: space = value.space as Ref<Project>
 
@@ -58,7 +52,7 @@
     {/if}
   </FixedColumn>
   <span class="ml-2 max-w-120 overflow-label issue">
-    <span class="title">{title}</span><span class="name">{valueReader.get('title')}</span>
+    <span class="title">{title}</span><span class="name">{value.title}</span>
   </span>
 </div>
 

@@ -27,7 +27,8 @@ import {
   IndexedDoc,
   SearchQuery,
   SearchOptions,
-  SearchResult
+  SearchResult,
+  SearchResultRaw
 } from '@hcengineering/core'
 import type { EmbeddingSearchOption, FullTextAdapter } from '@hcengineering/server-core'
 
@@ -107,7 +108,7 @@ class ElasticAdapter implements FullTextAdapter {
     return this._metrics
   }
 
-  async searchRaw (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
+  async searchRaw (query: SearchQuery, options: SearchOptions): Promise<SearchResultRaw> {
     try {
       const elasticQuery: any = {
         query: {
@@ -124,15 +125,6 @@ class ElasticAdapter implements FullTextAdapter {
         },
         size: options.limit ?? DEFAULT_LIMIT
       }
-      // if (query.aggregateBy !== undefined) {
-      //   elasticQuery.aggs = {
-      //     aggr_count: {
-      //       terms: {
-      //         field: `${query.aggregateBy}.keyword`
-      //       }
-      //     }
-      //   }
-      // }
 
       const filter = []
       if (query.spaces !== undefined) {
@@ -155,20 +147,13 @@ class ElasticAdapter implements FullTextAdapter {
         body: elasticQuery
       })
 
-      const resp: SearchResult = { docs: [] }
+      const resp: SearchResultRaw = { docs: [] }
       if (result.body.hits !== undefined) {
         if (result.body.hits.total?.value !== undefined) {
           resp.total = result.body.hits.total?.value
         }
         resp.docs = result.body.hits.hits.map((hit: any) => ({ ...hit._source, _score: hit._score }))
       }
-
-      // if (result.body.suggest !== undefined) {
-      //   resp.suggest = result.body.suggest
-      // }
-      // if (result.body.aggregations !== undefined) {
-      //   resp.aggregations = result.body.aggregations
-      // }
 
       return resp
     } catch (err) {

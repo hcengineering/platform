@@ -405,35 +405,30 @@ function getInNiN (query1: any, query2: any): Object {
 /**
  * @public
  */
-export type IndexedReaderGet<T> = (attribute: keyof T & string) => any
-
-/**
- * @public
- */
-export interface IndexedReader<T> {
-  get: IndexedReaderGet<T>
-  getDoc: IndexedReaderGet<T>
+export interface IndexedReader {
+  get: (attribute: string) => any
+  getDoc: (attribute: string) => IndexedReader | undefined
 }
 
 /**
  * @public
  */
-export function createIndexedReader<T extends Obj> (
-  _class: Ref<Class<T>>,
+export function createIndexedReader (
+  _class: Ref<Class<Doc>>,
   hierarchy: Hierarchy,
   doc: IndexedDoc,
   refAttribute?: string
-): IndexedReader<T> {
+): IndexedReader {
   return {
-    get: (attr: keyof T & string) => {
-      const realAttr = hierarchy.getAttribute(_class, attr)
+    get: (attr: string) => {
+      const realAttr = hierarchy.findAttribute(_class, attr)
       if (realAttr !== undefined) {
         return doc[docKey(attr, { refAttribute, _class: realAttr.attributeOf })]
       }
       return undefined
     },
-    getDoc: (attr: keyof T & string) => {
-      const realAttr = hierarchy.getAttribute(_class, attr)
+    getDoc: (attr: string) => {
+      const realAttr = hierarchy.findAttribute(_class, attr)
       if (realAttr !== undefined) {
         const refAtrr = realAttr.type as RefTo<Doc>
         return createIndexedReader(refAtrr.to, hierarchy, doc, docKey(attr, { _class }))

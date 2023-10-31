@@ -227,7 +227,6 @@ export interface IndexedDoc {
  */
 export interface SearchQuery {
   query: string
-  // aggregateBy?: string
   classes?: Ref<Class<Doc>>[]
   spaces?: Ref<Space>[]
 }
@@ -242,10 +241,33 @@ export interface SearchOptions {
 /**
  * @public
  */
-export interface SearchResult {
-  // suggest?: any
-  // aggregations?: any
+export interface SearchResultDoc {
+  id: Ref<Doc>
+  _class: Ref<Class<Doc>>
+  space: Ref<Space>
+  name?: string
+  avatar?: string
+  title?: string
+  number?: number
+  status?: string
+  spaceIdentifier?: string
+  attachedToName?: string
+  attachedToAvatar?: string
+}
+
+/**
+ * @public
+ */
+export interface SearchResultRaw {
   docs: IndexedDoc[]
+  total?: number
+}
+
+/**
+ * @public
+ */
+export interface SearchResult {
+  docs: SearchResultDoc[]
   total?: number
 }
 

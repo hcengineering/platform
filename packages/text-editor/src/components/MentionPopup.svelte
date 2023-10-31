@@ -26,14 +26,14 @@
   import { createEventDispatcher } from 'svelte'
   import presentation, { getClient, ObjectSearchCategory } from '@hcengineering/presentation'
 
-  import { Class, Ref, Doc, IndexedDoc } from '@hcengineering/core'
+  import { Class, Ref, Doc, SearchResultDoc } from '@hcengineering/core'
 
   export let query: string = ''
 
-  type SearchSection = { category: ObjectSearchCategory; items: IndexedDoc[] }
+  type SearchSection = { category: ObjectSearchCategory; items: SearchResultDoc[] }
   type SearchItem = {
     num: number
-    item: IndexedDoc
+    item: SearchResultDoc
     category: ObjectSearchCategory
     component: AnySvelteComponent
   }
@@ -62,14 +62,14 @@
   let selection = 0
 
   const titles = new Map<string, string>()
-  function titleHandler (doc: IndexedDoc) {
+  function titleHandler (doc: SearchResultDoc) {
     return (event: CustomEvent) => {
       const title = event.detail
       titles.set(doc.id, title)
     }
   }
 
-  function dispatchItem (item: IndexedDoc): void {
+  function dispatchItem (item: SearchResultDoc): void {
     const title = titles.get(item.id)
     if (title !== undefined) {
       dispatch('close', {
@@ -155,7 +155,7 @@
       }
     )
 
-    const itemsByClass = new Map<Ref<Class<Doc>>, IndexedDoc[]>()
+    const itemsByClass = new Map<Ref<Class<Doc>>, SearchResultDoc[]>()
     for (const item of result.docs) {
       const list = itemsByClass.get(item._class)
       if (list === undefined) {
@@ -169,7 +169,6 @@
     for (const [_class, items] of itemsByClass.entries()) {
       const category = findCategoryByClass(categories, _class)
       if (category !== undefined) {
-        // && category.component !== undefined
         sections.push({ category, items })
       }
     }

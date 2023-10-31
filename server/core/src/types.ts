@@ -35,7 +35,8 @@ import {
   IndexedDoc,
   SearchQuery,
   SearchOptions,
-  SearchResult
+  SearchResult,
+  SearchResultRaw
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import type { Resource } from '@hcengineering/platform'
@@ -163,7 +164,7 @@ export interface FullTextAdapter {
   remove: (id: Ref<Doc>[]) => Promise<void>
   updateMany: (docs: IndexedDoc[]) => Promise<TxResult[]>
 
-  searchRaw: (query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
+  searchRaw: (query: SearchQuery, options: SearchOptions) => Promise<SearchResultRaw>
 
   search: (
     _classes: Ref<Class<Doc>>[],
@@ -212,7 +213,7 @@ export class DummyFullTextAdapter implements FullTextAdapter {
     return []
   }
 
-  async searchRaw (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
+  async searchRaw (query: SearchQuery, options: SearchOptions): Promise<SearchResultRaw> {
     return { docs: [] }
   }
 

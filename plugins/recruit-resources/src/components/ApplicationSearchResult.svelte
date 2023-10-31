@@ -16,14 +16,13 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
 
-  import { Contact, formatName } from '@hcengineering/contact'
-  import { IndexedDoc, createIndexedReader, IndexedReader } from '@hcengineering/core'
+  import { formatName } from '@hcengineering/contact'
+  import { SearchResultDoc } from '@hcengineering/core'
   import Avatar from '@hcengineering/contact-resources/src/components/Avatar.svelte'
   import { getClient } from '@hcengineering/presentation'
   import { IconSize } from '@hcengineering/ui'
-  import recruit from '@hcengineering/recruit'
 
-  export let value: IndexedDoc
+  export let value: SearchResultDoc
 
   const dispatch = createEventDispatcher()
 
@@ -32,31 +31,21 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  const valueReader = createIndexedReader(recruit.class.Applicant, hierarchy, value)
-  const attachToReader = valueReader.getDoc('attachedTo') as IndexedReader<Contact>
-
   const shortLabel = hierarchy.getClass(value._class).shortLabel
 
   let title: string = ''
-  let avatar: string | undefined
   let name: string = ''
 
   $: if (shortLabel !== undefined) {
-    title = `${shortLabel}-${valueReader.get('number')}`
+    title = `${shortLabel}-${value.number}`
   } else {
-    title = valueReader.get('number')
+    title = `${value.number}`
   }
 
-  $: if (attachToReader.get('name') !== undefined) {
-    name = attachToReader.get('name')[0]
+  $: if (value.attachedToName !== undefined) {
+    name = value.attachedToName
   } else {
     name = ''
-  }
-
-  $: if (attachToReader.get('avatar') !== undefined) {
-    avatar = attachToReader.get('avatar')[0]
-  } else {
-    avatar = undefined
   }
 
   $: dispatch('title', title)
@@ -66,7 +55,7 @@
 </script>
 
 <div class="flex-row-center">
-  <Avatar {avatar} {size} {name} on:accent-color />
+  <Avatar avatar={value.attachedToAvatar} {size} {name} on:accent-color />
   <span class="ml-2 title">
     {title}
   </span>
