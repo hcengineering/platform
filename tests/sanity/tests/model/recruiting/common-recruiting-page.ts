@@ -1,8 +1,8 @@
 import { expect, Locator, Page } from '@playwright/test'
-import { CommonPage } from '../common-page'
 import path from 'path'
+import { CalendarPage } from '../calendar-page'
 
-export class CommonRecruitingPage extends CommonPage {
+export class CommonRecruitingPage extends CalendarPage {
   readonly page: Page
   readonly inputComment: Locator
   readonly buttonSendComment: Locator
@@ -14,7 +14,7 @@ export class CommonRecruitingPage extends CommonPage {
   readonly buttonDelete: Locator
 
   constructor (page: Page) {
-    super()
+    super(page)
     this.page = page
     this.inputComment = page.locator('div.text-input div.tiptap')
     this.buttonSendComment = page.locator('g#Send')

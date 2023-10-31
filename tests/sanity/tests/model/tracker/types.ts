@@ -1,6 +1,9 @@
-export interface NewIssue {
+export interface NewIssue extends Issue {
   title: string
   description: string
+}
+
+export interface Issue {
   status?: string
   priority?: string
   assignee?: string
