@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -30,6 +30,7 @@ export { default as TextEditor } from './components/TextEditor.svelte'
 export { default as TextEditorStyleToolbar } from './components/TextEditorStyleToolbar.svelte'
 export { default as AttachIcon } from './components/icons/Attach.svelte'
 export { default as TableOfContents } from './components/toc/TableOfContents.svelte'
+export * from './components/node-view'
 export { default } from './plugin'
 export * from './types'
 export * from './utils'
