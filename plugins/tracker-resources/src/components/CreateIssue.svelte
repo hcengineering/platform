@@ -425,11 +425,11 @@
     }
     const parents = parentIssue
       ? [
-          { parentId: _id, parentTitle: value.title },
-          { parentId: parentIssue._id, parentTitle: parentIssue.title },
+          { parentId: _id, parentTitle: value.title, space: parentIssue.space },
+          { parentId: parentIssue._id, parentTitle: parentIssue.title, space: parentIssue.space },
           ...parentIssue.parents
         ]
-      : [{ parentId: _id, parentTitle: value.title }]
+      : [{ parentId: _id, parentTitle: value.title, space: _space }]
     await subIssuesComponent.save(parents, _id)
     addNotification(
       await translate(tracker.string.IssueCreated, {}, $themeStore.language),
