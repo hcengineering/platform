@@ -18,10 +18,11 @@
   import { Project } from '@hcengineering/tracker'
   import {
     IconWithEmoji,
-    getCurrentLocation,
     getPlatformColorDef,
     getPlatformColorForTextDef,
-    themeStore
+    themeStore,
+    getTreeCollapsed,
+    setTreeCollapsed
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { NavLink, TreeNode } from '@hcengineering/view-resources'
@@ -35,10 +36,8 @@
   export let getActions: Function
   export let deselect: boolean = false
 
-  const COLLAPSED = 'COLLAPSED'
-  const getSpaceCollapsedKey = () => `${getCurrentLocation().path[1]}_${space._id}_collapsed`
-
-  $: collapsed = localStorage.getItem(getSpaceCollapsedKey()) === COLLAPSED
+  let collapsed: boolean = getTreeCollapsed(space._id)
+  $: setTreeCollapsed(space._id, collapsed)
 
   let specials: SpecialNavModel[] = []
 
@@ -78,7 +77,7 @@
     title={space.name}
     folder
     actions={() => getActions(space)}
-    on:click={() => localStorage.setItem(getSpaceCollapsedKey(), collapsed ? '' : COLLAPSED)}
+    on:click={() => (collapsed = !collapsed)}
   >
     {#each specials as special}
       <NavLink space={space._id} special={special.id}>
