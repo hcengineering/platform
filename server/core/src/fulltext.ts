@@ -264,7 +264,7 @@ export class FullTextIndex implements WithFind {
         for (const attr of attrList) {
           const val = valueReader.get(attr)
           if (val !== undefined) {
-            (doc as any)[attr] = val
+            ;(doc as any)[attr] = val
           }
         }
 

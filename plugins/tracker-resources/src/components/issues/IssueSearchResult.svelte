@@ -23,7 +23,7 @@
   import IssueStatusIcon from './IssueStatusIcon.svelte'
 
   export let value: SearchResultDoc
-  
+
   const dispatch = createEventDispatcher()
 
   let title: string

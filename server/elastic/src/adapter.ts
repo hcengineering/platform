@@ -27,7 +27,6 @@ import {
   IndexedDoc,
   SearchQuery,
   SearchOptions,
-  SearchResult,
   SearchResultRaw
 } from '@hcengineering/core'
 import type { EmbeddingSearchOption, FullTextAdapter } from '@hcengineering/server-core'
