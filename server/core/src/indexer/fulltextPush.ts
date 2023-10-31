@@ -30,7 +30,7 @@ import core, {
   Storage,
   WorkspaceId,
   IndexedDoc,
-  createIndexedReader,
+  createIndexedReader
 } from '@hcengineering/core'
 import { FullTextAdapter } from '../types'
 import { summaryStageId } from './summary'
@@ -147,7 +147,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
     const spaceIdentifier = reader.getDoc('space')?.get('identifier')?.[0]
 
     if (spaceIdentifier !== undefined && number !== undefined) {
-      parts.push(`${spaceIdentifier}-${number}`)
+      parts.push(`${spaceIdentifier as string}-${number}`)
     } else if (shortLabel !== undefined && number !== undefined) {
       parts.push(`${shortLabel}-${number}`)
     } else if (number !== undefined) {
@@ -155,11 +155,11 @@ export class FullTextPushStage implements FullTextPipelineStage {
     }
 
     if (reader.get('title') !== undefined) {
-      parts.push(reader.get('title'))
+      parts.push(reader.get('title') as string)
     }
 
     if (reader.get('name') !== undefined) {
-      parts.push(reader.get('name'))
+      parts.push(reader.get('name') as string)
     }
 
     if (parts.length > 0) {
