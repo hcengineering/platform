@@ -48,7 +48,7 @@
   import { InlinePopupExtension } from './extension/inlinePopup'
   import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
   import { FileAttachFunction, ImageExtension } from './extension/imageExt'
-  import { NodeUuidExtension } from './extension/nodeUuid'
+  import { NodeUuidExtension, nodeElementQuerySelector } from './extension/nodeUuid'
   import ImageStyleToolbar from './ImageStyleToolbar.svelte'
   import StyleButton from './StyleButton.svelte'
   import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
@@ -101,6 +101,8 @@
     provider?.on('synced', () => {
       loading = false
     })
+  } else {
+    loading = false
   }
 
   const currentUser = getCurrentAccount()
@@ -121,6 +123,14 @@
     if (editor) {
       return editor.getHTML()
     }
+  }
+
+  export function getNodeElement (uuid: string): Element | null {
+    if (!editor || !uuid) {
+      return null
+    }
+
+    return editor.view.dom.querySelector(nodeElementQuerySelector(uuid))
   }
 
   export function selectNode (uuid: string) {

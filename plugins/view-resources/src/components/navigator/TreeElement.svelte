@@ -17,10 +17,20 @@
   import type { Doc, Ref } from '@hcengineering/core'
   import type { Asset, IntlString } from '@hcengineering/platform'
   import type { Action, AnySvelteComponent } from '@hcengineering/ui'
-  import { ActionIcon, Icon, IconChevronDown, IconMoreH, Label, Menu, showPopup } from '@hcengineering/ui'
+  import {
+    ActionIcon,
+    Icon,
+    IconChevronDown,
+    IconMoreH,
+    Label,
+    Menu,
+    showPopup,
+    getTreeCollapsed,
+    setTreeCollapsed
+  } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
-  export let _id: Ref<Doc> | undefined = undefined
+  export let _id: Ref<Doc> | string | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let iconProps: Record<string, any> | undefined = undefined
   export let label: IntlString | undefined = undefined
@@ -31,7 +41,7 @@
   export let indent: boolean = false
   export let folder: boolean = false
   export let level: number = 0
-  export let collapsed: boolean = false
+  export let collapsed: boolean = getTreeCollapsed(_id)
   export let selected: boolean = false
   export let bold: boolean = false
   export let actions: (originalEvent?: MouseEvent) => Promise<Action[]> = async () => []
@@ -45,6 +55,8 @@
   }
 
   const dispatch = createEventDispatcher()
+  $: if (_id) collapsed = getTreeCollapsed(_id)
+  $: setTreeCollapsed(_id, collapsed)
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->

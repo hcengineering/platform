@@ -10,7 +10,6 @@ export class VacancyDetailsPage extends CommonRecruitingPage {
   readonly inputAttachFile: Locator
   readonly buttonInputCompany: Locator
   readonly buttonInputDueDate: Locator
-  readonly buttonDatePopupToday: Locator
   readonly buttonDatePopupSave: Locator
   readonly inputComment: Locator
 
@@ -23,7 +22,6 @@ export class VacancyDetailsPage extends CommonRecruitingPage {
     this.inputAttachFile = page.locator('div[class*="full"] input[name="file"]')
     this.buttonInputCompany = page.locator('button > div', { hasText: 'Company' })
     this.buttonInputDueDate = page.locator('button > div', { hasText: 'Due date' })
-    this.buttonDatePopupToday = page.locator('div.popup div.today:not(.wrongMonth)')
     this.buttonDatePopupSave = page.locator('div.popup button[type="submit"]')
     this.inputComment = page.locator('div.text-input div.tiptap')
   }

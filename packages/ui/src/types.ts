@@ -125,6 +125,8 @@ export interface TabItem {
 export interface RadioItem {
   id?: string
   label?: string
+  labelGap?: 'large' | 'medium'
+  labelSize?: 'medium' | 'large'
   labelIntl?: IntlString
   labelParams?: Record<string, any>
   value: any

@@ -20,10 +20,7 @@
   import { getClient } from '@hcengineering/presentation'
   import { Action, IconEdit } from '@hcengineering/ui'
   import { getActions as getContributedActions, TreeElement } from '@hcengineering/view-resources'
-
   import hr from '../../plugin'
-
-  // import TreeElement from './TreeElement.svelte'
 
   export let departments: Ref<Department>[]
   export let descendants: Map<Ref<Department>, Department[]>

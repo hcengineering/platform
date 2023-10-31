@@ -23,10 +23,12 @@
   export let disabled: boolean = false
   export let labelOverflow: boolean = false
   export let label: string | undefined = undefined
+  export let labelSize: 'medium' | 'large' = 'medium'
   export let labelIntl: IntlString | undefined = undefined
   export let labelParams: Record<string, any> | undefined = undefined
   export let action: () => void = () => {}
-  export let gap: 'small' | 'medium' | 'none' = 'none'
+  export let gap: 'large' | 'small' | 'medium' | 'none' = 'none'
+  export let labelGap: 'large' | 'medium' = 'medium'
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -50,7 +52,7 @@
     }}
   />
   <div class="marker" />
-  <label for={id} class:overflow-label={labelOverflow}>
+  <label for={id} class="{labelSize} gap-{labelGap}" class:overflow-label={labelOverflow}>
     <slot>
       {#if labelIntl}
         <Label label={labelIntl} params={labelParams} />
