@@ -117,7 +117,11 @@ class ElasticAdapter implements FullTextAdapter {
                 query: query.query,
                 analyze_wildcard: true,
                 flags: 'OR|PREFIX|PHRASE|FUZZY|NOT|ESCAPE',
-                default_operator: 'and'
+                default_operator: 'and',
+                fields: [
+                  'searchTitle^5',  // Boost matches in searchTitle by a factor of 5
+                  '*'               // Search in all other fields without a boost
+                ]
               }
             }
           }

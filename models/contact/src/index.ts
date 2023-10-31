@@ -94,6 +94,7 @@ export class TContact extends TDoc implements Contact {
     name!: string
 
   @Prop(TypeAttachment(), contact.string.Avatar)
+  @Index(IndexKind.FullText)
   @Hidden()
     avatar?: string | null
 

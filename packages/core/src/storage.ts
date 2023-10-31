@@ -219,6 +219,7 @@ export interface IndexedDoc {
   modifiedBy: Ref<Account>
   attachedTo?: Ref<Doc>
   attachedToClass?: Ref<Class<Doc>>
+  searchTitle?: string
   [key: string]: any
 }
 

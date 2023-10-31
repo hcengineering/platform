@@ -29,7 +29,8 @@ import core, {
   ServerStorage,
   Storage,
   WorkspaceId,
-  IndexedDoc
+  IndexedDoc,
+  createIndexedReader,
 } from '@hcengineering/core'
 import { FullTextAdapter } from '../types'
 import { summaryStageId } from './summary'
@@ -137,6 +138,37 @@ export class FullTextPushStage implements FullTextPipelineStage {
     }
   }
 
+  fixSearchTitle (pipeline: FullTextPipeline, doc: IndexedDoc): void {
+    const parts: string[] = []
+
+    const reader = createIndexedReader(doc._class, pipeline.hierarchy, doc)
+    const shortLabel = pipeline.hierarchy.getClass(doc._class)?.shortLabel
+    const number: number = reader.get('number')
+    const spaceIdentifier = reader.getDoc('space')?.get('identifier')?.[0]
+
+    if (spaceIdentifier !== undefined && number !== undefined) {
+      parts.push(`${spaceIdentifier}-${number}`)
+    } else if (shortLabel !== undefined && number !== undefined) {
+      parts.push(`${shortLabel}-${number}`)
+    } else if (number !== undefined) {
+      parts.push(`${number}`)
+    }
+
+    if (reader.get('title') !== undefined) {
+      parts.push(reader.get('title'))
+    }
+
+    if (reader.get('name') !== undefined) {
+      parts.push(reader.get('name'))
+    }
+
+    if (parts.length > 0) {
+      doc.searchTitle = parts.join(' ')
+    } else {
+      doc.searchTitle = ''
+    }
+  }
+
   async collect (toIndex: DocIndexState[], pipeline: FullTextPipeline, metrics: MeasureContext): Promise<void> {
     const bulk: IndexedDoc[] = []
 
@@ -208,6 +240,8 @@ export class FullTextPushStage implements FullTextPipelineStage {
 
           // Include child ref attributes
           await this.indexRefAttributes(allAttributes, doc, elasticDoc, metrics)
+
+          this.fixSearchTitle(pipeline, elasticDoc)
 
           this.checkIntegrity(elasticDoc)
           bulk.push(elasticDoc)
