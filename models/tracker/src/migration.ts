@@ -16,12 +16,14 @@
 import core, {
   DOMAIN_TX,
   Data,
+  Ref,
   SortingOrder,
   Status,
   TxCollectionCUD,
   TxCreateDoc,
   TxOperations,
-  TxUpdateDoc
+  TxUpdateDoc,
+  toIdMap
 } from '@hcengineering/core'
 import {
   MigrateOperation,
@@ -227,6 +229,43 @@ async function fixRemainingTime (client: MigrationClient): Promise<void> {
   )
 }
 
+async function fixParentsSpace (client: MigrationClient): Promise<void> {
+  while (true) {
+    const issues = await client.find<Issue>(
+      DOMAIN_TASK,
+      { _class: tracker.class.Issue, 'parents.space': { $exists: false }, parents: { $exists: true, $ne: [] } },
+      { limit: 1000 }
+    )
+
+    const parentIds: Set<Ref<Issue>> = new Set()
+    for (const i of issues) {
+      for (const p of i.parents ?? []) {
+        parentIds.add(p.parentId)
+      }
+    }
+
+    const parentIssues = toIdMap(
+      await client.find<Issue>(DOMAIN_TASK, { _class: tracker.class.Issue, _id: { $in: Array.from(parentIds) } })
+    )
+
+    for (const issue of issues) {
+      await client.update(
+        DOMAIN_TASK,
+        { _id: issue._id },
+        { parents: issue.parents.map((it) => ({ ...it, space: parentIssues.get(it.parentId)?.space ?? it.space })) }
+      )
+    }
+    if (issues.length === 0) {
+      break
+    }
+  }
+  await client.update(
+    DOMAIN_TASK,
+    { _class: { $ne: tracker.class.Issue }, remainingTime: { $exists: true } },
+    { $unset: { remainingTime: '' } }
+  )
+}
+
 async function moveIssues (client: MigrationClient): Promise<void> {
   const docs = await client.find(DOMAIN_TRACKER, { _class: tracker.class.Issue })
   if (docs.length > 0) {
@@ -252,6 +291,10 @@ export const trackerOperation: MigrateOperation = {
       {
         state: 'fixRemainingTime',
         func: fixRemainingTime
+      },
+      {
+        state: 'fixParentsSpace',
+        func: fixParentsSpace
       }
     ])
   },
