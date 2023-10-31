@@ -119,7 +119,8 @@
     "ShowApplications": "Показать кандидатов",
     "GetTalentIds": "Получить ID талантов",
     "HideDoneState": "Скрыть завершенных кандидатов",
-    "HideArchivedVacancies": "Скрыть архивные вакансии"
+    "HideArchivedVacancies": "Скрыть архивные вакансии",
+    "CreateNewSkills": "Создать навыки, если не найдены существующие"
   },
   "status": {
     "ApplicationExists": "Кандидат уже существует",

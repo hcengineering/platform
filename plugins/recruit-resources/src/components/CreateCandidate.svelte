@@ -57,7 +57,8 @@
     IconInfo,
     Label,
     showPopup,
-    Spinner
+    Spinner,
+    MiniToggle
   } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import recruit from '../plugin'
@@ -136,6 +137,7 @@
   let inputFile: HTMLInputElement
   let loading = false
   let dragover = false
+  let shouldCreateNewSkills = false
 
   let avatar: File | undefined = draft?.avatar
 
@@ -349,7 +351,7 @@
       for (const s of doc.skills ?? []) {
         const title = s.trim().toLowerCase()
         let e = namedElements.get(title)
-        if (e === undefined) {
+        if (e === undefined && shouldCreateNewSkills) {
           // No yet tag with title
           const category = findTagCategory(s, categories)
           const cinstance = categoriesMap.get(category)
@@ -366,18 +368,20 @@
           elements.set(e._id, e)
           newElements.push(e)
         }
-        newSkills.push(
-          TxProcessor.createDoc2Doc(
-            client.txFactory.createTxCreateDoc(tags.class.TagReference, tags.space.Tags, {
-              title: e.title,
-              color: e.color,
-              tag: e._id,
-              attachedTo: '' as Ref<Doc>,
-              attachedToClass: recruit.mixin.Candidate,
-              collection: 'skills'
-            })
+        if (e !== undefined) {
+          newSkills.push(
+            TxProcessor.createDoc2Doc(
+              client.txFactory.createTxCreateDoc(tags.class.TagReference, tags.space.Tags, {
+                title: e.title,
+                color: e.color,
+                tag: e._id,
+                attachedTo: '' as Ref<Doc>,
+                attachedToClass: recruit.mixin.Candidate,
+                collection: 'skills'
+              })
+            )
           )
-        )
+        }
       }
       object.skills = [...object.skills, ...newSkills]
     } catch (err: any) {
@@ -705,6 +709,9 @@
         {/if}
         <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected} />
       {/if}
+      <div class="ml-1">
+        <MiniToggle bind:on={shouldCreateNewSkills} label={recruit.string.CreateNewSkills} />
+      </div>
     </div>
     {#if matches.length > 0}
       <div class="flex-col-stretch flex-grow error-color">
