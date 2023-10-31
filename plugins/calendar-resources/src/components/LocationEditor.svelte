@@ -4,14 +4,14 @@
 
   export let value: string | undefined
 
-  function isLink (value: string | undefined): boolean {
-    if (value === undefined) return false
+  function isLink (value?: string | null): boolean {
+    if (value == null) return false
     const url = parseURL(value)
     return url.startsWith('http://') || url.startsWith('https://')
   }
 
   function open () {
-    if (value === undefined) return
+    if (value == null) return
     const url = parseURL(value)
     if (url.startsWith('http://') || url.startsWith('https://')) {
       window.open(url, '_blank')

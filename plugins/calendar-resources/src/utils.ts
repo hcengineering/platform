@@ -19,11 +19,11 @@ export function saveUTC (date: Timestamp): Timestamp {
   )
 }
 
-export function hidePrivateEvents (events: Event[], calendars: IdMap<Calendar>): Event[] {
+export function hidePrivateEvents (events: Event[], calendars: IdMap<Calendar>, allowMe: boolean = true): Event[] {
   const me = getCurrentAccount()._id
   const res: Event[] = []
   for (const event of events) {
-    if ((event.createdBy ?? event.modifiedBy) === me) {
+    if ((event.createdBy ?? event.modifiedBy) === me && allowMe) {
       res.push(event)
     } else {
       if (event.visibility !== undefined) {
