@@ -116,6 +116,25 @@ export interface ExtraActivityComponent extends Class<Doc> {
  */
 export const activityId = 'activity' as Plugin
 
+/**
+ * @public
+ */
+export type ActivityExtensionKind = 'footer' | 'action' | 'input'
+
+/**
+ * @public
+ */
+export interface ActivityExtension extends Doc {
+  ofClass: Ref<Class<Doc>>
+  components?: Partial<Record<ActivityExtensionKind, AnyComponent>>
+  isMention?: boolean
+}
+
+/**
+ * @public
+ */
+export interface TxMention extends Class<Doc> {}
+
 export default plugin(activityId, {
   icon: {
     Activity: '' as Asset
@@ -137,7 +156,8 @@ export default plugin(activityId, {
   },
   class: {
     TxViewlet: '' as Ref<Class<TxViewlet>>,
-    ActivityFilter: '' as Ref<Class<ActivityFilter>>
+    ActivityFilter: '' as Ref<Class<ActivityFilter>>,
+    ActivityExtension: '' as Ref<Class<ActivityExtension>>
   },
   component: {
     Activity: '' as AnyComponent

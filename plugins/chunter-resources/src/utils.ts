@@ -1,7 +1,18 @@
-import { chunterId, ChunterMessage, Comment, ThreadMessage } from '@hcengineering/chunter'
+import { chunterId, ChunterMessage, Comment, Reaction, ThreadMessage } from '@hcengineering/chunter'
 import contact, { Employee, PersonAccount, getName } from '@hcengineering/contact'
 import { employeeByIdStore } from '@hcengineering/contact-resources'
-import { Class, Client, Doc, getCurrentAccount, IdMap, Obj, Ref, Space, Timestamp } from '@hcengineering/core'
+import {
+  Class,
+  Client,
+  Doc,
+  getCurrentAccount,
+  IdMap,
+  Obj,
+  Ref,
+  Space,
+  Timestamp,
+  TxOperations
+} from '@hcengineering/core'
 import { Asset } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
 import {
@@ -278,4 +289,28 @@ function parseLinks (nodes: NodeListOf<ChildNode>): HTMLLinkElement[] {
     }
   })
   return res
+}
+
+export async function updateDocReactions (
+  client: TxOperations,
+  reactions: Reaction[],
+  object?: Doc,
+  emoji?: string
+): Promise<void> {
+  if (emoji === undefined || object === undefined) {
+    return
+  }
+
+  const currentAccount = getCurrentAccount()
+
+  const reaction = reactions.find((r) => r.emoji === emoji && r.createBy === currentAccount._id)
+
+  if (reaction == null) {
+    await client.addCollection(chunter.class.Reaction, object.space, object._id, object._class, 'reactions', {
+      emoji,
+      createBy: currentAccount._id
+    })
+  } else {
+    await client.remove(reaction)
+  }
 }

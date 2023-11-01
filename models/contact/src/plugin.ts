@@ -24,6 +24,7 @@ import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
 import { TemplateFieldFunc } from '@hcengineering/templates'
 import type { AnyComponent } from '@hcengineering/ui'
 import { Action, ActionCategory, ViewAction } from '@hcengineering/view'
+import { ActivityExtension } from '@hcengineering/activity'
 
 export default mergeIds(contactId, contact, {
   activity: {
@@ -112,7 +113,9 @@ export default mergeIds(contactId, contact, {
   },
   ids: {
     OrganizationNotificationGroup: '' as Ref<NotificationGroup>,
-    PersonNotificationGroup: '' as Ref<NotificationGroup>
+    PersonNotificationGroup: '' as Ref<NotificationGroup>,
+    PersonActivityExtension: '' as Ref<ActivityExtension>,
+    OrganizationActivityExtension: '' as Ref<ActivityExtension>
   },
   action: {
     KickEmployee: '' as Ref<Action>,

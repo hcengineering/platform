@@ -42,7 +42,7 @@
         class="flex-row-center"
         use:tooltip={{ component: ReactionsTooltip, props: { reactionAccounts: accounts } }}
         on:click={() => {
-          dispatch('remove', emoji)
+          dispatch('click', emoji)
         }}
       >
         <div>{emoji}</div>
@@ -55,13 +55,13 @@
 <style lang="scss">
   .container {
     display: flex;
+    flex-wrap: wrap;
     user-select: none;
+    column-gap: 1rem;
+    row-gap: 0.25rem;
 
     .counter {
       margin-left: 0.25rem;
-    }
-    .reaction + .reaction {
-      margin-left: 1rem;
     }
   }
 </style>

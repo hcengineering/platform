@@ -22,6 +22,7 @@ import recruit from '@hcengineering/recruit-resources/src/plugin'
 import { ProjectType } from '@hcengineering/task'
 import type { AnyComponent, Location } from '@hcengineering/ui'
 import type { Action, ActionCategory, ViewAction, ViewQueryAction, Viewlet } from '@hcengineering/view'
+import { ActivityExtension } from '@hcengineering/activity'
 
 export default mergeIds(recruitId, recruit, {
   action: {
@@ -82,7 +83,10 @@ export default mergeIds(recruitId, recruit, {
     ApplicationNotificationGroup: '' as Ref<NotificationGroup>,
     AssigneeNotification: '' as Ref<NotificationType>,
     ApplicationCreateNotification: '' as Ref<NotificationType>,
-    ReviewCreateNotification: '' as Ref<NotificationType>
+    ReviewCreateNotification: '' as Ref<NotificationType>,
+    VacancyActivityExtension: '' as Ref<ActivityExtension>,
+    ApplicantActivityExtension: '' as Ref<ActivityExtension>,
+    ReviewActivityExtension: '' as Ref<ActivityExtension>
   },
   component: {
     CreateApplication: '' as AnyComponent,

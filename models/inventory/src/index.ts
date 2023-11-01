@@ -14,6 +14,7 @@
 //
 
 import { Domain, IndexKind, Ref } from '@hcengineering/core'
+import activity from '@hcengineering/activity'
 import { Category, Product, Variant, inventoryId } from '@hcengineering/inventory'
 import { Builder, Collection, Index, Model, Prop, TypeRef, TypeString, UX } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
@@ -22,6 +23,7 @@ import { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import setting from '@hcengineering/setting'
 import view, { Viewlet } from '@hcengineering/view'
+import chunter from '@hcengineering/model-chunter'
 import inventory from './plugin'
 
 export { inventoryId } from '@hcengineering/inventory'
@@ -160,6 +162,30 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     { label: inventory.string.Inventory, visible: true },
     inventory.category.Inventory
+  )
+
+  builder.createDoc(
+    activity.class.ActivityExtension,
+    core.space.Model,
+    {
+      ofClass: inventory.class.Product,
+      components: {
+        input: chunter.component.CommentInput
+      }
+    },
+    inventory.ids.ProductActivityExtension
+  )
+
+  builder.createDoc(
+    activity.class.ActivityExtension,
+    core.space.Model,
+    {
+      ofClass: inventory.class.Category,
+      components: {
+        input: chunter.component.CommentInput
+      }
+    },
+    inventory.ids.CategoryActivityExtension
   )
 
   createAction(builder, {

@@ -43,6 +43,7 @@ import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
 import { ViewOptionsModel } from '@hcengineering/view'
+import activity from '@hcengineering/activity'
 import lead from './plugin'
 
 export { leadId } from '@hcengineering/lead'
@@ -507,6 +508,18 @@ export function createModel (builder: Builder): void {
       config: []
     },
     lead.viewlet.DashboardLead
+  )
+
+  builder.createDoc(
+    activity.class.ActivityExtension,
+    core.space.Model,
+    {
+      ofClass: lead.class.Lead,
+      components: {
+        input: chunter.component.CommentInput
+      }
+    },
+    lead.ids.LeadActivityExtension
   )
 
   builder.mixin(lead.class.Lead, core.class.Class, task.mixin.KanbanCard, {

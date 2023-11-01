@@ -23,6 +23,7 @@ import { mergeIds } from '@hcengineering/platform'
 import { ProjectType } from '@hcengineering/task'
 import type { AnyComponent } from '@hcengineering/ui'
 import { Action, ActionCategory, Viewlet } from '@hcengineering/view'
+import { ActivityExtension } from '@hcengineering/activity'
 
 export default mergeIds(leadId, lead, {
   string: {
@@ -69,6 +70,7 @@ export default mergeIds(leadId, lead, {
     CustomerNotificationGroup: '' as Ref<NotificationGroup>,
     FunnelNotificationGroup: '' as Ref<NotificationGroup>,
     LeadCreateNotification: '' as Ref<NotificationType>,
-    AssigneeNotification: '' as Ref<NotificationType>
+    AssigneeNotification: '' as Ref<NotificationType>,
+    LeadActivityExtension: '' as Ref<ActivityExtension>
   }
 })

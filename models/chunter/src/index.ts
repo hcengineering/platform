@@ -150,6 +150,9 @@ export class TComment extends TAttachedDoc implements Comment {
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
+
+  @Prop(Collection(chunter.class.Reaction), chunter.string.Reactions)
+    reactions?: number
 }
 
 @Model(chunter.class.Backlink, chunter.class.Comment)
@@ -735,6 +738,29 @@ export function createModel (builder: Builder, options = { addApplication: true 
       group: chunter.ids.ChunterNotificationGroup
     },
     chunter.ids.ChannelNotification
+  )
+
+  builder.createDoc(
+    activity.class.ActivityExtension,
+    core.space.Model,
+    {
+      ofClass: chunter.class.Comment,
+      components: {
+        footer: chunter.component.CommentReactions,
+        action: chunter.component.ReactionsAction
+      }
+    },
+    chunter.ids.ActivityExtension
+  )
+
+  builder.createDoc(
+    activity.class.ActivityExtension,
+    core.space.Model,
+    {
+      ofClass: chunter.class.Backlink,
+      isMention: true
+    },
+    chunter.ids.BackLinkActivityExtension
   )
 
   builder.createDoc(

@@ -1,4 +1,4 @@
-import type { DisplayTx, TxViewlet } from '@hcengineering/activity'
+import type { ActivityExtension, DisplayTx, TxViewlet } from '@hcengineering/activity'
 import core, {
   AttachedDoc,
   Class,
@@ -425,4 +425,8 @@ function filterCollectionTx (tx: DisplayTx): DisplayTx | undefined {
     ctx.txDocIds = new Set(txDocIds)
   }
   return ctx
+}
+
+export async function getExtensions (client: Client, ofClass: Ref<Class<Doc>>): Promise<ActivityExtension[]> {
+  return await client.findAll(activity.class.ActivityExtension, { ofClass })
 }

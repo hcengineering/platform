@@ -56,6 +56,7 @@ import {
 } from '@hcengineering/recruit'
 import setting from '@hcengineering/setting'
 import { KeyBinding, ViewOptionModel, ViewOptionsModel } from '@hcengineering/view'
+import activity from '@hcengineering/activity'
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
 import { TOpinion, TReview } from './review-model'
@@ -1555,6 +1556,42 @@ export function createModel (builder: Builder): void {
       disableValueSelector: true
     },
     recruit.filter.None
+  )
+
+  builder.createDoc(
+    activity.class.ActivityExtension,
+    core.space.Model,
+    {
+      ofClass: recruit.class.Vacancy,
+      components: {
+        input: chunter.component.CommentInput
+      }
+    },
+    recruit.ids.VacancyActivityExtension
+  )
+
+  builder.createDoc(
+    activity.class.ActivityExtension,
+    core.space.Model,
+    {
+      ofClass: recruit.class.Applicant,
+      components: {
+        input: chunter.component.CommentInput
+      }
+    },
+    recruit.ids.ApplicantActivityExtension
+  )
+
+  builder.createDoc(
+    activity.class.ActivityExtension,
+    core.space.Model,
+    {
+      ofClass: recruit.class.Review,
+      components: {
+        input: chunter.component.CommentInput
+      }
+    },
+    recruit.ids.ReviewActivityExtension
   )
 
   // Allow to use fuzzy search for mixins

@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { DisplayTx, TxViewlet } from '@hcengineering/activity'
+  import { tick } from 'svelte'
+  import type { ActivityExtension, DisplayTx, TxViewlet } from '@hcengineering/activity'
   import attachment from '@hcengineering/attachment'
-  import chunter from '@hcengineering/chunter'
   import contact, { Person, PersonAccount, getName } from '@hcengineering/contact'
-  import core, { AnyAttribute, Class, Doc, Ref, TxCUD, getCurrentAccount } from '@hcengineering/core'
+  import core, { AnyAttribute, Doc, Ref, TxCUD, getCurrentAccount } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import ui, {
@@ -36,11 +36,13 @@
   } from '@hcengineering/ui'
   import type { AttributeModel } from '@hcengineering/view'
   import { Menu, ObjectPresenter } from '@hcengineering/view-resources'
-  import { tick } from 'svelte'
+
+  import TxViewTx from './TxViewTx.svelte'
+  import ActivityExtensionComponent from './ActivityExtensionComponent.svelte'
+
   import { ActivityKey } from '../activity'
   import activity from '../plugin'
-  import { TxDisplayViewlet, getPrevValue, getValue, updateViewlet } from '../utils'
-  import TxViewTx from './TxViewTx.svelte'
+  import { TxDisplayViewlet, getPrevValue, getValue, updateViewlet, getExtensions } from '../utils'
 
   export let tx: DisplayTx
   export let viewlets: Map<ActivityKey, TxViewlet[]>
@@ -61,11 +63,18 @@
   let model: AttributeModel[] = []
   let modelIcon: Asset | undefined = undefined
   let iconComponent: AnyComponent | undefined = undefined
+  let extensions: ActivityExtension[] = []
 
   let edit: boolean = false
   let showDiff: boolean = false
 
   const currentAccount = getCurrentAccount() as PersonAccount
+
+  $: if (tx.doc?._class) {
+    getExtensions(client, tx.doc._class).then((res?: ActivityExtension[]) => {
+      extensions = res || []
+    })
+  }
 
   $: if (tx.tx._id !== ptx?.tx._id) {
     if (tx.tx.modifiedBy !== account?._id) {
@@ -141,14 +150,17 @@
     edit = false
     props = getProps(props, edit)
   }
+
   function isMessageType (attr?: AnyAttribute): boolean {
     return attr?.type._class === core.class.TypeMarkup
   }
+
   function isAttachment (tx: TxCUD<Doc>): boolean {
     return tx.objectClass === attachment.class.Attachment && tx._class === core.class.TxCreateDoc
   }
-  function isMention (_class?: Ref<Class<Doc>>): boolean {
-    return _class === chunter.class.Backlink
+
+  function isMention (extensions: ActivityExtension[]): boolean {
+    return extensions.some(({ isMention }) => !!isMention)
   }
 
   async function updateMessageType (model: AttributeModel[], tx: DisplayTx): Promise<boolean> {
@@ -163,13 +175,14 @@
     }
     return false
   }
+
   let hasMessageType = false
   $: updateMessageType(model, tx).then((res) => {
     hasMessageType = res
   })
   $: isComment = viewlet && viewlet?.editable
   $: isAttached = isAttachment(tx.tx)
-  $: isMentioned = isMention(tx.tx.objectClass)
+  $: isMentioned = isMention(extensions)
   $: withAvatar = isComment || isMentioned || isAttached
   $: isEmphasized = viewlet?.display === 'emphasized' || model.every((m) => isMessageType(m.attribute))
   $: isColumn = isComment || isEmphasized || hasMessageType
@@ -327,6 +340,7 @@
         </div>
         {#if isComment}
           <div class="buttons-group">
+            <ActivityExtensionComponent {extensions} kind="action" props={{ object: tx.doc }} />
             <!-- <Like /> -->
             {#if account?.person === currentAccount?.person}
               <ActionIcon icon={IconMoreH} size={'small'} action={showMenu} />
@@ -369,6 +383,7 @@
           </div>
         {/await}
       {/if}
+      <ActivityExtensionComponent {extensions} kind="footer" props={{ object: tx.doc }} />
     </div>
   </div>
 {/if}
@@ -390,9 +405,11 @@
       min-width: 2.25rem;
       color: var(--theme-darker-color);
     }
+
     .msgactivity-icon {
       height: 1.75rem;
     }
+
     .msgactivity-avatar {
       height: 2.25rem;
       // background-color: var(--theme-darker-color);
@@ -414,6 +431,7 @@
         flex-grow: 1;
         min-width: 0;
       }
+
       .msgactivity-content__title {
         display: inline-flex;
         align-items: center;
@@ -425,11 +443,13 @@
         flex-direction: column;
         padding-bottom: 0.25rem;
       }
+
       &:not(.comment) {
         .msgactivity-content__header {
           min-height: 1.75rem;
         }
       }
+
       &:not(.content) {
         align-items: center;
 
@@ -449,45 +469,43 @@
       background-color: var(--divider-trans-color);
       z-index: 1;
     }
+
     &.isNew {
       &::before {
         background-color: var(--highlight-red);
       }
+
       .icon {
         border: 1px solid var(--highlight-red);
       }
     }
+
     &.isNextNew {
       &::after {
         background-color: var(--highlight-red);
       }
     }
+
     &::before {
       top: -0.75rem;
       height: 0.75rem;
     }
+
     &.withAvatar::after {
       content: '';
       top: 2.25rem;
       bottom: 0;
     }
+
     &:not(.withAvatar)::after {
       content: '';
       top: 1.75rem;
       bottom: 0;
     }
   }
+
   :global(.msgactivity-container + .msgactivity-container::before) {
     content: '';
-  }
-
-  .menuOptions {
-    margin-left: 0.5rem;
-    opacity: 0.8;
-    cursor: pointer;
-    &:hover {
-      opacity: 1;
-    }
   }
 
   .time {
@@ -499,15 +517,12 @@
     }
   }
 
-  .message {
-    flex-basis: 100%;
-  }
-
   .activity-content {
     visibility: visible;
     min-width: 0;
     max-height: max-content;
     opacity: 1;
+    position: relative;
     transition-property: max-height, opacity;
     transition-timing-function: ease-in-out;
     transition-duration: 0.15s;
@@ -519,6 +534,7 @@
       max-height: 0;
       opacity: 0;
     }
+
     &.indent {
       margin-top: 0.5rem;
     }
@@ -527,9 +543,11 @@
   .show-diff {
     color: var(--theme-content-color);
     cursor: pointer;
+
     &:hover {
       color: var(--theme-caption-color);
     }
+
     &:active {
       color: var(--theme-content-color);
     }
