@@ -19,9 +19,10 @@
   import { getNodeViewContext } from './context'
 
   export let as = 'div'
-  export let element: HTMLElement
 
   const { onDragStart } = getNodeViewContext()
+
+  let element: HTMLElement
 
   onMount(async () => {
     await tick()
@@ -32,8 +33,8 @@
 <svelte:element
   this={as}
   bind:this={element}
-  on:dragstart={onDragStart}
   data-node-view-wrapper=""
+  on:dragstart={onDragStart}
   role="none"
   {...$$restProps}
 >
