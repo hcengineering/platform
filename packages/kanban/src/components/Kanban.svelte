@@ -36,6 +36,7 @@
   export let dontUpdateRank: boolean = false
 
   export let getUpdateProps: (doc: Doc, state: CategoryType) => DocumentUpdate<Item> | undefined
+  export let getAvailableCategories: ((doc: Doc) => Promise<CategoryType[]>) | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -43,6 +44,13 @@
     if (dragCard === undefined) {
       return
     }
+
+    const canDrop = !dragCardAvailableCategories || dragCardAvailableCategories.includes(state)
+
+    if (!canDrop) {
+      return
+    }
+
     let updates = getUpdateProps(dragCard, state)
 
     if (updates === undefined) {
@@ -61,6 +69,7 @@
       await client.diffUpdate(dragCard, updates)
     }
     dragCard = undefined
+    dragCardAvailableCategories = undefined
   }
 
   const client = getClient()
@@ -70,6 +79,7 @@
   let dragCardInitialState: CategoryType
   let dragCardInitialPosition: number | undefined
   let dragCardState: CategoryType | undefined
+  let dragCardAvailableCategories: CategoryType[] | undefined
 
   let isDragging = false
 
@@ -84,6 +94,12 @@
   function panelDragOver (event: Event | undefined, state: CategoryType): void {
     event?.preventDefault()
     if (dragCard !== undefined && dragCardState !== state) {
+      const canDrop = !dragCardAvailableCategories || dragCardAvailableCategories.includes(state)
+
+      if (!canDrop) {
+        return
+      }
+
       const updates = getUpdateProps(dragCard, state)
       if (updates === undefined) {
         return
@@ -169,7 +185,7 @@
     }
     isDragging = false
   }
-  function onDragStart (object: Item, state: CategoryType): void {
+  async function onDragStart (object: Item, state: CategoryType) {
     dragCardInitialState = state
     dragCardState = state
     dragCardInitialRank = object.rank
@@ -177,6 +193,7 @@
     dragCardInitialPosition = items.findIndex((p) => p._id === object._id)
     dragCard = object
     isDragging = true
+    dragCardAvailableCategories = await getAvailableCategories?.(object)
     dispatch('obj-focus', object)
   }
   // eslint-disable-next-line

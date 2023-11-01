@@ -66,7 +66,8 @@
     noCategory,
     openDoc,
     SelectDirection,
-    setGroupByValues
+    setGroupByValues,
+    statusStore
   } from '@hcengineering/view-resources'
   import view from '@hcengineering/view-resources/src/plugin'
   import { onMount } from 'svelte'
@@ -82,6 +83,8 @@
   import PriorityEditor from './PriorityEditor.svelte'
   import StatusEditor from './StatusEditor.svelte'
   import EstimationEditor from './timereport/EstimationEditor.svelte'
+  import { getStates } from '@hcengineering/task'
+  import { typeStore } from '@hcengineering/task-resources'
 
   export let space: Ref<Project> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
@@ -264,6 +267,39 @@
     if (enabledConfig(config, 'attachments') && (issue.attachments ?? 0) > 0) return true
     return false
   }
+
+  const getAvailableCategories = async (doc: Doc): Promise<CategoryType[]> => {
+    const issue = toIssue(doc)
+
+    if ([IssuesGrouping.Component, IssuesGrouping.Milestone].includes(groupByKey)) {
+      const availableCategories = []
+      const clazz = hierarchy.getAttribute(tracker.class.Issue, groupByKey)
+
+      for (const category of categories) {
+        if (!category || (issue as any)[groupByKey] === category) {
+          availableCategories.push(category)
+        } else if (clazz !== undefined && 'to' in clazz.type) {
+          const categoryDoc = await client.findOne(clazz.type.to as Ref<Class<Doc>>, {
+            _id: category as Ref<Doc>,
+            space: issue.space
+          })
+
+          if (categoryDoc) {
+            availableCategories.push(category)
+          }
+        }
+      }
+
+      return availableCategories
+    }
+
+    if (groupByKey === IssuesGrouping.Status) {
+      const space = await client.findOne(tracker.class.Project, { _id: issue.space })
+      return getStates(space, $typeStore, $statusStore.byId).map((a) => a._id)
+    }
+
+    return categories
+  }
 </script>
 
 {#if categories.length === 0}
@@ -288,6 +324,7 @@
     on:obj-focus={(evt) => {
       listProvider.updateFocus(evt.detail)
     }}
+    {getAvailableCategories}
     selection={listProvider.current($focusStore)}
     checked={$selection ?? []}
     on:check={(evt) => {
