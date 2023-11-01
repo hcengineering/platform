@@ -295,7 +295,7 @@
 
     if (groupByKey === IssuesGrouping.Status) {
       const space = await client.findOne(tracker.class.Project, { _id: issue.space })
-      return getStates(space, $typeStore, $statusStore.byId).map((a) => a._id)
+      return getStates(space, $typeStore, $statusStore.byId).map(({ _id }) => _id)
     }
 
     return categories
