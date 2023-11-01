@@ -159,7 +159,7 @@
     return tx.objectClass === attachment.class.Attachment && tx._class === core.class.TxCreateDoc
   }
 
-  function isMention (): boolean {
+  function isMention (extensions: ActivityExtension[]): boolean {
     return extensions.some(({ isMention }) => !!isMention)
   }
 
@@ -182,7 +182,7 @@
   })
   $: isComment = viewlet && viewlet?.editable
   $: isAttached = isAttachment(tx.tx)
-  $: isMentioned = isMention()
+  $: isMentioned = isMention(extensions)
   $: withAvatar = isComment || isMentioned || isAttached
   $: isEmphasized = viewlet?.display === 'emphasized' || model.every((m) => isMessageType(m.attribute))
   $: isColumn = isComment || isEmphasized || hasMessageType
