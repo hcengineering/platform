@@ -22,12 +22,11 @@
     DocumentUpdate,
     FindOptions,
     generateId,
-    ObjQueryType,
     Ref
   } from '@hcengineering/core'
   import { Item, Kanban as KanbanUI } from '@hcengineering/kanban'
   import { getResource } from '@hcengineering/platform'
-  import { createQuery, getClient, ActionContext } from '@hcengineering/presentation'
+  import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import { Project, Task, TaskGrouping, TaskOrdering } from '@hcengineering/task'
   import {
     ColorDefinition,
@@ -161,7 +160,7 @@
 
   async function updateCategories (
     _class: Ref<Class<Doc>>,
-    space: ObjQueryType<Ref<Project>> | undefined,
+    space: Ref<Project> | undefined,
     docs: Doc[],
     groupByKey: string,
     viewOptions: ViewOptions,
