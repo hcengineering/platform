@@ -346,9 +346,55 @@
       const categoriesMap = toIdMap(categories)
 
       const newSkills: TagReference[] = []
-
+      const formattedSkills = (doc.skills.map((s) => s.toLowerCase()) ?? []).filter(
+        (skill) => !namedElements.has(skill)
+      )
+      const refactoredSkills = []
+      if (formattedSkills.length > 0) {
+        const existingTags = Array.from(namedElements.keys()).filter((x) => x.length > 2)
+        const regex = /\S+(?:[-+]\S+)+/g
+        const regexForEmpty = /^((?![a-zA-Zа-яА-Я]).)*$/g
+        for (let sk of formattedSkills) {
+          sk = sk.toLowerCase()
+          const toReplace = [...new Set([...existingTags, ...refactoredSkills])]
+            .filter((s) => sk.includes(s))
+            .sort((a, b) => b.length - a.length)
+          if (toReplace.length > 0) {
+            for (const replacing of toReplace) {
+              if (namedElements.has(replacing)) {
+                refactoredSkills.push(replacing)
+                sk = sk.replace(replacing, '').trim()
+              }
+            }
+          }
+          if (sk.includes(' ')) {
+            const skSplit = sk.split(' ')
+            for (const spl of skSplit) {
+              const fixedTitle = regex.test(spl) ? spl.replaceAll(/[+-]/g, '') : spl
+              if (namedElements.has(fixedTitle)) {
+                refactoredSkills.push(fixedTitle)
+                sk = sk.replace(spl, '').trim()
+              }
+              if ([...doc.skills, ...refactoredSkills].includes(fixedTitle)) {
+                sk = sk.replace(spl, '').trim()
+              }
+            }
+          }
+          if (regex.test(sk)) {
+            const fixedTitle = sk.replaceAll(/[+-]/g, '')
+            if (namedElements.has(fixedTitle)) {
+              refactoredSkills.push(fixedTitle)
+              sk = ''
+            }
+          }
+          if (!regexForEmpty.test(sk) && !refactoredSkills.includes(sk)) {
+            refactoredSkills.push(sk)
+          }
+        }
+      }
+      const skillsToAdd = [...new Set([...doc.skills.map((s) => s.toLowerCase()), ...refactoredSkills])]
       // Create missing tag elemnts
-      for (const s of doc.skills ?? []) {
+      for (const s of skillsToAdd) {
         const title = s.trim().toLowerCase()
         let e = namedElements.get(title)
         if (e === undefined && shouldCreateNewSkills) {
