@@ -22,6 +22,7 @@
     DocumentUpdate,
     FindOptions,
     generateId,
+    ObjQueryType,
     Ref
   } from '@hcengineering/core'
   import { Item, Kanban as KanbanUI } from '@hcengineering/kanban'
@@ -160,7 +161,7 @@
 
   async function updateCategories (
     _class: Ref<Class<Doc>>,
-    space: Ref<Project> | undefined,
+    space: ObjQueryType<Ref<Project>> | undefined,
     docs: Doc[],
     groupByKey: string,
     viewOptions: ViewOptions,
@@ -173,20 +174,15 @@
       if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
         const categoryAction = await getResource(categoryFunc.action)
 
-        const spaces = getCategorySpaces(categories)
-        if (space !== undefined) {
-          spaces.push(space)
+        let spaces = getCategorySpaces(categories)
+        if (spaces.length === 0) {
+          const set = new Set(docs.map((p) => p.space))
+          spaces = Array.from(set)
         }
 
-        const res = await categoryAction(
-          _class,
-          spaces.length > 0 ? { space: { $in: Array.from(spaces.values()) } } : {},
-          space,
-          groupByKey,
-          update,
-          queryId,
-          viewlet.descriptor
-        )
+        const query = spaces.length > 0 ? { space: { $in: Array.from(spaces.values()) } } : space ? { space } : {}
+
+        const res = await categoryAction(_class, query, space, groupByKey, update, queryId, viewlet.descriptor)
         if (res !== undefined) {
           categories = res
           break
