@@ -26,7 +26,7 @@
   } from '@hcengineering/core'
   import { Item, Kanban as KanbanUI } from '@hcengineering/kanban'
   import { getResource } from '@hcengineering/platform'
-  import { createQuery, getClient, ActionContext } from '@hcengineering/presentation'
+  import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import { Project, Task, TaskGrouping, TaskOrdering } from '@hcengineering/task'
   import {
     ColorDefinition,
@@ -173,20 +173,15 @@
       if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
         const categoryAction = await getResource(categoryFunc.action)
 
-        const spaces = getCategorySpaces(categories)
-        if (space !== undefined) {
-          spaces.push(space)
+        let spaces = getCategorySpaces(categories)
+        if (spaces.length === 0) {
+          const set = new Set(docs.map((p) => p.space))
+          spaces = Array.from(set)
         }
 
-        const res = await categoryAction(
-          _class,
-          spaces.length > 0 ? { space: { $in: Array.from(spaces.values()) } } : {},
-          space,
-          groupByKey,
-          update,
-          queryId,
-          viewlet.descriptor
-        )
+        const query = spaces.length > 0 ? { space: { $in: Array.from(spaces.values()) } } : space ? { space } : {}
+
+        const res = await categoryAction(_class, query, space, groupByKey, update, queryId, viewlet.descriptor)
         if (res !== undefined) {
           categories = res
           break

@@ -200,7 +200,6 @@ async function statusSort (
       const type = types.splice(index, 1)[0]
       for (let index = 0; index < type.statuses.length; index++) {
         const st = type.statuses[index]
-        if (!value.includes(st._id)) continue
         const prev = index > 0 ? res.get(type.statuses[index - 1]._id) : prevRank
         const next = index < type.statuses.length - 1 ? res.get(type.statuses[index + 1]._id) : undefined
         const rank = calcRank(
