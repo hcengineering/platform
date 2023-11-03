@@ -59,7 +59,7 @@
 
   let resultQuery: DocumentQuery<Doc> = query
   $: getResultQuery(query, viewOptionsConfig, viewOptions).then((p) => {
-    resultQuery = { ...p, ...query }
+    resultQuery = { ...query, ...p }
   })
 
   $: queryNoLookup = noLookup(resultQuery)
@@ -68,7 +68,7 @@
 
   let categoryQueryOptions: Partial<FindOptions<Doc>>
   $: categoryQueryOptions = {
-    ...resultOptions,
+    ...noLookupOptions(resultOptions),
     projection: {
       ...resultOptions.projection,
       _id: 1,
@@ -130,6 +130,11 @@
       }
     }
     return newQuery
+  }
+
+  function noLookupOptions (options: FindOptions<Doc>): FindOptions<Doc> {
+    const { lookup, ...resultOptions } = options
+    return resultOptions
   }
 
   $: dispatch('content', docs)
