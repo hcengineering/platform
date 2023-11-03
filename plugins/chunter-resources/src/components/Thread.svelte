@@ -46,7 +46,7 @@
   const dispatch = createEventDispatcher()
 
   const lookup = {
-    _id: { attachments: attachment.class.Attachment },
+    _id: { attachments: attachment.class.Attachment, reactions: chunter.class.Reaction },
     createBy: core.class.Account
   }
 
@@ -67,10 +67,7 @@
       },
       (res) => (parent = res[0]),
       {
-        lookup: {
-          _id: { attachments: attachment.class.Attachment },
-          createBy: core.class.Account
-        }
+        lookup
       }
     )
   }
