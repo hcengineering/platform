@@ -16,7 +16,7 @@
   import core, { Doc, FindResult, IdMap, Ref, RefTo, Space, Status, toIdMap } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
-  import task, { Project, ProjectType, getStates } from '@hcengineering/task'
+  import task, { Project, ProjectType } from '@hcengineering/task'
   import ui, {
     EditWithIcon,
     Icon,
@@ -30,10 +30,16 @@
     themeStore
   } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
+  import {
+    FILTER_DEBOUNCE_MS,
+    FilterRemovedNotification,
+    sortFilterValues,
+    statusStore
+  } from '@hcengineering/view-resources'
+  import view from '@hcengineering/view-resources/src/plugin'
+  import { buildConfigLookup, getPresenter } from '@hcengineering/view-resources/src/utils'
   import { createEventDispatcher } from 'svelte'
-  import { FILTER_DEBOUNCE_MS, FilterRemovedNotification, sortFilterValues, statusStore } from '../..'
-  import view from '../../plugin'
-  import { buildConfigLookup, getPresenter } from '../../utils'
+  import { selectedTypeStore, typeStore } from '..'
 
   export let filter: Filter
   export let space: Ref<Space> | undefined = undefined
@@ -65,7 +71,12 @@
 
   let filterUpdateTimeout: any | undefined
 
-  async function getValues (search: string, typeStore: IdMap<ProjectType>, statusStore: IdMap<Status>): Promise<void> {
+  async function getValues (
+    search: string,
+    selectedType: Ref<ProjectType> | undefined,
+    typeStore: IdMap<ProjectType>,
+    statusStore: IdMap<Status>
+  ): Promise<void> {
     if (objectsPromise) {
       await objectsPromise
     }
@@ -74,16 +85,14 @@
     for (const object of filter.value) {
       targets.add(object)
     }
-    if (space !== undefined) {
-      const _space = await client.findOne(task.class.Project, { _id: space as Ref<Project> })
-      if (_space) {
-        values = getStates(_space, typeStore, statusStore)
-        for (const value of values) {
-          targets.add(value?._id)
-        }
-        if (search !== '') {
-          values = values.filter((p) => p?.name.includes(search))
-        }
+    const type = selectedType ? typeStore.get(selectedType) : undefined
+    if (type !== undefined) {
+      values = type?.statuses?.map((p) => statusStore.get(p._id))
+      for (const value of values) {
+        targets.add(value?._id)
+      }
+      if (search !== '') {
+        values = values.filter((p) => p?.name.includes(search))
       }
     } else {
       const statuses: Status[] = []
@@ -162,13 +171,7 @@
 
   const dispatch = createEventDispatcher()
 
-  const typesQuery = createQuery()
-  let types: IdMap<ProjectType> = new Map()
-  typesQuery.query(task.class.ProjectType, {}, (res) => {
-    types = toIdMap(res)
-  })
-
-  $: if (targetClass) getValues(search, types, $statusStore.byId)
+  $: if (targetClass) getValues(search, $selectedTypeStore, $typeStore, $statusStore.byId)
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>

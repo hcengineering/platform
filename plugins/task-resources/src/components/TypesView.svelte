@@ -33,6 +33,8 @@
   import { ViewOptions, Viewlet, ViewletDescriptor, ViewletPreference } from '@hcengineering/view'
   import { FilterBar, FilterButton, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
   import task from '../plugin'
+  import { onDestroy } from 'svelte'
+  import { selectedTypeStore } from '..'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined
@@ -82,6 +84,7 @@
   let modeSelectorProps: IModeSelector | undefined = undefined
   $: if (mode === undefined && config.length > 0) {
     ;[[mode]] = config
+    selectedTypeStore.set(mode as Ref<ProjectType>)
   }
   $: if (mode !== undefined) {
     modeSelectorProps = {
@@ -89,9 +92,14 @@
       config,
       onChange: (_mode: string) => {
         mode = _mode
+        selectedTypeStore.set(mode as Ref<ProjectType>)
       }
     }
   }
+
+  onDestroy(() => {
+    selectedTypeStore.set(undefined)
+  })
 </script>
 
 <div class="ac-header full divide caption-height">

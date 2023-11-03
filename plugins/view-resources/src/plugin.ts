@@ -25,7 +25,6 @@ export default mergeIds(viewId, view, {
     DateFilter: '' as AnyComponent,
     ValueFilter: '' as AnyComponent,
     ArrayFilter: '' as AnyComponent,
-    StatusFilter: '' as AnyComponent,
     StringFilter: '' as AnyComponent,
     TimestampFilter: '' as AnyComponent,
     FilterTypePopup: '' as AnyComponent,

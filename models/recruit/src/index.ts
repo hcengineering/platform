@@ -707,7 +707,7 @@ export function createModel (builder: Builder): void {
     label: recruit.string.HideArchivedVacancies
   }
 
-  const applicantViewOptions = (colors: boolean, hides: boolean): ViewOptionsModel => {
+  const applicantViewOptions = (colors: boolean): ViewOptionsModel => {
     const model: ViewOptionsModel = {
       groupBy: ['status', 'assignee', 'space', 'createdBy', 'modifiedBy'],
       orderBy: [
@@ -725,14 +725,13 @@ export function createModel (builder: Builder): void {
           actionTarget: 'category',
           action: view.function.ShowEmptyGroups,
           label: view.string.ShowEmptyGroups
-        }
+        },
+        applicationDoneOption,
+        vacancyHideOption
       ]
     }
     if (colors) {
       model.other.push(showColorsViewOption)
-    }
-    if (hides) {
-      model.other.push(...[applicationDoneOption, vacancyHideOption])
     }
     return model
   }
@@ -811,7 +810,7 @@ export function createModel (builder: Builder): void {
         strict: true,
         hiddenKeys: ['name', 'attachedTo']
       },
-      viewOptions: applicantViewOptions(true, true)
+      viewOptions: applicantViewOptions(true)
     },
     recruit.viewlet.ListApplicant
   )
@@ -978,12 +977,8 @@ export function createModel (builder: Builder): void {
       attachTo: recruit.class.Applicant,
       descriptor: task.viewlet.Kanban,
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      baseQuery: {
-        isDone: { $ne: true },
-        '$lookup.space.archived': false
-      },
       viewOptions: {
-        ...applicantViewOptions(false, false),
+        ...applicantViewOptions(false),
         groupDepth: 1
       },
       options: {

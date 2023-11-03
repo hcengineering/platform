@@ -753,10 +753,6 @@ export function createModel (builder: Builder): void {
     component: view.component.ObjectFilter
   })
 
-  builder.mixin(core.class.Status, core.class.Class, view.mixin.AttributeFilter, {
-    component: view.component.StatusFilter
-  })
-
   builder.mixin(core.class.TypeTimestamp, core.class.Class, view.mixin.AttributeFilter, {
     component: view.component.DateFilter,
     group: 'bottom'

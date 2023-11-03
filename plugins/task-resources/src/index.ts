@@ -16,21 +16,24 @@
 
 import { Attribute, Class, Doc, DocumentQuery, IdMap, Ref, Status, TxOperations, toIdMap } from '@hcengineering/core'
 import { IntlString, Resources } from '@hcengineering/platform'
+import { createQuery, getClient } from '@hcengineering/presentation'
 import task, { Project, ProjectType, Task, calcRank } from '@hcengineering/task'
 import { getCurrentLocation, navigate, showPopup } from '@hcengineering/ui'
 import { ViewletDescriptor } from '@hcengineering/view'
-import { CategoryQuery, statusStore } from '@hcengineering/view-resources'
+import { statusStore } from '@hcengineering/view-resources'
 import { get, writable } from 'svelte/store'
 import AssignedTasks from './components/AssignedTasks.svelte'
 import CreateStatePopup from './components/CreateStatePopup.svelte'
 import Dashboard from './components/Dashboard.svelte'
 import DueDateEditor from './components/DueDateEditor.svelte'
 import KanbanTemplatePresenter from './components/KanbanTemplatePresenter.svelte'
+import StatusFilter from './components/StatusFilter.svelte'
 import StatusSelector from './components/StatusSelector.svelte'
 import StatusTableView from './components/StatusTableView.svelte'
 import TaskHeader from './components/TaskHeader.svelte'
 import TaskPresenter from './components/TaskPresenter.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
+import TypesView from './components/TypesView.svelte'
 import KanbanView from './components/kanban/KanbanView.svelte'
 import ProjectEditor from './components/kanban/ProjectEditor.svelte'
 import ProjectTypeSelector from './components/kanban/ProjectTypeSelector.svelte'
@@ -41,8 +44,6 @@ import TodoItemPresenter from './components/todos/TodoItemPresenter.svelte'
 import TodoItemsPopup from './components/todos/TodoItemsPopup.svelte'
 import TodoStatePresenter from './components/todos/TodoStatePresenter.svelte'
 import Todos from './components/todos/Todos.svelte'
-import TypesView from './components/TypesView.svelte'
-import { createQuery, getClient } from '@hcengineering/presentation'
 
 export { default as AssigneePresenter } from './components/AssigneePresenter.svelte'
 export { StateRefPresenter }
@@ -106,7 +107,8 @@ export default async (): Promise<Resources> => ({
     CreateStatePopup,
     StatusSelector,
     TemplatesIcon,
-    TypesView
+    TypesView,
+    StatusFilter
   },
   actionImpl: {
     EditStatuses: editStatuses,
@@ -124,29 +126,14 @@ async function getAllStates (
   queryId: Ref<Doc>,
   attr: Attribute<Status>
 ): Promise<any[]> {
-  const _space = query?.space
-  if (_space !== undefined) {
-    const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
-      let refresh: boolean = false
-      const lq = CategoryQuery.getLiveQuery(queryId)
-      refresh = lq.query(task.class.Project, { _id: _space as Ref<Project> }, (res) => {
-        const typeId = res[0]?.type
-        const type = get(typeStore).get(typeId)
-        const statusMap = get(statusStore).byId
-        const statuses = (type?.statuses?.map((p) => statusMap.get(p._id)) as Status[]) ?? []
-        const result = statuses
-          .filter((p) => p?.category !== task.statusCategory.Lost && p?.category !== task.statusCategory.Won)
-          .map((p) => p?._id)
-        CategoryQuery.results.set(queryId, result)
-        resolve(result)
-        onUpdate()
-      })
-
-      if (!refresh) {
-        resolve(CategoryQuery.results.get(queryId) ?? [])
-      }
-    })
-    return await promise
+  const typeId = get(selectedTypeStore)
+  const type = typeId !== undefined ? get(typeStore).get(typeId) : undefined
+  if (type !== undefined) {
+    const statusMap = get(statusStore).byId
+    const statuses = (type.statuses?.map((p) => statusMap.get(p._id)) as Status[]) ?? []
+    return statuses
+      .filter((p) => p?.category !== task.statusCategory.Lost && p?.category !== task.statusCategory.Won)
+      .map((p) => p?._id)
   }
   return get(statusStore)
     .array.filter(
@@ -162,19 +149,8 @@ async function statusSort (
   space: Ref<Project> | undefined,
   viewletDescriptorId?: Ref<ViewletDescriptor>
 ): Promise<Array<Ref<Status>>> {
-  let type: ProjectType | undefined
-  if (space !== undefined) {
-    const _space = await client.findOne(
-      task.class.Project,
-      { _id: space },
-      {
-        lookup: {
-          type: task.class.ProjectType
-        }
-      }
-    )
-    type = _space?.$lookup?.type
-  }
+  const typeId = get(selectedTypeStore)
+  const type = typeId !== undefined ? get(typeStore).get(typeId) : undefined
   const statuses = get(statusStore).byId
 
   if (type !== undefined) {
@@ -238,3 +214,5 @@ function fillStores (): void {
 }
 
 fillStores()
+
+export const selectedTypeStore = writable<Ref<ProjectType> | undefined>(undefined)
