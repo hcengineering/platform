@@ -412,6 +412,10 @@ export function createModel (builder: Builder): void {
     func: task.function.StatusSort
   })
 
+  builder.mixin(core.class.Status, core.class.Class, view.mixin.AttributeFilter, {
+    component: task.component.StatusFilter
+  })
+
   builder.mixin(core.class.Status, core.class.Class, view.mixin.AllValuesFunc, {
     func: task.function.GetAllStates
   })

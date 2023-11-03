@@ -79,6 +79,7 @@ export default mergeIds(taskId, task, {
     AssigneeRequired: '' as IntlString
   },
   component: {
+    StatusFilter: '' as AnyComponent,
     TodoStatePresenter: '' as AnyComponent,
     AssignedTasks: '' as AnyComponent,
     DueDateEditor: '' as AnyComponent
