@@ -18,11 +18,14 @@ import { Attribute } from '@tiptap/core'
 /**
  * @public
  */
-export function getDataAttribute (name: string, def?: unknown | null): Partial<Attribute> {
+export function getDataAttribute (
+  name: string,
+  options?: Omit<Attribute, 'parseHTML' | 'renderHTML'>
+): Partial<Attribute> {
   const dataName = `data-${name}`
 
   return {
-    default: def,
+    default: null,
     parseHTML: (element) => element.getAttribute(dataName),
     renderHTML: (attributes) => {
       // eslint-disable-next-line
@@ -33,6 +36,7 @@ export function getDataAttribute (name: string, def?: unknown | null): Partial<A
       return {
         [dataName]: attributes[name]
       }
-    }
+    },
+    ...(options !== undefined ? options : {})
   }
 }
