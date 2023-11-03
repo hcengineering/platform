@@ -66,17 +66,16 @@ By default, Docker volumes named dev_db, dev_elastic, and dev_files will be crea
 Before you can begin, you need to create a workspace and an account and associate it with the workspace.
 
 ```bash
-cd ./tool
+cd ./tool # dev/tool in the repository root
 rushx run-local create-workspace ws1 -o DevWorkspace # Create workspace
 rushx run-local create-account user1 -p 1234 -f John -l Appleseed # Create account
-rushx run-local configure sanity-ws --list --enable '*' # Enable all modules, even if they are not yet intended to be used by a wide audience.
+rushx run-local configure ws1 --list --enable '*' # Enable all modules, even if they are not yet intended to be used by a wide audience.
 rushx run-local assign-workspace user1 ws1 # Assign workspace to user.
 rushx run-local confirm-email user1 # To allow the creation of additional test workspaces.
 
 ```
 
 or just:
-sh ./scripts/build.sh
 
 ```bash
 sh ./scripts/create-workspace.sh
@@ -99,6 +98,13 @@ rushx dev-server
 ```
 
 Then go to http://localhost:8080
+
+Use the following login credentials:
+```
+Email: user1
+Password: 1234
+Workspace: ws1
+```
 
 ## Update project structure and database
 
