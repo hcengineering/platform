@@ -30,6 +30,7 @@ import { SvelteRenderer } from './svelte-renderer'
 export interface SvelteNodeViewRendererOptions extends NodeViewRendererOptions {
   update?: (node: ProseMirrorNode, decorations: DecorationWithType[]) => boolean
   contentAs?: string
+  contentDOMElementAs?: string
 }
 
 type SvelteNodeViewComponent = typeof SvelteComponent | ComponentType
@@ -55,7 +56,13 @@ class SvelteNodeView extends NodeView<SvelteNodeViewComponent, Editor, SvelteNod
       deleteNode: () => this.deleteNode()
     }
 
-    this.contentDOMElement = this.node.isLeaf ? null : document.createElement(this.node.isInline ? 'span' : 'div')
+    if (this.node.isLeaf) {
+      this.contentDOMElement = null
+    } else if (this.options.contentDOMElementAs !== undefined) {
+      this.contentDOMElement = document.createElement(this.options.contentDOMElementAs)
+    } else {
+      this.contentDOMElement = document.createElement(this.node.isInline ? 'span' : 'div')
+    }
 
     if (this.contentDOMElement !== null) {
       // For some reason the whiteSpace prop is not inherited properly in Chrome and Safari
@@ -65,6 +72,7 @@ class SvelteNodeView extends NodeView<SvelteNodeViewComponent, Editor, SvelteNod
     }
 
     const contentAs = this.options.contentAs ?? (this.node.isInline ? 'span' : 'div')
+
     const target = document.createElement(contentAs)
     target.classList.add(`node-${this.node.type.name}`)
 
