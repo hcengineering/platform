@@ -57,7 +57,7 @@ function generateDailyValues (
   while (true) {
     if (bySetPos == null || bySetPos.includes(getSetPos(currentDate))) {
       const res = currentDate.getTime()
-      if (res > from) {
+      if (res > from && res < to) {
         values.push(res)
       }
       i++
@@ -92,7 +92,7 @@ function generateWeeklyValues (
     while (date < end) {
       if ((byDay == null || matchesByDay(date, byDay)) && (bySetPos == null || bySetPos.includes(getSetPos(date)))) {
         const res = date.getTime()
-        if (res > from) {
+        if (res > from && res < to) {
           values.push(res)
         }
         i++
@@ -172,7 +172,7 @@ function generateMonthlyValues (
         (bySetPos == null || bySetPos.includes(getSetPos(currentDate)))
       ) {
         const res = currentDate.getTime()
-        if (res > from) {
+        if (res > from && res < to) {
           values.push(res)
         }
         i++
@@ -212,7 +212,7 @@ function generateYearlyValues (
         (bySetPos == null || bySetPos.includes(getSetPos(currentDate)))
       ) {
         const res = currentDate.getTime()
-        if (res > from) {
+        if (res > from && res < to) {
           values.push(res)
         }
         i++
@@ -316,7 +316,8 @@ export function getAllEvents (events: Event[], from: Timestamp, to: Timestamp): 
     }
   }
   for (const rec of recur) {
-    recurData.push(...getReccuringEventInstances(rec, instancesMap.get(rec.eventId) ?? [], from, to))
+    const recEvents = getReccuringEventInstances(rec, instancesMap.get(rec.eventId) ?? [], from, to)
+    recurData.push(...recEvents)
   }
   const res = [
     ...base,

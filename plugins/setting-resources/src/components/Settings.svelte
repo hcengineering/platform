@@ -36,7 +36,7 @@
   import { onDestroy } from 'svelte'
   import CategoryElement from './CategoryElement.svelte'
 
-  export let visibileNav: boolean = true
+  export let visibleNav: boolean = true
   export let navFloat: boolean = false
   export let appsDirection: 'vertical' | 'horizontal' = 'horizontal'
 
@@ -97,7 +97,7 @@
 </script>
 
 <div class="flex h-full clear-mins">
-  {#if visibileNav}
+  {#if visibleNav}
     <div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
       <div class="antiPanel-wrap__content">
         <NavHeader label={setting.string.Settings} />
@@ -149,7 +149,7 @@
       <Component
         is={category.component}
         props={{
-          visibileNav
+          visibleNav
         }}
       />
     {/if}
