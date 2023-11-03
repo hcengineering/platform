@@ -19,8 +19,14 @@ export type TiptapCollabProviderConfiguration = HocuspocusProviderConfiguration 
 Required<Pick<HocuspocusProviderConfiguration, 'token'>>
 
 export class TiptapCollabProvider extends HocuspocusProvider {
+  loaded: Promise<void>
+
   constructor (configuration: TiptapCollabProviderConfiguration) {
     super(configuration as HocuspocusProviderConfiguration)
+
+    this.loaded = new Promise((resolve) => {
+      this.on('synced', resolve)
+    })
   }
 
   copyContent (sourceId: string, targetId: string): void {
