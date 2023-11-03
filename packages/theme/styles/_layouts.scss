@@ -610,7 +610,7 @@ input.search {
 }
 
 /* --------- */
-.no-word-wrap { word-wrap: none; }
+.no-word-wrap { word-wrap: none; text-wrap: nowrap; }
 .relative { position: relative; }
 .absolute { position: absolute; }
 .abs-lt-content {

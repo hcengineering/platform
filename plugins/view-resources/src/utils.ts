@@ -41,6 +41,7 @@ import { getResource } from '@hcengineering/platform'
 import { AttributeCategory, KeyedAttribute, getAttributePresenterClass, hasResource } from '@hcengineering/presentation'
 import {
   AnyComponent,
+  AnySvelteComponent,
   ErrorPresenter,
   Location,
   getCurrentResolvedLocation,
@@ -888,4 +889,17 @@ export async function openDoc (hierarchy: Hierarchy, object: Doc): Promise<void>
   const comp = panelComponent?.component ?? view.component.EditDoc
   const loc = await getObjectLinkFragment(hierarchy, object, {}, comp)
   navigate(loc)
+}
+
+/**
+ * @public
+ */
+export async function getSpacePresenter (
+  client: Client,
+  _class: Ref<Class<Doc>>
+): Promise<AnySvelteComponent | undefined> {
+  const value = client.getHierarchy().classHierarchyMixin(_class, view.mixin.SpacePresenter)
+  if (value?.presenter !== undefined) {
+    return await getResource(value.presenter)
+  }
 }

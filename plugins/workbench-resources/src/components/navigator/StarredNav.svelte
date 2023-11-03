@@ -22,9 +22,15 @@
   import { getClient } from '@hcengineering/presentation'
   import { Action, IconEdit } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { NavLink, TreeItem, TreeNode, getActions as getContributedActions } from '@hcengineering/view-resources'
+  import {
+    NavLink,
+    TreeItem,
+    TreeNode,
+    getActions as getContributedActions,
+    getSpacePresenter
+  } from '@hcengineering/view-resources'
   import { SpacesNavModel } from '@hcengineering/workbench'
-  import { classIcon, getSpaceName, getSpacePresenter } from '../../utils'
+  import { classIcon, getSpaceName } from '../../utils'
 
   export let label: IntlString
   export let spaces: Space[]

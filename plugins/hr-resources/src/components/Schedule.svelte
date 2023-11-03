@@ -39,7 +39,7 @@
   import ScheduleView from './ScheduleView.svelte'
   import Sidebar from './sidebar/Sidebar.svelte'
 
-  export let visibileNav: boolean = true
+  export let visibleNav: boolean = true
   export let navFloat: boolean = false
   export let appsDirection: 'vertical' | 'horizontal' = 'horizontal'
 
@@ -127,7 +127,7 @@
 </script>
 
 <div class="flex h-full clear-mins">
-  {#if visibileNav}
+  {#if visibleNav}
     <Sidebar
       {department}
       {descendants}

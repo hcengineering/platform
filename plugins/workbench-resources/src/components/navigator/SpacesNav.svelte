@@ -31,11 +31,17 @@
     navigate,
     showPopup
   } from '@hcengineering/ui'
-  import { NavLink, TreeItem, TreeNode, getActions as getContributedActions } from '@hcengineering/view-resources'
+  import {
+    NavLink,
+    TreeItem,
+    TreeNode,
+    getActions as getContributedActions,
+    getSpacePresenter
+  } from '@hcengineering/view-resources'
   import { SpacesNavModel } from '@hcengineering/workbench'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
-  import { classIcon, getSpaceName, getSpacePresenter } from '../../utils'
+  import { classIcon, getSpaceName } from '../../utils'
   import TreeSeparator from './TreeSeparator.svelte'
 
   export let model: SpacesNavModel

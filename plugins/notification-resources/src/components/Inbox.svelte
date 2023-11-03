@@ -42,7 +42,7 @@
   import People from './People.svelte'
   import { subscribe } from '../utils'
 
-  export let visibileNav: boolean = true
+  export let visibleNav: boolean = true
   export let navFloat: boolean = false
   export let appsDirection: 'vertical' | 'horizontal' = 'horizontal'
   let filter: 'all' | 'read' | 'unread' = 'all'
@@ -143,7 +143,7 @@
 </script>
 
 <div class="flex-row-top h-full">
-  {#if visibileNav}
+  {#if visibleNav}
     <div
       class="antiPanel-navigator {appsDirection === 'horizontal'
         ? 'portrait'

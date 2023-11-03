@@ -17,12 +17,13 @@
 import type { Class, Client, Doc, Obj, Ref, Space, TxOperations } from '@hcengineering/core'
 import core from '@hcengineering/core'
 import type { Workspace } from '@hcengineering/login'
+import login, { loginId } from '@hcengineering/login'
 import type { Asset } from '@hcengineering/platform'
 import { getResource, setMetadata } from '@hcengineering/platform'
 import preference from '@hcengineering/preference'
 import { closeClient, getClient } from '@hcengineering/presentation'
+import presentation from '@hcengineering/presentation/src/plugin'
 import {
-  AnySvelteComponent,
   closePanel,
   fetchMetadataLocalStorage,
   getCurrentLocation,
@@ -33,9 +34,6 @@ import view from '@hcengineering/view'
 import type { Application } from '@hcengineering/workbench'
 import workbench, { NavigatorModel } from '@hcengineering/workbench'
 import { writable } from 'svelte/store'
-import login, { loginId } from '@hcengineering/login'
-import presentation from '@hcengineering/presentation/src/plugin'
-
 export function classIcon (client: Client, _class: Ref<Class<Obj>>): Asset | undefined {
   return client.getHierarchy().getClass(_class).icon
 }
@@ -205,14 +203,4 @@ export function signOut (): void {
   setMetadataLocalStorage(login.metadata.LoginEmail, null)
   void closeClient()
   navigate({ path: [loginId] })
-}
-
-export async function getSpacePresenter (
-  client: Client,
-  _class: Ref<Class<Doc>>
-): Promise<AnySvelteComponent | undefined> {
-  const value = client.getHierarchy().classHierarchyMixin(_class, view.mixin.SpacePresenter)
-  if (value?.presenter !== undefined) {
-    return await getResource(value.presenter)
-  }
 }

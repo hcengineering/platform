@@ -11,8 +11,8 @@
 // See the License for the specific language governing permissions and
 
 import { writable } from 'svelte/store'
+import type { DefSeparators, SeparatedItem } from './types'
 import { DelayedCaller } from './utils'
-import type { SeparatedItem, DefSeparators } from './types'
 
 // limitations under the License.
 let observer: ResizeObserver
@@ -160,12 +160,6 @@ export const workbenchSeparators: DefSeparators = [
 
 export const settingsSeparators: DefSeparators = [
   { minSize: 12.5, size: 17.5, maxSize: 22.5, float: 'navigator' },
-  null
-]
-
-export const timeSeparators: DefSeparators = [
-  { minSize: 12.5, size: 17.5, maxSize: 22.5, float: 'navigator' },
-  { minSize: 25, size: 35, maxSize: 45 },
   null
 ]
 
