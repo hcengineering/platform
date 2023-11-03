@@ -28,7 +28,7 @@
     loc.path[3] = 'talents'
     loc.path.length = 4
     navigate(loc)
-    setTimeout(() => setFilterTag(tag), 50)
+    setTimeout(() => setFilterTag(tag), 200)
   }
 </script>
 
