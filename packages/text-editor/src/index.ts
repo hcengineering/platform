@@ -59,5 +59,6 @@ export {
   type InlineStyleToolbarStorage
 } from './components/extension/inlineStyleToolbar'
 export { ImageExtension, type ImageOptions } from './components/extension/imageExt'
+export { TodoItemExtension, TodoListExtension } from './components/extension/todo'
 
 export { textEditorId }

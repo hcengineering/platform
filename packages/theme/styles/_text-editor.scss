@@ -76,6 +76,17 @@
     margin: 0;
   }
 
+  ul[data-type="todoList"] {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+      margin: 0;
+      padding: 0;
+    }
+  }
+
   ol ol { list-style: lower-alpha; }
   ol ol ol { list-style: lower-roman; }
   ol ol ol ol { list-style: decimal; }
