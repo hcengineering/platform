@@ -594,10 +594,10 @@ abstract class MongoAdapterBase implements DbAdapter {
           return undefined
         }
         let digest = (d as any)['%hash%']
+        if ('%hash%' in d) {
+          delete d['%hash%']
+        }
         if (digest == null) {
-          if ('%hash%' in d) {
-            delete d['%hash%']
-          }
           const doc = JSON.stringify(d)
           const hash = createHash('sha256')
           hash.update(doc)
@@ -646,10 +646,12 @@ abstract class MongoAdapterBase implements DbAdapter {
 
   async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
     return this.stripHash(
-      await this.db
-        .collection(domain)
-        .find<Doc>({ _id: { $in: docs } })
-        .toArray()
+      this.stripHash(
+        await this.db
+          .collection(domain)
+          .find<Doc>({ _id: { $in: docs } })
+          .toArray()
+      )
     )
   }
 
@@ -664,7 +666,7 @@ abstract class MongoAdapterBase implements DbAdapter {
         part.map((it) => ({
           replaceOne: {
             filter: { _id: it._id },
-            replacement: it,
+            replacement: { ...it, '%hash%': '' },
             upsert: true
           }
         }))
@@ -696,7 +698,7 @@ abstract class MongoAdapterBase implements DbAdapter {
               updateOne: {
                 filter: { _id: it[0] },
                 update: {
-                  $set: set,
+                  $set: { ...set, '%hash%': '' },
                   ...($unset !== undefined ? { $unset } : {})
                 }
               }
