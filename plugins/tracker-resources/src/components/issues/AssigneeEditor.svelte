@@ -16,7 +16,7 @@
   import contact, { Employee, Person, PersonAccount } from '@hcengineering/contact'
   import { AssigneeBox, AssigneePopup, personAccountByIdStore } from '@hcengineering/contact-resources'
   import { AssigneeCategory } from '@hcengineering/contact-resources/src/assignee'
-  import { Account, Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
+  import { Account, Doc, DocumentQuery, Ref, Space, generateId } from '@hcengineering/core'
   import { RuleApplyResult, getClient, getDocRules } from '@hcengineering/presentation'
   import { Component, Issue } from '@hcengineering/tracker'
   import { ButtonKind, ButtonSize, IconSize, TooltipAlignment } from '@hcengineering/ui'
@@ -48,25 +48,29 @@
 
   const client = getClient()
   const dispatch = createEventDispatcher()
+  let progress = false
 
   const handleAssigneeChanged = async (newAssignee: Ref<Person> | undefined | null) => {
     if (newAssignee === undefined || (!Array.isArray(_object) && _object?.assignee === newAssignee)) {
       return
     }
-
+    progress = true
+    const ops = client.apply(generateId())
     if (Array.isArray(_object)) {
-      await Promise.all(
-        _object.map(async (p) => {
-          if ('_class' in p) {
-            await client.update(p, { assignee: newAssignee })
-          }
-        })
-      )
+      for (const p of _object) {
+        if ('_class' in p) {
+          await ops.update(p, { assignee: newAssignee })
+        }
+      }
     } else {
       if ('_class' in _object) {
-        await client.update(_object as any, { assignee: newAssignee })
+        await ops.update(_object as any, { assignee: newAssignee })
       }
     }
+
+    await ops.commit()
+
+    progress = false
 
     dispatch('change', newAssignee)
     if (isAction) dispatch('close')
@@ -156,6 +160,7 @@
       selected={sel}
       allowDeselect={true}
       titleDeselect={undefined}
+      loading={progress}
       on:close={(evt) => {
         const result = evt.detail
         if (result === null) {

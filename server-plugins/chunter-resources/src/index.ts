@@ -314,20 +314,29 @@ async function BacklinksCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> 
 
 async function BacklinksUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const ctx = TxProcessor.extractTx(tx) as TxUpdateDoc<Doc>
-  if (ctx._class !== core.class.TxUpdateDoc) return []
-  if (control.hierarchy.isDerived(ctx.objectClass, chunter.class.Backlink)) return []
 
-  const rawDoc = (await control.findAll(ctx.objectClass, { _id: ctx.objectId }))[0]
+  let hasUpdates = false
+  const attributes = control.hierarchy.getAllAttributes(ctx.objectClass)
+  for (const attr of attributes.values()) {
+    if (attr.type._class === core.class.TypeMarkup && attr.name in ctx.operations) {
+      hasUpdates = true
+      break
+    }
+  }
 
-  if (rawDoc !== undefined) {
-    const txFactory = new TxFactory(control.txFactory.account)
+  if (hasUpdates) {
+    const rawDoc = (await control.findAll(ctx.objectClass, { _id: ctx.objectId }))[0]
 
-    const doc = TxProcessor.updateDoc2Doc(rawDoc, ctx)
-    const targetTx = guessBacklinkTx(control.hierarchy, tx as TxCUD<Doc>)
-    const txes: Tx[] = await getUpdateBacklinksTxes(control, txFactory, doc, targetTx.objectId, targetTx.objectClass)
+    if (rawDoc !== undefined) {
+      const txFactory = new TxFactory(control.txFactory.account)
 
-    if (txes.length !== 0) {
-      await control.apply(txes, true)
+      const doc = TxProcessor.updateDoc2Doc(rawDoc, ctx)
+      const targetTx = guessBacklinkTx(control.hierarchy, tx as TxCUD<Doc>)
+      const txes: Tx[] = await getUpdateBacklinksTxes(control, txFactory, doc, targetTx.objectId, targetTx.objectClass)
+
+      if (txes.length !== 0) {
+        await control.apply(txes, true)
+      }
     }
   }
 
@@ -335,16 +344,24 @@ async function BacklinksUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> 
 }
 
 async function BacklinksRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const hierarchy = control.hierarchy
   const ctx = TxProcessor.extractTx(tx) as TxRemoveDoc<Doc>
-  if (ctx._class !== core.class.TxRemoveDoc) return []
-  if (hierarchy.isDerived(ctx.objectClass, chunter.class.Backlink)) return []
 
-  const txFactory = new TxFactory(control.txFactory.account)
+  let hasMarkdown = false
+  const attributes = control.hierarchy.getAllAttributes(ctx.objectClass)
+  for (const attr of attributes.values()) {
+    if (attr.type._class === core.class.TypeMarkup) {
+      hasMarkdown = true
+      break
+    }
+  }
 
-  const txes: Tx[] = await getRemoveBacklinksTxes(control, txFactory, ctx.objectId)
-  if (txes.length !== 0) {
-    await control.apply(txes, true)
+  if (hasMarkdown) {
+    const txFactory = new TxFactory(control.txFactory.account)
+
+    const txes: Tx[] = await getRemoveBacklinksTxes(control, txFactory, ctx.objectId)
+    if (txes.length !== 0) {
+      await control.apply(txes, true)
+    }
   }
 
   return []
@@ -416,9 +433,21 @@ export async function OnMessageSent (tx: Tx, control: TriggerControl): Promise<T
  * @public
  */
 export async function BacklinkTrigger (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const promises = [BacklinksCreate(tx, control), BacklinksUpdate(tx, control), BacklinksRemove(tx, control)]
-  const res = await Promise.all(promises)
-  return res.flat()
+  const result: Tx[] = []
+
+  const ctx = TxProcessor.extractTx(tx) as TxCreateDoc<Doc>
+  if (control.hierarchy.isDerived(ctx.objectClass, chunter.class.Backlink)) return []
+
+  if (ctx._class === core.class.TxCreateDoc) {
+    result.push(...(await BacklinksCreate(tx, control)))
+  }
+  if (ctx._class === core.class.TxUpdateDoc) {
+    result.push(...(await BacklinksUpdate(tx, control)))
+  }
+  if (ctx._class === core.class.TxRemoveDoc) {
+    result.push(...(await BacklinksRemove(tx, control)))
+  }
+  return result
 }
 
 /**

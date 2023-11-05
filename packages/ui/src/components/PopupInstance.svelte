@@ -148,17 +148,17 @@
   class:anim={element === 'float' || element === 'centered'}
   bind:this={modalHTML}
   style={`z-index: ${zIndex + 1};`}
-  style:top={options.props.top}
-  style:bottom={options.props.bottom}
-  style:left={options.props.left}
-  style:right={options.props.right}
-  style:width={options.props.width}
-  style:height={options.props.height}
-  style:max-width={options.props.maxWidth}
-  style:max-height={options.props.maxHeight}
-  style:min-width={options.props.minWidth}
-  style:min-height={options.props.minHeight}
-  style:transform={options.props.transform}
+  style:top={options?.props?.top}
+  style:bottom={options?.props?.bottom}
+  style:left={options?.props?.left}
+  style:right={options?.props?.right}
+  style:width={options?.props?.width}
+  style:height={options?.props?.height}
+  style:max-width={options?.props?.maxWidth}
+  style:max-height={options?.props?.maxHeight}
+  style:min-width={options?.props?.minWidth}
+  style:min-height={options?.props?.minHeight}
+  style:transform={options?.props?.transform}
   use:resizeObserver={(element) => {
     clientWidth = element.clientWidth
     clientHeight = element.clientHeight
@@ -187,7 +187,7 @@
 {#if overlay}
   <div
     class="modal-overlay"
-    class:antiOverlay={options.showOverlay}
+    class:antiOverlay={options?.showOverlay}
     style={`z-index: ${zIndex};`}
     on:click={handleOverlayClick}
     on:keydown|stopPropagation|preventDefault={() => {}}

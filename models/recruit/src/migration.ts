@@ -55,6 +55,28 @@ export const recruitOperation: MigrateOperation = {
             }
           })
         }
+      },
+      {
+        state: 'wrong-categories',
+        func: async (client): Promise<void> => {
+          const ops = new TxOperations(client, core.account.System)
+          while (true) {
+            const docs = await ops.findAll(
+              tags.class.TagElement,
+              {
+                targetClass: recruit.mixin.Candidate,
+                category: { $in: [tracker.category.Other, 'document:category:Other' as Ref<TagCategory>] }
+              },
+              { limit: 1000 }
+            )
+            for (const d of docs) {
+              await ops.update(d, { category: recruit.category.Other })
+            }
+            if (docs.length === 0) {
+              break
+            }
+          }
+        }
       }
     ])
   }

@@ -165,7 +165,7 @@ export async function getIssueNotificationContent (
  * @public
  */
 export async function OnComponentRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const ctx = TxProcessor.extractTx(tx) as TxUpdateDoc<Component>
+  const ctx = TxProcessor.extractTx(tx) as TxRemoveDoc<Component>
 
   const issues = await control.findAll(tracker.class.Issue, {
     component: ctx.objectId

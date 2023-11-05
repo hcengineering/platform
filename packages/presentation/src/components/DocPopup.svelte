@@ -24,6 +24,7 @@
     IconCheck,
     IconSearch,
     ListView,
+    Spinner,
     createFocusManager,
     deviceOptionsStore,
     resizeObserver,
@@ -59,6 +60,7 @@
   export let disallowDeselect: Ref<Doc>[] | undefined = undefined
   export let created: Doc[] = []
   export let embedded: boolean = false
+  export let loading = false
 
   let search: string = ''
 
@@ -185,7 +187,7 @@
           icon={IconAdd}
           showTooltip={{ label: create.label }}
           on:click={onCreate}
-          disabled={readonly}
+          disabled={readonly || loading}
         />
       </div>
     {/if}
@@ -210,20 +212,24 @@
           {@const isDeselectDisabled = selectedElements.has(obj._id) && forbiddenDeselectItemIds.has(obj._id)}
           <button
             class="menu-item withList w-full flex-row-center"
-            disabled={readonly || isDeselectDisabled}
+            disabled={readonly || isDeselectDisabled || loading}
             on:click={() => {
               handleSelection(undefined, objects, item)
             }}
           >
-            <span class="label" class:disabled={readonly || isDeselectDisabled}>
+            <span class="label" class:disabled={readonly || isDeselectDisabled || loading}>
               <slot name="item" item={obj} />
             </span>
             {#if (allowDeselect && selected) || multiSelect || selected}
               <div class="check" class:disabled={readonly}>
                 {#if obj._id === selected || selectedElements.has(obj._id)}
-                  <div use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
-                    <Icon icon={IconCheck} size={'small'} />
-                  </div>
+                  {#if loading}
+                    <Spinner size={'small'} />
+                  {:else}
+                    <div use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
+                      <Icon icon={IconCheck} size={'small'} />
+                    </div>
+                  {/if}
                 {/if}
               </div>
             {/if}

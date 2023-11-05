@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, FindOptions, Hierarchy, Mixin, Ref } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, FindOptions, Hierarchy, Mixin, Ref, generateId } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
-  import { getClient, ObjectPopup, updateAttribute } from '@hcengineering/presentation'
+  import { ObjectPopup, getClient, updateAttribute } from '@hcengineering/presentation'
   import { Label, SelectPopup, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
@@ -32,6 +32,7 @@
   export let size: 'small' | 'medium' | 'large' = 'small'
   export let embedded: boolean = false
 
+  let progress = false
   const dispatch = createEventDispatcher()
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -44,24 +45,24 @@
       dispatch('close', undefined)
       return
     }
+    progress = true
     const docs = Array.isArray(value) ? value : [value]
 
     const changed = (d: Doc) => (d as any)[attribute] !== newStatus
-    await Promise.all(
-      docs.filter(changed).map((it) => {
-        // c.update(it, { [attribute]: newStatus } )
-        const cl = Hierarchy.mixinOrClass(it)
-        const attr =
-          castRequest !== undefined
-            ? hierarchy.getAttribute(castRequest, attribute)
-            : hierarchy.getAttribute(cl, attribute)
-        if (attr === undefined) {
-          throw new Error('attribute not found')
-        }
-        return updateAttribute(client, it, cl, { key: attribute, attr }, newStatus)
-      })
-    )
-
+    const ops = client.apply('value-selector:' + generateId())
+    for (const it of docs.filter(changed)) {
+      const cl = Hierarchy.mixinOrClass(it)
+      const attr =
+        castRequest !== undefined
+          ? hierarchy.getAttribute(castRequest, attribute)
+          : hierarchy.getAttribute(cl, attribute)
+      if (attr === undefined) {
+        throw new Error('attribute not found')
+      }
+      await updateAttribute(ops, it, cl, { key: attribute, attr }, newStatus)
+    }
+    await ops.commit()
+    progress = false
     dispatch('close', newStatus)
   }
 
@@ -135,6 +136,7 @@
       {width}
       {size}
       {embedded}
+      loading={progress}
       on:changeContent
     />
   {:else if _class !== undefined}
@@ -152,6 +154,7 @@
       {width}
       {size}
       {embedded}
+      loading={progress}
       on:changeContent
     >
       <svelte:fragment slot="item" let:item>

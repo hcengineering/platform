@@ -23,6 +23,7 @@
   import Icon from './Icon.svelte'
   import Label from './Label.svelte'
   import ListView from './ListView.svelte'
+  import Spinner from './Spinner.svelte'
   import IconCheck from './icons/Check.svelte'
   import IconSearch from './icons/Search.svelte'
 
@@ -35,6 +36,7 @@
   export let onSelect: ((value: SelectPopupValueType['id']) => void) | undefined = undefined
   export let showShadow: boolean = true
   export let embedded: boolean = false
+  export let loading = false
 
   let popupElement: HTMLDivElement | undefined = undefined
   let search: string = ''
@@ -46,7 +48,10 @@
   let selection = 0
   let list: ListView
 
+  let selected: any
+
   function sendSelect (id: SelectPopupValueType['id']): void {
+    selected = id
     if (onSelect) {
       onSelect(id)
     } else {
@@ -129,7 +134,7 @@
       >
         <svelte:fragment slot="item" let:item={itemId}>
           {@const item = filteredObjects[itemId]}
-          <button class="menu-item withList w-full" on:click={() => sendSelect(item.id)}>
+          <button class="menu-item withList w-full" on:click={() => sendSelect(item.id)} disabled={loading}>
             <div class="flex-row-center flex-grow pointer-events-none">
               {#if item.component}
                 <div class="flex-grow clear-mins"><svelte:component this={item.component} {...item.props} /></div>
@@ -154,6 +159,9 @@
                   {/if}
                 </div>
               {/if}
+              {#if item.id === selected && loading}
+                <Spinner size={'small'} />
+              {/if}
             </div>
           </button>
         </svelte:fragment>
@@ -162,11 +170,6 @@
           {#if obj.category && ((row === 0 && obj.category.label !== undefined) || obj.category.label !== filteredObjects[row - 1]?.category?.label)}
             {#if row > 0}<div class="menu-separator" />{/if}
             <div class="menu-group__header flex-row-center">
-              <!-- {#if obj.category.icon}
-                <div class="flex-no-shrink mr-2">
-                  <Icon icon={obj.category.icon} size={'small'} />
-                </div>
-              {/if} -->
               <span class="overflow-label">
                 <Label label={obj.category.label} />
               </span>

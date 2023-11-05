@@ -26,6 +26,7 @@
     IconSearch,
     Label,
     ListView,
+    Spinner,
     createFocusManager,
     deviceOptionsStore,
     resizeObserver,
@@ -49,6 +50,7 @@
   export let width: 'medium' | 'large' | 'full' = 'medium'
   export let searchField: string = 'name'
   export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let loading = false
 
   $: showCategories = categories !== undefined && categories.length > 0
 
@@ -77,7 +79,14 @@
     { ...(options ?? {}), limit: 200, sort: { name: 1 } }
   )
 
-  $: updateCategories(objects, categories)
+  let dataLoading = false
+
+  $: {
+    dataLoading = true
+    updateCategories(objects, categories).then(() => {
+      dataLoading = false
+    })
+  }
 
   const currentUserCategory: AssigneeCategory = {
     label: contact.string.CategoryCurrentUser,
@@ -117,6 +126,7 @@
       if (c) {
         contacts.push(c)
       }
+      contacts = contacts
     })
   }
 
@@ -174,6 +184,7 @@
       bind:value={search}
       {placeholder}
       {placeholderParam}
+      loading={dataLoading}
       on:change
     />
   </div>
@@ -209,13 +220,17 @@
               <UserInfo size={'smaller'} value={obj} {icon} />
             </div>
             {#if allowDeselect && selected}
-              <div class="check">
-                {#if obj._id === selected}
-                  <div use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
-                    <Icon icon={IconCheck} size={'small'} />
-                  </div>
-                {/if}
-              </div>
+              {#if loading && obj._id === selected}
+                <Spinner size={'small'} />
+              {:else}
+                <div class="check">
+                  {#if obj._id === selected}
+                    <div use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
+                      <Icon icon={IconCheck} size={'small'} />
+                    </div>
+                  {/if}
+                </div>
+              {/if}
             {/if}
           </button>
         </svelte:fragment>

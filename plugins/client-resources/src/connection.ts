@@ -245,26 +245,30 @@ class Connection implements ClientConnection {
           }
           void broadcastEvent(client.event.NetworkRequests, this.requests.size)
         } else {
-          const tx = resp.result as Tx
-          if (
-            (tx?._class === core.class.TxWorkspaceEvent && (tx as TxWorkspaceEvent).event === WorkspaceEvent.Upgrade) ||
-            tx?._class === core.class.TxModelUpgrade
-          ) {
-            console.log('Processing upgrade')
-            websocket.send(
-              serialize(
-                {
-                  method: '#upgrading',
-                  params: [],
-                  id: -1
-                },
-                false
+          const txArr = Array.isArray(resp.result) ? (resp.result as Tx[]) : [resp.result as Tx]
+
+          for (const tx of txArr) {
+            if (
+              (tx?._class === core.class.TxWorkspaceEvent &&
+                (tx as TxWorkspaceEvent).event === WorkspaceEvent.Upgrade) ||
+              tx?._class === core.class.TxModelUpgrade
+            ) {
+              console.log('Processing upgrade')
+              websocket.send(
+                serialize(
+                  {
+                    method: '#upgrading',
+                    params: [],
+                    id: -1
+                  },
+                  false
+                )
               )
-            )
-            this.onUpgrade?.()
-            return
+              this.onUpgrade?.()
+              return
+            }
+            this.handler(tx)
           }
-          this.handler(tx)
 
           clearTimeout(this.incomingTimer)
           void broadcastEvent(client.event.NetworkRequests, this.requests.size + 1)
@@ -292,7 +296,8 @@ class Connection implements ClientConnection {
           params: [],
           id: -1,
           binary: useBinary,
-          compression: useCompression
+          compression: useCompression,
+          broadcast: true
         }
         websocket.send(serialize(helloRequest, false))
       }

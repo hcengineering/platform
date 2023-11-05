@@ -243,7 +243,12 @@ class TSessionManager implements SessionManager {
       for (const session of sessions.splice(0, 1)) {
         if (targets !== undefined && !targets.includes(session.session.getUser())) continue
         for (const _tx of tx) {
-          void session.socket.send(ctx, { result: _tx }, session.session.binaryResponseMode, false)
+          void session.socket.send(
+            ctx,
+            { result: _tx },
+            session.session.binaryResponseMode,
+            session.session.useCompression
+          )
         }
       }
       if (sessions.length > 0) {
@@ -461,9 +466,19 @@ class TSessionManager implements SessionManager {
       for (const sessionRef of sessions.splice(0, 1)) {
         if (sessionRef.session.sessionId !== from?.sessionId) {
           if (target === undefined) {
-            void sessionRef.socket.send(ctx, resp, sessionRef.session.binaryResponseMode, false)
+            void sessionRef.socket.send(
+              ctx,
+              resp,
+              sessionRef.session.binaryResponseMode,
+              sessionRef.session.useCompression
+            )
           } else if (target.includes(sessionRef.session.getUser())) {
-            void sessionRef.socket.send(ctx, resp, sessionRef.session.binaryResponseMode, false)
+            void sessionRef.socket.send(
+              ctx,
+              resp,
+              sessionRef.session.binaryResponseMode,
+              sessionRef.session.useCompression
+            )
           }
         }
       }
@@ -497,6 +512,7 @@ class TSessionManager implements SessionManager {
           const hello = request as HelloRequest
           service.binaryResponseMode = hello.binary ?? false
           service.useCompression = hello.compression ?? false
+          service.useBroadcast = hello.broadcast ?? false
 
           if (LOGGING_ENABLED) {
             console.timeLog(

@@ -104,7 +104,8 @@ export async function connect (title: string): Promise<Client | undefined> {
 
             if (currentVersionStr !== reconnectVersionStr) {
               // It seems upgrade happened
-              location.reload()
+              // location.reload()
+              versionError = `${currentVersionStr} != ${reconnectVersionStr}`
             }
             const serverVersion: { version: string } = await (
               await fetch(serverEndpoint + '/api/v1/version', {})
@@ -151,9 +152,6 @@ export async function connect (title: string): Promise<Client | undefined> {
 
       if (version === undefined || requiredVersion !== versionStr) {
         versionError = `${versionStr} => ${requiredVersion}`
-        setTimeout(() => {
-          window.location.reload()
-        }, 5000)
         return undefined
       }
     }
@@ -168,17 +166,10 @@ export async function connect (title: string): Promise<Client | undefined> {
       ) {
         const versionStr = version !== undefined ? versionToString(version) : 'unknown'
         versionError = `${versionStr} => ${serverVersion.version}`
-
-        setTimeout(() => {
-          window.location.reload()
-        }, 5000)
         return
       }
     } catch (err: any) {
       versionError = 'server version not available'
-      setTimeout(() => {
-        window.location.reload()
-      }, 5000)
       return
     }
   } catch (err: any) {

@@ -28,6 +28,7 @@ import core, {
   getObjectValue,
   Hierarchy,
   IndexingUpdateEvent,
+  BulkUpdateEvent,
   Lookup,
   LookupData,
   matchQuery,
@@ -1025,6 +1026,31 @@ export class LiveQuery extends TxProcessor implements Client {
       for (const v of this.queries.values()) {
         for (const q of v) {
           if (indexingParam._class.includes(q._class) && q.query.$search !== undefined) {
+            try {
+              await this.refresh(q)
+            } catch (err) {
+              console.error(err)
+            }
+          }
+        }
+      }
+    }
+    if (evt.event === WorkspaceEvent.BulkUpdate) {
+      const params = evt.params as BulkUpdateEvent
+      for (const q of [...this.queue]) {
+        if (params._class.includes(q._class)) {
+          if (!this.removeFromQueue(q)) {
+            try {
+              await this.refresh(q)
+            } catch (err) {
+              console.error(err)
+            }
+          }
+        }
+      }
+      for (const v of this.queries.values()) {
+        for (const q of v) {
+          if (params._class.includes(q._class)) {
             try {
               await this.refresh(q)
             } catch (err) {

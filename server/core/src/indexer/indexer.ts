@@ -564,7 +564,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       if (modelVersion !== undefined) {
         const modelVersionString = versionToString(modelVersion)
         if (modelVersionString !== process.env.MODEL_VERSION) {
-          console.error('Indexer: Model version mismatch', modelVersionString, process.env.MODEL_VERSION)
+          console.error(
+            `Indexer: Model version mismatch model: ${modelVersionString} env: ${process.env.MODEL_VERSION}`
+          )
           return
         }
       }

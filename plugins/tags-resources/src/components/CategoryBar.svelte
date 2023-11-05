@@ -21,12 +21,14 @@
   import tags from '../plugin'
   import { getTagStyle } from '../utils'
   import TagsCategoryPopup from './TagsCategoryPopup.svelte'
+  import { TagElementInfo } from '../utils'
 
   export let targetClass: Ref<Class<Doc>>
   export let category: Ref<TagCategory> | undefined = undefined
   export let selected: Ref<TagElement>[] = []
   export let gap: 'small' | 'big' = 'small'
   export let mode: 'item' | 'category' = 'category'
+  export let tagElements: Map<Ref<TagElement>, TagElementInfo> | undefined
 
   let categories: TagCategory[] = []
   let visibleCategories: TagCategory[] = []
@@ -58,32 +60,6 @@
     elementsQuery.unsubscribe()
   }
 
-  type TagElementInfo = { count: number; modifiedOn: number }
-  let tagElements: Map<Ref<TagElement>, TagElementInfo> | undefined = undefined
-  const refQuery = createQuery()
-  $: refQuery.query(
-    tags.class.TagReference,
-    {},
-    (res) => {
-      const result = new Map<Ref<TagElement>, TagElementInfo>()
-
-      for (const d of res) {
-        const v = result.get(d.tag) ?? { count: 0, modifiedOn: 0 }
-        v.count++
-        v.modifiedOn = Math.max(v.modifiedOn, d.modifiedOn)
-        result.set(d.tag, v)
-      }
-
-      tagElements = result
-    },
-    {
-      projection: {
-        _id: 1,
-        tag: 1
-      }
-    }
-  )
-
   $: {
     const counts = new Map<Ref<TagCategory>, TagElement[]>()
     for (const e of elements) {
@@ -103,7 +79,9 @@
   const categoriesQuery = createQuery()
   $: categoriesQuery.query(
     tags.class.TagCategory,
-    {},
+    {
+      targetClass
+    },
     (res) => {
       categories = res
     },

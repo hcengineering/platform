@@ -101,6 +101,19 @@
   $: initialLimit = !lastLevel ? undefined : singleCat ? singleCategoryLimit : defaultLimit
   $: limit = initialLimit
 
+  $: selection = $focusStore.provider?.selection
+
+  let selectedMatch: Ref<Doc>[] = []
+
+  $: if (itemProj !== undefined && itemProj.length > 0 && $selection !== undefined && $selection.length > 0) {
+    // update limit if we have selected items.
+    const prj = new Set(itemProj.map((it) => it._id))
+    selectedMatch = $selection.filter((it) => prj.has(it._id)).map((it) => it._id)
+    if (selectedMatch.length > (limit ?? 0)) {
+      limit = (limit ?? 0) + selectedMatch.length
+    }
+  }
+
   $: if (lastLevel) {
     limiter.add(async () => {
       loading = docsQuery.query(

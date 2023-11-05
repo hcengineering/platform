@@ -101,6 +101,9 @@ export class TTxApplyIf extends TTx implements TxApplyIf {
   // All matches should be false for all documents.
   notMatch!: DocumentClassQuery<Doc>[]
   txes!: TxCUD<Doc>[]
+
+  notify!: boolean
+  extraNotify!: Ref<Class<Doc>>[]
 }
 
 @Model(core.class.TxWorkspaceEvent, core.class.Doc)

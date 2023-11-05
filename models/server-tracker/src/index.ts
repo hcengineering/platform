@@ -43,8 +43,8 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverTracker.trigger.OnComponentRemove,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx._class': core.class.TxCreateDoc
+      _class: core.class.TxRemoveDoc,
+      objectClass: tracker.class.Component
     }
   })
 

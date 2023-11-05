@@ -46,3 +46,11 @@ export const tagLevel: Record<0 | 1 | 2 | 3, Asset> = {
   1: tags.icon.Level1,
   0: tags.icon.Tags
 }
+
+/**
+ * @public
+ */
+export interface TagElementInfo {
+  count: number
+  modifiedOn: number
+}

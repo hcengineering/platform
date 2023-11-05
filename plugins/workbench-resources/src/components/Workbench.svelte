@@ -551,7 +551,7 @@
     res((status) => handleSupportStatusChanged(status))
   )
   onDestroy(async () => {
-    await supportClient?.then((support) => support.destroy())
+    await supportClient?.then((support) => support?.destroy())
   })
 
   let supportWidgetLoading = false
