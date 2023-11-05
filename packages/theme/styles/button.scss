@@ -60,6 +60,7 @@
   &.short { max-width: 8.5rem; }
   &.accent { font-weight: 500; }
   &.sh-no-shape { border-radius: .375rem; }
+  &.sh-round-small { border-radius: .25rem; }
   &.sh-round { border-radius: .5rem; }
   &.sh-round2 { border-radius: .75rem; }
   &.sh-circle { border-radius: 1rem; }
@@ -86,6 +87,7 @@
 
   &.bs-solid { border-style: solid; }
   &.bs-dashed { border-style: dashed; }
+  &.bs-none { border: none; }
   &.jf-left { justify-content: flex-start; }
   &.jf-center { justify-content: center; }
   &.only-icon {
@@ -99,7 +101,9 @@
     border-color: var(--theme-button-border);
 
     &:hover { background-color: var(--theme-button-hovered); }
-    &:active { background-color: var(--theme-button-pressed); }
+    &:active,
+    &.pressed,
+    &.pressed:hover { background-color: var(--theme-button-pressed); }
     &:focus {
       background-color: var(--theme-button-focused);
       border-color: var(--theme-button-focused-border);
@@ -137,7 +141,9 @@
   }
   &.ghost, &.stepper {
     &:hover { background-color: var(--theme-button-hovered); }
-    &:active { background-color: var(--theme-button-pressed); }
+    &:active,
+    &.pressed,
+    &.pressed:hover { background-color: var(--theme-button-pressed); }
     &.selected { background-color: var(--highlight-select); }
     &.selected:hover { background-color: var(--highlight-select-hover); }
   }
@@ -200,7 +206,7 @@
     }
   }
   &.regular, &.ghost {
-    &:hover, &:active, &:focus { color: var(--theme-caption-color); }
+    &:hover, &:active, &.pressed, &.pressed:hover, &:focus { color: var(--theme-caption-color); }
   }
   &.primary,
   &.secondary,
@@ -218,7 +224,9 @@
     background-color: var(--primary-button-default);
 
     &:hover { background-color: var(--primary-button-hovered); }
-    &:active { background-color: var(--primary-button-pressed); }
+    &:active,
+    &.pressed,
+    &.pressed:hover { background-color: var(--primary-button-pressed); }
     &:focus { background-color: var(--primary-button-focused); }
     &:disabled {
       color: var(--primary-button-disabled-color);
@@ -231,7 +239,9 @@
   &.secondary {
     background-color: var(--secondary-button-default);
     &:hover { background-color: var(--secondary-button-hovered); }
-    &:active { background-color: var(--secondary-button-pressed); }
+    &:active,
+    &.pressed,
+    &.pressed:hover { background-color: var(--secondary-button-pressed); }
     &:focus { background-color: var(--secondary-button-focused); }
     &:disabled {
       color: var(--secondary-button-disabled-color);
@@ -241,7 +251,9 @@
   &.positive {
     background-color: var(--positive-button-default);
     &:hover { background-color: var(--positive-button-hovered); }
-    &:active { background-color: var(--positive-button-pressed); }
+    &:active,
+    &.pressed,
+    &.pressed:hover { background-color: var(--positive-button-pressed); }
     &:focus { background-color: var(--positive-button-focused); }
     &:disabled {
       color: var(--positive-button-disabled-color);
@@ -251,7 +263,9 @@
   &.negative {
     background-color: var(--negative-button-default);
     &:hover { background-color: var(--negative-button-hovered); }
-    &:active { background-color: var(--negative-button-pressed); }
+    &:active,
+    &.pressed,
+    &.pressed:hover { background-color: var(--negative-button-pressed); }
     &:focus { background-color: var(--negative-button-focused); }
     &:disabled {
       color: var(--negative-button-disabled-color);
@@ -269,7 +283,9 @@
     .btn-right-icon { color: var(--theme-button-contrast-color); }
 
     &:hover { background-color: var(--theme-button-contrast-hovered); }
-    &:active { background-color: var(--theme-button-contrast-pressed); }
+    &:active,
+    &.pressed,
+    &.pressed:hover { background-color: var(--theme-button-contrast-pressed); }
     &:focus { background-color: var(--theme-button-contrast-hovered); }
     &:disabled {
       color: var(--theme-button-contrast-disabled-color);
@@ -311,5 +327,20 @@
     .btn-right-icon { opacity: .5; }
   }
 
-  .resetIconSize { font-size: 16px; }
+  .resetIconSize,
+  &.resetIconSize { font-size: 16px !important; }
+
+  &.statusButton {
+    padding: 0 8px;
+    height: 20px;
+    min-width: 20px;
+    font-size: 13px;
+    border-radius: 4px;
+
+    &.square {
+      flex-shrink: 0;
+      padding: 2px;
+      width: 20px;
+    }
+  }
 }

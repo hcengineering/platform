@@ -329,6 +329,9 @@ export function fitPopupElement (
       newProps.bottom = '12px'
       newProps.right = '12px'
       show = true
+    } else if (element === 'status') {
+      newProps.top = 'calc(var(--status-bar-height) + 7.5px)'
+      newProps.right = '12px'
     }
   } else {
     if (clientWidth !== undefined && clientHeight !== undefined) {

@@ -61,6 +61,11 @@
     "TravelAndPlaces": "Travel & Places",
     "Objects": "Objects",
     "Food": "Food",
-    "MoreCount": "{count} more"
+    "MoreCount": "{count} more",
+    "Spacious": "Spacious",
+    "Compact": "Compact",
+    "ThemeLight": "Light",
+    "ThemeDark": "Dark",
+    "ThemeSystem": "System"
   }
 }

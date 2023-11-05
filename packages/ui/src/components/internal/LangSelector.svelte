@@ -17,9 +17,9 @@
   import { getMetadata } from '@hcengineering/platform'
   import { showPopup } from '../..'
   import LangPopup from './LangPopup.svelte'
-  import ui from '../../plugin'
+  import ui, { deviceOptionsStore as deviceInfo } from '../..'
 
-  import Flags from './icons/Flags.svelte'
+  let pressed: boolean = false
 
   const { currentLanguage, setLanguage } = getContext('lang') as {
     currentLanguage: string
@@ -27,8 +27,8 @@
   }
   const uiLangs = new Set(getMetadata(ui.metadata.Languages))
   const langs = [
-    { id: 'en', label: ui.string.English },
-    { id: 'ru', label: ui.string.Russian }
+    { id: 'en', label: ui.string.English, logo: '&#x1F1FA;&#x1F1F8;' },
+    { id: 'ru', label: ui.string.Russian, logo: '&#x1F1F7;&#x1F1FA;' }
   ].filter((lang) => uiLangs.has(lang.id))
 
   if (langs.findIndex((l) => l.id === currentLanguage) < 0 && langs.length !== 0) {
@@ -46,28 +46,28 @@
   const isSelectable = langs.length > 1
 
   $: selected = langs.find((item) => item.id === currentLanguage)
-  let trigger: HTMLElement
 
   const selectLanguage = (): void => {
     if (!isSelectable) {
       return
     }
+    pressed = true
 
-    showPopup(LangPopup, { langs }, trigger, (result) => {
+    showPopup(LangPopup, { langs, selected: selected?.id }, 'status', (result) => {
       if (result) {
         selected = langs.find((item) => item.id === result)
         setLanguage(result)
       }
+      pressed = false
     })
   }
+  $: $deviceInfo.language = selected?.id
 </script>
 
-<Flags />
-{#if selected}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div bind:this={trigger} class="flex-center {isSelectable ? 'cursor-pointer' : ''}" on:click={selectLanguage}>
-    <svg class="svg-16px">
-      <use href="#{selected.id}-flag" />
-    </svg>
-  </div>
-{/if}
+<button
+  class="antiButton ghost jf-center bs-none no-focus resetIconSize statusButton square"
+  class:pressed
+  on:click={selectLanguage}
+>
+  {@html selected?.logo}
+</button>

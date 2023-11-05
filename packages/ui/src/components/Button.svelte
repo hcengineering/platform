@@ -46,14 +46,15 @@
   export let loading: boolean = false
   export let width: string | undefined = undefined
   export let height: string | undefined = undefined
-  export let resetIconSize: boolean = false
+  export let resetIconSize: 'none' | 'icon' | 'full' = 'none'
   export let highlight: boolean = false
+  export let pressed: boolean = false
   export let selected: boolean = false
   export let notSelected: boolean = false
   export let focus: boolean = false
   export let click: boolean = false
   export let title: string | undefined = undefined
-  export let borderStyle: 'solid' | 'dashed' = 'solid'
+  export let borderStyle: 'solid' | 'dashed' | 'none' = 'solid'
   export let id: string | undefined = undefined
   export let input: HTMLButtonElement | undefined = undefined
   export let showTooltip: LabelAndProps | undefined = undefined
@@ -121,12 +122,14 @@
   class:no-focus={noFocus}
   class:accent
   class:highlight
+  class:pressed
   class:selected
   class:notSelected
   class:iconL={(icon || $$slots.icon) && (label || $$slots.content)}
   class:iconR={(iconRight || $$slots.iconRight) && (label || $$slots.content)}
   disabled={disabled || loading}
   class:short
+  class:resetIconSize={resetIconSize === 'full'}
   style:width
   style:height
   style:flex-shrink={shrink}
@@ -141,14 +144,14 @@
   {id}
 >
   {#if icon && !loading}
-    <div class="btn-icon pointer-events-none" class:resetIconSize>
+    <div class="btn-icon pointer-events-none" class:resetIconSize={resetIconSize === 'icon'}>
       <Icon bind:icon size={iconSize} {iconProps} />
     </div>
   {/if}
   {#if loading}
     <div
       class="btn-icon pointer-events-none spinner"
-      class:resetIconSize
+      class:resetIconSize={resetIconSize === 'icon'}
       style:color={primary ? 'var(--primary-button-color)' : 'var(--theme-caption-color)'}
     >
       <Spinner size={iconSize === 'inline' ? 'inline' : 'small'} />
@@ -160,7 +163,7 @@
     </span>
   {/if}
   {#if iconRight}
-    <div class="btn-right-icon pointer-events-none" class:resetIconSize>
+    <div class="btn-right-icon pointer-events-none" class:resetIconSize={resetIconSize === 'icon'}>
       <Icon bind:icon={iconRight} size={iconRightSize} iconProps={iconRightProps} />
     </div>
   {/if}

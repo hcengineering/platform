@@ -1,9 +1,12 @@
 <script lang="ts">
   import { onDestroy } from 'svelte'
+  import { showPopup, getTimeZoneName } from '../..'
+  import ClockPopup from './ClockPopup.svelte'
 
   let hours = ''
   let minutes = ''
-  let delimiter = false
+  let delimiter: boolean = false
+  let pressed: boolean = false
 
   function updateTime () {
     const date = new Date()
@@ -20,8 +23,18 @@
   onDestroy(() => clearInterval(interval))
 </script>
 
-<div style="min-width: 40px">
+<button
+  class="antiButton ghost jf-center bs-none no-focus statusButton"
+  class:pressed
+  on:click={(ev) => {
+    pressed = true
+    showPopup(ClockPopup, {}, 'status', () => {
+      pressed = false
+    })
+  }}
+>
+  <span>{getTimeZoneName()}</span>&nbsp;&nbsp;
   <span>{hours}</span>
-  <span style="visibility: {delimiter ? 'visible' : 'hidden'}">:</span>
+  <span style:visibility={delimiter ? 'visible' : 'hidden'}>:</span>
   <span>{minutes}</span>
-</div>
+</button>

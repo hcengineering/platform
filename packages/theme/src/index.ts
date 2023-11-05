@@ -27,26 +27,33 @@ export const setDefaultLanguage = (language: string): void => {
   }
 }
 
-function isSystemThemeDark (): boolean {
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
-}
-
-function getDefaultTheme (): string {
-  return isSystemThemeDark() ? 'theme-dark' : 'theme-light'
+function getDefaultProps (prop: string, value: string): string {
+  localStorage.setItem(prop, value)
+  return value
 }
 
 /**
  * @public
  */
-export const getCurrentTheme = (): string => localStorage.getItem('theme') ?? getDefaultTheme()
+export const isSystemThemeDark = (): boolean => window.matchMedia('(prefers-color-scheme: dark)').matches
 /**
  * @public
  */
-export const getCurrentFontSize = (): string => localStorage.getItem('fontsize') ?? 'normal-font'
+export const isThemeDark = (theme: string): boolean =>
+  theme === 'theme-dark' || (theme === 'theme-system' && isSystemThemeDark())
 /**
  * @public
  */
-export const getCurrentLanguage = (): string => localStorage.getItem('lang') ?? 'en'
+export const getCurrentTheme = (): string => localStorage.getItem('theme') ?? getDefaultProps('theme', 'theme-system')
+/**
+ * @public
+ */
+export const getCurrentFontSize = (): string =>
+  localStorage.getItem('fontsize') ?? getDefaultProps('fontsize', 'normal-font')
+/**
+ * @public
+ */
+export const getCurrentLanguage = (): string => localStorage.getItem('lang') ?? getDefaultProps('lang', 'en')
 
 export class ThemeOptions {
   constructor (readonly fontSize: number, readonly dark: boolean, readonly language: string) {}
@@ -54,7 +61,7 @@ export class ThemeOptions {
 export const themeStore = writable<ThemeOptions>(
   new ThemeOptions(
     getCurrentFontSize() === 'normal-font' ? 16 : 14,
-    getCurrentTheme() === 'theme-dark',
+    isThemeDark(getCurrentTheme()),
     getCurrentLanguage()
   )
 )

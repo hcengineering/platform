@@ -271,6 +271,31 @@
   padding: .5rem 0 1.25rem;
 }
 
+/* Statusbar - Popup */
+.statusPopup-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  min-height: 0;
+
+  &:not(:last-child) { margin-right: 12px; }
+
+  .label {
+    margin-top: .5rem;
+    font-weight: 500;
+    font-size: 12px;
+    color: var(--theme-darker-color);
+  }
+
+  &:hover .label { color: var(--theme-dark-color); }
+  &.selected .label {
+    font-weight: 600;
+    color: var(--theme-content-color);
+  }
+  &:not(.selected) { cursor: pointer; }
+}
+
 /* Basic */
 .antiGrid {
   display: flex;

@@ -15,28 +15,36 @@
 <script lang="ts">
   import platform, { loadPluginStrings, setMetadata } from '@hcengineering/platform'
   import { onMount, setContext } from 'svelte'
-  import { ThemeOptions, getCurrentFontSize, getCurrentLanguage, getCurrentTheme, themeStore as themeOptions } from './'
+  import {
+    ThemeOptions,
+    getCurrentFontSize,
+    getCurrentLanguage,
+    getCurrentTheme,
+    isThemeDark,
+    themeStore as themeOptions
+  } from './'
 
   const currentTheme = getCurrentTheme()
   const currentFontSize = getCurrentFontSize()
   let currentLanguage = getCurrentLanguage()
 
   const setOptions = (currentFont: string, theme: string, language: string) => {
-    themeOptions.set(new ThemeOptions(currentFont === 'normal-font' ? 16 : 14, theme === 'theme-dark', language))
+    themeOptions.set(new ThemeOptions(currentFont === 'normal-font' ? 16 : 14, isThemeDark(theme), language))
   }
 
+  const getRealTheme = (theme: string): string => (isThemeDark(theme) ? 'theme-dark' : 'theme-light')
   const setRootColors = (theme: string, set = true) => {
     if (set) {
       localStorage.setItem('theme', theme)
     }
-    document.documentElement.setAttribute('class', `${theme} ${getCurrentFontSize()}`)
+    document.documentElement.setAttribute('class', `${getRealTheme(theme)} ${getCurrentFontSize()}`)
     setOptions(getCurrentFontSize(), theme, getCurrentLanguage())
   }
   const setRootFontSize = (fontsize: string, set = true) => {
     if (set) {
       localStorage.setItem('fontsize', fontsize)
     }
-    document.documentElement.setAttribute('class', `${getCurrentTheme()} ${fontsize}`)
+    document.documentElement.setAttribute('class', `${getRealTheme(getCurrentTheme())} ${fontsize}`)
     setOptions(fontsize, getCurrentTheme(), getCurrentLanguage())
   }
   const setLanguage = async (language: string, set: boolean = true) => {

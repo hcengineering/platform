@@ -15,26 +15,31 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import Label from '../Label.svelte'
+  import IconCheck from '../icons/Check.svelte'
 
   export let langs: any
+  export let selected: string
 
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="antiPopup">
+<div class="antiPopup" style:min-width={'200px'}>
   <div class="ap-space x2" />
   {#each langs as lang}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
-      class="ap-menuItem hoverable flex-row-center"
+      class="ap-menuItem hoverable flex-row-center leading-16px"
       on:click={() => {
         dispatch('close', lang.id)
       }}
     >
-      <svg class="svg-small">
-        <use href="#{lang.id}-flag" />
-      </svg>
-      <div class="ml-2"><Label label={lang.label} /></div>
+      <div class="svg-16px flex-no-shrink text-16px mr-2">{@html lang.logo}</div>
+      <span class="overflow-label flex-grow"><Label label={lang.label} /></span>
+      <div class="ap-check">
+        {#if lang.id === selected}
+          <IconCheck size={'small'} fill={'var(--primary-button-default)'} />
+        {/if}
+      </div>
     </div>
   {/each}
   <div class="ap-space x2" />

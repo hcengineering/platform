@@ -444,6 +444,7 @@ input.search {
 .gapV-12 > *:not(:last-child) { margin-bottom: 3rem; }
 .gap-around-2 > * { margin: .25rem; }
 .gap-around-4 > * { margin: .5rem; }
+.gap-statusbar > *:not(:last-child) { margin-right: 12px; }
 
 /* --------- */
 .sm-tool-icon {
@@ -686,6 +687,7 @@ input.search {
 .min-w-8 { min-width: 2rem; }
 .min-w-9 { min-width: 2.25rem; }
 .min-w-12 { min-width: 3rem; }
+.min-w-50 { min-width: 12.5rem; }
 .min-w-60 { min-width: 15rem; }
 .min-w-80 { min-width: 20rem; }
 .min-w-100 { min-width: 25rem; }
@@ -818,6 +820,7 @@ a.no-line {
   color: var(--theme-dark-color);
   user-select: none;
 }
+.text-16px { font-size: 16px; }
 .text-xs { font-size: .625rem; }
 .text-11px { font-size: .6875rem; }
 .text-sm { font-size: .75rem; }
@@ -837,7 +840,9 @@ a.no-line {
 .lower { text-transform: lowercase; }
 .text-left { text-align: left; }
 .text-center { text-align: center; }
+.leading-16px { line-height: 16px; }
 .leading-3 { line-height: .75rem; }
+.tracking--05px { letter-spacing: -.5px; }
 .tracking-1px { letter-spacing: 1px; }
 
 .over-underline {

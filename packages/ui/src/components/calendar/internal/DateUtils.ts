@@ -126,3 +126,7 @@ export const getDueDateIconModifier = (
 export function getFormattedDate (value: number | null): string {
   return value === null ? '' : new Date(value).toLocaleString('default', { month: 'short', day: 'numeric' })
 }
+
+export const getTimeZoneName = (): string => {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone.split('/')[1]
+}

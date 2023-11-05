@@ -157,6 +157,7 @@ export type ButtonShape =
   | 'circle'
   | 'round'
   | 'round2'
+  | 'round-small'
   | 'filter'
   | undefined
 export type EditStyle =
@@ -196,6 +197,7 @@ export type PopupPosAlignment =
   | 'help-center'
   | 'centered'
   | 'center'
+  | 'status'
 
 export function isPopupPosAlignment (x: any): x is PopupPosAlignment {
   return (
@@ -349,7 +351,8 @@ export interface DeviceOptions {
   sizes: Record<WidthType, boolean>
   minWidth: boolean
   twoRows: boolean
-  theme?: any
+  theme?: string
+  language?: string
 }
 
 export interface TimelineItem {
