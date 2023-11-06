@@ -184,6 +184,7 @@ jobs:
         run: |
           cd ./tests/sanity
           node ../../common/scripts/install-run-rushx.js uitest
+          allure generate allure-results -o allure-report --clean
       # - name: Archive DB
       #   run: |
       #     cd ./tests
@@ -202,6 +203,12 @@ jobs:
         with:
           name: playwright-results
           path: ./tests/sanity/playwright-report/
+      - name: Upload allure test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: allure-report
+          path: ./tests/sanity/allure-report/
       - name: Upload Logs
         if: always()
         uses: actions/upload-artifact@v3

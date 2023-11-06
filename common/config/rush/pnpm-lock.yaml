@@ -824,6 +824,9 @@ dependencies:
   '@typescript-eslint/parser':
     specifier: ^5.41.0
     version: 5.62.0(eslint@8.51.0)(typescript@5.2.2)
+  allure-playwright:
+    specifier: 2.9.2
+    version: 2.9.2
   autolinker:
     specifier: 4.0.0
     version: 4.0.0
@@ -7822,6 +7825,18 @@ packages:
       uri-js: 4.4.1
     dev: false
 
+  /allure-js-commons@2.9.2:
+    resolution: {integrity: sha512-Qvi+zMZQruklqcnqG/zHCnE209v1YiWGhO3H2aPW2aXC8Ockqd01a+w2lP4Qqp3SfC+WQDeAK2+pp+v+eNl8xQ==}
+    dependencies:
+      properties: 1.2.1
+    dev: false
+
+  /allure-playwright@2.9.2:
+    resolution: {integrity: sha512-N0X1c1GGLg74vdDAuq86KCekuvQ5BaqqpgcBpJj5x3y/RlQPBn84wlg8PT/ViKQM4EdbNFMXOXpa5Opufv6qCg==}
+    dependencies:
+      allure-js-commons: 2.9.2
+    dev: false
+
   /ansi-colors@4.1.3:
     resolution: {integrity: sha512-/6w/C21Pm1A7aZitlI5Ni/2J6FFQN8i1Cvz3kHABAAbw93v/NlvKdVOqz7CCWz/3iv/JplRSEEZ83XION15ovw==}
     engines: {node: '>=6'}
@@ -13947,6 +13962,11 @@ packages:
       react-is: 16.13.1
     dev: false
 
+  /properties@1.2.1:
+    resolution: {integrity: sha512-qYNxyMj1JeW54i/EWEFsM1cVwxJbtgPp8+0Wg9XjNaK6VE/c4oRi6PNu5p7w1mNXEIQIjV5Wwn8v8Gz82/QzdQ==}
+    engines: {node: '>=0.10'}
+    dev: false
+
   /prosemirror-changeset@2.2.1:
     resolution: {integrity: sha512-J7msc6wbxB4ekDFj+n9gTW/jav/p53kdlivvuppHsrZXCaQdVgRghoZbSS3kwrRyAstRVQ4/+u5k7YfLgkkQvQ==}
     dependencies:
@@ -17040,7 +17060,7 @@ packages:
     dev: false
 
   file:projects/activity-resources.tgz(@types/node@16.11.68)(esbuild@0.16.17)(postcss-load-config@4.0.1)(postcss@8.4.31)(ts-node@10.9.1):
-    resolution: {integrity: sha512-Ta3AhnWDUEsMsVwecL5q4+9P99UCeALuP96nVAGNi1h4y1iDOLq1ZFOtSm3xLMLXks20yXAoDjaaXpN5AkE4GQ==, tarball: file:projects/activity-resources.tgz}
+    resolution: {integrity: sha512-9GzcUA5Q3zZL6TwGd0XkESkRYeWwFJ4CmUmHD8+jwEdGYmas7WaYoRKSbkplG5ckymwaEvyptyY+zRrHe80ckA==, tarball: file:projects/activity-resources.tgz}
     id: file:projects/activity-resources.tgz
     name: '@rush-temp/activity-resources'
     version: 0.0.0
@@ -19118,7 +19138,7 @@ packages:
     dev: false
 
   file:projects/model-inventory.tgz(typescript@5.2.2):
-    resolution: {integrity: sha512-SCKkh3KiOcLgrCz3z5MiPGD/loJ+bXNCLZEymK0SjK40RhZ/R+G1Vo6grvx2Wbkz2xzfTNGQ8UwppDWswH7r3Q==, tarball: file:projects/model-inventory.tgz}
+    resolution: {integrity: sha512-wrbvP46RYBDK9YKuUkd6LlbsjizkbjB6G7WjgqNbxlG1A5XyHP93+9/75NQcQTercDk7UzsAEwDmLaoHue0sLw==, tarball: file:projects/model-inventory.tgz}
     id: file:projects/model-inventory.tgz
     name: '@rush-temp/model-inventory'
     version: 0.0.0
@@ -19137,7 +19157,7 @@ packages:
     dev: false
 
   file:projects/model-lead.tgz(typescript@5.2.2):
-    resolution: {integrity: sha512-R2wTUWC65rH1nbNyXSuVgiUGktemJ6yIdcErdlGMbK6uxqik7z4EE2JvoHDSWheQq+3WAKIwyCGCle/l1fFxGQ==, tarball: file:projects/model-lead.tgz}
+    resolution: {integrity: sha512-VscZSxaIbMvb27fJNRBtfuvqYRFbyUG19kWTfQzBQzDqHiovm/jZPE9j8FlBAbh+BCdIgW6qM5uB2tEC53N2mA==, tarball: file:projects/model-lead.tgz}
     id: file:projects/model-lead.tgz
     name: '@rush-temp/model-lead'
     version: 0.0.0
@@ -19213,7 +19233,7 @@ packages:
     dev: false
 
   file:projects/model-recruit.tgz(typescript@5.2.2):
-    resolution: {integrity: sha512-AyYlOwgRIlVLti8RmL+Z2X0P3dV4oNLXHjh7SQO5T2ORQiv8YQ6kKs3If56XYw11LZL8YLjviRxL/0yLE7ZcOQ==, tarball: file:projects/model-recruit.tgz}
+    resolution: {integrity: sha512-cgEU2xIyM5U16o7J2feYPTdDd1WCXCTCqVbIHFQRpHKsdt7EHdi/55i6MBwnFdnz0xIzklkT/KPBrh9IK96knw==, tarball: file:projects/model-recruit.tgz}
     id: file:projects/model-recruit.tgz
     name: '@rush-temp/model-recruit'
     version: 0.0.0
@@ -22683,7 +22703,7 @@ packages:
     dev: false
 
   file:projects/tests-sanity.tgz:
-    resolution: {integrity: sha512-9SbIfI88iqlwAyT1o2l31Wd+sReDJ5wIX9hOwqeBHScRmcpFanU2eVbffCiqKNtVZeiiyy1pmXGZm3thj3Nebg==, tarball: file:projects/tests-sanity.tgz}
+    resolution: {integrity: sha512-gkKzOUcbuaLf4uN8Fd7Mv9+GrAGW+LXCUc+dBuXNgV20G81BUXyFfsTgA/Xib5DntTe+tO+zYQmjMCGZfAHjIQ==, tarball: file:projects/tests-sanity.tgz}
     name: '@rush-temp/tests-sanity'
     version: 0.0.0
     dependencies:
@@ -22692,6 +22712,7 @@ packages:
       '@types/node': 16.11.68
       '@typescript-eslint/eslint-plugin': 5.62.0(@typescript-eslint/parser@5.62.0)(eslint@8.51.0)(typescript@5.2.2)
       '@typescript-eslint/parser': 5.62.0(eslint@8.51.0)(typescript@5.2.2)
+      allure-playwright: 2.9.2
       cross-env: 7.0.3
       dotenv: 16.0.3
       eslint: 8.51.0
@@ -22980,7 +23001,7 @@ packages:
     dev: false
 
   file:projects/tracker-resources.tgz(@types/node@16.11.68)(esbuild@0.16.17)(postcss-load-config@4.0.1)(postcss@8.4.31)(ts-node@10.9.1):
-    resolution: {integrity: sha512-Ikg4KXyZO5fRqMu1KSfX76R2HmkLbG2wC0JQUTkmIOgy7K/1/mzp8kQ33se2ljNYybz6Qj2csqZhD4Ptya4DUQ==, tarball: file:projects/tracker-resources.tgz}
+    resolution: {integrity: sha512-fnONbbaUZPZYqnfrYl+MhWHrnxbedcy5Xa+dkh/HZeawN+PEETjL9OIF0H5y3zbBTqbOkYcB79l6CUZ56/tSdw==, tarball: file:projects/tracker-resources.tgz}
     id: file:projects/tracker-resources.tgz
     name: '@rush-temp/tracker-resources'
     version: 0.0.0

@@ -17,6 +17,7 @@ const config: PlaywrightTestConfig = {
   maxFailures: 5,
   expect: {
     timeout: 15000
-  }
+  },
+  reporter: 'allure-playwright'
 }
 export default config
