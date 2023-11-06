@@ -59,7 +59,7 @@
 
   let resultQuery: DocumentQuery<Doc> = query
   $: getResultQuery(query, viewOptionsConfig, viewOptions).then((p) => {
-    resultQuery = { ...query, ...p }
+    resultQuery = { ...p, ...query }
   })
 
   $: queryNoLookup = noLookup(resultQuery)
