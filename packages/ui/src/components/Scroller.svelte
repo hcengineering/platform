@@ -166,7 +166,9 @@
       (divBar == null && isScrolling === 'vertical') ||
       (divBarH == null && isScrolling === 'horizontal') ||
       divScroll == null
-    ) { return }
+    ) {
+      return
+    }
     const rectScroll = divScroll.getBoundingClientRect()
     if (isScrolling === 'vertical') {
       let Y = event.clientY - dXY
@@ -454,7 +456,9 @@
       (divBarH == null && horizontal) ||
       divScroll == null ||
       isScrolling !== false
-    ) { return }
+    ) {
+      return
+    }
     const rectScroll = divScroll.getBoundingClientRect()
     if (horizontal) {
       const x = ev.offsetX
