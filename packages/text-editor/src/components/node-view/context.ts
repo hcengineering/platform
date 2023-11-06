@@ -19,6 +19,7 @@ const key = 'tiptap-node-view-context'
 
 export interface TiptapNodeViewContext {
   onDragStart: (event: DragEvent) => void
+  onContentElement: (element: HTMLElement) => void
 }
 
 export function getNodeViewContext (): TiptapNodeViewContext {

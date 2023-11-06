@@ -77,23 +77,15 @@ class SvelteNodeView extends NodeView<SvelteNodeViewComponent, Editor, SvelteNod
     target.classList.add(`node-${this.node.type.name}`)
 
     const context = createNodeViewContext({
-      onDragStart: this.onDragStart.bind(this)
+      onDragStart: this.onDragStart.bind(this),
+      onContentElement: (element) => {
+        if (this.contentDOMElement !== null && !element.contains(this.contentDOMElement)) {
+          element.appendChild(this.contentDOMElement)
+        }
+      }
     })
 
     this.renderer = new SvelteRenderer(this.component, { element: target, props, context })
-    this.appendContendDom()
-  }
-
-  private appendContendDom (): void {
-    const contentElement = this.dom.querySelector('[data-node-view-content]')
-
-    if (
-      this.contentDOMElement !== null &&
-      contentElement !== null &&
-      !contentElement.contains(this.contentDOMElement)
-    ) {
-      contentElement.appendChild(this.contentDOMElement)
-    }
   }
 
   override get dom (): HTMLElement {

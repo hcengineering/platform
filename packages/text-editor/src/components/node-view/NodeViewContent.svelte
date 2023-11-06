@@ -15,18 +15,19 @@
 //
 -->
 <script lang="ts">
-  import { onMount, tick } from 'svelte'
+  import { getNodeViewContext } from './context'
 
   export let as = 'div'
 
-  let element: HTMLElement
+  const { onContentElement } = getNodeViewContext()
 
-  onMount(async () => {
-    await tick()
+  let element: HTMLElement
+  $: if (element) {
     element.style.whiteSpace = 'pre-wrap'
-  })
+    onContentElement(element)
+  }
 </script>
 
-<svelte:element this={as} bind:this={element} data-node-view-content="" {...$$restProps}>
+<svelte:element this={as} bind:this={element} {...$$restProps}>
   <slot />
 </svelte:element>
