@@ -1,5 +1,6 @@
 import { Editor, Range, escapeForRegEx } from '@tiptap/core'
-import { EditorState, Plugin, PluginKey } from '@tiptap/pm/state'
+import { EditorState, Plugin, PluginKey, Transaction } from '@tiptap/pm/state'
+import { ReplaceStep } from '@tiptap/pm/transform'
 import { Decoration, DecorationSet, EditorView } from '@tiptap/pm/view'
 
 import { ResolvedPos } from '@tiptap/pm/model'
@@ -17,6 +18,40 @@ export type SuggestionMatch = {
   query: string
   text: string
 } | null
+
+
+function hasChar(tr: Transaction, char = ''): boolean {
+  let isHardStop = false
+  let isChar = false
+  for (const step of tr.steps) {
+    if (step instanceof ReplaceStep) {
+      const slice = step.slice
+
+      slice.content.descendants((node, _pos): boolean => {
+        if (isHardStop) {
+          return false
+        }
+
+        if (node.type.isText && node.text !== undefined && node.text !== '') {
+          if (char !== '') {
+            if (node.text?.indexOf(char) > -1) {
+              isChar = true
+              isHardStop = true
+              return false
+            }
+          } else {
+            isChar = true
+            isHardStop = true
+            return false
+          }
+        }
+        return true
+      })
+    }
+  }
+
+  return isChar
+}
 
 export function findSuggestionMatch (config: Trigger): SuggestionMatch {
   const { char, allowSpaces, allowedPrefixes, startOfLine, $position } = config
@@ -252,6 +287,8 @@ export default function Suggestion<I = any> ({
           text: null | string
           composing: boolean
           decorationId?: string | null
+          specialCharInserted: boolean
+          maxRangeTo: number
         } = {
           active: false,
           range: {
@@ -260,7 +297,9 @@ export default function Suggestion<I = any> ({
           },
           query: null,
           text: null,
-          composing: false
+          composing: false,
+          specialCharInserted: false,
+          maxRangeTo: 0
         }
 
         return state
@@ -268,11 +307,18 @@ export default function Suggestion<I = any> ({
 
       // Apply changes to the plugin state from a view transaction.
       apply (transaction, prev, oldState, state) {
+        // console.log('c @ plugin apply')
+        // console.log(transaction)
         const { isEditable } = editor
         const { composing } = editor.view
         const { selection } = transaction
         const { empty, from } = selection
         const next = { ...prev }
+        const trPluginState = transaction.getMeta(pluginKey)
+
+        if (trPluginState !== undefined && trPluginState.forceCancelSuggestion) {
+          next.specialCharInserted = false
+        }
 
         next.composing = composing
 
@@ -285,23 +331,44 @@ export default function Suggestion<I = any> ({
             next.active = false
           }
 
-          // Try to match against where our cursor currently is
-          const match = findSuggestionMatch({
-            char,
-            allowSpaces,
-            allowedPrefixes,
-            startOfLine,
-            $position: selection.$from
-          })
-          const decorationId = `id_${Math.floor(Math.random() * 0xffffffff)}`
+          if (!prev.specialCharInserted) {
+            next.specialCharInserted = hasChar(transaction, char)
+          }
 
-          // If we found a match, update the current state to show it
-          if (match != null && allow({ editor, state, range: match.range })) {
-            next.active = true
-            next.decorationId = prev.decorationId ? prev.decorationId : decorationId
-            next.range = match.range
-            next.query = match.query
-            next.text = match.text
+          if (selection.$from.pos > next.maxRangeTo && transaction.steps.length === 0) {
+            next.specialCharInserted = false
+          }
+
+          // Make sure special char was inserted by user
+          // Before try to make any match
+          if (prev.specialCharInserted || next.specialCharInserted) {
+            // Try to match against where our cursor currently is
+            const match = findSuggestionMatch({
+              char,
+              allowSpaces,
+              allowedPrefixes,
+              startOfLine,
+              $position: selection.$from
+            })
+            const decorationId = `id_${Math.floor(Math.random() * 0xffffffff)}`
+
+            // If we found a match, update the current state to show it
+            if (match != null && allow({ editor, state, range: match.range })) {
+              next.active = true
+              next.decorationId = prev.decorationId ? prev.decorationId : decorationId
+              next.range = match.range
+
+              if (next.range.to > next.maxRangeTo || transaction.steps.length !== 0) {
+                next.maxRangeTo = next.range.to
+              }
+              // else {
+              //   next.range.to = next.maxRangeTo
+              // }
+
+              next.query = match.query
+              next.text = match.text
+            }
+
           } else {
             next.active = false
           }
@@ -313,6 +380,7 @@ export default function Suggestion<I = any> ({
         if (!next.active) {
           next.decorationId = null
           next.range = { from: 0, to: 0 }
+          next.maxRangeTo = 0
           next.query = null
           next.text = null
         }
@@ -325,9 +393,19 @@ export default function Suggestion<I = any> ({
       // Call the keydown hook if suggestion is active.
       handleKeyDown (view, event) {
         const { active, range } = plugin.getState(view.state)
-
+        
         if (!active) {
           return false
+        }
+
+        if (event.key === 'Escape') {
+          const flag = { forceCancelSuggestion: true }
+
+          // It's important to dispatch this state twice
+          // Just one state change is not enough to handle all
+          // decorators
+          view.dispatch(view.state.tr.setMeta(pluginKey, flag))
+          view.dispatch(view.state.tr.setMeta(pluginKey, flag))
         }
 
         return renderer?.onKeyDown?.({ view, event, range }) ?? false

@@ -60,7 +60,8 @@ export const Completion = Node.create<CompletionOptions>({
             range.to += 1
           }
 
-          editor
+          if (props !== null) {
+            editor
             .chain()
             .focus()
             .insertContentAt(range, [
@@ -74,6 +75,7 @@ export const Completion = Node.create<CompletionOptions>({
               }
             ])
             .run()
+          }
         },
         allow: ({ editor, range }) => {
           if (range.from > editor.state.doc.content.size) return false

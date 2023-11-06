@@ -32,7 +32,10 @@
       DummyPopup,
       {},
       undefined,
-      () => close(),
+      () => {
+        close()
+        command(null)
+      },
       () => {},
       { overlay: false, category: '' }
     )
