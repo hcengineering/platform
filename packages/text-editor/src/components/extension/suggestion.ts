@@ -307,8 +307,6 @@ export default function Suggestion<I = any> ({
 
       // Apply changes to the plugin state from a view transaction.
       apply (transaction, prev, oldState, state) {
-        // console.log('c @ plugin apply')
-        // console.log(transaction)
         const { isEditable } = editor
         const { composing } = editor.view
         const { selection } = transaction
@@ -361,17 +359,17 @@ export default function Suggestion<I = any> ({
               if (next.range.to > next.maxRangeTo || transaction.steps.length !== 0) {
                 next.maxRangeTo = next.range.to
               }
-              // else {
-              //   next.range.to = next.maxRangeTo
-              // }
 
               next.query = match.query
               next.text = match.text
+            } else {
+              next.active = false
             }
 
           } else {
             next.active = false
           }
+
         } else {
           next.active = false
         }
@@ -383,6 +381,7 @@ export default function Suggestion<I = any> ({
           next.maxRangeTo = 0
           next.query = null
           next.text = null
+          next.specialCharInserted = false
         }
 
         return next
@@ -393,7 +392,7 @@ export default function Suggestion<I = any> ({
       // Call the keydown hook if suggestion is active.
       handleKeyDown (view, event) {
         const { active, range } = plugin.getState(view.state)
-        
+
         if (!active) {
           return false
         }
