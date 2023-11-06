@@ -49,7 +49,7 @@
   }
 </script>
 
-<div class="container">
+<div class="commentPopup-container">
   <div
     class="flex-between header"
     use:resizeObserver={() => {
@@ -87,7 +87,7 @@
     {/if}
   </div>
   {#if withInput}
-    <div class="max-w-120 input">
+    <div class="input">
       <CommentInput
         {object}
         on:focus={() => {
@@ -99,37 +99,38 @@
 </div>
 
 <style lang="scss">
-  .item {
-    max-width: 30rem;
-  }
-  .item + .item {
-    margin-top: 0.75rem;
-  }
-
-  .input {
-    padding: 1rem;
-    padding-top: 0;
-  }
-
-  .comments {
-    overflow: auto;
-    flex: 1;
-    padding: 1rem;
-    padding-top: 0;
-  }
-
-  .container {
+  .commentPopup-container {
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    padding: 0;
+    min-width: 0;
+    min-height: 0;
     max-height: 30rem;
-  }
 
-  .header {
-    border-bottom: 1px solid var(--theme-divider-color);
-    padding: 1rem 1.5rem;
-    margin-right: -0.5rem;
-    margin-left: -0.5rem;
-    margin-bottom: 1rem;
+    .header {
+      flex-shrink: 0;
+      margin: 0 0.25rem 0.5rem;
+      padding: 0.5rem 1.25rem 1rem 0.75rem;
+      border-bottom: 1px solid var(--theme-divider-color);
+    }
+    .comments {
+      overflow: auto;
+      flex: 1;
+      padding: 0 1rem;
+      min-width: 0;
+      min-height: 0;
+
+      .item {
+        max-width: 30rem;
+      }
+      .item + .item {
+        margin-top: 0.75rem;
+      }
+    }
+
+    .input {
+      padding: 0.5rem 0.25rem 0.25rem;
+    }
   }
 </style>
