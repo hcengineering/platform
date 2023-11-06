@@ -61,6 +61,11 @@
     "TravelAndPlaces": "Путешествия & Места",
     "Objects": "Объекты",
     "Food": "Еда",
-    "MoreCount": "Ещё {count}"
+    "MoreCount": "Ещё {count}",
+    "Spacious": "Просторный",
+    "Compact": "Компактный",
+    "ThemeLight": "Светлая",
+    "ThemeDark": "Тёмная",
+    "ThemeSystem": "Системная"
   }
 }

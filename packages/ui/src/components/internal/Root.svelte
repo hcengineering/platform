@@ -12,13 +12,17 @@
   import StatusComponent from '../Status.svelte'
   import Clock from './Clock.svelte'
   // import Mute from './icons/Mute.svelte'
-  import { checkMobile, deviceOptionsStore as deviceInfo, networkStatus } from '../../'
+  import {
+    checkMobile,
+    deviceOptionsStore as deviceInfo
+    // networkStatus
+  } from '../../'
   import uiPlugin from '../../plugin'
   import Label from '../Label.svelte'
   import FontSizeSelector from './FontSizeSelector.svelte'
-  import Computer from './icons/Computer.svelte'
-  import Phone from './icons/Phone.svelte'
-  import WiFi from './icons/WiFi.svelte'
+  // import Computer from './icons/Computer.svelte'
+  // import Phone from './icons/Phone.svelte'
+  // import WiFi from './icons/WiFi.svelte'
   import LangSelector from './LangSelector.svelte'
   import ThemeSelector from './ThemeSelector.svelte'
 
@@ -76,7 +80,7 @@
   let docHeight: number = window.innerHeight
 
   let isMobile: boolean
-  let alwaysMobile: boolean = false
+  const alwaysMobile: boolean = false
   $: isMobile = alwaysMobile || checkMobile()
   let isPortrait: boolean
   $: isPortrait = docWidth <= docHeight
@@ -159,17 +163,12 @@
           <div class="clock">
             <Clock />
           </div>
-          <div class="flex-center widget">
+          <div class="flex-row-center gap-statusbar">
+            <FontSizeSelector />
+            <ThemeSelector />
             <LangSelector />
           </div>
-          <div class="flex-center widget cursor-pointer">
-            <ThemeSelector />
-          </div>
-          <div class="flex-center widget cursor-pointer">
-            <FontSizeSelector />
-          </div>
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <div
+          <!-- <div
             class="flex-center widget"
             class:rotated={!isPortrait && isMobile}
             on:click={() => {
@@ -183,7 +182,6 @@
               size={'small'}
             />
           </div>
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div
             class="flex-center widget cursor-pointer"
             on:click={(evt) => {
@@ -198,7 +196,7 @@
                 ? 'var(--theme-warning-color)'
                 : 'currentColor'}
             />
-          </div>
+          </div> -->
         </div>
       </div>
     </div>
@@ -215,10 +213,6 @@
 </Theme>
 
 <style lang="scss">
-  * {
-    --status-bar-height: 32px;
-  }
-
   #ui-root {
     position: relative;
     display: flex;
@@ -235,6 +229,7 @@
       font-size: 12px;
       line-height: 150%;
       background-color: var(--theme-statusbar-color);
+      border-bottom: 1px solid var(--theme-navpanel-divider);
 
       .maintenanceScheduled {
         padding: 0 0.5rem;
@@ -251,16 +246,12 @@
         text-align: center;
       }
       .clock {
-        margin: 0 16px 0 24px;
-        font-weight: 500;
-        user-select: none;
+        margin: 0 12px 0 8px;
       }
       .widget {
         -webkit-app-region: no-drag;
-        width: 16px;
-        height: 16px;
-        font-size: 14px;
-        color: var(--content-color);
+        font-size: 13px;
+        color: var(--theme-content-color);
         transition: transform 0.15s ease-in-out;
 
         &.rotated {

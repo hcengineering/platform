@@ -87,7 +87,12 @@ export const uis = plugin(uiId, {
     TravelAndPlaces: '' as IntlString,
     Food: '' as IntlString,
     MoreCount: '' as IntlString,
-    Objects: '' as IntlString
+    Objects: '' as IntlString,
+    Spacious: '' as IntlString,
+    Compact: '' as IntlString,
+    ThemeLight: '' as IntlString,
+    ThemeDark: '' as IntlString,
+    ThemeSystem: '' as IntlString
   },
   metadata: {
     DefaultApplication: '' as Metadata<AnyComponent>,

@@ -358,7 +358,7 @@
       &.halfMargin { margin: .25rem 0; }
     }
   }
-  &:not(.thinStyle) .ap-menuItem:not(.separator, .withComp) { padding: .25rem .5rem; }
+  &:not(.thinStyle) .ap-menuItem:not(.separator, .withComp) { padding: .625rem .5rem; }
   &.thinStyle {
     border-radius: .75rem;
 
@@ -378,7 +378,7 @@
     margin-left: 1rem;
     width: 1rem;
     height: 1rem;
-    color: var(--theme-dark-color);
+    color: var(--theme-popup-checkicon);
   }
   .ap-subheader {
     flex-shrink: 0;

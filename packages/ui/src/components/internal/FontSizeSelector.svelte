@@ -14,28 +14,45 @@
 -->
 <script lang="ts">
   import { getContext } from 'svelte'
+  import { IntlString } from '@hcengineering/platform'
+  import ui, { popupstore, showPopup, deviceOptionsStore as deviceInfo } from '../..'
   import FontSize from './icons/FontSize.svelte'
-  import { popupstore } from '../../popups'
-  import { deviceOptionsStore as deviceInfo } from '../..'
+  import FontSizePopup from './FontSizePopup.svelte'
 
   const { currentFontSize, setFontSize } = getContext('fontsize') as {
     currentFontSize: string
     setFontSize: (size: string) => void
   }
 
-  const fontsizes = ['small-font', 'normal-font']
+  const fontsizes: Array<{ id: string; label: IntlString; size: number }> = [
+    { id: 'normal-font', label: ui.string.Spacious, size: 16 },
+    { id: 'small-font', label: ui.string.Compact, size: 14 }
+  ]
+  let pressed: boolean = false
+  let btn: HTMLButtonElement
 
-  let current = fontsizes.indexOf(currentFontSize)
+  let current = fontsizes.findIndex((fs) => fs.id === currentFontSize)
 
-  function changeFontSize () {
-    current++
-    setFontSize(fontsizes[current % fontsizes.length])
-    $popupstore = $popupstore
+  function changeFontSize (ev: MouseEvent) {
+    pressed = true
+    showPopup(FontSizePopup, { fontsizes, selected: fontsizes[current].id }, btn, (result) => {
+      if (result) {
+        setFontSize(result)
+        current = fontsizes.findIndex((fs) => fs.id === result)
+        $popupstore = $popupstore
+      }
+      pressed = false
+    })
   }
-  $: $deviceInfo.fontSize = fontsizes[current % fontsizes.length] === 'normal-font' ? 16 : 14
+  $: $deviceInfo.fontSize = fontsizes[current].size
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="flex-center" on:click={changeFontSize}>
+<button
+  bind:this={btn}
+  class="antiButton ghost jf-center bs-none no-focus resetIconSize statusButton square"
+  class:pressed
+  style:color={'var(--theme-dark-color)'}
+  on:click={changeFontSize}
+>
   <FontSize />
-</div>
+</button>
