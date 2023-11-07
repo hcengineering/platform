@@ -51,22 +51,30 @@ export enum WorkspaceEvent {
   Upgrade,
   IndexingUpdate,
   SecurityChange,
-  MaintenanceNotification
+  MaintenanceNotification,
+  BulkUpdate
 }
 
 /**
  * Event to be send by server during model upgrade procedure.
  * @public
  */
-export interface TxWorkspaceEvent extends Tx {
+export interface TxWorkspaceEvent<T = any> extends Tx {
   event: WorkspaceEvent
-  params: any
+  params: T
 }
 
 /**
  * @public
  */
 export interface IndexingUpdateEvent {
+  _class: Ref<Class<Doc>>[]
+}
+
+/**
+ * @public
+ */
+export interface BulkUpdateEvent {
   _class: Ref<Class<Doc>>[]
 }
 
@@ -125,6 +133,11 @@ export interface TxApplyIf extends Tx {
 
   // If all matched execute following transactions.
   txes: TxCUD<Doc>[]
+
+  notify?: boolean // If false will not send notifications.
+
+  // If passed, will send WorkspaceEvent.BulkUpdate event with list of classes to update
+  extraNotify?: Ref<Class<Doc>>[]
 }
 
 /**
@@ -591,6 +604,8 @@ export class TxFactory {
     match: DocumentClassQuery<Doc>[],
     notMatch: DocumentClassQuery<Doc>[],
     txes: TxCUD<Doc>[],
+    notify: boolean = true,
+    extraNotify: Ref<Class<Doc>>[] = [],
     modifiedOn?: Timestamp,
     modifiedBy?: Ref<Account>
   ): TxApplyIf {
@@ -604,7 +619,9 @@ export class TxFactory {
       scope,
       match,
       notMatch,
-      txes
+      txes,
+      notify,
+      extraNotify
     }
   }
 }

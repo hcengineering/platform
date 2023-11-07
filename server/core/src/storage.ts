@@ -569,9 +569,7 @@ class TServerStorage implements ServerStorage {
     }
     const triggers = await ctx.with('process-triggers', {}, async (ctx) => {
       const result: Tx[] = []
-      for (const tx of txes) {
-        result.push(...(await this.triggers.apply(tx.modifiedBy, tx, triggerControl)))
-      }
+      result.push(...(await this.triggers.apply(ctx, txes, triggerControl)))
       return result
     })
 
@@ -652,8 +650,7 @@ class TServerStorage implements ServerStorage {
     derived = result[1]
 
     if (broadcast) {
-      this.options?.broadcast?.(txes)
-      this.options?.broadcast?.(derived)
+      this.options?.broadcast?.([...txes, ...derived])
     }
 
     return [...txes, ...derived]

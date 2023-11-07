@@ -1,10 +1,12 @@
 <script lang="ts">
   import tags, { selectedTagElements, TagElement } from '@hcengineering/tags'
-  import { Component, getCurrentResolvedLocation, navigate } from '@hcengineering/ui'
+  import { Button, Component, getCurrentResolvedLocation, navigate, showPopup } from '@hcengineering/ui'
   import recruit from '../plugin'
   import { buildFilterKey, setFilters } from '@hcengineering/view-resources'
   import { getClient } from '@hcengineering/presentation'
   import { Filter } from '@hcengineering/view'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import OptimizeSkills from './OptimizeSkills.svelte'
 
   function setFilterTag (tag: TagElement) {
     const client = getClient()
@@ -43,4 +45,12 @@
     сreateItemLabel: recruit.string.SkillCreateLabel,
     onTag
   }}
-/>
+>
+  <Button
+    label={getEmbeddedLabel('Optimize')}
+    kind={'regular'}
+    on:click={() => {
+      showPopup(OptimizeSkills, { targetClass: recruit.mixin.Candidate })
+    }}
+  />
+</Component>

@@ -530,7 +530,7 @@ export async function getPreviousAssignees (objectId: Ref<Doc> | undefined): Pro
     { sort: { modifiedOn: -1 } }
   )
   const set: Set<Ref<Contact>> = new Set()
-  const createAssignee = (createTx.tx as TxCreateDoc<Issue>).attributes.assignee
+  const createAssignee = (createTx?.tx as TxCreateDoc<Issue>)?.attributes?.assignee
   for (const tx of updateTxes) {
     const assignee = (tx.tx as TxUpdateDoc<Issue>).operations.assignee
     if (assignee == null) continue

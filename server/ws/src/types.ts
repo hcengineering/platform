@@ -54,6 +54,7 @@ export interface Session {
 
   binaryResponseMode: boolean
   useCompression: boolean
+  useBroadcast: boolean
 
   total: StatisticsElement
   current: StatisticsElement

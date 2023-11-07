@@ -55,7 +55,8 @@ export {
   EventTimeExtraButton,
   EventReminders,
   VisibilityEditor,
-  CalendarSelector
+  CalendarSelector,
+  EventPresenter
 }
 
 export type {

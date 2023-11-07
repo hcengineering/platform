@@ -49,9 +49,13 @@
     class="tag-item-inline overflow-label max-w-40"
     on:click
     use:tooltip={{
-      label: element?.description ? tags.string.TagTooltip : undefined,
-      props: { text: element?.description },
-      direction: 'right'
+      label: tags.string.TagTooltip,
+      props: {
+        text: `${name} ${
+          element?.description !== undefined && element?.description.length > 0 ? ': ' + element?.description : ''
+        }`
+      },
+      direction: 'top'
     }}
   >
     {name}
@@ -63,9 +67,13 @@
     on:click
     on:keydown
     use:tooltip={{
-      label: element?.description ? tags.string.TagTooltip : undefined,
-      props: { text: element?.description },
-      direction: 'right'
+      label: tags.string.TagTooltip,
+      props: {
+        text: `${name} ${
+          element?.description !== undefined && element?.description.length > 0 ? ': ' + element?.description : ''
+        }`
+      },
+      direction: 'top'
     }}
   >
     <span class="overflow-label max-w-40">{name}</span>

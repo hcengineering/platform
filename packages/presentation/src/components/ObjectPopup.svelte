@@ -16,11 +16,11 @@
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import { Label } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
   import presentation from '..'
   import { ObjectCreate } from '../types'
   import { createQuery } from '../utils'
   import DocPopup from './DocPopup.svelte'
-  import { createEventDispatcher } from 'svelte'
 
   export let _class: Ref<Class<Doc>>
   export let options: FindOptions<Doc> | undefined = undefined
@@ -47,6 +47,7 @@
   export let readonly = false
   export let disallowDeselect: Ref<Doc>[] | undefined = undefined
   export let embedded: boolean = false
+  export let loading = false
 
   export let filter: (it: Doc) => boolean = () => {
     return true
@@ -110,6 +111,7 @@
   {readonly}
   {disallowDeselect}
   {embedded}
+  {loading}
   on:update
   on:close
   on:changeContent

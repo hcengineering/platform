@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Attribute, Class, IdMap, Ref, Status } from '@hcengineering/core'
+  import { Attribute, Class, IdMap, Ref, Status, generateId } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { DocPopup, createQuery, getClient } from '@hcengineering/presentation'
   import { Project, ProjectType, Task, getStates } from '@hcengineering/task'
@@ -17,19 +17,22 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
+  let progress = false
   const changeStatus = async (newStatus: any) => {
     if (newStatus === undefined) {
       dispatch('close', undefined)
       return
     }
+    progress = true
     const docs = Array.isArray(value) ? value : [value]
 
+    const ops = client.apply('set-status' + generateId())
     const changed = (d: Task) => d.status !== newStatus
-    await Promise.all(
-      docs.filter(changed).map((it) => {
-        return client.update(it, { status: newStatus })
-      })
-    )
+    for (const it of docs.filter(changed)) {
+      await ops.update(it, { status: newStatus })
+    }
+    await ops.commit()
+    progress = false
 
     dispatch('close', newStatus)
   }
@@ -82,6 +85,7 @@
   {placeholder}
   {width}
   {embedded}
+  loading={progress}
   on:changeContent
 >
   <svelte:fragment slot="item" let:item>

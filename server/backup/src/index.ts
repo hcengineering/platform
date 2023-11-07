@@ -644,7 +644,6 @@ export async function restore (
 
     let idx: number | undefined
     let loaded = 0
-    let last = 0
     let el = 0
     let chunks = 0
     while (true) {
@@ -660,9 +659,7 @@ export async function restore (
         loaded++
       }
 
-      const mr = Math.round(loaded / 10000)
-      if (mr !== last) {
-        last = mr
+      if (el > 2500) {
         console.log(' loaded from server', loaded, el, chunks)
         el = 0
         chunks = 0

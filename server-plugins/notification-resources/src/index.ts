@@ -687,16 +687,17 @@ export async function createCollaboratorDoc (
   const res: Tx[] = []
   const hierarchy = control.hierarchy
   const mixin = hierarchy.classHierarchyMixin(tx.objectClass, notification.mixin.ClassCollaborators)
-  const doc = TxProcessor.createDoc2Doc(tx)
   if (mixin !== undefined) {
+    const doc = TxProcessor.createDoc2Doc(tx)
     const collaborators = await getDocCollaborators(doc, mixin, control)
 
     const mixinTx = getMixinTx(tx, control, collaborators)
     const notificationTxes = await createCollabDocInfo(collaborators, control, tx, originTx, doc, true)
     res.push(mixinTx)
     res.push(...notificationTxes)
+
+    res.push(...(await getSpaceCollabTxes(control, doc, tx, originTx)))
   }
-  res.push(...(await getSpaceCollabTxes(control, doc, tx, originTx)))
   return res
 }
 
@@ -786,11 +787,14 @@ async function collectionCollabDoc (tx: TxCollectionCUD<Doc, AttachedDoc>, contr
   const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
   let res = await collaboratorDocHandler(actualTx, control, tx)
   if ([core.class.TxCreateDoc, core.class.TxRemoveDoc].includes(actualTx._class)) {
-    const doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
-    if (doc !== undefined) {
-      if (control.hierarchy.hasMixin(doc, notification.mixin.Collaborators)) {
-        const collabMixin = control.hierarchy.as(doc, notification.mixin.Collaborators)
-        res = res.concat(await createCollabDocInfo(collabMixin.collaborators, control, actualTx, tx, doc, false))
+    const mixin = control.hierarchy.classHierarchyMixin(tx.objectClass, notification.mixin.ClassCollaborators)
+    if (mixin !== undefined) {
+      const doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
+      if (doc !== undefined) {
+        if (control.hierarchy.hasMixin(doc, notification.mixin.Collaborators)) {
+          const collabMixin = control.hierarchy.as(doc, notification.mixin.Collaborators)
+          res = res.concat(await createCollabDocInfo(collabMixin.collaborators, control, actualTx, tx, doc, false))
+        }
       }
     }
   }

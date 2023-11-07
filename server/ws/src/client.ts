@@ -16,6 +16,7 @@
 import core, {
   Account,
   AccountRole,
+  BulkUpdateEvent,
   Class,
   Doc,
   DocumentQuery,
@@ -26,7 +27,13 @@ import core, {
   Ref,
   Timestamp,
   Tx,
-  TxResult
+  TxApplyIf,
+  TxCUD,
+  TxProcessor,
+  TxResult,
+  TxWorkspaceEvent,
+  WorkspaceEvent,
+  generateId
 } from '@hcengineering/core'
 import { Pipeline, SessionContext } from '@hcengineering/server-core'
 import { Token } from '@hcengineering/server-token'
@@ -39,6 +46,7 @@ export class ClientSession implements Session {
   requests: Map<string, SessionRequest> = new Map()
   binaryResponseMode: boolean = false
   useCompression: boolean = true
+  useBroadcast: boolean = false
   sessionId = ''
 
   total: StatisticsElement = { find: 0, tx: 0 }
@@ -109,10 +117,66 @@ export class ClientSession implements Session {
     context.userEmail = this.token.email
     const [result, derived, target] = await this._pipeline.tx(context, tx)
 
-    this.broadcast(this, this.token.workspace, { result: tx }, target)
-    for (const dtx of derived) {
-      this.broadcast(null, this.token.workspace, { result: dtx }, target)
+    let shouldBroadcast = true
+
+    if (tx._class === core.class.TxApplyIf) {
+      const apply = tx as TxApplyIf
+      shouldBroadcast = apply.notify ?? true
+    }
+
+    if (tx._class !== core.class.TxApplyIf) {
+      this.broadcast(this, this.token.workspace, { result: tx }, target)
+    }
+    if (shouldBroadcast) {
+      if (this.useBroadcast) {
+        if (derived.length > 250) {
+          const classes = new Set<Ref<Class<Doc>>>()
+          for (const dtx of derived) {
+            if (this._pipeline.storage.hierarchy.isDerived(dtx._class, core.class.TxCUD)) {
+              classes.add((dtx as TxCUD<Doc>).objectClass)
+            }
+            const etx = TxProcessor.extractTx(dtx)
+            if (this._pipeline.storage.hierarchy.isDerived(etx._class, core.class.TxCUD)) {
+              classes.add((etx as TxCUD<Doc>).objectClass)
+            }
+          }
+          console.log('Broadcasting bulk', derived.length)
+          this.broadcast(null, this.token.workspace, { result: this.createBroadcastEvent(Array.from(classes)) }, target)
+        } else {
+          while (derived.length > 0) {
+            const part = derived.splice(0, 250)
+            console.log('Broadcasting part', part.length, derived.length)
+            this.broadcast(null, this.token.workspace, { result: part }, target)
+          }
+        }
+      } else {
+        for (const dtx of derived) {
+          this.broadcast(null, this.token.workspace, { result: dtx }, target)
+        }
+      }
+    }
+    if (tx._class === core.class.TxApplyIf) {
+      const apply = tx as TxApplyIf
+
+      if (apply.extraNotify !== undefined && apply.extraNotify.length > 0) {
+        this.broadcast(null, this.token.workspace, { result: this.createBroadcastEvent(apply.extraNotify) }, target)
+      }
     }
     return result
+  }
+
+  private createBroadcastEvent (classes: Ref<Class<Doc>>[]): TxWorkspaceEvent<BulkUpdateEvent> {
+    return {
+      _class: core.class.TxWorkspaceEvent,
+      _id: generateId(),
+      event: WorkspaceEvent.BulkUpdate,
+      params: {
+        _class: classes
+      },
+      modifiedBy: core.account.System,
+      modifiedOn: Date.now(),
+      objectSpace: core.space.DerivedTx,
+      space: core.space.DerivedTx
+    }
   }
 }

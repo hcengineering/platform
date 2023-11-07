@@ -15,23 +15,23 @@
 //
 
 import core, {
-  Tx,
-  Doc,
-  TxCreateDoc,
-  Ref,
-  Account,
-  TxCollectionCUD,
   AttachedDoc,
-  DocumentQuery,
-  matchQuery,
-  TxFactory,
-  Hierarchy,
   Class,
-  Obj
+  Doc,
+  DocumentQuery,
+  Hierarchy,
+  MeasureContext,
+  Obj,
+  Ref,
+  Tx,
+  TxCollectionCUD,
+  TxCreateDoc,
+  TxFactory,
+  matchQuery
 } from '@hcengineering/core'
 
-import { getResource } from '@hcengineering/platform'
-import type { Trigger, TriggerFunc, TriggerControl } from './types'
+import { Resource, getResource } from '@hcengineering/platform'
+import type { Trigger, TriggerControl, TriggerFunc } from './types'
 
 import serverCore from './plugin'
 
@@ -39,7 +39,7 @@ import serverCore from './plugin'
  * @public
  */
 export class Triggers {
-  private readonly triggers: [DocumentQuery<Tx> | undefined, TriggerFunc][] = []
+  private readonly triggers: [DocumentQuery<Tx> | undefined, TriggerFunc, Resource<TriggerFunc>][] = []
 
   constructor (protected readonly hierarchy: Hierarchy) {}
 
@@ -53,25 +53,29 @@ export class Triggers {
         const trigger = (createTx as TxCreateDoc<Trigger>).attributes.trigger
         const match = (createTx as TxCreateDoc<Trigger>).attributes.txMatch
         const func = await getResource(trigger)
-        this.triggers.push([match, func])
+        this.triggers.push([match, func, trigger])
       }
     }
   }
 
-  async apply (account: Ref<Account>, tx: Tx, ctrl: Omit<TriggerControl, 'txFactory'>): Promise<Tx[]> {
-    const control = { ...ctrl, txFactory: new TxFactory(account, true) }
-    const derived = this.triggers
-      .filter(([query]) => {
-        if (query === undefined) {
-          return true
-        }
+  async apply (ctx: MeasureContext, tx: Tx[], ctrl: Omit<TriggerControl, 'txFactory'>): Promise<Tx[]> {
+    const result: Tx[] = []
+    for (const [query, trigger, resource] of this.triggers) {
+      let matches = tx
+      if (query !== undefined) {
         this.addDerived(query, 'objectClass')
         this.addDerived(query, 'tx.objectClass')
-        return matchQuery([tx], query, core.class.Tx, control.hierarchy).length > 0
-      })
-      .map(([, trigger]) => trigger(tx, control))
-    const result = await Promise.all(derived)
-    return result.flatMap((x) => x)
+        matches = matchQuery(tx, query, core.class.Tx, ctrl.hierarchy) as Tx[]
+      }
+      if (matches.length > 0) {
+        await ctx.with(resource, {}, async (ctx) => {
+          for (const tx of matches) {
+            result.push(...(await trigger(tx, { ...ctrl, txFactory: new TxFactory(tx.modifiedBy, true) })))
+          }
+        })
+      }
+    }
+    return result
   }
 
   private addDerived (q: DocumentQuery<Tx>, key: string): void {

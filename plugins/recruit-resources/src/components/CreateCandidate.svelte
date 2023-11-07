@@ -157,17 +157,23 @@
   const elementQuery = createQuery()
   let elementsPromise: Promise<void>
   $: elementsPromise = new Promise((resolve) => {
-    elementQuery.query(tags.class.TagElement, {}, (result) => {
-      const ne = new Map<Ref<TagElement>, TagElement>()
-      const nne = new Map<string, TagElement>()
-      for (const t of newElements.concat(result)) {
-        ne.set(t._id, t)
-        nne.set(t.title.trim().toLowerCase(), t)
+    elementQuery.query(
+      tags.class.TagElement,
+      {
+        targetClass: recruit.mixin.Candidate
+      },
+      (result) => {
+        const ne = new Map<Ref<TagElement>, TagElement>()
+        const nne = new Map<string, TagElement>()
+        for (const t of newElements.concat(result)) {
+          ne.set(t._id, t)
+          nne.set(t.title.trim().toLowerCase(), t)
+        }
+        elements = ne
+        namedElements = nne
+        resolve()
       }
-      elements = ne
-      namedElements = nne
-      resolve()
-    })
+    )
   })
 
   async function createCandidate () {

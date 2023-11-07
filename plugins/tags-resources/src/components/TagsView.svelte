@@ -23,6 +23,7 @@
   import CategoryBar from './CategoryBar.svelte'
   import CreateTagElement from './CreateTagElement.svelte'
   // import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import { TagElementInfo } from '../utils'
 
   export let title: IntlString = tags.string.Tags
   export let icon: Asset | AnySvelteComponent = tags.icon.Tags
@@ -56,7 +57,6 @@
   }
   let category: Ref<TagCategory> | undefined = undefined
 
-  type TagElementInfo = { count: number; modifiedOn: number }
   let tagElements: Map<Ref<TagElement>, TagElementInfo> | undefined
   const refQuery = createQuery()
   $: refQuery.query(
@@ -94,8 +94,9 @@
     <span class="ac-header__title"><Label label={title} /></span>
   </div>
 
-  <div class="clear-mins mb-1">
+  <div class="clear-mins mb-1 flex-row-center">
     <Button icon={IconAdd} label={сreateItemLabel} kind={'primary'} on:click={showCreateDialog} />
+    <slot />
   </div>
 </div>
 <div class="ac-header full divide search-start">
@@ -108,6 +109,7 @@
 <CategoryBar
   {targetClass}
   {category}
+  {tagElements}
   on:change={(evt) => {
     category = evt.detail.category ?? undefined
     updateResultQuery(search, category)

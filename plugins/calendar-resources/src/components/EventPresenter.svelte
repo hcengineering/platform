@@ -14,11 +14,12 @@
 -->
 <script lang="ts">
   import { Event } from '@hcengineering/calendar'
-  import { Doc } from '@hcengineering/core'
+  import { DateRangeMode, Doc } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { DatePresenter, DateTimeRangePresenter, Label, showPopup } from '@hcengineering/ui'
   import view, { ObjectEditor } from '@hcengineering/view'
   import calendar from '../plugin'
+  import DateRangePresenter from '@hcengineering/ui/src/components/calendar/DateRangePresenter.svelte'
 
   export let value: Event
   export let hideDetails: boolean = false
@@ -50,7 +51,10 @@
       {#if value.allDay}
         <DatePresenter value={value.date} />
       {:else}
-        <DateTimeRangePresenter value={value.date} />
+        <div class="flex-row-center">
+          <DateTimeRangePresenter value={value.date} /> <span class="p-1">-</span>
+          <DateRangePresenter value={value.dueDate} mode={DateRangeMode.TIME} editable={false} />
+        </div>
       {/if}
     {/if}
   {/if}

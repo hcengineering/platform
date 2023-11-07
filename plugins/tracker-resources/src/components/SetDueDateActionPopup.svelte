@@ -13,28 +13,29 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachedData } from '@hcengineering/core'
-  import { DatePopup } from '@hcengineering/ui'
+  import { AttachedData, generateId } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Issue, IssueDraft } from '@hcengineering/tracker'
+  import { DatePopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let value: Issue | AttachedData<Issue> | Issue[] | IssueDraft
   export let mondayStart = true
   export let withTime = false
 
-  const client = getClient()
   const dispatch = createEventDispatcher()
 
   async function onUpdate ({ detail }: CustomEvent<Date | null | undefined>) {
     const newDueDate = detail && detail?.getTime()
 
     const vv = Array.isArray(value) ? value : [value]
+    const ops = getClient().apply(generateId())
     for (const docValue of vv) {
       if ('_class' in docValue && newDueDate !== undefined && newDueDate !== docValue.dueDate) {
-        await client.update(docValue, { dueDate: newDueDate })
+        await ops.update(docValue, { dueDate: newDueDate })
       }
     }
+    await ops.commit()
 
     dispatch('update', newDueDate)
   }
