@@ -24,6 +24,8 @@ loadMetadata(hr.icon, {
   Vacation: `${icons}#vacation`,
   Sick: `${icons}#sick`,
   PTO: `${icons}#pto`,
+  PTO2: `${icons}#pto2`,
   Overtime: `${icons}#overtime`,
+  Overtime2: `${icons}#overtime2`,
   Remote: `${icons}#remote`
 })

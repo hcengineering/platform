@@ -128,8 +128,10 @@ const hr = plugin(hrId, {
     Vacation: '' as Asset,
     Sick: '' as Asset,
     PTO: '' as Asset,
+    PTO2: '' as Asset,
     Remote: '' as Asset,
-    Overtime: '' as Asset
+    Overtime: '' as Asset,
+    Overtime2: '' as Asset
   },
   ids: {
     Head: '' as Ref<Department>,
