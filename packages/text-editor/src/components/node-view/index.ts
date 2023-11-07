@@ -13,30 +13,12 @@
 // limitations under the License.
 //
 
-import { Attribute } from '@tiptap/core'
-
-/**
- * @public
- */
-export function getDataAttribute (
-  name: string,
-  options?: Omit<Attribute, 'parseHTML' | 'renderHTML'>
-): Partial<Attribute> {
-  const dataName = `data-${name}`
-
-  return {
-    default: null,
-    parseHTML: (element) => element.getAttribute(dataName),
-    renderHTML: (attributes) => {
-      // eslint-disable-next-line
-      if (!attributes[name]) {
-        return {}
-      }
-
-      return {
-        [dataName]: attributes[name]
-      }
-    },
-    ...(options !== undefined ? options : {})
-  }
-}
+export { default as NodeViewContent } from './NodeViewContent.svelte'
+export { default as NodeViewWrapper } from './NodeViewWrapper.svelte'
+export {
+  default as SvelteNodeViewRenderer,
+  SvelteNodeViewComponent,
+  SvelteNodeViewProps as NodeViewProps,
+  SvelteNodeViewRendererOptions
+} from './svelte-node-view-renderer'
+export { SvelteRenderer, SvelteRendererComponent, SvelteRendererOptions } from './svelte-renderer'

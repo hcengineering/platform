@@ -97,9 +97,9 @@ export const Completion = Node.create<CompletionOptions>({
 
   addAttributes () {
     return {
-      id: getDataAttribute('id', null),
-      label: getDataAttribute('label', null),
-      objectclass: getDataAttribute('objectclass', null)
+      id: getDataAttribute('id'),
+      label: getDataAttribute('label'),
+      objectclass: getDataAttribute('objectclass')
     }
   },
 

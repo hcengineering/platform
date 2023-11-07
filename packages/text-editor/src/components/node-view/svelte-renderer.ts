@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,14 +14,27 @@
 // limitations under the License.
 //
 
-import { ComponentType, SvelteComponent } from 'svelte'
+import type { ComponentType, SvelteComponent } from 'svelte'
+
+export type SvelteRendererComponent = typeof SvelteComponent | ComponentType
+
+export interface SvelteRendererOptions {
+  element: HTMLElement
+  props?: any
+  context?: any
+}
 
 export class SvelteRenderer {
   private readonly component: SvelteComponent
+  element: HTMLElement
 
-  constructor (comp: typeof SvelteComponent | ComponentType, props: any) {
-    const options = { target: document.body, props }
-    this.component = new (comp as any)(options)
+  constructor (component: SvelteRendererComponent, { element, props, context }: SvelteRendererOptions) {
+    this.element = element
+    this.element.classList.add('svelte-renderer')
+
+    const options = { target: element, props, context }
+    const Component = component
+    this.component = new Component(options)
   }
 
   updateProps (props: Record<string, any>): void {

@@ -1,3 +1,4 @@
+<!--
 //
 // Copyright © 2023 Hardcore Engineering Inc.
 //
@@ -12,31 +13,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+-->
+<script lang="ts">
+  import { getNodeViewContext } from './context'
 
-import { Attribute } from '@tiptap/core'
+  export let as = 'div'
 
-/**
- * @public
- */
-export function getDataAttribute (
-  name: string,
-  options?: Omit<Attribute, 'parseHTML' | 'renderHTML'>
-): Partial<Attribute> {
-  const dataName = `data-${name}`
+  const { onContentElement } = getNodeViewContext()
 
-  return {
-    default: null,
-    parseHTML: (element) => element.getAttribute(dataName),
-    renderHTML: (attributes) => {
-      // eslint-disable-next-line
-      if (!attributes[name]) {
-        return {}
-      }
-
-      return {
-        [dataName]: attributes[name]
-      }
-    },
-    ...(options !== undefined ? options : {})
+  let element: HTMLElement
+  $: if (element) {
+    element.style.whiteSpace = 'pre-wrap'
+    onContentElement(element)
   }
-}
+</script>
+
+<svelte:element this={as} bind:this={element} {...$$restProps}>
+  <slot />
+</svelte:element>

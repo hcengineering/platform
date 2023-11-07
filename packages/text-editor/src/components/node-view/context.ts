@@ -13,30 +13,21 @@
 // limitations under the License.
 //
 
-import { Attribute } from '@tiptap/core'
+import { getContext } from 'svelte'
 
-/**
- * @public
- */
-export function getDataAttribute (
-  name: string,
-  options?: Omit<Attribute, 'parseHTML' | 'renderHTML'>
-): Partial<Attribute> {
-  const dataName = `data-${name}`
+const key = 'tiptap-node-view-context'
 
-  return {
-    default: null,
-    parseHTML: (element) => element.getAttribute(dataName),
-    renderHTML: (attributes) => {
-      // eslint-disable-next-line
-      if (!attributes[name]) {
-        return {}
-      }
+export interface TiptapNodeViewContext {
+  onDragStart: (event: DragEvent) => void
+  onContentElement: (element: HTMLElement) => void
+}
 
-      return {
-        [dataName]: attributes[name]
-      }
-    },
-    ...(options !== undefined ? options : {})
-  }
+export function getNodeViewContext (): TiptapNodeViewContext {
+  return getContext(key)
+}
+
+export function createNodeViewContext (value: TiptapNodeViewContext): Map<any, any> {
+  const context = new Map()
+  context.set(key, value)
+  return context
 }

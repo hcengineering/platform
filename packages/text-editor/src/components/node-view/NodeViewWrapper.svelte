@@ -1,3 +1,4 @@
+<!--
 //
 // Copyright © 2023 Hardcore Engineering Inc.
 //
@@ -12,31 +13,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+-->
+<script lang="ts">
+  import { onMount, tick } from 'svelte'
+  import { getNodeViewContext } from './context'
 
-import { Attribute } from '@tiptap/core'
+  export let as = 'div'
 
-/**
- * @public
- */
-export function getDataAttribute (
-  name: string,
-  options?: Omit<Attribute, 'parseHTML' | 'renderHTML'>
-): Partial<Attribute> {
-  const dataName = `data-${name}`
+  const { onDragStart } = getNodeViewContext()
 
-  return {
-    default: null,
-    parseHTML: (element) => element.getAttribute(dataName),
-    renderHTML: (attributes) => {
-      // eslint-disable-next-line
-      if (!attributes[name]) {
-        return {}
-      }
+  let element: HTMLElement
 
-      return {
-        [dataName]: attributes[name]
-      }
-    },
-    ...(options !== undefined ? options : {})
-  }
-}
+  onMount(async () => {
+    await tick()
+    element.style.whiteSpace = 'normal'
+  })
+</script>
+
+<svelte:element
+  this={as}
+  bind:this={element}
+  data-node-view-wrapper=""
+  on:dragstart={onDragStart}
+  role="none"
+  {...$$restProps}
+>
+  <slot />
+</svelte:element>

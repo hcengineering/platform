@@ -19,8 +19,8 @@ import Link from '@tiptap/extension-link'
 import Typography from '@tiptap/extension-typography'
 import { CompletionOptions } from '../Completion'
 import MentionList from './MentionList.svelte'
-import { SvelteRenderer } from './SvelteRenderer'
 import { NodeUuidExtension } from './extension/nodeUuid'
+import { SvelteRenderer } from './node-view'
 
 export const tableExtensions = [
   Table.configure({
@@ -164,9 +164,12 @@ export const completionConfig: Partial<CompletionOptions> = {
       return {
         onStart: (props: any) => {
           component = new SvelteRenderer(MentionList, {
-            ...props,
-            close: () => {
-              component.destroy()
+            element: document.body,
+            props: {
+              ...props,
+              close: () => {
+                component.destroy()
+              }
             }
           })
         },
