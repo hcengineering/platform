@@ -31,9 +31,12 @@ export interface SvelteNodeViewRendererOptions extends NodeViewRendererOptions {
   update?: (node: ProseMirrorNode, decorations: DecorationWithType[]) => boolean
   contentAs?: string
   contentDOMElementAs?: string
+  componentProps?: Record<string, any>
 }
 
-export type SvelteNodeViewProps = NodeViewProps
+export type SvelteNodeViewProps = NodeViewProps & {
+  [key: string]: any
+}
 
 export type SvelteNodeViewComponent = typeof SvelteComponent | ComponentType
 
@@ -55,7 +58,8 @@ class SvelteNodeView extends NodeView<SvelteNodeViewComponent, Editor, SvelteNod
       extension: this.extension,
       getPos: () => this.getPos(),
       updateAttributes: (attributes = {}) => this.updateAttributes(attributes),
-      deleteNode: () => this.deleteNode()
+      deleteNode: () => this.deleteNode(),
+      ...(this.options.componentProps ?? {})
     }
 
     if (this.node.isLeaf) {
