@@ -128,5 +128,5 @@ export function getFormattedDate (value: number | null): string {
 }
 
 export const getTimeZoneName = (): string => {
-  return Intl.DateTimeFormat().resolvedOptions().timeZone.split('/')[1]
+  return Intl.DateTimeFormat().resolvedOptions().timeZone?.split('/')[1] ?? ''
 }
