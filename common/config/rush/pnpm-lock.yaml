@@ -824,6 +824,9 @@ dependencies:
   '@typescript-eslint/parser':
     specifier: ^5.41.0
     version: 5.62.0(eslint@8.51.0)(typescript@5.2.2)
+  allure-commandline:
+    specifier: 2.24.1
+    version: 2.24.1
   allure-playwright:
     specifier: 2.9.2
     version: 2.9.2
@@ -7823,6 +7826,11 @@ packages:
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
       uri-js: 4.4.1
+    dev: false
+
+  /allure-commandline@2.24.1:
+    resolution: {integrity: sha512-eNto3ipBq+O2B/f8/OwiS3E8R7jYENs3qv8jT7wMZmziYLANsISC9tX/FfEqR3FDiQlEOjkP7iyTEZ3ph53FPg==}
+    hasBin: true
     dev: false
 
   /allure-js-commons@2.9.2:
@@ -22703,7 +22711,7 @@ packages:
     dev: false
 
   file:projects/tests-sanity.tgz:
-    resolution: {integrity: sha512-gkKzOUcbuaLf4uN8Fd7Mv9+GrAGW+LXCUc+dBuXNgV20G81BUXyFfsTgA/Xib5DntTe+tO+zYQmjMCGZfAHjIQ==, tarball: file:projects/tests-sanity.tgz}
+    resolution: {integrity: sha512-Mpuuf0/aFi8XMdgJ8YKvLWE6xJ+gThtS0hZA9bjLdBV1sKUT8jMdHDfxaAcdtrSkWXymVggP+Qs8AAqpwIA8ug==, tarball: file:projects/tests-sanity.tgz}
     name: '@rush-temp/tests-sanity'
     version: 0.0.0
     dependencies:
@@ -22712,6 +22720,7 @@ packages:
       '@types/node': 16.11.68
       '@typescript-eslint/eslint-plugin': 5.62.0(@typescript-eslint/parser@5.62.0)(eslint@8.51.0)(typescript@5.2.2)
       '@typescript-eslint/parser': 5.62.0(eslint@8.51.0)(typescript@5.2.2)
+      allure-commandline: 2.24.1
       allure-playwright: 2.9.2
       cross-env: 7.0.3
       dotenv: 16.0.3
