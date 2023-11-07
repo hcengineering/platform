@@ -164,6 +164,7 @@ export class TVacancyList extends TOrganization implements VacancyList {
   },
   title: {
     props: [
+      { _class: ['attachedTo', '_class'] },
       { name: ['attachedTo', 'name'] }
     ]
   }

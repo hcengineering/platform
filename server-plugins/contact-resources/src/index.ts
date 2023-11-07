@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import contact, { Channel, Contact, Organization, Person, contactId, getName } from '@hcengineering/contact'
-import { Doc, Tx, TxRemoveDoc, TxUpdateDoc, concatLink, Hierarchy } from '@hcengineering/core'
+import contact, { Channel, Contact, Organization, Person, contactId, getName, formatContactName } from '@hcengineering/contact'
+import { Ref, Class, Doc, Tx, TxRemoveDoc, TxUpdateDoc, concatLink, Hierarchy } from '@hcengineering/core'
 import notification, { Collaborators } from '@hcengineering/notification'
 import { getMetadata } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
@@ -161,8 +161,12 @@ export function organizationTextPresenter (doc: Doc): string {
 /**
  * @public
  */
-export function contactNameProvider (hierarchy: Hierarchy, props: { [key: string]: string }): string {
-  return props.name ?? ''
+export function contactNameProvider (
+  hierarchy: Hierarchy,
+  props: { [key: string]: string }
+): string {
+  const _class = props._class ? props._class as Ref<Class<Doc>> : contact.class.Contact
+  return formatContactName(hierarchy, _class, props.name ?? '')
 }
 
 

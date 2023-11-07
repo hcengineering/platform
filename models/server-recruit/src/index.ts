@@ -21,6 +21,7 @@ import notification from '@hcengineering/notification'
 import serverCore from '@hcengineering/server-core'
 import serverNotification from '@hcengineering/server-notification'
 import serverRecruit from '@hcengineering/server-recruit'
+import serverContact from '@hcengineering/server-contact'
 
 export { serverRecruitId } from '@hcengineering/server-recruit'
 
@@ -43,6 +44,10 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverRecruit.trigger.OnRecruitUpdate
+  })
+
+  builder.mixin(recruit.class.Applicant, core.class.Class, serverCore.mixin.SearchPresenter, {
+    getSearchTitle: serverContact.function.ContactNameProvider
   })
 
   builder.mixin(

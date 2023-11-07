@@ -28,6 +28,7 @@
     "@hcengineering/model": "^0.6.6",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/server-recruit": "^0.6.0",
+    "@hcengineering/server-contact": "0.6.1",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/model-recruit": "^0.6.0",
     "@hcengineering/notification": "^0.6.15",

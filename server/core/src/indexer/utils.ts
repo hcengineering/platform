@@ -312,7 +312,8 @@ export function readAndMapProps (reader: IndexedReader, props: ClassSearchConfig
     } else {
       for (const [propName, rest] of Object.entries(prop)) {
         if (rest.length > 1) {
-          res[propName] = reader.getDoc(rest[0])?.get(rest[1]) ?? ''
+          const val = reader.getDoc(rest[0])?.get(rest[1]) ?? ''
+          res[propName] = Array.isArray(val) ? val[0] : val
         }
       }
     }

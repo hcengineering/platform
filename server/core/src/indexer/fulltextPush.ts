@@ -145,15 +145,8 @@ export class FullTextPushStage implements FullTextPipelineStage {
 
   async applySearchProps (pipeline: FullTextPipeline, doc: IndexedDoc): Promise<void> {
     const hierarchy = pipeline.hierarchy
-
-    // find search config
-    const ancestors = hierarchy.getAncestors(doc._class)
-
-    console.log('applySearchProps', doc._class)
-
+    const ancestors = hierarchy.getAncestors(doc._class).reverse()
     const reader = createIndexedReader(doc._class, pipeline.hierarchy, doc)
-
-    // TODO: inverse ancestors order
     for (const _class of ancestors) {
       const res = hierarchy.getClass(_class)
       if (res.searchConfig !== undefined) {
@@ -185,15 +178,12 @@ export class FullTextPushStage implements FullTextPipelineStage {
           } else if (prop.config.tmpl !== undefined) {
             const tmpl = prop.config.tmpl
             const renderProps = readAndMapProps(reader, prop.config.props)
-            value = fillTemplate(tmpl, renderProps) // render temple
+            value = fillTemplate(tmpl, renderProps)
           } else if (prop.provider !== undefined) {
-            // load func
             const func = await getResource(prop.provider)
             const renderProps = readAndMapProps(reader, prop.config.props)
-            value = func(hierarchy, renderProps)
+            value = func(hierarchy, { _class: doc._class, ...renderProps })
           }
-
-          console.log('search fill', prop.name, value)
           doc[prop.name] = value
         }
       }
