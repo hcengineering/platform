@@ -42,11 +42,13 @@ import core, {
   SearchOptions,
   SearchResult,
   SearchResultDoc,
-  createIndexedReader
+  createIndexedReader,
+  ClassSearchConfigProps
 } from '@hcengineering/core'
+import type { Asset } from '@hcengineering/platform'
 import { MinioService } from '@hcengineering/minio'
 import { FullTextIndexPipeline } from './indexer'
-import { createStateDoc, isClassIndexable } from './indexer/utils'
+import { createStateDoc, isClassIndexable, readAndMapProps } from './indexer/utils'
 import type { FullTextAdapter, WithFind } from './types'
 
 /**
@@ -249,28 +251,32 @@ export class FullTextIndex implements WithFind {
 
   async searchFulltext (ctx: MeasureContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
     const resultRaw = await this.adapter.searchRaw(query, options)
+
     const result: SearchResult = {
       ...resultRaw,
       docs: resultRaw.docs.map((raw) => {
         const doc: SearchResultDoc = {
           id: raw.id,
           _class: raw._class,
-          space: raw.space
+          space: raw.space,
+          title: raw.searchTitle,
+          objectId: raw.searchObjectId
         }
 
         const valueReader = createIndexedReader(raw._class, this.hierarchy, raw)
-
-        const attrList: (keyof SearchResultDoc)[] = ['name', 'title', 'number', 'status', 'avatar', 'icon', 'color']
-        for (const attr of attrList) {
-          const val = valueReader.get(attr)
-          if (val !== undefined) {
-            ;(doc as any)[attr] = val
+        const ancestors = this.hierarchy.getAncestors(doc._class).reverse()
+        for (const _class of ancestors) {
+          const res = this.hierarchy.getClass(_class)
+          if (res.searchConfig !== undefined) {
+            if (res.searchConfig.icon !== undefined) {
+              doc.icon = res.searchConfig.icon
+            }
+            if (res.searchConfig.iconConfig !== undefined) {
+              doc.iconComponent = res.searchConfig.iconConfig.component
+              doc.iconProps = readAndMapProps(valueReader, res.searchConfig.iconConfig.props)
+            }
           }
         }
-
-        doc.spaceIdentifier = valueReader.getDoc('space')?.get('identifier')?.[0]
-        doc.attachedToName = valueReader.getDoc('attachedTo')?.get('name')?.[0]
-        doc.attachedToAvatar = valueReader.getDoc('attachedTo')?.get('avatar')?.[0]
 
         return doc
       })

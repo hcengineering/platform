@@ -174,12 +174,6 @@ export type ClassSearchConfigProps = string | { [key: string]: string[] }
 /**
  * @public
  */
-export type ClassSearchConfigIcon = Asset |
-  { component: any, props: ClassSearchConfigProps[] }
-
-/**
- * @public
- */
 export type ClassSearchConfigProperty = string |
   { tmpl?: string, props: ClassSearchConfigProps[] }
 
@@ -187,7 +181,8 @@ export type ClassSearchConfigProperty = string |
  * @public
  */
 export interface ClassSearchConfig {
-  icon: ClassSearchConfigIcon
+  icon?: Asset
+  iconConfig?: { component: any, props: ClassSearchConfigProps[] }
   title: ClassSearchConfigProperty
   objectId?: ClassSearchConfigProperty
 }

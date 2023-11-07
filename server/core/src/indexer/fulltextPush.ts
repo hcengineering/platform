@@ -165,7 +165,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
 
         if (res.searchConfig.objectId !== undefined) {
           props.push({
-            name: 'searchDocId',
+            name: 'searchObjectId',
             config: res.searchConfig.objectId,
             provider: searchMixin?.getSearchObjectId
           })

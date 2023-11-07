@@ -164,7 +164,7 @@ export function TypeEstimation (): Type<number> {
 @Model(tracker.class.Issue, task.class.Task)
 @UX(tracker.string.Issue, tracker.icon.Issue, 'TSK', 'title')
 @SEARCH({
-  icon: {
+  iconConfig: {
     component: tracker.component.IssueSearchIcon,
     props: ['status', 'space'],
   },

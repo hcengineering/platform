@@ -220,6 +220,7 @@ export interface IndexedDoc {
   attachedTo?: Ref<Doc>
   attachedToClass?: Ref<Class<Doc>>
   searchTitle?: string
+  searchObjectId?: string
   [key: string]: any
 }
 
@@ -246,16 +247,11 @@ export interface SearchResultDoc {
   id: Ref<Doc>
   _class: Ref<Class<Doc>>
   space: Ref<Space>
-  name?: string
-  avatar?: string
-  title?: string
-  number?: number
-  status?: string
-  spaceIdentifier?: string
-  attachedToName?: string
-  attachedToAvatar?: string
   icon?: string
-  color?: number
+  iconComponent?: string
+  iconProps?: { [key: string]: string }
+  objectId?: string
+  title?: string
 }
 
 /**

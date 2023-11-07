@@ -27,6 +27,7 @@
   import presentation, { getClient, ObjectSearchCategory } from '@hcengineering/presentation'
 
   import { Class, Ref, Doc, SearchResultDoc } from '@hcengineering/core'
+  import MentionResult from './MentionResult.svelte'
 
   export let query: string = ''
 
@@ -208,16 +209,13 @@
             <div class="mentonCategory">
               <Label label={item.category.title} />
             </div>
-            <!-- <div class="ap-subheader">
-              <Label label={item.category.title} />
-            </div> -->
           {/if}
         </svelte:fragment>
         <svelte:fragment slot="item" let:item={num}>
           {@const item = items[num]}
           {@const doc = item.item}
           <div class="ap-menuItem withComp" on:click={() => dispatchItem(doc)}>
-            <svelte:component this={item.component} value={doc} on:title={titleHandler(doc)} />
+            <MentionResult value={doc} />
           </div>
         </svelte:fragment>
       </ListView>

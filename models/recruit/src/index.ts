@@ -151,7 +151,7 @@ export class TVacancyList extends TOrganization implements VacancyList {
 @Model(recruit.class.Applicant, task.class.Task)
 @UX(recruit.string.Application, recruit.icon.Application, 'APP', 'number')
 @SEARCH({
-  icon: {
+  iconConfig: {
     component: contact.component.Avatar,
     props: [
       { avatar: ['attachedTo', 'avatar'] },

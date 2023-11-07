@@ -90,7 +90,7 @@ export class TChannelProvider extends TDoc implements ChannelProvider {
 @Model(contact.class.Contact, core.class.Doc, DOMAIN_CONTACT)
 @UX(contact.string.Contact, contact.icon.Person, 'CONT', 'name')
 @SEARCH({
-  icon: {
+  iconConfig: {
     component: contact.component.Avatar,
     props: ['avatar', 'name']
   },
