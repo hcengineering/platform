@@ -237,18 +237,14 @@ function isPerson (hierarchy: Hierarchy, value: Contact): value is Person {
   return isPersonClass(hierarchy, value._class)
 }
 
-function isPersonClass(hierarchy: Hierarchy, _class: Ref<Class<Doc>>) {
+function isPersonClass (hierarchy: Hierarchy, _class: Ref<Class<Doc>>): boolean {
   return hierarchy.isDerived(_class, contactPlugin.class.Person)
 }
 
 /**
  * @public
  */
-export function formatContactName(
-  hierarchy: Hierarchy,
-  _class: Ref<Class<Doc>>,
-  name: string
-): string {
+export function formatContactName (hierarchy: Hierarchy, _class: Ref<Class<Doc>>, name: string): string {
   if (isPersonClass(hierarchy, _class)) {
     return formatName(name)
   }

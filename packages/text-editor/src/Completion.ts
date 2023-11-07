@@ -62,19 +62,19 @@ export const Completion = Node.create<CompletionOptions>({
 
           if (props !== null) {
             editor
-            .chain()
-            .focus()
-            .insertContentAt(range, [
-              {
-                type: this.name,
-                attrs: props
-              },
-              {
-                type: 'text',
-                text: ' '
-              }
-            ])
-            .run()
+              .chain()
+              .focus()
+              .insertContentAt(range, [
+                {
+                  type: this.name,
+                  attrs: props
+                },
+                {
+                  type: 'text',
+                  text: ' '
+                }
+              ])
+              .run()
           }
         },
         allow: ({ editor, range }) => {

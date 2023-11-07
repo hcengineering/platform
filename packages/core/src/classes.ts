@@ -174,8 +174,7 @@ export type ClassSearchConfigProps = string | { [key: string]: string[] }
 /**
  * @public
  */
-export type ClassSearchConfigProperty = string |
-  { tmpl?: string, props: ClassSearchConfigProps[] }
+export type ClassSearchConfigProperty = string | { tmpl?: string, props: ClassSearchConfigProps[] }
 
 /**
  * @public

@@ -19,8 +19,7 @@ export type SuggestionMatch = {
   text: string
 } | null
 
-
-function hasChar(tr: Transaction, char = ''): boolean {
+function hasChar (tr: Transaction, char = ''): boolean {
   let isHardStop = false
   let isChar = false
   for (const step of tr.steps) {
@@ -34,7 +33,7 @@ function hasChar(tr: Transaction, char = ''): boolean {
 
         if (node.type.isText && node.text !== undefined && node.text !== '') {
           if (char !== '') {
-            if (node.text?.indexOf(char) > -1) {
+            if (node.text?.includes(char)) {
               isChar = true
               isHardStop = true
               return false
@@ -314,7 +313,7 @@ export default function Suggestion<I = any> ({
         const next = { ...prev }
         const trPluginState = transaction.getMeta(pluginKey)
 
-        if (trPluginState !== undefined && trPluginState.forceCancelSuggestion) {
+        if (trPluginState?.forceCancelSuggestion) {
           next.specialCharInserted = false
         }
 
@@ -365,11 +364,9 @@ export default function Suggestion<I = any> ({
             } else {
               next.active = false
             }
-
           } else {
             next.active = false
           }
-
         } else {
           next.active = false
         }

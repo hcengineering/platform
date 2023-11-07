@@ -28,7 +28,13 @@ import core, {
   Hierarchy,
   Ref
 } from '@hcengineering/core'
-import type { ObjectDDParticipant, Trigger, TriggerFunc, SearchPresenter, SearchProps, SearchPresenterFunc } from '@hcengineering/server-core'
+import type {
+  ObjectDDParticipant,
+  Trigger,
+  TriggerFunc,
+  SearchPresenter,
+  SearchPresenterFunc
+} from '@hcengineering/server-core'
 import serverCore from '@hcengineering/server-core'
 
 export { serverCoreId } from '@hcengineering/server-core'

@@ -42,12 +42,18 @@ import {
   FullTextPipelineStage,
   fullTextPushStageId
 } from './types'
-import { collectPropagate, collectPropagateClasses, docKey, getFullTextContext, IndexKeyOptions } from './utils'
+import {
+  collectPropagate,
+  collectPropagateClasses,
+  docKey,
+  getFullTextContext,
+  IndexKeyOptions,
+  readAndMapProps,
+  fillTemplate
+} from './utils'
 import plugin from '../plugin'
 
-import { readAndMapProps, fillTemplate } from './utils'
 import { getResource } from '@hcengineering/platform'
-
 
 /**
  * @public
@@ -150,10 +156,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
     for (const _class of ancestors) {
       const res = hierarchy.getClass(_class)
       if (res.searchConfig !== undefined) {
-        const searchMixin = hierarchy.classHierarchyMixin(
-          _class,
-          plugin.mixin.SearchPresenter
-        )
+        const searchMixin = hierarchy.classHierarchyMixin(_class, plugin.mixin.SearchPresenter)
 
         const props = [
           {

@@ -153,20 +153,14 @@ export class TVacancyList extends TOrganization implements VacancyList {
 @SEARCH({
   iconConfig: {
     component: contact.component.Avatar,
-    props: [
-      { avatar: ['attachedTo', 'avatar'] },
-      { name: ['attachedTo', 'name'] }
-    ],
+    props: [{ avatar: ['attachedTo', 'avatar'] }, { name: ['attachedTo', 'name'] }]
   },
   objectId: {
     tmpl: 'APP-{number}',
     props: ['number']
   },
   title: {
-    props: [
-      { _class: ['attachedTo', '_class'] },
-      { name: ['attachedTo', 'name'] }
-    ]
+    props: [{ _class: ['attachedTo', '_class'] }, { name: ['attachedTo', 'name'] }]
   }
 })
 export class TApplicant extends TTask implements Applicant {

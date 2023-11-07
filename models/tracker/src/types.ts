@@ -166,14 +166,11 @@ export function TypeEstimation (): Type<number> {
 @SEARCH({
   iconConfig: {
     component: tracker.component.IssueSearchIcon,
-    props: ['status', 'space'],
+    props: ['status', 'space']
   },
   objectId: {
     tmpl: '{identifier}-{number}',
-    props: [
-      { identifier: ['space', 'identifier'] },
-      'number',
-    ]
+    props: [{ identifier: ['space', 'identifier'] }, 'number']
   },
   title: 'title'
 })

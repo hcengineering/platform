@@ -42,10 +42,8 @@ import core, {
   SearchOptions,
   SearchResult,
   SearchResultDoc,
-  createIndexedReader,
-  ClassSearchConfigProps
+  createIndexedReader
 } from '@hcengineering/core'
-import type { Asset } from '@hcengineering/platform'
 import { MinioService } from '@hcengineering/minio'
 import { FullTextIndexPipeline } from './indexer'
 import { createStateDoc, isClassIndexable, readAndMapProps } from './indexer/utils'

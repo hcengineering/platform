@@ -78,7 +78,7 @@ interface ClassTxes {
   kind: ClassifierKind
   shortLabel?: string | IntlString
   sortingKey?: string
-  filteringKey?: string,
+  filteringKey?: string
   searchConfig?: ClassSearchConfig
 }
 
@@ -246,10 +246,7 @@ export function UX<T extends Obj> (
   }
 }
 
-
-export function SEARCH<T extends Obj> (
-  searchConfig: ClassSearchConfig
-) {
+export function SEARCH<T extends Obj> (searchConfig: ClassSearchConfig) {
   return function classDecorator<C extends new () => T> (constructor: C): void {
     const txes = getTxes(constructor.prototype)
     txes.searchConfig = searchConfig

@@ -305,11 +305,12 @@ export interface ObjectDDParticipant extends Class<Obj> {
   >
 }
 
-
 /**
  * @public
  */
-export type SearchProps = { [key: string]: string }
+export interface SearchProps {
+  [key: string]: string
+}
 
 /**
  * @public

@@ -16,18 +16,18 @@
 <script lang="ts">
   import type { SearchResultDoc } from '@hcengineering/core'
   import { Asset, getResource } from '@hcengineering/platform'
-  import { AnyComponent, AnySvelteComponent, Icon } from '@hcengineering/ui'
+  import { AnyComponent, Icon } from '@hcengineering/ui'
 
   export let value: SearchResultDoc
 
-  $: iconComponent = value.iconComponent ? value.iconComponent as AnyComponent : undefined
-  $: icon = value.icon !== undefined ? value.icon as Asset : undefined
+  $: iconComponent = value.iconComponent ? (value.iconComponent as AnyComponent) : undefined
+  $: icon = value.icon !== undefined ? (value.icon as Asset) : undefined
 </script>
 
 <div class="flex-row-center h-8">
   <div class="flex-center p-1 content-dark-color flex-no-shrink">
     {#if icon !== undefined}
-      <Icon icon={icon} size={'medium'} />
+      <Icon {icon} size={'medium'} />
     {/if}
     {#if iconComponent}
       {#await getResource(iconComponent) then component}

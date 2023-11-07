@@ -321,6 +321,6 @@ export function readAndMapProps (reader: IndexedReader, props: ClassSearchConfig
   return res
 }
 
-export function fillTemplate(tmpl: string, props: { [key: string]: string } ) {
+export function fillTemplate (tmpl: string, props: { [key: string]: string }): string {
   return tmpl.replace(/{(.*?)}/g, (_, key: string) => props[key])
 }
