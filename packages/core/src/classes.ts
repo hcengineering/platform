@@ -169,6 +169,32 @@ export interface Interface<T extends Doc> extends Classifier {
 /**
  * @public
  */
+export type ClassSearchConfigProps = string | { [key: string]: string[] }
+
+/**
+ * @public
+ */
+export type ClassSearchConfigIcon = Asset |
+  { component: any, props: ClassSearchConfigProps[] }
+
+/**
+ * @public
+ */
+export type ClassSearchConfigProperty = string |
+  { tmpl?: string, props: ClassSearchConfigProps[] }
+
+/**
+ * @public
+ */
+export interface ClassSearchConfig {
+  icon: ClassSearchConfigIcon
+  title: ClassSearchConfigProperty
+  objectId?: ClassSearchConfigProperty
+}
+
+/**
+ * @public
+ */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Class<T extends Obj> extends Classifier {
   extends?: Ref<Class<Obj>>
@@ -177,6 +203,7 @@ export interface Class<T extends Obj> extends Classifier {
   shortLabel?: string
   sortingKey?: string
   filteringKey?: string
+  searchConfig?: ClassSearchConfig
 }
 
 /**

@@ -16,7 +16,7 @@
 
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import type { TriggerFunc } from '@hcengineering/server-core'
+import type { TriggerFunc, SearchPresenterFunc } from '@hcengineering/server-core'
 import { Presenter } from '@hcengineering/server-notification'
 
 /**
@@ -36,6 +36,8 @@ export default plugin(serverContactId, {
     PersonHTMLPresenter: '' as Resource<Presenter>,
     PersonTextPresenter: '' as Resource<Presenter>,
     OrganizationHTMLPresenter: '' as Resource<Presenter>,
-    OrganizationTextPresenter: '' as Resource<Presenter>
+    OrganizationTextPresenter: '' as Resource<Presenter>,
+
+    ContactNameProvider: '' as Resource<SearchPresenterFunc>
   }
 })

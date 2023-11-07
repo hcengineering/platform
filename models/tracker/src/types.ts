@@ -38,7 +38,8 @@ import {
   TypeNumber,
   TypeRef,
   TypeString,
-  UX
+  UX,
+  SEARCH
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
@@ -162,6 +163,20 @@ export function TypeEstimation (): Type<number> {
  */
 @Model(tracker.class.Issue, task.class.Task)
 @UX(tracker.string.Issue, tracker.icon.Issue, 'TSK', 'title')
+@SEARCH({
+  icon: {
+    component: tracker.component.IssueSearchIcon,
+    props: ['status', 'space'],
+  },
+  objectId: {
+    tmpl: '{identifier}-{number}',
+    props: [
+      { identifier: ['space', 'identifier'] },
+      'number',
+    ]
+  },
+  title: 'title'
+})
 export class TIssue extends TTask implements Issue {
   @Prop(TypeRef(tracker.class.Issue), tracker.string.Parent)
   declare attachedTo: Ref<Issue>

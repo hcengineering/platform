@@ -50,6 +50,7 @@ import DueDatePresenter from './components/issues/DueDatePresenter.svelte'
 import EditIssue from './components/issues/edit/EditIssue.svelte'
 import IssueItem from './components/issues/IssueItem.svelte'
 import IssueSearchResult from './components/issues/IssueSearchResult.svelte'
+import IssueSearchIcon from './components/issues/IssueSearchIcon.svelte'
 import IssuePresenter from './components/issues/IssuePresenter.svelte'
 import IssuePreview from './components/issues/IssuePreview.svelte'
 import Issues from './components/issues/Issues.svelte'
@@ -492,7 +493,8 @@ export default async (): Promise<Resources> => ({
     EditRelatedTargetsPopup,
     TimePresenter,
     EstimationValueEditor,
-    IssueSearchResult
+    IssueSearchResult,
+    IssueSearchIcon
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>

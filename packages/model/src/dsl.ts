@@ -46,7 +46,8 @@ import core, {
   TxFactory,
   TxProcessor,
   Type,
-  TypeDate as TypeDateType
+  TypeDate as TypeDateType,
+  ClassSearchConfig
 } from '@hcengineering/core'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import toposort from 'toposort'
@@ -77,7 +78,8 @@ interface ClassTxes {
   kind: ClassifierKind
   shortLabel?: string | IntlString
   sortingKey?: string
-  filteringKey?: string
+  filteringKey?: string,
+  searchConfig?: ClassSearchConfig
 }
 
 const transactions = new Map<any, ClassTxes>()
@@ -244,6 +246,16 @@ export function UX<T extends Obj> (
   }
 }
 
+
+export function SEARCH<T extends Obj> (
+  searchConfig: ClassSearchConfig
+) {
+  return function classDecorator<C extends new () => T> (constructor: C): void {
+    const txes = getTxes(constructor.prototype)
+    txes.searchConfig = searchConfig
+  }
+}
+
 function generateIds (objectId: Ref<Doc>, txes: TxCreateDoc<Attribute<PropertyType>>[]): Tx[] {
   return txes.map((tx) => {
     const withId = {
@@ -278,7 +290,8 @@ function _generateTx (tx: ClassTxes): Tx[] {
       icon: tx.icon,
       shortLabel: tx.shortLabel,
       sortingKey: tx.sortingKey,
-      filteringKey: tx.filteringKey
+      filteringKey: tx.filteringKey,
+      searchConfig: tx.searchConfig
     },
     objectId
   )

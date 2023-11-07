@@ -31,6 +31,7 @@ import core, {
   FullTextSearchContext,
   generateId,
   Hierarchy,
+  IndexedReader,
   IndexStageState,
   isFullTextAttribute,
   isIndexedAttribute,
@@ -38,7 +39,8 @@ import core, {
   Ref,
   Space,
   Storage,
-  TxFactory
+  TxFactory,
+  ClassSearchConfigProps
 } from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
 import plugin from '../plugin'
@@ -300,4 +302,24 @@ export function collectPropagateClasses (pipeline: FullTextPipeline, objectClass
   traverseFullTextContexts(pipeline, objectClass, (fts) => fts?.propagateClasses?.forEach((it) => propagate.add(it)))
 
   return Array.from(propagate.values())
+}
+
+export function readAndMapProps (reader: IndexedReader, props: ClassSearchConfigProps[]): { [key: string]: string } {
+  const res: { [key: string]: string } = {}
+  for (const prop of props) {
+    if (typeof prop === 'string') {
+      res[prop] = reader.get(prop)
+    } else {
+      for (const [propName, rest] of Object.entries(prop)) {
+        if (rest.length > 1) {
+          res[propName] = reader.getDoc(rest[0])?.get(rest[1]) ?? ''
+        }
+      }
+    }
+  }
+  return res
+}
+
+export function fillTemplate(tmpl: string, props: { [key: string]: string } ) {
+  return tmpl.replace(/{(.*?)}/g, (_, key: string) => props[key])
 }

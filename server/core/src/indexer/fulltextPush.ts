@@ -43,6 +43,11 @@ import {
   fullTextPushStageId
 } from './types'
 import { collectPropagate, collectPropagateClasses, docKey, getFullTextContext, IndexKeyOptions } from './utils'
+import plugin from '../plugin'
+
+import { readAndMapProps, fillTemplate } from './utils'
+import { getResource } from '@hcengineering/platform'
+
 
 /**
  * @public
@@ -138,34 +143,60 @@ export class FullTextPushStage implements FullTextPipelineStage {
     }
   }
 
-  fixSearchTitle (pipeline: FullTextPipeline, doc: IndexedDoc): void {
-    const parts: string[] = []
+  async applySearchProps (pipeline: FullTextPipeline, doc: IndexedDoc): Promise<void> {
+    const hierarchy = pipeline.hierarchy
+
+    // find search config
+    const ancestors = hierarchy.getAncestors(doc._class)
+
+    console.log('applySearchProps', doc._class)
 
     const reader = createIndexedReader(doc._class, pipeline.hierarchy, doc)
-    const shortLabel = pipeline.hierarchy.getClass(doc._class)?.shortLabel
-    const number: number = reader.get('number')
-    const spaceIdentifier = reader.getDoc('space')?.get('identifier')?.[0]
 
-    if (spaceIdentifier !== undefined && number !== undefined) {
-      parts.push(`${spaceIdentifier as string}-${number}`)
-    } else if (shortLabel !== undefined && number !== undefined) {
-      parts.push(`${shortLabel}-${number}`)
-    } else if (number !== undefined) {
-      parts.push(`${number}`)
-    }
+    // TODO: inverse ancestors order
+    for (const _class of ancestors) {
+      const res = hierarchy.getClass(_class)
+      if (res.searchConfig !== undefined) {
+        const searchMixin = hierarchy.classHierarchyMixin(
+          _class,
+          plugin.mixin.SearchPresenter
+        )
 
-    if (reader.get('title') !== undefined) {
-      parts.push(reader.get('title') as string)
-    }
+        const props = [
+          {
+            name: 'searchTitle',
+            config: res.searchConfig.title,
+            provider: searchMixin?.getSearchTitle
+          }
+        ]
 
-    if (reader.get('name') !== undefined) {
-      parts.push(reader.get('name') as string)
-    }
+        if (res.searchConfig.objectId !== undefined) {
+          props.push({
+            name: 'searchDocId',
+            config: res.searchConfig.objectId,
+            provider: searchMixin?.getSearchObjectId
+          })
+        }
 
-    if (parts.length > 0) {
-      doc.searchTitle = parts.join(' ')
-    } else {
-      doc.searchTitle = ''
+        for (const prop of props) {
+          let value
+          if (typeof prop.config === 'string') {
+            value = reader.get(prop.config)
+          } else if (prop.config.tmpl !== undefined) {
+            const tmpl = prop.config.tmpl
+            const renderProps = readAndMapProps(reader, prop.config.props)
+            value = fillTemplate(tmpl, renderProps) // render temple
+          } else if (prop.provider !== undefined) {
+            // load func
+            const func = await getResource(prop.provider)
+            const renderProps = readAndMapProps(reader, prop.config.props)
+            value = func(hierarchy, renderProps)
+          }
+
+          console.log('search fill', prop.name, value)
+          doc[prop.name] = value
+        }
+      }
     }
   }
 
@@ -241,7 +272,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
           // Include child ref attributes
           await this.indexRefAttributes(allAttributes, doc, elasticDoc, metrics)
 
-          this.fixSearchTitle(pipeline, elasticDoc)
+          await this.applySearchProps(pipeline, elasticDoc)
 
           this.checkIntegrity(elasticDoc)
           bulk.push(elasticDoc)

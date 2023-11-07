@@ -304,3 +304,22 @@ export interface ObjectDDParticipant extends Class<Obj> {
   ) => Promise<Doc[]>
   >
 }
+
+
+/**
+ * @public
+ */
+export type SearchProps = { [key: string]: string }
+
+/**
+ * @public
+ */
+export type SearchPresenterFunc = (hierarchy: Hierarchy, props: SearchProps) => string
+
+/**
+ * @public
+ */
+export interface SearchPresenter extends Class<Doc> {
+  getSearchObjectId?: Resource<SearchPresenterFunc>
+  getSearchTitle?: Resource<SearchPresenterFunc>
+}

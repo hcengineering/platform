@@ -15,7 +15,7 @@
 //
 
 import contact, { Channel, Contact, Organization, Person, contactId, getName } from '@hcengineering/contact'
-import { Doc, Tx, TxRemoveDoc, TxUpdateDoc, concatLink } from '@hcengineering/core'
+import { Doc, Tx, TxRemoveDoc, TxUpdateDoc, concatLink, Hierarchy } from '@hcengineering/core'
 import notification, { Collaborators } from '@hcengineering/notification'
 import { getMetadata } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
@@ -158,6 +158,14 @@ export function organizationTextPresenter (doc: Doc): string {
   return `${organization.name}`
 }
 
+/**
+ * @public
+ */
+export function contactNameProvider (hierarchy: Hierarchy, props: { [key: string]: string }): string {
+  return props.name ?? ''
+}
+
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
@@ -168,6 +176,7 @@ export default async () => ({
     PersonHTMLPresenter: personHTMLPresenter,
     PersonTextPresenter: personTextPresenter,
     OrganizationHTMLPresenter: organizationHTMLPresenter,
-    OrganizationTextPresenter: organizationTextPresenter
+    OrganizationTextPresenter: organizationTextPresenter,
+    ContactNameProvider: contactNameProvider
   }
 })

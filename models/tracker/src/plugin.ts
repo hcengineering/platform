@@ -57,7 +57,8 @@ export default mergeIds(trackerId, tracker, {
     NotificationIssuePresenter: '' as AnyComponent,
     MilestoneFilter: '' as AnyComponent,
     EditRelatedTargets: '' as AnyComponent,
-    EditRelatedTargetsPopup: '' as AnyComponent
+    EditRelatedTargetsPopup: '' as AnyComponent,
+    IssueSearchIcon: '' as AnyComponent
   },
   app: {
     Tracker: '' as Ref<Application>

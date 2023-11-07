@@ -40,6 +40,10 @@ export function createModel (builder: Builder): void {
     presenter: serverContact.function.OrganizationTextPresenter
   })
 
+  builder.mixin(contact.class.Contact, core.class.Class, serverCore.mixin.SearchPresenter, {
+    getSearchTitle: serverContact.function.ContactNameProvider
+  })
+
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverContact.trigger.OnContactDelete,
     txMatch: {
