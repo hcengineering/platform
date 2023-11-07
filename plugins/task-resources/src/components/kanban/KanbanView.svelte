@@ -22,6 +22,7 @@
     DocumentUpdate,
     FindOptions,
     generateId,
+    mergeQueries,
     Ref
   } from '@hcengineering/core'
   import { Item, Kanban as KanbanUI } from '@hcengineering/kanban'
@@ -87,7 +88,7 @@
   }
 
   let resultQuery: DocumentQuery<any> = { ...query }
-  $: getResultQuery(query, viewOptionsConfig, viewOptions).then((p) => (resultQuery = { ...p, ...query }))
+  $: getResultQuery(query, viewOptionsConfig, viewOptions).then((p) => (resultQuery = mergeQueries(p, query)))
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
