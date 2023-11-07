@@ -14,9 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getResource } from '@hcengineering/platform'
   import {
-    AnySvelteComponent,
     createFocusManager,
     FocusHandler,
     Label,
@@ -36,22 +34,14 @@
     num: number
     item: SearchResultDoc
     category: ObjectSearchCategory
-    component: AnySvelteComponent
   }
 
   let items: SearchItem[] = []
   let categories: ObjectSearchCategory[] = []
-  const components: Map<Ref<Class<Doc>>, AnySvelteComponent> = new Map()
 
   const client = getClient()
 
   client.findAll(presentation.class.ObjectSearchCategory, { context: 'mention' }).then(async (results) => {
-    for (const cat of results) {
-      if (cat.classToSearch !== undefined && cat.component !== undefined) {
-        components.set(cat.classToSearch, await getResource(cat.component))
-      }
-    }
-
     categories = results
     updateItems(query)
   })
@@ -62,23 +52,12 @@
   let scrollContainer: HTMLElement
   let selection = 0
 
-  const titles = new Map<string, string>()
-  function titleHandler (doc: SearchResultDoc) {
-    return (event: CustomEvent) => {
-      const title = event.detail
-      titles.set(doc.id, title)
-    }
-  }
-
   function dispatchItem (item: SearchResultDoc): void {
-    const title = titles.get(item.id)
-    if (title !== undefined) {
-      dispatch('close', {
-        id: item.id,
-        label: title,
-        objectclass: item._class
-      })
-    }
+    dispatch('close', {
+      id: item.id,
+      label: item.objectId ?? item.title,
+      objectclass: item._class
+    })
   }
 
   export function onKeyDown (key: KeyboardEvent): boolean {
@@ -120,14 +99,11 @@
       const items = section.items
 
       if (category.classToSearch !== undefined) {
-        const component = components.get(category.classToSearch)
-        if (component !== undefined) {
-          results = results.concat(
-            items.map((item, num) => {
-              return { num, category, component, item }
-            })
-          )
-        }
+        results = results.concat(
+          items.map((item, num) => {
+            return { num, category, item }
+          })
+        )
       }
     }
     return results

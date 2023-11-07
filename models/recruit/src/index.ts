@@ -1225,8 +1225,7 @@ export function createModel (builder: Builder): void {
       title: recruit.string.Applications,
       query: recruit.completion.ApplicationQuery,
       context: ['search', 'mention'],
-      classToSearch: recruit.class.Applicant,
-      component: recruit.component.ApplicationSearchResult
+      classToSearch: recruit.class.Applicant
     },
     recruit.completion.ApplicationCategory
   )
@@ -1240,8 +1239,7 @@ export function createModel (builder: Builder): void {
       title: recruit.string.Vacancies,
       query: recruit.completion.VacancyQuery,
       context: ['search', 'mention'],
-      classToSearch: recruit.class.Vacancy,
-      component: recruit.component.VacancySearchResult
+      classToSearch: recruit.class.Vacancy
     },
     recruit.completion.VacancyCategory
   )

@@ -508,8 +508,7 @@ export function createModel (builder: Builder): void {
       title: tracker.string.Issues,
       query: tracker.completion.IssueQuery,
       context: ['search', 'mention'],
-      classToSearch: tracker.class.Issue,
-      component: tracker.component.IssueSearchResult
+      classToSearch: tracker.class.Issue
     },
     tracker.completion.IssueCategory
   )

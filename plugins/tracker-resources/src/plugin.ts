@@ -368,9 +368,7 @@ export default mergeIds(trackerId, tracker, {
     IssueTemplates: '' as AnyComponent,
     IssueTemplatePresenter: '' as AnyComponent,
     SubIssuesSelector: '' as AnyComponent,
-    IconWithEmoji: '' as Asset,
-
-    IssueSearchResult: '' as AnyComponent
+    IconWithEmoji: '' as Asset
   },
   metadata: {
     CreateIssueDraft: '' as Metadata<IssueDraft>

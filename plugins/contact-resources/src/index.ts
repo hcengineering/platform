@@ -84,7 +84,6 @@ import UserBox from './components/UserBox.svelte'
 import UserBoxItems from './components/UserBoxItems.svelte'
 import UserBoxList from './components/UserBoxList.svelte'
 import UserInfo from './components/UserInfo.svelte'
-import UserSearchResult from './components/UserSearchResult.svelte'
 import UsersPopup from './components/UsersPopup.svelte'
 import ActivityChannelMessage from './components/activity/ActivityChannelMessage.svelte'
 import ActivityChannelPresenter from './components/activity/ActivityChannelPresenter.svelte'
@@ -312,8 +311,7 @@ export default async (): Promise<Resources> => ({
     EmployeeFilterValuePresenter,
     PersonAccountFilterValuePresenter,
     DeleteConfirmationPopup,
-    PersonAccountRefPresenter,
-    UserSearchResult
+    PersonAccountRefPresenter
   },
   completion: {
     EmployeeQuery: async (

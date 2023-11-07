@@ -32,7 +32,6 @@ import { Filter } from '@hcengineering/view'
 import { FilterQuery, statusStore } from '@hcengineering/view-resources'
 import ApplicantFilter from './components/ApplicantFilter.svelte'
 import ApplicationItem from './components/ApplicationItem.svelte'
-import ApplicationSearchResult from './components/ApplicationSearchResult.svelte'
 import ApplicationPresenter from './components/ApplicationPresenter.svelte'
 import Applications from './components/Applications.svelte'
 import ApplicationsPresenter from './components/ApplicationsPresenter.svelte'
@@ -51,7 +50,6 @@ import TemplatesIcon from './components/TemplatesIcon.svelte'
 import Vacancies from './components/Vacancies.svelte'
 import VacancyCountPresenter from './components/VacancyCountPresenter.svelte'
 import VacancyItem from './components/VacancyItem.svelte'
-import VacancySearchResult from './components/VacancySearchResult.svelte'
 import VacancyItemPresenter from './components/VacancyItemPresenter.svelte'
 import VacancyList from './components/VacancyList.svelte'
 import VacancyModifiedPresenter from './components/VacancyModifiedPresenter.svelte'
@@ -359,10 +357,7 @@ export default async (): Promise<Resources> => ({
     VacancyTemplateEditor,
 
     MatchVacancy,
-    NotificationApplicantPresenter,
-
-    VacancySearchResult,
-    ApplicationSearchResult
+    NotificationApplicantPresenter
   },
   completion: {
     ApplicationQuery: async (

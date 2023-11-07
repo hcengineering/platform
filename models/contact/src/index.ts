@@ -94,10 +94,7 @@ export class TChannelProvider extends TDoc implements ChannelProvider {
     component: contact.component.Avatar,
     props: ['avatar', 'name']
   },
-  title: {
-    // provider: serverContact.function.ContactNameProvider,
-    props: ['name']
-  }
+  title: { props: ['name'] }
 })
 export class TContact extends TDoc implements Contact {
   @Prop(TypeString(), contact.string.Name)
@@ -745,8 +742,7 @@ export function createModel (builder: Builder): void {
       title: contact.string.People,
       query: contact.completion.PersonQuery,
       context: ['search', 'mention'],
-      classToSearch: contact.class.Person,
-      component: contact.component.UserSearchResult
+      classToSearch: contact.class.Person
     },
     contact.completion.PersonCategory
   )
@@ -760,8 +756,7 @@ export function createModel (builder: Builder): void {
       title: contact.string.Organizations,
       query: contact.completion.OrganizationQuery,
       context: ['search', 'mention'],
-      classToSearch: contact.class.Organization,
-      component: contact.component.UserSearchResult
+      classToSearch: contact.class.Organization
     },
     contact.completion.OrganizationCategory
   )
