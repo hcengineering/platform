@@ -162,60 +162,55 @@
 
   const onScroll = (event: MouseEvent): void => {
     scrolling = false
-    if (isScrolling && divBar && divScroll) {
-      const rectScroll = divScroll.getBoundingClientRect()
-      if (isScrolling === 'vertical') {
-        let Y = event.clientY - dXY
-        if (Y < rectScroll.top + shiftTop + 2) Y = rectScroll.top + shiftTop + 2
-        if (Y > rectScroll.bottom - divBar.clientHeight - shiftBottom - 2) {
-          Y = rectScroll.bottom - divBar.clientHeight - shiftBottom - 2
-        }
-        divBar.style.top = Y - rectScroll.y + 'px'
-        const topBar = Y - rectScroll.y - shiftTop - 2
-        const heightScroll = rectScroll.height - 4 - divBar.clientHeight - shiftTop - shiftBottom
-        const procBar = topBar / heightScroll
-        divScroll.scrollTop = (divScroll.scrollHeight - divScroll.clientHeight) * procBar
-      } else {
-        let X = event.clientX - dXY
-        if (X < rectScroll.left + 2 + shiftLeft) X = rectScroll.left + 2 + shiftLeft
-        if (X > rectScroll.right - divBarH.clientWidth - (mask !== 'none' ? 12 : 2) - shiftRight) {
-          X = rectScroll.right - divBarH.clientWidth - (mask !== 'none' ? 12 : 2) - shiftRight
-        }
-        divBarH.style.left = X - rectScroll.x + 'px'
-        const leftBar = X - rectScroll.x - shiftLeft - 2
-        const widthScroll =
-          rectScroll.width - 2 - (mask !== 'none' ? 12 : 2) - divBarH.clientWidth - shiftLeft - shiftRight
-        const procBar = leftBar / widthScroll
-        divScroll.scrollLeft = (divScroll.scrollWidth - divScroll.clientWidth) * procBar
+    if (
+      (divBar == null && isScrolling === 'vertical') ||
+      (divBarH == null && isScrolling === 'horizontal') ||
+      divScroll == null
+    ) {
+      return
+    }
+    const rectScroll = divScroll.getBoundingClientRect()
+    if (isScrolling === 'vertical') {
+      let Y = event.clientY - dXY
+      if (Y < rectScroll.top + shiftTop + 2) Y = rectScroll.top + shiftTop + 2
+      if (Y > rectScroll.bottom - divBar.clientHeight - shiftBottom - 2) {
+        Y = rectScroll.bottom - divBar.clientHeight - shiftBottom - 2
       }
+      divBar.style.top = Y - rectScroll.y + 'px'
+      const topBar = Y - rectScroll.y - shiftTop - 2
+      const heightScroll = rectScroll.height - 4 - divBar.clientHeight - shiftTop - shiftBottom
+      const procBar = topBar / heightScroll
+      divScroll.scrollTop = (divScroll.scrollHeight - divScroll.clientHeight) * procBar
+    } else {
+      let X = event.clientX - dXY
+      if (X < rectScroll.left + 2 + shiftLeft) X = rectScroll.left + 2 + shiftLeft
+      if (X > rectScroll.right - divBarH.clientWidth - (mask !== 'none' ? 12 : 2) - shiftRight) {
+        X = rectScroll.right - divBarH.clientWidth - (mask !== 'none' ? 12 : 2) - shiftRight
+      }
+      divBarH.style.left = X - rectScroll.x + 'px'
+      const leftBar = X - rectScroll.x - shiftLeft - 2
+      const widthScroll =
+        rectScroll.width - 2 - (mask !== 'none' ? 12 : 2) - divBarH.clientWidth - shiftLeft - shiftRight
+      const procBar = leftBar / widthScroll
+      divScroll.scrollLeft = (divScroll.scrollWidth - divScroll.clientWidth) * procBar
     }
   }
-  const onScrollEnd = (event: MouseEvent): void => {
-    const el: HTMLElement = event.currentTarget as HTMLElement
-    if (el && isScrolling) {
-      document.removeEventListener('mousemove', onScroll)
-      // document.body.style.pointerEvents = 'all'
-      document.body.style.userSelect = 'auto'
-      document.body.style.webkitUserSelect = 'auto'
-    }
+  const onScrollEnd = (): void => {
+    document.removeEventListener('mousemove', onScroll)
+    document.body.style.userSelect = 'auto'
+    document.body.style.webkitUserSelect = 'auto'
     document.removeEventListener('mouseup', onScrollEnd)
     isScrolling = false
   }
   const onScrollStart = (event: MouseEvent, direction: 'vertical' | 'horizontal'): void => {
+    if (divScroll == null) return
     scrolling = false
-    const el: HTMLElement = event.currentTarget as HTMLElement
-    if (el && divScroll) {
-      dXY =
-        direction === 'vertical'
-          ? event.clientY - el.getBoundingClientRect().y
-          : event.clientX - el.getBoundingClientRect().x
-      document.addEventListener('mouseup', onScrollEnd)
-      document.addEventListener('mousemove', onScroll)
-      // document.body.style.pointerEvents = 'none'
-      document.body.style.userSelect = 'none'
-      document.body.style.webkitUserSelect = 'none'
-      isScrolling = direction
-    }
+    dXY = direction === 'vertical' ? event.offsetY : event.offsetX
+    document.addEventListener('mouseup', onScrollEnd)
+    document.addEventListener('mousemove', onScroll)
+    document.body.style.userSelect = 'none'
+    document.body.style.webkitUserSelect = 'none'
+    isScrolling = direction
   }
 
   const renderFade = () => {
@@ -456,37 +451,43 @@
     ev: MouseEvent & { currentTarget: EventTarget & HTMLDivElement },
     horizontal: boolean = false
   ) => {
-    if (!isScrolling && divBar && divScroll) {
-      const rectScroll = divScroll.getBoundingClientRect()
-      if (horizontal) {
-        const x = ev.offsetX
-        const trackWidth = ev.currentTarget.clientWidth
-        const barWidth = divBarH.clientWidth
-        const leftBar =
-          x - barWidth / 2 <= 0
-            ? rectScroll.left + shiftLeft + 2
-            : x + barWidth / 2 >= trackWidth
-              ? rectScroll.right - barWidth - shiftRight - (mask !== 'none' ? 12 : 2)
-              : ev.clientX - barWidth / 2
-        divBarH.style.left = `${leftBar}px`
-        const widthScroll = rectScroll.width - 2 - (mask !== 'none' ? 12 : 2) - barWidth - shiftLeft - shiftRight
-        const procBar = (leftBar - rectScroll.left - shiftLeft - 2) / widthScroll
-        divScroll.scrollLeft = (divScroll.scrollWidth - divScroll.clientWidth) * procBar
-      } else {
-        const y = ev.offsetY
-        const trackHeight = ev.currentTarget.clientHeight
-        const barHeight = divBar.clientHeight
-        const topBar =
-          y - barHeight / 2 <= 0
-            ? rectScroll.top + shiftTop + 2
-            : y + barHeight / 2 >= trackHeight
-              ? rectScroll.bottom - barHeight - shiftBottom - 2
-              : ev.clientY - barHeight / 2
-        divBar.style.top = `${topBar}px`
-        const heightScroll = rectScroll.height - 4 - barHeight - shiftTop - shiftBottom
-        const procBar = (topBar - rectScroll.top - shiftTop - 2) / heightScroll
-        divScroll.scrollTop = (divScroll.scrollHeight - divScroll.clientHeight) * procBar
-      }
+    if (
+      (divBar == null && !horizontal) ||
+      (divBarH == null && horizontal) ||
+      divScroll == null ||
+      isScrolling !== false
+    ) {
+      return
+    }
+    const rectScroll = divScroll.getBoundingClientRect()
+    if (horizontal) {
+      const x = ev.offsetX
+      const trackWidth = ev.currentTarget.clientWidth
+      const barWidth = divBarH.clientWidth
+      const leftBar =
+        x - barWidth / 2 <= 0
+          ? rectScroll.left + shiftLeft + 2
+          : x + barWidth / 2 >= trackWidth
+            ? rectScroll.right - barWidth - shiftRight - (mask !== 'none' ? 12 : 2)
+            : ev.clientX - barWidth / 2
+      divBarH.style.left = `${leftBar}px`
+      const widthScroll = rectScroll.width - 2 - (mask !== 'none' ? 12 : 2) - barWidth - shiftLeft - shiftRight
+      const procBar = (leftBar - rectScroll.left - shiftLeft - 2) / widthScroll
+      divScroll.scrollLeft = (divScroll.scrollWidth - divScroll.clientWidth) * procBar
+    } else {
+      const y = ev.offsetY
+      const trackHeight = ev.currentTarget.clientHeight
+      const barHeight = divBar.clientHeight
+      const topBar =
+        y - barHeight / 2 <= 0
+          ? rectScroll.top + shiftTop + 2
+          : y + barHeight / 2 >= trackHeight
+            ? rectScroll.bottom - barHeight - shiftBottom - 2
+            : ev.clientY - barHeight / 2
+      divBar.style.top = `${topBar}px`
+      const heightScroll = rectScroll.height - 4 - barHeight - shiftTop - shiftBottom
+      const procBar = (topBar - rectScroll.top - shiftTop - 2) / heightScroll
+      divScroll.scrollTop = (divScroll.scrollHeight - divScroll.clientHeight) * procBar
     }
   }
 
