@@ -48,7 +48,6 @@ export type ObjectSearchFactory = (
   options?: {
     in?: RelatedDocument[]
     nin?: RelatedDocument[]
-    limit?: number
   }
 ) => Promise<ObjectSearchResult[]>
 
@@ -71,7 +70,6 @@ export interface ObjectSearchCategory extends Doc {
   // Query for documents with pattern
   query: Resource<ObjectSearchFactory>
   classToSearch?: Ref<Class<Doc>>
-  component?: AnyComponent
 }
 
 export interface ComponentExt {

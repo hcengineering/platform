@@ -164,10 +164,10 @@ async function queryContact (
   _class: Ref<Class<Contact>>,
   client: Client,
   search: string,
-  options?: { in?: RelatedDocument[], nin?: RelatedDocument[], limit?: number }
+  filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
 ): Promise<ObjectSearchResult[]> {
   const q: DocumentQuery<Contact> = { name: { $like: `%${search}%` } }
-  return await doContactQuery(_class, q, options, client)
+  return await doContactQuery(_class, q, filter, client)
 }
 
 async function queryEmployee (
@@ -194,28 +194,25 @@ async function queryEmployee (
   return q1.concat(q2)
 }
 
-const DEFAULT_LIMIT = 200
-
 async function doContactQuery<T extends Contact> (
   _class: Ref<Class<T>>,
   q: DocumentQuery<T>,
-  options: { in?: RelatedDocument[] | undefined, nin?: RelatedDocument[] | undefined, limit?: number } | undefined,
+  filter: { in?: RelatedDocument[] | undefined, nin?: RelatedDocument[] | undefined } | undefined,
   client: Client
 ): Promise<ObjectSearchResult[]> {
   if (_class === contact.mixin.Employee) {
     q = { ...q, active: true }
   }
-  if (options?.in !== undefined || options?.nin !== undefined) {
+  if (filter?.in !== undefined || filter?.nin !== undefined) {
     q._id = {}
-    if (options.in !== undefined) {
-      q._id.$in = options.in?.map((it) => it._id as Ref<T>)
+    if (filter.in !== undefined) {
+      q._id.$in = filter.in?.map((it) => it._id as Ref<T>)
     }
-    if (options.nin !== undefined) {
-      q._id.$nin = options.nin?.map((it) => it._id as Ref<T>)
+    if (filter.nin !== undefined) {
+      q._id.$nin = filter.nin?.map((it) => it._id as Ref<T>)
     }
   }
-  const limit = options?.limit ?? DEFAULT_LIMIT
-  return (await client.findAll(_class, q, { limit })).map(toObjectSearchResult)
+  return (await client.findAll(_class, q, { limit: 200 })).map(toObjectSearchResult)
 }
 
 async function kickEmployee (doc: Person): Promise<void> {
@@ -317,18 +314,15 @@ export default async (): Promise<Resources> => ({
     EmployeeQuery: async (
       client: Client,
       query: string,
-      options?: { in?: RelatedDocument[], nin?: RelatedDocument[], limit?: number }
-    ) => await queryEmployee(client, query, options),
-    PersonQuery: async (
-      client: Client,
-      query: string,
-      options?: { in?: RelatedDocument[], nin?: RelatedDocument[], limit?: number }
-    ) => await queryContact(contact.class.Person, client, query, options),
+      filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
+    ) => await queryEmployee(client, query, filter),
+    PersonQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>
+      await queryContact(contact.class.Person, client, query, filter),
     OrganizationQuery: async (
       client: Client,
       query: string,
-      options?: { in?: RelatedDocument[], nin?: RelatedDocument[], limit?: number }
-    ) => await queryContact(contact.class.Organization, client, query, options)
+      filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
+    ) => await queryContact(contact.class.Organization, client, query, filter)
   },
   function: {
     GetFileUrl: (file: string, size: IconSize, fileName?: string) => {
