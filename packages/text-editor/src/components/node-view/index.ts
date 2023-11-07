@@ -15,5 +15,10 @@
 
 export { default as NodeViewContent } from './NodeViewContent.svelte'
 export { default as NodeViewWrapper } from './NodeViewWrapper.svelte'
-export { default as SvelteNodeViewRenderer } from './svelte-node-view-renderer'
+export {
+  default as SvelteNodeViewRenderer,
+  SvelteNodeViewComponent,
+  SvelteNodeViewProps as NodeViewProps,
+  SvelteNodeViewRendererOptions
+} from './svelte-node-view-renderer'
 export { SvelteRenderer, SvelteRendererComponent, SvelteRendererOptions } from './svelte-renderer'

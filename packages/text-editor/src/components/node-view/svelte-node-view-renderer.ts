@@ -33,7 +33,9 @@ export interface SvelteNodeViewRendererOptions extends NodeViewRendererOptions {
   contentDOMElementAs?: string
 }
 
-type SvelteNodeViewComponent = typeof SvelteComponent | ComponentType
+export type SvelteNodeViewProps = NodeViewProps
+
+export type SvelteNodeViewComponent = typeof SvelteComponent | ComponentType
 
 /**
  * Svelte NodeView renderer, inspired by React and Vue implementation by Tiptap
@@ -45,7 +47,7 @@ class SvelteNodeView extends NodeView<SvelteNodeViewComponent, Editor, SvelteNod
   contentDOMElement!: HTMLElement | null
 
   override mount (): void {
-    const props: NodeViewProps = {
+    const props: SvelteNodeViewProps = {
       editor: this.editor,
       node: this.node,
       decorations: this.decorations,
