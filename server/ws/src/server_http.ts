@@ -145,12 +145,18 @@ export function startHttpServer (
     skipUTF8Validation: true
   })
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  wss.on('connection', async (ws: WebSocket, request: any, token: Token, sessionId?: string) => {
+  wss.on('connection', async (ws: WebSocket, request: IncomingMessage, token: Token, sessionId?: string) => {
     let buffer: Buffer[] | undefined = []
 
+    const data = {
+      remoteAddress: request.socket.remoteAddress ?? '',
+      userAgent: request.headers['user-agent'] ?? '',
+      language: request.headers['accept-language'] ?? ''
+    }
     const cs: ConnectionSocket = {
       id: generateId(),
       close: () => ws.close(),
+      data: () => data,
       send: async (ctx: MeasureContext, msg, binary, compression) => {
         if (ws.readyState !== ws.OPEN) {
           return

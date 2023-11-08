@@ -23,6 +23,7 @@ import SpecialView from './components/SpecialView.svelte'
 import WorkbenchApp from './components/WorkbenchApp.svelte'
 import { doNavigate } from './utils'
 import Workbench from './components/Workbench.svelte'
+import ServerManager from './components/ServerManager.svelte'
 
 async function hasArchiveSpaces (spaces: Space[]): Promise<boolean> {
   return spaces.find((sp) => sp.archived) !== undefined
@@ -41,7 +42,8 @@ export default async (): Promise<Resources> => ({
     SpacePanel,
     SpecialView,
     SpaceBrowser,
-    Workbench
+    Workbench,
+    ServerManager
   },
   function: {
     HasArchiveSpaces: hasArchiveSpaces,

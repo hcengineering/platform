@@ -88,6 +88,7 @@ export interface ConnectionSocket {
   id: string
   close: () => void
   send: (ctx: MeasureContext, msg: Response<any>, binary: boolean, compression: boolean) => Promise<void>
+  data: () => Record<string, any>
 }
 
 /**

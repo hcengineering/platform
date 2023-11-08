@@ -99,10 +99,7 @@ export const uis = plugin(uiId, {
   metadata: {
     DefaultApplication: '' as Metadata<AnyComponent>,
     Routes: '' as Metadata<Map<string, AnyComponent>>,
-    Languages: '' as Metadata<string[]>,
-
-    // Will activate network click button
-    ShowNetwork: '' as Metadata<(evt: MouseEvent) => void>
+    Languages: '' as Metadata<string[]>
   }
 })
 

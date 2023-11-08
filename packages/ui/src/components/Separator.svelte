@@ -436,6 +436,7 @@
   }
 
   const checkSibling = (start: boolean = false): void => {
+    if (separator === null) return
     if (prevElement === null || start) prevElement = separator.previousElementSibling as HTMLElement
     if (nextElement === null || start) nextElement = separator.nextElementSibling as HTMLElement
     if (separators && prevElement && separators[index].float !== undefined) {

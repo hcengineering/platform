@@ -1,7 +1,6 @@
 import client from '@hcengineering/client'
 import core, {
   AccountClient,
-  AccountRole,
   Client,
   ClientConnectEvent,
   Version,
@@ -12,15 +11,13 @@ import core, {
 import login, { loginId } from '@hcengineering/login'
 import { addEventListener, broadcastEvent, getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import presentation, { closeClient, refreshClient, setClient } from '@hcengineering/presentation'
-import ui, {
+import {
   fetchMetadataLocalStorage,
   getCurrentLocation,
   navigate,
   networkStatus,
-  setMetadataLocalStorage,
-  showPopup
+  setMetadataLocalStorage
 } from '@hcengineering/ui'
-import ServerManager from './components/ServerManager.svelte'
 import plugin from './plugin'
 
 export let versionError: string | undefined = ''
@@ -186,24 +183,6 @@ export async function connect (title: string): Promise<Client | undefined> {
   document.title = [ws, title].filter((it) => it).join(' - ')
   _clientSet = true
   await setClient(_client)
-
-  if (me.role === AccountRole.Owner) {
-    setMetadata(ui.metadata.ShowNetwork, (evt: MouseEvent) => {
-      if (getMetadata(presentation.metadata.Token) == null) {
-        return
-      }
-      if (getCurrentAccount()?.role === AccountRole.Owner) {
-        showPopup(
-          ServerManager,
-          {
-            endpoint: serverEndpoint,
-            token
-          },
-          'content'
-        )
-      }
-    })
-  }
   await broadcastEvent(plugin.event.NotifyConnection, getCurrentAccount())
 
   return _client

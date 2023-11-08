@@ -17,6 +17,7 @@ export function getStatistics (ctx: MeasureContext, sessions: SessionManager, ad
     for (const [k, v] of sessions.workspaces) {
       data.statistics.activeSessions[k] = Array.from(v.sessions.entries()).map(([k, v]) => ({
         userId: v.session.getUser(),
+        data: v.socket.data(),
         mins5: v.session.mins5,
         total: v.session.total,
         current: v.session.current
