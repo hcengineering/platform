@@ -249,7 +249,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: hr.string.PTO2,
-      icon: hr.icon.PTO,
+      icon: hr.icon.PTO2,
       color: PaletteColorIndexes.Watermelon,
       value: -0.5
     },
@@ -273,7 +273,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: hr.string.Overtime2,
-      icon: hr.icon.Overtime,
+      icon: hr.icon.Overtime2,
       color: PaletteColorIndexes.Cerulean,
       value: 0.5
     },
