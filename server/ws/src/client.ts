@@ -34,9 +34,9 @@ import core, {
   TxWorkspaceEvent,
   WorkspaceEvent,
   generateId,
- SearchQuery,
- SearchOptions,
- SearchResult
+  SearchQuery,
+  SearchOptions,
+  SearchResult
 } from '@hcengineering/core'
 import { Pipeline, SessionContext } from '@hcengineering/server-core'
 import { Token } from '@hcengineering/server-token'
