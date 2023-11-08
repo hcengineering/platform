@@ -17,6 +17,7 @@ import { Account, AnyAttribute, Class, Doc, DocData, DocIndexState, IndexKind, O
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { DocumentQuery, FindResult } from './storage'
+import { isPredicate } from './predicate'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -335,23 +336,28 @@ export class RateLimitter {
 export function mergeQueries<T extends Doc> (query1: DocumentQuery<T>, query2: DocumentQuery<T>): DocumentQuery<T> {
   const q = { ...query1 }
   for (const k in query2) {
-    if (
-      typeof query2[k] === 'object' &&
-      typeof query1[k] === 'object' &&
-      Object.keys(query2[k]).every((t) => t.startsWith('$')) &&
-      Object.keys(query1[k]).every((t) => t.startsWith('$'))
-    ) {
-      for (const x in query2[k]) {
-        if (x === '$in') {
-          q[k][x] =
-            query1[k][x].length - query2[k][x].length < 0
-              ? query2[k][x].filter((c: any) => query1[k][x].includes(c))
-              : query1[k][x].filter((c: any) => query2[k][x].includes(c))
-          continue
-        }
-        if (x === '$nin') {
-          q[k][x] = [...query1[k][x], ...query2[k][x]]
-          continue
+    if (!Object.keys(query1).includes(k)) {
+      Object.assign(q[k], query2[k])
+      continue
+    }
+    if (isPredicate(query2[k]) || isPredicate(query1[k])) {
+      const toIterate = isPredicate(query2[k]) ? query2[k] : query1[k]
+      for (const x in toIterate) {
+        if (['$in', '$nin'].includes(x)) {
+          const q1Arr = isPredicate(query1[k]) ? query1[k][x] : [query1[k]]
+          const q2Arr = isPredicate(query2[k]) ? query2[k][x] : [query2[k]]
+          if (x === '$in') {
+            const intersection =
+              q1Arr.length - q2Arr.length < 0
+                ? q2Arr.filter((c: any) => q1Arr.includes(c))
+                : q1Arr.filter((c: any) => q2Arr.includes(c))
+            Object.assign(q, { [k]: { $in: intersection } })
+            continue
+          }
+          if (x === '$nin') {
+            Object.assign(q, { [k]: { $nin: [...q1Arr, ...q2Arr] } })
+            continue
+          }
         }
         if (x === '$lt') {
           q[k][x] = query1[k][x] < query2[k][x] ? query1[k][x] : query2[k][x]
@@ -362,7 +368,6 @@ export function mergeQueries<T extends Doc> (query1: DocumentQuery<T>, query2: D
         }
       }
     }
-    if (!Object.keys(query1).includes(k)) Object.assign(q[k], query2[k])
   }
   return q
 }
