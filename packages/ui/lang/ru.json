@@ -66,6 +66,8 @@
     "Compact": "Компактный",
     "ThemeLight": "Светлая",
     "ThemeDark": "Тёмная",
-    "ThemeSystem": "Системная"
+    "ThemeSystem": "Системная",
+    "NoTimeZonesFound": "Временные зоны не найдены",
+    "Selected": "Выбрано:"
   }
 }

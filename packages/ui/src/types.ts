@@ -473,3 +473,14 @@ export interface SelectPopupValueType {
     label: IntlString
   }
 }
+
+/**
+ * @public
+ */
+export interface TimeZone {
+  id: string
+  continent: string
+  city: string
+  short: string
+  offset?: number
+}

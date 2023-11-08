@@ -66,6 +66,8 @@
     "Compact": "Compact",
     "ThemeLight": "Light",
     "ThemeDark": "Dark",
-    "ThemeSystem": "System"
+    "ThemeSystem": "System",
+    "NoTimeZonesFound": "No time zones found",
+    "Selected": "Selected:"
   }
 }
