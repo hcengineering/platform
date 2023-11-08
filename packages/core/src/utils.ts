@@ -334,10 +334,10 @@ export class RateLimitter {
 }
 
 export function mergeQueries<T extends Doc> (query1: DocumentQuery<T>, query2: DocumentQuery<T>): DocumentQuery<T> {
-  const q = { ...query1 }
+  const q = Object.assign({}, query1)
   for (const k in query2) {
     if (!Object.keys(query1).includes(k)) {
-      Object.assign(q[k], query2[k])
+      Object.assign(q, { [k]: query2[k] })
       continue
     }
     if (isPredicate(query2[k]) || isPredicate(query1[k])) {
@@ -356,15 +356,17 @@ export function mergeQueries<T extends Doc> (query1: DocumentQuery<T>, query2: D
           }
           if (x === '$nin') {
             Object.assign(q, { [k]: { $nin: [...q1Arr, ...q2Arr] } })
+          }
+        } else if (['$lt', '$gt'].includes(x)) {
+          const val1 = isPredicate(query1[k]) ? query1[k][x] : query1[k]
+          const val2 = isPredicate(query2[k]) ? query2[k][x] : query2[k]
+          if (x === '$lt') {
+            Object.assign(q, { [k]: { $lt: val1 < val2 ? val1 : val2 } })
             continue
           }
-        }
-        if (x === '$lt') {
-          q[k][x] = query1[k][x] < query2[k][x] ? query1[k][x] : query2[k][x]
-          continue
-        }
-        if (x === '$gt') {
-          q[k][x] = query1[k][x] > query2[k][x] ? query1[k][x] : query2[k][x]
+          if (x === '$gt') {
+            Object.assign(q, { [k]: { $gt: val1 > val2 ? val1 : val2 } })
+          }
         }
       }
     }
