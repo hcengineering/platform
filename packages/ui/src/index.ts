@@ -39,7 +39,8 @@ export type {
   TSeparatedItem,
   SeparatedItem,
   DefSeparators,
-  SeparatedElement
+  SeparatedElement,
+  TimeZone
 } from './types'
 
 export { themeStore } from '@hcengineering/theme'
@@ -175,6 +176,8 @@ export { default as IconLike } from './components/icons/Like.svelte'
 export { default as IconCollapseArrow } from './components/icons/CollapseArrow.svelte'
 export { default as IconEmoji } from './components/icons/Emoji.svelte'
 export { default as IconObjects } from './components/icons/Objects.svelte'
+export { default as IconUndo } from './components/icons/Undo.svelte'
+export { default as IconRedo } from './components/icons/Redo.svelte'
 
 export { default as PanelInstance } from './components/PanelInstance.svelte'
 export { default as Panel } from './components/Panel.svelte'

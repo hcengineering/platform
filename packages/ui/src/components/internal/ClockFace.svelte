@@ -15,6 +15,9 @@
 <script lang="ts">
   import { onDestroy } from 'svelte'
 
+  export let timeZone: string
+  export let size: string = '80px'
+
   const clock: Array<{ value: number; class: string }> = [
     { value: 0, class: 'hour-arrow' },
     { value: 0, class: 'minute-arrow' },
@@ -24,8 +27,11 @@
 
   const updateTime = (): void => {
     const now = new Date()
-    const startDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0).getTime()
-    const diff = now.getTime() - startDay
+    const offNow = timeZone === '' ? now : new Date(now.toLocaleString('en-US', { timeZone }))
+    const diffTZ = now.getTime() - offNow.getTime()
+    const realTime = new Date(now.getTime() - diffTZ)
+    const startDay = new Date(realTime.getFullYear(), realTime.getMonth(), realTime.getDate(), 0, 0, 0).getTime()
+    const diff = realTime.getTime() - startDay
     let h = diff / 3600000
     if (h > 12) h -= 12
     const m = (diff / 1000 / 60) % 60
@@ -40,7 +46,7 @@
   onDestroy(() => clearInterval(reqId))
 </script>
 
-<div class="clockFace-container">
+<div style:--clockface-size={size} class="clockFace-container">
   {#each [...Array(12).keys()] as hour}
     <div class="hour" data-hour={hour === 0 ? '12' : `${hour}`} />
   {/each}
@@ -55,9 +61,9 @@
     top: 1px;
     left: 50%;
     width: 1px;
-    height: 2px;
+    height: calc(var(--clockface-size, 64px) / 32);
     background: var(--theme-clockface-hours);
-    transform-origin: 50% 29px;
+    transform-origin: 50% calc(calc(var(--clockface-size, 64px) / 2) - 1px); // 29px;
     transform: rotate(0deg);
 
     @for $i from 2 through 12 {
@@ -66,16 +72,21 @@
       }
     }
     &:nth-child(3n + 1) {
-      height: 5px;
+      height: calc(var(--clockface-size, 64px) / 16);
       background: var(--theme-clockface-quarter);
     }
   }
 
   .clockFace-container {
+    --clockface-radius: calc(var(--clockface-size, 64px) / 2);
+    --clockface-arrow-end: calc(var(--clockface-size, 64px) / 16);
+    --clockface-sec-arrow: calc(calc(var(--clockface-radius) - 2px) + var(--clockface-arrow-end));
+    --clockface-min-arrow: calc(calc(var(--clockface-radius) * 0.75) + var(--clockface-arrow-end));
+    --clockface-hour-arrow: calc(calc(var(--clockface-radius) * 0.5) + var(--clockface-arrow-end));
     position: relative;
     flex-shrink: 0;
-    width: 60px;
-    height: 60px;
+    width: var(--clockface-size, 64px);
+    height: var(--clockface-size, 64px);
     background: var(--theme-clockface-back);
     border-radius: 50%;
     box-shadow: var(--theme-clockface-shadow);
@@ -88,17 +99,12 @@
       box-shadow: va(--theme-clockface-arrows-shadow);
       transform: rotate(0deg);
     }
-    .anim {
-      transition-property: transform;
-      transition-timing-function: var(--timing-clock);
-      transition-duration: 0.25s;
-    }
     .second-arrow {
       top: 2px;
       width: 2px;
-      height: 34px;
+      height: var(--clockface-sec-arrow);
       background: var(--theme-clockface-sec-arrow);
-      transform-origin: 50% 28px;
+      transform-origin: 50% calc(var(--clockface-radius) - 2px);
 
       &::before,
       &::after {
@@ -109,32 +115,32 @@
         transform: translateX(-50%);
       }
       &::before {
-        top: 25px;
+        top: calc(var(--clockface-radius) - 5px);
         width: 6px;
         height: 6px;
         background-color: var(--theme-clockface-sec-holder);
       }
       &::after {
-        top: 26px;
+        top: calc(var(--clockface-radius) - 4px);
         width: 4px;
         height: 4px;
         background: var(--theme-clockface-arrows-holder);
       }
     }
     .minute-arrow {
-      top: 4px;
+      top: calc(var(--clockface-radius) * 0.25);
       width: 2px;
-      height: 32px;
+      height: var(--clockface-min-arrow);
       background: var(--theme-clockface-min-arrow);
-      transform-origin: 50% 26px;
+      transform-origin: 50% calc(var(--clockface-min-arrow) - var(--clockface-arrow-end));
     }
     .hour-arrow {
-      top: 12px;
+      top: calc(var(--clockface-radius) * 0.5);
       left: calc(50% - 1px);
       width: 3px;
-      height: 24px;
+      height: var(--clockface-hour-arrow);
       background: var(--theme-clockface-min-arrow);
-      transform-origin: 50% 18px;
+      transform-origin: 50% calc(var(--clockface-hour-arrow) - var(--clockface-arrow-end));
     }
   }
 </style>

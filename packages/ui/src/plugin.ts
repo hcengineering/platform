@@ -92,7 +92,9 @@ export const uis = plugin(uiId, {
     Compact: '' as IntlString,
     ThemeLight: '' as IntlString,
     ThemeDark: '' as IntlString,
-    ThemeSystem: '' as IntlString
+    ThemeSystem: '' as IntlString,
+    NoTimeZonesFound: '' as IntlString,
+    Selected: '' as IntlString
   },
   metadata: {
     DefaultApplication: '' as Metadata<AnyComponent>,
