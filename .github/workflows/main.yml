@@ -203,6 +203,15 @@ jobs:
         with:
           name: playwright-results
           path: ./tests/sanity/playwright-report/
+      - name: Generates Allure Report
+        uses: simple-elf/allure-report-action@master
+        if: always()
+        id: allure-report
+        with:
+          allure_results: ./tests/sanity/allure-report/
+          gh_pages: gh-pages
+          allure_report: allure-report
+          allure_history: allure-history
       - name: Upload allure test results
         if: always()
         uses: actions/upload-artifact@v3
