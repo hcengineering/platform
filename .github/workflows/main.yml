@@ -218,6 +218,13 @@ jobs:
         with:
           name: allure-report
           path: ./tests/sanity/allure-report/
+      - name: Deploy report to Github Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v2
+        env:
+          PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUBLISH_BRANCH: gh-pages
+          PUBLISH_DIR: allure-history
       - name: Upload Logs
         if: always()
         uses: actions/upload-artifact@v3
