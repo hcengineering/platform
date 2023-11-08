@@ -24,7 +24,8 @@ export default mergeIds(workbenchId, workbench, {
     ApplicationPresenter: '' as AnyComponent,
     Archive: '' as AnyComponent,
     SpaceBrowser: '' as AnyComponent,
-    SpecialView: '' as AnyComponent
+    SpecialView: '' as AnyComponent,
+    ServerManager: '' as AnyComponent
   },
   string: {
     Application: '' as IntlString,

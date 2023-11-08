@@ -212,9 +212,32 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
         mode: ['browser'],
         application: tracker.app.Tracker,
         group: 'create'
-      }
+      },
+      override: [tracker.action.NewIssueGlobal]
     },
     tracker.action.NewIssue
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: tracker.component.CreateIssue,
+        element: 'top'
+      },
+      label: tracker.string.NewIssue,
+      icon: tracker.icon.NewIssue,
+      keyBinding: [],
+      input: 'none',
+      category: tracker.category.Tracker,
+      target: core.class.Doc,
+      context: {
+        mode: [],
+        group: 'create'
+      }
+    },
+    tracker.action.NewIssueGlobal
   )
 
   createAction(

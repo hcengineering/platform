@@ -17,7 +17,7 @@ import { Class, DOMAIN_MODEL, Ref, Space } from '@hcengineering/core'
 import { Builder, Mixin, Model, Prop, TypeRef, UX } from '@hcengineering/model'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import { createAction } from '@hcengineering/model-view'
-import type { Asset, IntlString } from '@hcengineering/platform'
+import { getEmbeddedLabel, type Asset, type IntlString } from '@hcengineering/platform'
 import view, { KeyBinding } from '@hcengineering/view'
 import type {
   Application,
@@ -68,6 +68,24 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(workbench.class.Application, core.class.Class, view.mixin.IgnoreActions, {
     actions: [view.action.Delete]
+  })
+
+  createAction(builder, {
+    action: view.actionImpl.ShowPopup,
+    actionProps: {
+      component: workbench.component.ServerManager,
+      element: 'content'
+    },
+    label: getEmbeddedLabel('Server statistics'),
+    icon: view.icon.Configure,
+    keyBinding: [],
+    input: 'none',
+    category: view.category.General,
+    target: core.class.Doc,
+    secured: true,
+    context: {
+      mode: ['workbench']
+    }
   })
 }
 
