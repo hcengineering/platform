@@ -17,7 +17,12 @@ import { type onStatelessParameters } from '@hocuspocus/provider'
 import { type Attribute } from '@tiptap/core'
 import * as Y from 'yjs'
 
+import contact, { type PersonAccount, formatName, getAvatarColorForId } from '@hcengineering/contact'
+import { getCurrentAccount } from '@hcengineering/core'
+import { getClient } from '@hcengineering/presentation'
+
 import { type DocumentId, TiptapCollabProvider } from './provider'
+import { type CollaborationUser } from './types'
 
 type ProviderData = (
   | {
@@ -104,5 +109,19 @@ export function getDataAttribute (
       }
     },
     ...(options ?? {})
+  }
+}
+
+export async function getCollaborationUser (): Promise<CollaborationUser> {
+  const client = getClient()
+
+  const me = getCurrentAccount() as PersonAccount
+  const employee = await client.findOne(contact.class.Person, { _id: me.person })
+
+  return {
+    id: me._id,
+    name: employee !== undefined ? formatName(employee.name) : me.email,
+    email: me.email,
+    color: getAvatarColorForId(me.person)
   }
 }

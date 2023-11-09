@@ -18,7 +18,7 @@
   import { getCurrentAccount } from '@hcengineering/core'
   import { IntlString, getMetadata, translate } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
-  import { Button, IconSize, Loading, getPlatformColorForText, themeStore } from '@hcengineering/ui'
+  import { Button, IconSize, Loading, themeStore } from '@hcengineering/ui'
   import { AnyExtension, Editor, FocusPosition, mergeAttributes } from '@tiptap/core'
   import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration'
   import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
@@ -38,7 +38,7 @@
     TextFormatCategory,
     TextNodeAction
   } from '../types'
-  import { copyDocumentContent, copyDocumentField } from '../utils'
+  import { copyDocumentContent, copyDocumentField, getCollaborationUser } from '../utils'
 
   import ImageStyleToolbar from './ImageStyleToolbar.svelte'
   import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
@@ -106,7 +106,7 @@
   let loading = true
   void provider.loaded.then(() => (loading = false))
 
-  const currentUser = getCurrentAccount()
+  const user = getCurrentAccount()
 
   let editor: Editor
   let element: HTMLElement
@@ -215,80 +215,78 @@
     )
   }
 
-  onMount(() => {
-    void ph.then(() => {
-      editor = new Editor({
-        element,
-        editorProps: { attributes: mergeAttributes(defaultEditorAttributes, editorAttributes, { class: 'flex-grow' }) },
-        extensions: [
-          ...defaultExtensions,
-          ...optionalExtensions,
-          Placeholder.configure({ placeholder: placeHolderStr }),
-          InlineStyleToolbarExtension.configure({
-            tippyOptions,
-            element: textToolbarElement,
-            isSupported: () => showTextStyleToolbar,
-            isSelectionOnly: () => false
-          }),
-          InlinePopupExtension.configure({
-            pluginKey: 'show-image-actions-popup',
-            element: imageToolbarElement,
-            tippyOptions: {
-              ...tippyOptions,
-              appendTo: () => boundary ?? element
-            },
-            shouldShow: ({ editor }) => {
-              if (readonly || !canShowPopups) {
-                return false
-              }
-              return editor.isActive('image')
-            }
-          }),
-          Collaboration.configure({
-            document: ydoc,
-            field
-          }),
-          CollaborationCursor.configure({
-            provider,
-            user: {
-              name: currentUser.email,
-              color: getPlatformColorForText(currentUser.email, $themeStore.dark)
-            },
-            selectionRender: noSelectionRender
-          }),
-          Completion.configure({
-            ...completionConfig,
-            showDoc (event: MouseEvent, _id: string, _class: string) {
-              dispatch('open-document', { event, _id, _class })
-            }
-          }),
-          EmojiExtension.configure(),
-          ...extensions
-        ],
-        parseOptions: {
-          preserveWhitespace: 'full'
-        },
-        onTransaction: () => {
-          // force re-render so `editor.isActive` works as expected
-          editor = editor
-        },
-        onBlur: ({ event }) => {
-          focused = false
-          dispatch('blur', event)
-        },
-        onFocus: () => {
-          focused = true
-          dispatch('focus')
-        },
-        onUpdate: ({ transaction }) => {
-          // ignore non-document changes
-          if (!transaction.docChanged) return
-          // ignore non-local changes
-          if (isChangeOrigin(transaction)) return
+  onMount(async () => {
+    await ph
+    const user = await getCollaborationUser()
 
-          dispatch('update')
-        }
-      })
+    editor = new Editor({
+      element,
+      editorProps: { attributes: mergeAttributes(defaultEditorAttributes, editorAttributes, { class: 'flex-grow' }) },
+      extensions: [
+        ...defaultExtensions,
+        ...optionalExtensions,
+        Placeholder.configure({ placeholder: placeHolderStr }),
+        InlineStyleToolbarExtension.configure({
+          tippyOptions,
+          element: textToolbarElement,
+          isSupported: () => showTextStyleToolbar,
+          isSelectionOnly: () => false
+        }),
+        InlinePopupExtension.configure({
+          pluginKey: 'show-image-actions-popup',
+          element: imageToolbarElement,
+          tippyOptions: {
+            ...tippyOptions,
+            appendTo: () => boundary ?? element
+          },
+          shouldShow: ({ editor }) => {
+            if (readonly || !canShowPopups) {
+              return false
+            }
+            return editor.isActive('image')
+          }
+        }),
+        Collaboration.configure({
+          document: ydoc,
+          field
+        }),
+        CollaborationCursor.configure({
+          provider,
+          user,
+          selectionRender: noSelectionRender
+        }),
+        Completion.configure({
+          ...completionConfig,
+          showDoc (event: MouseEvent, _id: string, _class: string) {
+            dispatch('open-document', { event, _id, _class })
+          }
+        }),
+        EmojiExtension.configure(),
+        ...extensions
+      ],
+      parseOptions: {
+        preserveWhitespace: 'full'
+      },
+      onTransaction: () => {
+        // force re-render so `editor.isActive` works as expected
+        editor = editor
+      },
+      onBlur: ({ event }) => {
+        focused = false
+        dispatch('blur', event)
+      },
+      onFocus: () => {
+        focused = true
+        dispatch('focus')
+      },
+      onUpdate: ({ transaction }) => {
+        // ignore non-document changes
+        if (!transaction.docChanged) return
+        // ignore non-local changes
+        if (isChangeOrigin(transaction)) return
+
+        dispatch('update')
+      }
     })
   })
 
