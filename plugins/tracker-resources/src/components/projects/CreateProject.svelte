@@ -63,7 +63,7 @@
     project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount()._id]
   let projectsIdentifiers: Set<string> = new Set()
   let isSaving = false
-  const defaultStatus: Ref<IssueStatus> | undefined = project?.defaultIssueStatus
+  let defaultStatus: Ref<IssueStatus> | undefined = project?.defaultIssueStatus
 
   let changeIdentityRef: HTMLElement
 
@@ -360,7 +360,7 @@
       <div class="antiGrid-row__header">
         <Label label={tracker.string.DefaultIssueStatus} />
       </div>
-      <StatusSelector value={defaultStatus} type={typeId} kind={'regular'} size={'large'} />
+      <StatusSelector bind:value={defaultStatus} type={typeId} kind={'regular'} size={'large'} />
     </div>
   </div>
 </Card>
