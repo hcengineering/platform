@@ -173,7 +173,7 @@
   }
 
   export function setNodeUuid (nodeId: string): boolean {
-    if (!editor || editor.view.state.selection.empty) {
+    if (!editor || editor.view.state.selection.empty || !nodeId) {
       return false
     }
 
