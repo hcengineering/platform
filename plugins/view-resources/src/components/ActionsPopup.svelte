@@ -89,9 +89,16 @@
     const docs = getSelection($focusStore, $selectionStore)
     let fActions: WithLookup<Action>[] = actions
 
+    // We need to filter application based actions first, to prevent override for globals
+    fActions = fActions.filter(
+      (it) =>
+        (it.$lookup?.category?.visible ?? true) &&
+        (it.context.application === viewContext.application || it.context.application === undefined)
+    )
     for (const d of docs) {
       fActions = filterActions(client, d, fActions)
     }
+
     if (docs.length === 0) {
       fActions = fActions.filter((it) => it.input === 'none')
       const overrideRemove: Array<Ref<Action>> = []
@@ -102,11 +109,6 @@
       }
       fActions = fActions.filter((it) => !overrideRemove.includes(it._id))
     }
-    fActions = fActions.filter(
-      (it) =>
-        (it.$lookup?.category?.visible ?? true) &&
-        (it.context.application === viewContext.application || it.context.application === undefined)
-    )
     fActions = await filterVisibleActions(fActions, docs)
     // Sort by category.
     supportedActions = fActions.sort((a, b) => a.category.localeCompare(b.category))
