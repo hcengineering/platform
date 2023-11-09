@@ -89,9 +89,7 @@
     /*
       Delayed save can be invoked after dismount. In this case descriptionBox would be null
     */
-    if (descriptionBox !== undefined && descriptionBox !== null) {
-      await descriptionBox.createAttachments()
-    }
+    await descriptionBox?.createAttachments()
   }
 
   let saveTrigger: any
