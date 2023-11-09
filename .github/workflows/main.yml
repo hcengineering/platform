@@ -176,19 +176,14 @@ jobs:
         run: |
           cd ./tests
           ./prepare.sh
-      - name: Install Playwright & Allure
+      - name: Install Playwright
         run: |
           cd ./tests/sanity
           node ../../common/scripts/install-run-rushx.js ci
-#          sudo apt-get install default-jre
-#          wget https://github.com/allure-framework/allure2/releases/download/2.24.1/allure_2.24.1-1_all.deb
-#          sudo dpkg -i allure_2.24.1-1_all.deb
-#          pwd
       - name: Run UI tests
         run: |
           cd ./tests/sanity
           node ../../common/scripts/install-run-rushx.js uitest
-          node ../../common/scripts/install-run-rushx.js allure:generate
       - name: "Store docker logs"
         if: always()
         run: |
@@ -217,7 +212,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: allure-report
-          path: ./tests/sanity/allure-report/
+          path: ./allure-report/
       - name: Deploy report to Github Pages
         if: always()
         uses: peaceiris/actions-gh-pages@v2
