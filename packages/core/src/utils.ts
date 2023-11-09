@@ -340,24 +340,11 @@ export function mergeQueries<T extends Doc> (query1: DocumentQuery<T>, query2: D
       Object.assign(q, { [k]: query2[k] })
       continue
     }
+    Object.assign(q, { [k]: getInNiN(query1[k], query2[k]) })
     if (isPredicate(query2[k]) || isPredicate(query1[k])) {
       const toIterate = isPredicate(query2[k]) ? query2[k] : query1[k]
       for (const x in toIterate) {
-        if (['$in', '$nin'].includes(x)) {
-          const q1Arr = isPredicate(query1[k]) ? query1[k][x] : [query1[k]]
-          const q2Arr = isPredicate(query2[k]) ? query2[k][x] : [query2[k]]
-          if (x === '$in') {
-            const intersection =
-              q1Arr.length - q2Arr.length < 0
-                ? q2Arr.filter((c: any) => q1Arr.includes(c))
-                : q1Arr.filter((c: any) => q2Arr.includes(c))
-            Object.assign(q, { [k]: { $in: intersection } })
-            continue
-          }
-          if (x === '$nin') {
-            Object.assign(q, { [k]: { $nin: [...q1Arr, ...q2Arr] } })
-          }
-        } else if (['$lt', '$gt'].includes(x)) {
+        if (['$lt', '$gt'].includes(x)) {
           const val1 = isPredicate(query1[k]) ? query1[k][x] : query1[k]
           const val2 = isPredicate(query2[k]) ? query2[k][x] : query2[k]
           if (x === '$lt') {
@@ -372,4 +359,37 @@ export function mergeQueries<T extends Doc> (query1: DocumentQuery<T>, query2: D
     }
   }
   return q
+}
+
+function getInNiN (query1: any, query2: any): Object {
+  const aIn =
+    (typeof query1 === 'object' && '$in' in query1 ? query1.$in : undefined) ??
+    (typeof query1 !== 'object' && query1 !== undefined ? [query1] : [])
+  const aNIn =
+    (typeof query1 === 'object' && '$nin' in query1 ? query1.$nin : undefined) ??
+    (typeof query1 === 'object' && query1.$ne !== undefined ? [query1.$ne] : [])
+  const bIn =
+    (typeof query2 === 'object' && '$in' in query2 ? query2.$in : undefined) ??
+    (typeof query2 !== 'object' && query2 !== undefined ? [query2] : [])
+  const bNIn =
+    (typeof query2 === 'object' && '$nin' in query2 ? query2.$nin : undefined) ??
+    (typeof query2 === 'object' && query2.$ne !== undefined ? [query2.$ne] : [])
+  const finalIn =
+    aIn.length - bIn.length < 0 ? bIn.filter((c: any) => aIn.includes(c)) : aIn.filter((c: any) => bIn.includes(c))
+  const finalNin = Array.from(new Set([...aNIn, ...bNIn]))
+  if (finalIn.length === 1 && finalNin.length === 0) {
+    return aIn[0]
+  }
+  if (finalIn.length === 0 && finalNin.length === 1) {
+    return { $ne: finalNin[0] }
+  }
+  const res: any = {}
+  if (finalIn.length > 0) {
+    res.$in = finalIn
+  }
+  if (finalNin.length > 0) {
+    res.$nin = finalNin
+  }
+  if (aIn.length === 1 && bIn.length === 1) return []
+  return res
 }
