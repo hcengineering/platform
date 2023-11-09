@@ -207,7 +207,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
       keyBinding: ['keyC'],
       input: 'none',
       category: tracker.category.Tracker,
-      target: tracker.class.Issue,
+      target: core.class.Doc,
       context: {
         mode: ['browser'],
         application: tracker.app.Tracker,
