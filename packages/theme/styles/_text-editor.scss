@@ -157,15 +157,40 @@
     border-right: 1px solid #0d0d0d;
     margin-left: -1px;
     margin-right: -1px;
-    pointer-events: none;
     position: relative;
     word-break: normal;
+
+    &::after {
+      content: '';
+      position: absolute;
+      border-color: inherit;
+      border-style: solid;
+      border-radius: 0 2px 2px 0;
+      border-width: 2.5px;
+      height: 5px;
+      width: 5px;
+      top: -2px;
+      left: -1px;
+    }
+
+    &:hover {
+      .collaboration-cursor__label {
+        visibility: visible;
+        opacity: 1;
+
+        transition: all 0.1s ease-in-out;
+      }
+    }
   }
 
   /* Render the username above the caret */
   .collaboration-cursor__label {
-    border-radius: 3px 3px 3px 0;
-    color: #0d0d0d;
+    visibility: hidden;
+    opacity: 0;
+
+    pointer-events: none;
+    border-radius: 0.25rem 0.25rem 0.25rem 0;
+    color: #f1f1f4;
     font-size: 12px;
     font-style: normal;
     font-weight: 600;
