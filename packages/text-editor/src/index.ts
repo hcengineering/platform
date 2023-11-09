@@ -35,6 +35,7 @@ export { default } from './plugin'
 export * from './types'
 export * from './utils'
 
+export { FocusExtension, type FocusOptions, type FocusStorage } from './components/extension/focus'
 export { HeadingsExtension, type HeadingsOptions, type HeadingsStorage } from './components/extension/headings'
 export {
   IsEmptyContentExtension,

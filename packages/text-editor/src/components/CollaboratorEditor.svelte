@@ -161,6 +161,25 @@
     })
   }
 
+  export function selectRange (from: number, to: number) {
+    if (!editor) {
+      return
+    }
+
+    const { doc, tr } = editor.view.state
+    const [$start, $end] = [doc.resolve(from), doc.resolve(to)]
+    editor.view.dispatch(tr.setSelection(new TextSelection($start, $end)))
+    needFocus = true
+  }
+
+  export function setNodeUuid (nodeId: string): boolean {
+    if (!editor || editor.view.state.selection.empty || !nodeId) {
+      return false
+    }
+
+    return editor.chain().setNodeUuid(nodeId).run()
+  }
+
   export function takeSnapshot (snapshotId: string) {
     copyDocumentContent(documentId, snapshotId, { provider }, initialContentId)
   }
