@@ -16,6 +16,7 @@
 
 import InviteLink from './components/InviteLink.svelte'
 import LoginApp from './components/LoginApp.svelte'
+import StatusControl from './components/StatusControl.svelte'
 import { changePassword, getWorkspaces, leaveWorkspace, selectWorkspace, sendInvite } from './utils'
 /*!
  * Anticrm Platform™ Login Plugin
@@ -24,10 +25,14 @@ import { changePassword, getWorkspaces, leaveWorkspace, selectWorkspace, sendInv
  * Licensed under the Eclipse Public License, Version 2.0
  */
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+
+export { default as StatusControl } from './components/StatusControl.svelte'
+
 export default async () => ({
   component: {
     LoginApp,
-    InviteLink
+    InviteLink,
+    StatusControl
   },
   function: {
     LeaveWorkspace: leaveWorkspace,
