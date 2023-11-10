@@ -20,7 +20,7 @@ import { createQuery, getClient } from '@hcengineering/presentation'
 import task, { Project, ProjectType, Task, calcRank } from '@hcengineering/task'
 import { getCurrentLocation, navigate, showPopup } from '@hcengineering/ui'
 import { ViewletDescriptor } from '@hcengineering/view'
-import { statusStore } from '@hcengineering/view-resources'
+import { CategoryQuery, statusStore } from '@hcengineering/view-resources'
 import { get, writable } from 'svelte/store'
 import AssignedTasks from './components/AssignedTasks.svelte'
 import CreateStatePopup from './components/CreateStatePopup.svelte'
@@ -134,6 +134,30 @@ async function getAllStates (
     return statuses
       .filter((p) => p?.category !== task.statusCategory.Lost && p?.category !== task.statusCategory.Won)
       .map((p) => p?._id)
+  }
+  const _space = query?.space
+  if (_space !== undefined) {
+    const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
+      let refresh: boolean = false
+      const lq = CategoryQuery.getLiveQuery(queryId)
+      refresh = lq.query(task.class.Project, { _id: _space as Ref<Project> }, (res) => {
+        const typeId = res[0]?.type
+        const type = get(typeStore).get(typeId)
+        const statusMap = get(statusStore).byId
+        const statuses = (type?.statuses?.map((p) => statusMap.get(p._id)) as Status[]) ?? []
+        const result = statuses
+          .filter((p) => p?.category !== task.statusCategory.Lost && p?.category !== task.statusCategory.Won)
+          .map((p) => p?._id)
+        CategoryQuery.results.set(queryId, result)
+        resolve(result)
+        onUpdate()
+      })
+
+      if (!refresh) {
+        resolve(CategoryQuery.results.get(queryId) ?? [])
+      }
+    })
+    return await promise
   }
   return get(statusStore)
     .array.filter(
