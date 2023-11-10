@@ -214,7 +214,7 @@ jobs:
           name: allure-report
           path: ./allure-report/
       - name: Deploy report to Github Pages
-        if: always()
+        if: ${{ github.ref == 'refs/heads/main' }}
         uses: peaceiris/actions-gh-pages@v2
         env:
           PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
