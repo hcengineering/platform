@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, mergeQueries, Ref, Space, WithLookup } from '@hcengineering/core'
   import { IntlString, getEmbeddedLabel } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { Project, ProjectType, ProjectTypeCategory } from '@hcengineering/task'
@@ -65,7 +65,7 @@
   $: spacesQ.query(task.class.Project, { type: mode as Ref<ProjectType> }, (result) => {
     spaces = result
   })
-
+  let resultQuery: DocumentQuery<Doc>
   $: query = { ...(baseQuery ?? {}), ...(viewlet?.baseQuery ?? {}), space: { $in: spaces.map((it) => it._id) } }
   $: searchQuery = search === '' ? query : { ...query, $search: search }
   $: resultQuery = searchQuery
@@ -154,7 +154,7 @@
     query={searchQuery}
     {viewOptions}
     on:change={(e) => {
-      resultQuery = { ...query, ...e.detail }
+      resultQuery = mergeQueries(query, e.detail)
     }}
   />
   <Component

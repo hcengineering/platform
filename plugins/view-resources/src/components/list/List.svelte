@@ -13,7 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Class, Doc, DocumentQuery, FindOptions, Ref, Space, RateLimitter } from '@hcengineering/core'
+  import core, {
+    Class,
+    Doc,
+    DocumentQuery,
+    FindOptions,
+    Ref,
+    Space,
+    RateLimitter,
+    mergeQueries
+  } from '@hcengineering/core'
   import { IntlString, getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
@@ -59,7 +68,7 @@
 
   let resultQuery: DocumentQuery<Doc> = query
   $: getResultQuery(query, viewOptionsConfig, viewOptions).then((p) => {
-    resultQuery = { ...query, ...p }
+    resultQuery = mergeQueries(p, query) as DocumentQuery<Doc>
   })
 
   $: queryNoLookup = noLookup(resultQuery)
