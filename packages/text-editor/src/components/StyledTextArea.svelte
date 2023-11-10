@@ -1,9 +1,12 @@
 <script lang="ts">
+  import { AnyExtension } from '@tiptap/core'
   import { IntlString } from '@hcengineering/platform'
   import { ButtonSize, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import textEditorPlugin from '../plugin'
   import StyledTextEditor from './StyledTextEditor.svelte'
+  import { Completion } from '../Completion'
+  import { completionConfig } from './extensions'
 
   export let label: IntlString | undefined = undefined
   export let content: string | undefined
@@ -16,6 +19,7 @@
   export let isScrollable: boolean = false
   export let maxHeight: 'max' | 'card' | 'limited' | string | undefined = undefined
   export let required = false
+  export let enableBackReferences = false
 
   let rawValue: string
   let oldContent = ''
@@ -45,6 +49,24 @@
     textEditor.focus()
     needFocus = false
   }
+
+  function configureExtensions () {
+    const completionPlugin = Completion.configure({
+      ...completionConfig,
+      showDoc (event: MouseEvent, _id: string, _class: string) {
+        dispatch('open-document', { event, _id, _class })
+      }
+    })
+
+    const extensions: AnyExtension[] = []
+    if (enableBackReferences) {
+      extensions.push(completionPlugin)
+    }
+
+    return extensions
+  }
+
+  const extensions = configureExtensions()
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -68,6 +90,7 @@
     {buttonSize}
     {maxHeight}
     {isScrollable}
+    {extensions}
     bind:content={rawValue}
     bind:this={textEditor}
     on:focus={() => {
