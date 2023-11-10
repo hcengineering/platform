@@ -17,7 +17,8 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { Card, getClient } from '@hcengineering/presentation'
   import tags, { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
-  import { EditBox, ListView, Loading } from '@hcengineering/ui'
+  import { Button, CheckBox, EditBox, Lazy, ListView, Loading } from '@hcengineering/ui'
+  import Expandable from '@hcengineering/ui/src/components/Expandable.svelte'
   import { FILTER_DEBOUNCE_MS } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
@@ -77,7 +78,8 @@
       element?: TagElement
       move: Ref<TagElement>[]
       toDelete: boolean
-      total?: number
+      total: number
+      newRefs: number
     }[]
     move: number
   }
@@ -157,8 +159,54 @@
     elements: [],
     move: 0
   }
+
+  let expertRefs: Pick<TagReference, '_id' | '_class' | 'tag' | 'title'>[] = []
+
+  let titles: string[] = []
+  const titlesStates: Map<string, boolean> = new Map()
+  $: getClient()
+    .findAll(
+      tags.class.TagReference,
+      {
+        tag: {
+          $in: Array.from(elements.map((it) => it._id))
+        },
+        weight: { $gt: 5 } // We need expert ones.
+      },
+      {
+        projection: {
+          tag: 1,
+          _id: 1,
+          title: 1
+        }
+      }
+    )
+    .then((res) => {
+      expertRefs = res
+    })
+
+  $: preparedRefs = expertRefs.map((it) => ({ ...it, title: prepareTitle(it.title) }))
+
+  let counters: Map<string, number> = new Map()
+  $: {
+    const _counters: Map<string, number> = new Map()
+    for (const t of titles) {
+      const refs = preparedRefs.filter((it) => it.title.toLowerCase() === t).length
+      _counters.set(t, refs)
+      if (refs < 5) {
+        titlesStates.set(t, false)
+      }
+    }
+    counters = _counters
+  }
+
+  $: titles = Array.from(new Set(expertRefs.map((it) => prepareTitle(it.title.toLocaleLowerCase()))))
+
   // Will return a set of operations over tag elements
-  async function updateTagsList (tagElements: TagElement[]): Promise<void> {
+  async function updateTagsList (
+    tagElements: TagElement[],
+    expertRefs: Pick<TagReference, '_id' | '_class' | 'tag' | 'title'>[]
+  ): Promise<void> {
     const _plan: TagUpdatePlan = {
       elements: [],
       move: 0
@@ -174,23 +222,6 @@
         goodTags.push(tag)
       }
     }
-
-    const expertRefs = await getClient().findAll(
-      tags.class.TagReference,
-      {
-        tag: {
-          $in: Array.from(tagElements.map((it) => it._id))
-        },
-        weight: { $gt: 5 } // We need expert ones.
-      },
-      {
-        projection: {
-          tag: 1,
-          _id: 1,
-          title: 1
-        }
-      }
-    )
 
     const toGoodTags = Array.from(new Set(expertRefs.map((it) => it.tag)))
       .map((it) => tagMap.get(it))
@@ -211,15 +242,34 @@
       .filter((t) => t.title.length > 2)
     const goodSortedTagsTitles = new Map<Ref<TagElement>, string>()
     processed = -1
+
+    // Candidate to have in list.
+    const allRefs = await getClient().findAll(
+      tags.class.TagReference,
+      {},
+      {
+        projection: {
+          tag: 1,
+          _id: 1
+        }
+      }
+    )
+
+    const tagElementIds = new Map<Ref<TagElement>, TagUpdatePlan['elements'][0]>()
+
     for (const tag of tagElements.toSorted((a, b) => prepareTitle(a.title).length - prepareTitle(b.title).length)) {
       processed++
+      const refs = allRefs.filter((it) => it.tag === tag._id)
       if (goodTagMap.has(tag._id)) {
-        _plan.elements.push({
+        const ee = {
           original: tag,
           move: [],
           toDelete: false,
-          total: -1
-        })
+          total: refs.length,
+          newRefs: 0
+        }
+        _plan.elements.push(ee)
+        tagElementIds.set(tag._id, ee)
         continue
       }
       let title = prepareTitle(tag.title)
@@ -227,7 +277,9 @@
         _plan.elements.push({
           original: tag,
           move: [],
-          toDelete: true
+          toDelete: true,
+          total: refs.length,
+          newRefs: 0
         })
         continue
       }
@@ -236,8 +288,16 @@
         _plan.elements.push({
           original: tag,
           move: namedIdx !== undefined ? [namedIdx] : [],
-          toDelete: true
+          toDelete: true,
+          total: refs.length,
+          newRefs: 0
         })
+        if (namedIdx !== undefined) {
+          const re = tagElementIds.get(namedIdx)
+          if (re !== undefined) {
+            re.newRefs += refs.length
+          }
+        }
         _plan.move++
         continue
       }
@@ -271,7 +331,9 @@
         const mve: TagUpdatePlan['elements'][0] = {
           original: tag,
           move: [],
-          toDelete: false
+          toDelete: false,
+          newRefs: 0,
+          total: refs.length
         }
         for (const t of toReplace) {
           let tt = goodSortedTagsTitles.get(t._id)
@@ -293,6 +355,11 @@
             continue
           }
           mve.move.push(t._id)
+
+          const re = tagElementIds.get(t._id)
+          if (re !== undefined) {
+            re.newRefs += mve.total
+          }
         }
         const namedIdx = namedElements.get(prepareTitle(title).toLowerCase())
         if (namedIdx !== undefined) {
@@ -302,14 +369,13 @@
         mve.element = { ...tag, title: prepareTitle(title) }
         mve.toDelete = prepareTitle(title).length <= 1 || isForRemove(title)
 
+        mve.total = refs.length
         if (isForRemove(title)) {
           mve.element.title = ''
         } else {
           // Candidate to have in list.
-          const refs = await getClient().findAll(tags.class.TagReference, { tag: tag._id }, { limit: 2, total: true })
           if (refs.length < 2) {
             mve.toDelete = true
-            mve.total = refs.total
           }
         }
         if (!mve.toDelete) {
@@ -320,37 +386,42 @@
         }
 
         _plan.elements.push(mve)
+        tagElementIds.set(tag._id, mve)
         _plan.move++
         continue
       }
 
       // Candidate to have in list.
-      const refs = await getClient().findAll(tags.class.TagReference, { tag: tag._id }, { limit: 2, total: true })
       if (isForRemove(title) || refs.length < 2) {
         _plan.elements.push({
           original: tag,
           move: [],
-          toDelete: true
+          toDelete: true,
+          newRefs: 0,
+          total: refs.length
         })
         _plan.move++
         continue
       }
       namedElements.set(prepareTitle(title.toLowerCase()), tag._id)
-      const ee = {
+      const ee: TagUpdatePlan['elements'][0] = {
         original: tag,
         element: { ...tag, title },
         move: [],
         toDelete: false,
-        total: refs.total
+        total: refs.length,
+        newRefs: 0
       }
 
       _plan.elements.push(ee)
-      if (ee.element?.title.length > 2) {
+      if (ee.element !== undefined && ee.element.title.length > 2) {
         goodSortedTags.push(ee.element)
         goodSortedTagsTitles.delete(ee.element._id)
         goodSortedTags.sort((a, b) => b.title.length - a.title.length).filter((t) => t.title.length > 2)
       }
-      goodTags.push(ee.element)
+      if (ee.element !== undefined) {
+        goodTags.push(ee.element)
+      }
     }
     _plan.elements.sort((a, b) => prepareTitle(a.original.title).localeCompare(prepareTitle(b.original.title)))
     plan = _plan
@@ -358,11 +429,19 @@
   }
 
   let doProcessing = false
-  $: {
+
+  function doAnalyse (): void {
     doProcessing = true
-    updateTagsList(elements).then(() => {
-      doProcessing = false
-    })
+    if (elements.length > 0 && expertRefs.length > 0) {
+      setTimeout(() => {
+        updateTagsList(
+          elements,
+          expertRefs.filter((it) => titlesStates.get(prepareTitle(it.title.toLowerCase())) ?? true)
+        ).then(() => {
+          doProcessing = false
+        })
+      }, 10)
+    }
   }
   let search: string = ''
 
@@ -375,6 +454,10 @@
   $: searchPlanElements = plan.elements.filter(
     (it) => it.original.title.toLowerCase().indexOf(_search.toLowerCase()) !== -1
   )
+
+  $: idMap = new Map(plan.elements.filter((it) => it.toDelete === false).map((it) => [it.original._id, it]))
+
+  $: searchTitles = titles.filter((it) => it.toLowerCase().indexOf(_search.toLowerCase()) !== -1)
 
   let processed: number = 0
 
@@ -407,7 +490,7 @@
         // We need to find all objects and add new tag elements to them and preserve skill level
         for (const a of allRefs) {
           for (const m of item.move) {
-            const me = plan.elements.find((it) => it.original._id === m && it.toDelete === false)
+            const me = idMap.get(m)
             if (me !== undefined) {
               const id = await ops.addCollection(
                 tags.class.TagReference,
@@ -486,6 +569,57 @@
     }
     return undefined
   }
+
+  function exportCSV (name: string, data: string): void {
+    const filename = name + new Date().toLocaleDateString() + '.csv'
+    const link = document.createElement('a')
+    link.style.display = 'none'
+    link.setAttribute('target', '_blank')
+    link.setAttribute('href', 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(data))
+    link.setAttribute('download', filename)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  function exportExpertSkills (): string {
+    // Construct csv
+    const csv: string[] = []
+    csv.push('title;enabled;references')
+    for (const t of titles) {
+      const row: string[] = []
+      row.push('"' + t + '"')
+      row.push('"' + (titlesStates.get(t) ?? true) ? 'true' : 'false' + '"')
+      row.push('"' + (counters.get(t) ?? 0) + '"')
+      csv.push(row.join(';'))
+    }
+    return csv.join('\n')
+  }
+
+  function exportPlan (): string {
+    // Construct csv
+    const csv: string[] = []
+    csv.push('number; title;total; new refs; new title;to delete;will add tags ')
+    let i = 0
+    for (const t of plan.elements) {
+      const row: string[] = []
+      row.push('"' + i++ + '"')
+      row.push('"' + (t.original?.title ?? '') + '"')
+      row.push('"' + (t.total + t.newRefs) + '"')
+      row.push('"' + t.newRefs + '"')
+      row.push('"' + (t.element?.title ?? '') + '"')
+      row.push('"' + (t.toDelete ? 'yes' : '') + '"')
+      const moveTo = t.move.map((it) => {
+        const orig = idMap.get(it)
+        return (
+          orig?.original.title + (' (#' + plan.elements.findIndex((it) => it.original._id === orig?.original._id) + ')')
+        )
+      })
+      row.push('"' + moveTo.join(', ') + '"')
+      csv.push(row.join(';'))
+    }
+    return csv.join('\n')
+  }
 </script>
 
 <Card
@@ -500,8 +634,7 @@
 >
   <div class="flex-row-center">
     <EditBox kind={'search-style'} bind:value={search} />
-
-    {#if processed > 0}
+    {#if processed > 0 || doProcessing}
       <div class="p-1">
         <Loading />
         Processing: {processed} / {searchPlanElements.length}
@@ -511,35 +644,86 @@
       <Loading />
     {/if}
   </div>
-  <div class="flex clear-mins" style:overflow={'auto'}>
-    <div class="flex-grow flex-nowrap no-word-wrap">
-      <div class="flex-row-center">
-        {elements.length} => {plan.elements.length - plan.move}
-      </div>
-      <ListView count={searchPlanElements.length}>
+  <Expandable>
+    <svelte:fragment slot="title">
+      Existing Expert level skills
+      {titles.length} =>
+      {titles.filter((it) => titlesStates.get(it) ?? true).length}
+    </svelte:fragment>
+    <div class="h-60" style:overflow={'auto'}>
+      <ListView count={searchTitles.length}>
         <svelte:fragment slot="item" let:item>
-          {@const el = searchPlanElements[item]}
-          <div class="flex-row-center" style:color={toColor(el)}>
-            {el.original.title}
-            {#if el.element}
-              => {el.element?.title}
-            {/if}
-            {#each el.move as mid}
-              {@const orig = plan.elements.find((it) => it.original._id === mid)}
-              {#if orig !== undefined}
-                ➡︎ {orig?.element?.title ?? orig?.original.title}
-              {:else}
-                {mid}
-              {/if}
-            {/each}
-            {#if (el.total ?? 0) > 0}
-              ({el.total})
-            {/if}
+          {@const el = searchTitles[item]}
+          <div class="flex-row-center flex-nowrap no-word-wrap">
+            <CheckBox
+              checked={titlesStates.get(el) ?? true}
+              on:value={(val) => {
+                titlesStates.set(el, val.detail === true)
+              }}
+            />
+            {el}
+            {counters.get(el)}
           </div>
         </svelte:fragment>
       </ListView>
     </div>
-  </div>
+  </Expandable>
+  <Expandable>
+    <svelte:fragment slot="title">
+      <div class="flex-row-center">
+        Update plan {elements.length}
+
+        {#if plan.elements.length - plan.move > 0}
+          => {plan.elements.length - plan.move}
+        {/if}
+      </div>
+    </svelte:fragment>
+    <div class="h-60" style:overflow={'auto'}>
+      {#if plan.elements.length > 0}
+        <div class="flex clear-mins" style:overflow={'auto'}>
+          <div class="flex-grow flex-nowrap no-word-wrap">
+            <ListView count={searchPlanElements.length}>
+              <svelte:fragment slot="item" let:item>
+                {@const el = searchPlanElements[item]}
+                <div class="flex-row-center" style:color={toColor(el)}>
+                  <Lazy>
+                    {el.original.title}
+                    {#if el.element}
+                      => {el.element?.title}
+                    {/if}
+                    {#each el.move as mid}
+                      {@const orig = idMap.get(mid)}
+                      {#if orig !== undefined}
+                        ➡︎ {orig?.element?.title ?? orig?.original.title}
+                      {:else}
+                        {mid}
+                      {/if}
+                    {/each}
+                    ({el.total + el.newRefs}) {el.newRefs}
+                  </Lazy>
+                </div>
+              </svelte:fragment>
+            </ListView>
+          </div>
+        </div>
+      {/if}
+    </div>
+  </Expandable>
+  <svelte:fragment slot="footer">
+    <Button label={getEmbeddedLabel('Analyse')} on:click={() => doAnalyse()} />
+    <Button
+      label={getEmbeddedLabel('Export expert skills')}
+      on:click={() => {
+        exportCSV('experts', exportExpertSkills())
+      }}
+    />
+    <Button
+      label={getEmbeddedLabel('Export plan')}
+      on:click={() => {
+        exportCSV('plan', exportPlan())
+      }}
+    />
+  </svelte:fragment>
 </Card>
 
 <style lang="scss">
