@@ -184,10 +184,6 @@ jobs:
         run: |
           cd ./tests/sanity
           node ../../common/scripts/install-run-rushx.js uitest
-      # - name: Archive DB
-      #   run: |
-      #     cd ./tests
-      #     ./update-snapshot-ci.sh ./tests/db_dump
       - name: "Store docker logs"
         if: always()
         run: |
@@ -202,6 +198,28 @@ jobs:
         with:
           name: playwright-results
           path: ./tests/sanity/playwright-report/
+      - name: Generates Allure Report
+        uses: simple-elf/allure-report-action@master
+        if: always()
+        id: allure-report
+        with:
+          allure_results: ./tests/sanity/allure-results/
+          gh_pages: gh-pages
+          allure_report: allure-report
+          allure_history: allure-history
+      - name: Upload allure test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: allure-report
+          path: ./allure-report/
+      - name: Deploy report to Github Pages
+        if: ${{ github.ref == 'refs/heads/main' }}
+        uses: peaceiris/actions-gh-pages@v2
+        env:
+          PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUBLISH_BRANCH: gh-pages
+          PUBLISH_DIR: allure-history
       - name: Upload Logs
         if: always()
         uses: actions/upload-artifact@v3
