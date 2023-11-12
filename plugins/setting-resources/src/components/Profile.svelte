@@ -132,7 +132,6 @@
             attachedClass={employee._class}
             focusIndex={10}
             allowOpen={false}
-            restricted={[contact.channelProvider.Email]}
           />
         </div>
       </div>

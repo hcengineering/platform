@@ -185,7 +185,6 @@
       kind={'regular'}
       size={'large'}
       editable
-      restricted={[contact.channelProvider.Email]}
     />
   </svelte:fragment>
 </Card>
