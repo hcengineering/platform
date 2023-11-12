@@ -195,7 +195,7 @@ export async function checkIssueDraft (page: Page, props: IssueProps): Promise<v
 
 export async function checkIssueFromList (page: Page, issueName: string): Promise<void> {
   await page.click(ViewletSelectors.Board)
-  await expect(page.locator(`.panel-container:has-text("${issueName}")`)).toContainText(issueName)
+  await expect(page.locator(`.panel-instance:has-text("${issueName}")`)).toContainText(issueName)
 }
 
 export async function openIssue (page: Page, name: string): Promise<void> {

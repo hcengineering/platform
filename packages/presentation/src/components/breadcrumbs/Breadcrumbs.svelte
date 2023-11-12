@@ -13,55 +13,52 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Component, ScrollerBar, getPlatformColor, themeStore } from '@hcengineering/ui'
+  import { Component, SelectPopup, showPopup } from '@hcengineering/ui'
+  import type { MouseTargetEvent } from '@hcengineering/ui'
   import { NavLink } from '../..'
-  import BreadcrumbsElement from './BreadcrumbsElement.svelte'
   import { BreadcrumbsModel } from './types'
   import { hasComponent } from './utils'
 
   export let models: readonly BreadcrumbsModel[]
-  export let gap: 'none' | 'small' | 'big' = 'small'
 
-  let scroller: HTMLElement
+  $: trimmed = models.length > 3
+  $: narrowModel = trimmed ? [models[0], models[models.length - 1]] : models
 
-  function getPosition (position: number): 'start' | 'end' | 'middle' {
-    if (position === 0) {
-      return 'start'
-    }
-
-    if (position === models.length - 1) {
-      return 'end'
-    }
-
-    return 'middle'
+  const handleMenuOpened = (event: MouseTargetEvent) => {
+    event.preventDefault()
+    const items = models.slice(1, -1).map((m, i) => {
+      if (hasComponent(m)) {
+        const { component, props } = m
+        return { id: i, component, props }
+      } else {
+        const { title } = m
+        return { id: i, text: title }
+      }
+    })
+    showPopup(SelectPopup, { value: items }, event.currentTarget)
   }
 </script>
 
-<ScrollerBar {gap} bind:scroller>
-  {#each models as model, i}
-    {@const { color } = model}
-    {#if hasComponent(model)}
-      {@const { component, props } = model}
-      <BreadcrumbsElement
-        position={getPosition(i)}
-        color={color !== undefined ? getPlatformColor(color, $themeStore.dark) : 'var(--accent-bg-color)'}
-      >
-        {#if typeof component === 'string'}
-          <Component is={component} {props} />
-        {:else}
-          <svelte:component this={component} {...props} />
-        {/if}
-      </BreadcrumbsElement>
-    {:else}
-      {@const { title, href, onClick } = model}
-      <NavLink {href} noUnderline {onClick}>
-        <BreadcrumbsElement
-          label={title}
-          {title}
-          position={getPosition(i)}
-          color={color !== undefined ? getPlatformColor(color, $themeStore.dark) : 'var(--accent-bg-color)'}
-        />
-      </NavLink>
-    {/if}
-  {/each}
-</ScrollerBar>
+{#each narrowModel as model, i}
+  {#if hasComponent(model)}
+    {@const { component, props } = model}
+    <div class="title">
+      {#if typeof component === 'string'}
+        <Component is={component} {props} />
+      {:else}
+        <svelte:component this={component} {...props} />
+      {/if}
+    </div>
+  {:else}
+    {@const { title, href, onClick } = model}
+    <NavLink {href} noUnderline {onClick}>
+      <div class="title">{title}</div>
+    </NavLink>
+  {/if}
+  <div class="title disabled">/</div>
+  {#if trimmed && i === 0}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <div class="title" on:click={handleMenuOpened}>...</div>
+    <div class="title disabled">/</div>
+  {/if}
+{/each}

@@ -24,7 +24,8 @@
 
 <Button
   {icon}
-  kind={'ghost'}
+  iconProps={{ size: 'medium' }}
+  kind={'icon'}
   showTooltip={{ label: title, direction: 'bottom' }}
   on:click={() => copyTextToClipboard(text)}
 />

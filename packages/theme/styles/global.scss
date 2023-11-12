@@ -94,7 +94,7 @@
 ::-webkit-scrollbar:horizontal {
   height: 6px;
 }
-::-webkit-scrollbar-track, .panel-container .scroll .scroll::-webkit-scrollbar-track {
+::-webkit-scrollbar-track, .panel-instance .scroll .scroll::-webkit-scrollbar-track {
   margin: 6px;
   // background-color: var(--scrollbar-bar-color);
 }

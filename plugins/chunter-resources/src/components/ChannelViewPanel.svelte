@@ -20,7 +20,7 @@
   export let _id: Ref<Space>
 </script>
 
-<div class="antiPanel-component">
+<div class="antiComponent">
   <SpaceHeader spaceId={_id} withSearch={false} />
   <ChannelView space={_id} />
 </div>

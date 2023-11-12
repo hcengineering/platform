@@ -14,25 +14,15 @@
     // limitations under the License.
 -->
 <script lang="ts">
-  import { afterUpdate } from 'svelte'
+  import { afterUpdate, createEventDispatcher } from 'svelte'
   import { Writable, writable } from 'svelte/store'
 
   import activity from '@hcengineering/activity'
-  import calendar from '@hcengineering/calendar'
   import { Doc } from '@hcengineering/core'
-  import { Asset } from '@hcengineering/platform'
-  import {
-    AnySvelteComponent,
-    Component,
-    deviceOptionsStore as deviceInfo,
-    Icon,
-    Panel,
-    Scroller
-  } from '@hcengineering/ui'
+  import { Component, deviceOptionsStore as deviceInfo, Panel, Scroller } from '@hcengineering/ui'
+  import type { ButtonItem } from '@hcengineering/ui'
 
   export let title: string | undefined = undefined
-  export let subtitle: string | undefined = undefined
-  export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let withoutActivity: boolean = false
   export let withoutInput: boolean = false
   export let withoutTitle: boolean = false
@@ -44,21 +34,30 @@
   export let isAside: boolean = true
   export let isUtils: boolean = true
   export let isCustomAttr: boolean = true
-  export let isReminder: boolean = true
-  export let floatAside = false
-  export let allowBack = true
-  export let allowClose = true
+  export let floatAside: boolean = false
+  export let allowClose: boolean = true
   export let useMaxWidth: boolean | undefined = undefined
-  export let isFullSize = false
-  export let embedded = false
+  export let isFullSize: boolean = false
   export let contentClasses: string | undefined = undefined
   export let content: HTMLElement | undefined | null = undefined
   export let withoutContentScroll: boolean = false
+  export let customAside: ButtonItem[] | undefined = undefined
+  export let selectedAside: string | false = customAside ? customAside[0].id : false
+
+  export function getAside (): string | false {
+    return selectedAside
+  }
+  export function setAside (id: string | boolean): void {
+    panel.setAside(id)
+  }
+
+  const dispatch = createEventDispatcher()
 
   let lastHref: string
   let timer: any
   let lastScrollHeight: number = -1
   let count: number = 0
+  let panel: Panel
 
   const waitCount = 10
   const PanelScrollTop: Writable<Record<string, number>> = writable<Record<string, number>>({})
@@ -93,6 +92,7 @@
 </script>
 
 <Panel
+  bind:this={panel}
   bind:isAside
   {isHeader}
   bind:panelWidth
@@ -100,53 +100,33 @@
   bind:withoutTitle
   on:open
   on:close
-  {allowBack}
   {allowClose}
   {floatAside}
-  {embedded}
   bind:useMaxWidth
   {isFullSize}
+  {customAside}
+  bind:selectedAside
+  on:select={(result) => {
+    selectedAside = result.detail
+    dispatch('select', result.detail)
+  }}
 >
-  <svelte:fragment slot="navigator">
-    {#if $$slots.navigator}
-      <div class="flex-row-center flex-gap-1-5 mx-2">
-        <slot name="navigator" />
-      </div>
-    {/if}
-  </svelte:fragment>
-
   <svelte:fragment slot="title">
     {#if !withoutTitle}
-      <div class="popupPanel-title__content-container antiTitle">
-        {#if $$slots.title}
-          <slot name="title" />
-        {:else}
-          <div class="icon-wrapper">
-            {#if icon}<div class="wrapped-icon"><Icon {icon} size={'medium'} /></div>{/if}
-            <div class="title-wrapper">
-              {#if title}<span class="wrapped-title">{title}</span>{/if}
-              {#if subtitle || $$slots.subtitle}
-                <span class="wrapped-subtitle">
-                  {#if subtitle}
-                    {subtitle}
-                  {/if}
-                  <slot name="subtitle" />
-                </span>
-              {/if}
-            </div>
-          </div>
-        {/if}
-      </div>
+      {#if $$slots.title}
+        <slot name="title" />
+      {:else if title}
+        <div class="title not-active">{title}</div>
+      {/if}
     {/if}
   </svelte:fragment>
 
-  <svelte:fragment slot="utils">
+  <svelte:fragment slot="pre-utils">
     <slot name="pre-utils" />
-    {#if isReminder}
-      <Component is={calendar.component.DocReminder} props={{ value: object, title, focusIndex: 9000 }} />
-    {/if}
+  </svelte:fragment>
+  <svelte:fragment slot="utils">
     {#if isUtils && $$slots.utils}
-      <div class="buttons-divider" />
+      <!-- <div class="buttons-divider" /> -->
       <slot name="utils" />
     {/if}
   </svelte:fragment>
@@ -202,7 +182,7 @@
         {#key object._id}
           <Component
             is={activity.component.Activity}
-            props={{ object, showCommenInput: !withoutInput, shouldScroll: embedded, focusIndex: 1000 }}
+            props={{ object, showCommenInput: !withoutInput, shouldScroll: true, focusIndex: 1000 }}
           />
         {/key}
       {/if}
@@ -221,7 +201,7 @@
             props={{
               object,
               showCommenInput: !withoutInput,
-              shouldScroll: embedded,
+              shouldScroll: true,
               focusIndex: 1000,
               boundary: content
             }}
@@ -247,7 +227,7 @@
               props={{
                 object,
                 showCommenInput: !withoutInput,
-                shouldScroll: embedded,
+                shouldScroll: true,
                 focusIndex: 1000,
                 boundary: content
               }}

@@ -58,7 +58,13 @@
       if (attributeModel) {
         const breadcrumbsModel: BreadcrumbsModel = {
           component: attributeModel.presenter,
-          props: { shouldShowAvatar: false, ...(attributeModel.props ?? {}), value: parent }
+          props: {
+            shouldShowAvatar: false,
+            noUnderline: true,
+            noSelect: true,
+            ...(attributeModel.props ?? {}),
+            value: parent
+          }
         }
 
         models.push(breadcrumbsModel)
@@ -71,6 +77,6 @@
 
 {#await getBreadcrumbsModels(element) then models}
   {#if models.length > 0}
-    <Breadcrumbs {models} gap="none" />
+    <Breadcrumbs {models} />
   {/if}
 {/await}

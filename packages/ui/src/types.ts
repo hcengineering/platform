@@ -141,6 +141,7 @@ export type ButtonKind =
   | 'negative'
   | 'regular'
   | 'ghost'
+  | 'icon'
   | 'no-border'
   | 'link'
   | 'link-bordered'
@@ -170,6 +171,16 @@ export type EditStyle =
   | 'ghost'
   | 'default-large'
   | 'ghost-large'
+
+export interface ButtonItem {
+  id: string
+  icon?: Asset | AnySvelteComponent | ComponentType
+  label?: IntlString
+  labelParams?: Record<string, any>
+  disabled?: boolean
+  showTooltip?: LabelAndProps
+}
+
 export interface PopupPositionElement {
   getBoundingClientRect: () => DOMRect
   position?: {
@@ -241,6 +252,7 @@ export interface IconProps {
   icon?: number
   size?: IconSize
   fill?: string
+  filled?: boolean
 }
 
 export function getIconSize2x (size: IconSize): IconSize {
@@ -484,3 +496,8 @@ export interface TimeZone {
   short: string
   offset?: number
 }
+
+/**
+ * @public
+ */
+export type MouseTargetEvent = MouseEvent & { currentTarget: EventTarget & HTMLElement }

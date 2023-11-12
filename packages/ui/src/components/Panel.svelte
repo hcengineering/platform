@@ -16,14 +16,14 @@
   import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
   import {
     deviceOptionsStore as deviceInfo,
-    checkAdaptiveMatching,
-    IconBack,
     Separator,
     defineSeparators,
     resizeObserver,
     Button,
+    ButtonGroup,
     Scroller,
-    panelSeparators
+    panelSeparators,
+    ButtonItem
   } from '../../'
   import IconClose from './icons/Close.svelte'
   import IconDetails from './icons/Details.svelte'
@@ -38,21 +38,35 @@
   export let isAside: boolean = true
   export let isFullSize: boolean = false
   export let withoutTitle: boolean = false
-  export let floatAside = false
-  export let allowBack = true
-  export let allowClose = true
+  export let floatAside: boolean = false
+  export let allowClose: boolean = true
   export let useMaxWidth: boolean | undefined = undefined
-  export let embedded = false
+  export let customAside: ButtonItem[] | undefined = undefined
+  export let selectedAside: string | false = customAside ? customAside[0].id : false
+
+  export function getAside (): string | false {
+    return selectedAside
+  }
+  export function setAside (id: string | boolean): void {
+    if (typeof id === 'string' && customAside) {
+      const i = customAside.findIndex((as) => as.id === id)
+      if (i === -1) return
+      handleSelectAside({ detail: id } as CustomEvent<any>)
+    } else {
+      asideShown = id as boolean
+      hideAside = !asideShown
+      if (id === false) selectedAside = false
+    }
+  }
 
   const dispatch = createEventDispatcher()
 
   let asideFloat: boolean = false
   let asideShown: boolean = true
+  let hideAside: boolean = false
   let fullSize: boolean = false
-
-  $: devSize = $deviceInfo.size
-  $: twoRows = checkAdaptiveMatching(devSize, 'xs')
-  $: moveUtils = checkAdaptiveMatching(devSize, 'sm')
+  let oldAside: string | false = selectedAside
+  $: if (typeof selectedAside === 'string' && oldAside !== selectedAside) oldAside = selectedAside
 
   let oldWidth = ''
   let hideTimer: any | undefined
@@ -69,13 +83,13 @@
       asideFloat = true
       if (asideShown) {
         asideShown = false
+        if (customAside) handleSelectAside({ detail: false } as CustomEvent<any>, false)
       }
     } else if (panelWidth > 900) {
-      if (asideFloat) {
-        asideFloat = false
-      }
-      if (!asideShown) {
+      if (asideFloat) asideFloat = false
+      if (!asideShown && !hideAside) {
         asideShown = true
+        if (customAside) handleSelectAside({ detail: oldAside } as CustomEvent<any>, false)
       }
     }
   }
@@ -91,100 +105,94 @@
   onMount(() => dispatch('open'))
 
   defineSeparators('panel-aside', panelSeparators)
+
+  const handleAside = (): void => {
+    asideShown = !asideShown
+    hideAside = !asideShown
+  }
+  const handleSelectAside = (result: CustomEvent<any>, sw: boolean = true): void => {
+    selectedAside = result.detail
+    if (sw) {
+      asideShown = selectedAside !== false
+      hideAside = !asideShown
+    }
+    dispatch('select', result.detail)
+  }
 </script>
 
 <div
   class="popupPanel panel"
-  class:embedded
   use:resizeObserver={(element) => {
     panelWidth = element.clientWidth
     checkPanel()
   }}
 >
-  <div
-    class="popupPanel-title__bordered {twoRows && !withoutTitle ? 'flex-col flex-no-shrink' : 'flex-row-center'}"
-    class:embedded
-  >
-    <div class="popupPanel-title {twoRows && !withoutTitle ? 'row-top' : 'row'}">
-      {#if allowBack}
+  <div class="popupPanel-title">
+    <div class="popupPanel-title__content">
+      {#if !withoutTitle}<slot name="title" />{/if}
+    </div>
+    <slot name="pre-utils" />
+    <div class="flex-row-center ml-3">
+      <slot name="utils" />
+      {#if $$slots.aside && isAside}
+        {#if customAside}
+          <ButtonGroup
+            items={customAside}
+            props={{ kind: 'icon', iconProps: { size: 'medium' } }}
+            bind:selected={selectedAside}
+            on:select={handleSelectAside}
+          />
+        {:else}
+          <Button
+            focusIndex={10008}
+            icon={IconDetails}
+            iconProps={{ size: 'medium', filled: asideShown }}
+            kind={'icon'}
+            selected={asideShown}
+            on:click={handleAside}
+          />
+        {/if}
+      {/if}
+      {#if useMaxWidth !== undefined}
         <Button
-          focusIndex={10000}
-          icon={IconBack}
-          kind={'ghost'}
-          size={'medium'}
+          focusIndex={10009}
+          icon={useMaxWidth ? IconMaxWidth : IconMinWidth}
+          iconProps={{ size: 'medium' }}
+          kind={'icon'}
+          selected={useMaxWidth}
           on:click={() => {
-            history.back()
+            useMaxWidth = !useMaxWidth
+            dispatch('maxWidth', useMaxWidth)
+          }}
+        />
+      {/if}
+      {#if isFullSize}
+        <Button
+          focusIndex={100010}
+          icon={fullSize ? IconScale : IconScaleFull}
+          iconProps={{ size: 'medium' }}
+          kind={'icon'}
+          selected={fullSize}
+          on:click={() => {
+            fullSize = !fullSize
+            dispatch('fullsize')
           }}
         />
       {/if}
       {#if allowClose}
-        <div class="antiHSpacer" />
         <Button
           focusIndex={10001}
           icon={IconClose}
-          kind={'ghost'}
-          size={'medium'}
+          iconProps={{ size: 'medium' }}
+          kind={'icon'}
           on:click={() => {
             dispatch('close')
           }}
         />
       {/if}
-      {#if $$slots.navigator}<slot name="navigator" />{/if}
-      <div class="popupPanel-title__content">
-        {#if !twoRows && !withoutTitle}<slot name="title" />{/if}
-      </div>
-      <div class="buttons-group xsmall-gap">
-        {#if !moveUtils}
-          <slot name="utils" />
-        {/if}
-        {#if isFullSize || useMaxWidth !== undefined || ($$slots.aside && isAside)}
-          <div class="buttons-divider" />
-        {/if}
-        {#if $$slots.aside && isAside}
-          <Button
-            focusIndex={10008}
-            icon={IconDetails}
-            kind={'ghost'}
-            size={'medium'}
-            selected={asideShown}
-            on:click={() => {
-              asideShown = !asideShown
-            }}
-          />
-        {/if}
-        {#if useMaxWidth !== undefined}
-          <Button
-            focusIndex={10009}
-            icon={useMaxWidth ? IconMaxWidth : IconMinWidth}
-            kind={'ghost'}
-            size={'medium'}
-            selected={useMaxWidth}
-            on:click={() => {
-              useMaxWidth = !useMaxWidth
-              dispatch('maxWidth', useMaxWidth)
-            }}
-          />
-        {/if}
-        {#if isFullSize}
-          <Button
-            focusIndex={100010}
-            icon={fullSize ? IconScale : IconScaleFull}
-            kind={'ghost'}
-            size={'medium'}
-            selected={fullSize}
-            on:click={() => {
-              fullSize = !fullSize
-              dispatch('fullsize')
-            }}
-          />
-        {/if}
-      </div>
     </div>
-    {#if twoRows && !withoutTitle}
-      <div class="popupPanel-title row-bottom"><slot name="title" /></div>
-    {/if}
   </div>
-  <div class="popupPanel-body {$deviceInfo.isMobile ? 'mobile' : 'main'}" class:asideShown class:embedded>
+  <div class="popupPanel-body {$deviceInfo.isMobile ? 'mobile' : 'main'}" class:asideShown>
     {#if $deviceInfo.isMobile}
       <Scroller horizontal padding={'.5rem .75rem'}>
         <div
@@ -223,11 +231,6 @@
       <div class="popupPanel-body__aside" class:float={asideFloat} class:shown={asideShown}>
         <Separator name={'panel-aside'} float={asideFloat ? 'aside' : true} index={0} />
         <div class="antiPanel-wrap__content">
-          {#if moveUtils}
-            <div class="buttons-group justify-end xsmall-gap" style:margin={'.5rem 2rem 0'}>
-              <slot name="utils" />
-            </div>
-          {/if}
           <slot name="aside" />
         </div>
       </div>

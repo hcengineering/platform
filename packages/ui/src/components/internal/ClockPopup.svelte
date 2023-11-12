@@ -84,10 +84,12 @@
   {#each selectedTZ as selected, i}
     <div class="statusPopup-option">
       <ClockFace bind:timeZone={selected} size={clockSize} />
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <span class="label overflow-label" style:max-width={clockSize} on:click={(ev) => changeTimeZone(ev, i)}>
-        {selected === '' ? '--' : convertTimeZone(selected).short}
-      </span>
+      {#if selected !== ''}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <span class="label overflow-label" style:max-width={clockSize} on:click={(ev) => changeTimeZone(ev, i)}>
+          {convertTimeZone(selected).short}
+        </span>
+      {/if}
     </div>
   {/each}
 </div>

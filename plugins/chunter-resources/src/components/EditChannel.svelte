@@ -18,13 +18,12 @@
   import type { Class, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { SpaceMembers } from '@hcengineering/contact-resources'
-  import { Icon, Label, Panel, Scroller } from '@hcengineering/ui'
+  import { Label, Panel, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   import chunter from '../plugin'
   import EditChannelDescriptionTab from './EditChannelDescriptionTab.svelte'
   import EditChannelSettingsTab from './EditChannelSettingsTab.svelte'
-  import Lock from './icons/Lock.svelte'
 
   export let _id: Ref<ChunterSpace>
   export let _class: Ref<Class<ChunterSpace>>
@@ -54,20 +53,12 @@
   <svelte:fragment slot="title">
     {#if clazz && channel}
       {#if _class === chunter.class.DirectMessage}
-        <span class="fs-title"><Label label={clazz.label} /></span>
+        <span class="title"><Label label={clazz.label} /></span>
       {:else}
-        <div class="antiTitle icon-wrapper">
-          <div class="wrapped-icon">
-            {#if clazz.icon}<Icon icon={channel.private ? Lock : clazz.icon} size={'medium'} />{/if}
-          </div>
-          <div class="title-wrapper">
-            <span class="wrapped-title">
-              <span class="trans-title content-color"><Label label={clazz.label} />›</span>
-              {channel.name}
-            </span>
-            <span class="wrapped-subtitle">{channel.description}</span>
-          </div>
-        </div>
+        <span class="title">
+          <span class="trans-title content-color"><Label label={clazz.label} />›</span>
+          {channel.name}
+        </span>
       {/if}
     {/if}
   </svelte:fragment>

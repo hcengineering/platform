@@ -17,7 +17,7 @@
   import type { Class, Ref, Space } from '@hcengineering/core'
   import core from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { EditBox, Icon, Label, Scroller, Panel, Component } from '@hcengineering/ui'
+  import { EditBox, Label, Scroller, Panel, Component } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import workbench from '../../plugin'
   import contact from '@hcengineering/contact'
@@ -62,12 +62,7 @@
 >
   <svelte:fragment slot="title">
     {#if clazz}
-      <div class="antiTitle icon-wrapper">
-        <div class="wrapped-icon">
-          {#if clazz.icon}<Icon icon={clazz.icon} size={'medium'} />{/if}
-        </div>
-        <span class="wrapped-title"><Label label={clazz.label} /></span>
-      </div>
+      <div class="title not-active"><Label label={clazz.label} /></div>
     {/if}
   </svelte:fragment>
 
