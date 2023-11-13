@@ -23,6 +23,7 @@
     ButtonGroup,
     Scroller,
     panelSeparators,
+    IconBack,
     ButtonItem
   } from '../../'
   import IconClose from './icons/Close.svelte'
@@ -39,13 +40,16 @@
   export let isFullSize: boolean = false
   export let withoutTitle: boolean = false
   export let floatAside: boolean = false
+  export let allowBack: boolean = true
   export let allowClose: boolean = true
+  export let embedded: boolean = false
   export let useMaxWidth: boolean | undefined = undefined
   export let customAside: ButtonItem[] | undefined = undefined
   export let selectedAside: string | false = customAside ? customAside[0].id : false
 
-  export function getAside (): string | false {
-    return selectedAside
+  export function getAside (): string | boolean {
+    if (customAside) return selectedAside
+    return asideShown
   }
   export function setAside (id: string | boolean): void {
     if (typeof id === 'string' && customAside) {
@@ -62,11 +66,12 @@
   const dispatch = createEventDispatcher()
 
   let asideFloat: boolean = false
-  let asideShown: boolean = true
-  let hideAside: boolean = false
+  let asideShown: boolean = typeof selectedAside === 'string'
+  let hideAside: boolean = !asideShown
   let fullSize: boolean = false
   let oldAside: string | false = selectedAside
   $: if (typeof selectedAside === 'string' && oldAside !== selectedAside) oldAside = selectedAside
+  $: setAside(selectedAside)
 
   let oldWidth = ''
   let hideTimer: any | undefined
@@ -122,12 +127,37 @@
 
 <div
   class="popupPanel panel"
+  class:embedded
   use:resizeObserver={(element) => {
     panelWidth = element.clientWidth
     checkPanel()
   }}
 >
-  <div class="popupPanel-title">
+  <div class="popupPanel-title" class:indent={allowClose || allowClose}>
+    {#if allowBack}
+      <Button
+        focusIndex={10000}
+        icon={IconBack}
+        iconProps={{ size: 'medium' }}
+        kind={'icon'}
+        on:click={() => {
+          dispatch('close')
+        }}
+      />
+      <div class="antiHSpacer" class:x2={!allowClose} />
+    {/if}
+    {#if allowClose}
+      <Button
+        focusIndex={10001}
+        icon={IconClose}
+        iconProps={{ size: 'medium' }}
+        kind={'icon'}
+        on:click={() => {
+          history.back()
+        }}
+      />
+      <div class="antiHSpacer x2" />
+    {/if}
     <div class="popupPanel-title__content">
       {#if !withoutTitle}<slot name="title" />{/if}
     </div>
@@ -176,17 +206,6 @@
           on:click={() => {
             fullSize = !fullSize
             dispatch('fullsize')
-          }}
-        />
-      {/if}
-      {#if allowClose}
-        <Button
-          focusIndex={10001}
-          icon={IconClose}
-          iconProps={{ size: 'medium' }}
-          kind={'icon'}
-          on:click={() => {
-            dispatch('close')
           }}
         />
       {/if}

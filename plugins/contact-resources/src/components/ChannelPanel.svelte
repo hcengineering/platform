@@ -21,6 +21,7 @@
 
   export let _id: Ref<Channel>
   export let _class: Ref<Class<Channel>>
+  export let embedded: boolean = false
 
   const client = getClient()
 
@@ -42,6 +43,9 @@
 
 {#await getPresenter(channel) then presenter}
   {#if presenter}
-    <Component is={presenter} props={{ _id: channel?.attachedTo, _class: channel?.attachedToClass, channel }} />
+    <Component
+      is={presenter}
+      props={{ embedded, _id: channel?.attachedTo, _class: channel?.attachedToClass, channel }}
+    />
   {/if}
 {/await}

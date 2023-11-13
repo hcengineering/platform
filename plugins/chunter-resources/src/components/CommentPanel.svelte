@@ -21,6 +21,7 @@
   import { Class, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
 
   export let _id: Ref<Comment> | undefined
+  export let embedded: boolean = true
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -90,5 +91,5 @@
 {#if loading}
   <Loading />
 {:else if component && attachedDocId && attachedDocClass}
-  <Component is={component} props={{ _id: attachedDocId, _class: attachedDocClass }} on:close />
+  <Component is={component} props={{ _id: attachedDocId, _class: attachedDocClass, embedded }} on:close />
 {/if}

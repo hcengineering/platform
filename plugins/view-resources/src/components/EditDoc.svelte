@@ -39,6 +39,7 @@
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
+  export let embedded: boolean = false
 
   let realObjectClass: Ref<Class<Doc>> = _class
   let lastId: Ref<Doc> = _id
@@ -265,17 +266,20 @@
   let content: HTMLElement
 </script>
 
-<ActionContext
-  context={{
-    mode: 'editor'
-  }}
-/>
+{#if !embedded}
+  <ActionContext
+    context={{
+      mode: 'editor'
+    }}
+  />
+{/if}
 
 {#if object !== undefined && finalTitle !== undefined}
   <Panel
     {object}
     isHeader={mainEditor?.pinned ?? false}
     isAside={true}
+    {embedded}
     bind:content
     bind:panelWidth
     bind:innerWidth
@@ -288,10 +292,12 @@
     withoutInput={!activityOptions.showInput}
   >
     <svelte:fragment slot="title">
-      <ParentsNavigator element={object} />
-      <DocNavLink noUnderline {object}>
-        <div class="title">{finalTitle}</div>
-      </DocNavLink>
+      {#if !embedded}<ParentsNavigator element={object} />{/if}
+      {#if embedded && object}
+        <DocNavLink noUnderline {object}>
+          <div class="title">{finalTitle}</div>
+        </DocNavLink>
+      {:else}<div class="title not-active">{finalTitle}</div>{/if}
     </svelte:fragment>
 
     <svelte:fragment slot="utils">
@@ -312,7 +318,7 @@
         {#if headerEditor !== undefined}
           <Component
             is={headerEditor}
-            props={{ object, keys, mixins, ignoreKeys, vertical: dir === 'column', allowedCollections }}
+            props={{ object, keys, mixins, ignoreKeys, vertical: dir === 'column', allowedCollections, embedded }}
             on:update={updateKeys}
           />
         {:else if dir === 'column'}
