@@ -60,18 +60,18 @@
     }
     values.clear()
     realValues.clear()
-    const resultQuery =
-      isSearchable && search !== ''
-        ? {
-            [filter.key.key]: { $like: '%' + search + '%' }
-          }
-        : {}
     let prefix = ''
     const hierarchy = client.getHierarchy()
     const attr = hierarchy.getAttribute(filter.key._class, filter.key.key)
     if (hierarchy.isMixin(attr.attributeOf)) {
       prefix = attr.attributeOf + '.'
     }
+    const resultQuery =
+      isSearchable && search !== ''
+        ? {
+            [prefix + filter.key.key]: { $like: '%' + search + '%' }
+          }
+        : {}
     const isDerivedFromSpace = hierarchy.isDerived(_class, core.class.Space)
 
     const spaces =
