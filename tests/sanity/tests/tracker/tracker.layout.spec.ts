@@ -126,7 +126,7 @@ test.describe('tracker layout tests', () => {
 
   for (const order of orders) {
     test(`issues-${order.toLowerCase()}-ordering-layout`, async ({ page }) => {
-      const locator = page.locator('.panel-instance')
+      const locator = page.locator('.panel-container')
       let orderedIssueNames: string[]
 
       if (order === 'Priority') {

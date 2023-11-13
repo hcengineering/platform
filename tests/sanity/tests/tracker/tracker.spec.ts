@@ -77,7 +77,7 @@ test('issues-status-display', async ({ page }) => {
     }
     for (const status of statuses) {
       await expect(
-        page.locator('.panel-instance', {
+        page.locator('.panel-container', {
           has: page.locator(`.header:has-text("${status}")`)
         })
       ).toContainText(getIssueName(status), { timeout: 15000 })

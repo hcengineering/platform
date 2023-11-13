@@ -22,7 +22,7 @@ export class CommonRecruitingPage extends CalendarPage {
     this.inputAddAttachment = page.locator('div.antiSection #file')
     this.textAttachmentName = page.locator('div.name a')
     this.buttonCreateFirstReview = page.locator('span:has-text("Create review")')
-    this.buttonMoreActions = page.locator('div.popupPanel-title div.buttons-group > button:nth-of-type(2)')
+    this.buttonMoreActions = page.locator('.popupPanel-title > .flex-row-center > button >> nth=0')
     this.buttonDelete = page.locator('button[class*="menuItem"] span', { hasText: 'Delete' })
   }
 
