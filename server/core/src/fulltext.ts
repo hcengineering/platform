@@ -37,17 +37,16 @@ import core, {
   TxFactory,
   TxResult,
   WorkspaceId,
-  IndexedDoc,
   SearchQuery,
   SearchOptions,
   SearchResult,
   SearchResultDoc,
-  createIndexedReader
+
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { FullTextIndexPipeline } from './indexer'
-import { createStateDoc, isClassIndexable, readAndMapProps } from './indexer/utils'
-import type { FullTextAdapter, WithFind } from './types'
+import { createStateDoc, isClassIndexable, readAndMapProps, createIndexedReader } from './indexer/utils'
+import type { FullTextAdapter, WithFind, IndexedDoc } from './types'
 
 /**
  * @public
@@ -248,7 +247,7 @@ export class FullTextIndex implements WithFind {
   }
 
   async searchFulltext (ctx: MeasureContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
-    const resultRaw = await this.adapter.searchRaw(query, options)
+    const resultRaw = await this.adapter.searchString(query, options)
 
     const result: SearchResult = {
       ...resultRaw,
@@ -259,8 +258,7 @@ export class FullTextIndex implements WithFind {
           shortTitle: raw.searchShortTitle,
           doc: {
             _id: raw.id,
-            _class: raw._class,
-            space: raw.space
+            _class: raw._class
           }
         }
 

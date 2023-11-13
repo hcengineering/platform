@@ -23,9 +23,10 @@ import {
   MeasureContext,
   ModelDb,
   Ref,
-  Storage,
-  IndexedDoc
+  Storage
 } from '@hcengineering/core'
+
+import type { IndexedDoc } from '../types'
 
 /**
  * @public
@@ -102,7 +103,7 @@ export const contentStageId = 'cnt-v2b'
 /**
  * @public
  */
-export const fieldStateId = 'fld-v7'
+export const fieldStateId = 'fld-v8'
 
 /**
  * @public

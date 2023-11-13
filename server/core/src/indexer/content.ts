@@ -22,11 +22,10 @@ import core, {
   MeasureContext,
   Ref,
   Storage,
-  WorkspaceId,
-  IndexedDoc
+  WorkspaceId
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
-import { ContentTextAdapter } from '../types'
+import { ContentTextAdapter, IndexedDoc } from '../types'
 import { contentStageId, DocUpdateHandler, fieldStateId, FullTextPipeline, FullTextPipelineStage } from './types'
 import { docKey, docUpdKey, getFullTextIndexableAttributes } from './utils'
 

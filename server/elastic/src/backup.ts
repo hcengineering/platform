@@ -31,11 +31,10 @@ import core, {
   toWorkspaceString,
   Tx,
   TxResult,
-  WorkspaceId,
-  IndexedDoc
+  WorkspaceId
 } from '@hcengineering/core'
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
-import { DbAdapter } from '@hcengineering/server-core'
+import { DbAdapter, IndexedDoc } from '@hcengineering/server-core'
 import { createHash } from 'node:crypto'
 
 class ElasticDataAdapter implements DbAdapter {

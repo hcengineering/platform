@@ -16,7 +16,7 @@
 import type { Asset } from '@hcengineering/platform'
 
 import type { KeysByType } from 'simplytyped'
-import type { AttachedDoc, Class, Doc, Ref, Account, Space, Timestamp } from './classes'
+import type { AttachedDoc, Class, Doc, Ref, Space } from './classes'
 import type { Tx } from './tx'
 
 /**
@@ -210,21 +210,7 @@ export type FindResult<T extends Doc> = WithLookup<T>[] & {
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface TxResult {}
 
-/**
- * @public
- */
-export interface IndexedDoc {
-  id: Ref<Doc>
-  _class: Ref<Class<Doc>>
-  space: Ref<Space>
-  modifiedOn: Timestamp
-  modifiedBy: Ref<Account>
-  attachedTo?: Ref<Doc>
-  attachedToClass?: Ref<Class<Doc>>
-  searchTitle?: string
-  searchShortTitle?: string
-  [key: string]: any
-}
+
 
 /**
  * @public
@@ -252,7 +238,7 @@ export interface SearchResultDoc {
   iconProps?: { [key: string]: string }
   shortTitle?: string
   title?: string
-  doc: Pick<Doc, '_id' | '_class' | 'space'>
+  doc: Pick<Doc, '_id' | '_class'>
 }
 
 /**

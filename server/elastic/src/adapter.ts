@@ -24,11 +24,10 @@ import {
   toWorkspaceString,
   TxResult,
   WorkspaceId,
-  IndexedDoc,
   SearchQuery,
   SearchOptions
 } from '@hcengineering/core'
-import type { EmbeddingSearchOption, FullTextAdapter, SearchResultRaw } from '@hcengineering/server-core'
+import type { EmbeddingSearchOption, FullTextAdapter, SearchStringResult, IndexedDoc } from '@hcengineering/server-core'
 
 import { Client, errors as esErr } from '@elastic/elasticsearch'
 import { Domain } from 'node:domain'
@@ -106,7 +105,7 @@ class ElasticAdapter implements FullTextAdapter {
     return this._metrics
   }
 
-  async searchRaw (query: SearchQuery, options: SearchOptions): Promise<SearchResultRaw> {
+  async searchString (query: SearchQuery, options: SearchOptions): Promise<SearchStringResult> {
     try {
       const elasticQuery: any = {
         query: {
@@ -150,7 +149,7 @@ class ElasticAdapter implements FullTextAdapter {
         body: elasticQuery
       })
 
-      const resp: SearchResultRaw = { docs: [] }
+      const resp: SearchStringResult = { docs: [] }
       if (result.body.hits !== undefined) {
         if (result.body.hits.total?.value !== undefined) {
           resp.total = result.body.hits.total?.value

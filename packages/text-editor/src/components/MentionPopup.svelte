@@ -50,7 +50,7 @@
     dispatch('close', {
       id: item.id,
       label: item.shortTitle ?? item.title,
-      objectclass: item._class
+      objectclass: item.doc._class
     })
   }
 
@@ -128,9 +128,9 @@
 
     const itemsByClass = new Map<Ref<Class<Doc>>, SearchResultDoc[]>()
     for (const item of result.docs) {
-      const list = itemsByClass.get(item._class)
+      const list = itemsByClass.get(item.doc._class)
       if (list === undefined) {
-        itemsByClass.set(item._class, [item])
+        itemsByClass.set(item.doc._class, [item])
       } else {
         list.push(item)
       }

@@ -28,11 +28,9 @@ import core, {
   Ref,
   ServerStorage,
   Storage,
-  WorkspaceId,
-  IndexedDoc,
-  createIndexedReader
+  WorkspaceId
 } from '@hcengineering/core'
-import { FullTextAdapter } from '../types'
+import { FullTextAdapter, IndexedDoc } from '../types'
 import { summaryStageId } from './summary'
 import {
   contentStageId,
@@ -49,7 +47,8 @@ import {
   getFullTextContext,
   IndexKeyOptions,
   readAndMapProps,
-  fillTemplate
+  fillTemplate,
+  createIndexedReader
 } from './utils'
 import plugin from '../plugin'
 

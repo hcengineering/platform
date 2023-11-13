@@ -24,11 +24,11 @@ import core, {
   MeasureContext,
   Ref,
   ServerStorage,
-  Storage,
-  IndexedDoc
+  Storage
 } from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
 import { contentStageId, DocUpdateHandler, fieldStateId, FullTextPipeline, FullTextPipelineStage } from './types'
+import type { IndexedDoc } from '../types'
 import {
   collectPropagate,
   docKey,

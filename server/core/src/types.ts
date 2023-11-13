@@ -14,6 +14,7 @@
 //
 
 import {
+  Account,
   Class,
   Doc,
   DocumentQuery,
@@ -27,12 +28,13 @@ import {
   Obj,
   Ref,
   ServerStorage,
+  Space,
   Storage,
+  Timestamp,
   Tx,
   TxFactory,
   TxResult,
   WorkspaceId,
-  IndexedDoc,
   SearchQuery,
   SearchOptions,
   SearchResult
@@ -152,7 +154,23 @@ export interface EmbeddingSearchOption {
 /**
  * @public
  */
-export interface SearchResultRaw {
+export interface IndexedDoc {
+  id: Ref<Doc>
+  _class: Ref<Class<Doc>>
+  space: Ref<Space>
+  modifiedOn: Timestamp
+  modifiedBy: Ref<Account>
+  attachedTo?: Ref<Doc>
+  attachedToClass?: Ref<Class<Doc>>
+  searchTitle?: string
+  searchShortTitle?: string
+  [key: string]: any
+}
+
+/**
+ * @public
+ */
+export interface SearchStringResult {
   docs: IndexedDoc[]
   total?: number
 }
@@ -171,7 +189,7 @@ export interface FullTextAdapter {
   remove: (id: Ref<Doc>[]) => Promise<void>
   updateMany: (docs: IndexedDoc[]) => Promise<TxResult[]>
 
-  searchRaw: (query: SearchQuery, options: SearchOptions) => Promise<SearchResultRaw>
+  searchString: (query: SearchQuery, options: SearchOptions) => Promise<SearchStringResult>
 
   search: (
     _classes: Ref<Class<Doc>>[],
@@ -220,7 +238,7 @@ export class DummyFullTextAdapter implements FullTextAdapter {
     return []
   }
 
-  async searchRaw (query: SearchQuery, options: SearchOptions): Promise<SearchResultRaw> {
+  async searchString (query: SearchQuery, options: SearchOptions): Promise<SearchStringResult> {
     return { docs: [] }
   }
 

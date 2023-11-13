@@ -402,38 +402,3 @@ function getInNiN (query1: any, query2: any): Object {
   return res
 }
 
-/**
- * @public
- */
-export interface IndexedReader {
-  get: (attribute: string) => any
-  getDoc: (attribute: string) => IndexedReader | undefined
-}
-
-/**
- * @public
- */
-export function createIndexedReader (
-  _class: Ref<Class<Doc>>,
-  hierarchy: Hierarchy,
-  doc: IndexedDoc,
-  refAttribute?: string
-): IndexedReader {
-  return {
-    get: (attr: string) => {
-      const realAttr = hierarchy.findAttribute(_class, attr)
-      if (realAttr !== undefined) {
-        return doc[docKey(attr, { refAttribute, _class: realAttr.attributeOf })]
-      }
-      return undefined
-    },
-    getDoc: (attr: string) => {
-      const realAttr = hierarchy.findAttribute(_class, attr)
-      if (realAttr !== undefined) {
-        const refAtrr = realAttr.type as RefTo<Doc>
-        return createIndexedReader(refAtrr.to, hierarchy, doc, docKey(attr, { _class }))
-      }
-      return undefined
-    }
-  }
-}
