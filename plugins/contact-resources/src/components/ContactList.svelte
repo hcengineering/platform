@@ -25,7 +25,7 @@
   import IconMembers from './icons/Members.svelte'
   import UsersPopup from './UsersPopup.svelte'
 
-  export let items: Ref<Contact>[] = []
+  export let items: Ref<Contact>[] | undefined = []
   export let _class: Ref<Class<Contact>> = contact.class.Contact
   export let label: IntlString
   export let docQuery: DocumentQuery<Contact> | undefined = {}
@@ -42,7 +42,7 @@
 
   const query = createQuery()
 
-  $: query.query<Contact>(_class, { _id: { $in: items } }, (result) => {
+  $: query.query<Contact>(_class, { _id: { $in: items ?? [] } }, (result) => {
     contacts = result
   })
 

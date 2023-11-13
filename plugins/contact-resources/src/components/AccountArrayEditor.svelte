@@ -18,6 +18,7 @@
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
+  import { onDestroy } from 'svelte'
   import { personAccountByIdStore } from '../utils'
   import UserBoxList from './UserBoxList.svelte'
 
@@ -30,16 +31,29 @@
   export let width: string | undefined = undefined
   export let excludeItems: Ref<Account>[] | undefined = undefined
 
-  let timer: any
+  let timer: any = null
   const client = getClient()
+  let update: (() => Promise<void>) | undefined
 
   function onUpdate (evt: CustomEvent<Ref<Employee>[]>): void {
-    clearTimeout(timer)
-    timer = setTimeout(async () => {
+    if (timer !== null) {
+      clearTimeout(timer)
+    }
+    update = async () => {
       const accounts = await client.findAll(contact.class.PersonAccount, { person: { $in: evt.detail } })
       onChange(accounts.map((it) => it._id))
-    }, 500)
+      if (timer !== null) {
+        clearTimeout(timer)
+      }
+      timer = null
+      update = undefined
+    }
+    timer = setTimeout(() => update?.(), 500)
   }
+
+  onDestroy(() => {
+    update?.()
+  })
 
   const excludedQuery = createQuery()
 

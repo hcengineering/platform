@@ -44,7 +44,7 @@
     const empAccIds = dm?.members.length !== 1 ? dm?.members.filter((accId) => accId !== myAccId) : dm?.members
 
     const employeeAccounts = await client.findAll(contact.class.PersonAccount, {
-      _id: { $in: empAccIds as Ref<PersonAccount>[] }
+      _id: { $in: (empAccIds ?? []) as Ref<PersonAccount>[] }
     })
 
     return employeeAccounts.map((ea) => ea.person)

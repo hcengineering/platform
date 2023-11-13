@@ -21,19 +21,19 @@
   import EmptyAvatar from './icons/EmptyAvatar.svelte'
 
   export let _class: Ref<Class<Contact>>
-  export let items: (Ref<Contact> | undefined | null)[] = []
+  export let items: (Ref<Contact> | undefined | null)[] | undefined = []
   export let size: IconSize
   export let limit: number = 3
   export let hideLimit: boolean = false
 
   let persons: Contact[] = []
 
-  $: includeEmpty = items.includes(undefined) || items.includes(null)
+  $: includeEmpty = items?.includes(undefined) || items?.includes(null)
 
   const query = createQuery()
   $: query.query<Contact>(
     _class,
-    { _id: { $in: items.filter((p) => p) as Ref<Contact>[] } },
+    { _id: { $in: (items?.filter((p) => p) as Ref<Contact>[]) ?? [] } },
     (result) => {
       persons = result
     },
@@ -48,18 +48,20 @@
   }
 </script>
 
-<div class="avatars-container">
-  {#if includeEmpty}
-    <div class="combine-avatar {size}" data-over={getDataOver(persons.length === 0, items)}>
-      <EmptyAvatar {size} />
-    </div>
-  {/if}
-  {#each persons as person, i}
-    <div class="combine-avatar {size}" data-over={getDataOver(persons.length === i + 1, items)}>
-      <Avatar avatar={person.avatar} {size} name={person.name} />
-    </div>
-  {/each}
-</div>
+{#if items !== undefined}
+  <div class="avatars-container">
+    {#if includeEmpty}
+      <div class="combine-avatar {size}" data-over={getDataOver(persons.length === 0, items)}>
+        <EmptyAvatar {size} />
+      </div>
+    {/if}
+    {#each persons as person, i}
+      <div class="combine-avatar {size}" data-over={getDataOver(persons.length === i + 1, items)}>
+        <Avatar avatar={person.avatar} {size} name={person.name} />
+      </div>
+    {/each}
+  </div>
+{/if}
 
 <style lang="scss">
   .avatars-container {
