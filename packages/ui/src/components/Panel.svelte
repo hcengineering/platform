@@ -57,7 +57,7 @@
       if (i === -1) return
       handleSelectAside({ detail: id } as CustomEvent<any>)
     } else {
-      asideShown = id as boolean
+      asideShown = id !== false
       hideAside = !asideShown
       if (id === false) selectedAside = false
     }
@@ -66,7 +66,7 @@
   const dispatch = createEventDispatcher()
 
   let asideFloat: boolean = false
-  let asideShown: boolean = (selectedAside !== false)
+  let asideShown: boolean = selectedAside !== false
   let hideAside: boolean = !asideShown
   let fullSize: boolean = false
   let oldAside: string | boolean = selectedAside
@@ -136,6 +136,7 @@
   <div class="popupPanel-title" class:indent={allowClose || allowClose}>
     {#if allowBack}
       <Button
+        id={'btnPBack'}
         focusIndex={10000}
         icon={IconBack}
         iconProps={{ size: 'medium' }}
@@ -148,6 +149,7 @@
     {/if}
     {#if allowClose}
       <Button
+        id={'btnPClose'}
         focusIndex={10001}
         icon={IconClose}
         iconProps={{ size: 'medium' }}
@@ -174,6 +176,7 @@
           />
         {:else}
           <Button
+            id={'btnPAside'}
             focusIndex={10008}
             icon={IconDetails}
             iconProps={{ size: 'medium', filled: asideShown }}
