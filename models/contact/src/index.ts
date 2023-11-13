@@ -49,8 +49,7 @@ import {
   TypeString,
   TypeTimestamp,
   TypeAttachment,
-  UX,
-  SEARCH
+  UX
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
@@ -89,13 +88,6 @@ export class TChannelProvider extends TDoc implements ChannelProvider {
 
 @Model(contact.class.Contact, core.class.Doc, DOMAIN_CONTACT)
 @UX(contact.string.Contact, contact.icon.Person, 'CONT', 'name')
-@SEARCH({
-  iconConfig: {
-    component: contact.component.Avatar,
-    props: ['avatar', 'name']
-  },
-  title: { props: ['name'] }
-})
 export class TContact extends TDoc implements Contact {
   @Prop(TypeString(), contact.string.Name)
   @Index(IndexKind.FullText)

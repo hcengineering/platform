@@ -20,6 +20,7 @@ import type { Resource } from '@hcengineering/platform'
 
 import core, {
   Class,
+  ClassSearchConfig,
   DOMAIN_MODEL,
   Doc,
   DocumentQuery,
@@ -61,6 +62,7 @@ export class TObjectDDParticipant extends TClass implements ObjectDDParticipant 
 
 @Mixin(serverCore.mixin.SearchPresenter, core.class.Class)
 export class TSearchPresenter extends TClass implements SearchPresenter {
+  searchConfig!: ClassSearchConfig
   getSearchObjectId!: Resource<SearchPresenterFunc>
   getSearchTitle!: Resource<SearchPresenterFunc>
 }

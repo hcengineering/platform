@@ -27,8 +27,8 @@ import core, {
   Storage
 } from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
+import { IndexedDoc } from '../types'
 import { contentStageId, DocUpdateHandler, fieldStateId, FullTextPipeline, FullTextPipelineStage } from './types'
-import type { IndexedDoc } from '../types'
 import {
   collectPropagate,
   docKey,

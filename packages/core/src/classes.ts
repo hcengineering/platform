@@ -197,7 +197,6 @@ export interface Class<T extends Obj> extends Classifier {
   shortLabel?: string
   sortingKey?: string
   filteringKey?: string
-  searchConfig?: ClassSearchConfig
 }
 
 /**

@@ -29,8 +29,7 @@ import {
   TypeMarkup,
   TypeRef,
   TypeString,
-  UX,
-  SEARCH
+  UX
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import calendar from '@hcengineering/model-calendar'
@@ -68,10 +67,6 @@ export { default } from './plugin'
 
 @Model(recruit.class.Vacancy, task.class.Project)
 @UX(recruit.string.Vacancy, recruit.icon.Vacancy, 'VCN', 'name')
-@SEARCH({
-  icon: recruit.icon.Vacancy,
-  title: 'name'
-})
 export class TVacancy extends TProject implements Vacancy {
   @Prop(TypeMarkup(), recruit.string.FullDescription)
   @Index(IndexKind.FullText)
@@ -150,19 +145,6 @@ export class TVacancyList extends TOrganization implements VacancyList {
 
 @Model(recruit.class.Applicant, task.class.Task)
 @UX(recruit.string.Application, recruit.icon.Application, 'APP', 'number')
-@SEARCH({
-  iconConfig: {
-    component: contact.component.Avatar,
-    props: [{ avatar: ['attachedTo', 'avatar'] }, { name: ['attachedTo', 'name'] }]
-  },
-  shortTitle: {
-    tmpl: 'APP-{number}',
-    props: ['number']
-  },
-  title: {
-    props: [{ _class: ['attachedTo', '_class'] }, { name: ['attachedTo', 'name'] }]
-  }
-})
 export class TApplicant extends TTask implements Applicant {
   // We need to declare, to provide property with label
   @Prop(TypeRef(recruit.mixin.Candidate), recruit.string.Talent)

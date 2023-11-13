@@ -47,6 +47,7 @@ import { MinioService } from '@hcengineering/minio'
 import { FullTextIndexPipeline } from './indexer'
 import { createStateDoc, isClassIndexable, readAndMapProps, createIndexedReader } from './indexer/utils'
 import type { FullTextAdapter, WithFind, IndexedDoc } from './types'
+import plugin from './plugin'
 
 /**
  * @public
@@ -265,15 +266,16 @@ export class FullTextIndex implements WithFind {
         const valueReader = createIndexedReader(raw._class, this.hierarchy, raw)
         const ancestors = this.hierarchy.getAncestors(doc.doc._class).reverse()
         for (const _class of ancestors) {
-          const res = this.hierarchy.getClass(_class)
-          if (res.searchConfig !== undefined) {
-            if (res.searchConfig.icon !== undefined) {
-              doc.icon = res.searchConfig.icon
-            }
-            if (res.searchConfig.iconConfig !== undefined) {
-              doc.iconComponent = res.searchConfig.iconConfig.component
-              doc.iconProps = readAndMapProps(valueReader, res.searchConfig.iconConfig.props)
-            }
+          const searchMixin = this.hierarchy.classHierarchyMixin(_class, plugin.mixin.SearchPresenter)
+          if (searchMixin === undefined) {
+            continue
+          }
+          if (searchMixin.searchConfig.icon !== undefined) {
+            doc.icon = searchMixin.searchConfig.icon
+          }
+          if (searchMixin.searchConfig.iconConfig !== undefined) {
+            doc.iconComponent = searchMixin.searchConfig.iconConfig.component
+            doc.iconProps = readAndMapProps(valueReader, searchMixin.searchConfig.iconConfig.props)
           }
         }
 

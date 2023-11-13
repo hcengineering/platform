@@ -41,6 +41,13 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(contact.class.Contact, core.class.Class, serverCore.mixin.SearchPresenter, {
+    searchConfig: {
+      iconConfig: {
+        component: contact.component.Avatar,
+        props: ['avatar', 'name']
+      },
+      title: { props: ['name'] }
+    },
     getSearchTitle: serverContact.function.ContactNameProvider
   })
 

@@ -22,6 +22,7 @@ import serverCore from '@hcengineering/server-core'
 import serverNotification from '@hcengineering/server-notification'
 import serverRecruit from '@hcengineering/server-recruit'
 import serverContact from '@hcengineering/server-contact'
+import contact from '@hcengineering/contact'
 
 export { serverRecruitId } from '@hcengineering/server-recruit'
 
@@ -46,7 +47,27 @@ export function createModel (builder: Builder): void {
     trigger: serverRecruit.trigger.OnRecruitUpdate
   })
 
+  builder.mixin(recruit.class.Vacancy, core.class.Class, serverCore.mixin.SearchPresenter, {
+    searchConfig: {
+      icon: recruit.icon.Vacancy,
+      title: 'name'
+    }
+  })
+
   builder.mixin(recruit.class.Applicant, core.class.Class, serverCore.mixin.SearchPresenter, {
+    searchConfig: {
+      iconConfig: {
+        component: contact.component.Avatar,
+        props: [{ avatar: ['attachedTo', 'avatar'] }, { name: ['attachedTo', 'name'] }]
+      },
+      shortTitle: {
+        tmpl: 'APP-{number}',
+        props: ['number']
+      },
+      title: {
+        props: [{ _class: ['attachedTo', '_class'] }, { name: ['attachedTo', 'name'] }]
+      }
+    },
     getSearchTitle: serverContact.function.ContactNameProvider
   })
 

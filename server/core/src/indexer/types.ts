@@ -25,7 +25,6 @@ import {
   Ref,
   Storage
 } from '@hcengineering/core'
-
 import type { IndexedDoc } from '../types'
 
 /**

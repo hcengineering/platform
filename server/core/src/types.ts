@@ -37,7 +37,8 @@ import {
   WorkspaceId,
   SearchQuery,
   SearchOptions,
-  SearchResult
+  SearchResult,
+  ClassSearchConfig
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import type { Resource } from '@hcengineering/platform'
@@ -346,6 +347,7 @@ export type SearchPresenterFunc = (hierarchy: Hierarchy, props: SearchProps) => 
  * @public
  */
 export interface SearchPresenter extends Class<Doc> {
+  searchConfig: ClassSearchConfig
   getSearchObjectId?: Resource<SearchPresenterFunc>
   getSearchTitle?: Resource<SearchPresenterFunc>
 }
