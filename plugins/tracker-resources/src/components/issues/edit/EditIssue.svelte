@@ -40,9 +40,10 @@
     createFocusManager,
     getCurrentResolvedLocation,
     navigate,
-    showPopup
+    showPopup,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
-  import { ContextMenu, DocNavLink, ParentsNavigator, UpDownNavigator } from '@hcengineering/view-resources'
+  import { ContextMenu, DocNavLink, ParentsNavigator } from '@hcengineering/view-resources'
   import view from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { generateIssueShortLink, getIssueId } from '../../../issues'
@@ -55,7 +56,6 @@
 
   export let _id: Ref<Issue>
   export let _class: Ref<Class<Issue>>
-  export let embedded = false
 
   let lastId: Ref<Doc> = _id
   const queryClient = createQuery()
@@ -165,14 +165,12 @@
   let content: HTMLElement
 </script>
 
-{#if !embedded}
-  <FocusHandler {manager} isEnabled={isContextEnabled} />
-  <ActionContext
-    context={{
-      mode: 'editor'
-    }}
-  />
-{/if}
+<FocusHandler {manager} isEnabled={isContextEnabled} />
+<ActionContext
+  context={{
+    mode: 'editor'
+  }}
+/>
 
 {#if issue !== undefined}
   <Panel
@@ -181,26 +179,19 @@
     isAside={true}
     isSub={false}
     withoutActivity={false}
-    withoutTitle
     bind:content
-    {embedded}
     bind:innerWidth
     on:open
     on:close={() => dispatch('close')}
+    on:select
   >
-    <svelte:fragment slot="navigator">
-      {#if !embedded}
-        <UpDownNavigator element={issue} />
-        <ParentsNavigator element={issue} />
+    <svelte:fragment slot="title">
+      <ParentsNavigator element={issue} />
+      {#if issueId}
+        <DocNavLink noUnderline object={issue}>
+          <div class="title">{issueId}</div>
+        </DocNavLink>
       {/if}
-
-      <span class="ml-4 fs-title select-text-i overflow-label">
-        {#if embedded}
-          <DocNavLink object={issue}>
-            {#if issueId}{issueId}{/if}
-          </DocNavLink>
-        {:else if issueId}{issueId}{/if}
-      </span>
     </svelte:fragment>
     <svelte:fragment slot="pre-utils">
       <ComponentExtensions
@@ -210,6 +201,39 @@
       {#if saved}
         <Label label={presentation.string.Saved} />
       {/if}
+    </svelte:fragment>
+
+    <svelte:fragment slot="utils">
+      <Button icon={IconMoreH} iconProps={{ size: 'medium' }} kind={'icon'} on:click={showMenu} />
+      {#if issueId}
+        <CopyToClipboard issueUrl={generateIssueShortLink(issueId)} />
+      {/if}
+      <Button
+        icon={setting.icon.Setting}
+        kind={'icon'}
+        iconProps={{ size: 'medium' }}
+        showTooltip={{ label: setting.string.ClassSetting }}
+        on:click={(ev) => {
+          ev.stopPropagation()
+          const loc = getCurrentResolvedLocation()
+          loc.path[2] = settingId
+          loc.path[3] = 'setting'
+          loc.path[4] = 'classes'
+          loc.path.length = 5
+          loc.query = { _class }
+          loc.fragment = undefined
+          navigate(loc)
+        }}
+      />
+      <Button
+        icon={IconMixin}
+        iconProps={{ size: 'medium' }}
+        kind={'icon'}
+        selected={showAllMixins}
+        on:click={() => {
+          showAllMixins = !showAllMixins
+        }}
+      />
     </svelte:fragment>
 
     {#if parentIssue}
@@ -227,7 +251,7 @@
       placeholder={tracker.string.IssueTitlePlaceholder}
       kind="large-style"
       on:blur={save}
-      autoFocus={!embedded}
+      autoFocus={!$deviceInfo.isMobile}
     />
     <div class="w-full mt-6">
       <AttachmentStyleBoxEditor
@@ -260,36 +284,6 @@
     <span slot="actions-label" class="select-text">
       {#if issueId}{issueId}{/if}
     </span>
-    <svelte:fragment slot="utils">
-      <Button icon={IconMoreH} kind={'ghost'} size={'medium'} on:click={showMenu} />
-      {#if issueId}
-        <CopyToClipboard issueUrl={generateIssueShortLink(issueId)} {issueId} />
-      {/if}
-      <Button
-        icon={setting.icon.Setting}
-        kind={'ghost'}
-        showTooltip={{ label: setting.string.ClassSetting }}
-        on:click={(ev) => {
-          ev.stopPropagation()
-          const loc = getCurrentResolvedLocation()
-          loc.path[2] = settingId
-          loc.path[3] = 'setting'
-          loc.path[4] = 'classes'
-          loc.path.length = 5
-          loc.query = { _class }
-          loc.fragment = undefined
-          navigate(loc)
-        }}
-      />
-      <Button
-        kind={'ghost'}
-        icon={IconMixin}
-        selected={showAllMixins}
-        on:click={() => {
-          showAllMixins = !showAllMixins
-        }}
-      />
-    </svelte:fragment>
 
     <svelte:fragment slot="custom-attributes">
       {#if issue && currentProject}

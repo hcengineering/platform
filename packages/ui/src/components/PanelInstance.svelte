@@ -143,7 +143,6 @@
     <slot name="panel-header" />
     <div
       class="panel-instance"
-      class:bg={false}
       bind:this={modalHTML}
       style:top={options?.props?.top}
       style:bottom={options?.props?.bottom}
@@ -156,20 +155,18 @@
       style:min-width={options?.props?.minWidth}
       style:transform={options?.props?.transform}
     >
-      <div class="panel-container" class:padding={props.element === 'content'}>
-        <svelte:component
-          this={component}
-          bind:this={componentInstance}
-          _id={props._id}
-          _class={props._class}
-          rightSection={props.rightSection}
-          position={props.element}
-          bind:popupOptions={options}
-          on:open={_open}
-          on:close={_close}
-          on:update={_update}
-        />
-      </div>
+      <svelte:component
+        this={component}
+        bind:this={componentInstance}
+        _id={props._id}
+        _class={props._class}
+        rightSection={props.rightSection}
+        position={props.element}
+        bind:popupOptions={options}
+        on:open={_open}
+        on:close={_close}
+        on:update={_update}
+      />
     </div>
     {#if props.element !== 'content'}
       <div
@@ -188,19 +185,6 @@
     z-index: 401;
     position: fixed;
     background-color: transparent;
-
-    &.bg {
-      background-color: var(--theme-back-color);
-    }
-    .panel-container {
-      padding: 0.5rem;
-      width: 100%;
-      height: 100%;
-
-      &.padding {
-        padding: 0.75rem;
-      }
-    }
   }
 
   .modal-overlay {

@@ -437,8 +437,12 @@
 
   const checkSibling = (start: boolean = false): void => {
     if (separator === null) return
-    if (prevElement === null || start) prevElement = separator.previousElementSibling as HTMLElement
-    if (nextElement === null || start) nextElement = separator.nextElementSibling as HTMLElement
+    if ((prevElement === null || start) && separator) {
+      prevElement = separator.previousElementSibling as HTMLElement
+    }
+    if ((nextElement === null || start) && separator) {
+      nextElement = separator.nextElementSibling as HTMLElement
+    }
     if (separators && prevElement && separators[index].float !== undefined) {
       prevElement.setAttribute('data-float', separators[index].float ?? '')
     }
@@ -447,7 +451,7 @@
     }
   }
   const checkParent = (): void => {
-    if (parentElement === null) parentElement = separator.parentElement as HTMLElement
+    if (parentElement === null && separator) parentElement = separator.parentElement as HTMLElement
     if (parentElement && typeof float === 'string') parentElement.setAttribute('data-float', float)
   }
 

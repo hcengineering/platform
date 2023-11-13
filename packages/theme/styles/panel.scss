@@ -77,54 +77,49 @@
 .popupPanel {
   overflow: hidden;
   display: flex;
-  min-height: 0;
+  width: 100%;
   height: 100%;
+  min-width: 0;
+  min-height: 0;
   
-  &.rowContent {
-    width: 100%;
-    min-width: 0;
-  }
   &:not(.rowContent) { flex-direction: column; }
-  &.embedded { width: 100%; }
-  &:not(.embedded) { border-radius: .5rem; }
 
   .popupPanel-title {
     display: flex;
     flex-shrink: 0;
     justify-content: stretch;
     align-items: center;
+    padding: 0 1rem 0 1.25rem;
+    min-width: 0;
+    min-height: 3.25rem;
+    background-color: var(--theme-comp-header-color);
+    border-bottom: 1px solid var(--theme-divider-color);
 
-    &.row {
-      padding: .5rem .75rem;
-      width: 100%;
-
-      &-top { margin: .5rem .75rem .125rem; }
-      &-bottom { margin: .5rem .75rem .5rem 1.25rem; }
-    }
-    &__bordered {
-      min-width: 0;
-      min-height: 3.25rem;
-      background-color: var(--theme-comp-header-color);
-      &:not(.embedded) {
-        border: 1px solid var(--theme-divider-color);
-        border-bottom: none;
-        border-radius: .5rem .5rem 0 0;
-      }
-      &.embedded {
-        border-bottom: 1px solid var(--theme-divider-color);
-      }
-    }
     &__content {
+      display: flex;
+      align-items: center;
       flex-grow: 1;
-      margin: 0 .75rem;
+      margin-right: .75rem;
       min-width: 0;
       min-height: 0;
 
-      &-container {
-        display: flex;
-        justify-content: stretch;
-        min-width: 0;
-        width: 100%;
+      .title {
+        padding: .125rem .375rem;
+        font-size: .8125rem;
+        color: var(--theme-content-color);
+        background-color: var(--theme-breadcrumb-default);
+        border-radius: .25rem;
+
+        &:not(:last-child) { margin-right: .125rem; }
+        &:not(.disabled, .not-active) {
+          cursor: pointer;
+
+          &:hover, &:focus { background-color: var(--theme-breadcrumb-hovered); }
+          &:active { background-color: var(--theme-breadcrumb-pressed); }
+          &:hover, &:focus, &:active { color: var(--theme-caption-color); }
+        }
+        &.disabled { color: var(--theme-dark-color); }
+        &.not-active { color: var(--theme-caption-color); }
       }
     }
   }
@@ -138,13 +133,8 @@
     height: 100%;
     background-color: var(--theme-panel-color);
     border: 1px solid var(--theme-divider-color);
-    &:not(.embedded) {
-      border-radius: 0 0 .5rem .5rem;
-    }
-    &.embedded { 
-      border-top: none;
-      border-left: none;
-    }
+    border-top: none;
+    border-left: none;
 
     &.main {
       justify-content: stretch;

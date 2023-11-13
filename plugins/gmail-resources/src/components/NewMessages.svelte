@@ -27,7 +27,6 @@
     Button,
     EditBox,
     eventToHTMLElement,
-    Icon,
     IconAttachment,
     Label,
     Panel,
@@ -236,12 +235,7 @@
   }}
 >
   <svelte:fragment slot="title">
-    <div class="antiTitle icon-wrapper">
-      <div class="wrapped-icon"><Icon icon={contact.icon.Email} size={'medium'} /></div>
-      <div class="title-wrapper">
-        <span class="wrapped-title">Email</span>
-      </div>
-    </div>
+    <div class="title not-active">Email</div>
   </svelte:fragment>
 
   <svelte:fragment slot="utils">

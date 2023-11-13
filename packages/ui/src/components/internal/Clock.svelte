@@ -33,7 +33,7 @@
     })
   }}
 >
-  <span>{getTimeZoneName()}</span>&nbsp;&nbsp;
+  {#if getTimeZoneName() !== ''}<span>{getTimeZoneName()}</span>&nbsp;&nbsp;{/if}
   <span>{hours}</span>
   <span style:visibility={delimiter ? 'visible' : 'hidden'}>:</span>
   <span>{minutes}</span>

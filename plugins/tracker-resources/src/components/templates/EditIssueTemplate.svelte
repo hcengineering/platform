@@ -22,17 +22,8 @@
   import setting, { settingId } from '@hcengineering/setting'
   import tags from '@hcengineering/tags'
   import { IssueTemplate, IssueTemplateChild, Project } from '@hcengineering/tracker'
-  import {
-    Button,
-    EditBox,
-    Icon,
-    IconMoreH,
-    Label,
-    getCurrentResolvedLocation,
-    navigate,
-    showPopup
-  } from '@hcengineering/ui'
-  import { ContextMenu, ParentsNavigator, UpDownNavigator } from '@hcengineering/view-resources'
+  import { Button, EditBox, IconMoreH, Label, getCurrentResolvedLocation, navigate, showPopup } from '@hcengineering/ui'
+  import { ContextMenu } from '@hcengineering/view-resources'
   import view from '@hcengineering/view'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import tracker from '../../plugin'
@@ -42,7 +33,6 @@
 
   export let _id: Ref<IssueTemplate>
   export let _class: Ref<Class<IssueTemplate>>
-  export let embedded = false
 
   let lastId: Ref<Doc> = _id
   const query = createQuery()
@@ -52,7 +42,6 @@
   let template: WithLookup<IssueTemplate> | undefined
   let currentProject: Project | undefined
   let title = ''
-  let description = ''
   let innerWidth: number
 
   let descriptionBox: AttachmentStyleBoxEditor
@@ -80,7 +69,6 @@
       async (result) => {
         ;[template] = result
         title = template.title
-        description = template.description
         currentProject = template.$lookup?.space
       },
       { lookup: { space: tracker.class.Project, labels: tags.class.TagElement } }
@@ -149,30 +137,16 @@
 
 {#if template !== undefined}
   <Panel
+    title={template.title}
     object={template}
     isHeader={false}
     isAside={true}
     isSub={false}
     withoutActivity={false}
-    {embedded}
     bind:innerWidth
     on:open
     on:close={() => dispatch('close')}
   >
-    <svelte:fragment slot="navigator">
-      {#if !embedded}
-        <UpDownNavigator element={template} />
-        <ParentsNavigator element={template} />
-      {/if}
-
-      <div class="ml-2">
-        <Icon icon={tracker.icon.IssueTemplates} size={'small'} />
-      </div>
-      <span class="fs-title flex-row-center">
-        {template.title}
-      </span>
-    </svelte:fragment>
-
     <EditBox bind:value={title} placeholder={tracker.string.IssueTitlePlaceholder} kind="large-style" on:blur={save} />
     <div class="w-full mt-6">
       <AttachmentStyleBoxEditor
@@ -207,10 +181,11 @@
       {/if}
     </svelte:fragment>
     <svelte:fragment slot="utils">
-      <Button icon={IconMoreH} kind={'ghost'} size={'medium'} on:click={showMenu} />
+      <Button icon={IconMoreH} iconProps={{ size: 'medium' }} kind={'icon'} on:click={showMenu} />
       <Button
         icon={setting.icon.Setting}
-        kind={'ghost'}
+        iconProps={{ size: 'medium' }}
+        kind={'icon'}
         showTooltip={{ label: setting.string.ClassSetting }}
         on:click={(ev) => {
           ev.stopPropagation()

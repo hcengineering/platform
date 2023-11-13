@@ -343,4 +343,16 @@
       width: 20px;
     }
   }
+  &:focus { z-index: 1; }
+  &.icon {
+    background-color: var(--theme-button-icon-default);
+
+    .btn-icon { color: var(--theme-dark-color); }
+
+    &:hover, &:focus, &.selected { background-color: var(--theme-button-icon-hovered); }
+    &:active { background-color: var(--theme-button-icon-pressed); }
+    &:hover, &:focus, &.selected, &:active {
+      .btn-icon { color: var(--theme-caption-color); }
+    }
+  }
 }

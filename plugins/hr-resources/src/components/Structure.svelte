@@ -17,16 +17,7 @@
   import { DocumentQuery, Ref, WithLookup } from '@hcengineering/core'
   import type { Department, Staff } from '@hcengineering/hr'
   import { createQuery } from '@hcengineering/presentation'
-  import {
-    Button,
-    deviceOptionsStore as deviceInfo,
-    eventToHTMLElement,
-    Label,
-    Scroller,
-    SearchEdit,
-    showPopup,
-    IconAdd
-  } from '@hcengineering/ui'
+  import { Button, eventToHTMLElement, Label, Scroller, SearchEdit, showPopup, IconAdd } from '@hcengineering/ui'
   import hr from '../plugin'
   import CreateDepartment from './CreateDepartment.svelte'
   import DepartmentCard from './DepartmentCard.svelte'
@@ -75,8 +66,6 @@
   spaceMembers.query(hr.mixin.Staff, {}, (res) => {
     allEmployees = res
   })
-
-  $: twoRows = $deviceInfo.twoRows
 </script>
 
 <div class="ac-header full divide caption-height">

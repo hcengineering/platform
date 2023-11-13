@@ -97,7 +97,7 @@
       Mem: {data.statistics.memoryUsed} / {data.statistics.memoryTotal} CPU: {data.statistics.cpuUsage}
     {/if}
   </svelte:fragment>
-  <svelte:fragment slot="navigator">
+  <svelte:fragment slot="title">
     <span class="p-3"> Server manager </span>
     <TabList
       items={tabs}

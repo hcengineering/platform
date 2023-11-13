@@ -32,13 +32,7 @@
     Label,
     showPopup
   } from '@hcengineering/ui'
-  import {
-    ContextMenu,
-    DocAttributeBar,
-    invokeAction,
-    ParentsNavigator,
-    UpDownNavigator
-  } from '@hcengineering/view-resources'
+  import { ContextMenu, DocAttributeBar, invokeAction, ParentsNavigator } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import board from '../plugin'
   import { getCardActions } from '../utils/CardActionUtils'
@@ -112,18 +106,12 @@
 
 {#if object !== undefined}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <Panel
-    icon={board.icon.Card}
-    title={object?.title}
-    {object}
-    isHeader
-    isAside={true}
-    isSub={false}
-    on:close={() => dispatch('close')}
-  >
-    <svelte:fragment slot="navigator">
-      <UpDownNavigator element={object} />
+  <Panel {object} isHeader isAside={true} isSub={false} on:close={() => dispatch('close')}>
+    <svelte:fragment slot="title">
       <ParentsNavigator element={object} />
+      {#if object?.title}
+        <div class="title not-active">{object?.title}</div>
+      {/if}
     </svelte:fragment>
     <svelte:fragment slot="header">
       <div class="flex fs-title flex-gap-1">

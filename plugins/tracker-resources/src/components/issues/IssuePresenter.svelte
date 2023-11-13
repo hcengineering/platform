@@ -24,10 +24,11 @@
   import { activeProjects } from '../../utils'
 
   export let value: WithLookup<Issue>
-  export let disabled = false
+  export let disabled: boolean = false
   export let onClick: (() => void) | undefined = undefined
   export let shouldShowAvatar: boolean = false
-  export let noUnderline = disabled
+  export let noUnderline: boolean = disabled
+  export let noSelect: boolean = false
   export let inline = false
   export let kind: 'list' | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
@@ -64,7 +65,7 @@
               <Icon icon={icon ?? tracker.icon.Issues} size={'small'} />
             </div>
           {/if}
-          <span class="overflow-label select-text" title={value?.title}>
+          <span class="overflow-label" class:select-text={!noSelect} title={value?.title}>
             {title}
             <slot name="details" />
           </span>

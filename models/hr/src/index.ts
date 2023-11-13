@@ -296,7 +296,7 @@ export function createModel (builder: Builder): void {
     builder,
     {
       action: view.actionImpl.ShowPanel,
-      actionProps: {},
+      actionProps: { element: 'content' },
       label: view.string.Open,
       icon: view.icon.Open,
       keyBinding: ['e'],
@@ -353,7 +353,7 @@ export function createModel (builder: Builder): void {
     builder,
     {
       action: view.actionImpl.ShowPanel,
-      actionProps: {},
+      actionProps: { element: 'content' },
       label: view.string.Open,
       icon: view.icon.Open,
       keyBinding: ['e'],

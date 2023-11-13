@@ -23,14 +23,22 @@
   import { Vacancy } from '@hcengineering/recruit'
   import tracker from '@hcengineering/tracker'
   import view from '@hcengineering/view'
-  import { Button, Component, EditBox, IconMixin, IconMoreH, Label, LinkWrapper, showPopup } from '@hcengineering/ui'
-  import { ContextMenu, DocAttributeBar } from '@hcengineering/view-resources'
+  import {
+    Button,
+    Component,
+    EditBox,
+    IconMixin,
+    IconMoreH,
+    Label,
+    showPopup,
+    deviceOptionsStore as deviceInfo
+  } from '@hcengineering/ui'
+  import { ContextMenu, DocAttributeBar, DocNavLink } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import recruit from '../plugin'
   import VacancyApplications from './VacancyApplications.svelte'
 
   export let _id: Ref<Vacancy>
-  export let embedded = false
 
   let object: Required<Vacancy>
   let rawName: string = ''
@@ -50,7 +58,7 @@
   const client = getClient()
 
   const query = createQuery()
-  const clazz = client.getHierarchy().getClass(recruit.class.Vacancy)
+  // const clazz = client.getHierarchy().getClass(recruit.class.Vacancy)
 
   function updateObject (_id: Ref<Vacancy>): void {
     if (lastId !== _id) {
@@ -125,26 +133,19 @@
 
 {#if object}
   <Panel
-    icon={clazz.icon}
-    title={object.name}
     isHeader={false}
     isSub={false}
     isAside={true}
-    {embedded}
     {object}
     on:open
     on:close={() => {
       dispatch('close')
     }}
   >
-    <svelte:fragment slot="subtitle">
-      {#if object.description}
-        <div class="flex">
-          <span class="overflow-label" title={object.description}>
-            <LinkWrapper text={object.description} />
-          </span>
-        </div>
-      {/if}
+    <svelte:fragment slot="title">
+      <DocNavLink noUnderline {object}>
+        <div class="title">{object.name}</div>
+      </DocNavLink>
     </svelte:fragment>
 
     <svelte:fragment slot="attributes" let:direction={dir}>
@@ -159,7 +160,7 @@
         placeholder={recruit.string.VacancyPlaceholder}
         kind={'large-style'}
         focusable
-        autoFocus={!embedded}
+        autoFocus={!$deviceInfo.isMobile}
         on:blur={save}
       />
     </span>
@@ -170,10 +171,11 @@
       {/if}
     </svelte:fragment>
     <svelte:fragment slot="utils">
-      <Button icon={IconMoreH} kind={'ghost'} size={'medium'} on:click={showMenu} />
+      <Button icon={IconMoreH} iconProps={{ size: 'medium' }} kind={'icon'} on:click={showMenu} />
       <Button
         icon={IconMixin}
-        kind={'ghost'}
+        kind={'icon'}
+        iconProps={{ size: 'medium' }}
         selected={showAllMixins}
         on:click={() => {
           showAllMixins = !showAllMixins

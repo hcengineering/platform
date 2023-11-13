@@ -38,7 +38,6 @@
   const client = getClient()
 
   const query = createQuery()
-  const clazz = client.getHierarchy().getClass(lead.class.Funnel)
 
   function updateObject (_id: Ref<Funnel>): void {
     query.query(lead.class.Funnel, { _id }, (result) => {
@@ -58,8 +57,6 @@
 {#if object}
   <Panel
     title={object.name}
-    subtitle={object.description}
-    icon={clazz.icon}
     isHeader={false}
     isAside={true}
     {object}

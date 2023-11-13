@@ -15,10 +15,10 @@
 -->
 <script lang="ts">
   import contact, { Contact, getName } from '@hcengineering/contact'
-  import core, { Class, ClassifierKind, Doc, Mixin, Obj, Ref } from '@hcengineering/core'
+  import core, { Class, ClassifierKind, Doc, Mixin, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
-  import { Asset, getResource, translate } from '@hcengineering/platform'
+  import { getResource, translate } from '@hcengineering/platform'
   import {
     AttributeCategory,
     AttributeCategoryOrder,
@@ -33,14 +33,12 @@
   import { AnyComponent, Button, Component, IconMixin, IconMoreH, showPopup, themeStore } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import { ContextMenu, ParentsNavigator } from '..'
+  import { ContextMenu, ParentsNavigator, DocNavLink } from '..'
   import { categorizeFields, getCollectionCounter, getFiltredKeys } from '../utils'
   import DocAttributeBar from './DocAttributeBar.svelte'
-  import UpDownNavigator from './UpDownNavigator.svelte'
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
-  export let embedded = false
 
   let realObjectClass: Ref<Class<Doc>> = _class
   let lastId: Ref<Doc> = _id
@@ -203,21 +201,6 @@
     }
   }
 
-  function getIcon (_class: Ref<Class<Obj>> | undefined): Asset | undefined {
-    if (_class === undefined) return undefined
-    let clazz = hierarchy.getClass(_class)
-    if (clazz.icon !== undefined) return clazz.icon
-    while (clazz.extends !== undefined) {
-      clazz = hierarchy.getClass(clazz.extends)
-      if (clazz.icon != null) {
-        return clazz.icon
-      }
-    }
-    // throw new Error(`Icon not found for ${_class}`)
-  }
-
-  $: icon = getIcon(realObjectClass)
-
   let title: string = ''
   let rawTitle: string = ''
 
@@ -282,20 +265,15 @@
   let content: HTMLElement
 </script>
 
-{#if !embedded}
-  <ActionContext
-    context={{
-      mode: 'editor'
-    }}
-  />
-{/if}
+<ActionContext
+  context={{
+    mode: 'editor'
+  }}
+/>
 
 {#if object !== undefined && finalTitle !== undefined}
   <Panel
-    {icon}
-    title={finalTitle}
     {object}
-    {embedded}
     isHeader={mainEditor?.pinned ?? false}
     isAside={true}
     bind:content
@@ -309,18 +287,19 @@
     withoutActivity={!activityOptions.enabled}
     withoutInput={!activityOptions.showInput}
   >
-    <svelte:fragment slot="navigator">
-      {#if !embedded}
-        <UpDownNavigator element={object} />
-        <ParentsNavigator element={object} />
-      {/if}
+    <svelte:fragment slot="title">
+      <ParentsNavigator element={object} />
+      <DocNavLink noUnderline {object}>
+        <div class="title">{finalTitle}</div>
+      </DocNavLink>
     </svelte:fragment>
 
     <svelte:fragment slot="utils">
-      <Button icon={IconMoreH} kind={'ghost'} size={'medium'} on:click={showMenu} />
+      <Button icon={IconMoreH} iconProps={{ size: 'medium' }} kind={'icon'} on:click={showMenu} />
       <Button
         icon={IconMixin}
-        kind={'ghost'}
+        iconProps={{ size: 'medium' }}
+        kind={'icon'}
         selected={showAllMixins}
         on:click={() => {
           showAllMixins = !showAllMixins
@@ -333,7 +312,7 @@
         {#if headerEditor !== undefined}
           <Component
             is={headerEditor}
-            props={{ object, keys, mixins, ignoreKeys, vertical: dir === 'column', allowedCollections, embedded }}
+            props={{ object, keys, mixins, ignoreKeys, vertical: dir === 'column', allowedCollections }}
             on:update={updateKeys}
           />
         {:else if dir === 'column'}
