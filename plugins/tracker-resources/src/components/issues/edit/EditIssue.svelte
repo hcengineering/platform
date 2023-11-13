@@ -40,8 +40,7 @@
     createFocusManager,
     getCurrentResolvedLocation,
     navigate,
-    showPopup,
-    deviceOptionsStore as deviceInfo
+    showPopup
   } from '@hcengineering/ui'
   import { ContextMenu, DocNavLink, ParentsNavigator } from '@hcengineering/view-resources'
   import view from '@hcengineering/view'
@@ -251,7 +250,6 @@
       placeholder={tracker.string.IssueTitlePlaceholder}
       kind="large-style"
       on:blur={save}
-      autoFocus={!$deviceInfo.isMobile}
     />
     <div class="w-full mt-6">
       <AttachmentStyleBoxEditor
