@@ -35,8 +35,7 @@ import {
   IndexedDoc,
   SearchQuery,
   SearchOptions,
-  SearchResult,
-  SearchResultRaw
+  SearchResult
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import type { Resource } from '@hcengineering/platform'
@@ -148,6 +147,14 @@ export interface EmbeddingSearchOption {
   embeddingBoost?: number // default 100
   fulltextBoost?: number // default 10
   minScore?: number // 75 for example.
+}
+
+/**
+ * @public
+ */
+export interface SearchResultRaw {
+  docs: IndexedDoc[]
+  total?: number
 }
 
 /**

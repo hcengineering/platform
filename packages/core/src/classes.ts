@@ -183,7 +183,7 @@ export interface ClassSearchConfig {
   icon?: Asset
   iconConfig?: { component: any, props: ClassSearchConfigProps[] }
   title: ClassSearchConfigProperty
-  objectId?: ClassSearchConfigProperty
+  shortTitle?: ClassSearchConfigProperty
 }
 
 /**

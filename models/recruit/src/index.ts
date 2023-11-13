@@ -155,7 +155,7 @@ export class TVacancyList extends TOrganization implements VacancyList {
     component: contact.component.Avatar,
     props: [{ avatar: ['attachedTo', 'avatar'] }, { name: ['attachedTo', 'name'] }]
   },
-  objectId: {
+  shortTitle: {
     tmpl: 'APP-{number}',
     props: ['number']
   },

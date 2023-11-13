@@ -255,14 +255,17 @@ export class FullTextIndex implements WithFind {
       docs: resultRaw.docs.map((raw) => {
         const doc: SearchResultDoc = {
           id: raw.id,
-          _class: raw._class,
-          space: raw.space,
           title: raw.searchTitle,
-          objectId: raw.searchObjectId
+          shortTitle: raw.searchShortTitle,
+          doc: {
+            _id: raw.id,
+            _class: raw._class,
+            space: raw.space
+          }
         }
 
         const valueReader = createIndexedReader(raw._class, this.hierarchy, raw)
-        const ancestors = this.hierarchy.getAncestors(doc._class).reverse()
+        const ancestors = this.hierarchy.getAncestors(doc.doc._class).reverse()
         for (const _class of ancestors) {
           const res = this.hierarchy.getClass(_class)
           if (res.searchConfig !== undefined) {

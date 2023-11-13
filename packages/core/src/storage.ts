@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 
+import type { Asset } from '@hcengineering/platform'
+
 import type { KeysByType } from 'simplytyped'
 import type { AttachedDoc, Class, Doc, Ref, Account, Space, Timestamp } from './classes'
 import type { Tx } from './tx'
@@ -220,7 +222,7 @@ export interface IndexedDoc {
   attachedTo?: Ref<Doc>
   attachedToClass?: Ref<Class<Doc>>
   searchTitle?: string
-  searchObjectId?: string
+  searchShortTitle?: string
   [key: string]: any
 }
 
@@ -245,21 +247,12 @@ export interface SearchOptions {
  */
 export interface SearchResultDoc {
   id: Ref<Doc>
-  _class: Ref<Class<Doc>>
-  space: Ref<Space>
-  icon?: string
+  icon?: Asset
   iconComponent?: string
   iconProps?: { [key: string]: string }
-  objectId?: string
+  shortTitle?: string
   title?: string
-}
-
-/**
- * @public
- */
-export interface SearchResultRaw {
-  docs: IndexedDoc[]
-  total?: number
+  doc: Pick<Doc, '_id' | '_class' | 'space'>
 }
 
 /**

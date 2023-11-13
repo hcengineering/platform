@@ -26,10 +26,9 @@ import {
   WorkspaceId,
   IndexedDoc,
   SearchQuery,
-  SearchOptions,
-  SearchResultRaw
+  SearchOptions
 } from '@hcengineering/core'
-import type { EmbeddingSearchOption, FullTextAdapter } from '@hcengineering/server-core'
+import type { EmbeddingSearchOption, FullTextAdapter, SearchResultRaw } from '@hcengineering/server-core'
 
 import { Client, errors as esErr } from '@elastic/elasticsearch'
 import { Domain } from 'node:domain'
@@ -120,6 +119,7 @@ class ElasticAdapter implements FullTextAdapter {
                 default_operator: 'and',
                 fields: [
                   'searchTitle^5', // Boost matches in searchTitle by a factor of 5
+                  'searchShortTitle^5',
                   '*' // Search in all other fields without a boost
                 ]
               }

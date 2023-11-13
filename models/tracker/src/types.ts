@@ -168,7 +168,7 @@ export function TypeEstimation (): Type<number> {
     component: tracker.component.IssueSearchIcon,
     props: ['status', 'space']
   },
-  objectId: {
+  shortTitle: {
     tmpl: '{identifier}-{number}',
     props: [{ identifier: ['space', 'identifier'] }, 'number']
   },
