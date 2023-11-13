@@ -45,7 +45,7 @@
   export let embedded: boolean = false
   export let useMaxWidth: boolean | undefined = undefined
   export let customAside: ButtonItem[] | undefined = undefined
-  export let selectedAside: string | false = customAside ? customAside[0].id : false
+  export let selectedAside: string | boolean = customAside ? customAside[0].id : isAside
 
   export function getAside (): string | boolean {
     if (customAside) return selectedAside
@@ -66,10 +66,10 @@
   const dispatch = createEventDispatcher()
 
   let asideFloat: boolean = false
-  let asideShown: boolean = typeof selectedAside === 'string'
+  let asideShown: boolean = (selectedAside !== false)
   let hideAside: boolean = !asideShown
   let fullSize: boolean = false
-  let oldAside: string | false = selectedAside
+  let oldAside: string | boolean = selectedAside
   $: if (typeof selectedAside === 'string' && oldAside !== selectedAside) oldAside = selectedAside
   $: setAside(selectedAside)
 

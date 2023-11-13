@@ -165,12 +165,14 @@
   let content: HTMLElement
 </script>
 
-<FocusHandler {manager} isEnabled={isContextEnabled} />
-<ActionContext
-  context={{
-    mode: 'editor'
-  }}
-/>
+{#if !embedded}
+  <FocusHandler {manager} isEnabled={isContextEnabled} />
+  <ActionContext
+    context={{
+      mode: 'editor'
+    }}
+  />
+{/if}
 
 {#if issue !== undefined}
   <Panel

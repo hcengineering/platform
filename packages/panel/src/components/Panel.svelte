@@ -44,7 +44,7 @@
   export let content: HTMLElement | undefined | null = undefined
   export let withoutContentScroll: boolean = false
   export let customAside: ButtonItem[] | undefined = undefined
-  export let selectedAside: string | false = customAside ? customAside[0].id : false
+  export let selectedAside: string | boolean = customAside ? customAside[0].id : isAside
 
   export function getAside (): string | boolean {
     return panel.getAside()
