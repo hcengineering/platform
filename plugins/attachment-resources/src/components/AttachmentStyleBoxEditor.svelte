@@ -86,13 +86,7 @@
       haveUnsavedChanges = false
     }
 
-    /*
-      As far as I understood, delayed save can be invoked after dismount. In this case
-      descriptionBox would be null. This happens a lot with mention links.
-    */
-    if (descriptionBox !== undefined && descriptionBox !== null) {
-      await descriptionBox.createAttachments()
-    }
+    await descriptionBox.createAttachments()
   }
 
   let saveTrigger: any
