@@ -22,7 +22,6 @@ import core, {
   DocumentQuery,
   DocumentUpdate,
   extractDocKey,
-  Hierarchy,
   isFullTextAttribute,
   isIndexedAttribute,
   MeasureContext,
@@ -46,14 +45,9 @@ import {
   collectPropagateClasses,
   docKey,
   getFullTextContext,
-  IndexKeyOptions,
-  readAndMapProps,
-  fillTemplate,
-  createIndexedReader
+  IndexKeyOptions
 } from './utils'
-import plugin from '../plugin'
-
-import { getResource } from '@hcengineering/platform'
+import { updateDocWithPresenter } from '../mapper'
 
 /**
  * @public
@@ -149,50 +143,6 @@ export class FullTextPushStage implements FullTextPipelineStage {
     }
   }
 
-  async applySearchProps (hierarchy: Hierarchy, doc: IndexedDoc): Promise<void> {
-    const ancestors = hierarchy.getAncestors(doc._class).reverse()
-    const reader = createIndexedReader(doc._class, hierarchy, doc)
-
-    for (const _class of ancestors) {
-      const searchMixin = hierarchy.classHierarchyMixin(_class, plugin.mixin.SearchPresenter)
-      if (searchMixin === undefined) {
-        continue
-      }
-
-      const props = [
-        {
-          name: 'searchTitle',
-          config: searchMixin.searchConfig.title,
-          provider: searchMixin.getSearchTitle
-        }
-      ]
-
-      if (searchMixin.searchConfig.shortTitle !== undefined) {
-        props.push({
-          name: 'searchShortTitle',
-          config: searchMixin.searchConfig.shortTitle,
-          provider: searchMixin.getSearchObjectId
-        })
-      }
-
-      for (const prop of props) {
-        let value
-        if (typeof prop.config === 'string') {
-          value = reader.get(prop.config)
-        } else if (prop.config.tmpl !== undefined) {
-          const tmpl = prop.config.tmpl
-          const renderProps = readAndMapProps(reader, prop.config.props)
-          value = fillTemplate(tmpl, renderProps)
-        } else if (prop.provider !== undefined) {
-          const func = await getResource(prop.provider)
-          const renderProps = readAndMapProps(reader, prop.config.props)
-          value = func(hierarchy, { _class: doc._class, ...renderProps })
-        }
-        doc[prop.name] = value
-      }
-    }
-  }
-
   async collect (toIndex: DocIndexState[], pipeline: FullTextPipeline, metrics: MeasureContext): Promise<void> {
     const bulk: IndexedDoc[] = []
 
@@ -265,7 +215,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
           // Include child ref attributes
           await this.indexRefAttributes(allAttributes, doc, elasticDoc, metrics)
 
-          await this.applySearchProps(pipeline.hierarchy, elasticDoc)
+          await updateDocWithPresenter(pipeline.hierarchy, elasticDoc)
 
           this.checkIntegrity(elasticDoc)
           bulk.push(elasticDoc)

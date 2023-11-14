@@ -39,15 +39,14 @@ import core, {
   WorkspaceId,
   SearchQuery,
   SearchOptions,
-  SearchResult,
-  SearchResultDoc,
-
+  SearchResult
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { FullTextIndexPipeline } from './indexer'
-import { createStateDoc, isClassIndexable, readAndMapProps, createIndexedReader } from './indexer/utils'
+import { createStateDoc, isClassIndexable } from './indexer/utils'
+import { mapSearchResultDoc } from './mapper'
 import type { FullTextAdapter, WithFind, IndexedDoc } from './types'
-import plugin from './plugin'
+
 
 /**
  * @public
@@ -253,33 +252,7 @@ export class FullTextIndex implements WithFind {
     const result: SearchResult = {
       ...resultRaw,
       docs: resultRaw.docs.map((raw) => {
-        const doc: SearchResultDoc = {
-          id: raw.id,
-          title: raw.searchTitle,
-          shortTitle: raw.searchShortTitle,
-          doc: {
-            _id: raw.id,
-            _class: raw._class
-          }
-        }
-
-        const valueReader = createIndexedReader(raw._class, this.hierarchy, raw)
-        const ancestors = this.hierarchy.getAncestors(doc.doc._class).reverse()
-        for (const _class of ancestors) {
-          const searchMixin = this.hierarchy.classHierarchyMixin(_class, plugin.mixin.SearchPresenter)
-          if (searchMixin === undefined) {
-            continue
-          }
-          if (searchMixin.searchConfig.icon !== undefined) {
-            doc.icon = searchMixin.searchConfig.icon
-          }
-          if (searchMixin.searchConfig.iconConfig !== undefined) {
-            doc.iconComponent = searchMixin.searchConfig.iconConfig.component
-            doc.iconProps = readAndMapProps(valueReader, searchMixin.searchConfig.iconConfig.props)
-          }
-        }
-
-        return doc
+        return mapSearchResultDoc(this.hierarchy, raw)
       })
     }
     return result

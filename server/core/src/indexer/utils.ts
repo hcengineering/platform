@@ -36,17 +36,13 @@ import core, {
   isIndexedAttribute,
   Obj,
   Ref,
-  RefTo,
   Space,
   Storage,
-  TxFactory,
-  ClassSearchConfigProps,
-  docKey
+  TxFactory
 } from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
 import plugin from '../plugin'
 import { FullTextPipeline} from './types'
-import type { IndexedDoc } from '../types'
 /**
  * @public
  */
@@ -304,61 +300,4 @@ export function collectPropagateClasses (pipeline: FullTextPipeline, objectClass
   traverseFullTextContexts(pipeline, objectClass, (fts) => fts?.propagateClasses?.forEach((it) => propagate.add(it)))
 
   return Array.from(propagate.values())
-}
-
-/**
- * @public
- */
-export interface IndexedReader {
-  get: (attribute: string) => any
-  getDoc: (attribute: string) => IndexedReader | undefined
-}
-
-export function readAndMapProps (reader: IndexedReader, props: ClassSearchConfigProps[]): { [key: string]: string } {
-  const res: { [key: string]: string } = {}
-  for (const prop of props) {
-    if (typeof prop === 'string') {
-      res[prop] = reader.get(prop)
-    } else {
-      for (const [propName, rest] of Object.entries(prop)) {
-        if (rest.length > 1) {
-          const val = reader.getDoc(rest[0])?.get(rest[1]) ?? ''
-          res[propName] = Array.isArray(val) ? val[0] : val
-        }
-      }
-    }
-  }
-  return res
-}
-
-export function fillTemplate (tmpl: string, props: { [key: string]: string }): string {
-  return tmpl.replace(/{(.*?)}/g, (_, key: string) => props[key])
-}
-
-/**
- * @public
- */
-export function createIndexedReader (
-  _class: Ref<Class<Doc>>,
-  hierarchy: Hierarchy,
-  doc: IndexedDoc,
-  refAttribute?: string
-): IndexedReader {
-  return {
-    get: (attr: string) => {
-      const realAttr = hierarchy.findAttribute(_class, attr)
-      if (realAttr !== undefined) {
-        return doc[docKey(attr, { refAttribute, _class: realAttr.attributeOf })]
-      }
-      return undefined
-    },
-    getDoc: (attr: string) => {
-      const realAttr = hierarchy.findAttribute(_class, attr)
-      if (realAttr !== undefined) {
-        const refAtrr = realAttr.type as RefTo<Doc>
-        return createIndexedReader(refAtrr.to, hierarchy, doc, docKey(attr, { _class }))
-      }
-      return undefined
-    }
-  }
 }
