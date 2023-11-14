@@ -37,11 +37,10 @@ import {
   WorkspaceId,
   SearchQuery,
   SearchOptions,
-  SearchResult,
-  ClassSearchConfig
+  SearchResult
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
-import type { Resource } from '@hcengineering/platform'
+import type { Resource, Asset } from '@hcengineering/platform'
 import { Readable } from 'stream'
 
 /**
@@ -342,6 +341,26 @@ export interface SearchProps {
  * @public
  */
 export type SearchPresenterFunc = (hierarchy: Hierarchy, props: SearchProps) => string
+
+/**
+ * @public
+ */
+export type ClassSearchConfigProps = string | { [key: string]: string[] }
+
+/**
+ * @public
+ */
+export type ClassSearchConfigProperty = string | { tmpl?: string, props: ClassSearchConfigProps[] }
+
+/**
+ * @public
+ */
+export interface ClassSearchConfig {
+  icon?: Asset
+  iconConfig?: { component: any, props: ClassSearchConfigProps[] }
+  title: ClassSearchConfigProperty
+  shortTitle?: ClassSearchConfigProperty
+}
 
 /**
  * @public

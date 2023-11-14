@@ -169,26 +169,6 @@ export interface Interface<T extends Doc> extends Classifier {
 /**
  * @public
  */
-export type ClassSearchConfigProps = string | { [key: string]: string[] }
-
-/**
- * @public
- */
-export type ClassSearchConfigProperty = string | { tmpl?: string, props: ClassSearchConfigProps[] }
-
-/**
- * @public
- */
-export interface ClassSearchConfig {
-  icon?: Asset
-  iconConfig?: { component: any, props: ClassSearchConfigProps[] }
-  title: ClassSearchConfigProperty
-  shortTitle?: ClassSearchConfigProperty
-}
-
-/**
- * @public
- */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Class<T extends Obj> extends Classifier {
   extends?: Ref<Class<Obj>>

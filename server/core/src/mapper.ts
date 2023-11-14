@@ -1,8 +1,8 @@
-import { Hierarchy, Ref, RefTo, Class, Doc, SearchResultDoc, ClassSearchConfigProps, docKey } from '@hcengineering/core'
+import { Hierarchy, Ref, RefTo, Class, Doc, SearchResultDoc, docKey } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 
 import plugin from './plugin'
-import { IndexedDoc, SearchPresenter } from './types'
+import { IndexedDoc, SearchPresenter, ClassSearchConfigProps } from './types'
 
 interface IndexedReader {
   get: (attribute: string) => any

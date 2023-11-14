@@ -20,7 +20,6 @@ import type { Resource } from '@hcengineering/platform'
 
 import core, {
   Class,
-  ClassSearchConfig,
   DOMAIN_MODEL,
   Doc,
   DocumentQuery,
@@ -34,7 +33,8 @@ import type {
   Trigger,
   TriggerFunc,
   SearchPresenter,
-  SearchPresenterFunc
+  SearchPresenterFunc,
+  ClassSearchConfig
 } from '@hcengineering/server-core'
 import serverCore from '@hcengineering/server-core'
 
