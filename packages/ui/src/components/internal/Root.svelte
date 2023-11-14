@@ -159,7 +159,7 @@
             <StatusComponent {status} />
           </div>
         </div>
-        <div class="flex-row-reverse">
+        <div class="flex-row-reverse" style:-webkit-app-region={'no-drag'}>
           <div class="clock">
             <Clock />
           </div>
@@ -248,20 +248,19 @@
       .clock {
         margin: 0 12px 0 8px;
       }
-      .widget {
-        -webkit-app-region: no-drag;
-        font-size: 13px;
-        color: var(--theme-content-color);
-        transition: transform 0.15s ease-in-out;
+      // .widget {
+      //   font-size: 13px;
+      //   color: var(--theme-content-color);
+      //   transition: transform 0.15s ease-in-out;
 
-        &.rotated {
-          transform-origin: center center;
-          transform: rotate(90deg);
-        }
-      }
-      .widget + .widget {
-        margin-right: 12px;
-      }
+      //   &.rotated {
+      //     transform-origin: center center;
+      //     transform: rotate(90deg);
+      //   }
+      // }
+      // .widget + .widget {
+      //   margin-right: 12px;
+      // }
     }
 
     .app {
