@@ -13,4 +13,5 @@ test('check-status-loading', async ({ page }) => {
   await expect(page.locator('.categoryHeader :text-is("Backlog")').first()).toBeVisible()
   await expect(page.locator('.categoryHeader :text-is("Todo")').first()).toBeVisible()
   await expect(page.locator('.categoryHeader :text-is("Done")').first()).toBeVisible()
+  await expect(page.locator('.categoryHeader :text-is("Canceled")').first()).toBeVisible()
 })
