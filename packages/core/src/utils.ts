@@ -378,7 +378,7 @@ function getInNiN (query1: any, query2: any): Object {
     aIn.length - bIn.length < 0 ? bIn.filter((c: any) => aIn.includes(c)) : aIn.filter((c: any) => bIn.includes(c))
   const finalNin = Array.from(new Set([...aNIn, ...bNIn]))
   if (finalIn.length === 1 && finalNin.length === 0) {
-    return aIn[0]
+    return finalIn[0]
   }
   if (finalIn.length === 0 && finalNin.length === 1) {
     return { $ne: finalNin[0] }

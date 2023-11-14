@@ -430,5 +430,18 @@ describe('memdb', () => {
 
     expect(mergeQueries({ age: { $lt: 20 } } as any, { age: { $gt: 25 } } as any)).toEqual({ age: { $gt: 25 } })
     expect(mergeQueries({ age: { $gt: 25 } } as any, { age: { $lt: 20 } } as any)).toEqual({ age: { $lt: 20 } })
+
+    const query4 = {
+      space: { $in: [id1] }
+    } as any
+    const query5 = {
+      space: { $in: [id2, id1] }
+    } as any
+    const resQuery45 = {
+      space: id1
+    } as any
+
+    expect(mergeQueries(query4, query5)).toEqual(resQuery45)
+    expect(mergeQueries(query5, query4)).toEqual(resQuery45)
   })
 })
