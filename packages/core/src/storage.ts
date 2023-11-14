@@ -210,8 +210,6 @@ export type FindResult<T extends Doc> = WithLookup<T>[] & {
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface TxResult {}
 
-
-
 /**
  * @public
  */

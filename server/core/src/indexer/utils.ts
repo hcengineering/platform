@@ -42,7 +42,7 @@ import core, {
 } from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
 import plugin from '../plugin'
-import { FullTextPipeline} from './types'
+import { FullTextPipeline } from './types'
 /**
  * @public
  */

@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import { Account, AnyAttribute, Class, Doc, RefTo, DocData, DocIndexState, IndexKind, Obj, Ref, Space } from './classes'
+import { Account, AnyAttribute, Class, Doc, DocData, DocIndexState, IndexKind, Obj, Ref, Space } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { isPredicate } from './predicate'
-import { FindResult, IndexedDoc, DocumentQuery, FindResult } from './storage'
+import { FindResult, DocumentQuery } from './storage'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -401,4 +401,3 @@ function getInNiN (query1: any, query2: any): Object {
   if (aIn.length === 1 && bIn.length === 1) return []
   return res
 }
-

@@ -40,13 +40,7 @@ import {
   FullTextPipelineStage,
   fullTextPushStageId
 } from './types'
-import {
-  collectPropagate,
-  collectPropagateClasses,
-  docKey,
-  getFullTextContext,
-  IndexKeyOptions
-} from './utils'
+import { collectPropagate, collectPropagateClasses, docKey, getFullTextContext, IndexKeyOptions } from './utils'
 import { updateDocWithPresenter } from '../mapper'
 
 /**

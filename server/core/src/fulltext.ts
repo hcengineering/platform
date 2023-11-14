@@ -47,7 +47,6 @@ import { createStateDoc, isClassIndexable } from './indexer/utils'
 import { mapSearchResultDoc } from './mapper'
 import type { FullTextAdapter, WithFind, IndexedDoc } from './types'
 
-
 /**
  * @public
  */
