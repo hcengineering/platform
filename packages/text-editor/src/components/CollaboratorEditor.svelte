@@ -15,8 +15,8 @@
 //
 -->
 <script lang="ts">
-  import { Plugin, PluginKey, TextSelection } from 'prosemirror-state'
-  import { DecorationSet } from 'prosemirror-view'
+  import { Plugin, PluginKey, TextSelection } from '@tiptap/pm/state'
+  import { DecorationSet } from '@tiptap/pm/view'
   import { getContext, createEventDispatcher, onDestroy, onMount } from 'svelte'
   import * as Y from 'yjs'
   import {

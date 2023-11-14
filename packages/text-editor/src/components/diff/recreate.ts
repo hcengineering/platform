@@ -17,8 +17,8 @@
 //
 
 import { Change, diffWordsWithSpace } from 'diff'
-import { Node, Schema } from 'prosemirror-model'
-import { ReplaceStep, Step, Transform } from 'prosemirror-transform'
+import { Node, Schema } from '@tiptap/pm/model'
+import { ReplaceStep, Step, Transform } from '@tiptap/pm/transform'
 import { applyPatch, createPatch, Operation } from 'rfc6902'
 import { Pointer } from 'rfc6902/pointer'
 import { diffArraysPM } from './diff'

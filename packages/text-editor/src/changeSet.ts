@@ -1,6 +1,6 @@
 import { Extension, Mark, mergeAttributes } from '@tiptap/core'
-import { ChangeSet } from 'prosemirror-changeset'
-import { Plugin } from 'prosemirror-state'
+import { ChangeSet } from '@tiptap/pm/changeset'
+import { Plugin } from '@tiptap/pm/state'
 
 export interface ChangeHighlightOptions {
   multicolor: boolean
