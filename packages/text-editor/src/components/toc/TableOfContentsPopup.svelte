@@ -36,8 +36,8 @@
 <FocusHandler {manager} />
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
-  <div class="header ml-2">
-    <span class="fs-title overflow-label">
+  <div class="header">
+    <span class="fs-title overflow-label ml-2">
       <Label label={textEditorPlugin.string.TableOfContents} />
     </span>
   </div>

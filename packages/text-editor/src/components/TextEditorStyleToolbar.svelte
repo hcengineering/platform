@@ -330,16 +330,18 @@
   {#if textFormatCategories.length > 0 && textNodeActions.length > 0}
     <div class="buttons-divider" />
   {/if}
-  {#each textNodeActions as action}
-    <StyleButton
-      icon={action.icon}
-      size={formatButtonSize}
-      selected={false}
-      disabled={textEditor.view.state.selection.empty}
-      showTooltip={{ label: action.label }}
-      on:click={() => {
-        dispatch('action', { action: action.id, editor: textEditor })
-      }}
-    />
-  {/each}
+  {#if textNodeActions.length > 0}
+    {#each textNodeActions as action}
+      <StyleButton
+        icon={action.icon}
+        size={formatButtonSize}
+        selected={false}
+        disabled={textEditor.view.state.selection.empty}
+        showTooltip={{ label: action.label }}
+        on:click={async () => {
+          dispatch('action', { action: action.id, editor: textEditor })
+        }}
+      />
+    {/each}
+  {/if}
 {/if}
