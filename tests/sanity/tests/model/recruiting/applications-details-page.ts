@@ -9,7 +9,7 @@ export class ApplicationsDetailsPage extends CommonRecruitingPage {
   constructor (page: Page) {
     super(page)
     this.page = page
-    this.textApplicationId = page.locator('div.popupPanel-title a.noUnderline > div.title')
+    this.textApplicationId = page.locator('div.popupPanel-title div.title.not-active')
     this.buttonState = page
       .locator('div[class*="collapsed-container"]')
       .nth(0)

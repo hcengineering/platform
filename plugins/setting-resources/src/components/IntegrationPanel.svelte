@@ -24,6 +24,7 @@
 
   export let _id: Ref<Integration>
   export let _class: Ref<Class<Integration>>
+  export let embedded: boolean = false
 
   let integration: Integration | undefined = undefined
   const query = createQuery()
@@ -53,7 +54,7 @@
 </script>
 
 {#if integration}
-  <Panel {title} object={integration} isHeader={false} isAside={false} withoutActivity withoutInput>
+  <Panel {title} object={integration} isHeader={false} isAside={false} {embedded} withoutActivity withoutInput>
     <div class="max-w-80 min-w-80">
       {#if type}
         <PluginCard {integration} integrationType={type} />

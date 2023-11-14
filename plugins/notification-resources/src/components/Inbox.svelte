@@ -187,7 +187,7 @@
         }}
       />
     {:else if component && _id && _class}
-      <Component is={component} props={{ _id, _class }} on:close={() => select(undefined)} />
+      <Component is={component} props={{ _id, _class, embedded: true }} on:close={() => select(undefined)} />
     {/if}
   </div>
 </div>

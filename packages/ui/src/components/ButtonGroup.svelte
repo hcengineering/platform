@@ -18,7 +18,7 @@
   import Button from './Button.svelte'
 
   export let items: ButtonItem[]
-  export let selected: string | false = false
+  export let selected: string | boolean = false
   export let allowDeselected: boolean = true
   export let mode: 'filled-icon' | 'highlighted' | 'selected' = 'selected'
   export let props: any = {}

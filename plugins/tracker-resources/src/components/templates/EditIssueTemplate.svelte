@@ -33,6 +33,7 @@
 
   export let _id: Ref<IssueTemplate>
   export let _class: Ref<Class<IssueTemplate>>
+  export let embedded: boolean = false
 
   let lastId: Ref<Doc> = _id
   const query = createQuery()
@@ -142,6 +143,7 @@
     isHeader={false}
     isAside={true}
     isSub={false}
+    {embedded}
     withoutActivity={false}
     bind:innerWidth
     on:open

@@ -89,12 +89,13 @@
     flex-shrink: 0;
     justify-content: stretch;
     align-items: center;
-    padding: 0 1rem 0 1.25rem;
     min-width: 0;
     min-height: 3.25rem;
     background-color: var(--theme-comp-header-color);
     border-bottom: 1px solid var(--theme-divider-color);
 
+    &:not(.indent) { padding: 0 1rem 0 1.25rem; }
+    &.indent { padding: 0 1rem; }
     &__content {
       display: flex;
       align-items: center;
@@ -119,7 +120,10 @@
           &:hover, &:focus, &:active { color: var(--theme-caption-color); }
         }
         &.disabled { color: var(--theme-dark-color); }
-        &.not-active { color: var(--theme-caption-color); }
+        &.not-active {
+          color: var(--theme-caption-color);
+          user-select: text;
+        }
       }
     }
   }

@@ -23,22 +23,14 @@
   import { Vacancy } from '@hcengineering/recruit'
   import tracker from '@hcengineering/tracker'
   import view from '@hcengineering/view'
-  import {
-    Button,
-    Component,
-    EditBox,
-    IconMixin,
-    IconMoreH,
-    Label,
-    showPopup,
-    deviceOptionsStore as deviceInfo
-  } from '@hcengineering/ui'
+  import { Button, Component, EditBox, IconMixin, IconMoreH, Label, showPopup } from '@hcengineering/ui'
   import { ContextMenu, DocAttributeBar, DocNavLink } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import recruit from '../plugin'
   import VacancyApplications from './VacancyApplications.svelte'
 
   export let _id: Ref<Vacancy>
+  export let embedded: boolean = false
 
   let object: Required<Vacancy>
   let rawName: string = ''
@@ -136,6 +128,7 @@
     isHeader={false}
     isSub={false}
     isAside={true}
+    {embedded}
     {object}
     on:open
     on:close={() => {
@@ -160,7 +153,7 @@
         placeholder={recruit.string.VacancyPlaceholder}
         kind={'large-style'}
         focusable
-        autoFocus={!$deviceInfo.isMobile}
+        autoFocus={!embedded}
         on:blur={save}
       />
     </span>

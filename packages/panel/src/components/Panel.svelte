@@ -35,17 +35,19 @@
   export let isUtils: boolean = true
   export let isCustomAttr: boolean = true
   export let floatAside: boolean = false
+  export let allowBack: boolean = true
   export let allowClose: boolean = true
+  export let embedded: boolean = false
   export let useMaxWidth: boolean | undefined = undefined
   export let isFullSize: boolean = false
   export let contentClasses: string | undefined = undefined
   export let content: HTMLElement | undefined | null = undefined
   export let withoutContentScroll: boolean = false
   export let customAside: ButtonItem[] | undefined = undefined
-  export let selectedAside: string | false = customAside ? customAside[0].id : false
+  export let selectedAside: string | boolean = customAside ? customAside[0].id : isAside
 
-  export function getAside (): string | false {
-    return selectedAside
+  export function getAside (): string | boolean {
+    return panel.getAside()
   }
   export function setAside (id: string | boolean): void {
     panel.setAside(id)
@@ -100,7 +102,9 @@
   bind:withoutTitle
   on:open
   on:close
+  {allowBack}
   {allowClose}
+  {embedded}
   {floatAside}
   bind:useMaxWidth
   {isFullSize}
@@ -182,7 +186,7 @@
         {#key object._id}
           <Component
             is={activity.component.Activity}
-            props={{ object, showCommenInput: !withoutInput, shouldScroll: true, focusIndex: 1000 }}
+            props={{ object, showCommenInput: !withoutInput, shouldScroll: embedded, focusIndex: 1000 }}
           />
         {/key}
       {/if}
@@ -201,7 +205,7 @@
             props={{
               object,
               showCommenInput: !withoutInput,
-              shouldScroll: true,
+              shouldScroll: embedded,
               focusIndex: 1000,
               boundary: content
             }}
@@ -227,7 +231,7 @@
               props={{
                 object,
                 showCommenInput: !withoutInput,
-                shouldScroll: true,
+                shouldScroll: embedded,
                 focusIndex: 1000,
                 boundary: content
               }}

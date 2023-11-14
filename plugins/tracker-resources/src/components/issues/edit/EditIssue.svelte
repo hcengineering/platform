@@ -55,6 +55,7 @@
 
   export let _id: Ref<Issue>
   export let _class: Ref<Class<Issue>>
+  export let embedded: boolean = false
 
   let lastId: Ref<Doc> = _id
   const queryClient = createQuery()
@@ -164,12 +165,14 @@
   let content: HTMLElement
 </script>
 
-<FocusHandler {manager} isEnabled={isContextEnabled} />
-<ActionContext
-  context={{
-    mode: 'editor'
-  }}
-/>
+{#if !embedded}
+  <FocusHandler {manager} isEnabled={isContextEnabled} />
+  <ActionContext
+    context={{
+      mode: 'editor'
+    }}
+  />
+{/if}
 
 {#if issue !== undefined}
   <Panel
@@ -177,6 +180,7 @@
     isHeader={false}
     isAside={true}
     isSub={false}
+    {embedded}
     withoutActivity={false}
     bind:content
     bind:innerWidth
@@ -185,12 +189,12 @@
     on:select
   >
     <svelte:fragment slot="title">
-      <ParentsNavigator element={issue} />
-      {#if issueId}
+      {#if !embedded}<ParentsNavigator element={issue} />{/if}
+      {#if embedded && issueId}
         <DocNavLink noUnderline object={issue}>
           <div class="title">{issueId}</div>
         </DocNavLink>
-      {/if}
+      {:else if issueId}<div class="title not-active">{issueId}</div>{/if}
     </svelte:fragment>
     <svelte:fragment slot="pre-utils">
       <ComponentExtensions
