@@ -25,7 +25,6 @@
     Extension,
     FocusPosition,
     HTMLContent,
-    SingleCommands,
     getMarkRange,
     mergeAttributes
   } from '@tiptap/core'
@@ -37,9 +36,10 @@
   import { IconObjects, IconSize, Loading, getPlatformColorForText, registerFocus, themeStore } from '@hcengineering/ui'
 
   import { Completion } from '../Completion'
+  import { textEditorCommandHandler } from '../commands'
   import textEditorPlugin from '../plugin'
   import { TiptapCollabProvider } from '../provider'
-  import { CollaborationIds, TextFormatCategory, TextNodeAction } from '../types'
+  import { CollaborationIds, TextEditorCommandHandler, TextFormatCategory, TextNodeAction } from '../types'
   import { copyDocumentContent, copyDocumentField } from '../utils'
 
   import { calculateDecorations } from './diff/decorations'
@@ -112,6 +112,12 @@
   })
 
   const dispatch = createEventDispatcher()
+
+  $: handler = textEditorCommandHandler(editor)
+
+  export function commands (): TextEditorCommandHandler | undefined {
+    return handler
+  }
 
   export function getHTML (): string | undefined {
     if (editor) {
@@ -203,10 +209,6 @@
     }
 
     editor.registerPlugin(plugin)
-  }
-
-  export function commands (): SingleCommands | undefined {
-    return editor?.commands
   }
 
   let needFocus = false

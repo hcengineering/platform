@@ -1,6 +1,7 @@
 import { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { Doc } from '@hcengineering/core'
 import type { AnySvelteComponent } from '@hcengineering/ui'
+import { Editor, SingleCommands } from '@tiptap/core'
 
 /**
  * @public
@@ -71,4 +72,25 @@ export interface Heading {
   id: string
   level: number
   title: string
+}
+
+/**
+ * @public
+ */
+export interface TextEditorCommandProps {
+  editor: Editor
+  commands: SingleCommands
+}
+
+/**
+ * @public
+ */
+export type TextEditorCommand = (props: TextEditorCommandProps) => boolean
+
+/**
+ * @public
+ */
+export interface TextEditorCommandHandler {
+  command: (command: TextEditorCommand) => boolean
+  chain: (...commands: TextEditorCommand[]) => boolean
 }

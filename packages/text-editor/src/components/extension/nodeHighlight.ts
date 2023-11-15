@@ -4,11 +4,16 @@ import { Plugin, PluginKey, TextSelection } from '@tiptap/pm/state'
 import { AddMarkStep, RemoveMarkStep } from '@tiptap/pm/transform'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import { NodeUuidExtension, NodeUuidOptions, NodeUuidStorage, findNodeUuidMark } from './nodeUuid'
+import { TextEditorCommand } from '../../types'
 
 export enum NodeHighlightType {
   WARNING = 'warning',
   ADD = 'add',
   DELETE = 'delete'
+}
+
+export function highlightUpdateCommand (): TextEditorCommand {
+  return ({ commands }) => commands.updateHighlight()
 }
 
 export interface NodeHighlightExtensionOptions extends NodeUuidOptions {
