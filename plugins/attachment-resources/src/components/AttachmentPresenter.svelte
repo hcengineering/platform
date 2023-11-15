@@ -161,8 +161,7 @@
     flex-shrink: 0;
     width: auto;
     height: 3rem;
-    min-width: 14rem;
-    max-width: 19rem;
+    min-width: 17.25rem;
     border-radius: 0.25rem;
 
     .icon {

@@ -19,7 +19,7 @@
   import { IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
   import textEditor, { AttachIcon, type RefAction, StyledTextBox } from '@hcengineering/text-editor'
-  import { ButtonSize, IconSize, Loading, updatePopup } from '@hcengineering/ui'
+  import { ButtonSize, IconSize, Loading, updatePopup, Scroller } from '@hcengineering/ui'
   import { ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
   import attachment from '../plugin'
   import { deleteFile, uploadFile } from '../utils'
@@ -410,59 +410,63 @@
     />
   </div>
   {#if (attachments.size && enableAttachments) || progress}
-    <div class="flex-row-center list scroll-divider-color">
-      {#each Array.from(attachments.values()) as attachment, index}
-        <div class="item flex-center flex-no-shrink clear-mins">
-          {#if useAttachmentPreview}
-            <AttachmentPreview value={attachment} {listProvider} on:open={(res) => (attachmentPopupId = res.detail)} />
-          {:else}
-            <AttachmentPresenter
-              value={attachment}
-              removable
-              showPreview
-              progress={progressItems.includes(attachment._id)}
-              on:remove={(result) => {
-                if (result !== undefined) {
-                  removeAttachment(attachment)
-                }
-              }}
-            />
+    <div class="attachment-grid-container">
+      <Scroller noStretch shrink>
+        <div class="attachment-grid">
+          {#each Array.from(attachments.values()) as attachment, index}
+            {#if useAttachmentPreview}
+              <AttachmentPreview
+                value={attachment}
+                {listProvider}
+                on:open={(res) => (attachmentPopupId = res.detail)}
+              />
+            {:else}
+              <AttachmentPresenter
+                value={attachment}
+                removable
+                showPreview
+                progress={progressItems.includes(attachment._id)}
+                on:remove={(result) => {
+                  if (result !== undefined) {
+                    removeAttachment(attachment)
+                  }
+                }}
+              />
+            {/if}
+          {/each}
+          {#if progress}
+            <div class="flex p-3" bind:this={element}>
+              <Loading
+                on:progress={() => {
+                  element.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' })
+                }}
+              />
+            </div>
           {/if}
         </div>
-      {/each}
-      {#if progress}
-        <div class="flex p-3" bind:this={element}>
-          <Loading
-            on:progress={() => {
-              element.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' })
-            }}
-          />
-        </div>
-      {/if}
+      </Scroller>
     </div>
   {/if}
 </div>
 
 <style lang="scss">
-  .list {
-    align-items: stretch;
+  .attachment-grid-container {
+    display: flex;
+    flex-direction: column;
     margin-top: 0.5rem;
     padding: 0.5rem;
     min-width: 0;
+    max-height: 21.625rem;
     color: var(--theme-caption-color);
-    overflow-x: auto;
-    overflow-y: hidden;
     background-color: var(--theme-button-default);
     border: 1px solid var(--theme-button-border);
     border-radius: 0.25rem;
 
-    .item {
-      min-height: 100%;
-    }
-    .item + .item {
-      margin-left: 1rem;
-      padding-left: 1rem;
-      border-left: 1px solid var(--theme-divider-color);
+    .attachment-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, 17.25rem);
+      grid-auto-rows: minmax(3rem, auto);
+      gap: 0.5rem;
     }
   }
 </style>
