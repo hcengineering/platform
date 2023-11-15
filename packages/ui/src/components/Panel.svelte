@@ -142,7 +142,7 @@
         iconProps={{ size: 'medium' }}
         kind={'icon'}
         on:click={() => {
-          dispatch('close')
+          history.back()
         }}
       />
       <div class="antiHSpacer" class:x2={!allowClose} />
@@ -155,7 +155,7 @@
         iconProps={{ size: 'medium' }}
         kind={'icon'}
         on:click={() => {
-          history.back()
+          dispatch('close')
         }}
       />
       <div class="antiHSpacer x2" />
