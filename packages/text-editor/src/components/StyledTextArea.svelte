@@ -103,7 +103,7 @@
     }}
     on:value={(evt) => {
       rawValue = evt.detail
-      dispatch('changeContent')
+      dispatch('changeContent', rawValue)
     }}
   >
     <slot />
