@@ -25,6 +25,7 @@
     Extension,
     FocusPosition,
     HTMLContent,
+    SingleCommands,
     getMarkRange,
     mergeAttributes
   } from '@tiptap/core'
@@ -33,7 +34,7 @@
   import Placeholder from '@tiptap/extension-placeholder'
   import { getCurrentAccount, Markup } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
-  import { getPlatformColorForText, IconObjects, IconSize, Loading, registerFocus, themeStore } from '@hcengineering/ui'
+  import { IconObjects, IconSize, Loading, getPlatformColorForText, registerFocus, themeStore } from '@hcengineering/ui'
 
   import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
@@ -202,6 +203,10 @@
     }
 
     editor.registerPlugin(plugin)
+  }
+
+  export function commands (): SingleCommands | undefined {
+    return editor?.commands
   }
 
   let needFocus = false
