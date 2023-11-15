@@ -64,6 +64,7 @@ export function serveAccount (methods: Record<string, AccountMethod>, productId 
   }
   setMetadata(toolPlugin.metadata.Endpoint, endpointUri)
   setMetadata(toolPlugin.metadata.Transactor, transactorUri)
+  setMetadata(toolPlugin.metadata.UserAgent, 'AccountService')
 
   let client: MongoClient
 

@@ -12,7 +12,8 @@ const toolPlugin = plugin(toolId, {
   metadata: {
     Endpoint: '' as Metadata<string>,
     Transactor: '' as Metadata<string>,
-    InitWorkspace: '' as Metadata<string>
+    InitWorkspace: '' as Metadata<string>,
+    UserAgent: '' as Metadata<string>
   }
 })
 

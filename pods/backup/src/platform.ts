@@ -21,6 +21,7 @@ import serverToken from '@hcengineering/server-token'
 import got from 'got'
 import { ObjectId } from 'mongodb'
 import config from './config'
+import toolPlugin from '@hcengineering/server-tool'
 
 /**
  * @public
@@ -71,6 +72,8 @@ export class PlatformWorker {
       accessKey: config.MinioAccessKey,
       secretKey: config.MinioSecretKey
     })
+
+    setMetadata(toolPlugin.metadata.UserAgent, config.ServiceID)
 
     await this.backup().then(() => {
       void this.schedule()
