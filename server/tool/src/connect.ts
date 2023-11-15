@@ -16,8 +16,9 @@
 
 import client, { clientId } from '@hcengineering/client'
 import { Client, systemAccountEmail, WorkspaceId } from '@hcengineering/core'
-import { addLocation, getResource, setMetadata } from '@hcengineering/platform'
+import { addLocation, getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import { generateToken } from '@hcengineering/server-token'
+import plugin from './plugin'
 
 /**
  * @public
@@ -37,7 +38,14 @@ export async function connect (
   setMetadata(client.metadata.UseBinaryProtocol, true)
   setMetadata(client.metadata.UseProtocolCompression, true)
 
-  setMetadata(client.metadata.ClientSocketFactory, (url) => new WebSocket(url))
+  setMetadata(client.metadata.ClientSocketFactory, (url) => {
+    const socket = new WebSocket(url, {
+      headers: {
+        'User-Agent': getMetadata(plugin.metadata.UserAgent) ?? 'Anticrm Tool Client'
+      }
+    })
+    return socket
+  })
   addLocation(clientId, () => import('@hcengineering/client-resources'))
 
   return await (
