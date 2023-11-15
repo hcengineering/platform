@@ -23,7 +23,6 @@
     ButtonGroup,
     Scroller,
     panelSeparators,
-    IconBack,
     ButtonItem
   } from '../../'
   import IconClose from './icons/Close.svelte'
@@ -40,7 +39,6 @@
   export let isFullSize: boolean = false
   export let withoutTitle: boolean = false
   export let floatAside: boolean = false
-  export let allowBack: boolean = true
   export let allowClose: boolean = true
   export let embedded: boolean = false
   export let useMaxWidth: boolean | undefined = undefined
@@ -133,20 +131,7 @@
     checkPanel()
   }}
 >
-  <div class="popupPanel-title" class:indent={allowClose || allowClose}>
-    {#if allowBack}
-      <Button
-        id={'btnPBack'}
-        focusIndex={10000}
-        icon={IconBack}
-        iconProps={{ size: 'medium' }}
-        kind={'icon'}
-        on:click={() => {
-          history.back()
-        }}
-      />
-      <div class="antiHSpacer" class:x2={!allowClose} />
-    {/if}
+  <div class="popupPanel-title" class:indent={allowClose}>
     {#if allowClose}
       <Button
         id={'btnPClose'}

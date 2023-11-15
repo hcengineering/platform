@@ -18,8 +18,8 @@
   const fill: string = 'currentColor'
 </script>
 
-<svg class="svg-{size}" {fill} viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+<svg class="svg-{size}" {fill} viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
   <path
-    d="M13.1,7.5H4.3l3.1-3.1L6.7,3.6l-4,4L2.4,8l0.4,0.4l4,4l0.6-0.8L4.3,8.5h8.8c0.3,0,0.5-0.2,0.5-0.5S13.3,7.5,13.1,7.5z"
+    d="M14 26L15.41 24.59L7.83 17H27C27.5523 17 28 16.5523 28 16C28 15.4477 27.5523 15 27 15H7.83L15.41 7.41L14 6L4 16L14 26Z"
   />
 </svg>
