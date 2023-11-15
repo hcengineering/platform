@@ -51,11 +51,6 @@ const NodeHighlightMeta = 'node-highlight'
 export interface NodeHighlightCommands<ReturnType> {
   [NodeHighlight]: {
     /**
-     * Force node to be re-rendered
-     */
-    updateNodeHighlight: (uuid: string) => ReturnType
-
-    /**
      * Force all nodes to be re-rendered
      */
     updateHighlight: () => ReturnType
@@ -179,12 +174,6 @@ export const NodeHighlightExtension: Extension<NodeHighlightExtensionOptions, No
             ({ view: { dispatch, state } }: CommandProps) => {
               dispatch(state.tr.setMeta(NodeHighlightMeta, ''))
               return true
-            },
-        updateNodeHighlight:
-          (uuid: string) =>
-            ({ view: { dispatch, state } }: CommandProps) => {
-              dispatch(state.tr.setMeta(NodeHighlightMeta, uuid))
-              return true
             }
       }
 
@@ -248,5 +237,5 @@ const createDecorations = (
     }
   })
 
-  return DecorationSet.empty.add(doc, decorations)
+  return DecorationSet.create(doc, decorations)
 }
