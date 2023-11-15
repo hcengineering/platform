@@ -18,8 +18,8 @@
   export let fill: string = 'currentColor'
 </script>
 
-<svg class="svg-{size}" {fill} viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+<svg class="svg-{size}" {fill} viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
   <path
-    d="M2.4,8c0,0.3,0.2,0.5,0.5,0.5h8.8l-3.1,3.1l0.6,0.8l4-4L13.6,8l-0.3-0.4l-4-4L8.6,4.4l3.1,3.1l-8.8,0C2.7,7.5,2.4,7.7,2.4,8z"
+    d="M18 6L16.57 7.393L24.15 15H5C4.44771 15 4 15.4477 4 16C4 16.5523 4.44772 17 5 17H24.15L16.57 24.573L18 26L28 16L18 6Z"
   />
 </svg>

@@ -35,7 +35,6 @@
   export let isUtils: boolean = true
   export let isCustomAttr: boolean = true
   export let floatAside: boolean = false
-  export let allowBack: boolean = true
   export let allowClose: boolean = true
   export let embedded: boolean = false
   export let useMaxWidth: boolean | undefined = undefined
@@ -102,7 +101,6 @@
   bind:withoutTitle
   on:open
   on:close
-  {allowBack}
   {allowClose}
   {embedded}
   {floatAside}
@@ -130,8 +128,8 @@
   </svelte:fragment>
   <svelte:fragment slot="utils">
     {#if isUtils && $$slots.utils}
-      <!-- <div class="buttons-divider" /> -->
       <slot name="utils" />
+      <div class="buttons-divider max-h-7 h-7 mx-2" />
     {/if}
   </svelte:fragment>
 

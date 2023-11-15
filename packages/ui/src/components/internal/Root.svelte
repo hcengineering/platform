@@ -1,28 +1,18 @@
 <script lang="ts">
-  import platform, { addEventListener, getMetadata, OK, PlatformEvent, Status } from '@hcengineering/platform'
+  import platform, { addEventListener, getMetadata, OK, PlatformEvent, Status, Severity } from '@hcengineering/platform'
   import { onDestroy } from 'svelte'
   import type { AnyComponent, WidthType } from '../../types'
   import { deviceSizes, deviceWidths } from '../../types'
   // import { applicationShortcutKey } from '../../utils'
   import { getCurrentLocation, location, navigate, locationStorageKeyId } from '../../location'
-
   import { Theme } from '@hcengineering/theme'
   import Component from '../Component.svelte'
-
   import StatusComponent from '../Status.svelte'
   import Clock from './Clock.svelte'
-  // import Mute from './icons/Mute.svelte'
-  import {
-    checkMobile,
-    deviceOptionsStore as deviceInfo
-    // networkStatus
-  } from '../../'
+  import { IconArrowLeft, IconArrowRight, checkMobile, deviceOptionsStore as deviceInfo } from '../../'
   import uiPlugin from '../../plugin'
   import Label from '../Label.svelte'
   import FontSizeSelector from './FontSizeSelector.svelte'
-  // import Computer from './icons/Computer.svelte'
-  // import Phone from './icons/Phone.svelte'
-  // import WiFi from './icons/WiFi.svelte'
   import LangSelector from './LangSelector.svelte'
   import ThemeSelector from './ThemeSelector.svelte'
 
@@ -146,18 +136,35 @@
   <div id="ui-root">
     <div class="antiStatusBar">
       <div class="flex-row-center h-full content-color">
+        <div class="history-box flex-row-center gap-3">
+          <button
+            class="antiButton ghost jf-center bs-none no-focus resetIconSize statusButton square"
+            style:color={'var(--theme-dark-color)'}
+            on:click={() => history.back()}
+          >
+            <IconArrowLeft size={'small'} />
+          </button>
+          <button
+            class="antiButton ghost jf-center bs-none no-focus resetIconSize statusButton square"
+            style:color={'var(--theme-dark-color)'}
+            on:click={() => history.forward()}
+          >
+            <IconArrowRight size={'small'} />
+          </button>
+        </div>
         <div
-          class="status-info"
+          class="flex-row-center justify-center status-info"
           style:margin-left={(isPortrait && docWidth <= 480) || (!isPortrait && docHeight <= 480) ? '1.5rem' : '0'}
         >
-          <div class="flex flex-row-center flex-center">
-            {#if maintenanceTime > 0}
-              <div class="flex-grow flex-center flex-row-center" class:maintenanceScheduled={maintenanceTime > 0}>
-                <Label label={platform.status.MaintenanceWarning} params={{ time: maintenanceTime }} />
-              </div>
-            {/if}
+          {#if maintenanceTime > 0}
+            <div class="flex-grow flex-center flex-row-center" class:maintenanceScheduled={maintenanceTime > 0}>
+              <Label label={platform.status.MaintenanceWarning} params={{ time: maintenanceTime }} />
+            </div>
+          {:else if status.severity !== Severity.OK}
             <StatusComponent {status} />
-          </div>
+          {:else}
+            <span class="logo-status">Zenflow</span>
+          {/if}
         </div>
         <div class="flex-row-reverse" style:-webkit-app-region={'no-drag'}>
           <div class="clock">
@@ -168,35 +175,6 @@
             <ThemeSelector />
             <LangSelector />
           </div>
-          <!-- <div
-            class="flex-center widget"
-            class:rotated={!isPortrait && isMobile}
-            on:click={() => {
-              alwaysMobile = !alwaysMobile
-              document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`)
-            }}
-          >
-            <svelte:component
-              this={isMobile ? Phone : Computer}
-              fill={alwaysMobile ? 'var(--theme-won-color)' : 'var(--content-color)'}
-              size={'small'}
-            />
-          </div>
-          <div
-            class="flex-center widget cursor-pointer"
-            on:click={(evt) => {
-              getMetadata(uiPlugin.metadata.ShowNetwork)?.(evt)
-            }}
-          >
-            <WiFi
-              size={'small'}
-              fill={$networkStatus === -1
-                ? 'var(--theme-error-color)'
-                : $networkStatus % 2 === 1
-                ? 'var(--theme-warning-color)'
-                : 'currentColor'}
-            />
-          </div> -->
         </div>
       </div>
     </div>
@@ -231,6 +209,10 @@
       background-color: var(--theme-statusbar-color);
       border-bottom: 1px solid var(--theme-navpanel-divider);
 
+      .history-box {
+        -webkit-app-region: no-drag;
+        margin-left: 5.625rem;
+      }
       .maintenanceScheduled {
         padding: 0 0.5rem;
         width: fit-content;
@@ -245,28 +227,18 @@
         flex-grow: 1;
         text-align: center;
       }
+      .logo-status {
+        font-weight: 500;
+        font-size: 14px;
+        color: var(--theme-content-color);
+      }
       .clock {
         margin: 0 12px 0 8px;
       }
-      // .widget {
-      //   font-size: 13px;
-      //   color: var(--theme-content-color);
-      //   transition: transform 0.15s ease-in-out;
-
-      //   &.rotated {
-      //     transform-origin: center center;
-      //     transform: rotate(90deg);
-      //   }
-      // }
-      // .widget + .widget {
-      //   margin-right: 12px;
-      // }
     }
 
     .app {
       height: calc(100% - var(--status-bar-height));
-      // min-width: 600px;
-      // min-height: 480px;
 
       .error {
         margin-top: 45vh;
