@@ -143,7 +143,9 @@ export const NodeHighlightExtension: Extension<NodeHighlightExtensionOptions, No
                   const oldDoc = tr.docs[index]
                   const newDoc = tr.docs[index + 1] ?? tr.doc
 
-                  if (oldDoc.rangeHasMark(oldStart, oldEnd, markType) !== newDoc.rangeHasMark(newStart, newEnd, markType)) {
+                  if (
+                    oldDoc.rangeHasMark(oldStart, oldEnd, markType) !== newDoc.rangeHasMark(newStart, newEnd, markType)
+                  ) {
                     hasMarkChanges = true
                   }
                 })
