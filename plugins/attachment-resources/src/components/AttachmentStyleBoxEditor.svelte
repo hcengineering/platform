@@ -20,7 +20,7 @@
   import { navigate } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import AttachmentStyledBox from './AttachmentStyledBox.svelte'
 
   export let object: Doc
@@ -104,6 +104,17 @@
 
     saveTrigger = setTimeout(() => save(saveObject, saveDescription), 2500)
   }
+
+  onDestroy(async () => {
+    // If change text and use mention link inside TextArea
+    // there is a case when createAttachments wouldn't be called
+    // because descriptionBox could be destroyed while
+    // we are doing await updateAttribute
+    // In that case it's better to call it from here, although
+    // I didn't find a way to loose any data.
+    // Check if no change is inside
+    await descriptionBox?.createAttachments()
+  })
 
   export function isFocused (): boolean {
     return descriptionBox.isFocused()
