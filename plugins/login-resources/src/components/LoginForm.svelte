@@ -17,8 +17,9 @@
   import { OK, setMetadata, Severity, Status } from '@hcengineering/platform'
   import { getCurrentLocation, navigate, Location, setMetadataLocalStorage } from '@hcengineering/ui'
   import presentation from '@hcengineering/presentation'
+  import { doLogin } from '@hcengineering/login'
 
-  import { doLogin, getWorkspaces, navigateToWorkspace, selectWorkspace } from '../utils'
+  import { getWorkspaces, navigateToWorkspace, selectWorkspace } from '../utils'
   import Form from './Form.svelte'
 
   import login from '../plugin'

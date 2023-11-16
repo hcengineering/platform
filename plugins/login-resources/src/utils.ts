@@ -36,46 +36,6 @@ import { workbenchId } from '@hcengineering/workbench'
 
 const DEV_WORKSPACE = 'DEV WORKSPACE'
 
-/**
- * Perform a login operation to required workspace with user credentials.
- */
-export async function doLogin (email: string, password: string): Promise<[Status, LoginInfo | undefined]> {
-  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
-
-  if (accountsUrl === undefined) {
-    throw new Error('accounts url not specified')
-  }
-
-  const token = getMetadata(login.metadata.OverrideLoginToken)
-  if (token !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return [OK, { token, endpoint, email, confirmed: true }]
-    }
-  }
-
-  const request = {
-    method: 'login',
-    params: [email, password]
-  }
-
-  try {
-    const response = await fetch(accountsUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(request)
-    })
-    const result = await response.json()
-    console.log('login result', result)
-    return [result.error ?? OK, result.result]
-  } catch (err) {
-    console.log('login error', err)
-    return [unknownError(err), undefined]
-  }
-}
-
 export async function signUp (
   email: string,
   password: string,

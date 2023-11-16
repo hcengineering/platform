@@ -17,6 +17,8 @@ import type { Asset, IntlString, Metadata, Plugin, Resource, Status } from '@hce
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 
+export * from './utils'
+
 /**
  * @public
  */
