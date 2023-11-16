@@ -23,6 +23,7 @@
   export let password: boolean | undefined = undefined
   export let id: string | undefined = undefined
   export let name: string | undefined = undefined
+  export let disabled: boolean = false
 </script>
 
 <div class="editbox{error ? ' error' : ''}" style={width ? 'width: ' + width : ''}>
@@ -41,6 +42,7 @@
       placeholder=" "
       spellcheck="false"
       autocapitalize="off"
+      {disabled}
     />
   {:else}
     <input
@@ -57,6 +59,7 @@
       placeholder=" "
       spellcheck="false"
       autocapitalize="off"
+      {disabled}
     />
   {/if}
   {#if label}
