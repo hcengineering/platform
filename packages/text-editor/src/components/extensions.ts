@@ -21,6 +21,7 @@ import { CompletionOptions } from '../Completion'
 import MentionList from './MentionList.svelte'
 import { NodeUuidExtension } from './extension/nodeUuid'
 import { SvelteRenderer } from './node-view'
+import { CodemarkExtension } from './extension/codemark'
 
 export const tableExtensions = [
   Table.configure({
@@ -68,6 +69,7 @@ export const defaultExtensions: AnyExtension[] = [
       }
     }
   }),
+  CodemarkExtension,
   Highlight.configure({
     multicolor: false
   }),
