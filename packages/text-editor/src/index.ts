@@ -45,7 +45,8 @@ export {
 export {
   NodeHighlightExtension,
   NodeHighlightType,
-  type NodeHighlightExtensionOptions
+  type NodeHighlightExtensionOptions,
+  highlightUpdateCommand
 } from './components/extension/nodeHighlight'
 export {
   NodeUuidExtension,

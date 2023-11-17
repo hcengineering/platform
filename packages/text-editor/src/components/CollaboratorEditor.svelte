@@ -15,8 +15,8 @@
 //
 -->
 <script lang="ts">
-  import { Plugin, PluginKey, TextSelection } from 'prosemirror-state'
-  import { DecorationSet } from 'prosemirror-view'
+  import { Plugin, PluginKey, TextSelection } from '@tiptap/pm/state'
+  import { DecorationSet } from '@tiptap/pm/view'
   import { getContext, createEventDispatcher, onDestroy, onMount } from 'svelte'
   import * as Y from 'yjs'
   import {
@@ -33,12 +33,13 @@
   import Placeholder from '@tiptap/extension-placeholder'
   import { getCurrentAccount, Markup } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
-  import { getPlatformColorForText, IconObjects, IconSize, Loading, registerFocus, themeStore } from '@hcengineering/ui'
+  import { IconObjects, IconSize, Loading, getPlatformColorForText, registerFocus, themeStore } from '@hcengineering/ui'
 
   import { Completion } from '../Completion'
+  import { textEditorCommandHandler } from '../commands'
   import textEditorPlugin from '../plugin'
   import { TiptapCollabProvider } from '../provider'
-  import { CollaborationIds, TextFormatCategory, TextNodeAction } from '../types'
+  import { CollaborationIds, TextEditorCommandHandler, TextFormatCategory, TextNodeAction } from '../types'
   import { copyDocumentContent, copyDocumentField } from '../utils'
 
   import { calculateDecorations } from './diff/decorations'
@@ -111,6 +112,12 @@
   })
 
   const dispatch = createEventDispatcher()
+
+  $: handler = textEditorCommandHandler(editor)
+
+  export function commands (): TextEditorCommandHandler | undefined {
+    return handler
+  }
 
   export function getHTML (): string | undefined {
     if (editor) {

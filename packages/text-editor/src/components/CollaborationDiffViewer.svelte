@@ -16,20 +16,18 @@
 -->
 <script lang="ts">
   import { Editor, Extension, mergeAttributes } from '@tiptap/core'
-
-  import { Plugin, PluginKey } from 'prosemirror-state'
+  import { Plugin, PluginKey } from '@tiptap/pm/state'
+  import { DecorationSet } from '@tiptap/pm/view'
   import { onDestroy, onMount } from 'svelte'
-
   import { Markup } from '@hcengineering/core'
   import { IconObjects, IconSize } from '@hcengineering/ui'
-  import StyleButton from './StyleButton.svelte'
 
-  import { DecorationSet } from 'prosemirror-view'
   import textEditorPlugin from '../plugin'
 
   import { calculateDecorations } from './diff/decorations'
-  import { defaultExtensions } from './extensions'
   import { defaultEditorAttributes } from './editor/editorProps'
+  import { defaultExtensions } from './extensions'
+  import StyleButton from './StyleButton.svelte'
 
   export let content: Markup
   export let buttonSize: IconSize = 'small'

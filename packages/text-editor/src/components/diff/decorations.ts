@@ -15,12 +15,12 @@
 
 import { Markup } from '@hcengineering/core'
 import { Editor } from '@tiptap/core'
-import { ChangeSet } from 'prosemirror-changeset'
-import { DOMParser, Node, Schema } from 'prosemirror-model'
-import { Decoration, DecorationSet } from 'prosemirror-view'
-import { recreateTransform } from './recreate'
+import { ChangeSet } from '@tiptap/pm/changeset'
+import { DOMParser, Node, Schema } from '@tiptap/pm/model'
+import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import { yDocToProsemirrorJSON } from 'y-prosemirror'
 import { Doc, applyUpdate } from 'yjs'
+import { recreateTransform } from './recreate'
 
 /**
  * @public

@@ -1,6 +1,6 @@
 import { Command, CommandProps, Mark, getMarkType, getMarksBetween, mergeAttributes } from '@tiptap/core'
-import { Node, Mark as ProseMirrorMark } from 'prosemirror-model'
-import { EditorState, Plugin, PluginKey } from 'prosemirror-state'
+import { Node, Mark as ProseMirrorMark } from '@tiptap/pm/model'
+import { EditorState, Plugin, PluginKey } from '@tiptap/pm/state'
 
 const NAME = 'node-uuid'
 
