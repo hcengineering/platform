@@ -1,5 +1,5 @@
 import { test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI } from '../utils'
+import { PlatformSetting, PlatformURI } from '../utils'
 import { allure } from 'allure-playwright'
 
 test.use({

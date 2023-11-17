@@ -1,4 +1,4 @@
-import { expect, Page, test } from '@playwright/test'
+import { Page, test } from '@playwright/test'
 import { PlatformSetting, PlatformURI } from './utils'
 import { allure } from 'allure-playwright'
 
