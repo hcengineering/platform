@@ -20,7 +20,7 @@
   import { navigate } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
-  import { createEventDispatcher, onDestroy } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import AttachmentStyledBox from './AttachmentStyledBox.svelte'
 
   export let object: Doc
@@ -74,6 +74,8 @@
       return
     }
 
+    descriptionBox.createAttachments()
+
     const old = getAttribute(client, object, key)
     if (description !== old) {
       await updateAttribute(client, object, object._class, key, description)
@@ -85,11 +87,6 @@
     } else {
       haveUnsavedChanges = false
     }
-
-    /*
-      Delayed save can be invoked after dismount. In this case descriptionBox would be null
-    */
-    await descriptionBox?.createAttachments()
   }
 
   let saveTrigger: any
@@ -104,17 +101,6 @@
 
     saveTrigger = setTimeout(() => save(saveObject, saveDescription), 2500)
   }
-
-  onDestroy(async () => {
-    // If change text and use mention link inside TextArea
-    // there is a case when createAttachments wouldn't be called
-    // because descriptionBox could be destroyed while
-    // we are doing await updateAttribute
-    // In that case it's better to call it from here, although
-    // I didn't find a way to loose any data.
-    // Check if no change is inside
-    await descriptionBox?.createAttachments()
-  })
 
   export function isFocused (): boolean {
     return descriptionBox.isFocused()
