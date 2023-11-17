@@ -18,6 +18,14 @@ const config: PlaywrightTestConfig = {
   expect: {
     timeout: 15000
   },
-  reporter: 'allure-playwright'
+  reporter: [
+    [
+      'allure-playwright',
+      {
+        detail: true,
+        suiteTitle: true
+      }
+    ]
+  ]
 }
 export default config

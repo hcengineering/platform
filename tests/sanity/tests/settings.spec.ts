@@ -1,14 +1,16 @@
 import { expect, test } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI } from './utils'
+import { allure } from 'allure-playwright'
 
 test.use({
   storageState: PlatformSetting
 })
 test.describe('contact tests', () => {
   test.beforeEach(async ({ page }) => {
-    // Create user and workspace
+    await allure.parentSuite('Contact test')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
+
   test('update-profile', async ({ page, context }) => {
     // Go to http://localhost:8083/workbench/sanity-ws
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
@@ -36,6 +38,7 @@ test.describe('contact tests', () => {
     // Click text=Apply
     await page.click('.editor-container button:nth-child(3)')
   })
+
   test('create-template', async ({ page }) => {
     // Go to http://localhost:8083/workbench/sanity-ws
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()

@@ -3,6 +3,7 @@ import { generateId, PlatformSetting, PlatformURI } from '../utils'
 import { NavigationMenuPage } from '../model/recruiting/navigation-menu-page'
 import { ApplicationsPage } from '../model/recruiting/applications-page'
 import { ApplicationsDetailsPage } from '../model/recruiting/applications-details-page'
+import { allure } from 'allure-playwright'
 
 test.use({
   storageState: PlatformSetting
@@ -10,7 +11,7 @@ test.use({
 
 test.describe('Application tests', () => {
   test.beforeEach(async ({ page }) => {
-    // Create user and workspace
+    await allure.parentSuite('Application tests')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
   })
 

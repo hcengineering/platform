@@ -1,5 +1,6 @@
 import { test } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI } from './utils'
+import { allure } from 'allure-playwright'
 
 test.use({
   storageState: PlatformSetting
@@ -7,9 +8,10 @@ test.use({
 
 test.describe('duplicate-org-test', () => {
   test.beforeEach(async ({ page }) => {
-    // Create user and workspace
+    await allure.parentSuite('Duplicate Org test')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
+
   test('check-contact-exists', async ({ page }) => {
     await page.click('[id="app-lead\\:string\\:LeadApplication"]')
 

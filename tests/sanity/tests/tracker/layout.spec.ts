@@ -14,6 +14,7 @@ import {
   ViewletSelectors
 } from './tracker.utils'
 import { fillSearch, generateId, PlatformSetting } from '../utils'
+import { allure } from 'allure-playwright'
 test.use({
   storageState: PlatformSetting
 })
@@ -87,6 +88,7 @@ async function initIssues (prefix: string, page: Page): Promise<IssueProps[]> {
 test.describe('tracker layout tests', () => {
   const id = generateId(4)
   test.beforeEach(async ({ page }) => {
+    await allure.parentSuite('Tracker tests')
     test.setTimeout(120000)
     await navigate(page)
     issuesProps = await initIssues(id, page)
