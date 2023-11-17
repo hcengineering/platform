@@ -270,7 +270,7 @@
       })
       staffs.forEach((staff) => {
         const filteredDepartments = departments.filter((department) => department.members.includes(staff._id))
-        map.set(staff.employee as Ref<Staff>, filteredDepartments as Department[])
+        map.set(staff.person as Ref<Staff>, filteredDepartments as Department[])
       })
     }
     return map
