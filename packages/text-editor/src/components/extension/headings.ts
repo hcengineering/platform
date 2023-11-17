@@ -15,7 +15,7 @@
 
 import { Extension } from '@tiptap/core'
 import { Node as ProseMirrorNode } from '@tiptap/pm/model'
-import { EditorState, Plugin, PluginKey } from '@tiptap/pm/state'
+import { EditorState, Plugin, PluginKey, Transaction } from '@tiptap/pm/state'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import slugify from 'slugify'
 import { Heading } from '../../types'
@@ -59,42 +59,15 @@ export const HeadingsExtension: Extension<HeadingsOptions, HeadingsStorage> = Ex
 
             options.onChange?.(headings)
 
-            return { decorations }
+            return { decorations: DecorationSet.create(state.doc, decorations) }
           },
 
           apply (tr, value, oldState, newState) {
-            if (!tr.docChanged) {
-              return value
-            }
-
-            let headingUpdate = false
-
-            tr.mapping.maps.forEach((map, index) =>
-              map.forEach((oldStart, oldEnd, newStart, newEnd) => {
-                const oldDoc = tr.docs[index]
-                const newDoc = tr.docs[index + 1] ?? tr.doc
-
-                oldDoc.nodesBetween(oldStart, oldEnd, (node) => {
-                  if (headingUpdate) {
-                    return false
-                  } else if (node.type.name === 'heading') {
-                    headingUpdate = true
-                  }
-                  return true
-                })
-                newDoc.nodesBetween(newStart, newEnd, (node) => {
-                  if (headingUpdate) {
-                    return false
-                  } else if (node.type.name === 'heading') {
-                    headingUpdate = true
-                  }
-                  return true
-                })
-              })
-            )
+            const headingUpdate = hasHeadingUpdate(tr)
 
             if (!headingUpdate) {
-              return value
+              const { decorations } = value
+              return { decorations: decorations.map(tr.mapping, tr.doc) }
             }
 
             const decorations = getHeadingDecorations(newState, prefixId)
@@ -103,7 +76,7 @@ export const HeadingsExtension: Extension<HeadingsOptions, HeadingsStorage> = Ex
             options.onChange?.(headings)
             storage.headings = headings
 
-            return { decorations }
+            return { decorations: DecorationSet.create(tr.doc, decorations) }
           }
         },
         props: {
@@ -111,7 +84,7 @@ export const HeadingsExtension: Extension<HeadingsOptions, HeadingsStorage> = Ex
             const pluginState = this.getState(state)
             if (pluginState !== undefined) {
               const { decorations } = pluginState
-              return DecorationSet.create(state.doc, decorations)
+              return decorations
             }
 
             return DecorationSet.empty
@@ -123,6 +96,40 @@ export const HeadingsExtension: Extension<HeadingsOptions, HeadingsStorage> = Ex
     return plugins
   }
 })
+
+function hasHeadingUpdate (tr: Transaction): boolean {
+  if (!tr.docChanged) {
+    return false
+  }
+
+  let found = false
+
+  tr.mapping.maps.forEach((map, index) =>
+    map.forEach((oldStart, oldEnd, newStart, newEnd) => {
+      const oldDoc = tr.docs[index]
+      const newDoc = tr.docs[index + 1] ?? tr.doc
+
+      oldDoc.nodesBetween(oldStart, oldEnd, (node) => {
+        if (found) {
+          return false
+        } else if (node.type.name === 'heading') {
+          found = true
+        }
+        return true
+      })
+      newDoc.nodesBetween(newStart, newEnd, (node) => {
+        if (found) {
+          return false
+        } else if (node.type.name === 'heading') {
+          found = true
+        }
+        return true
+      })
+    })
+  )
+
+  return found
+}
 
 function getHeadingDecorations (state: EditorState, idPrefix: string): Decoration[] {
   const decorations: Decoration[] = []
