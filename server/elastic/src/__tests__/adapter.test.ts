@@ -16,6 +16,7 @@
 
 import { Account, Class, Doc, getWorkspaceId, MeasureMetricsContext, Ref, Space } from '@hcengineering/core'
 import type { IndexedDoc } from '@hcengineering/server-core'
+
 import { createElasticAdapter } from '../adapter'
 
 describe('client', () => {
@@ -38,7 +39,18 @@ describe('client', () => {
     console.log(hits)
   })
 
-  // it('should find document', async () => {
-  //   const adapter = await createElasticAdapter('http://localhost:9200/', 'ws1')
-  // })
+  it('should find document with raw search', async () => {
+    const adapter = await createElasticAdapter(
+      'http://localhost:9200/',
+      getWorkspaceId('ws1', ''),
+      new MeasureMetricsContext('-', {})
+    )
+    const result = await adapter.searchString(
+      {
+        query: 'hey'
+      },
+      {}
+    )
+    console.log(result)
+  })
 })

@@ -13,8 +13,10 @@
 // limitations under the License.
 //
 
+import type { Asset } from '@hcengineering/platform'
+
 import type { KeysByType } from 'simplytyped'
-import type { AttachedDoc, Class, Doc, Ref } from './classes'
+import type { AttachedDoc, Class, Doc, Ref, Space } from './classes'
 import type { Tx } from './tx'
 
 /**
@@ -211,11 +213,56 @@ export interface TxResult {}
 /**
  * @public
  */
+export interface SearchQuery {
+  query: string
+  classes?: Ref<Class<Doc>>[]
+  spaces?: Ref<Space>[]
+}
+
+/**
+ * @public
+ */
+export interface SearchOptions {
+  limit?: number
+}
+
+/**
+ * @public
+ */
+export interface SearchResultDoc {
+  id: Ref<Doc>
+  icon?: Asset
+  iconComponent?: string
+  iconProps?: { [key: string]: string }
+  shortTitle?: string
+  title?: string
+  doc: Pick<Doc, '_id' | '_class'>
+}
+
+/**
+ * @public
+ */
+export interface SearchResult {
+  docs: SearchResultDoc[]
+  total?: number
+}
+
+/**
+ * @public
+ */
 export interface Storage {
   findAll: <T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
+
   tx: (tx: Tx) => Promise<TxResult>
+}
+
+/**
+ * @public
+ */
+export interface FulltextStorage {
+  searchFulltext: (query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
 }

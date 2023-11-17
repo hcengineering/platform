@@ -23,12 +23,17 @@ import {
   Ref,
   toWorkspaceString,
   TxResult,
-  WorkspaceId
+  WorkspaceId,
+  SearchQuery,
+  SearchOptions
 } from '@hcengineering/core'
-import type { EmbeddingSearchOption, FullTextAdapter, IndexedDoc } from '@hcengineering/server-core'
+import type { EmbeddingSearchOption, FullTextAdapter, SearchStringResult, IndexedDoc } from '@hcengineering/server-core'
 
 import { Client, errors as esErr } from '@elastic/elasticsearch'
 import { Domain } from 'node:domain'
+
+const DEFAULT_LIMIT = 200
+
 class ElasticAdapter implements FullTextAdapter {
   constructor (
     private readonly client: Client,
@@ -98,6 +103,65 @@ class ElasticAdapter implements FullTextAdapter {
 
   metrics (): MeasureContext {
     return this._metrics
+  }
+
+  async searchString (query: SearchQuery, options: SearchOptions): Promise<SearchStringResult> {
+    try {
+      const elasticQuery: any = {
+        query: {
+          bool: {
+            must: {
+              simple_query_string: {
+                query: query.query,
+                analyze_wildcard: true,
+                flags: 'OR|PREFIX|PHRASE|FUZZY|NOT|ESCAPE',
+                default_operator: 'and',
+                fields: [
+                  'searchTitle^5', // Boost matches in searchTitle by a factor of 5
+                  'searchShortTitle^5',
+                  '*' // Search in all other fields without a boost
+                ]
+              }
+            }
+          }
+        },
+        size: options.limit ?? DEFAULT_LIMIT
+      }
+
+      const filter = []
+      if (query.spaces !== undefined) {
+        filter.push({
+          terms: { 'space.keyword': query.spaces }
+        })
+      }
+      if (query.classes !== undefined) {
+        filter.push({
+          terms: { '_class.keyword': query.classes }
+        })
+      }
+
+      if (filter.length > 0) {
+        elasticQuery.query.bool.filter = filter
+      }
+
+      const result = await this.client.search({
+        index: toWorkspaceString(this.workspaceId),
+        body: elasticQuery
+      })
+
+      const resp: SearchStringResult = { docs: [] }
+      if (result.body.hits !== undefined) {
+        if (result.body.hits.total?.value !== undefined) {
+          resp.total = result.body.hits.total?.value
+        }
+        resp.docs = result.body.hits.hits.map((hit: any) => ({ ...hit._source, _score: hit._score }))
+      }
+
+      return resp
+    } catch (err) {
+      console.error('elastic error', JSON.stringify(err, null, 2))
+      return { docs: [] }
+    }
   }
 
   async search (

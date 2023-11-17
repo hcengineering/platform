@@ -45,8 +45,18 @@ export interface ObjectCreate {
 export type ObjectSearchFactory = (
   client: Client,
   query: string,
-  filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
+  options?: {
+    in?: RelatedDocument[]
+    nin?: RelatedDocument[]
+  }
 ) => Promise<ObjectSearchResult[]>
+
+/**
+ * @public
+ *  search - show in search popup
+ *  mention - show in mentions
+ */
+export type ObjectSearchContext = 'search' | 'mention'
 
 /**
  * @public
@@ -54,9 +64,12 @@ export type ObjectSearchFactory = (
 export interface ObjectSearchCategory extends Doc {
   label: IntlString
   icon: Asset
+  title: IntlString
+  context: ObjectSearchContext[]
 
   // Query for documents with pattern
   query: Resource<ObjectSearchFactory>
+  classToSearch?: Ref<Class<Doc>>
 }
 
 export interface ComponentExt {

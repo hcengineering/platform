@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { Builder, Model } from '@hcengineering/model'
+import { Builder, Model, Mixin } from '@hcengineering/model'
 import { TClass, TDoc } from '@hcengineering/model-core'
 import type { Resource } from '@hcengineering/platform'
 
@@ -28,7 +28,14 @@ import core, {
   Hierarchy,
   Ref
 } from '@hcengineering/core'
-import type { ObjectDDParticipant, Trigger, TriggerFunc } from '@hcengineering/server-core'
+import type {
+  ObjectDDParticipant,
+  Trigger,
+  TriggerFunc,
+  SearchPresenter,
+  SearchPresenterFunc,
+  ClassSearchConfig
+} from '@hcengineering/server-core'
 import serverCore from '@hcengineering/server-core'
 
 export { serverCoreId } from '@hcengineering/server-core'
@@ -53,6 +60,13 @@ export class TObjectDDParticipant extends TClass implements ObjectDDParticipant 
   >
 }
 
+@Mixin(serverCore.mixin.SearchPresenter, core.class.Class)
+export class TSearchPresenter extends TClass implements SearchPresenter {
+  searchConfig!: ClassSearchConfig
+  getSearchObjectId!: Resource<SearchPresenterFunc>
+  getSearchTitle!: Resource<SearchPresenterFunc>
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TTrigger, TObjectDDParticipant)
+  builder.createModel(TTrigger, TObjectDDParticipant, TSearchPresenter)
 }

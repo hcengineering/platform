@@ -19,8 +19,8 @@ import { Account, AttachedDoc, Class, DOMAIN_MODEL, Doc, Domain, PluginConfigura
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { ModelDb } from './memdb'
-import type { DocumentQuery, FindOptions, FindResult, Storage, TxResult, WithLookup } from './storage'
-import { SortingOrder } from './storage'
+import type { DocumentQuery, FindOptions, FindResult, Storage, FulltextStorage, TxResult, WithLookup } from './storage'
+import { SortingOrder, SearchQuery, SearchOptions, SearchResult } from './storage'
 import { Tx, TxCUD, TxCollectionCUD, TxCreateDoc, TxProcessor, TxUpdateDoc } from './tx'
 import { toFindResult } from './utils'
 
@@ -34,7 +34,7 @@ export type TxHandler = (tx: Tx) => void
 /**
  * @public
  */
-export interface Client extends Storage {
+export interface Client extends Storage, FulltextStorage {
   notify?: (tx: Tx) => void
   getHierarchy: () => Hierarchy
   getModel: () => ModelDb
@@ -79,7 +79,7 @@ export enum ClientConnectEvent {
 /**
  * @public
  */
-export interface ClientConnection extends Storage, BackupClient {
+export interface ClientConnection extends Storage, FulltextStorage, BackupClient {
   close: () => Promise<void>
   onConnect?: (event: ClientConnectEvent) => Promise<void>
 
@@ -125,6 +125,10 @@ class ClientImpl implements AccountClient, BackupClient {
       return this.hierarchy.updateLookupMixin(_class, v, options)
     })
     return toFindResult(result, data.total)
+  }
+
+  async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
+    return await this.conn.searchFulltext(query, options)
   }
 
   async findOne<T extends Doc>(

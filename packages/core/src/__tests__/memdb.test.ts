@@ -19,7 +19,15 @@ import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
 import { TxOperations } from '../operations'
-import { DocumentQuery, FindOptions, SortingOrder, WithLookup } from '../storage'
+import {
+  DocumentQuery,
+  FindOptions,
+  SortingOrder,
+  WithLookup,
+  SearchQuery,
+  SearchOptions,
+  SearchResult
+} from '../storage'
 import { Tx } from '../tx'
 import { genMinModel, test, TestMixin } from './minmodel'
 
@@ -42,6 +50,10 @@ class ClientModel extends ModelDb implements Client {
     options?: FindOptions<T>
   ): Promise<WithLookup<T> | undefined> {
     return (await this.findAll(_class, query, options)).shift()
+  }
+
+  async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
+    return { docs: [] }
   }
 
   async close (): Promise<void> {}

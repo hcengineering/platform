@@ -36,6 +36,20 @@ export function createModel (builder: Builder): void {
     presenter: serverTracker.function.IssueNotificationContentProvider
   })
 
+  builder.mixin(tracker.class.Issue, core.class.Class, serverCore.mixin.SearchPresenter, {
+    searchConfig: {
+      iconConfig: {
+        component: tracker.component.IssueSearchIcon,
+        props: ['status', 'space']
+      },
+      shortTitle: {
+        tmpl: '{identifier}-{number}',
+        props: [{ identifier: ['space', 'identifier'] }, 'number']
+      },
+      title: 'title'
+    }
+  })
+
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverTracker.trigger.OnIssueUpdate
   })

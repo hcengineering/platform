@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ObjectSearchPopup, ObjectSearchResult } from '@hcengineering/presentation'
   import { showPopup, resizeObserver, deviceOptionsStore as deviceInfo, PopupResult } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
+  import MentionPopup from './MentionPopup.svelte'
   import DummyPopup from './DummyPopup.svelte'
 
   export let query: string = ''
@@ -32,7 +32,10 @@
       DummyPopup,
       {},
       undefined,
-      () => close(),
+      () => {
+        close()
+        command(null)
+      },
       () => {},
       { overlay: false, category: '' }
     )
@@ -42,15 +45,15 @@
     dummyPopup.close()
   })
 
-  function dispatchItem (item: ObjectSearchResult): void {
+  function dispatchItem (item: { id: string; label: string; objectclass: string }): void {
     if (item == null) {
       close()
     } else {
-      command({ id: item.doc._id, label: item.title, objectclass: item.doc._class })
+      command(item)
     }
   }
 
-  let searchPopup: ObjectSearchPopup
+  let searchPopup: MentionPopup
 
   export function onKeyDown (ev: KeyboardEvent): boolean {
     return searchPopup?.onKeyDown(ev)
@@ -97,7 +100,7 @@
     updateStyle()
   }}
 >
-  <ObjectSearchPopup bind:this={searchPopup} {query} on:close={(evt) => dispatchItem(evt.detail)} />
+  <MentionPopup bind:this={searchPopup} {query} on:close={(evt) => dispatchItem(evt.detail)} />
 </div>
 
 <style lang="scss">

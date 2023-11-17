@@ -26,6 +26,7 @@ import {
   DocRules,
   DocCreateExtension,
   DocCreateFunction,
+  ObjectSearchContext,
   ObjectSearchCategory,
   ObjectSearchFactory
 } from '@hcengineering/presentation/src/types'
@@ -40,9 +41,12 @@ export { CreateExtensionKind, DocCreateExtension, DocCreateFunction, ObjectSearc
 export class TObjectSearchCategory extends TDoc implements ObjectSearchCategory {
   label!: IntlString
   icon!: Asset
+  title!: IntlString
+  context!: ObjectSearchContext[]
 
   // Query for documents with pattern
   query!: Resource<ObjectSearchFactory>
+  classToSearch!: Ref<Class<Doc>>
 }
 
 @Model(presentation.class.PresentationMiddlewareFactory, core.class.Doc, DOMAIN_MODEL)

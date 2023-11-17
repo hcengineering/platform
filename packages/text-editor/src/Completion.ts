@@ -1,8 +1,8 @@
 import { Node, mergeAttributes } from '@tiptap/core'
-import Suggestion, { SuggestionOptions } from '@tiptap/suggestion'
-
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { getDataAttribute } from './utils'
+
+import Suggestion, { SuggestionOptions } from './components/extension/suggestion'
 
 export interface CompletionOptions {
   HTMLAttributes: Record<string, any>
@@ -47,6 +47,7 @@ export const Completion = Node.create<CompletionOptions>({
       },
       suggestion: {
         char: '@',
+        allowSpaces: true,
         // pluginKey: CompletionPluginKey,
         command: ({ editor, range, props }) => {
           // increase range.to by one when the next node is of type "text"
@@ -59,20 +60,22 @@ export const Completion = Node.create<CompletionOptions>({
             range.to += 1
           }
 
-          editor
-            .chain()
-            .focus()
-            .insertContentAt(range, [
-              {
-                type: this.name,
-                attrs: props
-              },
-              {
-                type: 'text',
-                text: ' '
-              }
-            ])
-            .run()
+          if (props !== null) {
+            editor
+              .chain()
+              .focus()
+              .insertContentAt(range, [
+                {
+                  type: this.name,
+                  attrs: props
+                },
+                {
+                  type: 'text',
+                  text: ' '
+                }
+              ])
+              .run()
+          }
         },
         allow: ({ editor, range }) => {
           if (range.from > editor.state.doc.content.size) return false

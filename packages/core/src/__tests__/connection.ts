@@ -18,7 +18,7 @@ import { ClientConnection } from '../client'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
-import type { DocumentQuery, FindResult, TxResult } from '../storage'
+import type { DocumentQuery, FindResult, TxResult, SearchQuery, SearchOptions, SearchResult } from '../storage'
 import type { Tx } from '../tx'
 import { DOMAIN_TX } from '../tx'
 import { genMinModel } from './minmodel'
@@ -44,6 +44,11 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
 
   return {
     findAll,
+
+    searchFulltext: async (query: SearchQuery, options: SearchOptions): Promise<SearchResult> => {
+      return { docs: [] }
+    },
+
     tx: async (tx: Tx): Promise<TxResult> => {
       if (tx.objectSpace === core.space.Model) {
         hierarchy.tx(tx)

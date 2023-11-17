@@ -13,7 +13,19 @@
 // limitations under the License.
 //
 
-import { Class, Doc, DocumentQuery, FindOptions, FindResult, Ref, ServerStorage, Tx } from '@hcengineering/core'
+import {
+  Class,
+  Doc,
+  DocumentQuery,
+  FindOptions,
+  FindResult,
+  Ref,
+  ServerStorage,
+  Tx,
+  SearchQuery,
+  SearchOptions,
+  SearchResult
+} from '@hcengineering/core'
 import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
 
 /**
@@ -29,6 +41,10 @@ export abstract class BaseMiddleware {
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     return await this.provideFindAll(ctx, _class, query, options)
+  }
+
+  async searchFulltext (ctx: SessionContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
+    return await this.provideSearchFulltext(ctx, query, options)
   }
 
   protected async provideTx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
@@ -49,5 +65,16 @@ export abstract class BaseMiddleware {
       return await this.next.findAll(ctx, _class, query, options)
     }
     return await this.storage.findAll(ctx, _class, query, options)
+  }
+
+  protected async provideSearchFulltext (
+    ctx: SessionContext,
+    query: SearchQuery,
+    options: SearchOptions
+  ): Promise<SearchResult> {
+    if (this.next !== undefined) {
+      return await this.next.searchFulltext(ctx, query, options)
+    }
+    return await this.storage.searchFulltext(ctx, query, options)
   }
 }

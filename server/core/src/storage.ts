@@ -51,7 +51,10 @@ import core, {
   TxUpdateDoc,
   TxWorkspaceEvent,
   WorkspaceEvent,
-  WorkspaceId
+  WorkspaceId,
+  SearchQuery,
+  SearchOptions,
+  SearchResult
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { getResource } from '@hcengineering/platform'
@@ -373,6 +376,12 @@ class TServerStorage implements ServerStorage {
         return ctx.with('full-text-find-all', {}, (ctx) => this.fulltext.findAll(ctx, clazz, query, options))
       }
       return ctx.with('db-find-all', { d: domain }, () => this.getAdapter(domain).findAll(clazz, query, options))
+    })
+  }
+
+  async searchFulltext (ctx: MeasureContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
+    return await ctx.with('full-text-search', {}, (ctx) => {
+      return this.fulltext.searchFulltext(ctx, query, options)
     })
   }
 

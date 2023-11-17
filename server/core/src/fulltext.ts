@@ -36,12 +36,16 @@ import core, {
   TxCUD,
   TxFactory,
   TxResult,
-  WorkspaceId
+  WorkspaceId,
+  SearchQuery,
+  SearchOptions,
+  SearchResult
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { FullTextIndexPipeline } from './indexer'
 import { createStateDoc, isClassIndexable } from './indexer/utils'
-import type { FullTextAdapter, IndexedDoc, WithFind } from './types'
+import { mapSearchResultDoc } from './mapper'
+import type { FullTextAdapter, WithFind, IndexedDoc } from './types'
 
 /**
  * @public
@@ -237,6 +241,18 @@ export class FullTextIndex implements WithFind {
       if (options?.limit !== undefined && options?.limit < result.length) {
         result = toFindResult(result.slice(0, options?.limit), result.total)
       }
+    }
+    return result
+  }
+
+  async searchFulltext (ctx: MeasureContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
+    const resultRaw = await this.adapter.searchString(query, options)
+
+    const result: SearchResult = {
+      ...resultRaw,
+      docs: resultRaw.docs.map((raw) => {
+        return mapSearchResultDoc(this.hierarchy, raw)
+      })
     }
     return result
   }

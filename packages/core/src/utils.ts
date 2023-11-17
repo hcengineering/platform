@@ -16,8 +16,8 @@
 import { Account, AnyAttribute, Class, Doc, DocData, DocIndexState, IndexKind, Obj, Ref, Space } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
-import { DocumentQuery, FindResult } from './storage'
 import { isPredicate } from './predicate'
+import { FindResult, DocumentQuery } from './storage'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -116,6 +116,8 @@ export interface IndexKeyOptions {
   _class?: Ref<Class<Obj>>
   docId?: Ref<DocIndexState>
   extra?: string[]
+  relative?: boolean
+  refAttribute?: string
 }
 /**
  * @public
@@ -129,10 +131,16 @@ export function docUpdKey (name: string, opt?: IndexKeyOptions): string {
  */
 export function docKey (name: string, opt?: IndexKeyOptions): string {
   const extra = opt?.extra !== undefined && opt?.extra?.length > 0 ? `#${opt.extra?.join('#') ?? ''}` : ''
-  return (
+  let key =
     (opt?.docId !== undefined ? opt.docId.split('.').join('_') + '|' : '') +
     (opt?._class === undefined ? name : `${opt?._class}%${name}${extra}`)
-  )
+  if (opt?.refAttribute !== undefined) {
+    key = `${opt?.refAttribute}->${key}`
+  }
+  if (opt?.refAttribute !== undefined || (opt?.relative !== undefined && opt?.relative)) {
+    key = '|' + key
+  }
+  return key
 }
 
 /**

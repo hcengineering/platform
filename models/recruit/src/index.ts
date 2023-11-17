@@ -1198,7 +1198,10 @@ export function createModel (builder: Builder): void {
     {
       icon: recruit.icon.Application,
       label: recruit.string.SearchApplication,
-      query: recruit.completion.ApplicationQuery
+      title: recruit.string.Applications,
+      query: recruit.completion.ApplicationQuery,
+      context: ['search', 'mention'],
+      classToSearch: recruit.class.Applicant
     },
     recruit.completion.ApplicationCategory
   )
@@ -1209,7 +1212,10 @@ export function createModel (builder: Builder): void {
     {
       icon: recruit.icon.Vacancy,
       label: recruit.string.SearchVacancy,
-      query: recruit.completion.VacancyQuery
+      title: recruit.string.Vacancies,
+      query: recruit.completion.VacancyQuery,
+      context: ['search', 'mention'],
+      classToSearch: recruit.class.Vacancy
     },
     recruit.completion.VacancyCategory
   )

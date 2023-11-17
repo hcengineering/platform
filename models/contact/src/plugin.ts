@@ -98,7 +98,9 @@ export default mergeIds(contactId, contact, {
     CurrentEmployee: '' as IntlString,
 
     ConfigLabel: '' as IntlString,
-    ConfigDescription: '' as IntlString
+    ConfigDescription: '' as IntlString,
+    Employees: '' as IntlString,
+    People: '' as IntlString
   },
   completion: {
     PersonQuery: '' as Resource<ObjectSearchFactory>,

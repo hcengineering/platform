@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
 import core, {
   Account,
   AttachedDoc,
@@ -38,7 +37,10 @@ import core, {
   TxRemoveDoc,
   TxUpdateDoc,
   TxWorkspaceEvent,
-  WorkspaceEvent
+  WorkspaceEvent,
+  SearchResult,
+  SearchQuery,
+  SearchOptions
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { BroadcastFunc, Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
@@ -398,6 +400,20 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       }
     }
     return findResult
+  }
+
+  override async searchFulltext (
+    ctx: SessionContext,
+    query: SearchQuery,
+    options: SearchOptions
+  ): Promise<SearchResult> {
+    const newQuery = { ...query }
+    const account = await getUser(this.storage, ctx)
+    if (!isSystem(account)) {
+      newQuery.spaces = await this.getAllAllowedSpaces(account)
+    }
+    const result = await this.provideSearchFulltext(ctx, newQuery, options)
+    return result
   }
 
   async isUnavailable (ctx: SessionContext, space: Ref<Space>): Promise<boolean> {

@@ -40,7 +40,8 @@ import {
   FullTextPipelineStage,
   fullTextPushStageId
 } from './types'
-import { collectPropagate, collectPropagateClasses, docKey, getFullTextContext } from './utils'
+import { collectPropagate, collectPropagateClasses, docKey, getFullTextContext, IndexKeyOptions } from './utils'
+import { updateDocWithPresenter } from '../mapper'
 
 /**
  * @public
@@ -128,7 +129,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
           )
           if (refDocs.length > 0) {
             refDocs.forEach((c) => {
-              updateDoc2Elastic(c.attributes, elasticDoc, c._id)
+              updateDoc2Elastic(c.attributes, elasticDoc, c._id, attribute)
             })
           }
         }
@@ -208,6 +209,8 @@ export class FullTextPushStage implements FullTextPipelineStage {
           // Include child ref attributes
           await this.indexRefAttributes(allAttributes, doc, elasticDoc, metrics)
 
+          await updateDocWithPresenter(pipeline.hierarchy, elasticDoc)
+
           this.checkIntegrity(elasticDoc)
           bulk.push(elasticDoc)
         } catch (err: any) {
@@ -258,7 +261,12 @@ export function createElasticDoc (upd: DocIndexState): IndexedDoc {
   }
   return doc
 }
-function updateDoc2Elastic (attributes: Record<string, any>, doc: IndexedDoc, docIdOverride?: Ref<DocIndexState>): void {
+function updateDoc2Elastic (
+  attributes: Record<string, any>,
+  doc: IndexedDoc,
+  docIdOverride?: Ref<DocIndexState>,
+  refAttribute?: string
+): void {
   for (const [k, v] of Object.entries(attributes)) {
     if (v == null) {
       continue
@@ -280,7 +288,11 @@ function updateDoc2Elastic (attributes: Record<string, any>, doc: IndexedDoc, do
       }
       continue
     }
-    const docIdAttr = '|' + docKey(attr, { _class, extra: extra.filter((it) => it !== 'base64') })
+    const docKeyOpts: IndexKeyOptions = { _class, relative: true, extra: extra.filter((it) => it !== 'base64') }
+    if (refAttribute !== undefined) {
+      docKeyOpts.refAttribute = refAttribute
+    }
+    const docIdAttr = docKey(attr, docKeyOpts)
     if (vv !== null) {
       // Since we replace array of values, we could ignore null
       doc[docIdAttr] = [...(doc[docIdAttr] ?? [])]

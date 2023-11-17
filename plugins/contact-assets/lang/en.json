@@ -84,6 +84,7 @@
     "MergePersonsFrom": "Source contact",
     "MergePersonsTo": "Final contact",
     "SelectAvatar": "Select avatar",
+    "Avatar": "Avatar",
     "AvatarProvider": "Avatar provider",
     "GravatarsManaged": "Gravatars are managed",
     "Through": "through",
@@ -97,6 +98,8 @@
     "ConfigLabel": "Contacts",
     "ConfigDescription": "Extension to hold information about all Employees and other Person/Organization contacts.",
     "HasMessagesIn": "has messages in",
-    "HasNewMessagesIn": "has new messages in"
+    "HasNewMessagesIn": "has new messages in",
+    "Employees": "Employees",
+    "People": "People"
   }
 }

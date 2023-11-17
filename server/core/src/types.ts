@@ -34,10 +34,13 @@ import {
   Tx,
   TxFactory,
   TxResult,
-  WorkspaceId
+  WorkspaceId,
+  SearchQuery,
+  SearchOptions,
+  SearchResult
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
-import type { Resource } from '@hcengineering/platform'
+import type { Resource, Asset } from '@hcengineering/platform'
 import { Readable } from 'stream'
 
 /**
@@ -59,6 +62,7 @@ export interface Middleware {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
+  searchFulltext: (ctx: SessionContext, query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
 }
 
 /**
@@ -93,6 +97,7 @@ export interface Pipeline extends LowLevelStorage {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
+  searchFulltext: (ctx: SessionContext, query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
   tx: (ctx: SessionContext, tx: Tx) => Promise<[TxResult, Tx[], string[] | undefined]>
   close: () => Promise<void>
 }
@@ -136,20 +141,6 @@ export interface Trigger extends Doc {
 /**
  * @public
  */
-export interface IndexedDoc {
-  id: Ref<Doc>
-  _class: Ref<Class<Doc>>
-  space: Ref<Space>
-  modifiedOn: Timestamp
-  modifiedBy: Ref<Account>
-  attachedTo?: Ref<Doc>
-  attachedToClass?: Ref<Class<Doc>>
-  [key: string]: any
-}
-
-/**
- * @public
- */
 export interface EmbeddingSearchOption {
   field: string
   field_enable: string
@@ -158,6 +149,30 @@ export interface EmbeddingSearchOption {
   embeddingBoost?: number // default 100
   fulltextBoost?: number // default 10
   minScore?: number // 75 for example.
+}
+
+/**
+ * @public
+ */
+export interface IndexedDoc {
+  id: Ref<Doc>
+  _class: Ref<Class<Doc>>
+  space: Ref<Space>
+  modifiedOn: Timestamp
+  modifiedBy: Ref<Account>
+  attachedTo?: Ref<Doc>
+  attachedToClass?: Ref<Class<Doc>>
+  searchTitle?: string
+  searchShortTitle?: string
+  [key: string]: any
+}
+
+/**
+ * @public
+ */
+export interface SearchStringResult {
+  docs: IndexedDoc[]
+  total?: number
 }
 
 /**
@@ -173,6 +188,9 @@ export interface FullTextAdapter {
   update: (id: Ref<Doc>, update: Record<string, any>) => Promise<TxResult>
   remove: (id: Ref<Doc>[]) => Promise<void>
   updateMany: (docs: IndexedDoc[]) => Promise<TxResult[]>
+
+  searchString: (query: SearchQuery, options: SearchOptions) => Promise<SearchStringResult>
+
   search: (
     _classes: Ref<Class<Doc>>[],
     search: DocumentQuery<Doc>,
@@ -218,6 +236,10 @@ export class DummyFullTextAdapter implements FullTextAdapter {
 
   async updateMany (docs: IndexedDoc[]): Promise<TxResult[]> {
     return []
+  }
+
+  async searchString (query: SearchQuery, options: SearchOptions): Promise<SearchStringResult> {
+    return { docs: [] }
   }
 
   async search (query: any): Promise<IndexedDoc[]> {
@@ -306,4 +328,45 @@ export interface ObjectDDParticipant extends Class<Obj> {
     ) => Promise<FindResult<T>>
   ) => Promise<Doc[]>
   >
+}
+
+/**
+ * @public
+ */
+export interface SearchProps {
+  [key: string]: string
+}
+
+/**
+ * @public
+ */
+export type SearchPresenterFunc = (hierarchy: Hierarchy, props: SearchProps) => string
+
+/**
+ * @public
+ */
+export type ClassSearchConfigProps = string | { [key: string]: string[] }
+
+/**
+ * @public
+ */
+export type ClassSearchConfigProperty = string | { tmpl?: string, props: ClassSearchConfigProps[] }
+
+/**
+ * @public
+ */
+export interface ClassSearchConfig {
+  icon?: Asset
+  iconConfig?: { component: any, props: ClassSearchConfigProps[] }
+  title: ClassSearchConfigProperty
+  shortTitle?: ClassSearchConfigProperty
+}
+
+/**
+ * @public
+ */
+export interface SearchPresenter extends Class<Doc> {
+  searchConfig: ClassSearchConfig
+  getSearchObjectId?: Resource<SearchPresenterFunc>
+  getSearchTitle?: Resource<SearchPresenterFunc>
 }

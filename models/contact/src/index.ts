@@ -48,6 +48,7 @@ import {
   TypeRef,
   TypeString,
   TypeTimestamp,
+  TypeAttachment,
   UX
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
@@ -92,7 +93,10 @@ export class TContact extends TDoc implements Contact {
   @Index(IndexKind.FullText)
     name!: string
 
-  avatar?: string | null
+  @Prop(TypeAttachment(), contact.string.Avatar)
+  @Index(IndexKind.FullText)
+  @Hidden()
+    avatar?: string | null
 
   @Prop(Collection(contact.class.Channel), contact.string.ContactInfo)
     channels?: number
@@ -678,7 +682,8 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(contact.class.Contact, core.class.Class, view.mixin.ClassFilters, {
-    filters: []
+    filters: [],
+    ignoreKeys: ['avatar']
   })
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.ClassFilters, {
@@ -713,7 +718,9 @@ export function createModel (builder: Builder): void {
     {
       icon: contact.icon.Person,
       label: contact.string.SearchEmployee,
-      query: contact.completion.EmployeeQuery
+      title: contact.string.Employees,
+      query: contact.completion.EmployeeQuery,
+      context: ['search']
     },
     contact.completion.EmployeeCategory
   )
@@ -724,7 +731,10 @@ export function createModel (builder: Builder): void {
     {
       icon: contact.icon.Persona,
       label: contact.string.SearchPerson,
-      query: contact.completion.PersonQuery
+      title: contact.string.People,
+      query: contact.completion.PersonQuery,
+      context: ['search', 'mention'],
+      classToSearch: contact.class.Person
     },
     contact.completion.PersonCategory
   )
@@ -735,7 +745,10 @@ export function createModel (builder: Builder): void {
     {
       icon: contact.icon.Company,
       label: contact.string.SearchOrganization,
-      query: contact.completion.OrganizationQuery
+      title: contact.string.Organizations,
+      query: contact.completion.OrganizationQuery,
+      context: ['search', 'mention'],
+      classToSearch: contact.class.Organization
     },
     contact.completion.OrganizationCategory
   )

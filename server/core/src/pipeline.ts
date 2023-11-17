@@ -26,7 +26,10 @@ import {
   ServerStorage,
   StorageIterator,
   Tx,
-  TxResult
+  TxResult,
+  SearchQuery,
+  SearchOptions,
+  SearchResult
 } from '@hcengineering/core'
 import { DbConfiguration, createServerStorage } from './storage'
 import { BroadcastFunc, Middleware, MiddlewareCreator, Pipeline, SessionContext } from './types'
@@ -89,6 +92,12 @@ class PipelineImpl implements Pipeline {
     return this.head !== undefined
       ? await this.head.findAll(ctx, _class, query, options)
       : await this.storage.findAll(ctx, _class, query, options)
+  }
+
+  async searchFulltext (ctx: SessionContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
+    return this.head !== undefined
+      ? await this.head.searchFulltext(ctx, query, options)
+      : await this.storage.searchFulltext(ctx, query, options)
   }
 
   async tx (ctx: SessionContext, tx: Tx): Promise<[TxResult, Tx[], string[] | undefined]> {

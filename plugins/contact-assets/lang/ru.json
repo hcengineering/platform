@@ -85,6 +85,7 @@
     "MergePersonsFrom": "Исходный контакт",
     "MergePersonsTo": "Финальный контакт",
     "SelectAvatar": "Выбрать аватар",
+    "Avatar": "Аватар",
     "GravatarsManaged": "Граватары управляются",
     "Through": "через",
     "AddMembersHeader": "Добавить пользователей в {value}:",
@@ -97,6 +98,8 @@
     "ConfigLabel": "Контакты",
     "ConfigDescription": "Расширение по работе с сотрудниками и другими контактами.",
     "HasMessagesIn": "имеет сообщения в",
-    "HasNewMessagesIn": "имеет новые сообщения в"
+    "HasNewMessagesIn": "имеет новые сообщения в",
+    "Employees": "Сотрудники",
+    "People": "Люди"
   }
 }
