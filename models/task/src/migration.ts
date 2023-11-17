@@ -613,6 +613,12 @@ export const taskOperation: MigrateOperation = {
       {
         state: 'migrateProjectTypes',
         func: migrateProjectTypes
+      },
+      {
+        state: 'projectTypeSpace',
+        func: async (client) => {
+          await client.update(DOMAIN_SPACE, { space: core.space.Model }, { space: core.space.Space })
+        }
       }
     ])
   },

@@ -14,6 +14,7 @@ import {
   ViewletSelectors
 } from './tracker.utils'
 import { fillSearch, generateId, PlatformSetting } from '../utils'
+import { IssuesPage } from '../model/tracker/issues-page'
 test.use({
   storageState: PlatformSetting
 })
@@ -81,18 +82,25 @@ async function initIssues (prefix: string, page: Page): Promise<IssueProps[]> {
   const issuesProps = await createIssues(prefix, page, components, milestones)
   await page.click('text="Issues"')
 
+  const issuesPage = new IssuesPage(page)
+  await issuesPage.modelSelectorAll.click()
+
   return issuesProps
 }
 
 test.describe('tracker layout tests', () => {
   const id = generateId(4)
+  let issuesPropsP: Promise<IssueProps[]>
+  let issuesProps: IssueProps[] = []
   test.beforeEach(async ({ page }) => {
-    test.setTimeout(120000)
+    test.setTimeout(60000)
     await navigate(page)
-    issuesProps = await initIssues(id, page)
+    if (issuesPropsP === undefined) {
+      issuesPropsP = initIssues(id, page)
+    }
+    issuesProps = await issuesPropsP
   })
 
-  let issuesProps: IssueProps[] = []
   const orders = ['Status', 'Modified', 'Priority'] as const
   const groups = ['Status', 'Assignee', 'Priority', 'Component', 'Milestone', 'No grouping'] as const
   const groupsLabels: { [key in (typeof groups)[number]]?: string[] } = {
@@ -115,6 +123,8 @@ test.describe('tracker layout tests', () => {
       }
       const issueNames = issuesProps.map((props) => props.name)
 
+      const issuesPage = new IssuesPage(page)
+      await issuesPage.modelSelectorAll.click()
       await page.click(ViewletSelectors.Table)
       await expect(locator).toContainText(groupLabels)
 
@@ -130,7 +140,7 @@ test.describe('tracker layout tests', () => {
       let orderedIssueNames: string[]
 
       if (order === 'Priority') {
-        orderedIssueNames = issuesProps
+        orderedIssueNames = [...issuesProps]
           .sort((propsLeft, propsRight) => {
             if (propsLeft.priority === undefined || propsRight.priority === undefined) {
               return -1
@@ -149,7 +159,7 @@ test.describe('tracker layout tests', () => {
           })
           .map((p) => p.name)
       } else if (order === 'Status') {
-        orderedIssueNames = issuesProps
+        orderedIssueNames = [...issuesProps]
           .sort((propsLeft, propsRight) => {
             if (propsLeft.status !== undefined && propsRight.status !== undefined) {
               if (propsLeft.status === propsRight.status) {
@@ -169,6 +179,8 @@ test.describe('tracker layout tests', () => {
       } else {
         orderedIssueNames = issuesProps.map((props) => props.name).reverse()
       }
+      const issuesPage = new IssuesPage(page)
+      await issuesPage.modelSelectorAll.click()
       await page.click(ViewletSelectors.Board)
       await setViewGroup(page, 'No grouping')
       await setViewOrder(page, order)
@@ -176,7 +188,7 @@ test.describe('tracker layout tests', () => {
       await fillSearch(page, id)
 
       await expect(locator).toContainText(orderedIssueNames, {
-        timeout: 15000
+        timeout: 5000
       })
     })
   }

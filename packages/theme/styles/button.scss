@@ -10,6 +10,9 @@
   border: 1px solid transparent;
   transition-property: border, background-color, color, box-shadow;
   transition-duration: .15s;
+  &.testing {
+    transition-duration: 0;
+  }
 
   &.inline {
     height: 1.375rem;

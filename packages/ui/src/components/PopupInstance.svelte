@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { deviceOptionsStore as deviceInfo, resizeObserver } from '..'
+  import { deviceOptionsStore as deviceInfo, resizeObserver, testing } from '..'
   import { fitPopupElement } from '../popups'
   import type { AnySvelteComponent, PopupAlignment, PopupOptions, PopupPositionElement, DeviceOptions } from '../types'
 
@@ -144,8 +144,9 @@
 />
 
 <div
-  class="popup {showing === undefined ? 'endShow' : showing === false ? 'preShow' : 'startShow'}"
-  class:anim={element === 'float' || element === 'centered'}
+  class="popup {testing ? 'endShow' : showing === undefined ? 'endShow' : showing === false ? 'preShow' : 'startShow'}"
+  class:testing
+  class:anim={(element === 'float' || element === 'centered') && !testing}
   bind:this={modalHTML}
   style={`z-index: ${zIndex + 1};`}
   style:top={options?.props?.top}
@@ -187,6 +188,7 @@
 {#if overlay}
   <div
     class="modal-overlay"
+    class:testing
     class:antiOverlay={options?.showOverlay}
     style={`z-index: ${zIndex};`}
     on:click={handleOverlayClick}
@@ -235,5 +237,8 @@
     height: 100vh;
     transition: background-color 0.5s ease;
     touch-action: none;
+    &.testing {
+      transition: background-color 0 ease;
+    }
   }
 </style>
