@@ -256,3 +256,5 @@ export class DelayedCaller {
     }
   }
 }
+
+export const testing = (localStorage.getItem('#platform.testing.enabled') ?? 'false') === 'true'

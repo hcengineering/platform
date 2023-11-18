@@ -79,7 +79,7 @@
               kind={'primary'}
               size={'medium'}
               {items}
-              selected={account.role.toString()}
+              selected={account.role?.toString()}
               on:selected={(e) => {
                 change(account, Number(e.detail))
               }}

@@ -27,7 +27,7 @@
   }
 </script>
 
-{#if value}
+{#if value && Array.isArray(value.parents)}
   <div class="root" style:max-width={maxWidth}>
     <span class="names">
       {#each value.parents as parentInfo}

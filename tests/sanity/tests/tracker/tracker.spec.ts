@@ -12,6 +12,7 @@ import {
   toTime
 } from './tracker.utils'
 import { PlatformSetting, fillSearch, generateId } from '../utils'
+import { IssuesPage } from '../model/tracker/issues-page'
 test.use({
   storageState: PlatformSetting
 })
@@ -198,6 +199,8 @@ test('report-time-from-main-view', async ({ page }) => {
   await navigate(page)
 
   await page.click('text="Issues"')
+  const issuesPage = new IssuesPage(page)
+  await issuesPage.modelSelectorAll.click()
   await page.click('button:has-text("View")')
   await page.click('.ordering >> nth=0')
   await page.click('text="Modified date"')
@@ -313,6 +316,8 @@ test('sub-issue-draft', async ({ page }) => {
   await navigate(page)
   await createIssue(page, props)
   await page.click('text="Issues"')
+  const issuesPage = new IssuesPage(page)
+  await issuesPage.modelSelectorAll.click()
 
   await fillSearch(page, props.name)
 

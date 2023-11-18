@@ -6,6 +6,9 @@ import { CommonTrackerPage } from './common-tracker-page'
 export class IssuesPage extends CommonTrackerPage {
   readonly page: Page
   readonly pageHeader: Locator
+  readonly modelSelectorAll: Locator
+  readonly modelSelectorActive: Locator
+  readonly modelSelectorBacklog: Locator
   readonly buttonCreateNewIssue: Locator
   readonly inputPopupCreateNewIssueTitle: Locator
   readonly inputPopupCreateNewIssueDescription: Locator
@@ -25,7 +28,10 @@ export class IssuesPage extends CommonTrackerPage {
   constructor (page: Page) {
     super(page)
     this.page = page
-    this.pageHeader = page.locator('span[class*="header"]', { hasText: 'Issues' })
+    this.pageHeader = page.locator('div[class*="header"]', { hasText: 'Issues' })
+    this.modelSelectorAll = this.pageHeader.locator('text=All')
+    this.modelSelectorActive = this.pageHeader.locator('text=Active')
+    this.modelSelectorBacklog = this.pageHeader.locator('text=Backlog')
     this.buttonCreateNewIssue = page.locator('button > span', { hasText: 'New issue' })
     this.inputPopupCreateNewIssueTitle = page.locator('form[id="tracker:string:NewIssue"] input[type="text"]')
     this.inputPopupCreateNewIssueDescription = page.locator('form[id="tracker:string:NewIssue"] div.tiptap')
@@ -86,7 +92,7 @@ export class IssuesPage extends CommonTrackerPage {
       await this.selectMenuItem(this.page, data.component)
     }
     if (data.estimation != null) {
-      await this.buttonPopupCreateNewIssueEstimation.click({ delay: 100 })
+      await this.buttonPopupCreateNewIssueEstimation.click()
       await this.fillToSelectPopup(this.page, data.estimation)
     }
     if (data.milestone != null) {
