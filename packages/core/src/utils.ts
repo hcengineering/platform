@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { deepEqual } from 'fast-equals'
 import { Account, AnyAttribute, Class, Doc, DocData, DocIndexState, IndexKind, Obj, Ref, Space } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
@@ -342,31 +343,123 @@ export class RateLimitter {
 }
 
 export function mergeQueries<T extends Doc> (query1: DocumentQuery<T>, query2: DocumentQuery<T>): DocumentQuery<T> {
-  const q = Object.assign({}, query1)
-  for (const k in query2) {
-    if (!Object.keys(query1).includes(k)) {
-      Object.assign(q, { [k]: query2[k] })
-      continue
+  const keys1 = Object.keys(query1)
+  const keys2 = Object.keys(query2)
+
+  const query = Object.assign({}, query1)
+
+  for (const key of keys2) {
+    const value = keys1.includes(key) ? mergeField(query1[key], query2[key]) : query2[key]
+    if (value !== undefined) {
+      Object.assign(query, { [key]: value })
     }
-    Object.assign(q, { [k]: getInNiN(query1[k], query2[k]) })
-    if (isPredicate(query2[k]) || isPredicate(query1[k])) {
-      const toIterate = isPredicate(query2[k]) ? query2[k] : query1[k]
-      for (const x in toIterate) {
-        if (['$lt', '$gt'].includes(x)) {
-          const val1 = isPredicate(query1[k]) ? query1[k][x] : query1[k]
-          const val2 = isPredicate(query2[k]) ? query2[k][x] : query2[k]
-          if (x === '$lt') {
-            Object.assign(q, { [k]: { $lt: val1 < val2 ? val1 : val2 } })
-            continue
-          }
-          if (x === '$gt') {
-            Object.assign(q, { [k]: { $gt: val1 > val2 ? val1 : val2 } })
-          }
+  }
+
+  return query
+}
+
+function mergeField (field1: any, field2: any): Object | undefined {
+  // this is a special predicate that causes query never return any docs
+  // it is used in cases when queries intersection is empty
+  const never = { $in: [] }
+
+  const isPredicate1 = isPredicate(field1)
+  const isPredicate2 = isPredicate(field2)
+
+  if (isPredicate1 && isPredicate2) {
+    // $in, $nin, $eq are related fields so handle them separately here
+    const result = getInNiN(field1, field2)
+
+    const keys1 = Object.keys(field1)
+    const keys2 = Object.keys(field2)
+
+    for (const key of keys1) {
+      if (!keys2.includes(key)) {
+        Object.assign(result, { [key]: field1[key] })
+      } else {
+        const value = mergePredicateWithPredicate(key, field1[key], field2[key])
+        if (value !== undefined) {
+          Object.assign(result, { [key]: value })
         }
       }
     }
+
+    for (const key of keys2) {
+      if (!keys1.includes(key)) {
+        Object.assign(result, { [key]: field2[key] })
+      }
+    }
+
+    return Object.keys(result).length > 0 ? result : undefined
+  } else if (isPredicate1 || isPredicate2) {
+    // when one field is a predicate and the other is a simple value
+    // we need to ensure that the value matches predicate
+    const predicate = isPredicate1 ? field1 : field2
+    const value = isPredicate1 ? field2 : field1
+
+    for (const x in predicate) {
+      const result = mergePredicateWithValue(x, predicate[x], value)
+      if (result !== undefined) {
+        return result
+      }
+    }
+
+    // if we reached here, the value does not match the predicate
+    return never
+  } else {
+    // both are not predicates, can filter only when values are equal
+    return deepEqual(field1, field2) ? field1 : never
   }
-  return q
+}
+
+function mergePredicateWithPredicate (predicate: string, val1: any, val2: any): any | undefined {
+  if (val1 === undefined) return val2
+  if (val2 === undefined) return val1
+
+  switch (predicate) {
+    case '$in':
+    case '$nin':
+    case '$ne':
+      // ignore, handled separately
+      return undefined
+    case '$lt':
+      return val1 < val2 ? val1 : val2
+    case '$lte':
+      return val1 <= val2 ? val1 : val2
+    case '$gt':
+      return val1 > val2 ? val1 : val2
+    case '$gte':
+      return val1 >= val2 ? val1 : val2
+  }
+
+  // TODO we should properly support all available predicates here
+  // until then, fallback to the first predicate value
+
+  return val1
+}
+
+function mergePredicateWithValue (predicate: string, val1: any, val2: any): any | undefined {
+  switch (predicate) {
+    case '$in':
+      return Array.isArray(val1) && val1.includes(val2) ? val2 : undefined
+    case '$nin':
+      return Array.isArray(val1) && !val1.includes(val2) ? val2 : undefined
+    case '$lt':
+      return val2 < val1 ? val2 : undefined
+    case '$lte':
+      return val2 <= val1 ? val2 : undefined
+    case '$gt':
+      return val2 > val1 ? val2 : undefined
+    case '$gte':
+      return val2 >= val1 ? val2 : undefined
+    case '$ne':
+      return val1 !== val2 ? val2 : undefined
+  }
+
+  // TODO we should properly support all available predicates here
+  // until then, fallback to the non-predicate value
+
+  return val2
 }
 
 function getInNiN (query1: any, query2: any): Object {
@@ -385,12 +478,7 @@ function getInNiN (query1: any, query2: any): Object {
   const finalIn =
     aIn.length - bIn.length < 0 ? bIn.filter((c: any) => aIn.includes(c)) : aIn.filter((c: any) => bIn.includes(c))
   const finalNin = Array.from(new Set([...aNIn, ...bNIn]))
-  if (finalIn.length === 1 && finalNin.length === 0) {
-    return finalIn[0]
-  }
-  if (finalIn.length === 0 && finalNin.length === 1) {
-    return { $ne: finalNin[0] }
-  }
+
   const res: any = {}
   if (finalIn.length > 0) {
     res.$in = finalIn
@@ -398,6 +486,5 @@ function getInNiN (query1: any, query2: any): Object {
   if (finalNin.length > 0) {
     res.$nin = finalNin
   }
-  if (aIn.length === 1 && bIn.length === 1) return []
   return res
 }
