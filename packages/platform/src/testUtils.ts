@@ -21,6 +21,8 @@ export function makeLocalesTest (loader: Loader) {
   return async () => {
     const [target, ...rest] = await Promise.all(langs.map(loader))
     const matcher = makeLocaleMatcher(target)
-    rest.forEach((loc) => expect(loc).toEqual(matcher))
+    rest.forEach((loc) => {
+      expect(loc).toEqual(matcher)
+    })
   }
 }

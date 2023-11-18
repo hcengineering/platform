@@ -31,7 +31,7 @@
   const query = createQuery()
 
   let docs: DocUpdates[] = []
-  let map: Map<Ref<Account>, DocUpdates[]> = new Map()
+  let map = new Map<Ref<Account>, DocUpdates[]>()
   let accounts: PersonAccount[] = []
   let loading = true
 
@@ -112,7 +112,7 @@
 
   function changeSelected (index: number) {
     if (accounts[index] === undefined) {
-      if (accounts.length) {
+      if (accounts.length > 0) {
         if (index < accounts.length - 1) {
           selected++
         } else {

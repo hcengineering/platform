@@ -15,9 +15,9 @@
 
 import activity from '@hcengineering/activity'
 import type { Attachment, Photo, SavedAttachments } from '@hcengineering/attachment'
-import { Domain, IndexKind, Ref } from '@hcengineering/core'
+import { type Domain, IndexKind, type Ref } from '@hcengineering/core'
 import {
-  Builder,
+  type Builder,
   Index,
   Model,
   Prop,

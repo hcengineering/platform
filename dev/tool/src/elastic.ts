@@ -36,7 +36,7 @@ export async function rebuildElastic (
     await client.close()
   }
 
-  return await dropElastic(elasticUrl, workspaceId)
+  await dropElastic(elasticUrl, workspaceId)
 }
 
 async function dropElastic (elasticUrl: string, workspaceId: WorkspaceId): Promise<void> {

@@ -1,31 +1,31 @@
-import { chunterId, ChunterMessage, Comment, Reaction, ThreadMessage } from '@hcengineering/chunter'
-import contact, { Employee, PersonAccount, getName } from '@hcengineering/contact'
+import { chunterId, type ChunterMessage, type Comment, type Reaction, type ThreadMessage } from '@hcengineering/chunter'
+import contact, { type Employee, type PersonAccount, getName } from '@hcengineering/contact'
 import { employeeByIdStore } from '@hcengineering/contact-resources'
 import {
-  Class,
-  Client,
-  Doc,
+  type Class,
+  type Client,
+  type Doc,
   getCurrentAccount,
-  IdMap,
-  Obj,
-  Ref,
-  Space,
-  Timestamp,
-  TxOperations
+  type IdMap,
+  type Obj,
+  type Ref,
+  type Space,
+  type Timestamp,
+  type TxOperations
 } from '@hcengineering/core'
-import { Asset } from '@hcengineering/platform'
+import { type Asset } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
 import {
   getPanelURI,
   getLocation,
-  Location,
+  type Location,
   navigate,
-  ResolvedLocation,
+  type ResolvedLocation,
   getCurrentResolvedLocation
 } from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
-import { get, Unsubscriber, writable } from 'svelte/store'
+import { get, type Unsubscriber, writable } from 'svelte/store'
 
 import chunter from './plugin'
 

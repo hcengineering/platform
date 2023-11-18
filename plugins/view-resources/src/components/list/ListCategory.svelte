@@ -68,7 +68,7 @@
   export let level: number
   export let lookup: Lookup<Doc>
   export let _class: Ref<Class<Doc>>
-  export let config: (string | BuildModelKey)[]
+  export let config: Array<string | BuildModelKey>
   export let configurations: Record<Ref<Class<Doc>>, Viewlet['config']> | undefined
   export let configurationsVersion: number
   export let viewOptions: ViewOptions
@@ -103,7 +103,7 @@
 
   $: selection = $focusStore.provider?.selection
 
-  let selectedMatch: Ref<Doc>[] = []
+  let selectedMatch: Array<Ref<Doc>> = []
 
   $: if (itemProj !== undefined && itemProj.length > 0 && $selection !== undefined && $selection.length > 0) {
     // update limit if we have selected items.
@@ -379,7 +379,9 @@
       if (collapsed) {
         collapsed = false
         localStorage.setItem(categoryCollapseKey, 'false')
-        setTimeout(() => scroll(item), 50)
+        setTimeout(() => {
+          scroll(item)
+        }, 50)
       } else {
         listItems[pos]?.scroll()
       }
@@ -503,21 +505,33 @@
               checked={selectedObjectIdsSet.has(docObject._id)}
               last={i === limited.length - 1}
               lastCat={i === limited.length - 1 && (oneCat || lastCat)}
-              on:dragstart={(e) => dragStart(e, docObject, i)}
+              on:dragstart={(e) => {
+                dragStart(e, docObject, i)
+              }}
               on:dragenter={(e) => {
                 if (dragItemIndex !== undefined) {
                   e.stopPropagation()
                   e.preventDefault()
                 }
               }}
-              on:dragleave={(e) => dragItemLeave(e, i)}
-              on:dragover={(e) => dragover(e, i)}
+              on:dragleave={(e) => {
+                dragItemLeave(e, i)
+              }}
+              on:dragover={(e) => {
+                dragover(e, i)
+              }}
               on:drop={dropItemHandle}
               on:check={(ev) => dispatch('check', { docs: ev.detail.docs, value: ev.detail.value })}
-              on:contextmenu={(event) => handleMenuOpened(event, docObject)}
+              on:contextmenu={async (event) => {
+                await handleMenuOpened(event, docObject)
+              }}
               on:focus={() => {}}
-              on:mouseover={mouseAttractor(() => handleRowFocused(docObject))}
-              on:mouseenter={mouseAttractor(() => handleRowFocused(docObject))}
+              on:mouseover={mouseAttractor(() => {
+                handleRowFocused(docObject)
+              })}
+              on:mouseenter={mouseAttractor(() => {
+                handleRowFocused(docObject)
+              })}
               {props}
               {compactMode}
               on:on-mount={() => {

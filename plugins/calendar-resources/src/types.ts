@@ -1,4 +1,4 @@
-import { Timestamp } from '@hcengineering/core'
+import { type Timestamp } from '@hcengineering/core'
 
 export interface CalendarElement {
   id: string

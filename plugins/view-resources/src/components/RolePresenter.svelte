@@ -1,5 +1,5 @@
 <!--
-// 
+//
 // Copyright © 2021 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -25,7 +25,7 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  let mixins: Mixin<Doc>[] = []
+  let mixins: Array<Mixin<Doc>> = []
 
   $: if (value !== undefined) {
     const baseDomain = hierarchy.getDomain(value._class)

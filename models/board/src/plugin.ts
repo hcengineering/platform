@@ -14,13 +14,13 @@
 // limitations under the License.
 //
 
-import { Board, boardId } from '@hcengineering/board'
+import { type Board, boardId } from '@hcengineering/board'
 import board from '@hcengineering/board-resources/src/plugin'
 import type { Ref } from '@hcengineering/core'
-import { IntlString, mergeIds } from '@hcengineering/platform'
-import { ProjectType, Sequence } from '@hcengineering/task'
+import { type IntlString, mergeIds } from '@hcengineering/platform'
+import { type ProjectType, type Sequence } from '@hcengineering/task'
 import type { AnyComponent } from '@hcengineering/ui'
-import { Action, ViewAction, Viewlet, ViewletDescriptor } from '@hcengineering/view'
+import { type Action, type ViewAction, type Viewlet, type ViewletDescriptor } from '@hcengineering/view'
 
 export default mergeIds(boardId, board, {
   component: {

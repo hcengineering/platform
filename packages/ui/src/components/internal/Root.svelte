@@ -60,7 +60,7 @@
 
   addEventListener(PlatformEvent, async (_event, _status: Status) => {
     if (_status.code === platform.status.MaintenanceWarning) {
-      maintenanceTime = (_status.params as any).time
+      maintenanceTime = _status.params.time
     } else {
       status = _status
     }
@@ -140,14 +140,18 @@
           <button
             class="antiButton ghost jf-center bs-none no-focus resetIconSize statusButton square"
             style:color={'var(--theme-dark-color)'}
-            on:click={() => history.back()}
+            on:click={() => {
+              history.back()
+            }}
           >
             <IconArrowLeft size={'small'} />
           </button>
           <button
             class="antiButton ghost jf-center bs-none no-focus resetIconSize statusButton square"
             style:color={'var(--theme-dark-color)'}
-            on:click={() => history.forward()}
+            on:click={() => {
+              history.forward()
+            }}
           >
             <IconArrowRight size={'small'} />
           </button>

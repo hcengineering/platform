@@ -13,9 +13,16 @@
 // limitations under the License.
 //
 
-import { Attribute, DOMAIN_MODEL, DOMAIN_STATUS, Ref, Status, StatusCategory } from '@hcengineering/core'
+import {
+  type Attribute,
+  DOMAIN_MODEL,
+  DOMAIN_STATUS,
+  type Ref,
+  type Status,
+  type StatusCategory
+} from '@hcengineering/core'
 import { Model, Prop, TypeRef, TypeString, UX } from '@hcengineering/model'
-import { Asset, IntlString } from '@hcengineering/platform'
+import { type Asset, type IntlString } from '@hcengineering/platform'
 import core from './component'
 import { TDoc } from './core'
 

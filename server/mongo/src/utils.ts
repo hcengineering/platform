@@ -13,14 +13,16 @@
 // limitations under the License.
 //
 
-import { toWorkspaceString, WorkspaceId } from '@hcengineering/core'
-import { Db, MongoClient, MongoClientOptions } from 'mongodb'
+import { toWorkspaceString, type WorkspaceId } from '@hcengineering/core'
+import { type Db, MongoClient, type MongoClientOptions } from 'mongodb'
 
 let connections: MongoClient[] = []
 
 // Register mongo close on process exit.
 process.on('exit', () => {
-  shutdown().catch((err) => console.error(err))
+  shutdown().catch((err) => {
+    console.error(err)
+  })
 })
 
 /**
@@ -28,7 +30,7 @@ process.on('exit', () => {
  */
 export async function shutdown (): Promise<void> {
   for (const c of connections.values()) {
-    await (await c).close()
+    await c.close()
   }
   connections = []
 }

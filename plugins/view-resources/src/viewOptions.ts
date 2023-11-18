@@ -1,16 +1,16 @@
-import { Class, Doc, DocumentQuery, Ref, SortingOrder, Space } from '@hcengineering/core'
+import { type Class, type Doc, type DocumentQuery, type Ref, SortingOrder, type Space } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
-import { LiveQuery, createQuery, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
+import { type LiveQuery, createQuery, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
 import { locationToUrl, getCurrentResolvedLocation } from '@hcengineering/ui'
 import {
-  DropdownViewOption,
-  Groupping,
-  ToggleViewOption,
-  ViewOptionModel,
-  ViewOptions,
-  ViewOptionsModel,
-  Viewlet,
-  ViewletDescriptor
+  type DropdownViewOption,
+  type Groupping,
+  type ToggleViewOption,
+  type ViewOptionModel,
+  type ViewOptions,
+  type ViewOptionsModel,
+  type Viewlet,
+  type ViewletDescriptor
 } from '@hcengineering/view'
 import { get, writable } from 'svelte/store'
 import view from './plugin'

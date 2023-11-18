@@ -46,10 +46,12 @@
 <div class="flex-row-center gap-1-5 pr-1" class:pb-0-5={reminders.length}>
   <Icon icon={calendar.icon.Notifications} size="small" />
   <Button
-    label={reminders.length ? calendar.string.AddReminder : calendar.string.Reminders}
+    label={reminders.length > 0 ? calendar.string.AddReminder : calendar.string.Reminders}
     {disabled}
     kind={'ghost'}
-    on:click={(e) => addReminder(e)}
+    on:click={(e) => {
+      addReminder(e)
+    }}
   />
 </div>
 {#if reminders.length}
@@ -62,7 +64,9 @@
           on:edit={(event) => {
             if (event.detail) edit(event.detail, reminder, i)
           }}
-          on:remove={() => remove(i)}
+          on:remove={() => {
+            remove(i)
+          }}
         />
       {/each}
       <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
@@ -86,7 +90,9 @@
         on:edit={(event) => {
           if (event.detail) edit(event.detail, reminders[reminders.length - 1], reminders.length - 1)
         }}
-        on:remove={() => remove(reminders.length - 1)}
+        on:remove={() => {
+          remove(reminders.length - 1)
+        }}
       />
     {:else}
       {#each reminders as reminder, i}
@@ -96,7 +102,9 @@
           on:edit={(event) => {
             if (event.detail) edit(event.detail, reminder, i)
           }}
-          on:remove={() => remove(i)}
+          on:remove={() => {
+            remove(i)
+          }}
         />
       {/each}
     {/if}

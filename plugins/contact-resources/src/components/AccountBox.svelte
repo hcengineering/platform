@@ -39,7 +39,7 @@
     hierarchy
   ) as PersonAccount[]
 
-  let map: Map<Ref<Person>, Ref<Account>> = new Map()
+  let map = new Map<Ref<Person>, Ref<Account>>()
   $: map = new Map(accounts.map((p) => [p.person, p._id]))
 
   $: employees = accounts.map((p) => p.person)

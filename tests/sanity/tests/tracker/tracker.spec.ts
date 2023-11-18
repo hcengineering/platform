@@ -139,13 +139,17 @@ test('report-time-from-issue-card', async ({ page }) => {
     const time = values[random]
     const name = getIssueName()
     try {
-      await page.evaluate(() => localStorage.setItem('#platform.notification.timeout', '5000'))
+      await page.evaluate(() => {
+        localStorage.setItem('#platform.notification.timeout', '5000')
+      })
       await createIssue(page, { name, assignee, status })
       await page.waitForSelector(`text="${name}"`)
       await page.waitForSelector('text="View issue"')
       await page.click('text="View issue"')
     } finally {
-      await page.evaluate(() => localStorage.setItem('#platform.notification.timeout', '0'))
+      await page.evaluate(() => {
+        localStorage.setItem('#platform.notification.timeout', '0')
+      })
     }
 
     await page.click('#ReportedTimeEditor')
@@ -171,13 +175,17 @@ test('report-multiple-time-from-issue-card', async ({ page }) => {
   const name = getIssueName()
 
   try {
-    await page.evaluate(() => localStorage.setItem('#platform.notification.timeout', '5000'))
+    await page.evaluate(() => {
+      localStorage.setItem('#platform.notification.timeout', '5000')
+    })
     await createIssue(page, { name, assignee, status })
     await page.waitForSelector(`text="${name}"`)
     await page.waitForSelector('text="View issue"')
     await page.click('text="View issue"')
   } finally {
-    await page.evaluate(() => localStorage.setItem('#platform.notification.timeout', '0'))
+    await page.evaluate(() => {
+      localStorage.setItem('#platform.notification.timeout', '0')
+    })
   }
 
   await page.click('#ReportedTimeEditor')

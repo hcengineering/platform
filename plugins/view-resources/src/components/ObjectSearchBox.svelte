@@ -42,7 +42,7 @@
   import ObjectPresenter from './ObjectPresenter.svelte'
 
   export let _class: Ref<Class<Doc>>
-  export let excluded: Ref<Doc>[] | undefined = undefined
+  export let excluded: Array<Ref<Doc>> | undefined = undefined
   export let options: FindOptions<Doc> | undefined = undefined
   export let docQuery: DocumentQuery<Doc> | undefined = undefined
   export let label: IntlString
@@ -62,7 +62,7 @@
   export let id: string | undefined = undefined
   export let searchField: string = 'name'
   export let docProps: Record<string, any> = {}
-  export let allowCategory: Ref<ObjectSearchCategory>[] | undefined
+  export let allowCategory: Array<Ref<ObjectSearchCategory>> | undefined
 
   export let create: ObjectCreate | undefined = undefined
 
@@ -115,8 +115,6 @@
       )
     }
   }
-
-  $: hideIcon = size === 'x-large' || (size === 'large' && kind !== 'link')
 </script>
 
 <div {id} bind:this={container} class="min-w-0" class:w-full={width === '100%'} class:h-full={$$slots.content}>

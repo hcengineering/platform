@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-import { Ref } from '@hcengineering/core'
+import { type Ref } from '@hcengineering/core'
 import { hrId } from '@hcengineering/hr'
 import hr from '@hcengineering/hr-resources/src/plugin'
-import { NotificationGroup } from '@hcengineering/notification'
-import { IntlString, mergeIds } from '@hcengineering/platform'
-import { AnyComponent } from '@hcengineering/ui'
-import { Action, ActionCategory, ViewAction } from '@hcengineering/view'
+import { type NotificationGroup } from '@hcengineering/notification'
+import { type IntlString, mergeIds } from '@hcengineering/platform'
+import { type AnyComponent } from '@hcengineering/ui'
+import { type Action, type ActionCategory, type ViewAction } from '@hcengineering/view'
 
 export default mergeIds(hrId, hr, {
   string: {

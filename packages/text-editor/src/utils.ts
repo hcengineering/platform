@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { onStatelessParameters } from '@hocuspocus/provider'
-import { Attribute } from '@tiptap/core'
+import { type onStatelessParameters } from '@hocuspocus/provider'
+import { type Attribute } from '@tiptap/core'
 import * as Y from 'yjs'
 
 import { TiptapCollabProvider } from './provider'
@@ -97,6 +97,6 @@ export function getDataAttribute (
         [dataName]: attributes[name]
       }
     },
-    ...(options !== undefined ? options : {})
+    ...(options ?? {})
   }
 }

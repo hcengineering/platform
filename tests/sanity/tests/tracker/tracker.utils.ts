@@ -51,12 +51,16 @@ export async function fillIssueForm (page: Page, props: IssueProps): Promise<voi
   const af = 'form '
   const issueTitle = page.locator(af + '[placeholder="Issue\\ title"]')
   await issueTitle.fill(name)
-  await issueTitle.evaluate((e) => e.blur())
+  await issueTitle.evaluate((e) => {
+    e.blur()
+  })
 
   if (description !== undefined) {
     const pm = page.locator(af + '.ProseMirror')
     await pm.fill(description)
-    await pm.evaluate((e) => e.blur())
+    await pm.evaluate((e) => {
+      e.blur()
+    })
   }
   if (status !== undefined) {
     await page.click(af + '#status-editor')

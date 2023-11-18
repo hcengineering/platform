@@ -16,19 +16,26 @@
 
 import core, {
   AccountRole,
-  Class,
-  Client,
-  Doc,
-  Ref,
-  WithLookup,
+  type Class,
+  type Client,
+  type Doc,
+  type Ref,
+  type WithLookup,
   getCurrentAccount,
   matchQuery
 } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
-import { Action, ActionGroup, ActionIgnore, ViewAction, ViewActionInput, ViewContextType } from '@hcengineering/view'
+import {
+  type Action,
+  type ActionGroup,
+  type ActionIgnore,
+  type ViewAction,
+  type ViewActionInput,
+  type ViewContextType
+} from '@hcengineering/view'
 import view from './plugin'
-import { FocusSelection, SelectionStore } from './selection'
+import { type FocusSelection, type SelectionStore } from './selection'
 
 /**
  * @public

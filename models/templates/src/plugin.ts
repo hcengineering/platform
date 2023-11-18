@@ -14,15 +14,15 @@
 // limitations under the License.
 //
 
-import { Ref } from '@hcengineering/core'
-import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
-import { SettingsCategory } from '@hcengineering/setting'
+import { type Ref } from '@hcengineering/core'
+import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
+import { type SettingsCategory } from '@hcengineering/setting'
 import { templatesId } from '@hcengineering/templates'
 import templates from '@hcengineering/templates-resources/src/plugin'
 
-import { RefInputAction, RefInputActionItem } from '@hcengineering/model-text-editor'
+import { type RefInputAction, type RefInputActionItem } from '@hcengineering/model-text-editor'
 import type { AnyComponent } from '@hcengineering/ui'
-import { Action, ActionCategory } from '@hcengineering/view'
+import { type Action, type ActionCategory } from '@hcengineering/view'
 
 export default mergeIds(templatesId, templates, {
   ids: {

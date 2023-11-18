@@ -20,7 +20,7 @@
 
   const client = getClient()
 
-  let tabs: { component: AnyComponent; label: IntlString; props: any }[] | undefined
+  let tabs: { component: AnyComponent, label: IntlString, props: any }[] | undefined
 
   client
     .findAll(contact.class.ContactsTab, {})

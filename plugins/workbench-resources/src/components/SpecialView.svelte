@@ -27,14 +27,14 @@
   export let createComponent: AnyComponent | undefined
   export let createComponentProps: Record<string, any> = {}
   export let isCreationDisabled = false
-  export let descriptors: Ref<ViewletDescriptor>[] | undefined = undefined
+  export let descriptors: Array<Ref<ViewletDescriptor>> | undefined = undefined
   export let baseQuery: DocumentQuery<Doc> | undefined = undefined
 
   let search = ''
   let viewlet: WithLookup<Viewlet> | undefined
 
   let preference: ViewletPreference | undefined
-  let viewlets: WithLookup<Viewlet>[] = []
+  let viewlets: Array<WithLookup<Viewlet>> = []
   let viewOptions: ViewOptions | undefined
 
   $: query = { ...(baseQuery ?? {}), ...(viewlet?.baseQuery ?? {}) }
@@ -69,7 +69,9 @@
         label={createLabel}
         kind={'primary'}
         disabled={isCreationDisabled}
-        on:click={() => showCreateDialog()}
+        on:click={() => {
+          showCreateDialog()
+        }}
       />
     {/if}
   </div>

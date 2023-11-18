@@ -51,7 +51,7 @@
 
   let progress = false
 
-  let draftKey = objectId ? `${objectId}_attachments` : undefined
+  let draftKey = objectId != null ? `${objectId as string}_attachments` : undefined
   $: draftKey = objectId ? `${objectId}_attachments` : undefined
 
   const dispatch = createEventDispatcher()
@@ -144,7 +144,7 @@
     }
   }
 
-  async function createAttachment (file: File): Promise<{ file: string; type: string } | undefined> {
+  async function createAttachment (file: File): Promise<{ file: string, type: string } | undefined> {
     if (space === undefined || objectId === undefined || _class === undefined) return
     try {
       const uuid = await uploadFile(file)
@@ -249,10 +249,10 @@
 
   onDestroy(() => {
     if (!saved && !shouldSaveDraft) {
-      newAttachments.forEach(async (p) => {
+      newAttachments.forEach((p) => {
         const attachment = attachments.get(p)
         if (attachment !== undefined) {
-          await deleteAttachment(attachment)
+          void deleteAttachment(attachment)
         }
       })
     }
@@ -263,10 +263,10 @@
       DraftController.remove(draftKey)
     }
     if (removeFiles) {
-      newAttachments.forEach(async (p) => {
+      newAttachments.forEach((p) => {
         const attachment = attachments.get(p)
         if (attachment !== undefined) {
-          await deleteFile(attachment.file)
+          deleteFile(attachment.file)
         }
       })
     }
@@ -405,7 +405,7 @@
       on:focus
       on:open-document
       attachFile={async (file) => {
-        return createAttachment(file)
+        return await createAttachment(file)
       }}
     />
   </div>

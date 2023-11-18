@@ -12,20 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { Client, Doc, Ref, Space } from '@hcengineering/core'
+import { type Client, type Doc, type Ref, type Space } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
-import tracker, { trackerId, IssueDraft } from '@hcengineering/tracker'
-import { AnyComponent, Location } from '@hcengineering/ui'
+import tracker, { trackerId, type IssueDraft } from '@hcengineering/tracker'
+import { type AnyComponent, type Location } from '@hcengineering/ui'
 import {
-  CreateAggregationManagerFunc,
-  GetAllValuesFunc,
-  GrouppingManagerResource,
-  KeyFilter,
-  SortFunc,
-  ViewQueryAction,
-  Viewlet,
-  ViewletDescriptor
+  type CreateAggregationManagerFunc,
+  type GetAllValuesFunc,
+  type GrouppingManagerResource,
+  type KeyFilter,
+  type SortFunc,
+  type ViewQueryAction,
+  type Viewlet,
+  type ViewletDescriptor
 } from '@hcengineering/view'
 
 export default mergeIds(trackerId, tracker, {

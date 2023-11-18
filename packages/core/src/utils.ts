@@ -18,7 +18,7 @@ import { Account, AnyAttribute, Class, Doc, DocData, DocIndexState, IndexKind, O
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { isPredicate } from './predicate'
-import { FindResult, DocumentQuery } from './storage'
+import { DocumentQuery, FindResult } from './storage'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -263,7 +263,10 @@ export class AggregateValueData {
  * @public
  */
 export class AggregateValue {
-  constructor (readonly name: string | undefined, readonly values: AggregateValueData[]) {}
+  constructor (
+    readonly name: string | undefined,
+    readonly values: AggregateValueData[]
+  ) {}
 }
 
 /**
@@ -311,7 +314,7 @@ export class RateLimitter {
 
   constructor (readonly config: () => { rate: number, perSecond?: number }) {}
 
-  async exec<T, B extends Record<string, any> = {}>(op: (args?: B) => Promise<T>, args?: B): Promise<T> {
+  async exec<T, B extends Record<string, any> = any>(op: (args?: B) => Promise<T>, args?: B): Promise<T> {
     const processingId = `${this.idCounter++}`
     const cfg = this.config()
 
@@ -327,7 +330,7 @@ export class RateLimitter {
     }
   }
 
-  async add<T, B extends Record<string, any> = {}>(op: (args?: B) => Promise<T>, args?: B): Promise<void> {
+  async add<T, B extends Record<string, any> = any>(op: (args?: B) => Promise<T>, args?: B): Promise<void> {
     const cfg = this.config()
 
     if (this.processingQueue.size < cfg.rate) {
@@ -338,7 +341,7 @@ export class RateLimitter {
   }
 
   async waitProcessing (): Promise<void> {
-    await await Promise.race(this.processingQueue.values())
+    await Promise.race(this.processingQueue.values())
   }
 }
 
@@ -368,7 +371,7 @@ export function mergeQueries<T extends Doc> (query1: DocumentQuery<T>, query2: D
   return query
 }
 
-function mergeField (field1: any, field2: any): Object | undefined {
+function mergeField (field1: any, field2: any): any | undefined {
   // this is a special predicate that causes query never return any docs
   // it is used in cases when queries intersection is empty
   const never = { $in: [] }
@@ -473,7 +476,7 @@ function mergePredicateWithValue (predicate: string, val1: any, val2: any): any 
   return val2
 }
 
-function getInNiN (query1: any, query2: any): Object {
+function getInNiN (query1: any, query2: any): any {
   const aIn = typeof query1 === 'object' && '$in' in query1 ? query1.$in : undefined
   const bIn = typeof query2 === 'object' && '$in' in query2 ? query2.$in : undefined
   const aNIn =

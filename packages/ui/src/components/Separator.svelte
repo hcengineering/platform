@@ -35,8 +35,7 @@
   export let float: string | boolean = false // false - default state, true - hidden state for float, name - panel name for resize (float state)
 
   let sState: SeparatorState
-  $: sState =
-    typeof float === 'string' ? SeparatorState.FLOAT : float === true ? SeparatorState.HIDDEN : SeparatorState.NORMAL
+  $: sState = typeof float === 'string' ? SeparatorState.FLOAT : float ? SeparatorState.HIDDEN : SeparatorState.NORMAL
 
   const direction: 'horizontal' | 'vertical' = 'horizontal'
   let separators: SeparatedItem[] | null = null
@@ -54,14 +53,14 @@
   let correctedIndex: number = index
   let offset: number = 0
   let separatorsSizes: number[] | null = null
-  const separatorsWide: { start: number; end: number; total: number } = { start: 0, end: 0, total: 0 }
-  const containers: { minStart: number; minEnd: number; maxStart: number; maxEnd: number } = {
+  const separatorsWide: { start: number, end: number, total: number } = { start: 0, end: 0, total: 0 }
+  const containers: { minStart: number, minEnd: number, maxStart: number, maxEnd: number } = {
     minStart: -1,
     minEnd: -1,
     maxStart: -1,
     maxEnd: -1
   }
-  let parentSize: { start: number; end: number; size: number } | null = null
+  let parentSize: { start: number, end: number, size: number } | null = null
   let disabled: boolean = false
   let side: 'start' | 'end' | undefined = undefined
 

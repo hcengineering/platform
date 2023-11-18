@@ -127,7 +127,9 @@
         label={createLabel}
         kind={'primary'}
         disabled={isCreationDisabled}
-        on:click={() => showCreateDialog()}
+        on:click={() => {
+          showCreateDialog()
+        }}
       />
     {/if}
   </div>

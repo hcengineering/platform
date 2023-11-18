@@ -28,7 +28,7 @@
   export let query: DocumentQuery<Doc> = {}
   export let options: FindOptions<Doc> | undefined = undefined
   export let viewlet: Viewlet
-  export let config: (string | BuildModelKey)[]
+  export let config: Array<string | BuildModelKey>
 
   // Per _class configuration, if supported.
   export let configurations: Record<Ref<Class<Doc>>, Viewlet['config']> | undefined

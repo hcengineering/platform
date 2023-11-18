@@ -13,19 +13,19 @@
 // limitations under the License.
 //
 
-import { Unsubscriber, get } from 'svelte/store'
+import { type Unsubscriber, get } from 'svelte/store'
 
 import { getCurrentAccount } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import support, {
-  SupportClient,
-  SupportStatusCallback,
-  SupportSystem,
-  SupportWidget,
-  SupportWidgetConfig
+  type SupportClient,
+  type SupportStatusCallback,
+  type SupportSystem,
+  type SupportWidget,
+  type SupportWidgetConfig
 } from '@hcengineering/support'
 import { location, themeStore } from '@hcengineering/ui'
-import { createQuery, LiveQuery, getClient } from '@hcengineering/presentation'
+import { createQuery, type LiveQuery, getClient } from '@hcengineering/presentation'
 
 class SupportClientImpl implements SupportClient {
   private readonly supportSystem: SupportSystem
@@ -79,7 +79,9 @@ class SupportClientImpl implements SupportClient {
   }
 
   async showWidget (): Promise<void> {
-    await this.getWidget().then(async (widget) => await widget.showWidget())
+    await this.getWidget().then(async (widget) => {
+      await widget.showWidget()
+    })
   }
 
   async hideWidget (): Promise<void> {
@@ -87,7 +89,9 @@ class SupportClientImpl implements SupportClient {
   }
 
   async toggleWidget (): Promise<void> {
-    await this.getWidget().then(async (widget) => await widget.toggleWidget())
+    await this.getWidget().then(async (widget) => {
+      await widget.toggleWidget()
+    })
   }
 
   private updateWidgetConfig (config: SupportWidgetConfig): void {
@@ -119,8 +123,12 @@ class SupportClientImpl implements SupportClient {
       const factory = await getResource(this.supportSystem.factory)
       this.widget = factory(
         this.config,
-        (count: number) => this.handleUnreadCountChanged(count),
-        (visible: boolean) => this.handleVisibilityChanged(visible)
+        (count: number) => {
+          this.handleUnreadCountChanged(count)
+        },
+        (visible: boolean) => {
+          this.handleVisibilityChanged(visible)
+        }
       )
     }
     return await Promise.resolve(this.widget)

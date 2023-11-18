@@ -1,22 +1,22 @@
 import {
-  Class,
-  Client,
-  Doc,
-  DocumentQuery,
-  FindOptions,
-  FindResult,
-  Hierarchy,
-  ModelDb,
-  Ref,
-  Tx,
-  TxResult,
-  WithLookup,
+  type Class,
+  type Client,
+  type Doc,
+  type DocumentQuery,
+  type FindOptions,
+  type FindResult,
+  type Hierarchy,
+  type ModelDb,
+  type Ref,
+  type Tx,
+  type TxResult,
+  type WithLookup,
   toFindResult,
-  SearchQuery,
-  SearchOptions,
-  SearchResult
+  type SearchQuery,
+  type SearchOptions,
+  type SearchResult
 } from '@hcengineering/core'
-import { Resource } from '@hcengineering/platform'
+import { type Resource } from '@hcengineering/platform'
 
 /**
  * @public
@@ -157,7 +157,10 @@ export class PresentationPipelineImpl implements PresentationPipeline {
  * @public
  */
 export abstract class BasePresentationMiddleware {
-  constructor (protected readonly client: Client, readonly next?: PresentationMiddleware) {}
+  constructor (
+    protected readonly client: Client,
+    readonly next?: PresentationMiddleware
+  ) {}
 
   async provideNotifyTx (tx: Tx): Promise<void> {
     await this.next?.notifyTx(tx)
@@ -266,7 +269,7 @@ export class OptimizeQueryMiddleware extends BasePresentationMiddleware implemen
   }
 
   async close (): Promise<void> {
-    return await this.provideClose()
+    await this.provideClose()
   }
 
   async tx (tx: Tx): Promise<TxResult> {

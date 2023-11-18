@@ -94,7 +94,7 @@
       _id = filtered[index]?.attachedTo
       dispatch('change', filtered[index])
       markAsRead(index)
-    } else if (filtered.length) {
+    } else if (filtered.length > 0) {
       if (index < filtered.length - 1) {
         selected++
       } else {

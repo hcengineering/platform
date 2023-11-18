@@ -32,7 +32,10 @@ import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/s
  * @public
  */
 export abstract class BaseMiddleware {
-  constructor (protected readonly storage: ServerStorage, protected readonly next?: Middleware) {}
+  constructor (
+    protected readonly storage: ServerStorage,
+    protected readonly next?: Middleware
+  ) {}
 
   async findAll<T extends Doc>(
     ctx: SessionContext,

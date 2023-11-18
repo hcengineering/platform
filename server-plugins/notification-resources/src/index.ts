@@ -346,7 +346,7 @@ export async function getDocCollaborators (
   mixin: ClassCollaborators,
   control: TriggerControl
 ): Promise<Ref<Account>[]> {
-  const collaborators: Set<Ref<Account>> = new Set()
+  const collaborators = new Set<Ref<Account>>()
   for (const field of mixin.fields) {
     const value = (doc as any)[field]
     const newCollaborators = await getKeyCollaborators(doc, value, field, control)
@@ -820,7 +820,7 @@ async function getNewCollaborators (
   doc: Doc,
   control: TriggerControl
 ): Promise<Ref<Account>[]> {
-  const newCollaborators: Set<Ref<Account>> = new Set()
+  const newCollaborators = new Set<Ref<Account>>()
   if (ops.$push !== undefined) {
     for (const key in ops.$push) {
       if (mixin.fields.includes(key)) {

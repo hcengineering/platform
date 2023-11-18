@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import login, { LoginInfo, Workspace, WorkspaceLoginInfo } from '@hcengineering/login'
+import login, { type LoginInfo, type Workspace, type WorkspaceLoginInfo } from '@hcengineering/login'
 import {
   OK,
   PlatformError,
-  Status,
+  type Status,
   getMetadata,
   setMetadata,
   unknownError,
@@ -25,7 +25,7 @@ import {
 } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 import {
-  Location,
+  type Location,
   fetchMetadataLocalStorage,
   getCurrentLocation,
   navigate,

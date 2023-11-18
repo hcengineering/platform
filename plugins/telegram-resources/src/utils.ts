@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import contact, { Employee, PersonAccount } from '@hcengineering/contact'
+import contact, { type Employee, type PersonAccount } from '@hcengineering/contact'
 import { employeeByIdStore, getContactChannel } from '@hcengineering/contact-resources'
-import { Ref, getCurrentAccount } from '@hcengineering/core'
+import { type Ref, getCurrentAccount } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import setting from '@hcengineering/setting'
-import { TemplateDataProvider } from '@hcengineering/templates'
+import { type TemplateDataProvider } from '@hcengineering/templates'
 import { get } from 'svelte/store'
 
 export async function getCurrentEmployeeTG (): Promise<string | undefined> {

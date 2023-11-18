@@ -66,7 +66,7 @@
   }
 
   function escapeClose () {
-    if (componentInstance && componentInstance.canClose) {
+    if (componentInstance?.canClose) {
       if (!componentInstance.canClose()) return
     }
     _close(undefined)
@@ -96,7 +96,7 @@
   }
 
   const handleOutsideClick = (): void => {
-    if (componentInstance && componentInstance.onOutsideClick) {
+    if (componentInstance?.onOutsideClick) {
       componentInstance.onOutsideClick()
     }
   }
@@ -144,7 +144,7 @@
 />
 
 <div
-  class="popup {testing ? 'endShow' : showing === undefined ? 'endShow' : showing === false ? 'preShow' : 'startShow'}"
+  class="popup {testing ? 'endShow' : showing === undefined ? 'endShow' : !showing ? 'preShow' : 'startShow'}"
   class:testing
   class:anim={(element === 'float' || element === 'centered') && !testing}
   bind:this={modalHTML}
@@ -174,7 +174,9 @@
     on:update={(ev) => {
       _update(ev.detail)
     }}
-    on:close={(ev) => _close(ev?.detail)}
+    on:close={(ev) => {
+      _close(ev?.detail)
+    }}
     on:fullsize={() => {
       fullSize = !fullSize
       fitPopup(modalHTML, element, contentPanel)

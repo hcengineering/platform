@@ -29,7 +29,7 @@
   const client = getClient()
 
   async function addCard (title: string) {
-    const newCardId = generateId() as Ref<BoardCard>
+    const newCardId = generateId()
 
     const sequence = await client.findOne(task.class.Sequence, { attachedTo: board.class.Card })
     if (sequence === undefined) {
@@ -52,22 +52,22 @@
       dueDate: null
     }
 
-    return client.addCollection(board.class.Card, space, space, board.class.Board, 'cards', value, newCardId)
+    return await client.addCollection(board.class.Card, space, space, board.class.Board, 'cards', value, newCardId)
   }
 
   async function addCards (title: string, checkNewLine: boolean = false) {
     onClose()
     if (!checkNewLine) {
-      return addCard(title.replace('\n', ' '))
+      return await addCard(title.replace('\n', ' '))
     }
 
     const splittedTitle = title.split('\n')
 
     if (splittedTitle.length === 1) {
-      return addCard(splittedTitle[0])
+      return await addCard(splittedTitle[0])
     }
 
-    return new Promise<'single' | 'multiple' | 'close'>((resolve) => {
+    return await new Promise<'single' | 'multiple' | 'close'>((resolve) => {
       const popupOpts = {
         onAddSingle: () => {
           popup.close()
@@ -84,7 +84,9 @@
         cardsNumber: splittedTitle.length
       }
 
-      const popup = showPopup(AddMultipleCardsPopup, popupOpts, anchorRef, () => resolve('close'))
+      const popup = showPopup(AddMultipleCardsPopup, popupOpts, anchorRef, () => {
+        resolve('close')
+      })
     }).then((value) => {
       if (value === 'single' || value === 'close') {
         return addCard(title.replace('\n', ' ')).then((res) => {

@@ -14,12 +14,12 @@
 //
 
 import {
-  DecorationWithType,
-  Editor,
+  type DecorationWithType,
+  type Editor,
   NodeView,
-  NodeViewProps,
-  NodeViewRenderer,
-  NodeViewRendererOptions
+  type NodeViewProps,
+  type NodeViewRenderer,
+  type NodeViewRendererOptions
 } from '@tiptap/core'
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import type { ComponentType, SvelteComponent } from 'svelte'
@@ -34,9 +34,7 @@ export interface SvelteNodeViewRendererOptions extends NodeViewRendererOptions {
   componentProps?: Record<string, any>
 }
 
-export type SvelteNodeViewProps = NodeViewProps & {
-  [key: string]: any
-}
+export type SvelteNodeViewProps = NodeViewProps & Record<string, any>
 
 export type SvelteNodeViewComponent = typeof SvelteComponent | ComponentType
 
@@ -57,8 +55,12 @@ class SvelteNodeView extends NodeView<SvelteNodeViewComponent, Editor, SvelteNod
       selected: false,
       extension: this.extension,
       getPos: () => this.getPos(),
-      updateAttributes: (attributes = {}) => this.updateAttributes(attributes),
-      deleteNode: () => this.deleteNode(),
+      updateAttributes: (attributes = {}) => {
+        this.updateAttributes(attributes)
+      },
+      deleteNode: () => {
+        this.deleteNode()
+      },
       ...(this.options.componentProps ?? {})
     }
 

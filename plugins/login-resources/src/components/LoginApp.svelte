@@ -62,13 +62,15 @@
     'confirmationSend'
   ]
   onDestroy(
-    location.subscribe(async (loc) => {
-      page = loc.path[1] ?? (token ? 'selectWorkspace' : 'login')
-      if (!pages.includes(page)) {
-        page = 'login'
-      }
+    location.subscribe((loc) => {
+      void (async (loc) => {
+        page = loc.path[1] ?? (token ? 'selectWorkspace' : 'login')
+        if (!pages.includes(page)) {
+          page = 'login'
+        }
 
-      navigateUrl = loc.query?.navigateUrl ?? undefined
+        navigateUrl = loc.query?.navigateUrl ?? undefined
+      })(loc)
     })
   )
 </script>
@@ -196,7 +198,9 @@
           rgba(163, 203, 255, 0.24) 90%
         )
         border-box;
-      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
       -webkit-mask-composite: xor;
       mask-composite: exclude;
       border-radius: 1rem;

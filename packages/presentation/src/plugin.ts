@@ -14,11 +14,16 @@
 // limitations under the License.
 //
 
-import { Class, Ref } from '@hcengineering/core'
+import { type Class, type Ref } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { PresentationMiddlewareFactory } from './pipeline'
-import { ComponentPointExtension, DocRules, DocCreateExtension, ObjectSearchCategory } from './types'
+import { type PresentationMiddlewareFactory } from './pipeline'
+import {
+  type ComponentPointExtension,
+  type DocRules,
+  type DocCreateExtension,
+  type ObjectSearchCategory
+} from './types'
 
 /**
  * @public

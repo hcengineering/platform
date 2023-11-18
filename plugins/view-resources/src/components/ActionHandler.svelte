@@ -1,14 +1,14 @@
 <!--
 // Copyright © 2022 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -38,7 +38,7 @@
   })
 
   let lastKey: KeyboardEvent | undefined
-  let sequences: Action<Doc, Record<string, any>>[] = []
+  let sequences: Array<Action<Doc, Record<string, any>>> = []
   let delayedAction: (() => Promise<void>) | undefined
   let timer: any | undefined
 
@@ -87,8 +87,8 @@
 
   function getSequences (
     key: KeyboardEvent,
-    currentActions: Action<Doc, Record<string, any>>[]
-  ): Action<Doc, Record<string, any>>[] {
+    currentActions: Array<Action<Doc, Record<string, any>>>
+  ): Array<Action<Doc, Record<string, any>>> {
     const res = currentActions.filter((p) => p.keyBinding?.find((p) => findKeySequence(p, key)))
     return res
   }
@@ -175,7 +175,8 @@
             sequences = []
             lastKey = undefined
             delayedAction = undefined
-            return await action(selectionDocs, evt, a.actionProps)
+            await action(selectionDocs, evt, a.actionProps)
+            return
           }
         }
       }
@@ -192,9 +193,12 @@
             lastKey = undefined
             sequences = []
             delayedAction = undefined
-            return await action(selectionDocs, evt, a.actionProps)
+            await action(selectionDocs, evt, a.actionProps)
+            return
           } else {
-            delayedAction = async () => await action(selectionDocs, evt, a.actionProps)
+            delayedAction = async () => {
+              await action(selectionDocs, evt, a.actionProps)
+            }
             found = true
           }
         }

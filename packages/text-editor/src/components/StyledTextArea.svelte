@@ -41,7 +41,6 @@
     textEditor.setEditable(editable)
   }
   const dispatch = createEventDispatcher()
-  let focused = false
 
   let needFocus = focus
 
@@ -70,6 +69,7 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="antiComponent styled-box focusable clear-mins"
   class:antiEmphasized={kind === 'emphasized'}
@@ -93,11 +93,7 @@
     {extensions}
     bind:content={rawValue}
     bind:this={textEditor}
-    on:focus={() => {
-      focused = true
-    }}
     on:blur={() => {
-      focused = false
       dispatch('value', rawValue)
       content = rawValue
     }}

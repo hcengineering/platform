@@ -95,13 +95,13 @@
         update.dueDate = allDay ? saveUTC(dueDate) : dueDate
       }
     }
-    if (deepEqual(object.participants, participants) === false) {
+    if (!deepEqual(object.participants, participants)) {
       update.participants = participants
     }
-    if (deepEqual(object.externalParticipants, externalParticipants) === false) {
+    if (!deepEqual(object.externalParticipants, externalParticipants)) {
       update.externalParticipants = externalParticipants
     }
-    if (deepEqual(object.reminders, reminders) === false) {
+    if (!deepEqual(object.reminders, reminders)) {
       update.reminders = reminders
     }
     if (rules !== (object as ReccuringEvent).rules) {

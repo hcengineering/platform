@@ -9,7 +9,7 @@
   export let _class: Ref<Class<Doc>>
   export let viewlet: WithLookup<Viewlet> | undefined
   export let viewletQuery: DocumentQuery<Viewlet> | undefined = undefined
-  export let viewlets: WithLookup<Viewlet>[] = []
+  export let viewlets: Array<WithLookup<Viewlet>> = []
   export let label: string
   export let search: string
   export let showLabelSelector = false

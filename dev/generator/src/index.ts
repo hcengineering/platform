@@ -62,8 +62,8 @@ program
   .option('-l, --lite', 'use same pdf and same account for applicant and candidates', false)
   .action(async (genType: string, workspace: string, productId: string, count: number, cmd) => {
     switch (genType) {
-      case 'recruit':
-        return await generateContacts(
+      case 'recruit': {
+        await generateContacts(
           transactorUrl,
           getWorkspaceId(workspace, productId),
           {
@@ -81,10 +81,14 @@ program
           },
           minio
         )
-      case 'issue':
-        return await generateIssues(transactorUrl, getWorkspaceId(workspace, productId), {
+        return
+      }
+      case 'issue': {
+        await generateIssues(transactorUrl, getWorkspaceId(workspace, productId), {
           count
         })
+        return
+      }
       default:
         console.error(`Expected types: recruit, issue. Got type: ${genType}`)
     }

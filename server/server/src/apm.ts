@@ -81,7 +81,7 @@ export class APMMeasureContext implements MeasureContext {
   }
 
   async error (err: any): Promise<void> {
-    return await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       this.agent.captureError(err, () => {
         resolve()
       })

@@ -34,7 +34,9 @@
     {
       _id
     },
-    (res) => ([integration] = res)
+    (res) => {
+      ;[integration] = res
+    }
   )
 
   let type: IntegrationType | undefined = undefined
@@ -46,7 +48,9 @@
       {
         _id: integration.type
       },
-      (res) => ([type] = res)
+      (res) => {
+        ;[type] = res
+      }
     )
 
   let title: string = ''

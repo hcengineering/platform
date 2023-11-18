@@ -13,7 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import chunter, { type ChunterSpace, type Message, type ThreadMessage } from '@hcengineering/chunter'
@@ -23,6 +22,7 @@
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
   import plugin from '../plugin'
   import ChannelPresenter from './ChannelPresenter.svelte'
   import DmPresenter from './DmPresenter.svelte'
@@ -40,7 +40,7 @@
   export let readOnly = false
 
   let parent: Message | undefined
-  let commentId = generateId() as Ref<ThreadMessage>
+  let commentId: Ref<ThreadMessage> = generateId()
 
   const notificationClient = NotificationClientImpl.getClient()
   const dispatch = createEventDispatcher()
@@ -65,7 +65,9 @@
       {
         _id: id
       },
-      (res) => (parent = res[0]),
+      (res) => {
+        parent = res[0]
+      },
       {
         lookup
       }

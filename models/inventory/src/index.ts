@@ -13,16 +13,16 @@
 // limitations under the License.
 //
 
-import { Domain, IndexKind, Ref } from '@hcengineering/core'
+import { type Domain, IndexKind, type Ref } from '@hcengineering/core'
 import activity from '@hcengineering/activity'
-import { Category, Product, Variant, inventoryId } from '@hcengineering/inventory'
-import { Builder, Collection, Index, Model, Prop, TypeRef, TypeString, UX } from '@hcengineering/model'
+import { type Category, type Product, type Variant, inventoryId } from '@hcengineering/inventory'
+import { type Builder, Collection, Index, Model, Prop, TypeRef, TypeString, UX } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import core, { TAttachedDoc } from '@hcengineering/model-core'
 import { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import setting from '@hcengineering/setting'
-import view, { Viewlet } from '@hcengineering/view'
+import view, { type Viewlet } from '@hcengineering/view'
 import chunter from '@hcengineering/model-chunter'
 import inventory from './plugin'
 

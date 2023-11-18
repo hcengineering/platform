@@ -1,21 +1,21 @@
 import core, {
-  Doc,
-  Ref,
-  AnyAttribute,
-  Class,
-  DocumentQuery,
-  FindOptions,
-  Client,
-  Tx,
-  TxResult,
-  FindResult,
-  Attribute,
+  type Doc,
+  type Ref,
+  type AnyAttribute,
+  type Class,
+  type DocumentQuery,
+  type FindOptions,
+  type Client,
+  type Tx,
+  type TxResult,
+  type FindResult,
+  type Attribute,
   Hierarchy,
-  RefTo,
+  type RefTo,
   generateId
 } from '@hcengineering/core'
-import { BasePresentationMiddleware, PresentationMiddleware } from '@hcengineering/presentation'
-import view, { AggregationManager } from '@hcengineering/view'
+import { BasePresentationMiddleware, type PresentationMiddleware } from '@hcengineering/presentation'
+import view, { type AggregationManager } from '@hcengineering/view'
 import { getResource } from '@hcengineering/platform'
 
 /**
@@ -57,8 +57,10 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
   }
 
   async close (): Promise<void> {
-    this.mgrs.forEach((mgr) => mgr.close())
-    return await this.provideClose()
+    this.mgrs.forEach((mgr) => {
+      mgr.close()
+    })
+    await this.provideClose()
   }
 
   async tx (tx: Tx): Promise<TxResult> {
@@ -112,7 +114,7 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
         options: finalOptions
       }
     }
-    return { unsubscribe: (await ret).unsubscribe }
+    return { unsubscribe: ret.unsubscribe }
   }
 
   private async getAggregationManager (_class: Ref<Class<Doc>>): Promise<AggregationManager | undefined> {
@@ -123,7 +125,9 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
       const mixin = h.classHierarchyMixin(_class, view.mixin.Aggregation)
       if (mixin?.createAggregationManager !== undefined) {
         const f = await getResource(mixin.createAggregationManager)
-        mgr = f(this.client, () => this.refreshSubscribers())
+        mgr = f(this.client, () => {
+          this.refreshSubscribers()
+        })
         this.mgrs.set(_class, mgr)
       }
     }

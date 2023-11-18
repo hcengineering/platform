@@ -15,11 +15,11 @@
 //
 
 import activity from '@hcengineering/activity'
-import { Channel } from '@hcengineering/contact'
-import { Class, Domain, IndexKind, Ref, Timestamp, Type } from '@hcengineering/core'
+import { type Channel } from '@hcengineering/contact'
+import { type Class, type Domain, IndexKind, type Ref, type Timestamp, type Type } from '@hcengineering/core'
 import {
   ArrOf,
-  Builder,
+  type Builder,
   Collection,
   Index,
   Model,

@@ -186,10 +186,10 @@
 
   onDestroy(() => {
     if (!saved && !shouldSaveDraft) {
-      newAttachments.forEach(async (p) => {
+      newAttachments.forEach((p) => {
         const attachment = attachments.get(p)
         if (attachment !== undefined) {
-          await deleteAttachment(attachment)
+          void deleteAttachment(attachment)
         }
       })
     }
@@ -198,10 +198,10 @@
   export function removeDraft (removeFiles: boolean) {
     draftController.remove()
     if (removeFiles) {
-      newAttachments.forEach(async (p) => {
+      newAttachments.forEach((p) => {
         const attachment = attachments.get(p)
         if (attachment !== undefined) {
-          await deleteFile(attachment.file)
+          void deleteFile(attachment.file)
         }
       })
     }

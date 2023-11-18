@@ -34,15 +34,15 @@
   // import Drag from './icons/Drag.svelte'
 
   onMount(() => {
-    getResource(login.function.GetWorkspaces).then(async (f) => {
+    void getResource(login.function.GetWorkspaces).then(async (f) => {
       const workspaces = await f()
       $workspacesStore = workspaces
     })
   })
 
-  $: doLogin($workspacesStore)
+  $: void doLogin($workspacesStore)
 
-  async function doLogin (ws: Workspace[]) {
+  async function doLogin (ws: Workspace[]): Promise<void> {
     const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
     await Promise.all(
       ws.map(async (p) => {
@@ -67,7 +67,7 @@
     return locationToUrl(loc)
   }
 
-  async function clickHandler (e: MouseEvent, ws: string) {
+  async function clickHandler (e: MouseEvent, ws: string): Promise<void> {
     if (!e.metaKey && !e.ctrlKey) {
       e.preventDefault()
       closePopup()
@@ -109,17 +109,22 @@
       ev.stopPropagation()
     }
   }
-
-  $: last = $workspacesStore.length
 </script>
 
 {#if $workspacesStore.length}
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="antiPopup" on:keydown={keyDown}>
     <div class="ap-space x2" />
     <div class="ap-scroll">
       <div class="ap-box">
         {#each $workspacesStore as ws, i}
-          <a class="stealth" href={getWorkspaceLink(ws)} on:click={(e) => clickHandler(e, ws.workspace)}>
+          <a
+            class="stealth"
+            href={getWorkspaceLink(ws)}
+            on:click={async (e) => {
+              await clickHandler(e, ws.workspace)
+            }}
+          >
             <button
               bind:this={btns[i]}
               class="ap-menuItem flex-row-center flex-grow"

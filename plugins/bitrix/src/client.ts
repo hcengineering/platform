@@ -7,7 +7,10 @@ import { BitrixResult } from './types'
  * Require a proper rate limiter to function properly.
  */
 export class BitrixClient {
-  constructor (readonly url: string, readonly rateLimiter: <T>(op: () => Promise<T>) => Promise<T>) {}
+  constructor (
+    readonly url: string,
+    readonly rateLimiter: <T>(op: () => Promise<T>) => Promise<T>
+  ) {}
 
   async call (method: string, params: any): Promise<BitrixResult> {
     return await this.rateLimiter(async () => {

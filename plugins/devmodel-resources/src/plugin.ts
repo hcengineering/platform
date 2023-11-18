@@ -15,8 +15,8 @@
 
 import devmodel, { devModelId } from '@hcengineering/devmodel'
 import { mergeIds } from '@hcengineering/platform'
-import { Ref } from '@hcengineering/core'
-import { Application } from '@hcengineering/workbench'
+import { type Ref } from '@hcengineering/core'
+import { type Application } from '@hcengineering/workbench'
 
 export default mergeIds(devModelId, devmodel, {
   ids: {

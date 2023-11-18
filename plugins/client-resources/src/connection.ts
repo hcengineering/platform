@@ -54,7 +54,10 @@ class RequestPromise {
   resolve!: (value?: any) => void
   reject!: (reason?: any) => void
   reconnect?: () => void
-  constructor (readonly method: string, readonly params: any[]) {
+  constructor (
+    readonly method: string,
+    readonly params: any[]
+  ) {
     this.promise = new Promise((resolve, reject) => {
       this.resolve = resolve
       this.reject = reject
@@ -94,7 +97,9 @@ class Connection implements ClientConnection {
           s?.close()
         } else {
           console.log('no ping response from server. Closing socket.', s)
-          void s.then((s) => s.close())
+          void s.then((s) => {
+            s.close()
+          })
         }
         this.websocket = null
       }
@@ -110,7 +115,9 @@ class Connection implements ClientConnection {
     clearInterval(this.interval)
     if (this.websocket !== null) {
       if (this.websocket instanceof Promise) {
-        await this.websocket.then((ws) => ws.close())
+        await this.websocket.then((ws) => {
+          ws.close()
+        })
       } else {
         this.websocket.close(1000)
       }
@@ -381,12 +388,9 @@ class Connection implements ClientConnection {
       params: [tx],
       retry: async () => {
         if (tx._class === core.class.TxApplyIf) {
-          return (
-            (await (await this.findAll(core.class.Tx, { _id: (tx as TxApplyIf).txes[0]._id }, { limit: 1 })).length) ===
-            0
-          )
+          return (await this.findAll(core.class.Tx, { _id: (tx as TxApplyIf).txes[0]._id }, { limit: 1 })).length === 0
         }
-        return (await (await this.findAll(core.class.Tx, { _id: tx._id }, { limit: 1 })).length) === 0
+        return (await this.findAll(core.class.Tx, { _id: tx._id }, { limit: 1 })).length === 0
       }
     })
   }

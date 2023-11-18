@@ -1,5 +1,5 @@
 import { Extension, isTextSelection } from '@tiptap/core'
-import { BubbleMenuOptions } from '@tiptap/extension-bubble-menu'
+import { type BubbleMenuOptions } from '@tiptap/extension-bubble-menu'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { InlinePopupExtension } from './inlinePopup'
 

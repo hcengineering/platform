@@ -21,25 +21,25 @@ import WebSocket from 'ws'
 import { start } from '../server'
 
 import {
-  Account,
-  Class,
-  Doc,
-  DocumentQuery,
-  Domain,
-  FindOptions,
-  FindResult,
+  type Account,
+  type Class,
+  type Doc,
+  type DocumentQuery,
+  type Domain,
+  type FindOptions,
+  type FindResult,
   getWorkspaceId,
   Hierarchy,
   MeasureMetricsContext,
   ModelDb,
-  Ref,
-  ServerStorage,
-  Space,
+  type Ref,
+  type ServerStorage,
+  type Space,
   toFindResult,
-  Tx,
-  TxResult
+  type Tx,
+  type TxResult
 } from '@hcengineering/core'
-import { SessionContext } from '@hcengineering/server-core'
+import { type SessionContext } from '@hcengineering/server-core'
 import { ClientSession } from '../client'
 import { startHttpServer } from '../server_http'
 import { disableLogging } from '../types'

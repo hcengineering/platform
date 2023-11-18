@@ -15,7 +15,11 @@
 
 {#if pinnedIds.length > 0}
   <div class="bottom-divider over-underline pt-2 pb-2 container">
-    <div on:click={(ev) => showMessages(ev)}>
+    <div
+      on:click={(ev) => {
+        showMessages(ev)
+      }}
+    >
       <Label label={chunter.string.Pinned} />
       {pinnedIds.length}
     </div>

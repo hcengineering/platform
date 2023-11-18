@@ -607,7 +607,7 @@ export async function fixSkills (
 }
 
 function groupBy<T extends Doc> (docs: T[], key: string): Record<any, T[]> {
-  return docs.reduce((storage: { [key: string]: T[] }, item: T) => {
+  return docs.reduce((storage: Record<string, T[]>, item: T) => {
     const group = getObjectValue(key, item) ?? undefined
 
     storage[group] = storage[group] ?? []

@@ -1,14 +1,14 @@
 <!--
 // Copyright © 2022 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -20,12 +20,12 @@
   import { Button, Component, Icon, IconAdd, IconSize, Label, Loading } from '@hcengineering/ui'
   import view, { ObjectFactory } from '@hcengineering/view'
   import { flip } from 'svelte/animate'
-  import { SvelteComponentDev } from 'svelte/internal'
   import { getListItemPresenter, getObjectPresenter } from '../../utils'
+  import { SvelteComponent } from 'svelte'
 
   /*
   How to use:
-  
+
   We must add presenter for the "_class" via "ListItemPresenter" / "AttributePresenter"
   mixins or render the "object" slot to be able display the rows list.
 
@@ -58,7 +58,7 @@
   let areItemsloading = true
   let areItemsSorting = false
 
-  let presenter: typeof SvelteComponentDev | undefined
+  let presenter: typeof SvelteComponent | undefined
   let objectFactory: ObjectFactory | undefined
   let items: FindResult<Doc> | undefined
 
@@ -202,6 +202,7 @@
     <div class="flex-gap-1" class:flex-col={isVertical} class:flex={!isVertical} class:flex-wrap={!isVertical}>
       {#each items as item, index (item._id)}
         {@const isDraggable = isSortable && items.length > 1 && !areItemsSorting}
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
           class="item"
           class:column={isVertical}
@@ -210,9 +211,15 @@
           class:is-dragged-over-after={draggingIndex !== null && index === hoveringIndex && index > draggingIndex}
           draggable={isDraggable}
           animate:flip={{ duration: flipDuration }}
-          on:dragstart={(ev) => handleDragStart(ev, index)}
-          on:dragover={(ev) => handleDragOver(ev, index)}
-          on:drop={() => handleDrop(index)}
+          on:dragstart={(ev) => {
+            handleDragStart(ev, index)
+          }}
+          on:dragover={(ev) => {
+            handleDragOver(ev, index)
+          }}
+          on:drop={async () => {
+            await handleDrop(index)
+          }}
           on:dragend={resetDrag}
         >
           {#if $$slots.object}

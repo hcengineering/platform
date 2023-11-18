@@ -22,7 +22,7 @@
   interface Category {
     id: string
     label: IntlString
-    emojis: (string | undefined)[]
+    emojis: Array<string | undefined>
     icon: AnySvelteComponent
   }
 
@@ -30,7 +30,7 @@
 
   const regex = emojiRegex()
   const dispatch = createEventDispatcher()
-  const { currentFontSize } = getContext('fontsize') as { currentFontSize: string }
+  const { currentFontSize } = getContext<{ currentFontSize: string }>('fontsize')
   const emojiRowHeightPx = (currentFontSize === 'small-font' ? 14 : 16) * 2
 
   const categories: Category[] = [
@@ -105,7 +105,7 @@
 
   let currentCategory = categories[0]
 
-  function getEmojis (startCode: number, endCode: number, postfix?: number[]): (string | undefined)[] {
+  function getEmojis (startCode: number, endCode: number, postfix?: number[]): Array<string | undefined> {
     return [...Array(endCode - startCode + 1).keys()].map((v) => {
       const str = postfix ? String.fromCodePoint(v + startCode, ...postfix) : String.fromCodePoint(v + startCode)
       if ([...str.matchAll(regex)].length > 0) return str
@@ -149,7 +149,9 @@
         class="element"
         class:selected={currentCategory.id === category.id}
         use:tooltip={{ label: category.label }}
-        on:click={() => handleScrollToCategory(category.id)}
+        on:click={() => {
+          handleScrollToCategory(category.id)
+        }}
       >
         <svelte:component
           this={category.icon}

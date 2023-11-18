@@ -39,13 +39,17 @@
     icon={IconDownOutline}
     kind={'regular'}
     size={'medium'}
-    on:click={(evt) => next(evt, true)}
+    on:click={async (evt) => {
+      await next(evt, true)
+    }}
   />
   <Button
     focusIndex={10006}
     icon={IconUpOutline}
     kind={'regular'}
     size={'medium'}
-    on:click={(evt) => next(evt, false)}
+    on:click={async (evt) => {
+      await next(evt, false)
+    }}
   />
 {/if}

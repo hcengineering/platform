@@ -136,7 +136,9 @@
       return { id: p._id, label: p.label }
     })}
     label={hr.string.RequestType}
-    on:selected={(e) => typeSelected(e.detail)}
+    on:selected={(e) => {
+      typeSelected(e.detail)
+    }}
   />
   <AttachmentStyledBox
     bind:this={descriptionBox}

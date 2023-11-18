@@ -15,13 +15,13 @@
 //
 
 import {
-  AvatarProvider,
+  type AvatarProvider,
   AvatarType,
-  ChannelProvider,
-  Contact,
-  Employee,
-  Person,
-  PersonAccount,
+  type ChannelProvider,
+  type Contact,
+  type Employee,
+  type Person,
+  type PersonAccount,
   contactId,
   formatName,
   getFirstName,
@@ -29,22 +29,28 @@ import {
   getName
 } from '@hcengineering/contact'
 import {
-  Client,
-  Doc,
-  IdMap,
-  ObjQueryType,
-  Ref,
-  Timestamp,
-  TxOperations,
+  type Client,
+  type Doc,
+  type IdMap,
+  type ObjQueryType,
+  type Ref,
+  type Timestamp,
+  type TxOperations,
   getCurrentAccount,
   toIdMap
 } from '@hcengineering/core'
-import notification, { DocUpdateTx, DocUpdates } from '@hcengineering/notification'
+import notification, { type DocUpdateTx, type DocUpdates } from '@hcengineering/notification'
 import { getResource } from '@hcengineering/platform'
 import { createQuery, getClient } from '@hcengineering/presentation'
-import { TemplateDataProvider } from '@hcengineering/templates'
-import { Location, ResolvedLocation, TabItem, getCurrentResolvedLocation, getPanelURI } from '@hcengineering/ui'
-import view, { Filter } from '@hcengineering/view'
+import { type TemplateDataProvider } from '@hcengineering/templates'
+import {
+  type Location,
+  type ResolvedLocation,
+  type TabItem,
+  getCurrentResolvedLocation,
+  getPanelURI
+} from '@hcengineering/ui'
+import view, { type Filter } from '@hcengineering/view'
 import { FilterQuery } from '@hcengineering/view-resources'
 import { derived, get, writable } from 'svelte/store'
 import contact from './plugin'
@@ -94,7 +100,7 @@ export async function filterChannelHasNewMessagesResult (
   filter: Filter,
   onUpdate: () => void
 ): Promise<ObjQueryType<any>> {
-  const docUpdates = await get((await getResource(notification.function.GetNotificationClient))().docUpdatesStore)
+  const docUpdates = get((await getResource(notification.function.GetNotificationClient))().docUpdatesStore)
   const result = await getRefs(filter, onUpdate, undefined, docUpdates)
   return { $in: result }
 }
@@ -306,9 +312,13 @@ function fillStores (): void {
     })
 
     const providerQuery = createQuery(true)
-    providerQuery.query(contact.class.ChannelProvider, {}, (res) => channelProviders.set(res))
+    providerQuery.query(contact.class.ChannelProvider, {}, (res) => {
+      channelProviders.set(res)
+    })
   } else {
-    setTimeout(() => fillStores(), 50)
+    setTimeout(() => {
+      fillStores()
+    }, 50)
   }
 }
 

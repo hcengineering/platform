@@ -14,12 +14,27 @@
 //
 
 // To help typescript locate view plugin properly
-import { Board, boardId, Card, CardCover, CommonBoardPreference, MenuPage } from '@hcengineering/board'
+import {
+  type Board,
+  boardId,
+  type Card,
+  type CardCover,
+  type CommonBoardPreference,
+  type MenuPage
+} from '@hcengineering/board'
 import type { Employee } from '@hcengineering/contact'
-import { DOMAIN_MODEL, IndexKind, Markup, Ref, Status, Timestamp, Type } from '@hcengineering/core'
+import {
+  DOMAIN_MODEL,
+  IndexKind,
+  type Markup,
+  type Ref,
+  type Status,
+  type Timestamp,
+  type Type
+} from '@hcengineering/core'
 import {
   ArrOf,
-  Builder,
+  type Builder,
   Index,
   Model,
   Prop,
@@ -36,8 +51,8 @@ import preference, { TPreference } from '@hcengineering/model-preference'
 import tags from '@hcengineering/model-tags'
 import task, { actionTemplates as taskActionTemplates, TProject, TTask } from '@hcengineering/model-task'
 import view, { actionTemplates, createAction, actionTemplates as viewTemplates } from '@hcengineering/model-view'
-import workbench, { Application } from '@hcengineering/model-workbench'
-import { IntlString } from '@hcengineering/platform'
+import workbench, { type Application } from '@hcengineering/model-workbench'
+import { type IntlString } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 import board from './plugin'
 

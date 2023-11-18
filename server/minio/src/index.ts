@@ -59,7 +59,7 @@ export class MinioService {
   async list (workspaceId: WorkspaceId, prefix?: string): Promise<MinioWorkspaceItem[]> {
     try {
       const items = new Map<string, MinioWorkspaceItem>()
-      const list = await this.client.listObjects(getBucketId(workspaceId), prefix, true)
+      const list = this.client.listObjects(getBucketId(workspaceId), prefix, true)
       await new Promise((resolve) => {
         list.on('data', (data) => {
           if (data.name !== undefined) {

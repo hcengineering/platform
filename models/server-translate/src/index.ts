@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import { Builder, Model, Prop, TypeString, UX } from '@hcengineering/model'
+import { type Builder, Model, Prop, TypeString, UX } from '@hcengineering/model'
 import { TConfiguration } from '@hcengineering/model-core'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 
 import core, { DOMAIN_CONFIGURATION } from '@hcengineering/core'
-import translate, { TranslateConfiguration } from '@hcengineering/translate/src/plugin'
+import translate, { type TranslateConfiguration } from '@hcengineering/translate/src/plugin'
 
 export { translateId } from '@hcengineering/translate/src/plugin'
 

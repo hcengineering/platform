@@ -131,7 +131,9 @@
         <div
           class="over-underline text-sm caption-color"
           style:pointer-events={dragover ? 'none' : 'all'}
-          on:click={() => inputFile.click()}
+          on:click={() => {
+            inputFile.click()
+          }}
         >
           <Label label={attachment.string.UploadDropFilesHere} />
         </div>

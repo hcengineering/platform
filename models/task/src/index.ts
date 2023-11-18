@@ -16,18 +16,18 @@
 import type { Employee, Person } from '@hcengineering/contact'
 import contact from '@hcengineering/contact'
 import {
-  Class,
+  type Class,
   DOMAIN_MODEL,
-  Doc,
-  Domain,
+  type Doc,
+  type Domain,
   IndexKind,
-  Ref,
-  Status,
-  StatusCategory,
-  Timestamp
+  type Ref,
+  type Status,
+  type StatusCategory,
+  type Timestamp
 } from '@hcengineering/core'
 import {
-  Builder,
+  type Builder,
   Collection,
   Hidden,
   Index,
@@ -45,21 +45,21 @@ import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
 import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@hcengineering/model-core'
 import view, { createAction, template, actionTemplates as viewTemplates } from '@hcengineering/model-view'
-import { IntlString } from '@hcengineering/platform'
+import { type IntlString } from '@hcengineering/platform'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import tags from '@hcengineering/tags'
 import {
-  KanbanCard,
-  Project,
-  ProjectStatus,
-  ProjectType,
-  ProjectTypeCategory,
-  Sequence,
-  Task,
-  TodoItem
+  type KanbanCard,
+  type Project,
+  type ProjectStatus,
+  type ProjectType,
+  type ProjectTypeCategory,
+  type Sequence,
+  type Task,
+  type TodoItem
 } from '@hcengineering/task'
 import type { AnyComponent } from '@hcengineering/ui'
-import { ViewAction } from '@hcengineering/view'
+import { type ViewAction } from '@hcengineering/view'
 import task from './plugin'
 
 export { taskId } from '@hcengineering/task'

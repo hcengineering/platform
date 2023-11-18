@@ -17,10 +17,10 @@ import activity from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
 import type { PersonAccount } from '@hcengineering/contact'
 import contact from '@hcengineering/contact'
-import { Domain, IndexKind, Ref, Tx } from '@hcengineering/core'
+import { type Domain, IndexKind, type Ref, type Tx } from '@hcengineering/core'
 import {
   ArrOf,
-  Builder,
+  type Builder,
   Collection,
   Index,
   Mixin,
@@ -36,8 +36,13 @@ import core, { TAttachedDoc, TClass } from '@hcengineering/model-core'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import view from '@hcengineering/model-view'
 import notification from '@hcengineering/notification'
-import { Request, RequestDecisionComment, RequestPresenter, RequestStatus } from '@hcengineering/request'
-import { AnyComponent } from '@hcengineering/ui'
+import {
+  type Request,
+  type RequestDecisionComment,
+  type RequestPresenter,
+  type RequestStatus
+} from '@hcengineering/request'
+import { type AnyComponent } from '@hcengineering/ui'
 import request from './plugin'
 
 export { requestId } from '@hcengineering/request'

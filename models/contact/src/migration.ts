@@ -1,11 +1,11 @@
 //
 
-import { Class, DOMAIN_TX, Doc, Domain, Ref, TxOperations } from '@hcengineering/core'
+import { type Class, DOMAIN_TX, type Doc, type Domain, type Ref, TxOperations } from '@hcengineering/core'
 import {
-  MigrateOperation,
-  MigrationClient,
-  MigrationUpgradeClient,
-  ModelLogger,
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient,
+  type ModelLogger,
   tryMigrate
 } from '@hcengineering/model'
 import { DOMAIN_COMMENT } from '@hcengineering/model-chunter'

@@ -14,41 +14,41 @@
 // limitations under the License.
 //
 import core, {
-  Client,
-  ClientConnection,
+  type Client,
+  type ClientConnection,
   createClient,
-  Doc,
-  DocChunk,
-  Domain,
+  type Doc,
+  type DocChunk,
+  type Domain,
   DOMAIN_MODEL,
   DOMAIN_TX,
   generateId,
   getWorkspaceId,
   Hierarchy,
-  MeasureContext,
+  type MeasureContext,
   MeasureMetricsContext,
   ModelDb,
-  Ref,
+  type Ref,
   SortingOrder,
-  Space,
+  type Space,
   TxOperations,
-  WorkspaceId
+  type WorkspaceId
 } from '@hcengineering/core'
 import {
-  ContentTextAdapter,
+  type ContentTextAdapter,
   createNullStorageFactory,
   createServerStorage,
-  DbAdapter,
-  DbConfiguration,
+  type DbAdapter,
+  type DbConfiguration,
   DummyDbAdapter,
   DummyFullTextAdapter,
-  FullTextAdapter
+  type FullTextAdapter
 } from '@hcengineering/server-core'
-import { MongoClient } from 'mongodb'
+import { type MongoClient } from 'mongodb'
 import { createMongoAdapter, createMongoTxAdapter } from '..'
 import { getMongoClient, shutdown } from '../utils'
 import { genMinModel } from './minmodel'
-import { createTaskModel, Task, TaskComment, taskPlugin } from './tasks'
+import { createTaskModel, type Task, type TaskComment, taskPlugin } from './tasks'
 
 const txes = genMinModel()
 
@@ -110,7 +110,7 @@ describe('mongo operations', () => {
     hierarchy = new Hierarchy()
     model = new ModelDb(hierarchy)
     for (const t of txes) {
-      await hierarchy.tx(t)
+      hierarchy.tx(t)
     }
     for (const t of txes) {
       await model.tx(t)
@@ -174,7 +174,7 @@ describe('mongo operations', () => {
         upload: async (domain: Domain, docs: Doc[]) => {},
         clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
         loadModel: async () => txes,
-        getAccount: async () => ({} as any)
+        getAccount: async () => ({}) as any
       }
       return st
     })
@@ -183,7 +183,7 @@ describe('mongo operations', () => {
   }
 
   beforeEach(async () => {
-    return await initDb()
+    await initDb()
   })
 
   it('check add', async () => {

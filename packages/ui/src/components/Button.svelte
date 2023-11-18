@@ -65,9 +65,8 @@
   export let adaptiveShrink: WidthType | null = null
   export let gap: 'medium' | 'large' = 'medium'
 
-  $: iconSize =
-    iconProps && iconProps.size !== undefined ? iconProps.size : size && size === 'inline' ? 'inline' : 'small'
-  $: iconRightSize = iconRightProps && iconRightProps.size !== undefined ? iconRightProps.size : 'x-small'
+  $: iconSize = iconProps?.size !== undefined ? iconProps.size : size && size === 'inline' ? 'inline' : 'small'
+  $: iconRightSize = iconRightProps?.size !== undefined ? iconRightProps.size : 'x-small'
   let iconOnly: boolean = false
   $: iconOnly =
     label === undefined &&

@@ -17,7 +17,7 @@
     relations: value.relations ?? [],
     isBlocking: isBlocking ?? []
   }
-  let isBlocking: { _id: Ref<Issue>; _class: Ref<Class<Doc>> }[] = []
+  let isBlocking: { _id: Ref<Issue>, _class: Ref<Class<Doc>> }[] = []
   $: query.query(value._class, { 'blockedBy._id': value._id }, (result) => {
     isBlocking = result.map(({ _id, _class }) => ({ _id, _class }))
   })
@@ -90,7 +90,7 @@
         relatedDocuments: [...relations.blockedBy, ...relations.isBlocking, ...relations.relations]
       },
       'top',
-      async (result: { type: keyof typeof relations; doc: Doc } | undefined) => {
+      async (result: { type: keyof typeof relations, doc: Doc } | undefined) => {
         if (!result) return
         await updateRelation(result.doc, result.type, '$pull', tracker.string.RemoveRelation)
       }

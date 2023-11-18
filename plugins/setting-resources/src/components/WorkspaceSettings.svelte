@@ -20,13 +20,14 @@
   import {
     Component,
     Label,
-    getCurrentResolvedLocation,
-    resolvedLocationStore,
-    navigate,
+    Location,
+    Scroller,
     Separator,
     defineSeparators,
-    settingsSeparators,
-    Scroller
+    getCurrentResolvedLocation,
+    navigate,
+    resolvedLocationStore,
+    settingsSeparators
   } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import CategoryElement from './CategoryElement.svelte'
@@ -44,7 +45,7 @@
     setting.class.WorkspaceSettingCategory,
     {},
     (res) => {
-      categories = account.role > AccountRole.User ? res : res.filter((p) => p.secured === false)
+      categories = account.role > AccountRole.User ? res : res.filter((p) => !p.secured)
       category = findCategory(categoryId)
     },
     { sort: { order: 1 } }
@@ -55,9 +56,11 @@
   }
 
   onDestroy(
-    resolvedLocationStore.subscribe(async (loc) => {
-      categoryId = loc.path[4]
-      category = findCategory(categoryId)
+    resolvedLocationStore.subscribe((loc) => {
+      void (async (loc: Location): Promise<void> => {
+        categoryId = loc.path[4]
+        category = findCategory(categoryId)
+      })(loc)
     })
   )
 

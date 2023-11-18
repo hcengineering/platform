@@ -1,15 +1,15 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021, 2023 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -17,8 +17,7 @@
   import { IntlString, translate } from '@hcengineering/platform'
   import { themeStore } from '@hcengineering/ui'
 
-  import { FocusPosition, mergeAttributes } from '@tiptap/core'
-  import { AnyExtension, Editor, Extension, HTMLContent } from '@tiptap/core'
+  import { AnyExtension, Editor, Extension, FocusPosition, mergeAttributes } from '@tiptap/core'
   import Placeholder from '@tiptap/extension-placeholder'
   import { Node as ProseMirrorNode } from '@tiptap/pm/model'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
@@ -26,19 +25,19 @@
   import textEditorPlugin from '../plugin'
   import { TextFormatCategory } from '../types'
 
-  import { defaultEditorAttributes } from './editor/editorProps'
-  import { defaultExtensions } from './extensions'
-  import { InlinePopupExtension } from './extension/inlinePopup'
-  import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
   import ImageStyleToolbar from './ImageStyleToolbar.svelte'
   import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
+  import { defaultEditorAttributes } from './editor/editorProps'
+  import { InlinePopupExtension } from './extension/inlinePopup'
+  import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
+  import { defaultExtensions } from './extensions'
 
   export let content: string = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let extensions: AnyExtension[] = []
   export let textFormatCategories: TextFormatCategory[] = []
   export let supportSubmit = true
-  export let editorAttributes: { [name: string]: string } = {}
+  export let editorAttributes: Record<string, string> = {}
   export let boundary: HTMLElement | undefined = undefined
 
   let element: HTMLElement
@@ -74,7 +73,7 @@
     editor.commands.clearContent(true)
   }
   export function insertText (text: string): void {
-    editor.commands.insertContent(text as HTMLContent)
+    editor.commands.insertContent(text)
   }
 
   let needFocus = false

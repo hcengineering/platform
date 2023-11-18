@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Resources } from '@hcengineering/platform'
+import { type Resources } from '@hcengineering/platform'
 import TxCreateRequest from './components/activity/TxCreateRequest.svelte'
 import RequestLabel from './components/activity/TxRequestLabel.svelte'
 import EditRequest from './components/EditRequest.svelte'

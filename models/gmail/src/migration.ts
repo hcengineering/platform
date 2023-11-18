@@ -14,7 +14,7 @@
 //
 
 import core, { TxOperations } from '@hcengineering/core'
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
 import gmail from './plugin'
 
 export const gmailOperation: MigrateOperation = {

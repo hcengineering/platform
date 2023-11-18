@@ -57,7 +57,9 @@
             isEditable
             {value}
             kind={'list'}
-            on:remove={(res) => removeTag(res.detail)}
+            on:remove={(res) => {
+              removeTag(res.detail)
+            }}
           />
         </div>
       {/each}

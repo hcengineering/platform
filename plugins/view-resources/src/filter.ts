@@ -1,19 +1,19 @@
 import core, {
-  AnyAttribute,
-  AttachedDoc,
-  Class,
-  Collection,
-  Doc,
-  FindResult,
-  Hierarchy,
-  ObjQueryType,
-  Ref,
-  RefTo
+  type AnyAttribute,
+  type AttachedDoc,
+  type Class,
+  type Collection,
+  type Doc,
+  type FindResult,
+  type Hierarchy,
+  type ObjQueryType,
+  type Ref,
+  type RefTo
 } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
-import { LiveQuery, createQuery, getClient } from '@hcengineering/presentation'
-import { AnyComponent, getCurrentResolvedLocation, locationToUrl } from '@hcengineering/ui'
-import { Filter, FilterMode, FilteredView, KeyFilter } from '@hcengineering/view'
+import { createQuery, getClient, type LiveQuery } from '@hcengineering/presentation'
+import { getCurrentResolvedLocation, locationToUrl, type AnyComponent } from '@hcengineering/ui'
+import { type Filter, type FilterMode, type FilteredView, type KeyFilter } from '@hcengineering/view'
 import { get, writable } from 'svelte/store'
 import view from './plugin'
 

@@ -1,5 +1,5 @@
-import { Backlink } from '@hcengineering/chunter'
-import { Data, DocumentQuery, TxOperations } from '@hcengineering/core'
+import { type Backlink } from '@hcengineering/chunter'
+import { type Data, type DocumentQuery, type TxOperations } from '@hcengineering/core'
 import chunter from './plugin'
 
 /**

@@ -14,7 +14,7 @@
 //
 
 import activity from '@hcengineering/activity'
-import { Builder } from '@hcengineering/model'
+import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import task from '@hcengineering/model-task'
 import view from '@hcengineering/model-view'

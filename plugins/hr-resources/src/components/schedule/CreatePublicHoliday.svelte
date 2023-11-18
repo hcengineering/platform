@@ -65,7 +65,9 @@
   label={existingHoliday ? hr.string.EditPublicHoliday : hr.string.MarkAsPublicHoliday}
   on:close
   okLabel={existingHoliday ? presentation.string.Save : presentation.string.Ok}
-  okAction={() => saveHoliday()}
+  okAction={() => {
+    saveHoliday()
+  }}
   canSave={true}
   on:changeContent
 >
@@ -86,7 +88,13 @@
   </svelte:fragment>
   <svelte:fragment slot="buttons">
     {#if existingHoliday}
-      <Button label={presentation.string.Remove} kind="ghost" on:click={() => deleteHoliday()} />
+      <Button
+        label={presentation.string.Remove}
+        kind="ghost"
+        on:click={() => {
+          deleteHoliday()
+        }}
+      />
     {/if}
   </svelte:fragment>
 </Card>

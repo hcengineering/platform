@@ -33,7 +33,9 @@
         {
           attachedTo: value._id
         },
-        (res) => (attachments = res)
+        (res) => {
+          attachments = res
+        }
       )
     } else {
       attachments = []

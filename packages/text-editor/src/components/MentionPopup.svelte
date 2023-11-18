@@ -23,8 +23,11 @@
 
   export let query: string = ''
 
-  type SearchSection = { category: ObjectSearchCategory; items: SearchResultDoc[] }
-  type SearchItem = {
+  interface SearchSection {
+    category: ObjectSearchCategory
+    items: SearchResultDoc[]
+  }
+  interface SearchItem {
     num: number
     item: SearchResultDoc
     category: ObjectSearchCategory
@@ -115,7 +118,7 @@
     return undefined
   }
 
-  async function doFulltextSearch (classes: Ref<Class<Doc>>[], query: string): Promise<SearchSection[]> {
+  async function doFulltextSearch (classes: Array<Ref<Class<Doc>>>, query: string): Promise<SearchSection[]> {
     const result = await client.searchFulltext(
       {
         query: `${query}*`,
@@ -148,7 +151,7 @@
   }
 
   async function updateItems (query: string): Promise<void> {
-    const classesToSearch: Ref<Class<Doc>>[] = []
+    const classesToSearch: Array<Ref<Class<Doc>>> = []
     for (const cat of categories) {
       if (cat.classToSearch !== undefined) {
         classesToSearch.push(cat.classToSearch)
@@ -180,7 +183,12 @@
         <svelte:fragment slot="item" let:item={num}>
           {@const item = items[num]}
           {@const doc = item.item}
-          <div class="ap-menuItem withComp" on:click={() => dispatchItem(doc)}>
+          <div
+            class="ap-menuItem withComp"
+            on:click={() => {
+              dispatchItem(doc)
+            }}
+          >
             <MentionResult value={doc} />
           </div>
         </svelte:fragment>

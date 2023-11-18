@@ -16,7 +16,7 @@
 import { derived, get, writable } from 'svelte/store'
 import { closePopup } from './popups'
 import justClone from 'just-clone'
-import { Location as PlatformLocation } from './types'
+import { type Location as PlatformLocation } from './types'
 
 export function locationToUrl (location: PlatformLocation): string {
   let result = '/'

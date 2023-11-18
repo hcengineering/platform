@@ -70,10 +70,12 @@
     fieldMapping = res
   })
 
-  $: fieldsByClass = fieldMapping.reduce((p, c) => {
+  $: fieldsByClass = fieldMapping.reduce<Record<Ref<Class<Doc>>, BitrixFieldMapping[]>>((p, c) => {
     p[c.ofClass] = [...(p[c.ofClass] ?? []), c]
     return p
-  }, {} as Record<Ref<Class<Doc>>, BitrixFieldMapping[]>)
+  }, {})
+
+  const toRefArray = (arr: any[]) => arr as Ref<Class<Obj>>[]
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -132,11 +134,11 @@
             label={getEmbeddedLabel('Add mixin')}
             on:click={async () => {
               const h = client.getHierarchy()
-              const mixins = []
+              const mixins = toRefArray([])
               for (const o of h.getAncestors(mapping.ofClass)) {
-                const ms = await h.getDescendants(h.getBaseClass(o)).filter((it) => h.isMixin(it))
+                const ms = h.getDescendants(h.getBaseClass(o)).filter((it) => h.isMixin(it))
                 for (const m of ms) {
-                  if (mixins.indexOf(m) === -1) {
+                  if (!mixins.includes(m)) {
                     mixins.push(m)
                   }
                 }

@@ -14,23 +14,23 @@
 //
 
 import {
-  Attribute,
-  Class,
+  type Attribute,
+  type Class,
   DOMAIN_STATUS,
   DOMAIN_TX,
-  Data,
-  Doc,
-  Ref,
-  Space,
-  Status,
+  type Data,
+  type Doc,
+  type Ref,
+  type Space,
+  type Status,
   TxOperations,
   generateId,
   toIdMap
 } from '@hcengineering/core'
 import {
-  MigrateOperation,
-  MigrationClient,
-  MigrationUpgradeClient,
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient,
   createOrUpdate,
   tryMigrate,
   tryUpgrade
@@ -38,15 +38,15 @@ import {
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import tags from '@hcengineering/model-tags'
 import {
-  Project,
-  ProjectStatus,
-  ProjectType,
-  ProjectTypeCategory,
-  Task,
+  type Project,
+  type ProjectStatus,
+  type ProjectType,
+  type ProjectTypeCategory,
+  type Task,
   createState,
   taskId
 } from '@hcengineering/task'
-import view, { Filter } from '@hcengineering/view'
+import view, { type Filter } from '@hcengineering/view'
 import { DOMAIN_KANBAN, DOMAIN_TASK } from '.'
 import task from './plugin'
 
@@ -512,7 +512,7 @@ async function migrateProjectTypes (client: MigrationClient): Promise<void> {
   const classes = client.hierarchy.getDescendants(task.class.Project)
   // we should found all projects without types and group by class and then by statuses and create new type
   const projects = await client.find<Project>(DOMAIN_SPACE, { _class: { $in: classes }, type: { $exists: false } })
-  const projectsByCategory: Map<Ref<ProjectTypeCategory>, Project[]> = new Map()
+  const projectsByCategory = new Map<Ref<ProjectTypeCategory>, Project[]>()
   for (const project of projects) {
     const category = await getProjectTypeCategory(client, project._class)
     if (category === undefined) continue
@@ -564,7 +564,7 @@ interface ProjectTypeGroup {
 }
 
 function group (projects: Project[]): ProjectTypeGroup[] {
-  const map: Map<string, ProjectTypeGroup> = new Map()
+  const map = new Map<string, ProjectTypeGroup>()
 
   for (const project of projects) {
     const ids = getIds((project as any).states ?? [])

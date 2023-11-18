@@ -1,17 +1,17 @@
 import {
-  Class,
-  Client,
-  Doc,
-  DocData,
-  DocumentQuery,
-  Mixin,
-  Ref,
-  RelatedDocument,
-  Space,
-  TxOperations
+  type Class,
+  type Client,
+  type Doc,
+  type DocData,
+  type DocumentQuery,
+  type Mixin,
+  type Ref,
+  type RelatedDocument,
+  type Space,
+  type TxOperations
 } from '@hcengineering/core'
-import { Asset, IntlString, Resource } from '@hcengineering/platform'
-import { AnyComponent, AnySvelteComponent, ComponentExtensionId } from '@hcengineering/ui'
+import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
+import { type AnyComponent, type AnySvelteComponent, type ComponentExtensionId } from '@hcengineering/ui'
 
 export * from './components/breadcrumbs/types'
 

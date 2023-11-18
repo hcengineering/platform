@@ -29,7 +29,7 @@
   }
 
   async function copyCard (): Promise<void> {
-    const newCardId = generateId() as Ref<Card>
+    const newCardId = generateId()
 
     const sequence = await client.findOne(task.class.Sequence, { attachedTo: board.class.Card })
     if (sequence === undefined) {

@@ -13,17 +13,23 @@
 // limitations under the License.
 //
 
-import { MeasureContext, generateId } from '@hcengineering/core'
+import { type MeasureContext, generateId } from '@hcengineering/core'
 import { UNAUTHORIZED } from '@hcengineering/platform'
-import { Response, serialize } from '@hcengineering/rpc'
-import { Token, decodeToken } from '@hcengineering/server-token'
+import { type Response, serialize } from '@hcengineering/rpc'
+import { type Token, decodeToken } from '@hcengineering/server-token'
 import compression from 'compression'
 import cors from 'cors'
 import express from 'express'
-import http, { IncomingMessage } from 'http'
-import { RawData, WebSocket, WebSocketServer } from 'ws'
+import http, { type IncomingMessage } from 'http'
+import { type RawData, type WebSocket, WebSocketServer } from 'ws'
 import { getStatistics } from './stats'
-import { ConnectionSocket, HandleRequestFunction, LOGGING_ENABLED, PipelineFactory, SessionManager } from './types'
+import {
+  type ConnectionSocket,
+  type HandleRequestFunction,
+  LOGGING_ENABLED,
+  type PipelineFactory,
+  type SessionManager
+} from './types'
 
 /**
  * @public
@@ -155,7 +161,9 @@ export function startHttpServer (
     }
     const cs: ConnectionSocket = {
       id: generateId(),
-      close: () => ws.close(),
+      close: () => {
+        ws.close()
+      },
       data: () => data,
       send: async (ctx: MeasureContext, msg, binary, compression) => {
         if (ws.readyState !== ws.OPEN) {
@@ -165,20 +173,17 @@ export function startHttpServer (
 
         ctx.measure('send-data', smsg.length)
 
-        return await ctx.with(
-          'socket-send',
-          {},
-          async (ctx) =>
-            await new Promise((resolve, reject) => {
-              ws.send(smsg, { binary, compress: compression }, (err) => {
-                if (err != null) {
-                  reject(err)
-                } else {
-                  resolve()
-                }
-              })
+        await ctx.with('socket-send', {}, async (ctx) => {
+          await new Promise<void>((resolve, reject) => {
+            ws.send(smsg, { binary, compress: compression }, (err) => {
+              if (err != null) {
+                reject(err)
+              } else {
+                resolve()
+              }
             })
-        )
+          })
+        })
       }
     }
 

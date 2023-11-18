@@ -32,4 +32,15 @@
   $: _class = type?.to ?? contact.class.Person
 </script>
 
-<UserBox {_class} {label} {kind} {size} {justify} {width} bind:value on:change={(e) => onChange(e.detail)} />
+<UserBox
+  {_class}
+  {label}
+  {kind}
+  {size}
+  {justify}
+  {width}
+  bind:value
+  on:change={(e) => {
+    onChange(e.detail)
+  }}
+/>

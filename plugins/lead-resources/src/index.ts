@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { Resources } from '@hcengineering/platform'
+import { type Resources } from '@hcengineering/platform'
 import CreateFunnel from './components/CreateFunnel.svelte'
 import CreateLead from './components/CreateLead.svelte'
 import EditLead from './components/EditLead.svelte'

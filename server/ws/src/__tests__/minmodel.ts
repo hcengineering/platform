@@ -13,8 +13,23 @@
 // limitations under the License.
 //
 
-import type { Account, Arr, Class, Data, Doc, Mixin, Obj, Ref, TxCreateDoc, TxCUD } from '@hcengineering/core'
-import core, { AttachedDoc, ClassifierKind, DOMAIN_MODEL, DOMAIN_TX, TxFactory } from '@hcengineering/core'
+import core, {
+  ClassifierKind,
+  DOMAIN_MODEL,
+  DOMAIN_TX,
+  TxFactory,
+  type Account,
+  type Arr,
+  type AttachedDoc,
+  type Class,
+  type Data,
+  type Doc,
+  type Mixin,
+  type Obj,
+  type Ref,
+  type TxCUD,
+  type TxCreateDoc
+} from '@hcengineering/core'
 import type { IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 

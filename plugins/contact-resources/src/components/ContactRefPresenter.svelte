@@ -28,7 +28,15 @@
 
   let doc: Contact | undefined
   const query = createQuery()
-  $: value && query.query(contact.class.Contact, { _id: value }, (res) => ([doc] = res), { limit: 1 })
+  $: value &&
+    query.query(
+      contact.class.Contact,
+      { _id: value },
+      (res) => {
+        ;[doc] = res
+      },
+      { limit: 1 }
+    )
 </script>
 
 {#if doc}

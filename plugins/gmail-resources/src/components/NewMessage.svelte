@@ -154,7 +154,9 @@
       {
         attachedTo: objectId
       },
-      (res) => (attachments = res)
+      (res) => {
+        attachments = res
+      }
     )
 
   function onTemplate (e: CustomEvent<string>): void {

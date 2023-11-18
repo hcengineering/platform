@@ -168,7 +168,7 @@ class ClientImpl implements AccountClient, BackupClient {
   }
 
   async closeChunk (idx: number): Promise<void> {
-    return await this.conn.closeChunk(idx)
+    await this.conn.closeChunk(idx)
   }
 
   async loadDocs (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
@@ -176,11 +176,11 @@ class ClientImpl implements AccountClient, BackupClient {
   }
 
   async upload (domain: Domain, docs: Doc[]): Promise<void> {
-    return await this.conn.upload(domain, docs)
+    await this.conn.upload(domain, docs)
   }
 
   async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {
-    return await this.conn.clean(domain, docs)
+    await this.conn.clean(domain, docs)
   }
 
   async getAccount (): Promise<Account> {
@@ -243,7 +243,7 @@ export async function createClient (
   }
   txBuffer = undefined
 
-  const oldOnConnect: ((event: ClientConnectEvent) => void) | undefined = conn.onConnect
+  const oldOnConnect: ((event: ClientConnectEvent) => Promise<void>) | undefined = conn.onConnect
   conn.onConnect = async (event) => {
     console.log('Client: onConnect', event)
     // Find all new transactions and apply

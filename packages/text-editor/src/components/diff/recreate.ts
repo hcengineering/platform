@@ -16,11 +16,11 @@
 // based on Apache License 2.0
 //
 
-import { Change, diffWordsWithSpace } from 'diff'
-import { Node, Schema } from '@tiptap/pm/model'
-import { ReplaceStep, Step, Transform } from '@tiptap/pm/transform'
-import { applyPatch, createPatch, Operation } from 'rfc6902'
-import { Pointer } from 'rfc6902/pointer'
+import { type Change, diffWordsWithSpace } from 'diff'
+import { type Node, type Schema } from '@tiptap/pm/model'
+import { ReplaceStep, type Step, Transform } from '@tiptap/pm/transform'
+import { applyPatch, createPatch, type Operation } from 'rfc6902'
+import { type Pointer } from 'rfc6902/pointer'
 import { diffArraysPM } from './diff'
 
 /**
@@ -134,7 +134,10 @@ export class StepTransform {
   finalDoc: any
   ops: Operation[] = []
 
-  constructor (readonly fromDoc: Node, readonly toDoc: Node) {
+  constructor (
+    readonly fromDoc: Node,
+    readonly toDoc: Node
+  ) {
     this.schema = fromDoc.type.schema
     this.tr = new Transform(fromDoc)
   }

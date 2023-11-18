@@ -87,7 +87,9 @@
       is = editor.editor
     }
   }
-  const handleSelection = (e: { detail: Ref<Class<Type<any>>> }) => selectType(e.detail)
+  const handleSelection = (e: { detail: Ref<Class<Type<any>>> }) => {
+    selectType(e.detail)
+  }
   const handleChange = (e: any) => {
     type = e.detail?.type
     index = e.detail?.index

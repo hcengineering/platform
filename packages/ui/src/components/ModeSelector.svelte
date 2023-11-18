@@ -9,7 +9,9 @@
       id: c[0],
       labelIntl: c[1],
       labelParams: c[2],
-      action: () => props.onChange(c[0])
+      action: () => {
+        props.onChange(c[0])
+      }
     }
   })
 </script>

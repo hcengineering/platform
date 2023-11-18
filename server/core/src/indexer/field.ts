@@ -103,7 +103,7 @@ export class IndexedFieldStage implements FullTextPipelineStage {
       return p
     }, {})
 
-    const processed: Set<Ref<DocIndexState>> = new Set()
+    const processed = new Set<Ref<DocIndexState>>()
 
     for (const [v, values] of Object.entries(byClass)) {
       // Obtain real documents

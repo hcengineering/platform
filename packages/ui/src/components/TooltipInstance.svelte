@@ -249,13 +249,17 @@
       options = fitTooltip(tooltipHTML, clWidth)
     }
   })
-  onDestroy(() => hideTooltip())
+  onDestroy(() => {
+    hideTooltip()
+  })
 </script>
 
 {#if $tooltip.kind === 'popup'}
   <div
     class="modal-overlay antiOverlay"
-    on:click|stopPropagation|preventDefault={() => closeTooltip()}
+    on:click|stopPropagation|preventDefault={() => {
+      closeTooltip()
+    }}
     on:keydown|stopPropagation|preventDefault={() => {}}
   />
 {/if}

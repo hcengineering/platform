@@ -16,7 +16,7 @@
 import type { IntlString } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import setting, { settingId } from '@hcengineering/setting'
-import { AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui'
 
 export default mergeIds(settingId, setting, {
   component: {

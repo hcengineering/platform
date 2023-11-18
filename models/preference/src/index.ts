@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import { Doc, Ref, Space } from '@hcengineering/core'
-import { Builder, Model, Prop, TypeRef } from '@hcengineering/model'
+import { type Doc, type Ref, type Space } from '@hcengineering/core'
+import { type Builder, Model, Prop, TypeRef } from '@hcengineering/model'
 import core, { TDoc } from '@hcengineering/model-core'
-import preference, { DOMAIN_PREFERENCE, Preference, SpacePreference } from '@hcengineering/preference'
+import preference, { DOMAIN_PREFERENCE, type Preference, type SpacePreference } from '@hcengineering/preference'
 
 export { preferenceId } from '@hcengineering/preference'
 export { preferenceOperation } from './migration'

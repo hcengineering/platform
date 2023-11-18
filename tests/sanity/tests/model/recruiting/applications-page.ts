@@ -30,7 +30,7 @@ export class ApplicationsPage extends CommonRecruitingPage {
   async createNewApplication (data: NewApplication): Promise<void> {
     await this.buttonCreateApplication.click()
 
-    await this.selectTalent(data.talentsName != null ? data.talentsName : 'first')
+    await this.selectTalent(data.talentsName ?? 'first')
     await this.selectVacancy(data.vacancy)
     await this.selectRecruiter(data.recruiterName)
 

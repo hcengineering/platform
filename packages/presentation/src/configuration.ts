@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import core, { PluginConfiguration, SortingOrder } from '@hcengineering/core'
-import { Plugin, Resource, getResourcePlugin } from '@hcengineering/platform'
+import core, { type PluginConfiguration, SortingOrder } from '@hcengineering/core'
+import { type Plugin, type Resource, getResourcePlugin } from '@hcengineering/platform'
 import { get, writable } from 'svelte/store'
 import { createQuery } from '.'
 import { location as platformLocation } from '@hcengineering/ui'
@@ -23,7 +23,10 @@ import { location as platformLocation } from '@hcengineering/ui'
  * @public
  */
 export class ConfigurationManager {
-  constructor (readonly list: PluginConfiguration[], readonly configuration: Map<Plugin, PluginConfiguration>) {}
+  constructor (
+    readonly list: PluginConfiguration[],
+    readonly configuration: Map<Plugin, PluginConfiguration>
+  ) {}
 
   has (plugin: Plugin): boolean {
     return this.configuration.get(plugin)?.enabled !== false

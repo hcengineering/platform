@@ -16,7 +16,7 @@
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import { type ChunterMessage, type Message, type ThreadMessage } from '@hcengineering/chunter'
-  import core, { Doc, Ref, Space, generateId, getCurrentAccount } from '@hcengineering/core'
+  import core, { AttachedDoc, Doc, Ref, Space, generateId, getCurrentAccount } from '@hcengineering/core'
   import { DocUpdates } from '@hcengineering/notification'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -34,7 +34,7 @@
   export let _id: Ref<Message>
   export let currentSpace: Ref<Space>
   let message: Message | undefined
-  let commentId = generateId() as Ref<ThreadMessage>
+  let commentId: Ref<AttachedDoc> = generateId()
 
   let div: HTMLDivElement | undefined
   let autoscroll: boolean = false
@@ -99,7 +99,7 @@
       },
       (res) => {
         comments = res
-        newMessagesPos = newMessagesStart(comments, $docUpdates)
+        // newMessagesPos = newMessagesStart(comments, $docUpdates)
         notificationClient.read(id)
       },
       {
@@ -169,11 +169,11 @@
   function markUnread (comments: ThreadMessage[], docUpdates: Map<Ref<Doc>, DocUpdates>) {
     const newPos = newMessagesStart(comments, docUpdates)
     if (newPos !== -1) {
-      newMessagesPos = newPos
+      // newMessagesPos = newPos
     }
   }
 
-  let newMessagesPos: number = -1
+  // let newMessagesPos: number = -1
   let loading = false
 </script>
 

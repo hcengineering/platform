@@ -56,7 +56,11 @@ export const getCurrentFontSize = (): string =>
 export const getCurrentLanguage = (): string => localStorage.getItem('lang') ?? getDefaultProps('lang', 'en')
 
 export class ThemeOptions {
-  constructor (readonly fontSize: number, readonly dark: boolean, readonly language: string) {}
+  constructor (
+    readonly fontSize: number,
+    readonly dark: boolean,
+    readonly language: string
+  ) {}
 }
 export const themeStore = writable<ThemeOptions>(
   new ThemeOptions(

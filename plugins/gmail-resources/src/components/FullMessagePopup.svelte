@@ -33,7 +33,9 @@
       {
         attachedTo: message._id
       },
-      (res) => (attachments = res)
+      (res) => {
+        attachments = res
+      }
     )
 
   $: title = message.incoming ? message.sender : message.receiver

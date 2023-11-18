@@ -208,8 +208,12 @@
       bind:this={edits[0].el}
       class="digit"
       tabindex="0"
-      on:keydown={(ev) => keyDown(ev, edits[0].id)}
-      on:focus={() => focused(edits[0].id)}
+      on:keydown={(ev) => {
+        keyDown(ev, edits[0].id)
+      }}
+      on:focus={() => {
+        focused(edits[0].id)
+      }}
       on:blur={() => (selected = null)}
     >
       {#if edits[0].value > -1}
@@ -222,8 +226,12 @@
       bind:this={edits[1].el}
       class="digit"
       tabindex="0"
-      on:keydown={(ev) => keyDown(ev, edits[1].id)}
-      on:focus={() => focused(edits[1].id)}
+      on:keydown={(ev) => {
+        keyDown(ev, edits[1].id)
+      }}
+      on:focus={() => {
+        focused(edits[1].id)
+      }}
       on:blur={() => (selected = null)}
     >
       {#if edits[1].value > -1}
@@ -236,8 +244,12 @@
       bind:this={edits[2].el}
       class="digit"
       tabindex="0"
-      on:keydown={(ev) => keyDown(ev, edits[2].id)}
-      on:focus={() => focused(edits[2].id)}
+      on:keydown={(ev) => {
+        keyDown(ev, edits[2].id)
+      }}
+      on:focus={() => {
+        focused(edits[2].id)
+      }}
       on:blur={() => (selected = null)}
     >
       {#if edits[2].value > -1}
@@ -251,8 +263,12 @@
         bind:this={edits[3].el}
         class="digit"
         tabindex="0"
-        on:keydown={(ev) => keyDown(ev, edits[3].id)}
-        on:focus={() => focused(edits[3].id)}
+        on:keydown={(ev) => {
+          keyDown(ev, edits[3].id)
+        }}
+        on:focus={() => {
+          focused(edits[3].id)
+        }}
         on:blur={() => (selected = null)}
       >
         {#if edits[3].value > -1}
@@ -265,8 +281,12 @@
         bind:this={edits[4].el}
         class="digit"
         tabindex="0"
-        on:keydown={(ev) => keyDown(ev, edits[4].id)}
-        on:focus={() => focused(edits[4].id)}
+        on:keydown={(ev) => {
+          keyDown(ev, edits[4].id)
+        }}
+        on:focus={() => {
+          focused(edits[4].id)
+        }}
         on:blur={() => (selected = null)}
       >
         {#if edits[4].value > -1}

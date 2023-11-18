@@ -1,14 +1,14 @@
 <!--
 // Copyright © 2022 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -79,7 +79,7 @@
     }
   }
 
-  const getDateByOffset = (x: number): { date: Date; delta: number } => {
+  const getDateByOffset = (x: number): { date: Date, delta: number } => {
     const deltaDays = Math.floor(x / dayWidth)
     const calcDay = new Date(currentTime + deltaDays * MILLISECONDS_IN_DAY)
     return { date: calcDay, delta: deltaDays }
@@ -196,7 +196,7 @@
         })
         if (tr.length > 0) {
           mass = [...mass, ...tr]
-          tr.sort()
+          tr.sort((a, b) => a - b)
           const minD: Date = new Date(tr[0])
           const maxD: Date = new Date(tr[tr.length - 1])
           const r = {
@@ -213,7 +213,7 @@
         } else time.rows ? time.rows.push(null) : (time.rows = [null])
       } else time.rows ? time.rows.push(null) : (time.rows = [null])
     })
-    mass.sort()
+    mass.sort((a, b) => a - b)
 
     let leftRange: number = getOffsetByDate(mass[0]) - time.viewBox.width * 1.5
     const leftDate: Date = new Date(getDateByOffset(leftRange).date.setDate(1))
@@ -349,7 +349,9 @@
               <div class="eListGridCheckBox">
                 <CheckBox
                   checked={selectedRows.filter((i) => i === row).length > 0}
-                  on:value={(event) => onObjectChecked(row, event.detail)}
+                  on:value={(event) => {
+                    onObjectChecked(row, event.detail)
+                  }}
                 />
               </div>
             </div>

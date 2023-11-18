@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Resources } from '@hcengineering/platform'
+import { type Resources } from '@hcengineering/platform'
 import CreateDepartment from './components/CreateDepartment.svelte'
 import DepartmentEditor from './components/DepartmentEditor.svelte'
 import DepartmentStaff from './components/DepartmentStaff.svelte'
@@ -25,7 +25,7 @@ import TzDatePresenter from './components/TzDatePresenter.svelte'
 import TzDateEditor from './components/TzDateEditor.svelte'
 import RequestPresenter from './components/RequestPresenter.svelte'
 import { showPopup } from '@hcengineering/ui'
-import { Request } from '@hcengineering/hr'
+import { type Request } from '@hcengineering/hr'
 import EditRequestType from './components/EditRequestType.svelte'
 
 async function editRequestType (object: Request): Promise<void> {

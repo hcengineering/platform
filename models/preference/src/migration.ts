@@ -14,7 +14,7 @@
 //
 
 import { TxOperations } from '@hcengineering/core'
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import preference from '@hcengineering/preference'
 

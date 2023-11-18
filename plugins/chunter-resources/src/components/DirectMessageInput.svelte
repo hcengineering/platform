@@ -13,7 +13,7 @@
   const me = getCurrentAccount()._id
 
   const _class = chunter.class.Message
-  let messageId = generateId() as Ref<Message>
+  let messageId: Ref<Message> = generateId()
 
   let space: Ref<DirectMessage> | undefined
 

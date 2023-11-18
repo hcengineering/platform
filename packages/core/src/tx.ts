@@ -246,9 +246,7 @@ export interface PushOptions<T extends object> {
 /**
  * @public
  */
-export interface UnsetProperties {
-  [key: string]: any
-}
+export type UnsetProperties = Record<string, any>
 
 /**
  * @public
@@ -484,7 +482,10 @@ export abstract class TxProcessor implements WithTx {
  */
 export class TxFactory {
   private readonly txSpace: Ref<Space>
-  constructor (readonly account: Ref<Account>, readonly isDerived: boolean = false) {
+  constructor (
+    readonly account: Ref<Account>,
+    readonly isDerived: boolean = false
+  ) {
     this.txSpace = isDerived ? core.space.DerivedTx : core.space.Tx
   }
 

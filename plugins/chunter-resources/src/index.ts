@@ -13,19 +13,27 @@
 // limitations under the License.
 //
 
-import { DisplayTx } from '@hcengineering/activity'
+import { type DisplayTx } from '@hcengineering/activity'
 import chunter, {
-  Backlink,
-  Channel,
-  ChunterMessage,
-  ChunterSpace,
-  DirectMessage,
-  Message,
-  ThreadMessage
+  type Backlink,
+  type Channel,
+  type ChunterMessage,
+  type ChunterSpace,
+  type DirectMessage,
+  type Message,
+  type ThreadMessage
 } from '@hcengineering/chunter'
-import core, { Data, Doc, DocumentQuery, Ref, RelatedDocument, Space, getCurrentAccount } from '@hcengineering/core'
+import core, {
+  type Data,
+  type Doc,
+  type DocumentQuery,
+  type Ref,
+  type RelatedDocument,
+  type Space,
+  getCurrentAccount
+} from '@hcengineering/core'
 import { NotificationClientImpl } from '@hcengineering/notification-resources'
-import { IntlString, Resources, translate } from '@hcengineering/platform'
+import { type IntlString, type Resources, translate } from '@hcengineering/platform'
 import preference from '@hcengineering/preference'
 import { MessageBox, getClient } from '@hcengineering/presentation'
 import { getLocation, navigate, showPopup } from '@hcengineering/ui'

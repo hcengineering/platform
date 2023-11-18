@@ -17,7 +17,7 @@ import { activityId } from '@hcengineering/activity'
 import activity from '@hcengineering/activity-resources/src/plugin'
 import type { Resource, IntlString } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
-import { Doc, Ref } from '@hcengineering/core'
+import { type Doc, type Ref } from '@hcengineering/core'
 
 export default mergeIds(activityId, activity, {
   filter: {

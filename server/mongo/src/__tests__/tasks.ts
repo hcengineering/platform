@@ -1,5 +1,16 @@
-import { Account, AttachedDoc, Class, ClassifierKind, Data, Doc, Domain, Ref, Space, Tx } from '@hcengineering/core'
-import { IntlString, plugin, Plugin } from '@hcengineering/platform'
+import {
+  type Account,
+  type AttachedDoc,
+  type Class,
+  ClassifierKind,
+  type Data,
+  type Doc,
+  type Domain,
+  type Ref,
+  type Space,
+  type Tx
+} from '@hcengineering/core'
+import { type IntlString, plugin, type Plugin } from '@hcengineering/platform'
 import { createClass } from './minmodel'
 
 export interface TaskComment extends AttachedDoc {

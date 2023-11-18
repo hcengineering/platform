@@ -15,15 +15,15 @@
 
 import {
   AccountRole,
-  AttachedDoc,
-  Class,
-  Doc,
-  DocIndexState,
-  IndexingConfiguration,
-  TxCollectionCUD,
+  type AttachedDoc,
+  type Class,
+  type Doc,
+  type DocIndexState,
+  type IndexingConfiguration,
+  type TxCollectionCUD,
   systemAccountEmail
 } from '@hcengineering/core'
-import { Builder } from '@hcengineering/model'
+import { type Builder } from '@hcengineering/model'
 import core from './component'
 import {
   TArrOf,

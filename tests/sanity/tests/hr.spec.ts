@@ -71,6 +71,6 @@ test.describe('hr tests', () => {
 
     // Click text=Schedule
     await page.locator('text=Schedule').click()
-    await expect(await page.locator('td:nth-child(15) > .h-full .request')).toHaveCSS('opacity', '0.5')
+    await expect(page.locator('td:nth-child(15) > .h-full .request')).toHaveCSS('opacity', '0.5')
   })
 })

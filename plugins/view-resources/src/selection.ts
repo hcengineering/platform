@@ -1,7 +1,7 @@
-import { Doc, Ref } from '@hcengineering/core'
+import { type Doc, type Ref } from '@hcengineering/core'
 import { panelstore } from '@hcengineering/ui'
 import { onDestroy } from 'svelte'
-import { Unsubscriber, Writable, writable } from 'svelte/store'
+import { type Unsubscriber, type Writable, writable } from 'svelte/store'
 
 /**
  * @public
@@ -198,7 +198,9 @@ export class ListSelectionProvider implements SelectionFocusProvider {
       return selection
     })
 
-    this.unsubscribe.forEach((p) => p())
+    this.unsubscribe.forEach((p) => {
+      p()
+    })
   }
 
   select (offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection, noScroll?: boolean): void {

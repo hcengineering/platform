@@ -20,7 +20,7 @@
   import VacancyApplicationsPopup from './VacancyApplicationsPopup.svelte'
 
   export let value: Vacancy
-  export let applications: Map<Ref<Vacancy>, { count: number; modifiedOn: number }> | undefined
+  export let applications: Map<Ref<Vacancy>, { count: number, modifiedOn: number }> | undefined
 
   function click () {
     closeTooltip()

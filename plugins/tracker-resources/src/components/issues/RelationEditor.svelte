@@ -8,7 +8,7 @@
   export let blockedBy: Doc[] | undefined = undefined
 
   $: valueGroup = (type === 'isBlocking' ? blockedBy ?? [] : value[type] ?? []).reduce<
-    Map<Ref<Class<Doc>>, Ref<Doc>[]>
+  Map<Ref<Class<Doc>>, Ref<Doc>[]>
   >((rv, x) => {
     if (rv.has(x._class)) {
       rv.get(x._class)?.push(x._id)

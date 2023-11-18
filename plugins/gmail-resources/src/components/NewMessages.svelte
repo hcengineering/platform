@@ -181,7 +181,9 @@
     {
       attachedTo: attachmentParentId
     },
-    (res) => (attachments = res)
+    (res) => {
+      attachments = res
+    }
   )
 
   function getName (channel: Channel): string {

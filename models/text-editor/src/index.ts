@@ -14,16 +14,16 @@
 //
 
 import { DOMAIN_MODEL } from '@hcengineering/core'
-import { Builder, Model } from '@hcengineering/model'
+import { type Builder, Model } from '@hcengineering/model'
 import core, { TDoc } from '@hcengineering/model-core'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 // Import types to prevent .svelte components to being exposed to type typescript.
-import { RefInputAction, RefInputActionItem } from '@hcengineering/text-editor/src/types'
+import { type RefInputAction, type RefInputActionItem } from '@hcengineering/text-editor/src/types'
 import textEditor from './plugin'
 
 export { textEditorId } from '@hcengineering/text-editor/src/plugin'
 export { default } from './plugin'
-export { RefInputAction, RefInputActionItem }
+export type { RefInputAction, RefInputActionItem }
 
 @Model(textEditor.class.RefInputActionItem, core.class.Doc, DOMAIN_MODEL)
 export class TRefInputActionItem extends TDoc implements RefInputActionItem {

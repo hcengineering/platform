@@ -99,9 +99,7 @@ export interface ReverseLookups {
 /**
  * @public
  */
-export interface ReverseLookup {
-  [key: string]: Ref<Class<AttachedDoc>> | [Ref<Class<Doc>>, string]
-}
+export type ReverseLookup = Record<string, Ref<Class<AttachedDoc>> | [Ref<Class<Doc>>, string]>
 
 /**
  * @public
@@ -160,11 +158,7 @@ export interface SortingRules<T> {
  */
 export type SortingQuery<T extends Doc> = {
   [P in keyof T]?: SortingOrder | SortingRules<T[P]>
-} & {
-  // support nested queries e.g. 'user.friends.name'
-  // this will mark all unrecognized properties as any (including nested queries)
-  [key: string]: SortingOrder | SortingRules<any>
-}
+} & Record<string, SortingOrder | SortingRules<any>>
 
 /**
  * @public
@@ -233,7 +227,7 @@ export interface SearchResultDoc {
   id: Ref<Doc>
   icon?: Asset
   iconComponent?: string
-  iconProps?: { [key: string]: string }
+  iconProps?: Record<string, string>
   shortTitle?: string
   title?: string
   doc: Pick<Doc, '_id' | '_class'>

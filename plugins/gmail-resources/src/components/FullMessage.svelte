@@ -50,7 +50,9 @@
       {
         attachedTo: currentMessage._id
       },
-      (res) => (attachments = res)
+      (res) => {
+        attachments = res
+      }
     )
 
   $: title = currentMessage.incoming ? currentMessage.sender : currentMessage.receiver

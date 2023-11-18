@@ -51,16 +51,18 @@
     setting.class.SettingsCategory,
     {},
     (res) => {
-      categories = account.role > AccountRole.User ? res : res.filter((p) => p.secured === false)
+      categories = account.role > AccountRole.User ? res : res.filter((p) => !p.secured)
       category = findCategory(categoryId)
     },
     { sort: { order: 1 } }
   )
 
   onDestroy(
-    resolvedLocationStore.subscribe(async (loc) => {
-      categoryId = loc.path[3]
-      category = findCategory(categoryId)
+    resolvedLocationStore.subscribe((loc) => {
+      void (async (loc) => {
+        categoryId = loc.path[3]
+        category = findCategory(categoryId)
+      })(loc)
     })
   )
 
@@ -77,6 +79,7 @@
     const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
     if (tokens !== null) {
       const loc = getCurrentResolvedLocation()
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete tokens[loc.path[1]]
       setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
     }

@@ -1,21 +1,21 @@
 <!--
 // Copyright © 2022 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
 <script lang="ts">
   import { AttachedData, DocumentQuery, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { RuleApplyResult, createQuery, getClient, getDocRules } from '@hcengineering/presentation'
+  import { RuleApplyResult, getClient, getDocRules } from '@hcengineering/presentation'
   import { Component, Issue, IssueTemplate, Project } from '@hcengineering/tracker'
   import { ButtonKind, ButtonShape, ButtonSize, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -65,14 +65,6 @@
     }
     dispatch('change', newComponentId)
     if (isAction) dispatch('close')
-  }
-
-  const milestoneQuery = createQuery()
-  let component: Component | undefined
-  $: if (!Array.isArray(value) && value.component) {
-    milestoneQuery.query(tracker.class.Component, { _id: value.component }, (res) => {
-      component = res.shift()
-    })
   }
 
   $: _space =

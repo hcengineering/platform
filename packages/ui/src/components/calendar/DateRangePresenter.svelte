@@ -1,14 +1,14 @@
 <!--
 // Copyright © 2020 Anticrm Platform Contributors.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -270,7 +270,9 @@
         label: labelNull
       },
       undefined,
-      (result) => (!result ? closeDP() : saveDate()),
+      (result) => {
+        !result ? closeDP() : saveDate()
+      },
       (result) => {
         if (result !== undefined) {
           currentDate = result
@@ -313,9 +315,15 @@
         bind:this={edits[0].el}
         class="digit"
         tabindex="0"
-        on:keydown={(ev) => keyDown(ev, edits[0].id)}
-        on:focus={() => focused(edits[0].id)}
-        on:blur={(ev) => unfocus(ev, edits[0].id)}
+        on:keydown={(ev) => {
+          keyDown(ev, edits[0].id)
+        }}
+        on:focus={() => {
+          focused(edits[0].id)
+        }}
+        on:blur={(ev) => {
+          unfocus(ev, edits[0].id)
+        }}
       >
         {#if edits[0].value > -1}
           {edits[0].value.toString().padStart(2, '0')}
@@ -326,9 +334,15 @@
         bind:this={edits[1].el}
         class="digit"
         tabindex="0"
-        on:keydown={(ev) => keyDown(ev, edits[1].id)}
-        on:focus={() => focused(edits[1].id)}
-        on:blur={(ev) => unfocus(ev, edits[1].id)}
+        on:keydown={(ev) => {
+          keyDown(ev, edits[1].id)
+        }}
+        on:focus={() => {
+          focused(edits[1].id)
+        }}
+        on:blur={(ev) => {
+          unfocus(ev, edits[1].id)
+        }}
       >
         {#if edits[1].value > -1}
           {edits[1].value.toString().padStart(2, '0')}
@@ -339,9 +353,15 @@
         bind:this={edits[2].el}
         class="digit"
         tabindex="0"
-        on:keydown={(ev) => keyDown(ev, edits[2].id)}
-        on:focus={() => focused(edits[2].id)}
-        on:blur={(ev) => unfocus(ev, edits[2].id)}
+        on:keydown={(ev) => {
+          keyDown(ev, edits[2].id)
+        }}
+        on:focus={() => {
+          focused(edits[2].id)
+        }}
+        on:blur={(ev) => {
+          unfocus(ev, edits[2].id)
+        }}
       >
         {#if edits[2].value > -1}
           {edits[2].value.toString().padStart(4, '0')}
@@ -356,9 +376,15 @@
         bind:this={edits[3].el}
         class="digit"
         tabindex="0"
-        on:keydown={(ev) => keyDown(ev, edits[3].id)}
-        on:focus={() => focused(edits[3].id)}
-        on:blur={(ev) => unfocus(ev, edits[3].id)}
+        on:keydown={(ev) => {
+          keyDown(ev, edits[3].id)
+        }}
+        on:focus={() => {
+          focused(edits[3].id)
+        }}
+        on:blur={(ev) => {
+          unfocus(ev, edits[3].id)
+        }}
       >
         {#if edits[3].value > -1}
           {edits[3].value.toString().padStart(2, '0')}
@@ -369,9 +395,15 @@
         bind:this={edits[4].el}
         class="digit"
         tabindex="0"
-        on:keydown={(ev) => keyDown(ev, edits[4].id)}
-        on:focus={() => focused(edits[4].id)}
-        on:blur={(ev) => unfocus(ev, edits[4].id)}
+        on:keydown={(ev) => {
+          keyDown(ev, edits[4].id)
+        }}
+        on:focus={() => {
+          focused(edits[4].id)
+        }}
+        on:blur={(ev) => {
+          unfocus(ev, edits[4].id)
+        }}
       >
         {#if edits[4].value > -1}
           {edits[4].value.toString().padStart(2, '0')}
@@ -392,7 +424,9 @@
           const newFocusElement = edits[mode === DateRangeMode.TIME ? 2 : 0].el
           if (newFocusElement) newFocusElement.focus()
         }}
-        on:blur={(ev) => unfocus(ev, closeBtn)}
+        on:blur={(ev) => {
+          unfocus(ev, closeBtn)
+        }}
       >
         <Icon icon={IconClose} size={'x-small'} />
       </div>

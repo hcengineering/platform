@@ -15,15 +15,15 @@
 //
 
 import type { Ref } from '@hcengineering/core'
-import { Funnel, leadId } from '@hcengineering/lead'
+import { type Funnel, leadId } from '@hcengineering/lead'
 import lead from '@hcengineering/lead-resources/src/plugin'
-import { NotificationGroup, NotificationType } from '@hcengineering/notification'
+import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
 import type { IntlString } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
-import { ProjectType } from '@hcengineering/task'
+import { type ProjectType } from '@hcengineering/task'
 import type { AnyComponent } from '@hcengineering/ui'
-import { Action, ActionCategory, Viewlet } from '@hcengineering/view'
-import { ActivityExtension } from '@hcengineering/activity'
+import { type Action, type ActionCategory, type Viewlet } from '@hcengineering/view'
+import { type ActivityExtension } from '@hcengineering/activity'
 
 export default mergeIds(leadId, lead, {
   string: {

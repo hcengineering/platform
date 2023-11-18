@@ -50,6 +50,8 @@
   allowDeselect
   titleDeselect={contact.string.Cancel}
   bind:value
-  on:change={(e) => onChange(e.detail)}
+  on:change={(e) => {
+    onChange(e.detail)
+  }}
   {showNavigate}
 />

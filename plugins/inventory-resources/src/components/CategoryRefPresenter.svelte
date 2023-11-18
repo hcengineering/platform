@@ -25,7 +25,14 @@
   let category: Category | undefined
 
   const query = createQuery()
-  $: query.query(inventory.class.Category, { _id: value }, (res) => ([category] = res), { limit: 1 })
+  $: query.query(
+    inventory.class.Category,
+    { _id: value },
+    (res) => {
+      ;[category] = res
+    },
+    { limit: 1 }
+  )
 </script>
 
 {#if category}

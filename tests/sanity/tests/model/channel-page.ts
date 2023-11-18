@@ -19,6 +19,6 @@ export class ChannelPage {
   }
 
   async checkMessageExist (message: string): Promise<void> {
-    await expect(await this.textMessage.filter({ hasText: message })).toBeVisible()
+    await expect(this.textMessage.filter({ hasText: message })).toBeVisible()
   }
 }

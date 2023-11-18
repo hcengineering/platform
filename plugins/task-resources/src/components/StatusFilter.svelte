@@ -15,8 +15,8 @@
 <script lang="ts">
   import core, { Doc, FindResult, IdMap, Ref, RefTo, Space, Status, toIdMap } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
-  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
-  import task, { Project, ProjectType } from '@hcengineering/task'
+  import presentation, { getClient } from '@hcengineering/presentation'
+  import { ProjectType } from '@hcengineering/task'
   import ui, {
     EditWithIcon,
     Icon,
@@ -60,14 +60,6 @@
   const targets = new Set<any>()
   $: targetClass = (filter.key.attribute.type as RefTo<Status>).to
   $: clazz = hierarchy.getClass(targetClass)
-
-  let _space: Project | undefined = undefined
-  const query = createQuery()
-  if (space !== undefined) {
-    query.query(task.class.Project, { _id: space as Ref<Project> }, (res) => {
-      _space = res[0]
-    })
-  }
 
   let filterUpdateTimeout: any | undefined
 
@@ -164,7 +156,9 @@
   function updateFilter () {
     clearTimeout(filterUpdateTimeout)
 
-    filterUpdateTimeout = setTimeout(() => onChange(filter), FILTER_DEBOUNCE_MS)
+    filterUpdateTimeout = setTimeout(() => {
+      onChange(filter)
+    }, FILTER_DEBOUNCE_MS)
   }
 
   let search: string = ''

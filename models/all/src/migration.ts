@@ -14,7 +14,7 @@
 //
 
 // Import migrate operations.
-import { MigrateOperation } from '@hcengineering/model'
+import { type MigrateOperation } from '@hcengineering/model'
 import { attachmentOperation } from '@hcengineering/model-attachment'
 import { chunterOperation } from '@hcengineering/model-chunter'
 import { contactOperation } from '@hcengineering/model-contact'

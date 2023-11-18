@@ -165,7 +165,7 @@
   let maxHeightAD: number = 0
   let shownHeightAD: number = 0
   let shownAD: boolean = false
-  let shortAlldays: { id: string; day: number; fixRow?: boolean }[] = []
+  let shortAlldays: { id: string, day: number, fixRow?: boolean }[] = []
   let moreCounts: number[] = Array<number>(displayedDaysCount)
   const nullCalendarElement: CalendarElementRect = {
     top: 0,
@@ -333,7 +333,7 @@
       (date2.date >= date1.date && date2.date < date1.dueDate)
     )
   }
-  const convertToTime = (date: Timestamp | Date): { hours: number; mins: number } => {
+  const convertToTime = (date: Timestamp | Date): { hours: number, mins: number } => {
     const temp = new Date(date)
     return { hours: temp.getHours() - startHour, mins: temp.getMinutes() }
   }
@@ -366,14 +366,14 @@
       getGridOffset(endTime.mins, true)
     let cols = 1
     let index: number = 0
-    grid[event.day].columns.forEach((col, i) =>
+    grid[event.day].columns.forEach((col, i) => {
       col.elements.forEach((el) => {
         if (el.id === event._id) {
           cols = el.cols
           index = i
         }
       })
-    )
+    })
     const elWidth = (colWidth - rem(0.25) - (cols - 1) * rem(0.125)) / cols
     result.width = elWidth
     result.left = rem(3.5) + event.day * colWidth + index * elWidth + index * rem(0.125) + rem(0.125) + cellBorder
@@ -428,7 +428,7 @@
       ? 'none'
       : `linear-gradient(-90deg, rgba(0, 0, 0, 1) ${visibility * 100}%, rgba(0, 0, 0, .4) ${visibility * 100}%)`
   }
-  const getMore = (day: number): { top: number; left: number; width: number } => {
+  const getMore = (day: number): { top: number, left: number, width: number } => {
     const result = { top: 0, left: 0, width: 0 }
     const lastRow = (minimizedAD ? minAD : maxAD) - 1
     result.top = rem(0.125 + lastRow * (heightAD + 0.125))
@@ -469,7 +469,9 @@
     for (let i = 0; i < displayedDaysCount; i++) if (areDatesEqual(getDay(weekMonday, i), todayDate)) equal = true
     if (equal) {
       renderNow()
-      timer = setInterval(() => renderNow(), 1000)
+      timer = setInterval(() => {
+        renderNow()
+      }, 1000)
     } else nowLineTop = -1
   }
   export const scrollToTime = (date: Date): void => {
@@ -542,14 +544,14 @@
           ...event,
           date: originDate,
           dueDate: originDueDate
-        } as ReccuringInstance)
+        } as unknown as ReccuringInstance)
       } else {
         await client.update(event, update)
       }
     }
   }
-  async function mouseUpElement (e: MouseEvent) {
-    window.removeEventListener('mouseup', mouseUpElement)
+  async function mouseUpElement (e: MouseEvent): Promise<void> {
+    window.removeEventListener('mouseup', mouseUpElement as any)
     const event = events.find((ev) => ev._id === resizeId)
     if (event !== undefined) await updateHandler(event)
     resizeId = directionResize = null
@@ -561,7 +563,7 @@
     directionResize = direction
     originDate = event.date
     originDueDate = event.dueDate
-    window.addEventListener('mouseup', mouseUpElement)
+    window.addEventListener('mouseup', mouseUpElement as any)
   }
   function mouseMoveElement (
     e: MouseEvent & { currentTarget: EventTarget & HTMLDivElement },
@@ -665,6 +667,7 @@
   bind:divScroll={scroller}
   fade={{ multipler: { top: (showHeader ? 3.5 : 0) + styleAD / fontSize, bottom: 0 } }}
 >
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     bind:this={container}
     on:dragleave
@@ -675,7 +678,9 @@
     style:grid={`${showHeader ? '[header] 3.5rem ' : ''}[all-day] ${styleAD}px repeat(${
       (displayedHours - startHour) * 2
     }, [row-start] 2rem) / [time-col] 3.5rem repeat(${displayedDaysCount}, [col-start] 1fr)`}
-    use:resizeObserver={(element) => checkSizes(element)}
+    use:resizeObserver={(element) => {
+      checkSizes(element)
+    }}
   >
     {#if showHeader}
       <div class="sticky-header head center"><span class="zone">{getTimeZone()}</span></div>
@@ -781,6 +786,7 @@
               {@const rect = getMore(day)}
               <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
               <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <!-- svelte-ignore a11y-no-static-element-interactions -->
               <div
                 class="calendar-element withPointer antiButton ghost medium accent cursor-pointer"
                 style:top={`${rect.top}px`}
@@ -824,9 +830,15 @@
           style:width={`${colWidth}px`}
           style:grid-column={`col-start ${dayOfWeek + 1} / ${dayOfWeek + 2}`}
           style:grid-row={`row-start ${hourOfDay * 2 + 1} / row-start ${hourOfDay * 2 + 3}`}
-          on:mousemove={(e) => mouseMoveElement(e, day, hourOfDay)}
-          on:dragover={(e) => dragOver(e, day, hourOfDay)}
-          on:drop|preventDefault={(e) => dragDrop(e, day, hourOfDay)}
+          on:mousemove={(e) => {
+            mouseMoveElement(e, day, hourOfDay)
+          }}
+          on:dragover={(e) => {
+            dragOver(e, day, hourOfDay)
+          }}
+          on:drop|preventDefault={(e) => {
+            dragDrop(e, day, hourOfDay)
+          }}
           on:click|stopPropagation={() => {
             dispatch('create', {
               date: new Date(day.setHours(hourOfDay + startHour, 0, 0, 0)),
@@ -854,22 +866,32 @@
             style:--mask-image={'none'}
             draggable={!ev.allDay && !resizeId}
             tabindex={1000 + i}
-            on:dragstart={(e) => dragStartElement(e, ev)}
+            on:dragstart={(e) => {
+              dragStartElement(e, ev)
+            }}
             on:dragend={dragEndElement}
           >
             <div
               class="calendar-element-start"
               class:allowed={!resizeId && !dragId && !clearCells}
               class:hovered={resizeId === ev._id && directionResize === 'top'}
-              on:mousedown={(e) => mouseDownElement(e, ev, 'top')}
-              on:contextmenu={(e) => showMenu(e, ev)}
+              on:mousedown={(e) => {
+                mouseDownElement(e, ev, 'top')
+              }}
+              on:contextmenu={(e) => {
+                showMenu(e, ev)
+              }}
             />
             <div
               class="calendar-element-end"
               class:allowed={!resizeId && !dragId && !clearCells}
               class:hovered={resizeId === ev._id && directionResize === 'bottom'}
-              on:mousedown={(e) => mouseDownElement(e, ev, 'bottom')}
-              on:contextmenu={(e) => showMenu(e, ev)}
+              on:mousedown={(e) => {
+                mouseDownElement(e, ev, 'bottom')
+              }}
+              on:contextmenu={(e) => {
+                showMenu(e, ev)
+              }}
             />
             <EventElement
               event={ev}

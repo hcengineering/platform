@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import { Ref } from '@hcengineering/core'
-import { IntlString, mergeIds } from '@hcengineering/platform'
-import { AnyComponent } from '@hcengineering/ui'
-import { FilterFunction, ViewAction, ViewCategoryAction, viewId } from '@hcengineering/view'
-import { PresentationMiddlewareFactory } from '@hcengineering/presentation'
+import { type Ref } from '@hcengineering/core'
+import { type IntlString, mergeIds } from '@hcengineering/platform'
+import { type AnyComponent } from '@hcengineering/ui'
+import { type FilterFunction, type ViewAction, type ViewCategoryAction, viewId } from '@hcengineering/view'
+import { type PresentationMiddlewareFactory } from '@hcengineering/presentation'
 import view from '@hcengineering/view-resources/src/plugin'
 
 export default mergeIds(viewId, view, {

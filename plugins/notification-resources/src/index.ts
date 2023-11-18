@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { Resources } from '@hcengineering/platform'
+import { type Resources } from '@hcengineering/platform'
 import Inbox from './components/Inbox.svelte'
 import NotificationSettings from './components/NotificationSettings.svelte'
 import NotificationPresenter from './components/NotificationPresenter.svelte'
@@ -37,6 +37,7 @@ export default async (): Promise<Resources> => ({
     TxDmCreation
   },
   function: {
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     GetNotificationClient: NotificationClientImpl.getClient,
     HasntNotifications: hasntNotifications
   },

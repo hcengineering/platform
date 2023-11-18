@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachedData, Doc, Ref } from '@hcengineering/core'
+  import { AttachedData, AttachedDoc, Doc, Ref } from '@hcengineering/core'
   import { generateId } from '@hcengineering/core'
   import { OK, Status } from '@hcengineering/platform'
   import { Card, getClient } from '@hcengineering/presentation'
@@ -31,7 +31,7 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const inventoryId = generateId() as Ref<Category>
+  const inventoryId = generateId<AttachedDoc>()
 
   export function canClose (): boolean {
     return name !== ''

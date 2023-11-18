@@ -14,21 +14,21 @@
 //
 
 import core, {
-  Account,
-  Arr,
-  AttachedDoc,
-  Class,
+  type Account,
+  type Arr,
+  type AttachedDoc,
+  type Class,
   ClassifierKind,
-  Data,
-  Doc,
+  type Data,
+  type Doc,
   DOMAIN_DOC_INDEX_STATE,
   DOMAIN_MODEL,
   DOMAIN_TX,
-  Mixin,
-  Obj,
-  Ref,
-  TxCreateDoc,
-  TxCUD,
+  type Mixin,
+  type Obj,
+  type Ref,
+  type TxCreateDoc,
+  type TxCUD,
   TxFactory
 } from '@hcengineering/core'
 import type { IntlString, Plugin } from '@hcengineering/platform'

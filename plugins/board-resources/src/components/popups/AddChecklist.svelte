@@ -22,7 +22,7 @@
   let name: string | undefined
   let selectedTemplate: ListItem | undefined = undefined
   let templateListItems: ListItem[] = [noneListItem]
-  let templatesMap: Map<string, TodoItem> = new Map()
+  let templatesMap = new Map<string, TodoItem>()
   const client = getClient()
   const templatesQuery = createQuery()
   const dispatch = createEventDispatcher()

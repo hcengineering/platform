@@ -34,7 +34,7 @@
     return firstName === '' && lastName === ''
   }
 
-  const object: Person = {} as Person
+  const object: Person = {} as unknown as Person
 
   const dispatch = createEventDispatcher()
   const client = getClient()

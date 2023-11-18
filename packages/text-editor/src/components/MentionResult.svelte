@@ -15,13 +15,13 @@
 -->
 <script lang="ts">
   import type { SearchResultDoc } from '@hcengineering/core'
-  import { Asset, getResource } from '@hcengineering/platform'
+  import { getResource } from '@hcengineering/platform'
   import { AnyComponent, Icon } from '@hcengineering/ui'
 
   export let value: SearchResultDoc
 
   $: iconComponent = value.iconComponent ? (value.iconComponent as AnyComponent) : undefined
-  $: icon = value.icon !== undefined ? (value.icon as Asset) : undefined
+  $: icon = value.icon !== undefined ? value.icon : undefined
 </script>
 
 <div class="flex-row-center h-8">

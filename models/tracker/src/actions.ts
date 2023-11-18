@@ -14,14 +14,14 @@
 //
 
 import contact from '@hcengineering/contact'
-import { Builder } from '@hcengineering/model'
+import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import task from '@hcengineering/model-task'
 import view, { actionTemplates, createAction } from '@hcengineering/model-view'
 import workbench, { createNavigateAction } from '@hcengineering/model-workbench'
-import { IntlString } from '@hcengineering/platform'
+import { type IntlString } from '@hcengineering/platform'
 import { trackerId } from '@hcengineering/tracker'
-import { KeyBinding, ViewAction } from '@hcengineering/view'
+import { type KeyBinding, type ViewAction } from '@hcengineering/view'
 import tracker from './plugin'
 
 import tags from '@hcengineering/tags'

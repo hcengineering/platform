@@ -169,7 +169,7 @@ export function organizationTextPresenter (doc: Doc): string {
 /**
  * @public
  */
-export function contactNameProvider (hierarchy: Hierarchy, props: { [key: string]: string }): string {
+export function contactNameProvider (hierarchy: Hierarchy, props: Record<string, string>): string {
   const _class = props._class !== undefined ? (props._class as Ref<Class<Doc>>) : contact.class.Contact
   return formatContactName(hierarchy, _class, props.name ?? '')
 }
