@@ -105,9 +105,11 @@
       {/if}
       {#if !preview || notificationPreviewPresenter === undefined}
         <div class="flex-between flex-baseline mt-3">
-          {#if tx}
-            <TxView {tx} {viewlets} objectId={value.attachedTo} />
-          {/if}
+          <div>
+            {#if tx}
+              <TxView {tx} {viewlets} objectId={value.attachedTo} />
+            {/if}
+          </div>
           <div class="time">
             <TimeSince value={tx?.modifiedOn} />
           </div>

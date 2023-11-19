@@ -17,7 +17,7 @@
   import { Doc, DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import type { Issue, Project } from '@hcengineering/tracker'
+  import type { Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import { resolvedLocationStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
@@ -35,6 +35,34 @@
   let query: DocumentQuery<Issue> | undefined = undefined
   let modeSelectorProps: IModeSelector | undefined = undefined
   let mode: string | undefined = undefined
+
+  const activeStatusQuery = createQuery()
+
+  let activeStatuses: Ref<IssueStatus>[] = []
+
+  $: activeStatusQuery.query(
+    tracker.class.IssueStatus,
+    { category: { $in: [tracker.issueStatusCategory.Unstarted, tracker.issueStatusCategory.Started] } },
+    (result) => {
+      activeStatuses = result.map(({ _id }) => _id)
+    }
+  )
+
+  let active: DocumentQuery<Issue>
+  $: active = { status: { $in: activeStatuses }, ...assigned }
+
+  const backlogStatusQuery = createQuery()
+
+  let backlogStatuses: Ref<IssueStatus>[] = []
+  let backlog: DocumentQuery<Issue> = {}
+  $: backlogStatusQuery.query(
+    tracker.class.IssueStatus,
+    { category: tracker.issueStatusCategory.Backlog },
+    (result) => {
+      backlogStatuses = result.map(({ _id }) => _id)
+    }
+  )
+  $: backlog = { status: { $in: backlogStatuses }, ...assigned }
 
   const subscribedQuery = createQuery()
   $: subscribedQuery.query(
@@ -62,7 +90,7 @@
     { projection: { _id: 1 } }
   )
 
-  $: queries = { assigned, created, subscribed }
+  $: queries = { assigned, active, backlog, created, subscribed }
   $: mode = $resolvedLocationStore.query?.mode ?? undefined
   $: if (mode === undefined || (queries as any)[mode] === undefined) {
     ;[[mode]] = config

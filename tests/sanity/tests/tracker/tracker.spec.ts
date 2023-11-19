@@ -13,6 +13,7 @@ import {
 } from './tracker.utils'
 import { PlatformSetting, fillSearch, generateId } from '../utils'
 import { allure } from 'allure-playwright'
+import { IssuesPage } from '../model/tracker/issues-page'
 
 test.use({
   storageState: PlatformSetting
@@ -203,6 +204,13 @@ test.describe('Tracker tests', () => {
       const random = Math.floor(Math.random() * values.length)
       const time = values[random]
       count += time
+      await page.click('text="Issues"')
+      const issuesPage = new IssuesPage(page)
+      await issuesPage.modelSelectorAll.click()
+      await page.click('button:has-text("View")')
+      await page.click('.ordering >> nth=0')
+      await page.click('text="Modified date"')
+      await page.keyboard.press('Escape')
 
       await page.locator('.estimation-container').first().click()
       await page.waitForSelector('text="Estimation"')

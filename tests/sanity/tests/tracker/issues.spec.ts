@@ -36,6 +36,7 @@ test.describe('Tracker issue tests', () => {
     await leftSideMenuPage.buttonTracker.click()
 
     const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
     await issuesPage.createNewIssue(newIssue)
     await issuesPage.searchIssueByName(newIssue.title)
     await issuesPage.openIssueByName(newIssue.title)
@@ -69,6 +70,7 @@ test.describe('Tracker issue tests', () => {
     await leftSideMenuPage.buttonTracker.click()
 
     const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
     await issuesPage.createNewIssue(newIssue)
     await issuesPage.searchIssueByName(newIssue.title)
     await issuesPage.openIssueByName(newIssue.title)

@@ -5,7 +5,7 @@ export class CommonPage {
     if (name !== 'first') {
       await page.locator('div.selectPopup input').fill(name.split(' ')[0])
     }
-    await page.locator('div.selectPopup div.list-item:first-child').click({ delay: 500 })
+    await page.locator('div.selectPopup div.list-item:first-child').click()
   }
 
   async pressCreateButtonSelectPopup (page: Page): Promise<void> {
@@ -50,6 +50,6 @@ export class CommonPage {
     if (name !== 'first') {
       await page.locator('div.selectPopup input').fill(name.split(' ')[0])
     }
-    await page.locator('div.selectPopup div.list-item').click({ delay: 500 })
+    await page.locator('div.selectPopup div.list-item').click()
   }
 }
