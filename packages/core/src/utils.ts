@@ -346,12 +346,22 @@ export function mergeQueries<T extends Doc> (query1: DocumentQuery<T>, query2: D
   const keys1 = Object.keys(query1)
   const keys2 = Object.keys(query2)
 
-  const query = Object.assign({}, query1)
+  const query = {}
+
+  for (const key of keys1) {
+    if (!keys2.includes(key)) {
+      Object.assign(query, { [key]: query1[key] })
+    }
+  }
 
   for (const key of keys2) {
-    const value = keys1.includes(key) ? mergeField(query1[key], query2[key]) : query2[key]
-    if (value !== undefined) {
-      Object.assign(query, { [key]: value })
+    if (!keys1.includes(key)) {
+      Object.assign(query, { [key]: query2[key] })
+    } else {
+      const value = mergeField(query1[key], query2[key])
+      if (value !== undefined) {
+        Object.assign(query, { [key]: value })
+      }
     }
   }
 
@@ -362,6 +372,8 @@ function mergeField (field1: any, field2: any): Object | undefined {
   // this is a special predicate that causes query never return any docs
   // it is used in cases when queries intersection is empty
   const never = { $in: [] }
+  // list of ignored predicates, handled separately
+  const ignored = ['$in', '$nin', '$ne']
 
   const isPredicate1 = isPredicate(field1)
   const isPredicate2 = isPredicate(field2)
@@ -374,6 +386,8 @@ function mergeField (field1: any, field2: any): Object | undefined {
     const keys2 = Object.keys(field2)
 
     for (const key of keys1) {
+      if (ignored.includes(key)) continue
+
       if (!keys2.includes(key)) {
         Object.assign(result, { [key]: field1[key] })
       } else {
@@ -385,6 +399,8 @@ function mergeField (field1: any, field2: any): Object | undefined {
     }
 
     for (const key of keys2) {
+      if (ignored.includes(key)) continue
+
       if (!keys1.includes(key)) {
         Object.assign(result, { [key]: field2[key] })
       }
@@ -417,11 +433,6 @@ function mergePredicateWithPredicate (predicate: string, val1: any, val2: any): 
   if (val2 === undefined) return val1
 
   switch (predicate) {
-    case '$in':
-    case '$nin':
-    case '$ne':
-      // ignore, handled separately
-      return undefined
     case '$lt':
       return val1 < val2 ? val1 : val2
     case '$lte':
@@ -463,28 +474,35 @@ function mergePredicateWithValue (predicate: string, val1: any, val2: any): any 
 }
 
 function getInNiN (query1: any, query2: any): Object {
-  const aIn =
-    (typeof query1 === 'object' && '$in' in query1 ? query1.$in : undefined) ??
-    (typeof query1 !== 'object' && query1 !== undefined ? [query1] : [])
+  const aIn = typeof query1 === 'object' && '$in' in query1 ? query1.$in : undefined
+  const bIn = typeof query2 === 'object' && '$in' in query2 ? query2.$in : undefined
   const aNIn =
     (typeof query1 === 'object' && '$nin' in query1 ? query1.$nin : undefined) ??
     (typeof query1 === 'object' && query1.$ne !== undefined ? [query1.$ne] : [])
-  const bIn =
-    (typeof query2 === 'object' && '$in' in query2 ? query2.$in : undefined) ??
-    (typeof query2 !== 'object' && query2 !== undefined ? [query2] : [])
   const bNIn =
     (typeof query2 === 'object' && '$nin' in query2 ? query2.$nin : undefined) ??
-    (typeof query2 === 'object' && query2.$ne !== undefined ? [query2.$ne] : [])
-  const finalIn =
-    aIn.length - bIn.length < 0 ? bIn.filter((c: any) => aIn.includes(c)) : aIn.filter((c: any) => bIn.includes(c))
+    (typeof query1 === 'object' && query2.$ne !== undefined ? [query2.$ne] : [])
+
   const finalNin = Array.from(new Set([...aNIn, ...bNIn]))
 
-  const res: any = {}
-  if (finalIn.length > 0) {
-    res.$in = finalIn
+  // we must keep $in if it was in the original query
+  if (aIn !== undefined || bIn !== undefined) {
+    const finalIn =
+      aIn !== undefined && bIn !== undefined
+        ? aIn.length - bIn.length < 0
+          ? bIn.filter((c: any) => aIn.includes(c))
+          : aIn.filter((c: any) => bIn.includes(c))
+        : aIn ?? bIn
+    return { $in: finalIn.filter((p: any) => !finalNin.includes(p)) }
+  }
+  // try to preserve original $ne instead of $nin
+  if ((typeof query1 === 'object' && '$ne' in query1) || (typeof query2 === 'object' && '$ne' in query2)) {
+    if (finalNin.length === 1) {
+      return { $ne: finalNin[0] }
+    }
   }
   if (finalNin.length > 0) {
-    res.$nin = finalNin
+    return { $nin: finalNin }
   }
-  return res
+  return {}
 }

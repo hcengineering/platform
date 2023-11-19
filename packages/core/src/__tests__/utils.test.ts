@@ -64,7 +64,7 @@ describe('mergeQueries', () => {
     expect(mergeQueries({ age: { $gte: 40 } }, { age: { $gte: 42 } })).toEqual({ age: { $gte: 42 } })
     expect(mergeQueries({ age: { $gte: 42 } }, { age: { $gte: 40 } })).toEqual({ age: { $gte: 42 } })
 
-    expect(mergeQueries({ age: { $ne: 42 } }, { age: { $ne: 42 } })).toEqual({ age: { $nin: [42] } })
+    expect(mergeQueries({ age: { $ne: 42 } }, { age: { $ne: 42 } })).toEqual({ age: { $ne: 42 } })
   })
 
   it('merges predicate with value', () => {
@@ -125,20 +125,35 @@ describe('mergeQueries', () => {
   })
 
   it('$nin merge', () => {
-    expect(mergeQueries({ value: { $nin: [] } }, { value: { $nin: [] } })).toEqual({ value: { $nin: [] } })
+    expect(mergeQueries({ value: { $nin: [] } }, { value: { $nin: [] } })).toEqual({})
     expect(mergeQueries({ value: { $nin: [42] } }, { value: { $nin: [42] } })).toEqual({ value: { $nin: [42] } })
   })
 
-  it('$in and $nin merge', () => {
-    expect(mergeQueries({ value: { $in: [1, 2] } }, { value: { $nin: [1] } })).toEqual({
-      value: { $in: [1, 2], $nin: [1] }
-    })
-    expect(mergeQueries({ value: { $nin: [1] } }, { value: { $in: [1, 2] } })).toEqual({
-      value: { $in: [1, 2], $nin: [1] }
-    })
+  it('$in $nin $ne merge', () => {
+    // $in and $nin
+    expect(mergeQueries({ value: { $in: [1, 2] } }, { value: { $nin: [1] } })).toEqual({ value: { $in: [2] } })
+    expect(mergeQueries({ value: { $nin: [1] } }, { value: { $in: [1, 2] } })).toEqual({ value: { $in: [2] } })
 
-    expect(mergeQueries({ value: { $in: [] } }, { value: { $nin: [42] } })).toEqual({ value: { $in: [], $nin: [42] } })
-    expect(mergeQueries({ value: { $nin: [42] } }, { value: { $in: [] } })).toEqual({ value: { $in: [], $nin: [42] } })
+    expect(mergeQueries({ value: { $in: ['a', 'b'] } }, { value: { $nin: ['a'] } })).toEqual({ value: { $in: ['b'] } })
+    expect(mergeQueries({ value: { $nin: ['a'] } }, { value: { $in: ['a', 'b'] } })).toEqual({ value: { $in: ['b'] } })
+
+    expect(mergeQueries({ value: { $in: [1, 2] } }, { value: { $nin: [1, 2, 3] } })).toEqual({ value: { $in: [] } })
+    expect(mergeQueries({ value: { $nin: [1, 2, 3] } }, { value: { $in: [1, 2] } })).toEqual({ value: { $in: [] } })
+
+    expect(mergeQueries({ value: { $in: [1, 2] } }, { value: { $nin: [1, 2] } })).toEqual({ value: { $in: [] } })
+
+    expect(mergeQueries({ value: { $in: [] } }, { value: { $nin: [42] } })).toEqual({ value: { $in: [] } })
+    expect(mergeQueries({ value: { $nin: [42] } }, { value: { $in: [] } })).toEqual({ value: { $in: [] } })
+
+    // $in and $ne
+    expect(mergeQueries({ value: { $in: [1, 2] } }, { value: { $ne: 1 } })).toEqual({ value: { $in: [2] } })
+    expect(mergeQueries({ value: { $ne: 1 } }, { value: { $in: [1, 2] } })).toEqual({ value: { $in: [2] } })
+
+    expect(mergeQueries({ value: { $in: [1] } }, { value: { $ne: 1 } })).toEqual({ value: { $in: [] } })
+    expect(mergeQueries({ value: { $ne: 1 } }, { value: { $in: [1] } })).toEqual({ value: { $in: [] } })
+
+    expect(mergeQueries({ value: { $in: [] } }, { value: { $ne: 42 } })).toEqual({ value: { $in: [] } })
+    expect(mergeQueries({ value: { $ne: 42 } }, { value: { $in: [] } })).toEqual({ value: { $in: [] } })
   })
 
   it('$lt and $gt', () => {
