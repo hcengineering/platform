@@ -61,3 +61,10 @@ rushx dev-codegen # for local setup
 ## Test authoring.
 
 Please update all navigation with using PlatformURI for CI and dev environment compatible testing.
+
+## Generate Allure
+
+```bash
+allure generate allure-results -o allure-report --clean
+allure open allure-report
+```

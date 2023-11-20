@@ -1,14 +1,16 @@
 import { expect, test } from '@playwright/test'
 import { PlatformSetting, PlatformURI } from './utils'
+import { allure } from 'allure-playwright'
 
 test.use({
   storageState: PlatformSetting
 })
 test.describe('workbench tests', () => {
   test.beforeEach(async ({ page }) => {
-    // Create user and workspace
+    await allure.parentSuite('Workbench test')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
+
   test('navigator', async ({ page }) => {
     // Click [id="app-recruit\:string\:RecruitApplication"]
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')

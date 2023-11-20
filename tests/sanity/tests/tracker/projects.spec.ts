@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { navigate } from './tracker.utils'
 import { generateId, PlatformSetting, PlatformURI, fillSearch } from '../utils'
+import { allure } from 'allure-playwright'
 
 test.use({
   storageState: PlatformSetting
@@ -8,9 +9,10 @@ test.use({
 
 test.describe('component tests', () => {
   test.beforeEach(async ({ page }) => {
-    // Create user and workspace
+    await allure.parentSuite('Tracker tests')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
+
   test('create-component-issue', async ({ page }) => {
     await page.click('[id="app-tracker\\:string\\:TrackerApplication"]')
 

@@ -1,5 +1,6 @@
 import { test } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI } from '../utils'
+import { allure } from 'allure-playwright'
 
 test.use({
   storageState: PlatformSetting
@@ -7,9 +8,10 @@ test.use({
 
 test.describe('review tests', () => {
   test.beforeEach(async ({ page }) => {
-    // Create user and workspace
+    await allure.parentSuite('Review tests')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
   })
+
   test('create-review', async ({ page, context }) => {
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
     await page.click('text=Reviews')

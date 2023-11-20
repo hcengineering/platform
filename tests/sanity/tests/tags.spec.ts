@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI } from './utils'
+import { allure } from 'allure-playwright'
 
 test.use({
   storageState: PlatformSetting
@@ -7,9 +8,10 @@ test.use({
 
 test.describe('recruit tests', () => {
   test.beforeEach(async ({ page }) => {
-    // Create user and workspace
+    await allure.parentSuite('Recruit test')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
+
   test('create-skill-candidate-with-skill', async ({ page }) => {
     // Go to http://localhost:8083/workbench/sanity-ws
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()

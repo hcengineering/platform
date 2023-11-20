@@ -4,13 +4,15 @@ import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 import { Issue, NewIssue } from '../model/tracker/types'
+import { allure } from 'allure-playwright'
 
 test.use({
   storageState: PlatformSetting
 })
 
-test.describe('tracker issue tests', () => {
+test.describe('Tracker issue tests', () => {
   test.beforeEach(async ({ page }) => {
+    await allure.parentSuite('Tracker tests')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
