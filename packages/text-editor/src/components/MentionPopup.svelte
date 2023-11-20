@@ -38,10 +38,15 @@
 
   const client = getClient()
 
-  client.findAll(presentation.class.ObjectSearchCategory, { context: 'mention' }).then(async (results) => {
-    categories = results
-    updateItems(query)
-  })
+  client
+    .findAll(presentation.class.ObjectSearchCategory, { context: 'mention' })
+    .then(async (results) => {
+      categories = results
+      await updateItems(query)
+    })
+    .catch((e) => {
+      console.error(e)
+    })
 
   const dispatch = createEventDispatcher()
 
@@ -76,8 +81,8 @@
     if (key.key === 'Enter' || key.key === 'Tab') {
       key.preventDefault()
       key.stopPropagation()
-      const searchItem = items[selection]
-      if (searchItem) {
+      if (selection < items.length) {
+        const searchItem = items[selection]
         dispatchItem(searchItem.item)
         return true
       } else {
@@ -86,8 +91,6 @@
     }
     return false
   }
-
-  export function done () {}
 
   function packSearchResultsForListView (sections: SearchSection[]): SearchItem[] {
     let results: SearchItem[] = []
@@ -161,7 +164,7 @@
     const sections = await doFulltextSearch(classesToSearch, query)
     items = packSearchResultsForListView(sections)
   }
-  $: updateItems(query)
+  $: void updateItems(query)
 </script>
 
 {#if (items.length === 0 && query !== '') || items.length > 0}
