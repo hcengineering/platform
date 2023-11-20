@@ -20,7 +20,7 @@ import { type IntlString, mergeIds } from '@hcengineering/platform'
 import { type Action } from '@hcengineering/view'
 
 import { type Ref } from '@hcengineering/core'
-import type { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent } from '@hcengineering/ui/src/types'
 
 export default mergeIds(bitrixId, bitrix, {
   component: {

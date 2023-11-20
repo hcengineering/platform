@@ -25,7 +25,7 @@ import core, { DOMAIN_MODEL, type Class, type Doc, type DocumentQuery, type Ref,
 import { Mixin, Model, type Builder } from '@hcengineering/model'
 import { TClass, TDoc } from '@hcengineering/model-core'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 
 import activity from './plugin'
 

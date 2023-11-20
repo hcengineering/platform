@@ -50,7 +50,7 @@ import { TProject } from '@hcengineering/model-task'
 import view, { createAction } from '@hcengineering/model-view'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import calendar from './plugin'
 
 export * from '@hcengineering/calendar'

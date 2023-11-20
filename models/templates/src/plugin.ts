@@ -21,7 +21,7 @@ import { templatesId } from '@hcengineering/templates'
 import templates from '@hcengineering/templates-resources/src/plugin'
 
 import { type RefInputAction, type RefInputActionItem } from '@hcengineering/model-text-editor'
-import type { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action, type ActionCategory } from '@hcengineering/view'
 
 export default mergeIds(templatesId, templates, {

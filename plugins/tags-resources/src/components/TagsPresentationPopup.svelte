@@ -18,7 +18,7 @@
   import { TagElement, TagReference } from '@hcengineering/tags'
   import tags from '../plugin'
   import TagItem from './TagItem.svelte'
-  import { selectedTagElements } from '@hcengineering/tags'
+  import { selectedTagElements } from '../utils'
   import { Label } from '@hcengineering/ui'
 
   export let object: Doc

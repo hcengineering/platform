@@ -18,7 +18,10 @@ import { type Builder, Model, Prop, TypeRef } from '@hcengineering/model'
 import core, { TDoc } from '@hcengineering/model-core'
 import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 // Import types to prevent .svelte components to being exposed to type typescript.
-import { type PresentationMiddlewareCreator, type PresentationMiddlewareFactory } from '@hcengineering/presentation'
+import {
+  type PresentationMiddlewareCreator,
+  type PresentationMiddlewareFactory
+} from '@hcengineering/presentation/src/pipeline'
 import {
   type ComponentPointExtension,
   type CreateExtensionKind,
@@ -30,7 +33,7 @@ import {
   type ObjectSearchCategory,
   type ObjectSearchFactory
 } from '@hcengineering/presentation/src/types'
-import { type AnyComponent, type ComponentExtensionId } from '@hcengineering/ui'
+import { type AnyComponent, type ComponentExtensionId } from '@hcengineering/ui/src/types'
 import presentation from './plugin'
 
 export { presentationId } from '@hcengineering/presentation/src/plugin'

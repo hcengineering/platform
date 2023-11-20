@@ -58,7 +58,7 @@ import {
   type Task,
   type TodoItem
 } from '@hcengineering/task'
-import type { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { type ViewAction } from '@hcengineering/view'
 import task from './plugin'
 

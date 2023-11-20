@@ -17,7 +17,8 @@
   import { Class, Doc, DocumentQuery, getCurrentAccount, Ref, Status } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import tags, { selectedTagElements, TagCategory, TagElement } from '@hcengineering/tags'
+  import tags, { TagCategory, TagElement } from '@hcengineering/tags'
+  import { selectedTagElements } from '@hcengineering/tags-resources'
   import { Task } from '@hcengineering/task'
   import {
     Component,

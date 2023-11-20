@@ -55,7 +55,7 @@ import {
 } from '@hcengineering/notification'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import notification from './plugin'
 export { notificationId } from '@hcengineering/notification'
 export { notificationOperation } from './migration'

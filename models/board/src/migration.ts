@@ -22,7 +22,7 @@ import {
 } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import { createProjectType, createSequence } from '@hcengineering/model-task'
-import tags from '@hcengineering/tags'
+import tags from '@hcengineering/model-tags'
 import task, { type ProjectType } from '@hcengineering/task'
 import board from './plugin'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'

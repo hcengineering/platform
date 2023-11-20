@@ -17,7 +17,7 @@
 import { type Doc, type Ref } from '@hcengineering/core'
 import notification, { notificationId } from '@hcengineering/notification'
 import { type IntlString, type Resource, mergeIds } from '@hcengineering/platform'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action, type ActionCategory, type ViewAction } from '@hcengineering/view'
 import { type Application } from '@hcengineering/workbench'
 import { type TxViewlet } from '@hcengineering/activity'

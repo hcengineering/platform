@@ -18,7 +18,7 @@ import type { Ref } from '@hcengineering/core'
 import { inventoryId } from '@hcengineering/inventory'
 import inventory from '@hcengineering/inventory-resources/src/plugin'
 import { type IntlString, mergeIds } from '@hcengineering/platform'
-import type { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action, type ActionCategory, type ViewAction, type Viewlet } from '@hcengineering/view'
 import { type ActivityExtension } from '@hcengineering/activity'
 

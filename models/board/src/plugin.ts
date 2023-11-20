@@ -19,7 +19,7 @@ import board from '@hcengineering/board-resources/src/plugin'
 import type { Ref } from '@hcengineering/core'
 import { type IntlString, mergeIds } from '@hcengineering/platform'
 import { type ProjectType, type Sequence } from '@hcengineering/task'
-import type { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action, type ViewAction, type Viewlet, type ViewletDescriptor } from '@hcengineering/view'
 
 export default mergeIds(boardId, board, {
