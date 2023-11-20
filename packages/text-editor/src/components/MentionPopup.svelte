@@ -164,39 +164,43 @@
   $: updateItems(query)
 </script>
 
-<form class="antiPopup mentionPoup" on:keydown={onKeyDown} use:resizeObserver={() => dispatch('changeSize')}>
-  <div class="ap-scroll" bind:this={scrollContainer}>
-    <div class="ap-box">
-      {#if items.length === 0 && query !== ''}
-        <div class="noResults"><Label label={presentation.string.NoResults} /></div>
-      {/if}
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <ListView bind:this={list} bind:selection count={items.length}>
-        <svelte:fragment slot="category" let:item={num}>
-          {@const item = items[num]}
-          {#if item.num === 0}
-            <div class="mentonCategory">
-              <Label label={item.category.title} />
-            </div>
-          {/if}
-        </svelte:fragment>
-        <svelte:fragment slot="item" let:item={num}>
-          {@const item = items[num]}
-          {@const doc = item.item}
-          <div
-            class="ap-menuItem withComp"
-            on:click={() => {
-              dispatchItem(doc)
-            }}
-          >
-            <MentionResult value={doc} />
-          </div>
-        </svelte:fragment>
-      </ListView>
+{#if (items.length === 0 && query !== '') || items.length > 0}
+  <form class="antiPopup mentionPoup" on:keydown={onKeyDown} use:resizeObserver={() => dispatch('changeSize')}>
+    <div class="ap-scroll" bind:this={scrollContainer}>
+      <div class="ap-box">
+        {#if items.length === 0 && query !== ''}
+          <div class="noResults"><Label label={presentation.string.NoResults} /></div>
+        {/if}
+        {#if items.length > 0}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <ListView bind:this={list} bind:selection count={items.length}>
+            <svelte:fragment slot="category" let:item={num}>
+              {@const item = items[num]}
+              {#if item.num === 0}
+                <div class="mentonCategory">
+                  <Label label={item.category.title} />
+                </div>
+              {/if}
+            </svelte:fragment>
+            <svelte:fragment slot="item" let:item={num}>
+              {@const item = items[num]}
+              {@const doc = item.item}
+              <div
+                class="ap-menuItem withComp"
+                on:click={() => {
+                  dispatchItem(doc)
+                }}
+              >
+                <MentionResult value={doc} />
+              </div>
+            </svelte:fragment>
+          </ListView>
+        {/if}
+      </div>
     </div>
-  </div>
-  <div class="ap-space x2" />
-</form>
+    <div class="ap-space x2" />
+  </form>
+{/if}
 
 <style lang="scss">
   .noResults {
