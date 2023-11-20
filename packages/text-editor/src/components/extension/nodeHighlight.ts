@@ -17,8 +17,7 @@ export function highlightUpdateCommand (): TextEditorCommand {
 }
 
 export interface NodeHighlightExtensionOptions extends NodeUuidOptions {
-  getNodeHighlightType: (uuid: string) => NodeHighlightType | undefined | null
-  isActiveNode?: (uuid: string) => boolean
+  getNodeHighlight: (uuid: string) => { type: NodeHighlightType, isActive?: boolean } | undefined | null
   isHighlightModeOn: () => boolean
   isAutoSelect?: () => boolean
 }
@@ -33,21 +32,23 @@ const generateAttributes = (uuid: string, options: NodeHighlightExtensionOptions
     return undefined
   }
 
-  const type = options.getNodeHighlightType(uuid)
-  if (type === null || type === undefined) {
+  const highlight = options.getNodeHighlight(uuid)
+  if (highlight === null || highlight === undefined) {
     return undefined
   }
   const classAttrs: { class?: string } = {}
 
-  if (type === NodeHighlightType.WARNING) {
+  if (highlight.type === NodeHighlightType.WARNING) {
     classAttrs.class = 'text-editor-highlighted-node-warning'
-  } else if (type === NodeHighlightType.ADD) {
+  } else if (highlight.type === NodeHighlightType.ADD) {
     classAttrs.class = 'text-editor-highlighted-node-add'
-  } else if (type === NodeHighlightType.DELETE) {
+  } else if (highlight.type === NodeHighlightType.DELETE) {
     classAttrs.class = 'text-editor-highlighted-node-delete'
   }
 
-  return classAttrs
+  return highlight.isActive === true
+    ? mergeAttributes(classAttrs, { class: 'text-editor-highlighted-node-selected' })
+    : classAttrs
 }
 
 const NodeHighlight = 'node-highlight'
@@ -221,16 +222,7 @@ const createDecorations = (
         return
       }
 
-      decorations.push(
-        Decoration.inline(
-          range.from,
-          range.to,
-          mergeAttributes(
-            attributes,
-            options.isActiveNode?.(nodeUuid) === true ? { class: 'text-editor-highlighted-node-selected' } : {}
-          )
-        )
-      )
+      decorations.push(Decoration.inline(range.from, range.to, attributes))
     }
   })
 
