@@ -1,6 +1,6 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createFocusManager, FocusHandler, Label, ListView, resizeObserver } from '@hcengineering/ui'
+  import { Label, ListView, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation, { getClient, ObjectSearchCategory } from '@hcengineering/presentation'
 
@@ -70,7 +70,7 @@
       list?.select(selection - 1)
       return true
     }
-    if (key.key === 'Enter') {
+    if (key.key === 'Enter' || key.key === 'Tab') {
       key.preventDefault()
       key.stopPropagation()
       const searchItem = items[selection]
@@ -159,11 +159,7 @@
     items = packSearchResultsForListView(sections)
   }
   $: updateItems(query)
-
-  const manager = createFocusManager()
 </script>
-
-<FocusHandler {manager} />
 
 <form class="antiPopup mentionPoup" on:keydown={onKeyDown} use:resizeObserver={() => dispatch('changeSize')}>
   <div class="ap-scroll" bind:this={scrollContainer}>

@@ -161,6 +161,8 @@ export interface SuggestionKeyDownProps {
 
 export const SuggestionPluginKey = new PluginKey('suggestion')
 
+const cancelKeys = ['Escape', 'ArrowLeft', 'ArrowRight']
+
 export default function Suggestion<I = any> ({
   pluginKey = SuggestionPluginKey,
   editor,
@@ -394,7 +396,7 @@ export default function Suggestion<I = any> ({
           return false
         }
 
-        if (event.key === 'Escape') {
+        if (cancelKeys.includes(event.key)) {
           const flag = { forceCancelSuggestion: true }
 
           // It's important to dispatch this state twice

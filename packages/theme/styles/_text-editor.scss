@@ -231,6 +231,13 @@
   }
 }
 
+.reference {
+  &:hover,
+  &.ProseMirror-selectednode {
+    background-color: var(--theme-mention-focused-bg-color);
+  }
+}
+
 .text-editor-highlighted-node-warning {
   background-color: var(--text-editor-highlighted-node-warning-background-color);
   border-bottom: 0.0625rem solid var(--text-editor-highlighted-node-warning-border-color);
