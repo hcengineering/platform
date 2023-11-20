@@ -3,7 +3,7 @@ import { type Node as ProseMirrorNode, type MarkType } from '@tiptap/pm/model'
 import { Plugin, PluginKey, TextSelection } from '@tiptap/pm/state'
 import { AddMarkStep, RemoveMarkStep } from '@tiptap/pm/transform'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
-import { NodeUuidExtension, type NodeUuidOptions, type NodeUuidStorage, findNodeUuidMark } from './nodeUuid'
+import { NodeUuidExtension, type NodeUuidOptions, findNodeUuidMark } from './nodeUuid'
 import { type TextEditorCommand } from '../../types'
 
 export enum NodeHighlightType {
@@ -18,6 +18,7 @@ export function highlightUpdateCommand (): TextEditorCommand {
 
 export interface NodeHighlightExtensionOptions extends NodeUuidOptions {
   getNodeHighlightType: (uuid: string) => NodeHighlightType | undefined | null
+  isActiveNode?: (uuid: string) => boolean
   isHighlightModeOn: () => boolean
   isAutoSelect?: () => boolean
 }
@@ -69,17 +70,12 @@ declare module '@tiptap/core' {
 /**
  * Extension allows to highlight nodes based on uuid
  */
-export const NodeHighlightExtension: Extension<NodeHighlightExtensionOptions, NodeUuidStorage> =
+export const NodeHighlightExtension: Extension<NodeHighlightExtensionOptions> =
   Extension.create<NodeHighlightExtensionOptions>({
     name: NodeHighlight,
 
-    addStorage (): NodeUuidStorage {
-      return { activeNodeUuid: null }
-    },
-
     addProseMirrorPlugins () {
       const options = this.options
-      const storage: NodeUuidStorage = this.storage
 
       const plugins = [
         ...(this.parent?.() ?? []),
@@ -114,14 +110,14 @@ export const NodeHighlightExtension: Extension<NodeHighlightExtensionOptions, No
             init (_config, state): DecorationSet {
               const { doc, schema } = state
               const markType = schema.marks[NodeUuidExtension.name]
-              return createDecorations(doc, markType, storage, options)
+              return createDecorations(doc, markType, options)
             },
 
             apply (tr, decorations, oldState, newState) {
               const markType = newState.schema.marks[NodeUuidExtension.name]
 
               if (tr.getMeta(NodeHighlightMeta) !== undefined) {
-                return createDecorations(tr.doc, markType, storage, options)
+                return createDecorations(tr.doc, markType, options)
               }
 
               if (!tr.docChanged) {
@@ -136,7 +132,7 @@ export const NodeHighlightExtension: Extension<NodeHighlightExtensionOptions, No
                     (step instanceof RemoveMarkStep && step.mark.type === markType)
                 )
               ) {
-                return createDecorations(tr.doc, markType, storage, options)
+                return createDecorations(tr.doc, markType, options)
               }
 
               // update all decorations when changed content has mark changes
@@ -157,7 +153,7 @@ export const NodeHighlightExtension: Extension<NodeHighlightExtensionOptions, No
               })
 
               if (hasMarkChanges) {
-                return createDecorations(tr.doc, markType, storage, options)
+                return createDecorations(tr.doc, markType, options)
               }
 
               return decorations.map(tr.mapping, tr.doc)
@@ -189,17 +185,12 @@ export const NodeHighlightExtension: Extension<NodeHighlightExtensionOptions, No
 
     addExtensions () {
       const options: NodeHighlightExtensionOptions = this.options
-      const storage: NodeUuidStorage = this.storage
       return [
         NodeUuidExtension.extend({
           addOptions (): NodeUuidOptions {
             return {
               ...this.parent?.(),
-              ...options,
-              onNodeSelected: (uuid: string) => {
-                storage.activeNodeUuid = uuid
-                options.onNodeSelected?.(uuid)
-              }
+              ...options
             }
           }
         })
@@ -210,7 +201,6 @@ export const NodeHighlightExtension: Extension<NodeHighlightExtensionOptions, No
 const createDecorations = (
   doc: ProseMirrorNode,
   markType: MarkType,
-  storage: NodeUuidStorage,
   options: NodeHighlightExtensionOptions
 ): DecorationSet => {
   const decorations: Decoration[] = []
@@ -237,7 +227,7 @@ const createDecorations = (
           range.to,
           mergeAttributes(
             attributes,
-            nodeUuid === storage.activeNodeUuid ? { class: 'text-editor-highlighted-node-selected' } : {}
+            options.isActiveNode?.(nodeUuid) === true ? { class: 'text-editor-highlighted-node-selected' } : {}
           )
         )
       )
