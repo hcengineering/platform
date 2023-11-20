@@ -188,7 +188,7 @@
               <div
                 class="ap-menuItem withComp"
                 on:click={() => {
-                    dispatchItem(doc)
+                  dispatchItem(doc)
                 }}
               >
                 <MentionResult value={doc} />
