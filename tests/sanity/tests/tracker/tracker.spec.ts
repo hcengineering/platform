@@ -209,7 +209,7 @@ test.describe('Tracker tests', () => {
       await issuesPage.modelSelectorAll.click()
       await page.click('button:has-text("View")')
       await page.click('.ordering >> nth=0')
-      await page.click('text="Modified date"')
+      await page.locator('button.menu-item', { hasText: 'Modified date' }).click()
       await page.keyboard.press('Escape')
 
       await page.locator('.estimation-container').first().click()
