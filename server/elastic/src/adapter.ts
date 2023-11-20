@@ -128,7 +128,12 @@ class ElasticAdapter implements FullTextAdapter {
         size: options.limit ?? DEFAULT_LIMIT
       }
 
-      const filter = []
+      const filter: any = [
+        {
+          exists: { field: 'searchTitle' }
+        }
+      ]
+
       if (query.spaces !== undefined) {
         filter.push({
           terms: { 'space.keyword': query.spaces }

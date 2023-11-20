@@ -85,7 +85,7 @@ export async function updateDocWithPresenter (hierarchy: Hierarchy, doc: Indexed
     props.push({
       name: 'searchShortTitle',
       config: searchPresenter.searchConfig.shortTitle,
-      provider: searchPresenter.getSearchObjectId
+      provider: searchPresenter.getSearchShortTitle
     })
   }
 

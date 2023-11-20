@@ -365,6 +365,6 @@ export interface ClassSearchConfig {
  */
 export interface SearchPresenter extends Class<Doc> {
   searchConfig: ClassSearchConfig
-  getSearchObjectId?: Resource<SearchPresenterFunc>
+  getSearchShortTitle?: Resource<SearchPresenterFunc>
   getSearchTitle?: Resource<SearchPresenterFunc>
 }

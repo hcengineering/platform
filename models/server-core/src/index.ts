@@ -63,7 +63,7 @@ export class TObjectDDParticipant extends TClass implements ObjectDDParticipant 
 @Mixin(serverCore.mixin.SearchPresenter, core.class.Class)
 export class TSearchPresenter extends TClass implements SearchPresenter {
   searchConfig!: ClassSearchConfig
-  getSearchObjectId!: Resource<SearchPresenterFunc>
+  getSearchShortTitle!: Resource<SearchPresenterFunc>
   getSearchTitle!: Resource<SearchPresenterFunc>
 }
 

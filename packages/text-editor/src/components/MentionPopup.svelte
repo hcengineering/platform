@@ -164,12 +164,14 @@
   $: updateItems(query)
 </script>
 
+{#if items.length === 0 && query !== '' || items.length > 0}
 <form class="antiPopup mentionPoup" on:keydown={onKeyDown} use:resizeObserver={() => dispatch('changeSize')}>
   <div class="ap-scroll" bind:this={scrollContainer}>
     <div class="ap-box">
       {#if items.length === 0 && query !== ''}
         <div class="noResults"><Label label={presentation.string.NoResults} /></div>
       {/if}
+      {#if items.length > 0 }
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <ListView bind:this={list} bind:selection count={items.length}>
         <svelte:fragment slot="category" let:item={num}>
@@ -193,10 +195,12 @@
           </div>
         </svelte:fragment>
       </ListView>
+      {/if}
     </div>
   </div>
   <div class="ap-space x2" />
 </form>
+{/if}
 
 <style lang="scss">
   .noResults {
