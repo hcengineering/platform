@@ -42,7 +42,7 @@
   export let minW0 = true
   export let disabled: boolean = false
 
-  export let withSearch: boolean = true
+  export let enableSearch: boolean = true
 
   let container: HTMLElement
   let opened: boolean = false
@@ -71,7 +71,7 @@
         opened = true
         showPopup(
           DropdownLabelsPopup,
-          { placeholder, items, multiselect, selected, enableSearch: withSearch },
+          { placeholder, items, multiselect, selected, enableSearch },
           container,
           (result) => {
             if (result != null) {
