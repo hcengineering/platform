@@ -12,6 +12,9 @@ node ../dev/tool/bundle.js create-workspace sanity-ws -o SanityTest
 # Create user record in accounts
 node ../dev/tool/bundle.js create-account user1 -f John -l Appleseed -p 1234
 node ../dev/tool/bundle.js confirm-email user1
+# Create second user record in accounts
+node ../dev/tool/bundle.js create-account user2 -f Kainin -l Numoin -p 1234
+node ../dev/tool/bundle.js confirm-email user2
 
 
 # Restore workspace contents in mongo/elastic
@@ -21,6 +24,7 @@ node ../dev/tool/bundle.js upgrade-workspace sanity-ws
 
 # Re-assign user to workspace.
 node ../dev/tool/bundle.js assign-workspace user1 sanity-ws
+node ../dev/tool/bundle.js assign-workspace user2 sanity-ws
 
 node ../dev/tool/bundle.js configure sanity-ws --enable=*
 node ../dev/tool/bundle.js configure sanity-ws --list

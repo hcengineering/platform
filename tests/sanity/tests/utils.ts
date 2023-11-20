@@ -3,6 +3,7 @@ import { Locator, Page } from '@playwright/test'
 export const PlatformURI = process.env.PLATFORM_URI as string
 export const PlatformTransactor = process.env.PLATFORM_TRANSACTOR as string
 export const PlatformUser = process.env.PLATFORM_USER as string
+export const PlatformUserSecond = process.env.PLATFORM_USER_SECOND as string
 export const PlatformToken = process.env.PLATFORM_TOKEN as string
 export const PlatformSetting = process.env.SETTING as string
 

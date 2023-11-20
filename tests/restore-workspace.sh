@@ -7,6 +7,7 @@
 
 # Re-assign user to workspace.
 ./tool.sh assign-workspace user1 sanity-ws
+./tool.sh assign-workspace user2 sanity-ws
 
 ./tool.sh configure sanity-ws --enable=*
 ./tool.sh configure sanity-ws --list

@@ -1,8 +1,14 @@
-import { PlaywrightTestConfig } from '@playwright/test'
+import { devices, PlaywrightTestConfig } from '@playwright/test'
 import { config as dotenvConfig } from 'dotenv'
 dotenvConfig()
 
 const config: PlaywrightTestConfig = {
+  projects: [
+    {
+      name: 'Tests',
+      use: { ...devices['Desktop Chrome'] }
+    }
+  ],
   use: {
     screenshot: 'only-on-failure',
     trace: {
