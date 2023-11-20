@@ -18,7 +18,7 @@ import type { IntlString } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { requestId } from '@hcengineering/request'
 import request from '@hcengineering/request-resources/src/plugin'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import type { TxViewlet } from '@hcengineering/activity'
 import type { NotificationGroup, NotificationType } from '@hcengineering/notification'
 

@@ -59,6 +59,7 @@
     "@hcengineering/rekoni": "^0.6.0",
     "@hcengineering/notification": "^0.6.15",
     "@hcengineering/tags": "^0.6.11",
+    "@hcengineering/tags-resources": "^0.6.0",
     "@hcengineering/calendar": "^0.6.16",
     "@hcengineering/tracker": "^0.6.12"
   }

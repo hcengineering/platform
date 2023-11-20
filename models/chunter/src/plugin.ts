@@ -20,7 +20,7 @@ import type { Doc, Ref, Space } from '@hcengineering/core'
 import { type NotificationGroup } from '@hcengineering/notification'
 import type { IntlString, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
-import type { AnyComponent, Location } from '@hcengineering/ui'
+import type { AnyComponent, Location } from '@hcengineering/ui/src/types'
 import type { Action, ActionCategory, ViewAction, ViewletDescriptor } from '@hcengineering/view'
 
 export default mergeIds(chunterId, chunter, {

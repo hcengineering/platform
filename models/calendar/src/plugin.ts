@@ -20,7 +20,7 @@ import { type Ref } from '@hcengineering/core'
 import { type NotificationGroup } from '@hcengineering/notification'
 import type { IntlString } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import {
   type Action,
   type ActionCategory,

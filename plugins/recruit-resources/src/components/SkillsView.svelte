@@ -1,5 +1,5 @@
 <script lang="ts">
-  import tags, { selectedTagElements, TagElement } from '@hcengineering/tags'
+  import tags, { TagElement } from '@hcengineering/tags'
   import { Button, Component, getCurrentResolvedLocation, navigate, showPopup } from '@hcengineering/ui'
   import recruit from '../plugin'
   import { buildFilterKey, setFilters } from '@hcengineering/view-resources'
@@ -7,6 +7,7 @@
   import { Filter } from '@hcengineering/view'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import OptimizeSkills from './OptimizeSkills.svelte'
+  import { selectedTagElements } from '@hcengineering/tags-resources'
 
   function setFilterTag (tag: TagElement) {
     const client = getClient()

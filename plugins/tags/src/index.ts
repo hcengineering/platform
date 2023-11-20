@@ -17,7 +17,6 @@ import type { AttachedDoc, Class, Doc, Ref, Space } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
-import { writable } from 'svelte/store'
 import { FilterMode } from '@hcengineering/view'
 
 /**
@@ -150,8 +149,3 @@ export function findTagCategory (title: string, categories: TagCategory[]): Ref<
   }
   return defaultCategory._id
 }
-
-/**
- * @public
- */
-export const selectedTagElements = writable<Ref<TagElement>[]>([])

@@ -15,9 +15,9 @@
 
 import { type Ref } from '@hcengineering/core'
 import { type IntlString, mergeIds } from '@hcengineering/platform'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type FilterFunction, type ViewAction, type ViewCategoryAction, viewId } from '@hcengineering/view'
-import { type PresentationMiddlewareFactory } from '@hcengineering/presentation'
+import { type PresentationMiddlewareFactory } from '@hcengineering/presentation/src/pipeline'
 import view from '@hcengineering/view-resources/src/plugin'
 
 export default mergeIds(viewId, view, {

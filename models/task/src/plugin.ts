@@ -19,7 +19,7 @@ import { mergeIds } from '@hcengineering/platform'
 import { type TagCategory } from '@hcengineering/tags'
 import { taskId } from '@hcengineering/task'
 import task from '@hcengineering/task-resources/src/plugin'
-import type { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent } from '@hcengineering/ui/src/types'
 import type { Action, ActionCategory, ViewAction, Viewlet } from '@hcengineering/view'
 import {} from '@hcengineering/notification'
 

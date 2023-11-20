@@ -30,7 +30,7 @@ import core, { TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import presentation from '@hcengineering/model-presentation'
 import { type Asset, type IntlString, type Resource, type Status } from '@hcengineering/platform'
-import { type AnyComponent, type Location } from '@hcengineering/ui'
+import { type AnyComponent, type Location } from '@hcengineering/ui/src/types'
 import {
   type Action,
   type ActionCategory,

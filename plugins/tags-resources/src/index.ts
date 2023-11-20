@@ -34,14 +34,14 @@ import CreateTagElement from './components/CreateTagElement.svelte'
 import ObjectsTagsEditorPopup from './components/ObjectsTagsEditorPopup.svelte'
 import TagElement from './components/TagElement.svelte'
 import { type ObjQueryType } from '@hcengineering/core'
-import { getRefs } from './utils'
+import { getRefs, selectedTagElements } from './utils'
 import { type Filter } from '@hcengineering/view'
 import WeightPopup from './components/WeightPopup.svelte'
 import DraftTagsEditor from './components/DraftTagsEditor.svelte'
 import TagsFilterPresenter from './components/TagsFilterPresenter.svelte'
 import DocTagsEditor from './components/DocTagsEditor.svelte'
 
-export { WeightPopup, TagElement }
+export { WeightPopup, TagElement, selectedTagElements }
 export async function tagsInResult (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
   const result = await getRefs(filter, onUpdate)
   return { $in: result }

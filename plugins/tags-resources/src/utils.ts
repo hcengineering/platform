@@ -2,11 +2,12 @@
 
 import { type Doc, type DocumentQuery, type FindResult, type Ref } from '@hcengineering/core'
 import { type Asset } from '@hcengineering/platform'
-import { type InitialKnowledge, type TagReference } from '@hcengineering/tags'
+import { type TagElement, type InitialKnowledge, type TagReference } from '@hcengineering/tags'
 import { type ColorDefinition } from '@hcengineering/ui'
 import { type Filter } from '@hcengineering/view'
 import { FilterQuery } from '@hcengineering/view-resources'
 import tags from './plugin'
+import { writable } from 'svelte/store'
 
 export function getTagStyle (color: ColorDefinition, selected = false): string {
   return `
@@ -54,3 +55,8 @@ export interface TagElementInfo {
   count: number
   modifiedOn: number
 }
+
+/**
+ * @public
+ */
+export const selectedTagElements = writable<Array<Ref<TagElement>>>([])

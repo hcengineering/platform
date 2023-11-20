@@ -42,7 +42,7 @@ import {
   type RequestPresenter,
   type RequestStatus
 } from '@hcengineering/request'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import request from './plugin'
 
 export { requestId } from '@hcengineering/request'

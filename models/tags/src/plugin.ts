@@ -16,7 +16,7 @@ import { type Ref } from '@hcengineering/core'
 import { type IntlString, mergeIds } from '@hcengineering/platform'
 import { type TagCategory, tagsId } from '@hcengineering/tags'
 import tags from '@hcengineering/tags-resources/src/plugin'
-import type { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { type ViewAction } from '@hcengineering/model-view'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import view from '@hcengineering/view'

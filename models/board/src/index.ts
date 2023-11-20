@@ -53,7 +53,7 @@ import task, { actionTemplates as taskActionTemplates, TProject, TTask } from '@
 import view, { actionTemplates, createAction, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import workbench, { type Application } from '@hcengineering/model-workbench'
 import { type IntlString } from '@hcengineering/platform'
-import type { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent } from '@hcengineering/ui/src/types'
 import board from './plugin'
 
 export { boardId } from '@hcengineering/board'

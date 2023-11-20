@@ -54,7 +54,7 @@ import preference, { TPreference } from '@hcengineering/model-preference'
 import view, { createAction, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import chunter from './plugin'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 export { chunterId } from '@hcengineering/chunter'
 export { chunterOperation } from './migration'
 

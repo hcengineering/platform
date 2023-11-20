@@ -20,7 +20,7 @@ import { mergeIds } from '@hcengineering/platform'
 import { recruitId } from '@hcengineering/recruit'
 import recruit from '@hcengineering/recruit-resources/src/plugin'
 import { type ProjectType } from '@hcengineering/task'
-import type { AnyComponent, Location } from '@hcengineering/ui'
+import type { AnyComponent, Location } from '@hcengineering/ui/src/types'
 import type { Action, ActionCategory, ViewAction, ViewQueryAction, Viewlet } from '@hcengineering/view'
 import { type ActivityExtension } from '@hcengineering/activity'
 

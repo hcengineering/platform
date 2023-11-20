@@ -54,6 +54,7 @@
     "@hcengineering/workbench": "^0.6.8",
     "@hcengineering/notification": "^0.6.15",
     "@hcengineering/tags": "^0.6.11",
+    "@hcengineering/tags-resources": "^0.6.0",
     "@hcengineering/kanban": "^0.6.0",
     "@hcengineering/contact-resources": "^0.6.0"
   }

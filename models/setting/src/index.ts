@@ -36,7 +36,7 @@ import templates from '@hcengineering/templates'
 import setting from './plugin'
 
 import workbench from '@hcengineering/model-workbench'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 
 export { settingId } from '@hcengineering/setting'
 export { default } from './plugin'

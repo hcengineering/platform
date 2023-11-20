@@ -19,7 +19,7 @@ import attachment from '@hcengineering/attachment-resources/src/plugin'
 import type { Ref, Doc } from '@hcengineering/core'
 import type { IntlString, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
-import type { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent } from '@hcengineering/ui/src/types'
 import type { ActionCategory } from '@hcengineering/view'
 
 export default mergeIds(attachmentId, attachment, {
