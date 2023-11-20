@@ -36,7 +36,7 @@ export enum Severity {
  * Status of an operation
  * @public
  */
-export class Status<P extends Record<string, any> = {}> {
+export class Status<P extends Record<string, any> = any> {
   readonly severity: Severity
   readonly code: StatusCode<P>
   readonly params: P
@@ -84,7 +84,7 @@ export const UNAUTHORIZED = new Status(Severity.ERROR, platform.status.Unauthori
  * @param message -
  * @returns
  */
-export function unknownStatus (message: string): Status<{}> {
+export function unknownStatus (message: string): Status<any> {
   return new Status(Severity.ERROR, platform.status.UnknownError, { message })
 }
 

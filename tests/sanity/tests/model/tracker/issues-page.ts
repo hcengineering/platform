@@ -109,7 +109,7 @@ export class IssuesPage extends CommonTrackerPage {
     }
     if (data.filePath != null) {
       await this.inputPopupCreateNewIssueFile.setInputFiles(path.join(__dirname, `../../files/${data.filePath}`))
-      await expect(await this.textPopupCreateNewIssueFile.filter({ hasText: data.filePath })).toBeVisible()
+      await expect(this.textPopupCreateNewIssueFile.filter({ hasText: data.filePath })).toBeVisible()
     }
 
     await this.buttonCreateIssue.click()

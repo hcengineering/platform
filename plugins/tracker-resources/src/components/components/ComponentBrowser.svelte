@@ -1,36 +1,29 @@
 <!--
 // Copyright © 2023 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
 <script lang="ts">
   import { DocumentQuery, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
+  import { isCreateAllowed } from '@hcengineering/presentation'
   import { Component } from '@hcengineering/tracker'
-  import { Button, IconAdd, Label, SearchEdit, resolvedLocationStore, showPopup } from '@hcengineering/ui'
+  import { Button, IconAdd, Label, SearchEdit, showPopup } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
-  import {
-    FilterBar,
-    FilterButton,
-    ViewletSelector,
-    ViewletSettingButton,
-    makeViewletKey
-  } from '@hcengineering/view-resources'
-  import { onDestroy } from 'svelte'
+  import { FilterBar, FilterButton, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import { ComponentsFilterMode, activeProjects, componentsTitleMap } from '../../utils'
   import ComponentsContent from './ComponentsContent.svelte'
   import NewComponent from './NewComponent.svelte'
-  import { isCreateAllowed } from '@hcengineering/presentation'
 
   export let label: IntlString
   export let query: DocumentQuery<Component> = {}
@@ -43,8 +36,7 @@
   $: project = $activeProjects.get(space)
 
   let viewlet: WithLookup<Viewlet> | undefined
-  let viewlets: WithLookup<Viewlet>[] | undefined
-  let viewletKey = makeViewletKey()
+  let viewlets: Array<WithLookup<Viewlet>> | undefined
 
   let searchQuery: DocumentQuery<Component> = { ...query }
   let resultQuery: DocumentQuery<Component> = { ...searchQuery }
@@ -64,9 +56,6 @@
   $: resultQuery = { ...searchQuery }
 
   let viewOptions: ViewOptions | undefined
-  $: views =
-    viewlets?.map((v) => ({ id: v._id, icon: v.$lookup?.descriptor?.icon, tooltip: v.$lookup?.descriptor?.label })) ??
-    []
 
   $: if (panelWidth < 900 && !asideFloat) asideFloat = true
   $: if (panelWidth >= 900 && asideFloat) {
@@ -76,8 +65,6 @@
 
   $: if (docWidth <= 900 && !docSize) docSize = true
   $: if (docWidth > 900 && docSize) docSize = false
-
-  onDestroy(resolvedLocationStore.subscribe((loc) => (viewletKey = makeViewletKey(loc))))
 </script>
 
 <div class="ac-header full divide caption-height">

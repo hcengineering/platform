@@ -102,7 +102,7 @@
   const targetSpaceQuery = createQuery()
   const originSpaceQuery = createQuery()
 
-  let issueToUpdate: Map<Ref<Issue>, IssueToUpdate> = new Map()
+  let issueToUpdate = new Map<Ref<Issue>, IssueToUpdate>()
   let componentToUpdate: Record<Ref<Component>, ComponentToUpdate | undefined> = {}
 
   $: targetSpaceQuery.query(tracker.class.Project, { _id: space }, (res) => {
@@ -151,7 +151,7 @@
       upd.useComponent = false
       issueToUpdate.set(issue._id, upd)
     }
-    for (const component in Object.keys(componentToUpdate)) {
+    for (const component of Object.keys(componentToUpdate)) {
       componentToUpdate[component as Ref<Component>] = { ref: component as Ref<Component>, create: true }
     }
 
@@ -228,8 +228,8 @@
   numberOfBlocks={showManageAttributes
     ? toMove.length
     : targetProject !== undefined && !keepOriginalAttribytes && docs[0]?.space !== targetProject?._id
-    ? 1
-    : 0}
+      ? 1
+      : 0}
   on:changeContent
 >
   <svelte:fragment slot="title" let:label>

@@ -30,7 +30,7 @@
     </div>
   {/if}
 
-  {#if mapping && mapping.bitrixFields}
+  {#if mapping?.bitrixFields}
     {#if kind === MappingOperation.CopyValue}
       <CopyMappingPresenter {mapping} {value} />
     {:else if kind === MappingOperation.CreateTag}

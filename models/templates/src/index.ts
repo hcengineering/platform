@@ -14,13 +14,13 @@
 // limitations under the License.
 //
 
-import { Domain, DOMAIN_MODEL, IndexKind, Ref } from '@hcengineering/core'
-import { Builder, Index, Model, Prop, TypeString, UX } from '@hcengineering/model'
+import { type Domain, DOMAIN_MODEL, IndexKind, type Ref } from '@hcengineering/core'
+import { type Builder, Index, Model, Prop, TypeString, UX } from '@hcengineering/model'
 import core, { TDoc, TSpace } from '@hcengineering/model-core'
 import textEditor from '@hcengineering/model-text-editor'
 import tracker from '@hcengineering/model-tracker'
 import view, { createAction } from '@hcengineering/model-view'
-import { IntlString, Resource } from '@hcengineering/platform'
+import { type IntlString, type Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import type {
   MessageTemplate,

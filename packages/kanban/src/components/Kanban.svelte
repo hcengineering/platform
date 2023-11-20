@@ -328,7 +328,9 @@
         <div
           class="panel-container"
           bind:this={stateRefs[si]}
-          on:dragover={(event) => panelDragOver(event, state)}
+          on:dragover={(event) => {
+            panelDragOver(event, state)
+          }}
           on:drop={() => {
             move(state)
             isDragging = false
@@ -351,8 +353,12 @@
               {selection}
               {checkedSet}
               {state}
-              cardDragOver={(evt, obj) => cardDragOver(evt, obj, state)}
-              cardDrop={(evt, obj) => cardDrop(evt, obj, state)}
+              cardDragOver={(evt, obj) => {
+                cardDragOver(evt, obj, state)
+              }}
+              cardDrop={(evt, obj) => {
+                cardDrop(evt, obj, state)
+              }}
               {onDragStart}
               {showMenu}
             >

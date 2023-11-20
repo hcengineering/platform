@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import { IntlString, mergeIds } from '@hcengineering/platform'
-import { AnyComponent } from '@hcengineering/ui'
+import { type IntlString, mergeIds } from '@hcengineering/platform'
+import { type AnyComponent } from '@hcengineering/ui'
 import templates, { templatesId } from '@hcengineering/templates'
 
 export default mergeIds(templatesId, templates, {

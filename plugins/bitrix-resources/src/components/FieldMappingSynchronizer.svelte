@@ -30,10 +30,10 @@
   const client = getClient()
 
   $: fieldMapping = (mapping.$lookup?.fields as BitrixFieldMapping[]) ?? []
-  $: fieldsByClass = fieldMapping.reduce((p, c) => {
+  $: fieldsByClass = fieldMapping.reduce<Record<Ref<Class<Doc>>, BitrixFieldMapping[]>>((p, c) => {
     p[c.ofClass] = [...(p[c.ofClass] ?? []), c]
     return p
-  }, {} as Record<Ref<Class<Doc>>, BitrixFieldMapping[]>)
+  }, {})
 
   let direction: 'ASC' | 'DSC' = 'ASC'
   let limit = 1
@@ -47,7 +47,7 @@
 
   async function doSync (): Promise<void> {
     loading = true
-    const uploadUrl = (window.location.origin + getMetadata(presentation.metadata.UploadURL)) as string
+    const uploadUrl = window.location.origin + getMetadata(presentation.metadata.UploadURL)
     const token = (getMetadata(presentation.metadata.Token) as string) ?? ''
 
     const mappedFilter: Record<string, any> = {}
@@ -86,7 +86,7 @@
     }
   }
   const fieldsKey = bitrix.class.EntityMapping + '.fields.' + mapping._id
-  let filterFields: { _id: string; field: string; value: string }[] = []
+  let filterFields: { _id: string, field: string, value: string }[] = []
 
   const content = JSON.parse(localStorage.getItem(fieldsKey) ?? '[]')
 

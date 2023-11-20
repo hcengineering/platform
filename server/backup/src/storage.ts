@@ -52,7 +52,12 @@ class FileStorage implements BackupStorage {
 }
 
 class MinioStorage implements BackupStorage {
-  constructor (readonly client: MinioService, readonly workspaceId: WorkspaceId, readonly root: string) {}
+  constructor (
+    readonly client: MinioService,
+    readonly workspaceId: WorkspaceId,
+    readonly root: string
+  ) {}
+
   async loadFile (name: string): Promise<Buffer> {
     const data = await this.client.read(this.workspaceId, join(this.root, name))
     return Buffer.concat(data)

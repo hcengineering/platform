@@ -51,7 +51,10 @@ import {
 
 class ServerStorageWrapper implements ClientConnection {
   measureCtx = new MeasureMetricsContext('client', {})
-  constructor (private readonly storage: ServerStorage, private readonly handler: TxHandler) {}
+  constructor (
+    private readonly storage: ServerStorage,
+    private readonly handler: TxHandler
+  ) {}
 
   findAll<T extends Doc>(
     _class: Ref<Class<T>>,

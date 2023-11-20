@@ -11,10 +11,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
+import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import tags, { tagsId } from '@hcengineering/tags'
-import { AnyComponent } from '@hcengineering/ui'
-import { FilterFunction } from '@hcengineering/view'
+import { type AnyComponent } from '@hcengineering/ui'
+import { type FilterFunction } from '@hcengineering/view'
 
 export default mergeIds(tagsId, tags, {
   component: {

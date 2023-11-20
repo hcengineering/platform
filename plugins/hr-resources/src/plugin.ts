@@ -14,7 +14,7 @@
 //
 
 import hr, { hrId } from '@hcengineering/hr'
-import { IntlString, mergeIds } from '@hcengineering/platform'
+import { type IntlString, mergeIds } from '@hcengineering/platform'
 
 export default mergeIds(hrId, hr, {
   string: {

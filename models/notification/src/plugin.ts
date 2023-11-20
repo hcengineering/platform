@@ -14,13 +14,13 @@
 // limitations under the License.
 //
 
-import { Doc, Ref } from '@hcengineering/core'
+import { type Doc, type Ref } from '@hcengineering/core'
 import notification, { notificationId } from '@hcengineering/notification'
-import { IntlString, Resource, mergeIds } from '@hcengineering/platform'
-import { AnyComponent } from '@hcengineering/ui'
-import { Action, ActionCategory, ViewAction } from '@hcengineering/view'
-import { Application } from '@hcengineering/workbench'
-import { TxViewlet } from '@hcengineering/activity'
+import { type IntlString, type Resource, mergeIds } from '@hcengineering/platform'
+import { type AnyComponent } from '@hcengineering/ui'
+import { type Action, type ActionCategory, type ViewAction } from '@hcengineering/view'
+import { type Application } from '@hcengineering/workbench'
+import { type TxViewlet } from '@hcengineering/activity'
 
 export default mergeIds(notificationId, notification, {
   string: {

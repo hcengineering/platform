@@ -137,7 +137,7 @@
     const key = makeViewletKey(loc)
     if (fv.viewletId !== $activeViewlet[key]) return false
     if (fv.viewletId !== null) {
-      const viewOptions = getViewOptions({ _id: fv.viewletId } as Viewlet, viewOptionStore)
+      const viewOptions = getViewOptions({ _id: fv.viewletId } as unknown as Viewlet, viewOptionStore)
       if (JSON.stringify(fv.viewOptions) !== JSON.stringify(viewOptions)) return false
     }
     return true
@@ -207,15 +207,17 @@
     _id={'tree-saved'}
     label={view.string.FilteredViews}
     node
-    actions={async () => getActions(availableFilteredViews)}
+    actions={async () => await getActions(availableFilteredViews)}
   >
     {#each myFilteredViews as fv}
       <TreeItem
         _id={fv._id}
         title={fv.name}
         selected={selectedId === fv._id}
-        on:click={() => load(fv)}
-        actions={(ov) => viewAction(fv, ov)}
+        on:click={async () => {
+          await load(fv)
+        }}
+        actions={async (ov) => await viewAction(fv, ov)}
       />
     {/each}
   </TreeNode>

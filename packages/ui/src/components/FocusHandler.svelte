@@ -13,5 +13,9 @@
   }
 </script>
 
-<svelte:window on:keydown={(evt) => handleKey(evt)} />
+<svelte:window
+  on:keydown={(evt) => {
+    handleKey(evt)
+  }}
+/>
 <slot />

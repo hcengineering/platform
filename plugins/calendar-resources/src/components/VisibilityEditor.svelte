@@ -69,5 +69,7 @@
   {items}
   withSearch={false}
   {selected}
-  on:selected={(e) => change(e.detail._id)}
+  on:selected={(e) => {
+    change(e.detail._id)
+  }}
 />

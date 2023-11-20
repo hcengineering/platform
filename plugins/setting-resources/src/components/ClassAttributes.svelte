@@ -55,12 +55,12 @@
   export let ofClass: Ref<Class<Doc>> | undefined
 
   export let attributeMapper:
-    | {
-        component: AnySvelteComponent
-        label: IntlString
-        props: Record<string, any>
-      }
-    | undefined
+  | {
+    component: AnySvelteComponent
+    label: IntlString
+    props: Record<string, any>
+  }
+  | undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()

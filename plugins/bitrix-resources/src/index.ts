@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Resources } from '@hcengineering/platform'
+import { type Resources } from '@hcengineering/platform'
 
 import BitrixConnect from './components/BitrixConnect.svelte'
 import BitrixConfigure from './components/BitrixConfigure.svelte'

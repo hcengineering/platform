@@ -14,7 +14,7 @@
 //
 
 import core from '@hcengineering/core'
-import { Builder } from '@hcengineering/model'
+import { type Builder } from '@hcengineering/model'
 import serverCore from '@hcengineering/server-core'
 import serverView from '@hcengineering/server-view'
 

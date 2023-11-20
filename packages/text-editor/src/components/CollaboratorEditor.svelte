@@ -15,25 +15,17 @@
 //
 -->
 <script lang="ts">
-  import { Plugin, PluginKey, TextSelection } from '@tiptap/pm/state'
-  import { DecorationSet } from '@tiptap/pm/view'
-  import { getContext, createEventDispatcher, onDestroy, onMount } from 'svelte'
-  import * as Y from 'yjs'
-  import {
-    AnyExtension,
-    Editor,
-    Extension,
-    FocusPosition,
-    HTMLContent,
-    getMarkRange,
-    mergeAttributes
-  } from '@tiptap/core'
+  import { Markup, getCurrentAccount } from '@hcengineering/core'
+  import { IntlString, translate } from '@hcengineering/platform'
+  import { IconObjects, IconSize, Loading, getPlatformColorForText, registerFocus, themeStore } from '@hcengineering/ui'
+  import { AnyExtension, Editor, Extension, FocusPosition, getMarkRange, mergeAttributes } from '@tiptap/core'
   import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration'
   import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
   import Placeholder from '@tiptap/extension-placeholder'
-  import { getCurrentAccount, Markup } from '@hcengineering/core'
-  import { IntlString, translate } from '@hcengineering/platform'
-  import { IconObjects, IconSize, Loading, getPlatformColorForText, registerFocus, themeStore } from '@hcengineering/ui'
+  import { Plugin, PluginKey, TextSelection } from '@tiptap/pm/state'
+  import { DecorationSet } from '@tiptap/pm/view'
+  import { createEventDispatcher, getContext, onDestroy, onMount } from 'svelte'
+  import * as Y from 'yjs'
 
   import { Completion } from '../Completion'
   import { textEditorCommandHandler } from '../commands'
@@ -42,17 +34,17 @@
   import { CollaborationIds, TextEditorCommandHandler, TextFormatCategory, TextNodeAction } from '../types'
   import { copyDocumentContent, copyDocumentField } from '../utils'
 
-  import { calculateDecorations } from './diff/decorations'
-  import { noSelectionRender } from './editor/collaboration'
-  import { defaultEditorAttributes } from './editor/editorProps'
-  import { completionConfig, defaultExtensions } from './extensions'
-  import { InlinePopupExtension } from './extension/inlinePopup'
-  import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
-  import { FileAttachFunction, ImageExtension } from './extension/imageExt'
-  import { NodeUuidExtension, nodeElementQuerySelector } from './extension/nodeUuid'
   import ImageStyleToolbar from './ImageStyleToolbar.svelte'
   import StyleButton from './StyleButton.svelte'
   import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
+  import { calculateDecorations } from './diff/decorations'
+  import { noSelectionRender } from './editor/collaboration'
+  import { defaultEditorAttributes } from './editor/editorProps'
+  import { FileAttachFunction, ImageExtension } from './extension/imageExt'
+  import { InlinePopupExtension } from './extension/inlinePopup'
+  import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
+  import { NodeUuidExtension, nodeElementQuerySelector } from './extension/nodeUuid'
+  import { completionConfig, defaultExtensions } from './extensions'
 
   export let documentId: string
   export let readonly = false
@@ -72,7 +64,7 @@
   export let overflow: 'auto' | 'none' = 'auto'
   export let initialContent: string | undefined = undefined
   export let textNodeActions: TextNodeAction[] = []
-  export let editorAttributes: { [name: string]: string } = {}
+  export let editorAttributes: Record<string, string> = {}
   export let onExtensions: () => AnyExtension[] = () => []
   export let boundary: HTMLElement | undefined = undefined
 
@@ -80,11 +72,11 @@
 
   let element: HTMLElement
 
-  const ydoc = (getContext(CollaborationIds.Doc) as Y.Doc | undefined) ?? new Y.Doc()
+  const ydoc: any = getContext(CollaborationIds.Doc) ?? new Y.Doc()
 
-  const contextProvider = getContext(CollaborationIds.Provider) as TiptapCollabProvider | undefined
+  const contextProvider = getContext(CollaborationIds.Provider)
 
-  const provider =
+  const provider: any =
     contextProvider ??
     new TiptapCollabProvider({
       url: collaboratorURL,
@@ -244,7 +236,7 @@
   }
 
   const updateDecorations = () => {
-    if (editor && editor.schema) {
+    if (editor?.schema) {
       updateEditor(editor, field, comparedVersion)
     }
   }
@@ -375,7 +367,7 @@
       })
 
       if (initialContent) {
-        editor.commands.insertContent(initialContent as HTMLContent)
+        editor.commands.insertContent(initialContent)
       }
     })
   })

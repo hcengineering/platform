@@ -65,21 +65,21 @@
     ? ({
         label: chunter.string.TurnOffReplies,
         action: chunter.actionImpl.UnsubscribeMessage
-      } as Action)
+      } as unknown as Action)
     : ({
         label: chunter.string.GetNewReplies,
         action: chunter.actionImpl.SubscribeMessage
-      } as Action)
+      } as unknown as Action)
 
   $: pinActions = isPinned
     ? ({
         label: chunter.string.UnpinMessage,
         action: chunter.actionImpl.UnpinMessage
-      } as Action)
+      } as unknown as Action)
     : ({
         label: chunter.string.PinMessage,
         action: chunter.actionImpl.PinMessage
-      } as Action)
+      } as unknown as Action)
 
   $: isEditing = false
 
@@ -223,7 +223,12 @@
     {/if}
     {#if reactions?.length || (!thread && hasReplies)}
       <div class="footer flex-col">
-        {#if reactions?.length}<Reactions {reactions} on:click={(ev) => updateReactions(ev.detail)} />{/if}
+        {#if reactions?.length}<Reactions
+            {reactions}
+            on:click={(ev) => {
+              updateReactions(ev.detail)
+            }}
+          />{/if}
         {#if !thread && hasReplies}
           <Replies message={parentMessage} on:click={openThread} />
         {/if}

@@ -146,9 +146,7 @@ export interface FieldValue {
 /**
  * @public
  */
-export interface Fields {
-  [key: string]: FieldValue
-}
+export type Fields = Record<string, FieldValue>
 
 /**
  * @public

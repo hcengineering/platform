@@ -194,9 +194,13 @@ export async function benchmark (
                   json.metrics?.measurements?.client?.measurements?.handleRequest?.measurements?.['#send-data']
                     ?.value ?? 0
               })
-              .catch((err) => console.log(err))
+              .catch((err) => {
+                console.log(err)
+              })
           })
-          .catch((err) => console.log(err))
+          .catch((err) => {
+            console.log(err)
+          })
       } catch (err) {
         console.log(err)
       }
@@ -265,7 +269,9 @@ export async function benchmark (
             workers[i % workers.length].postMessage(msg)
 
             return new Promise((resolve) => {
-              works.set(workId, () => resolve(null))
+              works.set(workId, () => {
+                resolve(null)
+              })
             })
           })
       )

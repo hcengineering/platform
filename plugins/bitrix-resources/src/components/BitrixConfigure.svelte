@@ -102,9 +102,9 @@
 
     const op = client.apply('bitrix')
     // Remove all stuff
-    for (const d of await (
-      await client.findAll<Doc>(bitrix.class.EntityMapping, {})
-    ).concat(...(await client.findAll<Doc>(bitrix.class.FieldMapping, {})))) {
+    for (const d of (await client.findAll<Doc>(bitrix.class.EntityMapping, {})).concat(
+      ...(await client.findAll<Doc>(bitrix.class.FieldMapping, {}))
+    )) {
       await op.remove(d)
     }
 

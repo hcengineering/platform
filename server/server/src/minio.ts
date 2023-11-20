@@ -36,7 +36,10 @@ import { MinioService, MinioWorkspaceItem } from '@hcengineering/minio'
 import { DbAdapter } from '@hcengineering/server-core'
 
 class MinioBlobAdapter implements DbAdapter {
-  constructor (readonly workspaceId: WorkspaceId, readonly client: MinioService) {}
+  constructor (
+    readonly workspaceId: WorkspaceId,
+    readonly client: MinioService
+  ) {}
 
   async findAll<T extends Doc>(
     _class: Ref<Class<T>>,

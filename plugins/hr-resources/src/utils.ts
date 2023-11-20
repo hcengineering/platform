@@ -1,8 +1,8 @@
-import { Employee, getName } from '@hcengineering/contact'
-import { Ref, TxOperations } from '@hcengineering/core'
-import { Department, Request, RequestType, Staff, fromTzDate } from '@hcengineering/hr'
+import { type Employee, getName } from '@hcengineering/contact'
+import { type Ref, type TxOperations } from '@hcengineering/core'
+import { type Department, type Request, type RequestType, type Staff, fromTzDate } from '@hcengineering/hr'
 import { MessageBox } from '@hcengineering/presentation'
-import { Issue, TimeSpendReport } from '@hcengineering/tracker'
+import { type Issue, type TimeSpendReport } from '@hcengineering/tracker'
 import { MILLISECONDS_IN_DAY, areDatesEqual, isWeekend, showPopup } from '@hcengineering/ui'
 import hr from './plugin'
 
@@ -92,7 +92,7 @@ export function getMonth (date: Date, m: number): Date {
  * @public
  */
 export function getStartDate (year: number, month?: number): Date {
-  return new Date(new Date(year, month !== undefined ? month : 0).setHours(0, 0, 0, 0))
+  return new Date(new Date(year, month ?? 0).setHours(0, 0, 0, 0))
 }
 
 /**

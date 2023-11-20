@@ -181,7 +181,7 @@ async function getMixinWithForeignProperties (
     ...(mixin !== '' ? { _id: mixin as Ref<Class<Obj>> } : {})
   })
 
-  const result: Map<Ref<Class<Doc>>, ObjectPropertyInfo[]> = new Map()
+  const result = new Map<Ref<Class<Doc>>, ObjectPropertyInfo[]>()
 
   for (const [index, mixin] of mixins.entries()) {
     console.log(`(${index + 1}/${mixins.length}) Processing ${mixin._id} ...`)

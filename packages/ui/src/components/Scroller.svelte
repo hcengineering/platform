@@ -1,14 +1,14 @@
 <!--
 // Copyright © 2020 Anticrm Platform Contributors.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -342,7 +342,9 @@
       closed.forEach((el) => {
         if (!targets.has(el)) el.classList.remove('closed')
       })
-      targets.forEach((el) => el.classList.add('closed'))
+      targets.forEach((el) => {
+        el.classList.add('closed')
+      })
     }
   }
 
@@ -421,11 +423,15 @@
           }
           const tempEls = divBox.querySelectorAll('.categoryHeader')
           observer = new IntersectionObserver(checkIntersection, { root: null, rootMargin: '0px', threshold: 0.1 })
-          tempEls.forEach((el) => observer.observe(el))
+          tempEls.forEach((el) => {
+            observer.observe(el)
+          })
           const tempCats = divBox.querySelectorAll('.lastCat')
           if (tempCats.length > 0) {
             hasLastCategories = true
-            tempCats.forEach((el) => observer.observe(el))
+            tempCats.forEach((el) => {
+              observer.observe(el)
+            })
           } else {
             hasLastCategories = false
           }
@@ -435,7 +441,9 @@
   }
 
   let divHeight: number
-  const _resize = (): void => checkFade()
+  const _resize = (): void => {
+    checkFade()
+  }
 
   const tapScroll = (n: number, dir: 'up' | 'down') => {
     if (divScroll) {
@@ -543,8 +551,8 @@
         style:flex-direction={contentDirection === 'vertical'
           ? 'column'
           : contentDirection === 'vertical-reverse'
-          ? 'column-reverse'
-          : 'row'}
+            ? 'column-reverse'
+            : 'row'}
         style:height={contentDirection === 'vertical-reverse' ? 'max-content' : noStretch ? 'auto' : '100%'}
         use:resizeObserver={() => {
           checkAutoScroll()
@@ -563,7 +571,9 @@
     <button
       class="scrollButton top {orientir}"
       style:visibility={topButton}
-      on:click|preventDefault|stopPropagation={() => tapScroll(stepScroll, 'up')}
+      on:click|preventDefault|stopPropagation={() => {
+        tapScroll(stepScroll, 'up')
+      }}
     >
       <div style:transform={orientir === 'horizontal' ? 'rotate(-90deg)' : ''}>
         <IconUpOutline size={'medium'} />
@@ -572,7 +582,9 @@
     <button
       class="scrollButton bottom {orientir}"
       style:visibility={bottomButton}
-      on:click|preventDefault|stopPropagation={() => tapScroll(stepScroll, 'down')}
+      on:click|preventDefault|stopPropagation={() => {
+        tapScroll(stepScroll, 'down')
+      }}
     >
       <div style:transform={orientir === 'horizontal' ? 'rotate(-90deg)' : ''}>
         <IconDownOutline size={'medium'} />
@@ -583,14 +595,18 @@
       <button
         class="updown-up"
         style:visibility={topButton}
-        on:click|preventDefault|stopPropagation={() => tapScroll(stepScroll, 'up')}
+        on:click|preventDefault|stopPropagation={() => {
+          tapScroll(stepScroll, 'up')
+        }}
       >
         <HalfUpDown />
       </button>
       <button
         class="updown-down"
         style:visibility={bottomButton}
-        on:click|preventDefault|stopPropagation={() => tapScroll(stepScroll, 'down')}
+        on:click|preventDefault|stopPropagation={() => {
+          tapScroll(stepScroll, 'down')
+        }}
       >
         <HalfUpDown />
       </button>
@@ -598,12 +614,20 @@
   {/if}
   {#if mask !== 'none'}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="track" class:hovered={isScrolling === 'vertical'} on:click|stopPropagation={(ev) => clickOnTrack(ev)} />
+    <div
+      class="track"
+      class:hovered={isScrolling === 'vertical'}
+      on:click|stopPropagation={(ev) => {
+        clickOnTrack(ev)
+      }}
+    />
     <div
       class="bar"
       class:hovered={isScrolling === 'vertical'}
       bind:this={divBar}
-      on:mousedown={(ev) => onScrollStart(ev, 'vertical')}
+      on:mousedown={(ev) => {
+        onScrollStart(ev, 'vertical')
+      }}
       on:mouseleave={checkFade}
     />
   {/if}
@@ -612,13 +636,17 @@
     <div
       class="track-horizontal"
       class:hovered={isScrolling === 'horizontal'}
-      on:click|stopPropagation={(ev) => clickOnTrack(ev, true)}
+      on:click|stopPropagation={(ev) => {
+        clickOnTrack(ev, true)
+      }}
     />
     <div
       class="bar-horizontal"
       class:hovered={isScrolling === 'horizontal'}
       bind:this={divBarH}
-      on:mousedown={(ev) => onScrollStart(ev, 'horizontal')}
+      on:mousedown={(ev) => {
+        onScrollStart(ev, 'horizontal')
+      }}
       on:mouseleave={checkFade}
     />
   {/if}

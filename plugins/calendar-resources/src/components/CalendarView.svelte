@@ -388,7 +388,9 @@
     startFromWeekStart
     bind:selectedDate
     bind:currentDate
-    on:create={(e) => showCreateDialog(e.detail.date, e.detail.withTime)}
+    on:create={(e) => {
+      showCreateDialog(e.detail.date, e.detail.withTime)
+    }}
     on:drop
     on:dragenter={dragEnter}
   />
@@ -402,7 +404,9 @@
       startFromWeekStart={false}
       bind:selectedDate
       bind:currentDate
-      on:create={(e) => showCreateDialog(e.detail.date, e.detail.withTime)}
+      on:create={(e) => {
+        showCreateDialog(e.detail.date, e.detail.withTime)
+      }}
       on:drop
       on:dragenter={dragEnter}
     />

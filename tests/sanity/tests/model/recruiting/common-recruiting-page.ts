@@ -32,12 +32,12 @@ export class CommonRecruitingPage extends CalendarPage {
   }
 
   async checkCommentExist (comment: string): Promise<void> {
-    await expect(await this.textComment.filter({ hasText: comment })).toBeVisible()
+    await expect(this.textComment.filter({ hasText: comment })).toBeVisible()
   }
 
   async addAttachments (filePath: string): Promise<void> {
     await this.inputAddAttachment.setInputFiles(path.join(__dirname, `../../files/${filePath}`))
-    await expect(await this.textAttachmentName.filter({ hasText: filePath })).toBeVisible()
+    await expect(this.textAttachmentName.filter({ hasText: filePath })).toBeVisible()
   }
 
   async addFirstReview (reviewTitle: string, reviewDescription: string): Promise<void> {

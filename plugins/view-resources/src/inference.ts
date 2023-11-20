@@ -1,4 +1,4 @@
-import core, { Class, Client, Doc, DocIndexState, Ref } from '@hcengineering/core'
+import core, { type Class, type Client, type Doc, type DocIndexState, type Ref } from '@hcengineering/core'
 import { writable } from 'svelte/store'
 
 export interface InferenceFocus {

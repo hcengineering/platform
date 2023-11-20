@@ -239,7 +239,7 @@
   function tagAsRef (tag: TagElement): TagReference {
     return {
       _class: tags.class.TagReference,
-      _id: generateId() as Ref<TagReference>,
+      _id: generateId(),
       attachedTo: '' as Ref<Doc>,
       attachedToClass: tracker.class.Issue,
       collection: 'labels',
@@ -356,7 +356,7 @@
     const incResult = await client.updateDoc(
       tracker.class.Project,
       core.space.Space,
-      _space as Ref<Project>,
+      _space,
       {
         $inc: { sequence: 1 }
       },
@@ -576,7 +576,7 @@
     }
 
     if (targetRef !== undefined) {
-      return client.findOne(tracker.class.Project, { _id: targetRef })
+      return await client.findOne(tracker.class.Project, { _id: targetRef })
     }
   }
 

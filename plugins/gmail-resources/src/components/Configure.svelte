@@ -34,7 +34,7 @@
   }
 
   async function disable () {
-    if (shared === false) {
+    if (!shared) {
       await change([])
     }
   }

@@ -29,7 +29,7 @@
 </script>
 
 {#if archivedCards}
-  {#if !archivedCards.length}
+  {#if archivedCards.length === 0}
     <div class="flex-center fs-title pb-4">
       <Label label={board.string.NoResults} />
     </div>

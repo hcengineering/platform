@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import { Class, DOMAIN_MODEL, Ref, Space } from '@hcengineering/core'
-import { Builder, Mixin, Model, Prop, TypeRef, UX } from '@hcengineering/model'
+import { type Class, DOMAIN_MODEL, type Ref, type Space } from '@hcengineering/core'
+import { type Builder, Mixin, Model, Prop, TypeRef, UX } from '@hcengineering/model'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import { createAction } from '@hcengineering/model-view'
 import { getEmbeddedLabel, type Asset, type IntlString } from '@hcengineering/platform'
-import view, { KeyBinding } from '@hcengineering/view'
+import view, { type KeyBinding } from '@hcengineering/view'
 import type {
   Application,
   ApplicationNavModel,
@@ -31,7 +31,7 @@ import core, { TClass, TDoc } from '@hcengineering/model-core'
 import workbench from './plugin'
 
 export { workbenchId } from '@hcengineering/workbench'
-export { Application }
+export type { Application }
 
 @Model(workbench.class.Application, core.class.Doc, DOMAIN_MODEL)
 @UX(workbench.string.Application)

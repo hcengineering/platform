@@ -55,7 +55,7 @@
 
   const activityQuery = newActivity(client, attrs)
 
-  let viewlets: Map<ActivityKey, TxViewlet[]> = new Map()
+  let viewlets = new Map<ActivityKey, TxViewlet[]>()
 
   let allViewlets: TxViewlet[] = []
   let editableMap: Map<Ref<Class<Doc>>, boolean> | undefined = undefined

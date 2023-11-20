@@ -98,7 +98,12 @@
   {#if savedMessages.length > 0 || savedAttachments.length > 0}
     {#each savedMessages as message}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <div class="clear-mins flex-no-shrink" on:click={() => openMessageFromSpecial(message)}>
+      <div
+        class="clear-mins flex-no-shrink"
+        on:click={() => {
+          openMessageFromSpecial(message)
+        }}
+      >
         <Message
           {message}
           on:openThread

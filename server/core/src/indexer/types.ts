@@ -41,7 +41,7 @@ export interface FullTextPipeline {
   ) => Promise<void>
 
   add: (doc: DocIndexState) => void
-  markRemove: (doc: DocIndexState) => void
+  markRemove: (doc: DocIndexState) => Promise<void>
 
   search: (
     _classes: Ref<Class<Doc>>[],

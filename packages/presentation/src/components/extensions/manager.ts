@@ -1,17 +1,25 @@
-import { Class, Doc, DocData, Ref, SortingOrder, Space, TxOperations } from '@hcengineering/core'
+import {
+  type Class,
+  type Doc,
+  type DocData,
+  type Ref,
+  SortingOrder,
+  type Space,
+  type TxOperations
+} from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { onDestroy } from 'svelte'
-import { Writable, writable } from 'svelte/store'
-import { LiveQuery } from '../..'
+import { type Writable, writable } from 'svelte/store'
+import { type LiveQuery } from '../..'
 import presentation from '../../plugin'
-import { DocCreateExtension } from '../../types'
+import { type DocCreateExtension } from '../../types'
 import { createQuery } from '../../utils'
 
 export class DocCreateExtensionManager {
   query: LiveQuery
   _extensions: DocCreateExtension[] = []
   extensions: Writable<DocCreateExtension[]> = writable([])
-  states: Map<Ref<DocCreateExtension>, Writable<any>> = new Map()
+  states = new Map<Ref<DocCreateExtension>, Writable<any>>()
 
   static create (_class: Ref<Class<Doc>>): DocCreateExtensionManager {
     const mgr = new DocCreateExtensionManager(_class)

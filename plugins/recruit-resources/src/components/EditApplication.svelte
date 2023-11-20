@@ -22,7 +22,6 @@
   import VacancyCard from './VacancyCard.svelte'
   import ExpandRightDouble from './icons/ExpandRightDouble.svelte'
 
-  import { Ref } from '@hcengineering/core'
   import recruit from '../plugin'
   import Reviews from './review/Reviews.svelte'
 
@@ -32,7 +31,7 @@
 
   const dispatch = createEventDispatcher()
   const sendOpen = () => {
-    if (object !== undefined && object.number !== undefined) {
+    if (object?.number !== undefined) {
       dispatch('open', {
         ignoreKeys: ['comments', 'number'],
         allowedCollections: ['labels'],
@@ -43,7 +42,7 @@
 
   const candidateQuery = createQuery()
   $: if (object !== undefined) {
-    candidateQuery.query(recruit.mixin.Candidate, { _id: object.attachedTo as Ref<Candidate> }, (result) => {
+    candidateQuery.query(recruit.mixin.Candidate, { _id: object.attachedTo }, (result) => {
       candidate = result[0]
       sendOpen()
     })

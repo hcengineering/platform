@@ -50,7 +50,14 @@
 <div class="notifyPopup" class:min-w-168={!isMobile}>
   <div class="header flex-between">
     <span class="fs-title overflow-label"><Label label={calendar.string.Reminders} /></span>
-    <Button icon={IconAdd} size={'medium'} kind={'ghost'} on:click={(e) => click(e)} />
+    <Button
+      icon={IconAdd}
+      size={'medium'}
+      kind={'ghost'}
+      on:click={(e) => {
+        click(e)
+      }}
+    />
   </div>
   <Scroller>
     <div class="px-4 clear-mins">

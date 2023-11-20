@@ -1,24 +1,24 @@
-import { DisplayTx } from '@hcengineering/activity'
+import { type DisplayTx } from '@hcengineering/activity'
 import core, {
-  AnyAttribute,
-  AttachedDoc,
-  Attribute,
-  Class,
-  Client,
-  Collection,
-  Doc,
-  Hierarchy,
-  Ref,
+  type AnyAttribute,
+  type AttachedDoc,
+  type Attribute,
+  type Class,
+  type Client,
+  type Collection,
+  type Doc,
+  type Hierarchy,
+  type Ref,
   SortingOrder,
-  Tx,
-  TxCollectionCUD,
-  TxCreateDoc,
-  TxCUD,
-  TxMixin,
+  type Tx,
+  type TxCollectionCUD,
+  type TxCreateDoc,
+  type TxCUD,
+  type TxMixin,
   TxProcessor,
-  TxUpdateDoc
+  type TxUpdateDoc
 } from '@hcengineering/core'
-import { createQuery, LiveQuery } from '@hcengineering/presentation'
+import { createQuery, type LiveQuery } from '@hcengineering/presentation'
 
 /**
  * @public
@@ -81,7 +81,10 @@ class ActivityImpl implements Activity {
   private attachedTxes: Array<TxCollectionCUD<Doc, AttachedDoc>> = []
   private attacheChangedTxes: Array<TxCollectionCUD<Doc, AttachedDoc>> = []
   private readonly hierarchy: Hierarchy
-  constructor (readonly client: Client, attributes: Map<string, AnyAttribute>) {
+  constructor (
+    readonly client: Client,
+    attributes: Map<string, AnyAttribute>
+  ) {
     this.hierarchy = client.getHierarchy()
     this.hiddenAttributes = new Set(
       [...attributes.entries()].filter(([, value]) => value.hidden === true).map(([key]) => key)

@@ -25,7 +25,7 @@
   export let issue: Issue
   export let targetProject: Project
   export let currentProject: Ref<Project>
-  export let issueToUpdate: Map<Ref<Issue>, IssueToUpdate> = new Map()
+  export let issueToUpdate = new Map<Ref<Issue>, IssueToUpdate>()
   export let statuses: IssueStatus[]
 
   $: replace = issueToUpdate.get(issue._id)?.status ?? targetProject.defaultIssueStatus

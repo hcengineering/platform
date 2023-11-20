@@ -15,26 +15,26 @@
 
 import activity from '@hcengineering/activity'
 import {
-  Backlink,
-  Channel,
+  type Backlink,
+  type Channel,
   chunterId,
-  ChunterMessage,
-  ChunterMessageExtension,
-  ChunterSpace,
-  Comment,
-  DirectMessage,
-  Message,
-  Reaction,
-  SavedMessages,
-  ThreadMessage,
-  DirectMessageInput
+  type ChunterMessage,
+  type ChunterMessageExtension,
+  type ChunterSpace,
+  type Comment,
+  type DirectMessage,
+  type Message,
+  type Reaction,
+  type SavedMessages,
+  type ThreadMessage,
+  type DirectMessageInput
 } from '@hcengineering/chunter'
-import contact, { Person } from '@hcengineering/contact'
+import contact, { type Person } from '@hcengineering/contact'
 import type { Account, Class, Doc, Domain, Ref, Space, Timestamp } from '@hcengineering/core'
 import { IndexKind } from '@hcengineering/core'
 import {
   ArrOf,
-  Builder,
+  type Builder,
   Collection,
   Index,
   Mixin,
@@ -54,7 +54,7 @@ import preference, { TPreference } from '@hcengineering/model-preference'
 import view, { createAction, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import chunter from './plugin'
-import { AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui'
 export { chunterId } from '@hcengineering/chunter'
 export { chunterOperation } from './migration'
 

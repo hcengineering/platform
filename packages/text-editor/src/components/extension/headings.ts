@@ -14,11 +14,11 @@
 //
 
 import { Extension } from '@tiptap/core'
-import { Node as ProseMirrorNode } from '@tiptap/pm/model'
-import { EditorState, Plugin, PluginKey, Transaction } from '@tiptap/pm/state'
+import { type Node as ProseMirrorNode } from '@tiptap/pm/model'
+import { type EditorState, Plugin, PluginKey, type Transaction } from '@tiptap/pm/state'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import slugify from 'slugify'
-import { Heading } from '../../types'
+import { type Heading } from '../../types'
 
 export interface HeadingsOptions {
   prefixId?: string
@@ -104,7 +104,7 @@ function hasHeadingUpdate (tr: Transaction): boolean {
 
   let found = false
 
-  tr.mapping.maps.forEach((map, index) =>
+  tr.mapping.maps.forEach((map, index) => {
     map.forEach((oldStart, oldEnd, newStart, newEnd) => {
       const oldDoc = tr.docs[index]
       const newDoc = tr.docs[index + 1] ?? tr.doc
@@ -126,7 +126,7 @@ function hasHeadingUpdate (tr: Transaction): boolean {
         return true
       })
     })
-  )
+  })
 
   return found
 }

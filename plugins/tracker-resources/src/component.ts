@@ -16,23 +16,23 @@
 import {
   AggregateValue,
   AggregateValueData,
-  AnyAttribute,
-  Attribute,
-  Class,
-  Client,
-  Doc,
-  DocumentQuery,
-  Hierarchy,
-  Ref,
+  type AnyAttribute,
+  type Attribute,
+  type Class,
+  type Client,
+  type Doc,
+  type DocumentQuery,
+  type Hierarchy,
+  type Ref,
   SortingOrder,
-  Space,
-  Tx,
-  WithLookup,
+  type Space,
+  type Tx,
+  type WithLookup,
   matchQuery
 } from '@hcengineering/core'
 import { LiveQuery } from '@hcengineering/query'
-import tracker, { Component, ComponentManager } from '@hcengineering/tracker'
-import { AggregationManager, GrouppingManager } from '@hcengineering/view'
+import tracker, { type Component, ComponentManager } from '@hcengineering/tracker'
+import { type AggregationManager, type GrouppingManager } from '@hcengineering/view'
 import { get, writable } from 'svelte/store'
 
 export const componentStore = writable<ComponentManager>(new ComponentManager([]))

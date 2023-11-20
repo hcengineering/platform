@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import { IntlString, Resource, mergeIds } from '@hcengineering/platform'
-import { PresentationMiddlewareCreator } from '@hcengineering/presentation'
-import { AnyComponent } from '@hcengineering/ui'
+import { type IntlString, type Resource, mergeIds } from '@hcengineering/platform'
+import { type PresentationMiddlewareCreator } from '@hcengineering/presentation'
+import { type AnyComponent } from '@hcengineering/ui'
 import view, { viewId } from '@hcengineering/view'
 
 export default mergeIds(viewId, view, {

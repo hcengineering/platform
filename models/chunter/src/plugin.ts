@@ -13,16 +13,15 @@
 // limitations under the License.
 //
 
-import type { DisplayTx, TxViewlet } from '@hcengineering/activity'
-import { Channel, chunterId } from '@hcengineering/chunter'
+import type { ActivityExtension, DisplayTx, TxViewlet } from '@hcengineering/activity'
+import { chunterId, type Channel } from '@hcengineering/chunter'
 import chunter from '@hcengineering/chunter-resources/src/plugin'
 import type { Doc, Ref, Space } from '@hcengineering/core'
-import { NotificationGroup } from '@hcengineering/notification'
+import { type NotificationGroup } from '@hcengineering/notification'
 import type { IntlString, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import type { AnyComponent, Location } from '@hcengineering/ui'
 import type { Action, ActionCategory, ViewAction, ViewletDescriptor } from '@hcengineering/view'
-import { ActivityExtension } from '@hcengineering/activity'
 
 export default mergeIds(chunterId, chunter, {
   component: {

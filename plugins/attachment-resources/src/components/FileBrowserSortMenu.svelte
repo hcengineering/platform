@@ -6,7 +6,7 @@
 
   export let selectedSort: FileBrowserSortMode
 
-  const sortModeToString = (sortMode: FileBrowserSortMode): IntlString<{}> => {
+  const sortModeToString = (sortMode: FileBrowserSortMode): IntlString => {
     switch (sortMode) {
       case FileBrowserSortMode.NewestFile:
         return attachment.string.FileBrowserSortNewest

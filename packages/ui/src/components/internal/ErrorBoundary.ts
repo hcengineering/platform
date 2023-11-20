@@ -15,9 +15,9 @@
 
 import ErrorComponent from './ErrorComponent.svelte'
 export default class errorBoundary extends ErrorComponent {
-  constructor (config) {
-    let error = null
-    config.props.$$slots.default = config.props.$$slots.default.map((x) => (...args) => {
+  constructor (config: any) {
+    let error: any = null
+    config.props.$$slots.default = config.props.$$slots.default.map((x: any) => (...args: any[]) => {
       try {
         return x(...args)
       } catch (e) {
@@ -25,7 +25,7 @@ export default class errorBoundary extends ErrorComponent {
       }
     })
     super(config)
-    if (error) {
+    if (error != null) {
       this.$set({ error })
     }
   }

@@ -1,14 +1,14 @@
 <!--
 // Copyright © 2022 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -25,10 +25,10 @@
   import tracker from '../../plugin'
   import { getPreviousAssignees } from '../../utils'
 
-  type Object = (Doc | {}) & Pick<Issue, 'space' | 'component' | 'assignee'>
+  type AssigneeObject = (Doc | any) & Pick<Issue, 'space' | 'component' | 'assignee'>
 
-  export let object: Object | Object[] | undefined = undefined
-  export let value: Object | Object[] | undefined = undefined
+  export let object: AssigneeObject | AssigneeObject[] | undefined = undefined
+  export let value: AssigneeObject | AssigneeObject[] | undefined = undefined
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
   export let avatarSize: IconSize = 'card'
@@ -64,7 +64,7 @@
       }
     } else {
       if ('_class' in _object) {
-        await ops.update(_object as any, { assignee: newAssignee })
+        await ops.update(_object, { assignee: newAssignee })
       }
     }
 
@@ -78,7 +78,7 @@
 
   let categories: AssigneeCategory[] = []
 
-  function getCategories (object: Object | Object[]): void {
+  function getCategories (object: AssigneeObject | AssigneeObject[]): void {
     categories = []
     if (cdocs.length > 0) {
       categories.push({

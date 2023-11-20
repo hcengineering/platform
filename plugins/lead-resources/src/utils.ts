@@ -1,5 +1,5 @@
-import { Doc, Ref, TxOperations } from '@hcengineering/core'
-import { Lead } from '@hcengineering/lead'
+import { type Doc, type Ref, type TxOperations } from '@hcengineering/core'
+import { type Lead } from '@hcengineering/lead'
 import lead from './plugin'
 
 export async function getLeadTitle (client: TxOperations, ref: Ref<Doc>): Promise<string> {

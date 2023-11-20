@@ -79,7 +79,7 @@
   $: group(tasks, $statusStore.byId)
 
   function group (tasks: Task[], statuses: IdMap<Status>): void {
-    const template: Map<Ref<Status>, DashboardItem> = new Map(
+    const template = new Map<Ref<Status>, DashboardItem>(
       states.map((p) => {
         return [
           p._id,

@@ -21,8 +21,8 @@
 
   export let value: VacancyList
   export let values:
-    | Map<Ref<Organization>, { count: number; modifiedOn: number; vacancies: Ref<Vacancy>[] }>
-    | undefined
+  | Map<Ref<Organization>, { count: number, modifiedOn: number, vacancies: Ref<Vacancy>[] }>
+  | undefined
   export let resultQuery: DocumentQuery<Doc>
 
   export let label: IntlString

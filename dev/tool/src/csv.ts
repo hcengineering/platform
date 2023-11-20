@@ -36,6 +36,6 @@ export class CSVWriter<T extends Record<string, string | number>> {
   }
 
   async write (filename: string): Promise<void> {
-    return await writeFile(filename, this.data.join('\n'))
+    await writeFile(filename, this.data.join('\n'))
   }
 }

@@ -61,12 +61,16 @@
     dispatch('close')
   }
 
-  const moveAll = async () => {
-    docs.forEach(async (doc) => await move(doc))
+  const moveAll = async (): Promise<void> => {
+    await Promise.all(
+      docs.map(async (doc) => {
+        await move(doc)
+      })
+    )
   }
 
-  async function getSpace (): Promise<void> {
-    client.findOne(core.class.Space, { _id: space }).then((res) => (currentSpace = res))
+  async function getSpace (): Promise<Space | undefined> {
+    return await client.findOne(core.class.Space, { _id: space }).then((res) => (currentSpace = res))
   }
 
   async function invokeValidate (

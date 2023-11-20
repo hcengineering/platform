@@ -102,7 +102,10 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
 
   async update (doc: DocIndexState, update: DocumentUpdate<DocIndexState>): Promise<void> {}
 
-  constructor (readonly adapter: FullTextAdapter, readonly workspaceId: WorkspaceId) {}
+  constructor (
+    readonly adapter: FullTextAdapter,
+    readonly workspaceId: WorkspaceId
+  ) {}
 
   updateSummary (summary: FullSummaryStage): void {
     summary.fieldFilter.push((attr, value) => {

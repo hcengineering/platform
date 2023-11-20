@@ -35,11 +35,13 @@
     PopupPosAlignment,
     PopupResult,
     ResolvedLocation,
+    Separator,
     TooltipInstance,
     areLocationsEqual,
     closePanel,
     closePopup,
     closeTooltip,
+    defineSeparators,
     deviceOptionsStore as deviceInfo,
     getCurrentLocation,
     getLocation,
@@ -48,12 +50,9 @@
     navigate,
     openPanel,
     popupstore,
-    resizeObserver,
     resolvedLocationStore,
     setResolvedLocation,
     showPopup,
-    Separator,
-    defineSeparators,
     workbenchSeparators
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -84,7 +83,7 @@
 
   let contentPanel: HTMLElement
 
-  const { setTheme } = getContext('theme') as any
+  const { setTheme } = getContext<{ setTheme: (theme: string) => void }>('theme')
 
   let currentAppAlias: string | undefined
   let currentSpace: Ref<Space> | undefined
@@ -171,18 +170,21 @@
 
   const workspaceId = $location.path[1]
 
-  onDestroy(
-    location.subscribe(async (loc) => {
-      if (workspaceId !== $location.path[1]) {
-        // Switch of workspace
-        return
-      }
-      closeTooltip()
-      closePopup()
+  const doSyncLoc = async (loc: Location): Promise<void> => {
+    if (workspaceId !== $location.path[1]) {
+      // Switch of workspace
+      return
+    }
+    closeTooltip()
+    closePopup()
 
-      await syncLoc(loc)
-      await updateWindowTitle(loc)
-      checkOnHide()
+    await syncLoc(loc)
+    await updateWindowTitle(loc)
+    checkOnHide()
+  }
+  onDestroy(
+    location.subscribe((loc) => {
+      void doSyncLoc(loc)
     })
   )
 
@@ -475,8 +477,6 @@
 
   let aside: HTMLElement
   let cover: HTMLElement
-  let asideWidth: number
-  let componentWidth: number
 
   let navFloat: boolean = !($deviceInfo.docWidth < 1024)
   $: if ($deviceInfo.docWidth <= 1024 && !navFloat) {
@@ -508,7 +508,9 @@
   let popupSpacePosition: PopupPosAlignment
   $: popupSpacePosition = appsMini ? 'logo-mini' : appsDirection === 'horizontal' ? 'logo-portrait' : 'logo'
 
-  onMount(() => subscribeMobile(setTheme))
+  onMount(() => {
+    subscribeMobile(setTheme)
+  })
 
   async function checkIsHeaderHidden (currentApplication: Application | undefined) {
     return (
@@ -547,11 +549,16 @@
     supportStatus = status
   }
 
-  const supportClient = getResource(support.function.GetSupport).then((res) =>
-    res((status) => handleSupportStatusChanged(status))
+  const supportClient = getResource(support.function.GetSupport).then(
+    async (res) =>
+      await res((status) => {
+        handleSupportStatusChanged(status)
+      })
   )
   onDestroy(async () => {
-    await supportClient?.then((support) => support?.destroy())
+    await supportClient?.then((support) => {
+      support?.destroy()
+    })
   })
 
   let supportWidgetLoading = false
@@ -661,7 +668,9 @@
               notify={supportStatus?.hasUnreadMessages}
               selected={supportStatus?.visible}
               loading={supportWidgetLoading}
-              on:click={() => handleToggleSupportWidget()}
+              on:click={async () => {
+                await handleToggleSupportWidget()
+              }}
             />
           {/if}
         {/await}
@@ -733,13 +742,7 @@
         </div>
         <Separator name={'workbench'} float={navFloat} index={0} color={'var(--theme-navpanel-border)'} />
       {/if}
-      <div
-        class="antiPanel-component antiComponent"
-        bind:this={contentPanel}
-        use:resizeObserver={() => {
-          componentWidth = contentPanel.clientWidth
-        }}
-      >
+      <div class="antiPanel-component antiComponent" bind:this={contentPanel}>
         {#if currentApplication && currentApplication.component}
           <Component is={currentApplication.component} props={{ currentSpace, visibleNav, navFloat, appsDirection }} />
         {:else if specialComponent}
@@ -774,13 +777,7 @@
         {@const asideComponent = navigatorModel?.aside ?? currentApplication?.aside}
         {#if asideComponent !== undefined}
           <Separator name={'workbench'} index={1} />
-          <div
-            class="antiPanel-component antiComponent aside"
-            use:resizeObserver={(element) => {
-              asideWidth = element.clientWidth
-            }}
-            bind:this={aside}
-          >
+          <div class="antiPanel-component antiComponent aside" bind:this={aside}>
             <Component is={asideComponent} props={{ currentSpace, _id: asideId }} on:close={closeAside} />
           </div>
         {/if}
@@ -804,7 +801,14 @@
   <div class="flex-col-center justify-center h-full flex-grow">
     <h1><Label label={workbench.string.AccountDisabled} /></h1>
     <Label label={workbench.string.AccountDisabledDescr} />
-    <Button label={setting.string.Signout} kind={'link'} size={'small'} on:click={() => signOut()} />
+    <Button
+      label={setting.string.Signout}
+      kind={'link'}
+      size={'small'}
+      on:click={() => {
+        signOut()
+      }}
+    />
   </div>
 {/if}
 

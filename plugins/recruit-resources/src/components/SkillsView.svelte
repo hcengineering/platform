@@ -20,7 +20,7 @@
       modes: [tags.filter.FilterTagsIn, tags.filter.FilterTagsNin],
       mode: tags.filter.FilterTagsIn,
       index: 1
-    } as Filter
+    } as unknown as Filter
     setFilters([filter])
   }
   async function onTag (tag: TagElement): Promise<void> {
@@ -30,7 +30,9 @@
     loc.path[3] = 'talents'
     loc.path.length = 4
     navigate(loc)
-    setTimeout(() => setFilterTag(tag), 200)
+    setTimeout(() => {
+      setFilterTag(tag)
+    }, 200)
   }
 </script>
 

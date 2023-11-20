@@ -17,7 +17,7 @@
 import attachment, { attachmentId } from '@hcengineering/attachment'
 import type { IntlString, StatusCode } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
-import { ViewAction } from '@hcengineering/view'
+import { type ViewAction } from '@hcengineering/view'
 
 export default mergeIds(attachmentId, attachment, {
   string: {

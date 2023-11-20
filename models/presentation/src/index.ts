@@ -13,29 +13,29 @@
 // limitations under the License.
 //
 
-import { Class, DOMAIN_MODEL, Doc, Ref } from '@hcengineering/core'
-import { Builder, Model, Prop, TypeRef } from '@hcengineering/model'
+import { type Class, DOMAIN_MODEL, type Doc, type Ref } from '@hcengineering/core'
+import { type Builder, Model, Prop, TypeRef } from '@hcengineering/model'
 import core, { TDoc } from '@hcengineering/model-core'
-import { Asset, IntlString, Resource } from '@hcengineering/platform'
+import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 // Import types to prevent .svelte components to being exposed to type typescript.
-import { PresentationMiddlewareCreator, PresentationMiddlewareFactory } from '@hcengineering/presentation'
+import { type PresentationMiddlewareCreator, type PresentationMiddlewareFactory } from '@hcengineering/presentation'
 import {
-  ComponentPointExtension,
-  CreateExtensionKind,
-  DocAttributeRule,
-  DocRules,
-  DocCreateExtension,
-  DocCreateFunction,
-  ObjectSearchContext,
-  ObjectSearchCategory,
-  ObjectSearchFactory
+  type ComponentPointExtension,
+  type CreateExtensionKind,
+  type DocAttributeRule,
+  type DocRules,
+  type DocCreateExtension,
+  type DocCreateFunction,
+  type ObjectSearchContext,
+  type ObjectSearchCategory,
+  type ObjectSearchFactory
 } from '@hcengineering/presentation/src/types'
-import { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
+import { type AnyComponent, type ComponentExtensionId } from '@hcengineering/ui'
 import presentation from './plugin'
 
 export { presentationId } from '@hcengineering/presentation/src/plugin'
 export { default } from './plugin'
-export { CreateExtensionKind, DocCreateExtension, DocCreateFunction, ObjectSearchCategory, ObjectSearchFactory }
+export type { CreateExtensionKind, DocCreateExtension, DocCreateFunction, ObjectSearchCategory, ObjectSearchFactory }
 
 @Model(presentation.class.ObjectSearchCategory, core.class.Doc, DOMAIN_MODEL)
 export class TObjectSearchCategory extends TDoc implements ObjectSearchCategory {

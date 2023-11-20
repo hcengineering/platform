@@ -83,7 +83,7 @@ export function serveAccount (methods: Record<string, AccountMethod>, productId 
     const token = extractToken(ctx.request.headers)
 
     const request = ctx.request.body as any
-    const method = (methods as { [key: string]: AccountMethod })[request.method]
+    const method = methods[request.method]
     if (method === undefined) {
       const response = {
         id: request.id,

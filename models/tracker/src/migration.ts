@@ -15,26 +15,26 @@
 
 import core, {
   DOMAIN_TX,
-  Data,
-  Ref,
+  type Data,
+  type Ref,
   SortingOrder,
-  Status,
-  TxCollectionCUD,
-  TxCreateDoc,
+  type Status,
+  type TxCollectionCUD,
+  type TxCreateDoc,
   TxOperations,
-  TxUpdateDoc,
+  type TxUpdateDoc,
   toIdMap
 } from '@hcengineering/core'
 import {
-  MigrateOperation,
-  MigrationClient,
-  MigrationUpgradeClient,
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient,
   createOrUpdate,
   tryMigrate
 } from '@hcengineering/model'
 import { DOMAIN_TASK, createProjectType } from '@hcengineering/model-task'
 import tags from '@hcengineering/tags'
-import { Issue, TimeReportDayType, TimeSpendReport } from '@hcengineering/tracker'
+import { type Issue, TimeReportDayType, type TimeSpendReport } from '@hcengineering/tracker'
 import view from '@hcengineering/view'
 import tracker from './plugin'
 import { DOMAIN_TRACKER } from './types'
@@ -237,7 +237,7 @@ async function fixParentsSpace (client: MigrationClient): Promise<void> {
       { limit: 1000 }
     )
 
-    const parentIds: Set<Ref<Issue>> = new Set()
+    const parentIds = new Set<Ref<Issue>>()
     for (const i of issues) {
       for (const p of i.parents ?? []) {
         parentIds.add(p.parentId)

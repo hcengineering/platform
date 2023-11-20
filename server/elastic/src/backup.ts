@@ -38,7 +38,10 @@ import { DbAdapter, IndexedDoc } from '@hcengineering/server-core'
 import { createHash } from 'node:crypto'
 
 class ElasticDataAdapter implements DbAdapter {
-  constructor (readonly workspaceId: WorkspaceId, readonly client: Client) {}
+  constructor (
+    readonly workspaceId: WorkspaceId,
+    readonly client: Client
+  ) {}
 
   async findAll<T extends Doc>(
     _class: Ref<Class<T>>,

@@ -1,5 +1,5 @@
-import { Organization } from '@hcengineering/contact'
-import { Domain, IndexKind, Ref } from '@hcengineering/core'
+import { type Organization } from '@hcengineering/contact'
+import { type Domain, IndexKind, type Ref } from '@hcengineering/core'
 import { Collection, Index, Model, Prop, TypeMarkup, TypeRef, TypeString, UX } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import calendar, { TEvent } from '@hcengineering/model-calendar'
@@ -7,7 +7,7 @@ import chunter from '@hcengineering/model-chunter'
 import contact from '@hcengineering/model-contact'
 import core, { TAttachedDoc } from '@hcengineering/model-core'
 import task from '@hcengineering/model-task'
-import { Applicant, Candidate, Opinion, Review } from '@hcengineering/recruit'
+import { type Applicant, type Candidate, type Opinion, type Review } from '@hcengineering/recruit'
 import recruit from './plugin'
 
 @Model(recruit.class.Review, calendar.class.Event)

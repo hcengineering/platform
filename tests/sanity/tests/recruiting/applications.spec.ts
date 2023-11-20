@@ -44,9 +44,7 @@ test.describe('Application tests', () => {
     await page.click(`button:has-text("${vacancyId}")`)
 
     await page.waitForSelector('space.selector', { state: 'detached' })
-    await expect(
-      await page.locator('[id="recruit:string:CreateApplication"] button:has-text("HR Interview")')
-    ).toBeVisible()
+    await expect(page.locator('[id="recruit:string:CreateApplication"] button:has-text("HR Interview")')).toBeVisible()
 
     // We need to be sure state is proper one, no other way to do it.
     await page.waitForTimeout(100)

@@ -50,8 +50,8 @@ module.exports = {
   resolve: {
     symlinks: true,
     alias: {
-      svelte: path.resolve('./node_modules', 'svelte'),
-      '@hcengineering/platform-rig/profiles/ui/svelte': path.resolve('./node_modules', 'svelte'),
+      svelte: path.resolve('node_modules', 'svelte/src/runtime'),
+      '@hcengineering/platform-rig/profiles/ui/svelte': path.resolve('node_modules', 'svelte/src/runtime')
     },
     fallback: { 
       crypto: false 

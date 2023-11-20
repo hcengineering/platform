@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Class, Doc, Domain, IndexKind, Ref } from '@hcengineering/core'
-import { ArrOf, Builder, Index, Model, Prop, TypeNumber, TypeRef, TypeString, UX } from '@hcengineering/model'
+import { type Class, type Doc, type Domain, IndexKind, type Ref } from '@hcengineering/core'
+import { ArrOf, type Builder, Index, Model, Prop, TypeNumber, TypeRef, TypeString, UX } from '@hcengineering/model'
 import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
 import view from '@hcengineering/model-view'
-import { Asset, IntlString } from '@hcengineering/platform'
+import { type Asset, type IntlString } from '@hcengineering/platform'
 import type {
   ExpertKnowledge,
   InitialKnowledge,
@@ -27,7 +27,7 @@ import type {
 } from '@hcengineering/tags'
 import tags from './plugin'
 
-export { TagCategory, TagElement, TagReference, tagsId } from '@hcengineering/tags'
+export { type TagCategory, type TagElement, type TagReference, tagsId } from '@hcengineering/tags'
 export { tagsOperation } from './migration'
 export { tags as default }
 

@@ -91,7 +91,7 @@
   function isChanged (space: Space, docUpdates: Map<Ref<Doc>, DocUpdates>): boolean {
     const update = docUpdates.get(space._id)
     if (update === undefined) return false
-    return update.txes.length > 0 && update.hidden !== true
+    return update.txes.length > 0 && !update.hidden
   }
 </script>
 
@@ -118,7 +118,7 @@
               title={name}
               icon={classIcon(client, space._class)}
               selected={currentSpace === space._id}
-              actions={() => getActions(space)}
+              actions={async () => await getActions(space)}
               bold={isChanged(space, $docUpdates)}
             />
           </NavLink>

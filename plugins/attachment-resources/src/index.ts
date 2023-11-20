@@ -13,9 +13,16 @@
 // limitations under the License.
 //
 
-import attachment, { Attachment } from '@hcengineering/attachment'
-import { ObjQueryType, SortingOrder, SortingQuery, Markup, Ref, Doc } from '@hcengineering/core'
-import { IntlString, Resources } from '@hcengineering/platform'
+import attachment, { type Attachment } from '@hcengineering/attachment'
+import {
+  type ObjQueryType,
+  SortingOrder,
+  type SortingQuery,
+  type Markup,
+  type Ref,
+  type Doc
+} from '@hcengineering/core'
+import { type IntlString, type Resources } from '@hcengineering/platform'
 import preference from '@hcengineering/preference'
 import { getClient } from '@hcengineering/presentation'
 import TxAttachmentCreate from './components/activity/TxAttachmentCreate.svelte'
@@ -37,7 +44,7 @@ import AccordionEditor from './components/AccordionEditor.svelte'
 import IconUploadDuo from './components/icons/UploadDuo.svelte'
 import IconAttachment from './components/icons/Attachment.svelte'
 import { deleteFile, uploadFile } from './utils'
-import { DisplayTx } from '@hcengineering/activity'
+import { type DisplayTx } from '@hcengineering/activity'
 import AttachmentPreview from './components/AttachmentPreview.svelte'
 
 export {

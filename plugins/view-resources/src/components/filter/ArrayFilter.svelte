@@ -83,7 +83,8 @@
     values.clear()
     realValues.clear()
     if ((filter.key.attribute.type as ArrOf<Doc>).of._class === core.class.EnumOf) {
-      return getEnumValues(search)
+      await getEnumValues(search)
+      return
     }
     const resultQuery =
       search !== ''

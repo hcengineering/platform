@@ -13,7 +13,16 @@
 // limitations under the License.
 //
 
-import { Account, AccountRole, Arr, Domain, DOMAIN_MODEL, IndexKind, Ref, Space } from '@hcengineering/core'
+import {
+  type Account,
+  type AccountRole,
+  type Arr,
+  type Domain,
+  DOMAIN_MODEL,
+  IndexKind,
+  type Ref,
+  type Space
+} from '@hcengineering/core'
 import { ArrOf, Hidden, Index, Model, Prop, TypeBoolean, TypeRef, TypeString, UX } from '@hcengineering/model'
 import core from './component'
 import { TDoc } from './core'

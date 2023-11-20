@@ -91,7 +91,9 @@
     {
       label: request.string.Approve,
       icon: DocSuccess,
-      action: () => approve(),
+      action: () => {
+        void approve()
+      },
       order: 1000,
       fill: 'var(--theme-won-color)',
       disabled
@@ -99,7 +101,9 @@
     {
       label: request.string.Reject,
       icon: DocFail,
-      action: () => reject(),
+      action: () => {
+        void reject()
+      },
       order: 2000,
       fill: 'var(--theme-lost-color)',
       disabled

@@ -32,7 +32,6 @@
 
   const query = createQuery()
 
-  let _id: Ref<Doc> | undefined
   let docs: DocUpdates[] = []
   let filteredDocs: DocUpdates[] = []
   let loading = true
@@ -88,10 +87,9 @@
 
   function changeSelected (index: number) {
     if (filteredDocs[index] !== undefined) {
-      _id = filteredDocs[index]?.attachedTo
       dispatch('change', filteredDocs[index])
       markAsRead(index)
-    } else if (filteredDocs.length) {
+    } else if (filteredDocs.length > 0) {
       if (index < filteredDocs.length - 1) {
         selected++
       } else {
@@ -100,7 +98,6 @@
       changeSelected(selected)
     } else {
       selected = 0
-      _id = undefined
       dispatch('change', undefined)
     }
   }

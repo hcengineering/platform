@@ -15,38 +15,38 @@
 //
 
 import core, {
-  AnyAttribute,
-  ArrOf,
-  AttachedDoc,
-  Class,
-  Client,
-  Collection,
-  Doc,
-  DocumentQuery,
-  FindOptions,
-  FindResult,
+  type AnyAttribute,
+  type ArrOf,
+  type AttachedDoc,
+  type Class,
+  type Client,
+  type Collection,
+  type Doc,
+  type DocumentQuery,
+  type FindOptions,
+  type FindResult,
   getCurrentAccount,
-  Hierarchy,
-  Mixin,
-  Obj,
-  Ref,
-  RefTo,
-  Tx,
+  type Hierarchy,
+  type Mixin,
+  type Obj,
+  type Ref,
+  type RefTo,
+  type Tx,
   TxOperations,
-  TxResult,
-  WithLookup,
-  SearchQuery,
-  SearchOptions,
-  SearchResult
+  type TxResult,
+  type WithLookup,
+  type SearchQuery,
+  type SearchOptions,
+  type SearchResult
 } from '@hcengineering/core'
 import { getMetadata, getResource } from '@hcengineering/platform'
 import { LiveQuery as LQ } from '@hcengineering/query'
-import { AnySvelteComponent, IconSize } from '@hcengineering/ui'
-import view, { AttributeEditor } from '@hcengineering/view'
+import { type AnySvelteComponent, type IconSize } from '@hcengineering/ui'
+import view, { type AttributeEditor } from '@hcengineering/view'
 import { deepEqual } from 'fast-equals'
 import { onDestroy } from 'svelte'
-import { KeyedAttribute } from '..'
-import { OptimizeQueryMiddleware, PresentationPipeline, PresentationPipelineImpl } from './pipeline'
+import { type KeyedAttribute } from '..'
+import { OptimizeQueryMiddleware, type PresentationPipeline, PresentationPipelineImpl } from './pipeline'
 import plugin from './plugin'
 
 let liveQuery: LQ
@@ -73,7 +73,10 @@ export function removeTxListener (l: (tx: Tx) => void): void {
 }
 
 class UIClient extends TxOperations implements Client {
-  constructor (client: Client, private readonly liveQuery: Client) {
+  constructor (
+    client: Client,
+    private readonly liveQuery: Client
+  ) {
     super(client, getCurrentAccount()._id)
   }
 
@@ -122,6 +125,7 @@ export async function setClient (_client: Client): Promise<void> {
   const factories = await _client.findAll(plugin.class.PresentationMiddlewareFactory, {})
   const promises = factories.map(async (it) => await getResource(it.createPresentationMiddleware))
   const creators = await Promise.all(promises)
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   pipeline = PresentationPipelineImpl.create(_client, [OptimizeQueryMiddleware.create, ...creators])
 
   const needRefresh = liveQuery !== undefined
@@ -129,11 +133,17 @@ export async function setClient (_client: Client): Promise<void> {
   client = new UIClient(pipeline, liveQuery)
 
   _client.notify = (tx: Tx) => {
-    pipeline.notifyTx(tx).catch((err) => console.log(err))
+    pipeline.notifyTx(tx).catch((err) => {
+      console.log(err)
+    })
 
-    liveQuery.tx(tx).catch((err) => console.log(err))
+    liveQuery.tx(tx).catch((err) => {
+      console.log(err)
+    })
 
-    txListeners.forEach((it) => it(tx))
+    txListeners.forEach((it) => {
+      it(tx)
+    })
   }
   if (needRefresh || globalQueries.length > 0) {
     await refreshClient()
@@ -166,7 +176,7 @@ export class LiveQuery {
   private oldClass: Ref<Class<Doc>> | undefined
   private oldQuery: DocumentQuery<Doc> | undefined
   private oldOptions: FindOptions<Doc> | undefined
-  private oldCallback: ((result: FindResult<any>) => void) | undefined
+  private oldCallback: ((result: FindResult<any>) => void | Promise<void>) | undefined
   private reqId = 0
   unsubscribe: () => void = () => {}
   clientRecreated = false
@@ -184,7 +194,7 @@ export class LiveQuery {
   query<T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    callback: (result: FindResult<T>) => void,
+    callback: (result: FindResult<T>) => void | Promise<void>,
     options?: FindOptions<T>
   ): boolean {
     if (!this.needUpdate(_class, query, callback, options) && !this.clientRecreated) {
@@ -201,7 +211,7 @@ export class LiveQuery {
     id: number,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    callback: (result: FindResult<T>) => void,
+    callback: (result: FindResult<T>) => void | Promise<void>,
     options: FindOptions<T> | undefined
   ): void {
     if (pipeline === undefined) {
@@ -219,7 +229,9 @@ export class LiveQuery {
     })
     if (id !== this.reqId) {
       // If we have one more request after this one, no need to do something.
-      void piplineQuery.then((res) => res.unsubscribe())
+      void piplineQuery.then((res) => {
+        res.unsubscribe()
+      })
       return
     }
 
@@ -235,14 +247,16 @@ export class LiveQuery {
       (result) => {
         // If we have one more request after this one, no need to do something.
         if (id === this.reqId) {
-          callback(result)
+          void callback(result)
         }
       },
       options
     )
     this.unsubscribe = () => {
       unsub()
-      void piplineQuery.then((res) => res.unsubscribe())
+      void piplineQuery.then((res) => {
+        res.unsubscribe()
+      })
       this.oldCallback = undefined
       this.oldClass = undefined
       this.oldOptions = undefined
@@ -265,7 +279,7 @@ export class LiveQuery {
   private needUpdate<T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    callback: (result: FindResult<T>) => void,
+    callback: (result: FindResult<T>) => void | Promise<void>,
     options?: FindOptions<T>
   ): boolean {
     if (!deepEqual(_class, this.oldClass)) return true
@@ -305,7 +319,13 @@ export async function getBlobURL (blob: Blob): Promise<string> {
   return await new Promise((resolve) => {
     const reader = new FileReader()
 
-    reader.addEventListener('load', () => resolve(reader.result as string), false)
+    reader.addEventListener(
+      'load',
+      () => {
+        resolve(reader.result as string)
+      },
+      false
+    )
     reader.readAsDataURL(blob)
   })
 }

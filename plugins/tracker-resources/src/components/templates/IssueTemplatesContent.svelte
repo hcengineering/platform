@@ -1,11 +1,11 @@
 <script lang="ts">
   import { DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
   import { IssueTemplate } from '@hcengineering/tracker'
   import { Component } from '@hcengineering/ui'
-  import view, { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
+  import view, { ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
   import tracker from '../../plugin'
   import CreateIssueTemplate from './CreateIssueTemplate.svelte'
-  import { createQuery } from '@hcengineering/presentation'
 
   export let viewlet: WithLookup<Viewlet>
   export let viewOptions: ViewOptions
@@ -14,7 +14,6 @@
 
   const preferenceQuery = createQuery()
   let preference: ViewletPreference | undefined
-  let loading = true
 
   $: viewlet &&
     preferenceQuery.query(
@@ -24,7 +23,6 @@
       },
       (res) => {
         preference = res[0]
-        loading = false
       },
       { limit: 1 }
     )

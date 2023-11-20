@@ -366,7 +366,12 @@
     <div class="ac-header full divide">
       <div class="clear-mins" />
       <div class="ac-header-full small-gap">
-        <Button label={getEmbeddedLabel('Export')} on:click={(evt) => exportTable(evt)} />
+        <Button
+          label={getEmbeddedLabel('Export')}
+          on:click={(evt) => {
+            exportTable(evt)
+          }}
+        />
         <ViewletSelector
           hidden
           bind:viewlet

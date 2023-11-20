@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { getMetadata, Resources } from '@hcengineering/platform'
+import { getMetadata, type Resources } from '@hcengineering/platform'
 import telegram from './plugin'
 import presentation from '@hcengineering/presentation'
 import Chat from './components/Chat.svelte'

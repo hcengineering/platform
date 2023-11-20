@@ -6,9 +6,9 @@
   import ThemePopup from './ThemePopup.svelte'
   import { isSystemThemeDark } from '@hcengineering/theme'
 
-  const { currentTheme, setTheme } = getContext('theme') as { currentTheme: string; setTheme: (theme: string) => void }
+  const { currentTheme, setTheme } = getContext<{ currentTheme: string, setTheme: (theme: string) => void }>('theme')
 
-  const themes: Array<{ id: string; label: IntlString }> = [
+  const themes: Array<{ id: string, label: IntlString }> = [
     { id: 'theme-light', label: ui.string.ThemeLight },
     { id: 'theme-dark', label: ui.string.ThemeDark },
     { id: 'theme-system', label: ui.string.ThemeSystem }

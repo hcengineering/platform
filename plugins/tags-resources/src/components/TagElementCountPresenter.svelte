@@ -20,7 +20,7 @@
   import tags from '../plugin'
 
   export let value: TagElement
-  export let tagElements: Map<Ref<TagElement>, { count: number; modifiedOn: number }> | undefined
+  export let tagElements: Map<Ref<TagElement>, { count: number, modifiedOn: number }> | undefined
   export let icon: Asset | AnySvelteComponent = tags.icon.Tags
   export let onTag: ((tag: TagElement) => void) | undefined = undefined
 </script>

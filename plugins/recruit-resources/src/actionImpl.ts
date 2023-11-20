@@ -1,4 +1,4 @@
-import { Doc } from '@hcengineering/core'
+import { type Doc } from '@hcengineering/core'
 import { showPopup } from '@hcengineering/ui'
 import MoveApplication from './components/MoveApplication.svelte'
 

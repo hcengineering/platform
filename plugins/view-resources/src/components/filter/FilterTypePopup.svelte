@@ -277,7 +277,9 @@
       <!-- svelte-ignore a11y-mouse-events-have-key-events -->
       <button
         class="menu-item"
-        on:keydown={(event) => keyDown(event, -1)}
+        on:keydown={(event) => {
+          keyDown(event, -1)
+        }}
         on:mouseover={(event) => {
           event.currentTarget.focus()
         }}
@@ -296,7 +298,9 @@
         {#if filter === undefined && hasNested(type) && nestedFrom === undefined}
           <Submenu
             bind:element={elements[i]}
-            on:keydown={(event) => keyDown(event, i)}
+            on:keydown={(event) => {
+              keyDown(event, i)
+            }}
             on:mouseover={() => {
               elements[i]?.focus()
             }}
@@ -316,7 +320,9 @@
           <!-- svelte-ignore a11y-mouse-events-have-key-events -->
           <button
             class="menu-item"
-            on:keydown={(event) => keyDown(event, i)}
+            on:keydown={(event) => {
+              keyDown(event, i)
+            }}
             on:mouseover={(event) => {
               event.currentTarget.focus()
             }}

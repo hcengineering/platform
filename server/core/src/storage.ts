@@ -560,7 +560,9 @@ class TServerStorage implements ServerStorage {
       removedMap,
       workspace: this.workspace,
       fx: triggerFx.fx,
-      fulltextFx: (f) => triggerFx.fx(() => f(this.fulltextAdapter)),
+      fulltextFx: (f) => {
+        triggerFx.fx(() => f(this.fulltextAdapter))
+      },
       storageFx: (f) => {
         const adapter = this.storageAdapter
         if (adapter === undefined) {
@@ -737,7 +739,9 @@ class TServerStorage implements ServerStorage {
       console.log(err)
       throw err
     } finally {
-      onEnds.forEach((p) => p())
+      onEnds.forEach((p) => {
+        p()
+      })
     }
 
     return [result, derived]
@@ -940,10 +944,10 @@ export function createNullStorageFactory (): MinioService {
     remove: async (workspaceId: WorkspaceId, objectNames: string[]) => {},
     delete: async (workspaceId: WorkspaceId) => {},
     list: async (workspaceId: WorkspaceId, prefix?: string) => [],
-    stat: async (workspaceId: WorkspaceId, objectName: string) => ({} as any),
-    get: async (workspaceId: WorkspaceId, objectName: string) => ({} as any),
-    put: async (workspaceId: WorkspaceId, objectName: string, stream: any, size?: number, qwe?: any) => ({} as any),
-    read: async (workspaceId: WorkspaceId, name: string) => ({} as any),
-    partial: async (workspaceId: WorkspaceId, objectName: string, offset: number, length?: number) => ({} as any)
+    stat: async (workspaceId: WorkspaceId, objectName: string) => ({}) as any,
+    get: async (workspaceId: WorkspaceId, objectName: string) => ({}) as any,
+    put: async (workspaceId: WorkspaceId, objectName: string, stream: any, size?: number, qwe?: any) => ({}) as any,
+    read: async (workspaceId: WorkspaceId, name: string) => ({}) as any,
+    partial: async (workspaceId: WorkspaceId, objectName: string, offset: number, length?: number) => ({}) as any
   }
 }

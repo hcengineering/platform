@@ -39,7 +39,7 @@
     return firstName === '' && lastName === '' && email === ''
   }
 
-  const object: Employee = {} as Employee
+  const object: Employee = {} as unknown as Employee
 
   const dispatch = createEventDispatcher()
   const client = getClient()

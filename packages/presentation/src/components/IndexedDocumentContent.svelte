@@ -48,8 +48,8 @@
     <span class="font-medium">Result:</span>
     {#each summary.split('\n').filter((line, idx, arr) => {
       return line.toLowerCase().includes(search.toLowerCase()) || arr[idx - 1]
-          ?.toLowerCase()
-          .includes(search.toLowerCase())
+        ?.toLowerCase()
+        .includes(search.toLowerCase())
     }) as line}
       <span class:highlight={line.toLowerCase().includes(search.toLowerCase())}>{line}</span>
     {/each}

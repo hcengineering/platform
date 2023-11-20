@@ -16,7 +16,7 @@
 
 import type { Ref, Space } from '@hcengineering/core'
 import { mergeIds } from '@hcengineering/platform'
-import { TagCategory } from '@hcengineering/tags'
+import { type TagCategory } from '@hcengineering/tags'
 import { taskId } from '@hcengineering/task'
 import task from '@hcengineering/task-resources/src/plugin'
 import type { AnyComponent } from '@hcengineering/ui'

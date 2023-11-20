@@ -1,5 +1,5 @@
-import board, { Board, CommonBoardPreference } from '@hcengineering/board'
-import core, { Ref, TxOperations, getCurrentAccount } from '@hcengineering/core'
+import board, { type Board, type CommonBoardPreference } from '@hcengineering/board'
+import core, { type Ref, type TxOperations, getCurrentAccount } from '@hcengineering/core'
 import preference from '@hcengineering/preference'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import type { ProjectType, TodoItem } from '@hcengineering/task'
@@ -60,7 +60,10 @@ export function getDateIcon (item: TodoItem): 'normal' | 'warning' | 'overdue' {
 
 export const commonBoardPreference = readable<CommonBoardPreference>(undefined, (set) => {
   createQuery().query(board.class.CommonBoardPreference, { attachedTo: board.app.Board }, (result) => {
-    if (result.length > 0) return set(result[0])
+    if (result.length > 0) {
+      set(result[0])
+      return
+    }
     void getClient().createDoc(board.class.CommonBoardPreference, preference.space.Preference, {
       attachedTo: board.app.Board
     })

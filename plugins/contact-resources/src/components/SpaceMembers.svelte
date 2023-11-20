@@ -84,14 +84,14 @@
 {#await getUsers(space.members, search) then users}
   {@const current = users.filter((p) => members.has(p._id))}
   {@const foreign = users.filter((p) => !members.has(p._id))}
-  {#if isSearch && !foreign.length && !current.length}
+  {#if isSearch && foreign.length === 0 && current.length === 0}
     <div class="fs-title flex-center mt-10">
       <Label label={presentation.string.NoMatchesFound} />
     </div>
   {:else}
     {#if isSearch}
       <div class="pr-8 pl-8"><Label label={presentation.string.InThis} params={{ space: spaceClass }} /></div>
-      {#if !current.length}
+      {#if current.length === 0}
         <div class="fs-title pl-8 mb-4 mt-4">
           <Label label={presentation.string.NoMatchesInThis} params={{ space: spaceClass }} />
         </div>

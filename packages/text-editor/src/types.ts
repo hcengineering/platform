@@ -1,7 +1,7 @@
-import { Asset, IntlString, Resource } from '@hcengineering/platform'
-import { Doc } from '@hcengineering/core'
+import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
+import { type Doc } from '@hcengineering/core'
 import type { AnySvelteComponent } from '@hcengineering/ui'
-import { Editor, SingleCommands } from '@tiptap/core'
+import { type Editor, type SingleCommands } from '@tiptap/core'
 
 /**
  * @public

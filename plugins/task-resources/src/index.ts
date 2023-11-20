@@ -14,12 +14,22 @@
 // limitations under the License.
 //
 
-import { Attribute, Class, Doc, DocumentQuery, IdMap, Ref, Status, TxOperations, toIdMap } from '@hcengineering/core'
-import { IntlString, Resources } from '@hcengineering/platform'
+import {
+  type Attribute,
+  type Class,
+  type Doc,
+  type DocumentQuery,
+  type IdMap,
+  type Ref,
+  type Status,
+  type TxOperations,
+  toIdMap
+} from '@hcengineering/core'
+import { type IntlString, type Resources } from '@hcengineering/platform'
 import { createQuery, getClient } from '@hcengineering/presentation'
-import task, { Project, ProjectType, Task, calcRank } from '@hcengineering/task'
+import task, { type Project, type ProjectType, type Task, calcRank } from '@hcengineering/task'
 import { getCurrentLocation, navigate, showPopup } from '@hcengineering/ui'
-import { ViewletDescriptor } from '@hcengineering/view'
+import { type ViewletDescriptor } from '@hcengineering/view'
 import { CategoryQuery, statusStore } from '@hcengineering/view-resources'
 import { get, writable } from 'svelte/store'
 import AssignedTasks from './components/AssignedTasks.svelte'
@@ -190,7 +200,7 @@ async function statusSort (
       }
     })
   } else {
-    const res: Map<Ref<Status>, string> = new Map()
+    const res = new Map<Ref<Status>, string>()
     let prevRank: string | undefined
     const types = await client.findAll(task.class.ProjectType, {})
     for (const state of value) {
@@ -233,7 +243,9 @@ function fillStores (): void {
       typeStore.set(toIdMap(res))
     })
   } else {
-    setTimeout(() => fillStores(), 50)
+    setTimeout(() => {
+      fillStores()
+    }, 50)
   }
 }
 

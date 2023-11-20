@@ -13,15 +13,21 @@
 // limitations under the License.
 //
 
-import { TxViewlet } from '@hcengineering/activity'
+import { type TxViewlet } from '@hcengineering/activity'
 import { calendarId } from '@hcengineering/calendar'
 import calendar from '@hcengineering/calendar-resources/src/plugin'
-import { Ref } from '@hcengineering/core'
-import { NotificationGroup } from '@hcengineering/notification'
+import { type Ref } from '@hcengineering/core'
+import { type NotificationGroup } from '@hcengineering/notification'
 import type { IntlString } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
-import { AnyComponent } from '@hcengineering/ui'
-import { Action, ActionCategory, ViewAction, Viewlet, ViewletDescriptor } from '@hcengineering/view'
+import { type AnyComponent } from '@hcengineering/ui'
+import {
+  type Action,
+  type ActionCategory,
+  type ViewAction,
+  type Viewlet,
+  type ViewletDescriptor
+} from '@hcengineering/view'
 
 export default mergeIds(calendarId, calendar, {
   component: {

@@ -16,7 +16,7 @@
 
 import {
   ArrOf,
-  Builder,
+  type Builder,
   Collection,
   Hidden,
   Mixin,
@@ -30,8 +30,20 @@ import {
 import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
 import bitrix from './plugin'
 
-import { BitrixEntityMapping, BitrixFieldMapping, BitrixSyncDoc, Fields } from '@hcengineering/bitrix'
-import { AnyAttribute, Class, Mixin as CoreMixin, Doc, Domain, Ref } from '@hcengineering/core'
+import {
+  type BitrixEntityMapping,
+  type BitrixFieldMapping,
+  type BitrixSyncDoc,
+  type Fields
+} from '@hcengineering/bitrix'
+import {
+  type AnyAttribute,
+  type Class,
+  type Mixin as CoreMixin,
+  type Doc,
+  type Domain,
+  type Ref
+} from '@hcengineering/core'
 
 import view, { createAction } from '@hcengineering/model-view'
 

@@ -14,16 +14,23 @@
 // limitations under the License.
 //
 
-import { Channel, Contact, getGravatarUrl, getName, Person } from '@hcengineering/contact'
-import { Class, Client, DocumentQuery, Ref, RelatedDocument, WithLookup } from '@hcengineering/core'
-import login from '@hcengineering/login'
-import { IntlString, Resources, getResource } from '@hcengineering/platform'
-import { MessageBox, ObjectSearchResult, getClient, getFileUrl } from '@hcengineering/presentation'
+import { type Channel, type Contact, getGravatarUrl, getName, type Person } from '@hcengineering/contact'
 import {
-  AnyComponent,
-  AnySvelteComponent,
-  IconSize,
-  TooltipAlignment,
+  type Class,
+  type Client,
+  type DocumentQuery,
+  type Ref,
+  type RelatedDocument,
+  type WithLookup
+} from '@hcengineering/core'
+import login from '@hcengineering/login'
+import { type IntlString, type Resources, getResource } from '@hcengineering/platform'
+import { MessageBox, type ObjectSearchResult, getClient, getFileUrl } from '@hcengineering/presentation'
+import {
+  type AnyComponent,
+  type AnySvelteComponent,
+  type IconSize,
+  type TooltipAlignment,
   getIconSize2x,
   parseURL,
   showPopup

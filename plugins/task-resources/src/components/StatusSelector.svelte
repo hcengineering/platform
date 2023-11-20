@@ -39,13 +39,13 @@
 
   $: current = Array.isArray(value)
     ? value.every((v) => v.status === (value as Array<Task>)[0].status)
-      ? (value as Array<Task>)[0].status
+      ? value[0].status
       : undefined
     : value.status
 
   $: _space = Array.isArray(value)
     ? value.every((v) => v.space === (value as Array<Task>)[0].space)
-      ? (value as Array<Task>)[0].space
+      ? value[0].space
       : undefined
     : value.space
 
@@ -53,7 +53,9 @@
 
   const query = createQuery()
   $: _space
-    ? query.query(task.class.Project, { _id: _space as Ref<Project> }, (res) => (project = res[0]))
+    ? query.query(task.class.Project, { _id: _space as Ref<Project> }, (res) => {
+      project = res[0]
+    })
     : (project = undefined)
 
   function updateStatuses (

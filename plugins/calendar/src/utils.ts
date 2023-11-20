@@ -299,7 +299,7 @@ export function getAllEvents (events: Event[], from: Timestamp, to: Timestamp): 
   const recur: ReccuringEvent[] = []
   const instances: ReccuringInstance[] = []
   const recurData: ReccuringInstance[] = []
-  const instancesMap: Map<string, ReccuringInstance[]> = new Map()
+  const instancesMap = new Map<string, ReccuringInstance[]>()
   for (const event of events) {
     if (event._class === calendar.class.ReccuringEvent) {
       recur.push(event as ReccuringEvent)

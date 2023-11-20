@@ -81,20 +81,20 @@
 
   const noWeekendHolidayType: Ref<RequestType>[] = [hr.ids.PTO, hr.ids.PTO2, hr.ids.Vacation]
 
-  function checkConflict(request1: Request, request2: Request): boolean {
+  function checkConflict (request1: Request, request2: Request): boolean {
     return (
       tzDateCompare(request1.tzDate, request2.tzDueDate) <= 0 && tzDateCompare(request1.tzDueDate, request2.tzDate) >= 0
     )
   }
 
-  function getMonthDate(request: Request): number {
+  function getMonthDate (request: Request): number {
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth()
 
     return request.tzDate.year === year && request.tzDate.month === month ? request.tzDate.day : startDate.getDate()
   }
 
-  function getMonthDueDate(request: Request): number {
+  function getMonthDueDate (request: Request): number {
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth()
 
@@ -103,7 +103,7 @@
       : endDate.getDate()
   }
 
-  function getOrderedEmployeeRequests(employee: Staff): Request[] {
+  function getOrderedEmployeeRequests (employee: Staff): Request[] {
     const requests = getRequests(employeeRequests, startDate, endDate, employee._id)
     requests.sort((a, b) => {
       const res = tzDateCompare(a.tzDate, b.tzDate)
@@ -115,7 +115,7 @@
     return requests
   }
 
-  function buildTimelineRows(): TimelineRow[] {
+  function buildTimelineRows (departmentStaff: Staff[], employeeRequests: Map<Ref<Staff>, Request[]>): TimelineRow[] {
     const res: TimelineRow[] = []
 
     for (const employee of departmentStaff) {
@@ -154,7 +154,7 @@
     return res
   }
 
-  function createRequest(e: MouseEvent, date: Date, staff: Staff): void {
+  function createRequest (e: MouseEvent, date: Date, staff: Staff): void {
     if (!isEditable(staff)) return
     const readonly = editableList.length === 1
 
@@ -173,7 +173,7 @@
     )
   }
 
-  function isFutureDate() {
+  function isFutureDate () {
     const today = new Date(Date.now())
     return (
       currentDate >= today ||
@@ -181,11 +181,11 @@
     )
   }
 
-  function isEditable(employee: Staff): boolean {
+  function isEditable (employee: Staff): boolean {
     return editableList.includes(employee._id) && (isFutureDate() || getCurrentAccount().role === AccountRole.Owner)
   }
 
-  function getTooltip(requests: Request[], day: Date, staff: Staff): LabelAndProps | undefined {
+  function getTooltip (requests: Request[], day: Date, staff: Staff): LabelAndProps | undefined {
     if (requests.length === 0) return
     const weekend = isWeekend(day)
     const holiday =
@@ -199,30 +199,30 @@
     }
   }
 
-  function setPublicHoliday(date: Date) {
+  function setPublicHoliday (date: Date): void {
     showPopup(CreatePublicHoliday, { date, department })
   }
 
-  function getRowHeight(row: TimelineRow): number {
+  function getRowHeight (row: TimelineRow): number {
     const height = row.tracks.length * (eventHeightRem + eventMarginRem) - eventMarginRem + 2
     return Math.max(height, minRowHeightRem)
   }
 
-  function getColumnWidth(gridWidth: number, currentDate: Date): number {
+  function getColumnWidth (gridWidth: number, currentDate: Date): number {
     const width = gridWidth / daysInMonth(currentDate)
     return Math.max(width, minColWidthRem)
   }
 
-  export function getCellStyle(): string {
+  export function getCellStyle (): string {
     return `width: ${columnWidthRem}rem;`
   }
 
-  export function getRowStyle(row: TimelineRow): string {
+  export function getRowStyle (row: TimelineRow): string {
     const height = getRowHeight(row)
     return `height: ${height}rem;`
   }
 
-  export function getElementStyle(element: TimelineElement, trackIndex: number): string {
+  export function getElementStyle (element: TimelineElement, trackIndex: number): string {
     const left = (element.date - 1) * columnWidthRem
     const top = trackIndex * (eventHeightRem + eventMarginRem)
     const width = columnWidthRem * element.length
@@ -244,7 +244,7 @@
   $: columnWidthRem = getColumnWidth(containerWidthRem - headerWidthRem, currentDate)
 
   let rows: TimelineRow[]
-  $: departmentStaff, employeeRequests, (rows = buildTimelineRows())
+  $: rows = buildTimelineRows(departmentStaff, employeeRequests)
 </script>
 
 {#if rows.length}
@@ -285,10 +285,15 @@
               {@const day = getDay(startDate, value)}
               {@const today = areDatesEqual(todayDate, day)}
               <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <!-- svelte-ignore a11y-no-static-element-interactions -->
               <div
                 class="timeline-cell timeline-day-header flex-col-center justify-center"
                 style={getCellStyle()}
-                on:click={() => isFutureDate() && setPublicHoliday(day)}
+                on:click={() => {
+                  if (isFutureDate()) {
+                    setPublicHoliday(day)
+                  }
+                }}
               >
                 <div
                   class="timeline-day-header__day flex-col-center justify-center"
@@ -348,7 +353,9 @@
                     class:timeline-cell--holiday={holiday}
                     style={getCellStyle()}
                     use:tooltip={tooltipValue}
-                    on:click={(e) => createRequest(e, day, employee)}
+                    on:click={(e) => {
+                      createRequest(e, day, employee)
+                    }}
                   >
                     {#if today}
                       <div class="timeline-cell-today-marker" />

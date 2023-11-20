@@ -14,14 +14,14 @@
 //
 
 import type { TxViewlet } from '@hcengineering/activity'
-import { Doc, Ref } from '@hcengineering/core'
-import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
+import { type Doc, type Ref } from '@hcengineering/core'
+import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { settingId } from '@hcengineering/setting'
 import setting from '@hcengineering/setting-resources/src/plugin'
-import { AnyComponent } from '@hcengineering/ui'
-import { Action, ActionCategory, ViewAction } from '@hcengineering/view'
-import { TemplateFieldFunc } from '@hcengineering/templates'
-import { NotificationGroup, NotificationType } from '@hcengineering/notification'
+import { type AnyComponent } from '@hcengineering/ui'
+import { type Action, type ActionCategory, type ViewAction } from '@hcengineering/view'
+import { type TemplateFieldFunc } from '@hcengineering/templates'
+import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
 
 export default mergeIds(settingId, setting, {
   activity: {

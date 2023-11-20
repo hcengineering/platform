@@ -140,7 +140,11 @@
       bind:value
       placeholder={phTraslate}
       {style}
-      on:input={(ev) => ev.target && computeSize(ev.target)}
+      on:input={(ev) => {
+        if (ev.target) {
+          computeSize(ev.target)
+        }
+      }}
       on:change
       on:keydown
       on:keypress

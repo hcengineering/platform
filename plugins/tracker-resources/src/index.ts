@@ -14,22 +14,22 @@
 //
 
 import core, {
-  AttachedDoc,
-  Class,
+  type AttachedDoc,
+  type Class,
   ClassifierKind,
-  Client,
-  Doc,
-  DocumentQuery,
+  type Client,
+  type Doc,
+  type DocumentQuery,
   DOMAIN_MODEL,
   getCurrentAccount,
-  Ref,
-  RelatedDocument,
+  type Ref,
+  type RelatedDocument,
   toIdMap,
-  TxOperations
+  type TxOperations
 } from '@hcengineering/core'
-import { Resources, translate } from '@hcengineering/platform'
-import { getClient, MessageBox, ObjectSearchResult } from '@hcengineering/presentation'
-import { Issue, Milestone, Project } from '@hcengineering/tracker'
+import { type Resources, translate } from '@hcengineering/platform'
+import { getClient, MessageBox, type ObjectSearchResult } from '@hcengineering/presentation'
+import { type Issue, type Milestone, type Project } from '@hcengineering/tracker'
 import { getCurrentLocation, navigate, showPopup, themeStore } from '@hcengineering/ui'
 import ComponentEditor from './components/components/ComponentEditor.svelte'
 import ComponentFilterValuePresenter from './components/components/ComponentFilterValuePresenter.svelte'
@@ -258,7 +258,9 @@ async function deleteIssue (issue: Issue | Issue[]): Promise<void> {
     async (result?: boolean) => {
       if (result === true) {
         const objs = Array.isArray(issue) ? issue : [issue]
-        await deleteObjects(getClient(), objs as unknown as Doc[]).catch((err) => console.error(err))
+        await deleteObjects(getClient(), objs as unknown as Doc[]).catch((err) => {
+          console.error(err)
+        })
       }
     }
   )
@@ -308,9 +310,13 @@ async function deleteProject (project: Project | undefined): Promise<void> {
                           adoc.attachedToClass,
                           adoc.collection
                         )
-                        .catch((err) => console.error(err))
+                        .catch((err) => {
+                          console.error(err)
+                        })
                     } else {
-                      await ops.removeDoc(object._class, object.space, object._id).catch((err) => console.error(err))
+                      await ops.removeDoc(object._class, object.space, object._id).catch((err) => {
+                        console.error(err)
+                      })
                     }
                   }
                   await ops.commit()
@@ -402,8 +408,9 @@ async function deleteMilestone (milestones: Milestone | Milestone[]): Promise<vo
       MoveAndDeleteMilestonePopup,
       {
         milestones: milestoneArray,
-        moveAndDeleteMilestone: async (selectedMilestone?: Milestone) =>
+        moveAndDeleteMilestone: async (selectedMilestone?: Milestone) => {
           await moveAndDeleteMilestones(client, milestoneArray, selectedMilestone)
+        }
       },
       'top'
     )
@@ -526,6 +533,7 @@ export default async (): Promise<Resources> => ({
     Location: resolveLocation
   },
   aggregation: {
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     CreateComponentAggregationManager: ComponentAggregationManager.create,
     GrouppingComponentManager: grouppingComponentManager
   }

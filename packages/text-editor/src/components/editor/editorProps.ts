@@ -1,1 +1,1 @@
-export const defaultEditorAttributes: { [name: string]: string } = { class: 'text-editor-view' }
+export const defaultEditorAttributes: Record<string, string> = { class: 'text-editor-view' }

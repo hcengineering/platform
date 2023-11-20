@@ -28,7 +28,7 @@
   export let viewOptions: ViewOptions | undefined = undefined
 
   export let viewlet: Viewlet | undefined = undefined
-  export let viewlets: WithLookup<Viewlet>[] = []
+  export let viewlets: Array<WithLookup<Viewlet>> = []
   export let preference: ViewletPreference | undefined = undefined
   export let loading = true
 

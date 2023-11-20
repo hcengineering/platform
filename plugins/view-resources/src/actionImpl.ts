@@ -1,11 +1,19 @@
-import { Class, Doc, DocumentQuery, Hierarchy, Ref, Space, TxResult } from '@hcengineering/core'
-import { Asset, IntlString, Resource, getResource } from '@hcengineering/platform'
-import { MessageBox, getClient, updateAttribute, ContextStore, contextStore } from '@hcengineering/presentation'
 import {
-  AnyComponent,
-  AnySvelteComponent,
-  PopupAlignment,
-  PopupPosAlignment,
+  type Class,
+  type Doc,
+  type DocumentQuery,
+  Hierarchy,
+  type Ref,
+  type Space,
+  type TxResult
+} from '@hcengineering/core'
+import { type Asset, type IntlString, type Resource, getResource } from '@hcengineering/platform'
+import { MessageBox, getClient, updateAttribute, type ContextStore, contextStore } from '@hcengineering/presentation'
+import {
+  type AnyComponent,
+  type AnySvelteComponent,
+  type PopupAlignment,
+  type PopupPosAlignment,
   closeTooltip,
   isPopupPosAlignment,
   navigate,
@@ -15,9 +23,9 @@ import {
 import MoveView from './components/Move.svelte'
 import view from './plugin'
 import {
-  FocusSelection,
-  SelectDirection,
-  SelectionStore,
+  type FocusSelection,
+  type SelectDirection,
+  type SelectionStore,
   focusStore,
   previewDocument,
   selectionStore
@@ -72,7 +80,9 @@ function Delete (object: Doc | Doc[]): void {
       object,
       deleteAction: async () => {
         const objs = Array.isArray(object) ? object : [object]
-        await deleteObjects(getClient(), objs).catch((err) => console.error(err))
+        await deleteObjects(getClient(), objs).catch((err) => {
+          console.error(err)
+        })
       }
     },
     undefined
@@ -172,10 +182,18 @@ function SelectItemAll (doc: Doc | undefined, evt: Event): void {
   }
 }
 
-const MoveUp = (doc: Doc | undefined, evt: Event): void => select(evt, -1, $focusStore.focus, 'vertical')
-const MoveDown = (doc: Doc | undefined, evt: Event): void => select(evt, 1, $focusStore.focus, 'vertical')
-const MoveLeft = (doc: Doc | undefined, evt: Event): void => select(evt, -1, $focusStore.focus, 'horizontal')
-const MoveRight = (doc: Doc | undefined, evt: Event): void => select(evt, 1, $focusStore.focus, 'horizontal')
+const MoveUp = (doc: Doc | undefined, evt: Event): void => {
+  select(evt, -1, $focusStore.focus, 'vertical')
+}
+const MoveDown = (doc: Doc | undefined, evt: Event): void => {
+  select(evt, 1, $focusStore.focus, 'vertical')
+}
+const MoveLeft = (doc: Doc | undefined, evt: Event): void => {
+  select(evt, -1, $focusStore.focus, 'horizontal')
+}
+const MoveRight = (doc: Doc | undefined, evt: Event): void => {
+  select(evt, 1, $focusStore.focus, 'horizontal')
+}
 
 function ShowActions (doc: Doc | Doc[] | undefined, evt: Event): void {
   evt.preventDefault()
@@ -316,7 +334,7 @@ async function ShowEditor (
     const typeClass = hierarchy.getClass(attribute.type._class)
     const attributeEditorMixin = hierarchy.as(typeClass, view.mixin.AttributeEditor)
 
-    if (attributeEditorMixin === undefined || attributeEditorMixin.popup === undefined) {
+    if (attributeEditorMixin?.popup === undefined) {
       throw new Error(`failed to find editor popup for ${typeClass._id}`)
     }
 

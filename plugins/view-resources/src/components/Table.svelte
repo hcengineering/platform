@@ -1,15 +1,15 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -56,7 +56,7 @@
   export let hiddenHeader: boolean = false
   export let options: FindOptions<Doc> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
-  export let config: (BuildModelKey | string)[]
+  export let config: Array<BuildModelKey | string>
   export let tableId: string | undefined = undefined
   export let readonly = false
   export let showFooter = false
@@ -246,7 +246,9 @@
     if (attribute.collectionAttr) return
     if (attribute.isLookup) return
     const key = attribute.castRequest ? attribute.key.substring(attribute.castRequest.length + 1) : attribute.key
-    return (value: any) => onChange(value, doc, key, attr)
+    return (value: any) => {
+      onChange(value, doc, key, attr)
+    }
   }
 
   let width: number
@@ -273,7 +275,7 @@
   async function updateModelOptions (
     client: TxOperations,
     _class: Ref<Class<Doc>>,
-    config: (string | BuildModelKey)[],
+    config: Array<string | BuildModelKey>,
     lookup?: Lookup<Doc>
   ) {
     const newModelOpts = { client, _class, keys: config, lookup }
@@ -338,7 +340,9 @@
             <th
               class:sortable={attribute.sortingKey}
               class:sorted={attribute.sortingKey === _sortKey}
-              on:click={() => changeSorting(attribute.sortingKey)}
+              on:click={() => {
+                changeSorting(attribute.sortingKey)
+              }}
             >
               <div class="antiTable-cells">
                 {#if attribute.label}
@@ -355,7 +359,7 @@
         </tr>
       </thead>
     {/if}
-    {#if objects.length || objectsRecieved}
+    {#if objects.length > 0 || objectsRecieved}
       <tbody>
         {#each objects as object, row (object._id)}
           <tr
@@ -363,8 +367,12 @@
             class:checking={checkedSet.has(object._id)}
             class:fixed={row === selection}
             class:selected={row === selection}
-            on:mouseover={mouseAttractor(() => onRow(object))}
-            on:mouseenter={mouseAttractor(() => onRow(object))}
+            on:mouseover={mouseAttractor(() => {
+              onRow(object)
+            })}
+            on:mouseenter={mouseAttractor(() => {
+              onRow(object)
+            })}
             on:focus={() => {}}
             bind:this={refs[row]}
             on:contextmenu|preventDefault={contextHandler(object, row)}

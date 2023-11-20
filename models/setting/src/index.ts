@@ -15,28 +15,28 @@
 
 import activity from '@hcengineering/activity'
 import contact from '@hcengineering/contact'
-import { Account, Domain, DOMAIN_MODEL, Ref } from '@hcengineering/core'
-import { Builder, Mixin, Model } from '@hcengineering/model'
+import { type Account, type Domain, DOMAIN_MODEL, type Ref } from '@hcengineering/core'
+import { type Builder, Mixin, Model } from '@hcengineering/model'
 import core, { TClass, TConfiguration, TDoc } from '@hcengineering/model-core'
 import view, { createAction } from '@hcengineering/model-view'
 import notification from '@hcengineering/notification'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import {
-  Editable,
-  Handler,
-  Integration,
-  IntegrationType,
-  InviteSettings,
+  type Editable,
+  type Handler,
+  type Integration,
+  type IntegrationType,
+  type InviteSettings,
   settingId,
-  SettingsCategory,
-  UserMixin
+  type SettingsCategory,
+  type UserMixin
 } from '@hcengineering/setting'
 import task from '@hcengineering/task'
 import templates from '@hcengineering/templates'
 import setting from './plugin'
 
 import workbench from '@hcengineering/model-workbench'
-import { AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui'
 
 export { settingId } from '@hcengineering/setting'
 export { default } from './plugin'

@@ -124,7 +124,9 @@
   function updateFilter () {
     clearTimeout(filterUpdateTimeout)
 
-    filterUpdateTimeout = setTimeout(() => onChange(filter), FILTER_DEBOUNCE_MS)
+    filterUpdateTimeout = setTimeout(() => {
+      onChange(filter)
+    }, FILTER_DEBOUNCE_MS)
   }
 
   let search: string = ''

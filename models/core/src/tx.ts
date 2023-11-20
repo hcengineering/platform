@@ -14,28 +14,28 @@
 //
 
 import {
-  AttachedDoc,
-  Class,
-  Data,
-  Doc,
-  DocumentClassQuery,
-  DocumentUpdate,
+  type AttachedDoc,
+  type Class,
+  type Data,
+  type Doc,
+  type DocumentClassQuery,
+  type DocumentUpdate,
   DOMAIN_TX,
   IndexKind,
-  Mixin,
-  MixinUpdate,
-  Ref,
-  Space,
-  Tx,
-  TxApplyIf,
-  TxCollectionCUD,
-  TxCreateDoc,
-  TxCUD,
-  TxMixin,
-  TxRemoveDoc,
-  TxUpdateDoc,
-  TxWorkspaceEvent,
-  WorkspaceEvent
+  type Mixin,
+  type MixinUpdate,
+  type Ref,
+  type Space,
+  type Tx,
+  type TxApplyIf,
+  type TxCollectionCUD,
+  type TxCreateDoc,
+  type TxCUD,
+  type TxMixin,
+  type TxRemoveDoc,
+  type TxUpdateDoc,
+  type TxWorkspaceEvent,
+  type WorkspaceEvent
 } from '@hcengineering/core'
 import { Hidden, Index, Model, Prop, TypeRef } from '@hcengineering/model'
 import core from './component'

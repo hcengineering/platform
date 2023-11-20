@@ -21,7 +21,7 @@
 </script>
 
 {#if archivedLists}
-  {#if !archivedLists.length}
+  {#if archivedLists.length === 0}
     <div class="flex-center fs-title pb-4">
       <Label label={board.string.NoResults} />
     </div>

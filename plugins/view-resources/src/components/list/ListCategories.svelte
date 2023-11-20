@@ -58,7 +58,7 @@
   export let query: DocumentQuery<Doc> | undefined
   export let lookup: Lookup<Doc>
   export let baseMenuClass: Ref<Class<Doc>> | undefined
-  export let config: (string | BuildModelKey)[]
+  export let config: Array<string | BuildModelKey>
   export let configurations: Record<Ref<Class<Doc>>, Viewlet['config']> | undefined
   export let selectedObjectIds: Doc[] = []
   export let createItemDialog: AnyComponent | AnySvelteComponent | undefined
@@ -129,7 +129,7 @@
     }
   }
 
-  let itemModels: Map<Ref<Class<Doc>>, AttributeModel[]> = new Map()
+  let itemModels = new Map<Ref<Class<Doc>>, AttributeModel[]>()
 
   function getHeader (_class: Ref<Class<Doc>>, groupByKey: string): void {
     if (groupByKey === noCategory) {
@@ -146,12 +146,12 @@
   let configurationsVersion = 0
   async function buildModels (
     _class: Ref<Class<Doc>>,
-    config: (string | BuildModelKey)[],
+    config: Array<string | BuildModelKey>,
     configurations?: Record<Ref<Class<Doc>>, Viewlet['config']> | undefined
   ): Promise<void> {
     const id = ++updateCounter
     updateCounter = id
-    const newItemModels: Map<Ref<Class<Doc>>, AttributeModel[]> = new Map()
+    const newItemModels = new Map<Ref<Class<Doc>>, AttributeModel[]>()
     const entries = Object.entries(configurations ?? [])
     for (const [k, v] of entries) {
       const _cl = k as Ref<Class<Doc>>

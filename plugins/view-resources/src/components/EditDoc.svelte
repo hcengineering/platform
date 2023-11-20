@@ -54,12 +54,16 @@
     if (lastId !== _id) {
       const prev = lastId
       lastId = _id
-      notificationClient.then((client) => client.read(prev))
+      notificationClient.then(async (client) => {
+        await client.read(prev)
+      })
     }
   }
 
   onDestroy(async () => {
-    notificationClient.then((client) => client.read(_id))
+    notificationClient.then(async (client) => {
+      await client.read(_id)
+    })
   })
 
   const query = createQuery()
@@ -86,9 +90,9 @@
   }
 
   let keys: KeyedAttribute[] = []
-  let fieldEditors: { key: KeyedAttribute; editor: AnyComponent; category: AttributeCategory }[] = []
+  let fieldEditors: Array<{ key: KeyedAttribute, editor: AnyComponent, category: AttributeCategory }> = []
 
-  let mixins: Mixin<Doc>[] = []
+  let mixins: Array<Mixin<Doc>> = []
 
   let showAllMixins = false
 
@@ -131,7 +135,7 @@
 
     keys = attributes.map((it) => it.key)
 
-    const editors: { key: KeyedAttribute; editor: AnyComponent; category: AttributeCategory }[] = []
+    const editors: Array<{ key: KeyedAttribute, editor: AnyComponent, category: AttributeCategory }> = []
     const newInplaceAttributes: string[] = []
     for (const k of collections) {
       if (allowedCollections.includes(k.key.key)) continue
@@ -161,7 +165,7 @@
   function getEditorFooter (
     _class: Ref<Class<Doc>>,
     object?: Doc
-  ): { footer: AnyComponent; props?: Record<string, any> } | undefined {
+  ): { footer: AnyComponent, props?: Record<string, any> } | undefined {
     if (object !== undefined) {
       const footer = hierarchy.findClassOrMixinMixin(object, view.mixin.ObjectEditorFooter)
       if (footer !== undefined) {
@@ -284,7 +288,9 @@
     bind:panelWidth
     bind:innerWidth
     on:open
-    on:update={(ev) => _update(ev.detail)}
+    on:update={(ev) => {
+      _update(ev.detail)
+    }}
     on:close={() => {
       dispatch('close')
     }}

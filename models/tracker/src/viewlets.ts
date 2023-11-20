@@ -15,11 +15,11 @@
 
 import contact from '@hcengineering/contact'
 import { SortingOrder } from '@hcengineering/core'
-import { Builder } from '@hcengineering/model'
+import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import task from '@hcengineering/model-task'
 import view, { showColorsViewOption } from '@hcengineering/model-view'
-import { BuildModelKey, ViewOptionsModel } from '@hcengineering/view'
+import { type BuildModelKey, type ViewOptionsModel } from '@hcengineering/view'
 import tracker from './plugin'
 import tags from '@hcengineering/tags'
 

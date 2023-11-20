@@ -71,7 +71,9 @@
       parent={desc.length > 0}
       actions={() => getActions(department)}
       {level}
-      on:click={() => handleDepartmentSelected(department._id)}
+      on:click={() => {
+        handleDepartmentSelected(department._id)
+      }}
     >
       {#if desc.length}
         <svelte:self departments={desc} {descendants} {departmentById} {selected} level={level + 1} on:selected />

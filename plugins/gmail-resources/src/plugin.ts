@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { IntlString, mergeIds } from '@hcengineering/platform'
+import { type IntlString, mergeIds } from '@hcengineering/platform'
 
 import gmail, { gmailId } from '@hcengineering/gmail'
 

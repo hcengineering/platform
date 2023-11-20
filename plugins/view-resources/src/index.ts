@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import { Resources } from '@hcengineering/platform'
-import { getEventPopupPositionElement, PopupAlignment } from '@hcengineering/ui'
+import { type Resources } from '@hcengineering/platform'
+import { getEventPopupPositionElement, type PopupAlignment } from '@hcengineering/ui'
 import { actionImpl } from './actionImpl'
 import ActionsPopup from './components/ActionsPopup.svelte'
 import BooleanEditor from './components/BooleanEditor.svelte'
@@ -151,7 +151,7 @@ export {
   getObjectPreview,
   groupBy,
   isCollectionAttr,
-  LoadingProps,
+  type LoadingProps,
   setActiveViewletId
 } from './utils'
 export * from './viewOptions'
@@ -275,6 +275,7 @@ export default async (): Promise<Resources> => ({
     FilterDateNextMonth: dateNextMonth,
     FilterDateNotSpecified: dateNotSpecified,
     FilterDateCustom: dateCustom,
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     CreateDocMiddleware: AggregationMiddleware.create
   }
 })

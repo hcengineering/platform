@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { HocuspocusProvider, HocuspocusProviderConfiguration } from '@hocuspocus/provider'
+import { HocuspocusProvider, type HocuspocusProviderConfiguration } from '@hocuspocus/provider'
 
 export type TiptapCollabProviderConfiguration = HocuspocusProviderConfiguration &
 Required<Pick<HocuspocusProviderConfiguration, 'token'>>

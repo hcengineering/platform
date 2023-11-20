@@ -15,20 +15,20 @@
 
 import activity from '@hcengineering/activity'
 import {
-  Calendar,
-  CalendarEventPresenter,
-  Event,
-  ExternalCalendar,
-  ReccuringEvent,
-  ReccuringInstance,
-  RecurringRule,
-  Visibility
+  type Calendar,
+  type CalendarEventPresenter,
+  type Event,
+  type ExternalCalendar,
+  type ReccuringEvent,
+  type ReccuringInstance,
+  type RecurringRule,
+  type Visibility
 } from '@hcengineering/calendar'
-import { Contact } from '@hcengineering/contact'
-import { DateRangeMode, Domain, IndexKind, Markup, Ref, Timestamp } from '@hcengineering/core'
+import { type Contact } from '@hcengineering/contact'
+import { DateRangeMode, type Domain, IndexKind, type Markup, type Ref, type Timestamp } from '@hcengineering/core'
 import {
   ArrOf,
-  Builder,
+  type Builder,
   Collection,
   Index,
   Mixin,
@@ -50,7 +50,7 @@ import { TProject } from '@hcengineering/model-task'
 import view, { createAction } from '@hcengineering/model-view'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
-import { AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui'
 import calendar from './plugin'
 
 export * from '@hcengineering/calendar'

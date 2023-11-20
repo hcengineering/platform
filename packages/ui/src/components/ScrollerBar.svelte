@@ -103,7 +103,12 @@
 
   onMount(() => {
     if (scroller) {
-      const observer = new IntersectionObserver(() => checkMask(), { root: null, threshold: 0.1 })
+      const observer = new IntersectionObserver(
+        () => {
+          checkMask()
+        },
+        { root: null, threshold: 0.1 }
+      )
       const tempEl = scroller.querySelector('*') as HTMLElement
       if (tempEl) observer.observe(tempEl)
       checkMask()
@@ -113,7 +118,9 @@
   onDestroy(() => {
     if (scroller) scroller.removeEventListener('scroll', checkMask)
   })
-  const _resize = (): void => checkMask()
+  const _resize = (): void => {
+    checkMask()
+  }
 </script>
 
 <svelte:window on:resize={_resize} />

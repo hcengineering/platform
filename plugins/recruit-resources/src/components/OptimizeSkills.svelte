@@ -1,14 +1,14 @@
 <!--
 // Copyright © 2023 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -18,7 +18,7 @@
   import { Card, getClient } from '@hcengineering/presentation'
   import tags, { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
   import { Button, CheckBox, EditBox, Lazy, ListView, Loading } from '@hcengineering/ui'
-  import Expandable from '@hcengineering/ui/src/components/Expandable.svelte'
+  import { Expandable } from '@hcengineering/ui'
   import { FILTER_DEBOUNCE_MS } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
@@ -64,12 +64,6 @@
         loading2 = false
       })
   }
-
-  // $: refsQuery.query(tags.class.TagReference, { tag: { $in: Array.from(elements.map((it) => it._id)) } }, (res) => {
-  //   refs = res
-  // })
-  const selection = 0
-  $: selEl = elements[selection]
 
   interface TagUpdatePlan {
     // Just updated or new elements
@@ -163,7 +157,7 @@
   let expertRefs: Pick<TagReference, '_id' | '_class' | 'tag' | 'title'>[] = []
 
   let titles: string[] = []
-  const titlesStates: Map<string, boolean> = new Map()
+  const titlesStates = new Map<string, boolean>()
   $: getClient()
     .findAll(
       tags.class.TagReference,
@@ -187,9 +181,9 @@
 
   $: preparedRefs = expertRefs.map((it) => ({ ...it, title: prepareTitle(it.title) }))
 
-  let counters: Map<string, number> = new Map()
+  let counters = new Map<string, number>()
   $: {
-    const _counters: Map<string, number> = new Map()
+    const _counters = new Map<string, number>()
     for (const t of titles) {
       const refs = preparedRefs.filter((it) => it.title.toLowerCase() === t).length
       _counters.set(t, refs)
@@ -217,7 +211,7 @@
     const namedElements = new Map<string, Ref<TagElement>>()
     const goodTags: TagElement[] = []
     for (const tag of tagElements) {
-      if (tag.category.indexOf(recruit.category.Category) >= 0) {
+      if (tag.category.includes(recruit.category.Category)) {
         namedElements.set(prepareTitle(tag.title.toLowerCase()), tag._id)
         goodTags.push(tag)
       }
@@ -310,7 +304,7 @@
           tt = prepareTitle(t.title.toLowerCase())
           goodSortedTagsTitles.set(t._id, tt)
         }
-        if (lowTitle.indexOf(tt) !== -1) {
+        if (lowTitle.includes(tt)) {
           // We need to be sure we have some non word character at the end of match
           let spos = 0
           while (true) {
@@ -451,13 +445,11 @@
     _search = search
   }, FILTER_DEBOUNCE_MS)
 
-  $: searchPlanElements = plan.elements.filter(
-    (it) => it.original.title.toLowerCase().indexOf(_search.toLowerCase()) !== -1
-  )
+  $: searchPlanElements = plan.elements.filter((it) => it.original.title.toLowerCase().includes(_search.toLowerCase()))
 
-  $: idMap = new Map(plan.elements.filter((it) => it.toDelete === false).map((it) => [it.original._id, it]))
+  $: idMap = new Map(plan.elements.filter((it) => !it.toDelete).map((it) => [it.original._id, it]))
 
-  $: searchTitles = titles.filter((it) => it.toLowerCase().indexOf(_search.toLowerCase()) !== -1)
+  $: searchTitles = titles.filter((it) => it.toLowerCase().includes(_search.toLowerCase()))
 
   let processed: number = 0
 
@@ -710,7 +702,12 @@
     </div>
   </Expandable>
   <svelte:fragment slot="footer">
-    <Button label={getEmbeddedLabel('Analyse')} on:click={() => doAnalyse()} />
+    <Button
+      label={getEmbeddedLabel('Analyse')}
+      on:click={() => {
+        doAnalyse()
+      }}
+    />
     <Button
       label={getEmbeddedLabel('Export expert skills')}
       on:click={() => {

@@ -9,7 +9,9 @@
 
   const { id, closeTimeout } = notification
 
-  const removeNotificationHandler = () => store.removeNotification(id)
+  const removeNotificationHandler = () => {
+    store.removeNotification(id)
+  }
 
   let timeout: any | null = null
 

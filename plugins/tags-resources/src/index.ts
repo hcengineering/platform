@@ -11,8 +11,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Resources } from '@hcengineering/platform'
-import { TagElement as TagElementType } from '@hcengineering/tags'
+import { type Resources } from '@hcengineering/platform'
+import { type TagElement as TagElementType } from '@hcengineering/tags'
 import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
 import TagsCategoryBar from './components/CategoryBar.svelte'
 import CategoryPresenter from './components/CategoryPresenter.svelte'
@@ -33,9 +33,9 @@ import LabelsPresenter from './components/LabelsPresenter.svelte'
 import CreateTagElement from './components/CreateTagElement.svelte'
 import ObjectsTagsEditorPopup from './components/ObjectsTagsEditorPopup.svelte'
 import TagElement from './components/TagElement.svelte'
-import { ObjQueryType } from '@hcengineering/core'
+import { type ObjQueryType } from '@hcengineering/core'
 import { getRefs } from './utils'
-import { Filter } from '@hcengineering/view'
+import { type Filter } from '@hcengineering/view'
 import WeightPopup from './components/WeightPopup.svelte'
 import DraftTagsEditor from './components/DraftTagsEditor.svelte'
 import TagsFilterPresenter from './components/TagsFilterPresenter.svelte'

@@ -1,9 +1,9 @@
-import contact, { Employee, PersonAccount, getFirstName, getLastName } from '@hcengineering/contact'
+import contact, { type Employee, type PersonAccount, getFirstName, getLastName } from '@hcengineering/contact'
 import { employeeByIdStore } from '@hcengineering/contact-resources'
-import { Class, Doc, Hierarchy, Ref } from '@hcengineering/core'
+import { type Class, type Doc, type Hierarchy, type Ref } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import setting from '@hcengineering/setting'
-import { TemplateDataProvider } from '@hcengineering/templates'
+import { type TemplateDataProvider } from '@hcengineering/templates'
 import { get } from 'svelte/store'
 
 function isEditable (hierarchy: Hierarchy, p: Class<Doc>): boolean {

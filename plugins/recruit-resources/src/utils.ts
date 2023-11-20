@@ -1,9 +1,16 @@
 import contact, { getName } from '@hcengineering/contact'
-import { Class, Client, Doc, Hierarchy, Ref } from '@hcengineering/core'
+import { type Class, type Client, type Doc, Hierarchy, type Ref } from '@hcengineering/core'
 import presentation, { getClient } from '@hcengineering/presentation'
 import { getMetadata } from '@hcengineering/platform'
-import { Applicant, Candidate, Review, Vacancy, VacancyList, recruitId } from '@hcengineering/recruit'
-import { Location, ResolvedLocation, getCurrentResolvedLocation, getPanelURI } from '@hcengineering/ui'
+import {
+  type Applicant,
+  type Candidate,
+  type Review,
+  type Vacancy,
+  type VacancyList,
+  recruitId
+} from '@hcengineering/recruit'
+import { type Location, type ResolvedLocation, getCurrentResolvedLocation, getPanelURI } from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 import recruit from './plugin'

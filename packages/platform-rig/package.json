@@ -9,11 +9,12 @@
     "format": "./bin/format.js"
   },
   "devDependencies": {
-    "eslint-config-standard-with-typescript": "^23.0.0"
+    "eslint-config-standard-with-typescript": "^40.0.0",
+    "svelte-eslint-parser": "^0.33.1"
   },
   "peerDependencies": {
-    "@typescript-eslint/parser": "^5.41.0",
-    "eslint": "^8.26.0"
+    "@typescript-eslint/parser": "^6.11.0",
+    "eslint": "^8.54.0"
   },
   "dependencies": {
     "typescript": "^5.2.2"

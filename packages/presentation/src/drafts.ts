@@ -1,6 +1,6 @@
 import { fetchMetadataLocalStorage, setMetadataLocalStorage } from '@hcengineering/ui'
 import { deepEqual } from 'fast-equals'
-import { Unsubscriber, writable } from 'svelte/store'
+import { type Unsubscriber, writable } from 'svelte/store'
 import presentation from './plugin'
 
 migrateDrafts()
@@ -8,7 +8,7 @@ export const draftsStore = writable<Record<string, any>>(fetchMetadataLocalStora
 let drafts: Record<string, any> = fetchMetadataLocalStorage(presentation.metadata.Draft) ?? {}
 const activeDraftsKey = 'activeDrafts'
 export const activeDraftsStore = writable<Set<string>>(new Set())
-const activeDrafts: Set<string> = new Set()
+const activeDrafts = new Set<string>()
 
 window.addEventListener('storage', storageHandler)
 
@@ -153,7 +153,10 @@ function removeDraft (id: string, parentId: string | undefined = undefined): voi
 
 export class DraftController<T> {
   private unsub: Unsubscriber | undefined = undefined
-  constructor (private readonly id: string | undefined, private readonly parentId: string | undefined = undefined) {
+  constructor (
+    private readonly id: string | undefined,
+    private readonly parentId: string | undefined = undefined
+  ) {
     if (this.id !== undefined) {
       addActive(this.id)
     }
@@ -165,7 +168,8 @@ export class DraftController<T> {
 
   static save<T>(id: string, object: T, emptyObj: Partial<T> | undefined = undefined): void {
     if (emptyObj !== undefined && isEmptyDraft(object, emptyObj)) {
-      return DraftController.remove(id)
+      DraftController.remove(id)
+      return
     }
     drafts[id] = object
     addActive(id)
@@ -202,7 +206,8 @@ export class DraftController<T> {
 
   save (object: T, emptyObj: Partial<T> | undefined = undefined): void {
     if (emptyObj !== undefined && isEmptyDraft(object, emptyObj)) {
-      return this.remove()
+      this.remove()
+      return
     }
     if (this.id !== undefined) {
       drafts[this.id] = object

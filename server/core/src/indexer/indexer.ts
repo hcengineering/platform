@@ -61,9 +61,9 @@ let indexCounter = 0
  * @public
  */
 export class FullTextIndexPipeline implements FullTextPipeline {
-  pending: Map<Ref<DocIndexState>, DocumentUpdate<DocIndexState>> = new Map()
-  toIndex: Map<Ref<DocIndexState>, DocIndexState> = new Map()
-  extraIndex: Map<Ref<DocIndexState>, DocIndexState> = new Map()
+  pending = new Map<Ref<DocIndexState>, DocumentUpdate<DocIndexState>>()
+  toIndex = new Map<Ref<DocIndexState>, DocIndexState>()
+  extraIndex = new Map<Ref<DocIndexState>, DocIndexState>()
   stageChanged = 0
 
   cancelling: boolean = false
@@ -308,12 +308,18 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       console.log(this.workspace.name, 'Models is not upgraded to support indexer', this.indexId)
       return
     }
-    await this.metrics.with('init-states', {}, async () => await this.initStates())
+    await this.metrics.with('init-states', {}, async () => {
+      await this.initStates()
+    })
 
     while (!this.cancelling) {
-      await this.metrics.with('initialize-stages', {}, async () => await this.initializeStages())
+      await this.metrics.with('initialize-stages', {}, async () => {
+        await this.initializeStages()
+      })
 
-      await this.metrics.with('process-remove', {}, async () => await this.processRemove())
+      await this.metrics.with('process-remove', {}, async () => {
+        await this.processRemove()
+      })
 
       const _classes = await rateLimitter.exec(() => {
         return this.metrics.with('init-stages', {}, async () => await this.processIndex())
@@ -367,7 +373,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           if (!st.enabled) {
             break
           }
-          await this.metrics.with('flush', {}, async () => await this.flush(true))
+          await this.metrics.with('flush', {}, async () => {
+            await this.flush(true)
+          })
           const toSkip = Array.from(this.skipped.entries())
             .filter((it) => it[1] > 3)
             .map((it) => it[0])
@@ -442,11 +450,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             // Do Indexing
             this.currentStage = st
 
-            await this.metrics.with(
-              'collect',
-              { collector: st.stageId },
-              async (ctx) => await st.collect(toIndex, this, ctx)
-            )
+            await this.metrics.with('collect', { collector: st.stageId }, async (ctx) => {
+              await st.collect(toIndex, this, ctx)
+            })
             if (this.cancelling) {
               break
             }
@@ -458,11 +464,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
               const toIndex2 = this.matchStates(nst)
               if (toIndex2.length > 0) {
                 this.currentStage = nst
-                await this.metrics.with(
-                  'collect',
-                  { collector: nst.stageId },
-                  async (ctx) => await nst.collect(toIndex2, this, ctx)
-                )
+                await this.metrics.with('collect', { collector: nst.stageId }, async (ctx) => {
+                  await nst.collect(toIndex2, this, ctx)
+                })
               }
               if (this.cancelling) {
                 break

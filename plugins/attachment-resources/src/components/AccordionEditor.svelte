@@ -82,7 +82,12 @@
         }}
       >
         <span class="label"><Label label={item.label} /></span>
-        <div class="value" on:scroll={(ev) => onScroll(i, ev)}>
+        <div
+          class="value"
+          on:scroll={(ev) => {
+            onScroll(i, ev)
+          }}
+        >
           {#if item.state === 'closed'}
             <TextEditor
               bind:content={item.content}
@@ -102,7 +107,13 @@
             />
           {/if}
         </div>
-        <Button size={'medium'} kind={'ghost'} on:click={(ev) => flip(i, ev)}>
+        <Button
+          size={'medium'}
+          kind={'ghost'}
+          on:click={(ev) => {
+            flip(i, ev)
+          }}
+        >
           <svelte:fragment slot="icon">
             <div class="rotated-icon {item.state}">
               <IconDownOutline size={'medium'} />

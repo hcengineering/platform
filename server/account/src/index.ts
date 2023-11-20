@@ -1051,7 +1051,7 @@ export async function dropAccount (db: Db, productId: string, email: string): Pr
 
   await Promise.all(
     workspaces.map(async (ws) => {
-      return await deactivatePersonAccount(account.email, ws.workspace, productId)
+      await deactivatePersonAccount(account.email, ws.workspace, productId)
     })
   )
 

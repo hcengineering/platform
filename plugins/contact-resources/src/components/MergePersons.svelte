@@ -115,7 +115,7 @@
       await client.update(channel, { attachedTo: targetPerson._id })
     }
     for (const old of oldChannels) {
-      if ((enabledChannels.get(old._id) ?? true) === false) {
+      if (!(enabledChannels.get(old._id) ?? true)) {
         await client.remove(old)
       }
     }
@@ -148,6 +148,7 @@
     if (!targetValue) {
       ;(update as any)[field] = (sourcePerson as any)[field]
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete (update as any)[field]
     }
     update = update
@@ -174,7 +175,7 @@
     return res
   }
 
-  let enabledChannels: Map<Ref<Channel>, boolean> = new Map()
+  let enabledChannels = new Map<Ref<Channel>, boolean>()
 
   let resultChannels: Channel[] = []
   let oldChannels: Channel[] = []
@@ -210,6 +211,7 @@
     if (!targetValue) {
       ;(upd as any)[field] = (value as any)[field]
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete (upd as any)[field]
     }
     mixinUpdate[mixin] = upd
@@ -390,7 +392,9 @@
               key={attribute}
               value={sourcePerson}
               targetEmp={targetPerson}
-              onChange={(key, value) => selectMixin(mixin, key, value)}
+              onChange={(key, value) => {
+                selectMixin(mixin, key, value)
+              }}
               _class={mixin}
               selected={toAny(mixinUpdate)?.[mixin]?.[attribute] !== undefined}
             />

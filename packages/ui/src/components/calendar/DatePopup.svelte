@@ -111,8 +111,12 @@
       bind:currentDate
       {withTime}
       kind={'plain'}
-      on:close={() => closeDP(withTime)}
-      on:save={() => saveDate(withTime)}
+      on:close={() => {
+        closeDP(withTime)
+      }}
+      on:save={() => {
+        saveDate(withTime)
+      }}
     />
     <div class="divider" class:x2={!scrolled} />
     {#if scrolled}
@@ -126,7 +130,9 @@
             viewUpdate={false}
             hideNavigator={'all'}
             noPadding
-            on:update={(result) => updateDate(result.detail)}
+            on:update={(result) => {
+              updateDate(result.detail)
+            }}
           />
           {#if !oneMonth}
             <div class="space" />
@@ -136,8 +142,12 @@
               {mondayStart}
               viewUpdate={false}
               noPadding
-              on:update={(result) => updateDate(result.detail)}
-              on:navigation={(result) => navigateMonth(result.detail)}
+              on:update={(result) => {
+                updateDate(result.detail)
+              }}
+              on:navigation={(result) => {
+                navigateMonth(result.detail)
+              }}
             />
           {/if}
         </div>
@@ -151,7 +161,9 @@
           viewUpdate={false}
           hideNavigator={'all'}
           noPadding
-          on:update={(result) => updateDate(result.detail)}
+          on:update={(result) => {
+            updateDate(result.detail)
+          }}
         />
         {#if !oneMonth}
           <div class="space" />
@@ -161,15 +173,26 @@
             {mondayStart}
             viewUpdate={false}
             noPadding
-            on:update={(result) => updateDate(result.detail)}
-            on:navigation={(result) => navigateMonth(result.detail)}
+            on:update={(result) => {
+              updateDate(result.detail)
+            }}
+            on:navigation={(result) => {
+              navigateMonth(result.detail)
+            }}
           />
         {/if}
       </div>
     {/if}
   </div>
   <div class="footer">
-    <Button kind={'primary'} label={ui.string.Save} size={'large'} on:click={() => closeDP(withTime)} />
+    <Button
+      kind={'primary'}
+      label={ui.string.Save}
+      size={'large'}
+      on:click={() => {
+        closeDP(withTime)
+      }}
+    />
   </div>
 </div>
 <Shifts

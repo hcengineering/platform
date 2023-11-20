@@ -1,5 +1,5 @@
 import core, { TxOperations } from '@hcengineering/core'
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
 import tags from './plugin'
 
 export const tagsOperation: MigrateOperation = {

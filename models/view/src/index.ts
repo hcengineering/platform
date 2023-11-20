@@ -13,73 +13,84 @@
 // limitations under the License.
 //
 
-import { Account, Class, Client, DOMAIN_MODEL, Data, Doc, DocumentQuery, Domain, Ref, Space } from '@hcengineering/core'
-import { Builder, Mixin, Model } from '@hcengineering/model'
+import {
+  type Account,
+  type Class,
+  type Client,
+  DOMAIN_MODEL,
+  type Data,
+  type Doc,
+  type DocumentQuery,
+  type Domain,
+  type Ref,
+  type Space
+} from '@hcengineering/core'
+import { type Builder, Mixin, Model } from '@hcengineering/model'
 import core, { TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import presentation from '@hcengineering/model-presentation'
-import { Asset, IntlString, Resource, Status } from '@hcengineering/platform'
-import { AnyComponent, Location } from '@hcengineering/ui'
+import { type Asset, type IntlString, type Resource, type Status } from '@hcengineering/platform'
+import { type AnyComponent, type Location } from '@hcengineering/ui'
 import {
-  Action,
-  ActionCategory,
-  ActivityAttributePresenter,
-  Aggregation,
-  AllValuesFunc,
-  ArrayEditor,
-  AttributeEditor,
-  AttributeFilter,
-  AttributeFilterPresenter,
-  AttributePresenter,
-  BuildModelKey,
-  ClassFilters,
-  ClassSortFuncs,
-  CollectionEditor,
-  CollectionPresenter,
-  CreateAggregationManagerFunc,
-  Filter,
-  FilterMode,
-  FilteredView,
-  GetAllValuesFunc,
-  Groupping,
-  GrouppingManagerResource,
-  IgnoreActions,
-  InlineAttributEditor,
-  KeyBinding,
-  KeyFilter,
-  KeyFilterPreset,
-  LinkPresenter,
-  LinkProvider,
-  ListHeaderExtra,
-  ListItemPresenter,
-  ObjectEditor,
-  ObjectEditorFooter,
-  ObjectEditorHeader,
-  ObjectFactory,
-  ObjectPanel,
-  ObjectPresenter,
-  ObjectTitle,
-  ObjectValidator,
-  PreviewPresenter,
-  SortFunc,
-  SpaceHeader,
-  SpaceName,
-  SpacePresenter,
-  ViewAction,
-  ViewActionInput,
-  ViewContext,
-  ViewOptionModel,
-  ViewOptions,
-  ViewOptionsModel,
-  Viewlet,
-  ViewletDescriptor,
-  ViewletPreference
+  type Action,
+  type ActionCategory,
+  type ActivityAttributePresenter,
+  type Aggregation,
+  type AllValuesFunc,
+  type ArrayEditor,
+  type AttributeEditor,
+  type AttributeFilter,
+  type AttributeFilterPresenter,
+  type AttributePresenter,
+  type BuildModelKey,
+  type ClassFilters,
+  type ClassSortFuncs,
+  type CollectionEditor,
+  type CollectionPresenter,
+  type CreateAggregationManagerFunc,
+  type Filter,
+  type FilterMode,
+  type FilteredView,
+  type GetAllValuesFunc,
+  type Groupping,
+  type GrouppingManagerResource,
+  type IgnoreActions,
+  type InlineAttributEditor,
+  type KeyBinding,
+  type KeyFilter,
+  type KeyFilterPreset,
+  type LinkPresenter,
+  type LinkProvider,
+  type ListHeaderExtra,
+  type ListItemPresenter,
+  type ObjectEditor,
+  type ObjectEditorFooter,
+  type ObjectEditorHeader,
+  type ObjectFactory,
+  type ObjectPanel,
+  type ObjectPresenter,
+  type ObjectTitle,
+  type ObjectValidator,
+  type PreviewPresenter,
+  type SortFunc,
+  type SpaceHeader,
+  type SpaceName,
+  type SpacePresenter,
+  type ViewAction,
+  type ViewActionInput,
+  type ViewContext,
+  type ViewOptionModel,
+  type ViewOptions,
+  type ViewOptionsModel,
+  type Viewlet,
+  type ViewletDescriptor,
+  type ViewletPreference
 } from '@hcengineering/view'
 import view from './plugin'
 
 export { viewId } from '@hcengineering/view'
 export { viewOperation } from './migration'
-export { ViewAction, Viewlet }
+export type { ViewAction, Viewlet }
 
 export const DOMAIN_VIEW = 'view' as Domain
 
@@ -236,7 +247,7 @@ export class TSpaceName extends TClass implements SpaceName {
 
 @Mixin(view.mixin.ObjectValidator, core.class.Class)
 export class TObjectValidator extends TClass implements ObjectValidator {
-  validator!: Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status<{}>>>
+  validator!: Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status<any>>>
 }
 
 @Mixin(view.mixin.ObjectFactory, core.class.Class)

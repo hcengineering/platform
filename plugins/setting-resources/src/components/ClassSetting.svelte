@@ -24,12 +24,12 @@
 
   export let ofClass: Ref<Class<Obj>> | undefined
   export let attributeMapper:
-    | {
-        component: AnySvelteComponent
-        label: IntlString
-        props: Record<string, any>
-      }
-    | undefined
+  | {
+    component: AnySvelteComponent
+    label: IntlString
+    props: Record<string, any>
+  }
+  | undefined
   export let withoutHeader = false
 
   const loc = getLocation()

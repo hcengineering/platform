@@ -86,7 +86,14 @@
   {#if !withoutTime}
     <Button {kind} {size} padding={'0 .5rem'} on:click={timeClick} {disabled}>
       <svelte:fragment slot="content">
-        <TimeInputBox bind:currentDate noBorder size={'small'} on:update={(date) => updateTime(date.detail)} />
+        <TimeInputBox
+          bind:currentDate
+          noBorder
+          size={'small'}
+          on:update={(date) => {
+            updateTime(date.detail)
+          }}
+        />
         {#if difference > 0}
           <div class="ml-2 flex-no-shrink content-darker-color overflow-label">
             <TimeShiftPresenter value={date - difference} exact />

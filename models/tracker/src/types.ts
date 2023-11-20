@@ -13,17 +13,17 @@
 // limitations under the License.
 //
 
-import contact, { Employee, Person } from '@hcengineering/contact'
+import contact, { type Employee, type Person } from '@hcengineering/contact'
 import {
   DOMAIN_MODEL,
   DateRangeMode,
-  Domain,
+  type Domain,
   IndexKind,
-  Markup,
-  Ref,
-  RelatedDocument,
-  Timestamp,
-  Type
+  type Markup,
+  type Ref,
+  type RelatedDocument,
+  type Timestamp,
+  type Type
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -44,25 +44,25 @@ import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
 import core, { TAttachedDoc, TDoc, TStatus, TType } from '@hcengineering/model-core'
 import task, { TTask, TProject as TTaskProject } from '@hcengineering/model-task'
-import { IntlString } from '@hcengineering/platform'
-import tags, { TagElement } from '@hcengineering/tags'
+import { type IntlString } from '@hcengineering/platform'
+import tags, { type TagElement } from '@hcengineering/tags'
 import {
-  Component,
-  Issue,
-  IssueChildInfo,
-  IssueParentInfo,
-  IssuePriority,
-  IssueStatus,
-  IssueTemplate,
-  IssueTemplateChild,
-  Milestone,
-  MilestoneStatus,
-  Project,
-  RelatedClassRule,
-  RelatedIssueTarget,
-  RelatedSpaceRule,
-  TimeReportDayType,
-  TimeSpendReport
+  type Component,
+  type Issue,
+  type IssueChildInfo,
+  type IssueParentInfo,
+  type IssuePriority,
+  type IssueStatus,
+  type IssueTemplate,
+  type IssueTemplateChild,
+  type Milestone,
+  type MilestoneStatus,
+  type Project,
+  type RelatedClassRule,
+  type RelatedIssueTarget,
+  type RelatedSpaceRule,
+  type TimeReportDayType,
+  type TimeSpendReport
 } from '@hcengineering/tracker'
 import tracker from './plugin'
 

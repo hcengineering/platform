@@ -69,7 +69,7 @@
     const senderQuery = accounts.length ? { modifiedBy: { $in: accounts.map((a) => a._id) } } : {}
 
     let spaceQuery: { space: any }
-    if (selectedSpaces_.length) {
+    if (selectedSpaces_.length > 0) {
       spaceQuery = { space: { $in: selectedSpaces_ } }
     } else {
       // nothing is selected in space filter - show all available attachments (except for the archived channels)

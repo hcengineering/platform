@@ -14,19 +14,19 @@
 // limitations under the License.
 //
 
-import { Builder, Model, Mixin } from '@hcengineering/model'
+import { type Builder, Model, Mixin } from '@hcengineering/model'
 import { TClass, TDoc } from '@hcengineering/model-core'
 import type { Resource } from '@hcengineering/platform'
 
 import core, {
-  Class,
+  type Class,
   DOMAIN_MODEL,
-  Doc,
-  DocumentQuery,
-  FindOptions,
-  FindResult,
-  Hierarchy,
-  Ref
+  type Doc,
+  type DocumentQuery,
+  type FindOptions,
+  type FindResult,
+  type Hierarchy,
+  type Ref
 } from '@hcengineering/core'
 import type {
   ObjectDDParticipant,

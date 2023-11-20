@@ -16,10 +16,10 @@
 
 import { bitrixId } from '@hcengineering/bitrix'
 import bitrix from '@hcengineering/bitrix-resources/src/plugin'
-import { IntlString, mergeIds } from '@hcengineering/platform'
-import { Action } from '@hcengineering/view'
+import { type IntlString, mergeIds } from '@hcengineering/platform'
+import { type Action } from '@hcengineering/view'
 
-import { Ref } from '@hcengineering/core'
+import { type Ref } from '@hcengineering/core'
 import type { AnyComponent } from '@hcengineering/ui'
 
 export default mergeIds(bitrixId, bitrix, {

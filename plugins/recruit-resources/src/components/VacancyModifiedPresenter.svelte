@@ -18,7 +18,7 @@
   import { TimeSince } from '@hcengineering/ui'
 
   export let value: Vacancy
-  export let applications: Map<Ref<Vacancy>, { count: number; modifiedOn: number }> | undefined
+  export let applications: Map<Ref<Vacancy>, { count: number, modifiedOn: number }> | undefined
 </script>
 
 <TimeSince value={Math.max(applications?.get(value._id)?.modifiedOn ?? 0, value.modifiedOn)} />

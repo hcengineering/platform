@@ -13,6 +13,6 @@
 // limitations under the License.
 //
 
-import { DecorationAttrs } from '@tiptap/pm/view'
+import { type DecorationAttrs } from '@tiptap/pm/view'
 
 export const noSelectionRender = (_user: Record<string, any>): DecorationAttrs => ({})

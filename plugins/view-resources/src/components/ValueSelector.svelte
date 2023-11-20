@@ -18,12 +18,12 @@
   export let attribute: string
   export let searchField: string
   export let values:
-    | {
-        icon?: Asset
-        label: IntlString
-        id: string | number
-      }[]
-    | undefined = undefined
+  | Array<{
+    icon?: Asset
+    label: IntlString
+    id: string | number
+  }>
+  | undefined = undefined
 
   export let fillQuery: Record<string, string> | undefined
   export let docMatches: string[] | undefined
@@ -67,8 +67,8 @@
   }
 
   $: current = Array.isArray(value)
-    ? value.every((v) => (v as any)[attribute] === (value as Array<any>)[0][attribute])
-      ? (value as Array<any>)[0][attribute]
+    ? value.every((v) => (v as any)[attribute] === (value as any[])[0][attribute])
+      ? (value as any[])[0][attribute]
       : value
     : (value as any)[attribute]
 
@@ -119,7 +119,6 @@
   }
 
   $: updateQuery(query, value, fillQuery)
-  $: huge = size === 'medium' || size === 'large'
 
   $: valuesToShow = values !== undefined ? values.map((it) => ({ ...it, isSelected: it.id === current })) : []
 </script>

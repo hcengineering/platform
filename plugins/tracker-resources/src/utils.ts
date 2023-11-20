@@ -13,60 +13,60 @@
 // limitations under the License.
 //
 
-import { Contact } from '@hcengineering/contact'
+import { type Contact } from '@hcengineering/contact'
 import core, {
-  ApplyOperations,
-  AttachedData,
-  AttachedDoc,
-  Class,
-  Collection,
-  Doc,
-  DocumentQuery,
-  DocumentUpdate,
-  IdMap,
-  Ref,
   SortingOrder,
-  Space,
-  StatusCategory,
-  TxCollectionCUD,
-  TxCreateDoc,
-  TxOperations,
-  TxResult,
-  TxUpdateDoc,
-  toIdMap
+  toIdMap,
+  type ApplyOperations,
+  type AttachedData,
+  type AttachedDoc,
+  type Class,
+  type Collection,
+  type Doc,
+  type DocumentQuery,
+  type DocumentUpdate,
+  type IdMap,
+  type Ref,
+  type Space,
+  type StatusCategory,
+  type TxCollectionCUD,
+  type TxCreateDoc,
+  type TxOperations,
+  type TxResult,
+  type TxUpdateDoc
 } from '@hcengineering/core'
-import { Asset, IntlString } from '@hcengineering/platform'
+import { type Asset, type IntlString } from '@hcengineering/platform'
 import { createQuery, getClient } from '@hcengineering/presentation'
-import task, { ProjectType, calcRank } from '@hcengineering/task'
+import task, { calcRank, type ProjectType } from '@hcengineering/task'
 import {
-  Component,
-  Issue,
   IssuePriority,
-  IssueStatus,
   IssuesDateModificationPeriod,
   IssuesGrouping,
   IssuesOrdering,
-  Milestone,
   MilestoneStatus,
-  Project,
-  TimeReportDayType
+  TimeReportDayType,
+  type Component,
+  type Issue,
+  type IssueStatus,
+  type Milestone,
+  type Project
 } from '@hcengineering/tracker'
 import {
-  AnyComponent,
-  AnySvelteComponent,
   MILLISECONDS_IN_WEEK,
   PaletteColorIndexes,
   areDatesEqual,
   getMillisecondsInMonth,
-  isWeekend
+  isWeekend,
+  type AnyComponent,
+  type AnySvelteComponent
 } from '@hcengineering/ui'
-import { KeyFilter, ViewletDescriptor } from '@hcengineering/view'
+import { type KeyFilter, type ViewletDescriptor } from '@hcengineering/view'
 import {
   CategoryQuery,
   ListSelectionProvider,
-  SelectDirection,
   groupBy,
-  statusStore
+  statusStore,
+  type SelectDirection
 } from '@hcengineering/view-resources'
 import { get, writable } from 'svelte/store'
 import tracker from './plugin'
@@ -155,7 +155,7 @@ export const getGroupedIssues = (
   key: IssuesGroupByKeys | undefined,
   elements: Issue[],
   orderedCategories?: any[]
-): { [p: string]: Issue[] } => {
+): Record<string, Issue[]> => {
   if (key === undefined) {
     return { [undefined as any]: elements }
   }
@@ -176,7 +176,7 @@ export const getGroupedIssues = (
 
       return i1 - i2
     })
-    .reduce((obj: { [p: string]: any[] }, objKey) => {
+    .reduce((obj: Record<string, any[]>, objKey) => {
       obj[objKey] = unorderedIssues[objKey]
       return obj
     }, {})
@@ -529,7 +529,7 @@ export async function getPreviousAssignees (objectId: Ref<Doc> | undefined): Pro
     { 'tx.objectId': objectId, 'tx._class': core.class.TxUpdateDoc, 'tx.operations.assignee': { $exists: true } },
     { sort: { modifiedOn: -1 } }
   )
-  const set: Set<Ref<Contact>> = new Set()
+  const set = new Set<Ref<Contact>>()
   const createAssignee = (createTx?.tx as TxCreateDoc<Issue>)?.attributes?.assignee
   for (const tx of updateTxes) {
     const assignee = (tx.tx as TxUpdateDoc<Issue>).operations.assignee

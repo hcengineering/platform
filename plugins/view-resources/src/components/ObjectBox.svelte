@@ -36,7 +36,7 @@
   import ObjectPresenter from './ObjectPresenter.svelte'
 
   export let _class: Ref<Class<Doc>>
-  export let excluded: Ref<Doc>[] | undefined = undefined
+  export let excluded: Array<Ref<Doc>> | undefined = undefined
   export let options: FindOptions<Doc> | undefined = undefined
   export let docQuery: DocumentQuery<Doc> | undefined = undefined
   export let label: IntlString

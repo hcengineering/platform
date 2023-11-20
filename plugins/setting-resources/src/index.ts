@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { Class, Doc, Mixin } from '@hcengineering/core'
-import { Resources } from '@hcengineering/platform'
+import { type Class, type Doc, type Mixin } from '@hcengineering/core'
+import { type Resources } from '@hcengineering/platform'
 import { getClient, MessageBox } from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
 import { deleteObject } from '@hcengineering/view-resources/src/utils'
@@ -64,7 +64,9 @@ async function DeleteMixin (object: Mixin<Class<Doc>>): Promise<void> {
       if (result === true) {
         const objs = Array.isArray(object) ? object : [object]
         for (const o of objs) {
-          deleteObject(getClient(), o).catch((err) => console.error(err))
+          deleteObject(getClient(), o).catch((err) => {
+            console.error(err)
+          })
         }
       }
     }

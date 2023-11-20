@@ -15,7 +15,12 @@
 
 import { TxOperations } from '@hcengineering/core'
 import { leadId } from '@hcengineering/lead'
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient, tryUpgrade } from '@hcengineering/model'
+import {
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient,
+  tryUpgrade
+} from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import { createProjectType, createSequence } from '@hcengineering/model-task'
 import tracker from '@hcengineering/model-tracker'

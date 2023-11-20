@@ -15,7 +15,7 @@
 //
 
 import { concatLink } from '@hcengineering/core'
-import { getMetadata, Resources } from '@hcengineering/platform'
+import { getMetadata, type Resources } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 import TxSharedCreate from './components/activity/TxSharedCreate.svelte'
 import TxWriteMessage from './components/activity/TxWriteMessage.svelte'

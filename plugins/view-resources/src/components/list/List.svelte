@@ -37,7 +37,7 @@
   export let query: DocumentQuery<Doc> = {}
   export let options: FindOptions<Doc> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
-  export let config: (string | BuildModelKey)[]
+  export let config: Array<string | BuildModelKey>
   export let configurations: Record<Ref<Class<Doc>>, Viewlet['config']> | undefined
   export let selectedObjectIds: Doc[] = []
   export let createItemDialog: AnyComponent | AnySvelteComponent | undefined = undefined
@@ -68,12 +68,12 @@
 
   let resultQuery: DocumentQuery<Doc> = query
   $: getResultQuery(query, viewOptionsConfig, viewOptions).then((p) => {
-    resultQuery = mergeQueries(p, query) as DocumentQuery<Doc>
+    resultQuery = mergeQueries(p, query)
   })
 
   $: queryNoLookup = noLookup(resultQuery)
 
-  let fastQueryIds: Set<Ref<Doc>> = new Set()
+  let fastQueryIds = new Set<Ref<Doc>>()
 
   let categoryQueryOptions: Partial<FindOptions<Doc>>
   $: categoryQueryOptions = {

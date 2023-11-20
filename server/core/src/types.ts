@@ -333,9 +333,7 @@ export interface ObjectDDParticipant extends Class<Obj> {
 /**
  * @public
  */
-export interface SearchProps {
-  [key: string]: string
-}
+export type SearchProps = Record<string, string>
 
 /**
  * @public
@@ -345,7 +343,7 @@ export type SearchPresenterFunc = (hierarchy: Hierarchy, props: SearchProps) => 
 /**
  * @public
  */
-export type ClassSearchConfigProps = string | { [key: string]: string[] }
+export type ClassSearchConfigProps = string | Record<string, string[]>
 
 /**
  * @public

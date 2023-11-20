@@ -105,14 +105,15 @@
         if (param.length === 0) {
           result.push(getObjectConfig(viewlet.attachTo, param))
         } else {
-          result.push({
+          const attrCfg: AttributeConfig = {
             type: 'attribute',
             value: param,
             enabled: true,
             label: getKeyLabel(client, viewlet.attachTo, param, lookup),
             _class: viewlet.attachTo,
             icon: clazz.icon
-          } as AttributeConfig)
+          }
+          result.push(attrCfg)
         }
       } else {
         if (viewlet.configOptions?.hiddenKeys?.includes(param.key)) continue
@@ -129,14 +130,15 @@
               value: ''
             })
           }
-          result.push({
+          const attrCfg: AttributeConfig = {
             type: 'attribute',
             value: param,
             label: param.label ?? getKeyLabel(client, viewlet.attachTo, param.key, lookup),
             enabled: true,
             _class: viewlet.attachTo,
             icon: clazz.icon
-          } as AttributeConfig)
+          }
+          result.push(attrCfg)
         }
       }
     }
@@ -250,7 +252,7 @@
     return preference === undefined ? result : setStatus(result, preference)
   }
 
-  async function save (viewletId: Ref<Viewlet>, items: (Config | AttributeConfig)[]): Promise<void> {
+  async function save (viewletId: Ref<Viewlet>, items: Array<Config | AttributeConfig>): Promise<void> {
     const configValues = items.filter(
       (p) =>
         p.value !== undefined &&

@@ -14,49 +14,49 @@
 // limitations under the License.
 //
 
+import activity from '@hcengineering/activity'
+import chunter from '@hcengineering/chunter'
 import {
-  Account,
-  AttachedDoc,
-  Class,
-  Collection,
-  Data,
-  Doc,
-  Domain,
+  type Account,
+  type AttachedDoc,
+  type Class,
+  type Collection,
+  type Data,
+  type Doc,
+  type Domain,
   DOMAIN_MODEL,
   Hierarchy,
   IndexKind,
-  Ref,
-  Timestamp,
-  Tx,
-  TxCUD
+  type Ref,
+  type Timestamp,
+  type Tx,
+  type TxCUD
 } from '@hcengineering/core'
-import { ArrOf, Builder, Index, Mixin, Model, Prop, TypeRef, TypeString, UX } from '@hcengineering/model'
+import { ArrOf, type Builder, Index, Mixin, Model, Prop, TypeRef, TypeString, UX } from '@hcengineering/model'
 import core, { TAttachedDoc, TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import view, { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import {
-  DocUpdates,
-  DocUpdateTx,
-  EmailNotification,
-  Notification,
-  NotificationGroup,
-  NotificationPreferencesGroup,
+  type DocUpdates,
+  type DocUpdateTx,
+  type EmailNotification,
+  type Notification,
+  type NotificationGroup,
   notificationId,
-  NotificationObjectPresenter,
-  NotificationPreview,
-  NotificationProvider,
-  NotificationSetting,
-  NotificationStatus,
-  NotificationTemplate,
-  NotificationType
+  type NotificationObjectPresenter,
+  type NotificationPreferencesGroup,
+  type NotificationPreview,
+  type NotificationProvider,
+  type NotificationSetting,
+  type NotificationStatus,
+  type NotificationTemplate,
+  type NotificationType
 } from '@hcengineering/notification'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
-import { AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui'
 import notification from './plugin'
-import activity from '@hcengineering/activity'
-import chunter from '@hcengineering/chunter'
 export { notificationId } from '@hcengineering/notification'
 export { notificationOperation } from './migration'
 export { notification as default }

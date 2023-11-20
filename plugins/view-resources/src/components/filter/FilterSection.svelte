@@ -51,7 +51,7 @@
   $: isState = targetClass === core.class.Status ?? false
   const dispatch = createEventDispatcher()
 
-  async function getCountStates (ids: Ref<Doc>[]): Promise<number> {
+  async function getCountStates (ids: Array<Ref<Doc>>): Promise<number> {
     if (targetClass === undefined) {
       return 0
     }

@@ -1,10 +1,10 @@
 // Copyright © 2022 Hardcore Engineering Inc.
 
-import { Doc, DocumentQuery, FindResult, Ref } from '@hcengineering/core'
-import { Asset } from '@hcengineering/platform'
-import { InitialKnowledge, TagReference } from '@hcengineering/tags'
-import { ColorDefinition } from '@hcengineering/ui'
-import { Filter } from '@hcengineering/view'
+import { type Doc, type DocumentQuery, type FindResult, type Ref } from '@hcengineering/core'
+import { type Asset } from '@hcengineering/platform'
+import { type InitialKnowledge, type TagReference } from '@hcengineering/tags'
+import { type ColorDefinition } from '@hcengineering/ui'
+import { type Filter } from '@hcengineering/view'
 import { FilterQuery } from '@hcengineering/view-resources'
 import tags from './plugin'
 

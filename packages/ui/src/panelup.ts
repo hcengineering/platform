@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store'
 import { getLocation, navigate } from './location'
-import { AnyComponent, PopupAlignment } from './types'
+import { type AnyComponent, type PopupAlignment } from './types'
 
 export interface PanelProps {
   component: AnyComponent

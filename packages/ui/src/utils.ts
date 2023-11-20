@@ -14,12 +14,12 @@
 //
 
 import { generateId } from '@hcengineering/core'
-import type { Metadata } from '@hcengineering/platform'
-import { IntlString, setMetadata } from '@hcengineering/platform'
+import type { IntlString, Metadata } from '@hcengineering/platform'
+import { setMetadata } from '@hcengineering/platform'
 import autolinker from 'autolinker'
 import { writable } from 'svelte/store'
-import { Notification, NotificationPosition, NotificationSeverity, notificationsStore } from '.'
-import { AnyComponent, AnySvelteComponent, WidthType, deviceSizes } from './types'
+import { NotificationPosition, NotificationSeverity, notificationsStore, type Notification } from '.'
+import { deviceSizes, type AnyComponent, type AnySvelteComponent, type WidthType } from './types'
 
 /**
  * @public
@@ -84,7 +84,7 @@ export function addNotification (
   title: string,
   subTitle: string,
   component: AnyComponent | AnySvelteComponent,
-  params?: { [key: string]: any }
+  params?: Record<string, any>
 ): void {
   const closeTimeout = parseInt(localStorage.getItem('#platform.notification.timeout') ?? '10000')
   const notification: Notification = {

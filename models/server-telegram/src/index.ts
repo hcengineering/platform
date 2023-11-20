@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import { Builder } from '@hcengineering/model'
+import { type Builder } from '@hcengineering/model'
 
 import contact from '@hcengineering/contact'
-import core, { Class, Doc } from '@hcengineering/core'
-import serverCore, { ObjectDDParticipant } from '@hcengineering/server-core'
+import core, { type Class, type Doc } from '@hcengineering/core'
+import serverCore, { type ObjectDDParticipant } from '@hcengineering/server-core'
 import serverTelegram from '@hcengineering/server-telegram'
 import telegram from '@hcengineering/telegram'
 import notification from '@hcengineering/notification'

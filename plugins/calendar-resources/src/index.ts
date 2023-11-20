@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import { ReccuringInstance } from '@hcengineering/calendar'
-import { Doc, TxOperations, concatLink } from '@hcengineering/core'
-import { Resources, getMetadata } from '@hcengineering/platform'
+import { type ReccuringInstance } from '@hcengineering/calendar'
+import { type Doc, type TxOperations, concatLink } from '@hcengineering/core'
+import { type Resources, getMetadata } from '@hcengineering/platform'
 import presentation, { getClient } from '@hcengineering/presentation'
 import { closePopup, showPopup } from '@hcengineering/ui'
 import CalendarView from './components/CalendarView.svelte'
@@ -134,7 +134,9 @@ async function deleteRecEvent (object: ReccuringInstance): Promise<void> {
         object,
         deleteAction: async () => {
           const objs = Array.isArray(object) ? object : [object]
-          await deleteObjects(getClient(), objs).catch((err) => console.error(err))
+          await deleteObjects(getClient(), objs).catch((err) => {
+            console.error(err)
+          })
           closePopup()
         }
       },

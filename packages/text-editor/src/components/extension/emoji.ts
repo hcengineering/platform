@@ -1,5 +1,5 @@
 import { Extension } from '@tiptap/core'
-import { ResolvedPos } from '@tiptap/pm/model'
+import { type ResolvedPos } from '@tiptap/pm/model'
 
 const emojiReplaceDict = {
   '0:)': '😇',

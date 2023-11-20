@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import core, { Class, Doc } from '@hcengineering/core'
-import { Builder } from '@hcengineering/model'
-import serverCore, { ObjectDDParticipant } from '@hcengineering/server-core'
+import core, { type Class, type Doc } from '@hcengineering/core'
+import { type Builder } from '@hcengineering/model'
+import serverCore, { type ObjectDDParticipant } from '@hcengineering/server-core'
 import serverTags from '@hcengineering/server-tags'
 import tags from '@hcengineering/tags'
 

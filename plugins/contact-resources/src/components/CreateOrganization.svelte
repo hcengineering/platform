@@ -33,7 +33,7 @@
 
   const object: Organization = {
     name: ''
-  } as Organization
+  } as unknown as Organization
 
   const dispatch = createEventDispatcher()
   const client = getClient()

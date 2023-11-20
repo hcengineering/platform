@@ -13,15 +13,15 @@
 // limitations under the License.
 //
 
-import { SortingOrder, SortingQuery } from '@hcengineering/core'
-import { Asset, IntlString } from '@hcengineering/platform'
+import { SortingOrder, type SortingQuery } from '@hcengineering/core'
+import { type Asset, type IntlString } from '@hcengineering/platform'
 import {
-  Issue,
   IssuePriority,
   IssuesDateModificationPeriod,
   IssuesGrouping,
   IssuesOrdering,
-  MilestoneStatus
+  MilestoneStatus,
+  type Issue
 } from '@hcengineering/tracker'
 import tracker from './plugin'
 

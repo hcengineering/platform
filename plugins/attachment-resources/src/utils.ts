@@ -14,8 +14,16 @@
 // limitations under the License.
 //
 
-import { Attachment } from '@hcengineering/attachment'
-import { Class, concatLink, Data, Doc, Ref, Space, TxOperations as Client } from '@hcengineering/core'
+import { type Attachment } from '@hcengineering/attachment'
+import {
+  type Class,
+  concatLink,
+  type Data,
+  type Doc,
+  type Ref,
+  type Space,
+  type TxOperations as Client
+} from '@hcengineering/core'
 import presentation from '@hcengineering/presentation'
 import { PlatformError, Severity, Status, getMetadata, setPlatformStatus, unknownError } from '@hcengineering/platform'
 

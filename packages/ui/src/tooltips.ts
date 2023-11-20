@@ -1,4 +1,4 @@
-import { IntlString } from '@hcengineering/platform'
+import { type IntlString } from '@hcengineering/platform'
 import { writable } from 'svelte/store'
 import type { AnyComponent, AnySvelteComponent, LabelAndProps, TooltipAlignment } from './types'
 

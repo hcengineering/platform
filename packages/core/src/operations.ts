@@ -37,7 +37,11 @@ import { DocumentClassQuery, Tx, TxCUD, TxFactory, TxProcessor } from './tx'
 export class TxOperations implements Omit<Client, 'notify'> {
   readonly txFactory: TxFactory
 
-  constructor (readonly client: Client, readonly user: Ref<Account>, readonly isDerived: boolean = false) {
+  constructor (
+    readonly client: Client,
+    readonly user: Ref<Account>,
+    readonly isDerived: boolean = false
+  ) {
     this.txFactory = new TxFactory(user, isDerived)
   }
 
@@ -50,7 +54,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
   }
 
   async close (): Promise<void> {
-    return await this.client.close()
+    await this.client.close()
   }
 
   findAll<T extends Doc>(
@@ -401,11 +405,11 @@ export class TxOperations implements Omit<Client, 'notify'> {
   private splitObjectAttributes<T extends object>(
     obj: T,
     objClass: Ref<Class<Doc>>,
-    attributes: Map<String, AnyAttribute>
+    attributes: Map<string, AnyAttribute>
   ): Map<Ref<Class<Doc>>, object> {
     const hierarchy = this.getHierarchy()
 
-    const result: Map<Ref<Class<Doc>>, any> = new Map()
+    const result = new Map<Ref<Class<Doc>>, any>()
     for (const [key, value] of Object.entries(obj)) {
       const attributeOf = attributes.get(key)?.attributeOf
       const clazz = attributeOf !== undefined && hierarchy.isMixin(attributeOf) ? attributeOf : objClass
@@ -427,7 +431,10 @@ export class ApplyOperations extends TxOperations {
   txes: TxCUD<Doc>[] = []
   matches: DocumentClassQuery<Doc>[] = []
   notMatches: DocumentClassQuery<Doc>[] = []
-  constructor (readonly ops: TxOperations, readonly scope: string) {
+  constructor (
+    readonly ops: TxOperations,
+    readonly scope: string
+  ) {
     const txClient: Client = {
       getHierarchy: () => ops.client.getHierarchy(),
       getModel: () => ops.client.getModel(),
@@ -481,7 +488,11 @@ export class ApplyOperations extends TxOperations {
 export class TxBuilder extends TxOperations {
   txes: TxCUD<Doc>[] = []
   matches: DocumentClassQuery<Doc>[] = []
-  constructor (readonly hierarchy: Hierarchy, readonly modelDb: ModelDb, user: Ref<Account>) {
+  constructor (
+    readonly hierarchy: Hierarchy,
+    readonly modelDb: ModelDb,
+    user: Ref<Account>
+  ) {
     const txClient: Client = {
       getHierarchy: () => this.hierarchy,
       getModel: () => this.modelDb,
