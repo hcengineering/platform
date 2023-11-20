@@ -70,7 +70,7 @@
       list?.select(selection - 1)
       return true
     }
-    if (key.key === 'Enter') {
+    if (key.key === 'Enter' || key.key === 'Tab') {
       key.preventDefault()
       key.stopPropagation()
       const searchItem = items[selection]
