@@ -1,34 +1,18 @@
-import { test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI } from './utils'
-import { LeftSideMenuPage } from './model/left-side-menu-page'
-import { ChunterPage } from './model/chunter-page'
-import { ChannelPage } from './model/channel-page'
+import { test, expect } from '@playwright/test'
+import { generateId, PlatformURI } from './utils'
 import { allure } from 'allure-playwright'
+import { SignupPage } from './model/signup-page'
 
-test.use({
-  storageState: PlatformSetting
-})
-
-test.describe('channel tests', () => {
+test.describe('Signup tests', () => {
   test.beforeEach(async ({ page }) => {
-    await allure.parentSuite('Channel tests')
-    await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
+    await allure.parentSuite('Signup tests')
+    await (await page.goto(`${PlatformURI}/login/signup`))?.finished()
   })
 
-  test('create new private channel tests', async ({ page }) => {
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonChunter.click()
+  test('signup a new user', async ({ page }) => {
+    const signupPage = new SignupPage(page)
+    await signupPage.signup('FirstName', 'LastName', `testemail+${generateId()}@gmail.com`, 'UniquePass!1234')
 
-    const chunterPage = new ChunterPage(page)
-    await chunterPage.buttonChannelBrowser.click()
-    await chunterPage.buttonNewChannelHeader.click()
-
-    const channel = 'channel-' + generateId()
-    await chunterPage.createNewChannel(channel, true)
-    await chunterPage.openChannel(channel)
-
-    const channelPage = new ChannelPage(page)
-    await channelPage.sendMessage('Test message')
-    await channelPage.checkMessageExist('Test message')
+    await expect(signupPage.textError).toHaveText('Internal server error')
   })
 })
