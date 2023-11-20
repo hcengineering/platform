@@ -52,7 +52,8 @@ export {
   NodeUuidExtension,
   type NodeUuidCommands,
   type NodeUuidOptions,
-  type NodeUuidStorage
+  type NodeUuidStorage,
+  updateActiveNodeCommand
 } from './components/extension/nodeUuid'
 export { InlinePopupExtension } from './components/extension/inlinePopup'
 export {

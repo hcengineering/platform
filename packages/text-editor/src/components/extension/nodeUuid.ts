@@ -1,6 +1,7 @@
 import { type Command, type CommandProps, Mark, getMarkType, getMarksBetween, mergeAttributes } from '@tiptap/core'
 import { type Node, type Mark as ProseMirrorMark } from '@tiptap/pm/model'
 import { type EditorState, Plugin, PluginKey } from '@tiptap/pm/state'
+import { type TextEditorCommand } from '../../types'
 
 const NAME = 'node-uuid'
 
@@ -22,7 +23,13 @@ export interface NodeUuidCommands<ReturnType> {
      * Unset uuid mark
      */
     unsetNodeUuid: () => ReturnType
+
+    updateActiveNodeUuid: (uuid: string | null) => ReturnType
   }
+}
+
+export function updateActiveNodeCommand (uuid: string | null): TextEditorCommand {
+  return ({ editor }) => editor.commands.updateActiveNodeUuid(uuid)
 }
 
 declare module '@tiptap/core' {
@@ -157,7 +164,16 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
       unsetNodeUuid:
         () =>
           ({ commands }: CommandProps) =>
-            commands.unsetMark(this.name)
+            commands.unsetMark(this.name),
+      updateActiveNodeUuid: (uuid: string | null) => () => {
+        if (this.storage.activeNodeUuid !== uuid) {
+          this.storage.activeNodeUuid = uuid
+          this.options.onNodeSelected?.(uuid)
+          return true
+        }
+
+        return false
+      }
     }
 
     return result
