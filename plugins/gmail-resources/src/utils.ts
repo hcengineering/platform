@@ -1,6 +1,12 @@
-import contact, { Channel, Employee, Contact, PersonAccount, getName as getContactName } from '@hcengineering/contact'
-import { Doc, IdMap, Ref, toIdMap } from '@hcengineering/core'
-import { Message, SharedMessage } from '@hcengineering/gmail'
+import contact, {
+  type Channel,
+  type Employee,
+  type Contact,
+  type PersonAccount,
+  getName as getContactName
+} from '@hcengineering/contact'
+import { type Doc, type IdMap, type Ref, toIdMap } from '@hcengineering/core'
+import { type Message, type SharedMessage } from '@hcengineering/gmail'
 import { getClient } from '@hcengineering/presentation'
 
 export function getTime (time: number): string {

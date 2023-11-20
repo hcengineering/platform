@@ -56,7 +56,9 @@
       class:request--available={available}
       class:request--unavailable={!available}
       class:cursor-pointer={editable}
-      on:click={(e) => click(e, request)}
+      on:click={(e) => {
+        click(e, request)
+      }}
     >
       <Icon
         icon={type.icon}

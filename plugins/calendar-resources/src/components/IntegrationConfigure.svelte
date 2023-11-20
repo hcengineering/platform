@@ -33,7 +33,9 @@
       createdBy: getCurrentAccount()._id,
       externalUser: integration.value
     },
-    (res) => (calendars = res)
+    (res) => {
+      calendars = res
+    }
   )
 
   async function update (calendar: Calendar, value: boolean) {
@@ -67,7 +69,7 @@
       {#each calendars as calendar}
         <div>{calendar.name}</div>
         <div>
-          <Toggle on={calendar.archived === false} on:change={(res) => update(calendar, res.detail)} />
+          <Toggle on={!calendar.archived} on:change={(res) => update(calendar, res.detail)} />
         </div>
       {/each}
     </Grid>

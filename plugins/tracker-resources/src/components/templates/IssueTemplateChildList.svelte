@@ -1,14 +1,14 @@
-<!-- 
+<!--
 // Copyright © 2022 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -89,7 +89,9 @@
     {
       _id: project
     },
-    (res) => ([currentProject] = res)
+    (res) => {
+      ;[currentProject] = res
+    }
   )
   let currentProject: Project | undefined = undefined
 
@@ -115,11 +117,17 @@
     class:is-dragged-over-down={dragIndex !== null && index > dragIndex && index === hoveringIndex}
     animate:flip={{ duration: 400 }}
     draggable={true}
-    on:click|self={(evt) => openIssue(evt, issue)}
-    on:dragstart={(ev) => handleDragStart(ev, index, issue)}
+    on:click|self={(evt) => {
+      openIssue(evt, issue)
+    }}
+    on:dragstart={(ev) => {
+      handleDragStart(ev, index, issue)
+    }}
     on:dragover|preventDefault={() => false}
     on:dragenter={() => (hoveringIndex = index)}
-    on:drop|preventDefault={(ev) => handleDrop(ev, index)}
+    on:drop|preventDefault={(ev) => {
+      handleDrop(ev, index)
+    }}
     on:dragend={resetDrag}
   >
     <div class="draggable-container">
@@ -138,12 +146,23 @@
         }}
       />
       <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <span class="issuePresenter" on:click={(evt) => openIssue(evt, issue)}>
+      <span
+        class="issuePresenter"
+        on:click={(evt) => {
+          openIssue(evt, issue)
+        }}
+      >
         <FixedColumn key={'issue_template_issue'} justify={'left'}>
           {getIssueTemplateId(currentProject, issue)}
         </FixedColumn>
       </span>
-      <span class="text name" title={issue.title} on:click={(evt) => openIssue(evt, issue)}>
+      <span
+        class="text name"
+        title={issue.title}
+        on:click={(evt) => {
+          openIssue(evt, issue)
+        }}
+      >
         {issue.title}
       </span>
     </div>

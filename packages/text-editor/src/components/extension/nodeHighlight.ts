@@ -1,10 +1,10 @@
-import { Command, CommandProps, Extension, Range, getMarkRange, mergeAttributes } from '@tiptap/core'
-import { Node as ProseMirrorNode, MarkType } from '@tiptap/pm/model'
+import { type Command, type CommandProps, Extension, type Range, getMarkRange, mergeAttributes } from '@tiptap/core'
+import { type Node as ProseMirrorNode, type MarkType } from '@tiptap/pm/model'
 import { Plugin, PluginKey, TextSelection } from '@tiptap/pm/state'
 import { AddMarkStep, RemoveMarkStep } from '@tiptap/pm/transform'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
-import { NodeUuidExtension, NodeUuidOptions, NodeUuidStorage, findNodeUuidMark } from './nodeUuid'
-import { TextEditorCommand } from '../../types'
+import { NodeUuidExtension, type NodeUuidOptions, type NodeUuidStorage, findNodeUuidMark } from './nodeUuid'
+import { type TextEditorCommand } from '../../types'
 
 export enum NodeHighlightType {
   WARNING = 'warning',

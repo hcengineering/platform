@@ -14,39 +14,39 @@
 //
 
 import core, {
-  Account,
+  type Account,
   AccountRole,
-  BulkUpdateEvent,
-  Class,
-  Doc,
-  DocumentQuery,
-  FindOptions,
-  FindResult,
-  LoadModelResponse,
-  MeasureContext,
-  Ref,
-  Timestamp,
-  Tx,
-  TxApplyIf,
-  TxCUD,
+  type BulkUpdateEvent,
+  type Class,
+  type Doc,
+  type DocumentQuery,
+  type FindOptions,
+  type FindResult,
+  type LoadModelResponse,
+  type MeasureContext,
+  type Ref,
+  type Timestamp,
+  type Tx,
+  type TxApplyIf,
+  type TxCUD,
   TxProcessor,
-  TxResult,
-  TxWorkspaceEvent,
+  type TxResult,
+  type TxWorkspaceEvent,
   WorkspaceEvent,
   generateId,
-  SearchQuery,
-  SearchOptions,
-  SearchResult
+  type SearchQuery,
+  type SearchOptions,
+  type SearchResult
 } from '@hcengineering/core'
-import { Pipeline, SessionContext } from '@hcengineering/server-core'
-import { Token } from '@hcengineering/server-token'
-import { BroadcastCall, Session, SessionRequest, StatisticsElement } from './types'
+import { type Pipeline, type SessionContext } from '@hcengineering/server-core'
+import { type Token } from '@hcengineering/server-token'
+import { type BroadcastCall, type Session, type SessionRequest, type StatisticsElement } from './types'
 
 /**
  * @public
  */
 export class ClientSession implements Session {
-  requests: Map<string, SessionRequest> = new Map()
+  requests = new Map<string, SessionRequest>()
   binaryResponseMode: boolean = false
   useCompression: boolean = true
   useBroadcast: boolean = false

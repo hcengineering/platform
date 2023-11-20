@@ -14,7 +14,7 @@
 //
 
 import core from '@hcengineering/core'
-import { Builder } from '@hcengineering/model'
+import { type Builder } from '@hcengineering/model'
 import tracker from '@hcengineering/model-tracker'
 import notification from '@hcengineering/notification'
 import serverCore from '@hcengineering/server-core'

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { Builder } from '@hcengineering/model'
+import { type Builder } from '@hcengineering/model'
 
 import core from '@hcengineering/core'
 import serverNotification from '@hcengineering/server-notification'

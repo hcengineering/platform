@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-import { Builder } from '@hcengineering/model'
+import { type Builder } from '@hcengineering/model'
 
 import calendar from '@hcengineering/calendar'
-import core, { Class, Doc } from '@hcengineering/core'
+import core, { type Class, type Doc } from '@hcengineering/core'
 import serverNotification from '@hcengineering/server-notification'
 import serverCalendar from '@hcengineering/server-calendar'
-import serverCore, { ObjectDDParticipant } from '@hcengineering/server-core'
+import serverCore, { type ObjectDDParticipant } from '@hcengineering/server-core'
 import contact from '@hcengineering/contact'
 
 export { serverCalendarId } from '@hcengineering/server-calendar'

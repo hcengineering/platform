@@ -14,7 +14,7 @@
 //
 
 import core, { TxOperations } from '@hcengineering/core'
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
 import notification from '@hcengineering/notification'
 
 async function createSpace (client: MigrationUpgradeClient): Promise<void> {

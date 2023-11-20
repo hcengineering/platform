@@ -14,9 +14,9 @@
 //
 
 import type { Employee, Organization } from '@hcengineering/contact'
-import { IndexKind, Lookup, Ref, SortingOrder, Status, Timestamp } from '@hcengineering/core'
+import { IndexKind, type Lookup, type Ref, SortingOrder, type Status, type Timestamp } from '@hcengineering/core'
 import {
-  Builder,
+  type Builder,
   Collection,
   Hidden,
   Index,
@@ -42,20 +42,20 @@ import tags from '@hcengineering/model-tags'
 import task, { DOMAIN_TASK, TProject, TTask, actionTemplates } from '@hcengineering/model-task'
 import tracker from '@hcengineering/model-tracker'
 import view, { createAction, showColorsViewOption, actionTemplates as viewTemplates } from '@hcengineering/model-view'
-import workbench, { Application, createNavigateAction } from '@hcengineering/model-workbench'
+import workbench, { type Application, createNavigateAction } from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
-import { IntlString, getEmbeddedLabel } from '@hcengineering/platform'
+import { type IntlString, getEmbeddedLabel } from '@hcengineering/platform'
 import {
-  Applicant,
-  ApplicantMatch,
-  Candidate,
-  Candidates,
-  Vacancy,
-  VacancyList,
+  type Applicant,
+  type ApplicantMatch,
+  type Candidate,
+  type Candidates,
+  type Vacancy,
+  type VacancyList,
   recruitId
 } from '@hcengineering/recruit'
 import setting from '@hcengineering/setting'
-import { KeyBinding, ViewOptionModel, ViewOptionsModel } from '@hcengineering/view'
+import { type KeyBinding, type ViewOptionModel, type ViewOptionsModel } from '@hcengineering/view'
 import activity from '@hcengineering/activity'
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'

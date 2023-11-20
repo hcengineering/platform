@@ -37,7 +37,9 @@ async function getClient (): Promise<{ liveQuery: LiveQuery, factory: TxOperatio
   const storage = await createClient(connect)
   const liveQuery = new LiveQuery(storage)
   storage.notify = (tx: Tx) => {
-    liveQuery.tx(tx).catch((err) => console.log(err))
+    liveQuery.tx(tx).catch((err) => {
+      console.log(err)
+    })
   }
   return { liveQuery, factory: new TxOperations(storage, core.account.System) }
 }
@@ -94,7 +96,9 @@ describe('query', () => {
               expect(result).toHaveLength(expectedLength + attempt - 1)
               resolve(null)
             })
-            .catch((err) => expect(err).toBeUndefined())
+            .catch((err) => {
+              expect(err).toBeUndefined()
+            })
         }
       })
     })

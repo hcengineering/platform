@@ -194,10 +194,10 @@
       "summary": "format",
       "description": "Format and autofix linting issues",
       "enableParallelism": true,
-      "incremental": true,
+      "incremental": false,
       "ignoreDependencyOrder": true,
       "ignoreMissingScript": true,
-      "disableBuildCache": false
+      "disableBuildCache": true
     },
     {
       "commandKind": "bulk",
@@ -357,6 +357,13 @@
       "description": "Enable Heft clean building option",
       "associatedCommands": ["build", "rebuild"]
     },
+    {
+      "parameterKind": "flag",   
+      "longName": "--force",   
+      "shortName": "-f",
+      "description": "Force formatting",
+      "associatedCommands": ["format"]
+    }
     // {
     //   /**
     //    * (Required) Determines the type of custom parameter.

@@ -32,7 +32,7 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const cardId = generateId() as Ref<BoardCard>
+  const cardId = generateId()
 
   export function canClose (): boolean {
     return title !== ''

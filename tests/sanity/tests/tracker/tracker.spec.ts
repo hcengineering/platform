@@ -152,13 +152,17 @@ test.describe('Tracker tests', () => {
     const name = getIssueName()
 
     try {
-      await page.evaluate(() => localStorage.setItem('#platform.notification.timeout', '5000'))
+      await page.evaluate(() => {
+        localStorage.setItem('#platform.notification.timeout', '5000')
+      })
       await createIssue(page, { name, assignee, status })
       await page.waitForSelector(`text="${name}"`)
       await page.waitForSelector('text="View issue"')
       await page.click('text="View issue"')
     } finally {
-      await page.evaluate(() => localStorage.setItem('#platform.notification.timeout', '0'))
+      await page.evaluate(() => {
+        localStorage.setItem('#platform.notification.timeout', '0')
+      })
     }
 
     await page.click('#ReportedTimeEditor')
@@ -189,8 +193,19 @@ test.describe('Tracker tests', () => {
     const assignee = 'Chen Rosamund'
     const status = 'In Progress'
     const name = getIssueName()
-
-    await createIssue(page, { name, assignee, status })
+    try {
+      await page.evaluate(() => {
+        localStorage.setItem('#platform.notification.timeout', '5000')
+      })
+      await createIssue(page, { name, assignee, status })
+      await page.waitForSelector(`text="${name}"`)
+      await page.waitForSelector('text="View issue"')
+      await page.click('text="View issue"')
+    } finally {
+      await page.evaluate(() => {
+        localStorage.setItem('#platform.notification.timeout', '0')
+      })
+    }
 
     // await page.click('.close-button > .antiButton')
 

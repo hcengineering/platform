@@ -21,7 +21,7 @@
   import view from '../plugin'
 
   export let viewlet: Viewlet
-  export let items: (Config | AttributeConfig)[] = []
+  export let items: Array<Config | AttributeConfig> = []
 
   const dispatch = createEventDispatcher()
 
@@ -103,7 +103,9 @@
         ev.stopPropagation()
         selected = i
       }}
-      on:dragover|preventDefault={(e) => dragOver(e, i)}
+      on:dragover|preventDefault={(e) => {
+        dragOver(e, i)
+      }}
       on:dragend={dragEnd}
     >
       <ToggleWithLabel

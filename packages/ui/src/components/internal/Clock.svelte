@@ -20,7 +20,9 @@
   const interval = setInterval(updateTime, 500)
   updateTime()
 
-  onDestroy(() => clearInterval(interval))
+  onDestroy(() => {
+    clearInterval(interval)
+  })
 </script>
 
 <button

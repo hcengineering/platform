@@ -1,20 +1,20 @@
 <!--
 // Copyright © 2023 Anticrm Platform Contributors.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
 <script lang="ts">
   import contact from '@hcengineering/contact'
-  import ExpandRightDouble from '@hcengineering/contact-resources/src/components/icons/ExpandRightDouble.svelte'
+  import { ExpandRightDouble } from '@hcengineering/contact-resources'
   import { FindOptions, Status as TaskStatus } from '@hcengineering/core'
   import { OK, Severity, Status } from '@hcengineering/platform'
   import presentation, { Card, SpaceSelect, createQuery, getClient } from '@hcengineering/presentation'
@@ -56,10 +56,8 @@
   export function canClose (): boolean {
     return true
   }
-  let loading = false
 
   async function updateApplication () {
-    loading = true
     if (selectedState === undefined) {
       throw new Error(`Please select initial state:${_space}`)
     }
@@ -73,11 +71,10 @@
       await moveToSpace(op, a, _space, { status: selectedState._id })
     }
     await op.commit()
-    loading = false
     dispatch('close')
   }
 
-  let states: Array<{ id: number | string; color: number; label: string }> = []
+  let states: Array<{ id: number | string, color: number, label: string }> = []
   let selectedState: TaskStatus | undefined
   let rawStates: TaskStatus[] = []
   const spaceQuery = createQuery()
@@ -184,7 +181,7 @@
             { value: states, searchable: true, placeholder: ui.string.SearchDots },
             btn,
             (result) => {
-              if (result && result.id) {
+              if (result?.id) {
                 selectedState = { ...result, _id: result.id, name: result.label }
               }
               manager.setFocusPos(3)

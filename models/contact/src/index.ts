@@ -16,26 +16,34 @@
 
 import activity from '@hcengineering/activity'
 import {
-  AvatarProvider,
+  type AvatarProvider,
   AvatarType,
-  Channel,
-  ChannelProvider,
-  Contact,
-  ContactsTab,
-  Employee,
-  PersonAccount,
-  GetAvatarUrl,
-  Member,
-  Organization,
-  Organizations,
-  Person,
-  Persons,
-  Status,
+  type Channel,
+  type ChannelProvider,
+  type Contact,
+  type ContactsTab,
+  type Employee,
+  type PersonAccount,
+  type GetAvatarUrl,
+  type Member,
+  type Organization,
+  type Organizations,
+  type Person,
+  type Persons,
+  type Status,
   contactId
 } from '@hcengineering/contact'
-import { Class, DOMAIN_MODEL, DateRangeMode, Domain, IndexKind, Ref, Timestamp } from '@hcengineering/core'
 import {
-  Builder,
+  type Class,
+  DOMAIN_MODEL,
+  DateRangeMode,
+  type Domain,
+  IndexKind,
+  type Ref,
+  type Timestamp
+} from '@hcengineering/core'
+import {
+  type Builder,
   Collection,
   Hidden,
   Index,
@@ -55,14 +63,14 @@ import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
 import core, { TAccount, TAttachedDoc, TDoc, TSpace } from '@hcengineering/model-core'
 import presentation from '@hcengineering/model-presentation'
-import view, { ViewAction, Viewlet, createAction } from '@hcengineering/model-view'
+import view, { type ViewAction, type Viewlet, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import notification from '@hcengineering/notification'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import templates from '@hcengineering/templates'
-import { AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui'
 import contact from './plugin'
 
 export { contactId } from '@hcengineering/contact'

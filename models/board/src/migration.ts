@@ -13,12 +13,17 @@
 // limitations under the License.
 //
 
-import { Ref, TxOperations } from '@hcengineering/core'
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient, createOrUpdate } from '@hcengineering/model'
+import { type Ref, TxOperations } from '@hcengineering/core'
+import {
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient,
+  createOrUpdate
+} from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import { createProjectType, createSequence } from '@hcengineering/model-task'
 import tags from '@hcengineering/tags'
-import task, { ProjectType } from '@hcengineering/task'
+import task, { type ProjectType } from '@hcengineering/task'
 import board from './plugin'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 

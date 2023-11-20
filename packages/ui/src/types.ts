@@ -12,10 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { Timestamp } from '@hcengineering/core'
-import type { Asset, IntlString } from '@hcengineering/platform'
-import { /* Metadata, Plugin, plugin, */ Resource /*, Service */ } from '@hcengineering/platform'
-import { /* getContext, */ ComponentType } from 'svelte'
+import { type Timestamp } from '@hcengineering/core'
+import type {
+  Asset,
+  IntlString,
+  /* Metadata, Plugin, plugin, */ Resource /*, Service */
+} from '@hcengineering/platform'
+import { /* getContext, */ type ComponentType } from 'svelte'
 
 /**
  * Describe a browser URI location parsed to path, query and fragment.
@@ -94,9 +97,9 @@ export interface IPopupItem {
   _id?: number
   title?: IntlString | undefined
   component?: AnySvelteComponent | undefined
-  props?: Object
+  props?: Record<string, any>
   selected?: boolean
-  action?: Function
+  action?: () => void
 }
 
 export interface TabBase {

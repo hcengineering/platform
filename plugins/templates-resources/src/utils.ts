@@ -1,16 +1,16 @@
-import { Class, Doc, generateId, Ref } from '@hcengineering/core'
+import { type Class, type Doc, generateId, type Ref } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
 import templates, {
-  TemplateData,
-  TemplateDataProvider,
-  TemplateField,
-  TemplateFieldCategory
+  type TemplateData,
+  type TemplateDataProvider,
+  type TemplateField,
+  type TemplateFieldCategory
 } from '@hcengineering/templates'
 
 const fieldRegexp = /\$\{(\S+?)}/gi
 
-const templateData: Map<Ref<TemplateFieldCategory>, TemplateData[]> = new Map()
+const templateData = new Map<Ref<TemplateFieldCategory>, TemplateData[]>()
 
 class TemplateDataProviderImpl implements TemplateDataProvider {
   private readonly id = generateId()

@@ -38,7 +38,7 @@
   })
 
   const indexDataQuery = createQuery()
-  let state: Map<Ref<Doc>, DocIndexState> = new Map()
+  let state = new Map<Ref<Doc>, DocIndexState>()
   $: indexDataQuery.query(
     core.class.DocIndexState,
     {
@@ -65,7 +65,7 @@
   $: _sortedObjects = [..._objects].sort((a, b) => (scoreState.get(b._id) ?? 0) - (scoreState.get(a._id) ?? 0))
 
   const matchQuery = createQuery()
-  let matches: Map<Ref<Doc>, ApplicantMatch> = new Map()
+  let matches = new Map<Ref<Doc>, ApplicantMatch>()
 
   $: matchQuery.query(
     recruit.class.ApplicantMatch,
@@ -79,7 +79,7 @@
   )
 
   const applicationQuery = createQuery()
-  let applications: Map<Ref<Doc>, Applicant> = new Map()
+  let applications = new Map<Ref<Doc>, Applicant>()
 
   $: applicationQuery.query(
     recruit.class.Applicant,

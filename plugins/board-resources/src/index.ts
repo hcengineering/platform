@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { Resources } from '@hcengineering/platform'
-import { TodoItem } from '@hcengineering/task'
+import { type Resources } from '@hcengineering/platform'
+import { type TodoItem } from '@hcengineering/task'
 import { getClient } from '@hcengineering/presentation'
 
 import BoardPresenter from './components/BoardPresenter.svelte'

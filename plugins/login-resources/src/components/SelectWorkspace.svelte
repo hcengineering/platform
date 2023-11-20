@@ -129,7 +129,7 @@
             {workspace.workspace}
           </div>
         {/each}
-        {#if !workspaces.length && account?.confirmed === true}
+        {#if workspaces.length === 0 && account?.confirmed === true}
           <div class="form-row send">
             <Button label={login.string.CreateWorkspace} kind={'primary'} width="100%" on:click={createWorkspace} />
           </div>

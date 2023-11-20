@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-import { Calendar, Event, ReccuringEvent } from '@hcengineering/calendar'
+import { type Calendar, type Event, type ReccuringEvent } from '@hcengineering/calendar'
 import contact from '@hcengineering/contact'
-import core, { Ref, TxOperations } from '@hcengineering/core'
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import core, { type Ref, TxOperations } from '@hcengineering/core'
+import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { DOMAIN_SETTING } from '@hcengineering/model-setting'
-import { Integration } from '@hcengineering/setting'
+import { type Integration } from '@hcengineering/setting'
 import { DOMAIN_CALENDAR } from '.'
 import calendar from './plugin'
 

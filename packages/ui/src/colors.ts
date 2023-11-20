@@ -410,7 +410,7 @@ export function numberToRGB (color: number, alpha?: number): string {
   const g = hex.length >= 4 ? parseInt(hex.slice(2, 4), 16) : 0
   const b = hex.length >= 6 ? parseInt(hex.slice(4, 6), 16) : 0
 
-  return `rgba(${r}, ${g}, ${b}, ${alpha === undefined ? '1' : alpha})`
+  return `rgba(${r}, ${g}, ${b}, ${alpha ?? '1'})`
 }
 
 /**

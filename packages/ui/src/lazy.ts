@@ -28,7 +28,9 @@ function makeObserver (rootMargin: string): IntersectionObserver {
       for (const entry of entries) {
         entriesPending.set(entry.target, { isIntersecting: entry.isIntersecting })
       }
-      delayedCaller.call(() => notifyObservers(observer))
+      delayedCaller.call(() => {
+        notifyObservers(observer)
+      })
     },
     { rootMargin }
   )

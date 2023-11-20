@@ -15,10 +15,10 @@
 //
 
 import contact, { contactId } from '@hcengineering/contact'
-import { Doc } from '@hcengineering/core'
-import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
-import { Location } from '@hcengineering/ui'
-import { FilterFunction, SortFunc } from '@hcengineering/view'
+import { type Doc } from '@hcengineering/core'
+import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
+import { type Location } from '@hcengineering/ui'
+import { type FilterFunction, type SortFunc } from '@hcengineering/view'
 
 export default mergeIds(contactId, contact, {
   string: {

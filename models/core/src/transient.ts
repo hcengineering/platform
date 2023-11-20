@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { DOMAIN_TRANSIENT, UserStatus } from '@hcengineering/core'
+import { DOMAIN_TRANSIENT, type UserStatus } from '@hcengineering/core'
 import { Model } from '@hcengineering/model'
 import core from './component'
 import { TDoc } from './core'

@@ -1,14 +1,14 @@
 <!--
 // Copyright © 2022 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -42,7 +42,7 @@
   export let viewContext: ViewContext
 
   let search: string = ''
-  let actions: WithLookup<Action>[] = []
+  let actions: Array<WithLookup<Action>> = []
   let input: EditWithIcon
 
   const query = createQuery()
@@ -63,11 +63,11 @@
     }
   )
 
-  let supportedActions: WithLookup<Action>[] = []
-  let filteredActions: WithLookup<Action>[] = []
+  let supportedActions: Array<WithLookup<Action>> = []
+  let filteredActions: Array<WithLookup<Action>> = []
 
-  async function filterVisibleActions (actions: WithLookup<Action>[], docs: Doc[]) {
-    const resultActions: WithLookup<Action>[] = []
+  async function filterVisibleActions (actions: Array<WithLookup<Action>>, docs: Doc[]) {
+    const resultActions: Array<WithLookup<Action>> = []
 
     for (const action of actions) {
       if (!action.visibilityTester) {
@@ -85,9 +85,9 @@
 
   const client = getClient()
 
-  async function getSupportedActions (actions: WithLookup<Action>[]) {
+  async function getSupportedActions (actions: Array<WithLookup<Action>>) {
     const docs = getSelection($focusStore, $selectionStore)
-    let fActions: WithLookup<Action>[] = actions
+    let fActions: Array<WithLookup<Action>> = actions
 
     // We need to filter application based actions first, to prevent override for globals
     fActions = fActions.filter(
@@ -116,13 +116,13 @@
 
   $: getSupportedActions(actions)
 
-  async function filterSearchActions (actions: WithLookup<Action>[], search: string): Promise<void> {
-    const res: WithLookup<Action>[] = []
+  async function filterSearchActions (actions: Array<WithLookup<Action>>, search: string): Promise<void> {
+    const res: Array<WithLookup<Action>> = []
     search = search.trim().toLowerCase()
     if (search.length > 0) {
       for (const a of actions) {
         const tr = await translate(a.label, {}, $themeStore.language)
-        if (tr.toLowerCase().indexOf(search) !== -1) {
+        if (tr.toLowerCase().includes(search)) {
           res.push(a)
         }
       }
@@ -195,7 +195,7 @@
   on:keydown={onKeydown}
   use:resizeObserver={() => dispatch('changeContent')}
 >
-  {#if $selectionStore.docs.length > 0 || $focusStore.focus !== undefined || (activeAction && activeAction?.actionPopup !== undefined)}
+  {#if $selectionStore.docs.length > 0 || $focusStore.focus !== undefined || activeAction?.actionPopup !== undefined}
     <div class="mt-2 ml-2 flex-between flex-no-shrink">
       {#if $selectionStore.docs.length > 0}
         <div class="item-box">
@@ -211,7 +211,7 @@
           />
         </div>
       {/if}
-      {#if activeAction && activeAction?.actionPopup !== undefined}
+      {#if activeAction?.actionPopup !== undefined}
         <div class="mr-2">
           <Button
             icon={IconArrowLeft}
@@ -227,7 +227,7 @@
       {/if}
     </div>
   {/if}
-  {#if activeAction && activeAction?.actionPopup !== undefined}
+  {#if activeAction?.actionPopup !== undefined}
     <Component
       is={activeAction?.actionPopup}
       props={{
@@ -261,7 +261,9 @@
           bind:this={list}
           count={filteredActions.length}
           bind:selection
-          on:click={(evt) => handleSelection(evt, evt.detail)}
+          on:click={async (evt) => {
+            await handleSelection(evt, evt.detail)
+          }}
         >
           <svelte:fragment slot="category" let:item>
             {@const action = filteredActions[item]}

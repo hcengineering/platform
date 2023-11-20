@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { Diff, diffAny, Operation } from 'rfc6902/diff'
-import { Pointer } from 'rfc6902/pointer'
+import { type Diff, diffAny, type Operation } from 'rfc6902/diff'
+import { type Pointer } from 'rfc6902/pointer'
 
 interface ArrayOperation {
   op: 'add' | 'remove' | 'replace'

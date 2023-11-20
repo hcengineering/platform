@@ -55,7 +55,7 @@
     return new Intl.DateTimeFormat('default', { month: 'long' }).format(date)
   }
 
-  let hoveredIndex: number = -1
+  // let hoveredIndex: number = -1
 </script>
 
 {#if departmentStaff.length}
@@ -72,10 +72,10 @@
               class="fixed first-row"
               class:today={isToday(startDate)}
               on:mousemove={() => {
-                hoveredIndex = i
+                // hoveredIndex = i
               }}
               on:mouseleave={() => {
-                hoveredIndex = -1
+                // hoveredIndex = -1
               }}
             >
               {getMonthName(startDate)}

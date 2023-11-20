@@ -126,8 +126,12 @@
             <CircleButton
               size={'medium'}
               primary={isActive(day.id, selectedWeekdays)}
-              on:click={() => weekdayClick(day.id)}
-              on:selected={() => weekdayClick(day.id)}
+              on:click={() => {
+                weekdayClick(day.id)
+              }}
+              on:selected={() => {
+                weekdayClick(day.id)
+              }}
             >
               <div class="flex-row-center weekday" slot="content">
                 <Label label={day.label} />

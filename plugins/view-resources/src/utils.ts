@@ -16,43 +16,53 @@
 
 import core, {
   AccountRole,
-  AggregateValue,
-  AttachedDoc,
-  CategoryType,
-  Class,
-  Client,
-  Collection,
-  Doc,
-  DocumentUpdate,
   Hierarchy,
-  Lookup,
-  Obj,
-  Ref,
-  RefTo,
-  ReverseLookup,
-  ReverseLookups,
-  Space,
-  TxOperations,
   getCurrentAccount,
-  getObjectValue
+  getObjectValue,
+  type AggregateValue,
+  type AttachedDoc,
+  type CategoryType,
+  type Class,
+  type Client,
+  type Collection,
+  type Doc,
+  type DocumentUpdate,
+  type Lookup,
+  type Obj,
+  type Ref,
+  type RefTo,
+  type ReverseLookup,
+  type ReverseLookups,
+  type Space,
+  type TxOperations
 } from '@hcengineering/core'
 import type { IntlString } from '@hcengineering/platform'
 import { getResource } from '@hcengineering/platform'
-import { AttributeCategory, KeyedAttribute, getAttributePresenterClass, hasResource } from '@hcengineering/presentation'
 import {
-  AnyComponent,
-  AnySvelteComponent,
+  getAttributePresenterClass,
+  hasResource,
+  type AttributeCategory,
+  type KeyedAttribute
+} from '@hcengineering/presentation'
+import {
   ErrorPresenter,
-  Location,
   getCurrentResolvedLocation,
   getPanelURI,
   getPlatformColorForText,
   locationToUrl,
   navigate,
-  resolvedLocationStore
+  resolvedLocationStore,
+  type AnyComponent,
+  type AnySvelteComponent,
+  type Location
 } from '@hcengineering/ui'
-import type { BuildModelOptions, Viewlet, ViewletDescriptor } from '@hcengineering/view'
-import view, { AttributeModel, BuildModelKey } from '@hcengineering/view'
+import view, {
+  type AttributeModel,
+  type BuildModelKey,
+  type BuildModelOptions,
+  type Viewlet,
+  type ViewletDescriptor
+} from '@hcengineering/view'
 
 import { get, writable } from 'svelte/store'
 import plugin from './plugin'
@@ -318,9 +328,13 @@ export async function deleteObject (client: TxOperations, object: Doc): Promise<
     const adoc = object as AttachedDoc
     await client
       .removeCollection(object._class, object.space, adoc._id, adoc.attachedTo, adoc.attachedToClass, adoc.collection)
-      .catch((err) => console.error(err))
+      .catch((err) => {
+        console.error(err)
+      })
   } else {
-    await client.removeDoc(object._class, object.space, object._id).catch((err) => console.error(err))
+    await client.removeDoc(object._class, object.space, object._id).catch((err) => {
+      console.error(err)
+    })
   }
 }
 
@@ -333,9 +347,13 @@ export async function deleteObjects (client: TxOperations, objects: Doc[]): Prom
       const adoc = object as AttachedDoc
       await ops
         .removeCollection(object._class, object.space, adoc._id, adoc.attachedTo, adoc.attachedToClass, adoc.collection)
-        .catch((err) => console.error(err))
+        .catch((err) => {
+          console.error(err)
+        })
     } else {
-      await ops.removeDoc(object._class, object.space, object._id).catch((err) => console.error(err))
+      await ops.removeDoc(object._class, object.space, object._id).catch((err) => {
+        console.error(err)
+      })
     }
   }
   await ops.commit()
@@ -569,7 +587,7 @@ resolvedLocationStore.subscribe(() => {
 })
 
 export function groupBy<T extends Doc> (docs: T[], key: string, categories?: CategoryType[]): Record<any, T[]> {
-  return docs.reduce((storage: { [key: string]: T[] }, item: T) => {
+  return docs.reduce((storage: Record<string, T[]>, item: T) => {
     let group = getObjectValue(key, item) ?? undefined
 
     if (categories !== undefined) {
@@ -686,8 +704,8 @@ export function getCategorySpaces (categories: CategoryType[]): Array<Ref<Space>
 }
 
 export function concatCategories (arr1: CategoryType[], arr2: CategoryType[]): CategoryType[] {
-  const uniqueValues: Set<string | number | undefined> = new Set()
-  const uniqueObjects: Map<string | number, AggregateValue> = new Map()
+  const uniqueValues = new Set<string | number | undefined>()
+  const uniqueObjects = new Map<string | number, AggregateValue>()
 
   for (const item of arr1) {
     if (typeof item === 'object') {
@@ -820,7 +838,9 @@ export async function moveToSpace (
       const allAttached = await client.findAll(collection.of, { attachedTo: doc._id })
       for (const attached of allAttached) {
         // Do not use extra for childs.
-        await moveToSpace(client, attached, space).catch((err) => console.log('failed to move', name, err))
+        await moveToSpace(client, attached, space).catch((err) => {
+          console.log('failed to move', name, err)
+        })
       }
     }
   }

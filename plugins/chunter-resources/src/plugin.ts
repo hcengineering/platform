@@ -18,7 +18,7 @@ import type { Client, Space } from '@hcengineering/core'
 import type { IntlString, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
-import { ViewAction } from '@hcengineering/view'
+import { type ViewAction } from '@hcengineering/view'
 
 export default mergeIds(chunterId, chunter, {
   component: {

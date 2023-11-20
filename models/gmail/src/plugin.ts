@@ -14,14 +14,14 @@
 // limitations under the License.
 //
 
-import { Doc, Ref } from '@hcengineering/core'
-import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
+import { type Doc, type Ref } from '@hcengineering/core'
+import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { gmailId } from '@hcengineering/gmail'
 import gmail from '@hcengineering/gmail-resources/src/plugin'
 import type { AnyComponent } from '@hcengineering/ui'
 import type { TxViewlet } from '@hcengineering/activity'
-import { Action } from '@hcengineering/view'
-import { NotificationGroup } from '@hcengineering/notification'
+import { type Action } from '@hcengineering/view'
+import { type NotificationGroup } from '@hcengineering/notification'
 
 export default mergeIds(gmailId, gmail, {
   action: {

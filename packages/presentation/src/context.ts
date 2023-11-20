@@ -1,4 +1,4 @@
-import { ViewContext, ViewContextType } from '@hcengineering/view'
+import { type ViewContext, type ViewContextType } from '@hcengineering/view'
 import { writable } from 'svelte/store'
 
 /**

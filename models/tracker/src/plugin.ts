@@ -13,17 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { Doc, Ref } from '@hcengineering/core'
-import { ObjectSearchCategory, ObjectSearchFactory } from '@hcengineering/model-presentation'
-import { IntlString, Resource, mergeIds } from '@hcengineering/platform'
-import { ProjectType } from '@hcengineering/task'
+import { type Doc, type Ref } from '@hcengineering/core'
+import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/model-presentation'
+import { type IntlString, type Resource, mergeIds } from '@hcengineering/platform'
+import { type ProjectType } from '@hcengineering/task'
 import { trackerId } from '@hcengineering/tracker'
 import tracker from '@hcengineering/tracker-resources/src/plugin'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
-import { Action, ViewAction, Viewlet } from '@hcengineering/view'
-import { Application } from '@hcengineering/workbench'
-import { ActivityExtension, TxViewlet } from '@hcengineering/activity'
-import { NotificationGroup, NotificationType } from '@hcengineering/notification'
+import { type Action, type ViewAction, type Viewlet } from '@hcengineering/view'
+import { type Application } from '@hcengineering/workbench'
+import { type ActivityExtension, type TxViewlet } from '@hcengineering/activity'
+import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
 
 export default mergeIds(trackerId, tracker, {
   string: {

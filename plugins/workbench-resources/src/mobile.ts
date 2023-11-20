@@ -51,7 +51,9 @@ type SetTheme = (theme: string) => void
 export function subscribeMobile (setTheme: SetTheme): void {
   const webView = window as MobileNSWindow
   if (webView.nsWebViewBridge !== undefined) {
-    webView.nsWebViewBridge.on('message', (e) => handleMessage(e, setTheme))
+    webView.nsWebViewBridge.on('message', (e) => {
+      handleMessage(e, setTheme)
+    })
 
     onDestroy(
       location.subscribe((loc) => {

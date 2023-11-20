@@ -13,7 +13,7 @@
   client
     .getHierarchy()
     .getDescendants(contact.class.Contact)
-    .forEach(async (v) => {
+    .map(async (v) => {
       const cl = hierarchy.getClass(v)
       if (hierarchy.hasMixin(cl, view.mixin.ObjectFactory)) {
         const { component, create } = hierarchy.as(cl, view.mixin.ObjectFactory)

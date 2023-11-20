@@ -48,7 +48,9 @@
     localStorage.setItem(key, JSON.stringify(p))
   }
 
-  filterStore.subscribe((p) => save(_class, p))
+  filterStore.subscribe((p) => {
+    save(_class, p)
+  })
 
   function onChange (e: Filter | undefined) {
     if (e !== undefined) setFilters([e])

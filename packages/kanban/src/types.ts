@@ -1,5 +1,5 @@
-import { Doc } from '@hcengineering/core'
-import { Asset } from '@hcengineering/platform'
+import { type Doc } from '@hcengineering/core'
+import { type Asset } from '@hcengineering/platform'
 
 /**
  * @public

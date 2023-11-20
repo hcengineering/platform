@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { coreId, Data, PluginConfiguration, Ref, Tx, Version } from '@hcengineering/core'
+import core, { coreId, type Data, type PluginConfiguration, type Ref, type Tx, type Version } from '@hcengineering/core'
 import jsonVersion from './version.json'
 
 import { Builder } from '@hcengineering/model'
@@ -66,7 +66,7 @@ import workbench, { workbenchId, createModel as workbenchModel } from '@hcengine
 import { openAIId, createModel as serverOpenAI } from '@hcengineering/model-server-openai'
 import { createModel as serverTranslate, translateId } from '@hcengineering/model-server-translate'
 
-import { Plugin } from '@hcengineering/platform'
+import { type Plugin } from '@hcengineering/platform'
 
 export const version: Data<Version> = jsonVersion as Data<Version>
 

@@ -1,14 +1,14 @@
 <!--
 // Copyright © 2022, 2023 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -53,7 +53,7 @@
     if (typeof id === 'string' && customAside) {
       const i = customAside.findIndex((as) => as.id === id)
       if (i === -1) return
-      handleSelectAside({ detail: id } as CustomEvent<any>)
+      handleSelectAside({ detail: id })
     } else {
       asideShown = id !== false
       hideAside = !asideShown
@@ -86,13 +86,13 @@
       asideFloat = true
       if (asideShown) {
         asideShown = false
-        if (customAside) handleSelectAside({ detail: false } as CustomEvent<any>, false)
+        if (customAside) handleSelectAside({ detail: false }, false)
       }
     } else if (panelWidth > 900) {
       if (asideFloat) asideFloat = false
       if (!asideShown && !hideAside) {
         asideShown = true
-        if (customAside) handleSelectAside({ detail: oldAside } as CustomEvent<any>, false)
+        if (customAside) handleSelectAside({ detail: oldAside }, false)
       }
     }
   }
@@ -113,7 +113,7 @@
     asideShown = !asideShown
     hideAside = !asideShown
   }
-  const handleSelectAside = (result: CustomEvent<any>, sw: boolean = true): void => {
+  const handleSelectAside = (result: { detail: any }, sw: boolean = true): void => {
     selectedAside = result.detail
     if (sw) {
       asideShown = selectedAside !== false

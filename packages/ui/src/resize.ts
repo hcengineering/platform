@@ -97,7 +97,7 @@ const generateSeparatorsId = (name: string, float: string | boolean): string => 
 
 export function defineSeparators (name: string, items: DefSeparators): void {
   const id = generateSeparatorsId(name, false)
-  const income = items.map((it) => (it === null ? nullSeparatedItem : it))
+  const income = items.map((it) => it ?? nullSeparatedItem)
   let needAdd = true
   const saved = localStorage.getItem(id)
   if (typeof saved === 'string') {

@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import { Doc, Space } from '@hcengineering/core'
-import { IntlString, Resource, mergeIds } from '@hcengineering/platform'
-import { AnyComponent } from '@hcengineering/ui'
+import { type Doc, type Space } from '@hcengineering/core'
+import { type IntlString, type Resource, mergeIds } from '@hcengineering/platform'
+import { type AnyComponent } from '@hcengineering/ui'
 import { workbenchId } from '@hcengineering/workbench'
 import workbench from '@hcengineering/workbench-resources/src/plugin'
 

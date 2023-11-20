@@ -22,14 +22,12 @@
   import request from '../plugin'
 
   export let value: Request
-  let comments: Map<Ref<Account>, RequestDecisionComment> = new Map()
+  let comments = new Map<Ref<Account>, RequestDecisionComment>()
 
   const query = createQuery()
-  $: query.query(
-    request.mixin.RequestDecisionComment,
-    { attachedTo: value._id },
-    (res) => (comments = new Map(res.map((r) => [r.modifiedBy, r])))
-  )
+  $: query.query(request.mixin.RequestDecisionComment, { attachedTo: value._id }, (res) => {
+    comments = new Map(res.map((r) => [r.modifiedBy, r]))
+  })
 
   interface RequestDecision {
     employee: Ref<PersonAccount>

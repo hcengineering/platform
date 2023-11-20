@@ -21,7 +21,9 @@
   const statusesQuery = createQuery()
   let status: Status | undefined = undefined
   $: employee = $employeeByIdStore.get(employeeId) as Employee
-  statusesQuery.query(contact.class.Status, { attachedTo: employeeId }, (res) => (status = res[0]))
+  statusesQuery.query(contact.class.Status, { attachedTo: employeeId }, (res) => {
+    status = res[0]
+  })
 
   const dispatch = createEventDispatcher()
 
@@ -39,7 +41,7 @@
         } else if (status && !newStatus) {
           client.removeDoc(contact.class.Status, status.space, status._id)
         } else {
-          client.addCollection(contact.class.Status, employee!.space, employeeId, contact.mixin.Employee, 'statuses', {
+          client.addCollection(contact.class.Status, employee.space, employeeId, contact.mixin.Employee, 'statuses', {
             name: newStatus.name,
             dueDate: newStatus.dueDate
           })

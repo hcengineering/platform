@@ -41,7 +41,7 @@
       const temp: Ref<Doc>[] | 'All' = JSON.parse(saved)
       if (temp !== 'All' && Array.isArray(temp)) {
         selectedFiltersRefs = temp.filter((it) => filters.findIndex((f) => it === f._id) > -1)
-        if ((selectedFiltersRefs as Ref<Doc>[]).length === 0) {
+        if (selectedFiltersRefs.length === 0) {
           selectedFiltersRefs = 'All'
         }
       } else {

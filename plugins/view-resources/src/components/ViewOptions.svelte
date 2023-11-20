@@ -81,7 +81,9 @@
         selected={group}
         width="10rem"
         justify="left"
-        on:selected={(e) => selectGrouping(e.detail, i)}
+        on:selected={(e) => {
+          selectGrouping(e.detail, i)
+        }}
       />
     </div>
   {/each}
@@ -118,7 +120,12 @@
     >
       <span class="overflow-label"><Label label={model.label} /></span>
       {#if isToggleType(model)}
-        <Toggle on={viewOptions[model.key] ?? model.defaultValue} on:change={() => changeToggle(model)} />
+        <Toggle
+          on={viewOptions[model.key] ?? model.defaultValue}
+          on:change={() => {
+            changeToggle(model)
+          }}
+        />
       {:else if isDropdownType(model)}
         {@const items = model.values.filter(({ hidden }) => !hidden?.(viewOptions))}
         <DropdownLabelsIntl

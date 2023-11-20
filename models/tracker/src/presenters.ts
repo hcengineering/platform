@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Builder } from '@hcengineering/model'
+import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import view, { classPresenter } from '@hcengineering/model-view'
 import notification from '@hcengineering/notification'

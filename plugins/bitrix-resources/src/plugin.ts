@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import { IntlString, mergeIds } from '@hcengineering/platform'
+import { type IntlString, mergeIds } from '@hcengineering/platform'
 
 import bitrix, { bitrixId } from '@hcengineering/bitrix'
-import { Ref } from '@hcengineering/core'
-import { Handler, IntegrationType } from '@hcengineering/setting'
-import { AnyComponent } from '@hcengineering/ui'
+import { type Ref } from '@hcengineering/core'
+import { type Handler, type IntegrationType } from '@hcengineering/setting'
+import { type AnyComponent } from '@hcengineering/ui'
 
 export default mergeIds(bitrixId, bitrix, {
   string: {

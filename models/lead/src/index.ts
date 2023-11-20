@@ -15,10 +15,10 @@
 
 // To help typescript locate view plugin properly
 import type { Employee } from '@hcengineering/contact'
-import { FindOptions, IndexKind, Ref, SortingOrder, Status, Timestamp } from '@hcengineering/core'
-import { Customer, Funnel, Lead, leadId } from '@hcengineering/lead'
+import { type FindOptions, IndexKind, type Ref, SortingOrder, type Status, type Timestamp } from '@hcengineering/core'
+import { type Customer, type Funnel, type Lead, leadId } from '@hcengineering/lead'
 import {
-  Builder,
+  type Builder,
   Collection,
   Index,
   Mixin,
@@ -42,7 +42,7 @@ import view, { createAction, actionTemplates as viewTemplates } from '@hcenginee
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
-import { ViewOptionsModel } from '@hcengineering/view'
+import { type ViewOptionsModel } from '@hcengineering/view'
 import activity from '@hcengineering/activity'
 import lead from './plugin'
 

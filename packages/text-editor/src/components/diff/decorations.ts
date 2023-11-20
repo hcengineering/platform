@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import { Markup } from '@hcengineering/core'
-import { Editor } from '@tiptap/core'
+import { type Markup } from '@hcengineering/core'
+import { type Editor } from '@tiptap/core'
 import { ChangeSet } from '@tiptap/pm/changeset'
-import { DOMParser, Node, Schema } from '@tiptap/pm/model'
+import { DOMParser, type Node, type Schema } from '@tiptap/pm/model'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import { yDocToProsemirrorJSON } from 'y-prosemirror'
 import { Doc, applyUpdate } from 'yjs'
@@ -62,7 +62,7 @@ export function calculateDecorations (
   }
   | undefined {
   try {
-    if (editor === undefined || editor.schema === undefined) {
+    if (editor?.schema === undefined) {
       return
     }
     if (comparedVersion === undefined) {

@@ -1,14 +1,14 @@
 <!--
 // Copyright © 2020 Anticrm Platform Contributors.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -16,7 +16,7 @@
   import type { Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { recruitId, Vacancy } from '@hcengineering/recruit'
-  import { Button, Icon, IconAdd, Label, Loading, resizeObserver, Scroller, showPopup } from '@hcengineering/ui'
+  import { Button, Icon, IconAdd, Label, Loading, Scroller, showPopup } from '@hcengineering/ui'
   import { Viewlet, ViewletPreference } from '@hcengineering/view'
   import { NavLink, Table, ViewletsSettingButton } from '@hcengineering/view-resources'
   import recruit from '../plugin'
@@ -35,14 +35,13 @@
   const createApp = (ev: MouseEvent): void => {
     showPopup(CreateApplication, { space: objectId, preserveVacancy: true }, ev.target as HTMLElement)
   }
-  let wSection: number
 
   let viewlet: Viewlet | undefined
   let preference: ViewletPreference | undefined
   let loading = true
 </script>
 
-<div class="antiSection max-h-125 clear-mins" use:resizeObserver={(element) => (wSection = element.clientWidth)}>
+<div class="antiSection max-h-125 clear-mins">
   <div class="antiSection-header">
     <div class="antiSection-header__icon">
       <Icon icon={IconApplication} size={'small'} />

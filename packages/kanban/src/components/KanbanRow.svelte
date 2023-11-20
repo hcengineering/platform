@@ -62,8 +62,12 @@
     bind:this={stateRefs[i]}
     transition:slideD|local={{ isDragging }}
     class="p-1 flex-no-shrink border-radius-1 clear-mins"
-    on:dragover|preventDefault={(evt) => cardDragOver(evt, object)}
-    on:drop|preventDefault={(evt) => cardDrop(evt, object)}
+    on:dragover|preventDefault={(evt) => {
+      cardDragOver(evt, object)
+    }}
+    on:drop|preventDefault={(evt) => {
+      cardDrop(evt, object)
+    }}
   >
     <div
       class="card-container"
@@ -72,13 +76,17 @@
       on:mouseover={mouseAttractor(() => dispatch('obj-focus', object))}
       on:mouseenter={mouseAttractor(() => dispatch('obj-focus', object))}
       on:focus={() => {}}
-      on:contextmenu={(evt) => showMenu(evt, object)}
+      on:contextmenu={(evt) => {
+        showMenu(evt, object)
+      }}
       draggable={true}
       class:draggable={true}
       on:dragstart
       on:dragend
       class:dragged
-      on:dragstart={() => onDragStart(object, state)}
+      on:dragstart={() => {
+        onDragStart(object, state)
+      }}
       on:dragend={() => {
         isDragging = false
       }}

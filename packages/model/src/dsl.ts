@@ -92,7 +92,7 @@ function getTxes (target: any): ClassTxes {
   return txes
 }
 
-const attributes: Map<any, Map<string, Record<string, any>>> = new Map()
+const attributes = new Map<any, Map<string, Record<string, any>>>()
 function setAttr (target: any, prop: string, key: string, value: any): void {
   const props = attributes.get(target) ?? new Map<string, Record<string, any>>()
   const attrs = props.get(prop) ?? {}

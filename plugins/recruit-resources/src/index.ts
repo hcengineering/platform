@@ -14,21 +14,21 @@
 //
 
 import {
-  Client,
-  Doc,
-  DocumentQuery,
-  FindResult,
-  ObjQueryType,
-  Ref,
-  RelatedDocument,
+  type Client,
+  type Doc,
+  type DocumentQuery,
+  type FindResult,
+  type ObjQueryType,
+  type Ref,
+  type RelatedDocument,
   toIdMap
 } from '@hcengineering/core'
-import { OK, Resources, Severity, Status } from '@hcengineering/platform'
-import { ObjectSearchResult, createQuery } from '@hcengineering/presentation'
-import { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
+import { OK, type Resources, Severity, Status } from '@hcengineering/platform'
+import { type ObjectSearchResult, createQuery } from '@hcengineering/presentation'
+import { type Applicant, type Candidate, type Vacancy } from '@hcengineering/recruit'
 import task from '@hcengineering/task'
 import { showPopup } from '@hcengineering/ui'
-import { Filter } from '@hcengineering/view'
+import { type Filter } from '@hcengineering/view'
 import { FilterQuery, statusStore } from '@hcengineering/view-resources'
 import ApplicantFilter from './components/ApplicantFilter.svelte'
 import ApplicationItem from './components/ApplicationItem.svelte'

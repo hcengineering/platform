@@ -97,8 +97,18 @@
 
 <div class="top-divider">
   <div class="flex gap-2">
-    <Button label={getEmbeddedLabel('Load First N values')} on:click={() => loadItems(true)} />
-    <Button label={getEmbeddedLabel('Load Last N values')} on:click={() => loadItems(false)} />
+    <Button
+      label={getEmbeddedLabel('Load First N values')}
+      on:click={() => {
+        loadItems(true)
+      }}
+    />
+    <Button
+      label={getEmbeddedLabel('Load Last N values')}
+      on:click={() => {
+        loadItems(false)
+      }}
+    />
   </div>
   <EditBox kind={'search-style'} bind:value={pattern} />
 </div>

@@ -13,13 +13,17 @@
 // limitations under the License.
 //
 
-import core, { DOMAIN_MODEL, Domain, IndexKind } from '@hcengineering/core'
-import { Builder, Index, Model } from '@hcengineering/model'
+import core, { DOMAIN_MODEL, type Domain, IndexKind } from '@hcengineering/core'
+import { type Builder, Index, Model } from '@hcengineering/model'
 import preference, { TPreference } from '@hcengineering/model-preference'
-import support, { SupportConversation, SupportSystem, SupportWidgetFactory } from '@hcengineering/support'
+import support, {
+  type SupportConversation,
+  type SupportSystem,
+  type SupportWidgetFactory
+} from '@hcengineering/support'
 
 import { TDoc } from '@hcengineering/model-core'
-import { Resource } from '@hcengineering/platform'
+import { type Resource } from '@hcengineering/platform'
 
 export { supportId } from '@hcengineering/support'
 export { support as default }

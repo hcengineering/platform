@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Resources } from '@hcengineering/platform'
+import { type Resources } from '@hcengineering/platform'
 
 import { createSupportClient } from './support'
 

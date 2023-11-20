@@ -1,5 +1,5 @@
-import { Extension } from '@tiptap/core'
-import BubbleMenu, { BubbleMenuOptions } from '@tiptap/extension-bubble-menu'
+import { type Extension } from '@tiptap/core'
+import BubbleMenu, { type BubbleMenuOptions } from '@tiptap/extension-bubble-menu'
 
 export const InlinePopupExtension: Extension<BubbleMenuOptions> = BubbleMenu.extend({
   addOptions () {

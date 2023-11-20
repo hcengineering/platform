@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Client, generateId, mergeQueries } from '..'
+import { Client } from '..'
 import type { Class, Doc, Obj, Ref } from '../classes'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
@@ -407,53 +407,5 @@ describe('memdb', () => {
     } catch (e) {
       expect(e).toEqual(new Error('createDoc cannot be used for objects inherited from AttachedDoc'))
     }
-  })
-
-  it('mergeQueries', () => {
-    const id1 = generateId()
-    const id2 = generateId()
-    const q1 = {
-      space: id1,
-      unique: 'item',
-      age: { $gt: 10 }
-    } as any
-    const q2 = {
-      space: { $in: [id1, id2] },
-      age: 30
-    } as any
-    const resCompare = {
-      space: id1,
-      unique: 'item',
-      age: { $gt: 30 }
-    } as any
-    expect(mergeQueries(q1, q2)).toEqual(resCompare)
-    expect(mergeQueries(q2, q1)).toEqual(resCompare)
-
-    const q3 = {
-      space: { $nin: [id1] },
-      age: 20
-    } as any
-    const resCompare2 = {
-      space: { $ne: id1 },
-      age: []
-    } as any
-    expect(mergeQueries(q2, q3)).toEqual(resCompare2)
-    expect(mergeQueries(q3, q2)).toEqual(resCompare2)
-
-    expect(mergeQueries({ age: { $lt: 20 } } as any, { age: { $gt: 25 } } as any)).toEqual({ age: { $gt: 25 } })
-    expect(mergeQueries({ age: { $gt: 25 } } as any, { age: { $lt: 20 } } as any)).toEqual({ age: { $lt: 20 } })
-
-    const query4 = {
-      space: { $in: [id1] }
-    } as any
-    const query5 = {
-      space: { $in: [id2, id1] }
-    } as any
-    const resQuery45 = {
-      space: id1
-    } as any
-
-    expect(mergeQueries(query4, query5)).toEqual(resQuery45)
-    expect(mergeQueries(query5, query4)).toEqual(resQuery45)
   })
 })

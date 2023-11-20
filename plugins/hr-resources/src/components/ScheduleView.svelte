@@ -189,7 +189,7 @@
 
   const reportQuery = createQuery()
 
-  let timeReports: Map<Ref<Employee>, EmployeeReports> = new Map()
+  let timeReports = new Map<Ref<Employee>, EmployeeReports>()
 
   $: reportQuery.query(
     tracker.class.TimeSpendReport,
@@ -222,7 +222,7 @@
       }
     }
   )
-  let holidays: Map<Ref<Department>, Date[]> = new Map()
+  let holidays = new Map<Ref<Department>, Date[]>()
   const holidaysQuery = createQuery()
   $: holidaysQuery.query(
     hr.class.PublicHoliday,

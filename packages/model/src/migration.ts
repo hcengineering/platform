@@ -25,10 +25,8 @@ import { ModelLogger } from './utils'
 export type MigrateUpdate<T extends Doc> = Partial<T> &
 Omit<PushOptions<T>, '$move'> &
 IncOptions<T> &
-UnsetOptions & {
-  // For any other mongo stuff
-  [key: string]: any
-}
+UnsetOptions &
+Record<string, any>
 
 /**
  * @public

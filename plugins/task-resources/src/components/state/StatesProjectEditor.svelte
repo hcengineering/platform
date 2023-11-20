@@ -1,15 +1,15 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -102,7 +102,7 @@
 
   let categories: StatusCategory[] = []
   let categoriesMap: IdMap<StatusCategory> = new Map()
-  let groups: Map<Ref<StatusCategory>, Status[]> = new Map()
+  let groups = new Map<Ref<StatusCategory>, Status[]>()
   const query = createQuery()
   $: query.query(core.class.StatusCategory, { _id: { $in: category.statusCategories } }, (res) => {
     categories = res
@@ -115,7 +115,9 @@
       {
         onDelete: () => dispatch('delete', { state }),
         showDelete: states.length > 1,
-        onUpdate: () => edit(state)
+        onUpdate: () => {
+          edit(state)
+        }
       },
       eventToHTMLElement(ev),
       () => {}
@@ -161,7 +163,13 @@
   {@const prevIndex = getPrevIndex(groups, cat._id)}
   <div class="flex-no-shrink flex-between trans-title uppercase" class:mt-4={i > 0}>
     <Label label={cat.label} />
-    <CircleButton icon={IconAdd} size={'medium'} on:click={() => add(cat.ofAttribute, cat._id)} />
+    <CircleButton
+      icon={IconAdd}
+      size={'medium'}
+      on:click={() => {
+        add(cat.ofAttribute, cat._id)
+      }}
+    />
   </div>
   <div class="flex-col flex-no-shrink mt-3">
     {#each states as state, i}
@@ -198,7 +206,12 @@
           <StringPresenter value={state.name} oneLine />
         </div>
         <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div class="tool hover-trans" on:click={(e) => click(e, state)}>
+        <div
+          class="tool hover-trans"
+          on:click={(e) => {
+            click(e, state)
+          }}
+        >
           <IconMoreH size={'medium'} />
         </div>
       </div>

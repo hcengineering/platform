@@ -50,7 +50,7 @@
   }
 
   const updateDecorations = () => {
-    if (editor && editor.schema) {
+    if (editor?.schema) {
       updateEditor(editor, comparedVersion)
     }
   }

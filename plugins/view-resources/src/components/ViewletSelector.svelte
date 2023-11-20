@@ -7,7 +7,7 @@
   import { createQuery } from '@hcengineering/presentation'
 
   export let viewlet: WithLookup<Viewlet> | undefined
-  export let viewlets: WithLookup<Viewlet>[] = []
+  export let viewlets: Array<WithLookup<Viewlet>> = []
   export let viewletQuery: DocumentQuery<Viewlet>
   export let preference: ViewletPreference | undefined = undefined
   export let loading = true
@@ -42,7 +42,7 @@
   const dispatch = createEventDispatcher()
 
   function getActiveViewlet (
-    viewlets: WithLookup<Viewlet>[],
+    viewlets: Array<WithLookup<Viewlet>>,
     activeViewlet: Record<string, Ref<Viewlet> | null>,
     key: string
   ) {

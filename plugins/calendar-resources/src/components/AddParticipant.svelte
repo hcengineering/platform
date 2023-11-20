@@ -130,7 +130,7 @@
       return
     }
     const persons = client.findAll(contact.class.Person, { $search: `${val}*`, _id: { $nin: excluded } }, { limit: 5 })
-    const res: Set<Ref<Person>> = new Set()
+    const res = new Set<Ref<Person>>()
     for (const integration of integrations) {
       if (integration.value.includes(val)) {
         const acc = accounts.get((integration.createdBy ?? integration.modifiedBy) as Ref<PersonAccount>)
@@ -164,6 +164,7 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="antiEditBox"
   class:flex-grow={fullSize}
@@ -192,7 +193,9 @@
       bind:value
       placeholder={phTraslate}
       {style}
-      on:input={(ev) => ev.target && computeSize(ev.target)}
+      on:input={(ev) => {
+        computeSize(ev.target)
+      }}
       on:change
       on:keydown
       on:keypress

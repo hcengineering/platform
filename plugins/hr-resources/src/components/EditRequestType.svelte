@@ -25,7 +25,7 @@
       }
     }
   })
-  const requestPairMap: Map<Ref<RequestType>, Array<Ref<RequestType>>> = new Map([
+  const requestPairMap = new Map<Ref<RequestType>, Array<Ref<RequestType>>>([
     [hr.ids.PTO, [hr.ids.PTO2, hr.ids.Sick, hr.ids.Vacation]],
     [hr.ids.PTO2, [hr.ids.PTO]],
     [hr.ids.Overtime, [hr.ids.Overtime2]],
@@ -70,7 +70,9 @@
             return { id: p._id, label: p.label }
           })}
           label={hr.string.RequestType}
-          on:selected={(e) => typeSelected(e.detail)}
+          on:selected={(e) => {
+            typeSelected(e.detail)
+          }}
         />
       {:else}
         <Label label={hr.string.UnchangeableType} />

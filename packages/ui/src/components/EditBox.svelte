@@ -1,14 +1,14 @@
 <!--
 // Copyright © 2020 Anticrm Platform Contributors.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -63,11 +63,11 @@
   $: style = `max-width: ${
     maxWidth || (parentWidth ? (icon ? `calc(${parentWidth}px - 1.25rem)` : `${parentWidth}px`) : 'max-content')
   };`
-  $: translate(placeholder, placeholderParam ?? {}, $themeStore.language).then((res) => {
+  $: void translate(placeholder, placeholderParam ?? {}, $themeStore.language).then((res) => {
     phTraslate = res
   })
 
-  function computeSize (t: HTMLInputElement | EventTarget | null) {
+  function computeSize (t: HTMLInputElement | EventTarget | null): void {
     if (t == null) {
       return
     }
@@ -103,10 +103,10 @@
     computeSize(input)
   })
 
-  export function focusInput () {
+  export function focusInput (): void {
     input?.focus()
   }
-  export function selectInput () {
+  export function selectInput (): void {
     input?.select()
   }
 
@@ -132,6 +132,7 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="antiEditBox"
   class:flex-grow={fullSize}
@@ -167,7 +168,9 @@
         bind:value
         placeholder={phTraslate}
         {style}
-        on:input={(ev) => ev.target && computeSize(ev.target)}
+        on:input={(ev) => {
+          computeSize(ev.target)
+        }}
         on:change
         on:keydown
         on:keypress
@@ -182,7 +185,9 @@
         bind:value
         placeholder={phTraslate}
         {style}
-        on:input={(ev) => ev.target && computeSize(ev.target)}
+        on:input={(ev) => {
+          computeSize(ev.target)
+        }}
         on:change
         on:keydown
         on:keypress
@@ -196,7 +201,9 @@
         bind:value
         placeholder={phTraslate}
         {style}
-        on:input={(ev) => ev.target && computeSize(ev.target)}
+        on:input={(ev) => {
+          computeSize(ev.target)
+        }}
         on:change
         on:keydown
         on:keypress

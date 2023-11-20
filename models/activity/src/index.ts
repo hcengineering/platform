@@ -21,11 +21,11 @@ import type {
   ExtraActivityComponent,
   TxViewlet
 } from '@hcengineering/activity'
-import core, { Class, Doc, DocumentQuery, DOMAIN_MODEL, Ref, Tx } from '@hcengineering/core'
-import { Builder, Mixin, Model } from '@hcengineering/model'
+import core, { DOMAIN_MODEL, type Class, type Doc, type DocumentQuery, type Ref, type Tx } from '@hcengineering/core'
+import { Mixin, Model, type Builder } from '@hcengineering/model'
 import { TClass, TDoc } from '@hcengineering/model-core'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
-import { AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui'
 
 import activity from './plugin'
 

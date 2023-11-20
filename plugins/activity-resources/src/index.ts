@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { Doc, Ref } from '@hcengineering/core'
-import { Resources } from '@hcengineering/platform'
+import { type Doc, type Ref } from '@hcengineering/core'
+import { type Resources } from '@hcengineering/platform'
 import type { DisplayTx } from '@hcengineering/activity'
 import Activity from './components/Activity.svelte'
 import TxView from './components/TxView.svelte'

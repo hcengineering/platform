@@ -31,8 +31,7 @@ import {
   setMetadataLocalStorage
 } from '@hcengineering/ui'
 import view from '@hcengineering/view'
-import type { Application } from '@hcengineering/workbench'
-import workbench, { NavigatorModel } from '@hcengineering/workbench'
+import workbench, { type Application, type NavigatorModel } from '@hcengineering/workbench'
 import { writable } from 'svelte/store'
 export function classIcon (client: Client, _class: Ref<Class<Obj>>): Asset | undefined {
   return client.getHierarchy().getClass(_class).icon

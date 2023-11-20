@@ -13,14 +13,14 @@
 // limitations under the License.
 //
 
-import { Client, Doc, Ref, Space } from '@hcengineering/core'
+import { type Client, type Doc, type Ref, type Space } from '@hcengineering/core'
 import type { IntlString, Resource, StatusCode } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
-import { ObjectSearchCategory, ObjectSearchFactory } from '@hcengineering/presentation'
+import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/presentation'
 import recruit, { recruitId } from '@hcengineering/recruit'
-import { TagCategory } from '@hcengineering/tags'
-import { AnyComponent } from '@hcengineering/ui'
-import { FilterFunction, FilterMode, Viewlet } from '@hcengineering/view'
+import { type TagCategory } from '@hcengineering/tags'
+import { type AnyComponent } from '@hcengineering/ui'
+import { type FilterFunction, type FilterMode, type Viewlet } from '@hcengineering/view'
 
 export default mergeIds(recruitId, recruit, {
   viewlet: {

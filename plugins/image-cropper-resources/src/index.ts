@@ -15,7 +15,7 @@
 //
 import '@hcengineering/platform-rig/profiles/ui/svelte'
 
-import { Resources } from '@hcengineering/platform'
+import { type Resources } from '@hcengineering/platform'
 
 import Cropper from './components/Cropper.svelte'
 

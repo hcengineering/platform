@@ -62,7 +62,7 @@
     {/if}
     {#if isError}
       <div class="error-color top-divider mt-2 pt-2">
-        Error: {errorMessage && errorMessage?.error
+        Error: {errorMessage?.error
           ? JSON.parse(errorMessage.error)?.data?.error_description
           : undefined ?? 'unknown error'}
       </div>

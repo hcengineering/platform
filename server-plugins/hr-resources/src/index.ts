@@ -65,7 +65,7 @@ async function getOldDepartment (
 
 async function buildHierarchy (_id: Ref<Department>, control: TriggerControl): Promise<Department[]> {
   const res: Department[] = []
-  const ancestors: Map<Ref<Department>, Ref<Department>> = new Map()
+  const ancestors = new Map<Ref<Department>, Ref<Department>>()
   const departments = await control.findAll(hr.class.Department, {})
   for (const department of departments) {
     if (department._id === hr.ids.Head) continue
@@ -228,7 +228,7 @@ async function getEmailNotification (
   space: Ref<Department>,
   type: Ref<NotificationType>
 ): Promise<Tx[]> {
-  const contacts: Set<Ref<Contact>> = new Set()
+  const contacts = new Set<Ref<Contact>>()
   const departments = await buildHierarchy(space, control)
   for (const department of departments) {
     if (department.subscribers === undefined) continue

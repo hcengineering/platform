@@ -62,7 +62,11 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     core.space.Tx
   ]
 
-  private constructor (private readonly broadcast: BroadcastFunc, storage: ServerStorage, next?: Middleware) {
+  private constructor (
+    private readonly broadcast: BroadcastFunc,
+    storage: ServerStorage,
+    next?: Middleware
+  ) {
     super(storage, next)
   }
 

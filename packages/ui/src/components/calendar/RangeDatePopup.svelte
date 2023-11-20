@@ -147,8 +147,12 @@
         {mondayStart}
         viewUpdate={false}
         hideNavigator="right"
-        on:update={(result) => updateDate(result.detail)}
-        on:navigation={(result) => navigateMonth(result.detail)}
+        on:update={(result) => {
+          updateDate(result.detail)
+        }}
+        on:navigation={(result) => {
+          navigateMonth(result.detail)
+        }}
       />
       <MonthSquare
         bind:currentDate={endDate}
@@ -157,13 +161,24 @@
         {mondayStart}
         viewUpdate={false}
         hideNavigator="left"
-        on:update={(result) => updateDate(result.detail)}
-        on:navigation={(result) => navigateMonth(result.detail)}
+        on:update={(result) => {
+          updateDate(result.detail)
+        }}
+        on:navigation={(result) => {
+          navigateMonth(result.detail)
+        }}
       />
     </div>
   </div>
   <div class="footer">
-    <Button kind={'primary'} label={ui.string.Save} size={'x-large'} on:click={() => closeDP()} />
+    <Button
+      kind={'primary'}
+      label={ui.string.Save}
+      size={'x-large'}
+      on:click={() => {
+        closeDP()
+      }}
+    />
   </div>
 </div>
 

@@ -53,7 +53,7 @@
   }
 
   let loaded: boolean = false
-  let hiddenAppsIds: Ref<Application>[] = []
+  let hiddenAppsIds: Array<Ref<Application>> = []
   const hiddenAppsIdsQuery = createQuery()
   hiddenAppsIdsQuery.query(workbench.class.HiddenApplication, {}, (res) => {
     hiddenAppsIds = res.map((r) => r.attachedTo)

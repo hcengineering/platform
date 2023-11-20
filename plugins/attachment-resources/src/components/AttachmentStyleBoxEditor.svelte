@@ -99,7 +99,9 @@
     const saveObject = object
     const saveDescription = description
 
-    saveTrigger = setTimeout(() => save(saveObject, saveDescription), 2500)
+    saveTrigger = setTimeout(() => {
+      void save(saveObject, saveDescription)
+    }, 2500)
   }
 
   export function isFocused (): boolean {

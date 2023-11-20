@@ -1,5 +1,5 @@
 import { getResource } from '@hcengineering/platform'
-import { ComponentType } from 'svelte'
+import { type ComponentType } from 'svelte'
 import { writable } from 'svelte/store'
 import type {
   AnyComponent,
@@ -74,10 +74,12 @@ export function showPopup (
   const _element = element instanceof HTMLElement ? getPopupPositionElement(element) : element
   if (typeof component === 'string') {
     getResource(component)
-      .then((resolved) =>
+      .then((resolved) => {
         addPopup({ id, is: resolved, props, element: _element, onClose, onUpdate, close: closePopupOp, options })
-      )
-      .catch((err) => console.log(err))
+      })
+      .catch((err) => {
+        console.log(err)
+      })
   } else {
     addPopup({ id, is: component, props, element: _element, onClose, onUpdate, close: closePopupOp, options })
   }
@@ -356,7 +358,7 @@ export function getEventPopupPositionElement (
   e?: Event,
   position?: { v: VerticalAlignment, h: HorizontalAlignment }
 ): PopupAlignment | undefined {
-  if (e == null || e.target == null) {
+  if (e?.target == null) {
     return undefined
   }
   const target = e.target as HTMLElement

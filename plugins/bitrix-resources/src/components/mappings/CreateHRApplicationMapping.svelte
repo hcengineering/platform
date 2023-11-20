@@ -13,14 +13,7 @@
   import InlineAttributeBarEditor from '@hcengineering/presentation/src/components/InlineAttributeBarEditor.svelte'
   import recruit from '@hcengineering/recruit'
   import task from '@hcengineering/task'
-  import {
-    Button,
-    DropdownIntlItem,
-    DropdownLabels,
-    DropdownLabelsIntl,
-    DropdownTextItem,
-    IconAdd
-  } from '@hcengineering/ui'
+  import { Button, DropdownLabels, DropdownLabelsIntl, DropdownTextItem, IconAdd } from '@hcengineering/ui'
   import { ObjectBox } from '@hcengineering/view-resources'
   import bitrix from '../../plugin'
 
@@ -74,14 +67,15 @@
   $: items = getItems(fields)
 
   $: allAttrs = Array.from(getAllAttributes(client, recruit.mixin.Candidate).values())
-  $: attrs = allAttrs.map((it) => ({ id: it.name, label: it.label } as DropdownIntlItem))
+  $: attrs = allAttrs.map((it) => ({ id: it.name, label: it.label }))
 
   $: applicantAllAttrs = Array.from(client.getHierarchy().getAllAttributes(recruit.class.Applicant).values())
-  $: applicantAttrs = applicantAllAttrs.map((it) => ({ id: it.name, label: it.label } as DropdownIntlItem))
+  $: applicantAttrs = applicantAllAttrs.map((it) => ({ id: it.name, label: it.label }))
 
-  $: sourceStates = Array.from(mapping.bitrixFields[stateField].items?.values() ?? []).map(
-    (it) => ({ id: it.VALUE, label: it.VALUE } as DropdownTextItem)
-  )
+  $: sourceStates = Array.from(mapping.bitrixFields[stateField].items?.values() ?? []).map((it) => ({
+    id: it.VALUE,
+    label: it.VALUE
+  }))
 
   const states: Status[] = []
 

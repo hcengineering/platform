@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { BreadcrumbsModel, ComponentBreadcrumbsProps } from './types'
+import { type BreadcrumbsModel, type ComponentBreadcrumbsProps } from './types'
 
 export function hasComponent (model: BreadcrumbsModel): model is ComponentBreadcrumbsProps {
   return 'component' in model

@@ -93,7 +93,11 @@
 {#if messages.length > 0}
   <Scroller>
     {#each messages as message}
-      <div on:click={() => openMessageFromSpecial(message)}>
+      <div
+        on:click={() => {
+          openMessageFromSpecial(message)
+        }}
+      >
         <MessageComponent
           {message}
           on:openThread

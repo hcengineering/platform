@@ -1,24 +1,24 @@
 <!--
 // Copyright © 2022 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
 <script lang="ts">
   import { DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
-  import { IntlString, translate } from '@hcengineering/platform'
+  import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { Component } from '@hcengineering/tracker'
   import type { ButtonKind, ButtonSize, LabelAndProps, SelectPopupValueType } from '@hcengineering/ui'
-  import { Button, ButtonShape, SelectPopup, eventToHTMLElement, showPopup, themeStore } from '@hcengineering/ui'
+  import { Button, ButtonShape, SelectPopup, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import ComponentPresenter from './ComponentPresenter.svelte'
 
@@ -43,7 +43,6 @@
 
   export let showTooltip: LabelAndProps | undefined = undefined
   let selectedComponent: Component | undefined
-  let defaultComponentLabel = ''
 
   const queryQuery = createQuery()
   let rawComponents: Component[] = []
@@ -59,8 +58,6 @@
   )
 
   $: handleSelectedComponentIdUpdated(value, rawComponents)
-
-  $: translate(tracker.string.NoComponent, {}, $themeStore.language).then((result) => (defaultComponentLabel = result))
 
   const handleSelectedComponentIdUpdated = async (
     newComponentId: Ref<Component> | null | undefined,

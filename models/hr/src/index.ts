@@ -13,21 +13,30 @@
 // limitations under the License.
 //
 
-import { Contact, Employee } from '@hcengineering/contact'
-import { Arr, Class, DOMAIN_MODEL, Domain, IndexKind, Markup, Ref, Type } from '@hcengineering/core'
+import { type Contact, type Employee } from '@hcengineering/contact'
 import {
-  Department,
-  DepartmentMember,
-  PublicHoliday,
-  Request,
-  RequestType,
-  Staff,
-  TzDate,
+  type Arr,
+  type Class,
+  DOMAIN_MODEL,
+  type Domain,
+  IndexKind,
+  type Markup,
+  type Ref,
+  type Type
+} from '@hcengineering/core'
+import {
+  type Department,
+  type DepartmentMember,
+  type PublicHoliday,
+  type Request,
+  type RequestType,
+  type Staff,
+  type TzDate,
   hrId
 } from '@hcengineering/hr'
 import {
   ArrOf,
-  Builder,
+  type Builder,
   Collection,
   Hidden,
   Index,
@@ -48,7 +57,7 @@ import core, { TAttachedDoc, TDoc, TSpace, TType } from '@hcengineering/model-co
 import view, { classPresenter, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
-import { Asset, IntlString } from '@hcengineering/platform'
+import { type Asset, type IntlString } from '@hcengineering/platform'
 import hr from './plugin'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 

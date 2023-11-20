@@ -122,7 +122,9 @@
         }
       })
     )
-    spHandlers.forEach((spHandler) => spHandler())
+    spHandlers.forEach((spHandler) => {
+      spHandler()
+    })
 
     return [result, requestIndex]
   }
@@ -175,7 +177,7 @@
     {/if}
 
     {#each model.spaces as m, i (m.label)}
-      {#if (i === 0 && (specials.length > 0 || starred.length || savedMenu)) || i !== 0}<TreeSeparator line />{/if}
+      {#if (i === 0 && (specials.length > 0 || starred.length > 0 || savedMenu)) || i !== 0}<TreeSeparator line />{/if}
       <SpacesNav
         spaces={shownSpaces.filter((it) => hierarchy.isDerived(it._class, m.spaceClass))}
         {currentSpace}

@@ -1,14 +1,14 @@
 <!--
 // Copyright © 2022 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -19,7 +19,6 @@
   import { PersonAccount } from '@hcengineering/contact'
   import { personAccountByIdStore } from '@hcengineering/contact-resources'
   import core, { AnyAttribute, Doc, Ref, Tx, TxCUD } from '@hcengineering/core'
-  import { Asset } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
   import type { AttributeModel } from '@hcengineering/view'
@@ -32,17 +31,14 @@
 
   let ptx: DisplayTx | undefined
 
-  let props: any
   let employee: PersonAccount | undefined
   let model: AttributeModel[] = []
-  let modelIcon: Asset | undefined = undefined
 
   $: if (tx._id !== ptx?.tx._id) {
     ptx = newDisplayTx(tx as TxCUD<Doc>, client.getHierarchy(), false)
     if (tx.modifiedBy !== employee?._id) {
       employee = undefined
     }
-    props = undefined
     model = []
   }
 
@@ -50,8 +46,6 @@
     updateViewlet(client, viewlets, ptx).then((result) => {
       if (result.id === tx._id) {
         model = result.model
-        modelIcon = result.modelIcon
-        props = result.props
       }
     })
 

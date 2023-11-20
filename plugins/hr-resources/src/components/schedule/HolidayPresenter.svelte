@@ -19,7 +19,7 @@
   export let month: Date
   export let display: (staff: Staff, month: Date) => number | string
 
-  // $: _value = display(value)
+    // $: _value = display(value)
 </script>
 
 {#await display(value, month) then _value}

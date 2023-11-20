@@ -52,14 +52,14 @@ export type Resource<T> = Id & { __resource: T }
  *
  * @public
  */
-export type IntlString<T extends Record<string, any> = {}> = Id & { __intl_string: T }
+export type IntlString<T extends Record<string, any> = any> = Id & { __intl_string: T }
 
 /**
  * Status Code. Also works as i18n string Id for status description.
  *
  * @public
  */
-export type StatusCode<T extends Record<string, any> = {}> = IntlString<T>
+export type StatusCode<T extends Record<string, any> = any> = IntlString<T>
 
 /**
  * @public

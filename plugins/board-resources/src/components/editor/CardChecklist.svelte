@@ -271,7 +271,9 @@
               editable
               bind:value={item.dueTo}
               icon={getDateIcon(item)}
-              on:change={(e) => updateDueDate(item, e.detail)}
+              on:change={(e) => {
+                updateDueDate(item, e.detail)
+              }}
               noShift
             />
             <EmployeeBox
@@ -282,7 +284,14 @@
                 updateItemAssignee(item, e.detail)
               }}
             />
-            <Button icon={IconMoreH} kind="ghost" size="small" on:click={(e) => showItemMenu(item, e)} />
+            <Button
+              icon={IconMoreH}
+              kind="ghost"
+              size="small"
+              on:click={(e) => {
+                showItemMenu(item, e)
+              }}
+            />
           </div>
         {/if}
       </div>

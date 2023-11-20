@@ -1,9 +1,9 @@
 import client from '@hcengineering/client'
 import core, {
-  AccountClient,
-  Client,
+  type AccountClient,
+  type Client,
   ClientConnectEvent,
-  Version,
+  type Version,
   getCurrentAccount,
   setCurrentAccount,
   versionToString

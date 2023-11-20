@@ -125,7 +125,7 @@
         if (employee != null) {
           const personAccount = await client.findOne(contact.class.PersonAccount, { person: employee._id })
           if (personAccount !== undefined) {
-            const channel = await getDirectChannel(client, me._id as Ref<PersonAccount>, personAccount._id)
+            const channel = await getDirectChannel(client, me._id, personAccount._id)
 
             // re-subscribing in case DM was removed from notifications
             await subscribe(chunter.class.DirectMessage, channel)
@@ -181,7 +181,9 @@
       <EmployeeInbox
         accountId={selectedEmployee}
         on:change={(e) => select(e.detail)}
-        on:dm={(e) => openDM(e.detail)}
+        on:dm={(e) => {
+          openDM(e.detail)
+        }}
         on:close={() => {
           selectedEmployee = undefined
         }}

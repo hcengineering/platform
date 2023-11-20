@@ -16,7 +16,7 @@
 
 import { startHttpServer } from './server_http'
 // import { startUWebsocketServer } from './server_u'
-import { ServerFactory } from './types'
+import { type ServerFactory } from './types'
 
 export { start } from './server'
 export * from './types'

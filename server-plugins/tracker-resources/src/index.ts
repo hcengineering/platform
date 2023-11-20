@@ -231,7 +231,7 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
         parentTitle: it.title,
         space: it.space
       }))
-      await updateIssueParentEstimations(
+      updateIssueParentEstimations(
         {
           _id: removeTx.objectId,
           estimation: 0,
@@ -286,6 +286,7 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
             'tx.objectId': cud.objectId,
             _id: { $nin: [parentTx._id] }
           })
+          // eslint-disable-next-line @typescript-eslint/unbound-method
         ).map(TxProcessor.extractTx)
         const doc: TimeSpendReport | undefined = TxProcessor.buildDoc2Doc(logTxes)
 
@@ -313,6 +314,7 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
           'tx.objectId': cud.objectId,
           _id: { $nin: [parentTx._id] }
         })
+        // eslint-disable-next-line @typescript-eslint/unbound-method
       ).map(TxProcessor.extractTx)
       const doc: TimeSpendReport | undefined = TxProcessor.buildDoc2Doc(logTxes)
       if (doc !== undefined) {

@@ -14,21 +14,21 @@
 // limitations under the License.
 //
 
-import { Builder, Mixin } from '@hcengineering/model'
+import { type Builder, Mixin } from '@hcengineering/model'
 
-import core, { Account, Doc, Ref, Tx } from '@hcengineering/core'
+import core, { type Account, type Doc, type Ref, type Tx } from '@hcengineering/core'
 import { TClass } from '@hcengineering/model-core'
 import { TNotificationType } from '@hcengineering/model-notification'
-import notification, { NotificationType } from '@hcengineering/notification'
-import { Resource } from '@hcengineering/platform'
-import serverCore, { TriggerControl } from '@hcengineering/server-core'
+import notification, { type NotificationType } from '@hcengineering/notification'
+import { type Resource } from '@hcengineering/platform'
+import serverCore, { type TriggerControl } from '@hcengineering/server-core'
 import serverNotification, {
-  HTMLPresenter,
-  NotificationPresenter,
-  Presenter,
-  TextPresenter,
-  TypeMatch,
-  NotificationContentProvider
+  type HTMLPresenter,
+  type NotificationPresenter,
+  type Presenter,
+  type TextPresenter,
+  type TypeMatch,
+  type NotificationContentProvider
 } from '@hcengineering/server-notification'
 
 export { serverNotificationId } from '@hcengineering/server-notification'

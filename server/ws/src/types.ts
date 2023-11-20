@@ -1,18 +1,18 @@
 import {
-  Class,
-  Doc,
-  DocumentQuery,
-  FindOptions,
-  FindResult,
-  MeasureContext,
-  Ref,
-  Tx,
-  TxResult,
-  WorkspaceId
+  type Class,
+  type Doc,
+  type DocumentQuery,
+  type FindOptions,
+  type FindResult,
+  type MeasureContext,
+  type Ref,
+  type Tx,
+  type TxResult,
+  type WorkspaceId
 } from '@hcengineering/core'
-import { Response } from '@hcengineering/rpc'
-import { BroadcastFunc, Pipeline } from '@hcengineering/server-core'
-import { Token } from '@hcengineering/server-token'
+import { type Response } from '@hcengineering/rpc'
+import { type BroadcastFunc, type Pipeline } from '@hcengineering/server-core'
+import { type Token } from '@hcengineering/server-token'
 
 /**
  * @public

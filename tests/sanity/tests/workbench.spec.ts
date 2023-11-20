@@ -20,7 +20,7 @@ test.describe('workbench tests', () => {
     await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit/candidates`)
     // Click text=Applications Application >> span
     await expect(page.locator('text=Applications >> nth=1')).toBeVisible()
-    await expect(page.locator('text="APP-1')).toBeDefined()
+    expect(page.locator('text="APP-1')).toBeDefined()
 
     // Click text=Talents
     await page.click('text=Talents')
@@ -34,8 +34,8 @@ test.describe('workbench tests', () => {
     // Click text=Software Engineer
     await page.click('text=Software Engineer')
     await page.click('.antiSection-header >> text=Applications')
-    await expect(page.locator('text=Software Engineer')).toBeDefined()
-    await expect(page.locator('text="APP-1"')).toBeDefined()
+    expect(page.locator('text=Software Engineer')).toBeDefined()
+    expect(page.locator('text="APP-1"')).toBeDefined()
     // await page.click('[name="tooltip-task:string:Kanban"]')
     await page.click('.tablist-container div:nth-child(2)')
 

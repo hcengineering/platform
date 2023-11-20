@@ -12,7 +12,7 @@
   $: formattedDate = statusDueDate && formatDate(statusDueDate)
 
   const dispatch = createEventDispatcher()
-  const type = { mode: DateRangeMode.DATETIME, withShift: true } as TypeDate
+  const type = { mode: DateRangeMode.DATETIME, withShift: true } as unknown as TypeDate
 </script>
 
 <div

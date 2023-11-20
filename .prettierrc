@@ -1,4 +1,5 @@
 {
+    "$schema": "http://json-schema.org/draft-04/schema#",
     "trailingComma": "none",
     "tabWidth": 2,
     "semi": false,
@@ -6,5 +7,16 @@
     "printWidth": 120,
     "useTabs": false,
     "bracketSpacing": true,
-    "proseWrap": "preserve"
+    "proseWrap": "preserve",
+    "plugins": [
+        "prettier-plugin-svelte"
+    ],
+    "overrides": [
+        {
+            "files": "*.svelte",
+            "options": {
+                "parser": "svelte"
+            }
+        }
+    ]
 }

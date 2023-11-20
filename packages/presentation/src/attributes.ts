@@ -1,4 +1,4 @@
-import { AnyAttribute, Client } from '@hcengineering/core'
+import { type AnyAttribute, type Client } from '@hcengineering/core'
 
 /**
  * @public

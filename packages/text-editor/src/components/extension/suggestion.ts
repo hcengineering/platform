@@ -1,9 +1,9 @@
-import { Editor, Range, escapeForRegEx } from '@tiptap/core'
-import { EditorState, Plugin, PluginKey, Transaction } from '@tiptap/pm/state'
+import { type Editor, type Range, escapeForRegEx } from '@tiptap/core'
+import { type EditorState, Plugin, PluginKey, type Transaction } from '@tiptap/pm/state'
 import { ReplaceStep } from '@tiptap/pm/transform'
-import { Decoration, DecorationSet, EditorView } from '@tiptap/pm/view'
+import { Decoration, DecorationSet, type EditorView } from '@tiptap/pm/view'
 
-import { ResolvedPos } from '@tiptap/pm/model'
+import { type ResolvedPos } from '@tiptap/pm/model'
 
 export interface Trigger {
   char: string
@@ -161,6 +161,8 @@ export interface SuggestionKeyDownProps {
 
 export const SuggestionPluginKey = new PluginKey('suggestion')
 
+const cancelKeys = ['Escape', 'ArrowLeft', 'ArrowRight']
+
 export default function Suggestion<I = any> ({
   pluginKey = SuggestionPluginKey,
   editor,
@@ -178,7 +180,7 @@ export default function Suggestion<I = any> ({
   let props: SuggestionProps<I> | undefined
   const renderer = render?.()
 
-  const plugin: Plugin<any> = new Plugin({
+  const plugin: Plugin<any> = new Plugin<any>({
     key: pluginKey,
 
     view () {
@@ -394,7 +396,7 @@ export default function Suggestion<I = any> ({
           return false
         }
 
-        if (event.key === 'Escape') {
+        if (cancelKeys.includes(event.key)) {
           const flag = { forceCancelSuggestion: true }
 
           // It's important to dispatch this state twice

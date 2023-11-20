@@ -8,7 +8,7 @@
   import ColorPresenter from '../presenters/ColorPresenter.svelte'
   export let value: CardCover | undefined | null
   export let object: Card | undefined
-  export let onChange: (e: any) => void | undefined
+  export let onChange: (e: any) => void
 
   let cover = object ? object.cover : value
   let coverColor = cover?.color
@@ -18,7 +18,7 @@
   const dispatch = createEventDispatcher()
 
   const colorGroups = (function chunk (colors: number[]): number[][] {
-    return colors.length ? [colors.slice(0, 5), ...chunk(colors.slice(5))] : []
+    return colors.length > 0 ? [colors.slice(0, 5), ...chunk(colors.slice(5))] : []
   })(getBoardAvailableColors().map(hexColorToNumber))
 
   function close () {

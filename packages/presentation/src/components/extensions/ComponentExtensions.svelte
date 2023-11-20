@@ -11,8 +11,8 @@
 
   getClient()
     .findAll<ComponentPointExtension>(plugin.class.ComponentPointExtension, {
-      extension
-    })
+    extension
+  })
     .then((res) => {
       extensions = res
     })

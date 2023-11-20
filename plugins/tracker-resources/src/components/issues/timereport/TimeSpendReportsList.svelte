@@ -1,14 +1,14 @@
-<!-- 
+<!--
 // Copyright © 2022-2023 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -71,14 +71,18 @@
     {@const currentProject = $activeProjects.get(toProjectId(report.space))}
     <div
       class="{twoRows ? 'flex-col' : 'flex-between'} p-text-2 clear-mins"
-      on:contextmenu|preventDefault={(ev) => showContextMenu(ev, report)}
+      on:contextmenu|preventDefault={(ev) => {
+        showContextMenu(ev, report)
+      }}
       on:mouseenter={() => {
         listProvider.updateFocus(report)
       }}
       on:focus={() => {
         listProvider.updateFocus(report)
       }}
-      on:click={(evt) => editSpendReport(evt, report, currentProject?.defaultTimeReportDay)}
+      on:click={(evt) => {
+        editSpendReport(evt, report, currentProject?.defaultTimeReportDay)
+      }}
     >
       <div class="flex-row-center clear-mins gap-2 flex-grow mr-4" class:p-text={twoRows}>
         <FixedColumn key={'timespend_issue'} justify={'left'} addClass={'fs-bold'}>

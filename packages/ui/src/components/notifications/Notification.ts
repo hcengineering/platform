@@ -1,6 +1,6 @@
-import { NotificationPosition } from './NotificationPosition'
-import { NotificationSeverity } from './NotificationSeverity'
-import { AnyComponent, AnySvelteComponent } from '../../types'
+import { type NotificationPosition } from './NotificationPosition'
+import { type NotificationSeverity } from './NotificationSeverity'
+import { type AnyComponent, type AnySvelteComponent } from '../../types'
 
 export interface Notification {
   id: string
@@ -10,6 +10,6 @@ export interface Notification {
   subTitlePostfix?: string
   position: NotificationPosition
   severity?: NotificationSeverity
-  params?: { [key: string]: any }
+  params?: Record<string, any>
   closeTimeout?: number
 }

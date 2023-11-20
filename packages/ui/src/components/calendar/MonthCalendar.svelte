@@ -65,7 +65,9 @@
           class:right-border={dayOfWeek === 6}
           style:grid-column-start={dayOfWeek + 1}
           style:grid-row-start={weekIndex + 1}
-          on:click={() => onSelect(date)}
+          on:click={() => {
+            onSelect(date)
+          }}
         >
           {#if !$$slots.cell}
             {date.getDate()}

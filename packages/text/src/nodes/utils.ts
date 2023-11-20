@@ -37,6 +37,6 @@ export function getDataAttribute (
         [dataName]: attributes[name]
       }
     },
-    ...(options !== undefined ? options : {})
+    ...(options ?? {})
   }
 }

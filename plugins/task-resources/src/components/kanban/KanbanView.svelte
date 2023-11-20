@@ -81,7 +81,7 @@
 
   $: dontUpdateRank = orderBy[0] !== TaskOrdering.Manual
 
-  let accentColors: Map<string, ColorDefinition> = new Map()
+  let accentColors = new Map<string, ColorDefinition>()
   const setAccentColor = (n: number, ev: CustomEvent<ColorDefinition>) => {
     accentColors.set(`${n}${$themeStore.dark}${groupByKey}`, ev.detail)
     accentColors = accentColors
@@ -221,7 +221,7 @@
   $: presenterMixin = client.getHierarchy().as(clazz, task.mixin.KanbanCard)
   $: cardPresenter = getResource(presenterMixin.card)
 
-  const getDoneUpdate = (e: any) => ({ status: e.detail._id } as DocumentUpdate<Doc>)
+  const getDoneUpdate = (e: any) => ({ status: e.detail._id }) as unknown as DocumentUpdate<Doc>
 </script>
 
 {#await cardPresenter then presenter}
@@ -270,7 +270,9 @@
               kind={'list-header'}
               colorInherit={!$themeStore.dark}
               accent
-              on:accent-color={(ev) => setAccentColor(index, ev)}
+              on:accent-color={(ev) => {
+                setAccentColor(index, ev)
+              }}
             />
           {/if}
         </span>

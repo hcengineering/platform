@@ -16,7 +16,7 @@
 <script lang="ts">
   import contact, { Contact } from '@hcengineering/contact'
   import { UserBox } from '@hcengineering/contact-resources'
-  import { AttachedData, generateId, Ref, SortingOrder, Status as TaskStatus } from '@hcengineering/core'
+  import { AttachedData, AttachedDoc, generateId, Ref, SortingOrder, Status as TaskStatus } from '@hcengineering/core'
   import type { Customer, Funnel, Lead } from '@hcengineering/lead'
   import { OK, Status } from '@hcengineering/platform'
   import { Card, createQuery, getClient, InlineAttributeBar, SpaceSelector } from '@hcengineering/presentation'
@@ -39,7 +39,7 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const leadId = generateId() as Ref<Lead>
+  const leadId: Ref<AttachedDoc> = generateId()
 
   export function canClose (): boolean {
     return (preserveCustomer || customer === undefined) && title === ''
@@ -47,7 +47,9 @@
 
   let funnels: Funnel[] = []
   const funnelQuery = createQuery()
-  funnelQuery.query(lead.class.Funnel, {}, (res) => (funnels = res))
+  funnelQuery.query(lead.class.Funnel, {}, (res) => {
+    funnels = res
+  })
   $: rawStates = getStates(funnel, $typeStore, $statusStore.byId)
 
   let state: Ref<TaskStatus>
@@ -71,8 +73,8 @@
 
   async function createLead () {
     const sequence = await client.findOne(task.class.Sequence, { attachedTo: lead.class.Lead })
-    if (sequence === undefined) {
-      throw new Error('sequence object not found')
+    if (sequence === undefined || customer == null) {
+      throw new Error('Lead  creation failed')
     }
 
     const lastOne = await client.findOne(lead.class.Lead, {}, { sort: { rank: SortingOrder.Descending } })
@@ -89,7 +91,7 @@
       ...object
     }
 
-    const customerInstance = await client.findOne(contact.class.Contact, { _id: customer! })
+    const customerInstance = await client.findOne(contact.class.Contact, { _id: customer })
     if (customerInstance === undefined) {
       throw new Error('contact not found')
     }
@@ -103,7 +105,7 @@
       )
     }
 
-    await client.addCollection(lead.class.Lead, _space, customer!, lead.mixin.Customer, 'leads', value, leadId)
+    await client.addCollection(lead.class.Lead, _space, customer, lead.mixin.Customer, 'leads', value, leadId)
     dispatch('close')
   }
 

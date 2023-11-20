@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { Editor } from '@tiptap/core'
-import { TextEditorCommand, TextEditorCommandHandler } from './types'
+import { type Editor } from '@tiptap/core'
+import { type TextEditorCommand, type TextEditorCommandHandler } from './types'
 
 export function textEditorCommandHandler (editor: Editor | undefined): TextEditorCommandHandler | undefined {
   return editor !== undefined ? new TextEditorCommandHandlerImpl(editor) : undefined

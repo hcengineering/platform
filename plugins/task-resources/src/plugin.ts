@@ -16,8 +16,8 @@
 import type { IntlString } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import task, { taskId } from '@hcengineering/task'
-import { AnyComponent } from '@hcengineering/ui'
-import { GetAllValuesFunc, SortFunc } from '@hcengineering/view'
+import { type AnyComponent } from '@hcengineering/ui'
+import { type GetAllValuesFunc, type SortFunc } from '@hcengineering/view'
 import {} from '@hcengineering/notification'
 
 export default mergeIds(taskId, task, {

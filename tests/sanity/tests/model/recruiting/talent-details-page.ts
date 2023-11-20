@@ -54,7 +54,7 @@ export class TalentDetailsPage extends CommonRecruitingPage {
   }
 
   async checkSkill (skillTag: string): Promise<void> {
-    await expect(await this.textTagItem).toContainText(skillTag)
+    await expect(this.textTagItem).toContainText(skillTag)
   }
 
   async addSocialLinks (link: string, linkDescription: string): Promise<void> {

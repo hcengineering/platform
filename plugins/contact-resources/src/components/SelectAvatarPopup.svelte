@@ -1,14 +1,14 @@
 <!--
 // Copyright © 2022 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -114,7 +114,8 @@
       const url = getFileUrl(selectedAvatar, 'full')
       editableFile = await (await fetch(url)).blob()
     } else {
-      return inputRef.click()
+      inputRef.click()
+      return
     }
     showCropper(editableFile)
   }
@@ -198,6 +199,7 @@
 >
   <div class="flex-col-center gapV-4 mx-6">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="cursor-pointer"
       on:click|self={(e) => {
@@ -208,7 +210,7 @@
       <AvatarComponent
         avatar={selectedAvatarType === AvatarType.IMAGE
           ? selectedAvatar === ''
-            ? `${AvatarType.COLOR}://${color}`
+            ? `${AvatarType.COLOR}://${color?.color}`
             : selectedAvatar
           : `${selectedAvatarType}://${selectedAvatar}`}
         direct={selectedAvatarType === AvatarType.IMAGE ? selectedFile : undefined}

@@ -54,7 +54,12 @@
           <div class="firstCell" {style}>
             {#if descendants.has(object._id)}
               <!-- svelte-ignore a11y-click-events-have-key-events -->
-              <div class="expand" on:click={() => click(object._id)}>
+              <div
+                class="expand"
+                on:click={() => {
+                  click(object._id)
+                }}
+              >
                 {#if expanded.has(object._id)}
                   <Expand size={'small'} />
                 {:else}

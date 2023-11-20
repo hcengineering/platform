@@ -34,8 +34,8 @@ function createIndexedReader (
   }
 }
 
-function readAndMapProps (reader: IndexedReader, props: ClassSearchConfigProps[]): { [key: string]: string } {
-  const res: { [key: string]: string } = {}
+function readAndMapProps (reader: IndexedReader, props: ClassSearchConfigProps[]): Record<string, string> {
+  const res: Record<string, string> = {}
   for (const prop of props) {
     if (typeof prop === 'string') {
       res[prop] = reader.get(prop)
@@ -135,6 +135,6 @@ export function mapSearchResultDoc (hierarchy: Hierarchy, raw: IndexedDoc): Sear
   return doc
 }
 
-function fillTemplate (tmpl: string, props: { [key: string]: string }): string {
+function fillTemplate (tmpl: string, props: Record<string, string>): string {
   return tmpl.replace(/{(.*?)}/g, (_, key: string) => props[key])
 }

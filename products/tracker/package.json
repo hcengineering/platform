@@ -27,7 +27,7 @@
     "mini-css-extract-plugin": "^2.2.0",
     "dotenv-webpack": "^7.0.2",
     "ts-loader": "^9.2.5",
-    "svelte-loader": "^3.1.3",
+    "svelte-loader": "^3.1.9",
     "css-loader": "^5.2.1",
     "webpack-dev-server": "^4.7.4",
     "style-loader": "^3.2.1",
@@ -47,7 +47,7 @@
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/ui": "^0.6.3",
     "@hcengineering/theme": "^0.6.2",
-    "svelte": "3.55.1",
+    "svelte": "^4.2.5",
     "@hcengineering/login": "^0.6.1",
     "@hcengineering/login-assets": "^0.6.0",
     "@hcengineering/login-resources": "^0.6.2",
@@ -127,6 +127,6 @@
     "@hcengineering/devmodel": "^0.6.0",
     "@hcengineering/devmodel-resources": "^0.6.0",
     "@hcengineering/front": "^0.6.0",
-    "svelte-loader": "^3.1.3"
+    "svelte-loader": "^3.1.9"
   }
 }

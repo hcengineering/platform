@@ -64,7 +64,9 @@
     on:click={() => {
       dispatch('select', cl)
     }}
-    on:contextmenu|preventDefault|stopPropagation={(evt) => showContextMenu(evt, clazz)}
+    on:contextmenu|preventDefault|stopPropagation={(evt) => {
+      showContextMenu(evt, clazz)
+    }}
   >
     <div class="flex gap-2">
       {#if clazz.icon}

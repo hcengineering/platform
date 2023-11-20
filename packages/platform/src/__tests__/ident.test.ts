@@ -23,7 +23,7 @@ describe('ident', () => {
   it('should identify resources', () => {
     const ids = plugin(test, {
       status: {
-        MyString: '' as StatusCode<{}>
+        MyString: '' as StatusCode<any>
       }
     })
     expect(ids.status.MyString).toBe('test:status:MyString')
@@ -32,15 +32,15 @@ describe('ident', () => {
   it('should merge ids', () => {
     const ids = plugin(test, {
       resource: {
-        MyString: '' as StatusCode<{}>
+        MyString: '' as StatusCode<any>
       }
     })
     const merged = mergeIds(test, ids, {
       resource: {
-        OneMore: '' as StatusCode<{}>
+        OneMore: '' as StatusCode<any>
       },
       more: {
-        X: '' as StatusCode<{}>
+        X: '' as StatusCode<any>
       }
     })
     expect(merged.resource.MyString).toBe('test:resource:MyString')
@@ -51,13 +51,13 @@ describe('ident', () => {
   it('should fail overwriting ids', () => {
     const ids = plugin(test, {
       resource: {
-        MyString: '' as StatusCode<{}>
+        MyString: '' as StatusCode<any>
       }
     })
     const f = (): any =>
       mergeIds(test, ids, {
         resource: {
-          MyString: 'xxx' as StatusCode<{}>
+          MyString: 'xxx' as StatusCode<any>
         }
       })
     expect(f).toThrowError("'identify' overwrites")

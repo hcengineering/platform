@@ -36,7 +36,7 @@
       fetch(endpoint + `/api/v1/statistics?token=${token}`, {}).then(async (json) => {
         data = await json.json()
         admin = data?.admin ?? false
-        if (admin === false) {
+        if (!admin) {
           closePopup()
         }
       })
@@ -65,22 +65,22 @@
 
   $: activeSessions =
     (data?.statistics?.activeSessions as Record<
-      string,
-      {
-        userId: string
-        data?: Record<string, any>
-        total: StatisticsElement
-        mins5: StatisticsElement
-        current: StatisticsElement
-      }[]
+    string,
+    Array<{
+      userId: string
+      data?: Record<string, any>
+      total: StatisticsElement
+      mins5: StatisticsElement
+      current: StatisticsElement
+    }>
     >) ?? {}
 
   const employeeQuery = createQuery()
 
-  let employees: Map<string, PersonAccount> = new Map()
+  let employees = new Map<string, PersonAccount>()
 
   employeeQuery.query(contact.class.PersonAccount, {}, (res) => {
-    const emp: Map<string, PersonAccount> = new Map()
+    const emp = new Map<string, PersonAccount>()
     for (const r of res) {
       emp.set(r.email, r)
     }

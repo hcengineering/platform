@@ -16,7 +16,12 @@ import { Db, Document, Filter, Sort, UpdateFilter } from 'mongodb'
  * Upgrade client implementation.
  */
 export class MigrateClientImpl implements MigrationClient {
-  constructor (readonly db: Db, readonly hierarchy: Hierarchy, readonly model: ModelDb, readonly logger: ModelLogger) {}
+  constructor (
+    readonly db: Db,
+    readonly hierarchy: Hierarchy,
+    readonly model: ModelDb,
+    readonly logger: ModelLogger
+  ) {}
 
   private translateQuery<T extends Doc>(query: DocumentQuery<T>): Filter<Document> {
     const translated: any = {}

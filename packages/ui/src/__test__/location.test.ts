@@ -1,5 +1,5 @@
 import { locationToUrl } from '../location'
-import { Location } from '../types'
+import { type Location } from '../types'
 
 describe('location', () => {
   it('should translate location to url', () => {

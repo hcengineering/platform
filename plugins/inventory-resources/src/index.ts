@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import { Doc } from '@hcengineering/core'
-import { Resources } from '@hcengineering/platform'
+import { type Doc } from '@hcengineering/core'
+import { type Resources } from '@hcengineering/platform'
 import { showPopup } from '@hcengineering/ui'
 import Categories from './components/Categories.svelte'
 import CategoryPresenter from './components/CategoryPresenter.svelte'

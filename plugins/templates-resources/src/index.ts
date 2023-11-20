@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import { Resources } from '@hcengineering/platform'
+import { type Resources } from '@hcengineering/platform'
 import Templates from './components/Templates.svelte'
-import { TextEditorHandler } from '@hcengineering/text-editor'
+import { type TextEditorHandler } from '@hcengineering/text-editor'
 import { showPopup } from '@hcengineering/ui'
 import TemplatePopup from './components/TemplatePopup.svelte'
 import CreateTemplateCategory from './components/CreateTemplateCategory.svelte'

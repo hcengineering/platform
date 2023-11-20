@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { AccountRole, Space, getCurrentAccount } from '@hcengineering/core'
-import { Resources } from '@hcengineering/platform'
+import { AccountRole, type Space, getCurrentAccount } from '@hcengineering/core'
+import { type Resources } from '@hcengineering/platform'
 import ApplicationPresenter from './components/ApplicationPresenter.svelte'
 import Archive from './components/Archive.svelte'
 import SpacePanel from './components/navigator/SpacePanel.svelte'

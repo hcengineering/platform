@@ -14,12 +14,12 @@
 // limitations under the License.
 //
 
-import { Builder, Model, Prop, TypeBoolean, TypeNumber, TypeString, UX } from '@hcengineering/model'
+import { type Builder, Model, Prop, TypeBoolean, TypeNumber, TypeString, UX } from '@hcengineering/model'
 import { TConfiguration } from '@hcengineering/model-core'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 
 import core, { DOMAIN_CONFIGURATION } from '@hcengineering/core'
-import openai, { OpenAIConfiguration } from '@hcengineering/openai/src/plugin'
+import openai, { type OpenAIConfiguration } from '@hcengineering/openai/src/plugin'
 import serverCore from '@hcengineering/server-core'
 
 import chunter from '@hcengineering/model-chunter'

@@ -26,7 +26,6 @@
   let templates: MessageTemplate[] = []
   let selected: Ref<MessageTemplate> | undefined
   let newTemplate: Data<MessageTemplate> | undefined = undefined
-  let loading = true
 
   query.query(templatesPlugin.class.MessageTemplate, {}, (t) => {
     templates = t
@@ -34,7 +33,6 @@
       selected = undefined
       newTemplate = undefined
     }
-    loading = false
   })
 
   let spaces: TemplateCategory[] = []
@@ -162,12 +160,12 @@
 
       <div class="flex-col overflow-y-auto">
         {#each spaces as space (space._id)}
-          <TreeNode label={getEmbeddedLabel(space.name)} actions={async () => getSpaceActions(space)} parent>
+          <TreeNode label={getEmbeddedLabel(space.name)} actions={async () => await getSpaceActions(space)} parent>
             {#each getTemplates(templates, space._id) as t (t._id)}
               <TreeItem
                 _id={space._id}
                 title={t.title}
-                actions={async () => getActions(t)}
+                actions={async () => await getActions(t)}
                 indent
                 on:click={() => {
                   selected = t._id

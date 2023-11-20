@@ -14,32 +14,32 @@
 //
 
 import core, {
-  MeasureContext,
-  Ref,
-  Space,
-  Tx,
+  type MeasureContext,
+  type Ref,
+  type Space,
+  type Tx,
   TxFactory,
-  TxWorkspaceEvent,
+  type TxWorkspaceEvent,
   WorkspaceEvent,
-  WorkspaceId,
+  type WorkspaceId,
   generateId,
   toWorkspaceString
 } from '@hcengineering/core'
 import { unknownError } from '@hcengineering/platform'
-import { HelloRequest, HelloResponse, Response, readRequest } from '@hcengineering/rpc'
+import { type HelloRequest, type HelloResponse, type Response, readRequest } from '@hcengineering/rpc'
 import type { Pipeline, SessionContext } from '@hcengineering/server-core'
-import { Token } from '@hcengineering/server-token'
+import { type Token } from '@hcengineering/server-token'
 // import WebSocket, { RawData } from 'ws'
 
 import {
-  BroadcastCall,
-  ConnectionSocket,
+  type BroadcastCall,
+  type ConnectionSocket,
   LOGGING_ENABLED,
-  PipelineFactory,
-  ServerFactory,
-  Session,
-  SessionManager,
-  Workspace
+  type PipelineFactory,
+  type ServerFactory,
+  type Session,
+  type SessionManager,
+  type Workspace
 } from './types'
 
 function timeoutPromise (time: number): Promise<void> {
@@ -52,8 +52,8 @@ class TSessionManager implements SessionManager {
   readonly workspaces = new Map<string, Workspace>()
   checkInterval: any
 
-  sessions: Map<string, { session: Session, socket: ConnectionSocket }> = new Map()
-  reconnectIds: Set<string> = new Set()
+  sessions = new Map<string, { session: Session, socket: ConnectionSocket }>()
+  reconnectIds = new Set<string>()
 
   maintenanceTimer: any
   timeMinutes = 0
@@ -62,7 +62,9 @@ class TSessionManager implements SessionManager {
     readonly ctx: MeasureContext,
     readonly sessionFactory: (token: Token, pipeline: Pipeline, broadcast: BroadcastCall) => Session
   ) {
-    this.checkInterval = setInterval(() => this.handleInterval(), 1000)
+    this.checkInterval = setInterval(() => {
+      this.handleInterval()
+    }, 1000)
   }
 
   scheduleMaintenance (timeMinutes: number): void {
@@ -141,7 +143,7 @@ class TSessionManager implements SessionManager {
     return this.sessionFactory(token, pipeline, this.broadcast.bind(this))
   }
 
-  upgradeIdMap: Map<string, string> = new Map()
+  upgradeIdMap = new Map<string, string>()
 
   async addSession (
     ctx: MeasureContext,
@@ -227,9 +229,9 @@ class TSessionManager implements SessionManager {
       console.log(token.workspace.name, 'no sessions for workspace', wsString)
     }
     // Re-create pipeline.
-    workspace.pipeline = pipelineFactory(ctx, token.workspace, true, (tx, targets) =>
+    workspace.pipeline = pipelineFactory(ctx, token.workspace, true, (tx, targets) => {
       this.broadcastAll(workspace, tx, targets)
-    )
+    })
     return await workspace.pipeline
   }
 
@@ -264,9 +266,9 @@ class TSessionManager implements SessionManager {
     const upgrade = token.extra?.model === 'upgrade'
     const workspace: Workspace = {
       id: generateId(),
-      pipeline: pipelineFactory(ctx, token.workspace, upgrade, (tx, targets) =>
+      pipeline: pipelineFactory(ctx, token.workspace, upgrade, (tx, targets) => {
         this.broadcastAll(workspace, tx, targets)
-      ),
+      }),
       sessions: new Map(),
       upgrade
     }

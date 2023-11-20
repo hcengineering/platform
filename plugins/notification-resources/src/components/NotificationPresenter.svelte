@@ -24,7 +24,7 @@
   const store = notificationClient.docUpdatesStore
   $: docUpdate = $store.get(value._id)
 
-  $: hasNotification = docUpdate?.txes?.some((p) => p.isNew) && docUpdate?.hidden !== true
+  $: hasNotification = docUpdate?.txes?.some((p) => p.isNew) && !docUpdate?.hidden
 </script>
 
 {#if hasNotification}

@@ -14,8 +14,16 @@
 // limitations under the License.
 //
 
-import { Account, Class, Doc, DocumentUpdate, getCurrentAccount, Ref, TxOperations } from '@hcengineering/core'
-import notification, { Collaborators, DocUpdates, NotificationClient } from '@hcengineering/notification'
+import {
+  type Account,
+  type Class,
+  type Doc,
+  type DocumentUpdate,
+  getCurrentAccount,
+  type Ref,
+  type TxOperations
+} from '@hcengineering/core'
+import notification, { type Collaborators, type DocUpdates, type NotificationClient } from '@hcengineering/notification'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { writable } from 'svelte/store'
 
@@ -25,7 +33,7 @@ import { writable } from 'svelte/store'
 export class NotificationClientImpl implements NotificationClient {
   protected static _instance: NotificationClientImpl | undefined = undefined
   readonly docUpdatesStore = writable<Map<Ref<Doc>, DocUpdates>>(new Map())
-  docUpdatesMap: Map<Ref<Doc>, DocUpdates> = new Map()
+  docUpdatesMap = new Map<Ref<Doc>, DocUpdates>()
   readonly docUpdates = writable<DocUpdates[]>([])
 
   private readonly docUpdatesQuery = createQuery(true)

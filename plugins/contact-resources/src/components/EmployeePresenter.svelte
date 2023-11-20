@@ -43,6 +43,6 @@
   {accent}
   {defaultName}
   {noUnderline}
-  statusLabel={active === false && shouldShowName ? contact.string.Inactive : undefined}
+  statusLabel={!active && shouldShowName ? contact.string.Inactive : undefined}
   on:accent-color
 />

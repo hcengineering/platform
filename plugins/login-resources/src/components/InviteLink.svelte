@@ -129,7 +129,9 @@
       <MiniToggle
         bind:on={useDefault}
         label={login.string.UseWorkspaceInviteSettings}
-        on:click={() => setToDefault()}
+        on:click={() => {
+          setToDefault()
+        }}
       />
       {#if !useDefault}
         <EditBox

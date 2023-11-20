@@ -87,7 +87,7 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   async close (): Promise<void> {
-    return await this.client.close()
+    await this.client.close()
   }
 
   getHierarchy (): Hierarchy {
@@ -914,7 +914,8 @@ export class LiveQuery extends TxProcessor implements Client {
       q.options.limit === q.result.length &&
       h.isDerived(q._class, tx.objectClass)
     ) {
-      return await this.refresh(q)
+      await this.refresh(q)
+      return
     }
     const index = q.result.findIndex((p) => p._id === tx.objectId && h.isDerived(p._class, tx.objectClass))
     if (index > -1) {
@@ -1212,10 +1213,12 @@ export class LiveQuery extends TxProcessor implements Client {
 
     if (q.options?.limit !== undefined && q.result.length > q.options.limit) {
       if (updatedDoc === undefined) {
-        return await this.refresh(q)
+        await this.refresh(q)
+        return
       }
       if (q.result[q.options?.limit]._id === updatedDoc._id) {
-        return await this.refresh(q)
+        await this.refresh(q)
+        return
       }
       if (q.result.pop()?._id !== updatedDoc._id) {
         await this.callback(q)

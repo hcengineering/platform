@@ -14,8 +14,8 @@
 //
 
 import calendar, { calendarId } from '@hcengineering/calendar'
-import { IntlString, mergeIds } from '@hcengineering/platform'
-import { AnyComponent } from '@hcengineering/ui'
+import { type IntlString, mergeIds } from '@hcengineering/platform'
+import { type AnyComponent } from '@hcengineering/ui'
 
 export default mergeIds(calendarId, calendar, {
   activity: {

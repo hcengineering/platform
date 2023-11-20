@@ -1,30 +1,30 @@
 import type { ActivityExtension, DisplayTx, TxViewlet } from '@hcengineering/activity'
 import core, {
-  AttachedDoc,
-  Class,
-  Client,
-  Collection,
-  Doc,
-  Hierarchy,
-  Obj,
-  Ref,
-  TxCUD,
-  TxCollectionCUD,
-  TxCreateDoc,
-  TxMixin,
-  TxOperations,
+  type AttachedDoc,
+  type Class,
+  type Client,
+  type Collection,
+  type Doc,
+  type Hierarchy,
+  type Obj,
+  type Ref,
+  type TxCUD,
+  type TxCollectionCUD,
+  type TxCreateDoc,
+  type TxMixin,
+  type TxOperations,
   TxProcessor,
-  TxUpdateDoc,
+  type TxUpdateDoc,
   getObjectValue,
   matchQuery
 } from '@hcengineering/core'
-import { Asset, IntlString, getResource, translate } from '@hcengineering/platform'
+import { type Asset, type IntlString, getResource, translate } from '@hcengineering/platform'
 import { getAttributePresenterClass } from '@hcengineering/presentation'
-import { AnyComponent, AnySvelteComponent, ErrorPresenter, themeStore } from '@hcengineering/ui'
-import view, { AttributeModel, BuildModelKey, BuildModelOptions } from '@hcengineering/view'
+import { type AnyComponent, type AnySvelteComponent, ErrorPresenter, themeStore } from '@hcengineering/ui'
+import view, { type AttributeModel, type BuildModelKey, type BuildModelOptions } from '@hcengineering/view'
 import { getObjectPresenter } from '@hcengineering/view-resources'
 import { get } from 'svelte/store'
-import { ActivityKey, activityKey } from './activity'
+import { type ActivityKey, activityKey } from './activity'
 import activity from './plugin'
 
 const valueTypes: ReadonlyArray<Ref<Class<Doc>>> = [

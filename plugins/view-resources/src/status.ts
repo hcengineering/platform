@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { IdMap, Status, toIdMap } from '@hcengineering/core'
+import core, { type IdMap, type Status, toIdMap } from '@hcengineering/core'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { writable } from 'svelte/store'
 
@@ -41,7 +41,9 @@ function fillStores (): void {
       statusStore.set(obj)
     })
   } else {
-    setTimeout(() => fillStores(), 50)
+    setTimeout(() => {
+      fillStores()
+    }, 50)
   }
 }
 

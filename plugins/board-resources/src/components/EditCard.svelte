@@ -139,7 +139,9 @@
       bind:value={object.title}
       kind={'large-style'}
       autoFocus
-      on:change={() => change('title', object?.title)}
+      on:change={() => {
+        change('title', object?.title)
+      }}
     />
     <div class="background-accent-bg-color border-divider-color border-radius-3 p-4 mt-4 w-full">
       <StyledTextBox
@@ -147,7 +149,9 @@
         showButtons={false}
         placeholder={board.string.DescriptionPlaceholder}
         bind:content={object.description}
-        on:value={(evt) => change('description', evt.detail)}
+        on:value={(evt) => {
+          change('description', evt.detail)
+        }}
       />
     </div>
     <div class="mt-6">

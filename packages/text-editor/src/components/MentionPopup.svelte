@@ -1,6 +1,6 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createFocusManager, FocusHandler, Label, ListView, resizeObserver } from '@hcengineering/ui'
+  import { Label, ListView, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation, { getClient, ObjectSearchCategory } from '@hcengineering/presentation'
 
@@ -23,8 +23,11 @@
 
   export let query: string = ''
 
-  type SearchSection = { category: ObjectSearchCategory; items: SearchResultDoc[] }
-  type SearchItem = {
+  interface SearchSection {
+    category: ObjectSearchCategory
+    items: SearchResultDoc[]
+  }
+  interface SearchItem {
     num: number
     item: SearchResultDoc
     category: ObjectSearchCategory
@@ -70,7 +73,7 @@
       list?.select(selection - 1)
       return true
     }
-    if (key.key === 'Enter') {
+    if (key.key === 'Enter' || key.key === 'Tab') {
       key.preventDefault()
       key.stopPropagation()
       const searchItem = items[selection]
@@ -115,7 +118,7 @@
     return undefined
   }
 
-  async function doFulltextSearch (classes: Ref<Class<Doc>>[], query: string): Promise<SearchSection[]> {
+  async function doFulltextSearch (classes: Array<Ref<Class<Doc>>>, query: string): Promise<SearchSection[]> {
     const result = await client.searchFulltext(
       {
         query: `${query}*`,
@@ -148,7 +151,7 @@
   }
 
   async function updateItems (query: string): Promise<void> {
-    const classesToSearch: Ref<Class<Doc>>[] = []
+    const classesToSearch: Array<Ref<Class<Doc>>> = []
     for (const cat of categories) {
       if (cat.classToSearch !== undefined) {
         classesToSearch.push(cat.classToSearch)
@@ -159,11 +162,7 @@
     items = packSearchResultsForListView(sections)
   }
   $: updateItems(query)
-
-  const manager = createFocusManager()
 </script>
-
-<FocusHandler {manager} />
 
 <form class="antiPopup mentionPoup" on:keydown={onKeyDown} use:resizeObserver={() => dispatch('changeSize')}>
   <div class="ap-scroll" bind:this={scrollContainer}>
@@ -184,7 +183,12 @@
         <svelte:fragment slot="item" let:item={num}>
           {@const item = items[num]}
           {@const doc = item.item}
-          <div class="ap-menuItem withComp" on:click={() => dispatchItem(doc)}>
+          <div
+            class="ap-menuItem withComp"
+            on:click={() => {
+              dispatchItem(doc)
+            }}
+          >
             <MentionResult value={doc} />
           </div>
         </svelte:fragment>

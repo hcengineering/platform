@@ -488,9 +488,7 @@ export enum IndexOrder {
  */
 export type FieldIndex<T extends Doc> = {
   [P in keyof T]?: IndexOrder
-} & {
-  [key: string]: IndexOrder
-}
+} & Record<string, IndexOrder>
 
 /**
  * @public

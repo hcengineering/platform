@@ -15,7 +15,7 @@
 //
 
 import inventory, { inventoryId } from '@hcengineering/inventory'
-import { IntlString, mergeIds, StatusCode } from '@hcengineering/platform'
+import { type IntlString, mergeIds, type StatusCode } from '@hcengineering/platform'
 
 export default mergeIds(inventoryId, inventory, {
   status: {

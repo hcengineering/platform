@@ -13,9 +13,14 @@
 // limitations under the License.
 //
 
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient, tryMigrate } from '@hcengineering/model'
+import {
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient,
+  tryMigrate
+} from '@hcengineering/model'
 import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
-import view, { Filter, FilteredView, ViewletPreference, viewId } from '@hcengineering/view'
+import view, { type Filter, type FilteredView, type ViewletPreference, viewId } from '@hcengineering/view'
 import { DOMAIN_VIEW } from '.'
 
 async function removeDoneStatePref (client: MigrationClient): Promise<void> {

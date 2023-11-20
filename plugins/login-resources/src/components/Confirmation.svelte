@@ -21,7 +21,7 @@
   import presentation from '@hcengineering/presentation'
   import { onMount } from 'svelte'
 
-  let status: Status<any> = OK
+  export let status: Status<any> = OK
 
   function goToWorkspaces () {
     const loc = getCurrentLocation()

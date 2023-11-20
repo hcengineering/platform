@@ -199,7 +199,13 @@
     </div>
     <div class="scroll" style:margin={'0 -.5rem'}>
       <div class="box flex max-h-125">
-        <EnumValuesList bind:values bind:filtered on:remove={(e) => remove(e.detail)} />
+        <EnumValuesList
+          bind:values
+          bind:filtered
+          on:remove={(e) => {
+            remove(e.detail)
+          }}
+        />
       </div>
     </div>
   </div>

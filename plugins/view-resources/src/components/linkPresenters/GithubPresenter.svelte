@@ -89,7 +89,8 @@
             <div class="fs-title"><LabelComponent label={view.string.Labels} /></div>
             <div>
               {#each data.labels as label, i}
-                {#if i}, {/if}
+                {#if i},
+                {/if}
                 {label.name}
               {/each}
             </div>

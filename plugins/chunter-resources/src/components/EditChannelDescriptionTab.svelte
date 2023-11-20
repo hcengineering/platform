@@ -40,8 +40,11 @@
   }
 
   function onDescriptionChange (ev: Event) {
+    if (channel == null) {
+      return
+    }
     const newDescription = (ev.target as HTMLInputElement).value
-    client.update(channel!, { description: newDescription })
+    client.update(channel, { description: newDescription })
   }
 
   async function leaveChannel (): Promise<void> {

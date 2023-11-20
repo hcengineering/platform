@@ -552,7 +552,7 @@ async function doPerformSync (ops: SyncOptions & SyncOptionsExtra): Promise<Bitr
 
     const allTagElements = await ops.client.findAll<TagElement>(tags.class.TagElement, {})
 
-    const extraDocs: Map<Ref<Class<Doc>>, Doc[]> = new Map()
+    const extraDocs = new Map<Ref<Class<Doc>>, Doc[]>()
 
     extraDocs.set(recruit.class.Vacancy, await ops.client.findAll(recruit.class.Vacancy, {}))
     extraDocs.set(recruit.class.Applicant, await ops.client.findAll(recruit.class.Applicant, {}))

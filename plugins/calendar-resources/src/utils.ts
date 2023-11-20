@@ -1,5 +1,11 @@
-import { Calendar, Event, ReccuringEvent, ReccuringInstance, generateEventId } from '@hcengineering/calendar'
-import { IdMap, Timestamp, getCurrentAccount, toIdMap, DocumentUpdate } from '@hcengineering/core'
+import {
+  type Calendar,
+  type Event,
+  type ReccuringEvent,
+  type ReccuringInstance,
+  generateEventId
+} from '@hcengineering/calendar'
+import { type IdMap, type Timestamp, getCurrentAccount, toIdMap, type DocumentUpdate } from '@hcengineering/core'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { showPopup, closePopup, DAY } from '@hcengineering/ui'
 import { writable } from 'svelte/store'
@@ -75,7 +81,9 @@ function fillStores (): void {
       calendarStore.set(toIdMap(res))
     })
   } else {
-    setTimeout(() => fillStores(), 50)
+    setTimeout(() => {
+      fillStores()
+    }, 50)
   }
 }
 

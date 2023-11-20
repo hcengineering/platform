@@ -35,7 +35,9 @@ export function getMetricsContext (): MeasureContext {
         if (val !== oldMetricsValue) {
           oldMetricsValue = val
           if (metricsFile !== undefined) {
-            writeFile(metricsFile, val).catch((err) => console.error(err))
+            writeFile(metricsFile, val).catch((err) => {
+              console.error(err)
+            })
           }
           if (metricsConsole) {
             console.info('METRICS:', val)

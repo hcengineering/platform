@@ -65,7 +65,12 @@
       <ListView bind:this={list} count={participants.length} kind={'thin'}>
         <svelte:fragment slot="item" let:item>
           {@const doc = participants[item]}
-          <div class="ap-menuItem withComp noMargin" on:click={() => select(doc)}>
+          <div
+            class="ap-menuItem withComp noMargin"
+            on:click={() => {
+              select(doc)
+            }}
+          >
             <PersonRefPresenter disabled value={doc} />
           </div>
         </svelte:fragment>

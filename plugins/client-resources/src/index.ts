@@ -112,7 +112,9 @@ async function hookClient (client: Promise<AccountClient>): Promise<AccountClien
         .then((res) => {
           resolve(hookProc(res))
         })
-        .catch((err) => reject(err))
+        .catch((err) => {
+          reject(err)
+        })
     })
   }
   return await client

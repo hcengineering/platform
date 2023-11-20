@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import { Class, Ref } from '@hcengineering/core'
-import { IntlString, Plugin, plugin } from '@hcengineering/platform'
-import { RefInputActionItem } from './types'
+import { type Class, type Ref } from '@hcengineering/core'
+import { type IntlString, type Plugin, plugin } from '@hcengineering/platform'
+import { type RefInputActionItem } from './types'
 
 /**
  * @public

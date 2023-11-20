@@ -1,14 +1,14 @@
 <!--
 // Copyright © 2022-2023 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -61,7 +61,7 @@
   let defaultAssignee: Ref<Employee> | null | undefined = project?.defaultAssignee ?? null
   let members: Ref<Account>[] =
     project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount()._id]
-  let projectsIdentifiers: Set<string> = new Set()
+  let projectsIdentifiers = new Set<string>()
   let isSaving = false
   let defaultStatus: Ref<IssueStatus> | undefined = project?.defaultIssueStatus
 
@@ -194,11 +194,9 @@
     dispatch('close', id)
   }
 
-  $: projectsQuery.query(
-    tracker.class.Project,
-    { _id: { $nin: project ? [project._id] : [] } },
-    (res) => (projectsIdentifiers = new Set(res.map(({ identifier }) => identifier)))
-  )
+  $: projectsQuery.query(tracker.class.Project, { _id: { $nin: project ? [project._id] : [] } }, (res) => {
+    projectsIdentifiers = new Set(res.map(({ identifier }) => identifier))
+  })
 
   function handleTypeChange (evt: CustomEvent<Ref<ProjectType>>): void {
     typeId = evt.detail
@@ -274,7 +272,13 @@
         />
         {#if !isNew}
           <div class="ml-1">
-            <Button size={'small'} icon={IconEdit} on:click={(ev) => changeIdentity(eventToHTMLElement(ev))} />
+            <Button
+              size={'small'}
+              icon={IconEdit}
+              on:click={(ev) => {
+                changeIdentity(eventToHTMLElement(ev))
+              }}
+            />
           </div>
         {:else if !isSaving && projectsIdentifiers.has(identifier.toUpperCase())}
           <div class="absolute overflow-label duplicated-identifier">

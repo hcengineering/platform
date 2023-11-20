@@ -18,13 +18,13 @@ export class ApplicationsDetailsPage extends CommonRecruitingPage {
 
   async getApplicationId (): Promise<string> {
     const applicationId = await this.textApplicationId.textContent()
-    await expect(applicationId !== null).toBeTruthy()
-    return applicationId != null ? applicationId : ''
+    expect(applicationId !== null).toBeTruthy()
+    return applicationId ?? ''
   }
 
   async changeState (status: string): Promise<void> {
     await this.buttonState.click()
     await this.selectFromDropdown(this.page, status)
-    await expect(await this.buttonState).toContainText(status)
+    await expect(this.buttonState).toContainText(status)
   }
 }

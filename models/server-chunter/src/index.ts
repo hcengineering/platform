@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import { Builder } from '@hcengineering/model'
+import { type Builder } from '@hcengineering/model'
 
-import core, { Class, Doc } from '@hcengineering/core'
+import core, { type Class, type Doc } from '@hcengineering/core'
 import chunter from '@hcengineering/chunter'
 import serverNotification from '@hcengineering/server-notification'
-import serverCore, { ObjectDDParticipant } from '@hcengineering/server-core'
+import serverCore, { type ObjectDDParticipant } from '@hcengineering/server-core'
 import serverChunter from '@hcengineering/server-chunter'
 import notification from '@hcengineering/notification'
 export { serverChunterId } from '@hcengineering/server-chunter'

@@ -14,19 +14,19 @@
 //
 
 import { getCategories } from '@anticrm/skillset'
-import core, { Ref, TxOperations } from '@hcengineering/core'
+import core, { type Ref, TxOperations } from '@hcengineering/core'
 import {
-  MigrateOperation,
-  MigrationClient,
-  MigrationUpgradeClient,
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient,
   createOrUpdate,
   tryUpgrade
 } from '@hcengineering/model'
-import tags, { TagCategory } from '@hcengineering/model-tags'
+import tags, { type TagCategory } from '@hcengineering/model-tags'
 import { createProjectType, createSequence } from '@hcengineering/model-task'
 import tracker from '@hcengineering/model-tracker'
 import { recruitId } from '@hcengineering/recruit'
-import task, { ProjectType } from '@hcengineering/task'
+import task, { type ProjectType } from '@hcengineering/task'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import recruit from './plugin'
 

@@ -1,14 +1,14 @@
 <!--
 // Copyright © 2023 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -28,7 +28,7 @@
     Component
   } from '..'
 
-  export let steps: ReadonlyArray<DialogStep>
+  export let steps: readonly DialogStep[]
   export let stepIndex = 0
   export let doneLabel: IntlString = ui.string.Save
   export let title: IntlString
@@ -110,7 +110,9 @@
       <Button
         kind="regular"
         label={ui.string.Back}
-        on:click={async () => await handleStepSelect(currentStepIndex - 1)}
+        on:click={async () => {
+          await handleStepSelect(currentStepIndex - 1)
+        }}
       />
     {/if}
     <Button
@@ -118,7 +120,11 @@
       label={isDone ? doneLabel : ui.string.Next}
       disabled={!isStepValid}
       loading={isSaving}
-      on:click={isDone ? handleDone : async () => await handleStepSelect(currentStepIndex + 1)}
+      on:click={isDone
+        ? handleDone
+        : async () => {
+          await handleStepSelect(currentStepIndex + 1)
+        }}
     />
   </svelte:fragment>
 
@@ -152,7 +158,11 @@
               class:disabled
               class:fulfilled
               title={step.name}
-              on:click={disabled || selected ? undefined : async () => await handleStepSelect(index)}
+              on:click={disabled || selected
+                ? undefined
+                : async () => {
+                  await handleStepSelect(index)
+                }}
             >
               <Label label={step.name} />
             </li>

@@ -16,7 +16,7 @@
 
 import type { IntlString, Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { AnyComponent } from './types'
+import { type AnyComponent } from './types'
 
 /**
  * @public

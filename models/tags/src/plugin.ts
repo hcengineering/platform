@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Ref } from '@hcengineering/core'
-import { IntlString, mergeIds } from '@hcengineering/platform'
-import { TagCategory, tagsId } from '@hcengineering/tags'
+import { type Ref } from '@hcengineering/core'
+import { type IntlString, mergeIds } from '@hcengineering/platform'
+import { type TagCategory, tagsId } from '@hcengineering/tags'
 import tags from '@hcengineering/tags-resources/src/plugin'
 import type { AnyComponent } from '@hcengineering/ui'
-import { ViewAction } from '@hcengineering/model-view'
+import { type ViewAction } from '@hcengineering/model-view'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import view from '@hcengineering/view'
 

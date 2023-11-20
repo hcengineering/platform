@@ -14,12 +14,12 @@
 //
 import { getMetadata } from '@hcengineering/platform'
 import presentation, { PDFViewer, getFileUrl } from '@hcengineering/presentation'
-import { ImageNode, ImageOptions as ImageNodeOptions } from '@hcengineering/text'
-import { IconSize, getIconSize2x, showPopup } from '@hcengineering/ui'
+import { ImageNode, type ImageOptions as ImageNodeOptions } from '@hcengineering/text'
+import { type IconSize, getIconSize2x, showPopup } from '@hcengineering/ui'
 import { mergeAttributes, nodeInputRule } from '@tiptap/core'
-import { Node as ProseMirrorNode } from '@tiptap/pm/model'
+import { type Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
-import { EditorView } from '@tiptap/pm/view'
+import { type EditorView } from '@tiptap/pm/view'
 
 /**
  * @public

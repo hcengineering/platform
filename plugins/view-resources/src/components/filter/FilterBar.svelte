@@ -162,7 +162,7 @@
     if (selectedFilter.viewletId !== activeViewlet[key]) return true
     if (selectedFilter.filters !== JSON.stringify(filters)) return true
     if (selectedFilter.viewletId !== null) {
-      const viewOptions = getViewOptions({ _id: selectedFilter.viewletId } as Viewlet, viewOptionStore)
+      const viewOptions = getViewOptions({ _id: selectedFilter.viewletId } as unknown as Viewlet, viewOptionStore)
       if (JSON.stringify(selectedFilter.viewOptions) !== JSON.stringify(viewOptions)) return true
     }
     return false
@@ -195,14 +195,18 @@
         icon={view.icon.Views}
         label={view.string.SaveAs}
         width={'fit-content'}
-        on:click={() => saveFilteredView()}
+        on:click={async () => {
+          await saveFilteredView()
+        }}
       />
       {#if selectedFilterChanged($selectedFilterStore, $filterStore, $activeViewlet, $viewOptionStore)}
         <Button
           icon={view.icon.Views}
           label={view.string.Save}
           width={'fit-content'}
-          on:click={() => saveCurrentFilteredView($selectedFilterStore)}
+          on:click={async () => {
+            await saveCurrentFilteredView($selectedFilterStore)
+          }}
         />
       {/if}
     </div>

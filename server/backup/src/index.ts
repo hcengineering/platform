@@ -186,11 +186,11 @@ async function writeChanges (storage: BackupStorage, snapshot: string, changes: 
     await write(`${k}\n`, writable)
   }
   writable.end()
-  await new Promise((resolve) =>
+  await new Promise((resolve) => {
     writable.flush(() => {
       resolve(null)
     })
-  )
+  })
 }
 
 /**
@@ -737,7 +737,7 @@ export async function restore (
                     blobs.delete(name)
                     const doc = d?.doc as BlobData
                     doc.base64Data = bf.toString('base64') ?? ''
-                    sendChunk(doc, bf.length).finally(() => {
+                    void sendChunk(doc, bf.length).finally(() => {
                       requiredDocs.delete(doc._id)
                       next()
                     })
@@ -761,13 +761,13 @@ export async function restore (
                       const d = blobs.get(bname)
                       blobs.delete(bname)
                       ;(doc as BlobData).base64Data = d?.buffer?.toString('base64') ?? ''
-                      sendChunk(doc, bf.length).finally(() => {
+                      void sendChunk(doc, bf.length).finally(() => {
                         requiredDocs.delete(doc._id)
                         next()
                       })
                     }
                   } else {
-                    sendChunk(doc, bf.length).finally(() => {
+                    void sendChunk(doc, bf.length).finally(() => {
                       requiredDocs.delete(doc._id)
                       next()
                     })

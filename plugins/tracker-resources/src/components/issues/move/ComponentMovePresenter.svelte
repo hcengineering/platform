@@ -23,7 +23,7 @@
 
   export let issue: Issue
   export let targetProject: Project
-  export let issueToUpdate: Map<Ref<Issue>, IssueToUpdate> = new Map()
+  export let issueToUpdate = new Map<Ref<Issue>, IssueToUpdate>()
   export let components: Component[]
 
   $: current = components.find((it) => it._id === issue.component)

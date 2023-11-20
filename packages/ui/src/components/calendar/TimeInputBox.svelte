@@ -174,8 +174,12 @@
     bind:this={edits[0].el}
     class="digit"
     tabindex="0"
-    on:keydown={(ev) => keyDown(ev, edits[0].id)}
-    on:focus={() => focused(edits[0].id)}
+    on:keydown={(ev) => {
+      keyDown(ev, edits[0].id)
+    }}
+    on:focus={() => {
+      focused(edits[0].id)
+    }}
     on:blur={() => (selected = null)}
   >
     {#if edits[0].value > -1}
@@ -188,8 +192,12 @@
     bind:this={edits[1].el}
     class="digit"
     tabindex="0"
-    on:keydown={(ev) => keyDown(ev, edits[1].id)}
-    on:focus={() => focused(edits[1].id)}
+    on:keydown={(ev) => {
+      keyDown(ev, edits[1].id)
+    }}
+    on:focus={() => {
+      focused(edits[1].id)
+    }}
     on:blur={() => (selected = null)}
   >
     {#if edits[1].value > -1}

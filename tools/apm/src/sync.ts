@@ -1,4 +1,4 @@
-import { CommentArray, CommentObject, parse, stringify } from 'comment-json'
+import { type CommentArray, type CommentObject, parse, stringify } from 'comment-json'
 import { readFile, writeFile } from 'fs/promises'
 import path, { join } from 'path'
 
@@ -29,7 +29,7 @@ export async function syncRushFiles (
     const sPath = path.dirname(path.resolve(prj)).split(path.sep)
     const diff = path.join(...sPath.slice(abs.length))
     console.log('processing', diff)
-    const rushJsonSource = (await parse((await readFile(prj)).toString())) as CommentObject
+    const rushJsonSource = parse((await readFile(prj)).toString()) as CommentObject
     const sprojects = rushJsonSource.projects as unknown as CommentArray<RushPackage>
     for (const [k, v] of Object.entries(rushJsonSource)) {
       platformJson[k] = v

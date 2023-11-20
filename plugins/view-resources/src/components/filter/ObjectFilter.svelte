@@ -48,7 +48,7 @@
   filter.modes = filter.modes === undefined ? [view.filter.FilterObjectIn, view.filter.FilterObjectNin] : filter.modes
   filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
 
-  let values: (Doc | undefined | null)[] = []
+  let values: Array<Doc | undefined | null> = []
   let objectsPromise: Promise<FindResult<Doc>> | undefined
   let grouppingManager: GrouppingManager | undefined
 
@@ -149,7 +149,9 @@
   function updateFilter () {
     clearTimeout(filterUpdateTimeout)
 
-    filterUpdateTimeout = setTimeout(() => onChange(filter), FILTER_DEBOUNCE_MS)
+    filterUpdateTimeout = setTimeout(() => {
+      onChange(filter)
+    }, FILTER_DEBOUNCE_MS)
   }
 
   let search: string = ''

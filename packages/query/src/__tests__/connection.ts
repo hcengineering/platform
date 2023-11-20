@@ -69,7 +69,7 @@ FulltextStorage & {
     findOne: async (_class, query, options) => (await findAll(_class, query, { ...options, limit: 1 })).shift(),
     getHierarchy: () => hierarchy,
     getModel: () => model,
-    getAccount: async () => ({} as unknown as any),
+    getAccount: async () => ({}) as unknown as any,
     tx: async (tx: Tx): Promise<TxResult> => {
       if (tx.objectSpace === core.space.Model) {
         hierarchy.tx(tx)

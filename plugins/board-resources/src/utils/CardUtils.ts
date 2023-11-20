@@ -1,17 +1,17 @@
-import { Card } from '@hcengineering/board'
-import { Employee, PersonAccount } from '@hcengineering/contact'
+import { type Card } from '@hcengineering/board'
+import { type Employee, type PersonAccount } from '@hcengineering/contact'
 import {
-  TxOperations as Client,
-  TxResult,
+  type TxOperations as Client,
+  type TxResult,
   getCurrentAccount,
-  Ref,
-  Space,
-  AttachedData,
+  type Ref,
+  type Space,
+  type AttachedData,
   SortingOrder,
-  Status
+  type Status
 } from '@hcengineering/core'
 import { showPanel } from '@hcengineering/ui'
-import task, { calcRank, TodoItem } from '@hcengineering/task'
+import task, { calcRank, type TodoItem } from '@hcengineering/task'
 import board from '../plugin'
 
 export async function createCard (

@@ -14,15 +14,15 @@
 //
 
 import type { Client, Doc, Ref } from '@hcengineering/core'
-import { NotificationGroup, NotificationType } from '@hcengineering/notification'
+import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
 import type { IntlString, Resource, Status } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { recruitId } from '@hcengineering/recruit'
 import recruit from '@hcengineering/recruit-resources/src/plugin'
-import { ProjectType } from '@hcengineering/task'
+import { type ProjectType } from '@hcengineering/task'
 import type { AnyComponent, Location } from '@hcengineering/ui'
 import type { Action, ActionCategory, ViewAction, ViewQueryAction, Viewlet } from '@hcengineering/view'
-import { ActivityExtension } from '@hcengineering/activity'
+import { type ActivityExtension } from '@hcengineering/activity'
 
 export default mergeIds(recruitId, recruit, {
   action: {

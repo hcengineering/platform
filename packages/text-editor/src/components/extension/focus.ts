@@ -1,4 +1,4 @@
-import { Editor, Extension } from '@tiptap/core'
+import { type Editor, Extension } from '@tiptap/core'
 
 const canBlur = (editor: Editor, options: FocusOptions): boolean => {
   return (

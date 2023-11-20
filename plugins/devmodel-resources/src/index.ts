@@ -14,27 +14,27 @@
 //
 
 import core, {
-  Account,
-  AccountClient,
-  Class,
-  Client,
-  Doc,
-  DocumentQuery,
-  FindOptions,
-  FindResult,
-  Hierarchy,
-  ModelDb,
-  Ref,
-  Tx,
-  TxResult,
-  WithLookup,
-  SearchQuery,
-  SearchOptions,
-  SearchResult
+  type Account,
+  type AccountClient,
+  type Class,
+  type Client,
+  type Doc,
+  type DocumentQuery,
+  type FindOptions,
+  type FindResult,
+  type Hierarchy,
+  type ModelDb,
+  type Ref,
+  type Tx,
+  type TxResult,
+  type WithLookup,
+  type SearchQuery,
+  type SearchOptions,
+  type SearchResult
 } from '@hcengineering/core'
 import { devModelId } from '@hcengineering/devmodel'
 import { Builder } from '@hcengineering/model'
-import { IntlString, Resources, getMetadata } from '@hcengineering/platform'
+import { type IntlString, type Resources, getMetadata } from '@hcengineering/platform'
 import view from '@hcengineering/view'
 import workbench from '@hcengineering/workbench'
 import ModelView from './components/ModelView.svelte'

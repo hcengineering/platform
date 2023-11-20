@@ -1,7 +1,7 @@
-import { Writable } from 'svelte/store'
+import { type Writable } from 'svelte/store'
 import { generateId } from '@hcengineering/core'
 
-import { Notification } from './Notification'
+import { type Notification } from './Notification'
 import { NotificationPosition } from './NotificationPosition'
 import { NotificationSeverity } from './NotificationSeverity'
 
