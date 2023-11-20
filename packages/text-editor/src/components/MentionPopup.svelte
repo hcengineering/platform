@@ -165,6 +165,7 @@
 </script>
 
 {#if (items.length === 0 && query !== '') || items.length > 0}
+  <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
   <form class="antiPopup mentionPoup" on:keydown={onKeyDown} use:resizeObserver={() => dispatch('changeSize')}>
     <div class="ap-scroll" bind:this={scrollContainer}>
       <div class="ap-box">
@@ -185,6 +186,7 @@
             <svelte:fragment slot="item" let:item={num}>
               {@const item = items[num]}
               {@const doc = item.item}
+              <!-- svelte-ignore a11y-no-static-element-interactions -->
               <div
                 class="ap-menuItem withComp"
                 on:click={() => {
