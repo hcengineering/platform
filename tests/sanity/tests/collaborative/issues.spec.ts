@@ -1,12 +1,19 @@
 import { test } from '@playwright/test'
-import { generateId, PlatformURI, PlatformUser, PlatformUserSecond } from '../utils'
-import { SelectWorkspacePage } from '../model/select-workspace-page'
+import {
+  generateId,
+  PlatformSetting,
+  PlatformSettingSecond,
+  PlatformURI,
+} from '../utils'
 import { allure } from 'allure-playwright'
-import { LoginPage } from '../model/login-page'
 import { NewIssue } from '../model/tracker/types'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
+
+test.use({
+  storageState: PlatformSetting
+})
 
 test.describe('Collaborative test for issue', () => {
   test.beforeEach(async ({ page }) => {
@@ -14,21 +21,7 @@ test.describe('Collaborative test for issue', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
   })
 
-  test('Issues can be assigned to another users', async ({ browser }) => {
-    const userFirstContext = await browser.newContext()
-    const userSecondContext = await browser.newContext()
-
-    const userFirstPage = await userFirstContext.newPage()
-    const userSecondPage = await userSecondContext.newPage()
-
-    // create issue
-    const loginPage = new LoginPage(userFirstPage)
-    await loginPage.goto()
-    await loginPage.login(PlatformUser, '1234')
-
-    const selectWorkspacePage = new SelectWorkspacePage(userFirstPage)
-    await selectWorkspacePage.selectWorkspace('sanity-ws')
-
+  test('Issues can be assigned to another users', async ({ page, browser }) => {
     const newIssue: NewIssue = {
       title: `Collaborative test for issue-${generateId()}`,
       description: 'Collaborative test for issue',
@@ -44,25 +37,26 @@ test.describe('Collaborative test for issue', () => {
       filePath: 'cat.jpeg'
     }
 
-    const leftSideMenuPage = new LeftSideMenuPage(userFirstPage)
+    await (await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
+    const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.buttonTracker.click()
 
-    const issuesPage = new IssuesPage(userFirstPage)
-    await issuesPage.modelSelectorAll.click()
+    const issuesPage = new IssuesPage(page)
     await issuesPage.createNewIssue(newIssue)
+    await issuesPage.linkSidebarAll.click()
+    await issuesPage.modelSelectorAll.click()
+    await issuesPage.searchIssueByName(newIssue.title)
+    await issuesPage.openIssueByName(newIssue.title)
 
     // check by another user
-    const loginPageSecond = new LoginPage(userSecondPage)
-    await loginPageSecond.goto()
-    await loginPageSecond.login(PlatformUserSecond, '1234')
-
-    const selectWorkspacePageSecond = new SelectWorkspacePage(userSecondPage)
-    await selectWorkspacePageSecond.selectWorkspace('sanity-ws')
-
+    const userSecondContext = await browser.newContext({ storageState: PlatformSettingSecond })
+    const userSecondPage = await userSecondContext.newPage()
+    await (await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
     const leftSideMenuPageSecond = new LeftSideMenuPage(userSecondPage)
     await leftSideMenuPageSecond.buttonTracker.click()
 
     const issuesPageSecond = new IssuesPage(userSecondPage)
+    await issuesPageSecond.linkSidebarAll.click()
     await issuesPageSecond.modelSelectorAll.click()
     await issuesPageSecond.searchIssueByName(newIssue.title)
     await issuesPageSecond.openIssueByName(newIssue.title)

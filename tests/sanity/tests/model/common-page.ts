@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test'
+import { Page, expect } from '@playwright/test'
 
 export class CommonPage {
   async selectMenuItem (page: Page, name: string): Promise<void> {
@@ -49,6 +49,7 @@ export class CommonPage {
   async selectAssignee (page: Page, name: string): Promise<void> {
     if (name !== 'first') {
       await page.locator('div.selectPopup input').fill(name.split(' ')[0])
+      await expect(page.locator('div.selectPopup div.list-item')).toHaveCount(1)
     }
     await page.locator('div.selectPopup div.list-item').click()
   }
