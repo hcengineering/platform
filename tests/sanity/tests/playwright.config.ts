@@ -1,4 +1,4 @@
-import { devices, PlaywrightTestConfig } from '@playwright/test'
+import { PlaywrightTestConfig } from '@playwright/test'
 import { config as dotenvConfig } from 'dotenv'
 dotenvConfig()
 
