@@ -20,14 +20,8 @@
   export let as = 'div'
 
   const { onContentElement } = getNodeViewContext()
-
-  let element: HTMLElement
-  $: if (element) {
-    element.style.whiteSpace = 'pre-wrap'
-    onContentElement(element)
-  }
 </script>
 
-<svelte:element this={as} bind:this={element} {...$$restProps}>
+<svelte:element this={as} use:onContentElement {...$$restProps}>
   <slot />
 </svelte:element>

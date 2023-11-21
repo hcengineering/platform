@@ -30,6 +30,7 @@ import { SvelteRenderer } from './svelte-renderer'
 export interface SvelteNodeViewRendererOptions extends NodeViewRendererOptions {
   update?: (node: ProseMirrorNode, decorations: DecorationWithType[]) => boolean
   contentAs?: string
+  contentClass?: string
   contentDOMElementAs?: string
   componentProps?: Record<string, any>
 }
@@ -80,9 +81,10 @@ class SvelteNodeView extends NodeView<SvelteNodeViewComponent, Editor, SvelteNod
     }
 
     const contentAs = this.options.contentAs ?? (this.node.isInline ? 'span' : 'div')
+    const contentClass = this.options.contentClass ?? `node-${this.node.type.name}`
 
     const target = document.createElement(contentAs)
-    target.classList.add(`node-${this.node.type.name}`)
+    target.classList.add(contentClass)
 
     const context = createNodeViewContext({
       onDragStart: this.onDragStart.bind(this),
