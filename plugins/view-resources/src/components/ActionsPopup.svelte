@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup, Doc, Ref } from '@hcengineering/core'
+  import { WithLookup, Doc, Ref, Class, SearchResultDoc } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
-  import { createQuery, getClient, ActionContext } from '@hcengineering/presentation'
+  import presentation, { createQuery, getClient, ActionContext, ObjectSearchCategory } from '@hcengineering/presentation'
   import ui, {
     Button,
     closePopup,
@@ -38,6 +38,13 @@
   import ObjectPresenter from './ObjectPresenter.svelte'
   import { tick } from 'svelte'
   import { createEventDispatcher } from 'svelte'
+
+  import {
+    type SearchSection,
+    type SearchItem,
+    findCategoryByClass,
+    packSearchResultsForListView
+  } from '@hcengineering/text-editor'
 
   export let viewContext: ViewContext
 
@@ -181,6 +188,74 @@
   }
 
   const dispatch = createEventDispatcher()
+
+
+  // Copy-paste for Fulltext search
+
+
+  let items: SearchItem[] = []
+
+  let categories: ObjectSearchCategory[] = []
+
+  client
+    .findAll(presentation.class.ObjectSearchCategory, { context: 'spotlight' })
+    .then(async (results) => {
+      categories = results
+      await updateItems(search)
+    })
+    .catch((e) => {
+      console.error(e)
+    })
+
+
+
+  async function doFulltextSearch (classes: Array<Ref<Class<Doc>>>, query: string): Promise<SearchSection[]> {
+    const result = await client.searchFulltext(
+      {
+        query: `${query}*`,
+        classes
+      },
+      {
+        limit: 10
+      }
+    )
+
+    console.log('actions popup results', result)
+
+    const itemsByClass = new Map<Ref<Class<Doc>>, SearchResultDoc[]>()
+    for (const item of result.docs) {
+      const list = itemsByClass.get(item.doc._class)
+      if (list === undefined) {
+        itemsByClass.set(item.doc._class, [item])
+      } else {
+        list.push(item)
+      }
+    }
+
+    const sections: SearchSection[] = []
+    for (const [_class, items] of itemsByClass.entries()) {
+      const category = findCategoryByClass(categories, _class)
+      if (category !== undefined) {
+        sections.push({ category, items })
+      }
+    }
+
+    return sections
+  }
+
+  async function updateItems (query: string): Promise<void> {
+    const classesToSearch: Array<Ref<Class<Doc>>> = []
+    for (const cat of categories) {
+      if (cat.classToSearch !== undefined) {
+        classesToSearch.push(cat.classToSearch)
+      }
+    }
+
+    const sections = await doFulltextSearch(classesToSearch, query)
+    items = packSearchResultsForListView(sections)
+  }
+
+  $: updateItems(search)
 </script>
 
 <ActionContext
@@ -189,6 +264,7 @@
   }}
 />
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="selectPopup width-40"
   style:width="15rem"

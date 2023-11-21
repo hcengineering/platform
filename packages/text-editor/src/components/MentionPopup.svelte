@@ -16,22 +16,20 @@
 <script lang="ts">
   import { Label, ListView, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import presentation, { getClient, ObjectSearchCategory } from '@hcengineering/presentation'
+  import presentation, { getClient, type ObjectSearchCategory } from '@hcengineering/presentation'
 
   import { Class, Ref, Doc, SearchResultDoc } from '@hcengineering/core'
+
+  import {
+    type SearchSection,
+    type SearchItem,
+    packSearchResultsForListView,
+    findCategoryByClass
+  } from '../search'
+
   import MentionResult from './MentionResult.svelte'
 
   export let query: string = ''
-
-  interface SearchSection {
-    category: ObjectSearchCategory
-    items: SearchResultDoc[]
-  }
-  interface SearchItem {
-    num: number
-    item: SearchResultDoc
-    category: ObjectSearchCategory
-  }
 
   let items: SearchItem[] = []
   let categories: ObjectSearchCategory[] = []
@@ -90,35 +88,6 @@
       }
     }
     return false
-  }
-
-  function packSearchResultsForListView (sections: SearchSection[]): SearchItem[] {
-    let results: SearchItem[] = []
-    for (const section of sections) {
-      const category = section.category
-      const items = section.items
-
-      if (category.classToSearch !== undefined) {
-        results = results.concat(
-          items.map((item, num) => {
-            return { num, category, item }
-          })
-        )
-      }
-    }
-    return results
-  }
-
-  function findCategoryByClass (
-    categories: ObjectSearchCategory[],
-    _class: Ref<Class<Doc>>
-  ): ObjectSearchCategory | undefined {
-    for (const category of categories) {
-      if (category.classToSearch === _class) {
-        return category
-      }
-    }
-    return undefined
   }
 
   async function doFulltextSearch (classes: Array<Ref<Class<Doc>>>, query: string): Promise<SearchSection[]> {

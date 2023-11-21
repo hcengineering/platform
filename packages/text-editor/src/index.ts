@@ -34,6 +34,7 @@ export * from './components/node-view'
 export { default } from './plugin'
 export * from './types'
 export * from './utils'
+export * from './search'
 
 export { FocusExtension, type FocusOptions, type FocusStorage } from './components/extension/focus'
 export { HeadingsExtension, type HeadingsOptions, type HeadingsStorage } from './components/extension/headings'
