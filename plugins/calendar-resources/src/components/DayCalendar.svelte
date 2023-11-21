@@ -59,6 +59,7 @@
   export let startFromWeekStart = true
   export let weekFormat: 'narrow' | 'short' | 'long' | undefined = displayedDaysCount > 4 ? 'short' : 'long'
   export let showHeader: boolean = true
+  export let showFooter: boolean = true
   export let clearCells: boolean = false
 
   const client = getClient()
@@ -67,11 +68,14 @@
   const todayDate = new Date()
   const ampm = new Intl.DateTimeFormat([], { hour: 'numeric' }).resolvedOptions().hour12
   const getTimeFormat = (hour: number, min: number = 0): string => {
-    if (min === 0) return ampm ? `${hour > 12 ? hour - 12 : hour}${hour < 12 ? 'am' : 'pm'}` : `${addZero(hour)}:00`
-    else {
+    if (min === 0) {
+      return ampm
+        ? `${hour > 12 ? hour - 12 : hour}${hour < 12 ? 'am' : 'pm'}`
+        : `${addZero(hour === 24 ? 0 : hour)}:00`
+    } else {
       return ampm
         ? `${hour > 12 ? hour - 12 : hour}:${addZero(min)}${hour < 12 ? 'am' : 'pm'}`
-        : `${addZero(hour)}:${addZero(min)}`
+        : `${addZero(hour === 24 ? 0 : hour)}:${addZero(min)}`
     }
   }
   const rem = (n: number): number => n * fontSize
@@ -361,6 +365,7 @@
       (startTime.mins / 60) * cellHeight +
       getGridOffset(startTime.mins)
     result.bottom =
+      (showFooter ? rem(2) + 1 : 0) +
       cellHeight * (displayedHours - startHour - endTime.hours - 1) +
       ((60 - endTime.mins) / 60) * cellHeight +
       getGridOffset(endTime.mins, true)
@@ -847,8 +852,25 @@
           }}
         />
       {/each}
-      {#if hourOfDay === displayedHours - startHour - 1}<div class="clear-cell" />{/if}
+      {#if hourOfDay === displayedHours - startHour - 1}
+        {#if showFooter}
+          <div
+            class="time-cell"
+            style:grid-column={'time-col 1 / col-start 1'}
+            style:grid-row={`row-start ${hourOfDay * 2 + 2} / row-start ${hourOfDay * 2 + 4}`}
+          >
+            {getTimeFormat(displayedHours - startHour)}
+          </div>
+        {:else}
+          <div class="clear-cell" />
+        {/if}
+      {/if}
     {/each}
+    {#if showFooter}
+      {#each [...Array(displayedDaysCount).keys()] as _}
+        <div class="footer-cell" />
+      {/each}
+    {/if}
 
     {#key [styleAD, calendarWidth, displayedDaysCount, showHeader]}
       {#each newEvents.filter((ev) => !ev.allDay) as event, i}
@@ -969,6 +991,10 @@
       &.lowerLabel::after {
         top: -0.125rem;
       }
+    }
+    .footer-cell {
+      height: 2rem;
+      background-color: var(--theme-bg-color);
     }
   }
   .empty-cell {
