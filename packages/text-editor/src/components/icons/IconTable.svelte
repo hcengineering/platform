@@ -1,7 +1,7 @@
 <script lang="ts">
   export let size: 'small' | 'medium' | 'large'
   export let style: 'table' | 'grid' | 'tableProps' = 'table'
-  const fill: string = 'currentColor'
+  export let fill: string = 'currentColor'
 </script>
 
 {#if style === 'table'}
