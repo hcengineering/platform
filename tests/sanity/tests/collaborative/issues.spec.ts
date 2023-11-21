@@ -3,7 +3,6 @@ import { generateId, PlatformSetting, PlatformSettingSecond, PlatformURI } from 
 import { allure } from 'allure-playwright'
 import { NewIssue } from '../model/tracker/types'
 import { IssuesPage } from '../model/tracker/issues-page'
-import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 
 test.use({
@@ -18,7 +17,7 @@ test.describe('Collaborative test for issue', () => {
 
   test('Issues can be assigned to another users', async ({ page, browser }) => {
     const newIssue: NewIssue = {
-      title: `Collaborative test for issue`,
+      title: 'Collaborative test for issue',
       description: 'Collaborative test for issue',
       status: 'Backlog',
       priority: 'Urgent',
