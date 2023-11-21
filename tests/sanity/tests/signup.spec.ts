@@ -1,7 +1,8 @@
-import { test, expect } from '@playwright/test'
+import { test } from '@playwright/test'
 import { generateId, PlatformURI } from './utils'
 import { allure } from 'allure-playwright'
 import { SignupPage } from './model/signup-page'
+import { SelectWorkspacePage } from './model/select-workspace-page'
 
 test.describe('Signup tests', () => {
   test.beforeEach(async ({ page }) => {
@@ -13,6 +14,10 @@ test.describe('Signup tests', () => {
     const signupPage = new SignupPage(page)
     await signupPage.signup('FirstName', 'LastName', `testemail+${generateId()}@gmail.com`, 'UniquePass!1234')
 
-    await expect(signupPage.textError).toHaveText('Internal server error')
+    const selectWorkspacePage = new SelectWorkspacePage(page)
+    await selectWorkspacePage.buttonCreateWorkspace.click()
+    await selectWorkspacePage.createWorkspace(`test-${generateId()}`)
+
+    await selectWorkspacePage.checkError(page, 'Account not found')
   })
 })

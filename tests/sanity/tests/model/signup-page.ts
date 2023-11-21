@@ -1,6 +1,7 @@
 import { expect, type Locator, type Page } from '@playwright/test'
+import { CommonPage } from './common-page'
 
-export class SignupPage {
+export class SignupPage extends CommonPage {
   readonly page: Page
   readonly inputFirstName: Locator
   readonly inputLastName: Locator
@@ -8,9 +9,9 @@ export class SignupPage {
   readonly inputPassword: Locator
   readonly inputRepeatPassword: Locator
   readonly buttonSignup: Locator
-  readonly textError: Locator
 
   constructor (page: Page) {
+    super()
     this.page = page
     this.inputFirstName = page.locator('input[name="given-name"]')
     this.inputLastName = page.locator('input[name="family-name"]')
@@ -18,7 +19,6 @@ export class SignupPage {
     this.inputPassword = page.locator('input[name="new-password"]').nth(0)
     this.inputRepeatPassword = page.locator('input[name="new-password"]').nth(1)
     this.buttonSignup = page.locator('div.form-row > button', { hasText: 'Sign Up' })
-    this.textError = page.locator('div.ERROR span')
   }
 
   async signup (firstname: string, lastname: string, email: string, password: string): Promise<void> {

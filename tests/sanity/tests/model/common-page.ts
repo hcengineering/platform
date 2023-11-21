@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test'
+import { expect, Page } from '@playwright/test'
 
 export class CommonPage {
   async selectMenuItem (page: Page, name: string): Promise<void> {
@@ -51,5 +51,9 @@ export class CommonPage {
       await page.locator('div.selectPopup input').fill(name.split(' ')[0])
     }
     await page.locator('div.selectPopup div.list-item').click()
+  }
+
+  async checkError (page: Page, errorMessage: string): Promise<void> {
+    await expect(page.locator('div.ERROR span')).toHaveText(errorMessage)
   }
 }

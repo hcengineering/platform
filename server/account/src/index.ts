@@ -443,7 +443,7 @@ async function sendConfirmation (productId: string, account: Account): Promise<v
     subject = 'Confirm your email address to sign up for ezQMS'
   }
 
-  if (sesURL !== undefined) {
+  if (sesURL !== undefined && sesURL !== '') {
     const to = account.email
     await fetch(concatLink(sesURL, '/send'), {
       method: 'post',
@@ -523,8 +523,14 @@ export async function createAcc (
   if (newAccount === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, { account: email }))
   }
+  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
   if (!confirmed) {
-    await sendConfirmation(productId, newAccount)
+    if (sesURL !== undefined && sesURL !== '') {
+      await sendConfirmation(productId, newAccount)
+    } else {
+      console.info('Please provide email service url to enable email confirmations.')
+      await confirmEmail(db, email)
+    }
   }
   return newAccount
 }
