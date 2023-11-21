@@ -1,10 +1,5 @@
 import { test } from '@playwright/test'
-import {
-  generateId,
-  PlatformSetting,
-  PlatformSettingSecond,
-  PlatformURI,
-} from '../utils'
+import { generateId, PlatformSetting, PlatformSettingSecond, PlatformURI } from '../utils'
 import { allure } from 'allure-playwright'
 import { NewIssue } from '../model/tracker/types'
 import { IssuesPage } from '../model/tracker/issues-page'
