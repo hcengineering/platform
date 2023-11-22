@@ -69,6 +69,8 @@ export const findNodeUuidMark = (node: Node): ProseMirrorMark | undefined => {
  */
 export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
   name: NAME,
+  exitable: true,
+  inclusive: false,
   addOptions () {
     return {
       HTMLAttributes: {}
