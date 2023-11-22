@@ -16,7 +16,7 @@ test.describe('Collaborative test for issue', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
   })
 
-  test.skip('Issues can be assigned to another users', async ({ page, browser }) => {
+  test('Issues can be assigned to another users', async ({ page, browser }) => {
     const newIssue: NewIssue = {
       title: 'Collaborative test for issue',
       description: 'Collaborative test for issue',
