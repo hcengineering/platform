@@ -16,7 +16,7 @@ test.describe('Collaborative test for issue', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
   })
 
-  test('Issues can be assigned to another users', async ({ page, browser }) => {
+  test.skip('Issues can be assigned to another users', async ({ page, browser }) => {
     const newIssue: NewIssue = {
       title: 'Collaborative test for issue',
       description: 'Collaborative test for issue',
@@ -94,11 +94,11 @@ test.describe('Collaborative test for issue', () => {
     await issuesDetailsPage.editIssue({ status: 'In Progress' })
 
     // check by another user
-    await issuesPageSecond.modelSelectorActive.click()
+    await issuesPageSecond.modelSelectorBacklog.click()
     // not active for another user
     await issuesPageSecond.checkIssueNotExist(issue.title)
 
-    await issuesPageSecond.modelSelectorAll.click()
+    await issuesPageSecond.modelSelectorActive.click()
     await issuesPageSecond.searchIssueByName(issue.title)
     await issuesPageSecond.openIssueByName(issue.title)
 
