@@ -22,6 +22,7 @@ import MentionList from './MentionList.svelte'
 import { NodeUuidExtension } from './extension/nodeUuid'
 import { SvelteRenderer } from './node-view'
 import { CodemarkExtension } from './extension/codemark'
+import type { SuggestionKeyDownProps, SuggestionProps } from './extension/suggestion'
 
 export const tableExtensions = [
   Table.configure({
@@ -157,14 +158,14 @@ export const completionConfig: Partial<CompletionOptions> = {
     class: 'reference'
   },
   suggestion: {
-    items: async (query: { query: string }) => {
+    items: async () => {
       return []
     },
     render: () => {
       let component: any
 
       return {
-        onStart: (props: any) => {
+        onStart: (props: SuggestionProps) => {
           component = new SvelteRenderer(MentionList, {
             element: document.body,
             props: {
@@ -175,10 +176,13 @@ export const completionConfig: Partial<CompletionOptions> = {
             }
           })
         },
-        onUpdate (props: any) {
+        onUpdate (props: SuggestionProps) {
           component.updateProps(props)
         },
-        onKeyDown (props: any) {
+        onKeyDown (props: SuggestionKeyDownProps) {
+          if (props.event.key === 'Escape') {
+            props.event.stopPropagation()
+          }
           return component.onKeyDown(props)
         },
         onExit () {
