@@ -5,7 +5,6 @@ import { CommonTrackerPage } from './common-tracker-page'
 
 export class IssuesPage extends CommonTrackerPage {
   readonly page: Page
-  readonly pageHeader: Locator
   readonly modelSelectorAll: Locator
   readonly modelSelectorActive: Locator
   readonly modelSelectorBacklog: Locator
@@ -24,14 +23,14 @@ export class IssuesPage extends CommonTrackerPage {
   readonly textPopupCreateNewIssueFile: Locator
   readonly buttonCreateIssue: Locator
   readonly inputSearch: Locator
+  readonly linkSidebarAll: Locator
 
   constructor (page: Page) {
     super(page)
     this.page = page
-    this.pageHeader = page.locator('div[class*="header"]', { hasText: 'Issues' })
-    this.modelSelectorAll = this.pageHeader.locator('text=All')
-    this.modelSelectorActive = this.pageHeader.locator('text=Active')
-    this.modelSelectorBacklog = this.pageHeader.locator('text=Backlog')
+    this.modelSelectorAll = page.locator('div[data-id="tab-all"]')
+    this.modelSelectorActive = page.locator('div[data-id="tab-active"]')
+    this.modelSelectorBacklog = page.locator('div[data-id="tab-backlog"]')
     this.buttonCreateNewIssue = page.locator('button > span', { hasText: 'New issue' })
     this.inputPopupCreateNewIssueTitle = page.locator('form[id="tracker:string:NewIssue"] input[type="text"]')
     this.inputPopupCreateNewIssueDescription = page.locator('form[id="tracker:string:NewIssue"] div.tiptap')
@@ -59,6 +58,7 @@ export class IssuesPage extends CommonTrackerPage {
     this.textPopupCreateNewIssueFile = page.locator('div[class*="attachments"] > div[class*="attachment"]')
     this.buttonCreateIssue = page.locator('button > span', { hasText: 'Create issue' })
     this.inputSearch = page.locator('input[placeholder="Search"]')
+    this.linkSidebarAll = page.locator('a[href$="all-issues"]')
   }
 
   async createNewIssue (data: NewIssue): Promise<void> {
