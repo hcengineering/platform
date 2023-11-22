@@ -1,8 +1,9 @@
 import { test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformSettingSecond, PlatformURI } from '../utils'
+import { generateId, getSecondPage, PlatformSetting, PlatformURI } from '../utils'
 import { allure } from 'allure-playwright'
 import { NewIssue } from '../model/tracker/types'
 import { IssuesPage } from '../model/tracker/issues-page'
+import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 
 test.use({
@@ -31,7 +32,20 @@ test.describe('Collaborative test for issue', () => {
       filePath: 'cat.jpeg'
     }
 
+    // open second page
+    const userSecondPage = await getSecondPage(browser)
+    await (await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
+    const leftSideMenuPageSecond = new LeftSideMenuPage(userSecondPage)
+    await leftSideMenuPageSecond.buttonTracker.click()
+
+    const issuesPageSecond = new IssuesPage(userSecondPage)
+    await issuesPageSecond.linkSidebarAll.click()
+    await issuesPageSecond.modelSelectorAll.click()
+
+    // create a new issue by first user
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
 
     const issuesPage = new IssuesPage(page)
     await issuesPage.createNewIssue(newIssue)
@@ -40,14 +54,7 @@ test.describe('Collaborative test for issue', () => {
     await issuesPage.searchIssueByName(newIssue.title)
     await issuesPage.openIssueByName(newIssue.title)
 
-    // check by another user
-    const userSecondContext = await browser.newContext({ storageState: PlatformSettingSecond })
-    const userSecondPage = await userSecondContext.newPage()
-    await (await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
-
-    const issuesPageSecond = new IssuesPage(userSecondPage)
-    await issuesPageSecond.linkSidebarAll.click()
-    await issuesPageSecond.modelSelectorAll.click()
+    // check created issued by second user
     await issuesPageSecond.searchIssueByName(newIssue.title)
     await issuesPageSecond.openIssueByName(newIssue.title)
 
@@ -65,6 +72,17 @@ test.describe('Collaborative test for issue', () => {
       description: 'Collaborative test for issue'
     }
 
+    // open second page
+    const userSecondPage = await getSecondPage(browser)
+    await (await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
+    const leftSideMenuPageSecond = new LeftSideMenuPage(userSecondPage)
+    await leftSideMenuPageSecond.buttonTracker.click()
+
+    const issuesPageSecond = new IssuesPage(userSecondPage)
+    await issuesPageSecond.linkSidebarAll.click()
+    await issuesPageSecond.modelSelectorAll.click()
+
+    // change status
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
     const issuesPage = new IssuesPage(page)
     await issuesPage.linkSidebarAll.click()
@@ -76,12 +94,6 @@ test.describe('Collaborative test for issue', () => {
     await issuesDetailsPage.editIssue({ status: 'In Progress' })
 
     // check by another user
-    const userSecondContext = await browser.newContext({ storageState: PlatformSettingSecond })
-    const userSecondPage = await userSecondContext.newPage()
-    await (await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
-
-    const issuesPageSecond = new IssuesPage(userSecondPage)
-    await issuesPageSecond.linkSidebarAll.click()
     await issuesPageSecond.modelSelectorActive.click()
     // not active for another user
     await issuesPageSecond.checkIssueNotExist(issue.title)

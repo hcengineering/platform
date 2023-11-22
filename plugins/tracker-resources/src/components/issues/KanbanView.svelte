@@ -369,7 +369,7 @@
             kind={'ghost'}
             showTooltip={{ label: tracker.string.AddIssueTooltip, direction: 'left' }}
             on:click={() => {
-              showPopup(CreateIssue, { space: currentSpace, [groupByKey]: state._id }, 'top')
+              showPopup(CreateIssue, { space: currentSpace, [groupByKey]: state }, 'top')
             }}
           />
         </div>
