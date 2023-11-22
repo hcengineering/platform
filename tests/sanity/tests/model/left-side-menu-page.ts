@@ -1,6 +1,7 @@
 import { type Locator, type Page } from '@playwright/test'
+import { CommonPage } from './common-page'
 
-export class LeftSideMenuPage {
+export class LeftSideMenuPage extends CommonPage {
   readonly page: Page
   readonly buttonChunter: Locator
   readonly buttonContacts: Locator
@@ -8,10 +9,11 @@ export class LeftSideMenuPage {
   readonly buttonNotification: Locator
 
   constructor (page: Page) {
+    super()
     this.page = page
     this.buttonChunter = page.locator('button[id$="ApplicationLabelChunter"]')
     this.buttonContacts = page.locator('button[id$="Contacts"]')
     this.buttonTracker = page.locator('button[id$="TrackerApplication"]')
-    this.buttonNotification = page.locator('a[href$="notification"]')
+    this.buttonNotification = page.locator('button[id$="Inbox"]')
   }
 }
