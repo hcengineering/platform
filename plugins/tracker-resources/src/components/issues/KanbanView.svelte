@@ -395,7 +395,9 @@
                 <StatusEditor value={issue} kind="list" isEditable={false} />
               </div>
               <!-- {/if} -->
-              <IssuePresenter value={issue} />
+              <div class="flex-no-shrink">
+                <IssuePresenter value={issue} />
+              </div>
               <ParentNamesPresenter value={issue} />
             </div>
             <div class="flex-row-center gap-2 reverse flex-no-shrink">
