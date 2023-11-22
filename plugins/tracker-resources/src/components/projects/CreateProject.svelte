@@ -117,6 +117,9 @@
     if (projectData.defaultAssignee !== project?.defaultAssignee) {
       update.defaultAssignee = projectData.defaultAssignee
     }
+    if (projectData.defaultIssueStatus !== project?.defaultIssueStatus) {
+      update.defaultIssueStatus = projectData.defaultIssueStatus
+    }
     if (projectData.icon !== project?.icon) {
       update.icon = projectData.icon
     }

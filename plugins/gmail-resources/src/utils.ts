@@ -8,6 +8,7 @@ import contact, {
 import { type Doc, type IdMap, type Ref, toIdMap } from '@hcengineering/core'
 import { type Message, type SharedMessage } from '@hcengineering/gmail'
 import { getClient } from '@hcengineering/presentation'
+import gmail from './plugin'
 
 export function getTime (time: number): string {
   let options: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: 'numeric' }
@@ -109,6 +110,14 @@ export function getName (
   sender: boolean
 ): string {
   const h = getClient().getHierarchy()
+  if (message._class === gmail.class.NewMessage) {
+    if (!sender) return `${getContactName(h, object)} (${channel.value})`
+    const account = accounts.get(message.modifiedBy as Ref<PersonAccount>)
+    const emp = account != null ? employees.get(account?.person as Ref<Employee>) : undefined
+    const email = account?.email
+    const from = accounts.get(message.from as Ref<PersonAccount>)?.email ?? message.from
+    return emp != null ? `${getContactName(h, emp)} (${email})` : from
+  }
   if (message.incoming === sender) {
     return `${getContactName(h, object)} (${channel.value})`
   } else {

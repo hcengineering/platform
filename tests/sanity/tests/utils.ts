@@ -1,4 +1,4 @@
-import { Locator, Page } from '@playwright/test'
+import { Browser, Locator, Page } from '@playwright/test'
 
 export const PlatformURI = process.env.PLATFORM_URI as string
 export const PlatformTransactor = process.env.PLATFORM_TRANSACTOR as string
@@ -58,4 +58,9 @@ export async function fillSearch (page: Page, search: string): Promise<Locator> 
   await searchBox.press('Enter')
 
   return searchBox
+}
+
+export async function getSecondPage (browser: Browser): Promise<Page> {
+  const userSecondContext = await browser.newContext({ storageState: PlatformSettingSecond })
+  return await userSecondContext.newPage()
 }
