@@ -24,6 +24,7 @@ export class IssuesPage extends CommonTrackerPage {
   readonly buttonCreateIssue: Locator
   readonly inputSearch: Locator
   readonly linkSidebarAll: Locator
+  readonly linkSidebarMyIssue: Locator
 
   constructor (page: Page) {
     super(page)
@@ -59,6 +60,7 @@ export class IssuesPage extends CommonTrackerPage {
     this.buttonCreateIssue = page.locator('button > span', { hasText: 'Create issue' })
     this.inputSearch = page.locator('input[placeholder="Search"]')
     this.linkSidebarAll = page.locator('a[href$="all-issues"]')
+    this.linkSidebarMyIssue = page.locator('a[href$="my-issues"]')
   }
 
   async createNewIssue (data: NewIssue): Promise<void> {

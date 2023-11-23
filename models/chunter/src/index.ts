@@ -55,6 +55,7 @@ import view, { createAction, actionTemplates as viewTemplates } from '@hcenginee
 import workbench from '@hcengineering/model-workbench'
 import chunter from './plugin'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
+import { TypeBoolean } from '@hcengineering/model'
 export { chunterId } from '@hcengineering/chunter'
 export { chunterOperation } from './migration'
 
@@ -153,6 +154,9 @@ export class TComment extends TAttachedDoc implements Comment {
 
   @Prop(Collection(chunter.class.Reaction), chunter.string.Reactions)
     reactions?: number
+
+  @Prop(TypeBoolean(), chunter.string.PinMessage)
+    pinned?: boolean
 }
 
 @Model(chunter.class.Backlink, chunter.class.Comment)
@@ -751,6 +755,18 @@ export function createModel (builder: Builder, options = { addApplication: true 
       }
     },
     chunter.ids.ActivityExtension
+  )
+
+  builder.createDoc(
+    activity.class.ActivityExtension,
+    core.space.Model,
+    {
+      ofClass: chunter.class.Comment,
+      components: {
+        action: chunter.component.PinComment
+      }
+    },
+    chunter.ids.PinExtension
   )
 
   builder.createDoc(

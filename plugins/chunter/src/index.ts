@@ -103,6 +103,7 @@ export interface Comment extends AttachedDoc {
   message: string
   attachments?: number
   reactions?: number
+  pinned?: boolean
 }
 
 /**

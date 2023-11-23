@@ -85,8 +85,9 @@
     filters: ActivityFilter[],
     selected: Ref<Doc>[] | 'All'
   ): Promise<void> {
+    const txesSorted = txes.sort((tx) => ((tx.doc as any)?.pinned ? -1 : 1))
     if (selected === 'All') {
-      filtered = txes
+      filtered = txesSorted
       dispatch('update', filtered)
     } else {
       selectedFilters = filters.filter((filter) => selected.includes(filter._id))
@@ -95,7 +96,7 @@
         const fltr = await getResource(filter.filter)
         filterActions.push(fltr)
       }
-      filtered = txes.filter((it) => filterActions.some((f) => f(it, object._class)))
+      filtered = txesSorted.filter((it) => filterActions.some((f) => f(it, object._class)))
       dispatch('update', filtered)
     }
   }
