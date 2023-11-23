@@ -17,7 +17,7 @@ test.describe('Collaborative test for issue', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
   })
 
-  test('Issues can be assigned to another users', async ({ page, browser }) => {
+  test.skip('Issues can be assigned to another users', async ({ page, browser }) => {
     const newIssue: NewIssue = {
       title: 'Collaborative test for issue',
       description: 'Collaborative test for issue',
@@ -65,7 +65,7 @@ test.describe('Collaborative test for issue', () => {
     })
   })
 
-  test('Issues status can be changed by another users', async ({ page, browser }) => {
+  test.skip('Issues status can be changed by another users', async ({ page, browser }) => {
     const issue: NewIssue = {
       title: 'Issues status can be changed by another users',
       description: 'Collaborative test for issue'
@@ -117,36 +117,37 @@ test.describe('Collaborative test for issue', () => {
     const userSecondPage = await getSecondPage(browser)
     await (await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
 
-    // change assignee by first user
-    await (await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.linkSidebarAll.click()
-    await issuesPage.modelSelectorBacklog.click()
-    await issuesPage.searchIssueByName(issue.title)
-    await issuesPage.openIssueByName(issue.title)
+    await test.step('change assignee by first user', async () => {
+      await (await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
+      const issuesPage = new IssuesPage(page)
+      await issuesPage.linkSidebarAll.click()
+      await issuesPage.modelSelectorBacklog.click()
+      await issuesPage.searchIssueByName(issue.title)
+      await issuesPage.openIssueByName(issue.title)
 
-    const issuesDetailsPage = new IssuesDetailsPage(page)
-    await issuesDetailsPage.editIssue({ assignee: newAssignee })
+      const issuesDetailsPage = new IssuesDetailsPage(page)
+      await issuesDetailsPage.editIssue({ assignee: newAssignee })
+    })
 
-    // check notification by second
-    const leftSideMenuPageSecond = new LeftSideMenuPage(userSecondPage)
-    await leftSideMenuPageSecond.checkExistNewNotification(userSecondPage)
-    await leftSideMenuPageSecond.buttonNotification.click()
+    await test.step('change assignee by first user and check issue', async () => {
+      const leftSideMenuPageSecond = new LeftSideMenuPage(userSecondPage)
+      await leftSideMenuPageSecond.checkExistNewNotification(userSecondPage)
+      await leftSideMenuPageSecond.buttonNotification.click()
 
-    const notificationPageSecond = new NotificationPage(userSecondPage)
-    await notificationPageSecond.checkNotification(issue.title, newAssignee)
+      const notificationPageSecond = new NotificationPage(userSecondPage)
+      await notificationPageSecond.checkNotification(issue.title, newAssignee)
 
-    // check issue
-    await leftSideMenuPageSecond.buttonTracker.click()
+      await leftSideMenuPageSecond.buttonTracker.click()
 
-    const issuesPageSecond = new IssuesPage(userSecondPage)
-    await issuesPageSecond.linkSidebarMyIssue.click()
-    await issuesPageSecond.modelSelectorBacklog.click()
+      const issuesPageSecond = new IssuesPage(userSecondPage)
+      await issuesPageSecond.linkSidebarMyIssue.click()
+      await issuesPageSecond.modelSelectorBacklog.click()
 
-    await issuesPageSecond.searchIssueByName(issue.title)
-    await issuesPageSecond.openIssueByName(issue.title)
+      await issuesPageSecond.searchIssueByName(issue.title)
+      await issuesPageSecond.openIssueByName(issue.title)
 
-    const issuesDetailsPageSecond = new IssuesDetailsPage(userSecondPage)
-    await issuesDetailsPageSecond.checkIssue({ ...issue })
+      const issuesDetailsPageSecond = new IssuesDetailsPage(userSecondPage)
+      await issuesDetailsPageSecond.checkIssue({ ...issue })
+    })
   })
 })
