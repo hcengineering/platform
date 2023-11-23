@@ -49,7 +49,7 @@ export const InlineStyleToolbarExtension = Extension.create<InlineStyleToolbarOp
             return false
           }
 
-          if (editor.isDestroyed || !editor.isEditable) {
+          if (editor.isDestroyed) {
             return false
           }
 
