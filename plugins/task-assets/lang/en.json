@@ -75,6 +75,8 @@
     "StatusPopupTitle": "Create new status or edit name for existing",
     "NameAlreadyExists": "This name already exists for this status type",
     "ProjectType": "Project type",
-    "ProjectTypes": "Project types"
+    "ProjectTypes": "Project types",
+    "StatusChange": "Status changed",
+    "TaskCreated": "Task created"
   }
 }

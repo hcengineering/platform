@@ -73,7 +73,9 @@ export default mergeIds(taskId, task, {
     AllTime: '' as IntlString,
     StatusName: '' as IntlString,
     StatusPopupTitle: '' as IntlString,
-    NameAlreadyExists: '' as IntlString
+    NameAlreadyExists: '' as IntlString,
+    StatusChange: '' as IntlString,
+    TaskCreated: '' as IntlString
   },
   status: {
     AssigneeRequired: '' as IntlString
