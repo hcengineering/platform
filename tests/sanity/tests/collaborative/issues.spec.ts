@@ -36,8 +36,6 @@ test.describe('Collaborative test for issue', () => {
     // open second page
     const userSecondPage = await getSecondPage(browser)
     await (await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
-    // const leftSideMenuPageSecond = new LeftSideMenuPage(userSecondPage)
-    // await leftSideMenuPageSecond.buttonTracker.click()
 
     const issuesPageSecond = new IssuesPage(userSecondPage)
     await issuesPageSecond.linkSidebarAll.click()
@@ -76,8 +74,6 @@ test.describe('Collaborative test for issue', () => {
     // open second page
     const userSecondPage = await getSecondPage(browser)
     await (await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
-    // const leftSideMenuPageSecond = new LeftSideMenuPage(userSecondPage)
-    // await leftSideMenuPageSecond.buttonTracker.click()
 
     const issuesPageSecond = new IssuesPage(userSecondPage)
     await issuesPageSecond.linkSidebarAll.click()

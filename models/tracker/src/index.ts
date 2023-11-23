@@ -330,9 +330,9 @@ function defineApplication (
             component: tracker.component.MyIssues,
             componentProps: {
               config: [
+                ['assigned', view.string.Assigned, {}],
                 ['active', tracker.string.Active, {}],
                 ['backlog', tracker.string.Backlog, {}],
-                ['assigned', view.string.Assigned, {}],
                 ['created', view.string.Created, {}],
                 ['subscribed', view.string.Subscribed, {}]
               ]
@@ -348,9 +348,9 @@ function defineApplication (
               space: undefined,
               title: tracker.string.AllIssues,
               config: [
+                ['all', tracker.string.All, {}],
                 ['active', tracker.string.Active, {}],
-                ['backlog', tracker.string.Backlog, {}],
-                ['all', tracker.string.All, {}]
+                ['backlog', tracker.string.Backlog, {}]
               ]
             }
           },
@@ -387,9 +387,9 @@ function defineApplication (
                 componentProps: {
                   title: tracker.string.Issues,
                   config: [
+                    ['all', tracker.string.All, {}],
                     ['active', tracker.string.Active, {}],
-                    ['backlog', tracker.string.Backlog, {}],
-                    ['all', tracker.string.All, {}]
+                    ['backlog', tracker.string.Backlog, {}]
                   ]
                 }
               },

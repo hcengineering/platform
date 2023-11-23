@@ -117,8 +117,8 @@ class ElasticAdapter implements FullTextAdapter {
                 flags: 'OR|PREFIX|PHRASE|FUZZY|NOT|ESCAPE',
                 default_operator: 'and',
                 fields: [
-                  'searchTitle^5', // Boost matches in searchTitle by a factor of 5
-                  'searchShortTitle^5',
+                  'searchTitle^15', // boost
+                  'searchShortTitle^15',
                   '*' // Search in all other fields without a boost
                 ]
               }
