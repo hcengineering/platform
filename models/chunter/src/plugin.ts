@@ -34,7 +34,8 @@ export default mergeIds(chunterId, chunter, {
     SavedMessages: '' as AnyComponent,
     ChunterBrowser: '' as AnyComponent,
     CommentReactions: '' as AnyComponent,
-    ReactionsAction: '' as AnyComponent
+    ReactionsAction: '' as AnyComponent,
+    PinComment: '' as AnyComponent
   },
   action: {
     MarkCommentUnread: '' as Ref<Action>,
@@ -93,7 +94,8 @@ export default mergeIds(chunterId, chunter, {
     TxMessageCreate: '' as Ref<TxViewlet>,
     ChunterNotificationGroup: '' as Ref<NotificationGroup>,
     ActivityExtension: '' as Ref<ActivityExtension>,
-    BackLinkActivityExtension: '' as Ref<ActivityExtension>
+    BackLinkActivityExtension: '' as Ref<ActivityExtension>,
+    PinExtension: '' as Ref<ActivityExtension>
   },
   activity: {
     TxCommentCreate: '' as AnyComponent,
