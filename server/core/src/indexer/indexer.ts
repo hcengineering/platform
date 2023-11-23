@@ -31,7 +31,8 @@ import core, {
   _getOperator,
   setObjectValue,
   toFindResult,
-  versionToString
+  versionToString,
+  docKey
 } from '@hcengineering/core'
 import { DbAdapter } from '../adapter'
 import { RateLimitter } from '../limitter'
@@ -145,7 +146,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     }
   }
 
-  updateDoc<T extends Doc>(doc: T, tx: DocumentUpdate<T>, updateDate: boolean): T {
+  updateDoc (doc: DocIndexState, tx: DocumentUpdate<DocIndexState>, updateDate: boolean): DocIndexState {
     for (const key in tx) {
       if (key.startsWith('$')) {
         const operator = _getOperator(key)
@@ -154,6 +155,12 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         setObjectValue(key, doc, (tx as any)[key])
       }
     }
+
+    const spaceKey = docKey('space', { _class: core.class.Doc })
+    if (doc.attributes[spaceKey] !== undefined) {
+      doc.space = doc.attributes[spaceKey]
+    }
+
     if (updateDate) {
       doc.modifiedBy = core.account.System
       doc.modifiedOn = Date.now()

@@ -303,4 +303,9 @@ function updateDoc2Elastic (
       }
     }
   }
+
+  const spaceKey = docKey('space', { _class: core.class.Doc })
+  if (doc[spaceKey] !== undefined) {
+    doc.space = doc[spaceKey]
+  }
 }
