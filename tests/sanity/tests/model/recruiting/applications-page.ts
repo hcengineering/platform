@@ -13,6 +13,7 @@ export class ApplicationsPage extends CommonRecruitingPage {
   readonly buttonCreateNewApplication: Locator
   readonly buttonTabCreated: Locator
   readonly textTableFirstCell: Locator
+  readonly buttonSelectCollaborators: Locator
 
   constructor (page: Page) {
     super(page)
@@ -25,6 +26,7 @@ export class ApplicationsPage extends CommonRecruitingPage {
     this.buttonCreateNewApplication = page.locator('form[id="recruit:string:CreateApplication"] button[type="submit"]')
     this.buttonTabCreated = page.locator('div[data-id="tab-created"]')
     this.textTableFirstCell = page.locator('div[class$="firstCell"]')
+    this.buttonSelectCollaborators = page.locator('xpath=//span[text()="Collaborators"]/..//button')
   }
 
   async createNewApplication (data: NewApplication): Promise<void> {
@@ -107,5 +109,17 @@ export class ApplicationsPage extends CommonRecruitingPage {
       .locator('div[class*=tablist-container]')
       .locator('div', { hasText: type })
       .click()
+  }
+
+  async addCollaborators (name: string): Promise<void> {
+    if ('all' === name) {
+      const checks = this.page.locator('div.popup button.menu-item')
+      const count = await checks.count()
+      for (let i = 0; i < count; i++) {
+        await checks.nth(i).click()
+      }
+    } else {
+      await this.page.locator('div.popup button.menu-item div.label', { hasText: name }).click()
+    }
   }
 }
