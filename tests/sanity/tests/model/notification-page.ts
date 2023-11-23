@@ -7,8 +7,13 @@ export class NotificationPage {
     this.page = page
   }
 
-  async checkNotification (name: string, assignee: string): Promise<void> {
+  async checkNotificationIssue (name: string, assignee: string): Promise<void> {
     const notification = this.page.locator('div[class*="inbox-activity"] span', { hasText: name })
     await expect(notification.locator('xpath=../../..').locator('a span.ap-label')).toHaveText(assignee)
+  }
+
+  async checkNotificationCollaborators (name: string, text: string): Promise<void> {
+    const notification = this.page.locator('div[class*="inbox-activity"] span', { hasText: name })
+    await expect(notification.locator('xpath=../../..').locator('div[class*="title"]')).toHaveText(text)
   }
 }

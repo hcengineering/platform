@@ -129,13 +129,13 @@ test.describe('Collaborative test for issue', () => {
       await issuesDetailsPage.editIssue({ assignee: newAssignee })
     })
 
-    await test.step('change assignee by first user and check issue', async () => {
+    await test.step('Change assignee by first user and check issue', async () => {
       const leftSideMenuPageSecond = new LeftSideMenuPage(userSecondPage)
       await leftSideMenuPageSecond.checkExistNewNotification(userSecondPage)
       await leftSideMenuPageSecond.buttonNotification.click()
 
       const notificationPageSecond = new NotificationPage(userSecondPage)
-      await notificationPageSecond.checkNotification(issue.title, newAssignee)
+      await notificationPageSecond.checkNotificationIssue(issue.title, newAssignee)
 
       await leftSideMenuPageSecond.buttonTracker.click()
 
