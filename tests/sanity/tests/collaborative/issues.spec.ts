@@ -17,7 +17,7 @@ test.describe('Collaborative test for issue', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
   })
 
-  test.skip('Issues can be assigned to another users', async ({ page, browser }) => {
+  test('Issues can be assigned to another users', async ({ page, browser }) => {
     const newIssue: NewIssue = {
       title: 'Collaborative test for issue',
       description: 'Collaborative test for issue',
@@ -65,7 +65,7 @@ test.describe('Collaborative test for issue', () => {
     })
   })
 
-  test.skip('Issues status can be changed by another users', async ({ page, browser }) => {
+  test('Issues status can be changed by another users', async ({ page, browser }) => {
     const issue: NewIssue = {
       title: 'Issues status can be changed by another users',
       description: 'Collaborative test for issue'
