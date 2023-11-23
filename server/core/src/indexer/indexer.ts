@@ -157,7 +157,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     }
 
     const spaceKey = docKey('space', { _class: core.class.Doc })
-    if (doc.attributes[spaceKey] !== undefined) {
+    if (doc.attributes !== undefined && doc.attributes[spaceKey] !== undefined) {
       doc.space = doc.attributes[spaceKey]
     }
 
