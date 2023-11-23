@@ -18,7 +18,7 @@ test.describe('Collaborative test for issue', () => {
 
   test('Issues can be assigned to another users', async ({ page, browser }) => {
     const newIssue: NewIssue = {
-      title: `Collaborative test for issue-${generateId()}`,
+      title: 'Collaborative test for issue',
       description: 'Collaborative test for issue',
       status: 'Backlog',
       priority: 'Urgent',
@@ -37,6 +37,7 @@ test.describe('Collaborative test for issue', () => {
     await (await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
     const leftSideMenuPageSecond = new LeftSideMenuPage(userSecondPage)
     await leftSideMenuPageSecond.buttonTracker.click()
+
     const issuesPageSecond = new IssuesPage(userSecondPage)
     await issuesPageSecond.linkSidebarAll.click()
     await issuesPageSecond.modelSelectorAll.click()
@@ -62,6 +63,49 @@ test.describe('Collaborative test for issue', () => {
       ...newIssue,
       milestone: 'Milestone',
       estimation: '2h'
+    })
+  })
+
+  test('Issues status can be changed by another users', async ({ page, browser }) => {
+    const issue: NewIssue = {
+      title: 'Issues status can be changed by another users',
+      description: 'Collaborative test for issue'
+    }
+
+    // open second page
+    const userSecondPage = await getSecondPage(browser)
+    await (await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
+    const leftSideMenuPageSecond = new LeftSideMenuPage(userSecondPage)
+    await leftSideMenuPageSecond.buttonTracker.click()
+
+    const issuesPageSecond = new IssuesPage(userSecondPage)
+    await issuesPageSecond.linkSidebarAll.click()
+    await issuesPageSecond.modelSelectorAll.click()
+
+    // change status
+    await (await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.linkSidebarAll.click()
+    await issuesPage.modelSelectorBacklog.click()
+    await issuesPage.searchIssueByName(issue.title)
+    await issuesPage.openIssueByName(issue.title)
+
+    const issuesDetailsPage = new IssuesDetailsPage(page)
+    await issuesDetailsPage.editIssue({ status: 'In Progress' })
+
+    // check by another user
+    await issuesPageSecond.modelSelectorBacklog.click()
+    // not active for another user
+    await issuesPageSecond.checkIssueNotExist(issue.title)
+
+    await issuesPageSecond.modelSelectorActive.click()
+    await issuesPageSecond.searchIssueByName(issue.title)
+    await issuesPageSecond.openIssueByName(issue.title)
+
+    const issuesDetailsPageSecond = new IssuesDetailsPage(userSecondPage)
+    await issuesDetailsPageSecond.checkIssue({
+      ...issue,
+      status: 'In Progress'
     })
   })
 })
