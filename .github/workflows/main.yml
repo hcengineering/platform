@@ -199,7 +199,7 @@ jobs:
           name: playwright-results
           path: ./tests/sanity/playwright-report/
       - name: Get Allure history
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         if: ${{ github.ref == 'refs/heads/main' }}
         continue-on-error: true
         with:
