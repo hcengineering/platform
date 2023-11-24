@@ -309,25 +309,28 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
       break
     }
     case core.class.TxRemoveDoc: {
-      const logTxes = Array.from(
-        await control.findAll(core.class.TxCollectionCUD, {
-          'tx.objectId': cud.objectId,
-          _id: { $nin: [parentTx._id] }
-        })
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-      ).map(TxProcessor.extractTx)
-      const doc: TimeSpendReport | undefined = TxProcessor.buildDoc2Doc(logTxes)
-      if (doc !== undefined) {
-        const res = [
-          control.txFactory.createTxUpdateDoc<Issue>(parentTx.objectClass, parentTx.objectSpace, parentTx.objectId, {
-            $inc: { reportedTime: -1 * doc.value }
+      if (!control.removedMap.has(parentTx.objectId)) {
+        const logTxes = Array.from(
+          await control.findAll(core.class.TxCollectionCUD, {
+            'tx.objectId': cud.objectId,
+            _id: { $nin: [parentTx._id] }
           })
-        ]
-        const [currentIssue] = await control.findAll(tracker.class.Issue, { _id: parentTx.objectId }, { limit: 1 })
-        currentIssue.reportedTime -= doc.value
-        currentIssue.remainingTime = Math.max(0, currentIssue.estimation - currentIssue.reportedTime)
-        updateIssueParentEstimations(currentIssue, res, control, currentIssue.parents, currentIssue.parents)
-        return res
+          // eslint-disable-next-line @typescript-eslint/unbound-method
+        ).map(TxProcessor.extractTx)
+        const doc: TimeSpendReport | undefined = TxProcessor.buildDoc2Doc(logTxes)
+        if (doc !== undefined) {
+          const res = [
+            control.txFactory.createTxUpdateDoc<Issue>(parentTx.objectClass, parentTx.objectSpace, parentTx.objectId, {
+              $inc: { reportedTime: -1 * doc.value }
+            })
+          ]
+
+          const [currentIssue] = await control.findAll(tracker.class.Issue, { _id: parentTx.objectId }, { limit: 1 })
+          currentIssue.reportedTime -= doc.value
+          currentIssue.remainingTime = Math.max(0, currentIssue.estimation - currentIssue.reportedTime)
+          updateIssueParentEstimations(currentIssue, res, control, currentIssue.parents, currentIssue.parents)
+          return res
+        }
       }
     }
   }
