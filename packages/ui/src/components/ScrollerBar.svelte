@@ -128,6 +128,7 @@
   <div bind:this={scroller} class="antiStatesBar mask-{mask} {stepStyle}">
     <slot />
   </div>
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     class="bar"
     class:hovered={isScrolling}

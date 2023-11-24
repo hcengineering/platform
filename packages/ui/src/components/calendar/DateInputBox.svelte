@@ -204,6 +204,7 @@
 <div class="datetime-input {kind}">
   <div class="flex-row-center">
     <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <span
       bind:this={edits[0].el}
       class="digit"
@@ -222,6 +223,7 @@
     </span>
     <span class="separator">.</span>
     <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <span
       bind:this={edits[1].el}
       class="digit"
@@ -240,6 +242,7 @@
     </span>
     <span class="separator">.</span>
     <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <span
       bind:this={edits[2].el}
       class="digit"
@@ -259,6 +262,7 @@
     {#if withTime}
       <div class="time-divider" />
       <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <span
         bind:this={edits[3].el}
         class="digit"
@@ -277,6 +281,7 @@
       </span>
       <span class="separator">:</span>
       <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <span
         bind:this={edits[4].el}
         class="digit"
@@ -298,6 +303,7 @@
   {#if currentDate}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="close-btn"
       tabindex={0}

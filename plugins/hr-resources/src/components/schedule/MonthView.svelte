@@ -29,7 +29,8 @@
     Scroller,
     showPopup,
     tooltip,
-    deviceOptionsStore as deviceInfo
+    deviceOptionsStore as deviceInfo,
+    resizeObserver
   } from '@hcengineering/ui'
   import hr from '../../plugin'
   import { getHolidayDatesForEmployee, getRequests, isHoliday } from '../../utils'
@@ -251,10 +252,20 @@
   {@const dep = departmentById.get(department)}
 
   <Scroller horizontal fade={{ multipler: { top: headerHeightRem, left: headerWidthRem } }} noFade>
-    <div bind:clientWidth={containerWidth} class="timeline">
+    <div
+      use:resizeObserver={(evt) => {
+        containerWidth = evt.clientWidth
+      }}
+      class="timeline"
+    >
       {#key [containerWidthRem, columnWidthRem, headerWidthRem]}
         <!-- Resource Header -->
-        <div bind:clientWidth={headerWidth} class="timeline-header timeline-resource-header">
+        <div
+          use:resizeObserver={(evt) => {
+            headerWidth = evt.clientWidth
+          }}
+          class="timeline-header timeline-resource-header"
+        >
           <div class="timeline-row">
             <div class="timeline-resource-cell">
               <div class="timeline-resource-header__title">
@@ -268,7 +279,12 @@
         </div>
 
         <!-- Resource Content -->
-        <div bind:clientWidth={headerWidth} class="timeline-resource-content">
+        <div
+          use:resizeObserver={(evt) => {
+            headerWidth = evt.clientWidth
+          }}
+          class="timeline-resource-content"
+        >
           {#each rows as row}
             <div class="timeline-row" style={getRowStyle(row)}>
               <div class="timeline-resource-cell">

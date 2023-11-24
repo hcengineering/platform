@@ -113,6 +113,7 @@
   $: popup?.focus()
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="antiPopup{addClass ? ` ${addClass}` : ''}"
   use:resizeObserver={() => {

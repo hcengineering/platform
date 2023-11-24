@@ -498,6 +498,7 @@
 </script>
 
 {#if sState !== SeparatorState.HIDDEN}
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     bind:this={separator}
     style:--separator-size={`${separatorSize}px`}

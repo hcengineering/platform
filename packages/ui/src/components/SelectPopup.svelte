@@ -95,6 +95,7 @@
 <FocusHandler {manager} />
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="selectPopup"
   bind:this={popupElement}

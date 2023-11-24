@@ -72,6 +72,8 @@
     {#if viewDate}
       <div class="monthYear">{monthYear}</div>
       <div class="group" class:hideNavigator>
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="btn"
           on:click={() => {
@@ -81,6 +83,8 @@
         >
           <div class="icon-btn"><Icon icon={IconNavPrev} size={'full'} /></div>
         </div>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
           class="btn"
           on:click={() => {
@@ -101,6 +105,8 @@
           >{capitalizeFirstLetter(getWeekDayName(day(firstDayOfCurrentMonth, dayOfWeek), 'short'))}</span
         >
       {/each}
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       {#each days as day, i}
         <div
           class="day {day.style}"

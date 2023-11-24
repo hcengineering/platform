@@ -15,10 +15,10 @@
 <script lang="ts">
   import { Class, Doc, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { AnyComponent, Scroller } from '@hcengineering/ui'
-  import { BuildModelKey, Viewlet, ViewOptions } from '@hcengineering/view'
-  import { onMount } from 'svelte'
   import { ActionContext } from '@hcengineering/presentation'
+  import { AnyComponent, Scroller, resizeObserver } from '@hcengineering/ui'
+  import { BuildModelKey, ViewOptions, Viewlet } from '@hcengineering/view'
+  import { onMount } from 'svelte'
   import { ListSelectionProvider, SelectDirection, focusStore } from '../..'
 
   import List from './List.svelte'
@@ -41,7 +41,7 @@
   let list: List
   let scroll: Scroller
   let divScroll: HTMLDivElement
-  let listWidth: number
+  let listWidth: number = 0
 
   const listProvider = new ListSelectionProvider(
     (offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection, noScroll?: boolean) => {
@@ -63,7 +63,12 @@
     mode: 'browser'
   }}
 />
-<div bind:clientWidth={listWidth} class="w-full h-full py-4 clear-mins">
+<div
+  use:resizeObserver={(evt) => {
+    listWidth = evt.clientWidth
+  }}
+  class="w-full h-full py-4 clear-mins"
+>
   <Scroller
     bind:this={scroll}
     bind:divScroll

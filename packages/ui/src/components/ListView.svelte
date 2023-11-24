@@ -70,6 +70,7 @@
     {#each Array(count) as _, row}
       <slot name="category" item={row} />
       <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
         class="list-item{addClass ? ` ${addClass}` : ''}"
         class:selection={row === selection}

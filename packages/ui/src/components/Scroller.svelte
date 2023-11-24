@@ -543,6 +543,7 @@
         }
       }}
     >
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
         bind:this={divBox}
         class="box{gap ? ` ${gap}` : ''}"
@@ -614,6 +615,7 @@
   {/if}
   {#if mask !== 'none'}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="track"
       class:hovered={isScrolling === 'vertical'}
@@ -621,6 +623,7 @@
         clickOnTrack(ev)
       }}
     />
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="bar"
       class:hovered={isScrolling === 'vertical'}
@@ -633,6 +636,7 @@
   {/if}
   {#if horizontal && maskH !== 'none'}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="track-horizontal"
       class:hovered={isScrolling === 'horizontal'}
@@ -640,6 +644,7 @@
         clickOnTrack(ev, true)
       }}
     />
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="bar-horizontal"
       class:hovered={isScrolling === 'horizontal'}
