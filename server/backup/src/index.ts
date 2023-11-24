@@ -337,8 +337,7 @@ export async function backup (transactorUrl: string, workspaceId: WorkspaceId, s
       ...connection
         .getHierarchy()
         .domains()
-        .filter((it) => it !== DOMAIN_TRANSIENT && it !== DOMAIN_MODEL),
-      '_migrations' as Domain
+        .filter((it) => it !== DOMAIN_TRANSIENT && it !== DOMAIN_MODEL)
     ]
     console.log('domains for dump', domains.length)
 
