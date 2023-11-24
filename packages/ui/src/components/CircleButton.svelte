@@ -38,6 +38,7 @@
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   {id}
   class="flex-center icon-button icon-{size}"

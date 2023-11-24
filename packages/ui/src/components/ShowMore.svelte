@@ -49,6 +49,7 @@
 
   {#if !ignore && bigger && !fixed}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class="showMore" class:outter={cHeight > limit} on:click={toggle}>
       <Label label={cHeight > limit ? ui.string.ShowLess : ui.string.ShowMore} />
     </div>

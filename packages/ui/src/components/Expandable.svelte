@@ -30,6 +30,7 @@
 <div class="flex-col">
   <div class="expandable-header flex-between" class:expanded class:bordered>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="flex-row-center mr-4"
       class:cursor-pointer={expandable}

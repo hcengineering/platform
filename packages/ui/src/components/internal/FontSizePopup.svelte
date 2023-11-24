@@ -33,6 +33,7 @@
 <div class="antiPopup" style:flex-direction={'row'} style:padding={'12px'}>
   {#each fontsizes as font}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="statusPopup-option"
       class:selected={selected === font.id}

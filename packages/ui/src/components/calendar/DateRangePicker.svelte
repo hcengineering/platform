@@ -22,7 +22,6 @@
 
   export let title: IntlString
   export let value: number | null | undefined = null
-  export let withTime: boolean = false
   export let iconModifier: 'normal' | 'warning' | 'overdue' = 'normal'
   export let labelNull: IntlString = ui.string.NoDate
 

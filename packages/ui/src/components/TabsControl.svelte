@@ -26,6 +26,7 @@
 <div class="flex-stretch tabs-container" class:small={size === 'small'} style:padding class:noMargin>
   {#each model as tab, i}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="flex-row-center tab"
       class:selected={i === selected}

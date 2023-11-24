@@ -27,6 +27,8 @@
     <span class="toggle-switch" />
   </label>
   {#if label}
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <span
       class="mini-toggle-label"
       on:click={() => {
