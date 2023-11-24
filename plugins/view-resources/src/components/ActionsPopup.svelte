@@ -179,14 +179,14 @@
         const impl = await getResource(action.action)
         if (impl !== undefined) {
           closePopup()
-          impl(docs[0], evt, { ...action.actionProps, action })
+          void impl(docs[0], evt, { ...action.actionProps, action })
         }
       }
       if (action.input === 'selection' || action.input === 'any' || action.input === 'none') {
         const impl = await getResource(action.action)
         if (impl !== undefined) {
           closePopup()
-          impl(docs, evt, { ...action.actionProps, action })
+          void impl(docs, evt, { ...action.actionProps, action })
         }
       }
     }
@@ -206,7 +206,7 @@
     if (key.code === 'Enter') {
       key.preventDefault()
       key.stopPropagation()
-      handleSelection(key, selection)
+      void handleSelection(key, selection)
     }
   }
 
@@ -270,9 +270,8 @@
     items = packSearchAndActions(searchItems, filteredActions)
   }
 
-  $: updateItems(search, filteredActions)
+  $: void updateItems(search, filteredActions)
 
-  // Custom input
   let textHTML: HTMLInputElement
   let phTraslate: string = ''
   let autoFocus = !$deviceOptionsStore.isMobile
@@ -285,7 +284,7 @@
     if (autoFocus) focus()
   }
 
-  $: translate(view.string.ActionPlaceholder, {}).then((res) => {
+  $: void translate(view.string.ActionPlaceholder, {}).then((res) => {
     phTraslate = res
   })
 </script>
