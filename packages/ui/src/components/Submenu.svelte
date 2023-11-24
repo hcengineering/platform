@@ -39,6 +39,7 @@
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   bind:this={element}
   on:keydown

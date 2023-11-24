@@ -54,6 +54,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')} on:keydown={onKeydown}>
   <div class="menu-space" />
   <div class="scroll">

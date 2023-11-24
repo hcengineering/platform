@@ -170,6 +170,7 @@
 
 <div class="datetime-input {size}" class:noBorder class:disabled>
   <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <span
     bind:this={edits[0].el}
     class="digit"
@@ -188,6 +189,7 @@
   </span>
   <span class="separator">:</span>
   <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <span
     bind:this={edits[1].el}
     class="digit"
@@ -243,25 +245,6 @@
       color: var(--theme-caption-color);
     }
 
-    .close-btn {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin: 0 0.25rem;
-      width: 0.75rem;
-      height: 0.75rem;
-      color: var(--theme-content-color);
-      background-color: var(--theme-button-default);
-      outline: none;
-      border-radius: 50%;
-      cursor: pointer;
-
-      &:hover {
-        color: var(--theme-caption-color);
-        background-color: var(--theme-button-hovered);
-      }
-    }
-
     .digit {
       position: relative;
       padding: 0 0.125rem;
@@ -284,14 +267,6 @@
     &:not(.disabled) .digit:focus {
       color: var(--primary-button-color);
       background-color: var(--primary-button-default);
-    }
-    .time-divider {
-      flex-shrink: 0;
-      margin: 0 0.25rem;
-      width: 1px;
-      min-width: 1px;
-      height: 0.75rem;
-      background-color: var(--theme-button-border);
     }
     .separator {
       margin: 0 0.1rem;

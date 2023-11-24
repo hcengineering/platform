@@ -27,6 +27,7 @@
   <div class="ap-space x2" />
   {#each langs as lang}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="ap-menuItem hoverable flex-row-center leading-16px"
       on:click={() => {

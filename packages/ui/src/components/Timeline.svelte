@@ -332,6 +332,7 @@
     <Scroller bind:this={scroller}>
       {#each lines as line, row}
         {@const rangeRow = time.rows ? time.rows[row] : null}
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
           class="listGrid"
           class:mListGridChecked={selectedRows.find((x) => x === row) !== undefined}
@@ -423,6 +424,7 @@
       </div>
     </div>
   {/if}
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="timeline-splitter" class:moving style:left={`${panelWidth}px`} on:mousedown={splitterStart} />
 </div>
 
@@ -664,13 +666,6 @@
     .component-presenter {
       display: flex;
       align-items: center;
-
-      .space {
-        flex-shrink: 0;
-        width: 0.25rem;
-        min-width: 0.25rem;
-        max-width: 0.25rem;
-      }
     }
   }
   .timeline-action__button {
@@ -748,11 +743,6 @@
     }
   }
 
-  .filler {
-    display: flex;
-    flex-grow: 1;
-  }
-
   .gridElement {
     display: flex;
     align-items: center;
@@ -762,17 +752,5 @@
     &:first-child {
       margin-left: 0;
     }
-  }
-
-  .iconPresenter {
-    padding-left: 0.45rem;
-  }
-
-  .componentPresenter {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-    width: 5.5rem;
-    margin-left: 0.5rem;
   }
 </style>

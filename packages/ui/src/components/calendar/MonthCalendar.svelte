@@ -57,6 +57,7 @@
       {#each [...Array(7).keys()] as dayOfWeek}
         {@const date = weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek)}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
           class="cell"
           class:weekend={isWeekend(date)}

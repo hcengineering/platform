@@ -69,6 +69,7 @@
     <div class="flex-row-center mt-3">
       <Button label={submitLabel} kind="no-border" size="medium" on:click={submit} />
       <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div class="ml-2" on:click={cancel}>
         <ActionIcon icon={IconClose} size="medium" action={cancel} />
       </div>

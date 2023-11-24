@@ -145,6 +145,7 @@
   <div class="flex-row-center popup-header">
     {#each categories as category}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
         class="element"
         class:selected={currentCategory.id === category.id}
@@ -177,6 +178,7 @@
           {#each category.emojis as emoji}
             {#if emoji !== undefined}
               <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <!-- svelte-ignore a11y-no-static-element-interactions -->
               <div class="element" on:click={() => dispatch('close', emoji)}>{emoji}</div>
             {/if}
           {/each}
