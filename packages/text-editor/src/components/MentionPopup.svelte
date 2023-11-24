@@ -21,10 +21,9 @@
   import { Class, Ref, Doc, SearchResultDoc } from '@hcengineering/core'
 
   import {
-    type SearchSection,
     type SearchItem,
     packSearchResultsForListView,
-    findCategoryByClass
+    doFulltextSearch
   } from '../search'
 
   import MentionResult from './MentionResult.svelte'
@@ -90,38 +89,6 @@
     return false
   }
 
-  async function doFulltextSearch (classes: Array<Ref<Class<Doc>>>, query: string): Promise<SearchSection[]> {
-    const result = await client.searchFulltext(
-      {
-        query: `${query}*`,
-        classes
-      },
-      {
-        limit: 10
-      }
-    )
-
-    const itemsByClass = new Map<Ref<Class<Doc>>, SearchResultDoc[]>()
-    for (const item of result.docs) {
-      const list = itemsByClass.get(item.doc._class)
-      if (list === undefined) {
-        itemsByClass.set(item.doc._class, [item])
-      } else {
-        list.push(item)
-      }
-    }
-
-    const sections: SearchSection[] = []
-    for (const [_class, items] of itemsByClass.entries()) {
-      const category = findCategoryByClass(categories, _class)
-      if (category !== undefined) {
-        sections.push({ category, items })
-      }
-    }
-
-    return sections
-  }
-
   async function updateItems (query: string): Promise<void> {
     const classesToSearch: Array<Ref<Class<Doc>>> = []
     for (const cat of categories) {
@@ -130,7 +97,7 @@
       }
     }
 
-    const sections = await doFulltextSearch(classesToSearch, query)
+    const sections = await doFulltextSearch(client, classesToSearch, query, categories)
     items = packSearchResultsForListView(sections)
   }
   $: void updateItems(query)
@@ -160,7 +127,7 @@
               {@const doc = item.item}
               <!-- svelte-ignore a11y-no-static-element-interactions -->
               <div
-                class="ap-menuItem withComp"
+                class="ap-menuItem withComp h-8"
                 on:click={() => {
                   dispatchItem(doc)
                 }}

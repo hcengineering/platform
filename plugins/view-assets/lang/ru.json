@@ -23,7 +23,7 @@
     "Open": "Открыть",
     "Assignees": "Исполнители",
     "Labels": "Метки",
-    "ActionPlaceholder": "введите для фильтрации...",
+    "ActionPlaceholder": "Поиск или команда...",
     "General": "Общее",
     "Navigation": "Навигация",
     "Editor": "Редактор",
@@ -107,6 +107,9 @@
     "ChooseIcon": "Выбрать иконку",
     "IconColor": "Выберите цвет",
     "IconCategory": "Иконка",
-    "EmojiCategory": "Эмодзи"
+    "EmojiCategory": "Эмодзи",
+
+    "Type": "Введите",
+    "ToViewCommands": "чтобы увидеть команды"
   }
 }

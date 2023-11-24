@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Class, Ref, Doc, SearchResultDoc } from '@hcengineering/core'
+import type { Class, Ref, Doc, SearchResultDoc, TxOperations } from '@hcengineering/core'
 import { type ObjectSearchCategory } from '@hcengineering/presentation'
 
 /**
@@ -60,4 +60,41 @@ export function packSearchResultsForListView (sections: SearchSection[]): Search
     }
   }
   return results
+}
+
+export async function doFulltextSearch (
+  client: TxOperations,
+  classes: Array<Ref<Class<Doc>>>,
+  query: string,
+  categories: ObjectSearchCategory[]
+): Promise<SearchSection[]> {
+  const result = await client.searchFulltext(
+    {
+      query: `${query}*`,
+      classes
+    },
+    {
+      limit: 10
+    }
+  )
+
+  const itemsByClass = new Map<Ref<Class<Doc>>, SearchResultDoc[]>()
+  for (const item of result.docs) {
+    const list = itemsByClass.get(item.doc._class)
+    if (list === undefined) {
+      itemsByClass.set(item.doc._class, [item])
+    } else {
+      list.push(item)
+    }
+  }
+
+  const sections: SearchSection[] = []
+  for (const [_class, items] of itemsByClass.entries()) {
+    const category = findCategoryByClass(categories, _class)
+    if (category !== undefined) {
+      sections.push({ category, items })
+    }
+  }
+
+  return sections
 }

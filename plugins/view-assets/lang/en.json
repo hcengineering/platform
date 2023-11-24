@@ -36,11 +36,11 @@
     "Assigned": "Assigned",
     "Created": "Created",
     "Subscribed": "Subscribed",
-    
+
     "ShowPreview": "Show document preview",
     "ShowActions": "Show actions popup",
 
-    "ActionPlaceholder": "type to filter...",
+    "ActionPlaceholder": "Search or run a command...",
     "General": "General",
     "Navigation": "Navigation",
     "Editor": "Editor",
@@ -111,6 +111,8 @@
     "ChooseIcon": "Choose icon",
     "IconColor": "Choose icon color",
     "IconCategory": "Icon",
-    "EmojiCategory": "Emoji"
+    "EmojiCategory": "Emoji",
+    "Type": "Type",
+    "ToViewCommands": "to view available commands"
   }
 }

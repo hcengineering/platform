@@ -24,7 +24,7 @@
   $: icon = value.icon !== undefined ? value.icon : undefined
 </script>
 
-<div class="flex-row-center h-8">
+<div class="flex-row-center">
   <div class="flex-center p-1 content-dark-color flex-no-shrink">
     {#if icon !== undefined}
       <Icon {icon} size={'medium'} />

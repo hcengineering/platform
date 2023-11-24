@@ -23,34 +23,36 @@
     Icon,
     IconArrowLeft,
     Label,
-    EditWithIcon,
-    IconSearch,
     deviceOptionsStore,
     capitalizeFirstLetter,
     formatKey,
-    themeStore
+    themeStore,
+    IconChevronDown
   } from '@hcengineering/ui'
-  import { Action, ViewContext } from '@hcengineering/view'
+  import { Action, ActionCategory, ViewContext } from '@hcengineering/view'
   import { filterActions, getSelection } from '../actions'
   import view from '../plugin'
   import { focusStore, selectionStore } from '../selection'
+  import { openDoc } from '../utils'
   import { ListView, resizeObserver } from '@hcengineering/ui'
   import ObjectPresenter from './ObjectPresenter.svelte'
-  import { tick } from 'svelte'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, tick } from 'svelte'
 
   import {
     type SearchSection,
     type SearchItem,
-    findCategoryByClass,
-    packSearchResultsForListView
+    packSearchResultsForListView,
+    doFulltextSearch,
+    MentionResult
   } from '@hcengineering/text-editor'
+
+  import ChevronDown from './icons/ChevronDown.svelte'
+  import ChevronUp from './icons/ChevronUp.svelte'
 
   export let viewContext: ViewContext
 
   let search: string = ''
   let actions: Array<WithLookup<Action>> = []
-  let input: EditWithIcon
 
   const query = createQuery()
 
@@ -125,11 +127,14 @@
 
   async function filterSearchActions (actions: Array<WithLookup<Action>>, search: string): Promise<void> {
     const res: Array<WithLookup<Action>> = []
-    search = search.trim().toLowerCase()
-    if (search.length > 0) {
+    let preparedSearch = search.trim().toLowerCase()
+    if (preparedSearch.charAt(0) === '/') {
+      preparedSearch = preparedSearch.substring(1)
+    }
+    if (preparedSearch.length > 0) {
       for (const a of actions) {
         const tr = await translate(a.label, {}, $themeStore.language)
-        if (tr.toLowerCase().includes(search)) {
+        if (tr.toLowerCase().includes(preparedSearch)) {
           res.push(a)
         }
       }
@@ -147,24 +152,36 @@
   let activeAction: Action | undefined
 
   async function handleSelection (evt: Event, selection: number): Promise<void> {
-    const action = filteredActions[selection]
-    if (action.actionPopup !== undefined) {
-      activeAction = action
-      return
-    }
-    const docs = getSelection($focusStore, $selectionStore)
-    if (action.input === 'focus') {
-      const impl = await getResource(action.action)
-      if (impl !== undefined) {
-        closePopup()
-        impl(docs[0], evt, { ...action.actionProps, action })
+    const item = items[selection]
+
+    if (item.item !== undefined) {
+      const doc = item.item.doc
+      client.findOne(doc._class, { _id: doc._id })
+      .then((value) => {
+        if (value) {
+          openDoc(client.getHierarchy(), value)
+        }
+      })
+    } else if (item.action !== undefined) {
+      const action = item.action
+      if (action.actionPopup !== undefined) {
+        activeAction = action
+        return
       }
-    }
-    if (action.input === 'selection' || action.input === 'any' || action.input === 'none') {
-      const impl = await getResource(action.action)
-      if (impl !== undefined) {
-        closePopup()
-        impl(docs, evt, { ...action.actionProps, action })
+      const docs = getSelection($focusStore, $selectionStore)
+      if (action.input === 'focus') {
+        const impl = await getResource(action.action)
+        if (impl !== undefined) {
+          closePopup()
+          impl(docs[0], evt, { ...action.actionProps, action })
+        }
+      }
+      if (action.input === 'selection' || action.input === 'any' || action.input === 'none') {
+        const impl = await getResource(action.action)
+        if (impl !== undefined) {
+          closePopup()
+          impl(docs, evt, { ...action.actionProps, action })
+        }
       }
     }
   }
@@ -189,61 +206,45 @@
 
   const dispatch = createEventDispatcher()
 
+interface SearchActionItem {
+  num: number
+  item?: SearchResultDoc
+  category?: ObjectSearchCategory
+  action?: WithLookup<Action>
+  actionCategory?: ActionCategory | WithLookup<ActionCategory>
+}
 
-  // Copy-paste for Fulltext search
+function packSearchAndActions (searchItems: SearchItem[], filteredActions: Array<WithLookup<Action>>): SearchActionItem[] {
+  let iter = -1
+  const mappedActions: SearchActionItem[] = filteredActions.map((action, num: number) => {
+    if (num > 0 && filteredActions[num - 1].$lookup?.category?.label !== action.$lookup?.category?.label) {
+      iter = 0
+    } else {
+      iter++
+    }
+    return {
+      num: iter,
+      action,
+      actionCategory: action.$lookup?.category
+    }
+  })
+  return ([] as SearchActionItem[]).concat(searchItems).concat(mappedActions)
+}
 
-
-  let items: SearchItem[] = []
-
+  let items: SearchActionItem[] = []
   let categories: ObjectSearchCategory[] = []
 
   client
     .findAll(presentation.class.ObjectSearchCategory, { context: 'spotlight' })
     .then(async (results) => {
       categories = results
-      await updateItems(search)
+      await updateItems(search, filteredActions)
     })
     .catch((e) => {
       console.error(e)
     })
 
-
-
-  async function doFulltextSearch (classes: Array<Ref<Class<Doc>>>, query: string): Promise<SearchSection[]> {
-    const result = await client.searchFulltext(
-      {
-        query: `${query}*`,
-        classes
-      },
-      {
-        limit: 10
-      }
-    )
-
-    console.log('actions popup results', result)
-
-    const itemsByClass = new Map<Ref<Class<Doc>>, SearchResultDoc[]>()
-    for (const item of result.docs) {
-      const list = itemsByClass.get(item.doc._class)
-      if (list === undefined) {
-        itemsByClass.set(item.doc._class, [item])
-      } else {
-        list.push(item)
-      }
-    }
-
-    const sections: SearchSection[] = []
-    for (const [_class, items] of itemsByClass.entries()) {
-      const category = findCategoryByClass(categories, _class)
-      if (category !== undefined) {
-        sections.push({ category, items })
-      }
-    }
-
-    return sections
-  }
-
-  async function updateItems (query: string): Promise<void> {
+  async function updateItems (query: string, filteredActions: Array<WithLookup<Action>>): Promise<void> {
     const classesToSearch: Array<Ref<Class<Doc>>> = []
     for (const cat of categories) {
       if (cat.classToSearch !== undefined) {
@@ -251,11 +252,33 @@
       }
     }
 
-    const sections = await doFulltextSearch(classesToSearch, query)
-    items = packSearchResultsForListView(sections)
+    let sections: SearchSection[] = []
+    if (query !== '' && query.indexOf('/') !== 0) {
+      sections = await doFulltextSearch(client, classesToSearch, query, categories)
+    }
+
+    const searchItems = packSearchResultsForListView(sections)
+    items = packSearchAndActions(searchItems, filteredActions)
   }
 
-  $: updateItems(search)
+  $: updateItems(search, filteredActions)
+
+  // Custom input
+  let textHTML: HTMLInputElement
+  let phTraslate: string = ''
+  let autoFocus = !$deviceOptionsStore.isMobile
+
+  export function focus () {
+    textHTML.focus()
+    autoFocus = false
+  }
+  $: if (textHTML !== undefined) {
+    if (autoFocus) focus()
+  }
+
+  $: translate(view.string.ActionPlaceholder, {}).then((res) => {
+    phTraslate = res
+  })
 </script>
 
 <ActionContext
@@ -266,13 +289,13 @@
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-  class="selectPopup width-40"
+  class="selectPopup width-40 actionsPopup"
   style:width="15rem"
   on:keydown={onKeydown}
   use:resizeObserver={() => dispatch('changeContent')}
 >
   {#if $selectionStore.docs.length > 0 || $focusStore.focus !== undefined || activeAction?.actionPopup !== undefined}
-    <div class="mt-2 ml-2 flex-between flex-no-shrink">
+    <div class="actionsDoc flex-between flex-no-shrink">
       {#if $selectionStore.docs.length > 0}
         <div class="item-box">
           <Label label={view.string.NumberItems} params={{ count: $selectionStore.docs.length }} />
@@ -316,82 +339,187 @@
       on:close={async () => {
         activeAction = undefined
         await tick()
-        input?.focus()
+        textHTML?.focus()
       }}
     />
   {:else}
-    <div class="header">
-      <EditWithIcon
-        bind:this={input}
-        icon={IconSearch}
-        size={'large'}
-        width={'100%'}
-        autoFocus={!$deviceOptionsStore.isMobile}
+    <div class="header actionsHeader">
+      <input
+        class="actionsInput"
+        bind:this={textHTML}
+        type="text"
         bind:value={search}
-        placeholder={view.string.ActionPlaceholder}
+        placeholder={phTraslate}
+        on:change on:input on:keydown
       />
     </div>
     <div class="scroll">
       <div class="box">
         <ListView
           bind:this={list}
-          count={filteredActions.length}
+          count={items.length}
           bind:selection
           on:click={async (evt) => {
             await handleSelection(evt, evt.detail)
           }}
         >
-          <svelte:fragment slot="category" let:item>
-            {@const action = filteredActions[item]}
-            {#if item === 0 || (item > 0 && filteredActions[item - 1].$lookup?.category?.label !== action.$lookup?.category?.label)}
-              <!--Category for first item-->
-              {#if action.$lookup?.category}
-                <div class="category-box">
-                  <Label label={action.$lookup.category.label} />
-                </div>
-              {/if}
-            {/if}
-          </svelte:fragment>
-          <svelte:fragment slot="item" let:item>
-            {@const action = filteredActions[item]}
-            <div class="flex-row-center flex-between flex-grow ml-2 p-3 text-base cursor-pointer">
-              <div class="mr-4 {selection === item ? 'caption-color' : 'content-dark-color'}">
-                <Icon icon={action.icon ?? IconArrowLeft} size={'small'} />
-              </div>
-              <div class="flex-grow {selection === item ? 'caption-color' : 'content-color'}">
-                <Label label={action.label} />
-              </div>
-              <div class="mr-2 text-md flex-row-center">
-                {#if action.keyBinding}
-                  {#each action.keyBinding as key, i}
-                    {#if i !== 0}
-                      <div class="ml-2 mr-2 lower"><Label label={view.string.Or} /></div>
-                    {/if}
-                    <div class="flex-row-center">
-                      {#each formatKey(key) as k, jj}
-                        {#if jj !== 0}
-                          <div class="ml-1 mr-1 lower"><Label label={view.string.Then} /></div>
-                        {/if}
-                        {#each k as kk, j}
-                          <div class="flex-center text-sm key-box">
-                            {capitalizeFirstLetter(kk.trim())}
-                          </div>
-                        {/each}
-                      {/each}
-                    </div>
-                  {/each}
+          <svelte:fragment slot="category" let:item={num}>
+            {@const item = items[num]}
+              {#if item.num === 0}
+                {#if item.category !== undefined}
+                  <div class="actionsCategory">
+                    <Label label={item.category.title} />
+                  </div>
                 {/if}
+                {#if item.actionCategory}
+                  <div class="actionsCategory">
+                    <Label label={item.actionCategory.label} />
+                  </div>
+                {/if}
+              {/if}
+          </svelte:fragment>
+          <svelte:fragment slot="item" let:item={num}>
+            {@const item = items[num]}
+            {#if item.item !== undefined}
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <div class="ap-menuItem withComp actionsSearchItem">
+                <MentionResult value={item.item} />
               </div>
-            </div>
+            {/if}
+            {#if item.action !== undefined}
+              {@const action = item.action}
+              <div class="flex-row-center flex-between flex-grow ml-2 text-base cursor-pointer actionsitem">
+                <div class="mr-4 {selection === num ? 'caption-color' : 'content-dark-color'}">
+                  <Icon icon={action.icon ?? IconArrowLeft} size={'small'} />
+                </div>
+                <div class="flex-grow {selection === num ? 'caption-color' : 'content-color'}">
+                  <Label label={action.label} />
+                </div>
+                <div class="mr-2 text-md flex-row-center">
+                  {#if action.keyBinding}
+                    {#each action.keyBinding as key, i}
+                      {#if i !== 0}
+                        <div class="ml-2 mr-2 lower"><Label label={view.string.Or} /></div>
+                      {/if}
+                      <div class="flex-row-center">
+                        {#each formatKey(key) as k, jj}
+                          {#if jj !== 0}
+                            <div class="ml-1 mr-1 lower"><Label label={view.string.Then} /></div>
+                          {/if}
+                          {#each k as kk, j}
+                            <div class="flex-center text-sm key-box">
+                              {capitalizeFirstLetter(kk.trim())}
+                            </div>
+                          {/each}
+                        {/each}
+                      </div>
+                    {/each}
+                  {/if}
+                </div>
+              </div>
+            {/if}
           </svelte:fragment>
         </ListView>
       </div>
     </div>
+    <div class="actionsHint">
+      <div class="actionsHintLable" >
+        <span class="hintNav">
+          <ChevronUp size={'small'} />
+        </span>
+        <span class="hintNav">
+          <ChevronDown size={'small'} />
+        </span>
+        <span class="ml mr">
+          <Label label={view.string.Type} />
+        </span><span class="hintNav" >/</span>
+        <span class="ml"><Label label={view.string.ToViewCommands} /></span>
+      </div>
+    </div>
   {/if}
-  <div class="menu-space" />
 </div>
 
 <style lang="scss">
+  .actionsHint {
+    border-top: 1px solid var(--theme-popup-divider);
+    padding: 0 1.25rem;
+    font-size: 0.8125rem;
+
+    .actionsHintLable {
+      height: 2.75rem;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+
+      .hintNav {
+        width: 1rem;
+        height: 1rem;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        background-color: rgba(0, 0, 0, 0.05);
+        margin: 0.13rem;
+        font-size: 0.75rem;
+      }
+
+      .ml {
+        margin-left: 0.62rem;
+      }
+      .mr {
+        margin-right: 0.62rem;
+      }
+    }
+  }
+
+  .actionsDoc {
+    margin-top: 1rem;
+    margin-left: 1.25rem;
+    margin-right: 1.25rem;
+  }
+
+  .actionsInput {
+    width: 100%;
+    caret-color: var(--theme-caret-color);
+    border: none;
+    border-radius: 0.25rem;
+    font-size: 1.125rem;
+
+    &::placeholder {
+      color: var(--theme-dark-color);
+    }
+  }
+
+  .header.actionsHeader {
+    padding-top: 1rem;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  .selectPopup.actionsPopup {
+    max-height: 30rem;
+
+    .actionsCategory {
+      padding: 0.5rem 1.25rem;
+      font-size: 0.625rem;
+      letter-spacing: 0.0625rem;
+      color: var(--theme-dark-color);
+      text-transform: uppercase;
+      line-height: 1rem;
+    }
+
+    .actionsSearchItem {
+      height: 2.25rem;
+      display: flex;
+      margin: 0.25rem;
+    }
+
+    .actionsitem {
+      font-size: 0.875rem;
+      padding: 0.375rem;
+      margin: 0.25rem 0.5rem;
+    }
+  }
+
   .key-box {
     padding: 0 0.5rem;
     min-width: 1.5rem;
@@ -400,24 +528,16 @@
     border: 1px solid var(--theme-button-border);
     border-radius: 0.25rem;
   }
+
   .key-box + .key-box {
     margin-left: 0.5rem;
   }
+
   .item-box {
     display: inline-block;
     padding: 0.25rem 0.5rem;
     color: var(--theme-caption-color);
     background-color: var(--theme-divider-color);
     border-radius: 0.25rem;
-  }
-  .category-box {
-    display: flex;
-    align-items: center;
-    padding: 0.5rem 1rem;
-    min-height: 2rem;
-    text-transform: uppercase;
-    font-weight: 500;
-    font-size: 0.625rem;
-    color: var(--theme-caption-color);
   }
 </style>
