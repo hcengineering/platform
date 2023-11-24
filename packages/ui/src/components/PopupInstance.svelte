@@ -188,6 +188,7 @@
 </div>
 
 {#if overlay}
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     class="modal-overlay"
     class:testing

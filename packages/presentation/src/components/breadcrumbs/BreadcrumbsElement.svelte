@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { resizeObserver } from '@hcengineering/ui'
   export let label: string | undefined = undefined
   export let title: string | undefined = undefined
   export let position: 'start' | 'middle' | 'end' | undefined = undefined
@@ -24,7 +25,12 @@
   $: lenght = clientWidth + 32 > 300 ? 300 : clientWidth + 32
 </script>
 
-<div class="hidden-text text-md font-medium pointer-events-none content-pointer-events-none" bind:clientWidth>
+<div
+  class="hidden-text text-md font-medium pointer-events-none content-pointer-events-none"
+  use:resizeObserver={(evt) => {
+    clientWidth = evt.clientWidth
+  }}
+>
   {#if $$slots.default}
     <slot />
   {:else}

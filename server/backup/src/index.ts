@@ -333,10 +333,12 @@ export async function backup (transactorUrl: string, workspaceId: WorkspaceId, s
   })) as unknown as CoreClient & BackupClient
   console.log('starting backup')
   try {
-    const domains = connection
-      .getHierarchy()
-      .domains()
-      .filter((it) => it !== DOMAIN_TRANSIENT && it !== DOMAIN_MODEL)
+    const domains = [
+      ...connection
+        .getHierarchy()
+        .domains()
+        .filter((it) => it !== DOMAIN_TRANSIENT && it !== DOMAIN_MODEL)
+    ]
     console.log('domains for dump', domains.length)
 
     let backupInfo: BackupInfo = {

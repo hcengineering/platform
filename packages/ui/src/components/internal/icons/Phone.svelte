@@ -1,5 +1,5 @@
 <script lang="ts">
-  export let size: 'small' | 'medium' | 'large'
+  // export let size: 'small' | 'medium' | 'large'
   export let fill: string = 'currentColor'
 </script>
 

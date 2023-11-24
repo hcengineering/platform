@@ -16,7 +16,7 @@
   import { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Issue } from '@hcengineering/tracker'
-  import { Button, Chevron, ExpandCollapse, IconAdd, closeTooltip, showPopup } from '@hcengineering/ui'
+  import { Button, Chevron, ExpandCollapse, IconAdd, closeTooltip, resizeObserver, showPopup } from '@hcengineering/ui'
   import view, { ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { ViewletsSettingButton } from '@hcengineering/view-resources'
   import { afterUpdate } from 'svelte'
@@ -157,7 +157,13 @@
 {#if hasSubIssues && viewOptions && viewlet}
   {#if !isCollapsed}
     <ExpandCollapse isExpanded={!isCollapsed}>
-      <div class="list" class:collapsed={isCollapsed} bind:clientWidth={listWidth}>
+      <div
+        class="list"
+        class:collapsed={isCollapsed}
+        use:resizeObserver={(evt) => {
+          listWidth = evt.clientWidth
+        }}
+      >
         <SubIssueList
           createItemDialog={CreateIssue}
           createItemLabel={tracker.string.AddIssueTooltip}

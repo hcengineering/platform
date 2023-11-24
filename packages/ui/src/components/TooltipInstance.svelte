@@ -255,6 +255,7 @@
 </script>
 
 {#if $tooltip.kind === 'popup'}
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     class="modal-overlay antiOverlay"
     on:click|stopPropagation|preventDefault={() => {

@@ -117,7 +117,7 @@ test.describe('Collaborative test for issue', () => {
     const userSecondPage = await getSecondPage(browser)
     await (await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
 
-    await test.step('change assignee by first user', async () => {
+    await test.step(`user1. change assignee to ${newAssignee}`, async () => {
       await (await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
       const issuesPage = new IssuesPage(page)
       await issuesPage.linkSidebarAll.click()
@@ -129,7 +129,7 @@ test.describe('Collaborative test for issue', () => {
       await issuesDetailsPage.editIssue({ assignee: newAssignee })
     })
 
-    await test.step('Change assignee by first user and check issue', async () => {
+    await test.step('user2. check notification', async () => {
       const leftSideMenuPageSecond = new LeftSideMenuPage(userSecondPage)
       await leftSideMenuPageSecond.checkExistNewNotification(userSecondPage)
       await leftSideMenuPageSecond.buttonNotification.click()
@@ -138,7 +138,9 @@ test.describe('Collaborative test for issue', () => {
       await notificationPageSecond.checkNotificationIssue(issue.title, newAssignee)
 
       await leftSideMenuPageSecond.buttonTracker.click()
+    })
 
+    await test.step('user2. check issue assignee', async () => {
       const issuesPageSecond = new IssuesPage(userSecondPage)
       await issuesPageSecond.linkSidebarMyIssue.click()
       await issuesPageSecond.modelSelectorBacklog.click()

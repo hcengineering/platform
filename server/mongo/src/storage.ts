@@ -606,7 +606,7 @@ abstract class MongoAdapterBase implements DbAdapter {
         if ('%hash%' in d) {
           delete d['%hash%']
         }
-        if (digest == null) {
+        if (digest == null || digest === '') {
           const doc = JSON.stringify(d)
           const hash = createHash('sha256')
           hash.update(doc)
@@ -675,7 +675,7 @@ abstract class MongoAdapterBase implements DbAdapter {
         part.map((it) => ({
           replaceOne: {
             filter: { _id: it._id },
-            replacement: { ...it, '%hash%': '' },
+            replacement: { ...it, '%hash%': null },
             upsert: true
           }
         }))
@@ -707,7 +707,7 @@ abstract class MongoAdapterBase implements DbAdapter {
               updateOne: {
                 filter: { _id: it[0] },
                 update: {
-                  $set: { ...set, '%hash%': '' },
+                  $set: { ...set, '%hash%': null },
                   ...($unset !== undefined ? { $unset } : {})
                 }
               }

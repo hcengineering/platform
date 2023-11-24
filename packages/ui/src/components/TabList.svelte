@@ -70,6 +70,7 @@
       <div class="tablist-container {kind} {size}">
         {#each items as item, i}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
           <div
             bind:this={tabs[i]}
             class={kind === 'normal' || kind === 'regular' ? 'button' : 'plain'}
