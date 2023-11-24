@@ -31,7 +31,6 @@ export interface SvelteNodeViewRendererOptions extends NodeViewRendererOptions {
   update?: (node: ProseMirrorNode, decorations: DecorationWithType[]) => boolean
   contentAs?: string
   contentClass?: string
-  contentDOMElementAs?: string
   componentProps?: Record<string, any>
 }
 
@@ -65,33 +64,17 @@ class SvelteNodeView extends NodeView<SvelteNodeViewComponent, Editor, SvelteNod
       ...(this.options.componentProps ?? {})
     }
 
-    if (this.node.isLeaf) {
-      this.contentDOMElement = null
-    } else if (this.options.contentDOMElementAs !== undefined) {
-      this.contentDOMElement = document.createElement(this.options.contentDOMElementAs)
-    } else {
-      this.contentDOMElement = document.createElement(this.node.isInline ? 'span' : 'div')
-    }
-
-    if (this.contentDOMElement !== null) {
-      // For some reason the whiteSpace prop is not inherited properly in Chrome and Safari
-      // With this fix it seems to work fine
-      // See: https://github.com/ueberdosis/tiptap/issues/1197
-      this.contentDOMElement.style.whiteSpace = 'inherit'
-    }
-
     const contentAs = this.options.contentAs ?? (this.node.isInline ? 'span' : 'div')
     const contentClass = this.options.contentClass ?? `node-${this.node.type.name}`
 
     const target = document.createElement(contentAs)
     target.classList.add(contentClass)
 
+    this.contentDOMElement = null
     const context = createNodeViewContext({
       onDragStart: this.onDragStart.bind(this),
       onContentElement: (element) => {
-        if (this.contentDOMElement !== null && !element.contains(this.contentDOMElement)) {
-          element.appendChild(this.contentDOMElement)
-        }
+        this.contentDOMElement = element
       }
     })
 
