@@ -20,11 +20,7 @@
 
   import { Class, Ref, Doc, SearchResultDoc } from '@hcengineering/core'
 
-  import {
-    type SearchItem,
-    packSearchResultsForListView,
-    doFulltextSearch
-  } from '../search'
+  import { type SearchItem, packSearchResultsForListView, doFulltextSearch } from '../search'
 
   import MentionResult from './MentionResult.svelte'
 

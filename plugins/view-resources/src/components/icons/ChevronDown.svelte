@@ -18,5 +18,5 @@
 </script>
 
 <svg class="svg-{size}" {fill} viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg">
-  <path d="M6 8.24999L2.25 4.49999L2.775 3.97499L6 7.19999L9.225 3.97499L9.75 4.49999L6 8.24999Z" fill-opacity="0.6"/>
+  <path d="M6 8.24999L2.25 4.49999L2.775 3.97499L6 7.19999L9.225 3.97499L9.75 4.49999L6 8.24999Z" fill-opacity="0.6" />
 </svg>

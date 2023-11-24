@@ -15,7 +15,12 @@
 <script lang="ts">
   import { WithLookup, Doc, Ref, Class, SearchResultDoc } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
-  import presentation, { createQuery, getClient, ActionContext, ObjectSearchCategory } from '@hcengineering/presentation'
+  import presentation, {
+    createQuery,
+    getClient,
+    ActionContext,
+    ObjectSearchCategory
+  } from '@hcengineering/presentation'
   import ui, {
     Button,
     closePopup,
@@ -26,8 +31,7 @@
     deviceOptionsStore,
     capitalizeFirstLetter,
     formatKey,
-    themeStore,
-    IconChevronDown
+    themeStore
   } from '@hcengineering/ui'
   import { Action, ActionCategory, ViewContext } from '@hcengineering/view'
   import { filterActions, getSelection } from '../actions'
@@ -75,11 +79,14 @@
   let supportedActions: Array<WithLookup<Action>> = []
   let filteredActions: Array<WithLookup<Action>> = []
 
-  async function filterVisibleActions (actions: Array<WithLookup<Action>>, docs: Doc[]) {
+  async function filterVisibleActions (
+    actions: Array<WithLookup<Action>>,
+    docs: Doc[]
+  ): Promise<Array<WithLookup<Action>>> {
     const resultActions: Array<WithLookup<Action>> = []
 
     for (const action of actions) {
-      if (!action.visibilityTester) {
+      if (action.visibilityTester === undefined) {
         resultActions.push(action)
       } else {
         const visibilityTester = await getResource(action.visibilityTester)
@@ -94,7 +101,7 @@
 
   const client = getClient()
 
-  async function getSupportedActions (actions: Array<WithLookup<Action>>) {
+  async function getSupportedActions (actions: Array<WithLookup<Action>>): Promise<void> {
     const docs = getSelection($focusStore, $selectionStore)
     let fActions: Array<WithLookup<Action>> = actions
 
@@ -123,7 +130,7 @@
     supportedActions = fActions.sort((a, b) => a.category.localeCompare(b.category))
   }
 
-  $: getSupportedActions(actions)
+  $: void getSupportedActions(actions)
 
   async function filterSearchActions (actions: Array<WithLookup<Action>>, search: string): Promise<void> {
     const res: Array<WithLookup<Action>> = []
@@ -143,7 +150,7 @@
       filteredActions = actions
     }
   }
-  $: filterSearchActions(supportedActions, search)
+  $: void filterSearchActions(supportedActions, search)
 
   let selection = 0
   let list: ListView
@@ -156,10 +163,9 @@
 
     if (item.item !== undefined) {
       const doc = item.item.doc
-      client.findOne(doc._class, { _id: doc._id })
-      .then((value) => {
-        if (value) {
-          openDoc(client.getHierarchy(), value)
+      void client.findOne(doc._class, { _id: doc._id }).then((value) => {
+        if (value !== undefined) {
+          void openDoc(client.getHierarchy(), value)
         }
       })
     } else if (item.action !== undefined) {
@@ -206,30 +212,33 @@
 
   const dispatch = createEventDispatcher()
 
-interface SearchActionItem {
-  num: number
-  item?: SearchResultDoc
-  category?: ObjectSearchCategory
-  action?: WithLookup<Action>
-  actionCategory?: ActionCategory | WithLookup<ActionCategory>
-}
+  interface SearchActionItem {
+    num: number
+    item?: SearchResultDoc
+    category?: ObjectSearchCategory
+    action?: WithLookup<Action>
+    actionCategory?: ActionCategory | WithLookup<ActionCategory>
+  }
 
-function packSearchAndActions (searchItems: SearchItem[], filteredActions: Array<WithLookup<Action>>): SearchActionItem[] {
-  let iter = -1
-  const mappedActions: SearchActionItem[] = filteredActions.map((action, num: number) => {
-    if (num > 0 && filteredActions[num - 1].$lookup?.category?.label !== action.$lookup?.category?.label) {
-      iter = 0
-    } else {
-      iter++
-    }
-    return {
-      num: iter,
-      action,
-      actionCategory: action.$lookup?.category
-    }
-  })
-  return ([] as SearchActionItem[]).concat(searchItems).concat(mappedActions)
-}
+  function packSearchAndActions (
+    searchItems: SearchItem[],
+    filteredActions: Array<WithLookup<Action>>
+  ): SearchActionItem[] {
+    let iter = -1
+    const mappedActions: SearchActionItem[] = filteredActions.map((action, num: number) => {
+      if (num > 0 && filteredActions[num - 1].$lookup?.category?.label !== action.$lookup?.category?.label) {
+        iter = 0
+      } else {
+        iter++
+      }
+      return {
+        num: iter,
+        action,
+        actionCategory: action.$lookup?.category
+      }
+    })
+    return ([] as SearchActionItem[]).concat(searchItems).concat(mappedActions)
+  }
 
   let items: SearchActionItem[] = []
   let categories: ObjectSearchCategory[] = []
@@ -268,7 +277,7 @@ function packSearchAndActions (searchItems: SearchItem[], filteredActions: Array
   let phTraslate: string = ''
   let autoFocus = !$deviceOptionsStore.isMobile
 
-  export function focus () {
+  export function focus (): void {
     textHTML.focus()
     autoFocus = false
   }
@@ -350,7 +359,9 @@ function packSearchAndActions (searchItems: SearchItem[], filteredActions: Array
         type="text"
         bind:value={search}
         placeholder={phTraslate}
-        on:change on:input on:keydown
+        on:change
+        on:input
+        on:keydown
       />
     </div>
     <div class="scroll">
@@ -365,18 +376,18 @@ function packSearchAndActions (searchItems: SearchItem[], filteredActions: Array
         >
           <svelte:fragment slot="category" let:item={num}>
             {@const item = items[num]}
-              {#if item.num === 0}
-                {#if item.category !== undefined}
-                  <div class="actionsCategory">
-                    <Label label={item.category.title} />
-                  </div>
-                {/if}
-                {#if item.actionCategory}
-                  <div class="actionsCategory">
-                    <Label label={item.actionCategory.label} />
-                  </div>
-                {/if}
+            {#if item.num === 0}
+              {#if item.category !== undefined}
+                <div class="actionsCategory">
+                  <Label label={item.category.title} />
+                </div>
               {/if}
+              {#if item.actionCategory}
+                <div class="actionsCategory">
+                  <Label label={item.actionCategory.label} />
+                </div>
+              {/if}
+            {/if}
           </svelte:fragment>
           <svelte:fragment slot="item" let:item={num}>
             {@const item = items[num]}
@@ -423,7 +434,7 @@ function packSearchAndActions (searchItems: SearchItem[], filteredActions: Array
       </div>
     </div>
     <div class="actionsHint">
-      <div class="actionsHintLable" >
+      <div class="actionsHintLable">
         <span class="hintNav">
           <ChevronUp size={'small'} />
         </span>
@@ -432,7 +443,7 @@ function packSearchAndActions (searchItems: SearchItem[], filteredActions: Array
         </span>
         <span class="ml mr">
           <Label label={view.string.Type} />
-        </span><span class="hintNav" >/</span>
+        </span><span class="hintNav">/</span>
         <span class="ml"><Label label={view.string.ToViewCommands} /></span>
       </div>
     </div>
