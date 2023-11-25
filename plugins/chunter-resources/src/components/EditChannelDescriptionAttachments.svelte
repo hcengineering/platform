@@ -87,6 +87,7 @@
               <Icon icon={FileDownload} size={'small'} />
             </a>
             <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
             <div id="context-menu" class="eAttachmentRowMenu" on:click={(event) => showMenu(event, attachment, i)}>
               <IconMoreV size={'small'} />
             </div>
@@ -95,6 +96,7 @@
       {/each}
       {#if visibleAttachments.length < totalAttachments}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
           class="showMoreAttachmentsButton"
           on:click={() => {

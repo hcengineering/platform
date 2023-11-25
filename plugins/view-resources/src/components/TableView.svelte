@@ -14,12 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
+  import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
   import { TableBrowser } from '..'
   import { ActionContext } from '@hcengineering/presentation'
 
   export let _class: Ref<Class<Doc>>
-  export let space: Ref<Space> | undefined = undefined
+  // export let space: Ref<Space> | undefined = undefined
   export let query: DocumentQuery<Doc> = {}
   export let options: FindOptions<Doc> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined

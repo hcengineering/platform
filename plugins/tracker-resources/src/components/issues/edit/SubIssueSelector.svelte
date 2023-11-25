@@ -139,6 +139,7 @@
   <div class="flex root">
     <div class="item clear-mins">
       <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
         class="flex-center parent-issue cursor-pointer"
         use:tooltip={{ label: tracker.string.OpenParent, direction: 'bottom' }}

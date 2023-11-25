@@ -71,6 +71,8 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="sortMenu" on:click={(event) => showSortMenu(event)}>
   <Label label={attachment.string.FileBrowserSort} />
   <Label label={sortModeToString(selectedSort)} />

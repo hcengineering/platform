@@ -35,7 +35,7 @@
   export let tooltipLabels: PersonLabelTooltip | undefined = undefined
   export let avatarSize: IconSize = 'x-small'
   export let onEdit: ((event: MouseEvent) => void) | undefined = undefined
-  export let element: HTMLElement | undefined = undefined
+  // export let element: HTMLElement | undefined = undefined
   export let colorInherit: boolean = false
   export let accent: boolean = false
   export let maxWidth = ''
@@ -95,7 +95,6 @@
     {colorInherit}
     {accent}
     {maxWidth}
-    bind:element
     on:accent-color
   />
 {/if}

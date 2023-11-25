@@ -84,6 +84,7 @@
 {#if value}
   {#if kind === 'list' || kind === 'list-header'}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class="priority-container" class:cursor-pointer={isEditable} on:click={handlePriorityEditorOpened}>
       <div class="icon">
         {#if issuePriorities[value.priority]?.icon}<Icon icon={issuePriorities[value.priority]?.icon} {size} />{/if}

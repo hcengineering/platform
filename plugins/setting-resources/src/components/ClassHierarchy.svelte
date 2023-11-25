@@ -58,6 +58,7 @@
   {@const clazz = hierarchy.getClass(cl)}
   {@const desc = getDescendants(cl)}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     class="ac-column__list-item"
     class:ac-column__list-selected={cl === _class}

@@ -61,6 +61,7 @@
     {#await getDmName(client, dm) then name}
       {#await getEmpolyeeIds() then empolyeeIds}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div class="ac-header__wrap-title" on:click={onSpaceEdit}>
           <div class="ac-header__icon">
             <CombineAvatars _class={contact.mixin.Employee} items={empolyeeIds} size={'x-small'} />

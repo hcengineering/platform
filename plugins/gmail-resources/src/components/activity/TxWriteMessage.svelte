@@ -29,4 +29,6 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <span class="over-underline overflow-label" on:click={click}>{value.subject}</span>

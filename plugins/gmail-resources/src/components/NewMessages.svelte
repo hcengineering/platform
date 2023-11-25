@@ -302,6 +302,7 @@
     </div>
   </div>
   <Scroller>
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="popupPanel-body__main-content py-4 h-full"
       on:dragover|preventDefault={() => {}}

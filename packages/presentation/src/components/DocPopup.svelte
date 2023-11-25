@@ -46,12 +46,10 @@
   export let titleDeselect: IntlString | undefined = undefined
   export let placeholder: IntlString = presentation.string.Search
   export let selectedObjects: Ref<Doc>[] = []
-  export let ignoreObjects: Ref<Doc>[] = []
   export let shadows: boolean = true
   export let width: 'medium' | 'large' | 'full' = 'medium'
   export let size: 'small' | 'medium' | 'large' = 'large'
 
-  export let searchField: string = 'name'
   export let noSearchField: boolean = false
   export let groupBy = '_class'
 
@@ -156,6 +154,7 @@
 
 <FocusHandler {manager} />
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="selectPopup"
   class:full-width={width === 'full'}
@@ -167,31 +166,35 @@
     dispatch('changeContent')
   }}
 >
-  <div class="header flex-between">
-    <EditWithIcon
-      icon={IconSearch}
-      size={'large'}
-      width={'100%'}
-      autoFocus={!$deviceOptionsStore.isMobile}
-      bind:value={search}
-      on:change={() => dispatch('search', search)}
-      on:input={() => dispatch('search', search)}
-      {placeholder}
-    />
-    {#if create !== undefined}
-      <div class="ml-2">
-        <Button
-          focusIndex={2}
-          kind={'ghost'}
-          {size}
-          icon={IconAdd}
-          showTooltip={{ label: create.label }}
-          on:click={onCreate}
-          disabled={readonly || loading}
-        />
-      </div>
-    {/if}
-  </div>
+  {#if !noSearchField}
+    <div class="header flex-between">
+      <EditWithIcon
+        icon={IconSearch}
+        size={'large'}
+        width={'100%'}
+        autoFocus={!$deviceOptionsStore.isMobile}
+        bind:value={search}
+        on:change={() => dispatch('search', search)}
+        on:input={() => dispatch('search', search)}
+        {placeholder}
+      />
+      {#if create !== undefined}
+        <div class="ml-2">
+          <Button
+            focusIndex={2}
+            kind={'ghost'}
+            {size}
+            icon={IconAdd}
+            showTooltip={{ label: create.label }}
+            on:click={onCreate}
+            disabled={readonly || loading}
+          />
+        </div>
+      {/if}
+    </div>
+  {:else if !embedded}
+    <div class="menu-space" />
+  {/if}
   <div class="scroll">
     <div class="box">
       <ListView bind:this={list} count={objects.length} bind:selection>

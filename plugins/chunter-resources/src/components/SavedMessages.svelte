@@ -98,6 +98,7 @@
   {#if savedMessages.length > 0 || savedAttachments.length > 0}
     {#each savedMessages as message}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
         class="clear-mins flex-no-shrink"
         on:click={() => {
@@ -116,6 +117,7 @@
     {/each}
     {#each savedAttachments as att}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div class="attachmentContainer flex-no-shrink clear-mins" on:click={() => openAttachment(att)}>
         <AttachmentPreview value={att} isSaved={true} />
         <div class="label">

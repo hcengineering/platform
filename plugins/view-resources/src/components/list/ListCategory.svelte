@@ -79,7 +79,7 @@
     revert?: () => void
   }
   export let listDiv: HTMLDivElement
-  export let index: number
+  // export let index: number
   export let groupPersistKey: string
   export let compactMode: boolean = false
   export let resultQuery: DocumentQuery<Doc>
@@ -416,6 +416,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   in:fade|local={{ duration: 50 }}
   bind:this={div}

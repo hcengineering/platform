@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Event } from '@hcengineering/calendar'
-  import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
+  // import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
   import { Label, addZero, getPlatformColorForTextDef, showPopup, themeStore, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
@@ -24,9 +24,9 @@
   export let date: Date
   export let size: 'small' | 'huge' = 'small'
 
-  export let _class: Ref<Class<Doc>>
-  export let query: DocumentQuery<Event> = {}
-  export let options: FindOptions<Event> | undefined = undefined
+  // export let _class: Ref<Class<Doc>>
+  // export let query: DocumentQuery<Event> = {}
+  // export let options: FindOptions<Event> | undefined = undefined
 
   export let today: boolean = false
   export let selected: boolean = false
@@ -46,6 +46,7 @@
   <div class="h-full w-full p-0-5 flex-col" use:tooltip={tip}>
     <div class="flex-row-reverse">
       <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
         class="date flex-center"
         class:today
@@ -59,6 +60,7 @@
       </div>
     </div>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="flex-col flex-grow mt-1"
       on:click={() => {
@@ -118,14 +120,5 @@
     color: var(--theme-caption-color);
     background-color: var(--primary-button-disabled);
     border-color: var(--primary-button-outline);
-  }
-  .marker {
-    position: absolute;
-    top: 0.25rem;
-    right: 0.25rem;
-    width: 0.25rem;
-    height: 0.25rem;
-    border-radius: 50%;
-    background-color: var(--highlight-red);
   }
 </style>

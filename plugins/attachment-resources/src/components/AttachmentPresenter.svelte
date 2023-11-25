@@ -140,6 +140,7 @@
         {#if removable && value.readonly !== true}
           <span>•</span>
           <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
           <span
             class="remove-link"
             on:click={(ev) => {
@@ -243,13 +244,11 @@
     }
 
     .name:hover,
-    .icon:hover + .info-container > .name,
     .no-line:hover + .info-container > .name a {
       text-decoration: underline;
       color: var(--theme-caption-color);
     }
     .name:active,
-    .icon:active + .info-container > .name,
     .no-line:active + .info-container > .name a {
       text-decoration: underline;
       color: var(--theme-caption-color);

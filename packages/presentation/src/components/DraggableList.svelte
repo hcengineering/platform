@@ -91,6 +91,7 @@
 <div class="antiAccordion">
   {#each objects as object, index (object._id)}
     <div class="description pb-1" animate:flip={{ duration: 400 }}>
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
         class:is-dragging={index === draggingIndex}
         class:is-dragged-over-up={draggingIndex !== null && index < draggingIndex && index === hoveringIndex}

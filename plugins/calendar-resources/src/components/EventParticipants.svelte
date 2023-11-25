@@ -84,7 +84,7 @@
 
 <div class="flex-row-center gap-1-5 pb-0-5 pr-1">
   <Icon icon={calendar.icon.Participants} size="small" />
-  <AddParticipant {placeholder} excluded={participants} focusable fullSize on:ref={ref} on:enter={enter} />
+  <AddParticipant {placeholder} excluded={participants} focusable fullSize {disabled} on:ref={ref} on:enter={enter} />
 </div>
 {#if allParticipants.length}
   <Scroller padding={'.125rem .375rem 0 1.5rem'} shrink>
@@ -94,6 +94,7 @@
           participant={p.participant}
           externalParticipant={p.externalParticipant}
           focusIndex={10010 + i}
+          {disabled}
           on:removeParticipant={() => {
             if (p.participant) removeParticipant(p.participant)
           }}
@@ -120,6 +121,7 @@
         participant={allParticipants[allParticipants.length - 1].participant}
         externalParticipant={allParticipants[allParticipants.length - 1].externalParticipant}
         focusIndex={10010 + shortListLength - 1}
+        {disabled}
         on:removeParticipant={(event) => {
           if (event.detail !== undefined) removeParticipant(event.detail)
         }}
@@ -133,6 +135,7 @@
           participant={p.participant}
           externalParticipant={p.externalParticipant}
           focusIndex={10010 + i}
+          {disabled}
           on:removeParticipant={() => {
             if (p.participant) removeParticipant(p.participant)
           }}

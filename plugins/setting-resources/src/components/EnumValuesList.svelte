@@ -56,6 +56,7 @@
 
 <Scroller>
   {#each filtered as item, i}
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="flex-between flex-nowrap item step-tb25"
       draggable={true}

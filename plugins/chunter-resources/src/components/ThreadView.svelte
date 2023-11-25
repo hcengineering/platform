@@ -180,6 +180,7 @@
 <div class="header">
   <div class="title"><Label label={chunter.string.Thread} /></div>
   <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     class="tool"
     on:click={() => {

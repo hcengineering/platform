@@ -30,7 +30,7 @@
   import EventPresenter from './EventPresenter.svelte'
 
   export let event: Event
-  export let hourHeight: number
+  // export let hourHeight: number
   export let size: { width: number, height: number }
 
   $: oneRow = size.height < 42 || event.allDay
@@ -66,6 +66,7 @@
 
 {#if event}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     bind:this={div}
     class="event-container"

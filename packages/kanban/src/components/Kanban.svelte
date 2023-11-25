@@ -325,6 +325,7 @@
       {#each categories as state, si (typeof state === 'object' ? state.name : state)}
         {@const stateObjects = getGroupByValues(groupByDocs, state)}
 
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
           class="panel-container"
           bind:this={stateRefs[si]}

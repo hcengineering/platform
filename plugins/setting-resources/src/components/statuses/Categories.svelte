@@ -48,6 +48,7 @@
   {#each categories as f (f._id)}
     {#if hasResource(f.icon)}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
         class="flex-between item"
         class:selected={f._id === category?._id}

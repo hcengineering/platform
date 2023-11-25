@@ -30,6 +30,7 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="flex-row-center" on:click>
   <Avatar avatar={value.avatar} {size} {icon} name={value.name} on:accent-color />
   <div class="flex-col min-w-0 {size === 'tiny' || size === 'inline' ? 'ml-1' : 'ml-2'}" class:max-w-20={short}>

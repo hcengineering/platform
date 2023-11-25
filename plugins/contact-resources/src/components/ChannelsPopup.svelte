@@ -40,6 +40,7 @@
     <div class="overflow-label">{value.value}</div>
   </div>
   <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="button" on:click|preventDefault={copyLink}>
     <IconCopy size={'small'} />
   </div>

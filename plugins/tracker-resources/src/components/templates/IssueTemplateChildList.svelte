@@ -110,6 +110,7 @@
 
 {#each issues as issue, index (issue.id)}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     class="flex-between row"
     class:is-dragging={issue.id === dragId}

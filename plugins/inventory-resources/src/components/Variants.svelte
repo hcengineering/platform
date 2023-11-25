@@ -51,6 +51,8 @@
       <span class="text-sm content-dark-color mt-2">
         <Label label={inventory.string.NoVariantsForProduct} />
       </span>
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <span class="text-sm content-color over-underline" on:click={create}>
         <Label label={inventory.string.CreateVariant} />
       </span>

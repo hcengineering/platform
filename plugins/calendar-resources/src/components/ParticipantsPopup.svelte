@@ -57,6 +57,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="antiPopup thinStyle" on:keydown={onKeyDown}>
   <div class="ap-space x1-5" />
   <div class="ap-scroll">

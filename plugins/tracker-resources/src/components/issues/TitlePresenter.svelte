@@ -36,7 +36,7 @@
     style:max-width={maxWidth}
     title={value.title}
   >
-    <DocNavLink object={value} {onClick} component={tracker.component.EditIssue} shrink={1} colorInherit>
+    <DocNavLink object={value} {onClick} component={tracker.component.EditIssue} shrink={1} {disabled} colorInherit>
       {value.title}
     </DocNavLink>
   </span>

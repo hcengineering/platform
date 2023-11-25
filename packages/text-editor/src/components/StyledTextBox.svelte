@@ -7,7 +7,6 @@
     IconCheck,
     IconClose,
     IconEdit,
-    IconSize,
     Label,
     ShowMore,
     registerFocus,
@@ -36,7 +35,6 @@
   export let extraActions: RefAction[] = []
   export let showButtons: boolean = true
   export let buttonSize: ButtonSize = 'medium'
-  export let formatButtonSize: IconSize = 'small'
   export let hideExtraButtons: boolean = false
   export let maxHeight: 'max' | 'card' | 'limited' | string = 'max'
   export let previewLimit: number = 240
@@ -204,6 +202,7 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="flex-col styled-box"
   class:antiEmphasized={kind === 'emphasized'}
@@ -226,7 +225,6 @@
       {placeholder}
       {showButtons}
       {buttonSize}
-      {formatButtonSize}
       {maxHeight}
       {focusable}
       {autofocus}

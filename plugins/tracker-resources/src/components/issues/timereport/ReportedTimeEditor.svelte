@@ -62,6 +62,7 @@
 
 {#if kind === 'link'}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     id="ReportedTimeEditor"
     class="link-container antiButton link {size} flex-grow flex-between"

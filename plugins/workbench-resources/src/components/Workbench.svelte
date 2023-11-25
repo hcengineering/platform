@@ -612,6 +612,7 @@
         class:landscape={appsDirection === 'vertical'}
       >
         <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
           class="logo-container clear-mins"
           class:mini={appsMini}
@@ -676,6 +677,7 @@
         {/await}
         <div class="flex-center" class:mt-3={appsDirection === 'vertical'} class:ml-2={appsDirection === 'horizontal'}>
           <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
           <div
             id="profile-button"
             class="cursor-pointer"
@@ -695,6 +697,7 @@
     <div class="workbench-container">
       {#if currentApplication && navigatorModel && navigator && visibleNav}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         {#if navFloat}<div class="cover shown" on:click={() => (visibleNav = false)} />{/if}
         <div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
           <div class="antiPanel-wrap__content">

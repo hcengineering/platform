@@ -63,6 +63,7 @@
       <div class="mb-1"><a href={data.authorUrl}>{data.author}</a></div>
       {#if !played}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
           class="container"
           on:click={() => {

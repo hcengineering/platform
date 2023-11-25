@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc } from '@hcengineering/core'
-  import { Button, Dialog, PopupOptions } from '@hcengineering/ui'
+  // import { Doc } from '@hcengineering/core'
+  import { Button, Dialog } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import presentation from '..'
   import { getFileUrl } from '../utils'
@@ -24,13 +24,12 @@
   export let file: string
   export let name: string
   export let contentType: string | undefined
-  export let popupOptions: PopupOptions
-  export let value: Doc
+  // export let popupOptions: PopupOptions
+  // export let value: Doc
   export let showIcon = true
   export let fullSize = false
 
   const dispatch = createEventDispatcher()
-  // let imgView: 'img-horizontal-fit' | 'img-vertical-fit' | 'img-original-fit' = 'img-vertical-fit'
 
   function iconLabel (name: string): string {
     const parts = name.split('.')
@@ -123,37 +122,5 @@
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-  }
-  .img-horizontal-fit,
-  .img-vertical-fit,
-  .img-original-fit {
-    margin: 0 auto;
-    width: auto;
-    height: auto;
-  }
-  .img-horizontal-fit {
-    width: 100%;
-  }
-  .img-vertical-fit {
-    height: 100%;
-  }
-  .pdfviewer-header {
-    flex-shrink: 0;
-    display: flex;
-    justify-content: space-between;
-    flex-direction: row-reverse;
-    align-items: center;
-  }
-  .img-nav {
-    display: grid;
-    grid-template-columns: auto;
-    grid-auto-flow: column;
-    grid-auto-columns: min-content;
-    gap: 0.5rem;
-    align-items: center;
-  }
-  .space {
-    min-height: 0.5rem;
-    height: 0.5rem;
   }
 </style>

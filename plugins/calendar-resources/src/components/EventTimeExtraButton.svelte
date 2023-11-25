@@ -31,6 +31,7 @@
 {#if !allDay && rules.length === 0}
   <div class="antiButton ghost x-small sh-no-shape text-11px pl-2 pr-2 pt-1 pb-1 mt-1 ml-5-5 gap-3 w-min">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class="overflow-label cursor-pointer" on:click={() => (allDay = true)}>
       <Label label={calendar.string.AllDay} />
     </div>
@@ -39,6 +40,7 @@
     </div>
     {#if !noRepeat}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div class="overflow-label cursor-pointer" on:click={() => dispatch('repeat')}>
         <Label label={calendar.string.Repeat} />
       </div>

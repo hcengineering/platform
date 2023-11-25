@@ -90,6 +90,7 @@
 </div>
 {#each items as item, i}
   {#if isAttribute(item)}
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="menu-item flex-row-center"
       bind:this={elements[i]}
@@ -120,13 +121,3 @@
     <div class="antiDivider" />
   {/if}
 {/each}
-
-<style lang="scss">
-  .item {
-    padding: 0.5rem;
-    border-radius: 0.25rem;
-    &:hover {
-      background-color: var(--theme-button-hovered);
-    }
-  }
-</style>

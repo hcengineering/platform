@@ -14,14 +14,14 @@
 -->
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
-  import { Asset, IntlString } from '@hcengineering/platform'
+  import { IntlString } from '@hcengineering/platform'
   import { AnyComponent, Button, Component, IconAdd, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
   import { ViewOptions, Viewlet, ViewletDescriptor, ViewletPreference } from '@hcengineering/view'
   import { FilterBar, FilterButton, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined
-  export let icon: Asset
+  // export let icon: Asset
   export let label: IntlString
   export let createLabel: IntlString | undefined
   export let createComponent: AnyComponent | undefined

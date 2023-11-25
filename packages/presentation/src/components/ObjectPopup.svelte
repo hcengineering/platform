@@ -100,11 +100,9 @@
   {titleDeselect}
   {placeholder}
   {selectedObjects}
-  {ignoreObjects}
   {shadows}
   {width}
   {size}
-  {searchField}
   {noSearchField}
   {groupBy}
   {create}

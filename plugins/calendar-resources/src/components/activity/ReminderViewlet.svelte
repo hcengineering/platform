@@ -36,6 +36,8 @@
 <div class="flex">
   {#await getEvent(tx.objectId) then event}
     {#if event}
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <span
         class="over-underline caption-color flex-row-center"
         on:click={() => {

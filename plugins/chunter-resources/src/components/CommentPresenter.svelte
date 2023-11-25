@@ -25,7 +25,7 @@
 
   export let value: Comment
   export let inline: boolean = false
-  export let disabled = false
+  // export let disabled = false
   export let inbox: boolean = false
 
   const client = getClient()

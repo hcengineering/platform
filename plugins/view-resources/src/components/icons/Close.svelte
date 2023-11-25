@@ -16,7 +16,7 @@
 -->
 <script lang="ts">
   export let size: 'small' | 'medium' | 'large'
-  export let descending: boolean = false
+  // export let descending: boolean = false
   export let fill: string = 'currentColor'
 </script>
 

@@ -26,7 +26,7 @@
 
   let btn: HTMLButtonElement
 
-  function clickHandler (event: MouseEvent) {
+  function clickHandler () {
     showPopup(ViewletSetting, { viewlet }, btn)
   }
 
