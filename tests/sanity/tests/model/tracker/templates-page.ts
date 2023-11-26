@@ -21,7 +21,7 @@ export class TemplatePage extends CommonTrackerPage {
     this.page = page
     this.buttonNewTemplate = page.locator('button > span', { hasText: 'Template' })
     this.inputIssueTitle = page.locator('form[id$="NewProcess"] input')
-    this.inputIssueDescription = page.locator('form[id$="NewProcess"] div.textInput')
+    this.inputIssueDescription = page.locator('form[id$="NewProcess"] div.tiptap')
     this.buttonPopupCreateNewTemplatePriority = page.locator('form[id$="NewProcess"] div.antiCard-pool > button:first-child')
     this.buttonPopupCreateNewTemplateAssignee = page.locator('form[id$="NewProcess"] div.antiCard-pool > div > button')
     this.buttonPopupCreateNewTemplateLabels = page.locator('form[id$="NewProcess"] div.antiCard-pool > button:nth-child(3)')
@@ -32,7 +32,7 @@ export class TemplatePage extends CommonTrackerPage {
 
   }
 
-  async createNewTemplate (data: NewIssue): Promise<void> {
+  async createNewTemplate(data: NewIssue): Promise<void> {
     await this.buttonNewTemplate.click()
 
     await this.inputIssueTitle.fill(data.title)
@@ -46,13 +46,14 @@ export class TemplatePage extends CommonTrackerPage {
       await this.selectAssignee(this.page, data.assignee)
     }
     if (data.labels != null && data.createLabel != null) {
-        await this.buttonPopupCreateNewTemplateLabels.click()
+      await this.buttonPopupCreateNewTemplateLabels.click()
       if (data.createLabel) {
         await this.pressCreateButtonSelectPopup(this.page)
         await this.addNewTagPopup(this.page, data.labels, 'Tag from templateNewIssue')
       }
       await this.checkFromDropdown(this.page, data.labels)
-      await this.inputIssueTitle.click({ force: true })
+      // await this.inputIssueTitle.click({ force: true })
+      await this.buttonPopupCreateNewTemplatePriority.click({ force: true })
     }
     if (data.estimation != null) {
       await this.buttonPopupCreateNewTemplateEstimation.click()
@@ -68,6 +69,10 @@ export class TemplatePage extends CommonTrackerPage {
     }
 
     await this.buttonSaveTemplate.click()
+  }
+
+  async openTemplate(templateName: string): Promise<void> {
+    await this.page.locator('span.issuePresenterRoot > span', { hasText: templateName }).click()
   }
 }
 

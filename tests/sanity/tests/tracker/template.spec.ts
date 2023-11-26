@@ -7,6 +7,7 @@ import { Issue, NewIssue } from '../model/tracker/types'
 import { allure } from 'allure-playwright'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 import { TemplatePage } from '../model/tracker/templates-page'
+import { TemplateDetailsPage } from '../model/tracker/template-details-page'
 
 test.use({
   storageState: PlatformSetting
@@ -20,8 +21,8 @@ test.describe('Tracker template tests', () => {
 
   test('Create a Template', async ({ page }) => {
     const newTemplate: NewIssue = {
-      title: `Issue with all parameters and attachments-${generateId()}`,
-      description: 'Created issue with all parameters and attachments description',
+      title: `Template with all parameters-${generateId()}`,
+      description: 'Created template with all parameters',
       priority: 'Urgent',
       assignee: 'Dirak Kainin',
       createLabel: true,
@@ -39,13 +40,13 @@ test.describe('Tracker template tests', () => {
 
     const templatePage = new TemplatePage(page)
     await templatePage.createNewTemplate(newTemplate)
+    await templatePage.openTemplate(newTemplate.title)
 
-    // const issuesDetailsPage = new IssuesDetailsPage(page)
-    // await issuesDetailsPage.checkIssue({
-    //   ...newTemplate,
-    //   milestone: 'Milestone',
-    //   estimation: '2h'
-    // })
+    const templateDetailsPage = new TemplateDetailsPage(page)
+    await templateDetailsPage.checkTemplate({
+      ...newTemplate,
+      estimation: '2h'
+    })
   })
 
 })
