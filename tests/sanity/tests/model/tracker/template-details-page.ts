@@ -1,6 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test'
 import { CommonTrackerPage } from './common-tracker-page'
-import { NewIssue } from './types'
+import { Issue, NewIssue } from './types'
 
 export class TemplateDetailsPage extends CommonTrackerPage {
   readonly page: Page
@@ -11,7 +11,10 @@ export class TemplateDetailsPage extends CommonTrackerPage {
   readonly buttonAddLabel: Locator
   readonly textLabels: Locator
   readonly buttonComponent: Locator
-  readonly textEstimation: Locator
+  readonly buttonEstimation: Locator
+  readonly buttonDueDate: Locator
+  readonly buttonSaveDueDate: Locator
+  readonly textComment: Locator
 
   constructor (page: Page) {
     super(page)
@@ -23,7 +26,10 @@ export class TemplateDetailsPage extends CommonTrackerPage {
     this.textLabels = page.locator('div.menu-group span')
     this.buttonAddLabel = page.locator('//span[text()="Labels"]/../button[2]//span')
     this.buttonComponent = page.locator('//span[text()="Component"]/../div/div/button')
-    this.textEstimation = page.locator('(//span[text()="Estimation"]/../div/button)[3]')
+    this.buttonEstimation = page.locator('(//span[text()="Estimation"]/../div/button)[3]')
+    this.buttonDueDate = page.locator('(//span[text()="Due date"]/../div/button)[2]')
+    this.buttonSaveDueDate = page.locator('div.footer > button')
+    this.textComment = page.locator('div.labels-row')
   }
 
   async checkTemplate (data: NewIssue): Promise<void> {
@@ -43,7 +49,48 @@ export class TemplateDetailsPage extends CommonTrackerPage {
       await expect(this.buttonComponent).toHaveText(data.component)
     }
     if (data.estimation != null) {
-      await expect(this.textEstimation).toHaveText(data.estimation)
+      await expect(this.buttonEstimation).toHaveText(data.estimation)
     }
+  }
+
+  async editTemplate (data: Issue): Promise<void> {
+    if (data.priority != null) {
+      await this.buttonPriority.click()
+      await this.selectMenuItem(this.page, data.priority)
+    }
+    if (data.assignee != null) {
+      await this.buttonAssignee.click()
+      await this.selectAssignee(this.page, data.assignee)
+    }
+    if (data.labels != null && data.createLabel != null) {
+      if (data.createLabel) {
+        await this.buttonAddLabel.click()
+        await this.pressCreateButtonSelectPopup(this.page)
+        await this.addNewTagPopup(this.page, data.labels, 'Tag from edit template')
+      }
+      await this.checkFromDropdown(this.page, data.labels)
+      await this.inputTitle.click({ force: true })
+    }
+    if (data.component != null) {
+      await this.buttonComponent.click()
+      await this.selectMenuItem(this.page, data.component)
+    }
+    if (data.estimation != null) {
+      await this.buttonEstimation.click()
+      await this.fillToSelectPopup(this.page, data.estimation)
+    }
+    if (data.duedate != null) {
+      if (data.duedate === 'today') {
+        await this.buttonDueDate.click()
+        await this.buttonDatePopupToday.click()
+      } else {
+        await this.buttonDueDate.click()
+        await this.buttonSaveDueDate.click()
+      }
+    }
+  }
+
+  async checkCommentExist (comment: string): Promise<void> {
+    await expect(this.textComment.filter({ hasText: comment })).toBeVisible()
   }
 }
