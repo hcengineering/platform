@@ -53,4 +53,8 @@ export class CommonPage {
     }
     await page.locator('div.selectPopup div.list-item').click()
   }
+
+  async checkExistNewNotification (page: Page): Promise<void> {
+    await expect(page.locator('button[id$="Inbox"] > div.noty')).toBeVisible()
+  }
 }
