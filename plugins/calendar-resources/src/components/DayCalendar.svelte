@@ -545,11 +545,16 @@
     if (originDueDate !== event.dueDate) update.dueDate = event.dueDate
     if (Object.keys(update).length > 0) {
       if (event._class === calendar.class.ReccuringInstance) {
-        await updateReccuringInstance(update, {
+        const updated = await updateReccuringInstance(update, {
           ...event,
           date: originDate,
           dueDate: originDueDate
         } as unknown as ReccuringInstance)
+        if (!updated) {
+          event.date = originDate
+          event.dueDate = originDueDate
+          events = events
+        }
       } else {
         await client.update(event, update)
       }
