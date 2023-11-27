@@ -81,7 +81,7 @@
   {#if label}
     <div>
       <span class="label"><Label {label} /></span>
-      {#if required}<span class="error-color">&ast</span>{/if}
+      {#if required}<span class="error-color">&ast;</span>{/if}
     </div>
   {/if}
   <StyledTextEditor

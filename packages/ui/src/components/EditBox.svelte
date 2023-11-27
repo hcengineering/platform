@@ -150,7 +150,7 @@
   {#if label}
     <div class="mb-1 text-sm font-medium caption-color select-text">
       <Label {label} />
-      {#if required}<span class="error-color">&ast</span>{/if}
+      {#if required}<span class="error-color">&ast;</span>{/if}
     </div>
   {/if}
   <div class="{kind} flex-row-center clear-mins" class:focusable class:disabled class:w-full={fullSize}>
