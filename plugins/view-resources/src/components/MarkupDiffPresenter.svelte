@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { CollaborationDiffViewer } from '@hcengineering/text-editor'
+  import { MarkupDiffViewer } from '@hcengineering/text-editor'
   import { ShowMore } from '@hcengineering/ui'
 
   export let value: string | undefined
@@ -43,6 +43,6 @@
 
 <ShowMore>
   {#key [value, prevValue]}
-    <CollaborationDiffViewer content={value ?? ''} comparedVersion={prevValue ?? ''} noButton readonly />
+    <MarkupDiffViewer content={value ?? ''} comparedVersion={prevValue ?? ''} />
   {/key}
 </ShowMore>

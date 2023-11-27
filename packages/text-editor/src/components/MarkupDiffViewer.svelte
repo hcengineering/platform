@@ -15,24 +15,18 @@
 //
 -->
 <script lang="ts">
-  import { onDestroy, onMount } from 'svelte'
-  import { Doc as Ydoc } from 'yjs'
-
   import { Editor, Extension, mergeAttributes } from '@tiptap/core'
-  import Collaboration from '@tiptap/extension-collaboration'
   import { Plugin, PluginKey } from '@tiptap/pm/state'
   import { DecorationSet } from '@tiptap/pm/view'
+  import { onDestroy, onMount } from 'svelte'
+  import { Markup } from '@hcengineering/core'
 
-  import { calculateDecorations, createYdocDocument } from './diff/decorations'
+  import { calculateDecorations, createMarkupDocument } from './diff/decorations'
   import { defaultEditorAttributes } from './editor/editorProps'
   import { defaultExtensions } from './extensions'
 
-  export let ydoc: Ydoc
-  export let field: string | undefined = undefined
-  export let comparedYdoc: Ydoc | undefined = undefined
-  export let comparedField: string | undefined = undefined
-
-  // export let mode: 'unified' = 'unified'
+  export let content: Markup
+  export let comparedVersion: Markup | undefined = undefined
 
   let element: HTMLElement
   let editor: Editor
@@ -40,8 +34,12 @@
   let _decoration = DecorationSet.empty
   let oldContent = ''
 
-  function updateEditor (editor: Editor, ydoc: Ydoc, field?: string): void {
-    const r = calculateDecorations(editor, oldContent, createYdocDocument(editor.schema, ydoc, field))
+  function updateEditor (editor: Editor, comparedVersion?: Markup): void {
+    if (!comparedVersion) {
+      return
+    }
+
+    const r = calculateDecorations(editor, oldContent, createMarkupDocument(editor.schema, comparedVersion))
     if (r !== undefined) {
       oldContent = r.oldContent
       _decoration = r.decorations
@@ -49,8 +47,8 @@
   }
 
   const updateDecorations = () => {
-    if (editor?.schema && comparedYdoc) {
-      updateEditor(editor, comparedYdoc, comparedField)
+    if (editor?.schema) {
+      updateEditor(editor, comparedVersion)
     }
   }
 
@@ -70,16 +68,19 @@
     }
   })
 
-  $: if (editor && comparedYdoc) {
-    updateEditor(editor, comparedYdoc, comparedField)
-  }
+  $: updateEditor(editor, comparedVersion)
 
   onMount(() => {
     editor = new Editor({
       editorProps: { attributes: mergeAttributes(defaultEditorAttributes, { class: 'flex-grow' }) },
       element,
+      content,
       editable: false,
-      extensions: [...defaultExtensions, DecorationExtension, Collaboration.configure({ document: ydoc, field })]
+      extensions: [...defaultExtensions, DecorationExtension],
+      onTransaction: () => {
+        // force re-render so `editor.isActive` works as expected
+        editor = editor
+      }
     })
   })
 
