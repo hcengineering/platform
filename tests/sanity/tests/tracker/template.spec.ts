@@ -17,7 +17,7 @@ test.describe('Tracker template tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test.skip('Create a Template', async ({ page }) => {
+  test('Create a Template', async ({ page }) => {
     const newTemplate: NewIssue = {
       title: `Template with all parameters-${generateId()}`,
       description: 'Created template with all parameters',
