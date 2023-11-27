@@ -128,62 +128,76 @@ export async function updatePast (ops: DocumentUpdate<Event>, object: ReccuringI
 export async function updateReccuringInstance (
   ops: DocumentUpdate<ReccuringEvent>,
   object: ReccuringInstance
-): Promise<void> {
+): Promise<boolean> {
   const client = getClient()
   if (object.virtual !== true) {
     await client.update(object, ops)
+    return true
   } else {
-    showPopup(UpdateRecInstancePopup, { currentAvailable: ops.rules === undefined }, undefined, async (res) => {
-      if (res !== null) {
-        if (res.mode === 'current') {
-          await client.addCollection(
-            object._class,
-            object.space,
-            object.attachedTo,
-            object.attachedToClass,
-            object.collection,
-            {
-              title: object.title,
-              description: object.description,
-              date: object.date,
-              dueDate: object.dueDate,
-              allDay: object.allDay,
-              participants: object.participants,
-              externalParticipants: object.externalParticipants,
-              originalStartTime: object.originalStartTime,
-              recurringEventId: object.recurringEventId,
-              reminders: object.reminders,
-              location: object.location,
-              eventId: object.eventId,
-              access: 'owner',
-              rules: object.rules,
-              exdate: object.exdate,
-              rdate: object.rdate,
-              ...ops
-            },
-            object._id
-          )
-        } else if (res.mode === 'all') {
-          const base = await client.findOne(calendar.class.ReccuringEvent, {
-            space: object.space,
-            eventId: object.recurringEventId
-          })
-          if (base !== undefined) {
-            if (ops.date !== undefined) {
-              const diff = object.date - ops.date
-              ops.date = base.date - diff
+    return await new Promise((resolve) => {
+      showPopup(UpdateRecInstancePopup, { currentAvailable: ops.rules === undefined }, undefined, async (res) => {
+        if (res !== null) {
+          try {
+            if (res.mode === 'current') {
+              await client.addCollection(
+                object._class,
+                object.space,
+                object.attachedTo,
+                object.attachedToClass,
+                object.collection,
+                {
+                  title: object.title,
+                  description: object.description,
+                  date: object.date,
+                  dueDate: object.dueDate,
+                  allDay: object.allDay,
+                  participants: object.participants,
+                  externalParticipants: object.externalParticipants,
+                  originalStartTime: object.originalStartTime,
+                  recurringEventId: object.recurringEventId,
+                  reminders: object.reminders,
+                  location: object.location,
+                  eventId: object.eventId,
+                  access: 'owner',
+                  rules: object.rules,
+                  exdate: object.exdate,
+                  rdate: object.rdate,
+                  ...ops
+                },
+                object._id
+              )
+              resolve(true)
+            } else if (res.mode === 'all') {
+              const base = await client.findOne(calendar.class.ReccuringEvent, {
+                space: object.space,
+                eventId: object.recurringEventId
+              })
+              if (base !== undefined) {
+                if (ops.date !== undefined) {
+                  const diff = object.date - ops.date
+                  ops.date = base.date - diff
+                }
+                if (ops.dueDate !== undefined) {
+                  const diff = object.dueDate - ops.dueDate
+                  ops.dueDate = base.dueDate - diff
+                }
+                await client.update(base, ops)
+                resolve(true)
+              }
+              resolve(false)
+            } else if (res.mode === 'next') {
+              await updatePast(ops, object)
+              resolve(true)
             }
-            if (ops.dueDate !== undefined) {
-              const diff = object.dueDate - ops.dueDate
-              ops.dueDate = base.dueDate - diff
-            }
-            await client.update(base, ops)
+            resolve(false)
+          } catch {
+            resolve(false)
           }
-        } else if (res.mode === 'next') {
-          await updatePast(ops, object)
+        } else {
+          resolve(false)
         }
-      }
-      closePopup()
+        closePopup()
+      })
     })
   }
 }
