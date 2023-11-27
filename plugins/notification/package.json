@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/notification",
-  "version": "0.6.15",
+  "version": "0.6.16",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -35,10 +35,10 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/core": "^0.6.27",
-    "@hcengineering/preference": "^0.6.8",
-    "@hcengineering/setting": "^0.6.10",
-    "@hcengineering/ui": "^0.6.10"
+    "@hcengineering/core": "^0.6.28",
+    "@hcengineering/preference": "^0.6.9",
+    "@hcengineering/setting": "^0.6.11",
+    "@hcengineering/ui": "^0.6.11"
   },
   "repository": "https://github.com/hcengineering/anticrm",
   "publishConfig": {

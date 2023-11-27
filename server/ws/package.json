@@ -37,10 +37,10 @@
   "dependencies": {
     "ws": "^8.10.0",
     "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/core": "^0.6.27",
+    "@hcengineering/core": "^0.6.28",
     "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/server-token": "^0.6.6",
-    "@hcengineering/rpc": "^0.6.0",
+    "@hcengineering/server-token": "^0.6.7",
+    "@hcengineering/rpc": "^0.6.1",
     "bufferutil": "^4.0.7",
     "express": "^4.17.1",
     "compression": "~1.7.4",

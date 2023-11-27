@@ -25,9 +25,9 @@
     "prettier-plugin-svelte": "^3.1.0"
   },
   "dependencies": {
-    "@hcengineering/attachment": "^0.6.8",
-    "@hcengineering/core": "^0.6.27",
-    "@hcengineering/model": "^0.6.6",
+    "@hcengineering/attachment": "^0.6.9",
+    "@hcengineering/core": "^0.6.28",
+    "@hcengineering/model": "^0.6.7",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/server-attachment": "^0.6.1",
     "@hcengineering/server-core": "^0.6.1"

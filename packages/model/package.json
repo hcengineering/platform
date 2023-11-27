@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/model",
-  "version": "0.6.6",
+  "version": "0.6.7",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -30,7 +30,7 @@
     "prettier-plugin-svelte": "^3.1.0"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.27",
+    "@hcengineering/core": "^0.6.28",
     "@hcengineering/platform": "^0.6.9",
     "toposort": "^2.0.2",
     "fast-equals": "^2.0.3"

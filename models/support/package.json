@@ -25,13 +25,13 @@
     "prettier-plugin-svelte": "^3.1.0"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.27",
-    "@hcengineering/model": "^0.6.6",
+    "@hcengineering/core": "^0.6.28",
+    "@hcengineering/model": "^0.6.7",
     "@hcengineering/model-core": "^0.6.0",
     "@hcengineering/model-preference": "^0.6.0",
     "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/support": "^0.6.0",
+    "@hcengineering/support": "^0.6.1",
     "@hcengineering/support-resources": "^0.6.0",
-    "@hcengineering/ui": "^0.6.10"
+    "@hcengineering/ui": "^0.6.11"
   }
 }

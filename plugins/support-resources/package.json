@@ -35,11 +35,11 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.27",
+    "@hcengineering/core": "^0.6.28",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/presentation": "^0.6.2",
-    "@hcengineering/support": "^0.6.0",
-    "@hcengineering/ui": "^0.6.10",
+    "@hcengineering/support": "^0.6.1",
+    "@hcengineering/ui": "^0.6.11",
     "svelte": "^4.2.5"
   },
   "repository": "https://github.com/hcengineering/anticrm",

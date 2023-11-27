@@ -32,13 +32,13 @@
   "dependencies": {
     "mongodb": "^4.11.0",
     "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/core": "^0.6.27",
-    "@hcengineering/contact": "^0.6.19",
-    "@hcengineering/client-resources": "^0.6.22",
-    "@hcengineering/client": "^0.6.13",
+    "@hcengineering/core": "^0.6.28",
+    "@hcengineering/contact": "^0.6.20",
+    "@hcengineering/client-resources": "^0.6.23",
+    "@hcengineering/client": "^0.6.14",
     "ws": "^8.10.0",
-    "@hcengineering/model": "^0.6.6",
-    "@hcengineering/server-token": "^0.6.6",
+    "@hcengineering/model": "^0.6.7",
+    "@hcengineering/server-token": "^0.6.7",
     "@hcengineering/mongo": "^0.6.1",
     "@hcengineering/minio": "^0.6.0"
   }

@@ -25,25 +25,25 @@
     "prettier-plugin-svelte": "^3.1.0"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.27",
-    "@hcengineering/model": "^0.6.6",
-    "@hcengineering/ui": "^0.6.10",
-    "@hcengineering/view": "^0.6.8",
+    "@hcengineering/core": "^0.6.28",
+    "@hcengineering/model": "^0.6.7",
+    "@hcengineering/ui": "^0.6.11",
+    "@hcengineering/view": "^0.6.9",
     "@hcengineering/model-attachment": "^0.6.0",
-    "@hcengineering/setting": "^0.6.10",
+    "@hcengineering/setting": "^0.6.11",
     "@hcengineering/model-task": "^0.6.0",
-    "@hcengineering/calendar": "^0.6.16",
+    "@hcengineering/calendar": "^0.6.17",
     "@hcengineering/calendar-resources": "^0.6.0",
     "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/notification": "^0.6.15",
+    "@hcengineering/notification": "^0.6.16",
     "@hcengineering/model-core": "^0.6.0",
     "@hcengineering/model-view": "^0.6.0",
     "@hcengineering/model-setting": "^0.6.0",
     "@hcengineering/model-workbench": "^0.6.1",
     "@hcengineering/activity": "^0.6.0",
-    "@hcengineering/workbench": "^0.6.8",
+    "@hcengineering/workbench": "^0.6.9",
     "@hcengineering/model-chunter": "^0.6.0",
     "@hcengineering/model-contact": "^0.6.1",
-    "@hcengineering/contact": "^0.6.19"
+    "@hcengineering/contact": "^0.6.20"
   }
 }

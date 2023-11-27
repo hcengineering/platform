@@ -29,18 +29,18 @@
     "prettier-plugin-svelte": "^3.1.0"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.27",
+    "@hcengineering/core": "^0.6.28",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/contact": "^0.6.19",
-    "@hcengineering/chunter": "^0.6.11",
-    "@hcengineering/view": "^0.6.8",
-    "@hcengineering/login": "^0.6.7",
-    "@hcengineering/workbench": "^0.6.8",
-    "@hcengineering/notification": "^0.6.15",
+    "@hcengineering/contact": "^0.6.20",
+    "@hcengineering/chunter": "^0.6.12",
+    "@hcengineering/view": "^0.6.9",
+    "@hcengineering/login": "^0.6.8",
+    "@hcengineering/workbench": "^0.6.9",
+    "@hcengineering/notification": "^0.6.16",
     "@hcengineering/server-notification": "^0.6.1",
     "@hcengineering/server-notification-resources": "^0.6.0",
     "@hcengineering/server": "^0.6.4",
-    "@hcengineering/text": "^0.6.0"
+    "@hcengineering/text": "^0.6.1"
   }
 }
