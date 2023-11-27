@@ -40,7 +40,7 @@ import notification, { NotificationType } from '@hcengineering/notification'
 import { translate } from '@hcengineering/platform'
 import { TriggerControl } from '@hcengineering/server-core'
 import { getEmployee, getPersonAccountById } from '@hcengineering/server-notification'
-import { getContent, isAllowed } from '@hcengineering/server-notification-resources'
+import { getContent, isAllowed, sendEmailNotification } from '@hcengineering/server-notification-resources'
 
 async function getOldDepartment (
   currentTx: TxMixin<Employee, Staff> | TxUpdateDoc<Employee>,
@@ -221,13 +221,13 @@ export async function OnEmployeeDeactivate (tx: Tx, control: TriggerControl): Pr
   )
 }
 
-async function getEmailNotification (
+async function sendEmailNotifications (
   control: TriggerControl,
   sender: PersonAccount,
   doc: Request | PublicHoliday,
   space: Ref<Department>,
   type: Ref<NotificationType>
-): Promise<Tx[]> {
+): Promise<void> {
   const contacts = new Set<Ref<Contact>>()
   const departments = await buildHierarchy(space, control)
   for (const department of departments) {
@@ -257,25 +257,11 @@ async function getEmailNotification (
 
   const senderName = senderPerson !== undefined ? formatName(senderPerson.name) : ''
   const content = await getContent(doc, senderName, type, control, '')
-  if (content === undefined) return []
+  if (content === undefined) return
 
-  const res: Tx[] = []
   for (const channel of channels) {
-    const tx = control.txFactory.createTxCreateDoc(
-      notification.class.EmailNotification,
-      notification.space.Notifications,
-      {
-        status: 'new',
-        sender: senderName,
-        receivers: [channel.value],
-        subject: content.subject,
-        text: content.text,
-        html: content.html
-      }
-    )
-    res.push(tx)
+    await sendEmailNotification(content.text, content.html, content.subject, channel.value)
   }
-  return res
 }
 
 /**
@@ -289,13 +275,14 @@ export async function OnRequestCreate (tx: Tx, control: TriggerControl): Promise
 
   const request = TxProcessor.createDoc2Doc(ctx)
 
-  return await getEmailNotification(
+  await sendEmailNotifications(
     control,
     sender,
     request,
     ctx.objectSpace as Ref<Department>,
     hr.ids.CreateRequestNotification
   )
+  return []
 }
 
 /**
@@ -310,13 +297,14 @@ export async function OnRequestUpdate (tx: Tx, control: TriggerControl): Promise
   const request = (await control.findAll(hr.class.Request, { _id: ctx.objectId }))[0] as Request
   if (request === undefined) return []
 
-  return await getEmailNotification(
+  await sendEmailNotifications(
     control,
     sender,
     request,
     ctx.objectSpace as Ref<Department>,
     hr.ids.UpdateRequestNotification
   )
+  return []
 }
 
 /**
@@ -331,13 +319,14 @@ export async function OnRequestRemove (tx: Tx, control: TriggerControl): Promise
   const request = control.removedMap.get(ctx.objectId) as Request
   if (request === undefined) return []
 
-  return await getEmailNotification(
+  await sendEmailNotifications(
     control,
     sender,
     request,
     ctx.objectSpace as Ref<Department>,
     hr.ids.RemoveRequestNotification
   )
+  return []
 }
 
 /**
@@ -388,13 +377,14 @@ export async function OnPublicHolidayCreate (tx: Tx, control: TriggerControl): P
   if (employee === undefined) return []
 
   const publicHoliday = TxProcessor.createDoc2Doc(ctx)
-  return await getEmailNotification(
+  await sendEmailNotifications(
     control,
     sender,
     publicHoliday,
     publicHoliday.department,
     hr.ids.CreatePublicHolidayNotification
   )
+  return []
 }
 
 /**

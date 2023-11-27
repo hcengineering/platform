@@ -17,6 +17,9 @@
 import activity from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
 import {
+  DOMAIN_MODEL,
+  Hierarchy,
+  IndexKind,
   type Account,
   type AttachedDoc,
   type Class,
@@ -24,26 +27,22 @@ import {
   type Data,
   type Doc,
   type Domain,
-  DOMAIN_MODEL,
-  Hierarchy,
-  IndexKind,
   type Ref,
   type Timestamp,
   type Tx,
   type TxCUD
 } from '@hcengineering/core'
-import { ArrOf, type Builder, Index, Mixin, Model, Prop, TypeRef, TypeString, UX } from '@hcengineering/model'
+import { ArrOf, Index, Mixin, Model, Prop, TypeRef, TypeString, UX, type Builder } from '@hcengineering/model'
 import core, { TAttachedDoc, TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import view, { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import {
-  type DocUpdates,
+  notificationId,
   type DocUpdateTx,
-  type EmailNotification,
+  type DocUpdates,
   type Notification,
   type NotificationGroup,
-  notificationId,
   type NotificationObjectPresenter,
   type NotificationPreferencesGroup,
   type NotificationPreview,
@@ -74,29 +73,6 @@ export class TNotification extends TAttachedDoc implements Notification {
   text!: string
 
   type!: Ref<NotificationType>
-}
-
-@Model(notification.class.EmailNotification, core.class.Doc, DOMAIN_NOTIFICATION)
-export class TEmaiNotification extends TDoc implements EmailNotification {
-  @Prop(TypeString(), 'Sender' as IntlString)
-    sender!: string
-
-  @Prop(ArrOf(TypeString()), 'Receivers' as IntlString)
-    receivers!: string[]
-
-  @Prop(TypeString(), 'Subject' as IntlString)
-    subject!: string
-
-  @Prop(TypeString(), 'Text' as IntlString)
-    text!: string
-
-  @Prop(TypeString(), 'Html' as IntlString)
-    html?: string
-
-  @Prop(TypeString(), 'Status' as IntlString)
-    status!: 'new' | 'sent' | 'error'
-
-  error?: string
 }
 
 @Model(notification.class.NotificationType, core.class.Doc, DOMAIN_MODEL)
@@ -182,7 +158,6 @@ export class TDocUpdates extends TDoc implements DocUpdates {
 export function createModel (builder: Builder): void {
   builder.createModel(
     TNotification,
-    TEmaiNotification,
     TNotificationType,
     TNotificationProvider,
     TNotificationSetting,

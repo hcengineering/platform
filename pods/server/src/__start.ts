@@ -20,6 +20,7 @@ import serverCore from '@hcengineering/server-core'
 import serverToken from '@hcengineering/server-token'
 import { serverFactories } from '@hcengineering/server-ws'
 import { start } from '.'
+import serverNotification from '@hcengineering/server-notification'
 
 const serverPort = parseInt(process.env.SERVER_PORT ?? '3333')
 
@@ -81,8 +82,11 @@ if (frontUrl === undefined) {
   process.exit(1)
 }
 
+const sesUrl = process.env.SES_URL
+
 setMetadata(serverCore.metadata.FrontUrl, frontUrl)
 setMetadata(serverToken.metadata.Secret, serverSecret)
+setMetadata(serverNotification.metadata.SesUrl, sesUrl ?? '')
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 console.log(

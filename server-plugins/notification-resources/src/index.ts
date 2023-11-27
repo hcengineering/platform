@@ -38,25 +38,24 @@ import core, {
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc,
-  generateId,
+  concatLink,
   matchQuery
 } from '@hcengineering/core'
 import notification, {
   ClassCollaborators,
   Collaborators,
-  DocUpdates,
   DocUpdateTx,
-  EmailNotification,
+  DocUpdates,
   NotificationProvider,
   NotificationType
 } from '@hcengineering/notification'
-import { IntlString, getResource } from '@hcengineering/platform'
+import { IntlString, getMetadata, getResource } from '@hcengineering/platform'
 import type { TriggerControl } from '@hcengineering/server-core'
 import serverNotification, {
   HTMLPresenter,
+  NotificationPresenter,
   TextPresenter,
   getEmployee,
-  NotificationPresenter,
   getPersonAccount,
   getPersonAccountById
 } from '@hcengineering/server-notification'
@@ -222,15 +221,14 @@ export async function getContent (
   }
 }
 
-async function createEmailNotificationTxes (
+async function notifyByEmail (
   control: TriggerControl,
-  tx: Tx,
   type: Ref<NotificationType>,
   doc: Doc | undefined,
   senderId: Ref<PersonAccount>,
   receiverId: Ref<PersonAccount>,
   data: string = ''
-): Promise<Tx | undefined> {
+): Promise<void> {
   const sender = (await control.modelDb.findAll(contact.class.PersonAccount, { _id: senderId }))[0]
 
   const receiver = (await control.modelDb.findAll(contact.class.PersonAccount, { _id: receiverId }))[0]
@@ -238,42 +236,43 @@ async function createEmailNotificationTxes (
   let senderName = ''
 
   if (sender !== undefined) {
-    const senderPerson = (await control.modelDb.findAll(contact.class.Person, { _id: sender.person }))[0]
+    const senderPerson = (await control.findAll(contact.class.Person, { _id: sender.person }))[0]
     senderName = senderPerson !== undefined ? formatName(senderPerson.name) : ''
   }
 
   const content = await getContent(doc, senderName, type, control, data)
 
   if (content !== undefined) {
-    return await getEmailNotificationTx(tx, senderName, content.text, content.html, content.subject, receiver)
+    return await sendEmailNotification(content.text, content.html, content.subject, receiver.email)
   }
 }
 
-async function getEmailNotificationTx (
-  tx: Tx,
-  sender: string,
+export async function sendEmailNotification (
   text: string,
   html: string,
   subject: string,
-  receiver: PersonAccount
-): Promise<TxCreateDoc<EmailNotification> | undefined> {
-  return {
-    _id: generateId(),
-    objectId: generateId(),
-    _class: core.class.TxCreateDoc,
-    space: core.space.DerivedTx,
-    objectClass: notification.class.EmailNotification,
-    objectSpace: notification.space.Notifications,
-    modifiedOn: tx.modifiedOn,
-    modifiedBy: tx.modifiedBy,
-    attributes: {
-      status: 'new',
-      sender,
-      receivers: [receiver.email],
-      subject,
-      text,
-      html
+  receiver: string
+): Promise<void> {
+  try {
+    const sesURL = getMetadata(serverNotification.metadata.SesUrl)
+    if (sesURL === undefined || sesURL === '') {
+      console.log('Please provide email service url to enable email confirmations.')
+      return
     }
+    await fetch(concatLink(sesURL, '/send'), {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        text,
+        html,
+        subject,
+        to: [receiver]
+      })
+    })
+  } catch (err) {
+    console.log('Could not send email notification', err)
   }
 }
 
@@ -600,17 +599,13 @@ async function getNotificationTxes (
   const emp = await getEmployee(acc.person as Ref<Employee>, control)
   if (emp?.active === true) {
     for (const type of allowed.emails) {
-      const emailTx = await createEmailNotificationTxes(
+      await notifyByEmail(
         control,
-        originTx,
         type._id,
         object,
         originTx.modifiedBy as Ref<PersonAccount>,
         target as Ref<PersonAccount>
       )
-      if (emailTx !== undefined) {
-        res.push(emailTx)
-      }
     }
   }
   return res

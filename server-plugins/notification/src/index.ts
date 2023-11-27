@@ -17,7 +17,7 @@
 import contact, { Employee, Person, PersonAccount } from '@hcengineering/contact'
 import { Account, Class, Doc, Mixin, Ref, Tx, TxCUD } from '@hcengineering/core'
 import { NotificationType, NotificationContent } from '@hcengineering/notification'
-import { Plugin, Resource, plugin } from '@hcengineering/platform'
+import { Metadata, Plugin, Resource, plugin } from '@hcengineering/platform'
 import type { TriggerControl, TriggerFunc } from '@hcengineering/server-core'
 
 /**
@@ -133,6 +133,9 @@ export interface NotificationPresenter extends Class<Doc> {
  * @public
  */
 export default plugin(serverNotificationId, {
+  metadata: {
+    SesUrl: '' as Metadata<string>
+  },
   mixin: {
     HTMLPresenter: '' as Ref<Mixin<HTMLPresenter>>,
     TextPresenter: '' as Ref<Mixin<TextPresenter>>,
