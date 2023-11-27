@@ -16,6 +16,7 @@
 
 import core, {
   AccountRole,
+  type FindOptions,
   Hierarchy,
   getCurrentAccount,
   getObjectValue,
@@ -26,6 +27,7 @@ import core, {
   type Client,
   type Collection,
   type Doc,
+  type DocumentQuery,
   type DocumentUpdate,
   type Lookup,
   type Obj,
@@ -922,4 +924,58 @@ export async function getSpacePresenter (
   if (value?.presenter !== undefined) {
     return await getResource(value.presenter)
   }
+}
+
+/**
+ * @public
+ */
+export function getCategoryQueryProjection (
+  hierarchy: Hierarchy,
+  _class: Ref<Class<Doc>>,
+  query: DocumentQuery<Doc>,
+  fields: string[]
+): Record<string, number> {
+  const res: Record<string, number> = {}
+  for (const f of fields) {
+    /*
+      Mongo projection doesn't support properties fields which
+      start from $. Such field here is $search. The least we could do
+      is to filter all properties which start from $.
+    */
+    if (!f.startsWith('$')) {
+      res[f] = 1
+    }
+  }
+  for (const f of Object.keys(query)) {
+    if (!f.startsWith('$')) {
+      res[f] = 1
+    }
+  }
+  if (hierarchy.isDerived(_class, core.class.AttachedDoc)) {
+    res.attachedTo = 1
+    res.attachedToClass = 1
+    res.collection = 1
+  }
+  return res
+}
+
+/**
+ * @public
+ */
+export function getCategoryQueryNoLookup<T extends Doc = Doc> (query: DocumentQuery<T>): DocumentQuery<T> {
+  const newQuery: DocumentQuery<T> = {}
+  for (const [k, v] of Object.entries(query)) {
+    if (!k.startsWith('$lookup.')) {
+      ;(newQuery as any)[k] = v
+    }
+  }
+  return newQuery
+}
+
+/**
+ * @public
+ */
+export function getCategoryQueryNoLookupOptions<T extends Doc> (options: FindOptions<T>): FindOptions<T> {
+  const { lookup, ...resultOptions } = options
+  return resultOptions
 }

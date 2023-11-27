@@ -58,6 +58,7 @@ import Todos from './components/todos/Todos.svelte'
 
 export { default as AssigneePresenter } from './components/AssigneePresenter.svelte'
 export { StateRefPresenter, StatePresenter, TypeStatesPopup }
+export * from './utils'
 
 async function editStatuses (object: Project, ev: Event): Promise<void> {
   const client = getClient()

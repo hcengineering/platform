@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import board, { Card } from '@hcengineering/board'
-  import core, {
+  import {
     CategoryType,
     Class,
     Doc,
@@ -23,23 +23,25 @@
     DocumentUpdate,
     FindOptions,
     Ref,
-    SortingOrder,
     Status,
     WithLookup
   } from '@hcengineering/core'
   import { Kanban as KanbanUI } from '@hcengineering/kanban'
   import { ActionContext, createQuery } from '@hcengineering/presentation'
   import type { DocWithRank, Project } from '@hcengineering/task'
-  import task from '@hcengineering/task'
+  import task, { getStates } from '@hcengineering/task'
   import { getEventPositionElement, showPopup } from '@hcengineering/ui'
+  import { typeStore } from '@hcengineering/task-resources'
   import {
     ContextMenu,
     ListSelectionProvider,
     SelectDirection,
     focusStore,
+    getCategoryQueryNoLookup,
     getGroupByValues,
     groupBy,
-    setGroupByValues
+    setGroupByValues,
+    statusStore
   } from '@hcengineering/view-resources'
   import { onMount } from 'svelte'
   import KanbanCard from './KanbanCard.svelte'
@@ -59,21 +61,8 @@
     _space = result[0]
   })
 
-  const statesQuery = createQuery()
-  $: if (_space !== undefined) {
-    statesQuery.query(
-      core.class.Status,
-      { space: _space.type },
-      (result) => {
-        states = result
-      },
-      {
-        sort: {
-          rank: SortingOrder.Ascending
-        }
-      }
-    )
-  }
+  $: states = getStates(_space, $typeStore, $statusStore.byId)
+
   function castObject (object: any): WithLookup<Card> {
     return object as WithLookup<Card>
   }
@@ -97,6 +86,8 @@
     showPopup(ContextMenu, { object }, getEventPositionElement(ev))
   }
 
+  let resultQuery: DocumentQuery<DocWithRank>
+
   $: resultQuery = { ...query, isArchived: { $nin: [true] }, space }
 
   const cardQuery = createQuery()
@@ -104,7 +95,7 @@
 
   $: cardQuery.query<DocWithRank>(
     _class,
-    resultQuery,
+    getCategoryQueryNoLookup(resultQuery),
     (result) => {
       cards = result
     },
@@ -122,7 +113,7 @@
       return undefined
     }
     return {
-      state: groupValue,
+      status: groupValue,
       space: doc.space
     } as any
   }
@@ -133,6 +124,7 @@
     mode: 'browser'
   }}
 />
+{states.length}
 <KanbanUI
   bind:this={kanbanUI}
   objects={cards}
@@ -144,6 +136,10 @@
   }}
   {groupByDocs}
   {getUpdateProps}
+  {_class}
+  query={resultQuery}
+  {options}
+  groupByKey={'status'}
   checked={$selection ?? []}
   on:check={(evt) => {
     listProvider.updateSelection(evt.detail.docs, evt.detail.value)

@@ -13,11 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { CategoryType, Doc, Ref } from '@hcengineering/core'
+  import {
+    CategoryType,
+    Class,
+    Doc,
+    DocumentQuery,
+    FindOptions,
+    IdMap,
+    RateLimitter,
+    Ref,
+    Space,
+    toIdMap
+  } from '@hcengineering/core'
   import ui, { Button, IconMoreH, Lazy, mouseAttractor } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { slide } from 'svelte/transition'
   import { CardDragEvent, DocWithRank, Item } from '../types'
+  import { createQuery } from '@hcengineering/presentation'
 
   export let stateObjects: Item[]
   export let isDragging: boolean
@@ -26,6 +38,13 @@
   export let selection: number | undefined = undefined
   export let checkedSet: Set<Ref<Doc>>
   export let state: CategoryType
+
+  export let _class: Ref<Class<DocWithRank>>
+  export let space: Ref<Space> | undefined = undefined
+  export let query: DocumentQuery<DocWithRank> = {}
+  export let options: FindOptions<DocWithRank> | undefined = undefined
+  export let groupByKey: any
+  export let limiter: RateLimitter
 
   export let cardDragOver: (evt: CardDragEvent, object: Item) => void
   export let cardDrop: (evt: CardDragEvent, object: Item) => void
@@ -52,56 +71,73 @@
 
   let limit = 50
 
-  let limitedObjects: DocWithRank[] = []
-  $: limitedObjects = stateObjects.slice(0, limit)
+  let limitedObjects: IdMap<DocWithRank> = new Map()
+
+  const docQuery = createQuery()
+
+  $: groupQuery = { ...query, [groupByKey]: typeof state === 'object' ? { $in: state.values } : state }
+
+  $: void limiter.add(async () => {
+    docQuery.query(
+      _class,
+      groupQuery,
+      (res) => {
+        limitedObjects = toIdMap(res)
+      },
+      { ...options, limit }
+    )
+  })
 </script>
 
-{#each limitedObjects as object, i (object._id)}
-  {@const dragged = isDragging && object._id === dragCard?._id}
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div
-    bind:this={stateRefs[i]}
-    transition:slideD|local={{ isDragging }}
-    class="p-1 flex-no-shrink border-radius-1 clear-mins"
-    on:dragover|preventDefault={(evt) => {
-      cardDragOver(evt, object)
-    }}
-    on:drop|preventDefault={(evt) => {
-      cardDrop(evt, object)
-    }}
-  >
+{#each stateObjects as objectRef, i (objectRef._id)}
+  {@const dragged = isDragging && objectRef._id === dragCard?._id}
+  {@const object = limitedObjects.get(objectRef._id) ?? (objectRef._id === dragCard?._id ? dragCard : undefined)}
+  {#if object !== undefined}
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
-      class="card-container"
-      class:selection={selection !== undefined ? objects[selection]?._id === object._id : false}
-      class:checked={checkedSet.has(object._id)}
-      on:mouseover={mouseAttractor(() => dispatch('obj-focus', object))}
-      on:mouseenter={mouseAttractor(() => dispatch('obj-focus', object))}
-      on:focus={() => {}}
-      on:contextmenu={(evt) => {
-        showMenu(evt, object)
+      bind:this={stateRefs[i]}
+      transition:slideD|local={{ isDragging }}
+      class="p-1 flex-no-shrink border-radius-1 clear-mins"
+      on:dragover|preventDefault={(evt) => {
+        cardDragOver(evt, object)
       }}
-      draggable={true}
-      class:draggable={true}
-      on:dragstart
-      on:dragend
-      class:dragged
-      on:dragstart={() => {
-        onDragStart(object, state)
-      }}
-      on:dragend={() => {
-        isDragging = false
+      on:drop|preventDefault={(evt) => {
+        cardDrop(evt, object)
       }}
     >
-      <Lazy>
-        <slot name="card" object={toAny(object)} {dragged} />
-      </Lazy>
+      <div
+        class="card-container"
+        class:selection={selection !== undefined ? objects[selection]?._id === object._id : false}
+        class:checked={checkedSet.has(object._id)}
+        on:mouseover={mouseAttractor(() => dispatch('obj-focus', object))}
+        on:mouseenter={mouseAttractor(() => dispatch('obj-focus', object))}
+        on:focus={() => {}}
+        on:contextmenu={(evt) => {
+          showMenu(evt, object)
+        }}
+        draggable={true}
+        class:draggable={true}
+        on:dragstart
+        on:dragend
+        class:dragged
+        on:dragstart={() => {
+          onDragStart(object, state)
+        }}
+        on:dragend={() => {
+          isDragging = false
+        }}
+      >
+        <Lazy>
+          <slot name="card" object={toAny(object)} {dragged} />
+        </Lazy>
+      </div>
     </div>
-  </div>
+  {/if}
 {/each}
-{#if stateObjects.length > limitedObjects.length}
+{#if stateObjects.length > limitedObjects.size + (isDragging ? 1 : 0)}
   <div class="p-1 flex-no-shrink clear-mins">
     <div class="card-container flex-between p-4">
-      <span class="caption-color">{limitedObjects.length}</span> / {stateObjects.length}
+      <span class="caption-color">{limitedObjects.size}</span> / {stateObjects.length}
       <Button
         size={'small'}
         icon={IconMoreH}
