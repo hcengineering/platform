@@ -30,6 +30,7 @@
   $: areButtonsVisible = isEditable || isDeletable || isEditing
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="root flex background-button-bg-color border-radius-1"
   {style}

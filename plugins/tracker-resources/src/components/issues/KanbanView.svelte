@@ -311,6 +311,7 @@
     }}
   />
   <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <Kanban
     bind:this={kanbanUI}
     {categories}
@@ -429,8 +430,6 @@
                 kind={'link-bordered'}
                 size={'small'}
                 justify={'center'}
-                shrink={1}
-                bind:onlyIcon={fullFilled[issueId]}
               />
             {/if}
             {#if enabledConfig(config, 'dueDate')}

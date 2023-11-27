@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import { Button, ButtonKind, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { Button, ButtonKind, showPopup } from '@hcengineering/ui'
   import { ViewOptions, ViewOptionsModel, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
@@ -91,7 +91,7 @@
     showPopup(
       ViewOptionsEditor,
       { viewlet, config: mergedModel, viewOptions: getClient().getHierarchy().clone(viewOptions) },
-      eventToHTMLElement(event),
+      btn,
       undefined,
       (result) => {
         if (result?.key === undefined) return

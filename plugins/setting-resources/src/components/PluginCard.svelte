@@ -129,9 +129,6 @@
   .header {
     margin: 1.5rem 1.5rem 1rem;
   }
-  .max-label {
-    max-width: calc(100% - 6.25rem);
-  }
   .icon {
     flex-shrink: 0;
     min-width: 2.25rem;

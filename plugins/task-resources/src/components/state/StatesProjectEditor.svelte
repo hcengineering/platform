@@ -174,6 +174,7 @@
   <div class="flex-col flex-no-shrink mt-3">
     {#each states as state, i}
       {@const color = getColor(state, categoriesMap)}
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
         bind:this={elements[prevIndex + i]}
         class="flex-between states"

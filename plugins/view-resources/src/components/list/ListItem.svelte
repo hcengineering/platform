@@ -72,6 +72,7 @@
   })
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   bind:this={elem}
   class="listGrid antiList__row row gap-2 flex-grow"
@@ -363,9 +364,6 @@
         border-color: var(--primary-edit-border-color);
         opacity: 0.25;
       }
-      & > * {
-        pointer-events: none;
-      }
     }
     .hidden-panel:focus-within,
     .hidden-panel:focus,
@@ -373,9 +371,6 @@
       width: 100%;
       opacity: 1;
       pointer-events: all;
-    }
-    .space {
-      min-height: 0.1075rem;
     }
   }
 </style>

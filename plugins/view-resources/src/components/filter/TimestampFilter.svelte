@@ -58,6 +58,7 @@
     <div class="box">
       {#each values as value, i}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
           class="menu-item"
           on:click={() => {

@@ -220,21 +220,20 @@
     transition-property: border, background-color, color, box-shadow;
     transition-duration: 0.15s;
 
-    .left-round {
+    &.square {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0;
+      width: 1.75rem;
+    }
+    &.left-round {
       padding-left: 0.5rem;
     }
     .btn-icon {
       color: var(--theme-halfcontent-color);
       transition: color 0.15s;
       pointer-events: none;
-
-      &.square {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 0;
-        width: 1.75rem;
-      }
     }
     span {
       white-space: nowrap;

@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Event } from '@hcengineering/calendar'
   import { Class, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
-  import { Asset, IntlString } from '@hcengineering/platform'
+  import { IntlString } from '@hcengineering/platform'
   import { AnyComponent, Button, Component, IconAdd, Label, Loading, showPopup } from '@hcengineering/ui'
   import { Viewlet, ViewletPreference } from '@hcengineering/view'
   import { ViewletSelector, getViewOptions, viewOptionStore } from '@hcengineering/view-resources'
@@ -26,7 +26,7 @@
   export let space: Ref<Space> | undefined = undefined
   export let query: DocumentQuery<Event> = {}
 
-  export let viewIcon: Asset = calendar.icon.Calendar
+  // export let viewIcon: Asset = calendar.icon.Calendar
   export let viewLabel: IntlString = calendar.string.Events
 
   export let createComponent: AnyComponent | undefined = calendar.component.CreateEvent

@@ -76,6 +76,7 @@
 </script>
 
 {#if doc}
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     class="inbox-activity__container"
     on:keydown

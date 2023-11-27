@@ -50,6 +50,7 @@
 </script>
 
 <div class="commentPopup-container">
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     class="flex-between header"
     use:resizeObserver={() => {

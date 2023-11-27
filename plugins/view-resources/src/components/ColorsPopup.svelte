@@ -32,6 +32,7 @@
     {#each colors as color, i}
       {@const col = key === 'color' ? color.color : color.icon}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
         class="color"
         class:selected={selected === color.name}

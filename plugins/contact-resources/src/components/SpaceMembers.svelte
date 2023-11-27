@@ -100,6 +100,7 @@
     {#if !isSearch && withAddButton}
       <div class="item fs-title">
         <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div class="flex-row-center" on:click={openAddMembersPopup}>
           <div class="flex-center ml-1 mr-1"><IconAdd size={'large'} /></div>
           <div class="flex-col ml-2 min-w-0 content-color">
@@ -130,6 +131,7 @@
           <div class="item flex-between">
             <div class="fs-title"><UserInfo size={'medium'} value={person} /></div>
             <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
             <div class="over-underline" on:click={() => add(person._id)}>
               <Label label={presentation.string.Add} />
             </div>

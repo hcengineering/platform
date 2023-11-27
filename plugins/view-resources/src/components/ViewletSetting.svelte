@@ -13,11 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import core, { AnyAttribute, ArrOf, Class, Doc, Ref, Type } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
   import preferencePlugin from '@hcengineering/preference'
   import { createQuery, getAttributePresenterClass, getClient, hasResource } from '@hcengineering/presentation'
-  import { Loading } from '@hcengineering/ui'
+  import { Loading, resizeObserver } from '@hcengineering/ui'
   import { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { deepEqual } from 'fast-equals'
   import view from '../plugin'
@@ -26,6 +27,8 @@
   import DropdownLabelsIntl from '@hcengineering/ui/src/components/DropdownLabelsIntl.svelte'
 
   export let viewlet: Viewlet
+
+  const dispatch = createEventDispatcher()
 
   let preferences: ViewletPreference[] = []
   const preferenceQuery = createQuery()
@@ -300,7 +303,7 @@
   }
 </script>
 
-<div class="selectPopup">
+<div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="menu-space" />
   <div class="scroll">
     <div class="box">

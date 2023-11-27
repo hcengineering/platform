@@ -86,6 +86,7 @@
 <div id="templates" class="flex-col overflow-y-auto">
   {#each types as t (t._id)}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="ac-column__list-item"
       class:selected={t._id === type?._id}

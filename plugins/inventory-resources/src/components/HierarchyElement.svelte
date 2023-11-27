@@ -54,6 +54,7 @@
           <div class="firstCell" {style}>
             {#if descendants.has(object._id)}
               <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <!-- svelte-ignore a11y-no-static-element-interactions -->
               <div
                 class="expand"
                 on:click={() => {
@@ -73,6 +74,7 @@
               {...attribute.props}
             />
             <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
             <div class="menuRow" on:click={(ev) => showMenu(ev, object)}><IconMoreV size={'small'} /></div>
           </div>
         </td>

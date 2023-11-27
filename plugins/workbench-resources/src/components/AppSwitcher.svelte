@@ -61,6 +61,7 @@
   })
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="antiPopup min-w-60" on:keydown={keyDown}>
   <div class="ap-space x2" />
   <div class="ap-scroll">

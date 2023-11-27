@@ -58,6 +58,7 @@
   <div class="title disabled">/</div>
   {#if trimmed && i === 0}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class="title" on:click={handleMenuOpened}>...</div>
     <div class="title disabled">/</div>
   {/if}

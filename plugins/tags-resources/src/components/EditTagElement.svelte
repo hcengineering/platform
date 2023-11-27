@@ -111,6 +111,7 @@
     <div class="flex-col">
       <div class="fs-title flex-row-center">
         <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
           class="color"
           style={getTagStyle(getPlatformColorDef(data.color, $themeStore.dark))}

@@ -25,6 +25,8 @@
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div class="menu-item" on:click={() => dispatch('close', 1)}>
     <BooleanPresenter value={true} />
     {#if value}
@@ -33,6 +35,8 @@
       </div>
     {/if}
   </div>
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="menu-item" on:click={() => dispatch('close', 2)}>
     <BooleanPresenter value={false} />
     {#if !value}
@@ -42,6 +46,8 @@
     {/if}
   </div>
   {#if !withoutUndefined}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class="menu-item" on:click={() => dispatch('close', 3)}>
       <BooleanPresenter value={undefined} />
       {#if value === undefined}

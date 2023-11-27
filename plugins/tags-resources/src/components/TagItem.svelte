@@ -44,6 +44,7 @@
 
 {#if inline}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <span
     style={`--tag-color:${getPlatformColor(tag?.color ?? element?.color ?? 0, $themeStore.dark)}`}
     class="tag-item-inline overflow-label max-w-40"
@@ -61,6 +62,7 @@
     {name}
   </span>
 {:else}
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     class="tag-item"
     style={`${getTagStyle(getPlatformColorDef(tag?.color ?? element?.color ?? 0, $themeStore.dark), selected)}`}

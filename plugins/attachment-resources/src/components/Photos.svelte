@@ -126,6 +126,7 @@
     />
   </div>
 
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     class="antiSection-empty attachments items mt-3"
     class:solid={dragover}

@@ -120,6 +120,7 @@
 <div {id} bind:this={container} class="min-w-0" class:w-full={width === '100%'} class:h-full={$$slots.content}>
   {#if $$slots.content}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class="w-full h-full flex-streatch" on:click={_click}>
       <slot name="content" />
     </div>

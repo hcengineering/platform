@@ -45,8 +45,5 @@
     &.red {
       background-color: rgb(246, 105, 77);
     }
-    &.blue {
-      background-color: #2b5190;
-    }
   }
 </style>

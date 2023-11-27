@@ -1141,6 +1141,7 @@
     & > *:not(:first-child) { margin-left: .25rem; }
     & > * > *:not(.only-icon) { min-width: fit-content; }
   }
+  .panel-trigger > * { pointer-events: none; }
 }
 // Labels on the ListView
 .list-container .listitems-container,

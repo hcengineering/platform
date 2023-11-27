@@ -122,6 +122,7 @@
 {#if value && statuses}
   {#if kind === 'list' || kind === 'list-header'}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="flex-row-center flex-no-shrink"
       class:fix-margin={kind === 'list'}

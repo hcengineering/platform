@@ -83,6 +83,8 @@
     {/if}
   {:else}
     <div class="antiSection-empty solid flex-col-center mt-3">
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <span class="text-sm over-underline" on:click={createApp}>
         <Label label={plugin.string.NoTodoItems} />
       </span>

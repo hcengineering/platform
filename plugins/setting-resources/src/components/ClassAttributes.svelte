@@ -243,6 +243,7 @@
           <div class="antiTable-cells__firstCell whitespace-nowrap">
             <Label label={attr.label} />
             <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
             <div id="context-menu" class="antiTable-cells__firstCell-menuRow" on:click={(ev) => showMenu(ev, attr)}>
               <IconMoreV size={'small'} />
             </div>

@@ -173,6 +173,7 @@
   }}
   on:changeContent
 >
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="flex-col" on:keydown={onKeydown}>
     <EditBox bind:value={name} placeholder={core.string.Name} kind={'large-style'} fullSize />
     <div class="flex-between my-4">

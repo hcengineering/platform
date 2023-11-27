@@ -27,6 +27,8 @@
 
 <div class="antiPopup">
   <div class="ap-space x2" />
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     class="ap-menuItem hoverable flex-row-center"
     on:click={() => {
@@ -41,6 +43,7 @@
   </div>
   {#if showDelete}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="ap-menuItem hoverable flex-row-center redlight"
       on:click={() => {

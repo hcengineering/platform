@@ -19,7 +19,7 @@
   export let colorInherit: boolean = false
   export let accent: boolean = false
   export let defaultName: IntlString | undefined = ui.string.NotSelected
-  export let element: HTMLElement | undefined = undefined
+  // export let element: HTMLElement | undefined = undefined
   export let noUnderline: boolean = false
 
   $: employeeValue = typeof value === 'string' ? $personByIdStore.get(value) : value
@@ -29,7 +29,6 @@
 </script>
 
 <PersonPresenter
-  bind:element
   value={employeeValue}
   {tooltipLabels}
   onEdit={onEmployeeEdit}

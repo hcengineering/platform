@@ -298,6 +298,7 @@
                     </span>
                   {:else}
                     <!-- svelte-ignore a11y-click-events-have-key-events -->
+                    <!-- svelte-ignore a11y-no-static-element-interactions -->
                     <span class="show-diff" on:click={() => (showDiff = !showDiff)}>
                       <Label label={showDiff ? ui.string.ShowLess : ui.string.ShowMore} />
                     </span>
@@ -470,14 +471,8 @@
       z-index: 1;
     }
 
-    &.isNew {
-      &::before {
-        background-color: var(--highlight-red);
-      }
-
-      .icon {
-        border: 1px solid var(--highlight-red);
-      }
+    &.isNew::before {
+      background-color: var(--highlight-red);
     }
 
     &.isNextNew {

@@ -271,6 +271,7 @@
     style="display: none"
     on:change={fileSelected}
   />
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     class="container"
     on:dragover|preventDefault={() => {}}

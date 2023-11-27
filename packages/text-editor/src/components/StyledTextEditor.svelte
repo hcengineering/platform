@@ -18,7 +18,7 @@
   import { Node as ProseMirrorNode } from '@tiptap/pm/model'
   import { getResource, IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { Button, ButtonSize, IconSize, Scroller } from '@hcengineering/ui'
+  import { Button, ButtonSize, Scroller } from '@hcengineering/ui'
   import textEditorPlugin from '../plugin'
   import { RefAction, RefInputActionItem, TextEditorHandler, TextFormatCategory } from '../types'
   import { generateDefaultActions } from './editor/actions'
@@ -30,7 +30,6 @@
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let showButtons: boolean = true
   export let buttonSize: ButtonSize = 'medium'
-  export let formatButtonSize: IconSize = 'small'
   export let isScrollable: boolean = true
   export let focusable: boolean = false
   export let maxHeight: 'max' | 'card' | 'limited' | string | undefined = undefined
@@ -149,6 +148,7 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="ref-container clear-mins"
   class:h-full={full}

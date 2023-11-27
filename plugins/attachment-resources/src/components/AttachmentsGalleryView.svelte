@@ -53,6 +53,7 @@
   {#each attachments as attachment, i}
     <div class="attachmentCell" class:fixed={i === selectedFileNumber}>
       <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <AttachmentGalleryPresenter value={attachment}>
         <svelte:fragment slot="rowMenu">
           <div class="eAttachmentCellActions" class:fixed={i === selectedFileNumber}>

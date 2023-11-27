@@ -22,7 +22,7 @@
   import attachment from '../plugin'
   import { uploadFile } from '../utils'
 
-  export let attachments: number
+  // export let attachments: number
   export let object: Doc
   export let canAdd = true
   export let canRemove = true

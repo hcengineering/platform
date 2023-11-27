@@ -54,6 +54,7 @@
   <div class="gridCell">
     {#if isImage(value.type)}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div class="cellImagePreview" on:click={openAttachment}>
         <img class={'img-fit'} src={getFileUrl(value.file, 'full', value.name)} alt={value.name} />
       </div>
@@ -61,6 +62,7 @@
       <div class="cellMiscPreview">
         {#if isPDF(value.type)}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
           <div class="flex-center extensionIcon" on:click={openAttachment}>
             {extensionIconLabel(value.name)}
           </div>
@@ -75,6 +77,7 @@
     <div class="cellInfo">
       {#if isEmbedded(value.type)}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div class="flex-center extensionIcon" on:click={openAttachment}>
           {extensionIconLabel(value.name)}
         </div>
@@ -86,6 +89,7 @@
       <div class="eCellInfoData">
         {#if isEmbedded(value.type)}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
           <div class="eCellInfoFilename" on:click={openAttachment}>
             {trimFilename(value.name)}
           </div>

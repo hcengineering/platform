@@ -40,7 +40,7 @@
   export let relatedDocuments: RelatedDocument[] | undefined = undefined
   export let ignore: RelatedDocument[] | undefined = undefined
   export let allowCategory: Ref<ObjectSearchCategory>[] | undefined = undefined
-  export let hideButtons = false
+  // export let hideButtons = false
 
   let items: ObjectSearchResult[] = []
 
@@ -158,6 +158,7 @@
 
 <FocusHandler {manager} />
 
+<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 <form class="antiPopup" on:keydown={onKeyDown} use:resizeObserver={() => dispatch('changeSize')}>
   <div class="ap-menuHeader">
     {#if label}
@@ -170,6 +171,7 @@
         {@const status = categoryStatus[c._id] ?? 0}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
           class="tab"
           class:selected={category?._id === c._id}
@@ -201,6 +203,7 @@
   <div class="ap-scroll">
     <div class="ap-box">
       <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <ListView bind:this={list} bind:selection count={items.length}>
         <svelte:fragment slot="item" let:item>
           {@const doc = items[item]}

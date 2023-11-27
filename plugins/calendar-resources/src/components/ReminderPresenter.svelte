@@ -27,6 +27,8 @@
   const objectPresenter = getResource(view.component.ObjectPresenter)
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="antiSelect w-full cursor-pointer flex-between" on:click={click}>
   {#if value}
     {#await objectPresenter then component}

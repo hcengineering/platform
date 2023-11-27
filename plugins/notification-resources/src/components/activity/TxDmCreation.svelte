@@ -13,14 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { TxCreateDoc } from '@hcengineering/core'
   import { Label } from '@hcengineering/ui'
-  import { DirectMessage } from '@hcengineering/chunter'
 
   import notification from '../../plugin'
 
-  export let tx: TxCreateDoc<DirectMessage>
-  export let value: DirectMessage
+  // export let tx: TxCreateDoc<DirectMessage>
+  // export let value: DirectMessage
 </script>
 
 <Label label={notification.string.YouHaveJoinedTheConversation} />

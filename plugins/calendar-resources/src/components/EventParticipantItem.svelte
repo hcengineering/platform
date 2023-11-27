@@ -38,6 +38,7 @@
         size={'x-small'}
         padding={'0 .5rem'}
         focusIndex={-1}
+        {disabled}
         noFocus
         on:click={() => {
           dispatch('removeParticipant', participant)
@@ -56,6 +57,7 @@
         size={'x-small'}
         padding={'0 .5rem'}
         focusIndex={-1}
+        {disabled}
         noFocus
         on:click={() => {
           dispatch('removeExtParticipant', externalParticipant)

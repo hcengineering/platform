@@ -112,6 +112,7 @@
   {/if}
   {#each visibleOthers as model}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="antiCard-menu__item hoverable ordering"
       on:click={() => {

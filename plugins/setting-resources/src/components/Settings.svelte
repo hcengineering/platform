@@ -158,12 +158,3 @@
     {/if}
   </div>
 </div>
-
-<style lang="scss">
-  .signout {
-    display: flex;
-    flex-direction: column-reverse;
-    flex-grow: 1;
-    margin-bottom: 2rem;
-  }
-</style>

@@ -51,6 +51,7 @@
   <div class="flex-between header">
     <div class="overflow-label fs-title"><Label label={calendar.string.ConnectCalendar} /></div>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="tool"
       on:click={() => {

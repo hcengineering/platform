@@ -96,10 +96,6 @@
     user-select: none;
     box-shadow: var(--theme-popup-shadow);
 
-    .message {
-      margin-bottom: 1.75rem;
-      color: var(--theme-content-color);
-    }
     .footer {
       flex-shrink: 0;
       display: grid;

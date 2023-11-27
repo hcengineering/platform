@@ -30,5 +30,5 @@
 </script>
 
 {#if account}
-  <PersonAccountPresenter value={account} {disabled} {inline} {avatarSize} on:accent-color />
+  <PersonAccountPresenter value={account} {disabled} {inline} {avatarSize} {accent} on:accent-color />
 {/if}
