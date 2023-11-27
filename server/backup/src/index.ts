@@ -327,7 +327,12 @@ export async function cloneWorkspace (
 /**
  * @public
  */
-export async function backup (transactorUrl: string, workspaceId: WorkspaceId, storage: BackupStorage): Promise<void> {
+export async function backup (
+  transactorUrl: string,
+  workspaceId: WorkspaceId,
+  storage: BackupStorage,
+  skipDomains: string[] = []
+): Promise<void> {
   const connection = (await connect(transactorUrl, workspaceId, undefined, {
     mode: 'backup'
   })) as unknown as CoreClient & BackupClient
@@ -337,7 +342,7 @@ export async function backup (transactorUrl: string, workspaceId: WorkspaceId, s
       ...connection
         .getHierarchy()
         .domains()
-        .filter((it) => it !== DOMAIN_TRANSIENT && it !== DOMAIN_MODEL)
+        .filter((it) => it !== DOMAIN_TRANSIENT && it !== DOMAIN_MODEL && !skipDomains.includes(it))
     ]
     console.log('domains for dump', domains.length)
 

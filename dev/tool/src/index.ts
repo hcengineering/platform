@@ -342,9 +342,15 @@ export function devTool (
   program
     .command('backup <dirName> <workspace>')
     .description('dump workspace transactions and minio resources')
-    .action(async (dirName: string, workspace: string, cmd) => {
+    .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
+    .action(async (dirName: string, workspace: string, cmd: { skip: string }) => {
       const storage = await createFileBackupStorage(dirName)
-      await backup(transactorUrl, getWorkspaceId(workspace, productId), storage)
+      await backup(
+        transactorUrl,
+        getWorkspaceId(workspace, productId),
+        storage,
+        (cmd.skip ?? '').split(';').map((it) => it.trim())
+      )
     })
 
   program
