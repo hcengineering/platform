@@ -101,13 +101,13 @@ export function calculateDecorations (
 
     function deleted (prob: any): any {
       const icon = document.createElement('span')
-      icon.className = 'deletion'
+      icon.className = 'text-editor-highlighted-node-delete'
       icon.innerText = prob
       return icon
     }
     changes.forEach((change) => {
       if (change.inserted.length > 0) {
-        decorations.push(Decoration.inline(change.fromB, change.toB, { class: 'diff insertion' }, {}))
+        decorations.push(Decoration.inline(change.fromB, change.toB, { class: 'text-editor-highlighted-node-add' }, {}))
         decorations.push(Decoration.widget(change.fromB, lintIcon('add')))
       }
 
