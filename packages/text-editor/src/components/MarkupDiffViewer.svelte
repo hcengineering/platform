@@ -68,7 +68,9 @@
     }
   })
 
-  $: updateEditor(editor, comparedVersion)
+  $: if (editor && comparedVersion) {
+    updateEditor(editor, comparedVersion)
+  }
 
   onMount(() => {
     editor = new Editor({
