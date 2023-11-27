@@ -15,25 +15,24 @@
 //
 -->
 <script lang="ts">
+  import { onDestroy, onMount } from 'svelte'
+  import { Doc as Ydoc } from 'yjs'
+
   import { Editor, Extension, mergeAttributes } from '@tiptap/core'
+  import Collaboration from '@tiptap/extension-collaboration'
   import { Plugin, PluginKey } from '@tiptap/pm/state'
   import { DecorationSet } from '@tiptap/pm/view'
-  import { onDestroy, onMount } from 'svelte'
-  import { Markup } from '@hcengineering/core'
-  import { IconObjects, IconSize } from '@hcengineering/ui'
-
-  import textEditorPlugin from '../plugin'
 
   import { calculateDecorations } from './diff/decorations'
   import { defaultEditorAttributes } from './editor/editorProps'
   import { defaultExtensions } from './extensions'
-  import StyleButton from './StyleButton.svelte'
 
-  export let content: Markup
-  export let buttonSize: IconSize = 'small'
-  export let comparedVersion: Markup | undefined = undefined
-  export let noButton: boolean = false
-  export let readonly = false
+  export let ydoc: Ydoc
+  export let field: string | undefined = undefined
+  export let comparedYdoc: Ydoc | undefined = undefined
+  export let comparedField: string | undefined = undefined
+
+  // export let mode: 'unified' = 'unified'
 
   let element: HTMLElement
   let editor: Editor
@@ -41,8 +40,8 @@
   let _decoration = DecorationSet.empty
   let oldContent = ''
 
-  function updateEditor (editor?: Editor, comparedVersion?: Markup | ArrayBuffer): void {
-    const r = calculateDecorations(editor, oldContent, undefined, comparedVersion)
+  function updateEditor (editor?: Editor, ydoc?: Ydoc, field?: string): void {
+    const r = calculateDecorations(editor, oldContent, ydoc, field)
     if (r !== undefined) {
       oldContent = r.oldContent
       _decoration = r.decorations
@@ -51,7 +50,7 @@
 
   const updateDecorations = () => {
     if (editor?.schema) {
-      updateEditor(editor, comparedVersion)
+      updateEditor(editor, comparedYdoc, comparedField)
     }
   }
 
@@ -61,12 +60,9 @@
         new Plugin({
           key: new PluginKey('diffs'),
           props: {
-            decorations (state) {
+            decorations () {
               updateDecorations()
-              if (showDiff) {
-                return _decoration
-              }
-              return undefined
+              return _decoration
             }
           }
         })
@@ -74,21 +70,15 @@
     }
   })
 
-  $: updateEditor(editor, comparedVersion)
+  $: updateEditor(editor, comparedYdoc, comparedField)
 
   onMount(() => {
     editor = new Editor({
       editorProps: { attributes: mergeAttributes(defaultEditorAttributes, { class: 'flex-grow' }) },
       element,
-      content,
-      editable: true,
-      extensions: [...defaultExtensions, DecorationExtension],
-      onTransaction: () => {
-        // force re-render so `editor.isActive` works as expected
-        editor = editor
-      }
+      editable: false,
+      extensions: [...defaultExtensions, DecorationExtension, Collaboration.configure({ document: ydoc, field })]
     })
-    editor.setEditable(!readonly)
   })
 
   onDestroy(() => {
@@ -96,27 +86,9 @@
       editor.destroy()
     }
   })
-  let showDiff = true
 </script>
 
 <div class="ref-container">
-  {#if comparedVersion !== undefined && !noButton}
-    <div class="flex">
-      <div class="flex-grow" />
-      <div class="formatPanel buttons-group xsmall-gap mb-4">
-        <StyleButton
-          icon={IconObjects}
-          size={buttonSize}
-          selected={showDiff}
-          showTooltip={{ label: textEditorPlugin.string.EnableDiffMode }}
-          on:click={() => {
-            showDiff = !showDiff
-            editor.chain().focus()
-          }}
-        />
-      </div>
-    </div>
-  {/if}
   <div class="textInput">
     <div class="select-text" style="width: 100%;" bind:this={element} />
   </div>

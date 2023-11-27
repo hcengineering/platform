@@ -13,37 +13,24 @@
 // limitations under the License.
 //
 
-import { type Markup } from '@hcengineering/core'
 import { type Editor } from '@tiptap/core'
 import { ChangeSet } from '@tiptap/pm/changeset'
-import { DOMParser, type Node, type Schema } from '@tiptap/pm/model'
+import { type Node, type Schema } from '@tiptap/pm/model'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import { yDocToProsemirrorJSON } from 'y-prosemirror'
-import { Doc, applyUpdate } from 'yjs'
+import { type Doc as Ydoc } from 'yjs'
 import { recreateTransform } from './recreate'
 
 /**
  * @public
  */
-export function createDocument (schema: Schema, content: Markup | ArrayBuffer, field?: string): Node {
-  if (typeof content === 'string') {
-    const wrappedValue = `<body>${content}</body>`
-
-    const body = new window.DOMParser().parseFromString(wrappedValue, 'text/html').body
-
-    return DOMParser.fromSchema(schema).parse(body)
-  } else {
-    try {
-      const ydoc = new Doc()
-      const uint8arr = new Uint8Array(content)
-      applyUpdate(ydoc, uint8arr)
-
-      const body = yDocToProsemirrorJSON(ydoc, field)
-      return schema.nodeFromJSON(body)
-    } catch (err: any) {
-      console.error(err)
-      return schema.node(schema.topNodeType)
-    }
+export function createDocument (schema: Schema, ydoc: Ydoc, field?: string): Node {
+  try {
+    const body = yDocToProsemirrorJSON(ydoc, field)
+    return schema.nodeFromJSON(body)
+  } catch (err: any) {
+    console.error(err)
+    return schema.node(schema.topNodeType)
   }
 }
 
@@ -53,8 +40,8 @@ export function createDocument (schema: Schema, content: Markup | ArrayBuffer, f
 export function calculateDecorations (
   editor?: Editor,
   oldContent?: string,
-  field?: string,
-  comparedVersion?: Markup | ArrayBuffer
+  comparedYdoc?: Ydoc,
+  field?: string
 ):
   | {
     decorations: DecorationSet
@@ -65,11 +52,11 @@ export function calculateDecorations (
     if (editor?.schema === undefined) {
       return
     }
-    if (comparedVersion === undefined) {
+    if (comparedYdoc === undefined) {
       return
     }
     const schema = editor.schema
-    const docOld = createDocument(schema, comparedVersion, field)
+    const docOld = createDocument(schema, comparedYdoc, field)
     const docNew = editor.state.doc
 
     const c = editor.getHTML()
