@@ -15,7 +15,6 @@
 -->
 <script lang="ts">
   import type { Class, Doc, Ref } from '@hcengineering/core'
-  import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { KeyedAttribute } from '../attributes'
   import AttributeBarEditor from './AttributeBarEditor.svelte'
 
@@ -25,11 +24,6 @@
   export let showHeader: boolean = true
   export let readonly = false
   export let draft = false
-
-  export let kind: ButtonKind = 'link'
-  export let size: ButtonSize = 'large'
-  export let width: string | undefined = '100%'
-  export let justify: 'left' | 'center' = 'left'
 </script>
 
 <div class="popupPanel-body__aside-grid inCollapsed">

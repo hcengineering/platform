@@ -69,6 +69,7 @@
 >
   <div class="float-left-box">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <TabsControl size={'small'} model={[{ label: view.string.IconCategory }, { label: view.string.EmojiCategory }]}>
       <svelte:fragment slot="content" let:selected>
         {#if selected === 0}

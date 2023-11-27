@@ -49,6 +49,7 @@ import ProjectEditor from './components/kanban/ProjectEditor.svelte'
 import ProjectTypeSelector from './components/kanban/ProjectTypeSelector.svelte'
 import StateEditor from './components/state/StateEditor.svelte'
 import StatePresenter from './components/state/StatePresenter.svelte'
+import TypeStatesPopup from './components/state/TypeStatesPopup.svelte'
 import StateRefPresenter from './components/state/StateRefPresenter.svelte'
 import TodoItemPresenter from './components/todos/TodoItemPresenter.svelte'
 import TodoItemsPopup from './components/todos/TodoItemsPopup.svelte'
@@ -56,7 +57,7 @@ import TodoStatePresenter from './components/todos/TodoStatePresenter.svelte'
 import Todos from './components/todos/Todos.svelte'
 
 export { default as AssigneePresenter } from './components/AssigneePresenter.svelte'
-export { StateRefPresenter }
+export { StateRefPresenter, StatePresenter, TypeStatesPopup }
 
 async function editStatuses (object: Project, ev: Event): Promise<void> {
   const client = getClient()

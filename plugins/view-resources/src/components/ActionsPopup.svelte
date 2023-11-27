@@ -189,6 +189,7 @@
   }}
 />
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="selectPopup width-40"
   style:width="15rem"

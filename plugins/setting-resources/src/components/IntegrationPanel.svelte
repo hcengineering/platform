@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Ref } from '@hcengineering/core'
+  import { Ref } from '@hcengineering/core'
   import { Panel } from '@hcengineering/panel'
   import { createQuery } from '@hcengineering/presentation'
   import { Integration, IntegrationType } from '@hcengineering/setting'
@@ -23,7 +23,7 @@
   import { themeStore } from '@hcengineering/ui'
 
   export let _id: Ref<Integration>
-  export let _class: Ref<Class<Integration>>
+  // export let _class: Ref<Class<Integration>>
   export let embedded: boolean = false
 
   let integration: Integration | undefined = undefined

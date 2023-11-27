@@ -58,6 +58,7 @@
 
 {#each limitedObjects as object, i (object._id)}
   {@const dragged = isDragging && object._id === dragCard?._id}
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     bind:this={stateRefs[i]}
     transition:slideD|local={{ isDragging }}

@@ -15,6 +15,8 @@
 
 {#if pinnedIds.length > 0}
   <div class="bottom-divider over-underline pt-2 pb-2 container">
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
       on:click={(ev) => {
         showMessages(ev)

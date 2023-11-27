@@ -47,6 +47,7 @@
   $: headerDivide = hideContent && numberOfBlocks > 1
 </script>
 
+<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 <form
   id={label}
   class="antiCard {$deviceInfo.isMobile ? 'mobile' : 'dialog'} {width}"

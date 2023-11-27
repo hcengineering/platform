@@ -75,6 +75,8 @@
     "StatusPopupTitle": "Создание статуса и изменение имени существующего",
     "NameAlreadyExists": "Данное имя уже используется другим статусом этого типа",
     "ProjectType": "Тип проекта",
-    "ProjectTypes": "Типы проектов"
+    "ProjectTypes": "Типы проектов",
+    "StatusChange": "Статус изменен",
+    "TaskCreated": "Создана задача"
   }
 }

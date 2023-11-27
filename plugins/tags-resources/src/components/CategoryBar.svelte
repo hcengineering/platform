@@ -149,6 +149,7 @@
         {#each visibleCategories as item, i}
           {@const color = getPlatformColorForTextDef(item.label, $themeStore.dark)}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
           <div
             bind:this={visibleCategoriesRef[i]}
             class="categoryElement flex-center"

@@ -38,6 +38,8 @@
 <div class="container">
   {#each [...reactionsAccounts] as [emoji, accounts]}
     <div class="reaction over-underline">
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
         class="flex-row-center"
         use:tooltip={{ component: ReactionsTooltip, props: { reactionAccounts: accounts } }}

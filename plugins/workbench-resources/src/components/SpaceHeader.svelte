@@ -57,7 +57,7 @@
 
 {#if space}
   <div class="ac-header full divide caption-height">
-    <Header {space} {_class} />
+    <Header {space} />
 
     <div class="ac-header-full medium-gap mb-1">
       <ViewletSelector {viewletQuery} bind:viewlet bind:viewlets />

@@ -165,6 +165,7 @@
 
 <FocusHandler {manager} />
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="selectPopup"
   class:full-width={width === 'full'}

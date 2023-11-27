@@ -15,13 +15,13 @@
 <script lang="ts">
   import { PersonAccount } from '@hcengineering/contact'
   import { PersonAccountRefPresenter } from '@hcengineering/contact-resources'
-  import { Doc, Ref, TxMixin } from '@hcengineering/core'
+  import { Ref } from '@hcengineering/core'
   import { Collaborators } from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
   import { IconAdd, IconDelete, Label } from '@hcengineering/ui'
   import notification from '../../plugin'
 
-  export let tx: TxMixin<Doc, Collaborators>
+  // export let tx: TxMixin<Doc, Collaborators>
   export let value: Collaborators
   export let prevValue: Collaborators | undefined = undefined
 

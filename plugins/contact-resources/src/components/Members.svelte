@@ -100,6 +100,7 @@
         <Label label={contact.string.NoMembers} />
       </span>
       <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <span class="over-underline content-color" on:click={createApp}>
         <Label label={contact.string.AddMember} />
       </span>

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Calendar, Event, generateEventId } from '@hcengineering/calendar'
+  import { Calendar, generateEventId } from '@hcengineering/calendar'
   import { Employee, PersonAccount } from '@hcengineering/contact'
   import { UserBoxList } from '@hcengineering/contact-resources'
   import { Class, DateRangeMode, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
@@ -24,7 +24,7 @@
 
   export let attachedTo: Ref<Doc>
   export let attachedToClass: Ref<Class<Doc>>
-  export let event: Event | undefined = undefined
+  // export let event: Event | undefined = undefined
   export let title: string = ''
   let _title = title
 

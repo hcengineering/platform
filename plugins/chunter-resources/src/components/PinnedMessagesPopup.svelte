@@ -58,6 +58,7 @@
           {employee ? getName(client.getHierarchy(), employee) : ''}
         </span>
         <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
           class="cross"
           on:click={async () => {

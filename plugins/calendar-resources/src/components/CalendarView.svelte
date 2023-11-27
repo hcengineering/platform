@@ -350,7 +350,7 @@
     }}
   >
     <svelte:fragment slot="cell" let:date let:today let:selected let:wrongMonth>
-      <Day events={findEvents(objects, date)} {date} {_class} {options} {today} {selected} {wrongMonth} {query} />
+      <Day events={findEvents(objects, date)} {date} {today} {selected} {wrongMonth} />
     </svelte:fragment>
   </YearCalendar>
 {:else if mode === CalendarMode.Month}
@@ -360,12 +360,9 @@
         events={findEvents(objects, date)}
         {date}
         size={'huge'}
-        {_class}
-        {options}
         {today}
         {selected}
         {wrongMonth}
-        {query}
         on:select={(e) => {
           currentDate = e.detail
           if (areDatesEqual(selectedDate, currentDate)) {

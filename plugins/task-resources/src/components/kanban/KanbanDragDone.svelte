@@ -48,6 +48,7 @@
 
 <div class="done-panel overflow-y-auto whitespace-nowrap">
   {#each wonStates as wonState}
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="flex-grow flex-center done-item"
       class:hovered={hoveredDoneState === wonState._id}
@@ -67,6 +68,7 @@
     </div>
   {/each}
   {#each lostStates as lostState}
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="flex-grow flex-center done-item"
       class:hovered={hoveredDoneState === lostState._id}

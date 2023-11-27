@@ -22,7 +22,7 @@
   // export let label: IntlString
   export let placeholder: IntlString
   export let value: string
-  export let focus: boolean = false
+  // export let focus: boolean = false
   export let onChange: (value: string) => void
   export let kind: 'no-border' | 'link' = 'no-border'
   export let readonly = false

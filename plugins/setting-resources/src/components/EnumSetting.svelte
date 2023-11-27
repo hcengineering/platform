@@ -67,6 +67,7 @@
       <div class="overflow-y-auto">
         {#each enums as value}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
           <div
             class="ac-column__list-item"
             class:selected={selected === value}

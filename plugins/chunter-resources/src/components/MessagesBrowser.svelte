@@ -93,6 +93,8 @@
 {#if messages.length > 0}
   <Scroller>
     {#each messages as message}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
         on:click={() => {
           openMessageFromSpecial(message)

@@ -113,6 +113,7 @@
     <div class="antiSection-header__tag overflow-label">
       <Label label={filter.label} />
       <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
         class="tag-icon"
         on:click={() => {

@@ -22,7 +22,7 @@
   // import { classIcon } from '../utils'
 
   export let space: Space
-  export let _class: Ref<Class<Doc>> | undefined = undefined
+  // export let _class: Ref<Class<Doc>> | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()

@@ -128,6 +128,7 @@
           <Label label={attachment.string.NoAttachments} />
         </div>
         <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
           class="over-underline text-sm caption-color"
           style:pointer-events={dragover ? 'none' : 'all'}

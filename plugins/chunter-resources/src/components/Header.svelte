@@ -29,6 +29,7 @@
 
 <div class="ac-header__wrap-description">
   <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="ac-header__wrap-title" on:click>
     {#if icon}<div class="ac-header__icon"><Icon {icon} size={'small'} /></div>{/if}
     {#if label}

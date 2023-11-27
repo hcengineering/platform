@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import core, { Attribute, IdMap, Ref, Status, StatusCategory, toIdMap } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { ComponentExtensions, createQuery, getClient } from '@hcengineering/presentation'
   import { ProjectType, ProjectTypeCategory } from '@hcengineering/task'
   import {
     CircleButton,
@@ -158,6 +158,7 @@
 {#if categoryEditor}
   <Component is={categoryEditor} props={{ type }} />
 {/if}
+<ComponentExtensions extension={task.extensions.ProjectEditorExtension} props={{ type }} />
 {#each categories as cat, i}
   {@const states = groups.get(cat._id) ?? []}
   {@const prevIndex = getPrevIndex(groups, cat._id)}
@@ -174,6 +175,7 @@
   <div class="flex-col flex-no-shrink mt-3">
     {#each states as state, i}
       {@const color = getColor(state, categoriesMap)}
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
         bind:this={elements[prevIndex + i]}
         class="flex-between states"

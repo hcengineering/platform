@@ -71,16 +71,3 @@
     </div>
   </Grid>
 {/if}
-
-<style lang="scss">
-  .side-columns {
-    width: 45%;
-  }
-  .middle-column {
-    width: 10%;
-  }
-  .aligned-text {
-    display: flex;
-    align-items: center;
-  }
-</style>

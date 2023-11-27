@@ -110,6 +110,7 @@
   <div class="header">
     {#if shortcuts}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div class="mr-4 cursor-pointer" on:click={() => (shortcuts = !shortcuts)}>
         <Icon icon={IconArrowLeft} size={'medium'} fill={'var(--content-color)'} />
       </div>
@@ -122,6 +123,7 @@
     {#each cards as card}
       <div class="clear-mins card {!card.disabled ? 'cursor-pointer focused-button' : ''}">
         <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div class="container" on:click={card.onClick}>
           <Icon icon={card.icon} size={'small'} fill={'var(--content-color)'} />
           <div class="content">

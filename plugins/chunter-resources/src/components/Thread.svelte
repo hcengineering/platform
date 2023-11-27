@@ -178,6 +178,7 @@
     <MsgView message={parent} thread {savedAttachmentsIds} {readOnly} />
     {#if total > comments.length}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
         class="label pb-2 pt-2 pl-8 over-underline clear-mins"
         on:click={() => {

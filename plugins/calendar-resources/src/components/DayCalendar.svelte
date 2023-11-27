@@ -736,7 +736,7 @@
                   style:--mask-image={getMask(rect.visibility)}
                   tabindex={500 + i}
                 >
-                  <EventElement hourHeight={cellHeight} event={ev} size={{ width: rect.width, height: rect.height }} />
+                  <EventElement event={ev} size={{ width: rect.width, height: rect.height }} />
                 </div>
               {/if}
             {/each}
@@ -759,7 +759,7 @@
                 style:--mask-image={getMask(rect.visibility)}
                 tabindex={500 + i}
               >
-                <EventElement hourHeight={cellHeight} event={ev} size={{ width: rect.width, height: rect.height }} />
+                <EventElement event={ev} size={{ width: rect.width, height: rect.height }} />
               </div>
             {/if}
           {/each}
@@ -781,7 +781,7 @@
                 style:--mask-image={getMask(rect.visibility)}
                 tabindex={500 + i}
               >
-                <EventElement hourHeight={cellHeight} event={ev} size={{ width: rect.width, height: rect.height }} />
+                <EventElement event={ev} size={{ width: rect.width, height: rect.height }} />
               </div>
             {/if}
           {/each}
@@ -917,7 +917,6 @@
             />
             <EventElement
               event={ev}
-              hourHeight={cellHeight}
               size={{
                 width: rect.width,
                 height: (calendarRect?.height ?? rect.top + rect.bottom) - rect.top - rect.bottom
@@ -1000,8 +999,6 @@
   .empty-cell {
     border-left: 1px solid var(--theme-divider-color);
     border-bottom: 1px solid var(--theme-divider-color);
-  }
-  .clear-cell {
   }
   .time-cell {
     display: inline-flex;
@@ -1142,10 +1139,6 @@
     }
     &.allday-container {
       overflow: hidden;
-
-      .allday-event {
-        border-radius: 0.25rem;
-      }
     }
 
     .zone {

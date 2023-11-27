@@ -48,14 +48,6 @@
     size={'small'}
     on:click={() => dispatch('close')}
   />
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <!-- <div
-    class="button-close"
-    use:tooltip={{ label: tracker.string.RemoveParent, direction: 'bottom' }}
-    on:click={() => dispatch('close')}
-  >
-    <IconClose size="x-small" />
-  </div> -->
 </div>
 
 <style lang="scss">
@@ -77,24 +69,5 @@
     min-width: 0;
     color: var(--theme-caption-color);
     border-right: 1px solid var(--theme-button-border);
-  }
-
-  .button-close {
-    cursor: pointer;
-    position: relative;
-    color: var(--theme-dark-color);
-    transition: color 0.15s;
-
-    &:hover {
-      color: var(--theme-content-color);
-    }
-    &:active {
-      color: var(--theme-dark-color);
-    }
-    &::before {
-      position: absolute;
-      content: '';
-      inset: -0.5rem;
-    }
   }
 </style>

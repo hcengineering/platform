@@ -30,7 +30,7 @@ import {
 import { NotificationType } from '@hcengineering/notification'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import type { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
 import { Action, ViewletDescriptor } from '@hcengineering/view'
 
 /**
@@ -216,6 +216,9 @@ const task = plugin(taskId, {
   },
   ids: {
     AssigneedNotification: '' as Ref<NotificationType>
+  },
+  extensions: {
+    ProjectEditorExtension: '' as ComponentExtensionId
   }
 })
 

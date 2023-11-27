@@ -117,6 +117,7 @@
 
 {#if $$slots.content}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div id="space.selector" class="w-full h-full flex-streatch" on:click={showSpacesPopup}>
     <slot name="content" />
   </div>

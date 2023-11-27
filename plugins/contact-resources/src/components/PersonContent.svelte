@@ -34,7 +34,7 @@
   export let disabled = false
   export let shouldShowAvatar: boolean = true
   export let shouldShowName = true
-  export let element: HTMLElement | undefined = undefined
+  // export let element: HTMLElement | undefined = undefined
   export let shouldShowPlaceholder = false
   export let noUnderline: boolean = false
   export let defaultName: IntlString | undefined = undefined
@@ -112,6 +112,7 @@
   {/if}
 {:else if shouldShowPlaceholder}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <span
     class="antiPresenter"
     class:text-base={enlargedText}

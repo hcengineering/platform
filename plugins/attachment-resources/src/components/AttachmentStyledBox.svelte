@@ -19,7 +19,7 @@
   import { IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
   import textEditor, { AttachIcon, type RefAction, StyledTextBox } from '@hcengineering/text-editor'
-  import { ButtonSize, IconSize, Loading, updatePopup, Scroller } from '@hcengineering/ui'
+  import { ButtonSize, Loading, updatePopup, Scroller } from '@hcengineering/ui'
   import { ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
   import attachment from '../plugin'
   import { deleteFile, uploadFile } from '../utils'
@@ -35,7 +35,6 @@
   export let showButtons = false
   export let kind: 'normal' | 'emphasized' | 'indented' = 'normal'
   export let buttonSize: ButtonSize = 'medium'
-  export let formatButtonSize: IconSize = 'small'
   export let maxHeight: 'max' | 'card' | 'limited' | string = 'max'
   export let focusable: boolean = false
   export let refContainer: HTMLElement | undefined = undefined
@@ -373,6 +372,7 @@
   on:change={fileSelected}
 />
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="flex-col clear-mins"
   on:paste={(ev) => pasteAction(ev)}
@@ -391,7 +391,6 @@
       {alwaysEdit}
       {showButtons}
       {buttonSize}
-      {formatButtonSize}
       {maxHeight}
       {focusable}
       {kind}

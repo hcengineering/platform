@@ -45,6 +45,8 @@
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="scroll">
     <div class="box">
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
         class="menu-item"
         on:click={() => {
@@ -54,6 +56,8 @@
         <Label label={task.string.AllTime} />
       </div>
       {#each values as value}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
           class="menu-item"
           on:click={() => {

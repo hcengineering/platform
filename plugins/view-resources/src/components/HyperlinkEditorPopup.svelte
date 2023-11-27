@@ -127,9 +127,6 @@
       border-radius: 0.25rem;
       opacity: 0.95;
     }
-    &.show.copied::before {
-      border-color: var(--theme-divider-color);
-    }
     &.show::after {
       content: attr(data-tooltip);
       position: absolute;

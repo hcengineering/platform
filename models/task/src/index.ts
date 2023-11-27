@@ -71,8 +71,6 @@ export const DOMAIN_KANBAN = 'kanban' as Domain
 
 /**
  * @public
- *
- * No domain is specified, since pure Tasks could not exists
  */
 @Model(task.class.Task, core.class.AttachedDoc, DOMAIN_TASK)
 @UX(task.string.Task, task.icon.Task, task.string.Task)
@@ -86,8 +84,8 @@ export class TTask extends TAttachedDoc implements Task {
   @Hidden()
     number!: number
 
-  // @Prop(TypeRef(contact.mixin.Employee), task.string.TaskAssignee)
-  assignee!: Ref<Person> | null
+  @Prop(TypeRef(contact.mixin.Employee), task.string.TaskAssignee)
+    assignee!: Ref<Person> | null
 
   @Prop(TypeDate(), task.string.DueDate, { editor: task.component.DueDateEditor })
     dueDate!: Timestamp | null

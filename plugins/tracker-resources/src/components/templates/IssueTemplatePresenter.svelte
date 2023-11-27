@@ -36,6 +36,7 @@
 
 {#if value}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <span class="issuePresenterRoot" class:noPointer={disabled} class:noUnderline on:click={handleIssueEditorOpened}>
     {#if !inline && shouldShowAvatar}
       <div class="mr-2" use:tooltip={{ label: tracker.string.IssueTemplate }}>

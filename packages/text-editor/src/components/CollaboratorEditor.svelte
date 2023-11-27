@@ -69,6 +69,7 @@
   export let boundary: HTMLElement | undefined = undefined
 
   export let attachFile: FileAttachFunction | undefined = undefined
+  export let canShowPopups = true
 
   let element: HTMLElement
 
@@ -262,6 +263,7 @@
 
   $: updateEditor(editor, field, comparedVersion)
   $: if (editor) dispatch('editor', editor)
+  $: isStyleToolbarSupported = (!readonly || textNodeActions.length > 0) && canShowPopups
 
   $: tippyOptions = {
     zIndex: 100000,
@@ -304,7 +306,7 @@
           InlineStyleToolbarExtension.configure({
             tippyOptions,
             element: textToolbarElement,
-            isSupported: () => !readonly,
+            isSupported: () => isStyleToolbarSupported,
             isSelectionOnly: () => false
           }),
           InlinePopupExtension.configure({
@@ -315,7 +317,7 @@
               appendTo: () => boundary ?? element
             },
             shouldShow: () => {
-              if (!visible && !readonly) {
+              if (!visible || !readonly || !canShowPopups) {
                 return false
               }
               return editor?.isActive('image')
@@ -448,27 +450,31 @@
     bind:this={textToolbarElement}
     style="visibility: hidden;"
   >
-    <TextEditorStyleToolbar
-      textEditor={editor}
-      textFormatCategories={[
-        TextFormatCategory.Heading,
-        TextFormatCategory.TextDecoration,
-        TextFormatCategory.Link,
-        TextFormatCategory.List,
-        TextFormatCategory.Quote,
-        TextFormatCategory.Code,
-        TextFormatCategory.Table
-      ]}
-      formatButtonSize={buttonSize}
-      {textNodeActions}
-      on:focus={() => {
-        needFocus = true
-      }}
-      on:action={(event) => {
-        dispatch('action', event.detail)
-        needFocus = true
-      }}
-    />
+    {#if isStyleToolbarSupported}
+      <TextEditorStyleToolbar
+        textEditor={editor}
+        textFormatCategories={readonly
+          ? []
+          : [
+              TextFormatCategory.Heading,
+              TextFormatCategory.TextDecoration,
+              TextFormatCategory.Link,
+              TextFormatCategory.List,
+              TextFormatCategory.Quote,
+              TextFormatCategory.Code,
+              TextFormatCategory.Table
+            ]}
+        formatButtonSize={buttonSize}
+        {textNodeActions}
+        on:focus={() => {
+          needFocus = true
+        }}
+        on:action={(event) => {
+          dispatch('action', event.detail)
+          needFocus = true
+        }}
+      />
+    {/if}
   </div>
 
   <div

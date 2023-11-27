@@ -34,7 +34,7 @@
   import NewMessage from './NewMessage.svelte'
 
   export let channel: Channel
-  export let embedded = false
+  // export let embedded = false
   export let message: Message | undefined = undefined
 
   const client = getClient()

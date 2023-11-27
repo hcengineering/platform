@@ -362,7 +362,6 @@
     {viewOptions}
     {groupByKey}
     {lookup}
-    index={i}
     {config}
     {configurations}
     {configurationsVersion}
