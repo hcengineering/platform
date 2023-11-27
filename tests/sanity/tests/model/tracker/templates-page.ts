@@ -15,24 +15,32 @@ export class TemplatePage extends CommonTrackerPage {
   readonly buttonPopupCreateNewTemplateMilestone: Locator
   readonly buttonSaveTemplate: Locator
 
-
-  constructor(page: Page) {
+  constructor (page: Page) {
     super(page)
     this.page = page
     this.buttonNewTemplate = page.locator('button > span', { hasText: 'Template' })
     this.inputIssueTitle = page.locator('form[id$="NewProcess"] input')
     this.inputIssueDescription = page.locator('form[id$="NewProcess"] div.tiptap')
-    this.buttonPopupCreateNewTemplatePriority = page.locator('form[id$="NewProcess"] div.antiCard-pool > button:first-child')
+    this.buttonPopupCreateNewTemplatePriority = page.locator(
+      'form[id$="NewProcess"] div.antiCard-pool > button:first-child'
+    )
     this.buttonPopupCreateNewTemplateAssignee = page.locator('form[id$="NewProcess"] div.antiCard-pool > div > button')
-    this.buttonPopupCreateNewTemplateLabels = page.locator('form[id$="NewProcess"] div.antiCard-pool > button:nth-child(3)')
-    this.buttonPopupCreateNewTemplateEstimation = page.locator('form[id$="NewProcess"] div.antiCard-pool > button:nth-child(4)')
-    this.buttonPopupCreateNewTemplateComponent = page.locator('form[id$="NewProcess"] div.antiCard-pool > button:nth-child(5)')
-    this.buttonPopupCreateNewTemplateMilestone = page.locator('form[id$="NewProcess"] div.antiCard-pool > button:nth-child(6)')
+    this.buttonPopupCreateNewTemplateLabels = page.locator(
+      'form[id$="NewProcess"] div.antiCard-pool > button:nth-child(3)'
+    )
+    this.buttonPopupCreateNewTemplateEstimation = page.locator(
+      'form[id$="NewProcess"] div.antiCard-pool > button:nth-child(4)'
+    )
+    this.buttonPopupCreateNewTemplateComponent = page.locator(
+      'form[id$="NewProcess"] div.antiCard-pool > button:nth-child(5)'
+    )
+    this.buttonPopupCreateNewTemplateMilestone = page.locator(
+      'form[id$="NewProcess"] div.antiCard-pool > button:nth-child(6)'
+    )
     this.buttonSaveTemplate = page.locator('form[id$="NewProcess"] div[class*="footer"] button')
-
   }
 
-  async createNewTemplate(data: NewIssue): Promise<void> {
+  async createNewTemplate (data: NewIssue): Promise<void> {
     await this.buttonNewTemplate.click()
 
     await this.inputIssueTitle.fill(data.title)
@@ -71,8 +79,7 @@ export class TemplatePage extends CommonTrackerPage {
     await this.buttonSaveTemplate.click()
   }
 
-  async openTemplate(templateName: string): Promise<void> {
+  async openTemplate (templateName: string): Promise<void> {
     await this.page.locator('span.issuePresenterRoot > span', { hasText: templateName }).click()
   }
 }
-

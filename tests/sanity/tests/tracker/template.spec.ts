@@ -1,9 +1,7 @@
 import { test } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI } from '../utils'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
-import { IssuesPage } from '../model/tracker/issues-page'
-import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
-import { Issue, NewIssue } from '../model/tracker/types'
+import { NewIssue } from '../model/tracker/types'
 import { allure } from 'allure-playwright'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 import { TemplatePage } from '../model/tracker/templates-page'
@@ -29,7 +27,7 @@ test.describe('Tracker template tests', () => {
       labels: `CREATE-TEMPLATE-${generateId()}`,
       component: 'No component',
       estimation: '2',
-      milestone: 'No Milestone',
+      milestone: 'No Milestone'
     }
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
@@ -48,5 +46,4 @@ test.describe('Tracker template tests', () => {
       estimation: '2h'
     })
   })
-
 })

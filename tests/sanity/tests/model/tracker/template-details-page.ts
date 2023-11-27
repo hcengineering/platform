@@ -13,7 +13,7 @@ export class TemplateDetailsPage extends CommonTrackerPage {
   readonly buttonComponent: Locator
   readonly textEstimation: Locator
 
-  constructor(page: Page) {
+  constructor (page: Page) {
     super(page)
     this.page = page
     this.inputTitle = page.locator('div.popupPanel-body input[type="text"]')
@@ -26,7 +26,7 @@ export class TemplateDetailsPage extends CommonTrackerPage {
     this.textEstimation = page.locator('(//span[text()="Estimation"]/../div/button)[3]')
   }
 
-  async checkTemplate(data: NewIssue): Promise<void> {
+  async checkTemplate (data: NewIssue): Promise<void> {
     await expect(this.inputTitle).toHaveValue(data.title)
     await expect(this.inputDescription).toHaveText(data.description)
     if (data.priority != null) {
@@ -47,4 +47,3 @@ export class TemplateDetailsPage extends CommonTrackerPage {
     }
   }
 }
-
