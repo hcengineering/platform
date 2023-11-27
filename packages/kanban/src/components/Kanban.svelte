@@ -13,16 +13,33 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { CategoryType, Doc, DocumentUpdate, Ref } from '@hcengineering/core'
+  import {
+    CategoryType,
+    Class,
+    Doc,
+    DocumentQuery,
+    DocumentUpdate,
+    FindOptions,
+    RateLimitter,
+    Ref,
+    Space
+  } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { ScrollBox, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { CardDragEvent, Item } from '../types'
+  import { CardDragEvent, DocWithRank, Item } from '../types'
   import { calcRank } from '../utils'
   import KanbanRow from './KanbanRow.svelte'
 
   export let categories: CategoryType[] = []
-  export let objects: Item[] = []
+
+  export let _class: Ref<Class<DocWithRank>>
+  export let space: Ref<Space> | undefined = undefined
+  export let query: DocumentQuery<DocWithRank> = {}
+  export let options: FindOptions<DocWithRank> | undefined = undefined
+  export let objects: DocWithRank[] = []
+  export let groupByKey: any
+
   export let groupByDocs: Record<string | number, Item[]>
   export let getGroupByValues: (groupByDocs: Record<string | number, Item[]>, category: CategoryType) => Item[]
   export let setGroupByValues: (
@@ -40,7 +57,9 @@
 
   const dispatch = createEventDispatcher()
 
-  async function move (state: CategoryType) {
+  const limiter = new RateLimitter(() => ({ rate: 10 }))
+
+  async function move (state: CategoryType): Promise<void> {
     if (dragCard === undefined) {
       return
     }
@@ -48,13 +67,18 @@
     const canDrop = !dragCardAvailableCategories || dragCardAvailableCategories.includes(state)
 
     if (!canDrop) {
+      dragCard = undefined
+      dragCardAvailableCategories = undefined
       return
     }
 
     let updates = getUpdateProps(dragCard, state)
 
     if (updates === undefined) {
+      console.log('no update props')
       panelDragLeave(undefined, dragCardState)
+      dragCard = undefined
+      dragCardAvailableCategories = undefined
       return
     }
 
@@ -101,6 +125,7 @@
       }
 
       const updates = getUpdateProps(dragCard, state)
+      console.log('UPD', updates)
       if (updates === undefined) {
         return
       }
@@ -185,7 +210,7 @@
     }
     isDragging = false
   }
-  async function onDragStart (object: Item, state: CategoryType) {
+  async function onDragStart (object: Item, state: CategoryType): Promise<void> {
     dragCardInitialState = state
     dragCardState = state
     dragCardInitialRank = object.rank
@@ -306,7 +331,7 @@
 
   $: checkedSet = new Set<Ref<Doc>>(checked.map((it) => it._id))
 
-  export function check (docs: Doc[], value: boolean) {
+  export function check (docs: Doc[], value: boolean): void {
     dispatch('check', { docs, value })
   }
   const showMenu = async (evt: MouseEvent, object: Item): Promise<void> => {
@@ -333,8 +358,9 @@
             panelDragOver(event, state)
           }}
           on:drop={() => {
-            move(state)
-            isDragging = false
+            void move(state).then(() => {
+              isDragging = false
+            })
           }}
         >
           {#if $$slots.header !== undefined}
@@ -354,6 +380,7 @@
               {selection}
               {checkedSet}
               {state}
+              {limiter}
               cardDragOver={(evt, obj) => {
                 cardDragOver(evt, obj, state)
               }}
@@ -362,6 +389,10 @@
               }}
               {onDragStart}
               {showMenu}
+              {_class}
+              {query}
+              {options}
+              {groupByKey}
             >
               <svelte:fragment slot="card" let:object let:dragged>
                 <slot name="card" {object} {dragged} />

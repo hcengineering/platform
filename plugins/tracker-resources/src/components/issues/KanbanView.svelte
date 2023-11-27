@@ -21,16 +21,19 @@
     Doc,
     DocumentQuery,
     DocumentUpdate,
+    FindOptions,
     generateId,
     Lookup,
+    mergeQueries,
     Ref,
     WithLookup
   } from '@hcengineering/core'
-  import { Item, Kanban } from '@hcengineering/kanban'
+  import { Item, Kanban as KanbanUI } from '@hcengineering/kanban'
   import notification from '@hcengineering/notification'
-  import { getResource } from '@hcengineering/platform'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
+  import { DocWithRank, getStates } from '@hcengineering/task'
+  import { getTaskKanbanResultQuery, typeStore, updateTaskKanbanCategories } from '@hcengineering/task-resources'
   import { Issue, IssuesGrouping, IssuesOrdering, Project } from '@hcengineering/tracker'
   import {
     Button,
@@ -44,20 +47,13 @@
     showPopup,
     themeStore
   } from '@hcengineering/ui'
-  import {
-    AttributeModel,
-    BuildModelKey,
-    CategoryOption,
-    Viewlet,
-    ViewOptionModel,
-    ViewOptions,
-    ViewQueryOption
-  } from '@hcengineering/view'
+  import view, { AttributeModel, BuildModelKey, Viewlet, ViewOptionModel, ViewOptions } from '@hcengineering/view'
   import {
     enabledConfig,
     focusStore,
-    getCategories,
-    getCategorySpaces,
+    getCategoryQueryNoLookup,
+    getCategoryQueryNoLookupOptions,
+    getCategoryQueryProjection,
     getGroupByValues,
     getPresenter,
     groupBy,
@@ -69,7 +65,6 @@
     setGroupByValues,
     statusStore
   } from '@hcengineering/view-resources'
-  import view from '@hcengineering/view-resources/src/plugin'
   import { onMount } from 'svelte'
   import tracker from '../../plugin'
   import { activeProjects } from '../../utils'
@@ -83,9 +78,8 @@
   import PriorityEditor from './PriorityEditor.svelte'
   import StatusEditor from './StatusEditor.svelte'
   import EstimationEditor from './timereport/EstimationEditor.svelte'
-  import { getStates } from '@hcengineering/task'
-  import { typeStore } from '@hcengineering/task-resources'
 
+  const _class = tracker.class.Issue
   export let space: Ref<Project> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let query: DocumentQuery<Issue> = {}
@@ -93,11 +87,10 @@
   export let viewOptions: ViewOptions
   export let viewlet: Viewlet
   export let config: (string | BuildModelKey)[]
+  export let options: FindOptions<DocWithRank> | undefined = undefined
 
-  $: currentSpace = space || tracker.project.DefaultProject
   $: groupByKey = (viewOptions.groupBy[0] ?? noCategory) as IssuesGrouping
   $: orderBy = viewOptions.orderBy
-  $: sort = { [orderBy[0]]: orderBy[1] }
 
   let accentColors = new Map<string, ColorDefinition>()
   const setAccentColor = (n: number, ev: CustomEvent<ColorDefinition>) => {
@@ -107,36 +100,25 @@
 
   $: dontUpdateRank = orderBy[0] !== IssuesOrdering.Manual
 
+  $: currentSpace = space ?? tracker.project.DefaultProject
   let currentProject: Project | undefined
   $: currentProject = $activeProjects.get(currentSpace)
 
-  let resultQuery: DocumentQuery<any> = query
-  $: getResultQuery(query, viewOptionsConfig, viewOptions).then((p) => (resultQuery = p))
-
+  let resultQuery: DocumentQuery<any> = { ...query }
   const client = getClient()
-  const hierarchy = client.getHierarchy()
 
-  async function getResultQuery (
-    query: DocumentQuery<Issue>,
-    viewOptions: ViewOptionModel[] | undefined,
-    viewOptionsStore: ViewOptions
-  ): Promise<DocumentQuery<Issue>> {
-    if (viewOptions === undefined) return query
-    let result = hierarchy.clone(query)
-    for (const viewOption of viewOptions) {
-      if (viewOption.actionTarget !== 'query') continue
-      const queryOption = viewOption as ViewQueryOption
-      const f = await getResource(queryOption.action)
-      result = f(viewOptionsStore[queryOption.key] ?? queryOption.defaultValue, query)
-    }
-    return result
-  }
+  $: void getTaskKanbanResultQuery(client.getHierarchy(), query, viewOptionsConfig, viewOptions).then((p) => {
+    resultQuery = mergeQueries(p, query)
+  })
+
+  $: queryNoLookup = getCategoryQueryNoLookup(resultQuery)
 
   function toIssue (object: any): WithLookup<Issue> {
     return object as WithLookup<Issue>
   }
 
   const lookup: Lookup<Issue> = {
+    ...(options?.lookup ?? {}),
     space: tracker.class.Project,
     status: tracker.class.IssueStatus,
     component: tracker.class.Component,
@@ -147,7 +129,9 @@
     }
   }
 
-  let kanbanUI: Kanban
+  $: resultOptions = { ...options, lookup, ...(orderBy !== undefined ? { sort: { [orderBy[0]]: orderBy[1] } } : {}) }
+
+  let kanbanUI: KanbanUI
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
     kanbanUI?.select(offset, of, dir)
   })
@@ -161,69 +145,88 @@
     ev.preventDefault()
     showPopup(Menu, { object: items, baseMenuClass }, getEventPositionElement(ev))
   }
-  const issuesQuery = createQuery()
-  let issues: Issue[] = []
+  // Category information only
+  let tasks: DocWithRank[] = []
 
-  $: groupByDocs = groupBy(issues, groupByKey, categories)
+  $: groupByDocs = groupBy(tasks, groupByKey, categories)
 
-  $: issuesQuery.query(
-    tracker.class.Issue,
-    resultQuery,
-    (result) => {
-      issues = result
-    },
-    {
-      lookup,
-      sort
+  let fastDocs: DocWithRank[] = []
+  let slowDocs: DocWithRank[] = []
+
+  const docsQuery = createQuery()
+  const docsQuerySlow = createQuery()
+
+  let fastQueryIds = new Set<Ref<DocWithRank>>()
+
+  let categoryQueryOptions: Partial<FindOptions<DocWithRank>>
+  $: categoryQueryOptions = {
+    ...getCategoryQueryNoLookupOptions(resultOptions),
+    projection: {
+      ...resultOptions.projection,
+      _id: 1,
+      _class: 1,
+      rank: 1,
+      ...getCategoryQueryProjection(client.getHierarchy(), _class, queryNoLookup, viewOptions.groupBy)
     }
+  }
+
+  $: docsQuery.query(
+    _class,
+    queryNoLookup,
+    (res) => {
+      fastDocs = res
+      fastQueryIds = new Set(res.map((it) => it._id))
+    },
+    { ...categoryQueryOptions, limit: 1000 }
+  )
+  $: docsQuerySlow.query(
+    _class,
+    queryNoLookup,
+    (res) => {
+      slowDocs = res
+    },
+    categoryQueryOptions
   )
 
-  $: listProvider.update(issues)
+  $: tasks = [...fastDocs, ...slowDocs.filter((it) => !fastQueryIds.has(it._id))]
+
+  $: listProvider.update(tasks)
 
   let categories: CategoryType[] = []
 
   const queryId = generateId()
 
-  $: updateCategories(tracker.class.Issue, issues, groupByKey, viewOptions, viewOptionsConfig)
-
-  function update () {
-    updateCategories(tracker.class.Issue, issues, groupByKey, viewOptions, viewOptionsConfig)
+  function update (): void {
+    void updateTaskKanbanCategories(
+      client,
+      viewlet,
+      _class,
+      space,
+      tasks,
+      groupByKey,
+      viewOptions,
+      viewOptionsConfig,
+      update,
+      queryId
+    ).then((res) => {
+      categories = res
+    })
   }
 
-  async function updateCategories (
-    _class: Ref<Class<Doc>>,
-    docs: Doc[],
-    groupByKey: string,
-    viewOptions: ViewOptions,
-    viewOptionsModel: ViewOptionModel[] | undefined
-  ) {
-    categories = await getCategories(client, _class, space, docs, groupByKey, viewlet.descriptor)
-    for (const viewOption of viewOptionsModel ?? []) {
-      if (viewOption.actionTarget !== 'category') continue
-      const categoryFunc = viewOption as CategoryOption
-      if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
-        const categoryAction = await getResource(categoryFunc.action)
-
-        const spaces = getCategorySpaces(categories)
-        if (space !== undefined) {
-          spaces.push(space)
-        }
-        const res = await categoryAction(
-          _class,
-          spaces.length > 0 ? { space: { $in: Array.from(spaces.values()) } } : {},
-          space,
-          groupByKey,
-          update,
-          queryId,
-          viewlet.descriptor
-        )
-        if (res !== undefined) {
-          categories = res
-          break
-        }
-      }
-    }
-  }
+  $: void updateTaskKanbanCategories(
+    client,
+    viewlet,
+    _class,
+    space,
+    tasks,
+    groupByKey,
+    viewOptions,
+    viewOptionsConfig,
+    update,
+    queryId
+  ).then((res) => {
+    categories = res
+  })
 
   const fullFilled: Record<string, boolean> = {}
 
@@ -231,21 +234,20 @@
     if (groupByKey === noCategory) {
       headerComponent = undefined
     } else {
-      getPresenter(client, _class, { key: groupByKey }, { key: groupByKey }).then((p) => (headerComponent = p))
+      void getPresenter(client, _class, { key: groupByKey }, { key: groupByKey }).then((p) => {
+        headerComponent = p
+      })
     }
   }
 
   let headerComponent: AttributeModel | undefined
-  $: getHeader(tracker.class.Issue, groupByKey)
+  $: getHeader(_class, groupByKey)
 
   const getUpdateProps = (doc: Doc, category: CategoryType): DocumentUpdate<Item> | undefined => {
     const groupValue =
       typeof category === 'object' ? category.values.find((it) => it.space === doc.space)?._id : category
     if (groupValue === undefined) {
       return undefined
-    }
-    if ((doc as any)[groupByKey] === groupValue && viewOptions.orderBy[0] !== 'rank') {
-      return
     }
     return {
       [groupByKey]: groupValue,
@@ -273,7 +275,7 @@
 
     if ([IssuesGrouping.Component, IssuesGrouping.Milestone].includes(groupByKey)) {
       const availableCategories = []
-      const clazz = hierarchy.getAttribute(tracker.class.Issue, groupByKey)
+      const clazz = client.getHierarchy().getAttribute(tracker.class.Issue, groupByKey)
 
       for (const category of categories) {
         if (!category || (issue as any)[groupByKey] === category) {
@@ -312,16 +314,20 @@
   />
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <Kanban
+  <KanbanUI
     bind:this={kanbanUI}
     {categories}
     {dontUpdateRank}
-    objects={issues}
+    {_class}
+    query={resultQuery}
+    options={resultOptions}
+    objects={tasks}
     getGroupByValues={(groupByDocs, category) =>
-      groupByKey === noCategory ? issues : getGroupByValues(groupByDocs, category)}
+      groupByKey === noCategory ? tasks : getGroupByValues(groupByDocs, category)}
     {setGroupByValues}
     {getUpdateProps}
     {groupByDocs}
+    {groupByKey}
     on:obj-focus={(evt) => {
       listProvider.updateFocus(evt.detail)
     }}
@@ -360,7 +366,7 @@
               />
             {/if}
           </span>
-          <span class="counter">
+          <span class="counter ml-1">
             {count}
           </span>
         </div>
@@ -386,7 +392,7 @@
         <div
           class="tracker-card"
           on:click={() => {
-            openDoc(hierarchy, issue)
+            void openDoc(client.getHierarchy(), issue)
           }}
         >
           <div class="card-header flex-between">
@@ -482,7 +488,7 @@
         </div>
       {/key}
     </svelte:fragment>
-  </Kanban>
+  </KanbanUI>
 {/if}
 
 <style lang="scss">

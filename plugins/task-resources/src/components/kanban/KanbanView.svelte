@@ -22,13 +22,15 @@
     DocumentUpdate,
     FindOptions,
     generateId,
+    Lookup,
     mergeQueries,
     Ref
   } from '@hcengineering/core'
-  import { Item, Kanban as KanbanUI } from '@hcengineering/kanban'
+  import { DocWithRank, Item, Kanban as KanbanUI } from '@hcengineering/kanban'
   import { getResource } from '@hcengineering/platform'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
-  import { Project, Task, TaskGrouping, TaskOrdering } from '@hcengineering/task'
+  import tags from '@hcengineering/tags'
+  import { Project, Task, TaskOrdering } from '@hcengineering/task'
   import {
     ColorDefinition,
     defaultBackground,
@@ -37,19 +39,12 @@
     showPopup,
     themeStore
   } from '@hcengineering/ui'
-  import {
-    AttributeModel,
-    BuildModelKey,
-    CategoryOption,
-    Viewlet,
-    ViewOptionModel,
-    ViewOptions,
-    ViewQueryOption
-  } from '@hcengineering/view'
+  import view, { AttributeModel, BuildModelKey, Viewlet, ViewOptionModel, ViewOptions } from '@hcengineering/view'
   import {
     focusStore,
-    getCategories,
-    getCategorySpaces,
+    getCategoryQueryNoLookup,
+    getCategoryQueryNoLookupOptions,
+    getCategoryQueryProjection,
     getGroupByValues,
     getPresenter,
     groupBy,
@@ -59,9 +54,9 @@
     SelectDirection,
     setGroupByValues
   } from '@hcengineering/view-resources'
-  import view from '@hcengineering/view-resources/src/plugin'
   import { onMount } from 'svelte'
   import task from '../../plugin'
+  import { getTaskKanbanResultQuery, updateTaskKanbanCategories } from '../../utils'
   import KanbanDragDone from './KanbanDragDone.svelte'
 
   export let _class: Ref<Class<Task>>
@@ -72,42 +67,36 @@
   export let viewOptions: ViewOptions
   export let viewlet: Viewlet
   export let config: (string | BuildModelKey)[]
+  export let options: FindOptions<DocWithRank> | undefined = undefined
 
-  export let options: FindOptions<Task> | undefined
-
-  $: groupByKey = (viewOptions.groupBy[0] ?? noCategory) as TaskGrouping
+  $: groupByKey = viewOptions.groupBy[0] ?? noCategory
   $: orderBy = viewOptions.orderBy
-  $: sort = { [orderBy[0]]: orderBy[1] }
-
-  $: dontUpdateRank = orderBy[0] !== TaskOrdering.Manual
 
   let accentColors = new Map<string, ColorDefinition>()
-  const setAccentColor = (n: number, ev: CustomEvent<ColorDefinition>) => {
+  const setAccentColor = (n: number, ev: CustomEvent<ColorDefinition>): void => {
     accentColors.set(`${n}${$themeStore.dark}${groupByKey}`, ev.detail)
     accentColors = accentColors
   }
 
+  $: dontUpdateRank = orderBy[0] !== TaskOrdering.Manual
+
   let resultQuery: DocumentQuery<any> = { ...query }
-  $: getResultQuery(query, viewOptionsConfig, viewOptions).then((p) => (resultQuery = mergeQueries(p, query)))
-
   const client = getClient()
-  const hierarchy = client.getHierarchy()
 
-  async function getResultQuery (
-    query: DocumentQuery<Task>,
-    viewOptions: ViewOptionModel[] | undefined,
-    viewOptionsStore: ViewOptions
-  ): Promise<DocumentQuery<Task>> {
-    if (viewOptions === undefined) return query
-    let result = hierarchy.clone(query)
-    for (const viewOption of viewOptions) {
-      if (viewOption.actionTarget !== 'query') continue
-      const queryOption = viewOption as ViewQueryOption
-      const f = await getResource(queryOption.action)
-      result = f(viewOptionsStore[queryOption.key] ?? queryOption.defaultValue, query)
+  $: void getTaskKanbanResultQuery(client.getHierarchy(), query, viewOptionsConfig, viewOptions).then((p) => {
+    resultQuery = mergeQueries(p, query)
+  })
+
+  $: queryNoLookup = getCategoryQueryNoLookup(resultQuery)
+  const lookup: Lookup<Task> = {
+    ...(options?.lookup ?? {}),
+    space: task.class.Project,
+    status: core.class.Status,
+    _id: {
+      labels: tags.class.TagReference
     }
-    return result
   }
+  $: resultOptions = { ...options, lookup, ...(orderBy !== undefined ? { sort: { [orderBy[0]]: orderBy[1] } } : {}) }
 
   let kanbanUI: KanbanUI
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
@@ -123,79 +112,96 @@
     ev.preventDefault()
     showPopup(Menu, { object: items, baseMenuClass }, getEventPositionElement(ev))
   }
-  const issuesQuery = createQuery()
-  let tasks: Task[] = []
+  // Category information only
+  let tasks: DocWithRank[] = []
 
   $: groupByDocs = groupBy(tasks, groupByKey, categories)
 
-  $: issuesQuery.query<Task>(
-    _class,
-    resultQuery,
-    (result) => {
-      tasks = result
-    },
-    {
-      ...options,
-      lookup: {
-        ...options?.lookup,
-        space: task.class.Project,
-        status: core.class.Status
-      },
-      sort: {
-        ...options?.sort,
-        ...sort
-      }
+  let fastDocs: DocWithRank[] = []
+  let slowDocs: DocWithRank[] = []
+
+  const docsQuery = createQuery()
+  const docsQuerySlow = createQuery()
+
+  let fastQueryIds = new Set<Ref<DocWithRank>>()
+
+  let categoryQueryOptions: Partial<FindOptions<DocWithRank>>
+  $: categoryQueryOptions = {
+    ...getCategoryQueryNoLookupOptions(resultOptions),
+    projection: {
+      ...resultOptions.projection,
+      _id: 1,
+      _class: 1,
+      rank: 1,
+      ...getCategoryQueryProjection(client.getHierarchy(), _class, queryNoLookup, viewOptions.groupBy)
     }
+  }
+
+  $: docsQuery.query(
+    _class,
+    queryNoLookup,
+    (res) => {
+      fastDocs = res
+      fastQueryIds = new Set(res.map((it) => it._id))
+    },
+    { ...categoryQueryOptions, limit: 1000 }
   )
+  $: docsQuerySlow.query(
+    _class,
+    queryNoLookup,
+    (res) => {
+      slowDocs = res
+    },
+    categoryQueryOptions
+  )
+
+  $: tasks = [...fastDocs, ...slowDocs.filter((it) => !fastQueryIds.has(it._id))]
+
   $: listProvider.update(tasks)
 
   let categories: CategoryType[] = []
 
   const queryId = generateId()
 
-  $: updateCategories(_class, space, tasks, groupByKey, viewOptions, viewOptionsConfig)
-
-  function update () {
-    updateCategories(_class, space, tasks, groupByKey, viewOptions, viewOptionsConfig)
+  function update (): void {
+    void updateTaskKanbanCategories(
+      client,
+      viewlet,
+      _class,
+      space,
+      tasks,
+      groupByKey,
+      viewOptions,
+      viewOptionsConfig,
+      update,
+      queryId
+    ).then((res) => {
+      categories = res
+    })
   }
 
-  async function updateCategories (
-    _class: Ref<Class<Doc>>,
-    space: Ref<Project> | undefined,
-    docs: Doc[],
-    groupByKey: string,
-    viewOptions: ViewOptions,
-    viewOptionsModel: ViewOptionModel[] | undefined
-  ) {
-    categories = await getCategories(client, _class, space, docs, groupByKey, viewlet.descriptor)
-    for (const viewOption of viewOptionsModel ?? []) {
-      if (viewOption.actionTarget !== 'category') continue
-      const categoryFunc = viewOption as CategoryOption
-      if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
-        const categoryAction = await getResource(categoryFunc.action)
-
-        let spaces = getCategorySpaces(categories)
-        if (spaces.length === 0) {
-          const set = new Set(docs.map((p) => p.space))
-          spaces = Array.from(set)
-        }
-
-        const query = spaces.length > 0 ? { space: { $in: Array.from(spaces.values()) } } : space ? { space } : {}
-
-        const res = await categoryAction(_class, query, space, groupByKey, update, queryId, viewlet.descriptor)
-        if (res !== undefined) {
-          categories = res
-          break
-        }
-      }
-    }
-  }
+  $: void updateTaskKanbanCategories(
+    client,
+    viewlet,
+    _class,
+    space,
+    tasks,
+    groupByKey,
+    viewOptions,
+    viewOptionsConfig,
+    update,
+    queryId
+  ).then((res) => {
+    categories = res
+  })
 
   function getHeader (_class: Ref<Class<Doc>>, groupByKey: string): void {
     if (groupByKey === noCategory) {
       headerComponent = undefined
     } else {
-      getPresenter(client, _class, { key: groupByKey }, { key: groupByKey }).then((p) => (headerComponent = p))
+      void getPresenter(client, _class, { key: groupByKey }, { key: groupByKey }).then((p) => {
+        headerComponent = p
+      })
     }
   }
 
@@ -207,9 +213,6 @@
       typeof category === 'object' ? category.values.find((it) => it.space === doc.space)?._id : category
     if (groupValue === undefined) {
       return undefined
-    }
-    if ((doc as any)[groupByKey] === groupValue && viewOptions.orderBy[0] !== 'rank') {
-      return
     }
     return {
       [groupByKey]: groupValue,
@@ -234,12 +237,16 @@
     bind:this={kanbanUI}
     {categories}
     {dontUpdateRank}
+    {_class}
+    query={resultQuery}
+    options={resultOptions}
     objects={tasks}
     getGroupByValues={(groupByDocs, category) =>
       groupByKey === noCategory ? tasks : getGroupByValues(groupByDocs, category)}
     {setGroupByValues}
     {getUpdateProps}
     {groupByDocs}
+    {groupByKey}
     on:obj-focus={(evt) => {
       listProvider.updateFocus(evt.detail)
     }}
@@ -253,32 +260,34 @@
     <svelte:fragment slot="header" let:state let:count let:index>
       {@const color = accentColors.get(`${index}${$themeStore.dark}${groupByKey}`)}
       {@const headerBGColor = color?.background ?? defaultBackground($themeStore.dark)}
-
-      <div style:background={headerBGColor} class="header flex-row-center">
-        <span
-          class="clear-mins fs-bold overflow-label pointer-events-none"
-          style:color={color?.title ?? 'var(--theme-caption-color)'}
-        >
-          {#if groupByKey === noCategory}
-            <Label label={view.string.NoGrouping} />
-          {:else if headerComponent}
-            <svelte:component
-              this={headerComponent.presenter}
-              value={state}
-              {space}
-              size={'small'}
-              kind={'list-header'}
-              colorInherit={!$themeStore.dark}
-              accent
-              on:accent-color={(ev) => {
-                setAccentColor(index, ev)
-              }}
-            />
-          {/if}
-        </span>
-        <span class="counter ml-1">
-          {count}
-        </span>
+      <div style:background={headerBGColor} class="header flex-between">
+        <div class="flex-row-center gap-1">
+          <span
+            class="clear-mins fs-bold overflow-label pointer-events-none"
+            style:color={color?.title ?? 'var(--theme-caption-color)'}
+          >
+            {#if groupByKey === noCategory}
+              <Label label={view.string.NoGrouping} />
+            {:else if headerComponent}
+              <svelte:component
+                this={headerComponent.presenter}
+                value={state}
+                {space}
+                size={'small'}
+                kind={'list-header'}
+                display={'kanban'}
+                colorInherit={!$themeStore.dark}
+                accent
+                on:accent-color={(ev) => {
+                  setAccentColor(index, ev)
+                }}
+              />
+            {/if}
+          </span>
+          <span class="counter ml-1">
+            {count}
+          </span>
+        </div>
       </div>
     </svelte:fragment>
     <svelte:fragment slot="card" let:object let:dragged>
