@@ -33,6 +33,6 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/telegram": "^0.6.13"
+    "@hcengineering/telegram": "^0.6.14"
   }
 }

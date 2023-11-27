@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/chunter",
-  "version": "0.6.11",
+  "version": "0.6.12",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -31,11 +31,11 @@
   "dependencies": {
     "fast-equals": "^2.0.3",
     "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/ui": "^0.6.10",
-    "@hcengineering/notification": "^0.6.15",
-    "@hcengineering/contact": "^0.6.19",
-    "@hcengineering/core": "^0.6.27",
-    "@hcengineering/preference": "^0.6.8"
+    "@hcengineering/ui": "^0.6.11",
+    "@hcengineering/notification": "^0.6.16",
+    "@hcengineering/contact": "^0.6.20",
+    "@hcengineering/core": "^0.6.28",
+    "@hcengineering/preference": "^0.6.9"
   },
   "repository": "https://github.com/hcengineering/anticrm",
   "publishConfig": {

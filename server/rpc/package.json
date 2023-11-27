@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/rpc",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -31,7 +31,7 @@
     "prettier-plugin-svelte": "^3.1.0"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.27",
+    "@hcengineering/core": "^0.6.28",
     "@hcengineering/platform": "^0.6.9",
     "msgpackr": "^1.8.5"
   }

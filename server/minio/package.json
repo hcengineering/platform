@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@types/minio": "~7.0.11",
-    "@hcengineering/core": "^0.6.27",
+    "@hcengineering/core": "^0.6.28",
     "minio": "^7.0.26"
   }
 }

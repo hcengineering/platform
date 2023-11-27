@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/gmail",
-  "version": "0.6.14",
+  "version": "0.6.15",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -30,11 +30,11 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/core": "^0.6.27",
-    "@hcengineering/ui": "^0.6.10",
-    "@hcengineering/contact": "^0.6.19",
-    "@hcengineering/notification": "^0.6.15",
-    "@hcengineering/setting": "^0.6.10"
+    "@hcengineering/core": "^0.6.28",
+    "@hcengineering/ui": "^0.6.11",
+    "@hcengineering/contact": "^0.6.20",
+    "@hcengineering/notification": "^0.6.16",
+    "@hcengineering/setting": "^0.6.11"
   },
   "repository": "https://github.com/hcengineering/anticrm",
   "publishConfig": {
