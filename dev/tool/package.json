@@ -54,7 +54,7 @@
     "@hcengineering/model-all": "^0.6.0",
     "@hcengineering/model-telegram": "^0.6.0",
     "@hcengineering/telegram": "^0.6.13",
-    "@hcengineering/client-resources": "^0.6.21",
+    "@hcengineering/client-resources": "^0.6.22",
     "ws": "^8.10.0",
     "@hcengineering/client": "^0.6.13",
     "@hcengineering/platform": "^0.6.9",
