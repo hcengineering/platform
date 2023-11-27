@@ -135,7 +135,7 @@ test.describe('Collaborative test for issue', () => {
       await leftSideMenuPageSecond.buttonNotification.click()
 
       const notificationPageSecond = new NotificationPage(userSecondPage)
-      await notificationPageSecond.checkNotification(issue.title, newAssignee)
+      await notificationPageSecond.checkNotificationIssue(issue.title, newAssignee)
 
       await leftSideMenuPageSecond.buttonTracker.click()
     })
