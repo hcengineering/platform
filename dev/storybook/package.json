@@ -13,7 +13,7 @@
   "devDependencies": {
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/theme": "^0.6.3",
-    "@hcengineering/ui": "^0.6.10",
+    "@hcengineering/ui": "^0.6.11",
     "@storybook/addon-essentials": "^7.0.6",
     "@storybook/addon-interactions": "^7.0.6",
     "@storybook/addon-links": "^7.0.6",
