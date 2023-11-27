@@ -16,22 +16,15 @@
 <script lang="ts">
   import { Label, ListView, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import presentation, { getClient, ObjectSearchCategory } from '@hcengineering/presentation'
+  import presentation, { getClient, type ObjectSearchCategory } from '@hcengineering/presentation'
 
   import { Class, Ref, Doc, SearchResultDoc } from '@hcengineering/core'
+
+  import { type SearchItem, packSearchResultsForListView, doFulltextSearch } from '../search'
+
   import MentionResult from './MentionResult.svelte'
 
   export let query: string = ''
-
-  interface SearchSection {
-    category: ObjectSearchCategory
-    items: SearchResultDoc[]
-  }
-  interface SearchItem {
-    num: number
-    item: SearchResultDoc
-    category: ObjectSearchCategory
-  }
 
   let items: SearchItem[] = []
   let categories: ObjectSearchCategory[] = []
@@ -92,67 +85,6 @@
     return false
   }
 
-  function packSearchResultsForListView (sections: SearchSection[]): SearchItem[] {
-    let results: SearchItem[] = []
-    for (const section of sections) {
-      const category = section.category
-      const items = section.items
-
-      if (category.classToSearch !== undefined) {
-        results = results.concat(
-          items.map((item, num) => {
-            return { num, category, item }
-          })
-        )
-      }
-    }
-    return results
-  }
-
-  function findCategoryByClass (
-    categories: ObjectSearchCategory[],
-    _class: Ref<Class<Doc>>
-  ): ObjectSearchCategory | undefined {
-    for (const category of categories) {
-      if (category.classToSearch === _class) {
-        return category
-      }
-    }
-    return undefined
-  }
-
-  async function doFulltextSearch (classes: Array<Ref<Class<Doc>>>, query: string): Promise<SearchSection[]> {
-    const result = await client.searchFulltext(
-      {
-        query: `${query}*`,
-        classes
-      },
-      {
-        limit: 10
-      }
-    )
-
-    const itemsByClass = new Map<Ref<Class<Doc>>, SearchResultDoc[]>()
-    for (const item of result.docs) {
-      const list = itemsByClass.get(item.doc._class)
-      if (list === undefined) {
-        itemsByClass.set(item.doc._class, [item])
-      } else {
-        list.push(item)
-      }
-    }
-
-    const sections: SearchSection[] = []
-    for (const [_class, items] of itemsByClass.entries()) {
-      const category = findCategoryByClass(categories, _class)
-      if (category !== undefined) {
-        sections.push({ category, items })
-      }
-    }
-
-    return sections
-  }
-
   async function updateItems (query: string): Promise<void> {
     const classesToSearch: Array<Ref<Class<Doc>>> = []
     for (const cat of categories) {
@@ -161,7 +93,7 @@
       }
     }
 
-    const sections = await doFulltextSearch(classesToSearch, query)
+    const sections = await doFulltextSearch(client, classesToSearch, query, categories)
     items = packSearchResultsForListView(sections)
   }
   $: void updateItems(query)
@@ -191,7 +123,7 @@
               {@const doc = item.item}
               <!-- svelte-ignore a11y-no-static-element-interactions -->
               <div
-                class="ap-menuItem withComp"
+                class="ap-menuItem withComp h-8"
                 on:click={() => {
                   dispatchItem(doc)
                 }}

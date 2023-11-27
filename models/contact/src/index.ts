@@ -741,7 +741,7 @@ export function createModel (builder: Builder): void {
       label: contact.string.SearchPerson,
       title: contact.string.People,
       query: contact.completion.PersonQuery,
-      context: ['search', 'mention'],
+      context: ['search', 'mention', 'spotlight'],
       classToSearch: contact.class.Person
     },
     contact.completion.PersonCategory
@@ -755,7 +755,7 @@ export function createModel (builder: Builder): void {
       label: contact.string.SearchOrganization,
       title: contact.string.Organizations,
       query: contact.completion.OrganizationQuery,
-      context: ['search', 'mention'],
+      context: ['search', 'mention', 'spotlight'],
       classToSearch: contact.class.Organization
     },
     contact.completion.OrganizationCategory

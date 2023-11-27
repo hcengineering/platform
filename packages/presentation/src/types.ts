@@ -56,7 +56,7 @@ export type ObjectSearchFactory = (
  *  search - show in search popup
  *  mention - show in mentions
  */
-export type ObjectSearchContext = 'search' | 'mention'
+export type ObjectSearchContext = 'search' | 'mention' | 'spotlight'
 
 /**
  * @public
