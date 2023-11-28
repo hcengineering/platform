@@ -21,6 +21,7 @@ export { default as Collaboration } from './components/Collaboration.svelte'
 export { default as CollaborationDiffViewer } from './components/CollaborationDiffViewer.svelte'
 export { default as CollaboratorEditor } from './components/CollaboratorEditor.svelte'
 export { default as FullDescriptionBox } from './components/FullDescriptionBox.svelte'
+export { default as MarkupDiffViewer } from './components/MarkupDiffViewer.svelte'
 export { default as ReferenceInput } from './components/ReferenceInput.svelte'
 export { default as StyleButton } from './components/StyleButton.svelte'
 export { default as StyledTextArea } from './components/StyledTextArea.svelte'
@@ -64,5 +65,8 @@ export {
 } from './components/extension/inlineStyleToolbar'
 export { ImageExtension, type ImageOptions } from './components/extension/imageExt'
 export { TodoItemExtension, TodoListExtension } from './components/extension/todo'
+
+export { TiptapCollabProvider, type TiptapCollabProviderConfiguration, createTiptapCollaborationData } from './provider'
+export { CollaborationIds } from './types'
 
 export { textEditorId }

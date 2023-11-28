@@ -15,15 +15,14 @@
 //
 -->
 <script lang="ts">
-  import { Markup, getCurrentAccount } from '@hcengineering/core'
+  import { getCurrentAccount } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
-  import { IconObjects, IconSize, Loading, getPlatformColorForText, registerFocus, themeStore } from '@hcengineering/ui'
-  import { AnyExtension, Editor, Extension, FocusPosition, getMarkRange, mergeAttributes } from '@tiptap/core'
+  import { IconSize, Loading, getPlatformColorForText, registerFocus, themeStore } from '@hcengineering/ui'
+  import { AnyExtension, Editor, FocusPosition, getMarkRange, mergeAttributes } from '@tiptap/core'
   import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration'
   import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
   import Placeholder from '@tiptap/extension-placeholder'
-  import { Plugin, PluginKey, TextSelection } from '@tiptap/pm/state'
-  import { DecorationSet } from '@tiptap/pm/view'
+  import { TextSelection } from '@tiptap/pm/state'
   import { createEventDispatcher, getContext, onDestroy, onMount } from 'svelte'
   import * as Y from 'yjs'
 
@@ -35,9 +34,7 @@
   import { copyDocumentContent, copyDocumentField } from '../utils'
 
   import ImageStyleToolbar from './ImageStyleToolbar.svelte'
-  import StyleButton from './StyleButton.svelte'
   import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
-  import { calculateDecorations } from './diff/decorations'
   import { noSelectionRender } from './editor/collaboration'
   import { defaultEditorAttributes } from './editor/editorProps'
   import { FileAttachFunction, ImageExtension } from './extension/imageExt'
@@ -50,14 +47,13 @@
   export let readonly = false
   export let visible = true
 
-  export let token: string
-  export let collaboratorURL: string
+  export let token: string = ''
+  export let collaboratorURL: string = ''
 
   export let buttonSize: IconSize = 'small'
   export let focusable: boolean = false
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let initialContentId: string | undefined = undefined
-  export let comparedVersion: Markup | ArrayBuffer | undefined = undefined
 
   export let field: string | undefined = undefined
 
@@ -188,22 +184,6 @@
     copyDocumentField(documentId, srcFieldId, dstFieldId, { provider }, initialContentId)
   }
 
-  export function unregisterPlugin (nameOrPluginKey: string | PluginKey) {
-    if (!editor) {
-      return
-    }
-
-    editor.unregisterPlugin(nameOrPluginKey)
-  }
-
-  export function registerPlugin (plugin: Plugin) {
-    if (!editor) {
-      return
-    }
-
-    editor.registerPlugin(plugin)
-  }
-
   let needFocus = false
   let focused = false
   let posFocus: FocusPosition | undefined = undefined
@@ -225,44 +205,6 @@
     editor.setEditable(!readonly)
   }
 
-  let _decoration = DecorationSet.empty
-  let oldContent = ''
-
-  function updateEditor (editor?: Editor, field?: string, comparedVersion?: Markup | ArrayBuffer): void {
-    const r = calculateDecorations(editor, oldContent, field, comparedVersion)
-    if (r !== undefined) {
-      oldContent = r.oldContent
-      _decoration = r.decorations
-    }
-  }
-
-  const updateDecorations = () => {
-    if (editor?.schema) {
-      updateEditor(editor, field, comparedVersion)
-    }
-  }
-
-  const DecorationExtension = Extension.create({
-    addProseMirrorPlugins () {
-      return [
-        new Plugin({
-          key: new PluginKey('diffs'),
-          props: {
-            decorations (state) {
-              updateDecorations()
-              if (showDiff) {
-                return _decoration
-              }
-              return undefined
-            }
-          }
-        })
-      ]
-    }
-  })
-
-  $: updateEditor(editor, field, comparedVersion)
-  $: if (editor) dispatch('editor', editor)
   $: isStyleToolbarSupported = (!readonly || textNodeActions.length > 0) && canShowPopups
 
   $: tippyOptions = {
@@ -335,7 +277,6 @@
             },
             selectionRender: noSelectionRender
           }),
-          DecorationExtension,
           Completion.configure({
             ...completionConfig,
             showDoc (event: MouseEvent, _id: string, _class: string) {
@@ -385,8 +326,6 @@
     }
   })
 
-  let showDiff = true
-
   export let focusIndex = -1
   const { idx, focusManager } = registerFocus(focusIndex, {
     focus: () => {
@@ -421,27 +360,11 @@
 {/if}
 
 {#if visible}
-  {#if comparedVersion !== undefined || $$slots.tools}
+  {#if $$slots.tools}
     <div class="ref-container" style:overflow>
-      {#if comparedVersion !== undefined}
-        <div class="flex-row-center buttons-group xsmall-gap">
-          <StyleButton
-            icon={IconObjects}
-            size={buttonSize}
-            selected={showDiff}
-            showTooltip={{ label: textEditorPlugin.string.EnableDiffMode }}
-            on:click={() => {
-              showDiff = !showDiff
-              editor.chain().focus()
-            }}
-          />
-          <slot name="tools" />
-        </div>
-      {:else}
-        <div class="text-editor-toolbar buttons-group xsmall-gap">
-          <slot name="tools" />
-        </div>
-      {/if}
+      <div class="text-editor-toolbar buttons-group xsmall-gap">
+        <slot name="tools" />
+      </div>
     </div>
   {/if}
 

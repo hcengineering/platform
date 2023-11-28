@@ -19,13 +19,26 @@ import { ChangeSet } from '@tiptap/pm/changeset'
 import { DOMParser, type Node, type Schema } from '@tiptap/pm/model'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import { yDocToProsemirrorJSON } from 'y-prosemirror'
-import { Doc, applyUpdate } from 'yjs'
+import { Doc as Ydoc, applyUpdate } from 'yjs'
 import { recreateTransform } from './recreate'
 
 /**
  * @public
  */
-export function createDocument (schema: Schema, content: Markup | ArrayBuffer, field?: string): Node {
+export function createYdocDocument (schema: Schema, ydoc: Ydoc, field?: string): Node {
+  try {
+    const body = yDocToProsemirrorJSON(ydoc, field)
+    return schema.nodeFromJSON(body)
+  } catch (err: any) {
+    console.error(err)
+    return schema.node(schema.topNodeType)
+  }
+}
+
+/**
+ * @public
+ */
+export function createMarkupDocument (schema: Schema, content: Markup | ArrayBuffer, field?: string): Node {
   if (typeof content === 'string') {
     const wrappedValue = `<body>${content}</body>`
 
@@ -34,7 +47,7 @@ export function createDocument (schema: Schema, content: Markup | ArrayBuffer, f
     return DOMParser.fromSchema(schema).parse(body)
   } else {
     try {
-      const ydoc = new Doc()
+      const ydoc = new Ydoc()
       const uint8arr = new Uint8Array(content)
       applyUpdate(ydoc, uint8arr)
 
@@ -53,8 +66,7 @@ export function createDocument (schema: Schema, content: Markup | ArrayBuffer, f
 export function calculateDecorations (
   editor?: Editor,
   oldContent?: string,
-  field?: string,
-  comparedVersion?: Markup | ArrayBuffer
+  comparedDoc?: Node
 ):
   | {
     decorations: DecorationSet
@@ -65,11 +77,9 @@ export function calculateDecorations (
     if (editor?.schema === undefined) {
       return
     }
-    if (comparedVersion === undefined) {
+    if (comparedDoc === undefined) {
       return
     }
-    const schema = editor.schema
-    const docOld = createDocument(schema, comparedVersion, field)
     const docNew = editor.state.doc
 
     const c = editor.getHTML()
@@ -77,8 +87,8 @@ export function calculateDecorations (
       return
     }
 
-    const tr = recreateTransform(docOld, docNew)
-    const changeSet = ChangeSet.create(docOld).addSteps(tr.doc, tr.mapping.maps, undefined)
+    const tr = recreateTransform(comparedDoc, docNew)
+    const changeSet = ChangeSet.create(comparedDoc).addSteps(tr.doc, tr.mapping.maps, undefined)
     const changes = changeSet.changes
 
     const decorations: Decoration[] = []
@@ -91,18 +101,18 @@ export function calculateDecorations (
 
     function deleted (prob: any): any {
       const icon = document.createElement('span')
-      icon.className = 'deletion'
+      icon.className = 'text-editor-highlighted-node-delete'
       icon.innerText = prob
       return icon
     }
     changes.forEach((change) => {
       if (change.inserted.length > 0) {
-        decorations.push(Decoration.inline(change.fromB, change.toB, { class: 'diff insertion' }, {}))
+        decorations.push(Decoration.inline(change.fromB, change.toB, { class: 'text-editor-highlighted-node-add' }, {}))
         decorations.push(Decoration.widget(change.fromB, lintIcon('add')))
       }
 
       if (change.deleted.length > 0) {
-        const cont = docOld.textBetween(change.fromA, change.toA)
+        const cont = comparedDoc.textBetween(change.fromA, change.toA)
         decorations.push(Decoration.widget(change.fromB, deleted(cont)))
         decorations.push(Decoration.widget(change.fromB, lintIcon('delete')))
       }

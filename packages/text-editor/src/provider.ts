@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
+import { Doc as Ydoc } from 'yjs'
 import { HocuspocusProvider, type HocuspocusProviderConfiguration } from '@hocuspocus/provider'
 
 export type TiptapCollabProviderConfiguration = HocuspocusProviderConfiguration &
@@ -48,5 +48,26 @@ export class TiptapCollabProvider extends HocuspocusProvider {
   destroy (): void {
     this.configuration.websocketProvider.disconnect()
     super.destroy()
+  }
+}
+
+export const createTiptapCollaborationData = (params: {
+  collaboratorURL: string
+  documentId: string
+  initialContentId: string | undefined
+  token: string
+}): { provider: TiptapCollabProvider, ydoc: Ydoc } => {
+  const ydoc: Ydoc = new Ydoc()
+  return {
+    ydoc,
+    provider: new TiptapCollabProvider({
+      url: params.collaboratorURL,
+      name: params.documentId,
+      document: ydoc,
+      token: params.token,
+      parameters: {
+        initialContentId: params.initialContentId ?? ''
+      }
+    })
   }
 }

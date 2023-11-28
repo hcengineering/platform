@@ -16,9 +16,8 @@
 -->
 <script lang="ts">
   import { onDestroy, setContext } from 'svelte'
-  import * as Y from 'yjs'
 
-  import { TiptapCollabProvider } from '../provider'
+  import { TiptapCollabProvider, createTiptapCollaborationData } from '../provider'
   import { CollaborationIds } from '../types'
 
   export let documentId: string
@@ -36,18 +35,16 @@
     if (provider !== undefined) {
       provider.disconnect()
     }
-    const ydoc: Y.Doc = new Y.Doc()
-    provider = new TiptapCollabProvider({
-      url: collaboratorURL,
-      name: documentId,
-      document: ydoc,
-      token,
-      parameters: {
-        initialContentId: initialContentId ?? ''
-      }
+    const data = createTiptapCollaborationData({
+      collaboratorURL,
+      documentId,
+      initialContentId,
+      token
     })
-    setContext(CollaborationIds.Doc, ydoc)
+    provider = data.provider
+    setContext(CollaborationIds.Doc, data.ydoc)
     setContext(CollaborationIds.Provider, provider)
+
     provider.on('status', (event: any) => {
       console.log('Collaboration:', documentId, event.status) // logs "connected" or "disconnected"
     })
