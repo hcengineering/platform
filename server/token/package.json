@@ -32,7 +32,7 @@
   "dependencies": {
     "@hcengineering/core": "^0.6.28",
     "@hcengineering/platform": "^0.6.9",
-    "jwt-simple": "~0.5.6"
+    "jwt-simple": "^0.5.6"
   },
   "repository": "https://github.com/hcengineering/anticrm",
   "publishConfig": {
