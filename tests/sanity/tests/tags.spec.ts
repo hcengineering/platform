@@ -46,7 +46,7 @@ test.describe('recruit tests', () => {
     // await page.click('button:has-text("Cancel")')
     await page.keyboard.press('Escape')
     // await page.keyboard.press('Escape')
-    // Click button:has-text("Create")
+    // Click button:has-text("Crate")
     await page.click('button:has-text("Create")')
     await page.waitForSelector('form.antiCard', { state: 'detached' })
   })
