@@ -29,10 +29,10 @@ import {
 } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
+import { Preference } from '@hcengineering/preference'
 import { IntegrationType } from '@hcengineering/setting'
 import { AnyComponent } from '@hcengineering/ui'
 import { Writable } from './types'
-import { Preference } from '@hcengineering/preference'
 export * from './types'
 
 /**
@@ -43,19 +43,6 @@ export interface Notification extends AttachedDoc {
   status: NotificationStatus
   text: string
   type: Ref<NotificationType>
-}
-
-/**
- * @public
- */
-export interface EmailNotification extends Doc {
-  sender: string
-  receivers: string[]
-  subject: string
-  text: string
-  html?: string
-  status: 'new' | 'sent' | 'error'
-  error?: string
 }
 
 /**
@@ -238,7 +225,6 @@ const notification = plugin(notificationId, {
   },
   class: {
     Notification: '' as Ref<Class<Notification>>,
-    EmailNotification: '' as Ref<Class<EmailNotification>>,
     NotificationType: '' as Ref<Class<NotificationType>>,
     NotificationProvider: '' as Ref<Class<NotificationProvider>>,
     NotificationSetting: '' as Ref<Class<NotificationSetting>>,

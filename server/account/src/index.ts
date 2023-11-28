@@ -407,6 +407,7 @@ async function sendConfirmation (productId: string, account: Account): Promise<v
   const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
   if (sesURL === undefined || sesURL === '') {
     console.info('Please provide email service url to enable email confirmations.')
+    return
   }
   const front = getMetadata(accountPlugin.metadata.FrontURL)
   if (front === undefined || front === '') {
@@ -443,21 +444,19 @@ async function sendConfirmation (productId: string, account: Account): Promise<v
     subject = 'Confirm your email address to sign up for ezQMS'
   }
 
-  if (sesURL !== undefined) {
-    const to = account.email
-    await fetch(concatLink(sesURL, '/send'), {
-      method: 'post',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        text,
-        html,
-        subject,
-        to
-      })
+  const to = account.email
+  await fetch(concatLink(sesURL, '/send'), {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      text,
+      html,
+      subject,
+      to
     })
-  }
+  })
 }
 
 /**
@@ -475,7 +474,16 @@ export async function signUpJoin (
   console.log(`signup join:${email} ${first} ${last}`)
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(invite, email)
-  await createAcc(db, productId, email, password, first, last, invite?.emailMask === email)
+  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
+  await createAcc(
+    db,
+    productId,
+    email,
+    password,
+    first,
+    last,
+    invite?.emailMask === email || sesURL === undefined || sesURL === ''
+  )
   await assignWorkspace(db, productId, email, workspace.name)
 
   const token = (await login(db, productId, email, password)).token
@@ -540,7 +548,8 @@ export async function createAccount (
   first: string,
   last: string
 ): Promise<LoginInfo> {
-  const account = await createAcc(db, productId, email, password, first, last, false)
+  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
+  const account = await createAcc(db, productId, email, password, first, last, sesURL === undefined || sesURL === '')
 
   const result = {
     endpoint: getEndpoint(),
