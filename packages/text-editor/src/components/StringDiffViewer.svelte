@@ -23,7 +23,7 @@
 
   const handleDiff = (oldValue: string, newValue: string) => Diff[method](oldValue, newValue)
 
-  $: changes = handleDiff(value, compareTo)
+  $: changes = handleDiff(compareTo, value)
 </script>
 
 {#each changes as change}
