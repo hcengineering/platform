@@ -498,4 +498,5 @@ export type FieldIndex<T extends Doc> = {
 export interface IndexingConfiguration<T extends Doc> extends Class<Doc> {
   // Define a list of extra index definitions.
   indexes: (FieldIndex<T> | string)[]
+  searchDisabled?: boolean
 }

@@ -120,6 +120,13 @@ export function isClassIndexable (hierarchy: Hierarchy, c: Ref<Class<Doc>>): boo
     hierarchy.setClassifierProp(c, 'class_indexed', false)
     return false
   }
+
+  const indexMixin = hierarchy.classHierarchyMixin(c, core.mixin.IndexConfiguration)
+  if (indexMixin?.searchDisabled !== undefined && indexMixin?.searchDisabled === true) {
+    hierarchy.setClassifierProp(c, 'class_indexed', false)
+    return false
+  }
+
   const attrs = getFullTextIndexableAttributes(hierarchy, c)
   for (const d of hierarchy.getDescendants(c)) {
     if (hierarchy.isMixin(d)) {

@@ -335,4 +335,5 @@ export class TConfiguration extends TDoc implements Configuration {
 @MMixin(core.mixin.IndexConfiguration, core.class.Class)
 export class TIndexConfiguration<T extends Doc = Doc> extends TClass implements IndexingConfiguration<T> {
   indexes!: FieldIndex<T>[]
+  searchDisabled!: boolean
 }
