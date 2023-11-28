@@ -229,7 +229,8 @@ export type DocData<T extends Doc> = T extends AttachedDoc ? AttachedData<T> : D
 export enum DateRangeMode {
   DATE = 'date',
   TIME = 'time',
-  DATETIME = 'datetime'
+  DATETIME = 'datetime',
+  TIMEONLY = 'timeonly'
 }
 
 /**
