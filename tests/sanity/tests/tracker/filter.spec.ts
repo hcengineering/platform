@@ -109,18 +109,5 @@ test.describe('Tracker filters tests', () => {
 
       await issuesPage.checkFilteredIssueExist(newIssue.title)
     })
-
-    // await page.waitForTimeout(4 * 60 * 1000)
-    // await issuesPage.modelSelectorAll.click()
-    // await issuesPage.createNewIssue(newIssue)
-    // await issuesPage.searchIssueByName(newIssue.title)
-    // await issuesPage.openIssueByName(newIssue.title)
-    //
-    // const issuesDetailsPage = new IssuesDetailsPage(page)
-    // await issuesDetailsPage.checkIssue({
-    //   ...newIssue,
-    //   milestone: 'Milestone',
-    //   estimation: '2h'
-    // })
   })
 })
