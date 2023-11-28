@@ -85,6 +85,7 @@
       )
     } else {
       query.unsubscribe()
+      subIssues = []
     }
   }
 
