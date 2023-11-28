@@ -27,12 +27,12 @@ import {
   Tx,
   TxCUD
 } from '@hcengineering/core'
-import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
+import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
+import { Preference } from '@hcengineering/preference'
 import { IntegrationType } from '@hcengineering/setting'
 import { AnyComponent } from '@hcengineering/ui'
 import { Writable } from './types'
-import { Preference } from '@hcengineering/preference'
 export * from './types'
 
 /**

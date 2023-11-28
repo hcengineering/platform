@@ -475,7 +475,15 @@ export async function signUpJoin (
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(invite, email)
   const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
-  await createAcc(db, productId, email, password, first, last, invite?.emailMask === email || sesURL === undefined || sesURL === '')
+  await createAcc(
+    db,
+    productId,
+    email,
+    password,
+    first,
+    last,
+    invite?.emailMask === email || sesURL === undefined || sesURL === ''
+  )
   await assignWorkspace(db, productId, email, workspace.name)
 
   const token = (await login(db, productId, email, password)).token

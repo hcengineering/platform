@@ -243,7 +243,7 @@ async function notifyByEmail (
   const content = await getContent(doc, senderName, type, control, data)
 
   if (content !== undefined) {
-    return await sendEmailNotification(content.text, content.html, content.subject, receiver.email)
+    await sendEmailNotification(content.text, content.html, content.subject, receiver.email)
   }
 }
 
