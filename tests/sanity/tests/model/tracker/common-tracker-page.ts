@@ -43,23 +43,17 @@ export class CommonTrackerPage extends CalendarPage {
           break
       }
     }
-
-    // console.log(`getDay: ${("0" + timeStr.getDay()).slice(-2)}`)
-    // console.log(`getMonth: ${("0" + timeStr.getMonth()).slice(-2)}`)
-    // console.log(`getFullYear: ${timeStr.getFullYear()}`)
   }
 
   async fillBetweenDate (dateStart: string, dateEnd: string): Promise<void> {
     await this.page
       .locator('div.date-popup-container div.input:first-child span.digit:first-child')
       .click({ delay: 100 })
-    // await this.page.fill('div.date-popup-container div.input:first-child', dateStart, {force: true})
     await this.page.type('div.date-popup-container div.input:first-child', dateStart)
 
     await this.page
       .locator('div.date-popup-container div.input:last-child span.digit:first-child')
       .click({ delay: 100 })
-    // await this.page.fill('div.date-popup-container div.input:last-child', dateEnd, {force: true})
     await this.page.type('div.date-popup-container div.input:last-child', dateEnd)
 
     await this.page.locator('div.date-popup-container button[type="submit"]').click({ delay: 100 })
