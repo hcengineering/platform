@@ -13,13 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup, Doc, Ref, Class, SearchResultDoc } from '@hcengineering/core'
+  import { WithLookup, Doc, Ref, SearchResultDoc } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
-  import presentation, {
+  import {
+    type SearchItem,
+    type ObjectSearchCategory,
+    SearchResult,
     createQuery,
     getClient,
     ActionContext,
-    ObjectSearchCategory
+    searchFor
   } from '@hcengineering/presentation'
   import ui, {
     Button,
@@ -41,14 +44,6 @@
   import { ListView, resizeObserver } from '@hcengineering/ui'
   import ObjectPresenter from './ObjectPresenter.svelte'
   import { createEventDispatcher, tick } from 'svelte'
-
-  import {
-    type SearchSection,
-    type SearchItem,
-    packSearchResultsForListView,
-    doFulltextSearch,
-    MentionResult
-  } from '@hcengineering/text-editor'
 
   import ChevronDown from './icons/ChevronDown.svelte'
   import ChevronUp from './icons/ChevronUp.svelte'
@@ -241,32 +236,12 @@
   }
 
   let items: SearchActionItem[] = []
-  let categories: ObjectSearchCategory[] = []
-
-  client
-    .findAll(presentation.class.ObjectSearchCategory, { context: 'spotlight' })
-    .then(async (results) => {
-      categories = results
-      await updateItems(search, filteredActions)
-    })
-    .catch((e) => {
-      console.error(e)
-    })
 
   async function updateItems (query: string, filteredActions: Array<WithLookup<Action>>): Promise<void> {
-    const classesToSearch: Array<Ref<Class<Doc>>> = []
-    for (const cat of categories) {
-      if (cat.classToSearch !== undefined) {
-        classesToSearch.push(cat.classToSearch)
-      }
-    }
-
-    let sections: SearchSection[] = []
+    let searchItems: SearchItem[] = []
     if (query !== '' && query.indexOf('/') !== 0) {
-      sections = await doFulltextSearch(client, classesToSearch, query, categories)
+      searchItems = await searchFor('spotlight', query)
     }
-
-    const searchItems = packSearchResultsForListView(sections)
     items = packSearchAndActions(searchItems, filteredActions)
   }
 
@@ -393,7 +368,7 @@
             {#if item.item !== undefined}
               <!-- svelte-ignore a11y-click-events-have-key-events -->
               <div class="ap-menuItem withComp actionsSearchItem">
-                <MentionResult value={item.item} />
+                <SearchResult value={item.item} />
               </div>
             {/if}
             {#if item.action !== undefined}

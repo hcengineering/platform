@@ -59,7 +59,7 @@
     return searchPopup?.onKeyDown(ev)
   }
 
-  export function done () {}
+  export function done (): void {}
 
   function updateStyle (): void {
     const rect = clientRect()
@@ -84,7 +84,10 @@
   }
 
   let style = 'visibility: hidden'
-  $: if (popup) updateStyle()
+  $: if (popup !== undefined && popup !== null) {
+    updateStyle()
+  }
+
   let wPopup: number = 0
 </script>
 
