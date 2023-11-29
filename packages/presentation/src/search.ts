@@ -102,11 +102,12 @@ const categoriesByContext = new Map<string, ObjectSearchCategory[]>()
 
 export async function searchFor (context: 'mention' | 'spotlight', query: string): Promise<SearchItem[]> {
   const client = getClient()
-  let categories
-  if (categoriesByContext.get(context) === undefined) {
+  let categories = categoriesByContext.get(context)
+  if (categories === undefined) {
     categories = await client.findAll(plugin.class.ObjectSearchCategory, { context })
     categoriesByContext.set(context, categories)
   }
+
   if (categories === undefined) {
     return []
   }
