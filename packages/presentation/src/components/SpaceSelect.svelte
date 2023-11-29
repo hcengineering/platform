@@ -58,6 +58,7 @@
   export let componentProps: any | undefined = undefined
   export let autoSelect = true
   export let readonly = false
+  export let ignoreFill = false
   export let iconWithEmoji: AnySvelteComponent | Asset | ComponentType | undefined = view.ids.IconWithEmoji
   export let defaultIcon: AnySvelteComponent | Asset | ComponentType = IconFolder
   export let findDefaultSpace: (() => Promise<Space | undefined>) | undefined = undefined
@@ -131,12 +132,14 @@
     icon={selected?.icon === iconWithEmoji && iconWithEmoji ? IconWithEmoji : selected?.icon ?? defaultIcon}
     iconProps={selected?.icon === iconWithEmoji && iconWithEmoji
       ? { icon: selected?.color }
-      : {
-          fill:
-            selected?.color !== undefined
-              ? getPlatformColorDef(selected?.color, $themeStore.dark).icon
-              : getPlatformColorForTextDef(selected?.name ?? '', $themeStore.dark).icon
-        }}
+      : ignoreFill
+        ? undefined
+        : {
+            fill:
+              selected?.color !== undefined
+                ? getPlatformColorDef(selected?.color, $themeStore.dark).icon
+                : getPlatformColorForTextDef(selected?.name ?? '', $themeStore.dark).icon
+          }}
     {size}
     {kind}
     {justify}

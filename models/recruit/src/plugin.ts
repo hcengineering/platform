@@ -115,7 +115,8 @@ export default mergeIds(recruitId, recruit, {
     ApplicationMatchPresenter: '' as AnyComponent,
 
     MatchVacancy: '' as AnyComponent,
-    NotificationApplicantPresenter: '' as AnyComponent
+    NotificationApplicantPresenter: '' as AnyComponent,
+    VacancyEditor: '' as AnyComponent
   },
   template: {
     DefaultVacancy: '' as Ref<ProjectType>
