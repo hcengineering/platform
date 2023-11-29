@@ -52,7 +52,7 @@ jobs:
       - name: Cache node modules
         uses: actions/cache@v3
         env:
-          cache-name: cache-node-modules
+          cache-name: cache-node-platform
         with:
           path: |
             common/temp
