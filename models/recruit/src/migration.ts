@@ -77,6 +77,16 @@ export const recruitOperation: MigrateOperation = {
             }
           }
         }
+      },
+      {
+        state: 'remove-members',
+        func: async (client): Promise<void> => {
+          const ops = new TxOperations(client, core.account.System)
+          const docs = await ops.findAll(recruit.class.Vacancy, { members: { $exists: true, $ne: [] } })
+          for (const d of docs) {
+            await ops.update(d, { members: [] })
+          }
+        }
       }
     ])
   }
