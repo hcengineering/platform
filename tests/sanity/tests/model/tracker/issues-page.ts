@@ -129,4 +129,12 @@ export class IssuesPage extends CommonTrackerPage {
   async checkIssueNotExist (issueName: string): Promise<void> {
     await expect(this.page.locator('tr', { hasText: issueName })).toHaveCount(0)
   }
+
+  async checkFilteredIssueExist (issueName: string): Promise<void> {
+    await expect(this.page.locator('div.row span', { hasText: issueName })).toHaveCount(1)
+  }
+
+  async checkFilteredIssueNotExist (issueName: string): Promise<void> {
+    await expect(this.page.locator('div.row span', { hasText: issueName })).toHaveCount(0)
+  }
 }
