@@ -64,7 +64,7 @@ test.describe('Collaborative test for issue', () => {
     })
   })
 
-  test.skip('Issues status can be changed by another users', async ({ page, browser }) => {
+  test('Issues status can be changed by another users', async ({ page, browser }) => {
     const issue: NewIssue = {
       title: 'Issues status can be changed by another users',
       description: 'Collaborative test for issue'
@@ -105,7 +105,7 @@ test.describe('Collaborative test for issue', () => {
     })
   })
 
-  test.skip('First user change assignee, second user should see assigned issue', async ({ page, browser }) => {
+  test('First user change assignee, second user should see assigned issue', async ({ page, browser }) => {
     const newAssignee: string = 'Dirak Kainin'
     const issue: NewIssue = {
       title: 'First user change assignee, second user should see assigned issue',
