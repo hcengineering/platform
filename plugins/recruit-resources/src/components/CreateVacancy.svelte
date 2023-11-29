@@ -16,15 +16,7 @@
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import contact, { Organization } from '@hcengineering/contact'
   import { UserBox } from '@hcengineering/contact-resources'
-  import core, {
-    Data,
-    fillDefaults,
-    FindResult,
-    generateId,
-    getCurrentAccount,
-    Ref,
-    SortingOrder
-  } from '@hcengineering/core'
+  import core, { Data, fillDefaults, FindResult, generateId, Ref, SortingOrder } from '@hcengineering/core'
   import { Card, createQuery, getClient, InlineAttributeBar, MessageBox } from '@hcengineering/presentation'
   import { Vacancy as VacancyClass } from '@hcengineering/recruit'
   import tags from '@hcengineering/tags'
@@ -176,7 +168,7 @@
         archived: false,
         number: (incResult as any).object.sequence,
         company,
-        members: [getCurrentAccount()._id],
+        members: [],
         type: typeId
       },
       objectId
