@@ -55,6 +55,7 @@ import VacancyList from './components/VacancyList.svelte'
 import VacancyModifiedPresenter from './components/VacancyModifiedPresenter.svelte'
 import VacancyPresenter from './components/VacancyPresenter.svelte'
 import VacancyTemplateEditor from './components/VacancyTemplateEditor.svelte'
+import VacancyEditor from './components/VacancyEditor.svelte'
 import CreateOpinion from './components/review/CreateOpinion.svelte'
 import CreateReview from './components/review/CreateReview.svelte'
 import EditReview from './components/review/EditReview.svelte'
@@ -357,7 +358,8 @@ export default async (): Promise<Resources> => ({
     VacancyTemplateEditor,
 
     MatchVacancy,
-    NotificationApplicantPresenter
+    NotificationApplicantPresenter,
+    VacancyEditor
   },
   completion: {
     ApplicationQuery: async (
