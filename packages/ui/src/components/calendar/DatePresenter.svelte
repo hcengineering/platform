@@ -104,13 +104,17 @@
   {/if}
   {#if value !== null && value !== undefined}
     {#if shouldShowLabel}
-      {new Date(value).getDate()}
-      {getMonthName(new Date(value), 'short')}
-      {#if new Date(value).getFullYear() !== today.getFullYear()}
-        {new Date(value).getFullYear()}
+      {#if mode !== DateRangeMode.TIMEONLY}
+        {new Date(value).getDate()}
+        {getMonthName(new Date(value), 'short')}
+        {#if new Date(value).getFullYear() !== today.getFullYear()}
+          {new Date(value).getFullYear()}
+        {/if}
       {/if}
       {#if withTime}
-        <div class="time-divider" />
+        {#if mode !== DateRangeMode.TIMEONLY}
+          <div class="time-divider" />
+        {/if}
         {new Date(value).getHours().toString().padStart(2, '0')}
         <span class="separator">:</span>
         {new Date(value).getMinutes().toString().padStart(2, '0')}

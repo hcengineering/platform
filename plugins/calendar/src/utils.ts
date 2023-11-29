@@ -57,7 +57,7 @@ function generateDailyValues (
   while (true) {
     if (bySetPos == null || bySetPos.includes(getSetPos(currentDate))) {
       const res = currentDate.getTime()
-      if (res > from && res < to) {
+      if (res >= from && res <= to) {
         values.push(res)
       }
       i++
@@ -66,7 +66,7 @@ function generateDailyValues (
     currentDate.setDate(currentDate.getDate() + (interval ?? 1))
     if (count !== undefined && i === count) break
     if (endDate != null && currentDate.getTime() > endDate) break
-    if (currentDate.getTime() > to) break
+    if (currentDate.getTime() >= to) break
   }
 }
 
@@ -92,7 +92,7 @@ function generateWeeklyValues (
     while (date < end) {
       if ((byDay == null || matchesByDay(date, byDay)) && (bySetPos == null || bySetPos.includes(getSetPos(date)))) {
         const res = date.getTime()
-        if (res > from && res < to) {
+        if (res >= from && res <= to) {
           values.push(res)
         }
         i++
@@ -100,7 +100,7 @@ function generateWeeklyValues (
       date = new Date(date.setDate(date.getDate() + 1))
       if (count !== undefined && i === count) return
       if (endDate != null && date.getTime() > endDate) return
-      if (date.getTime() > to) return
+      if (date.getTime() >= to) return
     }
 
     currentDate = new Date(next)
@@ -172,7 +172,7 @@ function generateMonthlyValues (
         (bySetPos == null || bySetPos.includes(getSetPos(currentDate)))
       ) {
         const res = currentDate.getTime()
-        if (res > from && res < to) {
+        if (res >= from && res <= to) {
           values.push(res)
         }
         i++
@@ -181,7 +181,7 @@ function generateMonthlyValues (
 
       if (count !== undefined && i === count) return
       if (endDate != null && date.getTime() > endDate) return
-      if (date.getTime() > to) return
+      if (date.getTime() >= to) return
     }
     currentDate = new Date(next)
   }
@@ -212,7 +212,7 @@ function generateYearlyValues (
         (bySetPos == null || bySetPos.includes(getSetPos(currentDate)))
       ) {
         const res = currentDate.getTime()
-        if (res > from && res < to) {
+        if (res >= from && res <= to) {
           values.push(res)
         }
         i++
@@ -220,7 +220,7 @@ function generateYearlyValues (
       date = new Date(date.setDate(date.getDate() + 1))
       if (count !== undefined && i === count) return
       if (endDate != null && date.getTime() > endDate) return
-      if (date.getTime() > to) return
+      if (date.getTime() >= to) return
     }
     currentDate = new Date(next)
   }
@@ -310,8 +310,9 @@ export function getAllEvents (events: Event[], from: Timestamp, to: Timestamp): 
       arr.push(instance)
       instancesMap.set(instance.recurringEventId, arr)
     } else {
-      if (from > event.dueDate) continue
-      if (event.date > to) continue
+      if (from >= event.dueDate) continue
+      if (event.date >= to) continue
+
       base.push(event)
     }
   }
@@ -325,7 +326,7 @@ export function getAllEvents (events: Event[], from: Timestamp, to: Timestamp): 
     ...instances.filter((p) => {
       return from <= p.dueDate && p.date <= to && p.isCancelled !== true
     })
-  ]
+  ].map((it) => ({ ...it, date: Math.max(from, it.date), dueDate: Math.min(to, it.dueDate) }))
   res.sort((a, b) => a.date - b.date)
   return res
 }
