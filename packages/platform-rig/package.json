@@ -6,7 +6,8 @@
     "format": ""
   },
   "bin": {
-    "format": "./bin/format.js"
+    "format": "./bin/format.js",
+    "bump-package-version": "./bin/bump-package-version.js"
   },
   "devDependencies": {
     "eslint-config-standard-with-typescript": "^40.0.0",
