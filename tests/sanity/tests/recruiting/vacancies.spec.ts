@@ -4,6 +4,7 @@ import { NavigationMenuPage } from '../model/recruiting/navigation-menu-page'
 import { VacanciesPage } from '../model/recruiting/vacancies-page'
 import { VacancyDetailsPage } from '../model/recruiting/vacancy-details-page'
 import { allure } from 'allure-playwright'
+import { CommonPage } from '../model/common-page'
 
 test.use({
   storageState: PlatformSetting
@@ -32,7 +33,8 @@ test.describe('Vacancy tests', () => {
     // Create Application1
     await page.click('button:has-text("Application")')
     await page.click('form[id="recruit:string:CreateApplication"] [id="vacancy.talant.selector"]')
-    await page.click('button:has-text("P. Alex")')
+
+    await new CommonPage().selectAssignee(page, 'Alex')
     await page.click('form[id="recruit:string:CreateApplication"] button:has-text("Create")')
     await page.waitForSelector('form.antiCard', { state: 'detached' })
 
