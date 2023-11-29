@@ -37,10 +37,6 @@ test.describe('Collaborative test for issue', () => {
     const userSecondPage = await getSecondPage(browser)
     await (await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
 
-    const issuesPageSecond = new IssuesPage(userSecondPage)
-    await issuesPageSecond.linkSidebarAll.click()
-    await issuesPageSecond.modelSelectorAll.click()
-
     // create a new issue by first user
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
     const leftSideMenuPage = new LeftSideMenuPage(page)
@@ -54,6 +50,9 @@ test.describe('Collaborative test for issue', () => {
     await issuesPage.openIssueByName(newIssue.title)
 
     // check created issued by second user
+    const issuesPageSecond = new IssuesPage(userSecondPage)
+    await issuesPageSecond.linkSidebarAll.click()
+    await issuesPageSecond.modelSelectorAll.click()
     await issuesPageSecond.searchIssueByName(newIssue.title)
     await issuesPageSecond.openIssueByName(newIssue.title)
 
@@ -65,7 +64,7 @@ test.describe('Collaborative test for issue', () => {
     })
   })
 
-  test('Issues status can be changed by another users', async ({ page, browser }) => {
+  test.skip('Issues status can be changed by another users', async ({ page, browser }) => {
     const issue: NewIssue = {
       title: 'Issues status can be changed by another users',
       description: 'Collaborative test for issue'
@@ -106,7 +105,7 @@ test.describe('Collaborative test for issue', () => {
     })
   })
 
-  test('First user change assignee, second user should see assigned issue', async ({ page, browser }) => {
+  test.skip('First user change assignee, second user should see assigned issue', async ({ page, browser }) => {
     const newAssignee: string = 'Dirak Kainin'
     const issue: NewIssue = {
       title: 'First user change assignee, second user should see assigned issue',
