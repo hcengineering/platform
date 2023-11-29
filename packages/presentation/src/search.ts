@@ -14,12 +14,11 @@
 //
 
 import type { Class, Ref, Doc, SearchResultDoc, TxOperations } from '@hcengineering/core'
-import { type ObjectSearchCategory } from '@hcengineering/presentation'
+import { type ObjectSearchCategory } from './types'
+import plugin from './plugin'
+import { getClient } from './utils'
 
-/**
- * @public
- */
-export interface SearchSection {
+interface SearchSection {
   category: ObjectSearchCategory
   items: SearchResultDoc[]
 }
@@ -33,7 +32,7 @@ export interface SearchItem {
   category: ObjectSearchCategory
 }
 
-export function findCategoryByClass (
+function findCategoryByClass (
   categories: ObjectSearchCategory[],
   _class: Ref<Class<Doc>>
 ): ObjectSearchCategory | undefined {
@@ -45,7 +44,7 @@ export function findCategoryByClass (
   return undefined
 }
 
-export function packSearchResultsForListView (sections: SearchSection[]): SearchItem[] {
+function packSearchResultsForListView (sections: SearchSection[]): SearchItem[] {
   let results: SearchItem[] = []
   for (const section of sections) {
     const category = section.category
@@ -62,7 +61,7 @@ export function packSearchResultsForListView (sections: SearchSection[]): Search
   return results
 }
 
-export async function doFulltextSearch (
+async function doFulltextSearch (
   client: TxOperations,
   classes: Array<Ref<Class<Doc>>>,
   query: string,
@@ -97,4 +96,28 @@ export async function doFulltextSearch (
   }
 
   return sections
+}
+
+const categoriesByContext = new Map<string, ObjectSearchCategory[]>()
+
+export async function searchFor (context: 'mention' | 'spotlight', query: string): Promise<SearchItem[]> {
+  const client = getClient()
+  let categories
+  if (categoriesByContext.get(context) === undefined) {
+    categories = await client.findAll(plugin.class.ObjectSearchCategory, { context })
+    categoriesByContext.set(context, categories)
+  }
+  if (categories === undefined) {
+    return []
+  }
+
+  const classesToSearch: Array<Ref<Class<Doc>>> = []
+  for (const cat of categories) {
+    if (cat.classToSearch !== undefined) {
+      classesToSearch.push(cat.classToSearch)
+    }
+  }
+
+  const sections = await doFulltextSearch(client, classesToSearch, query, categories)
+  return packSearchResultsForListView(sections)
 }

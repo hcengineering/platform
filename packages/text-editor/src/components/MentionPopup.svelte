@@ -16,30 +16,12 @@
 <script lang="ts">
   import { Label, ListView, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import presentation, { getClient, type ObjectSearchCategory } from '@hcengineering/presentation'
-
-  import { Class, Ref, Doc, SearchResultDoc } from '@hcengineering/core'
-
-  import { type SearchItem, packSearchResultsForListView, doFulltextSearch } from '../search'
-
-  import MentionResult from './MentionResult.svelte'
+  import presentation, { type SearchItem, SearchResult, searchFor } from '@hcengineering/presentation'
+  import { SearchResultDoc } from '@hcengineering/core'
 
   export let query: string = ''
 
   let items: SearchItem[] = []
-  let categories: ObjectSearchCategory[] = []
-
-  const client = getClient()
-
-  client
-    .findAll(presentation.class.ObjectSearchCategory, { context: 'mention' })
-    .then(async (results) => {
-      categories = results
-      await updateItems(query)
-    })
-    .catch((e) => {
-      console.error(e)
-    })
 
   const dispatch = createEventDispatcher()
 
@@ -86,15 +68,7 @@
   }
 
   async function updateItems (query: string): Promise<void> {
-    const classesToSearch: Array<Ref<Class<Doc>>> = []
-    for (const cat of categories) {
-      if (cat.classToSearch !== undefined) {
-        classesToSearch.push(cat.classToSearch)
-      }
-    }
-
-    const sections = await doFulltextSearch(client, classesToSearch, query, categories)
-    items = packSearchResultsForListView(sections)
+    items = await searchFor('mention', query)
   }
   $: void updateItems(query)
 </script>
@@ -128,7 +102,7 @@
                   dispatchItem(doc)
                 }}
               >
-                <MentionResult value={doc} />
+                <SearchResult value={doc} />
               </div>
             </svelte:fragment>
           </ListView>
