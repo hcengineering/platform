@@ -26,7 +26,7 @@ test.describe('Tracker issue tests', () => {
       createLabel: true,
       labels: `CREATE-ISSUE-${generateId()}`,
       component: 'No component',
-      estimation: '2',
+      estimation: '2.5',
       milestone: 'No Milestone',
       duedate: 'today',
       filePath: 'cat.jpeg'
@@ -45,7 +45,7 @@ test.describe('Tracker issue tests', () => {
     await issuesDetailsPage.checkIssue({
       ...newIssue,
       milestone: 'Milestone',
-      estimation: '2h'
+      estimation: '2h 30m'
     })
   })
 

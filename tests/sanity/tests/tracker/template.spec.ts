@@ -26,7 +26,7 @@ test.describe('Tracker template tests', () => {
       createLabel: true,
       labels: `CREATE-TEMPLATE-${generateId()}`,
       component: 'No component',
-      estimation: '2',
+      estimation: '2.5',
       milestone: 'No Milestone'
     }
 
@@ -43,7 +43,7 @@ test.describe('Tracker template tests', () => {
     const templateDetailsPage = new TemplateDetailsPage(page)
     await templateDetailsPage.checkTemplate({
       ...newTemplate,
-      estimation: '2h'
+      estimation: '2h 30m'
     })
   })
 

@@ -238,6 +238,7 @@
     "TimeSpendReportDescription": "Описание",
     "TimeSpendValue": "{value}d",
     "TimeSpendHours": "{value}h",
+    "TimeSpendHoursAndMinutes": "{hours}h{minutes, plural, =0 {} other { #m}}",
     "ChildEstimation": "Оценка подзадач",
     "ChildReportedTime": "Время подзадач",
     "CapacityValue": "из {value}d",

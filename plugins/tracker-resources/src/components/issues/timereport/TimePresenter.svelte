@@ -30,13 +30,25 @@
   on:click
   use:tooltip={{
     component: Label,
-    props: { label: tracker.string.TimeSpendHours, params: { value: floorFractionDigits(value, 2) } }
+    props: {
+      label: tracker.string.TimeSpendHoursAndMinutes,
+      params: {
+        hours: Math.floor(value),
+        minutes: floorFractionDigits((value % 1) * 60, 0)
+      }
+    }
   }}
 >
   {#if noSymbol}
     {floorFractionDigits(value, 2)}
   {:else if value > 0 && value < 8}
-    <Label label={tracker.string.TimeSpendHours} params={{ value: floorFractionDigits(value, 2) }} />
+    <Label
+      label={tracker.string.TimeSpendHoursAndMinutes}
+      params={{
+        hours: Math.floor(value),
+        minutes: floorFractionDigits((value % 1) * 60, 0)
+      }}
+    />
   {:else}
     <Label label={tracker.string.TimeSpendValue} params={{ value: floorFractionDigits(value / 8, 3) }} />
   {/if}
