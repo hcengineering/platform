@@ -38,7 +38,9 @@ export class ModifiedMiddleware extends BaseMiddleware implements Middleware {
     if (tx.modifiedBy !== core.account.System && ctx.userEmail !== systemAccountEmail) {
       tx.modifiedOn = Date.now()
       tx.createdOn = tx.createdOn ?? tx.modifiedOn
-      if (tx._class === core.class.TxCollectionCUD) { (tx as TxCollectionCUD<any, any>).tx.modifiedOn = Date.now() }
+      if (tx._class === core.class.TxCollectionCUD) {
+        ;(tx as TxCollectionCUD<any, any>).tx.modifiedOn = Date.now()
+      }
     }
     return await this.provideTx(ctx, tx)
   }
