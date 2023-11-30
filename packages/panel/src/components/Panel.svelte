@@ -177,6 +177,10 @@
     </Scroller>
   </svelte:fragment>
 
+  <svelte:fragment slot="post-utils">
+    <slot name="post-utils" />
+  </svelte:fragment>
+
   {#if $deviceInfo.isMobile}
     <div bind:this={content} class="popupPanel-body__mobile-content clear-mins" class:max={useMaxWidth}>
       <slot />
