@@ -1,7 +1,7 @@
 import Table from '@tiptap/extension-table'
-import TableCell from '@tiptap/extension-table-cell'
+// import TableCell from '@tiptap/extension-table-cell'
 import TableHeader from '@tiptap/extension-table-header'
-import TableRow from '@tiptap/extension-table-row'
+// import TableRow from '@tiptap/extension-table-row'
 
 import TaskItem from '@tiptap/extension-task-item'
 import TaskList from '@tiptap/extension-task-list'
@@ -23,6 +23,8 @@ import { NodeUuidExtension } from './extension/nodeUuid'
 import { SvelteRenderer } from './node-view'
 import { CodemarkExtension } from './extension/codemark'
 import type { SuggestionKeyDownProps, SuggestionProps } from './extension/suggestion'
+
+import { TableCell, TableRow } from './extension/table'
 
 export const tableExtensions = [
   Table.configure({

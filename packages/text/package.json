@@ -47,7 +47,6 @@
     "@tiptap/extension-task-list": "^2.1.12",
     "@tiptap/extension-typography": "^2.1.12",
     "@tiptap/suggestion": "^2.1.12",
-    "@tiptap/prosemirror-tables": "^1.1.4",
     "prosemirror-model": "^1.19.2",
     "yjs": "^13.5.52",
     "y-prosemirror": "^1.2.1"
