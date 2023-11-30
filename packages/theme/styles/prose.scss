@@ -104,6 +104,15 @@ table.proseTable {
     .table-col-handle,
     .table-row-handle {
       cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      svg {
+        color: var(--theme-button-contrast-hovered);
+        opacity: 0;
+        z-index: 120;
+      }
 
       &__selected {
         &::before {
@@ -119,6 +128,11 @@ table.proseTable {
           left: var(--table-selection-border-indent);
           right: var(--table-selection-border-indent);
         }
+
+        svg {
+          color: white;
+          opacity: 1;
+        }
       }
     }
 
@@ -133,6 +147,8 @@ table.proseTable {
         &:not(.table-col-handle__selected) {
           background-color: var(--theme-button-hovered);
         }
+
+        svg { opacity: 1; }
       }
 
       &__selected {
@@ -151,9 +167,17 @@ table.proseTable {
       top: 0;
       left: -1.25rem;
 
+      svg {
+        transform: rotate(90deg);
+      }
+
       &:hover {
         &:not(.table-row-handle__selected) {
           background-color: var(--theme-button-hovered);
+        }
+
+        svg {
+          opacity: 1;
         }
       }
 

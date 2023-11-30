@@ -19,7 +19,7 @@ import { EditorState, Plugin, PluginKey, Selection } from '@tiptap/pm/state'
 import { CellSelection, TableMap } from '@tiptap/pm/tables'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 
-import { addSvg } from './icons'
+import { addSvg, handleSvg } from './icons'
 import { TableNodeLocation } from './types'
 import { insertColumn, insertRow, findTable, isColumnSelected, isRowSelected, selectColumn, selectRow } from './utils'
 
@@ -88,6 +88,7 @@ const columnHandlerDecoration = (state: EditorState, table: TableNodeLocation, e
     if (isColumnSelected(col, selection)) {
       handle.classList.add('table-col-handle__selected')
     }
+    handle.innerHTML = handleSvg
     handle.addEventListener('mousedown', e => handleColHandleMouseDown(col, table, e, editor))
     decorations.push(Decoration.widget(pos, handle))
   }
@@ -110,22 +111,22 @@ const columnInsertDecoration = (state: EditorState, table: TableNodeLocation, ed
     const show = (col < width - 1) && !isColumnSelected(col, selection) && !isColumnSelected(col + 1, selection)
 
     if (show) {
-      const dot = document.createElement('div')
-      dot.classList.add('table-col-insert')
+      const insert = document.createElement('div')
+      insert.classList.add('table-col-insert')
 
       const button = document.createElement('button')
       button.className = 'table-insert-button'
       button.innerHTML = addSvg
       button.addEventListener('mousedown', e => handleColInsertMouseDown(col, table, e, editor))
-      dot.appendChild(button)
+      insert.appendChild(button)
 
       const marker = document.createElement('div')
       marker.className = 'table-insert-marker'
       marker.style.height = tableHeightPx + 'px'
-      dot.appendChild(marker)
+      insert.appendChild(marker)
 
       const pos = getTableCellWidgetDecorationPos(table, tableMap, col)
-      decorations.push(Decoration.widget(pos, dot))
+      decorations.push(Decoration.widget(pos, insert))
     }
   }
 
@@ -160,6 +161,7 @@ const rowHandlerDecoration = (state: EditorState, table: TableNodeLocation, edit
     if (isRowSelected(row, selection)) {
       handle.classList.add('table-row-handle__selected')
     }
+    handle.innerHTML = handleSvg
     handle.addEventListener('mousedown', e => handleRowHandleMouseDown(row, table, e, editor))
     decorations.push(Decoration.widget(pos, handle))
   }
