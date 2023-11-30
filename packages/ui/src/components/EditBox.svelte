@@ -67,7 +67,7 @@
     phTraslate = res
   })
 
-  function handleComputeSize (t: HTMLInputElement | EventTarget | null): void {
+  function computeSize (t: HTMLInputElement | EventTarget | null): void {
     if (t == null) {
       return
     }
@@ -89,7 +89,7 @@
   function handleInput (ev: Event): void {
     const t: HTMLInputElement | EventTarget | null = ev.target
     if (t !== null && t !== undefined) {
-      handleComputeSize(t)
+      computeSize(t)
     }
 
     dispatch('input')
@@ -105,11 +105,11 @@
       input.select()
       select = false
     }
-    handleComputeSize(input)
+    computeSize(input)
   })
 
   afterUpdate(() => {
-    handleComputeSize(input)
+    computeSize(input)
   })
 
   export function focusInput (): void {
