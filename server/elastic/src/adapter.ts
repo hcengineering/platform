@@ -27,7 +27,13 @@ import {
   SearchQuery,
   SearchOptions
 } from '@hcengineering/core'
-import type { EmbeddingSearchOption, FullTextAdapter, SearchStringResult, IndexedDoc } from '@hcengineering/server-core'
+import type {
+  EmbeddingSearchOption,
+  FullTextAdapter,
+  SearchStringResult,
+  SearchScoring,
+  IndexedDoc
+} from '@hcengineering/server-core'
 
 import { Client, errors as esErr } from '@elastic/elasticsearch'
 import { Domain } from 'node:domain'
@@ -105,24 +111,50 @@ class ElasticAdapter implements FullTextAdapter {
     return this._metrics
   }
 
-  async searchString (query: SearchQuery, options: SearchOptions): Promise<SearchStringResult> {
+  async searchString (
+    query: SearchQuery,
+    options: SearchOptions & { scoring?: SearchScoring[] }
+  ): Promise<SearchStringResult> {
     try {
       const elasticQuery: any = {
         query: {
-          bool: {
-            must: {
-              simple_query_string: {
-                query: query.query,
-                analyze_wildcard: true,
-                flags: 'OR|PREFIX|PHRASE|FUZZY|NOT|ESCAPE',
-                default_operator: 'and',
-                fields: [
-                  'searchTitle^15', // boost
-                  'searchShortTitle^15',
-                  '*' // Search in all other fields without a boost
-                ]
+          function_score: {
+            query: {
+              bool: {
+                must: {
+                  simple_query_string: {
+                    query: query.query,
+                    analyze_wildcard: true,
+                    flags: 'OR|PREFIX|PHRASE|FUZZY|NOT|ESCAPE',
+                    default_operator: 'and',
+                    fields: [
+                      'searchTitle^50', // boost
+                      'searchShortTitle^50',
+                      '*' // Search in all other fields without a boost
+                    ]
+                  }
+                }
               }
-            }
+            },
+            functions: [
+              {
+                script_score: {
+                  script: {
+                    source: "Math.max(0, ((doc['modifiedOn'].value / 1000 - 1672531200) / 2592000))"
+                    /*
+                      Give more score for more recent objects. 1672531200 is the start of 2023
+                      2592000 is a month. The idea is go give 1 point for each month. For objects
+                      older than Jan 2023 it will give just zero.
+                      Better approach is to use gauss function, need to investigate futher how be
+                      map modifiedOn, need to tell elastic that this is a date.
+
+                      But linear function is perfect to conduct an experiment
+                    */
+                  }
+                }
+              }
+            ],
+            boost_mode: 'sum'
           }
         },
         size: options.limit ?? DEFAULT_LIMIT
@@ -146,7 +178,21 @@ class ElasticAdapter implements FullTextAdapter {
       }
 
       if (filter.length > 0) {
-        elasticQuery.query.bool.filter = filter
+        elasticQuery.query.function_score.query.bool.filter = filter
+      }
+
+      if (options.scoring !== undefined) {
+        const scoringTerms: any[] = options.scoring.map((scoringOption): any => {
+          return {
+            term: {
+              [`${scoringOption.attr}.keyword`]: {
+                value: scoringOption.value,
+                boost: scoringOption.boost
+              }
+            }
+          }
+        })
+        elasticQuery.query.function_score.query.bool.should = scoringTerms
       }
 
       const result = await this.client.search({

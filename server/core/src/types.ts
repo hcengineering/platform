@@ -189,7 +189,10 @@ export interface FullTextAdapter {
   remove: (id: Ref<Doc>[]) => Promise<void>
   updateMany: (docs: IndexedDoc[]) => Promise<TxResult[]>
 
-  searchString: (query: SearchQuery, options: SearchOptions) => Promise<SearchStringResult>
+  searchString: (
+    query: SearchQuery,
+    options: SearchOptions & { scoring?: SearchScoring[] }
+  ) => Promise<SearchStringResult>
 
   search: (
     _classes: Ref<Class<Doc>>[],
@@ -353,11 +356,21 @@ export type ClassSearchConfigProperty = string | { tmpl?: string, props: ClassSe
 /**
  * @public
  */
+export interface SearchScoring {
+  attr: string
+  value: string
+  boost: number
+}
+
+/**
+ * @public
+ */
 export interface ClassSearchConfig {
   icon?: Asset
   iconConfig?: { component: any, props: ClassSearchConfigProps[] }
   title: ClassSearchConfigProperty
   shortTitle?: ClassSearchConfigProperty
+  scoring?: SearchScoring[]
 }
 
 /**
