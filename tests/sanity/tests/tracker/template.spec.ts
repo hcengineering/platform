@@ -26,7 +26,7 @@ test.describe('Tracker template tests', () => {
       createLabel: true,
       labels: `CREATE-TEMPLATE-${generateId()}`,
       component: 'No component',
-      estimation: '2.5',
+      estimation: '2',
       milestone: 'No Milestone'
     }
 
@@ -43,13 +43,13 @@ test.describe('Tracker template tests', () => {
     const templateDetailsPage = new TemplateDetailsPage(page)
     await templateDetailsPage.checkTemplate({
       ...newTemplate,
-      estimation: '2h 30m'
+      estimation: '2h'
     })
   })
 
   test('Edit a Template', async ({ page }) => {
     const newTemplate: NewIssue = {
-      title: 'Template for edit',
+      title: `Template for edit-${generateId()}`,
       description: 'Created template for edit'
     }
 
@@ -70,6 +70,7 @@ test.describe('Tracker template tests', () => {
     await trackerNavigationMenuPage.buttonTemplates.click()
 
     const templatePage = new TemplatePage(page)
+    await templatePage.createNewTemplate(newTemplate)
     await templatePage.openTemplate(newTemplate.title)
 
     const templateDetailsPage = new TemplateDetailsPage(page)
@@ -86,5 +87,33 @@ test.describe('Tracker template tests', () => {
     await templateDetailsPage.checkCommentExist('Appleseed John changed assignee to Dirak Kainin')
     await templateDetailsPage.checkCommentExist('Appleseed John changed estimation to 1d')
     await templateDetailsPage.checkCommentExist('Appleseed John changed due date')
+
+    const estimations = new Map([
+      ['0', '0h'],
+      ['1', '1h'],
+      ['1.25', '1h 15m'],
+      ['1.259', '1h 15m'],
+      ['1.26', '1h 15m'],
+      ['1.27', '1h 16m'],
+      ['1.5', '1h 30m'],
+      ['1.75', '1h 45m'],
+      ['2', '2h'],
+      ['7', '7h'],
+      ['8', '1d'],
+      ['9', '1d 1h'],
+      ['9.5', '1d 1h 30m']
+    ])
+
+    for (const [input, expected] of estimations.entries()) {
+      await templateDetailsPage.editTemplate({
+        estimation: input
+      })
+      await templateDetailsPage.checkTemplate({
+        ...newTemplate,
+        ...editTemplate,
+        estimation: expected
+      })
+      await templateDetailsPage.checkCommentExist(`Appleseed John changed estimation to ${expected}`)
+    }
   })
 })

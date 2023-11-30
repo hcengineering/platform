@@ -269,9 +269,7 @@ export default mergeIds(trackerId, tracker, {
     TimeSpendReportValue: '' as IntlString,
     TimeSpendReportDescription: '' as IntlString,
     TimeSpendValue: '' as IntlString,
-    // TODO: Not used anymore. Should we drop it?
-    TimeSpendHours: '' as IntlString,
-    TimeSpendHoursAndMinutes: '' as IntlString,
+    TimeSpendHumanValue: '' as IntlString,
 
     ChildEstimation: '' as IntlString,
     ChildReportedTime: '' as IntlString,

@@ -13,13 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { floorFractionDigits, Label, tooltip } from '@hcengineering/ui'
+  import { Label, tooltip } from '@hcengineering/ui'
   import tracker from '../../../plugin'
 
   export let id: string | undefined = undefined
   export let kind: 'link' | undefined = undefined
   export let value: number
-  export let noSymbol: boolean = false
+
+  // TODO: Make configurable?
+  const hoursInWorkingDay = 8
+
+  $: days = Math.floor(value / hoursInWorkingDay)
+  $: hours = Math.floor(value % hoursInWorkingDay)
+  $: minutes = Math.floor((value % 1) * 60)
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -31,27 +37,15 @@
   use:tooltip={{
     component: Label,
     props: {
-      label: tracker.string.TimeSpendHoursAndMinutes,
-      params: {
-        hours: Math.floor(value),
-        minutes: floorFractionDigits((value % 1) * 60, 0)
-      }
+      label: tracker.string.TimeSpendHumanValue,
+      params: { days, hours, minutes }
     }
   }}
 >
-  {#if noSymbol}
-    {floorFractionDigits(value, 2)}
-  {:else if value > 0 && value < 8}
-    <Label
-      label={tracker.string.TimeSpendHoursAndMinutes}
-      params={{
-        hours: Math.floor(value),
-        minutes: floorFractionDigits((value % 1) * 60, 0)
-      }}
-    />
-  {:else}
-    <Label label={tracker.string.TimeSpendValue} params={{ value: floorFractionDigits(value / 8, 3) }} />
-  {/if}
+  <Label
+    label={tracker.string.TimeSpendHumanValue}
+    params={{ days, hours, minutes }}
+  />
 </span>
 
 <style lang="scss">

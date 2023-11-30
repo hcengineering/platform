@@ -26,7 +26,7 @@ test.describe('Tracker issue tests', () => {
       createLabel: true,
       labels: `CREATE-ISSUE-${generateId()}`,
       component: 'No component',
-      estimation: '2.5',
+      estimation: '2',
       milestone: 'No Milestone',
       duedate: 'today',
       filePath: 'cat.jpeg'
@@ -45,7 +45,7 @@ test.describe('Tracker issue tests', () => {
     await issuesDetailsPage.checkIssue({
       ...newIssue,
       milestone: 'Milestone',
-      estimation: '2h 30m'
+      estimation: '2h'
     })
   })
 
@@ -83,5 +83,32 @@ test.describe('Tracker issue tests', () => {
       ...editIssue,
       estimation: '1d'
     })
+
+    const estimations = new Map([
+      ['0', '0h'],
+      ['1', '1h'],
+      ['1.25', '1h 15m'],
+      ['1.259', '1h 15m'],
+      ['1.26', '1h 15m'],
+      ['1.27', '1h 16m'],
+      ['1.5', '1h 30m'],
+      ['1.75', '1h 45m'],
+      ['2', '2h'],
+      ['7', '7h'],
+      ['8', '1d'],
+      ['9', '1d 1h'],
+      ['9.5', '1d 1h 30m']
+    ])
+
+    for (const [input, expected] of estimations.entries()) {
+      await issuesDetailsPage.editIssue({
+        estimation: input
+      })
+      await issuesDetailsPage.checkIssue({
+        ...newIssue,
+        ...editIssue,
+        estimation: expected
+      })
+    }
   })
 })

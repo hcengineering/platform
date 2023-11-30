@@ -238,7 +238,7 @@
     "TimeSpendReportDescription": "Description",
     "TimeSpendValue": "{value}d",
     "TimeSpendHours": "{value}h",
-    "TimeSpendHoursAndMinutes": "{hours}h{minutes, plural, =0 {} other { #m}}",
+    "TimeSpendHumanValue": "{days, plural, =0 {{hours, plural, =0 {{minutes, plural, =0 {0h} other {}}} other {}}} other {#d}}{hours, plural, =0 {} other { #h}}{minutes, plural, =0 {} other { #m}}",
     "ChildEstimation": "Subissues Estimation",
     "ChildReportedTime": "Subissues Time",
     "CapacityValue": "of {value}d",
