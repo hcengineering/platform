@@ -198,6 +198,7 @@
         />
       {/if}
     </div>
+    <slot name="post-utils" />
   </div>
   <div class="popupPanel-body {$deviceInfo.isMobile ? 'mobile' : 'main'}" class:asideShown>
     {#if $deviceInfo.isMobile}
