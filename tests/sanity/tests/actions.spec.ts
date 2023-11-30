@@ -53,7 +53,12 @@ test.describe('actions tests', () => {
     await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit/talents`)
 
     await page.press('body', 'Meta+k')
-    await page.fill('[placeholder="Search\\ or\\ run\\ a\\ command\\.\\.\\."]', 'go to')
+
+    await expect(page.locator('input.actionsInput')).toBeVisible()
+    await expect(page.locator('div.actionsitem div', { hasText: 'Merge contacts' })).toBeVisible()
+
+    await page.click('div.actionsHeader input.actionsInput')
+    await page.type('div.actionsHeader input.actionsInput', 'go to ')
     expect(await page.locator('div.selectPopup :text("Go To Applications")').count()).toBe(1)
     await page.click('div.selectPopup :text("Go To Applications")')
 
