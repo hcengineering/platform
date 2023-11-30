@@ -42,6 +42,8 @@ const object: AttachedData<Issue> = {
 
 export interface IssueOptions {
   count: number // how many issues to add
+  minusDay?: number,
+  title?: string
 }
 
 export async function generateIssues (
@@ -59,9 +61,14 @@ export async function generateIssues (
     (p) => p._id
   )
 
+  const modifiedOn = new Date()
+  if (options.minusDay !== undefined && options.minusDay !== 0) {
+    modifiedOn.setDate(modifiedOn.getDate() - options.minusDay)
+  }
+
   for (let index = 0; index < options.count; index++) {
     console.log(`Generating issue ${index + 1}...`)
-    await genIssue(client, statuses)
+    await genIssue(client, statuses, modifiedOn, options.title)
   }
 
   await connection.close()
@@ -70,7 +77,7 @@ export async function generateIssues (
   console.info(metricsToString(ctx.metrics, 'Client', 70))
 }
 
-async function genIssue (client: TxOperations, statuses: Ref<IssueStatus>[]): Promise<void> {
+async function genIssue (client: TxOperations, statuses: Ref<IssueStatus>[], modifiedOn: Date, title?: string): Promise<void> {
   const lastOne = await client.findOne<Issue>(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
   const incResult = await client.updateDoc(
     tracker.class.Project,
@@ -81,8 +88,9 @@ async function genIssue (client: TxOperations, statuses: Ref<IssueStatus>[]): Pr
     },
     true
   )
+
   const value: AttachedData<Issue> = {
-    title: faker.commerce.productName(),
+    title: title ? title : faker.commerce.productName(),
     description: faker.lorem.paragraphs(),
     assignee: object.assignee,
     component: object.component,
@@ -109,7 +117,8 @@ async function genIssue (client: TxOperations, statuses: Ref<IssueStatus>[]): Pr
     tracker.class.Issue,
     'subIssues',
     value,
-    objectId
+    objectId,
+    modifiedOn.getTime()
   )
   objectId = generateId()
 }

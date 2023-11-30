@@ -32,6 +32,12 @@ if (minioEndpoint === undefined) {
   process.exit(1)
 }
 
+if (process.env.MINIO_PORT === undefined) {
+  console.error('please provide minio port')
+  process.exit(1)
+}
+const minioPort = Number.parseInt(process.env.MINIO_PORT)
+
 const minioAccessKey = process.env.MINIO_ACCESS_KEY
 if (minioAccessKey === undefined) {
   console.error('please provide minio access key')
@@ -46,7 +52,7 @@ if (minioSecretKey === undefined) {
 
 const minio = new MinioService({
   endPoint: minioEndpoint,
-  port: 9000,
+  port: minioPort,
   useSSL: false,
   accessKey: minioAccessKey,
   secretKey: minioSecretKey
@@ -60,6 +66,8 @@ program
   .description('generate a bunch of random candidates with attachemnts and comments or issues')
   .option('-r, --random', 'generate random ids. So every call will add count <count> more candidates.', false)
   .option('-l, --lite', 'use same pdf and same account for applicant and candidates', false)
+  .option('-m, --minusDay <value>', 'minus days for the modifiedOn issue', '0')
+  .option('-t, --title <value>', 'issue title', undefined)
   .action(async (genType: string, workspace: string, productId: string, count: number, cmd) => {
     switch (genType) {
       case 'recruit': {
@@ -85,7 +93,9 @@ program
       }
       case 'issue': {
         await generateIssues(transactorUrl, getWorkspaceId(workspace, productId), {
-          count
+          count,
+          minusDay: cmd.minusDay as number,
+          title: cmd.title
         })
         return
       }
