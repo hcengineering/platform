@@ -15,7 +15,7 @@ test.describe('Tracker filters tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test.skip('Modified date', async ({ page }) => {
+  test('Modified date', async ({ page }) => {
     const newIssue: NewIssue = {
       title: `Issue for the Modified filter-${generateId()}`,
       description: 'Issue for the Modified filter',
