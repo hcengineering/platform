@@ -84,7 +84,16 @@
     } else {
       target.style.width = Math.max(text.clientWidth, 50) + 'px'
     }
+  }
+
+  function handleInput (ev: Event): void {
+    const t: HTMLInputElement | EventTarget | null = ev.target
+    if (t !== null && t !== undefined) {
+      computeSize(t)
+    }
+
     dispatch('input')
+    dispatch('value', value)
   }
 
   onMount(() => {
@@ -168,9 +177,7 @@
         bind:value
         placeholder={phTraslate}
         {style}
-        on:input={(ev) => {
-          computeSize(ev.target)
-        }}
+        on:input={handleInput}
         on:change
         on:keydown
         on:keypress
@@ -185,9 +192,7 @@
         bind:value
         placeholder={phTraslate}
         {style}
-        on:input={(ev) => {
-          computeSize(ev.target)
-        }}
+        on:input={handleInput}
         on:change
         on:keydown
         on:keypress
@@ -201,9 +206,7 @@
         bind:value
         placeholder={phTraslate}
         {style}
-        on:input={(ev) => {
-          computeSize(ev.target)
-        }}
+        on:input={handleInput}
         on:change
         on:keydown
         on:keypress
