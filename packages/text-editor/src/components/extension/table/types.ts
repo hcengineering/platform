@@ -1,4 +1,3 @@
-<!--
 //
 // Copyright © 2023 Hardcore Engineering Inc.
 //
@@ -13,15 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
--->
-<script lang="ts">
-  import { getNodeViewContext } from './context'
 
-  export let as = 'div'
+import { type Node as ProseMirrorNode } from '@tiptap/pm/model'
 
-  const { onDragStart } = getNodeViewContext()
-</script>
-
-<svelte:element this={as} data-node-view-wrapper="" role="none" on:dragstart={onDragStart} {...$$restProps}>
-  <slot />
-</svelte:element>
+export interface TableNodeLocation {
+  pos: number
+  start: number
+  node: ProseMirrorNode
+}
