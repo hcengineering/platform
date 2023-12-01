@@ -42,7 +42,7 @@ const object: AttachedData<Issue> = {
 
 export interface IssueOptions {
   count: number // how many issues to add
-  minusDay?: number,
+  minusDay?: number
   title?: string
 }
 
@@ -77,7 +77,12 @@ export async function generateIssues (
   console.info(metricsToString(ctx.metrics, 'Client', 70))
 }
 
-async function genIssue (client: TxOperations, statuses: Ref<IssueStatus>[], modifiedOn: Date, title?: string): Promise<void> {
+async function genIssue (
+  client: TxOperations,
+  statuses: Ref<IssueStatus>[],
+  modifiedOn: Date,
+  title?: string
+): Promise<void> {
   const lastOne = await client.findOne<Issue>(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
   const incResult = await client.updateDoc(
     tracker.class.Project,
@@ -90,7 +95,7 @@ async function genIssue (client: TxOperations, statuses: Ref<IssueStatus>[], mod
   )
 
   const value: AttachedData<Issue> = {
-    title: title ? title : faker.commerce.productName(),
+    title: title ?? faker.commerce.productName(),
     description: faker.lorem.paragraphs(),
     assignee: object.assignee,
     component: object.component,
