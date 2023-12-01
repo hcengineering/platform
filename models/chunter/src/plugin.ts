@@ -77,6 +77,7 @@ export default mergeIds(chunterId, chunter, {
     Reactions: '' as IntlString,
     Emoji: '' as IntlString,
     FilterComments: '' as IntlString,
+    FilterPinnedComments: '' as IntlString,
     FilterBacklinks: '' as IntlString,
     DM: '' as IntlString,
     DMNotification: '' as IntlString,
@@ -114,6 +115,7 @@ export default mergeIds(chunterId, chunter, {
   },
   filter: {
     CommentsFilter: '' as Resource<(tx: DisplayTx, _class?: Ref<Doc>) => boolean>,
+    PinnedCommentsFilter: '' as Resource<(tx: DisplayTx, _class?: Ref<Doc>) => boolean>,
     BacklinksFilter: '' as Resource<(tx: DisplayTx, _class?: Ref<Doc>) => boolean>
   }
 })

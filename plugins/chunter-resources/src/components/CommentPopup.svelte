@@ -18,28 +18,29 @@
 
   import chunter, { Comment } from '@hcengineering/chunter'
   import { createQuery } from '@hcengineering/presentation'
-  import { Label, resizeObserver, Spinner, closeTooltip, Lazy } from '@hcengineering/ui'
+  import { Label, resizeObserver, Spinner, closeTooltip, Lazy, MiniToggle } from '@hcengineering/ui'
   import { DocNavLink, ObjectPresenter } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import CommentInput from './CommentInput.svelte'
   import CommentPresenter from './CommentPresenter.svelte'
+  import activity from '@hcengineering/activity'
 
   export let objectId: Ref<Doc>
   export let object: Doc
   export let withInput: boolean = true
 
   let loading = true
-
+  let activityOrderNewestFirst = JSON.parse(localStorage.getItem('activity-newest-first') ?? 'false')
   let comments: Comment[] = []
   const query = createQuery()
   $: query.query(
     chunter.class.Comment,
     { attachedTo: objectId },
     (res) => {
-      comments = res
+      comments = res.sort((c) => (c?.pinned ? -1 : 1))
       loading = false
     },
-    { sort: { modifiedOn: SortingOrder.Ascending } }
+    { sort: { modifiedOn: activityOrderNewestFirst ? SortingOrder.Descending : SortingOrder.Ascending } }
   )
   const dispatch = createEventDispatcher()
   let commentMode = false
@@ -68,6 +69,7 @@
     <div class="fs-title mr-2">
       <Label label={chunter.string.Comments} />
     </div>
+    <MiniToggle bind:on={activityOrderNewestFirst} label={activity.string.NewestFirst} />
     <DocNavLink {object}>
       <ObjectPresenter _class={object._class} objectId={object._id} value={object} />
     </DocNavLink>

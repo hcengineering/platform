@@ -149,7 +149,8 @@ export default plugin(activityId, {
     Unset: '' as IntlString,
     Added: '' as IntlString,
     From: '' as IntlString,
-    Removed: '' as IntlString
+    Removed: '' as IntlString,
+    NewestFirst: '' as IntlString
   },
   mixin: {
     ExtraActivityComponent: '' as Ref<Class<ExtraActivityComponent>>

@@ -21,7 +21,8 @@ import chunter, {
   type ChunterSpace,
   type DirectMessage,
   type Message,
-  type ThreadMessage
+  type ThreadMessage,
+  type Comment
 } from '@hcengineering/chunter'
 import core, {
   type Data,
@@ -274,6 +275,10 @@ export function commentsFilter (tx: DisplayTx, _class?: Ref<Doc>): boolean {
   return tx.tx.objectClass === chunter.class.Comment
 }
 
+export function pinnedCommentsFilter (tx: DisplayTx, _class?: Ref<Doc>): boolean {
+  return tx.tx.objectClass === chunter.class.Comment && (tx.doc as Comment)?.pinned === true
+}
+
 export function backlinksFilter (tx: DisplayTx, _class?: Ref<Doc>): boolean {
   return tx.tx.objectClass === chunter.class.Backlink
 }
@@ -281,6 +286,7 @@ export function backlinksFilter (tx: DisplayTx, _class?: Ref<Doc>): boolean {
 export default async (): Promise<Resources> => ({
   filter: {
     CommentsFilter: commentsFilter,
+    PinnedCommentsFilter: pinnedCommentsFilter,
     BacklinksFilter: backlinksFilter
   },
   component: {

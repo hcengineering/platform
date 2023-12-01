@@ -659,6 +659,11 @@ export function createModel (builder: Builder, options = { addApplication: true 
   })
 
   builder.createDoc(activity.class.ActivityFilter, core.space.Model, {
+    label: chunter.string.FilterPinnedComments,
+    filter: chunter.filter.PinnedCommentsFilter
+  })
+
+  builder.createDoc(activity.class.ActivityFilter, core.space.Model, {
     label: chunter.string.FilterBacklinks,
     filter: chunter.filter.BacklinksFilter
   })

@@ -31,10 +31,12 @@
   const client = getClient()
   let filters: ActivityFilter[] = []
   const saved = localStorage.getItem('activity-filter')
+  export let activityOrderNewestFirst = false
   let selectedFiltersRefs: Ref<Doc>[] | 'All' =
     saved !== null && saved !== undefined ? (JSON.parse(saved) as Ref<Doc>[] | 'All') : 'All'
   let selectedFilters: ActivityFilter[] = []
   $: localStorage.setItem('activity-filter', JSON.stringify(selectedFiltersRefs))
+  $: localStorage.setItem('activity-newest-first', JSON.stringify(activityOrderNewestFirst))
   client.findAll(activity.class.ActivityFilter, {}).then((res) => {
     filters = res
     if (saved !== null && saved !== undefined) {
@@ -71,6 +73,10 @@
       () => {},
       (res) => {
         if (res === undefined) return
+        if (res.action === 'toggle') {
+          activityOrderNewestFirst = res.value
+          return
+        }
         const selected = res.value as Ref<Doc>[]
         const isAll = selected.length === filters.length || selected.length === 0
         if (res.action === 'select') selectedFiltersRefs = isAll ? 'All' : selected
@@ -104,6 +110,7 @@
   $: updateFilterActions(txes, filters, selectedFiltersRefs)
 </script>
 
+<div class="w-4 min-w-4 max-w-4" />
 {#if selectedFiltersRefs === 'All'}
   <div class="antiSection-header__tag highlight">
     <Label label={activityPlg.string.All} />
