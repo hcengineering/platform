@@ -45,6 +45,10 @@ const tableCellDecorationPlugin = (editor: Editor) => {
         return {}
       },
       apply(tr, prev, oldState, newState) {
+        if (!editor.isEditable) {
+          return { selection: newState.selection, decorations: DecorationSet.empty }
+        }
+
         const oldTable = findTable(oldState.selection)
         const newTable = findTable(newState.selection)
 
