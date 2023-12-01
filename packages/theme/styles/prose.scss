@@ -39,7 +39,7 @@ table.proseTable {
     border-color: var(--theme-button-default);
   }
 
-  &:hover, &:focus-within {
+  &.table-selected {
     &::before {
       border-width: var(--table-outline-width);
     }

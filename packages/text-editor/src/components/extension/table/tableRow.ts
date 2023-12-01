@@ -13,6 +13,6 @@
 // limitations under the License.
 //
 
-import BuiltinTableRow from '@tiptap/extension-table-row'
+import TiptapTableRow from '@tiptap/extension-table-row'
 
-export const TableRow = BuiltinTableRow.extend({})
+export const TableRow = TiptapTableRow.extend({})

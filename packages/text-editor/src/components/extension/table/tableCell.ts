@@ -14,7 +14,7 @@
 //
 
 import { Editor } from '@tiptap/core'
-import BuiltinTableCell from '@tiptap/extension-table-cell'
+import TiptapTableCell from '@tiptap/extension-table-cell'
 import { EditorState, Plugin, PluginKey, Selection } from '@tiptap/pm/state'
 import { CellSelection, TableMap } from '@tiptap/pm/tables'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
@@ -23,9 +23,10 @@ import { addSvg, handleSvg } from './icons'
 import { TableNodeLocation } from './types'
 import { insertColumn, insertRow, findTable, isColumnSelected, isRowSelected, selectColumn, selectRow } from './utils'
 
-export const TableCell = BuiltinTableCell.extend({
+export const TableCell = TiptapTableCell.extend({
   addProseMirrorPlugins () {
     return [
+      ...(this.parent?.() ?? []),
       tableCellDecorationPlugin(this.editor)
     ]
   }

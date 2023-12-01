@@ -14,16 +14,17 @@
 //
 
 import { Editor } from '@tiptap/core'
-import BuiltinTable from '@tiptap/extension-table'
+import TiptapTable from '@tiptap/extension-table'
 import { EditorState, Plugin, PluginKey, Selection } from '@tiptap/pm/state'
 import { TableMap } from '@tiptap/pm/tables'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import { TableNodeLocation } from './types'
 import { insertColumn, insertRow, findTable } from './utils'
 
-export const Table = BuiltinTable.extend({
+export const Table = TiptapTable.extend({
   addProseMirrorPlugins () {
     return [
+      ...(this.parent?.() ?? []),
       tableDecorationPlugin(this.editor)
     ]
   }
@@ -55,6 +56,7 @@ const tableDecorationPlugin = (editor: Editor) => {
         }
 
         const decorations = DecorationSet.create(newState.doc, [
+          selectionDecoration(newState, newTable),
           addColDecoration(newState, newTable, editor),
           addRowDecoration(newState, newTable, editor)
         ])
@@ -67,6 +69,12 @@ const tableDecorationPlugin = (editor: Editor) => {
       }
     }
   })
+}
+
+const selectionDecoration = (_state: EditorState, table: TableNodeLocation): Decoration => {
+  const from = table.pos
+  const to = table.pos + table.node.nodeSize
+  return Decoration.node(from, to, { class: 'table-selected' })
 }
 
 const addColDecoration = (_state: EditorState, table: TableNodeLocation, editor: Editor): Decoration => {
