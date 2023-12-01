@@ -17,7 +17,7 @@
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { getClient, hasResource } from '@hcengineering/presentation'
-  import { ActionIcon, AnyComponent, Icon, Label, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { ActionIcon, AnyComponent, Icon, Label, eventToHTMLElement, showPopup, MiniToggle } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import activityPlg from '../plugin'
   import FilterPopup from './FilterPopup.svelte'
@@ -31,10 +31,12 @@
   const client = getClient()
   let filters: ActivityFilter[] = []
   const saved = localStorage.getItem('activity-filter')
+  export let activityOrderNewestFirst = false
   let selectedFiltersRefs: Ref<Doc>[] | 'All' =
     saved !== null && saved !== undefined ? (JSON.parse(saved) as Ref<Doc>[] | 'All') : 'All'
   let selectedFilters: ActivityFilter[] = []
   $: localStorage.setItem('activity-filter', JSON.stringify(selectedFiltersRefs))
+  $: localStorage.setItem('activity-newest-first', JSON.stringify(activityOrderNewestFirst))
   client.findAll(activity.class.ActivityFilter, {}).then((res) => {
     filters = res
     if (saved !== null && saved !== undefined) {
@@ -104,6 +106,8 @@
   $: updateFilterActions(txes, filters, selectedFiltersRefs)
 </script>
 
+<MiniToggle bind:on={activityOrderNewestFirst} label={activityPlg.string.NewestFirst} />
+<div class="w-4 min-w-4 max-w-4" />
 {#if selectedFiltersRefs === 'All'}
   <div class="antiSection-header__tag highlight">
     <Label label={activityPlg.string.All} />

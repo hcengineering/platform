@@ -20,8 +20,9 @@
   import { Avatar, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
   import { IdMap, Ref } from '@hcengineering/core'
   import { MessageViewer, getClient } from '@hcengineering/presentation'
-  import { ShowMore, TimeSince } from '@hcengineering/ui'
+  import { Icon, ShowMore, TimeSince } from '@hcengineering/ui'
   import { LinkPresenter, ObjectPresenter } from '@hcengineering/view-resources'
+  import view from '@hcengineering/view'
 
   export let value: Comment
   export let inline: boolean = false
@@ -81,7 +82,14 @@
           <div class="fs-title">
             {#if employee}{getName(client.getHierarchy(), employee)}{/if}
           </div>
-          <div class="content-dark-color ml-4"><TimeSince value={value.modifiedOn} /></div>
+          <div class="content-dark-color ml-4 flex-row-center">
+            {#if value.pinned}
+              <Icon icon={view.icon.Pin} size={'small'} fill="#3265cb" />
+            {/if}
+            <div class="ml-1">
+              <TimeSince value={value.modifiedOn} />
+            </div>
+          </div>
         </div>
         <ShowMore fixed>
           <MessageViewer message={value.message} />

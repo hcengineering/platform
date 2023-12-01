@@ -15,7 +15,7 @@
 <script lang="ts">
   import activity, { ActivityExtension, DisplayTx, TxViewlet } from '@hcengineering/activity'
   import core, { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
-  import notification, { DocUpdateTx, DocUpdates, Writable } from '@hcengineering/notification'
+  import notification, { DocUpdates, DocUpdateTx, Writable } from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Grid, Label, Lazy, Spinner } from '@hcengineering/ui'
@@ -84,11 +84,12 @@
   }
 
   let loading = false
-
+  let activityOrderNewestFirst = JSON.parse(localStorage.getItem('activity-newest-first') ?? 'false')
   function updateTxes (
     objectId: Ref<Doc>,
     objectClass: Ref<Class<Doc>>,
-    editableMap: Map<Ref<Class<Doc>>, boolean> | undefined
+    editableMap: Map<Ref<Class<Doc>>, boolean> | undefined,
+    activityOrder: boolean
   ): void {
     loading = true
     const res = activityQuery.update(
@@ -103,7 +104,7 @@
           }
         }
       },
-      SortingOrder.Ascending,
+      activityOrder ? SortingOrder.Descending : SortingOrder.Ascending,
       editableMap ?? new Map()
     )
     if (!res) {
@@ -111,7 +112,7 @@
     }
   }
 
-  $: updateTxes(object._id, object._class, editableMap)
+  $: updateTxes(object._id, object._class, editableMap, activityOrderNewestFirst)
 
   let filtered: DisplayTx[] = []
 
@@ -152,6 +153,7 @@
     on:update={(e) => {
       filtered = e.detail
     }}
+    bind:activityOrderNewestFirst
   />
 </div>
 <div class="p-activity select-text" id={activity.string.Activity}>
