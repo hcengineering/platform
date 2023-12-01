@@ -153,6 +153,8 @@ jobs:
           ./prepare.sh
       - name: Testing...
         run: node common/scripts/install-run-rush.js test --verbose
+        env:
+          ELASTIC_URL: 'http://localhost:9201'
   uitest:
     needs: build
     runs-on: ubuntu-latest
