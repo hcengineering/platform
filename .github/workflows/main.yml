@@ -155,6 +155,7 @@ jobs:
         run: node common/scripts/install-run-rush.js test --verbose
         env:
           ELASTIC_URL: 'http://localhost:9201'
+          MONGO_URL: 'http://localhost:27018'
   uitest:
     needs: build
     runs-on: ubuntu-latest
