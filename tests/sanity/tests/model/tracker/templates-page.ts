@@ -1,4 +1,4 @@
-import { type Locator, type Page } from '@playwright/test'
+import { expect, type Locator, type Page } from '@playwright/test'
 import { CommonTrackerPage } from './common-tracker-page'
 import { NewIssue } from './types'
 
@@ -81,5 +81,9 @@ export class TemplatePage extends CommonTrackerPage {
 
   async openTemplate (templateName: string): Promise<void> {
     await this.page.locator('span.issuePresenterRoot > span', { hasText: templateName }).click()
+  }
+
+  async checkTemplateNotExist (templateName: string): Promise<void> {
+    await expect(this.page.locator('span.issuePresenterRoot > span').filter({ hasText: templateName })).toHaveCount(0)
   }
 }

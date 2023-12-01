@@ -111,4 +111,27 @@ test.describe('Tracker template tests', () => {
       })
     }
   })
+
+  test('Delete Template', async ({ page }) => {
+    const deleteTemplate: NewIssue = {
+      title: `Template for delete-${generateId()}`,
+      description: 'Created template for delete'
+    }
+
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+    await trackerNavigationMenuPage.buttonTemplates.click()
+
+    let templatePage = new TemplatePage(page)
+    await templatePage.createNewTemplate(deleteTemplate)
+    await templatePage.openTemplate(deleteTemplate.title)
+
+    const templateDetailsPage = new TemplateDetailsPage(page)
+    await templateDetailsPage.deleteTemplate()
+
+    templatePage = new TemplatePage(page)
+    await templatePage.checkTemplateNotExist(deleteTemplate.title)
+  })
 })
