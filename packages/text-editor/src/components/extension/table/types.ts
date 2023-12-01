@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Node as ProseMirrorNode } from '@tiptap/pm/model'
+import { type Node as ProseMirrorNode } from '@tiptap/pm/model'
 
 export interface TableNodeLocation {
   pos: number

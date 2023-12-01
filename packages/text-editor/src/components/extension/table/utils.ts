@@ -14,10 +14,11 @@
 //
 
 import { findParentNode } from '@tiptap/core'
-import { Selection, Transaction } from '@tiptap/pm/state'
-import { CellSelection, Rect, TableMap, addColumn, addRow } from '@tiptap/pm/tables'
+import { type Node as ProseMirrorNode } from '@tiptap/pm/model'
+import { type Selection, type Transaction } from '@tiptap/pm/state'
+import { CellSelection, type Rect, TableMap, addColumn, addRow } from '@tiptap/pm/tables'
 
-import { TableNodeLocation } from './types'
+import { type TableNodeLocation } from './types'
 
 export function insertColumn (table: TableNodeLocation, index: number, tr: Transaction): Transaction {
   const map = TableMap.get(table.node)
@@ -27,7 +28,7 @@ export function insertColumn (table: TableNodeLocation, index: number, tr: Trans
     table: table.node,
     top: 0,
     left: 0,
-    bottom: map.height -1,
+    bottom: map.height - 1,
     right: map.width - 1
   }
   return addColumn(tr, rect, index)
@@ -41,7 +42,7 @@ export function insertRow (table: TableNodeLocation, index: number, tr: Transact
     table: table.node,
     top: 0,
     left: 0,
-    bottom: map.height -1,
+    bottom: map.height - 1,
     right: map.width - 1
   }
   return addRow(tr, rect, index)
@@ -109,16 +110,19 @@ export const isRectSelected = (rect: Rect, selection: CellSelection): boolean =>
   const start = selection.$anchorCell.start(-1)
   const cells = map.cellsInRect(rect)
   const selectedCells = map.cellsInRect(
-    map.rectBetween(
-      selection.$anchorCell.pos - start,
-      selection.$headCell.pos - start
-    )
+    map.rectBetween(selection.$anchorCell.pos - start, selection.$headCell.pos - start)
   )
 
   return cells.every((cell) => selectedCells.includes(cell))
 }
 
-export const findTable = (selection: Selection) =>
-  findParentNode(
-    (node) => node.type.spec.tableRole && node.type.spec.tableRole === 'table'
-  )(selection)
+export const findTable = (
+  selection: Selection
+):
+| {
+  pos: number
+  start: number
+  depth: number
+  node: ProseMirrorNode
+}
+| undefined => findParentNode((node) => node.type.spec.tableRole === 'table')(selection)

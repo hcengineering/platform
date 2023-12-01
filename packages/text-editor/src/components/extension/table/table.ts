@@ -13,20 +13,18 @@
 // limitations under the License.
 //
 
-import { Editor } from '@tiptap/core'
+import { type Editor } from '@tiptap/core'
 import TiptapTable from '@tiptap/extension-table'
-import { EditorState, Plugin, PluginKey, Selection } from '@tiptap/pm/state'
+import { type EditorState, Plugin, PluginKey, type Selection } from '@tiptap/pm/state'
 import { TableMap } from '@tiptap/pm/tables'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
-import { TableNodeLocation } from './types'
+import { type TableNodeLocation } from './types'
 import { insertColumn, insertRow, findTable } from './utils'
 
 export const Table = TiptapTable.extend({
   addProseMirrorPlugins () {
-    return [
-      ...(this.parent?.() ?? []),
-      tableDecorationPlugin(this.editor)
-    ]
+    const parent = this.parent?.() ?? []
+    return [tableDecorationPlugin(this.editor), ...parent]
   }
 })
 
@@ -35,7 +33,7 @@ interface TableDecorationPluginState {
   selection?: Selection
 }
 
-const tableDecorationPlugin = (editor: Editor) => {
+const tableDecorationPlugin = (editor: Editor): Plugin<TableDecorationPluginState> => {
   const key = new PluginKey('table-decoration-plugin')
   return new Plugin({
     key,
@@ -43,7 +41,7 @@ const tableDecorationPlugin = (editor: Editor) => {
       init: (): TableDecorationPluginState => {
         return {}
       },
-      apply(tr, prev, oldState, newState) {
+      apply (tr, prev, oldState, newState) {
         const oldTable = findTable(oldState.selection)
         const newTable = findTable(newState.selection)
 
@@ -82,7 +80,9 @@ const addColDecoration = (_state: EditorState, table: TableNodeLocation, editor:
 
   const div = document.createElement('div')
   div.classList.add('table-col-add-handle')
-  div.addEventListener('mousedown', e => handleColAddMouseDown(tableMap.width, table, e, editor))
+  div.addEventListener('mousedown', (e) => {
+    handleColAddMouseDown(tableMap.width, table, e, editor)
+  })
 
   return Decoration.widget(table.pos, div)
 }
@@ -92,7 +92,9 @@ const addRowDecoration = (_state: EditorState, table: TableNodeLocation, editor:
 
   const div = document.createElement('div')
   div.classList.add('table-row-add-handle')
-  div.addEventListener('mousedown', e => handleRowAddMouseDown(tableMap.width, table, e, editor))
+  div.addEventListener('mousedown', (e) => {
+    handleRowAddMouseDown(tableMap.width, table, e, editor)
+  })
 
   return Decoration.widget(table.pos, div)
 }

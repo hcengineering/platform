@@ -22,12 +22,6 @@
   const { onDragStart } = getNodeViewContext()
 </script>
 
-<svelte:element
-  this={as}
-  data-node-view-wrapper=""
-  role="none"
-  on:dragstart={onDragStart}
-  {...$$restProps}
->
+<svelte:element this={as} data-node-view-wrapper="" role="none" on:dragstart={onDragStart} {...$$restProps}>
   <slot />
 </svelte:element>

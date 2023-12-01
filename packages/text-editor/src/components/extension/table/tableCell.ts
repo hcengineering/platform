@@ -13,22 +13,19 @@
 // limitations under the License.
 //
 
-import { Editor } from '@tiptap/core'
+import { type Editor } from '@tiptap/core'
 import TiptapTableCell from '@tiptap/extension-table-cell'
-import { EditorState, Plugin, PluginKey, Selection } from '@tiptap/pm/state'
+import { type EditorState, Plugin, PluginKey, type Selection } from '@tiptap/pm/state'
 import { CellSelection, TableMap } from '@tiptap/pm/tables'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 
 import { addSvg, handleSvg } from './icons'
-import { TableNodeLocation } from './types'
+import { type TableNodeLocation } from './types'
 import { insertColumn, insertRow, findTable, isColumnSelected, isRowSelected, selectColumn, selectRow } from './utils'
 
 export const TableCell = TiptapTableCell.extend({
   addProseMirrorPlugins () {
-    return [
-      ...(this.parent?.() ?? []),
-      tableCellDecorationPlugin(this.editor)
-    ]
+    return [...(this.parent?.() ?? []), tableCellDecorationPlugin(this.editor)]
   }
 })
 
@@ -37,7 +34,7 @@ interface TableCellDecorationPluginState {
   selection?: Selection
 }
 
-const tableCellDecorationPlugin = (editor: Editor) => {
+const tableCellDecorationPlugin = (editor: Editor): Plugin<TableCellDecorationPluginState> => {
   const key = new PluginKey('table-cell-decoration-plugin')
   return new Plugin({
     key,
@@ -45,12 +42,11 @@ const tableCellDecorationPlugin = (editor: Editor) => {
       init: (): TableCellDecorationPluginState => {
         return {}
       },
-      apply(tr, prev, oldState, newState) {
+      apply (tr, prev, oldState, newState) {
         if (!editor.isEditable) {
           return { selection: newState.selection, decorations: DecorationSet.empty }
         }
 
-        const oldTable = findTable(oldState.selection)
         const newTable = findTable(newState.selection)
 
         if (newTable === undefined) {
@@ -94,7 +90,9 @@ const columnHandlerDecoration = (state: EditorState, table: TableNodeLocation, e
       handle.classList.add('table-col-handle__selected')
     }
     handle.innerHTML = handleSvg
-    handle.addEventListener('mousedown', e => handleColHandleMouseDown(col, table, e, editor))
+    handle.addEventListener('mousedown', (e) => {
+      handleColHandleMouseDown(col, table, e, editor)
+    })
     decorations.push(Decoration.widget(pos, handle))
   }
 
@@ -113,7 +111,7 @@ const columnInsertDecoration = (state: EditorState, table: TableNodeLocation, ed
   const tableHeightPx = dom.node.parentElement?.clientHeight ?? 0
 
   for (let col = 0; col < width; col++) {
-    const show = (col < width - 1) && !isColumnSelected(col, selection) && !isColumnSelected(col + 1, selection)
+    const show = col < width - 1 && !isColumnSelected(col, selection) && !isColumnSelected(col + 1, selection)
 
     if (show) {
       const insert = document.createElement('div')
@@ -122,7 +120,9 @@ const columnInsertDecoration = (state: EditorState, table: TableNodeLocation, ed
       const button = document.createElement('button')
       button.className = 'table-insert-button'
       button.innerHTML = addSvg
-      button.addEventListener('mousedown', e => handleColInsertMouseDown(col, table, e, editor))
+      button.addEventListener('mousedown', (e) => {
+        handleColInsertMouseDown(col, table, e, editor)
+      })
       insert.appendChild(button)
 
       const marker = document.createElement('div')
@@ -167,7 +167,9 @@ const rowHandlerDecoration = (state: EditorState, table: TableNodeLocation, edit
       handle.classList.add('table-row-handle__selected')
     }
     handle.innerHTML = handleSvg
-    handle.addEventListener('mousedown', e => handleRowHandleMouseDown(row, table, e, editor))
+    handle.addEventListener('mousedown', (e) => {
+      handleRowHandleMouseDown(row, table, e, editor)
+    })
     decorations.push(Decoration.widget(pos, handle))
   }
 
@@ -186,7 +188,7 @@ const rowInsertDecoration = (state: EditorState, table: TableNodeLocation, edito
   const tableWidthPx = dom.node.parentElement?.clientWidth ?? 0
 
   for (let row = 0; row < height; row++) {
-    const show = (row < height - 1) && !isRowSelected(row, selection) && !isRowSelected(row + 1, selection)
+    const show = row < height - 1 && !isRowSelected(row, selection) && !isRowSelected(row + 1, selection)
 
     if (show) {
       const dot = document.createElement('div')
@@ -195,7 +197,9 @@ const rowInsertDecoration = (state: EditorState, table: TableNodeLocation, edito
       const button = document.createElement('button')
       button.className = 'table-insert-button'
       button.innerHTML = addSvg
-      button.addEventListener('mousedown', e => handleRowInsertMouseDown(row, table, e, editor))
+      button.addEventListener('mousedown', (e) => {
+        handleRowInsertMouseDown(row, table, e, editor)
+      })
       dot.appendChild(button)
 
       const marker = document.createElement('div')
@@ -225,7 +229,7 @@ const handleRowInsertMouseDown = (row: number, table: TableNodeLocation, event: 
   editor.view.dispatch(insertRow(table, row + 1, editor.state.tr))
 }
 
-const selectionDecoration = (state: EditorState, table: TableNodeLocation) => {
+const selectionDecoration = (state: EditorState, table: TableNodeLocation): Decoration[] => {
   const decorations: Decoration[] = []
 
   const { selection } = state
@@ -258,23 +262,21 @@ const selectionDecoration = (state: EditorState, table: TableNodeLocation) => {
   return decorations
 }
 
-function getTableCellDecorationPos (table: TableNodeLocation, map: TableMap, index: number): { from: number, to: number } {
-  const pos = table.node.resolve(map.map[index] + 1)
-  return { from: table.start + pos.start() - 1, to: table.start + pos.end() + 1 }
-}
-
 function getTableCellWidgetDecorationPos (table: TableNodeLocation, map: TableMap, index: number): number {
   const pos = table.node.resolve(map.map[index] + 1)
   return table.start + pos.start()
 }
 
-
-function getTableCellBorders (cell: number, selection: number[], tableMap: TableMap): { top: boolean, bottom: boolean, left: boolean, right: boolean } {
+function getTableCellBorders (
+  cell: number,
+  selection: number[],
+  tableMap: TableMap
+): { top: boolean, bottom: boolean, left: boolean, right: boolean } {
   const { width, height } = tableMap
   const cellIndex = tableMap.map.indexOf(cell)
 
   const topCell = cellIndex >= width ? tableMap.map[cellIndex - width] : undefined
-  const bottomCell = cellIndex < (width * height - width) ? tableMap.map[cellIndex + width] : undefined
+  const bottomCell = cellIndex < width * height - width ? tableMap.map[cellIndex + width] : undefined
   const leftCell = cellIndex % width !== 0 ? tableMap.map[cellIndex - 1] : undefined
   const rightCell = cellIndex % width !== width - 1 ? tableMap.map[cellIndex + 1] : undefined
 
