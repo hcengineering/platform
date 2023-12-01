@@ -15,17 +15,30 @@
 //
 
 import { Account, Class, Doc, getWorkspaceId, MeasureMetricsContext, Ref, Space } from '@hcengineering/core'
-import type { IndexedDoc } from '@hcengineering/server-core'
+import type { FullTextAdapter, IndexedDoc } from '@hcengineering/server-core'
 
 import { createElasticAdapter } from '../adapter'
 
-describe('client', () => {
-  it('should create document', async () => {
-    const adapter = await createElasticAdapter(
-      'http://localhost:9200/',
+describe('Elastic Adapter', () => {
+  let adapter: FullTextAdapter
+
+  beforeEach(async () => {
+    adapter = await createElasticAdapter(
+      process.env.ELASTIC_URL ?? 'http://localhost:9200/',
       getWorkspaceId('ws1', ''),
       new MeasureMetricsContext('-', {})
     )
+  })
+
+  afterEach(async () => {
+    await adapter.close()
+  })
+
+  it('should init', () => {
+    expect(adapter).toBeTruthy()
+  })
+
+  it('should create document', async () => {
     const doc: IndexedDoc = {
       id: 'doc1' as Ref<Doc>,
       _class: 'class1' as Ref<Class<Doc>>,
@@ -40,11 +53,6 @@ describe('client', () => {
   })
 
   it('should find document with raw search', async () => {
-    const adapter = await createElasticAdapter(
-      'http://localhost:9200/',
-      getWorkspaceId('ws1', ''),
-      new MeasureMetricsContext('-', {})
-    )
     const result = await adapter.searchString(
       {
         query: 'hey'

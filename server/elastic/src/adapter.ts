@@ -477,7 +477,7 @@ export async function createElasticAdapter (
   url: string,
   workspaceId: WorkspaceId,
   metrics: MeasureContext
-): Promise<FullTextAdapter & { close: () => Promise<void> }> {
+): Promise<FullTextAdapter> {
   const client = new Client({
     node: url
   })
