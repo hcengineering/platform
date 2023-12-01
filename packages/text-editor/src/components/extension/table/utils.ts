@@ -14,7 +14,6 @@
 //
 
 import { findParentNode } from '@tiptap/core'
-import { type Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { type Selection, type Transaction } from '@tiptap/pm/state'
 import { CellSelection, type Rect, TableMap, addColumn, addRow } from '@tiptap/pm/tables'
 
@@ -116,13 +115,6 @@ export const isRectSelected = (rect: Rect, selection: CellSelection): boolean =>
   return cells.every((cell) => selectedCells.includes(cell))
 }
 
-export const findTable = (
-  selection: Selection
-):
-| {
-  pos: number
-  start: number
-  depth: number
-  node: ProseMirrorNode
+export const findTable = (selection: Selection): TableNodeLocation | undefined => {
+  return findParentNode((node) => node.type.spec.tableRole === 'table')(selection)
 }
-| undefined => findParentNode((node) => node.type.spec.tableRole === 'table')(selection)

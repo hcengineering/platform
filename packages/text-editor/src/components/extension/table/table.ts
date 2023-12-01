@@ -13,102 +13,12 @@
 // limitations under the License.
 //
 
-import { type Editor } from '@tiptap/core'
 import TiptapTable from '@tiptap/extension-table'
-import { type EditorState, Plugin, PluginKey, type Selection } from '@tiptap/pm/state'
-import { TableMap } from '@tiptap/pm/tables'
-import { Decoration, DecorationSet } from '@tiptap/pm/view'
-import { type TableNodeLocation } from './types'
-import { insertColumn, insertRow, findTable } from './utils'
+import TableNodeView from './TableNodeView.svelte'
+import { SvelteNodeViewRenderer } from '../../node-view'
 
 export const Table = TiptapTable.extend({
-  addProseMirrorPlugins () {
-    const parent = this.parent?.() ?? []
-    return [tableDecorationPlugin(this.editor), ...parent]
+  addNodeView () {
+    return SvelteNodeViewRenderer(TableNodeView, {})
   }
 })
-
-interface TableDecorationPluginState {
-  decorations?: DecorationSet
-  selection?: Selection
-}
-
-const tableDecorationPlugin = (editor: Editor): Plugin<TableDecorationPluginState> => {
-  const key = new PluginKey('table-decoration-plugin')
-  return new Plugin({
-    key,
-    state: {
-      init: (): TableDecorationPluginState => {
-        return {}
-      },
-      apply (tr, prev, oldState, newState) {
-        const oldTable = findTable(oldState.selection)
-        const newTable = findTable(newState.selection)
-
-        if (newTable === undefined) {
-          return {}
-        }
-
-        if (oldTable?.start === newTable.start) {
-          return prev
-        }
-
-        const decorations = DecorationSet.create(newState.doc, [
-          selectionDecoration(newState, newTable),
-          addColDecoration(newState, newTable, editor),
-          addRowDecoration(newState, newTable, editor)
-        ])
-        return { selection: newState.selection, decorations }
-      }
-    },
-    props: {
-      decorations (state) {
-        return key.getState(state).decorations
-      }
-    }
-  })
-}
-
-const selectionDecoration = (_state: EditorState, table: TableNodeLocation): Decoration => {
-  const from = table.pos
-  const to = table.pos + table.node.nodeSize
-  return Decoration.node(from, to, { class: 'table-selected' })
-}
-
-const addColDecoration = (_state: EditorState, table: TableNodeLocation, editor: Editor): Decoration => {
-  const tableMap = TableMap.get(table.node)
-
-  const div = document.createElement('div')
-  div.classList.add('table-col-add-handle')
-  div.addEventListener('mousedown', (e) => {
-    handleColAddMouseDown(tableMap.width, table, e, editor)
-  })
-
-  return Decoration.widget(table.pos, div)
-}
-
-const addRowDecoration = (_state: EditorState, table: TableNodeLocation, editor: Editor): Decoration => {
-  const tableMap = TableMap.get(table.node)
-
-  const div = document.createElement('div')
-  div.classList.add('table-row-add-handle')
-  div.addEventListener('mousedown', (e) => {
-    handleRowAddMouseDown(tableMap.width, table, e, editor)
-  })
-
-  return Decoration.widget(table.pos, div)
-}
-
-const handleColAddMouseDown = (col: number, table: TableNodeLocation, event: Event, editor: Editor): void => {
-  event.stopPropagation()
-  event.preventDefault()
-
-  editor.view.dispatch(insertColumn(table, col, editor.state.tr))
-}
-
-const handleRowAddMouseDown = (col: number, table: TableNodeLocation, event: Event, editor: Editor): void => {
-  event.stopPropagation()
-  event.preventDefault()
-
-  editor.view.dispatch(insertRow(table, col, editor.state.tr))
-}
