@@ -17,7 +17,7 @@
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { getClient, hasResource } from '@hcengineering/presentation'
-  import { ActionIcon, AnyComponent, Icon, Label, eventToHTMLElement, showPopup, MiniToggle } from '@hcengineering/ui'
+  import { ActionIcon, AnyComponent, Icon, Label, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import activityPlg from '../plugin'
   import FilterPopup from './FilterPopup.svelte'
@@ -73,6 +73,10 @@
       () => {},
       (res) => {
         if (res === undefined) return
+        if (res.action === 'toggle') {
+          activityOrderNewestFirst = res.value
+          return
+        }
         const selected = res.value as Ref<Doc>[]
         const isAll = selected.length === filters.length || selected.length === 0
         if (res.action === 'select') selectedFiltersRefs = isAll ? 'All' : selected
@@ -106,7 +110,6 @@
   $: updateFilterActions(txes, filters, selectedFiltersRefs)
 </script>
 
-<MiniToggle bind:on={activityOrderNewestFirst} label={activityPlg.string.NewestFirst} />
 <div class="w-4 min-w-4 max-w-4" />
 {#if selectedFiltersRefs === 'All'}
   <div class="antiSection-header__tag highlight">

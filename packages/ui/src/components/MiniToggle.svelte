@@ -15,10 +15,12 @@
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
   import Label from './Label.svelte'
+  import { createEventDispatcher } from 'svelte'
 
   export let label: IntlString | undefined = undefined
   export let on: boolean = false
   export let disabled: boolean = false
+  const dispatch = createEventDispatcher()
 </script>
 
 <div class="flex-row-center">
@@ -34,6 +36,7 @@
       on:click={() => {
         if (!disabled) {
           on = !on
+          dispatch('change', on)
         }
       }}
     >

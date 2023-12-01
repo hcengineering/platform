@@ -15,14 +15,14 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
   import { IntlString } from '@hcengineering/platform'
-  import { Label, resizeObserver, CheckBox } from '@hcengineering/ui'
+  import { Label, resizeObserver, CheckBox, MiniToggle } from '@hcengineering/ui'
   import { Doc, Ref } from '@hcengineering/core'
   import { ActivityFilter } from '@hcengineering/activity'
   import activity from '../plugin'
 
   export let selectedFiltersRefs: Ref<Doc>[] | 'All' = 'All'
   export let filters: ActivityFilter[] = []
-
+  let activityOrderNewestFirst = JSON.parse(localStorage.getItem('activity-newest-first') ?? 'false')
   const dispatch = createEventDispatcher()
 
   interface ActionMenu {
@@ -126,6 +126,15 @@
   <div class="ap-space" />
   <div class="ap-scroll">
     <div class="ap-box" bind:this={popup}>
+      <div class="ml-3 mt-2 mb-2 mr-3">
+        <MiniToggle
+          bind:on={activityOrderNewestFirst}
+          label={activity.string.NewestFirst}
+          on:change={() => {
+            dispatch('update', { action: 'toggle', value: activityOrderNewestFirst })
+          }}
+        />
+      </div>
       <!-- svelte-ignore a11y-mouse-events-have-key-events -->
       {#each menu as item, i}
         <button
