@@ -225,8 +225,8 @@ export async function toTime (value: number): Promise<string> {
   const minutes = Math.floor((value % 1) * 60)
 
   return [
-    ...(days > 0) ? [`${days}d`] : [],
-    ...(hours > 0) ? [`${hours}h`] : [],
-    ...(minutes > 0) ? [`${minutes}m`] : []
+    ...(days > 0 ? [`${days}d`] : []),
+    ...(hours > 0 ? [`${hours}h`] : []),
+    ...(minutes > 0 ? [`${minutes}m`] : [])
   ].join(' ')
 }
