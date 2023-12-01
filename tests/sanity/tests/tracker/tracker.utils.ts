@@ -213,9 +213,20 @@ export async function floorFractionDigits (n: number | string, amount: number): 
 }
 
 export async function toTime (value: number): Promise<string> {
-  if (value > 0 && value < 8) {
-    return `${await floorFractionDigits(value, 2)}h`
-  } else {
-    return `${await floorFractionDigits(value / 8, 3)}d`
+  if (value <= 0) {
+    return '0h'
   }
+
+  // TODO: Make configurable?
+  const hoursInWorkingDay = 8
+
+  const days = Math.floor(value / hoursInWorkingDay)
+  const hours = Math.floor(value % hoursInWorkingDay)
+  const minutes = Math.floor((value % 1) * 60)
+
+  return [
+    ...(days > 0 ? [`${days}d`] : []),
+    ...(hours > 0 ? [`${hours}h`] : []),
+    ...(minutes > 0 ? [`${minutes}m`] : [])
+  ].join(' ')
 }

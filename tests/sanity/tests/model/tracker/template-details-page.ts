@@ -44,6 +44,7 @@ export class TemplateDetailsPage extends CommonTrackerPage {
     if (data.labels != null) {
       await this.buttonAddLabel.click()
       await expect(this.page.locator('div.menu-group span', { hasText: data.labels })).toBeVisible()
+      await this.inputTitle.click({ force: true })
     }
     if (data.component != null) {
       await expect(this.buttonComponent).toHaveText(data.component)
