@@ -135,7 +135,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Cache build results
         uses: actions/cache@v3
         env:
@@ -144,13 +143,19 @@ jobs:
           path: ${{ env.CacheFolders}}
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-      - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@v1.10.0
-        with:
-          mongodb-version: 5.0
-
+      - name: Docker build
+        run: node common/scripts/install-run-rush.js docker:build
+        env:
+          DOCKER_CLI_HINTS: false
+      - name: Prepare server
+        run: |
+          cd ./tests
+          ./prepare.sh
       - name: Testing...
         run: node common/scripts/install-run-rush.js test --verbose
+        env:
+          ELASTIC_URL: 'http://localhost:9201'
+          MONGO_URL: 'mongodb://localhost:27018'
   uitest:
     needs: build
     runs-on: ubuntu-latest
@@ -166,12 +171,10 @@ jobs:
           path: ${{ env.CacheFolders}}
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-        
       - name: Docker build
         run: node common/scripts/install-run-rush.js docker:build
         env:
           DOCKER_CLI_HINTS: false
-
       - name: Prepare server
         run: |
           cd ./tests

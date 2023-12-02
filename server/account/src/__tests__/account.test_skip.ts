@@ -25,7 +25,7 @@ const DB_NAME = 'test_accounts'
 const methods = getMethods(version, builder().getTxes(), migrateOperations)
 
 describe('server', () => {
-  const dbUri = process.env.MONGODB_URI ?? 'mongodb://localhost:27017'
+  const dbUri = process.env.MONGO_URL ?? 'mongodb://localhost:27017'
   let conn: MongoClient
   let db: Db
   let workspace: string = 'ws-' + randomBytes(8).toString('hex')

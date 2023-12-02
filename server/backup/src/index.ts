@@ -376,8 +376,8 @@ export async function backup (
       backupIndex = '0' + backupIndex
     }
 
-    for (const c of domains) {
-      console.log('dumping domain...', c)
+    for (const domain of domains) {
+      console.log('dumping domain...', domain)
 
       const changes: Snapshot = {
         added: new Map(),
@@ -404,7 +404,7 @@ export async function backup (
       }
 
       // Cumulative digest
-      const digest = await loadDigest(storage, backupInfo.snapshots, c)
+      const digest = await loadDigest(storage, backupInfo.snapshots, domain)
 
       let idx: number | undefined
 
@@ -419,7 +419,7 @@ export async function backup (
       // Load all digest from collection.
       while (true) {
         try {
-          const it = await connection.loadChunk(c, idx)
+          const it = await connection.loadChunk(domain, idx)
           idx = it.idx
 
           const needRetrieve: Ref<Doc>[] = []
@@ -467,7 +467,7 @@ export async function backup (
         console.log('Retrieve chunk:', needRetrieve.length)
         let docs: Doc[] = []
         try {
-          docs = await connection.loadDocs(c, needRetrieve)
+          docs = await connection.loadDocs(domain, needRetrieve)
         } catch (err: any) {
           console.log(err)
           // Put back.
@@ -482,12 +482,12 @@ export async function backup (
           addedDocuments = 0
 
           if (changed > 0) {
-            snapshot.domains[c] = domainInfo
+            snapshot.domains[domain] = domainInfo
             domainInfo.added += processedChanges.added.size
             domainInfo.updated += processedChanges.updated.size
             domainInfo.removed += processedChanges.removed.length
 
-            const snapshotFile = join(backupIndex, `${c}-${snapshot.date}-${snapshotIndex}.snp.gz`)
+            const snapshotFile = join(backupIndex, `${domain}-${snapshot.date}-${snapshotIndex}.snp.gz`)
             snapshotIndex++
             domainInfo.snapshots = [...(domainInfo.snapshots ?? []), snapshotFile]
             await writeChanges(storage, snapshotFile, processedChanges)
@@ -501,8 +501,8 @@ export async function backup (
         if (_pack === undefined) {
           _pack = pack()
           stIndex++
-          const storageFile = join(backupIndex, `${c}-data-${snapshot.date}-${stIndex}.tar.gz`)
-          console.log('storing from domain', c, storageFile)
+          const storageFile = join(backupIndex, `${domain}-data-${snapshot.date}-${stIndex}.tar.gz`)
+          console.log('storing from domain', domain, storageFile)
           domainInfo.storage = [...(domainInfo.storage ?? []), storageFile]
           const dataStream = await storage.write(storageFile)
           const storageZip = createGzip()
@@ -553,12 +553,12 @@ export async function backup (
       }
 
       if (changed > 0) {
-        snapshot.domains[c] = domainInfo
+        snapshot.domains[domain] = domainInfo
         domainInfo.added += processedChanges.added.size
         domainInfo.updated += processedChanges.updated.size
         domainInfo.removed += processedChanges.removed.length
 
-        const snapshotFile = join(backupIndex, `${c}-${snapshot.date}-${snapshotIndex}.snp.gz`)
+        const snapshotFile = join(backupIndex, `${domain}-${snapshot.date}-${snapshotIndex}.snp.gz`)
         snapshotIndex++
         domainInfo.snapshots = [...(domainInfo.snapshots ?? []), snapshotFile]
         await writeChanges(storage, snapshotFile, processedChanges)
