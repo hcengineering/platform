@@ -33,4 +33,8 @@ export class TrackerNavigationMenuPage {
   async openTemplateForProject (projectName: string): Promise<void> {
     await this.page.locator(`a[href$="templates"][href*="${projectName}"]`).click()
   }
+
+  async openIssuesForProject (projectName: string): Promise<void> {
+    await this.page.locator(`a[href$="issues"][href*="${projectName}"]`).click()
+  }
 }
