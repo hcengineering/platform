@@ -15,3 +15,14 @@ export interface Issue {
   duedate?: string
   filePath?: string
 }
+
+export interface NewProject {
+  title: string
+  identifier: string
+  description: string
+  private: boolean
+  defaultAssigneeForIssues: string
+  defaultIssueStatus: string
+  icon?: string
+  type?: string
+}
