@@ -1,12 +1,14 @@
 import { expect, type Locator, type Page } from '@playwright/test'
+import { CommonPage } from '../common-page'
 
-export class TrackerNavigationMenuPage {
+export class TrackerNavigationMenuPage extends CommonPage {
   readonly page: Page
   readonly buttonIssues: Locator
   readonly buttonCreateProject: Locator
   readonly buttonProjectsParent: Locator
 
   constructor (page: Page) {
+    super()
     this.page = page
     this.buttonIssues = page.locator('a span', { hasText: 'Issues' })
     this.buttonCreateProject = page.locator('div#tree-projects').locator('xpath=..')
@@ -36,5 +38,14 @@ export class TrackerNavigationMenuPage {
 
   async openIssuesForProject (projectName: string): Promise<void> {
     await this.page.locator(`a[href$="issues"][href*="${projectName}"]`).click()
+  }
+
+  async openProjectToEdit (projectName: string): Promise<void> {
+    await this.buttonProjectsParent.filter({ hasText: projectName }).hover()
+    await this.buttonProjectsParent.filter({ hasText: projectName })
+      .locator('xpath=..')
+      .locator('div[class*="tool"]:not([class*="arrow"])')
+      .click()
+    await this.selectFromDropdown(this.page, 'Edit project')
   }
 }
