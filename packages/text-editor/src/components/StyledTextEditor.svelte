@@ -125,7 +125,7 @@
   let needFocus = autofocus
   const focused = false
 
-  $: if (textEditor && needFocus) {
+  $: if (textEditor !== undefined && needFocus) {
     if (!focused) textEditor.focus()
     needFocus = false
   }

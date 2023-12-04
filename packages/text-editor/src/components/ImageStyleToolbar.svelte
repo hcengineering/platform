@@ -37,7 +37,7 @@
     }
   }
 
-  function openImage () {
+  function openImage (): void {
     const attributes = textEditor.getAttributes('image')
     const fileId = attributes['file-id'] ?? attributes.src
     const fileName = attributes.alt ?? ''
@@ -51,14 +51,14 @@
     )
   }
 
-  function openOriginalImage () {
+  function openOriginalImage (): void {
     const attributes = textEditor.getAttributes('image')
     const fileId = attributes['file-id'] ?? attributes.src
     const url = getFileUrl(fileId, 'full')
     window.open(url, '_blank')
   }
 
-  function moreOptions (event: MouseEvent) {
+  function moreOptions (event: MouseEvent): void {
     const widthActions = ['25%', '50%', '75%', '100%', plugin.string.Unset].map((it) => {
       return {
         id: `#imageWidth${it}`,
@@ -81,7 +81,7 @@
       (val) => {
         if (val !== undefined) {
           const op = actions.find((it) => it.id === val)
-          if (op) {
+          if (op !== undefined) {
             op.action()
             dispatch('focus')
           }

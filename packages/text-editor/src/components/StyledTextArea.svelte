@@ -24,7 +24,7 @@
   let rawValue: string
   let oldContent = ''
 
-  $: if (content && oldContent !== content) {
+  $: if (content !== undefined && oldContent !== content) {
     oldContent = content
     rawValue = content
   }
@@ -44,12 +44,12 @@
 
   let needFocus = focus
 
-  $: if (textEditor && needFocus) {
+  $: if (textEditor !== undefined && needFocus) {
     textEditor.focus()
     needFocus = false
   }
 
-  function configureExtensions () {
+  function configureExtensions (): AnyExtension[] {
     const completionPlugin = Completion.configure({
       ...completionConfig,
       showDoc (event: MouseEvent, _id: string, _class: string) {
