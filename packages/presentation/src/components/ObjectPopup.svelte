@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -39,8 +39,8 @@
   export let width: 'medium' | 'large' | 'full' = 'medium'
   export let size: 'small' | 'medium' | 'large' = 'large'
 
+  export let searchMode: 'field' | 'fulltext' | 'disabled' = 'field'
   export let searchField: string = 'name'
-  export let noSearchField: boolean = false
   export let groupBy = '_class'
 
   export let create: ObjectCreate | undefined = undefined
@@ -56,21 +56,23 @@
   const created: Doc[] = []
   const dispatch = createEventDispatcher()
 
+  let noSearchField: boolean = false
   let search: string = ''
   let objects: Doc[] = []
 
   const query = createQuery()
 
+  $: noSearchField = searchMode === 'disabled'
   $: _idExtra = typeof docQuery?._id === 'object' ? docQuery?._id : {}
   $: query.query<Doc>(
     _class,
     {
       ...(docQuery ?? {}),
-      ...(noSearchField
-        ? search !== ''
+      ...(searchMode !== 'disabled' && search !== ''
+        ? searchMode === 'fulltext'
           ? { $search: search }
-          : {}
-        : { [searchField]: { $like: '%' + search + '%' } }),
+          : { [searchField]: { $like: '%' + search + '%' } }
+        : {}),
       _id: { $nin: ignoreObjects, ..._idExtra }
     },
     (result) => {
