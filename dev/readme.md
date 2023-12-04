@@ -6,7 +6,7 @@
 rush build
 rush bundle
 rush docker:build
-docker-compose up -d --force-recreate
+docker compose up -d --force-recreate
 ```
 
 ## Running ElasticVUE to check elastic intance

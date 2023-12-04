@@ -1,21 +1,21 @@
-import { test, expect, Page } from '@playwright/test'
+import { Page, expect, test } from '@playwright/test'
+import { allure } from 'allure-playwright'
+import { IssuesPage } from '../model/tracker/issues-page'
+import { PlatformSetting, expectToContainsOrdered, fillSearch, generateId } from '../utils'
 import {
-  checkIssueFromList,
-  createIssue,
-  createComponent,
-  createMilestone,
   DEFAULT_STATUSES,
   DEFAULT_USER,
   IssueProps,
-  navigate,
   PRIORITIES,
+  ViewletSelectors,
+  checkIssueFromList,
+  createComponent,
+  createIssue,
+  createMilestone,
+  navigate,
   setViewGroup,
-  setViewOrder,
-  ViewletSelectors
+  setViewOrder
 } from './tracker.utils'
-import { fillSearch, generateId, PlatformSetting } from '../utils'
-import { allure } from 'allure-playwright'
-import { IssuesPage } from '../model/tracker/issues-page'
 
 test.use({
   storageState: PlatformSetting
@@ -129,7 +129,9 @@ test.describe('tracker layout tests', () => {
       const issuesPage = new IssuesPage(page)
       await issuesPage.modelSelectorAll.click()
       await page.click(ViewletSelectors.Table)
-      await expect(locator).toContainText(groupLabels)
+      for (const g of groupLabels) {
+        await expect(locator).toContainText(g)
+      }
 
       for (const issueName of issueNames) {
         await checkIssueFromList(page, issueName)
@@ -190,9 +192,7 @@ test.describe('tracker layout tests', () => {
 
       await fillSearch(page, id)
 
-      await expect(locator).toContainText(orderedIssueNames, {
-        timeout: 5000
-      })
+      await expectToContainsOrdered(locator, orderedIssueNames)
     })
   }
 })

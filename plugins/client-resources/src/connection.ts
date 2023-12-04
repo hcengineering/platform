@@ -249,7 +249,17 @@ class Connection implements ClientConnection {
           const request = this.requests.get(resp.id)
           this.requests.delete(resp.id)
           if (resp.error !== undefined) {
-            console.log('ERROR', promise, request, resp.id)
+            console.log(
+              'ERROR',
+              'request:',
+              request?.method,
+              'response-id:',
+              resp.id,
+              'error: ',
+              resp.error,
+              'result: ',
+              resp.result
+            )
             promise.reject(new PlatformError(resp.error))
           } else {
             promise.resolve(resp.result)

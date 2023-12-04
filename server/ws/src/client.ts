@@ -110,12 +110,14 @@ export class ClientSession implements Session {
     this.current.find++
     const context = ctx as SessionContext
     context.userEmail = this.token.email
+    context.admin = this.token.extra?.admin === 'true'
     return await this._pipeline.findAll(context, _class, query, options)
   }
 
   async searchFulltext (ctx: MeasureContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
     const context = ctx as SessionContext
     context.userEmail = this.token.email
+    context.admin = this.token.extra?.admin === 'true'
     return await this._pipeline.searchFulltext(context, query, options)
   }
 
@@ -124,6 +126,7 @@ export class ClientSession implements Session {
     this.current.tx++
     const context = ctx as SessionContext
     context.userEmail = this.token.email
+    context.admin = this.token.extra?.admin === 'true'
     const [result, derived, target] = await this._pipeline.tx(context, tx)
 
     let shouldBroadcast = true

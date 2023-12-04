@@ -150,7 +150,7 @@ jobs:
       - name: Prepare server
         run: |
           cd ./tests
-          ./prepare.sh
+          ./prepare-tests.sh
       - name: Testing...
         run: node common/scripts/install-run-rush.js test --verbose
         env:
