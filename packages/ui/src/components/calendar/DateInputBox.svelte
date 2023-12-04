@@ -18,11 +18,13 @@
   import Icon from '../Icon.svelte'
   import Label from '../Label.svelte'
   import IconClose from '../icons/Close.svelte'
-  import { daysInMonth } from './internal/DateUtils'
+  import { daysInMonth, getUserTimezone } from './internal/DateUtils'
+  import moment from 'moment-timezone'
 
   export let currentDate: Date | null
   export let withTime: boolean = false
   export let kind: 'default' | 'plain' = 'default'
+  export let timeZone: string = getUserTimezone()
 
   type TEdits = 'day' | 'month' | 'year' | 'hour' | 'min'
   interface IEdits {
@@ -44,19 +46,31 @@
     if (date == null) date = new Date()
     switch (id) {
       case 'day':
+        date = new Date(timeZone ? moment(date).tz(timeZone).date(val).valueOf() : moment(date).date(val).valueOf())
         date.setDate(val)
         break
       case 'month':
-        date.setMonth(val - 1)
+        date = new Date(
+          timeZone
+            ? moment(date)
+              .tz(timeZone)
+              .month(val + 1)
+              .valueOf()
+            : moment(date)
+              .month(val + 1)
+              .valueOf()
+        )
         break
       case 'year':
-        date.setFullYear(val)
+        date = new Date(timeZone ? moment(date).tz(timeZone).year(val).valueOf() : moment(date).year(val).valueOf())
         break
       case 'hour':
-        date.setHours(val)
+        date = new Date(timeZone ? moment(date).tz(timeZone).hours(val).valueOf() : moment(date).hours(val).valueOf())
         break
       case 'min':
-        date.setMinutes(val)
+        date = new Date(
+          timeZone ? moment(date).tz(timeZone).minutes(val).valueOf() : moment(date).minutes(val).valueOf()
+        )
         break
     }
     return date
@@ -81,15 +95,15 @@
   const getValue = (date: Date, id: TEdits): number => {
     switch (id) {
       case 'day':
-        return date.getDate()
+        return timeZone ? moment(date).tz(timeZone).date() : moment(date).date()
       case 'month':
-        return date.getMonth() + 1
+        return timeZone ? moment(date).tz(timeZone).month() + 1 : moment(date).month() + 1
       case 'year':
-        return date.getFullYear()
+        return timeZone ? moment(date).tz(timeZone).year() : moment(date).year()
       case 'hour':
-        return date.getHours()
+        return timeZone ? moment(date).tz(timeZone).hours() : moment(date).hours()
       case 'min':
-        return date.getMinutes()
+        return timeZone ? moment(date).tz(timeZone).minutes() : moment(date).minutes()
     }
   }
 

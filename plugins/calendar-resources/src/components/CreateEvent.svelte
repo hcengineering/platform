@@ -18,19 +18,28 @@
   import { Class, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
-  import { Button, EditBox, Icon, IconClose, IconMoreH, createFocusManager, showPopup } from '@hcengineering/ui'
+  import {
+    Button,
+    EditBox,
+    FocusHandler,
+    Icon,
+    IconClose,
+    IconMoreH,
+    createFocusManager,
+    getUserTimezone,
+    showPopup
+  } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
   import { saveUTC } from '../utils'
+  import CalendarSelector from './CalendarSelector.svelte'
   import EventParticipants from './EventParticipants.svelte'
   import EventReminders from './EventReminders.svelte'
   import EventTimeEditor from './EventTimeEditor.svelte'
   import EventTimeExtraButton from './EventTimeExtraButton.svelte'
+  import LocationEditor from './LocationEditor.svelte'
   import ReccurancePopup from './ReccurancePopup.svelte'
   import VisibilityEditor from './VisibilityEditor.svelte'
-  import CalendarSelector from './CalendarSelector.svelte'
-  import LocationEditor from './LocationEditor.svelte'
-  import FocusHandler from '@hcengineering/ui/src/components/FocusHandler.svelte'
 
   export let attachedTo: Ref<Doc> = calendar.ids.NoAttached
   export let attachedToClass: Ref<Class<Doc>> = calendar.class.Event
@@ -41,7 +50,6 @@
   const now = new Date()
   const defaultDuration = 60 * 60 * 1000
   const allDayDuration = 24 * 60 * 60 * 1000 - 1
-  // const offsetTZ = new Date().getTimezoneOffset() * 60 * 1000
 
   let startDate =
     date === undefined ? now.getTime() : withTime ? date.getTime() : date.setHours(now.getHours(), now.getMinutes())
@@ -49,6 +57,7 @@
   let dueDate = startDate + duration
   let allDay = false
   let location = ''
+  let timeZone: string = getUserTimezone()
 
   let reminders = [30 * 60 * 1000]
 
@@ -99,7 +108,8 @@
         location,
         allDay,
         access: 'owner',
-        originalStartTime: allDay ? saveUTC(date) : date
+        originalStartTime: allDay ? saveUTC(date) : date,
+        timeZone
       })
     } else {
       await client.addCollection(calendar.class.Event, space, attachedTo, attachedToClass, 'events', {
@@ -114,6 +124,7 @@
         title,
         location,
         allDay,
+        timeZone,
         access: 'owner'
       })
     }
@@ -168,8 +179,14 @@
     </div>
   </div>
   <div class="block first flex-no-shrink">
-    <EventTimeEditor {allDay} bind:startDate bind:dueDate focusIndex={10004} />
-    <EventTimeExtraButton bind:allDay bind:rules on:repeat={setRecurrance} on:allday={allDayChangeHandler} />
+    <EventTimeEditor {allDay} bind:startDate bind:dueDate {timeZone} focusIndex={10004} />
+    <EventTimeExtraButton
+      bind:allDay
+      bind:timeZone
+      bind:rules
+      on:repeat={setRecurrance}
+      on:allday={allDayChangeHandler}
+    />
   </div>
   <div class="block rightCropPadding">
     <LocationEditor focusIndex={10010} bind:value={location} />

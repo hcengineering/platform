@@ -14,8 +14,11 @@
 -->
 <script lang="ts">
   export let date: number
+  export let timeZone: string
+
   const current = new Date()
   let options: Intl.DateTimeFormatOptions = {
+    timeZone,
     day: 'numeric',
     weekday: 'short',
     month: 'short'
@@ -26,6 +29,8 @@
       year: '2-digit'
     }
   }
+
+  $: options.timeZone = timeZone
 </script>
 
 {new Date(date).toLocaleDateString('default', options)}

@@ -27,7 +27,7 @@
     IconChevronDown,
     ActionIcon,
     IconUndo
-  } from '../..'
+  } from '..'
 
   interface TimeZoneGroup {
     continent: string
@@ -38,6 +38,7 @@
   export let timeZones: TimeZone[] = []
   export let count: number
   export let reset: string | null
+  export let withAdd: boolean = true
 
   const dispatch = createEventDispatcher()
 
@@ -142,18 +143,20 @@
                 {#each items as item}
                   <button class="menu-item no-focus items-center" on:click={() => dispatch('close', item.id)}>
                     <span class="overflow-label label flex-grow">{item.city}</span>
-                    <div class="tool ml-2">
-                      <Button
-                        icon={IconAdd}
-                        size={'small'}
-                        kind={'ghost'}
-                        disabled={count > 4}
-                        on:click={() => {
-                          count++
-                          dispatch('update', item.id)
-                        }}
-                      />
-                    </div>
+                    {#if withAdd}
+                      <div class="tool ml-2">
+                        <Button
+                          icon={IconAdd}
+                          size={'small'}
+                          kind={'ghost'}
+                          disabled={count > 4}
+                          on:click={() => {
+                            count++
+                            dispatch('update', item.id)
+                          }}
+                        />
+                      </div>
+                    {/if}
                   </button>
                 {/each}
               </div>

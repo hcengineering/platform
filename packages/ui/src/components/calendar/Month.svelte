@@ -14,23 +14,26 @@
 -->
 <script lang="ts">
   import { afterUpdate, createEventDispatcher } from 'svelte'
-  import IconNavPrev from '../icons/NavPrev.svelte'
-  import IconNavNext from '../icons/NavNext.svelte'
-  import Icon from '../Icon.svelte'
-  import {
-    firstDay,
-    day,
-    getWeekDayName,
-    areDatesEqual,
-    getMonthName,
-    daysInMonth,
-    TCellStyle,
-    ICell
-  } from './internal/DateUtils'
   import { capitalizeFirstLetter } from '../../utils'
+  import Icon from '../Icon.svelte'
+  import IconNavNext from '../icons/NavNext.svelte'
+  import IconNavPrev from '../icons/NavPrev.svelte'
+  import {
+    ICell,
+    TCellStyle,
+    areDatesEqual,
+    day,
+    daysInMonth,
+    firstDay,
+    getMonthName,
+    getUserTimezone,
+    getWeekDayName
+  } from './internal/DateUtils'
+  import moment from 'moment-timezone'
 
   export let currentDate: Date | null
   export let mondayStart: boolean = true
+  export let timeZone: string = getUserTimezone()
   export let hideNavigator: boolean = false
 
   const dispatch = createEventDispatcher()
@@ -46,7 +49,14 @@
 
   let days: ICell[] = []
   const getDateStyle = (date: Date): TCellStyle => {
-    if (currentDate != null && areDatesEqual(currentDate, date)) return 'selected'
+    if (currentDate != null) {
+      const zonedTime = moment(currentDate).tz(timeZone)
+      if (
+        zonedTime.date() === date.getDate() &&
+        zonedTime.year() === date.getFullYear() &&
+        zonedTime.month() === date.getMonth()
+      ) { return 'selected' }
+    }
     return 'not-selected'
   }
   const renderCellStyles = (): void => {

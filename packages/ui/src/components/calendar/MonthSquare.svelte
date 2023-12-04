@@ -17,8 +17,18 @@
   import IconArrowLeft from '../icons/ArrowLeft.svelte'
   import IconArrowRight from '../icons/ArrowRight.svelte'
   import Button from '../Button.svelte'
-  import { firstDay, day, getWeekDayName, areDatesEqual, getMonthName, weekday, isWeekend } from './internal/DateUtils'
+  import {
+    firstDay,
+    day,
+    getWeekDayName,
+    areDatesEqual,
+    getMonthName,
+    weekday,
+    isWeekend,
+    getUserTimezone
+  } from './internal/DateUtils'
   import { capitalizeFirstLetter } from '../../utils'
+  import moment from 'moment-timezone'
 
   export let currentDate: Date | null
   export let viewDate: Date
@@ -27,6 +37,7 @@
   export let viewUpdate: boolean = true
   export let noPadding: boolean = false
   export let displayedWeeksCount = 6
+  export let timeZone: string = getUserTimezone()
   export let selectedTo: Date | null | undefined = undefined
 
   const dispatch = createEventDispatcher()
@@ -49,8 +60,22 @@
   }
 
   function isSelected (currentDate: Date | null, selectedTo: Date | null | undefined, target: Date): boolean {
-    if (currentDate != null && areDatesEqual(currentDate, target)) return true
-    if (selectedTo != null && areDatesEqual(selectedTo, target)) return true
+    if (currentDate != null) {
+      const zonedTime = moment(currentDate).tz(timeZone)
+      if (
+        zonedTime.date() === target.getDate() &&
+        zonedTime.year() === target.getFullYear() &&
+        zonedTime.month() === target.getMonth()
+      ) { return true }
+    }
+    if (selectedTo != null) {
+      const zonedTime = moment(selectedTo).tz(timeZone)
+      if (
+        zonedTime.date() === target.getDate() &&
+        zonedTime.year() === target.getFullYear() &&
+        zonedTime.month() === target.getMonth()
+      ) { return true }
+    }
     return false
   }
 

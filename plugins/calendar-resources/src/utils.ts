@@ -162,6 +162,7 @@ export async function updateReccuringInstance (
                   rules: object.rules,
                   exdate: object.exdate,
                   rdate: object.rdate,
+                  timeZone: object.timeZone,
                   ...ops
                 },
                 object._id

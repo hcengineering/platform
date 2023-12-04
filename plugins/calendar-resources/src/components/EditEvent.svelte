@@ -18,20 +18,28 @@
   import { DocumentUpdate, Ref } from '@hcengineering/core'
   import presentation, { getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
-  import { Button, EditBox, Icon, IconClose, createFocusManager, showPopup } from '@hcengineering/ui'
+  import {
+    Button,
+    EditBox,
+    FocusHandler,
+    Icon,
+    IconClose,
+    createFocusManager,
+    getUserTimezone,
+    showPopup
+  } from '@hcengineering/ui'
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
   import { isReadOnly, saveUTC, updateReccuringInstance } from '../utils'
+  import CalendarSelector from './CalendarSelector.svelte'
   import EventParticipants from './EventParticipants.svelte'
   import EventReminders from './EventReminders.svelte'
   import EventTimeEditor from './EventTimeEditor.svelte'
   import EventTimeExtraButton from './EventTimeExtraButton.svelte'
+  import LocationEditor from './LocationEditor.svelte'
   import ReccurancePopup from './ReccurancePopup.svelte'
   import VisibilityEditor from './VisibilityEditor.svelte'
-  import CalendarSelector from './CalendarSelector.svelte'
-  import LocationEditor from './LocationEditor.svelte'
-  import FocusHandler from '@hcengineering/ui/src/components/FocusHandler.svelte'
 
   export let object: Event
   $: readOnly = isReadOnly(object)
@@ -48,6 +56,7 @@
   let visibility = object.visibility ?? 'public'
   let reminders = [...(object.reminders ?? [])]
   let space = object.space
+  let timeZone: string = object.timeZone ?? getUserTimezone()
 
   let description = object.description
   let location = object.location
@@ -83,6 +92,9 @@
     }
     if (object.location !== location) {
       update.location = location
+    }
+    if (object.timeZone !== timeZone) {
+      update.timeZone = timeZone
     }
     if (allDay !== object.allDay) {
       update.date = allDay ? saveUTC(startDate) : startDate
@@ -170,8 +182,16 @@
     </div>
   </div>
   <div class="block first flex-no-shrink">
-    <EventTimeEditor {allDay} bind:startDate bind:dueDate disabled={readOnly} focusIndex={10004} />
-    <EventTimeExtraButton bind:allDay bind:rules on:repeat={setRecurrance} on:allday={allDayChangeHandler} noRepeat />
+    <EventTimeEditor {allDay} bind:startDate {timeZone} bind:dueDate disabled={readOnly} focusIndex={10004} />
+    <EventTimeExtraButton
+      bind:allDay
+      bind:timeZone
+      bind:rules
+      on:repeat={setRecurrance}
+      {readOnly}
+      on:allday={allDayChangeHandler}
+      noRepeat
+    />
   </div>
   <div class="block rightCropPadding">
     <LocationEditor bind:value={location} focusIndex={10005} />

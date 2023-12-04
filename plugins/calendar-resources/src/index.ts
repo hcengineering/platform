@@ -102,7 +102,8 @@ async function deleteRecHandler (res: any, object: ReccuringInstance): Promise<v
         rules: object.rules,
         exdate: object.exdate,
         visibility: object.visibility,
-        access: object.access
+        access: object.access,
+        timeZone: object.timeZone
       },
       object._id
     )

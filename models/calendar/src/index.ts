@@ -117,11 +117,14 @@ export class TEvent extends TAttachedDoc implements Event {
   access!: 'freeBusyReader' | 'reader' | 'writer' | 'owner'
 
   visibility?: Visibility
+
+  timeZone?: string
 }
 
 @Model(calendar.class.ReccuringEvent, calendar.class.Event)
 @UX(calendar.string.ReccuringEvent, calendar.icon.Calendar)
 export class TReccuringEvent extends TEvent implements ReccuringEvent {
+  declare timeZone: string
   rules!: RecurringRule[]
   exdate!: Timestamp[]
   rdate!: Timestamp[]
@@ -132,7 +135,6 @@ export class TReccuringEvent extends TEvent implements ReccuringEvent {
 @UX(calendar.string.Event, calendar.icon.Calendar)
 export class TReccuringInstance extends TReccuringEvent implements ReccuringInstance {
   recurringEventId!: Ref<ReccuringEvent>
-  declare originalStartTime: number
   isCancelled?: boolean
   virtual?: boolean
 }

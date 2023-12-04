@@ -15,8 +15,10 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import Month from './Month.svelte'
+  import { getUserTimezone } from './internal/DateUtils'
 
   export let currentDate: Date | null
+  export let timeZone: string = getUserTimezone()
   export let mondayStart: boolean = true
 
   const dispatch = createEventDispatcher()
@@ -25,6 +27,7 @@
 <div class="antiPopup popup">
   <Month
     bind:currentDate
+    {timeZone}
     {mondayStart}
     on:update={(result) => {
       if (result.detail !== undefined) {
