@@ -35,7 +35,7 @@
     sort: { modifiedOn: SortingOrder.Descending }
   }
 
-  async function onClose ({ detail: parentIssue }: CustomEvent<Issue | undefined | null>) {
+  async function onClose ({ detail: parentIssue }: CustomEvent<Issue | undefined | null>): Promise<void> {
     const vv = Array.isArray(value) ? value : [value]
     for (const docValue of vv) {
       if (
@@ -93,7 +93,7 @@
   {ignoreObjects}
   shadows={true}
   {width}
-  noSearchField
+  searchMode={'fulltext'}
   on:update
   on:close={onClose}
 >
