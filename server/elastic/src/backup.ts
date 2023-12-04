@@ -36,6 +36,7 @@ import core, {
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import { DbAdapter, IndexedDoc } from '@hcengineering/server-core'
 import { createHash } from 'node:crypto'
+import { SearchResponse } from '@elastic/elasticsearch/api/types'
 
 class ElasticDataAdapter implements DbAdapter {
   constructor (
@@ -67,7 +68,7 @@ class ElasticDataAdapter implements DbAdapter {
     let listRecieved = false
     let pos = 0
     let buffer: { _id: string, data: IndexedDoc }[] = []
-    let resp: ApiResponse
+    let resp: ApiResponse | null = null
     let finished = false
     return {
       next: async () => {
@@ -99,10 +100,9 @@ class ElasticDataAdapter implements DbAdapter {
             }
             listRecieved = true
           }
-          if (pos === buffer.length && !finished) {
+          if (resp !== null && pos === buffer.length && !finished) {
             const params = {
-              scrollId: resp.body._scroll_id as string,
-              scroll: '23h'
+              scroll_id: (resp.body as SearchResponse)._scroll_id
             }
             resp = await this.client.scroll(params, { maxRetries: 5 })
             if (resp.statusCode !== 200) {
@@ -137,7 +137,13 @@ class ElasticDataAdapter implements DbAdapter {
           throw new PlatformError(e)
         }
       },
-      close: async () => {}
+      close: async () => {
+        if (resp !== null && (resp.body as SearchResponse)?._scroll_id != null) {
+          await this.client.clearScroll({
+            scroll_id: (resp.body as SearchResponse)._scroll_id
+          })
+        }
+      }
     }
   }
 

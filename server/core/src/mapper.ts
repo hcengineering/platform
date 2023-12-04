@@ -2,7 +2,7 @@ import { Hierarchy, Ref, RefTo, Class, Doc, SearchResultDoc, docKey } from '@hce
 import { getResource } from '@hcengineering/platform'
 
 import plugin from './plugin'
-import { IndexedDoc, SearchPresenter, ClassSearchConfigProps } from './types'
+import { IndexedDoc, SearchPresenter, ClassSearchConfigProps, SearchScoring } from './types'
 
 interface IndexedReader {
   get: (attribute: string) => any
@@ -104,6 +104,17 @@ export async function updateDocWithPresenter (hierarchy: Hierarchy, doc: Indexed
     }
     doc[prop.name] = value
   }
+}
+
+export function getScoringConfig (hierarchy: Hierarchy, classes: Ref<Class<Doc>>[]): SearchScoring[] {
+  let results: SearchScoring[] = []
+  for (const _class of classes) {
+    const searchPresenter = findSearchPresenter(hierarchy, _class)
+    if (searchPresenter?.searchConfig.scoring !== undefined) {
+      results = results.concat(searchPresenter?.searchConfig.scoring)
+    }
+  }
+  return results
 }
 
 /**

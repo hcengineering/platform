@@ -75,6 +75,7 @@ class ActivityImpl implements Activity {
   private readonly hiddenAttributes: Set<string>
   private prevObjectId: Ref<Doc> | undefined
   private prevObjectClass: Ref<Class<Doc>> | undefined
+  private prevSort: SortingOrder | undefined
   private editable: Map<Ref<Class<Doc>>, boolean> | undefined
 
   private ownTxes: Array<TxCUD<Doc>> = []
@@ -116,11 +117,12 @@ class ActivityImpl implements Activity {
     editable: Map<Ref<Class<Doc>>, boolean>
   ): boolean {
     this.editable = editable
-    if (objectId === this.prevObjectId && objectClass === this.prevObjectClass) {
+    if (objectId === this.prevObjectId && objectClass === this.prevObjectClass && sort === this.prevSort) {
       return false
     }
     this.prevObjectClass = objectClass
     this.prevObjectId = objectId
+    this.prevSort = sort
     let isAttached = false
 
     isAttached = this.hierarchy.isDerived(objectClass, core.class.AttachedDoc)

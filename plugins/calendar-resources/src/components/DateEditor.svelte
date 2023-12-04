@@ -35,6 +35,7 @@
   export let kind: ButtonKind = 'ghost'
   export let size: ButtonSize = 'medium'
   export let disabled: boolean = false
+  export let focusIndex = -1
 
   const dispatch = createEventDispatcher()
 
@@ -77,14 +78,21 @@
   class:gap-1-5={direction === 'horizontal'}
 >
   {#if showDate || withoutTime}
-    <Button {kind} {size} padding={'0 .5rem'} on:click={dateClick} {disabled}>
+    <Button {kind} {size} padding={'0 .5rem'} {focusIndex} on:click={dateClick} {disabled}>
       <svelte:fragment slot="content">
         <DateLocalePresenter date={currentDate.getTime()} />
       </svelte:fragment>
     </Button>
   {/if}
   {#if !withoutTime}
-    <Button {kind} {size} padding={'0 .5rem'} on:click={timeClick} {disabled}>
+    <Button
+      {kind}
+      {size}
+      padding={'0 .5rem'}
+      focusIndex={focusIndex !== -1 ? focusIndex + 1 : focusIndex}
+      on:click={timeClick}
+      {disabled}
+    >
       <svelte:fragment slot="content">
         <TimeInputBox
           bind:currentDate

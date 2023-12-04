@@ -10,7 +10,7 @@
         },
         {
           "name": "login:metadata:LoginTokens",
-          "value": "{\"sanity-ws\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjb25maXJtZWQiOnRydWUsImVtYWlsIjoidXNlcjIiLCJ3b3Jrc3BhY2UiOiJzYW5pdHktd3MiLCJwcm9kdWN0SWQiOiIifQ.810B-zY0JjmKWTeTNmhUWKPY4wkp5hGX3Ng6Y73NK7I\"}"
+          "value": "{\"sanity-ws\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InVzZXIyIiwid29ya3NwYWNlIjoic2FuaXR5LXdzIiwicHJvZHVjdElkIjoiIn0.YLSe7l0JNwyohgmqdGhnf8MpJZc7l7ZfoP80so3ZZN4\"}"
         },
         {
           "name": "login:metadata:LoginEndpoint",

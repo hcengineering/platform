@@ -4,9 +4,6 @@
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
-  "#override": [
-    "test"
-  ],
   "scripts": {
     "init": "ts-node src/__init.ts",
     "build": "tsc",
@@ -14,7 +11,7 @@
     "lint:fix": "eslint --fix src",
     "lint": "eslint src",
     "format": "format src",
-    "test": ""
+    "test": "jest --passWithNoTests --silent --forceExit"
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",

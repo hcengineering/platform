@@ -15,6 +15,8 @@ export class TemplateDetailsPage extends CommonTrackerPage {
   readonly buttonDueDate: Locator
   readonly buttonSaveDueDate: Locator
   readonly textComment: Locator
+  readonly buttonMoreActions: Locator
+  readonly buttonDelete: Locator
 
   constructor (page: Page) {
     super(page)
@@ -30,6 +32,8 @@ export class TemplateDetailsPage extends CommonTrackerPage {
     this.buttonDueDate = page.locator('(//span[text()="Due date"]/../div/button)[2]')
     this.buttonSaveDueDate = page.locator('div.footer > button')
     this.textComment = page.locator('div.labels-row')
+    this.buttonMoreActions = page.locator('div.popupPanel-title > div > button:nth-child(1)')
+    this.buttonDelete = page.locator('button[class*="menuItem"] > span', { hasText: 'Delete' })
   }
 
   async checkTemplate (data: NewIssue): Promise<void> {
@@ -44,6 +48,7 @@ export class TemplateDetailsPage extends CommonTrackerPage {
     if (data.labels != null) {
       await this.buttonAddLabel.click()
       await expect(this.page.locator('div.menu-group span', { hasText: data.labels })).toBeVisible()
+      await this.inputTitle.click({ force: true })
     }
     if (data.component != null) {
       await expect(this.buttonComponent).toHaveText(data.component)
@@ -92,5 +97,11 @@ export class TemplateDetailsPage extends CommonTrackerPage {
 
   async checkCommentExist (comment: string): Promise<void> {
     await expect(this.textComment.filter({ hasText: comment })).toBeVisible()
+  }
+
+  async deleteTemplate (): Promise<void> {
+    await this.buttonMoreActions.click()
+    await this.buttonDelete.click()
+    await this.pressYesDeletePopup(this.page)
   }
 }

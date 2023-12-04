@@ -4,7 +4,7 @@
 ./tool-local.sh create-account user1 -f John -l Appleseed -p 1234
 ./tool-local.sh confirm-email user1
 # Create second user record in accounts
-./tool-local.sh create-account user2 -f Kainin -l Numoin -p 1234
+./tool-local.sh create-account user2 -f Kainin -l Dirak -p 1234
 ./tool-local.sh confirm-email user2
 
 

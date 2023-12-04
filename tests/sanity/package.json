@@ -13,9 +13,9 @@
     "ci": "playwright install --with-deps chromium",
     "test": "",
     "uitest": "playwright test --browser chromium --reporter list,html,allure-playwright -c ./tests/playwright.config.ts",
-    "dev-uitest": "cross-env PLATFORM_URI=http://localhost:8080 PLATFORM_TRANSACTOR=ws://localhost:3333 SETTING=storage-dev.json playwright test --browser chromium --reporter list,html,allure-playwright -c ./tests/playwright.config.ts",
+    "dev-uitest": "cross-env PLATFORM_URI=http://localhost:8080 PLATFORM_TRANSACTOR=ws://localhost:3333 SETTING=storage-dev.json SETTING_SECOND=storageSecond-dev.json playwright test --browser chromium --reporter list,html,allure-playwright -c ./tests/playwright.config.ts",
     "debug": "playwright test --browser chromium -c ./tests/playwright.config.ts --debug --headed",
-    "dev-debug": "cross-env PLATFORM_URI=http://localhost:8080 PLATFORM_TRANSACTOR=ws://localhost:3333 SETTING=storage-dev.json playwright test --browser chromium -c ./tests/playwright.config.ts --debug --headed",
+    "dev-debug": "cross-env PLATFORM_URI=http://localhost:8080 PLATFORM_TRANSACTOR=ws://localhost:3333 SETTING=storage-dev.json SETTING_SECOND=storageSecond-dev.json playwright test --browser chromium -c ./tests/playwright.config.ts --debug --headed",
     "codegen": "playwright codegen --load-storage storage.json http://localhost:8083/workbench/sanity-ws/",
     "dev-codegen": "cross-env playwright codegen --load-storage storage-dev.json http://localhost:8080/workbench/sanity-ws/",
     "allure:generate": "allure generate allure-results -o allure-report --clean"
@@ -34,8 +34,8 @@
     "prettier": "^3.1.0",
     "prettier-plugin-svelte": "^3.1.0",
     "typescript": "^5.2.2",
-    "@playwright/test": "~1.23.0",
-    "allure-playwright": "2.9.2"
+    "@playwright/test": "^1.40.1",
+    "allure-playwright": "^2.9.2"
   },
   "dependencies": {
     "dotenv": "~16.0.0",

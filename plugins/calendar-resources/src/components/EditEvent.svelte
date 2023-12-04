@@ -18,7 +18,7 @@
   import { DocumentUpdate, Ref } from '@hcengineering/core'
   import presentation, { getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
-  import { Button, EditBox, Icon, IconClose, showPopup } from '@hcengineering/ui'
+  import { Button, EditBox, Icon, IconClose, createFocusManager, showPopup } from '@hcengineering/ui'
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
@@ -31,6 +31,7 @@
   import VisibilityEditor from './VisibilityEditor.svelte'
   import CalendarSelector from './CalendarSelector.svelte'
   import LocationEditor from './LocationEditor.svelte'
+  import FocusHandler from '@hcengineering/ui/src/components/FocusHandler.svelte'
 
   export let object: Event
   $: readOnly = isReadOnly(object)
@@ -138,7 +139,11 @@
       }
     })
   }
+
+  const manager = createFocusManager()
 </script>
+
+<FocusHandler {manager} />
 
 <div class="eventPopup-container">
   <div class="header flex-between">
@@ -165,18 +170,19 @@
     </div>
   </div>
   <div class="block first flex-no-shrink">
-    <EventTimeEditor {allDay} bind:startDate bind:dueDate disabled={readOnly} />
+    <EventTimeEditor {allDay} bind:startDate bind:dueDate disabled={readOnly} focusIndex={10004} />
     <EventTimeExtraButton bind:allDay bind:rules on:repeat={setRecurrance} on:allday={allDayChangeHandler} noRepeat />
   </div>
   <div class="block rightCropPadding">
-    <LocationEditor bind:value={location} />
-    <EventParticipants bind:participants bind:externalParticipants disabled={readOnly} />
+    <LocationEditor bind:value={location} focusIndex={10005} />
+    <EventParticipants bind:participants bind:externalParticipants disabled={readOnly} focusIndex={10006} />
   </div>
   <div class="block flex-no-shrink">
     <div class="flex-row-center gap-1-5">
       <Icon icon={calendar.icon.Description} size={'small'} />
       <StyledTextBox
         alwaysEdit={true}
+        focusIndex={10007}
         kind={'indented'}
         maxHeight={'limited'}
         showButtons={false}
@@ -187,17 +193,23 @@
   </div>
   <div class="divider" />
   <div class="block rightCropPadding">
-    <CalendarSelector bind:value={space} />
+    <CalendarSelector bind:value={space} focusIndex={10008} />
     <div class="flex-row-center flex-gap-1">
       <Icon icon={calendar.icon.Hidden} size={'small'} />
-      <VisibilityEditor bind:value={visibility} kind={'ghost'} withoutIcon />
+      <VisibilityEditor bind:value={visibility} kind={'ghost'} withoutIcon focusIndex={10009} />
     </div>
-    <EventReminders bind:reminders />
+    <EventReminders bind:reminders focusIndex={10010} />
   </div>
   <div class="divider" />
   <div class="flex-between p-5 flex-no-shrink">
     <div />
-    <Button kind="primary" label={presentation.string.Save} disabled={readOnly} on:click={saveEvent} />
+    <Button
+      kind="primary"
+      label={presentation.string.Save}
+      focusIndex={10011}
+      disabled={readOnly}
+      on:click={saveEvent}
+    />
   </div>
 </div>
 

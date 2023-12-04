@@ -1,5 +1,5 @@
 //
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,11 +15,15 @@
 
 /* Table */
 table.proseTable {
+  --table-selection-border-indent: -0.125rem;
+  --table-selection-border-radius: 0.125rem;
+  --table-selection-border-width: 0.125rem;
+
   border-collapse: collapse;
   table-layout: fixed;
   width: 100%;
+  position: relative;
   margin: 0;
-  overflow: hidden;
 
   td,
   th {
@@ -43,6 +47,199 @@ table.proseTable {
 
   p {
     margin: 0;
+  }
+
+  td {
+    // cell selection
+
+    &.table-cell-selected {
+      &::before {
+        content: '';
+        border: 0 solid var(--primary-button-focused);
+        border-radius: var(--table-selection-border-radius);
+        pointer-events: none;
+        position: absolute;
+        z-index: 110;
+        top: var(--table-selection-border-indent);
+        bottom: var(--table-selection-border-indent);
+        left: var(--table-selection-border-indent);
+        right: var(--table-selection-border-indent);
+      }
+      &__border-top::before {
+        border-top-width: var(--table-selection-border-width);
+      }
+      &__border-bottom::before {
+        border-bottom-width: var(--table-selection-border-width);
+      }
+      &__border-left::before {
+        border-left-width: var(--table-selection-border-width);
+      }
+      &__border-right::before {
+        border-right-width: var(--table-selection-border-width);
+      }
+    }
+
+    // row and col handlers
+
+    .table-col-handle,
+    .table-row-handle {
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      svg {
+        color: var(--theme-button-contrast-hovered);
+        opacity: 0;
+        z-index: 120;
+      }
+
+      &__selected {
+        &::before {
+          content: '';
+          background-color: var(--primary-button-focused);
+          border: var(--table-selection-border-width) solid var(--primary-button-focused);
+          border-radius: var(--table-selection-border-radius);
+          pointer-events: none;
+          position: absolute;
+          z-index: 110;
+          top: var(--table-selection-border-indent);
+          bottom: var(--table-selection-border-indent);
+          left: var(--table-selection-border-indent);
+          right: var(--table-selection-border-indent);
+        }
+
+        svg {
+          color: white;
+          opacity: 1;
+        }
+      }
+    }
+
+    .table-col-handle {
+      position: absolute;
+      width: calc(100% + 1px);
+      height: 1.25rem;
+      top: calc(-1.25rem - 1px);
+      left: 0;
+
+      &:hover {
+        &:not(.table-col-handle__selected) {
+          background-color: var(--theme-button-hovered);
+        }
+
+        svg { opacity: 1; }
+      }
+
+      &__selected {
+        &::before {
+          right: -1px;
+          bottom: 0;
+          border-bottom-width: 0;
+        }
+      }
+    }
+
+    .table-row-handle {
+      position: absolute;
+      width: 1.25rem;
+      height: calc(100% + 1px);
+      top: 0;
+      left: calc(-1.25rem - 1px);
+
+      svg {
+        transform: rotate(90deg);
+      }
+
+      &:hover {
+        &:not(.table-row-handle__selected) {
+          background-color: var(--theme-button-hovered);
+        }
+
+        svg {
+          opacity: 1;
+        }
+      }
+
+      &__selected {
+        &::before {
+          bottom: -1px;
+          right: 0;
+          border-right-width: 0;
+        }
+      }
+    }
+
+    // row and col insert
+
+    .table-col-insert,
+    .table-row-insert {
+      position: absolute;
+      z-index: 100;
+    }
+
+    .table-col-insert {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      top: -1.25rem;
+      right: -0.625rem;
+      width: 1.25rem;
+
+      .table-insert-marker {
+        width: 0.125rem;
+      }
+    }
+
+    .table-row-insert {
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-start;
+      align-items: center;
+      left: -1.25rem;
+      bottom: -0.625rem;
+      height: 1.25rem;
+
+      .table-insert-marker {
+        height: 0.125rem;
+      }
+    }
+
+    .table-insert-button {
+      cursor: pointer;
+      width: 1.25rem;
+      height: 1.25rem;
+
+      svg {
+        color: white;
+      }
+
+      &:hover {
+        border-radius: 50%;
+        background-color: var(--primary-button-focused);
+      }
+
+      &:not(:hover) {
+        &::before {
+          content: '';
+          border: 2px solid var(--text-editor-table-marker-color);
+          border-radius: 50%;
+          margin-left: calc(0.5rem - 1px);
+        }
+
+        svg {
+          opacity: 0;
+        }
+      }
+
+      &:hover + .table-insert-marker { opacity: 1; }
+    }
+
+    .table-insert-marker {
+      background-color: var(--primary-button-focused);
+      opacity: 0;
+    }
   }
 }
 

@@ -44,7 +44,7 @@ import core, {
 import { MinioService } from '@hcengineering/minio'
 import { FullTextIndexPipeline } from './indexer'
 import { createStateDoc, isClassIndexable } from './indexer/utils'
-import { mapSearchResultDoc } from './mapper'
+import { mapSearchResultDoc, getScoringConfig } from './mapper'
 import type { FullTextAdapter, WithFind, IndexedDoc } from './types'
 
 /**
@@ -246,7 +246,10 @@ export class FullTextIndex implements WithFind {
   }
 
   async searchFulltext (ctx: MeasureContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
-    const resultRaw = await this.adapter.searchString(query, options)
+    const resultRaw = await this.adapter.searchString(query, {
+      ...options,
+      scoring: getScoringConfig(this.hierarchy, query.classes ?? [])
+    })
 
     const result: SearchResult = {
       ...resultRaw,

@@ -69,11 +69,15 @@
     mode = Mode.View
   }
 
+  const dispatch = createEventDispatcher()
+
   let canBlur = true
   let focused = false
   let rawValue: string
   let oldContent = ''
   let modified: boolean = false
+
+  let textEditor: StyledTextEditor
 
   $: if (oldContent !== content) {
     oldContent = content
@@ -85,8 +89,6 @@
   }
   $: if (!modified && rawValue !== content) modified = true
   $: dispatch('change', modified)
-
-  let textEditor: StyledTextEditor
 
   export function submit (): void {
     textEditor.submit()
@@ -103,14 +105,13 @@
   export function setContent (data: string): void {
     textEditor.setContent(data)
   }
-  const dispatch = createEventDispatcher()
 
   export function isFocused (): boolean {
     return focused
   }
   let needFocus = false
 
-  $: if (textEditor && needFocus) {
+  $: if (textEditor !== undefined && needFocus) {
     textEditor.focus()
     needFocus = false
   }
@@ -119,7 +120,7 @@
   export let focusIndex = -1
   const { idx, focusManager } = registerFocus(focusIndex, {
     focus: () => {
-      const editable = textEditor?.isEditable()
+      const editable = textEditor?.isEditable() ?? false
       if (editable) {
         focused = true
         focus()
@@ -134,13 +135,13 @@
       return true
     }
   })
-  const updateFocus = () => {
+  const updateFocus = (): void => {
     if (focusIndex !== -1) {
       focusManager?.setFocus(idx)
     }
   }
 
-  const handleFocus = (value: boolean) => {
+  const handleFocus = (value: boolean): void => {
     focused = value
     if (focused) {
       updateFocus()
@@ -166,7 +167,7 @@
     }
   }
 
-  function configureExtensions () {
+  function configureExtensions (): AnyExtension[] {
     const imagePlugin = ImageExtension.configure({
       inline: true,
       HTMLAttributes: {},

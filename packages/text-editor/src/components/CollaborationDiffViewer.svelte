@@ -48,8 +48,8 @@
     }
   }
 
-  const updateDecorations = () => {
-    if (editor?.schema && comparedYdoc) {
+  const updateDecorations = (): void => {
+    if (editor?.schema !== undefined && comparedYdoc !== undefined) {
       updateEditor(editor, comparedYdoc, comparedField)
     }
   }
@@ -70,7 +70,7 @@
     }
   })
 
-  $: if (editor && comparedYdoc) {
+  $: if (editor !== undefined && comparedYdoc !== undefined) {
     updateEditor(editor, comparedYdoc, comparedField)
   }
 
@@ -84,7 +84,7 @@
   })
 
   onDestroy(() => {
-    if (editor) {
+    if (editor !== undefined) {
       editor.destroy()
     }
   })

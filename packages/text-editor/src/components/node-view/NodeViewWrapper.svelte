@@ -15,28 +15,13 @@
 //
 -->
 <script lang="ts">
-  import { onMount, tick } from 'svelte'
   import { getNodeViewContext } from './context'
 
   export let as = 'div'
 
   const { onDragStart } = getNodeViewContext()
-
-  let element: HTMLElement
-
-  onMount(async () => {
-    await tick()
-    element.style.whiteSpace = 'normal'
-  })
 </script>
 
-<svelte:element
-  this={as}
-  bind:this={element}
-  data-node-view-wrapper=""
-  on:dragstart={onDragStart}
-  role="none"
-  {...$$restProps}
->
+<svelte:element this={as} data-node-view-wrapper="" role="none" on:dragstart={onDragStart} {...$$restProps}>
   <slot />
 </svelte:element>

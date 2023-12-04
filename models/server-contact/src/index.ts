@@ -46,7 +46,14 @@ export function createModel (builder: Builder): void {
         component: contact.component.Avatar,
         props: ['avatar', 'name']
       },
-      title: { props: ['name'] }
+      title: { props: ['name'] },
+      scoring: [
+        {
+          attr: 'space',
+          value: contact.space.Employee as string,
+          boost: 2
+        }
+      ]
     },
     getSearchTitle: serverContact.function.ContactNameProvider
   })
