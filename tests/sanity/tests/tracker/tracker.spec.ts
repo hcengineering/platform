@@ -1,4 +1,7 @@
 import { expect, test } from '@playwright/test'
+import { allure } from 'allure-playwright'
+import { IssuesPage } from '../model/tracker/issues-page'
+import { PlatformSetting, fillSearch, generateId } from '../utils'
 import {
   DEFAULT_STATUSES,
   DEFAULT_USER,
@@ -11,9 +14,6 @@ import {
   openIssue,
   toTime
 } from './tracker.utils'
-import { PlatformSetting, fillSearch, generateId } from '../utils'
-import { allure } from 'allure-playwright'
-import { IssuesPage } from '../model/tracker/issues-page'
 
 test.use({
   storageState: PlatformSetting
@@ -48,7 +48,9 @@ test.describe('Tracker tests', () => {
       await page.locator(`.antiNav-element__dropbox > a > .antiNav-element:has-text("${panel}")`).click()
       await page.locator(`.ac-header .overflow-label:has-text("${mode}")`).click()
       await page.click(ViewletSelectors.Table)
-      await expect(locator).toContainText(statuses)
+      for (const s of statuses) {
+        await expect(locator).toContainText(s)
+      }
       if (excluded.length > 0) {
         await expect(locator).not.toContainText(excluded)
       }

@@ -1,4 +1,4 @@
-import { Browser, Locator, Page } from '@playwright/test'
+import { Browser, Locator, Page, expect } from '@playwright/test'
 
 export const PlatformURI = process.env.PLATFORM_URI as string
 export const PlatformTransactor = process.env.PLATFORM_TRANSACTOR as string
@@ -63,4 +63,8 @@ export async function fillSearch (page: Page, search: string): Promise<Locator> 
 export async function getSecondPage (browser: Browser): Promise<Page> {
   const userSecondContext = await browser.newContext({ storageState: PlatformSettingSecond })
   return await userSecondContext.newPage()
+}
+export function expectToContainsOrdered (val: Locator, text: string[], timeout?: number): Promise<void> {
+  const origIssuesExp = new RegExp('.*' + text.join('.*') + '.*')
+  return expect(val).toHaveText(origIssuesExp, { timeout })
 }

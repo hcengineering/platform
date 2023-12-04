@@ -23,8 +23,8 @@ Several teams building products on top of the Platform including [Zenflow](https
   - [Node.js](https://nodejs.org/en/download/)
   - [Docker](https://docs.docker.com/get-docker/)
   - [Docker Compose](https://docs.docker.com/compose/install/)
-- Make sure what docker and docker-compose commands are available in your terminal (e.g. `docker --version` and `docker-compose --version`).
-- Make sure what docker and docker-compose commands can be executed without sudo (e.g. `docker run hello-world` and `docker-compose --version`).
+- Make sure what docker and `docker compose` commands are available in your terminal (e.g. `docker --version` and `docker compose --version`).
+- Make sure what docker and `docker compose` commands can be executed without sudo (e.g. `docker run hello-world` and `docker compose --version`).
 
 ## Fast start
 
@@ -53,7 +53,7 @@ cd ./dev/
 rush build    # Will build all the required packages.
 rush bundle   # Will prepare bundles.
 rush docker:build   # Will build Docker containers for all applications in the local Docker environment.
-docker-compose up -d --force-recreate # Will set up all the containers
+docker compose up -d --force-recreate # Will set up all the containers
 ```
 
 or just:
