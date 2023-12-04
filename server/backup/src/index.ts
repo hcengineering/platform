@@ -653,26 +653,32 @@ export async function restore (
     let loaded = 0
     let el = 0
     let chunks = 0
-    while (true) {
-      const st = Date.now()
-      const it = await connection.loadChunk(c, idx)
-      chunks++
+    try {
+      while (true) {
+        const st = Date.now()
+        const it = await connection.loadChunk(c, idx)
+        chunks++
 
-      idx = it.idx
-      el += Date.now() - st
+        idx = it.idx
+        el += Date.now() - st
 
-      for (const [_id, hash] of Object.entries(it.docs)) {
-        serverChangeset.set(_id as Ref<Doc>, hash)
-        loaded++
+        for (const [_id, hash] of Object.entries(it.docs)) {
+          serverChangeset.set(_id as Ref<Doc>, hash)
+          loaded++
+        }
+
+        if (el > 2500) {
+          console.log(' loaded from server', loaded, el, chunks)
+          el = 0
+          chunks = 0
+        }
+        if (it.finished) {
+          break
+        }
       }
-
-      if (el > 2500) {
-        console.log(' loaded from server', loaded, el, chunks)
-        el = 0
-        chunks = 0
-      }
-      if (it.finished) {
-        break
+    } finally {
+      if (idx !== undefined) {
+        await connection.closeChunk(idx)
       }
     }
     console.log(' loaded', loaded)
@@ -815,19 +821,23 @@ export async function restore (
 
   try {
     for (const c of domains) {
-      console.log('loading server changeset for', c)
+      console.log('processing domain', c)
       let retry = 5
+      let delay = 1
       while (retry > 0) {
         retry--
         try {
           await processDomain(c)
+          if (delay > 1) {
+            console.log('retry-success')
+          }
           break
         } catch (err: any) {
-          if (retry === 0) {
-            console.log('error', err)
-          } else {
-            console.log('Wait for few seconds for elastic')
-            await new Promise((resolve) => setTimeout(resolve, 1000))
+          console.error('error', err)
+          if (retry !== 0) {
+            console.log('cool-down to retry', delay)
+            await new Promise((resolve) => setTimeout(resolve, delay * 1000))
+            delay++
           }
         }
       }

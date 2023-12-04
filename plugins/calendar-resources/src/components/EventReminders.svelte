@@ -20,6 +20,7 @@
 
   export let reminders: number[]
   export let disabled: boolean = false
+  export let focusIndex = -1
 
   const maxReminders: number = 4
   let shown: boolean = false
@@ -49,6 +50,7 @@
     label={reminders.length > 0 ? calendar.string.AddReminder : calendar.string.Reminders}
     {disabled}
     kind={'ghost'}
+    {focusIndex}
     on:click={(e) => {
       addReminder(e)
     }}

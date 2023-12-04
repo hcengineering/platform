@@ -22,6 +22,7 @@
   export let dueDate: number
   export let allDay: boolean
   export let disabled: boolean = false
+  export let focusIndex = -1
 
   $: sameDate = areDatesEqual(new Date(startDate), new Date(dueDate))
 
@@ -57,6 +58,7 @@
     withoutTime={allDay}
     on:update={dateChange}
     {disabled}
+    {focusIndex}
   />
   <div class="self-end flex-no-shrink mb-2 ml-1-5 mr-1-5 content-darker-color">
     <IconArrowRight size={'small'} />
@@ -68,6 +70,7 @@
     showDate={!sameDate}
     difference={startDate}
     {disabled}
+    focusIndex={focusIndex !== -1 ? focusIndex + 1 : focusIndex}
     on:update={dueChange}
   />
 </div>

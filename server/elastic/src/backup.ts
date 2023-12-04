@@ -138,7 +138,7 @@ class ElasticDataAdapter implements DbAdapter {
         }
       },
       close: async () => {
-        if (resp !== null) {
+        if (resp !== null && (resp.body as SearchResponse)?._scroll_id != null) {
           await this.client.clearScroll({
             scroll_id: (resp.body as SearchResponse)._scroll_id
           })

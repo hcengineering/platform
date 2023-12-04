@@ -6,4 +6,4 @@ rush bundle
 rush docker:build
 
 # Re-assign user to workspace.
-docker-compose -p sanity up $1 -d --force-recreate
+docker compose -p sanity up $1 -d --force-recreate

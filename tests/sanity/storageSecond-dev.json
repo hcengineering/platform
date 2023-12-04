@@ -2,11 +2,11 @@
   "cookies": [],
   "origins": [
     {
-      "origin": "http://localhost:8083",
+      "origin": "http://localhost:8080",
       "localStorage": [
         {
           "name": "login:metadata:LoginEmail",
-          "value": "user2"
+          "value": "user1"
         },
         {
           "name": "login:metadata:LoginTokens",
@@ -14,7 +14,15 @@
         },
         {
           "name": "login:metadata:LoginEndpoint",
-          "value": "ws://localhost:3334"
+          "value": "ws://localhost:3333"
+        },
+        {
+          "name": "#platform.notification.timeout",
+          "value": "0"
+        },
+        {
+          "name": "#platform.testing.enabled",
+          "value": "true"
         },
         {
           "name": "#platform.notification.logging",
