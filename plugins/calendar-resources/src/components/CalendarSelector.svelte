@@ -9,6 +9,7 @@
 
   export let value: Ref<Calendar> | undefined
   export let disabled: boolean = false
+  export let focusIndex = -1
 
   const dispatch = createEventDispatcher()
 
@@ -47,6 +48,7 @@
       withSearch={false}
       {selected}
       {disabled}
+      {focusIndex}
       on:selected={(e) => {
         change(e.detail._id)
       }}

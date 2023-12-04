@@ -3,6 +3,7 @@
   import calendar from '../plugin'
 
   export let value: string | undefined
+  export let focusIndex = 1
 
   function isLink (value?: string | null): boolean {
     if (value == null) return false
@@ -22,7 +23,7 @@
 <div class="flex-row-center flex-gap-1 container">
   <Icon icon={calendar.icon.Location} size={'small'} />
   <div class="flex-row-center">
-    <EditBox bind:value placeholder={calendar.string.Location} kind={'ghost'} fullSize focusable />
+    <EditBox bind:value placeholder={calendar.string.Location} kind={'ghost'} {focusIndex} fullSize focusable />
     {#if isLink(value)}
       <div class="tool">
         <Button focusIndex={4} kind={'ghost'} size={'small'} icon={IconArrowRight} on:click={open} />
