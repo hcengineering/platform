@@ -109,21 +109,21 @@
   }
 
   export function getHTML (): string | undefined {
-    if (editor) {
+    if (editor !== undefined) {
       return editor.getHTML()
     }
   }
 
   export function getNodeElement (uuid: string): Element | null {
-    if (!editor || !uuid) {
+    if (editor === undefined || uuid === '') {
       return null
     }
 
     return editor.view.dom.querySelector(nodeElementQuerySelector(uuid))
   }
 
-  export function selectNode (uuid: string) {
-    if (!editor) {
+  export function selectNode (uuid: string): void {
+    if (editor === undefined) {
       return
     }
 
@@ -138,7 +138,7 @@
         (mark) => mark.type.name === NodeUuidExtension.name && mark.attrs[NodeUuidExtension.name] === uuid
       )
 
-      if (!nodeUuidMark) {
+      if (nodeUuidMark === undefined) {
         return
       }
 
@@ -147,7 +147,7 @@
       // the first pos does not contain the mark, so we need to add 1 (pos + 1) to get the correct range
       const range = getMarkRange(doc.resolve(pos + 1), schema.marks[NodeUuidExtension.name])
 
-      if (!range) {
+      if (range === undefined) {
         return false
       }
 
@@ -157,8 +157,8 @@
     })
   }
 
-  export function selectRange (from: number, to: number) {
-    if (!editor) {
+  export function selectRange (from: number, to: number): void {
+    if (editor === undefined) {
       return
     }
 
@@ -169,18 +169,18 @@
   }
 
   export function setNodeUuid (nodeId: string): boolean {
-    if (!editor || editor.view.state.selection.empty || !nodeId) {
+    if (editor === undefined || editor.view.state.selection.empty || nodeId === '') {
       return false
     }
 
     return editor.chain().setNodeUuid(nodeId).run()
   }
 
-  export function takeSnapshot (snapshotId: string) {
+  export function takeSnapshot (snapshotId: string): void {
     copyDocumentContent(documentId, snapshotId, { provider }, initialContentId)
   }
 
-  export function copyField (srcFieldId: string, dstFieldId: string) {
+  export function copyField (srcFieldId: string, dstFieldId: string): void {
     copyDocumentField(documentId, srcFieldId, dstFieldId, { provider }, initialContentId)
   }
 
@@ -193,7 +193,7 @@
     needFocus = true
   }
 
-  $: if (editor && needFocus) {
+  $: if (editor !== undefined && needFocus) {
     if (!focused) {
       editor.commands.focus(posFocus)
       posFocus = undefined
@@ -236,7 +236,7 @@
   }
 
   onMount(() => {
-    ph.then(() => {
+    void ph.then(() => {
       editor = new Editor({
         element,
         editable: true,
@@ -309,14 +309,14 @@
         }
       })
 
-      if (initialContent) {
+      if (initialContent !== undefined) {
         editor.commands.insertContent(initialContent)
       }
     })
   })
 
   onDestroy(() => {
-    if (editor) {
+    if (editor !== undefined) {
       try {
         editor.destroy()
       } catch (err: any) {}
@@ -337,16 +337,16 @@
     isFocus: () => document.activeElement === element,
     canBlur: () => false
   })
-  const updateFocus = () => {
+  const updateFocus = (): void => {
     if (focusIndex !== -1) {
       focusManager?.setFocus(idx)
     }
   }
-  $: if (element) {
+  $: if (element !== undefined) {
     element.addEventListener('focus', updateFocus, { once: true })
   }
 
-  function handleFocus () {
+  function handleFocus (): void {
     needFocus = true
   }
 </script>

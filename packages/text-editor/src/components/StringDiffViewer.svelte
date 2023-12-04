@@ -21,7 +21,7 @@
   export let compareTo: string
   export let method: 'diffChars' | 'diffWords' | 'diffWordsWithSpace' = 'diffChars'
 
-  const handleDiff = (oldValue: string, newValue: string) => Diff[method](oldValue, newValue)
+  const handleDiff = (oldValue: string, newValue: string): Diff.Change[] => Diff[method](oldValue, newValue)
 
   $: changes = handleDiff(compareTo, value)
 </script>

@@ -79,7 +79,7 @@
     }
   }
 
-  function insertTable (event: MouseEvent) {
+  function insertTable (event: MouseEvent): void {
     showPopup(
       SelectPopup,
       {
@@ -97,7 +97,7 @@
             return
           }
           const tab = mInsertTable.find((it) => it.label === val)
-          if (tab) {
+          if (tab !== undefined) {
             textEditor.commands.insertTable({
               cols: tab.cols,
               rows: tab.rows,
@@ -111,7 +111,7 @@
     )
   }
 
-  function tableOptions (event: MouseEvent) {
+  function tableOptions (event: MouseEvent): void {
     const ops = [
       {
         id: '#addColumnBefore',
@@ -188,7 +188,7 @@
       (val) => {
         if (val !== undefined) {
           const op = ops.find((it) => it.id === val)
-          if (op) {
+          if (op !== undefined) {
             op.action()
             dispatch('focus')
           }

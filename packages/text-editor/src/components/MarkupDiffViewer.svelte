@@ -35,7 +35,7 @@
   let oldContent = ''
 
   function updateEditor (editor: Editor, comparedVersion?: Markup): void {
-    if (!comparedVersion) {
+    if (comparedVersion === undefined) {
       return
     }
 
@@ -46,8 +46,8 @@
     }
   }
 
-  const updateDecorations = () => {
-    if (editor?.schema) {
+  const updateDecorations = (): void => {
+    if (editor?.schema !== undefined) {
       updateEditor(editor, comparedVersion)
     }
   }
@@ -68,7 +68,7 @@
     }
   })
 
-  $: if (editor && comparedVersion) {
+  $: if (editor !== undefined && comparedVersion !== undefined) {
     updateEditor(editor, comparedVersion)
   }
 
@@ -87,7 +87,7 @@
   })
 
   onDestroy(() => {
-    if (editor) {
+    if (editor !== undefined) {
       editor.destroy()
     }
   })

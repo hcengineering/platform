@@ -61,7 +61,7 @@
   $: devSize = $deviceInfo.size
   $: shrinkButtons = checkAdaptiveMatching(devSize, 'sm')
 
-  function setContent (content: string) {
+  function setContent (content: string): void {
     textEditor?.setContent(content)
   }
 
@@ -106,7 +106,7 @@
   export let focusIndex = -1
   const { idx, focusManager } = registerFocus(focusIndex, {
     focus: () => {
-      const editable = textEditor?.isEditable() ?? false
+      const editable: boolean = textEditor?.isEditable() ?? false
       if (editable) {
         focused = true
         textEditor?.focus()
@@ -115,7 +115,7 @@
     },
     isFocus: () => focused
   })
-  const updateFocus = () => {
+  const updateFocus = (): void => {
     if (focusIndex !== -1) {
       focusManager?.setFocus(idx)
     }
@@ -184,7 +184,7 @@
               showTooltip={{ label: a.label }}
               size={buttonSize}
               on:click={handler(a, (a, evt) => {
-                if (!a.disabled) {
+                if (a.disabled !== true) {
                   handleAction(a, evt)
                 }
               })}
