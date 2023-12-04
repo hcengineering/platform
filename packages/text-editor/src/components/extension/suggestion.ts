@@ -62,7 +62,7 @@ export function findSuggestionMatch (config: Trigger): SuggestionMatch {
 
   // If allowSpaces: true terminates on at least 2 whitespaces
   const regexp = allowSpaces
-    ? new RegExp(`${prefix}${escapedChar}.*?(?=\\s{2}|$)`, 'gm')
+    ? new RegExp(`${prefix}${escapedChar}[^${escapedChar}]*?(?=\\s{2}|$)`, 'gm')
     : new RegExp(`${prefix}(?:^)?${escapedChar}[^\\s${escapedChar}]*`, 'gm')
 
   let text

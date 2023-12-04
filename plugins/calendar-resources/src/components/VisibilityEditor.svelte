@@ -23,6 +23,7 @@
   export let disabled: boolean = false
   export let kind: ButtonKind = 'regular'
   export let withoutIcon: boolean = false
+  export let focusIndex = -1
 
   let items: ListItem[] = []
 
@@ -68,6 +69,7 @@
   placeholder={calendar.string.DefaultVisibility}
   {items}
   withSearch={false}
+  {focusIndex}
   {selected}
   on:selected={(e) => {
     change(e.detail._id)

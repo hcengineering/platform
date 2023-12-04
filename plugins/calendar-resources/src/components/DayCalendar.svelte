@@ -33,21 +33,22 @@
     getMonday,
     getWeekDayName,
     resizeObserver,
-    showPopup
+    showPopup,
+    ticker
   } from '@hcengineering/ui'
   import { Menu } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import type {
+    CalendarADGrid,
+    CalendarADRows,
+    CalendarCell,
+    CalendarElement,
+    CalendarElementRect,
+    CalendarGrid
+  } from '..'
   import calendar from '../plugin'
   import { isReadOnly, updateReccuringInstance } from '../utils'
   import EventElement from './EventElement.svelte'
-  import type {
-    CalendarGrid,
-    CalendarADGrid,
-    CalendarADRows,
-    CalendarElementRect,
-    CalendarElement,
-    CalendarCell
-  } from '..'
 
   export let events: Event[]
   export let mondayStart = true
@@ -65,7 +66,16 @@
   const client = getClient()
   const dispatch = createEventDispatcher()
 
-  const todayDate = new Date()
+  let todayDate = new Date()
+
+  $: checkToday($ticker)
+
+  function checkToday (now: number): void {
+    if (!areDatesEqual(todayDate, new Date())) {
+      todayDate = new Date()
+    }
+  }
+
   const ampm = new Intl.DateTimeFormat([], { hour: 'numeric' }).resolvedOptions().hour12
   const getTimeFormat = (hour: number, min: number = 0): string => {
     if (min === 0) {

@@ -35,7 +35,7 @@ export async function getUser (storage: ServerStorage, ctx: SessionContext): Pro
   }
   const account = (await storage.modelDb.findAll(core.class.Account, { email: ctx.userEmail }))[0]
   if (account === undefined) {
-    if (ctx.userEmail === systemAccountEmail) {
+    if (ctx.userEmail === systemAccountEmail || ctx.admin === true) {
       return {
         _id: core.account.System,
         _class: core.class.Account,

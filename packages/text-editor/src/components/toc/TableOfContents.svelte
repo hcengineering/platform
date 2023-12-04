@@ -28,13 +28,13 @@
   $: minLevel = items.reduce((p, v) => Math.min(p, v.level), Infinity)
   $: maxLevel = items.reduce((p, v) => Math.max(p, v.level), 0)
 
-  function getLevelWidth (level: number) {
+  function getLevelWidth (level: number): number {
     return (100 * (maxLevel - level + 1)) / (maxLevel - minLevel + 1)
   }
 
   let hovered = false
 
-  function handleOpenToc (ev: MouseEvent) {
+  function handleOpenToc (ev: MouseEvent): void {
     ev.preventDefault()
     ev.stopPropagation()
 
@@ -46,7 +46,7 @@
       getPopupPositionElement(ev.target as HTMLElement, { v: 'top', h: 'right' }),
       (res) => {
         hovered = false
-        if (res) {
+        if (res != null) {
           dispatch('select', res)
         }
       }

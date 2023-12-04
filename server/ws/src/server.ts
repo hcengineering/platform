@@ -14,27 +14,27 @@
 //
 
 import core, {
+  TxFactory,
+  WorkspaceEvent,
+  generateId,
+  toWorkspaceString,
   type MeasureContext,
   type Ref,
   type Space,
   type Tx,
-  TxFactory,
   type TxWorkspaceEvent,
-  WorkspaceEvent,
-  type WorkspaceId,
-  generateId,
-  toWorkspaceString
+  type WorkspaceId
 } from '@hcengineering/core'
 import { unknownError } from '@hcengineering/platform'
-import { type HelloRequest, type HelloResponse, type Response, readRequest } from '@hcengineering/rpc'
+import { readRequest, type HelloRequest, type HelloResponse, type Response } from '@hcengineering/rpc'
 import type { Pipeline, SessionContext } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 // import WebSocket, { RawData } from 'ws'
 
 import {
+  LOGGING_ENABLED,
   type BroadcastCall,
   type ConnectionSocket,
-  LOGGING_ENABLED,
   type PipelineFactory,
   type ServerFactory,
   type Session,
@@ -46,6 +46,16 @@ function timeoutPromise (time: number): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(resolve, time)
   })
+}
+
+/**
+ * @public
+ */
+export interface Timeouts {
+  // Timeout preferences
+  pingTimeout: number // Default 1 second
+  shutdownWarmTimeout: number // Default 1 minute
+  reconnectTimeout: number // Default 3 seconds
 }
 
 class TSessionManager implements SessionManager {
@@ -60,11 +70,12 @@ class TSessionManager implements SessionManager {
 
   constructor (
     readonly ctx: MeasureContext,
-    readonly sessionFactory: (token: Token, pipeline: Pipeline, broadcast: BroadcastCall) => Session
+    readonly sessionFactory: (token: Token, pipeline: Pipeline, broadcast: BroadcastCall) => Session,
+    readonly timeouts: Timeouts
   ) {
     this.checkInterval = setInterval(() => {
       this.handleInterval()
-    }, 1000)
+    }, timeouts.pingTimeout)
   }
 
   scheduleMaintenance (timeMinutes: number): void {
@@ -225,9 +236,6 @@ class TSessionManager implements SessionManager {
       workspace.sessions = new Map()
       workspace.upgrade = token.extra?.model === 'upgrade'
     }
-    if (LOGGING_ENABLED) {
-      console.log(token.workspace.name, 'no sessions for workspace', wsString)
-    }
     // Re-create pipeline.
     workspace.pipeline = pipelineFactory(ctx, token.workspace, true, (tx, targets) => {
       this.broadcastAll(workspace, tx, targets)
@@ -314,9 +322,6 @@ class TSessionManager implements SessionManager {
     code: number,
     reason: string
   ): Promise<void> {
-    if (this.checkInterval !== undefined) {
-      clearInterval(this.checkInterval)
-    }
     // if (LOGGING_ENABLED) console.log(workspaceId.name, `closing websocket, code: ${code}, reason: ${reason}`)
     const wsid = toWorkspaceString(workspaceId)
     const workspace = this.workspaces.get(wsid)
@@ -336,7 +341,7 @@ class TSessionManager implements SessionManager {
 
       setTimeout(() => {
         this.reconnectIds.delete(sessionRef.session.sessionId)
-      }, 3000)
+      }, this.timeouts.reconnectTimeout)
       try {
         sessionRef.socket.close()
       } catch (err) {
@@ -348,11 +353,11 @@ class TSessionManager implements SessionManager {
         await this.setStatus(ctx, sessionRef.session, false)
       }
       if (!workspace.upgrade) {
-        // Wait few second's for new client to appear before closing workspace.
+        // Wait some time for new client to appear before closing workspace.
         if (workspace.sessions.size === 0) {
           setTimeout(() => {
             void this.performWorkspaceCloseCheck(workspace, workspaceId, wsid)
-          }, 5000)
+          }, this.timeouts.shutdownWarmTimeout)
         }
       } else {
         await this.performWorkspaceCloseCheck(workspace, workspaceId, wsid)
@@ -409,6 +414,9 @@ class TSessionManager implements SessionManager {
   }
 
   async closeWorkspaces (ctx: MeasureContext): Promise<void> {
+    if (this.checkInterval !== undefined) {
+      clearInterval(this.checkInterval)
+    }
     for (const w of this.workspaces) {
       await this.closeAll(ctx, w[0], w[1], 1, 'shutdown')
     }
@@ -552,7 +560,6 @@ class TSessionManager implements SessionManager {
         const f = (service as any)[request.method]
         try {
           const params = [...request.params]
-
           const result = await ctx.with('call', {}, async (callTx) => f.apply(service, [callTx, ...params]))
 
           const resp: Response<any> = { id: request.id, result }
@@ -569,7 +576,8 @@ class TSessionManager implements SessionManager {
           if (LOGGING_ENABLED) console.error(err)
           const resp: Response<any> = {
             id: request.id,
-            error: unknownError(err)
+            error: unknownError(err),
+            result: JSON.parse(JSON.stringify(err?.stack))
           }
           await ws.send(ctx, resp, service.binaryResponseMode, service.useCompression)
         }
@@ -624,9 +632,13 @@ export function start (
     productId: string
     serverFactory: ServerFactory
     enableCompression?: boolean
-  }
+  } & Partial<Timeouts>
 ): () => Promise<void> {
-  const sessions = new TSessionManager(ctx, opt.sessionFactory)
+  const sessions = new TSessionManager(ctx, opt.sessionFactory, {
+    pingTimeout: opt.pingTimeout ?? 1000,
+    shutdownWarmTimeout: opt.shutdownWarmTimeout ?? 60 * 1000,
+    reconnectTimeout: 3000
+  })
   return opt.serverFactory(
     sessions,
     (rctx, service, ws, msg, workspace) => sessions.handleRequest(rctx, service, ws, msg, workspace),

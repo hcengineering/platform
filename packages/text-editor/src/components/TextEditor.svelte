@@ -55,7 +55,9 @@
     return editor.isEditable
   }
   export function setEditable (editable: boolean): void {
-    if (editor) editor.setEditable(editable)
+    if (editor !== undefined) {
+      editor.setEditable(editable)
+    }
   }
   export function submit (): void {
     content = editor.getHTML()
@@ -104,7 +106,7 @@
     needFocus = true
   }
 
-  $: if (editor && needFocus) {
+  $: if (editor != null && needFocus) {
     if (!focused) {
       editor.commands.focus(posFocus)
       posFocus = undefined
@@ -146,7 +148,7 @@
   })
 
   onMount(() => {
-    ph.then(() => {
+    void ph.then(() => {
       editor = new Editor({
         element,
         editorProps: { attributes: mergeAttributes(defaultEditorAttributes, editorAttributes) },
@@ -197,16 +199,14 @@
   })
 
   onDestroy(() => {
-    if (editor) {
-      editor.destroy()
-    }
+    editor?.destroy()
   })
 
   /**
    * @public
    */
   export function removeNode (nde: ProseMirrorNode): void {
-    const deleteOp = (n: ProseMirrorNode, pos: number) => {
+    const deleteOp = (n: ProseMirrorNode, pos: number): void => {
       if (nde === n) {
         // const pos = editor.view.posAtDOM(nde, 0)
         editor.view.dispatch(editor.view.state.tr.delete(pos, pos + 1))
