@@ -2,7 +2,7 @@ import faker from 'faker'
 
 import contact from '@hcengineering/contact'
 import core, {
-  AttachedData,
+  AttachedData, Doc, DocData,
   generateId,
   MeasureMetricsContext,
   metricsToString,
@@ -94,7 +94,8 @@ async function genIssue (
     true
   )
 
-  const value: AttachedData<Issue> = {
+  const value: AttachedData<Issue> & Doc = {
+    // const value: Data<Issue> = {
     title: title ?? faker.commerce.productName(),
     description: faker.lorem.paragraphs(),
     assignee: object.assignee,
@@ -113,7 +114,13 @@ async function genIssue (
     estimation: object.estimation,
     reports: 0,
     relations: [],
-    childInfo: []
+    childInfo: [],
+    _class: tracker.class.Issue,
+    _id: objectId,
+    modifiedBy: core.account.System,
+    space: space,
+    modifiedOn: modifiedOn.getTime(),
+    createdOn: modifiedOn.getTime(),
   }
   await client.addCollection(
     tracker.class.Issue,
