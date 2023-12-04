@@ -283,10 +283,10 @@
   line-height: 1.1em;
 
   &.add {
-    background: lightblue;
+    background: var(--text-editor-highlighted-node-add-background-color);
   }
 
   &.delete {
-    background: orange;
+    background: var(--text-editor-highlighted-node-delete-background-color);
   }
 }
