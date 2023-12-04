@@ -44,15 +44,23 @@ test.describe('Tracker Projects tests', () => {
       description: 'Edit Project description',
       private: true,
       defaultAssigneeForIssues: 'Dirak Kainin',
+      defaultIssueStatus: 'In Progress'
+    }
+    const updateProjectData: NewProject = {
+      title: 'UpdateProject',
+      identifier: 'UPDAT',
+      description: 'Updated Project description',
+      private: true,
+      defaultAssigneeForIssues: 'Chen Rosamund',
       defaultIssueStatus: 'Done'
     }
 
     const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
-    // await trackerNavigationMenuPage.checkProjectNotExist(editProjectData.title)
-    // await trackerNavigationMenuPage.pressCreateProjectButton()
-    //
-    // const newProjectPage = new NewProjectPage(page)
-    // await newProjectPage.createNewProject(editProjectData)
+    await trackerNavigationMenuPage.checkProjectNotExist(editProjectData.title)
+    await trackerNavigationMenuPage.pressCreateProjectButton()
+
+    const newProjectPage = new NewProjectPage(page)
+    await newProjectPage.createNewProject(editProjectData)
     await trackerNavigationMenuPage.checkProjectExist(editProjectData.title)
 
     await trackerNavigationMenuPage.openProjectToEdit(editProjectData.title)
@@ -60,5 +68,8 @@ test.describe('Tracker Projects tests', () => {
     const editProjectPage = new EditProjectPage(page)
     await editProjectPage.checkProject(editProjectData)
 
+    await editProjectPage.updateProject(updateProjectData)
+    await trackerNavigationMenuPage.openProjectToEdit(updateProjectData.title)
+    await editProjectPage.checkProject(updateProjectData)
   })
 })

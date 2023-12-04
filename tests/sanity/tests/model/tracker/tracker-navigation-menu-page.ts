@@ -42,7 +42,8 @@ export class TrackerNavigationMenuPage extends CommonPage {
 
   async openProjectToEdit (projectName: string): Promise<void> {
     await this.buttonProjectsParent.filter({ hasText: projectName }).hover()
-    await this.buttonProjectsParent.filter({ hasText: projectName })
+    await this.buttonProjectsParent
+      .filter({ hasText: projectName })
       .locator('xpath=..')
       .locator('div[class*="tool"]:not([class*="arrow"])')
       .click()
