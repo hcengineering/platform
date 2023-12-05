@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { showPopup, TimeZone } from '../..'
+  import { convertTimeZone, showPopup, TimeZone } from '../..'
   import ClockFace from './ClockFace.svelte'
-  import TimeZonesPopup from './TimeZonesPopup.svelte'
+  import TimeZonesPopup from '../TimeZonesPopup.svelte'
 
   const clockSize: string = '80px'
   const tzs: string[] = []
@@ -30,17 +30,6 @@
   if (!Intl.supportedValuesOf) console.log('Your browser does not support Intl.supportedValuesOf().')
   else for (const timeZone of Intl.supportedValuesOf('timeZone')) tzs.push(timeZone)
 
-  const convertTimeZone = (tz: string): TimeZone => {
-    const tzSpace = tz.replaceAll('_', ' ')
-    const parts = tzSpace.split('/')
-    if (tz === '' || parts.length === 1) return { id: tz, continent: tzSpace, city: tzSpace, short: tzSpace }
-    return {
-      id: tz,
-      continent: parts[0],
-      city: parts.length > 2 ? `${parts[1]} - ${parts[2]}` : parts[1],
-      short: parts.length > 2 ? parts[2] : parts[1]
-    }
-  }
   if (tzs.length > 0) tzs.forEach((tz) => timeZones.push(convertTimeZone(tz)))
 
   const saveTZ = (): void => {

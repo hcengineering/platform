@@ -13,18 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Icon, areDatesEqual, IconArrowRight } from '@hcengineering/ui'
+  import { Icon, IconArrowRight, getUserTimezone } from '@hcengineering/ui'
+  import moment from 'moment-timezone'
+  import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
   import DateEditor from './DateEditor.svelte'
-  import { createEventDispatcher } from 'svelte'
 
   export let startDate: number
   export let dueDate: number
   export let allDay: boolean
   export let disabled: boolean = false
+  export let timeZone: string = getUserTimezone()
   export let focusIndex = -1
 
-  $: sameDate = areDatesEqual(new Date(startDate), new Date(dueDate))
+  $: sameDate = moment(startDate).tz(timeZone).isSame(moment(dueDate).tz(timeZone), 'date')
 
   let diff = dueDate - startDate
   const allDayDuration = 24 * 60 * 60 * 1000 - 1
@@ -56,6 +58,7 @@
     bind:date={startDate}
     direction={sameDate ? 'horizontal' : 'vertical'}
     withoutTime={allDay}
+    {timeZone}
     on:update={dateChange}
     {disabled}
     {focusIndex}
@@ -70,6 +73,7 @@
     showDate={!sameDate}
     difference={startDate}
     {disabled}
+    {timeZone}
     focusIndex={focusIndex !== -1 ? focusIndex + 1 : focusIndex}
     on:update={dueChange}
   />

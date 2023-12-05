@@ -20,6 +20,7 @@
   import { EditBoxPopup } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
+  import TimePresenter from '../issues/timereport/TimePresenter.svelte'
 
   export let value: IssueTemplateChild | IssueTemplate | Data<IssueTemplate> | IssueDraft
   export let isEditable: boolean = true
@@ -62,8 +63,6 @@
 {#if value}
   <Button
     showTooltip={isEditable ? { label: tracker.string.Estimation } : undefined}
-    label={tracker.string.TimeSpendValue}
-    labelParams={{ value: value.estimation }}
     icon={tracker.icon.Estimation}
     notSelected={value.estimation === 0}
     {justify}
@@ -72,5 +71,7 @@
     {kind}
     disabled={!isEditable}
     on:click={handleestimationEditorOpened}
-  />
+  >
+    <TimePresenter slot="content" value={value.estimation} />
+  </Button>
 {/if}

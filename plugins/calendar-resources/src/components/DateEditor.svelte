@@ -19,10 +19,11 @@
     ButtonSize,
     DatePopup,
     SimpleDatePopup,
-    eventToHTMLElement,
-    showPopup,
     TimeInputBox,
-    TimeShiftPresenter
+    TimeShiftPresenter,
+    eventToHTMLElement,
+    getUserTimezone,
+    showPopup
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import DateLocalePresenter from './DateLocalePresenter.svelte'
@@ -36,6 +37,7 @@
   export let size: ButtonSize = 'medium'
   export let disabled: boolean = false
   export let focusIndex = -1
+  export let timeZone: string = getUserTimezone()
 
   const dispatch = createEventDispatcher()
 
@@ -45,7 +47,7 @@
     if (!showDate) {
       showPopup(
         DatePopup,
-        { currentDate, withTime: !withoutTime, label: ui.string.SelectDate, noShift: true },
+        { currentDate, withTime: !withoutTime, timeZone, label: ui.string.SelectDate, noShift: true },
         undefined,
         (res) => {
           if (res) {
@@ -58,7 +60,7 @@
   }
 
   function dateClick (e: MouseEvent) {
-    showPopup(SimpleDatePopup, { currentDate }, eventToHTMLElement(e), (res) => {
+    showPopup(SimpleDatePopup, { currentDate, timeZone }, eventToHTMLElement(e), (res) => {
       if (res) {
         date = res.getTime()
         dispatch('update', date)
@@ -80,10 +82,11 @@
   {#if showDate || withoutTime}
     <Button {kind} {size} padding={'0 .5rem'} {focusIndex} on:click={dateClick} {disabled}>
       <svelte:fragment slot="content">
-        <DateLocalePresenter date={currentDate.getTime()} />
+        <DateLocalePresenter date={currentDate.getTime()} {timeZone} />
       </svelte:fragment>
     </Button>
   {/if}
+
   {#if !withoutTime}
     <Button
       {kind}
@@ -96,6 +99,7 @@
       <svelte:fragment slot="content">
         <TimeInputBox
           bind:currentDate
+          {timeZone}
           noBorder
           size={'small'}
           on:update={(date) => {

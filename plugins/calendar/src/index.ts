@@ -69,6 +69,7 @@ export interface ReccuringEvent extends Event {
   exdate: Timestamp[]
   rdate: Timestamp[]
   originalStartTime: Timestamp
+  timeZone: string
 }
 
 /**
@@ -101,6 +102,8 @@ export interface Event extends AttachedDoc {
   visibility?: Visibility
 
   access: 'freeBusyReader' | 'reader' | 'writer' | 'owner'
+
+  timeZone?: string
 }
 
 /**

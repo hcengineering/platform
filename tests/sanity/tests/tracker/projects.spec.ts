@@ -16,7 +16,7 @@ test.describe('Tracker Projects tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test.skip('Create project', async ({ page }) => {
+  test('Create project', async ({ page }) => {
     const newProjectData: NewProject = {
       title: 'TestProject',
       identifier: 'QWERT',

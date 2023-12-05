@@ -204,4 +204,34 @@ test.describe('Tracker filters tests', () => {
       await issuesPage.checkFilteredIssueExist(newIssue.title)
     })
   })
+
+  test('Status filter', async ({ page }) => {
+    const newIssue: NewIssue = {
+      title: `Issue for the Created filter-${generateId()}`,
+      description: 'Issue for the Created filter',
+      status: 'In Progress',
+      priority: 'Urgent',
+      assignee: 'Appleseed John',
+      createLabel: true,
+      component: 'No component',
+      estimation: '2',
+      milestone: 'No Milestone',
+      duedate: 'today',
+      filePath: 'cat.jpeg'
+    }
+
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
+    await issuesPage.createNewIssue(newIssue)
+
+    await test.step('Check Filter Today', async () => {
+      await issuesPage.selectFilter('Created date', 'Today')
+      await issuesPage.checkFilter('Created date', 'Today')
+
+      await issuesPage.checkFilteredIssueExist(newIssue.title)
+    })
+  })
 })

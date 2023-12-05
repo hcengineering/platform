@@ -306,7 +306,7 @@ test.describe('Tracker tests', () => {
       status: 'Todo',
       priority: 'Urgent',
       assignee: 'Appleseed John',
-      estimation: '1d',
+      estimation: '1h',
       dueDate: '24'
     })
   })
@@ -325,9 +325,11 @@ test.describe('Tracker tests', () => {
     await createIssue(page, props)
     await page.click('text="Issues"')
 
-    await fillSearch(page, props.name)
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
+    await issuesPage.searchIssueByName(props.name)
+    await issuesPage.openIssueByName(props.name)
 
-    await openIssue(page, props.name)
     await checkIssue(page, props)
     props.name = `sub${props.name}`
     await page.click('button:has-text("Add sub-issue")')

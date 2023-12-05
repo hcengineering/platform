@@ -13,10 +13,15 @@
 // limitations under the License.
 //
 
-import { type Calendar, type Event, type ReccuringEvent } from '@hcengineering/calendar'
+import { calendarId, type Calendar, type Event, type ReccuringEvent } from '@hcengineering/calendar'
 import contact from '@hcengineering/contact'
-import core, { type Ref, TxOperations } from '@hcengineering/core'
-import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
+import core, { TxOperations, type Ref } from '@hcengineering/core'
+import {
+  tryMigrate,
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient
+} from '@hcengineering/model'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { DOMAIN_SETTING } from '@hcengineering/model-setting'
 import { type Integration } from '@hcengineering/setting'
@@ -121,6 +126,17 @@ async function migrateSync (client: MigrationClient): Promise<void> {
   )
 }
 
+async function migrateTimezone (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_CALENDAR,
+    {
+      _class: { $in: [calendar.class.ReccuringEvent, calendar.class.ReccuringInstance] },
+      timeZone: { $exists: false }
+    },
+    { timeZone: 'Etc/GMT' }
+  )
+}
+
 export const calendarOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await fixEventDueDate(client)
@@ -128,6 +144,12 @@ export const calendarOperation: MigrateOperation = {
     await fillOriginalStartTime(client)
     await migrateSync(client)
     await migrateExternalCalendars(client)
+    await tryMigrate(client, calendarId, [
+      {
+        state: 'timezone',
+        func: migrateTimezone
+      }
+    ])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
