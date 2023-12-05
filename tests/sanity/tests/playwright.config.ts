@@ -19,6 +19,7 @@ const config: PlaywrightTestConfig = {
     timeout: 15000
   },
   reporter: [
+    ['list'],
     [
       'allure-playwright',
       {

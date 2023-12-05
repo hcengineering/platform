@@ -34,7 +34,7 @@ test.describe('Tracker template tests', () => {
     await leftSideMenuPage.buttonTracker.click()
 
     const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
-    await trackerNavigationMenuPage.buttonTemplates.click()
+    await trackerNavigationMenuPage.openTemplateForProject('Default')
 
     const templatePage = new TemplatePage(page)
     await templatePage.createNewTemplate(newTemplate)
@@ -67,7 +67,7 @@ test.describe('Tracker template tests', () => {
     await leftSideMenuPage.buttonTracker.click()
 
     const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
-    await trackerNavigationMenuPage.buttonTemplates.click()
+    await trackerNavigationMenuPage.openTemplateForProject('Default')
 
     const templatePage = new TemplatePage(page)
     await templatePage.createNewTemplate(newTemplate)
@@ -122,7 +122,7 @@ test.describe('Tracker template tests', () => {
     await leftSideMenuPage.buttonTracker.click()
 
     const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
-    await trackerNavigationMenuPage.buttonTemplates.click()
+    await trackerNavigationMenuPage.openTemplateForProject('Default')
 
     let templatePage = new TemplatePage(page)
     await templatePage.createNewTemplate(deleteTemplate)

@@ -14,6 +14,7 @@ import {
   openIssue,
   toTime
 } from './tracker.utils'
+import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 
 test.use({
   storageState: PlatformSetting
@@ -45,7 +46,7 @@ test.describe('Tracker tests', () => {
 
     async function performPanelTest (statuses: string[], panel: string, mode: string): Promise<void> {
       const excluded = DEFAULT_STATUSES.filter((status) => !statuses.includes(status))
-      await page.locator(`.antiNav-element__dropbox > a > .antiNav-element:has-text("${panel}")`).click()
+      await new TrackerNavigationMenuPage(page).openIssuesForProject('Default')
       await page.locator(`.ac-header .overflow-label:has-text("${mode}")`).click()
       await page.click(ViewletSelectors.Table)
       for (const s of statuses) {
