@@ -520,32 +520,6 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
     {
       action: view.actionImpl.ShowPopup,
       actionProps: {
-        component: tags.component.TagsEditorPopup,
-        element: 'top',
-        fillProps: {
-          _object: 'object'
-        }
-      },
-      label: tracker.string.Labels,
-      icon: tags.icon.Tags,
-      keyBinding: ['keyL'],
-      input: 'focus',
-      category: tracker.category.Tracker,
-      target: tracker.class.Issue,
-      context: {
-        mode: ['context', 'browser'],
-        application: tracker.app.Tracker,
-        group: 'edit'
-      }
-    },
-    tracker.action.SetLabels
-  )
-
-  createAction(
-    builder,
-    {
-      action: view.actionImpl.ShowPopup,
-      actionProps: {
         component: tags.component.ObjectsTagsEditorPopup,
         element: 'top',
         fillProps: {
@@ -555,7 +529,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
       label: tracker.string.Labels,
       icon: tags.icon.Tags,
       keyBinding: ['keyL'],
-      input: 'selection',
+      input: 'any',
       category: tracker.category.Tracker,
       target: tracker.class.Issue,
       context: {
@@ -593,6 +567,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
     },
     tracker.action.SetDueDate
   )
+
   createAction(
     builder,
     {
