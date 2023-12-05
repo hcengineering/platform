@@ -43,10 +43,14 @@
   const filteredViewsQuery = createQuery()
   let availableFilteredViews: FilteredView[] = []
   let myFilteredViews: FilteredView[] = []
-  $: filteredViewsQuery.query<FilteredView>(view.class.FilteredView, { attachedTo: currentApplication?.alias }, (result) => {
-    myFilteredViews = result.filter((p) => p.users.includes(me))
-    availableFilteredViews = result.filter((p) => p.sharable && !p.users.includes(me))
-  })
+  $: filteredViewsQuery.query<FilteredView>(
+    view.class.FilteredView,
+    { attachedTo: currentApplication?.alias },
+    (result) => {
+      myFilteredViews = result.filter((p) => p.users.includes(me))
+      availableFilteredViews = result.filter((p) => p.sharable && !p.users.includes(me))
+    }
+  )
 
   async function removeAction (filteredView: FilteredView): Promise<Action[]> {
     return [
