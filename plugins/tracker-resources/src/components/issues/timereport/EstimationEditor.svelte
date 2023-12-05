@@ -23,6 +23,7 @@
   import tracker from '../../../plugin'
   import EstimationPopup from './EstimationPopup.svelte'
   import EstimationStatsPresenter from './EstimationStatsPresenter.svelte'
+  import TimePresenter from './TimePresenter.svelte'
 
   export let value: Issue | AttachedData<Issue> | IssueDraft
   export let isEditable: boolean = true
@@ -81,9 +82,7 @@
     <Button
       {focusIndex}
       showTooltip={isEditable ? { label: tracker.string.Estimation } : undefined}
-      label={tracker.string.TimeSpendValue}
       notSelected={value.estimation === 0}
-      labelParams={{ value: value.estimation }}
       icon={tracker.icon.DueDate}
       {justify}
       {width}
@@ -91,6 +90,8 @@
       {kind}
       disabled={!isEditable}
       on:click={handleestimationEditorOpened}
-    />
+    >
+      <TimePresenter slot="content" value={value.estimation} />
+    </Button>
   {/if}
 {/if}
