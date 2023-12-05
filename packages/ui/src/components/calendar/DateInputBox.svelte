@@ -124,6 +124,7 @@
           edits[index].value = edits[index].value * 10 + num
         }
         if (!isNull() && !startTyping) {
+          fixEdits()
           currentDate = setValue(edits[index].value, currentDate, ed)
           dateToEdits(currentDate)
         }
@@ -162,6 +163,14 @@
       }
     }
   }
+
+  const fixEdits = (): void => {
+    const h: number = edits[3].value === -1 ? 0 : edits[3].value
+    const m: number = edits[4].value === -1 ? 0 : edits[4].value
+    currentDate = new Date(edits[2].value, edits[1].value - 1, edits[0].value, h, m)
+    dispatch('save')
+  }
+
   const focused = (ed: TEdits): void => {
     selected = ed
     startTyping = true
