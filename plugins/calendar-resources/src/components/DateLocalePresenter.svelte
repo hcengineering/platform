@@ -13,8 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { getUserTimezone } from '@hcengineering/ui'
+
   export let date: number
-  export let timeZone: string
+  export let timeZone: string = getUserTimezone()
 
   const current = new Date()
   let options: Intl.DateTimeFormatOptions = {
