@@ -16,7 +16,7 @@
   import { afterUpdate, createEventDispatcher } from 'svelte'
   import ui from '../../plugin'
   import Label from '../Label.svelte'
-  import moment from 'moment-timezone'
+  import { DateTime } from 'luxon'
 
   export let currentDate: Date
   export let size: 'small' | 'medium' = 'medium'
@@ -24,13 +24,13 @@
   export let disabled: boolean = false
   export let timeZone: string | undefined = undefined
 
-  type TEdits = 'hour' | 'min'
+  type TEdits = 'hour' | 'minute'
   interface IEdits {
     id: TEdits
     value: number
     el?: HTMLElement
   }
-  const editsType: TEdits[] = ['hour', 'min']
+  const editsType: TEdits[] = ['hour', 'minute']
   const getIndex = (id: TEdits): number => editsType.indexOf(id)
   let edits: IEdits[] = editsType.map((edit) => {
     return { id: edit, value: -1 }
@@ -42,36 +42,31 @@
 
   const setValue = (val: number, date: Date | null, id: TEdits, timeZone: string | undefined): Date => {
     if (date == null) date = new Date()
-    switch (id) {
-      case 'hour':
-        date = new Date(timeZone ? moment(date).tz(timeZone).hours(val).valueOf() : moment(date).hours(val).valueOf())
-        break
-      case 'min':
-        date = new Date(
-          timeZone ? moment(date).tz(timeZone).minutes(val).valueOf() : moment(date).minutes(val).valueOf()
-        )
-        break
-    }
+    date = new Date(
+      timeZone
+        ? DateTime.fromJSDate(date)
+          .setZone(timeZone)
+          .set({ [id]: val })
+          .valueOf()
+        : DateTime.fromJSDate(date)
+          .set({ [id]: val })
+          .valueOf()
+    )
+
     return date
   }
 
-  const getMaxValue = (date: Date | null, id: TEdits): number => {
-    if (date == null) date = new Date()
+  const getMaxValue = (id: TEdits): number => {
     switch (id) {
       case 'hour':
         return 23
-      case 'min':
+      case 'minute':
         return 59
     }
   }
 
   const getValue = (date: Date, id: TEdits, timeZone: string | undefined): number => {
-    switch (id) {
-      case 'hour':
-        return timeZone ? moment(date).tz(timeZone).hours() : moment(date).hours()
-      case 'min':
-        return timeZone ? moment(date).tz(timeZone).minutes() : moment(date).minutes()
-    }
+    return timeZone ? DateTime.fromJSDate(date).setZone(timeZone).get(id) : DateTime.fromJSDate(date).get(id)
   }
 
   const dateToEdits = (currentDate: Date | null, timeZone: string | undefined): void => {
@@ -110,20 +105,19 @@
             edits[index].value = num
           }
           startTyping = false
-        } else if (edits[index].value * 10 + num > getMaxValue(currentDate, ed)) {
-          edits[index].value = getMaxValue(currentDate, ed)
+        } else if (edits[index].value * 10 + num > getMaxValue(ed)) {
+          edits[index].value = getMaxValue(ed)
         } else {
           edits[index].value = edits[index].value * 10 + num
         }
         if (!isNull() && !startTyping) {
-          fixEdits()
           currentDate = setValue(edits[index].value, currentDate, ed, timeZone)
           dateToEdits(currentDate, timeZone)
         }
         edits = edits
         dispatch('update', currentDate)
 
-        if (selected === 'hour' && (shouldNext || edits[0].value > 2)) selected = 'min'
+        if (selected === 'hour' && (shouldNext || edits[0].value > 2)) selected = 'minute'
       }
       if (ev.code === 'Enter') {
         dispatch('close', currentDate)
@@ -149,19 +143,13 @@
         selected = index === 1 ? edits[0].id : edits[index + 1].id
       }
       if (ev.code === 'Tab') {
-        if (ed === 'min') dispatch('save')
+        if (ed === 'minute') dispatch('save')
       }
     }
   }
   const focused = (ed: TEdits): void => {
     selected = ed
     startTyping = true
-  }
-  const fixEdits = (): void => {
-    const h: number = edits[0].value === -1 ? 0 : edits[0].value
-    const m: number = edits[1].value === -1 ? 0 : edits[1].value
-    currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), h, m)
-    dispatch('save')
   }
 
   $: dateToEdits(currentDate, timeZone)

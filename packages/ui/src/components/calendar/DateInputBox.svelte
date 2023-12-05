@@ -19,20 +19,20 @@
   import Label from '../Label.svelte'
   import IconClose from '../icons/Close.svelte'
   import { daysInMonth, getUserTimezone } from './internal/DateUtils'
-  import moment from 'moment-timezone'
+  import { DateTime } from 'luxon'
 
   export let currentDate: Date | null
   export let withTime: boolean = false
   export let kind: 'default' | 'plain' = 'default'
   export let timeZone: string = getUserTimezone()
 
-  type TEdits = 'day' | 'month' | 'year' | 'hour' | 'min'
+  type TEdits = 'day' | 'month' | 'year' | 'hour' | 'minute'
   interface IEdits {
     id: TEdits
     value: number
     el?: HTMLElement
   }
-  const editsType: TEdits[] = ['day', 'month', 'year', 'hour', 'min']
+  const editsType: TEdits[] = ['day', 'month', 'year', 'hour', 'minute']
   const getIndex = (id: TEdits): number => editsType.indexOf(id)
   let edits: IEdits[] = editsType.map((edit) => {
     return { id: edit, value: -1 }
@@ -44,34 +44,17 @@
 
   const setValue = (val: number, date: Date | null, id: TEdits): Date => {
     if (date == null) date = new Date()
-    switch (id) {
-      case 'day':
-        date = new Date(timeZone ? moment(date).tz(timeZone).date(val).valueOf() : moment(date).date(val).valueOf())
-        break
-      case 'month':
-        date = new Date(
-          timeZone
-            ? moment(date)
-              .tz(timeZone)
-              .month(val - 1)
-              .valueOf()
-            : moment(date)
-              .month(val - 1)
-              .valueOf()
-        )
-        break
-      case 'year':
-        date = new Date(timeZone ? moment(date).tz(timeZone).year(val).valueOf() : moment(date).year(val).valueOf())
-        break
-      case 'hour':
-        date = new Date(timeZone ? moment(date).tz(timeZone).hours(val).valueOf() : moment(date).hours(val).valueOf())
-        break
-      case 'min':
-        date = new Date(
-          timeZone ? moment(date).tz(timeZone).minutes(val).valueOf() : moment(date).minutes(val).valueOf()
-        )
-        break
-    }
+    date = new Date(
+      timeZone
+        ? DateTime.fromJSDate(date)
+          .setZone(timeZone)
+          .set({ [id]: val })
+          .valueOf()
+        : DateTime.fromJSDate(date)
+          .setZone(timeZone)
+          .set({ [id]: val })
+          .valueOf()
+    )
     return date
   }
 
@@ -86,24 +69,14 @@
         return 3000
       case 'hour':
         return 23
-      case 'min':
+      case 'minute':
         return 59
     }
   }
 
   const getValue = (date: Date, id: TEdits): number => {
-    switch (id) {
-      case 'day':
-        return timeZone ? moment(date).tz(timeZone).date() : moment(date).date()
-      case 'month':
-        return timeZone ? moment(date).tz(timeZone).month() + 1 : moment(date).month() + 1
-      case 'year':
-        return timeZone ? moment(date).tz(timeZone).year() : moment(date).year()
-      case 'hour':
-        return timeZone ? moment(date).tz(timeZone).hours() : moment(date).hours()
-      case 'min':
-        return timeZone ? moment(date).tz(timeZone).minutes() : moment(date).minutes()
-    }
+    const res = timeZone ? DateTime.fromJSDate(date).setZone(timeZone).get(id) : DateTime.fromJSDate(date).get(id)
+    return res
   }
 
   const dateToEdits = (currentDate: Date | null): void => {
@@ -151,7 +124,6 @@
           edits[index].value = edits[index].value * 10 + num
         }
         if (!isNull() && !startTyping) {
-          fixEdits()
           currentDate = setValue(edits[index].value, currentDate, ed)
           dateToEdits(currentDate)
         }
@@ -161,7 +133,7 @@
           selected = 'month'
         } else if (selected === 'month' && (shouldNext || edits[1].value > 1)) selected = 'year'
         else if (selected === 'year' && withTime && (shouldNext || edits[2].value > 999)) selected = 'hour'
-        else if (selected === 'hour' && (shouldNext || edits[3].value > 2)) selected = 'min'
+        else if (selected === 'hour' && (shouldNext || edits[3].value > 2)) selected = 'minute'
       }
       if (ev.code === 'Enter') {
         if (!isNull(currentDate)) dispatch('close')
@@ -186,7 +158,7 @@
         selected = index === (withTime ? 4 : 2) ? edits[0].id : edits[index + 1].id
       }
       if (ev.code === 'Tab') {
-        if ((ed === 'year' && !withTime) || (ed === 'min' && withTime)) dispatch('save')
+        if ((ed === 'year' && !withTime) || (ed === 'minute' && withTime)) dispatch('save')
       }
     }
   }
@@ -197,12 +169,6 @@
   const clearEdits = (): void => {
     edits.forEach((edit) => (edit.value = -1))
     if (edits[0].el) edits[0].el.focus()
-    dispatch('save')
-  }
-  const fixEdits = (): void => {
-    const h: number = edits[3].value === -1 ? 0 : edits[3].value
-    const m: number = edits[4].value === -1 ? 0 : edits[4].value
-    currentDate = new Date(edits[2].value, edits[1].value - 1, edits[0].value, h, m)
     dispatch('save')
   }
 

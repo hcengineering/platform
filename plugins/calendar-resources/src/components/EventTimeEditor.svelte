@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Icon, IconArrowRight, getUserTimezone } from '@hcengineering/ui'
-  import moment from 'moment-timezone'
+  import { DateTime } from 'luxon'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
   import DateEditor from './DateEditor.svelte'
@@ -26,7 +26,9 @@
   export let timeZone: string = getUserTimezone()
   export let focusIndex = -1
 
-  $: sameDate = moment(startDate).tz(timeZone).isSame(moment(dueDate).tz(timeZone), 'date')
+  $: sameDate = DateTime.fromMillis(startDate)
+    .setZone(timeZone)
+    .hasSame(DateTime.fromMillis(dueDate).setZone(timeZone), 'day')
 
   let diff = dueDate - startDate
   const allDayDuration = 24 * 60 * 60 * 1000 - 1

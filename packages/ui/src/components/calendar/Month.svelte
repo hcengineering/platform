@@ -29,7 +29,7 @@
     getUserTimezone,
     getWeekDayName
   } from './internal/DateUtils'
-  import moment from 'moment-timezone'
+  import { DateTime } from 'luxon'
 
   export let currentDate: Date | null
   export let mondayStart: boolean = true
@@ -50,11 +50,11 @@
   let days: ICell[] = []
   const getDateStyle = (date: Date): TCellStyle => {
     if (currentDate != null) {
-      const zonedTime = moment(currentDate).tz(timeZone)
+      const zonedTime = DateTime.fromJSDate(currentDate).setZone(timeZone)
       if (
-        zonedTime.date() === date.getDate() &&
-        zonedTime.year() === date.getFullYear() &&
-        zonedTime.month() === date.getMonth()
+        zonedTime.day === date.getDate() &&
+        zonedTime.year === date.getFullYear() &&
+        zonedTime.month === date.getMonth() + 1
       ) {
         return 'selected'
       }

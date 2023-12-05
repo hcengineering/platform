@@ -28,7 +28,7 @@
     getUserTimezone
   } from './internal/DateUtils'
   import { capitalizeFirstLetter } from '../../utils'
-  import moment from 'moment-timezone'
+  import { DateTime } from 'luxon'
 
   export let currentDate: Date | null
   export let viewDate: Date
@@ -59,27 +59,19 @@
     return target > startDate && target < endDate
   }
 
+  function isDateSelected (date: Date | null | undefined, target: Date): boolean {
+    if (date == null) return false
+    const zonedTime = DateTime.fromJSDate(date).setZone(timeZone)
+    return (
+      zonedTime.day === target.getDate() &&
+      zonedTime.year === target.getFullYear() &&
+      zonedTime.month === target.getMonth() + 1
+    )
+  }
+
   function isSelected (currentDate: Date | null, selectedTo: Date | null | undefined, target: Date): boolean {
-    if (currentDate != null) {
-      const zonedTime = moment(currentDate).tz(timeZone)
-      if (
-        zonedTime.date() === target.getDate() &&
-        zonedTime.year() === target.getFullYear() &&
-        zonedTime.month() === target.getMonth()
-      ) {
-        return true
-      }
-    }
-    if (selectedTo != null) {
-      const zonedTime = moment(selectedTo).tz(timeZone)
-      if (
-        zonedTime.date() === target.getDate() &&
-        zonedTime.year() === target.getFullYear() &&
-        zonedTime.month() === target.getMonth()
-      ) {
-        return true
-      }
-    }
+    if (isDateSelected(currentDate, target)) return true
+    if (isDateSelected(selectedTo, target)) return true
     return false
   }
 
