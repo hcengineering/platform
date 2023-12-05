@@ -11,7 +11,8 @@
     navigate,
     showPopup,
     SelectPopup,
-    getEventPopupPositionElement
+    getEventPopupPositionElement,
+    getPopupPositionElement
   } from '@hcengineering/ui'
   import view, { Filter, FilteredView, ViewOptions, Viewlet } from '@hcengineering/view'
   import {
@@ -42,7 +43,7 @@
   const filteredViewsQuery = createQuery()
   let availableFilteredViews: FilteredView[] = []
   let myFilteredViews: FilteredView[] = []
-  $: filteredViewsQuery.query(view.class.FilteredView, { attachedTo: currentApplication?.alias }, (result) => {
+  $: filteredViewsQuery.query<FilteredView>(view.class.FilteredView, { attachedTo: currentApplication?.alias }, (result) => {
     myFilteredViews = result.filter((p) => p.users.includes(me))
     availableFilteredViews = result.filter((p) => p.sharable && !p.users.includes(me))
   })
@@ -111,7 +112,7 @@
       fragment: fv.location.fragment ?? undefined
     })
     if (fv.viewletId !== undefined && fv.viewletId !== null) {
-      const viewlet = await client.findOne(view.class.Viewlet, { _id: fv.viewletId })
+      const viewlet = await client.findOne<Viewlet>(view.class.Viewlet, { _id: fv.viewletId })
       setActiveViewletId(fv.viewletId, fv.location)
       if (viewlet !== undefined && fv.viewOptions !== undefined) {
         setViewOptions(viewlet, copy(fv.viewOptions))
@@ -120,7 +121,7 @@
     setFilters(JSON.parse(fv.filters))
   }
 
-  const clearSelection = () => {
+  const clearSelection = (): void => {
     selectedFilterStore.set(undefined)
     selectedId = undefined
     dispatch('select', false)
@@ -148,7 +149,7 @@
     loc: Location,
     filteredViews: FilteredView[] | undefined,
     viewOptionStore: Map<string, ViewOptions>
-  ) {
+  ): void {
     const filters = JSON.stringify(fs)
     if (loc && Array.isArray(fs) && fs.length > 0 && Array.isArray(filteredViews)) {
       if ($selectedFilterStore !== undefined) {
@@ -179,7 +180,7 @@
   async function getActions (availableFilteredViews: FilteredView[]): Promise<Action[]> {
     if (availableFilteredViews.length > 0) {
       const filteredViewsIdMap = toIdMap(availableFilteredViews)
-      const pushMeToFV = async (id: Ref<FilteredView>) => {
+      const pushMeToFV = async (id: Ref<FilteredView>): Promise<void> => {
         if (id === undefined) return
         const filteredView = filteredViewsIdMap.get(id)
         if (filteredView) await client.update(filteredView, { $push: { users: me } })
@@ -192,7 +193,15 @@
         label: view.string.AddSavedView,
         icon: IconAdd,
         action: async (_, e): Promise<void> => {
-          showPopup(SelectPopup, { value, searchable: true }, eventToHTMLElement(e as MouseEvent), pushMeToFV)
+          showPopup(
+            SelectPopup,
+            { value, searchable: true },
+            getPopupPositionElement(eventToHTMLElement(e as MouseEvent), {
+              v: 'top',
+              h: 'right'
+            }),
+            pushMeToFV
+          )
         }
       }
       return [add]
