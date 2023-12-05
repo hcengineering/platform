@@ -55,7 +55,9 @@
         zonedTime.date() === date.getDate() &&
         zonedTime.year() === date.getFullYear() &&
         zonedTime.month() === date.getMonth()
-      ) { return 'selected' }
+      ) {
+        return 'selected'
+      }
     }
     return 'not-selected'
   }

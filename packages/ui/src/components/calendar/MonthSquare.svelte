@@ -66,7 +66,9 @@
         zonedTime.date() === target.getDate() &&
         zonedTime.year() === target.getFullYear() &&
         zonedTime.month() === target.getMonth()
-      ) { return true }
+      ) {
+        return true
+      }
     }
     if (selectedTo != null) {
       const zonedTime = moment(selectedTo).tz(timeZone)
@@ -74,7 +76,9 @@
         zonedTime.date() === target.getDate() &&
         zonedTime.year() === target.getFullYear() &&
         zonedTime.month() === target.getMonth()
-      ) { return true }
+      ) {
+        return true
+      }
     }
     return false
   }
