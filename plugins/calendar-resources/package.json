@@ -53,6 +53,6 @@
     "@hcengineering/view": "^0.6.9",
     "@hcengineering/workbench": "^0.6.9",
     "fast-equals": "^2.0.3",
-    "luxon": "^3.4.4"
+    "luxon": "^3.3.7"
   }
 }
