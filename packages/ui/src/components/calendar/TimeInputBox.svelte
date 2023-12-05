@@ -16,11 +16,13 @@
   import { afterUpdate, createEventDispatcher } from 'svelte'
   import ui from '../../plugin'
   import Label from '../Label.svelte'
+  import moment from 'moment-timezone'
 
   export let currentDate: Date
   export let size: 'small' | 'medium' = 'medium'
   export let noBorder: boolean = false
   export let disabled: boolean = false
+  export let timeZone: string | undefined = undefined
 
   type TEdits = 'hour' | 'min'
   interface IEdits {
@@ -38,14 +40,16 @@
 
   const dispatch = createEventDispatcher()
 
-  const setValue = (val: number, date: Date | null, id: TEdits): Date => {
+  const setValue = (val: number, date: Date | null, id: TEdits, timeZone: string | undefined): Date => {
     if (date == null) date = new Date()
     switch (id) {
       case 'hour':
-        date.setHours(val)
+        date = new Date(timeZone ? moment(date).tz(timeZone).hours(val).valueOf() : moment(date).hours(val).valueOf())
         break
       case 'min':
-        date.setMinutes(val)
+        date = new Date(
+          timeZone ? moment(date).tz(timeZone).minutes(val).valueOf() : moment(date).minutes(val).valueOf()
+        )
         break
     }
     return date
@@ -61,23 +65,23 @@
     }
   }
 
-  const getValue = (date: Date, id: TEdits): number => {
+  const getValue = (date: Date, id: TEdits, timeZone: string | undefined): number => {
     switch (id) {
       case 'hour':
-        return date.getHours()
+        return timeZone ? moment(date).tz(timeZone).hours() : moment(date).hours()
       case 'min':
-        return date.getMinutes()
+        return timeZone ? moment(date).tz(timeZone).minutes() : moment(date).minutes()
     }
   }
 
-  const dateToEdits = (currentDate: Date | null): void => {
+  const dateToEdits = (currentDate: Date | null, timeZone: string | undefined): void => {
     if (currentDate == null) {
       edits.forEach((edit) => {
         edit.value = -1
       })
     } else {
       for (const edit of edits) {
-        edit.value = getValue(currentDate, edit.id)
+        edit.value = getValue(currentDate, edit.id, timeZone)
       }
     }
     edits = edits
@@ -85,7 +89,7 @@
 
   export const isNull = (currentDate?: Date): boolean => {
     if (currentDate !== undefined) {
-      dateToEdits(currentDate)
+      dateToEdits(currentDate, timeZone)
     }
     let result: boolean = false
     edits.forEach((edit, i) => {
@@ -113,8 +117,8 @@
         }
         if (!isNull() && !startTyping) {
           fixEdits()
-          currentDate = setValue(edits[index].value, currentDate, ed)
-          dateToEdits(currentDate)
+          currentDate = setValue(edits[index].value, currentDate, ed, timeZone)
+          dateToEdits(currentDate, timeZone)
         }
         edits = edits
         dispatch('update', currentDate)
@@ -132,8 +136,8 @@
         if (edits[index].value !== -1) {
           const val = ev.code === 'ArrowUp' ? edits[index].value + 1 : edits[index].value - 1
           if (currentDate) {
-            currentDate = setValue(val, currentDate, ed)
-            dateToEdits(currentDate)
+            currentDate = setValue(val, currentDate, ed, timeZone)
+            dateToEdits(currentDate, timeZone)
             dispatch('update', currentDate)
           }
         }
@@ -160,7 +164,7 @@
     dispatch('save')
   }
 
-  $: dateToEdits(currentDate)
+  $: dateToEdits(currentDate, timeZone)
   $: if (selected && edits[getIndex(selected)].el) edits[getIndex(selected)].el?.focus()
 
   afterUpdate(() => {

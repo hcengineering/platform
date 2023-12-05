@@ -11,6 +11,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { type TimeZone } from '../../../types'
+
 export const DAYS_IN_WEEK = 7
 
 export const MILLISECONDS_IN_MINUTE = 60000
@@ -127,6 +129,26 @@ export function getFormattedDate (value: number | null): string {
   return value === null ? '' : new Date(value).toLocaleString('default', { month: 'short', day: 'numeric' })
 }
 
-export const getTimeZoneName = (): string => {
-  return Intl.DateTimeFormat().resolvedOptions().timeZone?.split('/')[1] ?? ''
+export const getTimeZoneName = (val: string = Intl.DateTimeFormat().resolvedOptions().timeZone): string => {
+  return val.split('/')[1] ?? ''
+}
+
+export const convertTimeZone = (tz: string): TimeZone => {
+  const tzSpace = tz.replace(/_/gi, ' ')
+  const parts = tzSpace.split('/')
+  if (tz === '' || parts.length === 1) return { id: tz, continent: tzSpace, city: tzSpace, short: tzSpace }
+  return {
+    id: tz,
+    continent: parts[0],
+    city: parts.length > 2 ? `${parts[1]} - ${parts[2]}` : parts[1],
+    short: parts.length > 2 ? parts[2] : parts[1]
+  }
+}
+
+export function getUserTimezone (): string {
+  if (window.Intl !== undefined) {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone
+  } else {
+    return 'Etc/GMT'
+  }
 }

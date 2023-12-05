@@ -983,6 +983,9 @@ dependencies:
   minio:
     specifier: ^7.0.26
     version: 7.1.3
+  moment-timezone:
+    specifier: ^0.5.43
+    version: 0.5.43
   mongodb:
     specifier: ^4.11.0
     version: 4.17.1
@@ -13221,6 +13224,16 @@ packages:
     resolution: {integrity: sha512-ySViT69/76t8VhE1xXHK6Ch4NcDd26gx0MzKXLO+F7NOtnqH68d9zF94nT8ZWSxXh8ELOERsnJO/sWt1xZYw5A==}
     dev: false
 
+  /moment-timezone@0.5.43:
+    resolution: {integrity: sha512-72j3aNyuIsDxdF1i7CEgV2FfxM1r6aaqJyLB2vwb33mXYyoyLly+F1zbWqhA3/bVIoJ4szlUoMbUnVdid32NUQ==}
+    dependencies:
+      moment: 2.29.4
+    dev: false
+
+  /moment@2.29.4:
+    resolution: {integrity: sha512-5LC9SOxjSc2HF6vO2CyuTDNivEdoz2IvyJJGj6X8DJ0eFyfszE0QiEd+iXmBvUP3WHxSjFH/vIsA0EN00cgr8w==}
+    dev: false
+
   /mongodb-connection-string-url@2.6.0:
     resolution: {integrity: sha512-WvTZlI9ab0QYtTYnuMLgobULWhokRjtC7db9LtcVfJ+Hsnyr5eo6ZtNAt3Ly24XZScGMelOcGtm7lSn0332tPQ==}
     dependencies:
@@ -17768,7 +17781,7 @@ packages:
     dev: false
 
   file:projects/calendar-resources.tgz(@types/node@16.11.68)(esbuild@0.16.17)(postcss-load-config@4.0.1)(postcss@8.4.31)(ts-node@10.9.1):
-    resolution: {integrity: sha512-uhWVaA9LfyRGkkRYOipr4pcykZVqdl5EHUGCF146vAHuv01YV+njwZCeSRzbDYEB9VzQdPMdhh6/Wol8Zm3ENg==, tarball: file:projects/calendar-resources.tgz}
+    resolution: {integrity: sha512-GKA5RNUEh4K+pp2mAf479tKTKebnRqldRDNln/RgNekUVHs/vqOuzHbu/4uHlIpC1QJXxyi7H+m6lidp5bqv7A==, tarball: file:projects/calendar-resources.tgz}
     id: file:projects/calendar-resources.tgz
     name: '@rush-temp/calendar-resources'
     version: 0.0.0
@@ -17785,6 +17798,7 @@ packages:
       eslint-plugin-svelte3: 4.0.0(eslint@8.51.0)(svelte@3.55.1)
       fast-equals: 2.0.4
       jest: 29.7.0(@types/node@16.11.68)(ts-node@10.9.1)
+      moment-timezone: 0.5.43
       prettier: 3.1.0
       prettier-plugin-svelte: 3.1.0(prettier@3.1.0)(svelte@4.2.5)
       sass: 1.69.0
@@ -23711,7 +23725,7 @@ packages:
     dev: false
 
   file:projects/ui.tgz(@types/node@16.11.68)(esbuild@0.16.17)(postcss-load-config@4.0.1)(postcss@8.4.31)(ts-node@10.9.1):
-    resolution: {integrity: sha512-g5wJSxU0oHaWmOknjGHp3d+ML2V2bnveZV51xeHaq5GfbEwCdHat3DOsEt6zC3BMVRZsyJz8EmwNnd6A+KZYcA==, tarball: file:projects/ui.tgz}
+    resolution: {integrity: sha512-N7xpf37pbt76Fi7r6f4ioMRsUhBC6xMQmAliUP5wX0OLlzS/sU7SHQFqY5BYcXBV9HhyTcRqQ3cIG2yGgQivDQ==, tarball: file:projects/ui.tgz}
     id: file:projects/ui.tgz
     name: '@rush-temp/ui'
     version: 0.0.0
@@ -23731,6 +23745,7 @@ packages:
       fast-equals: 2.0.4
       jest: 29.7.0(@types/node@16.11.68)(ts-node@10.9.1)
       just-clone: 6.2.0
+      moment-timezone: 0.5.43
       prettier: 3.1.0
       prettier-plugin-svelte: 3.1.0(prettier@3.1.0)(svelte@4.2.5)
       sass: 1.69.0

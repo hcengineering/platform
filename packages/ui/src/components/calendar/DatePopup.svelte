@@ -19,11 +19,12 @@
   import {
     ActionIcon,
     Button,
-    Scroller,
-    deviceOptionsStore as deviceInfo,
-    checkAdaptiveMatching,
+    IconClose,
     Label,
-    IconClose
+    Scroller,
+    checkAdaptiveMatching,
+    deviceOptionsStore as deviceInfo,
+    getUserTimezone
   } from '../..'
   import ui from '../../plugin'
   import DateInputBox from './DateInputBox.svelte'
@@ -36,6 +37,7 @@
   export let label = currentDate != null ? ui.string.EditDueDate : ui.string.AddDueDate
   export let detail: IntlString | undefined = undefined
   export let noShift: boolean = false
+  export let timeZone: string = getUserTimezone()
 
   const dispatch = createEventDispatcher()
 
@@ -110,6 +112,7 @@
       bind:this={dateInput}
       bind:currentDate
       {withTime}
+      {timeZone}
       kind={'plain'}
       on:close={() => {
         closeDP(withTime)
@@ -126,6 +129,7 @@
           <MonthSquare
             bind:currentDate
             {viewDate}
+            {timeZone}
             {mondayStart}
             viewUpdate={false}
             hideNavigator={'all'}
@@ -140,6 +144,7 @@
               bind:currentDate
               viewDate={viewDateSec}
               {mondayStart}
+              {timeZone}
               viewUpdate={false}
               noPadding
               on:update={(result) => {
@@ -158,6 +163,7 @@
           bind:currentDate
           {viewDate}
           {mondayStart}
+          {timeZone}
           viewUpdate={false}
           hideNavigator={'all'}
           noPadding
@@ -169,6 +175,7 @@
           <div class="space" />
           <MonthSquare
             bind:currentDate
+            {timeZone}
             viewDate={viewDateSec}
             {mondayStart}
             viewUpdate={false}
