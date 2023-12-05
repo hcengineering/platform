@@ -23,6 +23,14 @@ export const PRIORITIES = ['No priority', 'Urgent', 'High', 'Medium', 'Low']
 export const DEFAULT_STATUSES = ['Backlog', 'Todo', 'In Progress', 'Done', 'Canceled']
 export const DEFAULT_USER = 'Appleseed John'
 
+export const DEFAULT_STATUSES_ID = new Map([
+  ['Backlog', 'tracker:issueStatusCategory:Backlog'],
+  ['Todo', 'tracker:issueStatusCategory:Unstarted'],
+  ['In Progress', 'tracker:issueStatusCategory:Started'],
+  ['Done', 'tracker:issueStatusCategory:Completed'],
+  ['Canceled', 'tracker:issueStatusCategory:Canceled']
+])
+
 export async function navigate (page: Page): Promise<void> {
   await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   await page.click('[id="app-tracker\\:string\\:TrackerApplication"]')

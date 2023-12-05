@@ -4,6 +4,7 @@ import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { NewIssue } from '../model/tracker/types'
 import { allure } from 'allure-playwright'
+import { DEFAULT_STATUSES, DEFAULT_STATUSES_ID } from './tracker.utils'
 
 test.use({
   storageState: PlatformSetting
@@ -203,5 +204,24 @@ test.describe('Tracker filters tests', () => {
 
       await issuesPage.checkFilteredIssueExist(newIssue.title)
     })
+  })
+
+  test('Status filter', async ({ page }) => {
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
+
+    for (const status of DEFAULT_STATUSES) {
+      await test.step(`Status Filter ${status}`, async () => {
+        await issuesPage.selectFilter('Status', status)
+        await issuesPage.inputSearch.press('Escape')
+
+        await issuesPage.checkFilter('Status', 'is')
+        await issuesPage.checkAllIssuesInStatus(DEFAULT_STATUSES_ID.get(status))
+        await issuesPage.buttonClearFilers.click()
+      })
+    }
   })
 })
