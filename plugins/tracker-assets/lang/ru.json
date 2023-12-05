@@ -236,7 +236,6 @@
     "TimeSpendReportValue": "Затраченные дни",
     "TimeSpendReportValueTooltip": "Затраченное время в человеко днях",
     "TimeSpendReportDescription": "Описание",
-    "TimeSpendValue": "{value}d",
     "TimeSpendDays": "{value}d",
     "TimeSpendHours": "{value}h",
     "TimeSpendMinutes": "{value}m",

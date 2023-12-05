@@ -64,7 +64,7 @@
   use:tooltip={{
     component: Label,
     props: {
-      label: tracker.string.TimeSpendValue,
+      label: tracker.string.TimeSpendHours,
       params: { value }
     }
   }}

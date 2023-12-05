@@ -158,9 +158,9 @@ test.describe('tracker layout tests', () => {
                 PRIORITIES.findIndex((p) => p === propsRight.priority) >
               0
             ) {
-              return 1
+              return -1
             }
-            return -1
+            return 1
           })
           .map((p) => p.name)
       } else if (order === 'Status') {
