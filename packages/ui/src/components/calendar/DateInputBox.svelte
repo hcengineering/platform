@@ -47,17 +47,16 @@
     switch (id) {
       case 'day':
         date = new Date(timeZone ? moment(date).tz(timeZone).date(val).valueOf() : moment(date).date(val).valueOf())
-        date.setDate(val)
         break
       case 'month':
         date = new Date(
           timeZone
             ? moment(date)
               .tz(timeZone)
-              .month(val + 1)
+              .month(val - 1)
               .valueOf()
             : moment(date)
-              .month(val + 1)
+              .month(val - 1)
               .valueOf()
         )
         break
