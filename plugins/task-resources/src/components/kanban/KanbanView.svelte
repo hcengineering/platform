@@ -87,7 +87,9 @@
     resultQuery = mergeQueries(p, query)
   })
 
-  $: queryNoLookup = getCategoryQueryNoLookup(resultQuery)
+  $: queryNoLookup = getCategoryQueryNoLookup(
+    mergeQueries(resultQuery, activeSpaces.length > 0 ? { space: { $in: activeSpaces } } : {})
+  )
   const lookup: Lookup<Task> = {
     ...(options?.lookup ?? {}),
     space: task.class.Project,
@@ -119,9 +121,10 @@
 
   let fastDocs: DocWithRank[] = []
   let slowDocs: DocWithRank[] = []
-
+  let activeSpaces: Ref<Project>[] = []
   const docsQuery = createQuery()
   const docsQuerySlow = createQuery()
+  const activeSpaceQuery = createQuery()
 
   let fastQueryIds = new Set<Ref<DocWithRank>>()
 
@@ -136,7 +139,16 @@
       ...getCategoryQueryProjection(client.getHierarchy(), _class, queryNoLookup, viewOptions.groupBy)
     }
   }
-
+  $: activeSpaceQuery.query(
+    task.class.Project,
+    {
+      archived: false
+    },
+    (res) => {
+      activeSpaces = res.map((r: Project) => r._id)
+    },
+    { projection: { _id: 1 } }
+  )
   $: docsQuery.query(
     _class,
     queryNoLookup,
