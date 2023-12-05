@@ -13,14 +13,14 @@ test.use({
 
 test.describe('Collaborative test for issue', () => {
   test.beforeEach(async ({ page }) => {
-    await allure.parentSuite('Collaborative test')
+    await allure.parentSuite('Collaborative tests')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
   })
 
   test('Issues can be assigned to another users', async ({ page, browser }) => {
     const newIssue: NewIssue = {
-      title: 'Collaborative test for issue',
-      description: 'Collaborative test for issue',
+      title: 'Issues can be assigned to another users',
+      description: 'Issues can be assigned to another users',
       status: 'Backlog',
       priority: 'Urgent',
       assignee: 'Appleseed John',
@@ -62,6 +62,7 @@ test.describe('Collaborative test for issue', () => {
       milestone: 'Milestone',
       estimation: '2h'
     })
+    await userSecondPage.close()
   })
 
   test('Issues status can be changed by another users', async ({ page, browser }) => {
@@ -103,6 +104,7 @@ test.describe('Collaborative test for issue', () => {
       ...issue,
       status: 'In Progress'
     })
+    await userSecondPage.close()
   })
 
   test('First user change assignee, second user should see assigned issue', async ({ page, browser }) => {
@@ -150,5 +152,6 @@ test.describe('Collaborative test for issue', () => {
       const issuesDetailsPageSecond = new IssuesDetailsPage(userSecondPage)
       await issuesDetailsPageSecond.checkIssue({ ...issue })
     })
+    await userSecondPage.close()
   })
 })
