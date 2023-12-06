@@ -416,7 +416,10 @@ class ElasticAdapter implements FullTextAdapter {
         const errorIds = new Set(errors.map((it: any) => it.index._id))
         const erroDocs = docs.filter((it) => errorIds.has(it.id))
         // Collect only errors
-        const errs = Array.from(errors.map((it: any) => it.index.error.reason as string)).join('\n')
+        const errs = Array.from(errors.map((it: any) => {
+          return `${it.index.error.reason}: ${it.index.error.caused_by?.reason}`
+        })).join('\n')
+
         console.error(`Failed to process bulk request: ${errs} ${JSON.stringify(erroDocs)}`)
       }
     }

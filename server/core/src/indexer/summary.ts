@@ -33,7 +33,7 @@ import { translate } from '@hcengineering/platform'
 import { convert } from 'html-to-text'
 import { IndexedDoc } from '../types'
 import { contentStageId, DocUpdateHandler, fieldStateId, FullTextPipeline, FullTextPipelineStage } from './types'
-import { collectPropagate, collectPropagateClasses, getFullTextContext, loadIndexStageStage } from './utils'
+import { collectPropagate, collectPropagateClasses, getFullTextContext, loadIndexStageStage, isCustomAttr } from './utils'
 
 /**
  * @public
@@ -238,6 +238,14 @@ export async function extractIndexedValues (
       }
       if (sourceContent.length === 0) {
         continue
+      }
+
+      if (isCustomAttr(attr)) {
+        const str = v.map((pair: string[]) => {
+          return `${pair[0]} is ${pair[1]}`
+        }).join(' ')
+        const cl = doc.objectClass
+        attributes[cl] = { ...attributes[cl], [k]: str }
       }
 
       if (_class === undefined) {
