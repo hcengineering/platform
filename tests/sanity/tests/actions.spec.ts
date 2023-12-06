@@ -32,6 +32,7 @@ test.describe('actions tests', () => {
 
     await page.click('text=Talents')
     await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit/talents`)
+    await expect(page.locator('a[href$="talents"] > div.selected')).toBeVisible()
 
     await page.press('body', 'Meta+k')
 
@@ -39,7 +40,7 @@ test.describe('actions tests', () => {
     await expect(page.locator('div.actionsitem div', { hasText: 'Merge contacts' })).toBeVisible()
 
     await page.click('div.actionsHeader input.actionsInput')
-    await page.type('div.actionsHeader input.actionsInput', 'go to ')
+    await page.fill('div.actionsHeader input.actionsInput', 'go to ')
     expect(await page.locator('div.selectPopup :text("Go To Vacancies")').count()).toBe(1)
     await page.click('div.selectPopup :text("Go To Vacancies")')
 
@@ -51,6 +52,7 @@ test.describe('actions tests', () => {
 
     await page.click('text=Talents')
     await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit/talents`)
+    await expect(page.locator('a[href$="talents"] > div.selected')).toBeVisible()
 
     await page.press('body', 'Meta+k')
 
@@ -58,7 +60,7 @@ test.describe('actions tests', () => {
     await expect(page.locator('div.actionsitem div', { hasText: 'Merge contacts' })).toBeVisible()
 
     await page.click('div.actionsHeader input.actionsInput')
-    await page.type('div.actionsHeader input.actionsInput', 'go to ')
+    await page.fill('div.actionsHeader input.actionsInput', 'go to ')
     expect(await page.locator('div.selectPopup :text("Go To Applications")').count()).toBe(1)
     await page.click('div.selectPopup :text("Go To Applications")')
 

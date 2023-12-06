@@ -238,8 +238,8 @@ test.describe('Tracker filters tests', () => {
         await issuesPage.inputSearch.press('Escape')
 
         await issuesPage.checkFilter('Priority', 'is')
-        // await issuesPage.checkAllIssuesByPriority(DEFAULT_STATUSES_ID.get(priority))
-        // await issuesPage.buttonClearFilers.click()
+        await issuesPage.checkAllIssuesByPriority(priority.toLowerCase().replaceAll(' ', ''))
+        await issuesPage.buttonClearFilers.click()
       })
     }
   })

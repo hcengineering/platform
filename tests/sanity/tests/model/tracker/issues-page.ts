@@ -151,7 +151,8 @@ export class IssuesPage extends CommonTrackerPage {
 
   async checkAllIssuesByPriority (priorityName: string): Promise<void> {
     for await (const locator of iterateLocator(this.page.locator('div.listGrid'))) {
-      await expect(locator.locator('div.priority-container use')).toHaveAttribute('href', priorityName)
+      const href = await locator.locator('div.priority-container use').getAttribute('href')
+      expect(href).toContain(priorityName)
     }
   }
 }
