@@ -23,6 +23,6 @@ export interface NewProject {
   private: boolean
   defaultAssigneeForIssues: string
   defaultIssueStatus: string
-  icon?: string
+  iconNumber?: number
   type?: string
 }
