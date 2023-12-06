@@ -48,6 +48,5 @@ export class TrackerNavigationMenuPage extends CommonPage {
       .locator('div[class*="tool"]:not([class*="arrow"])')
       .click()
     await this.selectFromDropdown(this.page, action)
-    // await this.selectFromDropdown(this.page, 'Edit project')
   }
 }
