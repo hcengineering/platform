@@ -248,8 +248,8 @@ export async function extractIndexedValues (
 
       if (isCustomAttr(attr)) {
         const str = v
-          .map((pair: string[]) => {
-            return `${pair[0]} is ${pair[1]}`
+          .map((pair: { label: string, value: string } ) => {
+            return `${pair.label} is ${pair.value}`
           })
           .join(' ')
         const cl = doc.objectClass

@@ -152,7 +152,7 @@ export class IndexedFieldStage implements FullTextPipelineStage {
             if (v.attr.isCustom === true && v.value !== '' && v.value !== undefined) {
               // No need to put localized text as attributes. We do not use it at all
               // Just put all content for custom attribute inside one custom field
-              customAttrValues.push([v.attr.label, v.value])
+              customAttrValues.push({ label: v.attr.label, value: v.value })
               continue
             }
 
