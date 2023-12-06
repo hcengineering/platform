@@ -63,13 +63,37 @@ test.describe('Tracker Projects tests', () => {
     await newProjectPage.createNewProject(editProjectData)
     await trackerNavigationMenuPage.checkProjectExist(editProjectData.title)
 
-    await trackerNavigationMenuPage.openProjectToEdit(editProjectData.title)
+    await trackerNavigationMenuPage.makeActionWithProject(editProjectData.title, 'Edit project')
 
     const editProjectPage = new EditProjectPage(page)
     await editProjectPage.checkProject(editProjectData)
 
     await editProjectPage.updateProject(updateProjectData)
-    await trackerNavigationMenuPage.openProjectToEdit(updateProjectData.title)
+    await trackerNavigationMenuPage.makeActionWithProject(updateProjectData.title, 'Edit project')
     await editProjectPage.checkProject(updateProjectData)
+  })
+
+  test('Archive Project', async ({ page }) => {
+    const archiveProjectData: NewProject = {
+      title: 'PROJECT_ARCHIVE',
+      identifier: 'ARCH',
+      description: 'Archive Project description',
+      private: true,
+      defaultAssigneeForIssues: 'Dirak Kainin',
+      defaultIssueStatus: 'In Progress'
+    }
+
+    const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+    await trackerNavigationMenuPage.checkProjectNotExist(archiveProjectData.title)
+    await trackerNavigationMenuPage.pressCreateProjectButton()
+
+    const newProjectPage = new NewProjectPage(page)
+    await newProjectPage.createNewProject(archiveProjectData)
+    await trackerNavigationMenuPage.checkProjectExist(archiveProjectData.title)
+
+    await trackerNavigationMenuPage.makeActionWithProject(archiveProjectData.title, 'Archive')
+    await trackerNavigationMenuPage.pressYesForPopup(page)
+
+    await trackerNavigationMenuPage.checkProjectNotExist(archiveProjectData.title)
   })
 })
