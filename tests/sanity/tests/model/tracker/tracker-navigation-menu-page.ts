@@ -10,7 +10,9 @@ export class TrackerNavigationMenuPage extends CommonPage {
   constructor (page: Page) {
     super()
     this.page = page
-    this.buttonIssues = page.locator('a span', { hasText: 'Issues' })
+    this.buttonIssues = page.locator('div[class*="antiNav-element"] a[href$="issues"] > div > span', {
+      hasText: 'Issues'
+    })
     this.buttonCreateProject = page.locator('div#tree-projects').locator('xpath=..')
     this.buttonProjectsParent = page.locator('div.parent > span')
   }

@@ -5,6 +5,7 @@ import { IssuesPage } from '../model/tracker/issues-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 import { Issue, NewIssue } from '../model/tracker/types'
 import { allure } from 'allure-playwright'
+import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 
 test.use({
   storageState: PlatformSetting
@@ -110,5 +111,86 @@ test.describe('Tracker issue tests', () => {
         estimation: expected
       })
     }
+  })
+
+  test('Set parent issue', async ({ page }) => {
+    const parentIssue: NewIssue = {
+      title: `PARENT ISSUE-${generateId()}`,
+      description: 'Created issue to be parent issue'
+    }
+
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
+    await issuesPage.createNewIssue(parentIssue)
+
+    await test.step('Set parent issue during creation', async () => {
+      const newIssue: NewIssue = {
+        title: `Set parent issue during creation-${generateId()}`,
+        description: 'Set parent issue during creation',
+        parentIssue: parentIssue.title
+      }
+
+      await issuesPage.modelSelectorAll.click()
+      await issuesPage.createNewIssue(newIssue)
+      await issuesPage.checkParentIssue(newIssue.title, parentIssue.title)
+
+      await issuesPage.openIssueByName(newIssue.title)
+      const issuesDetailsPage = new IssuesDetailsPage(page)
+      await issuesDetailsPage.checkIssue({
+        ...newIssue,
+        parentIssue: parentIssue.title
+      })
+
+      const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+      await trackerNavigationMenuPage.buttonIssues.click()
+    })
+
+    await test.step('Set parent issue from issues page', async () => {
+      const newIssue: NewIssue = {
+        title: `Set parent issue from issues page-${generateId()}`,
+        description: 'Set parent issue from issues page'
+      }
+      await issuesPage.modelSelectorAll.click()
+      await issuesPage.createNewIssue(newIssue)
+      await issuesPage.doActionOnIssue(newIssue.title, 'Set parent issue…')
+      await issuesPage.selectMenuItem(page, parentIssue.title)
+      await issuesPage.checkParentIssue(newIssue.title, parentIssue.title)
+
+      await issuesPage.openIssueByName(newIssue.title)
+      const issuesDetailsPage = new IssuesDetailsPage(page)
+      await issuesDetailsPage.checkIssue({
+        ...newIssue,
+        parentIssue: parentIssue.title
+      })
+
+      const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+      await trackerNavigationMenuPage.buttonIssues.click()
+    })
+
+    await test.step('Set parent issue from issue details page', async () => {
+      const newIssue: NewIssue = {
+        title: `Set parent issue from issue details page-${generateId()}`,
+        description: 'Set parent issue from issue details page'
+      }
+      await issuesPage.modelSelectorAll.click()
+      await issuesPage.createNewIssue(newIssue)
+      await issuesPage.openIssueByName(newIssue.title)
+
+      const issuesDetailsPage = new IssuesDetailsPage(page)
+
+      await issuesDetailsPage.moreActionOnIssue('Set parent issue…')
+      await issuesPage.selectMenuItem(page, parentIssue.title)
+      await issuesDetailsPage.checkIssue({
+        ...newIssue,
+        parentIssue: parentIssue.title
+      })
+
+      const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+      await trackerNavigationMenuPage.buttonIssues.click()
+      await issuesPage.checkParentIssue(newIssue.title, parentIssue.title)
+    })
   })
 })
