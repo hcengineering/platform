@@ -4,6 +4,7 @@ import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { NewIssue } from '../model/tracker/types'
 import { allure } from 'allure-playwright'
+import { DEFAULT_STATUSES, DEFAULT_STATUSES_ID } from './tracker.utils'
 
 test.use({
   storageState: PlatformSetting
@@ -206,32 +207,21 @@ test.describe('Tracker filters tests', () => {
   })
 
   test('Status filter', async ({ page }) => {
-    const newIssue: NewIssue = {
-      title: `Issue for the Created filter-${generateId()}`,
-      description: 'Issue for the Created filter',
-      status: 'In Progress',
-      priority: 'Urgent',
-      assignee: 'Appleseed John',
-      createLabel: true,
-      component: 'No component',
-      estimation: '2',
-      milestone: 'No Milestone',
-      duedate: 'today',
-      filePath: 'cat.jpeg'
-    }
-
     const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.buttonTracker.click()
 
     const issuesPage = new IssuesPage(page)
     await issuesPage.modelSelectorAll.click()
-    await issuesPage.createNewIssue(newIssue)
 
-    await test.step('Check Filter Today', async () => {
-      await issuesPage.selectFilter('Created date', 'Today')
-      await issuesPage.checkFilter('Created date', 'Today')
+    for (const status of DEFAULT_STATUSES) {
+      await test.step(`Status Filter ${status}`, async () => {
+        await issuesPage.selectFilter('Status', status)
+        await issuesPage.inputSearch.press('Escape')
 
-      await issuesPage.checkFilteredIssueExist(newIssue.title)
-    })
+        await issuesPage.checkFilter('Status', 'is')
+        await issuesPage.checkAllIssuesInStatus(DEFAULT_STATUSES_ID.get(status))
+        await issuesPage.buttonClearFilers.click()
+      })
+    }
   })
 })

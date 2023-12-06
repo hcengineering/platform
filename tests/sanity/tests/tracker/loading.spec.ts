@@ -1,4 +1,4 @@
-import { test } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { PlatformSetting, PlatformURI } from '../utils'
 import { allure } from 'allure-playwright'
@@ -15,10 +15,9 @@ test('check-status-loading', async ({ page }) => {
   const issuesPage = new IssuesPage(page)
   await issuesPage.modelSelectorAll.click()
 
-  // TODO: Test should create issues before checking for status loading
-  // await expect(page.locator('.categoryHeader :text-is("In Progress")').first()).toBeVisible()
-  // await expect(page.locator('.categoryHeader :text-is("Backlog")').first()).toBeVisible()
-  // await expect(page.locator('.categoryHeader :text-is("Todo")').first()).toBeVisible()
-  // await expect(page.locator('.categoryHeader :text-is("Done")').first()).toBeVisible()
-  // await expect(page.locator('.categoryHeader :text-is("Canceled")').first()).toBeVisible()
+  await expect(page.locator('.categoryHeader :text-is("In Progress")').first()).toBeVisible()
+  await expect(page.locator('.categoryHeader :text-is("Backlog")').first()).toBeVisible()
+  await expect(page.locator('.categoryHeader :text-is("Todo")').first()).toBeVisible()
+  await expect(page.locator('.categoryHeader :text-is("Done")').first()).toBeVisible()
+  await expect(page.locator('.categoryHeader :text-is("Canceled")').first()).toBeVisible()
 })

@@ -2,6 +2,7 @@ import { expect, type Locator, type Page } from '@playwright/test'
 import { NewIssue } from './types'
 import path from 'path'
 import { CommonTrackerPage } from './common-tracker-page'
+import { iterateLocator } from '../../utils'
 
 export class IssuesPage extends CommonTrackerPage {
   readonly page: Page
@@ -25,6 +26,7 @@ export class IssuesPage extends CommonTrackerPage {
   readonly inputSearch: Locator
   readonly linkSidebarAll: Locator
   readonly linkSidebarMyIssue: Locator
+  readonly buttonClearFilers: Locator
 
   constructor (page: Page) {
     super(page)
@@ -61,6 +63,7 @@ export class IssuesPage extends CommonTrackerPage {
     this.inputSearch = page.locator('input[placeholder="Search"]')
     this.linkSidebarAll = page.locator('a[href$="all-issues"]')
     this.linkSidebarMyIssue = page.locator('a[href$="my-issues"]')
+    this.buttonClearFilers = page.locator('div.search-start > div:first-child button')
   }
 
   async createNewIssue (data: NewIssue): Promise<void> {
@@ -136,5 +139,13 @@ export class IssuesPage extends CommonTrackerPage {
 
   async checkFilteredIssueNotExist (issueName: string): Promise<void> {
     await expect(this.page.locator('div.row span', { hasText: issueName })).toHaveCount(0)
+  }
+
+  async checkAllIssuesInStatus (statusId: string | undefined): Promise<void> {
+    if (statusId === undefined) throw new Error(`Unknown status id ${statusId}`)
+
+    for await (const locator of iterateLocator(this.page.locator('div.listGrid'))) {
+      await expect(locator.locator('div[class*="square"] > svg')).toHaveAttribute('id', statusId)
+    }
   }
 }
