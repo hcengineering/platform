@@ -259,7 +259,7 @@
               appendTo: () => boundary ?? element
             },
             shouldShow: () => {
-              if (!visible || !readonly || !canShowPopups) {
+              if (!visible || readonly || !canShowPopups) {
                 return false
               }
               return editor?.isActive('image')

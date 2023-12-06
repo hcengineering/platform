@@ -431,6 +431,15 @@
       }
     }
   }
+  &.marker-visible.checked {
+    .marker {
+      background-color: var(--primary-button-disabled);
+
+      &::after {
+        content: '';
+      }
+    }
+  }
   &.disabled {
     cursor: not-allowed;
 
