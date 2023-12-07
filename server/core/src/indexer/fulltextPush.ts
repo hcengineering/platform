@@ -40,7 +40,14 @@ import {
   FullTextPipelineStage,
   fullTextPushStageId
 } from './types'
-import { collectPropagate, collectPropagateClasses, docKey, getFullTextContext, IndexKeyOptions } from './utils'
+import {
+  collectPropagate,
+  collectPropagateClasses,
+  docKey,
+  getFullTextContext,
+  IndexKeyOptions,
+  isCustomAttr
+} from './utils'
 import { updateDocWithPresenter } from '../mapper'
 
 /**
@@ -283,7 +290,7 @@ function updateDoc2Elastic (
 
     docId = docIdOverride ?? docId
     if (docId === undefined) {
-      if (typeof vv !== 'object') {
+      if (typeof vv !== 'object' || isCustomAttr(k)) {
         doc[k] = vv
       }
       continue

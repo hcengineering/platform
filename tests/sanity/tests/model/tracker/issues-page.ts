@@ -165,4 +165,11 @@ export class IssuesPage extends CommonTrackerPage {
     await this.page.locator('a', { hasText: issueName }).click({ button: 'right' })
     await this.selectFromDropdown(this.page, action)
   }
+
+  async checkAllIssuesByPriority (priorityName: string): Promise<void> {
+    for await (const locator of iterateLocator(this.page.locator('div.listGrid'))) {
+      const href = await locator.locator('div.priority-container use').getAttribute('href')
+      expect(href).toContain(priorityName)
+    }
+  }
 }

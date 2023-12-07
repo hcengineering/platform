@@ -37,7 +37,8 @@ import {
   getFullTextIndexableAttributes,
   getFullTextContext,
   isFullTextAttribute,
-  loadIndexStageStage
+  loadIndexStageStage,
+  getCustomAttrKeys
 } from './utils'
 
 /**
@@ -146,7 +147,15 @@ export class IndexedFieldStage implements FullTextPipelineStage {
             }
           }
 
+          const customAttrValues: any = []
           for (const [, v] of Object.entries(content)) {
+            if (v.attr.isCustom === true && v.value !== '' && v.value !== undefined) {
+              // No need to put localized text as attributes. We do not use it at all
+              // Just put all content for custom attribute inside one custom field
+              customAttrValues.push({ label: v.attr.label, value: v.value })
+              continue
+            }
+
             // Check for content changes and collect update
             const dKey = docKey(v.attr.name, { _class: v.attr.attributeOf })
             const dUKey = docUpdKey(v.attr.name, { _class: v.attr.attributeOf })
@@ -159,6 +168,16 @@ export class IndexedFieldStage implements FullTextPipelineStage {
               }
             }
           }
+
+          const { customAttrKey, customAttrUKey } = getCustomAttrKeys()
+          if (
+            (docState.attributes[customAttrKey] !== undefined || customAttrValues.length > 0) &&
+            !deepEqual(docState.attributes[customAttrKey], customAttrValues)
+          ) {
+            changes++
+            ;(docUpdate as any)[customAttrUKey] = customAttrValues
+          }
+
           if (docState.attachedTo != null && changes > 0) {
             const ctx = getFullTextContext(pipeline.hierarchy, objClass)
             if (ctx.parentPropagate ?? true) {

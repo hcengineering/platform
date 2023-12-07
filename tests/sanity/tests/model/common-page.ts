@@ -57,4 +57,9 @@ export class CommonPage {
   async checkExistNewNotification (page: Page): Promise<void> {
     await expect(page.locator('button[id$="Inbox"] > div.noty')).toBeVisible()
   }
+
+  async pressYesForPopup (page: Page): Promise<void> {
+    await expect(page.locator('div.popup button[type="submit"]')).toBeVisible()
+    await page.locator('div.popup button[type="submit"]').click()
+  }
 }
