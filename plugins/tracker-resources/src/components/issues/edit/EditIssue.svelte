@@ -87,7 +87,7 @@
 
   $: _id &&
     _class &&
-    queryClient.query(
+    queryClient.query<Issue>(
       _class,
       { _id },
       async (result) => {

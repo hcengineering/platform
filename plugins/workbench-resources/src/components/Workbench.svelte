@@ -106,7 +106,7 @@
   const client = getClient()
 
   let apps: Application[] | Promise<Application[]> = client
-    .findAll(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
+    .findAll<Application>(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
     .then((res) => (apps = res))
 
   let panelInstance: PanelInstance
@@ -134,7 +134,7 @@
 
   let account: PersonAccount | undefined
   const accountQ = createQuery()
-  accountQ.query(
+  accountQ.query<PersonAccount>(
     contact.class.PersonAccount,
     {
       _id: accountId
@@ -151,7 +151,7 @@
   let employee: Employee | undefined
   const employeeQ = createQuery()
 
-  $: employeeQ.query(
+  $: employeeQ.query<Employee>(
     contact.mixin.Employee,
     {
       _id: account?.person as Ref<Employee>
@@ -163,8 +163,8 @@
   )
 
   let hasNotification = false
-  const noficicationClient = NotificationClientImpl.getClient()
-  noficicationClient.docUpdates.subscribe((res) => {
+  const notificationClient = NotificationClientImpl.getClient()
+  notificationClient.docUpdates.subscribe((res) => {
     hasNotification = res.some((p) => !p.hidden && p.txes.some((p) => p.isNew))
   })
 
@@ -197,7 +197,7 @@
       const title = getMetadata(workbench.metadata.PlatformTitle) ?? 'Platform'
       document.title = ws == null ? title : `${ws} - ${title}`
     }
-    broadcastEvent(workbench.event.NotifyTitle, document.title)
+    void broadcastEvent(workbench.event.NotifyTitle, document.title)
   }
   async function getWindowTitle (loc: Location) {
     if (loc.fragment == null) return
@@ -228,7 +228,7 @@
     }
     if (locationResolver) {
       const resolver = await getResource(locationResolver)
-      return await resolver?.(loc)
+      return await resolver(loc)
     }
   }
 
@@ -237,18 +237,22 @@
     const resolvedSpace = resolved.loc.path[3]
     const resolvedSpecial = resolved.loc.path[4]
     if (resolvedApp === undefined) {
-      const isSameApp = currentAppAlias === loc.path[2]
-      loc.path[2] = (currentAppAlias as string) ?? resolved.defaultLocation.path[2]
-      loc.path[3] = currentSpace ?? (currentSpecial as string) ?? resolved.defaultLocation.path[3]
-      if (loc.path[3] !== undefined && isSameApp) {
-        // setting space special/aside only if it belongs to the same app
-        if (loc.path[3] === resolved.defaultLocation.path[3]) {
-          loc.path[4] = resolved.defaultLocation.path[4]
-        } else {
-          loc.path[4] = (currentSpace && currentSpecial) ?? (asideId as string)
-        }
+      if (currentAppAlias === undefined) {
+        loc.path = [loc.path[0], loc.path[1], ...resolved.defaultLocation.path.splice(2)]
       } else {
-        loc.path.length = 4
+        const isSameApp = currentAppAlias === loc.path[2]
+        loc.path[2] = currentAppAlias ?? resolved.defaultLocation.path[2]
+        loc.path[3] = currentSpace ?? currentSpecial ?? resolved.defaultLocation.path[3]
+        if (loc.path[3] !== undefined && isSameApp) {
+          // setting space special/aside only if it belongs to the same app
+          if (loc.path[3] === resolved.defaultLocation.path[3]) {
+            loc.path[4] = resolved.defaultLocation.path[4]
+          } else {
+            loc.path[4] = (currentSpace && currentSpecial) ?? (asideId as string)
+          }
+        } else {
+          loc.path.length = 4
+        }
       }
     } else {
       loc.path[2] = resolvedApp
@@ -274,15 +278,15 @@
 
   async function syncLoc (loc: Location): Promise<void> {
     const originalLoc = JSON.stringify(loc)
-    // resolve short links
-    let resolvedLoc: ResolvedLocation | undefined
+
     if (loc.path.length > 3 && getSpecialComponent(loc.path[3]) === undefined) {
-      resolvedLoc = await resolveShortLink(loc)
+      // resolve short links
+      const resolvedLoc = await resolveShortLink(loc)
+      if (resolvedLoc !== undefined && !areLocationsEqual(loc, resolvedLoc.loc)) {
+        loc = mergeLoc(loc, resolvedLoc)
+      }
     }
 
-    if (resolvedLoc && !areLocationsEqual(loc, resolvedLoc.loc)) {
-      loc = mergeLoc(loc, resolvedLoc)
-    }
     setResolvedLocation(loc)
     const app = loc.path[2]
     let space = loc.path[3] as Ref<Space>
@@ -309,7 +313,7 @@
           loc.path[2] = appShort
           let len = 3
           if (spaceRef !== undefined && specialRef !== undefined) {
-            const spaceObj = await client.findOne(core.class.Space, { _id: spaceRef })
+            const spaceObj = await client.findOne<Space>(core.class.Space, { _id: spaceRef })
             if (spaceObj !== undefined) {
               loc.path[3] = spaceRef
               loc.path[4] = specialRef
@@ -327,7 +331,7 @@
     if (currentAppAlias !== app) {
       clear(1)
       currentAppAlias = app
-      currentApplication = await client.findOne(workbench.class.Application, { alias: app })
+      currentApplication = await client.findOne<Application>(workbench.class.Application, { alias: app })
       navigatorModel = await buildNavModel(client, currentApplication)
     }
 
@@ -383,7 +387,7 @@
     const props = decodeURIComponent(fragment).split('|')
 
     if (props.length >= 3) {
-      const doc = await client.findOne(props[2] as Ref<Class<Doc>>, { _id: props[1] as Ref<Doc> })
+      const doc = await client.findOne<Doc>(props[2] as Ref<Class<Doc>>, { _id: props[1] as Ref<Doc> })
       if (doc !== undefined) {
         const provider = ListSelectionProvider.Find(doc._id)
         updateFocus({
@@ -439,7 +443,7 @@
     if (spaceId === currentSpace) return
     clear(2)
     if (spaceId === undefined) return
-    const space = await client.findOne(core.class.Space, { _id: spaceId })
+    const space = await client.findOne<Space>(core.class.Space, { _id: spaceId })
     if (space === undefined) return
     currentSpace = spaceId
     const spaceClass = client.getHierarchy().getClass(space._class)
