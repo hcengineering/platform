@@ -308,3 +308,20 @@ export function collectPropagateClasses (pipeline: FullTextPipeline, objectClass
 
   return Array.from(propagate.values())
 }
+
+const CUSTOM_ATTR_KEY = 'customAttributes'
+const CUSTOM_ATTR_UPDATE_KEY = 'attributes.customAttributes'
+
+/**
+ * @public
+ */
+export function getCustomAttrKeys (): { customAttrKey: string, customAttrUKey: string } {
+  return { customAttrKey: CUSTOM_ATTR_KEY, customAttrUKey: CUSTOM_ATTR_UPDATE_KEY }
+}
+
+/**
+ * @public
+ */
+export function isCustomAttr (attr: string): boolean {
+  return attr === CUSTOM_ATTR_KEY
+}
