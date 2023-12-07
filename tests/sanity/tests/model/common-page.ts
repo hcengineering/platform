@@ -62,4 +62,8 @@ export class CommonPage {
     await expect(page.locator('div.popup button[type="submit"]')).toBeVisible()
     await page.locator('div.popup button[type="submit"]').click()
   }
+
+  async pressButtonBack (page: Page): Promise<void> {
+    await page.locator('div.history-box button:first-child').click()
+  }
 }
