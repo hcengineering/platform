@@ -3,16 +3,12 @@ import { CommonPage } from '../common-page'
 
 export class TrackerNavigationMenuPage extends CommonPage {
   readonly page: Page
-  readonly buttonIssues: Locator
   readonly buttonCreateProject: Locator
   readonly buttonProjectsParent: Locator
 
   constructor (page: Page) {
     super()
     this.page = page
-    this.buttonIssues = page.locator('div[class*="antiNav-element"] a[href$="issues"] > div > span', {
-      hasText: 'Issues'
-    })
     this.buttonCreateProject = page.locator('div#tree-projects').locator('xpath=..')
     this.buttonProjectsParent = page.locator('div.parent > span')
   }
@@ -39,7 +35,11 @@ export class TrackerNavigationMenuPage extends CommonPage {
   }
 
   async openIssuesForProject (projectName: string): Promise<void> {
-    await this.page.locator(`a[href$="issues"][href*="${projectName}"]`).click()
+    await this.page
+      .locator(`div[class*="antiNav-element"] a[href$="issues"][href*="${projectName}"]> div > span`, {
+        hasText: 'Issues'
+      })
+      .click()
   }
 
   async makeActionWithProject (projectName: string, action: string): Promise<void> {

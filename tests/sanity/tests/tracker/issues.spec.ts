@@ -145,7 +145,7 @@ test.describe('Tracker issue tests', () => {
       })
 
       const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
-      await trackerNavigationMenuPage.buttonIssues.click()
+      await trackerNavigationMenuPage.openIssuesForProject('Default')
     })
 
     await test.step('Set parent issue from issues page', async () => {
@@ -167,7 +167,7 @@ test.describe('Tracker issue tests', () => {
       })
 
       const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
-      await trackerNavigationMenuPage.buttonIssues.click()
+      await trackerNavigationMenuPage.openIssuesForProject('Default')
     })
 
     await test.step('Set parent issue from issue details page', async () => {
@@ -189,7 +189,7 @@ test.describe('Tracker issue tests', () => {
       })
 
       const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
-      await trackerNavigationMenuPage.buttonIssues.click()
+      await trackerNavigationMenuPage.openIssuesForProject('Default')
       await issuesPage.checkParentIssue(newIssue.title, parentIssue.title)
     })
   })

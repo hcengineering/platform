@@ -157,7 +157,10 @@ export class IssuesPage extends CommonTrackerPage {
 
   async checkParentIssue (issueName: string, parentName: string): Promise<void> {
     await expect(
-      this.page.locator('a', { hasText: issueName }).locator('xpath=../..').locator('div.root span.parent-label')
+      this.page
+        .locator('a', { hasText: issueName })
+        .locator('xpath=../..')
+        .locator('div.root span.parent-label:first-child')
     ).toHaveText(parentName)
   }
 
