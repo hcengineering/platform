@@ -148,4 +148,11 @@ export class IssuesPage extends CommonTrackerPage {
       await expect(locator.locator('div[class*="square"] > svg')).toHaveAttribute('id', statusId)
     }
   }
+
+  async checkAllIssuesByPriority (priorityName: string): Promise<void> {
+    for await (const locator of iterateLocator(this.page.locator('div.listGrid'))) {
+      const href = await locator.locator('div.priority-container use').getAttribute('href')
+      expect(href).toContain(priorityName)
+    }
+  }
 }
