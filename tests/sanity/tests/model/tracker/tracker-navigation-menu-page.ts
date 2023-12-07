@@ -40,13 +40,13 @@ export class TrackerNavigationMenuPage extends CommonPage {
     await this.page.locator(`a[href$="issues"][href*="${projectName}"]`).click()
   }
 
-  async openProjectToEdit (projectName: string): Promise<void> {
+  async makeActionWithProject (projectName: string, action: string): Promise<void> {
     await this.buttonProjectsParent.filter({ hasText: projectName }).hover()
     await this.buttonProjectsParent
       .filter({ hasText: projectName })
       .locator('xpath=..')
       .locator('div[class*="tool"]:not([class*="arrow"])')
       .click()
-    await this.selectFromDropdown(this.page, 'Edit project')
+    await this.selectFromDropdown(this.page, action)
   }
 }
