@@ -13,16 +13,16 @@
 // limitations under the License.
 //
 
-import { Editor } from '@tiptap/core'
+import { type Editor } from '@tiptap/core'
 import { type EditorState } from '@tiptap/pm/state'
 import { TableMap } from '@tiptap/pm/tables'
 import { Decoration } from '@tiptap/pm/view'
 
-import { handleSvg } from './icons'
 import { type TableNodeLocation } from '../types'
 import { isColumnSelected, selectColumn } from '../utils'
 
 import { moveColumn } from './actions'
+import { handleSvg } from './icons'
 import {
   dropMarkerWidthPx,
   getColDragMarker,
@@ -30,11 +30,11 @@ import {
   hideDragMarker,
   hideDropMarker,
   updateColDropMarker,
-  updateColDragOverlay
+  updateColDragMarker
 } from './tableDragMarkerDecoration'
 import { getTableCellWidgetDecorationPos, getTableWidthPx } from './utils'
 
-type TableColumn = {
+interface TableColumn {
   leftPx: number
   widthPx: number
 }
@@ -52,7 +52,9 @@ export const columnHandlerDecoration = (state: EditorState, table: TableNodeLoca
       handle.classList.add('table-col-handle__selected')
     }
     handle.innerHTML = handleSvg
-    handle.addEventListener('mousedown', (e) => handleMouseDown(col, table, e, editor))
+    handle.addEventListener('mousedown', (e) => {
+      handleMouseDown(col, table, e, editor)
+    })
     decorations.push(Decoration.widget(pos, handle))
   }
 
@@ -64,29 +66,27 @@ const handleMouseDown = (col: number, table: TableNodeLocation, event: MouseEven
   event.preventDefault()
 
   // select column
-  if (!isColumnSelected(col, editor.state.selection)) {
-    editor.view.dispatch(selectColumn(table, col, editor.state.tr))
-  }
+  editor.view.dispatch(selectColumn(table, col, editor.state.tr))
 
   // drag column
   const tableWidthPx = getTableWidthPx(table, editor)
   const columns = getTableColumns(table, editor)
 
   let dropIndex = col
-  const startLeft = columns[col].leftPx?? 0
+  const startLeft = columns[col].leftPx ?? 0
   const startX = event.clientX
 
   const dropMarker = getDropMarker()
   const dragMarker = getColDragMarker()
 
-  function handleFinish(): void {
+  function handleFinish (): void {
     if (dropMarker !== null) hideDropMarker(dropMarker)
     if (dragMarker !== null) hideDragMarker(dragMarker)
 
     if (col !== dropIndex) {
       let tr = editor.state.tr
       tr = selectColumn(table, dropIndex, tr)
-      tr = moveColumn(col, dropIndex, table, tr)
+      tr = moveColumn(table, col, dropIndex, tr)
       editor.view.dispatch(tr)
     }
     window.removeEventListener('mouseup', handleFinish)
@@ -103,7 +103,7 @@ const handleMouseDown = (col: number, table: TableNodeLocation, event: MouseEven
         : columns[dropIndex].leftPx + columns[dropIndex].widthPx
 
       updateColDropMarker(dropMarker, markerLeftPx - dropMarkerWidthPx / 2, dropMarkerWidthPx)
-      updateColDragOverlay(dragMarker, left, columns[col].widthPx)
+      updateColDragMarker(dragMarker, left, columns[col].widthPx)
     }
   }
 
@@ -113,8 +113,8 @@ const handleMouseDown = (col: number, table: TableNodeLocation, event: MouseEven
 
 function calculateColumnDropIndex (col: number, columns: TableColumn[], left: number): number {
   const colCenterPx = left + columns[col].widthPx / 2
-  const index = columns.findIndex((p) => colCenterPx < p.leftPx + p.widthPx)
-  return index !== -1 ? index : columns.length - 1
+  const index = columns.findIndex((p) => colCenterPx < (p.leftPx + p.widthPx / 2))
+  return index !== -1 ? index > col ? index - 1 : index : columns.length - 1
 }
 
 function getTableColumns (table: TableNodeLocation, editor: Editor): TableColumn[] {
@@ -125,11 +125,14 @@ function getTableColumns (table: TableNodeLocation, editor: Editor): TableColumn
   for (let col = 0; col < width; col++) {
     const dom = editor.view.domAtPos(table.start + map[col] + 1)
     if (dom.node instanceof HTMLElement) {
-      const widthPx = dom.node.offsetWidth
-      result.push({ leftPx, widthPx })
-      leftPx += widthPx
+      if (col === 0) {
+        leftPx = dom.node.offsetLeft
+      }
+      result.push({
+        leftPx: dom.node.offsetLeft - leftPx,
+        widthPx: dom.node.offsetWidth
+      })
     }
   }
-
   return result
 }

@@ -13,16 +13,16 @@
 // limitations under the License.
 //
 
-import { Editor } from '@tiptap/core'
+import { type Editor } from '@tiptap/core'
 import { type EditorState } from '@tiptap/pm/state'
 import { TableMap } from '@tiptap/pm/tables'
 import { Decoration } from '@tiptap/pm/view'
 
-import { handleSvg } from './icons'
 import { type TableNodeLocation } from '../types'
 import { isRowSelected, selectRow } from '../utils'
 
 import { moveRow } from './actions'
+import { handleSvg } from './icons'
 import {
   dropMarkerWidthPx,
   getDropMarker,
@@ -30,18 +30,13 @@ import {
   hideDragMarker,
   hideDropMarker,
   updateRowDropMarker,
-  updateRowDragOverlay
+  updateRowDragMarker
 } from './tableDragMarkerDecoration'
 import { getTableCellWidgetDecorationPos, getTableHeightPx } from './utils'
 
-type TableRow = {
+interface TableRow {
   topPx: number
   heightPx: number
-}
-
-type RowSelection = {
-  from: number
-  to: number
 }
 
 export const rowHandlerDecoration = (state: EditorState, table: TableNodeLocation, editor: Editor): Decoration[] => {
@@ -57,7 +52,9 @@ export const rowHandlerDecoration = (state: EditorState, table: TableNodeLocatio
       handle.classList.add('table-row-handle__selected')
     }
     handle.innerHTML = handleSvg
-    handle.addEventListener('mousedown', (e) => handleMouseDown(row, table, e, editor))
+    handle.addEventListener('mousedown', (e) => {
+      handleMouseDown(row, table, e, editor)
+    })
     decorations.push(Decoration.widget(pos, handle))
   }
 
@@ -69,29 +66,27 @@ const handleMouseDown = (row: number, table: TableNodeLocation, event: MouseEven
   event.preventDefault()
 
   // select row
-  if (!isRowSelected(row, editor.state.selection)) {
-    editor.view.dispatch(selectRow(table, row, editor.state.tr))
-  }
+  editor.view.dispatch(selectRow(table, row, editor.state.tr))
 
   // drag row
   const tableHeightPx = getTableHeightPx(table, editor)
   const rows = getTableRows(table, editor)
 
   let dropIndex = row
-  const startTop = rows[row].topPx?? 0
+  const startTop = rows[row].topPx ?? 0
   const startY = event.clientY
 
   const dropMarker = getDropMarker()
   const dragMarker = getRowDragMarker()
 
-  function handleFinish(): void {
+  function handleFinish (): void {
     if (dropMarker !== null) hideDropMarker(dropMarker)
     if (dragMarker !== null) hideDragMarker(dragMarker)
 
     if (row !== dropIndex) {
       let tr = editor.state.tr
       tr = selectRow(table, dropIndex, tr)
-      tr = moveRow(row, dropIndex, table, tr)
+      tr = moveRow(table, row, dropIndex, tr)
       editor.view.dispatch(tr)
     }
     window.removeEventListener('mouseup', handleFinish)
@@ -108,7 +103,7 @@ const handleMouseDown = (row: number, table: TableNodeLocation, event: MouseEven
         : rows[dropIndex].topPx + rows[dropIndex].heightPx
 
       updateRowDropMarker(dropMarker, markerTopPx - dropMarkerWidthPx / 2, dropMarkerWidthPx)
-      updateRowDragOverlay(dragMarker, top, rows[row].heightPx)
+      updateRowDragMarker(dragMarker, top, rows[row].heightPx)
     }
   }
 
@@ -119,7 +114,7 @@ const handleMouseDown = (row: number, table: TableNodeLocation, event: MouseEven
 function calculateRowDropIndex (row: number, rows: TableRow[], top: number): number {
   const rowCenterPx = top + rows[row].heightPx / 2
   const index = rows.findIndex((p) => rowCenterPx < p.topPx + p.heightPx)
-  return index !== -1 ? index : rows.length - 1
+  return index !== -1 ? index > row ? index - 1 : index : rows.length - 1
 }
 
 function getTableRows (table: TableNodeLocation, editor: Editor): TableRow[] {
@@ -135,6 +130,5 @@ function getTableRows (table: TableNodeLocation, editor: Editor): TableRow[] {
       topPx += heightPx
     }
   }
-
   return result
 }

@@ -15,10 +15,16 @@
 
 /* Table */
 table.proseTable {
-  --table-selection-border-indent: -0.125rem;
-  --table-selection-border-radius: 0.125rem;
-  --table-selection-border-width: 0.125rem;
-  --table-handle-size: 1.25rem
+  --table-selection-border-width: 2px;
+  --table-selection-border-indent: -2px;
+  --table-selection-border-radius: 2px;
+  --table-selection-border-width: 2px;
+  --table-handle-size: 1.25rem;
+  --table-handle-indent: calc(-1.25rem - 1px);
+
+  --table-selection-z-index: 100;
+  --table-drag-and-drop-z-index: 110;
+  --table-handlers-z-index: 120;
 
   border-collapse: collapse;
   table-layout: fixed;
@@ -60,7 +66,7 @@ table.proseTable {
         border-radius: var(--table-selection-border-radius);
         pointer-events: none;
         position: absolute;
-        z-index: 110;
+        z-index: var(--table-selection-z-index);
         top: var(--table-selection-border-indent);
         bottom: var(--table-selection-border-indent);
         left: var(--table-selection-border-indent);
@@ -92,7 +98,6 @@ table.proseTable {
       svg {
         color: var(--theme-button-contrast-hovered);
         opacity: 0;
-        z-index: 120;
       }
 
       &__selected {
@@ -103,7 +108,7 @@ table.proseTable {
           border-radius: var(--table-selection-border-radius);
           pointer-events: none;
           position: absolute;
-          z-index: 110;
+          z-index: var(--table-handlers-z-index);
           top: var(--table-selection-border-indent);
           bottom: var(--table-selection-border-indent);
           left: var(--table-selection-border-indent);
@@ -111,6 +116,7 @@ table.proseTable {
         }
 
         svg {
+          z-index: var(--table-handlers-z-index);
           color: white;
           opacity: 1;
         }
@@ -120,8 +126,8 @@ table.proseTable {
     .table-col-handle {
       position: absolute;
       width: calc(100% + 1px);
-      height: 1.25rem;
-      top: calc(-1.25rem - 1px);
+      height: var(--table-handle-size);
+      top: var(--table-handle-indent);
       left: 0;
 
       &:hover {
@@ -135,6 +141,7 @@ table.proseTable {
       &__selected {
         &::before {
           right: -1px;
+          top: 0;
           bottom: 0;
           border-bottom-width: 0;
           border-bottom-left-radius: 0;
@@ -145,10 +152,10 @@ table.proseTable {
 
     .table-row-handle {
       position: absolute;
-      width: 1.25rem;
+      width: var(--table-handle-size);
       height: calc(100% + 1px);
       top: 0;
-      left: calc(-1.25rem - 1px);
+      left: var(--table-handle-indent);
 
       svg {
         transform: rotate(90deg);
@@ -167,6 +174,7 @@ table.proseTable {
       &__selected {
         &::before {
           bottom: -1px;
+          left: 0;
           right: 0;
           border-right-width: 0;
           border-top-right-radius: 0;
@@ -188,7 +196,7 @@ table.proseTable {
       flex-direction: column;
       justify-content: flex-start;
       align-items: center;
-      top: -1.25rem;
+      top: var(--table-handle-indent);
       right: -0.625rem;
       width: 1.25rem;
 
@@ -202,7 +210,7 @@ table.proseTable {
       flex-direction: row;
       justify-content: flex-start;
       align-items: center;
-      left: -1.25rem;
+      left: var(--table-handle-indent);
       bottom: -0.625rem;
       height: 1.25rem;
 
@@ -250,16 +258,16 @@ table.proseTable {
   .table-drop-marker {
     background-color: var(--primary-button-focused);
     position: absolute;
-    z-index: 150;
+    z-index: var(--table-drag-and-drop-z-index);
   }
 
   .table-col-drag-marker,
   .table-row-drag-marker {
     position: absolute;
-    z-index: 150;
-    // opacity: 0.5;
-    background-color: var(--primary-button-focused);
-    border: var(--table-selection-border-width) solid var(--primary-button-focused);
+    z-index: var(--table-drag-and-drop-z-index);
+    opacity: 0.5;
+    background-color: var(--text-editor-drag-marker-bg-color);
+    border: var(--table-selection-border-width) solid var(--text-editor-drag-marker-bg-color);
     border-radius: var(--table-selection-border-radius);
 
     display: flex;
@@ -273,8 +281,8 @@ table.proseTable {
   }
 
   .table-col-drag-marker {
-    height: calc(1.25rem + var(--table-selection-border-width) + 1px);
-    top: calc(-1.25rem - var(--table-selection-border-width));
+    height: var(--table-handle-size);
+    top: calc(var(--table-handle-indent) + 1px);
 
     svg {
       width: 100%;
@@ -282,8 +290,8 @@ table.proseTable {
   }
 
   .table-row-drag-marker {
-    width: calc(1.25rem + var(--table-selection-border-width) + 1px);
-    left: calc(-1.25rem - var(--table-selection-border-width) - 1px);
+    width: var(--table-handle-size);
+    left: calc(var(--table-handle-indent) + 1px / 2);
 
     svg {
       height: 100%;

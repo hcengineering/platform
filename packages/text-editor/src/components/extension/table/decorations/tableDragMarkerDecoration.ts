@@ -93,13 +93,13 @@ export function hideDragMarker (element: DragMarkerHTMLElement): void {
   element.style.display = 'none'
 }
 
-export function updateColDragOverlay (element: DragMarkerHTMLElement, left: number, width: number): void {
+export function updateColDragMarker (element: DragMarkerHTMLElement, left: number, width: number): void {
   element.style.width = `${width}px`
   element.style.left = `${left}px`
   element.style.display = 'block'
 }
 
-export function updateRowDragOverlay (element: DragMarkerHTMLElement, top: number, height: number): void {
+export function updateRowDragMarker (element: DragMarkerHTMLElement, top: number, height: number): void {
   element.style.height = `${height}px`
   element.style.top = `${top}px`
   element.style.display = 'block'

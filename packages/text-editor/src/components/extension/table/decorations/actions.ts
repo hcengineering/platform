@@ -13,88 +13,71 @@
 // limitations under the License.
 //
 
-import { Node as ProseMirrorNode } from '@tiptap/pm/model'
-import { Transaction } from '@tiptap/pm/state'
+import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
+import type { Transaction } from '@tiptap/pm/state'
 import { TableMap } from '@tiptap/pm/tables'
-import { TableNodeLocation } from '../types'
+import type { TableNodeLocation } from '../types'
 
-type TableCell = {
-  cell: ProseMirrorNode
-  pos: number
-}
+type TableRow = Array<ProseMirrorNode | null>
+type TableRows = TableRow[]
 
-export function moveColumn (from: number, to: number, table: TableNodeLocation, tr: Transaction): Transaction {
-  const fromCells = getColumnCells(table, from)
-  const toCells = getColumnCells(table, to)
-  return moveCells(fromCells, toCells, table, tr)
-}
-
-export function moveRow (from: number, to: number, table: TableNodeLocation, tr: Transaction): Transaction {
-  const fromCells = getRowCells(table, from)
-  const toCells = getRowCells(table, to)
-  return moveCells(fromCells, toCells, table, tr)
-}
-
-function moveCells (fromCells: TableCell[], toCells: TableCell[], table: TableNodeLocation, tr: Transaction): Transaction {
-  if (fromCells.length !== toCells.length) return tr
-  const mapStart = tr.mapping.maps.length
-
-  for (let i = 0; i < toCells.length; i++) {
-    const fromCell = fromCells[i]
-    const toCell = toCells[i]
-
-    let fromStart = tr.mapping
-      .slice(mapStart)
-      .map(table.start + fromCell.pos)
-    let fromEnd = fromStart + fromCell.cell.nodeSize
-    const fromSlice = tr.doc.slice(fromStart, fromEnd)
-
-    const toStart = tr.mapping
-      .slice(mapStart)
-      .map(table.start + toCell.pos)
-    const toEnd = toStart + toCell.cell.nodeSize
-    const toSlice = tr.doc.slice(toStart, toEnd)
-
-    tr.replace(toStart, toEnd, fromSlice)
-
-    fromStart = tr.mapping.slice(mapStart).map(table.start + fromCell.pos)
-    fromEnd = fromStart + fromCell.cell.nodeSize
-    tr.replace(fromStart, fromEnd, toSlice)
-  }
-
+export function moveColumn (table: TableNodeLocation, from: number, to: number, tr: Transaction): Transaction {
+  const cols = transpose(tableToCells(table))
+  moveRowInplace(cols, from, to)
+  tableFromCells(table, transpose(cols), tr)
   return tr
 }
 
-function getColumnCells (table: TableNodeLocation, col: number): TableCell[] {
-  const { map, width, height } = TableMap.get(table.node)
-
-  const cells: TableCell[] = []
-  for (let row = 0; row < height; row++) {
-    const index = row * width + col
-    const pos = map[index]
-
-    const cell = table.node.nodeAt(pos)
-    if (cell !== null) {
-      cells.push({ cell, pos })
-    }
-  }
-
-  return cells
+export function moveRow (table: TableNodeLocation, from: number, to: number, tr: Transaction): Transaction {
+  const rows = tableToCells(table)
+  moveRowInplace(rows, from, to)
+  tableFromCells(table, rows, tr)
+  return tr
 }
 
-function getRowCells (table: TableNodeLocation, row: number): TableCell[] {
-  const { map, width } = TableMap.get(table.node)
+function moveRowInplace (rows: TableRows, from: number, to: number): void {
+  rows.splice(to, 0, rows.splice(from, 1)[0])
+}
 
-  const cells: TableCell[] = []
-  for (let col = 0; col < width; col++) {
-    const index = row * width + col
-    const pos = map[index]
+function transpose (rows: TableRows): TableRows {
+  return rows[0].map((_, colIdx) => rows.map((row) => row[colIdx]))
+}
 
-    const cell = table.node.nodeAt(pos)
-    if (cell !== null) {
-      cells.push({ cell, pos })
+function tableToCells (table: TableNodeLocation): TableRows {
+  const { map, width, height } = TableMap.get(table.node)
+
+  const rows = []
+  for (let row = 0; row < height; row++) {
+    const cells = []
+    for (let col = 0; col < width; col++) {
+      const pos = map[row * width + col]
+      cells.push(table.node.nodeAt(pos))
     }
+    rows.push(cells)
   }
 
-  return cells
+  return rows
+}
+
+function tableFromCells (table: TableNodeLocation, rows: TableRows, tr: Transaction): void {
+  const { map, width, height } = TableMap.get(table.node)
+  const mapStart = tr.mapping.maps.length
+
+  for (let row = 0; row < height; row++) {
+    for (let col = 0; col < width; col++) {
+      const pos = map[row * width + col]
+
+      const oldCell = table.node.nodeAt(pos)
+      const newCell = rows[row][col]
+
+      if (oldCell !== null && newCell !== null && oldCell !== newCell) {
+        const start = tr.mapping.slice(mapStart).map(table.start + pos)
+        const end = start + oldCell.nodeSize
+
+        tr.replaceWith(start, end, newCell)
+      } else {
+        console.log('ignored')
+      }
+    }
+  }
 }
