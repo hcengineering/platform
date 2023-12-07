@@ -120,7 +120,7 @@ export class IssuesPage extends CommonTrackerPage {
     }
     if (data.parentIssue != null) {
       await this.buttonPopupCreateNewIssueParent.click()
-      await this.selectMenuItem(this.page, data.parentIssue)
+      await this.selectMenuItem(this.page, data.parentIssue, true)
     }
 
     await this.buttonCreateIssue.click()

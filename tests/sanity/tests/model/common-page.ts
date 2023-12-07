@@ -1,9 +1,10 @@
 import { Page, expect } from '@playwright/test'
 
 export class CommonPage {
-  async selectMenuItem (page: Page, name: string): Promise<void> {
+  async selectMenuItem (page: Page, name: string, fullWordFilter: boolean = false): Promise<void> {
     if (name !== 'first') {
-      await page.locator('div.selectPopup input').fill(name.split(' ')[0])
+      const filterText = fullWordFilter ? name : name.split(' ')[0]
+      await page.locator('div.selectPopup input').fill(filterText)
     }
     await page.locator('div.selectPopup div.list-item:first-child').click()
   }
