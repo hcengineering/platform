@@ -140,6 +140,7 @@ export function start (
     telegramUrl: string
     gmailUrl: string
     calendarUrl: string
+    collaboratorUrl: string
     title?: string
     languages: string
     defaultLanguage: string
@@ -180,6 +181,7 @@ export function start (
       TELEGRAM_URL: config.telegramUrl,
       GMAIL_URL: config.gmailUrl,
       CALENDAR_URL: config.calendarUrl,
+      COLLABORATOR_URL: config.collaboratorUrl,
       TITLE: config.title,
       LANGUAGES: config.languages,
       DEFAULT_LANGUAGE: config.defaultLanguage,

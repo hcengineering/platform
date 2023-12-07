@@ -43,6 +43,7 @@
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "SERVER_SECRET": "secret",
+        "COLLABORATOR_URL": "ws://localhost:3078",
         "REKONI_URL": "http://localhost:4004",
         "FRONT_URL": "http://localhost:8080",
         // "SERVER_PROVIDER":"uweb"
@@ -78,6 +79,23 @@
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/pods/account",
+      "protocol": "inspector"
+    },
+    {
+      "name": "Debug Collaborator",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/__start.ts"],
+      "env": {
+        "SERVER_SECRET": "secret",
+        "TRANSACTOR_URL": "ws://localhost:3333",
+        "MINIO_ACCESS_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin",
+        "MINIO_ENDPOINT": "localhost"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/pods/collaborator",
       "protocol": "inspector"
     },
     {

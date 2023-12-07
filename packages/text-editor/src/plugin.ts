@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,7 +15,7 @@
 //
 
 import { type Class, type Ref } from '@hcengineering/core'
-import { type IntlString, type Plugin, plugin } from '@hcengineering/platform'
+import { type IntlString, type Metadata, type Plugin, plugin } from '@hcengineering/platform'
 import { type RefInputActionItem } from './types'
 
 /**
@@ -26,6 +26,9 @@ export const textEditorId = 'text-editor' as Plugin
 export default plugin(textEditorId, {
   class: {
     RefInputActionItem: '' as Ref<Class<RefInputActionItem>>
+  },
+  metadata: {
+    CollaboratorUrl: '' as Metadata<string>
   },
   string: {
     TableOfContents: '' as IntlString,

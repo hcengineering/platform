@@ -14,6 +14,9 @@ dependencies:
   '@hocuspocus/provider':
     specifier: ^2.5.0
     version: 2.6.1(bufferutil@4.0.7)(yjs@13.6.8)
+  '@hocuspocus/server':
+    specifier: ^2.5.0
+    version: 2.8.1(bufferutil@4.0.7)(yjs@13.6.8)
   '@koa/cors':
     specifier: ^3.1.0
     version: 3.4.3
@@ -86,6 +89,9 @@ dependencies:
   '@rush-temp/client-resources':
     specifier: file:./projects/client-resources.tgz
     version: file:projects/client-resources.tgz(@types/node@16.11.68)(esbuild@0.16.17)(svelte@4.2.5)(ts-node@10.9.1)
+  '@rush-temp/collaborator':
+    specifier: file:./projects/collaborator.tgz
+    version: file:projects/collaborator.tgz(bufferutil@4.0.7)(svelte@4.2.5)
   '@rush-temp/contact':
     specifier: file:./projects/contact.tgz
     version: file:projects/contact.tgz(@types/node@16.11.68)(esbuild@0.16.17)(svelte@4.2.5)(ts-node@10.9.1)
@@ -3616,6 +3622,12 @@ packages:
       lib0: 0.2.86
     dev: false
 
+  /@hocuspocus/common@2.8.1:
+    resolution: {integrity: sha512-pNXBvmiNmF13X/t/VTNfYMyEnWkLJ9e1gTyc7vFozBTfN9EgX7rexT4INradC288wkQ5Ha1gZb908Q4XBucm9g==}
+    dependencies:
+      lib0: 0.2.88
+    dev: false
+
   /@hocuspocus/provider@2.6.1(bufferutil@4.0.7)(yjs@13.6.8):
     resolution: {integrity: sha512-ue9U8isfCO4nE8ddmZ5AmoLHNrUEldxcDJ8eBxaRFCtc56V1GEk93M4r69Bvu/YvOcsJaURpXrSaN5GyQNJVQw==}
     peerDependencies:
@@ -3626,6 +3638,24 @@ packages:
       '@lifeomic/attempt': 3.0.3
       lib0: 0.2.86
       ws: 7.5.9(bufferutil@4.0.7)
+      yjs: 13.6.8
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
+
+  /@hocuspocus/server@2.8.1(bufferutil@4.0.7)(yjs@13.6.8):
+    resolution: {integrity: sha512-3BJFcShMQxB8+A1uPSdKTeL+UZvVg+XS6vbdcyC6yCy3ZScLGjCP+IPAgiNwa5xvcUEr64yp8LCroM+gZHyxbQ==}
+    peerDependencies:
+      y-protocols: ^1.0.6
+      yjs: ^13.6.8
+    dependencies:
+      '@hocuspocus/common': 2.8.1
+      async-lock: 1.4.0
+      kleur: 4.1.5
+      lib0: 0.2.86
+      uuid: 9.0.1
+      ws: 8.14.2(bufferutil@4.0.7)
       yjs: 13.6.8
     transitivePeerDependencies:
       - bufferutil
@@ -8070,6 +8100,10 @@ packages:
     requiresBuild: true
     dev: false
 
+  /async-lock@1.4.0:
+    resolution: {integrity: sha512-coglx5yIWuetakm3/1dsX9hxCNox22h7+V80RQOu2XUUMidtArxKoZoOtHUPuR84SycKTXzgGzAUR5hJxujyJQ==}
+    dev: false
+
   /async-value-promise@1.1.1:
     resolution: {integrity: sha512-c2RFDKjJle1rHa0YxN9Ysu97/QBu3Wa+NOejJxsX+1qVDJrkD3JL/GN1B3gaILAEXJXbu/4Z1lcoCHFESe/APA==}
     dependencies:
@@ -12508,6 +12542,11 @@ packages:
     engines: {node: '>=6'}
     dev: false
 
+  /kleur@4.1.5:
+    resolution: {integrity: sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==}
+    engines: {node: '>=6'}
+    dev: false
+
   /known-css-properties@0.29.0:
     resolution: {integrity: sha512-Ne7wqW7/9Cz54PDt4I3tcV+hAyat8ypyOGzYRJQfdxnnjeWsTxt1cy8pjvvKeI5kfXuyvULyeeAvwvvtAX3ayQ==}
     dev: false
@@ -12727,6 +12766,14 @@ packages:
 
   /lib0@0.2.86:
     resolution: {integrity: sha512-kxigQTM4Q7NwJkEgdqQvU21qiR37twcqqLmh+/SbiGbRLfPlLVbHyY9sWp7PwXh0Xus9ELDSjsUOwcrdt5yZ4w==}
+    engines: {node: '>=16'}
+    hasBin: true
+    dependencies:
+      isomorphic.js: 0.2.5
+    dev: false
+
+  /lib0@0.2.88:
+    resolution: {integrity: sha512-KyroiEvCeZcZEMx5Ys+b4u4eEBbA1ch7XUaBhYpwa/nPMrzTjUhI4RfcytmQfYoTBPcdyx+FX6WFNIoNuJzJfQ==}
     engines: {node: '>=16'}
     hasBin: true
     dependencies:
@@ -18070,6 +18117,56 @@ packages:
       - supports-color
       - svelte
       - ts-node
+    dev: false
+
+  file:projects/collaborator.tgz(bufferutil@4.0.7)(svelte@4.2.5):
+    resolution: {integrity: sha512-Aqxt81MeApDyPNFAK2c+YaKTe5kbBZdHrL/7UgrXClC3hqN7tVepxeWK77TaSz/Sk9/1+dOYphDBMBYK5jOxGQ==, tarball: file:projects/collaborator.tgz}
+    id: file:projects/collaborator.tgz
+    name: '@rush-temp/collaborator'
+    version: 0.0.0
+    dependencies:
+      '@hocuspocus/server': 2.8.1(bufferutil@4.0.7)(yjs@13.6.8)
+      '@types/body-parser': 1.19.3
+      '@types/compression': 1.7.3
+      '@types/cors': 2.8.14
+      '@types/express': 4.17.18
+      '@types/jest': 29.5.5
+      '@types/node': 16.11.68
+      '@types/ws': 8.5.6
+      '@typescript-eslint/eslint-plugin': 6.11.0(@typescript-eslint/parser@6.11.0)(eslint@8.54.0)(typescript@5.2.2)
+      '@typescript-eslint/parser': 6.11.0(eslint@8.54.0)(typescript@5.2.2)
+      body-parser: 1.19.2
+      compression: 1.7.4
+      cors: 2.8.5
+      cross-env: 7.0.3
+      esbuild: 0.16.17
+      eslint: 8.54.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.11.0)(eslint-plugin-import@2.28.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.54.0)(typescript@5.2.2)
+      eslint-plugin-import: 2.28.1(eslint@8.54.0)
+      eslint-plugin-n: 15.7.0(eslint@8.54.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.54.0)
+      express: 4.18.2
+      jest: 29.7.0(@types/node@16.11.68)(ts-node@10.9.1)
+      prettier: 3.1.0
+      prettier-plugin-svelte: 3.1.0(prettier@3.1.0)(svelte@4.2.5)
+      ts-jest: 29.1.1(esbuild@0.16.17)(jest@29.7.0)(typescript@5.2.2)
+      ts-node: 10.9.1(@types/node@16.11.68)(typescript@5.2.2)
+      typescript: 5.2.2
+      ws: 8.14.2(bufferutil@4.0.7)
+      yjs: 13.6.8
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@swc/core'
+      - '@swc/wasm'
+      - babel-jest
+      - babel-plugin-macros
+      - bufferutil
+      - node-notifier
+      - supports-color
+      - svelte
+      - utf-8-validate
+      - y-protocols
     dev: false
 
   file:projects/contact-assets.tgz(esbuild@0.16.17)(svelte@4.2.5)(ts-node@10.9.1)(typescript@5.2.2):
