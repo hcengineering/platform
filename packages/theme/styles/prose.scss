@@ -18,11 +18,12 @@ table.proseTable {
   --table-selection-border-indent: -0.125rem;
   --table-selection-border-radius: 0.125rem;
   --table-selection-border-width: 0.125rem;
+  --table-handle-size: 1.25rem
 
   border-collapse: collapse;
   table-layout: fixed;
-  width: 100%;
   position: relative;
+  width: 100%;
   margin: 0;
 
   td,
@@ -136,6 +137,8 @@ table.proseTable {
           right: -1px;
           bottom: 0;
           border-bottom-width: 0;
+          border-bottom-left-radius: 0;
+          border-bottom-right-radius: 0;
         }
       }
     }
@@ -166,6 +169,8 @@ table.proseTable {
           bottom: -1px;
           right: 0;
           border-right-width: 0;
+          border-top-right-radius: 0;
+          border-bottom-right-radius: 0;
         }
       }
     }
@@ -239,6 +244,50 @@ table.proseTable {
     .table-insert-marker {
       background-color: var(--primary-button-focused);
       opacity: 0;
+    }
+  }
+
+  .table-drop-marker {
+    background-color: var(--primary-button-focused);
+    position: absolute;
+    z-index: 150;
+  }
+
+  .table-col-drag-marker,
+  .table-row-drag-marker {
+    position: absolute;
+    z-index: 150;
+    // opacity: 0.5;
+    background-color: var(--primary-button-focused);
+    border: var(--table-selection-border-width) solid var(--primary-button-focused);
+    border-radius: var(--table-selection-border-radius);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    svg {
+      color: white;
+      margin: auto;
+    }
+  }
+
+  .table-col-drag-marker {
+    height: calc(1.25rem + var(--table-selection-border-width) + 1px);
+    top: calc(-1.25rem - var(--table-selection-border-width));
+
+    svg {
+      width: 100%;
+    }
+  }
+
+  .table-row-drag-marker {
+    width: calc(1.25rem + var(--table-selection-border-width) + 1px);
+    left: calc(-1.25rem - var(--table-selection-border-width) - 1px);
+
+    svg {
+      height: 100%;
+      transform: rotate(90deg);
     }
   }
 }
