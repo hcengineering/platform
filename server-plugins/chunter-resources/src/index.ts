@@ -541,7 +541,7 @@ export async function getChunterNotificationContent (
   let body: IntlString = chunter.string.Message
   const intlParams: Record<string, string | number> = {}
 
-  let message
+  let message: string | undefined
 
   if (tx._class === core.class.TxCollectionCUD) {
     const ptx = tx as TxCollectionCUD<Doc, AttachedDoc>
