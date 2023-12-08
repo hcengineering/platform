@@ -45,6 +45,10 @@ export function createModel (builder: Builder): void {
     presenter: serverChunter.function.ChunterNotificationContentProvider
   })
 
+  builder.mixin(chunter.class.Message, core.class.Class, serverNotification.mixin.NotificationPresenter, {
+    presenter: serverChunter.function.ChunterNotificationContentProvider
+  })
+
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverChunter.trigger.BacklinkTrigger
   })

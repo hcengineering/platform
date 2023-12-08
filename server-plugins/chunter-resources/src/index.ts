@@ -541,17 +541,25 @@ export async function getChunterNotificationContent (
   let body: IntlString = chunter.string.Message
   const intlParams: Record<string, string | number> = {}
 
+  let message
+
   if (tx._class === core.class.TxCollectionCUD) {
     const ptx = tx as TxCollectionCUD<Doc, AttachedDoc>
     if (ptx.tx._class === core.class.TxCreateDoc) {
       if (ptx.tx.objectClass === chunter.class.Message) {
         const createTx = ptx.tx as TxCreateDoc<Message>
-        const message = createTx.attributes.content
-        const plainTextMessage = stripTags(message, NOTIFICATION_BODY_SIZE)
-        intlParams.message = plainTextMessage
-        body = chunter.string.DirectNotificationBody
+        message = createTx.attributes.content
+      } else if (ptx.tx.objectClass === chunter.class.Backlink) {
+        const createTx = ptx.tx as TxCreateDoc<Backlink>
+        message = createTx.attributes.message
       }
     }
+  }
+
+  if (message !== undefined) {
+    const plainTextMessage = stripTags(message, NOTIFICATION_BODY_SIZE)
+    intlParams.message = plainTextMessage
+    body = chunter.string.DirectNotificationBody
   }
 
   return {
