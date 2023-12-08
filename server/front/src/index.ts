@@ -562,7 +562,9 @@ async function getResizeID (
     try {
       const d = await config.minio.stat(payload.workspace, sizeId)
       hasSmall = d !== undefined && d.size > 0
-    } catch (err) {}
+    } catch (err: any) {
+      console.error(err)
+    }
     if (hasSmall) {
       // We have cached small document, let's proceed with it.
       uuid = sizeId
