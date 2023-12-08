@@ -27,6 +27,7 @@ export class IssuesPage extends CommonTrackerPage {
   readonly linkSidebarAll: Locator
   readonly linkSidebarMyIssue: Locator
   readonly buttonClearFilers: Locator
+  readonly issuesList: Locator
   readonly buttonPopupCreateNewIssueParent: Locator
 
   constructor (page: Page) {
@@ -65,6 +66,7 @@ export class IssuesPage extends CommonTrackerPage {
     this.linkSidebarAll = page.locator('a[href$="all-issues"]')
     this.linkSidebarMyIssue = page.locator('a[href$="my-issues"]')
     this.buttonClearFilers = page.locator('div.search-start > div:first-child button')
+    this.issuesList = page.locator('div.listGrid')
     this.buttonPopupCreateNewIssueParent = page.locator('div#parentissue-editor button')
   }
 
@@ -150,7 +152,7 @@ export class IssuesPage extends CommonTrackerPage {
   async checkAllIssuesInStatus (statusId: string | undefined): Promise<void> {
     if (statusId === undefined) throw new Error(`Unknown status id ${statusId}`)
 
-    for await (const locator of iterateLocator(this.page.locator('div.listGrid'))) {
+    for await (const locator of iterateLocator(this.issuesList)) {
       await expect(locator.locator('div[class*="square"] > svg')).toHaveAttribute('id', statusId)
     }
   }
@@ -170,7 +172,7 @@ export class IssuesPage extends CommonTrackerPage {
   }
 
   async checkAllIssuesByPriority (priorityName: string): Promise<void> {
-    for await (const locator of iterateLocator(this.page.locator('div.listGrid'))) {
+    for await (const locator of iterateLocator(this.issuesList)) {
       const href = await locator.locator('div.priority-container use').getAttribute('href')
       expect(href).toContain(priorityName)
     }

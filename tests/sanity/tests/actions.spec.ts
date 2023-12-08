@@ -42,7 +42,7 @@ test.describe('actions tests', () => {
     await page.click('div.actionsHeader input.actionsInput')
     await page.fill('div.actionsHeader input.actionsInput', 'go to ')
     expect(await page.locator('div.selectPopup :text("Go To Vacancies")').count()).toBe(1)
-    await page.click('div.selectPopup :text("Go To Vacancies")')
+    await page.click('div.selectPopup :text("Go To Vacancies")', { delay: 100 })
 
     await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit/vacancies`)
   })
@@ -62,7 +62,7 @@ test.describe('actions tests', () => {
     await page.click('div.actionsHeader input.actionsInput')
     await page.fill('div.actionsHeader input.actionsInput', 'go to ')
     expect(await page.locator('div.selectPopup :text("Go To Applications")').count()).toBe(1)
-    await page.click('div.selectPopup :text("Go To Applications")')
+    await page.click('div.selectPopup :text("Go To Applications")', { delay: 100 })
 
     await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit/candidates`)
   })

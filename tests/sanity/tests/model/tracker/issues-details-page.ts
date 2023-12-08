@@ -15,6 +15,8 @@ export class IssuesDetailsPage extends CommonTrackerPage {
   readonly buttonMilestone: Locator
   readonly textEstimation: Locator
   readonly buttonEstimation: Locator
+  readonly buttonCreatedBy: Locator
+  readonly buttonCloseIssue: Locator
   readonly buttonMoreActions: Locator
   readonly textParentTitle: Locator
 
@@ -32,6 +34,8 @@ export class IssuesDetailsPage extends CommonTrackerPage {
     this.buttonMilestone = page.locator('(//span[text()="Milestone"]/../div/div/button)[3]')
     this.textEstimation = page.locator('(//span[text()="Estimation"]/../div/button)[4]')
     this.buttonEstimation = page.locator('(//span[text()="Estimation"]/../div/button)[3]')
+    this.buttonCreatedBy = page.locator('(//span[text()="Assignee"]/../div/button)[1]')
+    this.buttonCloseIssue = page.locator('div.popupPanel-title > button')
     this.buttonMoreActions = page.locator('div.popupPanel-title div.flex-row-center > button:first-child')
     this.textParentTitle = page.locator('span.issue-title')
   }

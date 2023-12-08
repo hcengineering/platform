@@ -4,6 +4,8 @@ import { NavigationMenuPage } from '../model/recruiting/navigation-menu-page'
 import { ApplicationsPage } from '../model/recruiting/applications-page'
 import { ApplicationsDetailsPage } from '../model/recruiting/applications-details-page'
 import { allure } from 'allure-playwright'
+import { VacancyDetailsPage } from '../model/recruiting/vacancy-details-page'
+import { VacanciesPage } from '../model/recruiting/vacancies-page'
 
 test.use({
   storageState: PlatformSetting
@@ -28,11 +30,15 @@ test.describe('Application tests', () => {
     await page.click('button:has-text("Vacancy")')
     await page.fill('[placeholder="Software\\ Engineer"]', vacancyId)
     await page.click('button:has-text("Create")')
-    await page.click(`tr > :has-text("${vacancyId}")`)
 
-    await page.click('text=Talents')
+    const vacanciesPage = new VacanciesPage(page)
+    await vacanciesPage.openVacancyByName(vacancyId)
+    const vacancyDetailsPage = new VacancyDetailsPage(page)
+    await expect(vacancyDetailsPage.inputComment).toBeVisible()
 
-    await page.click('text=Talents')
+    const navigationMenuPage = new NavigationMenuPage(page)
+    await navigationMenuPage.buttonTalents.click()
+
     await page.click('text=P. Andrey')
 
     // Click on Add button
