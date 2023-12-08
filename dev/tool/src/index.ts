@@ -59,6 +59,7 @@ import {
   cleanRemovedTransactions,
   cleanWorkspace,
   fixCommentDoubleIdCreate,
+  fixMinioBW,
   fixSkills,
   optimizeModel
 } from './clean'
@@ -492,6 +493,11 @@ export function devTool (
         )
       })
     })
+
+  program.command('fix-bw-workspace <workspace>').action(async (workspace: string) => {
+    const { minio } = prepareTools()
+    await fixMinioBW(getWorkspaceId(workspace, productId), minio)
+  })
 
   program
     .command('clean-removed-transactions <workspace>')

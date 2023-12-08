@@ -145,6 +145,25 @@ export async function cleanWorkspace (
   }
 }
 
+export async function fixMinioBW (workspaceId: WorkspaceId, minio: MinioService): Promise<void> {
+  console.log('try clean bw miniature for ', workspaceId.name)
+  const from = new Date(new Date().setDate(new Date().getDate() - 7))
+  const list = await minio.list(workspaceId)
+  console.log('found', list.length)
+  let removed = 0
+  for (const obj of list) {
+    if (obj.lastModified < from) continue
+    if (obj.name.includes('%size%')) {
+      await minio.remove(workspaceId, [obj.name])
+      removed++
+      if (removed % 100 === 0) {
+        console.log('removed: ', removed)
+      }
+    }
+  }
+  console.log('FINISH, removed: ', removed)
+}
+
 export async function cleanRemovedTransactions (workspaceId: WorkspaceId, transactorUrl: string): Promise<void> {
   const connection = (await connect(transactorUrl, workspaceId, undefined, {
     mode: 'backup'
