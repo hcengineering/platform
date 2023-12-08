@@ -28,6 +28,7 @@ export class IssuesPage extends CommonTrackerPage {
   readonly linkSidebarMyIssue: Locator
   readonly buttonClearFilers: Locator
   readonly issuesList: Locator
+  readonly buttonPopupCreateNewIssueParent: Locator
 
   constructor (page: Page) {
     super(page)
@@ -66,6 +67,7 @@ export class IssuesPage extends CommonTrackerPage {
     this.linkSidebarMyIssue = page.locator('a[href$="my-issues"]')
     this.buttonClearFilers = page.locator('div.search-start > div:first-child button')
     this.issuesList = page.locator('div.listGrid')
+    this.buttonPopupCreateNewIssueParent = page.locator('div#parentissue-editor button')
   }
 
   async createNewIssue (data: NewIssue): Promise<void> {
@@ -118,6 +120,10 @@ export class IssuesPage extends CommonTrackerPage {
       await this.inputPopupCreateNewIssueFile.setInputFiles(path.join(__dirname, `../../files/${data.filePath}`))
       await expect(this.textPopupCreateNewIssueFile.filter({ hasText: data.filePath })).toBeVisible()
     }
+    if (data.parentIssue != null) {
+      await this.buttonPopupCreateNewIssueParent.click()
+      await this.selectMenuItem(this.page, data.parentIssue, true)
+    }
 
     await this.buttonCreateIssue.click()
   }
@@ -149,6 +155,20 @@ export class IssuesPage extends CommonTrackerPage {
     for await (const locator of iterateLocator(this.issuesList)) {
       await expect(locator.locator('div[class*="square"] > svg')).toHaveAttribute('id', statusId)
     }
+  }
+
+  async checkParentIssue (issueName: string, parentName: string): Promise<void> {
+    await expect(
+      this.page
+        .locator('a', { hasText: issueName })
+        .locator('xpath=../..')
+        .locator('div.root span.parent-label:first-child')
+    ).toHaveText(parentName)
+  }
+
+  async doActionOnIssue (issueName: string, action: string): Promise<void> {
+    await this.page.locator('a', { hasText: issueName }).click({ button: 'right' })
+    await this.selectFromDropdown(this.page, action)
   }
 
   async checkAllIssuesByPriority (priorityName: string): Promise<void> {
