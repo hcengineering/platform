@@ -14,6 +14,7 @@ export interface Issue {
   milestone?: string
   duedate?: string
   filePath?: string
+  parentIssue?: string
 }
 
 export interface NewProject {
