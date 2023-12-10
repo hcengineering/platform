@@ -28,13 +28,6 @@ export interface NewProject {
   type?: string
 }
 
-// export interface TargetDate {
-//   targetDate: boolean
-//   targetDateDay: string
-//   targetDateMonth: string
-//   targetDateYear: string
-// }
-
 export interface NewMilestone {
   name: string
   description?: string
