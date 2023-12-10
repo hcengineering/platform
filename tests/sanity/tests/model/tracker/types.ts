@@ -27,3 +27,22 @@ export interface NewProject {
   iconNumber?: number
   type?: string
 }
+
+// export interface TargetDate {
+//   targetDate: boolean
+//   targetDateDay: string
+//   targetDateMonth: string
+//   targetDateYear: string
+// }
+
+export interface NewMilestone {
+  name: string
+  description?: string
+  status?: string
+  targetDate?: {
+    day: string
+    month: string
+    year: string
+  }
+  targetDateInDays?: string
+}

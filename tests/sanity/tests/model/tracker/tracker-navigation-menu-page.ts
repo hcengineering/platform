@@ -51,4 +51,12 @@ export class TrackerNavigationMenuPage extends CommonPage {
       .click()
     await this.selectFromDropdown(this.page, action)
   }
+
+  async openMilestonesForProject (projectName: string): Promise<void> {
+    await this.page
+      .locator('div[class*="antiNav-element"] a[href$="milestones"][href*="Default"]> div > span', {
+        hasText: 'Milestones'
+      })
+      .click()
+  }
 }

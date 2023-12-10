@@ -47,8 +47,8 @@ export class NewProjectPage extends CommonTrackerPage {
     if (data.description != null) {
       await this.inputDescription.fill(data.description)
     }
-    if (data.icon != null) {
-      await this.inputDescription.fill(data.icon)
+    if (data.iconNumber != null) {
+      await this.inputDescription.fill(data.iconNumber + '')
     }
     if (data.private != null && data.private) {
       await this.buttonMakePrivate.click()
