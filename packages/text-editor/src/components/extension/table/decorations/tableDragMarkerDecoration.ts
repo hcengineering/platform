@@ -41,7 +41,7 @@ export const tableDragMarkerDecoration = (state: EditorState, table: TableNodeLo
   rowDragMarker.classList.add('table-row-drag-marker')
   rowDragMarker.innerHTML = handleSvg
   rowDragMarker.style.display = 'none'
-  
+
   return [
     Decoration.widget(table.start, dropMarker),
     Decoration.widget(table.start, colDragMarker),

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Editor } from '@tiptap/core'
+import { type Editor } from '@tiptap/core'
 import { type EditorState } from '@tiptap/pm/state'
 import { TableMap } from '@tiptap/pm/tables'
 import { Decoration } from '@tiptap/pm/view'
@@ -44,7 +44,7 @@ export const columnInsertDecoration = (state: EditorState, table: TableNodeLocat
       const button = document.createElement('button')
       button.className = 'table-insert-button'
       button.innerHTML = addSvg
-      button.addEventListener('mousedown', (e) => handleMouseDown(col, table, e, editor))
+      button.addEventListener('mousedown', (e) => { handleMouseDown(col, table, e, editor) })
       insert.appendChild(button)
 
       const marker = document.createElement('div')

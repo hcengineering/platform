@@ -98,9 +98,7 @@ const handleMouseDown = (row: number, table: TableNodeLocation, event: MouseEven
       const top = Math.min(startTop + event.clientY - startY, tableHeightPx)
       dropIndex = calculateRowDropIndex(row, rows, top)
 
-      const markerTopPx = dropIndex <= row
-        ? rows[dropIndex].topPx
-        : rows[dropIndex].topPx + rows[dropIndex].heightPx
+      const markerTopPx = dropIndex <= row ? rows[dropIndex].topPx : rows[dropIndex].topPx + rows[dropIndex].heightPx
 
       updateRowDropMarker(dropMarker, markerTopPx - dropMarkerWidthPx / 2, dropMarkerWidthPx)
       updateRowDragMarker(dragMarker, top, rows[row].heightPx)
@@ -114,7 +112,7 @@ const handleMouseDown = (row: number, table: TableNodeLocation, event: MouseEven
 function calculateRowDropIndex (row: number, rows: TableRow[], top: number): number {
   const rowCenterPx = top + rows[row].heightPx / 2
   const index = rows.findIndex((p) => rowCenterPx < p.topPx + p.heightPx)
-  return index !== -1 ? index > row ? index - 1 : index : rows.length - 1
+  return index !== -1 ? (index > row ? index - 1 : index) : rows.length - 1
 }
 
 function getTableRows (table: TableNodeLocation, editor: Editor): TableRow[] {

@@ -98,9 +98,8 @@ const handleMouseDown = (col: number, table: TableNodeLocation, event: MouseEven
       const left = Math.min(startLeft + event.clientX - startX, tableWidthPx)
       dropIndex = calculateColumnDropIndex(col, columns, left)
 
-      const markerLeftPx = dropIndex <= col
-        ? columns[dropIndex].leftPx
-        : columns[dropIndex].leftPx + columns[dropIndex].widthPx
+      const markerLeftPx =
+        dropIndex <= col ? columns[dropIndex].leftPx : columns[dropIndex].leftPx + columns[dropIndex].widthPx
 
       updateColDropMarker(dropMarker, markerLeftPx - dropMarkerWidthPx / 2, dropMarkerWidthPx)
       updateColDragMarker(dragMarker, left, columns[col].widthPx)
@@ -113,8 +112,8 @@ const handleMouseDown = (col: number, table: TableNodeLocation, event: MouseEven
 
 function calculateColumnDropIndex (col: number, columns: TableColumn[], left: number): number {
   const colCenterPx = left + columns[col].widthPx / 2
-  const index = columns.findIndex((p) => colCenterPx < (p.leftPx + p.widthPx / 2))
-  return index !== -1 ? index > col ? index - 1 : index : columns.length - 1
+  const index = columns.findIndex((p) => colCenterPx < p.leftPx + p.widthPx / 2)
+  return index !== -1 ? (index > col ? index - 1 : index) : columns.length - 1
 }
 
 function getTableColumns (table: TableNodeLocation, editor: Editor): TableColumn[] {

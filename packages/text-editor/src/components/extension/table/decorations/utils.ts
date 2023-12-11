@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import { Editor } from '@tiptap/core'
-import { TableMap } from '@tiptap/pm/tables'
-import { TableNodeLocation } from '../types'
+import { type Editor } from '@tiptap/core'
+import { type TableMap } from '@tiptap/pm/tables'
+import { type TableNodeLocation } from '../types'
 
 export function getTableCellWidgetDecorationPos (table: TableNodeLocation, map: TableMap, index: number): number {
   return table.start + map.map[index] + 1
