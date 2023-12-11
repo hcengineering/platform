@@ -265,4 +265,26 @@ test.describe('Tracker filters tests', () => {
       await issuesDetailsPage.buttonCloseIssue.click()
     }
   })
+
+  test('Component filter', async ({ page }) => {
+    const defaultComponent = 'Default component'
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
+
+    await issuesPage.selectFilter('Component', defaultComponent)
+    await issuesPage.inputSearch.press('Escape')
+
+    await issuesPage.checkFilter('Component', 'is')
+    for await (const issue of iterateLocator(issuesPage.issuesList)) {
+      await issue.locator('span.list > a').click()
+
+      const issuesDetailsPage = new IssuesDetailsPage(page)
+      await expect(issuesDetailsPage.buttonComponent).toHaveText(defaultComponent)
+
+      await issuesDetailsPage.buttonCloseIssue.click()
+    }
+  })
 })
