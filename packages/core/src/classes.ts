@@ -44,6 +44,11 @@ export type Hyperlink = string
 /**
  * @public
  */
+export type CollectionSize<T> = T[]['length']
+
+/**
+ * @public
+ */
 export interface Obj {
   _class: Ref<Class<this>>
 }
@@ -253,7 +258,7 @@ export interface RefTo<T extends Doc> extends Type<Ref<Class<T>>> {
 /**
  * @public
  */
-export interface Collection<T extends AttachedDoc> extends Type<number> {
+export interface Collection<T extends AttachedDoc> extends Type<CollectionSize<T>> {
   of: Ref<Class<T>>
   itemLabel?: IntlString
 }

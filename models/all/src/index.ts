@@ -60,6 +60,7 @@ import { taskId, createModel as taskModel } from '@hcengineering/model-task'
 import telegram, { telegramId, createModel as telegramModel } from '@hcengineering/model-telegram'
 import { templatesId, createModel as templatesModel } from '@hcengineering/model-templates'
 import { textEditorId, createModel as textEditorModel } from '@hcengineering/model-text-editor'
+import { surveyId, createModel as surveyModel } from '@hcengineering/model-survey'
 import tracker, { trackerId, createModel as trackerModel } from '@hcengineering/model-tracker'
 import view, { viewId, createModel as viewModel } from '@hcengineering/model-view'
 import workbench, { workbenchId, createModel as workbenchModel } from '@hcengineering/model-workbench'
@@ -261,6 +262,16 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       }
     ],
     [supportModel, supportId],
+    [
+      surveyModel,
+      surveyId,
+      {
+        // TODO: icon, label, description?
+        enabled: true,
+        beta: true,
+        classFilter: defaultFilter
+      }
+    ],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],
