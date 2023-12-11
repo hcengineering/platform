@@ -4,11 +4,19 @@ import { CalendarPage } from '../calendar-page'
 export class CommonTrackerPage extends CalendarPage {
   readonly page: Page
   readonly buttonFilter: Locator
+  readonly inputComment: Locator
+  readonly buttonSendComment: Locator
+  readonly textComment: Locator
+  readonly textActivity: Locator
 
   constructor (page: Page) {
     super(page)
     this.page = page
     this.buttonFilter = page.locator('div.search-start > div:first-child button')
+    this.inputComment = page.locator('div.text-input div.tiptap')
+    this.buttonSendComment = page.locator('g#Send')
+    this.textComment = page.locator('div.showMore-content p')
+    this.textActivity = page.locator('div.header')
   }
 
   async selectFilter (filter: string, filterSecondLevel?: string): Promise<void> {
@@ -57,5 +65,18 @@ export class CommonTrackerPage extends CalendarPage {
     await this.page.type('div.date-popup-container div.input:last-child', dateEnd)
 
     await this.page.locator('div.date-popup-container button[type="submit"]').click({ delay: 100 })
+  }
+
+  async addComment (comment: string): Promise<void> {
+    await this.inputComment.fill(comment)
+    await this.buttonSendComment.click()
+  }
+
+  async checkCommentExist (comment: string): Promise<void> {
+    await expect(this.textComment.filter({ hasText: comment })).toBeVisible()
+  }
+
+  async checkActivityExist (activity: string): Promise<void> {
+    await expect(this.textActivity.filter({ hasText: activity })).toBeVisible()
   }
 }

@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { test } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI } from '../utils'
 import { allure } from 'allure-playwright'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
@@ -36,6 +36,36 @@ test.describe('Tracker milestone tests', () => {
     await milestonesPage.openMilestoneByName(newMilestone.name)
 
     const milestonesDetailsPage = new MilestonesDetailsPage(page)
-    await expect(milestonesDetailsPage.inputTitle).toHaveValue(newMilestone.name)
+    await milestonesDetailsPage.checkIssue(newMilestone)
+  })
+
+  test('Edit a Milestone', async ({ page }) => {
+    const commentText: 'Edit Milestone comment' = 'Edit Milestone comment'
+    const editMilestone: NewMilestone = {
+      name: 'Edit Milestone',
+      description: 'Edit Milestone Description',
+      status: 'Completed',
+      targetDateInDays: 'in 30 days'
+    }
+
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+    await trackerNavigationMenuPage.openMilestonesForProject('Default')
+
+    const milestonesPage = new MilestonesPage(page)
+    await milestonesPage.openMilestoneByName(editMilestone.name)
+
+    const milestonesDetailsPage = new MilestonesDetailsPage(page)
+    await milestonesDetailsPage.editIssue(editMilestone)
+    await milestonesDetailsPage.checkIssue(editMilestone)
+
+    await milestonesDetailsPage.addComment(commentText)
+    await milestonesDetailsPage.checkCommentExist(commentText)
+    await milestonesDetailsPage.checkActivityExist('created milestone')
+    await milestonesDetailsPage.checkActivityExist('changed target date in')
+    await milestonesDetailsPage.checkActivityExist('changed status in')
+    await milestonesDetailsPage.checkActivityExist('changed description in')
   })
 })
