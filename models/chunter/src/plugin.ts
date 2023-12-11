@@ -13,11 +13,16 @@
 // limitations under the License.
 //
 
-import type { ActivityExtension, DisplayTx, TxViewlet } from '@hcengineering/activity'
+import type { TxViewlet } from '@hcengineering/activity'
 import { chunterId, type Channel } from '@hcengineering/chunter'
 import chunter from '@hcengineering/chunter-resources/src/plugin'
 import type { Doc, Ref, Space } from '@hcengineering/core'
-import { type NotificationGroup } from '@hcengineering/notification'
+import {
+  type ActivityMessage,
+  type ActivityMessageExtension,
+  type DocUpdateMessageViewlet,
+  type NotificationGroup
+} from '@hcengineering/notification'
 import type { IntlString, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import type { AnyComponent, Location } from '@hcengineering/ui/src/types'
@@ -25,7 +30,6 @@ import type { Action, ActionCategory, ViewAction, ViewletDescriptor } from '@hce
 
 export default mergeIds(chunterId, chunter, {
   component: {
-    CommentPresenter: '' as AnyComponent,
     ChannelPresenter: '' as AnyComponent,
     DirectMessagePresenter: '' as AnyComponent,
     MessagePresenter: '' as AnyComponent,
@@ -33,9 +37,11 @@ export default mergeIds(chunterId, chunter, {
     Threads: '' as AnyComponent,
     SavedMessages: '' as AnyComponent,
     ChunterBrowser: '' as AnyComponent,
-    CommentReactions: '' as AnyComponent,
+    ReactionsPresenter: '' as AnyComponent,
     ReactionsAction: '' as AnyComponent,
-    PinComment: '' as AnyComponent
+    ActivityMessageReactionsAction: '' as AnyComponent,
+    BacklinkContent: '' as AnyComponent,
+    BacklinkReference: '' as AnyComponent
   },
   action: {
     MarkCommentUnread: '' as Ref<Action>,
@@ -74,15 +80,13 @@ export default mergeIds(chunterId, chunter, {
     PinnedMessages: '' as IntlString,
     SavedMessages: '' as IntlString,
     ThreadMessage: '' as IntlString,
-    Reactions: '' as IntlString,
     Emoji: '' as IntlString,
-    FilterComments: '' as IntlString,
-    FilterPinnedComments: '' as IntlString,
     FilterBacklinks: '' as IntlString,
     DM: '' as IntlString,
     DMNotification: '' as IntlString,
     ConfigLabel: '' as IntlString,
-    ConfigDescription: '' as IntlString
+    ConfigDescription: '' as IntlString,
+    Reacted: '' as IntlString
   },
   viewlet: {
     Chat: '' as Ref<ViewletDescriptor>
@@ -93,15 +97,18 @@ export default mergeIds(chunterId, chunter, {
     TxCommentRemove: '' as Ref<TxViewlet>,
     TxBacklinkRemove: '' as Ref<TxViewlet>,
     TxMessageCreate: '' as Ref<TxViewlet>,
+    TxChatMessageCreate: '' as Ref<TxViewlet>,
+    TxChatMessageRemove: '' as Ref<TxViewlet>,
     ChunterNotificationGroup: '' as Ref<NotificationGroup>,
-    ActivityExtension: '' as Ref<ActivityExtension>,
-    BackLinkActivityExtension: '' as Ref<ActivityExtension>,
-    PinExtension: '' as Ref<ActivityExtension>
+    DocUpdateMessageExtension: '' as Ref<ActivityMessageExtension>,
+    ChatMessageExtension: '' as Ref<ActivityMessageExtension>,
+    NotificationBacklinkCreated: '' as Ref<DocUpdateMessageViewlet>,
+    NotificationBacklinkRemoved: '' as Ref<DocUpdateMessageViewlet>,
+    NotificationReactionCreated: '' as Ref<DocUpdateMessageViewlet>,
+    NotificationReactionRemoved: '' as Ref<DocUpdateMessageViewlet>
   },
   activity: {
     TxCommentCreate: '' as AnyComponent,
-    TxBacklinkCreate: '' as AnyComponent,
-    TxBacklinkReference: '' as AnyComponent,
     TxMessageCreate: '' as AnyComponent
   },
   space: {
@@ -114,8 +121,6 @@ export default mergeIds(chunterId, chunter, {
     GetFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>
   },
   filter: {
-    CommentsFilter: '' as Resource<(tx: DisplayTx, _class?: Ref<Doc>) => boolean>,
-    PinnedCommentsFilter: '' as Resource<(tx: DisplayTx, _class?: Ref<Doc>) => boolean>,
-    BacklinksFilter: '' as Resource<(tx: DisplayTx, _class?: Ref<Doc>) => boolean>
+    BacklinksFilter: '' as Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>
   }
 })

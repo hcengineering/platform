@@ -17,13 +17,12 @@
 import type { Ref } from '@hcengineering/core'
 import { type Funnel, leadId } from '@hcengineering/lead'
 import lead from '@hcengineering/lead-resources/src/plugin'
-import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
+import { type ChatMessageViewlet, type NotificationGroup, type NotificationType } from '@hcengineering/notification'
 import type { IntlString } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { type ProjectType } from '@hcengineering/task'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action, type ActionCategory, type Viewlet } from '@hcengineering/view'
-import { type ActivityExtension } from '@hcengineering/activity'
 
 export default mergeIds(leadId, lead, {
   string: {
@@ -71,6 +70,6 @@ export default mergeIds(leadId, lead, {
     FunnelNotificationGroup: '' as Ref<NotificationGroup>,
     LeadCreateNotification: '' as Ref<NotificationType>,
     AssigneeNotification: '' as Ref<NotificationType>,
-    LeadActivityExtension: '' as Ref<ActivityExtension>
+    LeadChatMessageViewlet: '' as Ref<ChatMessageViewlet>
   }
 })

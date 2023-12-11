@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
 import {
   type Account,
   type Class,
@@ -23,9 +22,20 @@ import {
   type Ref,
   type TxOperations
 } from '@hcengineering/core'
-import notification, { type Collaborators, type DocUpdates, type NotificationClient } from '@hcengineering/notification'
+import notification, {
+  type ActivityMessage,
+  type ChatMessage,
+  type Collaborators,
+  type DisplayActivityMessage,
+  type DisplayDocUpdateMessage,
+  type DocUpdates,
+  inboxId,
+  type NotificationClient
+} from '@hcengineering/notification'
 import { createQuery, getClient } from '@hcengineering/presentation'
-import { writable } from 'svelte/store'
+import { get, writable } from 'svelte/store'
+import { type Location, type ResolvedLocation } from '@hcengineering/ui'
+import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
 
 /**
  * @public
@@ -108,6 +118,7 @@ export class NotificationClientImpl implements NotificationClient {
             }
           })
         }
+
         await client.createDoc(notification.class.DocUpdates, doc.space, {
           attachedTo: _id,
           attachedToClass: _class,
@@ -126,6 +137,34 @@ export class NotificationClientImpl implements NotificationClient {
 export async function hasntNotifications (object: DocUpdates): Promise<boolean> {
   if (object._class !== notification.class.DocUpdates) return false
   return !object.txes.some((p) => p.isNew)
+}
+/**
+ * @public
+ */
+export async function hasntInboxNotifications (message: DisplayActivityMessage): Promise<boolean> {
+  const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
+  const combinedIds =
+    message._class === notification.class.DocUpdateMessage
+      ? (message as DisplayDocUpdateMessage).combinedMessagesIds
+      : undefined
+  const ids: Array<Ref<ActivityMessage>> = [message._id, ...(combinedIds ?? [])]
+
+  return get(inboxNotificationsClient.inboxNotifications).some(
+    ({ attachedTo, isViewed }) => ids.includes(attachedTo) && isViewed
+  )
+}
+
+export async function hasInboxNotifications (message: DisplayActivityMessage): Promise<boolean> {
+  const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
+  const combinedIds =
+    message._class === notification.class.DocUpdateMessage
+      ? (message as DisplayDocUpdateMessage).combinedMessagesIds
+      : undefined
+  const ids: Array<Ref<ActivityMessage>> = [message._id, ...(combinedIds ?? [])]
+
+  return get(inboxNotificationsClient.inboxNotifications).some(
+    ({ attachedTo, isViewed }) => ids.includes(attachedTo) && !isViewed
+  )
 }
 
 enum OpWithMe {
@@ -220,4 +259,130 @@ export async function markAsUnread (object: DocUpdates): Promise<void> {
   await client.update(object, {
     txes
   })
+}
+
+/**
+ * @public
+ */
+export async function markAsReadInboxNotification (message: DisplayActivityMessage): Promise<void> {
+  const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
+  const combinedIds =
+    message._class === notification.class.DocUpdateMessage
+      ? (message as DisplayDocUpdateMessage).combinedMessagesIds
+      : undefined
+  const ids: Array<Ref<ActivityMessage>> = [message._id, ...(combinedIds ?? [])]
+
+  await inboxNotificationsClient.readMessages(ids)
+}
+
+/**
+ * @public
+ */
+export async function markAsUnreadInboxNotification (message: DisplayActivityMessage): Promise<void> {
+  const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
+  const combinedIds =
+    message._class === notification.class.DocUpdateMessage
+      ? (message as DisplayDocUpdateMessage).combinedMessagesIds
+      : undefined
+  const ids: Array<Ref<ActivityMessage>> = [message._id, ...(combinedIds ?? [])]
+
+  await inboxNotificationsClient.unreadMessages(ids)
+}
+
+export async function deleteChatMessage (message: ChatMessage): Promise<void> {
+  const client = getClient()
+  const notifications = await client.findAll(notification.class.InboxNotification, { attachedTo: message._id })
+
+  await Promise.all([
+    client.remove(message),
+    ...notifications.map(async (notification) => await client.remove(notification))
+  ])
+}
+
+export async function deleteInboxNotification (message: DisplayActivityMessage): Promise<void> {
+  const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
+  const combinedIds =
+    message._class === notification.class.DocUpdateMessage
+      ? (message as DisplayDocUpdateMessage).combinedMessagesIds
+      : undefined
+  const ids: Array<Ref<ActivityMessage>> = [message._id, ...(combinedIds ?? [])]
+
+  await inboxNotificationsClient.deleteMessagesNotifications(ids)
+}
+
+export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
+  if (loc.path[2] !== inboxId) {
+    return undefined
+  }
+
+  const availableSpecies = ['all', 'reactions']
+  const special = loc.path[3]
+
+  if (!availableSpecies.includes(special)) {
+    return {
+      loc: {
+        path: [loc.path[0], loc.path[1], inboxId, 'all'],
+        fragment: undefined
+      },
+      defaultLocation: {
+        path: [loc.path[0], loc.path[1], inboxId, 'all'],
+        fragment: undefined
+      }
+    }
+  }
+
+  const _id = loc.path[4] as Ref<ActivityMessage> | undefined
+
+  if (_id !== undefined) {
+    return await generateLocation(loc, _id)
+  }
+}
+
+async function generateLocation (loc: Location, _id: Ref<ActivityMessage>): Promise<ResolvedLocation | undefined> {
+  const client = getClient()
+
+  const appComponent = loc.path[0] ?? ''
+  const workspace = loc.path[1] ?? ''
+  const special = loc.path[3]
+
+  const availableSpecies = ['all', 'reactions']
+
+  if (!availableSpecies.includes(special)) {
+    return {
+      loc: {
+        path: [appComponent, workspace, inboxId, 'all'],
+        fragment: undefined
+      },
+      defaultLocation: {
+        path: [appComponent, workspace, inboxId, 'all'],
+        fragment: undefined
+      }
+    }
+  }
+
+  const message = await client.findOne(notification.class.ActivityMessage, { _id })
+
+  if (message === undefined) {
+    return {
+      loc: {
+        path: [appComponent, workspace, inboxId, special],
+        fragment: undefined
+      },
+      defaultLocation: {
+        path: [appComponent, workspace, inboxId, special],
+        fragment: undefined
+      }
+    }
+  }
+
+  return {
+    loc: {
+      path: [appComponent, workspace, inboxId, special, _id],
+      fragment: undefined
+    },
+    defaultLocation: {
+      path: [appComponent, workspace, inboxId, special, _id],
+      fragment: undefined
+    }
+  }
 }

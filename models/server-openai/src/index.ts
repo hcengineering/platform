@@ -22,8 +22,8 @@ import core, { DOMAIN_CONFIGURATION } from '@hcengineering/core'
 import openai, { type OpenAIConfiguration } from '@hcengineering/openai/src/plugin'
 import serverCore from '@hcengineering/server-core'
 
-import chunter from '@hcengineering/model-chunter'
 import recruit from '@hcengineering/model-recruit'
+import notification from '@hcengineering/notification'
 
 export { openAIId } from '@hcengineering/openai/src/plugin'
 
@@ -49,7 +49,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: openai.trigger.AsyncOnGPTRequest,
     txMatch: {
-      objectClass: { $in: [chunter.class.Comment, recruit.class.ApplicantMatch] },
+      objectClass: { $in: [notification.class.ChatMessage, recruit.class.ApplicantMatch] },
       _class: core.class.TxCreateDoc
     }
   })

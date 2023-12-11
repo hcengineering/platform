@@ -705,3 +705,15 @@ export interface ComponentToUpdate {
   ref: Ref<Component>
   create?: boolean
 }
+
+export async function getComponentTitle (client: TxOperations, ref: Ref<Component>): Promise<string> {
+  const object = await client.findOne(tracker.class.Component, { _id: ref })
+
+  return object?.label ?? ''
+}
+
+export async function getMilestoneTitle (client: TxOperations, ref: Ref<Milestone>): Promise<string> {
+  const object = await client.findOne(tracker.class.Milestone, { _id: ref })
+
+  return object?.label ?? ''
+}

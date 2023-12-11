@@ -20,12 +20,15 @@
 
   import chunter from '../plugin'
   import { updateDocReactions } from '../utils'
+  import { createEventDispatcher } from 'svelte'
 
   export let object: Doc | undefined = undefined
 
   const client = getClient()
 
   const reactionsQuery = createQuery()
+  const dispatch = createEventDispatcher()
+
   let reactions: Reaction[] = []
 
   $: if (object) {
@@ -35,11 +38,15 @@
   }
 
   function openEmojiPalette (ev: Event) {
+    dispatch('open')
     showPopup(
       EmojiPopup,
       {},
       ev.target as HTMLElement,
-      (emoji: string) => updateDocReactions(client, reactions, object, emoji),
+      (emoji: string) => {
+        updateDocReactions(client, reactions, object, emoji)
+        dispatch('close')
+      },
       () => {}
     )
   }

@@ -14,17 +14,12 @@
 //
 
 import attachment, { type Attachment } from '@hcengineering/attachment'
-import {
-  type ObjQueryType,
-  SortingOrder,
-  type SortingQuery,
-  type Markup,
-  type Ref,
-  type Doc
-} from '@hcengineering/core'
+import { type ObjQueryType, SortingOrder, type SortingQuery, type Markup } from '@hcengineering/core'
 import { type IntlString, type Resources } from '@hcengineering/platform'
 import preference from '@hcengineering/preference'
 import { getClient } from '@hcengineering/presentation'
+import notification, { type ActivityMessage, type DocUpdateMessage } from '@hcengineering/notification'
+
 import TxAttachmentCreate from './components/activity/TxAttachmentCreate.svelte'
 import AddAttachment from './components/AddAttachment.svelte'
 import AttachmentDocList from './components/AttachmentDocList.svelte'
@@ -44,8 +39,8 @@ import AccordionEditor from './components/AccordionEditor.svelte'
 import IconUploadDuo from './components/icons/UploadDuo.svelte'
 import IconAttachment from './components/icons/Attachment.svelte'
 import { deleteFile, uploadFile } from './utils'
-import { type DisplayTx } from '@hcengineering/activity'
 import AttachmentPreview from './components/AttachmentPreview.svelte'
+import NotificationAttachmentChanged from './components/notification/NotificationAttachmentChanged.svelte'
 
 export {
   AddAttachment,
@@ -239,8 +234,12 @@ export async function DeleteAttachment (attach: Attachment): Promise<void> {
   )
 }
 
-export function attachmentsFilter (tx: DisplayTx, _class?: Ref<Doc>): boolean {
-  return tx.tx.objectClass === attachment.class.Attachment
+export function attachmentsFilter (message: ActivityMessage): boolean {
+  if (message._class === notification.class.DocUpdateMessage) {
+    return (message as DocUpdateMessage).objectClass === attachment.class.Attachment
+  }
+
+  return false
 }
 
 export default async (): Promise<Resources> => ({
@@ -254,6 +253,9 @@ export default async (): Promise<Resources> => ({
     Attachments,
     FileBrowser,
     Photos
+  },
+  notification: {
+    NotificationAttachmentChanged
   },
   activity: {
     TxAttachmentCreate

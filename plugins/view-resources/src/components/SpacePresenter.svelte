@@ -17,8 +17,11 @@
   import type { Space } from '@hcengineering/core'
 
   export let value: Space
+  export let accent = false
 </script>
 
 {#if value}
-  {value.name}
+  <span class:fs-bold={accent}>
+    {value.name}
+  </span>
 {/if}

@@ -22,6 +22,7 @@ import {
   DocumentQuery,
   Mixin,
   Ref,
+  SortingOrder,
   Space,
   Timestamp,
   Tx,
@@ -29,10 +30,11 @@ import {
 } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { Preference } from '@hcengineering/preference'
 import { IntegrationType } from '@hcengineering/setting'
-import { AnyComponent } from '@hcengineering/ui'
-import { Writable } from './types'
+import { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui'
+import { Readable, Writable } from './types'
+import { Preference } from '@hcengineering/preference'
+import { Action } from '@hcengineering/view'
 export * from './types'
 
 /**
@@ -194,6 +196,11 @@ export const notificationId = 'notification' as Plugin
 /**
  * @public
  */
+export const inboxId = 'inbox' as Plugin
+
+/**
+ * @public
+ */
 export interface NotificationClient {
   docUpdatesStore: Writable<Map<Ref<Doc>, DocUpdates>>
   docUpdates: Writable<DocUpdates[]>
@@ -216,12 +223,197 @@ export type NotificationClientFactoy = () => NotificationClient
 /**
  * @public
  */
+export interface ActivityMessage extends AttachedDoc {
+  modifiedBy: Ref<Account>
+  modifiedOn: Timestamp
+
+  isPinned?: boolean
+
+  reactions?: number
+}
+
+export type DisplayActivityMessage = DisplayDocUpdateMessage | ChatMessage
+
+export interface DisplayDocUpdateMessage extends DocUpdateMessage {
+  previousMessages?: DocUpdateMessage[]
+  combinedMessagesIds?: Ref<DocUpdateMessage>[]
+}
+
+export type ActivityMessageExtensionKind = 'action' | 'footer'
+
+/**
+ * @public
+ */
+export interface ActivityMessageExtension extends Doc {
+  ofMessage: Ref<Class<ActivityMessage>>
+  components: { kind: ActivityMessageExtensionKind, component: AnyComponent }[]
+}
+
+/**
+ * @public
+ */
+export interface DocUpdateMessage extends ActivityMessage {
+  objectId: Ref<Doc>
+  objectClass: Ref<Class<Doc>>
+
+  txId: Ref<TxCUD<Doc>>
+
+  action: DocUpdateAction
+  updateCollection?: string
+  attributeUpdates?: DocAttributeUpdates
+}
+
+/**
+ * @public
+ */
+export interface DocAttributeUpdates {
+  attrKey: string
+  attrClass: Ref<Class<Doc>>
+  set: (string | number | null)[]
+  prevValue?: any // Need for description diff
+  added: (string | number | null)[]
+  removed: (string | number | null)[]
+  isMixin: boolean
+}
+
+export type DocUpdateAction = 'create' | 'update' | 'remove'
+
+/**
+ * @public
+ */
+export interface ChatMessage extends ActivityMessage {
+  message: string
+  attachments?: number
+  isEdited?: boolean
+}
+
+/**
+ * @public
+ */
+export interface InboxNotification extends Doc {
+  user: Ref<Account>
+  isViewed: boolean
+
+  attachedTo: Ref<ActivityMessage>
+  attachedToClass: Ref<Class<ActivityMessage>>
+
+  docNotifyContext: Ref<DocNotifyContext>
+}
+
+/**
+ * @public
+ */
+export interface DocNotifyContext extends Doc {
+  user: Ref<Account>
+
+  // Context
+  attachedTo: Ref<Doc>
+  attachedToClass: Ref<Class<Doc>>
+
+  hidden: boolean
+  lastViewedTimestamp?: Timestamp
+  lastUpdateTimestamp?: Timestamp
+}
+
+/**
+ * @public
+ */
+export interface InboxNotificationsClient {
+  docNotifyContextByDoc: Writable<Map<Ref<Doc>, DocNotifyContext>>
+  docNotifyContexts: Writable<DocNotifyContext[]>
+  inboxNotifications: Writable<InboxNotification[]>
+  inboxNotificationsByContext: Readable<Map<DocNotifyContext, InboxNotification[]>>
+  readDoc: (_id: Ref<Doc>) => Promise<void>
+  readMessages: (ids: Ref<ActivityMessage>[]) => Promise<void>
+  unreadMessages: (ids: Array<Ref<ActivityMessage>>) => Promise<void>
+  deleteMessagesNotifications: (ids: Array<Ref<ActivityMessage>>) => Promise<void>
+}
+
+export type DocUpdateMessageViewletAttributesConfig = Record<
+string,
+{
+  presenter?: AnyComponent
+  icon?: Asset
+  iconPresenter?: AnyComponent
+}
+>
+
+/**
+ * @public
+ */
+export interface DocUpdateMessageViewlet extends Doc {
+  objectClass: Ref<Class<Doc>>
+  action: DocUpdateAction
+  valueAttr?: string
+
+  label?: IntlString
+  labelComponent?: AnyComponent
+
+  icon?: Asset
+  component?: AnyComponent
+
+  config?: DocUpdateMessageViewletAttributesConfig
+
+  hideIfRemoved?: boolean
+  onlyWithParent?: boolean
+}
+
+/**
+ * @public
+ */
+export interface ChatMessageViewlet extends Doc {
+  objectClass: Ref<Class<Doc>>
+  label?: IntlString
+  hidden?: boolean
+  onlyWithParent?: boolean
+}
+
+/**
+ * @public
+ */
+export interface ActivityMessagesFilter extends Doc {
+  label: IntlString
+  filter: Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>
+}
+
+/**
+ * @public
+ */
+export interface ActivityDoc extends Class<Doc> {
+  ignoreCollections?: string[]
+}
+
+/**
+ * @public
+ */
+export type InboxNotificationsClientFactory = () => InboxNotificationsClient
+
+/**
+ * @public
+ */
+export interface NotificationObjectPreposition extends Class<Doc> {
+  preposition: IntlString
+}
+
+/**
+ * @public
+ */
+export interface NotificationAttributePresenter extends Class<Doc> {
+  presenter: AnyComponent
+}
+
+/**
+ * @public
+ */
 const notification = plugin(notificationId, {
   mixin: {
     ClassCollaborators: '' as Ref<Mixin<ClassCollaborators>>,
     Collaborators: '' as Ref<Mixin<Collaborators>>,
     NotificationObjectPresenter: '' as Ref<Mixin<NotificationObjectPresenter>>,
-    NotificationPreview: '' as Ref<Mixin<NotificationPreview>>
+    NotificationPreview: '' as Ref<Mixin<NotificationPreview>>,
+    ActivityDoc: '' as Ref<Mixin<ActivityDoc>>,
+    NotificationObjectPreposition: '' as Ref<Mixin<NotificationObjectPreposition>>,
+    NotificationAttributePresenter: '' as Ref<Mixin<NotificationAttributePresenter>>
   },
   class: {
     Notification: '' as Ref<Class<Notification>>,
@@ -230,7 +422,16 @@ const notification = plugin(notificationId, {
     NotificationSetting: '' as Ref<Class<NotificationSetting>>,
     DocUpdates: '' as Ref<Class<DocUpdates>>,
     NotificationGroup: '' as Ref<Class<NotificationGroup>>,
-    NotificationPreferencesGroup: '' as Ref<Class<NotificationPreferencesGroup>>
+    NotificationPreferencesGroup: '' as Ref<Class<NotificationPreferencesGroup>>,
+    DocNotifyContext: '' as Ref<Class<DocNotifyContext>>,
+    DocUpdateMessage: '' as Ref<Class<DocUpdateMessage>>,
+    ChatMessage: '' as Ref<Class<ChatMessage>>,
+    ActivityMessage: '' as Ref<Class<ActivityMessage>>,
+    InboxNotification: '' as Ref<Class<InboxNotification>>,
+    DocUpdateMessageViewlet: '' as Ref<Class<DocUpdateMessageViewlet>>,
+    ChatMessageViewlet: '' as Ref<Class<ChatMessageViewlet>>,
+    ActivityMessageExtension: '' as Ref<Class<ActivityMessageExtension>>,
+    ActivityMessagesFilter: '' as Ref<Class<ActivityMessagesFilter>>
   },
   ids: {
     NotificationSettings: '' as Ref<Doc>,
@@ -247,14 +448,31 @@ const notification = plugin(notificationId, {
   },
   component: {
     Inbox: '' as AnyComponent,
-    NotificationPresenter: '' as AnyComponent
+    NewInbox: '' as AnyComponent,
+    NotificationPresenter: '' as AnyComponent,
+    ActivityMessagePresenter: '' as AnyComponent,
+    ChatMessageInput: '' as AnyComponent,
+    NotificationCollaboratorsChanged: '' as AnyComponent,
+    ChatMessagesPresenter: '' as AnyComponent
+  },
+  activity: {
+    TxCollaboratorsChange: '' as AnyComponent
+  },
+  action: {
+    MarkAsUnreadInboxNotification: '' as Ref<Action>,
+    MarkAsReadInboxNotification: '' as Ref<Action>,
+    DeleteInboxNotification: '' as Ref<Action>,
+    DeleteChatMessage: '' as Ref<Action>
   },
   icon: {
     Notifications: '' as Asset,
     Inbox: '' as Asset,
     Track: '' as Asset,
     DontTrack: '' as Asset,
-    Hide: '' as Asset
+    Hide: '' as Asset,
+    Activity: '' as Asset,
+    Emoji: '' as Asset,
+    Thread: '' as Asset
   },
   space: {
     Notifications: '' as Ref<Space>
@@ -265,10 +483,47 @@ const notification = plugin(notificationId, {
     DontTrack: '' as IntlString,
     Inbox: '' as IntlString,
     CommonNotificationTitle: '' as IntlString,
-    CommonNotificationBody: '' as IntlString
+    CommonNotificationBody: '' as IntlString,
+    Created: '' as IntlString,
+    Changed: '' as IntlString,
+    To: '' as IntlString,
+    Unset: '' as IntlString,
+    Set: '' as IntlString,
+    Updated: '' as IntlString,
+    UpdatedCollection: '' as IntlString,
+    Added: '' as IntlString,
+    Removed: '' as IntlString,
+    From: '' as IntlString,
+    Attributes: '' as IntlString,
+    In: '' as IntlString,
+    New: '' as IntlString,
+    For: '' as IntlString,
+    Edit: '' as IntlString,
+    Update: '' as IntlString,
+    Edited: '' as IntlString,
+    ChangedCollaborators: '' as IntlString,
+    NewCollaborators: '' as IntlString,
+    RemovedCollaborators: '' as IntlString,
+    Comments: '' as IntlString,
+    NewestFirst: '' as IntlString,
+    LeftComment: '' as IntlString,
+    Pinned: '' as IntlString
   },
   function: {
-    GetNotificationClient: '' as Resource<NotificationClientFactoy>
+    GetNotificationClient: '' as Resource<NotificationClientFactoy>,
+    GetInboxNotificationsClient: '' as Resource<InboxNotificationsClientFactory>,
+    CombineActivityMessages: '' as Resource<
+    (messages: ActivityMessage[], order: SortingOrder) => DisplayActivityMessage[]
+    >,
+    SortActivityMessages: '' as Resource<(messages: ActivityMessage[], order: SortingOrder) => ActivityMessage[]>
+  },
+  resolver: {
+    Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
+  },
+  filter: {
+    AttributesFilter: '' as Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>,
+    ChatMessagesFilter: '' as Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>,
+    PinnedFilter: '' as Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>
   }
 })
 

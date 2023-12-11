@@ -41,7 +41,6 @@ import {
   UX
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
-import chunter from '@hcengineering/model-chunter'
 import core, { TAttachedDoc, TDoc, TStatus, TType } from '@hcengineering/model-core'
 import task, { TTask, TProject as TTaskProject } from '@hcengineering/model-task'
 import { type IntlString } from '@hcengineering/platform'
@@ -65,6 +64,7 @@ import {
   type TimeSpendReport
 } from '@hcengineering/tracker'
 import tracker from './plugin'
+import notification from '@hcengineering/notification'
 
 export const DOMAIN_TRACKER = 'tracker' as Domain
 
@@ -252,7 +252,7 @@ export class TIssue extends TTask implements Issue {
  */
 
 @Model(tracker.class.IssueTemplate, core.class.Doc, DOMAIN_TRACKER)
-@UX(tracker.string.IssueTemplate, tracker.icon.Issue, 'PROCESS')
+@UX(tracker.string.IssueTemplate, tracker.icon.IssueTemplates, 'PROCESS')
 export class TIssueTemplate extends TDoc implements IssueTemplate {
   @Prop(TypeString(), tracker.string.Title)
   @Index(IndexKind.FullText)
@@ -288,7 +288,7 @@ export class TIssueTemplate extends TDoc implements IssueTemplate {
   @Prop(ArrOf(TypeRef(tracker.class.IssueTemplate)), tracker.string.IssueTemplate)
     children!: IssueTemplateChild[]
 
-  @Prop(Collection(chunter.class.Comment), tracker.string.Comments)
+  @Prop(Collection(notification.class.ChatMessage), tracker.string.Comments)
     comments!: number
 
   @Prop(Collection(attachment.class.Attachment), tracker.string.Attachments)
@@ -336,7 +336,7 @@ export class TComponent extends TDoc implements Component {
   @Prop(TypeRef(contact.mixin.Employee), tracker.string.ComponentLead)
     lead!: Ref<Employee> | null
 
-  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
+  @Prop(Collection(notification.class.ChatMessage), notification.string.Comments)
     comments!: number
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
@@ -362,7 +362,7 @@ export class TMilestone extends TDoc implements Milestone {
   @Index(IndexKind.Indexed)
     status!: MilestoneStatus
 
-  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
+  @Prop(Collection(notification.class.ChatMessage), notification.string.Comments)
     comments!: number
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })

@@ -1,5 +1,5 @@
-import chunter, { Comment } from '@hcengineering/chunter'
 import { AttachedData, Class, Doc, generateId, Ref, Space, TxOperations } from '@hcengineering/core'
+import notification, { ChatMessage } from '@hcengineering/notification'
 import faker from 'faker'
 
 export interface CommentOptions {
@@ -20,17 +20,25 @@ export async function addComments<T extends Doc> (
 ): Promise<void> {
   const commentsCount = options.min + faker.datatype.number(options.max)
   for (let i = 0; i < commentsCount; i++) {
-    const commentId = `candidate-comment-${generateId()}-${i}` as Ref<Comment>
+    const commentId = `candidate-comment-${generateId()}-${i}` as Ref<ChatMessage>
 
-    const commentData: AttachedData<Comment> = {
+    const commentData: AttachedData<ChatMessage> = {
       message: faker.lorem.paragraphs(options.paragraphMin + faker.datatype.number(options.paragraphMax))
     }
-    await client.addCollection(chunter.class.Comment, space, objectId, _class, collection, commentData, commentId)
+    await client.addCollection(
+      notification.class.ChatMessage,
+      space,
+      objectId,
+      _class,
+      collection,
+      commentData,
+      commentId
+    )
 
     if (faker.datatype.number(100) > options.updateFactor) {
       const updateMsg = faker.lorem.paragraphs(options.paragraphMin + faker.datatype.number(options.paragraphMax))
 
-      await client.updateCollection(chunter.class.Comment, space, commentId, objectId, _class, collection, {
+      await client.updateCollection(notification.class.ChatMessage, space, commentId, objectId, _class, collection, {
         message: updateMsg
       })
     }

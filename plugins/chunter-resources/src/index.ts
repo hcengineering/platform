@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type DisplayTx } from '@hcengineering/activity'
+import { writable } from 'svelte/store'
 import chunter, {
   type Backlink,
   type Channel,
@@ -21,8 +21,7 @@ import chunter, {
   type ChunterSpace,
   type DirectMessage,
   type Message,
-  type ThreadMessage,
-  type Comment
+  type ThreadMessage
 } from '@hcengineering/chunter'
 import core, {
   type Data,
@@ -38,17 +37,14 @@ import { type IntlString, type Resources, translate } from '@hcengineering/platf
 import preference from '@hcengineering/preference'
 import { MessageBox, getClient } from '@hcengineering/presentation'
 import { getLocation, navigate, showPopup } from '@hcengineering/ui'
+import notification, { type ActivityMessage, type DocUpdateMessage } from '@hcengineering/notification'
+
 import ChannelHeader from './components/ChannelHeader.svelte'
 import ChannelPresenter from './components/ChannelPresenter.svelte'
 import ChannelView from './components/ChannelView.svelte'
 import ChannelViewPanel from './components/ChannelViewPanel.svelte'
 import ChunterBrowser from './components/ChunterBrowser.svelte'
-import CommentInput from './components/CommentInput.svelte'
-import CommentPopup from './components/CommentPopup.svelte'
-import CommentPresenter from './components/CommentPresenter.svelte'
-import CommentsPresenter from './components/CommentsPresenter.svelte'
 import Reactions from './components/Reactions.svelte'
-import CommentPanel from './components/CommentPanel.svelte'
 import ConvertDmToPrivateChannelModal from './components/ConvertDmToPrivateChannel.svelte'
 import CreateChannel from './components/CreateChannel.svelte'
 import CreateDirectMessage from './components/CreateDirectMessage.svelte'
@@ -66,22 +62,22 @@ import ThreadView from './components/ThreadView.svelte'
 import ThreadViewPanel from './components/ThreadViewPanel.svelte'
 import Thread from './components/Thread.svelte'
 import Threads from './components/Threads.svelte'
-import TxBacklinkCreate from './components/activity/TxBacklinkCreate.svelte'
-import TxBacklinkReference from './components/activity/TxBacklinkReference.svelte'
+import BacklinkContent from './components/BacklinkContent.svelte'
+import BacklinkReference from './components/BacklinkReference.svelte'
 import TxCommentCreate from './components/activity/TxCommentCreate.svelte'
 import TxMessageCreate from './components/activity/TxMessageCreate.svelte'
 import ReactionsAction from './components/ReactionsAction.svelte'
-import CommentReactions from './components/CommentReactions.svelte'
-import PinComment from './components/PinComment.svelte'
+import ReactionsPresenter from './components/ReactionsPresenter.svelte'
+import NotificationReactionCreated from './components/notification/NotificationReactionCreated.svelte'
+import ActivityMessageReactionsAction from './components/notification/ActivityMessageReactionsAction.svelte'
+import NotificationBacklinkLabel from './components/notification/NotificationBacklinkLabel.svelte'
 
-import notification from '@hcengineering/notification'
-import { writable } from 'svelte/store'
 import { updateBacklinksList } from './backlinks'
 import { getDmName, getLink, getTitle, resolveLocation } from './utils'
 
 export { default as Header } from './components/Header.svelte'
 export { classIcon } from './utils'
-export { CommentPopup, CommentsPresenter, Thread }
+export { Thread }
 
 async function MarkUnread (object: Message): Promise<void> {
   const client = NotificationClientImpl.getClient()
@@ -271,26 +267,18 @@ async function update (source: Doc, key: string, target: RelatedDocument[], msg:
   await updateBacklinksList(getClient(), q, backlinks)
 }
 
-export function commentsFilter (tx: DisplayTx, _class?: Ref<Doc>): boolean {
-  return tx.tx.objectClass === chunter.class.Comment
-}
-
-export function pinnedCommentsFilter (tx: DisplayTx, _class?: Ref<Doc>): boolean {
-  return tx.tx.objectClass === chunter.class.Comment && (tx.doc as Comment)?.pinned === true
-}
-
-export function backlinksFilter (tx: DisplayTx, _class?: Ref<Doc>): boolean {
-  return tx.tx.objectClass === chunter.class.Backlink
+export function backlinksFilter (message: ActivityMessage, _class?: Ref<Doc>): boolean {
+  if (message._class === notification.class.DocUpdateMessage) {
+    return (message as DocUpdateMessage).objectClass === chunter.class.Backlink
+  }
+  return false
 }
 
 export default async (): Promise<Resources> => ({
   filter: {
-    CommentsFilter: commentsFilter,
-    PinnedCommentsFilter: pinnedCommentsFilter,
     BacklinksFilter: backlinksFilter
   },
   component: {
-    CommentInput,
     CreateChannel,
     CreateDirectMessage,
     ThreadParentPresenter,
@@ -298,8 +286,6 @@ export default async (): Promise<Resources> => ({
     ChannelHeader,
     ChannelView,
     ChannelViewPanel,
-    CommentPresenter,
-    CommentsPresenter,
     Reactions,
     ChannelPresenter,
     DirectMessagePresenter,
@@ -315,10 +301,13 @@ export default async (): Promise<Resources> => ({
     Threads,
     ThreadView,
     SavedMessages,
-    CommentPanel,
     ReactionsAction,
-    CommentReactions,
-    PinComment
+    ReactionsPresenter,
+    BacklinkContent,
+    NotificationReactionCreated,
+    ActivityMessageReactionsAction,
+    NotificationBacklinkLabel,
+    BacklinkReference
   },
   function: {
     GetDmName: getDmName,
@@ -328,8 +317,6 @@ export default async (): Promise<Resources> => ({
   },
   activity: {
     TxCommentCreate,
-    TxBacklinkCreate,
-    TxBacklinkReference,
     TxMessageCreate
   },
   actionImpl: {

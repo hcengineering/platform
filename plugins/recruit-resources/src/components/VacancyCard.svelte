@@ -14,7 +14,6 @@
 -->
 <script lang="ts">
   import attachment from '@hcengineering/attachment'
-  import chunter from '@hcengineering/chunter'
   import contact, { Channel, Organization } from '@hcengineering/contact'
   import { ChannelsEditor } from '@hcengineering/contact-resources'
   import { Ref, WithLookup } from '@hcengineering/core'
@@ -24,6 +23,7 @@
   import { NavLink } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import VacancyIcon from './icons/Vacancy.svelte'
+  import notification from '@hcengineering/notification'
 
   export let vacancy: WithLookup<Vacancy> | undefined
   export let disabled: boolean = false
@@ -97,8 +97,8 @@
     <div class="footer">
       <div class="flex-row-center gap-2">
         <Component
-          is={chunter.component.CommentsPresenter}
-          props={{ value: vacancy.comments, object: vacancy, size: 'small', showCounter: true }}
+          is={notification.component.ChatMessagesPresenter}
+          props={{ value: vacancy, size: 'small', showCounter: true }}
         />
         <Component
           is={attachment.component.AttachmentsPresenter}

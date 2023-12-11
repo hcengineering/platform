@@ -68,7 +68,11 @@ export default plugin(telegramId, {
     Chat: '' as AnyComponent,
     Connect: '' as AnyComponent,
     Reconnect: '' as AnyComponent,
-    IconTelegram: '' as AnyComponent
+    IconTelegram: '' as AnyComponent,
+    SharedMessages: '' as AnyComponent
+  },
+  notification: {
+    NotificationMessageCreated: '' as AnyComponent
   },
   integrationType: {
     Telegram: '' as Ref<IntegrationType>

@@ -15,22 +15,66 @@
 //
 
 import { type Resources } from '@hcengineering/platform'
+
 import Inbox from './components/Inbox.svelte'
+import NewInbox from './components/inbox/Inbox.svelte'
 import NotificationSettings from './components/NotificationSettings.svelte'
 import NotificationPresenter from './components/NotificationPresenter.svelte'
 import TxCollaboratorsChange from './components/activity/TxCollaboratorsChange.svelte'
 import TxDmCreation from './components/activity/TxDmCreation.svelte'
-import { NotificationClientImpl, hasntNotifications, hide, markAsUnread, unsubscribe } from './utils'
+import ActivityMessagePresenter from './components/activity-message/ActivityMessagePresenter.svelte'
+import InboxAside from './components/inbox/InboxAside.svelte'
+import ChatMessagePresenter from './components/chat-message/ChatMessagePresenter.svelte'
+import DocUpdateMessagePresenter from './components/doc-update-message/DocUpdateMessagePresenter.svelte'
+import ChatMessageInput from './components/chat-message/ChatMessageInput.svelte'
+import PinMessageAction from './components/activity-message/PinMessageAction.svelte'
+import NotificationCollaboratorsChanged from './components/NotificationCollaboratorsChanged.svelte'
+import ChatMessagesPresenter from './components/chat-message/ChatMessagesPresenter.svelte'
+import {
+  NotificationClientImpl,
+  hasntNotifications,
+  hide,
+  markAsUnread,
+  unsubscribe,
+  resolveLocation,
+  markAsReadInboxNotification,
+  markAsUnreadInboxNotification,
+  deleteInboxNotification,
+  hasntInboxNotifications,
+  hasInboxNotifications,
+  deleteChatMessage
+} from './utils'
+import {
+  attributesFilter,
+  chatMessagesFilter,
+  combineActivityMessages,
+  pinnedFilter,
+  sortActivityMessages
+} from './activityMessagesUtils'
+import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
 
 export * from './utils'
+export * from './inboxNotificationsClient'
+export * from './activityMessagesUtils'
 
+export { default as ChatMessagesPresenter } from './components/chat-message/ChatMessagesPresenter.svelte'
+export { default as ChatMessagePopup } from './components/chat-message/ChatMessagePopup.svelte'
 export { default as BrowserNotificatator } from './components/BrowserNotificatator.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
     Inbox,
+    NewInbox,
     NotificationPresenter,
-    NotificationSettings
+    NotificationSettings,
+    InboxAside,
+    ActivityMessagePresenter,
+    DocUpdateMessagePresenter,
+    ChatMessagePresenter,
+    ChatMessageInput,
+    PinMessageAction,
+    NotificationCollaboratorsChanged,
+    ChatMessagesPresenter
   },
   activity: {
     TxCollaboratorsChange,
@@ -39,11 +83,29 @@ export default async (): Promise<Resources> => ({
   function: {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     GetNotificationClient: NotificationClientImpl.getClient,
-    HasntNotifications: hasntNotifications
+    HasntNotifications: hasntNotifications,
+    HasntInboxNotifications: hasntInboxNotifications,
+    HasInboxNotifications: hasInboxNotifications,
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    GetInboxNotificationsClient: InboxNotificationsClientImpl.getClient,
+    CombineActivityMessages: combineActivityMessages,
+    SortActivityMessages: sortActivityMessages
   },
   actionImpl: {
     Unsubscribe: unsubscribe,
     Hide: hide,
-    MarkAsUnread: markAsUnread
+    MarkAsUnread: markAsUnread,
+    MarkAsReadInboxNotification: markAsReadInboxNotification,
+    MarkAsUnreadInboxNotification: markAsUnreadInboxNotification,
+    DeleteInboxNotification: deleteInboxNotification,
+    DeleteChatMessage: deleteChatMessage
+  },
+  resolver: {
+    Location: resolveLocation
+  },
+  filter: {
+    AttributesFilter: attributesFilter,
+    PinnedFilter: pinnedFilter,
+    ChatMessagesFilter: chatMessagesFilter
   }
 })

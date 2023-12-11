@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import { get, writable } from 'svelte/store'
 import {
   type Attribute,
   type Class,
@@ -31,7 +32,7 @@ import task, { type Project, type ProjectType, type Task, calcRank } from '@hcen
 import { getCurrentLocation, navigate, showPopup } from '@hcengineering/ui'
 import { type ViewletDescriptor } from '@hcengineering/view'
 import { CategoryQuery, statusStore } from '@hcengineering/view-resources'
-import { get, writable } from 'svelte/store'
+
 import AssignedTasks from './components/AssignedTasks.svelte'
 import CreateStatePopup from './components/CreateStatePopup.svelte'
 import Dashboard from './components/Dashboard.svelte'
@@ -55,6 +56,7 @@ import TodoItemPresenter from './components/todos/TodoItemPresenter.svelte'
 import TodoItemsPopup from './components/todos/TodoItemsPopup.svelte'
 import TodoStatePresenter from './components/todos/TodoStatePresenter.svelte'
 import Todos from './components/todos/Todos.svelte'
+import StateIconPresenter from './components/state/StateIconPresenter.svelte'
 
 export { default as AssigneePresenter } from './components/AssigneePresenter.svelte'
 export { StateRefPresenter, StatePresenter, TypeStatesPopup }
@@ -120,6 +122,7 @@ export default async (): Promise<Resources> => ({
     StatusSelector,
     TemplatesIcon,
     TypesView,
+    StateIconPresenter,
     StatusFilter
   },
   actionImpl: {

@@ -19,13 +19,13 @@
   import { LinkPresenter } from '@hcengineering/view-resources'
   import { AttachmentList } from '@hcengineering/attachment-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { Ref, WithLookup, getCurrentAccount } from '@hcengineering/core'
+  import { Ref, WithLookup, getCurrentAccount, getDisplayTime } from '@hcengineering/core'
   import { Attachment } from '@hcengineering/attachment'
   import { EmployeePresenter, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
   import { PersonAccount } from '@hcengineering/contact'
 
   import chunter from '../plugin'
-  import { getLinks, getTime } from '../utils'
+  import { getLinks } from '../utils'
 
   export let value: WithLookup<ChunterMessage>
 
@@ -51,9 +51,9 @@
           <Label label={chunter.string.You} />
         {/if}
       {/if}
-      <span>{getTime(value.createdOn ?? 0)}</span>
+      <span>{getDisplayTime(value.createdOn ?? 0)}</span>
       {#if value.editedOn}
-        <span use:tooltip={{ label: ui.string.TimeTooltip, props: { value: getTime(value.editedOn) } }}>
+        <span use:tooltip={{ label: ui.string.TimeTooltip, props: { value: getDisplayTime(value.editedOn) } }}>
           <Label label={getEmbeddedLabel('Edited')} />
         </span>
       {/if}

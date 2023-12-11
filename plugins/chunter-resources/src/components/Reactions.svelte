@@ -13,15 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Reaction } from '@hcengineering/chunter'
-  import { Account, Ref } from '@hcengineering/core'
-  import { tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import { Reaction } from '@hcengineering/chunter'
+  import { Account, Doc, Ref } from '@hcengineering/core'
+  import { EmojiPopup, IconAdd, showPopup, tooltip } from '@hcengineering/ui'
+  import { getClient } from '@hcengineering/presentation'
+
   import ReactionsTooltip from './ReactionsTooltip.svelte'
+  import { updateDocReactions } from '../utils'
 
   export let reactions: Reaction[] = []
+  export let object: Doc | undefined = undefined
 
   const dispatch = createEventDispatcher()
+  const client = getClient()
 
   let reactionsAccounts = new Map<string, Ref<Account>[]>()
   $: {
@@ -33,25 +38,43 @@
     })
     reactionsAccounts = reactionsAccounts
   }
+  function getClickHandler (emoji: string) {
+    return (e: CustomEvent) => {
+      e.stopPropagation()
+      e.preventDefault()
+      dispatch('click', emoji)
+    }
+  }
+
+  function openEmojiPalette (ev: Event) {
+    showPopup(EmojiPopup, {}, ev.target as HTMLElement, (emoji: string) => {
+      updateDocReactions(client, reactions, object, emoji)
+    })
+  }
 </script>
 
 <div class="container">
   {#each [...reactionsAccounts] as [emoji, accounts]}
-    <div class="reaction over-underline">
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <div
-        class="flex-row-center"
-        use:tooltip={{ component: ReactionsTooltip, props: { reactionAccounts: accounts } }}
-        on:click={() => {
-          dispatch('click', emoji)
-        }}
-      >
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <div
+      class="item border-radius-1"
+      use:tooltip={{ component: ReactionsTooltip, props: { reactionAccounts: accounts } }}
+      on:click={getClickHandler(emoji)}
+    >
+      <div class="flex-row-center">
         <div>{emoji}</div>
         <div class="caption-color counter">{accounts.length}</div>
       </div>
     </div>
   {/each}
+  {#if object && reactionsAccounts.size > 0}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <div class="item flex-row-center border-radius-1" class:withoutBackground={true} on:click={openEmojiPalette}>
+      <IconAdd size="small" />
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">
@@ -59,11 +82,32 @@
     display: flex;
     flex-wrap: wrap;
     user-select: none;
-    column-gap: 1rem;
+    column-gap: 0.125rem;
     row-gap: 0.25rem;
+  }
 
-    .counter {
-      margin-left: 0.25rem;
+  .counter {
+    font-size: 0.75rem;
+    color: var(--theme-dark-color);
+    margin-left: 0.25rem;
+  }
+
+  .item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.625rem;
+    height: 1.5rem;
+    background: var(--secondary-button-disabled);
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+      border: 1px solid var(--theme-darker-color);
+    }
+
+    &.withoutBackground {
+      background: transparent;
     }
   }
 </style>

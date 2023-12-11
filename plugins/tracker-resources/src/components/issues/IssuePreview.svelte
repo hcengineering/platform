@@ -15,12 +15,13 @@
 <script lang="ts">
   import attachment from '@hcengineering/attachment'
   import { AttachmentDocList } from '@hcengineering/attachment-resources'
-  import chunter from '@hcengineering/chunter'
-  import { CommentPopup } from '@hcengineering/chunter-resources'
+  import notification from '@hcengineering/notification'
   import { Ref } from '@hcengineering/core'
   import { IconForward, MessageViewer, createQuery, getClient } from '@hcengineering/presentation'
   import { Issue, Project } from '@hcengineering/tracker'
   import { Label, Scroller, resizeObserver } from '@hcengineering/ui'
+  import { ChatMessagePopup } from '@hcengineering/notification-resources'
+
   import tracker from '../../plugin'
   import { activeProjects } from '../../utils'
   import AssigneeEditor from './AssigneeEditor.svelte'
@@ -113,9 +114,9 @@
     {/if}
     {#if issue.comments}
       <div class="mt-6 mb-2 overflow-label fs-bold content-dark-color">
-        <Label label={chunter.string.Comments} />:
+        <Label label={notification.string.Comments} />:
       </div>
-      <CommentPopup objectId={issue._id} object={issue} />
+      <ChatMessagePopup objectId={issue._id} object={issue} />
     {/if}
     <div class="h-3 flex-no-shrink" />
   </Scroller>

@@ -43,7 +43,6 @@ import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
 import { type ViewOptionsModel } from '@hcengineering/view'
-import activity from '@hcengineering/activity'
 import lead from './plugin'
 
 export { leadId } from '@hcengineering/lead'
@@ -60,7 +59,7 @@ export class TFunnel extends TProject implements Funnel {
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
-  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
+  @Prop(Collection(notification.class.ChatMessage), notification.string.Comments)
     comments?: number
 }
 
@@ -102,6 +101,14 @@ export function createModel (builder: Builder): void {
   const archiveId = 'archive'
 
   builder.createModel(TFunnel, TLead, TCustomer)
+
+  builder.mixin(lead.class.Lead, core.class.Class, notification.mixin.ActivityDoc, {
+    ignoreCollections: ['comments']
+  })
+  builder.mixin(lead.mixin.Customer, core.class.Class, notification.mixin.ActivityDoc, {
+    ignoreCollections: ['comments']
+  })
+  builder.mixin(lead.class.Funnel, core.class.Class, notification.mixin.ActivityDoc, {})
 
   builder.mixin(lead.class.Funnel, core.class.Class, workbench.mixin.SpaceView, {
     view: {
@@ -511,15 +518,13 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    activity.class.ActivityExtension,
+    notification.class.ChatMessageViewlet,
     core.space.Model,
     {
-      ofClass: lead.class.Lead,
-      components: {
-        input: chunter.component.CommentInput
-      }
+      objectClass: lead.class.Lead,
+      label: chunter.string.LeftComment
     },
-    lead.ids.LeadActivityExtension
+    lead.ids.LeadChatMessageViewlet
   )
 
   builder.mixin(lead.class.Lead, core.class.Class, task.mixin.KanbanCard, {

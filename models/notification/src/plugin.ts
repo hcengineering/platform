@@ -15,7 +15,11 @@
 //
 
 import { type Doc, type Ref } from '@hcengineering/core'
-import notification, { notificationId } from '@hcengineering/notification'
+import notification, {
+  type ActivityMessageExtension,
+  type DocUpdateMessageViewlet,
+  notificationId
+} from '@hcengineering/notification'
 import { type IntlString, type Resource, mergeIds } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action, type ActionCategory, type ViewAction } from '@hcengineering/view'
@@ -29,24 +33,39 @@ export default mergeIds(notificationId, notification, {
     EmailNotification: '' as IntlString,
     Collaborators: '' as IntlString,
     Archive: '' as IntlString,
-    MarkAsUnread: '' as IntlString
+    MarkAsUnread: '' as IntlString,
+    MarkAsRead: '' as IntlString,
+    ChangeCollaborators: '' as IntlString,
+    AllActivity: '' as IntlString,
+    Threads: '' as IntlString,
+    Mentions: '' as IntlString,
+    Reactions: '' as IntlString
   },
   app: {
-    Notification: '' as Ref<Application>
+    Notification: '' as Ref<Application>,
+    Inbox: '' as Ref<Application>
   },
   activity: {
-    TxCollaboratorsChange: '' as AnyComponent,
     TxDmCreation: '' as AnyComponent
   },
   ids: {
     TxCollaboratorsChange: '' as Ref<TxViewlet>,
-    TxDmCreation: '' as Ref<TxViewlet>
+    TxDmCreation: '' as Ref<TxViewlet>,
+    NotificationCollaboratorsChanged: '' as Ref<DocUpdateMessageViewlet>,
+    DocUpdateMessagePinExtension: '' as Ref<ActivityMessageExtension>,
+    ChatMessagePinExtension: '' as Ref<ActivityMessageExtension>
   },
   component: {
-    NotificationSettings: '' as AnyComponent
+    NotificationSettings: '' as AnyComponent,
+    InboxAside: '' as AnyComponent,
+    ChatMessagePresenter: '' as AnyComponent,
+    DocUpdateMessagePresenter: '' as AnyComponent,
+    PinMessageAction: '' as AnyComponent
   },
   function: {
-    HasntNotifications: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
+    HasntNotifications: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    HasntInboxNotifications: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    HasInboxNotifications: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
   },
   category: {
     Notification: '' as Ref<ActionCategory>
@@ -60,6 +79,10 @@ export default mergeIds(notificationId, notification, {
   actionImpl: {
     Unsubscribe: '' as ViewAction,
     Hide: '' as ViewAction,
-    MarkAsUnread: '' as ViewAction
+    MarkAsUnread: '' as ViewAction,
+    MarkAsUnreadInboxNotification: '' as ViewAction,
+    MarkAsReadInboxNotification: '' as ViewAction,
+    DeleteInboxNotification: '' as ViewAction,
+    DeleteChatMessage: '' as ViewAction
   }
 })

@@ -34,10 +34,9 @@ import { getMetadata, IntlString } from '@hcengineering/platform'
 import { Person, PersonAccount } from '@hcengineering/contact'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import tracker, { Component, Issue, IssueParentInfo, TimeSpendReport, trackerId } from '@hcengineering/tracker'
-import { NotificationContent } from '@hcengineering/notification'
+import notification, { ChatMessage, NotificationContent } from '@hcengineering/notification'
 import { workbenchId } from '@hcengineering/workbench'
 
-import chunter, { Comment } from '@hcengineering/chunter'
 import { stripTags } from '@hcengineering/text'
 
 async function updateSubIssues (
@@ -115,8 +114,8 @@ export async function getIssueNotificationContent (
     const ptx = tx as TxCollectionCUD<Doc, AttachedDoc>
 
     if (ptx.tx._class === core.class.TxCreateDoc) {
-      if (ptx.tx.objectClass === chunter.class.Comment) {
-        const createTx = ptx.tx as TxCreateDoc<Comment>
+      if (ptx.tx.objectClass === notification.class.ChatMessage) {
+        const createTx = ptx.tx as TxCreateDoc<ChatMessage>
         const message = createTx.attributes.message
         const plainTextMessage = stripTags(message, NOTIFICATION_BODY_SIZE)
         intlParams.message = plainTextMessage

@@ -15,8 +15,20 @@
 //
 
 import contact, { Employee, Person, PersonAccount } from '@hcengineering/contact'
-import { Account, Class, Doc, Mixin, Ref, Tx, TxCUD } from '@hcengineering/core'
-import { NotificationType, NotificationContent } from '@hcengineering/notification'
+import core, {
+  Account,
+  AttachedDoc,
+  Class,
+  Doc,
+  Mixin,
+  Ref,
+  SortingOrder,
+  Tx,
+  TxCUD,
+  TxCollectionCUD,
+  TxUpdateDoc
+} from '@hcengineering/core'
+import { NotificationContent, NotificationType } from '@hcengineering/notification'
 import { Metadata, Plugin, Resource, plugin } from '@hcengineering/platform'
 import type { TriggerControl, TriggerFunc } from '@hcengineering/server-core'
 
@@ -79,6 +91,74 @@ export async function getEmployee (employee: Ref<Employee>, control: TriggerCont
   return account !== undefined ? control.hierarchy.as(account, contact.mixin.Employee) : undefined
 }
 
+export async function getAllObjectTransactions (
+  control: Pick<TriggerControl, 'hierarchy' | 'findAll'>,
+  _class: Ref<Class<Doc>>,
+  docs: Ref<Doc>[]
+): Promise<DocObjectCache['transactions']> {
+  const cache: DocObjectCache['transactions'] = new Map()
+  const hierarchy = control.hierarchy
+  const isAttached = hierarchy.isDerived(_class, core.class.AttachedDoc)
+
+  const ownTxes = await control.findAll<TxCUD<Doc>>(
+    isAttached ? core.class.TxCollectionCUD : core.class.TxCUD,
+    isAttached
+      ? { 'tx.objectId': { $in: docs as Ref<AttachedDoc>[] } }
+      : {
+          objectId: { $in: docs },
+          _class: {
+            $in: [core.class.TxCreateDoc, core.class.TxUpdateDoc, core.class.TxRemoveDoc, core.class.TxMixin]
+          }
+        },
+    { sort: { modifiedOn: SortingOrder.Ascending } }
+  )
+
+  for (const tx of ownTxes) {
+    const id = isAttached ? (tx as TxCollectionCUD<Doc, AttachedDoc>).tx.objectId : tx.objectId
+    cache.set(id, [...(cache.get(id) ?? []), tx])
+  }
+
+  const collectionTxes = await control.findAll<TxCollectionCUD<Doc, AttachedDoc>>(
+    core.class.TxCollectionCUD,
+    {
+      objectId: { $in: docs },
+      'tx._class': { $in: [core.class.TxCreateDoc, core.class.TxUpdateDoc, core.class.TxRemoveDoc] }
+    },
+    { sort: { modifiedOn: SortingOrder.Ascending } }
+  )
+
+  for (const tx of collectionTxes) {
+    const id = tx.objectId
+    cache.set(id, [...(cache.get(id) ?? []), tx])
+  }
+
+  const moveCollection = await control.findAll<TxCollectionCUD<Doc, AttachedDoc>>(
+    core.class.TxCollectionCUD,
+    {
+      'tx.operations.attachedTo': { $in: docs },
+      'tx._class': core.class.TxUpdateDoc
+    },
+    { sort: { modifiedOn: SortingOrder.Ascending } }
+  )
+
+  for (const tx of moveCollection) {
+    const id = ((tx as TxCollectionCUD<Doc, AttachedDoc>).tx as TxUpdateDoc<AttachedDoc>).operations
+      .attachedTo as Ref<Doc>
+    cache.set(id, [...(cache.get(id) ?? []), tx])
+  }
+
+  for (const d of docs) {
+    cache.set(
+      d,
+      (cache.get(d) ?? [])
+        .sort((a, b) => a.modifiedOn - b.modifiedOn)
+        .filter((it, idx, arr) => arr.findIndex((q) => q._id === it._id) === idx)
+    )
+  }
+
+  return cache
+}
+
 /**
  * @public
  */
@@ -129,6 +209,11 @@ export interface NotificationPresenter extends Class<Doc> {
   presenter: Resource<NotificationContentProvider>
 }
 
+export interface DocObjectCache {
+  docs: Map<Ref<Doc>, Doc | null>
+  transactions: Map<Ref<Doc>, TxCUD<Doc>[]>
+}
+
 /**
  * @public
  */
@@ -144,9 +229,11 @@ export default plugin(serverNotificationId, {
   },
   trigger: {
     OnBacklinkCreate: '' as Resource<TriggerFunc>,
-    CollaboratorDocHandler: '' as Resource<TriggerFunc>,
+    NotificationMessagesHandler: '' as Resource<TriggerFunc>,
     OnAttributeCreate: '' as Resource<TriggerFunc>,
-    OnAttributeUpdate: '' as Resource<TriggerFunc>
+    OnAttributeUpdate: '' as Resource<TriggerFunc>,
+    OnReactionChanged: '' as Resource<TriggerFunc>,
+    OnChatMessageSent: '' as Resource<TriggerFunc>
   },
   function: {
     IsUserInFieldValue: '' as TypeMatchFunc,

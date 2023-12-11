@@ -84,8 +84,11 @@ import {
   type ViewOptionsModel,
   type Viewlet,
   type ViewletDescriptor,
-  type ViewletPreference
+  type ViewletPreference,
+  type NotificationAttributePresenter,
+  type ObjectIdentifier
 } from '@hcengineering/view'
+
 import view from './plugin'
 
 export { viewId } from '@hcengineering/view'
@@ -122,6 +125,9 @@ export function classPresenter (
   }
   if (activity !== undefined) {
     builder.mixin(_class, core.class.Class, view.mixin.ActivityAttributePresenter, {
+      presenter: activity
+    })
+    builder.mixin(_class, core.class.Class, view.mixin.NotificationAttributePresenter, {
       presenter: activity
     })
   }
@@ -204,6 +210,11 @@ export class TActivityAttributePresenter extends TClass implements ActivityAttri
   presenter!: AnyComponent
 }
 
+@Mixin(view.mixin.NotificationAttributePresenter, core.class.Class)
+export class TNotificationAttributePresenter extends TClass implements NotificationAttributePresenter {
+  presenter!: AnyComponent
+}
+
 @Mixin(view.mixin.SpacePresenter, core.class.Class)
 export class TSpacePresenter extends TClass implements SpacePresenter {
   presenter!: AnyComponent
@@ -258,7 +269,12 @@ export class TObjectFactory extends TClass implements ObjectFactory {
 
 @Mixin(view.mixin.ObjectTitle, core.class.Class)
 export class TObjectTitle extends TClass implements ObjectTitle {
-  titleProvider!: Resource<<T extends Doc>(client: Client, ref: Ref<T>) => Promise<string>>
+  titleProvider!: Resource<<T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<string>>
+}
+
+@Mixin(view.mixin.ObjectIdentifier, core.class.Class)
+export class TObjectIdentifier extends TClass implements ObjectIdentifier {
+  provider!: Resource<<T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<string>>
 }
 
 @Mixin(view.mixin.ListHeaderExtra, core.class.Class)
@@ -408,6 +424,7 @@ export function createModel (builder: Builder): void {
     TAttributePresenter,
     TAttributeFilterPresenter,
     TActivityAttributePresenter,
+    TNotificationAttributePresenter,
     TListItemPresenter,
     TCollectionEditor,
     TCollectionPresenter,
@@ -436,7 +453,8 @@ export function createModel (builder: Builder): void {
     TFilteredView,
     TAllValuesFunc,
     TAggregation,
-    TGroupping
+    TGroupping,
+    TObjectIdentifier
   )
 
   classPresenter(

@@ -4,11 +4,11 @@
   import { ChunterMessage } from '@hcengineering/chunter'
   import { Person, PersonAccount, getName as getContactName } from '@hcengineering/contact'
   import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-  import core, { IdMap, Ref, WithLookup } from '@hcengineering/core'
+  import core, { getDisplayTime, IdMap, Ref, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Label, Scroller } from '@hcengineering/ui'
   import chunter from '../plugin'
-  import { getTime, openMessageFromSpecial } from '../utils'
+  import { openMessageFromSpecial } from '../utils'
   import Message from './Message.svelte'
   import Bookmark from './icons/Bookmark.svelte'
 
@@ -123,7 +123,10 @@
         <div class="label">
           <Label
             label={chunter.string.SharedBy}
-            params={{ name: getName(att, $personAccountByIdStore, $personByIdStore), time: getTime(att.modifiedOn) }}
+            params={{
+              name: getName(att, $personAccountByIdStore, $personByIdStore),
+              time: getDisplayTime(att.modifiedOn)
+            }}
           />
         </div>
       </div>

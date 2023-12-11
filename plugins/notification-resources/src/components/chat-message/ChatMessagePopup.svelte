@@ -14,38 +14,40 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref, SortingOrder } from '@hcengineering/core'
-
-  import chunter, { Comment } from '@hcengineering/chunter'
-  import { createQuery } from '@hcengineering/presentation'
-  import { Label, resizeObserver, Spinner, closeTooltip, Lazy, MiniToggle } from '@hcengineering/ui'
-  import { DocNavLink, ObjectPresenter } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import CommentInput from './CommentInput.svelte'
-  import CommentPresenter from './CommentPresenter.svelte'
-  import activity from '@hcengineering/activity'
+  import { Doc, Ref, SortingOrder } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import notification, { ChatMessage } from '@hcengineering/notification'
+  import { closeTooltip, Label, Lazy, Spinner, resizeObserver, MiniToggle } from '@hcengineering/ui'
+  import { ObjectPresenter, DocNavLink } from '@hcengineering/view-resources'
+  import ChatMessageInput from './ChatMessageInput.svelte'
+  import ChatMessagePresenter from './ChatMessagePresenter.svelte'
 
   export let objectId: Ref<Doc>
   export let object: Doc
   export let withInput: boolean = true
 
-  let loading = true
-  let activityOrderNewestFirst = JSON.parse(localStorage.getItem('activity-newest-first') ?? 'false')
-  let comments: Comment[] = []
+  const dispatch = createEventDispatcher()
   const query = createQuery()
+
+  let loading = true
+  let messages: ChatMessage[] = []
+
+  let activityOrderNewestFirst = JSON.parse(localStorage.getItem('activity-newest-first') ?? 'false')
+
   $: query.query(
-    chunter.class.Comment,
+    notification.class.ChatMessage,
     { attachedTo: objectId },
     (res) => {
-      comments = res.sort((c) => (c?.pinned ? -1 : 1))
+      messages = res.sort((message) => (message?.isPinned ? -1 : 1))
       loading = false
     },
-    { sort: { modifiedOn: activityOrderNewestFirst ? SortingOrder.Descending : SortingOrder.Ascending } }
+    { sort: { createdOn: activityOrderNewestFirst ? SortingOrder.Descending : SortingOrder.Ascending } }
   )
-  const dispatch = createEventDispatcher()
-  let commentMode = false
 
-  $: if (commentMode) {
+  let isTextMode = false
+
+  $: if (isTextMode) {
     dispatch('tooltip', { kind: 'popup' })
   }
 </script>
@@ -59,7 +61,7 @@
     }}
     on:keydown={(evt) => {
       console.log(evt)
-      if (commentMode) {
+      if (isTextMode) {
         evt.preventDefault()
         evt.stopImmediatePropagation()
         closeTooltip()
@@ -67,23 +69,23 @@
     }}
   >
     <div class="fs-title mr-2">
-      <Label label={chunter.string.Comments} />
+      <Label label={notification.string.Comments} />
     </div>
-    <MiniToggle bind:on={activityOrderNewestFirst} label={activity.string.NewestFirst} />
+    <MiniToggle bind:on={activityOrderNewestFirst} label={notification.string.NewestFirst} />
     <DocNavLink {object}>
       <ObjectPresenter _class={object._class} objectId={object._id} value={object} />
     </DocNavLink>
   </div>
-  <div class="comments">
+  <div class="messages">
     {#if loading}
       <div class="flex-center">
         <Spinner />
       </div>
     {:else}
-      {#each comments as comment}
+      {#each messages as message}
         <div class="item">
           <Lazy>
-            <CommentPresenter value={comment} />
+            <ChatMessagePresenter value={message} />
           </Lazy>
         </div>
       {/each}
@@ -91,10 +93,10 @@
   </div>
   {#if withInput}
     <div class="input">
-      <CommentInput
+      <ChatMessageInput
         {object}
         on:focus={() => {
-          commentMode = true
+          isTextMode = true
         }}
       />
     </div>
@@ -117,7 +119,8 @@
       padding: 0.5rem 1.25rem 1rem 0.75rem;
       border-bottom: 1px solid var(--theme-divider-color);
     }
-    .comments {
+
+    .messages {
       overflow: auto;
       flex: 1;
       padding: 0 1rem;
@@ -127,6 +130,7 @@
       .item {
         max-width: 30rem;
       }
+
       .item + .item {
         margin-top: 0.75rem;
       }

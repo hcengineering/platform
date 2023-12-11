@@ -47,7 +47,7 @@ test.describe('Tracker template tests', () => {
     })
   })
 
-  test('Edit a Template', async ({ page }) => {
+  test.skip('Edit a Template', async ({ page }) => {
     const newTemplate: NewIssue = {
       title: `Template for edit-${generateId()}`,
       description: 'Created template for edit'

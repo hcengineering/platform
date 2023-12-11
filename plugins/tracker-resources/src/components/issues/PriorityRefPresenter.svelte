@@ -24,6 +24,7 @@
   export let accent: boolean = false
   export let inline: boolean = false
   export let shouldShowLabel: boolean = true
+  export let shouldShowAvatar: boolean = true
 
   $: icon = issuePriorities[value]?.icon
   $: label = issuePriorities[value]?.label
@@ -38,13 +39,13 @@
 </script>
 
 <div class="flex-presenter">
-  {#if !inline && icon}
+  {#if !inline && icon && shouldShowAvatar}
     <Icon {icon} {size} fill={'var(--theme-caption-color)'} />
   {/if}
   {#if shouldShowLabel}
     <span
       class="overflow-label"
-      class:ml-2={!inline && icon}
+      class:ml-2={!inline && icon && shouldShowAvatar}
       style:color={colorInherit ? 'inherit' : 'var(--theme-content-color)'}
       class:fs-bold={accent}
     >

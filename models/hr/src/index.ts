@@ -51,7 +51,6 @@ import {
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import calendar from '@hcengineering/model-calendar'
-import chunter from '@hcengineering/model-chunter'
 import contact, { TEmployee, TPersonAccount } from '@hcengineering/model-contact'
 import core, { TAttachedDoc, TDoc, TSpace, TType } from '@hcengineering/model-core'
 import view, { classPresenter, createAction } from '@hcengineering/model-view'
@@ -84,7 +83,7 @@ export class TDepartment extends TSpace implements Department {
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
-  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
+  @Prop(Collection(notification.class.ChatMessage), notification.string.Comments)
     comments?: number
 
   avatar?: string | null
@@ -158,7 +157,7 @@ export class TRequest extends TAttachedDoc implements Request {
   @Hidden()
     type!: Ref<RequestType>
 
-  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
+  @Prop(Collection(notification.class.ChatMessage), notification.string.Comments)
     comments?: number
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })

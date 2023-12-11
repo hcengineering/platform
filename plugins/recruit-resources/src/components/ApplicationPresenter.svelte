@@ -26,6 +26,7 @@
   export let disabled: boolean = false
   export let noUnderline: boolean = false
   export let accent: boolean = false
+  export let shouldShowAvatar: boolean = true
 
   const client = getClient()
   const shortLabel = value && client.getHierarchy().getClass(value._class).shortLabel
@@ -39,9 +40,11 @@
       </span>
     {:else}
       <div class="flex-presenter">
-        <div class="icon">
-          <Icon icon={recruit.icon.Application} size={'small'} />
-        </div>
+        {#if shouldShowAvatar}
+          <div class="icon">
+            <Icon icon={recruit.icon.Application} size={'small'} />
+          </div>
+        {/if}
         <span class="label nowrap" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>
           {#if shortLabel}{shortLabel}-{/if}{value.number}
         </span>

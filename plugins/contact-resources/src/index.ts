@@ -92,11 +92,12 @@ import UserBoxItems from './components/UserBoxItems.svelte'
 import UserBoxList from './components/UserBoxList.svelte'
 import UserInfo from './components/UserInfo.svelte'
 import UsersPopup from './components/UsersPopup.svelte'
-import ActivityChannelMessage from './components/activity/ActivityChannelMessage.svelte'
 import ActivityChannelPresenter from './components/activity/ActivityChannelPresenter.svelte'
 import ExpandRightDouble from './components/icons/ExpandRightDouble.svelte'
 import IconMembers from './components/icons/Members.svelte'
 import TxNameChange from './components/activity/TxNameChange.svelte'
+import NotificationNameChanged from './components/notification/NotificationNameChanged.svelte'
+import SystemAvatar from './components/SystemAvatar.svelte'
 
 import contact from './plugin'
 import {
@@ -155,7 +156,8 @@ export {
   SelectAvatars,
   UserBoxItems,
   MembersBox,
-  PersonRefPresenter
+  PersonRefPresenter,
+  SystemAvatar
 }
 
 const toObjectSearchResult = (e: WithLookup<Contact>): ObjectSearchResult => ({
@@ -271,6 +273,9 @@ export default async (): Promise<Resources> => ({
   activity: {
     TxNameChange
   },
+  notification: {
+    NotificationNameChanged
+  },
   component: {
     ContactArrayEditor,
     PersonEditor,
@@ -304,7 +309,6 @@ export default async (): Promise<Resources> => ({
     MergePersons,
     Avatar,
     UserBoxList,
-    ActivityChannelMessage,
     ChannelPresenter,
     ChannelPanel,
     ActivityChannelPresenter,

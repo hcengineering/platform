@@ -101,6 +101,7 @@
     "ModificationDate": "Изменено {value}",
     "Project": "Проект",
     "Issue": "Задача",
+    "SubIssue": "Подзадача",
     "Document": "",
     "DocumentIcon": "",
     "DocumentColor": "",

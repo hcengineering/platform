@@ -24,6 +24,8 @@
   export let disabled: boolean = false
   export let accent: boolean = false
   export let noUnderline: boolean = false
+
+  export let shouldShowAvatar: boolean = true
 </script>
 
 {#if value}
@@ -32,7 +34,9 @@
       <span class="antiMention" use:tooltip={{ label: lead.string.Lead }}>@LEAD-{value.number}</span>
     {:else}
       <div class="flex-presenter">
-        <div class="icon"><Icon icon={lead.icon.Lead} size={'small'} /></div>
+        {#if shouldShowAvatar}
+          <div class="icon"><Icon icon={lead.icon.Lead} size={'small'} /></div>
+        {/if}
         <span class="label nowrap" class:no-underline={noUnderline || disabled} class:fs-bold={accent}
           >LEAD-{value.number}</span
         >

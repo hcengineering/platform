@@ -24,6 +24,8 @@
   export let size: ButtonSize = 'large'
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = '100%'
+  export let shouldShowAvatar: boolean = true
+  export let accent: boolean = false
 
   $: disabled = onChange === undefined
 </script>
@@ -36,5 +38,7 @@
   {width}
   {justify}
   {disabled}
+  {accent}
+  {shouldShowAvatar}
   on:change={({ detail }) => onChange?.(detail)}
 />

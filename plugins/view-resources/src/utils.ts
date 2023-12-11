@@ -36,10 +36,11 @@ import core, {
   type ReverseLookup,
   type ReverseLookups,
   type Space,
-  type TxOperations
+  type TxOperations,
+  type Mixin
 } from '@hcengineering/core'
 import type { IntlString } from '@hcengineering/platform'
-import { getResource } from '@hcengineering/platform'
+import { getResource, translate } from '@hcengineering/platform'
 import {
   getAttributePresenterClass,
   hasResource,
@@ -56,12 +57,14 @@ import {
   resolvedLocationStore,
   type AnyComponent,
   type AnySvelteComponent,
-  type Location
+  type Location,
+  themeStore
 } from '@hcengineering/ui'
 import view, {
   type AttributeModel,
   type BuildModelKey,
   type BuildModelOptions,
+  type CollectionPresenter,
   type Viewlet,
   type ViewletDescriptor
 } from '@hcengineering/view'
@@ -69,6 +72,7 @@ import view, {
 import { get, writable } from 'svelte/store'
 import plugin from './plugin'
 import { noCategory } from './viewOptions'
+import contact, { type Contact, getName } from '@hcengineering/contact'
 
 export { getFiltredKeys, isCollectionAttr } from '@hcengineering/presentation'
 
@@ -145,21 +149,30 @@ export async function getObjectPreview (client: Client, _class: Ref<Class<Obj>>)
   return presenterMixin?.presenter
 }
 
-async function getAttributePresenter (
+export async function getAttributePresenter (
   client: Client,
   _class: Ref<Class<Obj>>,
   key: string,
-  preserveKey: BuildModelKey
+  preserveKey: BuildModelKey,
+  mixinClass?: Ref<Mixin<CollectionPresenter>>
 ): Promise<AttributeModel> {
+  const actualMixinClass = mixinClass ?? view.mixin.AttributePresenter
+
   const hierarchy = client.getHierarchy()
   const attribute = hierarchy.getAttribute(_class, key)
   const presenterClass = getAttributePresenterClass(hierarchy, attribute)
   const isCollectionAttr = presenterClass.category === 'collection'
-  const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : view.mixin.AttributePresenter
-  const presenterMixin = hierarchy.classHierarchyMixin(presenterClass.attrClass, mixin)
+  const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : actualMixinClass
+
+  let presenterMixin = hierarchy.classHierarchyMixin(presenterClass.attrClass, mixin)
+
+  if (presenterMixin?.presenter === undefined && mixinClass != null && mixin === mixinClass) {
+    presenterMixin = hierarchy.classHierarchyMixin(presenterClass.attrClass, view.mixin.AttributePresenter)
+  }
   if (presenterMixin?.presenter === undefined) {
     throw new Error('attribute presenter not found for ' + JSON.stringify(preserveKey))
   }
+
   const resultKey = preserveKey.sortingKey ?? preserveKey.key
   const sortingKey = Array.isArray(resultKey)
     ? resultKey
@@ -924,6 +937,89 @@ export async function getSpacePresenter (
   if (value?.presenter !== undefined) {
     return await getResource(value.presenter)
   }
+}
+
+export async function getDocLabel (client: Client, object: Doc | undefined): Promise<string | undefined> {
+  if (object === undefined) {
+    return undefined
+  }
+
+  const hierarchy = client.getHierarchy()
+  const name = (object as any).name
+
+  if (name !== undefined) {
+    if (hierarchy.isDerived(object._class, contact.class.Person)) {
+      return getName(hierarchy, object as Contact)
+    }
+    return name
+  }
+
+  const label = hierarchy.getClass(object._class).label
+
+  if (label === undefined) {
+    return undefined
+  }
+
+  return await translate(label, {}, get(themeStore).language)
+}
+
+export async function getDocTitle (
+  client: Client,
+  objectId: Ref<Doc>,
+  objectClass: Ref<Class<Doc>>,
+  object?: Doc
+): Promise<string | undefined> {
+  const hierarchy = client.getHierarchy()
+
+  const titleProvider = hierarchy.classHierarchyMixin(objectClass, view.mixin.ObjectTitle)
+
+  if (titleProvider === undefined) {
+    return
+  }
+
+  const resource = await getResource(titleProvider.titleProvider)
+
+  return await resource(client, objectId, object)
+}
+
+async function getDocIdentifier (
+  client: Client,
+  objectId: Ref<Doc>,
+  objectClass: Ref<Class<Doc>>,
+  object?: Doc
+): Promise<string | undefined> {
+  const hierarchy = client.getHierarchy()
+
+  const identifierProvider = hierarchy.classHierarchyMixin(objectClass, view.mixin.ObjectIdentifier)
+
+  if (identifierProvider === undefined) {
+    return
+  }
+
+  const resource = await getResource(identifierProvider.provider)
+
+  return await resource(client, objectId, object)
+}
+
+export async function getDocLinkTitle (
+  client: Client,
+  objectId: Ref<Doc>,
+  objectClass: Ref<Class<Doc>>,
+  object?: Doc
+): Promise<string | undefined> {
+  const identifier = await getDocIdentifier(client, objectId, objectClass, object)
+
+  if (identifier !== undefined) {
+    return identifier
+  }
+
+  const title = await getDocTitle(client, objectId, objectClass, object)
+
+  if (title !== undefined) {
+    return title
+  }
+
+  return await getDocLabel(client, object)
 }
 
 /**

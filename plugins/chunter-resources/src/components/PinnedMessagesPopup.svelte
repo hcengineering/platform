@@ -2,12 +2,11 @@
   import chunter, { ChunterMessage } from '@hcengineering/chunter'
   import { Person, PersonAccount, getName } from '@hcengineering/contact'
   import { Avatar, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-  import { IdMap, Ref, Space } from '@hcengineering/core'
+  import { getDisplayTime, IdMap, Ref, Space } from '@hcengineering/core'
   import { MessageViewer, createQuery, getClient } from '@hcengineering/presentation'
   import { IconClose } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { UnpinMessage } from '../index'
-  import { getTime } from '../utils'
 
   export let space: Ref<Space>
 
@@ -70,7 +69,7 @@
         </div>
       </div>
       <MessageViewer message={message.content} />
-      <span class="time">{getTime(message.createdOn ?? 0)}</span>
+      <span class="time">{getDisplayTime(message.createdOn ?? 0)}</span>
     </div>
   {/each}
 </div>

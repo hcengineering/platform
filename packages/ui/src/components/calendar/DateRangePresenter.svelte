@@ -35,15 +35,20 @@
   export let kind: 'default' | 'no-border' | 'link' | 'regular' = 'default'
   export let size: 'small' | 'medium' | 'large' = 'small'
   export let noShift: boolean = false
+  export let shouldShowAvatar: boolean = true
+  export let accent: boolean = false
+  export let inline: boolean = false
 
   const dispatch = createEventDispatcher()
 
   type TEdits = 'day' | 'month' | 'year' | 'hour' | 'min'
+
   interface IEdits {
     id: TEdits
     value: number
     el?: HTMLElement
   }
+
   const editsType: TEdits[] = ['day', 'month', 'year', 'hour', 'min']
   const getIndex = (id: TEdits): number => editsType.indexOf(id)
   const today = new Date()
@@ -297,155 +302,13 @@
   adaptValue()
 </script>
 
-<button
-  bind:this={datePresenter}
-  class="datetime-button {kind} {size}"
-  class:notSelected={!value}
-  class:editable
-  class:edit
-  on:click={() => {
-    if (editable && !opened && withDate) openPopup()
-    else if (editable && !opened && mode === DateRangeMode.TIME) edit = true
-  }}
->
-  {#if edit}
-    {#if withDate}
-      <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <span
-        bind:this={edits[0].el}
-        class="digit"
-        tabindex="0"
-        on:keydown={(ev) => {
-          keyDown(ev, edits[0].id)
-        }}
-        on:focus={() => {
-          focused(edits[0].id)
-        }}
-        on:blur={(ev) => {
-          unfocus(ev, edits[0].id)
-        }}
-      >
-        {#if edits[0].value > -1}
-          {edits[0].value.toString().padStart(2, '0')}
-        {:else}<Label label={ui.string.DD} />{/if}
-      </span>
-      <span class="separator">.</span>
-      <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <span
-        bind:this={edits[1].el}
-        class="digit"
-        tabindex="0"
-        on:keydown={(ev) => {
-          keyDown(ev, edits[1].id)
-        }}
-        on:focus={() => {
-          focused(edits[1].id)
-        }}
-        on:blur={(ev) => {
-          unfocus(ev, edits[1].id)
-        }}
-      >
-        {#if edits[1].value > -1}
-          {edits[1].value.toString().padStart(2, '0')}
-        {:else}<Label label={ui.string.MM} />{/if}
-      </span>
-      <span class="separator">.</span>
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-      <span
-        bind:this={edits[2].el}
-        class="digit"
-        tabindex="0"
-        on:keydown={(ev) => {
-          keyDown(ev, edits[2].id)
-        }}
-        on:focus={() => {
-          focused(edits[2].id)
-        }}
-        on:blur={(ev) => {
-          unfocus(ev, edits[2].id)
-        }}
-      >
-        {#if edits[2].value > -1}
-          {edits[2].value.toString().padStart(4, '0')}
-        {:else}<Label label={ui.string.YYYY} />{/if}
-      </span>
-    {/if}
-    {#if withTime}
-      {#if mode === DateRangeMode.DATETIME}
-        <div class="time-divider" />
-      {/if}
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-      <span
-        bind:this={edits[3].el}
-        class="digit"
-        tabindex="0"
-        on:keydown={(ev) => {
-          keyDown(ev, edits[3].id)
-        }}
-        on:focus={() => {
-          focused(edits[3].id)
-        }}
-        on:blur={(ev) => {
-          unfocus(ev, edits[3].id)
-        }}
-      >
-        {#if edits[3].value > -1}
-          {edits[3].value.toString().padStart(2, '0')}
-        {:else}<Label label={ui.string.HH} />{/if}
-      </span>
-      <span class="separator">:</span>
-      <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <span
-        bind:this={edits[4].el}
-        class="digit"
-        tabindex="0"
-        on:keydown={(ev) => {
-          keyDown(ev, edits[4].id)
-        }}
-        on:focus={() => {
-          focused(edits[4].id)
-        }}
-        on:blur={(ev) => {
-          unfocus(ev, edits[4].id)
-        }}
-      >
-        {#if edits[4].value > -1}
-          {edits[4].value.toString().padStart(2, '0')}
-        {:else}<Label label={ui.string.MM} />{/if}
-      </span>
-    {/if}
-    {#if value}
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-      <div
-        bind:this={closeBtn}
-        class="close-btn"
-        tabindex="0"
-        on:click={() => {
-          selected = defaultSelected
-          startTyping = true
-          value = null
-          setEmptyEdits()
-          const newFocusElement = edits[mode === DateRangeMode.TIME ? 2 : 0].el
-          if (newFocusElement) newFocusElement.focus()
-        }}
-        on:blur={(ev) => {
-          unfocus(ev, closeBtn)
-        }}
-      >
-        <Icon icon={IconClose} size={'x-small'} />
+{#if inline}
+  <span class:fs-bold={accent}>
+    {#if shouldShowAvatar}
+      <div class="btn-icon {iconModifier}">
+        <Icon icon={iconModifier === 'overdue' && !shouldIgnoreOverdue ? DPCalendarOver : DPCalendar} size={'full'} />
       </div>
     {/if}
-  {:else}
-    <div class="btn-icon {iconModifier}">
-      <Icon icon={iconModifier === 'overdue' && !shouldIgnoreOverdue ? DPCalendarOver : DPCalendar} size={'full'} />
-    </div>
     {#if value !== undefined && value !== null && value.toString() !== ''}
       {#if withDate}
         {new Date(value).getDate()}
@@ -467,8 +330,181 @@
         <Label label={labelNull} />
       </div>
     {/if}
-  {/if}
-</button>
+  </span>
+{:else}
+  <button
+    bind:this={datePresenter}
+    class="datetime-button {kind} {size}"
+    class:notSelected={!value}
+    class:editable
+    class:edit
+    on:click={() => {
+      if (editable && !opened && withDate) openPopup()
+      else if (editable && !opened && mode === DateRangeMode.TIME) edit = true
+    }}
+  >
+    {#if edit}
+      {#if withDate}
+        <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <span
+          bind:this={edits[0].el}
+          class="digit"
+          tabindex="0"
+          on:keydown={(ev) => {
+            keyDown(ev, edits[0].id)
+          }}
+          on:focus={() => {
+            focused(edits[0].id)
+          }}
+          on:blur={(ev) => {
+            unfocus(ev, edits[0].id)
+          }}
+        >
+          {#if edits[0].value > -1}
+            {edits[0].value.toString().padStart(2, '0')}
+          {:else}<Label label={ui.string.DD} />{/if}
+        </span>
+        <span class="separator">.</span>
+        <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <span
+          bind:this={edits[1].el}
+          class="digit"
+          tabindex="0"
+          on:keydown={(ev) => {
+            keyDown(ev, edits[1].id)
+          }}
+          on:focus={() => {
+            focused(edits[1].id)
+          }}
+          on:blur={(ev) => {
+            unfocus(ev, edits[1].id)
+          }}
+        >
+          {#if edits[1].value > -1}
+            {edits[1].value.toString().padStart(2, '0')}
+          {:else}<Label label={ui.string.MM} />{/if}
+        </span>
+        <span class="separator">.</span>
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+        <span
+          bind:this={edits[2].el}
+          class="digit"
+          tabindex="0"
+          on:keydown={(ev) => {
+            keyDown(ev, edits[2].id)
+          }}
+          on:focus={() => {
+            focused(edits[2].id)
+          }}
+          on:blur={(ev) => {
+            unfocus(ev, edits[2].id)
+          }}
+        >
+          {#if edits[2].value > -1}
+            {edits[2].value.toString().padStart(4, '0')}
+          {:else}<Label label={ui.string.YYYY} />{/if}
+        </span>
+      {/if}
+      {#if withTime}
+        {#if mode === DateRangeMode.DATETIME}
+          <div class="time-divider" />
+        {/if}
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+        <span
+          bind:this={edits[3].el}
+          class="digit"
+          tabindex="0"
+          on:keydown={(ev) => {
+            keyDown(ev, edits[3].id)
+          }}
+          on:focus={() => {
+            focused(edits[3].id)
+          }}
+          on:blur={(ev) => {
+            unfocus(ev, edits[3].id)
+          }}
+        >
+          {#if edits[3].value > -1}
+            {edits[3].value.toString().padStart(2, '0')}
+          {:else}<Label label={ui.string.HH} />{/if}
+        </span>
+        <span class="separator">:</span>
+        <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <span
+          bind:this={edits[4].el}
+          class="digit"
+          tabindex="0"
+          on:keydown={(ev) => {
+            keyDown(ev, edits[4].id)
+          }}
+          on:focus={() => {
+            focused(edits[4].id)
+          }}
+          on:blur={(ev) => {
+            unfocus(ev, edits[4].id)
+          }}
+        >
+          {#if edits[4].value > -1}
+            {edits[4].value.toString().padStart(2, '0')}
+          {:else}<Label label={ui.string.MM} />{/if}
+        </span>
+      {/if}
+      {#if value}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+        <div
+          bind:this={closeBtn}
+          class="close-btn"
+          tabindex="0"
+          on:click={() => {
+            selected = defaultSelected
+            startTyping = true
+            value = null
+            setEmptyEdits()
+            const newFocusElement = edits[mode === DateRangeMode.TIME ? 2 : 0].el
+            if (newFocusElement) newFocusElement.focus()
+          }}
+          on:blur={(ev) => {
+            unfocus(ev, closeBtn)
+          }}
+        >
+          <Icon icon={IconClose} size={'x-small'} />
+        </div>
+      {/if}
+    {:else}
+      <div class="btn-icon {iconModifier}">
+        <Icon icon={iconModifier === 'overdue' && !shouldIgnoreOverdue ? DPCalendarOver : DPCalendar} size={'full'} />
+      </div>
+      {#if value !== undefined && value !== null && value.toString() !== ''}
+        {#if withDate}
+          {new Date(value).getDate()}
+          {getMonthName(new Date(value), 'short')}
+          {#if new Date(value).getFullYear() !== today.getFullYear()}
+            {new Date(value).getFullYear()}
+          {/if}
+        {/if}
+        {#if withTime}
+          {#if withDate}
+            <div class="time-divider" />
+          {/if}
+          {new Date(value).getHours().toString().padStart(2, '0')}
+          <span class="separator">:</span>
+          {new Date(value).getMinutes().toString().padStart(2, '0')}
+        {/if}
+      {:else}
+        <div class="overflow-label">
+          <Label label={labelNull} />
+        </div>
+      {/if}
+    {/if}
+  </button>
+{/if}
 
 <style lang="scss">
   .datetime-button {
@@ -490,18 +526,23 @@
     transition-duration: 0.15s;
     cursor: pointer;
 
+    &.noPadding {
+      padding: 0;
+    }
+
     &.small {
       height: 1.5rem;
     }
+
     &.medium {
       height: 2rem;
     }
+
     &.large {
       height: 2.25rem;
     }
 
     .btn-icon {
-      margin-right: 0.375rem;
       width: 0.875rem;
       height: 0.875rem;
       transition: color 0.15s;
@@ -510,12 +551,15 @@
       &.normal {
         color: var(--theme-content-color);
       }
+
       &.warning {
         color: var(--theme-warning-color);
       }
+
       &.overdue {
         color: var(--theme-error-color);
       }
+
       &.critical {
         color: var(--theme-error-color);
       }
@@ -529,6 +573,7 @@
         color: var(--theme-caption-color);
       }
     }
+
     &.no-border {
       font-weight: 400;
       color: var(--theme-content-color);
@@ -544,6 +589,7 @@
           color: var(--theme-caption-color);
         }
       }
+
       &:disabled {
         color: var(--theme-trans-color);
         background-color: var(--theme-button-disabled);
@@ -552,8 +598,10 @@
         .btn-icon {
           color: var(--theme-trans-color);
         }
+
         &:hover {
           color: var(--theme-trans-color);
+
           .btn-icon {
             color: var(--theme-trans-color);
           }
@@ -565,27 +613,34 @@
 
         &:hover {
           background-color: var(--theme-button-hovered);
+
           .btn-icon {
             &.normal {
               color: var(--caption-color);
             }
+
             &.warning {
               color: var(--theme-warning-color);
             }
+
             &.overdue {
               color: var(--theme-error-color);
             }
+
             &.critical {
               color: var(--theme-error-color);
             }
           }
+
           .time-divider {
             background-color: var(--theme-divider-color);
           }
         }
+
         &:focus-within {
           background-color: var(--theme-button-focused);
           border-color: var(--primary-edit-border-color);
+
           &:hover {
             background-color: var(--theme-button-hovered);
           }
@@ -596,6 +651,7 @@
         padding: 0 0.125rem;
         background-color: transparent;
         border-color: var(--primary-edit-border-color);
+
         &:hover {
           background-color: transparent;
         }
@@ -606,13 +662,16 @@
       padding: 0 0.875rem;
       width: 100%;
       color: var(--theme-caption-color);
+
       &:hover {
         background-color: var(--theme-bg-color);
         border-color: var(--theme-divider-color);
+
         .btn-icon {
           color: var(--theme-content-color);
         }
       }
+
       &.edit {
         padding: 0 0.5rem;
       }
@@ -627,13 +686,16 @@
       .btn-icon {
         color: var(--theme-content-color);
       }
+
       &:hover {
         background-color: var(--theme-button-hovered);
         border-color: var(--theme-divider-color);
+
         .btn-icon {
           color: var(--theme-content-color);
         }
       }
+
       // &.edit {
       //   padding: 0 0.5rem;
       // }
@@ -670,6 +732,7 @@
       &:focus {
         background-color: var(--primary-bg-color);
       }
+
       &::after {
         position: absolute;
         top: 0;
@@ -680,6 +743,7 @@
         cursor: pointer;
       }
     }
+
     .time-divider {
       flex-shrink: 0;
       margin: 0 0.25rem;
@@ -688,15 +752,18 @@
       height: 0.75rem;
       background-color: var(--theme-divider-color);
     }
+
     .separator {
       margin: 0 0.1rem;
     }
+
     &.notSelected {
       color: var(--theme-dark-color);
 
       .btn-icon {
         color: var(--theme-darker-color);
       }
+
       &:hover,
       &:hover .btn-icon {
         color: var(--theme-content-color);

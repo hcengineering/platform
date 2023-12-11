@@ -14,7 +14,6 @@
 //
 
 import activity from '@hcengineering/activity'
-import chunter from '@hcengineering/chunter'
 import type { PersonAccount } from '@hcengineering/contact'
 import contact from '@hcengineering/contact'
 import { type Domain, IndexKind, type Ref, type Tx } from '@hcengineering/core'
@@ -73,11 +72,11 @@ export class TRequest extends TAttachedDoc implements Request {
   @ReadOnly()
     rejected?: Ref<PersonAccount>
 
-  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
+  @Prop(Collection(notification.class.ChatMessage), notification.string.Comments)
     comments?: number
 }
 
-@Mixin(request.mixin.RequestDecisionComment, chunter.class.Comment)
+@Mixin(request.mixin.RequestDecisionComment, notification.class.ChatMessage)
 export class TRequestDecisionComment extends TComment implements RequestDecisionComment {}
 
 @Mixin(request.mixin.RequestPresenter, core.class.Class)

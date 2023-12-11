@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2021 Anticrm Platform Contributors.
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,12 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Backlink } from '@hcengineering/chunter'
-  import { MessageViewer } from '@hcengineering/presentation'
+  import { IssuePriority } from '@hcengineering/tracker'
+  import { Icon } from '@hcengineering/ui'
+  import { issuePriorities } from '../../utils'
 
-  // export let tx: TxCreateDoc<Backlink>
-  export let value: Backlink
-  // export let edit: boolean = false
+  export let value: IssuePriority
+  export let size: 'small' | 'medium' = 'small'
+
+  $: icon = issuePriorities[value]?.icon
 </script>
 
-<MessageViewer message={value.message} />
+<Icon {icon} {size} fill={'var(--theme-caption-color)'} />

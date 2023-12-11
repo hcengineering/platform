@@ -26,6 +26,8 @@
   export let accent: boolean = false
   export let noUnderline: boolean = false
 
+  export let shouldShowAvatar: boolean = true
+
   const client = getClient()
 
   const label = client.getHierarchy().getClass(value?._class)?.shortLabel
@@ -34,9 +36,11 @@
 {#if value && label}
   <DocNavLink object={value} {inline} {disabled} {accent} {noUnderline}>
     <div class="flex-presenter" class:inline-presenter={inline}>
-      <div class="icon">
-        <Icon icon={recruit.icon.Review} size={'small'} />
-      </div>
+      {#if shouldShowAvatar}
+        <div class="icon">
+          <Icon icon={recruit.icon.Review} size={'small'} />
+        </div>
+      {/if}
       <span class="label nowrap" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>
         {label}-{value.number}
       </span>

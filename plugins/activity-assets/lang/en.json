@@ -1,21 +1,17 @@
 {
   "string": {
-    "Delete": "Delete",
-    "Edit": "Edit",
-    "Edited": "edited",
-    "DocCreated": "created {_class}",
-    "DocAdded": "added {_class}",
-    "DocDeleted": "deleted {_class}",
     "Activity": "Activity",
-    "Changed": "changed",
-    "To": "to",
-    "Unset": "unset",
-    "CollectionUpdated": "Update {collection}",
     "Added": "added",
-    "Removed": "removed",
-    "From": "from",
     "All": "All",
-    "Attributes": "Attributes",
-    "NewestFirst": "Newest first"
+    "Changed": "changed",
+    "CollectionUpdated": "Update {collection}",
+    "DocAdded": "added {_class}",
+    "DocCreated": "created {_class}",
+    "DocDeleted": "deleted {_class}",
+    "Edited": "edited",
+    "From": "from",
+    "Removed": "removed",
+    "To": "to",
+    "Unset": "unset"
   }
 }

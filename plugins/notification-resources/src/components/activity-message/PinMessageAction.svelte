@@ -13,17 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Component } from '@hcengineering/ui'
-  import { ActivityExtension, ActivityExtensionKind } from '@hcengineering/activity'
+  import { ActionIcon } from '@hcengineering/ui'
+  import { getClient } from '@hcengineering/presentation'
+  import view from '@hcengineering/view'
+  import { ActivityMessage } from '@hcengineering/notification'
 
-  export let kind: ActivityExtensionKind
-  export let extensions: ActivityExtension[] = []
-  export let props: Record<string, any> = {}
+  export let object: ActivityMessage
+
+  const client = getClient()
+
+  async function toggleMessagePinning (): Promise<void> {
+    await client.update(object, { isPinned: !object.isPinned })
+  }
 </script>
 
-{#each extensions as extension}
-  {@const component = extension.components?.[kind]}
-  {#if component}
-    <Component is={component} {props} />
-  {/if}
-{/each}
+<ActionIcon
+  icon={view.icon.Pin}
+  iconProps={object.isPinned ? { fill: '#3265cb' } : undefined}
+  size="medium"
+  action={toggleMessagePinning}
+/>

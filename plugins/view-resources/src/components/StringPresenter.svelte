@@ -18,6 +18,7 @@
   import { LabelAndProps, LinkWrapper, tooltip } from '@hcengineering/ui'
 
   export let value: string | string[] | undefined
+  export let accent: boolean = false
   export let oneLine: boolean = false
 
   $: tooltipParams = getTooltip(value)
@@ -36,7 +37,11 @@
   }
 </script>
 
-<span class="{oneLine ? 'overflow-label' : 'lines-limit-2'} select-text" use:tooltip={tooltipParams}>
+<span
+  class="{oneLine ? 'overflow-label' : 'lines-limit-2'} select-text"
+  class:fs-bold={accent}
+  use:tooltip={tooltipParams}
+>
   {#if Array.isArray(value)}
     {#each value as str, i}
       <span class:ml-1={i !== 0}><LinkWrapper text={str} /></span>

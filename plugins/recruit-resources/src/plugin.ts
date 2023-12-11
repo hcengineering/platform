@@ -157,9 +157,10 @@ export default mergeIds(recruitId, recruit, {
   },
   function: {
     IdProvider: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
-    AppTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>,
-    VacTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>,
-    RevTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>,
+    AppTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
+    AppIdentifierProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
+    VacTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
+    RevTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
     HasActiveApplicant: '' as FilterFunction,
     HasNoActiveApplicant: '' as FilterFunction,
     NoneApplications: '' as FilterFunction

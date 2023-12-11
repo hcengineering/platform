@@ -95,6 +95,7 @@ import MilestoneSelector from './components/milestones/MilestoneSelector.svelte'
 import MilestoneStatusEditor from './components/milestones/MilestoneStatusEditor.svelte'
 import MilestoneStatusPresenter from './components/milestones/MilestoneStatusPresenter.svelte'
 import MilestoneTitlePresenter from './components/milestones/MilestoneTitlePresenter.svelte'
+import MilestoneStatusIcon from './components/milestones/MilestoneStatusIcon.svelte'
 
 import SubIssuesSelector from './components/issues/edit/SubIssuesSelector.svelte'
 import EstimationEditor from './components/issues/timereport/EstimationEditor.svelte'
@@ -117,6 +118,8 @@ import {
   getAllComponents,
   getAllMilestones,
   getAllPriority,
+  getComponentTitle,
+  getMilestoneTitle,
   getVisibleFilters,
   issuePrioritySort,
   issueStatusSort,
@@ -139,6 +142,8 @@ import MilestoneRefPresenter from './components/milestones/MilestoneRefPresenter
 import CreateProject from './components/projects/CreateProject.svelte'
 import ProjectPresenter from './components/projects/ProjectPresenter.svelte'
 import ProjectSpacePresenter from './components/projects/ProjectSpacePresenter.svelte'
+import IssueStatusIcon from './components/issues/IssueStatusIcon.svelte'
+import PriorityIconPresenter from './components/issues/PriorityIconPresenter.svelte'
 
 import { get } from 'svelte/store'
 
@@ -499,6 +504,9 @@ export default async (): Promise<Resources> => ({
     EditRelatedTargetsPopup,
     TimePresenter,
     EstimationValueEditor,
+    IssueStatusIcon,
+    MilestoneStatusIcon,
+    PriorityIconPresenter,
     IssueSearchIcon
   },
   completion: {
@@ -507,6 +515,8 @@ export default async (): Promise<Resources> => ({
   },
   function: {
     IssueTitleProvider: getIssueTitle,
+    ComponentTitleProvider: getComponentTitle,
+    MilestoneTitleProvider: getMilestoneTitle,
     GetIssueId: issueIdProvider,
     GetIssueLink: issueLinkProvider,
     GetIssueLinkFragment: issueLinkFragmentProvider,

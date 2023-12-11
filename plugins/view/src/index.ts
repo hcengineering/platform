@@ -203,6 +203,13 @@ export interface ActivityAttributePresenter extends Class<Doc> {
 /**
  * @public
  */
+export interface NotificationAttributePresenter extends Class<Doc> {
+  presenter: AnyComponent
+}
+
+/**
+ * @public
+ */
 export interface SpacePresenter extends Class<Doc> {
   presenter: AnyComponent
 }
@@ -269,7 +276,14 @@ export interface ObjectValidator extends Class<Doc> {
  * @public
  */
 export interface ObjectTitle extends Class<Doc> {
-  titleProvider: Resource<<T extends Doc>(client: Client, ref: Ref<T>) => Promise<string>>
+  titleProvider: Resource<<T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<string>>
+}
+
+/**
+ * @public
+ */
+export interface ObjectIdentifier extends Class<Doc> {
+  provider: Resource<<T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<string>>
 }
 
 /**
@@ -766,6 +780,7 @@ const view = plugin(viewId, {
     ArrayEditor: '' as Ref<Mixin<ArrayEditor>>,
     AttributePresenter: '' as Ref<Mixin<AttributePresenter>>,
     ActivityAttributePresenter: '' as Ref<Mixin<ActivityAttributePresenter>>,
+    NotificationAttributePresenter: '' as Ref<Mixin<NotificationAttributePresenter>>,
     ListItemPresenter: '' as Ref<Mixin<ListItemPresenter>>,
     ObjectEditor: '' as Ref<Mixin<ObjectEditor>>,
     ObjectPresenter: '' as Ref<Mixin<ObjectPresenter>>,
@@ -774,6 +789,7 @@ const view = plugin(viewId, {
     ObjectValidator: '' as Ref<Mixin<ObjectValidator>>,
     ObjectFactory: '' as Ref<Mixin<ObjectFactory>>,
     ObjectTitle: '' as Ref<Mixin<ObjectTitle>>,
+    ObjectIdentifier: '' as Ref<Mixin<ObjectIdentifier>>,
     SpaceHeader: '' as Ref<Mixin<SpaceHeader>>,
     SpaceName: '' as Ref<Mixin<SpaceName>>,
     IgnoreActions: '' as Ref<Mixin<IgnoreActions>>,

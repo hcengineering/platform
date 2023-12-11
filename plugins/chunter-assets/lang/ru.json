@@ -17,7 +17,8 @@
     "About": "Информация",
     "Members": "Участники",
     "NoMembers": "Нет участников",
-    "MentionedIn": "упомянул(а) вас в",
+    "MentionedIn": "Упомянул(а) вас в",
+    "Mentioned": "Упомянул(а)",
     "ContactInfo": "Контактная информация",
     "Content": "Содержимое",
     "Comment": "Комментарий",
@@ -67,8 +68,6 @@
     "Messages": "Сообщения",
     "NoResults": "Нет результатов",
     "CopyLink": "Копировать ссылку",
-    "FilterComments": "Комментарии",
-    "FilterPinnedComments": "Закрепленные комментарии",
     "FilterBacklinks": "Упоминания",
     "DM": "Личное сообщение",
     "DMNotification": "Отправил сообщение",
@@ -80,6 +79,7 @@
     "NoMessages": "Сообщений пока нет",
     "DirectNotificationTitle": "{senderName}",
     "DirectNotificationBody": "{message}",
-    "AddCommentPlaceholder": "Добавить комментарий..."
+    "AddCommentPlaceholder": "Добавить комментарий...",
+    "Reacted": "Отреагировал(а)"
   }
 }

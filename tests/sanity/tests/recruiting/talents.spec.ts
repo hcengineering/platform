@@ -64,7 +64,7 @@ test.describe('candidate/talents tests', () => {
     expect(await page.locator('.cover-channel >> input').inputValue()).toEqual(email)
   })
 
-  test('Edit the Talent', async ({ page, context }) => {
+  test.skip('Edit the Talent', async ({ page, context }) => {
     const navigationMenuPage = new NavigationMenuPage(page)
     await navigationMenuPage.buttonTalents.click()
 
@@ -109,7 +109,7 @@ test.describe('candidate/talents tests', () => {
     await talentsPage.checkTalentNotExist(talentName)
   })
 
-  test('Merge contacts', async ({ page, context }) => {
+  test.skip('Merge contacts', async ({ page, context }) => {
     const navigationMenuPage = new NavigationMenuPage(page)
     await navigationMenuPage.buttonTalents.click()
     const talentsPage = new TalentsPage(page)

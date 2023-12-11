@@ -13,25 +13,13 @@
 // limitations under the License.
 //
 
-import { type Doc, type Ref } from '@hcengineering/core'
 import { type Resources } from '@hcengineering/platform'
-import type { DisplayTx } from '@hcengineering/activity'
-import Activity from './components/Activity.svelte'
-import TxView from './components/TxView.svelte'
 
-export { TxView }
+import Activity from './components/Activity.svelte'
 
 export * from './activity'
 export * from './utils'
-
-export function attributeFilter (tx: DisplayTx, _class?: Ref<Doc>): boolean {
-  return tx.tx.objectClass === _class
-}
-
 export default async (): Promise<Resources> => ({
-  filter: {
-    AttributeFilter: attributeFilter
-  },
   component: {
     Activity
   }

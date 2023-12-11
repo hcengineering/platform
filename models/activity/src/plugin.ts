@@ -12,18 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import type { DisplayTx } from '@hcengineering/activity'
 import { activityId } from '@hcengineering/activity'
 import activity from '@hcengineering/activity-resources/src/plugin'
-import type { Resource, IntlString } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
-import { type Doc, type Ref } from '@hcengineering/core'
 
-export default mergeIds(activityId, activity, {
-  filter: {
-    AttributeFilter: '' as Resource<(tx: DisplayTx, _class?: Ref<Doc>) => boolean>
-  },
-  string: {
-    Attributes: '' as IntlString
-  }
-})
+export default mergeIds(activityId, activity, {})
