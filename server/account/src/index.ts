@@ -163,11 +163,15 @@ function verifyPassword (password: string, hash: Buffer, salt: Buffer): boolean 
   return Buffer.compare(hash, hashWithSalt(password, salt)) === 0
 }
 
+function cleanEmail (email: string): string {
+  return email.toLowerCase().trim()
+}
+
 /**
  * @public
  */
 export async function getAccount (db: Db, email: string): Promise<Account | null> {
-  return await db.collection(ACCOUNT_COLLECTION).findOne<Account>({ email })
+  return await db.collection(ACCOUNT_COLLECTION).findOne<Account>({ email: cleanEmail(email) })
 }
 
 /**
@@ -238,7 +242,8 @@ async function getAccountInfoByToken (db: Db, productId: string, token: string):
  * @param workspace -
  * @returns
  */
-export async function login (db: Db, productId: string, email: string, password: string): Promise<LoginInfo> {
+export async function login (db: Db, productId: string, _email: string, password: string): Promise<LoginInfo> {
+  const email = cleanEmail(_email)
   console.log(`login attempt:${email}`)
   const info = await getAccountInfo(db, email, password)
   const result = {
@@ -272,7 +277,8 @@ export async function selectWorkspace (
   workspace: string,
   allowAdmin: boolean = true
 ): Promise<WorkspaceLoginInfo> {
-  const { email } = decodeToken(token)
+  let { email } = decodeToken(token)
+  email = cleanEmail(email)
   const accountInfo = await getAccount(db, email)
   if (accountInfo === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
@@ -350,10 +356,11 @@ export async function useInvite (db: Db, inviteId: ObjectId): Promise<void> {
 export async function join (
   db: Db,
   productId: string,
-  email: string,
+  _email: string,
   password: string,
   inviteId: ObjectId
 ): Promise<WorkspaceLoginInfo> {
+  const email = cleanEmail(_email)
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(invite, email)
   console.log(`join attempt:${email}, ${workspace.name}`)
@@ -368,7 +375,8 @@ export async function join (
 /**
  * @public
  */
-export async function confirmEmail (db: Db, email: string): Promise<Account> {
+export async function confirmEmail (db: Db, _email: string): Promise<Account> {
+  const email = cleanEmail(_email)
   const account = await getAccount(db, email)
   console.log(`confirm email:${email}`)
 
@@ -389,10 +397,11 @@ export async function confirmEmail (db: Db, email: string): Promise<Account> {
  */
 export async function confirm (db: Db, productId: string, token: string): Promise<LoginInfo> {
   const decode = decodeToken(token)
-  const email = decode.extra?.confirm
-  if (email === undefined) {
+  const _email = decode.extra?.confirm
+  if (_email === undefined) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: accountId }))
   }
+  const email = cleanEmail(_email)
   const account = await confirmEmail(db, email)
 
   const result = {
@@ -465,12 +474,13 @@ async function sendConfirmation (productId: string, account: Account): Promise<v
 export async function signUpJoin (
   db: Db,
   productId: string,
-  email: string,
+  _email: string,
   password: string,
   first: string,
   last: string,
   inviteId: ObjectId
 ): Promise<WorkspaceLoginInfo> {
+  const email = cleanEmail(_email)
   console.log(`signup join:${email} ${first} ${last}`)
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(invite, email)
@@ -498,12 +508,13 @@ export async function signUpJoin (
 export async function createAcc (
   db: Db,
   productId: string,
-  email: string,
+  _email: string,
   password: string,
   first: string,
   last: string,
   confirmed: boolean = false
 ): Promise<Account> {
+  const email = cleanEmail(_email)
   const salt = randomBytes(32)
   const hash = hashWithSalt(password, salt)
 
@@ -543,11 +554,12 @@ export async function createAcc (
 export async function createAccount (
   db: Db,
   productId: string,
-  email: string,
+  _email: string,
   password: string,
   first: string,
   last: string
 ): Promise<LoginInfo> {
+  const email = cleanEmail(_email)
   const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
   const account = await createAcc(db, productId, email, password, first, last, sesURL === undefined || sesURL === '')
 
@@ -779,9 +791,10 @@ export async function getUserWorkspaces (db: Db, productId: string, token: strin
 async function getWorkspaceAndAccount (
   db: Db,
   productId: string,
-  email: string,
+  _email: string,
   workspace: string
 ): Promise<{ accountId: ObjectId, workspaceId: ObjectId }> {
+  const email = cleanEmail(_email)
   const wsPromise = await getWorkspace(db, productId, workspace)
   if (wsPromise === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace }))
@@ -798,7 +811,8 @@ async function getWorkspaceAndAccount (
 /**
  * @public
  */
-export async function setRole (email: string, workspace: string, productId: string, role: AccountRole): Promise<void> {
+export async function setRole (_email: string, workspace: string, productId: string, role: AccountRole): Promise<void> {
+  const email = cleanEmail(_email)
   const connection = await connect(getTransactor(), getWorkspaceId(workspace, productId), email)
   try {
     const ops = new TxOperations(connection, core.account.System)
@@ -819,7 +833,8 @@ export async function setRole (email: string, workspace: string, productId: stri
 /**
  * @public
  */
-export async function assignWorkspace (db: Db, productId: string, email: string, workspace: string): Promise<void> {
+export async function assignWorkspace (db: Db, productId: string, _email: string, workspace: string): Promise<void> {
+  const email = cleanEmail(_email)
   const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
   if (initWS !== undefined && initWS === workspace) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
@@ -836,7 +851,8 @@ export async function assignWorkspace (db: Db, productId: string, email: string,
   await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: accountId }, { $addToSet: { workspaces: workspaceId } })
 }
 
-async function createEmployee (ops: TxOperations, name: string, email: string): Promise<Ref<Person>> {
+async function createEmployee (ops: TxOperations, name: string, _email: string): Promise<Ref<Person>> {
+  const email = cleanEmail(_email)
   const gravatarId = buildGravatarId(email)
   const hasGravatar = await checkHasGravatar(gravatarId)
 
@@ -934,7 +950,8 @@ export async function replacePassword (db: Db, productId: string, email: string,
 /**
  * @public
  */
-export async function requestPassword (db: Db, productId: string, email: string): Promise<void> {
+export async function requestPassword (db: Db, productId: string, _email: string): Promise<void> {
+  const email = cleanEmail(_email)
   const account = await getAccount(db, email)
 
   if (account === null) {
