@@ -24,6 +24,8 @@
 
   const dispatch = createEventDispatcher()
 
+  let oldChecked = checked
+
   const handleValueChanged = (event: Event) => {
     if (readonly) {
       return
@@ -31,7 +33,10 @@
     const eventTarget = event.target as HTMLInputElement
     const isChecked = eventTarget.checked
 
-    dispatch('value', isChecked)
+    if (oldChecked !== isChecked) {
+      oldChecked = isChecked
+      dispatch('value', isChecked)
+    }
   }
 </script>
 
