@@ -14,7 +14,6 @@
 //
 
 import { type Domain, IndexKind, type Ref } from '@hcengineering/core'
-import activity from '@hcengineering/activity'
 import { type Category, type Product, type Variant, inventoryId } from '@hcengineering/inventory'
 import { type Builder, Collection, Index, Model, Prop, TypeRef, TypeString, UX } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
@@ -23,9 +22,10 @@ import { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import setting from '@hcengineering/setting'
 import view, { type Viewlet } from '@hcengineering/view'
+import notification from '@hcengineering/notification'
 import chunter from '@hcengineering/model-chunter'
-import inventory from './plugin'
 
+import inventory from './plugin'
 export { inventoryId } from '@hcengineering/inventory'
 export { inventoryOperation } from './migration'
 export { default } from './plugin'
@@ -78,6 +78,10 @@ export class TVariant extends TAttachedDoc implements Variant {
 
 export function createModel (builder: Builder): void {
   builder.createModel(TCategory, TProduct, TVariant)
+
+  builder.mixin(inventory.class.Product, core.class.Class, notification.mixin.ActivityDoc, {})
+  builder.mixin(inventory.class.Category, core.class.Class, notification.mixin.ActivityDoc, {})
+  builder.mixin(inventory.class.Variant, core.class.Class, notification.mixin.ActivityDoc, {})
 
   builder.mixin(inventory.class.Category, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: inventory.component.CategoryPresenter
@@ -165,27 +169,23 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    activity.class.ActivityExtension,
+    notification.class.ChatMessageViewlet,
     core.space.Model,
     {
-      ofClass: inventory.class.Product,
-      components: {
-        input: chunter.component.CommentInput
-      }
+      objectClass: inventory.class.Product,
+      label: chunter.string.LeftComment
     },
-    inventory.ids.ProductActivityExtension
+    inventory.ids.ProductChatMessageViewlet
   )
 
   builder.createDoc(
-    activity.class.ActivityExtension,
+    notification.class.ChatMessageViewlet,
     core.space.Model,
     {
-      ofClass: inventory.class.Category,
-      components: {
-        input: chunter.component.CommentInput
-      }
+      objectClass: inventory.class.Category,
+      label: chunter.string.LeftComment
     },
-    inventory.ids.CategoryActivityExtension
+    inventory.ids.CategoryChatMessageViewlet
   )
 
   createAction(builder, {

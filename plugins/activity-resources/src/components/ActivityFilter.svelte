@@ -13,32 +13,36 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import activity, { ActivityFilter, DisplayTx } from '@hcengineering/activity'
-  import { Class, Doc, Ref } from '@hcengineering/core'
-  import { getResource } from '@hcengineering/platform'
-  import { getClient, hasResource } from '@hcengineering/presentation'
-  import { ActionIcon, AnyComponent, Icon, Label, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import activityPlg from '../plugin'
+  import { Doc, Ref, SortingOrder } from '@hcengineering/core'
+  import { getResource } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
+  import { ActionIcon, eventToHTMLElement, Icon, Label, showPopup } from '@hcengineering/ui'
+  import notification, { ActivityMessage, ActivityMessagesFilter } from '@hcengineering/notification'
+
+  import activity from '../plugin'
   import FilterPopup from './FilterPopup.svelte'
   import IconClose from './icons/Close.svelte'
   import IconFilter from './icons/Filter.svelte'
 
-  export let txes: DisplayTx[]
+  export let messages: ActivityMessage[]
   export let object: Doc
+  export let isNewestFirst = false
 
-  let filtered: DisplayTx[]
+  let filtered: ActivityMessage[]
   const client = getClient()
-  let filters: ActivityFilter[] = []
+  let filters: ActivityMessagesFilter[] = []
   const saved = localStorage.getItem('activity-filter')
-  export let activityOrderNewestFirst = false
   let selectedFiltersRefs: Ref<Doc>[] | 'All' =
     saved !== null && saved !== undefined ? (JSON.parse(saved) as Ref<Doc>[] | 'All') : 'All'
-  let selectedFilters: ActivityFilter[] = []
+  let selectedFilters: ActivityMessagesFilter[] = []
+
   $: localStorage.setItem('activity-filter', JSON.stringify(selectedFiltersRefs))
-  $: localStorage.setItem('activity-newest-first', JSON.stringify(activityOrderNewestFirst))
-  client.findAll(activity.class.ActivityFilter, {}).then((res) => {
+  $: localStorage.setItem('activity-newest-first', JSON.stringify(isNewestFirst))
+
+  client.findAll(notification.class.ActivityMessagesFilter, {}).then((res) => {
     filters = res
+
     if (saved !== null && saved !== undefined) {
       const temp: Ref<Doc>[] | 'All' = JSON.parse(saved)
       if (temp !== 'All' && Array.isArray(temp)) {
@@ -52,20 +56,7 @@
     }
   })
 
-  function getAdditionalComponent (_class: Ref<Class<Doc>>): AnyComponent | undefined {
-    const hierarchy = client.getHierarchy()
-    const mixin = hierarchy.classHierarchyMixin(_class, activity.mixin.ExtraActivityComponent, (m) =>
-      hasResource(m.component)
-    )
-    if (mixin !== undefined) {
-      return mixin.component
-    }
-  }
-
-  let extraComponent = getAdditionalComponent(object._class)
-  $: extraComponent = getAdditionalComponent(object._class)
-
-  const handleOptions = (ev: MouseEvent) => {
+  const handleOptions = (ev: MouseEvent): void => {
     showPopup(
       FilterPopup,
       { selectedFiltersRefs, filters },
@@ -74,7 +65,7 @@
       (res) => {
         if (res === undefined) return
         if (res.action === 'toggle') {
-          activityOrderNewestFirst = res.value
+          isNewestFirst = res.value
           return
         }
         const selected = res.value as Ref<Doc>[]
@@ -87,33 +78,45 @@
   const dispatch = createEventDispatcher()
 
   async function updateFilterActions (
-    txes: DisplayTx[],
-    filters: ActivityFilter[],
-    selected: Ref<Doc>[] | 'All'
+    messages: ActivityMessage[],
+    filters: ActivityMessagesFilter[],
+    selected: Ref<Doc>[] | 'All',
+    sortOrder: SortingOrder
   ): Promise<void> {
-    const txesSorted = txes.sort((tx) => ((tx.doc as any)?.pinned ? -1 : 1))
+    const sortMessagesFn = await getResource(notification.function.SortActivityMessages)
+
+    const sortedMessages = sortMessagesFn(messages, sortOrder).sort(({ isPinned }) =>
+      isPinned && sortOrder === SortingOrder.Ascending ? -1 : 1
+    )
+
     if (selected === 'All') {
-      filtered = txesSorted
+      filtered = sortedMessages
+
       dispatch('update', filtered)
     } else {
       selectedFilters = filters.filter((filter) => selected.includes(filter._id))
-      const filterActions: ((tx: DisplayTx, _class?: Ref<Doc>) => boolean)[] = []
+      const filterActions: ((message: ActivityMessage, _class?: Ref<Doc>) => boolean)[] = []
       for (const filter of selectedFilters) {
         const fltr = await getResource(filter.filter)
         filterActions.push(fltr)
       }
-      filtered = txesSorted.filter((it) => filterActions.some((f) => f(it, object._class)))
+      filtered = messages.filter((message) => filterActions.some((f) => f(message, object._class)))
       dispatch('update', filtered)
     }
   }
 
-  $: updateFilterActions(txes, filters, selectedFiltersRefs)
+  $: updateFilterActions(
+    messages,
+    filters,
+    selectedFiltersRefs,
+    isNewestFirst ? SortingOrder.Descending : SortingOrder.Ascending
+  )
 </script>
 
 <div class="w-4 min-w-4 max-w-4" />
 {#if selectedFiltersRefs === 'All'}
   <div class="antiSection-header__tag highlight">
-    <Label label={activityPlg.string.All} />
+    <Label label={activity.string.All} />
   </div>
 {:else}
   {#each selectedFilters as filter}
@@ -137,10 +140,3 @@
 {/if}
 <div class="w-4 min-w-4 max-w-4" />
 <ActionIcon icon={IconFilter} size={'medium'} action={handleOptions} />
-{#if extraComponent}
-  {#await getResource(extraComponent) then comp}
-    {#if comp}
-      <svelte:component this={comp} {filtered} {object} on:update />
-    {/if}
-  {/await}
-{/if}

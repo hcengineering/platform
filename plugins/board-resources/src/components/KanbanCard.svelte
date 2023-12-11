@@ -16,7 +16,6 @@
 <script lang="ts">
   import { AttachmentDroppable, AttachmentsPresenter } from '@hcengineering/attachment-resources'
   import type { Card } from '@hcengineering/board'
-  import { CommentsPresenter } from '@hcengineering/chunter-resources'
   import { Employee } from '@hcengineering/contact'
   import type { Ref, WithLookup } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
@@ -41,6 +40,7 @@
   import { hasDate, openCardPanel, updateCard, updateCardMembers } from '../utils/CardUtils'
   import CheckListsPresenter from './presenters/ChecklistsPresenter.svelte'
   import NotificationPresenter from './presenters/NotificationPresenter.svelte'
+  import { ChatMessagesPresenter } from '@hcengineering/notification-resources'
 
   export let object: WithLookup<Card>
 
@@ -196,7 +196,7 @@
           {/if}
           {#if (object.comments ?? 0) > 0}
             <div class="float-left">
-              <CommentsPresenter value={object.comments} {object} />
+              <ChatMessagesPresenter value={object.comments} {object} size="small" />
             </div>
           {/if}
           {#if (object.todoItems ?? 0) > 0}

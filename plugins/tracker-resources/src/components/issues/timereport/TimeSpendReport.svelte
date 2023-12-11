@@ -22,10 +22,12 @@
 
   export let value: WithLookup<TimeSpendReport>
   export let currentProject: Project | undefined
+  export let accent = false
+
   const client = getClient()
 
   $: issue = value.$lookup?.attachedTo
-  $: if (!issue) {
+  $: if (!issue && value.attachedToClass) {
     client.findOne(value.attachedToClass, { _id: value.attachedTo }).then((r) => {
       issue = r as Issue
     })
@@ -33,6 +35,9 @@
   $: defaultTimeReportDay = currentProject?.defaultTimeReportDay
 
   function editSpendReport (event: MouseEvent): void {
+    if (!issue) {
+      return
+    }
     showPopup(
       TimeSpendReportPopup,
       {
@@ -49,5 +54,5 @@
 </script>
 
 {#if value && value.value}
-  <TimePresenter id="TimeSpendReportValue" kind="link" value={value.value} on:click={editSpendReport} />
+  <TimePresenter id="TimeSpendReportValue" kind="link" value={value.value} on:click={editSpendReport} {accent} />
 {/if}

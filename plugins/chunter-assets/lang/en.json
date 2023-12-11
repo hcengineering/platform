@@ -17,7 +17,8 @@
     "About": "About",
     "Members": "Members",
     "NoMembers": "No members",
-    "MentionedIn": "mentioned you in ",
+    "MentionedIn": "Mentioned you in ",
+    "Mentioned": "Mentioned",
     "ContactInfo": "Contact Info",
     "Content": "Content",
     "Comment": "Comment",
@@ -67,8 +68,6 @@
     "Messages": "Messages",
     "NoResults": "No results",
     "CopyLink": "Copy link",
-    "FilterComments": "Comments",
-    "FilterPinnedComments": "Pinned comments",
     "FilterBacklinks": "Backlinks",
     "DM": "Direct message",
     "DMNotification": "Sent you a message",
@@ -80,6 +79,7 @@
     "NoMessages": "There are no messages yet",
     "DirectNotificationTitle": "{senderName}",
     "DirectNotificationBody": "{message}",
-    "AddCommentPlaceholder": "Add comment..."
+    "AddCommentPlaceholder": "Add comment...",
+    "Reacted": "Reacted"
   }
 }

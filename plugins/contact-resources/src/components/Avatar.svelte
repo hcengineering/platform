@@ -48,6 +48,7 @@
   export let direct: Blob | undefined = undefined
   export let size: IconSize
   export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let variant: 'circle' | 'roundedRect' = 'circle'
 
   let url: string[] | undefined
   let avatarProvider: AvatarProvider | undefined
@@ -94,7 +95,7 @@
 </script>
 
 <div
-  class="ava-{size} flex-center avatar-container"
+  class="ava-{size} flex-center avatar-container {variant}"
   class:no-img={!url && color}
   class:bordered={!url && color === undefined}
   style:background-color={color && !url ? color.icon : 'var(--theme-button-default)'}
@@ -123,8 +124,15 @@
     position: relative;
     overflow: hidden;
     background-color: var(--theme-button-default);
-    border-radius: 50%;
     pointer-events: none;
+
+    &.circle {
+      border-radius: 50%;
+    }
+
+    &.roundedRect {
+      border-radius: 6px;
+    }
 
     &.no-img {
       color: var(--primary-button-color);
@@ -220,8 +228,8 @@
     }
   }
   .ava-medium {
-    width: 2.25rem; // 36
-    height: 2.25rem;
+    width: 2.5rem; // 40
+    height: 2.5rem;
 
     .ava-text {
       font-weight: 500;
@@ -261,11 +269,20 @@
     position: absolute;
     filter: blur(32px);
   }
+
   .ava-mask {
     position: absolute;
     border: 1px solid var(--avatar-border-color);
-    border-radius: 50%;
+
+    &.circle {
+      border-radius: 50%;
+    }
+
+    &.roundedRect {
+      border-radius: 6px;
+    }
   }
+
   .ava-large .ava-mask,
   .ava-x-large .ava-mask,
   .ava-2x-large .ava-mask {

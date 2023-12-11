@@ -163,10 +163,20 @@
   )
 
   let hasNotification = false
+  // let hasInboxNotifications = false
+
   const notificationClient = NotificationClientImpl.getClient()
   notificationClient.docUpdates.subscribe((res) => {
     hasNotification = res.some((p) => !p.hidden && p.txes.some((p) => p.isNew))
   })
+
+  // const newNotificationClient = InboxNotificationsClientImpl.getClient()
+  //
+  // newNotificationClient.inboxNotificationsByContext.subscribe((inboxNotificationsByContext) => {
+  //   hasInboxNotifications = Array.from(inboxNotificationsByContext.entries()).some(
+  //     ([docNotifyContext, notifications]) => !docNotifyContext.hidden && notifications.some(({ isViewed }) => !isViewed)
+  //   )
+  // })
 
   const workspaceId = $location.path[1]
 
@@ -369,6 +379,11 @@
         setSpaceSpecial(special)
       }
     }
+
+    if (special !== currentSpecial && (navigatorModel?.aside || currentApplication?.aside)) {
+      asideId = special
+    }
+
     if (app !== undefined) {
       localStorage.setItem(`${locationStorageKeyId}_${app}`, originalLoc)
     }
@@ -655,6 +670,26 @@
             notify={hasNotification}
           />
         </NavLink>
+        <!-- NOTE: temporarily disabled       -->
+        <!--        <NavLink app={inboxId} shrink={0}>-->
+        <!--          <AppItem-->
+        <!--            icon={notification.icon.Notifications}-->
+        <!--            label={notification.string.Inbox}-->
+        <!--            selected={currentAppAlias === inboxId || inboxPopup !== undefined}-->
+        <!--            on:click={(e) => {-->
+        <!--              if (e.metaKey || e.ctrlKey) return-->
+        <!--              if (currentAppAlias === inboxId && lastLoc !== undefined) {-->
+        <!--                e.preventDefault()-->
+        <!--                e.stopPropagation()-->
+        <!--                navigate(lastLoc)-->
+        <!--                lastLoc = undefined-->
+        <!--              } else {-->
+        <!--                lastLoc = $location-->
+        <!--              }-->
+        <!--            }}-->
+        <!--            notify={hasInboxNotifications}-->
+        <!--          />-->
+        <!--        </NavLink>-->
         <Applications apps={getApps(apps)} active={currentApplication?._id} direction={appsDirection} />
       </div>
       <div class="info-box {appsDirection}" class:vertical-mobile={appsDirection === 'vertical'} class:mini={appsMini}>
@@ -780,7 +815,7 @@
           <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
         {/if}
       </div>
-      {#if asideId && currentSpace}
+      {#if asideId}
         {@const asideComponent = navigatorModel?.aside ?? currentApplication?.aside}
         {#if asideComponent !== undefined}
           <Separator name={'workbench'} index={1} />

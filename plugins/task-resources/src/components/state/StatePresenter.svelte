@@ -14,18 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { IdMap, Ref, Status, StatusCategory } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
-  import task, { Project, ProjectType } from '@hcengineering/task'
-  import {
-    ColorDefinition,
-    defaultBackground,
-    getColorNumberByText,
-    getPlatformColorDef,
-    themeStore
-  } from '@hcengineering/ui'
-  import { createEventDispatcher, onMount } from 'svelte'
-  import { typeStore } from '../..'
+  import { Ref, Status } from '@hcengineering/core'
+  import { Project } from '@hcengineering/task'
+  import StateIconPresenter from './StateIconPresenter.svelte'
 
   export let value: Status | undefined
   export let shouldShowAvatar = true
@@ -35,59 +26,9 @@
   export let shouldShowName: boolean = true
   export let shouldShowTooltip: boolean = false
   export let noUnderline: boolean = false
+  export let accent: boolean = false
   export let shrink: number = 0
   export let space: Ref<Project>
-
-  const dispatch = createEventDispatcher()
-
-  $: color = viewState
-    ? getPlatformColorDef(viewState.color ?? category?.color ?? getColorNumberByText(viewState.name), $themeStore.dark)
-    : undefined
-  const dispatchAccentColor = (color?: ColorDefinition) => {
-    dispatch('accent-color', color)
-  }
-
-  $: dispatchAccentColor(color)
-
-  onMount(() => {
-    dispatchAccentColor(color)
-  })
-
-  function getViewState (type: ProjectType | undefined, state: Status | undefined): Status | undefined {
-    if (state === undefined) return
-    if (type === undefined) return state
-    const targetColor = type.statuses.find((p) => p._id === state._id)?.color
-    if (targetColor === undefined) return state
-    return {
-      ...state,
-      color: targetColor
-    }
-  }
-
-  let category: StatusCategory | undefined
-  $: updateCategory(value)
-
-  async function updateCategory (value: Status | undefined) {
-    if (value === undefined) return
-    category = await client.findOne(core.class.StatusCategory, { _id: value.category })
-  }
-
-  $: viewState = getViewState(type, value)
-
-  let type: ProjectType | undefined = undefined
-
-  $: getType(space, $typeStore)
-
-  const client = getClient()
-
-  async function getType (space: Ref<Project>, types: IdMap<ProjectType>): Promise<ProjectType | undefined> {
-    const _space = await client.findOne(task.class.Project, { _id: space })
-    if (_space === undefined) {
-      type = undefined
-      return
-    }
-    type = types.get(_space.type)
-  }
 </script>
 
 {#if value}
@@ -97,16 +38,13 @@
     class="flex-presenter"
     class:inline-presenter={inline}
     class:flex-no-shrink={!shouldShowName || shrink === 0}
+    class:fs-bold={accent}
     on:click
   >
     {#if shouldShowAvatar}
-      <div
-        class="state-container"
-        class:inline
-        class:mr-2={shouldShowName}
-        style:background-color={color?.color ?? defaultBackground($themeStore.dark)}
-        title={shouldShowTooltip ? value.name : undefined}
-      />
+      <div class:mr-2={shouldShowName}>
+        <StateIconPresenter {value} {shouldShowTooltip} {space} />
+      </div>
     {/if}
     {#if shouldShowName}
       <span class="overflow-label label" class:nowrap={oneLine} class:no-underline={noUnderline || disabled}>
@@ -115,17 +53,3 @@
     {/if}
   </div>
 {/if}
-
-<style lang="scss">
-  .state-container {
-    flex-shrink: 0;
-    width: 0.875rem;
-    height: 0.875rem;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 0.25rem;
-
-    &.inline {
-      transform: translateY(0.125rem);
-    }
-  }
-</style>

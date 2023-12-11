@@ -30,18 +30,18 @@
     "prettier-plugin-svelte": "^3.1.0"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/core": "^0.6.28",
-    "@hcengineering/preference": "^0.6.9",
-    "@hcengineering/tags": "^0.6.12",
-    "@hcengineering/contact": "^0.6.20",
-    "@hcengineering/chunter": "^0.6.12",
     "@hcengineering/attachment": "^0.6.9",
-    "fast-equals": "^2.0.3",
-    "qs": "~6.11.0",
+    "@hcengineering/contact": "^0.6.20",
+    "@hcengineering/core": "^0.6.28",
     "@hcengineering/gmail": "^0.6.15",
+    "@hcengineering/notification": "^0.6.16",
+    "@hcengineering/platform": "^0.6.9",
+    "@hcengineering/preference": "^0.6.9",
     "@hcengineering/recruit": "^0.6.21",
-    "@hcengineering/task": "^0.6.13"
+    "@hcengineering/tags": "^0.6.12",
+    "@hcengineering/task": "^0.6.13",
+    "fast-equals": "^2.0.3",
+    "qs": "~6.11.0"
   },
   "repository": "https://github.com/hcengineering/anticrm",
   "publishConfig": {

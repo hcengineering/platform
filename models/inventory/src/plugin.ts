@@ -20,8 +20,7 @@ import inventory from '@hcengineering/inventory-resources/src/plugin'
 import { type IntlString, mergeIds } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action, type ActionCategory, type ViewAction, type Viewlet } from '@hcengineering/view'
-import { type ActivityExtension } from '@hcengineering/activity'
-
+import { type ChatMessageViewlet } from '@hcengineering/notification'
 export default mergeIds(inventoryId, inventory, {
   action: {
     CreateSubcategory: '' as Ref<Action>
@@ -50,7 +49,7 @@ export default mergeIds(inventoryId, inventory, {
     ConfigDescription: '' as IntlString
   },
   ids: {
-    ProductActivityExtension: '' as Ref<ActivityExtension>,
-    CategoryActivityExtension: '' as Ref<ActivityExtension>
+    ProductChatMessageViewlet: '' as Ref<ChatMessageViewlet>,
+    CategoryChatMessageViewlet: '' as Ref<ChatMessageViewlet>
   }
 })

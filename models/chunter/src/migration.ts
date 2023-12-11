@@ -14,7 +14,17 @@
 //
 
 import core, { TxOperations } from '@hcengineering/core'
-import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
+import {
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient,
+  tryMigrate
+} from '@hcengineering/model'
+import { chunterId } from '@hcengineering/chunter'
+import notification from '@hcengineering/notification'
+import { DOMAIN_NOTIFICATION } from '@hcengineering/model-notification'
+
+import { DOMAIN_COMMENT } from './index'
 import chunter from './plugin'
 
 export async function createGeneral (tx: TxOperations): Promise<void> {
@@ -79,8 +89,20 @@ async function createBacklink (tx: TxOperations): Promise<void> {
   }
 }
 
+async function convertCommentsToChatMessages (client: MigrationClient): Promise<void> {
+  await client.update(DOMAIN_COMMENT, { _class: chunter.class.Comment }, { _class: notification.class.ChatMessage })
+  await client.move(DOMAIN_COMMENT, { _class: notification.class.ChatMessage }, DOMAIN_NOTIFICATION)
+}
+
 export const chunterOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (client: MigrationClient): Promise<void> {
+    await tryMigrate(client, chunterId, [
+      {
+        state: 'create-chat-messages',
+        func: convertCommentsToChatMessages
+      }
+    ])
+  },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createGeneral(tx)

@@ -22,7 +22,7 @@
   import { updateDocReactions } from '../utils'
   import chunter from '../plugin'
 
-  export let object: Doc | undefined = undefined
+  export let object: Doc | undefined
 
   const client = getClient()
   const reactionsQuery = createQuery()
@@ -42,6 +42,6 @@
 
 {#if reactions.length}
   <div class="footer flex-col p-inline contrast mt-2">
-    <Reactions {reactions} on:click={handleClick} />
+    <Reactions {reactions} {object} on:click={handleClick} />
   </div>
 {/if}

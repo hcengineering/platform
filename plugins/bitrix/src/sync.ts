@@ -1,5 +1,4 @@
 import attachment, { Attachment } from '@hcengineering/attachment'
-import chunter, { Comment } from '@hcengineering/chunter'
 import contact, { Channel, combineName, Contact, Employee, PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
@@ -41,6 +40,7 @@ import {
   LoginInfo
 } from './types'
 import { convert, ConvertResult } from './utils'
+import notification, { ChatMessage } from '@hcengineering/notification'
 
 async function updateDoc (client: ApplyOperations, doc: Doc, raw: Doc | Data<Doc>, date: Timestamp): Promise<Doc> {
   // We need to update fields if they are different.
@@ -785,9 +785,9 @@ async function downloadComments (
       order: { ID: ops.direction }
     })
     for (const it of commentsData.result) {
-      const c: Comment & BitrixSyncDoc = {
+      const c: ChatMessage & BitrixSyncDoc = {
         _id: generateId(),
-        _class: chunter.class.Comment,
+        _class: notification.class.ChatMessage,
         message: processComment(it.COMMENT as string),
         bitrixId: `${it.ID as string}`,
         type: it.ENTITY_TYPE,

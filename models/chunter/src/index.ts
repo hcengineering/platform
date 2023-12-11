@@ -195,6 +195,8 @@ export function createModel (builder: Builder, options = { addApplication: true 
   const spaceClasses = [chunter.class.Channel, chunter.class.DirectMessage]
 
   spaceClasses.forEach((spaceClass) => {
+    builder.mixin(spaceClass, core.class.Class, notification.mixin.ActivityDoc, {})
+
     builder.mixin(spaceClass, core.class.Class, workbench.mixin.SpaceView, {
       view: {
         class: chunter.class.Message
@@ -475,18 +477,6 @@ export function createModel (builder: Builder, options = { addApplication: true 
     )
   }
 
-  builder.mixin(chunter.class.Comment, core.class.Class, view.mixin.ObjectPresenter, {
-    presenter: chunter.component.CommentPresenter
-  })
-
-  builder.mixin(chunter.class.Comment, core.class.Class, view.mixin.CollectionPresenter, {
-    presenter: chunter.component.CommentsPresenter
-  })
-
-  builder.mixin(chunter.class.Comment, core.class.Class, view.mixin.ObjectPanel, {
-    component: chunter.component.CommentPanel
-  })
-
   builder.createDoc(
     activity.class.TxViewlet,
     core.space.Model,
@@ -501,6 +491,22 @@ export function createModel (builder: Builder, options = { addApplication: true 
       hideOnRemove: true
     },
     chunter.ids.TxCommentCreate
+  )
+
+  builder.createDoc(
+    activity.class.TxViewlet,
+    core.space.Model,
+    {
+      objectClass: notification.class.ChatMessage,
+      icon: chunter.icon.Chunter,
+      txClass: core.class.TxCreateDoc,
+      component: chunter.activity.TxCommentCreate,
+      label: chunter.string.LeftComment,
+      display: 'content',
+      editable: true,
+      hideOnRemove: true
+    },
+    chunter.ids.TxChatMessageCreate
   )
 
   createAction(
@@ -610,6 +616,19 @@ export function createModel (builder: Builder, options = { addApplication: true 
     activity.class.TxViewlet,
     core.space.Model,
     {
+      objectClass: notification.class.ChatMessage,
+      icon: chunter.icon.Chunter,
+      txClass: core.class.TxRemoveDoc,
+      display: 'inline',
+      hideOnRemove: true
+    },
+    chunter.ids.TxChatMessageRemove
+  )
+
+  builder.createDoc(
+    activity.class.TxViewlet,
+    core.space.Model,
+    {
       objectClass: chunter.class.Message,
       icon: chunter.icon.Chunter,
       txClass: core.class.TxCreateDoc,
@@ -629,9 +648,9 @@ export function createModel (builder: Builder, options = { addApplication: true 
       objectClass: chunter.class.Backlink,
       icon: chunter.icon.Chunter,
       txClass: core.class.TxCreateDoc,
-      component: chunter.activity.TxBacklinkCreate,
+      component: chunter.component.BacklinkContent,
       label: chunter.string.MentionedIn,
-      labelComponent: chunter.activity.TxBacklinkReference,
+      labelComponent: chunter.component.BacklinkReference,
       display: 'emphasized',
       editable: false,
       hideOnRemove: true
@@ -653,17 +672,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
     chunter.ids.TxBacklinkRemove
   )
 
-  builder.createDoc(activity.class.ActivityFilter, core.space.Model, {
-    label: chunter.string.FilterComments,
-    filter: chunter.filter.CommentsFilter
-  })
-
-  builder.createDoc(activity.class.ActivityFilter, core.space.Model, {
-    label: chunter.string.FilterPinnedComments,
-    filter: chunter.filter.PinnedCommentsFilter
-  })
-
-  builder.createDoc(activity.class.ActivityFilter, core.space.Model, {
+  builder.createDoc(notification.class.ActivityMessagesFilter, core.space.Model, {
     label: chunter.string.FilterBacklinks,
     filter: chunter.filter.BacklinksFilter
   })
@@ -750,38 +759,41 @@ export function createModel (builder: Builder, options = { addApplication: true 
   )
 
   builder.createDoc(
-    activity.class.ActivityExtension,
+    notification.class.ActivityMessageExtension,
     core.space.Model,
     {
-      ofClass: chunter.class.Comment,
-      components: {
-        footer: chunter.component.CommentReactions,
-        action: chunter.component.ReactionsAction
-      }
+      ofMessage: notification.class.DocUpdateMessage,
+      components: [
+        {
+          kind: 'footer',
+          component: chunter.component.ReactionsPresenter
+        },
+        {
+          kind: 'action',
+          component: chunter.component.ActivityMessageReactionsAction
+        }
+      ]
     },
-    chunter.ids.ActivityExtension
+    chunter.ids.DocUpdateMessageExtension
   )
 
   builder.createDoc(
-    activity.class.ActivityExtension,
+    notification.class.ActivityMessageExtension,
     core.space.Model,
     {
-      ofClass: chunter.class.Comment,
-      components: {
-        action: chunter.component.PinComment
-      }
+      ofMessage: notification.class.ChatMessage,
+      components: [
+        {
+          kind: 'footer',
+          component: chunter.component.ReactionsPresenter
+        },
+        {
+          kind: 'action',
+          component: chunter.component.ActivityMessageReactionsAction
+        }
+      ]
     },
-    chunter.ids.PinExtension
-  )
-
-  builder.createDoc(
-    activity.class.ActivityExtension,
-    core.space.Model,
-    {
-      ofClass: chunter.class.Backlink,
-      isMention: true
-    },
-    chunter.ids.BackLinkActivityExtension
+    chunter.ids.ChatMessageExtension
   )
 
   builder.createDoc(
@@ -799,6 +811,55 @@ export function createModel (builder: Builder, options = { addApplication: true 
       group: chunter.ids.ChunterNotificationGroup
     },
     chunter.ids.ThreadNotification
+  )
+
+  builder.createDoc(
+    notification.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: chunter.class.Backlink,
+      action: 'create',
+      component: chunter.component.BacklinkContent,
+      labelComponent: chunter.component.NotificationBacklinkLabel,
+      hideIfRemoved: true
+    },
+    chunter.ids.NotificationBacklinkCreated
+  )
+
+  builder.createDoc(
+    notification.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: chunter.class.Backlink,
+      action: 'remove',
+      hideIfRemoved: true
+    },
+    chunter.ids.NotificationBacklinkRemoved
+  )
+
+  builder.createDoc(
+    notification.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: chunter.class.Reaction,
+      action: 'create',
+      component: chunter.component.NotificationReactionCreated,
+      label: chunter.string.Reacted,
+      onlyWithParent: true,
+      hideIfRemoved: true
+    },
+    chunter.ids.NotificationReactionCreated
+  )
+
+  builder.createDoc(
+    notification.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: chunter.class.Reaction,
+      action: 'remove',
+      hideIfRemoved: true
+    },
+    chunter.ids.NotificationReactionRemoved
   )
 
   createAction(builder, {

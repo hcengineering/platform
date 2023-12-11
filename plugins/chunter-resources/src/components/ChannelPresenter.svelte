@@ -20,6 +20,8 @@
 
   export let value: Channel
   export let inline: boolean = false
+  export let shouldShowAvatar = true
+
   const client = getClient()
 
   $: icon = client.getHierarchy().getClass(value._class).icon
@@ -28,7 +30,7 @@
 {#if value}
   <NavLink app={chunterId} space={value._id}>
     <div class="flex-presenter">
-      {#if !inline}
+      {#if !inline && shouldShowAvatar}
         <div class="icon">
           {#if icon}
             <Icon {icon} size={'small'} />

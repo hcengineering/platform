@@ -23,7 +23,7 @@
   import tracker from '../../plugin'
   import StatusIcon from '../icons/StatusIcon.svelte'
 
-  export let value: WithLookup<IssueStatus>
+  export let value: WithLookup<IssueStatus> | undefined
   export let size: IconSize
   export let space: Ref<Project> | undefined
 
@@ -46,7 +46,7 @@
     })
     : (_space = undefined)
 
-  $: if (value.category === tracker.issueStatusCategory.Started) {
+  $: if (value?.category === tracker.issueStatusCategory.Started) {
     statuses = getStates(_space, $typeStore, $statusStore.byId).filter(
       (p) => p.category === tracker.issueStatusCategory.Started
     )
@@ -56,11 +56,13 @@
     if (status.$lookup?.category) {
       category = status.$lookup.category
     }
-    if (category === undefined || category._id !== value.category) {
-      category = await client.findOne(core.class.StatusCategory, { _id: value.category })
+    if (category === undefined || category._id !== value?.category) {
+      if (value) {
+        category = await client.findOne(core.class.StatusCategory, { _id: value.category })
+      }
     }
-    if (value.category !== undefined && dynamicFillCategories.includes(value.category)) {
-      const index = statuses.findIndex((p) => p._id === value._id)
+    if (value?.category !== undefined && dynamicFillCategories.includes(value?.category)) {
+      const index = statuses.findIndex((p) => p._id === value?._id)
       if (index !== -1) {
         statusIcon.index = index + 1
         statusIcon.count = statuses.length + 1
@@ -83,11 +85,11 @@
 
   $: type = _space ? $typeStore.get(_space.type) : undefined
 
-  $: viewState = getViewState(type, value)
+  $: viewState = value && getViewState(type, value)
 
-  $: updateCategory(_space, value, statuses)
+  $: value && updateCategory(_space, value, statuses)
   $: icon = category?.icon
-  $: color = viewState.color !== undefined ? viewState.color : category !== undefined ? category.color : -1
+  $: color = viewState?.color !== undefined ? viewState?.color : category !== undefined ? category.color : -1
 </script>
 
 {#if icon !== undefined && color !== undefined && category !== undefined}

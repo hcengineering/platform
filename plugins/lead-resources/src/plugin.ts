@@ -53,6 +53,6 @@ export default mergeIds(leadId, lead, {
     TitlePresenter: '' as AnyComponent
   },
   function: {
-    LeadTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>
+    LeadTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
   }
 })

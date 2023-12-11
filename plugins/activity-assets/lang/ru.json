@@ -1,21 +1,17 @@
 {
   "string": {
-    "Delete": "Удалить",
-    "Edit": "Редактировать",
-    "Edited": "отредактировал(а)",
-    "DocCreated": "создал(а) {_class}",
-    "DocAdded": "добавил(а) {_class}",
-    "DocDeleted": "удалил(а) {_class}",
     "Activity": "Активность",
-    "Changed": "изменил(а)",
-    "To": "на",
-    "Unset": "сбросил",
-    "CollectionUpdated": "Обновлена {collection}",
     "Added": "добавила(а)",
-    "Removed": "удалил(а)",
-    "From": "из",
     "All": "Все",
-    "Attributes": "Атрибуты",
-    "NewestFirst": "Сначала новые"
+    "Changed": "изменил(а)",
+    "CollectionUpdated": "Обновлена {collection}",
+    "DocAdded": "добавил(а) {_class}",
+    "DocCreated": "создал(а) {_class}",
+    "DocDeleted": "удалил(а) {_class}",
+    "Edited": "отредактировал(а)",
+    "From": "из",
+    "Removed": "удалил(а)",
+    "To": "на",
+    "Unset": "сбросил"
   }
 }

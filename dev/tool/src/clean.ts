@@ -14,7 +14,6 @@
 //
 
 import attachment from '@hcengineering/attachment'
-import chunter, { Comment } from '@hcengineering/chunter'
 import contact from '@hcengineering/contact'
 import { deepEqual } from 'fast-equals'
 import core, {
@@ -39,6 +38,7 @@ import { connect } from '@hcengineering/server-tool'
 import tracker from '@hcengineering/tracker'
 import tags, { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
 import { MongoClient } from 'mongodb'
+import notification, { ChatMessage } from '@hcengineering/notification'
 
 export const DOMAIN_COMMENT = 'comment' as Domain
 
@@ -322,11 +322,11 @@ export async function fixCommentDoubleIdCreate (workspaceId: WorkspaceId, transa
   try {
     const commentTxes = await connection.findAll(core.class.TxCollectionCUD, {
       'tx._class': core.class.TxCreateDoc,
-      'tx.objectClass': chunter.class.Comment
+      'tx.objectClass': notification.class.ChatMessage
     })
     const commentTxesRemoved = await connection.findAll(core.class.TxCollectionCUD, {
       'tx._class': core.class.TxRemoveDoc,
-      'tx.objectClass': chunter.class.Comment
+      'tx.objectClass': notification.class.ChatMessage
     })
     const removed = new Map(commentTxesRemoved.map((it) => [it.tx.objectId, it]))
     // Do not checked removed
@@ -341,7 +341,7 @@ export async function fixCommentDoubleIdCreate (workspaceId: WorkspaceId, transa
       objSet.add(cid)
       if (has) {
         // We have found duplicate one, let's rename it.
-        const doc = TxProcessor.createDoc2Doc<Comment>(c.tx as unknown as TxCreateDoc<Comment>)
+        const doc = TxProcessor.createDoc2Doc<ChatMessage>(c.tx as unknown as TxCreateDoc<ChatMessage>)
         if (doc.message !== '' && doc.message.trim() !== '<p></p>') {
           await connection.clean(DOMAIN_TX, [c._id])
           if (oldValue.get(cid) === doc.message.trim()) {
@@ -351,7 +351,7 @@ export async function fixCommentDoubleIdCreate (workspaceId: WorkspaceId, transa
             console.log('renaming', cid, doc.message)
             // Remove previous transaction.
             c.tx.objectId = generateId()
-            doc._id = c.tx.objectId as Ref<Comment>
+            doc._id = c.tx.objectId as Ref<ChatMessage>
             await connection.upload(DOMAIN_TX, [c])
             // Also we need to create snapsot
             await connection.upload(DOMAIN_COMMENT, [doc])

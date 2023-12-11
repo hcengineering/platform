@@ -101,6 +101,7 @@
     "ModificationDate": "Updated {value}",
     "Project": "Project",
     "Issue": "Issue",
+    "SubIssue": "Sub-Issue",
     "Document": "",
     "DocumentIcon": "",
     "DocumentColor": "",

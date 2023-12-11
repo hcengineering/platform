@@ -14,7 +14,6 @@
 -->
 <script lang="ts">
   import attachment from '@hcengineering/attachment'
-  import chunter from '@hcengineering/chunter'
   import contact, { Channel, getName, Person } from '@hcengineering/contact'
   import { ChannelsEditor } from '@hcengineering/contact-resources'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -22,6 +21,7 @@
   import { Component, Label } from '@hcengineering/ui'
   import { DocNavLink } from '@hcengineering/view-resources'
   import recruit from '../plugin'
+  import notification from '@hcengineering/notification'
 
   export let candidate: Person | undefined
   export let disabled: boolean = false
@@ -64,8 +64,8 @@
     <div class="footer">
       <div class="flex-row-center gap-2">
         <Component
-          is={chunter.component.CommentsPresenter}
-          props={{ value: candidate.comments, object: candidate, size: 'small', showCounter: true }}
+          is={notification.component.ChatMessagesPresenter}
+          props={{ value: candidate, size: 'small', showCounter: true }}
         />
         <Component
           is={attachment.component.AttachmentsPresenter}

@@ -14,7 +14,6 @@
 -->
 <script lang="ts">
   import { AttachmentsPresenter } from '@hcengineering/attachment-resources'
-  import { CommentsPresenter } from '@hcengineering/chunter-resources'
   import contact, { getName } from '@hcengineering/contact'
   import { Avatar } from '@hcengineering/contact-resources'
   import { WithLookup } from '@hcengineering/core'
@@ -27,6 +26,8 @@
   import { Component, DueDatePresenter } from '@hcengineering/ui'
   import { BuildModelKey } from '@hcengineering/view'
   import { DocNavLink, ObjectPresenter, enabledConfig, statusStore } from '@hcengineering/view-resources'
+  import { ChatMessagesPresenter } from '@hcengineering/notification-resources'
+
   import ApplicationPresenter from './ApplicationPresenter.svelte'
 
   export let object: WithLookup<Applicant>
@@ -133,18 +134,14 @@
           <AttachmentsPresenter value={object.attachments} {object} />
         {/if}
         {#if enabledConfig(config, 'comments')}
-          {#if (object.comments ?? 0) > 0}
-            <CommentsPresenter value={object.comments} {object} kind={'list'} size={'x-small'} />
-          {/if}
-          {#if object.$lookup?.attachedTo !== undefined && (object.$lookup.attachedTo.comments ?? 0) > 0}
-            <CommentsPresenter
-              value={object.$lookup?.attachedTo?.comments}
-              object={object.$lookup?.attachedTo}
-              withInput={false}
-              kind={'list'}
-              size={'x-small'}
-            />
-          {/if}
+          <ChatMessagesPresenter value={object.comments} {object} kind="list" size="x-small" />
+          <ChatMessagesPresenter
+            value={object.$lookup?.attachedTo?.comments}
+            object={object.$lookup?.attachedTo}
+            withInput={false}
+            kind="list"
+            size="x-small"
+          />
         {/if}
       </div>
       {#if enabledConfig(config, 'assignee')}

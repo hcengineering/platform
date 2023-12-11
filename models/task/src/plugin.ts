@@ -59,7 +59,8 @@ export default mergeIds(taskId, task, {
     StateRefPresenter: '' as AnyComponent,
     StatusSelector: '' as AnyComponent,
     TemplatesIcon: '' as AnyComponent,
-    TypesView: '' as AnyComponent
+    TypesView: '' as AnyComponent,
+    StateIconPresenter: '' as AnyComponent
   },
   space: {
     TasksPublic: '' as Ref<Space>

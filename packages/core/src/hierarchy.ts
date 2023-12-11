@@ -151,6 +151,12 @@ export class Hierarchy {
     return data
   }
 
+  hasClass (_class: Ref<Class<Obj>>): boolean {
+    const data = this.classifiers.get(_class)
+
+    return !(data === undefined || this.isInterface(data))
+  }
+
   getClassOrInterface (_class: Ref<Class<Obj>>): Class<Obj> {
     const data = this.classifiers.get(_class)
     if (data === undefined) {

@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import { Comment } from '@hcengineering/chunter'
 import { PersonAccount } from '@hcengineering/contact'
 import type { AttachedDoc, Class, Doc, Mixin, Ref, Tx } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
+import { ChatMessage } from '@hcengineering/notification'
 
 /**
  * @public
@@ -36,7 +36,7 @@ export interface Request extends AttachedDoc {
 /**
  * @public
  */
-export interface RequestDecisionComment extends Comment {}
+export interface RequestDecisionComment extends ChatMessage {}
 
 /**
  * @public

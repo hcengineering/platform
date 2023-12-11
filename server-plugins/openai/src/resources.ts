@@ -15,7 +15,6 @@
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
-import chunter, { Comment } from '@hcengineering/chunter'
 import core, {
   Doc,
   DocIndexState,
@@ -32,6 +31,7 @@ import got from 'got'
 import { convert } from 'html-to-text'
 import { chunks } from './encoder/encoder'
 import openai, { OpenAIConfiguration, openAIRatelimitter } from './plugin'
+import notification, { ChatMessage } from '@hcengineering/notification'
 
 const model = 'text-davinci-003'
 
@@ -117,7 +117,7 @@ export async function AsyncOnGPTRequest (tx: Tx, tc: TriggerControl): Promise<Tx
   if (tc.hierarchy.isDerived(actualTx._class, core.class.TxCUD) && actualTx.modifiedBy !== openai.account.GPT) {
     const cud: TxCUD<Doc> = actualTx as TxCUD<Doc>
     //
-    if (tc.hierarchy.isDerived(cud.objectClass, chunter.class.Comment)) {
+    if (tc.hierarchy.isDerived(cud.objectClass, notification.class.ChatMessage)) {
       return await handleComment(tx, tc)
     }
     if (tc.hierarchy.isDerived(cud.objectClass, recruit.class.ApplicantMatch)) {
@@ -134,7 +134,7 @@ async function handleComment (tx: Tx, tc: TriggerControl): Promise<Tx[]> {
   let msg = ''
   //
   if (actualTx._class === core.class.TxCreateDoc) {
-    msg = (cud as TxCreateDoc<Comment>).attributes.message
+    msg = (cud as TxCreateDoc<ChatMessage>).attributes.message
   }
 
   const text = convert(msg, {
@@ -162,7 +162,7 @@ async function handleComment (tx: Tx, tc: TriggerControl): Promise<Tx[]> {
         }
       }
 
-      const parentTx = tx as TxCollectionCUD<Doc, Comment>
+      const parentTx = tx as TxCollectionCUD<Doc, ChatMessage>
 
       const [indexedData] = await tc.findAll(core.class.DocIndexState, {
         _id: parentTx.objectId as Ref<DocIndexState>
@@ -198,10 +198,10 @@ async function handleComment (tx: Tx, tc: TriggerControl): Promise<Tx[]> {
         const val = (choices.text as string).trim().split('\n').join('\n<br/>')
         finalMsg += `<p>Answer:\n<br/>${val}</p>`
       }
-      const msgTx = tc.txFactory.createTxUpdateDoc<Comment>(
+      const msgTx = tc.txFactory.createTxUpdateDoc<ChatMessage>(
         cud.objectClass,
         cud.objectSpace,
-        cud.objectId as Ref<Comment>,
+        cud.objectId as Ref<ChatMessage>,
         {
           message: finalMsg
         }

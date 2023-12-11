@@ -151,6 +151,7 @@ export default mergeIds(trackerId, tracker, {
     ChangeDueDate: '' as IntlString,
     ModificationDate: '' as IntlString,
     Issue: '' as IntlString,
+    SubIssue: '' as IntlString,
     IssueTemplate: '' as IntlString,
     Document: '' as IntlString,
     DocumentIcon: '' as IntlString,
@@ -326,6 +327,7 @@ export default mergeIds(trackerId, tracker, {
     ComponentFilterValuePresenter: '' as AnyComponent,
     PriorityEditor: '' as AnyComponent,
     PriorityRefPresenter: '' as AnyComponent,
+    PriorityIconPresenter: '' as AnyComponent,
     ComponentEditor: '' as AnyComponent,
     MilestoneEditor: '' as AnyComponent,
     StatusPresenter: '' as AnyComponent,
@@ -369,13 +371,17 @@ export default mergeIds(trackerId, tracker, {
     IssueTemplates: '' as AnyComponent,
     IssueTemplatePresenter: '' as AnyComponent,
     SubIssuesSelector: '' as AnyComponent,
-    IconWithEmoji: '' as Asset
+    IconWithEmoji: '' as Asset,
+    IssueStatusIcon: '' as AnyComponent,
+    MilestoneStatusIcon: '' as AnyComponent
   },
   metadata: {
     CreateIssueDraft: '' as Metadata<IssueDraft>
   },
   function: {
-    IssueTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>,
+    IssueTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
+    ComponentTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
+    MilestoneTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
     GetIssueId: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
     GetIssueLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
     GetIssueLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,

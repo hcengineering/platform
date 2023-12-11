@@ -15,23 +15,31 @@
 //
 
 import { getMetadata, type Resources } from '@hcengineering/platform'
-import telegram from './plugin'
+import { concatLink } from '@hcengineering/core'
 import presentation from '@hcengineering/presentation'
+
 import Chat from './components/Chat.svelte'
 import Connect from './components/Connect.svelte'
 import Reconnect from './components/Reconnect.svelte'
 import TxMessage from './components/activity/TxMessage.svelte'
 import IconTelegram from './components/icons/TelegramColor.svelte'
 import TxSharedCreate from './components/activity/TxSharedCreate.svelte'
-import { concatLink } from '@hcengineering/core'
+import NotificationMessageCreated from './components/notification/NotificationMessageCreated.svelte'
+
+import telegram from './plugin'
 import { getCurrentEmployeeTG, getIntegrationOwnerTG } from './utils'
+import SharedMessages from './components/SharedMessages.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
     Chat,
     Connect,
     Reconnect,
-    IconTelegram
+    IconTelegram,
+    SharedMessages
+  },
+  notification: {
+    NotificationMessageCreated
   },
   activity: {
     TxSharedCreate,

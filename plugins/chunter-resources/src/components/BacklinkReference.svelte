@@ -20,23 +20,18 @@
   import { getObjectPresenter } from '@hcengineering/view-resources'
 
   export let value: Backlink
+  export let inline = true
 
   const client = getClient()
   let presenter: AttributeModel | undefined
 
   const docQuery = createQuery()
-  // const targetQuery = createQuery()
   let doc: Doc | undefined
-  // let target: Doc | undefined
 
   $: value.backlinkClass != null &&
     docQuery.query(value.backlinkClass, { _id: value.backlinkId }, (r) => {
       doc = r.shift()
     })
-
-  // $: targetQuery.query(value.attachedToClass, { _id: value.attachedTo }, (r) => {
-  // target = r.shift()
-  // })
 
   $: if (doc !== undefined) {
     getObjectPresenter(client, doc._class, { key: '' }).then((p) => {
@@ -47,6 +42,6 @@
 
 {#if presenter}
   <span class="labels-row">
-    <svelte:component this={presenter.presenter} value={doc} inline />
+    <svelte:component this={presenter.presenter} value={doc} {inline} embedded shouldShowAvatar={false} />
   </span>
 {/if}

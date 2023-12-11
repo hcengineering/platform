@@ -134,6 +134,19 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
+    notification.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: telegram.class.Message,
+      action: 'create',
+      icon: contact.icon.Telegram,
+      component: telegram.notification.NotificationMessageCreated,
+      label: telegram.string.SharedMessages
+    },
+    telegram.ids.NotificationMessageCreated
+  )
+
+  builder.createDoc(
     contact.class.ChannelProvider,
     core.space.Model,
     {
@@ -175,6 +188,20 @@ export function createModel (builder: Builder): void {
       hideOnRemove: true
     },
     telegram.ids.TxSharedCreate
+  )
+
+  builder.createDoc(
+    notification.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: telegram.class.SharedMessages,
+      action: 'create',
+      icon: contact.icon.Telegram,
+      component: telegram.component.SharedMessages,
+      label: telegram.string.SharedMessages,
+      hideIfRemoved: true
+    },
+    telegram.ids.NotificationMessageShared
   )
 
   builder.createDoc(

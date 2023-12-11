@@ -20,6 +20,7 @@
   export let id: string | undefined = undefined
   export let kind: 'link' | undefined = undefined
   export let value: number
+  export let accent: boolean = false
 
   // TODO: Make configurable?
   const hoursInWorkingDay = 8
@@ -60,6 +61,7 @@
 <span
   {id}
   class:link={kind === 'link'}
+  class:fs-bold={accent}
   on:click
   use:tooltip={{
     component: Label,

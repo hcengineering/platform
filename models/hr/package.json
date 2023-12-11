@@ -35,7 +35,6 @@
     "@hcengineering/model-view": "^0.6.0",
     "@hcengineering/model-workbench": "^0.6.1",
     "@hcengineering/model-contact": "^0.6.1",
-    "@hcengineering/model-chunter": "^0.6.0",
     "@hcengineering/model-calendar": "^0.6.0",
     "@hcengineering/model-attachment": "^0.6.0",
     "@hcengineering/hr": "^0.6.12",

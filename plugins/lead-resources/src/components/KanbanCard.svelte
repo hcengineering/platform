@@ -15,7 +15,6 @@
 -->
 <script lang="ts">
   import { AttachmentsPresenter } from '@hcengineering/attachment-resources'
-  import { CommentsPresenter } from '@hcengineering/chunter-resources'
   import contact from '@hcengineering/contact'
   import { ContactPresenter } from '@hcengineering/contact-resources'
   import type { WithLookup } from '@hcengineering/core'
@@ -26,9 +25,11 @@
   import { ActionIcon, Component, DueDatePresenter, IconMoreH, showPopup } from '@hcengineering/ui'
   import { BuildModelKey } from '@hcengineering/view'
   import { ContextMenu, enabledConfig, openDoc, statusStore } from '@hcengineering/view-resources'
+  import { ChatMessagesPresenter } from '@hcengineering/notification-resources'
+  import task from '@hcengineering/task'
+
   import lead from '../plugin'
   import LeadPresenter from './LeadPresenter.svelte'
-  import task from '@hcengineering/task'
 
   export let object: WithLookup<Lead>
   export let config: (string | BuildModelKey)[]
@@ -93,8 +94,8 @@
       {#if enabledConfig(config, 'attachments') && (object.attachments ?? 0) > 0}
         <AttachmentsPresenter value={object.attachments} {object} />
       {/if}
-      {#if enabledConfig(config, 'comments') && (object.comments ?? 0) > 0}
-        <CommentsPresenter value={object.comments} {object} />
+      {#if enabledConfig(config, 'comments')}
+        <ChatMessagesPresenter value={object.comments} {object} />
       {/if}
     </div>
     {#if enabledConfig(config, 'assignee')}

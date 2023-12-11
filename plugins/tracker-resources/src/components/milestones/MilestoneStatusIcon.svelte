@@ -13,25 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ActionIcon } from '@hcengineering/ui'
-  import { getClient } from '@hcengineering/presentation'
-  import { type Comment } from '@hcengineering/chunter'
-  import view from '@hcengineering/view'
+  import { Milestone } from '@hcengineering/tracker'
+  import { ButtonSize, Icon } from '@hcengineering/ui'
+  import { milestoneStatusAssets } from '../../utils'
+  import tracker from '../../plugin'
 
-  export let object: Comment | undefined = undefined
+  export let value: Milestone['status'] | undefined
+  export let size: ButtonSize = 'large'
 
-  const client = getClient()
-
-  async function pinComment (ev: Event): Promise<void> {
-    if (object !== undefined) {
-      await client.update(object, { pinned: !object?.pinned })
-    }
-  }
+  $: icon = value === undefined ? tracker.icon.MilestoneStatusPlanned : milestoneStatusAssets[value]?.icon
 </script>
 
-<ActionIcon
-  icon={view.icon.Pin}
-  iconProps={object?.pinned === true ? { fill: '#3265cb' } : undefined}
-  size="medium"
-  action={pinComment}
-/>
+<Icon {icon} {size} />

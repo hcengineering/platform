@@ -175,6 +175,14 @@ export abstract class MemDb extends TxProcessor implements Storage {
     return toFindResult(res, total)
   }
 
+  async findOne<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<WithLookup<T> | undefined> {
+    return (await this.findAll(_class, query, { ...options, limit: 1 }))[0]
+  }
+
   /**
    * Only in model find without lookups and sorting.
    */

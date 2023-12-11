@@ -19,7 +19,7 @@
   import type { ChunterMessage, ChunterMessageExtension, Message, Reaction } from '@hcengineering/chunter'
   import { PersonAccount } from '@hcengineering/contact'
   import { Avatar, personByIdStore, EmployeePresenter } from '@hcengineering/contact-resources'
-  import { getCurrentAccount, Mixin, Ref, WithLookup } from '@hcengineering/core'
+  import { getCurrentAccount, getDisplayTime, Mixin, Ref, WithLookup } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { getClient, MessageViewer } from '@hcengineering/presentation'
   import ui, { ActionIcon, Button, EmojiPopup, IconMoreV, Label, showPopup, tooltip } from '@hcengineering/ui'
@@ -35,7 +35,7 @@
 
   import { AddMessageToSaved, DeleteMessageFromSaved, UnpinMessage } from '../index'
   import chunter from '../plugin'
-  import { getLinks, getTime, updateDocReactions } from '../utils'
+  import { getLinks, updateDocReactions } from '../utils'
 
   export let message: WithLookup<ChunterMessage>
   export let savedAttachmentsIds: Ref<Attachment>[]
@@ -188,9 +188,9 @@
       {#if employee}
         <EmployeePresenter value={employee} shouldShowAvatar={false} />
       {/if}
-      <span class="text-sm">{getTime(message.createdOn ?? 0)}</span>
+      <span class="text-sm">{getDisplayTime(message.createdOn ?? 0)}</span>
       {#if message.editedOn}
-        <span use:tooltip={{ label: ui.string.TimeTooltip, props: { value: getTime(message.editedOn) } }}>
+        <span use:tooltip={{ label: ui.string.TimeTooltip, props: { value: getDisplayTime(message.editedOn) } }}>
           <Label label={chunter.string.Edited} />
         </span>
       {/if}

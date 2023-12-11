@@ -22,8 +22,13 @@ import tracker from '@hcengineering/tracker-resources/src/plugin'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action, type ViewAction, type Viewlet } from '@hcengineering/view'
 import { type Application } from '@hcengineering/workbench'
-import { type ActivityExtension, type TxViewlet } from '@hcengineering/activity'
-import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
+import { type TxViewlet } from '@hcengineering/activity'
+import {
+  type ChatMessageViewlet,
+  type DocUpdateMessageViewlet,
+  type NotificationGroup,
+  type NotificationType
+} from '@hcengineering/notification'
 
 export default mergeIds(trackerId, tracker, {
   string: {
@@ -75,11 +80,16 @@ export default mergeIds(trackerId, tracker, {
     TxIssueCreated: '' as Ref<TxViewlet>,
     TrackerNotificationGroup: '' as Ref<NotificationGroup>,
     AssigneeNotification: '' as Ref<NotificationType>,
-    IssueActivityExtension: '' as Ref<ActivityExtension>,
-    IssueTemplateActivityExtension: '' as Ref<ActivityExtension>,
-    ComponentActivityExtension: '' as Ref<ActivityExtension>,
-    MilestoneActivityExtension: '' as Ref<ActivityExtension>,
-    BaseProjectType: '' as Ref<ProjectType>
+    BaseProjectType: '' as Ref<ProjectType>,
+    NotificationIssueUpdated: '' as Ref<DocUpdateMessageViewlet>,
+    NotificationIssueCreated: '' as Ref<DocUpdateMessageViewlet>,
+    NotificationIssueRemoved: '' as Ref<DocUpdateMessageViewlet>,
+    NotificationMilestoneUpdated: '' as Ref<DocUpdateMessageViewlet>,
+    NotificationIssueTemplateUpdated: '' as Ref<DocUpdateMessageViewlet>,
+    IssueChatMessageViewlet: '' as Ref<ChatMessageViewlet>,
+    IssueTemplateChatMessageViewlet: '' as Ref<ChatMessageViewlet>,
+    ComponentChatMessageViewlet: '' as Ref<ChatMessageViewlet>,
+    MilestoneChatMessageViewlet: '' as Ref<ChatMessageViewlet>
   },
   completion: {
     IssueQuery: '' as Resource<ObjectSearchFactory>,

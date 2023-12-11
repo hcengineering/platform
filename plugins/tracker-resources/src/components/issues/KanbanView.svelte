@@ -14,7 +14,6 @@
 -->
 <script lang="ts">
   import { AttachmentsPresenter } from '@hcengineering/attachment-resources'
-  import { CommentsPresenter } from '@hcengineering/chunter-resources'
   import {
     CategoryType,
     Class,
@@ -65,7 +64,9 @@
     setGroupByValues,
     statusStore
   } from '@hcengineering/view-resources'
+  import { ChatMessagesPresenter } from '@hcengineering/notification-resources'
   import { onMount } from 'svelte'
+
   import tracker from '../../plugin'
   import { activeProjects } from '../../utils'
   import ComponentEditor from '../components/ComponentEditor.svelte'
@@ -255,12 +256,12 @@
     }
   }
 
-  function shouldShowFooter (
+  async function shouldShowFooter (
     config: (string | BuildModelKey)[],
     reports: number,
     estimations: number,
     issue: WithLookup<Issue>
-  ): boolean {
+  ): Promise<boolean> {
     if (enabledConfig(config, 'estimation') && (reports > 0 || estimations > 0)) return true
     if (enabledConfig(config, 'comments')) {
       if ((issue.comments ?? 0) > 0) return true
@@ -459,32 +460,28 @@
               />
             </div>
           {/if}
-          {#if shouldShowFooter(config, reports, estimations, object)}
-            <div class="card-footer flex-between">
-              {#if enabledConfig(config, 'estimation')}
-                <EstimationEditor kind={'list'} size={'small'} value={issue} />
-              {/if}
-              <div class="flex-row-center gap-3 reverse">
-                {#if enabledConfig(config, 'attachments') && (object.attachments ?? 0) > 0}
-                  <AttachmentsPresenter value={object.attachments} {object} />
+          {#await shouldShowFooter(config, reports, estimations, object) then withFooter}
+            {#if withFooter}
+              <div class="card-footer flex-between">
+                {#if enabledConfig(config, 'estimation')}
+                  <EstimationEditor kind={'list'} size={'small'} value={issue} />
                 {/if}
-                {#if enabledConfig(config, 'comments')}
-                  {#if (object.comments ?? 0) > 0}
-                    <CommentsPresenter value={object.comments} {object} />
+                <div class="flex-row-center gap-3 reverse">
+                  {#if enabledConfig(config, 'attachments') && (object.attachments ?? 0) > 0}
+                    <AttachmentsPresenter value={object.attachments} {object} />
                   {/if}
-                  {#if object.$lookup?.attachedTo !== undefined && (object.$lookup.attachedTo.comments ?? 0) > 0}
-                    <CommentsPresenter
-                      value={object.$lookup?.attachedTo?.comments}
-                      object={object.$lookup?.attachedTo}
-                      withInput={false}
-                    />
-                  {/if}
-                {/if}
+                  <ChatMessagesPresenter value={object.comments} {object} />
+                  <ChatMessagesPresenter
+                    object={object.$lookup?.attachedTo}
+                    value={object.$lookup?.attachedTo?.comments}
+                    withInput={false}
+                  />
+                </div>
               </div>
-            </div>
-          {:else}
-            <div class="min-h-4 max-h-4 h-4" />
-          {/if}
+            {:else}
+              <div class="min-h-4 max-h-4 h-4" />
+            {/if}
+          {/await}
         </div>
       {/key}
     </svelte:fragment>

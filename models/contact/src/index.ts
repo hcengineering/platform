@@ -112,7 +112,7 @@ export class TContact extends TDoc implements Contact {
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
-  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
+  @Prop(Collection(notification.class.ChatMessage), notification.string.Comments)
     comments?: number
 
   @Prop(TypeString(), contact.string.Location)
@@ -221,6 +221,26 @@ export function createModel (builder: Builder): void {
     TContactsTab
   )
 
+  builder.mixin(contact.class.Contact, core.class.Class, notification.mixin.ActivityDoc, {
+    ignoreCollections: ['comments']
+  })
+  builder.mixin(contact.class.Person, core.class.Class, notification.mixin.ActivityDoc, {
+    ignoreCollections: ['comments']
+  })
+  builder.mixin(contact.mixin.Employee, core.class.Class, notification.mixin.ActivityDoc, {
+    ignoreCollections: ['comments']
+  })
+  builder.mixin(contact.class.Organization, core.class.Class, notification.mixin.ActivityDoc, {
+    ignoreCollections: ['comments']
+  })
+
+  builder.mixin(contact.class.Person, core.class.Class, notification.mixin.NotificationObjectPreposition, {
+    preposition: contact.string.For
+  })
+  builder.mixin(contact.mixin.Employee, core.class.Class, notification.mixin.NotificationObjectPreposition, {
+    preposition: contact.string.For
+  })
+
   builder.mixin(contact.mixin.Employee, core.class.Class, view.mixin.ObjectFactory, {
     component: contact.component.CreateEmployee
   })
@@ -307,6 +327,16 @@ export function createModel (builder: Builder): void {
     labelComponent: contact.activity.TxNameChange,
     display: 'inline',
     match: { 'operations.name': { $exists: true } }
+  })
+
+  builder.createDoc(notification.class.DocUpdateMessageViewlet, core.space.Model, {
+    objectClass: contact.class.Person,
+    action: 'update',
+    config: {
+      name: {
+        presenter: contact.notification.NotificationNameChanged
+      }
+    }
   })
 
   builder.createDoc<Viewlet>(
@@ -938,32 +968,34 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    activity.class.ActivityExtension,
+    notification.class.ChatMessageViewlet,
     core.space.Model,
     {
-      ofClass: contact.class.Person,
-      components: {
-        input: chunter.component.CommentInput
-      }
+      objectClass: contact.class.Person,
+      label: chunter.string.LeftComment
     },
-    contact.ids.PersonActivityExtension
+    contact.ids.PersonChatMessageViewlet
   )
 
   builder.createDoc(
-    activity.class.ActivityExtension,
+    notification.class.ChatMessageViewlet,
     core.space.Model,
     {
-      ofClass: contact.class.Organization,
-      components: {
-        input: chunter.component.CommentInput
-      }
+      objectClass: contact.mixin.Employee,
+      label: chunter.string.LeftComment
     },
-    contact.ids.OrganizationActivityExtension
+    contact.ids.EmployeeChatMessageViewlet
   )
 
-  builder.mixin(contact.class.Contact, core.class.Class, activity.mixin.ExtraActivityComponent, {
-    component: contact.component.ActivityChannelMessage
-  })
+  builder.createDoc(
+    notification.class.ChatMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: contact.class.Organization,
+      label: chunter.string.LeftComment
+    },
+    contact.ids.OrganizationChatMessageViewlet
+  )
 
   builder.createDoc(
     notification.class.NotificationGroup,

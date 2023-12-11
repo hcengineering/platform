@@ -37,6 +37,8 @@
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = undefined
   export let disabled = false
+  export let shouldShowAvatar: boolean = true
+  export let accent: boolean = false
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -83,8 +85,10 @@
   </button>
 {:else if kind === 'list-header'}
   <div class="flex-row-center pl-0-5">
-    <Icon {icon} {size} />
-    <span class="overflow-label ml-1-5"><Label {label} /></span>
+    {#if shouldShowAvatar}
+      <Icon {icon} {size} />
+    {/if}
+    <span class="overflow-label" class:ml-1-5={shouldShowAvatar} class:fs-bold={accent}><Label {label} /></span>
   </div>
 {:else}
   <Button

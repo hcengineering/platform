@@ -24,6 +24,7 @@
 
   export let value: Message
   export let inline: boolean = false
+  export let embedded = false
   export let disabled = false
 
   const client = getClient()
@@ -41,7 +42,7 @@
   })
 </script>
 
-{#if inline}
+{#if inline || embedded}
   {#if presenter && doc}
     <div class="flex-presenter">
       {#if isThreadMessage}
@@ -53,7 +54,7 @@
         </span>
         &nbsp;
       {/if}
-      <svelte:component this={presenter.presenter} value={doc} inline {disabled} />
+      <svelte:component this={presenter.presenter} value={doc} {inline} {disabled} shouldShowAvatarr={false} />
     </div>
   {/if}
 {:else}

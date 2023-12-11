@@ -14,16 +14,25 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  // import { TypeDate } from '@hcengineering/core'
   import { DateRangePresenter } from '@hcengineering/ui'
-
   export let value: number | null | undefined
   export let onChange: ((value: number | null) => void) | undefined = undefined
   export let noShift: boolean = false
+  export let shouldShowAvatar: boolean = true
+  export let accent: boolean = false
+  export let inline: boolean = false
 </script>
 
 {#if onChange !== undefined}
-  <DateRangePresenter {value} {noShift} editable on:change={(e) => onChange?.(e.detail)} />
+  <DateRangePresenter
+    {value}
+    {noShift}
+    editable
+    on:change={(e) => onChange?.(e.detail)}
+    {shouldShowAvatar}
+    {accent}
+    {inline}
+  />
 {:else}
-  <DateRangePresenter {value} {noShift} />
+  <DateRangePresenter {value} {noShift} {shouldShowAvatar} {accent} {inline} />
 {/if}

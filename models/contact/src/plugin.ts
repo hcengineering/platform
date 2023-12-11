@@ -17,18 +17,19 @@
 import { contactId } from '@hcengineering/contact'
 import contact from '@hcengineering/contact-resources/src/plugin'
 import type { Client, Doc, Ref } from '@hcengineering/core'
-import {} from '@hcengineering/core'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/model-presentation'
-import { type NotificationGroup } from '@hcengineering/notification'
+import { type ChatMessageViewlet, type NotificationGroup } from '@hcengineering/notification'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type TemplateFieldFunc } from '@hcengineering/templates'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action, type ActionCategory, type ViewAction } from '@hcengineering/view'
-import { type ActivityExtension } from '@hcengineering/activity'
 
 export default mergeIds(contactId, contact, {
   activity: {
     TxNameChange: '' as AnyComponent
+  },
+  notification: {
+    NotificationNameChanged: '' as AnyComponent
   },
   component: {
     PersonPresenter: '' as AnyComponent,
@@ -57,7 +58,6 @@ export default mergeIds(contactId, contact, {
     AccountArrayEditor: '' as AnyComponent,
     ChannelFilter: '' as AnyComponent,
     MergePersons: '' as AnyComponent,
-    ActivityChannelMessage: '' as AnyComponent,
     ChannelPanel: '' as AnyComponent,
     ActivityChannelPresenter: '' as AnyComponent,
     EmployeeFilter: '' as AnyComponent,
@@ -116,8 +116,9 @@ export default mergeIds(contactId, contact, {
   ids: {
     OrganizationNotificationGroup: '' as Ref<NotificationGroup>,
     PersonNotificationGroup: '' as Ref<NotificationGroup>,
-    PersonActivityExtension: '' as Ref<ActivityExtension>,
-    OrganizationActivityExtension: '' as Ref<ActivityExtension>
+    OrganizationChatMessageViewlet: '' as Ref<ChatMessageViewlet>,
+    PersonChatMessageViewlet: '' as Ref<ChatMessageViewlet>,
+    EmployeeChatMessageViewlet: '' as Ref<ChatMessageViewlet>
   },
   action: {
     KickEmployee: '' as Ref<Action>,
@@ -135,6 +136,6 @@ export default mergeIds(contactId, contact, {
     GetContactName: '' as Resource<TemplateFieldFunc>,
     GetContactFirstName: '' as Resource<TemplateFieldFunc>,
     GetContactLastName: '' as Resource<TemplateFieldFunc>,
-    ContactTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>
+    ContactTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
   }
 })

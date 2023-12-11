@@ -9,7 +9,7 @@ import {
   Ref,
   SortingOrder
 } from '@hcengineering/core'
-import { MigrateUpdate, MigrationClient, MigrationResult, ModelLogger } from '@hcengineering/model'
+import { MigrateUpdate, MigrationClient, MigrationIterator, MigrationResult, ModelLogger } from '@hcengineering/model'
 import { Db, Document, Filter, Sort, UpdateFilter } from 'mongodb'
 
 /**
@@ -63,6 +63,49 @@ export class MigrateClientImpl implements MigrationClient {
       }
     }
     return await cursor.toArray()
+  }
+
+  async traverse<T extends Doc>(
+    domain: Domain,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T> | undefined
+  ): Promise<MigrationIterator<T>> {
+    let cursor = this.db.collection(domain).find<T>(this.translateQuery(query))
+    if (options?.limit !== undefined) {
+      cursor = cursor.limit(options.limit)
+    }
+    if (options !== null && options !== undefined) {
+      if (options.sort !== undefined) {
+        const sort: Sort = {}
+        for (const key in options.sort) {
+          const order = options.sort[key] === SortingOrder.Ascending ? 1 : -1
+          sort[key] = order
+        }
+        cursor = cursor.sort(sort)
+      }
+    }
+    return {
+      next: async (size: number) => {
+        const docs: T[] = []
+        while (docs.length < size && (await cursor.hasNext())) {
+          try {
+            const d = await cursor.next()
+            if (d !== null) {
+              docs.push(d)
+            } else {
+              break
+            }
+          } catch (err) {
+            console.error(err)
+            return null
+          }
+        }
+        return docs
+      },
+      close: async () => {
+        await cursor.close()
+      }
+    }
   }
 
   async update<T extends Doc>(
@@ -138,11 +181,19 @@ export class MigrateClientImpl implements MigrationClient {
     return result
   }
 
-  async create<T extends Doc>(domain: Domain, doc: T): Promise<void> {
-    await this.db.collection(domain).insertOne(doc as Document)
+  async create<T extends Doc>(domain: Domain, doc: T | T[]): Promise<void> {
+    if (Array.isArray(doc)) {
+      await this.db.collection(domain).insertMany(doc as Document[])
+    } else {
+      await this.db.collection(domain).insertOne(doc as Document)
+    }
   }
 
   async delete<T extends Doc>(domain: Domain, _id: Ref<T>): Promise<void> {
     await this.db.collection(domain).deleteOne({ _id })
+  }
+
+  async deleteMany<T extends Doc>(domain: Domain, ids: Ref<T>[]): Promise<void> {
+    await this.db.collection(domain).deleteMany({ _id: { $in: ids } })
   }
 }

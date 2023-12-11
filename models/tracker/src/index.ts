@@ -18,7 +18,6 @@ import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import task from '@hcengineering/model-task'
 import view from '@hcengineering/model-view'
-import chunter from '@hcengineering/model-chunter'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
@@ -259,6 +258,10 @@ function defineFilters (builder: Builder): void {
     component: tracker.component.MilestoneFilter
   })
 
+  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: tracker.function.MilestoneTitleProvider
+  })
+
   //
   // Project
   //
@@ -278,6 +281,10 @@ function defineFilters (builder: Builder): void {
 
   builder.mixin(tracker.class.Component, core.class.Class, view.mixin.ClassFilters, {
     filters: []
+  })
+
+  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: tracker.function.ComponentTitleProvider
   })
 
   //
@@ -438,6 +445,20 @@ export function createModel (builder: Builder): void {
     TTypeRemainingTime
   )
 
+  builder.mixin(tracker.class.Project, core.class.Class, notification.mixin.ActivityDoc, {})
+  builder.mixin(tracker.class.Issue, core.class.Class, notification.mixin.ActivityDoc, {
+    ignoreCollections: ['comments']
+  })
+  builder.mixin(tracker.class.Milestone, core.class.Class, notification.mixin.ActivityDoc, {
+    ignoreCollections: ['comments']
+  })
+  builder.mixin(tracker.class.Component, core.class.Class, notification.mixin.ActivityDoc, {
+    ignoreCollections: ['comments']
+  })
+  builder.mixin(tracker.class.IssueTemplate, core.class.Class, notification.mixin.ActivityDoc, {
+    ignoreCollections: ['comments']
+  })
+
   defineViewlets(builder)
 
   defineStatusCategories(builder)
@@ -495,6 +516,82 @@ export function createModel (builder: Builder): void {
     tracker.ids.TxIssueCreated
   )
 
+  builder.createDoc(
+    notification.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: tracker.class.Issue,
+      action: 'update',
+      icon: tracker.icon.Issue,
+      config: {
+        status: {
+          iconPresenter: tracker.component.IssueStatusIcon
+        },
+        priority: {
+          iconPresenter: tracker.component.PriorityIconPresenter
+        },
+        estimation: {
+          icon: tracker.icon.Estimation
+        }
+      }
+    },
+    tracker.ids.NotificationIssueUpdated
+  )
+
+  builder.createDoc(
+    notification.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: tracker.class.Issue,
+      action: 'create',
+      icon: tracker.icon.Issue,
+      valueAttr: 'title'
+    },
+    tracker.ids.NotificationIssueCreated
+  )
+
+  builder.createDoc(
+    notification.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: tracker.class.Issue,
+      action: 'remove',
+      icon: tracker.icon.Issue,
+      valueAttr: 'title'
+    },
+    tracker.ids.NotificationIssueRemoved
+  )
+
+  builder.createDoc(
+    notification.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: tracker.class.Milestone,
+      action: 'update',
+      config: {
+        status: {
+          iconPresenter: tracker.component.MilestoneStatusIcon
+        }
+      }
+    },
+    tracker.ids.NotificationMilestoneUpdated
+  )
+
+  builder.createDoc(
+    notification.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: tracker.class.IssueTemplate,
+      action: 'update',
+      config: {
+        priority: {
+          iconPresenter: tracker.component.PriorityIconPresenter
+        }
+      }
+    },
+    tracker.ids.NotificationIssueTemplateUpdated
+  )
+
   defineApplication(builder, { myIssuesId, allIssuesId, issuesId, componentsId, milestonesId, templatesId })
 
   defineActions(builder, issuesId, componentsId, myIssuesId)
@@ -528,51 +625,43 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(
-    activity.class.ActivityExtension,
+    notification.class.ChatMessageViewlet,
     core.space.Model,
     {
-      ofClass: tracker.class.Issue,
-      components: {
-        input: chunter.component.CommentInput
-      }
+      objectClass: tracker.class.Issue,
+      label: notification.string.LeftComment
     },
-    tracker.ids.IssueActivityExtension
+    tracker.ids.IssueChatMessageViewlet
   )
 
   builder.createDoc(
-    activity.class.ActivityExtension,
+    notification.class.ChatMessageViewlet,
     core.space.Model,
     {
-      ofClass: tracker.class.IssueTemplate,
-      components: {
-        input: chunter.component.CommentInput
-      }
+      objectClass: tracker.class.IssueTemplate,
+      label: notification.string.LeftComment
     },
-    tracker.ids.IssueTemplateActivityExtension
+    tracker.ids.IssueTemplateChatMessageViewlet
   )
 
   builder.createDoc(
-    activity.class.ActivityExtension,
+    notification.class.ChatMessageViewlet,
     core.space.Model,
     {
-      ofClass: tracker.class.Component,
-      components: {
-        input: chunter.component.CommentInput
-      }
+      objectClass: tracker.class.Component,
+      label: notification.string.LeftComment
     },
-    tracker.ids.ComponentActivityExtension
+    tracker.ids.ComponentChatMessageViewlet
   )
 
   builder.createDoc(
-    activity.class.ActivityExtension,
+    notification.class.ChatMessageViewlet,
     core.space.Model,
     {
-      ofClass: tracker.class.Milestone,
-      components: {
-        input: chunter.component.CommentInput
-      }
+      objectClass: tracker.class.Milestone,
+      label: notification.string.LeftComment
     },
-    tracker.ids.MilestoneActivityExtension
+    tracker.ids.MilestoneChatMessageViewlet
   )
 
   builder.createDoc(

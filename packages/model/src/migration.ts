@@ -1,21 +1,21 @@
 import core, {
   Client,
-  Doc,
   DOMAIN_MIGRATION,
+  Data,
+  Doc,
   DocumentQuery,
   Domain,
   FindOptions,
   Hierarchy,
   IncOptions,
+  MigrationState,
   ModelDb,
   ObjQueryType,
   PushOptions,
   Ref,
-  UnsetOptions,
-  MigrationState,
-  generateId,
   TxOperations,
-  Data
+  UnsetOptions,
+  generateId
 } from '@hcengineering/core'
 import { ModelLogger } from './utils'
 
@@ -50,6 +50,14 @@ export type MigrationDocumentQuery<T extends Doc> = {
 
 /**
  * @public
+ */
+export interface MigrationIterator<T extends Doc> {
+  next: (count: number) => Promise<T[] | null>
+  close: () => Promise<void>
+}
+
+/**
+ * @public
  * Client to perform model upgrades
  */
 export interface MigrationClient {
@@ -61,6 +69,13 @@ export interface MigrationClient {
     query: MigrationDocumentQuery<T>,
     options?: Omit<FindOptions<T>, 'lookup'>
   ) => Promise<T[]>
+
+  // Traverse documents
+  traverse: <T extends Doc>(
+    domain: Domain,
+    query: MigrationDocumentQuery<T>,
+    options?: Omit<FindOptions<T>, 'lookup'>
+  ) => Promise<MigrationIterator<T>>
 
   // Allow to raw update documents inside domain.
   update: <T extends Doc>(
@@ -77,8 +92,9 @@ export interface MigrationClient {
   // Move documents per domain
   move: <T extends Doc>(sourceDomain: Domain, query: DocumentQuery<T>, targetDomain: Domain) => Promise<MigrationResult>
 
-  create: <T extends Doc>(domain: Domain, doc: T) => Promise<void>
+  create: <T extends Doc>(domain: Domain, doc: T | T[]) => Promise<void>
   delete: <T extends Doc>(domain: Domain, _id: Ref<T>) => Promise<void>
+  deleteMany: <T extends Doc>(domain: Domain, ids: Ref<T>[]) => Promise<void>
 
   hierarchy: Hierarchy
   model: ModelDb

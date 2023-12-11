@@ -66,6 +66,7 @@ import ReviewPresenter from './components/review/ReviewPresenter.svelte'
 import Reviews from './components/review/Reviews.svelte'
 import recruit from './plugin'
 import {
+  getAppIdentifier,
   getAppTitle,
   getObjectLink,
   getRevTitle,
@@ -372,6 +373,7 @@ export default async (): Promise<Resources> => ({
   },
   function: {
     AppTitleProvider: getAppTitle,
+    AppIdentifierProvider: getAppIdentifier,
     VacTitleProvider: getVacTitle,
     RevTitleProvider: getRevTitle,
     IdProvider: getSequenceId,

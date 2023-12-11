@@ -17,13 +17,16 @@
   import { IntlString } from '@hcengineering/platform'
   import { Label, resizeObserver, CheckBox, MiniToggle } from '@hcengineering/ui'
   import { Doc, Ref } from '@hcengineering/core'
-  import { ActivityFilter } from '@hcengineering/activity'
+  import notification, { ActivityMessagesFilter } from '@hcengineering/notification'
+
   import activity from '../plugin'
 
   export let selectedFiltersRefs: Ref<Doc>[] | 'All' = 'All'
-  export let filters: ActivityFilter[] = []
-  let activityOrderNewestFirst = JSON.parse(localStorage.getItem('activity-newest-first') ?? 'false')
+  export let filters: ActivityMessagesFilter[] = []
+
   const dispatch = createEventDispatcher()
+
+  let activityOrderNewestFirst = JSON.parse(localStorage.getItem('activity-newest-first') ?? 'false')
 
   interface ActionMenu {
     label: IntlString
@@ -129,7 +132,7 @@
       <div class="ml-3 mt-2 mb-2 mr-3">
         <MiniToggle
           bind:on={activityOrderNewestFirst}
-          label={activity.string.NewestFirst}
+          label={notification.string.NewestFirst}
           on:change={() => {
             dispatch('update', { action: 'toggle', value: activityOrderNewestFirst })
           }}

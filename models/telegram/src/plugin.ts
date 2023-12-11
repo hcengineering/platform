@@ -21,7 +21,7 @@ import telegram from '@hcengineering/telegram-resources/src/plugin'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 import type { TxViewlet } from '@hcengineering/activity'
 import { type TemplateFieldFunc } from '@hcengineering/templates'
-import { type NotificationGroup } from '@hcengineering/notification'
+import { type DocUpdateMessageViewlet, type NotificationGroup } from '@hcengineering/notification'
 
 export default mergeIds(telegramId, telegram, {
   string: {
@@ -42,7 +42,9 @@ export default mergeIds(telegramId, telegram, {
     TxMessage: '' as Ref<TxViewlet>,
     TxSharedCreate: '' as Ref<TxViewlet>,
     NewMessageNotificationViewlet: '' as Ref<TxViewlet>,
-    NotificationGroup: '' as Ref<NotificationGroup>
+    NotificationGroup: '' as Ref<NotificationGroup>,
+    NotificationMessageShared: '' as Ref<DocUpdateMessageViewlet>,
+    NotificationMessageCreated: '' as Ref<DocUpdateMessageViewlet>
   },
   function: {
     GetCurrentEmployeeTG: '' as Resource<TemplateFieldFunc>,

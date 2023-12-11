@@ -3,12 +3,12 @@ import { type Domain, IndexKind, type Ref } from '@hcengineering/core'
 import { Collection, Index, Model, Prop, TypeMarkup, TypeRef, TypeString, UX } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import calendar, { TEvent } from '@hcengineering/model-calendar'
-import chunter from '@hcengineering/model-chunter'
 import contact from '@hcengineering/model-contact'
 import core, { TAttachedDoc } from '@hcengineering/model-core'
 import task from '@hcengineering/model-task'
 import { type Applicant, type Candidate, type Opinion, type Review } from '@hcengineering/recruit'
 import recruit from './plugin'
+import notification from '@hcengineering/notification'
 
 @Model(recruit.class.Review, calendar.class.Event)
 @UX(recruit.string.Review, recruit.icon.Review, 'RVE', 'number')
@@ -47,7 +47,7 @@ export class TOpinion extends TAttachedDoc implements Opinion {
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
-  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
+  @Prop(Collection(notification.class.ChatMessage), notification.string.Comments)
     comments?: number
 
   @Prop(TypeMarkup(), recruit.string.Description)

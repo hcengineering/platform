@@ -42,7 +42,6 @@ import {
   UX
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
-import chunter from '@hcengineering/model-chunter'
 import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@hcengineering/model-core'
 import view, { createAction, template, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import { type IntlString } from '@hcengineering/platform'
@@ -61,6 +60,7 @@ import {
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { type ViewAction } from '@hcengineering/view'
 import task from './plugin'
+import notification from '@hcengineering/notification'
 
 export { taskId } from '@hcengineering/task'
 export { createProjectType, createSequence, taskOperation } from './migration'
@@ -95,7 +95,7 @@ export class TTask extends TAttachedDoc implements Task {
   @Prop(Collection(tags.class.TagReference, task.string.TaskLabels), task.string.TaskLabels)
     labels?: number
 
-  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
+  @Prop(Collection(notification.class.ChatMessage), notification.string.Comments)
     comments?: number
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })

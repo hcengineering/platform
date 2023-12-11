@@ -171,17 +171,27 @@ async function getTitle<T extends RecruitDocument> (
   return object != null ? await getSequenceId(object) : ''
 }
 
-export async function getVacTitle (client: Client, ref: Ref<Vacancy>): Promise<string> {
-  const object = await client.findOne(recruit.class.Vacancy, { _id: ref })
+export async function getVacTitle (client: Client, ref: Ref<Vacancy>, doc?: Vacancy): Promise<string> {
+  const object = doc ?? (await client.findOne(recruit.class.Vacancy, { _id: ref }))
   return object != null ? object.name : ''
 }
 
-export async function getAppTitle (client: Client, ref: Ref<Applicant>): Promise<string> {
-  const applicant = await client.findOne(recruit.class.Applicant, { _id: ref })
+export async function getAppTitle (client: Client, ref: Ref<Applicant>, doc?: Applicant): Promise<string> {
+  const applicant = doc ?? (await client.findOne(recruit.class.Applicant, { _id: ref }))
   if (applicant === undefined) return ''
   const candidate = await client.findOne(contact.class.Contact, { _id: applicant.attachedTo })
   if (candidate === undefined) return ''
   return getName(client.getHierarchy(), candidate)
+}
+
+export async function getAppIdentifier (client: Client, ref: Ref<Applicant>, doc?: Applicant): Promise<string> {
+  const applicant = doc ?? (await client.findOne(recruit.class.Applicant, { _id: ref }))
+
+  if (applicant === undefined) {
+    return ''
+  }
+
+  return `APP-${applicant.number}`
 }
 
 export async function getRevTitle (client: Client, ref: Ref<Review>): Promise<string> {

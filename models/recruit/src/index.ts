@@ -56,7 +56,7 @@ import {
 } from '@hcengineering/recruit'
 import setting from '@hcengineering/setting'
 import { type KeyBinding, type ViewOptionModel, type ViewOptionsModel } from '@hcengineering/view'
-import activity from '@hcengineering/activity'
+
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
 import { TOpinion, TReview } from './review-model'
@@ -85,7 +85,7 @@ export class TVacancy extends TProject implements Vacancy {
   @Prop(TypeRef(contact.class.Organization), recruit.string.Company, { icon: contact.icon.Company })
     company?: Ref<Organization>
 
-  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
+  @Prop(Collection(notification.class.ChatMessage), notification.string.Comments)
     comments?: number
 
   @Prop(TypeString(), recruit.string.Vacancy)
@@ -196,6 +196,18 @@ export class TApplicantMatch extends TAttachedDoc implements ApplicantMatch {
 
 export function createModel (builder: Builder): void {
   builder.createModel(TVacancy, TCandidates, TCandidate, TApplicant, TReview, TOpinion, TVacancyList, TApplicantMatch)
+
+  builder.mixin(recruit.class.Vacancy, core.class.Class, notification.mixin.ActivityDoc, {
+    ignoreCollections: ['comments']
+  })
+  builder.mixin(recruit.class.Applicant, core.class.Class, notification.mixin.ActivityDoc, {
+    ignoreCollections: ['comments']
+  })
+  builder.mixin(recruit.class.Review, core.class.Class, notification.mixin.ActivityDoc, {})
+
+  builder.mixin(recruit.mixin.Candidate, core.class.Class, notification.mixin.ActivityDoc, {
+    ignoreCollections: ['comments']
+  })
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, workbench.mixin.SpaceView, {
     view: {
@@ -832,7 +844,7 @@ export function createModel (builder: Builder): void {
           key: 'title',
           props: { kind: 'list', size: 'small', shouldShowName: false }
         },
-        { key: 'comments', displayProps: { key: 'comments', suffix: true } },
+        'comments',
         { key: '', displayProps: { grow: true } },
         {
           key: '$lookup.channels',
@@ -882,7 +894,7 @@ export function createModel (builder: Builder): void {
           label: recruit.string.Applications,
           props: { kind: 'list', size: 'small', shouldShowName: false }
         },
-        { key: 'comments', displayProps: { key: 'comments', suffix: true } },
+        'comments',
         {
           key: '',
           presenter: tracker.component.RelatedIssueSelector,
@@ -938,7 +950,7 @@ export function createModel (builder: Builder): void {
           label: recruit.string.Applications
         },
         'description',
-        { key: 'comments', displayProps: { key: 'comments', suffix: true } },
+        'comemnts',
         {
           key: '',
           presenter: tracker.component.RelatedIssueSelector,
@@ -1071,6 +1083,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ObjectTitle, {
     titleProvider: recruit.function.AppTitleProvider
+  })
+
+  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ObjectIdentifier, {
+    provider: recruit.function.AppIdentifierProvider
   })
 
   builder.mixin(recruit.class.Review, core.class.Class, view.mixin.ObjectTitle, {
@@ -1569,39 +1585,33 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    activity.class.ActivityExtension,
+    notification.class.ChatMessageViewlet,
     core.space.Model,
     {
-      ofClass: recruit.class.Vacancy,
-      components: {
-        input: chunter.component.CommentInput
-      }
+      objectClass: recruit.class.Vacancy,
+      label: chunter.string.LeftComment
     },
-    recruit.ids.VacancyActivityExtension
+    recruit.ids.VacancyChatMessageViewlet
   )
 
   builder.createDoc(
-    activity.class.ActivityExtension,
+    notification.class.ChatMessageViewlet,
     core.space.Model,
     {
-      ofClass: recruit.class.Applicant,
-      components: {
-        input: chunter.component.CommentInput
-      }
+      objectClass: recruit.class.Applicant,
+      label: chunter.string.LeftComment
     },
-    recruit.ids.ApplicantActivityExtension
+    recruit.ids.ApplicantChatMessageViewlet
   )
 
   builder.createDoc(
-    activity.class.ActivityExtension,
+    notification.class.ChatMessageViewlet,
     core.space.Model,
     {
-      ofClass: recruit.class.Review,
-      components: {
-        input: chunter.component.CommentInput
-      }
+      objectClass: recruit.class.Review,
+      label: chunter.string.LeftComment
     },
-    recruit.ids.ReviewActivityExtension
+    recruit.ids.ReviewChatMessageViewlet
   )
 
   // Allow to use fuzzy search for mixins
@@ -1615,7 +1625,7 @@ export function createModel (builder: Builder): void {
     propagate: [recruit.class.Applicant],
     propagateClasses: [
       tags.class.TagReference,
-      chunter.class.Comment,
+      notification.class.ChatMessage,
       attachment.class.Attachment,
       contact.class.Channel
     ]
@@ -1667,6 +1677,21 @@ export function createModel (builder: Builder): void {
       label: tracker.string.RelatedIssues
     }
   })
+
+  builder.createDoc(
+    notification.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: recruit.class.Applicant,
+      action: 'update',
+      config: {
+        status: {
+          iconPresenter: task.component.StateIconPresenter
+        }
+      }
+    },
+    recruit.ids.NotificationApplicantUpdated
+  )
 
   createAction(
     builder,

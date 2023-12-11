@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Contact, getName } from '@hcengineering/contact'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import core, { Class, ClassifierKind, Doc, Mixin, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
-  import { getResource, translate } from '@hcengineering/platform'
+  import { getResource } from '@hcengineering/platform'
   import {
     AttributeCategory,
     AttributeCategoryOrder,
@@ -30,10 +30,10 @@
     getClient,
     hasResource
   } from '@hcengineering/presentation'
-  import { AnyComponent, Button, Component, IconMixin, IconMoreH, showPopup, themeStore } from '@hcengineering/ui'
+  import { AnyComponent, Button, Component, IconMixin, IconMoreH, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { createEventDispatcher, onDestroy } from 'svelte'
-  import { ContextMenu, ParentsNavigator, DocNavLink } from '..'
+
+  import { ContextMenu, ParentsNavigator, DocNavLink, getDocLabel } from '..'
   import { categorizeFields, getCollectionCounter, getFiltredKeys } from '../utils'
   import DocAttributeBar from './DocAttributeBar.svelte'
 
@@ -210,21 +210,11 @@
   let rawTitle: string = ''
 
   $: if (object !== undefined) {
-    getTitle(object).then((t) => {
-      rawTitle = t
-    })
-  }
-
-  async function getTitle (object: Doc): Promise<string> {
-    const name = (object as any).name
-    if (name !== undefined) {
-      if (hierarchy.isDerived(object._class, contact.class.Person)) {
-        return getName(client.getHierarchy(), object as Contact)
+    getDocLabel(client, object).then((t) => {
+      if (t) {
+        rawTitle = t
       }
-      return name
-    }
-    const label = hierarchy.getClass(object._class).label
-    return await translate(label, {}, $themeStore.language)
+    })
   }
 
   async function getHeaderEditor (_class: Ref<Class<Doc>>): Promise<AnyComponent | undefined> {

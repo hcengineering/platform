@@ -410,6 +410,7 @@ export async function OnMessageSent (tx: Tx, control: TriggerControl): Promise<T
 
   const sender = message.createdBy
   const docUpdate = docUpdates.find((du) => du.user === sender)
+
   if (docUpdate === undefined) {
     let anotherPerson: Ref<Account> | undefined
     for (const person of channel.members) {

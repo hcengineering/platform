@@ -24,16 +24,17 @@
   export let colorInherit: boolean = false
   export let accent: boolean = false
   export let inline: boolean = false
+  export let shouldShowAvatar: boolean = true
 </script>
 
 {#if value}
   <div class="flex-presenter" style:color={'inherit'}>
-    {#if !inline}
+    {#if !inline && shouldShowAvatar}
       <IssueStatusIcon {value} {size} {space} on:accent-color />
     {/if}
     <span
       class="overflow-label"
-      class:ml-2={!inline}
+      class:ml-2={!inline && shouldShowAvatar}
       class:list-header={kind === 'list-header'}
       class:colorInherit
       class:fs-bold={accent}

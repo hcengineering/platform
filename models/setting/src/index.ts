@@ -328,6 +328,19 @@ export function createModel (builder: Builder): void {
     setting.ids.TxIntegrationDisable
   )
 
+  builder.createDoc(
+    notification.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: setting.class.Integration,
+      icon: setting.icon.Integrations,
+      label: setting.string.IntegrationWith,
+      action: 'update',
+      hideIfRemoved: true
+    },
+    setting.ids.UpdateIntegrationNotificationViewlet
+  )
+
   builder.mixin(core.class.TypeString, core.class.Class, view.mixin.ObjectEditor, {
     editor: setting.component.StringTypeEditor
   })

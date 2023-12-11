@@ -27,10 +27,11 @@ import type {
   TxMixin,
   TxUpdateDoc
 } from '@hcengineering/core'
-import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
+import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 
+// TODO: remove TxViewlet
 /**
  * Define an display for all transaction kinds for particular class.
  * @public
@@ -61,6 +62,7 @@ export interface TxViewlet extends Doc {
   hideOnRemove?: boolean
 }
 
+// TODO: remove DisplayTx
 /**
  * Transaction being displayed.
  * @public
@@ -99,66 +101,24 @@ export interface DisplayTx {
 /**
  * @public
  */
-export interface ActivityFilter extends Doc {
-  label: IntlString
-  filter: Resource<(tx: DisplayTx, _class?: Ref<Doc>) => boolean>
-}
-
-/**
- * @public
- */
-export interface ExtraActivityComponent extends Class<Doc> {
-  component: AnyComponent
-}
-
-/**
- * @public
- */
 export const activityId = 'activity' as Plugin
-
-/**
- * @public
- */
-export type ActivityExtensionKind = 'footer' | 'action' | 'input'
-
-/**
- * @public
- */
-export interface ActivityExtension extends Doc {
-  ofClass: Ref<Class<Doc>>
-  components?: Partial<Record<ActivityExtensionKind, AnyComponent>>
-  isMention?: boolean
-}
-
-/**
- * @public
- */
-export interface TxMention extends Class<Doc> {}
 
 export default plugin(activityId, {
   icon: {
     Activity: '' as Asset
   },
   string: {
-    Delete: '' as IntlString,
-    Edit: '' as IntlString,
-    Edited: '' as IntlString,
     Activity: '' as IntlString,
-    Changed: '' as IntlString,
-    To: '' as IntlString,
-    Unset: '' as IntlString,
     Added: '' as IntlString,
+    Changed: '' as IntlString,
+    Edited: '' as IntlString,
     From: '' as IntlString,
     Removed: '' as IntlString,
-    NewestFirst: '' as IntlString
-  },
-  mixin: {
-    ExtraActivityComponent: '' as Ref<Class<ExtraActivityComponent>>
+    To: '' as IntlString,
+    Unset: '' as IntlString
   },
   class: {
-    TxViewlet: '' as Ref<Class<TxViewlet>>,
-    ActivityFilter: '' as Ref<Class<ActivityFilter>>,
-    ActivityExtension: '' as Ref<Class<ActivityExtension>>
+    TxViewlet: '' as Ref<Class<TxViewlet>>
   },
   component: {
     Activity: '' as AnyComponent

@@ -1,4 +1,5 @@
-import type { ActivityExtension, DisplayTx, TxViewlet } from '@hcengineering/activity'
+import { get } from 'svelte/store'
+import type { DisplayTx, TxViewlet } from '@hcengineering/activity'
 import core, {
   type AttachedDoc,
   type Class,
@@ -15,7 +16,6 @@ import core, {
   type TxOperations,
   TxProcessor,
   type TxUpdateDoc,
-  getObjectValue,
   matchQuery
 } from '@hcengineering/core'
 import { type Asset, type IntlString, getResource, translate } from '@hcengineering/platform'
@@ -23,7 +23,7 @@ import { getAttributePresenterClass } from '@hcengineering/presentation'
 import { type AnyComponent, type AnySvelteComponent, ErrorPresenter, themeStore } from '@hcengineering/ui'
 import view, { type AttributeModel, type BuildModelKey, type BuildModelOptions } from '@hcengineering/view'
 import { getObjectPresenter } from '@hcengineering/view-resources'
-import { get } from 'svelte/store'
+
 import { type ActivityKey, activityKey } from './activity'
 import activity from './plugin'
 
@@ -390,43 +390,4 @@ export async function getValue (client: TxOperations, m: AttributeModel, tx: Dis
     value.isObjectSet = res[1]
   }
   return value
-}
-
-export function getPrevValue (client: TxOperations, m: AttributeModel, tx: DisplayTx): any {
-  if (tx.txes.length > 0 && tx.txes[0].prevDoc !== undefined) {
-    return getObjectValue(m.key, tx.txes[0].prevDoc)
-  } else if (tx.prevDoc !== undefined) {
-    return getObjectValue(m.key, tx.prevDoc)
-  }
-  return undefined
-}
-
-export function filterCollectionTxes (txes: DisplayTx[]): DisplayTx[] {
-  return txes.map(filterCollectionTx).filter(Boolean) as DisplayTx[]
-}
-
-function filterCollectionTx (tx: DisplayTx): DisplayTx | undefined {
-  if (tx.collectionAttribute === undefined) return tx
-  const txes = tx.txes.reduceRight(
-    (txes, ctx) => {
-      const filtredTxes = txes.filter(
-        ({ tx: { _class }, doc }) => doc?._id !== ctx.doc?._id || _class === core.class.TxUpdateDoc
-      )
-      return ctx.tx._class === core.class.TxUpdateDoc || filtredTxes.length === txes.length
-        ? [ctx, ...txes]
-        : filtredTxes
-    },
-    [tx]
-  )
-  const txDocIds = txes.map(({ doc }) => doc?._id).filter(Boolean) as Array<Ref<Doc>>
-  const ctx = txes.pop()
-  if (ctx !== undefined) {
-    ctx.txes = txes
-    ctx.txDocIds = new Set(txDocIds)
-  }
-  return ctx
-}
-
-export async function getExtensions (client: Client, ofClass: Ref<Class<Doc>>): Promise<ActivityExtension[]> {
-  return await client.findAll(activity.class.ActivityExtension, { ofClass })
 }

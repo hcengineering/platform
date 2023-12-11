@@ -98,6 +98,7 @@ export interface Reaction extends AttachedDoc {
 
 /**
  * @public
+ * @deprecated use ChatMessage instead
  */
 export interface Comment extends AttachedDoc {
   message: string
@@ -154,12 +155,10 @@ export default plugin(chunterId, {
     ChannelBrowser: '' as Asset
   },
   component: {
-    CommentInput: '' as AnyComponent,
     DmHeader: '' as AnyComponent,
     ChannelView: '' as AnyComponent,
     ThreadView: '' as AnyComponent,
     Thread: '' as AnyComponent,
-    CommentsPresenter: '' as AnyComponent,
     Reactions: '' as AnyComponent
   },
   class: {
@@ -182,6 +181,7 @@ export default plugin(chunterId, {
     Backlinks: '' as Ref<Space>
   },
   string: {
+    Reactions: '' as IntlString,
     EditUpdate: '' as IntlString,
     EditCancel: '' as IntlString,
     Comments: '' as IntlString,

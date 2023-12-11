@@ -13,161 +13,83 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import activity, { ActivityExtension, DisplayTx, TxViewlet } from '@hcengineering/activity'
-  import core, { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
-  import notification, { DocUpdates, DocUpdateTx, Writable } from '@hcengineering/notification'
+  import activity from '@hcengineering/activity'
+  import { Doc, Ref, SortingOrder } from '@hcengineering/core'
+  import notification, { DisplayActivityMessage, ActivityMessage } from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Grid, Label, Lazy, Spinner } from '@hcengineering/ui'
-  import { ActivityKey, activityKey, newActivity } from '../activity'
-  import { filterCollectionTxes, getExtensions } from '../utils'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Component, Grid, Label, Lazy, Spinner } from '@hcengineering/ui'
+
   import ActivityFilter from './ActivityFilter.svelte'
-  import TxView from './TxView.svelte'
-  import ActivityExtensionComponent from './ActivityExtensionComponent.svelte'
 
   export let object: Doc
   export let showCommenInput: boolean = true
   export let transparent: boolean = false
-  export let shouldScroll: boolean = false
   export let focusIndex: number = -1
   export let boundary: HTMLElement | undefined = undefined
 
-  let extensions: ActivityExtension[] = []
+  const activityMessagesQuery = createQuery()
 
-  $: if (object) {
-    getExtensions(client, object._class).then((res?: ActivityExtension[]) => {
-      extensions = res || []
-    })
-  }
+  let filteredMessages: DisplayActivityMessage[] = []
+  let activityMessages: ActivityMessage[] = []
+  let isLoading = false
 
-  getResource(notification.function.GetNotificationClient).then((res) => {
-    updatesStore = res().docUpdatesStore
-  })
-  let updatesStore: Writable<Map<Ref<Doc>, DocUpdates>> | undefined
+  let isNewestFirst = JSON.parse(localStorage.getItem('activity-newest-first') ?? 'false')
 
-  $: updates = $updatesStore?.get(object._id)
-  $: newTxes = updates?.txes ?? []
+  async function updateActivityMessages (objectId: Ref<Doc>, order: SortingOrder): Promise<void> {
+    isLoading = true
+    const combineMessagesFn = await getResource(notification.function.CombineActivityMessages)
 
-  let txes: DisplayTx[] = []
-
-  const client = getClient()
-  const attrs = client.getHierarchy().getAllAttributes(object._class)
-
-  const activityQuery = newActivity(client, attrs)
-
-  let viewlets = new Map<ActivityKey, TxViewlet[]>()
-
-  let allViewlets: TxViewlet[] = []
-  let editableMap: Map<Ref<Class<Doc>>, boolean> | undefined = undefined
-
-  const descriptors = createQuery()
-  $: descriptors.query(activity.class.TxViewlet, {}, (result) => {
-    allViewlets = result
-    editableMap = new Map(
-      allViewlets
-        .filter((tx) => tx.txClass === core.class.TxCreateDoc)
-        .map((it) => [it.objectClass, it.editable ?? false])
-    )
-  })
-
-  $: viewlets = buildViewletsMap(allViewlets)
-
-  function buildViewletsMap (allViewlets: TxViewlet[]): Map<ActivityKey, TxViewlet[]> {
-    const viewlets = new Map()
-    for (const res of allViewlets) {
-      const key = activityKey(res.objectClass, res.txClass)
-      const arr = viewlets.get(key) ?? []
-      arr.push(res)
-      viewlets.set(key, arr)
-    }
-    return viewlets
-  }
-
-  let loading = false
-  let activityOrderNewestFirst = JSON.parse(localStorage.getItem('activity-newest-first') ?? 'false')
-  function updateTxes (
-    objectId: Ref<Doc>,
-    objectClass: Ref<Class<Doc>>,
-    editableMap: Map<Ref<Class<Doc>>, boolean> | undefined,
-    activityOrder: boolean
-  ): void {
-    loading = true
-    const res = activityQuery.update(
-      objectId,
-      objectClass,
-      (_id, result) => {
-        if (_id === objectId) {
-          txes = filterCollectionTxes(result)
-
-          if (txes.length > 0) {
-            loading = false
-          }
-        }
+    const res = activityMessagesQuery.query(
+      notification.class.ActivityMessage,
+      { attachedTo: objectId },
+      (result: ActivityMessage[]) => {
+        activityMessages = combineMessagesFn(result, order)
+        isLoading = false
       },
-      activityOrder ? SortingOrder.Descending : SortingOrder.Ascending,
-      editableMap ?? new Map()
+      {
+        sort: {
+          createdOn: SortingOrder.Ascending
+        }
+      }
     )
     if (!res) {
-      loading = false
+      isLoading = false
     }
   }
 
-  $: updateTxes(object._id, object._class, editableMap, activityOrderNewestFirst)
-
-  let filtered: DisplayTx[] = []
-
-  let newTxIndexes: number[] = []
-  $: newTxIndexes = getNewTxes(filtered, newTxes)
-
-  function getNewTxes (filtered: DisplayTx[], newTxes: DocUpdateTx[]): number[] {
-    const res: number[] = []
-    for (let i = 0; i < filtered.length; i++) {
-      if (isNew(filtered[i], newTxes)) {
-        res.push(i)
-      }
-    }
-    return res
-  }
-
-  function isNew (tx: DisplayTx | undefined, newTxes: DocUpdateTx[]): boolean {
-    if (tx === undefined) return false
-    const index = newTxes.findIndex((p) => p._id === tx.originTx._id && p.isNew)
-    return index !== -1
-  }
-
-  $: scrollIndex = shouldScroll ? newTxIndexes[0] ?? filtered.length - 1 : -1
+  $: updateActivityMessages(object._id, isNewestFirst ? SortingOrder.Descending : SortingOrder.Ascending)
 </script>
 
 <div class="antiSection-header high mt-9" class:invisible={transparent}>
   <span class="antiSection-header__title flex-row-center">
     <Label label={activity.string.Activity} />
-    {#if loading}
+    {#if isLoading}
       <div class="ml-1">
-        <Spinner size={'small'} />
+        <Spinner size="small" />
       </div>
     {/if}
   </span>
   <ActivityFilter
-    {txes}
+    messages={activityMessages}
     {object}
     on:update={(e) => {
-      filtered = e.detail
+      filteredMessages = e.detail
     }}
-    bind:activityOrderNewestFirst
+    bind:isNewestFirst
   />
 </div>
 <div class="p-activity select-text" id={activity.string.Activity}>
-  {#if filtered}
-    <Grid column={1} rowGap={0.75}>
-      {#each filtered as tx, i}
+  {#if filteredMessages.length}
+    <Grid column={1} rowGap={0}>
+      {#each filteredMessages as message}
         <Lazy>
-          <TxView
-            {tx}
-            {viewlets}
-            isNew={newTxIndexes.includes(i)}
-            isNextNew={newTxIndexes.includes(i + 1)}
-            shouldScroll={i === scrollIndex}
-            {boundary}
+          <Component
+            is={notification.component.ActivityMessagePresenter}
+            props={{
+              value: message,
+              boundary
+            }}
           />
         </Lazy>
       {/each}
@@ -176,7 +98,7 @@
 </div>
 {#if showCommenInput}
   <div class="ref-input">
-    <ActivityExtensionComponent {extensions} kind="input" props={{ object, focusIndex, boundary }} />
+    <Component is={notification.component.ChatMessageInput} props={{ object, boundary, focusIndex }} />
   </div>
 {/if}
 
@@ -186,14 +108,18 @@
     margin-top: 1.75rem;
     padding-bottom: 2.5rem;
   }
+
   .p-activity {
     margin-top: 1.75rem;
   }
+
   .invisible {
     display: none;
   }
 
   :global(.grid .msgactivity-container.showIcon:last-child::after) {
     content: none;
-  } // Remove the line in the last Activity message
+  }
+
+  // Remove the line in the last Activity message
 </style>
