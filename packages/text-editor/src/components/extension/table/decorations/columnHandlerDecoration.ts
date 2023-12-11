@@ -95,14 +95,16 @@ const handleMouseDown = (col: number, table: TableNodeLocation, event: MouseEven
 
   function handleMove (event: MouseEvent): void {
     if (dropMarker !== null && dragMarker !== null) {
-      const left = Math.min(startLeft + event.clientX - startX, tableWidthPx)
-      dropIndex = calculateColumnDropIndex(col, columns, left)
+      const currentLeft = startLeft + event.clientX - startX
+      dropIndex = calculateColumnDropIndex(col, columns, currentLeft)
 
-      const markerLeftPx =
+      const dragMarkerWidthPx = columns[col].widthPx
+      const dragMarkerLeftPx = Math.max(0, Math.min(currentLeft, tableWidthPx - dragMarkerWidthPx))
+      const dropMarkerLeftPx =
         dropIndex <= col ? columns[dropIndex].leftPx : columns[dropIndex].leftPx + columns[dropIndex].widthPx
 
-      updateColDropMarker(dropMarker, markerLeftPx - dropMarkerWidthPx / 2, dropMarkerWidthPx)
-      updateColDragMarker(dragMarker, left, columns[col].widthPx)
+      updateColDropMarker(dropMarker, dropMarkerLeftPx - dropMarkerWidthPx / 2, dropMarkerWidthPx)
+      updateColDragMarker(dragMarker, dragMarkerLeftPx, dragMarkerWidthPx)
     }
   }
 
