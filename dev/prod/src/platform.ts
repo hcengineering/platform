@@ -73,7 +73,7 @@ import '@hcengineering/workbench-assets'
 
 import { coreId } from '@hcengineering/core'
 import presentation, { presentationId } from '@hcengineering/presentation'
-import { textEditorId } from '@hcengineering/text-editor'
+import textEditor, { textEditorId } from '@hcengineering/text-editor'
 
 import { setMetadata } from '@hcengineering/platform'
 import { setDefaultLanguage } from '@hcengineering/theme'
@@ -88,6 +88,7 @@ interface Config {
   TELEGRAM_URL: string
   GMAIL_URL: string
   CALENDAR_URL: string
+  COLLABORATOR_URL: string
   TITLE?: string
   LANGUAGES?: string
   DEFAULT_LANGUAGE?: string
@@ -148,6 +149,8 @@ export async function configurePlatform() {
   setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
 
   setMetadata(rekoni.metadata.RekoniUrl, config.REKONI_URL)
+
+  setMetadata(textEditor.metadata.CollaboratorUrl, config.COLLABORATOR_URL ?? 'ws://locahost:3078')
 
   setMetadata(uiPlugin.metadata.DefaultApplication, login.component.LoginApp)
 

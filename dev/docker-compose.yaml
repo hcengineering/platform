@@ -69,6 +69,7 @@ services:
       - mongodb
       - minio
       - elastic
+      - collaborator
       - transactor
     ports:
       - 8087:8080
@@ -83,11 +84,27 @@ services:
       - UPLOAD_URL=/files
       - TRANSACTOR_URL=ws://localhost:3333
       - ELASTIC_URL=http://elastic:9200
+      - COLLABORATOR_URL=ws://localhost:3078
       - MINIO_ENDPOINT=minio
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
       - TITLE=DevPlatform
       - DEFAULT_LANGUAGE=ru
+    restart: unless-stopped
+  collaborator:
+    image: hardcoreeng/collaborator
+    links:
+      - minio
+      - transactor
+    ports:
+      - 3078:3078
+    environment:
+      - COLLABORATOR_PORT=3078
+      - SECRET=secret
+      - TRANSACTOR_URL=ws://localhost:3333
+      - MINIO_ENDPOINT=minio
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
     restart: unless-stopped
   # tracker-front:
   #   image: hardcoreeng/tracker-front

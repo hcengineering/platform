@@ -797,6 +797,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/collaborator",
+      "projectFolder": "pods/collaborator",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/panel",
       "projectFolder": "packages/panel",
       "shouldPublish": true
