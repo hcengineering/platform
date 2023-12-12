@@ -31,7 +31,7 @@ export class TemplateDetailsPage extends CommonTrackerPage {
     this.buttonEstimation = page.locator('(//span[text()="Estimation"]/../div/button)[3]')
     this.buttonDueDate = page.locator('(//span[text()="Due date"]/../div/button)[2]')
     this.buttonSaveDueDate = page.locator('div.footer > button')
-    this.textComment = page.locator('div.labels-row')
+    this.textComment = page.locator('div.grid div.header')
     this.buttonMoreActions = page.locator('div.popupPanel-title > div > button:nth-child(1)')
     this.buttonDelete = page.locator('button[class*="menuItem"] > span', { hasText: 'Delete' })
   }

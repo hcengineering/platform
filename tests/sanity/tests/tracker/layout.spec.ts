@@ -94,6 +94,7 @@ test.describe('tracker layout tests', () => {
   const id = generateId(4)
   let issuesPropsP: Promise<IssueProps[]>
   let issuesProps: IssueProps[] = []
+
   test.beforeEach(async ({ page }) => {
     await allure.parentSuite('Tracker tests')
     test.setTimeout(60000)
