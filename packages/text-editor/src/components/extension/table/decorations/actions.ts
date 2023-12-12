@@ -75,8 +75,6 @@ function tableFromCells (table: TableNodeLocation, rows: TableRows, tr: Transact
         const end = start + oldCell.nodeSize
 
         tr.replaceWith(start, end, newCell)
-      } else {
-        console.log('ignored')
       }
     }
   }
