@@ -1,5 +1,7 @@
 {
   "string": {
+    "ConfigDescription": "Расширение для управления анкетами",
+    "ConfigLabel": "Анкеты",
     "SurveyApplication": "Анкеты"
   }
 }

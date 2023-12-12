@@ -45,8 +45,7 @@ export interface SurveyItem extends AttachedDoc {
  * Interactive survey item, e.g. a question
  */
 export interface SurveyInteractiveItem extends SurveyItem {
-  // TODO: Or plain string?
-  title: Markup
+  title: string
 }
 
 /**
@@ -62,8 +61,7 @@ export interface SurveyAssessableItem extends SurveyInteractiveItem {
  * @public
  */
 export interface Survey extends AttachedDoc {
-  // TODO: Or plain string?
-  title: Markup
+  title: string
   description: Markup
 
   threshold: Percentage
@@ -84,6 +82,8 @@ const survey = plugin(surveyId, {
     SurveyAssessableItem: '' as Ref<Class<SurveyAssessableItem>>
   },
   string: {
+    ConfigDescription: '' as IntlString,
+    ConfigLabel: '' as IntlString,
     SurveyApplication: '' as IntlString
   },
   icon: {

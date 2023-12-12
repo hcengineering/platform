@@ -1,5 +1,7 @@
 {
   "string": {
+    "ConfigDescription": "Extension to manage surveys",
+    "ConfigLabel": "Surveys",
     "SurveyApplication": "Surveys"
   }
 }
