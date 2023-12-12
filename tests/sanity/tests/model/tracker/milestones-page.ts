@@ -1,4 +1,4 @@
-import { type Locator, type Page } from '@playwright/test'
+import { expect, type Locator, type Page } from '@playwright/test'
 import { NewMilestone } from './types'
 import { CommonTrackerPage } from './common-tracker-page'
 
@@ -58,5 +58,9 @@ export class MilestonesPage extends CommonTrackerPage {
 
   async openMilestoneByName (milestoneName: string): Promise<void> {
     await this.page.locator('div.listGrid a', { hasText: milestoneName }).click()
+  }
+
+  async checkMilestoneNotExist (milestoneName: string): Promise<void> {
+    await expect(this.page.locator('div.listGrid a', { hasText: milestoneName })).toHaveCount(0)
   }
 }
