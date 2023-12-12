@@ -37,7 +37,7 @@
 
   let isDiffShown = false
 
-  function toggleShowMore () {
+  function toggleShowMore (): void {
     isDiffShown = !isDiffShown
   }
 </script>
@@ -106,7 +106,13 @@
       color: var(--theme-toggle-on-bg-hover);
 
       .triangle {
-        border-left-color: var(--theme-toggle-on-bg-hover);
+        &.left {
+          border-left-color: var(--theme-toggle-on-bg-hover);
+        }
+
+        &.down {
+          border-top-color: var(--theme-toggle-on-bg-hover);
+        }
       }
     }
   }
