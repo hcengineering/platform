@@ -104,21 +104,22 @@
   .table-wrapper {
     position: relative;
     display: flex;
-    margin: 1.25rem 0;
+    padding: 1.25rem 0;
 
     &::before {
       content: '';
       position: absolute;
-      top: -1.25rem;
-      bottom: -1.25rem;
-      left: -1.25rem;
-      right: -1.25rem;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
     }
 
     &.table-selected {
       &::before {
         border: 1.25rem var(--theme-button-default) solid;
         border-radius: 1.25rem;
+        inset: 0 -1.25rem;
       }
     }
 
@@ -137,7 +138,7 @@
       }
 
       &__row {
-        bottom: -1.25rem;
+        bottom: 0;
         left: 0;
         right: 0;
 
