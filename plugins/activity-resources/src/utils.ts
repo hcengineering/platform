@@ -1,5 +1,5 @@
 import { get } from 'svelte/store'
-import type { DisplayTx, TxViewlet } from '@hcengineering/activity'
+import type { DisplayTx, Reaction, TxViewlet } from '@hcengineering/activity'
 import core, {
   type AttachedDoc,
   type Class,
@@ -16,7 +16,8 @@ import core, {
   type TxOperations,
   TxProcessor,
   type TxUpdateDoc,
-  matchQuery
+  matchQuery,
+  getCurrentAccount
 } from '@hcengineering/core'
 import { type Asset, type IntlString, getResource, translate } from '@hcengineering/platform'
 import { getAttributePresenterClass } from '@hcengineering/presentation'
@@ -390,4 +391,28 @@ export async function getValue (client: TxOperations, m: AttributeModel, tx: Dis
     value.isObjectSet = res[1]
   }
   return value
+}
+
+export async function updateDocReactions (
+  client: TxOperations,
+  reactions: Reaction[],
+  object?: Doc,
+  emoji?: string
+): Promise<void> {
+  if (emoji === undefined || object === undefined) {
+    return
+  }
+
+  const currentAccount = getCurrentAccount()
+
+  const reaction = reactions.find((r) => r.emoji === emoji && r.createBy === currentAccount._id)
+
+  if (reaction == null) {
+    await client.addCollection(activity.class.Reaction, object.space, object._id, object._class, 'reactions', {
+      emoji,
+      createBy: currentAccount._id
+    })
+  } else {
+    await client.remove(reaction)
+  }
 }

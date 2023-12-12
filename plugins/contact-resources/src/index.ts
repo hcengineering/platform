@@ -96,7 +96,7 @@ import ActivityChannelPresenter from './components/activity/ActivityChannelPrese
 import ExpandRightDouble from './components/icons/ExpandRightDouble.svelte'
 import IconMembers from './components/icons/Members.svelte'
 import TxNameChange from './components/activity/TxNameChange.svelte'
-import NotificationNameChanged from './components/notification/NotificationNameChanged.svelte'
+import NameChangedActivityMessage from './components/activity/NameChangedActivityMessage.svelte'
 import SystemAvatar from './components/SystemAvatar.svelte'
 
 import contact from './plugin'
@@ -271,10 +271,8 @@ export default async (): Promise<Resources> => ({
     OpenChannel: openChannelURL
   },
   activity: {
-    TxNameChange
-  },
-  notification: {
-    NotificationNameChanged
+    TxNameChange,
+    NameChangedActivityMessage
   },
   component: {
     ContactArrayEditor,

@@ -13,16 +13,61 @@
 // limitations under the License.
 //
 
-import type { TxViewlet } from '@hcengineering/activity'
-import core, { DOMAIN_MODEL, type Class, type Doc, type DocumentQuery, type Ref, type Tx } from '@hcengineering/core'
-import { Model, type Builder } from '@hcengineering/model'
-import { TDoc } from '@hcengineering/model-core'
-import type { Asset, IntlString } from '@hcengineering/platform'
+import {
+  type ActivityDoc,
+  type ActivityExtension,
+  type ActivityExtensionKind,
+  type ActivityMessage,
+  type ActivityMessageExtension,
+  type ActivityMessageExtensionKind,
+  type ActivityMessagesFilter,
+  type DocAttributeUpdates,
+  type DocUpdateAction,
+  type DocUpdateMessage,
+  type DocUpdateMessageViewlet,
+  type DocUpdateMessageViewletAttributesConfig,
+  type Reaction,
+  type TxViewlet
+} from '@hcengineering/activity'
+import core, {
+  DOMAIN_MODEL,
+  type Class,
+  type Doc,
+  type DocumentQuery,
+  type Ref,
+  type Tx,
+  IndexKind,
+  type TxCUD,
+  type Domain,
+  type Account
+} from '@hcengineering/core'
+import {
+  Model,
+  type Builder,
+  Prop,
+  Index,
+  TypeRef,
+  TypeString,
+  Mixin,
+  Collection,
+  TypeBoolean
+} from '@hcengineering/model'
+import { TAttachedDoc, TClass, TDoc } from '@hcengineering/model-core'
+import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 
 import activity from './plugin'
+import view from '@hcengineering/model-view'
 
+export { activityOperation } from './migration'
 export { activityId } from '@hcengineering/activity'
+
+export const DOMAIN_ACTIVITY = 'activity' as Domain
+
+@Mixin(activity.mixin.ActivityDoc, core.class.Class)
+export class TActivityDoc extends TClass implements ActivityDoc {
+  ignoreCollections?: string[]
+}
 
 @Model(activity.class.TxViewlet, core.class.Doc, DOMAIN_MODEL)
 export class TTxViewlet extends TDoc implements TxViewlet {
@@ -39,8 +84,142 @@ export class TTxViewlet extends TDoc implements TxViewlet {
   hideOnRemove!: boolean
 }
 
+@Model(activity.class.ActivityMessage, core.class.AttachedDoc, DOMAIN_ACTIVITY)
+export class TActivityMessage extends TAttachedDoc implements ActivityMessage {
+  @Prop(TypeBoolean(), activity.string.Pinned)
+  @Index(IndexKind.Indexed)
+    isPinned?: boolean
+
+  @Prop(Collection(activity.class.Reaction), activity.string.Reactions)
+    reactions?: number
+}
+
+@Model(activity.class.DocUpdateMessage, activity.class.ActivityMessage, DOMAIN_ACTIVITY)
+export class TDocUpdateMessage extends TActivityMessage implements DocUpdateMessage {
+  @Prop(TypeRef(core.class.Doc), core.string.Object)
+  @Index(IndexKind.Indexed)
+    objectId!: Ref<Doc>
+
+  @Prop(TypeRef(core.class.Class), core.string.Class)
+  @Index(IndexKind.Indexed)
+    objectClass!: Ref<Class<Doc>>
+
+  @Prop(TypeRef(core.class.TxCUD), core.string.Object)
+  @Index(IndexKind.Indexed)
+    txId!: Ref<TxCUD<Doc>>
+
+  action!: DocUpdateAction
+  updateCollection?: string
+  attributeUpdates?: DocAttributeUpdates
+}
+
+@Model(activity.class.DocUpdateMessageViewlet, core.class.Doc, DOMAIN_MODEL)
+export class TDocUpdateMessageViewlet extends TDoc implements DocUpdateMessageViewlet {
+  @Prop(TypeRef(core.class.Doc), core.string.Class)
+  @Index(IndexKind.Indexed)
+    objectClass!: Ref<Class<Doc>>
+
+  @Prop(TypeString(), core.string.String)
+  @Index(IndexKind.Indexed)
+    action!: DocUpdateAction
+
+  label?: IntlString
+  labelComponent?: AnyComponent
+
+  valueAttr?: string
+
+  icon?: Asset
+  component?: AnyComponent
+  config?: DocUpdateMessageViewletAttributesConfig
+  hideIfRemoved?: boolean
+  onlyWithParent?: boolean
+}
+
+@Model(activity.class.ActivityMessageExtension, core.class.Doc, DOMAIN_MODEL)
+export class TActivityMessageExtension extends TDoc implements ActivityMessageExtension {
+  @Prop(TypeRef(activity.class.ActivityMessage), core.string.Class)
+  @Index(IndexKind.Indexed)
+    ofMessage!: Ref<Class<ActivityMessage>>
+
+  components!: { kind: ActivityMessageExtensionKind, component: AnyComponent }[]
+}
+
+@Model(activity.class.ActivityExtension, core.class.Doc, DOMAIN_MODEL)
+export class TActivityExtension extends TDoc implements ActivityExtension {
+  @Prop(TypeRef(core.class.Class), core.string.Class)
+  @Index(IndexKind.Indexed)
+    ofClass!: Ref<Class<Doc>>
+
+  components!: Record<ActivityExtensionKind, AnyComponent>
+}
+
+@Model(activity.class.ActivityMessagesFilter, core.class.Doc, DOMAIN_MODEL)
+export class TActivityMessagesFilter extends TDoc implements ActivityMessagesFilter {
+  label!: IntlString
+  filter!: Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>
+}
+
+@Model(activity.class.Reaction, core.class.AttachedDoc, DOMAIN_ACTIVITY)
+export class TReaction extends TAttachedDoc implements Reaction {
+  @Prop(TypeString(), activity.string.Emoji)
+    emoji!: string
+
+  @Prop(TypeRef(core.class.Account), view.string.Created)
+    createBy!: Ref<Account>
+}
 export function createModel (builder: Builder): void {
-  builder.createModel(TTxViewlet)
+  builder.createModel(
+    TTxViewlet,
+    TActivityDoc,
+    TActivityMessagesFilter,
+    TActivityMessageExtension,
+    TActivityMessage,
+    TDocUpdateMessage,
+    TDocUpdateMessageViewlet,
+    TActivityExtension,
+    TReaction
+  )
+
+  builder.mixin(activity.class.DocUpdateMessage, core.class.Class, activity.mixin.ActivityDoc, {})
+
+  builder.mixin(activity.class.DocUpdateMessage, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: activity.component.DocUpdateMessagePresenter
+  })
+
+  builder.createDoc(activity.class.ActivityMessagesFilter, core.space.Model, {
+    label: activity.string.Attributes,
+    filter: activity.filter.AttributesFilter
+  })
+
+  builder.createDoc(activity.class.ActivityMessagesFilter, core.space.Model, {
+    label: activity.string.Pinned,
+    filter: activity.filter.PinnedFilter
+  })
+
+  builder.createDoc(
+    activity.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: activity.class.Reaction,
+      action: 'create',
+      component: activity.component.ReactionAddedMessage,
+      label: activity.string.Reacted,
+      onlyWithParent: true,
+      hideIfRemoved: true
+    },
+    activity.ids.ReactionAddedActivityViewlet
+  )
+
+  builder.createDoc(
+    activity.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: activity.class.Reaction,
+      action: 'remove',
+      hideIfRemoved: true
+    },
+    activity.ids.ReactionRemovedActivityViewlet
+  )
 }
 
 export default activity

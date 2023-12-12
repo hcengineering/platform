@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import chunter, { Backlink, Reaction } from '@hcengineering/chunter'
+import chunter, { Backlink, ChatMessage } from '@hcengineering/chunter'
 import contact, { Employee, formatName, Person, PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
@@ -42,15 +42,12 @@ import core, {
   TxUpdateDoc
 } from '@hcengineering/core'
 import notification, {
-  DocUpdateMessage,
   ClassCollaborators,
   Collaborators,
   DocUpdateTx,
   DocNotifyContext,
-  ActivityMessage,
   NotificationProvider,
   NotificationType,
-  ChatMessage,
   DocUpdates
 } from '@hcengineering/notification'
 import { getMetadata, getResource, IntlString } from '@hcengineering/platform'
@@ -67,6 +64,7 @@ import serverNotification, {
 import { Content, NotificationControl } from './types'
 import { getDocUpdateAction, getTxAttributesUpdates, replaceAll } from './utils'
 import { type DocObjectCache } from '@hcengineering/server-notification'
+import activity, { ActivityMessage, DocUpdateMessage, Reaction } from '@hcengineering/activity'
 /**
  * @public
  */
@@ -124,7 +122,7 @@ export async function removeReactionNotifications (
   tx: TxCollectionCUD<ActivityMessage, Reaction>,
   control: TriggerControl
 ): Promise<Tx[]> {
-  const message = (await control.findAll(notification.class.DocUpdateMessage, { objectId: tx.tx.objectId }))[0]
+  const message = (await control.findAll(activity.class.DocUpdateMessage, { objectId: tx.tx.objectId }))[0]
 
   if (message === undefined) {
     return []
@@ -150,7 +148,7 @@ export async function createReactionNotifications (
   control: TriggerControl
 ): Promise<Tx[]> {
   const res: Tx[] = []
-  // const parentMessage = (await control.findAll(notification.class.ActivityMessage, { _id: tx.objectId }))[0]
+  // const parentMessage = (await control.findAll(activity.class.ActivityMessage, { _id: tx.objectId }))[0]
   //
   // if (parentMessage === undefined) {
   //   return res
@@ -266,7 +264,7 @@ async function removeChatMessageNotifications (tx: TxRemoveDoc<ChatMessage>, con
 async function createChatMessageNotifications (tx: TxCreateDoc<ChatMessage>, control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
   const hierarchy = control.hierarchy
-  const chatMessage = (await control.findAll(notification.class.ChatMessage, { _id: tx.objectId }))[0]
+  const chatMessage = (await control.findAll(chunter.class.ChatMessage, { _id: tx.objectId }))[0]
 
   if (chatMessage === undefined) {
     return res
@@ -886,7 +884,7 @@ function getDocUpdateMessageTx (
   modifiedBy?: Ref<Account>
 ): TxCollectionCUD<Doc, DocUpdateMessage> {
   const innerTx = control.txFactory.createTxCreateDoc(
-    notification.class.DocUpdateMessage,
+    activity.class.DocUpdateMessage,
     object.space,
     rawMessage,
     undefined,
@@ -919,7 +917,7 @@ export async function pushDocUpdateMessages (
   if (object === undefined) {
     return res
   }
-  const activityDoc = await control.modelDb.findOne(notification.mixin.ActivityDoc, { _id: object._class })
+  const activityDoc = await control.modelDb.findOne(activity.mixin.ActivityDoc, { _id: object._class })
 
   if (activityDoc === undefined) {
     return res
@@ -1269,7 +1267,7 @@ export async function generateDocUpdateMessages (
     return res
   }
 
-  if (control.hierarchy.isDerived(tx.objectClass, notification.class.ActivityMessage)) {
+  if (control.hierarchy.isDerived(tx.objectClass, activity.class.ActivityMessage)) {
     return res
   }
 
@@ -1309,7 +1307,7 @@ export async function generateDocUpdateMessages (
  * @public
  */
 export async function NotificationMessagesHandler (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
-  if (control.hierarchy.isDerived(tx.objectClass, notification.class.ActivityMessage)) {
+  if (control.hierarchy.isDerived(tx.objectClass, activity.class.ActivityMessage)) {
     return []
   }
 

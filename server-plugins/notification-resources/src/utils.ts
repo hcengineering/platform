@@ -14,10 +14,10 @@ import {
   TxUpdateDoc
 } from '@hcengineering/core'
 import core from '@hcengineering/core/lib/component'
-import { DocAttributeUpdates, DocUpdateAction } from '@hcengineering/notification'
 import { getAllObjectTransactions, type DocObjectCache } from '@hcengineering/server-notification'
 
 import { NotificationControl } from './types'
+import { DocAttributeUpdates, DocUpdateAction } from '@hcengineering/activity'
 
 function escapeRegExp (str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -116,7 +116,7 @@ export async function getDocDiff (
 
   const objectTxes =
     objectCache?.transactions.get(objectId) ??
-    (await getAllObjectTransactions(control, _class, [objectId])).get(objectId) ??
+    (await getAllObjectTransactions(control, _class, [objectId], mixin)).get(objectId) ??
     []
 
   const createTx = isAttached

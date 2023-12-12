@@ -13,24 +13,25 @@
 // limitations under the License.
 //
 
-import core, {
-  SortingOrder,
+import {
   TxFactory,
   toFindResult,
-  toIdMap,
-  type AttachedDoc,
-  type Class,
-  type Doc,
-  type Ref,
   type TxCUD,
-  type TxCollectionCUD,
+  type Doc,
   type TxCreateDoc,
-  TxProcessor
+  SortingOrder,
+  TxProcessor,
+  type Ref,
+  toIdMap,
+  type TxCollectionCUD,
+  type AttachedDoc,
+  type Class
 } from '@hcengineering/core'
 import { type MigrateOperation, type MigrationClient, type MigrationIterator, tryMigrate } from '@hcengineering/model'
-import notification, { type DocUpdateMessage } from '@hcengineering/notification'
-import { getAllObjectTransactions, type DocObjectCache, serverNotificationId } from '@hcengineering/server-notification'
-import { generateDocUpdateMessages, type NotificationControl } from '@hcengineering/server-notification-resources'
+import core from '@hcengineering/model-core'
+import { type DocObjectCache, getAllObjectTransactions, serverNotificationId } from '@hcengineering/server-notification'
+import { type NotificationControl, generateDocUpdateMessages } from '@hcengineering/server-notification-resources'
+import activity, { type DocUpdateMessage } from '@hcengineering/activity'
 
 function getNotificationControl (client: MigrationClient): NotificationControl {
   const txFactory = new TxFactory(core.account.System, false)
@@ -70,10 +71,10 @@ async function generateDocUpdateMessageByTx (
 }
 
 async function createDocUpdateMessages (client: MigrationClient): Promise<void> {
-  const activityDocs = await client.model.findAll(notification.mixin.ActivityDoc, {
-    _id: { $nin: [notification.class.DocUpdateMessage, notification.class.ChatMessage] }
-  })
-  const activityDocClasses = activityDocs.map(({ _id }) => _id)
+  const activityDocs = await client.model.findAll(activity.mixin.ActivityDoc, {})
+  const activityDocClasses = activityDocs
+    .map(({ _id }) => _id)
+    .filter((_class) => !client.hierarchy.isDerived(_class, activity.class.ActivityMessage))
 
   const notificationControl = getNotificationControl(client)
 

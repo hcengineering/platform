@@ -26,7 +26,8 @@ import core, {
   Tx,
   TxCUD,
   TxCollectionCUD,
-  TxUpdateDoc
+  TxUpdateDoc,
+  TxMixin
 } from '@hcengineering/core'
 import { NotificationContent, NotificationType } from '@hcengineering/notification'
 import { Metadata, Plugin, Resource, plugin } from '@hcengineering/platform'
@@ -94,7 +95,8 @@ export async function getEmployee (employee: Ref<Employee>, control: TriggerCont
 export async function getAllObjectTransactions (
   control: Pick<TriggerControl, 'hierarchy' | 'findAll'>,
   _class: Ref<Class<Doc>>,
-  docs: Ref<Doc>[]
+  docs: Ref<Doc>[],
+  mixin?: Ref<Mixin<Doc>>
 ): Promise<DocObjectCache['transactions']> {
   const cache: DocObjectCache['transactions'] = new Map()
   const hierarchy = control.hierarchy
@@ -128,6 +130,22 @@ export async function getAllObjectTransactions (
   )
 
   for (const tx of collectionTxes) {
+    const id = tx.objectId
+    cache.set(id, [...(cache.get(id) ?? []), tx])
+  }
+
+  const mixinTxes = isAttached
+    ? await control.findAll<TxMixin<Doc, Doc>>(
+      core.class.TxMixin,
+      {
+        objectId: { $in: docs },
+        ...(mixin !== undefined ? { mixin } : {})
+      },
+      { sort: { modifiedOn: SortingOrder.Ascending } }
+    )
+    : []
+
+  for (const tx of mixinTxes) {
     const id = tx.objectId
     cache.set(id, [...(cache.get(id) ?? []), tx])
   }

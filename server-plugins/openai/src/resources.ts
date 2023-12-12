@@ -15,6 +15,8 @@
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
+import got from 'got'
+import { convert } from 'html-to-text'
 import core, {
   Doc,
   DocIndexState,
@@ -27,11 +29,10 @@ import core, {
 } from '@hcengineering/core'
 import recruit, { ApplicantMatch } from '@hcengineering/recruit'
 import type { TriggerControl } from '@hcengineering/server-core'
-import got from 'got'
-import { convert } from 'html-to-text'
-import { chunks } from './encoder/encoder'
+import chunter, { ChatMessage } from '@hcengineering/chunter'
+
 import openai, { OpenAIConfiguration, openAIRatelimitter } from './plugin'
-import notification, { ChatMessage } from '@hcengineering/notification'
+import { chunks } from './encoder/encoder'
 
 const model = 'text-davinci-003'
 
@@ -117,7 +118,7 @@ export async function AsyncOnGPTRequest (tx: Tx, tc: TriggerControl): Promise<Tx
   if (tc.hierarchy.isDerived(actualTx._class, core.class.TxCUD) && actualTx.modifiedBy !== openai.account.GPT) {
     const cud: TxCUD<Doc> = actualTx as TxCUD<Doc>
     //
-    if (tc.hierarchy.isDerived(cud.objectClass, notification.class.ChatMessage)) {
+    if (tc.hierarchy.isDerived(cud.objectClass, chunter.class.ChatMessage)) {
       return await handleComment(tx, tc)
     }
     if (tc.hierarchy.isDerived(cud.objectClass, recruit.class.ApplicantMatch)) {

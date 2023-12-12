@@ -38,9 +38,9 @@ import { connect } from '@hcengineering/server-tool'
 import tracker from '@hcengineering/tracker'
 import tags, { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
 import { MongoClient } from 'mongodb'
-import notification, { ChatMessage } from '@hcengineering/notification'
+import chunter, { ChatMessage } from '@hcengineering/chunter'
 
-export const DOMAIN_COMMENT = 'comment' as Domain
+export const DOMAIN_CHUNTER = 'chunter' as Domain
 
 export async function cleanWorkspace (
   mongoUrl: string,
@@ -322,11 +322,11 @@ export async function fixCommentDoubleIdCreate (workspaceId: WorkspaceId, transa
   try {
     const commentTxes = await connection.findAll(core.class.TxCollectionCUD, {
       'tx._class': core.class.TxCreateDoc,
-      'tx.objectClass': notification.class.ChatMessage
+      'tx.objectClass': chunter.class.ChatMessage
     })
     const commentTxesRemoved = await connection.findAll(core.class.TxCollectionCUD, {
       'tx._class': core.class.TxRemoveDoc,
-      'tx.objectClass': notification.class.ChatMessage
+      'tx.objectClass': chunter.class.ChatMessage
     })
     const removed = new Map(commentTxesRemoved.map((it) => [it.tx.objectId, it]))
     // Do not checked removed
@@ -354,7 +354,7 @@ export async function fixCommentDoubleIdCreate (workspaceId: WorkspaceId, transa
             doc._id = c.tx.objectId as Ref<ChatMessage>
             await connection.upload(DOMAIN_TX, [c])
             // Also we need to create snapsot
-            await connection.upload(DOMAIN_COMMENT, [doc])
+            await connection.upload(DOMAIN_CHUNTER, [doc])
           }
         }
       }

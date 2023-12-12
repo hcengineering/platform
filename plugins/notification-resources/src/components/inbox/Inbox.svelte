@@ -13,23 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import {
-    DisplayActivityMessage,
-    InboxNotification,
-    DocNotifyContext,
-    ActivityMessage,
-    DisplayDocUpdateMessage
-  } from '@hcengineering/notification'
+  import { InboxNotification, DocNotifyContext } from '@hcengineering/notification'
   import { ActionContext, getClient } from '@hcengineering/presentation'
   import { Class, Doc, Ref, WithLookup } from '@hcengineering/core'
   import { getLocation, Label, location, navigate, Scroller } from '@hcengineering/ui'
   import { IntlString } from '@hcengineering/platform'
+  import activity, { ActivityMessage, DisplayActivityMessage, DisplayDocUpdateMessage } from '@hcengineering/activity'
+  import { ActivityMessagePresenter } from '@hcengineering/activity-resources'
 
-  import ActivityMessagePresenter from '../activity-message/ActivityMessagePresenter.svelte'
-  import notification from '../../plugin'
-  import { getDisplayActivityMessagesByNotifications } from '../../activityMessagesUtils'
   import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
   import Filter from '../Filter.svelte'
+  import { getDisplayActivityMessagesByNotifications } from '../../utils'
 
   export let label: IntlString
   export let _class: Ref<Class<Doc>> | undefined = undefined
@@ -61,7 +55,7 @@
 
   function markNotificationAsViewed (message: DisplayActivityMessage) {
     const combinedIds =
-      message._class === notification.class.DocUpdateMessage
+      message._class === activity.class.DocUpdateMessage
         ? (message as DisplayDocUpdateMessage).combinedMessagesIds
         : undefined
     const allMessagesIds = [message._id, ...(combinedIds ?? [])]
@@ -85,7 +79,7 @@
   }
 
   function handleMessageClicked (message: DisplayActivityMessage) {
-    if (client.getHierarchy().isDerived(message.attachedToClass, notification.class.ActivityMessage)) {
+    if (client.getHierarchy().isDerived(message.attachedToClass, activity.class.ActivityMessage)) {
       openDocActivity(message.attachedTo)
       selectedMessageId = message.attachedTo as Ref<ActivityMessage>
     } else {

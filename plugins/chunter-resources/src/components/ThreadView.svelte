@@ -22,6 +22,8 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { IconClose, Label, getCurrentResolvedLocation, navigate } from '@hcengineering/ui'
   import { afterUpdate, beforeUpdate, createEventDispatcher } from 'svelte'
+  import activity from '@hcengineering/activity'
+
   import chunter from '../plugin'
   import { isMessageHighlighted, messageIdForScroll, scrollAndHighLight, shouldScrollToMessage } from '../utils'
   import MsgView from './Message.svelte'
@@ -60,7 +62,7 @@
   const docUpdates = notificationClient.docUpdatesStore
 
   const lookup = {
-    _id: { attachments: attachment.class.Attachment, reactions: chunter.class.Reaction },
+    _id: { attachments: attachment.class.Attachment, reactions: activity.class.Reaction },
     createBy: core.class.Account
   }
 
@@ -86,7 +88,7 @@
       },
       {
         lookup: {
-          _id: { attachments: attachment.class.Attachment, reactions: chunter.class.Reaction },
+          _id: { attachments: attachment.class.Attachment, reactions: activity.class.Reaction },
           createBy: core.class.Account
         }
       }

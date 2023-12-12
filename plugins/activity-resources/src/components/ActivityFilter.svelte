@@ -18,12 +18,13 @@
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { ActionIcon, eventToHTMLElement, Icon, Label, showPopup } from '@hcengineering/ui'
-  import notification, { ActivityMessage, ActivityMessagesFilter } from '@hcengineering/notification'
+  import { ActivityMessage, ActivityMessagesFilter } from '@hcengineering/activity'
 
   import activity from '../plugin'
   import FilterPopup from './FilterPopup.svelte'
   import IconClose from './icons/Close.svelte'
   import IconFilter from './icons/Filter.svelte'
+  import { sortActivityMessages } from '../activityMessagesUtils'
 
   export let messages: ActivityMessage[]
   export let object: Doc
@@ -40,7 +41,7 @@
   $: localStorage.setItem('activity-filter', JSON.stringify(selectedFiltersRefs))
   $: localStorage.setItem('activity-newest-first', JSON.stringify(isNewestFirst))
 
-  client.findAll(notification.class.ActivityMessagesFilter, {}).then((res) => {
+  client.findAll(activity.class.ActivityMessagesFilter, {}).then((res) => {
     filters = res
 
     if (saved !== null && saved !== undefined) {
@@ -83,9 +84,7 @@
     selected: Ref<Doc>[] | 'All',
     sortOrder: SortingOrder
   ): Promise<void> {
-    const sortMessagesFn = await getResource(notification.function.SortActivityMessages)
-
-    const sortedMessages = sortMessagesFn(messages, sortOrder).sort(({ isPinned }) =>
+    const sortedMessages = sortActivityMessages(messages, sortOrder).sort(({ isPinned }) =>
       isPinned && sortOrder === SortingOrder.Ascending ? -1 : 1
     )
 

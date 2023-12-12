@@ -13,21 +13,24 @@
 // limitations under the License.
 //
 
-import type {
+import {
+  Account,
   AttachedDoc,
   Attribute,
   Class,
   Collection,
   Doc,
   DocumentQuery,
+  Mixin,
   Ref,
+  Timestamp,
   Tx,
   TxCreateDoc,
   TxCUD,
   TxMixin,
   TxUpdateDoc
 } from '@hcengineering/core'
-import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
+import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 
@@ -101,11 +104,155 @@ export interface DisplayTx {
 /**
  * @public
  */
+export interface ActivityMessage extends AttachedDoc {
+  modifiedBy: Ref<Account>
+  modifiedOn: Timestamp
+
+  isPinned?: boolean
+
+  reactions?: number
+}
+
+export type DisplayActivityMessage = DisplayDocUpdateMessage | ActivityMessage
+
+export interface DisplayDocUpdateMessage extends DocUpdateMessage {
+  previousMessages?: DocUpdateMessage[]
+  combinedMessagesIds?: Ref<DocUpdateMessage>[]
+}
+
+export type ActivityMessageExtensionKind = 'action' | 'footer'
+
+/**
+ * @public
+ */
+export interface ActivityMessageExtension extends Doc {
+  ofMessage: Ref<Class<ActivityMessage>>
+  components: { kind: ActivityMessageExtensionKind, component: AnyComponent }[]
+}
+
+/**
+ * @public
+ */
+export interface DocUpdateMessage extends ActivityMessage {
+  objectId: Ref<Doc>
+  objectClass: Ref<Class<Doc>>
+
+  txId: Ref<TxCUD<Doc>>
+
+  action: DocUpdateAction
+  updateCollection?: string
+  attributeUpdates?: DocAttributeUpdates
+}
+
+/**
+ * @public
+ */
+export interface DocAttributeUpdates {
+  attrKey: string
+  attrClass: Ref<Class<Doc>>
+  set: (string | number | null)[]
+  prevValue?: any // Need for description diff
+  added: (string | number | null)[]
+  removed: (string | number | null)[]
+  isMixin: boolean
+}
+
+export type DocUpdateAction = 'create' | 'update' | 'remove'
+
+export type DocUpdateMessageViewletAttributesConfig = Record<
+string,
+{
+  presenter?: AnyComponent
+  icon?: Asset
+  iconPresenter?: AnyComponent
+}
+>
+
+/**
+ * @public
+ */
+export interface ActivityMessageViewlet extends Doc {
+  objectClass: Ref<Class<Doc>>
+  onlyWithParent?: boolean
+}
+
+/**
+ * @public
+ */
+export interface DocUpdateMessageViewlet extends ActivityMessageViewlet {
+  action: DocUpdateAction
+  valueAttr?: string
+
+  label?: IntlString
+  labelComponent?: AnyComponent
+
+  icon?: Asset
+  component?: AnyComponent
+
+  config?: DocUpdateMessageViewletAttributesConfig
+
+  hideIfRemoved?: boolean
+}
+
+/**
+ * @public
+ */
 export const activityId = 'activity' as Plugin
 
+/**
+ * @public
+ */
+export interface ActivityMessagesFilter extends Doc {
+  label: IntlString
+  filter: Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>
+}
+
+/**
+ * @public
+ */
+export interface ActivityDoc extends Class<Doc> {
+  preposition?: IntlString
+  ignoreCollections?: string[]
+}
+
+/**
+ * @public
+ */
+export type ActivityExtensionKind = 'input'
+
+/**
+ * @public
+ */
+export interface ActivityExtension extends Doc {
+  ofClass: Ref<Class<Doc>>
+  components: Record<ActivityExtensionKind, AnyComponent>
+}
+
+/**
+ * @public
+ */
+export interface Reaction extends AttachedDoc {
+  emoji: string
+  createBy: Ref<Account>
+}
+
 export default plugin(activityId, {
+  mixin: {
+    ActivityDoc: '' as Ref<Mixin<ActivityDoc>>
+  },
+  class: {
+    TxViewlet: '' as Ref<Class<TxViewlet>>,
+    DocUpdateMessage: '' as Ref<Class<DocUpdateMessage>>,
+    ActivityMessage: '' as Ref<Class<ActivityMessage>>,
+    DocUpdateMessageViewlet: '' as Ref<Class<DocUpdateMessageViewlet>>,
+    ActivityMessageExtension: '' as Ref<Class<ActivityMessageExtension>>,
+    ActivityMessagesFilter: '' as Ref<Class<ActivityMessagesFilter>>,
+    ActivityExtension: '' as Ref<Class<ActivityExtension>>,
+    Reaction: '' as Ref<Class<Reaction>>
+  },
   icon: {
-    Activity: '' as Asset
+    Activity: '' as Asset,
+    Emoji: '' as Asset
   },
   string: {
     Activity: '' as IntlString,
@@ -115,12 +262,24 @@ export default plugin(activityId, {
     From: '' as IntlString,
     Removed: '' as IntlString,
     To: '' as IntlString,
-    Unset: '' as IntlString
-  },
-  class: {
-    TxViewlet: '' as Ref<Class<TxViewlet>>
+    Unset: '' as IntlString,
+    In: '' as IntlString,
+    NewestFirst: '' as IntlString,
+    Edit: '' as IntlString,
+    Updated: '' as IntlString,
+    Created: '' as IntlString,
+    UpdatedCollection: '' as IntlString,
+    New: '' as IntlString,
+    Set: '' as IntlString,
+    Update: '' as IntlString,
+    For: '' as IntlString,
+    AllActivity: '' as IntlString,
+    Reactions: '' as IntlString
   },
   component: {
-    Activity: '' as AnyComponent
+    Activity: '' as AnyComponent,
+    ActivityMessagePresenter: '' as AnyComponent,
+    DocUpdateMessagePresenter: '' as AnyComponent,
+    ReactionAddedMessage: '' as AnyComponent
   }
 })

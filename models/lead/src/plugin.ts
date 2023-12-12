@@ -14,10 +14,11 @@
 // limitations under the License.
 //
 
+import { type ChatMessageViewlet } from '@hcengineering/chunter'
 import type { Ref } from '@hcengineering/core'
 import { type Funnel, leadId } from '@hcengineering/lead'
 import lead from '@hcengineering/lead-resources/src/plugin'
-import { type ChatMessageViewlet, type NotificationGroup, type NotificationType } from '@hcengineering/notification'
+import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
 import type { IntlString } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { type ProjectType } from '@hcengineering/task'

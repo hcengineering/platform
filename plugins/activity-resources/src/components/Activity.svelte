@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import activity from '@hcengineering/activity'
+  import activity, { ActivityExtension, ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
   import { Doc, Ref, SortingOrder } from '@hcengineering/core'
-  import notification, { DisplayActivityMessage, ActivityMessage } from '@hcengineering/notification'
-  import { getResource } from '@hcengineering/platform'
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { Component, Grid, Label, Lazy, Spinner } from '@hcengineering/ui'
+  import ActivityExtensionComponent from './ActivityExtension.svelte'
 
   import ActivityFilter from './ActivityFilter.svelte'
+  import { combineActivityMessages } from '../activityMessagesUtils'
 
   export let object: Doc
   export let showCommenInput: boolean = true
@@ -28,7 +28,10 @@
   export let focusIndex: number = -1
   export let boundary: HTMLElement | undefined = undefined
 
+  const client = getClient()
   const activityMessagesQuery = createQuery()
+
+  let extensions: ActivityExtension[] = []
 
   let filteredMessages: DisplayActivityMessage[] = []
   let activityMessages: ActivityMessage[] = []
@@ -36,15 +39,18 @@
 
   let isNewestFirst = JSON.parse(localStorage.getItem('activity-newest-first') ?? 'false')
 
+  $: client.findAll(activity.class.ActivityExtension, { ofClass: object._class }).then((res) => {
+    extensions = res
+  })
+
   async function updateActivityMessages (objectId: Ref<Doc>, order: SortingOrder): Promise<void> {
     isLoading = true
-    const combineMessagesFn = await getResource(notification.function.CombineActivityMessages)
 
     const res = activityMessagesQuery.query(
-      notification.class.ActivityMessage,
+      activity.class.ActivityMessage,
       { attachedTo: objectId },
       (result: ActivityMessage[]) => {
-        activityMessages = combineMessagesFn(result, order)
+        activityMessages = combineActivityMessages(result, order)
         isLoading = false
       },
       {
@@ -85,7 +91,7 @@
       {#each filteredMessages as message}
         <Lazy>
           <Component
-            is={notification.component.ActivityMessagePresenter}
+            is={activity.component.ActivityMessagePresenter}
             props={{
               value: message,
               boundary
@@ -98,7 +104,7 @@
 </div>
 {#if showCommenInput}
   <div class="ref-input">
-    <Component is={notification.component.ChatMessageInput} props={{ object, boundary, focusIndex }} />
+    <ActivityExtensionComponent kind="input" {extensions} props={{ object, boundary, focusIndex }} />
   </div>
 {/if}
 

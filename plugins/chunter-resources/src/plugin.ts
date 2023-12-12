@@ -32,8 +32,7 @@ export default mergeIds(chunterId, chunter, {
     ChannelPreview: '' as AnyComponent,
     MessagePreview: '' as AnyComponent,
     DirectMessageInput: '' as AnyComponent,
-    NotificationBacklinkLabel: '' as AnyComponent,
-    NotificationReactionCreated: '' as AnyComponent
+    ReactionAddedMessage: '' as AnyComponent
   },
   function: {
     GetDmName: '' as Resource<(client: Client, space: Space) => Promise<string>>

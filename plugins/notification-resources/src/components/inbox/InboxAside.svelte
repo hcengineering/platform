@@ -17,12 +17,14 @@
   import { Doc, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Component, IconClose, Spinner } from '@hcengineering/ui'
-  import notification, { ActivityMessage, DisplayActivityMessage } from '@hcengineering/notification'
   import view from '@hcengineering/view'
-
-  import ActivityMessagePresenter from '../activity-message/ActivityMessagePresenter.svelte'
-  import { combineActivityMessages, getNotificationObject } from '../../activityMessagesUtils'
-  import ChatMessageInput from '../chat-message/ChatMessageInput.svelte'
+  import activity, { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
+  import {
+    ActivityExtension,
+    ActivityMessagePresenter,
+    combineActivityMessages,
+    getActivityObject
+  } from '@hcengineering/activity-resources'
 
   export let _id: Ref<ActivityMessage>
 
@@ -40,7 +42,7 @@
   let scrollElement: HTMLDivElement | undefined
 
   $: selectedMessageQuery.query(
-    notification.class.ActivityMessage,
+    activity.class.ActivityMessage,
     { _id },
     (result: ActivityMessage[]) => {
       selectedMessage = result[0]
@@ -51,7 +53,7 @@
   )
 
   $: selectedMessage &&
-    getNotificationObject(client, selectedMessage.attachedTo, selectedMessage.attachedToClass).then((res) => {
+    getActivityObject(client, selectedMessage.attachedTo, selectedMessage.attachedToClass).then((res) => {
       object = res.object
     })
   $: objectPresenter =
@@ -59,7 +61,7 @@
 
   $: selectedMessage &&
     messagesQuery.query(
-      notification.class.ActivityMessage,
+      activity.class.ActivityMessage,
       { attachedTo: selectedMessage.attachedTo },
       (result: ActivityMessage[]) => {
         messages = combineActivityMessages(result)
@@ -90,6 +92,7 @@
 
   {messages.length}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="tool" on:click={() => dispatch('close')}>
     <IconClose size="medium" />
   </div>
@@ -114,7 +117,7 @@
 {/if}
 {#if object}
   <div class="ref-input">
-    <ChatMessageInput {object} on:submit={scrollToBottom} />
+    <ActivityExtension kind="input" props={{ object }} on:submit={scrollToBottom} />
   </div>
 {/if}
 

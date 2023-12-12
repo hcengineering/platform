@@ -56,6 +56,7 @@ import {
 } from '@hcengineering/recruit'
 import setting from '@hcengineering/setting'
 import { type KeyBinding, type ViewOptionModel, type ViewOptionsModel } from '@hcengineering/view'
+import activity from '@hcengineering/activity'
 
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
@@ -85,7 +86,7 @@ export class TVacancy extends TProject implements Vacancy {
   @Prop(TypeRef(contact.class.Organization), recruit.string.Company, { icon: contact.icon.Company })
     company?: Ref<Organization>
 
-  @Prop(Collection(notification.class.ChatMessage), notification.string.Comments)
+  @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
     comments?: number
 
   @Prop(TypeString(), recruit.string.Vacancy)
@@ -197,16 +198,31 @@ export class TApplicantMatch extends TAttachedDoc implements ApplicantMatch {
 export function createModel (builder: Builder): void {
   builder.createModel(TVacancy, TCandidates, TCandidate, TApplicant, TReview, TOpinion, TVacancyList, TApplicantMatch)
 
-  builder.mixin(recruit.class.Vacancy, core.class.Class, notification.mixin.ActivityDoc, {
+  builder.mixin(recruit.class.Vacancy, core.class.Class, activity.mixin.ActivityDoc, {
     ignoreCollections: ['comments']
   })
-  builder.mixin(recruit.class.Applicant, core.class.Class, notification.mixin.ActivityDoc, {
+  builder.mixin(recruit.class.Applicant, core.class.Class, activity.mixin.ActivityDoc, {
     ignoreCollections: ['comments']
   })
-  builder.mixin(recruit.class.Review, core.class.Class, notification.mixin.ActivityDoc, {})
+  builder.mixin(recruit.class.Review, core.class.Class, activity.mixin.ActivityDoc, {})
 
-  builder.mixin(recruit.mixin.Candidate, core.class.Class, notification.mixin.ActivityDoc, {
+  builder.mixin(recruit.mixin.Candidate, core.class.Class, activity.mixin.ActivityDoc, {
     ignoreCollections: ['comments']
+  })
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: recruit.class.Vacancy,
+    components: { input: chunter.component.ChatMessageInput }
+  })
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: recruit.class.Applicant,
+    components: { input: chunter.component.ChatMessageInput }
+  })
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: recruit.class.Review,
+    components: { input: chunter.component.ChatMessageInput }
   })
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, workbench.mixin.SpaceView, {
@@ -1585,7 +1601,7 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    notification.class.ChatMessageViewlet,
+    chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
       objectClass: recruit.class.Vacancy,
@@ -1595,7 +1611,7 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    notification.class.ChatMessageViewlet,
+    chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
       objectClass: recruit.class.Applicant,
@@ -1605,7 +1621,7 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    notification.class.ChatMessageViewlet,
+    chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
       objectClass: recruit.class.Review,
@@ -1625,7 +1641,7 @@ export function createModel (builder: Builder): void {
     propagate: [recruit.class.Applicant],
     propagateClasses: [
       tags.class.TagReference,
-      notification.class.ChatMessage,
+      chunter.class.ChatMessage,
       attachment.class.Attachment,
       contact.class.Channel
     ]
@@ -1679,7 +1695,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(
-    notification.class.DocUpdateMessageViewlet,
+    activity.class.DocUpdateMessageViewlet,
     core.space.Model,
     {
       objectClass: recruit.class.Applicant,
@@ -1690,7 +1706,7 @@ export function createModel (builder: Builder): void {
         }
       }
     },
-    recruit.ids.NotificationApplicantUpdated
+    recruit.ids.ApplicantUpdatedActivityViewlet
   )
 
   createAction(

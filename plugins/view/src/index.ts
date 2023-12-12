@@ -203,13 +203,6 @@ export interface ActivityAttributePresenter extends Class<Doc> {
 /**
  * @public
  */
-export interface NotificationAttributePresenter extends Class<Doc> {
-  presenter: AnyComponent
-}
-
-/**
- * @public
- */
 export interface SpacePresenter extends Class<Doc> {
   presenter: AnyComponent
 }
@@ -780,7 +773,6 @@ const view = plugin(viewId, {
     ArrayEditor: '' as Ref<Mixin<ArrayEditor>>,
     AttributePresenter: '' as Ref<Mixin<AttributePresenter>>,
     ActivityAttributePresenter: '' as Ref<Mixin<ActivityAttributePresenter>>,
-    NotificationAttributePresenter: '' as Ref<Mixin<NotificationAttributePresenter>>,
     ListItemPresenter: '' as Ref<Mixin<ListItemPresenter>>,
     ObjectEditor: '' as Ref<Mixin<ObjectEditor>>,
     ObjectPresenter: '' as Ref<Mixin<ObjectPresenter>>,

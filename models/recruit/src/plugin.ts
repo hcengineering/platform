@@ -14,12 +14,7 @@
 //
 
 import type { Client, Doc, Ref } from '@hcengineering/core'
-import {
-  type ChatMessageViewlet,
-  type DocUpdateMessageViewlet,
-  type NotificationGroup,
-  type NotificationType
-} from '@hcengineering/notification'
+import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
 import type { IntlString, Resource, Status } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { recruitId } from '@hcengineering/recruit'
@@ -27,6 +22,8 @@ import recruit from '@hcengineering/recruit-resources/src/plugin'
 import { type ProjectType } from '@hcengineering/task'
 import type { AnyComponent, Location } from '@hcengineering/ui/src/types'
 import type { Action, ActionCategory, ViewAction, ViewQueryAction, Viewlet } from '@hcengineering/view'
+import { type DocUpdateMessageViewlet } from '@hcengineering/activity'
+import { type ChatMessageViewlet } from '@hcengineering/chunter'
 
 export default mergeIds(recruitId, recruit, {
   action: {
@@ -88,7 +85,7 @@ export default mergeIds(recruitId, recruit, {
     AssigneeNotification: '' as Ref<NotificationType>,
     ApplicationCreateNotification: '' as Ref<NotificationType>,
     ReviewCreateNotification: '' as Ref<NotificationType>,
-    NotificationApplicantUpdated: '' as Ref<DocUpdateMessageViewlet>,
+    ApplicantUpdatedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,
     ApplicantChatMessageViewlet: '' as Ref<ChatMessageViewlet>,
     VacancyChatMessageViewlet: '' as Ref<ChatMessageViewlet>,
     ReviewChatMessageViewlet: '' as Ref<ChatMessageViewlet>

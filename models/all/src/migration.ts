@@ -37,9 +37,11 @@ import { hrOperation } from '@hcengineering/model-hr'
 import { bitrixOperation } from '@hcengineering/model-bitrix'
 import { calendarOperation } from '@hcengineering/model-calendar'
 import { notificationServerOperation } from '@hcengineering/model-server-notification'
+import { activityOperation } from '@hcengineering/model-activity'
 
 export const migrateOperations: [string, MigrateOperation][] = [
   ['core', coreOperation],
+  ['activity', activityOperation],
   ['chunter', chunterOperation],
   ['calendar', calendarOperation],
   ['gmail', gmailOperation],

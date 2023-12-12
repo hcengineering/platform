@@ -16,7 +16,7 @@
   import { createEventDispatcher } from 'svelte'
   import { Attachment } from '@hcengineering/attachment'
   import { AttachmentList, AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import type { ChunterMessage, ChunterMessageExtension, Message, Reaction } from '@hcengineering/chunter'
+  import type { ChunterMessage, ChunterMessageExtension, Message } from '@hcengineering/chunter'
   import { PersonAccount } from '@hcengineering/contact'
   import { Avatar, personByIdStore, EmployeePresenter } from '@hcengineering/contact-resources'
   import { getCurrentAccount, getDisplayTime, Mixin, Ref, WithLookup } from '@hcengineering/core'
@@ -26,16 +26,17 @@
   import { Action } from '@hcengineering/view'
   import { LinkPresenter, Menu, ObjectPresenter } from '@hcengineering/view-resources'
   import notification, { Collaborators } from '@hcengineering/notification'
+  import { Reactions, updateDocReactions } from '@hcengineering/activity-resources'
+  import { Reaction } from '@hcengineering/activity'
 
   import Bookmark from './icons/Bookmark.svelte'
   import Emoji from './icons/Emoji.svelte'
   import Thread from './icons/Thread.svelte'
-  import Reactions from './Reactions.svelte'
   import Replies from './Replies.svelte'
 
   import { AddMessageToSaved, DeleteMessageFromSaved, UnpinMessage } from '../index'
   import chunter from '../plugin'
-  import { getLinks, updateDocReactions } from '../utils'
+  import { getLinks } from '../utils'
 
   export let message: WithLookup<ChunterMessage>
   export let savedAttachmentsIds: Ref<Attachment>[]
@@ -223,12 +224,14 @@
     {/if}
     {#if reactions?.length || (!thread && hasReplies)}
       <div class="footer flex-col">
-        {#if reactions?.length}<Reactions
+        {#if reactions?.length}
+          <Reactions
             {reactions}
             on:click={(ev) => {
               updateReactions(ev.detail)
             }}
-          />{/if}
+          />
+        {/if}
         {#if !thread && hasReplies}
           <Replies message={parentMessage} on:click={openThread} />
         {/if}

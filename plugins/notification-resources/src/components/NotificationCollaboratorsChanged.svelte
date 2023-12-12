@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import notification, { DocAttributeUpdates } from '@hcengineering/notification'
-
   import { IconAdd, IconDelete, Label } from '@hcengineering/ui'
   import { personAccountByIdStore, PersonAccountRefPresenter } from '@hcengineering/contact-resources'
   import { Person, PersonAccount } from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
+  import { DocAttributeUpdates } from '@hcengineering/activity'
+  import notification from '@hcengineering/notification'
 
   export let value: DocAttributeUpdates
 

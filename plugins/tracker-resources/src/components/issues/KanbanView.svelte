@@ -64,7 +64,7 @@
     setGroupByValues,
     statusStore
   } from '@hcengineering/view-resources'
-  import { ChatMessagesPresenter } from '@hcengineering/notification-resources'
+  import { ChatMessagesPresenter } from '@hcengineering/chunter-resources'
   import { onMount } from 'svelte'
 
   import tracker from '../../plugin'

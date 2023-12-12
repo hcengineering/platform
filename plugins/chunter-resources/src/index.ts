@@ -17,6 +17,7 @@ import { writable } from 'svelte/store'
 import chunter, {
   type Backlink,
   type Channel,
+  type ChatMessage,
   type ChunterMessage,
   type ChunterSpace,
   type DirectMessage,
@@ -37,14 +38,12 @@ import { type IntlString, type Resources, translate } from '@hcengineering/platf
 import preference from '@hcengineering/preference'
 import { MessageBox, getClient } from '@hcengineering/presentation'
 import { getLocation, navigate, showPopup } from '@hcengineering/ui'
-import notification, { type ActivityMessage, type DocUpdateMessage } from '@hcengineering/notification'
 
 import ChannelHeader from './components/ChannelHeader.svelte'
 import ChannelPresenter from './components/ChannelPresenter.svelte'
 import ChannelView from './components/ChannelView.svelte'
 import ChannelViewPanel from './components/ChannelViewPanel.svelte'
 import ChunterBrowser from './components/ChunterBrowser.svelte'
-import Reactions from './components/Reactions.svelte'
 import ConvertDmToPrivateChannelModal from './components/ConvertDmToPrivateChannel.svelte'
 import CreateChannel from './components/CreateChannel.svelte'
 import CreateDirectMessage from './components/CreateDirectMessage.svelte'
@@ -66,15 +65,18 @@ import BacklinkContent from './components/BacklinkContent.svelte'
 import BacklinkReference from './components/BacklinkReference.svelte'
 import TxCommentCreate from './components/activity/TxCommentCreate.svelte'
 import TxMessageCreate from './components/activity/TxMessageCreate.svelte'
-import ReactionsAction from './components/ReactionsAction.svelte'
-import ReactionsPresenter from './components/ReactionsPresenter.svelte'
-import NotificationReactionCreated from './components/notification/NotificationReactionCreated.svelte'
-import ActivityMessageReactionsAction from './components/notification/ActivityMessageReactionsAction.svelte'
-import NotificationBacklinkLabel from './components/notification/NotificationBacklinkLabel.svelte'
+import BacklinkCreatedLabel from './components/activity/BacklinkCreatedLabel.svelte'
+import ChatMessagePresenter from './components/chat-message/ChatMessagePresenter.svelte'
+import ChatMessageInput from './components/chat-message/ChatMessageInput.svelte'
+import ChatMessagesPresenter from './components/chat-message/ChatMessagesPresenter.svelte'
 
 import { updateBacklinksList } from './backlinks'
 import { getDmName, getLink, getTitle, resolveLocation } from './utils'
+import activity, { type ActivityMessage, type DocUpdateMessage } from '@hcengineering/activity'
+import notification from '@hcengineering/notification'
 
+export { default as ChatMessagesPresenter } from './components/chat-message/ChatMessagesPresenter.svelte'
+export { default as ChatMessagePopup } from './components/chat-message/ChatMessagePopup.svelte'
 export { default as Header } from './components/Header.svelte'
 export { classIcon } from './utils'
 export { Thread }
@@ -268,15 +270,31 @@ async function update (source: Doc, key: string, target: RelatedDocument[], msg:
 }
 
 export function backlinksFilter (message: ActivityMessage, _class?: Ref<Doc>): boolean {
-  if (message._class === notification.class.DocUpdateMessage) {
+  if (message._class === activity.class.DocUpdateMessage) {
     return (message as DocUpdateMessage).objectClass === chunter.class.Backlink
   }
   return false
 }
 
+export function chatMessagesFilter (message: ActivityMessage): boolean {
+  return message._class === chunter.class.ChatMessage
+}
+
+export async function deleteChatMessage (message: ChatMessage): Promise<void> {
+  const client = getClient()
+  // TODO: move to server?
+  const notifications = await client.findAll(notification.class.InboxNotification, { attachedTo: message._id })
+
+  await Promise.all([
+    client.remove(message),
+    ...notifications.map(async (notification) => await client.remove(notification))
+  ])
+}
+
 export default async (): Promise<Resources> => ({
   filter: {
-    BacklinksFilter: backlinksFilter
+    BacklinksFilter: backlinksFilter,
+    ChatMessagesFilter: chatMessagesFilter
   },
   component: {
     CreateChannel,
@@ -286,7 +304,6 @@ export default async (): Promise<Resources> => ({
     ChannelHeader,
     ChannelView,
     ChannelViewPanel,
-    Reactions,
     ChannelPresenter,
     DirectMessagePresenter,
     MessagePresenter,
@@ -301,13 +318,11 @@ export default async (): Promise<Resources> => ({
     Threads,
     ThreadView,
     SavedMessages,
-    ReactionsAction,
-    ReactionsPresenter,
     BacklinkContent,
-    NotificationReactionCreated,
-    ActivityMessageReactionsAction,
-    NotificationBacklinkLabel,
-    BacklinkReference
+    BacklinkReference,
+    ChatMessagePresenter,
+    ChatMessageInput,
+    ChatMessagesPresenter
   },
   function: {
     GetDmName: getDmName,
@@ -317,7 +332,8 @@ export default async (): Promise<Resources> => ({
   },
   activity: {
     TxCommentCreate,
-    TxMessageCreate
+    TxMessageCreate,
+    BacklinkCreatedLabel
   },
   actionImpl: {
     MarkUnread,
@@ -328,7 +344,8 @@ export default async (): Promise<Resources> => ({
     UnpinMessage,
     ArchiveChannel,
     UnarchiveChannel,
-    ConvertDmToPrivateChannel
+    ConvertDmToPrivateChannel,
+    DeleteChatMessage: deleteChatMessage
   },
   backreference: {
     Update: update

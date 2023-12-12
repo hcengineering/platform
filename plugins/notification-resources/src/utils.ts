@@ -20,22 +20,29 @@ import {
   type DocumentUpdate,
   getCurrentAccount,
   type Ref,
-  type TxOperations
+  SortingOrder,
+  type TxOperations,
+  type WithLookup
 } from '@hcengineering/core'
 import notification, {
-  type ActivityMessage,
-  type ChatMessage,
   type Collaborators,
-  type DisplayActivityMessage,
-  type DisplayDocUpdateMessage,
+  type DocNotifyContext,
   type DocUpdates,
   inboxId,
+  type InboxNotification,
   type NotificationClient
 } from '@hcengineering/notification'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { get, writable } from 'svelte/store'
 import { type Location, type ResolvedLocation } from '@hcengineering/ui'
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
+import activity, {
+  type ActivityMessage,
+  type DisplayActivityMessage,
+  type DisplayDocUpdateMessage,
+  type DocUpdateMessage
+} from '@hcengineering/activity'
+import { activityMessagesComparator, combineActivityMessages } from '@hcengineering/activity-resources'
 
 /**
  * @public
@@ -144,7 +151,7 @@ export async function hasntNotifications (object: DocUpdates): Promise<boolean> 
 export async function hasntInboxNotifications (message: DisplayActivityMessage): Promise<boolean> {
   const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
   const combinedIds =
-    message._class === notification.class.DocUpdateMessage
+    message._class === activity.class.DocUpdateMessage
       ? (message as DisplayDocUpdateMessage).combinedMessagesIds
       : undefined
   const ids: Array<Ref<ActivityMessage>> = [message._id, ...(combinedIds ?? [])]
@@ -157,7 +164,7 @@ export async function hasntInboxNotifications (message: DisplayActivityMessage):
 export async function hasInboxNotifications (message: DisplayActivityMessage): Promise<boolean> {
   const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
   const combinedIds =
-    message._class === notification.class.DocUpdateMessage
+    message._class === activity.class.DocUpdateMessage
       ? (message as DisplayDocUpdateMessage).combinedMessagesIds
       : undefined
   const ids: Array<Ref<ActivityMessage>> = [message._id, ...(combinedIds ?? [])]
@@ -267,7 +274,7 @@ export async function markAsUnread (object: DocUpdates): Promise<void> {
 export async function markAsReadInboxNotification (message: DisplayActivityMessage): Promise<void> {
   const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
   const combinedIds =
-    message._class === notification.class.DocUpdateMessage
+    message._class === activity.class.DocUpdateMessage
       ? (message as DisplayDocUpdateMessage).combinedMessagesIds
       : undefined
   const ids: Array<Ref<ActivityMessage>> = [message._id, ...(combinedIds ?? [])]
@@ -281,7 +288,7 @@ export async function markAsReadInboxNotification (message: DisplayActivityMessa
 export async function markAsUnreadInboxNotification (message: DisplayActivityMessage): Promise<void> {
   const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
   const combinedIds =
-    message._class === notification.class.DocUpdateMessage
+    message._class === activity.class.DocUpdateMessage
       ? (message as DisplayDocUpdateMessage).combinedMessagesIds
       : undefined
   const ids: Array<Ref<ActivityMessage>> = [message._id, ...(combinedIds ?? [])]
@@ -289,20 +296,10 @@ export async function markAsUnreadInboxNotification (message: DisplayActivityMes
   await inboxNotificationsClient.unreadMessages(ids)
 }
 
-export async function deleteChatMessage (message: ChatMessage): Promise<void> {
-  const client = getClient()
-  const notifications = await client.findAll(notification.class.InboxNotification, { attachedTo: message._id })
-
-  await Promise.all([
-    client.remove(message),
-    ...notifications.map(async (notification) => await client.remove(notification))
-  ])
-}
-
 export async function deleteInboxNotification (message: DisplayActivityMessage): Promise<void> {
   const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
   const combinedIds =
-    message._class === notification.class.DocUpdateMessage
+    message._class === activity.class.DocUpdateMessage
       ? (message as DisplayDocUpdateMessage).combinedMessagesIds
       : undefined
   const ids: Array<Ref<ActivityMessage>> = [message._id, ...(combinedIds ?? [])]
@@ -360,7 +357,7 @@ async function generateLocation (loc: Location, _id: Ref<ActivityMessage>): Prom
     }
   }
 
-  const message = await client.findOne(notification.class.ActivityMessage, { _id })
+  const message = await client.findOne(activity.class.ActivityMessage, { _id })
 
   if (message === undefined) {
     return {
@@ -385,4 +382,49 @@ async function generateLocation (loc: Location, _id: Ref<ActivityMessage>): Prom
       fragment: undefined
     }
   }
+}
+
+export function getDisplayActivityMessagesByNotifications (
+  inboxNotifications: Array<WithLookup<InboxNotification>>,
+  docNotifyContextById: Map<Ref<DocNotifyContext>, DocNotifyContext>,
+  filter: 'all' | 'read' | 'unread',
+  objectClass?: Ref<Class<Doc>>
+): DisplayActivityMessage[] {
+  const messages = inboxNotifications
+    .filter(({ docNotifyContext, isViewed }) => {
+      const update = docNotifyContextById.get(docNotifyContext)
+      const isVisible = update !== undefined && !update.hidden
+
+      if (!isVisible) {
+        return false
+      }
+
+      switch (filter) {
+        case 'unread':
+          return !isViewed
+        case 'all':
+          return true
+        case 'read':
+          return !!isViewed
+      }
+
+      return false
+    })
+    .map(({ $lookup }) => $lookup?.attachedTo)
+    .filter((message): message is ActivityMessage => {
+      if (message === undefined) {
+        return false
+      }
+      if (objectClass === undefined) {
+        return true
+      }
+      if (message._class !== activity.class.DocUpdateMessage) {
+        return false
+      }
+
+      return (message as DocUpdateMessage).objectClass === objectClass
+    })
+    .sort(activityMessagesComparator)
+
+  return combineActivityMessages(messages, SortingOrder.Descending)
 }

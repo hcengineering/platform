@@ -1,0 +1,287 @@
+<!--
+// Copyright © 2023 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+<script lang="ts">
+  import { Person } from '@hcengineering/contact'
+  import { Avatar, EmployeePresenter, SystemAvatar } from '@hcengineering/contact-resources'
+  import { getClient } from '@hcengineering/presentation'
+  import core from '@hcengineering/core/lib/component'
+  import activity, {
+    DisplayActivityMessage,
+    ActivityMessageExtension,
+    ActivityMessageViewlet
+  } from '@hcengineering/activity'
+  import { Action, ActionIcon, IconMoreH, Label, showPopup } from '@hcengineering/ui'
+  import { getActions, Menu } from '@hcengineering/view-resources'
+  import { getDisplayTime } from '@hcengineering/core'
+
+  import ActivityMessageExtensionComponent from './ActivityMessageExtension.svelte'
+  import ActivityMessagePresenter from './ActivityMessagePresenter.svelte'
+  import AddReactionAction from '../reactions/AddReactionAction.svelte'
+  import ReactionsPresenter from '../reactions/ReactionsPresenter.svelte'
+  import PinMessageAction from './PinMessageAction.svelte'
+
+  export let message: DisplayActivityMessage
+  export let parentMessage: DisplayActivityMessage | undefined
+
+  export let viewlet: ActivityMessageViewlet | undefined
+  export let person: Person | undefined = undefined
+  export let actions: Action[] = []
+  export let excludedActions: string[] = []
+  export let hasNotifyActions = false
+  export let showNotify: boolean = false
+  export let isHighlighted: boolean = false
+  export let isSelected: boolean = false
+  export let shouldScroll: boolean = false
+  export let embedded: boolean = false
+  export let hasActionsMenu: boolean = true
+  export let onClick: (() => void) | undefined = undefined
+
+  const client = getClient()
+  let allActionIds: string[] = []
+  const notifyActions: Action[] = [
+    // notification.action.MarkAsUnreadInboxNotification,
+    // notification.action.MarkAsReadInboxNotification,
+    // notification.action.DeleteInboxNotification
+  ]
+
+  let element: HTMLDivElement | undefined = undefined
+  let extensions: ActivityMessageExtension[] = []
+  let isActionMenuOpened = false
+
+  $: getActions(client, message, activity.class.ActivityMessage).then((res) => {
+    allActionIds = res.map(({ _id }) => _id)
+  })
+
+  function scrollToMessage () {
+    if (element && shouldScroll) {
+      element.scrollIntoView({ behavior: 'auto', block: 'end' })
+      shouldScroll = false
+    }
+  }
+
+  $: if (element && shouldScroll) {
+    setTimeout(scrollToMessage, 100)
+  }
+
+  client
+    .findAll(activity.class.ActivityMessageExtension, { ofMessage: message._class })
+    .then((res: ActivityMessageExtension[]) => {
+      extensions = res
+    })
+
+  function handleActionMenuOpened () {
+    isActionMenuOpened = true
+  }
+
+  function handleActionMenuClosed () {
+    isActionMenuOpened = false
+  }
+
+  $: key = parentMessage ? `${message._id}_${parentMessage._id}` : message._id
+  $: actualExcludedActions = hasNotifyActions ? excludedActions : [...notifyActions, ...excludedActions]
+
+  function showMenu (ev: MouseEvent) {
+    showPopup(
+      Menu,
+      {
+        object: message,
+        baseMenuClass: activity.class.ActivityMessage,
+        excludedActions: actualExcludedActions,
+        actions
+      },
+      ev.target as HTMLElement,
+      handleActionMenuClosed
+    )
+    handleActionMenuOpened()
+  }
+
+  $: isHidden = !!viewlet?.onlyWithParent && parentMessage === undefined
+  $: withActionMenu =
+    !embedded &&
+    hasActionsMenu &&
+    (actions.length > 0 || allActionIds.some((id) => !actualExcludedActions.includes(id)))
+</script>
+
+{#if !isHidden}
+  {#key key}
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <div
+      bind:this={element}
+      id={message._id}
+      class="root clear-mins"
+      class:clickable={!!onClick}
+      class:highlighted={isHighlighted}
+      class:selected={isSelected}
+      class:embedded
+      on:click={onClick}
+    >
+      {#if showNotify && !embedded}
+        <div class="notify" />
+      {/if}
+      {#if !embedded}
+        <div class="min-w-6 mt-1">
+          {#if person}
+            <Avatar size="medium" avatar={person.avatar} name={person.name} />
+          {:else}
+            <SystemAvatar size="medium" />
+          {/if}
+        </div>
+      {:else}
+        <div class="embeddedMarker" />
+      {/if}
+      <div class="content ml-2 w-full clear-mins">
+        <div class="header clear-mins">
+          {#if person}
+            <EmployeePresenter value={person} shouldShowAvatar={false} />
+          {:else}
+            <span class="strong">
+              <Label label={core.string.System} />
+            </span>
+          {/if}
+
+          <slot name="header" />
+
+          <span class="text-sm">{getDisplayTime(message.createdOn ?? 0)}</span>
+        </div>
+
+        <slot name="content" />
+
+        <ActivityMessageExtensionComponent kind="footer" {extensions} props={{ object: message }} />
+
+        <ReactionsPresenter object={message} />
+
+        {#if parentMessage}
+          <div class="mt-2" />
+          <ActivityMessagePresenter value={parentMessage} embedded />
+        {/if}
+      </div>
+
+      <div
+        class="actions clear-mins flex flex-gap-2 items-center"
+        class:menuShowed={isActionMenuOpened || message.isPinned}
+      >
+        <AddReactionAction object={message} />
+        <PinMessageAction object={message} />
+
+        <ActivityMessageExtensionComponent
+          kind="action"
+          {extensions}
+          props={{ object: message }}
+          on:close={handleActionMenuClosed}
+          on:open={handleActionMenuOpened}
+        />
+        {#if withActionMenu}
+          <ActionIcon icon={IconMoreH} size="small" action={showMenu} />
+        {/if}
+      </div>
+    </div>
+  {/key}
+{/if}
+
+<style lang="scss">
+  @keyframes highlight {
+    50% {
+      background-color: var(--theme-warning-color);
+    }
+  }
+
+  .root {
+    position: relative;
+    display: flex;
+    flex-shrink: 0;
+    padding: 0.75rem 0.75rem 0.75rem 1.25rem;
+    border-radius: 8px;
+    gap: 1rem;
+
+    &.clickable {
+      cursor: pointer;
+    }
+
+    &.highlighted {
+      animation: highlight 5000ms ease-in-out;
+    }
+
+    &.selected {
+      background-color: var(--highlight-select);
+    }
+
+    &.embedded {
+      background: var(--theme-navpanel-icons-divider);
+      padding: 0;
+
+      .content {
+        padding: 0.75rem 0.75rem 0.75rem 0;
+      }
+    }
+
+    .actions {
+      position: absolute;
+      visibility: hidden;
+      top: 0.75rem;
+      right: 0.75rem;
+      color: var(--theme-halfcontent-color);
+
+      &.menuShowed {
+        visibility: visible;
+      }
+    }
+
+    .content {
+      padding: 0;
+    }
+
+    &:hover > .actions {
+      visibility: visible;
+    }
+
+    &:hover:not(.embedded) {
+      background-color: var(--highlight-hover);
+    }
+  }
+
+  .header {
+    display: flex;
+    align-items: baseline;
+    font-size: 0.875rem;
+    color: var(--theme-halfcontent-color);
+    margin-bottom: 0.25rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: calc(100% - 3.5rem);
+
+    span {
+      margin-left: 0.25rem;
+      font-weight: 400;
+      line-height: 1.25rem;
+    }
+  }
+
+  .notify {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.25rem;
+    height: 0.5rem;
+    width: 0.5rem;
+    background-color: var(--theme-inbox-notify);
+    border-radius: 50%;
+  }
+
+  .embeddedMarker {
+    width: 6px;
+    background: var(--theme-link-color);
+  }
+</style>

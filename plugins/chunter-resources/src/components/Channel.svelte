@@ -21,6 +21,8 @@
   import { createQuery } from '@hcengineering/presentation'
   import { location as locationStore } from '@hcengineering/ui'
   import { afterUpdate, beforeUpdate, onDestroy } from 'svelte'
+  import activity from '@hcengineering/activity'
+
   import chunter from '../plugin'
   import { getDay, isMessageHighlighted, messageIdForScroll, scrollAndHighLight, shouldScrollToMessage } from '../utils'
   import ChannelSeparator from './ChannelSeparator.svelte'
@@ -95,7 +97,7 @@
       },
       {
         lookup: {
-          _id: { attachments: attachment.class.Attachment, reactions: chunter.class.Reaction },
+          _id: { attachments: attachment.class.Attachment, reactions: activity.class.Reaction },
           createBy: core.class.Account
         }
       }

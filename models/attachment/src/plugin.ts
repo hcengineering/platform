@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { TxViewlet } from '@hcengineering/activity'
+import type { TxViewlet, ActivityMessage, DocUpdateMessageViewlet } from '@hcengineering/activity'
 import { attachmentId } from '@hcengineering/attachment'
 import attachment from '@hcengineering/attachment-resources/src/plugin'
 import type { Ref, Doc } from '@hcengineering/core'
@@ -21,7 +21,6 @@ import type { IntlString, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 import type { ActionCategory } from '@hcengineering/view'
-import { type ActivityMessage, type DocUpdateMessageViewlet } from '@hcengineering/notification'
 
 export default mergeIds(attachmentId, attachment, {
   component: {
@@ -47,14 +46,12 @@ export default mergeIds(attachmentId, attachment, {
   ids: {
     TxAttachmentCreate: '' as Ref<TxViewlet>,
     TxAttachmentRemove: '' as Ref<TxViewlet>,
-    NotificationAttachmentCreated: '' as Ref<DocUpdateMessageViewlet>,
-    NotificationAttachmentRemoved: '' as Ref<DocUpdateMessageViewlet>
+    AttachmentCreatedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,
+    AttachmentRemovedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>
   },
   activity: {
-    TxAttachmentCreate: '' as AnyComponent
-  },
-  notification: {
-    NotificationAttachmentChanged: '' as AnyComponent
+    TxAttachmentCreate: '' as AnyComponent,
+    AttachmentsUpdatedMessage: '' as AnyComponent
   },
   category: {
     Attachments: '' as Ref<ActionCategory>

@@ -32,7 +32,6 @@ import core, { TAttachedDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import view, { createAction } from '@hcengineering/model-view'
 import attachment from './plugin'
-import notification from '@hcengineering/notification'
 
 export { attachmentId } from '@hcengineering/attachment'
 export { attachmentOperation } from './migration'
@@ -124,32 +123,32 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    notification.class.DocUpdateMessageViewlet,
+    activity.class.DocUpdateMessageViewlet,
     core.space.Model,
     {
       objectClass: attachment.class.Attachment,
       action: 'create',
       icon: attachment.icon.Attachment,
       label: attachment.string.AddAttachment,
-      component: attachment.notification.NotificationAttachmentChanged
+      component: attachment.activity.AttachmentsUpdatedMessage
     },
-    attachment.ids.NotificationAttachmentCreated
+    attachment.ids.AttachmentCreatedActivityViewlet
   )
 
   builder.createDoc(
-    notification.class.DocUpdateMessageViewlet,
+    activity.class.DocUpdateMessageViewlet,
     core.space.Model,
     {
       objectClass: attachment.class.Attachment,
       action: 'remove',
       icon: attachment.icon.Attachment,
       label: attachment.string.RemovedAttachment,
-      component: attachment.notification.NotificationAttachmentChanged
+      component: attachment.activity.AttachmentsUpdatedMessage
     },
-    attachment.ids.NotificationAttachmentRemoved
+    attachment.ids.AttachmentRemovedActivityViewlet
   )
 
-  builder.createDoc(notification.class.ActivityMessagesFilter, core.space.Model, {
+  builder.createDoc(activity.class.ActivityMessagesFilter, core.space.Model, {
     label: attachment.string.FilterAttachments,
     filter: attachment.filter.AttachmentsFilter
   })

@@ -40,7 +40,7 @@ import {
   LoginInfo
 } from './types'
 import { convert, ConvertResult } from './utils'
-import notification, { ChatMessage } from '@hcengineering/notification'
+import chunter, { ChatMessage } from '@hcengineering/chunter'
 
 async function updateDoc (client: ApplyOperations, doc: Doc, raw: Doc | Data<Doc>, date: Timestamp): Promise<Doc> {
   // We need to update fields if they are different.
@@ -787,7 +787,7 @@ async function downloadComments (
     for (const it of commentsData.result) {
       const c: ChatMessage & BitrixSyncDoc = {
         _id: generateId(),
-        _class: notification.class.ChatMessage,
+        _class: chunter.class.ChatMessage,
         message: processComment(it.COMMENT as string),
         bitrixId: `${it.ID as string}`,
         type: it.ENTITY_TYPE,

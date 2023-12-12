@@ -31,10 +31,10 @@
   },
   "dependencies": {
     "@hcengineering/attachment": "^0.6.9",
+    "@hcengineering/chunter": "^0.6.12",
     "@hcengineering/contact": "^0.6.20",
     "@hcengineering/core": "^0.6.28",
     "@hcengineering/gmail": "^0.6.15",
-    "@hcengineering/notification": "^0.6.16",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/preference": "^0.6.9",
     "@hcengineering/recruit": "^0.6.21",

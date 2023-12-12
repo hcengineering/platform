@@ -30,7 +30,7 @@ import {
   TypeString,
   UX
 } from '@hcengineering/model'
-import { TComment } from '@hcengineering/model-chunter'
+import chunter, { TComment } from '@hcengineering/model-chunter'
 import core, { TAttachedDoc, TClass } from '@hcengineering/model-core'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import view from '@hcengineering/model-view'
@@ -72,11 +72,11 @@ export class TRequest extends TAttachedDoc implements Request {
   @ReadOnly()
     rejected?: Ref<PersonAccount>
 
-  @Prop(Collection(notification.class.ChatMessage), notification.string.Comments)
+  @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
     comments?: number
 }
 
-@Mixin(request.mixin.RequestDecisionComment, notification.class.ChatMessage)
+@Mixin(request.mixin.RequestDecisionComment, chunter.class.ChatMessage)
 export class TRequestDecisionComment extends TComment implements RequestDecisionComment {}
 
 @Mixin(request.mixin.RequestPresenter, core.class.Class)

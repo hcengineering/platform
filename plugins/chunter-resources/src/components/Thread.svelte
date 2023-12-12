@@ -23,6 +23,8 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import activity from '@hcengineering/activity'
+
   import plugin from '../plugin'
   import ChannelPresenter from './ChannelPresenter.svelte'
   import DmPresenter from './DmPresenter.svelte'
@@ -46,7 +48,7 @@
   const dispatch = createEventDispatcher()
 
   const lookup = {
-    _id: { attachments: attachment.class.Attachment, reactions: chunter.class.Reaction },
+    _id: { attachments: attachment.class.Attachment, reactions: activity.class.Reaction },
     createBy: core.class.Account
   }
 

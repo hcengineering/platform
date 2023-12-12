@@ -64,7 +64,7 @@ import {
   type TimeSpendReport
 } from '@hcengineering/tracker'
 import tracker from './plugin'
-import notification from '@hcengineering/notification'
+import chunter from '@hcengineering/chunter'
 
 export const DOMAIN_TRACKER = 'tracker' as Domain
 
@@ -288,7 +288,7 @@ export class TIssueTemplate extends TDoc implements IssueTemplate {
   @Prop(ArrOf(TypeRef(tracker.class.IssueTemplate)), tracker.string.IssueTemplate)
     children!: IssueTemplateChild[]
 
-  @Prop(Collection(notification.class.ChatMessage), tracker.string.Comments)
+  @Prop(Collection(chunter.class.ChatMessage), tracker.string.Comments)
     comments!: number
 
   @Prop(Collection(attachment.class.Attachment), tracker.string.Attachments)
@@ -336,7 +336,7 @@ export class TComponent extends TDoc implements Component {
   @Prop(TypeRef(contact.mixin.Employee), tracker.string.ComponentLead)
     lead!: Ref<Employee> | null
 
-  @Prop(Collection(notification.class.ChatMessage), notification.string.Comments)
+  @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
     comments!: number
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
@@ -362,7 +362,7 @@ export class TMilestone extends TDoc implements Milestone {
   @Index(IndexKind.Indexed)
     status!: MilestoneStatus
 
-  @Prop(Collection(notification.class.ChatMessage), notification.string.Comments)
+  @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
     comments!: number
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })

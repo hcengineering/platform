@@ -18,7 +18,7 @@ import type { AttachedDoc, Class, Doc, Mixin, Ref, Tx } from '@hcengineering/cor
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
-import { ChatMessage } from '@hcengineering/notification'
+import { ChatMessage } from '@hcengineering/chunter'
 
 /**
  * @public

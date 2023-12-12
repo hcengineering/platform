@@ -30,6 +30,7 @@ import serverNotification, {
   type TypeMatch,
   type NotificationContentProvider
 } from '@hcengineering/server-notification'
+import chunter from '@hcengineering/model-chunter'
 
 export { serverNotificationId } from '@hcengineering/server-notification'
 export { notificationServerOperation } from './migration'
@@ -68,7 +69,7 @@ export function createModel (builder: Builder): void {
   //   trigger: serverNotification.trigger.OnReactionChanged,
   //   txMatch: {
   //     collection: 'reactions',
-  //     objectClass: notification.class.ActivityMessage,
+  //     objectClass: activity.class.ActivityMessage,
   //     _class: core.class.TxCollectionCUD
   //   }
   // })
@@ -80,7 +81,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverNotification.trigger.OnChatMessageSent,
     txMatch: {
-      objectClass: notification.class.ChatMessage
+      objectClass: chunter.class.ChatMessage
     }
   })
 

@@ -59,8 +59,9 @@ import {
 } from '@hcengineering/task'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { type ViewAction } from '@hcengineering/view'
+import chunter from '@hcengineering/model-chunter'
+
 import task from './plugin'
-import notification from '@hcengineering/notification'
 
 export { taskId } from '@hcengineering/task'
 export { createProjectType, createSequence, taskOperation } from './migration'
@@ -95,7 +96,7 @@ export class TTask extends TAttachedDoc implements Task {
   @Prop(Collection(tags.class.TagReference, task.string.TaskLabels), task.string.TaskLabels)
     labels?: number
 
-  @Prop(Collection(notification.class.ChatMessage), notification.string.Comments)
+  @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
     comments?: number
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })

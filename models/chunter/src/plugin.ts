@@ -13,16 +13,11 @@
 // limitations under the License.
 //
 
-import type { TxViewlet } from '@hcengineering/activity'
+import type { ActivityMessage, DocUpdateMessageViewlet, TxViewlet } from '@hcengineering/activity'
 import { chunterId, type Channel } from '@hcengineering/chunter'
 import chunter from '@hcengineering/chunter-resources/src/plugin'
 import type { Doc, Ref, Space } from '@hcengineering/core'
-import {
-  type ActivityMessage,
-  type ActivityMessageExtension,
-  type DocUpdateMessageViewlet,
-  type NotificationGroup
-} from '@hcengineering/notification'
+import { type NotificationGroup } from '@hcengineering/notification'
 import type { IntlString, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import type { AnyComponent, Location } from '@hcengineering/ui/src/types'
@@ -37,9 +32,6 @@ export default mergeIds(chunterId, chunter, {
     Threads: '' as AnyComponent,
     SavedMessages: '' as AnyComponent,
     ChunterBrowser: '' as AnyComponent,
-    ReactionsPresenter: '' as AnyComponent,
-    ReactionsAction: '' as AnyComponent,
-    ActivityMessageReactionsAction: '' as AnyComponent,
     BacklinkContent: '' as AnyComponent,
     BacklinkReference: '' as AnyComponent
   },
@@ -58,14 +50,14 @@ export default mergeIds(chunterId, chunter, {
     MarkCommentUnread: '' as ViewAction,
     ArchiveChannel: '' as ViewAction,
     UnarchiveChannel: '' as ViewAction,
-    ConvertDmToPrivateChannel: '' as ViewAction
+    ConvertDmToPrivateChannel: '' as ViewAction,
+    DeleteChatMessage: '' as ViewAction
   },
   category: {
     Chunter: '' as Ref<ActionCategory>
   },
   string: {
     ApplicationLabelChunter: '' as IntlString,
-    LeftComment: '' as IntlString,
     MentionedIn: '' as IntlString,
     Content: '' as IntlString,
     Comment: '' as IntlString,
@@ -100,16 +92,13 @@ export default mergeIds(chunterId, chunter, {
     TxChatMessageCreate: '' as Ref<TxViewlet>,
     TxChatMessageRemove: '' as Ref<TxViewlet>,
     ChunterNotificationGroup: '' as Ref<NotificationGroup>,
-    DocUpdateMessageExtension: '' as Ref<ActivityMessageExtension>,
-    ChatMessageExtension: '' as Ref<ActivityMessageExtension>,
-    NotificationBacklinkCreated: '' as Ref<DocUpdateMessageViewlet>,
-    NotificationBacklinkRemoved: '' as Ref<DocUpdateMessageViewlet>,
-    NotificationReactionCreated: '' as Ref<DocUpdateMessageViewlet>,
-    NotificationReactionRemoved: '' as Ref<DocUpdateMessageViewlet>
+    BacklinkCreatedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,
+    BacklinkRemovedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>
   },
   activity: {
     TxCommentCreate: '' as AnyComponent,
-    TxMessageCreate: '' as AnyComponent
+    TxMessageCreate: '' as AnyComponent,
+    BacklinkCreatedLabel: '' as AnyComponent
   },
   space: {
     General: '' as Ref<Channel>,
@@ -121,6 +110,7 @@ export default mergeIds(chunterId, chunter, {
     GetFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>
   },
   filter: {
-    BacklinksFilter: '' as Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>
+    BacklinksFilter: '' as Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>,
+    ChatMessagesFilter: '' as Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>
   }
 })

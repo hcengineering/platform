@@ -15,16 +15,12 @@
 //
 
 import { type Doc, type Ref } from '@hcengineering/core'
-import notification, {
-  type ActivityMessageExtension,
-  type DocUpdateMessageViewlet,
-  notificationId
-} from '@hcengineering/notification'
+import notification, { notificationId } from '@hcengineering/notification'
 import { type IntlString, type Resource, mergeIds } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action, type ActionCategory, type ViewAction } from '@hcengineering/view'
 import { type Application } from '@hcengineering/workbench'
-import { type TxViewlet } from '@hcengineering/activity'
+import { type DocUpdateMessageViewlet, type TxViewlet } from '@hcengineering/activity'
 
 export default mergeIds(notificationId, notification, {
   string: {
@@ -35,11 +31,7 @@ export default mergeIds(notificationId, notification, {
     Archive: '' as IntlString,
     MarkAsUnread: '' as IntlString,
     MarkAsRead: '' as IntlString,
-    ChangeCollaborators: '' as IntlString,
-    AllActivity: '' as IntlString,
-    Threads: '' as IntlString,
-    Mentions: '' as IntlString,
-    Reactions: '' as IntlString
+    ChangeCollaborators: '' as IntlString
   },
   app: {
     Notification: '' as Ref<Application>,
@@ -51,9 +43,7 @@ export default mergeIds(notificationId, notification, {
   ids: {
     TxCollaboratorsChange: '' as Ref<TxViewlet>,
     TxDmCreation: '' as Ref<TxViewlet>,
-    NotificationCollaboratorsChanged: '' as Ref<DocUpdateMessageViewlet>,
-    DocUpdateMessagePinExtension: '' as Ref<ActivityMessageExtension>,
-    ChatMessagePinExtension: '' as Ref<ActivityMessageExtension>
+    NotificationCollaboratorsChanged: '' as Ref<DocUpdateMessageViewlet>
   },
   component: {
     NotificationSettings: '' as AnyComponent,
@@ -82,7 +72,6 @@ export default mergeIds(notificationId, notification, {
     MarkAsUnread: '' as ViewAction,
     MarkAsUnreadInboxNotification: '' as ViewAction,
     MarkAsReadInboxNotification: '' as ViewAction,
-    DeleteInboxNotification: '' as ViewAction,
-    DeleteChatMessage: '' as ViewAction
+    DeleteInboxNotification: '' as ViewAction
   }
 })
