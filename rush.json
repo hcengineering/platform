@@ -787,6 +787,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/collaborator",
+      "projectFolder": "server/collaborator",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/tool",
       "projectFolder": "dev/tool",
       "shouldPublish": false
@@ -797,7 +802,7 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/collaborator",
+      "packageName": "@hcengineering/pod-collaborator",
       "projectFolder": "pods/collaborator",
       "shouldPublish": false
     },
