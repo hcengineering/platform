@@ -270,12 +270,8 @@
     &.focusable {
       border: 0.0625rem solid transparent;
       border-radius: 0.375rem;
-      margin: -0.25rem -0.5rem;
-      padding: 0.25rem 0.5rem;
-
-      &:focus-within {
-        border-color: var(--primary-edit-border-color);
-      }
+      margin: -0.25rem -1.25rem;
+      padding: 0.25rem 1.25rem;
     }
   }
 </style>
