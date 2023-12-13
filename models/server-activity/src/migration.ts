@@ -13,27 +13,30 @@
 // limitations under the License.
 //
 
-import {
-  TxFactory,
-  toFindResult,
-  type TxCUD,
-  type Doc,
-  type TxCreateDoc,
-  SortingOrder,
-  TxProcessor,
-  type Ref,
-  toIdMap,
-  type TxCollectionCUD,
-  type AttachedDoc,
-  type Class
-} from '@hcengineering/core'
-import { type MigrateOperation, type MigrationClient, type MigrationIterator, tryMigrate } from '@hcengineering/model'
-import core from '@hcengineering/model-core'
-import { type DocObjectCache, getAllObjectTransactions, serverNotificationId } from '@hcengineering/server-notification'
-import { type NotificationControl, generateDocUpdateMessages } from '@hcengineering/server-notification-resources'
-import activity, { type DocUpdateMessage } from '@hcengineering/activity'
 
-function getNotificationControl (client: MigrationClient): NotificationControl {
+import core, {
+  AttachedDoc,
+  Class,
+  Doc,
+  Ref,
+  TxCUD,
+  TxCollectionCUD,
+  TxProcessor,
+  toIdMap,
+  SortingOrder, TxFactory, toFindResult, TxCreateDoc
+} from '@hcengineering/core'
+import activity, {DocUpdateMessage} from '@hcengineering/activity'
+import { tryMigrate, type MigrateOperation, type MigrationClient, MigrationIterator } from '@hcengineering/model'
+import {
+  ActivityControl,
+  DocObjectCache,
+  getAllObjectTransactions,
+  serverActivityId
+} from '@hcengineering/server-activity'
+import { generateDocUpdateMessages } from '@hcengineering/server-activity-resources'
+
+
+function getActivityControl (client: MigrationClient): ActivityControl {
   const txFactory = new TxFactory(core.account.System, false)
 
   return {
@@ -47,7 +50,7 @@ function getNotificationControl (client: MigrationClient): NotificationControl {
 
 async function generateDocUpdateMessageByTx (
   tx: TxCUD<Doc>,
-  control: NotificationControl,
+  control: ActivityControl,
   client: MigrationClient,
   objectCache?: DocObjectCache
 ): Promise<void> {
@@ -76,9 +79,9 @@ async function createDocUpdateMessages (client: MigrationClient): Promise<void> 
     .map(({ _id }) => _id)
     .filter((_class) => !client.hierarchy.isDerived(_class, activity.class.ActivityMessage))
 
-  const notificationControl = getNotificationControl(client)
+  const notificationControl = getActivityControl(client)
 
-  const txClient: Pick<NotificationControl, 'hierarchy' | 'findAll'> = {
+  const txClient: Pick<ActivityControl, 'hierarchy' | 'findAll'> = {
     hierarchy: notificationControl.hierarchy,
     findAll: notificationControl.findAll
   }
@@ -198,11 +201,11 @@ async function createDocUpdateMessages (client: MigrationClient): Promise<void> 
   console.log('process-finished', processed)
 }
 
-export const notificationServerOperation: MigrateOperation = {
+export const activityServerOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, serverNotificationId, [
+    await tryMigrate(client, serverActivityId, [
       {
-        state: 'notifications',
+        state: 'activity-messages',
         func: createDocUpdateMessages
       }
     ])

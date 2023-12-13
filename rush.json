@@ -1469,6 +1469,21 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/server-activity",
+      "projectFolder": "server-plugins/activity",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-server-activity",
+      "projectFolder": "models/server-activity",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-activity-resources",
+      "projectFolder": "server-plugins/activity-resources",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/model-support",
       "projectFolder": "models/support",
       "shouldPublish": false

@@ -33,7 +33,6 @@ import serverNotification, {
 import chunter from '@hcengineering/model-chunter'
 
 export { serverNotificationId } from '@hcengineering/server-notification'
-export { notificationServerOperation } from './migration'
 
 @Mixin(serverNotification.mixin.HTMLPresenter, core.class.Class)
 export class THTMLPresenter extends TClass implements HTMLPresenter {
@@ -63,16 +62,6 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverNotification.trigger.OnBacklinkCreate
   })
-
-  // NOTE: temporarily disabled
-  // builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-  //   trigger: serverNotification.trigger.OnReactionChanged,
-  //   txMatch: {
-  //     collection: 'reactions',
-  //     objectClass: activity.class.ActivityMessage,
-  //     _class: core.class.TxCollectionCUD
-  //   }
-  // })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverNotification.trigger.NotificationMessagesHandler

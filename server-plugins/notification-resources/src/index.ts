@@ -44,11 +44,11 @@ import core, {
 import notification, {
   ClassCollaborators,
   Collaborators,
-  DocUpdateTx,
   DocNotifyContext,
+  DocUpdates,
+  DocUpdateTx,
   NotificationProvider,
-  NotificationType,
-  DocUpdates
+  NotificationType
 } from '@hcengineering/notification'
 import { getMetadata, getResource, IntlString } from '@hcengineering/platform'
 import type { TriggerControl } from '@hcengineering/server-core'
@@ -61,10 +61,10 @@ import serverNotification, {
   TextPresenter
 } from '@hcengineering/server-notification'
 
-import { Content, NotificationControl } from './types'
-import { getDocUpdateAction, getTxAttributesUpdates, replaceAll } from './utils'
-import { type DocObjectCache } from '@hcengineering/server-notification'
-import activity, { ActivityMessage, DocUpdateMessage, Reaction } from '@hcengineering/activity'
+import { Content } from './types'
+import activity, { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
+import { replaceAll } from './utils'
+
 /**
  * @public
  */
@@ -105,86 +105,6 @@ export async function OnBacklinkCreate (tx: Tx, control: TriggerControl): Promis
   return res
 }
 
-export async function OnReactionChanged (originTx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const tx = originTx as TxCollectionCUD<ActivityMessage, Reaction>
-  const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
-
-  if (actualTx._class === core.class.TxCreateDoc) {
-    return await createReactionNotifications(tx, control)
-  } else if (actualTx._class === core.class.TxRemoveDoc) {
-    return await removeReactionNotifications(tx, control)
-  }
-
-  return []
-}
-
-export async function removeReactionNotifications (
-  tx: TxCollectionCUD<ActivityMessage, Reaction>,
-  control: TriggerControl
-): Promise<Tx[]> {
-  const message = (await control.findAll(activity.class.DocUpdateMessage, { objectId: tx.tx.objectId }))[0]
-
-  if (message === undefined) {
-    return []
-  }
-
-  const res: Tx[] = []
-  const inboxNotifications = await control.findAll(notification.class.InboxNotification, { attachedTo: message._id })
-
-  inboxNotifications.forEach((inboxNotification) =>
-    res.push(
-      control.txFactory.createTxRemoveDoc(
-        notification.class.InboxNotification,
-        inboxNotification.space,
-        inboxNotification._id
-      )
-    )
-  )
-
-  return res
-}
-export async function createReactionNotifications (
-  tx: TxCollectionCUD<ActivityMessage, Reaction>,
-  control: TriggerControl
-): Promise<Tx[]> {
-  const res: Tx[] = []
-  // const parentMessage = (await control.findAll(activity.class.ActivityMessage, { _id: tx.objectId }))[0]
-  //
-  // if (parentMessage === undefined) {
-  //   return res
-  // }
-  //
-  // const user = parentMessage.createdBy
-  //
-  // if (user === undefined || user === core.account.System || user === tx.modifiedBy) {
-  //   return []
-  // }
-  //
-  // const messageTx: TxCreateDoc<DocUpdateMessage> | undefined = (
-  //   await pushDocUpdateMessages(control, res as TxCollectionCUD<Doc, DocUpdateMessage>[], parentMessage, tx, tx.modifiedBy)
-  // )[0]
-  //
-  // if (messageTx === undefined) {
-  //   return res
-  // }
-  //
-  // const docNotifyContexts = await control.findAll(notification.class.DocNotifyContext, {
-  //   attachedTo: parentMessage._id
-  // })
-  //
-  // createInboxNotifications(
-  //   control,
-  //   res,
-  //   user,
-  //   parentMessage,
-  //   tx,
-  //   messageTx.objectId,
-  //   messageTx.objectClass,
-  //   docNotifyContexts
-  // )
-
-  return res
-}
 export async function OnChatMessageSent (tx: TxCUD<ChatMessage>, control: TriggerControl): Promise<Tx[]> {
   // TODO: remove. Temporary code to receive notifications by chat messages for comments
   const hierarchy = control.hierarchy
@@ -876,105 +796,6 @@ export async function pushInboxNotifications (
   // }
 }
 
-function getDocUpdateMessageTx (
-  control: NotificationControl,
-  originTx: TxCUD<Doc>,
-  object: Doc,
-  rawMessage: Data<DocUpdateMessage>,
-  modifiedBy?: Ref<Account>
-): TxCollectionCUD<Doc, DocUpdateMessage> {
-  const innerTx = control.txFactory.createTxCreateDoc(
-    activity.class.DocUpdateMessage,
-    object.space,
-    rawMessage,
-    undefined,
-    originTx.modifiedOn,
-    modifiedBy ?? originTx.modifiedBy
-  )
-
-  return control.txFactory.createTxCollectionCUD(
-    rawMessage.attachedToClass,
-    rawMessage.attachedTo,
-    object.space,
-    rawMessage.collection,
-    innerTx,
-    originTx.modifiedOn,
-    modifiedBy ?? originTx.modifiedBy
-  )
-}
-
-/**
- * @public
- */
-export async function pushDocUpdateMessages (
-  control: NotificationControl,
-  res: TxCollectionCUD<Doc, DocUpdateMessage>[],
-  object: Doc | undefined,
-  originTx: TxCUD<Doc>,
-  modifiedBy?: Ref<Account>,
-  objectCache?: DocObjectCache
-): Promise<TxCollectionCUD<Doc, DocUpdateMessage>[]> {
-  if (object === undefined) {
-    return res
-  }
-  const activityDoc = await control.modelDb.findOne(activity.mixin.ActivityDoc, { _id: object._class })
-
-  if (activityDoc === undefined) {
-    return res
-  }
-
-  const collection =
-    originTx._class === core.class.TxCollectionCUD
-      ? (originTx as TxCollectionCUD<Doc, AttachedDoc>).collection
-      : undefined
-
-  const { ignoreCollections = [] } = activityDoc
-
-  if (collection !== undefined && ignoreCollections.includes(collection)) {
-    return res
-  }
-
-  const tx =
-    originTx._class === core.class.TxCollectionCUD ? (originTx as TxCollectionCUD<Doc, AttachedDoc>).tx : originTx
-
-  const rawMessage: Data<DocUpdateMessage> = {
-    txId: originTx._id,
-    attachedTo: object._id,
-    attachedToClass: object._class,
-    objectId: tx.objectId,
-    objectClass: tx.objectClass,
-    action: getDocUpdateAction(control, tx),
-    collection: 'docUpdateMessages',
-    updateCollection:
-      originTx._class === core.class.TxCollectionCUD
-        ? (originTx as TxCollectionCUD<Doc, AttachedDoc>).collection
-        : undefined
-  }
-
-  const attributesUpdates = await getTxAttributesUpdates(control, originTx, tx, object, objectCache)
-
-  for (const attributeUpdates of attributesUpdates) {
-    res.push(
-      getDocUpdateMessageTx(
-        control,
-        originTx,
-        object,
-        {
-          ...rawMessage,
-          attributeUpdates
-        },
-        modifiedBy
-      )
-    )
-  }
-
-  if (attributesUpdates.length === 0) {
-    res.push(getDocUpdateMessageTx(control, originTx, object, rawMessage, modifiedBy))
-  }
-
-  return res
-}
-
 function createInboxNotifications (
   control: TriggerControl,
   res: Tx[],
@@ -1256,53 +1077,6 @@ export async function collaboratorDocHandler (
   return []
 }
 
-export async function generateDocUpdateMessages (
-  tx: TxCUD<Doc>,
-  control: NotificationControl,
-  res: TxCollectionCUD<Doc, DocUpdateMessage>[] = [],
-  originTx?: TxCUD<Doc>,
-  objectCache?: DocObjectCache
-): Promise<TxCollectionCUD<Doc, DocUpdateMessage>[]> {
-  if (tx.space === core.space.DerivedTx) {
-    return res
-  }
-
-  if (control.hierarchy.isDerived(tx.objectClass, activity.class.ActivityMessage)) {
-    return res
-  }
-
-  switch (tx._class) {
-    case core.class.TxCreateDoc: {
-      const doc = TxProcessor.createDoc2Doc(tx as TxCreateDoc<Doc>)
-      return await pushDocUpdateMessages(control, res, doc, originTx ?? tx, undefined, objectCache)
-    }
-    case core.class.TxMixin:
-    case core.class.TxUpdateDoc: {
-      let doc = objectCache?.docs?.get(tx.objectId)
-      if (doc === undefined) {
-        doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
-      }
-      return await pushDocUpdateMessages(control, res, doc ?? undefined, originTx ?? tx, undefined, objectCache)
-    }
-    case core.class.TxCollectionCUD: {
-      const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
-      res = await generateDocUpdateMessages(actualTx, control, res, tx, objectCache)
-      if ([core.class.TxCreateDoc, core.class.TxRemoveDoc].includes(actualTx._class)) {
-        let doc = objectCache?.docs?.get(tx.objectId)
-        if (doc === undefined) {
-          doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
-        }
-        if (doc !== undefined) {
-          return await pushDocUpdateMessages(control, res, doc ?? undefined, originTx ?? tx, undefined, objectCache)
-        }
-      }
-      return res
-    }
-  }
-
-  return res
-}
-
 /**
  * @public
  */
@@ -1311,10 +1085,7 @@ export async function NotificationMessagesHandler (tx: TxCUD<Doc>, control: Trig
     return []
   }
 
-  const docUpdateMessages = await generateDocUpdateMessages(tx, control)
-  const res = await collaboratorDocHandler(tx, control, docUpdateMessages)
-
-  return [...docUpdateMessages, ...res]
+  return await collaboratorDocHandler(tx, control, [])
 }
 
 async function updateCollaboratorsMixin (
@@ -1640,7 +1411,6 @@ export * from './types'
 export default async () => ({
   trigger: {
     OnBacklinkCreate,
-    // OnReactionChanged,
     NotificationMessagesHandler,
     OnAttributeCreate,
     OnAttributeUpdate,
