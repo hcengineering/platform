@@ -33,7 +33,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin<Class<Doc>, ObjectDDParticipant>(
-    notification.class.ChatMessage,
+    chunter.class.ChatMessage,
     core.class.Class,
     serverCore.mixin.ObjectDDParticipant,
     {

@@ -22,6 +22,7 @@ import builder, { migrateOperations, version } from '@hcengineering/model-all'
 import { devTool } from '.'
 
 import { addLocation } from '@hcengineering/platform'
+import { serverActivityId } from '@hcengineering/server-activity'
 import { serverAttachmentId } from '@hcengineering/server-attachment'
 import { serverCalendarId } from '@hcengineering/server-calendar'
 import { serverChunterId } from '@hcengineering/server-chunter'
@@ -40,6 +41,7 @@ import { serverTelegramId } from '@hcengineering/server-telegram'
 import { serverTrackerId } from '@hcengineering/server-tracker'
 import { serverViewId } from '@hcengineering/server-view'
 
+addLocation(serverActivityId, () => import('@hcengineering/server-activity-resources'))
 addLocation(serverAttachmentId, () => import('@hcengineering/server-attachment-resources'))
 addLocation(serverContactId, () => import('@hcengineering/server-contact-resources'))
 addLocation(serverNotificationId, () => import('@hcengineering/server-notification-resources'))

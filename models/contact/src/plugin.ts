@@ -18,18 +18,17 @@ import { contactId } from '@hcengineering/contact'
 import contact from '@hcengineering/contact-resources/src/plugin'
 import type { Client, Doc, Ref } from '@hcengineering/core'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/model-presentation'
-import { type ChatMessageViewlet, type NotificationGroup } from '@hcengineering/notification'
+import { type NotificationGroup } from '@hcengineering/notification'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type TemplateFieldFunc } from '@hcengineering/templates'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action, type ActionCategory, type ViewAction } from '@hcengineering/view'
+import { type ChatMessageViewlet } from '@hcengineering/chunter'
 
 export default mergeIds(contactId, contact, {
   activity: {
-    TxNameChange: '' as AnyComponent
-  },
-  notification: {
-    NotificationNameChanged: '' as AnyComponent
+    TxNameChange: '' as AnyComponent,
+    NameChangedActivityMessage: '' as AnyComponent
   },
   component: {
     PersonPresenter: '' as AnyComponent,

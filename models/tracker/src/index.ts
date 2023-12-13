@@ -22,11 +22,12 @@ import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
 import { trackerId } from '@hcengineering/tracker'
-import tracker from './plugin'
-
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import presentation from '@hcengineering/model-presentation'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
+import chunter from '@hcengineering/chunter'
+
+import tracker from './plugin'
 import { createActions as defineActions } from './actions'
 import { definePresenters } from './presenters'
 import {
@@ -445,18 +446,38 @@ export function createModel (builder: Builder): void {
     TTypeRemainingTime
   )
 
-  builder.mixin(tracker.class.Project, core.class.Class, notification.mixin.ActivityDoc, {})
-  builder.mixin(tracker.class.Issue, core.class.Class, notification.mixin.ActivityDoc, {
+  builder.mixin(tracker.class.Project, core.class.Class, activity.mixin.ActivityDoc, {})
+  builder.mixin(tracker.class.Issue, core.class.Class, activity.mixin.ActivityDoc, {
     ignoreCollections: ['comments']
   })
-  builder.mixin(tracker.class.Milestone, core.class.Class, notification.mixin.ActivityDoc, {
+  builder.mixin(tracker.class.Milestone, core.class.Class, activity.mixin.ActivityDoc, {
     ignoreCollections: ['comments']
   })
-  builder.mixin(tracker.class.Component, core.class.Class, notification.mixin.ActivityDoc, {
+  builder.mixin(tracker.class.Component, core.class.Class, activity.mixin.ActivityDoc, {
     ignoreCollections: ['comments']
   })
-  builder.mixin(tracker.class.IssueTemplate, core.class.Class, notification.mixin.ActivityDoc, {
+  builder.mixin(tracker.class.IssueTemplate, core.class.Class, activity.mixin.ActivityDoc, {
     ignoreCollections: ['comments']
+  })
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: tracker.class.Issue,
+    components: { input: chunter.component.ChatMessageInput }
+  })
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: tracker.class.Milestone,
+    components: { input: chunter.component.ChatMessageInput }
+  })
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: tracker.class.Component,
+    components: { input: chunter.component.ChatMessageInput }
+  })
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: tracker.class.IssueTemplate,
+    components: { input: chunter.component.ChatMessageInput }
   })
 
   defineViewlets(builder)
@@ -517,7 +538,7 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    notification.class.DocUpdateMessageViewlet,
+    activity.class.DocUpdateMessageViewlet,
     core.space.Model,
     {
       objectClass: tracker.class.Issue,
@@ -535,11 +556,11 @@ export function createModel (builder: Builder): void {
         }
       }
     },
-    tracker.ids.NotificationIssueUpdated
+    tracker.ids.IssueUpdatedActivityViewlet
   )
 
   builder.createDoc(
-    notification.class.DocUpdateMessageViewlet,
+    activity.class.DocUpdateMessageViewlet,
     core.space.Model,
     {
       objectClass: tracker.class.Issue,
@@ -547,11 +568,11 @@ export function createModel (builder: Builder): void {
       icon: tracker.icon.Issue,
       valueAttr: 'title'
     },
-    tracker.ids.NotificationIssueCreated
+    tracker.ids.IssueCreatedActivityViewlet
   )
 
   builder.createDoc(
-    notification.class.DocUpdateMessageViewlet,
+    activity.class.DocUpdateMessageViewlet,
     core.space.Model,
     {
       objectClass: tracker.class.Issue,
@@ -559,11 +580,11 @@ export function createModel (builder: Builder): void {
       icon: tracker.icon.Issue,
       valueAttr: 'title'
     },
-    tracker.ids.NotificationIssueRemoved
+    tracker.ids.IssueRemovedActivityViewlet
   )
 
   builder.createDoc(
-    notification.class.DocUpdateMessageViewlet,
+    activity.class.DocUpdateMessageViewlet,
     core.space.Model,
     {
       objectClass: tracker.class.Milestone,
@@ -574,11 +595,11 @@ export function createModel (builder: Builder): void {
         }
       }
     },
-    tracker.ids.NotificationMilestoneUpdated
+    tracker.ids.MilestionUpdatedActivityViewlet
   )
 
   builder.createDoc(
-    notification.class.DocUpdateMessageViewlet,
+    activity.class.DocUpdateMessageViewlet,
     core.space.Model,
     {
       objectClass: tracker.class.IssueTemplate,
@@ -589,7 +610,7 @@ export function createModel (builder: Builder): void {
         }
       }
     },
-    tracker.ids.NotificationIssueTemplateUpdated
+    tracker.ids.IssueTemplateUpdatedActivityViewlet
   )
 
   defineApplication(builder, { myIssuesId, allIssuesId, issuesId, componentsId, milestonesId, templatesId })
@@ -625,41 +646,41 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(
-    notification.class.ChatMessageViewlet,
+    chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
       objectClass: tracker.class.Issue,
-      label: notification.string.LeftComment
+      label: chunter.string.LeftComment
     },
     tracker.ids.IssueChatMessageViewlet
   )
 
   builder.createDoc(
-    notification.class.ChatMessageViewlet,
+    chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
       objectClass: tracker.class.IssueTemplate,
-      label: notification.string.LeftComment
+      label: chunter.string.LeftComment
     },
     tracker.ids.IssueTemplateChatMessageViewlet
   )
 
   builder.createDoc(
-    notification.class.ChatMessageViewlet,
+    chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
       objectClass: tracker.class.Component,
-      label: notification.string.LeftComment
+      label: chunter.string.LeftComment
     },
     tracker.ids.ComponentChatMessageViewlet
   )
 
   builder.createDoc(
-    notification.class.ChatMessageViewlet,
+    chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
       objectClass: tracker.class.Milestone,
-      label: notification.string.LeftComment
+      label: chunter.string.LeftComment
     },
     tracker.ids.MilestoneChatMessageViewlet
   )

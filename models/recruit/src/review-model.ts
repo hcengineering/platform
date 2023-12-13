@@ -7,8 +7,9 @@ import contact from '@hcengineering/model-contact'
 import core, { TAttachedDoc } from '@hcengineering/model-core'
 import task from '@hcengineering/model-task'
 import { type Applicant, type Candidate, type Opinion, type Review } from '@hcengineering/recruit'
+import chunter from '@hcengineering/model-chunter'
+
 import recruit from './plugin'
-import notification from '@hcengineering/notification'
 
 @Model(recruit.class.Review, calendar.class.Event)
 @UX(recruit.string.Review, recruit.icon.Review, 'RVE', 'number')
@@ -47,7 +48,7 @@ export class TOpinion extends TAttachedDoc implements Opinion {
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
-  @Prop(Collection(notification.class.ChatMessage), notification.string.Comments)
+  @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
     comments?: number
 
   @Prop(TypeMarkup(), recruit.string.Description)

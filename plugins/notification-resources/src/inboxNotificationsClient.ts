@@ -14,13 +14,13 @@
 //
 import { type Account, getCurrentAccount, type Ref, SortingOrder, type Doc } from '@hcengineering/core'
 import notification, {
-  type ActivityMessage,
   type InboxNotification,
   type InboxNotificationsClient,
   type DocNotifyContext
 } from '@hcengineering/notification'
 import { derived, writable } from 'svelte/store'
 import { createQuery, getClient } from '@hcengineering/presentation'
+import activity, { type ActivityMessage } from '@hcengineering/activity'
 
 /**
  * @public
@@ -86,7 +86,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
           createdOn: SortingOrder.Descending
         },
         lookup: {
-          attachedTo: notification.class.ActivityMessage
+          attachedTo: activity.class.ActivityMessage
         }
       }
     )

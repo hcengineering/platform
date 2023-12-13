@@ -244,7 +244,7 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    notification.class.DocUpdateMessageViewlet,
+    activity.class.DocUpdateMessageViewlet,
     core.space.Model,
     {
       objectClass: calendar.class.Event,
@@ -252,7 +252,7 @@ export function createModel (builder: Builder): void {
       action: 'update',
       hideIfRemoved: true
     },
-    calendar.ids.UpdateRemainderNotificationViewlet
+    calendar.ids.UpdateRemainderActivityViewlet
   )
 
   builder.createDoc(

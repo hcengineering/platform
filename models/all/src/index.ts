@@ -52,6 +52,7 @@ import { serverTaskId, createModel as serverTaskModel } from '@hcengineering/mod
 import { serverTelegramId, createModel as serverTelegramModel } from '@hcengineering/model-server-telegram'
 import { serverTrackerId, createModel as serverTrackerModel } from '@hcengineering/model-server-tracker'
 import { serverViewId, createModel as serverViewModel } from '@hcengineering/model-server-view'
+import { serverActivityId, createModel as serverActivityModel } from '@hcengineering/model-server-activity'
 import setting, { settingId, createModel as settingModel } from '@hcengineering/model-setting'
 import { supportId, createModel as supportModel } from '@hcengineering/model-support'
 import { tagsId, createModel as tagsModel } from '@hcengineering/model-tags'
@@ -279,7 +280,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [serverNotificationModel, serverNotificationId],
     [serverRequestModel, serverRequestId],
     [serverViewModel, serverViewId],
-
+    [serverActivityModel, serverActivityId],
     [serverTranslate, translateId],
     [serverOpenAI, openAIId]
   ]

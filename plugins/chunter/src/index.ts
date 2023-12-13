@@ -30,6 +30,8 @@ import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
 import { AnyComponent, ResolvedLocation } from '@hcengineering/ui'
+import { ActivityMessage, ActivityMessageViewlet } from '@hcengineering/activity'
+import { Action } from '@hcengineering/view'
 
 /**
  * @public
@@ -88,16 +90,6 @@ export interface Message extends ChunterMessage {
 
 /**
  * @public
- */
-export interface Reaction extends AttachedDoc {
-  emoji: string
-  createBy: Ref<Account>
-  attachedTo: Ref<Doc>
-  attachedToClass: Ref<Class<Doc>>
-}
-
-/**
- * @public
  * @deprecated use ChatMessage instead
  */
 export interface Comment extends AttachedDoc {
@@ -141,6 +133,22 @@ export interface DirectMessageInput extends Class<Doc> {
 /**
  * @public
  */
+export interface ChatMessage extends ActivityMessage {
+  message: string
+  attachments?: number
+  isEdited?: boolean
+}
+
+/**
+ * @public
+ */
+export interface ChatMessageViewlet extends ActivityMessageViewlet {
+  label?: IntlString
+}
+
+/**
+ * @public
+ */
 export const chunterId = 'chunter' as Plugin
 
 export * from './utils'
@@ -159,7 +167,10 @@ export default plugin(chunterId, {
     ChannelView: '' as AnyComponent,
     ThreadView: '' as AnyComponent,
     Thread: '' as AnyComponent,
-    Reactions: '' as AnyComponent
+    Reactions: '' as AnyComponent,
+    ChatMessageInput: '' as AnyComponent,
+    ChatMessagesPresenter: '' as AnyComponent,
+    ChatMessagePresenter: '' as AnyComponent
   },
   class: {
     Message: '' as Ref<Class<Message>>,
@@ -171,7 +182,8 @@ export default plugin(chunterId, {
     Channel: '' as Ref<Class<Channel>>,
     SavedMessages: '' as Ref<Class<SavedMessages>>,
     DirectMessage: '' as Ref<Class<DirectMessage>>,
-    Reaction: '' as Ref<Class<Reaction>>
+    ChatMessage: '' as Ref<Class<ChatMessage>>,
+    ChatMessageViewlet: '' as Ref<Class<ChatMessageViewlet>>
   },
   mixin: {
     DirectMessageInput: '' as Ref<Mixin<DirectMessageInput>>,
@@ -195,7 +207,8 @@ export default plugin(chunterId, {
     ConvertToPrivate: '' as IntlString,
     DirectNotificationTitle: '' as IntlString,
     DirectNotificationBody: '' as IntlString,
-    AddCommentPlaceholder: '' as IntlString
+    AddCommentPlaceholder: '' as IntlString,
+    LeftComment: '' as IntlString
   },
   resolver: {
     Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
@@ -212,5 +225,8 @@ export default plugin(chunterId, {
   backreference: {
     // Update list of back references
     Update: '' as Resource<(source: Doc, key: string, target: RelatedDocument[], label: IntlString) => Promise<void>>
+  },
+  action: {
+    DeleteChatMessage: '' as Ref<Action>
   }
 })

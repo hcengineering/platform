@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.28",
-    "@hcengineering/notification": "^0.6.16",
+    "@hcengineering/chunter": "^0.6.12",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/recruit": "^0.6.21",
     "@hcengineering/server": "^0.6.4",

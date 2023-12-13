@@ -85,7 +85,6 @@ import {
   type Viewlet,
   type ViewletDescriptor,
   type ViewletPreference,
-  type NotificationAttributePresenter,
   type ObjectIdentifier
 } from '@hcengineering/view'
 
@@ -125,9 +124,6 @@ export function classPresenter (
   }
   if (activity !== undefined) {
     builder.mixin(_class, core.class.Class, view.mixin.ActivityAttributePresenter, {
-      presenter: activity
-    })
-    builder.mixin(_class, core.class.Class, view.mixin.NotificationAttributePresenter, {
       presenter: activity
     })
   }
@@ -207,11 +203,6 @@ export class TAttributeFilterPresenter extends TClass implements AttributeFilter
 
 @Mixin(view.mixin.ActivityAttributePresenter, core.class.Class)
 export class TActivityAttributePresenter extends TClass implements ActivityAttributePresenter {
-  presenter!: AnyComponent
-}
-
-@Mixin(view.mixin.NotificationAttributePresenter, core.class.Class)
-export class TNotificationAttributePresenter extends TClass implements NotificationAttributePresenter {
   presenter!: AnyComponent
 }
 
@@ -424,7 +415,6 @@ export function createModel (builder: Builder): void {
     TAttributePresenter,
     TAttributeFilterPresenter,
     TActivityAttributePresenter,
-    TNotificationAttributePresenter,
     TListItemPresenter,
     TCollectionEditor,
     TCollectionPresenter,
@@ -479,8 +469,7 @@ export function createModel (builder: Builder): void {
     core.class.TypeMarkup,
     view.component.MarkupPresenter,
     view.component.MarkupEditor,
-    view.component.MarkupEditorPopup,
-    view.component.MarkupDiffPresenter
+    view.component.MarkupEditorPopup
   )
 
   builder.mixin(core.class.TypeMarkup, core.class.Class, view.mixin.InlineAttributEditor, {

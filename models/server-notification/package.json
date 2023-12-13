@@ -25,14 +25,15 @@
     "prettier-plugin-svelte": "^3.1.0"
   },
   "dependencies": {
+    "@hcengineering/activity": "^0.6.0",
     "@hcengineering/core": "^0.6.28",
     "@hcengineering/model": "^0.6.7",
+    "@hcengineering/model-chunter": "^0.6.0",
     "@hcengineering/model-core": "^0.6.0",
     "@hcengineering/model-notification": "^0.6.0",
     "@hcengineering/notification": "^0.6.16",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/server-notification": "^0.6.1",
-    "@hcengineering/server-notification-resources": "^0.6.0"
+    "@hcengineering/server-notification": "^0.6.1"
   }
 }

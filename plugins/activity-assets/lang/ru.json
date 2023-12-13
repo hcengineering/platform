@@ -1,17 +1,33 @@
 {
   "string": {
     "Activity": "Активность",
-    "Added": "добавила(а)",
+    "Added": "Добавила(а)",
     "All": "Все",
-    "Changed": "изменил(а)",
+    "AllActivity": "Вся активнось",
+    "Attributes": "Атрибуты",
+    "Changed": "Изменил(а)",
     "CollectionUpdated": "Обновлена {collection}",
+    "Created": "Создал(a)",
     "DocAdded": "добавил(а) {_class}",
     "DocCreated": "создал(а) {_class}",
     "DocDeleted": "удалил(а) {_class}",
-    "Edited": "отредактировал(а)",
+    "Edit": "Редактировать",
+    "Edited": "Изменено",
+    "Emoji": "Эмодзи",
+    "For": "Для",
     "From": "из",
-    "Removed": "удалил(а)",
+    "In": "В",
+    "New": "Новые",
+    "NewestFirst": "Сначала новые",
+    "Pinned": "Закрепленные",
+    "Reacted": "Отреагировал(а)",
+    "Reactions": "Реакции",
+    "Removed": "Удалил(а)",
+    "Set": "установлен",
     "To": "на",
-    "Unset": "сбросил"
+    "Unset": "Cбросил",
+    "Update": "Обновить",
+    "Updated": "Обновил(а)",
+    "UpdatedCollection": "Обновленные"
   }
 }

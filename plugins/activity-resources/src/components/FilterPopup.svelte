@@ -17,7 +17,7 @@
   import { IntlString } from '@hcengineering/platform'
   import { Label, resizeObserver, CheckBox, MiniToggle } from '@hcengineering/ui'
   import { Doc, Ref } from '@hcengineering/core'
-  import notification, { ActivityMessagesFilter } from '@hcengineering/notification'
+  import { ActivityMessagesFilter } from '@hcengineering/activity'
 
   import activity from '../plugin'
 
@@ -132,7 +132,7 @@
       <div class="ml-3 mt-2 mb-2 mr-3">
         <MiniToggle
           bind:on={activityOrderNewestFirst}
-          label={notification.string.NewestFirst}
+          label={activity.string.NewestFirst}
           on:change={() => {
             dispatch('update', { action: 'toggle', value: activityOrderNewestFirst })
           }}

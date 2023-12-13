@@ -22,8 +22,8 @@ import { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import setting from '@hcengineering/setting'
 import view, { type Viewlet } from '@hcengineering/view'
-import notification from '@hcengineering/notification'
 import chunter from '@hcengineering/model-chunter'
+import activity from '@hcengineering/activity'
 
 import inventory from './plugin'
 export { inventoryId } from '@hcengineering/inventory'
@@ -79,9 +79,24 @@ export class TVariant extends TAttachedDoc implements Variant {
 export function createModel (builder: Builder): void {
   builder.createModel(TCategory, TProduct, TVariant)
 
-  builder.mixin(inventory.class.Product, core.class.Class, notification.mixin.ActivityDoc, {})
-  builder.mixin(inventory.class.Category, core.class.Class, notification.mixin.ActivityDoc, {})
-  builder.mixin(inventory.class.Variant, core.class.Class, notification.mixin.ActivityDoc, {})
+  builder.mixin(inventory.class.Product, core.class.Class, activity.mixin.ActivityDoc, {})
+  builder.mixin(inventory.class.Category, core.class.Class, activity.mixin.ActivityDoc, {})
+  builder.mixin(inventory.class.Variant, core.class.Class, activity.mixin.ActivityDoc, {})
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: inventory.class.Product,
+    components: { input: chunter.component.ChatMessageInput }
+  })
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: inventory.class.Category,
+    components: { input: chunter.component.ChatMessageInput }
+  })
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: inventory.class.Variant,
+    components: { input: chunter.component.ChatMessageInput }
+  })
 
   builder.mixin(inventory.class.Category, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: inventory.component.CategoryPresenter
@@ -169,7 +184,7 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    notification.class.ChatMessageViewlet,
+    chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
       objectClass: inventory.class.Product,
@@ -179,7 +194,7 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    notification.class.ChatMessageViewlet,
+    chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
       objectClass: inventory.class.Category,

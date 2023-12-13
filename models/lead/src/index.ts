@@ -43,6 +43,8 @@ import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
 import { type ViewOptionsModel } from '@hcengineering/view'
+import activity from '@hcengineering/activity'
+
 import lead from './plugin'
 
 export { leadId } from '@hcengineering/lead'
@@ -59,7 +61,7 @@ export class TFunnel extends TProject implements Funnel {
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
-  @Prop(Collection(notification.class.ChatMessage), notification.string.Comments)
+  @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
     comments?: number
 }
 
@@ -102,13 +104,25 @@ export function createModel (builder: Builder): void {
 
   builder.createModel(TFunnel, TLead, TCustomer)
 
-  builder.mixin(lead.class.Lead, core.class.Class, notification.mixin.ActivityDoc, {
+  builder.mixin(lead.class.Lead, core.class.Class, activity.mixin.ActivityDoc, {
     ignoreCollections: ['comments']
   })
-  builder.mixin(lead.mixin.Customer, core.class.Class, notification.mixin.ActivityDoc, {
+
+  builder.mixin(lead.mixin.Customer, core.class.Class, activity.mixin.ActivityDoc, {
     ignoreCollections: ['comments']
   })
-  builder.mixin(lead.class.Funnel, core.class.Class, notification.mixin.ActivityDoc, {})
+
+  builder.mixin(lead.class.Funnel, core.class.Class, activity.mixin.ActivityDoc, {})
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: lead.class.Lead,
+    components: { input: chunter.component.ChatMessageInput }
+  })
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: lead.class.Funnel,
+    components: { input: chunter.component.ChatMessageInput }
+  })
 
   builder.mixin(lead.class.Funnel, core.class.Class, workbench.mixin.SpaceView, {
     view: {
@@ -518,7 +532,7 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    notification.class.ChatMessageViewlet,
+    chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
       objectClass: lead.class.Lead,

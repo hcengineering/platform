@@ -15,12 +15,12 @@
 <script lang="ts">
   import attachment from '@hcengineering/attachment'
   import { AttachmentDocList } from '@hcengineering/attachment-resources'
-  import notification from '@hcengineering/notification'
+  import chunter from '@hcengineering/chunter'
   import { Ref } from '@hcengineering/core'
   import { IconForward, MessageViewer, createQuery, getClient } from '@hcengineering/presentation'
   import { Issue, Project } from '@hcengineering/tracker'
   import { Label, Scroller, resizeObserver } from '@hcengineering/ui'
-  import { ChatMessagePopup } from '@hcengineering/notification-resources'
+  import { ChatMessagePopup } from '@hcengineering/chunter-resources'
 
   import tracker from '../../plugin'
   import { activeProjects } from '../../utils'
@@ -114,7 +114,7 @@
     {/if}
     {#if issue.comments}
       <div class="mt-6 mb-2 overflow-label fs-bold content-dark-color">
-        <Label label={notification.string.Comments} />:
+        <Label label={chunter.string.Comments} />:
       </div>
       <ChatMessagePopup objectId={issue._id} object={issue} />
     {/if}

@@ -18,7 +18,7 @@ import { type ObjQueryType, SortingOrder, type SortingQuery, type Markup } from 
 import { type IntlString, type Resources } from '@hcengineering/platform'
 import preference from '@hcengineering/preference'
 import { getClient } from '@hcengineering/presentation'
-import notification, { type ActivityMessage, type DocUpdateMessage } from '@hcengineering/notification'
+import activity, { type ActivityMessage, type DocUpdateMessage } from '@hcengineering/activity'
 
 import TxAttachmentCreate from './components/activity/TxAttachmentCreate.svelte'
 import AddAttachment from './components/AddAttachment.svelte'
@@ -38,9 +38,9 @@ import AttachmentStyleBoxEditor from './components/AttachmentStyleBoxEditor.svel
 import AccordionEditor from './components/AccordionEditor.svelte'
 import IconUploadDuo from './components/icons/UploadDuo.svelte'
 import IconAttachment from './components/icons/Attachment.svelte'
-import { deleteFile, uploadFile } from './utils'
 import AttachmentPreview from './components/AttachmentPreview.svelte'
-import NotificationAttachmentChanged from './components/notification/NotificationAttachmentChanged.svelte'
+import AttachmentsUpdatedMessage from './components/activity/AttachmentsUpdatedMessage.svelte'
+import { deleteFile, uploadFile } from './utils'
 
 export {
   AddAttachment,
@@ -235,7 +235,7 @@ export async function DeleteAttachment (attach: Attachment): Promise<void> {
 }
 
 export function attachmentsFilter (message: ActivityMessage): boolean {
-  if (message._class === notification.class.DocUpdateMessage) {
+  if (message._class === activity.class.DocUpdateMessage) {
     return (message as DocUpdateMessage).objectClass === attachment.class.Attachment
   }
 
@@ -254,11 +254,9 @@ export default async (): Promise<Resources> => ({
     FileBrowser,
     Photos
   },
-  notification: {
-    NotificationAttachmentChanged
-  },
   activity: {
-    TxAttachmentCreate
+    TxAttachmentCreate,
+    AttachmentsUpdatedMessage
   },
   helper: {
     UploadFile: uploadFile,

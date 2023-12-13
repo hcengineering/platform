@@ -79,6 +79,7 @@ import { serverTelegramId } from '@hcengineering/server-telegram'
 import { Token } from '@hcengineering/server-token'
 import { serverTrackerId } from '@hcengineering/server-tracker'
 import { serverViewId } from '@hcengineering/server-view'
+import { serverActivityId } from '@hcengineering/server-activity'
 import {
   BroadcastCall,
   ClientSession,
@@ -206,6 +207,7 @@ export function start (
   addLocation(serverRequestId, () => import('@hcengineering/server-request-resources'))
   addLocation(serverViewId, () => import('@hcengineering/server-view-resources'))
   addLocation(serverHrId, () => import('@hcengineering/server-hr-resources'))
+  addLocation(serverActivityId, () => import('@hcengineering/server-activity-resources'))
   addLocation(openAIId, () => Promise.resolve({ default: openAIPluginImpl }))
 
   const middlewares: MiddlewareCreator[] = [

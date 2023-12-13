@@ -31,8 +31,6 @@ import { getWorkspaceDB } from '@hcengineering/mongo'
 import { connect } from '@hcengineering/server-tool'
 import { MongoClient } from 'mongodb'
 
-export const DOMAIN_COMMENT = 'comment' as Domain
-
 interface PropertyInfo {
   name: string
   cValue: any

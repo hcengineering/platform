@@ -21,7 +21,6 @@ import {
   tryMigrate
 } from '@hcengineering/model'
 import { chunterId } from '@hcengineering/chunter'
-import notification from '@hcengineering/notification'
 import { DOMAIN_NOTIFICATION } from '@hcengineering/model-notification'
 
 import { DOMAIN_COMMENT } from './index'
@@ -90,8 +89,8 @@ async function createBacklink (tx: TxOperations): Promise<void> {
 }
 
 async function convertCommentsToChatMessages (client: MigrationClient): Promise<void> {
-  await client.update(DOMAIN_COMMENT, { _class: chunter.class.Comment }, { _class: notification.class.ChatMessage })
-  await client.move(DOMAIN_COMMENT, { _class: notification.class.ChatMessage }, DOMAIN_NOTIFICATION)
+  await client.update(DOMAIN_COMMENT, { _class: chunter.class.Comment }, { _class: chunter.class.ChatMessage })
+  await client.move(DOMAIN_COMMENT, { _class: chunter.class.ChatMessage }, DOMAIN_NOTIFICATION)
 }
 
 export const chunterOperation: MigrateOperation = {

@@ -329,7 +329,7 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    notification.class.DocUpdateMessageViewlet,
+    activity.class.DocUpdateMessageViewlet,
     core.space.Model,
     {
       objectClass: setting.class.Integration,
@@ -338,7 +338,7 @@ export function createModel (builder: Builder): void {
       action: 'update',
       hideIfRemoved: true
     },
-    setting.ids.UpdateIntegrationNotificationViewlet
+    setting.ids.UpdateIntegrationActivityViewlet
   )
 
   builder.mixin(core.class.TypeString, core.class.Class, view.mixin.ObjectEditor, {

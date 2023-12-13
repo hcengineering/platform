@@ -167,6 +167,8 @@
     "@hcengineering/server-request": "^0.6.0",
     "@hcengineering/server-request-resources": "^0.6.0",
     "@hcengineering/server-view": "^0.6.0",
-    "@hcengineering/server-view-resources": "^0.6.0"
+    "@hcengineering/server-view-resources": "^0.6.0",
+    "@hcengineering/server-activity": "^0.6.0",
+    "@hcengineering/server-activity-resources": "^0.6.0"
   }
 }

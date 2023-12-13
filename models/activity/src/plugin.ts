@@ -12,8 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { activityId } from '@hcengineering/activity'
+import { activityId, type ActivityMessage, type DocUpdateMessageViewlet } from '@hcengineering/activity'
 import activity from '@hcengineering/activity-resources/src/plugin'
-import { mergeIds } from '@hcengineering/platform'
+import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
+import { type Doc, type Ref } from '@hcengineering/core'
 
-export default mergeIds(activityId, activity, {})
+export default mergeIds(activityId, activity, {
+  string: {
+    Attributes: '' as IntlString,
+    Pinned: '' as IntlString,
+    Emoji: '' as IntlString,
+    Reacted: '' as IntlString
+  },
+  filter: {
+    AttributesFilter: '' as Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>,
+    PinnedFilter: '' as Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>
+  },
+  ids: {
+    ReactionAddedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,
+    ReactionRemovedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>
+  }
+})

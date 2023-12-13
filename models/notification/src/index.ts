@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import activity from '@hcengineering/activity'
+import activity, { type ActivityMessage } from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
 import {
   type Account,
@@ -39,11 +39,9 @@ import {
   Mixin,
   Model,
   Prop,
-  TypeMarkup,
   TypeRef,
   TypeString,
   UX,
-  Collection as PropCollection,
   TypeBoolean,
   TypeDate
 } from '@hcengineering/model'
@@ -52,16 +50,6 @@ import preference, { TPreference } from '@hcengineering/model-preference'
 import view, { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import {
-  type ActivityMessage,
-  type ActivityMessageExtension,
-  type ActivityMessageExtensionKind,
-  type ChatMessage,
-  type ChatMessageViewlet,
-  type DocUpdateAction,
-  type DocAttributeUpdates,
-  type DocUpdateMessage,
-  type DocUpdateMessageViewlet,
-  type DocUpdateMessageViewletAttributesConfig,
   type DocUpdates,
   type DocUpdateTx,
   inboxId,
@@ -69,7 +57,6 @@ import {
   type DocNotifyContext,
   type Notification,
   type NotificationGroup,
-  type NotificationObjectPresenter,
   type NotificationPreferencesGroup,
   type NotificationPreview,
   type NotificationProvider,
@@ -77,19 +64,14 @@ import {
   type NotificationStatus,
   type NotificationTemplate,
   type NotificationType,
-  type ActivityMessagesFilter,
-  type ActivityDoc,
-  type NotificationObjectPreposition,
-  notificationId
+  notificationId,
+  type NotificationObjectPresenter
 } from '@hcengineering/notification'
-import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
+import { type Asset, type IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
-import attachment from '@hcengineering/model-attachment'
-import { type NotificationAttributePresenter } from '@hcengineering/view'
 
 import notification from './plugin'
-import { buildActivityMessages } from './activityMessages'
 
 export { notificationId } from '@hcengineering/notification'
 export { notificationOperation } from './migration'
@@ -174,21 +156,6 @@ export class TNotificationPreview extends TClass implements NotificationPreview 
   presenter!: AnyComponent
 }
 
-@Mixin(notification.mixin.ActivityDoc, core.class.Class)
-export class TActivityDoc extends TClass implements ActivityDoc {
-  ignoreCollections?: string[]
-}
-
-@Mixin(notification.mixin.NotificationObjectPreposition, core.class.Class)
-export class TNotificationObjectPreposition extends TClass implements NotificationObjectPreposition {
-  preposition!: IntlString
-}
-
-@Mixin(notification.mixin.NotificationAttributePresenter, core.class.Class)
-export class TNotificationAttributePresenter extends TClass implements NotificationAttributePresenter {
-  presenter!: AnyComponent
-}
-
 @Model(notification.class.DocUpdates, core.class.Doc, DOMAIN_NOTIFICATION)
 export class TDocUpdates extends TDoc implements DocUpdates {
   @Index(IndexKind.Indexed)
@@ -232,58 +199,13 @@ export class TDocNotifyContext extends TDoc implements DocNotifyContext {
     lastUpdateTimestamp?: Timestamp
 }
 
-@Model(notification.class.ActivityMessage, core.class.AttachedDoc, DOMAIN_NOTIFICATION)
-export class TActivityMessage extends TAttachedDoc implements ActivityMessage {
-  @Prop(TypeBoolean(), notification.string.Pinned)
-  @Index(IndexKind.Indexed)
-    isPinned?: boolean
-
-  @Prop(PropCollection(chunter.class.Reaction), chunter.string.Reactions)
-    reactions?: number
-}
-
-@Model(notification.class.DocUpdateMessage, notification.class.ActivityMessage, DOMAIN_NOTIFICATION)
-export class TDocUpdateMessage extends TActivityMessage implements DocUpdateMessage {
-  @Prop(TypeRef(core.class.Doc), core.string.Object)
-  @Index(IndexKind.Indexed)
-    objectId!: Ref<Doc>
-
-  @Prop(TypeRef(core.class.Class), core.string.Class)
-  @Index(IndexKind.Indexed)
-    objectClass!: Ref<Class<Doc>>
-
-  @Prop(TypeRef(core.class.TxCUD), core.string.Object)
-  @Index(IndexKind.Indexed)
-    txId!: Ref<TxCUD<Doc>>
-
-  action!: DocUpdateAction
-  updateCollection?: string
-  attributeUpdates?: DocAttributeUpdates
-}
-
-@Model(notification.class.ChatMessage, notification.class.ActivityMessage, DOMAIN_NOTIFICATION)
-export class TChatMessage extends TActivityMessage implements ChatMessage {
-  @Prop(TypeMarkup(), chunter.string.Message)
-  @Index(IndexKind.FullText)
-    message!: string
-
-  @Prop(PropCollection(attachment.class.Attachment), attachment.string.Attachments, {
-    shortLabel: attachment.string.Files
-  })
-    attachments?: number
-
-  @Prop(TypeBoolean(), core.string.Boolean)
-  @Index(IndexKind.Indexed)
-    isEdited?: boolean
-}
-
 @Model(notification.class.InboxNotification, core.class.Doc, DOMAIN_NOTIFICATION)
 export class TInboxNotification extends TDoc implements InboxNotification {
-  @Prop(TypeRef(notification.class.ActivityMessage), core.string.AttachedTo)
+  @Prop(TypeRef(activity.class.ActivityMessage), core.string.AttachedTo)
   @Index(IndexKind.Indexed)
     attachedTo!: Ref<ActivityMessage>
 
-  @Prop(TypeRef(notification.class.ActivityMessage), core.string.AttachedToClass)
+  @Prop(TypeRef(activity.class.ActivityMessage), core.string.AttachedToClass)
   @Index(IndexKind.Indexed)
     attachedToClass!: Ref<Class<ActivityMessage>>
 
@@ -300,54 +222,6 @@ export class TInboxNotification extends TDoc implements InboxNotification {
     isViewed!: boolean
 }
 
-@Model(notification.class.DocUpdateMessageViewlet, core.class.Doc, DOMAIN_MODEL)
-export class TDocUpdateMessageViewlet extends TDoc implements DocUpdateMessageViewlet {
-  @Prop(TypeRef(core.class.Doc), core.string.Class)
-  @Index(IndexKind.Indexed)
-    objectClass!: Ref<Class<Doc>>
-
-  @Prop(TypeString(), core.string.String)
-  @Index(IndexKind.Indexed)
-    action!: DocUpdateAction
-
-  label?: IntlString
-  labelComponent?: AnyComponent
-
-  valueAttr?: string
-
-  icon?: Asset
-  component?: AnyComponent
-  config?: DocUpdateMessageViewletAttributesConfig
-  hideIfRemoved?: boolean
-  onlyWithParent?: boolean
-}
-
-@Model(notification.class.ChatMessageViewlet, core.class.Doc, DOMAIN_MODEL)
-export class TChatMessageViewlet extends TDoc implements ChatMessageViewlet {
-  @Prop(TypeRef(core.class.Doc), core.string.Class)
-  @Index(IndexKind.Indexed)
-    objectClass!: Ref<Class<Doc>>
-
-  label?: IntlString
-  hidden?: boolean
-  onlyWithParent?: boolean
-}
-
-@Model(notification.class.ActivityMessageExtension, core.class.Doc, DOMAIN_MODEL)
-export class TActivityMessageExtension extends TDoc implements ActivityMessageExtension {
-  @Prop(TypeRef(notification.class.ActivityMessage), core.string.Class)
-  @Index(IndexKind.Indexed)
-    ofMessage!: Ref<Class<ActivityMessage>>
-
-  components!: { kind: ActivityMessageExtensionKind, component: AnyComponent }[]
-}
-
-@Model(notification.class.ActivityMessagesFilter, core.class.Doc, DOMAIN_MODEL)
-export class TActivityMessagesFilter extends TDoc implements ActivityMessagesFilter {
-  label!: IntlString
-  filter!: Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>
-}
-
 export function createModel (builder: Builder): void {
   builder.createModel(
     TNotification,
@@ -362,17 +236,7 @@ export function createModel (builder: Builder): void {
     TNotificationObjectPresenter,
     TNotificationPreview,
     TDocNotifyContext,
-    TDocUpdateMessage,
-    TChatMessage,
-    TActivityMessage,
-    TInboxNotification,
-    TDocUpdateMessageViewlet,
-    TActivityMessageExtension,
-    TChatMessageViewlet,
-    TActivityMessagesFilter,
-    TActivityDoc,
-    TNotificationObjectPreposition,
-    TNotificationAttributePresenter
+    TInboxNotification
   )
 
   // Temporarily disabled, we should think about it
@@ -449,21 +313,21 @@ export function createModel (builder: Builder): void {
           {
             id: 'all',
             component: notification.component.NewInbox,
-            icon: notification.icon.Activity,
-            label: notification.string.AllActivity,
+            icon: activity.icon.Activity,
+            label: activity.string.AllActivity,
             componentProps: {
               type: 'all',
-              label: notification.string.AllActivity
+              label: activity.string.AllActivity
             }
           },
           {
             id: 'reactions',
             component: notification.component.NewInbox,
-            icon: notification.icon.Emoji,
-            label: notification.string.Reactions,
+            icon: activity.icon.Emoji,
+            label: activity.string.Reactions,
             componentProps: {
-              _class: chunter.class.Reaction,
-              label: notification.string.Reactions
+              _class: activity.class.Reaction,
+              label: activity.string.Reactions
             }
           }
         ]
@@ -597,7 +461,68 @@ export function createModel (builder: Builder): void {
     notification.ids.TxDmCreation
   )
 
-  buildActivityMessages(builder)
+  builder.createDoc(
+    activity.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: notification.mixin.Collaborators,
+      action: 'update',
+      icon: notification.icon.Notifications,
+      component: notification.activity.TxCollaboratorsChange,
+      label: notification.string.ChangeCollaborators
+    },
+    notification.ids.NotificationCollaboratorsChanged
+  )
+
+  builder.mixin(notification.mixin.Collaborators, core.class.Class, view.mixin.ActivityAttributePresenter, {
+    presenter: notification.component.NotificationCollaboratorsChanged
+  })
+
+  createAction(
+    builder,
+    {
+      action: notification.actionImpl.MarkAsReadInboxNotification,
+      label: notification.string.MarkAsRead,
+      icon: notification.icon.Notifications,
+      input: 'focus',
+      visibilityTester: notification.function.HasMarkAsReadAction,
+      category: notification.category.Notification,
+      target: activity.class.ActivityMessage,
+      context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
+    },
+    notification.action.MarkAsReadInboxNotification
+  )
+
+  createAction(
+    builder,
+    {
+      action: notification.actionImpl.MarkAsUnreadInboxNotification,
+      label: notification.string.MarkAsUnread,
+      icon: notification.icon.Track,
+      input: 'focus',
+      visibilityTester: notification.function.HasMarkAsUnreadAction,
+      category: notification.category.Notification,
+      target: activity.class.ActivityMessage,
+      context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
+    },
+    notification.action.MarkAsUnreadInboxNotification
+  )
+
+  createAction(
+    builder,
+    {
+      action: notification.actionImpl.DeleteInboxNotification,
+      label: notification.string.Archive,
+      icon: view.icon.Archive,
+      input: 'focus',
+      keyBinding: ['Backspace'],
+      category: notification.category.Notification,
+      visibilityTester: notification.function.HasDeleteNotificationAction,
+      target: activity.class.ActivityMessage,
+      context: { mode: ['context', 'browser'], group: 'edit' }
+    },
+    notification.action.DeleteInboxNotification
+  )
 }
 
 export function generateClassNotificationTypes (

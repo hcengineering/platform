@@ -59,6 +59,7 @@ import notification from '@hcengineering/notification'
 import { type Asset, type IntlString } from '@hcengineering/platform'
 import hr from './plugin'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
+import chunter from '@hcengineering/model-chunter'
 
 export { hrId } from '@hcengineering/hr'
 export { hrOperation } from './migration'
@@ -83,7 +84,7 @@ export class TDepartment extends TSpace implements Department {
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
-  @Prop(Collection(notification.class.ChatMessage), notification.string.Comments)
+  @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
     comments?: number
 
   avatar?: string | null
@@ -157,7 +158,7 @@ export class TRequest extends TAttachedDoc implements Request {
   @Hidden()
     type!: Ref<RequestType>
 
-  @Prop(Collection(notification.class.ChatMessage), notification.string.Comments)
+  @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
     comments?: number
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })

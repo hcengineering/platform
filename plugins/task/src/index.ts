@@ -27,7 +27,6 @@ import {
   StatusCategory,
   Timestamp
 } from '@hcengineering/core'
-import { NotificationType } from '@hcengineering/notification'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
@@ -213,9 +212,6 @@ const task = plugin(taskId, {
     ProjectTypeSelector: '' as AnyComponent,
     TodoItemsPopup: '' as AnyComponent,
     CreateStatePopup: '' as AnyComponent
-  },
-  ids: {
-    AssigneedNotification: '' as Ref<NotificationType>
   },
   extensions: {
     ProjectEditorExtension: '' as ComponentExtensionId

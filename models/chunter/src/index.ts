@@ -24,17 +24,28 @@ import {
   type Comment,
   type DirectMessage,
   type Message,
-  type Reaction,
   type SavedMessages,
   type ThreadMessage,
-  type DirectMessageInput
+  type DirectMessageInput,
+  type ChatMessage,
+  type ChatMessageViewlet
 } from '@hcengineering/chunter'
 import contact, { type Person } from '@hcengineering/contact'
-import type { Account, Class, Doc, Domain, Ref, Space, Timestamp } from '@hcengineering/core'
-import { IndexKind } from '@hcengineering/core'
+import {
+  type Account,
+  type Class,
+  type Doc,
+  type Domain,
+  DOMAIN_MODEL,
+  type Ref,
+  type Space,
+  type Timestamp,
+  IndexKind
+} from '@hcengineering/core'
 import {
   ArrOf,
   type Builder,
+  Collection as PropCollection,
   Collection,
   Index,
   Mixin,
@@ -48,7 +59,7 @@ import {
   UX
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
-import core, { TAttachedDoc, TClass, TSpace } from '@hcengineering/model-core'
+import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@hcengineering/model-core'
 import notification from '@hcengineering/model-notification'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import view, { createAction, actionTemplates as viewTemplates } from '@hcengineering/model-view'
@@ -56,6 +67,8 @@ import workbench from '@hcengineering/model-workbench'
 import chunter from './plugin'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { TypeBoolean } from '@hcengineering/model'
+import type { IntlString } from '@hcengineering/platform'
+import { TActivityMessage } from '@hcengineering/model-activity'
 export { chunterId } from '@hcengineering/chunter'
 export { chunterOperation } from './migration'
 
@@ -99,7 +112,7 @@ export class TChunterMessage extends TAttachedDoc implements ChunterMessage {
   @Prop(TypeTimestamp(), chunter.string.Edit)
     editedOn?: Timestamp
 
-  @Prop(Collection(chunter.class.Reaction), chunter.string.Reactions)
+  @Prop(Collection(activity.class.Reaction), activity.string.Reactions)
     reactions?: number
 }
 
@@ -130,18 +143,6 @@ export class TMessage extends TChunterMessage implements Message {
     lastReply?: Timestamp
 }
 
-@Model(chunter.class.Reaction, core.class.AttachedDoc, DOMAIN_CHUNTER)
-export class TReaction extends TAttachedDoc implements Reaction {
-  @Prop(TypeString(), chunter.string.Emoji)
-    emoji!: string
-
-  @Prop(TypeRef(core.class.Account), chunter.string.CreateBy)
-    createBy!: Ref<Account>
-
-  declare attachedTo: Ref<ChunterMessage>
-  declare attachedToClass: Ref<Class<ChunterMessage>>
-}
-
 @Model(chunter.class.Comment, core.class.AttachedDoc, DOMAIN_COMMENT)
 @UX(chunter.string.Comment, undefined, 'COM')
 export class TComment extends TAttachedDoc implements Comment {
@@ -152,7 +153,7 @@ export class TComment extends TAttachedDoc implements Comment {
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
-  @Prop(Collection(chunter.class.Reaction), chunter.string.Reactions)
+  @Prop(Collection(activity.class.Reaction), activity.string.Reactions)
     reactions?: number
 
   @Prop(TypeBoolean(), chunter.string.PinMessage)
@@ -177,6 +178,31 @@ export class TDirectMessageInput extends TClass implements DirectMessageInput {
   component!: AnyComponent
 }
 
+@Model(chunter.class.ChatMessage, activity.class.ActivityMessage, DOMAIN_CHUNTER)
+export class TChatMessage extends TActivityMessage implements ChatMessage {
+  @Prop(TypeMarkup(), chunter.string.Message)
+  @Index(IndexKind.FullText)
+    message!: string
+
+  @Prop(PropCollection(attachment.class.Attachment), attachment.string.Attachments, {
+    shortLabel: attachment.string.Files
+  })
+    attachments?: number
+
+  @Prop(TypeBoolean(), core.string.Boolean)
+    isEdited?: boolean
+}
+
+@Model(chunter.class.ChatMessageViewlet, core.class.Doc, DOMAIN_MODEL)
+export class TChatMessageViewlet extends TDoc implements ChatMessageViewlet {
+  @Prop(TypeRef(core.class.Doc), core.string.Class)
+  @Index(IndexKind.Indexed)
+    objectClass!: Ref<Class<Doc>>
+
+  label?: IntlString
+  onlyWithParent?: boolean
+}
+
 export function createModel (builder: Builder, options = { addApplication: true }): void {
   builder.createModel(
     TChunterSpace,
@@ -189,13 +215,14 @@ export function createModel (builder: Builder, options = { addApplication: true 
     TBacklink,
     TDirectMessage,
     TSavedMessages,
-    TReaction,
-    TDirectMessageInput
+    TDirectMessageInput,
+    TChatMessage,
+    TChatMessageViewlet
   )
   const spaceClasses = [chunter.class.Channel, chunter.class.DirectMessage]
 
   spaceClasses.forEach((spaceClass) => {
-    builder.mixin(spaceClass, core.class.Class, notification.mixin.ActivityDoc, {})
+    builder.mixin(spaceClass, core.class.Class, activity.mixin.ActivityDoc, {})
 
     builder.mixin(spaceClass, core.class.Class, workbench.mixin.SpaceView, {
       view: {
@@ -497,7 +524,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
     activity.class.TxViewlet,
     core.space.Model,
     {
-      objectClass: notification.class.ChatMessage,
+      objectClass: chunter.class.ChatMessage,
       icon: chunter.icon.Chunter,
       txClass: core.class.TxCreateDoc,
       component: chunter.activity.TxCommentCreate,
@@ -616,7 +643,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
     activity.class.TxViewlet,
     core.space.Model,
     {
-      objectClass: notification.class.ChatMessage,
+      objectClass: chunter.class.ChatMessage,
       icon: chunter.icon.Chunter,
       txClass: core.class.TxRemoveDoc,
       display: 'inline',
@@ -672,7 +699,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
     chunter.ids.TxBacklinkRemove
   )
 
-  builder.createDoc(notification.class.ActivityMessagesFilter, core.space.Model, {
+  builder.createDoc(activity.class.ActivityMessagesFilter, core.space.Model, {
     label: chunter.string.FilterBacklinks,
     filter: chunter.filter.BacklinksFilter
   })
@@ -759,44 +786,6 @@ export function createModel (builder: Builder, options = { addApplication: true 
   )
 
   builder.createDoc(
-    notification.class.ActivityMessageExtension,
-    core.space.Model,
-    {
-      ofMessage: notification.class.DocUpdateMessage,
-      components: [
-        {
-          kind: 'footer',
-          component: chunter.component.ReactionsPresenter
-        },
-        {
-          kind: 'action',
-          component: chunter.component.ActivityMessageReactionsAction
-        }
-      ]
-    },
-    chunter.ids.DocUpdateMessageExtension
-  )
-
-  builder.createDoc(
-    notification.class.ActivityMessageExtension,
-    core.space.Model,
-    {
-      ofMessage: notification.class.ChatMessage,
-      components: [
-        {
-          kind: 'footer',
-          component: chunter.component.ReactionsPresenter
-        },
-        {
-          kind: 'action',
-          component: chunter.component.ActivityMessageReactionsAction
-        }
-      ]
-    },
-    chunter.ids.ChatMessageExtension
-  )
-
-  builder.createDoc(
     notification.class.NotificationType,
     core.space.Model,
     {
@@ -814,52 +803,27 @@ export function createModel (builder: Builder, options = { addApplication: true 
   )
 
   builder.createDoc(
-    notification.class.DocUpdateMessageViewlet,
+    activity.class.DocUpdateMessageViewlet,
     core.space.Model,
     {
       objectClass: chunter.class.Backlink,
       action: 'create',
       component: chunter.component.BacklinkContent,
-      labelComponent: chunter.component.NotificationBacklinkLabel,
+      labelComponent: chunter.activity.BacklinkCreatedLabel,
       hideIfRemoved: true
     },
-    chunter.ids.NotificationBacklinkCreated
+    chunter.ids.BacklinkCreatedActivityViewlet
   )
 
   builder.createDoc(
-    notification.class.DocUpdateMessageViewlet,
+    activity.class.DocUpdateMessageViewlet,
     core.space.Model,
     {
       objectClass: chunter.class.Backlink,
       action: 'remove',
       hideIfRemoved: true
     },
-    chunter.ids.NotificationBacklinkRemoved
-  )
-
-  builder.createDoc(
-    notification.class.DocUpdateMessageViewlet,
-    core.space.Model,
-    {
-      objectClass: chunter.class.Reaction,
-      action: 'create',
-      component: chunter.component.NotificationReactionCreated,
-      label: chunter.string.Reacted,
-      onlyWithParent: true,
-      hideIfRemoved: true
-    },
-    chunter.ids.NotificationReactionCreated
-  )
-
-  builder.createDoc(
-    notification.class.DocUpdateMessageViewlet,
-    core.space.Model,
-    {
-      objectClass: chunter.class.Reaction,
-      action: 'remove',
-      hideIfRemoved: true
-    },
-    chunter.ids.NotificationReactionRemoved
+    chunter.ids.BacklinkRemovedActivityViewlet
   )
 
   createAction(builder, {
@@ -874,6 +838,35 @@ export function createModel (builder: Builder, options = { addApplication: true 
       mode: 'space'
     }
   })
+
+  builder.createDoc(activity.class.ActivityMessagesFilter, core.space.Model, {
+    label: chunter.string.Comments,
+    filter: chunter.filter.ChatMessagesFilter
+  })
+  builder.mixin(chunter.class.ChatMessage, core.class.Class, activity.mixin.ActivityDoc, {})
+
+  builder.mixin(chunter.class.ChatMessage, core.class.Class, view.mixin.CollectionPresenter, {
+    presenter: chunter.component.ChatMessagesPresenter
+  })
+
+  builder.mixin(chunter.class.ChatMessage, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: chunter.component.ChatMessagePresenter
+  })
+
+  createAction(
+    builder,
+    {
+      action: chunter.actionImpl.DeleteChatMessage,
+      label: view.string.Delete,
+      icon: view.icon.Delete,
+      input: 'focus',
+      keyBinding: ['Backspace'],
+      category: chunter.category.Chunter,
+      target: chunter.class.ChatMessage,
+      context: { mode: ['context', 'browser'], group: 'edit' }
+    },
+    chunter.action.DeleteChatMessage
+  )
 }
 
 export default chunter

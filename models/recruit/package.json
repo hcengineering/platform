@@ -26,6 +26,8 @@
   },
   "dependencies": {
     "@anticrm/skillset": "^0.6.0",
+    "@hcengineering/activity": "^0.6.0",
+    "@hcengineering/chunter": "^0.6.12",
     "@hcengineering/contact": "^0.6.20",
     "@hcengineering/core": "^0.6.28",
     "@hcengineering/model": "^0.6.7",
