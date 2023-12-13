@@ -93,13 +93,13 @@ test.describe('Tracker sub-issues tests', () => {
     await issuesPage.openIssueByName(newSubIssue.title)
 
     await issuesDetailsPage.waitDetailsOpened(newSubIssue.title)
-    await expect(issuesDetailsPage.buttonParentIssueTitle).toHaveText(newIssue.title)
     await issuesDetailsPage.editIssue(editSubIssue)
     await issuesDetailsPage.checkIssue({
       ...newSubIssue,
       ...editSubIssue,
       milestone: 'Milestone',
-      estimation: '1d'
+      estimation: '1d',
+      parentIssue: newIssue.title
     })
   })
 })

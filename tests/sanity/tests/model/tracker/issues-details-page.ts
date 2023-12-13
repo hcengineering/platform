@@ -20,7 +20,6 @@ export class IssuesDetailsPage extends CommonTrackerPage {
   readonly buttonMoreActions: Locator
   readonly textParentTitle: Locator
   readonly buttonAddSubIssue: Locator
-  readonly buttonParentIssueTitle: Locator
 
   constructor (page: Page) {
     super(page)
@@ -41,7 +40,6 @@ export class IssuesDetailsPage extends CommonTrackerPage {
     this.buttonMoreActions = page.locator('div.popupPanel-title div.flex-row-center > button:first-child')
     this.textParentTitle = page.locator('span.issue-title')
     this.buttonAddSubIssue = page.locator('#add-sub-issue')
-    this.buttonParentIssueTitle = page.locator('div.parent-issue span.issue-title ')
   }
 
   async editIssue (data: Issue): Promise<void> {
