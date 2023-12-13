@@ -72,7 +72,11 @@ export class IssuesPage extends CommonTrackerPage {
 
   async createNewIssue (data: NewIssue): Promise<void> {
     await this.buttonCreateNewIssue.click()
+    await this.fillNewIssueForm(data)
+    await this.buttonCreateIssue.click()
+  }
 
+  async fillNewIssueForm (data: NewIssue): Promise<void> {
     await this.inputPopupCreateNewIssueTitle.fill(data.title)
     await this.inputPopupCreateNewIssueDescription.fill(data.description)
     if (data.status != null) {
@@ -124,8 +128,6 @@ export class IssuesPage extends CommonTrackerPage {
       await this.buttonPopupCreateNewIssueParent.click()
       await this.selectMenuItem(this.page, data.parentIssue, true)
     }
-
-    await this.buttonCreateIssue.click()
   }
 
   async searchIssueByName (issueName: string): Promise<void> {
