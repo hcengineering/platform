@@ -24,7 +24,7 @@ test.describe('Tracker related issue tests', () => {
     }
     const relatedIssue: NewIssue = {
       title: `New Related issue-${generateId()}`,
-      description: 'Description New Related issue-',
+      description: 'Description New Related issue',
       status: 'Done',
       priority: 'High',
       createLabel: true,
