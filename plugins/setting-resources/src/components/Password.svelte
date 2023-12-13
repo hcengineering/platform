@@ -100,7 +100,7 @@
           {disabled}
           kind={'primary'}
           on:click={() => {
-            save()
+            void save()
           }}
         />
       </div>

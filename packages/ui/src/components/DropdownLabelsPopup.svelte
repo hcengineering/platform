@@ -107,7 +107,7 @@
       />
     </div>
   {/if}
-  <div class="scroll">
+  <div class="scroll" class:mt-2={!enableSearch}>
     <div class="box">
       <ListView bind:this={list} count={objects.length} bind:selection>
         <svelte:fragment slot="item" let:item={idx}>

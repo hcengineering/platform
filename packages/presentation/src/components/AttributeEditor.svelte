@@ -17,9 +17,9 @@
   // import core from '@hcengineering/core'
   import type { Class, Doc, Ref } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
-  import type { AnySvelteComponent } from '@hcengineering/ui'
+  import type { AnySvelteComponent, EditStyle } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { getAttribute, KeyedAttribute, updateAttribute } from '../attributes'
+  import { KeyedAttribute, getAttribute, updateAttribute } from '../attributes'
   import { getAttributePresenterClass, getClient } from '../utils'
 
   export let _class: Ref<Class<Doc>>
@@ -29,6 +29,7 @@
   export let focus: boolean = false
   export let editable = true
   export let focusIndex = -1
+  export let editKind: EditStyle | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -42,7 +43,9 @@
   $: if (presenterClass !== undefined) {
     const typeClass = hierarchy.getClass(presenterClass.attrClass)
     const editorMixin = hierarchy.as(typeClass, view.mixin.AttributeEditor)
-    editor = getResource(editorMixin.inlineEditor)
+    if (editorMixin.inlineEditor !== undefined) {
+      editor = getResource(editorMixin.inlineEditor)
+    }
   }
 
   function onChange (value: any) {
@@ -67,6 +70,7 @@
       {onChange}
       {focus}
       {focusIndex}
+      {editKind}
     />
   {/await}
 {/if}

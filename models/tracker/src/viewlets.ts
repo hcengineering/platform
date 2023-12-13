@@ -26,6 +26,7 @@ import tags from '@hcengineering/tags'
 export const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
   groupBy: [
     'status',
+    'kind',
     'assignee',
     'priority',
     'component',
@@ -38,6 +39,7 @@ export const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
   ],
   orderBy: [
     ['status', SortingOrder.Ascending],
+    ['kind', SortingOrder.Ascending],
     ['priority', SortingOrder.Ascending],
     ['modifiedOn', SortingOrder.Descending],
     ['createdOn', SortingOrder.Descending],
@@ -95,6 +97,13 @@ export function issueConfig (
       props: { kind: 'list', size: 'small', justify: 'center' },
       displayProps: { key: key + 'status' }
     },
+    // {
+    //   key: 'kind',
+    //   label: task.string.TaskType,
+    //   presenter: task.component.TaskTypePresenter,
+    //   props: { kind: 'list', size: 'small', justify: 'center' },
+    //   displayProps: { key: key + 'kind' }
+    // },
     {
       key: '',
       label: tracker.string.Title,
@@ -230,9 +239,10 @@ export function defineViewlets (builder: Builder): void {
   )
 
   const subIssuesOptions: ViewOptionsModel = {
-    groupBy: ['status', 'assignee', 'priority', 'milestone', 'createdBy', 'modifiedBy'],
+    groupBy: ['status', 'kind', 'assignee', 'priority', 'milestone', 'createdBy', 'modifiedBy'],
     orderBy: [
       ['rank', SortingOrder.Ascending],
+      ['kind', SortingOrder.Ascending],
       ['status', SortingOrder.Ascending],
       ['priority', SortingOrder.Ascending],
       ['modifiedOn', SortingOrder.Descending],
@@ -508,8 +518,9 @@ export function defineViewlets (builder: Builder): void {
       attachTo: tracker.class.Project,
       descriptor: view.viewlet.List,
       viewOptions: {
-        groupBy: ['createdBy'],
+        groupBy: ['type', 'createdBy'],
         orderBy: [
+          ['type', SortingOrder.Descending],
           ['modifiedOn', SortingOrder.Descending],
           ['createdOn', SortingOrder.Descending]
         ],
@@ -524,7 +535,26 @@ export function defineViewlets (builder: Builder): void {
           key: '',
           props: { kind: 'list' }
         },
-        { key: '', displayProps: { grow: true } }
+        { key: '', displayProps: { grow: true } },
+        {
+          key: '',
+          presenter: tracker.component.MembersArrayEditor,
+          sortingKey: 'members',
+          props: { readonly: true, kind: 'list' }
+        },
+        {
+          key: 'type',
+          props: { kind: 'list' }
+        },
+        {
+          key: 'defaultAssignee',
+          props: { kind: 'list' }
+        },
+        {
+          key: 'modifiedOn',
+          presenter: tracker.component.ModificationDatePresenter,
+          displayProps: { fixed: 'right', dividerBefore: true }
+        }
       ]
     },
     tracker.viewlet.ProjectList

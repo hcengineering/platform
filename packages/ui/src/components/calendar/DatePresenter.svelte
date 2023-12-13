@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { IntlString, Asset } from '@hcengineering/platform'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, ComponentType } from 'svelte'
 
   import { DateRangeMode } from '@hcengineering/core'
   import ui from '../../plugin'
@@ -26,7 +26,6 @@
   import DPCalendar from './icons/DPCalendar.svelte'
   import DPCalendarOver from './icons/DPCalendarOver.svelte'
   import { getMonthName } from './internal/DateUtils'
-  import { ComponentType } from 'svelte'
 
   export let value: number | null | undefined
   export let mode: DateRangeMode = DateRangeMode.DATE

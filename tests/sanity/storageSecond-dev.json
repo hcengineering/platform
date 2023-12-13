@@ -26,7 +26,7 @@
         },
         {
           "name": "#platform.notification.logging",
-          "value": "false"
+          "value": "true"
         },
         {
           "name": "#platform.lazy.loading",

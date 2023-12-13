@@ -23,6 +23,7 @@
     ButtonSize,
     IconSize,
     SelectPopup,
+    SelectPopupValueType,
     TooltipAlignment,
     eventToHTMLElement,
     showPopup
@@ -59,19 +60,6 @@
     dispatch('change', newStatus)
   }
 
-  const handleStatusEditorOpened = (event: MouseEvent) => {
-    if (!isEditable) {
-      return
-    }
-
-    showPopup(
-      SelectPopup,
-      { value: statusesInfo, placeholder: tracker.string.SetStatus },
-      eventToHTMLElement(event),
-      changeStatus
-    )
-  }
-
   $: statuses = getStatuses($statusStore.byId, $typeStore, type)
 
   function getStatuses (
@@ -100,16 +88,32 @@
     return current
   }
 
+  let statusesInfo: SelectPopupValueType[]
+
   $: selectedStatus = getSelectedStatus(statuses, value)
   $: selectedStatusLabel = selectedStatus?.name
-  $: statusesInfo = statuses?.map((s) => {
-    return {
-      id: s._id,
-      component: StatusPresenter,
-      props: { value: s, size: 'small' },
-      isSelected: selectedStatus?._id === s._id ?? false
+  $: statusesInfo =
+    statuses?.map((s) => {
+      return {
+        id: s._id,
+        component: StatusPresenter,
+        props: { value: s, size: 'small' },
+        isSelected: selectedStatus?._id === s._id ?? false
+      }
+    }) ?? []
+  const handleStatusEditorOpened = (event: MouseEvent) => {
+    if (!isEditable) {
+      return
     }
-  })
+
+    showPopup(
+      SelectPopup,
+      { value: statusesInfo, placeholder: tracker.string.SetStatus },
+      eventToHTMLElement(event),
+      changeStatus
+    )
+  }
+
   $: smallgap = size === 'inline' || size === 'small'
 </script>
 

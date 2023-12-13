@@ -16,9 +16,12 @@
   import { Ref } from '@hcengineering/core'
   import { IssueStatus, Project } from '@hcengineering/tracker'
   import IssueStatusIcon from './IssueStatusIcon.svelte'
+  import { ProjectType, TaskType } from '@hcengineering/task'
 
   export let value: IssueStatus | undefined
-  export let space: Ref<Project>
+  export let space: Ref<Project> | undefined = undefined
+  export let projectType: Ref<ProjectType> | undefined = undefined
+  export let taskType: Ref<TaskType> | undefined = undefined
   export let size: 'small' | 'medium' = 'small'
   export let kind: 'list-header' | undefined = undefined
   export let colorInherit: boolean = false
@@ -29,8 +32,8 @@
 
 {#if value}
   <div class="flex-presenter" style:color={'inherit'}>
-    {#if !inline && shouldShowAvatar}
-      <IssueStatusIcon {value} {size} {space} on:accent-color />
+    {#if !inline}
+      <IssueStatusIcon {value} {size} {space} on:accent-color {projectType} {taskType} />
     {/if}
     <span
       class="overflow-label"

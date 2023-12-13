@@ -14,30 +14,29 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery, hasResource } from '@hcengineering/presentation'
-  import { Label, Component } from '@hcengineering/ui'
-  import task, { ProjectTypeCategory } from '@hcengineering/task'
-  import setting from '@hcengineering/setting'
-  import IconArrowRight from '../icons/ArrowRight.svelte'
   import { Ref } from '@hcengineering/core'
+  import { createQuery, hasResource } from '@hcengineering/presentation'
+  import setting from '@hcengineering/setting'
+  import task, { ProjectTypeDescriptor } from '@hcengineering/task'
+  import { Component, Icon, IconChevronDown, Label } from '@hcengineering/ui'
 
-  export let category: ProjectTypeCategory | undefined
-  export let categoryId: Ref<ProjectTypeCategory> | undefined
-  let categories: ProjectTypeCategory[] = []
+  export let descriptor: ProjectTypeDescriptor | undefined
+  export let descriptorId: Ref<ProjectTypeDescriptor> | undefined
+  let categories: ProjectTypeDescriptor[] = []
   const query = createQuery()
-  $: query.query(task.class.ProjectTypeCategory, {}, (result) => {
+  $: query.query(task.class.ProjectTypeDescriptor, {}, (result) => {
     categories = result
-    if (categoryId !== undefined) {
-      category = categories.find((p) => p._id === categoryId)
+    if (descriptorId !== undefined) {
+      descriptor = categories.find((p) => p._id === descriptorId)
     }
   })
 
-  $: if (category === undefined && categories.length > 0) {
-    category = categories.filter((f) => hasResource(f.icon))[0]
+  $: if (descriptor === undefined && categories.length > 0) {
+    descriptor = categories.filter((f) => hasResource(f.icon))[0]
   }
 
-  function select (item: ProjectTypeCategory) {
-    category = item
+  function select (item: ProjectTypeDescriptor): void {
+    descriptor = item
   }
 </script>
 
@@ -51,7 +50,7 @@
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
         class="flex-between item"
-        class:selected={f._id === category?._id}
+        class:selected={f._id === descriptor?._id}
         on:click={() => {
           select(f)
         }}
@@ -67,10 +66,15 @@
             <Label label={f.description} />
           </div>
         </div>
-        {#if f._id === category?._id}
-          <div class="caption-color ml-4"><IconArrowRight size={'small'} /></div>
+        {#if f._id === descriptor?._id}
+          <div class="caption-color ml-4">
+            <slot name="tools">
+              <Icon icon={IconChevronDown} size={'small'} />
+            </slot>
+          </div>
         {/if}
       </div>
+      <slot name="content" categoryId={f._id} />
     {/if}
   {/each}
 </div>
@@ -80,8 +84,8 @@
     min-height: 1.75rem;
   }
   .item {
-    padding: 1.25rem 1rem 1.25rem 1.25rem;
-    background-color: var(--theme-button-default);
+    padding: 0.25rem 0.25rem 0.25rem 0.25rem;
+    // background-color: var(--theme-button-default);
     border: 1px solid var(--theme-button-border);
     border-radius: 0.75rem;
     cursor: pointer;

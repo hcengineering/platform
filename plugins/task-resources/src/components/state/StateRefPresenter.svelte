@@ -30,6 +30,8 @@
   export let shrink: number = 0
   export let disabled: boolean = false
 
+  import { selectedTaskTypeStore, selectedTypeStore } from '../../index'
+
   $: state = $statusStore.byId.get(value)
 </script>
 
@@ -37,6 +39,15 @@
   {#if onChange !== undefined && state !== undefined}
     <StateEditor value={state._id} {space} {onChange} {kind} {size} {shouldShowName} {shrink} {disabled} />
   {:else}
-    <StatePresenter value={state} {space} {shouldShowName} {disabled} {shrink} on:accent-color />
+    <StatePresenter
+      value={state}
+      {space}
+      {shouldShowName}
+      {disabled}
+      {shrink}
+      on:accent-color
+      taskType={$selectedTaskTypeStore}
+      projectType={$selectedTypeStore}
+    />
   {/if}
 {/if}

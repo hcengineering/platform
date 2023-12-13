@@ -19,9 +19,8 @@
   import { Button, getPlatformColorForTextDef, showPopup, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
-  import { getTagStyle } from '../utils'
+  import { getTagStyle, TagElementInfo } from '../utils'
   import TagsCategoryPopup from './TagsCategoryPopup.svelte'
-  import { TagElementInfo } from '../utils'
 
   export let targetClass: Ref<Class<Doc>>
   export let category: Ref<TagCategory> | undefined = undefined

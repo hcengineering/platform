@@ -17,10 +17,9 @@
   import type { IntlString } from '@hcengineering/platform'
   import { translate } from '@hcengineering/platform'
   import type { ButtonKind, ButtonSize, TooltipAlignment } from '@hcengineering/ui'
-  import { showPopup, Button } from '@hcengineering/ui'
+  import { showPopup, Button, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation, { SpacesMultiPopup } from '..'
-  import { themeStore } from '@hcengineering/ui'
 
   export let selectedItems: Ref<Space>[] = []
   export let _classes: Ref<Class<Space>>[] = []

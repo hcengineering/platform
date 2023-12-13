@@ -67,7 +67,7 @@
   $: resultOptions = { ...options, lookup, ...(orderBy !== undefined ? { sort: { [orderBy[0]]: orderBy[1] } } : {}) }
 
   let resultQuery: DocumentQuery<Doc> = query
-  $: getResultQuery(query, viewOptionsConfig, viewOptions).then((p) => {
+  $: void getResultQuery(query, viewOptionsConfig, viewOptions).then((p) => {
     resultQuery = mergeQueries(p, query)
   })
 

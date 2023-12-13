@@ -18,10 +18,9 @@
   import type { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import type { Issue, IssueStatus, Project } from '@hcengineering/tracker'
-  import { resolvedLocationStore } from '@hcengineering/ui'
+  import { resolvedLocationStore, IModeSelector } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
-  import { IModeSelector } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import IssuesView from '../issues/IssuesView.svelte'
 

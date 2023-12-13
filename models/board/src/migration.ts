@@ -13,19 +13,21 @@
 // limitations under the License.
 //
 
+import { boardId } from '@hcengineering/board'
 import { type Ref, TxOperations } from '@hcengineering/core'
 import {
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient,
-  createOrUpdate
+  createOrUpdate,
+  tryMigrate
 } from '@hcengineering/model'
-import core from '@hcengineering/model-core'
-import { createProjectType, createSequence } from '@hcengineering/model-task'
-import tags from '@hcengineering/model-tags'
+import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
+import { createProjectType, createSequence, fixTaskTypes } from '@hcengineering/model-task'
+import tags from '@hcengineering/tags'
 import task, { type ProjectType } from '@hcengineering/task'
-import board from './plugin'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
+import board from './plugin'
 
 async function createSpace (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(core.class.Space, {
@@ -54,27 +56,51 @@ async function createDefaultProjectType (tx: TxOperations): Promise<Ref<ProjectT
     tx,
     {
       name: 'Default board',
-      category: board.category.BoardType,
-      description: ''
+      descriptor: board.descriptors.BoardType,
+      description: '',
+      tasks: []
     },
     [
       {
-        color: PaletteColorIndexes.Blueberry,
-        name: 'To do',
-        category: task.statusCategory.Active,
-        ofAttribute: board.attribute.State
-      },
-      {
-        color: PaletteColorIndexes.Arctic,
-        name: 'Done',
-        category: task.statusCategory.Active,
-        ofAttribute: board.attribute.State
-      },
-      {
-        color: PaletteColorIndexes.Grass,
-        name: 'Completed',
-        category: board.statusCategory.Completed,
-        ofAttribute: board.attribute.State
+        _id: board.taskType.Card,
+        descriptor: board.descriptors.Card,
+        name: 'Card',
+        ofClass: board.class.Card,
+        targetClass: board.class.Card,
+        statusClass: core.class.Status,
+        kind: 'task',
+        factory: [
+          {
+            color: PaletteColorIndexes.Coin,
+            name: 'Unstarted',
+            category: task.statusCategory.UnStarted,
+            ofAttribute: board.attribute.State
+          },
+          {
+            color: PaletteColorIndexes.Blueberry,
+            name: 'To do',
+            category: task.statusCategory.Active,
+            ofAttribute: board.attribute.State
+          },
+          {
+            color: PaletteColorIndexes.Arctic,
+            name: 'Done',
+            category: task.statusCategory.Active,
+            ofAttribute: board.attribute.State
+          },
+          {
+            color: PaletteColorIndexes.Grass,
+            name: 'Completed',
+            category: board.statusCategory.Completed,
+            ofAttribute: board.attribute.State
+          }
+        ],
+        statusCategories: [
+          task.statusCategory.UnStarted,
+          task.statusCategory.Active,
+          task.statusCategory.Won,
+          task.statusCategory.Lost
+        ]
       }
     ],
     board.template.DefaultBoard
@@ -100,7 +126,44 @@ async function createDefaults (tx: TxOperations): Promise<void> {
 }
 
 export const boardOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (client: MigrationClient): Promise<void> {
+    await tryMigrate(client, boardId, [
+      {
+        state: 'fix-category-descriptors',
+        func: async (client) => {
+          await client.update(
+            DOMAIN_SPACE,
+            { _class: task.class.ProjectType, category: 'board:category:BoardType' },
+            {
+              $set: { descriptor: board.descriptors.BoardType },
+              $unset: { category: 1 }
+            }
+          )
+        }
+      },
+      {
+        state: 'fixTaskStatus',
+        func: async (client): Promise<void> => {
+          await fixTaskTypes(client, board.descriptors.BoardType, async () => [
+            {
+              name: 'Card',
+              descriptor: board.descriptors.Card,
+              ofClass: board.class.Card,
+              targetClass: board.class.Card,
+              statusCategories: [
+                task.statusCategory.UnStarted,
+                task.statusCategory.Active,
+                task.statusCategory.Won,
+                task.statusCategory.Lost
+              ],
+              statusClass: core.class.Status,
+              kind: 'task'
+            }
+          ])
+        }
+      }
+    ])
+  },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const ops = new TxOperations(client, core.account.System)
     await createDefaults(ops)

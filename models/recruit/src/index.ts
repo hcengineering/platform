@@ -316,7 +316,7 @@ export function createModel (builder: Builder): void {
               label: recruit.string.Applications,
               createLabel: recruit.string.ApplicationCreateLabel,
               createComponent: recruit.component.CreateApplication,
-              category: recruit.category.VacancyTypeCategories,
+              descriptor: recruit.descriptors.VacancyType,
               descriptors: [
                 view.viewlet.Table,
                 view.viewlet.List,
@@ -1750,17 +1750,28 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    task.class.ProjectTypeCategory,
+    task.class.ProjectTypeDescriptor,
     core.space.Model,
     {
-      name: recruit.string.Vacancies,
+      name: recruit.string.RecruitApplication,
       description: recruit.string.ManageVacancyStatuses,
       icon: recruit.component.TemplatesIcon,
       editor: recruit.component.VacancyTemplateEditor,
-      attachedToClass: recruit.class.Vacancy,
-      statusClass: core.class.Status,
-      statusCategories: [task.statusCategory.Active, task.statusCategory.Won, task.statusCategory.Lost]
+      baseClass: recruit.class.Vacancy
     },
-    recruit.category.VacancyTypeCategories
+    recruit.descriptors.VacancyType
+  )
+
+  builder.createDoc(
+    task.class.TaskTypeDescriptor,
+    core.space.Model,
+    {
+      baseClass: recruit.class.Applicant,
+      allowCreate: true,
+      description: recruit.string.Application,
+      icon: recruit.icon.Application,
+      name: recruit.string.Application
+    },
+    recruit.descriptors.Application
   )
 }

@@ -47,7 +47,7 @@
 
   let currentProject: Project | undefined
 
-  $: currentProject = $activeProjects.get(space)
+  $: currentProject = $activeProjects.get(space) as Project
   $: issueName = currentProject && issue && `${currentProject.identifier}-${issue.number}`
 
   const limit: number = 350

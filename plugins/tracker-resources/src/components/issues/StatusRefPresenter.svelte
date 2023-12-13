@@ -17,6 +17,7 @@
   import { Project } from '@hcengineering/tracker'
   import { statusStore } from '@hcengineering/view-resources'
   import StatusPresenter from './StatusPresenter.svelte'
+  import { selectedTaskTypeStore } from '@hcengineering/task-resources'
 
   export let value: Ref<Status> | undefined
   export let space: Ref<Project>
@@ -29,5 +30,14 @@
 </script>
 
 {#if value}
-  <StatusPresenter {space} value={statusValue} {size} {kind} {colorInherit} {accent} on:accent-color />
+  <StatusPresenter
+    {space}
+    value={statusValue}
+    {size}
+    {kind}
+    {colorInherit}
+    {accent}
+    on:accent-color
+    taskType={$selectedTaskTypeStore}
+  />
 {/if}

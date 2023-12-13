@@ -20,7 +20,7 @@
   export let label: IntlString
   export let params: Record<string, any> = {}
 
-  let _value: string | undefined = undefined
+  let _value: string | undefined
 
   $: if (label !== undefined) {
     translate(label, params ?? {}, $themeStore.language)

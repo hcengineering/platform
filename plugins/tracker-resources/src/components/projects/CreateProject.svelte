@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { AccountArrayEditor, AssigneeBox } from '@hcengineering/contact-resources'
-  import core, { Account, DocumentUpdate, Ref, generateId, getCurrentAccount } from '@hcengineering/core'
+  import core, { Account, Data, DocumentUpdate, Ref, generateId, getCurrentAccount } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
   import task, { ProjectType } from '@hcengineering/task'
@@ -42,6 +42,7 @@
   import tracker from '../../plugin'
   import StatusSelector from '../issues/StatusSelector.svelte'
   import ChangeIdentity from './ChangeIdentity.svelte'
+  import { typeStore } from '@hcengineering/task-resources'
 
   export let project: Project | undefined = undefined
 
@@ -71,7 +72,7 @@
 
   $: isNew = !project
 
-  async function handleSave () {
+  async function handleSave (): Promise<void> {
     if (isNew) {
       await createProject()
     } else {
@@ -81,7 +82,7 @@
 
   let identifier: string = project?.identifier ?? 'TSK'
 
-  function getProjectData () {
+  function getProjectData (): Omit<Data<Project>, 'type'> {
     return {
       name,
       description,
@@ -98,7 +99,7 @@
     }
   }
 
-  async function updateProject () {
+  async function updateProject (): Promise<void> {
     if (!project) {
       return
     }
@@ -154,10 +155,16 @@
 
   let typeId: Ref<ProjectType> | undefined = project?.type
 
-  async function createProject () {
+  $: typeType = typeId !== undefined ? $typeStore.get(typeId) : undefined
+
+  $: if (defaultStatus === undefined && typeType !== undefined) {
+    defaultStatus = typeType.statuses[0]?._id
+  }
+
+  async function createProject (): Promise<void> {
     const projectId = generateId<Project>()
     const projectData = getProjectData()
-    if (typeId !== undefined) {
+    if (typeId !== undefined && typeType !== undefined) {
       const ops = client
         .apply(projectId)
         .notMatch(tracker.class.Project, { identifier: projectData.identifier.toUpperCase() })
@@ -168,6 +175,9 @@
       isSaving = false
 
       if (succeeded) {
+        // Add vacancy mixin
+        await client.createMixin(projectId, tracker.class.Project, core.space.Space, typeType.targetClass, {})
+
         close(projectId)
       } else {
         changeIdentity(changeIdentityRef)
@@ -175,17 +185,18 @@
     }
   }
 
-  function chooseIcon (ev: MouseEvent) {
+  function chooseIcon (ev: MouseEvent): void {
     const icons = [tracker.icon.Home, tracker.icon.RedCircle]
-    showPopup(IconPicker, { icon, color, icons }, 'top', (result) => {
+    const update = (result: any) => {
       if (result !== undefined && result !== null) {
         icon = result.icon
         color = result.color
         isColorSelected = true
       }
-    })
+    }
+    showPopup(IconPicker, { icon, color, icons }, 'top', update, update)
   }
-  function changeIdentity (element: HTMLElement) {
+  function changeIdentity (element: HTMLElement): void {
     showPopup(ChangeIdentity, { identifier, projectsIdentifiers }, element, (result) => {
       if (result != null) {
         identifier = result.toLocaleUpperCase()
@@ -193,7 +204,7 @@
     })
   }
 
-  function close (id?: Ref<Project>) {
+  function close (id?: Ref<Project>): void {
     dispatch('close', id)
   }
 
@@ -203,6 +214,7 @@
 
   function handleTypeChange (evt: CustomEvent<Ref<ProjectType>>): void {
     typeId = evt.detail
+    defaultStatus = undefined
   }
 
   $: identifier = identifier.toLocaleUpperCase().replaceAll('-', '_').replaceAll(' ', '_').substring(0, 5)
@@ -230,7 +242,7 @@
       <Component
         is={task.component.ProjectTypeSelector}
         props={{
-          categories: [tracker.category.ProjectTypeCategory],
+          descriptors: [tracker.descriptors.ProjectType],
           type: typeId,
           disabled: !isNew,
           focusIndex: 4,

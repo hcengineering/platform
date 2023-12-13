@@ -30,7 +30,8 @@ import {
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
-import { Action, ViewletDescriptor } from '@hcengineering/view'
+import { Action, IconProps, ViewletDescriptor } from '@hcengineering/view'
+import { NotificationType } from '../../notification/lib/index'
 
 /**
  * @public
@@ -47,6 +48,7 @@ export interface Project extends Space {
  * @public
  */
 export interface Task extends AttachedDoc, DocWithRank {
+  kind: Ref<TaskType>
   status: Ref<Status>
   isDone?: boolean
   number: number
@@ -84,26 +86,96 @@ export interface Sequence extends Doc {
   sequence: number
 }
 
-export interface ProjectStatus {
+export interface ProjectStatus extends IconProps {
   _id: Ref<Status>
-  // Optional color
-  color?: number
+  taskType: Ref<TaskType>
 }
 
+/**
+ * @public
+ */
+export type TaskTypeKind = 'task' | 'subtask' | 'both'
+
+/**
+ * @public
+ */
+export interface TaskTypeDescriptor extends Doc {
+  name: IntlString
+  description: IntlString
+  icon: Asset
+  baseClass: Ref<Class<Task>>
+
+  // If specified, will allow to be created by users, system type overwise
+  allowCreate: boolean
+}
+
+/**
+ * @public
+ */
+export interface TaskType extends Doc, IconProps {
+  parent: Ref<ProjectType>
+  descriptor: Ref<TaskTypeDescriptor>
+
+  name: string
+
+  kind: TaskTypeKind
+  // Specify if task is allowed to be used as subtask of following tasks.
+  allowedAsChildOf?: Ref<TaskType>[]
+
+  ofClass: Ref<Class<Task>> // Base class for task
+  targetClass: Ref<Class<Task>> // Class or Mixin mixin to hold all user defined attributes.
+
+  // Allowed statuses and ordering
+  statuses: Ref<Status>[]
+  statusClass: Ref<Class<Status>>
+  statusCategories: Ref<StatusCategory>[]
+}
+
+/**
+ * @public
+ *
+ * A a mixin for Class bind to taskType.
+ */
+export interface TaskTypeClass extends Class<TaskType> {
+  taskType: Ref<TaskType>
+  projectType: Ref<ProjectType>
+}
+
+/**
+ * @public
+ *
+ * A a mixin for Class bind to taskType.
+ */
+export interface ProjectTypeClass extends Class<ProjectType> {
+  projectType: Ref<ProjectType>
+}
+/**
+ * @public
+ *
+ * Define a user customized project type.
+ */
 export interface ProjectType extends Space {
   shortDescription?: string
-  category: Ref<ProjectTypeCategory>
+  descriptor: Ref<ProjectTypeDescriptor>
+  tasks: Ref<TaskType>[]
+
+  // Color and extra options per project type.
+  // All statuses per project has same color.
   statuses: ProjectStatus[]
+
+  // A mixin for project
+  targetClass: Ref<Class<Project>>
 }
 
-export interface ProjectTypeCategory extends Doc {
+/**
+ * @public
+ */
+export interface ProjectTypeDescriptor extends Doc {
   name: IntlString
   description: IntlString
   icon: AnyComponent
   editor?: AnyComponent
-  attachedToClass: Ref<Class<Project>>
-  statusClass: Ref<Class<Status>>
-  statusCategories: Ref<StatusCategory>[]
+  baseClass: Ref<Class<Task>>
 }
 
 /**
@@ -141,7 +213,9 @@ const task = plugin(taskId, {
     Move: '' as Ref<Action>
   },
   mixin: {
-    KanbanCard: '' as Ref<Mixin<KanbanCard>>
+    KanbanCard: '' as Ref<Mixin<KanbanCard>>,
+    TaskTypeClass: '' as Ref<Mixin<TaskTypeClass>>,
+    ProjectTypeClass: '' as Ref<Mixin<ProjectTypeClass>>
   },
   attribute: {
     State: '' as Ref<Attribute<Status>>
@@ -170,15 +244,18 @@ const task = plugin(taskId, {
     AssignedToMe: '' as IntlString,
     Dashboard: '' as IntlString,
     ProjectTypes: '' as IntlString,
+    TaskType: '' as IntlString,
     ProjectType: '' as IntlString
   },
   class: {
-    Task: '' as Ref<Class<Task>>,
     Sequence: '' as Ref<Class<Sequence>>,
     TodoItem: '' as Ref<Class<TodoItem>>,
+    ProjectTypeDescriptor: '' as Ref<Class<ProjectTypeDescriptor>>,
     ProjectType: '' as Ref<Class<ProjectType>>,
-    ProjectTypeCategory: '' as Ref<Class<ProjectTypeCategory>>,
-    Project: '' as Ref<Class<Project>>
+    Project: '' as Ref<Class<Project>>,
+    TaskTypeDescriptor: '' as Ref<Class<TaskTypeDescriptor>>,
+    TaskType: '' as Ref<Class<TaskType>>,
+    Task: '' as Ref<Class<Task>>
   },
   viewlet: {
     Kanban: '' as Ref<ViewletDescriptor>,
@@ -203,6 +280,7 @@ const task = plugin(taskId, {
     Statuses: '' as Ref<Space>
   },
   statusCategory: {
+    UnStarted: '' as Ref<StatusCategory>,
     Active: '' as Ref<StatusCategory>,
     Won: '' as Ref<StatusCategory>,
     Lost: '' as Ref<StatusCategory>
@@ -212,6 +290,10 @@ const task = plugin(taskId, {
     ProjectTypeSelector: '' as AnyComponent,
     TodoItemsPopup: '' as AnyComponent,
     CreateStatePopup: '' as AnyComponent
+  },
+  ids: {
+    AssigneedNotification: '' as Ref<NotificationType>,
+    ManageProjects: '' as Ref<Doc>
   },
   extensions: {
     ProjectEditorExtension: '' as ComponentExtensionId

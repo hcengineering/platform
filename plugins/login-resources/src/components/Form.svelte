@@ -20,13 +20,12 @@
     StylishEdit,
     Label,
     Button,
-    deviceOptionsStore as deviceInfo
+    deviceOptionsStore as deviceInfo,
+    themeStore
   } from '@hcengineering/ui'
   import StatusControl from './StatusControl.svelte'
-  import { OK, Status, Severity } from '@hcengineering/platform'
+  import { OK, Status, Severity, translate } from '@hcengineering/platform'
   import type { IntlString } from '@hcengineering/platform'
-  import { translate } from '@hcengineering/platform'
-  import { themeStore } from '@hcengineering/ui'
 
   import login from '../plugin'
   import { onMount } from 'svelte'

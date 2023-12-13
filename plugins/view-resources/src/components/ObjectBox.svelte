@@ -14,19 +14,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, FindOptions, Hierarchy, Ref } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, FindOptions, Hierarchy, Ref, mergeQueries } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
-  import presentation, { getClient, ObjectCreate } from '@hcengineering/presentation'
+  import presentation, { ObjectCreate, getClient } from '@hcengineering/presentation'
   import {
     ActionIcon,
     AnySvelteComponent,
     Button,
     ButtonKind,
     ButtonSize,
-    getEventPositionElement,
-    getFocusManager,
     Label,
     LabelAndProps,
+    getEventPositionElement,
+    getFocusManager,
     showPanel,
     showPopup
   } from '@hcengineering/ui'
@@ -58,6 +58,8 @@
   export let searchField: string = 'name'
   export let docProps: Record<string, any> = {}
   export let shouldShowAvatar = false
+  export let autoSelect = false
+  export let findDefault: (() => Promise<Doc | undefined>) | undefined = undefined
 
   export let create: ObjectCreate | undefined = undefined
 
@@ -68,11 +70,33 @@
 
   const client = getClient()
 
-  async function updateSelected (value: Ref<Doc> | null | undefined) {
-    selected = value ? await client.findOne(_class, { _id: value }) : undefined
+  async function updateSelected (
+    _value: Ref<Doc> | null | undefined,
+    docQuery: DocumentQuery<Doc> | undefined = undefined
+  ): Promise<void> {
+    selected = _value ? await client.findOne(_class, { ...(docQuery ?? {}), _id: _value }) : undefined
+
+    if (typeof docQuery?._id === 'object' && _value != null) {
+      const merged = mergeQueries({ _id: _value }, docQuery)
+      if (typeof merged._id === 'object' && Object.keys(merged._id).length === 0) {
+        // We do not have match.
+        selected = undefined
+      }
+    }
+
+    if (selected === undefined && autoSelect) {
+      selected = (await findDefault?.()) ?? (await client.findOne(_class, { ...(docQuery ?? {}) }))
+      if (selected !== undefined) {
+        value = selected._id ?? undefined
+        dispatch('change', value)
+      }
+    }
+    if (selected !== undefined) {
+      dispatch('object', selected)
+    }
   }
 
-  $: updateSelected(value)
+  $: void updateSelected(value, docQuery)
 
   const mgr = getFocusManager()
 

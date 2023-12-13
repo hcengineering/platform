@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Board, Card } from '@hcengineering/board'
-  import { Ref } from '@hcengineering/core'
+  import { Card } from '@hcengineering/board'
+  import { Ref, Space } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { DropdownLabels, DropdownTextItem, themeStore } from '@hcengineering/ui'
@@ -8,7 +8,7 @@
 
   export let object: Card
   export let label: IntlString
-  export let selected: Ref<Board>
+  export let selected: Ref<Space>
 
   let spaces: DropdownTextItem[] = []
   const spacesQuery = createQuery()

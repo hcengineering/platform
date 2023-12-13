@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { ActivityMessage, ActivityMessageViewlet } from '@hcengineering/activity'
 import type { Person } from '@hcengineering/contact'
 import type {
   Account,
@@ -29,8 +30,7 @@ import { NotificationType } from '@hcengineering/notification'
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
-import { AnyComponent, ResolvedLocation } from '@hcengineering/ui'
-import { ActivityMessage, ActivityMessageViewlet } from '@hcengineering/activity'
+import { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui'
 import { Action } from '@hcengineering/view'
 
 /**

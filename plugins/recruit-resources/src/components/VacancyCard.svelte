@@ -23,7 +23,7 @@
   import { NavLink } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import VacancyIcon from './icons/Vacancy.svelte'
-  import notification from '@hcengineering/notification'
+  import chunter from '@hcengineering/chunter'
 
   export let vacancy: WithLookup<Vacancy> | undefined
   export let disabled: boolean = false
@@ -97,7 +97,7 @@
     <div class="footer">
       <div class="flex-row-center gap-2">
         <Component
-          is={notification.component.ChatMessagesPresenter}
+          is={chunter.component.ChatMessagesPresenter}
           props={{ value: vacancy, size: 'small', showCounter: true }}
         />
         <Component

@@ -14,70 +14,67 @@
 //
 
 import { getCategories } from '@anticrm/skillset'
-import core, { type Ref, TxOperations } from '@hcengineering/core'
+import core, { TxOperations, type Ref } from '@hcengineering/core'
 import {
+  createOrUpdate,
+  tryMigrate,
+  tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
-  type MigrationUpgradeClient,
-  createOrUpdate,
-  tryUpgrade
+  type MigrationUpgradeClient
 } from '@hcengineering/model'
 import tags, { type TagCategory } from '@hcengineering/model-tags'
-import { createProjectType, createSequence } from '@hcengineering/model-task'
-import tracker from '@hcengineering/model-tracker'
+import { createProjectType, createSequence, fixTaskTypes } from '@hcengineering/model-task'
 import { recruitId } from '@hcengineering/recruit'
 import task, { type ProjectType } from '@hcengineering/task'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import recruit from './plugin'
+import { DOMAIN_SPACE } from '@hcengineering/model-core'
 
 export const recruitOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (client: MigrationClient): Promise<void> {
+    await tryMigrate(client, recruitId, [
+      {
+        state: 'fix-category-descriptors',
+        func: async (client) => {
+          await client.update(
+            DOMAIN_SPACE,
+            { _class: task.class.ProjectType, category: 'recruit:category:VacancyTypeCategories' },
+            {
+              $set: { descriptor: recruit.descriptors.VacancyType },
+              $unset: { category: 1 }
+            }
+          )
+        }
+      },
+      {
+        state: 'fixTaskStatus',
+        func: async (client): Promise<void> => {
+          await fixTaskTypes(client, recruit.descriptors.VacancyType, async () => [
+            {
+              name: 'Applicant',
+              descriptor: recruit.descriptors.Application,
+              ofClass: recruit.class.Applicant,
+              targetClass: recruit.class.Applicant,
+              statusCategories: [
+                task.statusCategory.UnStarted,
+                task.statusCategory.Active,
+                task.statusCategory.Won,
+                task.statusCategory.Lost
+              ],
+              statusClass: core.class.Status,
+              kind: 'task'
+            }
+          ])
+        }
+      }
+    ])
+  },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createDefaults(tx)
 
     await tryUpgrade(client, recruitId, [
-      {
-        state: 'related-targets',
-        func: async (client): Promise<void> => {
-          const ops = new TxOperations(client, core.account.ConfigUser)
-          await ops.createDoc(tracker.class.RelatedIssueTarget, core.space.Configuration, {
-            rule: {
-              kind: 'classRule',
-              ofClass: recruit.class.Vacancy
-            }
-          })
-
-          await ops.createDoc(tracker.class.RelatedIssueTarget, core.space.Configuration, {
-            rule: {
-              kind: 'classRule',
-              ofClass: recruit.class.Applicant
-            }
-          })
-        }
-      },
-      {
-        state: 'wrong-categories',
-        func: async (client): Promise<void> => {
-          const ops = new TxOperations(client, core.account.System)
-          while (true) {
-            const docs = await ops.findAll(
-              tags.class.TagElement,
-              {
-                targetClass: recruit.mixin.Candidate,
-                category: { $in: [tracker.category.Other, 'document:category:Other' as Ref<TagCategory>] }
-              },
-              { limit: 1000 }
-            )
-            for (const d of docs) {
-              await ops.update(d, { category: recruit.category.Other })
-            }
-            if (docs.length === 0) {
-              break
-            }
-          }
-        }
-      },
       {
         state: 'remove-members',
         func: async (client): Promise<void> => {
@@ -137,36 +134,60 @@ async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<Proje
     tx,
     {
       name: 'Default vacancy',
-      category: recruit.category.VacancyTypeCategories,
-      description: ''
+      descriptor: recruit.descriptors.VacancyType,
+      description: '',
+      tasks: []
     },
     [
       {
-        color: PaletteColorIndexes.Coin,
-        name: 'HR Interview',
-        ofAttribute: recruit.attribute.State,
-        category: task.statusCategory.Active
-      },
-      {
-        color: PaletteColorIndexes.Cerulean,
-        name: 'Technical Interview',
-        ofAttribute: recruit.attribute.State,
-        category: task.statusCategory.Active
-      },
-      {
-        color: PaletteColorIndexes.Waterway,
-        name: 'Test task',
-        ofAttribute: recruit.attribute.State,
-        category: task.statusCategory.Active
-      },
-      {
-        color: PaletteColorIndexes.Grass,
-        name: 'Offer',
-        ofAttribute: recruit.attribute.State,
-        category: task.statusCategory.Active
-      },
-      { name: 'Won', ofAttribute: recruit.attribute.State, category: task.statusCategory.Won },
-      { name: 'Lost', ofAttribute: recruit.attribute.State, category: task.statusCategory.Lost }
+        _id: recruit.taskTypes.Applicant,
+        name: 'Applicant',
+        descriptor: recruit.descriptors.Application,
+        ofClass: recruit.class.Applicant,
+        targetClass: recruit.class.Applicant,
+        statusCategories: [
+          task.statusCategory.UnStarted,
+          task.statusCategory.Active,
+          task.statusCategory.Won,
+          task.statusCategory.Lost
+        ],
+        statusClass: core.class.Status,
+        kind: 'task',
+        factory: [
+          {
+            color: PaletteColorIndexes.Coin,
+            name: 'Backlog',
+            ofAttribute: recruit.attribute.State,
+            category: task.statusCategory.UnStarted
+          },
+          {
+            color: PaletteColorIndexes.Coin,
+            name: 'HR Interview',
+            ofAttribute: recruit.attribute.State,
+            category: task.statusCategory.Active
+          },
+          {
+            color: PaletteColorIndexes.Cerulean,
+            name: 'Technical Interview',
+            ofAttribute: recruit.attribute.State,
+            category: task.statusCategory.Active
+          },
+          {
+            color: PaletteColorIndexes.Waterway,
+            name: 'Test task',
+            ofAttribute: recruit.attribute.State,
+            category: task.statusCategory.Active
+          },
+          {
+            color: PaletteColorIndexes.Grass,
+            name: 'Offer',
+            ofAttribute: recruit.attribute.State,
+            category: task.statusCategory.Active
+          },
+          { name: 'Won', ofAttribute: recruit.attribute.State, category: task.statusCategory.Won },
+          { name: 'Lost', ofAttribute: recruit.attribute.State, category: task.statusCategory.Lost }
+        ]
+      }
     ],
     recruit.template.DefaultVacancy
   )

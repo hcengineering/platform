@@ -72,7 +72,7 @@
             allowDeselect
             kind={'list'}
             on:change={(evt) => {
-              client.update(target, { target: evt.detail || null })
+              void client.diffUpdate(target, { target: evt.detail || null })
             }}
           />
         </FixedColumn>
@@ -81,7 +81,7 @@
             <Button
               icon={IconDelete}
               on:click={() => {
-                client.remove(target)
+                void client.remove(target)
               }}
             />
           </div>
@@ -113,7 +113,7 @@
           allowDeselect
           kind={'list'}
           on:change={(evt) => {
-            client.createDoc(tracker.class.RelatedIssueTarget, space, {
+            void client.createDoc(tracker.class.RelatedIssueTarget, space, {
               target: evt.detail || null,
               rule: {
                 kind: 'spaceRule',

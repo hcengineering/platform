@@ -77,6 +77,7 @@ import RelationsPopup from './components/RelationsPopup.svelte'
 import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
 import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
+import MembersArrayEditor from './components/projects/MembersArrayEditor.svelte'
 import {
   getIssueId,
   getIssueTitle,
@@ -227,7 +228,7 @@ async function editWorkflowStatuses (project: Project): Promise<void> {
   loc.path[3] = settingId
   loc.path[4] = 'statuses'
   loc.query = {
-    categoryId: tracker.category.ProjectTypeCategory,
+    descriptorId: tracker.descriptors.ProjectType,
     typeId: project.type
   }
   navigate(loc)
@@ -508,7 +509,8 @@ export default async (): Promise<Resources> => ({
     IssueStatusIcon,
     MilestoneStatusIcon,
     PriorityIconPresenter,
-    IssueSearchIcon
+    IssueSearchIcon,
+    MembersArrayEditor
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>

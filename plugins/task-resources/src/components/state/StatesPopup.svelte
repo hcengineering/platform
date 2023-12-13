@@ -14,17 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { IdMap, Ref, Status, StatusCategory, toIdMap } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { IdMap, Ref, Status } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
   import task, { Project, ProjectType } from '@hcengineering/task'
-  import {
-    ColorDefinition,
-    getColorNumberByText,
-    getPlatformColorDef,
-    resizeObserver,
-    themeStore
-  } from '@hcengineering/ui'
-  import { statusStore } from '@hcengineering/view-resources'
+  import { resizeObserver } from '@hcengineering/ui'
+  import { ObjectPresenter, statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import { typeStore } from '../..'
 
@@ -37,19 +31,6 @@
         .filter((p) => p !== undefined) as Status[]) ?? []
     : []
   const dispatch = createEventDispatcher()
-
-  function getColor (state: Status, type: ProjectType | undefined, categories: IdMap<StatusCategory>): ColorDefinition {
-    const category = state.category ? categories.get(state.category) : undefined
-    const targetColor = type?.statuses?.find((p) => p._id === state._id)?.color ?? state.color ?? category?.color
-    return getPlatformColorDef(targetColor ?? getColorNumberByText(state.name), $themeStore.dark)
-  }
-
-  let categories: IdMap<StatusCategory> = new Map()
-
-  const q = createQuery()
-  q.query(core.class.StatusCategory, {}, (res) => {
-    categories = toIdMap(res)
-  })
 
   $: getType(space, $typeStore)
 
@@ -71,15 +52,20 @@
   <div class="scroll">
     <div class="box">
       {#each states as state}
-        {@const color = getColor(state, type, categories)}
         <button
           class="menu-item"
           on:click={() => {
             dispatch('close', state)
           }}
         >
-          <div class="color" style:background-color={color.color} />
-          <span class="label">{state.name}</span>
+          <ObjectPresenter
+            _class={state._class}
+            objectId={state._id}
+            value={state}
+            props={{ projectType: type?._id }}
+          />
+          <!-- <div class="color" style:background-color={color.color} />
+          <span class="label">{state.name}</span> -->
         </button>
       {/each}
     </div>

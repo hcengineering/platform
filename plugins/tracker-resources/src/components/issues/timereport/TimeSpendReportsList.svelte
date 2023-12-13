@@ -22,9 +22,9 @@
     eventToHTMLElement,
     getEventPositionElement,
     ListView,
-    showPopup
+    showPopup,
+    DatePresenter
   } from '@hcengineering/ui'
-  import { DatePresenter } from '@hcengineering/ui'
   import { ContextMenu, FixedColumn, ListSelectionProvider } from '@hcengineering/view-resources'
   import { getIssueId } from '../../../issues'
   import tracker from '../../../plugin'

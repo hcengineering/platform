@@ -54,6 +54,8 @@
     "ActiveStates": "Активные статусы",
     "DoneStatesWon": "Завершено / Выиграно",
     "DoneStatesLost": "Завершено / Потеряно",
+    "StateBacklog": "Пул задач",
+    "StateActive": "Активные",
     "AllStates": "Все статусы",
     "DoneStates": "Завершенные статусы",
     "States": "Статусы",    
@@ -77,6 +79,8 @@
     "ProjectType": "Тип проекта",
     "ProjectTypes": "Типы проектов",
     "StatusChange": "Статус изменен",
-    "TaskCreated": "Создана задача"
+    "TaskCreated": "Создана задача",
+    "TaskType": "Тип задачи",
+    "ManageProjects": "Управление проектами"
   }
 }

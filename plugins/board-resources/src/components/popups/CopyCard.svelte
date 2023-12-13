@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
   import { Label, Status as StatusControl, TextArea } from '@hcengineering/ui'
-  import { Class, Client, Doc, Ref } from '@hcengineering/core'
+  import { Class, Client, Doc, Ref, generateId, AttachedData } from '@hcengineering/core'
   import { getResource, OK, Resource, Status } from '@hcengineering/platform'
   import { Card as Popup, getClient } from '@hcengineering/presentation'
   import { Card } from '@hcengineering/board'
@@ -10,7 +10,6 @@
   import SpaceSelect from '../selectors/SpaceSelect.svelte'
   import StateSelect from '../selectors/StateSelect.svelte'
   import RankSelect from '../selectors/RankSelect.svelte'
-  import { generateId, AttachedData } from '@hcengineering/core'
   import task from '@hcengineering/task'
 
   export let value: Card

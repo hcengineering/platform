@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { Employee } from '@hcengineering/contact'
+  import contact, { Employee } from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
 
-  import contact from '@hcengineering/contact'
   import { Component } from '@hcengineering/ui'
   import board from '../plugin'
 

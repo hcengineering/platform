@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import chunter, { getDirectChannel } from '@hcengineering/chunter'
-  import { Employee, PersonAccount } from '@hcengineering/contact'
+  import contact, { Employee, PersonAccount } from '@hcengineering/contact'
   import { Class, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
   import { DocUpdates } from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
@@ -32,7 +32,6 @@
     Separator
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import contact from '@hcengineering/contact'
   import { UsersPopup } from '@hcengineering/contact-resources'
 
   import notification from '../plugin'

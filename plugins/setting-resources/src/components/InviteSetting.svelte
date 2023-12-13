@@ -35,7 +35,7 @@
     }
   })
 
-  async function setInviteSettings () {
+  async function setInviteSettings (): Promise<void> {
     const newSettings = {
       expirationTime: expTime,
       emailMask: mask,

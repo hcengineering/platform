@@ -16,11 +16,10 @@
   import type { Comment } from '@hcengineering/chunter'
   import type { AttachedData, TxCreateDoc } from '@hcengineering/core'
   import { getClient, MessageViewer } from '@hcengineering/presentation'
-  import { AttachmentDocList } from '@hcengineering/attachment-resources'
+  import { AttachmentDocList, AttachmentRefInput } from '@hcengineering/attachment-resources'
   import { Button } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import chunter from '../../plugin'
-  import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import { LinkPresenter } from '@hcengineering/view-resources'
 
   export let tx: TxCreateDoc<Comment>

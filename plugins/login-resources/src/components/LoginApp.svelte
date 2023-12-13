@@ -14,11 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Popup, Scroller, deviceOptionsStore as deviceInfo, location, ticker } from '@hcengineering/ui'
+  import { Popup, Scroller, deviceOptionsStore as deviceInfo, location, ticker, themeStore } from '@hcengineering/ui'
 
   import { getMetadata } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
-  import { themeStore } from '@hcengineering/ui'
   import workbench from '@hcengineering/workbench'
   import { onDestroy } from 'svelte'
   import Confirmation from './Confirmation.svelte'

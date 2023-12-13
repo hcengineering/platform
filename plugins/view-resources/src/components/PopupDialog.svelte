@@ -18,9 +18,10 @@
   import { Label } from '@hcengineering/ui'
 
   export let label: IntlString
+  export let embedded: boolean = false
 </script>
 
-<div class="card-container">
+<div class:card-container={!embedded}>
   <div class="overflow-label label"><Label {label} /></div>
   <div class="content"><slot /></div>
 </div>

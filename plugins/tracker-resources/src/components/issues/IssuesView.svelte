@@ -29,7 +29,7 @@
   let resultQuery: DocumentQuery<Issue> = { ...searchQuery }
 
   $: if (!label && title) {
-    translate(title, {}, $themeStore.language).then((res) => {
+    void translate(title, {}, $themeStore.language).then((res) => {
       label = res
     })
   }
@@ -61,6 +61,11 @@
   <svelte:fragment slot="label_selector">
     <slot name="label_selector" />
   </svelte:fragment>
+
+  <svelte:fragment slot="type_selector">
+    <slot name="type_selector" {viewlet} />
+  </svelte:fragment>
+
   <svelte:fragment slot="extra">
     <ComponentExtensions
       extension={tracker.extensions.IssueListHeader}

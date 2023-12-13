@@ -14,18 +14,29 @@
 -->
 <script lang="ts">
   import core, { Ref, StatusCategory, WithLookup } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { ProjectType, getStates } from '@hcengineering/task'
-  import { typeStore } from '@hcengineering/task-resources'
+  import { getClient } from '@hcengineering/presentation'
+  import {
+    ProjectType,
+    TaskType,
+    getProjectTypeStates,
+    getStates,
+    getTaskTypeStates,
+    isTaskCategory
+  } from '@hcengineering/task'
+  import { taskTypeStore, typeStore } from '@hcengineering/task-resources'
+  import StatePresenter from '@hcengineering/task-resources/src/components/state/StatePresenter.svelte'
   import { IssueStatus, Project } from '@hcengineering/tracker'
   import { IconSize } from '@hcengineering/ui'
   import { statusStore } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
+  import { activeProjects } from '../../utils'
   import StatusIcon from '../icons/StatusIcon.svelte'
 
   export let value: WithLookup<IssueStatus> | undefined
   export let size: IconSize
-  export let space: Ref<Project> | undefined
+  export let space: Ref<Project> | undefined = undefined
+  export let projectType: Ref<ProjectType> | undefined = undefined
+  export let taskType: Ref<TaskType> | undefined = undefined
 
   const dynamicFillCategories = [tracker.issueStatusCategory.Started]
 
@@ -38,22 +49,30 @@
     count: number | undefined
   } = { index: undefined, count: undefined }
 
-  const spaceQuery = createQuery()
-  let _space: Project | undefined = undefined
-  $: space
-    ? spaceQuery.query(tracker.class.Project, { _id: space }, (res) => {
-      _space = res[0]
-    })
-    : (_space = undefined)
+  $: _space = space !== undefined ? ($activeProjects.get(space) as Project) : undefined
 
   $: if (value?.category === tracker.issueStatusCategory.Started) {
-    statuses = getStates(_space, $typeStore, $statusStore.byId).filter(
-      (p) => p.category === tracker.issueStatusCategory.Started
-    )
+    if (taskType !== undefined) {
+      statuses = getTaskTypeStates(taskType, $taskTypeStore, $statusStore.byId).filter(
+        (p) => p.category === tracker.issueStatusCategory.Started
+      )
+    } else if (projectType !== undefined) {
+      statuses = getProjectTypeStates(projectType, $typeStore, $statusStore.byId).filter(
+        (p) => p.category === tracker.issueStatusCategory.Started
+      )
+    } else {
+      statuses = getStates(_space, $typeStore, $statusStore.byId).filter(
+        (p) => p.category === tracker.issueStatusCategory.Started
+      )
+    }
   }
 
-  async function updateCategory (_space: Project | undefined, status: WithLookup<IssueStatus>, statuses: IssueStatus[]) {
-    if (status.$lookup?.category) {
+  async function updateCategory (
+    _space: Project | undefined,
+    status: WithLookup<IssueStatus>,
+    statuses: IssueStatus[]
+  ): Promise<void> {
+    if (status.$lookup?.category !== undefined) {
       category = status.$lookup.category
     }
     if (category === undefined || category._id !== value?.category) {
@@ -83,15 +102,27 @@
     }
   }
 
-  $: type = _space ? $typeStore.get(_space.type) : undefined
+  $: type = _space ? $typeStore.get(_space.type) : projectType !== undefined ? $typeStore.get(projectType) : undefined
 
   $: viewState = value && getViewState(type, value)
 
-  $: value && updateCategory(_space, value, statuses)
+  $: if (value !== undefined) {
+    void updateCategory(_space, value, statuses)
+  }
   $: icon = category?.icon
   $: color = viewState?.color !== undefined ? viewState?.color : category !== undefined ? category.color : -1
 </script>
 
-{#if icon !== undefined && color !== undefined && category !== undefined}
+{#if category !== undefined && isTaskCategory(category._id)}
+  <StatePresenter
+    {space}
+    projectType={_space?.type ?? projectType}
+    {taskType}
+    {value}
+    {size}
+    shouldShowName={false}
+    on:accent-color
+  />
+{:else if icon !== undefined && color !== undefined && category !== undefined}
   <StatusIcon on:accent-color {category} {size} fill={color} {statusIcon} />
 {/if}

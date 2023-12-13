@@ -17,21 +17,12 @@
   import { AccountRole, getCurrentAccount } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import setting, { SettingsCategory } from '@hcengineering/setting'
-  import {
-    Component,
-    Label,
-    Location,
-    Scroller,
-    Separator,
-    defineSeparators,
-    getCurrentResolvedLocation,
-    navigate,
-    resolvedLocationStore,
-    settingsSeparators
-  } from '@hcengineering/ui'
+  import { Component, Location, getCurrentResolvedLocation, navigate, resolvedLocationStore } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import CategoryElement from './CategoryElement.svelte'
 
+  export let kind: 'navigation' | undefined
+  export let categoryName: string
   let category: SettingsCategory | undefined
   let categoryId: string = ''
 
@@ -66,42 +57,38 @@
 
   function selectCategory (id: string): void {
     const loc = getCurrentResolvedLocation()
-    loc.path[4] = id
-    loc.path.length = 5
+    loc.path[3] = categoryName
+    if (loc.path[4] === id) {
+      loc.path.length = 4
+    } else {
+      loc.path[4] = id
+      loc.path.length = 5
+    }
     navigate(loc)
   }
-
-  defineSeparators('settingWorkspace', settingsSeparators)
 </script>
 
-<div class="flex h-full clear-mins">
-  {#if visibleNav}
-    <div class="antiPanel-navigator filledNav indent">
-      <div class="antiPanel-wrap__content">
-        <div class="antiNav-header overflow-label">
-          <Label label={setting.string.WorkspaceSetting} />
-        </div>
-        <Scroller shrink>
-          {#each categories as category}
-            <CategoryElement
-              icon={category.icon}
-              label={category.label}
-              selected={category.name === categoryId}
-              on:click={() => {
-                selectCategory(category.name)
-              }}
-            />
-          {/each}
-          <div class="antiNav-space" />
-        </Scroller>
-      </div>
+{#if kind === 'navigation'}
+  <div class="ml-4 mt-2">
+    <div class="antiPanel-element">
+      {#each categories as category}
+        <CategoryElement
+          icon={category.icon}
+          label={category.label}
+          selected={category.name === categoryId}
+          on:click={() => {
+            selectCategory(category.name)
+          }}
+        />
+        {#if category.name === categoryId && category.extraComponents?.navigation}
+          <Component
+            is={category.extraComponents?.navigation}
+            props={{ kind: 'navigation', categoryName: categoryId }}
+          />
+        {/if}
+      {/each}
     </div>
-    <Separator name={'settingWorkspace'} index={0} color={'var(--theme-navpanel-border)'} />
-  {/if}
-
-  <div class="antiPanel-component filled">
-    {#if category}
-      <Component is={category.component} />
-    {/if}
   </div>
-</div>
+{:else if category}
+  <Component is={category.component} props={{ kind: 'content' }} />
+{/if}

@@ -20,7 +20,7 @@ import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
 import { TagCategory } from '@hcengineering/tags'
-import type { Project, ProjectTypeCategory, Task } from '@hcengineering/task'
+import type { Project, ProjectTypeDescriptor, Task, TaskType } from '@hcengineering/task'
 import type { AnyComponent } from '@hcengineering/ui'
 import { Action, ActionCategory } from '@hcengineering/view'
 
@@ -91,8 +91,13 @@ const boards = plugin(boardId, {
   },
   category: {
     Card: '' as Ref<ActionCategory>,
-    Other: '' as Ref<TagCategory>,
-    BoardType: '' as Ref<ProjectTypeCategory>
+    Other: '' as Ref<TagCategory>
+  },
+  descriptors: {
+    BoardType: '' as Ref<ProjectTypeDescriptor>
+  },
+  taskType: {
+    Card: '' as Ref<TaskType>
   },
   attribute: {
     State: '' as Ref<Attribute<Status>>

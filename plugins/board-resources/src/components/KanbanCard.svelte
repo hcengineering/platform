@@ -16,13 +16,12 @@
 <script lang="ts">
   import { AttachmentDroppable, AttachmentsPresenter } from '@hcengineering/attachment-resources'
   import type { Card } from '@hcengineering/board'
-  import { Employee } from '@hcengineering/contact'
+  import contact, { Employee } from '@hcengineering/contact'
   import type { Ref, WithLookup } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import view from '@hcengineering/view'
   import tags from '@hcengineering/tags'
   import { getClient } from '@hcengineering/presentation'
-  import contact from '@hcengineering/contact'
   import {
     Button,
     Component,

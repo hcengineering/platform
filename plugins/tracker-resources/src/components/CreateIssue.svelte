@@ -33,7 +33,8 @@
     getClient
   } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
-  import { calcRank } from '@hcengineering/task'
+  import { TaskType, calcRank } from '@hcengineering/task'
+  import { TaskKindSelector } from '@hcengineering/task-resources'
   import {
     Component as ComponentType,
     Issue,
@@ -62,9 +63,8 @@
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { activeComponent, activeMilestone, generateIssueShortLink, getIssueId, updateIssueRelation } from '../issues'
   import tracker from '../plugin'
-  import ComponentSelector from './components/ComponentSelector.svelte'
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
-  import SubIssues from './SubIssues.svelte'
+  import ComponentSelector from './components/ComponentSelector.svelte'
   import AssigneeEditor from './issues/AssigneeEditor.svelte'
   import IssueNotification from './issues/IssueNotification.svelte'
   import ParentIssue from './issues/ParentIssue.svelte'
@@ -104,18 +104,24 @@
   const parentQuery = createQuery()
 
   let _space = draft?.space ?? space
+  let project: Project | undefined
   let object = getDefaultObjectFromDraft() ?? getDefaultObject(id)
   let isAssigneeTouched = false
+  let kind: Ref<TaskType> | undefined
 
-  function objectChange (object: IssueDraft, empty: any) {
+  let templateId: Ref<IssueTemplate> | undefined = draft?.template?.template
+  let appliedTemplateId: Ref<IssueTemplate> | undefined = draft?.template?.template
+
+  let template: IssueTemplate | undefined = undefined
+  const templateQuery = createQuery()
+
+  function objectChange (object: IssueDraft, empty: any): void {
     if (shouldSaveDraft) {
       draftController.save(object, empty)
     }
   }
 
-  $: objectChange(object, empty)
-
-  $: if (object.parentIssue) {
+  $: if (object.parentIssue !== undefined) {
     parentQuery.query(
       tracker.class.Issue,
       {
@@ -131,7 +137,7 @@
   }
 
   function getDefaultObjectFromDraft (): IssueDraft | undefined {
-    if (!draft) {
+    if (draft == null) {
       return
     }
 
@@ -163,7 +169,7 @@
       parentIssue: parentIssue?._id,
       subIssues: []
     }
-    if (originalIssue && !ignoreOriginal) {
+    if (originalIssue !== undefined && !ignoreOriginal) {
       const res: IssueDraft = {
         ...base,
         description: originalIssue.description,
@@ -176,11 +182,11 @@
         parentIssue: originalIssue.parents[0]?.parentId,
         title: `${originalIssue.title} (copy)`
       }
-      client.findAll(tags.class.TagReference, { attachedTo: originalIssue._id }).then((p) => {
+      void client.findAll(tags.class.TagReference, { attachedTo: originalIssue._id }).then((p) => {
         object.labels = p
       })
-      if (originalIssue.relations?.[0]) {
-        client.findOne(tracker.class.Issue, { _id: originalIssue.relations[0]._id as Ref<Issue> }).then((p) => {
+      if (originalIssue.relations?.[0] !== undefined) {
+        void client.findOne(tracker.class.Issue, { _id: originalIssue.relations[0]._id as Ref<Issue> }).then((p) => {
           relatedTo = p
         })
       }
@@ -191,13 +197,11 @@
   }
   fillDefaults(hierarchy, object, tracker.class.Issue)
 
-  let subIssuesComponent: SubIssues
-
   let currentProject: Project | undefined
 
   $: updateIssueStatusId(object, currentProject)
   $: updateAssigneeId(object, currentProject)
-  $: canSave = getTitle(object.title ?? '').length > 0 && object.status !== undefined
+  $: canSave = getTitle(object.title ?? '').length > 0 && object.status !== undefined && kind !== undefined
 
   $: empty = {
     assignee: assignee ?? currentProject?.defaultAssignee,
@@ -210,6 +214,8 @@
     space: _space
   }
 
+  $: objectChange(object, empty)
+
   $: if (_space !== undefined && object.space !== _space) {
     object.space = _space
   }
@@ -220,12 +226,6 @@
     object = getDefaultObject(undefined, true)
     fillDefaults(hierarchy, object, tracker.class.Issue)
   }
-
-  let templateId: Ref<IssueTemplate> | undefined = draft?.template?.template
-  let appliedTemplateId: Ref<IssueTemplate> | undefined = draft?.template?.template
-
-  let template: IssueTemplate | undefined = undefined
-  const templateQuery = createQuery()
 
   $: if (templateId !== undefined) {
     templateQuery.query(tracker.class.IssueTemplate, { _id: templateId }, (res) => {
@@ -284,7 +284,9 @@
     fillDefaults(hierarchy, object, tracker.class.Issue)
   }
 
-  $: template && updateTemplate(template)
+  $: if (template !== undefined) {
+    void updateTemplate(template)
+  }
 
   const dispatch = createEventDispatcher()
   const spaceQuery = createQuery()
@@ -303,19 +305,19 @@
 
   const docCreateManager = DocCreateExtensionManager.create(tracker.class.Issue)
 
-  async function updateIssueStatusId (object: IssueDraft, currentProject: Project | undefined) {
-    if (currentProject?.defaultIssueStatus && object.status === undefined) {
+  function updateIssueStatusId (object: IssueDraft, currentProject: Project | undefined): void {
+    if (currentProject?.defaultIssueStatus !== undefined && object.status === undefined) {
       object.status = currentProject.defaultIssueStatus
     }
   }
 
-  function resetDefaultAssigneeId () {
-    if (!isAssigneeTouched && !!object.assignee && object.assignee === currentProject?.defaultAssignee) {
+  function resetDefaultAssigneeId (): void {
+    if (!isAssigneeTouched && !(object.assignee == null) && object.assignee === currentProject?.defaultAssignee) {
       object = { ...object, assignee: assignee ?? null }
     }
   }
 
-  function updateAssigneeId (object: IssueDraft, currentProject: Project | undefined) {
+  function updateAssigneeId (object: IssueDraft, currentProject: Project | undefined): void {
     if (!isAssigneeTouched && object.assignee == null && currentProject !== undefined) {
       if (currentProject.defaultAssignee !== undefined) {
         object.assignee = currentProject.defaultAssignee
@@ -324,13 +326,13 @@
       }
     }
   }
-  function clearParentIssue () {
+  function clearParentIssue (): void {
     object.parentIssue = undefined
     parentQuery.unsubscribe()
     parentIssue = undefined
   }
 
-  function getTitle (value: string) {
+  function getTitle (value: string): string {
     return value.trim()
   }
 
@@ -338,7 +340,7 @@
     return true
   }
 
-  export async function onOutsideClick () {
+  export function onOutsideClick (): void {
     if (shouldSaveDraft) {
       draftController.save(object, empty)
     }
@@ -346,7 +348,7 @@
 
   async function createIssue (): Promise<void> {
     const _id: Ref<Issue> = generateId()
-    if (!canSave || object.status === undefined || _space === undefined) {
+    if (!canSave || object.status === undefined || _space === undefined || kind === undefined) {
       return
     }
 
@@ -376,18 +378,20 @@
       comments: 0,
       subIssues: 0,
       dueDate: object.dueDate,
-      parents: parentIssue
-        ? [
-            { parentId: parentIssue._id, parentTitle: parentIssue.title, space: parentIssue.space },
-            ...parentIssue.parents
-          ]
-        : [],
+      parents:
+        parentIssue != null
+          ? [
+              { parentId: parentIssue._id, parentTitle: parentIssue.title, space: parentIssue.space },
+              ...parentIssue.parents
+            ]
+          : [],
       reportedTime: 0,
       remainingTime: 0,
       estimation: object.estimation,
       reports: 0,
       relations: relatedTo !== undefined ? [{ _id: relatedTo._id, _class: relatedTo._class }] : [],
-      childInfo: []
+      childInfo: [],
+      kind
     }
 
     await docCreateManager.commit(operations, _id, _space, value)
@@ -423,14 +427,6 @@
         }
       }
     }
-    const parents = parentIssue
-      ? [
-          { parentId: _id, parentTitle: value.title, space: parentIssue.space },
-          { parentId: parentIssue._id, parentTitle: parentIssue.title, space: parentIssue.space },
-          ...parentIssue.parents
-        ]
-      : [{ parentId: _id, parentTitle: value.title, space: _space }]
-    await subIssuesComponent.save(parents, _id)
     addNotification(
       await translate(tracker.string.IssueCreated, {}, $themeStore.language),
       getTitle(object.title),
@@ -438,17 +434,16 @@
       {
         issueId: _id,
         subTitlePostfix: (await translate(tracker.string.CreatedOne, {}, $themeStore.language)).toLowerCase(),
-        issueUrl: currentProject && generateIssueShortLink(getIssueId(currentProject, value as Issue))
+        issueUrl: currentProject != null && generateIssueShortLink(getIssueId(currentProject, value as Issue))
       }
     )
 
     draftController.remove()
-    resetObject()
     descriptionBox?.removeDraft(false)
     isAssigneeTouched = false
   }
 
-  async function setParentIssue () {
+  async function setParentIssue (): Promise<void> {
     showPopup(
       SetParentIssueActionPopup,
       { value: { ...object, space: _space, attachedTo: parentIssue?._id } },
@@ -462,7 +457,7 @@
     )
   }
 
-  const handleComponentIdChanged = (componentId: Ref<ComponentType> | null | undefined) => {
+  const handleComponentIdChanged = (componentId: Ref<ComponentType> | null | undefined): void => {
     if (componentId === undefined) {
       return
     }
@@ -470,7 +465,7 @@
     object.component = componentId
   }
 
-  const handleMilestoneIdChanged = async (milestoneId: Ref<Milestone> | null | undefined) => {
+  const handleMilestoneIdChanged = (milestoneId: Ref<Milestone> | null | undefined): void => {
     if (milestoneId === undefined) {
       return
     }
@@ -508,7 +503,7 @@
     )
   }
 
-  async function showConfirmationDialog () {
+  async function showConfirmationDialog (): Promise<void> {
     draftController.save(object, empty)
     const isFormEmpty = draft === undefined
 
@@ -602,7 +597,7 @@
   on:close={() => dispatch('close')}
   onCancel={showConfirmationDialog}
   hideAttachments={attachments.size === 0}
-  hideSubheader={!parentIssue}
+  hideSubheader={parentIssue == null}
   noFade={true}
   on:changeContent
 >
@@ -611,6 +606,9 @@
       _class={tracker.class.Project}
       label={tracker.string.Project}
       bind:space={_space}
+      on:object={(evt) => {
+        project = evt.detail
+      }}
       kind={'regular'}
       size={'small'}
       component={ProjectPresenter}
@@ -641,6 +639,7 @@
       <div class="mr-2">
         <Label {label} />
       </div>
+      <TaskKindSelector projectType={project?.type} bind:taskType={kind} baseClass={tracker.class.Issue} />
       {#if relatedTo}
         <div class="lower mr-2">
           <Label label={tracker.string.RelatedTo} />
@@ -700,7 +699,7 @@
         }}
         on:attachments={(ev) => {
           if (ev.detail.size > 0) attachments = ev.detail.values
-          else if (ev.detail.size === 0 && ev.detail.values) {
+          else if (ev.detail.size === 0 && ev.detail.values != null) {
             attachments.clear()
             attachments = attachments
           }
@@ -708,36 +707,28 @@
       />
     {/key}
   </div>
-  {#if _space}
-    <SubIssues
-      bind:this={subIssuesComponent}
-      projectId={_space}
-      project={currentProject}
-      milestone={object.milestone}
-      component={object.component}
-      bind:subIssues={object.subIssues}
-    />
-  {/if}
   <DocCreateExtComponent manager={docCreateManager} kind={'body'} space={currentProject} props={extraProps} />
   <svelte:fragment slot="pool">
     <div id="status-editor">
-      <StatusEditor
-        focusIndex={3}
-        value={object}
-        kind={'regular'}
-        size={'large'}
-        defaultIssueStatus={currentProject?.defaultIssueStatus}
-        shouldShowLabel={true}
-        short
-        on:refocus={() => {
-          manager.setFocusPos(3)
-        }}
-        on:change={({ detail }) => {
-          if (object.status !== detail) {
-            object.status = detail
-          }
-        }}
-      />
+      {#if kind !== undefined}
+        <StatusEditor
+          focusIndex={3}
+          value={{ ...object, kind }}
+          kind={'regular'}
+          size={'large'}
+          defaultIssueStatus={currentProject?.defaultIssueStatus}
+          shouldShowLabel={true}
+          short
+          on:refocus={() => {
+            manager.setFocusPos(3)
+          }}
+          on:change={({ detail }) => {
+            if (object.status !== detail) {
+              object.status = detail
+            }
+          }}
+        />
+      {/if}
     </div>
     <div id="priority-editor">
       <PriorityEditor
@@ -821,11 +812,11 @@
     <div id="parentissue-editor" class="new-line">
       <Button
         icon={tracker.icon.Parent}
-        label={object.parentIssue ? tracker.string.RemoveParent : tracker.string.SetParent}
+        label={object.parentIssue != null ? tracker.string.RemoveParent : tracker.string.SetParent}
         kind={'regular'}
         size={'large'}
         notSelected={object.parentIssue === undefined}
-        on:click={object.parentIssue ? clearParentIssue : setParentIssue}
+        on:click={object.parentIssue != null ? clearParentIssue : setParentIssue}
       />
     </div>
     <DocCreateExtComponent manager={docCreateManager} kind={'pool'} space={currentProject} props={extraProps} />

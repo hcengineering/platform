@@ -689,16 +689,26 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(
-    task.class.ProjectTypeCategory,
+    task.class.ProjectTypeDescriptor,
     core.space.Model,
     {
-      name: lead.string.Funnels,
+      name: lead.string.LeadApplication,
       description: lead.string.ManageFunnelStatuses,
       icon: lead.component.TemplatesIcon,
-      attachedToClass: lead.class.Funnel,
-      statusClass: core.class.Status,
-      statusCategories: [task.statusCategory.Active, task.statusCategory.Won, task.statusCategory.Lost]
+      baseClass: lead.class.Funnel
     },
-    lead.category.FunnelTypeCategory
+    lead.descriptors.FunnelType
+  )
+  builder.createDoc(
+    task.class.TaskTypeDescriptor,
+    core.space.Model,
+    {
+      baseClass: lead.class.Lead,
+      allowCreate: true,
+      description: lead.string.Lead,
+      icon: lead.icon.Lead,
+      name: lead.string.Lead
+    },
+    lead.descriptors.Lead
   )
 }

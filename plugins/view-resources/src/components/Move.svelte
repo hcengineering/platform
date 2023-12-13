@@ -14,12 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient } from '@hcengineering/presentation'
+  import { getClient, SpaceSelect } from '@hcengineering/presentation'
   import { Button, Label, Status as StatusControl, themeStore } from '@hcengineering/ui'
 
   import core, { Class, Client, Doc, Ref, SortingOrder, Space } from '@hcengineering/core'
   import { OK, Resource, Status, getResource, translate } from '@hcengineering/platform'
-  import { SpaceSelect } from '@hcengineering/presentation'
   import task, { Project, Task, calcRank } from '@hcengineering/task'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
