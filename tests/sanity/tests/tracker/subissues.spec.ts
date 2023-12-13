@@ -24,7 +24,7 @@ test.describe('Tracker sub-issues tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test.skip('create sub-issue', async ({ page }) => {
+  test('create sub-issue', async ({ page }) => {
     await navigate(page)
 
     const props = {
