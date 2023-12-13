@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-
 import {
   Account,
   AttachedDoc,
@@ -140,7 +139,7 @@ function getDocUpdateMessageTx (
   )
 }
 
- async function pushDocUpdateMessages (
+async function pushDocUpdateMessages (
   control: ActivityControl,
   res: TxCollectionCUD<Doc, DocUpdateMessage>[],
   object: Doc | undefined,
@@ -209,7 +208,7 @@ function getDocUpdateMessageTx (
   return res
 }
 
- export async function generateDocUpdateMessages (
+export async function generateDocUpdateMessages (
   tx: TxCUD<Doc>,
   control: ActivityControl,
   res: TxCollectionCUD<Doc, DocUpdateMessage>[] = [],

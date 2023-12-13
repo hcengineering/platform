@@ -29,11 +29,11 @@ export async function getAllObjectTransactions (
     isAttached
       ? { 'tx.objectId': { $in: docs as Ref<AttachedDoc>[] } }
       : {
-        objectId: { $in: docs },
-        _class: {
-          $in: [core.class.TxCreateDoc, core.class.TxUpdateDoc, core.class.TxRemoveDoc, core.class.TxMixin]
-        }
-      },
+          objectId: { $in: docs },
+          _class: {
+            $in: [core.class.TxCreateDoc, core.class.TxUpdateDoc, core.class.TxRemoveDoc, core.class.TxMixin]
+          }
+        },
     { sort: { modifiedOn: SortingOrder.Ascending } }
   )
 

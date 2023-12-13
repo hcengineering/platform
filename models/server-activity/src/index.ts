@@ -18,7 +18,7 @@ import serverCore from '@hcengineering/server-core'
 import core from '@hcengineering/core/lib/component'
 import serverActivity from '@hcengineering/server-activity'
 
-export {activityServerOperation} from './migration'
+export { activityServerOperation } from './migration'
 export { serverActivityId } from '@hcengineering/server-activity'
 
 export function createModel (builder: Builder): void {

@@ -13,28 +13,29 @@
 // limitations under the License.
 //
 
-
 import core, {
-  AttachedDoc,
-  Class,
-  Doc,
-  Ref,
-  TxCUD,
-  TxCollectionCUD,
+  type AttachedDoc,
+  type Class,
+  type Doc,
+  type Ref,
+  type TxCUD,
+  type TxCollectionCUD,
   TxProcessor,
   toIdMap,
-  SortingOrder, TxFactory, toFindResult, TxCreateDoc
+  SortingOrder,
+  TxFactory,
+  toFindResult,
+  type TxCreateDoc
 } from '@hcengineering/core'
-import activity, {DocUpdateMessage} from '@hcengineering/activity'
-import { tryMigrate, type MigrateOperation, type MigrationClient, MigrationIterator } from '@hcengineering/model'
+import activity, { type DocUpdateMessage } from '@hcengineering/activity'
+import { tryMigrate, type MigrateOperation, type MigrationClient, type MigrationIterator } from '@hcengineering/model'
 import {
-  ActivityControl,
-  DocObjectCache,
+  type ActivityControl,
+  type DocObjectCache,
   getAllObjectTransactions,
   serverActivityId
 } from '@hcengineering/server-activity'
 import { generateDocUpdateMessages } from '@hcengineering/server-activity-resources'
-
 
 function getActivityControl (client: MigrationClient): ActivityControl {
   const txFactory = new TxFactory(core.account.System, false)

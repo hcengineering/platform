@@ -66,6 +66,7 @@ export const DOMAIN_ACTIVITY = 'activity' as Domain
 
 @Mixin(activity.mixin.ActivityDoc, core.class.Class)
 export class TActivityDoc extends TClass implements ActivityDoc {
+  preposition?: IntlString
   ignoreCollections?: string[]
 }
 

@@ -13,18 +13,16 @@
 // limitations under the License.
 //
 
-import { Plugin, Resource } from '@hcengineering/platform'
-import { plugin } from '@hcengineering/platform'
+import { Plugin, Resource, plugin } from '@hcengineering/platform'
 import type { TriggerFunc } from '@hcengineering/server-core'
 
 export * from './types'
-export  * from './utils'
+export * from './utils'
 
 /**
  * @public
  */
 export const serverActivityId = 'server-activity' as Plugin
-
 
 /**
  * @public
@@ -32,5 +30,5 @@ export const serverActivityId = 'server-activity' as Plugin
 export default plugin(serverActivityId, {
   trigger: {
     ActivityMessagesHandler: '' as Resource<TriggerFunc>
-  },
+  }
 })

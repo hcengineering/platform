@@ -15,15 +15,7 @@
 //
 
 import contact, { Employee, Person, PersonAccount } from '@hcengineering/contact'
-import {
-  Account,
-  Class,
-  Doc,
-  Mixin,
-  Ref,
-  Tx,
-  TxCUD
-} from '@hcengineering/core'
+import { Account, Class, Doc, Mixin, Ref, Tx, TxCUD } from '@hcengineering/core'
 import { NotificationContent, NotificationType } from '@hcengineering/notification'
 import { Metadata, Plugin, Resource, plugin } from '@hcengineering/platform'
 import type { TriggerControl, TriggerFunc } from '@hcengineering/server-core'
