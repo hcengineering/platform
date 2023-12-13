@@ -20,6 +20,7 @@ export class IssuesDetailsPage extends CommonTrackerPage {
   readonly buttonMoreActions: Locator
   readonly textParentTitle: Locator
   readonly buttonAddSubIssue: Locator
+  readonly textRelated: Locator
 
   constructor (page: Page) {
     super(page)
@@ -33,13 +34,14 @@ export class IssuesDetailsPage extends CommonTrackerPage {
     this.buttonAddLabel = page.locator('button.tag-button')
     this.buttonComponent = page.locator('//span[text()="Component"]/following-sibling::div[1]/div/button')
     this.buttonMilestone = page.locator('//span[text()="Milestone"]/following-sibling::div[1]/div/button')
-    this.textEstimation = page.locator('(//span[text()="Estimation"]/../div/button)[4]')
+    this.textEstimation = page.locator('//span[text()="Estimation"]/following-sibling::div[1]/button/span')
     this.buttonEstimation = page.locator('(//span[text()="Estimation"]/../div/button)[3]')
     this.buttonCreatedBy = page.locator('(//span[text()="Assignee"]/../div/button)[1]')
     this.buttonCloseIssue = page.locator('div.popupPanel-title > button')
     this.buttonMoreActions = page.locator('div.popupPanel-title div.flex-row-center > button:first-child')
     this.textParentTitle = page.locator('span.issue-title')
     this.buttonAddSubIssue = page.locator('#add-sub-issue')
+    this.textRelated = page.locator('//span[text()="Related"]/following-sibling::div[1]/div//span')
   }
 
   async editIssue (data: Issue): Promise<void> {
@@ -104,6 +106,9 @@ export class IssuesDetailsPage extends CommonTrackerPage {
     }
     if (data.parentIssue != null) {
       await expect(this.textParentTitle).toHaveText(data.parentIssue)
+    }
+    if (data.relatedIssue != null) {
+      await expect(this.textRelated).toContainText(data.relatedIssue)
     }
   }
 
