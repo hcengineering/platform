@@ -115,6 +115,7 @@ import MoveAndDeleteMilestonePopup from './components/milestones/MoveAndDeleteMi
 import EditIssueTemplate from './components/templates/EditIssueTemplate.svelte'
 import TemplateEstimationEditor from './components/templates/EstimationEditor.svelte'
 import {
+  activeProjects,
   getAllComponents,
   getAllMilestones,
   getAllPriority,
@@ -156,7 +157,7 @@ export { default as SubIssueList } from './components/issues/edit/SubIssueList.s
 export { default as IssueStatusIcon } from './components/issues/IssueStatusIcon.svelte'
 export { default as StatusPresenter } from './components/issues/StatusPresenter.svelte'
 
-export { CreateProject, IssuePresenter, TitlePresenter }
+export { CreateProject, IssuePresenter, PriorityEditor, StatusEditor, TitlePresenter, activeProjects }
 
 export async function queryIssue<D extends Issue> (
   _class: Ref<Class<D>>,
