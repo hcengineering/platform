@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { test } from '@playwright/test'
 import { allure } from 'allure-playwright'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { generateId, PlatformSetting, PlatformURI } from '../utils'
