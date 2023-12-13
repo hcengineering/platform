@@ -21,7 +21,6 @@
   import activity, { DisplayDocUpdateMessage, DocUpdateMessage, DocUpdateMessageViewlet } from '@hcengineering/activity'
 
   import NotificationObjectValue from './DocUpdateMessageObjectValue.svelte'
-  import notification from '@hcengineering/notification'
 
   export let message: DisplayDocUpdateMessage
   export let viewlet: DocUpdateMessageViewlet | undefined
@@ -44,7 +43,7 @@
   $: valueMessages = message.previousMessages?.length ? [...message.previousMessages, message] : [message]
   $: hasDifferentActions = message.previousMessages?.some(({ action }) => action !== message.action)
   // TODO: use AcrivityIcon
-  $: icon = viewlet?.icon ?? collectionAttribute?.icon ?? clazz.icon ?? notification.icon.Notifications
+  $: icon = viewlet?.icon ?? collectionAttribute?.icon ?? clazz.icon ?? activity.icon.Activity
 </script>
 
 <div class="content">

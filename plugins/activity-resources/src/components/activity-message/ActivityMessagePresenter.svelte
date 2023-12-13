@@ -26,7 +26,6 @@
   export let shouldScroll: boolean = false
   export let embedded: boolean = false
   export let hasActionsMenu: boolean = true
-  export let hasNotifyActions = false
   export let onClick: (() => void) | undefined = undefined
 
   const client = getClient()
@@ -46,7 +45,6 @@
       shouldScroll,
       embedded,
       hasActionsMenu,
-      hasNotifyActions,
       onClick
     }}
   />

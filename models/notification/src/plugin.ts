@@ -54,8 +54,9 @@ export default mergeIds(notificationId, notification, {
   },
   function: {
     HasntNotifications: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
-    HasntInboxNotifications: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
-    HasInboxNotifications: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
+    HasMarkAsUnreadAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    HasMarkAsReadAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    HasDeleteNotificationAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
   },
   category: {
     Notification: '' as Ref<ActionCategory>

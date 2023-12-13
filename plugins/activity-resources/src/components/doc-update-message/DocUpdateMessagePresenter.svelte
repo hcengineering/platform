@@ -38,7 +38,6 @@
   import { getAttributeModel, getCollectionAttribute, getActivityObject } from '../../activityMessagesUtils'
 
   export let value: DisplayDocUpdateMessage
-  export let hasNotifyActions = false
   export let showNotify: boolean = false
   export let isHighlighted: boolean = false
   export let isSelected: boolean = false
@@ -151,7 +150,6 @@
     {embedded}
     {hasActionsMenu}
     {viewlet}
-    {hasNotifyActions}
     {onClick}
   >
     <svelte:fragment slot="header">

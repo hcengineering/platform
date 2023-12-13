@@ -190,7 +190,6 @@ export class TChatMessage extends TActivityMessage implements ChatMessage {
     attachments?: number
 
   @Prop(TypeBoolean(), core.string.Boolean)
-  @Index(IndexKind.Indexed)
     isEdited?: boolean
 }
 

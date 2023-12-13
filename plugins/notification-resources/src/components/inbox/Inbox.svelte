@@ -118,7 +118,6 @@
       <ActivityMessagePresenter
         value={message}
         showNotify={!inboxNotificationByMessage.get(message._id)?.isViewed}
-        hasNotifyActions
         isSelected={message._id === selectedMessageId}
         onClick={() => {
           handleMessageClicked(message)

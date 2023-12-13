@@ -34,7 +34,7 @@ import notification, {
 } from '@hcengineering/notification'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { get, writable } from 'svelte/store'
-import { type Location, type ResolvedLocation } from '@hcengineering/ui'
+import { getCurrentLocation, type Location, type ResolvedLocation } from '@hcengineering/ui'
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
 import activity, {
   type ActivityMessage,
@@ -145,10 +145,21 @@ export async function hasntNotifications (object: DocUpdates): Promise<boolean> 
   if (object._class !== notification.class.DocUpdates) return false
   return !object.txes.some((p) => p.isNew)
 }
+
+function insideInbox (): boolean {
+  const loc = getCurrentLocation()
+
+  return loc.path[2] === inboxId
+}
+
 /**
  * @public
  */
-export async function hasntInboxNotifications (message: DisplayActivityMessage): Promise<boolean> {
+export async function hasMarkAsUnreadAction (message: DisplayActivityMessage): Promise<boolean> {
+  if (!insideInbox()) {
+    return false
+  }
+
   const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
   const combinedIds =
     message._class === activity.class.DocUpdateMessage
@@ -161,7 +172,11 @@ export async function hasntInboxNotifications (message: DisplayActivityMessage):
   )
 }
 
-export async function hasInboxNotifications (message: DisplayActivityMessage): Promise<boolean> {
+export async function hasMarkAsReadAction (message: DisplayActivityMessage): Promise<boolean> {
+  if (!insideInbox()) {
+    return false
+  }
+
   const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
   const combinedIds =
     message._class === activity.class.DocUpdateMessage
@@ -172,6 +187,10 @@ export async function hasInboxNotifications (message: DisplayActivityMessage): P
   return get(inboxNotificationsClient.inboxNotifications).some(
     ({ attachedTo, isViewed }) => ids.includes(attachedTo) && !isViewed
   )
+}
+
+export async function hasDeleteNotificationAction (): Promise<boolean> {
+  return insideInbox()
 }
 
 enum OpWithMe {

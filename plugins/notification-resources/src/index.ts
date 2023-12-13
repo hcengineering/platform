@@ -34,8 +34,9 @@ import {
   markAsReadInboxNotification,
   markAsUnreadInboxNotification,
   deleteInboxNotification,
-  hasntInboxNotifications,
-  hasInboxNotifications
+  hasMarkAsUnreadAction,
+  hasMarkAsReadAction,
+  hasDeleteNotificationAction
 } from './utils'
 
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
@@ -62,8 +63,9 @@ export default async (): Promise<Resources> => ({
     // eslint-disable-next-line @typescript-eslint/unbound-method
     GetNotificationClient: NotificationClientImpl.getClient,
     HasntNotifications: hasntNotifications,
-    HasntInboxNotifications: hasntInboxNotifications,
-    HasInboxNotifications: hasInboxNotifications,
+    HasMarkAsUnreadAction: hasMarkAsUnreadAction,
+    HasMarkAsReadAction: hasMarkAsReadAction,
+    HasDeleteNotificationAction: hasDeleteNotificationAction,
     // eslint-disable-next-line @typescript-eslint/unbound-method
     GetInboxNotificationsClient: InboxNotificationsClientImpl.getClient
   },

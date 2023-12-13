@@ -39,7 +39,6 @@
   export let person: Person | undefined = undefined
   export let actions: Action[] = []
   export let excludedActions: string[] = []
-  export let hasNotifyActions = false
   export let showNotify: boolean = false
   export let isHighlighted: boolean = false
   export let isSelected: boolean = false
@@ -50,11 +49,6 @@
 
   const client = getClient()
   let allActionIds: string[] = []
-  const notifyActions: Action[] = [
-    // notification.action.MarkAsUnreadInboxNotification,
-    // notification.action.MarkAsReadInboxNotification,
-    // notification.action.DeleteInboxNotification
-  ]
 
   let element: HTMLDivElement | undefined = undefined
   let extensions: ActivityMessageExtension[] = []
@@ -90,7 +84,6 @@
   }
 
   $: key = parentMessage ? `${message._id}_${parentMessage._id}` : message._id
-  $: actualExcludedActions = hasNotifyActions ? excludedActions : [...notifyActions, ...excludedActions]
 
   function showMenu (ev: MouseEvent) {
     showPopup(
@@ -98,7 +91,7 @@
       {
         object: message,
         baseMenuClass: activity.class.ActivityMessage,
-        excludedActions: actualExcludedActions,
+        excludedActions,
         actions
       },
       ev.target as HTMLElement,
@@ -109,9 +102,7 @@
 
   $: isHidden = !!viewlet?.onlyWithParent && parentMessage === undefined
   $: withActionMenu =
-    !embedded &&
-    hasActionsMenu &&
-    (actions.length > 0 || allActionIds.some((id) => !actualExcludedActions.includes(id)))
+    !embedded && hasActionsMenu && (actions.length > 0 || allActionIds.some((id) => !excludedActions.includes(id)))
 </script>
 
 {#if !isHidden}

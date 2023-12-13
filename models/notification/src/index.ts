@@ -485,7 +485,7 @@ export function createModel (builder: Builder): void {
       label: notification.string.MarkAsRead,
       icon: notification.icon.Notifications,
       input: 'focus',
-      visibilityTester: notification.function.HasInboxNotifications,
+      visibilityTester: notification.function.HasMarkAsReadAction,
       category: notification.category.Notification,
       target: activity.class.ActivityMessage,
       context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
@@ -500,7 +500,7 @@ export function createModel (builder: Builder): void {
       label: notification.string.MarkAsUnread,
       icon: notification.icon.Track,
       input: 'focus',
-      visibilityTester: notification.function.HasntInboxNotifications,
+      visibilityTester: notification.function.HasMarkAsUnreadAction,
       category: notification.category.Notification,
       target: activity.class.ActivityMessage,
       context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
@@ -517,6 +517,7 @@ export function createModel (builder: Builder): void {
       input: 'focus',
       keyBinding: ['Backspace'],
       category: notification.category.Notification,
+      visibilityTester: notification.function.HasDeleteNotificationAction,
       target: activity.class.ActivityMessage,
       context: { mode: ['context', 'browser'], group: 'edit' }
     },

@@ -22,15 +22,14 @@
   import { LinkPresenter } from '@hcengineering/view-resources'
   import { Action, Button, IconEdit, ShowMore } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import activity, { DisplayActivityMessage } from '@hcengineering/activity'
+  import { ActivityMessageTemplate } from '@hcengineering/activity-resources'
 
   import ChatMessageHeader from './ChatMessageHeader.svelte'
   import ChatMessageInput from './ChatMessageInput.svelte'
   import chunter, { ChatMessage, ChatMessageViewlet } from '@hcengineering/chunter'
-  import activity, { DisplayActivityMessage } from '@hcengineering/activity'
-  import { ActivityMessageTemplate } from '@hcengineering/activity-resources'
 
   export let value: ChatMessage | undefined
-  export let hasNotifyActions = false
   export let showNotify: boolean = false
   export let isHighlighted: boolean = false
   export let isSelected: boolean = false
@@ -156,7 +155,6 @@
     {embedded}
     {hasActionsMenu}
     {actions}
-    {hasNotifyActions}
     {onClick}
   >
     <svelte:fragment slot="header">

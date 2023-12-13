@@ -88,7 +88,6 @@ export class TTxViewlet extends TDoc implements TxViewlet {
 @Model(activity.class.ActivityMessage, core.class.AttachedDoc, DOMAIN_ACTIVITY)
 export class TActivityMessage extends TAttachedDoc implements ActivityMessage {
   @Prop(TypeBoolean(), activity.string.Pinned)
-  @Index(IndexKind.Indexed)
     isPinned?: boolean
 
   @Prop(Collection(activity.class.Reaction), activity.string.Reactions)
