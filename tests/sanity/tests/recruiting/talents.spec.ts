@@ -64,7 +64,7 @@ test.describe('candidate/talents tests', () => {
     expect(await page.locator('.cover-channel >> input').inputValue()).toEqual(email)
   })
 
-  test.skip('Edit the Talent', async ({ page, context }) => {
+  test('Edit the Talent', async ({ page, context }) => {
     const navigationMenuPage = new NavigationMenuPage(page)
     await navigationMenuPage.buttonTalents.click()
 

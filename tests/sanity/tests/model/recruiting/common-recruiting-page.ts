@@ -18,7 +18,7 @@ export class CommonRecruitingPage extends CalendarPage {
     this.page = page
     this.inputComment = page.locator('div.text-input div.tiptap')
     this.buttonSendComment = page.locator('g#Send')
-    this.textComment = page.locator('div.msgactivity-container p')
+    this.textComment = page.locator('div.showMore-content p')
     this.inputAddAttachment = page.locator('div.antiSection #file')
     this.textAttachmentName = page.locator('div.name a')
     this.buttonCreateFirstReview = page.locator('span:has-text("Create review")')
