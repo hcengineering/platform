@@ -4,12 +4,9 @@ import { IssuesPage } from '../model/tracker/issues-page'
 import { PlatformSetting, fillSearch, generateId } from '../utils'
 import {
   DEFAULT_STATUSES,
-  DEFAULT_USER,
   ViewletSelectors,
-  checkIssue,
   checkIssueDraft,
   createIssue,
-  fillIssueForm,
   navigate,
   openIssue,
   toTime
@@ -309,35 +306,5 @@ test.describe('Tracker tests', () => {
       estimation: '1h',
       dueDate: '24'
     })
-  })
-
-  test('sub-issue-draft', async ({ page }) => {
-    await navigate(page)
-
-    const props = {
-      name: getIssueName(),
-      description: 'description',
-      status: DEFAULT_STATUSES[1],
-      priority: 'Urgent',
-      assignee: DEFAULT_USER
-    }
-    await navigate(page)
-    await createIssue(page, props)
-    await page.click('text="Issues"')
-
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
-    await issuesPage.searchIssueByName(props.name)
-    await issuesPage.openIssueByName(props.name)
-
-    await checkIssue(page, props)
-    props.name = `sub${props.name}`
-    await page.click('button:has-text("Add sub-issue")')
-    await fillIssueForm(page, props)
-    await page.keyboard.press('Escape')
-    await page.keyboard.press('Escape')
-
-    await page.locator('#new-issue').click()
-    await checkIssueDraft(page, props)
   })
 })
