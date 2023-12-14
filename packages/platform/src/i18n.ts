@@ -21,7 +21,7 @@ import type { IntlString, Plugin } from './platform'
 import { Severity, Status, unknownError } from './status'
 
 import { getMetadata } from './metadata'
-import platform from './platform'
+import platform, { _EmbeddedId } from './platform'
 
 /**
  * @public
@@ -119,7 +119,7 @@ export async function translate<P extends Record<string, any>> (
   } else {
     try {
       const id = _parseId(message)
-      if (id.component === 'embedded') {
+      if (id.component === _EmbeddedId) {
         return id.name
       }
       const translation = (await getTranslation(id, locale)) ?? message

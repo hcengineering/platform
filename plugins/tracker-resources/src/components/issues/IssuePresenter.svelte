@@ -22,6 +22,8 @@
   import { DocNavLink } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import { activeProjects } from '../../utils'
+  import { taskTypeStore } from '@hcengineering/task-resources'
+  import TaskTypeIcon from '@hcengineering/task-resources/src/components/taskTypes/TaskTypeIcon.svelte'
 
   export let value: WithLookup<Issue>
   export let disabled: boolean = false
@@ -36,17 +38,24 @@
   let currentProject: Project | undefined = value?.$lookup?.space
 
   $: if (value !== undefined) {
-    currentProject = $activeProjects.get(value?.space)
+    currentProject = $activeProjects.get(value?.space) as Project
   }
 
   $: title = currentProject ? `${currentProject.identifier}-${value?.number}` : `${value?.number}`
 
   $: presenters =
     value !== undefined ? getClient().getHierarchy().findMixinMixins(value, view.mixin.ObjectPresenter) : []
+
+  $: taskType = $taskTypeStore.get(value.kind)
 </script>
 
 {#if value}
-  <div class="flex-row-center flex-between">
+  <div class="flex-row-center">
+    {#if taskType !== undefined}
+      <div class="text-sm mr-1">
+        <TaskTypeIcon value={taskType} />
+      </div>
+    {/if}
     <DocNavLink
       object={value}
       {onClick}

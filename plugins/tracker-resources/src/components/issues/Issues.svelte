@@ -17,10 +17,11 @@
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
-  import { resolvedLocationStore } from '@hcengineering/ui'
+  import { IModeSelector, resolvedLocationStore } from '@hcengineering/ui'
+  import view, { Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
 
-  import { IModeSelector } from '@hcengineering/ui'
+  import { TypeSelector, selectedTaskTypeStore, selectedTypeStore, taskTypeStore } from '@hcengineering/task-resources'
   import tracker from '../../plugin'
   import IssuesView from './IssuesView.svelte'
 
@@ -28,8 +29,12 @@
   export let baseQuery: DocumentQuery<Issue> = {}
   export let title: IntlString
   export let config: [string, IntlString, object][]
+  export let allProjectsTypes: boolean = false
+
+  export let baseClass = tracker.class.Issue
 
   const dispatch = createEventDispatcher()
+
   let query: DocumentQuery<Issue> | undefined = undefined
   let modeSelectorProps: IModeSelector | undefined = undefined
 
@@ -89,8 +94,29 @@
       onChange: (newMode: string) => dispatch('action', { mode: newMode })
     }
   }
+
+  $: allTypes = Array.from($taskTypeStore.values())
+    .filter((it) => it.parent === $selectedTypeStore)
+    .map((it) => it._id)
+
+  $: finalQuery = {
+    ...query,
+    ...(allProjectsTypes
+      ? {}
+      : $selectedTaskTypeStore !== undefined
+        ? { kind: $selectedTaskTypeStore }
+        : { kind: { $in: allTypes } })
+  }
+
+  const toVL = (data: any): Viewlet | undefined => data as Viewlet
 </script>
 
 {#if query !== undefined && modeSelectorProps !== undefined}
-  <IssuesView {query} space={currentSpace} {title} {modeSelectorProps} />
+  <IssuesView query={finalQuery} space={currentSpace} {title} {modeSelectorProps}>
+    <svelte:fragment slot="type_selector" let:viewlet>
+      {#if !allProjectsTypes}
+        <TypeSelector {baseClass} project={currentSpace} allTypes={toVL(viewlet)?.descriptor === view.viewlet.List} />
+      {/if}
+    </svelte:fragment>
+  </IssuesView>
 {/if}

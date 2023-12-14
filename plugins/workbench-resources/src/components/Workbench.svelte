@@ -170,17 +170,13 @@
     hasNotification = res.some((p) => !p.hidden && p.txes.some((p) => p.isNew))
   })
 
-  // const newNotificationClient = InboxNotificationsClientImpl.getClient()
-  //
-  // newNotificationClient.inboxNotificationsByContext.subscribe((inboxNotificationsByContext) => {
-  //   hasInboxNotifications = Array.from(inboxNotificationsByContext.entries()).some(
-  //     ([docNotifyContext, notifications]) => !docNotifyContext.hidden && notifications.some(({ isViewed }) => !isViewed)
-  //   )
-  // })
-
   const workspaceId = $location.path[1]
 
-  const doSyncLoc = async (loc: Location): Promise<void> => {
+  let syncPromise: Promise<void> | undefined = undefined
+
+  let locUpdate = 0
+
+  const doSyncLoc = async (loc: Location, iteration: number): Promise<void> => {
     if (workspaceId !== $location.path[1]) {
       // Switch of workspace
       return
@@ -188,17 +184,23 @@
     closeTooltip()
     closePopup()
 
-    await syncLoc(loc)
+    await syncLoc(loc, iteration)
     await updateWindowTitle(loc)
     checkOnHide()
+    syncPromise = undefined
   }
   onDestroy(
     location.subscribe((loc) => {
-      void doSyncLoc(loc)
+      locUpdate++
+      if (syncPromise !== undefined) {
+        void syncPromise.then(() => doSyncLoc(loc, locUpdate))
+      } else {
+        syncPromise = doSyncLoc(loc, locUpdate)
+      }
     })
   )
 
-  async function updateWindowTitle (loc: Location) {
+  async function updateWindowTitle (loc: Location): Promise<void> {
     const ws = loc.path[1]
     const docTitle = await getWindowTitle(loc)
     if (docTitle !== undefined && docTitle !== '') {
@@ -209,7 +211,8 @@
     }
     void broadcastEvent(workbench.event.NotifyTitle, document.title)
   }
-  async function getWindowTitle (loc: Location) {
+
+  async function getWindowTitle (loc: Location): Promise<string | undefined> {
     if (loc.fragment == null) return
     const hierarchy = client.getHierarchy()
     const [, _id, _class] = decodeURIComponent(loc.fragment).split('|')
@@ -286,17 +289,19 @@
     return loc
   }
 
-  async function syncLoc (loc: Location): Promise<void> {
+  async function syncLoc (loc: Location, iteration: number): Promise<void> {
     const originalLoc = JSON.stringify(loc)
 
     if (loc.path.length > 3 && getSpecialComponent(loc.path[3]) === undefined) {
       // resolve short links
       const resolvedLoc = await resolveShortLink(loc)
+      if (locUpdate !== iteration) {
+        return
+      }
       if (resolvedLoc !== undefined && !areLocationsEqual(loc, resolvedLoc.loc)) {
         loc = mergeLoc(loc, resolvedLoc)
       }
     }
-
     setResolvedLocation(loc)
     const app = loc.path[2]
     let space = loc.path[3] as Ref<Space>
@@ -324,6 +329,9 @@
           let len = 3
           if (spaceRef !== undefined && specialRef !== undefined) {
             const spaceObj = await client.findOne<Space>(core.class.Space, { _id: spaceRef })
+            if (locUpdate !== iteration) {
+              return
+            }
             if (spaceObj !== undefined) {
               loc.path[3] = spaceRef
               loc.path[4] = specialRef
@@ -342,7 +350,13 @@
       clear(1)
       currentAppAlias = app
       currentApplication = await client.findOne<Application>(workbench.class.Application, { alias: app })
+      if (locUpdate !== iteration) {
+        return
+      }
       navigatorModel = await buildNavModel(client, currentApplication)
+      if (locUpdate !== iteration) {
+        return
+      }
     }
 
     if (
@@ -376,6 +390,9 @@
         currentSpecial = space
       } else {
         await updateSpace(space)
+        if (locUpdate !== iteration) {
+          return
+        }
         setSpaceSpecial(special)
       }
     }
@@ -391,7 +408,7 @@
     if (fragment !== currentFragment) {
       currentFragment = fragment
       if (fragment !== undefined && fragment.trim().length > 0) {
-        setOpenPanelFocus(fragment)
+        await setOpenPanelFocus(fragment)
       } else {
         closePanel()
       }

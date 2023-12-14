@@ -147,7 +147,7 @@
   class:flex-grow={fullSize}
   class:w-full={focusable || fullSize}
   class:uppercase
-  on:click={() => {
+  on:click|stopPropagation={() => {
     input.focus()
   }}
   use:resizeObserver={(element) => {
@@ -181,7 +181,9 @@
         on:change
         on:keydown
         on:keypress
-        on:blur
+        on:blur={() => {
+          dispatch('blur', value)
+        }}
       />
     {:else if format === 'number'}
       <input
@@ -196,7 +198,9 @@
         on:change
         on:keydown
         on:keypress
-        on:blur
+        on:blur={() => {
+          dispatch('blur', value)
+        }}
       />
     {:else}
       <input
@@ -210,7 +214,9 @@
         on:change
         on:keydown
         on:keypress
-        on:blur
+        on:blur={() => {
+          dispatch('blur', value)
+        }}
       />
     {/if}
   </div>

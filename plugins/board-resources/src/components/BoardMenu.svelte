@@ -1,10 +1,9 @@
 <script lang="ts">
   import { Ref, Space } from '@hcengineering/core'
-  import { Label } from '@hcengineering/ui'
+  import { Label, Button, Component, IconBack, IconClose } from '@hcengineering/ui'
   import board from '../plugin'
   import { createQuery } from '@hcengineering/presentation'
   import { MenuPage } from '@hcengineering/board'
-  import { Button, Component, IconBack, IconClose } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let currentSpace: Ref<Space> | undefined

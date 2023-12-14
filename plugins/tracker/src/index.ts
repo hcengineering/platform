@@ -33,7 +33,7 @@ import {
 } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, Resource, plugin } from '@hcengineering/platform'
 import { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
-import { ProjectTypeCategory, Task, Project as TaskProject } from '@hcengineering/task'
+import { ProjectTypeDescriptor, Task, Project as TaskProject, TaskType } from '@hcengineering/task'
 import { AnyComponent, ComponentExtensionId, Location, ResolvedLocation } from '@hcengineering/ui'
 import { Action, ActionCategory, IconProps } from '@hcengineering/view'
 
@@ -201,6 +201,7 @@ export interface Issue extends Task {
  * @public
  */
 export interface IssueDraft {
+  kind?: Ref<TaskType>
   _id: Ref<Issue>
   title: string
   description: Markup
@@ -450,8 +451,10 @@ export default plugin(trackerId, {
   },
   category: {
     Other: '' as Ref<TagCategory>,
-    Tracker: '' as Ref<ActionCategory>,
-    ProjectTypeCategory: '' as Ref<ProjectTypeCategory>
+    Tracker: '' as Ref<ActionCategory>
+  },
+  descriptors: {
+    ProjectType: '' as Ref<ProjectTypeDescriptor>
   },
   action: {
     SetDueDate: '' as Ref<Action>,
@@ -495,5 +498,9 @@ export default plugin(trackerId, {
   extensions: {
     IssueListHeader: '' as ComponentExtensionId,
     EditIssueHeader: '' as ComponentExtensionId
+  },
+  taskTypes: {
+    Issue: '' as Ref<TaskType>,
+    SubIssue: '' as Ref<TaskType>
   }
 })

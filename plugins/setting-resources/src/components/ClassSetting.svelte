@@ -16,21 +16,22 @@
   import core, { Class, Doc, Obj, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { AnySvelteComponent, getLocation, Icon, Label, navigate } from '@hcengineering/ui'
+  import { AnySvelteComponent, Icon, Label, getLocation, navigate } from '@hcengineering/ui'
   import setting from '../plugin'
   import { filterDescendants } from '../utils'
   import ClassAttributes from './ClassAttributes.svelte'
   import ClassHierarchy from './ClassHierarchy.svelte'
 
-  export let ofClass: Ref<Class<Obj>> | undefined
+  export let ofClass: Ref<Class<Obj>> | undefined = undefined
   export let attributeMapper:
   | {
     component: AnySvelteComponent
     label: IntlString
     props: Record<string, any>
   }
-  | undefined
+  | undefined = undefined
   export let withoutHeader = false
+  export let useOfClassAttributes = true
 
   const loc = getLocation()
   const client = getClient()
@@ -47,26 +48,38 @@
   const clQuery = createQuery()
 
   let classes: Ref<Class<Doc>>[] = []
-  clQuery.query(core.class.Class, {}, (res) => {
-    classes = filterDescendants(hierarchy, ofClass, res)
+  let rawClasses: Class<Doc>[] = []
 
-    if (ofClass !== undefined) {
-      // We need to include all possible mixins as well
-      for (const ancestor of hierarchy.getAncestors(ofClass)) {
-        if (ancestor === ofClass) {
-          continue
-        }
-        const mixins = hierarchy.getDescendants(ancestor).filter((it) => hierarchy.isMixin(it))
-        for (const m of mixins) {
-          const mm = hierarchy.getClass(m)
-          if (!classes.includes(m) && mm.extends === ancestor && mm.label !== undefined) {
-            // Check if parent of
-            classes.push(m)
-          }
+  clQuery.query(core.class.Class, {}, (res) => {
+    rawClasses = res
+  })
+
+  $: classes = filterDescendants(hierarchy, ofClass, rawClasses)
+  $: if (ofClass !== undefined) {
+    // We need to include all possible mixins as well
+    for (const ancestor of hierarchy.getAncestors(ofClass)) {
+      if (ancestor === ofClass) {
+        continue
+      }
+      const mixins = hierarchy.getDescendants(ancestor).filter((it) => hierarchy.isMixin(it))
+      for (const m of mixins) {
+        const mm = hierarchy.getClass(m)
+        if (
+          !classes.includes(m) &&
+          mm.extends === ancestor &&
+          mm.label !== undefined &&
+          client.getHierarchy().hasMixin(mm, setting.mixin.Editable)
+        ) {
+          // Check if parent of
+          classes.push(m)
         }
       }
     }
-  })
+  }
+
+  $: if (ofClass !== undefined && _class !== undefined && !client.getHierarchy().isDerived(_class, ofClass)) {
+    _class = ofClass
+  }
 </script>
 
 <div class="antiComponent">
@@ -91,7 +104,11 @@
     </div>
     <div class="ac-column max">
       {#if _class !== undefined}
-        <ClassAttributes {_class} {ofClass} {attributeMapper} />
+        <table class="antiTable">
+          <tbody>
+            <ClassAttributes {_class} {ofClass} {attributeMapper} {useOfClassAttributes} />
+          </tbody>
+        </table>
       {/if}
     </div>
   </div>

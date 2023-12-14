@@ -81,7 +81,7 @@
               {items}
               selected={account.role?.toString()}
               on:selected={(e) => {
-                change(account, Number(e.detail))
+                void change(account, Number(e.detail))
               }}
             />
           </div>

@@ -15,14 +15,14 @@
 <script lang="ts">
   import type { Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import type { ProjectType, ProjectTypeCategory } from '@hcengineering/task'
+  import type { ProjectType, ProjectTypeDescriptor } from '@hcengineering/task'
   import task from '@hcengineering/task'
   import type { DropdownTextItem } from '@hcengineering/ui'
   import { ButtonKind, ButtonSize, DropdownLabels } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
 
-  export let categories: Ref<ProjectTypeCategory>[]
+  export let descriptors: Ref<ProjectTypeDescriptor>[]
   export let type: Ref<ProjectType> | undefined = undefined
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
@@ -31,7 +31,14 @@
 
   let types: ProjectType[] = []
   const typesQ = createQuery()
-  const query = disabled ? { category: { $in: categories } } : { category: { $in: categories }, archived: false }
+  const query = disabled
+    ? {
+        descriptor: { $in: descriptors }
+      }
+    : {
+        descriptor: { $in: descriptors },
+        archived: false
+      }
   $: typesQ.query(task.class.ProjectType, query, (result) => {
     types = result
   })

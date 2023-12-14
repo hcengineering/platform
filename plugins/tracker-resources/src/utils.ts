@@ -25,7 +25,6 @@ import core, {
   type Doc,
   type DocumentQuery,
   type DocumentUpdate,
-  type IdMap,
   type Ref,
   type Space,
   type StatusCategory,
@@ -37,7 +36,8 @@ import core, {
 } from '@hcengineering/core'
 import { type Asset, type IntlString } from '@hcengineering/platform'
 import { createQuery, getClient } from '@hcengineering/presentation'
-import task, { calcRank, type ProjectType } from '@hcengineering/task'
+import task, { calcRank, getStatusIndex, type ProjectType } from '@hcengineering/task'
+import { activeProjects as taskActiveProjects, taskTypeStore } from '@hcengineering/task-resources'
 import {
   IssuePriority,
   IssuesDateModificationPeriod,
@@ -68,10 +68,16 @@ import {
   statusStore,
   type SelectDirection
 } from '@hcengineering/view-resources'
-import { get, writable } from 'svelte/store'
+import { derived, get } from 'svelte/store'
 import tracker from './plugin'
 import { defaultMilestoneStatuses, defaultPriorities } from './types'
 
+export const activeProjects = derived(taskActiveProjects, (projects) => {
+  const client = getClient()
+  return toIdMap(
+    Array.from(projects.values()).filter((it) => client.getHierarchy().isDerived(it._class, tracker.class.Project))
+  ) as Map<Ref<Project>, Project>
+})
 export * from './types'
 
 export const UNSET_COLOR = -1
@@ -311,6 +317,7 @@ export async function issueStatusSort (
     )
     type = _space?.$lookup?.type
   }
+  const taskTypes = get(taskTypeStore)
   const statuses = get(statusStore).byId
   // TODO: How we track category updates.
 
@@ -323,8 +330,8 @@ export async function issueStatusSort (
         listIssueKanbanStatusOrder.indexOf(bVal?.category as Ref<StatusCategory>)
       if (res === 0) {
         if (type != null) {
-          const aIndex = type.statuses.findIndex((s) => s._id === a)
-          const bIndex = type.statuses.findIndex((s) => s._id === b)
+          const aIndex = getStatusIndex(type, taskTypes, a)
+          const bIndex = getStatusIndex(type, taskTypes, b)
           return aIndex - bIndex
         } else {
           return aVal.name.localeCompare(bVal.name)
@@ -341,8 +348,8 @@ export async function issueStatusSort (
         listIssueStatusOrder.indexOf(bVal?.category as Ref<StatusCategory>)
       if (res === 0) {
         if (type != null) {
-          const aIndex = type.statuses.findIndex((s) => s._id === a)
-          const bIndex = type.statuses.findIndex((s) => s._id === b)
+          const aIndex = getStatusIndex(type, taskTypes, a)
+          const bIndex = getStatusIndex(type, taskTypes, b)
           return aIndex - bIndex
         } else {
           return aVal.name.localeCompare(bVal.name)
@@ -378,14 +385,6 @@ export async function milestoneSort (
     })
   })
 }
-
-export const activeProjects = writable<IdMap<Project>>(new Map())
-const activeProjectsQuery = createQuery(true)
-
-activeProjectsQuery.query(tracker.class.Project, { archived: false }, (projects) => {
-  activeProjects.set(toIdMap(projects))
-})
-
 export async function moveIssuesToAnotherMilestone (
   client: TxOperations,
   oldMilestone: Milestone,

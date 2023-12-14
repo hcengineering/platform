@@ -75,9 +75,6 @@
       groupDepth: viewlet.viewOptions?.groupDepth
     }
 
-    if (classes.length > 1) {
-      mergedModel.groupBy.push('_class')
-    }
     for (const ev of extraViewlets) {
       mergedModel.groupBy.push(...(ev.viewOptions?.groupBy ?? []))
       mergedModel.orderBy.push(...(ev.viewOptions?.orderBy ?? []))

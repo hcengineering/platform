@@ -15,23 +15,22 @@
 
 import activity from '@hcengineering/activity'
 import contact from '@hcengineering/contact'
-import { type Account, type Domain, DOMAIN_MODEL, type Ref } from '@hcengineering/core'
-import { type Builder, Mixin, Model } from '@hcengineering/model'
+import { DOMAIN_MODEL, type Account, type Domain, type Ref } from '@hcengineering/core'
+import { Mixin, Model, type Builder } from '@hcengineering/model'
 import core, { TClass, TConfiguration, TDoc } from '@hcengineering/model-core'
 import view, { createAction } from '@hcengineering/model-view'
 import notification from '@hcengineering/notification'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import {
+  settingId,
   type Editable,
   type Handler,
   type Integration,
   type IntegrationType,
   type InviteSettings,
-  settingId,
   type SettingsCategory,
   type UserMixin
 } from '@hcengineering/setting'
-import task from '@hcengineering/task'
 import templates from '@hcengineering/templates'
 import setting from './plugin'
 
@@ -39,8 +38,8 @@ import workbench from '@hcengineering/model-workbench'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 
 export { settingId } from '@hcengineering/setting'
-export { default } from './plugin'
 export { settingOperation } from './migration'
+export { default } from './plugin'
 
 export const DOMAIN_SETTING = 'setting' as Domain
 
@@ -153,6 +152,9 @@ export function createModel (builder: Builder): void {
       label: setting.string.WorkspaceSetting,
       icon: setting.icon.Setting,
       component: setting.component.WorkspaceSettings,
+      extraComponents: {
+        navigation: setting.component.WorkspaceSettings
+      },
       group: 'settings',
       secured: false,
       order: 2000
@@ -167,9 +169,9 @@ export function createModel (builder: Builder): void {
       label: setting.string.Integrations,
       icon: setting.icon.Integrations,
       component: setting.component.Integrations,
-      group: 'settings',
+      group: 'settings-account',
       secured: false,
-      order: 3000
+      order: 1500
     },
     setting.ids.Integrations
   )
@@ -200,21 +202,7 @@ export function createModel (builder: Builder): void {
     setting.ids.Configure
   )
   builder.createDoc(
-    setting.class.WorkspaceSettingCategory,
-    core.space.Model,
-    {
-      name: 'statuses',
-      label: setting.string.ManageProjects,
-      icon: task.icon.ManageTemplates,
-      component: setting.component.ManageProjects,
-      group: 'settings-editor',
-      secured: false,
-      order: 4000
-    },
-    setting.ids.ManageProjects
-  )
-  builder.createDoc(
-    setting.class.WorkspaceSettingCategory,
+    setting.class.SettingsCategory,
     core.space.Model,
     {
       name: 'classes',
@@ -237,7 +225,8 @@ export function createModel (builder: Builder): void {
       component: setting.component.EnumSetting,
       group: 'settings-editor',
       secured: false,
-      order: 4600
+      order: 4600,
+      expandable: true
     },
     setting.ids.EnumSetting
   )

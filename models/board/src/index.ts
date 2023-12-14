@@ -516,16 +516,26 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(
-    task.class.ProjectTypeCategory,
+    task.class.ProjectTypeDescriptor,
     core.space.Model,
     {
-      name: board.string.Boards,
+      name: board.string.BoardApplication,
       description: board.string.ManageBoardStatuses,
       icon: board.component.TemplatesIcon,
-      attachedToClass: board.class.Board,
-      statusClass: core.class.Status,
-      statusCategories: [task.statusCategory.Active, task.statusCategory.Won, task.statusCategory.Lost]
+      baseClass: board.class.Board
     },
-    board.category.BoardType
+    board.descriptors.BoardType
+  )
+  builder.createDoc(
+    task.class.TaskTypeDescriptor,
+    core.space.Model,
+    {
+      baseClass: board.class.Card,
+      allowCreate: true,
+      description: board.string.Card,
+      icon: board.icon.Card,
+      name: board.string.Card
+    },
+    board.descriptors.Card
   )
 }

@@ -19,6 +19,14 @@
   },
   "plugins": ["@typescript-eslint", "import"],
   "ignorePatterns": ["*.json", "node_modules/*", ".eslintrc.js"],
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".ts"],
+        "moduleDirectory": ["src", "node_modules"]
+      }
+    }
+  },
   "overrides": [
     {
       "files": ["**/*.svelte"],
@@ -30,13 +38,13 @@
         "@typescript-eslint/array-type": "off",
         "@typescript-eslint/promise-function-async": "off",
         "@typescript-eslint/consistent-type-imports": "off",
-        "import/first": "off",
-        "import/no-duplicates": "off",
+        "import/first": "warn",
+        "import/no-duplicates": "warn",
         "import/no-mutable-exports": "off",
-        "import/no-unresolved": "off",
-        "no-multiple-empty-lines": "off",
+        "import/no-unresolved": "warn",
+        "no-multiple-empty-lines": "warn",
         "no-undef-init": "off",
-        "no-use-before-define": "off",
+        "no-use-before-define": "warn",
          // This need to be enabled eventually
         "@typescript-eslint/explicit-function-return-type": "warn",
         "@typescript-eslint/strict-boolean-expressions":"warn",

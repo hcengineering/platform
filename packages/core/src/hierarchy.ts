@@ -427,7 +427,11 @@ export class Hierarchy {
     this.classifierProperties.delete(attribute.attributeOf)
   }
 
-  getAllAttributes (clazz: Ref<Classifier>, to?: Ref<Classifier>): Map<string, AnyAttribute> {
+  getAllAttributes (
+    clazz: Ref<Classifier>,
+    to?: Ref<Classifier>,
+    traverse?: (name: string, attr: AnyAttribute) => void
+  ): Map<string, AnyAttribute> {
     const result = new Map<string, AnyAttribute>()
     let ancestors = this.getAncestors(clazz)
     if (to !== undefined) {
@@ -448,6 +452,7 @@ export class Hierarchy {
       const attributes = this.attributes.get(cls)
       if (attributes !== undefined) {
         for (const [name, attr] of attributes) {
+          traverse?.(name, attr)
           result.set(name, attr)
         }
       }

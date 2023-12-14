@@ -16,15 +16,14 @@
 import { TxOperations } from '@hcengineering/core'
 import { leadId } from '@hcengineering/lead'
 import {
+  tryMigrate,
+  tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
-  type MigrationUpgradeClient,
-  tryUpgrade
+  type MigrationUpgradeClient
 } from '@hcengineering/model'
-import core from '@hcengineering/model-core'
-import { createProjectType, createSequence } from '@hcengineering/model-task'
-import tracker from '@hcengineering/model-tracker'
-import task from '@hcengineering/task'
+import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
+import task, { createProjectType, createSequence, fixTaskTypes } from '@hcengineering/model-task'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import lead from './plugin'
 
@@ -37,42 +36,66 @@ async function createSpace (tx: TxOperations): Promise<void> {
       tx,
       {
         name: 'Default funnel',
-        category: lead.category.FunnelTypeCategory,
-        description: ''
+        descriptor: lead.descriptors.FunnelType,
+        description: '',
+        tasks: []
       },
       [
         {
-          color: PaletteColorIndexes.Coin,
-          name: 'Incoming',
-          ofAttribute: lead.attribute.State,
-          category: task.statusCategory.Active
-        },
-        {
-          color: PaletteColorIndexes.Arctic,
-          name: 'Negotation',
-          ofAttribute: lead.attribute.State,
-          category: task.statusCategory.Active
-        },
-        {
-          color: PaletteColorIndexes.Watermelon,
-          name: 'Offer preparing',
-          ofAttribute: lead.attribute.State,
-          category: task.statusCategory.Active
-        },
-        {
-          color: PaletteColorIndexes.Orange,
-          name: 'Make a decision',
-          ofAttribute: lead.attribute.State,
-          category: task.statusCategory.Active
-        },
-        {
-          color: PaletteColorIndexes.Ocean,
-          name: 'Contract conclusion',
-          ofAttribute: lead.attribute.State,
-          category: task.statusCategory.Active
-        },
-        { name: 'Won', ofAttribute: lead.attribute.State, category: task.statusCategory.Won },
-        { name: 'Lost', ofAttribute: lead.attribute.State, category: task.statusCategory.Lost }
+          _id: lead.taskType.Lead,
+          name: 'Lead',
+          descriptor: lead.descriptors.Lead,
+          ofClass: lead.class.Lead,
+          targetClass: lead.class.Lead,
+          statusClass: core.class.Status,
+          statusCategories: [
+            task.statusCategory.UnStarted,
+            task.statusCategory.Active,
+            task.statusCategory.Won,
+            task.statusCategory.Lost
+          ],
+          kind: 'task',
+          factory: [
+            {
+              color: PaletteColorIndexes.Coin,
+              name: 'Backlog',
+              ofAttribute: lead.attribute.State,
+              category: task.statusCategory.UnStarted
+            },
+            {
+              color: PaletteColorIndexes.Coin,
+              name: 'Incoming',
+              ofAttribute: lead.attribute.State,
+              category: task.statusCategory.Active
+            },
+            {
+              color: PaletteColorIndexes.Arctic,
+              name: 'Negotation',
+              ofAttribute: lead.attribute.State,
+              category: task.statusCategory.Active
+            },
+            {
+              color: PaletteColorIndexes.Watermelon,
+              name: 'Offer preparing',
+              ofAttribute: lead.attribute.State,
+              category: task.statusCategory.Active
+            },
+            {
+              color: PaletteColorIndexes.Orange,
+              name: 'Make a decision',
+              ofAttribute: lead.attribute.State,
+              category: task.statusCategory.Active
+            },
+            {
+              color: PaletteColorIndexes.Ocean,
+              name: 'Contract conclusion',
+              ofAttribute: lead.attribute.State,
+              category: task.statusCategory.Active
+            },
+            { name: 'Won', ofAttribute: lead.attribute.State, category: task.statusCategory.Won },
+            { name: 'Lost', ofAttribute: lead.attribute.State, category: task.statusCategory.Lost }
+          ]
+        }
       ],
       lead.template.DefaultFunnel
     )
@@ -98,24 +121,48 @@ async function createDefaults (tx: TxOperations): Promise<void> {
 }
 
 export const leadOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (client: MigrationClient): Promise<void> {
+    await tryMigrate(client, leadId, [
+      {
+        state: 'fix-category-descriptors',
+        func: async (client) => {
+          await client.update(
+            DOMAIN_SPACE,
+            { _class: task.class.ProjectType, category: 'lead:category:FunnelTypeCategory' },
+            {
+              $set: { descriptor: lead.descriptors.FunnelType },
+              $unset: { category: 1 }
+            }
+          )
+        }
+      },
+      {
+        state: 'fixTaskStatus',
+        func: async (client): Promise<void> => {
+          await fixTaskTypes(client, lead.descriptors.FunnelType, async () => [
+            {
+              name: 'Lead',
+              descriptor: lead.descriptors.Lead,
+              ofClass: lead.class.Lead,
+              targetClass: lead.class.Lead,
+              statusCategories: [
+                task.statusCategory.UnStarted,
+                task.statusCategory.Active,
+                task.statusCategory.Won,
+                task.statusCategory.Lost
+              ],
+              statusClass: core.class.Status,
+              kind: 'task'
+            }
+          ])
+        }
+      }
+    ])
+  },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const ops = new TxOperations(client, core.account.System)
     await createDefaults(ops)
 
-    await tryUpgrade(client, leadId, [
-      {
-        state: 'related-targets',
-        func: async (client): Promise<void> => {
-          const ops = new TxOperations(client, core.account.ConfigUser)
-          await ops.createDoc(tracker.class.RelatedIssueTarget, core.space.Configuration, {
-            rule: {
-              kind: 'classRule',
-              ofClass: lead.class.Lead
-            }
-          })
-        }
-      }
-    ])
+    await tryUpgrade(client, leadId, [])
   }
 }

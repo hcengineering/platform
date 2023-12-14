@@ -26,7 +26,7 @@
   import { Component, DueDatePresenter } from '@hcengineering/ui'
   import { BuildModelKey } from '@hcengineering/view'
   import { DocNavLink, ObjectPresenter, enabledConfig, statusStore } from '@hcengineering/view-resources'
-  import { ChatMessagesPresenter } from '@hcengineering/notification-resources'
+  import { ChatMessagesPresenter } from '@hcengineering/chunter-resources'
 
   import ApplicationPresenter from './ApplicationPresenter.svelte'
 
@@ -135,13 +135,15 @@
         {/if}
         {#if enabledConfig(config, 'comments')}
           <ChatMessagesPresenter value={object.comments} {object} kind="list" size="x-small" />
-          <ChatMessagesPresenter
-            value={object.$lookup?.attachedTo?.comments}
-            object={object.$lookup?.attachedTo}
-            withInput={false}
-            kind="list"
-            size="x-small"
-          />
+          {#if object.$lookup?.attachedTo}
+            <ChatMessagesPresenter
+              value={object.$lookup?.attachedTo?.comments}
+              object={object.$lookup?.attachedTo}
+              withInput={false}
+              kind="list"
+              size="x-small"
+            />
+          {/if}
         {/if}
       </div>
       {#if enabledConfig(config, 'assignee')}

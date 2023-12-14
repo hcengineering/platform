@@ -50,6 +50,7 @@
     "ChooseIcon": "Выбрать иконку",
     "AddIssue": "Добавить задачу",
     "NewIssue": "Новая задача",
+    "NewIssuePlaceholder": "Новая",
     "ResumeDraft": "Восстановить черновик",
     "SaveIssue": "Создать задачу",
     "SetPriority": "Установить приоритет\u2026",
@@ -288,7 +289,8 @@
     "IssueAssigneedToYou": "Назначено вам",
     "RelatedIssueTargetDescription": "Настройка проекта по умолчанию для Класса или пространства",
     "MapRelatedIssues": "Настроить проекты по умолчанию для связанных задач",
-    "DefaultIssueStatus": "Статус по умолчанию"
+    "DefaultIssueStatus": "Статус по умолчанию",
+    "IssueStatus": "Cтатус"
   },
   "status": {}
 }

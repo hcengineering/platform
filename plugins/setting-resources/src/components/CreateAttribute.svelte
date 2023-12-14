@@ -95,6 +95,8 @@
     index = e.detail?.index
     defaultValue = e.detail?.defaultValue
   }
+
+  $: clazz = client.getHierarchy().getClass(_class)
 </script>
 
 <Card
@@ -106,6 +108,13 @@
   }}
   on:changeContent
 >
+  <svelte:fragment slot="title">
+    <div class="flex-row-center">
+      <Label label={setting.string.CreatingAttribute} />
+      <div class="p-1">></div>
+      <Label label={clazz.label} />
+    </div>
+  </svelte:fragment>
   <div class="mb-2"><EditBox bind:value={name} placeholder={core.string.Name} /></div>
   <div class="flex-col mb-2">
     <div class="flex-row-center flex-grow">

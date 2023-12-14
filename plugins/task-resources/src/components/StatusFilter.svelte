@@ -16,7 +16,7 @@
   import core, { Doc, FindResult, IdMap, Ref, RefTo, Space, Status, toIdMap } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import { ProjectType } from '@hcengineering/task'
+  import { TaskType } from '@hcengineering/task'
   import ui, {
     EditWithIcon,
     Icon,
@@ -39,7 +39,7 @@
   import view from '@hcengineering/view-resources/src/plugin'
   import { buildConfigLookup, getPresenter } from '@hcengineering/view-resources/src/utils'
   import { createEventDispatcher } from 'svelte'
-  import { selectedTypeStore, typeStore } from '..'
+  import { selectedTaskTypeStore, taskTypeStore } from '..'
 
   export let filter: Filter
   export let space: Ref<Space> | undefined = undefined
@@ -65,21 +65,19 @@
 
   async function getValues (
     search: string,
-    selectedType: Ref<ProjectType> | undefined,
-    typeStore: IdMap<ProjectType>,
+    selectedType: Ref<TaskType> | undefined,
+    typeStore: IdMap<TaskType>,
     statusStore: IdMap<Status>
   ): Promise<void> {
-    if (objectsPromise) {
-      await objectsPromise
-    }
+    await objectsPromise
     targets.clear()
 
     for (const object of filter.value) {
       targets.add(object)
     }
-    const type = selectedType ? typeStore.get(selectedType) : undefined
+    const type = selectedType !== undefined ? typeStore.get(selectedType) : undefined
     if (type !== undefined) {
-      values = type?.statuses?.map((p) => statusStore.get(p._id))
+      values = type?.statuses?.map((p) => statusStore.get(p))
       for (const value of values) {
         targets.add(value?._id)
       }
@@ -153,7 +151,7 @@
     updateFilter()
   }
 
-  function updateFilter () {
+  function updateFilter (): void {
     clearTimeout(filterUpdateTimeout)
 
     filterUpdateTimeout = setTimeout(() => {
@@ -165,7 +163,9 @@
 
   const dispatch = createEventDispatcher()
 
-  $: if (targetClass) getValues(search, $selectedTypeStore, $typeStore, $statusStore.byId)
+  $: if (targetClass != null) {
+    void getValues(search, $selectedTaskTypeStore, $taskTypeStore, $statusStore.byId)
+  }
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>

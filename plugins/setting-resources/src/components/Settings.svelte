@@ -71,8 +71,12 @@
   }
   function selectCategory (id: string): void {
     const loc = getCurrentResolvedLocation()
-    loc.path[3] = id
-    loc.path.length = 4
+    if (loc.path[3] === id) {
+      loc.path.length = 3
+    } else {
+      loc.path[3] = id
+      loc.path.length = 4
+    }
     navigate(loc)
   }
   function signOut (): void {
@@ -86,7 +90,7 @@
     setMetadata(presentation.metadata.Token, null)
     setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
     setMetadataLocalStorage(login.metadata.LoginEmail, null)
-    closeClient()
+    void closeClient()
     navigate({ path: [loginId] })
   }
   function selectWorkspace (): void {
@@ -105,20 +109,43 @@
       <div class="antiPanel-wrap__content">
         <NavHeader label={setting.string.Settings} />
 
-        <Scroller shrink>
-          {#each categories as category, i}
-            {#if i > 0 && categories[i - 1].group !== category.group}
+        <Scroller>
+          {#each categories as _category, i}
+            {#if i > 0 && categories[i - 1].group !== _category.group}
               <div class="antiNav-divider short line" />
             {/if}
             <CategoryElement
-              icon={category.icon}
-              label={category.label}
-              selected={category.name === categoryId}
-              expandable={category._id === setting.ids.Setting}
+              icon={_category.icon}
+              label={_category.label}
+              selected={_category.name === categoryId}
+              expandable={_category.expandable ?? _category._id === setting.ids.Setting}
               on:click={() => {
-                selectCategory(category.name)
+                selectCategory(_category.name)
               }}
-            />
+            >
+              <svelte:fragment slot="tools">
+                {#if _category.extraComponents?.tools}
+                  <Component
+                    is={_category.extraComponents?.tools}
+                    props={{
+                      visibleNav,
+                      kind: 'tools',
+                      categoryName: _category.name
+                    }}
+                  />
+                {/if}
+              </svelte:fragment>
+            </CategoryElement>
+            {#if _category.extraComponents?.navigation}
+              <Component
+                is={_category.extraComponents?.navigation}
+                props={{
+                  visibleNav,
+                  kind: 'navigation',
+                  categoryName: _category.name
+                }}
+              />
+            {/if}
           {/each}
           <div class="antiNav-space" />
         </Scroller>

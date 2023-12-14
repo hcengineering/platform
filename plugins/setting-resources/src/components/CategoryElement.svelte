@@ -28,34 +28,29 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-  class="antiNav-element"
+  class="antiNav-element flex-row-center flex-between"
   class:selected
-  class:expandable
   on:click|stopPropagation={() => {
     dispatch('click')
   }}
 >
-  <div class="an-element__icon">
-    {#if icon}
-      <Icon {icon} size={'small'} />
-    {/if}
+  <div class="flex-row-center flex flex-between flex-grow">
+    <div class="flex-row-center">
+      <div class="an-element__icon">
+        {#if icon}
+          <Icon {icon} size={'small'} />
+        {/if}
+      </div>
+      <span class="an-element__label" class:trans-title={expandable}>
+        {#if label}<Label {label} />{/if}
+      </span>
+    </div>
+    <slot name="tools" />
   </div>
-  <span class="an-element__label">
-    {#if label}<Label {label} />{/if}
-  </span>
 </div>
 
 <style lang="scss">
   .expandable {
     position: relative;
-    &::after {
-      content: '▶';
-      position: absolute;
-      top: 50%;
-      right: 0.5rem;
-      font-size: 0.375rem;
-      color: var(--dark-color);
-      transform: translateY(-50%);
-    }
   }
 </style>

@@ -19,10 +19,10 @@
   import { closeTooltip, tooltipstore } from '../tooltips'
   import type { FadeOptions } from '../types'
   import { defaultSP } from '../types'
-  import IconUpOutline from './icons/UpOutline.svelte'
+  import { DelayedCaller } from '../utils'
   import IconDownOutline from './icons/DownOutline.svelte'
   import HalfUpDown from './icons/HalfUpDown.svelte'
-  import { DelayedCaller } from '../utils'
+  import IconUpOutline from './icons/UpOutline.svelte'
 
   export let padding: string | undefined = undefined
   export let autoscroll: boolean = false

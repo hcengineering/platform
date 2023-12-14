@@ -24,7 +24,7 @@
 
   export let label: IntlString
   export let value: Ref<Account>[]
-  export let onChange: (refs: Ref<Account>[]) => void
+  export let onChange: ((refs: Ref<Account>[]) => void) | undefined
   export let readonly = false
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
@@ -41,7 +41,7 @@
     }
     update = async () => {
       const accounts = await client.findAll(contact.class.PersonAccount, { person: { $in: evt.detail } })
-      onChange(accounts.map((it) => it._id))
+      onChange?.(accounts.map((it) => it._id))
       if (timer !== null) {
         clearTimeout(timer)
       }
@@ -52,7 +52,7 @@
   }
 
   onDestroy(() => {
-    update?.()
+    void update?.()
   })
 
   const excludedQuery = createQuery()

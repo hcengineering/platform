@@ -14,9 +14,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, Status } from '@hcengineering/core'
-  import { Project } from '@hcengineering/task'
-  import StateIconPresenter from './StateIconPresenter.svelte'
+  import core, { IdMap, Ref, Status, StatusCategory } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import task, { Project, ProjectType, TaskType } from '@hcengineering/task'
+  import {
+    ColorDefinition,
+    Icon,
+    IconSize,
+    IconWithEmoji,
+    getColorNumberByText,
+    getPlatformColorDef,
+    themeStore
+  } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
+  import { statusStore } from '@hcengineering/view-resources'
+  import { createEventDispatcher, onMount } from 'svelte'
+  import { typeStore } from '../..'
+  import IconBacklog from '../icons/IconBacklog.svelte'
+  import IconCanceled from '../icons/IconCanceled.svelte'
+  import IconCompleted from '../icons/IconCompleted.svelte'
+  import IconStarted from '../icons/IconStarted.svelte'
 
   export let value: Status | undefined
   export let shouldShowAvatar = true
@@ -28,7 +45,82 @@
   export let noUnderline: boolean = false
   export let accent: boolean = false
   export let shrink: number = 0
-  export let space: Ref<Project>
+  export let space: Ref<Project> | undefined = undefined
+  export let projectType: Ref<ProjectType> | undefined = undefined
+  export let taskType: Ref<TaskType> | undefined = undefined
+  export let size: IconSize = 'small'
+
+  const dispatch = createEventDispatcher()
+
+  let type: ProjectType | undefined = undefined
+  let category: StatusCategory | undefined
+
+  $: void getType(space, projectType, $typeStore)
+
+  const client = getClient()
+
+  async function getType (
+    space: Ref<Project> | undefined,
+    projectType: Ref<ProjectType> | undefined,
+    types: IdMap<ProjectType>
+  ): Promise<ProjectType | undefined> {
+    if (projectType !== undefined) {
+      type = types.get(projectType)
+      return
+    }
+    const _space = await client.findOne(task.class.Project, { _id: space })
+    if (_space === undefined) {
+      type = undefined
+      return
+    }
+    type = types.get(_space.type)
+  }
+
+  $: projectState = type?.statuses.find((p) => p._id === value?._id)
+
+  const dispatchAccentColor = (color?: ColorDefinition): void => {
+    dispatch('accent-color', color)
+  }
+
+  $: color =
+    projectState?.color !== undefined
+      ? getPlatformColorDef(
+        projectState.color ?? category?.color ?? getColorNumberByText(value?.name ?? ''),
+        $themeStore.dark
+      )
+      : undefined
+  $: dispatchAccentColor(color)
+
+  onMount(() => {
+    dispatchAccentColor(color)
+  })
+
+  $: void updateCategory(value)
+
+  async function updateCategory (value: Status | undefined): Promise<void> {
+    if (value === undefined) {
+      category = undefined
+      return
+    }
+    category = await client.findOne(core.class.StatusCategory, { _id: value.category })
+  }
+
+  const categoryIcons = {
+    [task.statusCategory.UnStarted]: IconBacklog,
+    [task.statusCategory.Active]: IconStarted,
+    [task.statusCategory.Won]: IconCompleted,
+    [task.statusCategory.Lost]: IconCanceled
+  }
+
+  $: sameCategory = (type?.statuses ?? []).filter(
+    (it) =>
+      $statusStore.byId.get(it._id)?.category === value?.category &&
+      (taskType === undefined || it.taskType === taskType)
+  )
+
+  $: index = sameCategory.findIndex((it) => it._id === value?._id) + 1
+
+  $: icon = projectState?.icon === view.ids.IconWithEmoji ? IconWithEmoji : projectState?.icon
 </script>
 
 {#if value}
@@ -42,8 +134,27 @@
     on:click
   >
     {#if shouldShowAvatar}
-      <div class:mr-2={shouldShowName}>
-        <StateIconPresenter {value} {shouldShowTooltip} {space} />
+      <div
+        class="state-container"
+        class:inline
+        class:mr-2={shouldShowName}
+        title={shouldShowTooltip ? value.name : undefined}
+      >
+        {#if icon != null}
+          <Icon {icon} {size} iconProps={{ icon: projectState?.color ?? category?.color }} />
+        {:else if category?._id === task.statusCategory.Active}
+          <Icon
+            icon={categoryIcons[category._id]}
+            {size}
+            iconProps={{ index, count: sameCategory.length + 1, fill: projectState?.color ?? category?.color }}
+          />
+        {:else}
+          <Icon
+            icon={categoryIcons[category?._id ?? task.statusCategory.UnStarted]}
+            {size}
+            iconProps={{ fill: projectState?.color ?? category?.color }}
+          />
+        {/if}
       </div>
     {/if}
     {#if shouldShowName}
@@ -53,3 +164,13 @@
     {/if}
   </div>
 {/if}
+
+<style lang="scss">
+  .state-container {
+    flex-shrink: 0;
+
+    &.inline {
+      transform: translateY(0.125rem);
+    }
+  }
+</style>

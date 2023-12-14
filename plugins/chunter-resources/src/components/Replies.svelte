@@ -15,9 +15,8 @@
 <script lang="ts">
   import { Message } from '@hcengineering/chunter'
   import { Person } from '@hcengineering/contact'
-  import { personByIdStore } from '@hcengineering/contact-resources'
+  import { personByIdStore, Avatar } from '@hcengineering/contact-resources'
   import { Doc, IdMap, Ref } from '@hcengineering/core'
-  import { Avatar } from '@hcengineering/contact-resources'
   import { Label, TimeSince } from '@hcengineering/ui'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { DocUpdates } from '@hcengineering/notification'

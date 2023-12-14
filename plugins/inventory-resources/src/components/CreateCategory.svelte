@@ -14,8 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachedData, AttachedDoc, Doc, Ref } from '@hcengineering/core'
-  import { generateId } from '@hcengineering/core'
+  import { AttachedData, AttachedDoc, Doc, Ref, generateId } from '@hcengineering/core'
   import { OK, Status } from '@hcengineering/platform'
   import { Card, getClient } from '@hcengineering/presentation'
   import type { Category } from '@hcengineering/inventory'

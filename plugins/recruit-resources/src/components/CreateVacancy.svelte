@@ -35,12 +35,16 @@
   import recruit from '../plugin'
   import Company from './icons/Company.svelte'
   import Vacancy from './icons/Vacancy.svelte'
+  import { selectedTypeStore, typeStore } from '@hcengineering/task-resources'
 
   const dispatch = createEventDispatcher()
 
   let name: string = ''
   let template: ProjectType | undefined
-  let typeId: Ref<ProjectType> | undefined
+  let typeId: Ref<ProjectType> | undefined = $selectedTypeStore
+
+  $: typeType = typeId !== undefined ? $typeStore.get(typeId) : undefined
+
   let appliedTemplateId: Ref<ProjectType> | undefined
   let objectId: Ref<VacancyClass> = generateId()
   let issueTemplates: FindResult<IssueTemplate>
@@ -144,8 +148,8 @@
     return resId
   }
 
-  async function createVacancy () {
-    if (typeId === undefined) {
+  async function createVacancy (): Promise<void> {
+    if (typeId === undefined || typeType === undefined) {
       throw Error(`Failed to find target project type: ${typeId}`)
     }
 
@@ -184,6 +188,10 @@
     }
 
     await descriptionBox.createAttachments()
+
+    // Add vacancy mixin
+    await client.createMixin(objectId, recruit.class.Vacancy, core.space.Space, typeType.targetClass, {})
+
     objectId = generateId()
 
     dispatch('close', id)
@@ -226,6 +234,7 @@
   }}
   on:changeContent
 >
+  {typeType?.name}
   <div class="flex-row-center clear-mins">
     <div class="mr-3">
       <Button focusIndex={1} icon={Vacancy} size={'medium'} kind={'link-bordered'} noFocus />
@@ -275,7 +284,7 @@
     <Component
       is={task.component.ProjectTypeSelector}
       props={{
-        categories: [recruit.category.VacancyTypeCategories],
+        descriptors: [recruit.descriptors.VacancyType],
         type: typeId,
         focusIndex: 4,
         kind: 'regular',

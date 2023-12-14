@@ -21,6 +21,7 @@
   export let addClass: string | undefined = undefined
   export let noScroll: boolean = false
   export let kind: 'default' | 'thin' = 'default'
+  export let updateOnMouse = true
 
   const refs: HTMLElement[] = []
 
@@ -75,10 +76,14 @@
         class="list-item{addClass ? ` ${addClass}` : ''}"
         class:selection={row === selection}
         on:mouseover={mouseAttractor(() => {
-          onRow(row)
+          if (updateOnMouse) {
+            onRow(row)
+          }
         })}
         on:mouseenter={mouseAttractor(() => {
-          onRow(row)
+          if (updateOnMouse) {
+            onRow(row)
+          }
         })}
         on:focus={() => {}}
         bind:this={refs[row]}
@@ -100,6 +105,9 @@
       margin: 0 0.5rem;
       min-width: 0;
       border-radius: 0.25rem;
+      &:hover {
+        background-color: var(--theme-popup-divider);
+      }
     }
     &.thin {
       .list-item {

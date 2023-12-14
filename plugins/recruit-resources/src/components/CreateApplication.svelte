@@ -41,7 +41,7 @@
     getClient
   } from '@hcengineering/presentation'
   import type { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
-  import task, { calcRank, getStates } from '@hcengineering/task'
+  import task, { TaskType, calcRank, getStates } from '@hcengineering/task'
   import ui, {
     Button,
     ColorPopup,
@@ -62,7 +62,7 @@
   import CandidateCard from './CandidateCard.svelte'
   import VacancyCard from './VacancyCard.svelte'
   import VacancyOrgPresenter from './VacancyOrgPresenter.svelte'
-  import { typeStore } from '@hcengineering/task-resources'
+  import { TaskKindSelector, selectedTypeStore, typeStore } from '@hcengineering/task-resources'
 
   export let space: Ref<Vacancy>
   export let candidate: Ref<Candidate>
@@ -94,7 +94,9 @@
     modifiedOn: Date.now(),
     modifiedBy: '' as Ref<Account>,
     startDate: null,
-    dueDate: null
+    dueDate: null,
+    kind: '' as Ref<TaskType>,
+    isDone: false
   }
 
   const dispatch = createEventDispatcher()
@@ -106,13 +108,16 @@
     return (preserveCandidate || _candidate === undefined) && assignee === undefined
   }
 
-  async function createApplication () {
+  async function createApplication (): Promise<void> {
     if (selectedState === undefined) {
       throw new Error(`Please select initial state:${_space}`)
     }
     const sequence = await client.findOne(task.class.Sequence, { attachedTo: recruit.class.Applicant })
     if (sequence === undefined) {
       throw new Error('sequence object not found')
+    }
+    if (kind === undefined) {
+      throw new Error('kind is not specified')
     }
 
     const lastOne = await client.findOne(recruit.class.Applicant, {}, { sort: { rank: SortingOrder.Descending } })
@@ -145,7 +150,8 @@
         assignee: doc.assignee,
         rank: calcRank(lastOne, undefined),
         startDate: null,
-        dueDate: null
+        dueDate: null,
+        kind
       },
       doc._id
     )
@@ -209,6 +215,8 @@
     return { id: s._id, label: s.name, color: s.color ?? getColorNumberByText(s.name) }
   })
 
+  let kind: Ref<TaskType> | undefined
+
   const manager = createFocusManager()
 
   const existingApplicationsQuery = createQuery()
@@ -268,6 +276,7 @@
   <svelte:fragment slot="title">
     <div class="flex-row-center gap-2">
       <Label label={recruit.string.CreateApplication} />
+      <TaskKindSelector projectType={vacancy?.type} bind:taskType={kind} baseClass={recruit.class.Applicant} />
     </div>
   </svelte:fragment>
   <StatusControl slot="error" {status} />
@@ -300,7 +309,7 @@
     <div class="flex-grow">
       <SpaceSelect
         _class={recruit.class.Vacancy}
-        spaceQuery={{ archived: false }}
+        spaceQuery={{ archived: false, ...($selectedTypeStore !== undefined ? { type: $selectedTypeStore } : {}) }}
         spaceOptions={orgOptions}
         readonly={preserveVacancy}
         label={recruit.string.Vacancy}
@@ -309,9 +318,6 @@
           label: recruit.string.CreateVacancy
         }}
         bind:value={_space}
-        on:change={(evt) => {
-          _space = evt.detail
-        }}
         component={VacancyOrgPresenter}
         componentProps={{ inline: true }}
       >

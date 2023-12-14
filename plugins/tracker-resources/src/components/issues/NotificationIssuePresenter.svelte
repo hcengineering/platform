@@ -20,7 +20,7 @@
 
   let currentProject: Project | undefined = undefined
 
-  $: currentProject = $activeProjects.get(value.space)
+  $: currentProject = $activeProjects.get(value.space) as Project
 
   $: title = currentProject ? `${currentProject.identifier}-${value?.number}` : `${value?.number}`
 </script>

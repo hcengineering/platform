@@ -14,27 +14,15 @@
 -->
 <script lang="ts">
   import { Class, Doc, DocumentQuery, mergeQueries, Ref, Space, WithLookup } from '@hcengineering/core'
-  import { IntlString, getEmbeddedLabel } from '@hcengineering/platform'
+  import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import { Project, ProjectType, ProjectTypeCategory } from '@hcengineering/task'
-  import {
-    AnyComponent,
-    Button,
-    Component,
-    IModeSelector,
-    IconAdd,
-    Label,
-    Loading,
-    ModeSelector,
-    SearchEdit,
-    resolvedLocationStore,
-    showPopup
-  } from '@hcengineering/ui'
-  import { ViewOptions, Viewlet, ViewletDescriptor, ViewletPreference } from '@hcengineering/view'
+  import { Project, ProjectType, ProjectTypeDescriptor } from '@hcengineering/task'
+  import { AnyComponent, Button, Component, IconAdd, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
+  import { Viewlet, ViewletDescriptor, ViewletPreference, ViewOptions } from '@hcengineering/view'
   import { FilterBar, FilterButton, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { selectedTaskTypeStore, selectedTypeStore, taskTypeStore } from '..'
   import task from '../plugin'
-  import { onDestroy } from 'svelte'
-  import { selectedTypeStore } from '..'
+  import TypeSelector from './TypeSelector.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined
@@ -45,7 +33,7 @@
   export let isCreationDisabled = false
   export let descriptors: Ref<ViewletDescriptor>[] | undefined = undefined
   export let baseQuery: DocumentQuery<Doc> | undefined = undefined
-  export let category: Ref<ProjectTypeCategory>
+  export let descriptor: Ref<ProjectTypeDescriptor>
 
   let search = ''
   let viewlet: WithLookup<Viewlet> | undefined
@@ -53,16 +41,10 @@
   let preference: ViewletPreference | undefined
   let viewlets: WithLookup<Viewlet>[] = []
   let viewOptions: ViewOptions | undefined
-  let types: ProjectType[] = []
-
-  const typeQ = createQuery()
-  $: typeQ.query(task.class.ProjectType, { category, archived: false }, (result) => {
-    types = result
-  })
 
   const spacesQ = createQuery()
   let spaces: Project[] = []
-  $: spacesQ.query(task.class.Project, { type: mode as Ref<ProjectType> }, (result) => {
+  $: spacesQ.query(task.class.Project, { type: $selectedTypeStore as Ref<ProjectType> }, (result) => {
     spaces = result
   })
   let resultQuery: DocumentQuery<Doc>
@@ -70,44 +52,30 @@
   $: searchQuery = search === '' ? query : { ...query, $search: search }
   $: resultQuery = searchQuery
 
-  function showCreateDialog () {
+  function showCreateDialog (): void {
     if (createComponent === undefined) return
     showPopup(createComponent, createComponentProps, 'top')
   }
 
-  $: mode = $resolvedLocationStore.query?.mode ?? undefined
+  $: allTypes = Array.from($taskTypeStore.values())
+    .filter((it) => it.parent === $selectedTypeStore)
+    .map((it) => it._id)
 
-  let config: Array<[string, IntlString, object]> = []
-  $: config = types.map((p) => {
-    return [p._id, getEmbeddedLabel(p.name), {}]
-  })
-  let modeSelectorProps: IModeSelector | undefined = undefined
-  $: if (mode === undefined && config.length > 0) {
-    ;[[mode]] = config
-    selectedTypeStore.set(mode as Ref<ProjectType>)
-  }
-  $: if (mode !== undefined) {
-    modeSelectorProps = {
-      mode,
-      config,
-      onChange: (_mode: string) => {
-        mode = _mode
-        selectedTypeStore.set(mode as Ref<ProjectType>)
-      }
-    }
+  $: finalQuery = {
+    ...resultQuery,
+    ...($selectedTaskTypeStore !== undefined ? { kind: $selectedTaskTypeStore } : { kind: { $in: allTypes } })
   }
 
-  onDestroy(() => {
-    selectedTypeStore.set(undefined)
-  })
+  $: totalQuery = {
+    ...query,
+    ...($selectedTaskTypeStore !== undefined ? { kind: $selectedTaskTypeStore } : { kind: { $in: allTypes } })
+  }
 </script>
 
 <div class="ac-header full divide caption-height">
   <div class="ac-header__wrap-title mr-3">
-    <span class="ac-header__title"><Label {label} /></span>
-    {#if modeSelectorProps !== undefined && modeSelectorProps.config.length > 1}
-      <ModeSelector props={modeSelectorProps} />
-    {/if}
+    <TypeSelector baseClass={_class} />
+    <!-- <span class="ac-header__title"><Label {label} /></span> -->
   </div>
 
   <div class="ac-header-full medium-gap mb-1">
@@ -121,7 +89,7 @@
         ...(descriptors !== undefined ? { descriptor: { $in: descriptors } } : {})
       }}
     />
-    {#if createLabel && createComponent}
+    {#if createLabel !== undefined && createComponent}
       <Button
         icon={IconAdd}
         label={createLabel}
@@ -149,7 +117,7 @@
 
 {#if !viewlet?.$lookup?.descriptor?.component || viewlet?.attachTo !== _class || (preference !== undefined && viewlet?._id !== preference.attachedTo)}
   <Loading />
-{:else if viewOptions && viewlet}
+{:else if viewOptions !== undefined && viewlet}
   <FilterBar
     {_class}
     {space}
@@ -171,8 +139,8 @@
       viewOptionsConfig: viewlet.viewOptions?.other,
       createItemDialog: createComponent,
       createItemLabel: createLabel,
-      query: resultQuery,
-      totalQuery: query
+      query: finalQuery,
+      totalQuery
     }}
   />
 {/if}

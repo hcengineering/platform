@@ -13,30 +13,33 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, ComponentType } from 'svelte'
+  import { ComponentType, createEventDispatcher } from 'svelte'
 
   import { Class, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
-  import { getPlatformColorDef, getPlatformColorForTextDef, IconWithEmoji, themeStore } from '@hcengineering/ui'
   import {
     AnySvelteComponent,
     Button,
     ButtonKind,
-    ButtonSize,
     ButtonShape,
+    ButtonSize,
+    IconFolder,
+    IconWithEmoji,
+    Label,
+    TooltipAlignment,
     eventToHTMLElement,
     getEventPositionElement,
     getFocusManager,
-    IconFolder,
-    Label,
+    getPlatformColorDef,
+    getPlatformColorForTextDef,
     showPopup,
-    TooltipAlignment
+    themeStore
   } from '@hcengineering/ui'
   import view, { IconProps } from '@hcengineering/view'
 
-  import SpacesPopup from './SpacesPopup.svelte'
   import { ObjectCreate } from '../types'
   import { getClient } from '../utils'
+  import SpacesPopup from './SpacesPopup.svelte'
 
   export let _class: Ref<Class<Space>>
   export let spaceQuery: DocumentQuery<Space> | undefined = { archived: false }
@@ -69,20 +72,19 @@
   const dispatch = createEventDispatcher()
 
   const mgr = getFocusManager()
-  async function updateSelected (value: Ref<Space> | undefined) {
-    selected = value !== undefined ? await client.findOne(_class, { ...(spaceQuery ?? {}), _id: value }) : undefined
+  async function updateSelected (_value: Ref<Space> | undefined, spaceQuery: DocumentQuery<Space> | undefined) {
+    selected = _value !== undefined ? await client.findOne(_class, { ...(spaceQuery ?? {}), _id: _value }) : undefined
 
     if (selected === undefined && autoSelect) {
       selected = (await findDefaultSpace?.()) ?? (await client.findOne(_class, { ...(spaceQuery ?? {}) }))
       if (selected !== undefined) {
         value = selected._id ?? undefined
-        dispatch('change', value)
-        dispatch('space', selected)
       }
     }
+    dispatch('object', selected)
   }
 
-  $: updateSelected(value)
+  $: updateSelected(value, spaceQuery)
 
   const showSpacesPopup = (ev: MouseEvent) => {
     if (readonly) {
@@ -108,7 +110,6 @@
       (result) => {
         if (result !== undefined) {
           value = result?._id ?? undefined
-          dispatch('change', value)
           mgr?.setFocusPos(focusIndex)
         }
       }

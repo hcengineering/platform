@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
+import {} from '@hcengineering/notification'
 import type { IntlString } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import task, { taskId } from '@hcengineering/task'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type GetAllValuesFunc, type SortFunc } from '@hcengineering/view'
-import {} from '@hcengineering/notification'
 
 export default mergeIds(taskId, task, {
   string: {

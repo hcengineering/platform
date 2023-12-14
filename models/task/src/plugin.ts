@@ -14,8 +14,9 @@
 // limitations under the License.
 //
 
+import {} from '@hcengineering/notification'
 import type { Ref, Space } from '@hcengineering/core'
-import { mergeIds } from '@hcengineering/platform'
+import { mergeIds, type IntlString } from '@hcengineering/platform'
 import { type TagCategory } from '@hcengineering/tags'
 import { taskId } from '@hcengineering/task'
 import task from '@hcengineering/task-resources/src/plugin'
@@ -59,7 +60,14 @@ export default mergeIds(taskId, task, {
     StatusSelector: '' as AnyComponent,
     TemplatesIcon: '' as AnyComponent,
     TypesView: '' as AnyComponent,
-    StateIconPresenter: '' as AnyComponent
+    StateIconPresenter: '' as AnyComponent,
+    TaskTypePresenter: '' as AnyComponent,
+    ProjectTypePresenter: '' as AnyComponent,
+    TaskTypeClassPresenter: '' as AnyComponent,
+    ProjectTypeClassPresenter: '' as AnyComponent,
+    ManageProjects: '' as AnyComponent,
+    ManageProjectsTools: '' as AnyComponent,
+    ManageProjectsContent: '' as AnyComponent
   },
   space: {
     TasksPublic: '' as Ref<Space>
@@ -67,5 +75,10 @@ export default mergeIds(taskId, task, {
   viewlet: {
     TableIssue: '' as Ref<Viewlet>,
     KanbanIssue: '' as Ref<Viewlet>
+  },
+  string: {
+    ManageProjects: '' as IntlString,
+    StateBacklog: '' as IntlString,
+    StateActive: '' as IntlString
   }
 })
