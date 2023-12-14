@@ -9,6 +9,9 @@ export class MilestonesDetailsPage extends CommonTrackerPage {
   readonly buttonTargetDate: Locator
   readonly inputMilestoneName: Locator
   readonly inputDescription: Locator
+  readonly buttonMoreActions: Locator
+  readonly buttonYesMoveAndDeleteMilestonePopup: Locator
+  readonly buttonModalOk: Locator
 
   constructor (page: Page) {
     super(page)
@@ -18,6 +21,11 @@ export class MilestonesDetailsPage extends CommonTrackerPage {
     this.buttonTargetDate = page.locator('//span[text()="Target date"]/following-sibling::div[1]/button')
     this.inputMilestoneName = page.locator('input[placeholder="Milestone name"]')
     this.inputDescription = page.locator('div.inputMsg div.tiptap')
+    this.buttonMoreActions = page.locator('div.popupPanel-title > div:last-child > button:first-child')
+    this.buttonYesMoveAndDeleteMilestonePopup = page.locator(
+      'form[id="tracker:string:MoveAndDeleteMilestone"] button.primary'
+    )
+    this.buttonModalOk = page.locator('div.popup div.footer button:first-child span', { hasText: 'Ok' })
   }
 
   async checkIssue (data: NewMilestone): Promise<void> {
@@ -49,5 +57,12 @@ export class MilestonesDetailsPage extends CommonTrackerPage {
       await this.buttonTargetDate.click()
       await this.fillDatePopupInDays(data.targetDateInDays)
     }
+  }
+
+  async deleteMilestone (): Promise<void> {
+    await this.buttonMoreActions.click()
+    await this.selectFromDropdown(this.page, 'Delete')
+    await this.buttonYesMoveAndDeleteMilestonePopup.click()
+    await this.buttonModalOk.click()
   }
 }
