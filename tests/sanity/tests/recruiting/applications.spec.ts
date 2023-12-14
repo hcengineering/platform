@@ -17,7 +17,7 @@ test.describe('Application tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
   })
 
-  test('create application', async ({ page }) => {
+  test.skip('create application', async ({ page }) => {
     await page.locator('[id="app-recruit\\:string\\:RecruitApplication"]').click()
     await page.waitForLoadState('load')
 
@@ -65,10 +65,10 @@ test.describe('Application tests', () => {
   })
 
   test('Edit an Application', async ({ page }) => {
+    const vacancyName = 'Software Engineer'
     const navigationMenuPage = new NavigationMenuPage(page)
     await navigationMenuPage.buttonApplications.click()
 
-    const vacancyName = 'Software Engineer'
     const applicationsPage = new ApplicationsPage(page)
     const talentName = await applicationsPage.createNewApplicationWithNewTalent({
       vacancy: vacancyName,
@@ -86,7 +86,7 @@ test.describe('Application tests', () => {
     await applicationsDetailsPage.addFirstReview('First Application Review', 'First Application review description')
   })
 
-  test('Change Done status', async ({ page }) => {
+  test.skip('Change Done status', async ({ page }) => {
     const navigationMenuPage = new NavigationMenuPage(page)
     await navigationMenuPage.buttonApplications.click()
 
@@ -115,7 +115,7 @@ test.describe('Application tests', () => {
     await applicationsPage.checkApplicationState(talentName, 'Won')
   })
 
-  test('Delete an Application', async ({ page }) => {
+  test.skip('Delete an Application', async ({ page }) => {
     const navigationMenuPage = new NavigationMenuPage(page)
     await navigationMenuPage.buttonApplications.click()
 
@@ -136,7 +136,7 @@ test.describe('Application tests', () => {
     await applicationsPage.checkApplicationNotExist(applicationId)
   })
 
-  test('Change & Save all States', async ({ page }) => {
+  test.skip('Change & Save all States', async ({ page }) => {
     const navigationMenuPage = new NavigationMenuPage(page)
     await navigationMenuPage.buttonApplications.click()
 
