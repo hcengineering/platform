@@ -510,7 +510,7 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   protected async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult> {
-    const docCache = new Map<Ref<Doc>, Doc>()
+    const docCache = new Map<string, Doc>()
     for (const queries of this.queries) {
       const isTx = this.client.getHierarchy().isDerived(queries[0], core.class.Tx)
       for (const q of queries[1]) {
@@ -525,7 +525,7 @@ export class LiveQuery extends TxProcessor implements Client {
     return {}
   }
 
-  private async handleDocUpdate (q: Query, tx: TxUpdateDoc<Doc>, docCache?: Map<Ref<Doc>, Doc>): Promise<void> {
+  private async handleDocUpdate (q: Query, tx: TxUpdateDoc<Doc>, docCache?: Map<string, Doc>): Promise<void> {
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
@@ -658,7 +658,7 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   // Check if query is partially matched.
-  private async matchQuery (q: Query, tx: TxUpdateDoc<Doc>, docCache?: Map<Ref<Doc>, Doc>): Promise<boolean> {
+  private async matchQuery (q: Query, tx: TxUpdateDoc<Doc>, docCache?: Map<string, Doc>): Promise<boolean> {
     if (!this.client.getHierarchy().isDerived(tx.objectClass, q._class)) {
       return false
     }
@@ -687,10 +687,15 @@ export class LiveQuery extends TxProcessor implements Client {
     }
 
     if (matched) {
-      const realDoc = docCache?.get(doc._id) ?? (await this.client.findOne(q._class, { _id: doc._id }, q.options))
+      const docIdKey = doc._id + JSON.stringify(q.options?.lookup)
+
+      const lookup = q.options?.lookup
+      const realDoc =
+        docCache?.get(docIdKey) ??
+        (await this.client.findOne(q._class, { _id: doc._id }, lookup !== undefined ? { lookup } : undefined))
 
       if (realDoc != null && docCache != null) {
-        docCache?.set(realDoc._id, realDoc)
+        docCache?.set(docIdKey, realDoc)
       }
       if (realDoc === undefined) return false
       const res = matchQuery([realDoc], q.query, q._class, this.client.getHierarchy())
