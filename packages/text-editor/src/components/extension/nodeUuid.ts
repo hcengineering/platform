@@ -115,8 +115,10 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
         key: new PluginKey('handle-node-uuid-click-plugin'),
         props: {
           handleClick (view, pos) {
+            const from = Math.max(0, pos - 1)
+            const to = Math.min(view.state.doc.content.size, pos + 1)
             const markRanges =
-              getMarksBetween(Math.max(0, pos - 1), pos + 1, view.state.doc)?.filter(
+              getMarksBetween(from, to, view.state.doc)?.filter(
                 (markRange) => markRange.mark.type.name === NAME && markRange.from <= pos && markRange.to >= pos
               ) ?? []
             let nodeUuid: string | null = null
