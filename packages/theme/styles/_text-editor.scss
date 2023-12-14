@@ -230,6 +230,10 @@
   }
 }
 
+.ProseMirror-gapcursor:after {
+  border-top: 1px solid var(--theme-text-primary-color) !important;
+}
+
 .reference {
   &:hover,
   &.ProseMirror-selectednode {
