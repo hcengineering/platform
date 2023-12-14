@@ -1,0 +1,8 @@
+{
+  "extends": "./node_modules/@hcengineering/platform-rig/profiles/ui/tsconfig.json",
+
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./lib"
+  }
+}

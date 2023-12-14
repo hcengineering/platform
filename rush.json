@@ -217,7 +217,7 @@
   //     "tools",      // non-shipping projects that are part of the developer toolchain
   //     "prototypes"  // experiments that should mostly be ignored by the review process
   //   ],
-  // 
+  //
   //   /**
   //    * A list of NPM package scopes that will be excluded from review.
   //    * We recommend to exclude TypeScript typings (the "@types" scope), because
@@ -355,7 +355,7 @@
     //    * The folder name for this variant.
     //    */
     //   "variantName": "old-sdk",
-    // 
+    //
     //   /**
     //    * An informative description
     //    */
@@ -394,19 +394,19 @@
     //    * The NPM package name of the project (must match package.json)
     //    */
     //   "packageName": "my-app",
-    // 
+    //
     //   /**
     //    * The path to the project folder, relative to the rush.json config file.
     //    */
     //   "projectFolder": "apps/my-app",
-    // 
+    //
     //   /**
     //    * An optional category for usage in the "browser-approved-packages.json"
     //    * and "nonbrowser-approved-packages.json" files.  The value must be one of the
     //    * strings from the "reviewCategories" defined above.
     //    */
     //   "reviewCategory": "production",
-    // 
+    //
     //   /**
     //    * A list of local projects that appear as devDependencies for this project, but cannot be
     //    * locally linked because it would create a cyclic dependency; instead, the last published
@@ -415,20 +415,20 @@
     //   "cyclicDependencyProjects": [
     //     // "my-toolchain"
     //   ],
-    // 
+    //
     //   /**
     //    * If true, then this project will be ignored by the "rush check" command.
     //    * The default value is false.
     //    */
     //   // "skipRushCheck": false,
-    // 
+    //
     //   /**
     //    * A flag indicating that changes to this project will be published to npm, which affects
     //    * the Rush change and publish workflows. The default value is false.
     //    * NOTE: "versionPolicyName" and "shouldPublish" are alternatives; you cannot specify them both.
     //    */
     //   // "shouldPublish": false,
-    // 
+    //
     //   /**
     //    * Facilitates postprocessing of a project's files prior to publishing.
     //    *
@@ -437,7 +437,7 @@
     //    * must contain its own package.json file, which is typically a build output.
     //    */
     //   // "publishFolder": "temp/publish",
-    // 
+    //
     //   /**
     //    * An optional version policy associated with the project.  Version policies are defined
     //    * in "version-policies.json" file.  See the "rush publish" documentation for more info.
@@ -445,7 +445,7 @@
     //    */
     //   // "versionPolicyName": ""
     // },
-    // 
+    //
     {
       "packageName": "@hcengineering/platform-rig",
       "projectFolder": "packages/platform-rig",
@@ -721,7 +721,7 @@
       "projectFolder": "dev/account",
       "shouldPublish": false
     },
-    {    
+    {
       "packageName": "@hcengineering/server-attachment",
       "projectFolder": "server-plugins/attachment",
       "shouldPublish": false
@@ -1251,7 +1251,6 @@
       "projectFolder": "server-plugins/telegram-resources",
       "shouldPublish": false
     },
-
     {
       "packageName": "@hcengineering/tracker",
       "projectFolder": "plugins/tracker",
@@ -1501,6 +1500,26 @@
     {
       "packageName": "@hcengineering/support-resources",
       "projectFolder": "plugins/support-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-survey",
+      "projectFolder": "models/survey",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/survey",
+      "projectFolder": "plugins/survey",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/survey-assets",
+      "projectFolder": "plugins/survey-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/survey-resources",
+      "projectFolder": "plugins/survey-resources",
       "shouldPublish": false
     }
   ]

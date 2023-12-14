@@ -18,6 +18,7 @@ import {
   AttachedDoc,
   Attribute,
   Class,
+  CollectionSize,
   Doc,
   DocManager,
   IdMap,
@@ -167,7 +168,7 @@ export interface Issue extends Task {
   component: Ref<Component> | null
 
   // For subtasks
-  subIssues: number
+  subIssues: CollectionSize<Issue>
   blockedBy?: RelatedDocument[]
   relations?: RelatedDocument[]
   parents: IssueParentInfo[]
@@ -185,7 +186,7 @@ export interface Issue extends Task {
   // ReportedTime time, auto updated using trigger.
   reportedTime: number
   // Collection of reportedTime entries, for proper time estimations per person.
-  reports: number
+  reports: CollectionSize<TimeSpendReport>
 
   childInfo: IssueChildInfo[]
 
