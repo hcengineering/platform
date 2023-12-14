@@ -71,7 +71,7 @@
 </script>
 
 <NodeViewWrapper class="table-node-wrapper" data-drag-handle>
-  <div class="table-wrapper" class:table-selected={focused}>
+  <div class="table-wrapper" class:table-selected={editable && focused}>
     <table class={className}>
       <NodeViewContent as="tbody" />
     </table>
