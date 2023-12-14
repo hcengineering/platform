@@ -193,4 +193,37 @@ test.describe('Tracker issue tests', () => {
       await issuesPage.checkParentIssue(newIssue.title, parentIssue.title)
     })
   })
+
+  test('Move to project', async ({ page }) => {
+    const secondProjectName = 'Second Project'
+    const moveIssue: NewIssue = {
+      title: `Issue to another project-${generateId()}`,
+      description: 'Issue to move to another project'
+    }
+
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+    await trackerNavigationMenuPage.openIssuesForProject('Default')
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
+    await issuesPage.createNewIssue(moveIssue)
+    await issuesPage.searchIssueByName(moveIssue.title)
+    await issuesPage.openIssueByName(moveIssue.title)
+
+    const issuesDetailsPage = new IssuesDetailsPage(page)
+    await issuesDetailsPage.moreActionOnIssue('Move to project')
+    await issuesDetailsPage.fillMoveIssuesModal(secondProjectName, true)
+
+    await trackerNavigationMenuPage.openIssuesForProject(secondProjectName)
+
+    await issuesPage.openIssueByName(moveIssue.title)
+    await issuesDetailsPage.checkIssue({
+      ...moveIssue
+    })
+    // await issuesDetailsPage.checkActivityExist('changed project in')
+    // await issuesDetailsPage.checkActivityExist('changed number in')
+  })
 })
