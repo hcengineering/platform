@@ -36,9 +36,12 @@ export class TrackerNavigationMenuPage extends CommonPage {
 
   async openIssuesForProject (projectName: string): Promise<void> {
     await this.page
-      .locator(`div[class*="antiNav-element"] a[href$="issues"][href*="${projectName}"]> div > span`, {
-        hasText: 'Issues'
-      })
+      .locator(
+        `xpath=//div[contains(@class, "parent")]/span[text()="${projectName}"]/../following-sibling::div[1]/a[contains(@href, "issues")]`,
+        {
+          hasText: 'Issues'
+        }
+      )
       .click()
   }
 

@@ -65,11 +65,14 @@ test.describe('Application tests', () => {
   })
 
   test('Edit an Application', async ({ page }) => {
+    const vacancyName = 'Software Engineer'
+
     const navigationMenuPage = new NavigationMenuPage(page)
     await navigationMenuPage.buttonApplications.click()
 
-    const vacancyName = 'Software Engineer'
     const applicationsPage = new ApplicationsPage(page)
+    await applicationsPage.selectType(vacancyName)
+
     const talentName = await applicationsPage.createNewApplicationWithNewTalent({
       vacancy: vacancyName,
       recruiterName: 'first'

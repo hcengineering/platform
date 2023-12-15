@@ -29,11 +29,11 @@ test.describe('Collaborative tests for Application', () => {
       await navigationMenuPage.buttonApplications.click()
 
       const applicationsPage = new ApplicationsPage(page)
+      await applicationsPage.selectType(vacancyName)
       talentName = await applicationsPage.createNewApplicationWithNewTalent({
         vacancy: vacancyName,
         recruiterName: 'first'
       })
-      await applicationsPage.selectType(vacancyName)
       await applicationsPage.openApplicationByTalentName(talentName)
 
       const applicationsDetailsPage = new ApplicationsDetailsPage(page)
