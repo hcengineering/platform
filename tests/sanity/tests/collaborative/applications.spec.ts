@@ -18,7 +18,7 @@ test.describe('Collaborative tests for Application', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
   })
 
-  test.skip('Add comment from several users', async ({ page, browser }) => {
+  test('Add comment from several users', async ({ page, browser }) => {
     const vacancyName = 'Software Engineer'
     let talentName: TalentName
     // open second page
@@ -33,7 +33,6 @@ test.describe('Collaborative tests for Application', () => {
         vacancy: vacancyName,
         recruiterName: 'first'
       })
-      await applicationsPage.selectType(vacancyName)
       await applicationsPage.openApplicationByTalentName(talentName)
 
       const applicationsDetailsPage = new ApplicationsDetailsPage(page)
@@ -60,7 +59,6 @@ test.describe('Collaborative tests for Application', () => {
       await navigationMenuPageSecond.buttonApplications.click()
 
       const applicationsPageSecond = new ApplicationsPage(userSecondPage)
-      await applicationsPageSecond.selectType(vacancyName)
       await applicationsPageSecond.openApplicationByTalentName(talentName)
 
       const applicationsDetailsPageSecond = new ApplicationsDetailsPage(userSecondPage)
@@ -85,7 +83,6 @@ test.describe('Collaborative tests for Application', () => {
       await navigationMenuPage.buttonApplications.click()
 
       const applicationsPage = new ApplicationsPage(page)
-      await applicationsPage.selectType(vacancyName)
       await applicationsPage.openApplicationByTalentName(talentName)
 
       const applicationsDetailsPage = new ApplicationsDetailsPage(page)

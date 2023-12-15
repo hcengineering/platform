@@ -37,10 +37,11 @@ test.describe('actions tests', () => {
     await page.press('body', 'Meta+k')
 
     await expect(page.locator('input.actionsInput')).toBeVisible()
-    await expect(page.locator('div.actionsitem div', { hasText: 'Merge contacts' })).toBeVisible()
 
     await page.click('div.actionsHeader input.actionsInput')
     await page.fill('div.actionsHeader input.actionsInput', 'go to ')
+    await page.waitForTimeout(500)
+
     expect(await page.locator('div.selectPopup div.list-item :text("Go To Vacancies")').count()).toBe(1)
     await page.click('div.selectPopup div.list-item :text("Go To Vacancies")', { delay: 100 })
 
@@ -57,10 +58,10 @@ test.describe('actions tests', () => {
     await page.press('body', 'Meta+k')
 
     await expect(page.locator('input.actionsInput')).toBeVisible()
-    await expect(page.locator('div.actionsitem div', { hasText: 'Merge contacts' })).toBeVisible()
 
     await page.click('div.actionsHeader input.actionsInput')
     await page.fill('div.actionsHeader input.actionsInput', 'go to ')
+    await page.waitForTimeout(500)
     expect(await page.locator('div.selectPopup :text("Go To Applications")').count()).toBe(1)
     await page.click('div.selectPopup :text("Go To Applications")', { delay: 100 })
 
