@@ -8,6 +8,9 @@ export class CommonTrackerPage extends CalendarPage {
   readonly buttonSendComment: Locator
   readonly textComment: Locator
   readonly textActivity: Locator
+  readonly buttonSpaceSelectorMoveIssuesModal: Locator
+  readonly buttonMoveIssuesModal: Locator
+  readonly buttonKeepOriginalMoveIssuesModal: Locator
 
   constructor (page: Page) {
     super(page)
@@ -17,6 +20,11 @@ export class CommonTrackerPage extends CalendarPage {
     this.buttonSendComment = page.locator('g#Send')
     this.textComment = page.locator('div.showMore-content p')
     this.textActivity = page.locator('div.header')
+    this.buttonSpaceSelectorMoveIssuesModal = page.locator(
+      'form[id="tracker:string:MoveIssues"] button[id="space.selector"]'
+    )
+    this.buttonMoveIssuesModal = page.locator('form[id="tracker:string:MoveIssues"] button[type="submit"]')
+    this.buttonKeepOriginalMoveIssuesModal = page.locator('form[id="tracker:string:MoveIssues"] span.toggle-switch')
   }
 
   async selectFilter (filter: string, filterSecondLevel?: string): Promise<void> {
@@ -78,5 +86,14 @@ export class CommonTrackerPage extends CalendarPage {
 
   async checkActivityExist (activity: string): Promise<void> {
     await expect(this.textActivity.filter({ hasText: activity })).toBeVisible()
+  }
+
+  async fillMoveIssuesModal (newProjectName: string, keepOriginalAttributes: boolean = false): Promise<void> {
+    await this.buttonSpaceSelectorMoveIssuesModal.click()
+    await this.selectMenuItem(this.page, newProjectName)
+    if (keepOriginalAttributes) {
+      await this.buttonKeepOriginalMoveIssuesModal.click()
+    }
+    await this.buttonMoveIssuesModal.click({ timeout: 100 })
   }
 }

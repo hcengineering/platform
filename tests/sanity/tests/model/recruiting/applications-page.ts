@@ -13,6 +13,7 @@ export class ApplicationsPage extends CommonRecruitingPage {
   readonly buttonCreateNewApplication: Locator
   readonly buttonTabCreated: Locator
   readonly textTableFirstCell: Locator
+  readonly buttonTypeSelector: Locator
 
   constructor (page: Page) {
     super(page)
@@ -25,6 +26,7 @@ export class ApplicationsPage extends CommonRecruitingPage {
     this.buttonCreateNewApplication = page.locator('form[id="recruit:string:CreateApplication"] button[type="submit"]')
     this.buttonTabCreated = page.locator('div[data-id="tab-created"]')
     this.textTableFirstCell = page.locator('div[class$="firstCell"]')
+    this.buttonTypeSelector = page.locator('div[class*="header"] div[class*="title"] button')
   }
 
   async createNewApplication (data: NewApplication): Promise<void> {
@@ -102,10 +104,7 @@ export class ApplicationsPage extends CommonRecruitingPage {
   }
 
   async selectType (type: string): Promise<void> {
-    await this.page
-      .locator('div[class*=header]')
-      .locator('div[class*=tablist-container]')
-      .locator('div', { hasText: type })
-      .click()
+    await this.buttonTypeSelector.click()
+    await this.selectMenuItem(this.page, type)
   }
 }
