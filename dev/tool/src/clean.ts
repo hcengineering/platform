@@ -40,7 +40,7 @@ import tags, { TagCategory, TagElement, TagReference } from '@hcengineering/tags
 import { MongoClient } from 'mongodb'
 import chunter, { ChatMessage } from '@hcengineering/chunter'
 
-export const DOMAIN_CHUNTER = 'chunter' as Domain
+export const DOMAIN_ACTIVITY = 'activity' as Domain
 
 export async function cleanWorkspace (
   mongoUrl: string,
@@ -354,7 +354,7 @@ export async function fixCommentDoubleIdCreate (workspaceId: WorkspaceId, transa
             doc._id = c.tx.objectId as Ref<ChatMessage>
             await connection.upload(DOMAIN_TX, [c])
             // Also we need to create snapsot
-            await connection.upload(DOMAIN_CHUNTER, [doc])
+            await connection.upload(DOMAIN_ACTIVITY, [doc])
           }
         }
       }
