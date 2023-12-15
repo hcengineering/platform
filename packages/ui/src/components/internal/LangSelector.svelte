@@ -15,9 +15,8 @@
 <script lang="ts">
   import { getContext } from 'svelte'
   import { getMetadata } from '@hcengineering/platform'
-  import { showPopup } from '../..'
+  import ui, { showPopup, deviceOptionsStore as deviceInfo } from '../..'
   import LangPopup from './LangPopup.svelte'
-  import ui, { deviceOptionsStore as deviceInfo } from '../..'
 
   let pressed: boolean = false
 

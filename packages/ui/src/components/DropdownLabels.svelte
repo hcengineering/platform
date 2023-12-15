@@ -97,7 +97,9 @@
     }}
   >
     <span slot="content" class="overflow-label disabled" class:content-color={selectedItem === undefined}>
-      {#if Array.isArray(selectedItem)}
+      {#if $$slots.content}
+        <slot name="content" />
+      {:else if Array.isArray(selectedItem)}
         {#if selectedItem.length > 0}
           {#each selectedItem as seleceted, i}
             <span class="step-row">{seleceted.label}</span>

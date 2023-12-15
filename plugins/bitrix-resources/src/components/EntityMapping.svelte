@@ -12,13 +12,23 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { ClassSetting } from '@hcengineering/setting-resources'
-  import { Button, Expandable, Icon, IconAdd, IconDelete, IconEdit, Label, showPopup } from '@hcengineering/ui'
+  import {
+    Button,
+    Expandable,
+    Icon,
+    IconAdd,
+    IconDelete,
+    IconEdit,
+    Label,
+    showPopup,
+    CheckBox,
+    DropdownLabelsPopup
+  } from '@hcengineering/ui'
   import bitrix from '../plugin'
 
   import AttributeMapper from './AttributeMapper.svelte'
   import FieldMappingPresenter from './FieldMappingPresenter.svelte'
 
-  import { CheckBox, DropdownLabelsPopup } from '@hcengineering/ui'
   import { deepEqual } from 'fast-equals'
   import BitrixFieldLookup from './BitrixFieldLookup.svelte'
   import CreateMappingAttribute from './CreateMappingAttribute.svelte'

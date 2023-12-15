@@ -14,15 +14,16 @@
 -->
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
-  import { getResource } from '@hcengineering/platform'
   import type {
     NotificationGroup,
     NotificationPreferencesGroup,
     NotificationSetting,
     NotificationType
   } from '@hcengineering/notification'
+  import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Label, Scroller, Separator, defineSeparators, settingsSeparators } from '@hcengineering/ui'
+  import { Location, Scroller, getCurrentResolvedLocation, navigate, resolvedLocationStore } from '@hcengineering/ui'
+  import { onDestroy } from 'svelte'
   import notification from '../plugin'
   import GroupElement from './GroupElement.svelte'
   import NotificationGroupSetting from './NotificationGroupSetting.svelte'
@@ -31,7 +32,7 @@
   let groups: NotificationGroup[] = []
   let preferencesGroups: NotificationPreferencesGroup[] = []
 
-  client.findAll(notification.class.NotificationGroup, {}).then((res) => {
+  void client.findAll(notification.class.NotificationGroup, {}).then((res) => {
     groups = res
   })
 
@@ -52,7 +53,7 @@
   let group: Ref<NotificationGroup> | undefined = undefined
   let currentPreferenceGroup: NotificationPreferencesGroup | undefined = undefined
 
-  client.findAll(notification.class.NotificationPreferencesGroup, {}).then((res) => {
+  void client.findAll(notification.class.NotificationPreferencesGroup, {}).then((res) => {
     preferencesGroups = res
   })
 
@@ -64,15 +65,19 @@
     }
   }
 
-  defineSeparators('settingNotify', settingsSeparators)
+  onDestroy(
+    resolvedLocationStore.subscribe((loc) => {
+      void (async (loc: Location): Promise<void> => {
+        group = loc.path[4] as Ref<NotificationGroup>
+        currentPreferenceGroup = undefined
+      })(loc)
+    })
+  )
 </script>
 
-<div class="flex h-full clear-mins">
-  <div class="antiPanel-navigator">
+<div class="flex">
+  <div class="antiPanel-element ml-4 mt-2">
     <div class="antiPanel-wrap__content">
-      <div class="antiNav-header overflow-label">
-        <Label label={notification.string.Notifications} />
-      </div>
       <Scroller shrink>
         {#each preferencesGroups as preferenceGroup}
           <GroupElement
@@ -82,6 +87,9 @@
             on:click={() => {
               currentPreferenceGroup = preferenceGroup
               group = undefined
+              const loc = getCurrentResolvedLocation()
+              loc.path.length = 4
+              navigate(loc)
             }}
           />
         {/each}
@@ -96,6 +104,10 @@
             on:click={() => {
               group = gr._id
               currentPreferenceGroup = undefined
+              const loc = getCurrentResolvedLocation()
+              loc.path[4] = group
+              loc.path.length = 5
+              navigate(loc)
             }}
           />
         {/each}
@@ -103,8 +115,6 @@
       </Scroller>
     </div>
   </div>
-  <Separator name={'settingNotify'} index={0} color={'var(--theme-navpanel-border)'} />
-
   <div class="antiPanel-component filled">
     {#if group}
       <NotificationGroupSetting {group} {settings} />

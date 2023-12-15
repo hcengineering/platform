@@ -34,6 +34,7 @@ import rekoni from '@hcengineering/rekoni'
 import { requestId } from '@hcengineering/request'
 import { settingId } from '@hcengineering/setting'
 import { supportId } from '@hcengineering/support'
+import { surveyId } from '@hcengineering/survey'
 import { tagsId } from '@hcengineering/tags'
 import { taskId } from '@hcengineering/task'
 import telegram, { telegramId } from '@hcengineering/telegram'
@@ -63,6 +64,7 @@ import '@hcengineering/recruit-assets'
 import '@hcengineering/request-assets'
 import '@hcengineering/setting-assets'
 import '@hcengineering/support-assets'
+import '@hcengineering/survey-assets'
 import '@hcengineering/tags-assets'
 import '@hcengineering/task-assets'
 import '@hcengineering/telegram-assets'
@@ -121,6 +123,7 @@ function configureI18n(): void {
    addStringsLoader(requestId, async (lang: string) => await import(`@hcengineering/request-assets/lang/${lang}.json`))
    addStringsLoader(settingId, async (lang: string) => await import(`@hcengineering/setting-assets/lang/${lang}.json`))
    addStringsLoader(supportId, async (lang: string) => await import(`@hcengineering/support-assets/lang/${lang}.json`))
+   addStringsLoader(surveyId, async (lang: string) => await import(`@hcengineering/survey-assets/lang/${lang}.json`))
    addStringsLoader(tagsId, async (lang: string) => await import(`@hcengineering/tags-assets/lang/${lang}.json`))
    addStringsLoader(taskId, async (lang: string) => await import(`@hcengineering/task-assets/lang/${lang}.json`))
    addStringsLoader(telegramId, async (lang: string) => await import(`@hcengineering/telegram-assets/lang/${lang}.json`))
@@ -132,12 +135,12 @@ function configureI18n(): void {
 
 export async function configurePlatform() {
   configureI18n()
-  
+
   const config: Config = await (await fetch(devConfig? '/config-dev.json' : '/config.json')).json()
   console.log('loading configuration', config)
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
-  
+
   if (config.MODEL_VERSION != null) {
     console.log('Minimal Model version requirement', config.MODEL_VERSION)
     setMetadata(presentation.metadata.RequiredVersion, config.MODEL_VERSION)
@@ -145,7 +148,7 @@ export async function configurePlatform() {
   setMetadata(telegram.metadata.TelegramURL, config.TELEGRAM_URL ?? 'http://localhost:8086')
   setMetadata(gmail.metadata.GmailURL, config.GMAIL_URL ?? 'http://localhost:8087')
   setMetadata(calendar.metadata.CalendarServiceURL, config.CALENDAR_URL ?? 'http://localhost:8095')
-  
+
   setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
 
   setMetadata(rekoni.metadata.RekoniUrl, config.REKONI_URL)
@@ -197,6 +200,7 @@ export async function configurePlatform() {
   addLocation(bitrixId, () => import(/* webpackChunkName: "bitrix" */ '@hcengineering/bitrix-resources'))
   addLocation(requestId, () => import(/* webpackChunkName: "request" */ '@hcengineering/request-resources'))
   addLocation(supportId, () => import(/* webpackChunkName: "support" */ '@hcengineering/support-resources'))
+  addLocation(surveyId, () => import(/* webpackChunkName: "support" */ '@hcengineering/survey-resources'))
 
   setMetadata(client.metadata.FilterModel, true)
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])

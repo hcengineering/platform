@@ -211,6 +211,7 @@ function defineFilters (builder: Builder): void {
   //
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ClassFilters, {
     filters: [
+      'kind',
       'status',
       'priority',
       'space',
@@ -359,7 +360,8 @@ function defineApplication (
                 ['all', tracker.string.All, {}],
                 ['active', tracker.string.Active, {}],
                 ['backlog', tracker.string.Backlog, {}]
-              ]
+              ],
+              allProjectsTypes: true
             }
           },
           {
@@ -368,7 +370,6 @@ function defineApplication (
             icon: view.icon.Archive,
             label: tracker.string.AllProjects,
             position: 'bottom',
-            visibleIf: workbench.function.IsOwner,
             spaceClass: tracker.class.Project,
             componentProps: {
               _class: tracker.class.Project,
@@ -686,22 +687,27 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    task.class.ProjectTypeCategory,
+    task.class.ProjectTypeDescriptor,
     core.space.Model,
     {
-      name: tracker.string.Projects,
+      name: tracker.string.TrackerApplication,
       description: tracker.string.ManageWorkflowStatuses,
       icon: task.component.TemplatesIcon,
-      attachedToClass: tracker.class.Project,
-      statusClass: tracker.class.IssueStatus,
-      statusCategories: [
-        tracker.issueStatusCategory.Backlog,
-        tracker.issueStatusCategory.Unstarted,
-        tracker.issueStatusCategory.Started,
-        tracker.issueStatusCategory.Completed,
-        tracker.issueStatusCategory.Canceled
-      ]
+      baseClass: tracker.class.Project
     },
-    tracker.category.ProjectTypeCategory
+    tracker.descriptors.ProjectType
+  )
+
+  builder.createDoc(
+    task.class.TaskTypeDescriptor,
+    core.space.Model,
+    {
+      baseClass: tracker.class.Issue,
+      allowCreate: true,
+      description: tracker.string.Issue,
+      icon: tracker.icon.Issue,
+      name: tracker.string.Issue
+    },
+    tracker.descriptors.Issue
   )
 }

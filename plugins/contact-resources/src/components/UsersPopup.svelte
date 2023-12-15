@@ -69,7 +69,7 @@
   {allowDeselect}
   {titleDeselect}
   {placeholder}
-  {docQuery}
+  docQuery={readonly ? { ...docQuery, _id: { $in: selectedUsers } } : docQuery}
   {filter}
   groupBy={'_class'}
   bind:selectedObjects={selectedUsers}

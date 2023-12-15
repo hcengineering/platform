@@ -88,7 +88,7 @@
 
   $: groupByKey = viewOptions.groupBy[level] ?? noCategory
   let categories: CategoryType[] = []
-  $: updateCategories(_class, space, docs, groupByKey, viewOptions, viewOptionsConfig)
+  $: void updateCategories(_class, space, docs, groupByKey, viewOptions, viewOptionsConfig)
 
   $: groupByDocs = groupBy(docs, groupByKey, categories)
 
@@ -100,8 +100,8 @@
     CategoryQuery.remove(queryId)
   })
 
-  function update () {
-    updateCategories(_class, space, docs, groupByKey, viewOptions, viewOptionsConfig)
+  function update (): void {
+    void updateCategories(_class, space, docs, groupByKey, viewOptions, viewOptionsConfig)
   }
 
   async function updateCategories (
@@ -111,7 +111,7 @@
     groupByKey: string,
     viewOptions: ViewOptions,
     viewOptionsModel: ViewOptionModel[] | undefined
-  ) {
+  ): Promise<void> {
     categories = await getCategories(client, _class, space, docs, groupByKey)
     if (level === 0) {
       for (const viewOption of viewOptionsModel ?? []) {

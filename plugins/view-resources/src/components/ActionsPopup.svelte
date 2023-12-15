@@ -34,14 +34,15 @@
     deviceOptionsStore,
     capitalizeFirstLetter,
     formatKey,
-    themeStore
+    themeStore,
+    ListView,
+    resizeObserver
   } from '@hcengineering/ui'
   import { Action, ActionCategory, ViewContext } from '@hcengineering/view'
   import { filterActions, getSelection } from '../actions'
   import view from '../plugin'
   import { focusStore, selectionStore } from '../selection'
   import { openDoc } from '../utils'
-  import { ListView, resizeObserver } from '@hcengineering/ui'
   import ObjectPresenter from './ObjectPresenter.svelte'
   import { createEventDispatcher, tick } from 'svelte'
 

@@ -18,7 +18,7 @@ export async function createCard (
   client: Client,
   space: Ref<Space>,
   status: Ref<Status>,
-  attribues: Partial<AttachedData<Card>>
+  attribues: Partial<AttachedData<Card>> & { kind: Card['kind'] }
 ): Promise<Ref<Card>> {
   const sequence = await client.findOne(task.class.Sequence, { attachedTo: board.class.Card })
   if (sequence === undefined) {

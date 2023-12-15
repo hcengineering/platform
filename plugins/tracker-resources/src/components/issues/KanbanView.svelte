@@ -103,7 +103,7 @@
 
   $: currentSpace = space ?? tracker.project.DefaultProject
   let currentProject: Project | undefined
-  $: currentProject = $activeProjects.get(currentSpace)
+  $: currentProject = $activeProjects.get(currentSpace) as Project
 
   let resultQuery: DocumentQuery<any> = { ...query }
   const client = getClient()
@@ -194,6 +194,7 @@
   $: listProvider.update(tasks)
 
   let categories: CategoryType[] = []
+  let loadCategories = true
 
   const queryId = generateId()
 
@@ -211,6 +212,7 @@
       queryId
     ).then((res) => {
       categories = res
+      loadCategories = false
     })
   }
 
@@ -227,6 +229,7 @@
     queryId
   ).then((res) => {
     categories = res
+    loadCategories = false
   })
 
   const fullFilled: Record<string, boolean> = {}
@@ -305,7 +308,7 @@
   }
 </script>
 
-{#if categories.length === 0}
+{#if loadCategories}
   <Loading />
 {:else}
   <ActionContext

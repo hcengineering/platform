@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
+import justClone from 'just-clone'
 import { derived, get, writable } from 'svelte/store'
 import { closePopup } from './popups'
-import justClone from 'just-clone'
 import { type Location as PlatformLocation } from './types'
 
 export function locationToUrl (location: PlatformLocation): string {

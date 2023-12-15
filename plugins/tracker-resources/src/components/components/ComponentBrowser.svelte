@@ -47,7 +47,7 @@
   let docWidth: number
   let docSize = false
 
-  function showCreateDialog () {
+  function showCreateDialog (): void {
     showPopup(NewComponent, { space, targetElement: null }, 'top')
   }
 

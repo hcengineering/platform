@@ -54,7 +54,6 @@ export default mergeIds(contactId, contact, {
     ContactArrayEditor: '' as AnyComponent,
     EmployeeEditor: '' as AnyComponent,
     CreateEmployee: '' as AnyComponent,
-    AccountArrayEditor: '' as AnyComponent,
     ChannelFilter: '' as AnyComponent,
     MergePersons: '' as AnyComponent,
     ChannelPanel: '' as AnyComponent,

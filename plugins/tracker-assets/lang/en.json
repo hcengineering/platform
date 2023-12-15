@@ -50,6 +50,7 @@
     "ChooseIcon": "Choose icon",
     "AddIssue": "Add Issue",
     "NewIssue": "New issue",
+    "NewIssuePlaceholder": "New",
     "ResumeDraft": "Resume draft",
     "SaveIssue": "Create issue",
     "SetPriority": "Set priority\u2026",
@@ -288,7 +289,8 @@
     "IssueAssigneedToYou": "Assigned to you",
     "RelatedIssueTargetDescription": "Related issue project target for Class or Space",
     "MapRelatedIssues": "Configure Related issue default projects",
-    "DefaultIssueStatus": "Default issue status"
+    "DefaultIssueStatus": "Default issue status",
+    "IssueStatus": "Status"
   },
   "status": {}
 }

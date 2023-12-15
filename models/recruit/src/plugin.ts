@@ -19,7 +19,7 @@ import type { IntlString, Resource, Status } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { recruitId } from '@hcengineering/recruit'
 import recruit from '@hcengineering/recruit-resources/src/plugin'
-import { type ProjectType } from '@hcengineering/task'
+import { type TaskTypeDescriptor, type ProjectType } from '@hcengineering/task'
 import type { AnyComponent, Location } from '@hcengineering/ui/src/types'
 import type { Action, ActionCategory, ViewAction, ViewQueryAction, Viewlet } from '@hcengineering/view'
 import { type DocUpdateMessageViewlet } from '@hcengineering/activity'
@@ -138,5 +138,8 @@ export default mergeIds(recruitId, recruit, {
     TableReview: '' as Ref<Viewlet>,
     TableVacancyList: '' as Ref<Viewlet>,
     ApplicantDashboard: '' as Ref<Viewlet>
+  },
+  descriptors: {
+    Application: '' as Ref<TaskTypeDescriptor>
   }
 })

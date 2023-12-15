@@ -16,6 +16,7 @@
 
 import { get, writable } from 'svelte/store'
 import {
+  toIdMap,
   type Attribute,
   type Class,
   type Doc,
@@ -23,12 +24,18 @@ import {
   type IdMap,
   type Ref,
   type Status,
-  type TxOperations,
-  toIdMap
+  type TxOperations
 } from '@hcengineering/core'
 import { type IntlString, type Resources } from '@hcengineering/platform'
 import { createQuery, getClient } from '@hcengineering/presentation'
-import task, { type Project, type ProjectType, type Task, calcRank } from '@hcengineering/task'
+import task, {
+  calcRank,
+  getStatusIndex,
+  type Project,
+  type ProjectType,
+  type Task,
+  type TaskType
+} from '@hcengineering/task'
 import { getCurrentLocation, navigate, showPopup } from '@hcengineering/ui'
 import { type ViewletDescriptor } from '@hcengineering/view'
 import { CategoryQuery, statusStore } from '@hcengineering/view-resources'
@@ -46,33 +53,43 @@ import TaskPresenter from './components/TaskPresenter.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
 import TypesView from './components/TypesView.svelte'
 import KanbanView from './components/kanban/KanbanView.svelte'
-import ProjectEditor from './components/kanban/ProjectEditor.svelte'
-import ProjectTypeSelector from './components/kanban/ProjectTypeSelector.svelte'
+import ProjectEditor from './components/projectTypes/ProjectEditor.svelte'
+import ProjectTypeSelector from './components/projectTypes/ProjectTypeSelector.svelte'
 import StateEditor from './components/state/StateEditor.svelte'
 import StatePresenter from './components/state/StatePresenter.svelte'
-import TypeStatesPopup from './components/state/TypeStatesPopup.svelte'
 import StateRefPresenter from './components/state/StateRefPresenter.svelte'
+import TypeStatesPopup from './components/state/TypeStatesPopup.svelte'
+import TaskTypeClassPresenter from './components/taskTypes/TaskTypeClassPresenter.svelte'
+import ProjectTypeClassPresenter from './components/taskTypes/ProjectTypeClassPresenter.svelte'
+import TaskTypePresenter from './components/taskTypes/TaskTypePresenter.svelte'
+import ProjectTypePresenter from './components/projectTypes/ProjectTypePresenter.svelte'
 import TodoItemPresenter from './components/todos/TodoItemPresenter.svelte'
 import TodoItemsPopup from './components/todos/TodoItemsPopup.svelte'
 import TodoStatePresenter from './components/todos/TodoStatePresenter.svelte'
 import Todos from './components/todos/Todos.svelte'
 import StateIconPresenter from './components/state/StateIconPresenter.svelte'
+import TaskKindSelector from './components/taskTypes/TaskKindSelector.svelte'
+
+import ManageProjects from './components/projectTypes/ManageProjects.svelte'
+import ManageProjectsTools from './components/projectTypes/ManageProjectsTools.svelte'
+import ManageProjectsContent from './components/projectTypes/ManageProjectsContent.svelte'
 
 export { default as AssigneePresenter } from './components/AssigneePresenter.svelte'
-export { StateRefPresenter, StatePresenter, TypeStatesPopup }
+export { default as TypeSelector } from './components/TypeSelector.svelte'
 export * from './utils'
+export { StatePresenter, StateRefPresenter, TypeStatesPopup, TaskKindSelector }
 
 async function editStatuses (object: Project, ev: Event): Promise<void> {
   const client = getClient()
-  const category = await client.findOne(task.class.ProjectTypeCategory, { attachedToClass: object._class })
+  const descriptor = await client.findOne(task.class.ProjectTypeDescriptor, { attachedToClass: object._class })
   const loc = getCurrentLocation()
   loc.path[2] = 'setting'
   loc.path[3] = 'setting'
   loc.path[4] = 'statuses'
   loc.query =
-    category != null
+    descriptor != null
       ? {
-          categoryId: category._id,
+          descriptorId: descriptor._id,
           typeId: object.type
         }
       : {
@@ -123,7 +140,14 @@ export default async (): Promise<Resources> => ({
     TemplatesIcon,
     TypesView,
     StateIconPresenter,
-    StatusFilter
+    StatusFilter,
+    TaskTypePresenter,
+    TaskTypeClassPresenter,
+    ProjectTypeClassPresenter,
+    ManageProjects,
+    ManageProjectsTools,
+    ManageProjectsContent,
+    ProjectTypePresenter
   },
   actionImpl: {
     EditStatuses: editStatuses,
@@ -142,10 +166,18 @@ async function getAllStates (
   attr: Attribute<Status>
 ): Promise<any[]> {
   const typeId = get(selectedTypeStore)
+  const taskTypeId = get(selectedTaskTypeStore)
+  if (taskTypeId === undefined) {
+    return []
+  }
   const type = typeId !== undefined ? get(typeStore).get(typeId) : undefined
+  const taskType = get(taskTypeStore).get(taskTypeId)
+  if (taskType === undefined) {
+    return []
+  }
   if (type !== undefined) {
     const statusMap = get(statusStore).byId
-    const statuses = (type.statuses?.map((p) => statusMap.get(p._id)) as Status[]) ?? []
+    const statuses = (taskType.statuses.map((p) => statusMap.get(p)) as Status[]) ?? []
     return statuses
       .filter((p) => p?.category !== task.statusCategory.Lost && p?.category !== task.statusCategory.Won)
       .map((p) => p?._id)
@@ -156,10 +188,8 @@ async function getAllStates (
       let refresh: boolean = false
       const lq = CategoryQuery.getLiveQuery(queryId)
       refresh = lq.query(task.class.Project, { _id: _space as Ref<Project> }, (res) => {
-        const typeId = res[0]?.type
-        const type = get(typeStore).get(typeId)
         const statusMap = get(statusStore).byId
-        const statuses = (type?.statuses?.map((p) => statusMap.get(p._id)) as Status[]) ?? []
+        const statuses = (taskType.statuses.map((p) => statusMap.get(p)) as Status[]) ?? []
         const result = statuses
           .filter((p) => p?.category !== task.statusCategory.Lost && p?.category !== task.statusCategory.Won)
           .map((p) => p?._id)
@@ -191,14 +221,15 @@ async function statusSort (
   const typeId = get(selectedTypeStore)
   const type = typeId !== undefined ? get(typeStore).get(typeId) : undefined
   const statuses = get(statusStore).byId
+  const taskTypes = get(taskTypeStore)
 
   if (type !== undefined) {
     value.sort((a, b) => {
       const aVal = statuses.get(a) as Status
       const bVal = statuses.get(b) as Status
       if (type != null) {
-        const aIndex = type.statuses.findIndex((s) => s._id === a)
-        const bIndex = type.statuses.findIndex((s) => s._id === b)
+        const aIndex = getStatusIndex(type, taskTypes, a)
+        const bIndex = getStatusIndex(type, taskTypes, b)
         return aIndex - bIndex
       } else {
         return aVal.name.localeCompare(bVal.name)
@@ -210,18 +241,22 @@ async function statusSort (
     const types = await client.findAll(task.class.ProjectType, {})
     for (const state of value) {
       if (res.has(state)) continue
-      const index = types.findIndex((p) => p.statuses.some((s) => s._id === state))
+      const index = types.findIndex((p) => p.tasks.some((q) => taskTypes.get(q)?.statuses.includes(state)))
       if (index === -1) break
       const type = types.splice(index, 1)[0]
-      for (let index = 0; index < type.statuses.length; index++) {
-        const st = type.statuses[index]
-        const prev = index > 0 ? res.get(type.statuses[index - 1]._id) : prevRank
-        const next = index < type.statuses.length - 1 ? res.get(type.statuses[index + 1]._id) : undefined
+      const statuses =
+        type.tasks.map((it) => taskTypes.get(it)).find((it) => it?.statuses.includes(state))?.statuses ?? []
+
+      // TODO: Check correctness
+      for (let index = 0; index < statuses.length; index++) {
+        const st = statuses[index]
+        const prev = index > 0 ? res.get(statuses[index - 1]) : prevRank
+        const next = index < statuses.length - 1 ? res.get(statuses[index + 1]) : undefined
         const rank = calcRank(
           prev !== undefined ? { rank: prev } : undefined,
           next !== undefined ? { rank: next } : undefined
         )
-        res.set(st._id, rank)
+        res.set(st, rank)
         prevRank = rank
       }
     }
@@ -239,6 +274,8 @@ async function statusSort (
 }
 
 export const typeStore = writable<IdMap<ProjectType>>(new Map())
+export const taskTypeStore = writable<IdMap<TaskType>>(new Map())
+
 function fillStores (): void {
   const client = getClient()
 
@@ -246,6 +283,11 @@ function fillStores (): void {
     const query = createQuery(true)
     query.query(task.class.ProjectType, {}, (res) => {
       typeStore.set(toIdMap(res))
+    })
+
+    const taskQuery = createQuery(true)
+    taskQuery.query(task.class.TaskType, {}, (res) => {
+      taskTypeStore.set(toIdMap(res))
     })
   } else {
     setTimeout(() => {
@@ -257,3 +299,11 @@ function fillStores (): void {
 fillStores()
 
 export const selectedTypeStore = writable<Ref<ProjectType> | undefined>(undefined)
+export const selectedTaskTypeStore = writable<Ref<TaskType> | undefined>(undefined)
+
+export const activeProjects = writable<IdMap<Project>>(new Map())
+const activeProjectsQuery = createQuery(true)
+
+activeProjectsQuery.query(task.class.Project, { archived: false }, (projects) => {
+  activeProjects.set(toIdMap(projects))
+})

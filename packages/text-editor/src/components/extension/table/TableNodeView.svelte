@@ -71,7 +71,7 @@
 </script>
 
 <NodeViewWrapper class="table-node-wrapper" data-drag-handle>
-  <div class="table-wrapper" class:table-selected={focused}>
+  <div class="table-wrapper" class:table-selected={editable && focused}>
     <table class={className}>
       <NodeViewContent as="tbody" />
     </table>
@@ -131,6 +131,7 @@
         right: -1.25rem;
         top: 0;
         bottom: 0;
+        margin: 1.25rem 0;
 
         .table-button {
           width: 1.25rem;

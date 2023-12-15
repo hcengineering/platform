@@ -13,13 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Person } from '@hcengineering/contact'
+  import contact, { Person } from '@hcengineering/contact'
   import { Class, Ref, Space } from '@hcengineering/core'
   import { SpaceMultiBoxList } from '@hcengineering/presentation'
   import { Component, DropdownLabelsIntl } from '@hcengineering/ui'
   import attachment from '../plugin'
   import { dateFileBrowserFilters, fileTypeFileBrowserFilters } from '..'
-  import contact from '@hcengineering/contact'
 
   export let requestedSpaceClasses: Ref<Class<Space>>[]
   export let spaceId: Ref<Space> | undefined

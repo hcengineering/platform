@@ -1,6 +1,5 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,12 +14,12 @@
 -->
 <script lang="ts">
   import core, { Attribute, IdMap, Ref, Status, StatusCategory, toIdMap } from '@hcengineering/core'
-  import { ComponentExtensions, createQuery, getClient } from '@hcengineering/presentation'
-  import { ProjectType, ProjectTypeCategory } from '@hcengineering/task'
+  import { Asset } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { ProjectStatus, ProjectType, TaskType, findStatusAttr, isTaskCategory } from '@hcengineering/task'
   import {
     CircleButton,
     ColorDefinition,
-    Component,
     IconAdd,
     IconCircles,
     IconMoreH,
@@ -32,14 +31,15 @@
     showPopup,
     themeStore
   } from '@hcengineering/ui'
-  import { ColorsPopup, StringPresenter } from '@hcengineering/view-resources'
+  import { ColorsPopup, IconPicker, ObjectPresenter } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import task from '../../plugin'
   import StatusesPopup from './StatusesPopup.svelte'
 
+  export let taskType: TaskType
   export let type: ProjectType
-  export let category: ProjectTypeCategory
   export let states: Status[] = []
+  export let statusCounter = new Map<Ref<Status>, number>()
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -58,7 +58,7 @@
     return false
   }
 
-  function dragover (ev: MouseEvent, i: number) {
+  function dragover (ev: MouseEvent, i: number): void {
     const s = selected as number
     if (dragswap(ev, i)) {
       ;[states[i], states[s]] = [states[s], states[i]]
@@ -66,7 +66,7 @@
     }
   }
 
-  async function onMove (to: number) {
+  function onMove (to: number): void {
     dispatch('move', {
       stateID: dragState,
       position: to
@@ -82,39 +82,48 @@
       if (targetColor !== undefined) {
         targetColor.color = res
         await client.update(type, { statuses: type.statuses })
+        type = type
       }
     })
   }
-  const categoryEditor = category.editor
 
-  function add (ofAttribute: Ref<Attribute<Status>>, cat: Ref<StatusCategory>) {
+  function add (ofAttribute: Ref<Attribute<Status>> | undefined, cat: Ref<StatusCategory>): void {
+    if (ofAttribute === undefined) {
+      return
+    }
     showPopup(task.component.CreateStatePopup, {
       ofAttribute,
-      _class: category.statusClass,
+      _class: taskType.statusClass,
       category: cat,
+      taskType,
       type
     })
   }
 
-  function edit (status: Status) {
-    showPopup(task.component.CreateStatePopup, { status, type, ofAttribute: status.ofAttribute })
+  function edit (status: Status): void {
+    showPopup(task.component.CreateStatePopup, {
+      status,
+      taskType,
+      type,
+      ofAttribute: status.ofAttribute
+    })
   }
 
   let categories: StatusCategory[] = []
   let categoriesMap: IdMap<StatusCategory> = new Map()
   let groups = new Map<Ref<StatusCategory>, Status[]>()
   const query = createQuery()
-  $: query.query(core.class.StatusCategory, { _id: { $in: category.statusCategories } }, (res) => {
+  $: query.query(core.class.StatusCategory, { _id: { $in: taskType.statusCategories } }, (res) => {
     categories = res
     categoriesMap = toIdMap(res)
   })
 
-  function click (ev: MouseEvent, state: Status) {
+  function click (ev: MouseEvent, state: Status): void {
     showPopup(
       StatusesPopup,
       {
         onDelete: () => dispatch('delete', { state }),
-        showDelete: states.length > 1,
+        showDelete: states.filter((it) => it.category === state.category).length > 1,
         onUpdate: () => {
           edit(state)
         }
@@ -124,9 +133,17 @@
     )
   }
 
-  function getColor (state: Status, categoriesMap: IdMap<StatusCategory>): ColorDefinition {
-    const category = state.category ? categoriesMap.get(state.category) : undefined
-    const targetColor = type.statuses.find((p) => p._id === state._id)?.color ?? state.color ?? category?.color
+  function getProjectStatus (
+    type: ProjectType,
+    state: Status,
+    categoriesMap: IdMap<StatusCategory>
+  ): ProjectStatus | undefined {
+    return type.statuses.find((p) => p._id === state._id)
+  }
+
+  function getColor (type: ProjectType, state: Status, categoriesMap: IdMap<StatusCategory>): ColorDefinition {
+    const category = state.category !== undefined ? categoriesMap.get(state.category) : undefined
+    const targetColor = getProjectStatus(type, state, categoriesMap)?.color ?? state.color ?? category?.color
     return getPlatformColorDef(targetColor ?? getColorNumberByText(state.name), $themeStore.dark)
   }
 
@@ -153,71 +170,101 @@
     }
     return index
   }
+  function selectIcon (el: HTMLElement, state: Status): void {
+    const icons: Asset[] = []
+    const projectStatus = getProjectStatus(type, state, categoriesMap)
+    showPopup(IconPicker, { icon: projectStatus?.icon, color: projectStatus?.color, icons }, el, async (result) => {
+      if (result !== undefined && result !== null) {
+        const targetColor = type.statuses.find((p) => p._id === state._id)
+        if (targetColor !== undefined) {
+          targetColor.color = result.color
+          targetColor.icon = result.icon
+          console.log(result.color)
+          await client.update(type, { statuses: type.statuses })
+          type = type
+        }
+      }
+    })
+  }
 </script>
 
-{#if categoryEditor}
-  <Component is={categoryEditor} props={{ type }} />
-{/if}
-<ComponentExtensions extension={task.extensions.ProjectEditorExtension} props={{ type }} />
 {#each categories as cat, i}
   {@const states = groups.get(cat._id) ?? []}
   {@const prevIndex = getPrevIndex(groups, cat._id)}
-  <div class="flex-no-shrink flex-between trans-title uppercase" class:mt-4={i > 0}>
-    <Label label={cat.label} />
-    <CircleButton
-      icon={IconAdd}
-      size={'medium'}
-      on:click={() => {
-        add(cat.ofAttribute, cat._id)
-      }}
-    />
-  </div>
-  <div class="flex-col flex-no-shrink mt-3">
-    {#each states as state, i}
-      {@const color = getColor(state, categoriesMap)}
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div
-        bind:this={elements[prevIndex + i]}
-        class="flex-between states"
-        style:background={color.background ?? defaultBackground($themeStore.dark)}
-        draggable={true}
-        on:dragover|preventDefault={(ev) => {
-          dragover(ev, i + prevIndex)
+  <div class="flex-col p-2">
+    <div class="flex-no-shrink flex-between trans-title uppercase" class:mt-4={i > 0}>
+      <Label label={cat.label} />
+      <CircleButton
+        icon={IconAdd}
+        size={'medium'}
+        on:click={() => {
+          add(findStatusAttr(getClient().getHierarchy(), taskType.ofClass)?._id, cat._id)
         }}
-        on:drop|preventDefault={() => {
-          onMove(prevIndex + i)
-        }}
-        on:dragstart={() => {
-          selected = i + prevIndex
-          dragState = states[i]._id
-        }}
-        on:dragend={() => {
-          selected = undefined
-        }}
-      >
-        <div class="bar"><IconCircles size={'small'} /></div>
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
+      />
+    </div>
+    <div class="flex-col flex-no-shrink mt-3">
+      {#each states as state, i}
+        {@const color = getColor(type, state, categoriesMap)}
+        {@const counter = statusCounter.get(state._id)}
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
-          class="color"
-          style:background-color={color.color}
-          on:click={() => {
-            onColor(state, color, elements[i + prevIndex])
+          bind:this={elements[prevIndex + i]}
+          class="flex-row-center flex-between states"
+          style:background={color.background ?? defaultBackground($themeStore.dark)}
+          draggable={true}
+          on:dragover|preventDefault={(ev) => {
+            dragover(ev, i + prevIndex)
           }}
-        />
-        <div class="flex-grow caption-color">
-          <StringPresenter value={state.name} oneLine />
-        </div>
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div
-          class="tool hover-trans"
-          on:click={(e) => {
-            click(e, state)
+          on:drop|preventDefault={() => {
+            onMove(prevIndex + i)
+          }}
+          on:dragstart={() => {
+            selected = i + prevIndex
+            dragState = states[i]._id
+          }}
+          on:dragend={() => {
+            selected = undefined
           }}
         >
-          <IconMoreH size={'medium'} />
+          <div class="bar"><IconCircles size={'small'} /></div>
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <div
+            class="color"
+            on:click={(ev) => {
+              if (state.category !== undefined && isTaskCategory(state.category)) {
+                selectIcon(elements[i + prevIndex], state)
+              } else {
+                onColor(state, color, elements[i + prevIndex])
+              }
+            }}
+          >
+            <ObjectPresenter
+              _class={state._class}
+              objectId={state._id}
+              value={state}
+              props={{ projectType: type._id, taskType: taskType._id }}
+            />
+          </div>
+          <div class="flex-grow caption-color no-word-wrap">
+            <!-- <StringPresenter value={state.name} oneLine /> -->
+
+            {#if counter !== undefined}
+              - {counter}
+            {/if}
+          </div>
+
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <div
+            class="tool hover-trans"
+            on:click={(e) => {
+              click(e, state)
+            }}
+          >
+            <IconMoreH size={'medium'} />
+          </div>
         </div>
-      </div>
-    {/each}
+      {/each}
+    </div>
   </div>
 {/each}
 
@@ -238,10 +285,6 @@
       cursor: grabbing;
     }
     .color {
-      margin-right: 0.75rem;
-      width: 1rem;
-      height: 1rem;
-      border-radius: 0.25rem;
       cursor: pointer;
     }
     .tool {

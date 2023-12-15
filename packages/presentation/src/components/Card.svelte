@@ -15,10 +15,17 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
-  import { Button, IconClose, Label, Scroller } from '@hcengineering/ui'
+  import {
+    Button,
+    IconClose,
+    Label,
+    Scroller,
+    deviceOptionsStore as deviceInfo,
+    resizeObserver,
+    IconBack
+  } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
-  import { deviceOptionsStore as deviceInfo, resizeObserver, IconBack } from '@hcengineering/ui'
   import IconForward from './icons/Forward.svelte'
 
   export let label: IntlString

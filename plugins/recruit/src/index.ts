@@ -30,7 +30,7 @@ import type {
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { TagReference } from '@hcengineering/tags'
-import type { Project, ProjectTypeCategory, Task } from '@hcengineering/task'
+import type { Project, ProjectTypeDescriptor, Task, TaskType } from '@hcengineering/task'
 import { AnyComponent, ResolvedLocation } from '@hcengineering/ui'
 
 /**
@@ -162,8 +162,8 @@ const recruit = plugin(recruitId, {
     Review: '' as Ref<Class<Review>>,
     Opinion: '' as Ref<Class<Opinion>>
   },
-  category: {
-    VacancyTypeCategories: '' as Ref<ProjectTypeCategory>
+  descriptors: {
+    VacancyType: '' as Ref<ProjectTypeDescriptor>
   },
   mixin: {
     Candidate: '' as Ref<Mixin<Candidate>>,
@@ -200,6 +200,9 @@ const recruit = plugin(recruitId, {
   },
   space: {
     Reviews: '' as Ref<Calendar>
+  },
+  taskTypes: {
+    Applicant: '' as Ref<TaskType>
   }
 })
 

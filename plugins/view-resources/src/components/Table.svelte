@@ -24,9 +24,10 @@
     FindOptions,
     Lookup,
     Ref,
-    TxOperations
+    TxOperations,
+    getObjectValue,
+    SortingOrder
   } from '@hcengineering/core'
-  import { getObjectValue, SortingOrder } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { createQuery, getClient, updateAttribute } from '@hcengineering/presentation'
   import ui, {

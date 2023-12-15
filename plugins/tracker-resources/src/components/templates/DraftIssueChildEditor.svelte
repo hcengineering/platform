@@ -26,13 +26,12 @@
     Milestone
   } from '@hcengineering/tracker'
   import { Button, Component, EditBox } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import tracker from '../../plugin'
   import AssigneeEditor from '../issues/AssigneeEditor.svelte'
   import PriorityEditor from '../issues/PriorityEditor.svelte'
   import StatusEditor from '../issues/StatusEditor.svelte'
   import EstimationEditor from './EstimationEditor.svelte'
-  import { onDestroy } from 'svelte'
 
   export let parendIssueId: Ref<Issue>
   export let project: Project

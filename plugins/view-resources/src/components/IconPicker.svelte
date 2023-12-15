@@ -14,84 +14,64 @@
 -->
 <script lang="ts">
   import { Asset, Metadata } from '@hcengineering/platform'
-  import presentation, { Card } from '@hcengineering/presentation'
-  import {
-    Button,
-    EmojiPopup,
-    Label,
-    TabsControl,
-    eventToHTMLElement,
-    getPlatformColor,
-    getPlatformColorDef,
-    showPopup,
-    themeStore
-  } from '@hcengineering/ui'
+  import { Button, EmojiPopup, TabsControl, getPlatformColor, getPlatformColorDef, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
   import ColorsPopup from './ColorsPopup.svelte'
+  import PopupDialog from './PopupDialog.svelte'
 
   export let icon: Metadata<string> | undefined = undefined
   export let icons: Asset[]
   export let iconWithEmoji: Asset = view.ids.IconWithEmoji
   export let color: number = 0
+  export let showColor: boolean = true
 
   const dispatch = createEventDispatcher()
 
   let _color = color
   let _icon = icon ?? icons[0]
-
-  function save () {
-    dispatch('close', { icon: _icon, color: _color })
-  }
-  function pickColor (evt: MouseEvent) {
-    showPopup(
-      ColorsPopup,
-      { selected: getPlatformColorDef(_color, $themeStore.dark).name },
-      eventToHTMLElement(evt),
-      (newColor) => {
-        if (newColor != null) {
-          _color = newColor
-        }
-      }
-    )
-  }
 </script>
 
-<Card
-  label={view.string.ChooseIcon}
-  okLabel={presentation.string.Save}
-  okAction={save}
-  canSave={_icon !== undefined}
-  on:close={() => {
-    dispatch('close')
-  }}
-  on:changeContent
->
-  <div class="float-left-box">
+<PopupDialog label={view.string.ChooseIcon} on:changeContent>
+  <div class="float-left-box w-85">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <TabsControl size={'small'} model={[{ label: view.string.IconCategory }, { label: view.string.EmojiCategory }]}>
       <svelte:fragment slot="content" let:selected>
         {#if selected === 0}
-          <div class="flex-row-center">
-            <Label label={view.string.IconColor} />
-            <div class="flex-no-shrink ml-2 color" on:click={pickColor}>
-              <div class="dot" style="background-color: {getPlatformColor(_color ?? 0, $themeStore.dark)}" />
-            </div>
-          </div>
-          {#each icons as obj}
-            <div class="float-left p-2">
-              <Button
-                icon={obj}
-                iconProps={{ fill: getPlatformColor(_color ?? 0, $themeStore.dark) }}
-                size="medium"
-                kind={obj === _icon ? 'primary' : 'ghost'}
-                on:click={() => {
-                  _icon = obj
+          <div class="flex-col mt-2">
+            {#if icons.length > 0}
+              <div class="flex">
+                {#each icons as obj}
+                  <div class="float-left">
+                    <Button
+                      icon={obj}
+                      iconProps={showColor ? { fill: getPlatformColor(_color ?? 0, $themeStore.dark) } : undefined}
+                      size="medium"
+                      kind={obj === _icon ? 'primary' : 'ghost'}
+                      on:click={() => {
+                        _icon = obj
+                        dispatch(!showColor ? 'close' : 'update', { icon: _icon, color: _color })
+                      }}
+                    />
+                  </div>
+                {/each}
+              </div>
+            {/if}
+            {#if showColor}
+              <ColorsPopup
+                selected={getPlatformColorDef(_color, $themeStore.dark).name}
+                embedded
+                on:close={(evt) => {
+                  _color = evt.detail
+                  dispatch(icons.length === 0 ? 'close' : 'update', {
+                    icon: icons.length === 0 ? null : _icon,
+                    color: _color
+                  })
                 }}
               />
-            </div>
-          {/each}
+            {/if}
+          </div>
         {:else}
           <EmojiPopup
             embedded
@@ -103,7 +83,7 @@
       </svelte:fragment>
     </TabsControl>
   </div>
-</Card>
+</PopupDialog>
 
 <style lang="scss">
   .color {

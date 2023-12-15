@@ -29,7 +29,7 @@ import Password from './components/Password.svelte'
 import Privacy from './components/Privacy.svelte'
 import Profile from './components/Profile.svelte'
 import Settings from './components/Settings.svelte'
-import ManageProjects from './components/statuses/ManageProjects.svelte'
+
 import Support from './components/Support.svelte'
 import Terms from './components/Terms.svelte'
 import BooleanTypeEditor from './components/typeEditors/BooleanTypeEditor.svelte'
@@ -45,9 +45,10 @@ import InviteSetting from './components/InviteSetting.svelte'
 import Configure from './components/Configure.svelte'
 import setting from './plugin'
 import IntegrationPanel from './components/IntegrationPanel.svelte'
-import { getOwnerFirstName, getOwnerLastName, getOwnerPosition, getValue } from './utils'
+import { getOwnerFirstName, getOwnerLastName, getOwnerPosition, getValue, filterDescendants } from './utils'
+import ClassAttributes from './components/ClassAttributes.svelte'
 
-export { ClassSetting }
+export { ClassSetting, filterDescendants, ClassAttributes }
 
 async function DeleteMixin (object: Mixin<Class<Doc>>): Promise<void> {
   const docs = await getClient().findAll(object._id, {}, { limit: 1 })
@@ -86,7 +87,6 @@ export default async (): Promise<Resources> => ({
     Support,
     Privacy,
     Terms,
-    ManageProjects,
     ClassSetting,
     StringTypeEditor,
     HyperlinkTypeEditor,

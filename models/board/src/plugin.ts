@@ -18,7 +18,7 @@ import { type Board, boardId } from '@hcengineering/board'
 import board from '@hcengineering/board-resources/src/plugin'
 import type { Ref } from '@hcengineering/core'
 import { type IntlString, mergeIds } from '@hcengineering/platform'
-import { type ProjectType, type Sequence } from '@hcengineering/task'
+import { type TaskTypeDescriptor, type ProjectType, type Sequence } from '@hcengineering/task'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action, type ViewAction, type Viewlet, type ViewletDescriptor } from '@hcengineering/view'
 
@@ -67,5 +67,8 @@ export default mergeIds(boardId, board, {
   },
   actionImpl: {
     ConvertToCard: '' as ViewAction
+  },
+  descriptors: {
+    Card: '' as Ref<TaskTypeDescriptor>
   }
 })

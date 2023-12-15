@@ -13,18 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { type DocUpdateMessageViewlet, type TxViewlet } from '@hcengineering/activity'
+import { type ChatMessageViewlet } from '@hcengineering/chunter'
 import { type Doc, type Ref } from '@hcengineering/core'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/model-presentation'
-import { type IntlString, type Resource, mergeIds } from '@hcengineering/platform'
-import { type ProjectType } from '@hcengineering/task'
+import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
+import { mergeIds, type IntlString, type Resource } from '@hcengineering/platform'
+import { type ProjectType, type TaskTypeDescriptor } from '@hcengineering/task'
 import { trackerId } from '@hcengineering/tracker'
 import tracker from '@hcengineering/tracker-resources/src/plugin'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action, type ViewAction, type Viewlet } from '@hcengineering/view'
 import { type Application } from '@hcengineering/workbench'
-import { type DocUpdateMessageViewlet, type TxViewlet } from '@hcengineering/activity'
-import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
-import { type ChatMessageViewlet } from '@hcengineering/chunter'
 
 export default mergeIds(trackerId, tracker, {
   string: {
@@ -59,7 +59,8 @@ export default mergeIds(trackerId, tracker, {
     MilestoneFilter: '' as AnyComponent,
     EditRelatedTargets: '' as AnyComponent,
     EditRelatedTargetsPopup: '' as AnyComponent,
-    IssueSearchIcon: '' as AnyComponent
+    IssueSearchIcon: '' as AnyComponent,
+    MembersArrayEditor: '' as AnyComponent
   },
   app: {
     Tracker: '' as Ref<Application>
@@ -85,7 +86,9 @@ export default mergeIds(trackerId, tracker, {
     IssueChatMessageViewlet: '' as Ref<ChatMessageViewlet>,
     IssueTemplateChatMessageViewlet: '' as Ref<ChatMessageViewlet>,
     ComponentChatMessageViewlet: '' as Ref<ChatMessageViewlet>,
-    MilestoneChatMessageViewlet: '' as Ref<ChatMessageViewlet>
+    MilestoneChatMessageViewlet: '' as Ref<ChatMessageViewlet>,
+    ClassingProjectType: '' as Ref<ProjectType>,
+    DefaultProjectType: '' as Ref<ProjectType>
   },
   completion: {
     IssueQuery: '' as Resource<ObjectSearchFactory>,
@@ -106,5 +109,8 @@ export default mergeIds(trackerId, tracker, {
     DeleteProject: '' as Ref<Action<Doc, Record<string, any>>>,
     DeleteProjectClean: '' as Ref<Action<Doc, Record<string, any>>>,
     DeleteIssue: '' as Ref<Action<Doc, Record<string, any>>>
+  },
+  descriptors: {
+    Issue: '' as Ref<TaskTypeDescriptor>
   }
 })

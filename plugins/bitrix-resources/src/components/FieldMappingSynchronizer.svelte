@@ -13,9 +13,17 @@
   import core, { Class, Doc, generateId, Ref, Space, WithLookup } from '@hcengineering/core'
   import { getEmbeddedLabel, getMetadata } from '@hcengineering/platform'
   import presentation, { getClient, SpaceSelect } from '@hcengineering/presentation'
-  import { Button, CheckBox, Expandable, Icon, IconAdd, IconClose, Label } from '@hcengineering/ui'
-  import { DropdownLabels } from '@hcengineering/ui'
-  import { EditBox } from '@hcengineering/ui'
+  import {
+    Button,
+    CheckBox,
+    Expandable,
+    Icon,
+    IconAdd,
+    IconClose,
+    Label,
+    DropdownLabels,
+    EditBox
+  } from '@hcengineering/ui'
   import { NumberEditor } from '@hcengineering/view-resources'
   import bitrix from '../plugin'
   import FieldMappingPresenter from './FieldMappingPresenter.svelte'
@@ -136,9 +144,6 @@
       _class={core.class.Space}
       label={core.string.Space}
       bind:value={space}
-      on:change={(evt) => {
-        space = evt.detail
-      }}
       autoSelect
       spaceQuery={{ _id: { $in: [contact.space.Contacts] } }}
     />

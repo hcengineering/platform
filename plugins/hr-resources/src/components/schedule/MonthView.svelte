@@ -13,8 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee } from '@hcengineering/contact'
-  import contact from '@hcengineering/contact'
+  import contact, { Employee } from '@hcengineering/contact'
   import { AccountRole, getCurrentAccount, Ref } from '@hcengineering/core'
   import { tzDateCompare, type Department, type Request, type RequestType, type Staff } from '@hcengineering/hr'
   import {

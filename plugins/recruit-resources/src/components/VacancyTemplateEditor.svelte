@@ -17,7 +17,7 @@
   import { ProjectType } from '@hcengineering/task'
   import { StyledTextBox } from '@hcengineering/text-editor'
   import tracker from '@hcengineering/tracker'
-  import { Button, Component, EditBox, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
+  import { Button, Component, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
   import { getFiltredKeys } from '@hcengineering/view-resources'
   import recruit from '../plugin'
 
@@ -29,25 +29,11 @@
   const customKeys = getFiltredKeys(hierarchy, type._class, []).filter((key) => key.attr.isCustom)
 
   async function onDescriptionChange (value: string) {
-    await client.update(type, { description: value })
-  }
-
-  async function onShortDescriptionChange (value: string) {
-    await client.update(type, { shortDescription: value })
+    await client.diffUpdate(type, { description: value })
   }
 </script>
 
-<div class="flex-no-shrink flex-between trans-title uppercase">
-  <Label label={recruit.string.Description} />
-</div>
-<div class="mt-3">
-  <EditBox
-    kind={'small-style'}
-    bind:value={type.shortDescription}
-    on:change={() => onShortDescriptionChange(type.shortDescription ?? '')}
-  />
-</div>
-<div class="mt-9">
+<div class="mt-4">
   <div class="flex-no-shrink flex-between trans-title uppercase">
     <Label label={recruit.string.FullDescription} />
   </div>
@@ -56,6 +42,7 @@
       <StyledTextBox
         kind={'emphasized'}
         alwaysEdit
+        maxHeight={'card'}
         showButtons={false}
         content={type.description ?? ''}
         on:value={(evt) => onDescriptionChange(evt.detail)}

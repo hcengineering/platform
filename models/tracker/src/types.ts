@@ -69,7 +69,7 @@ import chunter from '@hcengineering/chunter'
 export const DOMAIN_TRACKER = 'tracker' as Domain
 
 @Model(tracker.class.IssueStatus, core.class.Status)
-@UX(tracker.string.IssueStatuses, undefined, undefined, 'rank', 'name')
+@UX(tracker.string.IssueStatus, undefined, undefined, 'rank', 'name')
 export class TIssueStatus extends TStatus implements IssueStatus {}
 /**
  * @public
@@ -120,7 +120,7 @@ export class TProject extends TTaskProject implements Project {
 
   declare defaultTimeReportDay: TimeReportDayType
 
-  @Prop(Collection(tracker.class.RelatedIssueTarget), tracker.string.RelatedIssue)
+  @Prop(Collection(tracker.class.RelatedIssueTarget), tracker.string.RelatedIssues)
     relatedIssueTargets!: number
 }
 /**

@@ -14,17 +14,17 @@
 //
 
 import {
+  toIdMap,
   type Client,
   type Doc,
   type DocumentQuery,
   type FindResult,
   type ObjQueryType,
   type Ref,
-  type RelatedDocument,
-  toIdMap
+  type RelatedDocument
 } from '@hcengineering/core'
-import { OK, type Resources, Severity, Status } from '@hcengineering/platform'
-import { type ObjectSearchResult, createQuery } from '@hcengineering/presentation'
+import { OK, Severity, Status, type Resources } from '@hcengineering/platform'
+import { createQuery, type ObjectSearchResult } from '@hcengineering/presentation'
 import { type Applicant, type Candidate, type Vacancy } from '@hcengineering/recruit'
 import task from '@hcengineering/task'
 import { showPopup } from '@hcengineering/ui'
@@ -49,13 +49,13 @@ import SkillsView from './components/SkillsView.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
 import Vacancies from './components/Vacancies.svelte'
 import VacancyCountPresenter from './components/VacancyCountPresenter.svelte'
+import VacancyEditor from './components/VacancyEditor.svelte'
 import VacancyItem from './components/VacancyItem.svelte'
 import VacancyItemPresenter from './components/VacancyItemPresenter.svelte'
 import VacancyList from './components/VacancyList.svelte'
 import VacancyModifiedPresenter from './components/VacancyModifiedPresenter.svelte'
 import VacancyPresenter from './components/VacancyPresenter.svelte'
 import VacancyTemplateEditor from './components/VacancyTemplateEditor.svelte'
-import VacancyEditor from './components/VacancyEditor.svelte'
 import CreateOpinion from './components/review/CreateOpinion.svelte'
 import CreateReview from './components/review/CreateReview.svelte'
 import EditReview from './components/review/EditReview.svelte'
@@ -78,8 +78,8 @@ import {
   resolveLocation
 } from './utils'
 
-import { MoveApplicant } from './actionImpl'
 import { get } from 'svelte/store'
+import { MoveApplicant } from './actionImpl'
 
 async function createOpinion (object: Doc): Promise<void> {
   showPopup(CreateOpinion, { space: object.space, review: object._id })

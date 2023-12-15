@@ -49,14 +49,15 @@ table.proseTable {
 
   th {
     text-align: left;
-    background-color: var(--button-bg-color);
+    background-color: var(--text-editor-table-header-color);
   }
 
   p {
     margin: 0;
   }
 
-  td {
+  td,
+  th {
     // cell selection
 
     &.table-cell-selected {

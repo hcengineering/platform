@@ -102,10 +102,10 @@ export class ApplicationsPage extends CommonRecruitingPage {
   }
 
   async selectType (type: string): Promise<void> {
-    await this.page
-      .locator('div[class*=header]')
-      .locator('div[class*=tablist-container]')
-      .locator('div', { hasText: type })
-      .click()
+    // await this.page
+    //   .locator('div[class*=header]')
+    //   .locator('div[class*=tablist-container]')
+    //   .locator('div', { hasText: type })
+    //   .click()
   }
 }

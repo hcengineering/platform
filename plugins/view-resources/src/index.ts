@@ -111,7 +111,7 @@ import {
 import { IndexedDocumentPreview } from '@hcengineering/presentation'
 import { showEmptyGroups } from './viewOptions'
 import { AggregationMiddleware } from './middleware'
-export { getActions, invokeAction } from './actions'
+export { getActions, invokeAction, getContextActions } from './actions'
 export { default as ActionHandler } from './components/ActionHandler.svelte'
 export { default as FilterButton } from './components/filter/FilterButton.svelte'
 export { default as FixedColumn } from './components/FixedColumn.svelte'

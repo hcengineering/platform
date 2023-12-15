@@ -19,7 +19,7 @@ import type { Attribute, Class, Doc, Ref, Status, Timestamp } from '@hcengineeri
 import { Mixin } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import type { Project, ProjectTypeCategory, Task } from '@hcengineering/task'
+import type { Project, ProjectTypeDescriptor, Task, TaskType } from '@hcengineering/task'
 
 /**
  * @public
@@ -82,8 +82,11 @@ const lead = plugin(leadId, {
     LeadApplication: '' as Asset,
     CreateCustomer: '' as Asset
   },
-  category: {
-    FunnelTypeCategory: '' as Ref<ProjectTypeCategory>
+  descriptors: {
+    FunnelType: '' as Ref<ProjectTypeDescriptor>
+  },
+  taskType: {
+    Lead: '' as Ref<TaskType>
   }
 })
 

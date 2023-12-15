@@ -24,16 +24,19 @@
   <div class="ac-header__wrap-title">
     {#if showLabelSelector}
       <slot name="label_selector" />
-    {:else}
-      {#if label}
-        <span class="ac-header__title">{label}</span>
-      {/if}
-      {#if modeSelectorProps !== undefined}
-        <ModeSelector props={modeSelectorProps} />
-      {/if}
+    {:else if label}
+      <span class="ac-header__title">{label}</span>
+    {/if}
+    {#if $$slots.type_selector}
+      <div class="ml-2">
+        <slot name="type_selector" />
+      </div>
+    {/if}
+    {#if modeSelectorProps !== undefined}
+      <ModeSelector props={modeSelectorProps} />
     {/if}
   </div>
-  <div class="mb-1 clear-mins">
+  <div class="mb-1 clear-mins flex-row-center">
     <ViewletSelector bind:viewlet bind:viewlets viewletQuery={viewletQuery ?? { attachTo: _class }} />
     <slot name="header-tools" />
   </div>

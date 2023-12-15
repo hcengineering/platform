@@ -16,8 +16,9 @@
   import type { IntlString } from '@hcengineering/platform'
   import { translate } from '@hcengineering/platform'
   import { copyTextToClipboard } from '@hcengineering/presentation'
-  import { PopupOptions, themeStore } from '@hcengineering/ui'
   import {
+    PopupOptions,
+    themeStore,
     Button,
     createFocusManager,
     FocusHandler,

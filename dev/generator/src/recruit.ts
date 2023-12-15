@@ -15,7 +15,7 @@ import core, {
 import { MinioService } from '@hcengineering/minio'
 import recruit from '@hcengineering/model-recruit'
 import { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
-import task, { ProjectType, genRanks } from '@hcengineering/task'
+import task, { ProjectType, TaskType, genRanks } from '@hcengineering/task'
 import faker from 'faker'
 import jpeg, { BufferRet } from 'jpeg-js'
 import { AttachmentOptions, addAttachments } from './attachments'
@@ -97,13 +97,16 @@ async function genVacansyApplicants (
     name: faker.name.title(),
     description: faker.lorem.sentences(2),
     shortDescription: faker.lorem.sentences(1),
-    category: recruit.category.VacancyTypeCategories,
+    descriptor: recruit.descriptors.VacancyType,
     private: false,
     members: [],
     archived: false,
+    tasks: [],
+    // TODO: Fix me.
     statuses: states.map((s) => {
-      return { _id: s }
-    })
+      return { _id: s, taskType: '' as Ref<TaskType> }
+    }),
+    targetClass: recruit.class.Vacancy
   }
 
   await ctx.with('update', {}, (ctx) =>
@@ -180,7 +183,8 @@ async function genApplicant (
     status: faker.random.arrayElement(states),
     rank,
     startDate: null,
-    dueDate: null
+    dueDate: null,
+    kind: recruit.taskTypes.Applicant
   }
 
   // Update or create candidate

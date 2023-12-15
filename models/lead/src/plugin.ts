@@ -21,7 +21,7 @@ import lead from '@hcengineering/lead-resources/src/plugin'
 import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
 import type { IntlString } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
-import { type ProjectType } from '@hcengineering/task'
+import { type TaskTypeDescriptor, type ProjectType } from '@hcengineering/task'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action, type ActionCategory, type Viewlet } from '@hcengineering/view'
 
@@ -72,5 +72,8 @@ export default mergeIds(leadId, lead, {
     LeadCreateNotification: '' as Ref<NotificationType>,
     AssigneeNotification: '' as Ref<NotificationType>,
     LeadChatMessageViewlet: '' as Ref<ChatMessageViewlet>
+  },
+  descriptors: {
+    Lead: '' as Ref<TaskTypeDescriptor>
   }
 })

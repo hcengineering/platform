@@ -3,6 +3,7 @@
   import { ColorDefinition, IconSize, getPlatformColorDef, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../plugin'
+  import task from '@hcengineering/task'
 
   export let size: IconSize
 
@@ -37,7 +38,7 @@
   viewBox="0 0 16 16"
   xmlns="http://www.w3.org/2000/svg"
 >
-  {#if category._id === tracker.issueStatusCategory.Backlog}
+  {#if category._id === tracker.issueStatusCategory.Backlog || category._id === task.statusCategory.UnStarted}
     <path
       fill-rule="evenodd"
       clip-rule="evenodd"

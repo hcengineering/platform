@@ -23,11 +23,12 @@
   export let columns: number = 8
   export let selected: string | undefined = undefined
   export let key: 'color' | 'icon' = 'color'
+  export let embedded: boolean = false
 
   const dispatch = createEventDispatcher()
 </script>
 
-<PopupDialog label={view.string.ChooseAColor}>
+<PopupDialog label={view.string.ChooseAColor} {embedded}>
   <div class="color-grid" style="grid-template-columns: repeat({columns}, 1.5rem)">
     {#each colors as color, i}
       {@const col = key === 'color' ? color.color : color.icon}

@@ -14,9 +14,21 @@
 -->
 <script lang="ts">
   import type { Class, Doc } from '@hcengineering/core'
-  import { Label } from '@hcengineering/ui'
+  import { getClient } from '@hcengineering/presentation'
+  import { Component, Label } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
 
   export let value: Class<Doc>
+
+  $: presenters =
+    value !== undefined ? getClient().getHierarchy().findMixinMixins(value, view.mixin.ObjectPresenter) : []
 </script>
 
-<Label label={value.label} />
+<div class="flex-row-center text-nowrap">
+  <Label label={value.label} />
+  {#if presenters.length > 0}
+    {#each presenters as presenter}
+      <Component is={presenter.presenter} props={{ value }} />
+    {/each}
+  {/if}
+</div>

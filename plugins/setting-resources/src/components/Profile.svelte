@@ -22,6 +22,7 @@
   import { Button, createFocusManager, EditBox, FocusHandler, Icon, Label, showPopup } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import setting from '../plugin'
+
   const client = getClient()
 
   let avatarEditor: EditableAvatar
@@ -34,17 +35,17 @@
   onDestroy(
     employeeByIdStore.subscribe((p) => {
       const emp = p.get(account.person as Ref<Employee>)
-      if (emp) {
+      if (emp !== undefined) {
         firstName = getFirstName(emp.name)
         lastName = getLastName(emp.name)
       }
     })
   )
 
-  async function onAvatarDone (e: any) {
+  async function onAvatarDone (e: any): Promise<void> {
     if (employee === undefined) return
 
-    if (employee.avatar) {
+    if (employee.avatar != null) {
       await avatarEditor.removeAvatar(employee.avatar)
     }
     const avatar = await avatarEditor.createAvatar()
@@ -72,9 +73,9 @@
     )
   }
 
-  async function nameChange () {
-    if (employee) {
-      await client.update(employee, {
+  async function nameChange (): Promise<void> {
+    if (employee !== undefined) {
+      await client.diffUpdate(employee, {
         name: combineName(firstName, lastName)
       })
     }
@@ -142,7 +143,7 @@
         icon={setting.icon.Signout}
         label={setting.string.Leave}
         on:click={() => {
-          leave()
+          void leave()
         }}
       />
     </div>

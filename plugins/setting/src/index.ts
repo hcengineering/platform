@@ -73,11 +73,18 @@ export interface SettingsCategory extends Doc {
   label: IntlString
   icon: Asset
   component: AnyComponent
+  props?: Record<string, any>
+
+  // If defined, will pass kind with key to component
+  extraComponents?: Record<string, AnyComponent>
+
   group?: string
 
   // If defined, will sort using order.
   order?: number
   secured: boolean
+
+  expandable?: boolean
 }
 
 /**
@@ -101,7 +108,6 @@ export default plugin(settingId, {
     Password: '' as Ref<Doc>,
     Setting: '' as Ref<Doc>,
     Integrations: '' as Ref<Doc>,
-    ManageProjects: '' as Ref<Doc>,
     Support: '' as Ref<Doc>,
     Privacy: '' as Ref<Doc>,
     Terms: '' as Ref<Doc>,
@@ -129,7 +135,6 @@ export default plugin(settingId, {
     Password: '' as AnyComponent,
     WorkspaceSettings: '' as AnyComponent,
     Integrations: '' as AnyComponent,
-    ManageProjects: '' as AnyComponent,
     Support: '' as AnyComponent,
     Privacy: '' as AnyComponent,
     Terms: '' as AnyComponent,
@@ -140,7 +145,6 @@ export default plugin(settingId, {
     Setting: '' as IntlString,
     WorkspaceSetting: '' as IntlString,
     Integrations: '' as IntlString,
-    ManageProjects: '' as IntlString,
     Support: '' as IntlString,
     Privacy: '' as IntlString,
     Terms: '' as IntlString,

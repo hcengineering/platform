@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
-  import type { ButtonSize, ButtonKind } from '@hcengineering/ui'
+  import type { ButtonSize, ButtonKind, EditStyle } from '@hcengineering/ui'
   import { EditBox, Label, showPopup, eventToHTMLElement, Button } from '@hcengineering/ui'
   import EditBoxPopup from './EditBoxPopup.svelte'
 
@@ -30,6 +30,7 @@
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = 'fit-content'
+  export let editKind: EditStyle | undefined = undefined
 
   let shown: boolean = false
 
@@ -71,5 +72,5 @@
     <span class="content-dark-color"><Label label={placeholder} /></span>
   {/if}
 {:else}
-  <EditBox {placeholder} bind:value {autoFocus} {select} on:change={_onchange} />
+  <EditBox {placeholder} bind:value {autoFocus} {select} on:change={_onchange} kind={editKind} />
 {/if}

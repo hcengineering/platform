@@ -13,10 +13,26 @@
 // limitations under the License.
 //
 
-import { Class, Data, DocumentQuery, IdMap, Ref, Status, TxOperations } from '@hcengineering/core'
+import core, {
+  Class,
+  Data,
+  DocumentQuery,
+  Hierarchy,
+  IdMap,
+  Ref,
+  Status,
+  StatusCategory,
+  TxOperations,
+  type AnyAttribute,
+  type RefTo,
+  Doc,
+  generateId,
+  ClassifierKind
+} from '@hcengineering/core'
 import { LexoDecimal, LexoNumeralSystem36, LexoRank } from 'lexorank'
 import LexoRankBucket from 'lexorank/lib/lexoRank/lexoRankBucket'
-import task, { Project, ProjectType } from '.'
+import task, { Project, ProjectStatus, ProjectType, Task, TaskType } from '.'
+import { getEmbeddedLabel } from '@hcengineering/platform'
 
 /**
  * @public
@@ -50,13 +66,55 @@ export const calcRank = (prev?: { rank: string }, next?: { rank: string }): stri
 /**
  * @public
  */
-export function getStates (space: Project | undefined, types: IdMap<ProjectType>, statuses: IdMap<Status>): Status[] {
-  if (space === undefined) return []
+export function getProjectTypeStates (
+  projectType: Ref<ProjectType> | undefined,
+  types: IdMap<ProjectType>,
+  statuses: IdMap<Status>
+): Status[] {
+  if (projectType === undefined) return []
   return (
     (types
-      .get(space.type)
+      .get(projectType)
       ?.statuses?.map((p) => statuses.get(p._id))
       ?.filter((p) => p !== undefined) as Status[]) ?? []
+  )
+}
+
+/**
+ * @public
+ */
+export function getStates (space: Project | undefined, types: IdMap<ProjectType>, statuses: IdMap<Status>): Status[] {
+  if (space === undefined) return []
+  return getProjectTypeStates(space.type, types, statuses)
+}
+
+/**
+ * @public
+ */
+export function getTaskTypeStates (
+  taskType: Ref<TaskType> | undefined,
+  types: IdMap<TaskType>,
+  statuses: IdMap<Status>
+): Status[] {
+  if (taskType === undefined) return []
+  return (
+    (types
+      .get(taskType)
+      ?.statuses?.map((p) => statuses.get(p))
+      ?.filter((p) => p !== undefined) as Status[]) ?? []
+  )
+}
+
+/**
+ * @public
+ */
+export function getStatusIndex (type: ProjectType, taskTypes: IdMap<TaskType>, status: Ref<Status>): number {
+  return (
+    type.tasks
+      .map((it) => taskTypes.get(it))
+      .flatMap((it) => it?.statuses.indexOf(status))
+      .filter((it) => (it ?? 0) >= 0)
+      .reduce((p, c) => (p ?? 0) + (c ?? 0), 0) ?? -1
   )
 }
 
@@ -78,4 +136,178 @@ export async function createState<T extends Status> (
   }
   const res = await client.createDoc(_class, task.space.Statuses, data)
   return res
+}
+
+/**
+ * @public
+ */
+export function isTaskCategory (category: Ref<StatusCategory>): boolean {
+  return (
+    category === task.statusCategory.Active ||
+    category === task.statusCategory.Active ||
+    category === task.statusCategory.Won ||
+    category === task.statusCategory.Lost
+  )
+}
+
+/**
+ * @public
+ */
+export function calculateStatuses (
+  projectType: { statuses: ProjectType['statuses'], tasks: ProjectType['tasks'] },
+  taskTypes: Map<Ref<TaskType>, Data<TaskType>>,
+  override: Array<{ taskTypeId: Ref<TaskType>, statuses: Array<Ref<Status>> }>
+): ProjectStatus[] {
+  const stIds = new Map(projectType.statuses.map((p) => [p._id, p]))
+  const processed = new Set<string>()
+  const result: ProjectStatus[] = []
+
+  for (const tt of projectType.tasks) {
+    const statusesList = override.find((it) => it.taskTypeId === tt)?.statuses ?? taskTypes.get(tt)?.statuses ?? []
+    for (const tts of statusesList) {
+      const prjStatus = stIds.get(tts)
+      const key = `${tts}:${tt}`
+      if (!processed.has(key)) {
+        processed.add(key)
+        result.push({ ...(prjStatus ?? {}), _id: tts, taskType: tt })
+      }
+    }
+  }
+  return result
+}
+
+/**
+ * @public
+ */
+export function findStatusAttr (h: Hierarchy, _class: Ref<Class<Task>>): AnyAttribute {
+  const attrs = h.getAllAttributes(_class)
+  for (const it of attrs.values()) {
+    if (it.type._class === core.class.RefTo && h.isDerived((it.type as RefTo<any>).to, core.class.Status)) {
+      return it
+    }
+  }
+  return h.getAttribute(task.class.Task, 'status')
+}
+
+export type TaskTypeWithFactory = Omit<Data<TaskType>, 'statuses' | 'parent' | 'targetClass'> & {
+  _id: TaskType['_id']
+  factory: Data<Status>[]
+} & Partial<Pick<TaskType, 'targetClass'>>
+
+type ProjectData = Omit<Data<ProjectType>, 'statuses' | 'private' | 'members' | 'archived' | 'targetClass'>
+
+/**
+ * @public
+ */
+export async function createProjectType (
+  client: TxOperations,
+  data: ProjectData,
+  tasks: TaskTypeWithFactory[],
+  _id: Ref<ProjectType>
+): Promise<Ref<ProjectType>> {
+  const current = await client.findOne(task.class.ProjectType, { _id })
+  if (current !== undefined) {
+    return current._id
+  }
+
+  async function createStates (states: Data<Status>[], stateClass: Ref<Class<Status>>): Promise<Ref<Status>[]> {
+    const statuses: Ref<Status>[] = []
+    for (const st of states) {
+      statuses.push(await createState(client, stateClass, st))
+    }
+    return statuses
+  }
+
+  const _tasks: Ref<TaskType>[] = []
+  const tasksData = new Map<Ref<TaskType>, Data<TaskType>>()
+  const _statues = new Set<Ref<Status>>()
+  for (const it of tasks) {
+    const { factory, _id: taskId, ...data } = it
+    const statuses = await createStates(factory, data.statusClass)
+    for (const st of statuses) {
+      _statues.add(st)
+    }
+    const tdata = {
+      ...data,
+      parent: _id,
+      statuses
+    }
+
+    const ofClassClass = client.getHierarchy().getClass(data.ofClass)
+
+    tdata.icon = ofClassClass.icon
+
+    if (tdata.targetClass === undefined) {
+      // Create target class for custom field.
+      const targetClassId: Ref<Class<Task>> = generateId()
+      tdata.targetClass = targetClassId
+
+      await client.createDoc(
+        core.class.Mixin,
+        core.space.Model,
+        {
+          extends: data.ofClass,
+          kind: ClassifierKind.MIXIN,
+          label: ofClassClass.label,
+          icon: ofClassClass.icon
+        },
+        targetClassId
+      )
+
+      await client.createMixin(targetClassId, core.class.Mixin, core.space.Model, task.mixin.TaskTypeClass, {
+        taskType: taskId,
+        projectType: _id
+      })
+    }
+    await client.createDoc(task.class.TaskType, core.space.Model, tdata as Data<TaskType>, taskId)
+    tasksData.set(taskId, tdata as Data<TaskType>)
+    _tasks.push(taskId)
+  }
+
+  const categoryObj = client.getModel().findObject(data.descriptor)
+  if (categoryObj === undefined) {
+    throw new Error('category is not found in model')
+  }
+
+  const baseClassClass = client.getHierarchy().getClass(categoryObj.baseClass)
+
+  const targetProjectClassId: Ref<Class<Doc>> = generateId()
+
+  await client.createDoc(
+    core.class.Mixin,
+    core.space.Model,
+    {
+      extends: categoryObj.baseClass,
+      kind: ClassifierKind.MIXIN,
+      label: getEmbeddedLabel(data.name),
+      icon: baseClassClass.icon
+    },
+    targetProjectClassId,
+    undefined,
+    core.account.ConfigUser
+  )
+
+  await client.createMixin(targetProjectClassId, core.class.Mixin, core.space.Model, task.mixin.ProjectTypeClass, {
+    projectType: _id
+  })
+
+  const tmpl = await client.createDoc(
+    task.class.ProjectType,
+    core.space.Model,
+    {
+      description: data.description,
+      shortDescription: data.shortDescription,
+      descriptor: data.descriptor,
+      tasks: _tasks,
+      name: data.name,
+      private: false,
+      members: [],
+      archived: false,
+      statuses: calculateStatuses({ tasks: _tasks, statuses: [] }, tasksData, []),
+      targetClass: targetProjectClassId
+    },
+    _id
+  )
+
+  return tmpl
 }

@@ -15,7 +15,8 @@
 <script lang="ts">
   import { AttachedData, Ref, WithLookup } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { getStates } from '@hcengineering/task'
+  import { getTaskTypeStates } from '@hcengineering/task'
+  import { taskTypeStore } from '@hcengineering/task-resources'
   import { Issue, IssueDraft, IssueStatus, Project } from '@hcengineering/tracker'
   import {
     Button,
@@ -30,10 +31,8 @@
   import { statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
-  import { activeProjects } from '../../utils'
   import IssueStatusIcon from './IssueStatusIcon.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
-  import { typeStore } from '@hcengineering/task-resources'
   type ValueType = Issue | (AttachedData<Issue> & { space: Ref<Project> }) | IssueDraft
 
   export let value: ValueType
@@ -84,11 +83,7 @@
     )
   }
 
-  let space: Project | undefined = undefined
-
-  $: space = $activeProjects.get(value.space)
-
-  $: statuses = getStates(space, $typeStore, $statusStore.byId)
+  $: statuses = getTaskTypeStates(value.kind, $taskTypeStore, $statusStore.byId)
 
   function getSelectedStatus (
     statuses: WithLookup<IssueStatus>[] | undefined,
@@ -97,12 +92,18 @@
   ): WithLookup<IssueStatus> | undefined {
     if (value.status !== undefined) {
       const current = statuses?.find((status) => status._id === value.status)
-      if (current) return current
+      if (current != null) {
+        return current
+      }
     }
     if (defaultIssueStatus !== undefined) {
       const res = statuses?.find((status) => status._id === defaultStatus)
-      changeStatus(res?._id, false)
+      void changeStatus(res?._id, false)
       return res
+    }
+    // We need to choose first one, since it should not be case without status.
+    if (value.status === undefined) {
+      void changeStatus(statuses?.[0]?._id, false)
     }
   }
 

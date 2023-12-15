@@ -276,9 +276,9 @@ export function createModel (builder: Builder): void {
       label: notification.string.Notifications,
       icon: notification.icon.Notifications,
       component: notification.component.NotificationSettings,
-      group: 'settings',
+      group: 'settings-account',
       secured: false,
-      order: 2500
+      order: 1500
     },
     notification.ids.NotificationSettings
   )
