@@ -87,7 +87,7 @@
       "request": "launch",
       "args": ["src/__start.ts"],
       "env": {
-        "SERVER_SECRET": "secret",
+        "SECRET": "secret",
         "TRANSACTOR_URL": "ws://localhost:3333",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",

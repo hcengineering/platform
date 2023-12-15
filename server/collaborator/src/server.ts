@@ -15,6 +15,7 @@
 
 import { MeasureContext } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
+import { defaultExtensions } from '@hcengineering/text'
 import { Hocuspocus, onAuthenticatePayload } from '@hocuspocus/server'
 import bp from 'body-parser'
 import compression from 'compression'
@@ -25,8 +26,11 @@ import { WebSocket, WebSocketServer } from 'ws'
 
 import { Config } from './config'
 import { ActionsExtension } from './extensions/action'
-import { StorageExtension } from './extensions/storage'
 import { Context, buildContext } from './context'
+import { MinioStorageExtension } from './extensions/storage/minio'
+import { PlatformStorageExtension } from './extensions/storage/platform'
+import { RoutedStorageExtension } from './extensions/storage/router'
+import { HtmlTransformer } from './transformers/html'
 
 const gcEnabled = process.env.GC !== 'false' && process.env.GC !== '0'
 
@@ -90,10 +94,19 @@ export function start (ctx: MeasureContext, config: Config, minio: MinioService)
 
     extensions: [
       new ActionsExtension(),
-      new StorageExtension({
-        ctx: ctx.newChild('minio', {}),
-        minio,
-        transactorUrl: config.TransactorUrl
+      new RoutedStorageExtension({
+        extensions: {
+          minio: new MinioStorageExtension({
+            ctx: ctx.newChild('minio', {}),
+            minio,
+            transactorUrl: config.TransactorUrl
+          }),
+          platform: new PlatformStorageExtension({
+            ctx: ctx.newChild('platform', {}),
+            transformer: new HtmlTransformer(defaultExtensions),
+            transactorUrl: config.TransactorUrl
+          })
+        }
       })
     ],
 

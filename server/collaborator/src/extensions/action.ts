@@ -1,7 +1,7 @@
 import { Connection, Document, Extension, Hocuspocus, onConfigurePayload, onStatelessPayload } from '@hocuspocus/server'
 import * as Y from 'yjs'
 
-import { Context } from '../context'
+import { Context, withContext } from '../context'
 import { Action, ActionStatus, ActionStatusResponse, DocumentCopyAction, DocumentFieldCopyAction } from '../types'
 
 export class ActionsExtension implements Extension {
@@ -11,10 +11,10 @@ export class ActionsExtension implements Extension {
     this.instance = instance
   }
 
-  async onStateless (data: onStatelessPayload): Promise<any> {
+  async onStateless (data: withContext<onStatelessPayload>): Promise<any> {
     try {
       const action = JSON.parse(data.payload) as Action
-      const context = data.connection.context as Context
+      const context = data.connection.context
       const { connection } = data
 
       switch (action.action) {
@@ -45,10 +45,7 @@ export class ActionsExtension implements Extension {
     const { sourceId, targetId } = action.params
     console.info(`copy document content ${sourceId} -> ${targetId}`)
 
-    const _context: Context = {
-      token: context.token,
-      initialContentId: ''
-    }
+    const _context: Context = { ...context, initialContentId: '' }
 
     let source: Document | null = null
     let target: Document | null = null
@@ -102,10 +99,7 @@ export class ActionsExtension implements Extension {
       return
     }
 
-    const _context: Context = {
-      token: context.token,
-      initialContentId: ''
-    }
+    const _context: Context = { ...context, initialContentId: '' }
 
     let doc: Document | null = null
 

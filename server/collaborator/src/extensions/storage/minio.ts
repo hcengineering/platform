@@ -14,43 +14,24 @@
 //
 
 import attachment, { Attachment } from '@hcengineering/attachment'
-import client from '@hcengineering/client'
-import clientResources from '@hcengineering/client-resources'
-import core, { Client, MeasureContext, Ref, TxOperations } from '@hcengineering/core'
+import { MeasureContext, Ref } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
-import { setMetadata } from '@hcengineering/platform'
-import { Token, generateToken } from '@hcengineering/server-token'
+import { Token } from '@hcengineering/server-token'
 import { Extension, onLoadDocumentPayload, onStoreDocumentPayload } from '@hocuspocus/server'
-import { applyUpdate, encodeStateAsUpdate } from 'yjs'
-import config from '../config'
-import { Context } from '../context'
+import { Doc as YDoc, applyUpdate, encodeStateAsUpdate } from 'yjs'
+import { withContext } from '../../context'
+import { connect, getTxOperations } from '../../platform'
 
-// eslint-disable-next-line
-const WebSocket = require('ws')
-
-async function connect (transactorUrl: string, token: Token): Promise<Client> {
-  const encodedToken = generateToken(token.email, token.workspace)
-  // We need to override default factory with 'ws' one.
-  setMetadata(client.metadata.ClientSocketFactory, (url) => {
-    return new WebSocket(url, {
-      headers: {
-        'User-Agent': config.ServiceID
-      }
-    })
-  })
-  return await (await clientResources()).function.GetClient(encodedToken, transactorUrl)
-}
-
-export interface StorageConfiguration {
+export interface MinioStorageConfiguration {
   ctx: MeasureContext
   minio: MinioService
   transactorUrl: string
 }
 
-export class StorageExtension implements Extension {
-  private readonly configuration: StorageConfiguration
+export class MinioStorageExtension implements Extension {
+  private readonly configuration: MinioStorageConfiguration
 
-  constructor (configuration: StorageConfiguration) {
+  constructor (configuration: MinioStorageConfiguration) {
     this.configuration = configuration
   }
 
@@ -59,11 +40,13 @@ export class StorageExtension implements Extension {
     return Buffer.concat(buffer)
   }
 
-  async onLoadDocument (data: onLoadDocumentPayload): Promise<any> {
-    console.log('load document', data.documentName)
+  async onLoadDocument (data: withContext<onLoadDocumentPayload>): Promise<any> {
+    const { token, initialContentId } = data.context
 
     const documentId = data.documentName
-    const { token, initialContentId } = data.context as Context
+    console.log('load document from minio', documentId)
+
+    const ydoc = new YDoc()
 
     await this.configuration.ctx.with('load-document', {}, async () => {
       let minioDocument: Buffer | undefined
@@ -83,21 +66,21 @@ export class StorageExtension implements Extension {
       if (minioDocument !== undefined && minioDocument.length > 0) {
         try {
           const uint8arr = new Uint8Array(minioDocument)
-          applyUpdate(data.document, uint8arr)
+          applyUpdate(ydoc, uint8arr)
         } catch (err) {
           console.error(err)
         }
       }
     })
 
-    return data.document
+    return ydoc
   }
 
-  async onStoreDocument (data: onStoreDocumentPayload): Promise<void> {
-    console.log('store document', data.documentName)
+  async onStoreDocument (data: withContext<onStoreDocumentPayload>): Promise<void> {
+    const { token } = data.context
 
     const documentId = data.documentName
-    const { token } = data.context as Context
+    console.log('store document to minio', documentId)
 
     await this.configuration.ctx.with('store-document', {}, async (ctx) => {
       const updates = encodeStateAsUpdate(data.document)
@@ -114,18 +97,16 @@ export class StorageExtension implements Extension {
         try {
           const connection = await connect(this.configuration.transactorUrl, token)
 
-          // token belongs to the first user opened the document, this is not accurate, but
-          // since the document is collaborative, we need to choose some account to update the doc
-          const account = await connection.findOne(core.class.Account, { email: token.email })
-          const accountId = account?._id ?? core.account.System
-
-          const client = new TxOperations(connection, accountId, true)
-          const current = await client.findOne(attachment.class.Attachment, { _id: documentId as Ref<Attachment> })
+          const current = await connection.findOne(attachment.class.Attachment, { _id: documentId as Ref<Attachment> })
           if (current !== undefined) {
-            console.debug('platform notification for document', documentId)
+            console.log('platform notification for document', documentId)
+
+            // token belongs to the first user opened the document, this is not accurate, but
+            // since the document is collaborative, we need to choose some account to update the doc
+            const client = await getTxOperations(connection, token, true)
             await client.update(current, { lastModified: Date.now(), size: buffer.length })
           } else {
-            console.debug('platform attachment document not found', documentId)
+            console.log('platform attachment document not found', documentId)
           }
 
           await connection.close()

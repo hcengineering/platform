@@ -21,6 +21,10 @@ export interface Context {
   initialContentId: string
 }
 
+export type withContext<T> = Omit<T, 'context'> & {
+  context: Context
+}
+
 export function buildContext (data: onAuthenticatePayload): Context {
   const token = decodeToken(data.token)
   const initialContentId = data.requestParameters.get('initialContentId') as string

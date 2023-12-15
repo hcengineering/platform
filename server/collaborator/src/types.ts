@@ -15,6 +15,8 @@
 
 export type Action = DocumentCopyAction | DocumentFieldCopyAction
 
+export type StorageType = 'minio' | 'platform'
+
 export interface DocumentCopyAction {
   action: 'document.copy'
   params: {

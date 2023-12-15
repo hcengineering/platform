@@ -17,6 +17,9 @@ dependencies:
   '@hocuspocus/server':
     specifier: ^2.5.0
     version: 2.8.1(bufferutil@4.0.7)(yjs@13.6.8)
+  '@hocuspocus/transformer':
+    specifier: ^2.5.0
+    version: 2.8.1(@tiptap/pm@2.1.12)(y-prosemirror@1.2.1)(yjs@13.6.8)
   '@koa/cors':
     specifier: ^3.1.0
     version: 3.4.3
@@ -91,7 +94,7 @@ dependencies:
     version: file:projects/client-resources.tgz(@types/node@16.11.68)(esbuild@0.16.17)(svelte@4.2.5)(ts-node@10.9.1)
   '@rush-temp/collaborator':
     specifier: file:./projects/collaborator.tgz
-    version: file:projects/collaborator.tgz(bufferutil@4.0.7)(svelte@4.2.5)
+    version: file:projects/collaborator.tgz(@tiptap/pm@2.1.12)(bufferutil@4.0.7)(prosemirror-model@1.19.3)(svelte@4.2.5)
   '@rush-temp/contact':
     specifier: file:./projects/contact.tgz
     version: file:projects/contact.tgz(@types/node@16.11.68)(esbuild@0.16.17)(svelte@4.2.5)(ts-node@10.9.1)
@@ -3684,6 +3687,20 @@ packages:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+    dev: false
+
+  /@hocuspocus/transformer@2.8.1(@tiptap/pm@2.1.12)(y-prosemirror@1.2.1)(yjs@13.6.8):
+    resolution: {integrity: sha512-0WtE/fxGwD/BEdl22udznD+skggvF6D0kEpw7jTEUdfvqwSJEyUxq3tm1S1hVmZyQI21qDw6yTTgP7Ujf1WbSg==}
+    peerDependencies:
+      '@tiptap/pm': ^2.1.12
+      y-prosemirror: ^1.2.1
+      yjs: ^13.6.8
+    dependencies:
+      '@tiptap/core': 2.1.12(@tiptap/pm@2.1.12)
+      '@tiptap/pm': 2.1.12
+      '@tiptap/starter-kit': 2.1.12(@tiptap/pm@2.1.12)
+      y-prosemirror: 1.2.1(prosemirror-model@1.19.3)(yjs@13.6.8)
+      yjs: 13.6.8
     dev: false
 
   /@humanwhocodes/config-array@0.11.11:
@@ -18143,13 +18160,16 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/collaborator.tgz(bufferutil@4.0.7)(svelte@4.2.5):
-    resolution: {integrity: sha512-Aqxt81MeApDyPNFAK2c+YaKTe5kbBZdHrL/7UgrXClC3hqN7tVepxeWK77TaSz/Sk9/1+dOYphDBMBYK5jOxGQ==, tarball: file:projects/collaborator.tgz}
+  file:projects/collaborator.tgz(@tiptap/pm@2.1.12)(bufferutil@4.0.7)(prosemirror-model@1.19.3)(svelte@4.2.5):
+    resolution: {integrity: sha512-bxp2UhqZ3zDmiL1eKcblQOwNX2IgLU4dVndGsuT3cCuBela95l/Rib9tI5ZsoO0dsPvOZksg8lelW2dCo4kBfA==, tarball: file:projects/collaborator.tgz}
     id: file:projects/collaborator.tgz
     name: '@rush-temp/collaborator'
     version: 0.0.0
     dependencies:
       '@hocuspocus/server': 2.8.1(bufferutil@4.0.7)(yjs@13.6.8)
+      '@hocuspocus/transformer': 2.8.1(@tiptap/pm@2.1.12)(y-prosemirror@1.2.1)(yjs@13.6.8)
+      '@tiptap/core': 2.1.12(@tiptap/pm@2.1.12)
+      '@tiptap/html': 2.1.12(@tiptap/core@2.1.12)(@tiptap/pm@2.1.12)
       '@types/body-parser': 1.19.3
       '@types/compression': 1.7.3
       '@types/cors': 2.8.14
@@ -18177,16 +18197,21 @@ packages:
       ts-node: 10.9.1(@types/node@16.11.68)(typescript@5.2.2)
       typescript: 5.2.2
       ws: 8.14.2(bufferutil@4.0.7)
+      y-prosemirror: 1.2.1(prosemirror-model@1.19.3)(yjs@13.6.8)
       yjs: 13.6.8
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
       - '@swc/core'
       - '@swc/wasm'
+      - '@tiptap/pm'
       - babel-jest
       - babel-plugin-macros
       - bufferutil
       - node-notifier
+      - prosemirror-model
+      - prosemirror-state
+      - prosemirror-view
       - supports-color
       - svelte
       - utf-8-validate
