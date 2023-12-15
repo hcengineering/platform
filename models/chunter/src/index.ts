@@ -178,7 +178,7 @@ export class TDirectMessageInput extends TClass implements DirectMessageInput {
   component!: AnyComponent
 }
 
-@Model(chunter.class.ChatMessage, activity.class.ActivityMessage, DOMAIN_CHUNTER)
+@Model(chunter.class.ChatMessage, activity.class.ActivityMessage)
 export class TChatMessage extends TActivityMessage implements ChatMessage {
   @Prop(TypeMarkup(), chunter.string.Message)
   @Index(IndexKind.FullText)
