@@ -7,7 +7,7 @@ export TRANSACTOR_URL=ws://localhost:3333
 export ELASTIC_URL=http://localhost:9200
 export SERVER_SECRET=secret
 
-location="${1:-./sanity-ws}"
+location="${1:-./sanity-ws-new}"
 
 # Restore workspace contents in mongo/elastic
 node ../dev/tool/bundle.js backup ${location} sanity-ws

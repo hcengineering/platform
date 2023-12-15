@@ -1,4 +1,4 @@
-location="${1:-./sanity-ws}"
+location="${1:-./sanity-ws-new}"
 
 # Restore workspace contents in mongo/elastic
 ./tool.sh backup ${location} sanity-ws

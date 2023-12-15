@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Restore workspace contents in mongo/elastic
-./tool.sh backup-restore ./sanity-ws sanity-ws
+./tool.sh backup-restore ./sanity-ws-new sanity-ws
 
 ./tool.sh upgrade-workspace sanity-ws
 
