@@ -98,8 +98,7 @@ test.describe('contact tests', () => {
       button: 'right'
     })
     await page.click('text="Delete"')
-    // Click text=Yes
-    await page.click('text=Yes')
+    await page.click('form[id="view:string:DeleteObject"] button[type="submit"]')
 
     await expect(page.locator(`td:has-text("${last} ${first}")`)).toHaveCount(0)
   })
