@@ -109,7 +109,7 @@ test.describe('candidate/talents tests', () => {
     await talentsPage.checkTalentNotExist(talentName)
   })
 
-  test.skip('Merge contacts', async ({ page, context }) => {
+  test('Merge contacts', async ({ page, context }) => {
     const navigationMenuPage = new NavigationMenuPage(page)
     await navigationMenuPage.buttonTalents.click()
     const talentsPage = new TalentsPage(page)

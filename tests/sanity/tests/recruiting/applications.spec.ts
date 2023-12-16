@@ -74,7 +74,6 @@ test.describe('Application tests', () => {
       vacancy: vacancyName,
       recruiterName: 'first'
     })
-    await applicationsPage.selectType(vacancyName)
     await applicationsPage.openApplicationByTalentName(talentName)
 
     const applicationsDetailsPage = new ApplicationsDetailsPage(page)
