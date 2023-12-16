@@ -115,4 +115,8 @@ export class IssuesDetailsPage extends CommonTrackerPage {
   async waitDetailsOpened (issueTitle: string): Promise<void> {
     await this.page.waitForSelector(`div[class*="main"] div:has-text("${issueTitle}")`)
   }
+
+  async openSubIssueByName (issueName: string): Promise<void> {
+    await this.page.locator('div.listGrid a', { hasText: issueName }).click()
+  }
 }

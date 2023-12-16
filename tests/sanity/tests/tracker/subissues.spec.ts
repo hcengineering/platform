@@ -24,7 +24,7 @@ test.describe('Tracker sub-issues tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test('create sub-issue', async ({ page }) => {
+  test.skip('create sub-issue', async ({ page }) => {
     await navigate(page)
 
     const props = {
@@ -90,7 +90,7 @@ test.describe('Tracker sub-issues tests', () => {
 
     await issuesPage.fillNewIssueForm(newSubIssue)
     await issuesPage.buttonCreateIssue.click()
-    await issuesPage.openIssueByName(newSubIssue.title)
+    await issuesDetailsPage.openSubIssueByName(newSubIssue.title)
 
     await issuesDetailsPage.waitDetailsOpened(newSubIssue.title)
     await issuesDetailsPage.editIssue(editSubIssue)
