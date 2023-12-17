@@ -54,7 +54,6 @@
       icon: clazz.icon
     }))
 
-
   // import { Question, Survey } from '@hcengineering/survey'
   // import {
   //   Button,

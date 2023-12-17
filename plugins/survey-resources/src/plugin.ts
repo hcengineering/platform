@@ -14,9 +14,9 @@
 //
 
 import survey, {
-  CheckboxesQuestion,
-  QuestionDataEditorComponent,
-  RadioButtonsQuestion,
+  type CheckboxesQuestion,
+  type QuestionDataEditorComponent,
+  type RadioButtonsQuestion,
   surveyId
 } from '@hcengineering/survey'
 import { mergeIds } from '@hcengineering/platform'
