@@ -13,6 +13,14 @@
 // limitations under the License.
 //
 
-import type { Resources } from '@hcengineering/platform'
+import { type Resources } from '@hcengineering/platform'
 
-export default async (): Promise<Resources> => ({})
+import SurveyCreator from './components/SurveyCreator.svelte'
+import SurveyNamePresenter from './components/SurveyNamePresenter.svelte'
+
+export default async (): Promise<Resources> => ({
+  component: {
+    SurveyCreator,
+    SurveyNamePresenter
+  }
+})

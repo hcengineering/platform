@@ -35,8 +35,13 @@
   "dependencies": {
     "@hcengineering/core": "^0.6.28",
     "@hcengineering/platform": "^0.6.9",
+    "@hcengineering/presentation": "^0.6.2",
     "@hcengineering/survey": "^0.6.0",
+    "@hcengineering/text-editor": "^0.6.0",
     "@hcengineering/ui": "^0.6.11",
-    "@hcengineering/view": "^0.6.9"
+    "@hcengineering/view": "^0.6.9",
+    "@hcengineering/view-resources": "^0.6.0",
+    "lexorank": "~1.0.4",
+    "svelte": "^4.2.5"
   }
 }

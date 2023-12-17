@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,15 +11,15 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
 
-import survey, { surveyId } from '@hcengineering/survey'
-import { mergeIds } from '@hcengineering/platform'
-import { type AnyComponent } from '@hcengineering/ui'
+<script lang="ts">
+  import { DocNavLink } from '@hcengineering/view-resources'
+  import { Survey } from '@hcengineering/survey'
 
-export default mergeIds(surveyId, survey, {
-  component: {
-    SurveyCreator: '' as AnyComponent,
-    SurveyNamePresenter: '' as AnyComponent
-  }
-})
+  export let value: Survey
+</script>
+
+<DocNavLink object={value}>
+  {value.name}
+</DocNavLink>

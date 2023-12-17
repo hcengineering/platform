@@ -95,6 +95,11 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
   }
 
   private async init (ctx: MeasureContext): Promise<void> {
+    // FIXME: The following line looks up for private spaces in DOMAIN_SPACE only.
+    //  Thus, if you have a model class that represents private spaces,
+    //  and try to store it in its own domain, e.g. `@Model(MyModel, Space, MY_DOMAIN)`,
+    //  you won't be able to fetch instances of that class after the server restarts
+    //  due to query rewrite logic (see {@link SpaceSecurityMiddleware#findAll()})
     const spaces = await this.storage.findAll(ctx, core.class.Space, { private: true })
     for (const space of spaces) {
       this.addSpace(space)

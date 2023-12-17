@@ -14,90 +14,72 @@
 //
 
 import type { IntlString, Plugin } from '@hcengineering/platform'
-import type { AttachedDoc, Class, CollectionSize, Markup, Ref } from '@hcengineering/core'
-import type { Attachment } from '@hcengineering/attachment'
+import type { Class, Ref, Space, Type } from '@hcengineering/core'
 import { Asset, plugin } from '@hcengineering/platform'
+import {
+  CheckboxesOption,
+  CheckboxesQuestion,
+  InfoQuestion,
+  Question,
+  RadioButtonsOption,
+  RadioButtonsQuestion,
+  Rank,
+  Survey
+} from './types'
 
-/**
- * @public
- */
-export type Rank = string
-
-/**
- * @public
- *
- * ∈ [0.0, 100.0]
- */
-export type Percentage = number
-
-/**
- * @public
- *
- * Arbitrary survey item
- */
-export interface SurveyItem extends AttachedDoc {
-  rank: Rank
-}
-
-/**
- * @public
- *
- * Interactive survey item, e.g. a question
- */
-export interface SurveyInteractiveItem extends SurveyItem {
-  title: string
-}
-
-/**
- * @public
- *
- * Assessable interactive survey item, e.g. a question with correct answers
- */
-export interface SurveyAssessableItem extends SurveyInteractiveItem {
-  weight: Percentage
-}
-
-/**
- * @public
- */
-export interface Survey extends AttachedDoc {
-  title: string
-  description: Markup
-
-  threshold: Percentage
-  items: CollectionSize<SurveyItem>
-  attachments: CollectionSize<Attachment>
-}
+export * from './types'
 
 /**
  * @public
  */
 export const surveyId = 'survey' as Plugin
 
-const survey = plugin(surveyId, {
-  class: {
-    Survey: '' as Ref<Class<Survey>>,
-    SurveyItem: '' as Ref<Class<SurveyItem>>,
-    SurveyInteractiveItem: '' as Ref<Class<SurveyInteractiveItem>>,
-    SurveyAssessableItem: '' as Ref<Class<SurveyAssessableItem>>
-  },
-  string: {
-    ConfigDescription: '' as IntlString,
-    ConfigLabel: '' as IntlString,
-    SurveyApplication: '' as IntlString
-  },
-  icon: {
-    SurveyApplication: '' as Asset
-  },
-  action: {
-    // TODO: Declare actions?
-  },
-  component: {
-    // TODO: Declare components?
-  }
-})
-
 /**
  * @public
  */
-export default survey
+export default plugin(surveyId, {
+  class: {
+    CheckboxesOption: '' as Ref<Class<Type<CheckboxesOption>>>,
+    CheckboxesQuestion: '' as Ref<Class<CheckboxesQuestion>>,
+    InfoQuestion: '' as Ref<Class<InfoQuestion>>,
+    Question: '' as Ref<Class<Question>>,
+    RadioButtonsOption: '' as Ref<Class<Type<RadioButtonsOption>>>,
+    RadioButtonsQuestion: '' as Ref<Class<RadioButtonsQuestion>>,
+    Rank: '' as Ref<Class<Type<Rank>>>,
+    Survey: '' as Ref<Class<Survey>>
+  },
+  string: {
+    CheckboxesOption: '' as IntlString,
+    CheckboxesQuestion: '' as IntlString,
+    CheckboxesQuestionOptions: '' as IntlString,
+    CheckboxesQuestionText: '' as IntlString,
+    ConfigDescription: '' as IntlString,
+    ConfigLabel: '' as IntlString,
+    InfoQuestion: '' as IntlString,
+    InfoQuestionText: '' as IntlString,
+    Question: '' as IntlString,
+    RadioButtonsOption: '' as IntlString,
+    RadioButtonsQuestion: '' as IntlString,
+    RadioButtonsQuestionOptions: '' as IntlString,
+    RadioButtonsQuestionText: '' as IntlString,
+    Rank: '' as IntlString,
+    Survey: '' as IntlString,
+    Surveys: '' as IntlString,
+    SurveyApplication: '' as IntlString,
+    SurveyCreate: '' as IntlString,
+    SurveyName: '' as IntlString,
+    SurveyNamePlaceholder: '' as IntlString,
+    SurveyQuestions: '' as IntlString
+  },
+  icon: {
+    Checkboxes: '' as Asset,
+    Info: '' as Asset,
+    Question: '' as Asset,
+    RadioButtons: '' as Asset,
+    Survey: '' as Asset,
+    SurveyApplication: '' as Asset
+  },
+  space: {
+    Surveys: '' as Ref<Space>
+  }
+})

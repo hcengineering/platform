@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@hcengineering/attachment": "^0.6.9",
+    "@hcengineering/contact": "^0.6.20",
     "@hcengineering/core": "^0.6.28",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/ui": "^0.6.11",

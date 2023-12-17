@@ -235,7 +235,8 @@ export function fillDefaults<T extends Doc> (
   for (const attribute of attributes) {
     if (attribute[1].defaultValue !== undefined) {
       if ((object as any)[attribute[0]] === undefined) {
-        ;(object as any)[attribute[0]] = attribute[1].defaultValue
+        // Clone default value as it might be an object (e.g. array)
+        ;(object as any)[attribute[0]] = structuredClone(attribute[1].defaultValue)
       }
     }
   }

@@ -120,7 +120,7 @@ export function devTool (
 
   program.version('0.0.1')
 
-  // create-user john.appleseed@gmail.com --password 123 --workspace workspace --fullname "John Appleseed"
+  // create-account john.appleseed@gmail.com --password 123 --workspace workspace --fullname "John Appleseed"
   program
     .command('create-account <email>')
     .description('create user and corresponding account in master database')
@@ -476,7 +476,7 @@ export function devTool (
 
   program
     .command('clean-workspace <workspace>')
-    .description('set user role')
+    .description('clean workspace')
     .option('--recruit', 'Clean recruit', false)
     .option('--tracker', 'Clean tracker', false)
     .option('--removedTx', 'Clean removed transactions', false)
@@ -501,7 +501,7 @@ export function devTool (
 
   program
     .command('clean-removed-transactions <workspace>')
-    .description('set user role')
+    .description('clean removed transactions')
     .action(async (workspace: string, cmd: any) => {
       await cleanRemovedTransactions(getWorkspaceId(workspace, productId), transactorUrl)
     })

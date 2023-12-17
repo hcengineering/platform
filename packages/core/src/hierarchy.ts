@@ -272,7 +272,7 @@ export class Hierarchy {
 
   /**
    * Check if passed _class is derived from `from` class.
-   * It will iterave over parents.
+   * It will iterate over parents.
    */
   isDerived<T extends Obj>(_class: Ref<Class<T>>, from: Ref<Class<T>>): boolean {
     let cl: Ref<Class<T>> | undefined = _class
@@ -298,7 +298,7 @@ export class Hierarchy {
 
   /**
    * Check if passed _class implements passed interfaces `from`.
-   * It will check for class parents and they interfaces.
+   * It will check for class parents and their interfaces.
    */
   isImplements<T extends Doc>(_class: Ref<Class<T>>, from: Ref<Interface<T>>): boolean {
     let cl: Ref<Class<T>> | undefined = _class
@@ -313,7 +313,7 @@ export class Hierarchy {
   }
 
   /**
-   * Check if interface is extends passed interface.
+   * Check if interface extends passed interface.
    */
   private isExtends<T extends Doc>(extendsOrImplements: Ref<Interface<Doc>>[], from: Ref<Interface<T>>): boolean {
     const result: Ref<Interface<Doc>>[] = []

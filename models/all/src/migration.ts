@@ -38,6 +38,7 @@ import { bitrixOperation } from '@hcengineering/model-bitrix'
 import { calendarOperation } from '@hcengineering/model-calendar'
 import { activityOperation } from '@hcengineering/model-activity'
 import { activityServerOperation } from '@hcengineering/model-server-activity'
+import { surveyOperation } from '@hcengineering/model-survey'
 
 export const migrateOperations: [string, MigrateOperation][] = [
   ['core', coreOperation],
@@ -62,5 +63,6 @@ export const migrateOperations: [string, MigrateOperation][] = [
   ['hr', hrOperation],
   ['bitrix', bitrixOperation],
   ['inventiry', inventoryOperation],
-  ['activityServer', activityServerOperation]
+  ['activityServer', activityServerOperation],
+  ['survey', surveyOperation]
 ]

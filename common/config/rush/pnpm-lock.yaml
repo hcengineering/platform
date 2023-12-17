@@ -583,7 +583,7 @@ dependencies:
     version: file:projects/survey-assets.tgz(esbuild@0.16.17)(svelte@4.2.5)(ts-node@10.9.1)(typescript@5.2.2)
   '@rush-temp/survey-resources':
     specifier: file:./projects/survey-resources.tgz
-    version: file:projects/survey-resources.tgz(@types/node@16.11.68)(esbuild@0.16.17)(postcss-load-config@4.0.1)(postcss@8.4.31)(svelte@4.2.5)(ts-node@10.9.1)(typescript@5.2.2)
+    version: file:projects/survey-resources.tgz(@types/node@16.11.68)(esbuild@0.16.17)(postcss-load-config@4.0.1)(postcss@8.4.31)(ts-node@10.9.1)(typescript@5.2.2)
   '@rush-temp/tags':
     specifier: file:./projects/tags.tgz
     version: file:projects/tags.tgz(@types/node@16.11.68)(esbuild@0.16.17)(ts-node@10.9.1)
@@ -20343,7 +20343,7 @@ packages:
     dev: false
 
   file:projects/model-survey.tgz(svelte@4.2.5)(typescript@5.2.2):
-    resolution: {integrity: sha512-HqvLuhQJO8PpOeuDEPr7dcrxA2xZKXp7FLIwdckKONYx506mZVzErCiU3eXy3M4YyLXIQCTy272vnxJZnemJTw==, tarball: file:projects/model-survey.tgz}
+    resolution: {integrity: sha512-BRIy79z/B9+KLhYWkK7rny6s868tjib6HFnMocXsAF8yGOydGSjd9FAv/YO+jMbMRMBdDy2Ct7mnMSE4Xgo7dg==, tarball: file:projects/model-survey.tgz}
     id: file:projects/model-survey.tgz
     name: '@rush-temp/model-survey'
     version: 0.0.0
@@ -23249,8 +23249,8 @@ packages:
       - typescript
     dev: false
 
-  file:projects/survey-resources.tgz(@types/node@16.11.68)(esbuild@0.16.17)(postcss-load-config@4.0.1)(postcss@8.4.31)(svelte@4.2.5)(ts-node@10.9.1)(typescript@5.2.2):
-    resolution: {integrity: sha512-S4t+6+J3q1YibQwIzBOYpeWlSPTiFyvVhnhw07Eqnxy1z3ADHLlHpsxCXUI+zQQQzzo9zvGLRoK1hSYmtcPGfA==, tarball: file:projects/survey-resources.tgz}
+  file:projects/survey-resources.tgz(@types/node@16.11.68)(esbuild@0.16.17)(postcss-load-config@4.0.1)(postcss@8.4.31)(ts-node@10.9.1)(typescript@5.2.2):
+    resolution: {integrity: sha512-tuXhGdR2ZZ78vGl+Ij7HcMYBWRikwGCdfSqOCTjlXKYzQNcZ3R17J4M7yGRT6QlIW3/CmniOIO+TQeAVCuY7Dw==, tarball: file:projects/survey-resources.tgz}
     id: file:projects/survey-resources.tgz
     name: '@rush-temp/survey-resources'
     version: 0.0.0
@@ -23265,9 +23265,11 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.54.0)
       eslint-plugin-svelte: 2.35.0(eslint@8.54.0)(svelte@4.2.5)(ts-node@10.9.1)
       jest: 29.7.0(@types/node@16.11.68)(ts-node@10.9.1)
+      lexorank: 1.0.5
       prettier: 3.1.0
       prettier-plugin-svelte: 3.1.0(prettier@3.1.0)(svelte@4.2.5)
       sass: 1.69.0
+      svelte: 4.2.5
       svelte-check: 3.6.0(postcss-load-config@4.0.1)(postcss@8.4.31)(sass@1.69.0)(svelte@4.2.5)
       svelte-eslint-parser: 0.33.1(svelte@4.2.5)
       svelte-loader: 3.1.9(svelte@4.2.5)
@@ -23289,13 +23291,12 @@ packages:
       - stylus
       - sugarss
       - supports-color
-      - svelte
       - ts-node
       - typescript
     dev: false
 
   file:projects/survey.tgz(@types/node@16.11.68)(esbuild@0.16.17)(svelte@4.2.5)(ts-node@10.9.1)(typescript@5.2.2):
-    resolution: {integrity: sha512-VQ5Ne0MuO8zCvfvMqROddHTfinHEmiybMnz3XM/YfxOTxU1RRwZDGSoaixBU/tK98BURHp+NDnCiD5X3Q48DtQ==, tarball: file:projects/survey.tgz}
+    resolution: {integrity: sha512-5tP9hLNgOQhSdLgLrhbmGpCxSI6qd9hejj3r4Tj+5QK9a5tyoty1ZcgCjHRmvFm8N/CJqGmoXDjnZsH/S6LL6w==, tarball: file:projects/survey.tgz}
     id: file:projects/survey.tgz
     name: '@rush-temp/survey'
     version: 0.0.0

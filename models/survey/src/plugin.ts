@@ -18,9 +18,13 @@ import { surveyId } from '@hcengineering/survey'
 import survey from '@hcengineering/survey-resources/src/plugin'
 import { type Ref } from '@hcengineering/core'
 import { type Application } from '@hcengineering/workbench'
+import { type Viewlet } from '@hcengineering/view'
 
 export default mergeIds(surveyId, survey, {
   app: {
-    Survey: '' as Ref<Application>
+    SurveyApplication: '' as Ref<Application>
+  },
+  viewlet: {
+    SurveysTable: '' as Ref<Viewlet>
   }
 })
