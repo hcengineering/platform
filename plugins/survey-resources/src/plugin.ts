@@ -13,13 +13,20 @@
 // limitations under the License.
 //
 
-import survey, { surveyId } from '@hcengineering/survey'
+import survey, {
+  CheckboxesQuestion,
+  QuestionDataEditorComponent,
+  RadioButtonsQuestion,
+  surveyId
+} from '@hcengineering/survey'
 import { mergeIds } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui'
 
 export default mergeIds(surveyId, survey, {
   component: {
+    OptionsQuestionDataEditor: '' as QuestionDataEditorComponent<CheckboxesQuestion | RadioButtonsQuestion>,
     SurveyCreator: '' as AnyComponent,
-    SurveyNamePresenter: '' as AnyComponent
+    SurveyNamePresenter: '' as AnyComponent,
+    QuestionCollectionEditor: '' as AnyComponent
   }
 })

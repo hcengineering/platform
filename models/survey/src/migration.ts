@@ -19,34 +19,8 @@ import {
   type MigrationUpgradeClient,
   type ModelLogger
 } from '@hcengineering/model'
-import { TxOperations } from '@hcengineering/core'
-import core from '@hcengineering/model-core'
-import survey from './index'
-
-async function createSpace (tx: TxOperations): Promise<void> {
-  const current = await tx.findOne(core.class.Space, {
-    _id: survey.space.Surveys
-  })
-  if (current === undefined) {
-    await tx.createDoc(
-      core.class.Space,
-      core.space.Space,
-      {
-        name: 'Surveys',
-        description: 'Surveys',
-        private: false,
-        archived: false,
-        members: []
-      },
-      survey.space.Surveys
-    )
-  }
-}
 
 export const surveyOperation: MigrateOperation = {
   async migrate (client: MigrationClient, logger: ModelLogger): Promise<void> {},
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const tx = new TxOperations(client, core.account.System)
-    await createSpace(tx)
-  }
+  async upgrade (client: MigrationUpgradeClient): Promise<void> {}
 }

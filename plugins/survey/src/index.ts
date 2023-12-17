@@ -14,13 +14,13 @@
 //
 
 import type { IntlString, Plugin } from '@hcengineering/platform'
-import type { Class, Ref, Space, Type } from '@hcengineering/core'
+import type { Class, Mixin, Ref, Type } from '@hcengineering/core'
 import { Asset, plugin } from '@hcengineering/platform'
 import {
   CheckboxesOption,
   CheckboxesQuestion,
   InfoQuestion,
-  Question,
+  Question, QuestionDataEditor,
   RadioButtonsOption,
   RadioButtonsQuestion,
   Rank,
@@ -47,6 +47,9 @@ export default plugin(surveyId, {
     RadioButtonsQuestion: '' as Ref<Class<RadioButtonsQuestion>>,
     Rank: '' as Ref<Class<Type<Rank>>>,
     Survey: '' as Ref<Class<Survey>>
+  },
+  mixin: {
+    QuestionDataEditor: '' as Ref<Mixin<QuestionDataEditor>>
   },
   string: {
     CheckboxesOption: '' as IntlString,
@@ -78,8 +81,5 @@ export default plugin(surveyId, {
     RadioButtons: '' as Asset,
     Survey: '' as Asset,
     SurveyApplication: '' as Asset
-  },
-  space: {
-    Surveys: '' as Ref<Space>
   }
 })

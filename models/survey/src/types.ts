@@ -14,13 +14,13 @@
 //
 
 import { type CollectionSize, type Domain, IndexKind, type Markup, type Ref, type Type } from '@hcengineering/core'
-import core, { TAttachedDoc, TSpace } from '@hcengineering/model-core'
+import core, { TAttachedDoc, TClass, TSpace } from '@hcengineering/model-core'
 
 import {
   ArrOf,
   Collection,
   Hidden,
-  Index,
+  Index, Mixin,
   Model,
   Prop,
   TypeBoolean,
@@ -35,6 +35,8 @@ import {
   type CheckboxesQuestion,
   type InfoQuestion,
   type Question,
+  type QuestionDataEditor,
+  type QuestionDataEditorComponent,
   type RadioButtonsOption,
   type RadioButtonsQuestion,
   type Rank,
@@ -143,4 +145,12 @@ export class TInfoQuestion extends TQuestion implements InfoQuestion {
   @Prop(TypeMarkup(), survey.string.InfoQuestionText, { defaultValue: '' })
   @Index(IndexKind.FullText)
     text: string = ''
+}
+
+/**
+ * @public
+ */
+@Mixin(survey.mixin.QuestionDataEditor, core.class.Class)
+export class TQuestionDataEditor<Q extends Question> extends TClass implements QuestionDataEditor<Q> {
+  editor!: QuestionDataEditorComponent<Q>
 }

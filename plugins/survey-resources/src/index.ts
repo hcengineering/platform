@@ -17,9 +17,13 @@ import { type Resources } from '@hcengineering/platform'
 
 import SurveyCreator from './components/SurveyCreator.svelte'
 import SurveyNamePresenter from './components/SurveyNamePresenter.svelte'
+import OptionsQuestionDataEditor from './components/OptionsQuestionDataEditor.svelte'
+import QuestionCollectionEditor from './components/QuestionCollectionEditor.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
+    OptionsQuestionDataEditor,
+    QuestionCollectionEditor,
     SurveyCreator,
     SurveyNamePresenter
   }

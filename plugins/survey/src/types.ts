@@ -13,7 +13,9 @@
 // limitations under the License.
 //
 
-import { AttachedDoc, Class, CollectionSize, Markup, Ref, Space } from '@hcengineering/core'
+import { AttachedDoc, Class, CollectionSize, Doc, Markup, Ref, Space } from '@hcengineering/core'
+import { ComponentType, SvelteComponent } from 'svelte'
+import type { Resource } from '@hcengineering/platform'
 
 /**
  * @public
@@ -38,24 +40,60 @@ export interface Question extends AttachedDoc {
   rank: Rank
 }
 
+/**
+ * @public
+ */
 export interface RadioButtonsOption {
   label: string
 }
 
+/**
+ * @public
+ */
 export interface RadioButtonsQuestion extends Question {
   text: string
   options: RadioButtonsOption[]
 }
 
+/**
+ * @public
+ */
 export interface CheckboxesOption {
   label: string
 }
 
+/**
+ * @public
+ */
 export interface CheckboxesQuestion extends Question {
   text: string
   options: CheckboxesOption[]
 }
 
+/**
+ * @public
+ */
 export interface InfoQuestion extends Question {
   text: Markup
+}
+
+/**
+ * @public
+ */
+export type QuestionData<Q extends Question> = Omit<Q, keyof Question>
+
+/**
+ * @public
+ */
+export type QuestionDataEditorComponent<Q extends Question> = Resource<ComponentType<SvelteComponent<{
+  readonly _class: Ref<Class<Q>>
+  data: QuestionData<Q>
+  readonly editable: boolean
+}>>>
+
+/**
+ * @public
+ */
+export interface QuestionDataEditor<Q extends Question = Question> extends Class<Doc> {
+  editor: QuestionDataEditorComponent<Q>
 }

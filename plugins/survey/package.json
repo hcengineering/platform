@@ -33,6 +33,7 @@
     "@hcengineering/core": "^0.6.28",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/ui": "^0.6.11",
-    "@hcengineering/view": "^0.6.9"
+    "@hcengineering/view": "^0.6.9",
+    "svelte": "^4.2.5"
   }
 }

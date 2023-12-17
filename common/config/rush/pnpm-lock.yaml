@@ -577,7 +577,7 @@ dependencies:
     version: file:projects/support-resources.tgz(@types/node@16.11.68)(esbuild@0.16.17)(postcss-load-config@4.0.1)(postcss@8.4.31)(ts-node@10.9.1)
   '@rush-temp/survey':
     specifier: file:./projects/survey.tgz
-    version: file:projects/survey.tgz(@types/node@16.11.68)(esbuild@0.16.17)(svelte@4.2.5)(ts-node@10.9.1)(typescript@5.2.2)
+    version: file:projects/survey.tgz(@types/node@16.11.68)(esbuild@0.16.17)(ts-node@10.9.1)(typescript@5.2.2)
   '@rush-temp/survey-assets':
     specifier: file:./projects/survey-assets.tgz
     version: file:projects/survey-assets.tgz(esbuild@0.16.17)(svelte@4.2.5)(ts-node@10.9.1)(typescript@5.2.2)
@@ -23295,8 +23295,8 @@ packages:
       - typescript
     dev: false
 
-  file:projects/survey.tgz(@types/node@16.11.68)(esbuild@0.16.17)(svelte@4.2.5)(ts-node@10.9.1)(typescript@5.2.2):
-    resolution: {integrity: sha512-5tP9hLNgOQhSdLgLrhbmGpCxSI6qd9hejj3r4Tj+5QK9a5tyoty1ZcgCjHRmvFm8N/CJqGmoXDjnZsH/S6LL6w==, tarball: file:projects/survey.tgz}
+  file:projects/survey.tgz(@types/node@16.11.68)(esbuild@0.16.17)(ts-node@10.9.1)(typescript@5.2.2):
+    resolution: {integrity: sha512-mA24RRHgzRqWZ8t6L745EvjubGRGvbYSNoZWu44PoG6wQaG/kZJRr0jREgiyk8qqSyFxi+/wcrdw3E255cdURg==, tarball: file:projects/survey.tgz}
     id: file:projects/survey.tgz
     name: '@rush-temp/survey'
     version: 0.0.0
@@ -23312,6 +23312,7 @@ packages:
       jest: 29.7.0(@types/node@16.11.68)(ts-node@10.9.1)
       prettier: 3.1.0
       prettier-plugin-svelte: 3.1.0(prettier@3.1.0)(svelte@4.2.5)
+      svelte: 4.2.5
       ts-jest: 29.1.1(esbuild@0.16.17)(jest@29.7.0)(typescript@5.2.2)
     transitivePeerDependencies:
       - '@babel/core'
@@ -23322,7 +23323,6 @@ packages:
       - esbuild
       - node-notifier
       - supports-color
-      - svelte
       - ts-node
       - typescript
     dev: false
