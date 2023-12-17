@@ -33,7 +33,7 @@ export class IssuesDetailsPage extends CommonTrackerPage {
     this.buttonAddLabel = page.locator('button.tag-button')
     this.buttonComponent = page.locator('//span[text()="Component"]/following-sibling::div[1]/div/button')
     this.buttonMilestone = page.locator('//span[text()="Milestone"]/following-sibling::div[1]/div/button')
-    this.textEstimation = page.locator('(//span[text()="Estimation"]/../div/button)[4]')
+    this.textEstimation = page.locator('//span[text()="Estimation"]/following-sibling::div[1]/button/span')
     this.buttonEstimation = page.locator('(//span[text()="Estimation"]/../div/button)[3]')
     this.buttonCreatedBy = page.locator('(//span[text()="Assignee"]/../div/button)[1]')
     this.buttonCloseIssue = page.locator('div.popupPanel-title > button')

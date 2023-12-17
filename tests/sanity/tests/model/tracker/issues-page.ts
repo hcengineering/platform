@@ -29,6 +29,7 @@ export class IssuesPage extends CommonTrackerPage {
   readonly buttonClearFilers: Locator
   readonly issuesList: Locator
   readonly buttonPopupCreateNewIssueParent: Locator
+  readonly buttonPopupCreateNewIssueTemplate: Locator
 
   constructor (page: Page) {
     super(page)
@@ -68,6 +69,9 @@ export class IssuesPage extends CommonTrackerPage {
     this.buttonClearFilers = page.locator('div.search-start > div:first-child button')
     this.issuesList = page.locator('div.listGrid')
     this.buttonPopupCreateNewIssueParent = page.locator('div#parentissue-editor button')
+    this.buttonPopupCreateNewIssueTemplate = page.locator(
+      'form[id="tracker:string:NewIssue"] div[class*="title"] > div > button'
+    )
   }
 
   async createNewIssue (data: NewIssue): Promise<void> {
@@ -178,5 +182,10 @@ export class IssuesPage extends CommonTrackerPage {
       const href = await locator.locator('div.priority-container use').getAttribute('href')
       expect(href).toContain(priorityName)
     }
+  }
+
+  async selectTemplate (templateName: string): Promise<void> {
+    await this.buttonPopupCreateNewIssueTemplate.click()
+    await this.selectMenuItem(this.page, templateName)
   }
 }
