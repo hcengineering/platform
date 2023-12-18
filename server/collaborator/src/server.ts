@@ -95,6 +95,7 @@ export function start (ctx: MeasureContext, config: Config, minio: MinioService)
     extensions: [
       new ActionsExtension(),
       new RoutedStorageExtension({
+        default: 'minio',
         extensions: {
           minio: new MinioStorageExtension({
             ctx: ctx.newChild('minio', {}),

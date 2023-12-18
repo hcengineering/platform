@@ -88,6 +88,7 @@
       "args": ["src/__start.ts"],
       "env": {
         "SECRET": "secret",
+        "METRICS_CONSOLE": "true",
         "TRANSACTOR_URL": "ws://localhost:3333",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",

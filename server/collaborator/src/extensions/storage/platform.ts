@@ -75,20 +75,26 @@ export class PlatformStorageExtension implements Extension {
 
     let content = ''
 
-    await this.configuration.ctx.with('load-document', {}, async () => {
-      const client = await connect(this.configuration.transactorUrl, token)
+    await this.configuration.ctx.with('load-document', {}, async (ctx) => {
+      const client = await ctx.with('connect', {}, async () => {
+        return await connect(this.configuration.transactorUrl, token)
+      })
 
       try {
-        const doc = await client.findOne(objectClass, { _id: objectId })
-        if (doc !== undefined && objectAttr in doc) {
-          content = (doc as any)[objectAttr] as string
-        }
+        await ctx.with('query', {}, async () => {
+          const doc = await client.findOne(objectClass, { _id: objectId })
+          if (doc !== undefined && objectAttr in doc) {
+            content = (doc as any)[objectAttr] as string
+          }
+        })
       } finally {
         await client.close()
       }
     })
 
-    return this.configuration.transformer.toYdoc(content, objectAttr)
+    return await this.configuration.ctx.with('connect', {}, () => {
+      return this.configuration.transformer.toYdoc(content, objectAttr)
+    })
   }
 
   async storeDocument (context: Context, documentId: string, document: Document): Promise<void> {
@@ -102,21 +108,29 @@ export class PlatformStorageExtension implements Extension {
       return undefined
     }
 
-    await this.configuration.ctx.with('store-document', {}, async () => {
-      const content = this.configuration.transformer.fromYdoc(document, objectAttr)
+    await this.configuration.ctx.with('store-document', {}, async (ctx) => {
+      const content = await ctx.with('transform', {}, () => {
+        return this.configuration.transformer.fromYdoc(document, objectAttr)
+      })
 
       try {
-        const connection = await connect(this.configuration.transactorUrl, token)
+        const connection = await ctx.with('connect', {}, async () => {
+          return await connect(this.configuration.transactorUrl, token)
+        })
 
         // token belongs to the first user opened the document, this is not accurate, but
         // since the document is collaborative, we need to choose some account to update the doc
         const client = await getTxOperations(connection, token)
 
         // TODO push save changes only if there were any modifications
-        const doc = await client.findOne(objectClass, { _id: objectId })
-        if (doc !== undefined) {
-          if ((doc as any)[objectAttr] !== content) {
-            await client.update(doc, { [objectAttr]: content })
+        const current = await ctx.with('query', {}, async () => {
+          return await client.findOne(objectClass, { _id: objectId })
+        })
+        if (current !== undefined) {
+          if ((current as any)[objectAttr] !== content) {
+            await ctx.with('update', {}, async () => {
+              await client.update(current, { [objectAttr]: content })
+            })
           }
         } else {
           console.warn('platform document not found', documentId)

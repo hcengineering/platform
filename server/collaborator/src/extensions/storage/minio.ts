@@ -48,25 +48,31 @@ export class MinioStorageExtension implements Extension {
 
     const ydoc = new YDoc()
 
-    await this.configuration.ctx.with('load-document', {}, async () => {
+    await this.configuration.ctx.with('load-document', {}, async (ctx) => {
       let minioDocument: Buffer | undefined
-      try {
-        minioDocument = await this.getMinioDocument(documentId, token)
-      } catch (err: any) {
-        if (initialContentId !== undefined && initialContentId.length > 0) {
-          try {
-            minioDocument = await this.getMinioDocument(initialContentId, token)
-          } catch (err: any) {
-            // Do nothing
-            // Initial content document also might not have been initialized in minio (e.g. if it's an empty template)
+
+      await ctx.with('minio', {}, async () => {
+        try {
+          minioDocument = await this.getMinioDocument(documentId, token)
+        } catch (err: any) {
+          if (initialContentId !== undefined && initialContentId.length > 0) {
+            try {
+              minioDocument = await this.getMinioDocument(initialContentId, token)
+            } catch (err: any) {
+              // Do nothing
+              // Initial content document also might not have been initialized in minio (e.g. if it's an empty template)
+            }
           }
         }
-      }
+      })
 
       if (minioDocument !== undefined && minioDocument.length > 0) {
+        ctx.measure('size', minioDocument.byteLength)
         try {
           const uint8arr = new Uint8Array(minioDocument)
-          applyUpdate(ydoc, uint8arr)
+          await ctx.with('apply-update', {}, () => {
+            applyUpdate(ydoc, uint8arr)
+          })
         } catch (err) {
           console.error(err)
         }
@@ -87,6 +93,7 @@ export class MinioStorageExtension implements Extension {
       const buffer = Buffer.from(updates.buffer)
 
       // persist document to Minio
+      ctx.measure('size', buffer.byteLength)
       await ctx.with('minio', {}, async () => {
         const metaData = { 'content-type': 'application/ydoc' }
         await this.configuration.minio.put(token.workspace, documentId, buffer, buffer.length, metaData)
@@ -95,16 +102,23 @@ export class MinioStorageExtension implements Extension {
       // notify platform about changes
       await ctx.with('platform', {}, async () => {
         try {
-          const connection = await connect(this.configuration.transactorUrl, token)
+          const connection = await ctx.with('connect', {}, async () => {
+            return await connect(this.configuration.transactorUrl, token)
+          })
 
-          const current = await connection.findOne(attachment.class.Attachment, { _id: documentId as Ref<Attachment> })
+          const current = await ctx.with('query', {}, async () => {
+            return await connection.findOne(attachment.class.Attachment, { _id: documentId as Ref<Attachment> })
+          })
+
           if (current !== undefined) {
             console.log('platform notification for document', documentId)
 
             // token belongs to the first user opened the document, this is not accurate, but
             // since the document is collaborative, we need to choose some account to update the doc
-            const client = await getTxOperations(connection, token, true)
-            await client.update(current, { lastModified: Date.now(), size: buffer.length })
+            await ctx.with('update', {}, async () => {
+              const client = await getTxOperations(connection, token, true)
+              await client.update(current, { lastModified: Date.now(), size: buffer.length })
+            })
           } else {
             console.log('platform attachment document not found', documentId)
           }

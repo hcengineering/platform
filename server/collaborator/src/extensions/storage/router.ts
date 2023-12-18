@@ -19,25 +19,29 @@ export type StorageType = string
 
 export interface RoutedStorageConfiguration {
   extensions: Record<StorageType, Extension>
+  default?: StorageType
 }
 
 function parseDocumentName (documentId: string): { schema: StorageType, documentName: string } {
-  const [schema, documentName] = documentId.split('://')
-  return {
-    schema: schema ?? '',
-    documentName: documentName ?? ''
-  }
+  const [schema, documentName] = documentId.split('://', 2)
+  return documentName !== undefined
+    ? { documentName, schema }
+    : { documentName: documentId, schema: '' }
 }
 
 export class RoutedStorageExtension implements Extension {
   private readonly configuration: RoutedStorageConfiguration
 
   constructor (configuration: RoutedStorageConfiguration) {
-    this.configuration = configuration
+    this.configuration = { ...configuration }
   }
 
   getStorageExtension (schema: StorageType): Extension | undefined {
-    return this.configuration.extensions[schema]
+    return schema in this.configuration.extensions
+      ? this.configuration.extensions[schema]
+      : this.configuration.default !== undefined
+        ? this.configuration.extensions[this.configuration.default]
+        : undefined
   }
 
   async onDisconnect (data: onDisconnectPayload): Promise<any> {
