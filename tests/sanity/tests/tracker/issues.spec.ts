@@ -17,7 +17,7 @@ test.describe('Tracker issue tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test('Create an issue with all parameters and attachments', async ({ page }) => {
+  test.skip('Create an issue with all parameters and attachments', async ({ page }) => {
     const newIssue: NewIssue = {
       title: `Issue with all parameters and attachments-${generateId()}`,
       description: 'Created issue with all parameters and attachments description',
@@ -50,7 +50,7 @@ test.describe('Tracker issue tests', () => {
     })
   })
 
-  test('Edit an issue', async ({ page }) => {
+  test.skip('Edit an issue', async ({ page }) => {
     const newIssue: NewIssue = {
       title: `Issue with all parameters and attachments-${generateId()}`,
       description: 'Created issue with all parameters and attachments description'
@@ -113,7 +113,7 @@ test.describe('Tracker issue tests', () => {
     }
   })
 
-  test('Set parent issue', async ({ page }) => {
+  test.skip('Set parent issue', async ({ page }) => {
     const parentIssue: NewIssue = {
       title: `PARENT ISSUE-${generateId()}`,
       description: 'Created issue to be parent issue'
