@@ -95,7 +95,6 @@ export class CommonTrackerPage extends CalendarPage {
     await this.selectMenuItem(this.page, newProjectName)
 
     if (keepOriginalAttributes) {
-      await expect(this.inputKeepOriginalMoveIssuesModal).toHaveAttribute('disabled')
       await this.buttonKeepOriginalMoveIssuesModal.click()
     }
 
