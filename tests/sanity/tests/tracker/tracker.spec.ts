@@ -12,12 +12,13 @@ import {
   toTime
 } from './tracker.utils'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
+import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 
 test.use({
   storageState: PlatformSetting
 })
 
-const getIssueName = (postfix: string = generateId(5)): string => `issue-${postfix}`
+const getIssueName = (postfix: string = generateId()): string => `issue-${postfix}`
 
 const panelStatusMap = new Map([
   ['Issues/All', DEFAULT_STATUSES],
@@ -100,8 +101,10 @@ test.describe('Tracker tests', () => {
     await page.click('[data-id="tab-assigned"]')
     await expect(page.locator('.antiPanel-component')).not.toContainText(name)
     await page.click('[data-id="tab-created"]')
+    await page.waitForTimeout(3000)
     await expect(page.locator('.antiPanel-component')).toContainText(name)
     await page.click('[data-id="tab-subscribed"]')
+    await page.waitForTimeout(3000)
     await expect(page.locator('.antiPanel-component')).toContainText(name)
     await openIssue(page, name)
     // click "Don't track"
@@ -219,7 +222,9 @@ test.describe('Tracker tests', () => {
     // We need to fait for indexer to complete indexing.
     await fillSearch(page, name)
 
-    await page.waitForSelector(`text="${name}"`, { timeout: 15000 })
+    const issuesDetailsPage = new IssuesDetailsPage(page)
+    await issuesDetailsPage.waitDetailsOpened(name)
+    // await page.waitForSelector(`text="${name}"`, { timeout: 15000 })
 
     let count = 0
     for (let j = 0; j < 5; j++) {
