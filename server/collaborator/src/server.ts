@@ -93,7 +93,10 @@ export function start (ctx: MeasureContext, config: Config, minio: MinioService)
     unloadImmediately: false,
 
     extensions: [
-      new ActionsExtension(),
+      new ActionsExtension({
+        ctx: ctx.newChild('actions', {}),
+        transformer: new HtmlTransformer(defaultExtensions)
+      }),
       new RoutedStorageExtension({
         default: 'minio',
         extensions: {

@@ -17,9 +17,9 @@ import attachment, { Attachment } from '@hcengineering/attachment'
 import { MeasureContext, Ref } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { Token } from '@hcengineering/server-token'
-import { Extension, onLoadDocumentPayload, onStoreDocumentPayload } from '@hocuspocus/server'
+import { Document, Extension, onLoadDocumentPayload, onStoreDocumentPayload } from '@hocuspocus/server'
 import { Doc as YDoc, applyUpdate, encodeStateAsUpdate } from 'yjs'
-import { withContext } from '../../context'
+import { Context, withContext } from '../../context'
 import { connect, getTxOperations } from '../../platform'
 
 export interface MinioStorageConfiguration {
@@ -41,12 +41,28 @@ export class MinioStorageExtension implements Extension {
   }
 
   async onLoadDocument (data: withContext<onLoadDocumentPayload>): Promise<any> {
-    const { token, initialContentId } = data.context
+    return await this.configuration.ctx.with('load-document', {}, async (ctx) => {
+      return await this.loadDocument(ctx, data.context, data.documentName)
+    })
+  }
 
-    const documentId = data.documentName
+  async onStoreDocument (data: withContext<onStoreDocumentPayload>): Promise<void> {
+    await this.configuration.ctx.with('store-document', {}, async (ctx) => {
+      await this.storeDocument(
+        ctx,
+        data.context,
+        data.documentName,
+        data.document
+      )
+    })
+  }
+
+  async loadDocument (ctx: MeasureContext, context: Context, documentId: string): Promise<YDoc | undefined> {
+    const { token, initialContentId } = context
+
     console.log('load document from minio', documentId)
 
-    const ydoc = new YDoc()
+    let minioDocument: Buffer | undefined
 
     await this.configuration.ctx.with('load-document', {}, async (ctx) => {
       let minioDocument: Buffer | undefined
@@ -79,55 +95,68 @@ export class MinioStorageExtension implements Extension {
       }
     })
 
+    const ydoc = new YDoc()
+
+    if (minioDocument !== undefined && minioDocument.length > 0) {
+      ctx.measure('size', minioDocument.byteLength)
+      try {
+        const uint8arr = new Uint8Array(minioDocument)
+        await ctx.with('apply-update', {}, () => {
+          applyUpdate(ydoc, uint8arr)
+        })
+      } catch (err) {
+        console.error(err)
+      }
+    }
+
     return ydoc
   }
 
-  async onStoreDocument (data: withContext<onStoreDocumentPayload>): Promise<void> {
-    const { token } = data.context
+  async storeDocument (ctx: MeasureContext, context: Context, documentId: string, document: Document): Promise<void> {
+    const { token } = context
 
-    const documentId = data.documentName
     console.log('store document to minio', documentId)
 
-    await this.configuration.ctx.with('store-document', {}, async (ctx) => {
-      const updates = encodeStateAsUpdate(data.document)
-      const buffer = Buffer.from(updates.buffer)
+    const buffer = await ctx.with('encode', {}, async () => {
+      const updates = encodeStateAsUpdate(document)
+      return Buffer.from(updates.buffer)
+    })
 
-      // persist document to Minio
-      ctx.measure('size', buffer.byteLength)
-      await ctx.with('minio', {}, async () => {
-        const metaData = { 'content-type': 'application/ydoc' }
-        await this.configuration.minio.put(token.workspace, documentId, buffer, buffer.length, metaData)
-      })
+    // persist document to Minio
+    ctx.measure('size', buffer.byteLength)
+    await ctx.with('minio', {}, async () => {
+      const metaData = { 'content-type': 'application/ydoc' }
+      await this.configuration.minio.put(token.workspace, documentId, buffer, buffer.length, metaData)
+    })
 
-      // notify platform about changes
-      await ctx.with('platform', {}, async () => {
-        try {
-          const connection = await ctx.with('connect', {}, async () => {
-            return await connect(this.configuration.transactorUrl, token)
+    // notify platform about changes
+    await ctx.with('platform', {}, async (ctx) => {
+      try {
+        const connection = await ctx.with('connect', {}, async () => {
+          return await connect(this.configuration.transactorUrl, token)
+        })
+
+        const current = await ctx.with('query', {}, async () => {
+          return await connection.findOne(attachment.class.Attachment, { _id: documentId as Ref<Attachment> })
+        })
+
+        if (current !== undefined) {
+          console.log('platform notification for document', documentId)
+
+          // token belongs to the first user opened the document, this is not accurate, but
+          // since the document is collaborative, we need to choose some account to update the doc
+          await ctx.with('update', {}, async () => {
+            const client = await getTxOperations(connection, token, true)
+            await client.update(current, { lastModified: Date.now(), size: buffer.length })
           })
-
-          const current = await ctx.with('query', {}, async () => {
-            return await connection.findOne(attachment.class.Attachment, { _id: documentId as Ref<Attachment> })
-          })
-
-          if (current !== undefined) {
-            console.log('platform notification for document', documentId)
-
-            // token belongs to the first user opened the document, this is not accurate, but
-            // since the document is collaborative, we need to choose some account to update the doc
-            await ctx.with('update', {}, async () => {
-              const client = await getTxOperations(connection, token, true)
-              await client.update(current, { lastModified: Date.now(), size: buffer.length })
-            })
-          } else {
-            console.log('platform attachment document not found', documentId)
-          }
-
-          await connection.close()
-        } catch (err: any) {
-          console.debug('failed to notify platform', documentId, err)
+        } else {
+          console.log('platform attachment document not found', documentId)
         }
-      })
+
+        await connection.close()
+      } catch (err: any) {
+        console.debug('failed to notify platform', documentId, err)
+      }
     })
   }
 }

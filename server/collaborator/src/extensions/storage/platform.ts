@@ -43,26 +43,34 @@ export class PlatformStorageExtension implements Extension {
   }
 
   async onLoadDocument (data: withContext<onLoadDocumentPayload>): Promise<any> {
-    return await this.loadDocument(data.context, data.documentName)
+    // return await this.configuration.ctx.with('load-document', {}, async (ctx) => {
+    //   return await this.loadDocument(ctx, data.context, data.documentName)
+    // })
   }
 
   async onDisconnect (data: withContext<onDisconnectPayload>): Promise<any> {
-    await this.storeDocument(
-      data.context,
-      data.documentName,
-      data.document
-    )
+    await this.configuration.ctx.with('store-document', {}, async (ctx) => {
+      await this.storeDocument(
+        ctx,
+        data.context,
+        data.documentName,
+        data.document
+      )
+    })
   }
 
   async onStoreDocument (data: withContext<onStoreDocumentPayload>): Promise<void> {
-    await this.storeDocument(
-      data.context,
-      data.documentName,
-      data.document
-    )
+    await this.configuration.ctx.with('store-document', {}, async (ctx) => {
+      await this.storeDocument(
+        ctx,
+        data.context,
+        data.documentName,
+        data.document
+      )
+    })
   }
 
-  async loadDocument (context: Context, documentId: string): Promise<YDoc | undefined> {
+  async loadDocument (ctx: MeasureContext, context: Context, documentId: string): Promise<YDoc | undefined> {
     const { token } = context
     const { objectId, objectClass, objectAttr } = parseDocumentName(documentId)
 
@@ -73,31 +81,29 @@ export class PlatformStorageExtension implements Extension {
       return undefined
     }
 
-    let content = ''
-
-    await this.configuration.ctx.with('load-document', {}, async (ctx) => {
-      const client = await ctx.with('connect', {}, async () => {
-        return await connect(this.configuration.transactorUrl, token)
-      })
-
-      try {
-        await ctx.with('query', {}, async () => {
-          const doc = await client.findOne(objectClass, { _id: objectId })
-          if (doc !== undefined && objectAttr in doc) {
-            content = (doc as any)[objectAttr] as string
-          }
-        })
-      } finally {
-        await client.close()
-      }
+    const client = await ctx.with('connect', {}, async () => {
+      return await connect(this.configuration.transactorUrl, token)
     })
 
-    return await this.configuration.ctx.with('connect', {}, () => {
+    let content = ''
+
+    try {
+      await ctx.with('query', {}, async () => {
+        const doc = await client.findOne(objectClass, { _id: objectId })
+        if (doc !== undefined && objectAttr in doc) {
+          content = (doc as any)[objectAttr] as string
+        }
+      })
+    } finally {
+      await client.close()
+    }
+
+    return await this.configuration.ctx.with('transform', {}, () => {
       return this.configuration.transformer.toYdoc(content, objectAttr)
     })
   }
 
-  async storeDocument (context: Context, documentId: string, document: Document): Promise<void> {
+  async storeDocument (ctx: MeasureContext, context: Context, documentId: string, document: Document): Promise<void> {
     const { token } = context
     const { objectId, objectClass, objectAttr } = parseDocumentName(documentId)
 
@@ -108,38 +114,36 @@ export class PlatformStorageExtension implements Extension {
       return undefined
     }
 
-    await this.configuration.ctx.with('store-document', {}, async (ctx) => {
-      const content = await ctx.with('transform', {}, () => {
-        return this.configuration.transformer.fromYdoc(document, objectAttr)
+    const content = await ctx.with('transform', {}, () => {
+      return this.configuration.transformer.fromYdoc(document, objectAttr)
+    })
+
+    try {
+      const connection = await ctx.with('connect', {}, async () => {
+        return await connect(this.configuration.transactorUrl, token)
       })
 
-      try {
-        const connection = await ctx.with('connect', {}, async () => {
-          return await connect(this.configuration.transactorUrl, token)
-        })
+      // token belongs to the first user opened the document, this is not accurate, but
+      // since the document is collaborative, we need to choose some account to update the doc
+      const client = await getTxOperations(connection, token)
 
-        // token belongs to the first user opened the document, this is not accurate, but
-        // since the document is collaborative, we need to choose some account to update the doc
-        const client = await getTxOperations(connection, token)
-
-        // TODO push save changes only if there were any modifications
-        const current = await ctx.with('query', {}, async () => {
-          return await client.findOne(objectClass, { _id: objectId })
-        })
-        if (current !== undefined) {
-          if ((current as any)[objectAttr] !== content) {
-            await ctx.with('update', {}, async () => {
-              await client.update(current, { [objectAttr]: content })
-            })
-          }
-        } else {
-          console.warn('platform document not found', documentId)
+      // TODO push save changes only if there were any modifications
+      const current = await ctx.with('query', {}, async () => {
+        return await client.findOne(objectClass, { _id: objectId })
+      })
+      if (current !== undefined) {
+        if ((current as any)[objectAttr] !== content) {
+          await ctx.with('update', {}, async () => {
+            await client.update(current, { [objectAttr]: content })
+          })
         }
-
-        await connection.close()
-      } catch (err: any) {
-        console.debug('failed to store document to platform', documentId, err)
+      } else {
+        console.warn('platform document not found', documentId)
       }
-    })
+
+      await connection.close()
+    } catch (err: any) {
+      console.debug('failed to store document to platform', documentId, err)
+    }
   }
 }

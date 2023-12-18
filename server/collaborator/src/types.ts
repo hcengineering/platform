@@ -13,9 +13,17 @@
 // limitations under the License.
 //
 
-export type Action = DocumentCopyAction | DocumentFieldCopyAction
+export type Action = DocumentCopyAction | DocumentFieldCopyAction | DocumentContentAction
 
 export type StorageType = 'minio' | 'platform'
+
+export interface DocumentContentAction {
+  action: 'document.content'
+  params: {
+    field: string
+    content: string
+  }
+}
 
 export interface DocumentCopyAction {
   action: 'document.copy'
