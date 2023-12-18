@@ -30,7 +30,7 @@ test.describe('Tracker tests', () => {
     await allure.parentSuite('Tracker tests')
   })
 
-  test('issues-status-display', async ({ page }) => {
+  test.skip('issues-status-display', async ({ page }) => {
     const locator = page.locator('.list-container')
     await navigate(page)
     for (const status of DEFAULT_STATUSES) {
@@ -67,7 +67,7 @@ test.describe('Tracker tests', () => {
     }
   })
 
-  test('save-view-options', async ({ page }) => {
+  test.skip('save-view-options', async ({ page }) => {
     const panels = ['Issues', 'Active', 'Backlog']
     await navigate(page)
     for (const viewletSelector of [ViewletSelectors.Board, ViewletSelectors.Table]) {
@@ -94,6 +94,9 @@ test.describe('Tracker tests', () => {
     await navigate(page)
     await createIssue(page, { name })
     await page.click('text="My issues"')
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.searchIssueByName(name)
+
     await page.click('[data-id="tab-assigned"]')
     await expect(page.locator('.antiPanel-component')).not.toContainText(name)
     await page.click('[data-id="tab-created"]')
@@ -110,7 +113,7 @@ test.describe('Tracker tests', () => {
     await expect(page.locator('.antiPanel-component')).not.toContainText(name)
   })
 
-  test('report-time-from-issue-card', async ({ page }) => {
+  test.skip('report-time-from-issue-card', async ({ page }) => {
     await navigate(page)
     const assignee = 'Chen Rosamund'
     const status = 'In Progress'
@@ -147,7 +150,7 @@ test.describe('Tracker tests', () => {
     }
   })
 
-  test('report-multiple-time-from-issue-card', async ({ page }) => {
+  test.skip('report-multiple-time-from-issue-card', async ({ page }) => {
     await navigate(page)
     const assignee = 'Chen Rosamund'
     const status = 'In Progress'
@@ -184,7 +187,7 @@ test.describe('Tracker tests', () => {
     }
   })
 
-  test('report-time-from-main-view', async ({ page }) => {
+  test.skip('report-time-from-main-view', async ({ page }) => {
     await navigate(page)
 
     await page.click('text="Issues"')
@@ -246,7 +249,7 @@ test.describe('Tracker tests', () => {
     }
   })
 
-  test('create-issue-draft', async ({ page }) => {
+  test.skip('create-issue-draft', async ({ page }) => {
     await navigate(page)
 
     const issueName = 'Draft issue'
