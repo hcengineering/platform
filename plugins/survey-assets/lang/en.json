@@ -1,25 +1,22 @@
 {
   "string": {
-    "CheckboxesOption": "Option",
-    "CheckboxesQuestion": "Checkboxes",
-    "CheckboxesQuestionOptions": "Options",
-    "CheckboxesQuestionText": "Text",
+    "Checkboxes": "Checkboxes",
     "ConfigDescription": "Extension to manage surveys",
     "ConfigLabel": "Surveys",
-    "InfoQuestion": "Info",
-    "InfoQuestionText": "Text",
+    "Info": "Info",
+    "Option": "Option",
+    "Options": "Options",
     "Question": "Question",
-    "RadioButtonsOption": "Option",
-    "RadioButtonsQuestion": "Radio Buttons",
-    "RadioButtonsQuestionOptions": "Options",
-    "RadioButtonsQuestionText": "Text",
+    "QuestionData": "Data",
+    "QuestionText": "Text",
+    "Questions": "Questions",
+    "RadioButtons": "Radio Buttons",
     "Rank": "Rank",
     "Survey": "Survey",
     "Surveys": "Surveys",
     "SurveyApplication": "Surveys",
     "SurveyCreate": "Create Survey",
     "SurveyName": "Name",
-    "SurveyNamePlaceholder": "Survey Name",
-    "SurveyQuestions": "Questions"
+    "SurveyNamePlaceholder": "Survey Name"
   }
 }

@@ -31,7 +31,9 @@
 <Card
   label={survey.string.Survey}
   canSave={object.name.length > 0}
-  okAction={() => { void surveyCreate(object) }}
+  okAction={() => {
+    void surveyCreate(object)
+  }}
   okLabel={survey.string.SurveyCreate}
   on:close={() => dispatch('close')}
   on:changeContent

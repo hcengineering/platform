@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { AttachedDoc, Class, CollectionSize, Doc, Markup, Ref, Space } from '@hcengineering/core'
+import { AttachedDoc, Class, CollectionSize, Doc, Markup, Obj, Ref, Space } from '@hcengineering/core'
 import { ComponentType, SvelteComponent } from 'svelte'
 import type { Resource } from '@hcengineering/platform'
 
@@ -34,11 +34,19 @@ export interface Survey extends Space {
 /**
  * @public
  */
-export interface Question extends AttachedDoc {
+export interface Question<Data extends QuestionData = QuestionData> extends AttachedDoc {
   attachedTo: Ref<Survey>
   attachedToClass: Ref<Class<Survey>>
   rank: Rank
+  data: Data
 }
+
+/**
+ * @public
+ *
+ * Base marker interface for every question data implementation
+ */
+export interface QuestionData extends Obj {}
 
 /**
  * @public
@@ -50,7 +58,7 @@ export interface RadioButtonsOption {
 /**
  * @public
  */
-export interface RadioButtonsQuestion extends Question {
+export interface RadioButtons extends QuestionData {
   text: string
   options: RadioButtonsOption[]
 }
@@ -65,7 +73,7 @@ export interface CheckboxesOption {
 /**
  * @public
  */
-export interface CheckboxesQuestion extends Question {
+export interface Checkboxes extends QuestionData {
   text: string
   options: CheckboxesOption[]
 }
@@ -73,27 +81,25 @@ export interface CheckboxesQuestion extends Question {
 /**
  * @public
  */
-export interface InfoQuestion extends Question {
+export interface Info extends QuestionData {
   text: Markup
 }
 
 /**
  * @public
  */
-export type QuestionData<Q extends Question> = Omit<Q, keyof Question>
+export type QuestionDataEditorComponent<Q extends QuestionData> = Resource<
+  ComponentType<
+    SvelteComponent<{
+      data: Q
+      readonly editable: boolean
+    }>
+  >
+>
 
 /**
  * @public
  */
-export type QuestionDataEditorComponent<Q extends Question> = Resource<ComponentType<SvelteComponent<{
-  readonly _class: Ref<Class<Q>>
-  data: QuestionData<Q>
-  readonly editable: boolean
-}>>>
-
-/**
- * @public
- */
-export interface QuestionDataEditor<Q extends Question = Question> extends Class<Doc> {
+export interface QuestionDataEditor<Q extends QuestionData = QuestionData> extends Class<Doc> {
   editor: QuestionDataEditorComponent<Q>
 }

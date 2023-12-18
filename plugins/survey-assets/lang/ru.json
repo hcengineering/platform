@@ -1,25 +1,22 @@
 {
   "string": {
-    "CheckboxesQuestion": "Чекбоксы",
-    "CheckboxesQuestionOption": "Вариант",
-    "CheckboxesQuestionOptions": "Варианты",
-    "CheckboxesQuestionText": "Текст вопроса",
+    "Checkboxes": "Чекбоксы",
     "ConfigDescription": "Расширение для управления анкетами",
     "ConfigLabel": "Анкеты",
-    "InfoQuestion": "Информация",
-    "InfoQuestionText": "Текст",
+    "Info": "Информация",
+    "Option": "Вариант",
+    "Options": "Варианты",
     "Question": "Вопрос",
-    "RadioButtonsQuestion": "Радио-кнопки",
-    "RadioButtonsQuestionOption": "Вариант",
-    "RadioButtonsQuestionOptions": "Варианты",
-    "RadioButtonsQuestionText": "Текст вопроса",
+    "QuestionData": "Данные",
+    "QuestionText": "Текст",
+    "Questions": "Вопросы",
+    "RadioButtons": "Радио-кнопки",
     "Rank": "Ранг",
     "Survey": "Анкета",
     "Surveys": "Анкеты",
     "SurveyApplication": "Анкеты",
     "SurveyCreate": "Создать анкету",
     "SurveyName": "Название",
-    "SurveyNamePlaceholder": "Название анкеты",
-    "SurveyQuestions": "Вопросы"
+    "SurveyNamePlaceholder": "Название анкеты"
   }
 }

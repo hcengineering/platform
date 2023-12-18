@@ -18,21 +18,14 @@ import { type Class, type Ref } from '@hcengineering/core'
 import core from '@hcengineering/model-core'
 import workbench from '@hcengineering/model-workbench'
 import {
-  type Question,
+  type QuestionData,
   type QuestionDataEditor,
   type QuestionDataEditorComponent,
   surveyId
 } from '@hcengineering/survey'
 import survey from './plugin'
 import view from '@hcengineering/model-view'
-import {
-  TCheckboxesQuestion,
-  TInfoQuestion,
-  TQuestion,
-  TQuestionDataEditor,
-  TRadioButtonsQuestion,
-  TSurvey
-} from './types'
+import { TCheckboxes, TInfo, TQuestion, TQuestionData, TQuestionDataEditor, TRadioButtons, TSurvey } from './types'
 
 export { surveyOperation } from './migration'
 export { surveyId } from '@hcengineering/survey'
@@ -50,14 +43,19 @@ export function createModel (builder: Builder): void {
   defineApplication(builder)
 }
 
-export function defineQuestionDataEditor<TQuestion extends Question> (
+export function defineQuestionDataEditor<TQuestionData extends QuestionData> (
   builder: Builder,
-  questionClassRef: Ref<Class<TQuestion>>,
-  editor: QuestionDataEditorComponent<TQuestion>
+  questionClassRef: Ref<Class<TQuestionData>>,
+  editor: QuestionDataEditorComponent<TQuestionData>
 ): void {
-  builder.mixin<Class<TQuestion>, QuestionDataEditor<TQuestion>>(questionClassRef, core.class.Class, survey.mixin.QuestionDataEditor, {
-    editor
-  })
+  builder.mixin<Class<TQuestionData>, QuestionDataEditor<TQuestionData>>(
+    questionClassRef,
+    core.class.Class,
+    survey.mixin.QuestionDataEditor,
+    {
+      editor
+    }
+  )
 }
 
 function defineSurvey (builder: Builder): void {
@@ -76,7 +74,7 @@ function defineSurvey (builder: Builder): void {
         },
         {
           key: 'questions',
-          label: survey.string.SurveyQuestions,
+          label: survey.string.Questions,
           presenter: view.component.NumberPresenter
         },
         'createdBy',
@@ -105,18 +103,19 @@ function defineQuestion (builder: Builder): void {
 
 function defineQuestionTypes (builder: Builder): void {
   builder.createModel(TQuestionDataEditor)
+  builder.createModel(TQuestionData)
 
-  builder.createModel(TCheckboxesQuestion)
-  defineQuestionDataEditor(builder, survey.class.CheckboxesQuestion, survey.component.OptionsQuestionDataEditor)
+  builder.createModel(TCheckboxes)
+  defineQuestionDataEditor(builder, survey.class.Checkboxes, survey.component.OptionsQuestionDataEditor)
 
-  builder.createModel(TInfoQuestion)
+  builder.createModel(TInfo)
   // TODO: Define editor
   // builder.mixin(survey.class.InfoQuestionTemplate, core.class.Class, view.mixin.ObjectEditor, {
   //   editor: ...
   // })
 
-  builder.createModel(TRadioButtonsQuestion)
-  defineQuestionDataEditor(builder, survey.class.RadioButtonsQuestion, survey.component.OptionsQuestionDataEditor)
+  builder.createModel(TRadioButtons)
+  defineQuestionDataEditor(builder, survey.class.RadioButtons, survey.component.OptionsQuestionDataEditor)
 }
 
 function defineApplication (builder: Builder): void {

@@ -13,18 +13,12 @@
 // limitations under the License.
 -->
 
-<script type='module' lang='ts'>
+<script type="module" lang="ts">
   import { Button, EditBox, RadioButton, IconDelete, IconAdd, CheckBox } from '@hcengineering/ui'
-  import {
-    type CheckboxesQuestion,
-    type QuestionData,
-    type RadioButtonsQuestion
-  } from '@hcengineering/survey'
-  import { Class, Ref } from '@hcengineering/core'
+  import { type Checkboxes, type RadioButtons } from '@hcengineering/survey'
   import survey from '../plugin'
 
-  export let _class: Ref<Class<CheckboxesQuestion>> | Ref<Class<RadioButtonsQuestion>>
-  export let object: QuestionData<CheckboxesQuestion> | QuestionData<RadioButtonsQuestion>
+  export let object: Checkboxes | RadioButtons
   export let editable = true
 
   const inputs: EditBox[] = []
@@ -34,10 +28,7 @@
   function appendOption (): void {
     object = {
       ...object,
-      options: [
-        ...object.options,
-        { label: draft }
-      ]
+      options: [...object.options, { label: draft }]
     }
     setTimeout(() => {
       inputs[object.options.length - 1].focus()
@@ -51,85 +42,71 @@
     }
     object = {
       ...object,
-      options: [
-        ...object.options.slice(0, index),
-        ...object.options.slice(index + 1)
-      ]
+      options: [...object.options.slice(0, index), ...object.options.slice(index + 1)]
     }
   }
 </script>
 
 <div>
   <div class="mb-4 clear-mins">
-    <EditBox
-      bind:value={object.text}
-      kind='large-style'
-      autoFocus
-      fullSize
-      disabled={!editable}
-    />
+    <EditBox bind:value={object.text} kind="large-style" autoFocus fullSize disabled={!editable} />
   </div>
 
   {#each object.options as _, index}
-    <div class='flex flex-row-center flex-stretch flex-gap-1 my-1 mx-4'>
-      {#if _class === survey.class.CheckboxesQuestion}
+    <div class="flex flex-row-center flex-stretch flex-gap-1 my-1 mx-4">
+      {#if object._class === survey.class.Checkboxes}
         <CheckBox readonly />
-      {:else if _class === survey.class.RadioButtonsQuestion}
-        <RadioButton
-          group={null}
-          value={index}
-          label=''
-          disabled
-          isMarkerVisible
-        />
+      {:else if object._class === survey.class.RadioButtons}
+        <RadioButton group={null} value={index} label="" disabled isMarkerVisible />
       {/if}
       <EditBox
-        kind='default'
+        kind="default"
         fullSize
         bind:value={object.options[index].label}
         bind:this={inputs[index]}
         disabled={!editable}
       />
-      {#if editable && object.options.length > 1 }
+      {#if editable && object.options.length > 1}
         <Button
           icon={IconDelete}
-          kind='ghost'
-          shape='circle'
-          size='medium'
-          on:click={() => { removeOptionAt(index) }}
+          kind="ghost"
+          shape="circle"
+          size="medium"
+          on:click={() => {
+            removeOptionAt(index)
+          }}
         />
       {/if}
     </div>
   {/each}
 
   {#if editable}
-    <div class='flex flex-row-center flex-stretch flex-gap-1 my-1 mx-4'>
-      {#if _class === survey.class.CheckboxesQuestion}
+    <div class="flex flex-row-center flex-stretch flex-gap-1 my-1 mx-4">
+      {#if object._class === survey.class.Checkboxes}
         <CheckBox readonly />
-      {:else if _class === survey.class.RadioButtonsQuestion}
-        <RadioButton
-          group={null}
-          value={null}
-          label=''
-          disabled
-        />
+      {:else if object._class === survey.class.RadioButtons}
+        <RadioButton group={null} value={null} label="" disabled />
       {/if}
       <EditBox
-        kind='default'
+        kind="default"
         fullSize
         bind:value={draft}
-        on:input={() => { appendOption() }}
+        on:input={() => {
+          appendOption()
+        }}
       />
       <Button
         icon={IconAdd}
-        kind='ghost'
-        shape='circle'
-        size='medium'
-        on:click={() => { appendOption() }}
+        kind="ghost"
+        shape="circle"
+        size="medium"
+        on:click={() => {
+          appendOption()
+        }}
       />
     </div>
   {/if}
 </div>
 
-<style lang='scss'>
+<style lang="scss">
 </style>

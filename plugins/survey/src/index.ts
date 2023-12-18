@@ -18,13 +18,15 @@ import type { Class, Mixin, Ref, Type } from '@hcengineering/core'
 import { Asset, plugin } from '@hcengineering/platform'
 import {
   CheckboxesOption,
-  CheckboxesQuestion,
-  InfoQuestion,
-  Question, QuestionDataEditor,
+  Checkboxes,
+  Info,
+  Question,
+  QuestionDataEditor,
   RadioButtonsOption,
-  RadioButtonsQuestion,
+  RadioButtons,
   Rank,
-  Survey
+  Survey,
+  QuestionData
 } from './types'
 
 export * from './types'
@@ -40,11 +42,12 @@ export const surveyId = 'survey' as Plugin
 export default plugin(surveyId, {
   class: {
     CheckboxesOption: '' as Ref<Class<Type<CheckboxesOption>>>,
-    CheckboxesQuestion: '' as Ref<Class<CheckboxesQuestion>>,
-    InfoQuestion: '' as Ref<Class<InfoQuestion>>,
+    Checkboxes: '' as Ref<Class<Checkboxes>>,
+    Info: '' as Ref<Class<Info>>,
     Question: '' as Ref<Class<Question>>,
+    QuestionData: '' as Ref<Class<QuestionData>>,
     RadioButtonsOption: '' as Ref<Class<Type<RadioButtonsOption>>>,
-    RadioButtonsQuestion: '' as Ref<Class<RadioButtonsQuestion>>,
+    RadioButtons: '' as Ref<Class<RadioButtons>>,
     Rank: '' as Ref<Class<Type<Rank>>>,
     Survey: '' as Ref<Class<Survey>>
   },
@@ -52,27 +55,24 @@ export default plugin(surveyId, {
     QuestionDataEditor: '' as Ref<Mixin<QuestionDataEditor>>
   },
   string: {
-    CheckboxesOption: '' as IntlString,
-    CheckboxesQuestion: '' as IntlString,
-    CheckboxesQuestionOptions: '' as IntlString,
-    CheckboxesQuestionText: '' as IntlString,
+    Checkboxes: '' as IntlString,
     ConfigDescription: '' as IntlString,
     ConfigLabel: '' as IntlString,
-    InfoQuestion: '' as IntlString,
-    InfoQuestionText: '' as IntlString,
+    Info: '' as IntlString,
+    Option: '' as IntlString,
+    Options: '' as IntlString,
     Question: '' as IntlString,
-    RadioButtonsOption: '' as IntlString,
-    RadioButtonsQuestion: '' as IntlString,
-    RadioButtonsQuestionOptions: '' as IntlString,
-    RadioButtonsQuestionText: '' as IntlString,
+    QuestionData: '' as IntlString,
+    QuestionText: '' as IntlString,
+    Questions: '' as IntlString,
+    RadioButtons: '' as IntlString,
     Rank: '' as IntlString,
     Survey: '' as IntlString,
     Surveys: '' as IntlString,
     SurveyApplication: '' as IntlString,
     SurveyCreate: '' as IntlString,
     SurveyName: '' as IntlString,
-    SurveyNamePlaceholder: '' as IntlString,
-    SurveyQuestions: '' as IntlString
+    SurveyNamePlaceholder: '' as IntlString
   },
   icon: {
     Checkboxes: '' as Asset,

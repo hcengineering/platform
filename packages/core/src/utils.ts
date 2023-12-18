@@ -14,18 +14,7 @@
 //
 
 import { deepEqual } from 'fast-equals'
-import {
-  Account,
-  AnyAttribute,
-  Class,
-  Doc,
-  DocData,
-  DocIndexState,
-  IndexKind,
-  Obj,
-  Ref,
-  Space
-} from './classes'
+import { Account, AnyAttribute, Class, Doc, DocData, DocIndexState, IndexKind, Obj, Ref, Space } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { isPredicate } from './predicate'

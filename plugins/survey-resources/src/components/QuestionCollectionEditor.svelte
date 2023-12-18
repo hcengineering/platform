@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 
-<script lang='ts'>
+<script lang="ts">
   import survey from '../plugin'
   import {
     Button,
@@ -47,12 +47,11 @@
     query.unsubscribe()
   }
 
-  const questionClassDropdownItems: DropdownTextItem[] = getEditableQuestionClasses()
-    .map((clazz) => ({
-      id: clazz._id,
-      label: clazz.label,
-      icon: clazz.icon
-    }))
+  const questionClassDropdownItems: DropdownTextItem[] = getEditableQuestionClasses().map((clazz) => ({
+    id: clazz._id,
+    label: clazz.label,
+    icon: clazz.icon
+  }))
 
   // import { Question, Survey } from '@hcengineering/survey'
   // import {
@@ -96,14 +95,14 @@
         selected: undefined
       },
       getEventPopupPositionElement(e),
-      async (classRef?: Ref<Class<Question>>): Promise<void> => {
-        if (classRef === undefined) {
+      async (dataClassRef?: Ref<Class<Question>>): Promise<void> => {
+        if (dataClassRef === undefined) {
           return
         }
         const prevQuestion = index === null ? null : questions[index] ?? null
         const nextQuestion = (index === null ? questions[0] : questions[index + 1]) ?? null
-        const question = questionInit(classRef, prevQuestion?.rank ?? null, nextQuestion?.rank ?? null)
-        await questionCreate(object, classRef, question)
+        const question = questionInit(prevQuestion?.rank ?? null, nextQuestion?.rank ?? null, dataClassRef)
+        await questionCreate(object, question)
       }
     )
   }
@@ -112,7 +111,7 @@
 <div class="antiSection">
   <div class="antiSection-header">
     <span class="antiSection-header__title">
-      <Label label={survey.string.SurveyQuestions}/>
+      <Label label={survey.string.Questions} />
     </span>
   </div>
 
@@ -123,40 +122,37 @@
           <IconAdd size="medium" />
         </button>
       {/if}
-      {question._class} {question.rank} { JSON.stringify(question) }
-<!--      <QuestionTemplateEditor-->
-<!--        bind:object={questions[index]}-->
-<!--        index={index}-->
-<!--      />-->
+      {question.data._class}
+      {question.rank}
+      {JSON.stringify(question)}
+      <!--      <QuestionTemplateEditor-->
+      <!--        bind:object={questions[index]}-->
+      <!--        index={index}-->
+      <!--      />-->
       <button class="divider my-1" on:click={(e) => onClickAdd(e, index)}>
         <IconAdd size="medium" />
       </button>
     {/each}
   {:else}
-    <div class='antiSection-empty mt-4'>
-      <Button
-        icon={IconAdd}
-        width='100%'
-        kind='ghost'
-        on:click={(e) => onClickAdd(e, null)}
-      />
+    <div class="antiSection-empty mt-4">
+      <Button icon={IconAdd} width="100%" kind="ghost" on:click={(e) => onClickAdd(e, null)} />
     </div>
   {/if}
-
 </div>
 
-<style lang='scss'>
+<style lang="scss">
   .divider {
     color: var(--theme-content-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: .25rem;
+    gap: 0.25rem;
     opacity: 0;
-    transition: opacity .16s;
+    transition: opacity 0.16s;
     width: 100%;
 
-    &:before, &:after {
+    &:before,
+    &:after {
       content: ' ';
       height: 1px;
       width: 100%;
@@ -164,7 +160,8 @@
       background-color: var(--theme-divider-color);
     }
 
-    &:hover, &:focus {
+    &:hover,
+    &:focus {
       opacity: 1;
     }
   }
