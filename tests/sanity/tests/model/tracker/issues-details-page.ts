@@ -20,6 +20,7 @@ export class IssuesDetailsPage extends CommonTrackerPage {
   readonly buttonMoreActions: Locator
   readonly textParentTitle: Locator
   readonly buttonAddSubIssue: Locator
+  readonly textRelated: Locator
 
   constructor (page: Page) {
     super(page)
@@ -40,6 +41,7 @@ export class IssuesDetailsPage extends CommonTrackerPage {
     this.buttonMoreActions = page.locator('div.popupPanel-title div.flex-row-center > button:first-child')
     this.textParentTitle = page.locator('span.issue-title')
     this.buttonAddSubIssue = page.locator('#add-sub-issue')
+    this.textRelated = page.locator('//span[text()="Related"]/following-sibling::div[1]/div//span')
   }
 
   async editIssue (data: Issue): Promise<void> {
@@ -104,6 +106,9 @@ export class IssuesDetailsPage extends CommonTrackerPage {
     }
     if (data.parentIssue != null) {
       await expect(this.textParentTitle).toHaveText(data.parentIssue)
+    }
+    if (data.relatedIssue != null) {
+      await expect(this.textRelated).toContainText(data.relatedIssue)
     }
   }
 

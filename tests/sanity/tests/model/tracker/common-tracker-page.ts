@@ -11,6 +11,7 @@ export class CommonTrackerPage extends CalendarPage {
   readonly buttonSpaceSelectorMoveIssuesModal: Locator
   readonly buttonMoveIssuesModal: Locator
   readonly buttonKeepOriginalMoveIssuesModal: Locator
+  readonly inputKeepOriginalMoveIssuesModal: Locator
 
   constructor (page: Page) {
     super(page)
@@ -25,6 +26,7 @@ export class CommonTrackerPage extends CalendarPage {
     )
     this.buttonMoveIssuesModal = page.locator('form[id="tracker:string:MoveIssues"] button[type="submit"]')
     this.buttonKeepOriginalMoveIssuesModal = page.locator('form[id="tracker:string:MoveIssues"] span.toggle-switch')
+    this.inputKeepOriginalMoveIssuesModal = page.locator('form[id="tracker:string:MoveIssues"] input[type="checkbox"]')
   }
 
   async selectFilter (filter: string, filterSecondLevel?: string): Promise<void> {
@@ -91,9 +93,11 @@ export class CommonTrackerPage extends CalendarPage {
   async fillMoveIssuesModal (newProjectName: string, keepOriginalAttributes: boolean = false): Promise<void> {
     await this.buttonSpaceSelectorMoveIssuesModal.click()
     await this.selectMenuItem(this.page, newProjectName)
+
     if (keepOriginalAttributes) {
       await this.buttonKeepOriginalMoveIssuesModal.click()
     }
-    await this.buttonMoveIssuesModal.click({ timeout: 100 })
+
+    await this.buttonMoveIssuesModal.click({ delay: 1000 })
   }
 }
