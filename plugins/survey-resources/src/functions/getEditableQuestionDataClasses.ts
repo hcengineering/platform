@@ -1,11 +1,10 @@
-import { type Class } from '@hcengineering/core'
+import { type Class, type TxOperations } from '@hcengineering/core'
 import { type QuestionData } from '@hcengineering/survey'
 
 import survey from '../plugin'
-import { getClient } from '@hcengineering/presentation'
 
-export function getEditableQuestionClasses (): Array<Class<QuestionData>> {
-  const hierarchy = getClient().getHierarchy()
+export function getEditableQuestionDataClasses (client: TxOperations): Array<Class<QuestionData>> {
+  const hierarchy = client.getHierarchy()
   return hierarchy
     .getDescendants(survey.class.QuestionData)
     .map((classRef) => hierarchy.getClass(classRef))

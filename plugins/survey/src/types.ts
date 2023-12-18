@@ -89,12 +89,12 @@ export interface Info extends QuestionData {
  * @public
  */
 export type QuestionDataEditorComponent<Q extends QuestionData> = Resource<
-  ComponentType<
-    SvelteComponent<{
-      data: Q
-      readonly editable: boolean
-    }>
-  >
+ComponentType<
+SvelteComponent<{
+  data: Q
+  readonly editable: boolean
+}>
+>
 >
 
 /**

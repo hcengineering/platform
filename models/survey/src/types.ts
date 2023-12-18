@@ -14,7 +14,7 @@
 //
 
 import { type CollectionSize, type Domain, IndexKind, type Markup, type Ref, type Type } from '@hcengineering/core'
-import core, { TAttachedDoc, TClass, TObj, TSpace } from '@hcengineering/model-core'
+import core, { TAttachedDoc, TClass, TObj, TSpace, TType } from '@hcengineering/model-core'
 
 import {
   ArrOf,
@@ -53,6 +53,13 @@ export const DOMAIN_SURVEY = 'survey' as Domain
 export function TypeRank (): Type<Rank> {
   return { _class: survey.class.Rank, label: survey.string.Rank }
 }
+
+/**
+ * @public
+ */
+@UX(survey.string.Rank)
+@Model(survey.class.Rank, core.class.Type)
+export class TTypeRank extends TType {}
 
 // FIXME: Currently, classes that extend TSpace and represent private spaces
 //  cannot be stored in their own domain, as it breaks SpaceSecurityMiddleware.

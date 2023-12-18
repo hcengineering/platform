@@ -25,7 +25,16 @@ import {
 } from '@hcengineering/survey'
 import survey from './plugin'
 import view from '@hcengineering/model-view'
-import { TCheckboxes, TInfo, TQuestion, TQuestionData, TQuestionDataEditor, TRadioButtons, TSurvey } from './types'
+import {
+  TCheckboxes,
+  TInfo,
+  TQuestion,
+  TQuestionData,
+  TQuestionDataEditor,
+  TRadioButtons,
+  TSurvey,
+  TTypeRank
+} from './types'
 
 export { surveyOperation } from './migration'
 export { surveyId } from '@hcengineering/survey'
@@ -95,7 +104,7 @@ function defineSurvey (builder: Builder): void {
 }
 
 function defineQuestion (builder: Builder): void {
-  builder.createModel(TQuestion)
+  builder.createModel(TQuestion, TTypeRank)
   builder.mixin(survey.class.Question, core.class.Class, view.mixin.CollectionEditor, {
     editor: survey.component.QuestionCollectionEditor
   })

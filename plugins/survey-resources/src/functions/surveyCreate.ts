@@ -1,14 +1,13 @@
-import { type DocData, generateId, getCurrentAccount, type Ref } from '@hcengineering/core'
+import { type DocData, generateId, getCurrentAccount, type Ref, type TxOperations } from '@hcengineering/core'
 import type { Survey } from '@hcengineering/survey'
 import survey from '../plugin'
 import core from '@hcengineering/core/lib/component'
-import { getClient } from '@hcengineering/presentation'
 
-export async function surveyCreate (object: DocData<Survey>): Promise<Ref<Survey>> {
+export async function surveyCreate (client: TxOperations, object: DocData<Survey>): Promise<Ref<Survey>> {
   const owner = getCurrentAccount()
   const id = generateId<Survey>()
 
-  return await getClient().createDoc(
+  return await client.createDoc(
     survey.class.Survey,
     core.space.Space,
     {

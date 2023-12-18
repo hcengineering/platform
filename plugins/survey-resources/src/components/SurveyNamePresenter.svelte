@@ -20,6 +20,8 @@
   export let value: Survey
 </script>
 
-<DocNavLink object={value}>
-  {value.name}
+<DocNavLink object={value} noOverflow inline>
+  <span class="antiPresenter">
+    {value.name}
+  </span>
 </DocNavLink>

@@ -143,7 +143,7 @@ export class Hierarchy {
     return result
   }
 
-  getClass (_class: Ref<Class<Obj>>): Class<Obj> {
+  getClass<T extends Obj = Obj>(_class: Ref<Class<T>>): Class<T> {
     const data = this.classifiers.get(_class)
     if (data === undefined || this.isInterface(data)) {
       throw new Error('class not found: ' + _class)
@@ -151,7 +151,7 @@ export class Hierarchy {
     return data
   }
 
-  hasClass (_class: Ref<Class<Obj>>): boolean {
+  hasClass<T extends Obj = Obj>(_class: Ref<Class<T>>): boolean {
     const data = this.classifiers.get(_class)
 
     return !(data === undefined || this.isInterface(data))
@@ -289,7 +289,7 @@ export class Hierarchy {
   getBaseClass<T extends Doc>(_class: Ref<Mixin<T>>): Ref<Class<T>> {
     let cl: Ref<Class<T>> | undefined = _class
     while (cl !== undefined) {
-      const clz = this.getClass(cl)
+      const clz: Class<T> = this.getClass(cl)
       if (this.isClass(clz)) return cl
       cl = clz.extends
     }
@@ -303,7 +303,7 @@ export class Hierarchy {
   isImplements<T extends Doc>(_class: Ref<Class<T>>, from: Ref<Interface<T>>): boolean {
     let cl: Ref<Class<T>> | undefined = _class
     while (cl !== undefined) {
-      const klazz = this.getClass(cl)
+      const klazz: Class<T> = this.getClass(cl)
       if (this.isExtends(klazz.implements ?? [], from)) {
         return true
       }

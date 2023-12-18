@@ -15,15 +15,16 @@
 
 <script lang="ts">
   import { FocusHandler, createFocusManager, EditBox } from '@hcengineering/ui'
-  import { Card } from '@hcengineering/presentation'
+  import { Card, getClient } from '@hcengineering/presentation'
   import survey from '../plugin'
   import { createEventDispatcher } from 'svelte'
   import { surveyInit } from '../functions/surveyInit'
   import { surveyCreate } from '../functions/surveyCreate'
 
+  const client = getClient()
   const manager = createFocusManager()
   const dispatch = createEventDispatcher()
-  const object = surveyInit()
+  const object = surveyInit(client)
 </script>
 
 <FocusHandler {manager} />
@@ -32,7 +33,7 @@
   label={survey.string.Survey}
   canSave={object.name.length > 0}
   okAction={() => {
-    void surveyCreate(object)
+    void surveyCreate(client, object)
   }}
   okLabel={survey.string.SurveyCreate}
   on:close={() => dispatch('close')}

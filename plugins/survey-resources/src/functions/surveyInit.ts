@@ -1,10 +1,9 @@
-import { type DocData, fillDefaults } from '@hcengineering/core'
+import { type DocData, fillDefaults, type TxOperations } from '@hcengineering/core'
 import type { Survey } from '@hcengineering/survey'
 import survey from '../plugin'
-import { getClient } from '@hcengineering/presentation'
 
-export function surveyInit (): DocData<Survey> {
-  const hierarchy = getClient().getHierarchy()
+export function surveyInit (client: TxOperations): DocData<Survey> {
+  const hierarchy = client.getHierarchy()
 
   let object: DocData<Survey> = {
     name: '',
