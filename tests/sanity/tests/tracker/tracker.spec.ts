@@ -94,6 +94,9 @@ test.describe('Tracker tests', () => {
     await navigate(page)
     await createIssue(page, { name })
     await page.click('text="My issues"')
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.searchIssueByName(name)
+
     await page.click('[data-id="tab-assigned"]')
     await expect(page.locator('.antiPanel-component')).not.toContainText(name)
     await page.click('[data-id="tab-created"]')
