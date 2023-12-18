@@ -25,6 +25,7 @@
   import { TextSelection } from '@tiptap/pm/state'
   import { createEventDispatcher, getContext, onDestroy, onMount } from 'svelte'
   import * as Y from 'yjs'
+  import { IndexeddbPersistence } from 'y-indexeddb'
 
   import { Completion } from '../Completion'
   import { textEditorCommandHandler } from '../commands'
@@ -70,6 +71,8 @@
   let element: HTMLElement
 
   const ydoc: any = getContext(CollaborationIds.Doc) ?? new Y.Doc()
+
+  const localProvider = new IndexeddbPersistence(documentId, ydoc)
 
   const contextProvider = getContext(CollaborationIds.Provider)
 
@@ -308,10 +311,6 @@
           dispatch('update')
         }
       })
-
-      if (initialContent !== undefined) {
-        editor.commands.insertContent(initialContent)
-      }
     })
   })
 
@@ -320,10 +319,11 @@
       try {
         editor.destroy()
       } catch (err: any) {}
-      if (contextProvider === undefined) {
-        provider.destroy()
-      }
     }
+    if (contextProvider === undefined) {
+      provider.destroy()
+    }
+    void localProvider.destroy()
   })
 
   export let focusIndex = -1

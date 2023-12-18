@@ -17212,6 +17212,16 @@ packages:
     engines: {node: '>=0.4'}
     dev: false
 
+  /y-indexeddb@9.0.12(yjs@13.6.8):
+    resolution: {integrity: sha512-9oCFRSPPzBK7/w5vOkJBaVCQZKHXB/v6SIT+WYhnJxlEC61juqG0hBrAf+y3gmSMLFLwICNH9nQ53uscuse6Hg==}
+    engines: {node: '>=16.0.0', npm: '>=8.0.0'}
+    peerDependencies:
+      yjs: ^13.0.0
+    dependencies:
+      lib0: 0.2.88
+      yjs: 13.6.8
+    dev: false
+
   /y-leveldb@0.1.2(yjs@13.6.8):
     resolution: {integrity: sha512-6ulEn5AXfXJYi89rXPEg2mMHAyyw8+ZfeMMdOtBbV8FJpQ1NOrcgi6DTAcXof0dap84NjHPT2+9d0rb6cFsjEg==}
     requiresBuild: true
@@ -17423,7 +17433,7 @@ packages:
     dev: false
 
   file:projects/activity-resources.tgz(@types/node@16.11.68)(esbuild@0.16.17)(postcss-load-config@4.0.1)(postcss@8.4.31)(ts-node@10.9.1):
-    resolution: {integrity: sha512-F4DXewrthjnPi36RuMEgym+/VACMDSyCmP8QvXHUPvwu7x113/rtbhzOhSPSaj+jwZCzMiKTKXOU68B8Q1j+fw==, tarball: file:projects/activity-resources.tgz}
+    resolution: {integrity: sha512-S3azsw6dQwDQHF9dH26Ffp/Yje78ZWyL2Gv1xw9FRphd7bwsG8cz3/KgKHVjJ52Bg8lsuSAQZsUbUJqmn+U+QQ==, tarball: file:projects/activity-resources.tgz}
     id: file:projects/activity-resources.tgz
     name: '@rush-temp/activity-resources'
     version: 0.0.0
@@ -19472,7 +19482,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz(svelte@4.2.5)(typescript@5.2.2):
-    resolution: {integrity: sha512-PEl4zAGjvSsQ5stSRUuj2PYcZ0BdWTkxyaJNP63dbX4U6QA5sf7BuXamJRgETTD74jA40pGRXUAMnprS6t9z4w==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-bqRngFhfXoPedb0IMaXya9LnZ5agvGBsd49EUmpJuM/BWIDMW8Oj4iU2fnkTVYQEiBsprhXX1POk4chGR6dHvA==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -19836,7 +19846,7 @@ packages:
     dev: false
 
   file:projects/model-server-activity.tgz(svelte@4.2.5)(typescript@5.2.2):
-    resolution: {integrity: sha512-ddPj4Y8/1G2ItDMmgLbaasdkjTTY66I3XKmyV3KfZNjeRq7DJZquF5VG1GM09TpfAkQkLJBJcoHoqtqQ9OgluA==, tarball: file:projects/model-server-activity.tgz}
+    resolution: {integrity: sha512-n6L6M7urgihLXLCFZWoh8LlVt+8dQHiGaehmAG4KJ1X3pz8xmSnZAjUAeLdXZvuRHFcfTPyHv0YzDBJ+npXxHg==, tarball: file:projects/model-server-activity.tgz}
     id: file:projects/model-server-activity.tgz
     name: '@rush-temp/model-server-activity'
     version: 0.0.0
@@ -20046,7 +20056,7 @@ packages:
     dev: false
 
   file:projects/model-server-notification.tgz(svelte@4.2.5)(typescript@5.2.2):
-    resolution: {integrity: sha512-BmWHvQtuRizjJE87k3thPWrhHJBfOEx1tg62HmPHUMsWxoS6nBKVzTa4zzwFqHPb4tlzBS7S8ux1n5tTwtJiMQ==, tarball: file:projects/model-server-notification.tgz}
+    resolution: {integrity: sha512-csNOi/1jDDopp9M7/9nlneRsjWLZ8vMj16CsAYirsR7PtPRYXoC0jLwzIUCnscdJry8KH7l9oZm8DbszdunklA==, tarball: file:projects/model-server-notification.tgz}
     id: file:projects/model-server-notification.tgz
     name: '@rush-temp/model-server-notification'
     version: 0.0.0
@@ -20319,7 +20329,7 @@ packages:
     dev: false
 
   file:projects/model-survey.tgz(svelte@4.2.5)(typescript@5.2.2):
-    resolution: {integrity: sha512-Q15RJl+fvfRN7hsIQUZ4UzcqF524kBjhNiaFimmUJCkTlOjhUhhn04pjcSFsh7g+7KbVfZW3CyD7L9ZQVqHp4w==, tarball: file:projects/model-survey.tgz}
+    resolution: {integrity: sha512-HqvLuhQJO8PpOeuDEPr7dcrxA2xZKXp7FLIwdckKONYx506mZVzErCiU3eXy3M4YyLXIQCTy272vnxJZnemJTw==, tarball: file:projects/model-survey.tgz}
     id: file:projects/model-survey.tgz
     name: '@rush-temp/model-survey'
     version: 0.0.0
@@ -20361,7 +20371,7 @@ packages:
     dev: false
 
   file:projects/model-task.tgz(svelte@4.2.5)(typescript@5.2.2):
-    resolution: {integrity: sha512-56qSfouGLl0idf3X7qFQVjeAmCT0eg2iDPoErUQzeQpaYgJ2sbI1wp0Czj3hDm83NlA0eiIYkOIgqtHuSULM7w==, tarball: file:projects/model-task.tgz}
+    resolution: {integrity: sha512-P62KW6rPhZBuQdKMpqqnyMoKzw3Zd2057wyJxWQ0jOB9q9dd0XgFtsmMWAX/18O83aFY92sbqoPg/EPGTLV6zA==, tarball: file:projects/model-task.tgz}
     id: file:projects/model-task.tgz
     name: '@rush-temp/model-task'
     version: 0.0.0
@@ -21002,7 +21012,7 @@ packages:
     dev: false
 
   file:projects/pod-server.tgz(svelte@4.2.5):
-    resolution: {integrity: sha512-7Griqc83Xh/jubUWlO8qA+Cx1+2pjzZgouGteeQZXfCokol6X813h3O5vkKO3fenjg6doFII5zI+DJx1R4jBnQ==, tarball: file:projects/pod-server.tgz}
+    resolution: {integrity: sha512-P3qTbPOzsBBFCp/JsSNERRx6ITah+3bfpBDqPgP4dzydWPEcbW9AALPYjrYviv/GRZuFzgcBu32ZxrUMCZ6DwA==, tarball: file:projects/pod-server.tgz}
     id: file:projects/pod-server.tgz
     name: '@rush-temp/pod-server'
     version: 0.0.0
@@ -21150,7 +21160,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz(bufferutil@4.0.7)(esbuild@0.16.17)(sass@1.69.0)(ts-node@10.9.1)(typescript@5.2.2):
-    resolution: {integrity: sha512-AMQUJ8O71HSvI9iGDSj/32iyRs75Qepku6ir0Xq6n2/IwVW4BE3n0Fzhh5tfFTsbPtjL2p4qcA0mmJ0zg28D+g==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-RpgrKzlPUDZ5L+pT2NPQmXxUomiw84N6898NdEYNbbXERliDL6II+7Qw9LwoEBHtVDChgnU8ez+5WcuknHrjlw==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -21551,7 +21561,7 @@ packages:
     dev: false
 
   file:projects/server-activity.tgz(esbuild@0.16.17)(svelte@4.2.5)(ts-node@10.9.1):
-    resolution: {integrity: sha512-DneWyxHhW1vXrtKGwcLBuE7tkcbRkQVg4L/X4YamviGOuSWNSwUMb4KeJk7tqRhNwt0ldg3GcXvP7p01oPyVnA==, tarball: file:projects/server-activity.tgz}
+    resolution: {integrity: sha512-VDiyr4T43YaFFBX7WNa9eesnQK7F2dij3fbm62nMM+RV4iQBzOMJwBWAZAGEnHAkPQNMKSwnzqUf2N0barvTjg==, tarball: file:projects/server-activity.tgz}
     id: file:projects/server-activity.tgz
     name: '@rush-temp/server-activity'
     version: 0.0.0
@@ -23194,7 +23204,7 @@ packages:
     dev: false
 
   file:projects/survey-assets.tgz(esbuild@0.16.17)(svelte@4.2.5)(ts-node@10.9.1)(typescript@5.2.2):
-    resolution: {integrity: sha512-ERl1tCl6UFla9peQ8yjEtMIgDr6AhFGxfp5qEH7yi7H0CFrBYddSj5euGsvHwYnowtshRsAI5YKw4sUhEeTVxA==, tarball: file:projects/survey-assets.tgz}
+    resolution: {integrity: sha512-KqJbIkEBJ7f4dqGEd1ztPbMCP6l6l+wdYOTr83WN37YOUj8ucMuTcDWcZv1aCMZl/T/C6EUIDf5TgYvl1CHjcw==, tarball: file:projects/survey-assets.tgz}
     id: file:projects/survey-assets.tgz
     name: '@rush-temp/survey-assets'
     version: 0.0.0
@@ -23226,7 +23236,7 @@ packages:
     dev: false
 
   file:projects/survey-resources.tgz(@types/node@16.11.68)(esbuild@0.16.17)(postcss-load-config@4.0.1)(postcss@8.4.31)(svelte@4.2.5)(ts-node@10.9.1)(typescript@5.2.2):
-    resolution: {integrity: sha512-7TYqfVbpbPrAl/+fBGHT78DkkQo5+ZdIO7sIf+Z7UVEoNYzmnZnM0VCmnzdpAeOjZ64Z+kLG3onaLYbFf6awDQ==, tarball: file:projects/survey-resources.tgz}
+    resolution: {integrity: sha512-S4t+6+J3q1YibQwIzBOYpeWlSPTiFyvVhnhw07Eqnxy1z3ADHLlHpsxCXUI+zQQQzzo9zvGLRoK1hSYmtcPGfA==, tarball: file:projects/survey-resources.tgz}
     id: file:projects/survey-resources.tgz
     name: '@rush-temp/survey-resources'
     version: 0.0.0
@@ -23271,7 +23281,7 @@ packages:
     dev: false
 
   file:projects/survey.tgz(@types/node@16.11.68)(esbuild@0.16.17)(svelte@4.2.5)(ts-node@10.9.1)(typescript@5.2.2):
-    resolution: {integrity: sha512-meZo7FpLblppewqgFsGx3Mh6AS7deFcxC8D9vnRRWliUuGpYfq+7K3/T++j38D2RHZVGYnJTjHJnCMXTnTSPfA==, tarball: file:projects/survey.tgz}
+    resolution: {integrity: sha512-VQ5Ne0MuO8zCvfvMqROddHTfinHEmiybMnz3XM/YfxOTxU1RRwZDGSoaixBU/tK98BURHp+NDnCiD5X3Q48DtQ==, tarball: file:projects/survey.tgz}
     id: file:projects/survey.tgz
     name: '@rush-temp/survey'
     version: 0.0.0
@@ -23445,7 +23455,7 @@ packages:
     dev: false
 
   file:projects/task-resources.tgz(@types/node@16.11.68)(esbuild@0.16.17)(postcss-load-config@4.0.1)(postcss@8.4.31)(ts-node@10.9.1)(typescript@5.2.2):
-    resolution: {integrity: sha512-rmEmBZU8K4rPiePhlw99tsYnCiYoXlymTECYCm29m3zOEcKsLptEL5EPcI1YgJd6+83LOfAEHxYFLXcFgXWe+A==, tarball: file:projects/task-resources.tgz}
+    resolution: {integrity: sha512-sXLi/UksIrEaJL0K+aSQcqUSm8jJv9qeyEEJMiENDxjwvCDzONTz8HPwFjRVUdPSH6Mnz9YpNRwQyIDOpni0qg==, tarball: file:projects/task-resources.tgz}
     id: file:projects/task-resources.tgz
     name: '@rush-temp/task-resources'
     version: 0.0.0
@@ -23491,7 +23501,7 @@ packages:
     dev: false
 
   file:projects/task.tgz(@types/node@16.11.68)(esbuild@0.16.17)(svelte@4.2.5)(ts-node@10.9.1):
-    resolution: {integrity: sha512-IH/xqCjSTuVcbWA+pbE/dcZeChW7N4+jJiVCbwGDB605yipH/IDYSz1fsf+evXbkBm8lSHBnrzQf2ovVWk+Iig==, tarball: file:projects/task.tgz}
+    resolution: {integrity: sha512-qtjMbTtDdi6Zz2GIi6HXzFOVPYjrC35i3m/3E6cJcbFG7LzRv/QU9guhZl5M3zuSmymP0m6wxtJ3C4CiboCMJQ==, tarball: file:projects/task.tgz}
     id: file:projects/task.tgz
     name: '@rush-temp/task'
     version: 0.0.0
@@ -23771,7 +23781,7 @@ packages:
     dev: false
 
   file:projects/text-editor.tgz(@types/node@16.11.68)(bufferutil@4.0.7)(esbuild@0.16.17)(postcss-load-config@4.0.1)(postcss@8.4.31)(prosemirror-model@1.19.3)(ts-node@10.9.1):
-    resolution: {integrity: sha512-s3a0AnlJS8WBnLjA5ggHaLcbSh9tT9DA6Szy9wYWGJzt9R82/nfhh4qMOLWbvHbTgOu/ieWGrhG2FpWAzHSwzw==, tarball: file:projects/text-editor.tgz}
+    resolution: {integrity: sha512-42rs06vaqb/uM49NzAf4ggZxatYbBqfT2Qy0rZLsK72tSUAxZC86E97pxUjYaLKguUoAGkou/bQf2iOFySZQwA==, tarball: file:projects/text-editor.tgz}
     id: file:projects/text-editor.tgz
     name: '@rush-temp/text-editor'
     version: 0.0.0
@@ -23826,6 +23836,7 @@ packages:
       svelte-preprocess: 5.1.0(postcss-load-config@4.0.1)(postcss@8.4.31)(sass@1.69.0)(svelte@4.2.5)(typescript@5.2.2)
       ts-jest: 29.1.1(esbuild@0.16.17)(jest@29.7.0)(typescript@5.2.2)
       typescript: 5.2.2
+      y-indexeddb: 9.0.12(yjs@13.6.8)
       y-prosemirror: 1.2.1(prosemirror-model@1.19.3)(yjs@13.6.8)
       y-websocket: 1.5.0(yjs@13.6.8)
       yjs: 13.6.8
