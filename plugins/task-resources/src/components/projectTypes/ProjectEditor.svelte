@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { ComponentExtensions, createQuery, getClient } from '@hcengineering/presentation'
   import task, { Project, ProjectType, ProjectTypeDescriptor, Task, TaskType } from '@hcengineering/task'
 
   import { Ref, SortingOrder, Status } from '@hcengineering/core'
@@ -269,21 +269,8 @@
                   </div>
                 </div>
 
-                <div class="panelBox flex-col row">
-                  <!-- svelte-ignore a11y-click-events-have-key-events -->
-                  <!-- svelte-ignore a11y-no-static-element-interactions -->
-                  <div class="fs-title flex flex-between bottom-divider">
-                    <div class="trans-title">
-                      <Label label={getEmbeddedLabel('Automation')} />
-                    </div>
-                    <div class="p-1">
-                      <Button icon={IconAdd} kind={'primary'} size={'small'} on:click={(event) => {}} />
-                    </div>
-                  </div>
-                  <div class="mt-1">
-                    <!-- svelte-ignore a11y-no-static-element-interactions -->
-                  </div>
-                </div>
+                <ComponentExtensions extension={task.extensions.ProjectEditorExtension} props={{ type }} />
+
                 <div class="panelBox flex-col row">
                   <!-- svelte-ignore a11y-click-events-have-key-events -->
                   <!-- svelte-ignore a11y-no-static-element-interactions -->
