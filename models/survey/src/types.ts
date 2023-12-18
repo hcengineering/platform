@@ -93,7 +93,7 @@ export class TSurvey extends TSpace implements Survey {
 /**
  * @public
  */
-@Model(survey.class.Question, core.class.Doc, DOMAIN_SURVEY)
+@Model(survey.class.Question, core.class.AttachedDoc, DOMAIN_SURVEY)
 export class TQuestion<Data extends QuestionData> extends TAttachedDoc implements Question<Data> {
   @Prop(TypeRef(survey.class.Survey), core.string.AttachedTo)
   declare attachedTo: Ref<Survey>
