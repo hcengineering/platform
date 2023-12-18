@@ -224,7 +224,6 @@ test.describe('Tracker tests', () => {
 
     const issuesDetailsPage = new IssuesDetailsPage(page)
     await issuesDetailsPage.waitDetailsOpened(name)
-    // await page.waitForSelector(`text="${name}"`, { timeout: 15000 })
 
     let count = 0
     for (let j = 0; j < 5; j++) {
