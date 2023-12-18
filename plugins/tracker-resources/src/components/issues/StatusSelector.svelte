@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { IdMap, Ref, Status, WithLookup } from '@hcengineering/core'
-  import { ProjectType } from '@hcengineering/task'
+  import { ProjectType, TaskType } from '@hcengineering/task'
   import { typeStore } from '@hcengineering/task-resources'
   import { IssueStatus } from '@hcengineering/tracker'
   import {
@@ -36,6 +36,7 @@
 
   export let value: Ref<IssueStatus> | undefined
   export let type: Ref<ProjectType> | undefined
+  export let taskType: Ref<TaskType> | undefined = undefined
 
   let statuses: WithLookup<IssueStatus>[] | undefined = undefined
 
@@ -70,7 +71,14 @@
     if (typeId === undefined) return []
     const type = types.get(typeId)
     if (type === undefined) return []
-    return type.statuses.map((p) => statuses.get(p._id)).filter((p) => p !== undefined) as IssueStatus[]
+    let vals = type.statuses
+    if (taskType !== undefined) {
+      vals = vals.filter((it) => it.taskType === taskType)
+    }
+    return vals
+      .filter((it, idx, arr) => arr.findIndex((q) => q._id === it._id) === idx)
+      .map((p) => statuses.get(p._id))
+      .filter((p) => p !== undefined) as IssueStatus[]
   }
 
   function getSelectedStatus (

@@ -19,7 +19,7 @@ import { type Doc, type Ref } from '@hcengineering/core'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/model-presentation'
 import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
 import { mergeIds, type IntlString, type Resource } from '@hcengineering/platform'
-import { type ProjectType, type TaskTypeDescriptor } from '@hcengineering/task'
+import { type ProjectType } from '@hcengineering/task'
 import { trackerId } from '@hcengineering/tracker'
 import tracker from '@hcengineering/tracker-resources/src/plugin'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
@@ -109,8 +109,5 @@ export default mergeIds(trackerId, tracker, {
     DeleteProject: '' as Ref<Action<Doc, Record<string, any>>>,
     DeleteProjectClean: '' as Ref<Action<Doc, Record<string, any>>>,
     DeleteIssue: '' as Ref<Action<Doc, Record<string, any>>>
-  },
-  descriptors: {
-    Issue: '' as Ref<TaskTypeDescriptor>
   }
 })

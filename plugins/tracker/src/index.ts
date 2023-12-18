@@ -34,7 +34,7 @@ import {
 } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, Resource, plugin } from '@hcengineering/platform'
 import { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
-import { ProjectTypeDescriptor, Task, Project as TaskProject, TaskType } from '@hcengineering/task'
+import { ProjectTypeDescriptor, Task, Project as TaskProject, TaskType, TaskTypeDescriptor } from '@hcengineering/task'
 import { AnyComponent, ComponentExtensionId, Location, ResolvedLocation } from '@hcengineering/ui'
 import { Action, ActionCategory, IconProps } from '@hcengineering/view'
 
@@ -455,7 +455,8 @@ export default plugin(trackerId, {
     Tracker: '' as Ref<ActionCategory>
   },
   descriptors: {
-    ProjectType: '' as Ref<ProjectTypeDescriptor>
+    ProjectType: '' as Ref<ProjectTypeDescriptor>,
+    Issue: '' as Ref<TaskTypeDescriptor>
   },
   action: {
     SetDueDate: '' as Ref<Action>,
