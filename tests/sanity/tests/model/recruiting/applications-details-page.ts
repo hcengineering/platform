@@ -10,7 +10,7 @@ export class ApplicationsDetailsPage extends CommonRecruitingPage {
   constructor (page: Page) {
     super(page)
     this.page = page
-    this.textApplicationId = page.locator('div.popupPanel-title div.title.not-active')
+    this.textApplicationId = page.locator('div.popupPanel-title div.title:last-child')
     this.buttonState = page
       .locator('div[class*="collapsed-container"]')
       .nth(0)
@@ -42,5 +42,9 @@ export class ApplicationsDetailsPage extends CommonRecruitingPage {
       await this.page.locator('div.popup button.menu-item div.label', { hasText: name }).click()
     }
     await this.buttonSelectCollaborators.press('Escape')
+  }
+
+  async waitApplicationDetailsOpened (applicationId: string): Promise<void> {
+    await expect(this.textApplicationId).toHaveText(applicationId)
   }
 }

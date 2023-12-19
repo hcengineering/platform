@@ -227,6 +227,35 @@ test.describe('Tracker issue tests', () => {
     // await issuesDetailsPage.checkActivityExist('changed number in')
   })
 
+  test('Comment stored after reload the page', async ({ page }) => {
+    const commentText = `Comment should be stored after reload-${generateId()}`
+    const commentIssue: NewIssue = {
+      title: `Issue for stored comment-${generateId()}`,
+      description: 'Issue for comment stored after reload the page'
+    }
+
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+    await trackerNavigationMenuPage.openIssuesForProject('Default')
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
+    await issuesPage.createNewIssue(commentIssue)
+    await issuesPage.searchIssueByName(commentIssue.title)
+    await issuesPage.openIssueByName(commentIssue.title)
+
+    const issuesDetailsPage = new IssuesDetailsPage(page)
+    await issuesDetailsPage.waitDetailsOpened(commentIssue.title)
+    await issuesDetailsPage.addComment(commentText)
+    await issuesDetailsPage.checkCommentExist(commentText)
+
+    await page.reload()
+    await issuesDetailsPage.waitDetailsOpened(commentIssue.title)
+    await issuesDetailsPage.checkCommentExist(commentText)
+  })
+
   test('Create an Issue from template', async ({ page }) => {
     const templateName = 'New Issue'
     const newIssue: NewIssue = {

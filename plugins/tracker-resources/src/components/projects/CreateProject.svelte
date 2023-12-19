@@ -42,7 +42,7 @@
   import tracker from '../../plugin'
   import StatusSelector from '../issues/StatusSelector.svelte'
   import ChangeIdentity from './ChangeIdentity.svelte'
-  import { typeStore } from '@hcengineering/task-resources'
+  import { typeStore, taskTypeStore } from '@hcengineering/task-resources'
 
   export let project: Project | undefined = undefined
 
@@ -70,7 +70,7 @@
 
   const dispatch = createEventDispatcher()
 
-  $: isNew = !project
+  $: isNew = project == null
 
   async function handleSave (): Promise<void> {
     if (isNew) {
@@ -239,12 +239,13 @@
       <div class="antiGrid-row__header">
         <Label label={task.string.ProjectType} />
       </div>
+
       <Component
         is={task.component.ProjectTypeSelector}
+        disabled={!isNew}
         props={{
           descriptors: [tracker.descriptors.ProjectType],
           type: typeId,
-          disabled: !isNew,
           focusIndex: 4,
           kind: 'regular',
           size: 'large'
@@ -379,7 +380,15 @@
       <div class="antiGrid-row__header">
         <Label label={tracker.string.DefaultIssueStatus} />
       </div>
-      <StatusSelector bind:value={defaultStatus} type={typeId} kind={'regular'} size={'large'} />
+      <StatusSelector
+        taskType={Array.from($taskTypeStore.values()).filter(
+          (it) => it.parent === typeId && it.ofClass === tracker.class.Issue
+        )[0]?._id}
+        bind:value={defaultStatus}
+        type={typeId}
+        kind={'regular'}
+        size={'large'}
+      />
     </div>
   </div>
 </Card>
