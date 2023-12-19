@@ -69,7 +69,7 @@ export class MinioStorageAdapter implements StorageAdapter {
       decodedToken: { workspace }
     } = context
 
-    await this.ctx.with('load-document', {}, async (ctx) => {
+    await this.ctx.with('save-document', {}, async (ctx) => {
       const buffer = await ctx.with('transform', {}, () => {
         const updates = encodeStateAsUpdate(document)
         return Buffer.from(updates.buffer)

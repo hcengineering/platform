@@ -16,7 +16,8 @@
 -->
 <script lang="ts">
   import { getCurrentAccount } from '@hcengineering/core'
-  import { IntlString, translate } from '@hcengineering/platform'
+  import { IntlString, getMetadata, translate } from '@hcengineering/platform'
+  import presentation from '@hcengineering/presentation'
   import { IconSize, Loading, getPlatformColorForText, registerFocus, themeStore } from '@hcengineering/ui'
   import { AnyExtension, Editor, FocusPosition, getMarkRange, mergeAttributes } from '@tiptap/core'
   import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration'
@@ -25,12 +26,11 @@
   import { TextSelection } from '@tiptap/pm/state'
   import { createEventDispatcher, getContext, onDestroy, onMount } from 'svelte'
   import * as Y from 'yjs'
-  import { IndexeddbPersistence } from 'y-indexeddb'
 
   import { Completion } from '../Completion'
   import { textEditorCommandHandler } from '../commands'
   import textEditorPlugin from '../plugin'
-  import { TiptapCollabProvider } from '../provider'
+  import { DocumentId, TiptapCollabProvider } from '../provider'
   import { CollaborationIds, TextEditorCommandHandler, TextFormatCategory, TextNodeAction } from '../types'
   import { copyDocumentContent, copyDocumentField } from '../utils'
 
@@ -44,22 +44,19 @@
   import { NodeUuidExtension, nodeElementQuerySelector } from './extension/nodeUuid'
   import { completionConfig, defaultExtensions } from './extensions'
 
-  export let documentId: string
+  export let documentId: DocumentId
+  export let field: string | undefined = undefined
+  export let initialContentId: DocumentId | undefined = undefined
+  export let targetContentId: DocumentId | undefined = undefined
+
   export let readonly = false
   export let visible = true
-
-  export let token: string = ''
-  export let collaboratorURL: string = ''
 
   export let buttonSize: IconSize = 'small'
   export let focusable: boolean = false
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
-  export let initialContentId: string | undefined = undefined
-
-  export let field: string | undefined = undefined
 
   export let overflow: 'auto' | 'none' = 'auto'
-  export let initialContent: string | undefined = undefined
   export let textNodeActions: TextNodeAction[] = []
   export let editorAttributes: Record<string, string> = {}
   export let onExtensions: () => AnyExtension[] = () => []
@@ -68,11 +65,12 @@
   export let attachFile: FileAttachFunction | undefined = undefined
   export let canShowPopups = true
 
+  const token = getMetadata(presentation.metadata.Token) ?? ''
+  const collaboratorURL = getMetadata(textEditorPlugin.metadata.CollaboratorUrl) ?? ''
+
   let element: HTMLElement
 
   const ydoc: any = getContext(CollaborationIds.Doc) ?? new Y.Doc()
-
-  const localProvider = new IndexeddbPersistence(documentId, ydoc)
 
   const contextProvider = getContext(CollaborationIds.Provider)
 
@@ -84,7 +82,8 @@
       document: ydoc,
       token,
       parameters: {
-        initialContentId: initialContentId ?? ''
+        initialContentId,
+        targetContentId
       }
     })
 

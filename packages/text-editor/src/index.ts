@@ -65,7 +65,14 @@ export {
 export { ImageExtension, type ImageOptions } from './components/extension/imageExt'
 export { TodoItemExtension, TodoListExtension } from './components/extension/todo'
 
-export { TiptapCollabProvider, type TiptapCollabProviderConfiguration, createTiptapCollaborationData } from './provider'
+export {
+  TiptapCollabProvider,
+  type TiptapCollabProviderConfiguration,
+  createTiptapCollaborationData,
+  minioDocumentId,
+  mongodbDocumentId,
+  platformDocumentId
+} from './provider'
 export { CollaborationIds } from './types'
 
 export { textEditorId }

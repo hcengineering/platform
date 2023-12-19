@@ -16,15 +16,20 @@
 -->
 <script lang="ts">
   import { onDestroy, setContext } from 'svelte'
+  import { getMetadata } from '@hcengineering/platform'
+  import presentation from '@hcengineering/presentation'
 
-  import { TiptapCollabProvider, createTiptapCollaborationData } from '../provider'
+  import textEditorPlugin from '../plugin'
+  import { DocumentId, TiptapCollabProvider, createTiptapCollaborationData } from '../provider'
   import { CollaborationIds } from '../types'
 
-  export let documentId: string
-  export let token: string
-  export let collaboratorURL: string
+  export let documentId: DocumentId
+  export let field: string | undefined = undefined
+  export let initialContentId: DocumentId | undefined = undefined
+  export let targetContentId: DocumentId | undefined = undefined
 
-  export let initialContentId: string | undefined = undefined
+  const token = getMetadata(presentation.metadata.Token) ?? ''
+  const collaboratorURL = getMetadata(textEditorPlugin.metadata.CollaboratorUrl) ?? ''
 
   let _documentId = ''
 
@@ -39,6 +44,7 @@
       collaboratorURL,
       documentId,
       initialContentId,
+      targetContentId,
       token
     })
     provider = data.provider

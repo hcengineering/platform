@@ -13,10 +13,27 @@
 // limitations under the License.
 //
 import { Doc as Ydoc } from 'yjs'
+import type { Doc, Ref } from '@hcengineering/core'
+import { type KeyedAttribute, getClient } from '@hcengineering/presentation'
 import { HocuspocusProvider, type HocuspocusProviderConfiguration } from '@hocuspocus/provider'
 
 export type TiptapCollabProviderConfiguration = HocuspocusProviderConfiguration &
 Required<Pick<HocuspocusProviderConfiguration, 'token'>>
+
+export type DocumentId = string
+
+export function minioDocumentId (docId: Ref<Doc>, attr?: KeyedAttribute): DocumentId {
+  return attr !== undefined ? `minio://${docId}%${attr.key}` : `minio://${docId}`
+}
+
+export function platformDocumentId (docId: Ref<Doc>, attr: KeyedAttribute): DocumentId {
+  return `platform://${attr.attr.attributeOf}/${docId}/${attr.key}`
+}
+
+export function mongodbDocumentId (docId: Ref<Doc>, attr: KeyedAttribute): DocumentId {
+  const domain = getClient().getHierarchy().getDomain(attr.attr.attributeOf)
+  return `mongodb://${domain}/${docId}/${attr.key}`
+}
 
 export class TiptapCollabProvider extends HocuspocusProvider {
   loaded: Promise<void>
@@ -29,7 +46,15 @@ export class TiptapCollabProvider extends HocuspocusProvider {
     })
   }
 
-  copyContent (sourceId: string, targetId: string): void {
+  setContent (field: string, content: string): void {
+    const payload = {
+      action: 'document.content',
+      params: { field, content }
+    }
+    this.sendStateless(JSON.stringify(payload))
+  }
+
+  copyContent (sourceId: DocumentId, targetId: DocumentId): void {
     const payload = {
       action: 'document.copy',
       params: { sourceId, targetId }
@@ -37,7 +62,7 @@ export class TiptapCollabProvider extends HocuspocusProvider {
     this.sendStateless(JSON.stringify(payload))
   }
 
-  copyField (documentId: string, srcFieldId: string, dstFieldId: string): void {
+  copyField (documentId: DocumentId, srcFieldId: string, dstFieldId: string): void {
     const payload = {
       action: 'document.field.copy',
       params: { documentId, srcFieldId, dstFieldId }
@@ -53,8 +78,9 @@ export class TiptapCollabProvider extends HocuspocusProvider {
 
 export const createTiptapCollaborationData = (params: {
   collaboratorURL: string
-  documentId: string
-  initialContentId: string | undefined
+  documentId: DocumentId
+  initialContentId: DocumentId | undefined
+  targetContentId: DocumentId | undefined
   token: string
 }): { provider: TiptapCollabProvider, ydoc: Ydoc } => {
   const ydoc: Ydoc = new Ydoc()
@@ -66,7 +92,8 @@ export const createTiptapCollaborationData = (params: {
       document: ydoc,
       token: params.token,
       parameters: {
-        initialContentId: params.initialContentId ?? ''
+        initialContentId: params.initialContentId,
+        targetContentId: params.targetContentId
       }
     })
   }
