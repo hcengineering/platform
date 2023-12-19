@@ -116,4 +116,11 @@ export class TalentDetailsPage extends CommonRecruitingPage {
 
     await this.buttonPopupMergeContacts.click()
   }
+
+  async waitTalentDetailsOpened (applicationFirstName: string, applicationLastName?: string): Promise<void> {
+    await this.page.waitForSelector(`div[class*="header"] div.name:first-child :has-text("${applicationFirstName}")`)
+    if (applicationLastName != null) {
+      await this.page.waitForSelector(`div[class*="header"] div.name:nth-child(2) :has-text("${applicationFirstName}")`)
+    }
+  }
 }

@@ -15,7 +15,9 @@
 
 import core, {
   Class,
+  ClassifierKind,
   Data,
+  Doc,
   DocumentQuery,
   Hierarchy,
   IdMap,
@@ -23,16 +25,14 @@ import core, {
   Status,
   StatusCategory,
   TxOperations,
-  type AnyAttribute,
-  type RefTo,
-  Doc,
   generateId,
-  ClassifierKind
+  type AnyAttribute,
+  type RefTo
 } from '@hcengineering/core'
+import { PlatformError, getEmbeddedLabel, unknownStatus } from '@hcengineering/platform'
 import { LexoDecimal, LexoNumeralSystem36, LexoRank } from 'lexorank'
 import LexoRankBucket from 'lexorank/lib/lexoRank/lexoRankBucket'
 import task, { Project, ProjectStatus, ProjectType, Task, TaskType } from '.'
-import { getEmbeddedLabel } from '@hcengineering/platform'
 
 /**
  * @public
@@ -196,6 +196,18 @@ export type TaskTypeWithFactory = Omit<Data<TaskType>, 'statuses' | 'parent' | '
 
 type ProjectData = Omit<Data<ProjectType>, 'statuses' | 'private' | 'members' | 'archived' | 'targetClass'>
 
+async function createStates (
+  client: TxOperations,
+  states: Data<Status>[],
+  stateClass: Ref<Class<Status>>
+): Promise<Ref<Status>[]> {
+  const statuses: Ref<Status>[] = []
+  for (const st of states) {
+    statuses.push(await createState(client, stateClass, st))
+  }
+  return statuses
+}
+
 /**
  * @public
  */
@@ -210,64 +222,16 @@ export async function createProjectType (
     return current._id
   }
 
-  async function createStates (states: Data<Status>[], stateClass: Ref<Class<Status>>): Promise<Ref<Status>[]> {
-    const statuses: Ref<Status>[] = []
-    for (const st of states) {
-      statuses.push(await createState(client, stateClass, st))
-    }
-    return statuses
-  }
-
   const _tasks: Ref<TaskType>[] = []
   const tasksData = new Map<Ref<TaskType>, Data<TaskType>>()
   const _statues = new Set<Ref<Status>>()
-  for (const it of tasks) {
-    const { factory, _id: taskId, ...data } = it
-    const statuses = await createStates(factory, data.statusClass)
-    for (const st of statuses) {
-      _statues.add(st)
-    }
-    const tdata = {
-      ...data,
-      parent: _id,
-      statuses
-    }
-
-    const ofClassClass = client.getHierarchy().getClass(data.ofClass)
-
-    tdata.icon = ofClassClass.icon
-
-    if (tdata.targetClass === undefined) {
-      // Create target class for custom field.
-      const targetClassId: Ref<Class<Task>> = generateId()
-      tdata.targetClass = targetClassId
-
-      await client.createDoc(
-        core.class.Mixin,
-        core.space.Model,
-        {
-          extends: data.ofClass,
-          kind: ClassifierKind.MIXIN,
-          label: ofClassClass.label,
-          icon: ofClassClass.icon
-        },
-        targetClassId
-      )
-
-      await client.createMixin(targetClassId, core.class.Mixin, core.space.Model, task.mixin.TaskTypeClass, {
-        taskType: taskId,
-        projectType: _id
-      })
-    }
-    await client.createDoc(task.class.TaskType, core.space.Model, tdata as Data<TaskType>, taskId)
-    tasksData.set(taskId, tdata as Data<TaskType>)
-    _tasks.push(taskId)
-  }
 
   const categoryObj = client.getModel().findObject(data.descriptor)
   if (categoryObj === undefined) {
     throw new Error('category is not found in model')
   }
+
+  await createTaskTypes(tasks, _id, client, _statues, tasksData, _tasks, false)
 
   const baseClassClass = client.getHierarchy().getClass(categoryObj.baseClass)
 
@@ -310,4 +274,107 @@ export async function createProjectType (
   )
 
   return tmpl
+}
+
+/**
+ * @public
+ */
+export async function updateProjectType (
+  client: TxOperations,
+  projectType: Ref<ProjectType>,
+  tasks: TaskTypeWithFactory[]
+): Promise<void> {
+  const current = await client.findOne(task.class.ProjectType, { _id: projectType })
+  if (current === undefined) {
+    throw new PlatformError(unknownStatus('No project type found'))
+  }
+
+  const _tasks: Ref<TaskType>[] = [...current.tasks]
+  const tasksData = new Map<Ref<TaskType>, Data<TaskType>>()
+  const _statues = new Set<Ref<Status>>()
+
+  const hasUpdates = await createTaskTypes(tasks, projectType, client, _statues, tasksData, _tasks, true)
+
+  if (hasUpdates) {
+    const ttypes = await client.findAll<TaskType>(task.class.TaskType, { _id: { $in: _tasks } })
+    const newStatuses = calculateStatuses(
+      {
+        statuses: current.statuses,
+        tasks: _tasks
+      },
+      new Map(ttypes.map((it) => [it._id, it])),
+      []
+    )
+    await client.update(current, {
+      tasks: _tasks,
+      statuses: newStatuses
+    })
+  }
+}
+
+async function createTaskTypes (
+  tasks: TaskTypeWithFactory[],
+  _id: Ref<ProjectType>,
+  client: TxOperations,
+  _statues: Set<Ref<Status>>,
+  tasksData: Map<Ref<TaskType>, Data<TaskType>>,
+  _tasks: Ref<TaskType>[],
+  skipExisting: boolean
+): Promise<boolean> {
+  const existingTaskTypes = await client.findAll(task.class.TaskType, { parent: _id })
+
+  let hasUpdates = false
+  for (const it of tasks) {
+    const { factory, _id: taskId, ...data } = it
+
+    if (skipExisting) {
+      const existingOne = existingTaskTypes.find((tt) => tt.ofClass === data.ofClass)
+      if (existingOne !== undefined) {
+        // We have similar one, let's check categories
+        continue
+      }
+    }
+    hasUpdates = true
+
+    const statuses = await createStates(client, factory, data.statusClass)
+    for (const st of statuses) {
+      _statues.add(st)
+    }
+    const tdata = {
+      ...data,
+      parent: _id,
+      statuses
+    }
+
+    const ofClassClass = client.getHierarchy().getClass(data.ofClass)
+
+    tdata.icon = ofClassClass.icon
+
+    if (tdata.targetClass === undefined) {
+      // Create target class for custom field.
+      const targetClassId: Ref<Class<Task>> = generateId()
+      tdata.targetClass = targetClassId
+
+      await client.createDoc(
+        core.class.Mixin,
+        core.space.Model,
+        {
+          extends: data.ofClass,
+          kind: ClassifierKind.MIXIN,
+          label: ofClassClass.label,
+          icon: ofClassClass.icon
+        },
+        targetClassId
+      )
+
+      await client.createMixin(targetClassId, core.class.Mixin, core.space.Model, task.mixin.TaskTypeClass, {
+        taskType: taskId,
+        projectType: _id
+      })
+    }
+    await client.createDoc(task.class.TaskType, core.space.Model, tdata as Data<TaskType>, taskId)
+    tasksData.set(taskId, tdata as Data<TaskType>)
+    _tasks.push(taskId)
+  }
+  return hasUpdates
 }

@@ -97,7 +97,7 @@
     space: Ref<Project>,
     template: IssueTemplateData,
     parent: Ref<Issue> = tracker.ids.NoParent
-  ): Promise<Ref<Issue>> {
+  ): Promise<Ref<Issue> | undefined> {
     const lastOne = await client.findOne<Issue>(
       tracker.class.Issue,
       { space },
@@ -114,6 +114,10 @@
     )
     const project = await client.findOne(tracker.class.Project, { _id: space })
     const rank = calcRank(lastOne, undefined)
+    const taskType = await client.findOne(task.class.TaskType, { ofClass: tracker.class.Issue })
+    if (taskType === undefined) {
+      return
+    }
     const resId = await client.addCollection(tracker.class.Issue, space, parent, tracker.class.Issue, 'subIssues', {
       title: template.title + ` (${name})`,
       description: template.description,
@@ -133,7 +137,8 @@
       estimation: template.estimation,
       reports: 0,
       relations: [{ _id: id, _class: recruit.class.Vacancy }],
-      childInfo: []
+      childInfo: [],
+      kind: taskType._id
     })
     if ((template.labels?.length ?? 0) > 0) {
       const tagElements = await client.findAll(tags.class.TagElement, { _id: { $in: template.labels } })
@@ -181,8 +186,10 @@
     if (issueTemplates.length > 0) {
       for (const issueTemplate of issueTemplates) {
         const issue = await saveIssue(id, issueTemplate.space, issueTemplate)
-        for (const sub of issueTemplate.children) {
-          await saveIssue(id, issueTemplate.space, sub, issue)
+        if (issue !== undefined) {
+          for (const sub of issueTemplate.children) {
+            await saveIssue(id, issueTemplate.space, sub, issue)
+          }
         }
       }
     }
