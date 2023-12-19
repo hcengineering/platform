@@ -23,15 +23,15 @@ export const defaulOptions: ViewOptions = {
   orderBy: ['modifiedBy', SortingOrder.Descending]
 }
 
-export function isToggleType(viewOption: ViewOptionModel): viewOption is ToggleViewOption {
+export function isToggleType (viewOption: ViewOptionModel): viewOption is ToggleViewOption {
   return viewOption.type === 'toggle'
 }
 
-export function isDropdownType(viewOption: ViewOptionModel): viewOption is DropdownViewOption {
+export function isDropdownType (viewOption: ViewOptionModel): viewOption is DropdownViewOption {
   return viewOption.type === 'dropdown'
 }
 
-export function makeViewOptionsKey(viewlet: Ref<Viewlet>, variant?: string): string {
+export function makeViewOptionsKey (viewlet: Ref<Viewlet>, variant?: string): string {
   const prefix = viewlet + (variant !== undefined ? `-${variant}` : '')
   const loc = getCurrentResolvedLocation()
   loc.fragment = undefined
@@ -39,19 +39,19 @@ export function makeViewOptionsKey(viewlet: Ref<Viewlet>, variant?: string): str
   return `viewOptions:${prefix}:${locationToUrl(loc)}`
 }
 
-export function setViewOptions(viewlet: Viewlet, options: ViewOptions): void {
+export function setViewOptions (viewlet: Viewlet, options: ViewOptions): void {
   const key = makeViewOptionsKey(viewlet._id, viewlet.variant)
   localStorage.setItem(key, JSON.stringify(options))
   setStore(key, options)
 }
 
-function setStore(key: string, options: ViewOptions): void {
+function setStore (key: string, options: ViewOptions): void {
   const map = get(viewOptionStore)
   map.set(key, options)
   viewOptionStore.set(map)
 }
 
-function _getViewOptions(viewlet: Viewlet, viewOptionStore: Map<string, ViewOptions>): ViewOptions | null {
+function _getViewOptions (viewlet: Viewlet, viewOptionStore: Map<string, ViewOptions>): ViewOptions | null {
   const key = makeViewOptionsKey(viewlet._id, viewlet.variant)
   const store = viewOptionStore.get(key)
   if (store !== undefined) {
@@ -64,7 +64,7 @@ function _getViewOptions(viewlet: Viewlet, viewOptionStore: Map<string, ViewOpti
   return res
 }
 
-function getDefaults(viewOptions: ViewOptionsModel): ViewOptions {
+function getDefaults (viewOptions: ViewOptionsModel): ViewOptions {
   const res: ViewOptions = {
     groupBy: [viewOptions.groupBy[0] ?? defaulOptions.groupBy[0]],
     orderBy: viewOptions.orderBy?.[0] ?? defaulOptions.orderBy

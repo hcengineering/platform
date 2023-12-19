@@ -52,7 +52,7 @@
   const query = createQuery()
   // const clazz = client.getHierarchy().getClass(recruit.class.Vacancy)
 
-  function updateObject(_id: Ref<Vacancy>): void {
+  function updateObject (_id: Ref<Vacancy>): void {
     if (lastId !== _id) {
       const prev = lastId
       lastId = _id
@@ -70,7 +70,7 @@
 
   $: updateObject(_id)
 
-  function showMenu(ev?: Event): void {
+  function showMenu (ev?: Event): void {
     if (object !== undefined) {
       showPopup(ContextMenu, { object, excludedActions: [view.action.Open] }, (ev as MouseEvent).target as HTMLElement)
     }

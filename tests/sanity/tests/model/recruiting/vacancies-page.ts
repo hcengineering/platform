@@ -46,15 +46,18 @@ export class VacanciesPage extends CommonRecruitingPage {
 
 
   async rightClickVacancyByName (vacancyName: string): Promise<void> {
-    await this.page.locator('tr', { hasText: vacancyName }).locator('div[class$="firstCell"]').click({ button: "right" })
+    await this.page
+    .locator('tr', { hasText: vacancyName })
+    .locator('div[class$="firstCell"]')
+    .click({ button: "right" })
   }
 
   async archiveVacancyByName (vacancyName: string): Promise<void> {
     await this.rightClickVacancyByName(vacancyName)
-    await this.page.waitForSelector(`div.antiPopup :text("Archive")`)
-    await this.page.locator(`div.antiPopup :text("Archive")`).click()
-    await this.page.waitForSelector(`div.msgbox-container :text("Ok")`)
-    await this.page.locator(`div.msgbox-container :text("Ok")`).click()
+    await this.page.waitForSelector('div.antiPopup :text("Archive")')
+    await this.page.locator('div.antiPopup :text("Archive")').click()
+    await this.page.waitForSelector('div.msgbox-container :text("Ok")')
+    await this.page.locator('div.msgbox-container :text("Ok")').click()
   }
 
   async checkVacancyNotExist (vacancyName: string, message: string): Promise<void> {

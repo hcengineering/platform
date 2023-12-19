@@ -110,7 +110,6 @@ test.describe('Vacancy tests', () => {
   })
 
   test('Filter vacancies', async ({ page }) => {
-    //viable when test set of vacancies fits to single page
     const vacancyName = 'Archive Vacancy ' + generateId(5)
     const navigationMenuPage = new NavigationMenuPage(page)
     await navigationMenuPage.buttonVacancies.click()
@@ -125,16 +124,16 @@ test.describe('Vacancy tests', () => {
 
     await vacanciesPage.checkVacancyNotExist(vacancyName, `Archieved vacancy "${vacancyName}" not visible by default.`)
 
-    await page.click(`button:has-text('View')`)
-    await page.waitForSelector(`.antiCard-menu__item:has-text('Hide archived vacancies')`)
-    await page.click(`.antiCard-menu__item:has-text('Hide archived vacancies')`)
+    await page.click('button:has-text(\'View\')')
+    await page.waitForSelector('.antiCard-menu__item:has-text(\'Hide archived vacancies\')')
+    await page.click('.antiCard-menu__item:has-text(\'Hide archived vacancies\')')
 
     await vacanciesPage.checkVacancyExist(
       vacancyName,
       `Archieved vacancy "${vacancyName}" visible when hide archved off.`
     )
 
-    await page.click(`.antiCard-menu__item:has-text('Hide archived vacancies')`)
+    await page.click('.antiCard-menu__item:has-text(\'Hide archived vacancies\')')
 
     await vacanciesPage.checkVacancyNotExist(
       vacancyName,

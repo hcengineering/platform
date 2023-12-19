@@ -71,28 +71,28 @@ export { default } from './plugin'
 export class TVacancy extends TProject implements Vacancy {
   @Prop(TypeMarkup(), recruit.string.FullDescription)
   @Index(IndexKind.FullText)
-  fullDescription?: string
+    fullDescription?: string
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
-  attachments?: number
+    attachments?: number
 
   @Prop(TypeDate(), recruit.string.Due, recruit.icon.Calendar)
-  dueTo?: Timestamp
+    dueTo?: Timestamp
 
   @Prop(TypeString(), recruit.string.Location, recruit.icon.Location)
   @Index(IndexKind.FullText)
-  location?: string
+    location?: string
 
   @Prop(TypeRef(contact.class.Organization), recruit.string.Company, { icon: contact.icon.Company })
-  company?: Ref<Organization>
+    company?: Ref<Organization>
 
   @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
-  comments?: number
+    comments?: number
 
   @Prop(TypeString(), recruit.string.Vacancy)
   @Index(IndexKind.FullText)
   @Hidden()
-  number!: number
+    number!: number
 }
 
 @Model(recruit.class.Candidates, core.class.Space)
@@ -104,44 +104,44 @@ export class TCandidates extends TSpace implements Candidates {}
 export class TCandidate extends TPerson implements Candidate {
   @Prop(TypeString(), recruit.string.Title)
   @Index(IndexKind.FullText)
-  title?: string
+    title?: string
 
   @Prop(Collection(recruit.class.Applicant), recruit.string.Applications, {
     shortLabel: recruit.string.ApplicationsShort
   })
-  applications?: number
+    applications?: number
 
   @Prop(TypeBoolean(), recruit.string.Onsite)
-  onsite?: boolean
+    onsite?: boolean
 
   @Prop(TypeBoolean(), recruit.string.Remote)
-  remote?: boolean
+    remote?: boolean
 
   @Prop(TypeString(), recruit.string.Source)
   @Index(IndexKind.FullText)
-  source?: string
+    source?: string
 
   @Prop(Collection(tags.class.TagReference, recruit.string.SkillLabel), recruit.string.SkillsLabel, {
     icon: recruit.icon.Skills,
     schema: '3'
   })
-  skills?: number
+    skills?: number
 
   @Prop(Collection(recruit.class.Review, recruit.string.Review), recruit.string.Reviews)
-  reviews?: number
+    reviews?: number
 
   @Prop(
     Collection(recruit.class.ApplicantMatch, getEmbeddedLabel('Vacancy match')),
     getEmbeddedLabel('Vacancy Matches')
   )
-  vacancyMatch?: number
+    vacancyMatch?: number
 }
 
 @Mixin(recruit.mixin.VacancyList, contact.class.Organization)
 @UX(recruit.string.VacancyList, recruit.icon.RecruitApplication, 'CM', 'name')
 export class TVacancyList extends TOrganization implements VacancyList {
   @Prop(Collection(recruit.class.Vacancy), recruit.string.Vacancies)
-  vacancies!: number
+    vacancies!: number
 }
 
 @Model(recruit.class.Applicant, task.class.Task)
@@ -159,7 +159,7 @@ export class TApplicant extends TTask implements Applicant {
   declare space: Ref<Vacancy>
 
   @Prop(TypeDate(), task.string.StartDate)
-  startDate!: Timestamp | null
+    startDate!: Timestamp | null
 
   @Prop(TypeRef(contact.mixin.Employee), recruit.string.AssignedRecruiter)
   @Index(IndexKind.Indexed)
@@ -180,19 +180,19 @@ export class TApplicantMatch extends TAttachedDoc implements ApplicantMatch {
 
   @Prop(TypeBoolean(), getEmbeddedLabel('Complete'))
   @ReadOnly()
-  complete!: boolean
+    complete!: boolean
 
   @Prop(TypeString(), getEmbeddedLabel('Vacancy'))
   @ReadOnly()
-  vacancy!: string
+    vacancy!: string
 
   @Prop(TypeString(), getEmbeddedLabel('Summary'))
   @ReadOnly()
-  summary!: string
+    summary!: string
 
   @Prop(TypeMarkup(), getEmbeddedLabel('Response'))
   @ReadOnly()
-  response!: string
+    response!: string
 }
 
 export function createModel(builder: Builder): void {
@@ -502,7 +502,7 @@ export function createModel(builder: Builder): void {
     recruit.viewlet.VacancyApplicationsEmbeddeed
   )
 
-  //hiding arhived vacancies from vacancy view
+  // hiding arhived vacancies from vacancy view
   const vacancyHideArchivedOption: ViewOptionModel = {
     key: 'hideArchived',
     type: 'toggle',
@@ -743,7 +743,7 @@ export function createModel(builder: Builder): void {
     label: recruit.string.HideDoneState
   }
 
-  //hiding applicants related to archived vacancies from applicants view
+  // hiding applicants related to archived vacancies from applicants view
   const hideApplicantsFromArchivedVacanciesOption: ViewOptionModel = {
     key: 'hideArchivedVacancies',
     type: 'toggle',
@@ -1342,7 +1342,7 @@ export function createModel(builder: Builder): void {
     }
   })
 
-  function createGotoSpecialAction(builder: Builder, id: string, key: KeyBinding, label: IntlString): void {
+  function createGotoSpecialAction (builder: Builder, id: string, key: KeyBinding, label: IntlString): void {
     createNavigateAction(builder, key, label, recruit.app.Recruit as Ref<Application>, {
       application: recruitId,
       mode: 'special',

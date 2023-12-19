@@ -40,7 +40,7 @@
     }
   })
 
-  function selectGrouping(value: string, i: number) {
+  function selectGrouping (value: string, i: number) {
     groups[i] = value
     if (value === noCategory) {
       groups.length = i + 1
@@ -55,7 +55,7 @@
     })
   }
 
-  function getItems(groupBy: DropdownIntlItem[], i: number, current: string[]): DropdownIntlItem[] {
+  function getItems (groupBy: DropdownIntlItem[], i: number, current: string[]): DropdownIntlItem[] {
     const notAllowed = current.slice(0, i)
     return groupBy.filter((p) => !notAllowed.includes(p.id as string))
   }
