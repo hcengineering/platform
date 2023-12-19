@@ -195,7 +195,7 @@ export class TApplicantMatch extends TAttachedDoc implements ApplicantMatch {
     response!: string
 }
 
-export function createModel(builder: Builder): void {
+export function createModel (builder: Builder): void {
   builder.createModel(TVacancy, TCandidates, TCandidate, TApplicant, TReview, TOpinion, TVacancyList, TApplicantMatch)
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, activity.mixin.ActivityDoc, {

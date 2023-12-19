@@ -55,7 +55,7 @@
   let preference: ViewletPreference | undefined
   let loading = true
 
-  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
+  $: viewOptions = getViewOptions (viewlet, $viewOptionStore)
 </script>
 
 <div class="ac-header full divide">

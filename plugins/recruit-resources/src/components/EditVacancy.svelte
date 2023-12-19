@@ -80,7 +80,7 @@
   const hierarchy = client.getHierarchy()
   let mixins: Mixin<Doc>[] = []
 
-  function getMixins(object: Doc, showAllMixins: boolean): void {
+  function getMixins (object: Doc, showAllMixins: boolean): void {
     if (object === undefined) return
     const descendants = hierarchy.getDescendants(core.class.Doc).map((p) => hierarchy.getClass(p))
 
@@ -98,7 +98,7 @@
   let descriptionBox: AttachmentStyleBoxEditor
   $: descriptionKey = client.getHierarchy().getAttribute(recruit.class.Vacancy, 'fullDescription')
   let saved = false
-  async function save() {
+  async function save () {
     if (!object) {
       return
     }

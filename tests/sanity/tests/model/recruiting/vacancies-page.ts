@@ -12,7 +12,7 @@ export class VacanciesPage extends CommonRecruitingPage {
   readonly buttonCreateVacancyLocation: Locator
   readonly buttonCreateVacancy: Locator
 
-  constructor (page: Page) {
+  constructor(page: Page) {
     super(page)
     this.page = page
     this.pageHeader = page.locator('span[class*="header"]', { hasText: 'Vacancies' })
@@ -43,13 +43,11 @@ export class VacanciesPage extends CommonRecruitingPage {
     await this.page.locator('tr', { hasText: vacancyName }).locator('div[class$="firstCell"]').click()
   }
 
-
-
   async rightClickVacancyByName (vacancyName: string): Promise<void> {
     await this.page
-    .locator('tr', { hasText: vacancyName })
-    .locator('div[class$="firstCell"]')
-    .click({ button: "right" })
+      .locator('tr', { hasText: vacancyName })
+      .locator('div[class$="firstCell"]')
+      .click({ button: 'right' })
   }
 
   async archiveVacancyByName (vacancyName: string): Promise<void> {

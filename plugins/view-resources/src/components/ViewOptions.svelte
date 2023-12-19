@@ -99,26 +99,26 @@
     {/each}
   {/if}
   {#if hasMultipleSelections(config.orderBy)}
-  <div class="antiCard-menu__item ordering">
-    <span class="overflow-label"><Label label={view.string.Ordering} /></span>
-    <DropdownLabelsIntl
-      label={view.string.Ordering}
-      kind={'regular'}
-      size={'medium'}
-      items={orderBy}
-      selected={viewOptions.orderBy?.[0]}
-      width="10rem"
-      justify="left"
-      on:selected={(e) => {
-        const key = e.detail
-        const value = config.orderBy.find((p) => p[0] === key)
-        if (value !== undefined) {
-          viewOptions.orderBy = value
-          dispatch('update', { key: 'orderBy', value })
-        }
-      }}
-    />
-  </div>
+    <div class="antiCard-menu__item ordering">
+      <span class="overflow-label"><Label label={view.string.Ordering} /></span>
+      <DropdownLabelsIntl
+        label={view.string.Ordering}
+        kind={'regular'}
+        size={'medium'}
+        items={orderBy}
+        selected={viewOptions.orderBy?.[0]}
+        width="10rem"
+        justify="left"
+        on:selected={(e) => {
+          const key = e.detail
+          const value = config.orderBy.find((p) => p[0] === key)
+          if (value !== undefined) {
+            viewOptions.orderBy = value
+            dispatch('update', { key: 'orderBy', value })
+          }
+        }}
+      />
+    </div>
   {/if}
   {#if visibleOthers.length > 0 && (hasMultipleSelections(config.groupBy) || hasMultipleSelections(config.orderBy))}
     <div class="antiCard-menu__divider" />

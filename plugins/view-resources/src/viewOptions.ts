@@ -75,7 +75,7 @@ function getDefaults (viewOptions: ViewOptionsModel): ViewOptions {
   return res
 }
 
-export function getViewOptions(
+export function getViewOptions (
   viewlet: Viewlet | undefined,
   viewOptionStore: Map<string, ViewOptions>,
   defaults = defaulOptions
@@ -88,7 +88,7 @@ export function getViewOptions(
   return viewlet.viewOptions != null ? getDefaults(viewlet.viewOptions) : defaults
 }
 
-export function migrateViewOpttions(): void {
+export function migrateViewOpttions (): void {
   for (let index = 0; index < localStorage.length; index++) {
     const key = localStorage.key(index)
     if (key === null) continue
@@ -119,7 +119,7 @@ export function migrateViewOpttions(): void {
   }
 }
 
-export async function showEmptyGroups(
+export async function showEmptyGroups (
   _class: Ref<Class<Doc>>,
   query: DocumentQuery<Doc> | undefined,
   space: Ref<Space> | undefined,
@@ -165,14 +165,14 @@ export const CategoryQuery = {
   queries: new Map<string, LiveQuery>(),
   results: new Map<string, any[]>(),
 
-  getLiveQuery(index: string): LiveQuery {
+  getLiveQuery (index: string): LiveQuery {
     const current = CategoryQuery.queries.get(index)
     if (current !== undefined) return current
     const query = createQuery(true)
     this.queries.set(index, query)
     return query
   },
-  remove(index: string): void {
+  remove (index: string): void {
     const lq = this.queries.get(index)
     lq?.unsubscribe()
     this.queries.delete(index)
