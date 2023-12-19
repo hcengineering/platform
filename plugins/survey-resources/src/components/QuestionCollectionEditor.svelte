@@ -50,7 +50,7 @@
   let questions: Question[] = []
   let isMoving = false
 
-  $: if (object.questions > 0) {
+  $: {
     query.query<Question>(
       survey.class.Question,
       { space: object.space, attachedTo: object._id },
@@ -59,9 +59,6 @@
       },
       { sort: { rank: SortingOrder.Ascending } }
     )
-  } else {
-    questions = []
-    query.unsubscribe()
   }
 
   async function onClickAdd (e: MouseEvent, index: number | null): Promise<void> {
@@ -109,50 +106,54 @@
     </span>
   </div>
 
-  {#if questions.length > 0}
-    {#each questions as question, index (question._id)}
-      {#if index === 0}
-        <div class="divider">
-          <Button icon={IconAdd} shape="circle" size="x-small" on:click={(e) => onClickAdd(e, index)} />
-        </div>
-      {/if}
-      <QuestionEditor object={questions[index]} {index}>
-        <Button
-          icon={IconUp}
-          shape="circle"
-          kind="ghost"
-          disabled={index === 0 || isMoving}
-          on:click={() => {
-            void onClickMove(index, true)
-          }}
-        />
-        <Button
-          icon={IconDown}
-          shape="circle"
-          kind="ghost"
-          disabled={index === questions.length - 1 || isMoving}
-          on:click={() => {
-            void onClickMove(index, false)
-          }}
-        />
-        <Button
-          icon={IconDelete}
-          shape="circle"
-          kind="ghost"
-          on:click={() => {
-            void onClickDelete(index)
-          }}
-        />
-      </QuestionEditor>
+  {#each questions as question, index (question._id)}
+    {#if index === 0}
       <div class="divider">
         <Button icon={IconAdd} shape="circle" size="x-small" on:click={(e) => onClickAdd(e, index)} />
       </div>
-    {/each}
+    {/if}
+    <QuestionEditor object={questions[index]} {index}>
+      <Button
+        icon={IconUp}
+        shape="circle"
+        kind="ghost"
+        disabled={index === 0 || isMoving}
+        on:click={() => {
+          void onClickMove(index, true)
+        }}
+      />
+      <Button
+        icon={IconDown}
+        shape="circle"
+        kind="ghost"
+        disabled={index === questions.length - 1 || isMoving}
+        on:click={() => {
+          void onClickMove(index, false)
+        }}
+      />
+      <Button
+        icon={IconDelete}
+        shape="circle"
+        kind="ghost"
+        on:click={() => {
+          void onClickDelete(index)
+        }}
+      />
+    </QuestionEditor>
+    <div class="divider">
+      <Button icon={IconAdd} shape="circle" size="x-small" on:click={(e) => onClickAdd(e, index)} />
+    </div>
   {:else}
     <div class="antiSection-empty mt-4">
-      <Button icon={IconAdd} width="100%" kind="ghost" on:click={(e) => onClickAdd(e, null)} />
+      <Button
+        icon={IconAdd}
+        label={survey.string.Question}
+        width="100%"
+        kind="ghost"
+        on:click={(e) => onClickAdd(e, null)}
+      />
     </div>
-  {/if}
+  {/each}
 </div>
 
 <style lang="scss">
