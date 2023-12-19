@@ -40,7 +40,7 @@ test.describe('actions tests', () => {
 
     await page.click('div.actionsHeader input.actionsInput')
     await page.fill('div.actionsHeader input.actionsInput', 'go to ')
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(1000)
 
     expect(await page.locator('div.selectPopup div.list-item :text("Go To Vacancies")').count()).toBe(1)
     await page.click('div.selectPopup div.list-item :text("Go To Vacancies")', { delay: 100 })
@@ -61,7 +61,8 @@ test.describe('actions tests', () => {
 
     await page.click('div.actionsHeader input.actionsInput')
     await page.fill('div.actionsHeader input.actionsInput', 'go to ')
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(1000)
+
     expect(await page.locator('div.selectPopup :text("Go To Applications")').count()).toBe(1)
     await page.click('div.selectPopup :text("Go To Applications")', { delay: 100 })
 
