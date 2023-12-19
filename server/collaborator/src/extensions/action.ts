@@ -97,7 +97,7 @@ export class ActionsExtension implements Extension {
     const { sourceId, targetId } = action.params
     console.info(`copy document content ${sourceId} -> ${targetId}`)
 
-    const _context: Context = { ...context, initialContentId: '' }
+    const _context: Context = { ...context, initialContentId: '', targetContentId: '' }
 
     let source: Document | null = null
     let target: Document | null = null
@@ -151,7 +151,7 @@ export class ActionsExtension implements Extension {
       return
     }
 
-    const _context: Context = { ...context, initialContentId: '' }
+    const _context: Context = { ...context, initialContentId: '', targetContentId: '' }
 
     let doc: Document | null = null
 

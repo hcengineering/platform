@@ -17212,16 +17212,6 @@ packages:
     engines: {node: '>=0.4'}
     dev: false
 
-  /y-indexeddb@9.0.12(yjs@13.6.8):
-    resolution: {integrity: sha512-9oCFRSPPzBK7/w5vOkJBaVCQZKHXB/v6SIT+WYhnJxlEC61juqG0hBrAf+y3gmSMLFLwICNH9nQ53uscuse6Hg==}
-    engines: {node: '>=16.0.0', npm: '>=8.0.0'}
-    peerDependencies:
-      yjs: ^13.0.0
-    dependencies:
-      lib0: 0.2.88
-      yjs: 13.6.8
-    dev: false
-
   /y-leveldb@0.1.2(yjs@13.6.8):
     resolution: {integrity: sha512-6ulEn5AXfXJYi89rXPEg2mMHAyyw8+ZfeMMdOtBbV8FJpQ1NOrcgi6DTAcXof0dap84NjHPT2+9d0rb6cFsjEg==}
     requiresBuild: true
@@ -17229,7 +17219,7 @@ packages:
       yjs: ^13.0.0
     dependencies:
       level: 6.0.1
-      lib0: 0.2.86
+      lib0: 0.2.88
       yjs: 13.6.8
     dev: false
     optional: true
@@ -17254,7 +17244,7 @@ packages:
     peerDependencies:
       yjs: ^13.0.0
     dependencies:
-      lib0: 0.2.86
+      lib0: 0.2.88
       yjs: 13.6.8
     dev: false
 
@@ -18171,7 +18161,7 @@ packages:
     dev: false
 
   file:projects/collaborator.tgz(@tiptap/pm@2.1.12)(bufferutil@4.0.7)(prosemirror-model@1.19.3)(svelte@4.2.5):
-    resolution: {integrity: sha512-bxp2UhqZ3zDmiL1eKcblQOwNX2IgLU4dVndGsuT3cCuBela95l/Rib9tI5ZsoO0dsPvOZksg8lelW2dCo4kBfA==, tarball: file:projects/collaborator.tgz}
+    resolution: {integrity: sha512-37tcslNB1OuZncrABis1O54JHogvoU8oT3FYo91epmBvzoriNrS6wYuV2Odc+UI4frX6bZGQJEIYxmNYLNMajQ==, tarball: file:projects/collaborator.tgz}
     id: file:projects/collaborator.tgz
     name: '@rush-temp/collaborator'
     version: 0.0.0
@@ -18201,6 +18191,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.54.0)
       express: 4.18.2
       jest: 29.7.0(@types/node@16.11.68)(ts-node@10.9.1)
+      mongodb: 4.17.1
       prettier: 3.1.0
       prettier-plugin-svelte: 3.1.0(prettier@3.1.0)(svelte@4.2.5)
       ts-jest: 29.1.1(esbuild@0.16.17)(jest@29.7.0)(typescript@5.2.2)
@@ -18215,6 +18206,7 @@ packages:
       - '@swc/core'
       - '@swc/wasm'
       - '@tiptap/pm'
+      - aws-crt
       - babel-jest
       - babel-plugin-macros
       - bufferutil
@@ -23836,7 +23828,6 @@ packages:
       svelte-preprocess: 5.1.0(postcss-load-config@4.0.1)(postcss@8.4.31)(sass@1.69.0)(svelte@4.2.5)(typescript@5.2.2)
       ts-jest: 29.1.1(esbuild@0.16.17)(jest@29.7.0)(typescript@5.2.2)
       typescript: 5.2.2
-      y-indexeddb: 9.0.12(yjs@13.6.8)
       y-prosemirror: 1.2.1(prosemirror-model@1.19.3)(yjs@13.6.8)
       y-websocket: 1.5.0(yjs@13.6.8)
       yjs: 13.6.8

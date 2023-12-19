@@ -17,8 +17,10 @@ import { Token, decodeToken } from '@hcengineering/server-token'
 import { onAuthenticatePayload } from '@hocuspocus/server'
 
 export interface Context {
-  token: Token
+  token: string
+  decodedToken: Token
   initialContentId: string
+  targetContentId: string
 }
 
 export type withContext<T> = Omit<T, 'context'> & {
@@ -26,12 +28,15 @@ export type withContext<T> = Omit<T, 'context'> & {
 }
 
 export function buildContext (data: onAuthenticatePayload): Context {
-  const token = decodeToken(data.token)
+  const decodedToken = decodeToken(data.token)
   const initialContentId = data.requestParameters.get('initialContentId') as string
+  const targetContentId = data.requestParameters.get('targetContentId') as string
 
   const context: Context = {
-    token,
-    initialContentId: initialContentId ?? ''
+    decodedToken,
+    token: data.token,
+    initialContentId: initialContentId ?? '',
+    targetContentId: targetContentId ?? ''
   }
 
   return context

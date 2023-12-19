@@ -17,6 +17,7 @@
 import { MinioService } from '@hcengineering/minio'
 import { setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
+import { MongoClient } from 'mongodb'
 
 import config from './config'
 import { metricsContext } from './metrics'
@@ -33,7 +34,7 @@ export async function startCollaborator (): Promise<void> {
     minioPort = parseInt(sp[1])
   }
 
-  const minio = new MinioService({
+  const minioClient = new MinioService({
     endPoint: minioEndpoint,
     port: minioPort,
     useSSL: false,
@@ -41,9 +42,12 @@ export async function startCollaborator (): Promise<void> {
     secretKey: config.MinioSecretKey
   })
 
-  const shutdown = await start(metricsContext, config, minio)
+  const mongoClient = await MongoClient.connect(config.MongoUrl)
+
+  const shutdown = await start(metricsContext, config, minioClient, mongoClient)
 
   const close = (): void => {
+    void mongoClient.close()
     void shutdown()
   }
 

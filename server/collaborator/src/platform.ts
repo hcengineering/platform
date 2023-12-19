@@ -17,14 +17,13 @@ import client from '@hcengineering/client'
 import clientResources from '@hcengineering/client-resources'
 import core, { Client, TxOperations } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
-import { Token, generateToken } from '@hcengineering/server-token'
+import { Token } from '@hcengineering/server-token'
 import config from './config'
 
 // eslint-disable-next-line
 const WebSocket = require('ws')
 
-export async function connect (transactorUrl: string, token: Token): Promise<Client> {
-  const encodedToken = generateToken(token.email, token.workspace)
+export async function connect (transactorUrl: string, token: string): Promise<Client> {
   // We need to override default factory with 'ws' one.
   setMetadata(client.metadata.ClientSocketFactory, (url) => {
     return new WebSocket(url, {
@@ -33,7 +32,7 @@ export async function connect (transactorUrl: string, token: Token): Promise<Cli
       }
     })
   })
-  return await (await clientResources()).function.GetClient(encodedToken, transactorUrl)
+  return await (await clientResources()).function.GetClient(token, transactorUrl)
 }
 
 export async function getTxOperations (client: Client, token: Token, isDerived: boolean = false): Promise<TxOperations> {

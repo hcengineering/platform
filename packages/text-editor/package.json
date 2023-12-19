@@ -71,7 +71,6 @@
     "yjs": "^13.5.52",
     "y-websocket": "^1.5.0",
     "y-prosemirror": "^1.2.1",
-    "y-indexeddb": "^9.0.12",
     "rfc6902": "^5.0.1",
     "diff": "^5.1.0",
     "slugify": "^1.6.6"

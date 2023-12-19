@@ -28,10 +28,12 @@ import { WebSocket, WebSocketServer } from 'ws'
 import { Config } from './config'
 import { ActionsExtension } from './extensions/action'
 import { Context, buildContext } from './context'
-import { MinioStorageExtension } from './extensions/storage/minio'
-import { PlatformStorageExtension } from './extensions/storage/platform'
-import { RoutedStorageExtension } from './extensions/storage/router'
 import { HtmlTransformer } from './transformers/html'
+import { MinioStorageAdapter } from './storage/minio'
+import { MongodbStorageAdapter } from './storage/mongodb'
+import { PlatformStorageAdapter } from './storage/platform'
+import { StorageExtension } from './extensions/storage'
+import { RouterStorageAdapter } from './storage/router'
 
 const gcEnabled = process.env.GC !== 'false' && process.env.GC !== '0'
 
@@ -43,7 +45,12 @@ export type Shutdown = () => Promise<void>
 /**
  * @public
  */
-export async function start (ctx: MeasureContext, config: Config, minio: MinioService): Promise<Shutdown> {
+export async function start (
+  ctx: MeasureContext,
+  config: Config,
+  minio: MinioService,
+  mongo: MongoClient
+): Promise<Shutdown> {
   const port = config.Port
   console.log(`starting server on :${port} ...`)
 
@@ -65,7 +72,8 @@ export async function start (ctx: MeasureContext, config: Config, minio: MinioSe
     })
   )
 
-  const mongoClient = await MongoClient.connect(config.MongoUrl)
+  const extensionsCtx = ctx.newChild('extensions', {})
+  const storageCtx = ctx.newChild('storage', {})
 
   const hocuspocus = new Hocuspocus({
     address: '0.0.0.0',
@@ -102,24 +110,27 @@ export async function start (ctx: MeasureContext, config: Config, minio: MinioSe
 
     extensions: [
       new ActionsExtension({
-        ctx: ctx.newChild('actions', {}),
+        ctx: extensionsCtx.newChild('actions', {}),
         transformer: new HtmlTransformer(defaultExtensions)
       }),
-      new RoutedStorageExtension({
-        default: 'minio',
-        extensions: {
-          minio: new MinioStorageExtension({
-            ctx: ctx.newChild('minio', {}),
-            minio,
-            transactorUrl: config.TransactorUrl
-          }),
-          platform: new PlatformStorageExtension({
-            ctx: ctx.newChild('platform', {}),
-            transformer: new HtmlTransformer(defaultExtensions),
-            transactorUrl: config.TransactorUrl,
-            mongoClient
-          })
-        }
+      new StorageExtension({
+        ctx: extensionsCtx.newChild('storage', {}),
+        adapter: new RouterStorageAdapter(
+          {
+            minio: new MinioStorageAdapter(storageCtx.newChild('minio', {}), minio),
+            mongodb: new MongodbStorageAdapter(
+              storageCtx.newChild('mongodb', {}),
+              mongo,
+              new HtmlTransformer(defaultExtensions)
+            ),
+            platform: new PlatformStorageAdapter(
+              storageCtx.newChild('platform', {}),
+              config.TransactorUrl,
+              new HtmlTransformer(defaultExtensions)
+            )
+          },
+          'minio'
+        )
       })
     ],
 
@@ -166,6 +177,5 @@ export async function start (ctx: MeasureContext, config: Config, minio: MinioSe
 
   return async () => {
     server.close()
-    await mongoClient.close()
   }
 }
