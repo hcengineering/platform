@@ -52,7 +52,7 @@
   const query = createQuery()
   // const clazz = client.getHierarchy().getClass(recruit.class.Vacancy)
 
-  function updateObject (_id: Ref<Vacancy>): void {
+  function updateObject(_id: Ref<Vacancy>): void {
     if (lastId !== _id) {
       const prev = lastId
       lastId = _id
@@ -70,7 +70,7 @@
 
   $: updateObject(_id)
 
-  function showMenu (ev?: Event): void {
+  function showMenu(ev?: Event): void {
     if (object !== undefined) {
       showPopup(ContextMenu, { object, excludedActions: [view.action.Open] }, (ev as MouseEvent).target as HTMLElement)
     }
@@ -80,7 +80,7 @@
   const hierarchy = client.getHierarchy()
   let mixins: Mixin<Doc>[] = []
 
-  function getMixins (object: Doc, showAllMixins: boolean): void {
+  function getMixins(object: Doc, showAllMixins: boolean): void {
     if (object === undefined) return
     const descendants = hierarchy.getDescendants(core.class.Doc).map((p) => hierarchy.getClass(p))
 
@@ -98,7 +98,7 @@
   let descriptionBox: AttachmentStyleBoxEditor
   $: descriptionKey = client.getHierarchy().getAttribute(recruit.class.Vacancy, 'fullDescription')
   let saved = false
-  async function save () {
+  async function save() {
     if (!object) {
       return
     }

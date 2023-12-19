@@ -23,15 +23,15 @@ export const defaulOptions: ViewOptions = {
   orderBy: ['modifiedBy', SortingOrder.Descending]
 }
 
-export function isToggleType (viewOption: ViewOptionModel): viewOption is ToggleViewOption {
+export function isToggleType(viewOption: ViewOptionModel): viewOption is ToggleViewOption {
   return viewOption.type === 'toggle'
 }
 
-export function isDropdownType (viewOption: ViewOptionModel): viewOption is DropdownViewOption {
+export function isDropdownType(viewOption: ViewOptionModel): viewOption is DropdownViewOption {
   return viewOption.type === 'dropdown'
 }
 
-export function makeViewOptionsKey (viewlet: Ref<Viewlet>, variant?: string): string {
+export function makeViewOptionsKey(viewlet: Ref<Viewlet>, variant?: string): string {
   const prefix = viewlet + (variant !== undefined ? `-${variant}` : '')
   const loc = getCurrentResolvedLocation()
   loc.fragment = undefined
@@ -39,19 +39,19 @@ export function makeViewOptionsKey (viewlet: Ref<Viewlet>, variant?: string): st
   return `viewOptions:${prefix}:${locationToUrl(loc)}`
 }
 
-export function setViewOptions (viewlet: Viewlet, options: ViewOptions): void {
+export function setViewOptions(viewlet: Viewlet, options: ViewOptions): void {
   const key = makeViewOptionsKey(viewlet._id, viewlet.variant)
   localStorage.setItem(key, JSON.stringify(options))
   setStore(key, options)
 }
 
-function setStore (key: string, options: ViewOptions): void {
+function setStore(key: string, options: ViewOptions): void {
   const map = get(viewOptionStore)
   map.set(key, options)
   viewOptionStore.set(map)
 }
 
-function _getViewOptions (viewlet: Viewlet, viewOptionStore: Map<string, ViewOptions>): ViewOptions | null {
+function _getViewOptions(viewlet: Viewlet, viewOptionStore: Map<string, ViewOptions>): ViewOptions | null {
   const key = makeViewOptionsKey(viewlet._id, viewlet.variant)
   const store = viewOptionStore.get(key)
   if (store !== undefined) {
@@ -64,10 +64,10 @@ function _getViewOptions (viewlet: Viewlet, viewOptionStore: Map<string, ViewOpt
   return res
 }
 
-function getDefaults (viewOptions: ViewOptionsModel): ViewOptions {
+function getDefaults(viewOptions: ViewOptionsModel): ViewOptions {
   const res: ViewOptions = {
-    groupBy: [viewOptions.groupBy[0]],
-    orderBy: viewOptions.orderBy?.[0]
+    groupBy: [viewOptions.groupBy[0] ?? defaulOptions.groupBy[0]],
+    orderBy: viewOptions.orderBy?.[0] ?? defaulOptions.orderBy
   }
   for (const opt of viewOptions.other) {
     res[opt.key] = opt.defaultValue
@@ -75,7 +75,7 @@ function getDefaults (viewOptions: ViewOptionsModel): ViewOptions {
   return res
 }
 
-export function getViewOptions (
+export function getViewOptions(
   viewlet: Viewlet | undefined,
   viewOptionStore: Map<string, ViewOptions>,
   defaults = defaulOptions
@@ -88,7 +88,7 @@ export function getViewOptions (
   return viewlet.viewOptions != null ? getDefaults(viewlet.viewOptions) : defaults
 }
 
-export function migrateViewOpttions (): void {
+export function migrateViewOpttions(): void {
   for (let index = 0; index < localStorage.length; index++) {
     const key = localStorage.key(index)
     if (key === null) continue
@@ -119,7 +119,7 @@ export function migrateViewOpttions (): void {
   }
 }
 
-export async function showEmptyGroups (
+export async function showEmptyGroups(
   _class: Ref<Class<Doc>>,
   query: DocumentQuery<Doc> | undefined,
   space: Ref<Space> | undefined,
@@ -165,14 +165,14 @@ export const CategoryQuery = {
   queries: new Map<string, LiveQuery>(),
   results: new Map<string, any[]>(),
 
-  getLiveQuery (index: string): LiveQuery {
+  getLiveQuery(index: string): LiveQuery {
     const current = CategoryQuery.queries.get(index)
     if (current !== undefined) return current
     const query = createQuery(true)
     this.queries.set(index, query)
     return query
   },
-  remove (index: string): void {
+  remove(index: string): void {
     const lq = this.queries.get(index)
     lq?.unsubscribe()
     this.queries.delete(index)
