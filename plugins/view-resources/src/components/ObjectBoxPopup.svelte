@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Person } from '@hcengineering/contact'
-  import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
+  import { type Class, type Doc, type DocumentQuery, type FindOptions, type Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import presentation, { ObjectCreate, ObjectPopup } from '@hcengineering/presentation'
   import ObjectPresenter from './ObjectPresenter.svelte'
@@ -34,6 +34,7 @@
   export let create: ObjectCreate | undefined = undefined
   export let searchField: string = 'name'
   export let docProps: Record<string, any> = {}
+  export let groupBy = '_class'
 </script>
 
 <ObjectPopup
@@ -46,7 +47,7 @@
   {titleDeselect}
   {placeholder}
   {docQuery}
-  groupBy={'_class'}
+  {groupBy}
   bind:selectedObjects
   bind:ignoreObjects
   {shadows}

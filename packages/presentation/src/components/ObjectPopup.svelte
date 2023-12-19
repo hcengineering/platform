@@ -13,7 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
+  import {
+    getObjectValue,
+    type Class,
+    type Doc,
+    type DocumentQuery,
+    type FindOptions,
+    type Ref
+  } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import { Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -77,8 +84,8 @@
     },
     (result) => {
       result.sort((a, b) => {
-        const aval: string = `${(a as any)[groupBy]}`
-        const bval: string = `${(b as any)[groupBy]}`
+        const aval: string = `${getObjectValue(groupBy, a as any)}`
+        const bval: string = `${getObjectValue(groupBy, b as any)}`
         return aval.localeCompare(bval)
       })
       if (created.length > 0) {
