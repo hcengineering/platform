@@ -69,7 +69,7 @@
   const hasMultipleSelections = (varTocheck: any) => {
     if (!varTocheck) return false
     if (Array.isArray(varTocheck)) {
-      return varTocheck.filter((item) => item != undefined && item != null && item != '').length > 1
+      return varTocheck.filter((item) => item !== undefined && item !== null && item != '').length > 1
     }
     return true
   }
