@@ -20,7 +20,7 @@ import workbench from '@hcengineering/model-workbench'
 import {
   type QuestionData,
   type QuestionDataEditor,
-  type QuestionDataEditorComponent,
+  type QuestionDataEditorComponentTypeRef,
   surveyId
 } from '@hcengineering/survey'
 import survey from './plugin'
@@ -55,15 +55,13 @@ export function createModel (builder: Builder): void {
 export function defineQuestionDataEditor<TQuestionData extends QuestionData> (
   builder: Builder,
   questionClassRef: Ref<Class<TQuestionData>>,
-  editor: QuestionDataEditorComponent<TQuestionData>
+  editor: QuestionDataEditorComponentTypeRef<TQuestionData>
 ): void {
   builder.mixin<Class<TQuestionData>, QuestionDataEditor<TQuestionData>>(
     questionClassRef,
     core.class.Class,
     survey.mixin.QuestionDataEditor,
-    {
-      editor
-    }
+    { editor }
   )
 }
 

@@ -23250,7 +23250,7 @@ packages:
     dev: false
 
   file:projects/survey-resources.tgz(@types/node@16.11.68)(esbuild@0.16.17)(postcss-load-config@4.0.1)(postcss@8.4.31)(ts-node@10.9.1)(typescript@5.2.2):
-    resolution: {integrity: sha512-tuXhGdR2ZZ78vGl+Ij7HcMYBWRikwGCdfSqOCTjlXKYzQNcZ3R17J4M7yGRT6QlIW3/CmniOIO+TQeAVCuY7Dw==, tarball: file:projects/survey-resources.tgz}
+    resolution: {integrity: sha512-yRvwCI6SdJT4Oy33UxiZqP9AiWgJ85LwmCoX1b/zoKzBWq7s5yCOCfj/r/9w/67o1/kQkihP84NIx0IXn0Ycww==, tarball: file:projects/survey-resources.tgz}
     id: file:projects/survey-resources.tgz
     name: '@rush-temp/survey-resources'
     version: 0.0.0
@@ -23264,6 +23264,7 @@ packages:
       eslint-plugin-n: 15.7.0(eslint@8.54.0)
       eslint-plugin-promise: 6.1.1(eslint@8.54.0)
       eslint-plugin-svelte: 2.35.0(eslint@8.54.0)(svelte@4.2.5)(ts-node@10.9.1)
+      fast-equals: 2.0.4
       jest: 29.7.0(@types/node@16.11.68)(ts-node@10.9.1)
       lexorank: 1.0.5
       prettier: 3.1.0

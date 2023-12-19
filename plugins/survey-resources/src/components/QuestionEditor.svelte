@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import { Button, Icon, IconCheck, IconEdit, IconUndo, Label } from '@hcengineering/ui'
+  import { Button, Icon, Label, Loading } from '@hcengineering/ui'
   import { getClient } from '@hcengineering/presentation'
   import { Question } from '@hcengineering/survey'
   import { Class } from '@hcengineering/core'
@@ -22,6 +22,7 @@
   import { ComponentType } from 'svelte'
   import { getResource } from '@hcengineering/platform'
   import { questionUpdate } from '../functions/questionUpdate'
+  import { deepEqual } from 'fast-equals'
 
   export let index: number = 0
   export let object: Question
@@ -29,73 +30,59 @@
   type Data = (typeof object)['data']
 
   const client = getClient()
-  let isEditing = false
-  let isSubmitting = false
-  let draftData: Data | null = null
+  const hierarchy = client.getHierarchy()
+
   let dataClass: Class<Data>
   let dataEditorComponent: Promise<ComponentType>
-
-  $: {
-    const hierarchy = getClient().getHierarchy()
+  $: if (object.data._class !== dataClass?._id) {
     dataClass = hierarchy.getClass<Data>(object.data._class)
     dataEditorComponent = getResource(hierarchy.as(dataClass, survey.mixin.QuestionDataEditor).editor)
   }
 
-  export function startEditing (): void {
-    draftData = structuredClone(object.data)
-    isEditing = true
+  let data: Data = object.data
+  $: if (!deepEqual(data, object.data)) {
+    data = object.data
   }
 
-  export async function commit (): Promise<void> {
-    if (draftData !== null) {
-      isSubmitting = true
-      await questionUpdate(client, object, { data: draftData })
-      isSubmitting = false
-    }
-    isEditing = false
-  }
+  let isPreviewing = false
+  let isSubmitting = false
 
-  export function rollback (): void {
-    isEditing = false
-    draftData = null
+  async function submit (data: Data): Promise<void> {
+    isSubmitting = true
+    await questionUpdate(client, object, { data })
+    isSubmitting = false
   }
 </script>
 
-<form class="root border-divider-color">
+<div class="root border-divider-color">
   <div
-    class="flex flex-row-center flex-stretch flex-gap-1 background-comp-header-color bottom-divider pl-4 pr-2 pt-1 pb-1"
+    class="flex flex-row-center flex-stretch flex-gap-1 background-comp-header-color bottom-divider pl-4 pr-4 pt-1 pb-1"
   >
     <div class="index">{index + 1}.</div>
     <div class="flex flex-row-center flex-gap-1 flex-grow">
-      {#if dataClass.icon}
+      {#if isSubmitting}
+        <Loading size="inline" shrink />
+      {:else if dataClass.icon}
         <Icon icon={dataClass.icon} size="small" />
       {/if}
       <Label label={dataClass.label} />
     </div>
-    <Button icon={IconEdit} disabled={isEditing} shape="circle" kind="ghost" on:click={startEditing} />
+    <Button
+      icon={survey.icon.Eye}
+      shape="circle"
+      kind={isPreviewing ? 'primary' : 'ghost'}
+      on:click={() => {
+        isPreviewing = !isPreviewing
+      }}
+    />
     <slot />
   </div>
   {#await dataEditorComponent then instance}
-    <div class="root-editor pl-4 pt-4 pb-4 pr-2">
-      {#if draftData !== null && isEditing}
-        <svelte:component this={instance} bind:object={draftData} editable={isEditing} />
-      {:else}
-        <svelte:component this={instance} object={object.data} editable={false} />
-      {/if}
+    <div class="root-editor pl-4 pt-4 pb-4 pr-4">
+      <svelte:component this={instance} editable={!isPreviewing} object={data} {submit} />
     </div>
-
-    {#if isEditing}
-      <div class="flex flex-row-center justify-end flex-gap-1 pl-4 pr-4 pb-2 pt-2 top-divider">
-        <Button kind="ghost" icon={IconUndo} on:click={rollback} disabled={isSubmitting}>
-          <span slot="content">Cancel</span>
-        </Button>
-        <Button kind="primary" icon={IconCheck} on:click={commit} loading={isSubmitting}>
-          <span slot="content">Save</span>
-        </Button>
-      </div>
-    {/if}
   {/await}
-</form>
+</div>
 
 <style lang="scss">
 </style>

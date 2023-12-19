@@ -48,8 +48,6 @@
   const query = createQuery()
 
   let questions: Question[] = []
-  const editors: Record<Ref<Question>, QuestionEditor> = {}
-  let lastCreatedQuestionId: Ref<Question> | null = null
   let isMoving = false
 
   $: if (object.questions > 0) {
@@ -62,12 +60,8 @@
       { sort: { rank: SortingOrder.Ascending } }
     )
   } else {
+    questions = []
     query.unsubscribe()
-  }
-
-  $: if (lastCreatedQuestionId && editors[lastCreatedQuestionId]) {
-    editors[lastCreatedQuestionId].startEditing()
-    lastCreatedQuestionId = null
   }
 
   async function onClickAdd (e: MouseEvent, index: number | null): Promise<void> {
@@ -85,7 +79,7 @@
         const prevQuestion = index === null ? null : questions[index] ?? null
         const nextQuestion = (index === null ? questions[0] : questions[index + 1]) ?? null
         const question = questionInit(client, prevQuestion?.rank ?? null, nextQuestion?.rank ?? null, dataClassRef)
-        lastCreatedQuestionId = await questionCreate(client, object, question)
+        await questionCreate(client, object, question)
       }
     )
   }
@@ -93,8 +87,6 @@
   async function onClickMove (index: number, up: boolean): Promise<void> {
     const question1 = questions[index]
     const question2 = questions[index + (up ? -1 : 1)]
-    rollback(question1)
-    rollback(question2)
 
     isMoving = true
     const ops = client.apply(object._id)
@@ -106,12 +98,7 @@
 
   async function onClickDelete (index: number): Promise<void> {
     const question = questions[index]
-    rollback(question)
     await questionDelete(client, question)
-  }
-
-  function rollback (question: Question): void {
-    editors[question._id]?.rollback()
   }
 </script>
 
@@ -123,13 +110,13 @@
   </div>
 
   {#if questions.length > 0}
-    {#each questions as question, index}
+    {#each questions as question, index (question._id)}
       {#if index === 0}
-        <button class="divider my-1" on:click={(e) => onClickAdd(e, null)}>
-          <IconAdd size="medium" />
-        </button>
+        <div class="divider">
+          <Button icon={IconAdd} shape="circle" size="x-small" on:click={(e) => onClickAdd(e, index)} />
+        </div>
       {/if}
-      <QuestionEditor bind:this={editors[question._id]} object={questions[index]} {index}>
+      <QuestionEditor object={questions[index]} {index}>
         <Button
           icon={IconUp}
           shape="circle"
@@ -157,9 +144,9 @@
           }}
         />
       </QuestionEditor>
-      <button class="divider my-1" on:click={(e) => onClickAdd(e, index)}>
-        <IconAdd size="medium" />
-      </button>
+      <div class="divider">
+        <Button icon={IconAdd} shape="circle" size="x-small" on:click={(e) => onClickAdd(e, index)} />
+      </div>
     {/each}
   {:else}
     <div class="antiSection-empty mt-4">
@@ -175,7 +162,9 @@
     justify-content: space-between;
     align-items: center;
     gap: 0.25rem;
+    margin: 0.25rem;
     opacity: 0;
+    padding: 0 2rem;
     transition: opacity 0.16s;
     width: 100%;
 
@@ -189,7 +178,7 @@
     }
 
     &:hover,
-    &:focus {
+    &:focus-within {
       opacity: 1;
     }
   }

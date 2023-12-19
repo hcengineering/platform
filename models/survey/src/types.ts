@@ -38,7 +38,7 @@ import {
   type Question,
   type QuestionData,
   type QuestionDataEditor,
-  type QuestionDataEditorComponent,
+  type QuestionDataEditorComponentTypeRef,
   type RadioButtons,
   type RadioButtonsOption,
   type Rank,
@@ -170,5 +170,5 @@ export class TInfo extends TQuestionData implements Info {
  */
 @Mixin(survey.mixin.QuestionDataEditor, core.class.Class)
 export class TQuestionDataEditor<Q extends QuestionData> extends TClass implements QuestionDataEditor<Q> {
-  editor!: QuestionDataEditorComponent<Q>
+  editor!: QuestionDataEditorComponentTypeRef<Q>
 }

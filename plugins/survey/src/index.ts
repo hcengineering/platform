@@ -76,6 +76,7 @@ export default plugin(surveyId, {
   },
   icon: {
     Checkboxes: '' as Asset,
+    Eye: '' as Asset,
     Info: '' as Asset,
     Question: '' as Asset,
     RadioButtons: '' as Asset,

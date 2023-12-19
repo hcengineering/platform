@@ -15,21 +15,27 @@
 
 <script type="module" lang="ts">
   import { Button, EditBox, RadioButton, IconDelete, IconAdd, CheckBox } from '@hcengineering/ui'
-  import { type Checkboxes, type RadioButtons } from '@hcengineering/survey'
+  import { type Checkboxes, QuestionDataEditorComponentProps, type RadioButtons } from '@hcengineering/survey'
   import survey from '../plugin'
 
-  export let object: Checkboxes | RadioButtons
+  type Data = Checkboxes | RadioButtons
+
+  /**
+   * Declared $$Props help TypeScript ensure that your component is a valid {@link QuestionDataEditorComponent}
+   * @see https://raqueebuddinaziz.com/blog/svelte-type-events-slots-and-props/#restprops-props
+   */
+  interface $$Props extends QuestionDataEditorComponentProps<Data> {}
+
+  export let object: Data
   export let editable = true
+  export let submit: (data: Data) => Promise<void>
 
   const inputs: EditBox[] = []
 
   let draft: string = ''
 
   function appendOption (): void {
-    object = {
-      ...object,
-      options: [...object.options, { label: draft }]
-    }
+    update({ options: [...object.options, { label: draft }] })
     setTimeout(() => {
       inputs[object.options.length - 1].focus()
       draft = ''
@@ -37,33 +43,48 @@
   }
 
   function removeOptionAt (index: number): void {
-    if (index < 1) {
-      return
+    if (object.options.length > 1) {
+      update({ options: [...object.options.slice(0, index), ...object.options.slice(index + 1)] })
     }
-    object = {
-      ...object,
-      options: [...object.options.slice(0, index), ...object.options.slice(index + 1)]
-    }
+  }
+
+  function update (attributes: Partial<Data> = {}): void {
+    object = { ...object, ...attributes }
+    void submit(object)
   }
 </script>
 
-<div>
+<form>
   <div class="mb-4 clear-mins">
-    <EditBox bind:value={object.text} kind="large-style" autoFocus fullSize disabled={!editable} />
+    <EditBox
+      bind:value={object.text}
+      on:change={() => {
+        update()
+      }}
+      kind="large-style"
+      autoFocus
+      fullSize
+      disabled={!editable}
+    />
   </div>
 
   {#each object.options as _, index}
     <div class="flex flex-row-center flex-stretch flex-gap-1 my-1 mx-4">
-      {#if object._class === survey.class.Checkboxes}
-        <CheckBox readonly />
-      {:else if object._class === survey.class.RadioButtons}
-        <RadioButton group={null} value={index} label="" disabled isMarkerVisible />
-      {/if}
+      <div class="flex min-w-6">
+        {#if object._class === survey.class.Checkboxes}
+          <CheckBox readonly size="medium" />
+        {:else if object._class === survey.class.RadioButtons}
+          <RadioButton group={null} value={index} label="" disabled isMarkerVisible />
+        {/if}
+      </div>
       <EditBox
         kind="default"
         fullSize
         bind:value={object.options[index].label}
         bind:this={inputs[index]}
+        on:change={() => {
+          update()
+        }}
         disabled={!editable}
       />
       {#if editable && object.options.length > 1}
@@ -82,11 +103,13 @@
 
   {#if editable}
     <div class="flex flex-row-center flex-stretch flex-gap-1 my-1 mx-4">
-      {#if object._class === survey.class.Checkboxes}
-        <CheckBox readonly />
-      {:else if object._class === survey.class.RadioButtons}
-        <RadioButton group={null} value={null} label="" disabled />
-      {/if}
+      <div class="flex min-w-6">
+        {#if object._class === survey.class.Checkboxes}
+          <CheckBox readonly />
+        {:else if object._class === survey.class.RadioButtons}
+          <RadioButton group={null} value={null} label="" disabled />
+        {/if}
+      </div>
       <EditBox
         kind="default"
         fullSize
@@ -106,7 +129,7 @@
       />
     </div>
   {/if}
-</div>
+</form>
 
 <style lang="scss">
 </style>

@@ -88,18 +88,27 @@ export interface Info extends QuestionData {
 /**
  * @public
  */
-export type QuestionDataEditorComponent<Q extends QuestionData> = Resource<
-ComponentType<
-SvelteComponent<{
-  data: Q
+export interface QuestionDataEditorComponentProps<Q extends QuestionData> {
+  readonly object: Q
   readonly editable: boolean
-}>
->
+  readonly submit: (data: Q) => Promise<void>
+}
+
+/**
+ * @public
+ */
+export type QuestionDataEditorComponent<Q extends QuestionData> = SvelteComponent<QuestionDataEditorComponentProps<Q>>
+
+/**
+ * @public
+ */
+export type QuestionDataEditorComponentTypeRef<Q extends QuestionData> = Resource<
+ComponentType<QuestionDataEditorComponent<Q>>
 >
 
 /**
  * @public
  */
 export interface QuestionDataEditor<Q extends QuestionData = QuestionData> extends Class<Doc> {
-  editor: QuestionDataEditorComponent<Q>
+  editor: QuestionDataEditorComponentTypeRef<Q>
 }
