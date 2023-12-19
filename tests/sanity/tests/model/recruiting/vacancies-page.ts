@@ -12,7 +12,7 @@ export class VacanciesPage extends CommonRecruitingPage {
   readonly buttonCreateVacancyLocation: Locator
   readonly buttonCreateVacancy: Locator
 
-  constructor(page: Page) {
+  constructor (page: Page) {
     super(page)
     this.page = page
     this.pageHeader = page.locator('span[class*="header"]', { hasText: 'Vacancies' })
