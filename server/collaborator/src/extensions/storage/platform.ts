@@ -13,24 +13,34 @@
 // limitations under the License.
 //
 
-import { Class, Doc, MeasureContext, Ref } from '@hcengineering/core'
+import { Class, Doc, MeasureContext, Ref, toWorkspaceString } from '@hcengineering/core'
 import { Document, Extension, onDisconnectPayload, onLoadDocumentPayload, onStoreDocumentPayload } from '@hocuspocus/server'
 import { Transformer } from '@hocuspocus/transformer'
+import { MongoClient } from 'mongodb'
 import { Doc as YDoc } from 'yjs'
 import { Context, withContext } from '../../context'
 import { connect, getTxOperations } from '../../platform'
 
-function parseDocumentName (documentName: string): { objectId: Ref<Doc>, objectClass: Ref<Class<Doc>>, objectAttr: string } {
-  const [objectClass, objectId, objectAttr] = documentName.split('/')
+interface DocumentId {
+  objectId: Ref<Doc>
+  objectClass: Ref<Class<Doc>>
+  objectDomain: string
+  objectAttr: string
+}
+
+function parseDocumentName (documentName: string): DocumentId {
+  const [objectDomain, objectClass, objectId, objectAttr] = documentName.split('/')
   return {
-    objectClass: (objectClass ?? '') as Ref<Class<Doc>>,
     objectId: (objectId ?? '') as Ref<Doc>,
+    objectClass: (objectClass ?? '') as Ref<Class<Doc>>,
+    objectDomain: objectDomain ?? '',
     objectAttr: objectAttr ?? ''
   }
 }
 
 export interface PlatformStorageConfiguration {
   ctx: MeasureContext
+  mongoClient: MongoClient
   transformer: Transformer
   transactorUrl: string
 }
@@ -43,9 +53,9 @@ export class PlatformStorageExtension implements Extension {
   }
 
   async onLoadDocument (data: withContext<onLoadDocumentPayload>): Promise<any> {
-    // return await this.configuration.ctx.with('load-document', {}, async (ctx) => {
-    //   return await this.loadDocument(ctx, data.context, data.documentName)
-    // })
+    return await this.configuration.ctx.with('load-document', {}, async (ctx) => {
+      return await this.loadDocument(ctx, data.context, data.documentName)
+    })
   }
 
   async onDisconnect (data: withContext<onDisconnectPayload>): Promise<any> {
@@ -72,7 +82,7 @@ export class PlatformStorageExtension implements Extension {
 
   async loadDocument (ctx: MeasureContext, context: Context, documentId: string): Promise<YDoc | undefined> {
     const { token } = context
-    const { objectId, objectClass, objectAttr } = parseDocumentName(documentId)
+    const { objectId, objectClass, objectDomain, objectAttr } = parseDocumentName(documentId)
 
     console.log('load document from platform', documentId)
 
@@ -81,22 +91,15 @@ export class PlatformStorageExtension implements Extension {
       return undefined
     }
 
-    const client = await ctx.with('connect', {}, async () => {
-      return await connect(this.configuration.transactorUrl, token)
-    })
-
     let content = ''
 
-    try {
-      await ctx.with('query', {}, async () => {
-        const doc = await client.findOne(objectClass, { _id: objectId })
-        if (doc !== undefined && objectAttr in doc) {
-          content = (doc as any)[objectAttr] as string
-        }
-      })
-    } finally {
-      await client.close()
-    }
+    await ctx.with('query', {}, async () => {
+      const db = this.configuration.mongoClient.db(toWorkspaceString(token.workspace))
+      const doc = await db.collection(objectDomain).findOne({ _id: objectId }, { projection: { [objectAttr]: 1 } })
+      if (doc !== null && objectAttr in doc) {
+        content = doc[objectAttr] as string
+      }
+    })
 
     return await this.configuration.ctx.with('transform', {}, () => {
       return this.configuration.transformer.toYdoc(content, objectAttr)

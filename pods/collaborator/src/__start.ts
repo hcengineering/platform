@@ -14,4 +14,4 @@
 //
 
 import { startCollaborator } from '@hcengineering/collaborator'
-startCollaborator()
+void startCollaborator()

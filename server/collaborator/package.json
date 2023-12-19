@@ -12,8 +12,7 @@
     "docker:build": "docker build -t hardcoreeng/collaborator .",
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/collaborator staging",
     "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/collaborator",
-    "run-local": "cross-env TRANSACTOR_URL=ws://localhost:3333 SECRET=secret MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin ts-node src/__start.ts",
-    "run-bundle": "cross-env TRANSACTOR_URL=ws://localhost:3333 SECRET=secret MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin node ./bundle.js",
+    "run-local": "cross-env MONGO_URL=mongodb://localhost:27017 TRANSACTOR_URL=ws://localhost:3333 SECRET=secret MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin ts-node src/__start.ts",
     "lint": "eslint src",
     "format": "format src",
     "test": "jest --passWithNoTests --silent"
@@ -59,6 +58,7 @@
     "@hocuspocus/transformer": "^2.5.0",
     "@tiptap/core": "^2.1.12",
     "@tiptap/html": "^2.1.12",
+    "mongodb": "^4.11.0",
     "yjs": "^13.5.52",
     "y-prosemirror": "^1.2.1",
     "express": "^4.17.1",

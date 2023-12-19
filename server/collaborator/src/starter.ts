@@ -22,7 +22,7 @@ import config from './config'
 import { metricsContext } from './metrics'
 import { start } from './server'
 
-export function startCollaborator (): void {
+export async function startCollaborator (): Promise<void> {
   setMetadata(serverToken.metadata.Secret, config.Secret)
 
   let minioPort = 9000
@@ -41,10 +41,10 @@ export function startCollaborator (): void {
     secretKey: config.MinioSecretKey
   })
 
-  const server = start(metricsContext, config, minio)
+  const shutdown = await start(metricsContext, config, minio)
 
   const close = (): void => {
-    server()
+    void shutdown()
   }
 
   process.on('SIGINT', close)

@@ -22,6 +22,7 @@ import compression from 'compression'
 import cors from 'cors'
 import express from 'express'
 import { IncomingMessage, createServer } from 'http'
+import { MongoClient } from 'mongodb'
 import { WebSocket, WebSocketServer } from 'ws'
 
 import { Config } from './config'
@@ -37,7 +38,12 @@ const gcEnabled = process.env.GC !== 'false' && process.env.GC !== '0'
 /**
  * @public
  */
-export function start (ctx: MeasureContext, config: Config, minio: MinioService): () => void {
+export type Shutdown = () => Promise<void>
+
+/**
+ * @public
+ */
+export async function start (ctx: MeasureContext, config: Config, minio: MinioService): Promise<Shutdown> {
   const port = config.Port
   console.log(`starting server on :${port} ...`)
 
@@ -58,6 +64,8 @@ export function start (ctx: MeasureContext, config: Config, minio: MinioService)
       level: 6
     })
   )
+
+  const mongoClient = await MongoClient.connect(config.MongoUrl)
 
   const hocuspocus = new Hocuspocus({
     address: '0.0.0.0',
@@ -108,7 +116,8 @@ export function start (ctx: MeasureContext, config: Config, minio: MinioService)
           platform: new PlatformStorageExtension({
             ctx: ctx.newChild('platform', {}),
             transformer: new HtmlTransformer(defaultExtensions),
-            transactorUrl: config.TransactorUrl
+            transactorUrl: config.TransactorUrl,
+            mongoClient
           })
         }
       })
@@ -155,7 +164,8 @@ export function start (ctx: MeasureContext, config: Config, minio: MinioService)
   server.listen(port)
   console.log(`started server on :${port}`)
 
-  return () => {
+  return async () => {
     server.close()
+    await mongoClient.close()
   }
 }
