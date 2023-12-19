@@ -60,6 +60,7 @@
   export let shouldShowAvatar = false
   export let autoSelect = false
   export let findDefault: (() => Promise<Doc | undefined>) | undefined = undefined
+  export let groupBy = '_class'
 
   export let create: ObjectCreate | undefined = undefined
 
@@ -116,7 +117,8 @@
           placeholder,
           create,
           searchField,
-          docProps
+          docProps,
+          groupBy
         },
         !$$slots.content ? container : getEventPositionElement(ev),
         (result) => {

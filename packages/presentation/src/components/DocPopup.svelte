@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, Ref } from '@hcengineering/core'
+  import { getObjectValue, type Class, type Doc, type Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import {
     Button,
@@ -68,7 +68,7 @@
 
   $: showCategories =
     created.length > 0 ||
-    objects.map((it) => (it as any)[groupBy]).filter((it, index, arr) => arr.indexOf(it) === index).length > 1
+    objects.map((it) => getObjectValue(groupBy, it)).filter((it, index, arr) => arr.indexOf(it) === index).length > 1
 
   const checkSelected = (item: Doc): void => {
     if (selectedElements.has(item._id)) {
@@ -148,7 +148,7 @@
     if (created.find((it) => it._id === doc._id) !== undefined) {
       return '_created'
     }
-    return toAny(doc)[groupBy]
+    return getObjectValue(groupBy, toAny(doc))
   }
 </script>
 

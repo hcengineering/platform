@@ -16,7 +16,7 @@
   import core, { Doc, FindResult, IdMap, Ref, RefTo, Space, Status, toIdMap } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import { TaskType } from '@hcengineering/task'
+  import { ProjectType, TaskType } from '@hcengineering/task'
   import ui, {
     EditWithIcon,
     Icon,
@@ -39,7 +39,7 @@
   import view from '@hcengineering/view-resources/src/plugin'
   import { buildConfigLookup, getPresenter } from '@hcengineering/view-resources/src/utils'
   import { createEventDispatcher } from 'svelte'
-  import { selectedTaskTypeStore, taskTypeStore } from '..'
+  import { selectedTaskTypeStore, selectedTypeStore, taskTypeStore, typeStore } from '..'
 
   export let filter: Filter
   export let space: Ref<Space> | undefined = undefined
@@ -67,7 +67,9 @@
     search: string,
     selectedType: Ref<TaskType> | undefined,
     typeStore: IdMap<TaskType>,
-    statusStore: IdMap<Status>
+    statusStore: IdMap<Status>,
+    selectedProjectType: Ref<ProjectType> | undefined,
+    projectTypeStore: IdMap<ProjectType>
   ): Promise<void> {
     await objectsPromise
     targets.clear()
@@ -85,13 +87,22 @@
         values = values.filter((p) => p?.name.includes(search))
       }
     } else {
-      const statuses: Status[] = []
+      let statuses: Status[] = []
+      const prjStatuses = new Map(
+        (
+          (selectedProjectType !== undefined ? projectTypeStore.get(selectedProjectType) : undefined)?.statuses ?? []
+        ).map((p) => [p._id, p])
+      )
       for (const status of statusStore.values()) {
         if (hierarchy.isDerived(status._class, targetClass) && status.ofAttribute === filter.key.attribute._id) {
+          if (prjStatuses.size > 0 && !prjStatuses.has(status._id)) {
+            continue
+          }
           statuses.push(status)
           targets.add(status._id)
         }
       }
+      statuses = statuses.filter((it, idx, arr) => arr.findIndex((q) => q._id === it._id) === idx)
       values = await sort(statuses)
     }
     if (targets.has(undefined)) {
@@ -164,7 +175,7 @@
   const dispatch = createEventDispatcher()
 
   $: if (targetClass != null) {
-    void getValues(search, $selectedTaskTypeStore, $taskTypeStore, $statusStore.byId)
+    void getValues(search, $selectedTaskTypeStore, $taskTypeStore, $statusStore.byId, $selectedTypeStore, $typeStore)
   }
 </script>
 
