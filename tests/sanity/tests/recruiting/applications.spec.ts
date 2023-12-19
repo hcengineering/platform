@@ -159,4 +159,28 @@ test.describe('Application tests', () => {
     applicationsDetailsPage = new ApplicationsDetailsPage(page)
     await applicationsDetailsPage.changeState('Offer')
   })
+
+  test('Comment stored after reload the page', async ({ page }) => {
+    const commentText = `Application comment should be stored after reload-${generateId()}`
+
+    const vacancyName = 'Software Engineer'
+    const navigationMenuPage = new NavigationMenuPage(page)
+    await navigationMenuPage.buttonApplications.click()
+
+    const applicationsPage = new ApplicationsPage(page)
+    const talentName = await applicationsPage.createNewApplicationWithNewTalent({
+      vacancy: vacancyName,
+      recruiterName: 'first'
+    })
+    await applicationsPage.openApplicationByTalentName(talentName)
+
+    const applicationsDetailsPage = new ApplicationsDetailsPage(page)
+    const applicationId = await applicationsDetailsPage.getApplicationId()
+    await applicationsDetailsPage.addComment(commentText)
+    await applicationsDetailsPage.checkCommentExist(commentText)
+
+    await page.reload()
+    await applicationsDetailsPage.waitApplicationDetailsOpened(applicationId)
+    await applicationsDetailsPage.checkCommentExist(commentText)
+  })
 })
