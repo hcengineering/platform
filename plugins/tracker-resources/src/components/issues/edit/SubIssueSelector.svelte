@@ -15,6 +15,7 @@
 <script lang="ts">
   import core, { IdMap, Ref, SortingOrder, StatusCategory, WithLookup, toIdMap } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
+  import task from '@hcengineering/task'
   import { Issue, IssueStatus } from '@hcengineering/tracker'
   import {
     Icon,
@@ -101,8 +102,8 @@
         const aStatus = $statusStore.byId.get(a.status)
         const bStatus = $statusStore.byId.get(b.status)
         const res =
-          listIssueStatusOrder.indexOf(aStatus?.category ?? tracker.issueStatusCategory.Backlog) -
-          listIssueStatusOrder.indexOf(bStatus?.category ?? tracker.issueStatusCategory.Backlog)
+          listIssueStatusOrder.indexOf(aStatus?.category ?? task.statusCategory.UnStarted) -
+          listIssueStatusOrder.indexOf(bStatus?.category ?? task.statusCategory.UnStarted)
         return res
       })
       sortedSubIssues = subIssues ?? []

@@ -25,6 +25,8 @@
   import tracker from '../../plugin'
   import IssuesView from './IssuesView.svelte'
 
+  import task from '@hcengineering/task'
+
   export let currentSpace: Ref<Project> | undefined = undefined
   export let baseQuery: DocumentQuery<Issue> = {}
   export let title: IntlString
@@ -57,13 +59,9 @@
 
   let activeStatuses: Ref<IssueStatus>[] = []
 
-  $: activeStatusQuery.query(
-    tracker.class.IssueStatus,
-    { category: { $in: [tracker.issueStatusCategory.Unstarted, tracker.issueStatusCategory.Started] } },
-    (result) => {
-      activeStatuses = result.map(({ _id }) => _id)
-    }
-  )
+  $: activeStatusQuery.query(tracker.class.IssueStatus, { category: task.statusCategory.Active }, (result) => {
+    activeStatuses = result.map(({ _id }) => _id)
+  })
 
   let active: DocumentQuery<Issue>
   $: active = { status: { $in: activeStatuses }, ...spaceQuery }
@@ -72,13 +70,9 @@
 
   let backlogStatuses: Ref<IssueStatus>[] = []
   let backlog: DocumentQuery<Issue> = {}
-  $: backlogStatusQuery.query(
-    tracker.class.IssueStatus,
-    { category: tracker.issueStatusCategory.Backlog },
-    (result) => {
-      backlogStatuses = result.map(({ _id }) => _id)
-    }
-  )
+  $: backlogStatusQuery.query(tracker.class.IssueStatus, { category: task.statusCategory.UnStarted }, (result) => {
+    backlogStatuses = result.map(({ _id }) => _id)
+  })
   $: backlog = { status: { $in: backlogStatuses }, ...spaceQuery }
 
   $: queries = { all, active, backlog }

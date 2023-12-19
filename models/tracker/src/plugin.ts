@@ -15,7 +15,7 @@
 //
 import { type DocUpdateMessageViewlet, type TxViewlet } from '@hcengineering/activity'
 import { type ChatMessageViewlet } from '@hcengineering/chunter'
-import { type Doc, type Ref } from '@hcengineering/core'
+import { type StatusCategory, type Doc, type Ref } from '@hcengineering/core'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/model-presentation'
 import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
 import { mergeIds, type IntlString, type Resource } from '@hcengineering/platform'
@@ -109,5 +109,14 @@ export default mergeIds(trackerId, tracker, {
     DeleteProject: '' as Ref<Action<Doc, Record<string, any>>>,
     DeleteProjectClean: '' as Ref<Action<Doc, Record<string, any>>>,
     DeleteIssue: '' as Ref<Action<Doc, Record<string, any>>>
+  },
+
+  // For migration only
+  issueStatusCategory: {
+    Backlog: '' as Ref<StatusCategory>,
+    Unstarted: '' as Ref<StatusCategory>,
+    Started: '' as Ref<StatusCategory>,
+    Completed: '' as Ref<StatusCategory>,
+    Canceled: '' as Ref<StatusCategory>
   }
 })

@@ -220,7 +220,7 @@ test.describe('Tracker filters tests', () => {
         await issuesPage.inputSearch.press('Escape')
 
         await issuesPage.checkFilter('Status', 'is')
-        await issuesPage.checkAllIssuesInStatus(DEFAULT_STATUSES_ID.get(status))
+        await issuesPage.checkAllIssuesInStatus(DEFAULT_STATUSES_ID.get(status), status)
         await issuesPage.buttonClearFilers.click()
       })
     }

@@ -29,15 +29,13 @@
   $: statusValue = value ? $statusStore.byId.get(value) : undefined
 </script>
 
-{#if value}
-  <StatusPresenter
-    {space}
-    value={statusValue}
-    {size}
-    {kind}
-    {colorInherit}
-    {accent}
-    on:accent-color
-    taskType={$selectedTaskTypeStore}
-  />
-{/if}
+<StatusPresenter
+  {space}
+  value={statusValue}
+  {size}
+  {kind}
+  {colorInherit}
+  {accent}
+  on:accent-color
+  taskType={$selectedTaskTypeStore}
+/>
