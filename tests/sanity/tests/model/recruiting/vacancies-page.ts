@@ -50,8 +50,10 @@ export class VacanciesPage extends CommonRecruitingPage {
   }
 
   async archiveVacancyByName (vacancyName: string): Promise<void> {
-    this.rightClickVacancyByName(vacancyName)
+    await this.rightClickVacancyByName(vacancyName)
+    await this.page.waitForSelector(`div.antiPopup :text("Archive")`)
     await this.page.locator(`div.antiPopup :text("Archive")`).click()
+    await this.page.waitForSelector(`div.msgbox-container :text("Ok")`)
     await this.page.locator(`div.msgbox-container :text("Ok")`).click()
   }
 
