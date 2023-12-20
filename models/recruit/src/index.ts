@@ -272,7 +272,6 @@ export function createModel (builder: Builder): void {
   const talentsId = 'talents'
   const skillsId = 'skills'
   const candidatesId = 'candidates'
-  const archiveId = 'archive'
   const myApplicationsId = 'my-applications'
   const organizationsId = 'organizations'
 
@@ -340,18 +339,6 @@ export function createModel (builder: Builder): void {
               createComponentProps: { shouldSaveDraft: false }
             },
             position: 'vacancy'
-          },
-          {
-            id: archiveId,
-            component: recruit.component.Vacancies,
-            icon: view.icon.Archive,
-            label: workbench.string.Archive,
-            position: 'bottom',
-            visibleIf: workbench.function.HasArchiveSpaces,
-            spaceClass: recruit.class.Vacancy,
-            componentProps: {
-              archived: true
-            }
           },
           {
             id: skillsId,
