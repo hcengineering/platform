@@ -37,7 +37,7 @@ export class ComponentsPage extends CommonTrackerPage {
     await this.buttonNewComponentModalComponentCreate.click()
   }
 
-  async openComponentByName (issueName: string): Promise<void> {
-    await this.page.locator('div.row a', { hasText: issueName }).click()
+  async openComponentByName (componentName: string): Promise<void> {
+    await this.page.locator('div.row a', { hasText: componentName }).click()
   }
 }
