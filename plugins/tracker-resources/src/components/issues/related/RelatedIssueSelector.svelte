@@ -15,6 +15,7 @@
 <script lang="ts">
   import core, { Doc, IdMap, Ref, SortingOrder, StatusCategory, WithLookup, toIdMap } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
+  import task from '@hcengineering/task'
   import { Issue, Project } from '@hcengineering/tracker'
   import { Button, ButtonKind, ButtonSize, ProgressCircle, SelectPopup, showPanel } from '@hcengineering/ui'
   import { statusStore } from '@hcengineering/view-resources'
@@ -40,7 +41,7 @@
 
   $: _object = object ?? value
 
-  $: _object && update(_object)
+  $: _object != null && update(_object)
 
   function update (value: WithLookup<Doc & { related: number }>): void {
     if (value.$lookup?.related !== undefined) {
@@ -62,7 +63,7 @@
 
   let categories: IdMap<StatusCategory> = new Map()
 
-  getClient()
+  void getClient()
     .findAll(core.class.StatusCategory, {})
     .then((res) => {
       categories = toIdMap(res)
@@ -73,25 +74,22 @@
       const aStatus = $statusStore.byId.get(a.status)
       const bStatus = $statusStore.byId.get(b.status)
       return (
-        listIssueStatusOrder.indexOf(aStatus?.category ?? tracker.issueStatusCategory.Backlog) -
-        listIssueStatusOrder.indexOf(bStatus?.category ?? tracker.issueStatusCategory.Backlog)
+        listIssueStatusOrder.indexOf(aStatus?.category ?? task.statusCategory.UnStarted) -
+        listIssueStatusOrder.indexOf(bStatus?.category ?? task.statusCategory.UnStarted)
       )
     })
     subIssues = _subIssues
   }
 
-  $: if (subIssues) {
+  $: if (subIssues != null) {
     const doneStatuses = $statusStore.array
-      .filter(
-        (s) =>
-          s.category === tracker.issueStatusCategory.Completed || s.category === tracker.issueStatusCategory.Canceled
-      )
+      .filter((s) => s.category === task.statusCategory.Won || s.category === task.statusCategory.Lost)
       .map((p) => p._id)
     countComplete = subIssues.filter((si) => doneStatuses.includes(si.status)).length
   }
   $: hasSubIssues = (subIssues?.length ?? 0) > 0
 
-  function openIssue (target: Ref<Issue>) {
+  function openIssue (target: Ref<Issue>): void {
     subIssueListProvider(subIssues, target)
     showPanel(tracker.component.EditIssue, target, tracker.class.Issue, 'content')
   }

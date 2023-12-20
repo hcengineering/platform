@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import task from '@hcengineering/task'
   import { Issue } from '@hcengineering/tracker'
   import { floorFractionDigits, Label } from '@hcengineering/ui'
   import { FixedColumn, statusStore } from '@hcengineering/view-resources'
@@ -28,7 +29,7 @@
   $: noParents = docs?.filter((it) => !ids.has(it.attachedTo))
 
   $: rootNoBacklogIssues = noParents?.filter(
-    (it) => $statusStore.byId.get(it.status)?.category !== tracker.issueStatusCategory.Backlog
+    (it) => $statusStore.byId.get(it.status)?.category !== task.statusCategory.UnStarted
   )
 
   $: totalEstimation = floorFractionDigits(
@@ -42,14 +43,14 @@
           const cReported = it.childInfo.map((ct) => ct.reportedTime).reduce((a, b) => a + b, 0)
           if (cEstimation !== 0) {
             retEst = cEstimation
-            if (cat === tracker.issueStatusCategory.Completed || cat === tracker.issueStatusCategory.Canceled) {
+            if (cat === task.statusCategory.Won || cat === task.statusCategory.Lost) {
               if (cReported < cEstimation) {
                 retEst = cReported
               }
             }
           }
         } else {
-          if (cat === tracker.issueStatusCategory.Completed || cat === tracker.issueStatusCategory.Canceled) {
+          if (cat === task.statusCategory.Won || cat === task.statusCategory.Lost) {
             if (it.reportedTime < it.estimation) {
               return it.reportedTime
             }

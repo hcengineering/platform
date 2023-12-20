@@ -280,22 +280,20 @@ export const milestoneTitleMap: Record<MilestoneViewMode, IntlString> = Object.f
  * @public
  */
 export const listIssueStatusOrder = [
-  tracker.issueStatusCategory.Started,
-  tracker.issueStatusCategory.Unstarted,
-  tracker.issueStatusCategory.Backlog,
-  tracker.issueStatusCategory.Completed,
-  tracker.issueStatusCategory.Canceled
+  task.statusCategory.Active,
+  task.statusCategory.UnStarted,
+  task.statusCategory.Won,
+  task.statusCategory.Lost
 ] as const
 
 /**
  * @public
  */
 export const listIssueKanbanStatusOrder = [
-  tracker.issueStatusCategory.Backlog,
-  tracker.issueStatusCategory.Unstarted,
-  tracker.issueStatusCategory.Started,
-  tracker.issueStatusCategory.Completed,
-  tracker.issueStatusCategory.Canceled
+  task.statusCategory.UnStarted,
+  task.statusCategory.Active,
+  task.statusCategory.Won,
+  task.statusCategory.Lost
 ] as const
 
 export async function issueStatusSort (

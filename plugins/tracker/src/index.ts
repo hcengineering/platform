@@ -19,6 +19,7 @@ import {
   Attribute,
   Class,
   CollectionSize,
+  Data,
   Doc,
   DocManager,
   IdMap,
@@ -27,15 +28,22 @@ import {
   RelatedDocument,
   Space,
   Status,
-  StatusCategory,
   Timestamp,
   Type,
   WithLookup
 } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, Resource, plugin } from '@hcengineering/platform'
 import { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
-import { ProjectTypeDescriptor, Task, Project as TaskProject, TaskType, TaskTypeDescriptor } from '@hcengineering/task'
+import task, {
+  ProjectTypeDescriptor,
+  Task,
+  Project as TaskProject,
+  TaskStatusFactory,
+  TaskType,
+  TaskTypeDescriptor
+} from '@hcengineering/task'
 import { AnyComponent, ComponentExtensionId, Location, ResolvedLocation } from '@hcengineering/ui'
+import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import { Action, ActionCategory, IconProps } from '@hcengineering/view'
 
 /**
@@ -354,9 +362,41 @@ export class ComponentManager extends DocManager {
 /**
  * @public
  */
+export const classicIssueTaskStatuses: TaskStatusFactory[] = [
+  { category: task.statusCategory.UnStarted, statuses: [['Backlog', PaletteColorIndexes.Cloud]] },
+  {
+    category: task.statusCategory.Active,
+    statuses: [
+      ['Todo', PaletteColorIndexes.Porpoise],
+      ['In progress', PaletteColorIndexes.Cerulean]
+    ]
+  },
+  { category: task.statusCategory.Won, statuses: [['Done', PaletteColorIndexes.Grass]] },
+  { category: task.statusCategory.Lost, statuses: [['Canceled', PaletteColorIndexes.Coin]] }
+]
+
+/**
+ * @public
+ */
+export const baseIssueTaskStatuses: TaskStatusFactory[] = [
+  { category: task.statusCategory.UnStarted, statuses: [['Backlog', PaletteColorIndexes.Cloud]] },
+  {
+    category: task.statusCategory.Active,
+    statuses: [
+      ['Coding', PaletteColorIndexes.Porpoise],
+      ['Under review', PaletteColorIndexes.Cerulean]
+    ]
+  },
+  { category: task.statusCategory.Won, statuses: [['Done', PaletteColorIndexes.Grass]] },
+  { category: task.statusCategory.Lost, statuses: [['Canceled', PaletteColorIndexes.Coin]] }
+]
+
+/**
+ * @public
+ */
 export const trackerId = 'tracker' as Plugin
 
-export default plugin(trackerId, {
+const pluginState = plugin(trackerId, {
   class: {
     Project: '' as Ref<Class<Project>>,
     Issue: '' as Ref<Class<Issue>>,
@@ -390,13 +430,6 @@ export default plugin(trackerId, {
   },
   attribute: {
     IssueStatus: '' as Ref<Attribute<Status>>
-  },
-  issueStatusCategory: {
-    Backlog: '' as Ref<StatusCategory>,
-    Unstarted: '' as Ref<StatusCategory>,
-    Started: '' as Ref<StatusCategory>,
-    Completed: '' as Ref<StatusCategory>,
-    Canceled: '' as Ref<StatusCategory>
   },
   icon: {
     TrackerApplication: '' as Asset,
@@ -506,3 +539,23 @@ export default plugin(trackerId, {
     SubIssue: '' as Ref<TaskType>
   }
 })
+export default pluginState
+
+/**
+ * @public
+ */
+export function createStatesData (data: TaskStatusFactory[]): Omit<Data<Status>, 'rank'>[] {
+  const states: Omit<Data<Status>, 'rank'>[] = []
+
+  for (const category of data) {
+    for (const sName of category.statuses) {
+      states.push({
+        ofAttribute: pluginState.attribute.IssueStatus,
+        name: Array.isArray(sName) ? sName[0] : sName,
+        color: Array.isArray(sName) ? sName[1] : undefined,
+        category: category.category
+      })
+    }
+  }
+  return states
+}
