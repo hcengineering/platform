@@ -62,4 +62,12 @@ export class TrackerNavigationMenuPage extends CommonPage {
       })
       .click()
   }
+
+  async openComponentsForProject (projectName: string): Promise<void> {
+    await this.page
+      .locator('div[class*="antiNav-element"] a[href$="components"][href*="Default"]> div > span', {
+        hasText: 'Components'
+      })
+      .click()
+  }
 }

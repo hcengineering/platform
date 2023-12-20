@@ -40,3 +40,9 @@ export interface NewMilestone {
   }
   targetDateInDays?: string
 }
+
+export interface NewComponent {
+  name: string
+  description?: string
+  lead?: string
+}
