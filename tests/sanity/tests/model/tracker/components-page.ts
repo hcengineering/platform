@@ -1,4 +1,4 @@
-import { type Locator, type Page } from '@playwright/test'
+import { expect, type Locator, type Page } from '@playwright/test'
 import { NewComponent } from './types'
 import { CommonTrackerPage } from './common-tracker-page'
 
@@ -37,7 +37,11 @@ export class ComponentsPage extends CommonTrackerPage {
     await this.buttonNewComponentModalComponentCreate.click()
   }
 
-  async openComponentByName (issueName: string): Promise<void> {
-    await this.page.locator('div.row a', { hasText: issueName }).click()
+  async openComponentByName (componentName: string): Promise<void> {
+    await this.page.locator('div.row a', { hasText: componentName }).click()
+  }
+
+  async checkComponentNotExist (componentName: string): Promise<void> {
+    await expect(this.page.locator('div.row a', { hasText: componentName })).toHaveCount(0)
   }
 }

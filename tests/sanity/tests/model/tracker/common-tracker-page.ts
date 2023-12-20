@@ -12,6 +12,7 @@ export class CommonTrackerPage extends CalendarPage {
   readonly buttonMoveIssuesModal: Locator
   readonly buttonKeepOriginalMoveIssuesModal: Locator
   readonly inputKeepOriginalMoveIssuesModal: Locator
+  readonly buttonMoreActions: Locator
 
   constructor (page: Page) {
     super(page)
@@ -27,6 +28,7 @@ export class CommonTrackerPage extends CalendarPage {
     this.buttonMoveIssuesModal = page.locator('form[id="tracker:string:MoveIssues"] button[type="submit"]')
     this.buttonKeepOriginalMoveIssuesModal = page.locator('form[id="tracker:string:MoveIssues"] span.toggle-switch')
     this.inputKeepOriginalMoveIssuesModal = page.locator('form[id="tracker:string:MoveIssues"] input[type="checkbox"]')
+    this.buttonMoreActions = page.locator('div.popupPanel-title div.flex-row-center > button:first-child')
   }
 
   async selectFilter (filter: string, filterSecondLevel?: string): Promise<void> {

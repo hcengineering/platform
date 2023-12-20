@@ -75,4 +75,26 @@ test.describe('Tracker component tests', () => {
     await componentsPage.openComponentByName(editComponent.name)
     await componentsDetailsPage.checkComponent(editComponent)
   })
+
+  test('Delete a component', async ({ page }) => {
+    const newComponent: NewComponent = {
+      name: 'Delete component test',
+      description: 'Delete component test description'
+    }
+
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+    await trackerNavigationMenuPage.openComponentsForProject('Default')
+
+    const componentsPage = new ComponentsPage(page)
+    await componentsPage.openComponentByName(newComponent.name)
+
+    const componentsDetailsPage = new ComponentsDetailsPage(page)
+    await componentsDetailsPage.checkComponent(newComponent)
+    await componentsDetailsPage.deleteComponent()
+
+    await componentsPage.checkComponentNotExist(newComponent.name)
+  })
 })
