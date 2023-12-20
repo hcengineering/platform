@@ -18,7 +18,7 @@ test.describe('Tracker component tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test.skip('create-component-issue', async ({ page }) => {
+  test('create-component-issue', async ({ page }) => {
     await page.click('[id="app-tracker\\:string\\:TrackerApplication"]')
 
     await navigate(page)
