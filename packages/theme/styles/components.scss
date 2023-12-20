@@ -431,27 +431,17 @@
       }
     }
   }
-  &.marker-visible.checked {
-    .marker {
-      background-color: var(--primary-button-disabled);
-
-      &::after {
-        content: '';
-      }
-    }
-  }
   &.disabled {
     cursor: not-allowed;
 
-    .marker {
-      background-color: var(--primary-button-disabled);
-      border-color: transparent;
-    }
-
     &.checked {
-      marker::after {
-        content: '';
-        opacity: 0.4;
+      .marker {
+        background-color: var(--primary-button-disabled);
+
+        &::after {
+          content: '';
+          background-color: var(--primary-button-disabled-color);
+        }
       }
     }
 
