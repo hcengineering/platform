@@ -117,7 +117,7 @@ export async function start (
         ctx: extensionsCtx.newChild('storage', {}),
         adapter: new RouterStorageAdapter(
           {
-            minio: new MinioStorageAdapter(storageCtx.newChild('minio', {}), minio),
+            minio: new MinioStorageAdapter(storageCtx.newChild('minio', {}), minio, config.TransactorUrl),
             mongodb: new MongodbStorageAdapter(
               storageCtx.newChild('mongodb', {}),
               mongo,

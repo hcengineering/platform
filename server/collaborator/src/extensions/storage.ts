@@ -17,6 +17,8 @@ import { MeasureContext } from '@hcengineering/core'
 import {
   Document,
   Extension,
+  afterUnloadDocumentPayload,
+  onChangePayload,
   onDisconnectPayload,
   onLoadDocumentPayload,
   onStoreDocumentPayload
@@ -32,27 +34,52 @@ export interface StorageConfiguration {
 
 export class StorageExtension implements Extension {
   private readonly configuration: StorageConfiguration
+  private readonly collaborators = new Map<string, Set<string>>()
 
   constructor (configuration: StorageConfiguration) {
     this.configuration = configuration
   }
 
-  async onLoadDocument (data: withContext<onLoadDocumentPayload>): Promise<any> {
+  async onChange ({ context, documentName }: withContext<onChangePayload>): Promise<any> {
+    const collaborators = this.collaborators.get(documentName) ?? new Set()
+    collaborators.add(context.connectionId)
+    this.collaborators.set(documentName, collaborators)
+  }
+
+  async onLoadDocument ({ context, documentName }: withContext<onLoadDocumentPayload>): Promise<any> {
     return await this.configuration.ctx.with('load-document', {}, async () => {
-      return await this.loadDocument(data.documentName, data.context)
+      return await this.loadDocument(documentName, context)
     })
   }
 
-  async onStoreDocument (data: withContext<onStoreDocumentPayload>): Promise<void> {
+  async onStoreDocument ({ context, documentName, document }: withContext<onStoreDocumentPayload>): Promise<void> {
+    const collaborators = this.collaborators.get(documentName)
+    if (collaborators === undefined || collaborators.size === 0) {
+      console.log('no changes for document', documentName)
+      return
+    }
+
     await this.configuration.ctx.with('store-document', {}, async () => {
-      await this.storeDocument(data.documentName, data.document, data.context)
+      this.collaborators.delete(documentName)
+      await this.storeDocument(documentName, document, context)
     })
   }
 
-  async onDisconnect (data: withContext<onDisconnectPayload>): Promise<any> {
+  async onDisconnect ({ context, documentName, document }: withContext<onDisconnectPayload>): Promise<any> {
+    const { connectionId } = context
+    const collaborators = this.collaborators.get(documentName)
+    if (collaborators === undefined || !this.collaborators.has(connectionId)) {
+      console.log('no changes for document', documentName)
+    }
+
     await this.configuration.ctx.with('store-document', {}, async () => {
-      await this.storeDocument(data.documentName, data.document, data.context)
+      this.collaborators.get(documentName)?.delete(connectionId)
+      await this.storeDocument(documentName, document, context)
     })
+  }
+
+  async afterUnloadDocument ({ documentName }: afterUnloadDocumentPayload): Promise<any> {
+    this.collaborators.delete(documentName)
   }
 
   async loadDocument (documentId: string, context: Context): Promise<YDoc | undefined> {

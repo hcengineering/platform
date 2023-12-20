@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import { MeasureContext } from '@hcengineering/core'
+import attachment, { Attachment } from '@hcengineering/attachment'
+import { MeasureContext, Ref } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { Document } from '@hocuspocus/server'
 import { Doc as YDoc, applyUpdate, encodeStateAsUpdate } from 'yjs'
@@ -22,11 +23,17 @@ import { Context } from '../context'
 import { MinioClient } from '../minio'
 
 import { StorageAdapter } from './adapter'
+import { connect, getTxOperations } from '../platform'
+
+function maybePlatformDocumentId (documentId: string): boolean {
+  return !documentId.includes('%')
+}
 
 export class MinioStorageAdapter implements StorageAdapter {
   constructor (
     private readonly ctx: MeasureContext,
-    private readonly minio: MinioService
+    private readonly minio: MinioService,
+    private readonly transactorUrl: string
   ) {}
 
   async loadDocument (documentId: string, context: Context): Promise<YDoc | undefined> {
@@ -65,9 +72,7 @@ export class MinioStorageAdapter implements StorageAdapter {
   }
 
   async saveDocument (documentId: string, document: Document, context: Context): Promise<void> {
-    const {
-      decodedToken: { workspace }
-    } = context
+    const { decodedToken, token } = context
 
     await this.ctx.with('save-document', {}, async (ctx) => {
       const buffer = await ctx.with('transform', {}, () => {
@@ -76,8 +81,38 @@ export class MinioStorageAdapter implements StorageAdapter {
       })
 
       await ctx.with('update', {}, async () => {
-        const minio = new MinioClient(this.minio, workspace)
+        const minio = new MinioClient(this.minio, decodedToken.workspace)
         await minio.writeFile(documentId, buffer)
+      })
+
+      // minio file is usually an attachment document
+      // we need to touch an attachment from here to notify platform about changes
+
+      if (!maybePlatformDocumentId(documentId)) {
+        // documentId is not a platform document id, we can skip platform notification
+        return
+      }
+
+      await ctx.with('platform', {}, async () => {
+        const connection = await ctx.with('connect', {}, async () => {
+          return await connect(this.transactorUrl, token)
+        })
+
+        try {
+          const client = await getTxOperations(connection, decodedToken)
+
+          const current = await ctx.with('query', {}, async () => {
+            return await client.findOne(attachment.class.Attachment, { _id: documentId as Ref<Attachment> })
+          })
+
+          if (current !== undefined) {
+            await ctx.with('update', {}, async () => {
+              await client.update(current, { lastModified: Date.now(), size: buffer.length })
+            })
+          }
+        } finally {
+          await connection.close()
+        }
       })
     })
   }
