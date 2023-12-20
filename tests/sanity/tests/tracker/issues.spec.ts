@@ -1,4 +1,4 @@
-import { test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI } from '../utils'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesPage } from '../model/tracker/issues-page'
@@ -254,5 +254,37 @@ test.describe('Tracker issue tests', () => {
     await page.reload()
     await issuesDetailsPage.waitDetailsOpened(commentIssue.title)
     await issuesDetailsPage.checkCommentExist(commentText)
+  })
+
+  test('Create an Issue from template', async ({ page }) => {
+    const templateName = 'New Issue'
+    const newIssue: NewIssue = {
+      title: `New Issue-${generateId(4)}`,
+      description: 'New Issue',
+      priority: 'Medium',
+      estimation: '1d',
+      component: 'Default component',
+      milestone: 'Edit Milestone'
+    }
+
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+    await trackerNavigationMenuPage.openIssuesForProject('Default')
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
+    await issuesPage.buttonCreateNewIssue.click()
+    await issuesPage.selectTemplate(templateName)
+    await expect(issuesPage.buttonPopupCreateNewIssueTemplate).toHaveText(templateName)
+    await issuesPage.fillNewIssueForm({ description: newIssue.description, title: newIssue.title })
+    await issuesPage.buttonCreateIssue.click()
+
+    await issuesPage.searchIssueByName(newIssue.title)
+    await issuesPage.openIssueByName(newIssue.title)
+
+    const issuesDetailsPage = new IssuesDetailsPage(page)
+    await issuesDetailsPage.checkIssue(newIssue)
   })
 })
