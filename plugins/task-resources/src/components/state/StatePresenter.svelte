@@ -82,13 +82,10 @@
     dispatch('accent-color', color)
   }
 
-  $: color =
-    projectState?.color !== undefined
-      ? getPlatformColorDef(
-        projectState.color ?? category?.color ?? getColorNumberByText(value?.name ?? ''),
-        $themeStore.dark
-      )
-      : undefined
+  $: color = getPlatformColorDef(
+    projectState?.color ?? category?.color ?? getColorNumberByText(value?.name ?? ''),
+    $themeStore.dark
+  )
   $: dispatchAccentColor(color)
 
   onMount(() => {
@@ -127,6 +124,7 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
+    id="{value.category}:{value.name}"
     class="flex-presenter"
     class:inline-presenter={inline}
     class:flex-no-shrink={!shouldShowName || shrink === 0}

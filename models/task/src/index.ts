@@ -64,6 +64,7 @@ import { getEmbeddedLabel, type Asset, type IntlString } from '@hcengineering/pl
 import setting from '@hcengineering/setting'
 import tags from '@hcengineering/tags'
 import {
+  type TaskStatusFactory,
   calculateStatuses,
   findStatusAttr,
   type KanbanCard,
@@ -489,7 +490,7 @@ export function createModel (builder: Builder): void {
       ofAttribute: task.attribute.State,
       label: task.string.StateBacklog,
       icon: task.icon.TaskState,
-      color: PaletteColorIndexes.Coin,
+      color: PaletteColorIndexes.Cloud,
       defaultStatusName: 'Backlog',
       order: 0
     },
@@ -503,7 +504,7 @@ export function createModel (builder: Builder): void {
       ofAttribute: task.attribute.State,
       label: task.string.StateActive,
       icon: task.icon.TaskState,
-      color: PaletteColorIndexes.Blueberry,
+      color: PaletteColorIndexes.Porpoise,
       defaultStatusName: 'New state',
       order: 0
     },
@@ -517,7 +518,7 @@ export function createModel (builder: Builder): void {
       ofAttribute: task.attribute.State,
       label: task.string.DoneStatesWon,
       icon: task.icon.TaskState,
-      color: PaletteColorIndexes.Houseplant,
+      color: PaletteColorIndexes.Grass,
       defaultStatusName: 'Won',
       order: 0
     },
@@ -531,7 +532,7 @@ export function createModel (builder: Builder): void {
       ofAttribute: task.attribute.State,
       label: task.string.DoneStatesLost,
       icon: task.icon.TaskState,
-      color: PaletteColorIndexes.Firework,
+      color: PaletteColorIndexes.Coin,
       defaultStatusName: 'Lost',
       order: 0
     },
@@ -602,7 +603,10 @@ export function createModel (builder: Builder): void {
 /**
  * @public
  */
-export type FixTaskData = Omit<Data<TaskType>, 'space' | 'statuses' | 'parent'> & { _id?: TaskType['_id'] }
+export type FixTaskData = Omit<Data<TaskType>, 'space' | 'statuses' | 'statusCategories' | 'parent'> & {
+  _id?: TaskType['_id']
+  statusCategories: TaskType['statusCategories'] | TaskStatusFactory[]
+}
 export interface FixTaskResult {
   taskTypes: TaskType[]
   projectTypes: ProjectType[]
@@ -694,35 +698,74 @@ export async function fixTaskTypes (
       const statusAttr = findStatusAttr(client.hierarchy, data.ofClass)
       // Ensure we have at leas't one item in every category.
       for (const c of data.statusCategories) {
-        const cat = await client.model.findOne(core.class.StatusCategory, { _id: c })
-        const st = statuses.find((it) => it.category === c)
-        if (st === undefined) {
-          // We need to add new status into missing category
-          const statusId: Ref<Status> = generateId()
-          await client.create<Status>(DOMAIN_STATUS, {
-            _id: statusId,
-            _class: data.statusClass,
-            category: c,
-            modifiedBy: core.account.ConfigUser,
-            modifiedOn: Date.now(),
-            name: cat?.defaultStatusName ?? 'New state',
-            space: task.space.Statuses,
-            ofAttribute: statusAttr._id
-          })
-          dStatuses.push(statusId)
+        const category = typeof c === 'string' ? c : c.category
+        const cat = await client.model.findOne(core.class.StatusCategory, { _id: category })
 
-          await client.update(
-            DOMAIN_SPACE,
-            {
-              _id: t._id
-            },
-            { $push: { statuses: { _id: statusId } } }
-          )
-          t.statuses.push({ _id: statusId, taskType: taskTypeId })
+        const st = statuses.find((it) => it.category === category)
+        const newStatuses: Ref<Status>[] = []
+        if (st === undefined) {
+          if (typeof c === 'string') {
+            // We need to add new status into missing category
+            const statusId: Ref<Status> = generateId()
+            await client.create<Status>(DOMAIN_STATUS, {
+              _id: statusId,
+              _class: data.statusClass,
+              category,
+              modifiedBy: core.account.ConfigUser,
+              modifiedOn: Date.now(),
+              name: cat?.defaultStatusName ?? 'New state',
+              space: task.space.Statuses,
+              ofAttribute: statusAttr._id
+            })
+            newStatuses.push(statusId)
+            dStatuses.push(statusId)
+
+            await client.update(
+              DOMAIN_SPACE,
+              {
+                _id: t._id
+              },
+              { $push: { statuses: newStatuses.map((it) => ({ _id: it })) } }
+            )
+            t.statuses.push(...newStatuses.map((it) => ({ _id: it, taskType: taskTypeId })))
+          } else {
+            for (const sts of c.statuses) {
+              const stsName = Array.isArray(sts) ? sts[0] : sts
+              const color = Array.isArray(sts) ? sts[1] : undefined
+              const st = statuses.find((it) => it.name.toLowerCase() === stsName.toLowerCase())
+              if (st === undefined) {
+                // We need to add new status into missing category
+                const statusId: Ref<Status> = generateId()
+                await client.create<Status>(DOMAIN_STATUS, {
+                  _id: statusId,
+                  _class: data.statusClass,
+                  category,
+                  modifiedBy: core.account.ConfigUser,
+                  modifiedOn: Date.now(),
+                  name: stsName,
+                  color,
+                  space: task.space.Statuses,
+                  ofAttribute: statusAttr._id
+                })
+                newStatuses.push(statusId)
+                dStatuses.push(statusId)
+              }
+
+              await client.update(
+                DOMAIN_SPACE,
+                {
+                  _id: t._id
+                },
+                { $push: { statuses: newStatuses.map((it) => ({ _id: it })) } }
+              )
+              t.statuses.push(...newStatuses.map((it) => ({ _id: it, taskType: taskTypeId })))
+            }
+          }
         }
       }
       const taskType: TaskType = {
         ...data,
+        statusCategories: data.statusCategories.map((it) => (typeof it === 'string' ? it : it.category)),
         parent: t._id,
         _id: taskTypeId,
         _class: task.class.TaskType,

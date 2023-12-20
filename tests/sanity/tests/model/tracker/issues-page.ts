@@ -155,11 +155,11 @@ export class IssuesPage extends CommonTrackerPage {
     await expect(this.page.locator('div.row span', { hasText: issueName })).toHaveCount(0)
   }
 
-  async checkAllIssuesInStatus (statusId: string | undefined): Promise<void> {
+  async checkAllIssuesInStatus (statusId?: string, statusName?: string): Promise<void> {
     if (statusId === undefined) throw new Error(`Unknown status id ${statusId}`)
 
     for await (const locator of iterateLocator(this.issuesList)) {
-      await expect(locator.locator('div[class*="square"] > svg')).toHaveAttribute('id', statusId)
+      await expect(locator.locator('div[class*="square"] > div')).toHaveAttribute('id', `${statusId}:${statusName}`)
     }
   }
 
