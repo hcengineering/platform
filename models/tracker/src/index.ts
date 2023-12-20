@@ -14,21 +14,20 @@
 //
 
 import activity from '@hcengineering/activity'
+import chunter from '@hcengineering/chunter'
 import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
+import { generateClassNotificationTypes } from '@hcengineering/model-notification'
+import presentation from '@hcengineering/model-presentation'
 import task from '@hcengineering/model-task'
 import view from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
 import { trackerId } from '@hcengineering/tracker'
-import { generateClassNotificationTypes } from '@hcengineering/model-notification'
-import presentation from '@hcengineering/model-presentation'
-import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
-import chunter from '@hcengineering/chunter'
 
-import tracker from './plugin'
 import { createActions as defineActions } from './actions'
+import tracker from './plugin'
 import { definePresenters } from './presenters'
 import {
   TComponent,
@@ -127,78 +126,6 @@ function defineNotifications (builder: Builder): void {
     tracker.ids.TrackerNotificationGroup,
     [],
     ['comments', 'status', 'priority', 'assignee', 'subIssues', 'blockedBy', 'milestone', 'dueDate']
-  )
-}
-
-function defineStatusCategories (builder: Builder): void {
-  builder.createDoc(
-    core.class.StatusCategory,
-    core.space.Model,
-    {
-      ofAttribute: tracker.attribute.IssueStatus,
-      label: tracker.string.CategoryBacklog,
-      icon: tracker.icon.CategoryBacklog,
-      color: PaletteColorIndexes.Cloud,
-      defaultStatusName: 'Backlog',
-      order: 0
-    },
-    tracker.issueStatusCategory.Backlog
-  )
-
-  builder.createDoc(
-    core.class.StatusCategory,
-    core.space.Model,
-    {
-      ofAttribute: tracker.attribute.IssueStatus,
-      label: tracker.string.CategoryUnstarted,
-      icon: tracker.icon.CategoryUnstarted,
-      color: PaletteColorIndexes.Porpoise,
-      defaultStatusName: 'Todo',
-      order: 1
-    },
-    tracker.issueStatusCategory.Unstarted
-  )
-
-  builder.createDoc(
-    core.class.StatusCategory,
-    core.space.Model,
-    {
-      ofAttribute: tracker.attribute.IssueStatus,
-      label: tracker.string.CategoryStarted,
-      icon: tracker.icon.CategoryStarted,
-      color: PaletteColorIndexes.Cerulean,
-      defaultStatusName: 'In Progress',
-      order: 2
-    },
-    tracker.issueStatusCategory.Started
-  )
-
-  builder.createDoc(
-    core.class.StatusCategory,
-    core.space.Model,
-    {
-      ofAttribute: tracker.attribute.IssueStatus,
-      label: tracker.string.CategoryCompleted,
-      icon: tracker.icon.CategoryCompleted,
-      color: PaletteColorIndexes.Grass,
-      defaultStatusName: 'Done',
-      order: 3
-    },
-    tracker.issueStatusCategory.Completed
-  )
-
-  builder.createDoc(
-    core.class.StatusCategory,
-    core.space.Model,
-    {
-      ofAttribute: tracker.attribute.IssueStatus,
-      label: tracker.string.CategoryCanceled,
-      icon: tracker.icon.CategoryCanceled,
-      color: PaletteColorIndexes.Coin,
-      defaultStatusName: 'Canceled',
-      order: 4
-    },
-    tracker.issueStatusCategory.Canceled
   )
 }
 
@@ -482,8 +409,6 @@ export function createModel (builder: Builder): void {
   })
 
   defineViewlets(builder)
-
-  defineStatusCategories(builder)
 
   const issuesId = 'issues'
   const componentsId = 'components'

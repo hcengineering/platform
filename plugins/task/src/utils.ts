@@ -23,7 +23,6 @@ import core, {
   IdMap,
   Ref,
   Status,
-  StatusCategory,
   TxOperations,
   generateId,
   type AnyAttribute,
@@ -136,18 +135,6 @@ export async function createState<T extends Status> (
   }
   const res = await client.createDoc(_class, task.space.Statuses, data)
   return res
-}
-
-/**
- * @public
- */
-export function isTaskCategory (category: Ref<StatusCategory>): boolean {
-  return (
-    category === task.statusCategory.Active ||
-    category === task.statusCategory.Active ||
-    category === task.statusCategory.Won ||
-    category === task.statusCategory.Lost
-  )
 }
 
 /**

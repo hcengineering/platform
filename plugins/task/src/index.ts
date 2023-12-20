@@ -112,6 +112,14 @@ export interface TaskTypeDescriptor extends Doc {
 /**
  * @public
  */
+export interface TaskStatusFactory {
+  category: Ref<StatusCategory>
+  statuses: (string | [string, number])[]
+}
+
+/**
+ * @public
+ */
 export interface TaskType extends Doc, IconProps {
   parent: Ref<ProjectType>
   descriptor: Ref<TaskTypeDescriptor>
