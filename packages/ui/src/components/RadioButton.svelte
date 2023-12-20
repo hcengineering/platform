@@ -29,7 +29,6 @@
   export let action: () => void = () => {}
   export let gap: 'large' | 'small' | 'medium' | 'none' = 'none'
   export let labelGap: 'large' | 'medium' = 'medium'
-  export let isMarkerVisible: boolean = false
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -39,7 +38,6 @@
   class:disabled
   class:checked={group === value}
   tabindex="-1"
-  class:marker-visible={isMarkerVisible}
   on:click={() => {
     if (!disabled && group !== value) action()
   }}

@@ -24,11 +24,11 @@ export const DEFAULT_STATUSES = ['Backlog', 'Todo', 'In Progress', 'Done', 'Canc
 export const DEFAULT_USER = 'Appleseed John'
 
 export const DEFAULT_STATUSES_ID = new Map([
-  ['Backlog', 'tracker:issueStatusCategory:Backlog'],
-  ['Todo', 'tracker:issueStatusCategory:Unstarted'],
-  ['In Progress', 'tracker:issueStatusCategory:Started'],
-  ['Done', 'tracker:issueStatusCategory:Completed'],
-  ['Canceled', 'tracker:issueStatusCategory:Canceled']
+  ['Backlog', 'task:statusCategory:UnStarted'],
+  ['Todo', 'task:statusCategory:Active'],
+  ['In Progress', 'task:statusCategory:Active'],
+  ['Done', 'task:statusCategory:Won'],
+  ['Canceled', 'task:statusCategory:Lost']
 ])
 
 export async function navigate (page: Page): Promise<void> {

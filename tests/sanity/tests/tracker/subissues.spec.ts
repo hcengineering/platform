@@ -102,4 +102,43 @@ test.describe('Tracker sub-issues tests', () => {
       parentIssue: newIssue.title
     })
   })
+
+  test('Delete a sub-issue', async ({ page }) => {
+    const deleteIssue: NewIssue = {
+      title: `Issue for the delete sub-issue-${generateId()}`,
+      description: 'Description Issue for the delete sub-issue'
+    }
+    const deleteSubIssue: NewIssue = {
+      title: `Delete Sub-Issue with parameter-${generateId()}`,
+      description: 'Delete Description Sub-Issue with parameter'
+    }
+
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
+    await issuesPage.createNewIssue(deleteIssue)
+    await issuesPage.searchIssueByName(deleteIssue.title)
+    await issuesPage.openIssueByName(deleteIssue.title)
+
+    const issuesDetailsPage = new IssuesDetailsPage(page)
+    await issuesDetailsPage.buttonAddSubIssue.click()
+
+    await issuesPage.fillNewIssueForm(deleteSubIssue)
+    await issuesPage.buttonCreateIssue.click()
+    await issuesDetailsPage.openSubIssueByName(deleteSubIssue.title)
+
+    await issuesDetailsPage.waitDetailsOpened(deleteSubIssue.title)
+    await issuesDetailsPage.checkIssue({
+      ...deleteSubIssue,
+      parentIssue: deleteIssue.title
+    })
+
+    await issuesDetailsPage.moreActionOnIssue('Delete')
+    await issuesDetailsPage.pressYesForPopup(page)
+
+    await issuesPage.searchIssueByName(deleteSubIssue.title)
+    await issuesPage.checkIssueNotExist(deleteSubIssue.title)
+  })
 })

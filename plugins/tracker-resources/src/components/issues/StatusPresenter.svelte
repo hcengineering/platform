@@ -32,7 +32,7 @@
 
 {#if value}
   <div class="flex-presenter" style:color={'inherit'}>
-    {#if !inline}
+    {#if !inline && shouldShowAvatar}
       <IssueStatusIcon {value} {size} {space} on:accent-color {projectType} {taskType} />
     {/if}
     <span

@@ -22,6 +22,7 @@
   import Button from './Button.svelte'
   import DropdownLabelsPopup from './DropdownLabelsPopup.svelte'
   import Label from './Label.svelte'
+  import DropdownIcon from './icons/Dropdown.svelte'
 
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let label: IntlString | undefined = undefined
@@ -30,6 +31,7 @@
   export let multiselect = false
   export let selected: DropdownTextItem['id'] | Array<DropdownTextItem['id']> | undefined = multiselect ? [] : undefined
   export let allowDeselect: boolean = false
+  export let showDropdownIcon: boolean = false
 
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
@@ -113,6 +115,14 @@
         <Label label={label ?? ui.string.NotSelected} />
       {/if}
     </span>
+    <svelte:fragment slot="iconRight">
+      {#if showDropdownIcon}
+        <DropdownIcon
+          size={'small'}
+          fill={kind === 'primary' && !disabled ? 'var(--primary-button-content-color)' : 'var(--theme-dark-color)'}
+        />
+      {/if}
+    </svelte:fragment>
   </Button>
 </div>
 

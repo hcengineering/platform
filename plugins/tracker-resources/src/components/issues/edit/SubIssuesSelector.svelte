@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { IdMap, Ref, SortingOrder, StatusCategory, WithLookup, toIdMap } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { getStates } from '@hcengineering/task'
+  import task, { getStates } from '@hcengineering/task'
   import { Issue, Project } from '@hcengineering/tracker'
   import { Button, ButtonKind, ButtonSize, ProgressCircle, SelectPopup, showPanel } from '@hcengineering/ui'
   import { statusStore } from '@hcengineering/view-resources'
@@ -31,7 +31,7 @@
   export let kind: ButtonKind = 'link-bordered'
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'left'
-  export let width: string | undefined = 'min-contet'
+  export let width: string | undefined = 'min-content'
   export let compactMode: boolean = false
 
   let btn: HTMLElement
@@ -62,7 +62,7 @@
 
   let categories: IdMap<StatusCategory> = new Map()
 
-  getClient()
+  void getClient()
     .findAll(core.class.StatusCategory, {})
     .then((res) => {
       categories = toIdMap(res)
@@ -89,18 +89,15 @@
     }
   }
 
-  $: if (subIssues) {
+  $: if (subIssues != null) {
     const doneStatuses = getStates(project, $typeStore, $statusStore.byId)
-      .filter(
-        (s) =>
-          s?.category === tracker.issueStatusCategory.Completed || s?.category === tracker.issueStatusCategory.Canceled
-      )
+      .filter((s) => s?.category === task.statusCategory.Won || s?.category === task.statusCategory.Lost)
       .map((p) => p._id)
     countComplete = subIssues.filter((si) => doneStatuses.includes(si.status)).length
   }
   $: hasSubIssues = (subIssues?.length ?? 0) > 0
 
-  function openIssue (target: Ref<Issue>) {
+  function openIssue (target: Ref<Issue>): void {
     if (target !== value._id) {
       showPanel(tracker.component.EditIssue, target, value._class, 'content')
     }
@@ -111,15 +108,15 @@
       const aStatus = $statusStore.byId.get(a.status)
       const bStatus = $statusStore.byId.get(b.status)
       const res =
-        listIssueStatusOrder.indexOf(aStatus?.category ?? tracker.issueStatusCategory.Backlog) -
-        listIssueStatusOrder.indexOf(bStatus?.category ?? tracker.issueStatusCategory.Backlog)
+        listIssueStatusOrder.indexOf(aStatus?.category ?? task.statusCategory.UnStarted) -
+        listIssueStatusOrder.indexOf(bStatus?.category ?? task.statusCategory.UnStarted)
       return res
     })
     _subIssues = subIssues
   }
 
   $: subIssuesValue = _subIssues.map((iss) => {
-    const text = project ? `${getIssueId(project, iss)} ${iss.title}` : iss.title
+    const text = project != null ? `${getIssueId(project, iss)} ${iss.title}` : iss.title
     const c = $statusStore.byId.get(iss.status)?.category
     const category = c !== undefined ? categories.get(c) : undefined
     return {

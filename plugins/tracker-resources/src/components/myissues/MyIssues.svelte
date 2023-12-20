@@ -18,9 +18,10 @@
   import type { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import type { Issue, IssueStatus, Project } from '@hcengineering/tracker'
-  import { resolvedLocationStore, IModeSelector } from '@hcengineering/ui'
+  import { IModeSelector, resolvedLocationStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
+  import task from '@hcengineering/task'
   import tracker from '../../plugin'
   import IssuesView from '../issues/IssuesView.svelte'
 
@@ -39,13 +40,9 @@
 
   let activeStatuses: Ref<IssueStatus>[] = []
 
-  $: activeStatusQuery.query(
-    tracker.class.IssueStatus,
-    { category: { $in: [tracker.issueStatusCategory.Unstarted, tracker.issueStatusCategory.Started] } },
-    (result) => {
-      activeStatuses = result.map(({ _id }) => _id)
-    }
-  )
+  $: activeStatusQuery.query(tracker.class.IssueStatus, { category: task.statusCategory.Active }, (result) => {
+    activeStatuses = result.map(({ _id }) => _id)
+  })
 
   let active: DocumentQuery<Issue>
   $: active = { status: { $in: activeStatuses }, ...assigned }
@@ -54,13 +51,9 @@
 
   let backlogStatuses: Ref<IssueStatus>[] = []
   let backlog: DocumentQuery<Issue> = {}
-  $: backlogStatusQuery.query(
-    tracker.class.IssueStatus,
-    { category: tracker.issueStatusCategory.Backlog },
-    (result) => {
-      backlogStatuses = result.map(({ _id }) => _id)
-    }
-  )
+  $: backlogStatusQuery.query(tracker.class.IssueStatus, { category: task.statusCategory.UnStarted }, (result) => {
+    backlogStatuses = result.map(({ _id }) => _id)
+  })
   $: backlog = { status: { $in: backlogStatuses }, ...assigned }
 
   const subscribedQuery = createQuery()

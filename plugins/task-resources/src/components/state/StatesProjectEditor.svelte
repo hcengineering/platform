@@ -16,7 +16,7 @@
   import core, { Attribute, IdMap, Ref, Status, StatusCategory, toIdMap } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { ProjectStatus, ProjectType, TaskType, findStatusAttr, isTaskCategory } from '@hcengineering/task'
+  import { ProjectStatus, ProjectType, TaskType, findStatusAttr } from '@hcengineering/task'
   import {
     CircleButton,
     ColorDefinition,
@@ -231,7 +231,7 @@
           <div
             class="color"
             on:click={(ev) => {
-              if (state.category !== undefined && isTaskCategory(state.category)) {
+              if (state.category !== undefined) {
                 selectIcon(elements[i + prevIndex], state)
               } else {
                 onColor(state, color, elements[i + prevIndex])
