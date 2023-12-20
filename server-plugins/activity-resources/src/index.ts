@@ -263,10 +263,33 @@ async function ActivityMessagesHandler (tx: TxCUD<Doc>, control: TriggerControl)
   return await generateDocUpdateMessages(tx, control)
 }
 
+async function OnDocRemoved (originTx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
+  const tx = TxProcessor.extractTx(originTx) as TxCUD<Doc>
+
+  if (tx._class !== core.class.TxRemoveDoc) {
+    return []
+  }
+
+  const activityDocMixin = control.hierarchy.classHierarchyMixin(tx.objectClass, activity.mixin.ActivityDoc)
+
+  if (activityDocMixin === undefined) {
+    return []
+  }
+
+  const messages = await control.findAll(
+    activity.class.ActivityMessage,
+    { attachedTo: tx.objectId },
+    { projection: { _id: 1, _class: 1, space: 1 } }
+  )
+
+  return messages.map((message) => control.txFactory.createTxRemoveDoc(message._class, message.space, message._id))
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
     // OnReactionChanged,
-    ActivityMessagesHandler
+    ActivityMessagesHandler,
+    OnDocRemoved
   }
 })
