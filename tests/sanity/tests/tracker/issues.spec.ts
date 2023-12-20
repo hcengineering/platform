@@ -291,4 +291,27 @@ test.describe('Tracker issue tests', () => {
     const issuesDetailsPage = new IssuesDetailsPage(page)
     await issuesDetailsPage.checkIssue(newIssue)
   })
+
+  test('Delete an issue', async ({ page }) => {
+    const deleteIssue: NewIssue = {
+      title: 'Issue for deletion',
+      description: 'Description Issue for deletion'
+    }
+
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
+    await issuesPage.searchIssueByName(deleteIssue.title)
+    await issuesPage.openIssueByName(deleteIssue.title)
+
+    const issuesDetailsPage = new IssuesDetailsPage(page)
+    await issuesDetailsPage.waitDetailsOpened(deleteIssue.title)
+    await issuesDetailsPage.moreActionOnIssue('Delete')
+    await issuesDetailsPage.pressYesForPopup(page)
+
+    await issuesPage.searchIssueByName(deleteIssue.title)
+    await issuesPage.checkIssueNotExist(deleteIssue.title)
+  })
 })
