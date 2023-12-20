@@ -276,7 +276,11 @@ async function OnDocRemoved (originTx: TxCUD<Doc>, control: TriggerControl): Pro
     return []
   }
 
-  const messages = await control.findAll(activity.class.ActivityMessage, { attachedTo: tx.objectId })
+  const messages = await control.findAll(
+    activity.class.ActivityMessage,
+    { attachedTo: tx.objectId },
+    { projection: { _id: 1, _class: 1, space: 1 } }
+  )
 
   return messages.map((message) => control.txFactory.createTxRemoveDoc(message._class, message.space, message._id))
 }
