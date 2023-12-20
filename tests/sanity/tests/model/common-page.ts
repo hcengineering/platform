@@ -67,4 +67,9 @@ export class CommonPage {
   async pressButtonBack (page: Page): Promise<void> {
     await page.locator('div.history-box button:first-child').click()
   }
+
+  async checkFromDropdownWithSearch (page: Page, point: string): Promise<void> {
+    await page.locator('div.selectPopup input').fill(point)
+    await page.locator('div.selectPopup span[class^="lines"]', { hasText: point }).click()
+  }
 }

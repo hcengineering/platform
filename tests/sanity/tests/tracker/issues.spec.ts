@@ -135,8 +135,9 @@ test.describe('Tracker issue tests', () => {
 
       await issuesPage.modelSelectorAll.click()
       await issuesPage.createNewIssue(newIssue)
-      await issuesPage.checkParentIssue(newIssue.title, parentIssue.title)
+      await issuesPage.searchIssueByName(newIssue.title)
 
+      await issuesPage.checkParentIssue(newIssue.title, parentIssue.title)
       await issuesPage.openIssueByName(newIssue.title)
       const issuesDetailsPage = new IssuesDetailsPage(page)
       await issuesDetailsPage.checkIssue({
@@ -155,6 +156,8 @@ test.describe('Tracker issue tests', () => {
       }
       await issuesPage.modelSelectorAll.click()
       await issuesPage.createNewIssue(newIssue)
+      await issuesPage.searchIssueByName(newIssue.title)
+
       await issuesPage.doActionOnIssue(newIssue.title, 'Set parent issue…')
       await issuesPage.selectMenuItem(page, parentIssue.title, true)
       await issuesPage.checkParentIssue(newIssue.title, parentIssue.title)
@@ -177,6 +180,7 @@ test.describe('Tracker issue tests', () => {
       }
       await issuesPage.modelSelectorAll.click()
       await issuesPage.createNewIssue(newIssue)
+      await issuesPage.searchIssueByName(newIssue.title)
       await issuesPage.openIssueByName(newIssue.title)
 
       const issuesDetailsPage = new IssuesDetailsPage(page)
