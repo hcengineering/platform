@@ -28,16 +28,29 @@
   })
   const client = getClient()
   async function addRef ({ title, color, _id: tag }: TagElement): Promise<void> {
+    // check if tag already attached, could happen if 'add' clicked faster than ui updates
+    const containsTag = selected.some((refElement) => refElement === tag)
+    if (containsTag) {
+      return
+    }
+
+    selected.push(tag)
+
     await client.addCollection(tags.class.TagReference, object.space, object._id, object._class, 'labels', {
       title,
       color,
       tag
     })
   }
+
   async function removeTag (tag: TagElement): Promise<void> {
     const tagRef = await client.findOne(tags.class.TagReference, { tag: tag._id, attachedTo: object._id })
-    if (tagRef) await client.remove(tagRef)
+    if (tagRef) {
+      await client.remove(tagRef)
+      selected.splice(selected.indexOf(tag._id), 1)
+    }
   }
+
   async function onUpdate (event: CustomEvent<{ action: string, tag: TagElement }>) {
     const result = event.detail
     if (result === undefined) return
