@@ -51,7 +51,7 @@
 
 {#if value}
   <div class="flex-row-center">
-    {#if taskType !== undefined}
+    {#if shouldShowAvatar && taskType !== undefined}
       <div class="text-sm mr-1">
         <TaskTypeIcon value={taskType} />
       </div>

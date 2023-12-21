@@ -469,7 +469,8 @@ export function createModel (builder: Builder): void {
     core.class.TypeMarkup,
     view.component.MarkupPresenter,
     view.component.MarkupEditor,
-    view.component.MarkupEditorPopup
+    view.component.MarkupEditorPopup,
+    view.component.MarkupDiffPresenter
   )
 
   builder.mixin(core.class.TypeMarkup, core.class.Class, view.mixin.InlineAttributEditor, {

@@ -32,11 +32,7 @@
 
   let object: Doc | undefined = undefined
 
-  async function getValue (object: Doc | undefined): Promise<string | undefined> {
-    if (object === undefined) {
-      return ''
-    }
-
+  async function getValue (object: Doc): Promise<string | undefined> {
     if (viewlet?.valueAttr) {
       return (object as any)[viewlet.valueAttr]
     }
@@ -60,15 +56,17 @@
 </script>
 
 {#if object}
-  {#await getValue(object) then value}
-    {#if withIcon && message.action === 'create'}
-      <Icon icon={IconAdd} size="x-small" />
-    {/if}
-    {#if withIcon && message.action === 'remove'}
-      <Icon icon={IconDelete} size="x-small" />
-    {/if}
+  {#if withIcon && message.action === 'create'}
+    <Icon icon={IconAdd} size="x-small" />
+  {/if}
+  {#if withIcon && message.action === 'remove'}
+    <Icon icon={IconDelete} size="x-small" />
+  {/if}
 
-    {#if value}
+  {#if objectPresenter && !viewlet?.valueAttr}
+    <Component is={objectPresenter.presenter} props={{ value: object, accent: true, shouldShowAvatar: false }} />
+  {:else}
+    {#await getValue(object) then value}
       <span>
         <DocNavLink
           {object}
@@ -82,10 +80,8 @@
           <span class="separator">,</span>
         {/if}
       </span>
-    {:else if objectPresenter && object}
-      <Component is={objectPresenter.presenter} props={{ value: object, accent: true, shouldShowAvatar: false }} />
-    {/if}
-  {/await}
+    {/await}
+  {/if}
 {/if}
 
 <style lang="scss">

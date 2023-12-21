@@ -473,7 +473,7 @@ export function createModel (builder: Builder): void {
     notification.ids.NotificationCollaboratorsChanged
   )
 
-  builder.mixin(notification.mixin.Collaborators, core.class.Class, view.mixin.ActivityAttributePresenter, {
+  builder.mixin(notification.mixin.Collaborators, core.class.Class, activity.mixin.ActivityAttributeUpdatesPresenter, {
     presenter: notification.component.NotificationCollaboratorsChanged
   })
 

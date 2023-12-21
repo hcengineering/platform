@@ -14,9 +14,11 @@
 -->
 <script lang="ts">
   import { Component } from '@hcengineering/ui'
-  import view, { AttributeModel } from '@hcengineering/view'
+  import { AttributeModel } from '@hcengineering/view'
   import { getClient } from '@hcengineering/presentation'
   import { DocAttributeUpdates, DocUpdateMessageViewlet } from '@hcengineering/activity'
+
+  import activity from '../../plugin'
 
   import AddedAttributesPresenter from './attributes/AddedAttributesPresenter.svelte'
   import RemovedAttributesPresenter from './attributes/RemovedAttributesPresenter.svelte'
@@ -31,7 +33,8 @@
 
   $: presenter =
     viewlet?.config?.[attributeModel.key]?.presenter ??
-    hierarchy.classHierarchyMixin(attributeUpdates.attrClass, view.mixin.ActivityAttributePresenter)?.presenter
+    hierarchy.classHierarchyMixin(attributeUpdates.attrClass, activity.mixin.ActivityAttributeUpdatesPresenter)
+      ?.presenter
 </script>
 
 {#if presenter}
