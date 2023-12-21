@@ -41,4 +41,39 @@ test.describe('Companies tests', () => {
     const companyDetailsPage = new CompanyDetailsPage(page)
     await companyDetailsPage.checkCompany(newCompany)
   })
+
+  test('Edit a Company', async ({ page }) => {
+    const createdCompany = 'Edit Company'
+    const editCompany: NewCompany = {
+      name: `Updted Edit Company-${generateId()}`,
+      socials: [
+        {
+          type: 'Phone',
+          value: '+79835227364'
+        },
+        {
+          type: 'Email',
+          value: 'edit-company+1@gmail.com'
+        },
+        {
+          type: 'LinkedIn',
+          value: 'https://www.linkedin.com/in/test-contact/'
+        }
+      ]
+    }
+
+    const navigationMenuPage = new NavigationMenuPage(page)
+    await navigationMenuPage.buttonCompanies.click()
+
+    const companiesPage = new CompaniesPage(page)
+    await companiesPage.openCompanyByName(createdCompany)
+
+    const companyDetailsPage = new CompanyDetailsPage(page)
+    await companyDetailsPage.checkCompany({
+      name: createdCompany
+    })
+
+    await companyDetailsPage.editCompany(editCompany)
+    await companyDetailsPage.checkCompany(editCompany)
+  })
 })

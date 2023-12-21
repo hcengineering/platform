@@ -20,4 +20,13 @@ export class CompanyDetailsPage extends CommonRecruitingPage {
       }
     }
   }
+
+  async editCompany (data: NewCompany): Promise<void> {
+    await this.inputName.fill(data.name)
+    if (data.socials != null && data.socials.length !== 0) {
+      for (const social of data.socials) {
+        await this.addSocialLink(social)
+      }
+    }
+  }
 }
