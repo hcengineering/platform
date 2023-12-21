@@ -14,11 +14,10 @@
 // limitations under the License.
 //
 
-import { Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref } from '@hcengineering/core'
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
+import type { ObjectDDParticipantFunc, TriggerFunc } from '@hcengineering/server-core'
 import { Presenter } from '@hcengineering/server-notification'
-import type { TriggerFunc } from '@hcengineering/server-core'
 
 /**
  * @public
@@ -32,17 +31,7 @@ export default plugin(serverCalendarId, {
   function: {
     ReminderHTMLPresenter: '' as Resource<Presenter>,
     ReminderTextPresenter: '' as Resource<Presenter>,
-    FindReminders: '' as Resource<
-    (
-      doc: Doc,
-      hiearachy: Hierarchy,
-      findAll: <T extends Doc>(
-        clazz: Ref<Class<T>>,
-        query: DocumentQuery<T>,
-        options?: FindOptions<T>
-      ) => Promise<FindResult<T>>
-    ) => Promise<Doc[]>
-    >
+    FindReminders: '' as Resource<ObjectDDParticipantFunc>
   },
   trigger: {
     OnPersonAccountCreate: '' as Resource<TriggerFunc>

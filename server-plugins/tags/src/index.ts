@@ -13,10 +13,9 @@
 // limitations under the License.
 //
 
-import { Class, Doc, Hierarchy, Ref, FindResult, FindOptions, DocumentQuery } from '@hcengineering/core'
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { TriggerFunc } from '@hcengineering/server-core'
+import { ObjectDDParticipantFunc, TriggerFunc } from '@hcengineering/server-core'
 
 /**
  * @public
@@ -31,16 +30,6 @@ export default plugin(serverTagsId, {
     onTagReference: '' as Resource<TriggerFunc>
   },
   function: {
-    TagElementRemove: '' as Resource<
-    (
-      doc: Doc,
-      hiearachy: Hierarchy,
-      findAll: <T extends Doc>(
-        clazz: Ref<Class<T>>,
-        query: DocumentQuery<T>,
-        options?: FindOptions<T>
-      ) => Promise<FindResult<T>>
-    ) => Promise<Doc[]>
-    >
+    TagElementRemove: '' as Resource<ObjectDDParticipantFunc>
   }
 })
