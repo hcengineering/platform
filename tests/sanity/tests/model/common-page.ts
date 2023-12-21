@@ -27,6 +27,7 @@ export class CommonPage {
   }
 
   async fillToSelectPopup (page: Page, input: string): Promise<void> {
+    await expect(page.locator('div.selectPopup input')).toBeVisible()
     await page.locator('div.selectPopup input').fill(input)
     await page.locator('div.selectPopup button').click()
   }
@@ -71,5 +72,9 @@ export class CommonPage {
   async checkFromDropdownWithSearch (page: Page, point: string): Promise<void> {
     await page.locator('div.selectPopup input').fill(point)
     await page.locator('div.selectPopup span[class^="lines"]', { hasText: point }).click()
+  }
+
+  async closeNotification (page: Page): Promise<void> {
+    await page.locator('div.notify-container button[type="button"].small').nth(0).click()
   }
 }

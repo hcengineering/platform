@@ -74,10 +74,13 @@ export class IssuesPage extends CommonTrackerPage {
     )
   }
 
-  async createNewIssue (data: NewIssue): Promise<void> {
+  async createNewIssue (data: NewIssue, closeNotification: boolean = true): Promise<void> {
     await this.buttonCreateNewIssue.click()
     await this.fillNewIssueForm(data)
     await this.buttonCreateIssue.click()
+    if (closeNotification) {
+      await this.closeNotification(this.page)
+    }
   }
 
   async fillNewIssueForm (data: NewIssue): Promise<void> {
@@ -184,7 +187,7 @@ export class IssuesPage extends CommonTrackerPage {
     }
   }
 
-  async getIssueId (issueLabel: string, position: number = 1): Promise<string> {
+  async getIssueId (issueLabel: string, position: number = 0): Promise<string> {
     const id = await this.page.locator(`span[title="${issueLabel}"].overflow-label`).nth(position).textContent()
     return id?.trim() ?? ''
   }

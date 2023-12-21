@@ -42,7 +42,7 @@ test.describe('Tracker duplicate issue tests', () => {
     const firstIssueId = await issuesPage.getIssueId(firstIssue.title)
 
     await issuesPage.createNewIssue(secondIssue)
-    const secondIssueId = await issuesPage.getIssueId(secondIssue.title, 2)
+    const secondIssueId = await issuesPage.getIssueId(secondIssue.title, 1)
 
     expect(firstIssueId).not.toEqual(secondIssueId)
     await issuesPage.checkIssuesCount(firstIssue.title, 2)
