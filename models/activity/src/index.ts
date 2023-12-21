@@ -14,6 +14,7 @@
 //
 
 import {
+  type ActivityAttributeUpdatesPresenter,
   type ActivityDoc,
   type ActivityExtension,
   type ActivityExtensionKind,
@@ -55,9 +56,9 @@ import {
 import { TAttachedDoc, TClass, TDoc } from '@hcengineering/model-core'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
+import view from '@hcengineering/model-view'
 
 import activity from './plugin'
-import view from '@hcengineering/model-view'
 
 export { activityOperation } from './migration'
 export { activityId } from '@hcengineering/activity'
@@ -68,6 +69,11 @@ export const DOMAIN_ACTIVITY = 'activity' as Domain
 export class TActivityDoc extends TClass implements ActivityDoc {
   preposition?: IntlString
   ignoreCollections?: string[]
+}
+
+@Mixin(activity.mixin.ActivityAttributeUpdatesPresenter, core.class.Class)
+export class TActivityAttributeUpdatesPresenter extends TClass implements ActivityAttributeUpdatesPresenter {
+  presenter!: AnyComponent
 }
 
 @Model(activity.class.TxViewlet, core.class.Doc, DOMAIN_MODEL)
@@ -177,7 +183,8 @@ export function createModel (builder: Builder): void {
     TDocUpdateMessage,
     TDocUpdateMessageViewlet,
     TActivityExtension,
-    TReaction
+    TReaction,
+    TActivityAttributeUpdatesPresenter
   )
 
   builder.mixin(activity.class.DocUpdateMessage, core.class.Class, activity.mixin.ActivityDoc, {})

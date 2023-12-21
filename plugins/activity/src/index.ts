@@ -218,6 +218,13 @@ export interface ActivityDoc extends Class<Doc> {
 /**
  * @public
  */
+export interface ActivityAttributeUpdatesPresenter extends Class<Doc> {
+  presenter: AnyComponent
+}
+
+/**
+ * @public
+ */
 export type ActivityExtensionKind = 'input'
 
 /**
@@ -238,7 +245,8 @@ export interface Reaction extends AttachedDoc {
 
 export default plugin(activityId, {
   mixin: {
-    ActivityDoc: '' as Ref<Mixin<ActivityDoc>>
+    ActivityDoc: '' as Ref<Mixin<ActivityDoc>>,
+    ActivityAttributeUpdatesPresenter: '' as Ref<Mixin<ActivityAttributeUpdatesPresenter>>
   },
   class: {
     TxViewlet: '' as Ref<Class<TxViewlet>>,

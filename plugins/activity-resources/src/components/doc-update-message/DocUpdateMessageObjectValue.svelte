@@ -31,11 +31,7 @@
 
   const client = getClient()
 
-  async function getValue (object: Doc | undefined): Promise<string | undefined> {
-    if (object === undefined) {
-      return ''
-    }
-
+  async function getValue (object: Doc): Promise<string | undefined> {
     if (viewlet?.valueAttr) {
       return (object as any)[viewlet.valueAttr]
     }
@@ -45,7 +41,7 @@
 </script>
 
 {#await getActivityObject(client, message.objectId, message.objectClass) then { object }}
-  {#await getValue(object) then value}
+  {#if object}
     {#if withIcon && message.action === 'create'}
       <Icon icon={IconAdd} size="x-small" />
     {/if}
@@ -53,24 +49,26 @@
       <Icon icon={IconDelete} size="x-small" />
     {/if}
 
-    {#if value}
-      <span>
-        <DocNavLink
-          {object}
-          disabled={message.action === 'remove'}
-          component={objectPanel?.component ?? view.component.EditDoc}
-          shrink={0}
-        >
-          <span class="overflow-label select-text valueLink">{value}</span>
-        </DocNavLink>
-        {#if hasSeparator}
-          <span class="separator">,</span>
-        {/if}
-      </span>
-    {:else if objectPresenter && object}
+    {#if objectPresenter && !viewlet?.valueAttr}
       <Component is={objectPresenter.presenter} props={{ value: object, accent: true, shouldShowAvatar: false }} />
+    {:else}
+      {#await getValue(object) then value}
+        <span>
+          <DocNavLink
+            {object}
+            disabled={message.action === 'remove'}
+            component={objectPanel?.component ?? view.component.EditDoc}
+            shrink={0}
+          >
+            <span class="overflow-label select-text valueLink">{value}</span>
+          </DocNavLink>
+          {#if hasSeparator}
+            <span class="separator">,</span>
+          {/if}
+        </span>
+      {/await}
     {/if}
-  {/await}
+  {/if}
 {/await}
 
 <style lang="scss">

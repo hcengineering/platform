@@ -42,7 +42,6 @@
 
   $: valueMessages = message.previousMessages?.length ? [...message.previousMessages, message] : [message]
   $: hasDifferentActions = message.previousMessages?.some(({ action }) => action !== message.action)
-  // TODO: use AcrivityIcon
   $: icon = viewlet?.icon ?? collectionAttribute?.icon ?? clazz.icon ?? activity.icon.Activity
 </script>
 
