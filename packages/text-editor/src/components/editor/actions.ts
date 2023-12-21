@@ -10,6 +10,7 @@ export const generateDefaultActions = (editorHandler: TextEditorHandler): RefAct
       icon: RiMention,
       action: () => {
         editorHandler.insertText('@')
+        editorHandler.focus()
       },
       order: 3000
     },
