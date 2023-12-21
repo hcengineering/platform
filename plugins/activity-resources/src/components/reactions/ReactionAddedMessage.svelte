@@ -14,8 +14,20 @@
 -->
 <script lang="ts">
   import { Reaction } from '@hcengineering/activity'
+  import { Ref } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
 
-  export let value: Reaction | undefined
+  import activity from '../../plugin'
+
+  export let _id: Ref<Reaction>
+  export let value: Reaction | undefined = undefined
+
+  const query = createQuery()
+
+  $: value === undefined &&
+    query.query(activity.class.Reaction, { _id }, (res) => {
+      value = res[0]
+    })
 </script>
 
 <span class="labels-row gap-1">

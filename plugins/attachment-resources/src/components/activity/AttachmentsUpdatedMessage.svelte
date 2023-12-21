@@ -14,13 +14,25 @@
 -->
 <script lang="ts">
   import { DocUpdateMessage } from '@hcengineering/activity'
+  import { Ref } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
   import { Attachment } from '@hcengineering/attachment'
+  import { getOrBuildObject } from '@hcengineering/view-resources'
 
+  import attachment from '../../plugin'
   import AttachmentPresenter from '../AttachmentPresenter.svelte'
   import RemovedAttachmentPresenter from '../RemovedAttachmentPresenter.svelte'
 
   export let message: DocUpdateMessage
-  export let value: Attachment | undefined
+  export let _id: Ref<Attachment>
+  export let value: Attachment | undefined = undefined
+
+  const client = getClient()
+
+  $: value === undefined &&
+    getOrBuildObject<Attachment>(client, _id, attachment.class.Attachment).then((res) => {
+      value = res
+    })
 </script>
 
 {#if value}

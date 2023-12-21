@@ -22,17 +22,11 @@ import core, {
   groupByArray,
   type Hierarchy,
   type Ref,
-  SortingOrder,
-  type TxCollectionCUD,
-  type TxCreateDoc,
-  type TxCUD,
-  type TxMixin,
-  TxProcessor,
-  type TxUpdateDoc
+  SortingOrder
 } from '@hcengineering/core'
 import view, { type AttributeModel } from '@hcengineering/view'
 import { getClient, getFiltredKeys } from '@hcengineering/presentation'
-import { getAttributePresenter, getDocLinkTitle } from '@hcengineering/view-resources'
+import { buildRemovedDoc, getAttributePresenter, getDocLinkTitle } from '@hcengineering/view-resources'
 import { type Person } from '@hcengineering/contact'
 import { type IntlString } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui'
@@ -59,36 +53,6 @@ const valueTypes: ReadonlyArray<Ref<Class<Doc>>> = [
   core.class.TypeMarkup,
   core.class.TypeHyperlink
 ]
-
-async function buildRemovedDoc (client: Client, objectId: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<Doc | undefined> {
-  const isAttached = client.getHierarchy().isDerived(_class, core.class.AttachedDoc)
-  const txes = await client.findAll<TxCUD<Doc>>(
-    isAttached ? core.class.TxCollectionCUD : core.class.TxCUD,
-    isAttached
-      ? { 'tx.objectId': objectId as Ref<AttachedDoc> }
-      : {
-          objectId
-        },
-    { sort: { modifiedOn: 1 } }
-  )
-  const createTx = isAttached
-    ? txes.map((tx) => (tx as TxCollectionCUD<Doc, AttachedDoc>).tx).find((tx) => tx._class === core.class.TxCreateDoc)
-    : txes.find((tx) => tx._class === core.class.TxCreateDoc)
-
-  if (createTx === undefined) return
-  let doc = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<Doc>)
-
-  for (let tx of txes) {
-    tx = TxProcessor.extractTx(tx) as TxCUD<Doc>
-    if (tx._class === core.class.TxUpdateDoc) {
-      doc = TxProcessor.updateDoc2Doc(doc, tx as TxUpdateDoc<Doc>)
-    } else if (tx._class === core.class.TxMixin) {
-      const mixinTx = tx as TxMixin<Doc, Doc>
-      doc = TxProcessor.updateMixin4Doc(doc, mixinTx)
-    }
-  }
-  return doc
-}
 
 export async function getAttributeValues (client: Client, values: any[], attrClass: Ref<Class<Doc>>): Promise<any[]> {
   if (values.some((value) => typeof value !== 'string')) {
@@ -125,23 +89,6 @@ export function getCollectionAttribute (
   }
 
   return undefined
-}
-
-export async function getActivityObject (
-  client: Client,
-  objectId: Ref<Doc>,
-  objectClass: Ref<Class<Doc>>
-): Promise<{ isRemoved: boolean, object?: Doc }> {
-  const object = await client.findOne(objectClass, { _id: objectId })
-
-  if (object !== undefined) {
-    return { isRemoved: false, object }
-  }
-
-  return {
-    isRemoved: true,
-    object: await buildRemovedDoc(client, objectId, objectClass)
-  }
 }
 
 export async function getAttributeModel (

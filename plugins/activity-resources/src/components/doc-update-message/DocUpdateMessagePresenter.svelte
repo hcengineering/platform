@@ -35,7 +35,8 @@
   import DocUpdateMessageContent from './DocUpdateMessageContent.svelte'
   import DocUpdateMessageAttributes from './DocUpdateMessageAttributes.svelte'
 
-  import { getAttributeModel, getCollectionAttribute, getActivityObject } from '../../activityMessagesUtils'
+  import { getAttributeModel, getCollectionAttribute } from '../../activityMessagesUtils'
+  import { buildRemovedDoc, checkIsObjectRemoved } from '@hcengineering/view-resources'
 
   export let value: DisplayDocUpdateMessage
   export let showNotify: boolean = false
@@ -51,6 +52,8 @@
 
   const viewletQuery = createQuery()
   const userQuery = createQuery()
+  const objectQuery = createQuery()
+  const parentObjectQuery = createQuery()
 
   const collectionAttribute = getCollectionAttribute(hierarchy, value.attachedToClass, value.updateCollection)
   const clazz = hierarchy.getClass(value.objectClass)
@@ -111,26 +114,40 @@
 
   $: person = user?.person && $personByIdStore.get(user.person)
 
-  $: getActivityObject(client, value.objectId, value.objectClass).then((result) => {
-    isObjectLoading = false
-    object = result.object
-    isObjectRemoved = result.isRemoved
-  })
+  $: loadObject(value.objectId, value.objectClass)
+  $: loadParentObject(value, parentMessage)
 
-  $: getParentObject(value, parentMessage).then((result) => {
-    parentObject = result?.object
-  })
+  async function loadObject (_id: Ref<Doc>, _class: Ref<Class<Doc>>) {
+    isObjectRemoved = await checkIsObjectRemoved(client, _id, _class)
 
-  async function getParentObject (message: DocUpdateMessage, parentMessage?: ActivityMessage) {
-    if (parentMessage) {
-      return await getActivityObject(client, parentMessage.attachedTo, parentMessage.attachedToClass)
+    if (isObjectRemoved) {
+      object = await buildRemovedDoc(client, _id, _class)
+      isObjectLoading = false
+    } else {
+      objectQuery.query(_class, { _id }, (res) => {
+        isObjectLoading = false
+        object = res[0]
+      })
     }
+  }
 
-    if (message.objectId === message.attachedTo) {
+  async function loadParentObject (message: DocUpdateMessage, parentMessage?: ActivityMessage) {
+    if (!parentMessage && message.objectId === message.attachedTo) {
       return
     }
 
-    return await getActivityObject(client, message.attachedTo, message.attachedToClass)
+    const _id = parentMessage ? parentMessage.attachedTo : message.attachedTo
+    const _class = parentMessage ? parentMessage.attachedToClass : message.attachedToClass
+    const isRemoved = await checkIsObjectRemoved(client, _id, _class)
+
+    if (isRemoved) {
+      parentObject = await buildRemovedDoc(client, _id, _class)
+      return
+    }
+
+    parentObjectQuery.query(_class, { _id }, (res) => {
+      parentObject = res[0]
+    })
   }
 
   $: if (object && value.objectClass !== object._class) {
@@ -172,13 +189,13 @@
       {#if viewlet?.component}
         <ShowMore>
           <div class="customContent">
-            {#each [...(value?.previousMessages ?? []), value] as msg}
-              {#await getActivityObject(client, msg.objectId, msg.objectClass) then { object }}
-                {#if object}
-                  <Component is={viewlet.component} props={{ message: value, value: object }} />
-                {/if}
-              {/await}
+            {#each value?.previousMessages ?? [] as msg}
+              <Component is={viewlet.component} props={{ message: msg, _id: msg.objectId, _class: msg.objectClass }} />
             {/each}
+            <Component
+              is={viewlet.component}
+              props={{ message: value, _id: value.objectId, _class: value.objectClass, value: object }}
+            />
           </div>
         </ShowMore>
       {:else if value.action === 'create' || value.action === 'remove'}

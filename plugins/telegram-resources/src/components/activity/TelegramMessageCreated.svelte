@@ -13,10 +13,32 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { MessageViewer } from '@hcengineering/presentation'
+  import { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
   import { TelegramMessage } from '@hcengineering/telegram'
+  import { Ref } from '@hcengineering/core'
+  import { buildRemovedDoc, checkIsObjectRemoved } from '@hcengineering/view-resources'
 
-  export let value: TelegramMessage | undefined
+  import telegram from '../../plugin'
+
+  export let _id: Ref<TelegramMessage> | undefined = undefined
+  export let value: TelegramMessage | undefined = undefined
+
+  const query = createQuery()
+  const client = getClient()
+
+  $: value === undefined && _id && loadObject(_id)
+
+  async function loadObject (_id: Ref<TelegramMessage>) {
+    const isRemoved = await checkIsObjectRemoved(client, _id, telegram.class.Message)
+
+    if (isRemoved) {
+      value = await buildRemovedDoc(client, _id, telegram.class.Message)
+    } else {
+      query.query(telegram.class.Message, { _id }, (res) => {
+        value = res[0]
+      })
+    }
+  }
 </script>
 
 {#if value}
