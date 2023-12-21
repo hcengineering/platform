@@ -120,6 +120,7 @@
     "GetTalentIds": "Получить ID талантов",
     "HideDoneState": "Скрыть завершенных кандидатов",
     "HideArchivedVacancies": "Скрыть архивные вакансии",
+    "HideApplicantsFromArchivedVacancies": "Скрыть из архивных вакансии",
     "CreateNewSkills": "Создать навыки, если не найдены существующие"
   },
   "status": {
