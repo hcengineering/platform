@@ -468,7 +468,6 @@ export function createModel (builder: Builder): void {
       objectClass: notification.mixin.Collaborators,
       action: 'update',
       icon: notification.icon.Notifications,
-      component: notification.activity.TxCollaboratorsChange,
       label: notification.string.ChangeCollaborators
     },
     notification.ids.NotificationCollaboratorsChanged

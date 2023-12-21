@@ -14,14 +14,28 @@
 -->
 <script lang="ts">
   import type { Backlink } from '@hcengineering/chunter'
-  import { MessageViewer } from '@hcengineering/presentation'
+  import { createQuery, MessageViewer } from '@hcengineering/presentation'
+  import { Ref } from '@hcengineering/core'
 
-  export let value: Backlink
+  import chunter from '../plugin'
+
+  export let _id: Ref<Backlink> | undefined = undefined
+  export let value: Backlink | undefined = undefined
+
+  const query = createQuery()
+
+  $: value === undefined &&
+    _id &&
+    query.query(chunter.class.Backlink, { _id }, (res) => {
+      value = res[0]
+    })
 </script>
 
-<div class="root">
-  <MessageViewer message={value?.message} />
-</div>
+{#if value}
+  <div class="root">
+    <MessageViewer message={value.message} />
+  </div>
+{/if}
 
 <style lang="scss">
   .root {
