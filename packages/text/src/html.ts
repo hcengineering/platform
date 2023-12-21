@@ -28,7 +28,9 @@ export function getHTML (node: ProseMirrorNode, extensions: Extensions): string 
 /**
  * @public
  */
-export function parseHTML (content: string, extensions: Extensions): ProseMirrorNode {
+export function parseHTML (content: string, extensions?: Extensions): ProseMirrorNode {
+  extensions = extensions ?? defaultExtensions
+
   const schema = getSchema(extensions)
   const json = generateJSON(content, extensions)
 

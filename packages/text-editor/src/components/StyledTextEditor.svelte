@@ -16,12 +16,11 @@
   import { createEventDispatcher } from 'svelte'
   import { AnyExtension, mergeAttributes } from '@tiptap/core'
   import { Node as ProseMirrorNode } from '@tiptap/pm/model'
-  import { getResource, IntlString } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
+  import { IntlString } from '@hcengineering/platform'
   import { Button, ButtonSize, Scroller } from '@hcengineering/ui'
   import textEditorPlugin from '../plugin'
-  import { RefAction, RefInputActionItem, TextEditorHandler, TextFormatCategory } from '../types'
-  import { generateDefaultActions } from './editor/actions'
+  import { RefAction, TextEditorHandler, TextFormatCategory } from '../types'
+  import { defaultRefActions, getModelRefActions } from './editor/actions'
   import TextEditor from './TextEditor.svelte'
 
   const dispatch = createEventDispatcher()
@@ -84,7 +83,6 @@
           ? 'max-content'
           : maxHeight
 
-  const client = getClient()
   const editorHandler: TextEditorHandler = {
     insertText: (text) => {
       textEditor?.insertText(text)
@@ -97,20 +95,10 @@
       textEditor?.focus()
     }
   }
-  let actions: RefAction[] = generateDefaultActions(editorHandler)
-    .concat(...extraActions)
-    .sort((a, b) => a.order - b.order)
-  client.findAll<RefInputActionItem>(textEditorPlugin.class.RefInputActionItem, {}).then(async (res) => {
-    const cont: RefAction[] = []
-    for (const r of res) {
-      cont.push({
-        label: r.label,
-        icon: r.icon,
-        order: r.order ?? 10000,
-        action: await getResource(r.action)
-      })
-    }
-    actions = actions.concat(...cont).sort((a, b) => a.order - b.order)
+  let actions: RefAction[] = defaultRefActions.concat(...extraActions).sort((a, b) => a.order - b.order)
+
+  void getModelRefActions().then((modelActions) => {
+    actions = actions.concat(...modelActions).sort((a, b) => a.order - b.order)
   })
 
   const mergedEditorAttributes = mergeAttributes(

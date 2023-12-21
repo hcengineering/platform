@@ -32,7 +32,10 @@
   $: isTextType = getIsTextType(attributeModel)
 
   function getIsTextType (attributeModel: AttributeModel): boolean {
-    return attributeModel.attribute?.type?._class === core.class.TypeMarkup
+    return (
+      attributeModel.attribute?.type?._class === core.class.TypeMarkup ||
+      attributeModel.attribute?.type?._class === core.class.TypeCollaborativeMarkup
+    )
   }
 
   let isDiffShown = false

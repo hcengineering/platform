@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,19 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Space } from '@hcengineering/core'
-  import type { IntlString } from '@hcengineering/platform'
-  import { Section } from '@hcengineering/ui'
-  import plugin from '../plugin'
-  import IconMembersOutline from './icons/MembersOutline.svelte'
-  import SpaceMembers from './SpaceMembers.svelte'
+  import { Doc } from '@hcengineering/core'
 
-  export let label: IntlString = plugin.string.Members
-  export let space: Space
+  import { KeyedAttribute } from '@hcengineering/presentation'
+  import { CollaborativeAttributeSectionBox } from '@hcengineering/text-editor'
+
+  export let object: Doc
+  export let key: KeyedAttribute
 </script>
 
-<Section {label} icon={IconMembersOutline}>
-  <svelte:fragment slot="content">
-    <SpaceMembers {space} />
-  </svelte:fragment>
-</Section>
+{#key object._id}
+  <CollaborativeAttributeSectionBox {object} {key} label={key.attr.label} />
+{/key}

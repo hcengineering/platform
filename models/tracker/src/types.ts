@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import chunter from '@hcengineering/chunter'
 import contact, { type Employee, type Person } from '@hcengineering/contact'
 import {
   DOMAIN_MODEL,
@@ -33,6 +34,7 @@ import {
   Model,
   Prop,
   ReadOnly,
+  TypeCollaborativeMarkup,
   TypeDate,
   TypeMarkup,
   TypeNumber,
@@ -64,7 +66,6 @@ import {
   type TimeSpendReport
 } from '@hcengineering/tracker'
 import tracker from './plugin'
-import chunter from '@hcengineering/chunter'
 
 export const DOMAIN_TRACKER = 'tracker' as Domain
 
@@ -170,7 +171,7 @@ export class TIssue extends TTask implements Issue {
   @Index(IndexKind.FullText)
     title!: string
 
-  @Prop(TypeMarkup(), tracker.string.Description)
+  @Prop(TypeCollaborativeMarkup(), tracker.string.Description)
   @Index(IndexKind.FullText)
     description!: Markup
 
@@ -258,7 +259,7 @@ export class TIssueTemplate extends TDoc implements IssueTemplate {
   @Index(IndexKind.FullText)
     title!: string
 
-  @Prop(TypeMarkup(), tracker.string.Description)
+  @Prop(TypeCollaborativeMarkup(), tracker.string.Description)
   @Index(IndexKind.FullText)
     description!: Markup
 

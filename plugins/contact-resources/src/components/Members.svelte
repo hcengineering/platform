@@ -16,7 +16,7 @@
   import { Member } from '@hcengineering/contact'
   import type { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Button, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
+  import { Button, IconAdd, Label, Section, showPopup } from '@hcengineering/ui'
   import { Viewlet, ViewletPreference } from '@hcengineering/view'
   import { Table, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
   import contact from '../plugin'
@@ -66,14 +66,8 @@
   let preference: ViewletPreference | undefined
 </script>
 
-<div class="antiSection">
-  <div class="antiSection-header">
-    <div class="antiSection-header__icon">
-      <Icon icon={IconMembersOutline} size={'small'} />
-    </div>
-    <span class="antiSection-header__title">
-      <Label label={contact.string.Members} />
-    </span>
+<Section label={contact.string.Members} icon={IconMembersOutline}>
+  <svelte:fragment slot="header">
     <div class="buttons-group xsmall-gap">
       <ViewletSelector
         hidden
@@ -85,25 +79,28 @@
       <ViewletSettingButton kind={'ghost'} bind:viewlet />
       <Button id={contact.string.AddMember} icon={IconAdd} kind={'ghost'} on:click={createApp} />
     </div>
-  </div>
-  {#if members > 0 && viewlet}
-    <Table
-      _class={contact.class.Member}
-      config={preference?.config ?? viewlet.config}
-      options={viewlet.options}
-      query={{ attachedTo: objectId }}
-      loadingProps={{ length: members }}
-    />
-  {:else}
-    <div class="antiSection-empty solid flex-col mt-3">
-      <span class="content-dark-color">
-        <Label label={contact.string.NoMembers} />
-      </span>
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <span class="over-underline content-color" on:click={createApp}>
-        <Label label={contact.string.AddMember} />
-      </span>
-    </div>
-  {/if}
-</div>
+  </svelte:fragment>
+
+  <svelte:fragment slot="content">
+    {#if members > 0 && viewlet}
+      <Table
+        _class={contact.class.Member}
+        config={preference?.config ?? viewlet.config}
+        options={viewlet.options}
+        query={{ attachedTo: objectId }}
+        loadingProps={{ length: members }}
+      />
+    {:else}
+      <div class="antiSection-empty solid flex-col mt-3">
+        <span class="content-dark-color">
+          <Label label={contact.string.NoMembers} />
+        </span>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <span class="over-underline content-color" on:click={createApp}>
+          <Label label={contact.string.AddMember} />
+        </span>
+      </div>
+    {/if}
+  </svelte:fragment>
+</Section>

@@ -33,7 +33,8 @@ const valueTypes: ReadonlyArray<Ref<Class<Doc>>> = [
   core.class.EnumOf,
   core.class.TypeNumber,
   core.class.TypeDate,
-  core.class.TypeMarkup
+  core.class.TypeMarkup,
+  core.class.TypeCollaborativeMarkup
 ]
 
 export type TxDisplayViewlet =

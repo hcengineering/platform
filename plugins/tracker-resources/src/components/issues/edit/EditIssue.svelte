@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachmentStyleBoxEditor } from '@hcengineering/attachment-resources'
+  import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
   import { Class, Doc, Ref, WithLookup } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
@@ -67,26 +67,26 @@
   let currentProject: Project | undefined
   let title = ''
   let innerWidth: number
-  let descriptionBox: AttachmentStyleBoxEditor
+  let descriptionBox: AttachmentStyleBoxCollabEditor
   let showAllMixins: boolean
 
   const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
 
   $: read(_id)
-  function read (_id: Ref<Doc>) {
+  function read (_id: Ref<Doc>): void {
     if (lastId !== _id) {
       const prev = lastId
       lastId = _id
-      notificationClient.then((client) => client.read(prev))
+      void notificationClient.then((client) => client.read(prev))
     }
   }
 
   onDestroy(async () => {
-    notificationClient.then((client) => client.read(_id))
+    void notificationClient.then((client) => client.read(_id))
   })
 
-  $: _id &&
-    _class &&
+  $: _id !== undefined &&
+    _class !== undefined &&
     queryClient.query<Issue>(
       _class,
       { _id },
@@ -95,7 +95,7 @@
           await save()
         }
         ;[issue] = result
-        if (issue) {
+        if (issue !== undefined) {
           title = issue.title
           currentProject = issue.$lookup?.space
         }
@@ -103,13 +103,13 @@
       { lookup: { attachedTo: tracker.class.Issue, space: tracker.class.Project } }
     )
 
-  $: issueId = currentProject && issue && getIssueId(currentProject, issue)
+  $: issueId = currentProject !== undefined && issue !== undefined && getIssueId(currentProject, issue)
   $: canSave = title.trim().length > 0
   $: parentIssue = issue?.$lookup?.attachedTo
 
   let saved = false
-  async function save () {
-    if (!issue || !canSave) {
+  async function save (): Promise<void> {
+    if (issue === undefined || !canSave) {
       return
     }
 
@@ -121,7 +121,7 @@
   }
 
   function showMenu (ev?: Event): void {
-    if (issue) {
+    if (issue !== undefined) {
       showPopup(
         ContextMenu,
         { object: issue, excludedActions: [view.action.Open] },
@@ -153,7 +153,7 @@
     const clazz = hierarchy.getClass(_class)
     const editorMixin = hierarchy.as(clazz, view.mixin.ObjectEditorFooter)
     if (editorMixin?.editor == null && clazz.extends != null) return getEditorFooter(clazz.extends)
-    if (editorMixin.editor) {
+    if (editorMixin.editor !== undefined) {
       return { footer: editorMixin.editor, props: editorMixin?.props }
     }
     return undefined
@@ -254,7 +254,7 @@
       on:blur={save}
     />
     <div class="w-full mt-6">
-      <AttachmentStyleBoxEditor
+      <AttachmentStyleBoxCollabEditor
         focusIndex={30}
         object={issue}
         key={{ key: 'description', attr: descriptionKey }}
@@ -266,9 +266,8 @@
         }}
       />
     </div>
-
     <div class="mt-6">
-      {#key issue._id && currentProject !== undefined}
+      {#key issue._id !== undefined && currentProject !== undefined}
         {#if currentProject !== undefined}
           <SubIssues focusIndex={50} {issue} shouldSaveDraft />
         {/if}
@@ -286,7 +285,7 @@
     </span>
 
     <svelte:fragment slot="custom-attributes">
-      {#if issue && currentProject}
+      {#if issue !== undefined && currentProject}
         <div class="space-divider" />
         <ControlPanel {issue} {showAllMixins} />
       {/if}

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachmentStyleBoxEditor } from '@hcengineering/attachment-resources'
+  import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
   import { Class, Doc, Ref, WithLookup } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
@@ -45,25 +45,25 @@
   let title = ''
   let innerWidth: number
 
-  let descriptionBox: AttachmentStyleBoxEditor
+  let descriptionBox: AttachmentStyleBoxCollabEditor
 
   const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
 
   $: read(_id)
-  function read (_id: Ref<Doc>) {
+  function read (_id: Ref<Doc>): void {
     if (lastId !== _id) {
       const prev = lastId
       lastId = _id
-      notificationClient.then((client) => client.read(prev))
+      void notificationClient.then((client) => client.read(prev))
     }
   }
 
   onDestroy(async () => {
-    notificationClient.then((client) => client.read(_id))
+    void notificationClient.then((client) => client.read(_id))
   })
 
-  $: _id &&
-    _class &&
+  $: _id !== undefined &&
+    _class !== undefined &&
     query.query(
       _class,
       { _id },
@@ -79,8 +79,8 @@
 
   let saved = false
 
-  async function save () {
-    if (!template || !canSave) {
+  async function save (): Promise<void> {
+    if (template === undefined || !canSave) {
       return
     }
 
@@ -92,7 +92,7 @@
   }
 
   function showMenu (ev?: Event): void {
-    if (template) {
+    if (template !== undefined) {
       showPopup(
         ContextMenu,
         { object: template, excludedActions: [view.action.Open] },
@@ -151,7 +151,7 @@
   >
     <EditBox bind:value={title} placeholder={tracker.string.IssueTitlePlaceholder} kind="large-style" on:blur={save} />
     <div class="w-full mt-6">
-      <AttachmentStyleBoxEditor
+      <AttachmentStyleBoxCollabEditor
         focusIndex={30}
         object={template}
         key={{ key: 'description', attr: descriptionKey }}
@@ -163,7 +163,7 @@
       />
     </div>
     <div class="mt-6">
-      {#key template._id && currentProject !== undefined}
+      {#key template._id !== undefined && currentProject !== undefined}
         {#if currentProject !== undefined}
           <SubIssueTemplates
             maxHeight="limited"
@@ -204,7 +204,7 @@
     </svelte:fragment>
 
     <svelte:fragment slot="custom-attributes">
-      {#if template && currentProject}
+      {#if template !== undefined && currentProject}
         <TemplateControlPanel issue={template} />
       {/if}
     </svelte:fragment>

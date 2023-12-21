@@ -25,6 +25,7 @@ import {
   Model,
   Prop,
   ReadOnly,
+  TypeCollaborativeMarkup,
   TypeDate,
   TypeMarkup,
   TypeRef,
@@ -94,7 +95,7 @@ export class TCustomer extends TContact implements Customer {
   @Prop(Collection(lead.class.Lead), lead.string.Leads)
     leads?: number
 
-  @Prop(TypeMarkup(), core.string.Description)
+  @Prop(TypeCollaborativeMarkup(), core.string.Description)
   @Index(IndexKind.FullText)
     description!: string
 }

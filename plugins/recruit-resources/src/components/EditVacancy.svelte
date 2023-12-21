@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachmentStyleBoxEditor } from '@hcengineering/attachment-resources'
+  import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
   import core, { ClassifierKind, Data, Doc, Mixin, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
@@ -44,7 +44,7 @@
   const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
 
   onDestroy(async () => {
-    notificationClient.then((client) => client.read(_id))
+    void notificationClient.then((client) => client.read(_id))
   })
 
   const client = getClient()
@@ -56,8 +56,8 @@
     if (lastId !== _id) {
       const prev = lastId
       lastId = _id
-      if (prev) {
-        notificationClient.then((client) => client.read(prev))
+      if (prev !== undefined) {
+        void notificationClient.then((client) => client.read(prev))
       }
       query.query(recruit.class.Vacancy, { _id }, (result) => {
         object = result[0] as Required<Vacancy>
@@ -95,11 +95,11 @@
 
   $: getMixins(object, showAllMixins)
 
-  let descriptionBox: AttachmentStyleBoxEditor
+  let descriptionBox: AttachmentStyleBoxCollabEditor
   $: descriptionKey = client.getHierarchy().getAttribute(recruit.class.Vacancy, 'fullDescription')
   let saved = false
-  async function save () {
-    if (!object) {
+  async function save (): Promise<void> {
+    if (object === undefined) {
       return
     }
 
@@ -178,7 +178,7 @@
 
     <!-- <EditBox bind:value={object.description} placeholder={recruit.string.VacancyDescription} focusable on:blur={save} /> -->
     <div class="w-full mt-6">
-      <AttachmentStyleBoxEditor
+      <AttachmentStyleBoxCollabEditor
         focusIndex={30}
         {object}
         key={{ key: 'fullDescription', attr: descriptionKey }}

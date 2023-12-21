@@ -88,7 +88,7 @@
   const selection = listProvider.selection
 
   $: selectionIds = new Set($selection.map((it) => it._id))
-  $: selected = items.filter((it) => selectionIds.has(it._id))
+  $: selected = itemsProj.filter((it) => selectionIds.has(it._id))
 </script>
 
 {#if headerComponent || groupByKey === noCategory}
