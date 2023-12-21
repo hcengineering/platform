@@ -15,7 +15,7 @@
 
 import { MeasureContext } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
-import { defaultExtensions } from '@hcengineering/text'
+import { serverExtensions } from '@hcengineering/text'
 import { Hocuspocus, onAuthenticatePayload } from '@hocuspocus/server'
 import bp from 'body-parser'
 import compression from 'compression'
@@ -111,7 +111,7 @@ export async function start (
     extensions: [
       new ActionsExtension({
         ctx: extensionsCtx.newChild('actions', {}),
-        transformer: new HtmlTransformer(defaultExtensions)
+        transformer: new HtmlTransformer(serverExtensions)
       }),
       new StorageExtension({
         ctx: extensionsCtx.newChild('storage', {}),
@@ -121,12 +121,12 @@ export async function start (
             mongodb: new MongodbStorageAdapter(
               storageCtx.newChild('mongodb', {}),
               mongo,
-              new HtmlTransformer(defaultExtensions)
+              new HtmlTransformer(serverExtensions)
             ),
             platform: new PlatformStorageAdapter(
               storageCtx.newChild('platform', {}),
               config.TransactorUrl,
-              new HtmlTransformer(defaultExtensions)
+              new HtmlTransformer(serverExtensions)
             )
           },
           'minio'

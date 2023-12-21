@@ -99,7 +99,7 @@ export class MinioStorageAdapter implements StorageAdapter {
         })
 
         try {
-          const client = await getTxOperations(connection, decodedToken)
+          const client = await getTxOperations(connection, decodedToken, true)
 
           const current = await ctx.with('query', {}, async () => {
             return await client.findOne(attachment.class.Attachment, { _id: documentId as Ref<Attachment> })
