@@ -29,7 +29,7 @@
   const client = getClient()
   async function addRef ({ title, color, _id: tag }: TagElement): Promise<void> {
     // check if tag already attached, could happen if 'add' clicked faster than ui updates
-    const tagRef = await client.findOne(tags.class.TagReference, { tag: tag, attachedTo: object._id })
+    const tagRef = await client.findOne(tags.class.TagReference, { tag, attachedTo: object._id })
 
     if (!tagRef) {
       await client.addCollection(tags.class.TagReference, object.space, object._id, object._class, 'labels', {
@@ -44,7 +44,7 @@
     if (tagRef) await client.remove(tagRef)
   }
 
-  async function onUpdate (event: CustomEvent<{ action: string; tag: TagElement }>) {
+  async function onUpdate (event: CustomEvent<{ action: string, tag: TagElement }>) {
     const result = event.detail
     if (result === undefined) return
     if (result.action === 'add') addRef(result.tag)
