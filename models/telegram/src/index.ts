@@ -140,7 +140,7 @@ export function createModel (builder: Builder): void {
       objectClass: telegram.class.Message,
       action: 'create',
       icon: contact.icon.Telegram,
-      component: telegram.notification.NotificationMessageCreated,
+      component: telegram.activity.TelegramMessageCreated,
       label: telegram.string.SharedMessages
     },
     telegram.ids.TelegramMessageCreatedActivityViewlet

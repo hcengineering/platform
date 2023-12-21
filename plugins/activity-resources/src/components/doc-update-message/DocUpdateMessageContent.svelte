@@ -20,7 +20,7 @@
   import view from '@hcengineering/view'
   import activity, { DisplayDocUpdateMessage, DocUpdateMessage, DocUpdateMessageViewlet } from '@hcengineering/activity'
 
-  import NotificationObjectValue from './DocUpdateMessageObjectValue.svelte'
+  import DocUpdateMessageObjectValue from './DocUpdateMessageObjectValue.svelte'
 
   export let message: DisplayDocUpdateMessage
   export let viewlet: DocUpdateMessageViewlet | undefined
@@ -42,7 +42,6 @@
 
   $: valueMessages = message.previousMessages?.length ? [...message.previousMessages, message] : [message]
   $: hasDifferentActions = message.previousMessages?.some(({ action }) => action !== message.action)
-  // TODO: use AcrivityIcon
   $: icon = viewlet?.icon ?? collectionAttribute?.icon ?? clazz.icon ?? activity.icon.Activity
 </script>
 
@@ -70,7 +69,7 @@
     {@const createMessages = valueMessages.filter(({ action }) => action === 'create')}
 
     {#each createMessages as valueMessage, index}
-      <NotificationObjectValue
+      <DocUpdateMessageObjectValue
         message={valueMessage}
         {objectPresenter}
         {objectPanel}
@@ -80,7 +79,7 @@
       />
     {/each}
     {#each removeMessages as valueMessage, index}
-      <NotificationObjectValue
+      <DocUpdateMessageObjectValue
         message={valueMessage}
         {objectPresenter}
         {objectPanel}
@@ -91,7 +90,7 @@
     {/each}
   {:else}
     {#each valueMessages as valueMessage, index}
-      <NotificationObjectValue
+      <DocUpdateMessageObjectValue
         message={valueMessage}
         {objectPresenter}
         {objectPanel}

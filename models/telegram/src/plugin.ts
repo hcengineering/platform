@@ -52,6 +52,7 @@ export default mergeIds(telegramId, telegram, {
   },
   activity: {
     TxMessage: '' as AnyComponent,
-    TxSharedCreate: '' as AnyComponent
+    TxSharedCreate: '' as AnyComponent,
+    TelegramMessageCreated: '' as AnyComponent
   }
 })
