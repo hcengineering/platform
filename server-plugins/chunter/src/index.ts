@@ -13,11 +13,10 @@
 // limitations under the License.
 //
 
-import { Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref } from '@hcengineering/core'
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { TriggerFunc } from '@hcengineering/server-core'
-import { Presenter, TypeMatchFunc, NotificationContentProvider } from '@hcengineering/server-notification'
+import { ObjectDDParticipantFunc, TriggerFunc } from '@hcengineering/server-core'
+import { NotificationContentProvider, Presenter, TypeMatchFunc } from '@hcengineering/server-notification'
 
 /**
  * @public
@@ -34,17 +33,7 @@ export default plugin(serverChunterId, {
     OnMessageSent: '' as Resource<TriggerFunc>
   },
   function: {
-    CommentRemove: '' as Resource<
-    (
-      doc: Doc,
-      hiearachy: Hierarchy,
-      findAll: <T extends Doc>(
-        clazz: Ref<Class<T>>,
-        query: DocumentQuery<T>,
-        options?: FindOptions<T>
-      ) => Promise<FindResult<T>>
-    ) => Promise<Doc[]>
-    >,
+    CommentRemove: '' as Resource<ObjectDDParticipantFunc>,
     ChannelHTMLPresenter: '' as Resource<Presenter>,
     ChannelTextPresenter: '' as Resource<Presenter>,
     IsDirectMessage: '' as TypeMatchFunc,

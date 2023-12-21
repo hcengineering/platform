@@ -14,27 +14,19 @@
 // limitations under the License.
 //
 
-import { type Builder, Model, Mixin } from '@hcengineering/model'
+import { Mixin, Model, type Builder } from '@hcengineering/model'
 import { TClass, TDoc } from '@hcengineering/model-core'
 import type { Resource } from '@hcengineering/platform'
 
-import core, {
-  type Class,
-  DOMAIN_MODEL,
-  type Doc,
-  type DocumentQuery,
-  type FindOptions,
-  type FindResult,
-  type Hierarchy,
-  type Ref
-} from '@hcengineering/core'
+import core, { DOMAIN_MODEL } from '@hcengineering/core'
 import type {
+  ClassSearchConfig,
   ObjectDDParticipant,
-  Trigger,
-  TriggerFunc,
+  ObjectDDParticipantFunc,
   SearchPresenter,
   SearchPresenterFunc,
-  ClassSearchConfig
+  Trigger,
+  TriggerFunc
 } from '@hcengineering/server-core'
 import serverCore from '@hcengineering/server-core'
 
@@ -47,17 +39,7 @@ export class TTrigger extends TDoc implements Trigger {
 
 @Model(serverCore.mixin.ObjectDDParticipant, core.class.Class)
 export class TObjectDDParticipant extends TClass implements ObjectDDParticipant {
-  collectDocs!: Resource<
-  (
-    doc: Doc,
-    hiearachy: Hierarchy,
-    findAll: <T extends Doc>(
-      clazz: Ref<Class<T>>,
-      query: DocumentQuery<T>,
-      options?: FindOptions<T>
-    ) => Promise<FindResult<T>>
-  ) => Promise<Doc[]>
-  >
+  collectDocs!: Resource<ObjectDDParticipantFunc>
 }
 
 @Mixin(serverCore.mixin.SearchPresenter, core.class.Class)
