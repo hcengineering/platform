@@ -113,11 +113,35 @@ export interface ActivityMessage extends AttachedDoc {
   reactions?: number
 }
 
-export type DisplayActivityMessage = DisplayDocUpdateMessage | ActivityMessage
+export type DisplayActivityMessage = DisplayDocUpdateMessage | ActivityMessage | ActivityInfoMessage
 
 export interface DisplayDocUpdateMessage extends DocUpdateMessage {
   previousMessages?: DocUpdateMessage[]
   combinedMessagesIds?: Ref<DocUpdateMessage>[]
+}
+
+/**
+ * Designed to control and filter some of changes from being to be propagated into activity.
+ * @public
+ */
+export interface ActivityMessageControl extends Doc {
+  objectClass: Ref<Class<Doc>>
+
+  // A set of rules to be skipped from generate doc update activity messages
+  skip: DocumentQuery<Tx>[]
+}
+
+/**
+ *
+ * General information activity message.
+ * @public
+ */
+export interface ActivityInfoMessage extends ActivityMessage {
+  title?: IntlString
+  message: IntlString
+  props?: Record<string, any>
+  icon?: Asset
+  iconProps?: Record<string, any>
 }
 
 export type ActivityMessageExtensionKind = 'action' | 'footer'
@@ -218,6 +242,13 @@ export interface ActivityDoc extends Class<Doc> {
 /**
  * @public
  */
+export interface ActivityAttributeUpdatesPresenter extends Class<Doc> {
+  presenter: AnyComponent
+}
+
+/**
+ * @public
+ */
 export type ActivityExtensionKind = 'input'
 
 /**
@@ -238,12 +269,15 @@ export interface Reaction extends AttachedDoc {
 
 export default plugin(activityId, {
   mixin: {
-    ActivityDoc: '' as Ref<Mixin<ActivityDoc>>
+    ActivityDoc: '' as Ref<Mixin<ActivityDoc>>,
+    ActivityAttributeUpdatesPresenter: '' as Ref<Mixin<ActivityAttributeUpdatesPresenter>>
   },
   class: {
     TxViewlet: '' as Ref<Class<TxViewlet>>,
     DocUpdateMessage: '' as Ref<Class<DocUpdateMessage>>,
     ActivityMessage: '' as Ref<Class<ActivityMessage>>,
+    ActivityInfoMessage: '' as Ref<Class<ActivityInfoMessage>>,
+    ActivityMessageControl: '' as Ref<Class<ActivityMessageControl>>,
     DocUpdateMessageViewlet: '' as Ref<Class<DocUpdateMessageViewlet>>,
     ActivityMessageExtension: '' as Ref<Class<ActivityMessageExtension>>,
     ActivityMessagesFilter: '' as Ref<Class<ActivityMessagesFilter>>,
@@ -280,6 +314,7 @@ export default plugin(activityId, {
     Activity: '' as AnyComponent,
     ActivityMessagePresenter: '' as AnyComponent,
     DocUpdateMessagePresenter: '' as AnyComponent,
+    ActivityInfoMessagePresenter: '' as AnyComponent,
     ReactionAddedMessage: '' as AnyComponent
   }
 })

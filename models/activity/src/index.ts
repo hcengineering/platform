@@ -14,6 +14,8 @@
 //
 
 import {
+  type ActivityAttributeUpdatesPresenter,
+  type ActivityInfoMessage,
   type ActivityDoc,
   type ActivityExtension,
   type ActivityExtensionKind,
@@ -27,7 +29,8 @@ import {
   type DocUpdateMessageViewlet,
   type DocUpdateMessageViewletAttributesConfig,
   type Reaction,
-  type TxViewlet
+  type TxViewlet,
+  type ActivityMessageControl
 } from '@hcengineering/activity'
 import core, {
   DOMAIN_MODEL,
@@ -50,14 +53,15 @@ import {
   TypeString,
   Mixin,
   Collection,
-  TypeBoolean
+  TypeBoolean,
+  TypeIntlString
 } from '@hcengineering/model'
 import { TAttachedDoc, TClass, TDoc } from '@hcengineering/model-core'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
+import view from '@hcengineering/model-view'
 
 import activity from './plugin'
-import view from '@hcengineering/model-view'
 
 export { activityOperation } from './migration'
 export { activityId } from '@hcengineering/activity'
@@ -68,6 +72,11 @@ export const DOMAIN_ACTIVITY = 'activity' as Domain
 export class TActivityDoc extends TClass implements ActivityDoc {
   preposition?: IntlString
   ignoreCollections?: string[]
+}
+
+@Mixin(activity.mixin.ActivityAttributeUpdatesPresenter, core.class.Class)
+export class TActivityAttributeUpdatesPresenter extends TClass implements ActivityAttributeUpdatesPresenter {
+  presenter!: AnyComponent
 }
 
 @Model(activity.class.TxViewlet, core.class.Doc, DOMAIN_MODEL)
@@ -111,6 +120,24 @@ export class TDocUpdateMessage extends TActivityMessage implements DocUpdateMess
   action!: DocUpdateAction
   updateCollection?: string
   attributeUpdates?: DocAttributeUpdates
+}
+
+@Model(activity.class.ActivityInfoMessage, activity.class.ActivityMessage, DOMAIN_ACTIVITY)
+export class TActivityInfoMessage extends TActivityMessage implements ActivityInfoMessage {
+  @Prop(TypeIntlString(), activity.string.Update)
+    message!: IntlString
+
+  props!: Record<string, any>
+  icon!: Asset
+  iconProps!: Record<string, any>
+}
+
+@Model(activity.class.ActivityMessageControl, core.class.Doc, DOMAIN_MODEL)
+export class TActivityMessageControl extends TDoc implements ActivityMessageControl {
+  objectClass!: Ref<Class<Doc>>
+
+  // A set of rules to be skipped from generate doc update activity messages
+  skip!: DocumentQuery<Tx>[]
 }
 
 @Model(activity.class.DocUpdateMessageViewlet, core.class.Doc, DOMAIN_MODEL)
@@ -177,13 +204,20 @@ export function createModel (builder: Builder): void {
     TDocUpdateMessage,
     TDocUpdateMessageViewlet,
     TActivityExtension,
-    TReaction
+    TReaction,
+    TActivityAttributeUpdatesPresenter,
+    TActivityInfoMessage,
+    TActivityMessageControl
   )
 
   builder.mixin(activity.class.DocUpdateMessage, core.class.Class, activity.mixin.ActivityDoc, {})
 
   builder.mixin(activity.class.DocUpdateMessage, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: activity.component.DocUpdateMessagePresenter
+  })
+
+  builder.mixin(activity.class.ActivityInfoMessage, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: activity.component.ActivityInfoMessagePresenter
   })
 
   builder.createDoc(activity.class.ActivityMessagesFilter, core.space.Model, {

@@ -27,6 +27,9 @@ import {
   ModelDb,
   Obj,
   Ref,
+  SearchOptions,
+  SearchQuery,
+  SearchResult,
   ServerStorage,
   Space,
   Storage,
@@ -34,13 +37,10 @@ import {
   Tx,
   TxFactory,
   TxResult,
-  WorkspaceId,
-  SearchQuery,
-  SearchOptions,
-  SearchResult
+  WorkspaceId
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
-import type { Resource, Asset } from '@hcengineering/platform'
+import type { Asset, Resource } from '@hcengineering/platform'
 import { Readable } from 'stream'
 
 /**
@@ -321,18 +321,18 @@ export interface WithFind {
  */
 export interface ObjectDDParticipant extends Class<Obj> {
   // Collect more items to be deleted if parent document is deleted.
-  collectDocs: Resource<
-  (
-    doc: Doc,
-    hiearachy: Hierarchy,
-    findAll: <T extends Doc>(
-      clazz: Ref<Class<T>>,
-      query: DocumentQuery<T>,
-      options?: FindOptions<T>
-    ) => Promise<FindResult<T>>
-  ) => Promise<Doc[]>
-  >
+  collectDocs: Resource<ObjectDDParticipantFunc>
 }
+
+export type ObjectDDParticipantFunc = (
+  doc: Doc,
+  hiearachy: Hierarchy,
+  findAll: <T extends Doc>(
+    clazz: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ) => Promise<FindResult<T>>
+) => Promise<Doc[]>
 
 /**
  * @public

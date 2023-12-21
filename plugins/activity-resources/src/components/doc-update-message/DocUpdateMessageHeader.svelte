@@ -36,7 +36,7 @@
 
   let linkData: LinkData | undefined = undefined
 
-  $: getLinkData(message, object, parentObject, person).then((data) => {
+  $: void getLinkData(message, object, parentObject, person).then((data) => {
     linkData = data
   })
 

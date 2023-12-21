@@ -39,7 +39,7 @@
 
   let isNewestFirst = JSON.parse(localStorage.getItem('activity-newest-first') ?? 'false')
 
-  $: client.findAll(activity.class.ActivityExtension, { ofClass: object._class }).then((res) => {
+  $: void client.findAll(activity.class.ActivityExtension, { ofClass: object._class }).then((res) => {
     extensions = res
   })
 
@@ -64,7 +64,7 @@
     }
   }
 
-  $: updateActivityMessages(object._id, isNewestFirst ? SortingOrder.Descending : SortingOrder.Ascending)
+  $: void updateActivityMessages(object._id, isNewestFirst ? SortingOrder.Descending : SortingOrder.Ascending)
 </script>
 
 <div class="antiSection-header high mt-9" class:invisible={transparent}>

@@ -71,9 +71,6 @@ export default plugin(telegramId, {
     IconTelegram: '' as AnyComponent,
     SharedMessages: '' as AnyComponent
   },
-  notification: {
-    NotificationMessageCreated: '' as AnyComponent
-  },
   integrationType: {
     Telegram: '' as Ref<IntegrationType>
   },

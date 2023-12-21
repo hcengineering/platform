@@ -37,7 +37,13 @@ import core, {
   type ReverseLookups,
   type Space,
   type TxOperations,
-  type Mixin
+  type Mixin,
+  type TxCUD,
+  type TxCollectionCUD,
+  TxProcessor,
+  type TxCreateDoc,
+  type TxUpdateDoc,
+  type TxMixin
 } from '@hcengineering/core'
 import type { IntlString } from '@hcengineering/platform'
 import { getResource, translate } from '@hcengineering/platform'
@@ -1074,4 +1080,62 @@ export function getCategoryQueryNoLookup<T extends Doc = Doc> (query: DocumentQu
 export function getCategoryQueryNoLookupOptions<T extends Doc> (options: FindOptions<T>): FindOptions<T> {
   const { lookup, ...resultOptions } = options
   return resultOptions
+}
+
+export async function buildRemovedDoc<T extends Doc> (
+  client: Client,
+  objectId: Ref<T>,
+  _class: Ref<Class<T>>
+): Promise<T | undefined> {
+  const isAttached = client.getHierarchy().isDerived(_class, core.class.AttachedDoc)
+  const txes = await client.findAll<TxCUD<Doc>>(
+    isAttached ? core.class.TxCollectionCUD : core.class.TxCUD,
+    isAttached
+      ? { 'tx.objectId': objectId }
+      : {
+          objectId
+        },
+    { sort: { modifiedOn: 1 } }
+  )
+  const createTx = isAttached
+    ? txes.map((tx) => (tx as TxCollectionCUD<Doc, AttachedDoc>).tx).find((tx) => tx._class === core.class.TxCreateDoc)
+    : txes.find((tx) => tx._class === core.class.TxCreateDoc)
+
+  if (createTx === undefined) return
+  let doc = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<Doc>)
+
+  for (let tx of txes) {
+    tx = TxProcessor.extractTx(tx) as TxCUD<Doc>
+    if (tx._class === core.class.TxUpdateDoc) {
+      doc = TxProcessor.updateDoc2Doc(doc, tx as TxUpdateDoc<Doc>)
+    } else if (tx._class === core.class.TxMixin) {
+      const mixinTx = tx as TxMixin<Doc, Doc>
+      doc = TxProcessor.updateMixin4Doc(doc, mixinTx)
+    }
+  }
+  return doc as T
+}
+
+export async function getOrBuildObject<T extends Doc> (
+  client: Client,
+  objectId: Ref<T>,
+  objectClass: Ref<Class<T>>
+): Promise<T | undefined> {
+  const object = await client.findOne<Doc>(objectClass, { _id: objectId })
+
+  if (object !== undefined) {
+    return object as T
+  }
+
+  return await buildRemovedDoc(client, objectId, objectClass)
+}
+
+export async function checkIsObjectRemoved (
+  client: Client,
+  objectId: Ref<Doc>,
+  objectClass: Ref<Class<Doc>>
+): Promise<boolean> {
+  const object = await client.findOne(objectClass, { _id: objectId })
+
+  return object === undefined
 }

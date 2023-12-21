@@ -22,8 +22,6 @@
   import recruit from '../plugin'
   import CreateVacancy from './CreateVacancy.svelte'
 
-  export let archived = false
-
   let search: string = ''
   let searchQuery: DocumentQuery<Doc> = {}
   let resultQuery: DocumentQuery<Doc> = {}
@@ -191,7 +189,7 @@
       viewOptionsConfig: viewlet.viewOptions?.other,
       query: {
         ...resultQuery,
-        archived
+        ...(viewOptions?.hideArchived !== false ? { archived: false } : {})
       },
       totalQuery: {},
       tableId: 'vacanciesData'

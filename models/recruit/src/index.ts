@@ -272,7 +272,6 @@ export function createModel (builder: Builder): void {
   const talentsId = 'talents'
   const skillsId = 'skills'
   const candidatesId = 'candidates'
-  const archiveId = 'archive'
   const myApplicationsId = 'my-applications'
   const organizationsId = 'organizations'
 
@@ -340,18 +339,6 @@ export function createModel (builder: Builder): void {
               createComponentProps: { shouldSaveDraft: false }
             },
             position: 'vacancy'
-          },
-          {
-            id: archiveId,
-            component: recruit.component.Vacancies,
-            icon: view.icon.Archive,
-            label: workbench.string.Archive,
-            position: 'bottom',
-            visibleIf: workbench.function.HasArchiveSpaces,
-            spaceClass: recruit.class.Vacancy,
-            componentProps: {
-              archived: true
-            }
           },
           {
             id: skillsId,
@@ -502,6 +489,14 @@ export function createModel (builder: Builder): void {
     recruit.viewlet.VacancyApplicationsEmbeddeed
   )
 
+  // hiding arhived vacancies from vacancy view
+  const vacancyHideArchivedOption: ViewOptionModel = {
+    key: 'hideArchived',
+    type: 'toggle',
+    defaultValue: true,
+    label: recruit.string.HideArchivedVacancies
+  }
+
   builder.createDoc(
     view.class.Viewlet,
     core.space.Model,
@@ -535,6 +530,11 @@ export function createModel (builder: Builder): void {
       configOptions: {
         hiddenKeys: ['name', 'space', 'modifiedOn'],
         sortable: true
+      },
+      viewOptions: {
+        groupBy: [],
+        orderBy: [],
+        other: [vacancyHideArchivedOption]
       }
     },
     recruit.viewlet.TableVacancy
@@ -730,13 +730,14 @@ export function createModel (builder: Builder): void {
     label: recruit.string.HideDoneState
   }
 
-  const vacancyHideOption: ViewOptionModel = {
+  // hiding applicants related to archived vacancies from applicants view
+  const hideApplicantsFromArchivedVacanciesOption: ViewOptionModel = {
     key: 'hideArchivedVacancies',
     type: 'toggle',
     defaultValue: true,
     actionTarget: 'query',
     action: recruit.function.HideArchivedVacancies,
-    label: recruit.string.HideArchivedVacancies
+    label: recruit.string.HideApplicantsFromArchivedVacancies
   }
 
   const applicantViewOptions = (colors: boolean, hides: boolean): ViewOptionsModel => {
@@ -764,7 +765,7 @@ export function createModel (builder: Builder): void {
       model.other.push(showColorsViewOption)
     }
     if (hides) {
-      model.other.push(...[applicationDoneOption, vacancyHideOption])
+      model.other.push(...[applicationDoneOption, hideApplicantsFromArchivedVacanciesOption])
     }
     return model
   }
@@ -997,7 +998,7 @@ export function createModel (builder: Builder): void {
           ['modifiedOn', SortingOrder.Descending],
           ['createdOn', SortingOrder.Descending]
         ],
-        other: []
+        other: [vacancyHideArchivedOption]
       }
     },
     recruit.viewlet.ListVacancy

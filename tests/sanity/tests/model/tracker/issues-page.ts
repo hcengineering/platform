@@ -184,6 +184,19 @@ export class IssuesPage extends CommonTrackerPage {
     }
   }
 
+  async getIssueId (issueLabel: string, position: number = 1): Promise<string> {
+    const id = await this.page.locator(`span[title="${issueLabel}"].overflow-label`).nth(position).textContent()
+    return id?.trim() ?? ''
+  }
+
+  async openIssueById (issueId: string): Promise<void> {
+    await this.page.locator(`div.listGrid div.flex-no-shrink a[href$="${issueId}"]`).click()
+  }
+
+  async checkIssuesCount (issueName: string, count: number): Promise<void> {
+    await expect(this.page.locator('div.listGrid a', { hasText: issueName })).toHaveCount(count)
+  }
+
   async selectTemplate (templateName: string): Promise<void> {
     await this.buttonPopupCreateNewIssueTemplate.click()
     await this.selectMenuItem(this.page, templateName)

@@ -65,49 +65,62 @@
     dispatch('update', { key: model.key, value: viewOptions[model.key] })
   }
 
+  // checking if selector provides multiple choice options
+  const hasMultipleSelections = (varTocheck: any) => {
+    if (!varTocheck) return false
+    if (Array.isArray(varTocheck)) {
+      return varTocheck.filter((item) => item !== undefined && item !== null && item !== '').length > 1
+    }
+    return true
+  }
+
   $: visibleOthers = config.other.filter((p) => !p.hidden?.(viewOptions))
 </script>
 
 <div class="antiCard dialog menu">
   <div class="antiCard-menu__spacer" />
-  {#each groups as group, i}
-    <div class="antiCard-menu__item grouping">
-      <span class="overflow-label"><Label label={i === 0 ? view.string.Grouping : view.string.Then} /></span>
+  {#if hasMultipleSelections(config.groupBy)}
+    {#each groups as group, i}
+      <div class="antiCard-menu__item grouping">
+        <span class="overflow-label"><Label label={i === 0 ? view.string.Grouping : view.string.Then} /></span>
+        <DropdownLabelsIntl
+          label={view.string.Grouping}
+          kind={'regular'}
+          size={'medium'}
+          items={getItems(groupBy, i, viewOptions.groupBy)}
+          selected={group}
+          width="10rem"
+          justify="left"
+          on:selected={(e) => {
+            selectGrouping(e.detail, i)
+          }}
+        />
+      </div>
+    {/each}
+  {/if}
+  {#if hasMultipleSelections(config.orderBy)}
+    <div class="antiCard-menu__item ordering">
+      <span class="overflow-label"><Label label={view.string.Ordering} /></span>
       <DropdownLabelsIntl
-        label={view.string.Grouping}
+        label={view.string.Ordering}
         kind={'regular'}
         size={'medium'}
-        items={getItems(groupBy, i, viewOptions.groupBy)}
-        selected={group}
+        items={orderBy}
+        selected={viewOptions.orderBy?.[0]}
         width="10rem"
         justify="left"
         on:selected={(e) => {
-          selectGrouping(e.detail, i)
+          const key = e.detail
+          const value = config.orderBy.find((p) => p[0] === key)
+          if (value !== undefined) {
+            viewOptions.orderBy = value
+            dispatch('update', { key: 'orderBy', value })
+          }
         }}
       />
     </div>
-  {/each}
-  <div class="antiCard-menu__item ordering">
-    <span class="overflow-label"><Label label={view.string.Ordering} /></span>
-    <DropdownLabelsIntl
-      label={view.string.Ordering}
-      kind={'regular'}
-      size={'medium'}
-      items={orderBy}
-      selected={viewOptions.orderBy?.[0]}
-      width="10rem"
-      justify="left"
-      on:selected={(e) => {
-        const key = e.detail
-        const value = config.orderBy.find((p) => p[0] === key)
-        if (value !== undefined) {
-          viewOptions.orderBy = value
-          dispatch('update', { key: 'orderBy', value })
-        }
-      }}
-    />
-  </div>
-  {#if visibleOthers.length > 0}
+  {/if}
+  {#if visibleOthers.length > 0 && (hasMultipleSelections(config.groupBy) || hasMultipleSelections(config.orderBy))}
     <div class="antiCard-menu__divider" />
   {/if}
   {#each visibleOthers as model}

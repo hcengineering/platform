@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Doc, Ref, SortingOrder } from '@hcengineering/core'
+  import { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Component, IconClose, Spinner } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -22,9 +22,9 @@
   import {
     ActivityExtension,
     ActivityMessagePresenter,
-    combineActivityMessages,
-    getActivityObject
+    combineActivityMessages
   } from '@hcengineering/activity-resources'
+  import { buildRemovedDoc, checkIsObjectRemoved } from '@hcengineering/view-resources'
 
   export let _id: Ref<ActivityMessage>
 
@@ -33,6 +33,7 @@
   const dispatch = createEventDispatcher()
   const selectedMessageQuery = createQuery()
   const messagesQuery = createQuery()
+  const objectQuery = createQuery()
 
   let messages: DisplayActivityMessage[] = []
   let selectedMessage: ActivityMessage | undefined = undefined
@@ -52,10 +53,19 @@
     }
   )
 
-  $: selectedMessage &&
-    getActivityObject(client, selectedMessage.attachedTo, selectedMessage.attachedToClass).then((res) => {
-      object = res.object
-    })
+  async function loadObject (_id: Ref<Doc>, _class: Ref<Class<Doc>>) {
+    const isRemoved = await checkIsObjectRemoved(client, _id, _class)
+
+    if (isRemoved) {
+      object = await buildRemovedDoc(client, _id, _class)
+    } else {
+      objectQuery.query(_class, { _id }, (res) => {
+        object = res[0]
+      })
+    }
+  }
+
+  $: selectedMessage && loadObject(selectedMessage.attachedTo, selectedMessage.attachedToClass)
   $: objectPresenter =
     selectedMessage && hierarchy.classHierarchyMixin(selectedMessage.attachedToClass, view.mixin.ObjectPresenter)
 

@@ -13,17 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IconSize, resolvedLocationStore } from '@hcengineering/ui'
+  import { Icon, IconSize, resolvedLocationStore } from '@hcengineering/ui'
+  import { Asset } from '@hcengineering/platform'
 
   export let size: IconSize
   export let variant: 'circle' | 'roundedRect' = 'circle'
+  export let icon: Asset | undefined = undefined
+  export let iconProps: Record<string, any> | undefined = undefined
 
   $: workspace = $resolvedLocationStore.path[1]
 </script>
 
 <div class="avatar {size} {variant}">
   <div class="text">
-    {workspace?.toUpperCase()?.[0]}
+    {#if icon}
+      <Icon {icon} {size} {iconProps} />
+    {:else}
+      {workspace?.toUpperCase()?.[0]}
+    {/if}
   </div>
 </div>
 
@@ -32,11 +39,12 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    color: var(--white-color);
-    background-color: rgb(246, 105, 77);
+    color: var(--avatar-border-color);
+    background-color: var(--avatar-bg-color);
 
     .text {
       font-weight: 500;
+      color: var(--theme-accent-color);
     }
 
     &.circle {

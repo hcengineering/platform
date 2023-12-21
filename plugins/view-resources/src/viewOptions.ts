@@ -66,8 +66,8 @@ function _getViewOptions (viewlet: Viewlet, viewOptionStore: Map<string, ViewOpt
 
 function getDefaults (viewOptions: ViewOptionsModel): ViewOptions {
   const res: ViewOptions = {
-    groupBy: [viewOptions.groupBy[0]],
-    orderBy: viewOptions.orderBy?.[0]
+    groupBy: [viewOptions.groupBy[0] ?? defaulOptions.groupBy[0]],
+    orderBy: viewOptions.orderBy?.[0] ?? defaulOptions.orderBy
   }
   for (const opt of viewOptions.other) {
     res[opt.key] = opt.defaultValue
