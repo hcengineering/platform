@@ -18,7 +18,15 @@ import { type KeyedAttribute, getClient } from '@hcengineering/presentation'
 import { HocuspocusProvider, type HocuspocusProviderConfiguration } from '@hocuspocus/provider'
 
 export type TiptapCollabProviderConfiguration = HocuspocusProviderConfiguration &
-Required<Pick<HocuspocusProviderConfiguration, 'token'>>
+Required<Pick<HocuspocusProviderConfiguration, 'token'>> &
+Omit<HocuspocusProviderConfiguration, 'parameters'> & {
+  parameters: TiptapCollabProviderURLParameters
+}
+
+export interface TiptapCollabProviderURLParameters {
+  initialContentId?: DocumentId
+  targetContentId?: DocumentId
+}
 
 export type DocumentId = string
 
@@ -39,7 +47,23 @@ export class TiptapCollabProvider extends HocuspocusProvider {
   loaded: Promise<void>
 
   constructor (configuration: TiptapCollabProviderConfiguration) {
-    super(configuration as HocuspocusProviderConfiguration)
+    const parameters: Record<string, any> = {}
+
+    const initialContentId = configuration.parameters?.initialContentId
+    if (initialContentId !== undefined && initialContentId !== '') {
+      parameters.initialContentId = initialContentId
+    }
+
+    const targetContentId = configuration.parameters?.targetContentId
+    if (targetContentId !== undefined && targetContentId !== '') {
+      parameters.targetContentId = targetContentId
+    }
+
+    const hocuspocusConfig: HocuspocusProviderConfiguration = {
+      ...configuration,
+      parameters
+    }
+    super(hocuspocusConfig)
 
     this.loaded = new Promise((resolve) => {
       this.on('synced', resolve)
