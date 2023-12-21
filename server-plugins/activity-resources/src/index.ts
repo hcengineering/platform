@@ -13,11 +13,13 @@
 // limitations under the License.
 //
 
+import activity, { DocUpdateMessage } from '@hcengineering/activity'
 import {
   Account,
   AttachedDoc,
   Data,
   Doc,
+  matchQuery,
   Ref,
   Tx,
   TxCollectionCUD,
@@ -25,10 +27,9 @@ import {
   TxCUD,
   TxProcessor
 } from '@hcengineering/core'
-import type { TriggerControl } from '@hcengineering/server-core'
-import activity, { DocUpdateMessage } from '@hcengineering/activity'
 import core from '@hcengineering/core/lib/component'
 import { ActivityControl, DocObjectCache } from '@hcengineering/server-activity'
+import type { TriggerControl } from '@hcengineering/server-core'
 import { getDocUpdateAction, getTxAttributesUpdates } from './utils'
 
 // export async function OnReactionChanged (originTx: Tx, control: TriggerControl): Promise<Tx[]> {
@@ -221,6 +222,29 @@ export async function generateDocUpdateMessages (
 
   if (control.hierarchy.isDerived(tx.objectClass, activity.class.ActivityMessage)) {
     return res
+  }
+  const etx = TxProcessor.extractTx(tx)
+  if (
+    control.hierarchy.isDerived(etx._class, core.class.TxCUD) &&
+    control.hierarchy.isDerived((etx as TxCUD<Doc>).objectClass, activity.class.ActivityMessage)
+  ) {
+    return res
+  }
+
+  // Check if we have override control over transaction => activity mappings
+  const controlRules = control.modelDb.findAllSync(activity.class.ActivityMessageControl, {
+    objectClass: { $in: control.hierarchy.getDescendants(tx.objectClass) }
+  })
+  if (controlRules.length > 0) {
+    for (const r of controlRules) {
+      for (const s of r.skip) {
+        const otx = originTx ?? TxProcessor.extractTx(tx)
+        if (matchQuery(otx !== undefined ? [tx, otx] : [tx], s, r.objectClass, control.hierarchy).length > 0) {
+          // Match found, we need to skip
+          return res
+        }
+      }
+    }
   }
 
   switch (tx._class) {

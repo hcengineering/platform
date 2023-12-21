@@ -13,27 +13,25 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Person, PersonAccount } from '@hcengineering/contact'
-  import { personByIdStore } from '@hcengineering/contact-resources'
-  import { Account, AttachedDoc, Class, Collection, Doc, Ref } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import core from '@hcengineering/core/lib/component'
-  import { AttributeModel } from '@hcengineering/view'
-  import { IntlString } from '@hcengineering/platform'
-  import { Component, ShowMore } from '@hcengineering/ui'
   import activity, {
     ActivityMessage,
     DisplayActivityMessage,
     DisplayDocUpdateMessage,
-    DocUpdateAction,
     DocUpdateMessage,
     DocUpdateMessageViewlet
   } from '@hcengineering/activity'
+  import { Person, PersonAccount } from '@hcengineering/contact'
+  import { personByIdStore } from '@hcengineering/contact-resources'
+  import core, { Account, AttachedDoc, Class, Collection, Doc, Ref } from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Component, ShowMore } from '@hcengineering/ui'
+  import { AttributeModel } from '@hcengineering/view'
 
   import ActivityMessageTemplate from '../activity-message/ActivityMessageTemplate.svelte'
-  import DocUpdateMessageHeader from './DocUpdateMessageHeader.svelte'
-  import DocUpdateMessageContent from './DocUpdateMessageContent.svelte'
   import DocUpdateMessageAttributes from './DocUpdateMessageAttributes.svelte'
+  import DocUpdateMessageContent from './DocUpdateMessageContent.svelte'
+  import DocUpdateMessageHeader from './DocUpdateMessageHeader.svelte'
 
   import { getAttributeModel, getCollectionAttribute } from '../../activityMessagesUtils'
   import { buildRemovedDoc, checkIsObjectRemoved } from '@hcengineering/view-resources'
@@ -50,7 +48,6 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  const viewletQuery = createQuery()
   const userQuery = createQuery()
   const objectQuery = createQuery()
   const parentObjectQuery = createQuery()
@@ -70,31 +67,15 @@
   let object: Doc | undefined
   let isObjectRemoved: boolean = false
 
-  let isViewletLoading = true
   let isObjectLoading = true
 
-  $: isLoading = isViewletLoading || isObjectLoading
+  $: isLoading = isObjectLoading
 
-  $: loadViewlet(value.action, value.objectClass)
+  $: [viewlet] = client
+    .getModel()
+    .findAllSync(activity.class.DocUpdateMessageViewlet, { action: value.action, objectClass: value.objectClass })
 
-  async function loadViewlet (action: DocUpdateAction, objectClass: Ref<Class<Doc>>) {
-    isViewletLoading = true
-
-    const res = viewletQuery.query(
-      activity.class.DocUpdateMessageViewlet,
-      { action, objectClass },
-      (result: DocUpdateMessageViewlet[]) => {
-        viewlet = result[0]
-        isViewletLoading = false
-      }
-    )
-
-    if (!res) {
-      isViewletLoading = false
-    }
-  }
-
-  $: getAttributeModel(client, value.attributeUpdates, value.attachedToClass).then((model) => {
+  $: void getAttributeModel(client, value.attributeUpdates, value.attachedToClass).then((model) => {
     attributeModel = model
   })
 
@@ -104,7 +85,7 @@
     }
   }
 
-  $: getParentMessage(value.attachedToClass, value.attachedTo).then((res) => {
+  $: void getParentMessage(value.attachedToClass, value.attachedTo).then((res) => {
     parentMessage = res as DisplayActivityMessage
   })
 
@@ -112,12 +93,12 @@
     user = res[0] as PersonAccount
   })
 
-  $: person = user?.person && $personByIdStore.get(user.person)
+  $: person = user?.person != null ? $personByIdStore.get(user.person) : undefined
 
-  $: loadObject(value.objectId, value.objectClass)
-  $: loadParentObject(value, parentMessage)
+  $: void loadObject(value.objectId, value.objectClass)
+  $: void loadParentObject(value, parentMessage)
 
-  async function loadObject (_id: Ref<Doc>, _class: Ref<Class<Doc>>) {
+  async function loadObject (_id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<void> {
     isObjectRemoved = await checkIsObjectRemoved(client, _id, _class)
 
     if (isObjectRemoved) {
@@ -131,7 +112,7 @@
     }
   }
 
-  async function loadParentObject (message: DocUpdateMessage, parentMessage?: ActivityMessage) {
+  async function loadParentObject (message: DocUpdateMessage, parentMessage?: ActivityMessage): Promise<void> {
     if (!parentMessage && message.objectId === message.attachedTo) {
       return
     }
@@ -150,12 +131,12 @@
     })
   }
 
-  $: if (object && value.objectClass !== object._class) {
+  $: if (object != null && value.objectClass !== object._class) {
     object = undefined
   }
 </script>
 
-{#if !isLoading && (!viewlet?.hideIfRemoved || !isObjectRemoved) && (value.action !== 'update' || attributeModel !== undefined)}
+{#if !isLoading && (!(viewlet?.hideIfRemoved ?? false) || !isObjectRemoved) && (value.action !== 'update' || attributeModel !== undefined)}
   <ActivityMessageTemplate
     message={value}
     {parentMessage}

@@ -127,7 +127,7 @@ export async function translate<P extends Record<string, any>> (
         cache.set(message, translation)
         return message
       }
-      const compiled = new IntlMessageFormat(translation, locale)
+      const compiled = new IntlMessageFormat(translation, locale, undefined, { ignoreTag: true })
       cache.set(message, compiled)
       return compiled.format(params)
     } catch (err) {
