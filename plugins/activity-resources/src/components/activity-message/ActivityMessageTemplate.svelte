@@ -13,23 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import activity, {
+    ActivityMessageExtension,
+    ActivityMessageViewlet,
+    DisplayActivityMessage
+  } from '@hcengineering/activity'
   import { Person } from '@hcengineering/contact'
   import { Avatar, EmployeePresenter, SystemAvatar } from '@hcengineering/contact-resources'
+  import core, { getDisplayTime } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import core from '@hcengineering/core/lib/component'
-  import activity, {
-    DisplayActivityMessage,
-    ActivityMessageExtension,
-    ActivityMessageViewlet
-  } from '@hcengineering/activity'
   import { Action, ActionIcon, IconMoreH, Label, showPopup } from '@hcengineering/ui'
-  import { getActions, Menu } from '@hcengineering/view-resources'
-  import { getDisplayTime } from '@hcengineering/core'
+  import { Menu, getActions } from '@hcengineering/view-resources'
 
-  import ActivityMessageExtensionComponent from './ActivityMessageExtension.svelte'
-  import ActivityMessagePresenter from './ActivityMessagePresenter.svelte'
   import AddReactionAction from '../reactions/AddReactionAction.svelte'
   import ReactionsPresenter from '../reactions/ReactionsPresenter.svelte'
+  import ActivityMessageExtensionComponent from './ActivityMessageExtension.svelte'
+  import ActivityMessagePresenter from './ActivityMessagePresenter.svelte'
   import PinMessageAction from './PinMessageAction.svelte'
 
   export let message: DisplayActivityMessage
@@ -54,38 +53,38 @@
   let extensions: ActivityMessageExtension[] = []
   let isActionMenuOpened = false
 
-  $: getActions(client, message, activity.class.ActivityMessage).then((res) => {
+  $: void getActions(client, message, activity.class.ActivityMessage).then((res) => {
     allActionIds = res.map(({ _id }) => _id)
   })
 
-  function scrollToMessage () {
-    if (element && shouldScroll) {
+  function scrollToMessage (): void {
+    if (element != null && shouldScroll) {
       element.scrollIntoView({ behavior: 'auto', block: 'end' })
       shouldScroll = false
     }
   }
 
-  $: if (element && shouldScroll) {
+  $: if (element != null && shouldScroll) {
     setTimeout(scrollToMessage, 100)
   }
 
-  client
+  void client
     .findAll(activity.class.ActivityMessageExtension, { ofMessage: message._class })
     .then((res: ActivityMessageExtension[]) => {
       extensions = res
     })
 
-  function handleActionMenuOpened () {
+  function handleActionMenuOpened (): void {
     isActionMenuOpened = true
   }
 
-  function handleActionMenuClosed () {
+  function handleActionMenuClosed (): void {
     isActionMenuOpened = false
   }
 
-  $: key = parentMessage ? `${message._id}_${parentMessage._id}` : message._id
+  $: key = parentMessage != null ? `${message._id}_${parentMessage._id}` : message._id
 
-  function showMenu (ev: MouseEvent) {
+  function showMenu (ev: MouseEvent): void {
     showPopup(
       Menu,
       {
@@ -124,7 +123,9 @@
       {/if}
       {#if !embedded}
         <div class="min-w-6 mt-1">
-          {#if person}
+          {#if $$slots.icon}
+            <slot name="icon" />
+          {:else if person}
             <Avatar size="medium" avatar={person.avatar} name={person.name} />
           {:else}
             <SystemAvatar size="medium" />
@@ -138,9 +139,9 @@
           {#if person}
             <EmployeePresenter value={person} shouldShowAvatar={false} />
           {:else}
-            <span class="strong">
+            <div class="strong">
               <Label label={core.string.System} />
-            </span>
+            </div>
           {/if}
 
           <slot name="header" />

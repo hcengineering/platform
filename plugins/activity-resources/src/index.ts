@@ -18,6 +18,7 @@ import { type Resources } from '@hcengineering/platform'
 import Activity from './components/Activity.svelte'
 import ActivityMessagePresenter from './components/activity-message/ActivityMessagePresenter.svelte'
 import DocUpdateMessagePresenter from './components/doc-update-message/DocUpdateMessagePresenter.svelte'
+import ActivityInfoMessagePresenter from './components/activity-message/ActivityInfoMessagePresenter.svelte'
 import ReactionAddedMessage from './components/reactions/ReactionAddedMessage.svelte'
 
 import { attributesFilter, pinnedFilter } from './activityMessagesUtils'
@@ -36,7 +37,8 @@ export default async (): Promise<Resources> => ({
     Activity,
     ActivityMessagePresenter,
     DocUpdateMessagePresenter,
-    ReactionAddedMessage
+    ReactionAddedMessage,
+    ActivityInfoMessagePresenter
   },
   filter: {
     AttributesFilter: attributesFilter,
