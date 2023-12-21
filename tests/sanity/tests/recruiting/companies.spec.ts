@@ -45,7 +45,7 @@ test.describe('Companies tests', () => {
   test('Edit a Company', async ({ page }) => {
     const createdCompany = 'Edit Company'
     const editCompany: NewCompany = {
-      name: `Updted Edit Company-${generateId()}`,
+      name: `Updated Edit Company-${generateId()}`,
       socials: [
         {
           type: 'Phone',
@@ -59,7 +59,8 @@ test.describe('Companies tests', () => {
           type: 'LinkedIn',
           value: 'https://www.linkedin.com/in/test-contact/'
         }
-      ]
+      ],
+      location: 'London'
     }
 
     const navigationMenuPage = new NavigationMenuPage(page)
