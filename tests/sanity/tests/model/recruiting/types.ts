@@ -25,3 +25,13 @@ export interface NewVacancy {
   description: string
   location?: string
 }
+
+export interface SocialLink {
+  type: string
+  value: string
+}
+
+export interface NewCompany {
+  name: string
+  socials?: SocialLink[]
+}

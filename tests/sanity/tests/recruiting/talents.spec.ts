@@ -11,7 +11,7 @@ test.use({
 
 test.describe('candidate/talents tests', () => {
   test.beforeEach(async ({ page }) => {
-    await allure.parentSuite('Talents tests')
+    await allure.parentSuite('Recruiting tests')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
   })
 
@@ -86,7 +86,7 @@ test.describe('candidate/talents tests', () => {
     await talentDetailsPage.checkSkill(skillTag)
 
     await talentDetailsPage.addSocialLinks('Phone', '123123213213')
-    await talentDetailsPage.checkSocialLinks('Phone')
+    await talentDetailsPage.checkSocialLinks('Phone', '123123213213')
 
     await talentDetailsPage.inputLocation.fill('Awesome Location')
     const title = `Title-${generateId(4)}`
@@ -124,7 +124,7 @@ test.describe('candidate/talents tests', () => {
     const sourceTalent1 = 'SourceTalent1'
     await talentDetailsPage.addSource(sourceTalent1)
     await talentDetailsPage.addSocialLinks('Phone', '123123213213')
-    await talentDetailsPage.checkSocialLinks('Phone')
+    await talentDetailsPage.checkSocialLinks('Phone', '123123213213')
 
     // talent 2
     await navigationMenuPage.buttonTalents.click()
@@ -137,7 +137,7 @@ test.describe('candidate/talents tests', () => {
     const sourceTalent2 = 'SourceTalent2'
     await talentDetailsPage.addSource(sourceTalent2)
     await talentDetailsPage.addSocialLinks('Email', 'test-merge-2@gmail.com')
-    await talentDetailsPage.checkSocialLinks('Email')
+    await talentDetailsPage.checkSocialLinks('Email', 'test-merge-2@gmail.com')
 
     // merge
     await navigationMenuPage.buttonTalents.click()
@@ -156,8 +156,8 @@ test.describe('candidate/talents tests', () => {
 
     await navigationMenuPage.buttonTalents.click()
     await talentsPage.openTalentByTalentName(talentNameFirst)
-    await talentDetailsPage.checkSocialLinks('Phone')
-    await talentDetailsPage.checkSocialLinks('Email')
+    await talentDetailsPage.checkSocialLinks('Phone', '123123213213')
+    await talentDetailsPage.checkSocialLinks('Email', 'test-merge-2@gmail.com')
     await expect(talentDetailsPage.inputLocation).toHaveValue('Awesome Location Merge1')
     await expect(talentDetailsPage.page.locator('button > span', { hasText: titleTalent2 })).toBeVisible()
     await expect(talentDetailsPage.page.locator('button > span', { hasText: sourceTalent2 })).toBeVisible()

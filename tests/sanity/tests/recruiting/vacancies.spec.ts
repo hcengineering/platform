@@ -12,7 +12,7 @@ test.use({
 
 test.describe('Vacancy tests', () => {
   test.beforeEach(async ({ page }) => {
-    await allure.parentSuite('Vacancy tests')
+    await allure.parentSuite('Recruiting tests')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
   })
 

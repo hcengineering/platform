@@ -6,6 +6,7 @@ export class NavigationMenuPage {
   readonly buttonMyApplications: Locator
   readonly buttonTalents: Locator
   readonly buttonVacancies: Locator
+  readonly buttonCompanies: Locator
 
   constructor (page: Page) {
     this.page = page
@@ -13,5 +14,6 @@ export class NavigationMenuPage {
     this.buttonMyApplications = page.locator('a[href$="my-applications"]', { hasText: 'My applications' })
     this.buttonTalents = page.locator('a[href$="talents"]', { hasText: 'Talents' })
     this.buttonVacancies = page.locator('a[href$="vacancies"]', { hasText: 'Vacancies' })
+    this.buttonCompanies = page.locator('a[href$="organizations"]', { hasText: 'Companies' })
   }
 }
