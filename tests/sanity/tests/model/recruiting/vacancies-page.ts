@@ -69,7 +69,6 @@ export class VacanciesPage extends CommonRecruitingPage {
   }
 
   async selectAll (): Promise<void> {
-    // tr[class*="row"]
     const count = await this.page.locator('tr[class*="row"]').count()
     for (let i = 0; i < count; i++) {
       await this.page.locator('tr[class*="row"] td:first-child > div').nth(i).click()
