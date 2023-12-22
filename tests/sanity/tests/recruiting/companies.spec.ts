@@ -43,7 +43,7 @@ test.describe('Companies tests', () => {
   })
 
   test('Edit a Company', async ({ page }) => {
-    const createdCompany = 'Edit Company'
+    const createdCompany = `Edit Company--${generateId()}`
     const editCompany: NewCompany = {
       name: `Updated Edit Company-${generateId()}`,
       socials: [
@@ -67,6 +67,7 @@ test.describe('Companies tests', () => {
     await navigationMenuPage.buttonCompanies.click()
 
     const companiesPage = new CompaniesPage(page)
+    await companiesPage.createNewCompany({ name: createdCompany })
     await companiesPage.openCompanyByName(createdCompany)
 
     const companyDetailsPage = new CompanyDetailsPage(page)
