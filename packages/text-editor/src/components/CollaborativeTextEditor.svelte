@@ -76,6 +76,7 @@
   export let refActions: RefAction[] = []
 
   export let editorAttributes: Record<string, string> = {}
+  export let overflow: 'auto' | 'none' = 'none'
   export let boundary: HTMLElement | undefined = undefined
 
   export let attachFile: FileAttachFunction | undefined = undefined
@@ -306,6 +307,7 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
+  style:overflow
   class="ref-container clear-mins"
   class:h-full={full}
   on:click|preventDefault|stopPropagation={() => (needFocus = true)}
@@ -332,7 +334,7 @@
     <ImageStyleToolbar textEditor={editor} formatButtonSize={buttonSize} on:focus={handleFocus} />
   </div>
 
-  <div class="select-text" style="width: 100%;" bind:this={element} />
+  <div class="select-text" class:hidden={loading} style="width: 100%;" bind:this={element} />
 
   {#if refActions.length > 0}
     <div class="buttons-panel flex-between clear-mins">
@@ -372,5 +374,9 @@
     border-radius: 0.5rem;
     box-shadow: var(--button-shadow);
     z-index: 1;
+  }
+
+  .hidden {
+    display: none;
   }
 </style>

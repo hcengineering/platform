@@ -24,7 +24,6 @@
   import { CollaborationIds } from '../types'
 
   export let documentId: DocumentId
-  export let field: string | undefined = undefined
   export let initialContentId: DocumentId | undefined = undefined
   export let targetContentId: DocumentId | undefined = undefined
 

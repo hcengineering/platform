@@ -38,6 +38,7 @@
   export let buttonSize: IconSize = 'small'
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
 
+  export let overflow: 'auto' | 'none' = 'auto'
   export let textNodeActions: TextNodeAction[] = []
   export let editorAttributes: Record<string, string> = {}
   export let onExtensions: () => AnyExtension[] = () => []
@@ -167,6 +168,7 @@
     {readonly}
     {buttonSize}
     {placeholder}
+    {overflow}
     {boundary}
     {attachFile}
     extensions={[...onExtensions()]}
