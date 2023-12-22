@@ -40,4 +40,8 @@ export class CompaniesPage extends CommonRecruitingPage {
   async openCompanyByName (companyName: string): Promise<void> {
     await this.page.locator('tr a', { hasText: companyName }).click()
   }
+
+  async checkCompanyNotExist (companyName: string): Promise<void> {
+    await expect(this.page.locator('tr a', { hasText: companyName })).toHaveCount(0)
+  }
 }
