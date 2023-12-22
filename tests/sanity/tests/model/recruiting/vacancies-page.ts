@@ -11,6 +11,7 @@ export class VacanciesPage extends CommonRecruitingPage {
   readonly inputCreateVacancyDescription: Locator
   readonly buttonCreateVacancyLocation: Locator
   readonly buttonCreateVacancy: Locator
+  readonly buttonExport: Locator
 
   constructor (page: Page) {
     super(page)
@@ -24,6 +25,7 @@ export class VacanciesPage extends CommonRecruitingPage {
       hasText: 'Location'
     })
     this.buttonCreateVacancy = page.locator('form[id="recruit:string:CreateVacancy"] button[type="submit"]')
+    this.buttonExport = page.locator('button[type="button"] > span', { hasText: 'Export' })
   }
 
   async createNewVacancy ({ title, description, location }: NewVacancy): Promise<void> {
@@ -64,5 +66,34 @@ export class VacanciesPage extends CommonRecruitingPage {
 
   async checkVacancyExist (vacancyName: string, message: string): Promise<void> {
     await expect(this.page.locator('tr', { hasText: vacancyName }), message).toHaveCount(1)
+  }
+
+  async selectAll (): Promise<void> {
+    // tr[class*="row"]
+    const count = await this.page.locator('tr[class*="row"]').count()
+    for (let i = 0; i < count; i++) {
+      await this.page.locator('tr[class*="row"] td:first-child > div').nth(i).click()
+    }
+  }
+
+  async exportVacanciesWithCheck (textToCheck: string): Promise<void> {
+    const downloadPromise = this.page.waitForEvent('download')
+    await this.buttonExport.click()
+    const download = await downloadPromise
+
+    const chunks: string[] = []
+    const readable = await download.createReadStream()
+
+    readable.on('readable', () => {
+      let chunk
+      while ((chunk = readable.read()) !== null) {
+        chunks.push(chunk)
+      }
+    })
+
+    readable.on('end', () => {
+      const content = chunks.join('')
+      expect(content).toContain(textToCheck)
+    })
   }
 }

@@ -141,4 +141,13 @@ test.describe('Vacancy tests', () => {
       `Archieved vacancy "${vacancyName}" not visible when hide archved back on.`
     )
   })
+
+  test('Export vacancies', async ({ page }) => {
+    const navigationMenuPage = new NavigationMenuPage(page)
+    await navigationMenuPage.buttonVacancies.click()
+
+    const vacanciesPage = new VacanciesPage(page)
+    await vacanciesPage.selectAll()
+    await vacanciesPage.exportVacanciesWithCheck('Software Engineer')
+  })
 })
