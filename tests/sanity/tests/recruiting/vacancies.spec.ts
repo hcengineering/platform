@@ -5,6 +5,7 @@ import { VacanciesPage } from '../model/recruiting/vacancies-page'
 import { VacancyDetailsPage } from '../model/recruiting/vacancy-details-page'
 import { allure } from 'allure-playwright'
 import { CommonPage } from '../model/common-page'
+import { NewVacancy } from '../model/recruiting/types'
 
 test.use({
   storageState: PlatformSetting
@@ -125,16 +126,14 @@ test.describe('Vacancy tests', () => {
 
     await vacanciesPage.checkVacancyNotExist(vacancyName, `Archieved vacancy "${vacancyName}" not visible by default.`)
 
-    await page.click("button:has-text('View')")
-    await page.waitForSelector(".antiCard-menu__item:has-text('Hide archived vacancies')")
-    await page.click(".antiCard-menu__item:has-text('Hide archived vacancies')")
+    await vacanciesPage.showArchivedVacancy()
 
     await vacanciesPage.checkVacancyExist(
       vacancyName,
       `Archieved vacancy "${vacancyName}" visible when hide archved off.`
     )
 
-    await page.click(".antiCard-menu__item:has-text('Hide archived vacancies')")
+    await vacanciesPage.buttonHideArchivedVacancies.click()
 
     await vacanciesPage.checkVacancyNotExist(
       vacancyName,
@@ -149,5 +148,37 @@ test.describe('Vacancy tests', () => {
     const vacanciesPage = new VacanciesPage(page)
     await vacanciesPage.selectAll()
     await vacanciesPage.exportVacanciesWithCheck('Software Engineer')
+  })
+
+  test('Archive a Vacancy', async ({ page }) => {
+    const archiveVacancy: NewVacancy = {
+      title: `Archive Vacancy-${generateId(4)}`,
+      description: 'Vacancy description from Edit a Archive a Vacancy test',
+      location: 'Archive a Vacancy location'
+    }
+
+    const navigationMenuPage = new NavigationMenuPage(page)
+    await navigationMenuPage.buttonVacancies.click()
+
+    const vacanciesPage = new VacanciesPage(page)
+    await vacanciesPage.createNewVacancy(archiveVacancy)
+    await vacanciesPage.openVacancyByName(archiveVacancy.title)
+
+    const vacancyDetailsPage = new VacancyDetailsPage(page)
+    await vacancyDetailsPage.moreActionOn('Archive')
+    await vacancyDetailsPage.pressYesForPopup(page)
+    // await vacancyDetailsPage.checkActivityExist('changed archived in')
+
+    await navigationMenuPage.buttonVacancies.click()
+    await vacanciesPage.checkVacancyNotExist(
+      archiveVacancy.title,
+      `Archieved vacancy "${archiveVacancy.title}" visible.`
+    )
+
+    await vacanciesPage.showArchivedVacancy()
+    await vacanciesPage.checkVacancyExist(
+      archiveVacancy.title,
+      `Archieved vacancy "${archiveVacancy.title}" is not visible.`
+    )
   })
 })
