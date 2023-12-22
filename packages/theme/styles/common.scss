@@ -13,6 +13,39 @@
 // limitations under the License.
 //
 
+/* Typography */
+.font-regular-12,
+.font-medium-12,
+.font-regular-14,
+.font-medium-14,
+.font-bold-14 {
+  font-family: var(--font-family);
+  font-style: normal;
+  line-height: 1rem;
+  color: var(--global-primary-TextColor);
+}
+.font-regular-12,
+.font-medium-12 {
+  font-size: 0.75rem;
+}
+.font-regular-14,
+.font-medium-14,
+.font-bold-14 {
+  font-size: 0.875rem;
+}
+.font-regular-12,
+.font-regular-14 {
+  font-weight: 400;
+}
+.font-medium-12,
+.font-medium-14 {
+  font-weight: 500;
+}
+.font-bold-14 {
+  font-weight: 700;
+}
+
+
 /* Panels */
 * {
   --app-panel-width: 4.25rem;

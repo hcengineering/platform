@@ -80,6 +80,9 @@
 
   --theme-clockface-sec-arrow: conic-gradient(at 50% -10px, rgba(255, 0, 0, 0), rgba(255, 0, 0, 0) 49%, #F47758 50%, rgba(255, 0, 0, 0) 51%, rgba(255, 0, 0, 0) 100%);
   --theme-clockface-sec-holder: #F47758;
+
+  // New
+  --global-accent-IconColor: #6796FF;
 }
 
 /* Dark Theme */
@@ -309,9 +312,17 @@
   --theme-clockface-arrows-holder: radial-gradient(at top center, #2F2F3A, #555555);
   --theme-clockface-arrows-shadow: 0 0 1px white;
 
+  // New
   --global-ui-BackgroundColor: #A5BDFF0D;
   --global-ui-hover-BackgroundColor: #A5BDFF1A;
+  --global-ui-highlight-BackgroundColor: #A5BDFF0D;
+  --global-ui-hover-highlight-BackgroundColor: #A5BDFF26;
+  --global-surface-01-BorderColor: #1F2737;
   --global-surface-02-BackgroundColor: #19202E;
+  --global-primary-TextColor: #FFFFFF;
+  --global-secondary-TextColor: #C1C9D6;
+  --global-tertiary-TextColor: #8E99AF;
+  --global-accent-TextColor: #4D7FF5;
 }
 
 /* Light Theme */
@@ -541,7 +552,15 @@
   --theme-clockface-arrows-holder: radial-gradient(at top center, #eee, #aaa);
   --theme-clockface-arrows-shadow: 0 0 1px black;
 
-  --global-ui-hover-BackgroundColor: #A5BDFF1A;
+  // New
   --global-ui-BackgroundColor: #1530720D;
+  --global-ui-hover-BackgroundColor: #1530721A;
+  --global-ui-highlight-BackgroundColor: #A5BDFF26;
+  --global-ui-hover-highlight-BackgroundColor: #A5BDFF40;
+  --global-surface-01-BorderColor: #DDE1E9;
   --global-surface-02-BackgroundColor: #19202E;
+  --global-primary-TextColor: #0F121A;
+  --global-secondary-TextColor: #5A667E;
+  --global-tertiary-TextColor: #7B879E;
+  --global-accent-TextColor: #3566E2;
 }

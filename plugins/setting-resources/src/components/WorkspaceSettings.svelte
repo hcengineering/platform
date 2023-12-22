@@ -19,17 +19,16 @@
   import setting, { SettingsCategory } from '@hcengineering/setting'
   import { Component, Location, getCurrentResolvedLocation, navigate, resolvedLocationStore } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
-  import CategoryElement from './CategoryElement.svelte'
+  import NavItem from './NavItem.svelte'
 
   export let kind: 'navigation' | undefined
   export let categoryName: string
+
   let category: SettingsCategory | undefined
   let categoryId: string = ''
 
   let categories: SettingsCategory[] = []
   const account = getCurrentAccount() as PersonAccount
-
-  export let visibleNav = true
 
   const settingsQuery = createQuery()
   settingsQuery.query(
@@ -69,26 +68,19 @@
 </script>
 
 {#if kind === 'navigation'}
-  <div class="ml-4 mt-2">
-    <div class="antiPanel-element">
-      {#each categories as category}
-        <CategoryElement
-          icon={category.icon}
-          label={category.label}
-          selected={category.name === categoryId}
-          on:click={() => {
-            selectCategory(category.name)
-          }}
-        />
-        {#if category.name === categoryId && category.extraComponents?.navigation}
-          <Component
-            is={category.extraComponents?.navigation}
-            props={{ kind: 'navigation', categoryName: categoryId }}
-          />
-        {/if}
-      {/each}
-    </div>
-  </div>
+  {#each categories as category}
+    <NavItem
+      icon={category.icon}
+      label={category.label}
+      selected={category.name === categoryId}
+      on:click={() => {
+        selectCategory(category.name)
+      }}
+    />
+    {#if category.name === categoryId && category.extraComponents?.navigation}
+      <Component is={category.extraComponents?.navigation} props={{ kind: 'navigation', categoryName: categoryId }} />
+    {/if}
+  {/each}
 {:else if category}
   <Component is={category.component} props={{ kind: 'content' }} />
 {/if}

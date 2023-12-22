@@ -48,7 +48,8 @@ test.describe('contact tests', () => {
     // await page.hover('button:has-text("Settings")')
     await page.click('button:has-text("Settings")')
     // Click text=Workspace Notifications >> button
-    await page.click('.box > div:nth-child(4)')
+    // await page.click('.box > div:nth-child(4)')
+    await page.getByRole('button', { name: 'Notifications' }).click()
     await page.click('text="Text Templates"')
     // Click .flex-center.icon-button
     await page.click('#create-template')
@@ -81,11 +82,12 @@ test.describe('contact tests', () => {
     // await page.hover('button:has-text("Settings")')
     await page.click('button:has-text("Settings")')
     // Click text=Workspace Notifications >> button
-    await page.click('.box > div:nth-child(4)')
+    // await page.click('.box > div:nth-child(4)')
+    await page.getByRole('button', { name: 'Notifications' }).click()
     // Click text=Vacancies
     await page.locator('#new-project-type').click()
-    await page.getByRole('button', { name: 'Recruiting' }).click()
-    await page.locator('#templates').getByText('New Recruiting project type').first().click()
+    await page.getByRole('button', { name: 'Recruiting', exact: true }).click()
+    await page.locator('#navGroup-statuses').getByText('New Recruiting project type').first().click()
 
     // TODO: Need rework.
     // // Click #create-template div

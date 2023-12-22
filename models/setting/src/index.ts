@@ -120,8 +120,8 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       name: 'profile',
-      label: setting.string.EditProfile,
-      icon: setting.icon.EditProfile,
+      label: setting.string.AccountSettings,
+      icon: setting.icon.AccountSettings,
       component: setting.component.Profile,
       group: 'settings-account',
       secured: false,
@@ -149,7 +149,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       name: 'setting',
-      label: setting.string.WorkspaceSetting,
+      label: setting.string.WorkspaceSettings,
       icon: setting.icon.Setting,
       component: setting.component.WorkspaceSettings,
       extraComponents: {
@@ -181,7 +181,7 @@ export function createModel (builder: Builder): void {
     {
       name: 'owners',
       label: setting.string.Owners,
-      icon: setting.icon.Password,
+      icon: setting.icon.Owners,
       component: setting.component.Owners,
       order: 1000,
       secured: true
@@ -202,11 +202,11 @@ export function createModel (builder: Builder): void {
     setting.ids.Configure
   )
   builder.createDoc(
-    setting.class.SettingsCategory,
+    setting.class.WorkspaceSettingCategory,
     core.space.Model,
     {
       name: 'classes',
-      label: setting.string.ClassSetting,
+      label: setting.string.Classes,
       icon: setting.icon.Clazz,
       component: setting.component.ClassSetting,
       group: 'settings-editor',
@@ -236,7 +236,7 @@ export function createModel (builder: Builder): void {
     {
       name: 'invites',
       label: setting.string.InviteSettings,
-      icon: setting.icon.Setting,
+      icon: setting.icon.InviteSettings,
       component: setting.component.InviteSetting,
       group: 'settings-editor',
       secured: true,
