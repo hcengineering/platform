@@ -30,12 +30,7 @@
     "SurveyRequests": "Запросы",
     "SurveyResult": "Результат",
     "SurveyResults": "Результаты",
-    "TypeFloat": "Десятичное число",
     "TypeFraction": "Доля",
-    "TypeInt": "Целое число",
-    "TypeNonNegativeFloat": "Неотрицательное десятично число",
-    "TypeNonNegativeInt": "Неотрицательное целое число",
-    "TypePositiveInt": "Положительное целое число",
     "TypeRank": "Ранг"
   }
 }

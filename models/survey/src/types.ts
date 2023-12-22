@@ -22,7 +22,7 @@ import {
   type Ref,
   type Type
 } from '@hcengineering/core'
-import core, { TAttachedDoc, TClass, TSpace } from '@hcengineering/model-core'
+import core, { TAttachedDoc, TClass, TSpace, TType } from '@hcengineering/model-core'
 
 import {
   ArrOf,
@@ -45,6 +45,7 @@ import {
   type AnswerData,
   type AssessmentData,
   type Fraction,
+  type MultipleChoiceAssessmentData,
   type MultipleChoiceQuestion,
   type Question,
   type QuestionEditor,
@@ -66,9 +67,19 @@ import contact, { type Person } from '@hcengineering/contact'
 export const DOMAIN_SURVEY = 'survey' as Domain
 
 /** @public */
+@UX(survey.string.TypeRank)
+@Model(survey.class.TypeRank, core.class.Type)
+export class TTypeRank extends TType {}
+
+/** @public */
 export function TypeRank (): Type<Rank> {
   return { _class: survey.class.TypeRank, label: survey.string.TypeRank }
 }
+
+/** @public */
+@UX(survey.string.TypeFraction)
+@Model(survey.class.TypeFraction, core.class.Type)
+export class TTypeFraction extends TType {}
 
 /** @public */
 export function TypeFraction (): Type<Fraction> {
@@ -146,8 +157,23 @@ export class TQuestion extends TAttachedDoc implements Question {
 }
 
 /** @public */
+@UX(survey.string.Option)
+@Model(survey.class.TypeQuestionOption, core.class.Type)
+export class TTypeQuestionOption extends TType {}
+
+/** @public */
 export function TypeQuestionOption (): Type<QuestionOption> {
   return { _class: survey.class.TypeQuestionOption, label: survey.string.Option }
+}
+
+/** @public */
+@UX(survey.string.SingleChoice)
+@Model(survey.class.TypeSingleChoiceAssessmentData, core.class.Type)
+export class TTypeSingleChoiceAssessmentData extends TType {}
+
+/** @public */
+export function TypeSingleChoiceAssessmentData (): Type<SingleChoiceAssessmentData> {
+  return { _class: survey.class.TypeSingleChoiceAssessmentData, label: survey.string.SingleChoice }
 }
 
 /** @public */
@@ -160,11 +186,18 @@ export class TSingleChoiceQuestion extends TQuestion implements SingleChoiceQues
   @Prop(TypeBoolean(), survey.string.Shuffle, { defaultValue: false })
     shuffle: boolean = false
 
-  @Prop({
-    _class: survey.class.TypeSingleChoiceAssessmentData,
-    label: survey.string.SingleChoice
-  }, survey.string.Assessment)
+  @Prop(TypeSingleChoiceAssessmentData(), survey.string.Assessment)
   override assessment?: SingleChoiceAssessmentData = undefined
+}
+
+/** @public */
+@UX(survey.string.MultipleChoice)
+@Model(survey.class.TypeMultipleChoiceAssessmentData, core.class.Type)
+export class TTypeMultipleChoiceAssessmentData extends TType {}
+
+/** @public */
+export function TypeMultipleChoiceAssessmentData (): Type<MultipleChoiceAssessmentData> {
+  return { _class: survey.class.TypeMultipleChoiceAssessmentData, label: survey.string.MultipleChoice }
 }
 
 /** @public */
@@ -177,11 +210,18 @@ export class TMultipleChoiceQuestion extends TQuestion implements MultipleChoice
   @Prop(TypeBoolean(), survey.string.Shuffle, { defaultValue: false })
     shuffle: boolean = false
 
-  @Prop({
-    _class: survey.class.TypeMultipleChoiceAssessmentData,
-    label: survey.string.SingleChoice
-  }, survey.string.Assessment)
-  override assessment?: SingleChoiceAssessmentData = undefined
+  @Prop(TypeMultipleChoiceAssessmentData(), survey.string.Assessment)
+  override assessment?: MultipleChoiceAssessmentData = undefined
+}
+
+/** @public */
+@UX(survey.string.Reorder)
+@Model(survey.class.TypeReorderAssessmentData, core.class.Type)
+export class TTypeReorderAssessmentData extends TType {}
+
+/** @public */
+export function TypeReorderAssessmentData (): Type<ReorderAssessmentData> {
+  return { _class: survey.class.TypeReorderAssessmentData, label: survey.string.Reorder }
 }
 
 /** @public */
@@ -194,10 +234,7 @@ export class TReorderQuestion extends TQuestion implements ReorderQuestion {
   @Prop(TypeBoolean(), survey.string.Shuffle, { defaultValue: false })
     shuffle: boolean = false
 
-  @Prop({
-    _class: survey.class.TypeReorderAssessmentData,
-    label: survey.string.SingleChoice
-  }, survey.string.Assessment)
+  @Prop(TypeReorderAssessmentData(), survey.string.Assessment)
   override assessment?: ReorderAssessmentData = undefined
 }
 
@@ -261,6 +298,16 @@ export class TSurveyResult extends TAttachedDoc implements SurveyResult {
 }
 
 /** @public */
+@UX(survey.string.Answer)
+@Model(survey.class.TypeAnswerData, core.class.Type)
+export class TTypeAnswerData extends TType {}
+
+/** @public */
+export function TypeAnswerData (): Type<AnswerData<any>> {
+  return { _class: survey.class.TypeAnswerData, label: survey.string.Answer }
+}
+
+/** @public */
 @Model(survey.class.Answer, core.class.AttachedDoc, DOMAIN_SURVEY)
 @UX(survey.string.Answer)
 export class TAnswer<Q extends Question> extends TAttachedDoc implements Answer<Q> {
@@ -293,10 +340,7 @@ export class TAnswer<Q extends Question> extends TAttachedDoc implements Answer<
   @ReadOnly()
     question!: Ref<Q>
 
-  @Prop({
-    _class: survey.class.TypeAnswerData,
-    label: survey.string.SingleChoice
-  }, survey.string.Answer)
+  @Prop(TypeAnswerData(), survey.string.Answer)
     answer!: AnswerData<Q>
 
   @Prop(TypeFraction(), survey.string.Score)

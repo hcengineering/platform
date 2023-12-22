@@ -13,18 +13,20 @@
 // limitations under the License.
 //
 
-import { type Resources } from '@hcengineering/platform'
+import { type Question, type Survey } from '@hcengineering/survey'
+import { type AttachedData, type Ref, type TxOperations } from '@hcengineering/core'
 
-import SurveyCreator from './components/SurveyCreator.svelte'
-import SurveyNamePresenter from './components/SurveyNamePresenter.svelte'
-import QuestionCollectionEditor from './components/QuestionCollectionEditor.svelte'
-import ChoiceQuestionEditor from './components/ChoiceQuestionEditor.svelte'
-
-export default async (): Promise<Resources> => ({
-  component: {
-    ChoiceQuestionEditor,
-    QuestionCollectionEditor,
-    SurveyCreator,
-    SurveyNamePresenter
-  }
-})
+export async function questionCreate<Q extends Question> (
+  client: TxOperations,
+  survey: Survey,
+  question: AttachedData<Q> & Pick<Q, '_class'>
+): Promise<Ref<Question>> {
+  return await client.addCollection<Survey, Q>(
+    question._class,
+    survey._id,
+    survey._id,
+    survey._class,
+    'questions',
+    question
+  )
+}

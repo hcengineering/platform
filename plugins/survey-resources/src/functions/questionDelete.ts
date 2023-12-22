@@ -13,18 +13,10 @@
 // limitations under the License.
 //
 
-import { type Resources } from '@hcengineering/platform'
+import { type Question } from '@hcengineering/survey'
+import { deleteObject } from '@hcengineering/view-resources'
+import { type TxOperations } from '@hcengineering/core'
 
-import SurveyCreator from './components/SurveyCreator.svelte'
-import SurveyNamePresenter from './components/SurveyNamePresenter.svelte'
-import QuestionCollectionEditor from './components/QuestionCollectionEditor.svelte'
-import ChoiceQuestionEditor from './components/ChoiceQuestionEditor.svelte'
-
-export default async (): Promise<Resources> => ({
-  component: {
-    ChoiceQuestionEditor,
-    QuestionCollectionEditor,
-    SurveyCreator,
-    SurveyNamePresenter
-  }
-})
+export async function questionDelete (client: TxOperations, question: Question): Promise<void> {
+  await deleteObject(client, question)
+}

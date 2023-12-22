@@ -84,9 +84,9 @@ export interface UXObject extends Obj {
  * @public
  */
 export interface AttachedDoc<
-Parent extends Doc = Doc,
-Collection extends Extract<keyof Parent, string> | string = Extract<keyof Parent, string> | string,
-S extends Space = Space
+  Parent extends Doc = Doc,
+  Collection extends Extract<keyof Parent, string> | string = Extract<keyof Parent, string> | string,
+  S extends Space = Space
 > extends Doc<S> {
   attachedTo: Ref<Parent>
   attachedToClass: Ref<Class<Parent>>

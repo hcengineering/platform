@@ -26,9 +26,20 @@ import {
 import survey from './plugin'
 import view from '@hcengineering/model-view'
 import {
+  TAnswer,
+  TMultipleChoiceQuestion,
   TQuestion,
   TQuestionEditor,
-  TSurvey
+  TReorderQuestion,
+  TSingleChoiceQuestion,
+  TSurvey,
+  TSurveyRequest,
+  TSurveyResult,
+  TTypeAnswerData,
+  TTypeMultipleChoiceAssessmentData,
+  TTypeRank,
+  TTypeReorderAssessmentData,
+  TTypeSingleChoiceAssessmentData
 } from './types'
 
 export { surveyOperation } from './migration'
@@ -44,22 +55,18 @@ export function createModel (builder: Builder): void {
   defineQuestion(builder)
   defineQuestionTypes(builder)
   defineApplication(builder)
-  // TSurveyRequest,
-  // TSurveyResult,
-  // TAnswer
+  defineRest(builder)
 }
 
+// TODO: Can we make it a decorator for model classes?
 export function defineQuestionEditor<Q extends Question> (
   builder: Builder,
   questionClassRef: Ref<Class<Q>>,
   editor: QuestionEditorComponentTypeRef<Q>
 ): void {
-  builder.mixin<Class<Q>, QuestionEditor<Q>>(
-    questionClassRef,
-    core.class.Class,
-    survey.mixin.QuestionEditor,
-    { editor }
-  )
+  builder.mixin<Class<Q>, QuestionEditor<Q>>(questionClassRef, core.class.Class, survey.mixin.QuestionEditor, {
+    editor
+  })
 }
 
 function defineSurvey (builder: Builder): void {
@@ -81,11 +88,21 @@ function defineSurvey (builder: Builder): void {
           label: survey.string.Questions,
           presenter: view.component.NumberPresenter
         },
+        {
+          key: 'requests',
+          label: survey.string.SurveyRequests,
+          presenter: view.component.NumberPresenter
+        },
+        'private',
         'createdBy',
         'createdOn',
         'modifiedBy',
         'modifiedOn'
-      ]
+      ],
+      configOptions: {
+        hiddenKeys: ['name'],
+        sortable: true
+      }
     },
     survey.viewlet.SurveysTable
   )
@@ -99,24 +116,27 @@ function defineSurvey (builder: Builder): void {
 }
 
 function defineQuestion (builder: Builder): void {
-  // builder.createModel(TQuestion)
-  // builder.mixin(survey.class.Question, core.class.Class, view.mixin.CollectionEditor, {
-  //   editor: survey.component.QuestionCollectionEditor
-  // })
+  builder.createModel(TTypeRank, TQuestion)
+  builder.mixin(survey.class.Question, core.class.Class, view.mixin.CollectionEditor, {
+    editor: survey.component.QuestionCollectionEditor
+  })
 }
 
 function defineQuestionTypes (builder: Builder): void {
-  builder.createModel(
-    TQuestionEditor,
-    TQuestion
-  )
+  builder.createModel(TQuestionEditor)
 
-  // builder.createModel(TSingleChoiceQuestion)
-  // defineQuestionEditor(
-  //   builder,
-  //   survey.class.SingleChoiceQuestion,
-  //   survey.component.OptionsQuestionDataEditor
-  // )
+  builder.createModel(TTypeSingleChoiceAssessmentData, TSingleChoiceQuestion)
+  defineQuestionEditor(builder, survey.class.SingleChoiceQuestion, survey.component.ChoiceQuestionEditor)
+
+  builder.createModel(TTypeMultipleChoiceAssessmentData, TMultipleChoiceQuestion)
+  defineQuestionEditor(builder, survey.class.MultipleChoiceQuestion, survey.component.ChoiceQuestionEditor)
+
+  builder.createModel(TTypeReorderAssessmentData, TReorderQuestion)
+  // TODO: define editor
+}
+
+function defineRest (builder: Builder): void {
+  builder.createModel(TTypeAnswerData, TSurveyRequest, TSurveyResult, TAnswer)
 }
 
 function defineApplication (builder: Builder): void {

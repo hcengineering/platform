@@ -34,7 +34,9 @@ import {
   SingleChoiceAnswerData,
   SingleChoiceAssessmentData,
   SingleChoiceQuestion,
-  Survey, SurveyRequest, SurveyResult
+  Survey,
+  SurveyRequest,
+  SurveyResult
 } from './types'
 
 export * from './types'
@@ -67,7 +69,7 @@ export default plugin(surveyId, {
     TypeReorderAnswerData: '' as Ref<Class<Type<ReorderAnswerData>>>,
     TypeReorderAssessmentData: '' as Ref<Class<Type<ReorderAssessmentData>>>,
     TypeSingleChoiceAnswerData: '' as Ref<Class<Type<SingleChoiceAnswerData>>>,
-    TypeSingleChoiceAssessmentData: '' as Ref<Class<Type<SingleChoiceAssessmentData>>>,
+    TypeSingleChoiceAssessmentData: '' as Ref<Class<Type<SingleChoiceAssessmentData>>>
   },
   mixin: {
     QuestionEditor: '' as Ref<Mixin<QuestionEditor>>

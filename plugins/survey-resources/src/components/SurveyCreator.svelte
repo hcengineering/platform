@@ -39,11 +39,5 @@
   on:close={() => dispatch('close')}
   on:changeContent
 >
-  <EditBox
-    focusIndex={1}
-    bind:value={object.name}
-    kind="large-style"
-    autoFocus
-    fullSize
-  />
+  <EditBox focusIndex={1} bind:value={object.name} kind="large-style" autoFocus fullSize />
 </Card>

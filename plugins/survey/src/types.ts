@@ -59,7 +59,7 @@ export interface AnswerData<Q extends Question> {}
 
 /** @public */
 export interface QuestionOption {
-  label: Markup
+  label: string
 }
 
 /** @public */
@@ -91,7 +91,7 @@ export interface MultipleChoiceAnswerData extends AnswerData<MultipleChoiceQuest
 
 /** @public */
 export interface MultipleChoiceAssessmentData extends AssessmentData<MultipleChoiceQuestion> {
-  correctAnswer: MultipleChoiceQuestion
+  correctAnswer: MultipleChoiceAnswerData
 }
 
 /** @public */
@@ -107,7 +107,7 @@ export interface ReorderAnswerData extends AnswerData<ReorderQuestion> {
 
 /** @public */
 export interface ReorderAssessmentData extends AssessmentData<ReorderQuestion> {
-  correctAnswer: ReorderQuestion
+  correctAnswer: ReorderAnswerData
 }
 
 /** @public */
@@ -143,9 +143,7 @@ export interface QuestionEditorComponentProps<Q extends Question> {
 export type QuestionEditorComponent<Q extends Question> = SvelteComponent<QuestionEditorComponentProps<Q>>
 
 /** @public */
-export type QuestionEditorComponentTypeRef<Q extends Question> = Resource<
-ComponentType<QuestionEditorComponent<Q>>
->
+export type QuestionEditorComponentTypeRef<Q extends Question> = Resource<ComponentType<QuestionEditorComponent<Q>>>
 
 /** @public */
 export interface QuestionEditor<Q extends Question = Question> extends Class<Doc> {

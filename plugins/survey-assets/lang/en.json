@@ -26,10 +26,10 @@
     "SurveyApplication": "Surveys",
     "SurveyCreate": "Create Survey",
     "SurveyName": "Name",
-    "SurveyRequest": "Survey Request",
-    "SurveyRequests": "Survey Requests",
-    "SurveyResult": "Survey Result",
-    "SurveyResults": "Survey Results",
+    "SurveyRequest": "Request",
+    "SurveyRequests": "Requests",
+    "SurveyResult": "Result",
+    "SurveyResults": "Results",
     "TypeFraction": "Fraction",
     "TypeRank": "Rank"
   }

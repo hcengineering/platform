@@ -14,6 +14,9 @@
 //
 
 import survey, {
+  type MultipleChoiceQuestion,
+  type QuestionEditorComponentTypeRef,
+  type SingleChoiceQuestion,
   surveyId
 } from '@hcengineering/survey'
 import { mergeIds, type Resource } from '@hcengineering/platform'
@@ -21,6 +24,8 @@ import { type ComponentType } from 'svelte'
 
 export default mergeIds(surveyId, survey, {
   component: {
+    ChoiceQuestionEditor: '' as QuestionEditorComponentTypeRef<SingleChoiceQuestion | MultipleChoiceQuestion>,
+    QuestionCollectionEditor: '' as Resource<ComponentType>,
     SurveyCreator: '' as Resource<ComponentType>,
     SurveyNamePresenter: '' as Resource<ComponentType>
   }

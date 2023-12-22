@@ -13,18 +13,15 @@
 // limitations under the License.
 //
 
-import { type Resources } from '@hcengineering/platform'
+import { type Class, type TxOperations } from '@hcengineering/core'
+import { type Question } from '@hcengineering/survey'
 
-import SurveyCreator from './components/SurveyCreator.svelte'
-import SurveyNamePresenter from './components/SurveyNamePresenter.svelte'
-import QuestionCollectionEditor from './components/QuestionCollectionEditor.svelte'
-import ChoiceQuestionEditor from './components/ChoiceQuestionEditor.svelte'
+import survey from '../plugin'
 
-export default async (): Promise<Resources> => ({
-  component: {
-    ChoiceQuestionEditor,
-    QuestionCollectionEditor,
-    SurveyCreator,
-    SurveyNamePresenter
-  }
-})
+export function getEditableQuestionClasses (client: TxOperations): Array<Class<Question>> {
+  const hierarchy = client.getHierarchy()
+  return hierarchy
+    .getDescendants(survey.class.Question)
+    .map((classRef) => hierarchy.getClass(classRef))
+    .filter((_class) => hierarchy.hasMixin(_class, survey.mixin.QuestionEditor))
+}
