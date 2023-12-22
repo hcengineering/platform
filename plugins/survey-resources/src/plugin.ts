@@ -14,9 +14,6 @@
 //
 
 import survey, {
-  type Checkboxes,
-  type QuestionDataEditorComponentTypeRef,
-  type RadioButtons,
   surveyId
 } from '@hcengineering/survey'
 import { mergeIds, type Resource } from '@hcengineering/platform'
@@ -24,9 +21,7 @@ import { type ComponentType } from 'svelte'
 
 export default mergeIds(surveyId, survey, {
   component: {
-    OptionsQuestionDataEditor: '' as QuestionDataEditorComponentTypeRef<Checkboxes | RadioButtons>,
     SurveyCreator: '' as Resource<ComponentType>,
-    SurveyNamePresenter: '' as Resource<ComponentType>,
-    QuestionCollectionEditor: '' as Resource<ComponentType>
+    SurveyNamePresenter: '' as Resource<ComponentType>
   }
 })

@@ -13,8 +13,16 @@
 // limitations under the License.
 //
 
-import { type CollectionSize, type Domain, IndexKind, type Markup, type Ref, type Type } from '@hcengineering/core'
-import core, { TAttachedDoc, TClass, TObj, TSpace, TType } from '@hcengineering/model-core'
+import {
+  type Class,
+  type CollectionSize,
+  type Domain,
+  IndexKind,
+  type Markup,
+  type Ref,
+  type Type
+} from '@hcengineering/core'
+import core, { TAttachedDoc, TClass, TSpace } from '@hcengineering/model-core'
 
 import {
   ArrOf,
@@ -24,6 +32,7 @@ import {
   Mixin,
   Model,
   Prop,
+  ReadOnly,
   TypeBoolean,
   TypeMarkup,
   TypeRef,
@@ -32,143 +41,271 @@ import {
 } from '@hcengineering/model'
 import survey from './plugin'
 import {
-  type Checkboxes,
-  type CheckboxesOption,
-  type Info,
+  type Answer,
+  type AnswerData,
+  type AssessmentData,
+  type Fraction,
+  type MultipleChoiceQuestion,
   type Question,
-  type QuestionData,
-  type QuestionDataEditor,
-  type QuestionDataEditorComponentTypeRef,
-  type RadioButtons,
-  type RadioButtonsOption,
+  type QuestionEditor,
+  type QuestionEditorComponentTypeRef,
+  type QuestionOption,
   type Rank,
-  type Survey
+  type ReorderAssessmentData,
+  type ReorderQuestion,
+  type SingleChoiceAssessmentData,
+  type SingleChoiceQuestion,
+  type Survey,
+  type SurveyRequest,
+  type SurveyResult
 } from '@hcengineering/survey'
+import attachment from '@hcengineering/model-attachment'
+import { type Attachment } from '@hcengineering/attachment'
+import contact, { type Person } from '@hcengineering/contact'
 
 export const DOMAIN_SURVEY = 'survey' as Domain
 
-/**
- * @public
- */
+/** @public */
 export function TypeRank (): Type<Rank> {
-  return { _class: survey.class.Rank, label: survey.string.Rank }
+  return { _class: survey.class.TypeRank, label: survey.string.TypeRank }
 }
 
-/**
- * @public
- */
-@UX(survey.string.Rank)
-@Model(survey.class.Rank, core.class.Type)
-export class TTypeRank extends TType {}
+/** @public */
+export function TypeFraction (): Type<Fraction> {
+  return { _class: survey.class.TypeFraction, label: survey.string.TypeFraction }
+}
 
 // FIXME: Currently, classes that extend TSpace and represent private spaces
 //  cannot be stored in their own domain, as it breaks SpaceSecurityMiddleware.
 //  @Model(survey.class.Survey, core.class.Space, DOMAIN_SURVEY)
-/**
- * @public
- */
+/** @public */
 @Model(survey.class.Survey, core.class.Space)
 @UX(survey.string.Survey, survey.icon.Survey)
 export class TSurvey extends TSpace implements Survey {
   @Prop(TypeString(), survey.string.SurveyName, { defaultValue: '' })
   @Index(IndexKind.FullText)
-  declare name: string
+  override name: string = ''
 
   @Prop(TypeString(), core.string.Description, { defaultValue: '' })
   @Hidden()
-  declare description: Markup
+  override description: Markup = ''
 
   @Prop(TypeBoolean(), core.string.Archived, { defaultValue: false })
   @Hidden()
-  declare archived: boolean
+  override archived: boolean = false
 
   @Prop(TypeBoolean(), core.string.Private, { defaultValue: true })
-  @Hidden()
-  declare private: boolean
+  @ReadOnly()
+  override private: boolean = true
 
   @Prop(Collection(survey.class.Question), survey.string.Questions, { defaultValue: 0 })
     questions: CollectionSize<Question> = 0
+
+  @Prop(Collection(survey.class.SurveyRequest), survey.string.SurveyRequests, { defaultValue: 0 })
+    requests: CollectionSize<Question> = 0
 }
 
-/**
- * @public
- */
+/** @public */
 @Model(survey.class.Question, core.class.AttachedDoc, DOMAIN_SURVEY)
-export class TQuestion<Data extends QuestionData> extends TAttachedDoc implements Question<Data> {
+export class TQuestion extends TAttachedDoc implements Question {
+  @Prop(TypeRef(survey.class.Survey), core.string.Space)
+  @Index(IndexKind.Indexed)
+  @Hidden()
+  declare space: Ref<Survey>
+
+  @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
+  @Index(IndexKind.Indexed)
+  @Hidden()
+  declare attachedToClass: Ref<Class<Survey>>
+
   @Prop(TypeRef(survey.class.Survey), core.string.AttachedTo)
+  @Index(IndexKind.Indexed)
+  @ReadOnly()
   declare attachedTo: Ref<Survey>
 
+  @Prop(TypeString(), core.string.Collection, { defaultValue: 'questions' })
+  @Hidden()
+  override collection: 'questions' = 'questions'
+
+  @Prop(TypeMarkup(), survey.string.Question)
+  @Index(IndexKind.FullText)
+    title: Markup = ''
+
   @Prop(TypeRank(), survey.string.Rank)
+  @Index(IndexKind.Indexed)
   @Hidden()
     rank!: Rank
 
-  @Prop(TypeQuestionData(), survey.string.QuestionData)
-    data!: Data
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, {
+    shortLabel: attachment.string.Files,
+    defaultValue: 0
+  })
+    attachments: CollectionSize<Attachment> = 0
+
+  assessment?: AssessmentData<this>
 }
 
-/**
- * @public
- */
-@Model(survey.class.QuestionData, core.class.Obj)
-export class TQuestionData extends TObj implements QuestionData {}
-
-export function TypeQuestionData (): Type<QuestionData> {
-  return { _class: survey.class.QuestionData, label: survey.string.QuestionData }
+/** @public */
+export function TypeQuestionOption (): Type<QuestionOption> {
+  return { _class: survey.class.TypeQuestionOption, label: survey.string.Option }
 }
 
-/**
- * @public
- */
-export function TypeRadioButtonsOption (): Type<RadioButtonsOption> {
-  return { _class: survey.class.RadioButtonsOption, label: survey.string.Option }
+/** @public */
+@Model(survey.class.SingleChoiceQuestion, survey.class.Question)
+@UX(survey.string.SingleChoice, survey.icon.RadioButton)
+export class TSingleChoiceQuestion extends TQuestion implements SingleChoiceQuestion {
+  @Prop(ArrOf(TypeQuestionOption()), survey.string.Options, { defaultValue: [] })
+    options: QuestionOption[] = []
+
+  @Prop(TypeBoolean(), survey.string.Shuffle, { defaultValue: false })
+    shuffle: boolean = false
+
+  @Prop({
+    _class: survey.class.TypeSingleChoiceAssessmentData,
+    label: survey.string.SingleChoice
+  }, survey.string.Assessment)
+  override assessment?: SingleChoiceAssessmentData = undefined
 }
 
-/**
- * @public
- */
-@Model(survey.class.RadioButtons, survey.class.QuestionData)
-@UX(survey.string.RadioButtons, survey.icon.RadioButtons)
-export class TRadioButtons extends TQuestionData implements RadioButtons {
-  @Prop(TypeString(), survey.string.QuestionText, { defaultValue: '' })
-    text: string = ''
+/** @public */
+@Model(survey.class.MultipleChoiceQuestion, survey.class.Question)
+@UX(survey.string.MultipleChoice, survey.icon.Checkbox)
+export class TMultipleChoiceQuestion extends TQuestion implements MultipleChoiceQuestion {
+  @Prop(ArrOf(TypeQuestionOption()), survey.string.Options, { defaultValue: [] })
+    options: QuestionOption[] = []
 
-  @Prop(ArrOf(TypeRadioButtonsOption()), survey.string.Options, { defaultValue: [] })
-    options: RadioButtonsOption[] = []
+  @Prop(TypeBoolean(), survey.string.Shuffle, { defaultValue: false })
+    shuffle: boolean = false
+
+  @Prop({
+    _class: survey.class.TypeMultipleChoiceAssessmentData,
+    label: survey.string.SingleChoice
+  }, survey.string.Assessment)
+  override assessment?: SingleChoiceAssessmentData = undefined
 }
 
-/**
- * @public
- */
-export function TypeCheckboxesOption (): Type<CheckboxesOption> {
-  return { _class: survey.class.CheckboxesOption, label: survey.string.Option }
+/** @public */
+@Model(survey.class.ReorderQuestion, survey.class.Question)
+@UX(survey.string.Reorder, survey.icon.Drag)
+export class TReorderQuestion extends TQuestion implements ReorderQuestion {
+  @Prop(ArrOf(TypeQuestionOption()), survey.string.Options, { defaultValue: [] })
+    options: QuestionOption[] = []
+
+  @Prop(TypeBoolean(), survey.string.Shuffle, { defaultValue: false })
+    shuffle: boolean = false
+
+  @Prop({
+    _class: survey.class.TypeReorderAssessmentData,
+    label: survey.string.SingleChoice
+  }, survey.string.Assessment)
+  override assessment?: ReorderAssessmentData = undefined
 }
 
-/**
- * @public
- */
-@Model(survey.class.Checkboxes, survey.class.QuestionData)
-@UX(survey.string.Checkboxes, survey.icon.Checkboxes)
-export class TCheckboxes extends TQuestionData implements Checkboxes {
-  @Prop(TypeString(), survey.string.QuestionText, { defaultValue: '' })
-    text: string = ''
+/** @public */
+@Model(survey.class.SurveyRequest, core.class.AttachedDoc, DOMAIN_SURVEY)
+export class TSurveyRequest extends TAttachedDoc implements SurveyRequest {
+  @Prop(TypeRef(survey.class.Survey), core.string.Space)
+  @Index(IndexKind.Indexed)
+  @Hidden()
+  declare space: Ref<Survey>
 
-  @Prop(ArrOf(TypeCheckboxesOption()), survey.string.Options, { defaultValue: [] })
-    options: RadioButtonsOption[] = []
+  @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
+  @Index(IndexKind.Indexed)
+  @Hidden()
+  declare attachedToClass: Ref<Class<Survey>>
+
+  @Prop(TypeRef(survey.class.Survey), core.string.AttachedTo)
+  @Index(IndexKind.Indexed)
+  @ReadOnly()
+  declare attachedTo: Ref<Survey>
+
+  @Prop(TypeString(), core.string.Collection, { defaultValue: 'requests' })
+  @Hidden()
+  override collection: 'requests' = 'requests'
+
+  @Prop(TypeRef(contact.class.Person), survey.string.Assignee)
+  @ReadOnly()
+    assignee!: Ref<Person>
+
+  @Prop(Collection(survey.class.SurveyResult), survey.string.SurveyResult, { defaultValue: 0 })
+  @Index(IndexKind.Indexed)
+    results: CollectionSize<SurveyResult> = 0
 }
 
-/**
- * @public
- */
-@Model(survey.class.Info, survey.class.QuestionData)
-export class TInfo extends TQuestionData implements Info {
-  @Prop(TypeMarkup(), survey.string.QuestionText, { defaultValue: '' })
-    text: string = ''
+/** @public */
+@Model(survey.class.SurveyResult, core.class.AttachedDoc, DOMAIN_SURVEY)
+@UX(survey.string.SurveyResult)
+export class TSurveyResult extends TAttachedDoc implements SurveyResult {
+  @Prop(TypeRef(survey.class.Survey), core.string.Space)
+  @Index(IndexKind.Indexed)
+  @Hidden()
+  declare space: Ref<Survey>
+
+  @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
+  @Index(IndexKind.Indexed)
+  @Hidden()
+  declare attachedToClass: Ref<Class<SurveyRequest>>
+
+  @Prop(TypeRef(survey.class.Survey), core.string.AttachedTo)
+  @Index(IndexKind.Indexed)
+  @ReadOnly()
+  declare attachedTo: Ref<SurveyRequest>
+
+  @Prop(TypeString(), core.string.Collection, { defaultValue: 'results' })
+  @Hidden()
+  override collection: 'results' = 'results'
+
+  @Prop(Collection(survey.class.Answer), survey.string.Answers, { defaultValue: 0 })
+  @Index(IndexKind.Indexed)
+    answers: CollectionSize<Answer<any>> = 0
 }
 
-/**
- * @public
- */
-@Mixin(survey.mixin.QuestionDataEditor, core.class.Class)
-export class TQuestionDataEditor<Q extends QuestionData> extends TClass implements QuestionDataEditor<Q> {
-  editor!: QuestionDataEditorComponentTypeRef<Q>
+/** @public */
+@Model(survey.class.Answer, core.class.AttachedDoc, DOMAIN_SURVEY)
+@UX(survey.string.Answer)
+export class TAnswer<Q extends Question> extends TAttachedDoc implements Answer<Q> {
+  @Prop(TypeRef(survey.class.Survey), core.string.Space)
+  @Index(IndexKind.Indexed)
+  @Hidden()
+  declare space: Ref<Survey>
+
+  @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
+  @Index(IndexKind.Indexed)
+  @Hidden()
+  declare attachedToClass: Ref<Class<SurveyResult>>
+
+  @Prop(TypeRef(survey.class.Survey), core.string.AttachedTo)
+  @Index(IndexKind.Indexed)
+  @ReadOnly()
+  declare attachedTo: Ref<SurveyResult>
+
+  @Prop(TypeString(), core.string.Collection, { defaultValue: 'answers' })
+  @Hidden()
+  override collection: 'answers' = 'answers'
+
+  @Prop(TypeRef(core.class.Class), survey.string.Question)
+  @Index(IndexKind.Indexed)
+  @Hidden()
+    questionClass!: Ref<Class<Q>>
+
+  @Prop(TypeRef(survey.class.Question), survey.string.Question)
+  @Index(IndexKind.Indexed)
+  @ReadOnly()
+    question!: Ref<Q>
+
+  @Prop({
+    _class: survey.class.TypeAnswerData,
+    label: survey.string.SingleChoice
+  }, survey.string.Answer)
+    answer!: AnswerData<Q>
+
+  @Prop(TypeFraction(), survey.string.Score)
+  @Index(IndexKind.Indexed)
+    score?: Fraction
+}
+
+/** @public */
+@Mixin(survey.mixin.QuestionEditor, core.class.Class)
+export class TQuestionEditor<Q extends Question> extends TClass implements QuestionEditor<Q> {
+  editor!: QuestionEditorComponentTypeRef<Q>
 }

@@ -42,7 +42,6 @@
   <EditBox
     focusIndex={1}
     bind:value={object.name}
-    placeholder={survey.string.SurveyNamePlaceholder}
     kind="large-style"
     autoFocus
     fullSize

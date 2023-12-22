@@ -33,6 +33,7 @@
     "@types/jest":"^29.5.5"
   },
   "dependencies": {
+    "@hcengineering/attachment-resources": "^0.6.0",
     "@hcengineering/core": "^0.6.28",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/presentation": "^0.6.2",

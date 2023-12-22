@@ -18,11 +18,13 @@ import survey from '@hcengineering/survey'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(survey.icon, {
-  Checkboxes: `${icons}#checkbox`,
+  Checkbox: `${icons}#checkbox`,
+  Drag: `${icons}#drag`,
   Eye: `${icons}#eye`,
-  Info: `${icons}#info`,
+  Inbox: `${icons}#inbox`,
+  Outbox: `${icons}#outbox`,
   Question: `${icons}#question`,
-  RadioButtons: `${icons}#radio-button`,
+  RadioButton : `${icons}#radio-button`,
   Survey: `${icons}#survey`,
   SurveyApplication: `${icons}#survey`
 })

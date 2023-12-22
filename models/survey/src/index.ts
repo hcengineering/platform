@@ -18,29 +18,23 @@ import { type Class, type Ref } from '@hcengineering/core'
 import core from '@hcengineering/model-core'
 import workbench from '@hcengineering/model-workbench'
 import {
-  type QuestionData,
-  type QuestionDataEditor,
-  type QuestionDataEditorComponentTypeRef,
+  type Question,
+  type QuestionEditor,
+  type QuestionEditorComponentTypeRef,
   surveyId
 } from '@hcengineering/survey'
 import survey from './plugin'
 import view from '@hcengineering/model-view'
 import {
-  TCheckboxes,
-  TInfo,
   TQuestion,
-  TQuestionData,
-  TQuestionDataEditor,
-  TRadioButtons,
-  TSurvey,
-  TTypeRank
+  TQuestionEditor,
+  TSurvey
 } from './types'
 
 export { surveyOperation } from './migration'
 export { surveyId } from '@hcengineering/survey'
 export { default } from './plugin'
 
-// TODO: Should we place it into plugin itself, e.g. survey.routingParts.surveyId?
 export enum SurveyRoutingParts {
   SurveysId = 'surveys'
 }
@@ -50,17 +44,20 @@ export function createModel (builder: Builder): void {
   defineQuestion(builder)
   defineQuestionTypes(builder)
   defineApplication(builder)
+  // TSurveyRequest,
+  // TSurveyResult,
+  // TAnswer
 }
 
-export function defineQuestionDataEditor<TQuestionData extends QuestionData> (
+export function defineQuestionEditor<Q extends Question> (
   builder: Builder,
-  questionClassRef: Ref<Class<TQuestionData>>,
-  editor: QuestionDataEditorComponentTypeRef<TQuestionData>
+  questionClassRef: Ref<Class<Q>>,
+  editor: QuestionEditorComponentTypeRef<Q>
 ): void {
-  builder.mixin<Class<TQuestionData>, QuestionDataEditor<TQuestionData>>(
+  builder.mixin<Class<Q>, QuestionEditor<Q>>(
     questionClassRef,
     core.class.Class,
-    survey.mixin.QuestionDataEditor,
+    survey.mixin.QuestionEditor,
     { editor }
   )
 }
@@ -102,27 +99,24 @@ function defineSurvey (builder: Builder): void {
 }
 
 function defineQuestion (builder: Builder): void {
-  builder.createModel(TQuestion, TTypeRank)
-  builder.mixin(survey.class.Question, core.class.Class, view.mixin.CollectionEditor, {
-    editor: survey.component.QuestionCollectionEditor
-  })
+  // builder.createModel(TQuestion)
+  // builder.mixin(survey.class.Question, core.class.Class, view.mixin.CollectionEditor, {
+  //   editor: survey.component.QuestionCollectionEditor
+  // })
 }
 
 function defineQuestionTypes (builder: Builder): void {
-  builder.createModel(TQuestionDataEditor)
-  builder.createModel(TQuestionData)
+  builder.createModel(
+    TQuestionEditor,
+    TQuestion
+  )
 
-  builder.createModel(TCheckboxes)
-  defineQuestionDataEditor(builder, survey.class.Checkboxes, survey.component.OptionsQuestionDataEditor)
-
-  builder.createModel(TInfo)
-  // TODO: Define editor
-  // builder.mixin(survey.class.InfoQuestionTemplate, core.class.Class, view.mixin.ObjectEditor, {
-  //   editor: ...
-  // })
-
-  builder.createModel(TRadioButtons)
-  defineQuestionDataEditor(builder, survey.class.RadioButtons, survey.component.OptionsQuestionDataEditor)
+  // builder.createModel(TSingleChoiceQuestion)
+  // defineQuestionEditor(
+  //   builder,
+  //   survey.class.SingleChoiceQuestion,
+  //   survey.component.OptionsQuestionDataEditor
+  // )
 }
 
 function defineApplication (builder: Builder): void {
