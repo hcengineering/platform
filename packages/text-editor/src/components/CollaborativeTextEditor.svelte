@@ -334,7 +334,9 @@
     <ImageStyleToolbar textEditor={editor} formatButtonSize={buttonSize} on:focus={handleFocus} />
   </div>
 
-  <div class="select-text" class:hidden={loading} style="width: 100%;" bind:this={element} />
+  <div class="textInput">
+    <div class="select-text" class:hidden={loading} style="width: 100%;" bind:this={element} />
+  </div>
 
   {#if refActions.length > 0}
     <div class="buttons-panel flex-between clear-mins">
@@ -374,6 +376,15 @@
     border-radius: 0.5rem;
     box-shadow: var(--button-shadow);
     z-index: 1;
+  }
+
+  .textInput {
+    flex-grow: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    min-height: 1.25rem;
+    background-color: transparent;
   }
 
   .hidden {
