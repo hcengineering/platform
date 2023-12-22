@@ -798,6 +798,10 @@ export async function restore (
               })
             })
             const unzip = createGunzip()
+
+            readStream.on('end', () => {
+              readStream.destroy()
+            })
             readStream.pipe(unzip)
             unzip.pipe(ex)
 

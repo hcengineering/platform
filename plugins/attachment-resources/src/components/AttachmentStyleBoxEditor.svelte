@@ -114,7 +114,7 @@
     {focusIndex}
     enableBackReferences={true}
     bind:this={descriptionBox}
-    useAttachmentPreview={false}
+    useAttachmentPreview={true}
     isScrollable={false}
     objectId={object._id}
     _class={object._class}

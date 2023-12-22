@@ -26,6 +26,7 @@ import https from 'https'
 import { join, resolve } from 'path'
 import sharp from 'sharp'
 import { v4 as uuid } from 'uuid'
+import morgan from 'morgan'
 
 async function minioUpload (minio: MinioService, workspace: WorkspaceId, file: UploadedFile): Promise<string> {
   const id = uuid()
@@ -88,6 +89,11 @@ async function getFileRange (
       'Content-Type': stat.metaData['content-type']
     })
 
+    dataStream.on('end', () => {
+      dataStream.destroy()
+      res.end()
+    })
+
     dataStream.pipe(res)
   } catch (err: any) {
     console.log(err)
@@ -113,6 +119,7 @@ async function getFile (client: MinioService, workspace: WorkspaceId, uuid: stri
     })
     dataStream.on('end', function () {
       res.end()
+      dataStream.destroy()
     })
     dataStream.on('error', function (err) {
       console.log(err)
@@ -167,6 +174,8 @@ export function start (
   app.use(fileUpload())
   app.use(bp.json())
   app.use(bp.urlencoded({ extended: true }))
+
+  app.use(morgan('combined'))
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.get('/config.json', async (req, res) => {
@@ -227,7 +236,6 @@ export function start (
 
   const filesHandler = async (req: any, res: Response): Promise<void> => {
     try {
-      console.log(req.headers)
       const cookies = ((req?.headers?.cookie as string) ?? '').split(';').map((it) => it.trim().split('='))
 
       const token = cookies.find((it) => it[0] === 'presentation-metadata-Token')?.[1]
@@ -260,8 +268,12 @@ export function start (
       } else {
         await getFile(config.minio, payload.workspace, uuid, res)
       }
-    } catch (error) {
-      console.log(error)
+    } catch (error: any) {
+      if (error?.code === 'NoSuchKey' || error?.code === 'NotFound') {
+        console.log('No such key', req.query.file)
+      } else {
+        console.log(error)
+      }
       res.status(500).send()
     }
   }
@@ -563,7 +575,9 @@ async function getResizeID (
       const d = await config.minio.stat(payload.workspace, sizeId)
       hasSmall = d !== undefined && d.size > 0
     } catch (err: any) {
-      console.error(err)
+      if (err.code !== 'NotFound') {
+        console.error(err)
+      }
     }
     if (hasSmall) {
       // We have cached small document, let's proceed with it.

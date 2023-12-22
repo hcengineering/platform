@@ -70,7 +70,7 @@
   </div>
 {:else if type === 'video'}
   <div class="content buttonContainer flex-center">
-    <video controls>
+    <video controls preload="auto">
       <source src={getFileUrl(value.file, 'full', value.name)} />
       <track kind="captions" label={value.name} />
       <div class="container">
