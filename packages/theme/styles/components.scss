@@ -617,8 +617,8 @@
   width: 100%;
 
   th, td {
-    padding: .5rem 1.5rem;
-    text-align: left;
+    padding: .5rem 1.5rem; //Increased padding in the table cells to improve spacing
+    text-align: left; //Set text alignment to the left 
   }
   th {
     height: 3rem;

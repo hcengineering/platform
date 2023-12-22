@@ -13,65 +13,97 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Member } from '@hcengineering/contact'
-  import type { Class, Doc, Ref, Space } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Button, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
-  import { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { Table, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
-  import contact from '../plugin'
-  import UsersPopup from './UsersPopup.svelte'
-  import IconMembersOutline from './icons/MembersOutline.svelte'
-  import { onMount } from 'svelte'
+import {
+  Member
+} from '@hcengineering/contact'
+import type {
+  Class,
+  Doc,
+  Ref,
+  Space
+} from '@hcengineering/core'
+import {
+  createQuery,
+  getClient
+} from '@hcengineering/presentation'
+import {
+  Button,
+  Icon,
+  IconAdd,
+  Label,
+  showPopup
+} from '@hcengineering/ui'
+import {
+  Viewlet,
+  ViewletPreference
+} from '@hcengineering/view'
+import {
+  Table,
+  ViewletSelector,
+  ViewletSettingButton
+} from '@hcengineering/view-resources'
+import contact from '../plugin'
+import UsersPopup from './UsersPopup.svelte'
+import IconMembersOutline from './icons/MembersOutline.svelte'
+import {
+  onMount
+} from 'svelte'
 
-  export let objectId: Ref<Doc>
-  export let space: Ref<Space>
-  export let _class: Ref<Class<Doc>>
+export let objectId: Ref < Doc >
+  export let space: Ref < Space >
+    export let _class: Ref < Class < Doc >>
 
-  export let members: number
-  let memberItems: Member[] = []
+      export let members: number
+let memberItems: Member[] = []
 
-  const client = getClient()
-  let loading = true
-  const membersQuery = createQuery()
-  $: membersQuery.query(contact.class.Member, { attachedTo: objectId }, (result) => {
-    memberItems = result
-  })
+const client = getClient()
+let loading = true
+const membersQuery = createQuery()
+$: membersQuery.query(contact.class.Member, {
+  attachedTo: objectId
+}, (result) => {
+  memberItems = result
+})
 
-
-  const createApp = async (ev: MouseEvent): Promise<void> => {
-    showPopup(
-      UsersPopup,
-      {
-        _class: contact.class.Person,
-        options: undefined,
-        icon: contact.icon.Person,
-        allowDeselect: true,
-        multiSelect: true,
-        placeholder: contact.string.Member,
-        create: { component: contact.component.CreatePerson, label: contact.string.CreatePerson }, 
-        ignoreUsers: memberItems.map((it) => it.contact),
+const createApp = async (ev: MouseEvent): Promise < void > => {
+  showPopup(
+    UsersPopup, {
+      _class: contact.class.Person,
+      options: undefined,
+      icon: contact.icon.Person,
+      allowDeselect: true,
+      multiSelect: true, //enable multiselection in usersPopup for adding members in table
+      placeholder: contact.string.Member,
+      create: {
+        component: contact.component.CreatePerson,
+        label: contact.string.CreatePerson
       },
-      ev.target as HTMLElement,
-      undefined,
-      (result) => {
-        if (result && result.length > 0) {
+      ignoreUsers: memberItems.map((it) => it.contact),
+    },
+    ev.target as HTMLElement,
+    undefined,
+    (result) => {
+      if (result && result.length > 0) { // Check if 'result' is defined and contains elements
+        // Iterate over each userId in the 'result' array
         for (const userId of result) {
+          // Add a collection for each userId in the specified 'members'
+          // using the provided parameters: 'space', 'objectId', '_class'
+          // The collection type is 'member', and the objectId is set to 'userId'
           client.addCollection(contact.class.Member, space, objectId, _class, 'member', {
             contact: userId,
           });
         }
       }
     }
-    )
-  }
+  )
+}
 
-  onMount(()=>{
-   createApp
-  })
+onMount(() => { // Use the onMount lifecycle function to execute code when the component mounts
+  createApp
+})
 
-  let viewlet: Viewlet | undefined
-  let preference: ViewletPreference | undefined
+let viewlet: Viewlet | undefined
+let preference: ViewletPreference | undefined
 </script>
 
 <div class="antiSection">
@@ -95,7 +127,9 @@
     </div>
   </div>
   {#if members > 0 && viewlet}
-  <div class="scroll relative flex-shrink svelte-77kg2x">
+  <!-- Container with a class for horizontal scrolling -->
+  <div class="scroll relative flex-shrink svelte-77kg2x"> <!-- Set the class for the 'Table'component -->
+     <!-- Table Component -->
     <Table
       _class={contact.class.Member}
       config={preference?.config ?? viewlet.config}

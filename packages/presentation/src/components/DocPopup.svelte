@@ -13,140 +13,155 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getObjectValue, type Class, type Doc, type Ref } from '@hcengineering/core'
-  import type { IntlString } from '@hcengineering/platform'
-  import {
-    Button,
-    EditWithIcon,
-    FocusHandler,
-    Icon,
-    IconAdd,
-    IconCheck,
-    IconSearch,
-    ListView,
-    Spinner,
-    createFocusManager,
-    deviceOptionsStore,
-    resizeObserver,
-    showPopup,
-    tooltip
-  } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
-  import presentation from '..'
-  import { ObjectCreate } from '../types'
-  import { getClient } from '../utils'
+import {
+  getObjectValue,
+  type Class,
+  type Doc,
+  type Ref
+} from '@hcengineering/core'
+import type {
+  IntlString
+} from '@hcengineering/platform'
+import {
+  Button,
+  EditWithIcon,
+  FocusHandler,
+  Icon,
+  IconAdd,
+  IconCheck,
+  IconSearch,
+  ListView,
+  Spinner,
+  createFocusManager,
+  deviceOptionsStore,
+  resizeObserver,
+  showPopup,
+  tooltip
+} from '@hcengineering/ui'
+import {
+  createEventDispatcher
+} from 'svelte'
+import presentation from '..'
+import {
+  ObjectCreate
+} from '../types'
+import {
+  getClient
+} from '../utils'
 
-  export let _class: Ref<Class<Doc>>
+export let _class: Ref < Class < Doc >>
   export let objects: Doc[] = []
-  export let selected: Ref<Doc> | undefined = undefined
+export let selected: Ref < Doc > | undefined = undefined
 
-  export let multiSelect: boolean = false
-  export let closeAfterSelect: boolean = true
-  export let allowDeselect: boolean = false
-  export let titleDeselect: IntlString | undefined = undefined
-  export let placeholder: IntlString = presentation.string.Search
-  export let selectedObjects: Ref<Doc>[] = []
-  export let shadows: boolean = true
-  export let width: 'medium' | 'large' | 'full' = 'medium'
-  export let size: 'small' | 'medium' | 'large' = 'large'
+export let multiSelect: boolean = false
+export let closeAfterSelect: boolean = true
+export let allowDeselect: boolean = false
+export let titleDeselect: IntlString | undefined = undefined
+export let placeholder: IntlString = presentation.string.Search
+export let selectedObjects: Ref < Doc > [] = []
+export let shadows: boolean = true
+export let width: 'medium' | 'large' | 'full' = 'medium'
+export let size: 'small' | 'medium' | 'large' = 'large'
 
-  export let noSearchField: boolean = false
-  export let groupBy = '_class'
+export let noSearchField: boolean = false
+export let groupBy = '_class'
 
-  export let create: ObjectCreate | undefined = undefined
-  export let readonly = false
-  export let disallowDeselect: Ref<Doc>[] | undefined = undefined
-  export let created: Doc[] = []
-  export let embedded: boolean = false
-  export let loading = false
+export let create: ObjectCreate | undefined = undefined
+export let readonly = false
+export let disallowDeselect: Ref < Doc > [] | undefined = undefined
+export let created: Doc[] = []
+export let embedded: boolean = false
+export let loading = false
 
-  let selection = 0
-  let list: ListView
+let selection = 0
+let list: ListView
 
-  let search: string = ''
-  
-  const client = getClient()
-  const dispatch = createEventDispatcher()
-  const manager = createFocusManager()
-  const forbiddenDeselectItemIds = new Set(disallowDeselect)
+let search: string = ''
 
-  $: selectedElements = new Set(selectedObjects)
-  $: showCategories =
-    created.length > 0 ||
-    objects.map((it) => getObjectValue(groupBy, it)).filter((it, index, arr) => arr.indexOf(it) === index).length > 1
+const client = getClient()
+const dispatch = createEventDispatcher()
+const manager = createFocusManager()
+const forbiddenDeselectItemIds = new Set(disallowDeselect)
 
-  function toAny (obj: any): any {
-    return obj
-  }
+$: selectedElements = new Set(selectedObjects)
+$: showCategories =
+  created.length > 0 ||
+  objects.map((it) => getObjectValue(groupBy, it)).filter((it, index, arr) => arr.indexOf(it) === index).length > 1
 
-  const checkSelected = (item: Doc): void => {
-  selectedElements.clear();
+function toAny(obj: any): any {
+  return obj
+}
+
+const checkSelected = (item: Doc): void => {
+  selectedElements.clear(); // if member id is same in array then clear that id
 
   selectedElements.add(item._id);
-  objects = objects.filter((dataItem) => dataItem._id !== item._id);
+  objects = objects.filter((dataItem) => dataItem._id !== item._id); // if id is match then filter member from objects array
 
   selectedObjects = Array.from(selectedElements);
 
   dispatch('update', selectedObjects);
 };
 
-  async function handleSelection (evt: Event | undefined, objects: Doc[], selection: number): Promise<void> {
-    const item = objects[selection]
+async function handleSelection(evt: Event | undefined, objects: Doc[], selection: number): Promise < void > {
+  const item = objects[selection]
 
-    if (!multiSelect) {
-      if (allowDeselect) {
-        selected = item._id === selected ? undefined : item._id
-      } else {
-        selected = item._id
-      }
-      dispatch(closeAfterSelect ? 'close' : 'update', selected !== undefined ? item : undefined)
+  if (!multiSelect) {
+    if (allowDeselect) {
+      selected = item._id === selected ? undefined : item._id
     } else {
-      checkSelected(item)
+      selected = item._id
     }
+    dispatch(closeAfterSelect ? 'close' : 'update', selected !== undefined ? item : undefined)
+  } else {
+    checkSelected(item)
   }
+}
 
-  function onKeydown (key: KeyboardEvent): void {
-    if (key.code === 'ArrowUp') {
-      key.stopPropagation()
-      key.preventDefault()
-      list.select(selection - 1)
-    }
-    if (key.code === 'ArrowDown') {
-      key.stopPropagation()
-      key.preventDefault()
-      list.select(selection + 1)
-    }
-    if (key.code === 'Enter') {
-      key.preventDefault()
-      key.stopPropagation()
-      handleSelection(key, objects, selection)
-    }
+function onKeydown(key: KeyboardEvent): void {
+  if (key.code === 'ArrowUp') {
+    key.stopPropagation()
+    key.preventDefault()
+    list.select(selection - 1)
   }
+  if (key.code === 'ArrowDown') {
+    key.stopPropagation()
+    key.preventDefault()
+    list.select(selection + 1)
+  }
+  if (key.code === 'Enter') {
+    key.preventDefault()
+    key.stopPropagation()
+    handleSelection(key, objects, selection)
+  }
+}
 
-  function onCreate (): void {
-    if (create === undefined) {
-      return
-    }
-    const c = create
-    showPopup(c.component, c.props ?? {}, 'top', async (res) => {
-      if (res != null) {
-        // We expect reference to new object.
-        const newPerson = await client.findOne(_class, { _id: res })
-        if (newPerson !== undefined) {
-          search = c.update?.(newPerson) ?? ''
-          dispatch('created', newPerson)
-          dispatch('search', search)
-        }
+function onCreate(): void {
+  if (create === undefined) {
+    return
+  }
+  const c = create
+  showPopup(c.component, c.props ?? {}, 'top', async (res) => {
+    if (res != null) {
+      // We expect reference to new object.
+      const newPerson = await client.findOne(_class, {
+        _id: res
+      })
+      if (newPerson !== undefined) {
+        search = c.update ?.(newPerson) ?? ''
+        dispatch('created', newPerson)
+        dispatch('search', search)
       }
-    })
-  }
-
-  function getGroup (doc: Doc, groupBy: any): any {
-    if (created.find((it) => it._id === doc._id) !== undefined) {
-      return '_created'
     }
-    return getObjectValue(groupBy, toAny(doc))
+  })
+}
+
+function getGroup(doc: Doc, groupBy: any): any {
+  if (created.find((it) => it._id === doc._id) !== undefined) {
+    return '_created'
   }
+  return getObjectValue(groupBy, toAny(doc))
+}
 </script>
 
 <FocusHandler {manager} />
@@ -242,11 +257,11 @@
 </div>
 
 <style lang="scss">
-  .plainContainer {
-    color: var(--caption-color);
-    background-color: var(--theme-bg-color);
-    border: 1px solid var(--button-border-color);
-    border-radius: 0.25rem;
-    box-shadow: none;
-  }
+.plainContainer {
+  color: var(--caption-color);
+  background-color: var(--theme-bg-color);
+  border: 1px solid var(--button-border-color);
+  border-radius: 0.25rem;
+  box-shadow: none;
+}
 </style>
