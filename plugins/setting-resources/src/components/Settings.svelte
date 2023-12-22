@@ -114,11 +114,11 @@
         </div>
 
         <Scroller shrink>
-          {#each categories as _category, i}
+          {#each categories as _category}
             {#if _category.extraComponents?.navigation && (_category.expandable ?? _category._id === setting.ids.Setting)}
               <NavGroup
                 label={_category.label}
-                categoryName={_category.icon}
+                categoryName={_category.name}
                 selected={_category.name === categoryId}
                 tools={_category.extraComponents?.tools}
               >

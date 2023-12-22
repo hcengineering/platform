@@ -22,6 +22,8 @@
   export let selected: boolean = false
   export let tools: AnyComponent | undefined = undefined
   export let collapsed: boolean = false
+
+  $: id = `navGroup-${categoryName}`
 </script>
 
 <div class="hulyAccordionItem-container">
@@ -41,7 +43,7 @@
       </div>
     {/if}
   </button>
-  <div class="hulyAccordionItem-content" class:collapsed>
+  <div {id} class="hulyAccordionItem-content" class:collapsed>
     <slot />
   </div>
 </div>
