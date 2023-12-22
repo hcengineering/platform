@@ -30,11 +30,13 @@
     navigate,
     resolvedLocationStore,
     setMetadataLocalStorage,
-    showPopup
+    showPopup,
+    Label
   } from '@hcengineering/ui'
-  import { NavFooter, NavHeader } from '@hcengineering/workbench-resources'
+  import { NavFooter } from '@hcengineering/workbench-resources'
   import { onDestroy } from 'svelte'
-  import CategoryElement from './CategoryElement.svelte'
+  import NavItem from './NavItem.svelte'
+  import NavGroup from './NavGroup.svelte'
 
   export let visibleNav: boolean = true
   export let navFloat: boolean = false
@@ -106,62 +108,53 @@
 <div class="flex h-full clear-mins">
   {#if visibleNav}
     <div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
-      <div class="antiPanel-wrap__content">
-        <NavHeader label={setting.string.Settings} />
+      <div class="antiPanel-wrap__content hulyNavPanel-container">
+        <div class="hulyNavPanel-header">
+          <Label label={setting.string.Settings} />
+        </div>
 
-        <Scroller>
-          {#each categories as _category, i}
-            {#if i > 0 && categories[i - 1].group !== _category.group}
-              <div class="antiNav-divider short line" />
-            {/if}
-            <CategoryElement
-              icon={_category.icon}
-              label={_category.label}
-              selected={_category.name === categoryId}
-              expandable={_category.expandable ?? _category._id === setting.ids.Setting}
-              on:click={() => {
-                selectCategory(_category.name)
-              }}
-            >
-              <svelte:fragment slot="tools">
-                {#if _category.extraComponents?.tools}
-                  <Component
-                    is={_category.extraComponents?.tools}
-                    props={{
-                      visibleNav,
-                      kind: 'tools',
-                      categoryName: _category.name
-                    }}
-                  />
-                {/if}
-              </svelte:fragment>
-            </CategoryElement>
-            {#if _category.extraComponents?.navigation}
-              <Component
-                is={_category.extraComponents?.navigation}
-                props={{
-                  visibleNav,
-                  kind: 'navigation',
-                  categoryName: _category.name
+        <Scroller shrink>
+          {#each categories as _category}
+            {#if _category.extraComponents?.navigation && (_category.expandable ?? _category._id === setting.ids.Setting)}
+              <NavGroup
+                label={_category.label}
+                categoryName={_category.name}
+                selected={_category.name === categoryId}
+                tools={_category.extraComponents?.tools}
+              >
+                <Component
+                  is={_category.extraComponents?.navigation}
+                  props={{
+                    kind: 'navigation',
+                    categoryName: _category.name
+                  }}
+                />
+              </NavGroup>
+            {:else}
+              <NavItem
+                icon={_category.icon}
+                label={_category.label}
+                selected={_category.name === categoryId}
+                on:click={() => {
+                  selectCategory(_category.name)
                 }}
               />
             {/if}
           {/each}
-          <div class="antiNav-space" />
         </Scroller>
 
         <NavFooter split>
-          <CategoryElement
+          <NavItem
             icon={setting.icon.SelectWorkspace}
             label={setting.string.SelectWorkspace}
             on:click={selectWorkspace}
           />
-          <CategoryElement
+          <NavItem
             icon={login.icon.InviteWorkspace}
             label={setting.string.InviteWorkspace}
             on:click={inviteWorkspace}
           />
-          <CategoryElement icon={setting.icon.Signout} label={setting.string.Signout} on:click={signOut} />
+          <NavItem icon={setting.icon.Signout} label={setting.string.Signout} on:click={signOut} />
         </NavFooter>
       </div>
       <Separator
@@ -185,3 +178,20 @@
     {/if}
   </div>
 </div>
+
+<style lang="scss">
+  .hulyNavPanel-container :global(.hulyNavItem-container),
+  .hulyNavPanel-container :global(.hulyTaskNavLink-container) {
+    margin: 0 0.75rem;
+  }
+  .hulyNavPanel-container :global(.hulyNavItem-container) + :global(.hulyAccordionItem-container) {
+    margin-top: 0.75rem;
+  }
+  .hulyNavPanel-header {
+    padding: 1rem 1.25rem 1.5rem;
+    font-weight: 700;
+    font-size: 1.25rem;
+    line-height: 1.5rem;
+    color: var(--global-primary-TextColor);
+  }
+</style>

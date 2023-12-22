@@ -1,11 +1,13 @@
 <script lang="ts">
   import { Icon, IconSize } from '@hcengineering/ui'
   import IconFolder from './icons/Folder.svelte'
+
   export let size: IconSize = 'small'
+  export let fill: string | undefined = undefined
 </script>
 
 <div class="flex-center template-icon">
-  <Icon icon={IconFolder} {size} />
+  <Icon icon={IconFolder} {size} {fill} />
 </div>
 
 <style lang="scss">

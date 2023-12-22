@@ -86,8 +86,8 @@
 
 <div class="antiComponent">
   <div class="ac-header short divide">
-    <div class="ac-header__icon"><Icon icon={setting.icon.EditProfile} size={'medium'} /></div>
-    <div class="ac-header__title"><Label label={setting.string.EditProfile} /></div>
+    <div class="ac-header__icon"><Icon icon={setting.icon.AccountSettings} size={'medium'} /></div>
+    <div class="ac-header__title"><Label label={setting.string.AccountSettings} /></div>
   </div>
   <div class="ac-body p-10">
     {#if employee}

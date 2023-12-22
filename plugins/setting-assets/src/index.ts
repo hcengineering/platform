@@ -18,7 +18,8 @@ import setting from '@hcengineering/setting'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(setting.icon, {
-  EditProfile: `${icons}#edit`,
+  AccountSettings: `${icons}#accountSettings`,
+  Owners: `${icons}#owners`,
   Password: `${icons}#password`,
   Setting: `${icons}#settings`,
   Integrations: `${icons}#integration`,
@@ -28,5 +29,6 @@ loadMetadata(setting.icon, {
   Signout: `${icons}#signout`,
   SelectWorkspace: `${icons}#selectWorkspace`,
   Clazz: `${icons}#clazz`,
-  Enums: `${icons}#enums`
+  Enums: `${icons}#enums`,
+  InviteSettings: `${icons}#inviteSettings`
 })

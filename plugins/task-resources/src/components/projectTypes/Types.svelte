@@ -16,7 +16,7 @@
 <script lang="ts">
   import { Ref, WithLookup } from '@hcengineering/core'
   import { ProjectType } from '@hcengineering/task'
-  import { Component, Label, ListView } from '@hcengineering/ui'
+  import { Component, Label, IconOpenedArrow } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let type: ProjectType | undefined
@@ -29,37 +29,121 @@
     typeId = item._id
     dispatch('change', typeId)
   }
-  $: selection = types.findIndex((it) => it._id === typeId)
 </script>
 
-<div id="templates" class="flex-col w-full">
-  <ListView
-    count={types.length}
-    {selection}
-    on:click={(evt) => {
-      select(types[evt.detail])
+{#each types as typeItem}
+  <button
+    class="hulyTaskNavLink-container font-regular-14"
+    class:selected={typeItem._id === typeId}
+    on:click={() => {
+      select(typeItem)
     }}
-    updateOnMouse={false}
   >
-    <svelte:fragment slot="item" let:item>
-      {@const typeItem = types[item]}
-      <div class="flex-row flex-between p-1">
-        <div class="flex-col">
-          <div class="flex-row-center">
-            {#if typeItem.$lookup?.descriptor?.icon}
-              <div class="p-1">
-                <Component is={typeItem.$lookup?.descriptor?.icon} props={{ size: 'medium' }} />
-              </div>
-            {/if}
-            {typeItem.name}
-          </div>
-          {#if typeItem.$lookup?.descriptor}
-            <div class="text-sm">
-              <Label label={typeItem.$lookup?.descriptor.name} />
-            </div>
-          {/if}
+    <div class="hulyTaskNavLink-avatar">
+      {#if typeItem.$lookup?.descriptor?.icon}
+        <div class="hulyTaskNavLink-icon">
+          <Component is={typeItem.$lookup?.descriptor?.icon} props={{ size: 'small', fill: 'currentColor' }} />
         </div>
+      {/if}
+    </div>
+    {#if typeItem.$lookup?.descriptor}
+      <div class="hulyTaskNavLink-content">
+        <span class="hulyTaskNavLink-content__title">{typeItem.name}</span>
+        <span class="hulyTaskNavLink-content__descriptor">
+          <Label label={typeItem.$lookup?.descriptor.name} />
+        </span>
       </div>
-    </svelte:fragment>
-  </ListView>
-</div>
+    {/if}
+    {#if typeItem._id === typeId}
+      <div class="hulyTaskNavLink-icon right">
+        <IconOpenedArrow size={'small'} />
+      </div>
+    {/if}
+  </button>
+{/each}
+
+<style lang="scss">
+  .hulyTaskNavLink-container {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 0.75rem;
+    padding: 0 0.75rem 0 0.5rem;
+    height: 3.5rem;
+    min-width: 0;
+    border: none;
+    border-radius: 0.375rem;
+    outline: none;
+
+    &.selected {
+      cursor: auto;
+    }
+    .hulyTaskNavLink-avatar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+      width: 2.5rem;
+      height: 2.5rem;
+      min-width: 0;
+      background-color: var(--global-ui-BackgroundColor);
+      border-radius: 0.375rem;
+    }
+    .hulyTaskNavLink-icon {
+      flex-shrink: 0;
+      width: 1rem;
+      height: 1rem;
+      color: var(--global-secondary-TextColor);
+
+      &.right {
+        visibility: hidden;
+      }
+    }
+    .hulyTaskNavLink-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.125rem;
+      flex-grow: 1;
+      min-width: 0;
+      min-height: 0;
+
+      &__title,
+      &__descriptor {
+        white-space: nowrap;
+        word-break: break-all;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        text-align: left;
+        min-width: 0;
+      }
+      &__title {
+        color: var(--global-primary-TextColor);
+      }
+      &__descriptor {
+        color: var(--global-secondary-TextColor);
+      }
+    }
+
+    &:hover {
+      background-color: var(--global-ui-hover-highlight-BackgroundColor);
+    }
+    &.selected {
+      background-color: var(--global-ui-highlight-BackgroundColor);
+
+      .hulyTaskNavLink-icon {
+        color: var(--global-accent-TextColor);
+
+        &.right {
+          visibility: visible;
+        }
+      }
+      .hulyTaskNavLink-content .hulyTaskNavLink-content__title {
+        font-weight: 700;
+        color: var(--global-accent-TextColor);
+      }
+      .hulyTaskNavLink-content .hulyTaskNavLink-content__descriptor {
+        color: var(--global-primary-TextColor);
+      }
+    }
+  }
+</style>

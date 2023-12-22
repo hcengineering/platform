@@ -19,7 +19,7 @@ test.describe('Collaborative test for issue', () => {
 
   test('Issues can be assigned to another users', async ({ page, browser }) => {
     const newIssue: NewIssue = {
-      title: 'Issues can be assigned to another users',
+      title: `Issues can be assigned to another users-${generateId()}`,
       description: 'Issues can be assigned to another users',
       status: 'Backlog',
       priority: 'Urgent',
