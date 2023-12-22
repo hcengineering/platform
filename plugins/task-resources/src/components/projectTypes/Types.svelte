@@ -35,7 +35,9 @@
   <button
     class="hulyTaskNavLink-container font-regular-14"
     class:selected={typeItem._id === typeId}
-    on:click={() => { select(typeItem) }}
+    on:click={() => {
+      select(typeItem)
+    }}
   >
     <div class="hulyTaskNavLink-avatar">
       {#if typeItem.$lookup?.descriptor?.icon}
