@@ -1,6 +1,7 @@
 import { expect, Locator, Page } from '@playwright/test'
 import path from 'path'
 import { CalendarPage } from '../calendar-page'
+import { SocialLink } from './types'
 
 export class CommonRecruitingPage extends CalendarPage {
   readonly page: Page
@@ -12,6 +13,12 @@ export class CommonRecruitingPage extends CalendarPage {
   readonly buttonCreateFirstReview: Locator
   readonly buttonMoreActions: Locator
   readonly buttonDelete: Locator
+  readonly buttonAddSocialLinks: Locator
+  readonly buttonContactPhone: Locator
+  readonly buttonContactEmail: Locator
+  readonly inputSocialValue: Locator
+  readonly buttonSocialCancel: Locator
+  readonly buttonSocialSave: Locator
 
   constructor (page: Page) {
     super(page)
@@ -24,6 +31,16 @@ export class CommonRecruitingPage extends CalendarPage {
     this.buttonCreateFirstReview = page.locator('span:has-text("Create review")')
     this.buttonMoreActions = page.locator('.popupPanel-title > .flex-row-center > button >> nth=0')
     this.buttonDelete = page.locator('button[class*="menuItem"] span', { hasText: 'Delete' })
+    this.buttonAddSocialLinks = page.locator('button[id="presentation:string:AddSocialLinks"]')
+    this.buttonContactPhone = page.locator(
+      'div[class^="popupPanel-body"] div.horizontal button[id="contact:string:Phone"]'
+    )
+    this.buttonContactEmail = page.locator(
+      'div[class^="popupPanel-body"] div.horizontal button[id="gmail:string:Email"]'
+    )
+    this.inputSocialValue = page.locator('div.popup input.search')
+    this.buttonSocialCancel = page.locator('div.popup button[type="button"]:not([id])')
+    this.buttonSocialSave = page.locator('button#channel-ok')
   }
 
   async addComment (comment: string): Promise<void> {
@@ -63,5 +80,34 @@ export class CommonRecruitingPage extends CalendarPage {
     await this.buttonMoreActions.click()
     await this.buttonDelete.click()
     await this.pressYesDeletePopup(this.page)
+  }
+
+  async addSocialLinks (link: string, linkDescription: string): Promise<void> {
+    await this.buttonAddSocialLinks.click()
+    await this.selectFromDropdown(this.page, link)
+    await this.fillToDropdown(this.page, linkDescription)
+  }
+
+  async addSocialLink (social: SocialLink): Promise<void> {
+    await this.addSocialLinks(social.type, social.value)
+  }
+
+  async checkSocialLinks (link: string, value: string): Promise<void> {
+    switch (link) {
+      case 'Phone':
+        await expect(this.buttonContactPhone).toBeVisible()
+        await this.buttonContactPhone.click()
+        await expect(this.inputSocialValue).toHaveValue(value)
+        await this.buttonSocialSave.click()
+        break
+      case 'Email':
+        await expect(this.buttonContactEmail).toBeVisible()
+        await this.buttonContactEmail.click()
+        await expect(this.inputSocialValue).toHaveValue(value)
+        await this.buttonSocialSave.click()
+        break
+      default:
+        throw new Error(`Unknown case ${link}`)
+    }
   }
 }
