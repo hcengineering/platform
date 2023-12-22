@@ -13,9 +13,11 @@
 // limitations under the License.
 //
 
-import { AttachedDoc, Class, CollectionSize, Doc, Markup, Obj, Ref, Space } from '@hcengineering/core'
+import { AttachedDoc, Class, CollectionSize, Doc, Markup, Ref, Space } from '@hcengineering/core'
+import { Attachment } from '@hcengineering/attachment'
+import { Person } from '@hcengineering/contact'
 import { ComponentType, SvelteComponent } from 'svelte'
-import type { Resource } from '@hcengineering/platform'
+import { Resource } from '@hcengineering/platform'
 
 /**
  * @public
@@ -25,90 +27,127 @@ import type { Resource } from '@hcengineering/platform'
 export type Rank = string
 
 /**
- * @public
+ * ∈ [0, 1]
  */
+export type Fraction = number
+
+/** @public */
 export interface Survey extends Space {
+  name: string
   questions: CollectionSize<Question>
+  requests: CollectionSize<Request>
+  // TODO: isAssessment: boolean
 }
 
-/**
- * @public
- */
-export interface Question<Data extends QuestionData = QuestionData> extends AttachedDoc {
-  attachedTo: Ref<Survey>
-  attachedToClass: Ref<Class<Survey>>
+/** @public */
+export interface Question extends AttachedDoc<Survey, 'questions', Survey> {
+  title: Markup
   rank: Rank
-  data: Data
+  attachments: CollectionSize<Attachment>
+  assessment?: AssessmentData<this>
 }
 
-/**
- * @public
- *
- * Base marker interface for every question data implementation
- */
-export interface QuestionData extends Obj {}
-
-/**
- * @public
- */
-export interface RadioButtonsOption {
-  label: string
+/** @public */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface AssessmentData<Q extends Question> {
+  weight: number
 }
 
-/**
- * @public
- */
-export interface RadioButtons extends QuestionData {
-  text: string
-  options: RadioButtonsOption[]
+/** @public */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface, @typescript-eslint/no-unused-vars
+export interface AnswerData<Q extends Question> {}
+
+/** @public */
+export interface QuestionOption {
+  label: Markup
 }
 
-/**
- * @public
- */
-export interface CheckboxesOption {
-  label: string
+/** @public */
+export interface SingleChoiceQuestion extends Question {
+  options: QuestionOption[]
+  shuffle: boolean
 }
 
-/**
- * @public
- */
-export interface Checkboxes extends QuestionData {
-  text: string
-  options: CheckboxesOption[]
+/** @public */
+export interface SingleChoiceAnswerData extends AnswerData<SingleChoiceQuestion> {
+  selection?: number
 }
 
-/**
- * @public
- */
-export interface Info extends QuestionData {
-  text: Markup
+/** @public */
+export interface SingleChoiceAssessmentData extends AssessmentData<SingleChoiceQuestion> {
+  correctAnswer: SingleChoiceAnswerData
 }
 
-/**
- * @public
- */
-export interface QuestionDataEditorComponentProps<Q extends QuestionData> {
+/** @public */
+export interface MultipleChoiceQuestion extends Question {
+  options: QuestionOption[]
+  shuffle: boolean
+}
+
+/** @public */
+export interface MultipleChoiceAnswerData extends AnswerData<MultipleChoiceQuestion> {
+  selections: number[]
+}
+
+/** @public */
+export interface MultipleChoiceAssessmentData extends AssessmentData<MultipleChoiceQuestion> {
+  correctAnswer: MultipleChoiceQuestion
+}
+
+/** @public */
+export interface ReorderQuestion extends Question {
+  options: QuestionOption[]
+  shuffle: boolean
+}
+
+/** @public */
+export interface ReorderAnswerData extends AnswerData<ReorderQuestion> {
+  order: number[]
+}
+
+/** @public */
+export interface ReorderAssessmentData extends AssessmentData<ReorderQuestion> {
+  correctAnswer: ReorderQuestion
+}
+
+/** @public */
+export interface SurveyRequest extends AttachedDoc<Survey, 'requests', Survey> {
+  // TODO: Should it be Employee, no?
+  // TODO: Should it be an array of assignees instead?
+  assignee: Ref<Person>
+
+  results: CollectionSize<SurveyResult>
+  // TODO: maxAttempts?: number
+  // TODO: dueDate?: Timestamp
+}
+
+export interface SurveyResult extends AttachedDoc<SurveyRequest, 'results', Survey> {
+  answers: CollectionSize<Answer<any>>
+}
+
+export interface Answer<Q extends Question> extends AttachedDoc<SurveyResult, 'answers', Survey> {
+  questionClass: Ref<Class<Q>>
+  question: Ref<Q>
+  answer: AnswerData<Q>
+  score?: Fraction
+}
+
+/** @public */
+export interface QuestionEditorComponentProps<Q extends Question> {
   readonly object: Q
   readonly editable: boolean
-  readonly submit: (data: Q) => Promise<void>
+  readonly submit: (data: Partial<Q>) => Promise<void>
 }
 
-/**
- * @public
- */
-export type QuestionDataEditorComponent<Q extends QuestionData> = SvelteComponent<QuestionDataEditorComponentProps<Q>>
+/** @public */
+export type QuestionEditorComponent<Q extends Question> = SvelteComponent<QuestionEditorComponentProps<Q>>
 
-/**
- * @public
- */
-export type QuestionDataEditorComponentTypeRef<Q extends QuestionData> = Resource<
-ComponentType<QuestionDataEditorComponent<Q>>
+/** @public */
+export type QuestionEditorComponentTypeRef<Q extends Question> = Resource<
+ComponentType<QuestionEditorComponent<Q>>
 >
 
-/**
- * @public
- */
-export interface QuestionDataEditor<Q extends QuestionData = QuestionData> extends Class<Doc> {
-  editor: QuestionDataEditorComponentTypeRef<Q>
+/** @public */
+export interface QuestionEditor<Q extends Question = Question> extends Class<Doc> {
+  editor: QuestionEditorComponentTypeRef<Q>
 }
