@@ -143,7 +143,7 @@ export default plugin(settingId, {
   string: {
     Settings: '' as IntlString,
     Setting: '' as IntlString,
-    WorkspaceSetting: '' as IntlString,
+    WorkspaceSettings: '' as IntlString,
     Integrations: '' as IntlString,
     Support: '' as IntlString,
     Privacy: '' as IntlString,
@@ -152,7 +152,7 @@ export default plugin(settingId, {
     Delete: '' as IntlString,
     Disconnect: '' as IntlString,
     Add: '' as IntlString,
-    EditProfile: '' as IntlString,
+    AccountSettings: '' as IntlString,
     ChangePassword: '' as IntlString,
     CurrentPassword: '' as IntlString,
     NewPassword: '' as IntlString,
@@ -166,11 +166,13 @@ export default plugin(settingId, {
     SelectWorkspace: '' as IntlString,
     Reconnect: '' as IntlString,
     ClassSetting: '' as IntlString,
+    Classes: '' as IntlString,
     Owners: '' as IntlString,
     Configure: '' as IntlString
   },
   icon: {
-    EditProfile: '' as Asset,
+    AccountSettings: '' as Asset,
+    Owners: '' as Asset,
     Password: '' as Asset,
     Setting: '' as Asset,
     Integrations: '' as Asset,
@@ -180,7 +182,8 @@ export default plugin(settingId, {
     Signout: '' as Asset,
     SelectWorkspace: '' as Asset,
     Clazz: '' as Asset,
-    Enums: '' as Asset
+    Enums: '' as Asset,
+    InviteSettings: '' as Asset
   },
   templateFieldCategory: {
     Integration: '' as Ref<TemplateFieldCategory>

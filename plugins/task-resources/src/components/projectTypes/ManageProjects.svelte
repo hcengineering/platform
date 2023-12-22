@@ -63,13 +63,11 @@
   $: type = typeId !== undefined ? typeMap.get(typeId) : undefined
 </script>
 
-<div class="ml-8 flex-row mt-1">
-  <Types
-    {type}
-    {typeId}
-    {types}
-    on:change={(evt) => {
-      selectProjectType(evt.detail)
-    }}
-  />
-</div>
+<Types
+  {type}
+  {typeId}
+  {types}
+  on:change={(evt) => {
+    selectProjectType(evt.detail)
+  }}
+/>
