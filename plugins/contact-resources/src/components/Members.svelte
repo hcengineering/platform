@@ -22,22 +22,22 @@
   import contact from '../plugin'
   import UsersPopup from './UsersPopup.svelte'
   import IconMembersOutline from './icons/MembersOutline.svelte'
+  import { onMount } from 'svelte'
 
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
 
   export let members: number
-
   let memberItems: Member[] = []
 
+  const client = getClient()
+  let loading = true
   const membersQuery = createQuery()
   $: membersQuery.query(contact.class.Member, { attachedTo: objectId }, (result) => {
     memberItems = result
   })
 
-  const client = getClient()
-  let loading = true
 
   const createApp = async (ev: MouseEvent): Promise<void> => {
     showPopup(
@@ -45,22 +45,30 @@
       {
         _class: contact.class.Person,
         options: undefined,
-        ignoreUsers: memberItems.map((it) => it.contact),
         icon: contact.icon.Person,
-        allowDeselect: false,
+        allowDeselect: true,
+        multiSelect: true,
         placeholder: contact.string.Member,
-        create: { component: contact.component.CreatePerson, label: contact.string.CreatePerson }
+        create: { component: contact.component.CreatePerson, label: contact.string.CreatePerson }, 
+        ignoreUsers: memberItems.map((it) => it.contact),
       },
       ev.target as HTMLElement,
+      undefined,
       (result) => {
-        if (result != null) {
-          client.addCollection(contact.class.Member, space, objectId, _class, 'members', {
-            contact: result._id
-          })
+        if (result && result.length > 0) {
+        for (const userId of result) {
+          client.addCollection(contact.class.Member, space, objectId, _class, 'member', {
+            contact: userId,
+          });
         }
       }
+    }
     )
   }
+
+  onMount(()=>{
+   createApp
+  })
 
   let viewlet: Viewlet | undefined
   let preference: ViewletPreference | undefined
@@ -87,6 +95,7 @@
     </div>
   </div>
   {#if members > 0 && viewlet}
+  <div class="scroll relative flex-shrink svelte-77kg2x">
     <Table
       _class={contact.class.Member}
       config={preference?.config ?? viewlet.config}
@@ -94,6 +103,7 @@
       query={{ attachedTo: objectId }}
       loadingProps={{ length: members }}
     />
+  </div>
   {:else}
     <div class="antiSection-empty solid flex-col mt-3">
       <span class="content-dark-color">

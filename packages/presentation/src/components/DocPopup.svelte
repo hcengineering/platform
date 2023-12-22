@@ -60,32 +60,35 @@
   export let embedded: boolean = false
   export let loading = false
 
+  let selection = 0
+  let list: ListView
+
   let search: string = ''
+  
+  const client = getClient()
+  const dispatch = createEventDispatcher()
+  const manager = createFocusManager()
+  const forbiddenDeselectItemIds = new Set(disallowDeselect)
 
   $: selectedElements = new Set(selectedObjects)
-
-  const dispatch = createEventDispatcher()
-
   $: showCategories =
     created.length > 0 ||
     objects.map((it) => getObjectValue(groupBy, it)).filter((it, index, arr) => arr.indexOf(it) === index).length > 1
 
-  const checkSelected = (item: Doc): void => {
-    if (selectedElements.has(item._id)) {
-      selectedElements.delete(item._id)
-    } else {
-      selectedElements.add(item._id)
-    }
-
-    selectedObjects = Array.from(selectedElements)
-
-    dispatch('update', selectedObjects)
+  function toAny (obj: any): any {
+    return obj
   }
 
-  const client = getClient()
+  const checkSelected = (item: Doc): void => {
+  selectedElements.clear();
 
-  let selection = 0
-  let list: ListView
+  selectedElements.add(item._id);
+  objects = objects.filter((dataItem) => dataItem._id !== item._id);
+
+  selectedObjects = Array.from(selectedElements);
+
+  dispatch('update', selectedObjects);
+};
 
   async function handleSelection (evt: Event | undefined, objects: Doc[], selection: number): Promise<void> {
     const item = objects[selection]
@@ -119,7 +122,6 @@
       handleSelection(key, objects, selection)
     }
   }
-  const manager = createFocusManager()
 
   function onCreate (): void {
     if (create === undefined) {
@@ -138,11 +140,6 @@
       }
     })
   }
-  function toAny (obj: any): any {
-    return obj
-  }
-
-  const forbiddenDeselectItemIds = new Set(disallowDeselect)
 
   function getGroup (doc: Doc, groupBy: any): any {
     if (created.find((it) => it._id === doc._id) !== undefined) {

@@ -60,7 +60,7 @@ test.describe('contact tests', () => {
     await fillSearch(page, 'Marina')
 
     await expect(page.locator('.antiTable-body__row')).toHaveCount(1, {
-      timeout: 15000
+      timeout: 1500
     })
 
     await fillSearch(page, '')
