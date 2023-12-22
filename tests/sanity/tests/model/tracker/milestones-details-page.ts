@@ -9,7 +9,6 @@ export class MilestonesDetailsPage extends CommonTrackerPage {
   readonly buttonTargetDate: Locator
   readonly inputMilestoneName: Locator
   readonly inputDescription: Locator
-  readonly buttonMoreActions: Locator
   readonly buttonYesMoveAndDeleteMilestonePopup: Locator
   readonly buttonModalOk: Locator
 
@@ -21,7 +20,6 @@ export class MilestonesDetailsPage extends CommonTrackerPage {
     this.buttonTargetDate = page.locator('//span[text()="Target date"]/following-sibling::div[1]/button')
     this.inputMilestoneName = page.locator('input[placeholder="Milestone name"]')
     this.inputDescription = page.locator('div.inputMsg div.tiptap')
-    this.buttonMoreActions = page.locator('div.popupPanel-title > div:last-child > button:first-child')
     this.buttonYesMoveAndDeleteMilestonePopup = page.locator(
       'form[id="tracker:string:MoveAndDeleteMilestone"] button.primary'
     )
