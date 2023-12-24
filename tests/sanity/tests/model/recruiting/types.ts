@@ -34,4 +34,5 @@ export interface SocialLink {
 export interface NewCompany {
   name: string
   socials?: SocialLink[]
+  location?: string
 }

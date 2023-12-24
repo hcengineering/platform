@@ -19,6 +19,7 @@ export class CommonRecruitingPage extends CalendarPage {
   readonly inputSocialValue: Locator
   readonly buttonSocialCancel: Locator
   readonly buttonSocialSave: Locator
+  readonly buttonContactLinkedIn: Locator
 
   constructor (page: Page) {
     super(page)
@@ -41,6 +42,9 @@ export class CommonRecruitingPage extends CalendarPage {
     this.inputSocialValue = page.locator('div.popup input.search')
     this.buttonSocialCancel = page.locator('div.popup button[type="button"]:not([id])')
     this.buttonSocialSave = page.locator('button#channel-ok')
+    this.buttonContactLinkedIn = page.locator(
+      'div[class^="popupPanel-body"] div.horizontal button[id="contact:string:LinkedIn"]'
+    )
   }
 
   async addComment (comment: string): Promise<void> {
@@ -103,6 +107,12 @@ export class CommonRecruitingPage extends CalendarPage {
       case 'Email':
         await expect(this.buttonContactEmail).toBeVisible()
         await this.buttonContactEmail.click()
+        await expect(this.inputSocialValue).toHaveValue(value)
+        await this.buttonSocialSave.click()
+        break
+      case 'LinkedIn':
+        await expect(this.buttonContactLinkedIn).toBeVisible()
+        await this.buttonContactLinkedIn.click()
         await expect(this.inputSocialValue).toHaveValue(value)
         await this.buttonSocialSave.click()
         break
