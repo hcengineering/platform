@@ -12,8 +12,11 @@ export class VacanciesPage extends CommonRecruitingPage {
   readonly buttonCreateVacancyLocation: Locator
   readonly buttonCreateVacancy: Locator
   readonly buttonExport: Locator
+<<<<<<< HEAD
   readonly buttonView: Locator
   readonly buttonHideArchivedVacancies: Locator
+=======
+>>>>>>> main
 
   constructor (page: Page) {
     super(page)
@@ -28,8 +31,11 @@ export class VacanciesPage extends CommonRecruitingPage {
     })
     this.buttonCreateVacancy = page.locator('form[id="recruit:string:CreateVacancy"] button[type="submit"]')
     this.buttonExport = page.locator('button[type="button"] > span', { hasText: 'Export' })
+<<<<<<< HEAD
     this.buttonView = page.locator('div.search-start button[type="button"] > span', { hasText: 'View' })
     this.buttonHideArchivedVacancies = page.locator('div.popup span.toggle-switch')
+=======
+>>>>>>> main
   }
 
   async createNewVacancy ({ title, description, location }: NewVacancy): Promise<void> {
