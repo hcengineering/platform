@@ -86,7 +86,14 @@ async function getFileRange (
       'Content-Range': `bytes ${start}-${end}/${size}`,
       'Accept-Ranges': 'bytes',
       'Content-Length': end - start + 1,
-      'Content-Type': stat.metaData['content-type']
+      'Content-Type': stat.metaData['content-type'],
+      Etag: stat.etag,
+      'Last-Modified': stat.lastModified.toISOString()
+    })
+
+    dataStream.on('end', () => {
+      dataStream.destroy()
+      res.end()
     })
 
     dataStream.on('end', () => {
@@ -106,13 +113,11 @@ async function getFile (client: MinioService, workspace: WorkspaceId, uuid: stri
 
   try {
     const dataStream = await client.get(workspace, uuid)
-    res.status(200)
-    res.set('Cache-Control', 'max-age=7d')
-
-    const contentType = stat.metaData['content-type']
-    if (contentType !== undefined) {
-      res.setHeader('Content-Type', contentType)
-    }
+    res.writeHead(200, {
+      'Content-Type': stat.metaData['content-type'],
+      Etag: stat.etag,
+      'Last-Modified': stat.lastModified.toISOString()
+    })
 
     dataStream.on('data', function (chunk) {
       res.write(chunk)
@@ -222,10 +227,13 @@ export function start (
 
       const fileSize = stat.size
 
+      res.writeHead(200, {
+        'accept-ranges': 'bytes',
+        'content-length': fileSize,
+        Etag: stat.etag,
+        'Last-Modified': stat.lastModified.toISOString()
+      })
       res.status(200)
-
-      res.setHeader('accept-ranges', 'bytes')
-      res.setHeader('content-length', fileSize)
 
       res.end()
     } catch (error) {
