@@ -104,7 +104,7 @@ export async function nestedDontMatchResult (filter: Filter, onUpdate: () => voi
 }
 
 export async function dateOutdated (filter: Filter): Promise<ObjQueryType<any>> {
-  return { $lt: new Date() }
+  return { $lt: Date.now() }
 }
 
 export async function dateToday (filter: Filter): Promise<ObjQueryType<any>> {
