@@ -436,7 +436,7 @@ export type ViewActionInput = 'focus' | 'selection' | 'any' | 'none'
  * @public
  */
 export type ViewAction<T = Record<string, any>> = Resource<
-(doc: Doc | Doc[] | undefined, evt: Event, params?: T) => Promise<void>
+(doc: Doc | Doc[] | undefined, evt?: Event, params?: T) => Promise<void>
 >
 
 /**
@@ -871,7 +871,10 @@ const view = plugin(viewId, {
     Subscribed: '' as IntlString,
     HyperlinkPlaceholder: '' as IntlString,
     CopyToClipboard: '' as IntlString,
-    NoGrouping: '' as IntlString
+    NoGrouping: '' as IntlString,
+    Type: '' as IntlString,
+    UnArchive: '' as IntlString,
+    Save: '' as IntlString
   },
   icon: {
     Table: '' as Asset,

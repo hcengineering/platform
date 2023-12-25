@@ -30,12 +30,17 @@
   export let object: Doc
   export let isNewestFirst = false
 
-  let filtered: ActivityMessage[]
+  const allId = activity.ids.AllFilter
   const client = getClient()
+
+  let filtered: ActivityMessage[]
   let filters: ActivityMessagesFilter[] = []
+
   const saved = localStorage.getItem('activity-filter')
-  let selectedFiltersRefs: Ref<Doc>[] | 'All' =
-    saved !== null && saved !== undefined ? (JSON.parse(saved) as Ref<Doc>[] | 'All') : 'All'
+
+  let selectedFiltersRefs: Ref<ActivityMessagesFilter>[] | Ref<ActivityMessagesFilter> = saved
+    ? (JSON.parse(saved) as Ref<ActivityMessagesFilter>[])
+    : allId
   let selectedFilters: ActivityMessagesFilter[] = []
 
   $: localStorage.setItem('activity-filter', JSON.stringify(selectedFiltersRefs))
@@ -45,14 +50,14 @@
     filters = res
 
     if (saved !== null && saved !== undefined) {
-      const temp: Ref<Doc>[] | 'All' = JSON.parse(saved)
-      if (temp !== 'All' && Array.isArray(temp)) {
+      const temp: Ref<ActivityMessagesFilter>[] | Ref<ActivityMessagesFilter> = JSON.parse(saved)
+      if (temp !== allId && Array.isArray(temp)) {
         selectedFiltersRefs = temp.filter((it) => filters.findIndex((f) => it === f._id) > -1)
         if (selectedFiltersRefs.length === 0) {
-          selectedFiltersRefs = 'All'
+          selectedFiltersRefs = allId
         }
       } else {
-        selectedFiltersRefs = 'All'
+        selectedFiltersRefs = allId
       }
     }
   })
@@ -69,9 +74,9 @@
           isNewestFirst = res.value
           return
         }
-        const selected = res.value as Ref<Doc>[]
+        const selected = res.value as Ref<ActivityMessagesFilter>[]
         const isAll = selected.length === filters.length || selected.length === 0
-        if (res.action === 'select') selectedFiltersRefs = isAll ? 'All' : selected
+        if (res.action === 'select') selectedFiltersRefs = isAll ? allId : selected
       }
     )
   }
@@ -81,14 +86,14 @@
   async function updateFilterActions (
     messages: ActivityMessage[],
     filters: ActivityMessagesFilter[],
-    selected: Ref<Doc>[] | 'All',
+    selected: Ref<Doc>[] | Ref<ActivityMessagesFilter>,
     sortOrder: SortingOrder
   ): Promise<void> {
     const sortedMessages = sortActivityMessages(messages, sortOrder).sort(({ isPinned }) =>
       isPinned && sortOrder === SortingOrder.Ascending ? -1 : 1
     )
 
-    if (selected === 'All') {
+    if (selected === allId) {
       filtered = sortedMessages
 
       dispatch('update', filtered)
@@ -126,9 +131,9 @@
       <div
         class="tag-icon"
         on:click={() => {
-          if (selectedFiltersRefs !== 'All') {
+          if (selectedFiltersRefs !== allId && Array.isArray(selectedFiltersRefs)) {
             const ids = selectedFiltersRefs.filter((it) => it !== filter._id)
-            selectedFiltersRefs = ids.length > 0 ? ids : 'All'
+            selectedFiltersRefs = ids.length > 0 ? ids : allId
           }
         }}
       >

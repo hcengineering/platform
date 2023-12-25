@@ -1,47 +1,54 @@
-import { chunterId, type ChunterMessage, type Comment, type ThreadMessage } from '@hcengineering/chunter'
-import contact, { type Employee, type PersonAccount, getName } from '@hcengineering/contact'
-import { employeeByIdStore } from '@hcengineering/contact-resources'
+//
+// Copyright © 2023 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 import {
-  type Class,
-  type Client,
-  type Doc,
-  getCurrentAccount,
-  type IdMap,
-  type Obj,
-  type Ref,
-  type Space,
-  type Timestamp
-} from '@hcengineering/core'
-import { type Asset } from '@hcengineering/platform'
+  type Channel,
+  type ChatMessage,
+  chunterId,
+  type ChunterSpace,
+  type DirectMessage,
+  type ThreadMessage
+} from '@hcengineering/chunter'
+import contact, { type Employee, type PersonAccount, getName, type Person } from '@hcengineering/contact'
+import { employeeByIdStore } from '@hcengineering/contact-resources'
+import { type Client, type Doc, getCurrentAccount, type IdMap, type Ref, type Space } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import {
-  getPanelURI,
+  type AnySvelteComponent,
+  getCurrentResolvedLocation,
   getLocation,
   type Location,
-  navigate,
-  type ResolvedLocation,
-  getCurrentResolvedLocation
+  navigate
 } from '@hcengineering/ui'
-import view from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
-import { get, type Unsubscriber, writable } from 'svelte/store'
+import { get, type Unsubscriber } from 'svelte/store'
 
 import chunter from './plugin'
+import { type Asset, translate } from '@hcengineering/platform'
+import Lock from './components/icons/Lock.svelte'
+import { classIcon } from '@hcengineering/view-resources'
+import DmIconPresenter from './components/DmIconPresenter.svelte'
+import { type ActivityMessage } from '@hcengineering/activity'
+import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+import { type DocNotifyContext } from '@hcengineering/notification'
 
-export function classIcon (client: Client, _class: Ref<Class<Obj>>): Asset | undefined {
-  return client.getHierarchy().getClass(_class).icon
-}
-
-export async function getDmName (client: Client, dm: Space): Promise<string> {
-  const myAccId = getCurrentAccount()._id
-
-  let employeeAccounts: PersonAccount[] = await client.findAll(contact.class.PersonAccount, {
-    _id: { $in: dm.members as Array<Ref<PersonAccount>> }
-  })
-
-  if (dm.members.length > 1) {
-    employeeAccounts = employeeAccounts.filter((p) => p._id !== myAccId)
+export async function getDmName (client: Client, space?: Space): Promise<string> {
+  if (space === undefined) {
+    return ''
   }
+
+  const employeeAccounts: PersonAccount[] = await getDmAccounts(client, space)
 
   let unsub: Unsubscriber | undefined
   const promise = new Promise<IdMap<Employee>>((resolve) => {
@@ -57,35 +64,104 @@ export async function getDmName (client: Client, dm: Space): Promise<string> {
   unsub?.()
 
   const names: string[] = []
+  const processedPersons: Array<Ref<Person>> = []
 
   for (const acc of employeeAccounts) {
+    if (processedPersons.includes(acc.person)) {
+      continue
+    }
+
     const employee = map.get(acc.person as unknown as Ref<Employee>)
+
     if (employee !== undefined) {
       names.push(getName(client.getHierarchy(), employee))
+      processedPersons.push(acc.person)
     }
   }
-  const name = names.join(', ')
-
-  return name
+  return names.join(', ')
 }
 
-export function getDay (time: Timestamp): Timestamp {
-  const date: Date = new Date(time)
-  date.setHours(0, 0, 0, 0)
-  return date.getTime()
+export async function dmIdentifierProvider (): Promise<string> {
+  return await translate(chunter.string.Direct, {})
 }
 
-export function openMessageFromSpecial (message: ChunterMessage): void {
-  const loc = getLocation()
-
-  if (message.attachedToClass === chunter.class.ChunterSpace) {
-    loc.path.length = 4
-    loc.path[3] = message.attachedTo
-  } else if (message.attachedToClass === chunter.class.Message) {
-    loc.path.length = 5
-    loc.path[3] = message.space
-    loc.path[4] = message.attachedTo
+export async function canDeleteMessage (doc?: ChatMessage): Promise<boolean> {
+  if (doc === undefined) {
+    return false
   }
+
+  const me = getCurrentAccount()
+
+  return doc.createdBy === me._id
+}
+
+async function getDmAccounts (client: Client, space?: Space): Promise<PersonAccount[]> {
+  if (space === undefined) {
+    return []
+  }
+
+  const myAccId = getCurrentAccount()._id
+
+  const employeeAccounts: PersonAccount[] = await client.findAll(contact.class.PersonAccount, {
+    _id: { $in: (space.members ?? []) as Array<Ref<PersonAccount>> }
+  })
+
+  return employeeAccounts.filter((p) => p._id !== myAccId)
+}
+
+export async function getDmPersons (client: Client, space: Space): Promise<Person[]> {
+  const personAccounts: PersonAccount[] = await getDmAccounts(client, space)
+  const persons: Person[] = []
+
+  const personRefs = new Set(personAccounts.map(({ person }) => person))
+
+  for (const personRef of personRefs) {
+    const person = await client.findOne(contact.class.Person, { _id: personRef })
+    if (person !== undefined) {
+      persons.push(person)
+    }
+  }
+
+  return persons
+}
+
+export async function DirectMessageTitleProvider (client: Client, id: Ref<DirectMessage>): Promise<string> {
+  const space = await client.findOne(chunter.class.DirectMessage, { _id: id })
+
+  if (space === undefined) {
+    return ''
+  }
+
+  return await getDmName(client, space)
+}
+
+export async function openMessageFromSpecial (message?: ActivityMessage): Promise<void> {
+  if (message === undefined) {
+    return
+  }
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+  const loc = getCurrentResolvedLocation()
+
+  if (message._class === chunter.class.ThreadMessage) {
+    const threadMessage = message as ThreadMessage
+    const context = get(inboxClient.docNotifyContextByDoc).get(threadMessage.objectId)
+    if (context === undefined) {
+      return
+    }
+    loc.path[2] = chunterId
+    loc.path[3] = context._id
+    loc.path[4] = message.attachedTo
+  } else {
+    const context = get(inboxClient.docNotifyContextByDoc).get(message.attachedTo)
+    if (context === undefined) {
+      return
+    }
+    loc.path[2] = chunterId
+    loc.path[3] = context._id
+  }
+
+  loc.fragment = message._id
+
   navigate(loc)
 }
 
@@ -103,46 +179,27 @@ export enum SearchType {
   Contacts
 }
 
-export const messageIdForScroll = writable('')
-export const shouldScrollToMessage = writable(false)
-export const isMessageHighlighted = writable(false)
-
-let highlightFinishTaskId: number
-
-export function scrollAndHighLight (): void {
-  const messageElement = document.getElementById(get(messageIdForScroll))
-
-  if (messageElement == null) {
-    return
-  }
-  messageElement.scrollIntoView()
-  shouldScrollToMessage.set(false)
-
-  clearTimeout(highlightFinishTaskId)
-  isMessageHighlighted.set(true)
-
-  highlightFinishTaskId = window.setTimeout(() => {
-    isMessageHighlighted.set(false)
-  }, 2000)
-}
-
-export async function getLink (doc: Doc): Promise<string> {
-  const fragment = await getTitle(doc)
+export async function getLink (message: ActivityMessage): Promise<string> {
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+  const fragment = message._id
   const location = getCurrentResolvedLocation()
-  return await Promise.resolve(
-    `${window.location.protocol}//${window.location.host}/${workbenchId}/${location.path[1]}/${chunterId}#${fragment}`
-  )
-}
 
-export async function getFragment (doc: Doc): Promise<Location> {
-  const loc = getCurrentResolvedLocation()
-  loc.path.length = 2
-  loc.fragment = undefined
-  loc.query = undefined
-  loc.path[2] = chunterId
-  loc.fragment = await getTitle(doc)
+  let context: DocNotifyContext | undefined
+  let threadParent: string = ''
 
-  return loc
+  if (message._class === chunter.class.ThreadMessage) {
+    const threadMessage = message as ThreadMessage
+    threadParent = `/${threadMessage.attachedTo}`
+    context = get(inboxClient.docNotifyContextByDoc).get(threadMessage.objectId)
+  } else {
+    context = get(inboxClient.docNotifyContextByDoc).get(message.attachedTo)
+  }
+
+  if (context === undefined) {
+    return ''
+  }
+
+  return `${window.location.protocol}//${window.location.host}/${workbenchId}/${location.path[1]}/${chunterId}/${context._id}${threadParent}#${fragment}`
 }
 
 export async function getTitle (doc: Doc): Promise<string> {
@@ -158,111 +215,36 @@ export async function getTitle (doc: Doc): Promise<string> {
   return `${label}-${doc._id}`
 }
 
-export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
-  if (loc.path[2] !== chunterId) {
-    return undefined
+export async function chunterSpaceLinkFragmentProvider (doc: ChunterSpace): Promise<Location> {
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+  const context = get(inboxClient.docNotifyContextByDoc).get(doc._id)
+  const loc = getCurrentResolvedLocation()
+
+  if (context === undefined) {
+    return loc
   }
 
-  const shortLink = loc.fragment
+  loc.path.length = 2
+  loc.fragment = undefined
+  loc.query = undefined
+  loc.path[2] = chunterId
+  loc.path[3] = context._id
 
-  // shortlink
-  if (shortLink !== undefined && isShortId(shortLink)) {
-    return await generateLocation(loc, shortLink)
-  }
-
-  return undefined
+  return loc
 }
 
-async function generateLocation (loc: Location, shortLink: string): Promise<ResolvedLocation | undefined> {
-  const tokens = shortLink.split('-')
-  if (tokens.length < 2) {
-    return undefined
-  }
-  const classLabel = tokens[0]
-  const lastId = tokens.slice(1).join('-') as Ref<Doc>
+export function getChannelIcon (doc: Doc): Asset | AnySvelteComponent | undefined {
   const client = getClient()
-  const hierarchy = client.getHierarchy()
-  const classes = [chunter.class.Message, chunter.class.ThreadMessage, chunter.class.Comment]
-  let _class: Ref<Class<Doc>> | undefined
-  for (const clazz of classes) {
-    if (hierarchy.getClass(clazz).shortLabel === classLabel) {
-      _class = clazz
-      break
-    }
-  }
-  if (_class === undefined) {
-    console.error(`Could not find class ${classLabel}.`)
-    return undefined
-  }
-  const doc = await client.findOne(_class, { _id: lastId })
-  if (doc === undefined) {
-    console.error(`Could not find message ${lastId}.`)
-    return undefined
-  }
-  const appComponent = loc.path[0] ?? ''
-  const workspace = loc.path[1] ?? ''
 
-  if (hierarchy.isDerived(doc._class, chunter.class.Message)) {
-    return {
-      loc: {
-        path: [appComponent, workspace, chunterId, doc.space],
-        fragment: doc._id
-      },
-      defaultLocation: {
-        path: [appComponent, workspace, chunterId, doc.space],
-        fragment: doc._id
-      }
-    }
-  }
-  if (hierarchy.isDerived(doc._class, chunter.class.Comment)) {
-    const comment = doc as Comment
-    const panelComponent = hierarchy.classHierarchyMixin(comment.attachedToClass, view.mixin.ObjectPanel)
-    const component = panelComponent?.component ?? view.component.EditDoc
-    return {
-      loc: {
-        path: [appComponent, workspace],
-        fragment: getPanelURI(component, comment.attachedTo, comment.attachedToClass, 'content')
-      },
-      defaultLocation: {
-        path: [appComponent, workspace],
-        fragment: getPanelURI(component, comment.attachedTo, comment.attachedToClass, 'content')
-      }
-    }
-  }
-  if (hierarchy.isDerived(doc._class, chunter.class.ThreadMessage)) {
-    const msg = doc as ThreadMessage
-    return {
-      loc: {
-        path: [appComponent, workspace, chunterId, doc.space, msg.attachedTo],
-        fragment: doc._id
-      },
-      defaultLocation: {
-        path: [appComponent, workspace, chunterId, doc.space],
-        fragment: doc._id
-      }
-    }
-  }
-}
+  if (doc._class === chunter.class.Channel) {
+    const channel = doc as Channel
 
-function isShortId (shortLink: string): boolean {
-  return /^\S+-\S+$/.test(shortLink)
-}
+    return channel.private ? Lock : classIcon(client, channel._class)
+  }
 
-export function getLinks (content: string): HTMLLinkElement[] {
-  const parser = new DOMParser()
-  const parent = parser.parseFromString(content, 'text/html').firstChild?.childNodes[1] as HTMLElement
-  return parseLinks(parent.childNodes)
-}
+  if (doc._class === chunter.class.DirectMessage) {
+    return DmIconPresenter
+  }
 
-function parseLinks (nodes: NodeListOf<ChildNode>): HTMLLinkElement[] {
-  const res: HTMLLinkElement[] = []
-  nodes.forEach((p) => {
-    if (p.nodeType !== Node.TEXT_NODE) {
-      if (p.nodeName === 'A') {
-        res.push(p as HTMLLinkElement)
-      }
-      res.push(...parseLinks(p.childNodes))
-    }
-  })
-  return res
+  return classIcon(client, doc._class)
 }

@@ -47,16 +47,15 @@ export default mergeIds(notificationId, notification, {
   },
   component: {
     NotificationSettings: '' as AnyComponent,
-    InboxAside: '' as AnyComponent,
-    ChatMessagePresenter: '' as AnyComponent,
-    DocUpdateMessagePresenter: '' as AnyComponent,
-    PinMessageAction: '' as AnyComponent
+    InboxAside: '' as AnyComponent
   },
   function: {
     HasntNotifications: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     HasMarkAsUnreadAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     HasMarkAsReadAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
-    HasDeleteNotificationAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
+    HasDeleteNotificationAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    HasDocNotifyContextPinAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    HasDocNotifyContextUnpinAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
   },
   category: {
     Notification: '' as Ref<ActionCategory>
@@ -73,6 +72,10 @@ export default mergeIds(notificationId, notification, {
     MarkAsUnread: '' as ViewAction,
     MarkAsUnreadInboxNotification: '' as ViewAction,
     MarkAsReadInboxNotification: '' as ViewAction,
-    DeleteInboxNotification: '' as ViewAction
+    DeleteInboxNotification: '' as ViewAction,
+    UnpinDocNotifyContext: '' as ViewAction,
+    PinDocNotifyContext: '' as ViewAction,
+    HideDocNotifyContext: '' as ViewAction,
+    UnHideDocNotifyContext: '' as ViewAction
   }
 })

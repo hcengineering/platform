@@ -21,11 +21,14 @@
   import { getLinkData, LinkData } from '@hcengineering/activity-resources'
   import notification from '@hcengineering/notification'
 
+  import chunter from '../../plugin'
+
   export let message: ChatMessage
   export let person: Person | undefined
   export let viewlet: ChatMessageViewlet | undefined
   export let object: Doc | undefined
   export let parentObject: Doc | undefined
+  export let skipLabel = false
 
   let linkData: LinkData | undefined = undefined
 
@@ -34,20 +37,20 @@
   })
 </script>
 
-{#if viewlet?.label}
-  <span class="text-sm lower"> <Label label={viewlet.label} /></span>
+{#if !skipLabel}
+  <span class="text-sm lower"> <Label label={viewlet?.label ?? chunter.string.SentMessage} /></span>
 
   {#if linkData}
     <span class="text-sm lower"><Label label={linkData.preposition} /></span>
     <span class="text-sm">
-      <DocNavLink {object} component={linkData.panelComponent} shrink={0}>
+      <DocNavLink object={linkData.object} component={linkData.panelComponent} shrink={0}>
         <span class="overflow-label select-text">{linkData.title}</span>
       </DocNavLink>
     </span>
-    {#if message.isEdited}
-      <span class="text-sm lower"><Label label={notification.string.Edited} /></span>
-    {/if}
   {/if}
+{/if}
+{#if message.editedOn}
+  <span class="text-sm lower"><Label label={notification.string.Edited} /></span>
 {/if}
 
 <style lang="scss">

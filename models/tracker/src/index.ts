@@ -161,6 +161,24 @@ function defineFilters (builder: Builder): void {
     getVisibleFilters: tracker.function.GetVisibleFilters
   })
 
+  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ObjectIdentifier, {
+    provider: tracker.function.IssueTitleProvider
+  })
+
+  builder.mixin(tracker.class.Issue, core.class.Class, chunter.mixin.ObjectChatPanel, {
+    ignoreKeys: [
+      'number',
+      'createdBy',
+      'attachedTo',
+      'title',
+      'collaborators',
+      'description',
+      'remainingTime',
+      'reportedTime'
+    ],
+    titleProvider: tracker.function.IssueChatTitleProvider
+  })
+
   //
   // Issue Status
   //
@@ -256,6 +274,7 @@ function defineApplication (
       alias: trackerId,
       hidden: false,
       locationResolver: tracker.resolver.Location,
+      aside: chunter.component.ThreadView,
       navigatorModel: {
         specials: [
           {
@@ -575,6 +594,7 @@ export function createModel (builder: Builder): void {
     chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
+      messageClass: chunter.class.ChatMessage,
       objectClass: tracker.class.Issue,
       label: chunter.string.LeftComment
     },
@@ -585,6 +605,7 @@ export function createModel (builder: Builder): void {
     chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
+      messageClass: chunter.class.ChatMessage,
       objectClass: tracker.class.IssueTemplate,
       label: chunter.string.LeftComment
     },
@@ -595,6 +616,7 @@ export function createModel (builder: Builder): void {
     chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
+      messageClass: chunter.class.ChatMessage,
       objectClass: tracker.class.Component,
       label: chunter.string.LeftComment
     },
@@ -605,6 +627,7 @@ export function createModel (builder: Builder): void {
     chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
+      messageClass: chunter.class.ChatMessage,
       objectClass: tracker.class.Milestone,
       label: chunter.string.LeftComment
     },

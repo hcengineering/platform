@@ -16,12 +16,11 @@
   import { createEventDispatcher } from 'svelte'
   import { ActionIcon, EmojiPopup, IconEmoji, showPopup } from '@hcengineering/ui'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import activity, { Reaction } from '@hcengineering/activity'
-  import { Doc } from '@hcengineering/core'
+  import activity, { ActivityMessage, Reaction } from '@hcengineering/activity'
 
   import { updateDocReactions } from '../../utils'
 
-  export let object: Doc | undefined = undefined
+  export let object: ActivityMessage | undefined = undefined
 
   const client = getClient()
 
@@ -38,16 +37,10 @@
 
   function openEmojiPalette (ev: Event) {
     dispatch('open')
-    showPopup(
-      EmojiPopup,
-      {},
-      ev.target as HTMLElement,
-      (emoji: string) => {
-        updateDocReactions(client, reactions, object, emoji)
-        dispatch('close')
-      },
-      () => {}
-    )
+    showPopup(EmojiPopup, {}, ev.target as HTMLElement, (emoji: string) => {
+      updateDocReactions(client, reactions, object, emoji)
+      dispatch('close')
+    })
   }
 </script>
 

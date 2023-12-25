@@ -36,7 +36,7 @@
   export let isSelected: boolean = false
   export let shouldScroll: boolean = false
   export let embedded: boolean = false
-  export let hasActionsMenu: boolean = true
+  export let withActions: boolean = true
   export let onClick: (() => void) | undefined = undefined
 
   $: personAccount = $personAccountByIdStore.get((value.createdBy ?? value.modifiedBy) as Ref<PersonAccount>)
@@ -65,7 +65,7 @@
   {isSelected}
   {shouldScroll}
   {embedded}
-  {hasActionsMenu}
+  {withActions}
   viewlet={undefined}
   {onClick}
 >

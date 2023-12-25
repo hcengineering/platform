@@ -14,11 +14,10 @@
 // limitations under the License.
 //
 
-import type { Class, Client, Doc, Obj, Ref, Space, TxOperations } from '@hcengineering/core'
+import type { Class, Client, Doc, Ref, Space, TxOperations } from '@hcengineering/core'
 import core from '@hcengineering/core'
 import type { Workspace } from '@hcengineering/login'
 import login, { loginId } from '@hcengineering/login'
-import type { Asset } from '@hcengineering/platform'
 import { getResource, setMetadata } from '@hcengineering/platform'
 import preference from '@hcengineering/preference'
 import { closeClient, getClient } from '@hcengineering/presentation'
@@ -33,9 +32,7 @@ import {
 import view from '@hcengineering/view'
 import workbench, { type Application, type NavigatorModel } from '@hcengineering/workbench'
 import { writable } from 'svelte/store'
-export function classIcon (client: Client, _class: Ref<Class<Obj>>): Asset | undefined {
-  return client.getHierarchy().getClass(_class).icon
-}
+
 export function getSpecialSpaceClass (model: NavigatorModel): Array<Ref<Class<Space>>> {
   const spaceResult = model.spaces.map((x) => x.spaceClass)
   const result = (model.specials ?? [])

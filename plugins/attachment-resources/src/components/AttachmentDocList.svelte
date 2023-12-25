@@ -14,14 +14,18 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
-  import type { Doc } from '@hcengineering/core'
+  import type { Doc, Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
+
   import attachment from '../plugin'
   import AttachmentList from './AttachmentList.svelte'
 
   export let value: Doc & { attachments?: number }
 
   const query = createQuery()
+  const savedAttachmentsQuery = createQuery()
+
+  let savedAttachmentsIds: Ref<Attachment>[] = []
   let attachments: Attachment[] = []
 
   $: updateQuery(value)
@@ -41,6 +45,10 @@
       attachments = []
     }
   }
+
+  savedAttachmentsQuery.query(attachment.class.SavedAttachments, {}, (res) => {
+    savedAttachmentsIds = res.map(({ attachedTo }) => attachedTo)
+  })
 </script>
 
-<AttachmentList {attachments} />
+<AttachmentList {attachments} {savedAttachmentsIds} />

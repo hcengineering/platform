@@ -20,6 +20,7 @@
   import { IntlString } from '@hcengineering/platform'
   import activity, { ActivityMessage, DisplayActivityMessage, DisplayDocUpdateMessage } from '@hcengineering/activity'
   import { ActivityMessagePresenter } from '@hcengineering/activity-resources'
+  import chunter from '@hcengineering/chunter'
 
   import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
   import Filter from '../Filter.svelte'
@@ -72,18 +73,25 @@
     selectedMessageId = loc.path[4] as Ref<ActivityMessage> | undefined
   })
 
-  function openDocActivity (_id: Ref<Doc>) {
+  function openDocActivity (_id: Ref<Doc>, thread: boolean) {
     const loc = getLocation()
     loc.path[4] = _id
+    loc.query = {
+      ...loc.query,
+      thread: `${thread}`
+    }
     navigate(loc)
   }
 
   function handleMessageClicked (message: DisplayActivityMessage) {
-    if (client.getHierarchy().isDerived(message.attachedToClass, activity.class.ActivityMessage)) {
-      openDocActivity(message.attachedTo)
+    if (message._class === chunter.class.ThreadMessage) {
+      openDocActivity(message._id, true)
+      selectedMessageId = message._id as Ref<ActivityMessage>
+    } else if (client.getHierarchy().isDerived(message.attachedToClass, activity.class.ActivityMessage)) {
+      openDocActivity(message.attachedTo, false)
       selectedMessageId = message.attachedTo as Ref<ActivityMessage>
     } else {
-      openDocActivity(message._id)
+      openDocActivity(message._id, false)
       selectedMessageId = message._id
     }
     markNotificationAsViewed(message)
@@ -95,6 +103,11 @@
     filter,
     _class
   )
+
+  function handleReply (message: ActivityMessage) {
+    openDocActivity(message._id, true)
+    selectedMessageId = message._id
+  }
 </script>
 
 <ActionContext
@@ -119,9 +132,9 @@
         value={message}
         showNotify={!inboxNotificationByMessage.get(message._id)?.isViewed}
         isSelected={message._id === selectedMessageId}
-        onClick={() => {
-          handleMessageClicked(message)
-        }}
+        showEmbedded
+        onReply={() => { handleReply(message) }}
+        onClick={() => { handleMessageClicked(message) }}
       />
     {/each}
   </div>

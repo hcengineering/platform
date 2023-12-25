@@ -395,7 +395,8 @@ export default mergeIds(trackerId, tracker, {
     GetAllComponents: '' as GetAllValuesFunc,
     GetAllMilestones: '' as GetAllValuesFunc,
     GetVisibleFilters: '' as Resource<(filters: KeyFilter[], space?: Ref<Space>) => Promise<KeyFilter[]>>,
-    IsProjectJoined: '' as Resource<(space: Space) => Promise<boolean>>
+    IsProjectJoined: '' as Resource<(space: Space) => Promise<boolean>>,
+    IssueChatTitleProvider: '' as Resource<(object: Doc) => string>
   },
   aggregation: {
     CreateComponentAggregationManager: '' as CreateAggregationManagerFunc,

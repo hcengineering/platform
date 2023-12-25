@@ -36,12 +36,13 @@
     TreeItem,
     TreeNode,
     getActions as getContributedActions,
-    getSpacePresenter
+    getSpacePresenter,
+    classIcon
   } from '@hcengineering/view-resources'
   import { SpacesNavModel } from '@hcengineering/workbench'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
-  import { classIcon, getSpaceName } from '../../utils'
+  import { getSpaceName } from '../../utils'
   import TreeSeparator from './TreeSeparator.svelte'
 
   export let model: SpacesNavModel

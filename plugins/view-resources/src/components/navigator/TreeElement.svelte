@@ -44,6 +44,7 @@
   export let collapsed: boolean = getTreeCollapsed(_id)
   export let selected: boolean = false
   export let bold: boolean = false
+  export let showNotify: boolean = false
   export let actions: (originalEvent?: MouseEvent) => Promise<Action[]> = async () => []
 
   let hovered = false
@@ -62,7 +63,7 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-  class="antiNav-element"
+  class="antiNav-element relative"
   class:selected
   class:hovered
   class:parent
@@ -73,6 +74,9 @@
     dispatch('click')
   }}
 >
+  {#if showNotify}
+    <div class="notify" />
+  {/if}
   {#if icon && !node}
     <div class="an-element__icon" class:folder>
       <Icon {icon} {iconProps} size={'small'} />
@@ -121,3 +125,15 @@
 {#if parent && !collapsed}
   <div class="antiNav-element__dropbox"><slot /></div>
 {/if}
+
+<style lang="scss">
+  .notify {
+    position: absolute;
+    top: 0.5rem;
+    left: 1.5rem;
+    height: 0.5rem;
+    width: 0.5rem;
+    background-color: var(--theme-inbox-notify);
+    border-radius: 50%;
+  }
+</style>

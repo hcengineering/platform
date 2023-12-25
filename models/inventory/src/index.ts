@@ -148,6 +148,7 @@ export function createModel (builder: Builder): void {
       icon: inventory.icon.InventoryApplication,
       alias: inventoryId,
       hidden: false,
+      aside: chunter.component.ThreadView,
       navigatorModel: {
         specials: [
           {
@@ -187,6 +188,7 @@ export function createModel (builder: Builder): void {
     chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
+      messageClass: chunter.class.ChatMessage,
       objectClass: inventory.class.Product,
       label: chunter.string.LeftComment
     },
@@ -197,6 +199,7 @@ export function createModel (builder: Builder): void {
     chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
+      messageClass: chunter.class.ChatMessage,
       objectClass: inventory.class.Category,
       label: chunter.string.LeftComment
     },

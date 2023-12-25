@@ -25,8 +25,14 @@
   export let isSelected: boolean = false
   export let shouldScroll: boolean = false
   export let embedded: boolean = false
-  export let hasActionsMenu: boolean = true
+  export let withActions: boolean = true
+  export let hasNotifyActions = false
+  export let showEmbedded = false
+  export let hideReplies = false
+  export let skipLabel = false
+
   export let onClick: (() => void) | undefined = undefined
+  export let onReply: (() => void) | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -40,12 +46,17 @@
     props={{
       value,
       showNotify,
+      skipLabel,
       isHighlighted,
       isSelected,
       shouldScroll,
       embedded,
-      hasActionsMenu,
-      onClick
+      withActions,
+      hasNotifyActions,
+      showEmbedded,
+      hideReplies,
+      onClick,
+      onReply
     }}
   />
 {/if}

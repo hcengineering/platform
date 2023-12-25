@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,38 +13,38 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Doc } from '@hcengineering/core'
+  import { getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
+  import { getClient } from '@hcengineering/presentation'
   import { Channel } from '@hcengineering/chunter'
-  import type { Ref } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { openDoc } from '@hcengineering/view-resources'
-  import chunter from '../plugin'
-  import { classIcon } from '../utils'
-  import Header from './Header.svelte'
-  import Lock from './icons/Lock.svelte'
 
-  export let spaceId: Ref<Channel> | undefined
+  import Header from './Header.svelte'
+  import chunter from '../plugin'
+  import { getChannelIcon } from '../utils'
+
+  export let object: Doc
 
   const client = getClient()
-  const query = createQuery()
-  let channel: Channel | undefined
+  const hierarchy = client.getHierarchy()
 
-  $: query.query(chunter.class.Channel, { _id: spaceId }, (result) => {
-    channel = result[0]
-  })
+  $: topic = hierarchy.isDerived(object._class, chunter.class.Channel) ? (object as Channel).topic : undefined
 
-  async function onSpaceEdit (): Promise<void> {
-    if (channel === undefined) return
-    openDoc(client.getHierarchy(), channel)
+  async function getTitle (object: Doc) {
+    if (object._class === chunter.class.DirectMessage) {
+      return await getDocTitle(client, object._id, object._class, object)
+    }
+    return await getDocLinkTitle(client, object._id, object._class, object)
   }
 </script>
 
 <div class="ac-header divide full caption-height">
-  {#if channel}
+  {#await getTitle(object) then title}
     <Header
-      icon={channel.private ? Lock : classIcon(client, channel._class)}
-      label={channel.name}
-      description={channel.topic}
-      on:click={onSpaceEdit}
+      icon={getChannelIcon(object)}
+      iconProps={{ value: object }}
+      label={title}
+      intlLabel={title ? undefined : chunter.string.Channel}
+      description={topic}
     />
-  {/if}
+  {/await}
 </div>

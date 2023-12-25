@@ -34,20 +34,20 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   readonly inboxNotifications = writable<InboxNotification[]>([])
   readonly inboxNotificationsByContext = derived(
     [this.docNotifyContexts, this.inboxNotifications],
-    ([docNotifyContexts, inboxNotifications]) => {
-      if (inboxNotifications.length === 0 || docNotifyContexts.length === 0) {
-        return new Map<DocNotifyContext, InboxNotification[]>()
+    ([notifyContexts, inboxNotifications]) => {
+      if (inboxNotifications.length === 0 || notifyContexts.length === 0) {
+        return new Map<Ref<DocNotifyContext>, InboxNotification[]>()
       }
 
       return inboxNotifications.reduce((result, notification) => {
-        const docUpdate = docNotifyContexts.find(({ _id }) => _id === notification.docNotifyContext)
+        const notifyContext = notifyContexts.find(({ _id }) => _id === notification.docNotifyContext)
 
-        if (docUpdate == null) {
+        if (notifyContext === undefined || notifyContext.hidden) {
           return result
         }
 
-        return result.set(docUpdate, (result.get(docUpdate) ?? []).concat(notification))
-      }, new Map<DocNotifyContext, InboxNotification[]>())
+        return result.set(notifyContext._id, (result.get(notifyContext._id) ?? []).concat(notification))
+      }, new Map<Ref<DocNotifyContext>, InboxNotification[]>())
     }
   )
 
@@ -63,8 +63,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     this.docNotifyContextsQuery.query(
       notification.class.DocNotifyContext,
       {
-        user: this._user,
-        hidden: false
+        user: this._user
       },
       (result: DocNotifyContext[]) => {
         this.docNotifyContexts.set(result)
@@ -113,7 +112,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     }
 
     const inboxNotifications = this._inboxNotifications.filter(
-      (notification) => notification.docNotifyContext === docNotifyContext._id
+      (notification) => notification.docNotifyContext === docNotifyContext._id && !notification.isViewed
     )
 
     await Promise.all([
@@ -123,22 +122,24 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   }
 
   async readMessages (ids: Array<Ref<ActivityMessage>>): Promise<void> {
-    // TODO: should read inbox updates??
     const client = getClient()
-    const inboxNotifications = this._inboxNotifications.filter(({ attachedTo }) => ids.includes(attachedTo))
+    const notificationsToRead = this._inboxNotifications.filter(
+      ({ attachedTo, isViewed }) => ids.includes(attachedTo) && !isViewed
+    )
 
     await Promise.all(
-      inboxNotifications.map(async (notification) => await client.update(notification, { isViewed: true }))
+      notificationsToRead.map(async (notification) => await client.update(notification, { isViewed: true }))
     )
   }
 
   async unreadMessages (ids: Array<Ref<ActivityMessage>>): Promise<void> {
-    // TODO: should unread inbox updates??
     const client = getClient()
-    const inboxNotifications = this._inboxNotifications.filter(({ attachedTo }) => ids.includes(attachedTo))
+    const notificationsToUnread = this._inboxNotifications.filter(
+      ({ attachedTo, isViewed }) => ids.includes(attachedTo) && isViewed
+    )
 
     await Promise.all(
-      inboxNotifications.map(async (notification) => await client.update(notification, { isViewed: false }))
+      notificationsToUnread.map(async (notification) => await client.update(notification, { isViewed: false }))
     )
   }
 

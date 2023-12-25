@@ -15,8 +15,8 @@
 <script lang="ts">
   import type { Doc, Ref, Space } from '@hcengineering/core'
   import core from '@hcengineering/core'
-  import { DocUpdates } from '@hcengineering/notification'
-  import { NotificationClientImpl } from '@hcengineering/notification-resources'
+  import { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
+  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { IntlString, getResource } from '@hcengineering/platform'
   import preference from '@hcengineering/preference'
   import { getClient } from '@hcengineering/presentation'
@@ -27,10 +27,11 @@
     TreeItem,
     TreeNode,
     getActions as getContributedActions,
-    getSpacePresenter
+    getSpacePresenter,
+    classIcon
   } from '@hcengineering/view-resources'
   import { SpacesNavModel } from '@hcengineering/workbench'
-  import { classIcon, getSpaceName } from '../../utils'
+  import { getSpaceName } from '../../utils'
 
   export let label: IntlString
   export let spaces: Space[]
@@ -85,13 +86,18 @@
     return result
   }
 
-  const notificationClient = NotificationClientImpl.getClient()
-  const docUpdates = notificationClient.docUpdatesStore
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+  const docNotifyContextByDocStore = inboxClient.docNotifyContextByDoc
+  const inboxNotificationsByContextStore = inboxClient.inboxNotificationsByContext
 
-  function isChanged (space: Space, docUpdates: Map<Ref<Doc>, DocUpdates>): boolean {
-    const update = docUpdates.get(space._id)
-    if (update === undefined) return false
-    return update.txes.length > 0 && !update.hidden
+  function isChanged (
+    space: Space,
+    docUpdates: Map<Ref<Doc>, DocNotifyContext>,
+    inboxNotificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>
+  ): boolean {
+    const notifyContext = docUpdates.get(space._id)
+    if (notifyContext === undefined) return false
+    return !notifyContext.hidden && !!inboxNotificationsByContext.get(notifyContext._id)?.length
   }
 </script>
 
@@ -119,7 +125,7 @@
               icon={classIcon(client, space._class)}
               selected={currentSpace === space._id}
               actions={async () => await getActions(space)}
-              bold={isChanged(space, $docUpdates)}
+              bold={isChanged(space, $docNotifyContextByDocStore, $inboxNotificationsByContextStore)}
             />
           </NavLink>
         {/await}

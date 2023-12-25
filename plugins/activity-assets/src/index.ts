@@ -19,5 +19,6 @@ import { loadMetadata } from '@hcengineering/platform'
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(activity.icon, {
   Activity: `${icons}#activity`,
-  Emoji: `${icons}#emoji`
+  Emoji: `${icons}#emoji`,
+  Bookmark: `${icons}#bookmark`
 })

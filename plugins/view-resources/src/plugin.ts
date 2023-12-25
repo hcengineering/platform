@@ -61,7 +61,6 @@ export default mergeIds(viewId, view, {
     Before: '' as IntlString,
     After: '' as IntlString,
     Apply: '' as IntlString,
-    Save: '' as IntlString,
     IncludeItemsThatMatch: '' as IntlString,
     AnyFilter: '' as IntlString,
     AllFilters: '' as IntlString,
@@ -98,7 +97,6 @@ export default mergeIds(viewId, view, {
     IconCategory: '' as IntlString,
     EmojiCategory: '' as IntlString,
     NumberItems: '' as IntlString,
-    Type: '' as IntlString,
     ToViewCommands: '' as IntlString
   },
   function: {

@@ -19,6 +19,10 @@
   import { NavLink } from '@hcengineering/view-resources'
   import type { Application } from '@hcengineering/workbench'
   import workbench from '@hcengineering/workbench'
+  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+  import { DocNotifyContext } from '@hcengineering/notification'
+  import { getResource } from '@hcengineering/platform'
+
   import AppItem from './AppItem.svelte'
 
   export let active: Ref<Application> | undefined
@@ -36,6 +40,19 @@
   $: filteredApps = apps.filter((it) => !hiddenAppsIds.includes(it._id))
   $: topApps = filteredApps.filter((it) => it.position === 'top')
   $: bottomdApps = filteredApps.filter((it) => it.position !== 'top')
+
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+  const docNotifyContextsStore = inboxClient.docNotifyContexts
+
+  async function shouldNotify (app: Application, docNotifyContexts: DocNotifyContext[]) {
+    if (!app.shouldNotify) {
+      return false
+    }
+
+    const shouldNotifyFn = await getResource(app.shouldNotify)
+
+    return await shouldNotifyFn(docNotifyContexts)
+  }
 </script>
 
 <div class="flex-{direction === 'horizontal' ? 'row-center' : 'col-center'} clear-mins apps-{direction} relative">
@@ -50,13 +67,17 @@
     >
       {#each topApps as app}
         <NavLink app={app.alias} shrink={0}>
-          <AppItem selected={app._id === active} icon={app.icon} label={app.label} />
+          {#await shouldNotify(app, $docNotifyContextsStore) then notify}
+            <AppItem selected={app._id === active} icon={app.icon} label={app.label} {notify} />
+          {/await}
         </NavLink>
       {/each}
       <div class="divider" />
       {#each bottomdApps as app}
         <NavLink app={app.alias} shrink={0}>
-          <AppItem selected={app._id === active} icon={app.icon} label={app.label} />
+          {#await shouldNotify(app, $docNotifyContextsStore) then notify}
+            <AppItem selected={app._id === active} icon={app.icon} label={app.label} {notify} />
+          {/await}
         </NavLink>
       {/each}
       <div class="apps-space-{direction}" />

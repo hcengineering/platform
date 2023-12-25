@@ -17,15 +17,31 @@
   import type { Asset } from '@hcengineering/platform'
   import type { Action } from '@hcengineering/ui'
   import TreeElement from './TreeElement.svelte'
+  import { AnySvelteComponent } from '@hcengineering/ui'
 
   export let _id: Ref<Doc>
-  export let icon: Asset | undefined = undefined
+  export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let iconProps: Record<string, any> | undefined = undefined
   export let title: string
   export let notifications = 0
   export let actions: (originalEvent?: MouseEvent) => Promise<Action[]> = async () => []
   export let selected: boolean = false
   export let bold: boolean = false
   export let indent: boolean = false
+  export let showNotify: boolean = false
 </script>
 
-<TreeElement {_id} {icon} {title} {notifications} {selected} {actions} {bold} {indent} collapsed on:click />
+<TreeElement
+  {_id}
+  {icon}
+  {title}
+  {notifications}
+  {selected}
+  {actions}
+  {iconProps}
+  {bold}
+  {indent}
+  {showNotify}
+  collapsed
+  on:click
+/>

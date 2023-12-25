@@ -193,6 +193,42 @@ export async function hasDeleteNotificationAction (): Promise<boolean> {
   return insideInbox()
 }
 
+export async function hasDocNotifyContextPinAction (docNotifyContext: DocNotifyContext): Promise<boolean> {
+  if (docNotifyContext.hidden) {
+    return false
+  }
+  return docNotifyContext.isPinned !== true
+}
+
+export async function hasDocNotifyContextUnpinAction (docNotifyContext: DocNotifyContext): Promise<boolean> {
+  if (docNotifyContext.hidden) {
+    return false
+  }
+  return docNotifyContext.isPinned === true
+}
+
+export async function hasHiddenDocNotifyContext (contexts: DocNotifyContext[]): Promise<boolean> {
+  return contexts.some(({ hidden }) => hidden)
+}
+
+export async function hideDocNotifyContext (notifyContext: DocNotifyContext): Promise<void> {
+  const client = getClient()
+  await client.update(notifyContext, { hidden: true })
+}
+
+export async function unHideDocNotifyContext (notifyContext: DocNotifyContext): Promise<void> {
+  const client = getClient()
+  await client.update(notifyContext, { hidden: false })
+}
+
+export async function isDocNotifyContextHidden (notifyContext: DocNotifyContext): Promise<boolean> {
+  return notifyContext.hidden
+}
+
+export async function isDocNotifyContextVisible (notifyContext: DocNotifyContext): Promise<boolean> {
+  return !notifyContext.hidden
+}
+
 enum OpWithMe {
   Add = 'add',
   Remove = 'remove'
@@ -313,6 +349,22 @@ export async function markAsUnreadInboxNotification (message: DisplayActivityMes
   const ids: Array<Ref<ActivityMessage>> = [message._id, ...(combinedIds ?? [])]
 
   await inboxNotificationsClient.unreadMessages(ids)
+}
+
+export async function pinDocNotifyContext (object: DocNotifyContext): Promise<void> {
+  const client = getClient()
+
+  await client.updateDoc(object._class, object.space, object._id, {
+    isPinned: true
+  })
+}
+
+export async function unpinDocNotifyContext (object: DocNotifyContext): Promise<void> {
+  const client = getClient()
+
+  await client.updateDoc(object._class, object.space, object._id, {
+    isPinned: false
+  })
 }
 
 export async function deleteInboxNotification (message: DisplayActivityMessage): Promise<void> {

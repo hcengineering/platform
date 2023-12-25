@@ -148,7 +148,7 @@ export default plugin(serverNotificationId, {
     OnAttributeCreate: '' as Resource<TriggerFunc>,
     OnAttributeUpdate: '' as Resource<TriggerFunc>,
     OnReactionChanged: '' as Resource<TriggerFunc>,
-    OnChatMessageSent: '' as Resource<TriggerFunc>
+    OnChatMessageCreate: '' as Resource<TriggerFunc>
   },
   function: {
     IsUserInFieldValue: '' as TypeMatchFunc,

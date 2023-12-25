@@ -15,14 +15,16 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
   import { IntlString } from '@hcengineering/platform'
-  import { Label, resizeObserver, CheckBox, MiniToggle } from '@hcengineering/ui'
-  import { Doc, Ref } from '@hcengineering/core'
+  import { CheckBox, Label, MiniToggle, resizeObserver } from '@hcengineering/ui'
+  import { Ref } from '@hcengineering/core'
   import { ActivityMessagesFilter } from '@hcengineering/activity'
 
   import activity from '../plugin'
 
-  export let selectedFiltersRefs: Ref<Doc>[] | 'All' = 'All'
+  export let selectedFiltersRefs: Ref<ActivityMessagesFilter>[] | Ref<ActivityMessagesFilter> = activity.ids.AllFilter
   export let filters: ActivityMessagesFilter[] = []
+
+  const allId = activity.ids.AllFilter
 
   const dispatch = createEventDispatcher()
 
@@ -31,20 +33,19 @@
   interface ActionMenu {
     label: IntlString
     checked: boolean
-    value: Ref<Doc> | 'All'
+    value: Ref<ActivityMessagesFilter>
   }
-  let menu: ActionMenu[] = [
-    {
-      label: activity.string.All,
-      checked: true,
-      value: 'All'
-    }
-  ]
-  filters.map((fl) => menu.push({ label: fl.label, checked: false, value: fl._id }))
-  if (selectedFiltersRefs !== 'All') {
-    selectedFiltersRefs.forEach((fl) => {
-      const index = menu.findIndex((el) => el.value === fl)
-      if (index !== -1) menu[index].checked = true
+
+  let menu: ActionMenu[] = []
+
+  filters.map(({ label, _id }) => menu.push({ label, checked: _id === allId, value: _id }))
+
+  if (Array.isArray(selectedFiltersRefs)) {
+    selectedFiltersRefs.forEach((filterId) => {
+      const index = menu.findIndex(({ value }) => value === filterId)
+      if (index !== -1) {
+        menu[index].checked = true
+      }
     })
   }
 
@@ -79,31 +80,31 @@
 
   const checkAll = () => {
     menu.forEach((el, i) => (el.checked = i === 0))
-    selectedFiltersRefs = 'All'
+    selectedFiltersRefs = allId
   }
+
   const uncheckAll = () => {
     menu.forEach((el) => (el.checked = true))
-    const temp = filters.map((fl) => fl._id as Ref<Doc>)
-    selectedFiltersRefs = temp
+    selectedFiltersRefs = filters.map(({ _id }) => _id)
   }
 
   const selectRow = (n: number) => {
     if (n === 0) {
-      if (selectedFiltersRefs === 'All') uncheckAll()
+      if (selectedFiltersRefs === allId) uncheckAll()
       else checkAll()
     } else {
-      if (selectedFiltersRefs === 'All') {
+      if (selectedFiltersRefs === allId) {
         menu[n].checked = true
-        selectedFiltersRefs = [menu[n].value as Ref<Doc>]
+        selectedFiltersRefs = [menu[n].value]
       } else if (menu[n].checked) {
         if (menu.filter((el) => el.checked).length === 2) checkAll()
-        else {
+        else if (Array.isArray(selectedFiltersRefs)) {
           menu[n].checked = false
           selectedFiltersRefs = selectedFiltersRefs.filter((fl) => fl !== menu[n].value)
         }
-      } else {
+      } else if (Array.isArray(selectedFiltersRefs)) {
         menu[n].checked = true
-        selectedFiltersRefs.push(menu[n].value as Ref<Doc>)
+        selectedFiltersRefs.push(menu[n].value)
       }
     }
     menu = menu
@@ -152,7 +153,7 @@
           }}
         >
           <div class="flex-center justify-end mr-3 pointer-events-none">
-            <CheckBox checked={item.checked} symbol={selectedFiltersRefs !== 'All' && i === 0 ? 'minus' : 'check'} />
+            <CheckBox checked={item.checked} symbol={selectedFiltersRefs !== allId && i === 0 ? 'minus' : 'check'} />
           </div>
           <span class="overflow-label">
             <Label label={item.label} />

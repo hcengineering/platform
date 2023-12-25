@@ -23,6 +23,7 @@ import NotificationPresenter from './components/NotificationPresenter.svelte'
 import TxCollaboratorsChange from './components/activity/TxCollaboratorsChange.svelte'
 import TxDmCreation from './components/activity/TxDmCreation.svelte'
 import InboxAside from './components/inbox/InboxAside.svelte'
+import DocNotifyContextPresenter from './components/DocNotifyContextPresenter.svelte'
 import NotificationCollaboratorsChanged from './components/NotificationCollaboratorsChanged.svelte'
 import {
   NotificationClientImpl,
@@ -36,7 +37,16 @@ import {
   deleteInboxNotification,
   hasMarkAsUnreadAction,
   hasMarkAsReadAction,
-  hasDeleteNotificationAction
+  hasDeleteNotificationAction,
+  hasDocNotifyContextPinAction,
+  isDocNotifyContextHidden,
+  hasDocNotifyContextUnpinAction,
+  isDocNotifyContextVisible,
+  hasHiddenDocNotifyContext,
+  pinDocNotifyContext,
+  unpinDocNotifyContext,
+  hideDocNotifyContext,
+  unHideDocNotifyContext
 } from './utils'
 
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
@@ -53,7 +63,8 @@ export default async (): Promise<Resources> => ({
     NotificationPresenter,
     NotificationSettings,
     InboxAside,
-    NotificationCollaboratorsChanged
+    NotificationCollaboratorsChanged,
+    DocNotifyContextPresenter
   },
   activity: {
     TxCollaboratorsChange,
@@ -67,7 +78,12 @@ export default async (): Promise<Resources> => ({
     HasMarkAsReadAction: hasMarkAsReadAction,
     HasDeleteNotificationAction: hasDeleteNotificationAction,
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    GetInboxNotificationsClient: InboxNotificationsClientImpl.getClient
+    GetInboxNotificationsClient: InboxNotificationsClientImpl.getClient,
+    HasDocNotifyContextPinAction: hasDocNotifyContextPinAction,
+    HasDocNotifyContextUnpinAction: hasDocNotifyContextUnpinAction,
+    IsDocNotifyContextHidden: isDocNotifyContextHidden,
+    IsDocNotifyContextVisible: isDocNotifyContextVisible,
+    HasHiddenDocNotifyContext: hasHiddenDocNotifyContext
   },
   actionImpl: {
     Unsubscribe: unsubscribe,
@@ -75,7 +91,11 @@ export default async (): Promise<Resources> => ({
     MarkAsUnread: markAsUnread,
     MarkAsReadInboxNotification: markAsReadInboxNotification,
     MarkAsUnreadInboxNotification: markAsUnreadInboxNotification,
-    DeleteInboxNotification: deleteInboxNotification
+    DeleteInboxNotification: deleteInboxNotification,
+    PinDocNotifyContext: pinDocNotifyContext,
+    UnpinDocNotifyContext: unpinDocNotifyContext,
+    HideDocNotifyContext: hideDocNotifyContext,
+    UnHideDocNotifyContext: unHideDocNotifyContext
   },
   resolver: {
     Location: resolveLocation

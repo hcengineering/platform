@@ -1,76 +1,37 @@
+<!--
+// Copyright © 2023 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
 <script lang="ts">
-  import chunter, { ChunterMessage } from '@hcengineering/chunter'
-  import { Person, PersonAccount, getName } from '@hcengineering/contact'
-  import { Avatar, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-  import { getDisplayTime, IdMap, Ref, Space } from '@hcengineering/core'
-  import { MessageViewer, createQuery, getClient } from '@hcengineering/presentation'
-  import { IconClose } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
-  import { UnpinMessage } from '../index'
+  import { Doc, Ref } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import activity, { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
+  import { ActivityMessagePresenter } from '@hcengineering/activity-resources'
 
-  export let space: Ref<Space>
-
-  const client = getClient()
-
-  const pinnedQuery = createQuery()
-  let pinnedIds: Ref<ChunterMessage>[] = []
-  pinnedQuery.query(
-    chunter.class.ChunterSpace,
-    { _id: space },
-    (res) => {
-      pinnedIds = res[0]?.pinned ?? []
-    },
-    { limit: 1 }
-  )
+  export let attachedTo: Ref<Doc>
 
   const messagesQuery = createQuery()
-  let pinnedMessages: ChunterMessage[] = []
 
-  $: pinnedIds &&
-    messagesQuery.query(chunter.class.ChunterMessage, { _id: { $in: pinnedIds } }, (res) => {
-      pinnedMessages = res
-    })
+  let pinnedMessages: DisplayActivityMessage[] = []
 
-  const dispatch = createEventDispatcher()
-
-  function getEmployee (
-    message: ChunterMessage,
-    employeeAccounts: IdMap<PersonAccount>,
-    employees: IdMap<Person>
-  ): Person | undefined {
-    const acc = employeeAccounts.get(message.createBy as Ref<PersonAccount>)
-    if (acc) {
-      return employees.get(acc.person)
-    }
-  }
+  $: messagesQuery.query(activity.class.ActivityMessage, { attachedTo, isPinned: true }, (res: ActivityMessage[]) => {
+    pinnedMessages = res as DisplayActivityMessage[]
+  })
 </script>
 
 <div class="antiPopup vScroll popup">
   {#each pinnedMessages as message}
-    {@const employee = getEmployee(message, $personAccountByIdStore, $personByIdStore)}
-    <div class="message">
-      <div class="header">
-        <div class="avatar">
-          <Avatar size={'medium'} avatar={employee?.avatar} name={employee?.name} />
-        </div>
-        <span class="name">
-          {employee ? getName(client.getHierarchy(), employee) : ''}
-        </span>
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div
-          class="cross"
-          on:click={async () => {
-            if (pinnedIds.length === 1) dispatch('close')
-            UnpinMessage(message)
-          }}
-        >
-          <IconClose size="small" />
-        </div>
-      </div>
-      <MessageViewer message={message.content} />
-      <span class="time">{getDisplayTime(message.createdOn ?? 0)}</span>
-    </div>
+    <ActivityMessagePresenter value={message} withActions={false} />
   {/each}
 </div>
 
@@ -79,35 +40,5 @@
     padding: 1.25rem 1.25rem 1.25rem;
     max-height: 20rem;
     color: var(--caption-color);
-  }
-
-  .message {
-    padding: 0.75rem 1rem 0.75rem;
-    margin-bottom: 1rem;
-    box-shadow: inherit;
-    border-radius: inherit;
-  }
-
-  .header {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-
-    .name {
-      font-weight: 500;
-      margin-left: 1rem;
-      flex-grow: 2;
-    }
-
-    .cross {
-      opacity: 0.4;
-      cursor: pointer;
-      &:hover {
-        opacity: 1;
-      }
-    }
-  }
-  .time {
-    font-size: 0.75rem;
   }
 </style>

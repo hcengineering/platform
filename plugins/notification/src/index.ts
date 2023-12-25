@@ -165,6 +165,7 @@ export interface Collaborators extends Doc {
 
 /**
  * @public
+ * @deprecated
  */
 export interface DocUpdateTx {
   _id: Ref<TxCUD<Doc>>
@@ -179,6 +180,7 @@ export interface DocUpdateTx {
 
 /**
  * @public
+ * @deprecated
  */
 export interface DocUpdates extends Doc {
   user: Ref<Account>
@@ -232,6 +234,12 @@ export interface InboxNotification extends Doc {
   attachedToClass: Ref<Class<ActivityMessage>>
 
   docNotifyContext: Ref<DocNotifyContext>
+
+  // For browser notifications
+  title?: IntlString
+  body?: IntlString
+  intlParams?: Record<string, string | number>
+  intlParamsNotLocalized?: Record<string, IntlString>
 }
 
 /**
@@ -245,6 +253,7 @@ export interface DocNotifyContext extends Doc {
   attachedToClass: Ref<Class<Doc>>
 
   hidden: boolean
+  isPinned?: boolean
   lastViewedTimestamp?: Timestamp
   lastUpdateTimestamp?: Timestamp
 }
@@ -256,7 +265,7 @@ export interface InboxNotificationsClient {
   docNotifyContextByDoc: Writable<Map<Ref<Doc>, DocNotifyContext>>
   docNotifyContexts: Writable<DocNotifyContext[]>
   inboxNotifications: Writable<InboxNotification[]>
-  inboxNotificationsByContext: Readable<Map<DocNotifyContext, InboxNotification[]>>
+  inboxNotificationsByContext: Readable<Map<Ref<DocNotifyContext>, InboxNotification[]>>
   readDoc: (_id: Ref<Doc>) => Promise<void>
   readMessages: (ids: Ref<ActivityMessage>[]) => Promise<void>
   unreadMessages: (ids: Array<Ref<ActivityMessage>>) => Promise<void>
@@ -306,7 +315,8 @@ const notification = plugin(notificationId, {
     Inbox: '' as AnyComponent,
     NewInbox: '' as AnyComponent,
     NotificationPresenter: '' as AnyComponent,
-    NotificationCollaboratorsChanged: '' as AnyComponent
+    NotificationCollaboratorsChanged: '' as AnyComponent,
+    DocNotifyContextPresenter: '' as AnyComponent
   },
   activity: {
     TxCollaboratorsChange: '' as AnyComponent
@@ -314,7 +324,11 @@ const notification = plugin(notificationId, {
   action: {
     MarkAsUnreadInboxNotification: '' as Ref<Action>,
     MarkAsReadInboxNotification: '' as Ref<Action>,
-    DeleteInboxNotification: '' as Ref<Action>
+    DeleteInboxNotification: '' as Ref<Action>,
+    PinDocNotifyContext: '' as Ref<Action>,
+    UnpinDocNotifyContext: '' as Ref<Action>,
+    HideDocNotifyContext: '' as Ref<Action>,
+    UnHideDocNotifyContext: '' as Ref<Action>
   },
   icon: {
     Notifications: '' as Asset,
@@ -336,11 +350,15 @@ const notification = plugin(notificationId, {
     ChangedCollaborators: '' as IntlString,
     NewCollaborators: '' as IntlString,
     RemovedCollaborators: '' as IntlString,
-    Edited: '' as IntlString
+    Edited: '' as IntlString,
+    Pinned: '' as IntlString
   },
   function: {
     GetNotificationClient: '' as Resource<NotificationClientFactoy>,
-    GetInboxNotificationsClient: '' as Resource<InboxNotificationsClientFactory>
+    GetInboxNotificationsClient: '' as Resource<InboxNotificationsClientFactory>,
+    HasHiddenDocNotifyContext: '' as Resource<(doc: Doc[]) => Promise<boolean>>,
+    IsDocNotifyContextHidden: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    IsDocNotifyContextVisible: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
   },
   resolver: {
     Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>

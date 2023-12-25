@@ -22,18 +22,20 @@ import core, {
   groupByArray,
   type Hierarchy,
   type Ref,
-  SortingOrder
+  SortingOrder,
+  type Timestamp
 } from '@hcengineering/core'
 import view, { type AttributeModel } from '@hcengineering/view'
 import { getClient, getFiltredKeys } from '@hcengineering/presentation'
 import { buildRemovedDoc, getAttributePresenter, getDocLinkTitle } from '@hcengineering/view-resources'
 import { type Person } from '@hcengineering/contact'
-import { type IntlString } from '@hcengineering/platform'
+import { getResource, type IntlString } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui'
 import { get } from 'svelte/store'
 import { personAccountByIdStore } from '@hcengineering/contact-resources'
 import activity, {
   type ActivityMessage,
+  type ActivityMessagesFilter,
   type DisplayActivityMessage,
   type DisplayDocUpdateMessage,
   type DocAttributeUpdates,
@@ -381,6 +383,10 @@ export function pinnedFilter (message: ActivityMessage, _class?: Ref<Doc>): bool
   return message.isPinned === true
 }
 
+export function allFilter (): boolean {
+  return true
+}
+
 export interface LinkData {
   title?: string
   preposition: IntlString
@@ -426,4 +432,58 @@ export async function getLinkData (
     panelComponent: panelComponent?.component ?? view.component.EditDoc,
     object: linkObject
   }
+}
+
+export async function getMessageFragment (doc: Doc): Promise<string> {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  let clazz = hierarchy.getClass(doc._class)
+  let label = clazz.shortLabel
+  while (label === undefined && clazz.extends !== undefined) {
+    clazz = hierarchy.getClass(clazz.extends)
+    label = clazz.shortLabel
+  }
+  label = label ?? doc._class
+  return `${label}-${doc._id}`
+}
+
+export async function filterActivityMessages (
+  messages: DisplayActivityMessage[],
+  filters: ActivityMessagesFilter[],
+  objectClass: Ref<Class<Doc>>,
+  filterId?: Ref<ActivityMessagesFilter>
+): Promise<DisplayActivityMessage[]> {
+  if (filterId === undefined || filterId === activity.ids.AllFilter) {
+    return messages
+  }
+
+  const filter = filters.find(({ _id }) => _id === filterId)
+
+  if (filter === undefined) {
+    return messages
+  }
+
+  const filterFn = await getResource(filter.filter)
+
+  return messages.filter((message) => filterFn(message, objectClass))
+}
+
+export function getClosestDateSelectorDate (date: Timestamp, scrollElement: HTMLDivElement): Timestamp | undefined {
+  const dateSelectors = scrollElement.getElementsByClassName('dateSelector')
+
+  if (dateSelectors === undefined || dateSelectors.length === 0) {
+    return
+  }
+
+  let closestDate: Timestamp | undefined = parseInt(dateSelectors[dateSelectors.length - 1].id)
+
+  for (const elem of Array.from(dateSelectors).reverse()) {
+    const curDate = parseInt(elem.id)
+    if (curDate < date) break
+    else if (curDate - date < closestDate - date) {
+      closestDate = curDate
+    }
+  }
+
+  return closestDate
 }

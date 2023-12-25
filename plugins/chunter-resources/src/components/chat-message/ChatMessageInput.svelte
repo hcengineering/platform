@@ -15,24 +15,31 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import { Doc, generateId, getCurrentAccount } from '@hcengineering/core'
+  import { Class, Doc, generateId, getCurrentAccount, Ref } from '@hcengineering/core'
   import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
-  import chunter, { ChatMessage } from '@hcengineering/chunter'
+  import chunter, { ChatMessage, ThreadMessage } from '@hcengineering/chunter'
+  import { PersonAccount } from '@hcengineering/contact'
+  import activity, { ActivityMessage } from '@hcengineering/activity'
 
   export let object: Doc
   export let chatMessage: ChatMessage | undefined = undefined
   export let shouldSaveDraft: boolean = true
   export let focusIndex: number = -1
   export let boundary: HTMLElement | undefined = undefined
+  export let loading = false
+  export let collection: string = 'comments'
 
   type MessageDraft = Pick<ChatMessage, '_id' | 'message' | 'attachments'>
 
   const dispatch = createEventDispatcher()
 
   const client = getClient()
-  const _class = chunter.class.ChatMessage
+  const hierarchy = client.getHierarchy()
+  const _class: Ref<Class<ChatMessage>> = hierarchy.isDerived(object._class, activity.class.ActivityMessage)
+    ? chunter.class.ThreadMessage
+    : chunter.class.ChatMessage
   const createdMessageQuery = createQuery()
-  const account = getCurrentAccount()
+  const account = getCurrentAccount() as PersonAccount
 
   const draftKey = `${object._id}_${_class}`
   const draftController = new DraftController<MessageDraft>(draftKey)
@@ -47,9 +54,8 @@
   let currentMessage: MessageDraft = chatMessage ?? currentDraft ?? getDefault()
   let _id = currentMessage._id
   let inputContent = currentMessage.message
-  let loading = false
 
-  $: createdMessageQuery.query(chunter.class.ChatMessage, { _id }, (result: ChatMessage[]) => {
+  $: createdMessageQuery.query(_class, { _id }, (result: ChatMessage[]) => {
     if (result.length > 0 && _id !== chatMessage?._id) {
       // Ouch we have got comment with same id created already.
       currentMessage = getDefault()
@@ -108,17 +114,46 @@
   async function createMessage (event: CustomEvent) {
     const { message, attachments } = event.detail
 
-    await client.addCollection<Doc, ChatMessage>(
-      _class,
-      object.space,
-      object._id,
-      object._class,
-      'comments',
-      { message, attachments },
-      _id,
-      Date.now(),
-      account._id
-    )
+    if (_class === chunter.class.ThreadMessage) {
+      const parentMessage = object as ActivityMessage
+
+      await client.addCollection<ActivityMessage, ThreadMessage>(
+        chunter.class.ThreadMessage,
+        parentMessage.space,
+        parentMessage._id,
+        parentMessage._class,
+        'replies',
+        {
+          message,
+          attachments,
+          objectClass: parentMessage.attachedToClass,
+          objectId: parentMessage.attachedTo
+        },
+        _id as Ref<ThreadMessage>,
+        Date.now(),
+        account._id
+      )
+
+      await client.update(parentMessage, { lastReply: Date.now() })
+
+      const hasPerson = !!parentMessage.repliedPersons?.includes(account.person)
+
+      if (!hasPerson) {
+        await client.update(parentMessage, { $push: { repliedPersons: account.person } })
+      }
+    } else {
+      await client.addCollection<Doc, ChatMessage>(
+        _class,
+        object.space,
+        object._id,
+        object._class,
+        collection,
+        { message, attachments },
+        _id,
+        Date.now(),
+        account._id
+      )
+    }
   }
 
   async function editMessage (event: CustomEvent) {
@@ -126,7 +161,7 @@
       return
     }
     const { message, attachments } = event.detail
-    await client.update(chatMessage, { message, attachments, isEdited: true })
+    await client.update(chatMessage, { message, attachments, editedOn: Date.now() })
   }
   export function submit (): void {
     inputRef.submit()

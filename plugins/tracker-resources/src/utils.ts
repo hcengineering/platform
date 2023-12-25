@@ -690,6 +690,10 @@ export async function getVisibleFilters (filters: KeyFilter[], space?: Ref<Space
   return space === undefined ? filters : filters.filter((f) => f.key !== 'space')
 }
 
+export function getIssueChatTitle (object: Issue): string {
+  return object.title
+}
+
 interface ManualUpdates {
   useStatus: boolean
   useComponent: boolean

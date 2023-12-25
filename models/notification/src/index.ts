@@ -197,6 +197,9 @@ export class TDocNotifyContext extends TDoc implements DocNotifyContext {
   @Prop(TypeDate(), core.string.Date)
   @Index(IndexKind.Indexed)
     lastUpdateTimestamp?: Timestamp
+
+  @Prop(TypeBoolean(), notification.string.Pinned)
+    isPinned?: boolean
 }
 
 @Model(notification.class.InboxNotification, core.class.Doc, DOMAIN_NOTIFICATION)
@@ -220,6 +223,11 @@ export class TInboxNotification extends TDoc implements InboxNotification {
   @Prop(TypeBoolean(), core.string.Boolean)
   @Index(IndexKind.Indexed)
     isViewed!: boolean
+
+  title?: IntlString
+  body?: IntlString
+  intlParams?: Record<string, string | number>
+  intlParamsNotLocalized?: Record<string, IntlString>
 }
 
 export function createModel (builder: Builder): void {
@@ -281,20 +289,6 @@ export function createModel (builder: Builder): void {
       order: 1500
     },
     notification.ids.NotificationSettings
-  )
-
-  builder.createDoc(
-    workbench.class.Application,
-    core.space.Model,
-    {
-      label: notification.string.Inbox,
-      icon: notification.icon.Notifications,
-      alias: notificationId,
-      hidden: true,
-      component: notification.component.Inbox,
-      aside: chunter.component.ThreadView
-    },
-    notification.app.Notification
   )
 
   builder.createDoc(
@@ -522,6 +516,76 @@ export function createModel (builder: Builder): void {
     },
     notification.action.DeleteInboxNotification
   )
+
+  createAction(
+    builder,
+    {
+      action: notification.actionImpl.HideDocNotifyContext,
+      label: view.string.Archive,
+      icon: view.icon.Archive,
+      input: 'focus',
+      category: view.category.General,
+      target: notification.class.DocNotifyContext,
+      context: {
+        mode: ['browser', 'context'],
+        group: 'remove'
+      },
+      visibilityTester: notification.function.IsDocNotifyContextVisible
+    },
+    notification.action.HideDocNotifyContext
+  )
+
+  createAction(
+    builder,
+    {
+      action: notification.actionImpl.UnHideDocNotifyContext,
+      label: view.string.UnArchive,
+      icon: view.icon.Archive,
+      input: 'focus',
+      category: view.category.General,
+      target: notification.class.DocNotifyContext,
+      context: {
+        mode: ['browser', 'context'],
+        group: 'remove'
+      },
+      visibilityTester: notification.function.IsDocNotifyContextHidden
+    },
+    notification.action.UnHideDocNotifyContext
+  )
+
+  createAction(
+    builder,
+    {
+      action: notification.actionImpl.PinDocNotifyContext,
+      label: view.string.Pin,
+      icon: notification.icon.Track,
+      input: 'focus',
+      category: notification.category.Notification,
+      target: notification.class.DocNotifyContext,
+      visibilityTester: notification.function.HasDocNotifyContextPinAction,
+      context: { mode: ['context', 'browser'], group: 'edit' }
+    },
+    notification.action.PinDocNotifyContext
+  )
+
+  createAction(
+    builder,
+    {
+      action: notification.actionImpl.UnpinDocNotifyContext,
+      label: view.string.Unpin,
+      icon: notification.icon.Track,
+      input: 'focus',
+      category: notification.category.Notification,
+      target: notification.class.DocNotifyContext,
+      visibilityTester: notification.function.HasDocNotifyContextUnpinAction,
+      context: { mode: ['context', 'browser'], group: 'edit' }
+    },
+    notification.action.UnpinDocNotifyContext
+  )
+
+  builder.mixin(notification.class.DocNotifyContext, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: notification.component.DocNotifyContextPresenter
+  })
 }
 
 export function generateClassNotificationTypes (

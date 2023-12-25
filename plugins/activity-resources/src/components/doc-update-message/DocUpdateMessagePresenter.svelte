@@ -42,8 +42,11 @@
   export let isSelected: boolean = false
   export let shouldScroll: boolean = false
   export let embedded: boolean = false
-  export let hasActionsMenu: boolean = true
+  export let withActions: boolean = true
+  export let showEmbedded = false
+  export let hideReplies = false
   export let onClick: (() => void) | undefined = undefined
+  export let onReply: (() => void) | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -146,9 +149,12 @@
     {isSelected}
     {shouldScroll}
     {embedded}
-    {hasActionsMenu}
+    {withActions}
     {viewlet}
+    {showEmbedded}
+    {hideReplies}
     {onClick}
+    {onReply}
   >
     <svelte:fragment slot="header">
       {#if viewlet?.labelComponent}

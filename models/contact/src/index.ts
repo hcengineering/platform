@@ -276,6 +276,7 @@ export function createModel (builder: Builder): void {
       hidden: false,
       // component: contact.component.ContactsTabs,
       locationResolver: contact.resolver.Location,
+      aside: chunter.component.ThreadView,
       navigatorModel: {
         spaces: [],
         specials: [
@@ -984,6 +985,7 @@ export function createModel (builder: Builder): void {
     chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
+      messageClass: chunter.class.ChatMessage,
       objectClass: contact.class.Person,
       label: chunter.string.LeftComment
     },
@@ -994,6 +996,7 @@ export function createModel (builder: Builder): void {
     chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
+      messageClass: chunter.class.ChatMessage,
       objectClass: contact.mixin.Employee,
       label: chunter.string.LeftComment
     },
@@ -1004,6 +1007,7 @@ export function createModel (builder: Builder): void {
     chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
+      messageClass: chunter.class.ChatMessage,
       objectClass: contact.class.Organization,
       label: chunter.string.LeftComment
     },

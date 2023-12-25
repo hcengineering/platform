@@ -13,8 +13,7 @@
 // limitations under the License.
 //
 
-import activity, { DocUpdateMessage } from '@hcengineering/activity'
-import {
+import core, {
   Account,
   AttachedDoc,
   Data,
@@ -27,91 +26,86 @@ import {
   TxCUD,
   TxProcessor
 } from '@hcengineering/core'
-import core from '@hcengineering/core/lib/component'
 import { ActivityControl, DocObjectCache } from '@hcengineering/server-activity'
 import type { TriggerControl } from '@hcengineering/server-core'
+import activity, { ActivityMessage, DocUpdateMessage, Reaction } from '@hcengineering/activity'
+import { pushInboxNotifications, removeDocInboxNotifications } from '@hcengineering/server-notification-resources'
+import notification from '@hcengineering/notification'
+
 import { getDocUpdateAction, getTxAttributesUpdates } from './utils'
 
-// export async function OnReactionChanged (originTx: Tx, control: TriggerControl): Promise<Tx[]> {
-//   const tx = originTx as TxCollectionCUD<ActivityMessage, Reaction>
-//   const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
-//
-//   if (actualTx._class === core.class.TxCreateDoc) {
-//     return await createReactionNotifications(tx, control)
-//   } else if (actualTx._class === core.class.TxRemoveDoc) {
-//     return await removeReactionNotifications(tx, control)
-//   }
-//
-//   return []
-// }
-//
-// export async function removeReactionNotifications (
-//   tx: TxCollectionCUD<ActivityMessage, Reaction>,
-//   control: TriggerControl
-// ): Promise<Tx[]> {
-//   const message = (await control.findAll(activity.class.DocUpdateMessage, { objectId: tx.tx.objectId }))[0]
-//
-//   if (message === undefined) {
-//     return []
-//   }
-//
-//   const res: Tx[] = []
-//   const inboxNotifications = await control.findAll(notification.class.InboxNotification, { attachedTo: message._id })
-//
-//   inboxNotifications.forEach((inboxNotification) =>
-//     res.push(
-//       control.txFactory.createTxRemoveDoc(
-//         notification.class.InboxNotification,
-//         inboxNotification.space,
-//         inboxNotification._id
-//       )
-//     )
-//   )
-//
-//   return res
-// }
-// export async function createReactionNotifications (
-//   tx: TxCollectionCUD<ActivityMessage, Reaction>,
-//   control: TriggerControl
-// ): Promise<Tx[]> {
-//   const res: Tx[] = []
-//   const parentMessage = (await control.findAll(activity.class.ActivityMessage, { _id: tx.objectId }))[0]
-//
-//   if (parentMessage === undefined) {
-//     return res
-//   }
-//
-//   const user = parentMessage.createdBy
-//
-//   if (user === undefined || user === core.account.System || user === tx.modifiedBy) {
-//     return []
-//   }
-//
-//   const messageTx: TxCreateDoc<DocUpdateMessage> | undefined = (
-//     await pushDocUpdateMessages(control, res as TxCollectionCUD<Doc, DocUpdateMessage>[], parentMessage, tx, tx.modifiedBy)
-//   )[0]
-//
-//   if (messageTx === undefined) {
-//     return res
-//   }
-//
-//   const docNotifyContexts = await control.findAll(notification.class.DocNotifyContext, {
-//     attachedTo: parentMessage._id
-//   })
-//
-//   createInboxNotifications(
-//     control,
-//     res,
-//     user,
-//     parentMessage,
-//     tx,
-//     messageTx.objectId,
-//     messageTx.objectClass,
-//     docNotifyContexts
-//   )
-//
-//   return res
-// }
+export async function OnReactionChanged (originTx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const tx = originTx as TxCollectionCUD<ActivityMessage, Reaction>
+  const innerTx = TxProcessor.extractTx(tx) as TxCUD<Reaction>
+
+  if (innerTx._class === core.class.TxCreateDoc) {
+    return await createReactionNotifications(tx, control)
+  }
+
+  if (innerTx._class === core.class.TxRemoveDoc) {
+    return await removeReactionNotifications(tx, control)
+  }
+
+  return []
+}
+
+export async function removeReactionNotifications (
+  tx: TxCollectionCUD<ActivityMessage, Reaction>,
+  control: TriggerControl
+): Promise<Tx[]> {
+  const message = (
+    await control.findAll(activity.class.ActivityMessage, { objectId: tx.tx.objectId }, { projection: { _id: 1 } })
+  )[0]
+
+  if (message === undefined) {
+    return []
+  }
+
+  return await removeDocInboxNotifications(message._id, control)
+}
+
+export async function createReactionNotifications (
+  tx: TxCollectionCUD<ActivityMessage, Reaction>,
+  control: TriggerControl
+): Promise<Tx[]> {
+  const parentMessage = (await control.findAll(activity.class.ActivityMessage, { _id: tx.objectId }))[0]
+
+  if (parentMessage === undefined) {
+    return []
+  }
+
+  const user = parentMessage.createdBy
+
+  if (user === undefined || user === core.account.System || user === tx.modifiedBy) {
+    return []
+  }
+
+  const res: Tx[] = []
+
+  const messageTx = (
+    await pushDocUpdateMessages(
+      control,
+      res as TxCollectionCUD<Doc, DocUpdateMessage>[],
+      parentMessage,
+      tx,
+      tx.modifiedBy
+    )
+  )[0]
+
+  if (messageTx === undefined) {
+    return []
+  }
+
+  const docUpdateMessage = TxProcessor.createDoc2Doc(messageTx.tx as TxCreateDoc<DocUpdateMessage>)
+
+  const notifyContexts = await control.findAll(notification.class.DocNotifyContext, {
+    attachedTo: parentMessage._id
+  })
+
+  await pushInboxNotifications(tx, control, res, user, parentMessage, notifyContexts, docUpdateMessage, false)
+
+  return res
+}
 
 function getDocUpdateMessageTx (
   control: ActivityControl,
@@ -312,8 +306,8 @@ async function OnDocRemoved (originTx: TxCUD<Doc>, control: TriggerControl): Pro
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    // OnReactionChanged,
     ActivityMessagesHandler,
-    OnDocRemoved
+    OnDocRemoved,
+    OnReactionChanged
   }
 })
