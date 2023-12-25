@@ -63,6 +63,7 @@ export interface TextNodeAction {
   id: string
   label?: IntlString
   icon: Asset | AnySvelteComponent
+  action: (params: { editor: Editor }) => Promise<void> | void
 }
 
 /**

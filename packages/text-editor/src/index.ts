@@ -19,6 +19,9 @@ import { textEditorId } from './plugin'
 export * from '@hcengineering/presentation/src/types'
 export { default as Collaboration } from './components/Collaboration.svelte'
 export { default as CollaborationDiffViewer } from './components/CollaborationDiffViewer.svelte'
+export { default as CollaborativeAttributeBox } from './components/CollaborativeAttributeBox.svelte'
+export { default as CollaborativeAttributeSectionBox } from './components/CollaborativeAttributeSectionBox.svelte'
+export { default as CollaborativeTextEditor } from './components/CollaborativeTextEditor.svelte'
 export { default as CollaboratorEditor } from './components/CollaboratorEditor.svelte'
 export { default as FullDescriptionBox } from './components/FullDescriptionBox.svelte'
 export { default as MarkupDiffViewer } from './components/MarkupDiffViewer.svelte'
@@ -65,7 +68,14 @@ export {
 export { ImageExtension, type ImageOptions } from './components/extension/imageExt'
 export { TodoItemExtension, TodoListExtension } from './components/extension/todo'
 
-export { TiptapCollabProvider, type TiptapCollabProviderConfiguration, createTiptapCollaborationData } from './provider'
+export {
+  TiptapCollabProvider,
+  type TiptapCollabProviderConfiguration,
+  createTiptapCollaborationData,
+  minioDocumentId,
+  mongodbDocumentId,
+  platformDocumentId
+} from './provider'
 export { CollaborationIds } from './types'
 
 export { textEditorId }

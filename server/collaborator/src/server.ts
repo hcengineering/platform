@@ -15,25 +15,42 @@
 
 import { MeasureContext } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
+import { serverExtensions } from '@hcengineering/text'
 import { Hocuspocus, onAuthenticatePayload } from '@hocuspocus/server'
 import bp from 'body-parser'
 import compression from 'compression'
 import cors from 'cors'
 import express from 'express'
 import { IncomingMessage, createServer } from 'http'
+import { MongoClient } from 'mongodb'
 import { WebSocket, WebSocketServer } from 'ws'
 
 import { Config } from './config'
 import { ActionsExtension } from './extensions/action'
-import { StorageExtension } from './extensions/storage'
 import { Context, buildContext } from './context'
+import { HtmlTransformer } from './transformers/html'
+import { MinioStorageAdapter } from './storage/minio'
+import { MongodbStorageAdapter } from './storage/mongodb'
+import { PlatformStorageAdapter } from './storage/platform'
+import { StorageExtension } from './extensions/storage'
+import { RouterStorageAdapter } from './storage/router'
 
 const gcEnabled = process.env.GC !== 'false' && process.env.GC !== '0'
 
 /**
  * @public
  */
-export function start (ctx: MeasureContext, config: Config, minio: MinioService): () => void {
+export type Shutdown = () => Promise<void>
+
+/**
+ * @public
+ */
+export async function start (
+  ctx: MeasureContext,
+  config: Config,
+  minio: MinioService,
+  mongo: MongoClient
+): Promise<Shutdown> {
   const port = config.Port
   console.log(`starting server on :${port} ...`)
 
@@ -54,6 +71,9 @@ export function start (ctx: MeasureContext, config: Config, minio: MinioService)
       level: 6
     })
   )
+
+  const extensionsCtx = ctx.newChild('extensions', {})
+  const storageCtx = ctx.newChild('storage', {})
 
   const hocuspocus = new Hocuspocus({
     address: '0.0.0.0',
@@ -89,11 +109,28 @@ export function start (ctx: MeasureContext, config: Config, minio: MinioService)
     unloadImmediately: false,
 
     extensions: [
-      new ActionsExtension(),
+      new ActionsExtension({
+        ctx: extensionsCtx.newChild('actions', {}),
+        transformer: new HtmlTransformer(serverExtensions)
+      }),
       new StorageExtension({
-        ctx: ctx.newChild('minio', {}),
-        minio,
-        transactorUrl: config.TransactorUrl
+        ctx: extensionsCtx.newChild('storage', {}),
+        adapter: new RouterStorageAdapter(
+          {
+            minio: new MinioStorageAdapter(storageCtx.newChild('minio', {}), minio, config.TransactorUrl),
+            mongodb: new MongodbStorageAdapter(
+              storageCtx.newChild('mongodb', {}),
+              mongo,
+              new HtmlTransformer(serverExtensions)
+            ),
+            platform: new PlatformStorageAdapter(
+              storageCtx.newChild('platform', {}),
+              config.TransactorUrl,
+              new HtmlTransformer(serverExtensions)
+            )
+          },
+          'minio'
+        )
       })
     ],
 
@@ -138,7 +175,7 @@ export function start (ctx: MeasureContext, config: Config, minio: MinioService)
   server.listen(port)
   console.log(`started server on :${port}`)
 
-  return () => {
+  return async () => {
     server.close()
   }
 }

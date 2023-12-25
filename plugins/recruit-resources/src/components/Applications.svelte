@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { Doc, Ref } from '@hcengineering/core'
-  import { Button, Icon, IconAdd, Label, Scroller, showPopup } from '@hcengineering/ui'
+  import { Button, IconAdd, Label, Scroller, Section, showPopup } from '@hcengineering/ui'
   import { Viewlet, ViewletPreference } from '@hcengineering/view'
   import { Table, ViewletsSettingButton } from '@hcengineering/view-resources'
   import recruit from '../plugin'
@@ -35,14 +35,8 @@
   let loading = true
 </script>
 
-<div class="antiSection">
-  <div class="antiSection-header">
-    <div class="antiSection-header__icon">
-      <Icon icon={IconApplication} size={'small'} />
-    </div>
-    <span class="antiSection-header__title">
-      <Label label={recruit.string.Applications} />
-    </span>
+<Section label={recruit.string.Applications} icon={IconApplication}>
+  <svelte:fragment slot="header">
     <div class="flex-row-center gap-2 reverse">
       <ViewletsSettingButton
         viewletQuery={{ _id: recruit.viewlet.VacancyApplicationsEmbeddeed }}
@@ -53,28 +47,32 @@
       />
       <Button id="appls.add" icon={IconAdd} kind={'ghost'} on:click={createApp} />
     </div>
-  </div>
-  {#if applications > 0 && viewlet && !loading}
-    <Scroller horizontal>
-      <Table
-        _class={recruit.class.Applicant}
-        config={preference?.config ?? viewlet.config}
-        query={{ attachedTo: objectId, ...(viewlet?.baseQuery ?? {}) }}
-        loadingProps={{ length: applications }}
-      />
-    </Scroller>
-  {:else}
-    <div class="antiSection-empty solid flex-col-center mt-3">
-      <div class="caption-color">
-        <FileDuo size={'large'} />
+  </svelte:fragment>
+
+  <svelte:fragment slot="content">
+    {#if applications > 0 && viewlet && !loading}
+      <Scroller horizontal>
+        <Table
+          _class={recruit.class.Applicant}
+          config={preference?.config ?? viewlet.config}
+          query={{ attachedTo: objectId, ...(viewlet?.baseQuery ?? {}) }}
+          loadingProps={{ length: applications }}
+        />
+      </Scroller>
+    {:else}
+      <div class="antiSection-empty solid flex-col-center mt-3">
+        <div class="caption-color">
+          <FileDuo size={'large'} />
+        </div>
+        <span class="content-dark-color">
+          <Label label={recruit.string.NoApplicationsForTalent} />
+        </span>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <span class="over-underline content-color" on:click={createApp}>
+          <Label label={recruit.string.CreateAnApplication} />
+        </span>
       </div>
-      <span class="content-dark-color">
-        <Label label={recruit.string.NoApplicationsForTalent} />
-      </span>
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <span class="over-underline content-color" on:click={createApp}>
-        <Label label={recruit.string.CreateAnApplication} />
-      </span>
-    </div>
-  {/if}
-</div>
+    {/if}
+  </svelte:fragment>
+</Section>

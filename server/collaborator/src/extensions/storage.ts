@@ -13,126 +13,117 @@
 // limitations under the License.
 //
 
-import attachment, { Attachment } from '@hcengineering/attachment'
-import client from '@hcengineering/client'
-import clientResources from '@hcengineering/client-resources'
-import core, { Client, MeasureContext, Ref, TxOperations } from '@hcengineering/core'
-import { MinioService } from '@hcengineering/minio'
-import { setMetadata } from '@hcengineering/platform'
-import { Token, generateToken } from '@hcengineering/server-token'
-import { Extension, onLoadDocumentPayload, onStoreDocumentPayload } from '@hocuspocus/server'
-import { applyUpdate, encodeStateAsUpdate } from 'yjs'
-import config from '../config'
-import { Context } from '../context'
-
-// eslint-disable-next-line
-const WebSocket = require('ws')
-
-async function connect (transactorUrl: string, token: Token): Promise<Client> {
-  const encodedToken = generateToken(token.email, token.workspace)
-  // We need to override default factory with 'ws' one.
-  setMetadata(client.metadata.ClientSocketFactory, (url) => {
-    return new WebSocket(url, {
-      headers: {
-        'User-Agent': config.ServiceID
-      }
-    })
-  })
-  return await (await clientResources()).function.GetClient(encodedToken, transactorUrl)
-}
+import { MeasureContext } from '@hcengineering/core'
+import {
+  Document,
+  Extension,
+  afterUnloadDocumentPayload,
+  onChangePayload,
+  onDisconnectPayload,
+  onLoadDocumentPayload,
+  onStoreDocumentPayload
+} from '@hocuspocus/server'
+import { Doc as YDoc } from 'yjs'
+import { Context, withContext } from '../context'
+import { StorageAdapter } from '../storage/adapter'
 
 export interface StorageConfiguration {
   ctx: MeasureContext
-  minio: MinioService
-  transactorUrl: string
+  adapter: StorageAdapter
 }
 
 export class StorageExtension implements Extension {
   private readonly configuration: StorageConfiguration
+  private readonly collaborators = new Map<string, Set<string>>()
 
   constructor (configuration: StorageConfiguration) {
     this.configuration = configuration
   }
 
-  async getMinioDocument (documentId: string, token: Token): Promise<Buffer | undefined> {
-    const buffer = await this.configuration.minio.read(token.workspace, documentId)
-    return Buffer.concat(buffer)
+  async onChange ({ context, documentName }: withContext<onChangePayload>): Promise<any> {
+    const collaborators = this.collaborators.get(documentName) ?? new Set()
+    collaborators.add(context.connectionId)
+    this.collaborators.set(documentName, collaborators)
   }
 
-  async onLoadDocument (data: onLoadDocumentPayload): Promise<any> {
-    console.log('load document', data.documentName)
+  async onLoadDocument ({ context, documentName }: withContext<onLoadDocumentPayload>): Promise<any> {
+    return await this.configuration.ctx.with('load-document', {}, async () => {
+      return await this.loadDocument(documentName, context)
+    })
+  }
 
-    const documentId = data.documentName
-    const { token, initialContentId } = data.context as Context
+  async onStoreDocument ({ context, documentName, document }: withContext<onStoreDocumentPayload>): Promise<void> {
+    const collaborators = this.collaborators.get(documentName)
+    if (collaborators === undefined || collaborators.size === 0) {
+      console.log('no changes for document', documentName)
+      return
+    }
 
-    await this.configuration.ctx.with('load-document', {}, async () => {
-      let minioDocument: Buffer | undefined
+    await this.configuration.ctx.with('store-document', {}, async () => {
+      this.collaborators.delete(documentName)
+      await this.storeDocument(documentName, document, context)
+    })
+  }
+
+  async onDisconnect ({ context, documentName, document }: withContext<onDisconnectPayload>): Promise<any> {
+    const { connectionId } = context
+    const collaborators = this.collaborators.get(documentName)
+    if (collaborators === undefined || !this.collaborators.has(connectionId)) {
+      console.log('no changes for document', documentName)
+    }
+
+    await this.configuration.ctx.with('store-document', {}, async () => {
+      this.collaborators.get(documentName)?.delete(connectionId)
+      await this.storeDocument(documentName, document, context)
+    })
+  }
+
+  async afterUnloadDocument ({ documentName }: afterUnloadDocumentPayload): Promise<any> {
+    this.collaborators.delete(documentName)
+  }
+
+  async loadDocument (documentId: string, context: Context): Promise<YDoc | undefined> {
+    const { adapter } = this.configuration
+
+    console.log('load document', documentId)
+    try {
+      const ydoc = await adapter.loadDocument(documentId, context)
+      if (ydoc !== undefined) {
+        return ydoc
+      }
+    } catch (err) {
+      console.error('failed to load document', documentId, err)
+    }
+
+    const { initialContentId } = context
+    if (initialContentId !== undefined && initialContentId.length > 0) {
+      console.log('load document initial content', initialContentId)
       try {
-        minioDocument = await this.getMinioDocument(documentId, token)
-      } catch (err: any) {
-        if (initialContentId !== undefined && initialContentId.length > 0) {
-          try {
-            minioDocument = await this.getMinioDocument(initialContentId, token)
-          } catch (err: any) {
-            // Do nothing
-            // Initial content document also might not have been initialized in minio (e.g. if it's an empty template)
-          }
-        }
+        return await adapter.loadDocument(initialContentId, context)
+      } catch (err) {
+        console.error('failed to load document', initialContentId, err)
       }
-
-      if (minioDocument !== undefined && minioDocument.length > 0) {
-        try {
-          const uint8arr = new Uint8Array(minioDocument)
-          applyUpdate(data.document, uint8arr)
-        } catch (err) {
-          console.error(err)
-        }
-      }
-    })
-
-    return data.document
+    }
   }
 
-  async onStoreDocument (data: onStoreDocumentPayload): Promise<void> {
-    console.log('store document', data.documentName)
+  async storeDocument (documentId: string, document: Document, context: Context): Promise<void> {
+    const { adapter } = this.configuration
 
-    const documentId = data.documentName
-    const { token } = data.context as Context
+    console.log('store document', documentId)
+    try {
+      await adapter.saveDocument(documentId, document, context)
+    } catch (err) {
+      console.error('failed to save document', documentId, err)
+    }
 
-    await this.configuration.ctx.with('store-document', {}, async (ctx) => {
-      const updates = encodeStateAsUpdate(data.document)
-      const buffer = Buffer.from(updates.buffer)
-
-      // persist document to Minio
-      await ctx.with('minio', {}, async () => {
-        const metaData = { 'content-type': 'application/ydoc' }
-        await this.configuration.minio.put(token.workspace, documentId, buffer, buffer.length, metaData)
-      })
-
-      // notify platform about changes
-      await ctx.with('platform', {}, async () => {
-        try {
-          const connection = await connect(this.configuration.transactorUrl, token)
-
-          // token belongs to the first user opened the document, this is not accurate, but
-          // since the document is collaborative, we need to choose some account to update the doc
-          const account = await connection.findOne(core.class.Account, { email: token.email })
-          const accountId = account?._id ?? core.account.System
-
-          const client = new TxOperations(connection, accountId, true)
-          const current = await client.findOne(attachment.class.Attachment, { _id: documentId as Ref<Attachment> })
-          if (current !== undefined) {
-            console.debug('platform notification for document', documentId)
-            await client.update(current, { lastModified: Date.now(), size: buffer.length })
-          } else {
-            console.debug('platform attachment document not found', documentId)
-          }
-
-          await connection.close()
-        } catch (err: any) {
-          console.debug('failed to notify platform', documentId, err)
-        }
-      })
-    })
+    const { targetContentId } = context
+    if (targetContentId !== undefined && targetContentId.length > 0) {
+      console.log('store document target content', targetContentId)
+      try {
+        await adapter.saveDocument(targetContentId, document, context)
+      } catch (err) {
+        console.error('failed to save document', targetContentId, err)
+      }
+    }
   }
 }

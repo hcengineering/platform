@@ -199,6 +199,10 @@ export class TTypeNumber extends TType {}
 @Model(core.class.TypeMarkup, core.class.Type)
 export class TTypeMarkup extends TType {}
 
+@UX(core.string.Collaborative)
+@Model(core.class.TypeCollaborativeMarkup, core.class.Type)
+export class TTypeCollaborativeMarkup extends TType {}
+
 @UX(core.string.Ref)
 @Model(core.class.RefTo, core.class.Type)
 export class TRefTo extends TType implements RefTo<Doc> {

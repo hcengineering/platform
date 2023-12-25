@@ -25,6 +25,7 @@ import {
   Prop,
   ReadOnly,
   TypeBoolean,
+  TypeCollaborativeMarkup,
   TypeDate,
   TypeMarkup,
   TypeRef,
@@ -69,7 +70,7 @@ export { default } from './plugin'
 @Model(recruit.class.Vacancy, task.class.Project)
 @UX(recruit.string.Vacancy, recruit.icon.Vacancy, 'VCN', 'name')
 export class TVacancy extends TProject implements Vacancy {
-  @Prop(TypeMarkup(), recruit.string.FullDescription)
+  @Prop(TypeCollaborativeMarkup(), recruit.string.FullDescription)
   @Index(IndexKind.FullText)
     fullDescription?: string
 

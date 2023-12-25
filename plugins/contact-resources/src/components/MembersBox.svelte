@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { Space } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
-  import { Icon, Label } from '@hcengineering/ui'
+  import { Section } from '@hcengineering/ui'
   import plugin from '../plugin'
   import IconMembersOutline from './icons/MembersOutline.svelte'
   import SpaceMembers from './SpaceMembers.svelte'
@@ -24,14 +24,8 @@
   export let space: Space
 </script>
 
-<div class="antiSection">
-  <div class="antiSection-header">
-    <div class="antiSection-header__icon">
-      <Icon icon={IconMembersOutline} size={'small'} />
-    </div>
-    <span class="antiSection-header__title">
-      <Label {label} />
-    </span>
-  </div>
-  <SpaceMembers {space} />
-</div>
+<Section {label} icon={IconMembersOutline}>
+  <svelte:fragment slot="content">
+    <SpaceMembers {space} />
+  </svelte:fragment>
+</Section>

@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,5 +13,13 @@
 // limitations under the License.
 //
 
-import { startCollaborator } from './starter'
-void startCollaborator()
+import { Document } from '@hocuspocus/server'
+import { Doc as YDoc } from 'yjs'
+import { Context } from '../context'
+
+export interface StorageAdapter {
+  loadDocument: (documentId: string, context: Context) => Promise<YDoc | undefined>
+  saveDocument: (documentId: string, document: Document, context: Context) => Promise<void>
+}
+
+export type StorageAdapters = Record<string, StorageAdapter>

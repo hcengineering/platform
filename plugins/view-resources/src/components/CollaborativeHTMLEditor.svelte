@@ -1,6 +1,5 @@
-//
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+<!--
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -12,7 +11,17 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import { Doc } from '@hcengineering/core'
 
-import { startCollaborator } from './starter'
-void startCollaborator()
+  import { KeyedAttribute } from '@hcengineering/presentation'
+  import { CollaborativeAttributeSectionBox } from '@hcengineering/text-editor'
+
+  export let object: Doc
+  export let key: KeyedAttribute
+</script>
+
+{#key object._id}
+  <CollaborativeAttributeSectionBox {object} {key} label={key.attr.label} />
+{/key}

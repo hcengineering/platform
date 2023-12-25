@@ -1,11 +1,45 @@
+//
+// Copyright © 2023 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+import { MeasureContext } from '@hcengineering/core'
 import { Connection, Document, Extension, Hocuspocus, onConfigurePayload, onStatelessPayload } from '@hocuspocus/server'
+import { Transformer } from '@hocuspocus/transformer'
 import * as Y from 'yjs'
 
 import { Context } from '../context'
-import { Action, ActionStatus, ActionStatusResponse, DocumentCopyAction, DocumentFieldCopyAction } from '../types'
+import {
+  Action,
+  ActionStatus,
+  ActionStatusResponse,
+  DocumentContentAction,
+  DocumentCopyAction,
+  DocumentFieldCopyAction
+} from '../types'
+
+export interface ActionsConfiguration {
+  ctx: MeasureContext
+  transformer: Transformer
+}
 
 export class ActionsExtension implements Extension {
+  private readonly configuration: ActionsConfiguration
   instance!: Hocuspocus
+
+  constructor (configuration: ActionsConfiguration) {
+    this.configuration = configuration
+  }
 
   async onConfigure ({ instance }: onConfigurePayload): Promise<void> {
     this.instance = instance
@@ -14,21 +48,29 @@ export class ActionsExtension implements Extension {
   async onStateless (data: onStatelessPayload): Promise<any> {
     try {
       const action = JSON.parse(data.payload) as Action
-      const context = data.connection.context as Context
-      const { connection } = data
+      const context = data.connection.context
+      const { connection, document, documentName } = data
 
-      switch (action.action) {
-        case 'document.copy':
-          await this.onCopyDocument(context, action)
-          this.sendActionStatus(connection, action, 'completed')
-          return
-        case 'document.field.copy':
-          await this.onCopyDocumentField(context, action)
-          this.sendActionStatus(connection, action, 'completed')
-          return
-        default:
-          console.error('unsupported action type', action)
-      }
+      console.log('process stateless message', action.action, documentName)
+
+      await this.configuration.ctx.with(action.action, {}, async () => {
+        switch (action.action) {
+          case 'document.content':
+            await this.onDocumentContent(document, action)
+            this.sendActionStatus(connection, action, 'completed')
+            return
+          case 'document.copy':
+            await this.onCopyDocument(context, action)
+            this.sendActionStatus(connection, action, 'completed')
+            return
+          case 'document.field.copy':
+            await this.onCopyDocumentField(context, action)
+            this.sendActionStatus(connection, action, 'completed')
+            return
+          default:
+            console.error('unsupported action type', action)
+        }
+      })
     } catch (err: any) {
       console.error('failed to process stateless message', err)
     }
@@ -39,16 +81,23 @@ export class ActionsExtension implements Extension {
     connection.sendStateless(JSON.stringify(payload))
   }
 
+  async onDocumentContent (document: Document, action: DocumentContentAction): Promise<void> {
+    const { content, field } = action.params
+    if (!document.share.has(field)) {
+      const ydoc = this.configuration.transformer.toYdoc(content, field)
+      document.merge(ydoc)
+    } else {
+      console.warn('document has already been initialized')
+    }
+  }
+
   async onCopyDocument (context: Context, action: DocumentCopyAction): Promise<void> {
     const instance = this.instance
 
     const { sourceId, targetId } = action.params
     console.info(`copy document content ${sourceId} -> ${targetId}`)
 
-    const _context: Context = {
-      token: context.token,
-      initialContentId: ''
-    }
+    const _context: Context = { ...context, initialContentId: '', targetContentId: '' }
 
     let source: Document | null = null
     let target: Document | null = null
@@ -102,10 +151,7 @@ export class ActionsExtension implements Extension {
       return
     }
 
-    const _context: Context = {
-      token: context.token,
-      initialContentId: ''
-    }
+    const _context: Context = { ...context, initialContentId: '', targetContentId: '' }
 
     let doc: Document | null = null
 

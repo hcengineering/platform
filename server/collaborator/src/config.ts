@@ -25,6 +25,7 @@ export interface Config {
   Port: number
 
   TransactorUrl: string
+  MongoUrl: string
 
   MinioEndpoint: string
   MinioAccessKey: string
@@ -37,6 +38,7 @@ const envMap: { [key in keyof Config]: string } = {
   Interval: 'INTERVAL',
   Port: 'COLLABORATOR_PORT',
   TransactorUrl: 'TRANSACTOR_URL',
+  MongoUrl: 'MONGO_URL',
   MinioEndpoint: 'MINIO_ENDPOINT',
   MinioAccessKey: 'MINIO_ACCESS_KEY',
   MinioSecretKey: 'MINIO_SECRET_KEY'
@@ -47,6 +49,7 @@ const required: Array<keyof Config> = [
   'ServiceID',
   'Port',
   'TransactorUrl',
+  'MongoUrl',
   'MinioEndpoint',
   'MinioAccessKey',
   'MinioSecretKey'
@@ -59,6 +62,7 @@ const config: Config = (() => {
     Interval: parseInt(process.env[envMap.Interval] ?? '30000'),
     Port: parseInt(process.env[envMap.Port] ?? '3078'),
     TransactorUrl: process.env[envMap.TransactorUrl],
+    MongoUrl: process.env[envMap.MongoUrl],
     MinioEndpoint: process.env[envMap.MinioEndpoint],
     MinioAccessKey: process.env[envMap.MinioAccessKey],
     MinioSecretKey: process.env[envMap.MinioSecretKey]

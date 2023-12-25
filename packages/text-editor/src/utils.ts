@@ -17,7 +17,7 @@ import { type onStatelessParameters } from '@hocuspocus/provider'
 import { type Attribute } from '@tiptap/core'
 import * as Y from 'yjs'
 
-import { TiptapCollabProvider } from './provider'
+import { type DocumentId, TiptapCollabProvider } from './provider'
 
 type ProviderData = (
   | {
@@ -29,7 +29,12 @@ type ProviderData = (
   }
 ) & { ydoc?: Y.Doc }
 
-function getProvider (documentId: string, providerData: ProviderData, initialContentId?: string): TiptapCollabProvider {
+function getProvider (
+  documentId: DocumentId,
+  providerData: ProviderData,
+  initialContentId?: DocumentId,
+  targetContentId?: DocumentId
+): TiptapCollabProvider {
   if (!('provider' in providerData)) {
     const provider = new TiptapCollabProvider({
       url: providerData.collaboratorURL,
@@ -37,7 +42,8 @@ function getProvider (documentId: string, providerData: ProviderData, initialCon
       document: providerData.ydoc ?? new Y.Doc(),
       token: providerData.token,
       parameters: {
-        initialContentId: initialContentId ?? ''
+        initialContentId,
+        targetContentId
       },
       onStateless (data: onStatelessParameters) {
         try {
@@ -58,21 +64,21 @@ function getProvider (documentId: string, providerData: ProviderData, initialCon
 }
 
 export function copyDocumentField (
-  documentId: string,
+  documentId: DocumentId,
   srcFieldId: string,
   dstFieldId: string,
   providerData: ProviderData,
-  initialContentId?: string
+  initialContentId?: DocumentId
 ): void {
   const provider = getProvider(documentId, providerData, initialContentId)
   provider.copyField(documentId, srcFieldId, dstFieldId)
 }
 
 export function copyDocumentContent (
-  documentId: string,
+  documentId: DocumentId,
   snapshotId: string,
   providerData: ProviderData,
-  initialContentId?: string
+  initialContentId?: DocumentId
 ): void {
   const provider = getProvider(documentId, providerData, initialContentId)
   provider.copyContent(documentId, snapshotId)

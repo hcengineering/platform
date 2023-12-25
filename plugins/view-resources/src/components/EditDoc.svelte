@@ -61,7 +61,7 @@
   }
 
   onDestroy(async () => {
-    notificationClient.then(async (client) => {
+    await notificationClient.then(async (client) => {
       await client.read(_id)
     })
   })

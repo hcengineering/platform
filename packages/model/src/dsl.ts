@@ -395,6 +395,13 @@ export function TypeMarkup (): Type<Markup> {
 /**
  * @public
  */
+export function TypeCollaborativeMarkup (): Type<Markup> {
+  return { _class: core.class.TypeCollaborativeMarkup, label: core.string.Collaborative }
+}
+
+/**
+ * @public
+ */
 export function TypeRecord (): Type<Markup> {
   return { _class: core.class.TypeRecord, label: core.string.Record }
 }

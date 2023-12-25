@@ -13,21 +13,34 @@
 // limitations under the License.
 //
 
+import { generateId } from '@hcengineering/core'
 import { Token, decodeToken } from '@hcengineering/server-token'
 import { onAuthenticatePayload } from '@hocuspocus/server'
 
 export interface Context {
-  token: Token
+  connectionId: string
+  token: string
+  decodedToken: Token
   initialContentId: string
+  targetContentId: string
+}
+
+export type withContext<T> = Omit<T, 'context'> & {
+  context: Context
 }
 
 export function buildContext (data: onAuthenticatePayload): Context {
-  const token = decodeToken(data.token)
+  const connectionId = generateId()
+  const decodedToken = decodeToken(data.token)
   const initialContentId = data.requestParameters.get('initialContentId') as string
+  const targetContentId = data.requestParameters.get('targetContentId') as string
 
   const context: Context = {
-    token,
-    initialContentId: initialContentId ?? ''
+    connectionId,
+    decodedToken,
+    token: data.token,
+    initialContentId: initialContentId ?? '',
+    targetContentId: targetContentId ?? ''
   }
 
   return context
