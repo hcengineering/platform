@@ -15,7 +15,6 @@
 //
 -->
 <script lang="ts">
-  import { getCurrentAccount } from '@hcengineering/core'
   import { IntlString, getMetadata, translate } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
   import { Button, IconSize, Loading, themeStore } from '@hcengineering/ui'
@@ -42,7 +41,7 @@
 
   import ImageStyleToolbar from './ImageStyleToolbar.svelte'
   import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
-  import { noSelectionRender } from './editor/collaboration'
+  import { noSelectionRender, renderCursor } from './editor/collaboration'
   import { defaultEditorAttributes } from './editor/editorProps'
   import { EmojiExtension } from './extension/emoji'
   import { FileAttachFunction, ImageExtension } from './extension/imageExt'
@@ -105,8 +104,6 @@
 
   let loading = true
   void provider.loaded.then(() => (loading = false))
-
-  const user = getCurrentAccount()
 
   let editor: Editor
   let element: HTMLElement
@@ -253,6 +250,7 @@
         CollaborationCursor.configure({
           provider,
           user,
+          render: renderCursor,
           selectionRender: noSelectionRender
         }),
         Completion.configure({

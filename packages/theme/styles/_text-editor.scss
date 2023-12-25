@@ -153,8 +153,8 @@
 
   /* Give a remote user a caret */
   .collaboration-cursor__caret {
-    border-left: 1px solid #0d0d0d;
-    border-right: 1px solid #0d0d0d;
+    border-left: 1px solid transparent;
+    border-right: 1px solid transparent;
     margin-left: -1px;
     margin-right: -1px;
     position: relative;
@@ -165,43 +165,15 @@
       position: absolute;
       border-color: inherit;
       border-style: solid;
-      border-radius: 0 2px 2px 0;
-      border-width: 2px;
-      height: 4px;
-      width: 4px;
-      top: -3px;
-      left: -1px;
+      width: 0;
+      height: 0;
+      top: -2px;
+      left: -4px;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top-width: 4px;
+      border-bottom: 0;
     }
-
-    &:hover {
-      .collaboration-cursor__label {
-        visibility: visible;
-        opacity: 1;
-
-        transition: all 0.1s ease-in-out;
-      }
-    }
-  }
-
-  /* Render the username above the caret */
-  .collaboration-cursor__label {
-    visibility: hidden;
-    opacity: 0;
-
-    pointer-events: none;
-    border-radius: 0.25rem 0.25rem 0.25rem 0;
-    color: #f1f1f4;
-    font-size: 12px;
-    font-style: normal;
-    font-weight: 600;
-    left: -1px;
-    line-height: normal;
-    padding: 0.1rem 0.3rem;
-    position: absolute;
-    top: -1.4em;
-    user-select: none;
-    white-space: nowrap;
-    z-index: 1;
   }
 
   cmark {
