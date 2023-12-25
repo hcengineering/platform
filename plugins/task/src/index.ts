@@ -31,7 +31,7 @@ import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
 import { Action, IconProps, ViewletDescriptor } from '@hcengineering/view'
-import { NotificationType } from '../../notification/lib/index'
+import { NotificationType } from '@hcengineering/notification'
 
 /**
  * @public
