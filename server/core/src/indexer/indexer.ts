@@ -402,7 +402,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
                   limit: globalIndexer.processingSize,
                   sort: {
                     _id: 1
-                  }
+                  },
+                   total: true
                 }
               )
           )
@@ -568,7 +569,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     }
     return toIndex
   }
-
+  // TODO: Move to migration 
   async checkIndexConsistency (dbStorage: ServerStorage): Promise<void> {
     await rateLimitter.exec(async () => {
       if (process.env.MODEL_VERSION !== undefined) {
@@ -607,23 +608,29 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           if (this.cancelling) {
             return
           }
-          const newDocs: DocIndexState[] = (
-            await dbStorage.findAll<Doc>(
-              this.metrics,
-              c,
-              { _class: c, _id: { $nin: states } },
-              { limit: 1000, projection: { _id: 1, attachedTo: 1, attachedToClass: 1 } as any }
-            )
-          ).map((it) => {
-            return createStateDoc(it._id, c, {
-              stages: {},
-              attributes: {},
-              removed: false,
-              space: it.space,
-              attachedTo: (it as AttachedDoc)?.attachedTo ?? undefined,
-              attachedToClass: (it as AttachedDoc)?.attachedToClass ?? undefined
+          let newDocs: DocIndexState[] = []
+          try {
+            newDocs = (
+              await dbStorage.findAll<Doc>(
+                this.metrics,
+                c,
+                { _class: c, _id: { $nin: states } },
+                { limit: 500, projection: { _id: 1, attachedTo: 1, attachedToClass: 1 } as any }
+              )
+            ).map((it) => {
+              return createStateDoc(it._id, c, {
+                stages: {},
+                attributes: {},
+                removed: false,
+                space: it.space,
+                attachedTo: (it as AttachedDoc)?.attachedTo ?? undefined,
+                attachedToClass: (it as AttachedDoc)?.attachedToClass ?? undefined
+              })
             })
-          })
+          } catch (e) {
+            console.error(e)
+            break
+          }
 
           states.push(...newDocs.map((it) => it._id))
 
