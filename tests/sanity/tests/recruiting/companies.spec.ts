@@ -78,4 +78,24 @@ test.describe('Companies tests', () => {
     await companyDetailsPage.editCompany(editCompany)
     await companyDetailsPage.checkCompany(editCompany)
   })
+
+  test('Delete a Company', async ({ page }) => {
+    const deleteCompany: NewCompany = {
+      name: `Delete Company-${generateId()}`
+    }
+
+    const navigationMenuPage = new NavigationMenuPage(page)
+    await navigationMenuPage.buttonCompanies.click()
+
+    const companiesPage = new CompaniesPage(page)
+    await companiesPage.createNewCompany(deleteCompany)
+    await companiesPage.openCompanyByName(deleteCompany.name)
+
+    const companyDetailsPage = new CompanyDetailsPage(page)
+    await companyDetailsPage.checkCompany(deleteCompany)
+    await companyDetailsPage.deleteEntity()
+
+    await navigationMenuPage.buttonCompanies.click()
+    await companiesPage.checkCompanyNotExist(deleteCompany.name)
+  })
 })
