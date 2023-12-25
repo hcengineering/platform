@@ -166,10 +166,10 @@
       border-color: inherit;
       border-style: solid;
       border-radius: 0 2px 2px 0;
-      border-width: 2.5px;
-      height: 5px;
-      width: 5px;
-      top: -2px;
+      border-width: 2px;
+      height: 4px;
+      width: 4px;
+      top: -3px;
       left: -1px;
     }
 
@@ -201,6 +201,7 @@
     top: -1.4em;
     user-select: none;
     white-space: nowrap;
+    z-index: 1;
   }
 
   cmark {

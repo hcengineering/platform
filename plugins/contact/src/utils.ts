@@ -16,8 +16,20 @@
 import { AttachedData, Class, Client, Doc, FindResult, Ref, Hierarchy } from '@hcengineering/core'
 import { IconSize, ColorDefinition } from '@hcengineering/ui'
 import { MD5 } from 'crypto-js'
-import { Channel, Contact, contactPlugin, Person } from '.'
+import { AvatarType, Channel, Contact, contactPlugin, Person } from '.'
 import { AVATAR_COLORS, GravatarPlaceholderType } from './types'
+
+/**
+ * @public
+ */
+export function getAvatarColor (contact: Contact, darkTheme: boolean): string {
+  const avatar = contact.avatar ?? ''
+  const [type, color] = avatar.split('://')
+  if (type === AvatarType.COLOR) {
+    return color
+  }
+  return getAvatarColorForId(contact._id)
+}
 
 /**
  * @public
