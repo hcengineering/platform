@@ -402,8 +402,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
                   limit: globalIndexer.processingSize,
                   sort: {
                     _id: 1
-                  },
-                   total: true
+                  }
                 }
               )
           )
@@ -439,8 +438,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
               `Full text: Indexing ${this.indexId} ${st.stageId}`,
               Object.entries(this.currentStages)
                 .map((it) => `${it[0]}:${it[1]}`)
-                .join(' '),
-              result.total
+                .join(' ')
             )
           } else {
             // Nothing to index, check on next cycle.
@@ -569,7 +567,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     }
     return toIndex
   }
-  // TODO: Move to migration 
+
+  // TODO: Move to migration
   async checkIndexConsistency (dbStorage: ServerStorage): Promise<void> {
     await rateLimitter.exec(async () => {
       if (process.env.MODEL_VERSION !== undefined) {

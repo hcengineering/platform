@@ -132,7 +132,7 @@ export function docUpdKey (name: string, opt?: IndexKeyOptions): string {
  */
 export function docKey (name: string, opt?: IndexKeyOptions): string {
   const extra = opt?.extra !== undefined && opt?.extra?.length > 0 ? `#${opt.extra?.join('#') ?? ''}` : ''
-  return (opt?._class === undefined ? name : `${opt?._class}%${name}${extra}`)
+  return opt?._class === undefined ? name : `${opt?._class}%${name}${extra}`
 }
 
 /**
