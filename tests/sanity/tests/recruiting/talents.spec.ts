@@ -4,6 +4,7 @@ import { NavigationMenuPage } from '../model/recruiting/navigation-menu-page'
 import { TalentsPage } from '../model/recruiting/talents-page'
 import { TalentDetailsPage } from '../model/recruiting/talent-details-page'
 import { allure } from 'allure-playwright'
+import { TalentName } from '../model/recruiting/types'
 
 test.use({
   storageState: PlatformSetting
@@ -161,5 +162,21 @@ test.describe('candidate/talents tests', () => {
     await expect(talentDetailsPage.inputLocation).toHaveValue('Awesome Location Merge1')
     await expect(talentDetailsPage.page.locator('button > span', { hasText: titleTalent2 })).toBeVisible()
     await expect(talentDetailsPage.page.locator('button > span', { hasText: sourceTalent2 })).toBeVisible()
+  })
+
+  test('Match to vacancy', async ({ page, context }) => {
+    const talentName: TalentName = {
+      firstName: 'Software',
+      lastName: `Engineer-${generateId(4)}`
+    }
+
+    const navigationMenuPage = new NavigationMenuPage(page)
+    await navigationMenuPage.buttonTalents.click()
+
+    const talentsPage = new TalentsPage(page)
+    await talentsPage.createNewTalentWithName(talentName.firstName, talentName.lastName)
+
+    await talentsPage.rightClickAction(talentName, 'Match to vacancy')
+    await talentsPage.checkMatchVacancy(`${talentName.lastName} ${talentName.firstName}`, '0.5')
   })
 })
