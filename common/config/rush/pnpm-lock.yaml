@@ -1022,6 +1022,9 @@ dependencies:
   mongodb:
     specifier: ^4.11.0
     version: 4.17.1
+  morgan:
+    specifier: ^1.10.0
+    version: 1.10.0
   msgpackr:
     specifier: ^1.8.5
     version: 1.9.9
@@ -7259,6 +7262,12 @@ packages:
       '@types/node': 16.11.68
     dev: false
 
+  /@types/morgan@1.9.9:
+    resolution: {integrity: sha512-iRYSDKVaC6FkGSpEVVIvrRGw0DfJMiQzIn3qr2G5B3C//AWkulhXgaBd7tS9/J79GWSYMTHGs7PfI5b3Y8m+RQ==}
+    dependencies:
+      '@types/node': 16.11.68
+    dev: false
+
   /@types/node-fetch@2.6.6:
     resolution: {integrity: sha512-95X8guJYhfqiuVVhRFxVQcf4hW/2bCuoPwDasMf/531STFoNoWTT7YDnWdXHEZKqAGUigmpG31r2FE70LwnzJw==}
     dependencies:
@@ -13356,6 +13365,17 @@ packages:
     resolution: {integrity: sha512-YRIr1exCIfBDLZle8WHOfSo7Xg3M+phcZfq9Fx1L6Abo+atGp7cge5pM7PjyBn4s1oZI/BRD4EMrzQBbPpVb5Q==}
     dev: false
 
+  /morgan@1.10.0:
+    resolution: {integrity: sha512-AbegBVI4sh6El+1gNwvD5YIck7nSA36weD7xvIxG4in80j/UoK8AEGaWnnz8v1GxonMCltmlNs5ZKbGvl9b1XQ==}
+    engines: {node: '>= 0.8.0'}
+    dependencies:
+      basic-auth: 2.0.1
+      debug: 2.6.9
+      depd: 2.0.0
+      on-finished: 2.3.0
+      on-headers: 1.0.2
+    dev: false
+
   /mri@1.2.0:
     resolution: {integrity: sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA==}
     engines: {node: '>=4'}
@@ -18613,7 +18633,7 @@ packages:
     dev: false
 
   file:projects/front.tgz(esbuild@0.16.17)(svelte@4.2.5):
-    resolution: {integrity: sha512-xBechy2SGLSNUUN/rM60kyFJOJA8edlX2f/gqHk272BIfcsGXtUlPl8yPXv/H9zciOKSAUSy/6fMDZVNATVuqA==, tarball: file:projects/front.tgz}
+    resolution: {integrity: sha512-G4bpLQ5WO+t2ZP5hbCRzS4Zpzi1bwLhpC0hdhLTNkwFw6GUj38chkzMtzroD/cExV30MrjtntL5yQJ2n3yvv2A==, tarball: file:projects/front.tgz}
     id: file:projects/front.tgz
     name: '@rush-temp/front'
     version: 0.0.0
@@ -18624,6 +18644,7 @@ packages:
       '@types/express': 4.17.18
       '@types/express-fileupload': 1.4.2
       '@types/jest': 29.5.5
+      '@types/morgan': 1.9.9
       '@types/node': 16.11.68
       '@types/sharp': 0.32.0
       '@types/uuid': 8.3.4
@@ -18641,6 +18662,7 @@ packages:
       express: 4.18.2
       express-fileupload: 1.4.1
       jest: 29.7.0(@types/node@16.11.68)(ts-node@10.9.1)
+      morgan: 1.10.0
       prettier: 3.1.0
       prettier-plugin-svelte: 3.1.0(prettier@3.1.0)(svelte@4.2.5)
       sharp: 0.32.6
@@ -23558,7 +23580,7 @@ packages:
     dev: false
 
   file:projects/telegram-resources.tgz(@types/node@16.11.68)(esbuild@0.16.17)(postcss-load-config@4.0.1)(postcss@8.4.31)(ts-node@10.9.1):
-    resolution: {integrity: sha512-qrqvq8PmtA09Sn9AOCaId5Zupe804Fw4t6pRfrDPlmYm39aemhZ+QHAyUIvg2kr/yo0jNRwXg4g3DBpUbUTRhA==, tarball: file:projects/telegram-resources.tgz}
+    resolution: {integrity: sha512-xz5vevvHFXT/WIU4CCz9TPJUwGOgAUtiEgcJFYsWwzFUUL5Mz2ImUG0GkV9wQeAfkjaz0KiKD6YWe78Ir9WD5w==, tarball: file:projects/telegram-resources.tgz}
     id: file:projects/telegram-resources.tgz
     name: '@rush-temp/telegram-resources'
     version: 0.0.0
