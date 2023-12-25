@@ -19,6 +19,7 @@ export class CommonRecruitingPage extends CalendarPage {
   readonly inputSocialValue: Locator
   readonly buttonSocialCancel: Locator
   readonly buttonSocialSave: Locator
+  readonly textActivity: Locator
   readonly buttonContactLinkedIn: Locator
 
   constructor (page: Page) {
@@ -42,6 +43,7 @@ export class CommonRecruitingPage extends CalendarPage {
     this.inputSocialValue = page.locator('div.popup input.search')
     this.buttonSocialCancel = page.locator('div.popup button[type="button"]:not([id])')
     this.buttonSocialSave = page.locator('button#channel-ok')
+    this.textActivity = page.locator('div.header')
     this.buttonContactLinkedIn = page.locator(
       'div[class^="popupPanel-body"] div.horizontal button[id="contact:string:LinkedIn"]'
     )
@@ -119,5 +121,14 @@ export class CommonRecruitingPage extends CalendarPage {
       default:
         throw new Error(`Unknown case ${link}`)
     }
+  }
+
+  async moreActionOn (action: string): Promise<void> {
+    await this.buttonMoreActions.click()
+    await this.selectFromDropdown(this.page, action)
+  }
+
+  async checkActivityExist (activity: string): Promise<void> {
+    await expect(this.textActivity.filter({ hasText: activity })).toBeVisible()
   }
 }
