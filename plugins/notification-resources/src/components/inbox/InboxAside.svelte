@@ -110,13 +110,14 @@
   {/if}
 
   {#if object}
-    <!--TODO: provide component or config by models to avoid chunter using-->
     <ActivityScrolledView
       bind:isLoading
       selectedMessageId={_id}
       {object}
       lastViewedTimestamp={notifyContext?.lastViewedTimestamp}
-      _class={hierarchy.isDerived(object._class, chunter.class.ChunterSpace) ? chunter.class.ChatMessage : undefined}
+      _class={hierarchy.isDerived(object._class, chunter.class.ChunterSpace)
+        ? chunter.class.ChatMessage
+        : activity.class.ActivityMessage}
       skipLabels={hierarchy.isDerived(object._class, chunter.class.ChunterSpace)}
     />
   {/if}
