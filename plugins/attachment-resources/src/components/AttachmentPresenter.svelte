@@ -37,14 +37,16 @@
     const ext = parts[parts.length - 1]
     return ext.substring(0, 4).toUpperCase()
   }
-  function isImage (contentType: string) {
+  function isImage (contentType: string): boolean {
     return contentType.startsWith('image/')
   }
-  function openEmbedded (contentType: string) {
-    return contentType.includes('application/pdf') || contentType.startsWith('image/')
+  function openEmbedded (contentType: string): boolean {
+    return (
+      contentType.includes('application/pdf') || contentType.startsWith('image/') || contentType.startsWith('video/')
+    )
   }
 
-  function clickHandler (e: MouseEvent) {
+  function clickHandler (e: MouseEvent): void {
     if (!openEmbedded(value.type)) return
     e.preventDefault()
     e.stopPropagation()
@@ -60,7 +62,7 @@
     )
   }
 
-  function middleClickHandler (e: MouseEvent) {
+  function middleClickHandler (e: MouseEvent): void {
     if (e.button !== 1) return
     e.preventDefault()
     e.stopPropagation()
