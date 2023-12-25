@@ -13,15 +13,7 @@
 // limitations under the License.
 //
 
-import { type Class, type TxOperations } from '@hcengineering/core'
-import { type Question } from '@hcengineering/survey'
-
-import survey from '../plugin'
-
-export function getEditableQuestionClasses (client: TxOperations): Array<Class<Question>> {
-  const hierarchy = client.getHierarchy()
-  return hierarchy
-    .getDescendants(survey.class.Question)
-    .map((classRef) => hierarchy.getClass(classRef))
-    .filter((_class) => hierarchy.hasMixin(_class, survey.mixin.QuestionEditor))
-}
+export * from './base'
+export * from './MultipleChoice'
+export * from './Reorder'
+export * from './SingleChoice'

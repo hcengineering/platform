@@ -17,19 +17,14 @@ import { type Builder } from '@hcengineering/model'
 import { type Class, type Ref } from '@hcengineering/core'
 import core from '@hcengineering/model-core'
 import workbench from '@hcengineering/model-workbench'
-import {
-  type Question,
-  type QuestionEditor,
-  type QuestionEditorComponentTypeRef,
-  surveyId
-} from '@hcengineering/survey'
+import { type Question, type QuestionType, surveyId } from '@hcengineering/survey'
 import survey from './plugin'
 import view from '@hcengineering/model-view'
 import {
   TAnswer,
   TMultipleChoiceQuestion,
   TQuestion,
-  TQuestionEditor,
+  TQuestionType,
   TReorderQuestion,
   TSingleChoiceQuestion,
   TSurvey,
@@ -59,14 +54,12 @@ export function createModel (builder: Builder): void {
 }
 
 // TODO: Can we make it a decorator for model classes?
-export function defineQuestionEditor<Q extends Question> (
+export function defineQuestionType<Q extends Question> (
   builder: Builder,
   questionClassRef: Ref<Class<Q>>,
-  editor: QuestionEditorComponentTypeRef<Q>
+  attributes: Pick<QuestionType<Q>, 'editor' | 'initQuestion' | 'initAssessmentData'>
 ): void {
-  builder.mixin<Class<Q>, QuestionEditor<Q>>(questionClassRef, core.class.Class, survey.mixin.QuestionEditor, {
-    editor
-  })
+  builder.mixin<Class<Q>, QuestionType<Q>>(questionClassRef, core.class.Class, survey.mixin.QuestionType, attributes)
 }
 
 function defineSurvey (builder: Builder): void {
@@ -123,13 +116,21 @@ function defineQuestion (builder: Builder): void {
 }
 
 function defineQuestionTypes (builder: Builder): void {
-  builder.createModel(TQuestionEditor)
+  builder.createModel(TQuestionType)
 
   builder.createModel(TTypeSingleChoiceAssessmentData, TSingleChoiceQuestion)
-  defineQuestionEditor(builder, survey.class.SingleChoiceQuestion, survey.component.ChoiceQuestionEditor)
+  defineQuestionType(builder, survey.class.SingleChoiceQuestion, {
+    editor: survey.component.SingleChoiceQuestionEditor,
+    initQuestion: survey.function.SingleChoiceInitQuestion,
+    initAssessmentData: survey.function.SingleChoiceInitAssessmentData
+  })
 
   builder.createModel(TTypeMultipleChoiceAssessmentData, TMultipleChoiceQuestion)
-  defineQuestionEditor(builder, survey.class.MultipleChoiceQuestion, survey.component.ChoiceQuestionEditor)
+  defineQuestionType(builder, survey.class.MultipleChoiceQuestion, {
+    editor: survey.component.MultipleChoiceQuestionEditor,
+    initQuestion: survey.function.MultipleChoiceInitQuestion,
+    initAssessmentData: survey.function.MultipleChoiceInitAssessmentData
+  })
 
   builder.createModel(TTypeReorderAssessmentData, TReorderQuestion)
   // TODO: define editor

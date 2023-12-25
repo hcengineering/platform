@@ -24,18 +24,18 @@
     IconDelete,
     IconDown,
     IconUp,
-    Label,
     showPopup
   } from '@hcengineering/ui'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Question, Survey } from '@hcengineering/survey'
   import { Class, Ref, SortingOrder } from '@hcengineering/core'
-  import { questionCreate } from '../functions/questionCreate'
-  import { questionInit } from '../functions/questionInit'
+  import { questionCreate } from '../utils/questionCreate'
   import QuestionEditor from './QuestionCollectionItemEditor.svelte'
-  import { questionDelete } from '../functions/questionDelete'
-  import { questionUpdate } from '../functions/questionUpdate'
-  import { getEditableQuestionClasses } from '../functions/getEditableQuestionClasses'
+  import { questionDelete } from '../utils/questionDelete'
+  import { questionUpdate } from '../utils/questionUpdate'
+  import { getEditableQuestionClasses } from '../utils/getEditableQuestionClasses'
+  import { themeStore } from '@hcengineering/theme'
+  import { questionInit } from '../utils/questionInit'
 
   export let object: Survey
 
@@ -75,8 +75,17 @@
         }
         const prevQuestion = index === null ? null : questions[index] ?? null
         const nextQuestion = (index === null ? questions[0] : questions[index + 1]) ?? null
-        const question = questionInit(client, prevQuestion?.rank ?? null, nextQuestion?.rank ?? null, classRef)
-        await questionCreate(client, object, question)
+        const question = await questionInit(
+          $themeStore.language,
+          client.getHierarchy(),
+          classRef,
+          prevQuestion?.rank ?? null,
+          nextQuestion?.rank ?? null
+        )
+        await questionCreate<Question>(client, object, {
+          ...question,
+          _class: classRef
+        })
       }
     )
   }
@@ -100,16 +109,12 @@
 </script>
 
 <div class="antiSection">
-  <div class="antiSection-header">
-    <span class="antiSection-header__title">
-      <Label label={survey.string.Questions} />
-    </span>
-  </div>
-
   {#each questions as question, index (question._id)}
     {#if index === 0}
-      <div class="divider">
-        <Button icon={IconAdd} shape="circle" size="x-small" on:click={(e) => onClickAdd(e, null)} />
+      <div class="divider divider-first">
+        <div class="divider--button">
+          <Button icon={IconAdd} shape="circle" kind="regular" size="small" on:click={(e) => onClickAdd(e, null)} />
+        </div>
       </div>
     {/if}
 
@@ -118,6 +123,7 @@
         icon={IconUp}
         shape="circle"
         kind="ghost"
+        size="medium"
         disabled={index === 0 || isMoving}
         on:click={() => {
           void onClickMove(index, true)
@@ -127,6 +133,7 @@
         icon={IconDown}
         shape="circle"
         kind="ghost"
+        size="medium"
         disabled={index === questions.length - 1 || isMoving}
         on:click={() => {
           void onClickMove(index, false)
@@ -136,13 +143,16 @@
         icon={IconDelete}
         shape="circle"
         kind="ghost"
+        size="medium"
         on:click={() => {
           void onClickDelete(index)
         }}
       />
     </QuestionEditor>
     <div class="divider">
-      <Button icon={IconAdd} shape="circle" size="small" on:click={(e) => onClickAdd(e, index)} />
+      <div class="divider--button">
+        <Button icon={IconAdd} shape="circle" kind="regular" size="small" on:click={(e) => onClickAdd(e, index)} />
+      </div>
     </div>
   {:else}
     <div class="antiSection-empty mt-4">
@@ -159,30 +169,38 @@
 </div>
 
 <style lang="scss">
+  .no-border {
+    border-bottom: none;
+  }
+
   .divider {
-    color: var(--theme-content-color);
+    align-items: center;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    gap: 0.25rem;
-    margin: 0.25rem;
-    opacity: 0;
-    padding: 0 2rem;
-    transition: opacity 0.16s;
+    margin: -1rem 0 0;
+    overflow: visible;
+    padding: 1rem 0;
     width: 100%;
 
     &:before,
     &:after {
-      content: ' ';
+      background-color: var(--theme-divider-color);
+      content: '';
       height: 1px;
       width: 100%;
-      min-height: 1px;
-      background-color: var(--theme-divider-color);
     }
 
-    &:hover,
-    &:focus-within {
-      opacity: 1;
+    &--button {
+      display: none;
+      padding-left: 0.25rem;
+      padding-right: 0.25rem;
+      position: relative;
+      margin: -1em auto -1em;
+      z-index: 1;
+    }
+
+    &:hover &--button {
+      display: inherit;
     }
   }
 </style>

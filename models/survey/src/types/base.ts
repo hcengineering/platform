@@ -25,7 +25,6 @@ import {
 import core, { TAttachedDoc, TClass, TSpace, TType } from '@hcengineering/model-core'
 
 import {
-  ArrOf,
   Collection,
   Hidden,
   Index,
@@ -39,23 +38,19 @@ import {
   TypeString,
   UX
 } from '@hcengineering/model'
-import survey from './plugin'
+import survey from '../plugin'
 import {
   type Answer,
-  type AnswerData,
+  type AnswerDataOf,
   type AssessmentData,
   type Fraction,
-  type MultipleChoiceAssessmentData,
-  type MultipleChoiceQuestion,
   type Question,
-  type QuestionEditor,
-  type QuestionEditorComponentTypeRef,
   type QuestionOption,
+  type QuestionType,
+  type QuestionTypeEditorComponentType,
+  type QuestionTypeInitAssessmentDataFunction,
+  type QuestionTypeInitQuestionFunction,
   type Rank,
-  type ReorderAssessmentData,
-  type ReorderQuestion,
-  type SingleChoiceAssessmentData,
-  type SingleChoiceQuestion,
   type Survey,
   type SurveyRequest,
   type SurveyResult
@@ -63,6 +58,7 @@ import {
 import attachment from '@hcengineering/model-attachment'
 import { type Attachment } from '@hcengineering/attachment'
 import contact, { type Person } from '@hcengineering/contact'
+import { type Resource } from '@hcengineering/platform'
 
 export const DOMAIN_SURVEY = 'survey' as Domain
 
@@ -113,12 +109,14 @@ export class TSurvey extends TSpace implements Survey {
     questions: CollectionSize<Question> = 0
 
   @Prop(Collection(survey.class.SurveyRequest), survey.string.SurveyRequests, { defaultValue: 0 })
-    requests: CollectionSize<Question> = 0
+    requests: CollectionSize<SurveyRequest> = 0
 }
 
 /** @public */
 @Model(survey.class.Question, core.class.AttachedDoc, DOMAIN_SURVEY)
-export class TQuestion extends TAttachedDoc implements Question {
+export class TQuestion<TAnswerData, TAssessmentData extends AssessmentData>
+  extends TAttachedDoc
+  implements Question<TAnswerData, TAssessmentData> {
   @Prop(TypeRef(survey.class.Survey), core.string.Space)
   @Index(IndexKind.Indexed)
   @Hidden()
@@ -153,7 +151,7 @@ export class TQuestion extends TAttachedDoc implements Question {
   })
     attachments: CollectionSize<Attachment> = 0
 
-  assessment?: AssessmentData<this>
+  assessment: TAssessmentData | null = null
 }
 
 /** @public */
@@ -164,78 +162,6 @@ export class TTypeQuestionOption extends TType {}
 /** @public */
 export function TypeQuestionOption (): Type<QuestionOption> {
   return { _class: survey.class.TypeQuestionOption, label: survey.string.Option }
-}
-
-/** @public */
-@UX(survey.string.SingleChoice)
-@Model(survey.class.TypeSingleChoiceAssessmentData, core.class.Type)
-export class TTypeSingleChoiceAssessmentData extends TType {}
-
-/** @public */
-export function TypeSingleChoiceAssessmentData (): Type<SingleChoiceAssessmentData> {
-  return { _class: survey.class.TypeSingleChoiceAssessmentData, label: survey.string.SingleChoice }
-}
-
-/** @public */
-@Model(survey.class.SingleChoiceQuestion, survey.class.Question)
-@UX(survey.string.SingleChoice, survey.icon.RadioButton)
-export class TSingleChoiceQuestion extends TQuestion implements SingleChoiceQuestion {
-  @Prop(ArrOf(TypeQuestionOption()), survey.string.Options, { defaultValue: [] })
-    options: QuestionOption[] = []
-
-  @Prop(TypeBoolean(), survey.string.Shuffle, { defaultValue: false })
-    shuffle: boolean = false
-
-  @Prop(TypeSingleChoiceAssessmentData(), survey.string.Assessment)
-  override assessment?: SingleChoiceAssessmentData = undefined
-}
-
-/** @public */
-@UX(survey.string.MultipleChoice)
-@Model(survey.class.TypeMultipleChoiceAssessmentData, core.class.Type)
-export class TTypeMultipleChoiceAssessmentData extends TType {}
-
-/** @public */
-export function TypeMultipleChoiceAssessmentData (): Type<MultipleChoiceAssessmentData> {
-  return { _class: survey.class.TypeMultipleChoiceAssessmentData, label: survey.string.MultipleChoice }
-}
-
-/** @public */
-@Model(survey.class.MultipleChoiceQuestion, survey.class.Question)
-@UX(survey.string.MultipleChoice, survey.icon.Checkbox)
-export class TMultipleChoiceQuestion extends TQuestion implements MultipleChoiceQuestion {
-  @Prop(ArrOf(TypeQuestionOption()), survey.string.Options, { defaultValue: [] })
-    options: QuestionOption[] = []
-
-  @Prop(TypeBoolean(), survey.string.Shuffle, { defaultValue: false })
-    shuffle: boolean = false
-
-  @Prop(TypeMultipleChoiceAssessmentData(), survey.string.Assessment)
-  override assessment?: MultipleChoiceAssessmentData = undefined
-}
-
-/** @public */
-@UX(survey.string.Reorder)
-@Model(survey.class.TypeReorderAssessmentData, core.class.Type)
-export class TTypeReorderAssessmentData extends TType {}
-
-/** @public */
-export function TypeReorderAssessmentData (): Type<ReorderAssessmentData> {
-  return { _class: survey.class.TypeReorderAssessmentData, label: survey.string.Reorder }
-}
-
-/** @public */
-@Model(survey.class.ReorderQuestion, survey.class.Question)
-@UX(survey.string.Reorder, survey.icon.Drag)
-export class TReorderQuestion extends TQuestion implements ReorderQuestion {
-  @Prop(ArrOf(TypeQuestionOption()), survey.string.Options, { defaultValue: [] })
-    options: QuestionOption[] = []
-
-  @Prop(TypeBoolean(), survey.string.Shuffle, { defaultValue: false })
-    shuffle: boolean = false
-
-  @Prop(TypeReorderAssessmentData(), survey.string.Assessment)
-  override assessment?: ReorderAssessmentData = undefined
 }
 
 /** @public */
@@ -303,7 +229,7 @@ export class TSurveyResult extends TAttachedDoc implements SurveyResult {
 export class TTypeAnswerData extends TType {}
 
 /** @public */
-export function TypeAnswerData (): Type<AnswerData<any>> {
+export function TypeAnswerData (): Type<AnswerDataOf<any>> {
   return { _class: survey.class.TypeAnswerData, label: survey.string.Answer }
 }
 
@@ -341,7 +267,7 @@ export class TAnswer<Q extends Question> extends TAttachedDoc implements Answer<
     question!: Ref<Q>
 
   @Prop(TypeAnswerData(), survey.string.Answer)
-    answer!: AnswerData<Q>
+    answer!: AnswerDataOf<Q>
 
   @Prop(TypeFraction(), survey.string.Score)
   @Index(IndexKind.Indexed)
@@ -349,7 +275,9 @@ export class TAnswer<Q extends Question> extends TAttachedDoc implements Answer<
 }
 
 /** @public */
-@Mixin(survey.mixin.QuestionEditor, core.class.Class)
-export class TQuestionEditor<Q extends Question> extends TClass implements QuestionEditor<Q> {
-  editor!: QuestionEditorComponentTypeRef<Q>
+@Mixin(survey.mixin.QuestionType, core.class.Class)
+export class TQuestionType<Q extends Question> extends TClass implements QuestionType<Q> {
+  editor!: Resource<QuestionTypeEditorComponentType<Q>>
+  initQuestion!: Resource<QuestionTypeInitQuestionFunction<Q>>
+  initAssessmentData?: Resource<QuestionTypeInitAssessmentDataFunction<Q>>
 }

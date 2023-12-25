@@ -13,20 +13,7 @@
 // limitations under the License.
 //
 
-import { type Question, type Survey } from '@hcengineering/survey'
-import { type AttachedData, type Ref, type TxOperations } from '@hcengineering/core'
-
-export async function questionCreate<Q extends Question> (
-  client: TxOperations,
-  survey: Survey,
-  question: AttachedData<Q> & Pick<Q, '_class'>
-): Promise<Ref<Question>> {
-  return await client.addCollection<Survey, Q>(
-    question._class,
-    survey._id,
-    survey._id,
-    survey._class,
-    'questions',
-    question
-  )
-}
+export * from './base'
+export * from './MultipleChoice'
+export * from './Reorder'
+export * from './SingleChoice'

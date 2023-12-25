@@ -14,15 +14,17 @@
 -->
 
 <script lang="ts">
-  import { Button, EditBox, Icon, Label, Loading } from '@hcengineering/ui'
+  import { Button, CheckBox, EditBox, Label, Loading, tooltip } from '@hcengineering/ui'
   import { getClient } from '@hcengineering/presentation'
-  import { Question } from '@hcengineering/survey'
+  import { Question, QuestionType, QuestionTypeInitAssessmentDataFunction } from '@hcengineering/survey'
   import { Class } from '@hcengineering/core'
   import survey from '../plugin'
   import { ComponentType } from 'svelte'
   import { getResource } from '@hcengineering/platform'
-  import { questionUpdate } from '../functions/questionUpdate'
+  import { questionUpdate } from '../utils/questionUpdate'
   import { deepEqual } from 'fast-equals'
+  import { StyledTextBox } from '@hcengineering/text-editor'
+  import { themeStore } from '@hcengineering/theme'
 
   // TODO: Move to `generics` attribute when IDE supports it
   //  https://youtrack.jetbrains.com/issue/WEB-57377
@@ -35,10 +37,12 @@
   const hierarchy = client.getHierarchy()
 
   let questionClass: Class<Q>
-  let questionEditorComponent: Promise<ComponentType>
+  let questionType: QuestionType<Q>
+  let questionEditorComponentPromise: Promise<ComponentType>
   $: if (object._class !== questionClass?._id) {
     questionClass = hierarchy.getClass<Q>(object._class)
-    questionEditorComponent = getResource(hierarchy.as(questionClass, survey.mixin.QuestionEditor).editor)
+    questionType = hierarchy.as(questionClass, survey.mixin.QuestionType)
+    questionEditorComponentPromise = getResource(questionType.editor)
   }
 
   // A copy of current object to be passed to nested editor
@@ -52,30 +56,59 @@
 
   let isPreviewing = false
   let isSubmitting = false
+  let isAssessable: boolean
+
+  $: isAssessable = draft.assessment !== null
 
   async function submit (data: Partial<Q>): Promise<void> {
     isSubmitting = true
     await questionUpdate(client, object, data)
     isSubmitting = false
   }
+
+  async function onTitleChange (title: string): Promise<void> {
+    draft.title = title
+    await submit({ title: draft.title })
+  }
+
+  async function onWeightChange (): Promise<void> {
+    await submit({ assessment: draft.assessment })
+  }
+
+  async function onAssessmentToggle (on: boolean): Promise<void> {
+    if (questionType.initAssessmentData === undefined) {
+      return
+    }
+    if (on) {
+      const initAssessmentData = await getResource<QuestionTypeInitAssessmentDataFunction<Q>>(
+        questionType.initAssessmentData
+      )
+      draft = {
+        ...draft,
+        assessment: await initAssessmentData($themeStore.language, hierarchy, object)
+      }
+    } else {
+      draft = {
+        ...draft,
+        assessment: null
+      }
+    }
+    await submit({ assessment: draft.assessment })
+  }
 </script>
 
-<div class="root border-divider-color">
-  <div
-    class="flex flex-row-center flex-stretch flex-gap-1 background-comp-header-color bottom-divider pl-4 pr-4 pt-1 pb-1"
-  >
-    <div class="index">{index + 1}.</div>
-    <div class="flex flex-row-center flex-gap-1 flex-grow">
-      {#if isSubmitting}
-        <Loading size="inline" shrink />
-      {:else if questionClass.icon}
-        <Icon icon={questionClass.icon} size="small" />
-      {/if}
-      <Label label={questionClass.label} />
+<form class="root-editor pt-1 pb-6 pr-2">
+  <div class="flex flex-row-center">
+    <div class="flex-grow content-color">
+      {index + 1}. <Label label={questionClass.label} />
     </div>
+    {#if isSubmitting}
+      <Loading size="inline" shrink />
+    {/if}
     <Button
       icon={survey.icon.Eye}
       shape="circle"
+      size="medium"
       kind={isPreviewing ? 'primary' : 'ghost'}
       on:click={() => {
         isPreviewing = !isPreviewing
@@ -83,26 +116,58 @@
     />
     <slot />
   </div>
-  <form class="root-editor pl-4 pt-4 pb-4 pr-4">
-    <div class="mb-4 clear-mins">
-      <EditBox
-        bind:value={draft.title}
-        on:change={() => {
-          void submit({ title: draft.title })
-        }}
-        kind="large-style"
-        autoFocus
-        fullSize
-        disabled={isPreviewing}
-      />
+  <div class="flex items-baseline justify-end flex-wrap">
+    <div class="flex-grow text-lg mb-2">
+      <!--
+        TODO: Ugly hack to force complete re-render and re-mount of StyledTextBox,
+          to avoid phantom format panels in nested TextEditor. See TextEditor comments for more details
+      -->
+      {#key index}
+        <StyledTextBox
+          mode={isPreviewing ? 1 : 2}
+          hideExtraButtons
+          isScrollable={false}
+          showButtons={false}
+          content={draft.title}
+          on:blur={(e) => onTitleChange(e.detail)}
+        />
+      {/key}
     </div>
-    {#await questionEditorComponent}
-      <Loading />
-    {:then instance}
-      <svelte:component this={instance} editable={!isPreviewing} object={draft} {submit} />
-    {/await}
-  </form>
-</div>
-
-<style lang="scss">
-</style>
+    {#if questionType.initAssessmentData !== undefined}
+      <div class="flex-row-center mr-2 flex-gap-2 flex-no-shrink">
+        <CheckBox
+          readonly={isPreviewing}
+          kind="positive"
+          size="medium"
+          circle
+          checked={isAssessable}
+          on:value={(e) => onAssessmentToggle(e.detail)}
+        />
+        <Label label={survey.string.Assessment} />
+        {#if draft.assessment !== null}
+          <div
+            use:tooltip={{
+              label: survey.string.QuestionWeight,
+              direction: 'right'
+            }}
+          >
+            <EditBox
+              format="number"
+              maxDigitsAfterPoint={1}
+              kind="default"
+              maxWidth="1.6rem"
+              disabled={isPreviewing}
+              bind:value={draft.assessment.weight}
+              on:blur={onWeightChange}
+            />
+          </div>
+        {/if}
+      </div>
+    {/if}
+  </div>
+  {#await questionEditorComponentPromise}
+    <Loading />
+  {:then instance}
+    <svelte:component this={instance} editable={!isPreviewing} object={draft} {submit} />
+  {/await}
+</form>

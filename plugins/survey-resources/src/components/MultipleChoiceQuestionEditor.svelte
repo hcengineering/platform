@@ -14,41 +14,35 @@
 -->
 
 <script lang="ts">
-  import { Button, EditBox, RadioButton, IconDelete, IconAdd, CheckBox } from '@hcengineering/ui'
+  import { Button, EditBox, IconDelete, IconAdd, CheckBox } from '@hcengineering/ui'
   import {
+    AssessmentDataOf,
     type MultipleChoiceQuestion,
-    type QuestionEditorComponentProps,
-    type SingleChoiceQuestion
+    type QuestionTypeEditorComponentProps
   } from '@hcengineering/survey'
-  import survey from '../plugin'
-  import { getClient } from '@hcengineering/presentation'
 
   // TODO: Move to `generics` attribute when IDE supports it
   //  https://youtrack.jetbrains.com/issue/WEB-57377
-  type Q = SingleChoiceQuestion | MultipleChoiceQuestion
+  type Q = MultipleChoiceQuestion
 
   /**
-   * Declared $$Props help TypeScript ensure that your component is a valid {@link QuestionEditorComponent}
+   * Declared $$Props help TypeScript ensure that your component properly implements {@link QuestionTypeEditorComponentType}
    * @see https://raqueebuddinaziz.com/blog/svelte-type-events-slots-and-props/#restprops-props
    */
-  interface $$Props extends QuestionEditorComponentProps<Q> {}
+  interface $$Props extends QuestionTypeEditorComponentProps<Q> {}
 
   export let object: Q
   export let editable = true
   export let submit: (data: Partial<Q>) => Promise<void>
 
   const inputs: EditBox[] = []
-  const hierarchy = getClient().getHierarchy()
 
   let draft: string = ''
-  let useCheckboxes: boolean
-  let useRadioButtons: boolean
-
-  $: useCheckboxes = hierarchy.isDerived(object._class, survey.class.MultipleChoiceQuestion)
-  $: useRadioButtons = hierarchy.isDerived(object._class, survey.class.SingleChoiceQuestion)
 
   function appendOption (): void {
-    update({ options: [...object.options, { label: draft }] })
+    update({
+      options: [...object.options, { label: draft }]
+    })
     setTimeout(() => {
       inputs[object.options.length - 1].focus()
       draft = ''
@@ -56,26 +50,70 @@
   }
 
   function removeOptionAt (index: number): void {
-    if (object.options.length > 1) {
-      update({ options: [...object.options.slice(0, index), ...object.options.slice(index + 1)] })
+    if (object.options.length < 1) {
+      return
     }
+    const nextOptions = [...object.options.slice(0, index), ...object.options.slice(index + 1)]
+    const prevAssessment: AssessmentDataOf<MultipleChoiceQuestion> | null = object.assessment
+    let nextAssessment = prevAssessment
+    if (prevAssessment !== null) {
+      const selections = prevAssessment.correctAnswer.selections
+        .filter((i) => i !== index)
+        .map((i) => (i > index ? i - 1 : i))
+
+      nextAssessment = {
+        ...prevAssessment,
+        correctAnswer: {
+          ...prevAssessment.correctAnswer,
+          selections
+        }
+      }
+    }
+    update({
+      options: nextOptions,
+      assessment: nextAssessment
+    })
   }
 
   function update (data: Partial<Q> = {}): void {
     object = { ...object, ...data }
     void submit(object)
   }
+
+  function toggleIndex (index: number, on: boolean): boolean | undefined {
+    if (object.assessment === null) {
+      return undefined
+    }
+    const selections = new Set(object.assessment.correctAnswer.selections)
+    if (on) {
+      selections.add(index)
+    } else {
+      selections.delete(index)
+    }
+    update({
+      assessment: {
+        ...object.assessment,
+        correctAnswer: {
+          ...object.assessment.correctAnswer,
+          selections: Array.from(selections)
+        }
+      }
+    })
+  }
 </script>
 
-<form>
-  {#each object.options as _, index}
-    <div class="flex flex-row-center flex-stretch flex-gap-1 my-1 mx-4">
-      <div class="flex min-w-6">
-        {#if useCheckboxes}
-          <CheckBox readonly size="medium" />
-        {:else if useRadioButtons}
-          <RadioButton group={null} value={index} label="" disabled />
-        {/if}
+<div>
+  {#each object.options as _, index (index)}
+    <div class="flex flex-row-center flex-stretch flex-gap-1 my-1">
+      <div class="flex min-w-8 pl-2">
+        <CheckBox
+          readonly={!editable || object.assessment === null}
+          size="medium"
+          checked={object.assessment !== null && object.assessment.correctAnswer.selections.includes(index)}
+          on:value={(e) => {
+            toggleIndex(index, e.detail)
+          }}
+        />
       </div>
       <EditBox
         kind="default"
@@ -102,13 +140,9 @@
   {/each}
 
   {#if editable}
-    <div class="flex flex-row-center flex-stretch flex-gap-1 my-1 mx-4">
-      <div class="flex min-w-6">
-        {#if useCheckboxes}
-          <CheckBox readonly />
-        {:else if useRadioButtons}
-          <RadioButton group={null} value={-1} label="" disabled />
-        {/if}
+    <div class="flex flex-row-center flex-stretch flex-gap-1 my-1">
+      <div class="flex min-w-8 pl-2">
+        <CheckBox readonly size="medium" />
       </div>
       <EditBox
         kind="default"
@@ -129,7 +163,4 @@
       />
     </div>
   {/if}
-</form>
-
-<style lang="scss">
-</style>
+</div>

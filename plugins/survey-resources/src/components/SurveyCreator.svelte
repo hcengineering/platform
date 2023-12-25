@@ -18,8 +18,8 @@
   import { Card, getClient } from '@hcengineering/presentation'
   import survey from '../plugin'
   import { createEventDispatcher } from 'svelte'
-  import { surveyInit } from '../functions/surveyInit'
-  import { surveyCreate } from '../functions/surveyCreate'
+  import { surveyInit } from '../utils/surveyInit'
+  import { surveyCreate } from '../utils/surveyCreate'
 
   const client = getClient()
   const manager = createFocusManager()

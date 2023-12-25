@@ -18,14 +18,14 @@ import type { Class, Mixin, Ref, Type } from '@hcengineering/core'
 import { Asset, plugin } from '@hcengineering/platform'
 import {
   Answer,
-  AnswerData,
+  AnswerDataOf,
   AssessmentData,
   Fraction,
   MultipleChoiceAnswerData,
   MultipleChoiceAssessmentData,
   MultipleChoiceQuestion,
   Question,
-  QuestionEditor,
+  QuestionType,
   QuestionOption,
   Rank,
   ReorderAnswerData,
@@ -59,8 +59,8 @@ export default plugin(surveyId, {
     Survey: '' as Ref<Class<Survey>>,
     SurveyRequest: '' as Ref<Class<SurveyRequest>>,
     SurveyResult: '' as Ref<Class<SurveyResult>>,
-    TypeAnswerData: '' as Ref<Class<Type<AnswerData<any>>>>,
-    TypeAssessmentData: '' as Ref<Class<Type<AssessmentData<any>>>>,
+    TypeAnswerData: '' as Ref<Class<Type<AnswerDataOf<any>>>>,
+    TypeAssessmentData: '' as Ref<Class<Type<AssessmentData>>>,
     TypeFraction: '' as Ref<Class<Type<Fraction>>>,
     TypeMultipleChoiceAnswerData: '' as Ref<Class<Type<MultipleChoiceAnswerData>>>,
     TypeMultipleChoiceAssessmentData: '' as Ref<Class<Type<MultipleChoiceAssessmentData>>>,
@@ -72,7 +72,7 @@ export default plugin(surveyId, {
     TypeSingleChoiceAssessmentData: '' as Ref<Class<Type<SingleChoiceAssessmentData>>>
   },
   mixin: {
-    QuestionEditor: '' as Ref<Mixin<QuestionEditor>>
+    QuestionType: '' as Ref<Mixin<QuestionType>>
   },
   string: {
     Answer: '' as IntlString,
@@ -89,6 +89,7 @@ export default plugin(surveyId, {
     Outbox: '' as IntlString,
     Question: '' as IntlString,
     QuestionText: '' as IntlString,
+    QuestionWeight: '' as IntlString,
     Questions: '' as IntlString,
     Rank: '' as IntlString,
     Reorder: '' as IntlString,
@@ -104,7 +105,6 @@ export default plugin(surveyId, {
     SurveyRequests: '' as IntlString,
     SurveyResult: '' as IntlString,
     SurveyResults: '' as IntlString,
-    SurveyWeight: '' as IntlString,
     TypeFraction: '' as IntlString,
     TypeRank: '' as IntlString
   },

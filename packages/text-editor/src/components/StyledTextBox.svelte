@@ -48,6 +48,7 @@
 
   export let attachFile: FileAttachFunction | undefined = undefined
 
+  // TODO: Expose
   const Mode = {
     View: 1,
     Edit: 2

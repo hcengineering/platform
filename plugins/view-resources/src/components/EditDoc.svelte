@@ -207,7 +207,7 @@
     }
   }
 
-  let title: string = ''
+  let title: string | undefined = undefined
   let rawTitle: string = ''
 
   $: if (object !== undefined) {

@@ -18,13 +18,25 @@ import { type Resources } from '@hcengineering/platform'
 import SurveyCreator from './components/SurveyCreator.svelte'
 import SurveyNamePresenter from './components/SurveyNamePresenter.svelte'
 import QuestionCollectionEditor from './components/QuestionCollectionEditor.svelte'
-import ChoiceQuestionEditor from './components/ChoiceQuestionEditor.svelte'
+import { multipleChoiceInitAssessmentData } from './functions/multipleChoiceInitAssessmentData'
+import { multipleChoiceInitQuestion } from './functions/multipleChoiceInitQuestion'
+import { singleChoiceInitAssessmentData } from './functions/singleChoiceInitAssessmentData'
+import { singleChoiceInitQuestion } from './functions/singleChoiceInitQuestion'
+import MultipleChoiceQuestionEditor from './components/MultipleChoiceQuestionEditor.svelte'
+import SingleChoiceQuestionEditor from './components/SingleChoiceQuestionEditor.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
-    ChoiceQuestionEditor,
+    MultipleChoiceQuestionEditor,
     QuestionCollectionEditor,
+    SingleChoiceQuestionEditor,
     SurveyCreator,
     SurveyNamePresenter
+  },
+  function: {
+    MultipleChoiceInitAssessmentData: multipleChoiceInitAssessmentData,
+    MultipleChoiceInitQuestion: multipleChoiceInitQuestion,
+    SingleChoiceInitAssessmentData: singleChoiceInitAssessmentData,
+    SingleChoiceInitQuestion: singleChoiceInitQuestion
   }
 })
