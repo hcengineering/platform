@@ -71,7 +71,12 @@ export class StorageExtension implements Extension {
         minioDocument = await this.getMinioDocument(documentId, token)
       } catch (err: any) {
         if (initialContentId !== undefined && initialContentId.length > 0) {
-          minioDocument = await this.getMinioDocument(initialContentId, token)
+          try {
+            minioDocument = await this.getMinioDocument(initialContentId, token)
+          } catch (err: any) {
+            // Do nothing
+            // Initial content document also might not have been initialized in minio (e.g. if it's an empty template)
+          }
         }
       }
 
