@@ -67,6 +67,7 @@ export class MinioService {
           }
         })
         list.on('end', () => {
+          list.destroy()
           resolve(null)
         })
       })
@@ -111,6 +112,7 @@ export class MinioService {
       })
 
       data.on('end', () => {
+        data.destroy()
         resolve(null)
       })
     })
