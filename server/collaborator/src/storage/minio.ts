@@ -20,7 +20,6 @@ import { Document } from '@hocuspocus/server'
 import { Doc as YDoc, applyUpdate, encodeStateAsUpdate } from 'yjs'
 
 import { Context } from '../context'
-import { MinioClient } from '../minio'
 
 import { StorageAdapter } from './adapter'
 import { connect, getTxOperations } from '../platform'
@@ -41,12 +40,11 @@ export class MinioStorageAdapter implements StorageAdapter {
       decodedToken: { workspace }
     } = context
 
-    const minio = new MinioClient(this.minio, workspace)
-
     return await this.ctx.with('load-document', {}, async (ctx) => {
       const minioDocument = await ctx.with('query', {}, async () => {
         try {
-          return await minio.loadFile(documentId)
+          const buffer = await this.minio.read(workspace, documentId)
+          return Buffer.concat(buffer)
         } catch {
           return undefined
         }
@@ -81,8 +79,8 @@ export class MinioStorageAdapter implements StorageAdapter {
       })
 
       await ctx.with('update', {}, async () => {
-        const minio = new MinioClient(this.minio, decodedToken.workspace)
-        await minio.writeFile(documentId, buffer)
+        const metadata = { 'content-type': 'application/ydoc' }
+        await this.minio.put(decodedToken.workspace, documentId, buffer, buffer.length, metadata)
       })
 
       // minio file is usually an attachment document
