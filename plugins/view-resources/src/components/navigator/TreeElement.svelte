@@ -53,7 +53,7 @@
 
   $: actions().then((result) => {
     inlineActions = result.filter((action) => action.inline === true)
-    popupMenuActions = result.filter((action) => !action.inline === true)
+    popupMenuActions = result.filter((action) => action.inline !== true)
   })
 
   async function onMenuClick (ev: MouseEvent) {
@@ -110,11 +110,7 @@
         class:pressed={hovered}
         on:click|preventDefault|stopPropagation={(ev) => onInlineClick(ev, action)}
       >
-        {#if action.icon !== undefined}
-          <Icon icon={action.icon} size={'small'} />
-        {:else}
-          <Icon icon={ActionIcon} size={'small'} />
-        {/if}
+          <Icon icon={action.icon ?? ActionIcon} size={'small'} />
       </div>
     {/each}
     <div class="an-element__tool" class:pressed={hovered} on:click|preventDefault|stopPropagation={onMenuClick}>

@@ -54,8 +54,8 @@
       availableFilteredViews = result.filter((p) => p.sharable && !p.users.includes(me))
 
       const location = getLocation()
-      if (location.query?.filterVeiewId) {
-        const targetView = result.find((view) => view._id === location.query?.filterVeiewId)
+      if (location.query?.filterViewId) {
+        const targetView = result.find((view) => view._id === location.query?.filterViewId)
         if (targetView) {
           load(targetView)
         }
@@ -118,7 +118,7 @@
           const { protocol, hostname, port } = window.location
           const baseUrl = `${protocol}//${hostname}${port ? `:${port}` : ''}`
           let query = filteredView.location.query || {}
-          query.filterVeiewId = filteredView._id
+          query.filterViewId = filteredView._id
 
           const targetUrl = locationToUrl({
             path: filteredView.location.path,
