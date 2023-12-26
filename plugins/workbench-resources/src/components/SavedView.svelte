@@ -55,7 +55,7 @@
 
       const location = getLocation()
       if (location.query?.filterVeiewId) {
-        const targetView = result.find((view) => view._id == location.query?.filterVeiewId)
+        const targetView = result.find((view) => view._id === location.query?.filterVeiewId)
         if (targetView) {
           load(targetView)
         }

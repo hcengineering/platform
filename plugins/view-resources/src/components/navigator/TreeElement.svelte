@@ -26,7 +26,8 @@
     Menu,
     showPopup,
     getTreeCollapsed,
-    setTreeCollapsed
+    setTreeCollapsed,
+    IconActivity
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
@@ -109,7 +110,11 @@
         class:pressed={hovered}
         on:click|preventDefault|stopPropagation={(ev) => onInlineClick(ev, action)}
       >
-        <Icon icon={action.icon} size={'small'} />
+        {#if action.icon !== undefined}
+          <Icon icon={action.icon} size={'small'} />
+        {:else}
+          <Icon icon={ActionIcon} size={'small'} />
+        {/if}
       </div>
     {/each}
     <div class="an-element__tool" class:pressed={hovered} on:click|preventDefault|stopPropagation={onMenuClick}>
