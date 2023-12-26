@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type Account, getCurrentAccount, type Ref, SortingOrder, type Doc } from '@hcengineering/core'
+import { type Account, getCurrentAccount, type Ref, SortingOrder, type Doc, type WithLookup } from '@hcengineering/core'
 import notification, {
   type InboxNotification,
   type InboxNotificationsClient,
@@ -20,7 +20,7 @@ import notification, {
 } from '@hcengineering/notification'
 import { derived, writable } from 'svelte/store'
 import { createQuery, getClient } from '@hcengineering/presentation'
-import activity, { type ActivityMessage } from '@hcengineering/activity'
+import activity, { type ActivityMessage, type DocUpdateMessage } from '@hcengineering/activity'
 
 /**
  * @public
@@ -56,7 +56,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
 
   private readonly _user: Ref<Account>
   private _docNotifyContextByDoc = new Map<Ref<Doc>, DocNotifyContext>()
-  private _inboxNotifications: InboxNotification[] = []
+  private _inboxNotifications: Array<WithLookup<InboxNotification>> = []
 
   private constructor () {
     this._user = getCurrentAccount()._id
@@ -123,8 +123,27 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
 
   async readMessages (ids: Array<Ref<ActivityMessage>>): Promise<void> {
     const client = getClient()
+
     const notificationsToRead = this._inboxNotifications.filter(
-      ({ attachedTo, isViewed }) => ids.includes(attachedTo) && !isViewed
+      ({ attachedTo, attachedToClass, $lookup, isViewed }) => {
+        const shouldRead = ids.includes(attachedTo) && !isViewed
+
+        if (shouldRead) {
+          return true
+        }
+
+        if (attachedToClass !== activity.class.DocUpdateMessage || $lookup?.attachedTo === undefined) {
+          return false
+        }
+
+        const docUpdateMessage = $lookup.attachedTo as DocUpdateMessage
+
+        if (docUpdateMessage.objectClass !== activity.class.Reaction) {
+          return false
+        }
+
+        return ids.includes(docUpdateMessage.attachedTo as Ref<ActivityMessage>) && !isViewed
+      }
     )
 
     await Promise.all(
