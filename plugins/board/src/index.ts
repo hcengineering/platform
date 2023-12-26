@@ -104,13 +104,13 @@ const boards = plugin(boardId, {
   },
   action: {
     Open: '' as Ref<Action>,
-    Cover: '' as Ref<Action>,
-    Dates: '' as Ref<Action>,
-    Labels: '' as Ref<Action>,
-    Move: '' as Ref<Action>,
-    Copy: '' as Ref<Action>,
-    Archive: '' as Ref<Action>,
-    SendToBoard: '' as Ref<Action>,
+    Cover: '' as Ref<Action<Doc, any>>,
+    Dates: '' as Ref<Action<Doc, any>>,
+    Labels: '' as Ref<Action<Doc, any>>,
+    Move: '' as Ref<Action<Doc, any>>,
+    Copy: '' as Ref<Action<Doc, any>>,
+    Archive: '' as Ref<Action<Doc, any>>,
+    SendToBoard: '' as Ref<Action<Doc, any>>,
     Delete: '' as Ref<Action>
   },
   string: {
