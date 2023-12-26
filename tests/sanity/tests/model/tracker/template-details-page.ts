@@ -15,7 +15,6 @@ export class TemplateDetailsPage extends CommonTrackerPage {
   readonly buttonDueDate: Locator
   readonly buttonSaveDueDate: Locator
   readonly textComment: Locator
-  readonly buttonMoreActions: Locator
   readonly buttonDelete: Locator
 
   constructor (page: Page) {
@@ -32,7 +31,6 @@ export class TemplateDetailsPage extends CommonTrackerPage {
     this.buttonDueDate = page.locator('(//span[text()="Due date"]/../div/button)[2]')
     this.buttonSaveDueDate = page.locator('div.footer > button')
     this.textComment = page.locator('div.grid div.header')
-    this.buttonMoreActions = page.locator('div.popupPanel-title > div > button:nth-child(1)')
     this.buttonDelete = page.locator('button[class*="menuItem"] > span', { hasText: 'Delete' })
   }
 

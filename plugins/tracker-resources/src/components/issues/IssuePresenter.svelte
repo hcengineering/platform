@@ -25,7 +25,7 @@
   import { taskTypeStore } from '@hcengineering/task-resources'
   import TaskTypeIcon from '@hcengineering/task-resources/src/components/taskTypes/TaskTypeIcon.svelte'
 
-  export let value: WithLookup<Issue>
+  export let value: WithLookup<Issue> | undefined
   export let disabled: boolean = false
   export let onClick: (() => void) | undefined = undefined
   export let shouldShowAvatar: boolean = false
@@ -46,7 +46,7 @@
   $: presenters =
     value !== undefined ? getClient().getHierarchy().findMixinMixins(value, view.mixin.ObjectPresenter) : []
 
-  $: taskType = $taskTypeStore.get(value.kind)
+  $: taskType = value !== undefined ? $taskTypeStore.get(value.kind) : undefined
 </script>
 
 {#if value}

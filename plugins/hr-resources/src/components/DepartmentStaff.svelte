@@ -18,7 +18,7 @@
   import { Ref, WithLookup } from '@hcengineering/core'
   import { Department, Staff } from '@hcengineering/hr'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Button, IconAdd, Label, Scroller, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { Button, IconAdd, Label, Scroller, Section, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { Viewlet, ViewletPreference } from '@hcengineering/view'
   import { Table, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
   import hr from '../plugin'
@@ -67,11 +67,8 @@
   let viewlet: WithLookup<Viewlet> | undefined
 </script>
 
-<div class="antiSection">
-  <div class="antiSection-header">
-    <span class="antiSection-header__title">
-      <Label label={hr.string.Members} />
-    </span>
+<Section label={hr.string.Members}>
+  <svelte:fragment slot="header">
     <div class="flex-row-center gap-2 reverse">
       <ViewletSelector
         hidden
@@ -83,26 +80,30 @@
       <ViewletSettingButton kind={'ghost'} bind:viewlet />
       <Button id={hr.string.AddEmployee} icon={IconAdd} kind={'ghost'} on:click={add} />
     </div>
-  </div>
-  {#if (value?.members.length ?? 0) > 0}
-    <Scroller>
-      <Table
-        _class={hr.mixin.Staff}
-        config={preference?.config ?? viewlet?.config ?? []}
-        options={viewlet?.options}
-        query={{ department: objectId }}
-        loadingProps={{ length: value?.members.length ?? 0 }}
-      />
-    </Scroller>
-  {:else}
-    <div class="antiSection-empty solid flex-col-center mt-3">
-      <span class="text-sm content-dark-color">
-        <Label label={hr.string.NoMembers} />
-      </span>
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <span class="text-sm content-color over-underline" on:click={add}>
-        <Label label={hr.string.AddMember} />
-      </span>
-    </div>
-  {/if}
-</div>
+  </svelte:fragment>
+
+  <svelte:fragment slot="content">
+    {#if (value?.members.length ?? 0) > 0}
+      <Scroller>
+        <Table
+          _class={hr.mixin.Staff}
+          config={preference?.config ?? viewlet?.config ?? []}
+          options={viewlet?.options}
+          query={{ department: objectId }}
+          loadingProps={{ length: value?.members.length ?? 0 }}
+        />
+      </Scroller>
+    {:else}
+      <div class="antiSection-empty solid flex-col-center mt-3">
+        <span class="text-sm content-dark-color">
+          <Label label={hr.string.NoMembers} />
+        </span>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <span class="text-sm content-color over-underline" on:click={add}>
+          <Label label={hr.string.AddMember} />
+        </span>
+      </div>
+    {/if}
+  </svelte:fragment>
+</Section>

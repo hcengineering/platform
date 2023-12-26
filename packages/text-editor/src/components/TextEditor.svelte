@@ -17,7 +17,7 @@
   import { IntlString, translate } from '@hcengineering/platform'
   import { themeStore } from '@hcengineering/ui'
 
-  import { AnyExtension, Editor, Extension, FocusPosition, mergeAttributes } from '@tiptap/core'
+  import { AnyExtension, Editor, FocusPosition, mergeAttributes } from '@tiptap/core'
   import Placeholder from '@tiptap/extension-placeholder'
   import { Node as ProseMirrorNode } from '@tiptap/pm/model'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
@@ -30,6 +30,7 @@
   import { defaultEditorAttributes } from './editor/editorProps'
   import { InlinePopupExtension } from './extension/inlinePopup'
   import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
+  import { SubmitExtension } from './extension/submit'
   import { defaultExtensions } from './extensions'
 
   export let content: string = ''
@@ -114,38 +115,7 @@
     needFocus = false
   }
 
-  const Handle = Extension.create({
-    addKeyboardShortcuts () {
-      return {
-        'Ctrl-Enter': () => {
-          const res = this.editor.commands.splitListItem('listItem')
-          if (!res) {
-            this.editor.commands.first(({ commands }) => [
-              () => commands.newlineInCode(),
-              () => commands.createParagraphNear(),
-              () => commands.liftEmptyBlock(),
-              () => commands.splitBlock()
-            ])
-          }
-          return true
-        },
-        'Shift-Enter': () => {
-          this.editor.commands.setHardBreak()
-          return true
-        },
-        Enter: () => {
-          submit()
-          return true
-        },
-        Space: () => {
-          if (editor.isActive('link')) {
-            this.editor.commands.toggleMark('link')
-          }
-          return false
-        }
-      }
-    }
-  })
+  const Handle = SubmitExtension.configure({ submit })
 
   onMount(() => {
     void ph.then(() => {
@@ -171,7 +141,7 @@
               ...tippyOptions,
               appendTo: () => boundary ?? element
             },
-            shouldShow: () => editor?.isActive('image')
+            shouldShow: ({ editor }) => editor.isEditable && editor.isActive('image')
           })
         ],
         parseOptions: {
@@ -217,31 +187,24 @@
       deleteOp(n, pos)
     })
   }
+
+  function handleFocus (): void {
+    needFocus = true
+  }
 </script>
 
-<div class="formatPanel buttons-group xsmall-gap mb-4" bind:this={textToolbarElement}>
-  <TextEditorStyleToolbar
-    textEditor={editor}
-    {textFormatCategories}
-    on:focus={() => {
-      needFocus = true
-    }}
-  />
+<div bind:this={textToolbarElement} class="text-editor-toolbar buttons-group xsmall-gap mb-4">
+  <TextEditorStyleToolbar textEditor={editor} {textFormatCategories} on:focus={handleFocus} />
 </div>
 
-<div class="formatPanel buttons-group xsmall-gap mb-4" bind:this={imageToolbarElement}>
-  <ImageStyleToolbar
-    textEditor={editor}
-    on:focus={() => {
-      needFocus = true
-    }}
-  />
+<div bind:this={imageToolbarElement} class="text-editor-toolbar buttons-group xsmall-gap mb-4">
+  <ImageStyleToolbar textEditor={editor} on:focus={handleFocus} />
 </div>
 
 <div class="select-text" style="width: 100%;" bind:this={element} />
 
 <style lang="scss">
-  .formatPanel {
+  .text-editor-toolbar {
     margin: -0.5rem -0.25rem 0.5rem;
     padding: 0.375rem;
     background-color: var(--theme-comp-header-color);

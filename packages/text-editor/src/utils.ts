@@ -15,9 +15,21 @@
 
 import { type onStatelessParameters } from '@hocuspocus/provider'
 import { type Attribute } from '@tiptap/core'
+import { get } from 'svelte/store'
 import * as Y from 'yjs'
 
-import { TiptapCollabProvider } from './provider'
+import contact, { type PersonAccount, formatName, AvatarType } from '@hcengineering/contact'
+import { getCurrentAccount } from '@hcengineering/core'
+import { getClient } from '@hcengineering/presentation'
+import {
+  type ColorDefinition,
+  getPlatformAvatarColorByName,
+  getPlatformAvatarColorForTextDef,
+  themeStore
+} from '@hcengineering/ui'
+
+import { type DocumentId, TiptapCollabProvider } from './provider'
+import { type CollaborationUser } from './types'
 
 type ProviderData = (
   | {
@@ -29,7 +41,12 @@ type ProviderData = (
   }
 ) & { ydoc?: Y.Doc }
 
-function getProvider (documentId: string, providerData: ProviderData, initialContentId?: string): TiptapCollabProvider {
+function getProvider (
+  documentId: DocumentId,
+  providerData: ProviderData,
+  initialContentId?: DocumentId,
+  targetContentId?: DocumentId
+): TiptapCollabProvider {
   if (!('provider' in providerData)) {
     const provider = new TiptapCollabProvider({
       url: providerData.collaboratorURL,
@@ -37,7 +54,8 @@ function getProvider (documentId: string, providerData: ProviderData, initialCon
       document: providerData.ydoc ?? new Y.Doc(),
       token: providerData.token,
       parameters: {
-        initialContentId: initialContentId ?? ''
+        initialContentId,
+        targetContentId
       },
       onStateless (data: onStatelessParameters) {
         try {
@@ -58,21 +76,21 @@ function getProvider (documentId: string, providerData: ProviderData, initialCon
 }
 
 export function copyDocumentField (
-  documentId: string,
+  documentId: DocumentId,
   srcFieldId: string,
   dstFieldId: string,
   providerData: ProviderData,
-  initialContentId?: string
+  initialContentId?: DocumentId
 ): void {
   const provider = getProvider(documentId, providerData, initialContentId)
   provider.copyField(documentId, srcFieldId, dstFieldId)
 }
 
 export function copyDocumentContent (
-  documentId: string,
+  documentId: DocumentId,
   snapshotId: string,
   providerData: ProviderData,
-  initialContentId?: string
+  initialContentId?: DocumentId
 ): void {
   const provider = getProvider(documentId, providerData, initialContentId)
   provider.copyContent(documentId, snapshotId)
@@ -98,5 +116,29 @@ export function getDataAttribute (
       }
     },
     ...(options ?? {})
+  }
+}
+
+function getAvatarColor (name: string, avatar: string, darkTheme: boolean): ColorDefinition {
+  const [type, color] = avatar.split('://')
+  if (type === AvatarType.COLOR) {
+    return getPlatformAvatarColorByName(color, darkTheme)
+  }
+  return getPlatformAvatarColorForTextDef(name, darkTheme)
+}
+
+export async function getCollaborationUser (): Promise<CollaborationUser> {
+  const client = getClient()
+
+  const me = getCurrentAccount() as PersonAccount
+  const person = await client.findOne(contact.class.Person, { _id: me.person })
+  const name = person !== undefined ? formatName(person.name) : me.email
+  const color = getAvatarColor(name, person?.avatar ?? '', get(themeStore).dark)
+
+  return {
+    id: me._id,
+    name,
+    email: me.email,
+    color: color.icon ?? 'var(--theme-button-default)'
   }
 }

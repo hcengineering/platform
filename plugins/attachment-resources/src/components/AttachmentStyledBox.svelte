@@ -19,12 +19,10 @@
   import { IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
   import textEditor, { AttachIcon, type RefAction, StyledTextBox } from '@hcengineering/text-editor'
-  import { ButtonSize, Loading, updatePopup, Scroller } from '@hcengineering/ui'
-  import { ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
+  import { ButtonSize } from '@hcengineering/ui'
   import attachment from '../plugin'
   import { deleteFile, uploadFile } from '../utils'
-  import AttachmentPresenter from './AttachmentPresenter.svelte'
-  import AttachmentPreview from './AttachmentPreview.svelte'
+  import AttachmentsGrid from './AttachmentsGrid.svelte'
 
   export let objectId: Ref<Doc> | undefined = undefined
   export let space: Ref<Space> | undefined = undefined
@@ -54,18 +52,6 @@
   $: draftKey = objectId ? `${objectId}_attachments` : undefined
 
   const dispatch = createEventDispatcher()
-  let attachmentPopupId: string = ''
-  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
-    const currentAttachmentIndex = listProvider.current()
-    if (currentAttachmentIndex === undefined) return
-    const selected = currentAttachmentIndex + offset
-    const sel = listProvider.docs()[selected] as Attachment
-    if (sel !== undefined && attachmentPopupId !== '') {
-      listProvider.updateFocus(sel)
-      updatePopup(attachmentPopupId, { props: { file: sel.file, name: sel.name, contentType: sel.type } })
-    }
-  })
-  $: listProvider.update(Array.from(attachments.values()).filter((attachment) => attachment.type.startsWith('image/')))
 
   export function focus (): void {
     refInput.focus()
@@ -358,7 +344,6 @@
     extraActions = []
   }
 
-  let element: HTMLElement
   let progressItems: Ref<Doc>[] = []
 </script>
 
@@ -382,90 +367,41 @@
     fileDrop(ev)
   }}
 >
-  <div class="expand-collapse">
-    <StyledTextBox
-      {focusIndex}
-      bind:this={refInput}
-      bind:content
-      {placeholder}
-      {alwaysEdit}
-      {showButtons}
-      {buttonSize}
-      {maxHeight}
-      {focusable}
-      {kind}
-      {enableBackReferences}
-      {isScrollable}
-      {boundary}
-      {extraActions}
-      on:changeSize
-      on:changeContent
-      on:blur
-      on:focus
-      on:open-document
-      attachFile={async (file) => {
-        return await createAttachment(file)
+  <StyledTextBox
+    {focusIndex}
+    bind:this={refInput}
+    bind:content
+    {placeholder}
+    {alwaysEdit}
+    {showButtons}
+    {buttonSize}
+    {maxHeight}
+    {focusable}
+    {kind}
+    {enableBackReferences}
+    {isScrollable}
+    {boundary}
+    {extraActions}
+    on:changeSize
+    on:changeContent
+    on:blur
+    on:focus
+    on:open-document
+    attachFile={async (file) => {
+      return await createAttachment(file)
+    }}
+  />
+  {#if (attachments.size > 0 && enableAttachments) || progress}
+    <AttachmentsGrid
+      attachments={Array.from(attachments.values())}
+      {progress}
+      {progressItems}
+      {useAttachmentPreview}
+      on:remove={async (evt) => {
+        if (evt.detail !== undefined) {
+          await removeAttachment(evt.detail)
+        }
       }}
     />
-  </div>
-  {#if (attachments.size && enableAttachments) || progress}
-    <div class="attachment-grid-container">
-      <Scroller noStretch shrink>
-        <div class="attachment-grid">
-          {#each Array.from(attachments.values()) as attachment, index}
-            {#if useAttachmentPreview}
-              <AttachmentPreview
-                value={attachment}
-                {listProvider}
-                on:open={(res) => (attachmentPopupId = res.detail)}
-              />
-            {:else}
-              <AttachmentPresenter
-                value={attachment}
-                removable
-                showPreview
-                progress={progressItems.includes(attachment._id)}
-                on:remove={(result) => {
-                  if (result !== undefined) {
-                    removeAttachment(attachment)
-                  }
-                }}
-              />
-            {/if}
-          {/each}
-          {#if progress}
-            <div class="flex p-3" bind:this={element}>
-              <Loading
-                on:progress={() => {
-                  element.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' })
-                }}
-              />
-            </div>
-          {/if}
-        </div>
-      </Scroller>
-    </div>
   {/if}
 </div>
-
-<style lang="scss">
-  .attachment-grid-container {
-    display: flex;
-    flex-direction: column;
-    margin-top: 0.5rem;
-    padding: 0.5rem;
-    min-width: 0;
-    max-height: 21.625rem;
-    color: var(--theme-caption-color);
-    background-color: var(--theme-button-default);
-    border: 1px solid var(--theme-button-border);
-    border-radius: 0.25rem;
-
-    .attachment-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, 17.25rem);
-      grid-auto-rows: minmax(3rem, auto);
-      gap: 0.5rem;
-    }
-  }
-</style>

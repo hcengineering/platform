@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { IdMap, Ref, Status, StatusCategory, toIdMap } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { ProjectType } from '@hcengineering/task'
+  import { ProjectType, TaskType } from '@hcengineering/task'
   import {
     ColorDefinition,
     getColorNumberByText,
@@ -28,13 +28,24 @@
   import { typeStore } from '../..'
 
   export let space: Ref<ProjectType>
+  export let taskType: TaskType | undefined = undefined
 
-  $: states = type
-    ? ($typeStore
-        .get(type._id)
-        ?.statuses?.map((p) => $statusStore.byId.get(p._id))
-        .filter((p) => p !== undefined) as Status[]) ?? []
-    : []
+  $: states = getStates($statusStore.byId, type, taskType)
+
+  function getStates (
+    statusStore: IdMap<Status>,
+    type: ProjectType | undefined,
+    taskType: TaskType | undefined
+  ): Status[] {
+    if (type === undefined) return []
+
+    let res = type.statuses.map((p) => statusStore.get(p._id)).filter((p) => p !== undefined) as Status[]
+    if (taskType !== undefined) {
+      res = res.filter((p) => taskType.statuses.includes(p._id))
+    }
+    return res
+  }
+
   const dispatch = createEventDispatcher()
 
   function getColor (state: Status, type: ProjectType | undefined, categories: IdMap<StatusCategory>): ColorDefinition {
@@ -51,7 +62,7 @@
   })
 
   let type: ProjectType | undefined = undefined
-  type = $typeStore.get(space)
+  $: type = $typeStore.get(space)
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>

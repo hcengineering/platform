@@ -271,7 +271,7 @@ export async function extractIndexedValues (
         continue
       }
 
-      if (keyAttr.type._class === core.class.TypeMarkup) {
+      if (keyAttr.type._class === core.class.TypeMarkup || keyAttr.type._class === core.class.TypeCollaborativeMarkup) {
         sourceContent = convert(sourceContent, {
           preserveNewlines: true,
           selectors: [{ selector: 'img', format: 'skip' }]

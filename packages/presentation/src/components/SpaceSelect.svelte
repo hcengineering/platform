@@ -18,6 +18,7 @@
   import { Class, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
   import {
+    AnyComponent,
     AnySvelteComponent,
     Button,
     ButtonKind,
@@ -57,7 +58,7 @@
   export let shape: ButtonShape = undefined
   export let width: string | undefined = undefined
   export let allowDeselect = false
-  export let component: AnySvelteComponent | undefined = undefined
+  export let component: AnyComponent | AnySvelteComponent | undefined = undefined
   export let componentProps: any | undefined = undefined
   export let autoSelect = true
   export let readonly = false

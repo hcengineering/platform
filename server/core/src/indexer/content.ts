@@ -118,6 +118,7 @@ export class ContentRetrievalStage implements FullTextPipelineStage {
                       {},
                       async () => await this.contentAdapter.content(ref, contentType, readable)
                     )
+                    readable?.destroy()
 
                     textContent = textContent
                       .split(/ +|\t+|\f+/)

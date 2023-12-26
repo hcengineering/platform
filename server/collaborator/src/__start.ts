@@ -15,4 +15,4 @@
 //
 
 import { startCollaborator } from './starter'
-startCollaborator()
+void startCollaborator()

@@ -85,6 +85,10 @@ export function definePresenters (builder: Builder): void {
     presenter: tracker.component.PriorityRefPresenter
   })
 
+  builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AttributeEditor, {
+    inlineEditor: tracker.component.PriorityInlineEditor
+  })
+
   //
   // Project
   //

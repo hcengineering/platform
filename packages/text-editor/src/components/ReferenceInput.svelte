@@ -13,8 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Asset, IntlString, getResource } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
+  import { Asset, IntlString } from '@hcengineering/platform'
   import {
     AnySvelteComponent,
     Button,
@@ -27,13 +26,13 @@
   import { createEventDispatcher } from 'svelte'
   import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
-  import { RefAction, RefInputActionItem, TextEditorHandler, TextFormatCategory } from '../types'
+  import { RefAction, TextEditorHandler, TextFormatCategory } from '../types'
   import TextEditor from './TextEditor.svelte'
+  import { defaultRefActions, getModelRefActions } from './editor/actions'
   import { completionConfig } from './extensions'
   import { EmojiExtension } from './extension/emoji'
   import { IsEmptyContentExtension } from './extension/isEmptyContent'
   import Send from './icons/Send.svelte'
-  import { generateDefaultActions } from './editor/actions'
 
   export let content: string = ''
   export let showHeader = false
@@ -49,7 +48,6 @@
   export let focusable: boolean = false
   export let boundary: HTMLElement | undefined = undefined
 
-  const client = getClient()
   const dispatch = createEventDispatcher()
   const buttonSize = 'medium'
 
@@ -77,20 +75,10 @@
     }
   }
 
-  let actions: RefAction[] = generateDefaultActions(editorHandler)
-    .concat(...extraActions)
-    .sort((a, b) => a.order - b.order)
-  client.findAll<RefInputActionItem>(textEditorPlugin.class.RefInputActionItem, {}).then(async (res) => {
-    const cont: RefAction[] = []
-    for (const r of res) {
-      cont.push({
-        label: r.label,
-        icon: r.icon,
-        order: r.order ?? 10000,
-        action: await getResource(r.action)
-      })
-    }
-    actions = actions.concat(...cont).sort((a, b) => a.order - b.order)
+  let actions: RefAction[] = defaultRefActions.concat(...extraActions).sort((a, b) => a.order - b.order)
+
+  void getModelRefActions().then((modelActions) => {
+    actions = actions.concat(...modelActions).sort((a, b) => a.order - b.order)
   })
 
   export function submit (): void {

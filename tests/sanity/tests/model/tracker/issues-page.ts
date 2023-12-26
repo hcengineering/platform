@@ -74,7 +74,7 @@ export class IssuesPage extends CommonTrackerPage {
     )
   }
 
-  async createNewIssue (data: NewIssue, closeNotification: boolean = true): Promise<void> {
+  async createNewIssue (data: NewIssue, closeNotification: boolean = false): Promise<void> {
     await this.buttonCreateNewIssue.click()
     await this.fillNewIssueForm(data)
     await this.buttonCreateIssue.click()

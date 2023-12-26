@@ -102,6 +102,7 @@ services:
   collaborator:
     image: hardcoreeng/collaborator
     links:
+      - mongodb
       - minio
       - transactor
     ports:
@@ -110,6 +111,7 @@ services:
       - COLLABORATOR_PORT=3078
       - SECRET=secret
       - TRANSACTOR_URL=ws://localhost:3334
+      - MONGO_URL=mongodb://mongodb:27018
       - MINIO_ENDPOINT=minio
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin

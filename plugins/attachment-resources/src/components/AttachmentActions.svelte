@@ -15,9 +15,9 @@
 <script lang="ts">
   import type { Attachment } from '@hcengineering/attachment'
   import { getResource } from '@hcengineering/platform'
-  import { showPopup, ActionIcon, IconMoreH, Menu } from '@hcengineering/ui'
-  import { Action } from '@hcengineering/view'
-  import { getFileUrl } from '@hcengineering/presentation'
+  import { PDFViewer, getFileUrl } from '@hcengineering/presentation'
+  import { ActionIcon, IconMoreH, IconOpen, Menu, closeTooltip, showPopup } from '@hcengineering/ui'
+  import view, { Action } from '@hcengineering/view'
 
   import attachmentPlugin from '../plugin'
   import FileDownload from './icons/FileDownload.svelte'
@@ -26,6 +26,25 @@
   export let isSaved = false
 
   let download: HTMLAnchorElement
+
+  $: contentType = attachment?.type ?? ''
+  $: openable =
+    contentType.includes('application/pdf') || contentType.startsWith('image/') || contentType.startsWith('video/')
+
+  function showPreview (e: MouseEvent): void {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.metaKey || e.ctrlKey) {
+      window.open((e.target as HTMLAnchorElement).href, '_blank')
+      return
+    }
+    closeTooltip()
+    showPopup(
+      PDFViewer,
+      { file: attachment.file, name: attachment.name, contentType, value: attachment },
+      contentType.startsWith('image/') ? 'centered' : 'float'
+    )
+  }
 
   $: saveAttachmentAction = isSaved
     ? ({
@@ -42,17 +61,28 @@
       Menu,
       {
         actions: [
+          ...(openable
+            ? [
+                {
+                  label: view.string.Open,
+                  icon: IconOpen,
+                  action: async (props: any, evt: MouseEvent) => {
+                    showPreview(evt)
+                  }
+                }
+              ]
+            : []),
           {
             label: saveAttachmentAction.label,
             icon: saveAttachmentAction.icon,
-            action: async (evt: MouseEvent) => {
+            action: async (props: any, evt: MouseEvent) => {
               const impl = await getResource(saveAttachmentAction.action)
               await impl(attachment, evt)
             }
           },
           {
             label: attachmentPlugin.string.DeleteFile,
-            action: async (evt: MouseEvent) => {
+            action: async (props: any, evt: MouseEvent) => {
               const impl = await getResource(attachmentPlugin.actionImpl.DeleteAttachment)
               await impl(attachment, evt)
             }
@@ -66,19 +96,28 @@
 
 <div class="flex">
   <a
-    class="mr-1"
+    class="mr-1 flex-row-center gap-2 p-1"
     href={getFileUrl(attachment.file, 'full', attachment.name)}
     download={attachment.name}
     bind:this={download}
     on:click|stopPropagation
   >
+    {#if openable}
+      <ActionIcon
+        icon={IconOpen}
+        size={'medium'}
+        action={(evt) => {
+          showPreview(evt)
+        }}
+      />
+    {/if}
     <ActionIcon
       icon={FileDownload}
-      size={'small'}
+      size={'medium'}
       action={() => {
         download.click()
       }}
     />
   </a>
-  <ActionIcon icon={IconMoreH} size={'small'} action={showMenu} />
+  <ActionIcon icon={IconMoreH} size={'medium'} action={showMenu} />
 </div>

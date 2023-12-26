@@ -26,6 +26,7 @@ import https from 'https'
 import { join, resolve } from 'path'
 import sharp from 'sharp'
 import { v4 as uuid } from 'uuid'
+import morgan from 'morgan'
 
 async function minioUpload (minio: MinioService, workspace: WorkspaceId, file: UploadedFile): Promise<string> {
   const id = uuid()
@@ -85,7 +86,14 @@ async function getFileRange (
       'Content-Range': `bytes ${start}-${end}/${size}`,
       'Accept-Ranges': 'bytes',
       'Content-Length': end - start + 1,
-      'Content-Type': stat.metaData['content-type']
+      'Content-Type': stat.metaData['content-type'],
+      Etag: stat.etag,
+      'Last-Modified': stat.lastModified.toISOString()
+    })
+
+    dataStream.on('end', () => {
+      dataStream.destroy()
+      res.end()
     })
 
     dataStream.pipe(res)
@@ -100,19 +108,18 @@ async function getFile (client: MinioService, workspace: WorkspaceId, uuid: stri
 
   try {
     const dataStream = await client.get(workspace, uuid)
-    res.status(200)
-    res.set('Cache-Control', 'max-age=7d')
-
-    const contentType = stat.metaData['content-type']
-    if (contentType !== undefined) {
-      res.setHeader('Content-Type', contentType)
-    }
+    res.writeHead(200, {
+      'Content-Type': stat.metaData['content-type'],
+      Etag: stat.etag,
+      'Last-Modified': stat.lastModified.toISOString()
+    })
 
     dataStream.on('data', function (chunk) {
       res.write(chunk)
     })
     dataStream.on('end', function () {
       res.end()
+      dataStream.destroy()
     })
     dataStream.on('error', function (err) {
       console.log(err)
@@ -169,6 +176,8 @@ export function start (
   app.use(bp.json())
   app.use(bp.urlencoded({ extended: true }))
 
+  app.use(morgan('combined'))
+
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.get('/config.json', async (req, res) => {
     res.status(200)
@@ -215,10 +224,13 @@ export function start (
 
       const fileSize = stat.size
 
+      res.writeHead(200, {
+        'accept-ranges': 'bytes',
+        'content-length': fileSize,
+        Etag: stat.etag,
+        'Last-Modified': stat.lastModified.toISOString()
+      })
       res.status(200)
-
-      res.setHeader('accept-ranges', 'bytes')
-      res.setHeader('content-length', fileSize)
 
       res.end()
     } catch (error) {
@@ -229,7 +241,6 @@ export function start (
 
   const filesHandler = async (req: any, res: Response): Promise<void> => {
     try {
-      console.log(req.headers)
       const cookies = ((req?.headers?.cookie as string) ?? '').split(';').map((it) => it.trim().split('='))
 
       const token = cookies.find((it) => it[0] === 'presentation-metadata-Token')?.[1]
@@ -262,8 +273,12 @@ export function start (
       } else {
         await getFile(config.minio, payload.workspace, uuid, res)
       }
-    } catch (error) {
-      console.log(error)
+    } catch (error: any) {
+      if (error?.code === 'NoSuchKey' || error?.code === 'NotFound') {
+        console.log('No such key', req.query.file)
+      } else {
+        console.log(error)
+      }
       res.status(500).send()
     }
   }
@@ -565,7 +580,9 @@ async function getResizeID (
       const d = await config.minio.stat(payload.workspace, sizeId)
       hasSmall = d !== undefined && d.size > 0
     } catch (err: any) {
-      console.error(err)
+      if (err.code !== 'NotFound') {
+        console.error(err)
+      }
     }
     if (hasSmall) {
       // We have cached small document, let's proceed with it.

@@ -15,8 +15,8 @@
 -->
 <script lang="ts">
   import { Class, Doc, DocumentQuery, FindOptions, Ref, Space, getCurrentAccount } from '@hcengineering/core'
-  import { Asset } from '@hcengineering/platform'
-  import { AnySvelteComponent, ButtonSize } from '@hcengineering/ui'
+  import { Asset, getResource } from '@hcengineering/platform'
+  import { AnyComponent, AnySvelteComponent, ButtonSize } from '@hcengineering/ui'
   import { ObjectCreate } from '../types'
   import { createQuery } from '../utils'
   import DocPopup from './DocPopup.svelte'
@@ -30,7 +30,7 @@
   export let create: ObjectCreate | undefined = undefined
   export let size: ButtonSize = 'small'
   export let allowDeselect = false
-  export let component: AnySvelteComponent | undefined = undefined
+  export let component: AnyComponent | AnySvelteComponent | undefined = undefined
   export let componentProps: any | undefined = undefined
   export let iconWithEmoji: AnySvelteComponent | Asset | ComponentType | undefined = undefined
   export let defaultIcon: AnySvelteComponent | Asset | ComponentType | undefined = undefined
@@ -64,6 +64,18 @@
     spaceOptions
   )
 
+  let is: AnySvelteComponent | undefined = undefined
+
+  $: getComponent(component)
+
+  async function getComponent (component: AnySvelteComponent | AnyComponent | undefined): Promise<void> {
+    if (typeof component === 'string') {
+      is = await getResource(component)
+    } else {
+      is = component
+    }
+  }
+
   let spaces: Space[] = []
 </script>
 
@@ -80,8 +92,8 @@
   on:search={(e) => (search = e.detail)}
 >
   <svelte:fragment slot="item" let:item={space}>
-    {#if component}
-      <svelte:component this={component} {...componentProps} {size} value={space} />
+    {#if is}
+      <svelte:component this={is} {...componentProps} {size} value={space} />
     {:else}
       <SpaceInfo {size} value={space} {iconWithEmoji} {defaultIcon} />
     {/if}

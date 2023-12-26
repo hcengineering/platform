@@ -17,12 +17,13 @@
 import { MinioService } from '@hcengineering/minio'
 import { setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
+import { MongoClient } from 'mongodb'
 
 import config from './config'
 import { metricsContext } from './metrics'
 import { start } from './server'
 
-export function startCollaborator (): void {
+export async function startCollaborator (): Promise<void> {
   setMetadata(serverToken.metadata.Secret, config.Secret)
 
   let minioPort = 9000
@@ -33,7 +34,7 @@ export function startCollaborator (): void {
     minioPort = parseInt(sp[1])
   }
 
-  const minio = new MinioService({
+  const minioClient = new MinioService({
     endPoint: minioEndpoint,
     port: minioPort,
     useSSL: false,
@@ -41,10 +42,13 @@ export function startCollaborator (): void {
     secretKey: config.MinioSecretKey
   })
 
-  const server = start(metricsContext, config, minio)
+  const mongoClient = await MongoClient.connect(config.MongoUrl)
+
+  const shutdown = await start(metricsContext, config, minioClient, mongoClient)
 
   const close = (): void => {
-    server()
+    void mongoClient.close()
+    void shutdown()
   }
 
   process.on('SIGINT', close)

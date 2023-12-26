@@ -276,7 +276,7 @@
   <svelte:fragment slot="title">
     <div class="flex-row-center gap-2">
       <Label label={recruit.string.CreateApplication} />
-      <TaskKindSelector projectType={vacancy?.type} bind:taskType={kind} baseClass={recruit.class.Applicant} />
+      <TaskKindSelector projectType={vacancy?.type} bind:value={kind} baseClass={recruit.class.Applicant} />
     </div>
   </svelte:fragment>
   <StatusControl slot="error" {status} />

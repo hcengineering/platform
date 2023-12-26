@@ -42,7 +42,8 @@ import core, {
   TxFactory,
   TxProcessor,
   TxRemoveDoc,
-  TxUpdateDoc
+  TxUpdateDoc,
+  Type
 } from '@hcengineering/core'
 import notification, { Collaborators, NotificationType, NotificationContent } from '@hcengineering/notification'
 import { getMetadata, IntlString } from '@hcengineering/platform'
@@ -53,6 +54,10 @@ import { stripTags } from '@hcengineering/text'
 import { getBacklinks, getBacklinksTxes } from './backlinks'
 
 export { getBacklinksTxes } from './backlinks'
+
+function isMarkupType (type: Ref<Class<Type<any>>>): boolean {
+  return type === core.class.TypeMarkup || type === core.class.TypeCollaborativeMarkup
+}
 
 function getCreateBacklinksTxes (
   control: TriggerControl,
@@ -66,7 +71,7 @@ function getCreateBacklinksTxes (
   const backlinks: Data<Backlink>[] = []
   const attributes = control.hierarchy.getAllAttributes(doc._class)
   for (const attr of attributes.values()) {
-    if (attr.type._class === core.class.TypeMarkup) {
+    if (isMarkupType(attr.type._class)) {
       const content = (doc as any)[attr.name]?.toString() ?? ''
       const attrBacklinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, content)
       backlinks.push(...attrBacklinks)
@@ -90,7 +95,7 @@ async function getUpdateBacklinksTxes (
   const backlinks: Data<Backlink>[] = []
   const attributes = control.hierarchy.getAllAttributes(doc._class)
   for (const attr of attributes.values()) {
-    if (attr.type._class === core.class.TypeMarkup) {
+    if (isMarkupType(attr.type._class)) {
       hasBacklinkAttrs = true
       const content = (doc as any)[attr.name]?.toString() ?? ''
       const attrBacklinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, content)
@@ -318,7 +323,7 @@ async function BacklinksUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> 
   let hasUpdates = false
   const attributes = control.hierarchy.getAllAttributes(ctx.objectClass)
   for (const attr of attributes.values()) {
-    if (attr.type._class === core.class.TypeMarkup && attr.name in ctx.operations) {
+    if (isMarkupType(attr.type._class) && attr.name in ctx.operations) {
       hasUpdates = true
       break
     }
@@ -349,7 +354,7 @@ async function BacklinksRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> 
   let hasMarkdown = false
   const attributes = control.hierarchy.getAllAttributes(ctx.objectClass)
   for (const attr of attributes.values()) {
-    if (attr.type._class === core.class.TypeMarkup) {
+    if (isMarkupType(attr.type._class)) {
       hasMarkdown = true
       break
     }

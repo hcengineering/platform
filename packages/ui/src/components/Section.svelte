@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,59 +13,36 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Asset, IntlString } from '@hcengineering/platform'
+  import type { Asset, IntlString } from '@hcengineering/platform'
   import type { AnySvelteComponent } from '../types'
-  import Label from './Label.svelte'
-  import ArrowUp from './icons/Up.svelte'
-  import ArrowDown from './icons/Down.svelte'
-  import Icon from './Icon.svelte'
 
-  export let icon: Asset | AnySvelteComponent
+  import Icon from './Icon.svelte'
+  import Label from './Label.svelte'
+
   export let label: IntlString
-  export let closed: boolean = false
+  export let icon: Asset | AnySvelteComponent | undefined = undefined
+
+  export let showHeader: boolean = true
+  export let high: boolean = false
+  export let invisible: boolean = false
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<div
-  class="flex-row-center section-container"
-  on:click|preventDefault={() => {
-    closed = !closed
-  }}
->
-  <Icon {icon} size={'small'} />
-  <!-- <svelte:component this={icon} size={'small'} /> -->
-  <div class="title"><Label {label} /></div>
-  <div class="arrow">
-    {#if closed}<ArrowUp size={'small'} />{:else}<ArrowDown size={'small'} />{/if}
-  </div>
+<div class="antiSection">
+  {#if showHeader}
+    <div class="antiSection-header" class:high class:invisible>
+      {#if icon}
+        <div class="antiSection-header__icon">
+          <Icon {icon} size={'small'} />
+        </div>
+      {/if}
+
+      <span class="antiSection-header__title flex-row-center">
+        <Label {label} />
+      </span>
+
+      <slot name="header" />
+    </div>
+  {/if}
+
+  <slot name="content" />
 </div>
-{#if !closed}<div class="section-content"><slot /></div>{/if}
-
-<style lang="scss">
-  .section-container {
-    width: 100%;
-    height: 5rem;
-    min-height: 5rem;
-    cursor: pointer;
-    user-select: none;
-
-    .title {
-      flex-grow: 1;
-      margin-left: 0.75rem;
-      font-weight: 500;
-      color: var(--caption-color);
-    }
-    .arrow {
-      margin: 0.5rem;
-    }
-  }
-  .section-content {
-    margin: 1rem 0 3.5rem;
-    height: auto;
-  }
-  :global(.section-container + .section-container),
-  :global(.section-content + .section-container) {
-    border-top: 1px solid var(--divider-color);
-  }
-</style>

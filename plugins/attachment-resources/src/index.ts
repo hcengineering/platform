@@ -35,6 +35,7 @@ import FileDownload from './components/icons/FileDownload.svelte'
 import Photos from './components/Photos.svelte'
 import AttachmentStyledBox from './components/AttachmentStyledBox.svelte'
 import AttachmentStyleBoxEditor from './components/AttachmentStyleBoxEditor.svelte'
+import AttachmentStyleBoxCollabEditor from './components/AttachmentStyleBoxCollabEditor.svelte'
 import AccordionEditor from './components/AccordionEditor.svelte'
 import IconUploadDuo from './components/icons/UploadDuo.svelte'
 import IconAttachment from './components/icons/Attachment.svelte'
@@ -56,6 +57,7 @@ export {
   FileBrowser,
   AttachmentStyledBox,
   AttachmentStyleBoxEditor,
+  AttachmentStyleBoxCollabEditor,
   AccordionEditor,
   IconUploadDuo,
   IconAttachment,

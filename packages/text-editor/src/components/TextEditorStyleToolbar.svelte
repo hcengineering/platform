@@ -338,8 +338,8 @@
         selected={false}
         disabled={textEditor.view.state.selection.empty}
         showTooltip={{ label: action.label }}
-        on:click={async () => {
-          dispatch('action', { action: action.id, editor: textEditor })
+        on:click={() => {
+          void action.action({ editor: textEditor })
         }}
       />
     {/each}

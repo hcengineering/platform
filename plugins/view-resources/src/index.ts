@@ -42,6 +42,7 @@ import StringFilter from './components/filter/StringFilter.svelte'
 import StringFilterPresenter from './components/filter/StringFilterPresenter.svelte'
 import TimestampFilter from './components/filter/TimestampFilter.svelte'
 import ValueFilter from './components/filter/ValueFilter.svelte'
+import CollaborativeHTMLEditor from './components/CollaborativeHTMLEditor.svelte'
 import HTMLEditor from './components/HTMLEditor.svelte'
 import HTMLPresenter from './components/HTMLPresenter.svelte'
 import HyperlinkPresenter from './components/HyperlinkPresenter.svelte'
@@ -238,6 +239,7 @@ export default async (): Promise<Resources> => ({
     FilterTypePopup,
     ValueSelector,
     HTMLEditor,
+    CollaborativeHTMLEditor,
     ListView,
     GrowPresenter,
     DividerPresenter,
