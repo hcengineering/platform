@@ -423,7 +423,7 @@ export interface LinkPresenter extends Doc {
  * @public
  *
  *  "Alt + K" =\> Alt and K should be pressed together
- *  "J T" - J and then T shold be pressed.
+ *  "J T" - J and then T should be pressed.
  */
 export type KeyBinding = string
 
@@ -435,23 +435,23 @@ export type ViewActionInput = 'focus' | 'selection' | 'any' | 'none'
 /**
  * @public
  */
-export type ViewActionFunction<TDoc extends Doc = Doc, TParams = Record<string, any>> = (
-  doc: TDoc | TDoc[] | undefined,
+export type ViewActionFunction<T extends Doc = Doc, P = Record<string, any>> = (
+  doc: T | T[] | undefined,
   evt: Event,
-  params?: TParams
+  params?: P
 ) => Promise<void>
 
 /**
  * @public
  */
-export type ViewActionAvailabilityFunction<TDoc extends Doc = Doc> = (
-  doc: TDoc | TDoc[] | undefined
+export type ViewActionAvailabilityFunction<T extends Doc = Doc> = (
+  doc: T | T[] | undefined
 ) => Promise<boolean>
 
 /**
  * @public
  */
-export type ViewAction<TParams = Record<string, any>> = Resource<ViewActionFunction<Doc, TParams>>
+export type ViewAction<P = Record<string, any>> = Resource<ViewActionFunction<Doc, P>>
 
 /**
  * @public
