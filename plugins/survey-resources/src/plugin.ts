@@ -14,28 +14,50 @@
 //
 
 import survey, {
+  type MultipleChoiceAnswerData,
   type MultipleChoiceQuestion,
   type QuestionTypeEditorComponentType,
+  type QuestionTypeInitAnswerDataFunction,
   type QuestionTypeInitAssessmentDataFunction,
   type QuestionTypeInitQuestionFunction,
+  type QuestionTypePlayerComponentType,
+  type SingleChoiceAnswerData,
   type SingleChoiceQuestion,
+  type Survey,
   surveyId
 } from '@hcengineering/survey'
 import { mergeIds, type Resource } from '@hcengineering/platform'
 import { type ComponentType } from 'svelte'
+import { type ViewActionAvailabilityFunction, type ViewActionFunction } from '@hcengineering/view'
 
 export default mergeIds(surveyId, survey, {
   component: {
     SingleChoiceQuestionEditor: '' as Resource<QuestionTypeEditorComponentType<SingleChoiceQuestion>>,
+    SingleChoiceQuestionPlayer: '' as Resource<QuestionTypePlayerComponentType<SingleChoiceQuestion>>,
     MultipleChoiceQuestionEditor: '' as Resource<QuestionTypeEditorComponentType<MultipleChoiceQuestion>>,
+    MultipleChoiceQuestionPlayer: '' as Resource<QuestionTypePlayerComponentType<MultipleChoiceQuestion>>,
     QuestionCollectionEditor: '' as Resource<ComponentType>,
     SurveyCreator: '' as Resource<ComponentType>,
-    SurveyNamePresenter: '' as Resource<ComponentType>
+    SurveyPresenter: '' as Resource<ComponentType>,
+    SurveyResultEditor: '' as Resource<ComponentType>,
+    SurveyResultPresenter: '' as Resource<ComponentType>
   },
   function: {
+    MultipleChoiceInitAnswerData: '' as Resource<
+    QuestionTypeInitAnswerDataFunction<MultipleChoiceQuestion, MultipleChoiceAnswerData>
+    >,
     MultipleChoiceInitAssessmentData: '' as Resource<QuestionTypeInitAssessmentDataFunction<MultipleChoiceQuestion>>,
     MultipleChoiceInitQuestion: '' as Resource<QuestionTypeInitQuestionFunction<MultipleChoiceQuestion>>,
+    SingleChoiceInitAnswerData: '' as Resource<
+    QuestionTypeInitAnswerDataFunction<SingleChoiceQuestion, SingleChoiceAnswerData>
+    >,
     SingleChoiceInitAssessmentData: '' as Resource<QuestionTypeInitAssessmentDataFunction<SingleChoiceQuestion>>,
-    SingleChoiceInitQuestion: '' as Resource<QuestionTypeInitQuestionFunction<SingleChoiceQuestion>>
+    SingleChoiceInitQuestion: '' as Resource<QuestionTypeInitQuestionFunction<SingleChoiceQuestion>>,
+    SurveyCanBePublished: '' as Resource<ViewActionAvailabilityFunction<Survey>>,
+    SurveyCanBeTaken: '' as Resource<ViewActionAvailabilityFunction<Survey>>,
+    SurveyCanBeUnpublished: '' as Resource<ViewActionAvailabilityFunction<Survey>>,
+    SurveyPublish: '' as Resource<ViewActionFunction<Survey>>,
+    SurveyTake: '' as Resource<ViewActionFunction<Survey>>,
+    SurveyUnpublish: '' as Resource<ViewActionFunction<Survey>>
   }
 })

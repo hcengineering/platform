@@ -16,27 +16,51 @@
 import { type Resources } from '@hcengineering/platform'
 
 import SurveyCreator from './components/SurveyCreator.svelte'
-import SurveyNamePresenter from './components/SurveyNamePresenter.svelte'
 import QuestionCollectionEditor from './components/QuestionCollectionEditor.svelte'
-import { multipleChoiceInitAssessmentData } from './functions/multipleChoiceInitAssessmentData'
-import { multipleChoiceInitQuestion } from './functions/multipleChoiceInitQuestion'
-import { singleChoiceInitAssessmentData } from './functions/singleChoiceInitAssessmentData'
-import { singleChoiceInitQuestion } from './functions/singleChoiceInitQuestion'
+import { MultipleChoiceInitAssessmentData } from './functions/MultipleChoiceInitAssessmentData'
+import { MultipleChoiceInitQuestion } from './functions/MultipleChoiceInitQuestion'
+import { SingleChoiceInitAssessmentData } from './functions/SingleChoiceInitAssessmentData'
+import { SingleChoiceInitQuestion } from './functions/SingleChoiceInitQuestion'
 import MultipleChoiceQuestionEditor from './components/MultipleChoiceQuestionEditor.svelte'
 import SingleChoiceQuestionEditor from './components/SingleChoiceQuestionEditor.svelte'
+import SurveyPresenter from './components/SurveyPresenter.svelte'
+import SurveyResultPresenter from './components/SurveyResultPresenter.svelte'
+import { SurveyCanBePublished } from './functions/SurveyCanBePublished'
+import { SurveyCanBeUnpublished } from './functions/SurveyCanBeUnpublished'
+import { SurveyPublish } from './functions/SurveyPublish'
+import { SurveyUnpublish } from './functions/SurveyUnpublish'
+import { SurveyCanBeTaken } from './functions/SurveyCanBeTaken'
+import { SurveyTake } from './functions/SurveyTake'
+import SurveyResultEditor from './components/SurveyResultEditor.svelte'
+import MultipleChoiceQuestionPlayer from './components/MultipleChoiceQuestionPlayer.svelte'
+import SingleChoiceQuestionPlayer from './components/SingleChoiceQuestionPlayer.svelte'
+import { MultipleChoiceInitAnswerData } from './functions/MultipleChoiceInitAnswerData'
+import { SingleChoiceInitAnswerData } from './functions/SingleChoiceInitAnswerData'
 
 export default async (): Promise<Resources> => ({
   component: {
     MultipleChoiceQuestionEditor,
+    MultipleChoiceQuestionPlayer,
     QuestionCollectionEditor,
     SingleChoiceQuestionEditor,
+    SingleChoiceQuestionPlayer,
     SurveyCreator,
-    SurveyNamePresenter
+    SurveyPresenter,
+    SurveyResultEditor,
+    SurveyResultPresenter
   },
   function: {
-    MultipleChoiceInitAssessmentData: multipleChoiceInitAssessmentData,
-    MultipleChoiceInitQuestion: multipleChoiceInitQuestion,
-    SingleChoiceInitAssessmentData: singleChoiceInitAssessmentData,
-    SingleChoiceInitQuestion: singleChoiceInitQuestion
+    MultipleChoiceInitAnswerData,
+    MultipleChoiceInitAssessmentData,
+    MultipleChoiceInitQuestion,
+    SingleChoiceInitAnswerData,
+    SingleChoiceInitAssessmentData,
+    SingleChoiceInitQuestion,
+    SurveyCanBePublished,
+    SurveyCanBeTaken,
+    SurveyCanBeUnpublished,
+    SurveyPublish,
+    SurveyTake,
+    SurveyUnpublish
   }
 })

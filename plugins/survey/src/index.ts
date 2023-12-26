@@ -35,9 +35,9 @@ import {
   SingleChoiceAssessmentData,
   SingleChoiceQuestion,
   Survey,
-  SurveyRequest,
   SurveyResult
 } from './types'
+import { type Action, ActionCategory } from '@hcengineering/view'
 
 export * from './types'
 
@@ -57,7 +57,6 @@ export default plugin(surveyId, {
     ReorderQuestion: '' as Ref<Class<ReorderQuestion>>,
     SingleChoiceQuestion: '' as Ref<Class<SingleChoiceQuestion>>,
     Survey: '' as Ref<Class<Survey>>,
-    SurveyRequest: '' as Ref<Class<SurveyRequest>>,
     SurveyResult: '' as Ref<Class<SurveyResult>>,
     TypeAnswerData: '' as Ref<Class<Type<AnswerDataOf<any>>>>,
     TypeAssessmentData: '' as Ref<Class<Type<AssessmentData>>>,
@@ -70,6 +69,14 @@ export default plugin(surveyId, {
     TypeReorderAssessmentData: '' as Ref<Class<Type<ReorderAssessmentData>>>,
     TypeSingleChoiceAnswerData: '' as Ref<Class<Type<SingleChoiceAnswerData>>>,
     TypeSingleChoiceAssessmentData: '' as Ref<Class<Type<SingleChoiceAssessmentData>>>
+  },
+  category: {
+    Survey: '' as Ref<ActionCategory>
+  },
+  action: {
+    SurveyPublish: '' as Ref<Action<Survey>>,
+    SurveyTake: '' as Ref<Action<Survey>>,
+    SurveyUnpublish: '' as Ref<Action<Survey>>
   },
   mixin: {
     QuestionType: '' as Ref<Mixin<QuestionType>>
@@ -96,15 +103,18 @@ export default plugin(surveyId, {
     Score: '' as IntlString,
     Shuffle: '' as IntlString,
     SingleChoice: '' as IntlString,
+    SubmittedBy: '' as IntlString,
+    SubmittedOn: '' as IntlString,
     Survey: '' as IntlString,
     Surveys: '' as IntlString,
     SurveyApplication: '' as IntlString,
     SurveyCreate: '' as IntlString,
     SurveyName: '' as IntlString,
-    SurveyRequest: '' as IntlString,
-    SurveyRequests: '' as IntlString,
+    SurveyPublish: '' as IntlString,
     SurveyResult: '' as IntlString,
     SurveyResults: '' as IntlString,
+    SurveyTake: '' as IntlString,
+    SurveyUnpublish: '' as IntlString,
     TypeFraction: '' as IntlString,
     TypeRank: '' as IntlString
   },
@@ -117,6 +127,7 @@ export default plugin(surveyId, {
     Question: '' as Asset,
     RadioButton: '' as Asset,
     Survey: '' as Asset,
-    SurveyApplication: '' as Asset
+    SurveyApplication: '' as Asset,
+    SurveyResult: '' as Asset
   }
 })

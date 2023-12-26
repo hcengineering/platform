@@ -1,4 +1,4 @@
-<!--
+//
 // Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,17 +11,25 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
--->
+//
 
-<script lang="ts">
-  import { DocNavLink } from '@hcengineering/view-resources'
-  import { Survey } from '@hcengineering/survey'
+import {
+  type MultipleChoiceAnswerData,
+  type MultipleChoiceQuestion,
+  type QuestionTypeInitAnswerDataFunction
+} from '@hcengineering/survey'
+import type { ThemeOptions } from '@hcengineering/theme'
+import type { Hierarchy } from '@hcengineering/core'
 
-  export let value: Survey
-</script>
-
-<DocNavLink object={value} noOverflow inline>
-  <span class="antiPresenter">
-    {value.name}
-  </span>
-</DocNavLink>
+export const MultipleChoiceInitAnswerData: QuestionTypeInitAnswerDataFunction<
+MultipleChoiceQuestion,
+MultipleChoiceAnswerData
+> = async (
+  language: ThemeOptions['language'],
+  hierarchy: Hierarchy,
+  question: MultipleChoiceQuestion
+): Promise<MultipleChoiceAnswerData> => {
+  return {
+    selections: []
+  }
+}

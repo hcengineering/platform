@@ -13,8 +13,23 @@
 // limitations under the License.
 //
 
-export * from './base'
-export * from './MultipleChoice'
-export * from './QuestionType'
-export * from './Reorder'
-export * from './SingleChoice'
+import {
+  type QuestionTypeInitAnswerDataFunction,
+  type SingleChoiceAnswerData,
+  type SingleChoiceQuestion
+} from '@hcengineering/survey'
+import type { ThemeOptions } from '@hcengineering/theme'
+import type { Hierarchy } from '@hcengineering/core'
+
+export const SingleChoiceInitAnswerData: QuestionTypeInitAnswerDataFunction<
+SingleChoiceQuestion,
+SingleChoiceAnswerData
+> = async (
+  language: ThemeOptions['language'],
+  hierarchy: Hierarchy,
+  question: SingleChoiceQuestion
+): Promise<SingleChoiceAnswerData> => {
+  return {
+    selection: null
+  }
+}

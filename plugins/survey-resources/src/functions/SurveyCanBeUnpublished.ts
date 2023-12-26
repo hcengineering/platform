@@ -13,19 +13,18 @@
 // limitations under the License.
 //
 
-import { mergeIds } from '@hcengineering/platform'
-import { surveyId } from '@hcengineering/survey'
-import survey from '@hcengineering/survey-resources/src/plugin'
-import { type Ref } from '@hcengineering/core'
-import { type Application } from '@hcengineering/workbench'
-import { type Viewlet } from '@hcengineering/view'
+import { type ViewActionAvailabilityFunction } from '@hcengineering/view'
+import { type Survey } from '@hcengineering/survey'
+import { getCurrentAccount } from '@hcengineering/core'
 
-export default mergeIds(surveyId, survey, {
-  app: {
-    SurveyApplication: '' as Ref<Application>
-  },
-  viewlet: {
-    TableSurvey: '' as Ref<Viewlet>,
-    TableSurveyResult: '' as Ref<Viewlet>
+export const SurveyCanBeUnpublished: ViewActionAvailabilityFunction<Survey> = async (
+  objects: Survey | Survey[] | undefined
+): Promise<boolean> => {
+  if (objects === undefined) {
+    return false
   }
-})
+  const currentAccountId = getCurrentAccount()._id
+  return (Array.isArray(objects) ? objects : [objects]).every((object) => {
+    return !object.private && object.createdBy === currentAccountId && object.results === 0
+  })
+}

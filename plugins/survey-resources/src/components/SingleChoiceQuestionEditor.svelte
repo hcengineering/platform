@@ -21,19 +21,15 @@
     type SingleChoiceQuestion
   } from '@hcengineering/survey'
 
-  // TODO: Move to `generics` attribute when IDE supports it
-  //  https://youtrack.jetbrains.com/issue/WEB-57377
-  type Q = SingleChoiceQuestion
-
   /**
    * Declared $$Props help TypeScript ensure that your component properly implements {@link QuestionTypeEditorComponentType}
    * @see https://raqueebuddinaziz.com/blog/svelte-type-events-slots-and-props/#restprops-props
    */
-  interface $$Props extends QuestionTypeEditorComponentProps<Q> {}
+  interface $$Props extends QuestionTypeEditorComponentProps<SingleChoiceQuestion> {}
 
-  export let object: Q
+  export let question: SingleChoiceQuestion
   export let editable = true
-  export let submit: (data: Partial<Q>) => Promise<void>
+  export let submit: (data: Partial<SingleChoiceQuestion>) => Promise<void>
 
   const inputs: EditBox[] = []
 
@@ -41,20 +37,20 @@
 
   function appendOption (): void {
     update({
-      options: [...object.options, { label: draft }]
+      options: [...question.options, { label: draft }]
     })
     setTimeout(() => {
-      inputs[object.options.length - 1].focus()
+      inputs[question.options.length - 1].focus()
       draft = ''
     })
   }
 
   function removeOptionAt (index: number): void {
-    if (object.options.length < 1) {
+    if (question.options.length < 1) {
       return
     }
-    const nextOptions = [...object.options.slice(0, index), ...object.options.slice(index + 1)]
-    const prevAssessment: AssessmentDataOf<SingleChoiceQuestion> | null = object.assessment
+    const nextOptions = [...question.options.slice(0, index), ...question.options.slice(index + 1)]
+    const prevAssessment: AssessmentDataOf<SingleChoiceQuestion> | null = question.assessment
     let nextAssessment = prevAssessment
     if (prevAssessment !== null) {
       nextAssessment = {
@@ -71,26 +67,26 @@
     })
   }
 
-  function update (data: Partial<Q> = {}): void {
-    object = { ...object, ...data }
-    void submit(object)
+  function update (data: Partial<SingleChoiceQuestion> = {}): void {
+    question = { ...question, ...data }
+    void submit(question)
   }
 
   function toggleIndex (index: number, on: boolean): boolean | undefined {
-    if (object.assessment === null) {
+    if (question.assessment === null) {
       return undefined
     }
-    let nextSelection = object.assessment.correctAnswer.selection
+    let nextSelection = question.assessment.correctAnswer.selection
     if (on) {
       nextSelection = index
-    } else if (index === object.assessment.correctAnswer.selection) {
+    } else if (index === question.assessment.correctAnswer.selection) {
       nextSelection = null
     }
     update({
       assessment: {
-        ...object.assessment,
+        ...question.assessment,
         correctAnswer: {
-          ...object.assessment.correctAnswer,
+          ...question.assessment.correctAnswer,
           selection: nextSelection
         }
       }
@@ -99,14 +95,14 @@
 </script>
 
 <div>
-  {#each object.options as _, index (index)}
+  {#each question.options as _, index (index)}
     <div class="flex flex-row-center flex-stretch flex-gap-1 my-1">
       <div class="flex min-w-8 pl-2">
-        {#if object.assessment === null}
+        {#if question.assessment === null}
           <RadioButton group={null} value={index} disabled labelOverflow />
         {:else}
           <RadioButton
-            group={object.assessment.correctAnswer.selection}
+            group={question.assessment.correctAnswer.selection}
             value={index}
             labelOverflow
             disabled={!editable}
@@ -117,14 +113,14 @@
       <EditBox
         kind="default"
         fullSize
-        bind:value={object.options[index].label}
+        bind:value={question.options[index].label}
         bind:this={inputs[index]}
         on:change={() => {
           update()
         }}
         disabled={!editable}
       />
-      {#if editable && object.options.length > 1}
+      {#if editable && question.options.length > 1}
         <Button
           icon={IconDelete}
           kind="ghost"

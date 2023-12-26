@@ -435,9 +435,23 @@ export type ViewActionInput = 'focus' | 'selection' | 'any' | 'none'
 /**
  * @public
  */
-export type ViewAction<T = Record<string, any>> = Resource<
-(doc: Doc | Doc[] | undefined, evt: Event, params?: T) => Promise<void>
->
+export type ViewActionFunction<TDoc extends Doc = Doc, TParams = Record<string, any>> = (
+  doc: TDoc | TDoc[] | undefined,
+  evt: Event,
+  params?: TParams
+) => Promise<void>
+
+/**
+ * @public
+ */
+export type ViewActionAvailabilityFunction<TDoc extends Doc = Doc> = (
+  doc: TDoc | TDoc[] | undefined
+) => Promise<boolean>
+
+/**
+ * @public
+ */
+export type ViewAction<TParams = Record<string, any>> = Resource<ViewActionFunction<Doc, TParams>>
 
 /**
  * @public
@@ -457,7 +471,7 @@ export type ActionGroup = 'create' | 'edit' | 'associate' | 'copy' | 'tools' | '
  */
 export interface Action<T extends Doc = Doc, P = Record<string, any>> extends Doc, UXObject {
   // Action implementation details
-  action: ViewAction<P>
+  action: Resource<ViewActionFunction<T, P>>
   // Action implementation parameters
   actionProps?: P
 
@@ -477,7 +491,7 @@ export interface Action<T extends Doc = Doc, P = Record<string, any>> extends Do
   query?: DocumentQuery<T>
 
   // Action is shown only if the check is passed
-  visibilityTester?: Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
+  visibilityTester?: Resource<ViewActionAvailabilityFunction<T>>
 
   // If defined, types should be matched to proposed list
   inputProps?: Record<string, Ref<Class<Doc>>>
@@ -495,7 +509,7 @@ export interface Action<T extends Doc = Doc, P = Record<string, any>> extends Do
   context: ViewContext
 
   // A list of actions replaced by this one.
-  // For example it could be global action and action for focus class, second one fill override first one.
+  // For example, it could be global action and action for focus class, second one fill override first one.
   override?: Ref<Action>[]
 
   // Avaible only for workspace owners

@@ -13,8 +13,17 @@
 // limitations under the License.
 //
 
-export * from './base'
-export * from './MultipleChoice'
-export * from './QuestionType'
-export * from './Reorder'
-export * from './SingleChoice'
+import { type ViewActionAvailabilityFunction } from '@hcengineering/view'
+import { type Survey } from '@hcengineering/survey'
+
+export const SurveyCanBeTaken: ViewActionAvailabilityFunction<Survey> = async (
+  objects: Survey | Survey[] | undefined
+): Promise<boolean> => {
+  if (objects === undefined) {
+    return false
+  }
+  return (Array.isArray(objects) ? objects : [objects]).every((object) => {
+    // TODO: Add more checks: maxAttempts, existing unfinished results, etc.
+    return !object.private && object.questions > 0
+  })
+}

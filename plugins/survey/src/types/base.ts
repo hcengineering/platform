@@ -14,21 +14,16 @@
 //
 
 import {
-  type AttachedData,
+  Account,
   type AttachedDoc,
   type Class,
   type CollectionSize,
-  type Doc,
-  Hierarchy,
   type Markup,
   type Ref,
-  type Space
+  type Space,
+  Timestamp
 } from '@hcengineering/core'
 import { type Attachment } from '@hcengineering/attachment'
-import { type Person } from '@hcengineering/contact'
-import { type ComponentType, type SvelteComponent } from 'svelte'
-import { type Resource } from '@hcengineering/platform'
-import { ThemeOptions } from '@hcengineering/theme'
 
 /**
  * @public
@@ -48,8 +43,7 @@ export type Fraction = number
 export interface Survey extends Space {
   name: string
   questions: CollectionSize<Question>
-  requests: CollectionSize<SurveyRequest>
-  // TODO: isAssessment: boolean
+  results: CollectionSize<SurveyResult>
 }
 
 /** @public */
@@ -85,60 +79,19 @@ export interface QuestionOption {
 }
 
 /** @public */
-export interface SurveyRequest extends AttachedDoc<Survey, 'requests', Survey> {
-  // TODO: Should it be Employee, no?
-  // TODO: Should it be an array of assignees instead?
-  assignee: Ref<Person>
-
-  results: CollectionSize<SurveyResult>
-  // TODO: maxAttempts?: number
-  // TODO: dueDate?: Timestamp
-}
-
-/** @public */
-export interface SurveyResult extends AttachedDoc<SurveyRequest, 'results', Survey> {
+export interface SurveyResult extends AttachedDoc<Survey, 'results', Survey> {
   answers: CollectionSize<Answer<any>>
+  submittedOn?: Timestamp
+  submittedBy?: Ref<Account>
 }
 
 /** @public */
-export interface Answer<TQuestion extends Question> extends AttachedDoc<SurveyResult, 'answers', Survey> {
+export interface Answer<
+  TQuestion extends Question,
+  TAnswerData extends AnswerDataOf<TQuestion> = AnswerDataOf<TQuestion>
+> extends AttachedDoc<SurveyResult, 'answers', Survey> {
   questionClass: Ref<Class<TQuestion>>
   question: Ref<TQuestion>
-  answer: AnswerDataOf<TQuestion>
+  answer: TAnswerData
   score?: Fraction
-}
-
-/** @public */
-export interface QuestionTypeEditorComponentProps<Q extends Question> {
-  readonly object: Q
-  readonly editable: boolean
-  readonly submit: (data: Partial<Q>) => Promise<void>
-}
-
-/** @public */
-export type QuestionTypeEditorComponentType<Q extends Question> = ComponentType<
-SvelteComponent<QuestionTypeEditorComponentProps<Q>>
->
-
-/** @public */
-export type QuestionTypeInitQuestionFunction<Q extends Question> = (
-  language: ThemeOptions['language'],
-  hierarchy: Hierarchy,
-  prevRank: Rank | null,
-  nextRank: Rank | null
-) => Promise<AttachedData<Q>>
-
-/** @public */
-export type QuestionTypeInitAssessmentDataFunction<Q extends Question> = (
-  language: ThemeOptions['language'],
-  hierarchy: Hierarchy,
-  question: Q
-) => Promise<AssessmentDataOf<Q>>
-
-/** @public */
-export interface QuestionType<Q extends Question = Question> extends Class<Doc> {
-  editor: Resource<QuestionTypeEditorComponentType<Q>>
-  initQuestion: Resource<QuestionTypeInitQuestionFunction<Q>>
-  // If initAssessmentData is not defined, we assume that the question cannot be assessable
-  initAssessmentData?: Resource<QuestionTypeInitAssessmentDataFunction<Q>>
 }

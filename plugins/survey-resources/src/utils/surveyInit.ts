@@ -27,7 +27,7 @@ export function surveyInit (client: TxOperations): DocData<Survey> {
     members: [],
     archived: false,
     questions: 0,
-    requests: 0
+    results: 0
   }
 
   object = fillDefaults<Survey>(hierarchy, object, survey.class.Survey)

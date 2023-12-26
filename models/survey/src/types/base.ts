@@ -14,12 +14,14 @@
 //
 
 import {
+  type Account,
   type Class,
   type CollectionSize,
   type Domain,
   IndexKind,
   type Markup,
   type Ref,
+  type Timestamp,
   type Type
 } from '@hcengineering/core'
 import core, { TAttachedDoc, TClass, TSpace, TType } from '@hcengineering/model-core'
@@ -36,6 +38,7 @@ import {
   TypeMarkup,
   TypeRef,
   TypeString,
+  TypeTimestamp,
   UX
 } from '@hcengineering/model'
 import survey from '../plugin'
@@ -48,16 +51,16 @@ import {
   type QuestionOption,
   type QuestionType,
   type QuestionTypeEditorComponentType,
+  type QuestionTypeInitAnswerDataFunction,
   type QuestionTypeInitAssessmentDataFunction,
   type QuestionTypeInitQuestionFunction,
+  type QuestionTypePlayerComponentType,
   type Rank,
   type Survey,
-  type SurveyRequest,
   type SurveyResult
 } from '@hcengineering/survey'
 import attachment from '@hcengineering/model-attachment'
 import { type Attachment } from '@hcengineering/attachment'
-import contact, { type Person } from '@hcengineering/contact'
 import { type Resource } from '@hcengineering/platform'
 
 export const DOMAIN_SURVEY = 'survey' as Domain
@@ -108,8 +111,8 @@ export class TSurvey extends TSpace implements Survey {
   @Prop(Collection(survey.class.Question), survey.string.Questions, { defaultValue: 0 })
     questions: CollectionSize<Question> = 0
 
-  @Prop(Collection(survey.class.SurveyRequest), survey.string.SurveyRequests, { defaultValue: 0 })
-    requests: CollectionSize<SurveyRequest> = 0
+  @Prop(Collection(survey.class.SurveyResult), survey.string.SurveyResults, { defaultValue: 0 })
+    results: CollectionSize<SurveyResult> = 0
 }
 
 /** @public */
@@ -165,14 +168,19 @@ export function TypeQuestionOption (): Type<QuestionOption> {
 }
 
 /** @public */
-@Model(survey.class.SurveyRequest, core.class.AttachedDoc, DOMAIN_SURVEY)
-export class TSurveyRequest extends TAttachedDoc implements SurveyRequest {
+@Model(survey.class.SurveyResult, core.class.AttachedDoc, DOMAIN_SURVEY)
+@UX(survey.string.SurveyResult)
+export class TSurveyResult extends TAttachedDoc implements SurveyResult {
+  @Prop(TypeRef(core.class.Doc), core.string.Id)
+  @ReadOnly()
+  declare _id: Ref<this>
+
   @Prop(TypeRef(survey.class.Survey), core.string.Space)
   @Index(IndexKind.Indexed)
   @Hidden()
   declare space: Ref<Survey>
 
-  @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
+  @Prop(TypeRef(survey.class.Survey), core.string.AttachedToClass)
   @Index(IndexKind.Indexed)
   @Hidden()
   declare attachedToClass: Ref<Class<Survey>>
@@ -182,38 +190,6 @@ export class TSurveyRequest extends TAttachedDoc implements SurveyRequest {
   @ReadOnly()
   declare attachedTo: Ref<Survey>
 
-  @Prop(TypeString(), core.string.Collection, { defaultValue: 'requests' })
-  @Hidden()
-  override collection: 'requests' = 'requests'
-
-  @Prop(TypeRef(contact.class.Person), survey.string.Assignee)
-  @ReadOnly()
-    assignee!: Ref<Person>
-
-  @Prop(Collection(survey.class.SurveyResult), survey.string.SurveyResult, { defaultValue: 0 })
-  @Index(IndexKind.Indexed)
-    results: CollectionSize<SurveyResult> = 0
-}
-
-/** @public */
-@Model(survey.class.SurveyResult, core.class.AttachedDoc, DOMAIN_SURVEY)
-@UX(survey.string.SurveyResult)
-export class TSurveyResult extends TAttachedDoc implements SurveyResult {
-  @Prop(TypeRef(survey.class.Survey), core.string.Space)
-  @Index(IndexKind.Indexed)
-  @Hidden()
-  declare space: Ref<Survey>
-
-  @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
-  @Index(IndexKind.Indexed)
-  @Hidden()
-  declare attachedToClass: Ref<Class<SurveyRequest>>
-
-  @Prop(TypeRef(survey.class.Survey), core.string.AttachedTo)
-  @Index(IndexKind.Indexed)
-  @ReadOnly()
-  declare attachedTo: Ref<SurveyRequest>
-
   @Prop(TypeString(), core.string.Collection, { defaultValue: 'results' })
   @Hidden()
   override collection: 'results' = 'results'
@@ -221,6 +197,14 @@ export class TSurveyResult extends TAttachedDoc implements SurveyResult {
   @Prop(Collection(survey.class.Answer), survey.string.Answers, { defaultValue: 0 })
   @Index(IndexKind.Indexed)
     answers: CollectionSize<Answer<any>> = 0
+
+  @Prop(TypeTimestamp(), survey.string.SubmittedOn, { defaultValue: undefined })
+  @Index(IndexKind.Indexed)
+    submittedOn?: Timestamp
+
+  @Prop(TypeRef(core.class.Account), survey.string.SubmittedBy, { defaultValue: undefined })
+  @Index(IndexKind.Indexed)
+    submittedBy?: Ref<Account>
 }
 
 /** @public */
@@ -236,7 +220,9 @@ export function TypeAnswerData (): Type<AnswerDataOf<any>> {
 /** @public */
 @Model(survey.class.Answer, core.class.AttachedDoc, DOMAIN_SURVEY)
 @UX(survey.string.Answer)
-export class TAnswer<Q extends Question> extends TAttachedDoc implements Answer<Q> {
+export class TAnswer<TQuestion extends Question, TAnswerData extends AnswerDataOf<TQuestion> = AnswerDataOf<TQuestion>>
+  extends TAttachedDoc
+  implements Answer<TQuestion, TAnswerData> {
   @Prop(TypeRef(survey.class.Survey), core.string.Space)
   @Index(IndexKind.Indexed)
   @Hidden()
@@ -259,15 +245,15 @@ export class TAnswer<Q extends Question> extends TAttachedDoc implements Answer<
   @Prop(TypeRef(core.class.Class), survey.string.Question)
   @Index(IndexKind.Indexed)
   @Hidden()
-    questionClass!: Ref<Class<Q>>
+    questionClass!: Ref<Class<TQuestion>>
 
   @Prop(TypeRef(survey.class.Question), survey.string.Question)
   @Index(IndexKind.Indexed)
   @ReadOnly()
-    question!: Ref<Q>
+    question!: Ref<TQuestion>
 
   @Prop(TypeAnswerData(), survey.string.Answer)
-    answer!: AnswerDataOf<Q>
+    answer!: TAnswerData
 
   @Prop(TypeFraction(), survey.string.Score)
   @Index(IndexKind.Indexed)
@@ -276,8 +262,15 @@ export class TAnswer<Q extends Question> extends TAttachedDoc implements Answer<
 
 /** @public */
 @Mixin(survey.mixin.QuestionType, core.class.Class)
-export class TQuestionType<Q extends Question> extends TClass implements QuestionType<Q> {
-  editor!: Resource<QuestionTypeEditorComponentType<Q>>
-  initQuestion!: Resource<QuestionTypeInitQuestionFunction<Q>>
-  initAssessmentData?: Resource<QuestionTypeInitAssessmentDataFunction<Q>>
+export class TQuestionType<
+    TQuestion extends Question,
+    TAnswerData extends AnswerDataOf<TQuestion> = AnswerDataOf<TQuestion>
+  >
+  extends TClass
+  implements QuestionType<TQuestion, TAnswerData> {
+  initQuestion!: Resource<QuestionTypeInitQuestionFunction<TQuestion>>
+  initAssessmentData?: Resource<QuestionTypeInitAssessmentDataFunction<TQuestion>>
+  editor!: Resource<QuestionTypeEditorComponentType<TQuestion>>
+  initAnswerData!: Resource<QuestionTypeInitAnswerDataFunction<TQuestion, TAnswerData>>
+  player!: Resource<QuestionTypePlayerComponentType<TQuestion>>
 }

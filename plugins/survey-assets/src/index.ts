@@ -26,5 +26,6 @@ loadMetadata(survey.icon, {
   Question: `${icons}#question`,
   RadioButton: `${icons}#radio-button`,
   Survey: `${icons}#survey`,
-  SurveyApplication: `${icons}#survey`
+  SurveyApplication: `${icons}#survey`,
+  SurveyResult: `${icons}#result`
 })

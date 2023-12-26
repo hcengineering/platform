@@ -31,7 +31,7 @@
   type Q = Question
 
   export let index: number = 0
-  export let object: Q
+  export let question: Q
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -39,18 +39,18 @@
   let questionClass: Class<Q>
   let questionType: QuestionType<Q>
   let questionEditorComponentPromise: Promise<ComponentType>
-  $: if (object._class !== questionClass?._id) {
-    questionClass = hierarchy.getClass<Q>(object._class)
+  $: if (question._class !== questionClass?._id) {
+    questionClass = hierarchy.getClass<Q>(question._class)
     questionType = hierarchy.as(questionClass, survey.mixin.QuestionType)
     questionEditorComponentPromise = getResource(questionType.editor)
   }
 
   // A copy of current object to be passed to nested editor
-  let draft: Q = object
+  let draft: Q = question
   $: {
-    const externalChangesDetected = !deepEqual(object, draft)
+    const externalChangesDetected = !deepEqual(question, draft)
     if (externalChangesDetected) {
-      draft = object
+      draft = question
     }
   }
 
@@ -62,7 +62,7 @@
 
   async function submit (data: Partial<Q>): Promise<void> {
     isSubmitting = true
-    await questionUpdate(client, object, data)
+    await questionUpdate(client, question, data)
     isSubmitting = false
   }
 
@@ -85,7 +85,7 @@
       )
       draft = {
         ...draft,
-        assessment: await initAssessmentData($themeStore.language, hierarchy, object)
+        assessment: await initAssessmentData($themeStore.language, hierarchy, question)
       }
     } else {
       draft = {
@@ -168,6 +168,6 @@
   {#await questionEditorComponentPromise}
     <Loading />
   {:then instance}
-    <svelte:component this={instance} editable={!isPreviewing} object={draft} {submit} />
+    <svelte:component this={instance} editable={!isPreviewing} question={draft} {submit} />
   {/await}
 </form>

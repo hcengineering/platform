@@ -30,7 +30,7 @@
   import { Question, Survey } from '@hcengineering/survey'
   import { Class, Ref, SortingOrder } from '@hcengineering/core'
   import { questionCreate } from '../utils/questionCreate'
-  import QuestionEditor from './QuestionCollectionItemEditor.svelte'
+  import QuestionEditor from './QuestionEditor.svelte'
   import { questionDelete } from '../utils/questionDelete'
   import { questionUpdate } from '../utils/questionUpdate'
   import { getEditableQuestionClasses } from '../utils/getEditableQuestionClasses'
@@ -53,7 +53,7 @@
   $: {
     query.query<Question>(
       survey.class.Question,
-      { space: object._id, attachedTo: object._id, attachedToClass: object._class },
+      { attachedTo: object._id, attachedToClass: object._class },
       (res) => {
         questions = res
       },
@@ -82,10 +82,7 @@
           prevQuestion?.rank ?? null,
           nextQuestion?.rank ?? null
         )
-        await questionCreate<Question>(client, object, {
-          ...question,
-          _class: classRef
-        })
+        await questionCreate<Question>(client, object, classRef, question)
       }
     )
   }
@@ -118,7 +115,7 @@
       </div>
     {/if}
 
-    <QuestionEditor object={questions[index]} {index}>
+    <QuestionEditor {question} {index}>
       <Button
         icon={IconUp}
         shape="circle"

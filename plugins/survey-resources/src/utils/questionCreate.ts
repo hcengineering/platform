@@ -14,18 +14,19 @@
 //
 
 import { type Question, type Survey } from '@hcengineering/survey'
-import { type AttachedData, type Ref, type TxOperations } from '@hcengineering/core'
+import { type AttachedData, type Class, type Ref, type TxOperations } from '@hcengineering/core'
 
 export async function questionCreate<Q extends Question> (
   client: TxOperations,
-  survey: Survey,
-  question: AttachedData<Q> & Pick<Q, '_class'>
+  attachedTo: Survey,
+  classRef: Ref<Class<Q>>,
+  question: AttachedData<Q>
 ): Promise<Ref<Q>> {
   return await client.addCollection<Survey, Q>(
-    question._class,
-    survey._id,
-    survey._id,
-    survey._class,
+    classRef,
+    attachedTo._id,
+    attachedTo._id,
+    attachedTo._class,
     'questions',
     question
   )
