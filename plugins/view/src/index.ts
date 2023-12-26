@@ -444,9 +444,7 @@ export type ViewActionFunction<T extends Doc = Doc, P = Record<string, any>> = (
 /**
  * @public
  */
-export type ViewActionAvailabilityFunction<T extends Doc = Doc> = (
-  doc: T | T[] | undefined
-) => Promise<boolean>
+export type ViewActionAvailabilityFunction<T extends Doc = Doc> = (doc: T | T[] | undefined) => Promise<boolean>
 
 /**
  * @public
