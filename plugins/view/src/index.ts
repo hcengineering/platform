@@ -871,7 +871,8 @@ const view = plugin(viewId, {
     Subscribed: '' as IntlString,
     HyperlinkPlaceholder: '' as IntlString,
     CopyToClipboard: '' as IntlString,
-    NoGrouping: '' as IntlString
+    NoGrouping: '' as IntlString,
+    PublicView: '' as IntlString
   },
   icon: {
     Table: '' as Asset,

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Ref, getCurrentAccount, toIdMap } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { copyTextToClipboard, createQuery, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import {
     Action,
@@ -12,7 +12,9 @@
     showPopup,
     SelectPopup,
     getEventPopupPositionElement,
-    getPopupPositionElement
+    getPopupPositionElement,
+    locationToUrl,
+    getLocation
   } from '@hcengineering/ui'
   import view, { Filter, FilteredView, ViewOptions, Viewlet } from '@hcengineering/view'
   import {
@@ -33,6 +35,7 @@
   import copy from 'fast-copy'
   import { createEventDispatcher } from 'svelte'
   import contact from '@hcengineering/contact'
+  import task from '../../../task/lib'
 
   export let currentApplication: Application | undefined
 
@@ -49,6 +52,14 @@
     (result) => {
       myFilteredViews = result.filter((p) => p.users.includes(me))
       availableFilteredViews = result.filter((p) => p.sharable && !p.users.includes(me))
+
+      const location = getLocation()
+      if (location.query?.filterVeiewId) {
+        const targetView = result.find((view) => view._id == location.query?.filterVeiewId)
+        if (targetView) {
+          load(targetView)
+        }
+      }
     }
   )
 
@@ -85,13 +96,52 @@
     ]
   }
 
+  async function switchPublicAction (object: FilteredView, originalEvent: MouseEvent | undefined): Promise<Action[]> {
+    return [
+      {
+        icon: object.sharable ? task.icon.TodoCheck : task.icon.TodoUnCheck,
+        label: view.string.PublicView,
+        action: async (ctx: any, evt: Event) => {
+          await client.update(object, { sharable: !object.sharable })
+        }
+      }
+    ]
+  }
+
+  async function copyUrlAction (filteredView: FilteredView): Promise<Action[]> {
+    return [
+      {
+        icon: view.icon.CopyLink,
+        label: view.string.CopyToClipboard,
+        inline: true,
+        action: async (ctx: any, evt: Event) => {
+          const { protocol, hostname, port } = window.location
+          const baseUrl = `${protocol}//${hostname}${port ? `:${port}` : ''}`
+          let query = filteredView.location.query || {}
+          query.filterVeiewId = filteredView._id
+
+          const targetUrl = locationToUrl({
+            path: filteredView.location.path,
+            query: query,
+            fragment: filteredView.location.fragment ?? undefined
+          })
+          copyTextToClipboard(baseUrl + targetUrl)
+        }
+      }
+    ]
+  }
+
   async function viewAction (filteredView: FilteredView, originalEvent: MouseEvent | undefined): Promise<Action[]> {
+    const copyUrl = await copyUrlAction(filteredView)
     const rename = await renameAction(filteredView, originalEvent)
+    const setPublic = await switchPublicAction(filteredView, originalEvent)
+    const hide = await hideAction(filteredView)
+
     if (filteredView.createdBy === me) {
       const remove = await removeAction(filteredView)
-      return [...remove, ...rename]
+      return [...setPublic, ...rename, ...remove, ...copyUrl]
     }
-    return await hideAction(filteredView)
+    return [...hide, ...copyUrl]
   }
 
   async function hideAction (object: FilteredView): Promise<Action[]> {

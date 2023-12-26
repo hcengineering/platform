@@ -47,11 +47,23 @@
   export let actions: (originalEvent?: MouseEvent) => Promise<Action[]> = async () => []
 
   let hovered = false
+  let inlineActions: Action[] = []
+  let popupMenuActions: Action[] = []
+
+  $: actions().then((result) => {
+    inlineActions = result.filter((action) => action.inline === true)
+    popupMenuActions = result.filter((action) => !action.inline === true)
+  })
+
   async function onMenuClick (ev: MouseEvent) {
-    showPopup(Menu, { actions: await actions(ev), ctx: _id }, ev.target as HTMLElement, () => {
+    showPopup(Menu, { actions: popupMenuActions, ctx: _id }, ev.target as HTMLElement, () => {
       hovered = false
     })
     hovered = true
+  }
+
+  async function onInlineClick(ev: MouseEvent, action: Action) {
+    action.action([], ev)
   }
 
   const dispatch = createEventDispatcher()
@@ -91,6 +103,15 @@
   <div class="an-element__grow" />
 
   {#if !parent}
+    {#each inlineActions as action}
+      <div
+        class="an-element__tool"
+        class:pressed={hovered}
+        on:click|preventDefault|stopPropagation={(ev) => onInlineClick(ev, action)}
+      >
+        <Icon icon={action.icon} size={'small'} />
+      </div>
+    {/each}
     <div class="an-element__tool" class:pressed={hovered} on:click|preventDefault|stopPropagation={onMenuClick}>
       <IconMoreH size={'small'} />
     </div>
