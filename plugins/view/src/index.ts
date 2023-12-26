@@ -435,23 +435,21 @@ export type ViewActionInput = 'focus' | 'selection' | 'any' | 'none'
 /**
  * @public
  */
-export type ViewActionFunction<TDoc extends Doc = Doc, TParams = Record<string, any>> = (
-  doc: TDoc | TDoc[] | undefined,
+export type ViewActionFunction<T extends Doc = Doc, P = Record<string, any>> = (
+  doc: T | T[] | undefined,
   evt: Event,
-  params?: TParams
+  params?: P
 ) => Promise<void>
 
 /**
  * @public
  */
-export type ViewActionAvailabilityFunction<TDoc extends Doc = Doc> = (
-  doc: TDoc | TDoc[] | undefined
-) => Promise<boolean>
+export type ViewActionAvailabilityFunction<T extends Doc = Doc> = (doc: T | T[] | undefined) => Promise<boolean>
 
 /**
  * @public
  */
-export type ViewAction<TParams = Record<string, any>> = Resource<ViewActionFunction<Doc, TParams>>
+export type ViewAction<P = Record<string, any>> = Resource<ViewActionFunction<Doc, P>>
 
 /**
  * @public
