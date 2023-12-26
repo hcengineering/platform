@@ -30,6 +30,7 @@ import {
   TSurvey,
   TSurveyResult,
   TTypeAnswerData,
+  TTypeFraction,
   TTypeMultipleChoiceAssessmentData,
   TTypeRank,
   TTypeReorderAssessmentData,
@@ -202,7 +203,7 @@ function defineQuestionTypes (builder: Builder): void {
 }
 
 function defineResult (builder: Builder): void {
-  builder.createModel(TSurveyResult, TTypeAnswerData, TAnswer)
+  builder.createModel(TSurveyResult, TTypeFraction, TTypeAnswerData, TAnswer)
   builder.mixin(survey.class.SurveyResult, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: survey.component.SurveyResultPresenter
   })
