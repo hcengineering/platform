@@ -59,5 +59,5 @@
   />
 {/if}
 {#if !allTypes}
-  <TaskKindSelector {baseClass} projectType={$selectedTypeStore} bind:taskType={$selectedTaskTypeStore} />
+  <TaskKindSelector {baseClass} projectType={$selectedTypeStore} bind:value={$selectedTaskTypeStore} />
 {/if}
