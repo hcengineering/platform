@@ -18,6 +18,7 @@ import { type IntlString, mergeIds, type Resource } from '@hcengineering/platfor
 import { type Doc, type Ref } from '@hcengineering/core'
 import type { Location } from '@hcengineering/ui'
 import { type ActionCategory } from '@hcengineering/view'
+import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
 
 export default mergeIds(activityId, activity, {
   string: {
@@ -34,7 +35,9 @@ export default mergeIds(activityId, activity, {
   },
   ids: {
     ReactionAddedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,
-    ReactionRemovedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>
+    ReactionRemovedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,
+    ActivityNotificationGroup: '' as Ref<NotificationGroup>,
+    AddReactionNotification: '' as Ref<NotificationType>
   },
   function: {
     GetFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>

@@ -29,8 +29,7 @@ import core, {
 import { ActivityControl, DocObjectCache } from '@hcengineering/server-activity'
 import type { TriggerControl } from '@hcengineering/server-core'
 import activity, { ActivityMessage, DocUpdateMessage, Reaction } from '@hcengineering/activity'
-import { pushInboxNotifications, removeDocInboxNotifications } from '@hcengineering/server-notification-resources'
-import notification from '@hcengineering/notification'
+import { createCollabDocInfo, removeDocInboxNotifications } from '@hcengineering/server-notification-resources'
 
 import { getDocUpdateAction, getTxAttributesUpdates } from './utils'
 
@@ -80,7 +79,7 @@ export async function createReactionNotifications (
     return []
   }
 
-  const res: Tx[] = []
+  let res: Tx[] = []
 
   const messageTx = (
     await pushDocUpdateMessages(
@@ -98,11 +97,9 @@ export async function createReactionNotifications (
 
   const docUpdateMessage = TxProcessor.createDoc2Doc(messageTx.tx as TxCreateDoc<DocUpdateMessage>)
 
-  const notifyContexts = await control.findAll(notification.class.DocNotifyContext, {
-    attachedTo: parentMessage._id
-  })
-
-  await pushInboxNotifications(tx, control, res, user, parentMessage, notifyContexts, docUpdateMessage, false)
+  res = res.concat(
+    await createCollabDocInfo([user], control, tx.tx, tx, parentMessage, docUpdateMessage, true, false, false)
+  )
 
   return res
 }

@@ -457,13 +457,23 @@ async function getNotificationTxes (
   isOwn: boolean,
   isSpace: boolean,
   docNotifyContexts: DocNotifyContext[],
-  activityMessage: ActivityMessage
+  activityMessage: ActivityMessage,
+  shouldUpdateTimestamp = true
 ): Promise<Tx[]> {
   const res: Tx[] = []
   const notifyResult = await isShouldNotify(control, tx, originTx, object, target, isOwn, isSpace)
-  console.log({ notifyResult, object })
+
   if (notifyResult.allowed) {
-    await pushInboxNotifications(originTx, control, res, target, object, docNotifyContexts, activityMessage)
+    await pushInboxNotifications(
+      originTx,
+      control,
+      res,
+      target,
+      object,
+      docNotifyContexts,
+      activityMessage,
+      shouldUpdateTimestamp
+    )
   }
 
   if (notifyResult.emails.length === 0) {
@@ -489,7 +499,7 @@ async function getNotificationTxes (
   return res
 }
 
-async function createCollabDocInfo (
+export async function createCollabDocInfo (
   collaborators: Ref<Account>[],
   control: TriggerControl,
   tx: TxCUD<Doc>,
@@ -497,7 +507,8 @@ async function createCollabDocInfo (
   object: Doc,
   activityMessage: ActivityMessage,
   isOwn: boolean,
-  isSpace: boolean = false
+  isSpace: boolean = false,
+  shouldUpdateTimestamp = true
 ): Promise<Tx[]> {
   let res: Tx[] = []
 
@@ -510,7 +521,18 @@ async function createCollabDocInfo (
 
   for (const target of targets) {
     res = res.concat(
-      await getNotificationTxes(control, object, tx, originTx, target, isOwn, isSpace, notifyContexts, activityMessage)
+      await getNotificationTxes(
+        control,
+        object,
+        tx,
+        originTx,
+        target,
+        isOwn,
+        isSpace,
+        notifyContexts,
+        activityMessage,
+        shouldUpdateTimestamp
+      )
     )
   }
   return res

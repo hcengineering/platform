@@ -315,6 +315,23 @@ export function createModel (builder: Builder): void {
   builder.mixin(activity.class.DocUpdateMessage, core.class.Class, notification.mixin.ClassCollaborators, {
     fields: ['createdBy', 'repliedPersons']
   })
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: false,
+      generated: false,
+      label: activity.string.Reactions,
+      group: activity.ids.ActivityNotificationGroup,
+      txClasses: [core.class.TxCreateDoc],
+      objectClass: activity.class.Reaction,
+      providers: {
+        [notification.providers.PlatformNotification]: true
+      }
+    },
+    activity.ids.AddReactionNotification
+  )
 }
 
 export default activity
