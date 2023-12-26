@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { type Ref } from '@hcengineering/core'
+import { type Doc, type Ref } from '@hcengineering/core'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type SettingsCategory } from '@hcengineering/setting'
 import { templatesId } from '@hcengineering/templates'
@@ -35,9 +35,9 @@ export default mergeIds(templatesId, templates, {
     EditGroup: '' as AnyComponent
   },
   action: {
-    Copy: '' as Ref<Action>,
-    Move: '' as Ref<Action>,
-    EditGroup: '' as Ref<Action>,
+    Copy: '' as Ref<Action<Doc, any>>,
+    Move: '' as Ref<Action<Doc, any>>,
+    EditGroup: '' as Ref<Action<Doc, any>>,
     ShowTemplates: '' as Resource<RefInputAction>
   },
   category: {

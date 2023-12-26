@@ -15,7 +15,7 @@
 //
 
 import { type ChatMessageViewlet } from '@hcengineering/chunter'
-import type { Ref } from '@hcengineering/core'
+import type { Doc, Ref } from '@hcengineering/core'
 import { type Funnel, leadId } from '@hcengineering/lead'
 import lead from '@hcengineering/lead-resources/src/plugin'
 import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
@@ -63,7 +63,7 @@ export default mergeIds(leadId, lead, {
   },
   action: {
     EditStatuses: '' as Ref<Action>,
-    CreateGlobalLead: '' as Ref<Action>
+    CreateGlobalLead: '' as Ref<Action<Doc, any>>
   },
   ids: {
     LeadNotificationGroup: '' as Ref<NotificationGroup>,

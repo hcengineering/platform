@@ -19,7 +19,7 @@ import bitrix from '@hcengineering/bitrix-resources/src/plugin'
 import { type IntlString, mergeIds } from '@hcengineering/platform'
 import { type Action } from '@hcengineering/view'
 
-import { type Ref } from '@hcengineering/core'
+import { type Doc, type Ref } from '@hcengineering/core'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 
 export default mergeIds(bitrixId, bitrix, {
@@ -34,6 +34,6 @@ export default mergeIds(bitrixId, bitrix, {
     ConfigDescription: '' as IntlString
   },
   action: {
-    BitrixImport: '' as Ref<Action>
+    BitrixImport: '' as Ref<Action<Doc, any>>
   }
 })

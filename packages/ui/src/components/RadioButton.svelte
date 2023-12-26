@@ -58,7 +58,7 @@
       {#if labelIntl}
         <Label label={labelIntl} params={labelParams} />
       {:else}
-        {label}
+        {label ?? ''}
       {/if}
     </slot>
   </label>

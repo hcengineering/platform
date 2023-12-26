@@ -301,6 +301,22 @@ export class Builder {
       byId.set(tx._id, tx)
     })
 
+    Array.from(byId.entries()).forEach(([id, txes]) => {
+      if (txes.kind === ClassifierKind.CLASS && txes.domain !== undefined && txes.extends !== undefined) {
+        let parentTxes: ClassTxes | undefined = txes
+        let parentDomain: Domain | undefined
+        do {
+          parentTxes = parentTxes.extends === undefined ? undefined : byId.get(parentTxes.extends)
+          parentDomain = parentTxes === undefined ? undefined : parentTxes.domain
+        } while (parentTxes !== undefined && parentDomain === undefined)
+        if (parentDomain !== undefined) {
+          throw new Error(
+            `Class '${id}' should not specify its own domain '${txes.domain}', as it already extends class '${parentTxes?._id}' in domain '${parentDomain}'`
+          )
+        }
+      }
+    })
+
     const generated = this.generateTransactions(txes, byId)
 
     for (const tx of generated) {

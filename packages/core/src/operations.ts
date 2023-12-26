@@ -103,7 +103,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     space: Ref<Space>,
     attachedTo: Ref<T>,
     attachedToClass: Ref<Class<T>>,
-    collection: string,
+    collection: Extract<keyof T, string> | string,
     attributes: AttachedData<P>,
     id?: Ref<P>,
     modifiedOn?: Timestamp,
@@ -128,7 +128,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     objectId: Ref<P>,
     attachedTo: Ref<T>,
     attachedToClass: Ref<Class<T>>,
-    collection: string,
+    collection: Extract<keyof T, string> | string,
     operations: DocumentUpdate<P>,
     retrieve?: boolean,
     modifiedOn?: Timestamp,
@@ -153,7 +153,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     objectId: Ref<P>,
     attachedTo: Ref<T>,
     attachedToClass: Ref<Class<T>>,
-    collection: string,
+    collection: Extract<keyof T, string> | string,
     modifiedOn?: Timestamp,
     modifiedBy?: Ref<Account>
   ): Promise<Ref<T>> {

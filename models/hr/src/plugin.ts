@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type Ref } from '@hcengineering/core'
+import { type Doc, type Ref } from '@hcengineering/core'
 import { hrId } from '@hcengineering/hr'
 import hr from '@hcengineering/hr-resources/src/plugin'
 import { type NotificationGroup } from '@hcengineering/notification'
@@ -55,7 +55,7 @@ export default mergeIds(hrId, hr, {
     HR: '' as Ref<ActionCategory>
   },
   action: {
-    CreateDepartment: '' as Ref<Action>,
+    CreateDepartment: '' as Ref<Action<Doc, any>>,
     EditDepartment: '' as Ref<Action>,
     ArchiveDepartment: '' as Ref<Action>,
     EditRequest: '' as Ref<Action>,

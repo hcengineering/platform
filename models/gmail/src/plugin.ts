@@ -25,7 +25,7 @@ import { type NotificationGroup } from '@hcengineering/notification'
 
 export default mergeIds(gmailId, gmail, {
   action: {
-    WriteEmail: '' as Ref<Action>
+    WriteEmail: '' as Ref<Action<Doc, any>>
   },
   string: {
     MessageID: '' as IntlString,

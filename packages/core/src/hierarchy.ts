@@ -143,7 +143,7 @@ export class Hierarchy {
     return result
   }
 
-  getClass (_class: Ref<Class<Obj>>): Class<Obj> {
+  getClass<T extends Obj = Obj>(_class: Ref<Class<T>>): Class<T> {
     const data = this.classifiers.get(_class)
     if (data === undefined || this.isInterface(data)) {
       throw new Error('class not found: ' + _class)
@@ -151,7 +151,7 @@ export class Hierarchy {
     return data
   }
 
-  hasClass (_class: Ref<Class<Obj>>): boolean {
+  hasClass<T extends Obj = Obj>(_class: Ref<Class<T>>): boolean {
     const data = this.classifiers.get(_class)
 
     return !(data === undefined || this.isInterface(data))
@@ -272,7 +272,7 @@ export class Hierarchy {
 
   /**
    * Check if passed _class is derived from `from` class.
-   * It will iterave over parents.
+   * It will iterate over parents.
    */
   isDerived<T extends Obj>(_class: Ref<Class<T>>, from: Ref<Class<T>>): boolean {
     let cl: Ref<Class<T>> | undefined = _class
@@ -289,7 +289,7 @@ export class Hierarchy {
   getBaseClass<T extends Doc>(_class: Ref<Mixin<T>>): Ref<Class<T>> {
     let cl: Ref<Class<T>> | undefined = _class
     while (cl !== undefined) {
-      const clz = this.getClass(cl)
+      const clz: Class<T> = this.getClass(cl)
       if (this.isClass(clz)) return cl
       cl = clz.extends
     }
@@ -298,12 +298,12 @@ export class Hierarchy {
 
   /**
    * Check if passed _class implements passed interfaces `from`.
-   * It will check for class parents and they interfaces.
+   * It will check for class parents and their interfaces.
    */
   isImplements<T extends Doc>(_class: Ref<Class<T>>, from: Ref<Interface<T>>): boolean {
     let cl: Ref<Class<T>> | undefined = _class
     while (cl !== undefined) {
-      const klazz = this.getClass(cl)
+      const klazz: Class<T> = this.getClass(cl)
       if (this.isExtends(klazz.implements ?? [], from)) {
         return true
       }
@@ -313,7 +313,7 @@ export class Hierarchy {
   }
 
   /**
-   * Check if interface is extends passed interface.
+   * Check if interface extends passed interface.
    */
   private isExtends<T extends Doc>(extendsOrImplements: Ref<Interface<Doc>>[], from: Ref<Interface<T>>): boolean {
     const result: Ref<Interface<Doc>>[] = []
