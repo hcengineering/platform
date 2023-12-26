@@ -635,11 +635,11 @@
     <DocCreateExtComponent manager={docCreateManager} kind={'header'} space={currentProject} props={extraProps} />
   </svelte:fragment>
   <svelte:fragment slot="title" let:label>
-    <div class="flex-row-center gap-1">
+    <div class="flex-row-center gap-2">
       <div class="mr-2">
         <Label {label} />
       </div>
-      <TaskKindSelector projectType={project?.type} bind:taskType={kind} baseClass={tracker.class.Issue} />
+      <TaskKindSelector projectType={project?.type} bind:value={kind} baseClass={tracker.class.Issue} />
       {#if relatedTo}
         <div class="lower mr-2">
           <Label label={tracker.string.RelatedTo} />

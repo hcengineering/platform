@@ -121,7 +121,7 @@ export interface TriggerControl {
   fx: (f: () => Promise<void>) => void
 
   // Bulk operations in case trigger require some
-  apply: (tx: Tx[], broadcast: boolean) => Promise<void>
+  apply: (tx: Tx[], broadcast: boolean) => Promise<TxResult>
 }
 
 /**

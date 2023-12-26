@@ -426,6 +426,7 @@ const pluginState = plugin(trackerId, {
     RelatedIssueTemplates: '' as AnyComponent,
     EditIssue: '' as AnyComponent,
     CreateIssue: '' as AnyComponent,
+    ProjectPresenter: '' as AnyComponent,
     CreateIssueTemplate: '' as AnyComponent
   },
   attribute: {
@@ -528,6 +529,7 @@ const pluginState = plugin(trackerId, {
     IssueNotificationChangedProperty: '' as IntlString,
     IssueNotificationMessage: '' as IntlString,
     IssueAssigneedToYou: '' as IntlString,
+    Project: '' as IntlString,
     RelatedIssues: '' as IntlString
   },
   extensions: {
