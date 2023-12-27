@@ -571,7 +571,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   // TODO: Move to migration
   async checkIndexConsistency (dbStorage: ServerStorage): Promise<void> {
     await rateLimitter.exec(async () => {
-      if (process.env.MODEL_VERSION !== undefined) {
+      if (process.env.MODEL_VERSION !== undefined && process.env.MODEL_VERSION !== '') {
         const modelVersion = (await this.model.findAll(core.class.Version, {}))[0]
         if (modelVersion !== undefined) {
           const modelVersionString = versionToString(modelVersion)
@@ -653,15 +653,21 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
       // Clean for non existing classes
 
-      const unknownClasses = (
-        await this.storage.findAll(
+      while (true) {
+        const docRefs = await this.storage.findAll(
           core.class.DocIndexState,
           { objectClass: { $nin: allClasses } },
-          { projection: { _id: 1 } }
+          { projection: { _id: 1, objectClass: 1 }, limit: 10000 }
         )
-      ).map((it) => it._id)
-      if (unknownClasses.length > 0) {
-        await this.storage.clean(DOMAIN_DOC_INDEX_STATE, unknownClasses)
+        const unknownClasses = docRefs.map((it) => it._id)
+
+        console.log('cleaning', docRefs.length, Array.from(new Set(docRefs.map((it) => it.objectClass))).join(', '))
+
+        if (unknownClasses.length > 0) {
+          await this.storage.clean(DOMAIN_DOC_INDEX_STATE, unknownClasses)
+        } else {
+          break
+        }
       }
     })
   }
