@@ -314,7 +314,7 @@
     </div>
   {/if}
 
-  <div class="text-editor-toolbar buttons-group xsmall-gap mb-4" bind:this={textToolbarElement}>
+  <div class="text-editor-toolbar buttons-group xsmall-gap mb-4" bind:this={textToolbarElement} style="visibility: hidden;">
     {#if showTextStyleToolbar}
       <TextEditorStyleToolbar
         textEditor={editor}
@@ -326,7 +326,7 @@
     {/if}
   </div>
 
-  <div class="text-editor-toolbar buttons-group xsmall-gap mb-4" bind:this={imageToolbarElement}>
+  <div class="text-editor-toolbar buttons-group xsmall-gap mb-4" bind:this={imageToolbarElement} style="visibility: hidden;">
     <ImageStyleToolbar textEditor={editor} formatButtonSize={buttonSize} on:focus={handleFocus} />
   </div>
 
