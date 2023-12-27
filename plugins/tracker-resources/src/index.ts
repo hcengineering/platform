@@ -58,6 +58,7 @@ import KanbanView from './components/issues/KanbanView.svelte'
 import ModificationDatePresenter from './components/issues/ModificationDatePresenter.svelte'
 import NotificationIssuePresenter from './components/issues/NotificationIssuePresenter.svelte'
 import PriorityEditor from './components/issues/PriorityEditor.svelte'
+import PriorityInlineEditor from './components/issues/PriorityInlineEditor.svelte'
 import PriorityFilterValuePresenter from './components/issues/PriorityFilterValuePresenter.svelte'
 import PriorityPresenter from './components/issues/PriorityPresenter.svelte'
 import PriorityRefPresenter from './components/issues/PriorityRefPresenter.svelte'
@@ -447,6 +448,7 @@ export default async (): Promise<Resources> => ({
     ModificationDatePresenter,
     PriorityPresenter,
     PriorityEditor,
+    PriorityInlineEditor,
     PriorityRefPresenter,
     MilestoneRefPresenter,
     ComponentEditor,

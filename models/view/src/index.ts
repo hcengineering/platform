@@ -99,10 +99,10 @@ export const DOMAIN_VIEW = 'view' as Domain
 export function createAction<T extends Doc = Doc, P = Record<string, any>> (
   builder: Builder,
   data: Data<Action<T, P>>,
-  id?: Ref<Action>
+  id?: Ref<Action<T, P>>
 ): void {
-  const { label, ...adata } = data as Data<Action>
-  builder.createDoc(view.class.Action, core.space.Model, { label, ...adata }, id)
+  const { label, ...adata } = data
+  builder.createDoc<Action<T, P>>(view.class.Action, core.space.Model, { label, ...adata }, id)
 }
 
 export function classPresenter (

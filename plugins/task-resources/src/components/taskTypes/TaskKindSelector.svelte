@@ -3,11 +3,11 @@
   import { getClient } from '@hcengineering/presentation'
   import task, { ProjectType, TaskType } from '@hcengineering/task'
   import { DropdownLabels } from '@hcengineering/ui'
-  import { onDestroy } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import { selectedTaskTypeStore, taskTypeStore } from '../..'
 
+  export let value: Ref<TaskType> | undefined
   export let projectType: Ref<ProjectType> | undefined
-  export let taskType: Ref<TaskType> | undefined
   export let focusIndex: number = -1
   export let baseClass: Ref<Class<Doc>> | undefined = undefined
   export let allTypes = false
@@ -25,19 +25,31 @@
     .map((it) => ({ id: it._id, label: it.name }))
 
   $: if (
-    (taskType === undefined && items.length > 0) ||
-    (items.length > 0 && items.find((it) => it.id === taskType) === undefined)
+    (value === undefined && items.length > 0) ||
+    (items.length > 0 && items.find((it) => it.id === value) === undefined)
   ) {
-    taskType = items[0].id
+    value = items[0].id
+    change()
   }
 
   onDestroy(() => {
     $selectedTaskTypeStore = undefined
   })
+
+  const dispatch = createEventDispatcher()
+
+  function change () {
+    dispatch('change', value)
+  }
 </script>
 
 {#if projectType !== undefined && items.length > 1}
-  <div class="p-1">
-    <DropdownLabels {focusIndex} kind={'regular'} {items} bind:selected={taskType} enableSearch={false} />
-  </div>
+  <DropdownLabels
+    {focusIndex}
+    kind={'regular'}
+    {items}
+    bind:selected={value}
+    enableSearch={false}
+    on:selected={change}
+  />
 {/if}

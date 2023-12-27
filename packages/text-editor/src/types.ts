@@ -1,5 +1,5 @@
 import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
-import { type Doc } from '@hcengineering/core'
+import { type Account, type Doc, type Ref } from '@hcengineering/core'
 import type { AnySvelteComponent } from '@hcengineering/ui'
 import { type Editor, type SingleCommands } from '@tiptap/core'
 
@@ -94,4 +94,14 @@ export type TextEditorCommand = (props: TextEditorCommandProps) => boolean
 export interface TextEditorCommandHandler {
   command: (command: TextEditorCommand) => boolean
   chain: (...commands: TextEditorCommand[]) => boolean
+}
+
+/**
+ * @public
+ */
+export interface CollaborationUser {
+  id: Ref<Account>
+  name: string
+  email: string
+  color: string
 }

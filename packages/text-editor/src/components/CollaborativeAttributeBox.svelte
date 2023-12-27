@@ -36,6 +36,10 @@
 
   export let focusIndex = -1
 
+  export function isFocused (): boolean {
+    return editor?.isFocused() ?? false
+  }
+
   let editor: CollaborativeTextEditor
 
   $: documentId = minioDocumentId(object._id, key)

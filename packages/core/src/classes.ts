@@ -56,9 +56,9 @@ export interface Obj {
 /**
  * @public
  */
-export interface Doc extends Obj {
+export interface Doc<S extends Space = Space> extends Obj {
   _id: Ref<this>
-  space: Ref<Space>
+  space: Ref<S>
   modifiedOn: Timestamp
   modifiedBy: Ref<Account>
   createdBy?: Ref<Account> // Marked as optional since it will be filled by platform.
@@ -83,10 +83,14 @@ export interface UXObject extends Obj {
 /**
  * @public
  */
-export interface AttachedDoc extends Doc {
-  attachedTo: Ref<Doc>
-  attachedToClass: Ref<Class<Doc>>
-  collection: string
+export interface AttachedDoc<
+  Parent extends Doc = Doc,
+  Collection extends Extract<keyof Parent, string> | string = Extract<keyof Parent, string> | string,
+  S extends Space = Space
+> extends Doc<S> {
+  attachedTo: Ref<Parent>
+  attachedToClass: Ref<Class<Parent>>
+  collection: Collection
 }
 
 /**

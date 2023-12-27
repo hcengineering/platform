@@ -1501,26 +1501,6 @@
       "packageName": "@hcengineering/support-resources",
       "projectFolder": "plugins/support-resources",
       "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/model-survey",
-      "projectFolder": "models/survey",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/survey",
-      "projectFolder": "plugins/survey",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/survey-assets",
-      "projectFolder": "plugins/survey-assets",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/survey-resources",
-      "projectFolder": "plugins/survey-resources",
-      "shouldPublish": false
     }
   ]
 }

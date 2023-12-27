@@ -132,16 +132,7 @@ export function docUpdKey (name: string, opt?: IndexKeyOptions): string {
  */
 export function docKey (name: string, opt?: IndexKeyOptions): string {
   const extra = opt?.extra !== undefined && opt?.extra?.length > 0 ? `#${opt.extra?.join('#') ?? ''}` : ''
-  let key =
-    (opt?.docId !== undefined ? opt.docId.split('.').join('_') + '|' : '') +
-    (opt?._class === undefined ? name : `${opt?._class}%${name}${extra}`)
-  if (opt?.refAttribute !== undefined) {
-    key = `${opt?.refAttribute}->${key}`
-  }
-  if (opt?.refAttribute !== undefined || (opt?.relative !== undefined && opt?.relative)) {
-    key = '|' + key
-  }
-  return key
+  return opt?._class === undefined ? name : `${opt?._class}%${name}${extra}`
 }
 
 /**
@@ -235,7 +226,8 @@ export function fillDefaults<T extends Doc> (
   for (const attribute of attributes) {
     if (attribute[1].defaultValue !== undefined) {
       if ((object as any)[attribute[0]] === undefined) {
-        ;(object as any)[attribute[0]] = attribute[1].defaultValue
+        // Clone default value as it might be an object (e.g. array)
+        ;(object as any)[attribute[0]] = structuredClone(attribute[1].defaultValue)
       }
     }
   }

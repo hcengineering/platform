@@ -1,3 +1,4 @@
+<!--
 //
 // Copyright © 2023 Hardcore Engineering Inc.
 //
@@ -12,15 +13,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+-->
+<script lang="ts">
+  import contact from '@hcengineering/contact'
+  import { Component } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
+  import { CollaborationUser } from '../types'
 
-import { mergeIds } from '@hcengineering/platform'
-import { surveyId } from '@hcengineering/survey'
-import survey from '@hcengineering/survey-resources/src/plugin'
-import { type Ref } from '@hcengineering/core'
-import { type Application } from '@hcengineering/workbench'
+  export let user: CollaborationUser
+</script>
 
-export default mergeIds(surveyId, survey, {
-  app: {
-    Survey: '' as Ref<Application>
-  }
-})
+<Component
+  is={view.component.ObjectPresenter}
+  props={{
+    objectId: user.id,
+    _class: contact.class.PersonAccount,
+    shouldShowAvatar: true,
+    shouldShowName: true
+  }}
+/>

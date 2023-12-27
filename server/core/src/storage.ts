@@ -575,7 +575,7 @@ class TServerStorage implements ServerStorage {
       modelDb: this.modelDb,
       hierarchy: this.hierarchy,
       apply: async (tx, broadcast) => {
-        await this.apply(ctx, tx, broadcast)
+        return await this.apply(ctx, tx, broadcast)
       }
     }
     const triggers = await ctx.with('process-triggers', {}, async (ctx) => {
@@ -654,7 +654,7 @@ class TServerStorage implements ServerStorage {
     return { passed, onEnd }
   }
 
-  async apply (ctx: MeasureContext, txes: Tx[], broadcast: boolean): Promise<Tx[]> {
+  async apply (ctx: MeasureContext, txes: Tx[], broadcast: boolean): Promise<TxResult> {
     const result = await this.processTxes(ctx, txes)
     let derived: Tx[] = []
 
@@ -664,7 +664,7 @@ class TServerStorage implements ServerStorage {
       this.options?.broadcast?.([...txes, ...derived])
     }
 
-    return [...txes, ...derived]
+    return result[0]
   }
 
   fillTxes (txes: Tx[], txToStore: Tx[], modelTx: Tx[], txToProcess: Tx[], applyTxes: Tx[]): void {

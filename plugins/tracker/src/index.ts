@@ -426,6 +426,7 @@ const pluginState = plugin(trackerId, {
     RelatedIssueTemplates: '' as AnyComponent,
     EditIssue: '' as AnyComponent,
     CreateIssue: '' as AnyComponent,
+    ProjectPresenter: '' as AnyComponent,
     CreateIssueTemplate: '' as AnyComponent
   },
   attribute: {
@@ -492,26 +493,26 @@ const pluginState = plugin(trackerId, {
     Issue: '' as Ref<TaskTypeDescriptor>
   },
   action: {
-    SetDueDate: '' as Ref<Action>,
-    SetParent: '' as Ref<Action>,
+    SetDueDate: '' as Ref<Action<Doc, any>>,
+    SetParent: '' as Ref<Action<Doc, any>>,
     SetStatus: '' as Ref<Action>,
-    SetPriority: '' as Ref<Action>,
-    SetAssignee: '' as Ref<Action>,
-    SetComponent: '' as Ref<Action>,
-    CopyIssueId: '' as Ref<Action>,
-    CopyIssueTitle: '' as Ref<Action>,
-    CopyIssueLink: '' as Ref<Action>,
+    SetPriority: '' as Ref<Action<Doc, any>>,
+    SetAssignee: '' as Ref<Action<Doc, any>>,
+    SetComponent: '' as Ref<Action<Doc, any>>,
+    CopyIssueId: '' as Ref<Action<Doc, any>>,
+    CopyIssueTitle: '' as Ref<Action<Doc, any>>,
+    CopyIssueLink: '' as Ref<Action<Doc, any>>,
     MoveToProject: '' as Ref<Action>,
-    Duplicate: '' as Ref<Action>,
-    Relations: '' as Ref<Action>,
-    NewIssue: '' as Ref<Action>,
-    NewIssueGlobal: '' as Ref<Action>,
-    NewSubIssue: '' as Ref<Action>,
+    Duplicate: '' as Ref<Action<Doc, any>>,
+    Relations: '' as Ref<Action<Doc, any>>,
+    NewIssue: '' as Ref<Action<Doc, any>>,
+    NewIssueGlobal: '' as Ref<Action<Doc, any>>,
+    NewSubIssue: '' as Ref<Action<Doc, any>>,
     EditWorkflowStatuses: '' as Ref<Action>,
     EditProject: '' as Ref<Action>,
-    SetMilestone: '' as Ref<Action>,
-    SetLabels: '' as Ref<Action>,
-    EditRelatedTargets: '' as Ref<Action>
+    SetMilestone: '' as Ref<Action<Doc, any>>,
+    SetLabels: '' as Ref<Action<Doc, any>>,
+    EditRelatedTargets: '' as Ref<Action<Doc, any>>
   },
   project: {
     DefaultProject: '' as Ref<Project>
@@ -528,6 +529,7 @@ const pluginState = plugin(trackerId, {
     IssueNotificationChangedProperty: '' as IntlString,
     IssueNotificationMessage: '' as IntlString,
     IssueAssigneedToYou: '' as IntlString,
+    Project: '' as IntlString,
     RelatedIssues: '' as IntlString
   },
   extensions: {

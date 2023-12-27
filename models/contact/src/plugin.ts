@@ -121,7 +121,7 @@ export default mergeIds(contactId, contact, {
   action: {
     KickEmployee: '' as Ref<Action>,
     DeleteEmployee: '' as Ref<Action>,
-    MergePersons: '' as Ref<Action>
+    MergePersons: '' as Ref<Action<Doc, any>>
   },
   actionImpl: {
     KickEmployee: '' as ViewAction,

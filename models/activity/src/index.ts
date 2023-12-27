@@ -120,7 +120,7 @@ export class TActivityMessage extends TAttachedDoc implements ActivityMessage {
     replies?: number
 }
 
-@Model(activity.class.DocUpdateMessage, activity.class.ActivityMessage, DOMAIN_ACTIVITY)
+@Model(activity.class.DocUpdateMessage, activity.class.ActivityMessage)
 export class TDocUpdateMessage extends TActivityMessage implements DocUpdateMessage {
   @Prop(TypeRef(core.class.Doc), core.string.Object)
   @Index(IndexKind.Indexed)
@@ -139,7 +139,7 @@ export class TDocUpdateMessage extends TActivityMessage implements DocUpdateMess
   attributeUpdates?: DocAttributeUpdates
 }
 
-@Model(activity.class.ActivityInfoMessage, activity.class.ActivityMessage, DOMAIN_ACTIVITY)
+@Model(activity.class.ActivityInfoMessage, activity.class.ActivityMessage)
 export class TActivityInfoMessage extends TActivityMessage implements ActivityInfoMessage {
   @Prop(TypeIntlString(), activity.string.Update)
     message!: IntlString

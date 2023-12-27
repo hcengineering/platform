@@ -121,6 +121,7 @@
 
     const editors: Array<{ key: KeyedAttribute, editor: AnyComponent, category: AttributeCategory }> = []
     const newInplaceAttributes: string[] = []
+
     for (const k of collections) {
       if (allowedCollections.includes(k.key.key)) continue
       const editor = await getFieldEditor(k.key)
@@ -190,7 +191,7 @@
     }
   }
 
-  let title: string = ''
+  let title: string | undefined = undefined
   let rawTitle: string = ''
 
   $: if (object !== undefined) {
@@ -316,14 +317,14 @@
     </svelte:fragment>
 
     <svelte:fragment slot="header">
-      {#if mainEditor && mainEditor.pinned}
+      {#if mainEditor && mainEditor.editor && mainEditor.pinned}
         <div class="flex-col flex-grow my-4">
           <Component is={mainEditor.editor} props={{ object }} on:open={handleOpen} />
         </div>
       {/if}
     </svelte:fragment>
 
-    {#if mainEditor && !mainEditor.pinned}
+    {#if mainEditor && mainEditor.editor && !mainEditor.pinned}
       <div class="flex-col flex-grow flex-no-shrink step-tb-6">
         <Component is={mainEditor.editor} props={{ object }} on:open={handleOpen} />
       </div>
@@ -346,6 +347,7 @@
         </div>
       {/if}
     {/each}
+
     {#if editorFooter}
       <div class="step-tb-6">
         <Component is={editorFooter.footer} props={{ object, _class, ...editorFooter.props }} />

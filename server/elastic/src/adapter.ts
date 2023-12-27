@@ -71,7 +71,20 @@ class ElasticAdapter implements FullTextAdapter {
       if (field !== undefined) {
         console.log('Mapping', mappings.body)
       }
-      const wsMappings = mappings.body[toWorkspaceString(this.workspaceId)]
+      let wsMappings = mappings.body[toWorkspaceString(this.workspaceId)]
+      if (Object.keys(wsMappings?.mappings?.properties ?? {}).some((k) => k.includes('->'))) {
+        await this.client.indices.delete({
+          index: toWorkspaceString(this.workspaceId)
+        })
+        const createIndex = await this.client.indices.create({
+          index: toWorkspaceString(this.workspaceId)
+        })
+        console.log('recreate index', createIndex)
+        const mappings = await this.client.indices.getMapping({
+          index: toWorkspaceString(this.workspaceId)
+        })
+        wsMappings = mappings.body[toWorkspaceString(this.workspaceId)]
+      }
 
       // Collect old values.
       for (const [k, v] of Object.entries(wsMappings?.mappings?.properties ?? {})) {

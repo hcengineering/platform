@@ -14,5 +14,21 @@
 //
 
 import { type DecorationAttrs } from '@tiptap/pm/view'
+import { showTooltip } from '@hcengineering/ui'
+import { type CollaborationUser } from '../../types'
+import CollaborationUserPopup from '../CollaborationUserPopup.svelte'
 
-export const noSelectionRender = (_user: Record<string, any>): DecorationAttrs => ({})
+export const renderCursor = (user: CollaborationUser): HTMLElement => {
+  const cursor = document.createElement('span')
+
+  cursor.classList.add('collaboration-cursor__caret')
+  cursor.setAttribute('style', `border-color: ${user.color}`)
+
+  cursor.addEventListener('mousemove', () => {
+    showTooltip(undefined, cursor, 'top', CollaborationUserPopup, { user })
+  })
+
+  return cursor
+}
+
+export const noSelectionRender = (_user: CollaborationUser): DecorationAttrs => ({})

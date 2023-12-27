@@ -16,19 +16,9 @@
   import { AttachedData } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Issue, IssueDraft, IssuePriority, IssueTemplateData } from '@hcengineering/tracker'
-  import {
-    Button,
-    ButtonKind,
-    ButtonSize,
-    eventToHTMLElement,
-    Icon,
-    Label,
-    SelectPopup,
-    showPopup
-  } from '@hcengineering/ui'
+  import { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import tracker from '../../plugin'
-  import { defaultPriorities, issuePriorities } from '../../utils'
+  import PriorityInlineEditor from './PriorityInlineEditor.svelte'
 
   export let value: Issue | AttachedData<Issue> | IssueTemplateData | IssueDraft
   export let isEditable: boolean = true
@@ -44,21 +34,6 @@
   const dispatch = createEventDispatcher()
   $: selectedPriority = value.priority
 
-  const handlePriorityEditorOpened = (event: MouseEvent) => {
-    event.stopPropagation()
-
-    if (!isEditable) {
-      return
-    }
-
-    showPopup(
-      SelectPopup,
-      { value: prioritiesInfo, placeholder: tracker.string.SetPriority, searchable: true },
-      eventToHTMLElement(event),
-      changePriority
-    )
-  }
-
   const changePriority = async (newPriority: IssuePriority | undefined) => {
     if (!isEditable || newPriority === undefined || value.priority === newPriority) {
       return
@@ -71,66 +46,16 @@
       await client.update(value, { priority: newPriority })
     }
   }
-
-  $: prioritiesInfo = defaultPriorities.map((p) => {
-    return {
-      id: p,
-      isSelected: selectedPriority === p,
-      ...issuePriorities[p]
-    }
-  })
 </script>
 
-{#if value}
-  {#if kind === 'list' || kind === 'list-header'}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div class="priority-container" class:cursor-pointer={isEditable} on:click={handlePriorityEditorOpened}>
-      <div class="icon">
-        {#if issuePriorities[value.priority]?.icon}<Icon icon={issuePriorities[value.priority]?.icon} {size} />{/if}
-      </div>
-      {#if shouldShowLabel}
-        <span class="{kind === 'list' ? 'ml-2 text-md' : 'ml-3 text-base'} overflow-label disabled content-color">
-          <Label label={issuePriorities[value.priority]?.label} />
-        </span>
-      {/if}
-    </div>
-  {:else}
-    <Button
-      showTooltip={isEditable ? { label: tracker.string.SetPriority } : undefined}
-      label={shouldShowLabel ? issuePriorities[value.priority]?.label : undefined}
-      icon={issuePriorities[value.priority]?.icon}
-      {justify}
-      {focusIndex}
-      {width}
-      {size}
-      {kind}
-      disabled={!isEditable}
-      on:click={handlePriorityEditorOpened}
-    />
-  {/if}
-{/if}
-
-<style lang="scss">
-  .priority-container {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-    min-width: 0;
-
-    .icon {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-shrink: 0;
-      width: 1rem;
-      height: 1rem;
-      color: var(--theme-caption-color);
-    }
-    &:hover {
-      .icon {
-        color: var(--theme-caption-color) !important;
-      }
-    }
-  }
-</style>
+<PriorityInlineEditor
+  {kind}
+  {size}
+  {justify}
+  {width}
+  {focusIndex}
+  {shouldShowLabel}
+  {isEditable}
+  bind:value={selectedPriority}
+  on:change={(e) => changePriority(e.detail)}
+/>
