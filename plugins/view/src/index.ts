@@ -887,7 +887,8 @@ const view = plugin(viewId, {
     NoGrouping: '' as IntlString,
     Type: '' as IntlString,
     UnArchive: '' as IntlString,
-    Save: '' as IntlString
+    Save: '' as IntlString,
+    PublicView: '' as IntlString
   },
   icon: {
     Table: '' as Asset,
