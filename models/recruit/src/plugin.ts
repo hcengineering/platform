@@ -28,12 +28,12 @@ import { type ChatMessageViewlet } from '@hcengineering/chunter'
 export default mergeIds(recruitId, recruit, {
   action: {
     CreateOpinion: '' as Ref<Action>,
-    CreateGlobalApplication: '' as Ref<Action>,
-    CopyApplicationId: '' as Ref<Action>,
-    CopyApplicationLink: '' as Ref<Action>,
-    CopyCandidateLink: '' as Ref<Action>,
+    CreateGlobalApplication: '' as Ref<Action<Doc, any>>,
+    CopyApplicationId: '' as Ref<Action<Doc, any>>,
+    CopyApplicationLink: '' as Ref<Action<Doc, any>>,
+    CopyCandidateLink: '' as Ref<Action<Doc, any>>,
     MoveApplicant: '' as Ref<Action>,
-    GetTalentIds: '' as Ref<Action>,
+    GetTalentIds: '' as Ref<Action<Doc, any>>,
     EditStatuses: '' as Ref<Action>
   },
   actionImpl: {

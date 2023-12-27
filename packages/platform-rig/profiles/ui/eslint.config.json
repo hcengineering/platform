@@ -35,6 +35,11 @@
         "parser": "@typescript-eslint/parser"
       },
       "rules": {
+        "@typescript-eslint/no-unused-vars": ["warn", {
+          // Registered Svelte names for better component typings,
+          // see https://raqueebuddinaziz.com/blog/svelte-type-events-slots-and-props/#restprops-props
+          "varsIgnorePattern": "^\\$\\$(Props|Events|Slots)$"
+        }],
         "@typescript-eslint/array-type": "off",
         "@typescript-eslint/promise-function-async": "off",
         "@typescript-eslint/consistent-type-imports": "off",

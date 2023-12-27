@@ -130,12 +130,20 @@
           ...extensions,
           InlineStyleToolbarExtension.configure({
             tippyOptions,
+            // TODO: Toolbar element is updated on every component update,
+            //  but extensions is created only on mount. This causes issues when
+            //  you're trying to use TextEditor in long-living components that
+            //  get updated, e.g. in QuestionCollectionItemEditor in Surveys
             element: textToolbarElement,
             isSupported: () => true,
             isSelectionOnly: () => false
           }),
           InlinePopupExtension.configure({
             pluginKey: 'show-image-actions-popup',
+            // TODO: Toolbar element is updated on every component update,
+            //  but extensions is created only on mount. This causes issues when
+            //  you're trying to use TextEditor in long-living components that
+            //  get updated, e.g. in QuestionCollectionItemEditor in Surveys
             element: imageToolbarElement,
             tippyOptions: {
               ...tippyOptions,

@@ -37,6 +37,8 @@
 
   const client = getClient()
 
+  let editor: CollaborativeAttributeBox
+
   let refActions: RefAction[] = []
   let extraActions: RefAction[] = []
   let modelRefActions: RefAction[] = []
@@ -77,6 +79,10 @@
   )
 
   let inputFile: HTMLInputElement
+
+  export function isFocused (): boolean {
+    return editor?.isFocused() ?? false
+  }
 
   export function handleAttach (): void {
     inputFile.click()
@@ -218,6 +224,7 @@
     }}
   >
     <CollaborativeAttributeBox
+      bind:this={editor}
       {object}
       {key}
       {focusIndex}

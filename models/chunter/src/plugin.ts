@@ -41,9 +41,9 @@ export default mergeIds(chunterId, chunter, {
     ArchiveChannel: '' as Ref<Action>,
     UnarchiveChannel: '' as Ref<Action>,
     ConvertToPrivate: '' as Ref<Action>,
-    CopyCommentLink: '' as Ref<Action>,
-    CopyThreadMessageLink: '' as Ref<Action>,
-    CopyMessageLink: '' as Ref<Action>
+    CopyCommentLink: '' as Ref<Action<Doc, any>>,
+    CopyThreadMessageLink: '' as Ref<Action<Doc, any>>,
+    CopyMessageLink: '' as Ref<Action<Doc, any>>
   },
   actionImpl: {
     MarkUnread: '' as ViewAction,
