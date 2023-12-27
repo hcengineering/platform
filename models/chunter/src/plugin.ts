@@ -40,7 +40,7 @@ export default mergeIds(chunterId, chunter, {
     ArchiveChannel: '' as Ref<Action>,
     UnarchiveChannel: '' as Ref<Action>,
     ConvertToPrivate: '' as Ref<Action>,
-    CopyChatMessageLink: '' as Ref<Action>,
+    CopyChatMessageLink: '' as Ref<Action<Doc, any>>,
     OpenChannel: '' as Ref<Action>
   },
   actionImpl: {
