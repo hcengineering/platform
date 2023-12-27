@@ -29,6 +29,7 @@
     (items.length > 0 && items.find((it) => it.id === value) === undefined)
   ) {
     value = items[0].id
+    change()
   }
 
   onDestroy(() => {
