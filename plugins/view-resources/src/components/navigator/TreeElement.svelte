@@ -63,7 +63,7 @@
     hovered = true
   }
 
-  async function onInlineClick(ev: MouseEvent, action: Action) {
+  async function onInlineClick (ev: MouseEvent, action: Action) {
     action.action([], ev)
   }
 
