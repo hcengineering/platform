@@ -42,7 +42,7 @@
     Breadcrumbs
   } from '@hcengineering/ui'
   import { ContextMenu } from '@hcengineering/view-resources'
-    import plugin from '../../plugin'
+  import plugin from '../../plugin'
   import CreateTaskType from '../taskTypes/CreateTaskType.svelte'
   import TaskTypeEditor from '../taskTypes/TaskTypeEditor.svelte'
   import TaskTypeIcon from '../taskTypes/TaskTypeIcon.svelte'

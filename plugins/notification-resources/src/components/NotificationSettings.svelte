@@ -36,8 +36,7 @@
     Separator,
     NavItem
   } from '@hcengineering/ui'
-    import notification from '../plugin'
-  import GroupElement from './GroupElement.svelte'
+  import notification from '../plugin'
   import NotificationGroupSetting from './NotificationGroupSetting.svelte'
 
   export let visibleNav: boolean = true

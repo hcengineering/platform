@@ -16,7 +16,7 @@
   import { createEventDispatcher, ComponentType } from 'svelte'
   import type { Asset, IntlString } from '@hcengineering/platform'
   import { AnySvelteComponent } from '../types'
-    import ChevronRight from './icons/ChevronRight.svelte'
+  import ChevronRight from './icons/ChevronRight.svelte'
   import Label from './Label.svelte'
   import Breadcrumb from './Breadcrumb.svelte'
 
