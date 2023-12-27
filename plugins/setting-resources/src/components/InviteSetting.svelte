@@ -13,10 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import login from '@hcengineering/login'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { InviteSettings } from '@hcengineering/setting'
-  import { Button, EditBox, MiniToggle } from '@hcengineering/ui'
+  import { Button, EditBox, MiniToggle, Header, Breadcrumb } from '@hcengineering/ui'
+
+  export let visibleNav: boolean = true
+
+  const dispatch = createEventDispatcher()
 
   const client = getClient()
   let expTime: number = 48
@@ -55,23 +60,28 @@
   }
 </script>
 
-<div class="form">
-  <div class="mt-2">
-    <EditBox label={login.string.LinkValidHours} format={'number'} bind:value={expTime} />
-  </div>
-  <div class="mt-2">
-    <EditBox label={login.string.EmailMask} bind:value={mask} />
-  </div>
-  <div class="mt-2">
-    <MiniToggle bind:on={noLimit} label={login.string.NoLimit} on:change={() => noLimit && (limit = -1)} />
-  </div>
-  {#if !noLimit}
+<div class="hulyComponent">
+  <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+    <Breadcrumb icon={setting.icon.InviteSettings} label={setting.string.InviteSettings} size={'large'} isCurrent />
+  </Header>
+  <div class="form">
     <div class="mt-2">
-      <EditBox label={login.string.InviteLimit} format={'number'} bind:value={limit} />
+      <EditBox label={login.string.LinkValidHours} format={'number'} bind:value={expTime} />
     </div>
-  {/if}
-  <div class="mt-2">
-    <Button label={presentation.string.Save} size={'medium'} kind={'primary'} on:click={() => setInviteSettings()} />
+    <div class="mt-2">
+      <EditBox label={login.string.EmailMask} bind:value={mask} />
+    </div>
+    <div class="mt-2">
+      <MiniToggle bind:on={noLimit} label={login.string.NoLimit} on:change={() => noLimit && (limit = -1)} />
+    </div>
+    {#if !noLimit}
+      <div class="mt-2">
+        <EditBox label={login.string.InviteLimit} format={'number'} bind:value={limit} />
+      </div>
+    {/if}
+    <div class="mt-2">
+      <Button label={presentation.string.Save} size={'medium'} kind={'primary'} on:click={() => setInviteSettings()} />
+    </div>
   </div>
 </div>
 

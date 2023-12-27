@@ -106,37 +106,34 @@
   }
 </script>
 
-<div class="flex-grow vScroll w-full">
-  <div class="container">
-    <Grid {column} columnGap={5} rowGap={1.5}>
-      {#each types as type}
-        <div class="flex">
-          {#if type.generated}
-            <Label label={getLabel(type)} />:
-          {/if}
-          <Label label={type.label} />
-        </div>
-        {#each providers as provider (provider._id)}
-          {#if type.providers[provider._id] !== undefined}
-            <div class="toggle">
-              <ToggleWithLabel
-                label={provider.label}
-                on={getStatus(settings, type._id, provider._id)}
-                on:change={createHandler(type._id, provider._id)}
-              />
-            </div>
-          {:else}
-            <div />
-          {/if}
-        {/each}
+<div class="container">
+  <Grid {column} columnGap={5} rowGap={1.5}>
+    {#each types as type}
+      <div class="flex">
+        {#if type.generated}
+          <Label label={getLabel(type)} />:
+        {/if}
+        <Label label={type.label} />
+      </div>
+      {#each providers as provider (provider._id)}
+        {#if type.providers[provider._id] !== undefined}
+          <div class="toggle">
+            <ToggleWithLabel
+              label={provider.label}
+              on={getStatus(settings, type._id, provider._id)}
+              on:change={createHandler(type._id, provider._id)}
+            />
+          </div>
+        {:else}
+          <div />
+        {/if}
       {/each}
-    </Grid>
-  </div>
+    {/each}
+  </Grid>
 </div>
 
 <style lang="scss">
   .container {
-    padding: 3rem;
     width: fit-content;
   }
 

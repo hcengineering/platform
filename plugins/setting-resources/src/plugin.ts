@@ -66,7 +66,6 @@ export default mergeIds(settingId, setting, {
     ShowAttribute: '' as IntlString,
     Visibility: '' as IntlString,
     Hidden: '' as IntlString,
-    InviteSettings: '' as IntlString,
     DefaultValue: '' as IntlString,
     SelectAValue: '' as IntlString,
     DateOnly: '' as IntlString,
@@ -77,6 +76,8 @@ export default mergeIds(settingId, setting, {
     ConfigurationDisabled: '' as IntlString,
     ConfigDisable: '' as IntlString,
     ConfigEnable: '' as IntlString,
-    ConfigBeta: '' as IntlString
+    ConfigBeta: '' as IntlString,
+    ClassSettingHint: '' as IntlString,
+    ClassProperties: '' as IntlString
   }
 })

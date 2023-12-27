@@ -14,20 +14,25 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
-  import type { AnyComponent } from '@hcengineering/ui'
-  import { Label, Component } from '@hcengineering/ui'
+  import type { AnyComponent } from '..'
+  import { Label, Component } from '..'
 
   export let label: IntlString
   export let categoryName: string
   export let selected: boolean = false
   export let tools: AnyComponent | undefined = undefined
   export let collapsed: boolean = false
+  export let second: boolean = false
 
   $: id = `navGroup-${categoryName}`
 </script>
 
-<div class="hulyAccordionItem-container">
-  <button class="hulyAccordionItem-header" class:selected on:click={() => (collapsed = !collapsed)}>
+<div class="hulyAccordionItem-container" class:collapsed class:second>
+  <button
+    class="hulyAccordionItem-header"
+    class:selected={selected || !collapsed}
+    on:click={() => (collapsed = !collapsed)}
+  >
     <div class="hulyAccordionItem-header__label font-medium-12">
       <Label {label} />
     </div>
@@ -53,9 +58,13 @@
     display: flex;
     flex-direction: column;
     min-width: 0;
-    border-top: 1px solid var(--theme-navpanel-divider);
-    // border-bottom: 1px solid var(--theme-navpanel-divider); // var(--global-surface-01-BorderColor);
 
+    &:not(.second) {
+      border-top: 1px solid var(--theme-navpanel-divider);
+    }
+    &.second.collapsed {
+      border-bottom: 1px solid var(--theme-navpanel-divider); // var(--global-surface-01-BorderColor);
+    }
     .hulyAccordionItem-header {
       display: flex;
       justify-content: space-between;

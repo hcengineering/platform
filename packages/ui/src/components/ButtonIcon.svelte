@@ -13,14 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  export let size: 'small' | 'medium' | 'large'
-  const fill: string = 'currentColor'
+  import type { Asset } from '@hcengineering/platform'
+  import { AnySvelteComponent } from '../types'
+  import { ComponentType } from 'svelte'
+  import ButtonBase from './ButtonBase.svelte'
+
+  export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
+  export let size: 'large' | 'medium' | 'small' = 'large'
+  export let icon: Asset | AnySvelteComponent | ComponentType
+  export let disabled: boolean = false
+  export let loading: boolean = false
+  export let inheritColor: boolean = false
 </script>
 
-<svg class="svg-{size}" {fill} viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-  <path
-    fill-rule="evenodd"
-    clip-rule="evenodd"
-    d="M5.79336 4.36074C6.18388 3.97021 6.81704 3.97021 7.20757 4.36074L10.8803 8.03392L7.20711 11.7071C6.81658 12.0976 6.18342 12.0976 5.79289 11.7071C5.40237 11.3166 5.40237 10.6834 5.79289 10.2929L8.05186 8.03392L5.79336 5.77495C5.40283 5.38443 5.40283 4.75126 5.79336 4.36074Z"
-  />
-</svg>
+<ButtonBase type={'type-button-icon'} {kind} {size} {icon} {disabled} {loading} {inheritColor} on:click />

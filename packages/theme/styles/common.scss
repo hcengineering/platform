@@ -18,7 +18,9 @@
 .font-medium-12,
 .font-regular-14,
 .font-medium-14,
-.font-bold-14 {
+.font-bold-14,
+.paragraph-regular-14,
+.heading-medium-16 {
   font-family: var(--font-family);
   font-style: normal;
   line-height: 1rem;
@@ -30,11 +32,13 @@
 }
 .font-regular-14,
 .font-medium-14,
-.font-bold-14 {
+.font-bold-14,
+.paragraph-regular-14 {
   font-size: 0.875rem;
 }
 .font-regular-12,
-.font-regular-14 {
+.font-regular-14,
+.paragraph-regular-14 {
   font-weight: 400;
 }
 .font-medium-12,
@@ -44,7 +48,15 @@
 .font-bold-14 {
   font-weight: 700;
 }
-
+.heading-medium-16 {
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.125rem;
+}
+.paragraph-regular-14 {
+  line-height: 1.25rem;
+  color: var(--global-tertiary-TextColor);
+}
 
 /* Panels */
 * {
@@ -83,7 +95,7 @@
   
   &.header { background-color: var(--theme-comp-header-color); }
   &.filled { background-color: var(--theme-bg-color); }
-  &.filledNav { background-color: var(--theme-navpanel-color); }
+  &.filledNav { background-color: var(--theme-navpanel-color) !important; }
   &.border-left { border-left: 1px solid var(--theme-divider-color); }
   &.border-right { border-right: 1px solid var(--theme-divider-color); }
 }
