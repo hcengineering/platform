@@ -31,6 +31,8 @@
     "IntegrationDisabledDescr": "Integration disabled",
     "IntegrationWith": "Integration with ",
     "ClassSetting": "Class setting",
+    "ClassSettingHint": "A set or category of things having some property or attribute in common from others by kind, type, or quality.",
+    "ClassProperties": "Class properties",
     "Classes": "Classes",
     "Attributes": "Attributes",
     "DeleteAttribute": "Delete attribute",

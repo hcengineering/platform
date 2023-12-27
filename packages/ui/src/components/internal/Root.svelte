@@ -211,7 +211,7 @@
       font-size: 12px;
       line-height: 150%;
       background-color: var(--theme-statusbar-color);
-      border-bottom: 1px solid var(--theme-navpanel-divider);
+      // border-bottom: 1px solid var(--theme-navpanel-divider);
 
       .history-box {
         -webkit-app-region: no-drag;

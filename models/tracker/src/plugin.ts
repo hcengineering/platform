@@ -59,6 +59,7 @@ export default mergeIds(trackerId, tracker, {
     MilestoneFilter: '' as AnyComponent,
     EditRelatedTargets: '' as AnyComponent,
     EditRelatedTargetsPopup: '' as AnyComponent,
+    SettingsRelatedTargets: '' as AnyComponent,
     IssueSearchIcon: '' as AnyComponent,
     MembersArrayEditor: '' as AnyComponent
   },

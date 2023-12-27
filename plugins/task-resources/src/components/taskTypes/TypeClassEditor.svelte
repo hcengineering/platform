@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { Class, Doc, Obj, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { ClassAttributes } from '@hcengineering/setting-resources'
+  import { ClassAttributesList } from '@hcengineering/setting-resources'
   import { Button, Icon, IconAdd } from '@hcengineering/ui'
   import { ObjectPresenter } from '@hcengineering/view-resources'
 
@@ -41,7 +41,7 @@
     })
   $: clazz = client.getHierarchy().getClass(_class)
 
-  let mainAttributes: ClassAttributes
+  let mainAttributes: ClassAttributesList
 </script>
 
 <div class="flex flex-between mb-4">
@@ -60,7 +60,7 @@
 <div class="ml-2 mr-2">
   <table class="antiTable mx-2">
     <tbody>
-      <ClassAttributes
+      <ClassAttributesList
         bind:this={mainAttributes}
         {_class}
         {ofClass}
@@ -69,7 +69,7 @@
         showCreate={false}
       />
       {#each classes as clazz2}
-        <ClassAttributes
+        <ClassAttributesList
           _class={clazz2._id}
           {ofClass}
           useOfClassAttributes={false}

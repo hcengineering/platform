@@ -13,10 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import { PluginConfiguration } from '@hcengineering/core'
   import { configurationStore, getClient } from '@hcengineering/presentation'
-  import { Button, Icon, IconInfo, Label, Scroller } from '@hcengineering/ui'
+  import { Button, Icon, IconInfo, Label, Header, Breadcrumb } from '@hcengineering/ui'
   import setting from '../plugin'
+
+  export let visibleNav: boolean = true
+
+  const dispatch = createEventDispatcher()
 
   const client = getClient()
 
@@ -27,13 +32,12 @@
   }
 </script>
 
-<div class="antiComponent">
-  <div class="ac-header short divide">
-    <div class="ac-header__icon"><Icon icon={setting.icon.Setting} size={'medium'} /></div>
-    <div class="ac-header__title"><Label label={setting.string.Configuration} /></div>
-  </div>
-  <Scroller>
-    <div class="flex-row-center flex-wrap p-1 gap-around-4">
+<div class="hulyComponent">
+  <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+    <Breadcrumb icon={setting.icon.Setting} label={setting.string.Configuration} size={'large'} isCurrent />
+  </Header>
+  <div class="hulyComponent-content__column content">
+    <div class="flex-row-center flex-wrap gap-around-4">
       {#each $configurationStore.list as config}
         {#if config.label}
           <div class="cardBox flex-col clear-mins" class:enabled={config.enabled ?? true}>
@@ -66,7 +70,7 @@
         {/if}
       {/each}
     </div>
-  </Scroller>
+  </div>
 </div>
 
 <style lang="scss">

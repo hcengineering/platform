@@ -13,12 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import contact, { PersonAccount } from '@hcengineering/contact'
   import { EmployeePresenter, personByIdStore } from '@hcengineering/contact-resources'
   import { AccountRole, SortingOrder, getCurrentAccount } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { DropdownIntlItem, DropdownLabelsIntl, EditBox, Icon, Label } from '@hcengineering/ui'
+  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+  import { DropdownIntlItem, DropdownLabelsIntl, EditBox, Header, Breadcrumb } from '@hcengineering/ui'
   import setting from '../plugin'
+
+  export let visibleNav: boolean = true
+
+  const dispatch = createEventDispatcher()
 
   const client = getClient()
 
@@ -54,14 +59,13 @@
   let search = ''
 </script>
 
-<div class="antiComponent">
-  <div class="ac-header short divide">
-    <div class="ac-header__icon"><Icon icon={setting.icon.Password} size={'medium'} /></div>
-    <div class="ac-header__title"><Label label={setting.string.Owners} /></div>
-    <EditBox kind={'search-style'} focusIndex={1} bind:value={search} />
-  </div>
-  <div class="ac-body columns">
-    <div class="ac-column max">
+<div class="hulyComponent">
+  <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+    <Breadcrumb icon={setting.icon.Owners} label={setting.string.Owners} size={'large'} isCurrent />
+    <EditBox kind={'search-style'} focusIndex={1} bind:value={search} placeholder={presentation.string.Search} />
+  </Header>
+  <div class="hulyComponent-content__column content">
+    <div class="hulyComponent-content">
       {#each accounts as account (account._id)}
         {@const employee = $personByIdStore.get(account.person)}
         {#if employee?.name?.includes(search)}

@@ -15,15 +15,15 @@
 <script lang="ts">
   import { Class, ClassifierKind, Doc, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Icon, IconAdd, getEventPositionElement, showPopup } from '@hcengineering/ui'
+  import { getEventPositionElement, showPopup, NavItem } from '@hcengineering/ui'
   import { ContextMenu } from '@hcengineering/view-resources'
-  import ObjectPresenter from '@hcengineering/view-resources/src/components/ObjectPresenter.svelte'
   import { createEventDispatcher } from 'svelte'
   import settings from '../plugin'
 
   export let classes: Ref<Class<Doc>>[] = ['contact:class:Contact' as Ref<Class<Doc>>]
   export let _class: Ref<Class<Doc>> | undefined
   export let ofClass: Ref<Class<Doc>> | undefined
+  export let level: number = 1
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -58,35 +58,20 @@
 {#each classes as cl}
   {@const clazz = client.getHierarchy().getClass(cl)}
   {@const desc = getDescendants(cl)}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div
-    class="ac-column__list-item"
-    class:ac-column__list-selected={cl === _class}
+  <NavItem
+    label={clazz.label}
+    isFold
+    empty
+    {level}
+    selected={cl === _class}
     on:click={() => {
       dispatch('select', cl)
     }}
-    on:contextmenu|preventDefault|stopPropagation={(evt) => {
+    on:contextmenu={(evt) => {
       showContextMenu(evt, clazz)
     }}
-  >
-    <div class="flex-row-center">
-      {#if clazz.icon}
-        <div class="mr-1 flex">
-          <Icon icon={clazz.icon} size={'medium'} />
-          {#if clazz.kind === ClassifierKind.MIXIN && client.getHierarchy().hasMixin(clazz, settings.mixin.UserMixin)}
-            <Icon icon={IconAdd} size={'x-small'} fill={'var(--theme-dark-color)'} />
-          {/if}
-        </div>
-      {/if}
-      <span class="overflow-label caption-color">
-        <ObjectPresenter _class={clazz._class} objectId={clazz._id} value={clazz} />
-      </span>
-    </div>
-  </div>
+  />
   {#if desc.length}
-    <div class="ml-8 mt-3 mb-3">
-      <svelte:self classes={desc} {_class} on:select />
-    </div>
+    <svelte:self classes={desc} {_class} level={level + 1} on:select />
   {/if}
 {/each}

@@ -168,7 +168,8 @@ export default plugin(settingId, {
     ClassSetting: '' as IntlString,
     Classes: '' as IntlString,
     Owners: '' as IntlString,
-    Configure: '' as IntlString
+    Configure: '' as IntlString,
+    InviteSettings: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,

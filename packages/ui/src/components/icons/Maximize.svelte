@@ -13,14 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  export let size: 'small' | 'medium' | 'large'
+  import { IconSize } from '../../types'
+  export let size: IconSize
   const fill: string = 'currentColor'
 </script>
 
-<svg class="svg-{size}" {fill} viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-  <path
-    fill-rule="evenodd"
-    clip-rule="evenodd"
-    d="M5.79336 4.36074C6.18388 3.97021 6.81704 3.97021 7.20757 4.36074L10.8803 8.03392L7.20711 11.7071C6.81658 12.0976 6.18342 12.0976 5.79289 11.7071C5.40237 11.3166 5.40237 10.6834 5.79289 10.2929L8.05186 8.03392L5.79336 5.77495C5.40283 5.38443 5.40283 4.75126 5.79336 4.36074Z"
-  />
+<svg class="svg-{size}" {fill} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <path d="M7 3V2H2V7H3V3.707L12.293 13H9V14H14V9H13V12.293L3.707 3H7Z" />
 </svg>

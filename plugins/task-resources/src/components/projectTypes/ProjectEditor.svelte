@@ -14,6 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import { ComponentExtensions, createQuery, getClient } from '@hcengineering/presentation'
   import task, { Project, ProjectType, ProjectTypeDescriptor, Task, TaskType } from '@hcengineering/task'
 
@@ -21,6 +22,7 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import {
     Button,
+    ButtonIcon,
     Component,
     EditBox,
     Icon,
@@ -31,16 +33,16 @@
     IconMoreV,
     Label,
     Location,
-    Scroller,
     eventToHTMLElement,
     getCurrentResolvedLocation,
     navigate,
     resolvedLocationStore,
-    showPopup
+    showPopup,
+    Header,
+    Breadcrumbs
   } from '@hcengineering/ui'
   import { ContextMenu } from '@hcengineering/view-resources'
-  import { onDestroy } from 'svelte'
-  import plugin from '../../plugin'
+    import plugin from '../../plugin'
   import CreateTaskType from '../taskTypes/CreateTaskType.svelte'
   import TaskTypeEditor from '../taskTypes/TaskTypeEditor.svelte'
   import TaskTypeIcon from '../taskTypes/TaskTypeIcon.svelte'
@@ -49,6 +51,9 @@
 
   export let type: ProjectType
   export let descriptor: ProjectTypeDescriptor | undefined
+  export let visibleNav: boolean = true
+
+  const dispatch = createEventDispatcher()
 
   const client = getClient()
   const query = createQuery()
@@ -141,173 +146,160 @@
     selectedTaskTypeId = id as Ref<TaskType>
     navigate(loc)
   }
+  $: items =
+    selectedTaskType !== undefined
+      ? [{ label: plugin.string.ProjectType }, { title: selectedTaskType.name }]
+      : [{ label: plugin.string.ProjectType }]
 </script>
 
-<div class="h-full flex-col w-full">
-  {#if type !== undefined && descriptor !== undefined}
-    <div class="p-2 bottom-divider flex-row-center">
-      <div class="button-group flex-row-center right-divider pr-2">
-        <Button
-          icon={IconDelete}
-          kind={'regular'}
-          on:click={(ev) => {
-            // Ask for delete
-          }}
-        />
-        <Button
-          icon={IconCopy}
-          kind={'regular'}
-          on:click={(ev) => {
-            // Do copy of type
-          }}
-        />
-        <Button
-          icon={IconMoreV}
-          kind={'regular'}
-          on:click={(ev) => {
-            showPopup(ContextMenu, { object: type }, eventToHTMLElement(ev), () => {})
-          }}
-        />
-      </div>
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div class="fs-title ml-2 flex-row-center">
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div
-          class="hover-trans"
-          on:click={() => {
-            selectTaskType(undefined)
-          }}
-        >
-          <Label label={plugin.string.ProjectType} />
-        </div>
-        {#if selectedTaskType !== undefined}
-          <span class="p-1">/</span>
-          {selectedTaskType.name}
-        {/if}
-      </div>
-    </div>
-    <div class="h-full flex-row-top w-full justify-center">
-      <div class="h-full editorBox flex-col">
-        <Scroller padding={'0 1rem'} noStretch shrink>
-          {#if selectedTaskType === undefined}
-            <!-- <div class="flex-col">Navigation</div> -->
-            <div class="flex-grow h-full">
-              <div class="p-4 flex-col">
+{#if type !== undefined && descriptor !== undefined}
+  <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+    <ButtonIcon
+      icon={IconCopy}
+      size={'small'}
+      kind={'secondary'}
+      on:click={(ev) => {
+        // Do copy of type
+      }}
+    />
+    <ButtonIcon
+      icon={IconDelete}
+      size={'small'}
+      kind={'secondary'}
+      on:click={(ev) => {
+        // Ask for delete
+      }}
+    />
+    <ButtonIcon
+      icon={IconMoreV}
+      size={'small'}
+      kind={'secondary'}
+      on:click={(ev) => {
+        showPopup(ContextMenu, { object: type }, eventToHTMLElement(ev), () => {})
+      }}
+    />
+    <Breadcrumbs
+      {items}
+      size={'large'}
+      selected={selectedTaskType !== undefined ? 1 : 0}
+      on:select={(event) => {
+        if (event.detail === 0) selectTaskType(undefined)
+      }}
+    />
+  </Header>
+  <div class="hulyComponent-content__column content">
+    <div class="hulyComponent-content">
+      {#if selectedTaskType === undefined}
+        <!-- <div class="flex-col">Navigation</div> -->
+        <div class="flex-grow h-full">
+          <div class="p-4 flex-col">
+            <div>
+              <div class="flex-row-center flex-between mb-2">
                 <div>
-                  <div class="flex-row-center flex-between mb-2">
-                    <div>
-                      <Component is={descriptor.icon} props={{ size: 'large' }} />
-                    </div>
-                    <div class="flex-row-center no-word-wrap">
-                      <Icon icon={IconFile} size={'small'} />
-                      {projects.length} projects
-                    </div>
-                  </div>
-                  <EditBox
-                    kind={'large-style'}
-                    value={type?.name ?? ''}
-                    on:blur={(evt) => {
-                      if (type !== undefined) {
-                        void client.diffUpdate(type, { name: evt.detail })
-                      }
-                    }}
-                  />
-                  <div class="p-2">
-                    <EditBox
-                      placeholder={getEmbeddedLabel('Description')}
-                      kind={'small-style'}
-                      bind:value={type.shortDescription}
-                      on:change={() => onShortDescriptionChange(type?.shortDescription ?? '')}
-                    />
-                  </div>
-                  {#if descriptor?.editor}
-                    <Component is={descriptor.editor} props={{ type }} />
-                  {/if}
+                  <Component is={descriptor.icon} props={{ size: 'large' }} />
                 </div>
-
-                <div class="panelBox flex-col row">
-                  <!-- svelte-ignore a11y-click-events-have-key-events -->
-                  <!-- svelte-ignore a11y-no-static-element-interactions -->
-                  <div class="fs-title flex flex-between bottom-divider">
-                    <div class="trans-title">
-                      <Label label={getEmbeddedLabel('Task types')} />
-                    </div>
-                    <div class="p-1">
-                      <Button
-                        icon={IconAdd}
-                        kind={'primary'}
-                        size={'small'}
-                        on:click={(event) => {
-                          showPopup(CreateTaskType, { type, descriptor }, 'top')
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <div class="mt-1">
-                    <!-- svelte-ignore a11y-no-static-element-interactions -->
-                    {#each taskTypes as taskType}
-                      <!-- svelte-ignore a11y-click-events-have-key-events -->
-                      <div
-                        class="flex-grow p-2 antiButton sh-round flex-row-center"
-                        class:regular={taskType._id === selectedTaskTypeId}
-                        class:ghost={taskType._id !== selectedTaskTypeId}
-                        on:click|stopPropagation={() => {
-                          selectTaskType(taskType._id)
-                        }}
-                      >
-                        <div class="p-2">
-                          <TaskTypeIcon value={taskType} size={'small'} />
-                        </div>
-                        <div class="fs-title">
-                          {taskType.name}
-                        </div>
-                        <div class="ml-2 text-sm">
-                          <TaskTypeKindEditor readonly kind={taskType.kind} buttonKind={'link'} />
-                        </div>
-                      </div>
-                    {/each}
-                  </div>
-                </div>
-
-                <ComponentExtensions extension={task.extensions.ProjectEditorExtension} props={{ type }} />
-
-                <div class="panelBox flex-col row">
-                  <!-- svelte-ignore a11y-click-events-have-key-events -->
-                  <!-- svelte-ignore a11y-no-static-element-interactions -->
-                  <div class="fs-title flex flex-between bottom-divider">
-                    <div class="trans-title">
-                      <Label label={getEmbeddedLabel('Collections')} />
-                    </div>
-                    <div class="p-1">
-                      <Button icon={IconAdd} kind={'primary'} size={'small'} on:click={(event) => {}} />
-                    </div>
-                  </div>
-                  <div class="mt-1">
-                    <!-- svelte-ignore a11y-no-static-element-interactions -->
-                  </div>
-                </div>
-
-                <div class="panelBox flex-col row">
-                  <div class="mt-1">
-                    <TypeClassEditor ofClass={descriptor.baseClass} _class={type.targetClass} />
-                  </div>
+                <div class="flex-row-center no-word-wrap">
+                  <Icon icon={IconFile} size={'small'} />
+                  {projects.length} projects
                 </div>
               </div>
+              <EditBox
+                kind={'large-style'}
+                value={type?.name ?? ''}
+                on:blur={(evt) => {
+                  if (type !== undefined) {
+                    void client.diffUpdate(type, { name: evt.detail })
+                  }
+                }}
+              />
+              <div class="p-2">
+                <EditBox
+                  placeholder={getEmbeddedLabel('Description')}
+                  kind={'small-style'}
+                  bind:value={type.shortDescription}
+                  on:change={() => onShortDescriptionChange(type?.shortDescription ?? '')}
+                />
+              </div>
+              {#if descriptor?.editor}
+                <Component is={descriptor.editor} props={{ type }} />
+              {/if}
             </div>
-          {:else}
-            <TaskTypeEditor
-              taskType={selectedTaskType}
-              projectType={type}
-              {taskTypes}
-              {taskTypeCounter}
-              {statusCounter}
-            />
-          {/if}
-        </Scroller>
-      </div>
+
+            <div class="panelBox flex-col row">
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <!-- svelte-ignore a11y-no-static-element-interactions -->
+              <div class="fs-title flex flex-between bottom-divider">
+                <div class="trans-title">
+                  <Label label={getEmbeddedLabel('Task types')} />
+                </div>
+                <div class="p-1">
+                  <Button
+                    icon={IconAdd}
+                    kind={'primary'}
+                    size={'small'}
+                    on:click={(event) => {
+                      showPopup(CreateTaskType, { type, descriptor }, 'top')
+                    }}
+                  />
+                </div>
+              </div>
+              <div class="mt-1">
+                <!-- svelte-ignore a11y-no-static-element-interactions -->
+                {#each taskTypes as taskType}
+                  <!-- svelte-ignore a11y-click-events-have-key-events -->
+                  <div
+                    class="flex-grow p-2 antiButton sh-round flex-row-center"
+                    class:regular={taskType._id === selectedTaskTypeId}
+                    class:ghost={taskType._id !== selectedTaskTypeId}
+                    on:click|stopPropagation={() => {
+                      selectTaskType(taskType._id)
+                    }}
+                  >
+                    <div class="p-2">
+                      <TaskTypeIcon value={taskType} size={'small'} />
+                    </div>
+                    <div class="fs-title">
+                      {taskType.name}
+                    </div>
+                    <div class="ml-2 text-sm">
+                      <TaskTypeKindEditor readonly kind={taskType.kind} buttonKind={'link'} />
+                    </div>
+                  </div>
+                {/each}
+              </div>
+            </div>
+
+            <ComponentExtensions extension={task.extensions.ProjectEditorExtension} props={{ type }} />
+
+            <div class="panelBox flex-col row">
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <!-- svelte-ignore a11y-no-static-element-interactions -->
+              <div class="fs-title flex flex-between bottom-divider">
+                <div class="trans-title">
+                  <Label label={getEmbeddedLabel('Collections')} />
+                </div>
+                <div class="p-1">
+                  <Button icon={IconAdd} kind={'primary'} size={'small'} on:click={(event) => {}} />
+                </div>
+              </div>
+              <div class="mt-1">
+                <!-- svelte-ignore a11y-no-static-element-interactions -->
+              </div>
+            </div>
+
+            <div class="panelBox flex-col row">
+              <div class="mt-1">
+                <TypeClassEditor ofClass={descriptor.baseClass} _class={type.targetClass} />
+              </div>
+            </div>
+          </div>
+        </div>
+      {:else}
+        <TaskTypeEditor taskType={selectedTaskType} projectType={type} {taskTypes} {taskTypeCounter} {statusCounter} />
+      {/if}
     </div>
-  {/if}
-</div>
+  </div>
+{/if}
 
 <style lang="scss">
   .row {

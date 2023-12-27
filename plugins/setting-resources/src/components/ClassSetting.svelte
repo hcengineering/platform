@@ -13,10 +13,25 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import core, { Class, Doc, Obj, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { AnySvelteComponent, Icon, Label, getLocation, navigate } from '@hcengineering/ui'
+  import {
+    AnySvelteComponent,
+    Scroller,
+    ButtonIcon,
+    IconDescription,
+    Label,
+    getLocation,
+    navigate,
+    Header,
+    Breadcrumb,
+    defineSeparators,
+    settingsSeparators,
+    Separator,
+    NavGroup
+  } from '@hcengineering/ui'
   import setting from '../plugin'
   import { filterDescendants } from '../utils'
   import ClassAttributes from './ClassAttributes.svelte'
@@ -32,6 +47,9 @@
   | undefined = undefined
   export let withoutHeader = false
   export let useOfClassAttributes = true
+  export let visibleNav: boolean = true
+
+  const dispatch = createEventDispatcher()
 
   const loc = getLocation()
   const client = getClient()
@@ -80,36 +98,47 @@
   $: if (ofClass !== undefined && _class !== undefined && !client.getHierarchy().isDerived(_class, ofClass)) {
     _class = ofClass
   }
+  defineSeparators('workspaceSettings', settingsSeparators)
 </script>
 
-<div class="antiComponent">
+<div class="hulyComponent">
   {#if !withoutHeader}
-    <div class="ac-header short divide">
-      <div class="ac-header__icon"><Icon icon={setting.icon.Clazz} size={'medium'} /></div>
-      <div class="ac-header__title"><Label label={setting.string.ClassSetting} /></div>
-    </div>
+    <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+      <Breadcrumb icon={setting.icon.Clazz} label={setting.string.ClassSetting} size={'large'} isCurrent />
+    </Header>
   {/if}
-  <div class="ac-body columns hScroll">
-    <div class="ac-column">
-      <div class="overflow-y-auto">
-        <ClassHierarchy
-          {classes}
-          {_class}
-          {ofClass}
-          on:select={(e) => {
-            _class = e.detail
-          }}
-        />
+  <div class="hulyComponent-content__container columns">
+    <div class="hulyComponent-content__column">
+      <div class="hulyComponent-content__navHeader">
+        <div class="hulyComponent-content__navHeader-menu">
+          <ButtonIcon kind={'tertiary'} icon={IconDescription} size={'small'} inheritColor />
+        </div>
+        <div class="hulyComponent-content__navHeader-hint paragraph-regular-14">
+          <Label label={setting.string.ClassSettingHint} />
+        </div>
       </div>
+      <Scroller>
+        <NavGroup label={setting.string.Classes} selected={_class !== undefined} categoryName={'classes'} second>
+          <ClassHierarchy
+            {classes}
+            {_class}
+            {ofClass}
+            on:select={(e) => {
+              _class = e.detail
+            }}
+          />
+        </NavGroup>
+      </Scroller>
     </div>
-    <div class="ac-column max">
-      {#if _class !== undefined}
-        <table class="antiTable">
-          <tbody>
+    <Separator name={'workspaceSettings'} index={0} color={'var(--theme-divider-color)'} />
+    <div class="hulyComponent-content__column content">
+      <div class="hulyComponent-content">
+        {#if _class !== undefined}
+          <Scroller>
             <ClassAttributes {_class} {ofClass} {attributeMapper} {useOfClassAttributes} />
-          </tbody>
-        </table>
-      {/if}
+          </Scroller>
+        {/if}
+      </div>
     </div>
   </div>
 </div>

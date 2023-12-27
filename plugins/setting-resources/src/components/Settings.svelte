@@ -31,12 +31,12 @@
     resolvedLocationStore,
     setMetadataLocalStorage,
     showPopup,
-    Label
+    Label,
+    NavItem,
+    NavGroup
   } from '@hcengineering/ui'
   import { NavFooter } from '@hcengineering/workbench-resources'
   import { onDestroy } from 'svelte'
-  import NavItem from './NavItem.svelte'
-  import NavGroup from './NavGroup.svelte'
 
   export let visibleNav: boolean = true
   export let navFloat: boolean = false
@@ -105,9 +105,12 @@
   defineSeparators('setting', settingsSeparators)
 </script>
 
-<div class="flex h-full clear-mins">
+<div class="hulyPanels-container">
   {#if visibleNav}
-    <div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
+    <div
+      class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'} border-left"
+      class:border-right={category?.component === undefined}
+    >
       <div class="antiPanel-wrap__content hulyNavPanel-container">
         <div class="hulyNavPanel-header">
           <Label label={setting.string.Settings} />
@@ -157,29 +160,40 @@
           <NavItem icon={setting.icon.Signout} label={setting.string.Signout} on:click={signOut} />
         </NavFooter>
       </div>
-      <Separator
-        name={'setting'}
-        float={navFloat ? 'navigator' : true}
-        index={0}
-        color={'var(--theme-navpanel-border)'}
-      />
+      <Separator name={'setting'} float={navFloat ? 'navigator' : true} index={0} color={'transparent'} />
     </div>
-    <Separator name={'setting'} float={navFloat} index={0} color={'var(--theme-navpanel-border)'} />
+    <Separator name={'setting'} float={navFloat} index={0} color={'transparent'} />
   {/if}
 
-  <div class="antiPanel-component filled">
+  <div class="antiPanel-component filledNav">
     {#if category}
       <Component
         is={category.component}
         props={{
+          kind: 'content',
           visibleNav
         }}
+        on:change={(event) => (visibleNav = event.detail)}
       />
     {/if}
   </div>
 </div>
 
 <style lang="scss">
+  .hulyPanels-container {
+    display: flex;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    background-color: var(--theme-navpanel-color); // var(--global-surface-01-BackgroundColor);
+
+    // .antiPanel-navigator {
+    //   background-color: transparent;
+    // }
+    .antiPanel-component {
+      border-radius: var(--small-focus-BorderRadius);
+    }
+  }
   .hulyNavPanel-container :global(.hulyNavItem-container),
   .hulyNavPanel-container :global(.hulyTaskNavLink-container) {
     margin: 0 0.75rem;

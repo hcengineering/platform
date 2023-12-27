@@ -53,7 +53,8 @@
     resolvedLocationStore,
     setResolvedLocation,
     showPopup,
-    workbenchSeparators
+    workbenchSeparators,
+    IconSettings
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import {
@@ -78,7 +79,6 @@
   import Navigator from './Navigator.svelte'
   import SelectWorkspaceMenu from './SelectWorkspaceMenu.svelte'
   import SpaceView from './SpaceView.svelte'
-  import IconSettings from './icons/Settings.svelte'
   import TopMenu from './icons/TopMenu.svelte'
 
   let contentPanel: HTMLElement
@@ -640,7 +640,11 @@
       />
     </clipPath>
   </svg>
-  <div class="workbench-container" style:flex-direction={appsDirection === 'horizontal' ? 'column-reverse' : 'row'}>
+  <div
+    class="workbench-container"
+    class:setting-app={currentApplication?.alias === 'setting'}
+    style:flex-direction={appsDirection === 'horizontal' ? 'column-reverse' : 'row'}
+  >
     <div class="antiPanel-application {appsDirection}" class:lastDivider={!visibleNav}>
       <div
         class="hamburger-container clear-mins"
@@ -750,7 +754,7 @@
         application: currentApplication?._id
       }}
     />
-    <div class="workbench-container">
+    <div class="workbench-container inner">
       {#if currentApplication && navigatorModel && navigator && visibleNav}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -879,6 +883,28 @@
     width: 100%;
     height: 100%;
     touch-action: none;
+
+    &:not(.setting-app, .inner) {
+      border-top: 1px solid var(--theme-navpanel-divider);
+    }
+    &.setting-app {
+      position: relative;
+      background-color: var(--theme-statusbar-color);
+      border-radius: var(--medium-BorderRadius);
+
+      &::after {
+        position: absolute;
+        content: '';
+        inset: 0;
+        border: 1px solid var(--theme-divider-color);
+        border-radius: var(--medium-BorderRadius);
+        pointer-events: none;
+      }
+      .antiPanel-application {
+        border-radius: var(--medium-BorderRadius) 0 0 var(--medium-BorderRadius);
+        border-right: none;
+      }
+    }
   }
 
   .hamburger-container {
