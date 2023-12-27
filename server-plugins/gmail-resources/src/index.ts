@@ -24,7 +24,6 @@ import {
   Hierarchy,
   Ref,
   Tx,
-  TxCUD,
   TxCreateDoc,
   TxProcessor
 } from '@hcengineering/core'
@@ -72,41 +71,43 @@ export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise
       res.push(tx)
     }
     if (message.incoming) {
-      const docs = await control.findAll(notification.class.DocUpdates, {
+      const docs = await control.findAll(notification.class.DocNotifyContext, {
         attachedTo: channel._id,
         user: message.modifiedBy
       })
       for (const doc of docs) {
+        // TODO: push inbox notification
+        // res.push(
+        //   control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
+        //     $push: {
+        //       txes: {
+        //         _id: tx._id as Ref<TxCUD<Doc>>,
+        //         modifiedOn: tx.modifiedOn,
+        //         modifiedBy: tx.modifiedBy,
+        //         isNew: true
+        //       }
+        //     }
+        //   })
+        // )
         res.push(
           control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
-            $push: {
-              txes: {
-                _id: tx._id as Ref<TxCUD<Doc>>,
-                modifiedOn: tx.modifiedOn,
-                modifiedBy: tx.modifiedBy,
-                isNew: true
-              }
-            }
-          })
-        )
-        res.push(
-          control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
-            lastTxTime: tx.modifiedOn,
+            lastUpdateTimestamp: tx.modifiedOn,
             hidden: false
           })
         )
       }
       if (docs.length === 0) {
         res.push(
-          control.txFactory.createTxCreateDoc(notification.class.DocUpdates, channel.space, {
+          control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, channel.space, {
             user: tx.modifiedBy,
             attachedTo: channel._id,
             attachedToClass: channel._class,
             hidden: false,
-            lastTxTime: tx.modifiedOn,
-            txes: [
-              { _id: tx._id as Ref<TxCUD<Doc>>, modifiedOn: tx.modifiedOn, modifiedBy: tx.modifiedBy, isNew: true }
-            ]
+            lastUpdateTimestamp: tx.modifiedOn
+            // TODO: push inbox notification
+            // txes: [
+            //   { _id: tx._id as Ref<TxCUD<Doc>>, modifiedOn: tx.modifiedOn, modifiedBy: tx.modifiedBy, isNew: true }
+            // ]
           })
         )
       }

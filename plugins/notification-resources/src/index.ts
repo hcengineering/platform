@@ -16,8 +16,7 @@
 
 import { type Resources } from '@hcengineering/platform'
 
-import Inbox from './components/Inbox.svelte'
-import NewInbox from './components/inbox/Inbox.svelte'
+import Inbox from './components/inbox/Inbox.svelte'
 import NotificationSettings from './components/NotificationSettings.svelte'
 import NotificationPresenter from './components/NotificationPresenter.svelte'
 import TxCollaboratorsChange from './components/activity/TxCollaboratorsChange.svelte'
@@ -26,10 +25,6 @@ import InboxAside from './components/inbox/InboxAside.svelte'
 import DocNotifyContextPresenter from './components/DocNotifyContextPresenter.svelte'
 import NotificationCollaboratorsChanged from './components/NotificationCollaboratorsChanged.svelte'
 import {
-  NotificationClientImpl,
-  hasntNotifications,
-  hide,
-  markAsUnread,
   unsubscribe,
   resolveLocation,
   markAsReadInboxNotification,
@@ -59,7 +54,6 @@ export { default as BrowserNotificatator } from './components/BrowserNotificatat
 export default async (): Promise<Resources> => ({
   component: {
     Inbox,
-    NewInbox,
     NotificationPresenter,
     NotificationSettings,
     InboxAside,
@@ -71,9 +65,6 @@ export default async (): Promise<Resources> => ({
     TxDmCreation
   },
   function: {
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    GetNotificationClient: NotificationClientImpl.getClient,
-    HasntNotifications: hasntNotifications,
     HasMarkAsUnreadAction: hasMarkAsUnreadAction,
     HasMarkAsReadAction: hasMarkAsReadAction,
     HasDeleteNotificationAction: hasDeleteNotificationAction,
@@ -87,8 +78,6 @@ export default async (): Promise<Resources> => ({
   },
   actionImpl: {
     Unsubscribe: unsubscribe,
-    Hide: hide,
-    MarkAsUnread: markAsUnread,
     MarkAsReadInboxNotification: markAsReadInboxNotification,
     MarkAsUnreadInboxNotification: markAsUnreadInboxNotification,
     DeleteInboxNotification: deleteInboxNotification,

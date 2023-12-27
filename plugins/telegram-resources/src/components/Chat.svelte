@@ -19,7 +19,7 @@
   import contact, { Channel, Contact, Person, PersonAccount, getName as getContactName } from '@hcengineering/contact'
   import { Avatar, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
   import { IdMap, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
-  import { NotificationClientImpl } from '@hcengineering/notification-resources'
+  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { Integration } from '@hcengineering/setting'
@@ -52,7 +52,7 @@
   const dispatch = createEventDispatcher()
 
   const client = getClient()
-  const notificationClient = NotificationClientImpl.getClient()
+  const inboxClient = InboxNotificationsClientImpl.getClient()
 
   let templateProvider: TemplateDataProvider | undefined
 
@@ -88,7 +88,7 @@
       (res) => {
         messages = res.reverse()
         if (channel !== undefined) {
-          notificationClient.forceRead(channel._id, channel._class)
+          inboxClient.forceReadDoc(channel._id, channel._class)
         }
       },
       {
@@ -149,7 +149,7 @@
       }
     )
     if (channel !== undefined) {
-      await notificationClient.forceRead(channel._id, channel._class)
+      await inboxClient.forceReadDoc(channel._id, channel._class)
     }
     clear()
   }

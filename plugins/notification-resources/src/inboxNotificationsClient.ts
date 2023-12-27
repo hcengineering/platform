@@ -12,11 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type Account, getCurrentAccount, type Ref, SortingOrder, type Doc, type WithLookup } from '@hcengineering/core'
+import {
+  type Account,
+  getCurrentAccount,
+  type Ref,
+  SortingOrder,
+  type Doc,
+  type WithLookup,
+  type Class
+} from '@hcengineering/core'
 import notification, {
   type InboxNotification,
   type InboxNotificationsClient,
-  type DocNotifyContext
+  type DocNotifyContext,
+  type Collaborators
 } from '@hcengineering/notification'
 import { derived, writable } from 'svelte/store'
 import { createQuery, getClient } from '@hcengineering/presentation'
@@ -107,7 +116,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     const client = getClient()
     const docNotifyContext = this._docNotifyContextByDoc.get(_id)
 
-    if (docNotifyContext == null) {
+    if (docNotifyContext === undefined) {
       return
     }
 
@@ -119,6 +128,55 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       ...inboxNotifications.map(async (notification) => await client.update(notification, { isViewed: true })),
       client.update(docNotifyContext, { lastViewedTimestamp: Date.now() })
     ])
+  }
+
+  async forceReadDoc (_id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<void> {
+    const client = getClient()
+    const context = this._docNotifyContextByDoc.get(_id)
+
+    if (context !== undefined) {
+      await this.readDoc(_id); return
+    }
+
+    const doc = await client.findOne(_class, { _id })
+
+    if (doc === undefined) {
+      return
+    }
+
+    const hierarchy = client.getHierarchy()
+    const collaboratorsMixin = hierarchy.as<Doc, Collaborators>(doc, notification.mixin.Collaborators)
+
+    if (collaboratorsMixin.collaborators === undefined) {
+      await client.createMixin<Doc, Collaborators>(
+        collaboratorsMixin._id,
+        collaboratorsMixin._class,
+        collaboratorsMixin.space,
+        notification.mixin.Collaborators,
+        {
+          collaborators: [this._user]
+        }
+      )
+    } else if (!collaboratorsMixin.collaborators.includes(this._user)) {
+      await client.updateMixin(
+        collaboratorsMixin._id,
+        collaboratorsMixin._class,
+        collaboratorsMixin.space,
+        notification.mixin.Collaborators,
+        {
+          $push: {
+            collaborators: this._user
+          }
+        }
+      )
+    }
+
+    await client.createDoc(notification.class.DocNotifyContext, doc.space, {
+      attachedTo: _id,
+      attachedToClass: _class,
+      user: this._user,
+      hidden: true
+    })
   }
 
   async readMessages (ids: Array<Ref<ActivityMessage>>): Promise<void> {

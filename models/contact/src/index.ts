@@ -239,6 +239,8 @@ export function createModel (builder: Builder): void {
     ignoreCollections: ['comments']
   })
 
+  builder.mixin(contact.class.Channel, core.class.Class, activity.mixin.ActivityDoc, {})
+
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: contact.class.Contact,
     components: { input: chunter.component.ChatMessageInput }

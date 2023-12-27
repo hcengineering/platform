@@ -17,7 +17,7 @@
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import contact, { Channel, Contact, getName as getContactName } from '@hcengineering/contact'
   import { generateId, getCurrentAccount, Ref, toIdMap } from '@hcengineering/core'
-  import { NotificationClientImpl } from '@hcengineering/notification-resources'
+  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { Integration } from '@hcengineering/setting'
@@ -63,7 +63,7 @@
   let channels: Channel[] = []
 
   const client = getClient()
-  const notificationClient = NotificationClientImpl.getClient()
+  const inboxClient = InboxNotificationsClientImpl.getClient()
 
   const attachmentParentId = generateId()
 
@@ -91,7 +91,7 @@
           .map((m) => m.trim())
           .filter((m) => m.length)
       })
-      await notificationClient.forceRead(channel._id, channel._class)
+      await inboxClient.forceReadDoc(channel._id, channel._class)
       for (const attachment of attachments) {
         await client.addCollection(
           attachmentP.class.Attachment,

@@ -330,57 +330,6 @@ export function createModel (builder: Builder): void {
     notification.app.Inbox
   )
 
-  createAction(
-    builder,
-    {
-      action: notification.actionImpl.MarkAsUnread,
-      actionProps: {},
-      label: notification.string.MarkAsUnread,
-      icon: notification.icon.Track,
-      input: 'focus',
-      visibilityTester: notification.function.HasntNotifications,
-      category: notification.category.Notification,
-      target: notification.class.DocUpdates,
-      context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
-    },
-    notification.action.MarkAsUnread
-  )
-
-  createAction(
-    builder,
-    {
-      action: notification.actionImpl.Hide,
-      actionProps: {},
-      label: notification.string.Archive,
-      icon: view.icon.Archive,
-      input: 'focus',
-      keyBinding: ['Backspace'],
-      category: notification.category.Notification,
-      target: notification.class.DocUpdates,
-      context: { mode: ['context', 'browser'], group: 'edit' }
-    },
-    notification.action.Hide
-  )
-
-  createAction(
-    builder,
-    {
-      action: notification.actionImpl.Unsubscribe,
-      actionProps: {},
-      label: notification.string.DontTrack,
-      icon: notification.icon.Hide,
-      input: 'focus',
-      category: notification.category.Notification,
-      target: notification.class.DocUpdates,
-      context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
-    },
-    notification.action.Unsubscribe
-  )
-
-  builder.mixin(notification.class.DocUpdates, core.class.Class, view.mixin.IgnoreActions, {
-    actions: [view.action.Delete, view.action.Open]
-  })
-
   createAction(builder, {
     action: workbench.actionImpl.Navigate,
     actionProps: {

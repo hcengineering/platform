@@ -50,7 +50,6 @@ export default mergeIds(notificationId, notification, {
     InboxAside: '' as AnyComponent
   },
   function: {
-    HasntNotifications: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     HasMarkAsUnreadAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     HasMarkAsReadAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     HasDeleteNotificationAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
@@ -62,14 +61,10 @@ export default mergeIds(notificationId, notification, {
   },
   groups: {},
   action: {
-    Unsubscribe: '' as Ref<Action>,
-    Hide: '' as Ref<Action>,
-    MarkAsUnread: '' as Ref<Action>
+    Unsubscribe: '' as Ref<Action>
   },
   actionImpl: {
     Unsubscribe: '' as ViewAction,
-    Hide: '' as ViewAction,
-    MarkAsUnread: '' as ViewAction,
     MarkAsUnreadInboxNotification: '' as ViewAction,
     MarkAsReadInboxNotification: '' as ViewAction,
     DeleteInboxNotification: '' as ViewAction,

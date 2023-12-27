@@ -203,27 +203,10 @@ export const inboxId = 'inbox' as Plugin
 
 /**
  * @public
- * @deprecated
- */
-export interface NotificationClient {
-  docUpdatesStore: Writable<Map<Ref<Doc>, DocUpdates>>
-  docUpdates: Writable<DocUpdates[]>
-  read: (_id: Ref<Doc>) => Promise<void>
-  forceRead: (_id: Ref<Doc>, _class: Ref<Class<Doc>>, space: Ref<Space>) => Promise<void>
-}
-
-/**
- * @public
  */
 export interface NotificationPreview extends Class<Doc> {
   presenter: AnyComponent
 }
-
-/**
- * @public
- * @deprecated
- */
-export type NotificationClientFactoy = () => NotificationClient
 
 /**
  * @public
@@ -269,6 +252,7 @@ export interface InboxNotificationsClient {
   inboxNotifications: Writable<InboxNotification[]>
   inboxNotificationsByContext: Readable<Map<Ref<DocNotifyContext>, InboxNotification[]>>
   readDoc: (_id: Ref<Doc>) => Promise<void>
+  forceReadDoc: (_id: Ref<Doc>, _class: Ref<Class<Doc>>) => Promise<void>
   readMessages: (ids: Ref<ActivityMessage>[]) => Promise<void>
   unreadMessages: (ids: Array<Ref<ActivityMessage>>) => Promise<void>
   deleteMessagesNotifications: (ids: Array<Ref<ActivityMessage>>) => Promise<void>
@@ -356,7 +340,6 @@ const notification = plugin(notificationId, {
     Pinned: '' as IntlString
   },
   function: {
-    GetNotificationClient: '' as Resource<NotificationClientFactoy>,
     GetInboxNotificationsClient: '' as Resource<InboxNotificationsClientFactory>,
     HasHiddenDocNotifyContext: '' as Resource<(doc: Doc[]) => Promise<boolean>>,
     IsDocNotifyContextHidden: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,

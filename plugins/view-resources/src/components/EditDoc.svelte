@@ -47,22 +47,22 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
+  const inboxClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
 
   $: read(_id)
   function read (_id: Ref<Doc>) {
     if (lastId !== _id) {
       const prev = lastId
       lastId = _id
-      notificationClient.then(async (client) => {
-        await client.read(prev)
+      inboxClient.then(async (client) => {
+        await client.readDoc(prev)
       })
     }
   }
 
   onDestroy(async () => {
-    await notificationClient.then(async (client) => {
-      await client.read(_id)
+    await inboxClient.then(async (client) => {
+      await client.readDoc(_id)
     })
   })
 

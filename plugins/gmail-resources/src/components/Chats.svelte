@@ -18,9 +18,10 @@
   import { personAccountByIdStore, employeeByIdStore } from '@hcengineering/contact-resources'
   import { Ref, SortingOrder } from '@hcengineering/core'
   import { Message, SharedMessage } from '@hcengineering/gmail'
-  import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import plugin, { Button, Icon, IconShare, Label, Scroller } from '@hcengineering/ui'
+  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+
   import gmail from '../plugin'
   import { convertMessages } from '../utils'
   import Messages from './Messages.svelte'
@@ -41,7 +42,7 @@
   const messagesQuery = createQuery()
   const newMessageQuery = createQuery()
 
-  const notificationClient = NotificationClientImpl.getClient()
+  const inboxClient = InboxNotificationsClientImpl.getClient()
 
   newMessageQuery.query(
     gmail.class.NewMessage,
@@ -61,7 +62,7 @@
       { attachedTo: channelId },
       (res) => {
         plainMessages = res
-        notificationClient.read(channelId)
+        inboxClient.readDoc(channelId)
       },
       { sort: { sendOn: SortingOrder.Descending } }
     )
@@ -83,7 +84,7 @@
         messages: convertMessages(object, channel, selectedMessages, $personAccountByIdStore, $employeeByIdStore)
       }
     )
-    await notificationClient.read(channel._id)
+    await inboxClient.readDoc(channel._id)
     clear()
   }
 

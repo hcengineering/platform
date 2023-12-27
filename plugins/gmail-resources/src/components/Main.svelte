@@ -18,7 +18,7 @@
   import { employeeByIdStore } from '@hcengineering/contact-resources'
   import { getCurrentAccount } from '@hcengineering/core'
   import { Message, SharedMessage } from '@hcengineering/gmail'
-  import { NotificationClientImpl } from '@hcengineering/notification-resources'
+  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { Integration } from '@hcengineering/setting'
@@ -38,16 +38,16 @@
   export let message: Message | undefined = undefined
 
   const client = getClient()
+  const inboxClient = InboxNotificationsClientImpl.getClient()
 
   let object: Contact
   let currentMessage: SharedMessage | undefined = undefined
 
   let newMessage: boolean = false
-  const notificationClient = NotificationClientImpl.getClient()
   let integrations: Integration[] = []
   let selectedIntegration: Integration | undefined = undefined
 
-  notificationClient.forceRead(channel._id, channel._class)
+  inboxClient.forceReadDoc(channel._id, channel._class)
 
   const dispatch = createEventDispatcher()
 

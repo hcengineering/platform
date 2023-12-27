@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 import {
-  type Account,
   type Class,
   type Doc,
   type DocumentUpdate,
@@ -27,13 +26,11 @@ import {
 import notification, {
   type Collaborators,
   type DocNotifyContext,
-  type DocUpdates,
   inboxId,
-  type InboxNotification,
-  type NotificationClient
+  type InboxNotification
 } from '@hcengineering/notification'
-import { createQuery, getClient } from '@hcengineering/presentation'
-import { get, writable } from 'svelte/store'
+import { getClient } from '@hcengineering/presentation'
+import { get } from 'svelte/store'
 import { getCurrentLocation, type Location, type ResolvedLocation } from '@hcengineering/ui'
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
 import activity, {
@@ -43,108 +40,6 @@ import activity, {
   type DocUpdateMessage
 } from '@hcengineering/activity'
 import { activityMessagesComparator, combineActivityMessages } from '@hcengineering/activity-resources'
-
-/**
- * @public
- */
-export class NotificationClientImpl implements NotificationClient {
-  protected static _instance: NotificationClientImpl | undefined = undefined
-  readonly docUpdatesStore = writable<Map<Ref<Doc>, DocUpdates>>(new Map())
-  docUpdatesMap = new Map<Ref<Doc>, DocUpdates>()
-  readonly docUpdates = writable<DocUpdates[]>([])
-
-  private readonly docUpdatesQuery = createQuery(true)
-
-  private readonly user: Ref<Account>
-
-  private constructor () {
-    this.user = getCurrentAccount()._id
-    this.docUpdatesQuery.query(
-      notification.class.DocUpdates,
-      {
-        user: this.user
-      },
-      (result) => {
-        this.docUpdates.set(result)
-        this.docUpdatesMap = new Map(result.map((p) => [p.attachedTo, p]))
-        this.docUpdatesStore.set(this.docUpdatesMap)
-      }
-    )
-  }
-
-  static createClient (): NotificationClientImpl {
-    NotificationClientImpl._instance = new NotificationClientImpl()
-    return NotificationClientImpl._instance
-  }
-
-  static getClient (): NotificationClientImpl {
-    if (NotificationClientImpl._instance === undefined) {
-      NotificationClientImpl._instance = new NotificationClientImpl()
-    }
-    return NotificationClientImpl._instance
-  }
-
-  async read (_id: Ref<Doc>): Promise<void> {
-    const client = getClient()
-    const docUpdate = this.docUpdatesMap.get(_id)
-    if (docUpdate !== undefined) {
-      if (docUpdate.txes.some((p) => p.isNew)) {
-        docUpdate.txes.forEach((p) => (p.isNew = false))
-        await client.update(docUpdate, { txes: docUpdate.txes })
-      }
-    }
-  }
-
-  async forceRead (_id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<void> {
-    const client = getClient()
-    const docUpdate = this.docUpdatesMap.get(_id)
-    if (docUpdate !== undefined) {
-      if (docUpdate.txes.some((p) => p.isNew)) {
-        docUpdate.txes.forEach((p) => (p.isNew = false))
-        await client.update(docUpdate, { txes: docUpdate.txes })
-      }
-    } else {
-      const doc = await client.findOne(_class, { _id })
-      if (doc !== undefined) {
-        const hiearachy = client.getHierarchy()
-        const collab = hiearachy.as<Doc, Collaborators>(doc, notification.mixin.Collaborators)
-        if (collab.collaborators === undefined) {
-          await client.createMixin<Doc, Collaborators>(
-            collab._id,
-            collab._class,
-            collab.space,
-            notification.mixin.Collaborators,
-            {
-              collaborators: [this.user]
-            }
-          )
-        } else if (!collab.collaborators.includes(this.user)) {
-          await client.updateMixin(collab._id, collab._class, collab.space, notification.mixin.Collaborators, {
-            $push: {
-              collaborators: this.user
-            }
-          })
-        }
-
-        await client.createDoc(notification.class.DocUpdates, doc.space, {
-          attachedTo: _id,
-          attachedToClass: _class,
-          user: this.user,
-          hidden: true,
-          txes: []
-        })
-      }
-    }
-  }
-}
-
-/**
- * @public
- */
-export async function hasntNotifications (object: DocUpdates): Promise<boolean> {
-  if (object._class !== notification.class.DocUpdates) return false
-  return !object.txes.some((p) => p.isNew)
-}
 
 function insideInbox (): boolean {
   const loc = getCurrentLocation()
@@ -278,7 +173,7 @@ async function updateMeInCollaborators (
 /**
  * @public
  */
-export async function unsubscribe (object: DocUpdates): Promise<void> {
+export async function unsubscribe (object: DocNotifyContext): Promise<void> {
   const client = getClient()
   await updateMeInCollaborators(client, object.attachedToClass, object.attachedTo, OpWithMe.Remove)
   await client.remove(object)
@@ -290,37 +185,6 @@ export async function unsubscribe (object: DocUpdates): Promise<void> {
 export async function subscribe (docClass: Ref<Class<Doc>>, docId: Ref<Doc>): Promise<void> {
   const client = getClient()
   await updateMeInCollaborators(client, docClass, docId, OpWithMe.Add)
-}
-
-/**
- * @public
- */
-export async function hide (object: DocUpdates | DocUpdates[]): Promise<void> {
-  const client = getClient()
-  if (Array.isArray(object)) {
-    for (const value of object) {
-      await client.update(value, {
-        hidden: true
-      })
-    }
-  } else {
-    await client.update(object, {
-      hidden: true
-    })
-  }
-}
-
-/**
- * @public
- */
-export async function markAsUnread (object: DocUpdates): Promise<void> {
-  const client = getClient()
-  if (object.txes.length === 0) return
-  const txes = object.txes
-  txes[0].isNew = true
-  await client.update(object, {
-    txes
-  })
 }
 
 /**
