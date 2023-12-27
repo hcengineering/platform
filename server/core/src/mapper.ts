@@ -9,6 +9,7 @@ interface IndexedReader {
   getDoc: (attribute: string) => IndexedReader | undefined
 }
 
+// TODO: Rework to use mongo
 function createIndexedReader (
   _class: Ref<Class<Doc>>,
   hierarchy: Hierarchy,

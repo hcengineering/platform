@@ -302,7 +302,7 @@ function updateDoc2Elastic (
     const docIdAttr = docKey(attr, docKeyOpts)
     if (vv !== null) {
       // Since we replace array of values, we could ignore null
-      doc[docIdAttr] = [...(doc[docIdAttr] ?? [])]
+      doc[docIdAttr] = typeof doc[docIdAttr] === 'string' ? [doc[docIdAttr]] : [...(doc[docIdAttr] ?? [])]
       if (vv !== '') {
         if (typeof vv !== 'object') {
           doc[docIdAttr].push(vv)
