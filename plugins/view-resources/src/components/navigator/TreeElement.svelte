@@ -110,7 +110,7 @@
         class:pressed={hovered}
         on:click|preventDefault|stopPropagation={(ev) => onInlineClick(ev, action)}
       >
-          <Icon icon={action.icon ?? ActionIcon} size={'small'} />
+        <Icon icon={action.icon ?? ActionIcon} size={'small'} />
       </div>
     {/each}
     <div class="an-element__tool" class:pressed={hovered} on:click|preventDefault|stopPropagation={onMenuClick}>

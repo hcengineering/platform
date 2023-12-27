@@ -117,12 +117,12 @@
         action: async (ctx: any, evt: Event) => {
           const { protocol, hostname, port } = window.location
           const baseUrl = `${protocol}//${hostname}${port ? `:${port}` : ''}`
-          let query = filteredView.location.query || {}
+          const query = filteredView.location.query || {}
           query.filterViewId = filteredView._id
 
           const targetUrl = locationToUrl({
             path: filteredView.location.path,
-            query: query,
+            query,
             fragment: filteredView.location.fragment ?? undefined
           })
           copyTextToClipboard(baseUrl + targetUrl)
