@@ -203,6 +203,7 @@ export const inboxId = 'inbox' as Plugin
 
 /**
  * @public
+ * @deprecated
  */
 export interface NotificationClient {
   docUpdatesStore: Writable<Map<Ref<Doc>, DocUpdates>>
@@ -220,6 +221,7 @@ export interface NotificationPreview extends Class<Doc> {
 
 /**
  * @public
+ * @deprecated
  */
 export type NotificationClientFactoy = () => NotificationClient
 
