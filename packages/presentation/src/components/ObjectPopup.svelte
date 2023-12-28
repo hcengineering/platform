@@ -84,14 +84,6 @@
     },
     (result) => {
       result.sort((a, b) => {
-        // selected first + alphabetic ordering
-        const selectedA = selectedObjects.some((sel) => sel === a._id)
-        const selectedB = selectedObjects.some((sel) => sel === b._id)
-
-        if (selectedA !== selectedB) {
-          return selectedA ? -1 : 1
-        }
-
         const aval: string = `${getObjectValue(groupBy, a as any)}`
         const bval: string = `${getObjectValue(groupBy, b as any)}`
         return aval.localeCompare(bval)
