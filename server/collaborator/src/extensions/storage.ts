@@ -54,13 +54,14 @@ export class StorageExtension implements Extension {
 
   async onStoreDocument ({ context, documentName, document }: withContext<onStoreDocumentPayload>): Promise<void> {
     const collaborators = this.collaborators.get(documentName)
+
     if (collaborators === undefined || collaborators.size === 0) {
       console.log('no changes for document', documentName)
       return
     }
 
+    this.collaborators.delete(documentName)
     await this.configuration.ctx.with('store-document', {}, async () => {
-      this.collaborators.delete(documentName)
       await this.storeDocument(documentName, document, context)
     })
   }
@@ -68,12 +69,14 @@ export class StorageExtension implements Extension {
   async onDisconnect ({ context, documentName, document }: withContext<onDisconnectPayload>): Promise<any> {
     const { connectionId } = context
     const collaborators = this.collaborators.get(documentName)
-    if (collaborators === undefined || !this.collaborators.has(connectionId)) {
+
+    if (collaborators === undefined || !collaborators.has(connectionId)) {
       console.log('no changes for document', documentName)
+      return
     }
 
+    this.collaborators.delete(documentName)
     await this.configuration.ctx.with('store-document', {}, async () => {
-      this.collaborators.get(documentName)?.delete(connectionId)
       await this.storeDocument(documentName, document, context)
     })
   }
