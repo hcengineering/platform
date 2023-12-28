@@ -81,6 +81,8 @@
     "StatusChange": "Статус изменен",
     "TaskCreated": "Создана задача",
     "TaskType": "Тип задачи",
-    "ManageProjects": "Управление проектами"
+    "ManageProjects": "Управление проектами",
+    "CreateProjectType": "Создать тип проекта",
+    "ClassicProject": "Классический проект"
   }
 }

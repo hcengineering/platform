@@ -58,7 +58,8 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
         name: 'Classic project',
         descriptor: tracker.descriptors.ProjectType,
         description: '',
-        tasks: []
+        tasks: [],
+        classic: true
       },
       [
         {
@@ -88,7 +89,8 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
         name: 'Base project',
         descriptor: tracker.descriptors.ProjectType,
         description: '',
-        tasks: []
+        tasks: [],
+        classic: false
       },
       [
         {
