@@ -67,7 +67,9 @@
         filter: (it: Doc) => {
           const h = client.getHierarchy()
           if (h.hasMixin(it, contact.mixin.Employee)) {
-            return h.as(it, contact.mixin.Employee).active
+            const isActive = h.as(it, contact.mixin.Employee).active
+            const isSelected = items.some((selectedItem) => selectedItem === it._id)
+            return isActive || isSelected
           }
         },
         readonly
