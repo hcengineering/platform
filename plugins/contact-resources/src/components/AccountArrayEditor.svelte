@@ -36,7 +36,6 @@
   let update: (() => Promise<void>) | undefined
 
   function onUpdate (evt: CustomEvent<Ref<Employee>[]>): void {
-    debugger
     if (timer !== null) {
       clearTimeout(timer)
     }
@@ -76,12 +75,9 @@
   $: docQuery =
     excluded.length > 0
       ? {
-          //active: true,
           _id: { $nin: excluded.map((p) => (p as PersonAccount).person as Ref<Employee>) }
         }
-      : {
-          //active: true
-        }
+      : {}
 </script>
 
 <UserBoxList
