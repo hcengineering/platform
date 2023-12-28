@@ -22,6 +22,8 @@
   import { typeStore } from '../../'
   import ProjectEditor from './ProjectEditor.svelte'
 
+  export let visibleNav: boolean = true
+
   let type: WithLookup<ProjectType> | undefined
   let typeId: Ref<ProjectType> | undefined
 
@@ -36,8 +38,8 @@
   $: type = typeId !== undefined ? $typeStore.get(typeId) : undefined
 </script>
 
-<div class="p-1 w-full h-full">
+<div class="hulyComponent">
   {#if type !== undefined}
-    <ProjectEditor {type} descriptor={type.$lookup?.descriptor} />
+    <ProjectEditor {type} descriptor={type.$lookup?.descriptor} {visibleNav} on:change />
   {/if}
 </div>

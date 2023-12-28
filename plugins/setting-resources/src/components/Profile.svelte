@@ -13,15 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import contact, { Employee, PersonAccount, combineName, getFirstName, getLastName } from '@hcengineering/contact'
   import { ChannelsEditor, EditableAvatar, employeeByIdStore } from '@hcengineering/contact-resources'
   import { Ref, getCurrentAccount } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
   import { AttributeEditor, getClient, MessageBox } from '@hcengineering/presentation'
-  import { Button, createFocusManager, EditBox, FocusHandler, Icon, Label, showPopup } from '@hcengineering/ui'
-  import { onDestroy } from 'svelte'
+  import { Button, createFocusManager, EditBox, FocusHandler, showPopup, Header, Breadcrumb } from '@hcengineering/ui'
   import setting from '../plugin'
+
+  export let visibleNav: boolean = true
+
+  const dispatch = createEventDispatcher()
 
   const client = getClient()
 
@@ -84,11 +88,10 @@
 
 <FocusHandler {manager} />
 
-<div class="antiComponent">
-  <div class="ac-header short divide">
-    <div class="ac-header__icon"><Icon icon={setting.icon.AccountSettings} size={'medium'} /></div>
-    <div class="ac-header__title"><Label label={setting.string.AccountSettings} /></div>
-  </div>
+<div class="hulyComponent">
+  <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+    <Breadcrumb icon={setting.icon.AccountSettings} label={setting.string.AccountSettings} size={'large'} isCurrent />
+  </Header>
   <div class="ac-body p-10">
     {#if employee}
       <div class="flex flex-grow w-full">

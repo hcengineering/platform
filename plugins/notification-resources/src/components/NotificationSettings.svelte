@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import { Ref } from '@hcengineering/core'
   import type {
     NotificationGroup,
@@ -22,11 +23,25 @@
   } from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Location, Scroller, getCurrentResolvedLocation, navigate, resolvedLocationStore } from '@hcengineering/ui'
-  import { onDestroy } from 'svelte'
+  import {
+    Location,
+    Scroller,
+    getCurrentResolvedLocation,
+    navigate,
+    resolvedLocationStore,
+    Header,
+    Breadcrumb,
+    defineSeparators,
+    settingsSeparators,
+    Separator,
+    NavItem
+  } from '@hcengineering/ui'
   import notification from '../plugin'
-  import GroupElement from './GroupElement.svelte'
   import NotificationGroupSetting from './NotificationGroupSetting.svelte'
+
+  export let visibleNav: boolean = true
+
+  const dispatch = createEventDispatcher()
 
   const client = getClient()
   let groups: NotificationGroup[] = []
@@ -73,14 +88,23 @@
       })(loc)
     })
   )
+  defineSeparators('notificationSettings', settingsSeparators)
 </script>
 
-<div class="flex">
-  <div class="antiPanel-element ml-4 mt-2">
-    <div class="antiPanel-wrap__content">
+<div class="hulyComponent">
+  <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+    <Breadcrumb
+      icon={notification.icon.Notifications}
+      label={notification.string.Notifications}
+      size={'large'}
+      isCurrent
+    />
+  </Header>
+  <div class="hulyComponent-content__container columns">
+    <div class="hulyComponent-content__column navigation py-2">
       <Scroller shrink>
         {#each preferencesGroups as preferenceGroup}
-          <GroupElement
+          <NavItem
             icon={preferenceGroup.icon}
             label={preferenceGroup.label}
             selected={preferenceGroup === currentPreferenceGroup}
@@ -94,10 +118,10 @@
           />
         {/each}
         {#if preferencesGroups.length > 0 && groups.length > 0}
-          <div class="antiNav-divider short line" />
+          <div class="antiNav-divider line" />
         {/if}
         {#each groups as gr}
-          <GroupElement
+          <NavItem
             icon={gr.icon}
             label={gr.label}
             selected={gr._id === group}
@@ -114,15 +138,20 @@
         <div class="antiNav-space" />
       </Scroller>
     </div>
-  </div>
-  <div class="antiPanel-component filled">
-    {#if group}
-      <NotificationGroupSetting {group} {settings} />
-    {/if}
-    {#if currentPreferenceGroup}
-      {#await getResource(currentPreferenceGroup.presenter) then presenter}
-        <svelte:component this={presenter} />
-      {/await}
-    {/if}
+    <Separator name={'notificationSettings'} index={0} color={'var(--theme-divider-color)'} />
+    <div class="hulyComponent-content__column content">
+      <div class="hulyComponent-content">
+        <Scroller>
+          {#if group}
+            <NotificationGroupSetting {group} {settings} />
+          {/if}
+          {#if currentPreferenceGroup}
+            {#await getResource(currentPreferenceGroup.presenter) then presenter}
+              <svelte:component this={presenter} />
+            {/await}
+          {/if}
+        </Scroller>
+      </div>
+    </div>
   </div>
 </div>

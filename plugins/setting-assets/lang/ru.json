@@ -31,6 +31,8 @@
     "IntegrationDisabledDescr": "Интеграция отключена",
     "IntegrationWith": "Интеграция с ",
     "ClassSetting": "Настройки класса",
+    "ClassSettingHint": "Набор или категория вещей, обладающих каким-либо свойством или атрибутом, отличающимся от других по виду, типу или качеству.",
+    "ClassProperties": "Свойства класса",
     "Classes": "Классы",
     "Attributes": "Атрибуты",
     "DeleteAttribute": "Удалить атрибут",

@@ -32,7 +32,7 @@
     Action,
     ActionIcon,
     AnySvelteComponent,
-    ButtonIcon,
+    CircleButton,
     Icon,
     IconAdd,
     IconDelete,
@@ -41,8 +41,7 @@
     Label,
     Menu,
     getEventPositionElement,
-    showPopup,
-    IconSettings
+    showPopup
   } from '@hcengineering/ui'
   import { getContextActions } from '@hcengineering/view-resources'
   import settings from '../plugin'
@@ -54,6 +53,7 @@
   export let ofClass: Ref<Class<Doc>> | undefined = undefined
   export let useOfClassAttributes = true
   export let showTitle = true
+  export let showCreate = true
 
   export let attributeMapper:
   | {
@@ -69,7 +69,6 @@
   const classQuery = createQuery()
 
   let clazz: Class<Doc> | undefined
-  let hovered: number | null = null
 
   $: classQuery.query(core.class.Class, { _id: _class }, (res) => {
     clazz = res.shift()
@@ -121,8 +120,7 @@
     )
   }
 
-  async function showMenu (ev: MouseEvent, attribute: AnyAttribute, row: number): Promise<void> {
-    hovered = row
+  async function showMenu (ev: MouseEvent, attribute: AnyAttribute): Promise<void> {
     const exist = (await client.findOne(attribute.attributeOf, { [attribute.name]: { $exists: true } })) !== undefined
 
     const actions: Action[] = [
@@ -154,9 +152,7 @@
         }
       }))
     )
-    showPopup(Menu, { actions }, getEventPositionElement(ev), () => {
-      hovered = null
-    })
+    showPopup(Menu, { actions }, getEventPositionElement(ev))
   }
 
   function getAttrType (type: Type<any>): IntlString | undefined {
@@ -183,176 +179,104 @@
 </script>
 
 {#if showTitle}
-  {#if clazz}
-    <div class="flex-row-center flex-no-shrink mb-6">
-      <div class="hulyInput-body">
-        <Label label={clazz.label} />
+  <div class="flex-row-center fs-title mb-3">
+    {#if clazz?.icon}
+      <div class="mr-2 flex">
+        <Icon icon={clazz.icon} size={'medium'} />
+        {#if clazz.kind === ClassifierKind.MIXIN && hierarchy.hasMixin(clazz, settings.mixin.UserMixin)}
+          <Icon icon={IconAdd} size={'x-small'} />
+        {/if}
       </div>
+    {/if}
+    {#if clazz}
+      <Label label={clazz.label} />
       {#if clazz.kind === ClassifierKind.MIXIN && hierarchy.hasMixin(clazz, settings.mixin.UserMixin)}
         <div class="ml-2">
           <ActionIcon icon={IconEdit} size="small" action={editLabel} />
         </div>
       {/if}
-    </div>
-  {/if}
-{/if}
-<div class="hulyTableAttr-container">
-  <div class="hulyTableAttr-header font-medium-12">
-    <IconSettings size={'small'} />
-    <span><Label label={settings.string.ClassProperties} /></span>
-    <ButtonIcon kind={'primary'} icon={IconAdd} size={'small'} on:click={createAttribute} />
+    {/if}
   </div>
-  {#if attributes.length}
-    <div class="hulyTableAttr-content">
-      {#each attributes as attr, i}
-        {@const attrType = getAttrType(attr.type)}
+{/if}
+{#if showCreate}
+  <div class="flex-between trans-title mb-3">
+    <Label label={settings.string.Attributes} />
+    <CircleButton icon={IconAdd} size="medium" on:click={createAttribute} />
+  </div>
+{/if}
+{#each attributes as attr, i}
+  {@const attrType = getAttrType(attr.type)}
+  <tr
+    class="antiTable-body__row"
+    on:contextmenu={(ev) => {
+      ev.preventDefault()
+      void showMenu(ev, attr)
+    }}
+  >
+    <td>
+      {#if i === 0 && clazz?.label !== undefined}
+        <div class="trans-title">
+          <Label label={clazz.label} />
+        </div>
+      {/if}
+    </td>
+    <td>
+      <div class="antiTable-cells__firstCell whitespace-nowrap flex-row-center">
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div
-          class="hulyTableAttr-content__row"
-          class:hovered={hovered === i}
-          on:contextmenu={(ev) => {
-            ev.preventDefault()
-            void showMenu(ev, attr, i)
-          }}
-        >
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <!-- svelte-ignore a11y-no-static-element-interactions -->
-          <div class="hulyTableAttr-content__row-dragMenu" on:click={(ev) => showMenu(ev, attr, i)}>
-            <IconMoreV2 size={'small'} />
-          </div>
-          {#if attr.isCustom}
-            <div class="hulyTableAttr-content__row-chip font-medium-12">
-              <Label label={settings.string.Custom} />
-            </div>
-          {/if}
-          {#if attr.icon !== undefined}
-            <div class="hulyTableAttr-content__row-icon">
-              <Icon icon={attr.icon} size={'small'} />
-            </div>
-          {/if}
-          <div class="hulyTableAttr-content__row-label font-regular-14" class:accent={!attr.hidden}>
-            <Label label={attr.label} />
-          </div>
-          {#if attributeMapper}
-            <svelte:component this={attributeMapper.component} {...attributeMapper.props} attribute={attr} />
-          {/if}
-          <div class="hulyTableAttr-content__row-type font-medium-12">
-            <Label label={attr.type.label} />
-            {#if attrType !== undefined}
-              : <Label label={attrType} />
-            {/if}
-            {#if attr.type._class === core.class.EnumOf}
-              {#await getEnumName(attr.type) then name}
-                {#if name}
-                  : {name}
-                {/if}
-              {/await}
-            {/if}
+        <div id="context-menu" on:click={(ev) => showMenu(ev, attr)}>
+          <div class="p-1">
+            <IconMoreV2 size={'medium'} />
           </div>
         </div>
-      {/each}
-    </div>
-  {/if}
-</div>
-
-<style lang="scss">
-  .hulyInput-body {
-    flex-grow: 1;
-    flex-shrink: 0;
-    padding: var(--spacing-1) var(--spacing-2);
-    font-weight: 500;
-    font-size: 1.5rem;
-    line-height: 2rem;
-    color: var(--input-TextColor);
-  }
-  .hulyTableAttr-container {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    align-self: stretch;
-    background-color: var(--theme-table-row-color);
-    border: 1px solid var(--theme-divider-color);
-    border-radius: var(--large-BorderRadius);
-
-    .hulyTableAttr-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      align-self: stretch;
-      flex-shrink: 0;
-      padding: var(--spacing-2) var(--spacing-2) var(--spacing-2) var(--spacing-2_5);
-      text-transform: uppercase;
-      color: var(--global-secondary-TextColor);
-
-      span {
-        flex-grow: 1;
-        margin-left: var(--spacing-1_5);
-      }
-    }
-    .hulyTableAttr-content {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      align-self: stretch;
-      flex-shrink: 0;
-      padding: var(--spacing-1);
-      border-top: 1px solid var(--theme-divider-color);
-
-      &__row {
-        display: flex;
-        align-items: center;
-        align-self: stretch;
-        gap: var(--spacing-1);
-        padding: var(--spacing-1) var(--spacing-2) var(--spacing-1) var(--spacing-1);
-        border-radius: var(--small-BorderRadius);
-        cursor: pointer;
-
-        &.hovered,
-        &:hover {
-          background-color: var(--theme-table-header-color); // var(--global-surface-03-hover-BackgroundColor);
-        }
-
-        &-dragMenu {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          flex-shrink: 0;
-          width: var(--global-extra-small-Size);
-          height: var(--global-extra-small-Size);
-          border-radius: var(--extra-small-BorderRadius);
-        }
-        &-chip {
-          padding: var(--spacing-0_25) var(--spacing-0_5);
-          text-transform: uppercase;
-          color: var(--global-tertiary-TextColor);
-          background-color: var(--global-ui-BackgroundColor);
-          border-radius: var(--extra-small-BorderRadius);
-        }
-        &-icon {
-          width: var(--global-min-Size);
-          height: var(--global-min-Size);
-          color: var(--global-primary-TextColor);
-        }
-        &-label {
-          white-space: nowrap;
-          word-break: break-all;
-          text-overflow: ellipsis;
-          overflow: hidden;
-          display: flex;
-          align-items: center;
-          flex-grow: 1;
-          min-width: 0;
-          color: var(--global-primary-TextColor);
-
-          &.accent {
-            font-weight: 500;
-          }
-        }
-        &-type {
-          text-transform: uppercase;
-          color: var(--global-secondary-TextColor);
-        }
-      }
-    }
-  }
-</style>
+        {#if attr.icon !== undefined}
+          <div class="p-1">
+            <Icon icon={attr.icon} size={'small'} />
+          </div>
+        {/if}
+        {#if attr.isCustom}
+          <div class="trans-title p-1">
+            <Label label={settings.string.Custom} />
+          </div>
+        {/if}
+        <div class:accent={!attr.hidden}>
+          <Label label={attr.label} />
+        </div>
+      </div>
+    </td>
+    <td class="select-text whitespace-nowrap trans-title text-xs text-right" style:padding-right={'1rem !important'}>
+      <Label label={attr.type.label} />
+      {#if attrType !== undefined}
+        : <Label label={attrType} />
+      {/if}
+      {#if attr.type._class === core.class.EnumOf}
+        {#await getEnumName(attr.type) then name}
+          {#if name}
+            : {name}
+          {/if}
+        {/await}
+      {/if}
+    </td>
+    {#if attributeMapper}
+      <td>
+        <svelte:component this={attributeMapper.component} {...attributeMapper.props} attribute={attr} />
+      </td>
+    {/if}
+  </tr>
+{/each}
+{#if attributes.length === 0}
+  <tr class="antiTable-body__row">
+    <td>
+      <div class="trans-title">
+        {#if clazz}
+          <Label label={clazz.label} />
+        {/if}
+      </div>
+    </td>
+    <td class="select-text whitespace-nowrap"> </td>
+    <td> </td>
+    {#if attributeMapper}
+      <td> </td>
+    {/if}
+  </tr>
+{/if}
