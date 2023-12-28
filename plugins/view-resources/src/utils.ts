@@ -359,9 +359,11 @@ export async function deleteObject (client: TxOperations, object: Doc): Promise<
   }
 }
 
-export async function deleteObjects (client: TxOperations, objects: Doc[]): Promise<void> {
-  const currentAcc = getCurrentAccount()
-  if (currentAcc.role !== AccountRole.Owner && objects.some((p) => p.createdBy !== currentAcc._id)) return
+export async function deleteObjects (client: TxOperations, objects: Doc[], skipCheck: boolean = false): Promise<void> {
+  if (!skipCheck) {
+    const currentAcc = getCurrentAccount()
+    if (currentAcc.role !== AccountRole.Owner && objects.some((p) => p.createdBy !== currentAcc._id)) return
+  }
   const ops = client.apply('delete')
   for (const object of objects) {
     if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {

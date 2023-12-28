@@ -73,14 +73,22 @@ async function CopyTextToClipboard (
   }
 }
 
-function Delete (object: Doc | Doc[]): void {
+function Delete (
+  object: Doc | Doc[],
+  evt: Event,
+  props: {
+    skipCheck: boolean
+  }
+): void {
+  const skipCheck = props?.skipCheck ?? false
   showPopup(
     contact.component.DeleteConfirmationPopup,
     {
       object,
+      skipCheck,
       deleteAction: async () => {
         const objs = Array.isArray(object) ? object : [object]
-        await deleteObjects(getClient(), objs).catch((err) => {
+        await deleteObjects(getClient(), objs, skipCheck).catch((err) => {
           console.error(err)
         })
       }
