@@ -23,7 +23,8 @@
   import { completionConfig } from './extensions'
   import { EmojiExtension } from './extension/emoji'
   import { FocusExtension } from './extension/focus'
-  import { ImageExtension, FileAttachFunction } from './extension/imageExt'
+  import { ImageExtension } from './extension/imageExt'
+  import { type FileAttachFunction } from './extension/types'
   import { RefAction } from '../types'
 
   export let label: IntlString | undefined = undefined
