@@ -14,11 +14,11 @@
 -->
 
 <script lang="ts">
-  import { Ref, generateId } from "@hcengineering/core"
-  import { Card, getClient } from "@hcengineering/presentation"
-  import { ProjectTypeDescriptor, createProjectType } from "@hcengineering/task"
-  import { DropdownLabelsIntl, EditBox, ToggleWithLabel } from "@hcengineering/ui"
-  import { createEventDispatcher } from "svelte"
+  import { Ref, generateId } from '@hcengineering/core'
+  import { Card, getClient } from '@hcengineering/presentation'
+  import { ProjectTypeDescriptor, createProjectType } from '@hcengineering/task'
+  import { DropdownLabelsIntl, EditBox, ToggleWithLabel } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
   import task from '../../plugin'
 
   const client = getClient()
@@ -68,7 +68,7 @@
     dispatch('close')
   }}
   on:changeContent
-  >
+>
   <div class="flex-col flex-gap-2">
     <EditBox bind:value={name} placeholder={task.string.ProjectType} />
     <DropdownLabelsIntl {items} on:selected={selectType} />

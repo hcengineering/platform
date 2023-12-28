@@ -47,11 +47,7 @@
       : undefined
     : value.kind
 
-  function updateStatuses (
-    taskTypes: IdMap<TaskType>,
-    store: IdMap<Status>,
-    kind: Ref<TaskType> | undefined
-  ): void {
+  function updateStatuses (taskTypes: IdMap<TaskType>, store: IdMap<Status>, kind: Ref<TaskType> | undefined): void {
     if (kind === undefined) {
       statuses = []
     } else {
@@ -59,7 +55,6 @@
         const type = taskTypes.get(kind)
         if (type !== undefined) {
           statuses = type.statuses.map((p) => store.get(p)).filter((p) => p !== undefined) as Status[]
-          return
         }
       }
     }

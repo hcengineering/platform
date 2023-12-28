@@ -39,9 +39,9 @@ export async function createSequence (tx: TxOperations, _class: Ref<Class<Doc>>)
   }
 }
 
-async function reorderStates(_client: MigrationUpgradeClient): Promise<void> {
+async function reorderStates (_client: MigrationUpgradeClient): Promise<void> {
   const client = new TxOperations(_client, core.account.System)
-  const states = toIdMap((await client.findAll(core.class.Status, {})))
+  const states = toIdMap(await client.findAll(core.class.Status, {}))
   const order = [
     task.statusCategory.UnStarted,
     task.statusCategory.Active,
@@ -118,7 +118,7 @@ export const taskOperation: MigrateOperation = {
         func: async (client) => {
           await client.update(
             DOMAIN_SPACE,
-            { _class: task.class.ProjectType, classic: { $exists: false} },
+            { _class: task.class.ProjectType, classic: { $exists: false } },
             {
               classic: true
             }
