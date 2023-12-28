@@ -375,17 +375,49 @@ export function createModel (builder: Builder): void {
   )
 
   builder.mixin(tracker.class.Project, core.class.Class, activity.mixin.ActivityDoc, {})
-  builder.mixin(tracker.class.Issue, core.class.Class, activity.mixin.ActivityDoc, {
-    ignoreCollections: ['comments']
+  builder.mixin(tracker.class.Issue, core.class.Class, activity.mixin.ActivityDoc, {})
+  builder.mixin(tracker.class.Milestone, core.class.Class, activity.mixin.ActivityDoc, {})
+  builder.mixin(tracker.class.Component, core.class.Class, activity.mixin.ActivityDoc, {})
+  builder.mixin(tracker.class.IssueTemplate, core.class.Class, activity.mixin.ActivityDoc, {})
+
+  builder.createDoc(activity.class.ActivityMessageControl, core.space.Model, {
+    objectClass: tracker.class.Issue,
+    skip: [
+      {
+        _class: core.class.TxCollectionCUD,
+        collection: 'comments'
+      }
+    ]
   })
-  builder.mixin(tracker.class.Milestone, core.class.Class, activity.mixin.ActivityDoc, {
-    ignoreCollections: ['comments']
+
+  builder.createDoc(activity.class.ActivityMessageControl, core.space.Model, {
+    objectClass: tracker.class.Milestone,
+    skip: [
+      {
+        _class: core.class.TxCollectionCUD,
+        collection: 'comments'
+      }
+    ]
   })
-  builder.mixin(tracker.class.Component, core.class.Class, activity.mixin.ActivityDoc, {
-    ignoreCollections: ['comments']
+
+  builder.createDoc(activity.class.ActivityMessageControl, core.space.Model, {
+    objectClass: tracker.class.Component,
+    skip: [
+      {
+        _class: core.class.TxCollectionCUD,
+        collection: 'comments'
+      }
+    ]
   })
-  builder.mixin(tracker.class.IssueTemplate, core.class.Class, activity.mixin.ActivityDoc, {
-    ignoreCollections: ['comments']
+
+  builder.createDoc(activity.class.ActivityMessageControl, core.space.Model, {
+    objectClass: tracker.class.IssueTemplate,
+    skip: [
+      {
+        _class: core.class.TxCollectionCUD,
+        collection: 'comments'
+      }
+    ]
   })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
