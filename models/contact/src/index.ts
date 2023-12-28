@@ -221,9 +221,7 @@ export function createModel (builder: Builder): void {
     TContactsTab
   )
 
-  builder.mixin(contact.class.Contact, core.class.Class, activity.mixin.ActivityDoc, {
-    preposition: contact.string.For
-  })
+  builder.mixin(contact.class.Contact, core.class.Class, activity.mixin.ActivityDoc, {})
 
   builder.mixin(contact.class.Person, core.class.Class, activity.mixin.ActivityDoc, {
     preposition: contact.string.For
