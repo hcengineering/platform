@@ -47,8 +47,9 @@ import setting from './plugin'
 import IntegrationPanel from './components/IntegrationPanel.svelte'
 import { getOwnerFirstName, getOwnerLastName, getOwnerPosition, getValue, filterDescendants } from './utils'
 import ClassAttributes from './components/ClassAttributes.svelte'
+import ClassAttributesList from './components/ClassAttributesList.svelte'
 
-export { ClassSetting, filterDescendants, ClassAttributes }
+export { ClassSetting, filterDescendants, ClassAttributes, ClassAttributesList }
 
 async function DeleteMixin (object: Mixin<Class<Doc>>): Promise<void> {
   const docs = await getClient().findAll(object._id, {}, { limit: 1 })

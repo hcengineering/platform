@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import core, { Data, Ref } from '@hcengineering/core'
   import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
   import { createQuery, getClient, MessageViewer, SpaceSelector } from '@hcengineering/presentation'
@@ -9,16 +10,24 @@
     Button,
     EditBox,
     eventToHTMLElement,
-    Icon,
     IconAdd,
     IconEdit,
     Label,
-    showPopup
+    showPopup,
+    Header,
+    Breadcrumb,
+    Separator,
+    defineSeparators,
+    settingsSeparators
   } from '@hcengineering/ui'
   import { getActions as getContributedActions, TreeItem, TreeNode } from '@hcengineering/view-resources'
   import templatesPlugin from '../plugin'
   import CreateTemplateCategory from './CreateTemplateCategory.svelte'
   import FieldPopup from './FieldPopup.svelte'
+
+  export let visibleNav: boolean = true
+
+  const dispatch = createEventDispatcher()
 
   const client = getClient()
   const query = createQuery()
@@ -138,17 +147,22 @@
   }
 
   let space: Ref<TemplateCategory> | undefined = undefined
+  defineSeparators('workspaceSettings', settingsSeparators)
 </script>
 
-<div class="antiComponent">
-  <div class="ac-header short divide">
-    <div class="ac-header__icon"><Icon icon={templatesPlugin.icon.Templates} size={'medium'} /></div>
-    <div class="ac-header__title"><Label label={templatesPlugin.string.Templates} /></div>
-  </div>
+<div class="hulyComponent">
+  <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+    <Breadcrumb
+      icon={templatesPlugin.icon.Templates}
+      label={templatesPlugin.string.Templates}
+      size={'large'}
+      isCurrent
+    />
+  </Header>
 
-  <div class="ac-body columns clear-mins">
-    <div class="ac-column">
-      <div id="create-template" class="flex-between trans-title mb-3">
+  <div class="hulyComponent-content__container columns">
+    <div class="hulyComponent-content__column">
+      <div id="create-template" class="flex-between trans-title m-3">
         <Button
           icon={templatesPlugin.icon.Template}
           label={templatesPlugin.string.CreateTemplate}
@@ -179,79 +193,81 @@
         {/each}
       </div>
     </div>
-
-    <div class="ac-column max template-container">
-      {#if newTemplate}
-        <div class="flex-between mr-4">
-          <span class="trans-title mb-3">
+    <Separator name={'workspaceSettings'} index={0} color={'var(--theme-divider-color)'} />
+    <div class="hulyComponent-content__column content">
+      <div class="hulyComponent-content">
+        {#if newTemplate}
+          <div class="flex-between mr-4">
+            <span class="trans-title mb-3">
+              {#if mode === Mode.Create}
+                <Label label={templatesPlugin.string.CreateTemplate} />
+              {:else if mode === Mode.Edit}
+                <Label label={templatesPlugin.string.EditTemplate} />
+              {:else}
+                <Label label={templatesPlugin.string.ViewTemplate} />
+              {/if}
+            </span>
             {#if mode === Mode.Create}
-              <Label label={templatesPlugin.string.CreateTemplate} />
-            {:else if mode === Mode.Edit}
-              <Label label={templatesPlugin.string.EditTemplate} />
-            {:else}
-              <Label label={templatesPlugin.string.ViewTemplate} />
+              <SpaceSelector
+                _class={templatesPlugin.class.TemplateCategory}
+                label={templatesPlugin.string.TemplateCategory}
+                bind:space
+                create={{
+                  component: templatesPlugin.component.CreateTemplateCategory,
+                  label: templatesPlugin.string.CreateTemplateCategory
+                }}
+              />
             {/if}
-          </span>
-          {#if mode === Mode.Create}
-            <SpaceSelector
-              _class={templatesPlugin.class.TemplateCategory}
-              label={templatesPlugin.string.TemplateCategory}
-              bind:space
-              create={{
-                component: templatesPlugin.component.CreateTemplateCategory,
-                label: templatesPlugin.string.CreateTemplateCategory
-              }}
-            />
-          {/if}
-        </div>
-        <div class="text-lg caption-color">
+          </div>
+          <div class="text-lg caption-color">
+            {#if mode !== Mode.View}
+              <EditBox bind:value={newTemplate.title} placeholder={templatesPlugin.string.TemplatePlaceholder} />
+            {:else}
+              {newTemplate.title}
+            {/if}
+          </div>
+          <div class="separator" />
           {#if mode !== Mode.View}
-            <EditBox bind:value={newTemplate.title} placeholder={templatesPlugin.string.TemplatePlaceholder} />
+            <StyledTextEditor bind:content={newTemplate.message} bind:this={textEditor} on:value={updateTemplate}>
+              <div class="flex flex-reverse flex-grow">
+                <div class="ml-2">
+                  <Button
+                    disabled={newTemplate.title.trim().length === 0}
+                    kind={'primary'}
+                    label={templatesPlugin.string.SaveTemplate}
+                    on:click={saveNewTemplate}
+                  />
+                </div>
+                <div class="ml-2">
+                  <Button
+                    label={templatesPlugin.string.Cancel}
+                    on:click={() => {
+                      if (mode === Mode.Create) {
+                        newTemplate = undefined
+                      }
+                      mode = Mode.View
+                    }}
+                  />
+                </div>
+                <Button label={templatesPlugin.string.Field} on:click={addField} />
+              </div>
+            </StyledTextEditor>
           {:else}
-            {newTemplate.title}
-          {/if}
-        </div>
-        <div class="separator" />
-        {#if mode !== Mode.View}
-          <StyledTextEditor bind:content={newTemplate.message} bind:this={textEditor} on:value={updateTemplate}>
-            <div class="flex flex-reverse flex-grow">
-              <div class="ml-2">
-                <Button
-                  disabled={newTemplate.title.trim().length === 0}
-                  kind={'primary'}
-                  label={templatesPlugin.string.SaveTemplate}
-                  on:click={saveNewTemplate}
-                />
-              </div>
-              <div class="ml-2">
-                <Button
-                  label={templatesPlugin.string.Cancel}
-                  on:click={() => {
-                    if (mode === Mode.Create) {
-                      newTemplate = undefined
-                    }
-                    mode = Mode.View
-                  }}
-                />
-              </div>
-              <Button label={templatesPlugin.string.Field} on:click={addField} />
+            <div class="text">
+              <MessageViewer message={newTemplate.message} />
             </div>
-          </StyledTextEditor>
-        {:else}
-          <div class="text">
-            <MessageViewer message={newTemplate.message} />
-          </div>
-          <div class="flex flex-reverse">
-            <Button
-              kind={'primary'}
-              label={templatesPlugin.string.EditTemplate}
-              on:click={() => {
-                mode = Mode.Edit
-              }}
-            />
-          </div>
+            <div class="flex flex-reverse">
+              <Button
+                kind={'primary'}
+                label={templatesPlugin.string.EditTemplate}
+                on:click={() => {
+                  mode = Mode.Edit
+                }}
+              />
+            </div>
+          {/if}
         {/if}
-      {/if}
+      </div>
     </div>
   </div>
 </div>

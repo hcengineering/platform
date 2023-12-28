@@ -13,13 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import setting from '@hcengineering/setting'
   import presentation from '@hcengineering/presentation'
-  import { Button, EditBox, Icon, Label } from '@hcengineering/ui'
+  import { Button, EditBox, Icon, Label, Header, Breadcrumb } from '@hcengineering/ui'
   import login from '@hcengineering/login'
   import Error from './icons/Error.svelte'
   import plugin from '../plugin'
   import { getResource } from '@hcengineering/platform'
+
+  export let visibleNav: boolean = true
+
+  const dispatch = createEventDispatcher()
 
   let oldPassword: string = ''
   let password: string = ''
@@ -54,11 +59,10 @@
   $: updateSaved(oldPassword, password, password2)
 </script>
 
-<div class="antiComponent">
-  <div class="ac-header short divide">
-    <div class="ac-header__icon"><Icon icon={setting.icon.Password} size={'medium'} /></div>
-    <div class="ac-header__title"><Label label={setting.string.ChangePassword} /></div>
-  </div>
+<div class="hulyComponent">
+  <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+    <Breadcrumb icon={setting.icon.Password} label={setting.string.ChangePassword} size={'large'} isCurrent />
+  </Header>
   <div class="flex-row-stretch flex-grow p-10">
     <div class="flex-grow flex-col">
       {#if error}

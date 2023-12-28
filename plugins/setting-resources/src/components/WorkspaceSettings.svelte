@@ -17,12 +17,19 @@
   import { AccountRole, getCurrentAccount } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import setting, { SettingsCategory } from '@hcengineering/setting'
-  import { Component, Location, getCurrentResolvedLocation, navigate, resolvedLocationStore } from '@hcengineering/ui'
+  import {
+    Component,
+    Location,
+    getCurrentResolvedLocation,
+    navigate,
+    resolvedLocationStore,
+    NavItem
+  } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
-  import NavItem from './NavItem.svelte'
 
-  export let kind: 'navigation' | undefined
+  export let kind: 'navigation' | 'content' | undefined
   export let categoryName: string
+  export let visibleNav: boolean = true
 
   let category: SettingsCategory | undefined
   let categoryId: string = ''
@@ -81,6 +88,8 @@
       <Component is={category.extraComponents?.navigation} props={{ kind: 'navigation', categoryName: categoryId }} />
     {/if}
   {/each}
+{:else if kind === 'content' && !category}
+  <div class="hulyComponent" />
 {:else if category}
-  <Component is={category.component} props={{ kind: 'content' }} />
+  <Component is={category.component} props={{ kind: 'content', visibleNav }} on:change />
 {/if}
