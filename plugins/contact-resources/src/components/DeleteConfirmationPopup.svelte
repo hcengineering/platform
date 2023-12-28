@@ -26,6 +26,7 @@
 
   export let object: Doc | Doc[]
   export let deleteAction: () => void
+  export let skipCheck: boolean = false
   const objectArray = Array.isArray(object) ? object : [object]
   const owners: PersonAccount[] = Array.from($personAccountByIdStore.values()).filter(
     (acc) => acc.role === AccountRole.Owner
@@ -33,6 +34,7 @@
   const dispatch = createEventDispatcher()
   $: creators = [...new Set(objectArray.map((obj) => obj.createdBy as Ref<PersonAccount>))]
   $: canDelete =
+    skipCheck ||
     (creators.length === 1 && creators.includes(getCurrentAccount()._id as Ref<PersonAccount>)) ||
     getCurrentAccount().role === AccountRole.Owner
   $: label = canDelete ? view.string.DeleteObject : view.string.DeletePopupNoPermissionTitle
