@@ -199,16 +199,29 @@ export class TApplicantMatch extends TAttachedDoc implements ApplicantMatch {
 export function createModel (builder: Builder): void {
   builder.createModel(TVacancy, TCandidates, TCandidate, TApplicant, TReview, TOpinion, TVacancyList, TApplicantMatch)
 
-  builder.mixin(recruit.class.Vacancy, core.class.Class, activity.mixin.ActivityDoc, {
-    ignoreCollections: ['comments']
-  })
-  builder.mixin(recruit.class.Applicant, core.class.Class, activity.mixin.ActivityDoc, {
-    ignoreCollections: ['comments']
-  })
+  builder.mixin(recruit.class.Vacancy, core.class.Class, activity.mixin.ActivityDoc, {})
+  builder.mixin(recruit.class.Applicant, core.class.Class, activity.mixin.ActivityDoc, {})
   builder.mixin(recruit.class.Review, core.class.Class, activity.mixin.ActivityDoc, {})
+  builder.mixin(recruit.mixin.Candidate, core.class.Class, activity.mixin.ActivityDoc, {})
 
-  builder.mixin(recruit.mixin.Candidate, core.class.Class, activity.mixin.ActivityDoc, {
-    ignoreCollections: ['comments']
+  builder.createDoc(activity.class.ActivityMessageControl, core.space.Model, {
+    objectClass: recruit.class.Vacancy,
+    skip: [
+      {
+        _class: core.class.TxCollectionCUD,
+        collection: 'comments'
+      }
+    ]
+  })
+
+  builder.createDoc(activity.class.ActivityMessageControl, core.space.Model, {
+    objectClass: recruit.class.Applicant,
+    skip: [
+      {
+        _class: core.class.TxCollectionCUD,
+        collection: 'comments'
+      }
+    ]
   })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {

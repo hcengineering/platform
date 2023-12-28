@@ -222,21 +222,27 @@ export function createModel (builder: Builder): void {
   )
 
   builder.mixin(contact.class.Contact, core.class.Class, activity.mixin.ActivityDoc, {
-    ignoreCollections: ['comments']
+    preposition: contact.string.For
   })
 
   builder.mixin(contact.class.Person, core.class.Class, activity.mixin.ActivityDoc, {
-    preposition: contact.string.For,
-    ignoreCollections: ['comments']
+    preposition: contact.string.For
   })
 
   builder.mixin(contact.mixin.Employee, core.class.Class, activity.mixin.ActivityDoc, {
-    preposition: contact.string.For,
-    ignoreCollections: ['comments']
+    preposition: contact.string.For
   })
 
-  builder.mixin(contact.class.Organization, core.class.Class, activity.mixin.ActivityDoc, {
-    ignoreCollections: ['comments']
+  builder.mixin(contact.class.Organization, core.class.Class, activity.mixin.ActivityDoc, {})
+
+  builder.createDoc(activity.class.ActivityMessageControl, core.space.Model, {
+    objectClass: contact.class.Contact,
+    skip: [
+      {
+        _class: core.class.TxCollectionCUD,
+        collection: 'comments'
+      }
+    ]
   })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {

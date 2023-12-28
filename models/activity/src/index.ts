@@ -30,7 +30,8 @@ import {
   type DocUpdateMessageViewletAttributesConfig,
   type Reaction,
   type TxViewlet,
-  type ActivityMessageControl
+  type ActivityMessageControl,
+  type IgnoreActivity
 } from '@hcengineering/activity'
 import core, {
   DOMAIN_MODEL,
@@ -71,13 +72,15 @@ export const DOMAIN_ACTIVITY = 'activity' as Domain
 @Mixin(activity.mixin.ActivityDoc, core.class.Class)
 export class TActivityDoc extends TClass implements ActivityDoc {
   preposition?: IntlString
-  ignoreCollections?: string[]
 }
 
 @Mixin(activity.mixin.ActivityAttributeUpdatesPresenter, core.class.Class)
 export class TActivityAttributeUpdatesPresenter extends TClass implements ActivityAttributeUpdatesPresenter {
   presenter!: AnyComponent
 }
+
+@Mixin(activity.mixin.IgnoreActivity, core.class.Class)
+export class TIgnoreActivity extends TClass implements IgnoreActivity {}
 
 @Model(activity.class.TxViewlet, core.class.Doc, DOMAIN_MODEL)
 export class TTxViewlet extends TDoc implements TxViewlet {
@@ -194,6 +197,7 @@ export class TReaction extends TAttachedDoc implements Reaction {
   @Prop(TypeRef(core.class.Account), view.string.Created)
     createBy!: Ref<Account>
 }
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TTxViewlet,
@@ -207,7 +211,8 @@ export function createModel (builder: Builder): void {
     TReaction,
     TActivityAttributeUpdatesPresenter,
     TActivityInfoMessage,
-    TActivityMessageControl
+    TActivityMessageControl,
+    TIgnoreActivity
   )
 
   builder.mixin(activity.class.DocUpdateMessage, core.class.Class, activity.mixin.ActivityDoc, {})
