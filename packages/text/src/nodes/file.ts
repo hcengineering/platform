@@ -53,25 +53,18 @@ export const FileNode = Node.create<FileOptions>({
       'file-id': {
         default: null
       },
-      'file-name': {
+      'data-file-name': {
         default: null
       },
-      'file-size': {
+      'data-file-size': {
         default: null
       },
-      'file-type': {
+      'data-file-type': {
         default: null
       },
-      src: {
+      'data-file-href': {
         default: null
-      },
-      alt: {
-        default: null
-      },
-      title: {
-        default: null
-      },
-      align: getDataAttribute('align')
+      }
     }
   },
 
@@ -81,16 +74,16 @@ export const FileNode = Node.create<FileOptions>({
         tag: `div[data-type="${this.name}"]`
       },
       {
-        tag: 'div[file-name]'
+        tag: 'div[data-file-name]'
       },
       {
-        tag: 'div[file-size]'
+        tag: 'div[data-file-size]'
       },
       {
-        tag: 'div[file-type]'
+        tag: 'div[data-file-type]'
       },
       {
-        tag: 'div[src]'
+        tag: 'div[data-file-href]'
       }
     ]
   },
@@ -100,12 +93,13 @@ export const FileNode = Node.create<FileOptions>({
       'data-type': this.name
     }
 
-    const fileName = HTMLAttributes['file-name']
-    const size = HTMLAttributes['file-size']
-    const fileType = HTMLAttributes['file-type']
+    const fileName = HTMLAttributes['data-file-name']
+    const size = HTMLAttributes['data-file-size']
+    const fileType = HTMLAttributes['data-file-type']
+    const href = HTMLAttributes['data-file-href']
     const linkAttributes = {
       class: 'file-name',
-      href: node.attrs.src,
+      href,
       type: fileType,
       download: fileName,
       target: '_blank'

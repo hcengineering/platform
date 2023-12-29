@@ -46,7 +46,7 @@ export const inputRegex = /(?:^|\s)(!\[(.+|:?)]\((\S+)(?:(?:\s+)["'](\S+)["'])?\
 export const FileExtension = FileNode.extend<FileOptions>({
   addOptions () {
     return {
-      inline: true,
+      inline: false,
       HTMLAttributes: {}
     }
   },
@@ -57,16 +57,16 @@ export const FileExtension = FileNode.extend<FileOptions>({
         tag: `div[data-type="${this.name}"]`
       },
       {
-        tag: 'div[file-name]'
+        tag: 'div[data-file-name]'
       },
       {
-        tag: 'div[file-size]'
+        tag: 'div[data-file-size]'
       },
       {
-        tag: 'div[file-type]'
+        tag: 'div[data-file-type]'
       },
       {
-        tag: 'div[src]'
+        tag: 'div[data-file-href]'
       }
     ]
   },
@@ -80,12 +80,13 @@ export const FileExtension = FileNode.extend<FileOptions>({
     }
 
     const id = HTMLAttributes['file-id']
-    const fileName = HTMLAttributes['file-name']
-    const size = HTMLAttributes['file-size']
-    const fileType = HTMLAttributes['file-type']
+    const fileName = HTMLAttributes['data-file-name']
+    const size = HTMLAttributes['data-file-size']
+    const fileType = HTMLAttributes['data-file-type']
+    const href = HTMLAttributes['data-file-type']
     const linkAttributes = {
       class: 'file-name',
-      href: node.attrs.src,
+      href,
       type: fileType,
       download: fileName,
       target: '_blank'
@@ -96,7 +97,7 @@ export const FileExtension = FileNode.extend<FileOptions>({
     }
     const icon = document.createElement('div')
     icon.classList.add('icon')
-    icon.innerHTML = fileType.includes('image') === true ? imageIcon : attachIcon
+    icon.innerHTML = fileType.startsWith('image') === true ? imageIcon : attachIcon
 
     return [
       'div',
@@ -110,12 +111,7 @@ export const FileExtension = FileNode.extend<FileOptions>({
     return [
       nodeInputRule({
         find: inputRegex,
-        type: this.type,
-        getAttributes: (match) => {
-          const [, , alt, src, title] = match
-
-          return { src, alt, title }
-        }
+        type: this.type
       })
     ]
   },
@@ -131,24 +127,16 @@ export const FileExtension = FileNode.extend<FileOptions>({
 
       const files = dataTransfer?.files
       if (files !== undefined && opt.attachFile !== undefined) {
-        enum FileType {
-          none = 0,
-          image = 1,
-          file = 2,
-          mix = 3 // 1 + 2 = image + file
-        }
-        let attachTypes: FileType = 0
+        let hasNotImageFile: boolean = false
         for (let i = 0; i < files.length; i++) {
           const file = files.item(i)
           if (file != null) {
-            if (file.type.includes('image')) {
-              attachTypes = attachTypes | FileType.image
-            } else {
-              attachTypes = attachTypes | FileType.file
+            if (!file.type.startsWith('image')) {
+              hasNotImageFile = true
             }
           }
         }
-        if (attachTypes === FileType.none || attachTypes === FileType.image) {
+        if (!hasNotImageFile) {
           return false
         }
 
@@ -160,9 +148,9 @@ export const FileExtension = FileNode.extend<FileOptions>({
               if (id !== undefined) {
                 const node = view.state.schema.nodes.file.create({
                   'file-id': id.file,
-                  'file-name': file.name,
-                  'file-type': file.type,
-                  'file-size': file.size
+                  'data-file-name': file.name,
+                  'data-file-type': file.type,
+                  'data-file-size': file.size
                 })
                 const transaction = view.state.tr.insert(pos?.pos ?? 0, node)
                 view.dispatch(transaction)
