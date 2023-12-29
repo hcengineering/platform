@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { getFileUrl } from '@hcengineering/presentation'
+import { getFileUrl, PDFViewer } from '@hcengineering/presentation'
 import { FileNode, type FileOptions as FileNodeOptions } from '@hcengineering/text'
+import { showPopup } from '@hcengineering/ui'
 import { nodeInputRule } from '@tiptap/core'
 import { type Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
@@ -64,9 +65,6 @@ export const FileExtension = FileNode.extend<FileOptions>({
       },
       {
         tag: 'div[data-file-type]'
-      },
-      {
-        tag: 'div[data-file-href]'
       }
     ]
   },
@@ -83,17 +81,17 @@ export const FileExtension = FileNode.extend<FileOptions>({
     const fileName = HTMLAttributes['data-file-name']
     const size = HTMLAttributes['data-file-size']
     const fileType = HTMLAttributes['data-file-type']
-    const href = HTMLAttributes['data-file-type']
+    let href: string = ''
+    if (id != null) {
+      href = getFileUrl(id, 'full', fileName)
+      this.options.reportNode?.(id, node)
+    }
     const linkAttributes = {
       class: 'file-name',
       href,
       type: fileType,
       download: fileName,
       target: '_blank'
-    }
-    if (id != null) {
-      linkAttributes.href = getFileUrl(id, 'full', fileName)
-      this.options.reportNode?.(id, node)
     }
     const icon = document.createElement('div')
     icon.classList.add('icon')
@@ -183,6 +181,25 @@ export const FileExtension = FileNode.extend<FileOptions>({
             if (dataTransfer !== null) {
               return handleDrop(view, view.posAtCoords({ left: event.x, top: event.y }), dataTransfer)
             }
+          },
+          handleDoubleClickOn (view, pos, node, nodePos, event) {
+            const fileId = node.attrs['file-id'] ?? ''
+            if (fileId === '') return
+            const fileName = node.attrs['data-file-name'] ?? ''
+            const fileType: string = node.attrs['data-file-type'] ?? ''
+            if (!(fileType.startsWith('image/') || fileType === 'text/plain' || fileType === 'application/pdf')) return
+
+            showPopup(
+              PDFViewer,
+              {
+                file: fileId,
+                name: fileName,
+                contentType: fileType,
+                fullSize: true,
+                showIcon: false
+              },
+              'centered'
+            )
           }
         }
       })
