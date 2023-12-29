@@ -305,7 +305,7 @@ function updateDoc2Elastic (
       doc[docIdAttr] = typeof doc[docIdAttr] === 'string' ? [doc[docIdAttr]] : [...(doc[docIdAttr] ?? [])]
       if (vv !== '') {
         if (typeof vv !== 'object') {
-          doc[docIdAttr].push(vv)
+          doc[docIdAttr] = Array.from(new Set([...doc[docIdAttr], vv]))
         }
       }
     }
