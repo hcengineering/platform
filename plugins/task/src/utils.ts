@@ -255,7 +255,8 @@ export async function createProjectType (
       members: [],
       archived: false,
       statuses: calculateStatuses({ tasks: _tasks, statuses: [] }, tasksData, []),
-      targetClass: targetProjectClassId
+      targetClass: targetProjectClassId,
+      classic: data.classic
     },
     _id
   )

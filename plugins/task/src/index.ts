@@ -173,6 +173,9 @@ export interface ProjectType extends Space {
 
   // A mixin for project
   targetClass: Ref<Class<Project>>
+
+  // disable automation workflow
+  classic: boolean
 }
 
 /**

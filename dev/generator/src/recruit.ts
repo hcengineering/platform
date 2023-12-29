@@ -102,6 +102,7 @@ async function genVacansyApplicants (
     members: [],
     archived: false,
     tasks: [],
+    classic: true,
     // TODO: Fix me.
     statuses: states.map((s) => {
       return { _id: s, taskType: '' as Ref<TaskType> }
