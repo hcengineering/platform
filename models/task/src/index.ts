@@ -640,6 +640,10 @@ export async function fixTaskTypes (
   const resultProjects: Project[] = []
 
   for (const t of projectTypes) {
+    if (t.tasks?.length > 0) {
+      // Already migrated.
+      continue
+    }
     t.tasks = [...(t.tasks ?? [])]
     if (t.targetClass === undefined) {
       const targetProjectClassId: Ref<Class<Doc>> = generateId()

@@ -55,7 +55,11 @@ async function reorderStates (_client: MigrationUpgradeClient): Promise<void> {
       const bIndex = order.indexOf(states.get(b)?.category ?? task.statusCategory.UnStarted)
       return aIndex - bIndex
     })
-    await client.diffUpdate(taskType, { statuses })
+    try {
+      await client.diffUpdate(taskType, { statuses })
+    } catch (err: any) {
+      console.error(err)
+    }
   }
 }
 

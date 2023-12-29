@@ -31,6 +31,7 @@ export { default as Reactions } from './components/reactions/Reactions.svelte'
 export { default as ActivityMessageTemplate } from './components/activity-message/ActivityMessageTemplate.svelte'
 export { default as ActivityMessagePresenter } from './components/activity-message/ActivityMessagePresenter.svelte'
 export { default as ActivityExtension } from './components/ActivityExtension.svelte'
+export { default as ActivityMessageHeader } from './components/activity-message/ActivityMessageHeader.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
