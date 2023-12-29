@@ -46,6 +46,7 @@
     "SocialLinks": "Social links",
     "ViewActivity": "View activity",
     "PersonAlreadyExists": "Contact already exists...",
+    "InvalidEmail": "Invalid email...",
     "Status": "Status",
     "SetStatus": "Set status",
     "ClearStatus": "Clear status",

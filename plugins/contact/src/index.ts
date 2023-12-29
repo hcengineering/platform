@@ -255,6 +255,7 @@ export const contactPlugin = plugin(contactId, {
   },
   string: {
     PersonAlreadyExists: '' as IntlString,
+    InvalidEmail: '' as IntlString,
     Person: '' as IntlString,
     Employee: '' as IntlString,
     CreateOrganization: '' as IntlString,

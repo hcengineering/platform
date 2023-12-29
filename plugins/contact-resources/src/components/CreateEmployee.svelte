@@ -20,7 +20,7 @@
   import { Card, createQuery, getClient } from '@hcengineering/presentation'
   import { createFocusManager, EditBox, FocusHandler, IconInfo, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { ChannelsDropdown } from '..'
+  import { ChannelsDropdown, validateEmail } from '..'
   import contact from '../plugin'
   import EditableAvatar from './EditableAvatar.svelte'
 
@@ -39,7 +39,7 @@
     return firstName === '' && lastName === '' && email === ''
   }
 
-  const object: Employee = {} as unknown as Employee
+  const emptyEmployee: Employee = {} as unknown as Employee
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -49,7 +49,7 @@
     const name = combineName(firstName, lastName)
     const person: Data<Person> = {
       name,
-      city: object.city
+      city: emptyEmployee.city
     }
 
     person.avatar = await avatarEditor.createAvatar()
@@ -89,7 +89,7 @@
     }
   ]
 
-  let exists: PersonAccount | undefined
+  let exists = false
   const query = createQuery()
   $: query.query(
     contact.class.PersonAccount,
@@ -97,20 +97,23 @@
       email: email.trim()
     },
     (p) => {
-      exists = p[0]
+      exists = p[0] !== undefined
     }
   )
+
+  $: isValidEmail = validateEmail(email.trim());
 
   const manager = createFocusManager()
 
   function changeEmail () {
+    const trimmedEmail = email.trim()
     const index = channels.findIndex((p) => p.provider === contact.channelProvider.Email)
     if (index !== -1) {
-      channels[index].value = email.trim()
+      channels[index].value = trimmedEmail
     } else {
       channels.push({
         provider: contact.channelProvider.Email,
-        value: email.trim()
+        value: trimmedEmail
       })
     }
     channels = channels
@@ -124,8 +127,8 @@
   okAction={createPerson}
   canSave={firstName.trim().length > 0 &&
     lastName.trim().length > 0 &&
-    email.trim().length > 0 &&
-    exists === undefined &&
+    isValidEmail &&
+    !exists &&
     canSave}
   on:close={() => {
     dispatch('close')
@@ -133,11 +136,19 @@
   on:changeContent
 >
   <svelte:fragment slot="error">
-    {#if exists !== undefined}
+    {#if exists}
       <div class="flex-row-center error-color">
         <IconInfo size={'small'} />
         <span class="text-sm overflow-label ml-2">
           <Label label={contact.string.PersonAlreadyExists} />
+        </span>
+      </div>
+    {/if}
+    {#if email.trim()?.length > 0 && !exists && !isValidEmail}
+      <div class="flex-row-center error-color">
+        <IconInfo size={'small'} />
+        <span class="text-sm overflow-label ml-2">
+          <Label label={contact.string.InvalidEmail} />
         </span>
       </div>
     {/if}
@@ -151,13 +162,15 @@
         autoFocus
         focusIndex={1}
       />
-      <EditBox
-        placeholder={contact.string.PersonLastNamePlaceholder}
-        bind:value={lastName}
-        kind={'large-style'}
-        focusIndex={2}
-      />
       <div class="mt-1">
+        <EditBox
+          placeholder={contact.string.PersonLastNamePlaceholder}
+          bind:value={lastName}
+          kind={'large-style'}
+          focusIndex={2}
+        />
+      </div>
+      <div class="mt-2">
         <EditBox
           placeholder={contact.string.Email}
           bind:value={email}
@@ -170,7 +183,7 @@
     </div>
     <div class="ml-4">
       <EditableAvatar
-        avatar={object.avatar}
+        avatar={emptyEmployee.avatar}
         name={combineName(firstName, lastName)}
         {email}
         size={'large'}

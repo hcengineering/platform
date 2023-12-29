@@ -64,6 +64,10 @@ export function formatDate (dueDateMs: Timestamp): string {
   })
 }
 
+export function validateEmail (email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+}
+
 export async function employeeSort (client: TxOperations, value: Array<Ref<Employee>>): Promise<Array<Ref<Employee>>> {
   const h = client.getHierarchy()
   return value.sort((a, b) => {
