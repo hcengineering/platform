@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 import { Node } from '@tiptap/core'
-import { getDataAttribute } from './utils'
 
 /**
  * @public

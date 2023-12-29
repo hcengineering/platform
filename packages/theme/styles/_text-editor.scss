@@ -226,9 +226,9 @@
 }
 
 .text-editor-file-container {
-  background-color: rgba(0, 0, 0, 0.02);
+  background-color: var(--theme-button-default);
   border-radius: 0.375rem;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--theme-button-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
