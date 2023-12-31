@@ -99,13 +99,15 @@
         autoFocus
         focusIndex={1}
       />
-      <EditBox
-        placeholder={contact.string.PersonLastNamePlaceholder}
-        bind:value={lastName}
-        kind={'large-style'}
-        focusIndex={2}
-      />
       <div class="mt-1">
+        <EditBox
+          placeholder={contact.string.PersonLastNamePlaceholder}
+          bind:value={lastName}
+          kind={'large-style'}
+          focusIndex={2}
+        />
+      </div>
+      <div class="mt-2">
         <EditBox
           placeholder={contact.string.PersonLocationPlaceholder}
           bind:value={object.city}
