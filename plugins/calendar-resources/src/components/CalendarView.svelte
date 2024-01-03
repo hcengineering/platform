@@ -382,6 +382,7 @@
     events={objects}
     {mondayStart}
     displayedDaysCount={7}
+    {dragItemId}
     startFromWeekStart
     bind:selectedDate
     bind:currentDate
@@ -396,6 +397,7 @@
     <DayCalendar
       bind:this={dayCalendar}
       events={objects}
+      {dragItemId}
       {mondayStart}
       displayedDaysCount={mode === CalendarMode.Days ? 3 : 1}
       startFromWeekStart={false}
