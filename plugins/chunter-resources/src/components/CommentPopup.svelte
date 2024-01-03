@@ -31,6 +31,7 @@
 
   let loading = true
   let activityOrderNewestFirst = JSON.parse(localStorage.getItem('activity-newest-first') ?? 'false')
+  $: localStorage.setItem('activity-newest-first', JSON.stringify(activityOrderNewestFirst))
   let comments: Comment[] = []
   const query = createQuery()
   $: query.query(
