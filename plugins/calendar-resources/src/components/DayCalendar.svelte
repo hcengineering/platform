@@ -276,13 +276,14 @@
   }
   const prepareAllDays = () => {
     alldays = calendarEvents.filter((ev) => ev.allDay)
+    shortAlldays = []
     adRows = []
     for (let i = 0; i < displayedDaysCount; i++) alldaysGrid[i] = { alldays: [null] }
     adMaxRow = 1
     alldays
       .filter((event) => event.day === -1)
       .forEach((event) => {
-        const days = newEvents
+        const days = calendarEvents
           .filter((ev) => ev.allDay && ev.day !== -1 && event._id === ev._id)
           .map((ev) => {
             return ev.day
@@ -307,7 +308,7 @@
     for (let r = 0; r < shown; r++) {
       const lastRow = r === shown - 1
       for (let d = 0; d < displayedDaysCount; d++) {
-        if (r < shown - 1 && tempEventID !== alldaysGrid[d].alldays[r] && alldaysGrid[d].alldays[r] !== null) {
+        if (!lastRow && tempEventID !== alldaysGrid[d].alldays[r] && alldaysGrid[d].alldays[r] !== null) {
           tempEventID = alldaysGrid[d].alldays[r] ?? ''
           if (tempEventID !== '') shortAlldays.push({ id: tempEventID, day: d })
         } else if (lastRow) {
