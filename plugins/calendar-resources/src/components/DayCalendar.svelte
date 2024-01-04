@@ -536,7 +536,7 @@
     return Math.round(exactly / roundStep) * roundStep
   }
 
-  const getExaclty = (e: MouseEvent): number => {
+  const getExactly = (e: MouseEvent): number => {
     return Math.round((e.offsetY * 60) / cellHeight)
   }
 
@@ -630,7 +630,7 @@
     hour: number
   ): void {
     if (resizeId == null && directionResize == null) return
-    const exactly = getExaclty(e)
+    const exactly = getExactly(e)
     const minutes = getMinutes(exactly)
     const mins: number = getStickyMinutes(minutes, exactly, day, hour + startHour, resizeId)
     if (oldMins === mins) return
@@ -665,7 +665,7 @@
 
   function dragDrop (e: DragEvent, day: Date, hourOfDay: number): void {
     const hour = hourOfDay + startHour
-    const newTime = new Date(day).setHours(hour, getExaclty(e), 0, 0)
+    const newTime = new Date(day).setHours(hour, getExactly(e), 0, 0)
     if (dragId) {
       if (oldTime === -1) oldTime = newTime
       const index = events.findIndex((ev) => ev._id === dragId)
@@ -708,7 +708,7 @@
     const dragOn: CalendarCell = {
       day,
       hourOfDay,
-      minutes: getExaclty(e)
+      minutes: getExactly(e)
     }
     if (
       dragOnOld !== null &&
