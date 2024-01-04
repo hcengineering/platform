@@ -172,7 +172,6 @@
       isSaving = true
       await ops.createDoc(tracker.class.Project, core.space.Space, { ...projectData, type: typeId }, projectId)
       const succeeded = await ops.commit()
-      isSaving = false
 
       if (succeeded) {
         // Add vacancy mixin
@@ -180,6 +179,7 @@
 
         close(projectId)
       } else {
+        isSaving = false
         changeIdentity(changeIdentityRef)
       }
     }
