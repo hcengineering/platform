@@ -51,6 +51,14 @@ export async function startCollaborator (): Promise<void> {
     void shutdown()
   }
 
+  process.on('uncaughtException', (e) => {
+    console.error(e)
+  })
+
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason)
+  })
+
   process.on('SIGINT', close)
   process.on('SIGTERM', close)
   process.on('exit', close)
