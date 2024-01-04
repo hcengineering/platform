@@ -79,6 +79,7 @@ export default mergeIds(taskId, task, {
   string: {
     ManageProjects: '' as IntlString,
     StateBacklog: '' as IntlString,
-    StateActive: '' as IntlString
+    StateActive: '' as IntlString,
+    StateUnstarted: '' as IntlString
   }
 })

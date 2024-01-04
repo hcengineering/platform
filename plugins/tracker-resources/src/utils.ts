@@ -281,6 +281,7 @@ export const milestoneTitleMap: Record<MilestoneViewMode, IntlString> = Object.f
  */
 export const listIssueStatusOrder = [
   task.statusCategory.Active,
+  task.statusCategory.ToDo,
   task.statusCategory.UnStarted,
   task.statusCategory.Won,
   task.statusCategory.Lost
@@ -291,6 +292,7 @@ export const listIssueStatusOrder = [
  */
 export const listIssueKanbanStatusOrder = [
   task.statusCategory.UnStarted,
+  task.statusCategory.ToDo,
   task.statusCategory.Active,
   task.statusCategory.Won,
   task.statusCategory.Lost
@@ -688,6 +690,25 @@ export const IssuePriorityColor = {
 export async function getVisibleFilters (filters: KeyFilter[], space?: Ref<Space>): Promise<KeyFilter[]> {
   // Removes the "Project" filter if a specific space is provided
   return space === undefined ? filters : filters.filter((f) => f.key !== 'space')
+}
+
+export function getIssueStatusCategories (project: ProjectType): Array<Ref<StatusCategory>> {
+  if (project.classic) {
+    return [
+      task.statusCategory.UnStarted,
+      task.statusCategory.ToDo,
+      task.statusCategory.Active,
+      task.statusCategory.Won,
+      task.statusCategory.Lost
+    ]
+  } else {
+    return [
+      task.statusCategory.UnStarted,
+      task.statusCategory.Active,
+      task.statusCategory.Won,
+      task.statusCategory.Lost
+    ]
+  }
 }
 
 interface ManualUpdates {

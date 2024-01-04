@@ -31,6 +31,7 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import { typeStore } from '../..'
   import IconBacklog from '../icons/IconBacklog.svelte'
+  import IconUnstarted from '../icons/IconUnstarted.svelte'
   import IconCanceled from '../icons/IconCanceled.svelte'
   import IconCompleted from '../icons/IconCompleted.svelte'
   import IconStarted from '../icons/IconStarted.svelte'
@@ -104,6 +105,7 @@
 
   const categoryIcons = {
     [task.statusCategory.UnStarted]: IconBacklog,
+    [task.statusCategory.ToDo]: IconUnstarted,
     [task.statusCategory.Active]: IconStarted,
     [task.statusCategory.Won]: IconCompleted,
     [task.statusCategory.Lost]: IconCanceled

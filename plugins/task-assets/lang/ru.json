@@ -55,6 +55,7 @@
     "DoneStatesWon": "Завершено / Выиграно",
     "DoneStatesLost": "Завершено / Потеряно",
     "StateBacklog": "Пул задач",
+    "StateUnstarted": "Не запущенные",
     "StateActive": "Активные",
     "AllStates": "Все статусы",
     "DoneStates": "Завершенные статусы",

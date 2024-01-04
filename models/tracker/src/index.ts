@@ -663,7 +663,8 @@ export function createModel (builder: Builder): void {
       allowCreate: true,
       description: tracker.string.Issue,
       icon: tracker.icon.Issue,
-      name: tracker.string.Issue
+      name: tracker.string.Issue,
+      statusCategoriesFunc: tracker.function.GetIssueStatusCategories
     },
     tracker.descriptors.Issue
   )
