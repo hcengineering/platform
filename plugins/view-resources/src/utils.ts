@@ -103,7 +103,11 @@ export async function getObjectPresenter (
   const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : view.mixin.ObjectPresenter
   const clazz = hierarchy.getClass(_class)
 
-  const presenterMixin = hierarchy.classHierarchyMixin(_class, mixin, (m) => !checkResource || hasResource(m.presenter))
+  const presenterMixin = hierarchy.classHierarchyMixin(
+    _class,
+    mixin,
+    (m) => !checkResource || hasResource(m.presenter) === true
+  )
   if (presenterMixin?.presenter === undefined) {
     console.error(
       `object presenter not found for class=${_class}, mixin=${mixin}, preserve key ${JSON.stringify(preserveKey)}`
