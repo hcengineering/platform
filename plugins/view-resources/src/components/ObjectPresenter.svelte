@@ -20,6 +20,7 @@
 
   export let objectId: Ref<Doc> | undefined = undefined
   export let _class: Ref<Class<Doc>> | undefined = undefined
+  export let attributeClass: Ref<Class<Doc>> | undefined = undefined
   export let value: Doc | RelatedDocument | undefined = undefined
   export let props: Record<string, any> = {}
   export let inline: boolean = false
@@ -37,7 +38,7 @@
   const docQuery = createQuery()
   let doc: Doc | undefined
 
-  $: if (value === undefined && _class != null) {
+  $: if (value === undefined && _class != null && objectId !== undefined && objectId !== null) {
     docQuery.query(_class, { _id: objectId }, (r) => {
       doc = r.shift()
     })
@@ -65,6 +66,17 @@
         console.log(objectId)
         console.log(_class)
         console.log(value)
+        throw p
+      })
+  } else if (attributeClass !== undefined) {
+    // getting correct presenter for undefined field
+    getObjectPresenter(client, attributeClass, { key: '' })
+      .then((p) => {
+        presenter = p
+      })
+      .catch((p) => {
+        console.log('Presenter for undef field')
+        console.log(attributeClass)
         throw p
       })
   }

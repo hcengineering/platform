@@ -423,6 +423,7 @@
                       this={attribute.presenter}
                       value={getValue(attribute, object)}
                       onChange={getOnChange(object, attribute)}
+                      attributeClass={attribute._class}
                       {...joinProps(attribute, object)}
                     />
                   </div>
