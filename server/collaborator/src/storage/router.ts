@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-import { Document } from '@hocuspocus/server'
 import { Doc as YDoc } from 'yjs'
 
 import { Context } from '../context'
@@ -45,7 +44,7 @@ export class RouterStorageAdapter implements StorageAdapter {
     return await adapter?.loadDocument?.(documentName, context)
   }
 
-  async saveDocument (documentId: string, document: Document, context: Context): Promise<void> {
+  async saveDocument (documentId: string, document: YDoc, context: Context): Promise<void> {
     const { schema, documentName } = parseDocumentName(documentId)
     const adapter = this.getStorageAdapter(schema)
     await adapter?.saveDocument?.(documentName, document, context)
