@@ -49,7 +49,8 @@ import {
   TypeString,
   UX,
   type Builder,
-  type MigrationClient
+  type MigrationClient,
+  ReadOnly
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
@@ -106,6 +107,7 @@ export class TTask extends TAttachedDoc implements Task {
 
   @Prop(TypeRef(task.class.TaskType), task.string.TaskType)
   @Index(IndexKind.Indexed)
+  @ReadOnly()
     kind!: Ref<TaskType>
 
   @Prop(TypeString(), task.string.TaskNumber)
@@ -203,6 +205,9 @@ export class TProjectType extends TSpace implements ProjectType {
 
   @Prop(TypeRef(core.class.Class), getEmbeddedLabel('Target Class'))
     targetClass!: Ref<Class<Project>>
+
+  @Prop(TypeBoolean(), getEmbeddedLabel('Classic'))
+    classic!: boolean
 }
 
 @Model(task.class.TaskType, core.class.Doc, DOMAIN_TASK)
@@ -506,7 +511,7 @@ export function createModel (builder: Builder): void {
       icon: task.icon.TaskState,
       color: PaletteColorIndexes.Porpoise,
       defaultStatusName: 'New state',
-      order: 0
+      order: 1
     },
     task.statusCategory.Active
   )
@@ -520,7 +525,7 @@ export function createModel (builder: Builder): void {
       icon: task.icon.TaskState,
       color: PaletteColorIndexes.Grass,
       defaultStatusName: 'Won',
-      order: 0
+      order: 2
     },
     task.statusCategory.Won
   )
@@ -534,7 +539,7 @@ export function createModel (builder: Builder): void {
       icon: task.icon.TaskState,
       color: PaletteColorIndexes.Coin,
       defaultStatusName: 'Lost',
-      order: 0
+      order: 3
     },
     task.statusCategory.Lost
   )
@@ -635,6 +640,10 @@ export async function fixTaskTypes (
   const resultProjects: Project[] = []
 
   for (const t of projectTypes) {
+    if (t.tasks?.length > 0) {
+      // Already migrated.
+      continue
+    }
     t.tasks = [...(t.tasks ?? [])]
     if (t.targetClass === undefined) {
       const targetProjectClassId: Ref<Class<Doc>> = generateId()

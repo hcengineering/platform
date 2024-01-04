@@ -39,7 +39,6 @@
   export let taskType: TaskType
   export let type: ProjectType
   export let states: Status[] = []
-  export let statusCounter = new Map<Ref<Status>, number>()
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -205,7 +204,6 @@
     <div class="flex-col flex-no-shrink mt-3">
       {#each states as state, i}
         {@const color = getColor(type, state, categoriesMap)}
-        {@const counter = statusCounter.get(state._id)}
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
           bind:this={elements[prevIndex + i]}
@@ -226,31 +224,26 @@
             selected = undefined
           }}
         >
-          <div class="bar"><IconCircles size={'small'} /></div>
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <div
-            class="color"
-            on:click={(ev) => {
-              if (state.category !== undefined) {
-                selectIcon(elements[i + prevIndex], state)
-              } else {
-                onColor(state, color, elements[i + prevIndex])
-              }
-            }}
-          >
-            <ObjectPresenter
-              _class={state._class}
-              objectId={state._id}
-              value={state}
-              props={{ projectType: type._id, taskType: taskType._id }}
-            />
-          </div>
-          <div class="flex-grow caption-color no-word-wrap">
-            <!-- <StringPresenter value={state.name} oneLine /> -->
-
-            {#if counter !== undefined}
-              - {counter}
-            {/if}
+          <div class="flex-row-center">
+            <div class="bar"><IconCircles size={'small'} /></div>
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <div
+              class="color"
+              on:click={(ev) => {
+                if (state.category !== undefined) {
+                  selectIcon(elements[i + prevIndex], state)
+                } else {
+                  onColor(state, color, elements[i + prevIndex])
+                }
+              }}
+            >
+              <ObjectPresenter
+                _class={state._class}
+                objectId={state._id}
+                value={state}
+                props={{ projectType: type._id, taskType: taskType._id }}
+              />
+            </div>
           </div>
 
           <!-- svelte-ignore a11y-click-events-have-key-events -->

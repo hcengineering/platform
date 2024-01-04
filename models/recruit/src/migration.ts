@@ -136,7 +136,8 @@ async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<Proje
       name: 'Default vacancy',
       descriptor: recruit.descriptors.VacancyType,
       description: '',
-      tasks: []
+      tasks: [],
+      classic: true
     },
     [
       {

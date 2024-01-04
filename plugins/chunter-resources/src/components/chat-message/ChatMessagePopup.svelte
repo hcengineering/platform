@@ -35,7 +35,7 @@
   let messages: ChatMessage[] = []
 
   let activityOrderNewestFirst = JSON.parse(localStorage.getItem('activity-newest-first') ?? 'false')
-
+  $: localStorage.setItem('activity-newest-first', JSON.stringify(activityOrderNewestFirst))
   $: query.query(
     chunter.class.ChatMessage,
     { attachedTo: objectId },

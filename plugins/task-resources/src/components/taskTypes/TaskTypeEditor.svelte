@@ -32,7 +32,6 @@
   export let taskType: TaskType
 
   export let taskTypeCounter: Map<Ref<TaskType>, number>
-  export let statusCounter: Map<Ref<Status>, number>
 
   export let taskTypes: TaskType[]
 
@@ -113,7 +112,6 @@
         {taskType}
         type={projectType}
         {states}
-        {statusCounter}
         on:delete={async (evt) => {
           const index = taskType.statuses.findIndex((p) => p === evt.detail.state._id)
           taskType.statuses.splice(index, 1)
