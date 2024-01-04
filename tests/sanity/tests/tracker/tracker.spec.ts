@@ -298,7 +298,7 @@ test.describe('Tracker tests', () => {
     // Click button:has-text("No due date")
     await page.locator('button:has-text("Due date")').click()
     // Click text=24 >> nth=0
-    await page.locator('.date-popup-container >> text=24').first().click()
+    await page.locator('.date-popup-container div.day >> text=24').first().click()
 
     await page.keyboard.press('Escape')
     await page.keyboard.press('Escape')
