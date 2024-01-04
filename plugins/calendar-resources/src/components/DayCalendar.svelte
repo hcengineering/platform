@@ -62,6 +62,7 @@
   export let showHeader: boolean = true
   export let showFooter: boolean = true
   export let clearCells: boolean = false
+  export let dragItemId: Ref<Event> | null = null
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -531,14 +532,52 @@
       : rem((heightAD + 0.125) * (adMaxRow <= maxAD ? adMaxRow : maxAD) + 0.25)
   $: showArrowAD = (!minimizedAD && adMaxRow > maxAD) || (minimizedAD && adMaxRow > minAD)
 
-  const getMinutes = (e: MouseEvent): number => {
-    let mins: number = 0
-    for (let i = 0; i < stepsPerHour; i++) {
-      if (e.offsetY >= (i * cellHeight) / stepsPerHour && e.offsetY < ((i + 1) * cellHeight) / stepsPerHour) {
-        mins = (i * 60) / stepsPerHour
+  const getMinutes = (exactly: number): number => {
+    const roundStep = 60 / stepsPerHour
+    return Math.round(exactly / roundStep) * roundStep
+  }
+
+  const getExactly = (e: MouseEvent): number => {
+    return Math.round((e.offsetY * 60) / cellHeight)
+  }
+
+  const getStickyMinutes = (
+    minutes: number,
+    exactly: number,
+    day: Date,
+    hour: number,
+    skipId: Ref<Event> | null
+  ): number => {
+    const roundStep = 60 / stepsPerHour
+    // try find event for stick
+    if (exactly !== minutes) {
+      const minMinutes = Math.floor(exactly / roundStep) * roundStep
+      const maxMinutes = Math.ceil(exactly / roundStep) * roundStep
+      const min = new Date(day).setHours(hour, minMinutes, 0, 0)
+      const max = new Date(day).setHours(hour, maxMinutes, 0, 0)
+      const target = new Date(day).setHours(hour, exactly, 0, 0)
+      const events = newEvents.filter((ev) => ev._id !== skipId && !ev.allDay)
+      if (events.length > 0) {
+        const minutes: number[] = []
+        for (const ev of events) {
+          if (ev.date >= min && ev.date <= max) {
+            minutes.push(convertToTime(ev.date).mins)
+          }
+          if (ev.dueDate >= min && ev.dueDate <= max) {
+            minutes.push(convertToTime(ev.dueDate).mins)
+          }
+        }
+        if (minutes.length > 0) {
+          let nearest = minutes[0]
+          for (let index = 1; index < minutes.length; index++) {
+            const minute = minutes[index]
+            if (Math.abs(minute - target) < Math.abs(nearest - target)) nearest = minute
+          }
+          return nearest
+        }
       }
     }
-    return mins
+    return minutes
   }
 
   let dragOnOld: CalendarCell | null = null
@@ -592,18 +631,12 @@
     hour: number
   ): void {
     if (resizeId == null && directionResize == null) return
-    let mins: number = 0
-    for (let i = 0; i < stepsPerHour; i++) {
-      if (e.offsetY >= (i * cellHeight) / stepsPerHour && e.offsetY < ((i + 1) * cellHeight) / stepsPerHour) mins = i
-    }
+    const exactly = getExactly(e)
+    const minutes = getMinutes(exactly)
+    const mins: number = getStickyMinutes(minutes, exactly, day, hour + startHour, resizeId)
     if (oldMins === mins) return
     oldMins = mins
-    const newDate = new Date(day).setHours(
-      hour + startHour,
-      (mins * 60) / stepsPerHour + (directionResize === 'top' ? 0 : 60 / stepsPerHour),
-      0,
-      0
-    )
+    const newDate = new Date(day).setHours(hour + startHour, mins, 0, 0)
     const index = events.findIndex((ev) => ev._id === resizeId)
     if (index === -1) return
     if (directionResize === 'top') {
@@ -613,6 +646,7 @@
     }
     events = events
   }
+
   function dragStartElement (e: DragEvent & { currentTarget: EventTarget & HTMLDivElement }, event: Event): void {
     if (isReadOnly(event) || event.allDay) return
     if (e.dataTransfer) e.dataTransfer.effectAllowed = 'all'
@@ -623,37 +657,59 @@
     closeTooltip()
     setTimeout(() => (dragId = event._id), 50)
   }
+
   async function dragEndElement (e: DragEvent) {
     const event = events.find((ev) => ev._id === dragId)
     if (event !== undefined) await updateHandler(event)
     dragId = null
   }
+
   function dragDrop (e: DragEvent, day: Date, hourOfDay: number): void {
-    const newTime = new Date(day).setHours(hourOfDay + startHour, getMinutes(e), 0, 0)
+    const hour = hourOfDay + startHour
+    const newTime = new Date(day).setHours(hour, getExactly(e), 0, 0)
     if (dragId) {
+      if (oldTime === -1) oldTime = newTime
       const index = events.findIndex((ev) => ev._id === dragId)
       const diff = newTime - oldTime
-      if (diff && index !== -1 && oldTime !== -1) {
-        events[index].date = originDate + diff
-        events[index].dueDate = originDueDate + diff
-        events = events
+      if (diff && index !== -1) {
+        const diffTime = new Date(originDate + diff)
+        const minutes = convertToTime(diffTime).mins
+        const roundMinutes = getMinutes(minutes)
+        const stickyMinutes = getStickyMinutes(roundMinutes, minutes, diffTime, diffTime.getHours(), dragId)
+        const stickyTime = new Date(diffTime).setMinutes(stickyMinutes, 0, 0)
+        const stickyDiff = stickyTime - originDate
+        if (stickyDiff) {
+          events[index].date = stickyTime
+          events[index].dueDate = originDueDate + stickyDiff
+        }
       }
+      events.sort((a, b) => a.date - b.date)
     } else {
+      const minutes = convertToTime(newTime).mins
+      const roundMinutes = getMinutes(minutes)
+      const stickyMinutes = getStickyMinutes(
+        roundMinutes,
+        minutes,
+        new Date(newTime),
+        new Date(newTime).getHours(),
+        dragItemId
+      )
       dispatch('dragDrop', {
         day,
-        hour: hourOfDay + startHour,
-        date: new Date(newTime)
+        hour,
+        date: new Date(new Date(newTime).setMinutes(stickyMinutes, 0, 0))
       })
     }
     dragOnOld = null
   }
+
   function dragOver (e: DragEvent, day: Date, hourOfDay: number): void {
     if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
     e.preventDefault()
     const dragOn: CalendarCell = {
       day,
       hourOfDay,
-      minutes: getMinutes(e)
+      minutes: getExactly(e)
     }
     if (
       dragOnOld !== null &&
@@ -670,11 +726,30 @@
       const index = events.findIndex((ev) => ev._id === dragId)
       const diff = newTime - oldTime
       if (diff && index !== -1) {
-        events[index].date = originDate + diff
-        events[index].dueDate = originDueDate + diff
+        const diffTime = new Date(originDate + diff)
+        const minutes = convertToTime(diffTime).mins
+        const roundMinutes = getMinutes(minutes)
+        const stickyMinutes = getStickyMinutes(roundMinutes, minutes, diffTime, diffTime.getHours(), dragId)
+        const stickyTime = new Date(diffTime).setMinutes(stickyMinutes, 0, 0)
+        const stickyDiff = stickyTime - originDate
+        if (stickyDiff) {
+          events[index].date = stickyTime
+          events[index].dueDate = originDueDate + stickyDiff
+        }
       }
       events.sort((a, b) => a.date - b.date)
-    } else dispatch('dragEnter', { date: new Date(newTime) })
+    } else {
+      const minutes = convertToTime(newTime).mins
+      const roundMinutes = getMinutes(minutes)
+      const stickyMinutes = getStickyMinutes(
+        roundMinutes,
+        minutes,
+        new Date(newTime),
+        new Date(newTime).getHours(),
+        dragItemId
+      )
+      dispatch('dragEnter', { date: new Date(new Date(newTime).setMinutes(stickyMinutes, 0, 0)) })
+    }
   }
 
   function showMenu (ev: MouseEvent, event: Event) {
