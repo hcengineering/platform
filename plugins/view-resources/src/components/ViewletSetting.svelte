@@ -176,7 +176,11 @@
         : category === 'collection'
           ? view.mixin.CollectionPresenter
           : view.mixin.AttributePresenter
-    const presenter = hierarchy.classHierarchyMixin(attrClass, mixin, (m) => hasResource(m.presenter))?.presenter
+    const presenter = hierarchy.classHierarchyMixin(
+      attrClass,
+      mixin,
+      (m) => hasResource(m.presenter) ?? false
+    )?.presenter
     if (presenter === undefined) return
     const clazz = hierarchy.getClass(attribute.attributeOf)
     const extraProps = viewlet.configOptions?.extraProps

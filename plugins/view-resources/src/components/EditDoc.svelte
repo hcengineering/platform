@@ -219,8 +219,10 @@
   }
 
   async function getHeaderEditor (_class: Ref<Class<Doc>>): Promise<AnyComponent | undefined> {
-    const editorMixin = hierarchy.classHierarchyMixin(_class, view.mixin.ObjectEditorHeader, (m) =>
-      hasResource(m.editor)
+    const editorMixin = hierarchy.classHierarchyMixin(
+      _class,
+      view.mixin.ObjectEditorHeader,
+      (m) => hasResource(m.editor) ?? false
     )
     return editorMixin?.editor
   }

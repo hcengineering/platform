@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import core, { Class, ClassifierKind, Data, Ref, RefTo, Status, generateId, toIdMap } from '@hcengineering/core'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
-  import presentation, { Card, getClient } from '@hcengineering/presentation'
+  import { Resource, getEmbeddedLabel } from '@hcengineering/platform'
+  import presentation, { Card, getClient, hasResource } from '@hcengineering/presentation'
   import {
     ProjectType,
     ProjectTypeDescriptor,
@@ -57,7 +57,10 @@
     }
   }
 
-  const taskTypeDescriptors = client.getModel().findAllSync(task.class.TaskTypeDescriptor, { allowCreate: true })
+  const taskTypeDescriptors = client
+    .getModel()
+    .findAllSync(task.class.TaskTypeDescriptor, { allowCreate: true })
+    .filter((p) => hasResource(p._id as any as Resource<any>))
 
   let { kind, name, targetClass, statusCategories, statuses, allowedAsChildOf } =
     taskType !== undefined ? { ...taskType } : { ...defaultTaskType(type) }
