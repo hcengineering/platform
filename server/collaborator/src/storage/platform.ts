@@ -14,7 +14,6 @@
 //
 
 import { Class, Doc, MeasureContext, Ref } from '@hcengineering/core'
-import { Document } from '@hocuspocus/server'
 import { Transformer } from '@hocuspocus/transformer'
 import { Doc as YDoc } from 'yjs'
 
@@ -82,7 +81,7 @@ export class PlatformStorageAdapter implements StorageAdapter {
     })
   }
 
-  async saveDocument (documentId: string, document: Document, context: Context): Promise<void> {
+  async saveDocument (documentId: string, document: YDoc, context: Context): Promise<void> {
     const { decodedToken, token } = context
     const { objectId, objectClass, objectAttr } = parseDocumentId(documentId)
 

@@ -102,7 +102,15 @@ export class StorageExtension implements Extension {
     if (initialContentId !== undefined && initialContentId.length > 0) {
       console.log('load document initial content', initialContentId)
       try {
-        return await adapter.loadDocument(initialContentId, context)
+        const ydoc = await adapter.loadDocument(initialContentId, context)
+
+        // if document was loaded from the initial content we need to save
+        // it to ensure the next time we load ydoc document
+        if (ydoc !== undefined) {
+          await adapter.saveDocument(documentId, ydoc, context)
+        }
+
+        return ydoc
       } catch (err) {
         console.error('failed to load document', initialContentId, err)
       }
