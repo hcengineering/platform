@@ -38,9 +38,7 @@ export class ConfigurationManager {
     }
     try {
       return this.has(getResourcePlugin(resource))
-    } catch {
-
-    }
+    } catch {}
   }
 }
 // Issue status live query
