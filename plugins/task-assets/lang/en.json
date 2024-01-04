@@ -55,6 +55,7 @@
     "DoneStatesWon": "Done status / Won",
     "DoneStatesLost": "Done status / Lost",
     "StateBacklog": "Backlog",
+    "StateUnstarted": "Unstarted",
     "StateActive": "Active",
     "AllStates": "All states",
     "DoneStates": "Done states",

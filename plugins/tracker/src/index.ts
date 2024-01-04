@@ -364,12 +364,10 @@ export class ComponentManager extends DocManager {
  */
 export const classicIssueTaskStatuses: TaskStatusFactory[] = [
   { category: task.statusCategory.UnStarted, statuses: [['Backlog', PaletteColorIndexes.Cloud]] },
+  { category: task.statusCategory.ToDo, statuses: [['Todo', PaletteColorIndexes.Porpoise]] },
   {
     category: task.statusCategory.Active,
-    statuses: [
-      ['Todo', PaletteColorIndexes.Porpoise],
-      ['In progress', PaletteColorIndexes.Cerulean]
-    ]
+    statuses: [['In progress', PaletteColorIndexes.Cerulean]]
   },
   { category: task.statusCategory.Won, statuses: [['Done', PaletteColorIndexes.Grass]] },
   { category: task.statusCategory.Lost, statuses: [['Canceled', PaletteColorIndexes.Coin]] }

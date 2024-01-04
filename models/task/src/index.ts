@@ -61,7 +61,7 @@ import view, {
   template,
   actionTemplates as viewTemplates
 } from '@hcengineering/model-view'
-import { getEmbeddedLabel, type Asset, type IntlString } from '@hcengineering/platform'
+import { getEmbeddedLabel, type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import tags from '@hcengineering/tags'
 import {
@@ -171,6 +171,7 @@ export class TTaskTypeDescriptor extends TDoc implements TaskTypeDescriptor {
 
   // If specified, will allow to be created by users, system type overwize
   allowCreate!: boolean
+  statusCategoriesFunc?: Resource<(project: ProjectType) => Ref<StatusCategory>[]>
 }
 
 @Mixin(task.mixin.TaskTypeClass, core.class.Class)
@@ -507,11 +508,25 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       ofAttribute: task.attribute.State,
-      label: task.string.StateActive,
+      label: task.string.StateUnstarted,
       icon: task.icon.TaskState,
       color: PaletteColorIndexes.Porpoise,
-      defaultStatusName: 'New state',
+      defaultStatusName: 'Todo',
       order: 1
+    },
+    task.statusCategory.ToDo
+  )
+
+  builder.createDoc(
+    core.class.StatusCategory,
+    core.space.Model,
+    {
+      ofAttribute: task.attribute.State,
+      label: task.string.StateActive,
+      icon: task.icon.TaskState,
+      color: PaletteColorIndexes.Cerulean,
+      defaultStatusName: 'New state',
+      order: 2
     },
     task.statusCategory.Active
   )
@@ -525,7 +540,7 @@ export function createModel (builder: Builder): void {
       icon: task.icon.TaskState,
       color: PaletteColorIndexes.Grass,
       defaultStatusName: 'Won',
-      order: 2
+      order: 3
     },
     task.statusCategory.Won
   )
@@ -539,7 +554,7 @@ export function createModel (builder: Builder): void {
       icon: task.icon.TaskState,
       color: PaletteColorIndexes.Coin,
       defaultStatusName: 'Lost',
-      order: 3
+      order: 4
     },
     task.statusCategory.Lost
   )

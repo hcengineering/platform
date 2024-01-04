@@ -27,7 +27,7 @@ import {
   StatusCategory,
   Timestamp
 } from '@hcengineering/core'
-import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
+import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
 import { Action, IconProps, ViewletDescriptor } from '@hcengineering/view'
@@ -107,6 +107,7 @@ export interface TaskTypeDescriptor extends Doc {
 
   // If specified, will allow to be created by users, system type overwise
   allowCreate: boolean
+  statusCategoriesFunc?: Resource<(project: ProjectType) => Ref<StatusCategory>[]>
 }
 
 /**
@@ -292,6 +293,8 @@ const task = plugin(taskId, {
   },
   statusCategory: {
     UnStarted: '' as Ref<StatusCategory>,
+    // For classic project type
+    ToDo: '' as Ref<StatusCategory>,
     Active: '' as Ref<StatusCategory>,
     Won: '' as Ref<StatusCategory>,
     Lost: '' as Ref<StatusCategory>

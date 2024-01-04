@@ -44,6 +44,7 @@ async function reorderStates (_client: MigrationUpgradeClient): Promise<void> {
   const states = toIdMap(await client.findAll(core.class.Status, {}))
   const order = [
     task.statusCategory.UnStarted,
+    task.statusCategory.ToDo,
     task.statusCategory.Active,
     task.statusCategory.Won,
     task.statusCategory.Lost
