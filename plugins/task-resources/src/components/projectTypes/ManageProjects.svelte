@@ -18,9 +18,10 @@
   import task, { ProjectType } from '@hcengineering/task'
   import { Location, getCurrentResolvedLocation, navigate, resolvedLocationStore } from '@hcengineering/ui'
 
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, hasResource } from '@hcengineering/presentation'
   import { onDestroy } from 'svelte'
   import Types from './Types.svelte'
+  import { Resource } from '@hcengineering/platform'
 
   export let kind: 'navigation' | 'tools' | undefined
   export let categoryName: string
@@ -50,7 +51,7 @@
     task.class.ProjectType,
     { archived: false },
     (result) => {
-      types = result
+      types = result.filter((p) => hasResource(p.descriptor as any as Resource<any>))
     },
     {
       lookup: {
