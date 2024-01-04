@@ -108,11 +108,6 @@
     }
   )
 
-  $: statusCounter = tasks.reduce(
-    (map, task) => map.set(task.status, (map.get(task.status) ?? 0) + 1),
-    new Map<Ref<Status>, number>()
-  )
-
   // $: spaceCounter = tasks.reduce(
   //   (map, task) => map.set(task.space, (map.get(task.space) ?? 0) + 1),
   //   new Map<Ref<Space>, number>()
@@ -295,7 +290,7 @@
           </div>
         </div>
       {:else}
-        <TaskTypeEditor taskType={selectedTaskType} projectType={type} {taskTypes} {taskTypeCounter} {statusCounter} />
+        <TaskTypeEditor taskType={selectedTaskType} projectType={type} {taskTypes} {taskTypeCounter} />
       {/if}
     </div>
   </div>
