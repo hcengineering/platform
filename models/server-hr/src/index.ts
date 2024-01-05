@@ -15,6 +15,7 @@
 
 import { type Builder } from '@hcengineering/model'
 
+import contact from '@hcengineering/contact'
 import core from '@hcengineering/core'
 import hr from '@hcengineering/hr'
 import serverCore from '@hcengineering/server-core'
@@ -65,6 +66,14 @@ export function createModel (builder: Builder): void {
       _class: core.class.TxCollectionCUD,
       'tx.objectClass': hr.class.Request,
       'tx._class': core.class.TxRemoveDoc
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverHr.trigger.OnEmployee,
+    txMatch: {
+      _class: core.class.TxMixin,
+      mixin: contact.mixin.Employee
     }
   })
 
