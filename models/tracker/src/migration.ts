@@ -15,17 +15,16 @@
 
 import core, {
   DOMAIN_STATUS,
-  SortingOrder,
+  DOMAIN_TX,
   TxOperations,
+  TxProcessor,
   generateId,
+  toIdMap,
   type Data,
   type Ref,
   type Status,
-  toIdMap,
-  DOMAIN_TX,
-  type TxCreateDoc,
-  TxProcessor,
-  type Tx
+  type Tx,
+  type TxCreateDoc
 } from '@hcengineering/core'
 import {
   createOrUpdate,
@@ -39,14 +38,14 @@ import { DOMAIN_TASK, createProjectType, fixTaskTypes } from '@hcengineering/mod
 import tags from '@hcengineering/tags'
 import task, { type ProjectType, type TaskType } from '@hcengineering/task'
 import {
-  type IssueStatus,
   TimeReportDayType,
   baseIssueTaskStatuses,
   classicIssueTaskStatuses,
-  createStatesData
+  createStatesData,
+  type IssueStatus
 } from '@hcengineering/tracker'
-import tracker from './plugin'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
+import tracker from './plugin'
 
 async function createDefaultProject (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(tracker.class.Project, {
@@ -119,30 +118,31 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
 
   // Create new if not deleted by customers.
   if (current === undefined && currentDeleted === undefined) {
-    const state = await tx.findOne(
-      tracker.class.IssueStatus,
-      { space: tracker.ids.DefaultProjectType },
-      { sort: { rank: SortingOrder.Ascending } }
-    )
-    if (state !== undefined) {
-      await tx.createDoc(
-        tracker.class.Project,
-        core.space.Space,
-        {
-          name: 'Default',
-          description: 'Default project',
-          private: false,
-          members: [],
-          archived: false,
-          identifier: 'TSK',
-          sequence: 0,
-          defaultIssueStatus: state._id,
-          defaultTimeReportDay: TimeReportDayType.PreviousWorkDay,
-          defaultAssignee: undefined,
-          type: tracker.ids.ClassingProjectType
-        },
-        tracker.project.DefaultProject
-      )
+    const taskType = await tx.findOne(task.class.TaskType, {
+      _id: tracker.taskTypes.Issue
+    })
+    if (taskType !== undefined) {
+      const state = await tx.findOne(core.class.Status, { _id: taskType.statuses[0] })
+      if (state !== undefined) {
+        await tx.createDoc(
+          tracker.class.Project,
+          core.space.Space,
+          {
+            name: 'Default',
+            description: 'Default project',
+            private: false,
+            members: [],
+            archived: false,
+            identifier: 'TSK',
+            sequence: 0,
+            defaultIssueStatus: state._id,
+            defaultTimeReportDay: TimeReportDayType.PreviousWorkDay,
+            defaultAssignee: undefined,
+            type: tracker.ids.ClassingProjectType
+          },
+          tracker.project.DefaultProject
+        )
+      }
     }
   }
 }
