@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import account, { ACCOUNT_DB, AccountMethod } from '@hcengineering/account'
-import platform, { Severity, Status, setMetadata } from '@hcengineering/platform'
+import account, { ACCOUNT_DB, AccountMethod, accountId } from '@hcengineering/account'
+import platform, { Severity, Status, addStringsLoader, setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
 import toolPlugin from '@hcengineering/server-tool'
 import cors from '@koa/cors'
@@ -28,7 +28,7 @@ import { MongoClient } from 'mongodb'
 /**
  * @public
  */
-export function serveAccount (methods: Record<string, AccountMethod>, productId = ''): void {
+export function serveAccount (methods: Record<string, AccountMethod>, productId = ''): void {  
   const ACCOUNT_PORT = parseInt(process.env.ACCOUNT_PORT ?? '3000')
   const dbUri = process.env.MONGO_URL
   if (dbUri === undefined) {
@@ -50,9 +50,15 @@ export function serveAccount (methods: Record<string, AccountMethod>, productId 
     process.exit(1)
   }
 
+  addStringsLoader(accountId, async (lang: string) => await import(`@hcengineering/account/lang/${lang}.json`))
+
   const ses = process.env.SES_URL
   const frontURL = process.env.FRONT_URL
+  const productName = process.env.PRODUCT_NAME
+  const lang = process.env.LANGUAGE ?? 'en'
 
+  setMetadata(platform.metadata.locale, lang)
+  setMetadata(account.metadata.ProductName, productName)
   setMetadata(account.metadata.SES_URL, ses)
   setMetadata(account.metadata.FrontURL, frontURL)
 
