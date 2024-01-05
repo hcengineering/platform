@@ -67,7 +67,7 @@
         console.log(value)
         throw p
       })
-  } 
+  }
 </script>
 
 {#if presenter}
