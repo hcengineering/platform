@@ -14,6 +14,7 @@ import presentation, { closeClient, refreshClient, setClient } from '@hcengineer
 import {
   fetchMetadataLocalStorage,
   getCurrentLocation,
+  locationStorageKeyId,
   navigate,
   networkStatus,
   setMetadataLocalStorage
@@ -33,7 +34,21 @@ addEventListener(client.event.NetworkRequests, async (event: string, val: number
 export async function connect (title: string): Promise<Client | undefined> {
   const loc = getCurrentLocation()
   const ws = loc.path[1]
-  if (ws === undefined) return
+  if (ws === undefined) {
+    const lastLoc = localStorage.getItem(locationStorageKeyId)
+    if (lastLoc !== null) {
+      const lastLocObj = JSON.parse(lastLoc)
+      if (lastLocObj.path !== undefined && lastLocObj.path[0] === loc.path[0]) {
+        navigate(lastLocObj)
+        return
+      }
+    } else {
+      navigate({
+        path: [loginId]
+      })
+      return
+    }
+  }
   const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
   const token = tokens[ws]
   setMetadata(presentation.metadata.Token, token)
