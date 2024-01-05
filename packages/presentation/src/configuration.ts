@@ -32,11 +32,13 @@ export class ConfigurationManager {
     return this.configuration.get(plugin)?.enabled !== false
   }
 
-  hasResource<T>(resource?: Resource<T> | null): boolean {
+  hasResource<T>(resource?: Resource<T> | null): boolean | undefined {
     if (resource == null) {
       return false
     }
-    return this.has(getResourcePlugin(resource))
+    try {
+      return this.has(getResourcePlugin(resource))
+    } catch {}
   }
 }
 // Issue status live query
@@ -51,7 +53,7 @@ let workspaceId: string = ''
 /**
  * @public
  */
-export function hasResource<T> (resource?: Resource<T>): boolean {
+export function hasResource<T> (resource?: Resource<T>): boolean | undefined {
   return configuration.hasResource(resource)
 }
 

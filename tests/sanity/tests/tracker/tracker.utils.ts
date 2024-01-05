@@ -25,7 +25,7 @@ export const DEFAULT_USER = 'Appleseed John'
 
 export const DEFAULT_STATUSES_ID = new Map([
   ['Backlog', 'task:statusCategory:UnStarted'],
-  ['Todo', 'task:statusCategory:Active'],
+  ['Todo', 'task:statusCategory:ToDo'],
   ['In Progress', 'task:statusCategory:Active'],
   ['Done', 'task:statusCategory:Won'],
   ['Canceled', 'task:statusCategory:Lost']

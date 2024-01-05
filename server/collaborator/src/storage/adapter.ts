@@ -13,13 +13,12 @@
 // limitations under the License.
 //
 
-import { Document } from '@hocuspocus/server'
 import { Doc as YDoc } from 'yjs'
 import { Context } from '../context'
 
 export interface StorageAdapter {
   loadDocument: (documentId: string, context: Context) => Promise<YDoc | undefined>
-  saveDocument: (documentId: string, document: Document, context: Context) => Promise<void>
+  saveDocument: (documentId: string, document: YDoc, context: Context) => Promise<void>
 }
 
 export type StorageAdapters = Record<string, StorageAdapter>

@@ -59,9 +59,13 @@
 
   let activeStatuses: Ref<IssueStatus>[] = []
 
-  $: activeStatusQuery.query(tracker.class.IssueStatus, { category: task.statusCategory.Active }, (result) => {
-    activeStatuses = result.map(({ _id }) => _id)
-  })
+  $: activeStatusQuery.query(
+    tracker.class.IssueStatus,
+    { category: { $in: [task.statusCategory.Active, task.statusCategory.ToDo] } },
+    (result) => {
+      activeStatuses = result.map(({ _id }) => _id)
+    }
+  )
 
   let active: DocumentQuery<Issue>
   $: active = { status: { $in: activeStatuses }, ...spaceQuery }

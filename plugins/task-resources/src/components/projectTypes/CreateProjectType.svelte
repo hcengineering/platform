@@ -15,11 +15,12 @@
 
 <script lang="ts">
   import { Ref, generateId } from '@hcengineering/core'
-  import { Card, getClient } from '@hcengineering/presentation'
+  import { Card, getClient, hasResource } from '@hcengineering/presentation'
   import { ProjectTypeDescriptor, createProjectType } from '@hcengineering/task'
   import { DropdownLabelsIntl, EditBox, ToggleWithLabel } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import task from '../../plugin'
+  import { Resource } from '@hcengineering/platform'
 
   const client = getClient()
 
@@ -49,7 +50,10 @@
     dispatch('close')
   }
 
-  const descriptors = client.getModel().findAllSync(task.class.ProjectTypeDescriptor, {})
+  const descriptors = client
+    .getModel()
+    .findAllSync(task.class.ProjectTypeDescriptor, {})
+    .filter((p) => hasResource(p._id as any as Resource<any>))
   const items = descriptors.map((it) => ({
     label: it.name,
     id: it._id
