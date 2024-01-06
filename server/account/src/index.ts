@@ -36,21 +36,14 @@ import core, {
   WorkspaceId
 } from '@hcengineering/core'
 import { consoleModelLogger, MigrateOperation, ModelLogger } from '@hcengineering/model'
-import platform, {
-  getMetadata,
-  Metadata,
-  PlatformError,
-  Plugin,
-  plugin,
-  Severity,
-  Status
-} from '@hcengineering/platform'
+import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
 import { cloneWorkspace } from '@hcengineering/server-backup'
 import { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin, { connect, initModel, upgradeModel } from '@hcengineering/server-tool'
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { Binary, Db, Filter, ObjectId } from 'mongodb'
 import fetch from 'node-fetch'
+import accountPlugin, { accountId } from './plugin'
 
 const WORKSPACE_COLLECTION = 'workspace'
 const ACCOUNT_COLLECTION = 'account'
@@ -60,21 +53,6 @@ const INVITE_COLLECTION = 'invite'
  * @public
  */
 export const ACCOUNT_DB = 'account'
-
-/**
- * @public
- */
-export const accountId = 'account' as Plugin
-
-/**
- * @public
- */
-const accountPlugin = plugin(accountId, {
-  metadata: {
-    FrontURL: '' as Metadata<string>,
-    SES_URL: '' as Metadata<string>
-  }
-})
 
 const getEndpoint = (): string => {
   const endpoint = getMetadata(toolPlugin.metadata.Endpoint)
@@ -433,25 +411,10 @@ async function sendConfirmation (productId: string, account: Account): Promise<v
 
   const link = concatLink(front, `/login/confirm?id=${token}`)
 
-  let text = `Спасибо за ваш интерес к Bold. Для завершения регистрации копируйте ссылку в адресную строку вашего браузера ${link}. С уважением, Команда Bold.`
-  let html = `<p>Здравствуйте,</p>
-  <p>Спасибо за ваш интерес к Bold. Для завершения регистрации пройдите по <a href=${link}>этой ссылке</a> или скопируйте ссылку ниже в адресную строку вашего браузера.</p>
-  <p>${link}</p>
-  <p>С уважением,</p>
-  <p>Команда Bold.</p>`
-  let subject = 'Подтвердите адрес электронной почты для регистрации на Bold.ru'
-
-  // A quick workaround for now to have confirmation email in english for ezqms.
-  // Remove as soon as sever i18n is there.
-  if (productId === 'ezqms') {
-    text = `Thank you for your interest in ezQMS. To complete the sign up process please copy the following link into your browser's URL bar ${link}. Regards, ezQMS Team.`
-    html = `<p>Hello,</p>
-    <p>Thank you for your interest in ezQMS. To complete the sign up process please follow <a href=${link}>this link</a> or copy the following link into your browser's URL bar.</p>
-    <p>${link}</p>
-    <p>Regards,</p>
-    <p>ezQMS Team.</p>`
-    subject = 'Confirm your email address to sign up for ezQMS'
-  }
+  const name = getMetadata(accountPlugin.metadata.ProductName)
+  const text = await translate(accountPlugin.string.ConfirmationText, { name, link })
+  const html = await translate(accountPlugin.string.ConfirmationHTML, { name, link })
+  const subject = await translate(accountPlugin.string.ConfirmationSubject, { name })
 
   if (sesURL !== undefined && sesURL !== '') {
     const to = account.email
@@ -985,11 +948,10 @@ export async function requestPassword (db: Db, productId: string, _email: string
 
   const link = concatLink(front, `/login/recovery?id=${token}`)
 
-  const text = `We received a request to reset the password for your account. To reset your password, please paste the following link in your web browser's address bar: ${link}. If you have not ordered a password recovery just ignore this letter.`
-  const html = `<p>We received a request to reset the password for your account. To reset your password, please click the link below: <a href=${link}>Reset password</a></p><p>
-  If the Reset password link above does not work, paste the following link in your web browser's address bar: ${link}
-</p><p>If you have not ordered a password recovery just ignore this letter.</p>`
-  const subject = 'Password recovery'
+  const text = await translate(accountPlugin.string.RecoveryText, { link })
+  const html = await translate(accountPlugin.string.RecoveryHTML, { link })
+  const subject = await translate(accountPlugin.string.RecoverySubject, {})
+
   const to = account.email
   await fetch(concatLink(sesURL, '/send'), {
     method: 'post',
@@ -1161,12 +1123,11 @@ export async function sendInvite (db: Db, productId: string, token: string, emai
   const inviteId = await getInviteLink(db, productId, token, exp, email, 1)
   const link = concatLink(front, `/login/join?inviteId=${inviteId.toString()}`)
 
-  const text = `You were invited to ${workspace.workspace}. To join please paste the following link in your web browser's address bar: ${link}. Link valid for ${expHours} hours.`
+  const ws = workspace.workspace
+  const text = await translate(accountPlugin.string.InviteText, { link, ws, expHours })
+  const html = await translate(accountPlugin.string.InviteHTML, { link, ws, expHours })
+  const subject = await translate(accountPlugin.string.InviteSubject, { ws })
 
-  const html = `<p>You were invited to ${workspace.workspace}. To join, please click the link below: <a href=${link}>Join</a></p><p>
-  If the invite link above does not work, paste the following link in your web browser's address bar: ${link}
-</p><p>Link valid for ${expHours} hours.</p>`
-  const subject = `Invite to ${workspace.workspace}`
   const to = email
   await fetch(concatLink(sesURL, '/send'), {
     method: 'post',
@@ -1257,4 +1218,5 @@ export function getMethods (
   }
 }
 
+export * from './plugin'
 export default accountPlugin
