@@ -28,7 +28,7 @@ import { MongoClient } from 'mongodb'
 /**
  * @public
  */
-export function serveAccount (methods: Record<string, AccountMethod>, productId = ''): void {  
+export function serveAccount (methods: Record<string, AccountMethod>, productId = ''): void {
   const ACCOUNT_PORT = parseInt(process.env.ACCOUNT_PORT ?? '3000')
   const dbUri = process.env.MONGO_URL
   if (dbUri === undefined) {
