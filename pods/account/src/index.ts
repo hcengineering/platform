@@ -24,6 +24,8 @@ import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
 import { MongoClient } from 'mongodb'
+import accountEn from '@hcengineering/account/lang/en.json'
+import accountRu from '@hcengineering/account/lang/ru.json'
 
 /**
  * @public
@@ -50,7 +52,16 @@ export function serveAccount (methods: Record<string, AccountMethod>, productId 
     process.exit(1)
   }
 
-  addStringsLoader(accountId, async (lang: string) => await import(`@hcengineering/account/lang/${lang}.json`))
+  addStringsLoader(accountId, async (lang: string) => {
+    switch (lang) {
+      case 'en':
+        return accountEn
+      case 'ru':
+        return accountRu
+      default:
+        return accountEn
+    }
+  })
 
   const ses = process.env.SES_URL
   const frontURL = process.env.FRONT_URL
