@@ -360,7 +360,7 @@ async function createTaskTypes (
         projectType: _id
       })
     }
-    await client.createDoc(task.class.TaskType, core.space.Model, tdata as Data<TaskType>, taskId)
+    await client.createDoc(task.class.TaskType, _id, tdata as Data<TaskType>, taskId)
     tasksData.set(taskId, tdata as Data<TaskType>)
     _tasks.push(taskId)
   }
