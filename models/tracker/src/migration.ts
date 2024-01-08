@@ -248,7 +248,7 @@ async function restoreToDoCategory (client: MigrationClient): Promise<void> {
     const taskTypes = await client.find<TaskType>(DOMAIN_TASK, {
       _class: task.class.TaskType,
       descriptor: tracker.descriptors.Issue,
-      _id: { $in: p.tasks }
+      _id: { $in: p.tasks ?? [] }
     })
     for (const taskType of taskTypes) {
       if (taskType.statusCategories.includes(task.statusCategory.ToDo)) continue
