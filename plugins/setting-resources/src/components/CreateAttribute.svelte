@@ -104,7 +104,9 @@
   okLabel={presentation.string.Create}
   okAction={save}
   canSave={!(type === undefined || name === undefined || name.trim().length === 0)}
-  onCancel={() => { clearSettingsStore() }}
+  onCancel={() => {
+    clearSettingsStore()
+  }}
 >
   <div class="hulyModal-content__titleGroup">
     <div class="hulyChip-item font-medium-12">

@@ -230,7 +230,9 @@
       kind={'primary'}
       icon={IconAdd}
       size={'small'}
-      on:click={(ev) => { createAttribute(ev) }}
+      on:click={(ev) => {
+        createAttribute(ev)
+      }}
     />
   </div>
   {#if attributes.length}

@@ -43,7 +43,6 @@
   const items = getTypes()
 
   const handleSelection = (id: string | number) => {
-    console.log('[!!!] id: ', id)
     dispatch('close', id)
   }
 </script>
@@ -51,7 +50,12 @@
 <div class="hulyPopupMenu-container">
   <div class="hulyPopupMenu-group">
     {#each items as item}
-      <button class="hulyPopupMenu-group__item" on:click={() => { handleSelection(item.id) }}>
+      <button
+        class="hulyPopupMenu-group__item"
+        on:click={() => {
+          handleSelection(item.id)
+        }}
+      >
         <span class="hulyPopupMenu-group__item-label overflow-label">
           <Label label={item.label} />
         </span>
