@@ -50,6 +50,7 @@ import ClassAttributes from './components/ClassAttributes.svelte'
 import ClassAttributesList from './components/ClassAttributesList.svelte'
 
 export { ClassSetting, filterDescendants, ClassAttributes, ClassAttributesList }
+export * from './store'
 
 async function DeleteMixin (object: Mixin<Class<Doc>>): Promise<void> {
   const docs = await getClient().findAll(object._id, {}, { limit: 1 })

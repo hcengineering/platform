@@ -36,7 +36,8 @@
     NavGroup
   } from '@hcengineering/ui'
   import { NavFooter } from '@hcengineering/workbench-resources'
-  import { onDestroy } from 'svelte'
+  import { ComponentType, onDestroy } from 'svelte'
+  import { settingsStore, clearSettingsStore, type SettingsStore } from '../store'
 
   export let visibleNav: boolean = true
   export let navFloat: boolean = false
@@ -47,6 +48,8 @@
 
   let categories: SettingsCategory[] = []
   const account = getCurrentAccount() as PersonAccount
+  let asideComponent: ComponentType | null = null
+  let asideProps: object | null = null
 
   const settingsQuery = createQuery()
   settingsQuery.query(
@@ -72,6 +75,7 @@
     return categories.find((x) => x.name === name)
   }
   function selectCategory (id: string): void {
+    clearSettingsStore()
     const loc = getCurrentResolvedLocation()
     if (loc.path[3] === id) {
       loc.path.length = 3
@@ -101,6 +105,12 @@
   function inviteWorkspace (): void {
     showPopup(login.component.InviteLink, {})
   }
+
+  const updatedStore = (ss: SettingsStore): ComponentType | null => {
+    asideProps = ss.props ?? null
+    return ss.component ?? null
+  }
+  $: asideComponent = updatedStore($settingsStore)
 
   defineSeparators('setting', settingsSeparators)
 </script>
@@ -165,7 +175,7 @@
     <Separator name={'setting'} float={navFloat} index={0} color={'transparent'} />
   {/if}
 
-  <div class="antiPanel-component filledNav">
+  <div class="antiPanel-component filledNav" style:flex-direction={'row'}>
     {#if category}
       <Component
         is={category.component}
@@ -177,15 +187,25 @@
       />
     {/if}
   </div>
+  {#if asideComponent != null}
+    <Separator name={'setting'} index={1} color={'transparent'} />
+    <div class="hulySidePanel-container">
+      {#key asideProps}
+        <svelte:component this={asideComponent} {...asideProps} />
+      {/key}
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">
   .hulyPanels-container {
     display: flex;
+    width: 100%;
     height: 100%;
     min-width: 0;
     min-height: 0;
     background-color: var(--theme-navpanel-color); // var(--global-surface-01-BackgroundColor);
+    border-radius: 0 var(--small-focus-BorderRadius) var(--small-focus-BorderRadius) 0;
 
     // .antiPanel-navigator {
     //   background-color: transparent;
@@ -207,5 +227,14 @@
     font-size: 1.25rem;
     line-height: 1.5rem;
     color: var(--global-primary-TextColor);
+  }
+  .hulySidePanel-container {
+    display: flex;
+    flex-direction: column;
+    width: 10rem;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    border-radius: 0 var(--small-focus-BorderRadius) var(--small-focus-BorderRadius) 0;
   }
 </style>

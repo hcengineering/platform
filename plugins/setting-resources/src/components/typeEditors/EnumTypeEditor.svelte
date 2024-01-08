@@ -17,6 +17,7 @@
   import { TypeEnum } from '@hcengineering/model'
   import presentation, { getClient } from '@hcengineering/presentation'
   import { Button, Label, showPopup } from '@hcengineering/ui'
+  import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { EnumEditor } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import setting from '../../plugin'
@@ -26,6 +27,8 @@
   export let editable: boolean = true
   export let value: Enum | undefined
   export let defaultValue: string | undefined
+  export let kind: ButtonKind = 'no-border'
+  export let size: ButtonSize = 'small'
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -55,45 +58,45 @@
   }
 </script>
 
-<div>
-  <div class="flex-row-center flex-grow">
+<div class="hulyModal-content__settingsSet-line">
+  <span class="label">
     <Label label={core.string.Enum} />
-    <div class="ml-4">
-      {#if editable}
-        <EnumSelect label={core.string.Enum} bind:value {create} />
-      {:else if value}
-        {value.name}
-      {/if}
-    </div>
+  </span>
+  <div class="flex-row-center gap-2">
+    {#if editable}
+      <EnumSelect label={core.string.Enum} bind:value {create} {kind} {size} />
+    {:else if value}
+      {value.name}
+    {/if}
     {#if value}
-      <div class="ml-2">
-        <Button
-          icon={setting.icon.Setting}
-          kind={'no-border'}
-          size={'small'}
-          showTooltip={{ label: presentation.string.Edit }}
-          on:click={edit}
-        />
-      </div>
+      <Button
+        icon={setting.icon.Setting}
+        {kind}
+        {size}
+        showTooltip={{ label: presentation.string.Edit }}
+        on:click={edit}
+      />
     {/if}
   </div>
-  {#if value && type}
-    <div class="flex-row-center mt-2">
-      <Label label={setting.string.DefaultValue} />
-      <div class="ml-2">
-        <EnumEditor
-          label={setting.string.SelectAValue}
-          kind={'no-border'}
-          size={'small'}
-          allowDeselect
-          {type}
-          value={defaultValue ?? ''}
-          onChange={(e) => {
-            defaultValue = e
-            dispatch('change', { type, defaultValue })
-          }}
-        />
-      </div>
-    </div>
-  {/if}
 </div>
+{#if value && type}
+  <div class="hulyModal-content__settingsSet-line">
+    <span class="label">
+      <Label label={setting.string.DefaultValue} />
+    </span>
+    <div class="ml-2">
+      <EnumEditor
+        label={setting.string.SelectAValue}
+        {kind}
+        {size}
+        allowDeselect
+        {type}
+        value={defaultValue ?? ''}
+        onChange={(e) => {
+          defaultValue = e
+          dispatch('change', { type, defaultValue })
+        }}
+      />
+    </div>
+  </div>
+{/if}

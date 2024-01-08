@@ -42,13 +42,16 @@
     Menu,
     getEventPositionElement,
     showPopup,
-    IconSettings
+    IconSettings,
+    IconOpenedArrow
   } from '@hcengineering/ui'
   import { getContextActions } from '@hcengineering/view-resources'
   import settings from '../plugin'
   import CreateAttribute from './CreateAttribute.svelte'
   import EditAttribute from './EditAttribute.svelte'
   import EditClassLabel from './EditClassLabel.svelte'
+  import { settingsStore, clearSettingsStore } from '../store'
+  import TypesPopup from './typeEditors/TypesPopup.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let ofClass: Ref<Class<Doc>> | undefined = undefined
@@ -70,6 +73,8 @@
 
   let clazz: Class<Doc> | undefined
   let hovered: number | null = null
+  let selected: number | null = null
+  let btnAdd: ButtonIcon
 
   $: classQuery.query(core.class.Class, { _id: _class }, (res) => {
     clazz = res.shift()
@@ -96,8 +101,11 @@
     attributes = getCustomAttributes(_class)
   }
 
-  export function createAttribute (): void {
-    showPopup(CreateAttribute, { _class }, 'top', update)
+  export function createAttribute (ev: MouseEvent): void {
+    showPopup(TypesPopup, { _class }, getEventPositionElement(ev), (_id) => {
+      if (_id !== undefined) $settingsStore = { component: CreateAttribute, props: { _id, _class } }
+    })
+    // showPopup(CreateAttribute, { _class }, 'top', update)
   }
 
   export async function editAttribute (attribute: AnyAttribute, exist: boolean): Promise<void> {
@@ -130,7 +138,7 @@
         label: presentation.string.Edit,
         icon: IconEdit,
         action: async () => {
-          await editAttribute(attribute, exist)
+          await selectAttribute(attribute, row)
         }
       }
     ]
@@ -180,6 +188,23 @@
   function editLabel (evt: MouseEvent): void {
     showPopup(EditClassLabel, { clazz }, getEventPositionElement(evt))
   }
+  async function selectAttribute (attribute: AnyAttribute, n: number): Promise<void> {
+    if (selected === n) {
+      selected = null
+      clearSettingsStore()
+      return
+    }
+    selected = n
+    const exist = (await client.findOne(attribute.attributeOf, { [attribute.name]: { $exists: true } })) !== undefined
+    $settingsStore = { component: EditAttribute, props: { attribute, exist } }
+  }
+  settingsStore.subscribe((value) => {
+    if (value.component == null) selected = null
+  })
+  const classUpdated = (_clazz: Ref<Class<Doc>>): void => {
+    selected = null
+  }
+  $: classUpdated(_class)
 </script>
 
 {#if showTitle}
@@ -200,28 +225,41 @@
   <div class="hulyTableAttr-header font-medium-12">
     <IconSettings size={'small'} />
     <span><Label label={settings.string.ClassProperties} /></span>
-    <ButtonIcon kind={'primary'} icon={IconAdd} size={'small'} on:click={createAttribute} />
+    <ButtonIcon
+      bind:this={btnAdd}
+      kind={'primary'}
+      icon={IconAdd}
+      size={'small'}
+      on:click={(ev) => {
+        createAttribute(ev)
+      }}
+    />
   </div>
   {#if attributes.length}
     <div class="hulyTableAttr-content">
       {#each attributes as attr, i}
         {@const attrType = getAttrType(attr.type)}
         <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="hulyTableAttr-content__row"
           class:hovered={hovered === i}
+          class:selected={selected === i}
           on:contextmenu={(ev) => {
             ev.preventDefault()
             void showMenu(ev, attr, i)
           }}
+          on:click={async () => {
+            void selectAttribute(attr, i)
+          }}
         >
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <!-- svelte-ignore a11y-no-static-element-interactions -->
-          <div class="hulyTableAttr-content__row-dragMenu" on:click={(ev) => showMenu(ev, attr, i)}>
+          <div class="hulyTableAttr-content__row-dragMenu" on:click|stopPropagation={(ev) => showMenu(ev, attr, i)}>
             <IconMoreV2 size={'small'} />
           </div>
           {#if attr.isCustom}
-            <div class="hulyTableAttr-content__row-chip font-medium-12">
+            <div class="hulyChip-item font-medium-12">
               <Label label={settings.string.Custom} />
             </div>
           {/if}
@@ -248,6 +286,9 @@
                 {/if}
               {/await}
             {/if}
+          </div>
+          <div class="hulyTableAttr-content__row-arrow">
+            <IconOpenedArrow size={'small'} />
           </div>
         </div>
       {/each}
@@ -307,11 +348,6 @@
         border-radius: var(--small-BorderRadius);
         cursor: pointer;
 
-        &.hovered,
-        &:hover {
-          background-color: var(--theme-table-header-color); // var(--global-surface-03-hover-BackgroundColor);
-        }
-
         &-dragMenu {
           display: flex;
           justify-content: center;
@@ -319,13 +355,6 @@
           flex-shrink: 0;
           width: var(--global-extra-small-Size);
           height: var(--global-extra-small-Size);
-          border-radius: var(--extra-small-BorderRadius);
-        }
-        &-chip {
-          padding: var(--spacing-0_25) var(--spacing-0_5);
-          text-transform: uppercase;
-          color: var(--global-tertiary-TextColor);
-          background-color: var(--global-ui-BackgroundColor);
           border-radius: var(--extra-small-BorderRadius);
         }
         &-icon {
@@ -351,6 +380,38 @@
         &-type {
           text-transform: uppercase;
           color: var(--global-secondary-TextColor);
+        }
+        &-arrow {
+          display: none;
+          flex-shrink: 0;
+          width: var(--global-min-Size);
+          height: var(--global-min-Size);
+          color: var(--global-primary-LinkColor);
+        }
+
+        &.hovered,
+        &:hover {
+          background-color: var(--theme-table-header-color); // var(--global-surface-03-hover-BackgroundColor);
+        }
+        &.selected {
+          background-color: var(--theme-table-header-color); // var(--global-surface-03-hover-BackgroundColor);
+
+          .hulyTableAttr-content__row-icon,
+          .hulyTableAttr-content__row-arrow,
+          .hulyTableAttr-content__row-label {
+            color: var(--global-primary-LinkColor);
+          }
+          .hulyTableAttr-content__row-type {
+            color: var(--global-primary-TextColor);
+          }
+          .hulyTableAttr-content__row-label {
+            font-weight: 700;
+          }
+        }
+        &.hovered .hulyTableAttr-content__row-arrow,
+        &:hover .hulyTableAttr-content__row-arrow,
+        &.selected .hulyTableAttr-content__row-arrow {
+          display: block;
         }
       }
     }

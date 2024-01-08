@@ -14,22 +14,25 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { IconMaximize, IconMinimize } from '..'
+  import { IconMaximize, IconMinimize, IconClose, ButtonIcon } from '..'
 
+  export let type: 'type-aside' | 'type-component' = 'type-component'
   export let minimize: boolean = false
 
   const dispatch = createEventDispatcher()
 </script>
 
 <div class="hulyHeader-container">
-  <button class="hulyHeader-button" on:click={() => dispatch('resize', minimize)}>
-    {#if minimize}
-      <IconMinimize size={'small'} />
-    {:else}
-      <IconMaximize size={'small'} />
-    {/if}
-  </button>
-  <div class="hulyHeader-divider" />
+  {#if type === 'type-component'}
+    <button class="hulyHeader-button" on:click={() => dispatch('resize', minimize)}>
+      {#if minimize}
+        <IconMinimize size={'small'} />
+      {:else}
+        <IconMaximize size={'small'} />
+      {/if}
+    </button>
+    <div class="hulyHeader-divider" />
+  {/if}
   <div class="hulyHeader-titleGroup">
     <slot />
   </div>
@@ -38,52 +41,9 @@
       <slot name="actions" />
     </div>
   {/if}
+  {#if type === 'type-aside'}
+    <div class="hulyHeader-divider" />
+    <div class="hulyHotKey-item">Esc</div>
+    <ButtonIcon icon={IconClose} kind={'tertiary'} size={'small'} on:click={() => dispatch('close')} />
+  {/if}
 </div>
-
-<style lang="scss">
-  .hulyHeader-container {
-    display: flex;
-    align-items: center;
-    padding: var(--spacing-1_5) var(--spacing-2);
-    width: 100%;
-    height: var(--spacing-6_5);
-    border-bottom: 1px solid var(--theme-divider-color); // var(--global-surface-02-BorderColor);
-
-    .hulyHeader-button {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-shrink: 0;
-      padding: 0;
-      width: 1.5rem;
-      height: 1.5rem;
-      color: var(--button-disabled-IconColor);
-      cursor: pointer;
-
-      &:hover {
-        color: var(--button-subtle-LabelColor);
-      }
-    }
-    .hulyHeader-divider {
-      flex-shrink: 0;
-      margin: 0 var(--spacing-2);
-      width: 1px;
-      height: var(--spacing-4);
-      background-color: var(--theme-divider-color); // var(--global-surface-02-BorderColor);
-    }
-    .hulyHeader-titleGroup,
-    .hulyHeader-buttonsGroup {
-      display: flex;
-      align-items: center;
-      min-width: 0;
-    }
-    .hulyHeader-titleGroup {
-      flex-grow: 1;
-      gap: var(--spacing-0_5);
-    }
-    .hulyHeader-buttonsGroup {
-      gap: var(--spacing-1);
-      margin-left: var(--spacing-2);
-    }
-  }
-</style>

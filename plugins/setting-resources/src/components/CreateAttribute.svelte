@@ -25,14 +25,16 @@
     Type
   } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { Card, getClient } from '@hcengineering/presentation'
-  import { AnyComponent, Component, DropdownLabelsIntl, EditBox, Label } from '@hcengineering/ui'
+  import presentation, { getClient } from '@hcengineering/presentation'
+  import { AnyComponent, Component, DropdownLabelsIntl, ModernEditbox, Label, Modal } from '@hcengineering/ui'
   import { DropdownIntlItem } from '@hcengineering/ui/src/types'
-  import { createEventDispatcher } from 'svelte'
   import setting from '../plugin'
   import view from '@hcengineering/view'
+  import { clearSettingsStore } from '../store'
 
+  export let _id: Ref<Class<Type<PropertyType>>> | undefined = undefined
   export let _class: Ref<Class<Doc>>
+
   let name: string
   let type: Type<PropertyType> | undefined
   let index: IndexKind | undefined
@@ -40,7 +42,6 @@
   let is: AnyComponent | undefined
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const dispatch = createEventDispatcher()
 
   async function save (): Promise<void> {
     if (type === undefined) return
@@ -57,7 +58,7 @@
       data.index = index
     }
     await client.createDoc(core.class.Attribute, core.space.Model, data)
-    dispatch('close')
+    clearSettingsStore()
   }
 
   function getTypes (): DropdownIntlItem[] {
@@ -95,44 +96,49 @@
     index = e.detail?.index
     defaultValue = e.detail?.defaultValue
   }
-
-  $: clazz = client.getHierarchy().getClass(_class)
 </script>
 
-<Card
+<Modal
   label={setting.string.CreatingAttribute}
+  type={'type-aside'}
+  okLabel={presentation.string.Create}
   okAction={save}
   canSave={!(type === undefined || name === undefined || name.trim().length === 0)}
-  on:close={() => {
-    dispatch('close')
+  onCancel={() => {
+    clearSettingsStore()
   }}
-  on:changeContent
 >
-  <svelte:fragment slot="title">
-    <div class="flex-row-center">
-      <Label label={setting.string.CreatingAttribute} />
-      <div class="p-1">></div>
-      <Label label={clazz.label} />
+  <div class="hulyModal-content__titleGroup">
+    <div class="hulyChip-item font-medium-12">
+      <Label label={setting.string.Custom} />
     </div>
-  </svelte:fragment>
-  <div class="mb-2"><EditBox bind:value={name} placeholder={core.string.Name} /></div>
-  <div class="flex-col mb-2">
-    <div class="flex-row-center flex-grow">
-      <Label label={setting.string.Type} />
-      <div class="ml-4">
-        <DropdownLabelsIntl
-          label={setting.string.Type}
-          {items}
-          width="8rem"
-          bind:selected={selectedType}
-          on:selected={handleSelection}
-        />
-      </div>
+    <ModernEditbox bind:value={name} label={core.string.Name} size={'large'} kind={'ghost'} />
+  </div>
+  <div class="hulyModal-content__settingsSet">
+    <div class="hulyModal-content__settingsSet-line">
+      <span class="label">
+        <Label label={setting.string.Type} />
+      </span>
+      <DropdownLabelsIntl
+        label={setting.string.Type}
+        {items}
+        size={'large'}
+        width="8rem"
+        bind:selected={selectedType}
+        on:selected={handleSelection}
+      />
     </div>
     {#if is}
-      <div class="flex mt-4">
-        <Component {is} on:change={handleChange} />
-      </div>
+      <Component
+        {is}
+        props={{
+          type,
+          defaultValue,
+          kind: 'regular',
+          size: 'large'
+        }}
+        on:change={handleChange}
+      />
     {/if}
   </div>
-</Card>
+</Modal>

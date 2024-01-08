@@ -26,6 +26,7 @@
     NavItem
   } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
+  import { clearSettingsStore } from '../store'
 
   export let kind: 'navigation' | 'content' | undefined
   export let categoryName: string
@@ -62,6 +63,7 @@
   )
 
   function selectCategory (id: string): void {
+    clearSettingsStore()
     const loc = getCurrentResolvedLocation()
     loc.path[3] = categoryName
     if (loc.path[4] === id) {
