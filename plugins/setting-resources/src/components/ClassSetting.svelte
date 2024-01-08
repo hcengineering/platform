@@ -36,6 +36,7 @@
   import { filterDescendants } from '../utils'
   import ClassAttributes from './ClassAttributes.svelte'
   import ClassHierarchy from './ClassHierarchy.svelte'
+  import { clearSettingsStore } from '../store'
 
   export let ofClass: Ref<Class<Obj>> | undefined = undefined
   export let attributeMapper:
@@ -125,6 +126,7 @@
             {ofClass}
             on:select={(e) => {
               _class = e.detail
+              clearSettingsStore()
             }}
           />
         </NavGroup>

@@ -131,6 +131,7 @@ export { default as ButtonIcon } from './components/ButtonIcon.svelte'
 export { default as ModernEditbox } from './components/ModernEditbox.svelte'
 export { default as NavItem } from './components/NavItem.svelte'
 export { default as NavGroup } from './components/NavGroup.svelte'
+export { default as Modal } from './components/Modal.svelte'
 
 export { default as IconAdd } from './components/icons/Add.svelte'
 export { default as IconCircleAdd } from './components/icons/CircleAdd.svelte'

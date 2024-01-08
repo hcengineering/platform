@@ -19,9 +19,12 @@
   import { DropdownLabelsIntl, Label, DropdownIntlItem } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import setting from '../../plugin'
+  import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
 
   export let type: DateType | undefined
   export let editable: boolean = true
+  export let kind: ButtonKind = 'regular'
+  export let size: ButtonSize = 'medium'
 
   const dispatch = createEventDispatcher()
   const items: DropdownIntlItem[] = [
@@ -49,22 +52,23 @@
   })
 </script>
 
-<div class="flex-row-center">
-  <Label label={setting.string.DateMode} />
-  <div class="ml-2">
-    {#if editable}
-      <DropdownLabelsIntl
-        {selected}
-        {items}
-        size="medium"
-        label={setting.string.DateMode}
-        on:selected={(res) => {
-          selected = res.detail
-          dispatch('change', { type: TypeDate(res.detail._id) })
-        }}
-      />
-    {:else}
-      <Label {label} />
-    {/if}
-  </div>
+<div class="hulyModal-content__settingsSet-line">
+  <span class="label">
+    <Label label={setting.string.DateMode} />
+  </span>
+  {#if editable}
+    <DropdownLabelsIntl
+      {selected}
+      {items}
+      {kind}
+      {size}
+      label={setting.string.DateMode}
+      on:selected={(res) => {
+        selected = res.detail
+        dispatch('change', { type: TypeDate(res.detail._id) })
+      }}
+    />
+  {:else}
+    <Label {label} />
+  {/if}
 </div>

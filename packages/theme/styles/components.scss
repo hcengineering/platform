@@ -81,6 +81,166 @@
   }
 }
 
+/* Header */
+.hulyHeader-container {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-1_5) var(--spacing-2);
+  width: 100%;
+  height: var(--spacing-6_5);
+  border-bottom: 1px solid var(--theme-divider-color); // var(--global-surface-02-BorderColor);
+
+  .hulyHeader-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    color: var(--button-disabled-IconColor);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--button-subtle-LabelColor);
+    }
+  }
+  .hulyHeader-divider {
+    flex-shrink: 0;
+    margin: 0 var(--spacing-2);
+    width: 1px;
+    height: var(--spacing-4);
+    background-color: var(--theme-divider-color); // var(--global-surface-02-BorderColor);
+  }
+  .hulyHeader-titleGroup,
+  .hulyHeader-buttonsGroup {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+  }
+  .hulyHeader-titleGroup {
+    flex-grow: 1;
+    gap: var(--spacing-0_5);
+  }
+  .hulyHeader-buttonsGroup {
+    gap: var(--spacing-1);
+    margin-left: var(--spacing-2);
+  }
+  .hulyHotKey-item {
+    margin-right: .625rem;
+  }
+}
+
+/* Modal */
+.hulyModal-container,
+.hulyModal-container .hulyModal-content,
+.hulyModal-container .hulyModal-content__titleGroup,
+.hulyModal-container .hulyModal-content__settingsSet,
+.hulyModal-container .hulyModal-footer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+.hulyModal-container {
+  height: 100%;
+  border-top: 1px solid transparent;
+  
+  .hulyModal-content {
+    padding: var(--spacing-2) var(--spacing-1_5) var(--spacing-6);
+    height: 100%;
+    
+    &__titleGroup {
+      flex-shrink: 0;
+      padding: var(--spacing-2) var(--spacing-0_5) 0;
+
+      .hulyChip-item {
+        margin: 0 0 var(--spacing-0_75) var(--spacing-1_5);
+      }
+    }
+    &__settingsSet {
+      flex-shrink: 0;
+      padding: var(--spacing-4) var(--spacing-2_5) 0;
+      
+      &-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-shrink: 0;
+        padding: var(--spacing-1_5) 0;
+        width: 100%;
+        min-width: 0;
+        min-height: var(--global-max-Size);
+        border-bottom: 1px solid var(--global-subtle-ui-BorderColor);
+        
+        &:first-child {
+          border-top: 1px solid var(--global-subtle-ui-BorderColor);
+        }
+        .label {
+          text-transform: uppercase;
+          font-weight: 500;
+          font-size: .75rem;
+          font-style: normal;
+          line-height: 1rem;
+          color: var(--global-secondary-TextColor);
+        }
+      }
+    }
+  }
+  .hulyModal-footer {
+    flex-direction: row-reverse;
+    flex-shrink: 0;
+    gap: var(--spacing-1);
+    padding: var(--spacing-2) var(--spacing-2_5);
+    border-top: 1px solid var(--theme-divider-color); // var(--global-surface-01-BorderColor);
+  }
+
+  &.type-aside .hulyHeader-container {
+    border-radius: 0 var(--small-focus-BorderRadius) 0 0;
+
+    .hulyHeader-titleGroup {
+      text-transform: uppercase;
+      font-family: var(--font-family);
+      font-weight: 500;
+      font-size: .75rem;
+      font-style: normal;
+      line-height: 1rem;
+      color: var(--global-secondary-TextColor);
+    }
+    .hulyHeader-buttonsGroup {
+      gap: var(--spacing-0_5);
+    }
+  }
+}
+
+.hulyChip-item {
+  padding: var(--spacing-0_25) var(--spacing-0_5);
+  width: fit-content;
+  text-transform: uppercase;
+  color: var(--global-tertiary-TextColor);
+  background-color: var(--global-ui-BackgroundColor);
+  border-radius: var(--extra-small-BorderRadius);
+}
+
+.hulyHotKey-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--spacing-0_25) var(--spacing-0_5);
+  height: var(--global-min-Size);
+  min-width: var(--global-min-Size);
+  text-align: center;
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: .625rem;
+  font-style: normal;
+  line-height: normal;
+  color: var(--global-primary-TextColor);
+  background: var(--button-secondary-hover-BackgroundColor);
+  border-radius: var(--extra-small-BorderRadius);
+}
+
 /* Component */
 .antiComponent {
   display: flex;
