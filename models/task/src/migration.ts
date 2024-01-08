@@ -24,8 +24,9 @@ import {
 } from '@hcengineering/model'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import tags from '@hcengineering/model-tags'
-import { taskId } from '@hcengineering/task'
+import { type TaskType, taskId } from '@hcengineering/task'
 import task from './plugin'
+import { DOMAIN_TASK } from '.'
 
 /**
  * @public
@@ -128,6 +129,18 @@ export const taskOperation: MigrateOperation = {
               classic: true
             }
           )
+        }
+      },
+      {
+        state: 'fixIncorrectTaskTypeSpace',
+        func: async (client) => {
+          const taskTypes = await client.find<TaskType>(DOMAIN_TASK, {
+            _class: task.class.TaskType,
+            space: core.space.Model
+          })
+          for (const taskType of taskTypes) {
+            await client.update(DOMAIN_TASK, { _id: taskType._id }, { $set: { space: taskType.parent } })
+          }
         }
       }
     ])
