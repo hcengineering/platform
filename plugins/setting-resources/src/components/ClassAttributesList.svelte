@@ -41,6 +41,7 @@
     Label,
     Menu,
     getEventPositionElement,
+    getEventPopupPositionElement,
     showPopup
   } from '@hcengineering/ui'
   import { getContextActions } from '@hcengineering/view-resources'
@@ -48,6 +49,8 @@
   import CreateAttribute from './CreateAttribute.svelte'
   import EditAttribute from './EditAttribute.svelte'
   import EditClassLabel from './EditClassLabel.svelte'
+  import { settingsStore } from '../store'
+  import TypesPopup from './typeEditors/TypesPopup.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let ofClass: Ref<Class<Doc>> | undefined = undefined
@@ -95,8 +98,10 @@
     attributes = getCustomAttributes(_class)
   }
 
-  export function createAttribute (): void {
-    showPopup(CreateAttribute, { _class }, 'top', update)
+  export function createAttribute (ev: MouseEvent): void {
+    showPopup(TypesPopup, { _class }, getEventPopupPositionElement(ev), (_id) => {
+      if (_id !== undefined) $settingsStore = { component: CreateAttribute, props: { _id, _class } }
+    })
   }
 
   export async function editAttribute (attribute: AnyAttribute, exist: boolean): Promise<void> {
