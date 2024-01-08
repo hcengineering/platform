@@ -68,7 +68,7 @@
     "@tiptap/extension-bubble-menu": "^2.1.12",
     "@tiptap/extension-underline": "^2.1.12",
     "@tiptap/extension-list-keymap": "^2.1.12",
-    "@hocuspocus/provider": "^2.5.0",
+    "@hocuspocus/provider": "^2.9.0",
     "prosemirror-codemark": "^0.4.2",
     "yjs": "^13.5.52",
     "y-websocket": "^1.5.0",
