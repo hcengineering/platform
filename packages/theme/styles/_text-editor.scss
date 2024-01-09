@@ -294,6 +294,11 @@
   }
 }
 
+.text-editor-file-container.ProseMirror-selectednode {
+  box-shadow: 0 0 0 2px var(--text-editor-selected-node-color);
+  border-radius: 0.125rem;
+}
+
 .ProseMirror-gapcursor:after {
   border-top: 1px solid var(--theme-text-primary-color) !important;
 }
