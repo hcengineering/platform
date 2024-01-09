@@ -20,7 +20,7 @@
   import presentation from '@hcengineering/presentation'
 
   import textEditorPlugin from '../plugin'
-  import { DocumentId, TiptapCollabProvider, createTiptapCollaborationData } from '../provider'
+  import { DocumentId, TiptapCollabProvider, createTiptapCollaborationData } from '../provider/tiptap'
   import { CollaborationIds } from '../types'
 
   export let documentId: DocumentId
