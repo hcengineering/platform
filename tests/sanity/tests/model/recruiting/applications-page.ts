@@ -41,8 +41,8 @@ export class ApplicationsPage extends CommonRecruitingPage {
 
   async createNewApplicationWithNewTalent (data: NewApplication): Promise<TalentName> {
     const talentName: TalentName = {
-      firstName: `TestFirst-${generateId(4)}`,
-      lastName: `TestLast-${generateId(4)}`
+      firstName: `TestFirst-${generateId(2)}`,
+      lastName: `TestLast-${generateId(2)}`
     }
 
     await this.buttonCreateApplication.click()

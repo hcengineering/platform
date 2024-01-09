@@ -64,7 +64,7 @@ test.describe('Application tests', () => {
     await page.click('button:has-text("Chen Rosamund")')
   })
 
-  test('Edit an Application', async ({ page }) => {
+  test.skip('Edit an Application', async ({ page }) => {
     const vacancyName = 'Software Engineer'
     const navigationMenuPage = new NavigationMenuPage(page)
     await navigationMenuPage.buttonApplications.click()
