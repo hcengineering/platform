@@ -67,20 +67,15 @@
       } else if (event.key === 'Enter') {
         event.preventDefault()
 
-        if (target && target.form) {
-          var focussable = Array.prototype.filter.call(
-            target.form.querySelectorAll(focussableElements),
-            function (element) {
-              //check for visibility while always include the current activeElement
-              return element.offsetWidth > 0 || element.offsetHeight > 0 || element === target
-            }
-          )
-          const index = focussable.indexOf(target)
+        const focussable = (
+          Array.from(formElement?.querySelectorAll(focussableElements) ?? []) as HTMLElement[]
+        ).filter((element) => element.offsetWidth > 0 || element.offsetHeight > 0 || element === target)
+        
+        const index = focussable.indexOf(target)
 
-          const nextInput = focussable[index + 1] || focussable[0]
-          if (nextInput) {
-            nextInput.focus()
-          }
+        const nextInput = focussable[index + 1] || focussable[0]
+        if (nextInput) {
+          nextInput.focus()
         }
       }
     }
