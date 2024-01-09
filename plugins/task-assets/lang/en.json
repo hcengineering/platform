@@ -55,6 +55,7 @@
     "DoneStatesWon": "Done status / Won",
     "DoneStatesLost": "Done status / Lost",
     "StateBacklog": "Backlog",
+    "StateUnstarted": "Unstarted",
     "StateActive": "Active",
     "AllStates": "All states",
     "DoneStates": "Done states",
@@ -81,6 +82,8 @@
     "StatusChange": "Status changed",
     "TaskCreated": "Task created",
     "TaskType": "Task type",
-    "ManageProjects": "Project types"
+    "ManageProjects": "Project types",
+    "CreateProjectType": "Create project type",
+    "ClassicProject": "Classic project"
   }
 }

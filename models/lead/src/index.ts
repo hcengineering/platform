@@ -105,12 +105,18 @@ export function createModel (builder: Builder): void {
 
   builder.createModel(TFunnel, TLead, TCustomer)
 
-  builder.mixin(lead.class.Lead, core.class.Class, activity.mixin.ActivityDoc, {
-    ignoreCollections: ['comments']
-  })
+  builder.mixin(lead.class.Lead, core.class.Class, activity.mixin.ActivityDoc, {})
 
-  builder.mixin(lead.mixin.Customer, core.class.Class, activity.mixin.ActivityDoc, {
-    ignoreCollections: ['comments']
+  builder.mixin(lead.mixin.Customer, core.class.Class, activity.mixin.ActivityDoc, {})
+
+  builder.createDoc(activity.class.ActivityMessageControl, core.space.Model, {
+    objectClass: lead.class.Lead,
+    skip: [
+      {
+        _class: core.class.TxCollectionCUD,
+        collection: 'comments'
+      }
+    ]
   })
 
   builder.mixin(lead.class.Funnel, core.class.Class, activity.mixin.ActivityDoc, {})

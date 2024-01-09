@@ -160,7 +160,8 @@ export const workbenchSeparators: DefSeparators = [
 
 export const settingsSeparators: DefSeparators = [
   { minSize: 12.5, size: 17.5, maxSize: 22.5, float: 'navigator' },
-  null
+  null,
+  { minSize: 17, size: 30, maxSize: 32, float: 'aside' }
 ]
 
 export const separatorsStore = writable<string[]>([])

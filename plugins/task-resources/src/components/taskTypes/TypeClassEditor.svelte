@@ -55,7 +55,7 @@
       <ObjectPresenter _class={clazz._class} objectId={clazz._id} value={clazz} />
     {/if}
   </div>
-  <Button icon={IconAdd} size={'small'} kind={'primary'} on:click={() => mainAttributes?.createAttribute()} />
+  <Button icon={IconAdd} size={'small'} kind={'primary'} on:click={(ev) => mainAttributes?.createAttribute(ev)} />
 </div>
 <div class="ml-2 mr-2">
   <table class="antiTable mx-2">

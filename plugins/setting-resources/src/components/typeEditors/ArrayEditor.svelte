@@ -20,9 +20,12 @@
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import setting from '../../plugin'
+  import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
 
   export let type: ArrOf<Doc> | undefined
   export let editable: boolean = true
+  export let kind: ButtonKind = 'regular'
+  export let size: ButtonSize = 'medium'
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -56,34 +59,34 @@
   }
 </script>
 
-<div class="flex-col">
-  <div class="flex-row-center flex-grow">
+<div class="hulyModal-content__settingsSet-line">
+  <span class="label">
     <Label label={setting.string.Type} />
-    <div class="ml-4">
-      {#if editable}
-        <DropdownLabelsIntl
-          label={core.string.Class}
-          items={types.map((p) => {
-            return { id: p._id, label: p.label }
-          })}
-          width="8rem"
-          bind:selected={refClass}
-        />
-      {:else if selected}
-        <Label label={selected.label} />
-      {/if}
-    </div>
-  </div>
-  {#if selected}
-    <div class="flex mt-4">
-      <Component
-        is={getComponent(selected)}
-        props={{
-          type: type?.of,
-          editable
-        }}
-        on:change={handleChange}
-      />
-    </div>
+  </span>
+  {#if editable}
+    <DropdownLabelsIntl
+      label={core.string.Class}
+      {kind}
+      {size}
+      items={types.map((p) => {
+        return { id: p._id, label: p.label }
+      })}
+      width="8rem"
+      bind:selected={refClass}
+    />
+  {:else if selected}
+    <Label label={selected.label} />
   {/if}
 </div>
+{#if selected}
+  <Component
+    is={getComponent(selected)}
+    props={{
+      type: type?.of,
+      editable,
+      kind,
+      size
+    }}
+    on:change={handleChange}
+  />
+{/if}

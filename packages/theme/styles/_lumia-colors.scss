@@ -1,0 +1,137 @@
+//
+// Copyright © 2021 Anticrm Platform Contributors.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+/* Common Colors */
+* {
+  --global-accent-IconColor: #6796FF;
+  --global-on-accent-TextColor: #FFFFFF;
+  --global-focus-inset-BorderColor: #0D121C;
+
+  --button-accent-LabelColor: #fff;
+  --button-disabled-LabelColor: #8b97ad;
+  --button-accent-IconColor: #fff;
+  --button-disabled-IconColor: #8b97ad;
+  --button-primary-BackgroundColor: #3364e2;
+  --button-primary-BorderColor: #d1d5de1a;
+  --button-primary-hover-BackgroundColor: #6191fe;
+  --button-primary-active-BackgroundColor: #2553cf;
+  --button-primary-loading-LabelColor: #6191fe;
+  --button-negative-loading-LabelColor: #ff9187;
+  --button-negative-BorderColor: #d1d5de26;
+  --button-negative-hover-BackgroundColor: #e34748;
+  --button-negative-active-BackgroundColor: #c42a32;
+}
+
+/* Dark Theme */
+.theme-dark {
+  --global-ui-BackgroundColor: #A5BDFF0D;
+  --global-ui-hover-BackgroundColor: #A5BDFF1A;
+  --global-ui-highlight-BackgroundColor: #A5BDFF0D;
+  --global-ui-hover-highlight-BackgroundColor: #A5BDFF26;
+  --global-surface-01-BackgroundColor: #131925;
+  --global-surface-01-BorderColor: #1F2737;
+  --global-surface-02-BackgroundColor: #19202E;
+  --global-surface-02-BorderColor: #262F40;
+  --global-surface-03-hover-BackgroundColor: #19202E;
+  --global-subtle-ui-BorderColor: #A5BDFF0D;
+  --global-popover-BackgroundColor: #262F40;
+  --global-popover-hover-BackgroundColor: #1F2737;
+  --global-popover-BorderColor: #A5BDFF1A;
+  --global-primary-LinkColor: #4D7FF5;
+  --global-primary-TextColor: #FFFFFF;
+  --global-secondary-TextColor: #C1C9D6;
+  --global-tertiary-TextColor: #8E99AF;
+  --global-accent-TextColor: #4D7FF5;
+  --global-focus-BorderColor: #2A59D6;
+
+  /** Buttons **/
+  --button-subtle-LabelColor: #fff;
+  --button-subtle-IconColor: #fff;
+  --button-disabled-BackgroundColor: #d1d5de0d;
+  --button-primary-loading-LabelColor: #6191fe;
+  --button-secondary-BackgroundColor: #d1d5de0d;
+  --button-secondary-BorderColor: #d1d5de1a;
+  --button-secondary-hover-BackgroundColor: #d1d5de1a;
+  --button-secondary-active-BackgroundColor: #d1d5de26;
+  --button-negative-BackgroundColor: #e34748;
+  --button-tertiary-hover-BackgroundColor: #d1d5de1a;
+  --button-tertiary-active-BackgroundColor: #d1d5de26;
+  --button-menu-active-BorderColor: #d9dee6;
+
+  /** Editbox **/
+  --input-BackgroundColor: #a5bdff0d;
+  --input-hover-BackgroundColor: #a5bdff1a;
+  --input-BorderColor: #a5bdff0d;
+  --input-TextColor: #ffffff;
+  --input-LabelColor: #ffffff;
+  --input-filled-LabelColor: #8b97ad;
+  --input-PlaceholderColor: #8b97ad;
+  --input-hover-PlaceholderColor: #ffffff;
+  --input-focus-PlaceholderColor: #556178;
+  --input-HelperColor: #8b97ad;
+  --input-error-BorderColor: #fb6863;
+  --input-search-IconColor: #ffffff;
+}
+
+/* Light Theme */
+.theme-light {
+  --global-ui-BackgroundColor: #1530720D;
+  --global-ui-hover-BackgroundColor: #1530721A;
+  --global-ui-highlight-BackgroundColor: #A5BDFF26;
+  --global-ui-hover-highlight-BackgroundColor: #A5BDFF40;
+  --global-surface-01-BackgroundColor: #F8F9FA;
+  --global-surface-01-BorderColor: #DDE1E9;
+  --global-surface-02-BackgroundColor: #19202E;
+  --global-surface-02-BorderColor: #EBEEF2;
+  --global-surface-03-hover-BackgroundColor: #F8F9FA;
+  --global-subtle-ui-BorderColor: #1530720D;
+  --global-popover-BackgroundColor: #131925;
+  --global-popover-hover-BackgroundColor: #1F2737;
+  --global-popover-BorderColor: #A5BDFF26;
+  --global-primary-LinkColor: #3566E2;
+  --global-primary-TextColor: #0F121A;
+  --global-secondary-TextColor: #5A667E;
+  --global-tertiary-TextColor: #7B879E;
+  --global-accent-TextColor: #3566E2;
+  --global-focus-BorderColor: #204DC8;
+
+  /** Buttons **/
+  --button-subtle-LabelColor: #000;
+  --button-subtle-IconColor: #000;
+  --button-disabled-BackgroundColor: #1725470d;
+  --button-primary-loading-LabelColor: #95baff;
+  --button-secondary-BackgroundColor: #1725470d;
+  --button-secondary-BorderColor: #1725471a;
+  --button-secondary-hover-BackgroundColor: #1725471a;
+  --button-secondary-active-BackgroundColor: #17254726;
+  --button-negative-BackgroundColor: #ea4c4c;
+  --button-tertiary-hover-BackgroundColor: #1725471a;
+  --button-tertiary-active-BackgroundColor: #17254726;
+  --button-menu-active-BorderColor: #0f121a;
+
+  /** Editbox **/
+  --input-BackgroundColor: #1530720d;
+  --input-hover-BackgroundColor: #1530721a;
+  --input-BorderColor: #1530720d;
+  --input-TextColor: #0f121a;
+  --input-LabelColor: #0f121a;
+  --input-filled-LabelColor: #556178;
+  --input-PlaceholderColor: #556178;
+  --input-hover-PlaceholderColor: #0f121a;
+  --input-focus-PlaceholderColor: #8b97ad;
+  --input-HelperColor: #556178;
+  --input-error-BorderColor: #e34748;
+  --input-search-IconColor: #0f121a;
+}

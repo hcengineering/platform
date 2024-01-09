@@ -1,17 +1,15 @@
 <script lang="ts">
-  import { Attribute, Class, IdMap, Ref, Status, generateId } from '@hcengineering/core'
+  import { Class, IdMap, Ref, Status, generateId } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { DocPopup, createQuery, getClient } from '@hcengineering/presentation'
-  import { Project, ProjectType, Task, getStates } from '@hcengineering/task'
+  import { DocPopup, getClient } from '@hcengineering/presentation'
+  import { Task, TaskType } from '@hcengineering/task'
   import { ObjectPresenter, statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { typeStore } from '..'
-  import task from '../plugin'
+  import { taskTypeStore } from '..'
 
   export let value: Task | Task[]
   export let width: 'medium' | 'large' | 'full' = 'medium'
   export let placeholder: IntlString
-  export let ofAttribute: Ref<Attribute<Status>>
   export let _class: Ref<Class<Status>>
   export let embedded: boolean = false
 
@@ -43,35 +41,26 @@
       : undefined
     : value.status
 
-  $: _space = Array.isArray(value)
-    ? value.every((v) => v.space === (value as Array<Task>)[0].space)
-      ? value[0].space
+  $: kind = Array.isArray(value)
+    ? value.every((v) => v.kind === (value as Array<Task>)[0].kind)
+      ? value[0].kind
       : undefined
-    : value.space
+    : value.kind
 
-  let project: Project | undefined
-
-  const query = createQuery()
-  $: _space
-    ? query.query(task.class.Project, { _id: _space as Ref<Project> }, (res) => {
-      project = res[0]
-    })
-    : (project = undefined)
-
-  function updateStatuses (
-    space: Project | undefined,
-    types: IdMap<ProjectType>,
-    store: IdMap<Status>,
-    allStatuses: Status[]
-  ): void {
-    if (space === undefined) {
-      statuses = allStatuses.filter((p) => p.ofAttribute === ofAttribute)
+  function updateStatuses (taskTypes: IdMap<TaskType>, store: IdMap<Status>, kind: Ref<TaskType> | undefined): void {
+    if (kind === undefined) {
+      statuses = []
     } else {
-      statuses = getStates(space, types, store)
+      if (kind !== undefined) {
+        const type = taskTypes.get(kind)
+        if (type !== undefined) {
+          statuses = type.statuses.map((p) => store.get(p)).filter((p) => p !== undefined) as Status[]
+        }
+      }
     }
   }
 
-  $: updateStatuses(project, $typeStore, $statusStore.byId, $statusStore.array)
+  $: updateStatuses($taskTypeStore, $statusStore.byId, kind)
 
   let statuses: Status[] = []
 </script>

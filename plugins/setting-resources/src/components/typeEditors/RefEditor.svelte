@@ -19,9 +19,12 @@
   import { DropdownLabelsIntl, Label } from '@hcengineering/ui'
   import view from '@hcengineering/view-resources/src/plugin'
   import { createEventDispatcher } from 'svelte'
+  import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
 
   export let type: RefTo<Doc> | undefined
   export let editable: boolean = true
+  export let kind: ButtonKind = 'regular'
+  export let size: ButtonSize = 'medium'
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -48,13 +51,13 @@
   $: refClass && dispatch('change', { type: TypeRef(refClass) })
 </script>
 
-<div class="flex-row-center flex-grow">
-  <Label label={core.string.Class} />
-  <div class="ml-4">
-    {#if editable}
-      <DropdownLabelsIntl label={core.string.Class} items={classes} width="8rem" bind:selected={refClass} />
-    {:else if selected}
-      <Label label={selected.label} />
-    {/if}
-  </div>
+<div class="hulyModal-content__settingsSet-line">
+  <span class="label">
+    <Label label={core.string.Class} />
+  </span>
+  {#if editable}
+    <DropdownLabelsIntl label={core.string.Class} items={classes} width="8rem" bind:selected={refClass} {kind} {size} />
+  {:else if selected}
+    <Label label={selected.label} />
+  {/if}
 </div>

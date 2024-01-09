@@ -18,9 +18,11 @@
   import task, { ProjectType } from '@hcengineering/task'
   import { Location, getCurrentResolvedLocation, navigate, resolvedLocationStore } from '@hcengineering/ui'
 
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, hasResource } from '@hcengineering/presentation'
   import { onDestroy } from 'svelte'
   import Types from './Types.svelte'
+  import { Resource } from '@hcengineering/platform'
+  import { clearSettingsStore } from '@hcengineering/setting-resources'
 
   export let kind: 'navigation' | 'tools' | undefined
   export let categoryName: string
@@ -36,6 +38,7 @@
   )
 
   function selectProjectType (id: string): void {
+    clearSettingsStore()
     const loc = getCurrentResolvedLocation()
     loc.path[3] = categoryName
     loc.path[4] = id
@@ -50,7 +53,7 @@
     task.class.ProjectType,
     { archived: false },
     (result) => {
-      types = result
+      types = result.filter((p) => hasResource(p.descriptor as any as Resource<any>))
     },
     {
       lookup: {

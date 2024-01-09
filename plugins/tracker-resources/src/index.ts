@@ -123,6 +123,7 @@ import {
   getAllMilestones,
   getAllPriority,
   getComponentTitle,
+  getIssueStatusCategories,
   getMilestoneTitle,
   getIssueChatTitle,
   getVisibleFilters,
@@ -538,7 +539,8 @@ export default async (): Promise<Resources> => ({
     GetAllMilestones: getAllMilestones,
     GetVisibleFilters: getVisibleFilters,
     IssueChatTitleProvider: getIssueChatTitle,
-    IsProjectJoined: async (project: Project) => !project.private || project.members.includes(getCurrentAccount()._id)
+    IsProjectJoined: async (project: Project) => !project.private || project.members.includes(getCurrentAccount()._id),
+    GetIssueStatusCategories: getIssueStatusCategories
   },
   actionImpl: {
     Move: move,

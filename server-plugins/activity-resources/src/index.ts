@@ -148,17 +148,6 @@ async function pushDocUpdateMessages (
     return res
   }
 
-  const collection =
-    originTx._class === core.class.TxCollectionCUD
-      ? (originTx as TxCollectionCUD<Doc, AttachedDoc>).collection
-      : undefined
-
-  const { ignoreCollections = [] } = activityDoc
-
-  if (collection !== undefined && ignoreCollections.includes(collection)) {
-    return res
-  }
-
   const tx =
     originTx._class === core.class.TxCollectionCUD ? (originTx as TxCollectionCUD<Doc, AttachedDoc>).tx : originTx
 
@@ -207,30 +196,37 @@ export async function generateDocUpdateMessages (
   originTx?: TxCUD<Doc>,
   objectCache?: DocObjectCache
 ): Promise<TxCollectionCUD<Doc, DocUpdateMessage>[]> {
+  const { hierarchy } = control
+
   if (tx.space === core.space.DerivedTx) {
     return res
   }
 
-  if (control.hierarchy.isDerived(tx.objectClass, activity.class.ActivityMessage)) {
+  const etx = TxProcessor.extractTx(tx) as TxCUD<Doc>
+
+  if (
+    hierarchy.isDerived(tx.objectClass, activity.class.ActivityMessage) ||
+    hierarchy.isDerived(etx.objectClass, activity.class.ActivityMessage)
+  ) {
     return res
   }
-  const etx = TxProcessor.extractTx(tx)
+
   if (
-    control.hierarchy.isDerived(etx._class, core.class.TxCUD) &&
-    control.hierarchy.isDerived((etx as TxCUD<Doc>).objectClass, activity.class.ActivityMessage)
+    hierarchy.classHierarchyMixin(tx.objectClass, activity.mixin.IgnoreActivity) !== undefined ||
+    hierarchy.classHierarchyMixin(etx.objectClass, activity.mixin.IgnoreActivity) !== undefined
   ) {
     return res
   }
 
   // Check if we have override control over transaction => activity mappings
   const controlRules = control.modelDb.findAllSync(activity.class.ActivityMessageControl, {
-    objectClass: { $in: control.hierarchy.getDescendants(tx.objectClass) }
+    objectClass: { $in: hierarchy.getAncestors(tx.objectClass) }
   })
   if (controlRules.length > 0) {
     for (const r of controlRules) {
       for (const s of r.skip) {
-        const otx = originTx ?? TxProcessor.extractTx(tx)
-        if (matchQuery(otx !== undefined ? [tx, otx] : [tx], s, r.objectClass, control.hierarchy).length > 0) {
+        const otx = originTx ?? etx
+        if (matchQuery(otx !== undefined ? [tx, otx] : [tx], s, r.objectClass, hierarchy).length > 0) {
           // Match found, we need to skip
           return res
         }

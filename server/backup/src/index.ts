@@ -283,14 +283,10 @@ export async function cloneWorkspace (
               if (collectionCud) {
                 return {
                   ...p,
-                  createdBy: core.account.System,
-                  modifiedBy: core.account.System,
                   modifiedOn: Date.now(),
                   createdOn: Date.now(),
                   tx: {
                     ...(p as TxCollectionCUD<Doc, AttachedDoc>).tx,
-                    createdBy: core.account.System,
-                    modifiedBy: core.account.System,
                     modifiedOn: Date.now(),
                     createdOn: Date.now()
                   }
@@ -298,8 +294,6 @@ export async function cloneWorkspace (
               } else {
                 return {
                   ...p,
-                  createdBy: core.account.System,
-                  modifiedBy: core.account.System,
                   modifiedOn: Date.now(),
                   createdOn: Date.now()
                 }

@@ -236,9 +236,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
   const spaceClasses = [chunter.class.Channel, chunter.class.DirectMessage]
 
   spaceClasses.forEach((spaceClass) => {
-    builder.mixin(spaceClass, core.class.Class, activity.mixin.ActivityDoc, {
-      ignoreCollections: ['messages']
-    })
+    builder.mixin(spaceClass, core.class.Class, activity.mixin.ActivityDoc, {})
 
     builder.mixin(spaceClass, core.class.Class, view.mixin.LinkProvider, {
       encode: chunter.function.GetChunterSpaceLinkFragment
@@ -573,9 +571,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
     filter: chunter.filter.ChatMessagesFilter
   })
 
-  builder.mixin(chunter.class.ChatMessage, core.class.Class, activity.mixin.ActivityDoc, {
-    ignoreCollections: ['createdBy', 'replies']
-  })
+  builder.mixin(chunter.class.ChatMessage, core.class.Class, activity.mixin.ActivityDoc, {})
 
   builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.ObjectIdentifier, {
     provider: chunter.function.DmIdentifierProvider

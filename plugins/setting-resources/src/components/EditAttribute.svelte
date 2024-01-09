@@ -15,19 +15,20 @@
 <script lang="ts">
   import core, { AnyAttribute, Class, DocumentUpdate, IndexKind, PropertyType, Ref, Type } from '@hcengineering/core'
   import { getEmbeddedLabel, translate } from '@hcengineering/platform'
-  import presentation, { Card, getClient } from '@hcengineering/presentation'
+  import presentation, { getClient } from '@hcengineering/presentation'
   import setting from '../plugin'
   import {
     AnyComponent,
     Component,
     DropdownIntlItem,
     DropdownLabelsIntl,
-    EditBox,
+    ModernEditbox,
     Label,
-    themeStore
+    themeStore,
+    Modal
   } from '@hcengineering/ui'
   import view from '@hcengineering/view-resources/src/plugin'
-  import { createEventDispatcher } from 'svelte'
+  import { clearSettingsStore } from '../store'
 
   export let attribute: AnyAttribute
   export let exist: boolean
@@ -39,7 +40,6 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const dispatch = createEventDispatcher()
 
   translate(attribute.label, {}, $themeStore.language).then((p) => (name = p))
 
@@ -61,7 +61,7 @@
       }
     }
     await client.updateDoc(attribute._class, attribute.space, attribute._id, update)
-    dispatch('close')
+    clearSettingsStore()
   }
 
   function getTypes (): DropdownIntlItem[] {
@@ -101,46 +101,54 @@
   }
 </script>
 
-<Card
+<Modal
   label={setting.string.EditAttribute}
+  type={'type-aside'}
   okLabel={presentation.string.Save}
   okAction={save}
   canSave={!(name === undefined || name.trim().length === 0)}
-  on:close={() => {
-    dispatch('close')
+  onCancel={() => {
+    clearSettingsStore()
   }}
-  on:changeContent
 >
-  <div class="mb-2"><EditBox bind:value={name} placeholder={core.string.Name} /></div>
-  <div class="flex-col mb-2">
-    <div class="flex-row-center flex-grow">
-      <Label label={setting.string.Type} />
-      <div class="ml-4">
-        {#if exist}
-          <Label label={attribute.type.label} />
-        {:else}
-          <DropdownLabelsIntl
-            label={setting.string.Type}
-            {items}
-            width="8rem"
-            bind:selected={selectedType}
-            on:selected={handleSelect}
-          />
-        {/if}
-      </div>
-    </div>
-    {#if is}
-      <div class="flex mt-4">
-        <Component
-          {is}
-          props={{
-            type,
-            defaultValue,
-            editable: !exist
-          }}
-          on:change={handleChange}
-        />
+  <div class="hulyModal-content__titleGroup">
+    {#if attribute.isCustom}
+      <div class="hulyChip-item font-medium-12">
+        <Label label={setting.string.Custom} />
       </div>
     {/if}
+    <ModernEditbox bind:value={name} label={core.string.Name} size={'large'} kind={'ghost'} />
   </div>
-</Card>
+  <div class="hulyModal-content__settingsSet">
+    <div class="hulyModal-content__settingsSet-line">
+      <span class="label">
+        <Label label={setting.string.Type} />
+      </span>
+      {#if exist}
+        <Label label={attribute.type.label} />
+      {:else}
+        <DropdownLabelsIntl
+          label={setting.string.Type}
+          {items}
+          size={'large'}
+          width="8rem"
+          bind:selected={selectedType}
+          on:selected={handleSelect}
+        />
+      {/if}
+    </div>
+    {#if is}
+      <Component
+        {is}
+        props={{
+          type,
+          defaultValue,
+          editable: !exist,
+          kind: 'regular',
+          size: 'large'
+        }}
+        on:change={handleChange}
+      />
+    {/if}
+  </div>
+</Modal>

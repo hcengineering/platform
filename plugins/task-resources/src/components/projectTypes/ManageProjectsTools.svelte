@@ -14,46 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { generateId } from '@hcengineering/core'
-  import { Button, IconAdd, Menu, getEventPopupPositionElement, showPopup } from '@hcengineering/ui'
+  import { Button, IconAdd, showPopup } from '@hcengineering/ui'
+  import CreateProjectType from './CreateProjectType.svelte'
 
-  import { translate } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
-  import task, { ProjectTypeDescriptor, createProjectType } from '@hcengineering/task'
-
-  const client = getClient()
-
-  async function createType (descriptor: ProjectTypeDescriptor): Promise<void> {
-    const descriptorName = await translate(descriptor.name, {})
-
-    await createProjectType(
-      client,
-      {
-        name: `New ${descriptorName} project type`,
-        descriptor: descriptor._id,
-        description: '',
-        tasks: []
-      },
-      [],
-      generateId()
-    )
-  }
-
-  async function chooseProjectType (evt: MouseEvent): Promise<void> {
-    const descriptors = client.getModel().findAllSync(task.class.ProjectTypeDescriptor, {})
-    showPopup(
-      Menu,
-      {
-        actions: descriptors.map((it) => ({
-          label: it.name,
-          action: () => {
-            void createType(it)
-          }
-        }))
-      },
-      getEventPopupPositionElement(evt)
-    )
+  function open () {
+    showPopup(CreateProjectType, {}, 'top')
   }
 </script>
 
-<Button id="new-project-type" icon={IconAdd} kind={'link'} size="small" on:click={chooseProjectType} />
+<Button id="new-project-type" icon={IconAdd} kind={'link'} size="small" on:click={open} />

@@ -105,7 +105,11 @@ export async function getObjectPresenter (
   const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : view.mixin.ObjectPresenter
   const clazz = hierarchy.getClass(_class)
 
-  const presenterMixin = hierarchy.classHierarchyMixin(_class, mixin, (m) => !checkResource || hasResource(m.presenter))
+  const presenterMixin = hierarchy.classHierarchyMixin(
+    _class,
+    mixin,
+    (m) => !checkResource || hasResource(m.presenter) === true
+  )
   if (presenterMixin?.presenter === undefined) {
     console.error(
       `object presenter not found for class=${_class}, mixin=${mixin}, preserve key ${JSON.stringify(preserveKey)}`
@@ -361,9 +365,11 @@ export async function deleteObject (client: TxOperations, object: Doc): Promise<
   }
 }
 
-export async function deleteObjects (client: TxOperations, objects: Doc[]): Promise<void> {
-  const currentAcc = getCurrentAccount()
-  if (currentAcc.role !== AccountRole.Owner && objects.some((p) => p.createdBy !== currentAcc._id)) return
+export async function deleteObjects (client: TxOperations, objects: Doc[], skipCheck: boolean = false): Promise<void> {
+  if (!skipCheck) {
+    const currentAcc = getCurrentAccount()
+    if (currentAcc.role !== AccountRole.Owner && objects.some((p) => p.createdBy !== currentAcc._id)) return
+  }
   const ops = client.apply('delete')
   for (const object of objects) {
     if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
@@ -895,8 +901,10 @@ export async function getObjectLinkFragment (
   props: Record<string, any> = {},
   component: AnyComponent = view.component.EditDoc
 ): Promise<Location> {
-  const provider = hierarchy.classHierarchyMixin(Hierarchy.mixinOrClass(object), view.mixin.LinkProvider, (m) =>
-    hasResource(m.encode)
+  const provider = hierarchy.classHierarchyMixin(
+    Hierarchy.mixinOrClass(object),
+    view.mixin.LinkProvider,
+    (m) => hasResource(m.encode) ?? false
   )
   if (provider?.encode !== undefined) {
     const f = await getResource(provider.encode)
@@ -906,7 +914,7 @@ export async function getObjectLinkFragment (
     }
   }
   const loc = getCurrentResolvedLocation()
-  if (hasResource(component)) {
+  if (hasResource(component) === true) {
     loc.fragment = getPanelURI(component, object._id, Hierarchy.mixinOrClass(object), 'content')
   }
   return loc

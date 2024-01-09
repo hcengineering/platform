@@ -22,7 +22,7 @@
 
   import textEditorPlugin from '../plugin'
   import { DocumentId } from '../provider'
-  import { TextEditorCommandHandler, TextNodeAction } from '../types'
+  import { TextEditorCommandHandler, TextFormatCategory, TextNodeAction } from '../types'
 
   import CollaborativeTextEditor from './CollaborativeTextEditor.svelte'
   import { FileAttachFunction } from './extension/imageExt'
@@ -171,6 +171,17 @@
     {overflow}
     {boundary}
     {attachFile}
+    textFormatCategories={readonly
+      ? []
+      : [
+          TextFormatCategory.Heading,
+          TextFormatCategory.TextDecoration,
+          TextFormatCategory.Link,
+          TextFormatCategory.List,
+          TextFormatCategory.Quote,
+          TextFormatCategory.Code,
+          TextFormatCategory.Table
+        ]}
     extensions={[...onExtensions()]}
     {textNodeActions}
     {canShowPopups}

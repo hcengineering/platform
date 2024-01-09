@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import core, { Class, ClassifierKind, Data, Ref, RefTo, Status, generateId, toIdMap } from '@hcengineering/core'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
-  import presentation, { Card, getClient } from '@hcengineering/presentation'
+  import { Resource, getEmbeddedLabel, getResource } from '@hcengineering/platform'
+  import presentation, { Card, getClient, hasResource } from '@hcengineering/presentation'
   import {
     ProjectType,
     ProjectTypeDescriptor,
@@ -25,8 +25,7 @@
     createState,
     findStatusAttr
   } from '@hcengineering/task'
-  import { DropdownIntlItem, EditBox, getColorNumberByText } from '@hcengineering/ui'
-  import DropdownLabelsIntl from '@hcengineering/ui/src/components/DropdownLabelsIntl.svelte'
+  import { DropdownIntlItem, DropdownLabelsIntl, EditBox, getColorNumberByText } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import task from '../../plugin'
   import TaskTypeKindEditor from './TaskTypeKindEditor.svelte'
@@ -35,7 +34,7 @@
   const client = getClient()
   export let type: ProjectType
   export let descriptor: ProjectTypeDescriptor
-  export let taskType: TaskType
+  export let taskType: TaskType | undefined
 
   function defaultTaskType (type: ProjectType): Data<TaskType> {
     return {
@@ -57,7 +56,10 @@
     }
   }
 
-  const taskTypeDescriptors = client.getModel().findAllSync(task.class.TaskTypeDescriptor, { allowCreate: true })
+  const taskTypeDescriptors = client
+    .getModel()
+    .findAllSync(task.class.TaskTypeDescriptor, { allowCreate: true })
+    .filter((p) => hasResource(p._id as any as Resource<any>))
 
   let { kind, name, targetClass, statusCategories, statuses, allowedAsChildOf } =
     taskType !== undefined ? { ...taskType } : { ...defaultTaskType(type) }
@@ -79,6 +81,7 @@
 
     const descr = taskTypeDescriptors.find((it) => it._id === taskTypeDescriptor)
     if (descr === undefined) return
+
     const ofClass = descr.baseClass
     const _taskType = {
       kind,
@@ -93,11 +96,21 @@
       parent: type._id,
       icon: descr.icon
     }
+
+    if (taskType === undefined && descr.statusCategoriesFunc !== undefined) {
+      const f = await getResource(descr.statusCategoriesFunc)
+      if (f !== undefined) {
+        _taskType.statusCategories = f(type)
+      }
+    }
+
     const taskTypeId: Ref<TaskType> = taskType?._id ?? generateId()
-    const categories = toIdMap(await client.findAll(core.class.StatusCategory, { _id: { $in: statusCategories } }))
+    const categories = toIdMap(
+      await client.findAll(core.class.StatusCategory, { _id: { $in: _taskType.statusCategories } })
+    )
     const statusAttr =
       findStatusAttr(client.getHierarchy(), ofClass) ?? client.getHierarchy().getAttribute(task.class.Task, 'status')
-    for (const st of statusCategories) {
+    for (const st of _taskType.statusCategories) {
       const std = categories.get(st)
       if (std !== undefined) {
         const s = await createState(client, _taskType.statusClass, {
@@ -108,7 +121,7 @@
         _taskType.statuses.push(s)
         if (type.statuses.find((it) => it._id === s) === undefined) {
           await client.update(type, {
-            $push: { statuses: { _id: s, color: getColorNumberByText(std.defaultStatusName), taskType: taskTypeId } }
+            $push: { statuses: { _id: s, taskType: taskTypeId } }
           })
         }
       }

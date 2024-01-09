@@ -49,7 +49,8 @@ import {
   TypeString,
   UX,
   type Builder,
-  type MigrationClient
+  type MigrationClient,
+  ReadOnly
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
@@ -60,7 +61,7 @@ import view, {
   template,
   actionTemplates as viewTemplates
 } from '@hcengineering/model-view'
-import { getEmbeddedLabel, type Asset, type IntlString } from '@hcengineering/platform'
+import { getEmbeddedLabel, type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import tags from '@hcengineering/tags'
 import {
@@ -106,6 +107,7 @@ export class TTask extends TAttachedDoc implements Task {
 
   @Prop(TypeRef(task.class.TaskType), task.string.TaskType)
   @Index(IndexKind.Indexed)
+  @ReadOnly()
     kind!: Ref<TaskType>
 
   @Prop(TypeString(), task.string.TaskNumber)
@@ -169,6 +171,7 @@ export class TTaskTypeDescriptor extends TDoc implements TaskTypeDescriptor {
 
   // If specified, will allow to be created by users, system type overwize
   allowCreate!: boolean
+  statusCategoriesFunc?: Resource<(project: ProjectType) => Ref<StatusCategory>[]>
 }
 
 @Mixin(task.mixin.TaskTypeClass, core.class.Class)
@@ -203,6 +206,9 @@ export class TProjectType extends TSpace implements ProjectType {
 
   @Prop(TypeRef(core.class.Class), getEmbeddedLabel('Target Class'))
     targetClass!: Ref<Class<Project>>
+
+  @Prop(TypeBoolean(), getEmbeddedLabel('Classic'))
+    classic!: boolean
 }
 
 @Model(task.class.TaskType, core.class.Doc, DOMAIN_TASK)
@@ -502,11 +508,25 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       ofAttribute: task.attribute.State,
-      label: task.string.StateActive,
+      label: task.string.StateUnstarted,
       icon: task.icon.TaskState,
       color: PaletteColorIndexes.Porpoise,
+      defaultStatusName: 'Todo',
+      order: 1
+    },
+    task.statusCategory.ToDo
+  )
+
+  builder.createDoc(
+    core.class.StatusCategory,
+    core.space.Model,
+    {
+      ofAttribute: task.attribute.State,
+      label: task.string.StateActive,
+      icon: task.icon.TaskState,
+      color: PaletteColorIndexes.Cerulean,
       defaultStatusName: 'New state',
-      order: 0
+      order: 2
     },
     task.statusCategory.Active
   )
@@ -520,7 +540,7 @@ export function createModel (builder: Builder): void {
       icon: task.icon.TaskState,
       color: PaletteColorIndexes.Grass,
       defaultStatusName: 'Won',
-      order: 0
+      order: 3
     },
     task.statusCategory.Won
   )
@@ -534,7 +554,7 @@ export function createModel (builder: Builder): void {
       icon: task.icon.TaskState,
       color: PaletteColorIndexes.Coin,
       defaultStatusName: 'Lost',
-      order: 0
+      order: 4
     },
     task.statusCategory.Lost
   )
@@ -618,7 +638,8 @@ export interface FixTaskResult {
 export async function fixTaskTypes (
   client: MigrationClient,
   descriptor: Ref<ProjectTypeDescriptor>,
-  dataFactory: (t: ProjectType) => Promise<FixTaskData[]>
+  dataFactory: (t: ProjectType) => Promise<FixTaskData[]>,
+  migrateTasks?: (projects: Project[], taskType: TaskType) => Promise<void>
 ): Promise<FixTaskResult> {
   const categoryObj = client.model.findObject(descriptor)
   if (categoryObj === undefined) {
@@ -680,12 +701,22 @@ export async function fixTaskTypes (
       )
     }
 
-    const dataTypes = await dataFactory(t)
+    const newTaskTypes = await dataFactory(t)
 
     const projects = await client.find<Project>(DOMAIN_SPACE, { type: t._id })
     resultProjects.push(...projects)
 
-    for (const data of dataTypes) {
+    for (const data of newTaskTypes) {
+      // Check and skip if already had task type for same class
+      const tt = await client.find<TaskType>(DOMAIN_TASK, {
+        _class: task.class.TaskType,
+        ofClass: data.ofClass,
+        parent: t._id
+      })
+      if (tt.length > 0) {
+        continue
+      }
+
       const taskTypeId: Ref<TaskType> = data._id ?? generateId()
       const descr = client.model.getObject(data.descriptor)
 
@@ -694,16 +725,16 @@ export async function fixTaskTypes (
         _class: data.statusClass
       })
 
-      const dStatuses = [...t.statuses.map((it) => it._id)]
+      const dStatuses: Ref<Status>[] = []
       const statusAttr = findStatusAttr(client.hierarchy, data.ofClass)
       // Ensure we have at leas't one item in every category.
       for (const c of data.statusCategories) {
         const category = typeof c === 'string' ? c : c.category
         const cat = await client.model.findOne(core.class.StatusCategory, { _id: category })
 
-        const st = statuses.find((it) => it.category === category)
+        const st = statuses.filter((it) => it.category === category)
         const newStatuses: Ref<Status>[] = []
-        if (st === undefined) {
+        if (st.length === 0 || typeof c === 'object') {
           if (typeof c === 'string') {
             // We need to add new status into missing category
             const statusId: Ref<Status> = generateId()
@@ -749,6 +780,8 @@ export async function fixTaskTypes (
                 })
                 newStatuses.push(statusId)
                 dStatuses.push(statusId)
+              } else {
+                dStatuses.push(st._id)
               }
 
               await client.update(
@@ -759,6 +792,12 @@ export async function fixTaskTypes (
                 { $push: { statuses: newStatuses.map((it) => ({ _id: it })) } }
               )
               t.statuses.push(...newStatuses.map((it) => ({ _id: it, taskType: taskTypeId })))
+            }
+          }
+        } else {
+          for (const sss of st.map((it) => it._id)) {
+            if (!dStatuses.includes(sss)) {
+              dStatuses.push(sss)
             }
           }
         }
@@ -830,11 +869,13 @@ export async function fixTaskTypes (
       )
       t.tasks.push(taskTypeId)
       // Update kind and target classId
+      const projectsToUpdate = projects.filter((it) => it.type === t._id)
       await client.update(
         DOMAIN_TASK,
-        { space: { $in: projects.map((it) => it._id) }, _class: data.ofClass },
+        { space: { $in: projectsToUpdate.map((it) => it._id) }, _class: data.ofClass },
         { $set: { kind: taskTypeId } }
       )
+      await migrateTasks?.(projectsToUpdate, taskType)
     }
 
     // We need to fix project statuses field, for proper icon calculation.

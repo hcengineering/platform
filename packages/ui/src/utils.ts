@@ -173,13 +173,18 @@ export function mouseAttractor (op: () => void, diff = 2): (evt: MouseEvent) => 
  * @returns {string} string with replaced URLs
  */
 export function replaceURLs (text: string): string {
-  return autolinker.link(text, {
-    urls: true,
-    phone: false,
-    email: false,
-    sanitizeHtml: true,
-    stripPrefix: false
-  })
+  try {
+    return autolinker.link(text, {
+      urls: true,
+      phone: false,
+      email: false,
+      sanitizeHtml: true,
+      stripPrefix: false
+    })
+  } catch (err: any) {
+    console.error(err)
+    return text
+  }
 }
 
 /**

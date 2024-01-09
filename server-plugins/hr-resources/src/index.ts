@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import contact, { Contact, Employee, PersonAccount, formatName, getName } from '@hcengineering/contact'
+import contact, { Contact, Employee, Person, PersonAccount, formatName, getName } from '@hcengineering/contact'
 import core, {
   Doc,
   Ref,
@@ -188,6 +188,29 @@ export async function OnDepartmentRemove (tx: Tx, control: TriggerControl): Prom
     )
   })
   return res
+}
+
+/**
+ * @public
+ */
+export async function OnEmployee (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const ctx = TxProcessor.extractTx(tx) as TxMixin<Person, Employee>
+
+  const person = (await control.findAll(contact.class.Person, { _id: ctx.objectId }))[0]
+  if (person === undefined) {
+    return []
+  }
+
+  const employee = control.hierarchy.as(person, ctx.mixin)
+  if (control.hierarchy.hasMixin(person, hr.mixin.Staff) || !employee.active) {
+    return []
+  }
+
+  return [
+    control.txFactory.createTxMixin(ctx.objectId, ctx.objectClass, ctx.objectSpace, hr.mixin.Staff, {
+      department: hr.ids.Head
+    })
+  ]
 }
 
 /**
@@ -422,6 +445,7 @@ export async function PublicHolidayTextPresenter (doc: Doc, control: TriggerCont
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
+    OnEmployee,
     OnRequestCreate,
     OnRequestUpdate,
     OnRequestRemove,

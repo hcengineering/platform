@@ -24,6 +24,7 @@
   import { getResource } from '@hcengineering/platform'
 
   import AppItem from './AppItem.svelte'
+  import preference from '@hcengineering/preference'
 
   export let active: Ref<Application> | undefined
   export let apps: Application[] = []
@@ -32,10 +33,16 @@
   let loaded: boolean = false
   let hiddenAppsIds: Array<Ref<Application>> = []
   const hiddenAppsIdsQuery = createQuery()
-  hiddenAppsIdsQuery.query(workbench.class.HiddenApplication, {}, (res) => {
-    hiddenAppsIds = res.map((r) => r.attachedTo)
-    loaded = true
-  })
+  hiddenAppsIdsQuery.query(
+    workbench.class.HiddenApplication,
+    {
+      space: preference.space.Preference
+    },
+    (res) => {
+      hiddenAppsIds = res.map((r) => r.attachedTo)
+      loaded = true
+    }
+  )
 
   $: filteredApps = apps.filter((it) => !hiddenAppsIds.includes(it._id))
   $: topApps = filteredApps.filter((it) => it.position === 'top')

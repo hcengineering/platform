@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { TxOperations, type Class, type Doc, type Ref } from '@hcengineering/core'
+import { TxOperations, type Class, type Doc, type Ref, toIdMap } from '@hcengineering/core'
 import {
   createOrUpdate,
   tryMigrate,
@@ -24,8 +24,9 @@ import {
 } from '@hcengineering/model'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import tags from '@hcengineering/model-tags'
-import { taskId } from '@hcengineering/task'
+import { type TaskType, taskId } from '@hcengineering/task'
 import task from './plugin'
+import { DOMAIN_TASK } from '.'
 
 /**
  * @public
@@ -36,6 +37,31 @@ export async function createSequence (tx: TxOperations, _class: Ref<Class<Doc>>)
       attachedTo: _class,
       sequence: 0
     })
+  }
+}
+
+async function reorderStates (_client: MigrationUpgradeClient): Promise<void> {
+  const client = new TxOperations(_client, core.account.System)
+  const states = toIdMap(await client.findAll(core.class.Status, {}))
+  const order = [
+    task.statusCategory.UnStarted,
+    task.statusCategory.ToDo,
+    task.statusCategory.Active,
+    task.statusCategory.Won,
+    task.statusCategory.Lost
+  ]
+  const taskTypes = await client.findAll(task.class.TaskType, {})
+  for (const taskType of taskTypes) {
+    const statuses = [...taskType.statuses].sort((a, b) => {
+      const aIndex = order.indexOf(states.get(a)?.category ?? task.statusCategory.UnStarted)
+      const bIndex = order.indexOf(states.get(b)?.category ?? task.statusCategory.UnStarted)
+      return aIndex - bIndex
+    })
+    try {
+      await client.diffUpdate(taskType, { statuses })
+    } catch (err: any) {
+      console.error(err)
+    }
   }
 }
 
@@ -92,6 +118,30 @@ export const taskOperation: MigrateOperation = {
         func: async (client) => {
           await client.update(DOMAIN_SPACE, { space: core.space.Model }, { space: core.space.Space })
         }
+      },
+      {
+        state: 'classicProjectTypes',
+        func: async (client) => {
+          await client.update(
+            DOMAIN_SPACE,
+            { _class: task.class.ProjectType, classic: { $exists: false } },
+            {
+              classic: true
+            }
+          )
+        }
+      },
+      {
+        state: 'fixIncorrectTaskTypeSpace',
+        func: async (client) => {
+          const taskTypes = await client.find<TaskType>(DOMAIN_TASK, {
+            _class: task.class.TaskType,
+            space: core.space.Model
+          })
+          for (const taskType of taskTypes) {
+            await client.update(DOMAIN_TASK, { _id: taskType._id }, { $set: { space: taskType.parent } })
+          }
+        }
       }
     ])
   },
@@ -113,6 +163,11 @@ export const taskOperation: MigrateOperation = {
       task.category.TaskTag
     )
 
-    await tryUpgrade(client, taskId, [])
+    await tryUpgrade(client, taskId, [
+      {
+        state: 'reorderStates',
+        func: reorderStates
+      }
+    ])
   }
 }

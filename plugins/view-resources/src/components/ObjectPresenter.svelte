@@ -37,7 +37,7 @@
   const docQuery = createQuery()
   let doc: Doc | undefined
 
-  $: if (value === undefined && _class != null) {
+  $: if (value === undefined && _class != null && objectId != null) {
     docQuery.query(_class, { _id: objectId }, (r) => {
       doc = r.shift()
     })

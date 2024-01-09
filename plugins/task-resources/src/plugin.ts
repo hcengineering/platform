@@ -75,7 +75,9 @@ export default mergeIds(taskId, task, {
     StatusPopupTitle: '' as IntlString,
     NameAlreadyExists: '' as IntlString,
     StatusChange: '' as IntlString,
-    TaskCreated: '' as IntlString
+    TaskCreated: '' as IntlString,
+    CreateProjectType: '' as IntlString,
+    ClassicProject: '' as IntlString
   },
   status: {
     AssigneeRequired: '' as IntlString

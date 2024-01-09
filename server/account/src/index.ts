@@ -20,7 +20,8 @@ import contact, {
   combineName,
   Employee,
   getAvatarColorForId,
-  Person
+  Person,
+  PersonAccount
 } from '@hcengineering/contact'
 import core, {
   AccountRole,
@@ -36,21 +37,14 @@ import core, {
   WorkspaceId
 } from '@hcengineering/core'
 import { consoleModelLogger, MigrateOperation, ModelLogger } from '@hcengineering/model'
-import platform, {
-  getMetadata,
-  Metadata,
-  PlatformError,
-  Plugin,
-  plugin,
-  Severity,
-  Status
-} from '@hcengineering/platform'
+import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
 import { cloneWorkspace } from '@hcengineering/server-backup'
 import { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin, { connect, initModel, upgradeModel } from '@hcengineering/server-tool'
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { Binary, Db, Filter, ObjectId } from 'mongodb'
 import fetch from 'node-fetch'
+import accountPlugin, { accountId } from './plugin'
 
 const WORKSPACE_COLLECTION = 'workspace'
 const ACCOUNT_COLLECTION = 'account'
@@ -60,21 +54,6 @@ const INVITE_COLLECTION = 'invite'
  * @public
  */
 export const ACCOUNT_DB = 'account'
-
-/**
- * @public
- */
-export const accountId = 'account' as Plugin
-
-/**
- * @public
- */
-const accountPlugin = plugin(accountId, {
-  metadata: {
-    FrontURL: '' as Metadata<string>,
-    SES_URL: '' as Metadata<string>
-  }
-})
 
 const getEndpoint = (): string => {
   const endpoint = getMetadata(toolPlugin.metadata.Endpoint)
@@ -433,25 +412,10 @@ async function sendConfirmation (productId: string, account: Account): Promise<v
 
   const link = concatLink(front, `/login/confirm?id=${token}`)
 
-  let text = `Спасибо за ваш интерес к Bold. Для завершения регистрации копируйте ссылку в адресную строку вашего браузера ${link}. С уважением, Команда Bold.`
-  let html = `<p>Здравствуйте,</p>
-  <p>Спасибо за ваш интерес к Bold. Для завершения регистрации пройдите по <a href=${link}>этой ссылке</a> или скопируйте ссылку ниже в адресную строку вашего браузера.</p>
-  <p>${link}</p>
-  <p>С уважением,</p>
-  <p>Команда Bold.</p>`
-  let subject = 'Подтвердите адрес электронной почты для регистрации на Bold.ru'
-
-  // A quick workaround for now to have confirmation email in english for ezqms.
-  // Remove as soon as sever i18n is there.
-  if (productId === 'ezqms') {
-    text = `Thank you for your interest in ezQMS. To complete the sign up process please copy the following link into your browser's URL bar ${link}. Regards, ezQMS Team.`
-    html = `<p>Hello,</p>
-    <p>Thank you for your interest in ezQMS. To complete the sign up process please follow <a href=${link}>this link</a> or copy the following link into your browser's URL bar.</p>
-    <p>${link}</p>
-    <p>Regards,</p>
-    <p>ezQMS Team.</p>`
-    subject = 'Confirm your email address to sign up for ezQMS'
-  }
+  const name = getMetadata(accountPlugin.metadata.ProductName)
+  const text = await translate(accountPlugin.string.ConfirmationText, { name, link })
+  const html = await translate(accountPlugin.string.ConfirmationHTML, { name, link })
+  const subject = await translate(accountPlugin.string.ConfirmationSubject, { name })
 
   if (sesURL !== undefined && sesURL !== '') {
     const to = account.email
@@ -730,7 +694,9 @@ export const createUserWorkspace =
       // Update last workspace time.
       await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: info._id }, { $set: { lastWorkspace: Date.now() } })
 
-      await assignWorkspace(db, productId, email, workspace)
+      const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
+      const shouldUpdateAccount = initWS !== undefined && (await getWorkspace(db, productId, initWS)) !== null
+      await assignWorkspace(db, productId, email, workspace, shouldUpdateAccount)
       await setRole(email, workspace, productId, AccountRole.Owner)
       const result = {
         endpoint: getEndpoint(),
@@ -841,7 +807,13 @@ export async function setRole (_email: string, workspace: string, productId: str
 /**
  * @public
  */
-export async function assignWorkspace (db: Db, productId: string, _email: string, workspace: string): Promise<void> {
+export async function assignWorkspace (
+  db: Db,
+  productId: string,
+  _email: string,
+  workspace: string,
+  shouldReplaceAccount: boolean = false
+): Promise<void> {
   const email = cleanEmail(_email)
   const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
   if (initWS !== undefined && initWS === workspace) {
@@ -850,7 +822,7 @@ export async function assignWorkspace (db: Db, productId: string, _email: string
   const { workspaceId, accountId } = await getWorkspaceAndAccount(db, productId, email, workspace)
   const account = await db.collection<Account>(ACCOUNT_COLLECTION).findOne({ _id: accountId })
 
-  if (account !== null) await createPersonAccount(account, productId, workspace)
+  if (account !== null) await createPersonAccount(account, productId, workspace, shouldReplaceAccount)
 
   // Add account into workspace.
   await db.collection(WORKSPACE_COLLECTION).updateOne({ _id: workspaceId }, { $addToSet: { accounts: accountId } })
@@ -885,13 +857,74 @@ async function createEmployee (ops: TxOperations, name: string, _email: string):
   return id
 }
 
-async function createPersonAccount (account: Account, productId: string, workspace: string): Promise<void> {
+async function replaceCurrentAccount (
+  ops: TxOperations,
+  account: Account,
+  currentAccount: PersonAccount,
+  name: string
+): Promise<void> {
+  await ops.update(currentAccount, { email: account.email })
+  const employee = await ops.findOne(contact.mixin.Employee, { _id: currentAccount.person as Ref<Employee> })
+  if (employee === undefined) {
+    // Employee was deleted, let's restore it.
+    const employeeId = await createEmployee(ops, name, account.email)
+
+    await ops.updateDoc(contact.class.PersonAccount, currentAccount.space, currentAccount._id, {
+      person: employeeId
+    })
+  } else {
+    const email = cleanEmail(account.email)
+    const gravatarId = buildGravatarId(email)
+    const hasGravatar = await checkHasGravatar(gravatarId)
+
+    await ops.update(employee, {
+      name,
+      avatar: hasGravatar
+        ? `${AvatarType.GRAVATAR}://${gravatarId}`
+        : `${AvatarType.COLOR}://${getAvatarColorForId(employee._id)}`,
+      ...(employee.active ? {} : { active: true })
+    })
+    const currentChannel = await ops.findOne(contact.class.Channel, {
+      attachedTo: employee._id,
+      provider: contact.channelProvider.Email
+    })
+    if (currentChannel === undefined) {
+      await ops.addCollection(
+        contact.class.Channel,
+        contact.space.Contacts,
+        employee._id,
+        contact.mixin.Employee,
+        'channels',
+        {
+          provider: contact.channelProvider.Email,
+          value: email
+        }
+      )
+    } else if (currentChannel.value !== email) {
+      await ops.update(currentChannel, { value: email })
+    }
+  }
+}
+
+async function createPersonAccount (
+  account: Account,
+  productId: string,
+  workspace: string,
+  shouldReplaceCurrent: boolean = false
+): Promise<void> {
   const connection = await connect(getTransactor(), getWorkspaceId(workspace, productId))
   try {
     const ops = new TxOperations(connection, core.account.System)
 
     const name = combineName(account.first, account.last)
     // Check if EmployeeAccoun is not exists
+    if (shouldReplaceCurrent) {
+      const currentAccount = await ops.findOne(contact.class.PersonAccount, {})
+      if (currentAccount !== undefined) {
+        await replaceCurrentAccount(ops, account, currentAccount, name)
+        return
+      }
+    }
     const existingAccount = await ops.findOne(contact.class.PersonAccount, { email: account.email })
     if (existingAccount === undefined) {
       const employee = await createEmployee(ops, name, account.email)
@@ -985,11 +1018,10 @@ export async function requestPassword (db: Db, productId: string, _email: string
 
   const link = concatLink(front, `/login/recovery?id=${token}`)
 
-  const text = `We received a request to reset the password for your account. To reset your password, please paste the following link in your web browser's address bar: ${link}. If you have not ordered a password recovery just ignore this letter.`
-  const html = `<p>We received a request to reset the password for your account. To reset your password, please click the link below: <a href=${link}>Reset password</a></p><p>
-  If the Reset password link above does not work, paste the following link in your web browser's address bar: ${link}
-</p><p>If you have not ordered a password recovery just ignore this letter.</p>`
-  const subject = 'Password recovery'
+  const text = await translate(accountPlugin.string.RecoveryText, { link })
+  const html = await translate(accountPlugin.string.RecoveryHTML, { link })
+  const subject = await translate(accountPlugin.string.RecoverySubject, {})
+
   const to = account.email
   await fetch(concatLink(sesURL, '/send'), {
     method: 'post',
@@ -1161,12 +1193,11 @@ export async function sendInvite (db: Db, productId: string, token: string, emai
   const inviteId = await getInviteLink(db, productId, token, exp, email, 1)
   const link = concatLink(front, `/login/join?inviteId=${inviteId.toString()}`)
 
-  const text = `You were invited to ${workspace.workspace}. To join please paste the following link in your web browser's address bar: ${link}. Link valid for ${expHours} hours.`
+  const ws = workspace.workspace
+  const text = await translate(accountPlugin.string.InviteText, { link, ws, expHours })
+  const html = await translate(accountPlugin.string.InviteHTML, { link, ws, expHours })
+  const subject = await translate(accountPlugin.string.InviteSubject, { ws })
 
-  const html = `<p>You were invited to ${workspace.workspace}. To join, please click the link below: <a href=${link}>Join</a></p><p>
-  If the invite link above does not work, paste the following link in your web browser's address bar: ${link}
-</p><p>Link valid for ${expHours} hours.</p>`
-  const subject = `Invite to ${workspace.workspace}`
   const to = email
   await fetch(concatLink(sesURL, '/send'), {
     method: 'post',
@@ -1257,4 +1288,5 @@ export function getMethods (
   }
 }
 
+export * from './plugin'
 export default accountPlugin

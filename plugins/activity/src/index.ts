@@ -243,7 +243,6 @@ export interface ActivityMessagesFilter extends Doc {
  */
 export interface ActivityDoc extends Class<Doc> {
   preposition?: IntlString
-  ignoreCollections?: string[]
 }
 
 /**
@@ -283,10 +282,16 @@ export interface SavedMessage extends Preference {
   attachedTo: Ref<ActivityMessage>
 }
 
+/**
+ * @public
+ */
+export interface IgnoreActivity extends Class<Doc> {}
+
 export default plugin(activityId, {
   mixin: {
     ActivityDoc: '' as Ref<Mixin<ActivityDoc>>,
-    ActivityAttributeUpdatesPresenter: '' as Ref<Mixin<ActivityAttributeUpdatesPresenter>>
+    ActivityAttributeUpdatesPresenter: '' as Ref<Mixin<ActivityAttributeUpdatesPresenter>>,
+    IgnoreActivity: '' as Ref<Mixin<IgnoreActivity>>
   },
   class: {
     TxViewlet: '' as Ref<Class<TxViewlet>>,

@@ -16,7 +16,6 @@
 import attachment, { Attachment } from '@hcengineering/attachment'
 import { MeasureContext, Ref } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
-import { Document } from '@hocuspocus/server'
 import { Doc as YDoc, applyUpdate, encodeStateAsUpdate } from 'yjs'
 
 import { Context } from '../context'
@@ -69,7 +68,7 @@ export class MinioStorageAdapter implements StorageAdapter {
     })
   }
 
-  async saveDocument (documentId: string, document: Document, context: Context): Promise<void> {
+  async saveDocument (documentId: string, document: YDoc, context: Context): Promise<void> {
     const { decodedToken, token } = context
 
     await this.ctx.with('save-document', {}, async (ctx) => {

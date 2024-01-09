@@ -14,7 +14,6 @@
 //
 
 import { MeasureContext, toWorkspaceString } from '@hcengineering/core'
-import { Document } from '@hocuspocus/server'
 import { Transformer } from '@hocuspocus/transformer'
 import { MongoClient } from 'mongodb'
 import { Doc as YDoc } from 'yjs'
@@ -72,7 +71,7 @@ export class MongodbStorageAdapter implements StorageAdapter {
     })
   }
 
-  async saveDocument (_documentId: string, _document: Document, _context: Context): Promise<void> {
+  async saveDocument (_documentId: string, _document: YDoc, _context: Context): Promise<void> {
     // do nothing, not supported
   }
 }

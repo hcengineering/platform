@@ -23,8 +23,8 @@
     getFocusManager,
     TooltipAlignment
   } from '@hcengineering/ui'
+  import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import EnumPopup from './EnumPopup.svelte'
-
   import core, { Ref, Class, DocumentQuery, Enum } from '@hcengineering/core'
   import { ObjectCreate } from '@hcengineering/presentation'
 
@@ -34,6 +34,8 @@
   export let focus = false
   export let create: ObjectCreate | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
+  export let kind: ButtonKind = 'no-border'
+  export let size: ButtonSize = 'small'
 
   const _class: Ref<Class<Enum>> = core.class.Enum
   const query: DocumentQuery<Enum> = {}
@@ -66,8 +68,8 @@
   {focus}
   {focusIndex}
   icon={IconFolder}
-  size={'small'}
-  kind={'no-border'}
+  {size}
+  {kind}
   showTooltip={{ label, direction: labelDirection }}
   on:click={handleClick}
 >

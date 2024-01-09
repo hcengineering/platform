@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type Client, type Doc, type Ref, type Space } from '@hcengineering/core'
+import { type StatusCategory, type Client, type Doc, type Ref, type Space } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
+import { type ProjectType } from '@hcengineering/task'
 import tracker, { trackerId, type IssueDraft } from '@hcengineering/tracker'
 import { type AnyComponent, type Location } from '@hcengineering/ui'
 import {
@@ -395,7 +396,8 @@ export default mergeIds(trackerId, tracker, {
     GetAllMilestones: '' as GetAllValuesFunc,
     GetVisibleFilters: '' as Resource<(filters: KeyFilter[], space?: Ref<Space>) => Promise<KeyFilter[]>>,
     IsProjectJoined: '' as Resource<(space: Space) => Promise<boolean>>,
-    IssueChatTitleProvider: '' as Resource<(object: Doc) => string>
+    IssueChatTitleProvider: '' as Resource<(object: Doc) => string>,
+    GetIssueStatusCategories: '' as Resource<(project: ProjectType) => Array<Ref<StatusCategory>>>
   },
   aggregation: {
     CreateComponentAggregationManager: '' as CreateAggregationManagerFunc,

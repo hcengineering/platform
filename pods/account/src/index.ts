@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import account, { ACCOUNT_DB, AccountMethod } from '@hcengineering/account'
-import platform, { Severity, Status, setMetadata } from '@hcengineering/platform'
+import account, { ACCOUNT_DB, AccountMethod, accountId } from '@hcengineering/account'
+import platform, { Severity, Status, addStringsLoader, setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
 import toolPlugin from '@hcengineering/server-tool'
 import cors from '@koa/cors'
@@ -24,6 +24,8 @@ import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
 import { MongoClient } from 'mongodb'
+import accountEn from '@hcengineering/account/lang/en.json'
+import accountRu from '@hcengineering/account/lang/ru.json'
 
 /**
  * @public
@@ -50,9 +52,24 @@ export function serveAccount (methods: Record<string, AccountMethod>, productId 
     process.exit(1)
   }
 
+  addStringsLoader(accountId, async (lang: string) => {
+    switch (lang) {
+      case 'en':
+        return accountEn
+      case 'ru':
+        return accountRu
+      default:
+        return accountEn
+    }
+  })
+
   const ses = process.env.SES_URL
   const frontURL = process.env.FRONT_URL
+  const productName = process.env.PRODUCT_NAME
+  const lang = process.env.LANGUAGE ?? 'en'
 
+  setMetadata(platform.metadata.locale, lang)
+  setMetadata(account.metadata.ProductName, productName)
   setMetadata(account.metadata.SES_URL, ses)
   setMetadata(account.metadata.FrontURL, frontURL)
 

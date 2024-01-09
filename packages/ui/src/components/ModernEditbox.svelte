@@ -13,7 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  export let label: string
+  import { IntlString, translate } from '@hcengineering/platform'
+  import Label from './Label.svelte'
+  import { themeStore } from '..'
+
+  export let label: IntlString
   export let value: string | undefined = undefined
   export let kind: 'default' | 'ghost' = 'default'
   export let size: 'small' | 'large' = 'small'
@@ -22,9 +26,14 @@
   export let password: boolean = false
   export let limit: number = 0
 
-  $: labeled = kind === 'default' && size === 'large'
-  $: placeholder = labeled ? ' ' : label
   $: maxlength = limit === 0 ? null : limit
+
+  let placeholderStr: string = ''
+  $: ph = translate(label, {}, $themeStore.language).then((r) => {
+    placeholderStr = r
+  })
+  $: labeled = kind === 'default' && size === 'large'
+  $: placeholder = labeled ? ' ' : placeholderStr
 </script>
 
 <label class="editbox-wrapper {kind} {size}" class:error class:disabled>
@@ -61,7 +70,7 @@
       on:input
     />
   {/if}
-  {#if labeled}<div class="font-regular-14 label">{label}</div>{/if}
+  {#if labeled}<div class="font-regular-14 label"><Label {label} /></div>{/if}
 </label>
 
 <style lang="scss">
