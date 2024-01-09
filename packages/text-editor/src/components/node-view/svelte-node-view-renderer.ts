@@ -47,6 +47,8 @@ class SvelteNodeView extends NodeView<SvelteNodeViewComponent, Editor, SvelteNod
 
   contentDOMElement!: HTMLElement | null
 
+  isEditable!: boolean
+
   override mount (): void {
     const props: SvelteNodeViewProps = {
       editor: this.editor,
@@ -64,6 +66,8 @@ class SvelteNodeView extends NodeView<SvelteNodeViewComponent, Editor, SvelteNod
       ...(this.options.componentProps ?? {})
     }
 
+    this.isEditable = this.editor.isEditable
+
     const contentAs = this.options.contentAs ?? (this.node.isInline ? 'span' : 'div')
     const contentClass = this.options.contentClass ?? `node-${this.node.type.name}`
 
@@ -77,6 +81,8 @@ class SvelteNodeView extends NodeView<SvelteNodeViewComponent, Editor, SvelteNod
         this.contentDOMElement = element
       }
     })
+
+    this.editor.on('update', this.handleEditorUpdate.bind(this))
 
     this.renderer = new SvelteRenderer(this.component, { element: target, props, context })
   }
@@ -126,9 +132,17 @@ class SvelteNodeView extends NodeView<SvelteNodeViewComponent, Editor, SvelteNod
     this.renderer.updateProps({ selected: false })
   }
 
+  handleEditorUpdate (): void {
+    if (this.isEditable !== this.editor.isEditable) {
+      this.isEditable = this.editor.isEditable
+      this.renderer.updateProps({ editor: this.editor })
+    }
+  }
+
   destroy (): void {
     this.renderer.destroy()
     this.contentDOMElement = null
+    this.editor.off('update', this.handleEditorUpdate.bind(this))
   }
 }
 
