@@ -65,7 +65,6 @@ export class ApplicationsPage extends CommonRecruitingPage {
   }
 
   async selectVacancy (name: string): Promise<void> {
-    await this.page.screenshot({ path: 'selectVacancy.png' });
     await this.buttonSpaceSelector.click()
     await this.selectMenuItem(this.page, name)
   }
