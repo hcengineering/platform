@@ -50,8 +50,60 @@
 
   const dispatch = createEventDispatcher()
 
+  const focussableElements =
+    'a:not([disabled]), button:not([disabled]), input[type=text]:not([disabled]), [tabindex]:not([disabled]):not([tabindex="-1"])'
+
   let okProcessing = false
   $: headerDivide = hideContent && numberOfBlocks > 1
+
+  function handleKeyDown (event: KeyboardEvent) {
+    const target = event.target as HTMLInputElement
+    const formElement = target.closest('form')
+
+    if (target && formElement) {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        event.preventDefault()
+        handleOkClick()
+      } else if (event.key === 'Enter') {
+        event.preventDefault()
+
+        if (target && target.form) {
+          var focussable = Array.prototype.filter.call(
+            target.form.querySelectorAll(focussableElements),
+            function (element) {
+              //check for visibility while always include the current activeElement
+              return element.offsetWidth > 0 || element.offsetHeight > 0 || element === target
+            }
+          )
+          const index = focussable.indexOf(target)
+
+          const nextInput = focussable[index + 1] || focussable[0]
+          if (nextInput) {
+            nextInput.focus()
+          }
+        }
+      }
+    }
+  }
+
+  function handleOkClick () {
+    if (canSave) {
+      if (okProcessing) {
+        return
+      }
+      okProcessing = true
+      const r = okAction()
+      if (r instanceof Promise) {
+        r.then(() => {
+          okProcessing = false
+          dispatch('close')
+        })
+      } else {
+        okProcessing = false
+        dispatch('close')
+      }
+    }
+  }
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
@@ -59,7 +111,7 @@
   id={label}
   class="antiCard {$deviceInfo.isMobile ? 'mobile' : 'dialog'} {width}"
   class:full={fullSize}
-  on:keydown
+  on:keydown={handleKeyDown}
   on:submit|preventDefault={() => {}}
   use:resizeObserver={() => {
     dispatch('changeContent')
@@ -159,22 +211,7 @@
           label={okLabel}
           kind={'primary'}
           size={'large'}
-          on:click={() => {
-            if (okProcessing) {
-              return
-            }
-            okProcessing = true
-            const r = okAction()
-            if (r instanceof Promise) {
-              r.then(() => {
-                okProcessing = false
-                dispatch('close')
-              })
-            } else {
-              okProcessing = false
-              dispatch('close')
-            }
-          }}
+          on:click={handleOkClick}
         />
       </div>
       <div class="buttons-group small-gap text-sm">
