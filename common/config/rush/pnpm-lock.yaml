@@ -707,6 +707,9 @@ dependencies:
   '@tiptap/extension-highlight':
     specifier: ^2.1.12
     version: 2.1.12(@tiptap/core@2.1.12)
+  '@tiptap/extension-history':
+    specifier: ^2.1.12
+    version: 2.1.12(@tiptap/core@2.1.12)(@tiptap/pm@2.1.12)
   '@tiptap/extension-link':
     specifier: ^2.1.12
     version: 2.1.12(@tiptap/core@2.1.12)(@tiptap/pm@2.1.12)
@@ -23650,7 +23653,7 @@ packages:
     dev: false
 
   file:projects/text-editor.tgz(@types/node@16.11.68)(bufferutil@4.0.7)(esbuild@0.16.17)(postcss-load-config@4.0.1)(postcss@8.4.31)(prosemirror-model@1.19.3)(ts-node@10.9.1):
-    resolution: {integrity: sha512-OTmONKS1vIIvQHrDVFHNsaVZopEiXGbimLMlkHpMj1sznAdusJITPsPbj9Q3YLvIc8VXNSlQeRzN2QlkwW2IYg==, tarball: file:projects/text-editor.tgz}
+    resolution: {integrity: sha512-QgUDUW3v5zIVHETcfC/UsoZ8EPeauNcSyGO+I/J6rXLG2ndtNKIWRdl7Herj480/Q6JjPjWmm5RTIRAnz8lZXQ==, tarball: file:projects/text-editor.tgz}
     id: file:projects/text-editor.tgz
     name: '@rush-temp/text-editor'
     version: 0.0.0
@@ -23665,6 +23668,7 @@ packages:
       '@tiptap/extension-gapcursor': 2.1.12(@tiptap/core@2.1.12)(@tiptap/pm@2.1.12)
       '@tiptap/extension-heading': 2.1.12(@tiptap/core@2.1.12)
       '@tiptap/extension-highlight': 2.1.12(@tiptap/core@2.1.12)
+      '@tiptap/extension-history': 2.1.12(@tiptap/core@2.1.12)(@tiptap/pm@2.1.12)
       '@tiptap/extension-link': 2.1.12(@tiptap/core@2.1.12)(@tiptap/pm@2.1.12)
       '@tiptap/extension-list-keymap': 2.1.12(@tiptap/core@2.1.12)
       '@tiptap/extension-mention': 2.1.12(@tiptap/core@2.1.12)(@tiptap/pm@2.1.12)(@tiptap/suggestion@2.1.12)
@@ -23735,7 +23739,7 @@ packages:
     dev: false
 
   file:projects/text.tgz(@types/node@16.11.68)(esbuild@0.16.17)(svelte@4.2.5)(ts-node@10.9.1):
-    resolution: {integrity: sha512-mAnt4uQfrjjGcqAXJI8y+sOq5joLxJAU4l8shfLkgdv0FJY+JcR7/lnT0cg79pAEySJ3WWb3RnXlyH+TtGejJQ==, tarball: file:projects/text.tgz}
+    resolution: {integrity: sha512-yBBmdVZ6t7OiE7WauaYvqDsgVsOUzS8W4sKslQ6EXa/gvDvnV3F/cjAMIvbH6B4w1bFOWoqgC25sqxO8HUaEOQ==, tarball: file:projects/text.tgz}
     id: file:projects/text.tgz
     name: '@rush-temp/text'
     version: 0.0.0
@@ -23744,6 +23748,7 @@ packages:
       '@tiptap/extension-gapcursor': 2.1.12(@tiptap/core@2.1.12)(@tiptap/pm@2.1.12)
       '@tiptap/extension-heading': 2.1.12(@tiptap/core@2.1.12)
       '@tiptap/extension-highlight': 2.1.12(@tiptap/core@2.1.12)
+      '@tiptap/extension-history': 2.1.12(@tiptap/core@2.1.12)(@tiptap/pm@2.1.12)
       '@tiptap/extension-link': 2.1.12(@tiptap/core@2.1.12)(@tiptap/pm@2.1.12)
       '@tiptap/extension-mention': 2.1.12(@tiptap/core@2.1.12)(@tiptap/pm@2.1.12)(@tiptap/suggestion@2.1.12)
       '@tiptap/extension-table': 2.1.12(@tiptap/core@2.1.12)(@tiptap/pm@2.1.12)

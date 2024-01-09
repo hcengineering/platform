@@ -37,6 +37,7 @@
     "@tiptap/extension-gapcursor": "^2.1.12",
     "@tiptap/extension-heading": "^2.1.12",
     "@tiptap/extension-highlight": "^2.1.12",
+    "@tiptap/extension-history": "^2.1.12",
     "@tiptap/extension-link": "^2.1.12",
     "@tiptap/extension-mention": "^2.1.12",
     "@tiptap/extension-table": "^2.1.12",

@@ -15,9 +15,9 @@
 
 import chunter, { Backlink } from '@hcengineering/chunter'
 import { Class, Data, Doc, Ref, Tx, TxFactory } from '@hcengineering/core'
-import { extractReferences, getHTML, parseHTML, serverExtensions } from '@hcengineering/text'
+import { ServerKit, extractReferences, getHTML, parseHTML } from '@hcengineering/text'
 
-const extensions = serverExtensions
+const extensions = [ServerKit]
 
 export function getBacklinks (
   backlinkId: Ref<Doc>,

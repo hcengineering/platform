@@ -15,7 +15,7 @@
 
 import { MeasureContext } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
-import { serverExtensions } from '@hcengineering/text'
+import { ServerKit } from '@hcengineering/text'
 import { Hocuspocus, onAuthenticatePayload } from '@hocuspocus/server'
 import bp from 'body-parser'
 import compression from 'compression'
@@ -72,6 +72,14 @@ export async function start (
     })
   )
 
+  const extensions = [
+    ServerKit.configure({
+      image: {
+        uploadUrl: config.UploadUrl
+      }
+    })
+  ]
+
   const extensionsCtx = ctx.newChild('extensions', {})
   const storageCtx = ctx.newChild('storage', {})
 
@@ -111,7 +119,7 @@ export async function start (
     extensions: [
       new ActionsExtension({
         ctx: extensionsCtx.newChild('actions', {}),
-        transformer: new HtmlTransformer(serverExtensions)
+        transformer: new HtmlTransformer(extensions)
       }),
       new StorageExtension({
         ctx: extensionsCtx.newChild('storage', {}),
@@ -121,12 +129,12 @@ export async function start (
             mongodb: new MongodbStorageAdapter(
               storageCtx.newChild('mongodb', {}),
               mongo,
-              new HtmlTransformer(serverExtensions)
+              new HtmlTransformer(extensions)
             ),
             platform: new PlatformStorageAdapter(
               storageCtx.newChild('platform', {}),
               config.TransactorUrl,
-              new HtmlTransformer(serverExtensions)
+              new HtmlTransformer(extensions)
             )
           },
           'minio'
