@@ -13,26 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DisplayActivityMessage } from '@hcengineering/activity'
   import view from '@hcengineering/view'
   import { getClient } from '@hcengineering/presentation'
-  import { Action, Component } from '@hcengineering/ui'
+  import { Component } from '@hcengineering/ui'
   import { Class, Doc, Ref } from '@hcengineering/core'
+  import { DisplayInboxNotification } from '@hcengineering/notification'
 
-  export let value: DisplayActivityMessage
-  export let showNotify: boolean = false
-  export let isHighlighted: boolean = false
-  export let isSelected: boolean = false
-  export let shouldScroll: boolean = false
-  export let embedded: boolean = false
-  export let withActions: boolean = true
-  export let showEmbedded = false
-  export let hideReplies = false
-  export let skipLabel = false
-  export let actions: Action[] = []
-
-  export let onClick: (() => void) | undefined = undefined
-  export let onReply: (() => void) | undefined = undefined
+  export let value: DisplayInboxNotification
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -41,22 +28,5 @@
 </script>
 
 {#if objectPresenter}
-  <Component
-    is={objectPresenter.presenter}
-    props={{
-      value,
-      showNotify,
-      skipLabel,
-      isHighlighted,
-      isSelected,
-      shouldScroll,
-      embedded,
-      withActions,
-      showEmbedded,
-      hideReplies,
-      actions,
-      onClick,
-      onReply
-    }}
-  />
+  <Component is={objectPresenter.presenter} props={{ value }} />
 {/if}

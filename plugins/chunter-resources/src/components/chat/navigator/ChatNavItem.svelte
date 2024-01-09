@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { Doc, Ref } from '@hcengineering/core'
-  import notification, { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
+  import notification, { ActivityInboxNotification, DocNotifyContext } from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Action, IconEdit } from '@hcengineering/ui'
@@ -43,7 +43,7 @@
 
   let threadMessages: ThreadMessage[] = []
 
-  $: inboxNotificationsStore = notificationClient.inboxNotifications
+  $: inboxNotificationsStore = notificationClient.activityInboxNotifications
 
   $: threadMessagesQuery.query(
     chunter.class.ThreadMessage,
@@ -57,7 +57,7 @@
 
   function hasNewMessages (
     context: DocNotifyContext,
-    notifications: InboxNotification[],
+    notifications: ActivityInboxNotification[],
     threadMessages: ThreadMessage[]
   ) {
     const { lastViewedTimestamp = 0, lastUpdateTimestamp = 0 } = context
@@ -66,9 +66,9 @@
       return true
     }
 
-    const threadMessagesIdsIds = threadMessages.map(({ _id }) => _id) as Ref<ActivityMessage>[]
+    const threadMessagesIds = threadMessages.map(({ _id }) => _id) as Ref<ActivityMessage>[]
 
-    return notifications.some(({ attachedTo, isViewed }) => threadMessagesIdsIds.includes(attachedTo) && !isViewed)
+    return notifications.some(({ attachedTo, isViewed }) => threadMessagesIds.includes(attachedTo) && !isViewed)
   }
 
   async function getItemActions (docNotifyContext: DocNotifyContext): Promise<Action[]> {

@@ -32,6 +32,7 @@
     "NewCollaborators": "Новые участники",
     "RemovedCollaborators": "Удалены участники",
     "Edited": "отредактировал(а)",
-    "Pinned": "Закреплено"
+    "Pinned": "Закреплено",
+    "Message": "Сообщение"
   }
 }

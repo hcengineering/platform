@@ -13,101 +13,31 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { InboxNotification, DocNotifyContext } from '@hcengineering/notification'
-  import { ActionContext, getClient } from '@hcengineering/presentation'
-  import { Class, Doc, Ref, WithLookup } from '@hcengineering/core'
-  import { getLocation, Label, location, navigate, Scroller } from '@hcengineering/ui'
+  import { DisplayInboxNotification } from '@hcengineering/notification'
+  import { ActionContext } from '@hcengineering/presentation'
+  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { Label, Scroller } from '@hcengineering/ui'
   import { IntlString } from '@hcengineering/platform'
-  import activity, { ActivityMessage, DisplayActivityMessage, DisplayDocUpdateMessage } from '@hcengineering/activity'
-  import { ActivityMessagePresenter } from '@hcengineering/activity-resources'
-  import chunter from '@hcengineering/chunter'
 
   import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
   import Filter from '../Filter.svelte'
-  import { getDisplayActivityMessagesByNotifications } from '../../utils'
+  import { getDisplayInboxNotifications } from '../../utils'
+  import { InboxNotificationsFilter } from '../../types'
+  import InboxNotificationPresenter from './InboxNotificationPresenter.svelte'
 
   export let label: IntlString
   export let _class: Ref<Class<Doc>> | undefined = undefined
 
-  let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
-  let filter: 'all' | 'read' | 'unread' = 'all'
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+  const inboxNotificationsByContextStore = inboxClient.inboxNotificationsByContext
 
-  const notificationsClient = InboxNotificationsClientImpl.getClient()
-  const client = getClient()
+  let displayNotifications: DisplayInboxNotification[] = []
+  let filter: InboxNotificationsFilter = 'all'
 
-  let docNotifyContextById: Map<Ref<DocNotifyContext>, DocNotifyContext> = new Map<
-  Ref<DocNotifyContext>,
-  DocNotifyContext
-  >()
-  let inboxNotificationByMessage: Map<Ref<ActivityMessage>, InboxNotification> = new Map<
-  Ref<ActivityMessage>,
-  InboxNotification
-  >()
-  let inboxNotifications: WithLookup<InboxNotification>[] = []
-
-  notificationsClient.docNotifyContexts.subscribe((res: DocNotifyContext[]) => {
-    docNotifyContextById = new Map(res.map((update) => [update._id, update]))
+  $: getDisplayInboxNotifications($inboxNotificationsByContextStore, filter, _class).then((res) => {
+    console.log('UPDATE')
+    displayNotifications = res
   })
-
-  notificationsClient.inboxNotifications.subscribe((res: InboxNotification[]) => {
-    inboxNotifications = res
-    inboxNotificationByMessage = new Map(res.map((notification) => [notification.attachedTo, notification]))
-  })
-
-  function markNotificationAsViewed (message: DisplayActivityMessage) {
-    const combinedIds =
-      message._class === activity.class.DocUpdateMessage
-        ? (message as DisplayDocUpdateMessage).combinedMessagesIds
-        : undefined
-    const allMessagesIds = [message._id, ...(combinedIds ?? [])]
-    const notifications = allMessagesIds
-      .map((id) => inboxNotificationByMessage.get(id))
-      .filter((n): n is InboxNotification => !!n)
-
-    notifications.forEach((notification) => {
-      client.update(notification, { isViewed: true })
-    })
-  }
-
-  location.subscribe((loc) => {
-    selectedMessageId = loc.path[4] as Ref<ActivityMessage> | undefined
-  })
-
-  function openDocActivity (_id: Ref<Doc>, thread: boolean) {
-    const loc = getLocation()
-    loc.path[4] = _id
-    loc.query = {
-      ...loc.query,
-      thread: `${thread}`
-    }
-    navigate(loc)
-  }
-
-  function handleMessageClicked (message: DisplayActivityMessage) {
-    if (message._class === chunter.class.ThreadMessage) {
-      openDocActivity(message._id, true)
-      selectedMessageId = message._id as Ref<ActivityMessage>
-    } else if (client.getHierarchy().isDerived(message.attachedToClass, activity.class.ActivityMessage)) {
-      openDocActivity(message.attachedTo, false)
-      selectedMessageId = message.attachedTo as Ref<ActivityMessage>
-    } else {
-      openDocActivity(message._id, false)
-      selectedMessageId = message._id
-    }
-    markNotificationAsViewed(message)
-  }
-
-  $: displayMessages = getDisplayActivityMessagesByNotifications(
-    inboxNotifications,
-    docNotifyContextById,
-    filter,
-    _class
-  )
-
-  function handleReply (message: ActivityMessage) {
-    openDocActivity(message._id, true)
-    selectedMessageId = message._id
-  }
 </script>
 
 <ActionContext
@@ -127,15 +57,8 @@
 
 <Scroller>
   <div class="content">
-    {#each displayMessages as message}
-      <ActivityMessagePresenter
-        value={message}
-        showNotify={!inboxNotificationByMessage.get(message._id)?.isViewed}
-        isSelected={message._id === selectedMessageId}
-        showEmbedded
-        onReply={() => { handleReply(message) }}
-        onClick={() => { handleMessageClicked(message) }}
-      />
+    {#each displayNotifications as notification}
+      <InboxNotificationPresenter value={notification} />
     {/each}
   </div>
 </Scroller>

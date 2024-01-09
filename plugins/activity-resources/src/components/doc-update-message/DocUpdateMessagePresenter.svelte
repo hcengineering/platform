@@ -25,7 +25,7 @@
   import core, { Account, AttachedDoc, Class, Collection, Doc, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Component, ShowMore } from '@hcengineering/ui'
+  import { Component, ShowMore, Action } from '@hcengineering/ui'
   import { AttributeModel } from '@hcengineering/view'
 
   import ActivityMessageTemplate from '../activity-message/ActivityMessageTemplate.svelte'
@@ -45,6 +45,7 @@
   export let withActions: boolean = true
   export let showEmbedded = false
   export let hideReplies = false
+  export let actions: Action[] = []
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -153,6 +154,7 @@
     {viewlet}
     {showEmbedded}
     {hideReplies}
+    {actions}
     {onClick}
     {onReply}
   >

@@ -31,6 +31,7 @@ import core, {
   MixinUpdate,
   Ref,
   RefTo,
+  Timestamp,
   Tx,
   TxCollectionCUD,
   TxCreateDoc,
@@ -41,9 +42,11 @@ import core, {
   TxUpdateDoc
 } from '@hcengineering/core'
 import notification, {
+  ActivityInboxNotification,
   ClassCollaborators,
   Collaborators,
   DocNotifyContext,
+  InboxNotification,
   NotificationProvider,
   NotificationType
 } from '@hcengineering/notification'
@@ -382,17 +385,15 @@ export async function getDocCollaborators (
   return Array.from(collaborators.values())
 }
 
-/**
- * @public
- */
-export async function pushInboxNotifications (
-  originTx: TxCUD<Doc>,
+async function pushInboxNotifications (
   control: TriggerControl,
   res: Tx[],
   targetUser: Ref<Account>,
   object: Doc,
   docNotifyContexts: DocNotifyContext[],
-  activityMessage: ActivityMessage,
+  data: Partial<Data<InboxNotification>>,
+  _class: Ref<Class<InboxNotification>>,
+  modifiedOn: Timestamp,
   shouldUpdateTimestamp = true
 ): Promise<void> {
   const docNotifyContext = docNotifyContexts.find(({ user }) => user === targetUser)
@@ -402,7 +403,53 @@ export async function pushInboxNotifications (
 
   let docNotifyContextId: Ref<DocNotifyContext>
 
-  const existNotifications = await control.findAll(notification.class.InboxNotification, {
+  if (docNotifyContext === undefined) {
+    const createContextTx = control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, object.space, {
+      user: targetUser,
+      attachedTo: object._id,
+      attachedToClass: object._class,
+      hidden: false,
+      lastUpdateTimestamp: shouldUpdateTimestamp ? modifiedOn : undefined
+    })
+    res.push(createContextTx)
+    docNotifyContextId = createContextTx.objectId
+  } else {
+    if (shouldUpdateTimestamp) {
+      res.push(
+        control.txFactory.createTxUpdateDoc(docNotifyContext._class, docNotifyContext.space, docNotifyContext._id, {
+          lastUpdateTimestamp: modifiedOn
+        })
+      )
+    }
+    docNotifyContextId = docNotifyContext._id
+  }
+
+  if (!isHidden) {
+    res.push(
+      control.txFactory.createTxCreateDoc(_class, object.space, {
+        user: targetUser,
+        isViewed: false,
+        docNotifyContext: docNotifyContextId,
+        ...data
+      })
+    )
+  }
+}
+
+/**
+ * @public
+ */
+export async function pushActivityInboxNotifications (
+  originTx: TxCUD<Doc>,
+  control: TriggerControl,
+  res: Tx[],
+  targetUser: Ref<Account>,
+  object: Doc,
+  docNotifyContexts: DocNotifyContext[],
+  activityMessage: ActivityMessage,
+  shouldUpdateTimestamp = true
+): Promise<void> {
+  const existNotifications = await control.findAll(notification.class.ActivityInboxNotification, {
     user: targetUser,
     attachedTo: activityMessage._id
   })
@@ -411,41 +458,24 @@ export async function pushInboxNotifications (
     return
   }
 
-  if (docNotifyContext === undefined) {
-    const createContextTx = control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, object.space, {
-      user: targetUser,
-      attachedTo: object._id,
-      attachedToClass: object._class,
-      hidden: false,
-      lastUpdateTimestamp: shouldUpdateTimestamp ? activityMessage.modifiedOn : undefined
-    })
-    res.push(createContextTx)
-    docNotifyContextId = createContextTx.objectId
-  } else {
-    if (shouldUpdateTimestamp) {
-      res.push(
-        control.txFactory.createTxUpdateDoc(docNotifyContext._class, docNotifyContext.space, docNotifyContext._id, {
-          lastUpdateTimestamp: activityMessage.modifiedOn
-        })
-      )
-    }
-    docNotifyContextId = docNotifyContext._id
+  const content = await getNotificationContent(originTx, targetUser, object, control)
+  const data: Partial<Data<ActivityInboxNotification>> = {
+    ...content,
+    attachedTo: activityMessage._id,
+    attachedToClass: activityMessage._class
   }
 
-  if (!isHidden) {
-    const content = await getNotificationContent(originTx, targetUser, object, control)
-
-    res.push(
-      control.txFactory.createTxCreateDoc(notification.class.InboxNotification, object.space, {
-        user: targetUser,
-        isViewed: false,
-        attachedTo: activityMessage._id,
-        attachedToClass: activityMessage._class,
-        docNotifyContext: docNotifyContextId,
-        ...content
-      })
-    )
-  }
+  await pushInboxNotifications(
+    control,
+    res,
+    targetUser,
+    object,
+    docNotifyContexts,
+    data,
+    notification.class.ActivityInboxNotification,
+    activityMessage.modifiedOn,
+    shouldUpdateTimestamp
+  )
 }
 
 async function getNotificationTxes (
@@ -464,7 +494,7 @@ async function getNotificationTxes (
   const notifyResult = await isShouldNotify(control, tx, originTx, object, target, isOwn, isSpace)
 
   if (notifyResult.allowed) {
-    await pushInboxNotifications(
+    await pushActivityInboxNotifications(
       originTx,
       control,
       res,
@@ -657,7 +687,15 @@ async function updateCollaboratorsMixin (
         attachedTo: tx.objectId
       })
       for (const collab of newCollabs) {
-        await pushInboxNotifications(originTx, control, res, collab, prevDoc, docNotifyContexts, activityMessage)
+        await pushActivityInboxNotifications(
+          originTx,
+          control,
+          res,
+          collab,
+          prevDoc,
+          docNotifyContexts,
+          activityMessage
+        )
       }
     }
   }
@@ -901,7 +939,7 @@ async function collaboratorDocHandler (
   return []
 }
 
-async function NotificationMessagesHandler (
+async function ActivityNotificationsHandler (
   tx: TxCollectionCUD<Doc, DocUpdateMessage>,
   control: TriggerControl
 ): Promise<Tx[]> {
@@ -935,16 +973,57 @@ export async function removeDocInboxNotifications (_id: Ref<ActivityMessage>, co
   )
 }
 
+async function OnActivityNotificationViewed (
+  tx: TxUpdateDoc<InboxNotification>,
+  control: TriggerControl
+): Promise<Tx[]> {
+  if (tx.objectClass !== notification.class.ActivityInboxNotification || tx.operations.isViewed !== true) {
+    return []
+  }
+
+  const inboxNotification = (
+    await control.findAll(notification.class.ActivityInboxNotification, {
+      _id: tx.objectId as Ref<ActivityInboxNotification>
+    })
+  )[0]
+
+  if (inboxNotification === undefined) {
+    return []
+  }
+
+  // Read reactions notifications when message is read
+  const { attachedTo, user } = inboxNotification
+
+  const reactionMessages = await control.findAll(activity.class.DocUpdateMessage, {
+    attachedTo,
+    objectClass: activity.class.Reaction
+  })
+
+  if (reactionMessages.length === 0) {
+    return []
+  }
+
+  const reactionNotifications = await control.findAll(notification.class.ActivityInboxNotification, {
+    attachedTo: { $in: reactionMessages.map(({ _id }) => _id) },
+    user
+  })
+
+  return reactionNotifications.map(({ _id, _class, space }) =>
+    control.txFactory.createTxUpdateDoc(_class, space, _id, { isViewed: true })
+  )
+}
+
 export * from './types'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
     OnChatMessageCreate,
-    NotificationMessagesHandler,
+    ActivityNotificationsHandler,
     OnAttributeCreate,
     OnAttributeUpdate,
-    OnBacklinkCreate
+    OnBacklinkCreate,
+    OnActivityNotificationViewed
   },
   function: {
     IsUserInFieldValue: isUserInFieldValue,

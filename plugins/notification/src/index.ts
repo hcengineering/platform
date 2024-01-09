@@ -215,9 +215,6 @@ export interface InboxNotification extends Doc {
   user: Ref<Account>
   isViewed: boolean
 
-  attachedTo: Ref<ActivityMessage>
-  attachedToClass: Ref<Class<ActivityMessage>>
-
   docNotifyContext: Ref<DocNotifyContext>
 
   // For browser notifications
@@ -226,6 +223,25 @@ export interface InboxNotification extends Doc {
   intlParams?: Record<string, string | number>
   intlParamsNotLocalized?: Record<string, IntlString>
 }
+
+export interface ActivityInboxNotification extends InboxNotification {
+  attachedTo: Ref<ActivityMessage>
+  attachedToClass: Ref<Class<ActivityMessage>>
+}
+
+export interface CommonInboxNotification extends InboxNotification {
+  title?: IntlString
+  message: IntlString
+  props?: Record<string, any>
+  icon?: Asset
+  iconProps?: Record<string, any>
+}
+
+export interface DisplayActivityInboxNotification extends ActivityInboxNotification {
+  combinedIds: Ref<ActivityInboxNotification>[]
+}
+
+export type DisplayInboxNotification = DisplayActivityInboxNotification | InboxNotification
 
 /**
  * @public
@@ -250,12 +266,14 @@ export interface InboxNotificationsClient {
   docNotifyContextByDoc: Writable<Map<Ref<Doc>, DocNotifyContext>>
   docNotifyContexts: Writable<DocNotifyContext[]>
   inboxNotifications: Writable<InboxNotification[]>
+  activityInboxNotifications: Readable<ActivityInboxNotification[]>
   inboxNotificationsByContext: Readable<Map<Ref<DocNotifyContext>, InboxNotification[]>>
   readDoc: (_id: Ref<Doc>) => Promise<void>
   forceReadDoc: (_id: Ref<Doc>, _class: Ref<Class<Doc>>) => Promise<void>
   readMessages: (ids: Ref<ActivityMessage>[]) => Promise<void>
-  unreadMessages: (ids: Array<Ref<ActivityMessage>>) => Promise<void>
-  deleteMessagesNotifications: (ids: Array<Ref<ActivityMessage>>) => Promise<void>
+  readNotifications: (ids: Array<Ref<InboxNotification>>) => Promise<void>
+  unreadNotifications: (ids: Array<Ref<InboxNotification>>) => Promise<void>
+  deleteNotifications: (ids: Array<Ref<InboxNotification>>) => Promise<void>
 }
 
 /**
@@ -282,7 +300,9 @@ const notification = plugin(notificationId, {
     NotificationGroup: '' as Ref<Class<NotificationGroup>>,
     NotificationPreferencesGroup: '' as Ref<Class<NotificationPreferencesGroup>>,
     DocNotifyContext: '' as Ref<Class<DocNotifyContext>>,
-    InboxNotification: '' as Ref<Class<InboxNotification>>
+    InboxNotification: '' as Ref<Class<InboxNotification>>,
+    ActivityInboxNotification: '' as Ref<Class<ActivityInboxNotification>>,
+    CommonInboxNotification: '' as Ref<Class<CommonInboxNotification>>
   },
   ids: {
     NotificationSettings: '' as Ref<Doc>,
@@ -299,7 +319,6 @@ const notification = plugin(notificationId, {
   },
   component: {
     Inbox: '' as AnyComponent,
-    NewInbox: '' as AnyComponent,
     NotificationPresenter: '' as AnyComponent,
     NotificationCollaboratorsChanged: '' as AnyComponent,
     DocNotifyContextPresenter: '' as AnyComponent

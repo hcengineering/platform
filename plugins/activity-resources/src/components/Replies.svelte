@@ -17,8 +17,9 @@
   import { personByIdStore, Avatar } from '@hcengineering/contact-resources'
   import { Doc, IdMap, Ref, WithLookup } from '@hcengineering/core'
   import { getLocation, Label, navigate, TimeSince } from '@hcengineering/ui'
-  import { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
+  import { ActivityMessage } from '@hcengineering/activity'
   import notification, {
+    ActivityInboxNotification,
     DocNotifyContext,
     InboxNotification,
     InboxNotificationsClient
@@ -62,13 +63,8 @@
 
     return (inboxNotificationsByContext?.get(context._id) ?? [])
       .filter((notification) => {
-        if (notification.attachedToClass !== activity.class.DocUpdateMessage) {
-          return true
-        }
-
-        const attachedTo = notification.$lookup?.attachedTo as DocUpdateMessage | undefined
-
-        return attachedTo?.updateCollection !== 'reactions'
+        const activityNotifications = notification as ActivityInboxNotification
+        return activityNotifications.attachedToClass !== activity.class.DocUpdateMessage
       })
       .some(({ isViewed }) => !isViewed)
   }

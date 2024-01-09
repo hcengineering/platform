@@ -144,11 +144,12 @@ export default plugin(serverNotificationId, {
   },
   trigger: {
     OnBacklinkCreate: '' as Resource<TriggerFunc>,
-    NotificationMessagesHandler: '' as Resource<TriggerFunc>,
+    ActivityNotificationsHandler: '' as Resource<TriggerFunc>,
     OnAttributeCreate: '' as Resource<TriggerFunc>,
     OnAttributeUpdate: '' as Resource<TriggerFunc>,
     OnReactionChanged: '' as Resource<TriggerFunc>,
-    OnChatMessageCreate: '' as Resource<TriggerFunc>
+    OnChatMessageCreate: '' as Resource<TriggerFunc>,
+    OnActivityNotificationViewed: '' as Resource<TriggerFunc>
   },
   function: {
     IsUserInFieldValue: '' as TypeMatchFunc,

@@ -31,7 +31,8 @@ export default mergeIds(notificationId, notification, {
     Archive: '' as IntlString,
     MarkAsUnread: '' as IntlString,
     MarkAsRead: '' as IntlString,
-    ChangeCollaborators: '' as IntlString
+    ChangeCollaborators: '' as IntlString,
+    Message: '' as IntlString
   },
   app: {
     Notification: '' as Ref<Application>,
@@ -47,12 +48,13 @@ export default mergeIds(notificationId, notification, {
   },
   component: {
     NotificationSettings: '' as AnyComponent,
-    InboxAside: '' as AnyComponent
+    InboxAside: '' as AnyComponent,
+    ActivityInboxNotificationPresenter: '' as AnyComponent,
+    CommonInboxNotificationPresenter: '' as AnyComponent
   },
   function: {
     HasMarkAsUnreadAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     HasMarkAsReadAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
-    HasDeleteNotificationAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     HasDocNotifyContextPinAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     HasDocNotifyContextUnpinAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
   },

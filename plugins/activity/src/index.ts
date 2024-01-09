@@ -119,7 +119,7 @@ export interface ActivityMessage extends AttachedDoc {
   reactions?: number
 }
 
-export type DisplayActivityMessage = DisplayDocUpdateMessage | ActivityMessage | ActivityInfoMessage
+export type DisplayActivityMessage = DisplayDocUpdateMessage | ActivityMessage
 
 export interface DisplayDocUpdateMessage extends DocUpdateMessage {
   previousMessages?: DocUpdateMessage[]

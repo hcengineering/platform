@@ -24,6 +24,8 @@ import TxDmCreation from './components/activity/TxDmCreation.svelte'
 import InboxAside from './components/inbox/InboxAside.svelte'
 import DocNotifyContextPresenter from './components/DocNotifyContextPresenter.svelte'
 import NotificationCollaboratorsChanged from './components/NotificationCollaboratorsChanged.svelte'
+import ActivityInboxNotificationPresenter from './components/inbox/ActivityInboxNotificationPresenter.svelte'
+import CommonInboxNotificationPresenter from './components/inbox/CommonInboxNotificationPresenter.svelte'
 import {
   unsubscribe,
   resolveLocation,
@@ -32,7 +34,6 @@ import {
   deleteInboxNotification,
   hasMarkAsUnreadAction,
   hasMarkAsReadAction,
-  hasDeleteNotificationAction,
   hasDocNotifyContextPinAction,
   isDocNotifyContextHidden,
   hasDocNotifyContextUnpinAction,
@@ -54,11 +55,13 @@ export { default as BrowserNotificatator } from './components/BrowserNotificatat
 export default async (): Promise<Resources> => ({
   component: {
     Inbox,
+    InboxAside,
     NotificationPresenter,
     NotificationSettings,
-    InboxAside,
     NotificationCollaboratorsChanged,
-    DocNotifyContextPresenter
+    DocNotifyContextPresenter,
+    ActivityInboxNotificationPresenter,
+    CommonInboxNotificationPresenter
   },
   activity: {
     TxCollaboratorsChange,
@@ -67,7 +70,6 @@ export default async (): Promise<Resources> => ({
   function: {
     HasMarkAsUnreadAction: hasMarkAsUnreadAction,
     HasMarkAsReadAction: hasMarkAsReadAction,
-    HasDeleteNotificationAction: hasDeleteNotificationAction,
     // eslint-disable-next-line @typescript-eslint/unbound-method
     GetInboxNotificationsClient: InboxNotificationsClientImpl.getClient,
     HasDocNotifyContextPinAction: hasDocNotifyContextPinAction,

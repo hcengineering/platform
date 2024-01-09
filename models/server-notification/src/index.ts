@@ -61,11 +61,19 @@ export function createModel (builder: Builder): void {
   builder.createModel(THTMLPresenter, TTextPresenter, TTypeMatch, TNotificationPresenter)
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverNotification.trigger.NotificationMessagesHandler,
+    trigger: serverNotification.trigger.ActivityNotificationsHandler,
     txMatch: {
       _class: core.class.TxCollectionCUD,
       'tx._class': core.class.TxCreateDoc,
       'tx.objectClass': activity.class.DocUpdateMessage
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverNotification.trigger.OnActivityNotificationViewed,
+    txMatch: {
+      _class: core.class.TxUpdateDoc,
+      objectClass: notification.class.ActivityInboxNotification
     }
   })
 

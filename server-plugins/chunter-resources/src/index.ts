@@ -46,7 +46,11 @@ import core, {
 import notification, { NotificationContent } from '@hcengineering/notification'
 import { getMetadata, IntlString } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
-import { getDocCollaborators, getMixinTx, pushInboxNotifications } from '@hcengineering/server-notification-resources'
+import {
+  getDocCollaborators,
+  getMixinTx,
+  pushActivityInboxNotifications
+} from '@hcengineering/server-notification-resources'
 import { workbenchId } from '@hcengineering/workbench'
 import { stripTags } from '@hcengineering/text'
 import { Person, PersonAccount } from '@hcengineering/contact'
@@ -441,7 +445,15 @@ export async function OnDirectMessageSent (originTx: Tx, control: TriggerControl
 
     if (anotherPerson == null) return []
 
-    await pushInboxNotifications(dmCreationTx, control, res, anotherPerson, directChannel, notifyContexts, message)
+    await pushActivityInboxNotifications(
+      dmCreationTx,
+      control,
+      res,
+      anotherPerson,
+      directChannel,
+      notifyContexts,
+      message
+    )
   } else if (notifyContext.hidden) {
     res.push(
       control.txFactory.createTxUpdateDoc(notifyContext._class, notifyContext.space, notifyContext._id, {

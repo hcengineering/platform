@@ -20,72 +20,96 @@ import {
   getCurrentAccount,
   type Ref,
   SortingOrder,
-  type TxOperations,
-  type WithLookup
+  type TxOperations
 } from '@hcengineering/core'
 import notification, {
+  type ActivityInboxNotification,
   type Collaborators,
+  type DisplayActivityInboxNotification,
+  type DisplayInboxNotification,
   type DocNotifyContext,
   inboxId,
   type InboxNotification
 } from '@hcengineering/notification'
 import { getClient } from '@hcengineering/presentation'
 import { get } from 'svelte/store'
-import { getCurrentLocation, type Location, type ResolvedLocation } from '@hcengineering/ui'
-import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
+import { type Location, type ResolvedLocation } from '@hcengineering/ui'
 import activity, {
   type ActivityMessage,
-  type DisplayActivityMessage,
   type DisplayDocUpdateMessage,
   type DocUpdateMessage
 } from '@hcengineering/activity'
 import { activityMessagesComparator, combineActivityMessages } from '@hcengineering/activity-resources'
 
-function insideInbox (): boolean {
-  const loc = getCurrentLocation()
+import { type InboxNotificationsFilter } from './types'
+import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
 
-  return loc.path[2] === inboxId
+/**
+ * @public
+ */
+export async function hasMarkAsUnreadAction (doc: DisplayInboxNotification): Promise<boolean> {
+  const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
+
+  const combinedIds =
+    doc._class === notification.class.ActivityInboxNotification
+      ? (doc as DisplayActivityInboxNotification).combinedIds
+      : [doc._id]
+
+  return get(inboxNotificationsClient.inboxNotifications).some(
+    ({ _id, isViewed }) => combinedIds.includes(_id) && isViewed
+  )
+}
+
+export async function hasMarkAsReadAction (doc: DisplayInboxNotification): Promise<boolean> {
+  const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
+
+  const combinedIds =
+    doc._class === notification.class.ActivityInboxNotification
+      ? (doc as DisplayActivityInboxNotification).combinedIds
+      : [doc._id]
+
+  return get(inboxNotificationsClient.inboxNotifications).some(
+    ({ _id, isViewed }) => combinedIds.includes(_id) && !isViewed
+  )
 }
 
 /**
  * @public
  */
-export async function hasMarkAsUnreadAction (message: DisplayActivityMessage): Promise<boolean> {
-  if (!insideInbox()) {
-    return false
-  }
-
+export async function markAsReadInboxNotification (doc: DisplayInboxNotification): Promise<void> {
   const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
-  const combinedIds =
-    message._class === activity.class.DocUpdateMessage
-      ? (message as DisplayDocUpdateMessage).combinedMessagesIds
-      : undefined
-  const ids: Array<Ref<ActivityMessage>> = [message._id, ...(combinedIds ?? [])]
 
-  return get(inboxNotificationsClient.inboxNotifications).some(
-    ({ attachedTo, isViewed }) => ids.includes(attachedTo) && isViewed
-  )
+  const ids =
+    doc._class === notification.class.ActivityInboxNotification
+      ? (doc as DisplayActivityInboxNotification).combinedIds
+      : [doc._id]
+
+  await inboxNotificationsClient.readNotifications(ids)
 }
 
-export async function hasMarkAsReadAction (message: DisplayActivityMessage): Promise<boolean> {
-  if (!insideInbox()) {
-    return false
-  }
-
+/**
+ * @public
+ */
+export async function markAsUnreadInboxNotification (doc: DisplayInboxNotification): Promise<void> {
   const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
-  const combinedIds =
-    message._class === activity.class.DocUpdateMessage
-      ? (message as DisplayDocUpdateMessage).combinedMessagesIds
-      : undefined
-  const ids: Array<Ref<ActivityMessage>> = [message._id, ...(combinedIds ?? [])]
 
-  return get(inboxNotificationsClient.inboxNotifications).some(
-    ({ attachedTo, isViewed }) => ids.includes(attachedTo) && !isViewed
-  )
+  const ids =
+    doc._class === notification.class.ActivityInboxNotification
+      ? (doc as DisplayActivityInboxNotification).combinedIds
+      : [doc._id]
+
+  await inboxNotificationsClient.unreadNotifications(ids)
 }
 
-export async function hasDeleteNotificationAction (): Promise<boolean> {
-  return insideInbox()
+export async function deleteInboxNotification (doc: DisplayInboxNotification): Promise<void> {
+  const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
+
+  const ids =
+    doc._class === notification.class.ActivityInboxNotification
+      ? (doc as DisplayActivityInboxNotification).combinedIds
+      : [doc._id]
+
+  await inboxNotificationsClient.deleteNotifications(ids)
 }
 
 export async function hasDocNotifyContextPinAction (docNotifyContext: DocNotifyContext): Promise<boolean> {
@@ -187,34 +211,6 @@ export async function subscribe (docClass: Ref<Class<Doc>>, docId: Ref<Doc>): Pr
   await updateMeInCollaborators(client, docClass, docId, OpWithMe.Add)
 }
 
-/**
- * @public
- */
-export async function markAsReadInboxNotification (message: DisplayActivityMessage): Promise<void> {
-  const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
-  const combinedIds =
-    message._class === activity.class.DocUpdateMessage
-      ? (message as DisplayDocUpdateMessage).combinedMessagesIds
-      : undefined
-  const ids: Array<Ref<ActivityMessage>> = [message._id, ...(combinedIds ?? [])]
-
-  await inboxNotificationsClient.readMessages(ids)
-}
-
-/**
- * @public
- */
-export async function markAsUnreadInboxNotification (message: DisplayActivityMessage): Promise<void> {
-  const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
-  const combinedIds =
-    message._class === activity.class.DocUpdateMessage
-      ? (message as DisplayDocUpdateMessage).combinedMessagesIds
-      : undefined
-  const ids: Array<Ref<ActivityMessage>> = [message._id, ...(combinedIds ?? [])]
-
-  await inboxNotificationsClient.unreadMessages(ids)
-}
-
 export async function pinDocNotifyContext (object: DocNotifyContext): Promise<void> {
   const client = getClient()
 
@@ -229,17 +225,6 @@ export async function unpinDocNotifyContext (object: DocNotifyContext): Promise<
   await client.updateDoc(object._class, object.space, object._id, {
     isPinned: false
   })
-}
-
-export async function deleteInboxNotification (message: DisplayActivityMessage): Promise<void> {
-  const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
-  const combinedIds =
-    message._class === activity.class.DocUpdateMessage
-      ? (message as DisplayDocUpdateMessage).combinedMessagesIds
-      : undefined
-  const ids: Array<Ref<ActivityMessage>> = [message._id, ...(combinedIds ?? [])]
-
-  await inboxNotificationsClient.deleteMessagesNotifications(ids)
 }
 
 export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
@@ -319,33 +304,41 @@ async function generateLocation (loc: Location, _id: Ref<ActivityMessage>): Prom
   }
 }
 
-export function getDisplayActivityMessagesByNotifications (
-  inboxNotifications: Array<WithLookup<InboxNotification>>,
-  docNotifyContextById: Map<Ref<DocNotifyContext>, DocNotifyContext>,
-  filter: 'all' | 'read' | 'unread',
+export async function getDisplayInboxNotifications (
+  notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>,
+  filter: InboxNotificationsFilter,
   objectClass?: Ref<Class<Doc>>
-): DisplayActivityMessage[] {
-  const messages = inboxNotifications
-    .filter(({ docNotifyContext, isViewed }) => {
-      const update = docNotifyContextById.get(docNotifyContext)
-      const isVisible = update !== undefined && !update.hidden
-
-      if (!isVisible) {
-        return false
-      }
-
+): Promise<DisplayInboxNotification[]> {
+  const client = getClient()
+  const filteredNotifications = Array.from(notificationsByContext.values())
+    .flat()
+    .filter(({ isViewed }) => {
       switch (filter) {
-        case 'unread':
-          return !isViewed
         case 'all':
           return true
+        case 'unread':
+          return !isViewed
         case 'read':
           return !!isViewed
+        default:
+          return false
       }
-
-      return false
     })
-    .map(({ $lookup }) => $lookup?.attachedTo)
+
+  const activityNotifications = filteredNotifications.filter(
+    (n): n is ActivityInboxNotification => n._class === notification.class.ActivityInboxNotification
+  )
+  const displayNotifications: DisplayInboxNotification[] = filteredNotifications.filter(
+    ({ _class }) => _class !== notification.class.ActivityInboxNotification
+  )
+
+  const messages: Array<ActivityMessage | undefined> = await Promise.all(
+    activityNotifications.map(async (activityNotification) =>
+      await client.findOne(activity.class.ActivityMessage, { _id: activityNotification.attachedTo })
+    )
+  )
+
+  const filteredMessages = messages
     .filter((message): message is ActivityMessage => {
       if (message === undefined) {
         return false
@@ -361,5 +354,39 @@ export function getDisplayActivityMessagesByNotifications (
     })
     .sort(activityMessagesComparator)
 
-  return combineActivityMessages(messages, SortingOrder.Descending)
+  const combinedMessages = combineActivityMessages(filteredMessages, SortingOrder.Descending)
+
+  for (const message of combinedMessages) {
+    if (message._class === activity.class.DocUpdateMessage) {
+      const displayMessage = message as DisplayDocUpdateMessage
+      const ids: Array<Ref<ActivityMessage>> = displayMessage.combinedMessagesIds ?? [displayMessage._id]
+      const activityNotification = activityNotifications.find(({ attachedTo }) => attachedTo === message._id)
+
+      if (activityNotification === undefined) {
+        continue
+      }
+
+      const displayNotification = {
+        ...activityNotification,
+        combinedIds: activityNotifications.filter(({ attachedTo }) => ids.includes(attachedTo)).map(({ _id }) => _id)
+      }
+
+      displayNotifications.push(displayNotification)
+    } else {
+      const activityNotification = activityNotifications.find(({ attachedTo }) => attachedTo === message._id)
+      if (activityNotification !== undefined) {
+        displayNotifications.push({
+          ...activityNotification,
+          combinedIds: [activityNotification._id]
+        })
+      }
+    }
+  }
+
+  displayNotifications.sort(
+    (notification1, notification2) =>
+      (notification2.createdOn ?? notification2.modifiedOn) - (notification1.createdOn ?? notification1.modifiedOn)
+  )
+
+  return displayNotifications
 }
