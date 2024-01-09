@@ -68,11 +68,10 @@
         event.preventDefault()
 
         const focussable = (
-          Array.from(formElement?.querySelectorAll(focussableElements) ?? []) as HTMLElement[]
+          Array.from(formElement?.querySelectorAll(focussableElements) as NodeListOf<HTMLElement>)
         ).filter((element) => element.offsetWidth > 0 || element.offsetHeight > 0 || element === target)
         
         const index = focussable.indexOf(target)
-
         const nextInput = focussable[index + 1] || focussable[0]
         if (nextInput) {
           nextInput.focus()
