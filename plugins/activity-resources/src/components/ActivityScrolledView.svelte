@@ -51,6 +51,7 @@
   const client = getClient()
   const messagesQuery = createQuery()
 
+  let prevMessagesLength = 0
   let messages: DisplayActivityMessage[] = []
   let displayMessages: DisplayActivityMessage[] = []
   let filters: ActivityMessagesFilter[] = []
@@ -81,6 +82,7 @@
     _class,
     { attachedTo: object._id },
     (result: ActivityMessage[]) => {
+      prevMessagesLength = messages.length
       messages = combineActivityMessages(result)
       isLoading = false
     },
@@ -198,7 +200,6 @@
     const lastTimestamp = messages[messages.length - 1].createdOn ?? 0
 
     if (notifyContext !== undefined && (notifyContext.lastViewedTimestamp ?? 0) < lastTimestamp) {
-      console.log({ lastTimestamp })
       client.update(notifyContext, { lastViewedTimestamp: lastTimestamp })
     }
   }
@@ -290,6 +291,10 @@
 
   function handleMessageSent () {
     scrollToBottom(markViewportInitialized)
+  }
+
+  $: if (isViewportInitialized && messages.length > prevMessagesLength) {
+    setTimeout(() => { readViewportMessages() }, 100)
   }
 </script>
 
