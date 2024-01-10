@@ -197,6 +197,8 @@
     padding: 0.75rem 0.75rem 0.75rem 1.25rem;
     border-radius: 8px;
     gap: 1rem;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
 
     &.clickable {
       cursor: pointer;
@@ -240,7 +242,7 @@
     }
 
     &:hover:not(.embedded) {
-      background-color: var(--highlight-hover);
+      border: 1px solid var(--highlight-hover);
     }
   }
 
