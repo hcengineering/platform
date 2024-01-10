@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { get } from 'svelte/store'
 import {
   type Class,
   type Doc,
@@ -32,7 +33,6 @@ import notification, {
   type InboxNotification
 } from '@hcengineering/notification'
 import { getClient } from '@hcengineering/presentation'
-import { get } from 'svelte/store'
 import { type Location, type ResolvedLocation } from '@hcengineering/ui'
 import activity, {
   type ActivityMessage,
@@ -333,8 +333,9 @@ export async function getDisplayInboxNotifications (
   )
 
   const messages: Array<ActivityMessage | undefined> = await Promise.all(
-    activityNotifications.map(async (activityNotification) =>
-      await client.findOne(activity.class.ActivityMessage, { _id: activityNotification.attachedTo })
+    activityNotifications.map(
+      async (activityNotification) =>
+        await client.findOne(activity.class.ActivityMessage, { _id: activityNotification.attachedTo })
     )
   )
 

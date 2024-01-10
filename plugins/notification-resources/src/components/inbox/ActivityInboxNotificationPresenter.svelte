@@ -27,7 +27,7 @@
 
   import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
   import { getActions } from '@hcengineering/view-resources'
-    import { getResource } from '@hcengineering/platform'
+  import { getResource } from '@hcengineering/platform'
 
   export let value: DisplayActivityInboxNotification
 

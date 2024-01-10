@@ -294,7 +294,9 @@
   }
 
   $: if (isViewportInitialized && messages.length > prevMessagesLength) {
-    setTimeout(() => { readViewportMessages() }, 100)
+    setTimeout(() => {
+      readViewportMessages()
+    }, 100)
   }
 </script>
 
