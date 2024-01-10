@@ -175,6 +175,7 @@
         <ChatMessageInput
           bind:this={refInput}
           chatMessage={value}
+          shouldSaveDraft={false}
           {object}
           on:submit={() => {
             isEditing = false
