@@ -22,9 +22,10 @@
     Scroller,
     deviceOptionsStore as deviceInfo,
     resizeObserver,
-    IconBack
+    IconBack,
+    getFocusManager
   } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
   import presentation from '..'
   import IconForward from './icons/Forward.svelte'
 
@@ -50,31 +51,24 @@
 
   const dispatch = createEventDispatcher()
 
-  const focussableElements =
-    'a:not([disabled]), button:not([disabled]), input[type=text]:not([disabled]), [tabindex]:not([disabled]):not([tabindex="-1"])'
+  const focusManager = getFocusManager()
 
   let okProcessing = false
   $: headerDivide = hideContent && numberOfBlocks > 1
 
   function handleKeyDown (event: KeyboardEvent) {
     const target = event.target as HTMLInputElement
-    const formElement = target.closest('form')
 
-    if (target && formElement) {
+    if (target) {
       if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
         event.preventDefault()
         handleOkClick()
       } else if (event.key === 'Enter') {
-        event.preventDefault()
-
-        const focussable = (
-          Array.from(formElement?.querySelectorAll(focussableElements) as NodeListOf<HTMLElement>)
-        ).filter((element) => element.offsetWidth > 0 || element.offsetHeight > 0 || element === target)
-        
-        const index = focussable.indexOf(target)
-        const nextInput = focussable[index + 1] || focussable[0]
-        if (nextInput) {
-          nextInput.focus()
+        debugger
+        // ignore customized editable divs to not interrupt multiline behavior
+        if (!target.isContentEditable) {
+          event.preventDefault()
+          focusManager?.next(1)
         }
       }
     }

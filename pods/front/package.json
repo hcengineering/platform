@@ -8,14 +8,14 @@
     "build": "tsc",
     "build:watch": "tsc",
     "lint:fix": "eslint --fix src",
-    "bundle": "esbuild src/__start.ts --define:process.env.MODEL_VERSION=$(node ../../models/all/lib/__showversion.js) --bundle --minify --platform=node --external:sharp > bundle.js & rm -rf ./dist && cp -r ../../dev/prod/dist . && cp -r ../../dev/prod/public/* ./dist/ && rm ./dist/config.json",
+    "bundle": "esbuild src/__start.ts --define:process.env.MODEL_VERSION='0.6.144' --bundle --minify --platform=node --external:sharp > bundle.js & rm -rf ./dist && cp -r ../../dev/prod/dist . && cp -r ../../dev/prod/public/* ./dist/ && rm ./dist/config.json",
     "docker:build": "docker build -t hardcoreeng/front .",
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/front staging",
     "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/front",
     "docker:tbuild": "docker build -t hardcoreeng/front . --platform=linux/amd64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/front",
     "lint": "eslint src",
     "format": "format src",
-    "run-local": "cross-env MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost TRANSACTOR_URL=ws://localhost:3333 SERVER_SECRET='secret' ACCOUNTS_URL=http://localhost:3000 UPLOAD_URL=/files ELASTIC_URL=http://localhost:9200 MODEL_VERSION=$(node ../../models/all/lib/__showversion.js) PUBLIC_DIR='.' ts-node ./src/__start.ts",
+    "run-local": "cross-env MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost TRANSACTOR_URL=ws://localhost:3333 SERVER_SECRET='secret' ACCOUNTS_URL=http://localhost:3000 UPLOAD_URL=/files ELASTIC_URL=http://localhost:9200 MODEL_VERSION='0.6.144' PUBLIC_DIR='.' ts-node ./src/__start.ts",
     "test": "jest --passWithNoTests --silent"
   },
   "devDependencies": {
