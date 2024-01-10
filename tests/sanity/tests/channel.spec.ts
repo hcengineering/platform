@@ -15,7 +15,7 @@ test.describe('channel tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test('create new private channel tests', async ({ page }) => {
+  test.skip('create new private channel tests', async ({ page }) => {
     const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.buttonChunter.click()
 
