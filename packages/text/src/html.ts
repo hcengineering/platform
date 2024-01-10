@@ -17,7 +17,10 @@ import { Extensions, getSchema } from '@tiptap/core'
 import { generateJSON, generateHTML } from '@tiptap/html'
 import { Node as ProseMirrorNode } from '@tiptap/pm/model'
 
-import { defaultExtensions } from './extensions'
+import { ServerKit } from './kits/server-kit'
+
+const defaultExtensions = [ServerKit]
+
 /**
  * @public
  */
