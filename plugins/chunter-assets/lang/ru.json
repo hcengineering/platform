@@ -80,11 +80,10 @@
     "Reacted": "Отреагировал(а)",
     "Saved": "Сохранено",
     "Docs": "Documents",
-    "NewDocumentChat": "New document chat",
     "NewestFirst": "Сначала новые",
-    "ReplyToThread": "Reply to thread",
-    "SentMessage": "Sent message",
-    "Direct": "direct",
-    "RepliedToThread": "Replied to thread"
+    "ReplyToThread": "Ответить в канале",
+    "SentMessage": "Отправил(а) сообщение",
+    "Direct": "личные сообщения",
+    "RepliedToThread": "Ответил(а) в канале"
   }
 }
