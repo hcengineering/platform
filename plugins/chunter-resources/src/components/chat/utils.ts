@@ -123,9 +123,7 @@ export const chatNavGroups: ChatNavGroupModel[] = [
         ]
       },
       isPinned: { $ne: true }
-    },
-    addLabel: chunter.string.NewDocumentChat,
-    addComponent: chunter.component.CreateDocChannel
+    }
   },
   {
     id: 'channels',

@@ -44,7 +44,6 @@ import ChatMessagePresenter from './components/chat-message/ChatMessagePresenter
 import ChatMessageInput from './components/chat-message/ChatMessageInput.svelte'
 import ChatMessagesPresenter from './components/chat-message/ChatMessagesPresenter.svelte'
 import Chat from './components/chat/Chat.svelte'
-import CreateDocChannel from './components/chat/create/CreateDocChannel.svelte'
 import ThreadMessagePresenter from './components/threads/ThreadMessagePresenter.svelte'
 import ThreadParentPresenter from './components/threads/ThreadParentPresenter.svelte'
 import ChannelHeader from './components/ChannelHeader.svelte'
@@ -226,7 +225,6 @@ export default async (): Promise<Resources> => ({
     ChatMessageInput,
     ChatMessagesPresenter,
     Chat,
-    CreateDocChannel,
     ThreadMessagePresenter,
     Threads
   },

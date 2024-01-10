@@ -56,7 +56,6 @@ export default mergeIds(chunterId, chunter, {
     Channels: '' as IntlString,
     DirectMessages: '' as IntlString,
     CreateChannel: '' as IntlString,
-    NewDocumentChat: '' as IntlString,
     NewDirectMessage: '' as IntlString,
     ChannelName: '' as IntlString,
     ChannelNamePlaceholder: '' as IntlString,
