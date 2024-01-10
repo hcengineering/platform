@@ -25,7 +25,7 @@
     IconBack,
     getFocusManager
   } from '@hcengineering/ui'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import presentation from '..'
   import IconForward from './icons/Forward.svelte'
 
