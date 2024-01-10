@@ -27,6 +27,7 @@
 
   import { Completion } from '../Completion'
   import { textEditorCommandHandler } from '../commands'
+  import { EditorKit } from '../kits/editor-kit'
   import textEditorPlugin from '../plugin'
   import { DocumentId, TiptapCollabProvider } from '../provider'
   import {
@@ -47,7 +48,7 @@
   import { FileAttachFunction, ImageExtension } from './extension/imageExt'
   import { InlinePopupExtension } from './extension/inlinePopup'
   import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
-  import { completionConfig, defaultExtensions } from './extensions'
+  import { completionConfig } from './extensions'
 
   export let documentId: DocumentId
   export let field: string | undefined = undefined
@@ -207,7 +208,8 @@
     optionalExtensions.push(
       ImageExtension.configure({
         inline: true,
-        attachFile
+        attachFile,
+        uploadUrl: getMetadata(presentation.metadata.UploadURL)
       })
     )
   }
@@ -220,7 +222,7 @@
       element,
       editorProps: { attributes: mergeAttributes(defaultEditorAttributes, editorAttributes, { class: 'flex-grow' }) },
       extensions: [
-        ...defaultExtensions,
+        EditorKit.configure({ history: false }),
         ...optionalExtensions,
         Placeholder.configure({ placeholder: placeHolderStr }),
         InlineStyleToolbarExtension.configure({
@@ -259,7 +261,7 @@
             dispatch('open-document', { event, _id, _class })
           }
         }),
-        EmojiExtension.configure(),
+        EmojiExtension,
         ...extensions
       ],
       parseOptions: {

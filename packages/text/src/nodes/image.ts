@@ -21,6 +21,12 @@ import { getDataAttribute } from './utils'
 export interface ImageOptions {
   inline: boolean
   HTMLAttributes: Record<string, any>
+  uploadUrl?: string
+}
+
+// This is a simplified version of getFileUrl from presentation plugin, which we cannot use
+function getFileUrl (uploadUrl: string, fileId: string, size: string = 'full'): string {
+  return `${uploadUrl}?file=${fileId}&size=${size}`
 }
 
 /**
@@ -32,7 +38,8 @@ export const ImageNode = Node.create<ImageOptions>({
   addOptions () {
     return {
       inline: true,
-      HTMLAttributes: {}
+      HTMLAttributes: {},
+      uploadUrl: ''
     }
   },
 
@@ -97,6 +104,12 @@ export const ImageNode = Node.create<ImageOptions>({
       this.options.HTMLAttributes,
       HTMLAttributes
     )
+
+    const fileId = imgAttributes['file-id']
+    if (fileId != null) {
+      const uploadUrl = this.options.uploadUrl ?? ''
+      imgAttributes.src = getFileUrl(uploadUrl, fileId)
+    }
 
     return ['div', divAttributes, ['img', imgAttributes]]
   }

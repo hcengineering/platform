@@ -1,90 +1,22 @@
-import TableHeader from '@tiptap/extension-table-header'
+//
+// Copyright © 2023 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 
-import TaskItem from '@tiptap/extension-task-item'
-import TaskList from '@tiptap/extension-task-list'
-
-import { type Level } from '@tiptap/extension-heading'
-import Highlight from '@tiptap/extension-highlight'
-import StarterKit from '@tiptap/starter-kit'
-import Underline from '@tiptap/extension-underline'
-
-import Gapcursor from '@tiptap/extension-gapcursor'
-import ListKeymap from '@tiptap/extension-list-keymap'
-
-import { type AnyExtension } from '@tiptap/core'
-import Link from '@tiptap/extension-link'
-import Typography from '@tiptap/extension-typography'
 import { type CompletionOptions } from '../Completion'
 import MentionList from './MentionList.svelte'
-import { NodeUuidExtension } from './extension/nodeUuid'
 import { SvelteRenderer } from './node-view'
-import { CodemarkExtension } from './extension/codemark'
 import type { SuggestionKeyDownProps, SuggestionProps } from './extension/suggestion'
-
-import { Table, TableCell, TableRow } from './extension/table'
-
-export const tableExtensions = [
-  Table.configure({
-    resizable: false,
-    HTMLAttributes: {
-      class: 'proseTable'
-    }
-  }),
-  TableRow.configure({}),
-  TableHeader.configure({}),
-  TableCell.configure({})
-]
-
-export const taskListExtensions = [
-  TaskList,
-  TaskItem.configure({
-    nested: true,
-    HTMLAttributes: {
-      class: 'flex flex-grow gap-1 checkbox_style'
-    }
-  })
-]
-
-export const supportedHeadingLevels: Level[] = [1, 2, 3]
-
-export const defaultExtensions: AnyExtension[] = [
-  StarterKit.configure({
-    code: {
-      HTMLAttributes: {
-        class: 'proseCode'
-      }
-    },
-    codeBlock: {
-      languageClassPrefix: 'language-',
-      exitOnArrowDown: true,
-      exitOnTripleEnter: true,
-      HTMLAttributes: {
-        class: 'proseCodeBlock'
-      }
-    },
-    heading: {
-      levels: supportedHeadingLevels,
-      HTMLAttributes: {
-        class: 'proseHeading'
-      }
-    }
-  }),
-  CodemarkExtension,
-  Highlight.configure({
-    multicolor: false
-  }),
-  Underline.configure({}),
-  Typography.configure({}),
-  Gapcursor,
-  Link.configure({
-    openOnClick: true,
-    HTMLAttributes: { class: 'cursor-pointer', rel: 'noopener noreferrer', target: '_blank' }
-  }),
-  ListKeymap.configure({}),
-  NodeUuidExtension,
-  ...tableExtensions
-  // ...taskListExtensions // Disable since tasks are not working properly now.
-]
 
 export const mInsertTable = [
   {

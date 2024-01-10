@@ -20,10 +20,13 @@
   import { DecorationSet } from '@tiptap/pm/view'
   import { onDestroy, onMount } from 'svelte'
   import { Markup } from '@hcengineering/core'
+  import { getMetadata } from '@hcengineering/platform'
+  import presentation from '@hcengineering/presentation'
 
   import { calculateDecorations, createMarkupDocument } from './diff/decorations'
   import { defaultEditorAttributes } from './editor/editorProps'
-  import { defaultExtensions } from './extensions'
+  import { ImageExtension } from './extension/imageExt'
+  import { EditorKit } from '../kits/editor-kit'
 
   export let content: Markup
   export let comparedVersion: Markup | undefined = undefined
@@ -78,7 +81,13 @@
       element,
       content,
       editable: false,
-      extensions: [...defaultExtensions, DecorationExtension],
+      extensions: [
+        EditorKit,
+        ImageExtension.configure({
+          uploadUrl: getMetadata(presentation.metadata.UploadURL)
+        }),
+        DecorationExtension
+      ],
       onTransaction: () => {
         // force re-render so `editor.isActive` works as expected
         editor = editor
