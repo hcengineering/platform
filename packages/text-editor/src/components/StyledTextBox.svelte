@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { IntlString } from '@hcengineering/platform'
+  import { IntlString, getMetadata } from '@hcengineering/platform'
   import presentation, { MessageViewer } from '@hcengineering/presentation'
   import {
     ActionIcon,
@@ -175,7 +175,8 @@
       attachFile,
       reportNode: (id, node) => {
         attachments.set(id, node)
-      }
+      },
+      uploadUrl: getMetadata(presentation.metadata.UploadURL)
     })
 
     const completionPlugin = Completion.configure({

@@ -72,15 +72,17 @@ export default async () => {
             load: async () => {
               if (typeof localStorage !== 'undefined') {
                 const storedValue = localStorage.getItem('platform.model') ?? null
-                const model = storedValue != null ? JSON.parse(storedValue) : undefined
-                if (token !== model?.token) {
-                  return {
-                    full: false,
-                    transactions: [],
-                    hash: []
+                try {
+                  const model = storedValue != null ? JSON.parse(storedValue) : undefined
+                  if (token !== model?.token) {
+                    return {
+                      full: false,
+                      transactions: [],
+                      hash: []
+                    }
                   }
-                }
-                return model.model
+                  return model.model
+                } catch {}
               }
               return {
                 full: true,

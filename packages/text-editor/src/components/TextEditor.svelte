@@ -31,7 +31,7 @@
   import { InlinePopupExtension } from './extension/inlinePopup'
   import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
   import { SubmitExtension } from './extension/submit'
-  import { defaultExtensions } from './extensions'
+  import { EditorKit } from '../kits/editor-kit'
 
   export let content: string = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
@@ -124,7 +124,7 @@
         editorProps: { attributes: mergeAttributes(defaultEditorAttributes, editorAttributes) },
         content,
         extensions: [
-          ...defaultExtensions,
+          EditorKit,
           ...(supportSubmit ? [Handle] : []), // order important
           Placeholder.configure({ placeholder: placeHolderStr }),
           ...extensions,

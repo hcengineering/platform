@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { getMetadata } from '@hcengineering/platform'
-import presentation, { PDFViewer, getFileUrl } from '@hcengineering/presentation'
+import { PDFViewer } from '@hcengineering/presentation'
 import { ImageNode, type ImageOptions as ImageNodeOptions } from '@hcengineering/text'
 import { type IconSize, getIconSize2x, showPopup } from '@hcengineering/ui'
 import { mergeAttributes, nodeInputRule } from '@tiptap/core'
@@ -37,6 +36,7 @@ export type ImageAlignment = 'center' | 'left' | 'right'
 export interface ImageOptions extends ImageNodeOptions {
   attachFile?: FileAttachFunction
   reportNode?: (id: string, node: ProseMirrorNode) => void
+  uploadUrl: string
 }
 
 export interface ImageAlignmentOptions {
@@ -80,6 +80,11 @@ function getType (type: string): 'image' | 'other' {
   return 'other'
 }
 
+// This is a simplified version of getFileUrl from presentation plugin, which we cannot use
+function getFileUrl (fileId: string, size: IconSize = 'full', uploadUrl: string): string {
+  return `${uploadUrl}?file=${fileId}&size=${size as string}`
+}
+
 /**
  * @public
  */
@@ -87,7 +92,8 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
   addOptions () {
     return {
       inline: true,
-      HTMLAttributes: {}
+      HTMLAttributes: {},
+      uploadUrl: ''
     }
   },
 
@@ -117,9 +123,11 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
       HTMLAttributes
     )
 
+    const uploadUrl = this.options.uploadUrl ?? ''
+
     const id = imgAttributes['file-id']
     if (id != null) {
-      imgAttributes.src = getFileUrl(id, 'full')
+      imgAttributes.src = getFileUrl(id, 'full', uploadUrl)
       let width: IconSize | undefined
       switch (imgAttributes.width) {
         case '32px':
@@ -137,8 +145,9 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
           break
       }
       if (width !== undefined) {
-        imgAttributes.src = getFileUrl(id, width)
-        imgAttributes.srcset = getFileUrl(id, width) + ' 1x,' + getFileUrl(id, getIconSize2x(width)) + ' 2x'
+        imgAttributes.src = getFileUrl(id, width, uploadUrl)
+        imgAttributes.srcset =
+          getFileUrl(id, width, uploadUrl) + ' 1x,' + getFileUrl(id, getIconSize2x(width), uploadUrl) + ' 2x'
       }
       imgAttributes.class = 'text-editor-image'
       imgAttributes.contentEditable = false
@@ -207,8 +216,7 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
       for (const uri of uris) {
         if (uri !== '') {
           const url = new URL(uri)
-          const uploadUrl = getMetadata(presentation.metadata.UploadURL)
-          if (uploadUrl === undefined || !url.href.includes(uploadUrl)) {
+          if (opt.uploadUrl === undefined || !url.href.includes(opt.uploadUrl)) {
             continue
           }
 

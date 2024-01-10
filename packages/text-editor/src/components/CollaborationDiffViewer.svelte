@@ -25,7 +25,7 @@
 
   import { calculateDecorations, createYdocDocument } from './diff/decorations'
   import { defaultEditorAttributes } from './editor/editorProps'
-  import { defaultExtensions } from './extensions'
+  import { EditorKit } from '../kits/editor-kit'
 
   export let ydoc: Ydoc
   export let field: string | undefined = undefined
@@ -79,7 +79,7 @@
       editorProps: { attributes: mergeAttributes(defaultEditorAttributes, { class: 'flex-grow' }) },
       element,
       editable: false,
-      extensions: [...defaultExtensions, DecorationExtension, Collaboration.configure({ document: ydoc, field })]
+      extensions: [EditorKit, DecorationExtension, Collaboration.configure({ document: ydoc, field })]
     })
   })
 

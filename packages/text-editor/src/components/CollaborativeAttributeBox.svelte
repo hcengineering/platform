@@ -100,4 +100,5 @@
   on:focus
   on:blur
   on:update
+  on:open-document
 />

@@ -26,6 +26,7 @@ export interface Config {
 
   TransactorUrl: string
   MongoUrl: string
+  UploadUrl: string
 
   MinioEndpoint: string
   MinioAccessKey: string
@@ -39,6 +40,7 @@ const envMap: { [key in keyof Config]: string } = {
   Port: 'COLLABORATOR_PORT',
   TransactorUrl: 'TRANSACTOR_URL',
   MongoUrl: 'MONGO_URL',
+  UploadUrl: 'UPLOAD_URL',
   MinioEndpoint: 'MINIO_ENDPOINT',
   MinioAccessKey: 'MINIO_ACCESS_KEY',
   MinioSecretKey: 'MINIO_SECRET_KEY'
@@ -63,6 +65,7 @@ const config: Config = (() => {
     Port: parseInt(process.env[envMap.Port] ?? '3078'),
     TransactorUrl: process.env[envMap.TransactorUrl],
     MongoUrl: process.env[envMap.MongoUrl],
+    UploadUrl: process.env[envMap.UploadUrl] ?? '/files',
     MinioEndpoint: process.env[envMap.MinioEndpoint],
     MinioAccessKey: process.env[envMap.MinioAccessKey],
     MinioSecretKey: process.env[envMap.MinioSecretKey]
