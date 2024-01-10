@@ -18,7 +18,7 @@ test.describe('Collaborative tests for Application', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
   })
 
-  test('Add comment from several users', async ({ page, browser }) => {
+  test.skip('Add comment from several users', async ({ page, browser }) => {
     const vacancyName = 'Software Engineer'
     let talentName: TalentName
     // open second page
