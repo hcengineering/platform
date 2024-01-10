@@ -5,7 +5,6 @@ import { NewIssue } from '../model/tracker/types'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
-import { NotificationPage } from '../model/notification-page'
 
 test.use({
   storageState: PlatformSetting
@@ -130,17 +129,17 @@ test.describe('Collaborative test for issue', () => {
       await issuesDetailsPage.editIssue({ assignee: newAssignee })
     })
 
-    // TODO: rewrite checkNotificationIssue
-    test.skip('user2. check notification', async () => {
-      const leftSideMenuPageSecond = new LeftSideMenuPage(userSecondPage)
-      await leftSideMenuPageSecond.checkExistNewNotification(userSecondPage)
-      await leftSideMenuPageSecond.buttonNotification.click()
-
-      const notificationPageSecond = new NotificationPage(userSecondPage)
-      await notificationPageSecond.checkNotificationIssue(issue.title, newAssignee)
-
-      await leftSideMenuPageSecond.buttonTracker.click()
-    })
+    // TODO: rewrite checkNotificationIssue and uncomment
+    // await test.step('user2. check notification', async () => {
+    //   const leftSideMenuPageSecond = new LeftSideMenuPage(userSecondPage)
+    //   await leftSideMenuPageSecond.checkExistNewNotification(userSecondPage)
+    //   await leftSideMenuPageSecond.buttonNotification.click()
+    //
+    //   const notificationPageSecond = new NotificationPage(userSecondPage)
+    //   await notificationPageSecond.checkNotificationIssue(issue.title, newAssignee)
+    //
+    //   await leftSideMenuPageSecond.buttonTracker.click()
+    // })
 
     await test.step('user2. check issue assignee', async () => {
       const issuesPageSecond = new IssuesPage(userSecondPage)
