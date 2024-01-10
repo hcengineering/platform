@@ -64,7 +64,6 @@
         event.preventDefault()
         handleOkClick()
       } else if (event.key === 'Enter') {
-        debugger
         // ignore customized editable divs to not interrupt multiline behavior
         if (!target.isContentEditable) {
           event.preventDefault()
