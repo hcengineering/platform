@@ -293,6 +293,16 @@ export interface TypeHyperlink extends Type<Hyperlink> {}
 
 /**
  * @public
+ *
+ * A type for some custom serialized field with a set of editors
+ */
+export interface TypeAny<AnyComponent = any> extends Type<any> {
+  presenter: AnyComponent
+  editor?: AnyComponent
+}
+
+/**
+ * @public
  */
 export const DOMAIN_MODEL = 'model' as Domain
 

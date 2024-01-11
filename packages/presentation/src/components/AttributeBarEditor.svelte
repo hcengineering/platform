@@ -40,7 +40,7 @@
   const dispatch = createEventDispatcher()
   let editor: AnySvelteComponent | undefined
 
-  function onChange (value: any) {
+  function onChange (value: any): void {
     const doc = object as Doc
 
     dispatch('update', { key, value })
@@ -48,12 +48,14 @@
     if (draft) {
       ;(doc as any)[attributeKey] = value
     } else {
-      updateAttribute(client, doc, doc._class, { key: attributeKey, attr: attribute }, value)
+      void updateAttribute(client, doc, doc._class, { key: attributeKey, attr: attribute }, value)
     }
   }
 
-  function getEditor (_class: Ref<Class<Doc>>, key: KeyedAttribute | string) {
-    getAttributeEditor(client, _class, key).then((p) => (editor = p))
+  function getEditor (_class: Ref<Class<Doc>>, key: KeyedAttribute | string): void {
+    void getAttributeEditor(client, _class, key).then((p) => {
+      editor = p
+    })
   }
 
   $: getEditor(_class, key)

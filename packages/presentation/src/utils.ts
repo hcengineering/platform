@@ -15,6 +15,9 @@
 //
 
 import core, {
+  TxOperations,
+  type TypeAny,
+  getCurrentAccount,
   type AnyAttribute,
   type ArrOf,
   type AttachedDoc,
@@ -25,28 +28,26 @@ import core, {
   type DocumentQuery,
   type FindOptions,
   type FindResult,
-  getCurrentAccount,
   type Hierarchy,
   type Mixin,
   type Obj,
   type Ref,
   type RefTo,
-  type Tx,
-  TxOperations,
-  type TxResult,
-  type WithLookup,
-  type SearchQuery,
   type SearchOptions,
-  type SearchResult
+  type SearchQuery,
+  type SearchResult,
+  type Tx,
+  type TxResult,
+  type WithLookup
 } from '@hcengineering/core'
 import { getMetadata, getResource } from '@hcengineering/platform'
 import { LiveQuery as LQ } from '@hcengineering/query'
-import { type AnySvelteComponent, type IconSize } from '@hcengineering/ui'
+import { type AnyComponent, type AnySvelteComponent, type IconSize } from '@hcengineering/ui'
 import view, { type AttributeEditor } from '@hcengineering/view'
 import { deepEqual } from 'fast-equals'
 import { onDestroy } from 'svelte'
 import { type KeyedAttribute } from '..'
-import { OptimizeQueryMiddleware, type PresentationPipeline, PresentationPipelineImpl } from './pipeline'
+import { OptimizeQueryMiddleware, PresentationPipelineImpl, type PresentationPipeline } from './pipeline'
 import plugin from './plugin'
 
 let liveQuery: LQ
@@ -406,6 +407,12 @@ export async function getAttributeEditor (
 ): Promise<AnySvelteComponent | undefined> {
   const hierarchy = client.getHierarchy()
   const attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
+
+  if (attribute.type._class === core.class.TypeAny) {
+    const _type: TypeAny = attribute.type as TypeAny<AnyComponent>
+    return await getResource(_type.editor ?? _type.presenter)
+  }
+
   const presenterClass = attribute !== undefined ? getAttributePresenterClass(hierarchy, attribute) : undefined
 
   if (presenterClass === undefined) {

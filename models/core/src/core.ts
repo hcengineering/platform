@@ -14,6 +14,13 @@
 //
 
 import {
+  DOMAIN_BLOB,
+  DOMAIN_CONFIGURATION,
+  DOMAIN_DOC_INDEX_STATE,
+  DOMAIN_FULLTEXT_BLOB,
+  DOMAIN_MIGRATION,
+  DOMAIN_MODEL,
+  IndexKind,
   type Account,
   type AnyAttribute,
   type ArrOf,
@@ -27,21 +34,15 @@ import {
   type Doc,
   type DocIndexState,
   type Domain,
-  DOMAIN_BLOB,
-  DOMAIN_CONFIGURATION,
-  DOMAIN_MIGRATION,
-  DOMAIN_DOC_INDEX_STATE,
-  DOMAIN_FULLTEXT_BLOB,
-  DOMAIN_MODEL,
   type Enum,
   type EnumOf,
   type FieldIndex,
   type FullTextData,
   type FullTextSearchContext,
-  type IndexingConfiguration,
-  IndexKind,
   type IndexStageState,
+  type IndexingConfiguration,
   type Interface,
+  type MigrationState,
   type Mixin,
   type Obj,
   type PluginConfiguration,
@@ -50,8 +51,8 @@ import {
   type Space,
   type Timestamp,
   type Type,
-  type Version,
-  type MigrationState
+  type TypeAny,
+  type Version
 } from '@hcengineering/core'
 import {
   Hidden,
@@ -241,6 +242,13 @@ export class TTypeDate extends TType {}
 @Model(core.class.EnumOf, core.class.Type)
 export class TEnumOf extends TType implements EnumOf {
   of!: Ref<Enum>
+}
+
+@UX(getEmbeddedLabel('Any'))
+@Model(core.class.TypeAny, core.class.Type)
+export class TTypeAny extends TType implements TypeAny {
+  presenter!: any
+  editor!: any
 }
 
 @Model(core.class.Version, core.class.Doc, DOMAIN_MODEL)
