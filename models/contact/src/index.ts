@@ -243,6 +243,8 @@ export function createModel (builder: Builder): void {
     ]
   })
 
+  builder.mixin(contact.class.Channel, core.class.Class, activity.mixin.ActivityDoc, {})
+
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: contact.class.Contact,
     components: { input: chunter.component.ChatMessageInput }
@@ -280,6 +282,7 @@ export function createModel (builder: Builder): void {
       hidden: false,
       // component: contact.component.ContactsTabs,
       locationResolver: contact.resolver.Location,
+      aside: chunter.component.ThreadView,
       navigatorModel: {
         spaces: [],
         specials: [
@@ -988,6 +991,7 @@ export function createModel (builder: Builder): void {
     chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
+      messageClass: chunter.class.ChatMessage,
       objectClass: contact.class.Person,
       label: chunter.string.LeftComment
     },
@@ -998,6 +1002,7 @@ export function createModel (builder: Builder): void {
     chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
+      messageClass: chunter.class.ChatMessage,
       objectClass: contact.mixin.Employee,
       label: chunter.string.LeftComment
     },
@@ -1008,6 +1013,7 @@ export function createModel (builder: Builder): void {
     chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
+      messageClass: chunter.class.ChatMessage,
       objectClass: contact.class.Organization,
       label: chunter.string.LeftComment
     },

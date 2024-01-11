@@ -13,8 +13,27 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Label } from '@hcengineering/ui'
-  import chunter from '../plugin'
+  import { DirectMessage } from '@hcengineering/chunter'
+  import { getClient } from '@hcengineering/presentation'
+  import { Person } from '@hcengineering/contact'
+  import { Avatar } from '@hcengineering/contact-resources'
+
+  import { getDmPersons } from '../utils'
+
+  export let value: DirectMessage
+
+  const client = getClient()
+  let persons: Person[] = []
+
+  $: getDmPersons(client, value).then((res) => {
+    persons = res
+  })
 </script>
 
-<Label label={chunter.string.Thread} />
+{#each persons as person}
+  {#if person}
+    <div class="icon">
+      <Avatar size="x-small" avatar={person.avatar} name={person.name} />
+    </div>
+  {/if}
+{/each}

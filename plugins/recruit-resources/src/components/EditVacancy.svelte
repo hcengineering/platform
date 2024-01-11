@@ -41,10 +41,10 @@
   let showAllMixins = false
 
   const dispatch = createEventDispatcher()
-  const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
+  const inboxClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
 
   onDestroy(async () => {
-    void notificationClient.then((client) => client.read(_id))
+    void inboxClient.then((client) => client.readDoc(_id))
   })
 
   const client = getClient()
@@ -57,7 +57,7 @@
       const prev = lastId
       lastId = _id
       if (prev !== undefined) {
-        void notificationClient.then((client) => client.read(prev))
+        void inboxClient.then((client) => client.readDoc(prev))
       }
       query.query(recruit.class.Vacancy, { _id }, (result) => {
         object = result[0] as Required<Vacancy>

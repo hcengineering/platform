@@ -22,7 +22,6 @@
   import { ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import NotificationView from './NotificationView.svelte'
-  import { hide } from '../utils'
 
   export let filter: 'all' | 'read' | 'unread' = 'all'
   export let _id: Ref<Doc> | undefined
@@ -161,11 +160,11 @@
       selected++
       changeSelected(selected)
     }
-    if (key.code === 'Backspace') {
-      key.preventDefault()
-      key.stopPropagation()
-      hide(listProvider.docs()[selected] as DocUpdates)
-    }
+    // if (key.code === 'Backspace') {
+    //   key.preventDefault()
+    //   key.stopPropagation()
+    //   hide(listProvider.docs()[selected] as DocUpdates)
+    // }
     if (key.code === 'Enter') {
       key.preventDefault()
       key.stopPropagation()

@@ -19,6 +19,7 @@
   import { navigateToSpecial } from '../utils'
 
   export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let iconProps: Record<string, any> | undefined = undefined
   export let label: string | undefined = undefined
   export let intlLabel: IntlString | undefined = undefined
   export let description: string | undefined = undefined
@@ -31,7 +32,7 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="ac-header__wrap-title" on:click>
-    {#if icon}<div class="ac-header__icon"><Icon {icon} size={'small'} /></div>{/if}
+    {#if icon}<div class="ac-header__icon"><Icon {icon} size={'small'} {iconProps} /></div>{/if}
     {#if label}
       <span class="ac-header__title">{label}</span>
     {:else if intlLabel}

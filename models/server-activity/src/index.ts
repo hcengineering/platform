@@ -22,15 +22,13 @@ export { activityServerOperation } from './migration'
 export { serverActivityId } from '@hcengineering/server-activity'
 
 export function createModel (builder: Builder): void {
-  // NOTE: temporarily disabled
-  // builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-  //   trigger: serverNotification.trigger.OnReactionChanged,
-  //   txMatch: {
-  //     collection: 'reactions',
-  //     objectClass: activity.class.ActivityMessage,
-  //     _class: core.class.TxCollectionCUD
-  //   }
-  // })
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverActivity.trigger.OnReactionChanged,
+    txMatch: {
+      collection: 'reactions',
+      _class: core.class.TxCollectionCUD
+    }
+  })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverActivity.trigger.ActivityMessagesHandler

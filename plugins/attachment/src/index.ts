@@ -56,7 +56,8 @@ export default plugin(attachmentId, {
   component: {
     Attachments: '' as AnyComponent,
     Photos: '' as AnyComponent,
-    AttachmentsPresenter: '' as AnyComponent
+    AttachmentsPresenter: '' as AnyComponent,
+    FileBrowser: '' as AnyComponent
   },
   icon: {
     Attachment: '' as Asset,
@@ -89,6 +90,7 @@ export default plugin(attachmentId, {
     FileBrowserTypeFilterVideos: '' as IntlString,
     FileBrowserTypeFilterPDFs: '' as IntlString,
     DeleteFile: '' as IntlString,
-    Attachments: '' as IntlString
+    Attachments: '' as IntlString,
+    FileBrowser: '' as IntlString
   }
 })

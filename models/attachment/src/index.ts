@@ -31,6 +31,7 @@ import {
 import core, { TAttachedDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import view, { createAction } from '@hcengineering/model-view'
+
 import attachment from './plugin'
 
 export { attachmentId } from '@hcengineering/attachment'
@@ -150,6 +151,7 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(activity.class.ActivityMessagesFilter, core.space.Model, {
     label: attachment.string.FilterAttachments,
+    position: 50,
     filter: attachment.filter.AttachmentsFilter
   })
 

@@ -48,6 +48,7 @@
         dispatch('close')
       }}
     />
+    <div class="mr-4" />
     <Button
       label={presentation.string.Cancel}
       on:click={() => {

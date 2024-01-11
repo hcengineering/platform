@@ -39,7 +39,7 @@ import {
   getCurrentAccount,
   toIdMap
 } from '@hcengineering/core'
-import notification, { type DocUpdateTx, type DocUpdates } from '@hcengineering/notification'
+import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 import { getResource } from '@hcengineering/platform'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { type TemplateDataProvider } from '@hcengineering/templates'
@@ -100,8 +100,14 @@ export async function filterChannelHasNewMessagesResult (
   filter: Filter,
   onUpdate: () => void
 ): Promise<ObjQueryType<any>> {
-  const docUpdates = get((await getResource(notification.function.GetNotificationClient))().docUpdatesStore)
-  const result = await getRefs(filter, onUpdate, undefined, docUpdates)
+  const inboxClient = (await getResource(notification.function.GetInboxNotificationsClient))()
+  const result = await getRefs(
+    filter,
+    onUpdate,
+    undefined,
+    get(inboxClient.docNotifyContextByDoc),
+    get(inboxClient.inboxNotificationsByContext)
+  )
   return { $in: result }
 }
 
@@ -119,7 +125,8 @@ export async function getRefs (
   filter: Filter,
   onUpdate: () => void,
   hasMessages?: boolean,
-  docUpdates?: Map<Ref<Doc>, DocUpdates>
+  docUpdates?: Map<Ref<Doc>, DocNotifyContext>,
+  inboxNotificationsByContext?: Map<Ref<DocNotifyContext>, InboxNotification[]>
 ): Promise<Array<Ref<Doc>>> {
   const lq = FilterQuery.getLiveQuery(filter.index)
   const client = getClient()
@@ -135,10 +142,12 @@ export async function getRefs (
       },
       (refs) => {
         const filteredRefs =
-          docUpdates !== undefined
+          docUpdates !== undefined && inboxNotificationsByContext !== undefined
             ? refs.filter((channel) => {
               const docUpdate = docUpdates.get(channel._id)
-              return docUpdate != null ? docUpdate.txes.some((p: DocUpdateTx) => p.isNew) : (channel.items ?? 0) > 0
+              return docUpdate != null
+                ? inboxNotificationsByContext.get(docUpdate._id)?.some(({ isViewed }) => !isViewed)
+                : (channel.items ?? 0) > 0
             })
             : refs
         const result = Array.from(new Set(filteredRefs.map((p) => p.attachedTo)))

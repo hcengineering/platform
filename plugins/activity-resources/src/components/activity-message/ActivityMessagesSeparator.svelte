@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -21,9 +21,15 @@
   export let params: any = undefined
   export let reverse: boolean = false
   export let isNew: boolean = false
+  export let element: HTMLDivElement | undefined = undefined
 </script>
 
-<div class="w-full text-sm flex-center whitespace-nowrap" class:flex-reverse={reverse} class:new={isNew}>
+<div
+  class="w-full text-sm flex-center whitespace-nowrap"
+  class:flex-reverse={reverse}
+  class:new={isNew}
+  bind:this={element}
+>
   <div class:ml-8={!reverse} class:mr-4={reverse}><Label label={title} {params} /></div>
   <div class:ml-4={!reverse} class:mr-4={reverse} class:line />
 </div>
@@ -35,6 +41,7 @@
     height: 1px;
     background-color: var(--divider-color);
   }
+
   .new {
     .line {
       background-color: var(--highlight-red);

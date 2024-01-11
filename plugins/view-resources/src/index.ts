@@ -135,6 +135,7 @@ export { default as FilterRemovedNotification } from './components/filter/Filter
 export { default as ParentsNavigator } from './components/ParentsNavigator.svelte'
 export { default as ViewletSelector } from './components/ViewletSelector.svelte'
 export { default as ViewletsSettingButton } from './components/ViewletsSettingButton.svelte'
+export { default as BaseDocPresenter } from './components/BaseDocPresenter.svelte'
 
 export * from './filter'
 export * from './selection'

@@ -16,18 +16,28 @@
   import { Doc, Mixin } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
+
   import ClassAttributeBar from './ClassAttributeBar.svelte'
 
   export let object: Doc
   export let mixins: Array<Mixin<Doc>> = []
   export let ignoreKeys: string[]
   export let allowedCollections: string[] = []
+  export let showHeader: boolean = true
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 </script>
 
-<ClassAttributeBar _class={object._class} {object} {ignoreKeys} to={undefined} {allowedCollections} on:update />
+<ClassAttributeBar
+  _class={object._class}
+  {object}
+  {ignoreKeys}
+  to={undefined}
+  {allowedCollections}
+  {showHeader}
+  on:update
+/>
 {#each mixins as mixin}
   {@const to = !hierarchy.hasMixin(mixin, setting.mixin.UserMixin) ? object._class : mixin.extends}
   {#if !hierarchy.hasMixin(mixin, setting.mixin.Editable) || hierarchy.as(mixin, setting.mixin.Editable).value}
@@ -38,6 +48,7 @@
         {ignoreKeys}
         {to}
         {allowedCollections}
+        {showHeader}
         on:update
       />
     {/key}

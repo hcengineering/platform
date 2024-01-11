@@ -16,8 +16,6 @@
 <script lang="ts">
   import type { Doc, Ref, Space } from '@hcengineering/core'
   import core from '@hcengineering/core'
-  import { DocUpdates } from '@hcengineering/notification'
-  import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { IntlString, getResource } from '@hcengineering/platform'
   import preference from '@hcengineering/preference'
   import { getClient } from '@hcengineering/presentation'
@@ -36,12 +34,16 @@
     TreeItem,
     TreeNode,
     getActions as getContributedActions,
-    getSpacePresenter
+    getSpacePresenter,
+    classIcon
   } from '@hcengineering/view-resources'
   import { SpacesNavModel } from '@hcengineering/workbench'
   import { createEventDispatcher } from 'svelte'
+  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+  import { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
+
   import plugin from '../../plugin'
-  import { classIcon, getSpaceName } from '../../utils'
+  import { getSpaceName } from '../../utils'
   import TreeSeparator from './TreeSeparator.svelte'
 
   export let model: SpacesNavModel
@@ -104,13 +106,24 @@
     return result
   }
 
-  const notificationClient = NotificationClientImpl.getClient()
-  const docUpdates = notificationClient.docUpdatesStore
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+  const notifyContextByDocStore = inboxClient.docNotifyContextByDoc
+  const inboxNotificationsByContextStore = inboxClient.inboxNotificationsByContext
 
-  function isChanged (space: Space, docUpdates: Map<Ref<Doc>, DocUpdates>): boolean {
-    const update = docUpdates.get(space._id)
-    if (update === undefined) return false
-    return update.txes.filter((tx) => tx.isNew).length > 0 && !update.hidden
+  function isChanged (
+    space: Space,
+    notifyContextByDoc: Map<Ref<Doc>, DocNotifyContext>,
+    inboxNotificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>
+  ): boolean {
+    const context = notifyContextByDoc.get(space._id)
+
+    if (context === undefined || context.hidden) {
+      return false
+    }
+
+    const inboxNotifications = inboxNotificationsByContext.get(context._id) ?? []
+
+    return inboxNotifications.filter(({ isViewed }) => !isViewed).length > 0
   }
 
   function getParentActions (): Action[] {
@@ -172,7 +185,7 @@
               icon={classIcon(client, space._class)}
               selected={deselect ? false : currentSpace === space._id}
               actions={async () => await getActions(space)}
-              bold={isChanged(space, $docUpdates)}
+              bold={isChanged(space, $notifyContextByDocStore, $inboxNotificationsByContextStore)}
               indent
             />
           {/await}

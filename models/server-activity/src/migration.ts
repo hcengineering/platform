@@ -36,6 +36,7 @@ import {
   serverActivityId
 } from '@hcengineering/server-activity'
 import { generateDocUpdateMessages } from '@hcengineering/server-activity-resources'
+import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 
 function getActivityControl (client: MigrationClient): ActivityControl {
   const txFactory = new TxFactory(core.account.System, false)
@@ -55,6 +56,16 @@ async function generateDocUpdateMessageByTx (
   client: MigrationClient,
   objectCache?: DocObjectCache
 ): Promise<void> {
+  const existsMessages = await client.find<DocUpdateMessage>(
+    DOMAIN_ACTIVITY,
+    { _class: activity.class.DocUpdateMessage, txId: tx._id },
+    { projection: { _id: 1 } }
+  )
+
+  if (existsMessages.length > 0) {
+    return
+  }
+
   const createCollectionCUDTxes = await generateDocUpdateMessages(tx, control, undefined, undefined, objectCache)
 
   for (const collectionTx of createCollectionCUDTxes) {
@@ -206,8 +217,14 @@ export const activityServerOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, serverActivityId, [
       {
-        state: 'activity-messages',
-        func: createDocUpdateMessages
+        state: 'doc-update-messages',
+        func: async (client) => {
+          // Recreate activity to avoid duplicates
+          await client.deleteMany(DOMAIN_ACTIVITY, {
+            _class: activity.class.DocUpdateMessage
+          })
+          await createDocUpdateMessages(client)
+        }
       }
     ])
   },

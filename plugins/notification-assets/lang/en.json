@@ -31,6 +31,8 @@
     "ChangedCollaborators": "Changed collaborators",
     "NewCollaborators": "New collaborators",
     "RemovedCollaborators": "Removed collaborators",
-    "Edited": "edited"
+    "Edited": "edited",
+    "Pinned": "Pinned",
+    "Message": "Message"
   }
 }
