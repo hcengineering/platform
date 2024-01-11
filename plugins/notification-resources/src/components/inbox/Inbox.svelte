@@ -35,7 +35,6 @@
   let filter: InboxNotificationsFilter = 'all'
 
   $: getDisplayInboxNotifications($inboxNotificationsByContextStore, filter, _class).then((res) => {
-    console.log('UPDATE')
     displayNotifications = res
   })
 </script>
