@@ -213,27 +213,6 @@ async function createDocUpdateMessages (client: MigrationClient): Promise<void> 
   console.log('process-finished', processed)
 }
 
-async function removeAllDocUpdateMessages (client: MigrationClient): Promise<void> {
-  while (true) {
-    const messages = await client.find<DocUpdateMessage>(
-      DOMAIN_ACTIVITY,
-      {
-        _class: activity.class.DocUpdateMessage
-      },
-      { limit: 500, projection: { _id: 1 } }
-    )
-
-    if (messages.length === 0) {
-      return
-    }
-
-    await client.deleteMany(
-      DOMAIN_ACTIVITY,
-      messages.map(({ _id }) => _id)
-    )
-  }
-}
-
 export const activityServerOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, serverActivityId, [
@@ -241,7 +220,9 @@ export const activityServerOperation: MigrateOperation = {
         state: 'doc-update-messages',
         func: async (client) => {
           // Recreate activity to avoid duplicates
-          await removeAllDocUpdateMessages(client)
+          await client.deleteMany(DOMAIN_ACTIVITY, {
+            _class: activity.class.DocUpdateMessage
+          })
           await createDocUpdateMessages(client)
         }
       }

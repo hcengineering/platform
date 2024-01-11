@@ -183,10 +183,7 @@ async function migrateInboxNotifications (client: MigrationClient): Promise<void
       await Promise.all(docUpdates.map((docUpdate) => getInboxData(client, docUpdate)))
     ).filter((data): data is InboxData => data !== undefined)
 
-    await client.deleteMany(
-      DOMAIN_NOTIFICATION,
-      docUpdates.map(({ _id }) => _id)
-    )
+    await client.deleteMany(DOMAIN_NOTIFICATION, { _id: { $in: docUpdates.map(({ _id }) => _id) } })
     await client.create(
       DOMAIN_NOTIFICATION,
       data.map(({ context }) => context)
