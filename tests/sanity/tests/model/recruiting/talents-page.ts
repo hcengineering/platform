@@ -25,10 +25,10 @@ export class TalentsPage extends CommonRecruitingPage {
     this.inputSearchTalent = page.locator('div[class*="header"] input')
   }
 
-  async createNewTalent (): Promise<TalentName> {
+  async createNewTalent (firstPrefix: string = 'TestFirst', lastPrefix: string = 'TestLast'): Promise<TalentName> {
     const talentName: TalentName = {
-      firstName: `TestFirst-${generateId(4)}`,
-      lastName: `TestLast-${generateId(4)}`
+      firstName: `${firstPrefix}-${generateId(4)}`,
+      lastName: `${lastPrefix}-${generateId(4)}`
     }
     await this.createNewTalentWithName(talentName.firstName, talentName.lastName)
     return talentName

@@ -65,7 +65,7 @@ export class ApplicationsPage extends CommonRecruitingPage {
   }
 
   async selectVacancy (name: string): Promise<void> {
-    await this.buttonSpaceSelector.click()
+    await this.buttonSpaceSelector.click({ delay: 300 })
     await this.selectMenuItem(this.page, name)
   }
 

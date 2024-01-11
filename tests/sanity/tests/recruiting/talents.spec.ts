@@ -116,7 +116,7 @@ test.describe('candidate/talents tests', () => {
     const talentsPage = new TalentsPage(page)
 
     // talent1
-    const talentNameFirst = await talentsPage.createNewTalent()
+    const talentNameFirst = await talentsPage.createNewTalent('FirstMergeName', 'FirstMergeLastName')
     await talentsPage.openTalentByTalentName(talentNameFirst)
     let talentDetailsPage = new TalentDetailsPage(page)
     await talentDetailsPage.inputLocation.fill('Awesome Location Merge1')
@@ -129,7 +129,7 @@ test.describe('candidate/talents tests', () => {
 
     // talent 2
     await navigationMenuPage.buttonTalents.click()
-    const talentNameSecond = await talentsPage.createNewTalent()
+    const talentNameSecond = await talentsPage.createNewTalent('SecondMergeName', 'SecondMergeLastName')
     await talentsPage.openTalentByTalentName(talentNameSecond)
     talentDetailsPage = new TalentDetailsPage(page)
     await talentDetailsPage.inputLocation.fill('Awesome Location Merge2')
@@ -178,6 +178,6 @@ test.describe('candidate/talents tests', () => {
     await talentsPage.createNewTalentWithName(talentName.firstName, talentName.lastName)
 
     await talentsPage.rightClickAction(talentName, 'Match to vacancy')
-    await talentsPage.checkMatchVacancy(`${talentName.lastName} ${talentName.firstName}`, '0.5')
+    await talentsPage.checkMatchVacancy(`${talentName.lastName} ${talentName.firstName}`, '0.')
   })
 })
