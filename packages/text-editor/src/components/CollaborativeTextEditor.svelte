@@ -29,7 +29,8 @@
   import { textEditorCommandHandler } from '../commands'
   import { EditorKit } from '../kits/editor-kit'
   import textEditorPlugin from '../plugin'
-  import { DocumentId, TiptapCollabProvider } from '../provider'
+  import { MinioProvider } from '../provider/minio'
+  import { DocumentId, TiptapCollabProvider } from '../provider/tiptap'
   import {
     CollaborationIds,
     RefAction,
@@ -90,7 +91,9 @@
   const ydoc = getContext<YDoc>(CollaborationIds.Doc) ?? new YDoc()
   const contextProvider = getContext<TiptapCollabProvider>(CollaborationIds.Provider)
 
-  const provider: TiptapCollabProvider =
+  const localProvider = contextProvider === undefined ? new MinioProvider(documentId, ydoc) : undefined
+
+  const remoteProvider: TiptapCollabProvider =
     contextProvider ??
     new TiptapCollabProvider({
       url: collaboratorURL,
@@ -103,8 +106,14 @@
       }
     })
 
-  let loading = true
-  void provider.loaded.then(() => (loading = false))
+  let localSynced = false
+  let remoteSynced = false
+
+  $: loading = !localSynced && !remoteSynced
+  $: editable = !readonly && remoteSynced
+
+  void localProvider?.loaded.then(() => (localSynced = true))
+  void remoteProvider.loaded.then(() => (remoteSynced = true))
 
   let editor: Editor
   let element: HTMLElement
@@ -142,11 +151,11 @@
   }
 
   export function takeSnapshot (snapshotId: string): void {
-    copyDocumentContent(documentId, snapshotId, { provider }, initialContentId)
+    copyDocumentContent(documentId, snapshotId, { provider: remoteProvider }, initialContentId)
   }
 
   export function copyField (srcFieldId: string, dstFieldId: string): void {
-    copyDocumentField(documentId, srcFieldId, dstFieldId, { provider }, initialContentId)
+    copyDocumentField(documentId, srcFieldId, dstFieldId, { provider: remoteProvider }, initialContentId)
   }
 
   export function isEditable (): boolean {
@@ -179,11 +188,11 @@
   }
 
   $: if (editor !== undefined) {
-    editor.setEditable(!readonly)
+    editor.setEditable(editable, true)
   }
 
   $: showTextStyleToolbar =
-    (!readonly || textFormatCategories.length > 0 || textNodeActions.length > 0) && canShowPopups
+    ((editable && textFormatCategories.length > 0) || textNodeActions.length > 0) && canShowPopups
 
   $: tippyOptions = {
     zIndex: 100000,
@@ -239,7 +248,7 @@
             appendTo: () => boundary ?? element
           },
           shouldShow: ({ editor }) => {
-            if (readonly || !canShowPopups) {
+            if (!editable || !canShowPopups) {
               return false
             }
             return editor.isActive('image')
@@ -250,7 +259,7 @@
           field
         }),
         CollaborationCursor.configure({
-          provider,
+          provider: remoteProvider,
           user,
           render: renderCursor,
           selectionRender: noSelectionRender
@@ -295,10 +304,11 @@
       try {
         editor.destroy()
       } catch (err: any) {}
-      if (contextProvider === undefined) {
-        provider.destroy()
-      }
     }
+    if (contextProvider === undefined) {
+      remoteProvider.destroy()
+    }
+    localProvider?.destroy()
   })
 </script>
 

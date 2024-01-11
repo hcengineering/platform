@@ -21,7 +21,7 @@
   import { FocusExtension } from './extension/focus'
   import { FileAttachFunction } from './extension/imageExt'
   import textEditorPlugin from '../plugin'
-  import { minioDocumentId, mongodbDocumentId, platformDocumentId } from '../provider'
+  import { minioDocumentId, mongodbDocumentId, platformDocumentId } from '../provider/utils'
   import { RefAction, TextNodeAction } from '../types'
 
   export let object: Doc

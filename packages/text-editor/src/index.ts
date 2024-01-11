@@ -71,11 +71,9 @@ export { TodoItemExtension, TodoListExtension } from './components/extension/tod
 export {
   TiptapCollabProvider,
   type TiptapCollabProviderConfiguration,
-  createTiptapCollaborationData,
-  minioDocumentId,
-  mongodbDocumentId,
-  platformDocumentId
-} from './provider'
+  createTiptapCollaborationData
+} from './provider/tiptap'
+export { minioDocumentId, mongodbDocumentId, platformDocumentId } from './provider/utils'
 export { CollaborationIds } from './types'
 
 export { textEditorId }
