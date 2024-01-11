@@ -21,7 +21,6 @@ function createIndexedReader (
     get: (attr: string) => {
       const realAttr = hierarchy.findAttribute(_class, attr)
       if (realAttr !== undefined) {
-        // const attributes = doc._class === core.class.DocIndexState ? doc.attributes : doc
         return doc.attributes[docKey(attr, { refAttribute, _class: realAttr.attributeOf })]
       }
       return undefined
@@ -29,7 +28,6 @@ function createIndexedReader (
     getDoc: (attr: string) => {
       const realAttr = hierarchy.findAttribute(_class, attr)
       if (realAttr !== undefined) {
-        // const anotherDoc = doc._class === core.class.DocIndexState ? otherDocs?.[attr] : doc
         const anotherDoc = otherDocs?.[attr]
         if (anotherDoc !== undefined) {
           const refAtrr = realAttr.type as RefTo<Doc>
