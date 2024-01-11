@@ -5,10 +5,11 @@ export class CommonPage {
     if (name !== 'first') {
       const filterText = fullWordFilter ? name : name.split(' ')[0]
       console.log('filterText: !' + filterText + '!')
+      await page.waitForTimeout(300)
       await page.locator('div.selectPopup input').fill(filterText.trim())
-      console.log('selectMenuItem: !' + await page.locator('div.selectPopup input').inputValue() + '!')
+      console.log('selectMenuItem: !' + (await page.locator('div.selectPopup input').inputValue()) + '!')
     }
-    await page.locator('div.selectPopup div.list-item:first-child').click()
+    await page.locator('div.selectPopup div.list-item:first-child').click({ delay: 200 })
   }
 
   async pressCreateButtonSelectPopup (page: Page): Promise<void> {
