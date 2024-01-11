@@ -28,6 +28,7 @@
     "@hcengineering/activity": "^0.6.0",
     "@hcengineering/core": "^0.6.28",
     "@hcengineering/model": "^0.6.7",
+    "@hcengineering/model-activity": "^0.6.0",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/server-activity": "^0.6.0",
     "@hcengineering/server-activity-resources": "^0.6.0",

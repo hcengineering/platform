@@ -692,6 +692,10 @@ export async function getVisibleFilters (filters: KeyFilter[], space?: Ref<Space
   return space === undefined ? filters : filters.filter((f) => f.key !== 'space')
 }
 
+export function getIssueChatTitle (object: Issue): string {
+  return object.title
+}
+
 export function getIssueStatusCategories (project: ProjectType): Array<Ref<StatusCategory>> {
   if (project.classic) {
     return [

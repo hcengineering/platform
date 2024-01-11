@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Anticrm Platform Contributors.
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -16,14 +16,15 @@
   import { createEventDispatcher } from 'svelte'
   import { deepEqual } from 'fast-equals'
 
+  import { DirectMessage } from '@hcengineering/chunter'
   import contact, { Employee } from '@hcengineering/contact'
   import core, { getCurrentAccount, Ref } from '@hcengineering/core'
   import { getClient, SpaceCreateCard } from '@hcengineering/presentation'
-  import workbench from '@hcengineering/workbench'
   import { getResource } from '@hcengineering/platform'
-
-  import chunter from '../plugin'
   import { UserBoxList } from '@hcengineering/contact-resources'
+  import notification, { DocNotifyContext } from '@hcengineering/notification'
+
+  import chunter from '../../../plugin'
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -33,17 +34,26 @@
 
   async function createDirectMessage () {
     const employeeAccounts = await client.findAll(contact.class.PersonAccount, { person: { $in: employeeIds } })
+    const accIds = [myAccId, ...employeeAccounts.filter(({ _id }) => _id !== myAccId).map(({ _id }) => _id)].sort()
 
-    const accIds = [myAccId, ...employeeAccounts.filter((ea) => ea._id !== myAccId).map((ea) => ea._id)].sort()
-    const existingDms = await client.findAll(chunter.class.DirectMessage, {})
-    const navigate = await getResource(workbench.actionImpl.Navigate)
+    const existingContexts = await client.findAll<DocNotifyContext>(
+      notification.class.DocNotifyContext,
+      {
+        user: myAccId,
+        attachedToClass: chunter.class.DirectMessage
+      },
+      { lookup: { attachedTo: chunter.class.DirectMessage } }
+    )
 
-    for (const dm of existingDms) {
-      if (deepEqual(dm.members.sort(), accIds)) {
-        await navigate([], undefined as any, {
-          mode: 'space',
-          space: dm._id
-        })
+    const navigate = await getResource(chunter.actionImpl.OpenChannel)
+
+    for (const context of existingContexts) {
+      if (deepEqual((context.$lookup?.attachedTo as DirectMessage)?.members.sort(), accIds)) {
+        if (context.hidden) {
+          await client.update(context, { hidden: false })
+        }
+        await navigate(context)
+
         return
       }
     }
@@ -56,10 +66,14 @@
       members: accIds
     })
 
-    await navigate([], undefined as any, {
-      mode: 'space',
-      space: dmId
+    const notifyContextId = await client.createDoc(notification.class.DocNotifyContext, core.space.Space, {
+      user: myAccId,
+      attachedTo: dmId,
+      attachedToClass: chunter.class.DirectMessage,
+      hidden: false
     })
+
+    await navigate(undefined, undefined, { _id: notifyContextId })
   }
 </script>
 

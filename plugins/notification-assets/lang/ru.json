@@ -31,6 +31,8 @@
     "ChangedCollaborators": "Изменены участники",
     "NewCollaborators": "Новые участники",
     "RemovedCollaborators": "Удалены участники",
-    "Edited": "отредактировал(а)"
+    "Edited": "отредактировал(а)",
+    "Pinned": "Закреплено",
+    "Message": "Сообщение"
   }
 }

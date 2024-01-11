@@ -7,6 +7,8 @@ export class NotificationPage {
     this.page = page
   }
 
+  // TODO: rewrite functions according to new inbox
+
   async checkNotificationIssue (name: string, assignee: string): Promise<void> {
     const notification = this.page.locator('div[class*="inbox-activity"] span', { hasText: name })
     await expect(notification.locator('xpath=../../..').locator('a span.ap-label')).toHaveText(assignee)

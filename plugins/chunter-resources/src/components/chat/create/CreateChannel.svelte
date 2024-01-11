@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,36 +15,43 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { IconFolder, EditBox, ToggleWithLabel, Grid } from '@hcengineering/ui'
-  import workbench from '@hcengineering/workbench'
   import presentation, { getClient, SpaceCreateCard } from '@hcengineering/presentation'
   import { getResource } from '@hcengineering/platform'
-
-  import chunter from '../plugin'
   import core, { getCurrentAccount } from '@hcengineering/core'
+  import notification from '@hcengineering/notification'
+
+  import chunter from '../../../plugin'
 
   const dispatch = createEventDispatcher()
 
   let isPrivate: boolean = false
   let name: string = ''
+
   export function canClose (): boolean {
     return name === ''
   }
+
   const client = getClient()
 
   async function createChannel () {
+    const accountId = getCurrentAccount()._id
     const channelId = await client.createDoc(chunter.class.Channel, core.space.Space, {
       name,
       description: '',
       private: isPrivate,
       archived: false,
-      members: [getCurrentAccount()._id]
+      members: [accountId]
     })
-    const navigate = await getResource(workbench.actionImpl.Navigate)
+    const notifyContextId = await client.createDoc(notification.class.DocNotifyContext, core.space.Space, {
+      user: accountId,
+      attachedTo: channelId,
+      attachedToClass: chunter.class.Channel,
+      hidden: false
+    })
 
-    await navigate([], undefined as any, {
-      mode: 'space',
-      space: channelId
-    })
+    const navigate = await getResource(chunter.actionImpl.OpenChannel)
+
+    await navigate(undefined, undefined, { _id: notifyContextId })
   }
 </script>
 

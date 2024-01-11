@@ -18,7 +18,7 @@
   import contact, { Channel, Contact, getName } from '@hcengineering/contact'
   import { Data, generateId } from '@hcengineering/core'
   import { NewMessage, SharedMessage } from '@hcengineering/gmail'
-  import { NotificationClientImpl } from '@hcengineering/notification-resources'
+  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Integration } from '@hcengineering/setting'
@@ -32,8 +32,10 @@
   export let channel: Channel
   export let currentMessage: SharedMessage | undefined
   export let selectedIntegration: Integration
+
   const client = getClient()
-  const notificationClient = NotificationClientImpl.getClient()
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+
   let objectId = generateId()
 
   let progress = false
@@ -75,7 +77,7 @@
       },
       objectId
     )
-    await notificationClient.forceRead(channel._id, channel._class)
+    await inboxClient.forceReadDoc(channel._id, channel._class)
     objectId = generateId()
     dispatch('close')
   }

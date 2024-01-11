@@ -24,10 +24,10 @@
   import view from '@hcengineering/view'
   import activity, { DisplayActivityMessage } from '@hcengineering/activity'
   import { ActivityMessageTemplate } from '@hcengineering/activity-resources'
+  import chunter, { ChatMessage, ChatMessageViewlet } from '@hcengineering/chunter'
 
   import ChatMessageHeader from './ChatMessageHeader.svelte'
   import ChatMessageInput from './ChatMessageInput.svelte'
-  import chunter, { ChatMessage, ChatMessageViewlet } from '@hcengineering/chunter'
 
   export let value: ChatMessage | undefined
   export let showNotify: boolean = false
@@ -35,8 +35,12 @@
   export let isSelected: boolean = false
   export let shouldScroll: boolean = false
   export let embedded: boolean = false
-  export let hasActionsMenu: boolean = true
+  export let withActions: boolean = true
+  export let showEmbedded = false
+  export let hideReplies = false
+  export let skipLabel = false
   export let onClick: (() => void) | undefined = undefined
+  export let onReply: (() => void) | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -58,7 +62,7 @@
   $: value &&
     viewletQuery.query(
       chunter.class.ChatMessageViewlet,
-      { objectClass: value.attachedToClass },
+      { objectClass: value.attachedToClass, messageClass: value._class },
       (result: ChatMessageViewlet[]) => {
         viewlet = result[0]
       }
@@ -131,13 +135,14 @@
           {
             label: activity.string.Edit,
             icon: IconEdit,
+            group: 'edit',
             action: handleEditAction
           }
         ]
       : [])
   ]
 
-  $: excludedActions = isOwn ? [] : [chunter.action.DeleteChatMessage]
+  $: excludedActions = []
   let refInput: ChatMessageInput
 </script>
 
@@ -153,12 +158,15 @@
     {isSelected}
     {shouldScroll}
     {embedded}
-    {hasActionsMenu}
+    {withActions}
     {actions}
+    {showEmbedded}
+    {hideReplies}
     {onClick}
+    {onReply}
   >
     <svelte:fragment slot="header">
-      <ChatMessageHeader {object} {parentObject} message={value} {viewlet} {person} />
+      <ChatMessageHeader {object} {parentObject} message={value} {viewlet} {person} {skipLabel} />
     </svelte:fragment>
     <svelte:fragment slot="content">
       {#if !isEditing}

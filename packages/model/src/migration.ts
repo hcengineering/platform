@@ -94,7 +94,7 @@ export interface MigrationClient {
 
   create: <T extends Doc>(domain: Domain, doc: T | T[]) => Promise<void>
   delete: <T extends Doc>(domain: Domain, _id: Ref<T>) => Promise<void>
-  deleteMany: <T extends Doc>(domain: Domain, ids: Ref<T>[]) => Promise<void>
+  deleteMany: <T extends Doc>(domain: Domain, query: DocumentQuery<T>) => Promise<void>
 
   hierarchy: Hierarchy
   model: ModelDb

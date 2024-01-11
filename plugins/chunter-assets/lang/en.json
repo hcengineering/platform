@@ -29,9 +29,6 @@
     "Chat": "Chat",
     "In": "In",
     "MentionNotification": "Mentioned",
-    "Replies": "Replies",
-    "LastReply": "Last reply",
-    "RepliesCount": "{replies, plural, =1 {# reply} other {# replies}}",
     "Topic": "Topic",
     "Thread": "Thread",
     "Threads": "Threads",
@@ -80,6 +77,13 @@
     "DirectNotificationTitle": "{senderName}",
     "DirectNotificationBody": "{message}",
     "AddCommentPlaceholder": "Add comment...",
-    "Reacted": "Reacted"
+    "Reacted": "Reacted",
+    "Saved": "Saved",
+    "Docs": "Documents",
+    "NewestFirst": "Newest first",
+    "ReplyToThread": "Reply to thread",
+    "SentMessage": "Sent message",
+    "Direct": "direct",
+    "RepliedToThread": "Replied to thread"
   }
 }

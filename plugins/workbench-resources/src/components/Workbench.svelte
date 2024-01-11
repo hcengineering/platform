@@ -14,54 +14,54 @@
 -->
 <script lang="ts">
   import contact, { Employee, PersonAccount } from '@hcengineering/contact'
-  import core, { Class, Doc, Ref, Space, getCurrentAccount, setCurrentAccount } from '@hcengineering/core'
+  import core, { Class, Doc, getCurrentAccount, Ref, setCurrentAccount, Space } from '@hcengineering/core'
   import login from '@hcengineering/login'
-  import notification, { notificationId } from '@hcengineering/notification'
-  import { BrowserNotificatator, NotificationClientImpl } from '@hcengineering/notification-resources'
-  import { IntlString, broadcastEvent, getMetadata, getResource } from '@hcengineering/platform'
+  import notification, { inboxId } from '@hcengineering/notification'
+  import { BrowserNotificatator, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+  import { broadcastEvent, getMetadata, getResource, IntlString } from '@hcengineering/platform'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import support, { SupportStatus } from '@hcengineering/support'
   import {
     AnyComponent,
+    areLocationsEqual,
     Button,
+    closePanel,
+    closePopup,
+    closeTooltip,
     CompAndProps,
     Component,
+    defineSeparators,
+    deviceOptionsStore as deviceInfo,
+    getCurrentLocation,
+    getLocation,
     Label,
     Location,
+    location,
+    locationStorageKeyId,
+    navigate,
+    openPanel,
     PanelInstance,
     Popup,
     PopupAlignment,
     PopupPosAlignment,
     PopupResult,
-    ResolvedLocation,
-    Separator,
-    TooltipInstance,
-    areLocationsEqual,
-    closePanel,
-    closePopup,
-    closeTooltip,
-    defineSeparators,
-    deviceOptionsStore as deviceInfo,
-    getCurrentLocation,
-    getLocation,
-    location,
-    locationStorageKeyId,
-    navigate,
-    openPanel,
     popupstore,
+    ResolvedLocation,
     resolvedLocationStore,
+    Separator,
     setResolvedLocation,
     showPopup,
     workbenchSeparators,
-    IconSettings
+    IconSettings,
+    TooltipInstance
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import {
     ActionHandler,
     ListSelectionProvider,
-    NavLink,
     migrateViewOpttions,
+    NavLink,
     updateFocus
   } from '@hcengineering/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
@@ -124,9 +124,8 @@
   }
 
   onMount(() => {
-    getResource(login.function.GetWorkspaces).then(async (f) => {
-      const workspaces = await f()
-      $workspacesStore = workspaces
+    getResource(login.function.GetWorkspaces).then(async (getWorkspaceFn) => {
+      $workspacesStore = await getWorkspaceFn()
     })
   })
 
@@ -162,19 +161,19 @@
     { limit: 1 }
   )
 
-  let hasNotification = false
-  // let hasInboxNotifications = false
-
-  const notificationClient = NotificationClientImpl.getClient()
-  notificationClient.docUpdates.subscribe((res) => {
-    hasNotification = res.some((p) => !p.hidden && p.txes.some((p) => p.isNew))
-  })
-
   const workspaceId = $location.path[1]
 
+  let hasInboxNotifications = false
   let syncPromise: Promise<void> | undefined = undefined
-
   let locUpdate = 0
+
+  const notificationClient = InboxNotificationsClientImpl.getClient()
+
+  notificationClient.inboxNotificationsByContext.subscribe((inboxNotificationsByContext) => {
+    hasInboxNotifications = Array.from(inboxNotificationsByContext.entries()).some(([_, notifications]) =>
+      notifications.some(({ isViewed }) => !isViewed)
+    )
+  })
 
   const doSyncLoc = async (loc: Location, iteration: number): Promise<void> => {
     if (workspaceId !== $location.path[1]) {
@@ -672,14 +671,14 @@
           />
         </div>
         <!-- <ActivityStatus status="active" /> -->
-        <NavLink app={notificationId} shrink={0}>
+        <NavLink app={inboxId} shrink={0}>
           <AppItem
-            icon={notification.icon.Inbox}
+            icon={notification.icon.Notifications}
             label={notification.string.Inbox}
-            selected={currentAppAlias === notificationId || inboxPopup !== undefined}
+            selected={currentAppAlias === inboxId || inboxPopup !== undefined}
             on:click={(e) => {
               if (e.metaKey || e.ctrlKey) return
-              if (currentAppAlias === notificationId && lastLoc !== undefined) {
+              if (currentAppAlias === inboxId && lastLoc !== undefined) {
                 e.preventDefault()
                 e.stopPropagation()
                 navigate(lastLoc)
@@ -688,29 +687,9 @@
                 lastLoc = $location
               }
             }}
-            notify={hasNotification}
+            notify={hasInboxNotifications}
           />
         </NavLink>
-        <!-- NOTE: temporarily disabled       -->
-        <!--        <NavLink app={inboxId} shrink={0}>-->
-        <!--          <AppItem-->
-        <!--            icon={notification.icon.Notifications}-->
-        <!--            label={notification.string.Inbox}-->
-        <!--            selected={currentAppAlias === inboxId || inboxPopup !== undefined}-->
-        <!--            on:click={(e) => {-->
-        <!--              if (e.metaKey || e.ctrlKey) return-->
-        <!--              if (currentAppAlias === inboxId && lastLoc !== undefined) {-->
-        <!--                e.preventDefault()-->
-        <!--                e.stopPropagation()-->
-        <!--                navigate(lastLoc)-->
-        <!--                lastLoc = undefined-->
-        <!--              } else {-->
-        <!--                lastLoc = $location-->
-        <!--              }-->
-        <!--            }}-->
-        <!--            notify={hasInboxNotifications}-->
-        <!--          />-->
-        <!--        </NavLink>-->
         <Applications apps={getApps(apps)} active={currentApplication?._id} direction={appsDirection} />
       </div>
       <div class="info-box {appsDirection}" class:vertical-mobile={appsDirection === 'vertical'} class:mini={appsMini}>

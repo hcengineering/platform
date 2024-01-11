@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Person } from '@hcengineering/contact'
 import {
   Account,
   AttachedDoc,
@@ -32,6 +33,7 @@ import {
 } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
+import { Preference } from '@hcengineering/preference'
 import type { AnyComponent } from '@hcengineering/ui'
 
 // TODO: remove TxViewlet
@@ -110,10 +112,14 @@ export interface ActivityMessage extends AttachedDoc {
 
   isPinned?: boolean
 
+  repliedPersons?: Ref<Person>[]
+  lastReply?: Timestamp
+
+  replies?: number
   reactions?: number
 }
 
-export type DisplayActivityMessage = DisplayDocUpdateMessage | ActivityMessage | ActivityInfoMessage
+export type DisplayActivityMessage = DisplayDocUpdateMessage | ActivityMessage
 
 export interface DisplayDocUpdateMessage extends DocUpdateMessage {
   previousMessages?: DocUpdateMessage[]
@@ -228,6 +234,7 @@ export const activityId = 'activity' as Plugin
  */
 export interface ActivityMessagesFilter extends Doc {
   label: IntlString
+  position: number
   filter: Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>
 }
 
@@ -262,8 +269,17 @@ export interface ActivityExtension extends Doc {
  * @public
  */
 export interface Reaction extends AttachedDoc {
+  attachedTo: Ref<ActivityMessage>
+  attachedToClass: Ref<Class<ActivityMessage>>
   emoji: string
   createBy: Ref<Account>
+}
+
+/**
+ * @public
+ */
+export interface SavedMessage extends Preference {
+  attachedTo: Ref<ActivityMessage>
 }
 
 /**
@@ -287,11 +303,13 @@ export default plugin(activityId, {
     ActivityMessageExtension: '' as Ref<Class<ActivityMessageExtension>>,
     ActivityMessagesFilter: '' as Ref<Class<ActivityMessagesFilter>>,
     ActivityExtension: '' as Ref<Class<ActivityExtension>>,
-    Reaction: '' as Ref<Class<Reaction>>
+    Reaction: '' as Ref<Class<Reaction>>,
+    SavedMessage: '' as Ref<Class<SavedMessage>>
   },
   icon: {
     Activity: '' as Asset,
-    Emoji: '' as Asset
+    Emoji: '' as Asset,
+    Bookmark: '' as Asset
   },
   string: {
     Activity: '' as IntlString,
@@ -313,7 +331,9 @@ export default plugin(activityId, {
     Update: '' as IntlString,
     For: '' as IntlString,
     AllActivity: '' as IntlString,
-    Reactions: '' as IntlString
+    Reactions: '' as IntlString,
+    LastReply: '' as IntlString,
+    RepliesCount: '' as IntlString
   },
   component: {
     Activity: '' as AnyComponent,
@@ -321,5 +341,8 @@ export default plugin(activityId, {
     DocUpdateMessagePresenter: '' as AnyComponent,
     ActivityInfoMessagePresenter: '' as AnyComponent,
     ReactionAddedMessage: '' as AnyComponent
+  },
+  ids: {
+    AllFilter: '' as Ref<ActivityMessagesFilter>
   }
 })

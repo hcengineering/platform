@@ -24,5 +24,5 @@
 </script>
 
 {#if extension}
-  <Component is={extension.components[kind]} {props} on:close on:open />
+  <Component is={extension.components[kind]} {props} on:close on:open on:submit />
 {/if}

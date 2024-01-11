@@ -30,6 +30,7 @@ export const serverActivityId = 'server-activity' as Plugin
 export default plugin(serverActivityId, {
   trigger: {
     ActivityMessagesHandler: '' as Resource<TriggerFunc>,
-    OnDocRemoved: '' as Resource<TriggerFunc>
+    OnDocRemoved: '' as Resource<TriggerFunc>,
+    OnReactionChanged: '' as Resource<TriggerFunc>
   }
 })

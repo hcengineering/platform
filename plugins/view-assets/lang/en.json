@@ -114,6 +114,9 @@
     "IconCategory": "Icon",
     "EmojiCategory": "Emoji",
     "Type": "Type",
-    "ToViewCommands": "to view available commands"
+    "ToViewCommands": "to view available commands",
+    "UnArchive": "Unarchive",
+    "Pin": "Pin",
+    "Unpin": "Unpin"
   }
 }

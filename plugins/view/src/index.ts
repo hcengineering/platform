@@ -435,9 +435,10 @@ export type ViewActionInput = 'focus' | 'selection' | 'any' | 'none'
 /**
  * @public
  */
+
 export type ViewActionFunction<T extends Doc = Doc, P = Record<string, any>> = (
   doc: T | T[] | undefined,
-  evt: Event,
+  evt?: Event,
   params?: P
 ) => Promise<void>
 
@@ -884,6 +885,9 @@ const view = plugin(viewId, {
     HyperlinkPlaceholder: '' as IntlString,
     CopyToClipboard: '' as IntlString,
     NoGrouping: '' as IntlString,
+    Type: '' as IntlString,
+    UnArchive: '' as IntlString,
+    Save: '' as IntlString,
     PublicView: '' as IntlString
   },
   icon: {

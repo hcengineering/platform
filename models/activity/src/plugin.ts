@@ -16,20 +16,33 @@ import { activityId, type ActivityMessage, type DocUpdateMessageViewlet } from '
 import activity from '@hcengineering/activity-resources/src/plugin'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type Doc, type Ref } from '@hcengineering/core'
+import type { Location } from '@hcengineering/ui'
+import { type ActionCategory } from '@hcengineering/view'
+import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
 
 export default mergeIds(activityId, activity, {
   string: {
     Attributes: '' as IntlString,
     Pinned: '' as IntlString,
     Emoji: '' as IntlString,
-    Reacted: '' as IntlString
+    Reacted: '' as IntlString,
+    Replies: '' as IntlString
   },
   filter: {
     AttributesFilter: '' as Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>,
-    PinnedFilter: '' as Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>
+    PinnedFilter: '' as Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>,
+    AllFilter: '' as Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>
   },
   ids: {
     ReactionAddedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,
-    ReactionRemovedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>
+    ReactionRemovedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,
+    ActivityNotificationGroup: '' as Ref<NotificationGroup>,
+    AddReactionNotification: '' as Ref<NotificationType>
+  },
+  function: {
+    GetFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>
+  },
+  category: {
+    Activity: '' as Ref<ActionCategory>
   }
 })

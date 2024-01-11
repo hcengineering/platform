@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import core, { Class, ClassifierKind, Doc, Mixin, Ref } from '@hcengineering/core'
+  import { Class, Doc, Mixin, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
@@ -33,7 +33,7 @@
   import { AnyComponent, Button, Component, IconMixin, IconMoreH, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
 
-  import { ContextMenu, ParentsNavigator, DocNavLink, getDocLabel } from '..'
+  import { ContextMenu, ParentsNavigator, DocNavLink, getDocLabel, getDocMixins } from '..'
   import { categorizeFields, getCollectionCounter, getFiltredKeys } from '../utils'
   import DocAttributeBar from './DocAttributeBar.svelte'
 
@@ -47,22 +47,22 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
+  const inboxClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
 
   $: read(_id)
   function read (_id: Ref<Doc>) {
     if (lastId !== _id) {
       const prev = lastId
       lastId = _id
-      notificationClient.then(async (client) => {
-        await client.read(prev)
+      inboxClient.then(async (client) => {
+        await client.readDoc(prev)
       })
     }
   }
 
   onDestroy(async () => {
-    await notificationClient.then(async (client) => {
-      await client.read(_id)
+    await inboxClient.then(async (client) => {
+      await client.readDoc(_id)
     })
   })
 
@@ -93,27 +93,11 @@
   let fieldEditors: Array<{ key: KeyedAttribute, editor: AnyComponent, category: AttributeCategory }> = []
 
   let mixins: Array<Mixin<Doc>> = []
-
   let showAllMixins = false
 
+  $: mixins = getDocMixins(object, showAllMixins, ignoreMixins, realObjectClass)
+
   const dispatch = createEventDispatcher()
-
-  function getMixins (object: Doc, showAllMixins: boolean): void {
-    if (object === undefined) return
-    const descendants = hierarchy.getDescendants(core.class.Doc).map((p) => hierarchy.getClass(p))
-
-    mixins = descendants.filter(
-      (m) =>
-        m.kind === ClassifierKind.MIXIN &&
-        !ignoreMixins.has(m._id) &&
-        (hierarchy.hasMixin(object, m._id) ||
-          (showAllMixins &&
-            hierarchy.isDerived(realObjectClass, hierarchy.getBaseClass(m._id)) &&
-            (m.extends && hierarchy.isMixin(m.extends) ? hierarchy.hasMixin(object, m.extends) : true)))
-    )
-  }
-
-  $: getMixins(object, showAllMixins)
 
   let ignoreKeys: string[] = []
   let activityOptions = { enabled: true, showInput: true }
@@ -255,7 +239,7 @@
     allowedCollections = ev.detail.allowedCollections ?? []
     collectionArrays = ev.detail.collectionArrays ?? []
     title = ev.detail.title
-    getMixins(object, showAllMixins)
+    mixins = getDocMixins(object, showAllMixins, ignoreMixins, realObjectClass)
     updateKeys()
   }
 

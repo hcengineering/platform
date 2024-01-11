@@ -31,7 +31,8 @@ export default mergeIds(notificationId, notification, {
     Archive: '' as IntlString,
     MarkAsUnread: '' as IntlString,
     MarkAsRead: '' as IntlString,
-    ChangeCollaborators: '' as IntlString
+    ChangeCollaborators: '' as IntlString,
+    Message: '' as IntlString
   },
   app: {
     Notification: '' as Ref<Application>,
@@ -48,31 +49,30 @@ export default mergeIds(notificationId, notification, {
   component: {
     NotificationSettings: '' as AnyComponent,
     InboxAside: '' as AnyComponent,
-    ChatMessagePresenter: '' as AnyComponent,
-    DocUpdateMessagePresenter: '' as AnyComponent,
-    PinMessageAction: '' as AnyComponent
+    ActivityInboxNotificationPresenter: '' as AnyComponent,
+    CommonInboxNotificationPresenter: '' as AnyComponent
   },
   function: {
-    HasntNotifications: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     HasMarkAsUnreadAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     HasMarkAsReadAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
-    HasDeleteNotificationAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
+    HasDocNotifyContextPinAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    HasDocNotifyContextUnpinAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
   },
   category: {
     Notification: '' as Ref<ActionCategory>
   },
   groups: {},
   action: {
-    Unsubscribe: '' as Ref<Action>,
-    Hide: '' as Ref<Action>,
-    MarkAsUnread: '' as Ref<Action>
+    Unsubscribe: '' as Ref<Action>
   },
   actionImpl: {
     Unsubscribe: '' as ViewAction,
-    Hide: '' as ViewAction,
-    MarkAsUnread: '' as ViewAction,
     MarkAsUnreadInboxNotification: '' as ViewAction,
     MarkAsReadInboxNotification: '' as ViewAction,
-    DeleteInboxNotification: '' as ViewAction
+    DeleteInboxNotification: '' as ViewAction,
+    UnpinDocNotifyContext: '' as ViewAction,
+    PinDocNotifyContext: '' as ViewAction,
+    HideDocNotifyContext: '' as ViewAction,
+    UnHideDocNotifyContext: '' as ViewAction
   }
 })

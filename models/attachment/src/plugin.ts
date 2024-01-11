@@ -24,8 +24,7 @@ import type { ActionCategory } from '@hcengineering/view'
 
 export default mergeIds(attachmentId, attachment, {
   component: {
-    AttachmentPresenter: '' as AnyComponent,
-    FileBrowser: '' as AnyComponent
+    AttachmentPresenter: '' as AnyComponent
   },
   string: {
     AddAttachment: '' as IntlString,

@@ -70,19 +70,19 @@
   let descriptionBox: AttachmentStyleBoxCollabEditor
   let showAllMixins: boolean
 
-  const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
+  const inboxClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
 
   $: read(_id)
   function read (_id: Ref<Doc>): void {
     if (lastId !== _id) {
       const prev = lastId
       lastId = _id
-      void notificationClient.then((client) => client.read(prev))
+      void inboxClient.then((client) => client.readDoc(prev))
     }
   }
 
   onDestroy(async () => {
-    void notificationClient.then((client) => client.read(_id))
+    void inboxClient.then((client) => client.readDoc(_id))
   })
 
   $: _id !== undefined &&

@@ -99,7 +99,9 @@ export default mergeIds(viewId, view, {
     General: '' as IntlString,
     Navigation: '' as IntlString,
     Editor: '' as IntlString,
-    MarkdownFormatting: '' as IntlString
+    MarkdownFormatting: '' as IntlString,
+    Pin: '' as IntlString,
+    Unpin: '' as IntlString
   },
   function: {
     FilterArrayAllResult: '' as FilterFunction,

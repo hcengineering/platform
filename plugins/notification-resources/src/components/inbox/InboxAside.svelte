@@ -14,39 +14,46 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
+  import { Class, Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Component, IconClose, Spinner } from '@hcengineering/ui'
+  import { Component, getLocation, IconClose, location as locationStore, Spinner } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import activity, { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
-  import {
-    ActivityExtension,
-    ActivityMessagePresenter,
-    combineActivityMessages
-  } from '@hcengineering/activity-resources'
+  import activity, { ActivityMessage } from '@hcengineering/activity'
+  import chunter from '@hcengineering/chunter'
   import { buildRemovedDoc, checkIsObjectRemoved } from '@hcengineering/view-resources'
+  import { DocNotifyContext } from '@hcengineering/notification'
+  import { ActivityScrolledView } from '@hcengineering/activity-resources'
+
+  import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
 
   export let _id: Ref<ActivityMessage>
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+
   const selectedMessageQuery = createQuery()
-  const messagesQuery = createQuery()
   const objectQuery = createQuery()
 
-  let messages: DisplayActivityMessage[] = []
+  let loc = getLocation()
   let selectedMessage: ActivityMessage | undefined = undefined
   let object: Doc | undefined = undefined
   let isLoading: boolean = true
+  let notifyContext: DocNotifyContext | undefined = undefined
 
-  let scrollElement: HTMLDivElement | undefined
+  locationStore.subscribe((newLocation) => {
+    loc = newLocation
+  })
+
+  $: docNotifyContextByDocStore = inboxClient.docNotifyContextByDoc
 
   $: selectedMessageQuery.query(
     activity.class.ActivityMessage,
     { _id },
     (result: ActivityMessage[]) => {
       selectedMessage = result[0]
+      notifyContext = $docNotifyContextByDocStore.get(selectedMessage.attachedTo)
     },
     {
       limit: 1
@@ -66,76 +73,57 @@
   }
 
   $: selectedMessage && loadObject(selectedMessage.attachedTo, selectedMessage.attachedToClass)
+
   $: objectPresenter =
     selectedMessage && hierarchy.classHierarchyMixin(selectedMessage.attachedToClass, view.mixin.ObjectPresenter)
 
-  $: selectedMessage &&
-    messagesQuery.query(
-      activity.class.ActivityMessage,
-      { attachedTo: selectedMessage.attachedTo },
-      (result: ActivityMessage[]) => {
-        messages = combineActivityMessages(result)
-        isLoading = false
-      },
-      {
-        sort: {
-          modifiedOn: SortingOrder.Ascending
-        }
-      }
-    )
-
-  function scrollToBottom () {
-    setTimeout(() => {
-      if (scrollElement !== undefined) {
-        scrollElement.scrollTo(0, scrollElement.scrollHeight)
-      }
-    }, 100)
-  }
+  $: isThread = loc.query?.thread === 'true'
+  $: threadId =
+    selectedMessage?._class === chunter.class.ThreadMessage ? selectedMessage.attachedTo : selectedMessage?._id
 </script>
 
-<div class="ac-header full divide caption-height withoutBackground">
-  <div class="ac-header__wrap-title mr-3">
-    {#if objectPresenter && object}
-      <Component is={objectPresenter.presenter} props={{ value: object }} />
-    {/if}
+{#if isThread && selectedMessage}
+  <Component
+    is={chunter.component.ThreadView}
+    props={{ _id: threadId, selectedMessageId: selectedMessage._id }}
+    on:close={() => dispatch('close')}
+  />
+{:else}
+  <div class="ac-header full divide caption-height withoutBackground">
+    <div class="ac-header__wrap-title mr-3">
+      {#if objectPresenter && object}
+        <Component is={objectPresenter.presenter} props={{ value: object }} />
+      {/if}
+    </div>
+
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <div class="tool" on:click={() => dispatch('close')}>
+      <IconClose size="medium" />
+    </div>
   </div>
 
-  {messages.length}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class="tool" on:click={() => dispatch('close')}>
-    <IconClose size="medium" />
-  </div>
-</div>
+  {#if isLoading}
+    <div class="spinner">
+      <Spinner size="small" />
+    </div>
+  {/if}
 
-{#if isLoading}
-  <div class="spinner">
-    <Spinner size="small" />
-  </div>
-{/if}
-
-{#if !isLoading}
-  <div class="flex-col vScroll content" bind:this={scrollElement}>
-    {#each messages as message}
-      <ActivityMessagePresenter
-        value={message}
-        isHighlighted={message._id === _id}
-        shouldScroll={_id === message._id}
-      />
-    {/each}
-  </div>
-{/if}
-{#if object}
-  <div class="ref-input">
-    <ActivityExtension kind="input" props={{ object }} on:submit={scrollToBottom} />
-  </div>
+  {#if object}
+    <ActivityScrolledView
+      bind:isLoading
+      selectedMessageId={_id}
+      {object}
+      lastViewedTimestamp={notifyContext?.lastViewedTimestamp}
+      _class={hierarchy.isDerived(object._class, chunter.class.ChunterSpace)
+        ? chunter.class.ChatMessage
+        : activity.class.ActivityMessage}
+      skipLabels={hierarchy.isDerived(object._class, chunter.class.ChunterSpace)}
+    />
+  {/if}
 {/if}
 
 <style lang="scss">
-  .content {
-    padding: 0 24px;
-  }
-
   .spinner {
     display: flex;
     align-items: center;
@@ -152,9 +140,5 @@
     &:hover {
       opacity: 1;
     }
-  }
-
-  .ref-input {
-    margin: 1.25rem 1rem;
   }
 </style>

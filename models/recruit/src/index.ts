@@ -298,6 +298,7 @@ export function createModel (builder: Builder): void {
       locationResolver: recruit.resolver.Location,
       alias: recruitId,
       hidden: false,
+      aside: chunter.component.ThreadView,
       navigatorModel: {
         spaces: [],
         specials: [
@@ -1619,6 +1620,7 @@ export function createModel (builder: Builder): void {
     chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
+      messageClass: chunter.class.ChatMessage,
       objectClass: recruit.class.Vacancy,
       label: chunter.string.LeftComment
     },
@@ -1629,6 +1631,7 @@ export function createModel (builder: Builder): void {
     chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
+      messageClass: chunter.class.ChatMessage,
       objectClass: recruit.class.Applicant,
       label: chunter.string.LeftComment
     },
@@ -1639,6 +1642,7 @@ export function createModel (builder: Builder): void {
     chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
+      messageClass: chunter.class.ChatMessage,
       objectClass: recruit.class.Review,
       label: chunter.string.LeftComment
     },

@@ -21,7 +21,7 @@ import DocUpdateMessagePresenter from './components/doc-update-message/DocUpdate
 import ActivityInfoMessagePresenter from './components/activity-message/ActivityInfoMessagePresenter.svelte'
 import ReactionAddedMessage from './components/reactions/ReactionAddedMessage.svelte'
 
-import { attributesFilter, pinnedFilter } from './activityMessagesUtils'
+import { getMessageFragment, attributesFilter, pinnedFilter, allFilter } from './activityMessagesUtils'
 
 export * from './activity'
 export * from './utils'
@@ -31,6 +31,7 @@ export { default as Reactions } from './components/reactions/Reactions.svelte'
 export { default as ActivityMessageTemplate } from './components/activity-message/ActivityMessageTemplate.svelte'
 export { default as ActivityMessagePresenter } from './components/activity-message/ActivityMessagePresenter.svelte'
 export { default as ActivityExtension } from './components/ActivityExtension.svelte'
+export { default as ActivityScrolledView } from './components/ActivityScrolledView.svelte'
 export { default as ActivityMessageHeader } from './components/activity-message/ActivityMessageHeader.svelte'
 
 export default async (): Promise<Resources> => ({
@@ -43,6 +44,10 @@ export default async (): Promise<Resources> => ({
   },
   filter: {
     AttributesFilter: attributesFilter,
-    PinnedFilter: pinnedFilter
+    PinnedFilter: pinnedFilter,
+    AllFilter: allFilter
+  },
+  function: {
+    GetFragment: getMessageFragment
   }
 })

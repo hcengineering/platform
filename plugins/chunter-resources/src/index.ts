@@ -14,169 +14,58 @@
 //
 
 import { writable } from 'svelte/store'
-import chunter, {
-  type Backlink,
-  type Channel,
-  type ChatMessage,
-  type ChunterMessage,
-  type ChunterSpace,
-  type DirectMessage,
-  type Message,
-  type ThreadMessage
-} from '@hcengineering/chunter'
-import core, {
-  type Data,
-  type Doc,
-  type DocumentQuery,
-  type Ref,
-  type RelatedDocument,
-  type Space,
-  getCurrentAccount
-} from '@hcengineering/core'
-import { NotificationClientImpl } from '@hcengineering/notification-resources'
+import chunter, { type Backlink, type Channel, type ChatMessage, type DirectMessage } from '@hcengineering/chunter'
+import { type Data, type Doc, type DocumentQuery, type Ref, type RelatedDocument } from '@hcengineering/core'
 import { type IntlString, type Resources, translate } from '@hcengineering/platform'
-import preference from '@hcengineering/preference'
 import { MessageBox, getClient } from '@hcengineering/presentation'
-import { getLocation, navigate, showPopup } from '@hcengineering/ui'
+import { closePanel, getCurrentLocation, getLocation, navigate, showPopup } from '@hcengineering/ui'
+import activity, { type ActivityMessage, type DocUpdateMessage } from '@hcengineering/activity'
+import { type DocNotifyContext } from '@hcengineering/notification'
 
-import ChannelHeader from './components/ChannelHeader.svelte'
 import ChannelPresenter from './components/ChannelPresenter.svelte'
 import ChannelView from './components/ChannelView.svelte'
 import ChannelViewPanel from './components/ChannelViewPanel.svelte'
-import ChunterBrowser from './components/ChunterBrowser.svelte'
+import ChunterBrowser from './components/chat/specials/ChunterBrowser.svelte'
 import ConvertDmToPrivateChannelModal from './components/ConvertDmToPrivateChannel.svelte'
-import CreateChannel from './components/CreateChannel.svelte'
-import CreateDirectMessage from './components/CreateDirectMessage.svelte'
+import CreateChannel from './components/chat/create/CreateChannel.svelte'
+import CreateDirectMessage from './components/chat/create/CreateDirectMessage.svelte'
 import DirectMessagePresenter from './components/DirectMessagePresenter.svelte'
 import DmHeader from './components/DmHeader.svelte'
 import DmPresenter from './components/DmPresenter.svelte'
 import DirectMessageInput from './components/DirectMessageInput.svelte'
 import EditChannel from './components/EditChannel.svelte'
-import MessagePresenter from './components/MessagePresenter.svelte'
 import ChannelPreview from './components/ChannelPreview.svelte'
-import MessagePreview from './components/MessagePreview.svelte'
-import SavedMessages from './components/SavedMessages.svelte'
-import ThreadParentPresenter from './components/ThreadParentPresenter.svelte'
-import ThreadView from './components/ThreadView.svelte'
-import ThreadViewPanel from './components/ThreadViewPanel.svelte'
-import Thread from './components/Thread.svelte'
-import Threads from './components/Threads.svelte'
+import ThreadView from './components/threads/ThreadView.svelte'
+import ThreadViewPanel from './components/threads/ThreadViewPanel.svelte'
 import BacklinkContent from './components/BacklinkContent.svelte'
 import BacklinkReference from './components/BacklinkReference.svelte'
-import TxCommentCreate from './components/activity/TxCommentCreate.svelte'
-import TxMessageCreate from './components/activity/TxMessageCreate.svelte'
 import BacklinkCreatedLabel from './components/activity/BacklinkCreatedLabel.svelte'
 import ChatMessagePresenter from './components/chat-message/ChatMessagePresenter.svelte'
 import ChatMessageInput from './components/chat-message/ChatMessageInput.svelte'
 import ChatMessagesPresenter from './components/chat-message/ChatMessagesPresenter.svelte'
+import Chat from './components/chat/Chat.svelte'
+import ThreadMessagePresenter from './components/threads/ThreadMessagePresenter.svelte'
+import ThreadParentPresenter from './components/threads/ThreadParentPresenter.svelte'
+import ChannelHeader from './components/ChannelHeader.svelte'
+import SavedMessages from './components/chat/specials/SavedMessages.svelte'
+import Threads from './components/chat/specials/Threads.svelte'
 
 import { updateBacklinksList } from './backlinks'
-import { getDmName, getLink, getTitle, resolveLocation } from './utils'
-import activity, { type ActivityMessage, type DocUpdateMessage } from '@hcengineering/activity'
-import notification from '@hcengineering/notification'
+import {
+  DirectMessageTitleProvider,
+  canDeleteMessage,
+  chunterSpaceLinkFragmentProvider,
+  dmIdentifierProvider,
+  getDmName,
+  getLink,
+  getTitle
+} from './utils'
 
 export { default as ChatMessagesPresenter } from './components/chat-message/ChatMessagesPresenter.svelte'
 export { default as ChatMessagePopup } from './components/chat-message/ChatMessagePopup.svelte'
+export { default as ChatMessageInput } from './components/chat-message/ChatMessageInput.svelte'
 export { default as Header } from './components/Header.svelte'
-export { classIcon } from './utils'
-export { Thread }
-
-async function MarkUnread (object: Message): Promise<void> {
-  const client = NotificationClientImpl.getClient()
-  await client.forceRead(object.space, chunter.class.ChunterSpace)
-}
-
-async function MarkCommentUnread (object: ThreadMessage): Promise<void> {
-  const client = NotificationClientImpl.getClient()
-  await client.forceRead(object.attachedTo, object.attachedToClass)
-}
-
-async function SubscribeMessage (object: Message): Promise<void> {
-  const client = getClient()
-  const acc = getCurrentAccount()
-  const hierarchy = client.getHierarchy()
-  if (hierarchy.isDerived(object._class, chunter.class.ThreadMessage)) {
-    await client.updateMixin(
-      object.attachedTo,
-      object.attachedToClass,
-      object.space,
-      notification.mixin.Collaborators,
-      {
-        $push: {
-          collaborators: acc._id
-        }
-      }
-    )
-  } else {
-    await client.updateMixin(object._id, object._class, object.space, notification.mixin.Collaborators, {
-      $push: {
-        collaborators: acc._id
-      }
-    })
-  }
-}
-
-async function UnsubscribeMessage (object: ChunterMessage): Promise<void> {
-  const client = getClient()
-  const acc = getCurrentAccount()
-  const hierarchy = client.getHierarchy()
-  const notificationClient = NotificationClientImpl.getClient()
-  if (hierarchy.isDerived(object._class, chunter.class.ThreadMessage)) {
-    await client.updateMixin(
-      object.attachedTo,
-      object.attachedToClass,
-      object.space,
-      notification.mixin.Collaborators,
-      {
-        $pull: {
-          collaborators: acc._id
-        }
-      }
-    )
-    const docUpdate = notificationClient.docUpdatesMap.get(object.attachedTo)
-    if (docUpdate !== undefined) {
-      await client.remove(docUpdate)
-    }
-  } else {
-    await client.updateMixin(object._id, object._class, object.space, notification.mixin.Collaborators, {
-      $pull: {
-        collaborators: acc._id
-      }
-    })
-    const docUpdate = notificationClient.docUpdatesMap.get(object._id)
-    if (docUpdate !== undefined) {
-      await client.remove(docUpdate)
-    }
-  }
-}
-
-type PinnedChunterSpace = ChunterSpace
-
-async function PinMessage (message: ChunterMessage): Promise<void> {
-  const client = getClient()
-
-  await client.updateDoc<PinnedChunterSpace>(
-    chunter.class.ChunterSpace,
-    core.space.Space,
-    message.space as Ref<PinnedChunterSpace>,
-    {
-      $push: { pinned: message._id }
-    }
-  )
-}
-
-export async function UnpinMessage (message: ChunterMessage): Promise<void> {
-  const client = getClient()
-
-  await client.updateDoc<PinnedChunterSpace>(
-    chunter.class.ChunterSpace,
-    core.space.Space,
-    message.space as Ref<PinnedChunterSpace>,
-    {
-      $pull: { pinned: message._id }
-    }
-  )
-}
+export { default as ThreadView } from './components/threads/ThreadView.svelte'
 
 export async function ArchiveChannel (channel: Channel, evt: any, afterArchive?: () => void): Promise<void> {
   showPopup(
@@ -230,27 +119,40 @@ async function ConvertDmToPrivateChannel (dm: DirectMessage): Promise<void> {
   })
 }
 
-export async function AddMessageToSaved (message: ChunterMessage): Promise<void> {
-  const client = getClient()
+async function OpenChannel (notifyContext?: DocNotifyContext, evt?: Event): Promise<void> {
+  evt?.preventDefault()
 
-  await client.createDoc(chunter.class.SavedMessages, preference.space.Preference, {
-    attachedTo: message._id
-  })
+  closePanel()
+
+  const loc = getCurrentLocation()
+  const id = notifyContext?._id
+
+  if (id === undefined) {
+    return
+  }
+
+  loc.path[3] = id
+  loc.fragment = undefined
+
+  navigate(loc)
 }
 
-export async function DeleteMessageFromSaved (message: ChunterMessage): Promise<void> {
+async function UnpinAllChannels (contexts: DocNotifyContext[]): Promise<void> {
   const client = getClient()
-
-  const current = await client.findOne(chunter.class.SavedMessages, { attachedTo: message._id })
-  if (current !== undefined) {
-    await client.remove(current)
-  }
+  await Promise.all(contexts.map(async (context) => await client.update(context, { isPinned: false })))
 }
 
 export const userSearch = writable('')
 
-export async function chunterBrowserVisible (spaces: Space[]): Promise<boolean> {
+export async function chunterBrowserVisible (): Promise<boolean> {
   return false
+}
+
+export function shouldNotify (docNotifyContexts: DocNotifyContext[]): boolean {
+  return docNotifyContexts.some(
+    ({ hidden, lastViewedTimestamp, lastUpdateTimestamp }) =>
+      !hidden && (lastViewedTimestamp ?? 0) < (lastUpdateTimestamp ?? 0)
+  )
 }
 
 async function update (source: Doc, key: string, target: RelatedDocument[], msg: IntlString): Promise<void> {
@@ -282,13 +184,16 @@ export function chatMessagesFilter (message: ActivityMessage): boolean {
 
 export async function deleteChatMessage (message: ChatMessage): Promise<void> {
   const client = getClient()
-  // TODO: move to server?
-  const notifications = await client.findAll(notification.class.InboxNotification, { attachedTo: message._id })
 
-  await Promise.all([
-    client.remove(message),
-    ...notifications.map(async (notification) => await client.remove(notification))
-  ])
+  await client.remove(message)
+}
+
+export async function replyToThread (message: ActivityMessage): Promise<void> {
+  console.log('reply', { message })
+
+  const loc = getLocation()
+  loc.path[4] = message._id
+  navigate(loc)
 }
 
 export default async (): Promise<Resources> => ({
@@ -306,51 +211,47 @@ export default async (): Promise<Resources> => ({
     ChannelViewPanel,
     ChannelPresenter,
     DirectMessagePresenter,
-    MessagePresenter,
-    MessagePreview,
     ChannelPreview,
     ChunterBrowser,
     DmHeader,
     DmPresenter,
     DirectMessageInput,
     EditChannel,
-    Thread,
-    Threads,
     ThreadView,
     SavedMessages,
     BacklinkContent,
     BacklinkReference,
     ChatMessagePresenter,
     ChatMessageInput,
-    ChatMessagesPresenter
+    ChatMessagesPresenter,
+    Chat,
+    ThreadMessagePresenter,
+    Threads
   },
   function: {
     GetDmName: getDmName,
     ChunterBrowserVisible: chunterBrowserVisible,
     GetFragment: getTitle,
-    GetLink: getLink
+    GetLink: getLink,
+    DirectMessageTitleProvider,
+    ShouldNotify: shouldNotify,
+    DmIdentifierProvider: dmIdentifierProvider,
+    CanDeleteMessage: canDeleteMessage,
+    GetChunterSpaceLinkFragment: chunterSpaceLinkFragmentProvider
   },
   activity: {
-    TxCommentCreate,
-    TxMessageCreate,
     BacklinkCreatedLabel
   },
   actionImpl: {
-    MarkUnread,
-    MarkCommentUnread,
-    SubscribeMessage,
-    UnsubscribeMessage,
-    PinMessage,
-    UnpinMessage,
     ArchiveChannel,
     UnarchiveChannel,
     ConvertDmToPrivateChannel,
-    DeleteChatMessage: deleteChatMessage
+    DeleteChatMessage: deleteChatMessage,
+    OpenChannel,
+    UnpinAllChannels,
+    ReplyToThread: replyToThread
   },
   backreference: {
     Update: update
-  },
-  resolver: {
-    Location: resolveLocation
   }
 })
