@@ -4,7 +4,9 @@ export class CommonPage {
   async selectMenuItem (page: Page, name: string, fullWordFilter: boolean = false): Promise<void> {
     if (name !== 'first') {
       const filterText = fullWordFilter ? name : name.split(' ')[0]
-      await page.locator('div.selectPopup input').fill(filterText)
+      console.log('filterText: !' + filterText + '!')
+      await page.locator('div.selectPopup input').fill(filterText.trim())
+      console.log('selectMenuItem: !' + await page.locator('div.selectPopup input').inputValue() + '!')
     }
     await page.locator('div.selectPopup div.list-item:first-child').click()
   }
