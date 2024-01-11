@@ -6,7 +6,7 @@ export class CommonPage {
       const filterText = fullWordFilter ? name : name.split(' ')[0]
       console.log('filterText: !' + filterText + '!')
       await page.waitForTimeout(300)
-      await page.locator('div.selectPopup input').pressSequentially(filterText.trim())
+      await page.locator('div.selectPopup input').fill(filterText.trim())
       console.log('selectMenuItem: !' + (await page.locator('div.selectPopup input').inputValue()) + '!')
     }
     await page.locator('div.selectPopup div.list-item:first-child').click({ delay: 200 })

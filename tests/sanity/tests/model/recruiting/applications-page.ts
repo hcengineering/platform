@@ -51,7 +51,7 @@ export class ApplicationsPage extends CommonRecruitingPage {
     await this.pressCreateButtonSelectPopup(this.page)
     await this.createNewTalentPopup(this.page, talentName.firstName, talentName.lastName)
 
-    await this.selectVacancy(data.vacancy)
+    // await this.selectVacancy(data.vacancy)
     await this.selectRecruiter(data.recruiterName)
 
     await this.buttonCreateNewApplication.click()
@@ -68,7 +68,8 @@ export class ApplicationsPage extends CommonRecruitingPage {
     await this.page.screenshot({ path: `screenshots/${name}_before.png`, fullPage: true })
     await this.buttonSpaceSelector.click({ delay: 300 })
     await this.page.screenshot({ path: `screenshots/${name}_after.png`, fullPage: true })
-    await this.selectMenuItem(this.page, name, true)
+    // await this.selectMenuItem(this.page, name, true)
+    await this.selectMenuItem(this.page, 'first')
   }
 
   async selectRecruiter (name: string): Promise<void> {
