@@ -236,6 +236,12 @@ jobs:
         with:
           name: docker-logs
           path: ./tests/sanity/logs
+      - name: Upload screenshot
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: screenshots
+          path: ./tests/sanity/screenshots
       # - name: Upload DB snapshot
       #   if: always()
       #   uses: actions/upload-artifact@v3

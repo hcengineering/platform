@@ -65,7 +65,9 @@ export class ApplicationsPage extends CommonRecruitingPage {
   }
 
   async selectVacancy (name: string): Promise<void> {
+    await this.page.screenshot({ path: `screenshots/${name}_before.png`, fullPage: true })
     await this.buttonSpaceSelector.click({ delay: 300 })
+    await this.page.screenshot({ path: `screenshots/${name}_after.png`, fullPage: true })
     await this.selectMenuItem(this.page, name)
   }
 
