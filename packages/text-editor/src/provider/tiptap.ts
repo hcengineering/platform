@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 import { Doc as Ydoc } from 'yjs'
-import type { Doc, Ref } from '@hcengineering/core'
-import { type KeyedAttribute, getClient } from '@hcengineering/presentation'
 import { HocuspocusProvider, type HocuspocusProviderConfiguration } from '@hocuspocus/provider'
+
+export type DocumentId = string
 
 export type TiptapCollabProviderConfiguration = HocuspocusProviderConfiguration &
 Required<Pick<HocuspocusProviderConfiguration, 'token'>> &
@@ -26,21 +26,6 @@ Omit<HocuspocusProviderConfiguration, 'parameters'> & {
 export interface TiptapCollabProviderURLParameters {
   initialContentId?: DocumentId
   targetContentId?: DocumentId
-}
-
-export type DocumentId = string
-
-export function minioDocumentId (docId: Ref<Doc>, attr?: KeyedAttribute): DocumentId {
-  return attr !== undefined ? `minio://${docId}%${attr.key}` : `minio://${docId}`
-}
-
-export function platformDocumentId (docId: Ref<Doc>, attr: KeyedAttribute): DocumentId {
-  return `platform://${attr.attr.attributeOf}/${docId}/${attr.key}`
-}
-
-export function mongodbDocumentId (docId: Ref<Doc>, attr: KeyedAttribute): DocumentId {
-  const domain = getClient().getHierarchy().getDomain(attr.attr.attributeOf)
-  return `mongodb://${domain}/${docId}/${attr.key}`
 }
 
 export class TiptapCollabProvider extends HocuspocusProvider {

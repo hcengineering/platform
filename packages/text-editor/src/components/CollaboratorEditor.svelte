@@ -21,7 +21,7 @@
   import { TextSelection } from '@tiptap/pm/state'
 
   import textEditorPlugin from '../plugin'
-  import { DocumentId } from '../provider'
+  import { DocumentId } from '../provider/tiptap'
   import { TextEditorCommandHandler, TextFormatCategory, TextNodeAction } from '../types'
 
   import CollaborativeTextEditor from './CollaborativeTextEditor.svelte'

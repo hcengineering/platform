@@ -28,7 +28,7 @@ import {
   themeStore
 } from '@hcengineering/ui'
 
-import { type DocumentId, TiptapCollabProvider } from './provider'
+import { type DocumentId, TiptapCollabProvider } from './provider/tiptap'
 import { type CollaborationUser } from './types'
 
 type ProviderData = (
