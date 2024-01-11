@@ -132,7 +132,7 @@
     focusManager?.setFocus(idx)
   }
   $: if (input) {
-    input.addEventListener('focus', updateFocus, { once: true })
+    input.addEventListener('focus', updateFocus)
   }
 
   export function focus (): void {
