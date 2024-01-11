@@ -49,26 +49,35 @@ export function extractReferences (content: ProseMirrorNode): Array<Reference> {
   return result
 }
 
+export interface ReferenceOptions {
+  renderLabel: (props: { options: ReferenceOptions, node: any }) => string
+  suggestion: { char: string }
+}
+
 /**
  * @public
  */
-export const ReferenceNode = Node.create({
+export const ReferenceNode = Node.create<ReferenceOptions>({
   name: 'reference',
   group: 'inline',
-  content: 'inline*',
   inline: true,
 
   addAttributes () {
     return {
       id: getDataAttribute('id'),
-
       objectclass: getDataAttribute('objectclass'),
-
       label: getDataAttribute('label'),
+      class: { default: null }
+    }
+  },
 
-      class: {
-        default: null
-      }
+  addOptions () {
+    return {
+      renderLabel ({ options, node }) {
+        // eslint-disable-next-line
+        return `${options.suggestion.char}${node.attrs.label ?? node.attrs.id}`
+      },
+      suggestion: { char: '@' }
     }
   },
 
@@ -80,7 +89,22 @@ export const ReferenceNode = Node.create({
     ]
   },
 
-  renderHTML ({ HTMLAttributes }) {
-    return ['span', mergeAttributes({ 'data-type': this.name }, HTMLAttributes), 0]
+  renderHTML ({ node, HTMLAttributes }) {
+    const options = this.options
+    return [
+      'span',
+      mergeAttributes(
+        {
+          'data-type': this.name
+        },
+        HTMLAttributes
+      ),
+      this.options.renderLabel({ options, node })
+    ]
+  },
+
+  renderText ({ node }) {
+    const options = this.options
+    return options.renderLabel({ options, node })
   }
 })
