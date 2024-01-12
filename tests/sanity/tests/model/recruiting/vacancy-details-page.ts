@@ -20,7 +20,6 @@ export class VacancyDetailsPage extends CommonRecruitingPage {
     this.buttonInputDescription = page.locator('button > span', { hasText: 'Description' })
     this.buttonInputLocation = page.locator('button > span', { hasText: 'Location' })
     this.inputAttachFile = page.locator('div[class*="full"] input[name="file"]')
-    this.textAttachmentName = page.locator('div.attachment-grid a')
     this.buttonInputCompany = page.locator('button > div', { hasText: 'Company' })
     this.buttonInputDueDate = page.locator('button > div', { hasText: 'Due date' })
     this.buttonDatePopupSave = page.locator('div.popup button[type="submit"]')
