@@ -86,6 +86,11 @@
     "ConfigurationDisabled": "Выключено",
     "ConfigDisable": "Выключить",
     "ConfigEnable": "Включить",
-    "ConfigBeta": "Ознакомительная версия"
+    "ConfigBeta": "Ознакомительная версия",
+    "Properties": "Свойства",
+    "TaskTypes": "Типы задач",
+    "Automations": "Автоматизация",
+    "Collections": "Коллекции",
+    "ClassColon": "Класс:"
   }
 }

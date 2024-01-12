@@ -18,7 +18,7 @@
   import { EmployeePresenter, personByIdStore } from '@hcengineering/contact-resources'
   import { AccountRole, SortingOrder, getCurrentAccount } from '@hcengineering/core'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
-  import { DropdownIntlItem, DropdownLabelsIntl, EditBox, Header, Breadcrumb } from '@hcengineering/ui'
+  import { DropdownIntlItem, DropdownLabelsIntl, EditBox, Header, Breadcrumb, Scroller } from '@hcengineering/ui'
   import setting from '../plugin'
 
   export let visibleNav: boolean = true
@@ -65,32 +65,34 @@
     <EditBox kind={'search-style'} focusIndex={1} bind:value={search} placeholder={presentation.string.Search} />
   </Header>
   <div class="hulyComponent-content__column content">
-    <div class="hulyComponent-content">
-      {#each accounts as account (account._id)}
-        {@const employee = $personByIdStore.get(account.person)}
-        {#if employee?.name?.includes(search)}
-          <div class="flex-row-center p-2 flex-no-shrink">
-            <div class="p-1 min-w-80">
-              {#if employee}
-                <EmployeePresenter value={employee} disabled={false} />
-              {:else}
-                {account.email}
-              {/if}
+    <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
+      <div class="hulyComponent-content">
+        {#each accounts as account (account._id)}
+          {@const employee = $personByIdStore.get(account.person)}
+          {#if employee?.name?.includes(search)}
+            <div class="flex-row-center p-2 flex-no-shrink">
+              <div class="p-1 min-w-80">
+                {#if employee}
+                  <EmployeePresenter value={employee} disabled={false} />
+                {:else}
+                  {account.email}
+                {/if}
+              </div>
+              <DropdownLabelsIntl
+                label={setting.string.Role}
+                disabled={account.role > currentRole || (account.role === AccountRole.Owner && owners.length === 1)}
+                kind={'primary'}
+                size={'medium'}
+                {items}
+                selected={account.role?.toString()}
+                on:selected={(e) => {
+                  void change(account, Number(e.detail))
+                }}
+              />
             </div>
-            <DropdownLabelsIntl
-              label={setting.string.Role}
-              disabled={account.role > currentRole || (account.role === AccountRole.Owner && owners.length === 1)}
-              kind={'primary'}
-              size={'medium'}
-              {items}
-              selected={account.role?.toString()}
-              on:selected={(e) => {
-                void change(account, Number(e.detail))
-              }}
-            />
-          </div>
-        {/if}
-      {/each}
-    </div>
+          {/if}
+        {/each}
+      </div>
+    </Scroller>
   </div>
 </div>

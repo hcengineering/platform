@@ -248,7 +248,7 @@ export class TTaskType extends TDoc implements TaskType {
 export class TProjectTypeDescriptor extends TDoc implements ProjectTypeDescriptor {
   name!: IntlString
   description!: IntlString
-  icon!: AnyComponent
+  icon!: Asset
   editor?: AnyComponent
   baseClass!: Ref<Class<Task>>
 }

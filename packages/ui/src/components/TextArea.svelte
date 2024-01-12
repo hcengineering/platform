@@ -22,6 +22,7 @@
   export let label: IntlString | undefined = undefined
   export let width: string | undefined = undefined
   export let height: string | undefined = undefined
+  export let margin: string | undefined = undefined
   export let value: string | undefined = undefined
   export let placeholder: IntlString = plugin.string.EditBoxPlaceholder
   export let placeholderParam: any | undefined = undefined
@@ -40,7 +41,7 @@
   }
 </script>
 
-<div class="textarea" class:no-focus-border={noFocusBorder} style:width style:height>
+<div class="textarea" class:no-focus-border={noFocusBorder} style:width style:height style:margin>
   {#if label}<div class="label"><Label {label} /></div>{/if}
   <textarea
     bind:value

@@ -1,16 +1,6 @@
 //
-// Copyright © 2021 Anticrm Platform Contributors.
-// 
-// Licensed under the Eclipse Public License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License. You may
-// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// © 2023 Hardcore Engineering, Inc. All Rights Reserved.
+// Licensed under the Eclipse Public License v2.0 (SPDX: EPL-2.0).
 //
 
 /* Common Colors */
@@ -37,6 +27,7 @@
 /* Dark Theme */
 .theme-dark {
   --global-ui-BackgroundColor: #A5BDFF0D;
+  --global-ui-BorderColor: #A5BDFF1A;
   --global-ui-hover-BackgroundColor: #A5BDFF1A;
   --global-ui-highlight-BackgroundColor: #A5BDFF0D;
   --global-ui-hover-highlight-BackgroundColor: #A5BDFF26;
@@ -53,6 +44,7 @@
   --global-primary-TextColor: #FFFFFF;
   --global-secondary-TextColor: #C1C9D6;
   --global-tertiary-TextColor: #8E99AF;
+  --global-disabled-TextColor: #5A667E;
   --global-accent-TextColor: #4D7FF5;
   --global-focus-BorderColor: #2A59D6;
 
@@ -88,6 +80,7 @@
 /* Light Theme */
 .theme-light {
   --global-ui-BackgroundColor: #1530720D;
+  --global-ui-BorderColor: #1530721A;
   --global-ui-hover-BackgroundColor: #1530721A;
   --global-ui-highlight-BackgroundColor: #A5BDFF26;
   --global-ui-hover-highlight-BackgroundColor: #A5BDFF40;
@@ -104,6 +97,7 @@
   --global-primary-TextColor: #0F121A;
   --global-secondary-TextColor: #5A667E;
   --global-tertiary-TextColor: #7B879E;
+  --global-disabled-TextColor: #A1ABBF;
   --global-accent-TextColor: #3566E2;
   --global-focus-BorderColor: #204DC8;
 

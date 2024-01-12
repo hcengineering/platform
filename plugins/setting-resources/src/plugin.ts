@@ -78,6 +78,7 @@ export default mergeIds(settingId, setting, {
     ConfigEnable: '' as IntlString,
     ConfigBeta: '' as IntlString,
     ClassSettingHint: '' as IntlString,
-    ClassProperties: '' as IntlString
+    ClassProperties: '' as IntlString,
+    ClassColon: '' as IntlString
   }
 })

@@ -703,7 +703,7 @@ export function createModel (builder: Builder): void {
     {
       name: lead.string.LeadApplication,
       description: lead.string.ManageFunnelStatuses,
-      icon: lead.component.TemplatesIcon,
+      icon: lead.icon.LeadApplication,
       baseClass: lead.class.Funnel
     },
     lead.descriptors.FunnelType

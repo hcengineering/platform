@@ -20,8 +20,9 @@ import { writable } from 'svelte/store'
  * @public
  */
 export interface SettingsStore {
-  component?: ComponentType | null
-  props?: object | null
+  id?: any | undefined
+  component?: ComponentType | undefined
+  props?: object | undefined
 }
 
 /**
@@ -33,5 +34,5 @@ export const settingsStore = writable<SettingsStore>({})
  * @public
  */
 export const clearSettingsStore = (): void => {
-  settingsStore.set({ component: null, props: null })
+  settingsStore.set({ id: undefined, component: undefined, props: undefined })
 }

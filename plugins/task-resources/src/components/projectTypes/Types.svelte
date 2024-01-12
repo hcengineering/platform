@@ -16,7 +16,7 @@
 <script lang="ts">
   import { Ref, WithLookup } from '@hcengineering/core'
   import { ProjectType } from '@hcengineering/task'
-  import { Component, Label, IconOpenedArrow } from '@hcengineering/ui'
+  import { Icon, Label, IconOpenedArrow } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let type: ProjectType | undefined
@@ -42,7 +42,7 @@
     <div class="hulyTaskNavLink-avatar">
       {#if typeItem.$lookup?.descriptor?.icon}
         <div class="hulyTaskNavLink-icon">
-          <Component is={typeItem.$lookup?.descriptor?.icon} props={{ size: 'small', fill: 'currentColor' }} />
+          <Icon icon={typeItem.$lookup?.descriptor?.icon} size={'small'} fill={'currentColor'} />
         </div>
       {/if}
     </div>

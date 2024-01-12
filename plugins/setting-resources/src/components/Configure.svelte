@@ -16,7 +16,7 @@
   import { createEventDispatcher } from 'svelte'
   import { PluginConfiguration } from '@hcengineering/core'
   import { configurationStore, getClient } from '@hcengineering/presentation'
-  import { Button, Icon, IconInfo, Label, Header, Breadcrumb } from '@hcengineering/ui'
+  import { Button, Icon, IconInfo, Label, Header, Breadcrumb, Scroller } from '@hcengineering/ui'
   import setting from '../plugin'
 
   export let visibleNav: boolean = true
@@ -37,39 +37,41 @@
     <Breadcrumb icon={setting.icon.Setting} label={setting.string.Configuration} size={'large'} isCurrent />
   </Header>
   <div class="hulyComponent-content__column content">
-    <div class="flex-row-center flex-wrap gap-around-4">
-      {#each $configurationStore.list as config}
-        {#if config.label}
-          <div class="cardBox flex-col clear-mins" class:enabled={config.enabled ?? true}>
-            <div class="flex-row-center">
-              <span class="mr-2">
-                <Icon icon={config.icon ?? IconInfo} size={'medium'} />
-              </span>
-              <span class="fs-title">
-                <Label label={config.label} />
-              </span>
-            </div>
-            {#if config.description}
-              <div class="my-3 flex-grow clear-mins">
-                <Label label={config.description} />
+    <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
+      <div class="flex-row-center flex-wrap gap-around-4">
+        {#each $configurationStore.list as config}
+          {#if config.label}
+            <div class="cardBox flex-col clear-mins" class:enabled={config.enabled ?? true}>
+              <div class="flex-row-center">
+                <span class="mr-2">
+                  <Icon icon={config.icon ?? IconInfo} size={'medium'} />
+                </span>
+                <span class="fs-title">
+                  <Label label={config.label} />
+                </span>
               </div>
-            {/if}
-            <div class="flex-between flex-row-center">
-              {#if config.beta}
-                <Label label={setting.string.ConfigBeta} />
+              {#if config.description}
+                <div class="my-3 flex-grow clear-mins">
+                  <Label label={config.description} />
+                </div>
               {/if}
-              <div class="flex-row-center flex-reverse flex-grow max-h-9">
-                <Button
-                  label={config.enabled ?? true ? setting.string.ConfigDisable : setting.string.ConfigEnable}
-                  size={'large'}
-                  on:click={() => change(config, !(config.enabled ?? true))}
-                />
+              <div class="flex-between flex-row-center">
+                {#if config.beta}
+                  <Label label={setting.string.ConfigBeta} />
+                {/if}
+                <div class="flex-row-center flex-reverse flex-grow max-h-9">
+                  <Button
+                    label={config.enabled ?? true ? setting.string.ConfigDisable : setting.string.ConfigEnable}
+                    size={'large'}
+                    on:click={() => change(config, !(config.enabled ?? true))}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        {/if}
-      {/each}
-    </div>
+          {/if}
+        {/each}
+      </div>
+    </Scroller>
   </div>
 </div>
 
