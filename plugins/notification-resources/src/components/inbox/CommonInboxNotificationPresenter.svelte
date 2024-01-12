@@ -28,10 +28,11 @@
   import notification, { CommonInboxNotification } from '@hcengineering/notification'
   import { ActionIcon, IconMoreH, Label, showPopup } from '@hcengineering/ui'
   import { getDocLinkTitle, Menu } from '@hcengineering/view-resources'
-  import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
-  import { ActivityDocLink, getLinkData, LinkData } from '@hcengineering/activity-resources'
+  import { ActivityDocLink } from '@hcengineering/activity-resources'
   import activity from '@hcengineering/activity'
   import view from '@hcengineering/view'
+
+  import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
 
   export let value: CommonInboxNotification
 
@@ -115,7 +116,6 @@
       {#if object}
         {#await getDocLinkTitle(client, object._id, object._class, object) then linkTitle}
           <ActivityDocLink
-            preposition={activity.string.In}
             {object}
             title={linkTitle}
             panelComponent={hierarchy.classHierarchyMixin(object._class, view.mixin.ObjectPanel)?.component}
