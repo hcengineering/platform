@@ -101,14 +101,16 @@
 
   async function merge (): Promise<void> {
     if (sourcePerson === undefined || targetPerson === undefined) return
+
     if (Object.keys(update).length > 0) {
-      if (update.avatar !== undefined || sourcePerson.avatar === targetPerson.avatar) {
+      const _update = { ...update }
+      if (_update.avatar !== undefined || sourcePerson.avatar === targetPerson.avatar) {
         // We replace avatar, we need to update source with target
         await client.update(sourcePerson, {
           avatar: sourcePerson.avatar === targetPerson.avatar ? '' : targetPerson.avatar
         })
       }
-      await client.update(targetPerson, update)
+      await client.update(targetPerson, _update)
     }
     for (const channel of resultChannels.values()) {
       if (channel.attachedTo === targetPerson._id) continue
