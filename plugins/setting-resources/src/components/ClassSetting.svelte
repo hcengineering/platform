@@ -110,7 +110,7 @@
   {/if}
   <div class="hulyComponent-content__container columns">
     <div class="hulyComponent-content__column">
-      <div class="hulyComponent-content__navHeader">
+      <div class="hulyComponent-content__navHeader divide">
         <div class="hulyComponent-content__navHeader-menu">
           <ButtonIcon kind={'tertiary'} icon={IconDescription} size={'small'} inheritColor />
         </div>
@@ -134,13 +134,13 @@
     </div>
     <Separator name={'workspaceSettings'} index={0} color={'var(--theme-divider-color)'} />
     <div class="hulyComponent-content__column content">
-      <div class="hulyComponent-content">
-        {#if _class !== undefined}
-          <Scroller>
-            <ClassAttributes {_class} {ofClass} {attributeMapper} {useOfClassAttributes} />
-          </Scroller>
-        {/if}
-      </div>
+      <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
+        <div class="hulyComponent-content">
+          {#if _class !== undefined}
+            <ClassAttributes {_class} {ofClass} {attributeMapper} />
+          {/if}
+        </div>
+      </Scroller>
     </div>
   </div>
 </div>

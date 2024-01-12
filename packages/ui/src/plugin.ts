@@ -29,6 +29,8 @@ export const uis = plugin(uiId, {
     Ok: '' as IntlString,
     Cancel: '' as IntlString,
     Save: '' as IntlString,
+    Publish: '' as IntlString,
+    SaveDraft: '' as IntlString,
     Minutes: '' as IntlString,
     Hours: '' as IntlString,
     Days: '' as IntlString,

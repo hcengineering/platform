@@ -4,6 +4,8 @@
     "Ok": "Ok",
     "Cancel": "Cancel",
     "Save": "Save",
+    "Publish": "Publish",
+    "SaveDraft": "Save draft",
     "Minutes": "{minutes, plural, =0 {less than a minute ago} =1 {a minute ago} other {# minutes ago}}",
     "Hours": "{hours, plural, =0 {less than an hour ago} =1 {an hour ago} other {# hours ago}}",
     "Days": "{days, plural, =0 {today} =1 {yesterday} other {# days ago}}",

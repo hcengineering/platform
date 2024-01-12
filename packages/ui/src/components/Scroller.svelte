@@ -25,6 +25,7 @@
   import IconUpOutline from './icons/UpOutline.svelte'
 
   export let padding: string | undefined = undefined
+  export let bottomPadding: string | undefined = undefined
   export let autoscroll: boolean = false
   export let bottomStart: boolean = false
   export let fade: FadeOptions = defaultSP
@@ -32,6 +33,7 @@
   export let invertScroll: boolean = false
   export let contentDirection: 'vertical' | 'vertical-reverse' | 'horizontal' = 'vertical'
   export let horizontal: boolean = contentDirection === 'horizontal'
+  export let align: 'start' | 'center' | 'end' | 'stretch' = 'stretch'
   export let gap: string | undefined = undefined
   export let noStretch: boolean = autoscroll
   export let buttons: 'normal' | 'union' | false = false
@@ -555,6 +557,7 @@
             ? 'column-reverse'
             : 'row'}
         style:height={contentDirection === 'vertical-reverse' ? 'max-content' : noStretch ? 'auto' : '100%'}
+        style:align-items={align}
         use:resizeObserver={() => {
           checkAutoScroll()
           checkFade()
@@ -565,6 +568,9 @@
       >
         {#if bottomStart}<div class="flex-grow flex-shrink" />{/if}
         <slot />
+        {#if bottomPadding}
+          <div style:width={'100%'} style:min-height={bottomPadding} />
+        {/if}
       </div>
     </div>
   </div>

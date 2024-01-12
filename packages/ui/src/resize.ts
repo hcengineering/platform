@@ -164,4 +164,6 @@ export const settingsSeparators: DefSeparators = [
   { minSize: 17, size: 30, maxSize: 32, float: 'aside' }
 ]
 
+export const secondNavSeparators: DefSeparators = [{ minSize: 7, size: 7.5, maxSize: 15, float: 'navigator' }, null]
+
 export const separatorsStore = writable<string[]>([])

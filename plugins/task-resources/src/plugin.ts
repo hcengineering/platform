@@ -77,7 +77,11 @@ export default mergeIds(taskId, task, {
     StatusChange: '' as IntlString,
     TaskCreated: '' as IntlString,
     CreateProjectType: '' as IntlString,
-    ClassicProject: '' as IntlString
+    ClassicProject: '' as IntlString,
+    LastSave: '' as IntlString,
+    Published: '' as IntlString,
+    CountProjects: '' as IntlString,
+    ProjectTypeTitle: '' as IntlString
   },
   status: {
     AssigneeRequired: '' as IntlString

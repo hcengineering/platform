@@ -28,7 +28,8 @@
     Breadcrumb,
     defineSeparators,
     settingsSeparators,
-    Separator
+    Separator,
+    Scroller
   } from '@hcengineering/ui'
   import { ContextMenu } from '@hcengineering/view-resources'
   import setting from '../plugin'
@@ -104,11 +105,13 @@
     </div>
     <Separator name={'workspaceSettings'} index={0} color={'var(--theme-divider-color)'} />
     <div class="hulyComponent-content__column content">
-      <div class="hulyComponent-content">
-        {#if selected !== undefined}
-          <EnumValues value={selected} />
-        {/if}
-      </div>
+      <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
+        <div class="hulyComponent-content">
+          {#if selected !== undefined}
+            <EnumValues value={selected} />
+          {/if}
+        </div>
+      </Scroller>
     </div>
   </div>
 </div>

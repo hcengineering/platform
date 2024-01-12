@@ -18,7 +18,8 @@
     Breadcrumb,
     Separator,
     defineSeparators,
-    settingsSeparators
+    settingsSeparators,
+    Scroller
   } from '@hcengineering/ui'
   import { getActions as getContributedActions, TreeItem, TreeNode } from '@hcengineering/view-resources'
   import templatesPlugin from '../plugin'
@@ -195,79 +196,81 @@
     </div>
     <Separator name={'workspaceSettings'} index={0} color={'var(--theme-divider-color)'} />
     <div class="hulyComponent-content__column content">
-      <div class="hulyComponent-content">
-        {#if newTemplate}
-          <div class="flex-between mr-4">
-            <span class="trans-title mb-3">
+      <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
+        <div class="hulyComponent-content">
+          {#if newTemplate}
+            <div class="flex-between mr-4">
+              <span class="trans-title mb-3">
+                {#if mode === Mode.Create}
+                  <Label label={templatesPlugin.string.CreateTemplate} />
+                {:else if mode === Mode.Edit}
+                  <Label label={templatesPlugin.string.EditTemplate} />
+                {:else}
+                  <Label label={templatesPlugin.string.ViewTemplate} />
+                {/if}
+              </span>
               {#if mode === Mode.Create}
-                <Label label={templatesPlugin.string.CreateTemplate} />
-              {:else if mode === Mode.Edit}
-                <Label label={templatesPlugin.string.EditTemplate} />
-              {:else}
-                <Label label={templatesPlugin.string.ViewTemplate} />
+                <SpaceSelector
+                  _class={templatesPlugin.class.TemplateCategory}
+                  label={templatesPlugin.string.TemplateCategory}
+                  bind:space
+                  create={{
+                    component: templatesPlugin.component.CreateTemplateCategory,
+                    label: templatesPlugin.string.CreateTemplateCategory
+                  }}
+                />
               {/if}
-            </span>
-            {#if mode === Mode.Create}
-              <SpaceSelector
-                _class={templatesPlugin.class.TemplateCategory}
-                label={templatesPlugin.string.TemplateCategory}
-                bind:space
-                create={{
-                  component: templatesPlugin.component.CreateTemplateCategory,
-                  label: templatesPlugin.string.CreateTemplateCategory
-                }}
-              />
-            {/if}
-          </div>
-          <div class="text-lg caption-color">
+            </div>
+            <div class="text-lg caption-color">
+              {#if mode !== Mode.View}
+                <EditBox bind:value={newTemplate.title} placeholder={templatesPlugin.string.TemplatePlaceholder} />
+              {:else}
+                {newTemplate.title}
+              {/if}
+            </div>
+            <div class="separator" />
             {#if mode !== Mode.View}
-              <EditBox bind:value={newTemplate.title} placeholder={templatesPlugin.string.TemplatePlaceholder} />
+              <StyledTextEditor bind:content={newTemplate.message} bind:this={textEditor} on:value={updateTemplate}>
+                <div class="flex flex-reverse flex-grow">
+                  <div class="ml-2">
+                    <Button
+                      disabled={newTemplate.title.trim().length === 0}
+                      kind={'primary'}
+                      label={templatesPlugin.string.SaveTemplate}
+                      on:click={saveNewTemplate}
+                    />
+                  </div>
+                  <div class="ml-2">
+                    <Button
+                      label={templatesPlugin.string.Cancel}
+                      on:click={() => {
+                        if (mode === Mode.Create) {
+                          newTemplate = undefined
+                        }
+                        mode = Mode.View
+                      }}
+                    />
+                  </div>
+                  <Button label={templatesPlugin.string.Field} on:click={addField} />
+                </div>
+              </StyledTextEditor>
             {:else}
-              {newTemplate.title}
-            {/if}
-          </div>
-          <div class="separator" />
-          {#if mode !== Mode.View}
-            <StyledTextEditor bind:content={newTemplate.message} bind:this={textEditor} on:value={updateTemplate}>
-              <div class="flex flex-reverse flex-grow">
-                <div class="ml-2">
-                  <Button
-                    disabled={newTemplate.title.trim().length === 0}
-                    kind={'primary'}
-                    label={templatesPlugin.string.SaveTemplate}
-                    on:click={saveNewTemplate}
-                  />
-                </div>
-                <div class="ml-2">
-                  <Button
-                    label={templatesPlugin.string.Cancel}
-                    on:click={() => {
-                      if (mode === Mode.Create) {
-                        newTemplate = undefined
-                      }
-                      mode = Mode.View
-                    }}
-                  />
-                </div>
-                <Button label={templatesPlugin.string.Field} on:click={addField} />
+              <div class="text">
+                <MessageViewer message={newTemplate.message} />
               </div>
-            </StyledTextEditor>
-          {:else}
-            <div class="text">
-              <MessageViewer message={newTemplate.message} />
-            </div>
-            <div class="flex flex-reverse">
-              <Button
-                kind={'primary'}
-                label={templatesPlugin.string.EditTemplate}
-                on:click={() => {
-                  mode = Mode.Edit
-                }}
-              />
-            </div>
+              <div class="flex flex-reverse">
+                <Button
+                  kind={'primary'}
+                  label={templatesPlugin.string.EditTemplate}
+                  on:click={() => {
+                    mode = Mode.Edit
+                  }}
+                />
+              </div>
+            {/if}
           {/if}
-        {/if}
-      </div>
+        </div>
+      </Scroller>
     </div>
   </div>
 </div>

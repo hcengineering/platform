@@ -140,8 +140,8 @@
     </div>
     <Separator name={'notificationSettings'} index={0} color={'var(--theme-divider-color)'} />
     <div class="hulyComponent-content__column content">
-      <div class="hulyComponent-content">
-        <Scroller>
+      <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
+        <div class="hulyComponent-content">
           {#if group}
             <NotificationGroupSetting {group} {settings} />
           {/if}
@@ -150,8 +150,8 @@
               <svelte:component this={presenter} />
             {/await}
           {/if}
-        </Scroller>
-      </div>
+        </div>
+      </Scroller>
     </div>
   </div>
 </div>
