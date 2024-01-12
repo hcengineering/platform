@@ -19,13 +19,14 @@
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
   import presentation, {
-    createQuery,
-    getClient,
     ActionContext,
+    ComponentExtensions,
     contextStore,
-    ComponentExtensions
+    createQuery,
+    getClient
   } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
+  import { taskTypeStore, typeStore } from '@hcengineering/task-resources'
   import { Issue, Project } from '@hcengineering/tracker'
   import {
     AnyComponent,
@@ -42,8 +43,8 @@
     navigate,
     showPopup
   } from '@hcengineering/ui'
-  import { ContextMenu, DocNavLink, ParentsNavigator } from '@hcengineering/view-resources'
   import view from '@hcengineering/view'
+  import { ContextMenu, DocNavLink, ParentsNavigator } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { generateIssueShortLink, getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
@@ -161,6 +162,10 @@
   $: editorFooter = getEditorFooter(issue?._class)
 
   let content: HTMLElement
+
+  $: taskType = issue?.kind !== undefined ? $taskTypeStore.get(issue?.kind) : undefined
+
+  $: projectType = taskType?.parent !== undefined ? $typeStore.get(taskType.parent) : undefined
 </script>
 
 {#if !embedded}
@@ -187,12 +192,24 @@
     on:select
   >
     <svelte:fragment slot="title">
-      {#if !embedded}<ParentsNavigator element={issue} />{/if}
+      {#if !embedded}
+        <ParentsNavigator element={issue} />
+      {/if}
       {#if embedded && issueId}
         <DocNavLink noUnderline object={issue}>
           <div class="title">{issueId}</div>
         </DocNavLink>
-      {:else if issueId}<div class="title not-active">{issueId}</div>{/if}
+      {:else if issueId}
+        <div class="title not-active">{issueId}</div>
+      {/if}
+
+      {#if (projectType?.tasks.length ?? 0) > 1 && taskType !== undefined}
+        ({taskType.name})
+      {/if}
+      <ComponentExtensions
+        extension={tracker.extensions.EditIssueTitle}
+        props={{ size: 'medium', value: issue, space: currentProject }}
+      />
     </svelte:fragment>
     <svelte:fragment slot="pre-utils">
       <ComponentExtensions

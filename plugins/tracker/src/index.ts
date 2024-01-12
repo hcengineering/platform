@@ -532,7 +532,8 @@ const pluginState = plugin(trackerId, {
   },
   extensions: {
     IssueListHeader: '' as ComponentExtensionId,
-    EditIssueHeader: '' as ComponentExtensionId
+    EditIssueHeader: '' as ComponentExtensionId,
+    EditIssueTitle: '' as ComponentExtensionId
   },
   taskTypes: {
     Issue: '' as Ref<TaskType>,

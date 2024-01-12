@@ -15,13 +15,13 @@
 
 import {
   AccountRole,
+  systemAccountEmail,
   type AttachedDoc,
   type Class,
   type Doc,
   type DocIndexState,
   type IndexingConfiguration,
-  type TxCollectionCUD,
-  systemAccountEmail
+  type TxCollectionCUD
 } from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
 import core from './component'
@@ -49,6 +49,7 @@ import {
   TPluginConfiguration,
   TRefTo,
   TType,
+  TTypeAny,
   TTypeAttachment,
   TTypeBoolean,
   TTypeCollaborativeMarkup,
@@ -126,6 +127,7 @@ export function createModel (builder: Builder): void {
     TPluginConfiguration,
     TUserStatus,
     TEnum,
+    TTypeAny,
     TBlobData,
     TFulltextData,
     TTypeRelatedDocument,

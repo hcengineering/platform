@@ -45,6 +45,7 @@ import type {
   Space,
   Timestamp,
   Type,
+  TypeAny,
   UserStatus
 } from './classes'
 import { Status, StatusCategory } from './status'
@@ -109,6 +110,7 @@ export default plugin(coreId, {
     Enum: '' as Ref<Class<Enum>>,
     EnumOf: '' as Ref<Class<EnumOf>>,
     Collection: '' as Ref<Class<Collection<AttachedDoc>>>,
+    TypeAny: '' as Ref<Class<TypeAny>>,
     Version: '' as Ref<Class<Version>>,
     PluginConfiguration: '' as Ref<Class<PluginConfiguration>>,
     UserStatus: '' as Ref<Class<UserStatus>>,

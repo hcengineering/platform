@@ -48,10 +48,10 @@
     }
   }
 
-  function onChange (value: any) {
+  function onChange (value: any): void {
     if (!editable) return
     const doc = object as Doc
-    updateAttribute(client, doc, _class, { key: attributeKey, attr: attribute }, value)
+    void updateAttribute(client, doc, _class, { key: attributeKey, attr: attribute }, value)
   }
 </script>
 
