@@ -23,7 +23,7 @@ import config from './config'
 // eslint-disable-next-line
 const WebSocket = require('ws')
 
-export async function connect (transactorUrl: string, token: string): Promise<Client> {
+export async function connect (token: string): Promise<Client> {
   // We need to override default factory with 'ws' one.
   setMetadata(client.metadata.ClientSocketFactory, (url) => {
     return new WebSocket(url, {
@@ -32,7 +32,7 @@ export async function connect (transactorUrl: string, token: string): Promise<Cl
       }
     })
   })
-  return await (await clientResources()).function.GetClient(token, transactorUrl)
+  return await (await clientResources()).function.GetClient(token, config.TransactorUrl)
 }
 
 export async function getTxOperations (client: Client, token: Token, isDerived: boolean = false): Promise<TxOperations> {

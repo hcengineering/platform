@@ -44,7 +44,6 @@ function isValidDocumentId (documentId: PlatformDocumentId): boolean {
 export class PlatformStorageAdapter implements StorageAdapter {
   constructor (
     private readonly ctx: MeasureContext,
-    private readonly transactorUrl: string,
     private readonly transformer: Transformer
   ) {}
 
@@ -61,7 +60,7 @@ export class PlatformStorageAdapter implements StorageAdapter {
       let content = ''
 
       const client = await ctx.with('connect', {}, async () => {
-        return await connect(this.transactorUrl, token)
+        return await connect(token)
       })
 
       try {
@@ -92,7 +91,7 @@ export class PlatformStorageAdapter implements StorageAdapter {
 
     await this.ctx.with('save-document', {}, async (ctx) => {
       const connection = await ctx.with('connect', {}, async () => {
-        return await connect(this.transactorUrl, token)
+        return await connect(token)
       })
       const client = await getTxOperations(connection, decodedToken)
 

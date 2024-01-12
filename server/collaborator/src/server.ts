@@ -83,6 +83,8 @@ export async function start (
   const extensionsCtx = ctx.newChild('extensions', {})
   const storageCtx = ctx.newChild('storage', {})
 
+  const transformer = new HtmlTransformer(extensions)
+
   const hocuspocus = new Hocuspocus({
     address: '0.0.0.0',
     port,
@@ -119,23 +121,15 @@ export async function start (
     extensions: [
       new ActionsExtension({
         ctx: extensionsCtx.newChild('actions', {}),
-        transformer: new HtmlTransformer(extensions)
+        transformer
       }),
       new StorageExtension({
         ctx: extensionsCtx.newChild('storage', {}),
         adapter: new RouterStorageAdapter(
           {
-            minio: new MinioStorageAdapter(storageCtx.newChild('minio', {}), minio, config.TransactorUrl),
-            mongodb: new MongodbStorageAdapter(
-              storageCtx.newChild('mongodb', {}),
-              mongo,
-              new HtmlTransformer(extensions)
-            ),
-            platform: new PlatformStorageAdapter(
-              storageCtx.newChild('platform', {}),
-              config.TransactorUrl,
-              new HtmlTransformer(extensions)
-            )
+            minio: new MinioStorageAdapter(storageCtx.newChild('minio', {}), minio),
+            mongodb: new MongodbStorageAdapter(storageCtx.newChild('mongodb', {}), mongo, transformer),
+            platform: new PlatformStorageAdapter(storageCtx.newChild('platform', {}), transformer)
           },
           'minio'
         )

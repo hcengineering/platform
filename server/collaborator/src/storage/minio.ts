@@ -30,8 +30,7 @@ function maybePlatformDocumentId (documentId: string): boolean {
 export class MinioStorageAdapter implements StorageAdapter {
   constructor (
     private readonly ctx: MeasureContext,
-    private readonly minio: MinioService,
-    private readonly transactorUrl: string
+    private readonly minio: MinioService
   ) {}
 
   async loadDocument (documentId: string, context: Context): Promise<YDoc | undefined> {
@@ -92,7 +91,7 @@ export class MinioStorageAdapter implements StorageAdapter {
 
       await ctx.with('platform', {}, async () => {
         const connection = await ctx.with('connect', {}, async () => {
-          return await connect(this.transactorUrl, token)
+          return await connect(token)
         })
 
         try {
