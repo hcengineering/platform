@@ -385,7 +385,7 @@ export async function getDocCollaborators (
   return Array.from(collaborators.values())
 }
 
-async function pushInboxNotifications (
+export async function pushInboxNotifications (
   control: TriggerControl,
   res: Tx[],
   targetUser: Ref<Account>,
@@ -1014,6 +1014,7 @@ async function OnActivityNotificationViewed (
 }
 
 export * from './types'
+export * from './utils'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({

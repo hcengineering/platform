@@ -230,7 +230,7 @@ export interface ActivityInboxNotification extends InboxNotification {
 }
 
 export interface CommonInboxNotification extends InboxNotification {
-  title?: IntlString
+  header?: IntlString
   message: IntlString
   props?: Record<string, any>
   icon?: Asset

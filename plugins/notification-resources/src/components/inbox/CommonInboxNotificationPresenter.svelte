@@ -22,16 +22,28 @@
     personByIdStore,
     EmployeePresenter
   } from '@hcengineering/contact-resources'
-  import core, { getDisplayTime, Ref } from '@hcengineering/core'
+  import core, { Doc, getDisplayTime, Ref } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
-  import { MessageViewer } from '@hcengineering/presentation'
+  import { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
   import notification, { CommonInboxNotification } from '@hcengineering/notification'
   import { ActionIcon, IconMoreH, Label, showPopup } from '@hcengineering/ui'
-  import { Menu } from '@hcengineering/view-resources'
+  import { getDocLinkTitle, Menu } from '@hcengineering/view-resources'
+  import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
+  import { ActivityDocLink, getLinkData, LinkData } from '@hcengineering/activity-resources'
+  import activity from '@hcengineering/activity'
+  import view from '@hcengineering/view'
 
   export let value: CommonInboxNotification
 
+  const objectQuery = createQuery()
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+  const docNotifyContextsStore = inboxClient.docNotifyContexts
+
   let isActionMenuOpened = false
+  let content = ''
+  let object: Doc | undefined = undefined
 
   $: personAccount = $personAccountByIdStore.get((value.createdBy ?? value.modifiedBy) as Ref<PersonAccount>)
   $: person =
@@ -39,7 +51,12 @@
       ? $employeeByIdStore.get(personAccount.person as Ref<Employee>) ?? $personByIdStore.get(personAccount.person)
       : undefined
 
-  let content = ''
+  $: context = $docNotifyContextsStore.find(({ _id }) => _id === value.docNotifyContext)
+
+  $: context &&
+    objectQuery.query(context.attachedToClass, { _id: context.attachedTo }, (result) => {
+      object = result[0]
+    })
 
   $: void translate(value.message, value.props)
     .then((message) => {
@@ -90,6 +107,20 @@
         <div class="strong">
           <Label label={core.string.System} />
         </div>
+      {/if}
+      {#if value.header}
+        <span class="text-sm lower"><Label label={value.header} /></span>
+      {/if}
+
+      {#if object}
+        {#await getDocLinkTitle(client, object._id, object._class, object) then linkTitle}
+          <ActivityDocLink
+            preposition={activity.string.In}
+            {object}
+            title={linkTitle}
+            panelComponent={hierarchy.classHierarchyMixin(object._class, view.mixin.ObjectPanel)?.component}
+          />
+        {/await}
       {/if}
 
       <span class="text-sm">{getDisplayTime(value.createdOn ?? 0)}</span>

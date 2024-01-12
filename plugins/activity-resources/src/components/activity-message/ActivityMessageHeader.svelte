@@ -16,11 +16,12 @@
   import { ActivityMessage } from '@hcengineering/activity'
   import { Person } from '@hcengineering/contact'
   import { Doc } from '@hcengineering/core'
-  import notification from '../../plugin'
   import { Label } from '@hcengineering/ui'
-  import { DocNavLink } from '@hcengineering/view-resources'
-  import { LinkData, getLinkData } from '../../activityMessagesUtils'
   import { IntlString } from '@hcengineering/platform'
+
+  import { LinkData, getLinkData } from '../../activityMessagesUtils'
+  import ActivityDocLink from '../ActivityDocLink.svelte'
+  import notification from '../../plugin'
 
   export let message: ActivityMessage
   export let person: Person | undefined
@@ -43,15 +44,16 @@
 </span>
 
 {#if linkData}
-  <span class="text-sm lower"><Label label={linkData.preposition} /></span>
-  <span class="text-sm">
-    <DocNavLink {object} component={linkData.panelComponent} shrink={0}>
-      <span class="overflow-label select-text">{linkData.title}</span>
-    </DocNavLink>
-  </span>
-  {#if isEdited}
-    <span class="text-sm lower"><Label label={notification.string.Edited} /></span>
-  {/if}
+  <ActivityDocLink
+    preposition={linkData.preposition}
+    title={linkData.title}
+    object={linkData.object}
+    panelComponent={linkData.panelComponent}
+  />
+{/if}
+
+{#if isEdited}
+  <span class="text-sm lower"><Label label={notification.string.Edited} /></span>
 {/if}
 
 <style lang="scss">

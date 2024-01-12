@@ -13,7 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DocNavLink } from '@hcengineering/view-resources'
   import { Doc } from '@hcengineering/core'
   import { Label } from '@hcengineering/ui'
   import { IntlString } from '@hcengineering/platform'
@@ -22,6 +21,7 @@
   import { Person } from '@hcengineering/contact'
 
   import { LinkData, getLinkData } from '../../activityMessagesUtils'
+  import ActivityDocLink from '../ActivityDocLink.svelte'
 
   export let message: DisplayDocUpdateMessage
   export let viewlet: DocUpdateMessageViewlet | undefined
@@ -90,14 +90,12 @@
 {/if}
 
 {#if linkData}
-  {#if !isOwn || message.action === 'update'}
-    <span class="text-sm lower"><Label label={linkData.preposition} /></span>
-  {/if}
-  <span class="text-sm">
-    <DocNavLink object={linkData.object} component={linkData.panelComponent} shrink={0}>
-      <span class="overflow-label select-text">{linkData.title}</span>
-    </DocNavLink>
-  </span>
+  <ActivityDocLink
+    preposition={!isOwn || message.action === 'update' ? linkData.preposition : undefined}
+    object={linkData.object}
+    panelComponent={linkData.panelComponent}
+    title={linkData.title}
+  />
 {/if}
 
 <style lang="scss">

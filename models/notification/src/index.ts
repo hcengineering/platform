@@ -238,6 +238,7 @@ export class TActivityInboxNotification extends TInboxNotification implements Ac
 
 @Model(notification.class.CommonInboxNotification, notification.class.InboxNotification)
 export class TCommonInboxNotification extends TInboxNotification implements CommonInboxNotification {
+  header?: IntlString
   @Prop(TypeIntlString(), notification.string.Message)
     message!: IntlString
 

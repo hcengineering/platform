@@ -13,12 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DocNavLink } from '@hcengineering/view-resources'
   import { Doc } from '@hcengineering/core'
   import { Label } from '@hcengineering/ui'
   import { Person } from '@hcengineering/contact'
   import { ChatMessage, ChatMessageViewlet } from '@hcengineering/chunter'
-  import { getLinkData, LinkData } from '@hcengineering/activity-resources'
+  import { getLinkData, LinkData, ActivityDocLink } from '@hcengineering/activity-resources'
   import notification from '@hcengineering/notification'
 
   import chunter from '../../plugin'
@@ -41,12 +40,12 @@
   <span class="text-sm lower"> <Label label={viewlet?.label ?? chunter.string.SentMessage} /></span>
 
   {#if linkData}
-    <span class="text-sm lower"><Label label={linkData.preposition} /></span>
-    <span class="text-sm">
-      <DocNavLink object={linkData.object} component={linkData.panelComponent} shrink={0}>
-        <span class="overflow-label select-text">{linkData.title}</span>
-      </DocNavLink>
-    </span>
+    <ActivityDocLink
+      preposition={linkData.preposition}
+      object={linkData.object}
+      panelComponent={linkData.panelComponent}
+      title={linkData.title}
+    />
   {/if}
 {/if}
 {#if message.editedOn}
