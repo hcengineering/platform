@@ -169,7 +169,11 @@ export default plugin(settingId, {
     Classes: '' as IntlString,
     Owners: '' as IntlString,
     Configure: '' as IntlString,
-    InviteSettings: '' as IntlString
+    InviteSettings: '' as IntlString,
+    Properties: '' as IntlString,
+    TaskTypes: '' as IntlString,
+    Automations: '' as IntlString,
+    Collections: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,

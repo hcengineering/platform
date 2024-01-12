@@ -185,7 +185,7 @@ export interface ProjectType extends Space {
 export interface ProjectTypeDescriptor extends Doc {
   name: IntlString
   description: IntlString
-  icon: AnyComponent
+  icon: Asset
   editor?: AnyComponent
   baseClass: Ref<Class<Task>>
 }

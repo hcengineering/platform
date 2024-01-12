@@ -1774,7 +1774,7 @@ export function createModel (builder: Builder): void {
     {
       name: recruit.string.RecruitApplication,
       description: recruit.string.ManageVacancyStatuses,
-      icon: recruit.component.TemplatesIcon,
+      icon: recruit.icon.RecruitApplication,
       editor: recruit.component.VacancyTemplateEditor,
       baseClass: recruit.class.Vacancy
     },

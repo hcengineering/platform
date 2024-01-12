@@ -22,6 +22,7 @@
 
   export let title: string | undefined = undefined
   export let label: IntlString | undefined = undefined
+  export let labelParams: Record<string, any> = {}
   export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative'
   export let size: 'large' | 'medium' | 'small'
@@ -43,10 +44,13 @@
   on:click
 >
   {#if loading}
-    <div class="icon animate"><Spinner size={'small'} /></div>
-  {:else if icon}<div class="icon"><Icon {icon} size={'small'} /></div>{/if}
+    <div class="icon animate"><Spinner size={type === 'type-button' && !hasMenu ? 'medium' : 'small'} /></div>
+  {:else if icon}<div class="icon">
+      <Icon {icon} size={type === 'type-button' && !hasMenu ? 'medium' : 'small'} />
+    </div>{/if}
+  {#if label}<span><Label {label} params={labelParams} /></span>{/if}
   {#if title}<span>{title}</span>{/if}
-  {#if label}<span><Label {label} /></span>{/if}
+  <slot />
 </button>
 
 <style lang="scss">
@@ -113,7 +117,8 @@
         width: var(--spacing-4);
       }
     }
-    &.type-button-icon .icon {
+    &.type-button-icon .icon,
+    &.menu .icon {
       width: var(--spacing-2);
       height: var(--spacing-2);
     }
@@ -123,7 +128,7 @@
       background-color: var(--button-primary-BackgroundColor);
 
       .icon {
-        fill: var(--button-accent-IconColor);
+        color: var(--button-accent-IconColor);
       }
       span {
         color: var(--button-accent-LabelColor);
@@ -145,7 +150,7 @@
         cursor: not-allowed;
 
         .icon {
-          fill: var(--button-disabled-IconColor);
+          color: var(--button-disabled-IconColor);
         }
         span {
           color: var(--button-disabled-LabelColor);
@@ -165,7 +170,7 @@
       background-color: var(--button-secondary-BackgroundColor);
 
       .icon {
-        fill: var(--button-subtle-IconColor);
+        color: var(--button-subtle-IconColor);
       }
       span {
         color: var(--button-subtle-LabelColor);
@@ -187,7 +192,7 @@
         cursor: not-allowed;
 
         .icon {
-          fill: var(--button-disabled-IconColor);
+          color: var(--button-disabled-IconColor);
         }
         span {
           color: var(--button-disabled-LabelColor);
@@ -207,13 +212,13 @@
       background-color: transparent;
 
       &:not(.inheritColor) .icon {
-        fill: var(--button-subtle-IconColor);
+        color: var(--button-subtle-IconColor);
       }
       &.inheritColor {
         color: inherit;
 
         .icon {
-          fill: currentColor;
+          color: currentColor;
         }
       }
       span {
@@ -235,7 +240,7 @@
         cursor: not-allowed;
 
         .icon {
-          fill: var(--button-disabled-IconColor);
+          color: var(--button-disabled-IconColor);
         }
         span {
           color: var(--button-disabled-LabelColor);
@@ -255,7 +260,7 @@
       background-color: var(--button-negative-BackgroundColor);
 
       .icon {
-        fill: var(--button-accent-IconColor);
+        color: var(--button-accent-IconColor);
       }
       span {
         color: var(--button-accent-LabelColor);
@@ -277,7 +282,7 @@
         cursor: not-allowed;
 
         .icon {
-          fill: var(--button-disabled-IconColor);
+          color: var(--button-disabled-IconColor);
         }
         span {
           color: var(--button-disabled-LabelColor);

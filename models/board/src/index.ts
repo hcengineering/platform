@@ -521,7 +521,7 @@ export function createModel (builder: Builder): void {
     {
       name: board.string.BoardApplication,
       description: board.string.ManageBoardStatuses,
-      icon: board.component.TemplatesIcon,
+      icon: board.icon.Board,
       baseClass: board.class.Board
     },
     board.descriptors.BoardType
