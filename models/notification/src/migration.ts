@@ -32,10 +32,10 @@ import {
   tryMigrate
 } from '@hcengineering/model'
 import notification, {
+  type ActivityInboxNotification,
   type DocNotifyContext,
   type DocUpdates,
   type DocUpdateTx,
-  type InboxNotification,
   notificationId
 } from '@hcengineering/notification'
 import activity, { type ActivityMessage, type DocUpdateMessage } from '@hcengineering/activity'
@@ -44,7 +44,7 @@ import { DOMAIN_NOTIFICATION } from './index'
 
 interface InboxData {
   context: DocNotifyContext
-  notifications: InboxNotification[]
+  notifications: ActivityInboxNotification[]
 }
 
 const DOMAIN_ACTIVITY = 'activity' as Domain
@@ -105,7 +105,7 @@ async function getInboxNotifications (
   client: MigrationClient,
   tx: DocUpdateTx,
   context: DocNotifyContext
-): Promise<InboxNotification[]> {
+): Promise<ActivityInboxNotification[]> {
   const messages = await getActivityMessages(client, tx, context)
 
   if (messages.length === 0) {
@@ -114,7 +114,7 @@ async function getInboxNotifications (
 
   return messages.map((message) => ({
     _id: generateId(),
-    _class: notification.class.InboxNotification,
+    _class: notification.class.ActivityInboxNotification,
     space: context.space,
     user: context.user,
     isViewed: !tx.isNew,
