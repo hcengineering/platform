@@ -15,25 +15,22 @@
 
 import core, {
   Account,
-  ArrOf as TypeArrOf,
   AttachedDoc,
   Attribute,
   Class,
   Classifier,
   ClassifierKind,
-  Collection as TypeCollection,
   Data,
   DateRangeMode,
   Doc,
   Domain,
   Enum,
   EnumOf,
-  generateId,
   Hyperlink,
+  Mixin as IMixin,
   IndexKind,
   Interface,
   Markup,
-  Mixin as IMixin,
   MixinUpdate,
   Obj,
   PropertyType,
@@ -46,7 +43,11 @@ import core, {
   TxFactory,
   TxProcessor,
   Type,
-  TypeDate as TypeDateType
+  TypeAny as TypeAnyType,
+  ArrOf as TypeArrOf,
+  Collection as TypeCollection,
+  TypeDate as TypeDateType,
+  generateId
 } from '@hcengineering/core'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import toposort from 'toposort'
@@ -462,6 +463,17 @@ export function TypeRef (_class: Ref<Class<Doc>>): RefTo<Doc> {
  */
 export function TypeEnum (of: Ref<Enum>): EnumOf {
   return { _class: core.class.EnumOf, label: core.string.Enum, of }
+}
+
+/**
+ * @public
+ */
+export function TypeAny<AnyComponent = any> (
+  presenter: AnyComponent,
+  label: IntlString,
+  editor?: AnyComponent
+): TypeAnyType<AnyComponent> {
+  return { _class: core.class.TypeAny, label, presenter, editor }
 }
 
 /**
