@@ -165,6 +165,7 @@ export interface IndexedDoc {
   attachedToClass?: Ref<Class<Doc>>
   searchTitle?: string
   searchShortTitle?: string
+  searchIcon?: any
   [key: string]: any
 }
 
