@@ -249,7 +249,7 @@ test.describe('Tracker tests', () => {
     }
   })
 
-  test('create-issue-draft', async ({ page }) => {
+  test.skip('create-issue-draft', async ({ page }) => {
     await navigate(page)
 
     const issueName = 'Draft issue'

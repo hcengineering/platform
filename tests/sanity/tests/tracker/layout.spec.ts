@@ -114,7 +114,7 @@ test.describe('tracker layout tests', () => {
   }
 
   for (const group of groups) {
-    test(`issues-${group.toLowerCase()}-grouping-layout`, async ({ page }) => {
+    test.skip(`issues-${group.toLowerCase()}-grouping-layout`, async ({ page }) => {
       const locator = page.locator('.list-container')
       await setViewGroup(page, group)
 

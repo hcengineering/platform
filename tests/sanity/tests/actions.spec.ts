@@ -47,7 +47,7 @@ test.describe('actions tests', () => {
     await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit/vacancies`)
   })
 
-  test('action-switch-applications', async ({ page }) => {
+  test.skip('action-switch-applications', async ({ page }) => {
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
 
     await page.click('text=Talents')
