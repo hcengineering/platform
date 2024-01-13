@@ -178,7 +178,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
               }
             }
           }
-
+          const parentDoc: DocIndexState | undefined = undefined
           if (doc.attachedToClass != null && doc.attachedTo != null) {
             const propagate: Ref<Class<Doc>>[] = collectPropagate(pipeline, doc.attachedToClass)
             if (propagate.some((it) => pipeline.hierarchy.isDerived(doc.objectClass, it))) {
@@ -210,13 +210,21 @@ export class FullTextPushStage implements FullTextPipelineStage {
               }
             }
           }
+          const [spaceDoc] = await metrics.with(
+            'find-space',
+            {},
+            async (ctx) =>
+              await this.dbStorage.findAll(ctx, core.class.DocIndexState, {
+                _id: doc.space as any as Ref<DocIndexState>
+              })
+          )
 
           const allAttributes = pipeline.hierarchy.getAllAttributes(elasticDoc._class)
 
           // Include child ref attributes
           await this.indexRefAttributes(allAttributes, doc, elasticDoc, metrics)
 
-          await updateDocWithPresenter(pipeline.hierarchy, elasticDoc)
+          await updateDocWithPresenter(pipeline.hierarchy, doc, elasticDoc, { parentDoc, spaceDoc })
 
           this.checkIntegrity(elasticDoc)
           bulk.push(elasticDoc)
