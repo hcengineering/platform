@@ -77,7 +77,7 @@
   }
 
   const items = getTypes()
-  let selectedType: Ref<Class<Type<PropertyType>>>
+  export let selectedType: Ref<Class<Type<PropertyType>>> | undefined = undefined
 
   $: selectedType && selectType(selectedType)
 
