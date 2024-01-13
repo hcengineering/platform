@@ -74,7 +74,7 @@
 
   export function createAttribute (ev: MouseEvent): void {
     showPopup(TypesPopup, { _class }, getEventPositionElement(ev), (_id) => {
-      if (_id !== undefined) $settingsStore = { component: CreateAttribute, props: { _id, _class } }
+      if (_id !== undefined) $settingsStore = { component: CreateAttribute, props: { selectedType: _id, _class } }
     })
   }
 

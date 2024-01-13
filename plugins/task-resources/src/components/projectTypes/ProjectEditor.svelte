@@ -210,14 +210,14 @@
       <!-- afterLabel={plugin.string.Published} -->
       <!-- <span slot="afterLabel">{dateStr}</span> -->
     </Breadcrumbs>
-    <svelte:fragment slot="actions">
-      <!-- <div class="hulyHeader-buttonsGroup__label font-regular-12">
+    <!-- <svelte:fragment slot="actions">
+      <div class="hulyHeader-buttonsGroup__label font-regular-12">
         <Label label={plugin.string.LastSave} />
         <span>{dateStr}</span>
-      </div> -->
+      </div>
       <ModernButton kind={'secondary'} label={ui.string.SaveDraft} size={'small'} />
       <ModernButton kind={'primary'} icon={IconSend} label={ui.string.Publish} size={'small'} />
-    </svelte:fragment>
+    </svelte:fragment> -->
   </Header>
   <div class="hulyComponent-content__container columns">
     {#if selectedTaskTypeId === undefined}
