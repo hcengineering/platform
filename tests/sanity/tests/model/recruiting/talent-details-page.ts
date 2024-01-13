@@ -30,6 +30,7 @@ export class TalentDetailsPage extends CommonRecruitingPage {
     this.buttonPopupMergeContacts = page.locator('form[id="contact:string:MergePersons"] button > span', {
       hasText: 'Merge contacts'
     })
+    this.textAttachmentName = page.locator('div.name a')
   }
 
   async addSkill (skillTag: string, skillDescription: string): Promise<void> {
