@@ -106,19 +106,13 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
 
   private async initDomains (ctx: MeasureContext): Promise<void> {
     const classesPerDomain: Record<string, Ref<Class<Doc>>[]> = {}
-    const skip = new Set<Ref<Class<Doc>>>()
     const classes = this.storage.hierarchy.getDescendants(core.class.Doc)
     for (const _class of classes) {
-      if (skip.has(_class)) continue
-      try {
-        const parent = this.storage.hierarchy.getParentClass(_class)
-        skip.add(parent)
-        const domain = this.storage.hierarchy.findDomain(parent)
-        if (domain === undefined) continue
-        classesPerDomain[domain] = classesPerDomain[domain] ?? []
-        classesPerDomain[domain].push(parent)
-        this.storage.hierarchy.getDescendants(parent).forEach((p) => skip.add(p))
-      } catch {}
+      const clazz = this.storage.hierarchy.getClass(_class)
+      if (clazz.domain === undefined) continue
+      const domain = clazz.domain
+      classesPerDomain[domain] = classesPerDomain[domain] ?? []
+      classesPerDomain[domain].push(_class)
     }
     for (const domain in classesPerDomain) {
       for (const _class of classesPerDomain[domain]) {
