@@ -135,7 +135,7 @@ export function getRequests (
     requests = Array.from(employeeRequests.values()).flat()
   }
   if (requests === undefined) return []
-
+  
   return requests.filter(
     (request) => fromTzDate(request.tzDate) <= endTime && fromTzDate(request.tzDueDate) > startTime
   )
@@ -231,6 +231,12 @@ export function getHolidayDatesForEmployee (
     }
   }
   return dates
+}
+
+export function isBirthDay (date: Date, employee: Staff): boolean {
+  if (employee.birthday === undefined) return false
+  const birthdayDate = new Date(Number(employee.birthday))
+  return birthdayDate.getUTCMonth() === date.getUTCMonth() && birthdayDate.getUTCDate() === date.getUTCDate()
 }
 
 export interface EmployeeReports {

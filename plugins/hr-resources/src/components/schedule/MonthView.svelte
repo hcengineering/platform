@@ -32,12 +32,13 @@
     resizeObserver
   } from '@hcengineering/ui'
   import hr from '../../plugin'
-  import { getHolidayDatesForEmployee, getRequests, isHoliday } from '../../utils'
+  import { getHolidayDatesForEmployee, getRequests, isHoliday, isBirthDay } from '../../utils'
   import CreateRequest from '../CreateRequest.svelte'
   import RequestsPopup from '../RequestsPopup.svelte'
   import CreatePublicHoliday from './CreatePublicHoliday.svelte'
   import ScheduleRequest from './ScheduleRequest.svelte'
   import StaffPresenter from './StaffPresenter.svelte'
+  import IconBirthday from '../icon/Birthday.svelte'
 
   const headerHeightRem = 4.375
   const eventHeightRem = 1.5
@@ -358,7 +359,7 @@
                 )}
                 {@const requests = getRequests(employeeRequests, day, day, employee._id)}
                 {@const tooltipValue = getTooltip(requests, day, employee)}
-
+                {@const birthday = isBirthDay(day, employee)}
                 {#key [tooltipValue, editable]}
                   <!-- svelte-ignore a11y-click-events-have-key-events -->
                   <div
@@ -374,6 +375,13 @@
                   >
                     {#if today}
                       <div class="timeline-cell-today-marker" />
+                    {/if}
+                    {#if birthday}
+                      <div class="timeline-cell--birthday">
+                        <div class="birthday-icon">
+                          <IconBirthday/>
+                        </div>
+                      </div>
                     {/if}
                   </div>
                 {/key}
@@ -525,6 +533,13 @@
       background-color: $timeline-bg-color;
     }
 
+    .timeline-cell--birthday {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(253, 101, 101, 0.105);
+    }
+
     .timeline-cell-today-marker {
       width: 100%;
       height: 100%;
@@ -550,4 +565,14 @@
 
     pointer-events: all;
   }
+
+  .birthday-icon {
+    position: absolute;
+    top: 78%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 25px;
+    height: 25px;
+  }
+
+
 </style>
