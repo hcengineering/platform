@@ -24,6 +24,7 @@ import core, {
   FieldIndex,
   Hierarchy,
   IndexKind,
+  IndexOrder,
   ModelDb,
   Tx,
   WorkspaceId
@@ -250,8 +251,12 @@ async function createUpdateIndexes (connection: CoreClient, db: Db, logger: Mode
       const attrs = hierarchy.getAllAttributes(c._id)
       const domainAttrs = domains.get(domain) ?? new Set<string | FieldIndex<Doc>>()
       for (const a of attrs.values()) {
-        if (a.index !== undefined && a.index === IndexKind.Indexed) {
-          domainAttrs.add(a.name)
+        if (a.index !== undefined && (a.index === IndexKind.Indexed || a.index === IndexKind.IndexedDsc)) {
+          if (a.index === IndexKind.Indexed) {
+            domainAttrs.add(a.name)
+          } else {
+            domainAttrs.add({ [a.name]: IndexOrder.Descending })
+          }
         }
       }
 

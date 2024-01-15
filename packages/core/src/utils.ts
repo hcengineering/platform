@@ -184,7 +184,7 @@ export function isFullTextAttribute (attr: AnyAttribute): boolean {
  * @public
  */
 export function isIndexedAttribute (attr: AnyAttribute): boolean {
-  return attr.index === IndexKind.Indexed
+  return attr.index === IndexKind.Indexed || attr.index === IndexKind.IndexedDsc
 }
 
 /**

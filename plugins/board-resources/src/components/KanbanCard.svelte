@@ -19,27 +19,26 @@
   import contact, { Employee } from '@hcengineering/contact'
   import type { Ref, WithLookup } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
-  import view from '@hcengineering/view'
-  import tags from '@hcengineering/tags'
+  import { ChatMessagesPresenter } from '@hcengineering/notification-resources'
   import { getClient } from '@hcengineering/presentation'
+  import tags from '@hcengineering/tags'
   import {
     Button,
     Component,
     EditBox,
-    getPopupPositionElement,
     Icon,
     IconMoreV,
     Label,
+    getPopupPositionElement,
     numberToHexColor,
     showPopup
   } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { ContextMenu } from '@hcengineering/view-resources'
   import board from '../plugin'
-  import DatePresenter from './presenters/DatePresenter.svelte'
   import { hasDate, openCardPanel, updateCard, updateCardMembers } from '../utils/CardUtils'
-  import CheckListsPresenter from './presenters/ChecklistsPresenter.svelte'
+  import DatePresenter from './presenters/DatePresenter.svelte'
   import NotificationPresenter from './presenters/NotificationPresenter.svelte'
-  import { ChatMessagesPresenter } from '@hcengineering/notification-resources'
 
   export let object: WithLookup<Card>
 
@@ -196,11 +195,6 @@
           {#if (object.comments ?? 0) > 0}
             <div class="float-left">
               <ChatMessagesPresenter value={object.comments} {object} size="small" />
-            </div>
-          {/if}
-          {#if (object.todoItems ?? 0) > 0}
-            <div class="float-left">
-              <CheckListsPresenter value={object} />
             </div>
           {/if}
           {#if (object.labels ?? 0) > 0}

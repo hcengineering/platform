@@ -56,11 +56,6 @@ export default mergeIds(boardId, board, {
     SelectColor: '' as IntlString,
     NoColor: '' as IntlString,
     NoColorInfo: '' as IntlString,
-    Checklists: '' as IntlString,
-    ChecklistDropdownNone: '' as IntlString,
-    ShowDoneChecklistItems: '' as IntlString,
-    HideDoneChecklistItems: '' as IntlString,
-    CopyChecklistFrom: '' as IntlString,
     Dates: '' as IntlString,
     Attachments: '' as IntlString,
     AddAttachment: '' as IntlString,
@@ -119,9 +114,7 @@ export default mergeIds(boardId, board, {
     SwitchToCards: '' as IntlString,
     SearchArchive: '' as IntlString,
     Size: '' as IntlString,
-    RemoveCover: '' as IntlString,
-    DeleteChecklist: '' as IntlString,
-    DeleteChecklistConfirm: '' as IntlString
+    RemoveCover: '' as IntlString
   },
   statusCategory: {
     Completed: '' as Ref<StatusCategory>

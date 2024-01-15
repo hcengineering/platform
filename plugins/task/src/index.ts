@@ -19,7 +19,6 @@ import {
   Attribute,
   Class,
   Doc,
-  Markup,
   Mixin,
   Ref,
   Space,
@@ -27,11 +26,11 @@ import {
   StatusCategory,
   Timestamp
 } from '@hcengineering/core'
+import { NotificationType } from '@hcengineering/notification'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
 import { Action, IconProps, ViewletDescriptor } from '@hcengineering/view'
-import { NotificationType } from '@hcengineering/notification'
 
 /**
  * @public
@@ -56,19 +55,7 @@ export interface Task extends AttachedDoc, DocWithRank {
   dueDate: Timestamp | null
   comments?: number
   attachments?: number
-  todoItems?: number
   labels?: number
-}
-
-/**
- * @public
- */
-export interface TodoItem extends AttachedDoc, DocWithRank {
-  name: Markup
-  assignee: Ref<Person> | null
-  done: boolean
-  dueTo: Timestamp | null
-  items?: number
 }
 
 /**
@@ -252,7 +239,6 @@ const task = plugin(taskId, {
     MarkAsUndone: '' as IntlString,
     Kanban: '' as IntlString,
     ApplicationLabelTask: '' as IntlString,
-    TodoItems: '' as IntlString,
     AssignedToMe: '' as IntlString,
     Dashboard: '' as IntlString,
     ProjectTypes: '' as IntlString,
@@ -261,7 +247,6 @@ const task = plugin(taskId, {
   },
   class: {
     Sequence: '' as Ref<Class<Sequence>>,
-    TodoItem: '' as Ref<Class<TodoItem>>,
     ProjectTypeDescriptor: '' as Ref<Class<ProjectTypeDescriptor>>,
     ProjectType: '' as Ref<Class<ProjectType>>,
     Project: '' as Ref<Class<Project>>,
@@ -302,7 +287,6 @@ const task = plugin(taskId, {
   component: {
     ProjectEditor: '' as AnyComponent,
     ProjectTypeSelector: '' as AnyComponent,
-    TodoItemsPopup: '' as AnyComponent,
     CreateStatePopup: '' as AnyComponent
   },
   ids: {

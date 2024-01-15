@@ -1,8 +1,8 @@
 import board, { type Board, type CommonBoardPreference } from '@hcengineering/board'
-import core, { type Ref, type TxOperations, getCurrentAccount } from '@hcengineering/core'
+import core, { getCurrentAccount, type Ref, type TxOperations } from '@hcengineering/core'
 import preference from '@hcengineering/preference'
 import { createQuery, getClient } from '@hcengineering/presentation'
-import type { ProjectType, TodoItem } from '@hcengineering/task'
+import type { ProjectType } from '@hcengineering/task'
 import {
   EastSideColor,
   FeijoaColor,
@@ -13,8 +13,7 @@ import {
   MoodyBlueColor,
   SalmonColor,
   SeaBuckthornColor,
-  SeagullColor,
-  areDatesEqual
+  SeagullColor
 } from '@hcengineering/ui'
 import { readable } from 'svelte/store'
 
@@ -50,14 +49,6 @@ export function getBoardAvailableColors (): string[] {
     SeagullColor
   ]
 }
-
-export function getDateIcon (item: TodoItem): 'normal' | 'warning' | 'overdue' {
-  if (item.dueTo === null) return 'normal'
-  const date = new Date()
-  const dueDate = new Date(item.dueTo)
-  return areDatesEqual(date, dueDate) ? 'warning' : dueDate < date ? 'overdue' : 'normal'
-}
-
 export const commonBoardPreference = readable<CommonBoardPreference>(undefined, (set) => {
   createQuery().query(board.class.CommonBoardPreference, { attachedTo: board.app.Board }, (result) => {
     if (result.length > 0) {

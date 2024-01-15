@@ -594,7 +594,24 @@ abstract class MongoAdapterBase implements DbAdapter {
 
   find (domain: Domain): StorageIterator {
     const coll = this.db.collection<Doc>(domain)
-    const iterator = coll.find({}, { sort: { _id: -1 } })
+    const iterator = coll.find({}, {})
+
+    const bulkUpdate = new Map<Ref<Doc>, string>()
+    const flush = async (flush = false): Promise<void> => {
+      if (bulkUpdate.size > 1000 || flush) {
+        if (bulkUpdate.size > 0) {
+          await coll.bulkWrite(
+            Array.from(bulkUpdate.entries()).map((it) => ({
+              updateOne: {
+                filter: { _id: it[0] },
+                update: { $set: { '%hash%': it[1] } }
+              }
+            }))
+          )
+        }
+        bulkUpdate.clear()
+      }
+    }
 
     return {
       next: async () => {
@@ -611,7 +628,10 @@ abstract class MongoAdapterBase implements DbAdapter {
           const hash = createHash('sha256')
           hash.update(doc)
           digest = hash.digest('base64')
-          await coll.updateOne({ _id: d._id }, { $set: { '%hash%': digest } })
+
+          bulkUpdate.set(d._id, digest)
+          // await coll.updateOne({ _id: d._id }, { $set: { '%hash%': digest } })
+          await flush()
         }
         return {
           id: d._id,
@@ -620,6 +640,7 @@ abstract class MongoAdapterBase implements DbAdapter {
         }
       },
       close: async () => {
+        await flush(true)
         await iterator.close()
       }
     }
