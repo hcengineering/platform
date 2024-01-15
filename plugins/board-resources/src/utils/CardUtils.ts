@@ -11,7 +11,7 @@ import {
   type Status
 } from '@hcengineering/core'
 import { showPanel } from '@hcengineering/ui'
-import task, { calcRank, type TodoItem } from '@hcengineering/task'
+import task, { calcRank } from '@hcengineering/task'
 import board from '../plugin'
 
 export async function createCard (
@@ -41,17 +41,6 @@ export async function createCard (
   }
 
   return await client.addCollection(board.class.Card, space, space, board.class.Board, 'cards', value)
-}
-
-export async function getCardFromTodoItem (client: Client, todoItem: TodoItem | undefined): Promise<Card | undefined> {
-  if (todoItem === undefined) return
-  if (todoItem.attachedToClass === todoItem._class) {
-    return await getCardFromTodoItem(
-      client,
-      await client.findOne(todoItem._class, { _id: todoItem.attachedTo as Ref<TodoItem> })
-    )
-  }
-  return await client.findOne(board.class.Card, { _id: todoItem.attachedTo as Ref<Card> })
 }
 
 export function updateCard (client: Client, card: Card, field: string, value: any): Promise<TxResult> | undefined {

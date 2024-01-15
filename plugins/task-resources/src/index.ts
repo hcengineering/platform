@@ -63,10 +63,6 @@ import TaskTypeClassPresenter from './components/taskTypes/TaskTypeClassPresente
 import ProjectTypeClassPresenter from './components/taskTypes/ProjectTypeClassPresenter.svelte'
 import TaskTypePresenter from './components/taskTypes/TaskTypePresenter.svelte'
 import ProjectTypePresenter from './components/projectTypes/ProjectTypePresenter.svelte'
-import TodoItemPresenter from './components/todos/TodoItemPresenter.svelte'
-import TodoItemsPopup from './components/todos/TodoItemsPopup.svelte'
-import TodoStatePresenter from './components/todos/TodoStatePresenter.svelte'
-import Todos from './components/todos/Todos.svelte'
 import StateIconPresenter from './components/state/StateIconPresenter.svelte'
 import TaskKindSelector from './components/taskTypes/TaskKindSelector.svelte'
 
@@ -124,16 +120,12 @@ export default async (): Promise<Resources> => ({
     KanbanView,
     StatePresenter,
     StateEditor,
-    Todos,
-    TodoItemPresenter,
-    TodoStatePresenter,
     StatusTableView,
     TaskHeader,
     ProjectEditor,
     ProjectTypeSelector,
     AssignedTasks,
     StateRefPresenter,
-    TodoItemsPopup,
     DueDateEditor,
     CreateStatePopup,
     StatusSelector,

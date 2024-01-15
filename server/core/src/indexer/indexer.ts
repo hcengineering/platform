@@ -399,10 +399,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
                   removed: false
                 },
                 {
-                  limit: globalIndexer.processingSize,
-                  sort: {
-                    _id: 1
-                  }
+                  limit: globalIndexer.processingSize
                 }
               )
           )

@@ -627,10 +627,12 @@ export async function restore (
     Object.keys(s.domains).forEach((it) => domains.add(it as Domain))
   }
 
+  console.log('connecting:', transactorUrl, workspaceId.name)
   const connection = (await connect(transactorUrl, workspaceId, undefined, {
     mode: 'backup',
     model: 'upgrade'
   })) as unknown as CoreClient & BackupClient
+  console.log('connected')
 
   // We need to find empty domains and clean them.
   const allDomains = connection.getHierarchy().domains()

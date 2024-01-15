@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Employee, Person } from '@hcengineering/contact'
+import type { Person } from '@hcengineering/contact'
 import contact from '@hcengineering/contact'
 import {
   ClassifierKind,
@@ -41,16 +41,15 @@ import {
   Mixin,
   Model,
   Prop,
+  ReadOnly,
   TypeBoolean,
   TypeDate,
-  TypeMarkup,
   TypeRecord,
   TypeRef,
   TypeString,
   UX,
   type Builder,
-  type MigrationClient,
-  ReadOnly
+  type MigrationClient
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
@@ -65,7 +64,6 @@ import { getEmbeddedLabel, type Asset, type IntlString, type Resource } from '@h
 import setting from '@hcengineering/setting'
 import tags from '@hcengineering/tags'
 import {
-  type TaskStatusFactory,
   calculateStatuses,
   findStatusAttr,
   type KanbanCard,
@@ -76,11 +74,11 @@ import {
   type ProjectTypeDescriptor,
   type Sequence,
   type Task,
+  type TaskStatusFactory,
   type TaskType,
   type TaskTypeClass,
   type TaskTypeDescriptor,
-  type TaskTypeKind,
-  type TodoItem
+  type TaskTypeKind
 } from '@hcengineering/task'
 import type { AnyComponent } from '@hcengineering/ui'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
@@ -121,7 +119,10 @@ export class TTask extends TAttachedDoc implements Task {
   @Prop(TypeDate(), task.string.DueDate, { editor: task.component.DueDateEditor })
     dueDate!: Timestamp | null
 
-  declare rank: string
+  @Prop(TypeString(), task.string.Rank)
+  @Index(IndexKind.IndexedDsc)
+  @Hidden()
+    rank!: string
 
   @Prop(Collection(tags.class.TagReference, task.string.TaskLabels), task.string.TaskLabels)
     labels?: number
@@ -133,28 +134,6 @@ export class TTask extends TAttachedDoc implements Task {
     attachments?: number
 
   isDone?: boolean
-}
-
-@Model(task.class.TodoItem, core.class.AttachedDoc, DOMAIN_TASK)
-@UX(task.string.Todo)
-export class TTodoItem extends TAttachedDoc implements TodoItem {
-  @Prop(TypeMarkup(), task.string.TodoName, task.icon.Task)
-  @Index(IndexKind.FullText)
-    name!: string
-
-  @Prop(TypeRef(contact.mixin.Employee), task.string.TaskAssignee)
-    assignee!: Ref<Employee> | null
-
-  @Prop(TypeBoolean(), task.string.TaskDone)
-    done!: boolean
-
-  @Prop(TypeDate(), task.string.TaskDueTo)
-    dueTo!: Timestamp | null
-
-  @Prop(Collection(task.class.TodoItem), task.string.Todos)
-    items!: number
-
-  declare rank: string
 }
 
 @Mixin(task.mixin.KanbanCard, core.class.Class)
@@ -320,7 +299,6 @@ export function createModel (builder: Builder): void {
     TKanbanCard,
     TSequence,
     TTask,
-    TTodoItem,
     TProject,
     TProjectType,
     TTaskType,
@@ -418,14 +396,6 @@ export function createModel (builder: Builder): void {
     task.viewlet.Dashboard
   )
 
-  builder.mixin(task.class.TodoItem, core.class.Class, view.mixin.CollectionEditor, {
-    editor: task.component.Todos
-  })
-
-  builder.mixin(task.class.TodoItem, core.class.Class, view.mixin.ObjectPresenter, {
-    presenter: task.component.TodoItemPresenter
-  })
-
   builder.mixin(task.class.TaskType, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: task.component.TaskTypePresenter
   })
@@ -435,46 +405,6 @@ export function createModel (builder: Builder): void {
   })
 
   classPresenter(builder, task.class.TaskType, task.component.TaskTypePresenter, task.component.TaskTypePresenter)
-
-  createAction(builder, {
-    label: task.string.MarkAsDone,
-    icon: task.icon.TodoCheck,
-    action: view.actionImpl.UpdateDocument,
-    actionProps: {
-      key: 'done',
-      value: true
-    },
-    input: 'focus',
-    category: task.category.Task,
-    query: {
-      done: false
-    },
-    target: task.class.TodoItem,
-    context: {
-      mode: ['context', 'browser'],
-      group: 'edit'
-    }
-  })
-
-  createAction(builder, {
-    label: task.string.MarkAsUndone,
-    icon: task.icon.TodoUnCheck,
-    action: view.actionImpl.UpdateDocument,
-    actionProps: {
-      key: 'done',
-      value: false
-    },
-    input: 'focus',
-    category: task.category.Task,
-    query: {
-      done: true
-    },
-    context: {
-      mode: ['context', 'browser'],
-      group: 'edit'
-    },
-    target: task.class.TodoItem
-  })
 
   createAction(
     builder,

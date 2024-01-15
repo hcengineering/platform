@@ -114,7 +114,9 @@ export enum IndexKind {
    *
    * Also mean to include into Elastic search.
    */
-  Indexed
+  Indexed,
+  // Same as indexed but for descending
+  IndexedDsc
 }
 
 /**

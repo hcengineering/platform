@@ -44,7 +44,6 @@ export default mergeIds(taskId, task, {
     UploadDropFilesHere: '' as IntlString,
     NoTaskForObject: '' as IntlString,
     Delete: '' as IntlString,
-    NoTodoItems: '' as IntlString,
     TodoState: '' as IntlString,
     DoneState: '' as IntlString,
     UndoneState: '' as IntlString,

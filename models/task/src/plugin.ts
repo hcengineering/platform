@@ -32,8 +32,6 @@ export default mergeIds(taskId, task, {
   },
   actionImpl: {
     EditStatuses: '' as ViewAction,
-    TodoItemMarkDone: '' as ViewAction,
-    TodoItemMarkUnDone: '' as ViewAction,
     ArchiveSpace: '' as ViewAction,
     UnarchiveSpace: '' as ViewAction,
     SelectStatus: '' as ViewAction
@@ -51,8 +49,6 @@ export default mergeIds(taskId, task, {
     StatePresenter: '' as AnyComponent,
     StateEditor: '' as AnyComponent,
     KanbanView: '' as AnyComponent,
-    Todos: '' as AnyComponent,
-    TodoItemPresenter: '' as AnyComponent,
     StatusTableView: '' as AnyComponent,
     TaskHeader: '' as AnyComponent,
     Dashboard: '' as AnyComponent,
