@@ -295,7 +295,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       const oldStagesRegex = [/fld-v.*/, /cnt-v.*/, /fts-v.*/, /sum-v.*/]
       for (const st of this.stages) {
         const regexp = oldStagesRegex.find((r) => r.test(st.stageId))
-        if (regexp !== undefined) { await this.storage.removeOldIndex(DOMAIN_DOC_INDEX_STATE, regexp, new RegExp(st.stageId)) }
+        if (regexp !== undefined) {
+          await this.storage.removeOldIndex(DOMAIN_DOC_INDEX_STATE, regexp, new RegExp(st.stageId))
+        }
         await this.storage.createIndexes(DOMAIN_DOC_INDEX_STATE, {
           indexes: [
             {
