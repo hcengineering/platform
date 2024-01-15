@@ -56,6 +56,7 @@ class MinioBlobAdapter implements DbAdapter {
   async init (model: Tx[]): Promise<void> {}
 
   async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {}
+  async removeOldIndex (domain: Domain, indexLike: string, indexExact: string): Promise<void> {}
 
   async close (): Promise<void> {}
 
