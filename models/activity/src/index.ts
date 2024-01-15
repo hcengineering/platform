@@ -31,6 +31,7 @@ import {
   type Reaction,
   type TxViewlet,
   type ActivityMessageControl,
+  type SavedMessage,
   type IgnoreActivity
 } from '@hcengineering/activity'
 import core, {
@@ -43,7 +44,8 @@ import core, {
   IndexKind,
   type TxCUD,
   type Domain,
-  type Account
+  type Account,
+  type Timestamp
 } from '@hcengineering/core'
 import {
   Model,
@@ -55,11 +57,16 @@ import {
   Mixin,
   Collection,
   TypeBoolean,
-  TypeIntlString
+  TypeIntlString,
+  ArrOf,
+  TypeTimestamp
 } from '@hcengineering/model'
 import { TAttachedDoc, TClass, TDoc } from '@hcengineering/model-core'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
+import contact, { type Person } from '@hcengineering/contact'
+import preference, { TPreference } from '@hcengineering/model-preference'
+import notification from '@hcengineering/notification'
 import view from '@hcengineering/model-view'
 
 import activity from './plugin'
@@ -102,8 +109,18 @@ export class TActivityMessage extends TAttachedDoc implements ActivityMessage {
   @Prop(TypeBoolean(), activity.string.Pinned)
     isPinned?: boolean
 
+  @Prop(ArrOf(TypeRef(contact.class.Person)), contact.string.Person)
+    repliedPersons?: Ref<Person>[]
+
+  @Prop(TypeTimestamp(), activity.string.LastReply)
+  @Index(IndexKind.Indexed)
+    lastReply?: Timestamp
+
   @Prop(Collection(activity.class.Reaction), activity.string.Reactions)
     reactions?: number
+
+  @Prop(Collection(activity.class.ActivityMessage), activity.string.Replies)
+    replies?: number
 }
 
 @Model(activity.class.DocUpdateMessage, activity.class.ActivityMessage)
@@ -186,11 +203,20 @@ export class TActivityExtension extends TDoc implements ActivityExtension {
 @Model(activity.class.ActivityMessagesFilter, core.class.Doc, DOMAIN_MODEL)
 export class TActivityMessagesFilter extends TDoc implements ActivityMessagesFilter {
   label!: IntlString
+  position!: number
   filter!: Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>
 }
 
 @Model(activity.class.Reaction, core.class.AttachedDoc, DOMAIN_ACTIVITY)
 export class TReaction extends TAttachedDoc implements Reaction {
+  @Prop(TypeRef(activity.class.ActivityMessage), core.string.AttachedTo)
+  @Index(IndexKind.Indexed)
+  declare attachedTo: Ref<ActivityMessage>
+
+  @Prop(TypeRef(activity.class.ActivityMessage), core.string.AttachedToClass)
+  @Index(IndexKind.Indexed)
+  declare attachedToClass: Ref<Class<ActivityMessage>>
+
   @Prop(TypeString(), activity.string.Emoji)
     emoji!: string
 
@@ -198,6 +224,11 @@ export class TReaction extends TAttachedDoc implements Reaction {
     createBy!: Ref<Account>
 }
 
+@Model(activity.class.SavedMessage, preference.class.Preference)
+export class TSavedMessage extends TPreference implements SavedMessage {
+  @Prop(TypeRef(activity.class.ActivityMessage), view.string.Save)
+  declare attachedTo: Ref<ActivityMessage>
+}
 export function createModel (builder: Builder): void {
   builder.createModel(
     TTxViewlet,
@@ -212,6 +243,7 @@ export function createModel (builder: Builder): void {
     TActivityAttributeUpdatesPresenter,
     TActivityInfoMessage,
     TActivityMessageControl,
+    TSavedMessage,
     TIgnoreActivity
   )
 
@@ -225,13 +257,30 @@ export function createModel (builder: Builder): void {
     presenter: activity.component.ActivityInfoMessagePresenter
   })
 
+  builder.mixin(activity.class.DocUpdateMessage, core.class.Class, view.mixin.LinkProvider, {
+    encode: activity.function.GetFragment
+  })
+
+  builder.createDoc(
+    activity.class.ActivityMessagesFilter,
+    core.space.Model,
+    {
+      label: activity.string.All,
+      position: 10,
+      filter: activity.filter.AllFilter
+    },
+    activity.ids.AllFilter
+  )
+
   builder.createDoc(activity.class.ActivityMessagesFilter, core.space.Model, {
     label: activity.string.Attributes,
+    position: 10,
     filter: activity.filter.AttributesFilter
   })
 
   builder.createDoc(activity.class.ActivityMessagesFilter, core.space.Model, {
     label: activity.string.Pinned,
+    position: 20,
     filter: activity.filter.PinnedFilter
   })
 
@@ -258,6 +307,31 @@ export function createModel (builder: Builder): void {
       hideIfRemoved: true
     },
     activity.ids.ReactionRemovedActivityViewlet
+  )
+
+  builder.mixin(activity.class.ActivityMessage, core.class.Class, notification.mixin.ClassCollaborators, {
+    fields: ['createdBy', 'repliedPersons']
+  })
+
+  builder.mixin(activity.class.DocUpdateMessage, core.class.Class, notification.mixin.ClassCollaborators, {
+    fields: ['createdBy', 'repliedPersons']
+  })
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: false,
+      generated: false,
+      label: activity.string.Reactions,
+      group: activity.ids.ActivityNotificationGroup,
+      txClasses: [core.class.TxCreateDoc],
+      objectClass: activity.class.Reaction,
+      providers: {
+        [notification.providers.PlatformNotification]: true
+      }
+    },
+    activity.ids.AddReactionNotification
   )
 }
 

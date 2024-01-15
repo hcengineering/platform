@@ -29,9 +29,6 @@
     "Reference": "Ссылка",
     "Chat": "Чат",
     "In": "в",
-    "Replies": "Ответы",
-    "LastReply": "Последний ответ",
-    "RepliesCount": "{replies, plural, one {# ответ} few {# ответа} other {# ответов}}",
     "Topic": "Топик",
     "Thread": "Обсуждение",
     "Threads": "Обсуждения",
@@ -80,6 +77,13 @@
     "DirectNotificationTitle": "{senderName}",
     "DirectNotificationBody": "{message}",
     "AddCommentPlaceholder": "Добавить комментарий...",
-    "Reacted": "Отреагировал(а)"
+    "Reacted": "Отреагировал(а)",
+    "Saved": "Сохранено",
+    "Docs": "Documents",
+    "NewestFirst": "Сначала новые",
+    "ReplyToThread": "Ответить в канале",
+    "SentMessage": "Отправил(а) сообщение",
+    "Direct": "личные сообщения",
+    "RepliedToThread": "Ответил(а) в канале"
   }
 }

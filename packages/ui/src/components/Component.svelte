@@ -64,6 +64,7 @@
           on:action
           on:valid
           on:validate
+          on:submit
         >
           <slot />
         </Ctor>
@@ -81,6 +82,7 @@
           on:action
           on:valid
           on:validate
+          on:submit
         />
       {/if}
     </ErrorBoundary>

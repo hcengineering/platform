@@ -13,15 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core from '@hcengineering/core'
+  import core, { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { Icon, Label } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { TableBrowser } from '@hcengineering/view-resources'
   import { NavigatorModel } from '@hcengineering/workbench'
+
   import workbench from '../plugin'
   import { getSpecialSpaceClass } from '../utils'
 
   export let model: NavigatorModel | undefined
+  export let _class: Ref<Class<Doc>> = core.class.Space
+  export let config: string[] = ['', '_class', 'modifiedOn']
+  export let baseMenuClass: Ref<Class<Doc>> = core.class.Space
+  export let query: DocumentQuery<Doc> | undefined = undefined
 </script>
 
 <div class="ac-header">
@@ -32,11 +37,11 @@
 </div>
 {#if model}
   <TableBrowser
-    _class={core.class.Space}
-    config={['', '_class', 'modifiedOn']}
+    {_class}
+    {config}
     showNotification
-    baseMenuClass={core.class.Space}
-    query={{
+    {baseMenuClass}
+    query={query ?? {
       _class: { $in: getSpecialSpaceClass(model) },
       archived: true
     }}

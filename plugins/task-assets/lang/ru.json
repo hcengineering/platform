@@ -84,6 +84,10 @@
     "TaskType": "Тип задачи",
     "ManageProjects": "Управление проектами",
     "CreateProjectType": "Создать тип проекта",
-    "ClassicProject": "Классический проект"
+    "ClassicProject": "Классический проект",
+    "LastSave": "Последнее сохранение",
+    "Published": "Опубликовано",
+    "CountProjects": "{count, plural, =0 {Нет проектов} =1 {# проект} other {# проектов}}",
+    "ProjectTypeTitle": "Название типа проекта"
   }
 }

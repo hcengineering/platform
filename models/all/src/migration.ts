@@ -55,12 +55,13 @@ export const migrateOperations: [string, MigrateOperation][] = [
   ['view', viewOperation],
   ['contact', contactOperation],
   ['tags', tagsOperation],
-  ['notification', notificationOperation],
   ['setting', settingOperation],
   ['tracker', trackerOperation],
   ['board', boardOperation],
   ['hr', hrOperation],
   ['bitrix', bitrixOperation],
   ['inventiry', inventoryOperation],
-  ['activityServer', activityServerOperation]
+  ['activityServer', activityServerOperation],
+  // We should call it after activityServer and chunter
+  ['notification', notificationOperation]
 ]

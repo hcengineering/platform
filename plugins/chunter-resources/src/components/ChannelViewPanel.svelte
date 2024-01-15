@@ -13,14 +13,32 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, Space } from '@hcengineering/core'
-  import ChannelView from './ChannelView.svelte'
-  import SpaceHeader from './SpaceHeader.svelte'
+  import { Doc, Ref } from '@hcengineering/core'
+  import notification, { DocNotifyContext } from '@hcengineering/notification'
+  import { createQuery } from '@hcengineering/presentation'
 
-  export let _id: Ref<Space>
+  import ChannelPresenter from './ChannelView.svelte'
+
+  export let _id: Ref<DocNotifyContext>
+
+  const objectQuery = createQuery()
+  const contextQuery = createQuery()
+
+  let notifyContext: DocNotifyContext | undefined = undefined
+  let object: Doc | undefined = undefined
+
+  $: contextQuery.query(notification.class.DocNotifyContext, { _id }, (res) => {
+    notifyContext = res[0]
+  })
+
+  $: notifyContext &&
+    objectQuery.query(notifyContext.attachedToClass, { _id: notifyContext.attachedTo }, (res) => {
+      object = res[0]
+    })
 </script>
 
-<div class="antiComponent">
-  <SpaceHeader spaceId={_id} withSearch={false} />
-  <ChannelView space={_id} />
-</div>
+{#if notifyContext && object}
+  <div class="antiComponent">
+    <ChannelPresenter {notifyContext} {object} />
+  </div>
+{/if}

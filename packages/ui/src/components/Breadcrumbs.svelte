@@ -46,9 +46,10 @@
       }}
     />
   {/each}
-  {#if afterLabel}
-    <span class="hulyBreadcrumbs-afterLabel">
-      <Label label={afterLabel} />
+  {#if afterLabel || $$slots.afterLabel}
+    <span class="hulyBreadcrumbs-afterLabel font-medium-12">
+      {#if afterLabel}<Label label={afterLabel} />{/if}
+      <slot name="afterLabel" />
     </span>
   {/if}
 </div>

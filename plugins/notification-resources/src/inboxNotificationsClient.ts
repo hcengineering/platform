@@ -12,15 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type Account, getCurrentAccount, type Ref, SortingOrder, type Doc } from '@hcengineering/core'
+import {
+  type Account,
+  type Class,
+  type Doc,
+  getCurrentAccount,
+  type Ref,
+  SortingOrder,
+  type WithLookup
+} from '@hcengineering/core'
 import notification, {
+  type ActivityInboxNotification,
+  type Collaborators,
+  type DocNotifyContext,
   type InboxNotification,
-  type InboxNotificationsClient,
-  type DocNotifyContext
+  type InboxNotificationsClient
 } from '@hcengineering/notification'
 import { derived, writable } from 'svelte/store'
 import { createQuery, getClient } from '@hcengineering/presentation'
-import activity, { type ActivityMessage } from '@hcengineering/activity'
+import { type ActivityMessage } from '@hcengineering/activity'
 
 /**
  * @public
@@ -34,21 +44,30 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   readonly inboxNotifications = writable<InboxNotification[]>([])
   readonly inboxNotificationsByContext = derived(
     [this.docNotifyContexts, this.inboxNotifications],
-    ([docNotifyContexts, inboxNotifications]) => {
-      if (inboxNotifications.length === 0 || docNotifyContexts.length === 0) {
-        return new Map<DocNotifyContext, InboxNotification[]>()
+    ([notifyContexts, inboxNotifications]) => {
+      if (inboxNotifications.length === 0 || notifyContexts.length === 0) {
+        return new Map<Ref<DocNotifyContext>, InboxNotification[]>()
       }
 
       return inboxNotifications.reduce((result, notification) => {
-        const docUpdate = docNotifyContexts.find(({ _id }) => _id === notification.docNotifyContext)
+        const notifyContext = notifyContexts.find(({ _id }) => _id === notification.docNotifyContext)
 
-        if (docUpdate == null) {
+        if (notifyContext === undefined || notifyContext.hidden) {
           return result
         }
 
-        return result.set(docUpdate, (result.get(docUpdate) ?? []).concat(notification))
-      }, new Map<DocNotifyContext, InboxNotification[]>())
+        return result.set(notifyContext._id, (result.get(notifyContext._id) ?? []).concat(notification))
+      }, new Map<Ref<DocNotifyContext>, InboxNotification[]>())
     }
+  )
+
+  readonly activityInboxNotifications = derived(
+    [this.inboxNotifications],
+    ([notifications]) =>
+      notifications.filter(
+        (n): n is ActivityInboxNotification => n._class === notification.class.ActivityInboxNotification
+      ),
+    [] as ActivityInboxNotification[]
   )
 
   private readonly docNotifyContextsQuery = createQuery(true)
@@ -56,15 +75,14 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
 
   private readonly _user: Ref<Account>
   private _docNotifyContextByDoc = new Map<Ref<Doc>, DocNotifyContext>()
-  private _inboxNotifications: InboxNotification[] = []
+  private _inboxNotifications: Array<WithLookup<InboxNotification>> = []
 
   private constructor () {
     this._user = getCurrentAccount()._id
     this.docNotifyContextsQuery.query(
       notification.class.DocNotifyContext,
       {
-        user: this._user,
-        hidden: false
+        user: this._user
       },
       (result: DocNotifyContext[]) => {
         this.docNotifyContexts.set(result)
@@ -84,9 +102,6 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       {
         sort: {
           createdOn: SortingOrder.Descending
-        },
-        lookup: {
-          attachedTo: activity.class.ActivityMessage
         }
       }
     )
@@ -108,12 +123,12 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     const client = getClient()
     const docNotifyContext = this._docNotifyContextByDoc.get(_id)
 
-    if (docNotifyContext == null) {
+    if (docNotifyContext === undefined) {
       return
     }
 
     const inboxNotifications = this._inboxNotifications.filter(
-      (notification) => notification.docNotifyContext === docNotifyContext._id
+      (notification) => notification.docNotifyContext === docNotifyContext._id && !notification.isViewed
     )
 
     await Promise.all([
@@ -122,29 +137,103 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     ])
   }
 
+  async forceReadDoc (_id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<void> {
+    const client = getClient()
+    const context = this._docNotifyContextByDoc.get(_id)
+
+    if (context !== undefined) {
+      await this.readDoc(_id)
+      return
+    }
+
+    const doc = await client.findOne(_class, { _id })
+
+    if (doc === undefined) {
+      return
+    }
+
+    const hierarchy = client.getHierarchy()
+    const collaboratorsMixin = hierarchy.as<Doc, Collaborators>(doc, notification.mixin.Collaborators)
+
+    if (collaboratorsMixin.collaborators === undefined) {
+      await client.createMixin<Doc, Collaborators>(
+        collaboratorsMixin._id,
+        collaboratorsMixin._class,
+        collaboratorsMixin.space,
+        notification.mixin.Collaborators,
+        {
+          collaborators: [this._user]
+        }
+      )
+    } else if (!collaboratorsMixin.collaborators.includes(this._user)) {
+      await client.updateMixin(
+        collaboratorsMixin._id,
+        collaboratorsMixin._class,
+        collaboratorsMixin.space,
+        notification.mixin.Collaborators,
+        {
+          $push: {
+            collaborators: this._user
+          }
+        }
+      )
+    }
+
+    await client.createDoc(notification.class.DocNotifyContext, doc.space, {
+      attachedTo: _id,
+      attachedToClass: _class,
+      user: this._user,
+      hidden: true
+    })
+  }
+
   async readMessages (ids: Array<Ref<ActivityMessage>>): Promise<void> {
-    // TODO: should read inbox updates??
     const client = getClient()
-    const inboxNotifications = this._inboxNotifications.filter(({ attachedTo }) => ids.includes(attachedTo))
+
+    const notificationsToRead = this._inboxNotifications
+      .filter((n): n is ActivityInboxNotification => n._class === notification.class.ActivityInboxNotification)
+      .filter(({ attachedTo, attachedToClass, isViewed }) => {
+        return ids.includes(attachedTo) && !isViewed
+
+        // if (attachedToClass !== activity.class.DocUpdateMessage || $lookup?.attachedTo === undefined) {
+        //   return false
+        // }
+        //
+        // const docUpdateMessage = $lookup.attachedTo as DocUpdateMessage
+        //
+        // if (docUpdateMessage.objectClass !== activity.class.Reaction) {
+        //   return false
+        // }
+        //
+        // return ids.includes(docUpdateMessage.attachedTo as Ref<ActivityMessage>) && !isViewed
+      })
 
     await Promise.all(
-      inboxNotifications.map(async (notification) => await client.update(notification, { isViewed: true }))
+      notificationsToRead.map(async (notification) => await client.update(notification, { isViewed: true }))
     )
   }
 
-  async unreadMessages (ids: Array<Ref<ActivityMessage>>): Promise<void> {
-    // TODO: should unread inbox updates??
+  async readNotifications (ids: Array<Ref<InboxNotification>>): Promise<void> {
     const client = getClient()
-    const inboxNotifications = this._inboxNotifications.filter(({ attachedTo }) => ids.includes(attachedTo))
+    const notificationsToRead = this._inboxNotifications.filter(({ _id }) => ids.includes(_id))
 
     await Promise.all(
-      inboxNotifications.map(async (notification) => await client.update(notification, { isViewed: false }))
+      notificationsToRead.map(async (notification) => await client.update(notification, { isViewed: true }))
     )
   }
 
-  async deleteMessagesNotifications (ids: Array<Ref<ActivityMessage>>): Promise<void> {
+  async unreadNotifications (ids: Array<Ref<InboxNotification>>): Promise<void> {
     const client = getClient()
-    const inboxNotifications = this._inboxNotifications.filter(({ attachedTo }) => ids.includes(attachedTo))
+    const notificationsToUnread = this._inboxNotifications.filter(({ _id }) => ids.includes(_id))
+
+    await Promise.all(
+      notificationsToUnread.map(async (notification) => await client.update(notification, { isViewed: false }))
+    )
+  }
+
+  async deleteNotifications (ids: Array<Ref<InboxNotification>>): Promise<void> {
+    const client = getClient()
+    const inboxNotifications = this._inboxNotifications.filter(({ _id }) => ids.includes(_id))
     await Promise.all(inboxNotifications.map(async (notification) => await client.remove(notification)))
   }
 }

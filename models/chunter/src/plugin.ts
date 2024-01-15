@@ -16,8 +16,8 @@
 import type { ActivityMessage, DocUpdateMessageViewlet, TxViewlet } from '@hcengineering/activity'
 import { chunterId, type Channel } from '@hcengineering/chunter'
 import chunter from '@hcengineering/chunter-resources/src/plugin'
-import type { Doc, Ref, Space } from '@hcengineering/core'
-import { type NotificationGroup } from '@hcengineering/notification'
+import { type Client, type Doc, type Ref } from '@hcengineering/core'
+import { type DocNotifyContext, type NotificationGroup } from '@hcengineering/notification'
 import type { IntlString, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import type { AnyComponent, Location } from '@hcengineering/ui/src/types'
@@ -29,11 +29,10 @@ export default mergeIds(chunterId, chunter, {
     DirectMessagePresenter: '' as AnyComponent,
     MessagePresenter: '' as AnyComponent,
     DmPresenter: '' as AnyComponent,
-    Threads: '' as AnyComponent,
-    SavedMessages: '' as AnyComponent,
-    ChunterBrowser: '' as AnyComponent,
     BacklinkContent: '' as AnyComponent,
-    BacklinkReference: '' as AnyComponent
+    BacklinkReference: '' as AnyComponent,
+    ChannelsPanel: '' as AnyComponent,
+    Chat: '' as AnyComponent
   },
   action: {
     MarkCommentUnread: '' as Ref<Action>,
@@ -41,17 +40,15 @@ export default mergeIds(chunterId, chunter, {
     ArchiveChannel: '' as Ref<Action>,
     UnarchiveChannel: '' as Ref<Action>,
     ConvertToPrivate: '' as Ref<Action>,
-    CopyCommentLink: '' as Ref<Action<Doc, any>>,
-    CopyThreadMessageLink: '' as Ref<Action<Doc, any>>,
-    CopyMessageLink: '' as Ref<Action<Doc, any>>
+    CopyChatMessageLink: '' as Ref<Action<Doc, any>>,
+    OpenChannel: '' as Ref<Action>
   },
   actionImpl: {
-    MarkUnread: '' as ViewAction,
-    MarkCommentUnread: '' as ViewAction,
     ArchiveChannel: '' as ViewAction,
     UnarchiveChannel: '' as ViewAction,
     ConvertDmToPrivateChannel: '' as ViewAction,
-    DeleteChatMessage: '' as ViewAction
+    DeleteChatMessage: '' as ViewAction,
+    ReplyToThread: '' as ViewAction
   },
   category: {
     Chunter: '' as Ref<ActionCategory>
@@ -62,7 +59,6 @@ export default mergeIds(chunterId, chunter, {
     Content: '' as IntlString,
     Comment: '' as IntlString,
     Reference: '' as IntlString,
-    Chat: '' as IntlString,
     CreateBy: '' as IntlString,
     Create: '' as IntlString,
     Edit: '' as IntlString,
@@ -71,14 +67,15 @@ export default mergeIds(chunterId, chunter, {
     MentionNotification: '' as IntlString,
     PinnedMessages: '' as IntlString,
     SavedMessages: '' as IntlString,
-    ThreadMessage: '' as IntlString,
     Emoji: '' as IntlString,
     FilterBacklinks: '' as IntlString,
     DM: '' as IntlString,
     DMNotification: '' as IntlString,
     ConfigLabel: '' as IntlString,
     ConfigDescription: '' as IntlString,
-    Reacted: '' as IntlString
+    Reacted: '' as IntlString,
+    Saved: '' as IntlString,
+    RepliedToThread: '' as IntlString
   },
   viewlet: {
     Chat: '' as Ref<ViewletDescriptor>
@@ -105,9 +102,12 @@ export default mergeIds(chunterId, chunter, {
     Random: '' as Ref<Channel>
   },
   function: {
-    ChunterBrowserVisible: '' as Resource<(spaces: Space[]) => Promise<boolean>>,
     GetLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
-    GetFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>
+    GetFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
+    ShouldNotify: '' as Resource<(docNotifyContexts: DocNotifyContext[]) => Promise<boolean>>,
+    DmIdentifierProvider: '' as Resource<<T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<string>>,
+    CanDeleteMessage: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    GetChunterSpaceLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>
   },
   filter: {
     BacklinksFilter: '' as Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>,

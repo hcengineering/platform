@@ -20,11 +20,11 @@
 
   import IssueStatusIcon from './IssueStatusIcon.svelte'
 
-  export let status: string
-  export let space: Ref<Space>
+  export let status: string | string[]
+  export let space: Ref<Space> | Ref<Space>[]
 
-  $: st = $statusStore.byId.get(status as Ref<Status>)
-  $: spaceProject = space as Ref<Project>
+  $: st = $statusStore.byId.get(Array.isArray(status) ? (status[0] as Ref<Status>) : (status as Ref<Status>))
+  $: spaceProject = Array.isArray(space) ? (space[0] as Ref<Project>) : (space as Ref<Project>)
 </script>
 
 {#if st}

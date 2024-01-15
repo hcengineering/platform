@@ -155,6 +155,7 @@ export function createModel (builder: Builder): void {
       icon: lead.icon.LeadApplication,
       alias: leadId,
       hidden: false,
+      aside: chunter.component.ThreadView,
       navigatorModel: {
         specials: [
           {
@@ -542,6 +543,7 @@ export function createModel (builder: Builder): void {
     chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
+      messageClass: chunter.class.ChatMessage,
       objectClass: lead.class.Lead,
       label: chunter.string.LeftComment
     },
@@ -701,7 +703,7 @@ export function createModel (builder: Builder): void {
     {
       name: lead.string.LeadApplication,
       description: lead.string.ManageFunnelStatuses,
-      icon: lead.component.TemplatesIcon,
+      icon: lead.icon.LeadApplication,
       baseClass: lead.class.Funnel
     },
     lead.descriptors.FunnelType

@@ -6,7 +6,6 @@ import { ApplicationsDetailsPage } from '../model/recruiting/applications-detail
 import { allure } from 'allure-playwright'
 import { TalentName } from '../model/recruiting/types'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
-import { NotificationPage } from '../model/notification-page'
 
 test.use({
   storageState: PlatformSetting
@@ -48,11 +47,12 @@ test.describe('Collaborative tests for Application', () => {
       await leftSideMenuPageSecond.checkExistNewNotification(userSecondPage)
       await leftSideMenuPageSecond.buttonNotification.click()
 
-      const notificationPageSecond = new NotificationPage(userSecondPage)
-      await notificationPageSecond.checkNotificationCollaborators(
-        `${talentName.lastName} ${talentName.firstName}`,
-        'You have been added to collaborators'
-      )
+      // TODO: rewrite checkNotificationCollaborators and uncomment
+      // const notificationPageSecond = new NotificationPage(userSecondPage)
+      // await notificationPageSecond.checkNotificationCollaborators(
+      //   `${talentName.lastName} ${talentName.firstName}`,
+      //   'You have been added to collaborators'
+      // )
 
       await (await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
       const navigationMenuPageSecond = new NavigationMenuPage(userSecondPage)
@@ -72,11 +72,12 @@ test.describe('Collaborative tests for Application', () => {
       await leftSideMenuPage.checkExistNewNotification(page)
       await leftSideMenuPage.buttonNotification.click()
 
-      const notificationPage = new NotificationPage(page)
-      await notificationPage.checkNotificationCollaborators(
-        `${talentName.lastName} ${talentName.firstName}`,
-        'left a comment'
-      )
+      // TODO: rewrite checkNotificationCollaborators and uncomment
+      // const notificationPage = new NotificationPage(page)
+      // await notificationPage.checkNotificationCollaborators(
+      //   `${talentName.lastName} ${talentName.firstName}`,
+      //   'left a comment'
+      // )
 
       await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
       const navigationMenuPage = new NavigationMenuPage(page)

@@ -156,6 +156,7 @@ test.describe('candidate/talents tests', () => {
     })
 
     await navigationMenuPage.buttonTalents.click()
+    await talentsPage.searchTalentByTalentName(talentNameFirst)
     await talentsPage.openTalentByTalentName(talentNameFirst)
     await talentDetailsPage.checkSocialLinks('Phone', '123123213213')
     await talentDetailsPage.checkSocialLinks('Email', 'test-merge-2@gmail.com')

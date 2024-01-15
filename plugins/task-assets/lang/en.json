@@ -84,6 +84,10 @@
     "TaskType": "Task type",
     "ManageProjects": "Project types",
     "CreateProjectType": "Create project type",
-    "ClassicProject": "Classic project"
+    "ClassicProject": "Classic project",
+    "LastSave": "Last save",
+    "Published": "Published",
+    "CountProjects": "{count, plural, =0 {No projects} =1 {# project} other {# projects}}",
+    "ProjectTypeTitle": "Project type title"
   }
 }

@@ -14,6 +14,7 @@
 //
 
 import type { Class, Doc, Mixin, Obj, Ref, Space } from '@hcengineering/core'
+import { DocNotifyContext } from '@hcengineering/notification'
 import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
@@ -43,6 +44,7 @@ export interface Application extends Doc {
   checkIsHeaderHidden?: Resource<() => Promise<boolean>>
   checkIsHeaderDisabled?: Resource<() => Promise<boolean>>
   navFooterComponent?: AnyComponent
+  shouldNotify?: Resource<(docNotifyContexts: DocNotifyContext[]) => Promise<boolean>>
 }
 
 /**
@@ -142,7 +144,16 @@ export default plugin(workbenchId, {
   },
   component: {
     WorkbenchApp: '' as AnyComponent,
-    InviteLink: '' as AnyComponent
+    InviteLink: '' as AnyComponent,
+    Archive: '' as AnyComponent,
+    SpaceBrowser: '' as AnyComponent
+  },
+  string: {
+    Archive: '' as IntlString,
+    Joined: '' as IntlString,
+    Leave: '' as IntlString,
+    View: '' as IntlString,
+    Join: '' as IntlString
   },
   icon: {
     Search: '' as Asset

@@ -174,6 +174,7 @@
     }
     &.type-anchor-link {
       padding: 0 0.75rem 0 0.625rem;
+      width: fit-content;
       min-height: 1.75rem;
 
       .hulyNavItem-icon,

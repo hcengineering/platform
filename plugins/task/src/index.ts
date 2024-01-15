@@ -31,7 +31,7 @@ import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platfor
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
 import { Action, IconProps, ViewletDescriptor } from '@hcengineering/view'
-import { NotificationType } from '../../notification/lib/index'
+import { NotificationType } from '@hcengineering/notification'
 
 /**
  * @public
@@ -185,7 +185,7 @@ export interface ProjectType extends Space {
 export interface ProjectTypeDescriptor extends Doc {
   name: IntlString
   description: IntlString
-  icon: AnyComponent
+  icon: Asset
   editor?: AnyComponent
   baseClass: Ref<Class<Task>>
 }

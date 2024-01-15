@@ -15,10 +15,10 @@
 -->
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
-  import { createQuery, hasResource } from '@hcengineering/presentation'
+  import { createQuery } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import task, { ProjectTypeDescriptor } from '@hcengineering/task'
-  import { Component, Icon, IconChevronDown, Label } from '@hcengineering/ui'
+  import { Icon, IconChevronDown, Label } from '@hcengineering/ui'
 
   export let descriptor: ProjectTypeDescriptor | undefined
   export let descriptorId: Ref<ProjectTypeDescriptor> | undefined
@@ -32,7 +32,7 @@
   })
 
   $: if (descriptor === undefined && categories.length > 0) {
-    descriptor = categories.filter((f) => hasResource(f.icon))[0]
+    descriptor = categories.filter((f) => f.icon)[0]
   }
 
   function select (item: ProjectTypeDescriptor): void {
@@ -45,7 +45,7 @@
 </div>
 <div class="flex-col overflow-y-auto">
   {#each categories as f (f._id)}
-    {#if hasResource(f.icon)}
+    {#if f.icon}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
@@ -56,7 +56,7 @@
         }}
       >
         <div class="icon flex-no-shrink mr-4">
-          <Component is={f.icon} />
+          <Icon icon={f.icon} size={'small'} />
         </div>
         <div class="flex-grow flex-col">
           <div class="fs-title overflow-label">

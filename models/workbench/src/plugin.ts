@@ -22,8 +22,6 @@ import workbench from '@hcengineering/workbench-resources/src/plugin'
 export default mergeIds(workbenchId, workbench, {
   component: {
     ApplicationPresenter: '' as AnyComponent,
-    Archive: '' as AnyComponent,
-    SpaceBrowser: '' as AnyComponent,
     SpecialView: '' as AnyComponent,
     ServerManager: '' as AnyComponent
   },

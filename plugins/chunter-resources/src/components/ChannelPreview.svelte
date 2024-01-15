@@ -15,22 +15,20 @@
 <script lang="ts">
   import { SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import chunter, { ChunterMessage, DirectMessage } from '@hcengineering/chunter'
-  import attachment from '@hcengineering/attachment'
+  import chunter, { ChatMessage, DirectMessage } from '@hcengineering/chunter'
   import { Label } from '@hcengineering/ui'
+  import { ActivityMessagePresenter } from '@hcengineering/activity-resources'
 
   import chunterResources from '../plugin'
-  import MessagePreview from './MessagePreview.svelte'
 
   export let object: DirectMessage
-  export let newTxes: number
 
   const NUM_OF_RECENT_MESSAGES = 5 as const
 
-  let messages: ChunterMessage[] = []
+  let messages: ChatMessage[] = []
   const messagesQuery = createQuery()
   $: messagesQuery.query(
-    chunter.class.ChunterMessage,
+    chunter.class.ChatMessage,
     { attachedTo: object._id },
     (res) => {
       if (res !== undefined) {
@@ -38,12 +36,9 @@
       }
     },
     {
-      limit: newTxes + NUM_OF_RECENT_MESSAGES,
+      limit: NUM_OF_RECENT_MESSAGES,
       sort: {
         createdOn: SortingOrder.Descending
-      },
-      lookup: {
-        _id: { attachments: attachment.class.Attachment }
       }
     }
   )
@@ -52,7 +47,7 @@
 <div class="flex-col flex-gap-3 preview-container">
   {#if messages.length}
     {#each messages as message}
-      <MessagePreview value={message} />
+      <ActivityMessagePresenter value={message} skipLabel />
     {/each}
   {:else}
     <Label label={chunterResources.string.NoMessages} />

@@ -30,6 +30,8 @@
   import ActivityMessageExtensionComponent from './ActivityMessageExtension.svelte'
   import ActivityMessagePresenter from './ActivityMessagePresenter.svelte'
   import PinMessageAction from './PinMessageAction.svelte'
+  import Replies from '../Replies.svelte'
+  import SaveMessageAction from '../SaveMessageAction.svelte'
 
   export let message: DisplayActivityMessage
   export let parentMessage: DisplayActivityMessage | undefined
@@ -43,8 +45,11 @@
   export let isSelected: boolean = false
   export let shouldScroll: boolean = false
   export let embedded: boolean = false
-  export let hasActionsMenu: boolean = true
+  export let withActions: boolean = true
+  export let showEmbedded = false
+  export let hideReplies = false
   export let onClick: (() => void) | undefined = undefined
+  export let onReply: (() => void) | undefined = undefined
 
   const client = getClient()
   let allActionIds: string[] = []
@@ -53,9 +58,10 @@
   let extensions: ActivityMessageExtension[] = []
   let isActionMenuOpened = false
 
-  $: void getActions(client, message, activity.class.ActivityMessage).then((res) => {
-    allActionIds = res.map(({ _id }) => _id)
-  })
+  $: withActions &&
+    getActions(client, message, activity.class.ActivityMessage).then((res) => {
+      allActionIds = res.map(({ _id }) => _id)
+    })
 
   function scrollToMessage (): void {
     if (element != null && shouldScroll) {
@@ -101,7 +107,7 @@
 
   $: isHidden = !!viewlet?.onlyWithParent && parentMessage === undefined
   $: withActionMenu =
-    !embedded && hasActionsMenu && (actions.length > 0 || allActionIds.some((id) => !excludedActions.includes(id)))
+    withActions && !embedded && (actions.length > 0 || allActionIds.some((id) => !excludedActions.includes(id)))
 </script>
 
 {#if !isHidden}
@@ -151,32 +157,38 @@
 
         <slot name="content" />
 
+        {#if !hideReplies && message.replies && message.replies > 0}
+          <div class="mt-2" />
+          <Replies {message} {onReply} />
+        {/if}
         <ActivityMessageExtensionComponent kind="footer" {extensions} props={{ object: message }} />
 
         <ReactionsPresenter object={message} />
-
-        {#if parentMessage}
+        {#if parentMessage && showEmbedded}
           <div class="mt-2" />
-          <ActivityMessagePresenter value={parentMessage} embedded />
+          <ActivityMessagePresenter value={parentMessage} embedded hideReplies withActions={false} />
         {/if}
       </div>
 
       <div
         class="actions clear-mins flex flex-gap-2 items-center"
-        class:menuShowed={isActionMenuOpened || message.isPinned}
+        class:opened={isActionMenuOpened || message.isPinned}
       >
-        <AddReactionAction object={message} />
-        <PinMessageAction object={message} />
+        {#if withActions}
+          <AddReactionAction object={message} />
+          <PinMessageAction object={message} />
+          <SaveMessageAction object={message} />
 
-        <ActivityMessageExtensionComponent
-          kind="action"
-          {extensions}
-          props={{ object: message }}
-          on:close={handleActionMenuClosed}
-          on:open={handleActionMenuOpened}
-        />
-        {#if withActionMenu}
-          <ActionIcon icon={IconMoreH} size="small" action={showMenu} />
+          <ActivityMessageExtensionComponent
+            kind="action"
+            {extensions}
+            props={{ object: message }}
+            on:close={handleActionMenuClosed}
+            on:open={handleActionMenuOpened}
+          />
+          {#if withActionMenu}
+            <ActionIcon icon={IconMoreH} size="small" action={showMenu} />
+          {/if}
         {/if}
       </div>
     </div>
@@ -195,8 +207,10 @@
     display: flex;
     flex-shrink: 0;
     padding: 0.75rem 0.75rem 0.75rem 1.25rem;
-    border-radius: 8px;
     gap: 1rem;
+    overflow: hidden;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
 
     &.clickable {
       cursor: pointer;
@@ -226,7 +240,7 @@
       right: 0.75rem;
       color: var(--theme-halfcontent-color);
 
-      &.menuShowed {
+      &.opened {
         visibility: visible;
       }
     }
@@ -240,7 +254,7 @@
     }
 
     &:hover:not(.embedded) {
-      background-color: var(--highlight-hover);
+      border: 1px solid var(--highlight-hover);
     }
   }
 

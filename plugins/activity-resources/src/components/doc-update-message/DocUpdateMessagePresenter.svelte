@@ -25,7 +25,7 @@
   import core, { Account, AttachedDoc, Class, Collection, Doc, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Component, ShowMore } from '@hcengineering/ui'
+  import { Component, ShowMore, Action } from '@hcengineering/ui'
   import { AttributeModel } from '@hcengineering/view'
 
   import ActivityMessageTemplate from '../activity-message/ActivityMessageTemplate.svelte'
@@ -42,8 +42,12 @@
   export let isSelected: boolean = false
   export let shouldScroll: boolean = false
   export let embedded: boolean = false
-  export let hasActionsMenu: boolean = true
+  export let withActions: boolean = true
+  export let showEmbedded = false
+  export let hideReplies = false
+  export let actions: Action[] = []
   export let onClick: (() => void) | undefined = undefined
+  export let onReply: (() => void) | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -146,9 +150,13 @@
     {isSelected}
     {shouldScroll}
     {embedded}
-    {hasActionsMenu}
+    {withActions}
     {viewlet}
+    {showEmbedded}
+    {hideReplies}
+    {actions}
     {onClick}
+    {onReply}
   >
     <svelte:fragment slot="header">
       {#if viewlet?.labelComponent}

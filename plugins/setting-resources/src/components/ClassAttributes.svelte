@@ -13,50 +13,35 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, {
-    AnyAttribute,
-    ArrOf,
-    AttachedDoc,
-    Class,
-    ClassifierKind,
-    Collection,
-    Doc,
-    EnumOf,
-    Ref,
-    RefTo,
-    Type
-  } from '@hcengineering/core'
-  import { IntlString, getResource } from '@hcengineering/platform'
-  import presentation, { MessageBox, createQuery, getClient } from '@hcengineering/presentation'
+  import core, { AnyAttribute, Class, ClassifierKind, Doc, Ref, Space } from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import {
-    Action,
     ActionIcon,
     AnySvelteComponent,
     ButtonIcon,
-    Icon,
     IconAdd,
-    IconDelete,
     IconEdit,
-    IconMoreV2,
     Label,
-    Menu,
     getEventPositionElement,
     showPopup,
     IconSettings,
-    IconOpenedArrow
+    ModernButton
   } from '@hcengineering/ui'
-  import { getContextActions } from '@hcengineering/view-resources'
+  import { ObjectPresenter } from '@hcengineering/view-resources'
   import settings from '../plugin'
   import CreateAttribute from './CreateAttribute.svelte'
+  import ClassAttributesList from './ClassAttributesList.svelte'
   import EditAttribute from './EditAttribute.svelte'
   import EditClassLabel from './EditClassLabel.svelte'
   import { settingsStore, clearSettingsStore } from '../store'
   import TypesPopup from './typeEditors/TypesPopup.svelte'
+  import { onDestroy } from 'svelte'
 
   export let _class: Ref<Class<Doc>>
   export let ofClass: Ref<Class<Doc>> | undefined = undefined
-  export let useOfClassAttributes = true
-  export let showTitle = true
+  export let showHierarchy: boolean = false
+  export let showTitle: boolean = !showHierarchy
 
   export let attributeMapper:
   | {
@@ -72,139 +57,65 @@
   const classQuery = createQuery()
 
   let clazz: Class<Doc> | undefined
-  let hovered: number | null = null
-  let selected: number | null = null
-  let btnAdd: ButtonIcon
+  let classes: Class<Doc>[] = []
+  let clazzHierarchy: Class<Doc<Space>>
+  let selected: AnyAttribute | undefined = undefined
 
   $: classQuery.query(core.class.Class, { _id: _class }, (res) => {
     clazz = res.shift()
   })
-  $: attributes = getCustomAttributes(_class)
-
-  function getCustomAttributes (_class: Ref<Class<Doc>>): AnyAttribute[] {
+  function hasCustomAttributes (_class: Ref<Class<Doc>>): boolean {
     const cl = hierarchy.getClass(_class)
     const attributes = Array.from(
-      hierarchy
-        .getAllAttributes(_class, _class === ofClass && useOfClassAttributes ? core.class.Doc : cl.extends)
-        .values()
+      hierarchy.getAllAttributes(_class, _class === ofClass ? core.class.Doc : cl.extends).values()
     )
-    return attributes
-  }
-
-  const attrQuery = createQuery()
-
-  $: attrQuery.query(core.class.Attribute, { attributeOf: _class }, () => {
-    attributes = getCustomAttributes(_class)
-  })
-
-  function update (): void {
-    attributes = getCustomAttributes(_class)
+    return attributes.length > 0
   }
 
   export function createAttribute (ev: MouseEvent): void {
     showPopup(TypesPopup, { _class }, getEventPositionElement(ev), (_id) => {
-      if (_id !== undefined) $settingsStore = { component: CreateAttribute, props: { _id, _class } }
-    })
-    // showPopup(CreateAttribute, { _class }, 'top', update)
-  }
-
-  export async function editAttribute (attribute: AnyAttribute, exist: boolean): Promise<void> {
-    showPopup(EditAttribute, { attribute, exist }, 'top', update)
-  }
-
-  export async function removeAttribute (attribute: AnyAttribute, exist: boolean): Promise<void> {
-    showPopup(
-      MessageBox,
-      {
-        label: settings.string.DeleteAttribute,
-        message: exist ? settings.string.DeleteAttributeExistConfirm : settings.string.DeleteAttributeConfirm
-      },
-      'top',
-      async (result) => {
-        if (result != null) {
-          await client.remove(attribute)
-          update()
-        }
-      }
-    )
-  }
-
-  async function showMenu (ev: MouseEvent, attribute: AnyAttribute, row: number): Promise<void> {
-    hovered = row
-    const exist = (await client.findOne(attribute.attributeOf, { [attribute.name]: { $exists: true } })) !== undefined
-
-    const actions: Action[] = [
-      {
-        label: presentation.string.Edit,
-        icon: IconEdit,
-        action: async () => {
-          await selectAttribute(attribute, row)
-        }
-      }
-    ]
-    if (attribute.isCustom === true) {
-      actions.push({
-        label: presentation.string.Remove,
-        icon: IconDelete,
-        action: async () => {
-          await removeAttribute(attribute, exist)
-        }
-      })
-    }
-    const extra = await getContextActions(client, attribute, { mode: 'context' })
-    actions.push(
-      ...extra.map((it) => ({
-        label: it.label,
-        icon: it.icon,
-        action: async (_: any, evt: Event) => {
-          const r = await getResource(it.action)
-          await r(attribute, evt, it.actionProps)
-        }
-      }))
-    )
-    showPopup(Menu, { actions }, getEventPositionElement(ev), () => {
-      hovered = null
+      if (_id !== undefined) $settingsStore = { component: CreateAttribute, props: { selectedType: _id, _class } }
     })
   }
 
-  function getAttrType (type: Type<any>): IntlString | undefined {
-    switch (type._class) {
-      case core.class.RefTo:
-        return client.getHierarchy().getClass((type as RefTo<Doc>).to).label
-      case core.class.Collection:
-        return client.getHierarchy().getClass((type as Collection<AttachedDoc>).of).label
-      case core.class.ArrOf:
-        return (type as ArrOf<Doc>).of.label
-      default:
-        return undefined
-    }
-  }
-
-  async function getEnumName (type: Type<any>): Promise<string | undefined> {
-    const ref = (type as EnumOf).of
-    const res = await client.findOne(core.class.Enum, { _id: ref })
-    return res?.name
-  }
   function editLabel (evt: MouseEvent): void {
     showPopup(EditClassLabel, { clazz }, getEventPositionElement(evt))
   }
-  async function selectAttribute (attribute: AnyAttribute, n: number): Promise<void> {
-    if (selected === n) {
-      selected = null
-      clearSettingsStore()
-      return
-    }
-    selected = n
-    const exist = (await client.findOne(attribute.attributeOf, { [attribute.name]: { $exists: true } })) !== undefined
-    $settingsStore = { component: EditAttribute, props: { attribute, exist } }
-  }
-  settingsStore.subscribe((value) => {
-    if (value.component == null) selected = null
-  })
+
   const classUpdated = (_clazz: Ref<Class<Doc>>): void => {
-    selected = null
+    selected = undefined
+    classes = client
+      .getHierarchy()
+      .getAncestors(_class)
+      .map((it) => client.getHierarchy().getClass(it))
+      .filter((it) => {
+        return (
+          !it.hidden &&
+          it.label !== undefined &&
+          it._id !== core.class.Doc &&
+          it._id !== core.class.AttachedDoc &&
+          it._id !== _class
+        )
+      })
+    clazzHierarchy = client.getHierarchy().getClass(_class)
   }
   $: classUpdated(_class)
+
+  settingsStore.subscribe((value) => {
+    if (value.id === undefined) selected = undefined
+  })
+  const handleDeselect = (): void => {
+    selected = undefined
+    clearSettingsStore()
+  }
+  const handleSelect = async (event: CustomEvent): Promise<void> => {
+    selected = event.detail as AnyAttribute
+    const exist = (await client.findOne(selected.attributeOf, { [selected.name]: { $exists: true } })) !== undefined
+    $settingsStore = { id: selected._id, component: EditAttribute, props: { attribute: selected, exist } }
+  }
+  onDestroy(() => {
+    if (selected !== undefined) clearSettingsStore()
+  })
 </script>
 
 {#if showTitle}
@@ -222,11 +133,17 @@
   {/if}
 {/if}
 <div class="hulyTableAttr-container">
-  <div class="hulyTableAttr-header font-medium-12">
-    <IconSettings size={'small'} />
-    <span><Label label={settings.string.ClassProperties} /></span>
+  <div class="hulyTableAttr-header font-medium-12" class:withButton={showHierarchy}>
+    {#if showHierarchy}
+      <ModernButton icon={IconSettings} kind={'secondary'} size={'small'} hasMenu>
+        <Label label={settings.string.ClassColon} />
+        <ObjectPresenter _class={clazzHierarchy._class} objectId={clazzHierarchy._id} value={clazzHierarchy} />
+      </ModernButton>
+    {:else}
+      <IconSettings size={'small'} />
+      <span><Label label={settings.string.ClassProperties} /></span>
+    {/if}
     <ButtonIcon
-      bind:this={btnAdd}
       kind={'primary'}
       icon={IconAdd}
       size={'small'}
@@ -235,63 +152,50 @@
       }}
     />
   </div>
-  {#if attributes.length}
-    <div class="hulyTableAttr-content">
-      {#each attributes as attr, i}
-        {@const attrType = getAttrType(attr.type)}
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div
-          class="hulyTableAttr-content__row"
-          class:hovered={hovered === i}
-          class:selected={selected === i}
-          on:contextmenu={(ev) => {
-            ev.preventDefault()
-            void showMenu(ev, attr, i)
-          }}
-          on:click={async () => {
-            void selectAttribute(attr, i)
-          }}
-        >
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <!-- svelte-ignore a11y-no-static-element-interactions -->
-          <div class="hulyTableAttr-content__row-dragMenu" on:click|stopPropagation={(ev) => showMenu(ev, attr, i)}>
-            <IconMoreV2 size={'small'} />
-          </div>
-          {#if attr.isCustom}
-            <div class="hulyChip-item font-medium-12">
-              <Label label={settings.string.Custom} />
-            </div>
-          {/if}
-          {#if attr.icon !== undefined}
-            <div class="hulyTableAttr-content__row-icon">
-              <Icon icon={attr.icon} size={'small'} />
-            </div>
-          {/if}
-          <div class="hulyTableAttr-content__row-label font-regular-14" class:accent={!attr.hidden}>
-            <Label label={attr.label} />
-          </div>
-          {#if attributeMapper}
-            <svelte:component this={attributeMapper.component} {...attributeMapper.props} attribute={attr} />
-          {/if}
-          <div class="hulyTableAttr-content__row-type font-medium-12">
-            <Label label={attr.type.label} />
-            {#if attrType !== undefined}
-              : <Label label={attrType} />
-            {/if}
-            {#if attr.type._class === core.class.EnumOf}
-              {#await getEnumName(attr.type) then name}
-                {#if name}
-                  : {name}
-                {/if}
-              {/await}
-            {/if}
-          </div>
-          <div class="hulyTableAttr-content__row-arrow">
-            <IconOpenedArrow size={'small'} />
-          </div>
+  {#if showHierarchy}
+    <div class="hulyTableAttr-content class withTitle">
+      <div class="hulyTableAttr-content__title">
+        <Label label={settings.string.Properties} />
+      </div>
+      <div class="hulyTableAttr-content__wrapper">
+        <ClassAttributesList
+          {_class}
+          {ofClass}
+          {attributeMapper}
+          {selected}
+          on:deselect={handleDeselect}
+          on:select={handleSelect}
+        />
+      </div>
+    </div>
+    {#each classes as clazz2}
+      <div class="hulyTableAttr-content class withTitle">
+        <div class="hulyTableAttr-content__title">
+          <Label label={clazz2.label} />
         </div>
-      {/each}
+        <div class="hulyTableAttr-content__wrapper">
+          <ClassAttributesList
+            _class={clazz2._id}
+            {ofClass}
+            {attributeMapper}
+            {selected}
+            notUseOfClass
+            on:deselect={handleDeselect}
+            on:select={handleSelect}
+          />
+        </div>
+      </div>
+    {/each}
+  {:else if hasCustomAttributes(_class)}
+    <div class="hulyTableAttr-content class">
+      <ClassAttributesList
+        {_class}
+        {ofClass}
+        {attributeMapper}
+        {selected}
+        on:deselect={handleDeselect}
+        on:select={handleSelect}
+      />
     </div>
   {/if}
 </div>
@@ -305,115 +209,5 @@
     font-size: 1.5rem;
     line-height: 2rem;
     color: var(--input-TextColor);
-  }
-  .hulyTableAttr-container {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    align-self: stretch;
-    background-color: var(--theme-table-row-color);
-    border: 1px solid var(--theme-divider-color);
-    border-radius: var(--large-BorderRadius);
-
-    .hulyTableAttr-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      align-self: stretch;
-      flex-shrink: 0;
-      padding: var(--spacing-2) var(--spacing-2) var(--spacing-2) var(--spacing-2_5);
-      text-transform: uppercase;
-      color: var(--global-secondary-TextColor);
-
-      span {
-        flex-grow: 1;
-        margin-left: var(--spacing-1_5);
-      }
-    }
-    .hulyTableAttr-content {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      align-self: stretch;
-      flex-shrink: 0;
-      padding: var(--spacing-1);
-      border-top: 1px solid var(--theme-divider-color);
-
-      &__row {
-        display: flex;
-        align-items: center;
-        align-self: stretch;
-        gap: var(--spacing-1);
-        padding: var(--spacing-1) var(--spacing-2) var(--spacing-1) var(--spacing-1);
-        border-radius: var(--small-BorderRadius);
-        cursor: pointer;
-
-        &-dragMenu {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          flex-shrink: 0;
-          width: var(--global-extra-small-Size);
-          height: var(--global-extra-small-Size);
-          border-radius: var(--extra-small-BorderRadius);
-        }
-        &-icon {
-          width: var(--global-min-Size);
-          height: var(--global-min-Size);
-          color: var(--global-primary-TextColor);
-        }
-        &-label {
-          white-space: nowrap;
-          word-break: break-all;
-          text-overflow: ellipsis;
-          overflow: hidden;
-          display: flex;
-          align-items: center;
-          flex-grow: 1;
-          min-width: 0;
-          color: var(--global-primary-TextColor);
-
-          &.accent {
-            font-weight: 500;
-          }
-        }
-        &-type {
-          text-transform: uppercase;
-          color: var(--global-secondary-TextColor);
-        }
-        &-arrow {
-          display: none;
-          flex-shrink: 0;
-          width: var(--global-min-Size);
-          height: var(--global-min-Size);
-          color: var(--global-primary-LinkColor);
-        }
-
-        &.hovered,
-        &:hover {
-          background-color: var(--theme-table-header-color); // var(--global-surface-03-hover-BackgroundColor);
-        }
-        &.selected {
-          background-color: var(--theme-table-header-color); // var(--global-surface-03-hover-BackgroundColor);
-
-          .hulyTableAttr-content__row-icon,
-          .hulyTableAttr-content__row-arrow,
-          .hulyTableAttr-content__row-label {
-            color: var(--global-primary-LinkColor);
-          }
-          .hulyTableAttr-content__row-type {
-            color: var(--global-primary-TextColor);
-          }
-          .hulyTableAttr-content__row-label {
-            font-weight: 700;
-          }
-        }
-        &.hovered .hulyTableAttr-content__row-arrow,
-        &:hover .hulyTableAttr-content__row-arrow,
-        &.selected .hulyTableAttr-content__row-arrow {
-          display: block;
-        }
-      }
-    }
   }
 </style>

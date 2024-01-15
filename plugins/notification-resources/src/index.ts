@@ -16,19 +16,17 @@
 
 import { type Resources } from '@hcengineering/platform'
 
-import Inbox from './components/Inbox.svelte'
-import NewInbox from './components/inbox/Inbox.svelte'
+import Inbox from './components/inbox/Inbox.svelte'
 import NotificationSettings from './components/NotificationSettings.svelte'
 import NotificationPresenter from './components/NotificationPresenter.svelte'
 import TxCollaboratorsChange from './components/activity/TxCollaboratorsChange.svelte'
 import TxDmCreation from './components/activity/TxDmCreation.svelte'
 import InboxAside from './components/inbox/InboxAside.svelte'
+import DocNotifyContextPresenter from './components/DocNotifyContextPresenter.svelte'
 import NotificationCollaboratorsChanged from './components/NotificationCollaboratorsChanged.svelte'
+import ActivityInboxNotificationPresenter from './components/inbox/ActivityInboxNotificationPresenter.svelte'
+import CommonInboxNotificationPresenter from './components/inbox/CommonInboxNotificationPresenter.svelte'
 import {
-  NotificationClientImpl,
-  hasntNotifications,
-  hide,
-  markAsUnread,
   unsubscribe,
   resolveLocation,
   markAsReadInboxNotification,
@@ -36,7 +34,15 @@ import {
   deleteInboxNotification,
   hasMarkAsUnreadAction,
   hasMarkAsReadAction,
-  hasDeleteNotificationAction
+  hasDocNotifyContextPinAction,
+  isDocNotifyContextHidden,
+  hasDocNotifyContextUnpinAction,
+  isDocNotifyContextVisible,
+  hasHiddenDocNotifyContext,
+  pinDocNotifyContext,
+  unpinDocNotifyContext,
+  hideDocNotifyContext,
+  unHideDocNotifyContext
 } from './utils'
 
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
@@ -49,33 +55,38 @@ export { default as BrowserNotificatator } from './components/BrowserNotificatat
 export default async (): Promise<Resources> => ({
   component: {
     Inbox,
-    NewInbox,
+    InboxAside,
     NotificationPresenter,
     NotificationSettings,
-    InboxAside,
-    NotificationCollaboratorsChanged
+    NotificationCollaboratorsChanged,
+    DocNotifyContextPresenter,
+    ActivityInboxNotificationPresenter,
+    CommonInboxNotificationPresenter
   },
   activity: {
     TxCollaboratorsChange,
     TxDmCreation
   },
   function: {
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    GetNotificationClient: NotificationClientImpl.getClient,
-    HasntNotifications: hasntNotifications,
     HasMarkAsUnreadAction: hasMarkAsUnreadAction,
     HasMarkAsReadAction: hasMarkAsReadAction,
-    HasDeleteNotificationAction: hasDeleteNotificationAction,
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    GetInboxNotificationsClient: InboxNotificationsClientImpl.getClient
+    GetInboxNotificationsClient: InboxNotificationsClientImpl.getClient,
+    HasDocNotifyContextPinAction: hasDocNotifyContextPinAction,
+    HasDocNotifyContextUnpinAction: hasDocNotifyContextUnpinAction,
+    IsDocNotifyContextHidden: isDocNotifyContextHidden,
+    IsDocNotifyContextVisible: isDocNotifyContextVisible,
+    HasHiddenDocNotifyContext: hasHiddenDocNotifyContext
   },
   actionImpl: {
     Unsubscribe: unsubscribe,
-    Hide: hide,
-    MarkAsUnread: markAsUnread,
     MarkAsReadInboxNotification: markAsReadInboxNotification,
     MarkAsUnreadInboxNotification: markAsUnreadInboxNotification,
-    DeleteInboxNotification: deleteInboxNotification
+    DeleteInboxNotification: deleteInboxNotification,
+    PinDocNotifyContext: pinDocNotifyContext,
+    UnpinDocNotifyContext: unpinDocNotifyContext,
+    HideDocNotifyContext: hideDocNotifyContext,
+    UnHideDocNotifyContext: unHideDocNotifyContext
   },
   resolver: {
     Location: resolveLocation

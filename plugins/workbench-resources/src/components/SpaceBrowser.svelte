@@ -36,9 +36,8 @@
     SearchEdit,
     showPopup
   } from '@hcengineering/ui'
-  import { FilterBar, FilterButton, SpacePresenter } from '@hcengineering/view-resources'
+  import { classIcon, FilterBar, FilterButton, SpacePresenter } from '@hcengineering/view-resources'
   import plugin from '../plugin'
-  import { classIcon } from '../utils'
 
   export let _class: Ref<Class<Space>>
   export let label: IntlString

@@ -14,13 +14,12 @@
 -->
 <script lang="ts">
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import activity, { Reaction } from '@hcengineering/activity'
-  import { Doc } from '@hcengineering/core'
+  import activity, { ActivityMessage, Reaction } from '@hcengineering/activity'
 
   import Reactions from './Reactions.svelte'
   import { updateDocReactions } from '../../utils'
 
-  export let object: Doc | undefined
+  export let object: ActivityMessage | undefined
 
   const client = getClient()
   const reactionsQuery = createQuery()
@@ -38,7 +37,7 @@
   }
 </script>
 
-{#if reactions.length}
+{#if object !== undefined && reactions.length > 0}
   <div class="footer flex-col p-inline contrast mt-2">
     <Reactions {reactions} {object} on:click={handleClick} />
   </div>

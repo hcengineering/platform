@@ -29,8 +29,7 @@ import type {
 import { NotificationType } from '@hcengineering/notification'
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
-import type { Preference } from '@hcengineering/preference'
-import { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui'
+import { AnyComponent } from '@hcengineering/ui'
 import { Action } from '@hcengineering/view'
 
 /**
@@ -55,6 +54,7 @@ export interface DirectMessage extends ChunterSpace {}
 
 /**
  * @public
+ * @deprecated use ChatMessage instead
  */
 export interface ChunterMessage extends AttachedDoc {
   content: string
@@ -71,14 +71,7 @@ export interface ChunterMessageExtension extends ChunterMessage {}
 
 /**
  * @public
- */
-export interface ThreadMessage extends ChunterMessage {
-  attachedTo: Ref<Message>
-  attachedToClass: Ref<Class<Message>>
-}
-
-/**
- * @public
+ * @deprecated use ChatMessage instead
  */
 export interface Message extends ChunterMessage {
   attachedTo: Ref<Space>
@@ -92,6 +85,7 @@ export interface Message extends ChunterMessage {
  * @public
  * @deprecated use ChatMessage instead
  */
+// TODO: remove comment
 export interface Comment extends AttachedDoc {
   message: string
   attachments?: number
@@ -119,15 +113,16 @@ export interface Backlink extends Comment {
 /**
  * @public
  */
-export interface SavedMessages extends Preference {
-  attachedTo: Ref<ChunterMessage>
+export interface DirectMessageInput extends Class<Doc> {
+  component: AnyComponent
 }
 
 /**
  * @public
  */
-export interface DirectMessageInput extends Class<Doc> {
-  component: AnyComponent
+export interface ObjectChatPanel extends Class<Doc> {
+  ignoreKeys: string[]
+  titleProvider: Resource<(object: Doc) => string>
 }
 
 /**
@@ -136,13 +131,24 @@ export interface DirectMessageInput extends Class<Doc> {
 export interface ChatMessage extends ActivityMessage {
   message: string
   attachments?: number
-  isEdited?: boolean
+  editedOn?: Timestamp
+}
+
+/**
+ * @public
+ */
+export interface ThreadMessage extends ChatMessage {
+  attachedTo: Ref<ActivityMessage>
+  attachedToClass: Ref<Class<ActivityMessage>>
+  objectId: Ref<Doc>
+  objectClass: Ref<Class<Doc>>
 }
 
 /**
  * @public
  */
 export interface ChatMessageViewlet extends ActivityMessageViewlet {
+  messageClass: Ref<Class<Doc>>
   label?: IntlString
 }
 
@@ -159,7 +165,6 @@ export default plugin(chunterId, {
     Hashtag: '' as Asset,
     Thread: '' as Asset,
     Lock: '' as Asset,
-    Bookmark: '' as Asset,
     ChannelBrowser: '' as Asset
   },
   component: {
@@ -170,7 +175,8 @@ export default plugin(chunterId, {
     Reactions: '' as AnyComponent,
     ChatMessageInput: '' as AnyComponent,
     ChatMessagesPresenter: '' as AnyComponent,
-    ChatMessagePresenter: '' as AnyComponent
+    ChatMessagePresenter: '' as AnyComponent,
+    ThreadMessagePresenter: '' as AnyComponent
   },
   class: {
     Message: '' as Ref<Class<Message>>,
@@ -180,14 +186,14 @@ export default plugin(chunterId, {
     Comment: '' as Ref<Class<Comment>>,
     ChunterSpace: '' as Ref<Class<ChunterSpace>>,
     Channel: '' as Ref<Class<Channel>>,
-    SavedMessages: '' as Ref<Class<SavedMessages>>,
     DirectMessage: '' as Ref<Class<DirectMessage>>,
     ChatMessage: '' as Ref<Class<ChatMessage>>,
     ChatMessageViewlet: '' as Ref<Class<ChatMessageViewlet>>
   },
   mixin: {
     DirectMessageInput: '' as Ref<Mixin<DirectMessageInput>>,
-    ChunterMessageExtension: '' as Ref<Mixin<ChunterMessageExtension>>
+    ChunterMessageExtension: '' as Ref<Mixin<ChunterMessageExtension>>,
+    ObjectChatPanel: '' as Ref<Mixin<ObjectChatPanel>>
   },
   space: {
     Backlinks: '' as Ref<Space>
@@ -208,16 +214,18 @@ export default plugin(chunterId, {
     DirectNotificationTitle: '' as IntlString,
     DirectNotificationBody: '' as IntlString,
     AddCommentPlaceholder: '' as IntlString,
-    LeftComment: '' as IntlString
-  },
-  resolver: {
-    Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
+    LeftComment: '' as IntlString,
+    Docs: '' as IntlString,
+    Chat: '' as IntlString,
+    ThreadMessage: '' as IntlString,
+    ReplyToThread: '' as IntlString
   },
   ids: {
     DMNotification: '' as Ref<NotificationType>,
     MentionNotification: '' as Ref<NotificationType>,
     ThreadNotification: '' as Ref<NotificationType>,
-    ChannelNotification: '' as Ref<NotificationType>
+    ChannelNotification: '' as Ref<NotificationType>,
+    ThreadMessageViewlet: '' as Ref<ChatMessageViewlet>
   },
   app: {
     Chunter: '' as Ref<Doc>
@@ -227,6 +235,7 @@ export default plugin(chunterId, {
     Update: '' as Resource<(source: Doc, key: string, target: RelatedDocument[], label: IntlString) => Promise<void>>
   },
   action: {
-    DeleteChatMessage: '' as Ref<Action>
+    DeleteChatMessage: '' as Ref<Action>,
+    ReplyToThread: '' as Ref<Action>
   }
 })

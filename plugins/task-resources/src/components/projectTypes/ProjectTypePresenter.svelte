@@ -16,7 +16,7 @@
   import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import task, { type ProjectType } from '@hcengineering/task'
-  import { Component } from '@hcengineering/ui'
+  import { Icon } from '@hcengineering/ui'
   import { typeStore } from '../..'
 
   export let value: ProjectType | Ref<ProjectType> | undefined
@@ -29,7 +29,7 @@
 {#if _value !== undefined}
   <span class="label flex-row-center gap-1 ml-3 no-word-wrap">
     {#if descriptor?.icon}
-      <Component is={descriptor?.icon} props={{ size: 'small' }} />
+      <Icon icon={descriptor?.icon} size={'small'} />
     {/if}
     <span class:ml-1={descriptor?.icon !== undefined}>
       {_value.name}

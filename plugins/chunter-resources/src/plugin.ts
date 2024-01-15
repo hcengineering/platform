@@ -14,7 +14,7 @@
 //
 
 import chunter, { chunterId } from '@hcengineering/chunter'
-import type { Client, Space } from '@hcengineering/core'
+import type { Client, Doc, Ref, Space } from '@hcengineering/core'
 import type { IntlString, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
@@ -32,18 +32,23 @@ export default mergeIds(chunterId, chunter, {
     ChannelPreview: '' as AnyComponent,
     MessagePreview: '' as AnyComponent,
     DirectMessageInput: '' as AnyComponent,
-    ReactionAddedMessage: '' as AnyComponent
+    CreateDocChannel: '' as AnyComponent,
+    SavedMessages: '' as AnyComponent,
+    Threads: '' as AnyComponent,
+    ChunterBrowser: '' as AnyComponent
   },
   function: {
-    GetDmName: '' as Resource<(client: Client, space: Space) => Promise<string>>
+    GetDmName: '' as Resource<(client: Client, space: Space) => Promise<string>>,
+    DirectMessageTitleProvider: '' as Resource<(client: Client, id: Ref<Doc>) => Promise<string>>,
+    ChunterBrowserVisible: '' as Resource<(spaces: Space[]) => Promise<boolean>>
   },
   actionImpl: {
     SubscribeMessage: '' as ViewAction,
     UnsubscribeMessage: '' as ViewAction,
-    PinMessage: '' as ViewAction,
-    UnpinMessage: '' as ViewAction,
     SubscribeComment: '' as ViewAction,
-    UnsubscribeComment: '' as ViewAction
+    UnsubscribeComment: '' as ViewAction,
+    UnpinAllChannels: '' as ViewAction,
+    OpenChannel: '' as ViewAction
   },
   string: {
     Channel: '' as IntlString,
@@ -63,8 +68,6 @@ export default mergeIds(chunterId, chunter, {
     Topic: '' as IntlString,
     Thread: '' as IntlString,
     Threads: '' as IntlString,
-    RepliesCount: '' as IntlString,
-    LastReply: '' as IntlString,
     New: '' as IntlString,
     GetNewReplies: '' as IntlString,
     TurnOffReplies: '' as IntlString,
@@ -93,6 +96,8 @@ export default mergeIds(chunterId, chunter, {
     YouHaveJoinedTheConversation: '' as IntlString,
     NoMessages: '' as IntlString,
     On: '' as IntlString,
-    Mentioned: '' as IntlString
+    Mentioned: '' as IntlString,
+    SentMessage: '' as IntlString,
+    Direct: '' as IntlString
   }
 })

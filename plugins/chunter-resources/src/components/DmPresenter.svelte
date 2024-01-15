@@ -15,28 +15,22 @@
 <script lang="ts">
   import { chunterId, DirectMessage } from '@hcengineering/chunter'
   import { getClient } from '@hcengineering/presentation'
-  import { Icon } from '@hcengineering/ui'
   import { NavLink } from '@hcengineering/view-resources'
 
   import { getDmName } from '../utils'
+  import DmIconPresenter from './DmIconPresenter.svelte'
 
   export let value: DirectMessage
   export let disabled = false
 
   const client = getClient()
-
-  $: icon = client.getHierarchy().getClass(value._class).icon
 </script>
 
 {#if value}
   {#await getDmName(client, value) then name}
     <NavLink app={chunterId} space={value._id} {disabled}>
       <div class="flex-presenter">
-        <div class="icon">
-          {#if icon}
-            <Icon {icon} size={'small'} />
-          {/if}
-        </div>
+        <DmIconPresenter {value} />
         <span class="label">{name}</span>
       </div>
     </NavLink>

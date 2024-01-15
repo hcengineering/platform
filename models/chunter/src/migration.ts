@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { TxOperations } from '@hcengineering/core'
+import core, { type Class, type Doc, type Ref, TxOperations } from '@hcengineering/core'
 import {
   type MigrateOperation,
   type MigrationClient,
@@ -22,14 +22,44 @@ import {
 } from '@hcengineering/model'
 import { chunterId } from '@hcengineering/chunter'
 import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
+import notification from '@hcengineering/notification'
 
 import { DOMAIN_COMMENT } from './index'
 import chunter from './plugin'
 
-export async function createGeneral (tx: TxOperations): Promise<void> {
+export async function createDocNotifyContexts (
+  client: MigrationUpgradeClient,
+  tx: TxOperations,
+  attachedTo: Ref<Doc>,
+  attachedToClass: Ref<Class<Doc>>
+): Promise<void> {
+  const users = await client.findAll(core.class.Account, {})
+  for (const user of users) {
+    if (user._id === core.account.System) {
+      continue
+    }
+    const docNotifyContext = await client.findOne(notification.class.DocNotifyContext, {
+      user: user._id,
+      attachedTo,
+      attachedToClass
+    })
+
+    if (docNotifyContext === undefined) {
+      await tx.createDoc(notification.class.DocNotifyContext, core.space.Space, {
+        user: user._id,
+        attachedTo,
+        attachedToClass,
+        hidden: false
+      })
+    }
+  }
+}
+
+export async function createGeneral (client: MigrationUpgradeClient, tx: TxOperations): Promise<void> {
   const createTx = await tx.findOne(core.class.TxCreateDoc, {
     objectId: chunter.space.General
   })
+
   if (createTx === undefined) {
     await tx.createDoc(
       chunter.class.Channel,
@@ -45,12 +75,15 @@ export async function createGeneral (tx: TxOperations): Promise<void> {
       chunter.space.General
     )
   }
+
+  await createDocNotifyContexts(client, tx, chunter.space.General, chunter.class.Channel)
 }
 
-export async function createRandom (tx: TxOperations): Promise<void> {
+export async function createRandom (client: MigrationUpgradeClient, tx: TxOperations): Promise<void> {
   const createTx = await tx.findOne(core.class.TxCreateDoc, {
     objectId: chunter.space.Random
   })
+
   if (createTx === undefined) {
     await tx.createDoc(
       chunter.class.Channel,
@@ -66,6 +99,8 @@ export async function createRandom (tx: TxOperations): Promise<void> {
       chunter.space.Random
     )
   }
+
+  await createDocNotifyContexts(client, tx, chunter.space.Random, chunter.class.Channel)
 }
 
 async function createBacklink (tx: TxOperations): Promise<void> {
@@ -104,8 +139,8 @@ export const chunterOperation: MigrateOperation = {
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
-    await createGeneral(tx)
-    await createRandom(tx)
+    await createGeneral(client, tx)
+    await createRandom(client, tx)
     await createBacklink(tx)
   }
 }

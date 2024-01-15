@@ -15,14 +15,14 @@
 <script lang="ts">
   import { Doc } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
-  import { NotificationClientImpl } from '@hcengineering/notification-resources'
+  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { Icon, IconSize } from '@hcengineering/ui'
 
   export let object: Doc
   export let size: IconSize = 'small'
 
-  const notificationClient = NotificationClientImpl.getClient()
-  const store = notificationClient.docUpdatesStore
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+  const store = inboxClient.docNotifyContextByDoc
   $: subscribed = $store.get(object._id) !== undefined
 </script>
 

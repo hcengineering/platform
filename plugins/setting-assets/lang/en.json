@@ -85,6 +85,11 @@
     "ConfigurationDisabled": "Disabled",
     "ConfigDisable": "Disable",
     "ConfigEnable": "Enable",
-    "ConfigBeta": "Beta version"
+    "ConfigBeta": "Beta version",
+    "Properties": "Properties",
+    "TaskTypes": "Task types",
+    "Automations": "Automations",
+    "Collections": "Collections",
+    "ClassColon": "Class:"
   }
 }

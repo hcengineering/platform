@@ -17,9 +17,6 @@
 import core, {
   AccountRole,
   type FindOptions,
-  Hierarchy,
-  getCurrentAccount,
-  getObjectValue,
   type AggregateValue,
   type AttachedDoc,
   type CategoryType,
@@ -29,7 +26,11 @@ import core, {
   type Doc,
   type DocumentQuery,
   type DocumentUpdate,
+  getCurrentAccount,
+  getObjectValue,
+  Hierarchy,
   type Lookup,
+  type Mixin,
   type Obj,
   type Ref,
   type RefTo,
@@ -37,33 +38,34 @@ import core, {
   type ReverseLookups,
   type Space,
   type TxOperations,
-  type Mixin,
   type TxCUD,
   type TxCollectionCUD,
   TxProcessor,
   type TxCreateDoc,
   type TxUpdateDoc,
-  type TxMixin
+  type TxMixin,
+  ClassifierKind
 } from '@hcengineering/core'
-import type { IntlString } from '@hcengineering/platform'
+import type { Asset, IntlString } from '@hcengineering/platform'
 import { getResource, translate } from '@hcengineering/platform'
 import {
-  getAttributePresenterClass,
-  hasResource,
   type AttributeCategory,
+  getAttributePresenterClass,
+  getClient,
+  hasResource,
   type KeyedAttribute
 } from '@hcengineering/presentation'
 import {
+  type AnyComponent,
+  type AnySvelteComponent,
   ErrorPresenter,
   getCurrentResolvedLocation,
   getPanelURI,
   getPlatformColorForText,
+  type Location,
   locationToUrl,
   navigate,
   resolvedLocationStore,
-  type AnyComponent,
-  type AnySvelteComponent,
-  type Location,
   themeStore
 } from '@hcengineering/ui'
 import view, {
@@ -1146,4 +1148,37 @@ export async function checkIsObjectRemoved (
   const object = await client.findOne(objectClass, { _id: objectId })
 
   return object === undefined
+}
+
+export function getDocMixins (
+  object: Doc,
+  showAllMixins = false,
+  ignoreMixins = new Set<Ref<Mixin<Doc>>>(),
+  objectClass?: Ref<Class<Doc>>
+): Array<Mixin<Doc>> {
+  if (object === undefined) {
+    return []
+  }
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  const descendants = hierarchy.getDescendants(core.class.Doc).map((p) => hierarchy.getClass(p))
+  const _class = objectClass ?? object._class
+
+  return descendants.filter(
+    (descendant) =>
+      descendant.kind === ClassifierKind.MIXIN &&
+      !ignoreMixins.has(descendant._id) &&
+      (hierarchy.hasMixin(object, descendant._id) ||
+        (showAllMixins &&
+          hierarchy.isDerived(_class, hierarchy.getBaseClass(descendant._id)) &&
+          (descendant.extends !== undefined && hierarchy.isMixin(descendant.extends)
+            ? hierarchy.hasMixin(object, descendant.extends)
+            : true)))
+  )
+}
+
+export function classIcon (client: Client, _class: Ref<Class<Obj>>): Asset | undefined {
+  return client.getHierarchy().getClass(_class).icon
 }

@@ -21,6 +21,7 @@ import serverNotification from '@hcengineering/server-notification'
 import serverCore, { type ObjectDDParticipant } from '@hcengineering/server-core'
 import serverChunter from '@hcengineering/server-chunter'
 import notification from '@hcengineering/notification'
+
 export { serverChunterId } from '@hcengineering/server-chunter'
 
 export function createModel (builder: Builder): void {
@@ -45,7 +46,7 @@ export function createModel (builder: Builder): void {
     presenter: serverChunter.function.ChunterNotificationContentProvider
   })
 
-  builder.mixin(chunter.class.Message, core.class.Class, serverNotification.mixin.NotificationPresenter, {
+  builder.mixin(chunter.class.ChatMessage, core.class.Class, serverNotification.mixin.NotificationPresenter, {
     presenter: serverChunter.function.ChunterNotificationContentProvider
   })
 
@@ -58,11 +59,22 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverChunter.trigger.OnMessageSent,
+    trigger: serverChunter.trigger.OnDirectMessageSent,
     txMatch: {
-      objectClass: chunter.class.DirectMessage,
       _class: core.class.TxCollectionCUD,
-      collection: 'messages'
+      objectClass: chunter.class.DirectMessage,
+      collection: 'messages',
+      'tx._class': core.class.TxCreateDoc,
+      'tx.objectClass': chunter.class.ChatMessage
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverChunter.trigger.OnChatMessageRemoved,
+    txMatch: {
+      _class: core.class.TxCollectionCUD,
+      'tx._class': core.class.TxRemoveDoc,
+      'tx.objectClass': chunter.class.ChatMessage
     }
   })
 

@@ -16,7 +16,7 @@
   import { DisplayActivityMessage } from '@hcengineering/activity'
   import view from '@hcengineering/view'
   import { getClient } from '@hcengineering/presentation'
-  import { Component } from '@hcengineering/ui'
+  import { Action, Component } from '@hcengineering/ui'
   import { Class, Doc, Ref } from '@hcengineering/core'
 
   export let value: DisplayActivityMessage
@@ -25,8 +25,14 @@
   export let isSelected: boolean = false
   export let shouldScroll: boolean = false
   export let embedded: boolean = false
-  export let hasActionsMenu: boolean = true
+  export let withActions: boolean = true
+  export let showEmbedded = false
+  export let hideReplies = false
+  export let skipLabel = false
+  export let actions: Action[] = []
+
   export let onClick: (() => void) | undefined = undefined
+  export let onReply: (() => void) | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -40,12 +46,17 @@
     props={{
       value,
       showNotify,
+      skipLabel,
       isHighlighted,
       isSelected,
       shouldScroll,
       embedded,
-      hasActionsMenu,
-      onClick
+      withActions,
+      showEmbedded,
+      hideReplies,
+      actions,
+      onClick,
+      onReply
     }}
   />
 {/if}
