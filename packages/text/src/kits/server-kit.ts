@@ -14,6 +14,7 @@
 //
 
 import { Extension } from '@tiptap/core'
+import { Level } from '@tiptap/extension-heading'
 import Table from '@tiptap/extension-table'
 import TableCell from '@tiptap/extension-table-cell'
 import TableHeader from '@tiptap/extension-table-header'
@@ -21,12 +22,12 @@ import TableRow from '@tiptap/extension-table-row'
 import TaskItem from '@tiptap/extension-task-item'
 import TaskList from '@tiptap/extension-task-list'
 
+import { NodeUuid } from '../marks/nodeUuid'
 import { ImageNode, ImageOptions } from '../nodes/image'
 import { ReferenceNode } from '../nodes/reference'
 import { TodoItemNode, TodoListNode } from '../nodes/todo'
 
 import { DefaultKit, DefaultKitOptions } from './default-kit'
-import { Level } from '@tiptap/extension-heading'
 
 const headingLevels: Level[] = [1, 2, 3, 4, 5, 6]
 
@@ -72,7 +73,8 @@ export const ServerKit = Extension.create<ServerKitOptions>({
       ImageNode.configure(this.options.image),
       TodoItemNode,
       TodoListNode,
-      ReferenceNode
+      ReferenceNode,
+      NodeUuid
     ]
   }
 })
