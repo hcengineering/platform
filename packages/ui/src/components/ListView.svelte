@@ -27,8 +27,6 @@
 
   const dispatch = createEventDispatcher()
 
-  let oldSelection = Date.now()
-
   function processRowSelected (item: number): void {
     selection = item
     dispatch('on-select', item)
@@ -36,7 +34,7 @@
 
   const rowSelectDebounced = debounce(processRowSelected, 25, true, 100)
 
-  function updateSelection (item: number) {
+  function updateSelection (item: number): void {
     // debounce makes shure event is processed not too often and last call is processed
     rowSelectDebounced(item)
   }
