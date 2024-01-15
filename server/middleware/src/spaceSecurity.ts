@@ -20,27 +20,27 @@ import core, {
   DocumentQuery,
   FindOptions,
   FindResult,
-  generateId,
   LookupData,
   MeasureContext,
   ObjQueryType,
   Position,
   PullArray,
   Ref,
+  SearchOptions,
+  SearchQuery,
+  SearchResult,
   ServerStorage,
   Space,
-  systemAccountEmail,
   Tx,
-  TxCreateDoc,
   TxCUD,
+  TxCreateDoc,
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc,
   TxWorkspaceEvent,
   WorkspaceEvent,
-  SearchResult,
-  SearchQuery,
-  SearchOptions
+  generateId,
+  systemAccountEmail
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { BroadcastFunc, Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
@@ -117,16 +117,26 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     for (const domain in classesPerDomain) {
       for (const _class of classesPerDomain[domain]) {
         const field = this.getKey(_class)
-        const spaces = await this.storage.findAll(
-          ctx,
-          _class,
-          {},
-          {
-            projection: { [field]: 1 }
+        const map = this.domainSpaces[domain] ?? new Set()
+        this.domainSpaces[domain] = map
+
+        while (true) {
+          const spaces = await this.storage.findAll(
+            ctx,
+            _class,
+            {
+              [field]: { $nin: Array.from(map.values()) }
+            },
+            {
+              projection: { [field]: 1 },
+              limit: 1000
+            }
+          )
+          if (spaces.length === 0) {
+            break
           }
-        )
-        this.domainSpaces[domain] = this.domainSpaces[domain] ?? new Set()
-        spaces.forEach((p) => this.domainSpaces[domain].add((p as any)[field] as Ref<Space>))
+          spaces.forEach((p) => map.add((p as any)[field] as Ref<Space>))
+        }
       }
     }
   }

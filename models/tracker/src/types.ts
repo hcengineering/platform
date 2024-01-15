@@ -224,10 +224,6 @@ export class TIssue extends TTask implements Issue {
   @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.DueDate)
   declare dueDate: Timestamp | null
 
-  @Prop(TypeString(), tracker.string.Rank)
-  @Hidden()
-  declare rank: string
-
   @Prop(TypeRef(tracker.class.Milestone), tracker.string.Milestone, { icon: tracker.icon.Milestone })
   @Index(IndexKind.Indexed)
     milestone!: Ref<Milestone> | null

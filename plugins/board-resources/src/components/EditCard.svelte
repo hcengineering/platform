@@ -19,27 +19,23 @@
   import core, { Class, Doc, Mixin, Ref, Space } from '@hcengineering/core'
   import { Panel } from '@hcengineering/panel'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import type { State, TodoItem } from '@hcengineering/task'
-  import task from '@hcengineering/task'
   import { StyledTextBox } from '@hcengineering/text-editor'
   import {
     Button,
     CircleButton,
     EditBox,
-    getEventPopupPositionElement,
     IconAdd,
     IconMoreH,
     Label,
+    getEventPopupPositionElement,
     showPopup
   } from '@hcengineering/ui'
-  import { ContextMenu, DocAttributeBar, invokeAction, ParentsNavigator } from '@hcengineering/view-resources'
+  import { ContextMenu, DocAttributeBar, ParentsNavigator, invokeAction } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import board from '../plugin'
   import { getCardActions } from '../utils/CardActionUtils'
   import { updateCard } from '../utils/CardUtils'
   import CardActions from './editor/CardActions.svelte'
-  import CardChecklist from './editor/CardChecklist.svelte'
-  import AddChecklist from './popups/AddChecklist.svelte'
 
   export let _id: Ref<Card>
   export let _class: Ref<Class<Card>>
@@ -48,13 +44,12 @@
   const cardQuery = createQuery()
   const stateQuery = createQuery()
   const spaceQuery = createQuery()
-  const checklistsQuery = createQuery()
 
   let object: Card | undefined
   let state: State | undefined
   let space: Space | undefined
   let handleMove: (e: Event) => void
-  let checklists: TodoItem[] = []
+
   const mixins: Mixin<Doc>[] = []
   const allowedCollections = ['labels']
   const ignoreKeys = ['isArchived', 'location', 'title', 'description', 'status', 'number', 'assignee']
@@ -65,27 +60,18 @@
     }
   }
 
-  function addChecklist (e: Event) {
-    showPopup(AddChecklist, { value: object }, getEventPopupPositionElement(e))
-  }
-
   $: cardQuery.query(_class, { _id }, (result) => {
     object = result[0]
   })
 
   $: object?.status &&
-    stateQuery.query(task.class.State, { _id: object.status }, (result) => {
+    stateQuery.query(core.class.Status, { _id: object.status }, (result) => {
       state = result[0]
     })
 
   $: object?.space &&
     spaceQuery.query(core.class.Space, { _id: object.space }, (result) => {
       space = result[0]
-    })
-
-  $: object &&
-    checklistsQuery.query(task.class.TodoItem, { space: object.space, attachedTo: object._id }, (result) => {
-      checklists = result
     })
 
   getCardActions(client, { _id: board.action.Move }).then(async (result) => {
@@ -156,15 +142,6 @@
     </div>
     <div class="mt-6">
       <Attachments objectId={_id} {_class} space={object.space} attachments={object.attachments ?? 0} />
-    </div>
-    <div class="flex-row-center mt-6">
-      <span class="text-xl font-medium caption-color mr-3"><Label label={board.string.Checklists} /></span>
-      <CircleButton icon={IconAdd} size="small" selected on:click={addChecklist} />
-    </div>
-    <div class="mr-2 ml-2 mb-4">
-      {#each checklists as checklist}
-        <CardChecklist value={checklist} />
-      {/each}
     </div>
     <svelte:fragment slot="custom-attributes" let:direction>
       {#if direction === 'column'}

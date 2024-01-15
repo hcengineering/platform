@@ -484,24 +484,6 @@ export function createModel (builder: Builder): void {
     actions: [view.action.Delete, task.action.Move]
   })
 
-  // TODO: update query when nested query is available
-  createAction(
-    builder,
-    {
-      action: board.actionImpl.ConvertToCard,
-      label: board.string.ConvertToCard,
-      icon: board.icon.Card,
-      category: board.category.Card,
-      query: {
-        attachedToClass: task.class.TodoItem
-      },
-      input: 'any',
-      target: task.class.TodoItem,
-      context: { mode: ['context', 'browser'] }
-    },
-    board.action.ConvertToCard
-  )
-
   createAction(builder, {
     ...viewTemplates.open,
     target: board.class.Board,

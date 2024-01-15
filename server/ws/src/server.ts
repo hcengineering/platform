@@ -154,8 +154,6 @@ class TSessionManager implements SessionManager {
     return this.sessionFactory(token, pipeline, this.broadcast.bind(this))
   }
 
-  upgradeIdMap = new Map<string, string>()
-
   async addSession (
     ctx: MeasureContext,
     ws: ConnectionSocket,
@@ -176,18 +174,14 @@ class TSessionManager implements SessionManager {
       }
 
       let pipeline: Pipeline
-      const upgradeId = this.upgradeIdMap.get(token.workspace.name)
       if (token.extra?.model === 'upgrade') {
-        if (upgradeId !== undefined && sessionId !== upgradeId) {
-          ws.close()
-          throw new Error('Another Upgrade in progress....')
+        if (workspace.upgrade) {
+          pipeline = await ctx.with('pipeline', {}, async () => await (workspace as Workspace).pipeline)
+        } else {
+          pipeline = await this.createUpgradeSession(token, sessionId, ctx, wsString, workspace, pipelineFactory, ws)
         }
-        if (sessionId !== undefined) {
-          this.upgradeIdMap.set(token.workspace.name, sessionId)
-        }
-        pipeline = await this.createUpgradeSession(token, sessionId, ctx, wsString, workspace, pipelineFactory, ws)
       } else {
-        if (workspace.upgrade && sessionId !== upgradeId) {
+        if (workspace.upgrade) {
           ws.close()
           throw new Error('Upgrade in progress....')
         }
@@ -331,10 +325,6 @@ class TSessionManager implements SessionManager {
     }
     const sessionRef = this.sessions.get(ws.id)
     if (sessionRef !== undefined) {
-      const upgradeId = this.upgradeIdMap.get(workspaceId.name)
-      if (upgradeId === sessionRef.session.sessionId) {
-        this.upgradeIdMap.delete(workspaceId.name)
-      }
       this.sessions.delete(ws.id)
       workspace.sessions.delete(sessionRef.session.sessionId)
       this.reconnectIds.add(sessionRef.session.sessionId)
@@ -441,14 +431,12 @@ class TSessionManager implements SessionManager {
 
           if (this.workspaces.get(wsid)?.id === wsUID) {
             this.workspaces.delete(wsid)
-            this.upgradeIdMap.delete(workspaceId.name)
           }
           if (LOGGING_ENABLED) {
             console.timeLog(workspaceId.name, 'Closed workspace', wsUID)
           }
         } catch (err: any) {
           this.workspaces.delete(wsid)
-          this.upgradeIdMap.delete(workspaceId.name)
           if (LOGGING_ENABLED) {
             console.error(workspaceId.name, err)
           }
