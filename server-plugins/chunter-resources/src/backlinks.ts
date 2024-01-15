@@ -41,10 +41,9 @@ export function getBacklinks (
   content: string
 ): Array<Data<Backlink>> {
   const doc = parseHTML(content, extensions)
-
   const result: Array<Data<Backlink>> = []
-
   const references = extractReferences(doc)
+
   for (const ref of references) {
     if (ref.objectId !== attachedDocId && ref.objectId !== backlinkId) {
       result.push({
@@ -73,13 +72,16 @@ export function getBacklinksTxes (txFactory: TxFactory, backlinks: Data<Backlink
     const pos = backlinks.findIndex(
       (b) => b.backlinkId === c.backlinkId && b.backlinkClass === c.backlinkClass && b.attachedTo === c.attachedTo
     )
+
     if (pos !== -1) {
       // Update existing backlinks when message changed
       const data = backlinks[pos]
+
       if (c.message !== data.message) {
         const innerTx = txFactory.createTxUpdateDoc(c._class, c.space, c._id, {
           message: data.message
         })
+
         txes.push(
           txFactory.createTxCollectionCUD(
             c.attachedToClass,
@@ -90,10 +92,12 @@ export function getBacklinksTxes (txFactory: TxFactory, backlinks: Data<Backlink
           )
         )
       }
+
       backlinks.splice(pos, 1)
     } else {
       // Remove not found backlinks
       const innerTx = txFactory.createTxRemoveDoc(c._class, c.space, c._id)
+
       txes.push(
         txFactory.createTxCollectionCUD(c.attachedToClass, c.attachedTo, chunter.space.Backlinks, c.collection, innerTx)
       )
@@ -103,6 +107,7 @@ export function getBacklinksTxes (txFactory: TxFactory, backlinks: Data<Backlink
   // Add missing backlinks
   for (const backlink of backlinks) {
     const backlinkTx = txFactory.createTxCreateDoc(chunter.class.Backlink, chunter.space.Backlinks, backlink)
+
     txes.push(
       txFactory.createTxCollectionCUD(
         backlink.attachedToClass,
@@ -125,13 +130,14 @@ export function getCreateBacklinksTxes (
   backlinkClass: Ref<Class<Doc>>
 ): Tx[] {
   const attachedDocId = doc._id
-
   const backlinks: Data<Backlink>[] = []
   const attributes = control.hierarchy.getAllAttributes(doc._class)
+
   for (const attr of attributes.values()) {
     if (attr.type._class === core.class.TypeMarkup) {
       const content = (doc as any)[attr.name]?.toString() ?? ''
       const attrBacklinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, content)
+
       backlinks.push(...attrBacklinks)
     }
   }
@@ -149,9 +155,10 @@ export async function getUpdateBacklinksTxes (
   const attachedDocId = doc._id
 
   // collect attribute backlinks
-  let hasBacklinkAttrs = false
   const backlinks: Data<Backlink>[] = []
   const attributes = control.hierarchy.getAllAttributes(doc._class)
+  let hasBacklinkAttrs = false
+
   for (const attr of attributes.values()) {
     if (attr.type._class === core.class.TypeMarkup) {
       hasBacklinkAttrs = true
@@ -183,10 +190,11 @@ export async function getRemoveBacklinksTxes (
   doc: Ref<Doc>
 ): Promise<Tx[]> {
   const txes: Tx[] = []
-
   const backlinks = await control.findAll(chunter.class.Backlink, { attachedDocId: doc, collection: 'backlinks' })
+
   for (const b of backlinks) {
     const innerTx = txFactory.createTxRemoveDoc(b._class, b.space, b._id)
+
     txes.push(
       txFactory.createTxCollectionCUD(b.attachedToClass, b.attachedTo, chunter.space.Backlinks, b.collection, innerTx)
     )
@@ -200,9 +208,10 @@ export function guessBacklinkTx (hierarchy: Hierarchy, tx: TxCUD<Doc>): TxCUD<Do
   if (hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)) {
     const cltx = tx as TxCollectionCUD<Doc, AttachedDoc>
     tx = TxProcessor.extractTx(cltx) as TxCUD<Doc>
-
     const mixin = hierarchy.classHierarchyMixin(tx.objectClass, notification.mixin.ClassCollaborators)
+
     return mixin !== undefined ? tx : cltx
   }
+
   return tx
 }

@@ -111,9 +111,11 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
     summary.fieldFilter.push((attr, value) => {
       const tMarkup = attr.type._class === core.class.TypeMarkup
       const lowerCase: string = value.toLocaleLowerCase()
+
       if (tMarkup && (lowerCase.includes('gpt:') || lowerCase.includes('gpt Answer:'))) {
         return false
       }
+
       return true
     })
   }
@@ -123,20 +125,25 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
       // Just do nothing
       const config = await storage.findAll(openaiPlugin.class.OpenAIConfiguration, {})
       let needCheck = 0
+
       if (config.length > 0) {
         if (this.enabled !== config[0].embeddings) {
           needCheck++
           this.enabled = config[0].embeddings
         }
+
         if (this.token !== config[0].token) {
           this.token = config[0].token
           needCheck++
         }
+
         const ep = (config[0].endpoint + '/embeddings').replace('//', '/')
+
         if (this.endpoint !== ep) {
           this.endpoint = ep
           needCheck++
         }
+
         if (this.tokenLimit !== config[0].tokenLimit) {
           this.tokenLimit = config[0].tokenLimit
           needCheck++
@@ -149,6 +156,7 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
         // Initialize field embedding
         const emb = await this.getEmbedding('dummy')
         const dim = emb.data[0].embedding.length
+
         this.field = `${this.field}_${dim}`
         this.field_enabled = this.field + this.field_enabled
 
@@ -183,11 +191,14 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
         }
       }
     }
+
     let l = this.tokenLimit
     let response: OpenAIEmbeddingResponse | undefined
+
     while (true) {
       const chs = chunks(text, l)
       let chunkChange = false
+
       for (const c of chs) {
         try {
           const embeddingData = await openAIRatelimitter.exec(
@@ -204,7 +215,9 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
                 timeout: 15000
               })
           )
+
           const res = JSON.parse(embeddingData.body) as OpenAIEmbeddingResponse
+
           if (response === undefined) {
             response = res
           } else {
@@ -215,6 +228,7 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
           }
         } catch (err: any) {
           const msg = (err.message ?? '') as string
+
           if (msg.includes('maximum context length is')) {
             // We need to split chunks and try again.
             l = l / 2
@@ -222,17 +236,22 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
             response = undefined
             break
           }
+
           throw err
         }
       }
+
       if (chunkChange) {
         continue
       }
+
       break
     }
+
     if (response === undefined) {
       throw new Error('Failed to retrieve embedding')
     }
+
     return response
   }
 
@@ -248,7 +267,11 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
         pass: true
       }
     }
-    if (query.$search === undefined) return { docs: [], pass: true }
+
+    if (query.$search === undefined) {
+      return { docs: [], pass: true }
+    }
+
     const queryString = query.$search.replace('\n ', ' ')
     const embeddingData = await this.getEmbedding(queryString)
     const embedding = embeddingData.data[0].embedding
@@ -261,6 +284,7 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
       field_enable: this.field_enabled,
       fulltextBoost: 1
     })
+
     return {
       docs,
       pass: docs.length === 0
@@ -271,12 +295,15 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
     if (!this.enabled) {
       return
     }
+
     for (const doc of toIndex) {
       if (pipeline.cancelling) {
         return
       }
+
       await this.limitter.add(() => this.collectDoc(doc, pipeline, metrics))
     }
+
     await this.limitter.waitProcessing()
   }
 
@@ -284,6 +311,7 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
     if (pipeline.cancelling) {
       return
     }
+
     const needIndex = isIndexingRequired(pipeline, doc)
 
     // Copy content attributes as well.
@@ -295,6 +323,7 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
     // No need to index this class, mark embeddings as empty ones.
     if (!needIndex) {
       await pipeline.update(doc._id, this.stageValue, {})
+
       return
     }
 
@@ -302,6 +331,7 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
       if (this.unauthorized) {
         return
       }
+
       const embeddingText = doc.fullSummary ?? ''
 
       if (embeddingText.length > this.treshold) {
@@ -311,18 +341,22 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
         console.log('calculate embeddings:', doc.objectClass, doc._id)
 
         let embeddingData: OpenAIEmbeddingResponse | undefined
+
         while (true) {
           try {
             embeddingData = await metrics.with('fetch-embeddings', {}, async () => await this.getEmbedding(embeddText))
+
             break
           } catch (err: any) {
             if (((err.message as string) ?? '').includes('connect ECONNREFUSED')) {
               await new Promise((resolve) => setTimeout(resolve, 1000))
             }
+
             if (err.message === 'Response code 429 (Too Many Requests)') {
               await new Promise((resolve) => setTimeout(resolve, 1000))
               continue
             }
+
             throw new Error(err)
           }
         }
@@ -333,23 +367,28 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
           [this.field]: embedding,
           [this.field_enabled]: true
         })
+
         if (this.copyToState) {
           ;(update as any)[docUpdKey(this.field)] = embedding
         } else {
           ;(update as any)[docUpdKey(this.field)] = embedding.length
         }
+
         ;(update as any)[docUpdKey(this.field_enabled)] = true
       }
     } catch (err: any) {
       if (err.message === 'Response code 401 (Unauthorized)') {
         this.unauthorized = true
       }
+
       const wasError = doc.attributes.error !== undefined
 
       await pipeline.update(doc._id, false, { [docKey('error')]: JSON.stringify(err) })
+
       if (wasError) {
         return
       }
+
       // Print error only first time, and update it in doc index
       console.error(err)
     }

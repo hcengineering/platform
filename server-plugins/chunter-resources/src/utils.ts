@@ -54,14 +54,17 @@ export async function IsMeMentioned (
   if (!isBacklink(tx, control.hierarchy)) {
     return false
   }
+
   const backlink = TxProcessor.createDoc2Doc(tx as TxCreateDoc<Backlink>)
 
   if (!control.hierarchy.isDerived(backlink.attachedToClass, contact.class.Person)) {
     return false
   }
+
   const acc = (
     await control.modelDb.findAll(contact.class.PersonAccount, { person: backlink.attachedTo as Ref<Person> })
   )[0]
+
   return acc._id === user
 }
 
@@ -83,6 +86,7 @@ export async function IsDirectMessage (
   control: TriggerControl
 ): Promise<boolean> {
   const dm = (await control.findAll(chunter.class.DirectMessage, { _id: doc._id as Ref<DirectMessage> }))[0]
+
   return dm !== undefined
 }
 

@@ -42,7 +42,10 @@ export async function TagElementRemove (
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
 ): Promise<Doc[]> {
-  if (!hierarchy.isDerived(doc._class, tags.class.TagElement)) return []
+  if (!hierarchy.isDerived(doc._class, tags.class.TagElement)) {
+    return []
+  }
+
   return await findAll(tags.class.TagReference, { tag: doc._id as Ref<TagElement> })
 }
 
@@ -53,27 +56,38 @@ export async function onTagReference (tx: Tx, control: TriggerControl): Promise<
   const actualTx = TxProcessor.extractTx(tx)
   const isCreate = control.hierarchy.isDerived(actualTx._class, core.class.TxCreateDoc)
   const isRemove = control.hierarchy.isDerived(actualTx._class, core.class.TxRemoveDoc)
-  if (!isCreate && !isRemove) return []
-  if (!control.hierarchy.isDerived((actualTx as TxCUD<Doc>).objectClass, tags.class.TagReference)) return []
+
+  if (
+    (!isCreate && !isRemove) ||
+    !control.hierarchy.isDerived((actualTx as TxCUD<Doc>).objectClass, tags.class.TagReference)
+  ) {
+    return []
+  }
+
   if (isCreate) {
     const doc = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<TagReference>)
     const res = control.txFactory.createTxUpdateDoc(tags.class.TagElement, tags.space.Tags, doc.tag, {
       $inc: { refCount: 1 }
     })
+
     return [res]
   }
+
   if (isRemove) {
     const ctx = actualTx as TxRemoveDoc<TagReference>
     const doc = control.removedMap.get(ctx.objectId) as TagReference
+
     if (doc !== undefined) {
       if (!control.removedMap.has(doc.tag)) {
         const res = control.txFactory.createTxUpdateDoc(tags.class.TagElement, tags.space.Tags, doc.tag, {
           $inc: { refCount: -1 }
         })
+
         return [res]
       }
     }
   }
+
   return []
 }
 

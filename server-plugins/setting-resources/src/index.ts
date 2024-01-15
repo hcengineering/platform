@@ -24,7 +24,11 @@ import setting, { Integration } from '@hcengineering/setting'
 export async function integrationHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const integration = doc as Integration
   const type = (await control.modelDb.findAll(setting.class.IntegrationType, { _id: integration.type }))[0]
-  if (type === undefined) return ''
+
+  if (type === undefined) {
+    return ''
+  }
+
   return await translate(type.label, {})
 }
 
@@ -34,7 +38,11 @@ export async function integrationHTMLPresenter (doc: Doc, control: TriggerContro
 export async function integrationTextPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const integration = doc as Integration
   const type = (await control.modelDb.findAll(setting.class.IntegrationType, { _id: integration.type }))[0]
-  if (type === undefined) return ''
+
+  if (type === undefined) {
+    return ''
+  }
+
   return await translate(type.label, {})
 }
 

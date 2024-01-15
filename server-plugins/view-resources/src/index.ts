@@ -23,18 +23,29 @@ import view from '@hcengineering/view'
 export async function OnCustomAttributeRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const hierarchy = control.hierarchy
   const ptx = tx as TxRemoveDoc<AnyAttribute>
-  if (!checkTx(ptx, hierarchy)) return []
+
+  if (!checkTx(ptx, hierarchy)) {
+    return []
+  }
+
   const txes = await control.findAll<TxCUD<AnyAttribute>>(core.class.TxCUD, { objectId: ptx.objectId })
   const attribute = TxProcessor.buildDoc2Doc<AnyAttribute>(txes)
-  if (attribute === undefined) return []
+
+  if (attribute === undefined) {
+    return []
+  }
+
   const preferences = await control.findAll(view.class.ViewletPreference, { config: attribute.name })
   const res: Tx[] = []
+
   for (const preference of preferences) {
     const tx = control.txFactory.createTxUpdateDoc(preference._class, preference.space, preference._id, {
       $pull: { config: attribute.name }
     })
+
     res.push(tx)
   }
+
   return res
 }
 
@@ -46,6 +57,7 @@ function checkTx (ptx: TxRemoveDoc<AnyAttribute>, hierarchy: Hierarchy): boolean
   if (!hierarchy.isDerived(ptx.objectClass, core.class.Attribute)) {
     return false
   }
+
   return true
 }
 

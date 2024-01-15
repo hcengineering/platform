@@ -48,6 +48,7 @@ async function updateSubIssues (
 
   return subIssues.map((issue) => {
     const docUpdate = typeof update === 'function' ? update(issue) : update
+
     return control.txFactory.createTxUpdateDoc(issue._class, issue.space, issue._id, docUpdate)
   })
 }
@@ -61,6 +62,7 @@ export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Pr
   const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const path = `${workbenchId}/${control.workspace.name}/${trackerId}/${issueId}`
   const link = concatLink(front, path)
+
   return `<a href="${link}">${issueId}</a> ${issue.title}`
 }
 
@@ -70,6 +72,7 @@ export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Pr
 export async function getIssueId (doc: Issue, control: TriggerControl): Promise<string> {
   const issue = doc
   const project = (await control.findAll(tracker.class.Project, { _id: issue.space }))[0]
+
   return `${project?.identifier ?? '?'}-${issue.number}`
 }
 
@@ -85,6 +88,7 @@ export async function issueTextPresenter (doc: Doc, control: TriggerControl): Pr
 
 function isSamePerson (control: TriggerControl, assignee: Ref<Person>, target: Ref<Account>): boolean {
   const targetAccount = control.modelDb.getObject(target) as PersonAccount
+
   return assignee === targetAccount?.person
 }
 
@@ -99,16 +103,14 @@ export async function getIssueNotificationContent (
   control: TriggerControl
 ): Promise<NotificationContent> {
   const issue = doc as Issue
-
   const issueShortName = await issueTextPresenter(doc, control)
   const issueTitle = `${issueShortName}: ${issue.title}`
-
   const title = tracker.string.IssueNotificationTitle
-  let body = tracker.string.IssueNotificationBody
   const intlParams: Record<string, string | number> = {
     issueTitle
   }
   const intlParamsNotLocalized: Record<string, IntlString> = {}
+  let body = tracker.string.IssueNotificationBody
 
   if (tx._class === core.class.TxCollectionCUD) {
     const ptx = tx as TxCollectionCUD<Doc, AttachedDoc>
@@ -118,6 +120,7 @@ export async function getIssueNotificationContent (
         const createTx = ptx.tx as TxCreateDoc<ChatMessage>
         const message = createTx.attributes.message
         const plainTextMessage = stripTags(message, NOTIFICATION_BODY_SIZE)
+
         intlParams.message = plainTextMessage
       }
     } else if (ptx.tx._class === core.class.TxUpdateDoc) {
@@ -131,14 +134,17 @@ export async function getIssueNotificationContent (
         body = tracker.string.IssueAssigneedToYou
       } else {
         const attributes = control.hierarchy.getAllAttributes(doc._class)
+
         for (const attrName in updateTx.operations) {
           if (!Object.prototype.hasOwnProperty.call(updateTx.operations, attrName)) {
             continue
           }
 
           const attr = attributes.get(attrName)
+
           if (attr !== null && attr !== undefined) {
             intlParamsNotLocalized.property = attr.label
+
             if (attr.type._class === core.class.TypeString) {
               body = tracker.string.IssueNotificationChangedProperty
               intlParams.newValue = (issue as any)[attr.name]?.toString()
@@ -146,6 +152,7 @@ export async function getIssueNotificationContent (
               body = tracker.string.IssueNotificationChanged
             }
           }
+
           break
         }
       }
@@ -165,11 +172,14 @@ export async function getIssueNotificationContent (
  */
 export async function OnComponentRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const ctx = TxProcessor.extractTx(tx) as TxRemoveDoc<Component>
-
   const issues = await control.findAll(tracker.class.Issue, {
     component: ctx.objectId
   })
-  if (issues === undefined) return []
+
+  if (issues === undefined) {
+    return []
+  }
+
   const res: Tx[] = []
 
   for (const issue of issues) {
@@ -178,8 +188,10 @@ export async function OnComponentRemove (tx: Tx, control: TriggerControl): Promi
       component: null
     }
     const tx = control.txFactory.createTxUpdateDoc(issue._class, issue.space, issue._id, issuePush)
+
     res.push(tx)
   }
+
   return res
 }
 
@@ -196,6 +208,7 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
     actualTx._class === core.class.TxRemoveDoc
   ) {
     const cud = actualTx as TxCUD<TimeSpendReport>
+
     if (cud.objectClass === tracker.class.TimeSpendReport) {
       return await doTimeReportUpdate(cud, tx, control)
     }
@@ -203,9 +216,11 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
 
   if (actualTx._class === core.class.TxCreateDoc) {
     const createTx = actualTx as TxCreateDoc<Issue>
+
     if (control.hierarchy.isDerived(createTx.objectClass, tracker.class.Issue)) {
       const issue = TxProcessor.createDoc2Doc(createTx)
       const res: Tx[] = []
+
       updateIssueParentEstimations(issue, res, control, [], issue.parents)
 
       return res
@@ -214,12 +229,15 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
 
   if (actualTx._class === core.class.TxUpdateDoc) {
     const updateTx = actualTx as TxUpdateDoc<Issue>
+
     if (control.hierarchy.isDerived(updateTx.objectClass, tracker.class.Issue)) {
       return await doIssueUpdate(updateTx, control, tx as TxCollectionCUD<Issue, AttachedDoc>)
     }
   }
+
   if (actualTx._class === core.class.TxRemoveDoc) {
     const removeTx = actualTx as TxRemoveDoc<Issue>
+
     if (control.hierarchy.isDerived(removeTx.objectClass, tracker.class.Issue)) {
       const parentIssue = await control.findAll(tracker.class.Issue, {
         'childInfo.childId': removeTx.objectId
@@ -230,6 +248,7 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
         parentTitle: it.title,
         space: it.space
       }))
+
       updateIssueParentEstimations(
         {
           _id: removeTx.objectId,
@@ -242,9 +261,11 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
         parents,
         []
       )
+
       return res
     }
   }
+
   return []
 }
 
@@ -263,6 +284,7 @@ export default async () => ({
 
 async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const parentTx = tx as TxCollectionCUD<Issue, TimeSpendReport>
+
   switch (cud._class) {
     case core.class.TxCreateDoc: {
       const ccud = cud as TxCreateDoc<TimeSpendReport>
@@ -272,13 +294,16 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
         })
       ]
       const [currentIssue] = await control.findAll(tracker.class.Issue, { _id: parentTx.objectId }, { limit: 1 })
+
       currentIssue.reportedTime += ccud.attributes.value
       currentIssue.remainingTime = Math.max(0, currentIssue.estimation - currentIssue.reportedTime)
       updateIssueParentEstimations(currentIssue, res, control, currentIssue.parents, currentIssue.parents)
+
       return res
     }
     case core.class.TxUpdateDoc: {
       const upd = cud as TxUpdateDoc<TimeSpendReport>
+
       if (upd.operations.value !== undefined) {
         const logTxes = Array.from(
           await control.findAll(core.class.TxCollectionCUD, {
@@ -288,9 +313,9 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
           // eslint-disable-next-line @typescript-eslint/unbound-method
         ).map(TxProcessor.extractTx)
         const doc: TimeSpendReport | undefined = TxProcessor.buildDoc2Doc(logTxes)
-
         const res: Tx[] = []
         const [currentIssue] = await control.findAll(tracker.class.Issue, { _id: parentTx.objectId }, { limit: 1 })
+
         if (doc !== undefined) {
           res.push(
             control.txFactory.createTxUpdateDoc<Issue>(parentTx.objectClass, parentTx.objectSpace, parentTx.objectId, {
@@ -303,8 +328,10 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
         }
 
         updateIssueParentEstimations(currentIssue, res, control, currentIssue.parents, currentIssue.parents)
+
         return res
       }
+
       break
     }
     case core.class.TxRemoveDoc: {
@@ -317,22 +344,25 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
           // eslint-disable-next-line @typescript-eslint/unbound-method
         ).map(TxProcessor.extractTx)
         const doc: TimeSpendReport | undefined = TxProcessor.buildDoc2Doc(logTxes)
+
         if (doc !== undefined) {
           const res = [
             control.txFactory.createTxUpdateDoc<Issue>(parentTx.objectClass, parentTx.objectSpace, parentTx.objectId, {
               $inc: { reportedTime: -1 * doc.value }
             })
           ]
-
           const [currentIssue] = await control.findAll(tracker.class.Issue, { _id: parentTx.objectId }, { limit: 1 })
+
           currentIssue.reportedTime -= doc.value
           currentIssue.remainingTime = Math.max(0, currentIssue.estimation - currentIssue.reportedTime)
           updateIssueParentEstimations(currentIssue, res, control, currentIssue.parents, currentIssue.parents)
+
           return res
         }
       }
     }
   }
+
   return []
 }
 
@@ -342,7 +372,6 @@ async function doIssueUpdate (
   tx: TxCollectionCUD<Issue, AttachedDoc>
 ): Promise<Tx[]> {
   const res: Tx[] = []
-
   let currentIssue: WithLookup<Issue> | undefined
 
   async function getCurrentIssue (): Promise<WithLookup<Issue>> {
@@ -351,6 +380,7 @@ async function doIssueUpdate (
     }
     // We need to remove estimation information from out parent issue
     ;[currentIssue] = await control.findAll(tracker.class.Issue, { _id: updateTx.objectId }, { limit: 1 })
+
     return currentIssue
   }
 
@@ -360,7 +390,6 @@ async function doIssueUpdate (
       { _id: updateTx.operations.attachedTo as Ref<Issue> },
       { limit: 1 }
     )
-
     const updatedParents =
       newParent !== undefined
         ? [{ parentId: newParent._id, parentTitle: newParent.title, space: newParent.space }, ...newParent.parents]
@@ -385,6 +414,7 @@ async function doIssueUpdate (
 
     // Remove from parent estimation list.
     const issue = await getCurrentIssue()
+
     updateIssueParentEstimations(issue, res, control, issue.parents, updatedParents)
   }
 
@@ -448,6 +478,7 @@ function updateIssueParentEstimations (
       })
     )
   }
+
   for (const pinfo of targetParents) {
     res.push(
       control.txFactory.createTxUpdateDoc(tracker.class.Issue, pinfo.space, pinfo.parentId, {

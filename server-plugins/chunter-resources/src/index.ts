@@ -73,9 +73,9 @@ function getCreateBacklinksTxes (
   backlinkClass: Ref<Class<Doc>>
 ): Tx[] {
   const attachedDocId = doc._id
-
   const backlinks: Data<Backlink>[] = []
   const attributes = control.hierarchy.getAllAttributes(doc._class)
+
   for (const attr of attributes.values()) {
     if (isMarkupType(attr.type._class)) {
       const content = (doc as any)[attr.name]?.toString() ?? ''
@@ -133,6 +133,7 @@ export async function channelHTMLPresenter (doc: Doc, control: TriggerControl): 
   const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const path = `${workbenchId}/${control.workspace.name}/${chunterId}/${channel._id}`
   const link = concatLink(front, path)
+
   return `<a href='${link}'>${channel.name}</a>`
 }
 
@@ -141,6 +142,7 @@ export async function channelHTMLPresenter (doc: Doc, control: TriggerControl): 
  */
 export async function channelTextPresenter (doc: Doc): Promise<string> {
   const channel = doc as ChunterSpace
+
   return `${channel.name}`
 }
 
@@ -161,6 +163,7 @@ export async function CommentRemove (
   }
 
   const chatMessage = doc as ChatMessage
+
   return await findAll(chunter.class.Backlink, {
     backlinkId: chatMessage.attachedTo,
     backlinkClass: chatMessage.attachedToClass,
@@ -238,6 +241,7 @@ async function OnChatMessageCreated (tx: TxCUD<Doc>, control: TriggerControl): P
   if (targetDoc !== undefined) {
     if (hierarchy.hasMixin(targetDoc, notification.mixin.Collaborators)) {
       const collaboratorsMixin = hierarchy.as(targetDoc, notification.mixin.Collaborators)
+
       if (!collaboratorsMixin.collaborators.includes(chatMessage.modifiedBy)) {
         res.push(
           control.txFactory.createTxMixin(
@@ -255,9 +259,11 @@ async function OnChatMessageCreated (tx: TxCUD<Doc>, control: TriggerControl): P
       }
     } else {
       const collaborators = await getDocCollaborators(targetDoc, mixin, control)
+
       if (!collaborators.includes(chatMessage.modifiedBy)) {
         collaborators.push(chatMessage.modifiedBy)
       }
+
       res.push(getMixinTx(tx, control, collaborators))
     }
   }
@@ -327,6 +333,7 @@ async function BacklinksUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> 
 
   let hasUpdates = false
   const attributes = control.hierarchy.getAllAttributes(ctx.objectClass)
+
   for (const attr of attributes.values()) {
     if (isMarkupType(attr.type._class) && attr.name in ctx.operations) {
       hasUpdates = true
@@ -339,7 +346,6 @@ async function BacklinksUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> 
 
     if (rawDoc !== undefined) {
       const txFactory = new TxFactory(control.txFactory.account)
-
       const doc = TxProcessor.updateDoc2Doc(rawDoc, ctx)
       const targetTx = guessBacklinkTx(control.hierarchy, tx as TxCUD<Doc>)
       const txes: Tx[] = await getUpdateBacklinksTxes(control, txFactory, doc, targetTx.objectId, targetTx.objectClass)
@@ -355,9 +361,9 @@ async function BacklinksUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> 
 
 async function BacklinksRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const ctx = TxProcessor.extractTx(tx) as TxRemoveDoc<Doc>
-
-  let hasMarkdown = false
   const attributes = control.hierarchy.getAllAttributes(ctx.objectClass)
+  let hasMarkdown = false
+
   for (const attr of attributes.values()) {
     if (isMarkupType(attr.type._class)) {
       hasMarkdown = true

@@ -37,8 +37,8 @@ export async function OnContactDelete (
   { findAll, hierarchy, storageFx, removedMap, txFactory }: TriggerControl
 ): Promise<Tx[]> {
   const rmTx = tx as TxRemoveDoc<Contact>
-
   const removeContact = removedMap.get(rmTx.objectId) as Contact
+
   if (removeContact === undefined) {
     return []
   }
@@ -52,6 +52,7 @@ export async function OnContactDelete (
   if (avatar?.includes('://') && !avatar?.startsWith('image://')) {
     return []
   }
+
   if (avatar === '') {
     return []
   }
@@ -61,6 +62,7 @@ export async function OnContactDelete (
 
     if (avatar != null) {
       const extra = await adapter.list(bucket, avatar)
+
       if (extra.length > 0) {
         await adapter.remove(
           bucket,
@@ -71,8 +73,8 @@ export async function OnContactDelete (
   })
 
   const result: Tx[] = []
-
   const members = await findAll(contact.class.Member, { contact: removeContact._id })
+
   for (const member of members) {
     const removeTx = txFactory.createTxRemoveDoc(member._class, member.space, member._id)
     const tx = txFactory.createTxCollectionCUD(
@@ -82,6 +84,7 @@ export async function OnContactDelete (
       member.collection,
       removeTx
     )
+
     result.push(tx)
   }
 
@@ -93,14 +96,15 @@ export async function OnContactDelete (
  */
 export async function OnChannelUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const uTx = tx as TxUpdateDoc<Channel>
-
   const result: Tx[] = []
 
   if (uTx.operations.$inc?.items !== undefined) {
     const doc = (await control.findAll(uTx.objectClass, { _id: uTx.objectId }, { limit: 1 }))[0]
+
     if (doc !== undefined) {
       if (control.hierarchy.hasMixin(doc, notification.mixin.Collaborators)) {
         const collab = control.hierarchy.as(doc, notification.mixin.Collaborators) as Doc as Collaborators
+
         if (collab.collaborators.includes(tx.modifiedBy)) {
           result.push(
             control.txFactory.createTxMixin(doc._id, doc._class, doc.space, notification.mixin.Collaborators, {
@@ -120,6 +124,7 @@ export async function OnChannelUpdate (tx: Tx, control: TriggerControl): Promise
             collaborators: [tx.modifiedBy]
           }
         )
+
         result.push(res)
       }
     }
@@ -136,6 +141,7 @@ export async function personHTMLPresenter (doc: Doc, control: TriggerControl): P
   const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const path = `${workbenchId}/${control.workspace.name}/${contactId}/${doc._id}`
   const link = concatLink(front, path)
+
   return `<a href="${link}">${getName(control.hierarchy, person)}</a>`
 }
 
@@ -144,6 +150,7 @@ export async function personHTMLPresenter (doc: Doc, control: TriggerControl): P
  */
 export function personTextPresenter (doc: Doc, control: TriggerControl): string {
   const person = doc as Person
+
   return `${getName(control.hierarchy, person)}`
 }
 
@@ -155,6 +162,7 @@ export async function organizationHTMLPresenter (doc: Doc, control: TriggerContr
   const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const path = `${workbenchId}/${control.workspace.name}/${contactId}/${doc._id}`
   const link = concatLink(front, path)
+
   return `<a href="${link}">${organization.name}</a>`
 }
 
@@ -163,6 +171,7 @@ export async function organizationHTMLPresenter (doc: Doc, control: TriggerContr
  */
 export function organizationTextPresenter (doc: Doc): string {
   const organization = doc as Organization
+
   return `${organization.name}`
 }
 
@@ -171,6 +180,7 @@ export function organizationTextPresenter (doc: Doc): string {
  */
 export function contactNameProvider (hierarchy: Hierarchy, props: Record<string, string>): string {
   const _class = props._class !== undefined ? (props._class as Ref<Class<Doc>>) : contact.class.Contact
+
   return formatContactName(hierarchy, _class, props.name ?? '')
 }
 

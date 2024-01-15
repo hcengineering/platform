@@ -23,15 +23,26 @@ import type { TriggerControl } from '@hcengineering/server-core'
 export async function OnRequestUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const hierarchy = control.hierarchy
   const ptx = tx as TxCollectionCUD<Doc, Request>
-  if (!checkTx(ptx, hierarchy)) return []
+
+  if (!checkTx(ptx, hierarchy)) {
+    return []
+  }
+
   const ctx = ptx.tx as TxUpdateDoc<Request>
-  if (ctx.operations.$push?.approved === undefined) return []
+
+  if (ctx.operations.$push?.approved === undefined) {
+    return []
+  }
+
   const request = (await control.findAll(ctx.objectClass, { _id: ctx.objectId }))[0]
+
   if (request.approved.length === request.requiredApprovesCount) {
     const collectionTx = control.txFactory.createTxUpdateDoc(ctx.objectClass, ctx.objectSpace, ctx.objectId, {
       status: RequestStatus.Completed
     })
+
     collectionTx.space = core.space.Tx
+
     const resTx = control.txFactory.createTxCollectionCUD(
       ptx.objectClass,
       ptx.objectId,
@@ -39,10 +50,12 @@ export async function OnRequestUpdate (tx: Tx, control: TriggerControl): Promise
       'requests',
       collectionTx
     )
+
     resTx.space = core.space.Tx
 
     await control.apply([resTx, request.tx], true)
   }
+
   return []
 }
 
@@ -54,6 +67,7 @@ function checkTx (ptx: TxCollectionCUD<Doc, Request>, hierarchy: Hierarchy): boo
   if (ptx.tx._class !== core.class.TxUpdateDoc || !hierarchy.isDerived(ptx.tx.objectClass, request.class.Request)) {
     return false
   }
+
   return true
 }
 

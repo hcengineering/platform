@@ -28,6 +28,7 @@ export async function productHTMLPresenter (doc: Doc, control: TriggerControl): 
   const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const path = `${workbenchId}/${control.workspace.name}/${inventoryId}/Products/#${view.component.EditDoc}|${product._id}|${product._class}|content`
   const link = concatLink(front, path)
+
   return `<a href="${link}">${product.name}</a>`
 }
 
@@ -36,6 +37,7 @@ export async function productHTMLPresenter (doc: Doc, control: TriggerControl): 
  */
 export async function productTextPresenter (doc: Doc): Promise<string> {
   const product = doc as Product
+
   return `${product.name}`
 }
 

@@ -22,17 +22,24 @@ import task, { Task } from '@hcengineering/task'
  */
 export async function OnStateUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
-  if (!control.hierarchy.isDerived(actualTx.objectClass, task.class.Task)) return []
+
+  if (!control.hierarchy.isDerived(actualTx.objectClass, task.class.Task)) {
+    return []
+  }
+
   if (actualTx._class === core.class.TxCreateDoc) {
     const doc = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<Task>)
     const status = (await control.findAll(core.class.Status, { _id: doc.status }))[0]
+
     if (status?.category === task.statusCategory.Lost || status?.category === task.statusCategory.Won) {
       return [control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, { isDone: true })]
     }
   } else if (actualTx._class === core.class.TxUpdateDoc) {
     const updateTx = actualTx as TxUpdateDoc<Task>
+
     if (updateTx.operations.status !== undefined) {
       const status = (await control.findAll(core.class.Status, { _id: updateTx.operations.status }))[0]
+
       if (status?.category === task.statusCategory.Lost || status?.category === task.statusCategory.Won) {
         return [
           control.txFactory.createTxUpdateDoc(updateTx.objectClass, updateTx.objectSpace, updateTx.objectId, {
@@ -48,6 +55,7 @@ export async function OnStateUpdate (tx: Tx, control: TriggerControl): Promise<T
       }
     }
   }
+
   return []
 }
 

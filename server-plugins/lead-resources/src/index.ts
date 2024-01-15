@@ -28,6 +28,7 @@ export async function leadHTMLPresenter (doc: Doc, control: TriggerControl): Pro
   const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const path = `${workbenchId}/${control.workspace.name}/${leadId}/${lead.space}/#${view.component.EditDoc}|${lead._id}|${lead._class}|content`
   const link = concatLink(front, path)
+
   return `<a href="${link}">${lead.title}</a>`
 }
 
@@ -36,6 +37,7 @@ export async function leadHTMLPresenter (doc: Doc, control: TriggerControl): Pro
  */
 export async function leadTextPresenter (doc: Doc): Promise<string> {
   const lead = doc as Lead
+
   return `LEAD-${lead.number}`
 }
 

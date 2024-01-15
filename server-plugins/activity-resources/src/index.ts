@@ -142,6 +142,7 @@ async function pushDocUpdateMessages (
   if (object === undefined) {
     return res
   }
+
   const activityDoc = await control.modelDb.findOne(activity.mixin.ActivityDoc, { _id: object._class })
 
   if (activityDoc === undefined) {

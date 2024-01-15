@@ -41,6 +41,7 @@ export async function getPersonAccount (
       { limit: 1 }
     )
   )[0]
+
   return account
 }
 
@@ -60,6 +61,7 @@ export async function getPersonAccountById (
       { limit: 1 }
     )
   )[0]
+
   return account
 }
 
@@ -76,6 +78,7 @@ export async function getEmployee (employee: Ref<Employee>, control: TriggerCont
       { limit: 1 }
     )
   )[0]
+
   return account !== undefined ? control.hierarchy.as(account, contact.mixin.Employee) : undefined
 }
 

@@ -53,10 +53,12 @@ export async function FindReminders (
 export async function ReminderHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string | undefined> {
   const event = doc as Event
   const target = (await control.findAll(event.attachedToClass, { _id: event.attachedTo }, { limit: 1 }))[0]
+
   if (target !== undefined) {
     const HTMLPresenter = getHTMLPresenter(target._class, control.hierarchy)
     const htmlPart =
       HTMLPresenter !== undefined ? await (await getResource(HTMLPresenter.presenter))(target, control) : undefined
+
     return htmlPart
   }
 }
@@ -67,9 +69,14 @@ export async function ReminderHTMLPresenter (doc: Doc, control: TriggerControl):
 export async function ReminderTextPresenter (doc: Doc, control: TriggerControl): Promise<string | undefined> {
   const event = doc as Event
   const target = (await control.findAll(event.attachedToClass, { _id: event.attachedTo }, { limit: 1 }))[0]
+
   if (target !== undefined) {
     const TextPresenter = getTextPresenter(target._class, control.hierarchy)
-    if (TextPresenter === undefined) return
+
+    if (TextPresenter === undefined) {
+      return
+    }
+
     return await (
       await getResource(TextPresenter.presenter)
     )(target, control)
@@ -98,6 +105,7 @@ export async function OnPersonAccountCreate (tx: Tx, control: TriggerControl): P
     undefined,
     user._id
   )
+
   return [res]
 }
 

@@ -48,6 +48,7 @@ function getAvailableAttributesKeys (tx: TxCUD<Doc>, hierarchy: Hierarchy): stri
     }
 
     const hiddenAttrs = getHiddenAttrs(hierarchy, _class)
+
     return Object.keys(mixinTx.attributes)
       .filter((id) => !id.startsWith('$'))
       .filter((key) => !hiddenAttrs.has(key))
@@ -62,10 +63,12 @@ function getModifiedAttributes (tx: TxCUD<Doc>, hierarchy: Hierarchy): Record<st
 
     return updateTx.operations as Record<string, any>
   }
+
   if (hierarchy.isDerived(tx._class, core.class.TxMixin)) {
     const mixinTx = tx as TxMixin<Doc, Doc>
     return mixinTx.attributes as Record<string, any>
   }
+
   return {}
 }
 

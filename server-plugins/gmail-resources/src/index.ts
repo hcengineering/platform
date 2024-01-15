@@ -44,11 +44,14 @@ export async function FindMessages (
   ) => Promise<FindResult<T>>
 ): Promise<Doc[]> {
   const channel = doc as Channel
+
   if (channel.provider !== contact.channelProvider.Email) {
     return []
   }
+
   const messages = await findAll(gmail.class.Message, { attachedTo: channel._id })
   const newMessages = await findAll(gmail.class.NewMessage, { attachedTo: channel._id })
+
   return [...messages, ...newMessages]
 }
 
@@ -57,24 +60,25 @@ export async function FindMessages (
  */
 export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
-
   const createTx = tx as TxCreateDoc<Message>
-
   const message = TxProcessor.createDoc2Doc<Message>(createTx)
-
   const channel = (await control.findAll(contact.class.Channel, { _id: message.attachedTo }, { limit: 1 }))[0]
+
   if (channel !== undefined) {
     if (channel.lastMessage === undefined || channel.lastMessage < message.sendOn) {
       const tx = control.txFactory.createTxUpdateDoc(channel._class, channel.space, channel._id, {
         lastMessage: message.sendOn
       })
+
       res.push(tx)
     }
+
     if (message.incoming) {
       const docs = await control.findAll(notification.class.DocNotifyContext, {
         attachedTo: channel._id,
         user: message.modifiedBy
       })
+
       for (const doc of docs) {
         // TODO: push inbox notification
         // res.push(
@@ -89,6 +93,7 @@ export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise
         //     }
         //   })
         // )
+
         res.push(
           control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
             lastUpdateTimestamp: tx.modifiedOn,
@@ -96,6 +101,7 @@ export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise
           })
         )
       }
+
       if (docs.length === 0) {
         res.push(
           control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, channel.space, {
@@ -128,6 +134,7 @@ export async function IsIncomingMessage (
   control: TriggerControl
 ): Promise<boolean> {
   const message = TxProcessor.createDoc2Doc(TxProcessor.extractTx(tx) as TxCreateDoc<Message>)
+
   return message.incoming && message.sendOn > (doc.createdOn ?? doc.modifiedOn)
 }
 

@@ -44,11 +44,14 @@ export async function FindMessages (
   ) => Promise<FindResult<T>>
 ): Promise<Doc[]> {
   const channel = doc as Channel
+
   if (channel.provider !== contact.channelProvider.Telegram) {
     return []
   }
+
   const messages = await findAll(telegram.class.Message, { attachedTo: channel._id })
   const newMessages = await findAll(telegram.class.NewMessage, { attachedTo: channel._id })
+
   return [...messages, ...newMessages]
 }
 
@@ -57,14 +60,15 @@ export async function FindMessages (
  */
 export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
-
   const message = TxProcessor.createDoc2Doc<TelegramMessage>(tx as TxCreateDoc<TelegramMessage>)
   const channel = (await control.findAll(contact.class.Channel, { _id: message.attachedTo }, { limit: 1 }))[0]
+
   if (channel !== undefined) {
     if (channel.lastMessage === undefined || channel.lastMessage < message.sendOn) {
       const tx = control.txFactory.createTxUpdateDoc(channel._class, channel.space, channel._id, {
         lastMessage: message.sendOn
       })
+
       res.push(tx)
     }
 
@@ -73,6 +77,7 @@ export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise
         attachedTo: channel._id,
         user: message.modifiedBy
       })
+
       for (const doc of docs) {
         // TODO: push inbox notifications
         // res.push(
@@ -87,6 +92,7 @@ export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise
         //     }
         //   })
         // )
+
         res.push(
           control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
             lastUpdateTimestamp: tx.modifiedOn,
@@ -94,6 +100,7 @@ export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise
           })
         )
       }
+
       if (docs.length === 0) {
         res.push(
           control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, channel.space, {
@@ -126,6 +133,7 @@ export async function IsIncomingMessage (
   control: TriggerControl
 ): Promise<boolean> {
   const message = TxProcessor.createDoc2Doc(TxProcessor.extractTx(tx) as TxCreateDoc<TelegramMessage>)
+
   return message.incoming && message.sendOn > (doc.createdOn ?? doc.modifiedOn)
 }
 

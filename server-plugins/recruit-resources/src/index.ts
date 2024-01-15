@@ -33,6 +33,7 @@ function getSequenceId (doc: Vacancy | Applicant, control: TriggerControl): stri
   const hierarchy = control.hierarchy
   let clazz = hierarchy.getClass(doc._class)
   let label = clazz.shortLabel
+
   while (label === undefined && clazz.extends !== undefined) {
     clazz = hierarchy.getClass(clazz.extends)
     label = clazz.shortLabel
@@ -49,6 +50,7 @@ export async function vacancyHTMLPresenter (doc: Doc, control: TriggerControl): 
   const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const path = `${workbenchId}/${control.workspace.name}/${recruitId}/${getSequenceId(vacancy, control)}`
   const link = concatLink(front, path)
+
   return `<a href="${link}">${vacancy.name}</a>`
 }
 
@@ -57,6 +59,7 @@ export async function vacancyHTMLPresenter (doc: Doc, control: TriggerControl): 
  */
 export async function vacancyTextPresenter (doc: Doc): Promise<string> {
   const vacancy = doc as Vacancy
+
   return `${vacancy.name}`
 }
 
@@ -69,6 +72,7 @@ export async function applicationHTMLPresenter (doc: Doc, control: TriggerContro
   const id = getSequenceId(applicant, control)
   const path = `${workbenchId}/${control.workspace.name}/${recruitId}/${id}`
   const link = concatLink(front, path)
+
   return `<a href="${link}">${id}</a>`
 }
 
@@ -78,6 +82,7 @@ export async function applicationHTMLPresenter (doc: Doc, control: TriggerContro
 export async function applicationTextPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const applicant = doc as Applicant
   const id = getSequenceId(applicant, control)
+
   return id
 }
 
@@ -86,9 +91,7 @@ export async function applicationTextPresenter (doc: Doc, control: TriggerContro
  */
 export async function OnRecruitUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx)
-
   const res: Tx[] = []
-
   const cud = actualTx as TxCUD<Doc>
 
   if (actualTx._class === core.class.TxCreateDoc) {
@@ -98,9 +101,11 @@ export async function OnRecruitUpdate (tx: Tx, control: TriggerControl): Promise
   if (actualTx._class === core.class.TxUpdateDoc) {
     await handleVacancyUpdate(control, cud, res)
   }
+
   if (actualTx._class === core.class.TxRemoveDoc) {
     await handleVacancyRemove(control, cud, actualTx)
   }
+
   return res
 }
 
@@ -119,6 +124,7 @@ export default async () => ({
 async function handleVacancyUpdate (control: TriggerControl, cud: TxCUD<Doc>, res: Tx[]): Promise<void> {
   if (control.hierarchy.isDerived(cud.objectClass, recruit.class.Vacancy)) {
     const updateTx = cud as TxUpdateDoc<Vacancy>
+
     if (updateTx.operations.company !== undefined) {
       // It could be null or new value
       const txes = await control.findAll(core.class.TxCUD, {
@@ -126,6 +132,7 @@ async function handleVacancyUpdate (control: TriggerControl, cud: TxCUD<Doc>, re
         _id: { $nin: [updateTx._id] }
       })
       const vacancy = TxProcessor.buildDoc2Doc(txes) as Vacancy
+
       if (vacancy.company != null) {
         // We have old value
         res.push(
@@ -140,6 +147,7 @@ async function handleVacancyUpdate (control: TriggerControl, cud: TxCUD<Doc>, re
           )
         )
       }
+
       if (updateTx.operations.company !== null) {
         res.push(
           control.txFactory.createTxMixin(
@@ -167,6 +175,7 @@ async function handleVacancyRemove (control: TriggerControl, cud: TxCUD<Doc>, ac
     })
     const vacancy = TxProcessor.buildDoc2Doc(txes) as Vacancy
     const res: Tx[] = []
+
     if (vacancy.company != null) {
       // We have old value
       res.push(
@@ -188,6 +197,7 @@ function handleVacancyCreate (control: TriggerControl, cud: TxCUD<Doc>, actualTx
   if (control.hierarchy.isDerived(cud.objectClass, recruit.class.Vacancy)) {
     const createTx = actualTx as TxCreateDoc<Vacancy>
     const vacancy = TxProcessor.createDoc2Doc(createTx)
+
     if (vacancy.company !== undefined) {
       res.push(
         control.txFactory.createTxMixin(
