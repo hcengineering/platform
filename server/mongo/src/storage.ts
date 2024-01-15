@@ -69,6 +69,7 @@ import {
 } from 'mongodb'
 import { createHash } from 'node:crypto'
 import { getMongoClient, getWorkspaceDB } from './utils'
+import { cutObjectArray } from '@hcengineering/core'
 
 function translateDoc (doc: Doc): Document {
   return { ...doc, '%hash%': null }
@@ -115,6 +116,21 @@ abstract class MongoAdapterBase implements DbAdapter {
       } catch (err: any) {
         console.error(err)
       }
+    }
+  }
+
+  async removeOldIndex (domain: Domain, indexLike: string, indexExact: string): Promise<void> {
+    try {
+      const existingIndexes = await this.db.collection(domain).indexes()
+      for (const existingIndex of existingIndexes) {
+        const name: string = existingIndex.name
+        if (name.includes(indexLike) && !name.includes(indexExact)) {
+          console.log('removing old index', name, indexExact)
+          await this.db.collection(domain).dropIndex(existingIndex.name)
+        }
+      }
+    } catch (err: any) {
+      console.error(err)
     }
   }
 
@@ -434,7 +450,17 @@ abstract class MongoAdapterBase implements DbAdapter {
       enableUtf8Validation: false
     })
     cursor.maxTimeMS(30000)
-    const res = (await cursor.toArray())[0]
+    let res: Document = []
+    try {
+      res = (await cursor.toArray())[0]
+    } catch (e) {
+      console.error(
+        `error during executing cursor in findWithPipeline ${clazz} ${JSON.stringify(
+          cutObjectArray(query)
+        )} ${JSON.stringify(options)}`,
+        e
+      )
+    }
     const result = res.results as WithLookup<T>[]
     const total = options?.total === true ? res.totalCount?.shift()?.count ?? 0 : -1
     for (const row of result) {
@@ -574,8 +600,17 @@ abstract class MongoAdapterBase implements DbAdapter {
     // Error in case of timeout
     cursor.maxTimeMS(30000)
     cursor.maxAwaitTimeMS(30000)
-
-    const res = await cursor.toArray()
+    let res: T[] = []
+    try {
+      res = await cursor.toArray()
+    } catch (e) {
+      console.error(
+        `error during executing cursor in findAll ${_class} ${JSON.stringify(cutObjectArray(query))} ${JSON.stringify(
+          options
+        )}`,
+        e
+      )
+    }
     if (options?.total === true && options?.limit === undefined) {
       total = res.length
     }

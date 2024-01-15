@@ -500,3 +500,21 @@ function getInNiN (query1: any, query2: any): any {
   }
   return {}
 }
+
+export function cutObjectArray (obj: any): any {
+  const r = {}
+  for (const key of Object.keys(obj)) {
+    if (Array.isArray(obj[key])) {
+      if (obj[key].length > 3) {
+        Object.assign(r, { [key]: `[${obj[key].slice(0, 3)}, ... and ${obj[key].length - 3} more]` })
+      } else Object.assign(r, { [key]: obj[key] })
+      continue
+    }
+    if (typeof obj[key] === 'object') {
+      Object.assign(r, { [key]: cutObjectArray(obj[key]) })
+      continue
+    }
+    Object.assign(r, { [key]: obj[key] })
+  }
+  return r
+}

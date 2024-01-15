@@ -293,6 +293,11 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       this.indexesCreated = true
       // We need to be sure we have individual indexes per stage.
       for (const st of this.stages) {
+        await this.storage.removeOldIndex(
+          DOMAIN_DOC_INDEX_STATE,
+          'stages.' + st.stageId.substring(0, st.stageId.indexOf('-v') + 2),
+          'stages' + st.stageId
+        )
         await this.storage.createIndexes(DOMAIN_DOC_INDEX_STATE, {
           indexes: [
             {
@@ -399,10 +404,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
                   removed: false
                 },
                 {
-                  limit: globalIndexer.processingSize,
-                  sort: {
-                    _id: 1
-                  }
+                  limit: globalIndexer.processingSize
                 }
               )
           )
