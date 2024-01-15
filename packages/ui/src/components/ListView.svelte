@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { mouseAttractor, resizeObserver } from '..'
+  import { debounce, resizeObserver } from '..'
 
   export let selection: number = 0
   export let count: number
@@ -29,20 +29,16 @@
 
   let oldSelection = Date.now()
 
-  function onRow (item: number): void {
-    if (updateSelection(item)) {
-      dispatch('on-select', item)
-    }
+  function processRowSelected (item: number): void {
+    selection = item
+    dispatch('on-select', item)
   }
 
-  function updateSelection (item: number): boolean {
-    const now = Date.now()
-    if (now - oldSelection >= 25) {
-      selection = item
-      oldSelection = now
-      return true
-    }
-    return false
+  const rowSelectDebounced = debounce(processRowSelected, 25, true, 100)
+
+  function updateSelection (item: number) {
+    // debounce makes shure event is processed not too often and last call is processed
+    rowSelectDebounced(item)
   }
 
   export function select (pos: number): void {
@@ -53,7 +49,7 @@
       pos = count - 1
     }
     const r = refs[pos]
-    onRow(pos)
+    processRowSelected(pos)
     if (r !== undefined) {
       r?.scrollIntoView({ behavior: 'auto', block: 'nearest' })
     }
@@ -75,16 +71,16 @@
       <div
         class="list-item{addClass ? ` ${addClass}` : ''}"
         class:selection={row === selection}
-        on:mouseover={mouseAttractor(() => {
+        on:mouseenter={() => {
           if (updateOnMouse) {
-            onRow(row)
+            updateSelection(row)
           }
-        })}
-        on:mouseenter={mouseAttractor(() => {
+        }}
+        on:mouseover={() => {
           if (updateOnMouse) {
-            onRow(row)
+            updateSelection(row)
           }
-        })}
+        }}
         on:focus={() => {}}
         bind:this={refs[row]}
         on:click={() => dispatch('click', row)}

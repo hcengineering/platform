@@ -17,6 +17,7 @@ import { generateId } from '@hcengineering/core'
 import type { IntlString, Metadata } from '@hcengineering/platform'
 import { setMetadata } from '@hcengineering/platform'
 import autolinker from 'autolinker'
+import { onDestroy } from 'svelte'
 import { writable } from 'svelte/store'
 import { NotificationPosition, NotificationSeverity, notificationsStore, type Notification } from '.'
 import { deviceSizes, type AnyComponent, type AnySvelteComponent, type WidthType } from './types'
@@ -160,6 +161,56 @@ export function mouseAttractor (op: () => void, diff = 2): (evt: MouseEvent) => 
     }
   }
 }
+
+/**
+ * prevents successive executions more often than delay, ensures last trigger would be executed if component still exists
+ */
+export function debounce (func: Function, delay: number = 25, fallthtough: boolean = false, fallthroughDelay: number = 100): (...args: any[]) => void {
+  let timeoutId: any
+  let lastExecutionTime = 0
+
+  const debouncedFunction = function (...args: any[]): void {
+    clearTimeout(timeoutId)
+
+    timeoutId = setTimeout(() => {
+      func(...args)
+    }, delay)
+
+    // ensures function execution at least once in fallthroughDelay during frequent calls
+    if (fallthtough)
+    {
+        const now = Date.now()
+        if (now - lastExecutionTime >= fallthroughDelay) {
+            lastExecutionTime = now
+          func(...args)
+        }
+    }
+  }
+
+  onDestroy(() => {
+    // Cleanup on component destruction
+    clearTimeout(timeoutId)
+  })
+
+  return debouncedFunction
+}
+
+/**
+ * throttles function execution to not more than once in delay, looses last trigger if it was during delay
+ */
+export function throttle (func: Function, delay: number): (...args: any[]) => void {
+    let lastExecutionTime = 0
+  
+    const throttledFunction = function (...args: any[]): void {
+        const now = Date.now()
+        if (now - lastExecutionTime >= delay) {
+            lastExecutionTime = now
+          func(...args)
+        }
+    }
+  
+    return throttledFunction
+  }
 
 /**
  * Replaces URLs with Links in a given block of text/HTML
