@@ -311,6 +311,11 @@ export const DOMAIN_MODEL = 'model' as Domain
 /**
  * @public
  */
+export const DOMAIN_COLLABORATION = '_collaboration' as Domain
+
+/**
+ * @public
+ */
 export const DOMAIN_CONFIGURATION = '_configuration' as Domain
 
 /**
@@ -521,4 +526,18 @@ export interface IndexingConfiguration<T extends Doc> extends Class<Doc> {
   // Define a list of extra index definitions.
   indexes: (FieldIndex<T> | string)[]
   searchDisabled?: boolean
+}
+
+/**
+ * @public
+ */
+export type CollaborativeDocumentId = string
+
+/**
+ * @public
+ *
+ * Defines current collaboration state.
+ */
+export interface CollaborationState extends Doc {
+  documents: CollaborativeDocumentId[]
 }

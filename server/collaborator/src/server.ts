@@ -32,6 +32,7 @@ import { HtmlTransformer } from './transformers/html'
 import { MinioStorageAdapter } from './storage/minio'
 import { MongodbStorageAdapter } from './storage/mongodb'
 import { PlatformStorageAdapter } from './storage/platform'
+import { StateExtension } from './extensions/state'
 import { StorageExtension } from './extensions/storage'
 import { Controller } from './platform'
 import { RouterStorageAdapter } from './storage/router'
@@ -122,6 +123,7 @@ export async function start (
     unloadImmediately: false,
 
     extensions: [
+      new StateExtension({ controller }),
       new ActionsExtension({
         ctx: extensionsCtx.newChild('actions', {}),
         transformer

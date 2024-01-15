@@ -15,6 +15,7 @@
 
 import {
   DOMAIN_BLOB,
+  DOMAIN_COLLABORATION,
   DOMAIN_CONFIGURATION,
   DOMAIN_DOC_INDEX_STATE,
   DOMAIN_FULLTEXT_BLOB,
@@ -28,6 +29,8 @@ import {
   type BlobData,
   type Class,
   type ClassifierKind,
+  type CollaborationState,
+  type CollaborativeDocumentId,
   type Collection,
   type Configuration,
   type ConfigurationElement,
@@ -348,4 +351,8 @@ export class TConfiguration extends TDoc implements Configuration {
 export class TIndexConfiguration<T extends Doc = Doc> extends TClass implements IndexingConfiguration<T> {
   indexes!: FieldIndex<T>[]
   searchDisabled!: boolean
+}
+@Model(core.class.CollaborationState, core.class.Doc, DOMAIN_COLLABORATION)
+export class TCollaborationState extends TDoc implements CollaborationState {
+  documents!: CollaborativeDocumentId[]
 }

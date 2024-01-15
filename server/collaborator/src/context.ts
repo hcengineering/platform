@@ -26,7 +26,11 @@ export interface Context {
   targetContentId: string
 }
 
-export type withContext<T> = Omit<T, 'context'> & {
+interface WithContext {
+  context: any
+}
+
+export type withContext<T extends WithContext> = Omit<T, 'context'> & {
   context: Context
 }
 

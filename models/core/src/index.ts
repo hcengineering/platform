@@ -31,6 +31,7 @@ import {
   TAttribute,
   TBlobData,
   TClass,
+  TCollaborationState,
   TCollection,
   TConfiguration,
   TConfigurationElement,
@@ -139,7 +140,8 @@ export function createModel (builder: Builder): void {
     TIndexConfiguration,
     TStatus,
     TStatusCategory,
-    TMigrationState
+    TMigrationState,
+    TCollaborationState
   )
 
   builder.createDoc(
