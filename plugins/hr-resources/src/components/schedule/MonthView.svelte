@@ -453,7 +453,6 @@
 
   .timeline-resource-content {
     background-color: $timeline-bg-color;
-
     position: sticky;
     left: 0;
     z-index: 1;
@@ -513,7 +512,6 @@
 
   .timeline-cell {
     border-right: $timeline-border;
-
     width: $timeline-column-width;
     height: 100%;
 
@@ -544,14 +542,12 @@
       width: 100%;
       height: 100%;
       background-color: var(--theme-calendar-today-bgcolor);
-
       pointer-events: none;
     }
   }
 
   .timeline-resource-cell {
     border-right: $timeline-border;
-
     width: 100%;
     height: 100%;
     padding: 1rem 2rem;
@@ -562,7 +558,6 @@
     height: 1.5rem;
     padding-left: 0.125rem;
     padding-right: 0.125rem;
-
     pointer-events: all;
   }
 
