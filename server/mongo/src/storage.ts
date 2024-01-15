@@ -14,22 +14,26 @@
 //
 
 import core, {
+  DOMAIN_MODEL,
+  DOMAIN_TX,
+  SortingOrder,
+  TxProcessor,
+  escapeLikeForRegexp,
+  getTypeOf,
+  isOperator,
+  toFindResult,
   type AttachedDoc,
   type Class,
   type Doc,
   type DocumentQuery,
   type DocumentUpdate,
   type Domain,
-  DOMAIN_MODEL,
-  DOMAIN_TX,
   type Enum,
   type EnumOf,
-  escapeLikeForRegexp,
   type FindOptions,
   type FindResult,
   type Hierarchy,
   type IndexingConfiguration,
-  isOperator,
   type Lookup,
   type Mixin,
   type ModelDb,
@@ -37,24 +41,20 @@ import core, {
   type QueryUpdate,
   type Ref,
   type ReverseLookups,
-  SortingOrder,
+  type SortQuerySelector,
   type SortingQuery,
   type SortingRules,
-  type SortQuerySelector,
   type StorageIterator,
-  toFindResult,
   type Tx,
+  type TxCUD,
   type TxCollectionCUD,
   type TxCreateDoc,
-  type TxCUD,
   type TxMixin,
-  TxProcessor,
   type TxRemoveDoc,
   type TxResult,
   type TxUpdateDoc,
   type WithLookup,
-  type WorkspaceId,
-  getTypeOf
+  type WorkspaceId
 } from '@hcengineering/core'
 import type { DbAdapter, TxAdapter } from '@hcengineering/server-core'
 import {
@@ -619,24 +619,32 @@ abstract class MongoAdapterBase implements DbAdapter {
         if (d === null) {
           return undefined
         }
-        let digest = (d as any)['%hash%']
+        let digest: string | null = (d as any)['%hash%']
         if ('%hash%' in d) {
           delete d['%hash%']
         }
-        if (digest == null || digest === '') {
+        const pos = (digest ?? '').indexOf('|')
+        if (digest == null || digest === '' || pos === -1) {
           const doc = JSON.stringify(d)
           const hash = createHash('sha256')
           hash.update(doc)
+          const size = doc.length
           digest = hash.digest('base64')
 
-          bulkUpdate.set(d._id, digest)
-          // await coll.updateOne({ _id: d._id }, { $set: { '%hash%': digest } })
+          bulkUpdate.set(d._id, `${digest}|${size.toString(16)}`)
+
           await flush()
-        }
-        return {
-          id: d._id,
-          hash: digest,
-          size: this.calcSize(d) // Some approx size for document.
+          return {
+            id: d._id,
+            hash: digest,
+            size
+          }
+        } else {
+          return {
+            id: d._id,
+            hash: digest.slice(0, pos),
+            size: parseInt(digest.slice(pos + 1), 16)
+          }
         }
       },
       close: async () => {
