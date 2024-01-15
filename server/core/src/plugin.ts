@@ -40,7 +40,8 @@ const serverCore = plugin(serverCoreId, {
     TriggerState: '' as Ref<Space>
   },
   metadata: {
-    FrontUrl: '' as Metadata<string>
+    FrontUrl: '' as Metadata<string>,
+    CursorMaxTimeMS: '' as Metadata<string>
   }
 })
 

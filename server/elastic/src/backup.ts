@@ -59,7 +59,7 @@ class ElasticDataAdapter implements DbAdapter {
   async init (model: Tx[]): Promise<void> {}
 
   async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {}
-  async removeOldIndex (domain: Domain, indexLike: string, indexExact: string): Promise<void> {}
+  async removeOldIndex (domain: Domain, deletePattern: RegExp, keepPattern: RegExp): Promise<void> {}
 
   async close (): Promise<void> {
     await this.client.close()
