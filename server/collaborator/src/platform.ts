@@ -15,15 +15,15 @@
 
 import client from '@hcengineering/client'
 import clientResources from '@hcengineering/client-resources'
-import core, { Client, TxOperations } from '@hcengineering/core'
+import core, { Client, Tx, TxOperations, WorkspaceId, systemAccountEmail, toWorkspaceString } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
-import { Token } from '@hcengineering/server-token'
+import { Token, generateToken } from '@hcengineering/server-token'
 import config from './config'
 
 // eslint-disable-next-line
 const WebSocket = require('ws')
 
-export async function connect (token: string): Promise<Client> {
+async function connect (token: string): Promise<Client> {
   // We need to override default factory with 'ws' one.
   setMetadata(client.metadata.ClientSocketFactory, (url) => {
     return new WebSocket(url, {
@@ -35,9 +35,87 @@ export async function connect (token: string): Promise<Client> {
   return await (await clientResources()).function.GetClient(token, config.TransactorUrl)
 }
 
-export async function getTxOperations (client: Client, token: Token, isDerived: boolean = false): Promise<TxOperations> {
+async function getTxOperations (client: Client, token: Token, isDerived: boolean = false): Promise<TxOperations> {
   const account = await client.findOne(core.class.Account, { email: token.email })
   const accountId = account?._id ?? core.account.System
 
   return new TxOperations(client, accountId, isDerived)
+}
+
+/**
+ * @public
+ */
+export interface ClientFactoryParams {
+  derived: boolean
+}
+
+/**
+ * @public
+ */
+export type ClientFactory = (params: ClientFactoryParams) => Promise<TxOperations>
+
+/**
+ * @public
+ */
+export function getClientFactory (token: Token, controller: Controller): ClientFactory {
+  return async ({ derived }: ClientFactoryParams) => {
+    const workspaceClient = await controller.get(token.workspace)
+    return await getTxOperations(workspaceClient.client, token, derived)
+  }
+}
+
+/**
+ * @public
+ */
+export class Controller {
+  private readonly workspaces: Map<string, WorkspaceClient> = new Map<string, WorkspaceClient>()
+
+  async get (workspaceId: WorkspaceId): Promise<WorkspaceClient> {
+    const workspace = toWorkspaceString(workspaceId)
+
+    let client = this.workspaces.get(workspace)
+    if (client === undefined) {
+      client = await WorkspaceClient.create(workspaceId)
+      this.workspaces.set(workspace, client)
+    }
+
+    return client
+  }
+
+  async close (): Promise<void> {
+    for (const workspace of this.workspaces.values()) {
+      await workspace.close()
+    }
+    this.workspaces.clear()
+  }
+}
+
+/**
+ * @public
+ */
+export class WorkspaceClient {
+  private readonly txHandlers: ((tx: Tx) => Promise<void>)[] = []
+
+  private constructor (
+    readonly workspace: WorkspaceId,
+    readonly client: Client
+  ) {
+    this.client.notify = (tx) => {
+      void this.txHandler(tx)
+    }
+  }
+
+  static async create (workspace: WorkspaceId): Promise<WorkspaceClient> {
+    const token = generateToken(systemAccountEmail, workspace)
+    const client = await connect(token)
+    return new WorkspaceClient(workspace, client)
+  }
+
+  async close (): Promise<void> {
+    await this.client.close()
+  }
+
+  private async txHandler (tx: Tx): Promise<void> {
+    this.txHandlers.map((handler) => handler(tx))
+  }
 }

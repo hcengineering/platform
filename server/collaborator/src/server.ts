@@ -33,6 +33,7 @@ import { MinioStorageAdapter } from './storage/minio'
 import { MongodbStorageAdapter } from './storage/mongodb'
 import { PlatformStorageAdapter } from './storage/platform'
 import { StorageExtension } from './extensions/storage'
+import { Controller } from './platform'
 import { RouterStorageAdapter } from './storage/router'
 
 const gcEnabled = process.env.GC !== 'false' && process.env.GC !== '0'
@@ -82,6 +83,8 @@ export async function start (
 
   const extensionsCtx = ctx.newChild('extensions', {})
   const storageCtx = ctx.newChild('storage', {})
+
+  const controller = new Controller()
 
   const transformer = new HtmlTransformer(extensions)
 
@@ -139,7 +142,7 @@ export async function start (
     async onAuthenticate (data: onAuthenticatePayload): Promise<Context> {
       ctx.measure('authenticate', 1)
 
-      return buildContext(data)
+      return buildContext(data, controller)
     }
   })
 

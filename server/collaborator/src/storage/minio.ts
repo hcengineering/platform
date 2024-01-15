@@ -21,7 +21,6 @@ import { Doc as YDoc, applyUpdate, encodeStateAsUpdate } from 'yjs'
 import { Context } from '../context'
 
 import { StorageAdapter } from './adapter'
-import { connect, getTxOperations } from '../platform'
 
 function maybePlatformDocumentId (documentId: string): boolean {
   return !documentId.includes('%')
@@ -34,14 +33,12 @@ export class MinioStorageAdapter implements StorageAdapter {
   ) {}
 
   async loadDocument (documentId: string, context: Context): Promise<YDoc | undefined> {
-    const {
-      decodedToken: { workspace }
-    } = context
+    const { workspaceId } = context
 
     return await this.ctx.with('load-document', {}, async (ctx) => {
       const minioDocument = await ctx.with('query', {}, async () => {
         try {
-          const buffer = await this.minio.read(workspace, documentId)
+          const buffer = await this.minio.read(workspaceId, documentId)
           return Buffer.concat(buffer)
         } catch {
           return undefined
@@ -68,7 +65,7 @@ export class MinioStorageAdapter implements StorageAdapter {
   }
 
   async saveDocument (documentId: string, document: YDoc, context: Context): Promise<void> {
-    const { decodedToken, token } = context
+    const { clientFactory, workspaceId } = context
 
     await this.ctx.with('save-document', {}, async (ctx) => {
       const buffer = await ctx.with('transform', {}, () => {
@@ -78,7 +75,7 @@ export class MinioStorageAdapter implements StorageAdapter {
 
       await ctx.with('update', {}, async () => {
         const metadata = { 'content-type': 'application/ydoc' }
-        await this.minio.put(decodedToken.workspace, documentId, buffer, buffer.length, metadata)
+        await this.minio.put(workspaceId, documentId, buffer, buffer.length, metadata)
       })
 
       // minio file is usually an attachment document
@@ -90,24 +87,18 @@ export class MinioStorageAdapter implements StorageAdapter {
       }
 
       await ctx.with('platform', {}, async () => {
-        const connection = await ctx.with('connect', {}, async () => {
-          return await connect(token)
+        const client = await ctx.with('connect', {}, async () => {
+          return await clientFactory({ derived: true })
         })
 
-        try {
-          const client = await getTxOperations(connection, decodedToken, true)
+        const current = await ctx.with('query', {}, async () => {
+          return await client.findOne(attachment.class.Attachment, { _id: documentId as Ref<Attachment> })
+        })
 
-          const current = await ctx.with('query', {}, async () => {
-            return await client.findOne(attachment.class.Attachment, { _id: documentId as Ref<Attachment> })
+        if (current !== undefined) {
+          await ctx.with('update', {}, async () => {
+            await client.update(current, { lastModified: Date.now(), size: buffer.length })
           })
-
-          if (current !== undefined) {
-            await ctx.with('update', {}, async () => {
-              await client.update(current, { lastModified: Date.now(), size: buffer.length })
-            })
-          }
-        } finally {
-          await connection.close()
         }
       })
     })
