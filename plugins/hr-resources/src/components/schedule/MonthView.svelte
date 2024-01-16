@@ -380,7 +380,7 @@
                     {#if birthday}
                       <div class="timeline-cell--birthday">
                         <div class="birthday-icon">
-                          <IconBirthday/>
+                          <IconBirthday />
                         </div>
                       </div>
                     {/if}
@@ -561,15 +561,16 @@
   }
 
   .timeline-cell--birthday {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(253, 101, 101, 0.105);
-    }
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(253, 101, 101, 0.105);
+  }
 
     .birthday-icon {
     position: absolute;
-    top: 78%; left: 50%;
+    top: 78%; 
+    left: 50%;
     transform: translate(-50%,-50%);
     width: 25px;
     height: 25px;
