@@ -214,6 +214,12 @@ export function isHoliday (holidays: Date[] | undefined, day: Date): boolean {
   return holidays.some((date) => areDatesEqual(day, date))
 }
 
+export function isBirthDay (date: Date, employee: Staff): boolean {
+  if (employee.birthday === undefined) return false
+  const birthdayDate = new Date(Number(employee.birthday))
+  return birthdayDate.getUTCMonth() === date.getUTCMonth() && birthdayDate.getUTCDate() === date.getUTCDate()
+}
+
 export function getHolidayDatesForEmployee (
   departmentMap: Map<Ref<Staff>, Department[]>,
   employee: Ref<Staff>,
