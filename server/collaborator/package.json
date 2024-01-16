@@ -55,7 +55,6 @@
     "@hcengineering/minio": "^0.6.0",
     "@hcengineering/text": "^0.6.1",
     "@hcengineering/query": "^0.6.8",
-    "@hcengineering/rpc": "^0.6.1",
     "@hocuspocus/server": "^2.9.0",
     "@hocuspocus/transformer": "^2.9.0",
     "@tiptap/core": "^2.1.12",

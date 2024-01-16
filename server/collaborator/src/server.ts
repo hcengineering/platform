@@ -15,8 +15,6 @@
 
 import { MeasureContext, generateId } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
-import { UNAUTHORIZED } from '@hcengineering/platform'
-import { Response, serialize } from '@hcengineering/rpc'
 import { Token, decodeToken } from '@hcengineering/server-token'
 import { ServerKit } from '@hcengineering/text'
 import { Hocuspocus, onAuthenticatePayload, onDestroyPayload } from '@hocuspocus/server'
@@ -27,10 +25,12 @@ import express from 'express'
 import { IncomingMessage, createServer } from 'http'
 import { MongoClient } from 'mongodb'
 import { WebSocket, WebSocketServer } from 'ws'
+import { applyUpdate, encodeStateAsUpdate } from 'yjs'
 
 import { Config } from './config'
 import { Context, buildContext } from './context'
 import { ActionsExtension } from './extensions/action'
+import { HtmlTransformer } from './transformers/html'
 import { StateExtension } from './extensions/state'
 import { StorageExtension } from './extensions/storage'
 import { Controller, getClientFactory } from './platform'
@@ -38,9 +38,6 @@ import { MinioStorageAdapter } from './storage/minio'
 import { MongodbStorageAdapter } from './storage/mongodb'
 import { PlatformStorageAdapter } from './storage/platform'
 import { RouterStorageAdapter } from './storage/router'
-import { HtmlTransformer } from './transformers/html'
-import { Server } from './ws/server'
-import { ClientSession } from './ws/session'
 
 const gcEnabled = process.env.GC !== 'false' && process.env.GC !== '0'
 
@@ -156,14 +153,130 @@ export async function start (
     }
   })
 
-  const contentserver = new Server(ctx.newChild('content', {}), (token) => {
-    return new ClientSession(
-      generateId(),
-      token.workspace,
-      getClientFactory(token, controller),
-      hocuspocus,
-      transformer
-    )
+  const restCtx = ctx.newChild('REST', {})
+
+  const getContext = (token: Token, documentId: string): Context => {
+    return {
+      connectionId: generateId(),
+      workspaceId: token.workspace,
+      clientFactory: getClientFactory(token, controller),
+      initialContentId: documentId,
+      targetContentId: ''
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.get('/api/content/:classId/:docId/:attribute', async (req, res) => {
+    console.log('handle request', req.method, req.url)
+
+    const authHeader = req.headers.authorization
+    if (authHeader === undefined) {
+      res.status(403).send()
+      return
+    }
+
+    const token = authHeader.split(' ')[1]
+    const decodedToken = decodeToken(token)
+
+    const docId = req.params.docId
+    const attribute = req.params.attribute
+
+    if (docId === undefined || docId === '') {
+      res.status(400).send({ err: "'docId' is missing" })
+      return
+    }
+
+    if (attribute === undefined || attribute === '') {
+      res.status(400).send({ err: "'attribute' is missing" })
+      return
+    }
+
+    const documentId = `minio://${docId}%${attribute}`
+
+    const context = getContext(decodedToken, documentId)
+
+    await restCtx.with(`${req.method} /content`, {}, async (ctx) => {
+      const connection = await ctx.with('connect', {}, async () => {
+        return await hocuspocus.openDirectConnection(documentId, context)
+      })
+
+      try {
+        const html = await ctx.with('transform', {}, async () => {
+          let content = ''
+          await connection.transact((document) => {
+            content = transformer.fromYdoc(document, attribute)
+          })
+          return content
+        })
+
+        res.writeHead(200, { 'Content-Type': 'application/json' })
+        const json = JSON.stringify({ html })
+        res.end(json)
+      } catch (err: any) {
+        res.status(500).send({ message: err.message })
+      } finally {
+        await connection.disconnect()
+      }
+    })
+
+    res.end()
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.put('/api/content/:classId/:docId/:attribute', async (req, res) => {
+    console.log('handle request', req.method, req.url)
+
+    const authHeader = req.headers.authorization
+    if (authHeader === undefined) {
+      res.status(403).send()
+      return
+    }
+
+    const token = authHeader.split(' ')[1]
+    const decodedToken = decodeToken(token)
+
+    const docId = req.params.docId
+    const attribute = req.params.attribute
+
+    if (docId === undefined || docId === '') {
+      res.status(400).send({ err: "'docId' is missing" })
+      return
+    }
+
+    if (attribute === undefined || attribute === '') {
+      res.status(400).send({ err: "'attribute' is missing" })
+      return
+    }
+
+    const documentId = `minio://${docId}%${attribute}`
+    const data = req.body.html ?? '<p></p>'
+
+    const context = getContext(decodedToken, documentId)
+
+    await restCtx.with(`${req.method} /content`, {}, async (ctx) => {
+      const update = await ctx.with('transform', {}, () => {
+        const ydoc = transformer.toYdoc(data, attribute)
+        return encodeStateAsUpdate(ydoc)
+      })
+
+      const connection = await ctx.with('connect', {}, async () => {
+        return await hocuspocus.openDirectConnection(documentId, context)
+      })
+
+      try {
+        await ctx.with('update', {}, async () => {
+          await connection.transact((document) => {
+            const fragment = document.getXmlFragment(attribute)
+            fragment.delete(0, fragment.length)
+            applyUpdate(document, update)
+          })
+        })
+      } finally {
+        await connection.disconnect()
+      }
+    })
+
+    res.status(200).end()
   })
 
   const wss = new WebSocketServer({
@@ -185,50 +298,16 @@ export async function start (
     }
   })
 
-  wss.on('documents', (incoming: WebSocket, request: IncomingMessage) => {
+  wss.on('connection', (incoming: WebSocket, request: IncomingMessage) => {
     hocuspocus.handleConnection(incoming, request)
-  })
-
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  wss.on('content', async (incoming: WebSocket, request: IncomingMessage, token: Token) => {
-    await contentserver.handleConnection(token, incoming, request)
   })
 
   const server = createServer(app)
 
   server.on('upgrade', (request: IncomingMessage, socket: any, head: Buffer) => {
-    const [path, query] = request?.url?.split('?', 2) ?? []
-
-    if (path === config.ContentUrl) {
-      const params = new URLSearchParams(query ?? '')
-      const token = params.get('token')
-
-      try {
-        const decodedToken = decodeToken(token ?? '')
-        wss.handleUpgrade(request, socket, head, (ws) => {
-          wss.emit('content', ws, request, decodedToken)
-        })
-      } catch (err) {
-        wss.handleUpgrade(request, socket, head, (ws) => {
-          const resp: Response<any> = {
-            id: -1,
-            error: UNAUTHORIZED,
-            result: 'hello'
-          }
-          ws.send(serialize(resp, false), { binary: false })
-          ws.onmessage = (msg) => {
-            const resp: Response<any> = {
-              error: UNAUTHORIZED
-            }
-            ws.send(serialize(resp, false), { binary: false })
-          }
-        })
-      }
-    } else {
-      wss.handleUpgrade(request, socket, head, (ws) => {
-        wss.emit('documents', ws, request)
-      })
-    }
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit('connection', ws, request)
+    })
   })
 
   server.listen(port)

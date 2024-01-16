@@ -15,5 +15,6 @@
 //
 
 export type { Config } from './config'
+export { type CollaboratorClient, getClient } from './client'
 export { start } from './server'
 export { startCollaborator } from './starter'
