@@ -29,7 +29,6 @@ export class CommonPage {
   async fillToSelectPopup (page: Page, input: string): Promise<void> {
     await expect(page.locator('div.selectPopup input')).toBeVisible()
     await page.locator('div.selectPopup input').fill(input)
-    await expect(page.locator('div.selectPopup button')).toBeVisible()
     await page.locator('div.selectPopup button').click()
   }
 

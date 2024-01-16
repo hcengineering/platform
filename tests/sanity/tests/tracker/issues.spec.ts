@@ -115,7 +115,7 @@ test.describe('Tracker issue tests', () => {
 
   test('Set parent issue', async ({ page }) => {
     const parentIssue: NewIssue = {
-      title: `PARENT ISSUE-${generateId()}`,
+      title: `PARENT ISSUE-${generateId(2)}`,
       description: 'Created issue to be parent issue'
     }
 
@@ -128,7 +128,7 @@ test.describe('Tracker issue tests', () => {
 
     await test.step('Set parent issue during creation', async () => {
       const newIssue: NewIssue = {
-        title: `Set parent issue during creation-${generateId()}`,
+        title: `Set parent issue during creation-${generateId(2)}`,
         description: 'Set parent issue during creation',
         parentIssue: parentIssue.title
       }
@@ -151,7 +151,7 @@ test.describe('Tracker issue tests', () => {
 
     await test.step('Set parent issue from issues page', async () => {
       const newIssue: NewIssue = {
-        title: `Set parent issue from issues page-${generateId()}`,
+        title: `Set parent issue from issues page-${generateId(2)}`,
         description: 'Set parent issue from issues page'
       }
       await issuesPage.modelSelectorAll.click()
@@ -160,6 +160,8 @@ test.describe('Tracker issue tests', () => {
 
       await issuesPage.doActionOnIssue(newIssue.title, 'Set parent issue…')
       await issuesPage.selectMenuItem(page, parentIssue.title, true)
+
+      await issuesPage.searchIssueByName(newIssue.title)
       await issuesPage.checkParentIssue(newIssue.title, parentIssue.title)
 
       await issuesPage.openIssueByName(newIssue.title)
@@ -175,7 +177,7 @@ test.describe('Tracker issue tests', () => {
 
     await test.step('Set parent issue from issue details page', async () => {
       const newIssue: NewIssue = {
-        title: `Set parent issue from issue details page-${generateId()}`,
+        title: `Set parent issue from issue details page-${generateId(2)}`,
         description: 'Set parent issue from issue details page'
       }
       await issuesPage.modelSelectorAll.click()

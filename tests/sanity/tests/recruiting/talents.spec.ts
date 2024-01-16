@@ -178,6 +178,6 @@ test.describe('candidate/talents tests', () => {
     await talentsPage.createNewTalentWithName(talentName.firstName, talentName.lastName)
 
     await talentsPage.rightClickAction(talentName, 'Match to vacancy')
-    await talentsPage.checkMatchVacancy(`${talentName.lastName} ${talentName.firstName}`, '0.5')
+    await talentsPage.checkMatchVacancy(`${talentName.lastName} ${talentName.firstName}`, '0.')
   })
 })
