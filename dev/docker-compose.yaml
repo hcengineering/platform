@@ -122,6 +122,7 @@ services:
     environment:
       - SERVER_PORT=3333
       - SERVER_SECRET=secret
+      - SERVER_CURSOR_MAXTIMEMS=30000
       - ELASTIC_URL=http://elastic:9200
       - MONGO_URL=mongodb://mongodb:27017
       - METRICS_CONSOLE=false

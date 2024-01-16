@@ -57,6 +57,7 @@ import core, {
   getTypeOf
 } from '@hcengineering/core'
 import type { DbAdapter, TxAdapter } from '@hcengineering/server-core'
+import serverCore from '@hcengineering/server-core'
 import {
   type AnyBulkWriteOperation,
   type Collection,
@@ -69,6 +70,8 @@ import {
 } from 'mongodb'
 import { createHash } from 'node:crypto'
 import { getMongoClient, getWorkspaceDB } from './utils'
+import { cutObjectArray } from '@hcengineering/core'
+import { getMetadata } from '@hcengineering/platform'
 
 function translateDoc (doc: Doc): Document {
   return { ...doc, '%hash%': null }
@@ -115,6 +118,21 @@ abstract class MongoAdapterBase implements DbAdapter {
       } catch (err: any) {
         console.error(err)
       }
+    }
+  }
+
+  async removeOldIndex (domain: Domain, deletePattern: RegExp, keepPattern: RegExp): Promise<void> {
+    try {
+      const existingIndexes = await this.db.collection(domain).indexes()
+      for (const existingIndex of existingIndexes) {
+        const name: string = existingIndex.name
+        if (deletePattern.test(name) && !keepPattern.test(name)) {
+          console.log('removing old index', name, keepPattern)
+          await this.db.collection(domain).dropIndex(existingIndex.name)
+        }
+      }
+    } catch (err: any) {
+      console.error(err)
     }
   }
 
@@ -433,8 +451,13 @@ abstract class MongoAdapterBase implements DbAdapter {
       checkKeys: false,
       enableUtf8Validation: false
     })
-    cursor.maxTimeMS(30000)
-    const res = (await cursor.toArray())[0]
+    cursor.maxTimeMS(parseInt(getMetadata(serverCore.metadata.CursorMaxTimeMS) ?? '30000'))
+    let res: Document = []
+    try {
+      res = (await cursor.toArray())[0]
+    } catch (e) {
+      console.error('error during executing cursor in findWithPipeline', clazz, cutObjectArray(query), options, e)
+    }
     const result = res.results as WithLookup<T>[]
     const total = options?.total === true ? res.totalCount?.shift()?.count ?? 0 : -1
     for (const row of result) {
@@ -572,10 +595,14 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
 
     // Error in case of timeout
-    cursor.maxTimeMS(30000)
+    cursor.maxTimeMS(parseInt(getMetadata(serverCore.metadata.CursorMaxTimeMS) ?? '30000'))
     cursor.maxAwaitTimeMS(30000)
-
-    const res = await cursor.toArray()
+    let res: T[] = []
+    try {
+      res = await cursor.toArray()
+    } catch (e) {
+      console.error('error during executing cursor in findAll', _class, cutObjectArray(query), options, e)
+    }
     if (options?.total === true && options?.limit === undefined) {
       total = res.length
     }
