@@ -12,15 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import {
-  type Account,
-  type Class,
-  type Doc,
-  getCurrentAccount,
-  type Ref,
-  SortingOrder,
-  type WithLookup
-} from '@hcengineering/core'
+import { type ActivityMessage } from '@hcengineering/activity'
+import { SortingOrder, getCurrentAccount, type Class, type Doc, type Ref, type WithLookup } from '@hcengineering/core'
 import notification, {
   type ActivityInboxNotification,
   type Collaborators,
@@ -28,9 +21,8 @@ import notification, {
   type InboxNotification,
   type InboxNotificationsClient
 } from '@hcengineering/notification'
-import { derived, writable } from 'svelte/store'
 import { createQuery, getClient } from '@hcengineering/presentation'
-import { type ActivityMessage } from '@hcengineering/activity'
+import { derived, writable } from 'svelte/store'
 
 /**
  * @public
@@ -73,16 +65,14 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   private readonly docNotifyContextsQuery = createQuery(true)
   private readonly inboxNotificationsQuery = createQuery(true)
 
-  private readonly _user: Ref<Account>
   private _docNotifyContextByDoc = new Map<Ref<Doc>, DocNotifyContext>()
   private _inboxNotifications: Array<WithLookup<InboxNotification>> = []
 
   private constructor () {
-    this._user = getCurrentAccount()._id
     this.docNotifyContextsQuery.query(
       notification.class.DocNotifyContext,
       {
-        user: this._user
+        user: getCurrentAccount()._id
       },
       (result: DocNotifyContext[]) => {
         this.docNotifyContexts.set(result)
@@ -93,7 +83,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     this.inboxNotificationsQuery.query(
       notification.class.InboxNotification,
       {
-        user: this._user
+        user: getCurrentAccount()._id
       },
       (result: InboxNotification[]) => {
         this.inboxNotifications.set(result)
@@ -162,10 +152,10 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         collaboratorsMixin.space,
         notification.mixin.Collaborators,
         {
-          collaborators: [this._user]
+          collaborators: [getCurrentAccount()._id]
         }
       )
-    } else if (!collaboratorsMixin.collaborators.includes(this._user)) {
+    } else if (!collaboratorsMixin.collaborators.includes(getCurrentAccount()._id)) {
       await client.updateMixin(
         collaboratorsMixin._id,
         collaboratorsMixin._class,
@@ -173,7 +163,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         notification.mixin.Collaborators,
         {
           $push: {
-            collaborators: this._user
+            collaborators: getCurrentAccount()._id
           }
         }
       )
@@ -182,7 +172,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     await client.createDoc(notification.class.DocNotifyContext, doc.space, {
       attachedTo: _id,
       attachedToClass: _class,
-      user: this._user,
+      user: getCurrentAccount()._id,
       hidden: true
     })
   }
