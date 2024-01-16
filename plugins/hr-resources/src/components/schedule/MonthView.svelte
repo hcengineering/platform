@@ -567,11 +567,11 @@
     background-color: rgba(253, 101, 101, 0.105);
   }
 
-    .birthday-icon {
+  .birthday-icon {
     position: absolute;
-    top: 78%; 
+    top: 78%;
     left: 50%;
-    transform: translate(-50%,-50%);
+    transform: translate(-50%, -50%);
     width: 25px;
     height: 25px;
   }
