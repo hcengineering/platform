@@ -13,10 +13,13 @@
 // limitations under the License.
 //
 
-import { MeasureContext } from '@hcengineering/core'
+import { MeasureContext, generateId } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
+import { UNAUTHORIZED } from '@hcengineering/platform'
+import { Response, serialize } from '@hcengineering/rpc'
+import { Token, decodeToken } from '@hcengineering/server-token'
 import { ServerKit } from '@hcengineering/text'
-import { Hocuspocus, onAuthenticatePayload } from '@hocuspocus/server'
+import { Hocuspocus, onAuthenticatePayload, onDestroyPayload } from '@hocuspocus/server'
 import bp from 'body-parser'
 import compression from 'compression'
 import cors from 'cors'
@@ -26,16 +29,18 @@ import { MongoClient } from 'mongodb'
 import { WebSocket, WebSocketServer } from 'ws'
 
 import { Config } from './config'
-import { ActionsExtension } from './extensions/action'
 import { Context, buildContext } from './context'
-import { HtmlTransformer } from './transformers/html'
+import { ActionsExtension } from './extensions/action'
+import { StateExtension } from './extensions/state'
+import { StorageExtension } from './extensions/storage'
+import { Controller, getClientFactory } from './platform'
 import { MinioStorageAdapter } from './storage/minio'
 import { MongodbStorageAdapter } from './storage/mongodb'
 import { PlatformStorageAdapter } from './storage/platform'
-import { StateExtension } from './extensions/state'
-import { StorageExtension } from './extensions/storage'
-import { Controller } from './platform'
 import { RouterStorageAdapter } from './storage/router'
+import { HtmlTransformer } from './transformers/html'
+import { Server } from './ws/server'
+import { ClientSession } from './ws/session'
 
 const gcEnabled = process.env.GC !== 'false' && process.env.GC !== '0'
 
@@ -143,9 +148,22 @@ export async function start (
 
     async onAuthenticate (data: onAuthenticatePayload): Promise<Context> {
       ctx.measure('authenticate', 1)
-
       return buildContext(data, controller)
+    },
+
+    async onDestroy (data: onDestroyPayload): Promise<void> {
+      await controller.close()
     }
+  })
+
+  const contentserver = new Server(ctx.newChild('content', {}), (token) => {
+    return new ClientSession(
+      generateId(),
+      token.workspace,
+      getClientFactory(token, controller),
+      hocuspocus,
+      transformer
+    )
   })
 
   const wss = new WebSocketServer({
@@ -167,16 +185,50 @@ export async function start (
     }
   })
 
-  wss.on('connection', (incoming: WebSocket, request: IncomingMessage) => {
+  wss.on('documents', (incoming: WebSocket, request: IncomingMessage) => {
     hocuspocus.handleConnection(incoming, request)
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  wss.on('content', async (incoming: WebSocket, request: IncomingMessage, token: Token) => {
+    await contentserver.handleConnection(token, incoming, request)
   })
 
   const server = createServer(app)
 
-  server.on('upgrade', (request, socket, head) => {
-    wss.handleUpgrade(request, socket, head, (ws) => {
-      wss.emit('connection', ws, request)
-    })
+  server.on('upgrade', (request: IncomingMessage, socket: any, head: Buffer) => {
+    const [path, query] = request?.url?.split('?', 2) ?? []
+
+    if (path === config.ContentUrl) {
+      const params = new URLSearchParams(query ?? '')
+      const token = params.get('token')
+
+      try {
+        const decodedToken = decodeToken(token ?? '')
+        wss.handleUpgrade(request, socket, head, (ws) => {
+          wss.emit('content', ws, request, decodedToken)
+        })
+      } catch (err) {
+        wss.handleUpgrade(request, socket, head, (ws) => {
+          const resp: Response<any> = {
+            id: -1,
+            error: UNAUTHORIZED,
+            result: 'hello'
+          }
+          ws.send(serialize(resp, false), { binary: false })
+          ws.onmessage = (msg) => {
+            const resp: Response<any> = {
+              error: UNAUTHORIZED
+            }
+            ws.send(serialize(resp, false), { binary: false })
+          }
+        })
+      }
+    } else {
+      wss.handleUpgrade(request, socket, head, (ws) => {
+        wss.emit('documents', ws, request)
+      })
+    }
   })
 
   server.listen(port)
