@@ -83,7 +83,9 @@ if (frontUrl === undefined) {
 }
 
 const sesUrl = process.env.SES_URL
+const cursorMaxTime = process.env.SERVER_CURSOR_MAXTIMEMS
 
+setMetadata(serverCore.metadata.CursorMaxTimeMS, cursorMaxTime)
 setMetadata(serverCore.metadata.FrontUrl, frontUrl)
 setMetadata(serverToken.metadata.Secret, serverSecret)
 setMetadata(serverNotification.metadata.SesUrl, sesUrl ?? '')

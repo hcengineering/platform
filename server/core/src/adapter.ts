@@ -43,6 +43,7 @@ export interface DbAdapter {
   init: (model: Tx[]) => Promise<void>
 
   createIndexes: (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>) => Promise<void>
+  removeOldIndex: (domain: Domain, deletePattern: RegExp, keepPattern: RegExp) => Promise<void>
 
   close: () => Promise<void>
   findAll: <T extends Doc>(
@@ -102,6 +103,7 @@ export class DummyDbAdapter implements DbAdapter {
   }
 
   async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {}
+  async removeOldIndex (domain: Domain, deletePattern: RegExp, keepPattern: RegExp): Promise<void> {}
 
   async tx (...tx: Tx[]): Promise<TxResult> {
     return {}
