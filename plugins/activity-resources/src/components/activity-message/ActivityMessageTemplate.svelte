@@ -48,7 +48,6 @@
   export let withActions: boolean = true
   export let showEmbedded = false
   export let hideReplies = false
-  export let skipHeader = false
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -142,21 +141,19 @@
         <div class="embeddedMarker" />
       {/if}
       <div class="content ml-2 w-full clear-mins">
-        {#if !skipHeader}
-          <div class="header clear-mins">
-            {#if person}
-              <EmployeePresenter value={person} shouldShowAvatar={false} />
-            {:else}
-              <div class="strong">
-                <Label label={core.string.System} />
-              </div>
-            {/if}
+        <div class="header clear-mins">
+          {#if person}
+            <EmployeePresenter value={person} shouldShowAvatar={false} />
+          {:else}
+            <div class="strong">
+              <Label label={core.string.System} />
+            </div>
+          {/if}
 
-            <slot name="header" />
+          <slot name="header" />
 
-            <span class="text-sm">{getDisplayTime(message.createdOn ?? 0)}</span>
-          </div>
-        {/if}
+          <span class="text-sm">{getDisplayTime(message.createdOn ?? 0)}</span>
+        </div>
 
         <slot name="content" />
 
