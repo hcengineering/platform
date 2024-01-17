@@ -115,7 +115,7 @@ test.describe('Tracker issue tests', () => {
 
   test('Set parent issue', async ({ page }) => {
     const parentIssue: NewIssue = {
-      title: `PARENT ISSUE-${generateId(2)}`,
+      title: `PARENT ISSUE-${generateId(5)}`,
       description: 'Created issue to be parent issue'
     }
 
@@ -127,21 +127,21 @@ test.describe('Tracker issue tests', () => {
     await issuesPage.createNewIssue(parentIssue)
 
     await test.step('Set parent issue during creation', async () => {
-      const newIssue: NewIssue = {
+      const duringCreationIssue: NewIssue = {
         title: `Set parent issue during creation-${generateId(2)}`,
         description: 'Set parent issue during creation',
         parentIssue: parentIssue.title
       }
 
       await issuesPage.modelSelectorAll.click()
-      await issuesPage.createNewIssue(newIssue)
-      await issuesPage.searchIssueByName(newIssue.title)
+      await issuesPage.createNewIssue(duringCreationIssue)
+      await issuesPage.searchIssueByName(duringCreationIssue.title)
 
-      await issuesPage.checkParentIssue(newIssue.title, parentIssue.title)
-      await issuesPage.openIssueByName(newIssue.title)
+      await issuesPage.checkParentIssue(duringCreationIssue.title, parentIssue.title)
+      await issuesPage.openIssueByName(duringCreationIssue.title)
       const issuesDetailsPage = new IssuesDetailsPage(page)
       await issuesDetailsPage.checkIssue({
-        ...newIssue,
+        ...duringCreationIssue,
         parentIssue: parentIssue.title
       })
 
@@ -150,24 +150,24 @@ test.describe('Tracker issue tests', () => {
     })
 
     await test.step('Set parent issue from issues page', async () => {
-      const newIssue: NewIssue = {
+      const fromIssuesPageIssue: NewIssue = {
         title: `Set parent issue from issues page-${generateId(2)}`,
         description: 'Set parent issue from issues page'
       }
       await issuesPage.modelSelectorAll.click()
-      await issuesPage.createNewIssue(newIssue)
-      await issuesPage.searchIssueByName(newIssue.title)
+      await issuesPage.createNewIssue(fromIssuesPageIssue)
+      await issuesPage.searchIssueByName(fromIssuesPageIssue.title)
 
-      await issuesPage.doActionOnIssue(newIssue.title, 'Set parent issue…')
+      await issuesPage.doActionOnIssue(fromIssuesPageIssue.title, 'Set parent issue…')
       await issuesPage.selectMenuItem(page, parentIssue.title, true)
 
-      await issuesPage.searchIssueByName(newIssue.title)
-      await issuesPage.checkParentIssue(newIssue.title, parentIssue.title)
+      await issuesPage.searchIssueByName(fromIssuesPageIssue.title)
+      await issuesPage.checkParentIssue(fromIssuesPageIssue.title, parentIssue.title)
 
-      await issuesPage.openIssueByName(newIssue.title)
+      await issuesPage.openIssueByName(fromIssuesPageIssue.title)
       const issuesDetailsPage = new IssuesDetailsPage(page)
       await issuesDetailsPage.checkIssue({
-        ...newIssue,
+        ...fromIssuesPageIssue,
         parentIssue: parentIssue.title
       })
 

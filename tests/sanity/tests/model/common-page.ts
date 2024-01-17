@@ -5,6 +5,7 @@ export class CommonPage {
     if (name !== 'first') {
       const filterText = fullWordFilter ? name : name.split(' ')[0]
       await page.locator('div.selectPopup input').fill(filterText)
+      await page.waitForTimeout(300)
     }
     await page.locator('div.selectPopup div.list-item:first-child').click()
   }
