@@ -492,6 +492,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@hcengineering/collaborator-client",
+      "projectFolder": "packages/collaborator-client",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@hcengineering/prod",
       "projectFolder": "dev/prod",
       "shouldPublish": false
