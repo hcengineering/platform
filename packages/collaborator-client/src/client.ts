@@ -13,15 +13,7 @@
 // limitations under the License.
 //
 
-import core, {
-  Class,
-  Client,
-  CollaborativeDocumentId,
-  Doc,
-  Ref,
-  WorkspaceId,
-  concatLink
-} from '@hcengineering/core'
+import core, { Class, Client, CollaborativeDocumentId, Doc, Ref, WorkspaceId, concatLink } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { LiveQuery } from '@hcengineering/query'
 import { ServerKit, htmlToYDoc } from '@hcengineering/text'
@@ -66,9 +58,7 @@ class CollaboratorClientImpl implements CollaboratorClient {
   ) {
     this.lq = new LiveQuery(client)
 
-    this.extensions = [
-      ServerKit.configure({ image: { uploadUrl } })
-    ]
+    this.extensions = [ServerKit.configure({ image: { uploadUrl } })]
 
     this.queryCollaborationState()
   }
