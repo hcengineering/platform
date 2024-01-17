@@ -48,7 +48,6 @@ export default mergeIds(notificationId, notification, {
   },
   component: {
     NotificationSettings: '' as AnyComponent,
-    InboxAside: '' as AnyComponent,
     ActivityInboxNotificationPresenter: '' as AnyComponent,
     CommonInboxNotificationPresenter: '' as AnyComponent
   },

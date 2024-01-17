@@ -21,7 +21,6 @@ import NotificationSettings from './components/NotificationSettings.svelte'
 import NotificationPresenter from './components/NotificationPresenter.svelte'
 import TxCollaboratorsChange from './components/activity/TxCollaboratorsChange.svelte'
 import TxDmCreation from './components/activity/TxDmCreation.svelte'
-import InboxAside from './components/inbox/InboxAside.svelte'
 import DocNotifyContextPresenter from './components/DocNotifyContextPresenter.svelte'
 import NotificationCollaboratorsChanged from './components/NotificationCollaboratorsChanged.svelte'
 import ActivityInboxNotificationPresenter from './components/inbox/ActivityInboxNotificationPresenter.svelte'
@@ -62,7 +61,6 @@ export { default as BrowserNotificatator } from './components/BrowserNotificatat
 export default async (): Promise<Resources> => ({
   component: {
     Inbox,
-    InboxAside,
     NotificationPresenter,
     NotificationSettings,
     NotificationCollaboratorsChanged,
