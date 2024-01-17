@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { Class, Client, CollaborativeDocumentId, Doc, Ref, WorkspaceId, concatLink } from '@hcengineering/core'
+import core, { Class, CollaborativeDocumentId, Doc, Ref, WorkspaceId, concatLink } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { LiveQuery } from '@hcengineering/query'
 import { ServerKit, htmlToYDoc } from '@hcengineering/text'
@@ -32,32 +32,29 @@ export interface CollaboratorClient {
  * @public
  */
 export function getClient (
-  client: Client,
+  lq: LiveQuery,
   minio: MinioService,
   token: string,
   workspaceId: WorkspaceId,
   collaboratorUrl: string,
   uploadUrl: string
 ): CollaboratorClient {
-  return new CollaboratorClientImpl(client, minio, token, workspaceId, collaboratorUrl, uploadUrl)
+  return new CollaboratorClientImpl(lq, minio, token, workspaceId, collaboratorUrl, uploadUrl)
 }
 
 class CollaboratorClientImpl implements CollaboratorClient {
-  private readonly lq: LiveQuery
   private readonly extensions: Extensions
 
   private documents: Set<CollaborativeDocumentId> = new Set<CollaborativeDocumentId>()
 
   constructor (
-    private readonly client: Client,
+    private readonly lq: LiveQuery,
     private readonly minio: MinioService,
     private readonly token: string,
     private readonly workspaceId: WorkspaceId,
     private readonly collaboratorUrl: string,
     uploadUrl: string
   ) {
-    this.lq = new LiveQuery(client)
-
     this.extensions = [ServerKit.configure({ image: { uploadUrl } })]
 
     this.queryCollaborationState()
