@@ -15,12 +15,12 @@
 
 import {
   DOMAIN_BLOB,
-  DOMAIN_COLLABORATION,
   DOMAIN_CONFIGURATION,
   DOMAIN_DOC_INDEX_STATE,
   DOMAIN_FULLTEXT_BLOB,
   DOMAIN_MIGRATION,
   DOMAIN_MODEL,
+  DOMAIN_TRANSIENT,
   IndexKind,
   type Account,
   type AnyAttribute,
@@ -352,7 +352,7 @@ export class TIndexConfiguration<T extends Doc = Doc> extends TClass implements 
   indexes!: FieldIndex<T>[]
   searchDisabled!: boolean
 }
-@Model(core.class.CollaborationState, core.class.Doc, DOMAIN_COLLABORATION)
+@Model(core.class.CollaborationState, core.class.Doc, DOMAIN_TRANSIENT)
 export class TCollaborationState extends TDoc implements CollaborationState {
   documents!: CollaborativeDocumentId[]
 }
