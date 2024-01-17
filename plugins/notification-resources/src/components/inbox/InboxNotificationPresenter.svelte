@@ -17,12 +17,12 @@
   import { getClient } from '@hcengineering/presentation'
   import { Component } from '@hcengineering/ui'
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { DisplayInboxNotification } from '@hcengineering/notification'
+  import { ActivityNotificationViewlet, DisplayInboxNotification } from '@hcengineering/notification'
 
   export let value: DisplayInboxNotification
   export let embedded = false
   export let skipLabel = false
-  export let withCheck = true
+  export let viewlets: ActivityNotificationViewlet[] = []
   export let onClick: (() => void) | undefined = undefined
   export let onCheck: ((isChecked: boolean) => void) | undefined = undefined
 
@@ -33,5 +33,5 @@
 </script>
 
 {#if objectPresenter}
-  <Component is={objectPresenter.presenter} props={{ value, embedded, skipLabel, withCheck, onClick, onCheck }} />
+  <Component is={objectPresenter.presenter} props={{ value, embedded, skipLabel, viewlets, onClick, onCheck }} />
 {/if}

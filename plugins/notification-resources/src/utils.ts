@@ -204,10 +204,12 @@ export async function unReadNotifyContext (doc: DocNotifyContext): Promise<void>
  * @public
  */
 export async function deleteContextNotifications (doc: DocNotifyContext): Promise<void> {
+  const client = getClient()
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const inboxNotifications = get(inboxClient.inboxNotificationsByContext).get(doc._id) ?? []
 
   await inboxClient.deleteNotifications(inboxNotifications.map(({ _id }) => _id))
+  await client.update(doc, { lastViewedTimestamp: Date.now() })
 }
 
 enum OpWithMe {

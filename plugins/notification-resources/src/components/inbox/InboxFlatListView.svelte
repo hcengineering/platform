@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Scroller } from '@hcengineering/ui'
-  import { DisplayInboxNotification } from '@hcengineering/notification'
+  import { ActivityNotificationViewlet, DisplayInboxNotification } from '@hcengineering/notification'
   import { createEventDispatcher } from 'svelte'
   import { flip } from 'svelte/animate'
 
@@ -23,6 +23,7 @@
   import { deleteInboxNotification } from '../../utils'
 
   export let notifications: DisplayInboxNotification[] = []
+  export let viewlets: ActivityNotificationViewlet[] = []
 
   const dispatch = createEventDispatcher()
   const inboxClient = InboxNotificationsClientImpl.getClient()
@@ -39,9 +40,10 @@
 
 <Scroller>
   {#each notifications as notification (notification._id)}
-    <div animate:flip={{ duration: 800 }}>
+    <div animate:flip={{ duration: 500 }}>
       <InboxNotificationPresenter
         value={notification}
+        {viewlets}
         onCheck={(isChecked) => handleCheck(notification, isChecked)}
         onClick={() => {
           dispatch('click', {

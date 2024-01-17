@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DisplayInboxNotification, DocNotifyContext } from '@hcengineering/notification'
+  import { ActivityNotificationViewlet, DisplayInboxNotification, DocNotifyContext } from '@hcengineering/notification'
   import { groupByArray, Ref } from '@hcengineering/core'
   import { flip } from 'svelte/animate'
 
@@ -22,6 +22,7 @@
   import { deleteContextNotifications } from '../../utils'
 
   export let notifications: DisplayInboxNotification[] = []
+  export let viewlets: ActivityNotificationViewlet[] = []
 
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const notifyContextsStore = inboxClient.docNotifyContexts
@@ -40,7 +41,7 @@
 </script>
 
 {#each displayNotificationsByContext as [contextId, contextNotifications] (contextId)}
-  <div animate:flip={{ duration: 1000 }}>
+  <div animate:flip={{ duration: 500 }}>
     {#if contextNotifications.length}
       {@const context = $notifyContextsStore.find(({ _id }) => _id === contextId)}
 
@@ -48,6 +49,7 @@
         <DocNotifyContextCard
           value={context}
           notifications={contextNotifications}
+          {viewlets}
           on:click
           on:check={(event) => handleCheck(context, event.detail)}
         />

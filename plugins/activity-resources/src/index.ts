@@ -20,6 +20,8 @@ import ActivityMessagePresenter from './components/activity-message/ActivityMess
 import DocUpdateMessagePresenter from './components/doc-update-message/DocUpdateMessagePresenter.svelte'
 import ActivityInfoMessagePresenter from './components/activity-message/ActivityInfoMessagePresenter.svelte'
 import ReactionPresenter from './components/reactions/ReactionPresenter.svelte'
+import ReactionNotificationPresenter from './components/reactions/ReactionNotificationPresenter.svelte'
+import ActivityMessageNotificationLabel from './components/activity-message/ActivityMessageNotificationLabel.svelte'
 
 import { getMessageFragment, attributesFilter, pinnedFilter, allFilter } from './activityMessagesUtils'
 
@@ -34,6 +36,7 @@ export { default as ActivityExtension } from './components/ActivityExtension.sve
 export { default as ActivityScrolledView } from './components/ActivityScrolledView.svelte'
 export { default as ActivityDocLink } from './components/ActivityDocLink.svelte'
 export { default as ReactionPresenter } from './components/reactions/ReactionPresenter.svelte'
+export { default as ActivityMessageNotificationLabel } from './components/activity-message/ActivityMessageNotificationLabel.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -41,7 +44,9 @@ export default async (): Promise<Resources> => ({
     ActivityMessagePresenter,
     DocUpdateMessagePresenter,
     ReactionPresenter,
-    ActivityInfoMessagePresenter
+    ActivityInfoMessagePresenter,
+    ReactionNotificationPresenter,
+    ActivityMessageNotificationLabel
   },
   filter: {
     AttributesFilter: attributesFilter,

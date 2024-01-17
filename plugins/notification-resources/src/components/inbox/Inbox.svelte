@@ -13,7 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import notification, { DisplayInboxNotification, DocNotifyContext } from '@hcengineering/notification'
+  import notification, {
+    ActivityNotificationViewlet,
+    DisplayInboxNotification,
+    DocNotifyContext
+  } from '@hcengineering/notification'
   import { ActionContext, getClient } from '@hcengineering/presentation'
   import view, { Viewlet } from '@hcengineering/view'
   import {
@@ -77,8 +81,13 @@
   let selectedContext: DocNotifyContext | undefined = undefined
   let selectedComponent: AnyComponent | undefined = undefined
 
+  let viewlets: ActivityNotificationViewlet[] = []
   let viewlet: WithLookup<Viewlet> | undefined
   let loading = true
+
+  client.findAll(notification.class.ActivityNotificationViewlet, {}).then((res) => {
+    viewlets = res
+  })
 
   $: getDisplayInboxNotifications($notificationsByContextStore, filter).then((res) => {
     displayNotifications = res
@@ -139,12 +148,17 @@
     selectedContext = event?.detail?.context
     selectedContextId = selectedContext?._id
 
+    const loc = getLocation()
+
     if (selectedContext !== undefined) {
-      const loc = getLocation()
       loc.fragment = selectedContext._id
       loc.query = { message: event?.detail?.notification?.attachedTo }
-      navigate(loc)
+    } else {
+      loc.fragment = undefined
+      loc.query = undefined
     }
+
+    navigate(loc)
   }
 
   async function updateSelectedPanel (selectedContext?: DocNotifyContext) {
@@ -227,7 +241,8 @@
                 is={viewlet.$lookup.descriptor.component}
                 props={{
                   notifications: filteredNotifications,
-                  checkedContexts
+                  checkedContexts,
+                  viewlets
                 }}
                 on:click={selectContext}
               />
@@ -265,7 +280,7 @@
   }
 
   .notifications {
-    margin: 0.5rem;
+    margin: 0 0.5rem;
     height: 100%;
   }
 </style>

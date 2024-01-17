@@ -313,10 +313,15 @@ export function createModel (builder: Builder, options = { addApplication: true 
     presenter: chunter.component.ChannelPresenter
   })
 
-  // TODO: move to activity models
-  builder.mixin(activity.class.ActivityMessage, core.class.Class, notification.mixin.NotificationContextPresenter, {
-    labelPresenter: chunter.component.MessageNotificationLabelPresenter,
-    presenter: chunter.component.MessageNotificationPresenter
+  builder.mixin(chunter.class.ChatMessage, core.class.Class, notification.mixin.NotificationContextPresenter, {
+    labelPresenter: chunter.component.ChatMessageNotificationLabel
+  })
+
+  builder.createDoc(notification.class.ActivityNotificationViewlet, core.space.Model, {
+    messageMatch: {
+      _class: chunter.class.ThreadMessage
+    },
+    presenter: chunter.component.ThreadNotificationPresenter
   })
 
   builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.SpaceHeader, {
@@ -401,8 +406,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
         alias: chunterId,
         hidden: false,
         component: chunter.component.Chat,
-        aside: chunter.component.ThreadView,
-        shouldNotify: chunter.function.ShouldNotify
+        aside: chunter.component.ThreadView
       },
       chunter.app.Chunter
     )

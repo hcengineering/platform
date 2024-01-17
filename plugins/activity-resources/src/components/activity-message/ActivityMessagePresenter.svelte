@@ -30,7 +30,7 @@
   export let hideReplies = false
   export let skipLabel = false
   export let actions: Action[] = []
-
+  export let excludedActions: string[] = []
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -55,6 +55,7 @@
       showEmbedded,
       hideReplies,
       actions,
+      excludedActions,
       onClick,
       onReply
     }}

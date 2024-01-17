@@ -321,6 +321,10 @@ export function createModel (builder: Builder): void {
     component: view.component.AttachedDocPanel
   })
 
+  builder.mixin(activity.class.ActivityMessage, core.class.Class, notification.mixin.NotificationContextPresenter, {
+    labelPresenter: activity.component.ActivityMessageNotificationLabel
+  })
+
   builder.createDoc(
     notification.class.NotificationType,
     core.space.Model,
@@ -337,6 +341,14 @@ export function createModel (builder: Builder): void {
     },
     activity.ids.AddReactionNotification
   )
+
+  builder.createDoc(notification.class.ActivityNotificationViewlet, core.space.Model, {
+    messageMatch: {
+      _class: activity.class.DocUpdateMessage,
+      objectClass: activity.class.Reaction
+    },
+    presenter: activity.component.ReactionNotificationPresenter
+  })
 }
 
 export default activity

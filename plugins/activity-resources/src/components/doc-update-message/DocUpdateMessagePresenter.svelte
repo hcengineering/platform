@@ -46,6 +46,7 @@
   export let showEmbedded = false
   export let hideReplies = false
   export let actions: Action[] = []
+  export let excludedActions: string[] = []
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -150,6 +151,7 @@
     {isSelected}
     {shouldScroll}
     {embedded}
+    {excludedActions}
     {withActions}
     {viewlet}
     {showEmbedded}

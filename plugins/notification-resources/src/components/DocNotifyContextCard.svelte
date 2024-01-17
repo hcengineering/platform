@@ -14,24 +14,29 @@
 -->
 <script lang="ts">
   import { ActionIcon, CheckBox, Component, IconMoreH, Label, showPopup } from '@hcengineering/ui'
-  import notification, { DisplayInboxNotification, DocNotifyContext } from '@hcengineering/notification'
+  import notification, {
+    ActivityNotificationViewlet,
+    DisplayInboxNotification,
+    DocNotifyContext
+  } from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
   import { getDocTitle, getDocIdentifier, Menu } from '@hcengineering/view-resources'
   import chunter from '@hcengineering/chunter'
+  import { createEventDispatcher } from 'svelte'
 
   import InboxNotificationPresenter from './inbox/InboxNotificationPresenter.svelte'
   import NotifyContextIcon from './NotifyContextIcon.svelte'
   import NotifyMarker from './NotifyMarker.svelte'
-  import { createEventDispatcher } from 'svelte'
 
   export let value: DocNotifyContext
   export let notifications: DisplayInboxNotification[] = []
+  export let viewlets: ActivityNotificationViewlet[] = []
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
 
-  const visibleNotification = notifications[0]
+  $: visibleNotification = notifications[0]
 
   function showMenu (ev: MouseEvent): void {
     showPopup(
@@ -104,11 +109,7 @@
     </div>
 
     <div class="notification">
-      {#if presenterMixin?.presenter}
-        <Component is={presenterMixin.presenter} props={{ notification: visibleNotification, context: value }} />
-      {:else}
-        <InboxNotificationPresenter value={visibleNotification} withCheck={false} embedded skipLabel />
-      {/if}
+      <InboxNotificationPresenter value={visibleNotification} {viewlets} embedded skipLabel />
     </div>
   </div>
 {/if}

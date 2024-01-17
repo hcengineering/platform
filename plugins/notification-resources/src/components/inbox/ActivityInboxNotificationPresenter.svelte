@@ -14,23 +14,26 @@
 -->
 <script lang="ts">
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Ref, SortingOrder } from '@hcengineering/core'
+  import { matchQuery, Ref, SortingOrder } from '@hcengineering/core'
   import notification, {
     ActivityInboxNotification,
+    ActivityNotificationViewlet,
     DisplayActivityInboxNotification,
     InboxNotification
   } from '@hcengineering/notification'
   import { ActivityMessagePresenter, combineActivityMessages } from '@hcengineering/activity-resources'
   import activity, { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
-  import { location, Action, CheckBox, getLocation, navigate } from '@hcengineering/ui'
+  import { location, Action, CheckBox, getLocation, navigate, Component } from '@hcengineering/ui'
   import { getActions } from '@hcengineering/view-resources'
   import { getResource } from '@hcengineering/platform'
+  import chunter from '@hcengineering/chunter'
 
   import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
 
   export let value: DisplayActivityInboxNotification
   export let embedded = false
   export let skipLabel = false
+  export let viewlets: ActivityNotificationViewlet[] = []
   export let onClick: (() => void) | undefined = undefined
   export let onCheck: ((isChecked: boolean) => void) | undefined = undefined
 
@@ -40,6 +43,7 @@
   const notificationsStore = notificationsClient.inboxNotifications
 
   let messages: ActivityMessage[] = []
+  let viewlet: ActivityNotificationViewlet | undefined = undefined
   let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
   let displayMessage: DisplayActivityMessage | undefined = undefined
   let actions: Action[] = []
@@ -68,6 +72,26 @@
 
   $: displayMessage = messages.length > 1 ? combineActivityMessages(messages)[0] : messages[0]
 
+  $: getAllActions(value).then((res) => {
+    actions = res
+  })
+
+  $: updateViewlet(viewlets, displayMessage)
+
+  function updateViewlet (viewlets: ActivityNotificationViewlet[], message?: DisplayActivityMessage) {
+    if (viewlets.length === 0 || message === undefined) {
+      return
+    }
+
+    for (const v of viewlets) {
+      const matched = matchQuery([message], v.messageMatch, message._class, client.getHierarchy(), true)
+      if (matched.length > 0) {
+        viewlet = v
+        return
+      }
+    }
+  }
+
   function handleReply (message?: DisplayActivityMessage): void {
     if (message === undefined) {
       return
@@ -93,37 +117,46 @@
 
     return result
   }
-
-  $: getAllActions(value).then((res) => {
-    actions = res
-  })
 </script>
 
 {#if displayMessage !== undefined}
-  <div class="flex-presenter gap-2 ml-2">
+  <div class="notification gap-2 ml-2">
     {#if !embedded}
-      <CheckBox
-        circle
-        kind="primary"
-        on:value={(event) => {
-          if (onCheck) {
-            onCheck(event.detail)
-          }
+      <div class="mt-6">
+        <CheckBox
+          circle
+          kind="primary"
+          on:value={(event) => {
+            if (onCheck) {
+              onCheck(event.detail)
+            }
+          }}
+        />
+      </div>
+    {/if}
+    {#if viewlet}
+      <Component is={viewlet.presenter} props={{ message: displayMessage, notification: value, embedded, onClick }} />
+    {:else}
+      <ActivityMessagePresenter
+        value={displayMessage}
+        showNotify={!value.isViewed && !embedded}
+        isSelected={displayMessage._id === selectedMessageId}
+        excludedActions={[chunter.action.ReplyToThread]}
+        showEmbedded
+        {embedded}
+        {skipLabel}
+        {actions}
+        onReply={() => {
+          handleReply(displayMessage)
         }}
+        {onClick}
       />
     {/if}
-    <ActivityMessagePresenter
-      value={displayMessage}
-      showNotify={!value.isViewed && !embedded}
-      isSelected={displayMessage._id === selectedMessageId}
-      showEmbedded
-      {embedded}
-      {skipLabel}
-      {actions}
-      onReply={() => {
-        handleReply(displayMessage)
-      }}
-      {onClick}
-    />
   </div>
 {/if}
+
+<style lang="scss">
+  .notification {
+    display: flex;
+  }
+</style>

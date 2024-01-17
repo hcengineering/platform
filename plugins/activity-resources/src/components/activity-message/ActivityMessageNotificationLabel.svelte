@@ -15,17 +15,16 @@
 <script lang="ts">
   import { Label } from '@hcengineering/ui'
   import { ActivityInboxNotification, DocNotifyContext } from '@hcengineering/notification'
-  import { ActivityDocLink, ReactionPresenter } from '@hcengineering/activity-resources'
   import activity, { ActivityMessage, DocUpdateMessage, Reaction } from '@hcengineering/activity'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Doc, Ref } from '@hcengineering/core'
+  import core, { Doc, Ref } from '@hcengineering/core'
   import { getDocLinkTitle } from '@hcengineering/view-resources'
   import view from '@hcengineering/view'
-
-  import chunter from '../../plugin'
   import { EmployeePresenter, personAccountByIdStore } from '@hcengineering/contact-resources'
   import { PersonAccount } from '@hcengineering/contact'
-  import core from '@hcengineering/core/lib/component'
+
+  import ActivityDocLink from '../ActivityDocLink.svelte'
+  import ReactionPresenter from '../reactions/ReactionPresenter.svelte'
 
   export let context: DocNotifyContext
   export let notification: ActivityInboxNotification
@@ -73,16 +72,11 @@
     message && $personAccountByIdStore.get((message?.createdBy ?? message.modifiedBy) as Ref<PersonAccount>)
 </script>
 
-{#if parentMessage && object}
-  {#if hierarchy.isDerived(notification.attachedToClass, chunter.class.ThreadMessage)}
-    <div class="label overflow-label">
-      <Label label={chunter.string.Thread} />
-      <ActivityDocLink {title} preposition={activity.string.In} {object} {panelComponent} />
-    </div>
-  {:else if reaction && message}
+{#if object}
+  {#if reaction}
     <div class="labels">
       <div class="label overflow-label">
-        <Label label={chunter.string.Message} />
+        <Label label={activity.string.Message} />
         <ActivityDocLink {title} preposition={activity.string.In} {object} {panelComponent} />
       </div>
 
@@ -104,7 +98,7 @@
     </div>
   {:else}
     <div class="label overflow-label">
-      <Label label={chunter.string.Message} />
+      <Label label={activity.string.Message} />
       <ActivityDocLink {title} preposition={activity.string.In} {object} {panelComponent} />
     </div>
   {/if}

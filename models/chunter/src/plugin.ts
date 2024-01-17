@@ -17,7 +17,7 @@ import type { ActivityMessage, DocUpdateMessageViewlet, TxViewlet } from '@hceng
 import { chunterId, type Channel } from '@hcengineering/chunter'
 import chunter from '@hcengineering/chunter-resources/src/plugin'
 import { type Client, type Doc, type Ref } from '@hcengineering/core'
-import { type DocNotifyContext, type NotificationGroup } from '@hcengineering/notification'
+import { type NotificationGroup } from '@hcengineering/notification'
 import type { IntlString, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import type { AnyComponent, Location } from '@hcengineering/ui/src/types'
@@ -33,8 +33,8 @@ export default mergeIds(chunterId, chunter, {
     BacklinkReference: '' as AnyComponent,
     ChannelsPanel: '' as AnyComponent,
     Chat: '' as AnyComponent,
-    MessageNotificationLabelPresenter: '' as AnyComponent,
-    MessageNotificationPresenter: '' as AnyComponent
+    ChatMessageNotificationLabel: '' as AnyComponent,
+    ThreadNotificationPresenter: '' as AnyComponent
   },
   action: {
     MarkCommentUnread: '' as Ref<Action>,
@@ -105,7 +105,6 @@ export default mergeIds(chunterId, chunter, {
   function: {
     GetLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
     GetFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
-    ShouldNotify: '' as Resource<(docNotifyContexts: DocNotifyContext[]) => Promise<boolean>>,
     DmIdentifierProvider: '' as Resource<<T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<string>>,
     CanDeleteMessage: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     GetChunterSpaceLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>

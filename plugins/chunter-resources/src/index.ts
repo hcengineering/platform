@@ -51,8 +51,8 @@ import SavedMessages from './components/chat/specials/SavedMessages.svelte'
 import Threads from './components/chat/specials/Threads.svelte'
 import DirectIcon from './components/DirectIcon.svelte'
 import ChannelIcon from './components/ChannelIcon.svelte'
-import MessageNotificationPresenter from './components/notification/MessageNotificationPresenter.svelte'
-import MessageNotificationLabelPresenter from './components/notification/MessageNotificationLabelPresenter.svelte'
+import ThreadNotificationPresenter from './components/notification/ThreadNotificationPresenter.svelte'
+import ChatMessageNotificationLabel from './components/notification/ChatMessageNotificationLabel.svelte'
 
 import { updateBacklinksList } from './backlinks'
 import {
@@ -153,13 +153,6 @@ export async function chunterBrowserVisible (): Promise<boolean> {
   return false
 }
 
-export function shouldNotify (docNotifyContexts: DocNotifyContext[]): boolean {
-  return docNotifyContexts.some(
-    ({ hidden, lastViewedTimestamp, lastUpdateTimestamp }) =>
-      !hidden && (lastViewedTimestamp ?? 0) < (lastUpdateTimestamp ?? 0)
-  )
-}
-
 async function update (source: Doc, key: string, target: RelatedDocument[], msg: IntlString): Promise<void> {
   const message = await translate(msg, {})
   const backlinks: Array<Data<Backlink>> = target.map((it) => ({
@@ -232,8 +225,8 @@ export default async (): Promise<Resources> => ({
     Threads,
     DirectIcon,
     ChannelIcon,
-    MessageNotificationLabelPresenter,
-    MessageNotificationPresenter
+    ChatMessageNotificationLabel,
+    ThreadNotificationPresenter
   },
   function: {
     GetDmName: getDmName,
@@ -242,7 +235,6 @@ export default async (): Promise<Resources> => ({
     GetLink: getLink,
     DirectTitleProvider,
     ChannelTitleProvider,
-    ShouldNotify: shouldNotify,
     DmIdentifierProvider: dmIdentifierProvider,
     CanDeleteMessage: canDeleteMessage,
     GetChunterSpaceLinkFragment: chunterSpaceLinkFragmentProvider

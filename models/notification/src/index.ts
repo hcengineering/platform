@@ -23,6 +23,7 @@ import {
   type Collection,
   type Data,
   type Doc,
+  type DocumentQuery,
   type Domain,
   DOMAIN_MODEL,
   Hierarchy,
@@ -69,7 +70,8 @@ import {
   type NotificationObjectPresenter,
   type ActivityInboxNotification,
   type CommonInboxNotification,
-  type NotificationContextPresenter
+  type NotificationContextPresenter,
+  type ActivityNotificationViewlet
 } from '@hcengineering/notification'
 import { type Asset, type IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
@@ -162,9 +164,8 @@ export class TNotificationPreview extends TClass implements NotificationPreview 
 }
 
 @Mixin(notification.mixin.NotificationContextPresenter, core.class.Class)
-export class TNotificationGroupPresenter extends TClass implements NotificationContextPresenter {
+export class TNotificationContextPresenter extends TClass implements NotificationContextPresenter {
   labelPresenter?: AnyComponent
-  presenter?: AnyComponent
 }
 
 @Model(notification.class.DocUpdates, core.class.Doc, DOMAIN_NOTIFICATION)
@@ -255,6 +256,13 @@ export class TCommonInboxNotification extends TInboxNotification implements Comm
   iconProps!: Record<string, any>
 }
 
+@Model(notification.class.ActivityNotificationViewlet, core.class.Doc, DOMAIN_MODEL)
+export class TActivityNotificationViewlet extends TDoc implements ActivityNotificationViewlet {
+  messageMatch!: DocumentQuery<Doc>
+
+  presenter!: AnyComponent
+}
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TNotification,
@@ -272,7 +280,8 @@ export function createModel (builder: Builder): void {
     TInboxNotification,
     TActivityInboxNotification,
     TCommonInboxNotification,
-    TNotificationGroupPresenter
+    TNotificationContextPresenter,
+    TActivityNotificationViewlet
   )
 
   // Temporarily disabled, we should think about it

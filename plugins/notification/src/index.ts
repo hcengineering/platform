@@ -213,7 +213,6 @@ export interface NotificationPreview extends Class<Doc> {
  */
 export interface NotificationContextPresenter extends Class<Doc> {
   labelPresenter?: AnyComponent
-  presenter?: AnyComponent
 }
 
 /**
@@ -292,6 +291,14 @@ export type InboxNotificationsClientFactory = () => InboxNotificationsClient
 /**
  * @public
  */
+export interface ActivityNotificationViewlet extends Doc {
+  messageMatch: DocumentQuery<Doc>
+  presenter: AnyComponent
+}
+
+/**
+ * @public
+ */
 const notification = plugin(notificationId, {
   mixin: {
     ClassCollaborators: '' as Ref<Mixin<ClassCollaborators>>,
@@ -311,7 +318,8 @@ const notification = plugin(notificationId, {
     DocNotifyContext: '' as Ref<Class<DocNotifyContext>>,
     InboxNotification: '' as Ref<Class<InboxNotification>>,
     ActivityInboxNotification: '' as Ref<Class<ActivityInboxNotification>>,
-    CommonInboxNotification: '' as Ref<Class<CommonInboxNotification>>
+    CommonInboxNotification: '' as Ref<Class<CommonInboxNotification>>,
+    ActivityNotificationViewlet: '' as Ref<Class<ActivityNotificationViewlet>>
   },
   ids: {
     NotificationSettings: '' as Ref<Doc>,
