@@ -50,7 +50,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Cache node modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-node-platform
         with:
@@ -76,7 +76,7 @@ jobs:
         run: node common/scripts/install-run-rush.js bundle
 
       - name: Cache build results
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-build-results
         with:
@@ -92,7 +92,7 @@ jobs:
           fetch-depth: 0
 
       - name: Cache build results
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-build-results
         with:
@@ -110,7 +110,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Cache build results
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-build-results
         with:
@@ -136,7 +136,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Cache build results
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-build-results
         with:
@@ -164,7 +164,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Cache build results
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-build-results
         with:
@@ -251,7 +251,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Cache build results
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-build-results
         with:
