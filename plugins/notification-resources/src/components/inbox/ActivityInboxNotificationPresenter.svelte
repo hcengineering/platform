@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Doc, Ref, SortingOrder } from '@hcengineering/core'
+  import { Ref, SortingOrder } from '@hcengineering/core'
   import notification, {
     ActivityInboxNotification,
     DisplayActivityInboxNotification,
@@ -22,16 +22,17 @@
   } from '@hcengineering/notification'
   import { ActivityMessagePresenter, combineActivityMessages } from '@hcengineering/activity-resources'
   import activity, { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
-  import { getLocation, location, navigate, Action } from '@hcengineering/ui'
-  import chunter from '@hcengineering/chunter'
-
-  import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
+  import { location, Action, CheckBox, getLocation, navigate } from '@hcengineering/ui'
   import { getActions } from '@hcengineering/view-resources'
   import { getResource } from '@hcengineering/platform'
+
+  import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
 
   export let value: DisplayActivityInboxNotification
   export let embedded = false
   export let skipLabel = false
+  export let onClick: (() => void) | undefined = undefined
+  export let onCheck: ((isChecked: boolean) => void) | undefined = undefined
 
   const client = getClient()
   const messagesQuery = createQuery()
@@ -67,45 +68,13 @@
 
   $: displayMessage = messages.length > 1 ? combineActivityMessages(messages)[0] : messages[0]
 
-  function handleMessageClicked (message?: ActivityMessage): void {
+  function handleReply (message?: DisplayActivityMessage): void {
     if (message === undefined) {
       return
     }
-    if (message._class === chunter.class.ThreadMessage) {
-      openDocActivity(message._id, true)
-      selectedMessageId = message._id
-    } else if (client.getHierarchy().isDerived(message.attachedToClass, activity.class.ActivityMessage)) {
-      openDocActivity(message.attachedTo, false)
-      selectedMessageId = message.attachedTo as Ref<ActivityMessage>
-    } else {
-      openDocActivity(message._id, false)
-      selectedMessageId = message._id
-    }
-    markNotificationViewed()
-  }
-
-  function handleReply (message?: ActivityMessage): void {
-    if (message === undefined) {
-      return
-    }
-
-    openDocActivity(message._id, true)
-    selectedMessageId = message._id
-  }
-
-  function markNotificationViewed () {
-    combinedNotifications.forEach((notification) => {
-      client.update(notification, { isViewed: true })
-    })
-  }
-
-  function openDocActivity (_id: Ref<Doc>, thread: boolean) {
     const loc = getLocation()
-    loc.path[4] = _id
-    loc.query = {
-      ...loc.query,
-      thread: `${thread}`
-    }
+    loc.fragment = value.docNotifyContext
+    loc.query = { message: message._id }
     navigate(loc)
   }
 
@@ -131,19 +100,30 @@
 </script>
 
 {#if displayMessage !== undefined}
-  <ActivityMessagePresenter
-    value={displayMessage}
-    showNotify={!value.isViewed}
-    isSelected={displayMessage._id === selectedMessageId}
-    showEmbedded
-    {embedded}
-    {skipLabel}
-    {actions}
-    onReply={() => {
-      handleReply(displayMessage)
-    }}
-    onClick={() => {
-      handleMessageClicked(displayMessage)
-    }}
-  />
+  <div class="flex-presenter gap-2 ml-2">
+    {#if !embedded}
+      <CheckBox
+        circle
+        kind="primary"
+        on:value={(event) => {
+          if (onCheck) {
+            onCheck(event.detail)
+          }
+        }}
+      />
+    {/if}
+    <ActivityMessagePresenter
+      value={displayMessage}
+      showNotify={!value.isViewed && !embedded}
+      isSelected={displayMessage._id === selectedMessageId}
+      showEmbedded
+      {embedded}
+      {skipLabel}
+      {actions}
+      onReply={() => {
+        handleReply(displayMessage)
+      }}
+      {onClick}
+    />
+  </div>
 {/if}

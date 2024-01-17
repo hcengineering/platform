@@ -25,7 +25,6 @@ export default mergeIds(activityId, activity, {
     Attributes: '' as IntlString,
     Pinned: '' as IntlString,
     Emoji: '' as IntlString,
-    Reacted: '' as IntlString,
     Replies: '' as IntlString
   },
   filter: {

@@ -261,7 +261,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
     })
 
     builder.mixin(spaceClass, core.class.Class, view.mixin.ObjectPanel, {
-      component: chunter.component.EditChannel
+      component: chunter.component.ChannelPanel
     })
   })
 
@@ -270,7 +270,11 @@ export function createModel (builder: Builder, options = { addApplication: true 
   })
 
   builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.ObjectTitle, {
-    titleProvider: chunter.function.DirectMessageTitleProvider
+    titleProvider: chunter.function.DirectTitleProvider
+  })
+
+  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: chunter.function.ChannelTitleProvider
   })
 
   builder.mixin(chunter.class.DirectMessage, core.class.Class, notification.mixin.ClassCollaborators, {
@@ -279,14 +283,6 @@ export function createModel (builder: Builder, options = { addApplication: true 
 
   builder.mixin(chunter.class.Channel, core.class.Class, notification.mixin.ClassCollaborators, {
     fields: ['members']
-  })
-
-  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ObjectPanel, {
-    component: chunter.component.ChannelViewPanel
-  })
-
-  builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.ObjectPanel, {
-    component: chunter.component.ChannelViewPanel
   })
 
   builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.ObjectPresenter, {
@@ -315,6 +311,12 @@ export function createModel (builder: Builder, options = { addApplication: true 
 
   builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: chunter.component.ChannelPresenter
+  })
+
+  // TODO: move to activity models
+  builder.mixin(activity.class.ActivityMessage, core.class.Class, notification.mixin.NotificationContextPresenter, {
+    labelPresenter: chunter.component.MessageNotificationLabelPresenter,
+    presenter: chunter.component.MessageNotificationPresenter
   })
 
   builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.SpaceHeader, {

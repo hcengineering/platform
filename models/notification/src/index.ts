@@ -68,7 +68,8 @@ import {
   notificationId,
   type NotificationObjectPresenter,
   type ActivityInboxNotification,
-  type CommonInboxNotification
+  type CommonInboxNotification,
+  type NotificationContextPresenter
 } from '@hcengineering/notification'
 import { type Asset, type IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
@@ -158,6 +159,12 @@ export class TNotificationObjectPresenter extends TClass implements Notification
 @Mixin(notification.mixin.NotificationPreview, core.class.Class)
 export class TNotificationPreview extends TClass implements NotificationPreview {
   presenter!: AnyComponent
+}
+
+@Mixin(notification.mixin.NotificationContextPresenter, core.class.Class)
+export class TNotificationGroupPresenter extends TClass implements NotificationContextPresenter {
+  labelPresenter?: AnyComponent
+  presenter?: AnyComponent
 }
 
 @Model(notification.class.DocUpdates, core.class.Doc, DOMAIN_NOTIFICATION)
@@ -264,7 +271,8 @@ export function createModel (builder: Builder): void {
     TDocNotifyContext,
     TInboxNotification,
     TActivityInboxNotification,
-    TCommonInboxNotification
+    TCommonInboxNotification,
+    TNotificationGroupPresenter
   )
 
   // Temporarily disabled, we should think about it
@@ -320,28 +328,7 @@ export function createModel (builder: Builder): void {
       alias: inboxId,
       hidden: true,
       locationResolver: notification.resolver.Location,
-      navigatorModel: {
-        aside: notification.component.InboxAside,
-        spaces: [],
-        specials: [
-          {
-            id: 'activity',
-            component: notification.component.Inbox,
-            icon: activity.icon.Activity,
-            label: activity.string.Activity
-          }
-          // {
-          //   id: 'reactions',
-          //   component: notification.component.Inbox,
-          //   icon: activity.icon.Emoji,
-          //   label: activity.string.Reactions,
-          //   componentProps: {
-          //     _class: activity.class.Reaction,
-          //     label: activity.string.Reactions
-          //   }
-          // }
-        ]
-      }
+      component: notification.component.Inbox
     },
     notification.app.Inbox
   )
@@ -484,17 +471,61 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: notification.actionImpl.HideDocNotifyContext,
-      label: view.string.Archive,
+      action: notification.actionImpl.ReadNotifyContext,
+      label: notification.string.MarkAsRead,
+      icon: notification.icon.Notifications,
+      input: 'focus',
+      visibilityTester: notification.function.CanReadNotifyContext,
+      category: notification.category.Notification,
+      target: notification.class.DocNotifyContext,
+      context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
+    },
+    notification.action.ReadNotifyContext
+  )
+
+  createAction(
+    builder,
+    {
+      action: notification.actionImpl.UnReadNotifyContext,
+      label: notification.string.MarkAsUnread,
+      icon: notification.icon.Notifications,
+      input: 'focus',
+      visibilityTester: notification.function.CanUnReadNotifyContext,
+      category: notification.category.Notification,
+      target: notification.class.DocNotifyContext,
+      context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
+    },
+    notification.action.UnReadNotifyContext
+  )
+
+  createAction(
+    builder,
+    {
+      action: notification.actionImpl.DeleteContextNotifications,
+      label: notification.string.Archive,
       icon: view.icon.Archive,
       input: 'focus',
-      category: view.category.General,
+      category: notification.category.Notification,
+      target: notification.class.DocNotifyContext,
+      context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
+    },
+    notification.action.DeleteContextNotifications
+  )
+
+  createAction(
+    builder,
+    {
+      action: notification.actionImpl.HideDocNotifyContext,
+      label: notification.string.DontTrack,
+      icon: notification.icon.DontTrack,
+      input: 'focus',
+      category: notification.category.Notification,
       target: notification.class.DocNotifyContext,
       context: {
         mode: ['browser', 'context'],
         group: 'remove'
       },
-      visibilityTester: notification.function.IsDocNotifyContextVisible
+      visibilityTester: notification.function.IsDocNotifyContextTracked
     },
     notification.action.HideDocNotifyContext
   )

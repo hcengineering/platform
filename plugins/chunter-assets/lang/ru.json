@@ -84,6 +84,7 @@
     "ReplyToThread": "Ответить в канале",
     "SentMessage": "Отправил(а) сообщение",
     "Direct": "Личные сообщения",
-    "RepliedToThread": "Ответил(а) в канале"
+    "RepliedToThread": "Ответил(а) в канале",
+    "RepliedTo": "Ответил(а) на: {message}"
   }
 }

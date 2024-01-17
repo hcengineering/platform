@@ -148,6 +148,68 @@ export async function isDocNotifyContextVisible (notifyContext: DocNotifyContext
   return !notifyContext.hidden
 }
 
+/**
+ * @public
+ */
+export async function canReadNotifyContext (doc: DocNotifyContext): Promise<boolean> {
+  const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
+
+  return (
+    get(inboxNotificationsClient.inboxNotificationsByContext)
+      .get(doc._id)
+      ?.some(({ isViewed }) => !isViewed) ?? false
+  )
+}
+
+/**
+ * @public
+ */
+export async function canUnReadNotifyContext (doc: DocNotifyContext): Promise<boolean> {
+  const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
+
+  return (
+    get(inboxNotificationsClient.inboxNotificationsByContext)
+      .get(doc._id)
+      ?.every(({ isViewed }) => isViewed) ?? false
+  )
+}
+
+/**
+ * @public
+ */
+export async function readNotifyContext (doc: DocNotifyContext): Promise<void> {
+  const client = getClient()
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+  const inboxNotifications = get(inboxClient.inboxNotificationsByContext).get(doc._id) ?? []
+
+  await inboxClient.readNotifications(inboxNotifications.map(({ _id }) => _id))
+  await client.update(doc, { lastViewedTimestamp: Date.now() })
+}
+
+/**
+ * @public
+ */
+export async function unReadNotifyContext (doc: DocNotifyContext): Promise<void> {
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+  const inboxNotifications = get(inboxClient.inboxNotificationsByContext).get(doc._id) ?? []
+
+  if (inboxNotifications.length === 0) {
+    return
+  }
+
+  await inboxClient.unreadNotifications([inboxNotifications[0]._id])
+}
+
+/**
+ * @public
+ */
+export async function deleteContextNotifications (doc: DocNotifyContext): Promise<void> {
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+  const inboxNotifications = get(inboxClient.inboxNotificationsByContext).get(doc._id) ?? []
+
+  await inboxClient.deleteNotifications(inboxNotifications.map(({ _id }) => _id))
+}
+
 enum OpWithMe {
   Add = 'add',
   Remove = 'remove'
@@ -232,74 +294,61 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
     return undefined
   }
 
-  const availableSpecies = ['all', 'reactions']
-  const special = loc.path[3]
+  const contextId = loc.fragment as Ref<DocNotifyContext> | undefined
 
-  if (!availableSpecies.includes(special)) {
+  if (contextId === undefined) {
     return {
       loc: {
-        path: [loc.path[0], loc.path[1], inboxId, 'all'],
+        path: [loc.path[0], loc.path[1], inboxId],
         fragment: undefined
       },
       defaultLocation: {
-        path: [loc.path[0], loc.path[1], inboxId, 'all'],
+        path: [loc.path[0], loc.path[1], inboxId],
         fragment: undefined
       }
     }
   }
 
-  const _id = loc.path[4] as Ref<ActivityMessage> | undefined
-
-  if (_id !== undefined) {
-    return await generateLocation(loc, _id)
-  }
+  return await generateLocation(loc, contextId)
 }
 
-async function generateLocation (loc: Location, _id: Ref<ActivityMessage>): Promise<ResolvedLocation | undefined> {
+async function generateLocation (
+  loc: Location,
+  contextId: Ref<DocNotifyContext>
+): Promise<ResolvedLocation | undefined> {
   const client = getClient()
 
   const appComponent = loc.path[0] ?? ''
   const workspace = loc.path[1] ?? ''
-  const special = loc.path[3]
+  const messageId = loc.query?.message as Ref<ActivityMessage> | undefined
 
-  const availableSpecies = ['all', 'reactions']
+  const context = await client.findOne(notification.class.DocNotifyContext, { _id: contextId })
 
-  if (!availableSpecies.includes(special)) {
+  if (context === undefined) {
     return {
       loc: {
-        path: [appComponent, workspace, inboxId, 'all'],
+        path: [loc.path[0], loc.path[1], inboxId],
         fragment: undefined
       },
       defaultLocation: {
-        path: [appComponent, workspace, inboxId, 'all'],
+        path: [loc.path[0], loc.path[1], inboxId],
         fragment: undefined
       }
     }
   }
 
-  const message = await client.findOne(activity.class.ActivityMessage, { _id })
-
-  if (message === undefined) {
-    return {
-      loc: {
-        path: [appComponent, workspace, inboxId, special],
-        fragment: undefined
-      },
-      defaultLocation: {
-        path: [appComponent, workspace, inboxId, special],
-        fragment: undefined
-      }
-    }
-  }
+  const message =
+    messageId !== undefined ? await client.findOne(activity.class.ActivityMessage, { _id: messageId }) : undefined
 
   return {
     loc: {
-      path: [appComponent, workspace, inboxId, special, _id],
-      fragment: undefined
+      path: [appComponent, workspace, inboxId],
+      fragment: contextId,
+      query: { message: message !== undefined ? (messageId as string) : null }
     },
     defaultLocation: {
-      path: [appComponent, workspace, inboxId, special, _id],
-      fragment: undefined
+      path: [appComponent, workspace, inboxId],
+      query: { message: message !== undefined ? (messageId as string) : null }
     }
   }
 }

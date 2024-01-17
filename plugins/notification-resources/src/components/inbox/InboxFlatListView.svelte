@@ -15,14 +15,41 @@
 <script lang="ts">
   import { Scroller } from '@hcengineering/ui'
   import { DisplayInboxNotification } from '@hcengineering/notification'
+  import { createEventDispatcher } from 'svelte'
+  import { flip } from 'svelte/animate'
 
   import InboxNotificationPresenter from './InboxNotificationPresenter.svelte'
+  import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
+  import { deleteInboxNotification } from '../../utils'
 
   export let notifications: DisplayInboxNotification[] = []
+
+  const dispatch = createEventDispatcher()
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+  const notifyContextsStore = inboxClient.docNotifyContexts
+
+  async function handleCheck (notification: DisplayInboxNotification, isChecked: boolean) {
+    if (!isChecked) {
+      return
+    }
+
+    await deleteInboxNotification(notification)
+  }
 </script>
 
 <Scroller>
-  {#each notifications as notification}
-    <InboxNotificationPresenter value={notification} />
+  {#each notifications as notification (notification._id)}
+    <div animate:flip={{ duration: 800 }}>
+      <InboxNotificationPresenter
+        value={notification}
+        onCheck={(isChecked) => handleCheck(notification, isChecked)}
+        onClick={() => {
+          dispatch('click', {
+            context: $notifyContextsStore.find(({ _id }) => _id === notification.docNotifyContext),
+            notification
+          })
+        }}
+      />
+    </div>
   {/each}
 </Scroller>

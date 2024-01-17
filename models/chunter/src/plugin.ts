@@ -32,7 +32,9 @@ export default mergeIds(chunterId, chunter, {
     BacklinkContent: '' as AnyComponent,
     BacklinkReference: '' as AnyComponent,
     ChannelsPanel: '' as AnyComponent,
-    Chat: '' as AnyComponent
+    Chat: '' as AnyComponent,
+    MessageNotificationLabelPresenter: '' as AnyComponent,
+    MessageNotificationPresenter: '' as AnyComponent
   },
   action: {
     MarkCommentUnread: '' as Ref<Action>,
@@ -40,8 +42,7 @@ export default mergeIds(chunterId, chunter, {
     ArchiveChannel: '' as Ref<Action>,
     UnarchiveChannel: '' as Ref<Action>,
     ConvertToPrivate: '' as Ref<Action>,
-    CopyChatMessageLink: '' as Ref<Action<Doc, any>>,
-    OpenChannel: '' as Ref<Action>
+    CopyChatMessageLink: '' as Ref<Action<Doc, any>>
   },
   actionImpl: {
     ArchiveChannel: '' as ViewAction,

@@ -24,7 +24,7 @@ import { type DocNotifyContext } from '@hcengineering/notification'
 
 import ChannelPresenter from './components/ChannelPresenter.svelte'
 import ChannelView from './components/ChannelView.svelte'
-import ChannelViewPanel from './components/ChannelViewPanel.svelte'
+import ChannelPanel from './components/ChannelPanel.svelte'
 import ChunterBrowser from './components/chat/specials/ChunterBrowser.svelte'
 import ConvertDmToPrivateChannelModal from './components/ConvertDmToPrivateChannel.svelte'
 import CreateChannel from './components/chat/create/CreateChannel.svelte'
@@ -51,10 +51,13 @@ import SavedMessages from './components/chat/specials/SavedMessages.svelte'
 import Threads from './components/chat/specials/Threads.svelte'
 import DirectIcon from './components/DirectIcon.svelte'
 import ChannelIcon from './components/ChannelIcon.svelte'
+import MessageNotificationPresenter from './components/notification/MessageNotificationPresenter.svelte'
+import MessageNotificationLabelPresenter from './components/notification/MessageNotificationLabelPresenter.svelte'
 
 import { updateBacklinksList } from './backlinks'
 import {
-  DirectMessageTitleProvider,
+  ChannelTitleProvider,
+  DirectTitleProvider,
   canDeleteMessage,
   chunterSpaceLinkFragmentProvider,
   dmIdentifierProvider,
@@ -191,8 +194,6 @@ export async function deleteChatMessage (message: ChatMessage): Promise<void> {
 }
 
 export async function replyToThread (message: ActivityMessage): Promise<void> {
-  console.log('reply', { message })
-
   const loc = getLocation()
   loc.path[4] = message._id
   navigate(loc)
@@ -210,7 +211,7 @@ export default async (): Promise<Resources> => ({
     ThreadViewPanel,
     ChannelHeader,
     ChannelView,
-    ChannelViewPanel,
+    ChannelPanel,
     ChannelPresenter,
     DirectMessagePresenter,
     ChannelPreview,
@@ -230,14 +231,17 @@ export default async (): Promise<Resources> => ({
     ThreadMessagePresenter,
     Threads,
     DirectIcon,
-    ChannelIcon
+    ChannelIcon,
+    MessageNotificationLabelPresenter,
+    MessageNotificationPresenter
   },
   function: {
     GetDmName: getDmName,
     ChunterBrowserVisible: chunterBrowserVisible,
     GetFragment: getTitle,
     GetLink: getLink,
-    DirectMessageTitleProvider,
+    DirectTitleProvider,
+    ChannelTitleProvider,
     ShouldNotify: shouldNotify,
     DmIdentifierProvider: dmIdentifierProvider,
     CanDeleteMessage: canDeleteMessage,

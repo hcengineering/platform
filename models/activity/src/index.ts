@@ -290,7 +290,7 @@ export function createModel (builder: Builder): void {
     {
       objectClass: activity.class.Reaction,
       action: 'create',
-      component: activity.component.ReactionAddedMessage,
+      component: activity.component.ReactionPresenter,
       label: activity.string.Reacted,
       onlyWithParent: true,
       hideIfRemoved: true
@@ -315,6 +315,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(activity.class.DocUpdateMessage, core.class.Class, notification.mixin.ClassCollaborators, {
     fields: ['createdBy', 'repliedPersons']
+  })
+
+  builder.mixin(activity.class.ActivityMessage, core.class.Class, view.mixin.ObjectPanel, {
+    component: view.component.AttachedDocPanel
   })
 
   builder.createDoc(

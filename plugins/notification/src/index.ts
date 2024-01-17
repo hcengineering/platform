@@ -211,6 +211,14 @@ export interface NotificationPreview extends Class<Doc> {
 /**
  * @public
  */
+export interface NotificationContextPresenter extends Class<Doc> {
+  labelPresenter?: AnyComponent
+  presenter?: AnyComponent
+}
+
+/**
+ * @public
+ */
 export interface InboxNotification extends Doc {
   user: Ref<Account>
   isViewed: boolean
@@ -289,7 +297,8 @@ const notification = plugin(notificationId, {
     ClassCollaborators: '' as Ref<Mixin<ClassCollaborators>>,
     Collaborators: '' as Ref<Mixin<Collaborators>>,
     NotificationObjectPresenter: '' as Ref<Mixin<NotificationObjectPresenter>>,
-    NotificationPreview: '' as Ref<Mixin<NotificationPreview>>
+    NotificationPreview: '' as Ref<Mixin<NotificationPreview>>,
+    NotificationContextPresenter: '' as Ref<Mixin<NotificationContextPresenter>>
   },
   class: {
     Notification: '' as Ref<Class<Notification>>,
@@ -341,7 +350,10 @@ const notification = plugin(notificationId, {
     PinDocNotifyContext: '' as Ref<Action>,
     UnpinDocNotifyContext: '' as Ref<Action>,
     HideDocNotifyContext: '' as Ref<Action>,
-    UnHideDocNotifyContext: '' as Ref<Action>
+    UnHideDocNotifyContext: '' as Ref<Action>,
+    UnReadNotifyContext: '' as Ref<Action>,
+    ReadNotifyContext: '' as Ref<Action>,
+    DeleteContextNotifications: '' as Ref<Action>
   },
   icon: {
     Notifications: '' as Asset,
@@ -373,7 +385,7 @@ const notification = plugin(notificationId, {
     GetInboxNotificationsClient: '' as Resource<InboxNotificationsClientFactory>,
     HasHiddenDocNotifyContext: '' as Resource<(doc: Doc[]) => Promise<boolean>>,
     IsDocNotifyContextHidden: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
-    IsDocNotifyContextVisible: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
+    IsDocNotifyContextTracked: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
   },
   resolver: {
     Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>

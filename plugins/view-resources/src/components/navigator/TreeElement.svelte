@@ -16,7 +16,7 @@
 <script lang="ts">
   import type { Doc, Ref } from '@hcengineering/core'
   import type { Asset, IntlString } from '@hcengineering/platform'
-  import type { Action, AnySvelteComponent } from '@hcengineering/ui'
+  import type { Action, AnySvelteComponent, IconSize } from '@hcengineering/ui'
   import {
     ActionIcon,
     Icon,
@@ -34,6 +34,7 @@
   export let _id: Ref<Doc> | string | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let iconProps: Record<string, any> | undefined = undefined
+  export let iconSize: IconSize = 'small'
   export let label: IntlString | undefined = undefined
   export let title: string | undefined = undefined
   export let notifications = 0
@@ -92,7 +93,7 @@
   {/if}
   {#if icon && !node}
     <div class="an-element__icon" class:folder>
-      <Icon {icon} {iconProps} size={'small'} />
+      <Icon {icon} {iconProps} size={iconSize} />
     </div>
   {/if}
   <span class="an-element__label" class:title={node} class:bold>

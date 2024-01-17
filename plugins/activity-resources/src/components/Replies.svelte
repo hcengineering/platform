@@ -45,9 +45,9 @@
   let displayPersons: Person[] = []
 
   $: docNotifyContextByDocStore = inboxClient?.docNotifyContextByDoc
-  $: inboxNotificationsByContextStore = inboxClient?.inboxNotificationsByContext
+  $: notificationsByContextStore = inboxClient?.inboxNotificationsByContext
 
-  $: hasNew = hasNewReplies(message, $docNotifyContextByDocStore, $inboxNotificationsByContextStore)
+  $: hasNew = hasNewReplies(message, $docNotifyContextByDocStore, $notificationsByContextStore)
   $: updateQuery(persons, $personByIdStore)
 
   function hasNewReplies (

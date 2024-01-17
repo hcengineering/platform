@@ -19,22 +19,26 @@
   import { onDestroy } from 'svelte'
   import activity, { ActivityMessage, ActivityMessagesFilter } from '@hcengineering/activity'
   import { ActivityScrolledView } from '@hcengineering/activity-resources'
+  import { getClient } from '@hcengineering/presentation'
 
   import chunter from '../plugin'
 
-  export let notifyContext: DocNotifyContext
+  export let context: DocNotifyContext
   export let object: Doc
   export let filterId: Ref<ActivityMessagesFilter> = activity.ids.AllFilter
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
 
   let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
 
   const unsubscribe = locationStore.subscribe((newLocation) => {
-    selectedMessageId = newLocation.fragment as Ref<ActivityMessage>
+    selectedMessageId = newLocation.query?.message as Ref<ActivityMessage> | undefined
   })
 
   onDestroy(unsubscribe)
 
-  $: isDocChannel = ![chunter.class.DirectMessage, chunter.class.Channel].includes(notifyContext.attachedToClass)
+  $: isDocChannel = !hierarchy.isDerived(context.attachedToClass, chunter.class.ChunterSpace)
   $: messagesClass = isDocChannel ? activity.class.ActivityMessage : chunter.class.ChatMessage
   $: collection = isDocChannel ? 'comments' : 'messages'
 </script>
@@ -47,5 +51,5 @@
   startFromBottom
   {selectedMessageId}
   {collection}
-  lastViewedTimestamp={notifyContext.lastViewedTimestamp}
+  lastViewedTimestamp={context.lastViewedTimestamp}
 />

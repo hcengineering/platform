@@ -15,13 +15,14 @@
 <script lang="ts">
   import type { Doc, Ref } from '@hcengineering/core'
   import type { Asset } from '@hcengineering/platform'
-  import type { Action } from '@hcengineering/ui'
+  import type { Action, IconSize } from '@hcengineering/ui'
   import TreeElement from './TreeElement.svelte'
   import { AnySvelteComponent } from '@hcengineering/ui'
 
   export let _id: Ref<Doc>
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let iconProps: Record<string, any> | undefined = undefined
+  export let iconSize: IconSize = 'small'
   export let title: string
   export let notifications = 0
   export let actions: (originalEvent?: MouseEvent) => Promise<Action[]> = async () => []
@@ -34,6 +35,7 @@
 <TreeElement
   {_id}
   {icon}
+  {iconSize}
   {title}
   {notifications}
   {selected}

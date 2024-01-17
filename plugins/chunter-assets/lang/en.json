@@ -84,6 +84,7 @@
     "ReplyToThread": "Reply to thread",
     "SentMessage": "Sent message",
     "Direct": "Direct",
-    "RepliedToThread": "Replied to thread"
+    "RepliedToThread": "Replied to thread",
+    "RepliedTo": "replied to: {message}"
   }
 }

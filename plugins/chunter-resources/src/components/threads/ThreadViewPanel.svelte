@@ -15,12 +15,19 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { ActivityMessage } from '@hcengineering/activity'
+  import { location as locationStore } from '@hcengineering/ui'
 
   import ThreadView from './ThreadView.svelte'
 
   export let _id: Ref<ActivityMessage>
+
+  let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
+
+  locationStore.subscribe((newLocation) => {
+    selectedMessageId = newLocation.query?.message as Ref<ActivityMessage> | undefined
+  })
 </script>
 
 <div class="antiPanel-component">
-  <ThreadView {_id} />
+  <ThreadView {_id} {selectedMessageId} on:close />
 </div>

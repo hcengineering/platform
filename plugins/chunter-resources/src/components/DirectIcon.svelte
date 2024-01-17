@@ -74,6 +74,8 @@
     flex-wrap: wrap;
     height: 2.5rem;
     width: 2.5rem;
+    min-width: 2.5rem;
+    min-height: 2.5rem;
     border: 1px solid transparent;
     border-radius: 0.5rem;
   }

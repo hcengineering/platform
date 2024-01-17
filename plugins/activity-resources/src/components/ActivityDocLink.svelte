@@ -27,7 +27,7 @@
 {#if preposition}
   <span class="text-sm lower"><Label label={preposition} /></span>
 {/if}
-<span class="text-sm">
+<span class="text-sm" {title}>
   <DocNavLink {object} component={panelComponent} shrink={0}>
     <span class="overflow-label select-text">{title}</span>
   </DocNavLink>

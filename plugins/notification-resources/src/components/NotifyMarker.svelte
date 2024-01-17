@@ -14,15 +14,22 @@
 -->
 <script lang="ts">
   export let count: number = 0
+
+  const maxNumber = 9
 </script>
 
 {#if count > 0}
-  <div class="notifyMarker">{count}</div>
+  <div class="notifyMarker">
+    {#if count > maxNumber}
+      {maxNumber}+
+    {:else}
+      {count}
+    {/if}
+  </div>
 {/if}
 
 <style lang="scss">
   .notifyMarker {
-    position: absolute;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -30,9 +37,8 @@
     height: 1rem;
     border-radius: 50%;
     background-color: var(--highlight-red);
-    right: 0;
-    top: 0;
-    font-size: 8px;
+    font-size: 10px;
     font-weight: 700;
+    color: var(--white-color);
   }
 </style>

@@ -34,9 +34,9 @@
   import SaveMessageAction from '../SaveMessageAction.svelte'
 
   export let message: DisplayActivityMessage
-  export let parentMessage: DisplayActivityMessage | undefined
+  export let parentMessage: DisplayActivityMessage | undefined = undefined
 
-  export let viewlet: ActivityMessageViewlet | undefined
+  export let viewlet: ActivityMessageViewlet | undefined = undefined
   export let person: Person | undefined = undefined
   export let actions: Action[] = []
   export let excludedActions: string[] = []
@@ -48,6 +48,7 @@
   export let withActions: boolean = true
   export let showEmbedded = false
   export let hideReplies = false
+  export let skipHeader = false
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -141,19 +142,21 @@
         <div class="embeddedMarker" />
       {/if}
       <div class="content ml-2 w-full clear-mins">
-        <div class="header clear-mins">
-          {#if person}
-            <EmployeePresenter value={person} shouldShowAvatar={false} />
-          {:else}
-            <div class="strong">
-              <Label label={core.string.System} />
-            </div>
-          {/if}
+        {#if !skipHeader}
+          <div class="header clear-mins">
+            {#if person}
+              <EmployeePresenter value={person} shouldShowAvatar={false} />
+            {:else}
+              <div class="strong">
+                <Label label={core.string.System} />
+              </div>
+            {/if}
 
-          <slot name="header" />
+            <slot name="header" />
 
-          <span class="text-sm">{getDisplayTime(message.createdOn ?? 0)}</span>
-        </div>
+            <span class="text-sm">{getDisplayTime(message.createdOn ?? 0)}</span>
+          </div>
+        {/if}
 
         <slot name="content" />
 
@@ -211,6 +214,7 @@
     overflow: hidden;
     border: 1px solid transparent;
     border-radius: 0.25rem;
+    width: calc(100% - 2rem);
 
     &.clickable {
       cursor: pointer;
@@ -225,7 +229,6 @@
     }
 
     &.embedded {
-      background: var(--theme-navpanel-icons-divider);
       padding: 0;
 
       .content {
@@ -288,6 +291,7 @@
 
   .embeddedMarker {
     width: 6px;
-    background: var(--theme-link-color);
+    border-radius: 0.5rem;
+    background: var(--secondary-button-default);
   }
 </style>

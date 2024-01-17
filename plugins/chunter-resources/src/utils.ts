@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 import {
+  type Channel,
   type ChatMessage,
   chunterId,
   type ChunterSpace,
@@ -124,14 +125,24 @@ export async function getDmPersons (client: Client, space: Space): Promise<Perso
   return persons
 }
 
-export async function DirectMessageTitleProvider (client: Client, id: Ref<DirectMessage>): Promise<string> {
-  const space = await client.findOne(chunter.class.DirectMessage, { _id: id })
+export async function DirectTitleProvider (client: Client, id: Ref<DirectMessage>): Promise<string> {
+  const direct = await client.findOne(chunter.class.DirectMessage, { _id: id })
 
-  if (space === undefined) {
+  if (direct === undefined) {
     return ''
   }
 
-  return await getDmName(client, space)
+  return await getDmName(client, direct)
+}
+
+export async function ChannelTitleProvider (client: Client, id: Ref<Channel>): Promise<string> {
+  const channel = await client.findOne(chunter.class.Channel, { _id: id })
+
+  if (channel === undefined) {
+    return ''
+  }
+
+  return channel.name
 }
 
 export async function openMessageFromSpecial (message?: ActivityMessage): Promise<void> {
@@ -180,7 +191,6 @@ export enum SearchType {
 
 export async function getLink (message: ActivityMessage): Promise<string> {
   const inboxClient = InboxNotificationsClientImpl.getClient()
-  const fragment = message._id
   const location = getCurrentResolvedLocation()
 
   let context: DocNotifyContext | undefined
@@ -198,7 +208,7 @@ export async function getLink (message: ActivityMessage): Promise<string> {
     return ''
   }
 
-  return `${window.location.protocol}//${window.location.host}/${workbenchId}/${location.path[1]}/${chunterId}/${context._id}${threadParent}#${fragment}`
+  return `${window.location.protocol}//${window.location.host}/${workbenchId}/${location.path[1]}/${chunterId}/${context._id}${threadParent}?message=${message._id}`
 }
 
 export async function getTitle (doc: Doc): Promise<string> {

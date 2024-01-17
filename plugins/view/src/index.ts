@@ -861,7 +861,8 @@ const view = plugin(viewId, {
     ValueSelector: '' as AnyComponent,
     GrowPresenter: '' as AnyComponent,
     DividerPresenter: '' as AnyComponent,
-    IconWithEmoji: '' as AnyComponent
+    IconWithEmoji: '' as AnyComponent,
+    AttachedDocPanel: '' as AnyComponent
   },
   ids: {
     IconWithEmoji: '' as Asset

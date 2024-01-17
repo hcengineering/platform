@@ -20,39 +20,37 @@
   import view from '@hcengineering/view'
   import { Doc } from '@hcengineering/core'
 
-  export let context: DocNotifyContext
-  export let size: IconSize = 'medium'
-
+  export let value: DocNotifyContext
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const query = createQuery()
 
   let object: Doc | undefined = undefined
 
-  $: iconMixin = hierarchy.classHierarchyMixin(context.attachedToClass, view.mixin.ObjectIcon)
+  $: iconMixin = hierarchy.classHierarchyMixin(value.attachedToClass, view.mixin.ObjectIcon)
   $: iconMixin &&
-    query.query(context.attachedToClass, { _id: context.attachedTo }, (res) => {
+    query.query(value.attachedToClass, { _id: value.attachedTo }, (res) => {
       object = res[0]
     })
 </script>
 
-{#if iconMixin && object}
-  <Component is={iconMixin.component} props={{ value: object, size }} />
-{:else}
-  <div class="icon">
-    <Icon icon={classIcon(client, context.attachedToClass) ?? notification.icon.Notifications} {size} />
-  </div>
-{/if}
+<div class="container">
+  {#if iconMixin && object}
+    <Component is={iconMixin.component} props={{ value: object, size: 'medium' }} />
+  {:else}
+    <Icon icon={classIcon(client, value.attachedToClass) ?? notification.icon.Notifications} size="medium" />
+  {/if}
+</div>
 
 <style lang="scss">
-  .icon {
+  .container {
     display: flex;
     align-items: center;
     justify-content: center;
     border: 1px solid transparent;
-    border-radius: 6px;
-    width: 40px;
-    height: 40px;
+    border-radius: 0.5rem;
     background-color: var(--theme-button-hovered);
+    width: 2.5rem;
+    height: 2.5rem;
   }
 </style>

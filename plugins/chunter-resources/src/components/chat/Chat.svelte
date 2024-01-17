@@ -88,10 +88,6 @@
       object = res[0]
     })
 
-  $: if (selectedContext) {
-    console.log({ selectedContext: selectedContext.attachedToClass })
-  }
-
   $: isDocChatOpened =
     selectedContext !== undefined &&
     ![chunter.class.Channel, chunter.class.DirectMessage].includes(selectedContext.attachedToClass)
@@ -139,7 +135,7 @@
     {/if}
     {#if selectedContext && object}
       {#key selectedContext._id}
-        <ChannelView notifyContext={selectedContext} {object} {filterId} />
+        <ChannelView context={selectedContext} {object} {filterId} />
       {/key}
     {/if}
   </div>
