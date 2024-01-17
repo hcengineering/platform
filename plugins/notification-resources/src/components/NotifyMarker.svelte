@@ -37,7 +37,7 @@
     height: 1rem;
     border-radius: 50%;
     background-color: var(--highlight-red);
-    font-size: 10px;
+    font-size: 0.625rem;
     font-weight: 700;
     color: var(--white-color);
   }

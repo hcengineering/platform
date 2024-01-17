@@ -169,7 +169,7 @@
     display: flex;
     flex-shrink: 0;
     padding: 0.75rem 0.75rem 0.75rem 1.25rem;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     gap: 1rem;
     overflow: hidden;
     cursor: pointer;
@@ -228,7 +228,7 @@
   }
 
   .embeddedMarker {
-    width: 6px;
+    width: 0.375rem;
     border-radius: 0.5rem;
     background: var(--secondary-button-default);
   }
