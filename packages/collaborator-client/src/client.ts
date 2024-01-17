@@ -15,10 +15,10 @@
 
 import core, {
   Class,
+  Client,
   CollaborativeDocumentId,
   Doc,
   Ref,
-  TxOperations,
   WorkspaceId,
   concatLink
 } from '@hcengineering/core'
@@ -40,7 +40,7 @@ export interface CollaboratorClient {
  * @public
  */
 export function getClient (
-  client: TxOperations,
+  client: Client,
   minio: MinioService,
   token: string,
   workspaceId: WorkspaceId,
@@ -57,7 +57,7 @@ class CollaboratorClientImpl implements CollaboratorClient {
   private documents: Set<CollaborativeDocumentId> = new Set<CollaborativeDocumentId>()
 
   constructor (
-    private readonly client: TxOperations,
+    private readonly client: Client,
     private readonly minio: MinioService,
     private readonly token: string,
     private readonly workspaceId: WorkspaceId,
