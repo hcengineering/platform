@@ -31,7 +31,7 @@
     showPopup,
     themeStore
   } from '@hcengineering/ui'
-  import { ColorsPopup, IconPicker, ObjectPresenter } from '@hcengineering/view-resources'
+  import { ColorsPopup, IconPicker, ObjectPresenter, statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import task from '../../plugin'
   import StatusesPopup from './StatusesPopup.svelte'
@@ -77,12 +77,12 @@
       if (res == null) {
         return
       }
-      const targetColor = type.statuses.find((p) => p._id === state._id)
-      if (targetColor !== undefined) {
+      const targetColors = type.statuses.filter((p) => p._id === state._id)
+      for (const targetColor of targetColors) {
         targetColor.color = res
-        await client.update(type, { statuses: type.statuses })
-        type = type
       }
+      await client.update(type, { statuses: type.statuses })
+      type = type
     })
   }
 
@@ -174,11 +174,12 @@
     const projectStatus = getProjectStatus(type, state, categoriesMap)
     showPopup(IconPicker, { icon: projectStatus?.icon, color: projectStatus?.color, icons }, el, async (result) => {
       if (result !== undefined && result !== null) {
-        const targetColor = type.statuses.find((p) => p._id === state._id)
-        if (targetColor !== undefined) {
+        const targetColors = type.statuses.filter((p) => p._id === state._id)
+        for (const targetColor of targetColors) {
           targetColor.color = result.color
           targetColor.icon = result.icon
-          console.log(result.color)
+        }
+        if (targetColors.length > 0) {
           await client.update(type, { statuses: type.statuses })
           type = type
         }

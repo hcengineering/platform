@@ -145,7 +145,12 @@ export function calculateStatuses (
   taskTypes: Map<Ref<TaskType>, Data<TaskType>>,
   override: Array<{ taskTypeId: Ref<TaskType>, statuses: Array<Ref<Status>> }>
 ): ProjectStatus[] {
-  const stIds = new Map(projectType.statuses.map((p) => [p._id, p]))
+  const stIds = new Map<Ref<Status>, ProjectStatus>()
+  for (const s of projectType.statuses) {
+    if (!stIds.has(s._id)) {
+      stIds.set(s._id, s)
+    }
+  }
   const processed = new Set<string>()
   const result: ProjectStatus[] = []
 
