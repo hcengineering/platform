@@ -30,6 +30,8 @@
   import { getResource } from '@hcengineering/platform'
 
   export let value: DisplayActivityInboxNotification
+  export let embedded = false
+  export let skipLabel = false
 
   const client = getClient()
   const messagesQuery = createQuery()
@@ -134,6 +136,8 @@
     showNotify={!value.isViewed}
     isSelected={displayMessage._id === selectedMessageId}
     showEmbedded
+    {embedded}
+    {skipLabel}
     {actions}
     onReply={() => {
       handleReply(displayMessage)

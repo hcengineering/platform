@@ -75,6 +75,7 @@ import setting from '@hcengineering/setting'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 
 import notification from './plugin'
+import { defineViewlets } from './viewlets'
 
 export { notificationId } from '@hcengineering/notification'
 export { notificationOperation } from './migration'
@@ -315,7 +316,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: notification.string.Inbox,
-      icon: notification.icon.Notifications,
+      icon: notification.icon.Inbox,
       alias: inboxId,
       hidden: true,
       locationResolver: notification.resolver.Location,
@@ -324,25 +325,21 @@ export function createModel (builder: Builder): void {
         spaces: [],
         specials: [
           {
-            id: 'all',
+            id: 'activity',
             component: notification.component.Inbox,
             icon: activity.icon.Activity,
-            label: activity.string.AllActivity,
-            componentProps: {
-              type: 'all',
-              label: activity.string.AllActivity
-            }
-          },
-          {
-            id: 'reactions',
-            component: notification.component.Inbox,
-            icon: activity.icon.Emoji,
-            label: activity.string.Reactions,
-            componentProps: {
-              _class: activity.class.Reaction,
-              label: activity.string.Reactions
-            }
+            label: activity.string.Activity
           }
+          // {
+          //   id: 'reactions',
+          //   component: notification.component.Inbox,
+          //   icon: activity.icon.Emoji,
+          //   label: activity.string.Reactions,
+          //   componentProps: {
+          //     _class: activity.class.Reaction,
+          //     label: activity.string.Reactions
+          //   }
+          // }
         ]
       }
     },
@@ -561,6 +558,8 @@ export function createModel (builder: Builder): void {
   builder.mixin(notification.class.CommonInboxNotification, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: notification.component.CommonInboxNotificationPresenter
   })
+
+  defineViewlets(builder)
 }
 
 export function generateClassNotificationTypes (

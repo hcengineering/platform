@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,27 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DirectMessage } from '@hcengineering/chunter'
-  import { getClient } from '@hcengineering/presentation'
   import { Person } from '@hcengineering/contact'
-  import { Avatar } from '@hcengineering/contact-resources'
+  import { IconSize } from '@hcengineering/ui'
+  import Avatar from './Avatar.svelte'
 
-  import { getDmPersons } from '../utils'
-
-  export let value: DirectMessage
-
-  const client = getClient()
-  let persons: Person[] = []
-
-  $: getDmPersons(client, value).then((res) => {
-    persons = res
-  })
+  export let value: Person
+  export let size: IconSize = 'small'
 </script>
 
-{#each persons as person}
-  {#if person}
-    <div class="icon">
-      <Avatar size="x-small" avatar={person.avatar} name={person.name} />
-    </div>
-  {/if}
-{/each}
+<Avatar avatar={value.avatar} {size} />

@@ -162,7 +162,7 @@ function defineFilters (builder: Builder): void {
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ObjectIdentifier, {
-    provider: tracker.function.IssueTitleProvider
+    provider: tracker.function.IssueIdentifierProvider
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, chunter.mixin.ObjectChatPanel, {

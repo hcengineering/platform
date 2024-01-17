@@ -35,6 +35,7 @@
   import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
 
   export let value: CommonInboxNotification
+  export let embedded: boolean = false
 
   const objectQuery = createQuery()
   const client = getClient()

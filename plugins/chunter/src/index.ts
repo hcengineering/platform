@@ -218,7 +218,9 @@ export default plugin(chunterId, {
     Docs: '' as IntlString,
     Chat: '' as IntlString,
     ThreadMessage: '' as IntlString,
-    ReplyToThread: '' as IntlString
+    ReplyToThread: '' as IntlString,
+    Channels: '' as IntlString,
+    Direct: '' as IntlString
   },
   ids: {
     DMNotification: '' as Ref<NotificationType>,

@@ -49,6 +49,8 @@ import ThreadParentPresenter from './components/threads/ThreadParentPresenter.sv
 import ChannelHeader from './components/ChannelHeader.svelte'
 import SavedMessages from './components/chat/specials/SavedMessages.svelte'
 import Threads from './components/chat/specials/Threads.svelte'
+import DirectIcon from './components/DirectIcon.svelte'
+import ChannelIcon from './components/ChannelIcon.svelte'
 
 import { updateBacklinksList } from './backlinks'
 import {
@@ -226,7 +228,9 @@ export default async (): Promise<Resources> => ({
     ChatMessagesPresenter,
     Chat,
     ThreadMessagePresenter,
-    Threads
+    Threads,
+    DirectIcon,
+    ChannelIcon
   },
   function: {
     GetDmName: getDmName,

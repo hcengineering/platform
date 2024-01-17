@@ -381,6 +381,7 @@ export default mergeIds(trackerId, tracker, {
   },
   function: {
     IssueTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
+    IssueIdentifierProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
     ComponentTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
     MilestoneTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
     GetIssueId: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,

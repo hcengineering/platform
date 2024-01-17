@@ -33,7 +33,7 @@ import { IntegrationType } from '@hcengineering/setting'
 import { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui'
 import { Readable, Writable } from './types'
 import { Preference } from '@hcengineering/preference'
-import { Action } from '@hcengineering/view'
+import { Action, Viewlet, ViewletDescriptor } from '@hcengineering/view'
 import { ActivityMessage } from '@hcengineering/activity'
 
 export * from './types'
@@ -321,10 +321,18 @@ const notification = plugin(notificationId, {
     Inbox: '' as AnyComponent,
     NotificationPresenter: '' as AnyComponent,
     NotificationCollaboratorsChanged: '' as AnyComponent,
-    DocNotifyContextPresenter: '' as AnyComponent
+    DocNotifyContextPresenter: '' as AnyComponent,
+    InboxFlatListView: '' as AnyComponent,
+    InboxGroupedListView: '' as AnyComponent
   },
   activity: {
     TxCollaboratorsChange: '' as AnyComponent
+  },
+  viewlet: {
+    FlatList: '' as Ref<ViewletDescriptor>,
+    InboxFlatList: '' as Ref<Viewlet>,
+    GroupedList: '' as Ref<ViewletDescriptor>,
+    InboxGroupedList: '' as Ref<Viewlet>
   },
   action: {
     MarkAsUnreadInboxNotification: '' as Ref<Action>,
@@ -356,7 +364,10 @@ const notification = plugin(notificationId, {
     NewCollaborators: '' as IntlString,
     RemovedCollaborators: '' as IntlString,
     Edited: '' as IntlString,
-    Pinned: '' as IntlString
+    Pinned: '' as IntlString,
+    FlatList: '' as IntlString,
+    GroupedList: '' as IntlString,
+    All: '' as IntlString
   },
   function: {
     GetInboxNotificationsClient: '' as Resource<InboxNotificationsClientFactory>,

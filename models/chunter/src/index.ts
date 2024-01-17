@@ -235,6 +235,14 @@ export function createModel (builder: Builder, options = { addApplication: true 
   )
   const spaceClasses = [chunter.class.Channel, chunter.class.DirectMessage]
 
+  builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.ObjectIcon, {
+    component: chunter.component.DirectIcon
+  })
+
+  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ObjectIcon, {
+    component: chunter.component.ChannelIcon
+  })
+
   spaceClasses.forEach((spaceClass) => {
     builder.mixin(spaceClass, core.class.Class, activity.mixin.ActivityDoc, {})
 

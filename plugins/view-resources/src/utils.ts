@@ -998,7 +998,7 @@ export async function getDocTitle (
   return await resource(client, objectId, object)
 }
 
-async function getDocIdentifier (
+export async function getDocIdentifier (
   client: Client,
   objectId: Ref<Doc>,
   objectClass: Ref<Class<Doc>>,

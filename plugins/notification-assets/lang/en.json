@@ -33,6 +33,8 @@
     "RemovedCollaborators": "Removed collaborators",
     "Edited": "edited",
     "Pinned": "Pinned",
-    "Message": "Message"
+    "Message": "Message",
+    "FlatList": "Flat list",
+    "GroupedList": "Grouped list"
   }
 }

@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 import {
-  type Channel,
   type ChatMessage,
   chunterId,
   type ChunterSpace,
@@ -32,16 +31,16 @@ import {
   navigate
 } from '@hcengineering/ui'
 import { workbenchId } from '@hcengineering/workbench'
-import { get, type Unsubscriber } from 'svelte/store'
-
-import chunter from './plugin'
 import { type Asset, translate } from '@hcengineering/platform'
-import Lock from './components/icons/Lock.svelte'
 import { classIcon } from '@hcengineering/view-resources'
-import DmIconPresenter from './components/DmIconPresenter.svelte'
 import { type ActivityMessage } from '@hcengineering/activity'
 import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 import { type DocNotifyContext } from '@hcengineering/notification'
+import { get, type Unsubscriber } from 'svelte/store'
+
+import chunter from './plugin'
+import DirectIcon from './components/DirectIcon.svelte'
+import ChannelIcon from './components/ChannelIcon.svelte'
 
 export async function getDmName (client: Client, space?: Space): Promise<string> {
   if (space === undefined) {
@@ -237,13 +236,11 @@ export function getChannelIcon (doc: Doc): Asset | AnySvelteComponent | undefine
   const client = getClient()
 
   if (doc._class === chunter.class.Channel) {
-    const channel = doc as Channel
-
-    return channel.private ? Lock : classIcon(client, channel._class)
+    return ChannelIcon
   }
 
   if (doc._class === chunter.class.DirectMessage) {
-    return DmIconPresenter
+    return DirectIcon
   }
 
   return classIcon(client, doc._class)

@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,22 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import view from '@hcengineering/view'
-  import { getClient } from '@hcengineering/presentation'
-  import { Component } from '@hcengineering/ui'
-  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { Scroller } from '@hcengineering/ui'
   import { DisplayInboxNotification } from '@hcengineering/notification'
 
-  export let value: DisplayInboxNotification
-  export let embedded: boolean = false
-  export let skipLabel = false
+  import InboxNotificationPresenter from './InboxNotificationPresenter.svelte'
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
-  $: objectPresenter = hierarchy.classHierarchyMixin(value._class as Ref<Class<Doc>>, view.mixin.ObjectPresenter)
+  export let notifications: DisplayInboxNotification[] = []
 </script>
 
-{#if objectPresenter}
-  <Component is={objectPresenter.presenter} props={{ value, embedded, skipLabel }} />
-{/if}
+<Scroller>
+  {#each notifications as notification}
+    <InboxNotificationPresenter value={notification} />
+  {/each}
+</Scroller>
