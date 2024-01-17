@@ -49,14 +49,14 @@ export class ActionsExtension implements Extension {
     try {
       const action = JSON.parse(data.payload) as Action
       const context = data.connection.context
-      const { connection, document, documentName } = data
+      const { connection, documentName } = data
 
       console.log('process stateless message', action.action, documentName)
 
       await this.configuration.ctx.with(action.action, {}, async () => {
         switch (action.action) {
           case 'document.content':
-            await this.onDocumentContent(document, action)
+            await this.onDocumentContent(context, documentName, action)
             this.sendActionStatus(connection, action, 'completed')
             return
           case 'document.copy':
@@ -81,13 +81,35 @@ export class ActionsExtension implements Extension {
     connection.sendStateless(JSON.stringify(payload))
   }
 
-  async onDocumentContent (document: Document, action: DocumentContentAction): Promise<void> {
+  async onDocumentContent (context: Context, documentName: string, action: DocumentContentAction): Promise<void> {
+    const instance = this.instance
     const { content, field } = action.params
-    if (!document.share.has(field)) {
-      const ydoc = this.configuration.transformer.toYdoc(content, field)
-      document.merge(ydoc)
-    } else {
-      console.warn('document has already been initialized')
+
+    const connection = await instance.openDirectConnection(documentName, context)
+
+    let document: Document | null = null
+
+    try {
+      document = connection.document
+
+      if (document != null) {
+        if (!document.share.has(field)) {
+          const ydoc = this.configuration.transformer.toYdoc(content, field)
+          await connection.transact((target) => {
+            Y.applyUpdate(target, Y.encodeStateAsUpdate(ydoc), connection)
+          })
+        } else {
+          console.warn(`document field '${field}' has already been initialized`)
+        }
+      } else {
+        console.warn('document is empty')
+      }
+    } finally {
+      await connection.disconnect()
+    }
+
+    if (document !== null && document.getConnectionsCount() === 0) {
+      instance.unloadDocument(document)
     }
   }
 
