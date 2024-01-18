@@ -21,7 +21,7 @@
 
   import chunter from '../plugin'
 
-  export let notifyContext: DocNotifyContext
+  export let context: DocNotifyContext
 
   const pinnedQuery = createQuery()
 
@@ -29,7 +29,7 @@
 
   $: pinnedQuery.query(
     activity.class.ActivityMessage,
-    { attachedTo: notifyContext.attachedTo, isPinned: true },
+    { attachedTo: context.attachedTo, isPinned: true },
     (res: ActivityMessage[]) => {
       pinnedMessagesCount = res.length
     }
@@ -37,7 +37,7 @@
   function openMessagesPopup (ev: MouseEvent & { currentTarget: EventTarget & HTMLDivElement }) {
     showPopup(
       PinnedMessagesPopup,
-      { attachedTo: notifyContext.attachedTo, attachedToClass: notifyContext.attachedToClass },
+      { attachedTo: context.attachedTo, attachedToClass: context.attachedToClass },
       eventToHTMLElement(ev)
     )
   }

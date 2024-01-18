@@ -48,7 +48,7 @@
   export let direct: Blob | undefined = undefined
   export let size: IconSize
   export let icon: Asset | AnySvelteComponent | undefined = undefined
-  export let variant: 'circle' | 'roundedRect' = 'circle'
+  export let variant: 'circle' | 'roundedRect' = 'roundedRect'
 
   let url: string[] | undefined
   let avatarProvider: AvatarProvider | undefined
@@ -131,7 +131,7 @@
     }
 
     &.roundedRect {
-      border-radius: 6px;
+      border-radius: 0.5rem;
     }
 
     &.no-img {
@@ -184,6 +184,10 @@
       font-weight: 500;
       font-size: 0.625rem;
       letter-spacing: -0.05em;
+    }
+
+    &.roundedRect {
+      border-radius: 0.25rem;
     }
   }
 
@@ -246,6 +250,7 @@
       font-size: 2rem;
     }
   }
+
   .ava-x-large {
     width: 7.5rem; // 120
     height: 7.5rem;
@@ -254,7 +259,12 @@
       font-weight: 500;
       font-size: 3.5rem;
     }
+
+    &.roundedRect {
+      border-radius: 1rem;
+    }
   }
+
   .ava-2x-large {
     width: 10rem; // 120
     height: 10rem;
@@ -262,6 +272,10 @@
     .ava-text {
       font-weight: 500;
       font-size: 4.75rem;
+    }
+
+    &.roundedRect {
+      border-radius: 1rem;
     }
   }
 
@@ -279,7 +293,16 @@
     }
 
     &.roundedRect {
-      border-radius: 6px;
+      border-radius: 0.5rem;
+
+      .ava-tiny {
+        border-radius: 0.25rem;
+      }
+
+      .ava-x-large,
+      .ava-2x-large {
+        border-radius: 1rem;
+      }
     }
   }
 

@@ -83,7 +83,8 @@
     "NewestFirst": "Newest first",
     "ReplyToThread": "Reply to thread",
     "SentMessage": "Sent message",
-    "Direct": "direct",
-    "RepliedToThread": "Replied to thread"
+    "Direct": "Direct",
+    "RepliedToThread": "Replied to thread",
+    "RepliedTo": "replied to: {message}"
   }
 }

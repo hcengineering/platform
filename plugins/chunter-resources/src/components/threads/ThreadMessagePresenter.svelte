@@ -26,6 +26,7 @@
   export let showEmbedded = false
   export let skipLabel = false
   export let onClick: (() => void) | undefined = undefined
+  export let onReply: (() => void) | undefined = undefined
 </script>
 
 <ChatMessagePresenter
@@ -39,4 +40,5 @@
   {embedded}
   {skipLabel}
   {onClick}
+  {onReply}
 />

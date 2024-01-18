@@ -48,7 +48,6 @@ export default mergeIds(notificationId, notification, {
   },
   component: {
     NotificationSettings: '' as AnyComponent,
-    InboxAside: '' as AnyComponent,
     ActivityInboxNotificationPresenter: '' as AnyComponent,
     CommonInboxNotificationPresenter: '' as AnyComponent
   },
@@ -56,7 +55,9 @@ export default mergeIds(notificationId, notification, {
     HasMarkAsUnreadAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     HasMarkAsReadAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     HasDocNotifyContextPinAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
-    HasDocNotifyContextUnpinAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
+    HasDocNotifyContextUnpinAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    CanReadNotifyContext: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    CanUnReadNotifyContext: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
   },
   category: {
     Notification: '' as Ref<ActionCategory>
@@ -73,6 +74,9 @@ export default mergeIds(notificationId, notification, {
     UnpinDocNotifyContext: '' as ViewAction,
     PinDocNotifyContext: '' as ViewAction,
     HideDocNotifyContext: '' as ViewAction,
-    UnHideDocNotifyContext: '' as ViewAction
+    UnHideDocNotifyContext: '' as ViewAction,
+    UnReadNotifyContext: '' as ViewAction,
+    ReadNotifyContext: '' as ViewAction,
+    DeleteContextNotifications: '' as ViewAction
   }
 })

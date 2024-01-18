@@ -85,6 +85,7 @@ import DateFilterPresenter from './components/filter/DateFilterPresenter.svelte'
 import ArrayFilter from './components/filter/ArrayFilter.svelte'
 import SpaceHeader from './components/SpaceHeader.svelte'
 import ViewletContentView from './components/ViewletContentView.svelte'
+import AttachedDocPanel from './components/AttachedDocPanel.svelte'
 
 import {
   afterResult,
@@ -251,7 +252,8 @@ export default async (): Promise<Resources> => ({
     StatusPresenter,
     StatusRefPresenter,
     DateFilterPresenter,
-    StringFilterPresenter
+    StringFilterPresenter,
+    AttachedDocPanel
   },
   popup: {
     PositionElementAlignment

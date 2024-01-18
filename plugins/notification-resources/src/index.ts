@@ -21,11 +21,12 @@ import NotificationSettings from './components/NotificationSettings.svelte'
 import NotificationPresenter from './components/NotificationPresenter.svelte'
 import TxCollaboratorsChange from './components/activity/TxCollaboratorsChange.svelte'
 import TxDmCreation from './components/activity/TxDmCreation.svelte'
-import InboxAside from './components/inbox/InboxAside.svelte'
 import DocNotifyContextPresenter from './components/DocNotifyContextPresenter.svelte'
 import NotificationCollaboratorsChanged from './components/NotificationCollaboratorsChanged.svelte'
 import ActivityInboxNotificationPresenter from './components/inbox/ActivityInboxNotificationPresenter.svelte'
 import CommonInboxNotificationPresenter from './components/inbox/CommonInboxNotificationPresenter.svelte'
+import InboxFlatListView from './components/inbox/InboxFlatListView.svelte'
+import InboxGroupedListView from './components/inbox/InboxGroupedListView.svelte'
 import {
   unsubscribe,
   resolveLocation,
@@ -42,7 +43,12 @@ import {
   pinDocNotifyContext,
   unpinDocNotifyContext,
   hideDocNotifyContext,
-  unHideDocNotifyContext
+  unHideDocNotifyContext,
+  canReadNotifyContext,
+  canUnReadNotifyContext,
+  readNotifyContext,
+  unReadNotifyContext,
+  deleteContextNotifications
 } from './utils'
 
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
@@ -55,13 +61,14 @@ export { default as BrowserNotificatator } from './components/BrowserNotificatat
 export default async (): Promise<Resources> => ({
   component: {
     Inbox,
-    InboxAside,
     NotificationPresenter,
     NotificationSettings,
     NotificationCollaboratorsChanged,
     DocNotifyContextPresenter,
     ActivityInboxNotificationPresenter,
-    CommonInboxNotificationPresenter
+    CommonInboxNotificationPresenter,
+    InboxFlatListView,
+    InboxGroupedListView
   },
   activity: {
     TxCollaboratorsChange,
@@ -75,8 +82,10 @@ export default async (): Promise<Resources> => ({
     HasDocNotifyContextPinAction: hasDocNotifyContextPinAction,
     HasDocNotifyContextUnpinAction: hasDocNotifyContextUnpinAction,
     IsDocNotifyContextHidden: isDocNotifyContextHidden,
-    IsDocNotifyContextVisible: isDocNotifyContextVisible,
-    HasHiddenDocNotifyContext: hasHiddenDocNotifyContext
+    IsDocNotifyContextTracked: isDocNotifyContextVisible,
+    HasHiddenDocNotifyContext: hasHiddenDocNotifyContext,
+    CanReadNotifyContext: canReadNotifyContext,
+    CanUnReadNotifyContext: canUnReadNotifyContext
   },
   actionImpl: {
     Unsubscribe: unsubscribe,
@@ -86,7 +95,10 @@ export default async (): Promise<Resources> => ({
     PinDocNotifyContext: pinDocNotifyContext,
     UnpinDocNotifyContext: unpinDocNotifyContext,
     HideDocNotifyContext: hideDocNotifyContext,
-    UnHideDocNotifyContext: unHideDocNotifyContext
+    UnHideDocNotifyContext: unHideDocNotifyContext,
+    ReadNotifyContext: readNotifyContext,
+    UnReadNotifyContext: unReadNotifyContext,
+    DeleteContextNotifications: deleteContextNotifications
   },
   resolver: {
     Location: resolveLocation

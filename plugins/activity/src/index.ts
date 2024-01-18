@@ -333,14 +333,18 @@ export default plugin(activityId, {
     AllActivity: '' as IntlString,
     Reactions: '' as IntlString,
     LastReply: '' as IntlString,
-    RepliesCount: '' as IntlString
+    RepliesCount: '' as IntlString,
+    Reacted: '' as IntlString,
+    Message: '' as IntlString
   },
   component: {
     Activity: '' as AnyComponent,
     ActivityMessagePresenter: '' as AnyComponent,
     DocUpdateMessagePresenter: '' as AnyComponent,
     ActivityInfoMessagePresenter: '' as AnyComponent,
-    ReactionAddedMessage: '' as AnyComponent
+    ReactionPresenter: '' as AnyComponent,
+    ReactionNotificationPresenter: '' as AnyComponent,
+    ActivityMessageNotificationLabel: '' as AnyComponent
   },
   ids: {
     AllFilter: '' as Ref<ActivityMessagesFilter>

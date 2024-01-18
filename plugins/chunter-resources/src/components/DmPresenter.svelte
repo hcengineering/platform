@@ -18,7 +18,7 @@
   import { NavLink } from '@hcengineering/view-resources'
 
   import { getDmName } from '../utils'
-  import DmIconPresenter from './DmIconPresenter.svelte'
+  import DirectIcon from './DirectIcon.svelte'
 
   export let value: DirectMessage
   export let disabled = false
@@ -30,7 +30,7 @@
   {#await getDmName(client, value) then name}
     <NavLink app={chunterId} space={value._id} {disabled}>
       <div class="flex-presenter">
-        <DmIconPresenter {value} />
+        <DirectIcon {value} />
         <span class="label">{name}</span>
       </div>
     </NavLink>

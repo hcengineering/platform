@@ -39,6 +39,8 @@
   export let showEmbedded = false
   export let hideReplies = false
   export let skipLabel = false
+  export let actions: Action[] = []
+  export let excludedActions: string[] = []
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -125,11 +127,11 @@
   }
 
   let isEditing = false
-  let actions: Action[] = []
+  let additionalActions: Action[] = []
 
   $: isOwn = user !== undefined && user._id === currentAccount._id
 
-  $: actions = [
+  $: additionalActions = [
     ...(isOwn
       ? [
           {
@@ -139,10 +141,10 @@
             action: handleEditAction
           }
         ]
-      : [])
+      : []),
+    ...actions
   ]
 
-  $: excludedActions = []
   let refInput: ChatMessageInput
 </script>
 
@@ -159,7 +161,7 @@
     {shouldScroll}
     {embedded}
     {withActions}
-    {actions}
+    actions={additionalActions}
     {showEmbedded}
     {hideReplies}
     {onClick}

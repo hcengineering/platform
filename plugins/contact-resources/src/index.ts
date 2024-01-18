@@ -98,6 +98,7 @@ import IconMembers from './components/icons/Members.svelte'
 import TxNameChange from './components/activity/TxNameChange.svelte'
 import NameChangedActivityMessage from './components/activity/NameChangedActivityMessage.svelte'
 import SystemAvatar from './components/SystemAvatar.svelte'
+import PersonIcon from './components/PersonIcon.svelte'
 
 import contact from './plugin'
 import {
@@ -317,7 +318,8 @@ export default async (): Promise<Resources> => ({
     EmployeeFilterValuePresenter,
     PersonAccountFilterValuePresenter,
     DeleteConfirmationPopup,
-    PersonAccountRefPresenter
+    PersonAccountRefPresenter,
+    PersonIcon
   },
   completion: {
     EmployeeQuery: async (

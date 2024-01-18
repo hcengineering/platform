@@ -182,21 +182,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
 
     const notificationsToRead = this._inboxNotifications
       .filter((n): n is ActivityInboxNotification => n._class === notification.class.ActivityInboxNotification)
-      .filter(({ attachedTo, attachedToClass, isViewed }) => {
-        return ids.includes(attachedTo) && !isViewed
-
-        // if (attachedToClass !== activity.class.DocUpdateMessage || $lookup?.attachedTo === undefined) {
-        //   return false
-        // }
-        //
-        // const docUpdateMessage = $lookup.attachedTo as DocUpdateMessage
-        //
-        // if (docUpdateMessage.objectClass !== activity.class.Reaction) {
-        //   return false
-        // }
-        //
-        // return ids.includes(docUpdateMessage.attachedTo as Ref<ActivityMessage>) && !isViewed
-      })
+      .filter(({ attachedTo, isViewed }) => ids.includes(attachedTo) && !isViewed)
 
     await Promise.all(
       notificationsToRead.map(async (notification) => await client.update(notification, { isViewed: true }))

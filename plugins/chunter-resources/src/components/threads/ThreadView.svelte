@@ -32,7 +32,7 @@
   let message: DisplayActivityMessage | undefined = undefined
 
   locationStore.subscribe((newLocation) => {
-    selectedMessageId = newLocation.fragment as Ref<ActivityMessage>
+    selectedMessageId = newLocation.query?.message as Ref<ActivityMessage> | undefined
   })
 
   $: messageQuery.query(activity.class.ActivityMessage, { _id }, (result: ActivityMessage[]) => {

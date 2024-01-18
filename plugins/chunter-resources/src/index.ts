@@ -24,7 +24,7 @@ import { type DocNotifyContext } from '@hcengineering/notification'
 
 import ChannelPresenter from './components/ChannelPresenter.svelte'
 import ChannelView from './components/ChannelView.svelte'
-import ChannelViewPanel from './components/ChannelViewPanel.svelte'
+import ChannelPanel from './components/ChannelPanel.svelte'
 import ChunterBrowser from './components/chat/specials/ChunterBrowser.svelte'
 import ConvertDmToPrivateChannelModal from './components/ConvertDmToPrivateChannel.svelte'
 import CreateChannel from './components/chat/create/CreateChannel.svelte'
@@ -49,10 +49,15 @@ import ThreadParentPresenter from './components/threads/ThreadParentPresenter.sv
 import ChannelHeader from './components/ChannelHeader.svelte'
 import SavedMessages from './components/chat/specials/SavedMessages.svelte'
 import Threads from './components/chat/specials/Threads.svelte'
+import DirectIcon from './components/DirectIcon.svelte'
+import ChannelIcon from './components/ChannelIcon.svelte'
+import ThreadNotificationPresenter from './components/notification/ThreadNotificationPresenter.svelte'
+import ChatMessageNotificationLabel from './components/notification/ChatMessageNotificationLabel.svelte'
 
 import { updateBacklinksList } from './backlinks'
 import {
-  DirectMessageTitleProvider,
+  ChannelTitleProvider,
+  DirectTitleProvider,
   canDeleteMessage,
   chunterSpaceLinkFragmentProvider,
   dmIdentifierProvider,
@@ -148,13 +153,6 @@ export async function chunterBrowserVisible (): Promise<boolean> {
   return false
 }
 
-export function shouldNotify (docNotifyContexts: DocNotifyContext[]): boolean {
-  return docNotifyContexts.some(
-    ({ hidden, lastViewedTimestamp, lastUpdateTimestamp }) =>
-      !hidden && (lastViewedTimestamp ?? 0) < (lastUpdateTimestamp ?? 0)
-  )
-}
-
 async function update (source: Doc, key: string, target: RelatedDocument[], msg: IntlString): Promise<void> {
   const message = await translate(msg, {})
   const backlinks: Array<Data<Backlink>> = target.map((it) => ({
@@ -189,8 +187,6 @@ export async function deleteChatMessage (message: ChatMessage): Promise<void> {
 }
 
 export async function replyToThread (message: ActivityMessage): Promise<void> {
-  console.log('reply', { message })
-
   const loc = getLocation()
   loc.path[4] = message._id
   navigate(loc)
@@ -208,7 +204,7 @@ export default async (): Promise<Resources> => ({
     ThreadViewPanel,
     ChannelHeader,
     ChannelView,
-    ChannelViewPanel,
+    ChannelPanel,
     ChannelPresenter,
     DirectMessagePresenter,
     ChannelPreview,
@@ -226,15 +222,19 @@ export default async (): Promise<Resources> => ({
     ChatMessagesPresenter,
     Chat,
     ThreadMessagePresenter,
-    Threads
+    Threads,
+    DirectIcon,
+    ChannelIcon,
+    ChatMessageNotificationLabel,
+    ThreadNotificationPresenter
   },
   function: {
     GetDmName: getDmName,
     ChunterBrowserVisible: chunterBrowserVisible,
     GetFragment: getTitle,
     GetLink: getLink,
-    DirectMessageTitleProvider,
-    ShouldNotify: shouldNotify,
+    DirectTitleProvider,
+    ChannelTitleProvider,
     DmIdentifierProvider: dmIdentifierProvider,
     CanDeleteMessage: canDeleteMessage,
     GetChunterSpaceLinkFragment: chunterSpaceLinkFragmentProvider

@@ -16,16 +16,17 @@
   import { Ref, Doc } from '@hcengineering/core'
   import { getLocation, navigate } from '@hcengineering/ui'
   import { DocNotifyContext } from '@hcengineering/notification'
-  import activity, { ActivityMessagesFilter } from '@hcengineering/activity'
+  import activity, { ActivityMessage, ActivityMessagesFilter } from '@hcengineering/activity'
   import { ChatMessage } from '@hcengineering/chunter'
 
   import Channel from './Channel.svelte'
   import PinnedMessages from './PinnedMessages.svelte'
   import ChannelHeader from './ChannelHeader.svelte'
 
-  export let notifyContext: DocNotifyContext
+  export let context: DocNotifyContext
   export let object: Doc
   export let filterId: Ref<ActivityMessagesFilter> = activity.ids.AllFilter
+  export let allowClose = false
 
   function openThread (_id: Ref<ChatMessage>) {
     const loc = getLocation()
@@ -34,10 +35,10 @@
   }
 </script>
 
-<ChannelHeader {object} />
-<PinnedMessages {notifyContext} />
+<ChannelHeader {object} {allowClose} on:close />
+<PinnedMessages {context} />
 <Channel
-  {notifyContext}
+  {context}
   {object}
   {filterId}
   on:openThread={(e) => {

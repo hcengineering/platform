@@ -82,12 +82,13 @@ import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svel
 import MembersArrayEditor from './components/projects/MembersArrayEditor.svelte'
 import {
   getIssueId,
-  getIssueTitle,
+  issueIdentifierProvider,
   issueIdProvider,
   issueLinkFragmentProvider,
   issueLinkProvider,
-  issueTitleProvider,
-  resolveLocation
+  getIssueTitle,
+  resolveLocation,
+  issueTitleProvider
 } from './issues'
 import tracker from './plugin'
 
@@ -523,13 +524,14 @@ export default async (): Promise<Resources> => ({
       await queryIssue(tracker.class.Issue, client, query, filter)
   },
   function: {
-    IssueTitleProvider: getIssueTitle,
+    IssueIdentifierProvider: issueIdentifierProvider,
+    IssueTitleProvider: issueTitleProvider,
     ComponentTitleProvider: getComponentTitle,
     MilestoneTitleProvider: getMilestoneTitle,
     GetIssueId: issueIdProvider,
     GetIssueLink: issueLinkProvider,
     GetIssueLinkFragment: issueLinkFragmentProvider,
-    GetIssueTitle: issueTitleProvider,
+    GetIssueTitle: getIssueTitle,
     IssueStatusSort: issueStatusSort,
     IssuePrioritySort: issuePrioritySort,
     MilestoneSort: milestoneSort,

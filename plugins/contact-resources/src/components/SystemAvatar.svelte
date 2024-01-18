@@ -17,7 +17,7 @@
   import { Asset } from '@hcengineering/platform'
 
   export let size: IconSize
-  export let variant: 'circle' | 'roundedRect' = 'circle'
+  export let variant: 'circle' | 'roundedRect' = 'roundedRect'
   export let icon: Asset | undefined = undefined
   export let iconProps: Record<string, any> | undefined = undefined
 
@@ -52,7 +52,7 @@
     }
 
     &.roundedRect {
-      border-radius: 0.375rem;
+      border-radius: 0.5rem;
     }
 
     &.x-small {
@@ -100,6 +100,10 @@
 
       .text {
         font-size: 3.5rem;
+      }
+
+      &.roundedRect {
+        border-radius: 1rem;
       }
     }
   }

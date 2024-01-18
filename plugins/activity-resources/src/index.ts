@@ -19,7 +19,9 @@ import Activity from './components/Activity.svelte'
 import ActivityMessagePresenter from './components/activity-message/ActivityMessagePresenter.svelte'
 import DocUpdateMessagePresenter from './components/doc-update-message/DocUpdateMessagePresenter.svelte'
 import ActivityInfoMessagePresenter from './components/activity-message/ActivityInfoMessagePresenter.svelte'
-import ReactionAddedMessage from './components/reactions/ReactionAddedMessage.svelte'
+import ReactionPresenter from './components/reactions/ReactionPresenter.svelte'
+import ReactionNotificationPresenter from './components/reactions/ReactionNotificationPresenter.svelte'
+import ActivityMessageNotificationLabel from './components/activity-message/ActivityMessageNotificationLabel.svelte'
 
 import { getMessageFragment, attributesFilter, pinnedFilter, allFilter } from './activityMessagesUtils'
 
@@ -32,16 +34,19 @@ export { default as ActivityMessageTemplate } from './components/activity-messag
 export { default as ActivityMessagePresenter } from './components/activity-message/ActivityMessagePresenter.svelte'
 export { default as ActivityExtension } from './components/ActivityExtension.svelte'
 export { default as ActivityScrolledView } from './components/ActivityScrolledView.svelte'
-export { default as ActivityMessageHeader } from './components/activity-message/ActivityMessageHeader.svelte'
 export { default as ActivityDocLink } from './components/ActivityDocLink.svelte'
+export { default as ReactionPresenter } from './components/reactions/ReactionPresenter.svelte'
+export { default as ActivityMessageNotificationLabel } from './components/activity-message/ActivityMessageNotificationLabel.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
     Activity,
     ActivityMessagePresenter,
     DocUpdateMessagePresenter,
-    ReactionAddedMessage,
-    ActivityInfoMessagePresenter
+    ReactionPresenter,
+    ActivityInfoMessagePresenter,
+    ReactionNotificationPresenter,
+    ActivityMessageNotificationLabel
   },
   filter: {
     AttributesFilter: attributesFilter,

@@ -275,6 +275,13 @@ export interface ObjectTitle extends Class<Doc> {
 /**
  * @public
  */
+export interface ObjectIcon extends Class<Doc> {
+  component: AnyComponent
+}
+
+/**
+ * @public
+ */
 export interface ObjectIdentifier extends Class<Doc> {
   provider: Resource<<T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<string>>
 }
@@ -807,7 +814,8 @@ const view = plugin(viewId, {
     SpacePresenter: '' as Ref<Mixin<SpacePresenter>>,
     AttributeFilterPresenter: '' as Ref<Mixin<AttributeFilterPresenter>>,
     Aggregation: '' as Ref<Mixin<Aggregation>>,
-    Groupping: '' as Ref<Mixin<Groupping>>
+    Groupping: '' as Ref<Mixin<Groupping>>,
+    ObjectIcon: '' as Ref<Mixin<ObjectIcon>>
   },
   class: {
     ViewletPreference: '' as Ref<Class<ViewletPreference>>,
@@ -853,7 +861,8 @@ const view = plugin(viewId, {
     ValueSelector: '' as AnyComponent,
     GrowPresenter: '' as AnyComponent,
     DividerPresenter: '' as AnyComponent,
-    IconWithEmoji: '' as AnyComponent
+    IconWithEmoji: '' as AnyComponent,
+    AttachedDocPanel: '' as AnyComponent
   },
   ids: {
     IconWithEmoji: '' as Asset

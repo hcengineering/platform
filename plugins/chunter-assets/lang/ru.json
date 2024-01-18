@@ -83,7 +83,8 @@
     "NewestFirst": "Сначала новые",
     "ReplyToThread": "Ответить в канале",
     "SentMessage": "Отправил(а) сообщение",
-    "Direct": "личные сообщения",
-    "RepliedToThread": "Ответил(а) в канале"
+    "Direct": "Личные сообщения",
+    "RepliedToThread": "Ответил(а) в канале",
+    "RepliedTo": "Ответил(а) на: {message}"
   }
 }

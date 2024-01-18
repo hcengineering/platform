@@ -95,9 +95,6 @@
     .combine-avatar.x-large:not(:first-child) {
       margin-left: calc(1px - (7.5rem / 2));
     }
-    .combine-avatar:not(:last-child) {
-      mask: radial-gradient(circle at 100% 50%, rgba(0, 0, 0, 0) 48.5%, rgb(0, 0, 0) 50%);
-    }
     .combine-avatar.inline,
     .combine-avatar.tiny,
     .combine-avatar.card,
@@ -124,7 +121,7 @@
         height: 100%;
         background-color: var(--theme-bg-color);
         border: 1px solid var(--theme-divider-color);
-        border-radius: 50%;
+        border-radius: 0.25rem;
         opacity: 0.9;
         z-index: 1;
       }

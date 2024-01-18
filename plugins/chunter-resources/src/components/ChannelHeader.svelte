@@ -23,6 +23,7 @@
   import { getChannelIcon } from '../utils'
 
   export let object: Doc
+  export let allowClose = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -45,6 +46,14 @@
       label={title}
       intlLabel={title ? undefined : chunter.string.Channel}
       description={topic}
+      {allowClose}
+      on:close
     />
   {/await}
 </div>
+
+<style lang="scss">
+  .ac-header {
+    padding: 0.5rem 1rem;
+  }
+</style>

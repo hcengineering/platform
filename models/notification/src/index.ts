@@ -23,6 +23,7 @@ import {
   type Collection,
   type Data,
   type Doc,
+  type DocumentQuery,
   type Domain,
   DOMAIN_MODEL,
   Hierarchy,
@@ -68,13 +69,16 @@ import {
   notificationId,
   type NotificationObjectPresenter,
   type ActivityInboxNotification,
-  type CommonInboxNotification
+  type CommonInboxNotification,
+  type NotificationContextPresenter,
+  type ActivityNotificationViewlet
 } from '@hcengineering/notification'
 import { type Asset, type IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 
 import notification from './plugin'
+import { defineViewlets } from './viewlets'
 
 export { notificationId } from '@hcengineering/notification'
 export { notificationOperation } from './migration'
@@ -157,6 +161,11 @@ export class TNotificationObjectPresenter extends TClass implements Notification
 @Mixin(notification.mixin.NotificationPreview, core.class.Class)
 export class TNotificationPreview extends TClass implements NotificationPreview {
   presenter!: AnyComponent
+}
+
+@Mixin(notification.mixin.NotificationContextPresenter, core.class.Class)
+export class TNotificationContextPresenter extends TClass implements NotificationContextPresenter {
+  labelPresenter?: AnyComponent
 }
 
 @Model(notification.class.DocUpdates, core.class.Doc, DOMAIN_NOTIFICATION)
@@ -247,6 +256,13 @@ export class TCommonInboxNotification extends TInboxNotification implements Comm
   iconProps!: Record<string, any>
 }
 
+@Model(notification.class.ActivityNotificationViewlet, core.class.Doc, DOMAIN_MODEL)
+export class TActivityNotificationViewlet extends TDoc implements ActivityNotificationViewlet {
+  messageMatch!: DocumentQuery<Doc>
+
+  presenter!: AnyComponent
+}
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TNotification,
@@ -263,7 +279,9 @@ export function createModel (builder: Builder): void {
     TDocNotifyContext,
     TInboxNotification,
     TActivityInboxNotification,
-    TCommonInboxNotification
+    TCommonInboxNotification,
+    TNotificationContextPresenter,
+    TActivityNotificationViewlet
   )
 
   // Temporarily disabled, we should think about it
@@ -315,36 +333,11 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: notification.string.Inbox,
-      icon: notification.icon.Notifications,
+      icon: notification.icon.Inbox,
       alias: inboxId,
       hidden: true,
       locationResolver: notification.resolver.Location,
-      navigatorModel: {
-        aside: notification.component.InboxAside,
-        spaces: [],
-        specials: [
-          {
-            id: 'all',
-            component: notification.component.Inbox,
-            icon: activity.icon.Activity,
-            label: activity.string.AllActivity,
-            componentProps: {
-              type: 'all',
-              label: activity.string.AllActivity
-            }
-          },
-          {
-            id: 'reactions',
-            component: notification.component.Inbox,
-            icon: activity.icon.Emoji,
-            label: activity.string.Reactions,
-            componentProps: {
-              _class: activity.class.Reaction,
-              label: activity.string.Reactions
-            }
-          }
-        ]
-      }
+      component: notification.component.Inbox
     },
     notification.app.Inbox
   )
@@ -487,17 +480,61 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: notification.actionImpl.HideDocNotifyContext,
-      label: view.string.Archive,
+      action: notification.actionImpl.ReadNotifyContext,
+      label: notification.string.MarkAsRead,
+      icon: notification.icon.Notifications,
+      input: 'focus',
+      visibilityTester: notification.function.CanReadNotifyContext,
+      category: notification.category.Notification,
+      target: notification.class.DocNotifyContext,
+      context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
+    },
+    notification.action.ReadNotifyContext
+  )
+
+  createAction(
+    builder,
+    {
+      action: notification.actionImpl.UnReadNotifyContext,
+      label: notification.string.MarkAsUnread,
+      icon: notification.icon.Notifications,
+      input: 'focus',
+      visibilityTester: notification.function.CanUnReadNotifyContext,
+      category: notification.category.Notification,
+      target: notification.class.DocNotifyContext,
+      context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
+    },
+    notification.action.UnReadNotifyContext
+  )
+
+  createAction(
+    builder,
+    {
+      action: notification.actionImpl.DeleteContextNotifications,
+      label: notification.string.Archive,
       icon: view.icon.Archive,
       input: 'focus',
-      category: view.category.General,
+      category: notification.category.Notification,
+      target: notification.class.DocNotifyContext,
+      context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
+    },
+    notification.action.DeleteContextNotifications
+  )
+
+  createAction(
+    builder,
+    {
+      action: notification.actionImpl.HideDocNotifyContext,
+      label: notification.string.DontTrack,
+      icon: notification.icon.DontTrack,
+      input: 'focus',
+      category: notification.category.Notification,
       target: notification.class.DocNotifyContext,
       context: {
         mode: ['browser', 'context'],
         group: 'remove'
       },
-      visibilityTester: notification.function.IsDocNotifyContextVisible
+      visibilityTester: notification.function.IsDocNotifyContextTracked
     },
     notification.action.HideDocNotifyContext
   )
@@ -561,6 +598,8 @@ export function createModel (builder: Builder): void {
   builder.mixin(notification.class.CommonInboxNotification, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: notification.component.CommonInboxNotificationPresenter
   })
+
+  defineViewlets(builder)
 }
 
 export function generateClassNotificationTypes (

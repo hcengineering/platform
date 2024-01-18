@@ -18,7 +18,7 @@ export function isIssueId (shortLink: string): boolean {
   return /^\S+-\d+$/.test(shortLink)
 }
 
-export async function getIssueTitle (client: TxOperations, ref: Ref<Doc>): Promise<string> {
+export async function issueIdentifierProvider (client: TxOperations, ref: Ref<Doc>): Promise<string> {
   const object = await client.findOne(
     tracker.class.Issue,
     { _id: ref as Ref<Issue> },
@@ -26,6 +26,20 @@ export async function getIssueTitle (client: TxOperations, ref: Ref<Doc>): Promi
   )
   if (object?.$lookup?.space === undefined) throw new Error(`Issue project not found, _id: ${ref}`)
   return getIssueId(object.$lookup.space, object)
+}
+
+export async function issueTitleProvider (client: TxOperations, ref: Ref<Doc>): Promise<string> {
+  const object = await client.findOne(
+    tracker.class.Issue,
+    { _id: ref as Ref<Issue> },
+    { lookup: { space: tracker.class.Project } }
+  )
+
+  if (object === undefined) {
+    return ''
+  }
+
+  return await getIssueTitle(object)
 }
 
 async function getTitle (doc: Doc): Promise<string> {
@@ -55,7 +69,7 @@ export async function issueLinkFragmentProvider (doc: Doc): Promise<Location> {
   return loc
 }
 
-export async function issueTitleProvider (doc: Issue): Promise<string> {
+export async function getIssueTitle (doc: Issue): Promise<string> {
   return await Promise.resolve(doc.title)
 }
 

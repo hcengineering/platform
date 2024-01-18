@@ -235,6 +235,14 @@ export function createModel (builder: Builder, options = { addApplication: true 
   )
   const spaceClasses = [chunter.class.Channel, chunter.class.DirectMessage]
 
+  builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.ObjectIcon, {
+    component: chunter.component.DirectIcon
+  })
+
+  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ObjectIcon, {
+    component: chunter.component.ChannelIcon
+  })
+
   spaceClasses.forEach((spaceClass) => {
     builder.mixin(spaceClass, core.class.Class, activity.mixin.ActivityDoc, {})
 
@@ -253,7 +261,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
     })
 
     builder.mixin(spaceClass, core.class.Class, view.mixin.ObjectPanel, {
-      component: chunter.component.EditChannel
+      component: chunter.component.ChannelPanel
     })
   })
 
@@ -262,7 +270,11 @@ export function createModel (builder: Builder, options = { addApplication: true 
   })
 
   builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.ObjectTitle, {
-    titleProvider: chunter.function.DirectMessageTitleProvider
+    titleProvider: chunter.function.DirectTitleProvider
+  })
+
+  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: chunter.function.ChannelTitleProvider
   })
 
   builder.mixin(chunter.class.DirectMessage, core.class.Class, notification.mixin.ClassCollaborators, {
@@ -271,14 +283,6 @@ export function createModel (builder: Builder, options = { addApplication: true 
 
   builder.mixin(chunter.class.Channel, core.class.Class, notification.mixin.ClassCollaborators, {
     fields: ['members']
-  })
-
-  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ObjectPanel, {
-    component: chunter.component.ChannelViewPanel
-  })
-
-  builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.ObjectPanel, {
-    component: chunter.component.ChannelViewPanel
   })
 
   builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.ObjectPresenter, {
@@ -307,6 +311,17 @@ export function createModel (builder: Builder, options = { addApplication: true 
 
   builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: chunter.component.ChannelPresenter
+  })
+
+  builder.mixin(chunter.class.ChatMessage, core.class.Class, notification.mixin.NotificationContextPresenter, {
+    labelPresenter: chunter.component.ChatMessageNotificationLabel
+  })
+
+  builder.createDoc(notification.class.ActivityNotificationViewlet, core.space.Model, {
+    messageMatch: {
+      _class: chunter.class.ThreadMessage
+    },
+    presenter: chunter.component.ThreadNotificationPresenter
   })
 
   builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.SpaceHeader, {
@@ -391,8 +406,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
         alias: chunterId,
         hidden: false,
         component: chunter.component.Chat,
-        aside: chunter.component.ThreadView,
-        shouldNotify: chunter.function.ShouldNotify
+        aside: chunter.component.ThreadView
       },
       chunter.app.Chunter
     )

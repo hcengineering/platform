@@ -33,7 +33,7 @@ import { IntegrationType } from '@hcengineering/setting'
 import { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui'
 import { Readable, Writable } from './types'
 import { Preference } from '@hcengineering/preference'
-import { Action } from '@hcengineering/view'
+import { Action, Viewlet, ViewletDescriptor } from '@hcengineering/view'
 import { ActivityMessage } from '@hcengineering/activity'
 
 export * from './types'
@@ -211,6 +211,13 @@ export interface NotificationPreview extends Class<Doc> {
 /**
  * @public
  */
+export interface NotificationContextPresenter extends Class<Doc> {
+  labelPresenter?: AnyComponent
+}
+
+/**
+ * @public
+ */
 export interface InboxNotification extends Doc {
   user: Ref<Account>
   isViewed: boolean
@@ -284,12 +291,21 @@ export type InboxNotificationsClientFactory = () => InboxNotificationsClient
 /**
  * @public
  */
+export interface ActivityNotificationViewlet extends Doc {
+  messageMatch: DocumentQuery<Doc>
+  presenter: AnyComponent
+}
+
+/**
+ * @public
+ */
 const notification = plugin(notificationId, {
   mixin: {
     ClassCollaborators: '' as Ref<Mixin<ClassCollaborators>>,
     Collaborators: '' as Ref<Mixin<Collaborators>>,
     NotificationObjectPresenter: '' as Ref<Mixin<NotificationObjectPresenter>>,
-    NotificationPreview: '' as Ref<Mixin<NotificationPreview>>
+    NotificationPreview: '' as Ref<Mixin<NotificationPreview>>,
+    NotificationContextPresenter: '' as Ref<Mixin<NotificationContextPresenter>>
   },
   class: {
     Notification: '' as Ref<Class<Notification>>,
@@ -302,7 +318,8 @@ const notification = plugin(notificationId, {
     DocNotifyContext: '' as Ref<Class<DocNotifyContext>>,
     InboxNotification: '' as Ref<Class<InboxNotification>>,
     ActivityInboxNotification: '' as Ref<Class<ActivityInboxNotification>>,
-    CommonInboxNotification: '' as Ref<Class<CommonInboxNotification>>
+    CommonInboxNotification: '' as Ref<Class<CommonInboxNotification>>,
+    ActivityNotificationViewlet: '' as Ref<Class<ActivityNotificationViewlet>>
   },
   ids: {
     NotificationSettings: '' as Ref<Doc>,
@@ -321,10 +338,18 @@ const notification = plugin(notificationId, {
     Inbox: '' as AnyComponent,
     NotificationPresenter: '' as AnyComponent,
     NotificationCollaboratorsChanged: '' as AnyComponent,
-    DocNotifyContextPresenter: '' as AnyComponent
+    DocNotifyContextPresenter: '' as AnyComponent,
+    InboxFlatListView: '' as AnyComponent,
+    InboxGroupedListView: '' as AnyComponent
   },
   activity: {
     TxCollaboratorsChange: '' as AnyComponent
+  },
+  viewlet: {
+    FlatList: '' as Ref<ViewletDescriptor>,
+    InboxFlatList: '' as Ref<Viewlet>,
+    GroupedList: '' as Ref<ViewletDescriptor>,
+    InboxGroupedList: '' as Ref<Viewlet>
   },
   action: {
     MarkAsUnreadInboxNotification: '' as Ref<Action>,
@@ -333,7 +358,10 @@ const notification = plugin(notificationId, {
     PinDocNotifyContext: '' as Ref<Action>,
     UnpinDocNotifyContext: '' as Ref<Action>,
     HideDocNotifyContext: '' as Ref<Action>,
-    UnHideDocNotifyContext: '' as Ref<Action>
+    UnHideDocNotifyContext: '' as Ref<Action>,
+    UnReadNotifyContext: '' as Ref<Action>,
+    ReadNotifyContext: '' as Ref<Action>,
+    DeleteContextNotifications: '' as Ref<Action>
   },
   icon: {
     Notifications: '' as Asset,
@@ -356,13 +384,16 @@ const notification = plugin(notificationId, {
     NewCollaborators: '' as IntlString,
     RemovedCollaborators: '' as IntlString,
     Edited: '' as IntlString,
-    Pinned: '' as IntlString
+    Pinned: '' as IntlString,
+    FlatList: '' as IntlString,
+    GroupedList: '' as IntlString,
+    All: '' as IntlString
   },
   function: {
     GetInboxNotificationsClient: '' as Resource<InboxNotificationsClientFactory>,
     HasHiddenDocNotifyContext: '' as Resource<(doc: Doc[]) => Promise<boolean>>,
     IsDocNotifyContextHidden: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
-    IsDocNotifyContextVisible: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
+    IsDocNotifyContextTracked: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
   },
   resolver: {
     Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>

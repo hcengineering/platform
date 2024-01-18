@@ -113,6 +113,7 @@
       selected={selectedContextId === notifyContext._id}
       icon={getChannelIcon(doc)}
       iconProps={{ value: doc }}
+      iconSize="x-small"
       showNotify={hasNewMessages(notifyContext, $inboxNotificationsStore, threadMessages)}
       actions={async () => await getItemActions(notifyContext)}
       indent

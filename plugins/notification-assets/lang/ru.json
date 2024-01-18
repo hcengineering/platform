@@ -33,6 +33,8 @@
     "RemovedCollaborators": "Удалены участники",
     "Edited": "отредактировал(а)",
     "Pinned": "Закреплено",
-    "Message": "Сообщение"
+    "Message": "Сообщение",
+    "FlatList": "Flat list",
+    "GroupedList": "Grouped list"
   }
 }

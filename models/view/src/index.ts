@@ -85,7 +85,8 @@ import {
   type Viewlet,
   type ViewletDescriptor,
   type ViewletPreference,
-  type ObjectIdentifier
+  type ObjectIdentifier,
+  type ObjectIcon
 } from '@hcengineering/view'
 
 import view from './plugin'
@@ -293,6 +294,11 @@ export class TAggregation extends TClass implements Aggregation {
   createAggregationManager!: CreateAggregationManagerFunc
 }
 
+@Mixin(view.mixin.ObjectIcon, core.class.Class)
+export class TObjectIcon extends TClass implements ObjectIcon {
+  component!: AnyComponent
+}
+
 @Model(view.class.ViewletPreference, preference.class.Preference)
 export class TViewletPreference extends TPreference implements ViewletPreference {
   declare attachedTo: Ref<Viewlet>
@@ -444,7 +450,8 @@ export function createModel (builder: Builder): void {
     TAllValuesFunc,
     TAggregation,
     TGroupping,
-    TObjectIdentifier
+    TObjectIdentifier,
+    TObjectIcon
   )
 
   classPresenter(

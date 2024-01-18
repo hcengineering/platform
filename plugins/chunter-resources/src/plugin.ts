@@ -25,7 +25,7 @@ export default mergeIds(chunterId, chunter, {
     CreateChannel: '' as AnyComponent,
     CreateDirectMessage: '' as AnyComponent,
     ChannelHeader: '' as AnyComponent,
-    ChannelViewPanel: '' as AnyComponent,
+    ChannelPanel: '' as AnyComponent,
     ThreadViewPanel: '' as AnyComponent,
     ThreadParentPresenter: '' as AnyComponent,
     EditChannel: '' as AnyComponent,
@@ -35,11 +35,14 @@ export default mergeIds(chunterId, chunter, {
     CreateDocChannel: '' as AnyComponent,
     SavedMessages: '' as AnyComponent,
     Threads: '' as AnyComponent,
-    ChunterBrowser: '' as AnyComponent
+    ChunterBrowser: '' as AnyComponent,
+    DirectIcon: '' as AnyComponent,
+    ChannelIcon: '' as AnyComponent
   },
   function: {
     GetDmName: '' as Resource<(client: Client, space: Space) => Promise<string>>,
-    DirectMessageTitleProvider: '' as Resource<(client: Client, id: Ref<Doc>) => Promise<string>>,
+    DirectTitleProvider: '' as Resource<(client: Client, id: Ref<Doc>) => Promise<string>>,
+    ChannelTitleProvider: '' as Resource<(client: Client, id: Ref<Doc>) => Promise<string>>,
     ChunterBrowserVisible: '' as Resource<(spaces: Space[]) => Promise<boolean>>
   },
   actionImpl: {
@@ -53,7 +56,6 @@ export default mergeIds(chunterId, chunter, {
   string: {
     Channel: '' as IntlString,
     DirectMessage: '' as IntlString,
-    Channels: '' as IntlString,
     DirectMessages: '' as IntlString,
     CreateChannel: '' as IntlString,
     NewDirectMessage: '' as IntlString,
@@ -97,7 +99,6 @@ export default mergeIds(chunterId, chunter, {
     NoMessages: '' as IntlString,
     On: '' as IntlString,
     Mentioned: '' as IntlString,
-    SentMessage: '' as IntlString,
-    Direct: '' as IntlString
+    SentMessage: '' as IntlString
   }
 })

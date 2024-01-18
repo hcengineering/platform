@@ -218,7 +218,10 @@ export default plugin(chunterId, {
     Docs: '' as IntlString,
     Chat: '' as IntlString,
     ThreadMessage: '' as IntlString,
-    ReplyToThread: '' as IntlString
+    ReplyToThread: '' as IntlString,
+    Channels: '' as IntlString,
+    Direct: '' as IntlString,
+    RepliedTo: '' as IntlString
   },
   ids: {
     DMNotification: '' as Ref<NotificationType>,
@@ -236,6 +239,7 @@ export default plugin(chunterId, {
   },
   action: {
     DeleteChatMessage: '' as Ref<Action>,
-    ReplyToThread: '' as Ref<Action>
+    ReplyToThread: '' as Ref<Action>,
+    OpenChannel: '' as Ref<Action>
   }
 })

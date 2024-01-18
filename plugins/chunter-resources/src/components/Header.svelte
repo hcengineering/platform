@@ -14,7 +14,9 @@
 -->
 <script lang="ts">
   import type { Asset, IntlString } from '@hcengineering/platform'
-  import { AnySvelteComponent, Icon, Label, SearchEdit } from '@hcengineering/ui'
+  import { AnySvelteComponent, Button, Icon, IconClose, Label, SearchEdit } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
+
   import { userSearch } from '../index'
   import { navigateToSpecial } from '../utils'
 
@@ -23,15 +25,30 @@
   export let label: string | undefined = undefined
   export let intlLabel: IntlString | undefined = undefined
   export let description: string | undefined = undefined
+  export let allowClose = false
+
+  const dispatch = createEventDispatcher()
 
   let userSearch_: string
   userSearch.subscribe((v) => (userSearch_ = v))
 </script>
 
-<div class="ac-header__wrap-description">
+<div class="ac-header__wrap-description header">
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="ac-header__wrap-title" on:click>
+    {#if allowClose}
+      <Button
+        focusIndex={10001}
+        icon={IconClose}
+        iconProps={{ size: 'medium' }}
+        kind={'icon'}
+        on:click={() => {
+          dispatch('close')
+        }}
+      />
+      <div class="antiHSpacer x2" />
+    {/if}
     {#if icon}<div class="ac-header__icon"><Icon {icon} size={'small'} {iconProps} /></div>{/if}
     {#if label}
       <span class="ac-header__title">{label}</span>

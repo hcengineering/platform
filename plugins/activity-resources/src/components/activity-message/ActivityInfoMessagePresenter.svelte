@@ -22,12 +22,12 @@
     personAccountByIdStore,
     personByIdStore
   } from '@hcengineering/contact-resources'
-
-  import ActivityMessageTemplate from './ActivityMessageTemplate.svelte'
-
+  import { Action } from '@hcengineering/ui'
   import { Ref } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import { MessageViewer } from '@hcengineering/presentation'
+
+  import ActivityMessageTemplate from './ActivityMessageTemplate.svelte'
   import ActivityMessageHeader from './ActivityMessageHeader.svelte'
 
   export let value: ActivityInfoMessage
@@ -37,6 +37,8 @@
   export let shouldScroll: boolean = false
   export let embedded: boolean = false
   export let withActions: boolean = true
+  export let excludedActions: string[] = []
+  export let actions: Action[] = []
   export let onClick: (() => void) | undefined = undefined
 
   $: personAccount = $personAccountByIdStore.get((value.createdBy ?? value.modifiedBy) as Ref<PersonAccount>)
@@ -66,6 +68,8 @@
   {shouldScroll}
   {embedded}
   {withActions}
+  {actions}
+  {excludedActions}
   viewlet={undefined}
   {onClick}
 >

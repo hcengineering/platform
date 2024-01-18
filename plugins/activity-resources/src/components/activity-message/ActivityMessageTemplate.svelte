@@ -34,9 +34,9 @@
   import SaveMessageAction from '../SaveMessageAction.svelte'
 
   export let message: DisplayActivityMessage
-  export let parentMessage: DisplayActivityMessage | undefined
+  export let parentMessage: DisplayActivityMessage | undefined = undefined
 
-  export let viewlet: ActivityMessageViewlet | undefined
+  export let viewlet: ActivityMessageViewlet | undefined = undefined
   export let person: Person | undefined = undefined
   export let actions: Action[] = []
   export let excludedActions: string[] = []
@@ -211,6 +211,7 @@
     overflow: hidden;
     border: 1px solid transparent;
     border-radius: 0.25rem;
+    width: calc(100% - 2rem);
 
     &.clickable {
       cursor: pointer;
@@ -225,7 +226,6 @@
     }
 
     &.embedded {
-      background: var(--theme-navpanel-icons-divider);
       padding: 0;
 
       .content {
@@ -288,6 +288,7 @@
 
   .embeddedMarker {
     width: 6px;
-    background: var(--theme-link-color);
+    border-radius: 0.5rem;
+    background: var(--secondary-button-default);
   }
 </style>
