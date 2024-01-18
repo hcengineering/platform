@@ -31,6 +31,7 @@
   export let skipLabel = false
   export let actions: Action[] = []
   export let excludedActions: string[] = []
+  export let withFlatActions: boolean = true
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -56,6 +57,7 @@
       hideReplies,
       actions,
       excludedActions,
+      withFlatActions,
       onClick,
       onReply
     }}

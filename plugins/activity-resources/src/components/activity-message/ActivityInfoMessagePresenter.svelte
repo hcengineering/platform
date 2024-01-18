@@ -37,6 +37,7 @@
   export let shouldScroll: boolean = false
   export let embedded: boolean = false
   export let withActions: boolean = true
+  export let withFlatActions: boolean = true
   export let excludedActions: string[] = []
   export let actions: Action[] = []
   export let onClick: (() => void) | undefined = undefined
@@ -70,6 +71,7 @@
   {withActions}
   {actions}
   {excludedActions}
+  {withFlatActions}
   viewlet={undefined}
   {onClick}
 >
