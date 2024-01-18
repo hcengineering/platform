@@ -21,7 +21,8 @@ import {
   getCurrentAccount,
   type Ref,
   SortingOrder,
-  type TxOperations
+  type TxOperations,
+  type WithLookup
 } from '@hcengineering/core'
 import notification, {
   type ActivityInboxNotification,
@@ -355,12 +356,11 @@ async function generateLocation (
   }
 }
 
-export async function getDisplayInboxNotifications (
+export function getDisplayInboxNotifications (
   notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>,
-  filter: InboxNotificationsFilter,
+  filter: InboxNotificationsFilter = 'all',
   objectClass?: Ref<Class<Doc>>
-): Promise<DisplayInboxNotification[]> {
-  const client = getClient()
+): DisplayInboxNotification[] {
   const filteredNotifications = Array.from(notificationsByContext.values())
     .flat()
     .filter(({ isViewed }) => {
@@ -377,20 +377,14 @@ export async function getDisplayInboxNotifications (
     })
 
   const activityNotifications = filteredNotifications.filter(
-    (n): n is ActivityInboxNotification => n._class === notification.class.ActivityInboxNotification
+    (n): n is WithLookup<ActivityInboxNotification> => n._class === notification.class.ActivityInboxNotification
   )
   const displayNotifications: DisplayInboxNotification[] = filteredNotifications.filter(
     ({ _class }) => _class !== notification.class.ActivityInboxNotification
   )
 
-  const messages: Array<ActivityMessage | undefined> = await Promise.all(
-    activityNotifications.map(
-      async (activityNotification) =>
-        await client.findOne(activity.class.ActivityMessage, { _id: activityNotification.attachedTo })
-    )
-  )
-
-  const filteredMessages = messages
+  const messages: ActivityMessage[] = activityNotifications
+    .map((activityNotification) => activityNotification.$lookup?.attachedTo)
     .filter((message): message is ActivityMessage => {
       if (message === undefined) {
         return false
@@ -406,7 +400,7 @@ export async function getDisplayInboxNotifications (
     })
     .sort(activityMessagesComparator)
 
-  const combinedMessages = combineActivityMessages(filteredMessages, SortingOrder.Descending)
+  const combinedMessages = combineActivityMessages(messages, SortingOrder.Descending)
 
   for (const message of combinedMessages) {
     if (message._class === activity.class.DocUpdateMessage) {
@@ -441,4 +435,12 @@ export async function getDisplayInboxNotifications (
   )
 
   return displayNotifications
+}
+
+export async function hasInboxNotifications (
+  notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>
+): Promise<boolean> {
+  const displayNotifications = getDisplayInboxNotifications(notificationsByContext)
+
+  return displayNotifications.some(({ isViewed }) => !isViewed)
 }

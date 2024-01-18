@@ -89,9 +89,7 @@
     viewlets = res
   })
 
-  $: getDisplayInboxNotifications($notificationsByContextStore, filter).then((res) => {
-    displayNotifications = res
-  })
+  $: displayNotifications = getDisplayInboxNotifications($notificationsByContextStore, filter)
 
   locationStore.subscribe((newLocation) => {
     selectedContextId = newLocation.fragment as Ref<DocNotifyContext> | undefined
