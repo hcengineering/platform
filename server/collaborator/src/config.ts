@@ -27,7 +27,6 @@ export interface Config {
   TransactorUrl: string
   MongoUrl: string
   UploadUrl: string
-  ContentUrl: string
 
   MinioEndpoint: string
   MinioAccessKey: string
@@ -42,7 +41,6 @@ const envMap: { [key in keyof Config]: string } = {
   TransactorUrl: 'TRANSACTOR_URL',
   MongoUrl: 'MONGO_URL',
   UploadUrl: 'UPLOAD_URL',
-  ContentUrl: 'CONTENT_URL',
   MinioEndpoint: 'MINIO_ENDPOINT',
   MinioAccessKey: 'MINIO_ACCESS_KEY',
   MinioSecretKey: 'MINIO_SECRET_KEY'
@@ -68,7 +66,6 @@ const config: Config = (() => {
     TransactorUrl: process.env[envMap.TransactorUrl],
     MongoUrl: process.env[envMap.MongoUrl],
     UploadUrl: process.env[envMap.UploadUrl] ?? '/files',
-    ContentUrl: process.env[envMap.ContentUrl] ?? '/content',
     MinioEndpoint: process.env[envMap.MinioEndpoint],
     MinioAccessKey: process.env[envMap.MinioAccessKey],
     MinioSecretKey: process.env[envMap.MinioSecretKey]

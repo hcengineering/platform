@@ -16,10 +16,8 @@
 import { Extensions, getSchema } from '@tiptap/core'
 import { generateJSON, generateHTML } from '@tiptap/html'
 import { Node as ProseMirrorNode } from '@tiptap/pm/model'
-import { Doc as YDoc } from 'yjs'
 
 import { ServerKit } from './kits/server-kit'
-import { prosemirrorJSONToYDoc } from 'y-prosemirror'
 
 const defaultExtensions = [ServerKit]
 
@@ -40,18 +38,6 @@ export function parseHTML (content: string, extensions?: Extensions): ProseMirro
   const json = generateJSON(content, extensions)
 
   return ProseMirrorNode.fromJSON(schema, json)
-}
-
-/**
- * @public
- */
-export function htmlToYDoc (content: string, field: string, extensions?: Extensions): YDoc {
-  extensions = extensions ?? defaultExtensions
-
-  const schema = getSchema(extensions)
-  const json = generateJSON(content, extensions)
-
-  return prosemirrorJSONToYDoc(schema, json, field)
 }
 
 const ELLIPSIS_CHAR = '…'
