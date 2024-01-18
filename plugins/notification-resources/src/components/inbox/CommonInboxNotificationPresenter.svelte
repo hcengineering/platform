@@ -29,15 +29,14 @@
   import { ActionIcon, CheckBox, IconMoreH, Label, showPopup } from '@hcengineering/ui'
   import { getDocLinkTitle, Menu } from '@hcengineering/view-resources'
   import { ActivityDocLink } from '@hcengineering/activity-resources'
-  import activity from '@hcengineering/activity'
   import view from '@hcengineering/view'
 
   import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
 
   export let value: CommonInboxNotification
   export let embedded = false
+  export let skipLabel = false
   export let onClick: (() => void) | undefined = undefined
-  export let onCheck: ((isChecked: boolean) => void) | undefined = undefined
 
   const objectQuery = createQuery()
   const client = getClient()
@@ -92,48 +91,35 @@
   }
 </script>
 
-<div class="flex-presenter gap-2 ml-2">
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<div class="root clear-mins flex-grow" on:click={onClick}>
   {#if !embedded}
-    <CheckBox
-      circle
-      kind="primary"
-      on:value={(event) => {
-        if (onCheck) {
-          onCheck(event.detail)
-        }
-      }}
-    />
-  {/if}
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="root clear-mins flex-grow" on:click={onClick}>
-    {#if !embedded}
-      {#if !value.isViewed}
-        <div class="notify" />
-      {/if}
-
-      {#if value.icon}
-        <SystemAvatar size="medium" icon={value.icon} iconProps={value.iconProps} />
-      {:else if person}
-        <Avatar size="medium" avatar={person.avatar} name={person.name} />
-      {:else}
-        <SystemAvatar size="medium" />
-      {/if}
-    {:else}
-      <div class="embeddedMarker" />
+    {#if !value.isViewed}
+      <div class="notify" />
     {/if}
-    <div class="content ml-2 w-full clear-mins">
-      <div class="header clear-mins">
-        {#if person}
-          <EmployeePresenter value={person} shouldShowAvatar={false} />
-        {:else}
-          <div class="strong">
-            <Label label={core.string.System} />
-          </div>
-        {/if}
-        {#if value.header}
-          <span class="text-sm lower"><Label label={value.header} /></span>
-        {/if}
+
+    {#if value.icon}
+      <SystemAvatar size="medium" icon={value.icon} iconProps={value.iconProps} />
+    {:else if person}
+      <Avatar size="medium" avatar={person.avatar} name={person.name} />
+    {:else}
+      <SystemAvatar size="medium" />
+    {/if}
+  {:else}
+    <div class="embeddedMarker" />
+  {/if}
+  <div class="content ml-2 w-full clear-mins">
+    <div class="header clear-mins">
+      {#if person}
+        <EmployeePresenter value={person} shouldShowAvatar={false} />
+      {:else}
+        <div class="strong">
+          <Label label={core.string.System} />
+        </div>
+      {/if}
+      {#if !skipLabel && value.header}
+        <span class="text-sm lower"><Label label={value.header} /></span>
 
         {#if object}
           {#await getDocLinkTitle(client, object._id, object._class, object) then linkTitle}
@@ -144,23 +130,23 @@
             />
           {/await}
         {/if}
+      {/if}
 
-        <span class="text-sm">{getDisplayTime(value.createdOn ?? 0)}</span>
-      </div>
-
-      <div class="flex-row-center">
-        <div class="customContent">
-          <MessageViewer message={content} />
-        </div>
-      </div>
+      <span class="text-sm">{getDisplayTime(value.createdOn ?? 0)}</span>
     </div>
 
-    {#if !embedded}
-      <div class="actions clear-mins flex flex-gap-2 items-center" class:opened={isActionMenuOpened}>
-        <ActionIcon icon={IconMoreH} size="small" action={showMenu} />
+    <div class="flex-row-center">
+      <div class="customContent">
+        <MessageViewer message={content} />
       </div>
-    {/if}
+    </div>
   </div>
+
+  {#if !embedded}
+    <div class="actions clear-mins flex flex-gap-2 items-center" class:opened={isActionMenuOpened}>
+      <ActionIcon icon={IconMoreH} size="small" action={showMenu} />
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">

@@ -41,17 +41,33 @@
 <Scroller>
   {#each notifications as notification (notification._id)}
     <div animate:flip={{ duration: 500 }}>
-      <InboxNotificationPresenter
-        value={notification}
-        {viewlets}
-        onCheck={(isChecked) => handleCheck(notification, isChecked)}
-        onClick={() => {
-          dispatch('click', {
-            context: $notifyContextsStore.find(({ _id }) => _id === notification.docNotifyContext),
-            notification
-          })
-        }}
-      />
+      <div class="notification gap-2 ml-2">
+        <!--        <div class="mt-6">-->
+        <!--          <CheckBox-->
+        <!--            circle-->
+        <!--            kind="primary"-->
+        <!--            on:value={(event) => {-->
+        <!--              handleCheck(notification, event.detail)-->
+        <!--            }}-->
+        <!--          />-->
+        <!--        </div>-->
+        <InboxNotificationPresenter
+          value={notification}
+          {viewlets}
+          onClick={() => {
+            dispatch('click', {
+              context: $notifyContextsStore.find(({ _id }) => _id === notification.docNotifyContext),
+              notification
+            })
+          }}
+        />
+      </div>
     </div>
   {/each}
 </Scroller>
+
+<style lang="scss">
+  .notification {
+    display: flex;
+  }
+</style>

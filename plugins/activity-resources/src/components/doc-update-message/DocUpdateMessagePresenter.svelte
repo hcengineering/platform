@@ -46,6 +46,8 @@
   export let showEmbedded = false
   export let hideReplies = false
   export let actions: Action[] = []
+  export let skipLabel = false
+  export let withFlatActions: boolean = true
   export let excludedActions: string[] = []
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
@@ -157,6 +159,8 @@
     {showEmbedded}
     {hideReplies}
     {actions}
+    {skipLabel}
+    {withFlatActions}
     {onClick}
     {onReply}
   >

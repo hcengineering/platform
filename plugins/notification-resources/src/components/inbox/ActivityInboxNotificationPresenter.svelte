@@ -23,7 +23,7 @@
   } from '@hcengineering/notification'
   import { ActivityMessagePresenter, combineActivityMessages } from '@hcengineering/activity-resources'
   import activity, { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
-  import { location, Action, CheckBox, getLocation, navigate, Component } from '@hcengineering/ui'
+  import { location, Action, getLocation, navigate, Component } from '@hcengineering/ui'
   import { getActions } from '@hcengineering/view-resources'
   import { getResource } from '@hcengineering/platform'
   import chunter from '@hcengineering/chunter'
@@ -35,7 +35,6 @@
   export let skipLabel = false
   export let viewlets: ActivityNotificationViewlet[] = []
   export let onClick: (() => void) | undefined = undefined
-  export let onCheck: ((isChecked: boolean) => void) | undefined = undefined
 
   const client = getClient()
   const messagesQuery = createQuery()
@@ -120,43 +119,23 @@
 </script>
 
 {#if displayMessage !== undefined}
-  <div class="notification gap-2 ml-2">
-    {#if !embedded}
-      <div class="mt-6">
-        <CheckBox
-          circle
-          kind="primary"
-          on:value={(event) => {
-            if (onCheck) {
-              onCheck(event.detail)
-            }
-          }}
-        />
-      </div>
-    {/if}
-    {#if viewlet}
-      <Component is={viewlet.presenter} props={{ message: displayMessage, notification: value, embedded, onClick }} />
-    {:else}
-      <ActivityMessagePresenter
-        value={displayMessage}
-        showNotify={!value.isViewed && !embedded}
-        isSelected={displayMessage._id === selectedMessageId}
-        excludedActions={[chunter.action.ReplyToThread]}
-        showEmbedded
-        {embedded}
-        {skipLabel}
-        {actions}
-        onReply={() => {
-          handleReply(displayMessage)
-        }}
-        {onClick}
-      />
-    {/if}
-  </div>
+  {#if viewlet}
+    <Component is={viewlet.presenter} props={{ message: displayMessage, notification: value, embedded, onClick }} />
+  {:else}
+    <ActivityMessagePresenter
+      value={displayMessage}
+      showNotify={!value.isViewed && !embedded}
+      isSelected={displayMessage._id === selectedMessageId}
+      excludedActions={[chunter.action.ReplyToThread]}
+      showEmbedded
+      {embedded}
+      {skipLabel}
+      {actions}
+      withFlatActions={false}
+      onReply={() => {
+        handleReply(displayMessage)
+      }}
+      {onClick}
+    />
+  {/if}
 {/if}
-
-<style lang="scss">
-  .notification {
-    display: flex;
-  }
-</style>

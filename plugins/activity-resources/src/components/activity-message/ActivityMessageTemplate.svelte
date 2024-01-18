@@ -46,8 +46,10 @@
   export let shouldScroll: boolean = false
   export let embedded: boolean = false
   export let withActions: boolean = true
+  export let withFlatActions: boolean = true
   export let showEmbedded = false
   export let hideReplies = false
+  export let skipLabel = false
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -150,8 +152,9 @@
             </div>
           {/if}
 
-          <slot name="header" />
-
+          {#if !skipLabel}
+            <slot name="header" />
+          {/if}
           <span class="text-sm">{getDisplayTime(message.createdOn ?? 0)}</span>
         </div>
 
@@ -175,17 +178,19 @@
         class:opened={isActionMenuOpened || message.isPinned}
       >
         {#if withActions}
-          <AddReactionAction object={message} />
-          <PinMessageAction object={message} />
-          <SaveMessageAction object={message} />
+          {#if withFlatActions}
+            <AddReactionAction object={message} />
+            <PinMessageAction object={message} />
+            <SaveMessageAction object={message} />
 
-          <ActivityMessageExtensionComponent
-            kind="action"
-            {extensions}
-            props={{ object: message }}
-            on:close={handleActionMenuClosed}
-            on:open={handleActionMenuOpened}
-          />
+            <ActivityMessageExtensionComponent
+              kind="action"
+              {extensions}
+              props={{ object: message }}
+              on:close={handleActionMenuClosed}
+              on:open={handleActionMenuOpened}
+            />
+          {/if}
           {#if withActionMenu}
             <ActionIcon icon={IconMoreH} size="small" action={showMenu} />
           {/if}
