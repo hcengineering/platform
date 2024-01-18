@@ -265,8 +265,10 @@ export async function start (
         await ctx.with('update', {}, async () => {
           await connection.transact((document) => {
             const fragment = document.getXmlFragment(attribute)
-            fragment.delete(0, fragment.length)
-            applyUpdate(document, update)
+            document.transact((tr) => {
+              fragment.delete(0, fragment.length)
+              applyUpdate(document, update)
+            })
           })
         })
       } finally {
