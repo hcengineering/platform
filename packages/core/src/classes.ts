@@ -522,17 +522,3 @@ export interface IndexingConfiguration<T extends Doc> extends Class<Doc> {
   indexes: (FieldIndex<T> | string)[]
   searchDisabled?: boolean
 }
-
-/**
- * @public
- */
-export type CollaborativeDocumentId = string
-
-/**
- * @public
- *
- * Defines current collaboration state.
- */
-export interface CollaborationState extends Doc {
-  documents: CollaborativeDocumentId[]
-}

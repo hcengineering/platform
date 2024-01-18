@@ -20,7 +20,6 @@ import {
   DOMAIN_FULLTEXT_BLOB,
   DOMAIN_MIGRATION,
   DOMAIN_MODEL,
-  DOMAIN_TRANSIENT,
   IndexKind,
   type Account,
   type AnyAttribute,
@@ -29,8 +28,6 @@ import {
   type BlobData,
   type Class,
   type ClassifierKind,
-  type CollaborationState,
-  type CollaborativeDocumentId,
   type Collection,
   type Configuration,
   type ConfigurationElement,
@@ -351,8 +348,4 @@ export class TConfiguration extends TDoc implements Configuration {
 export class TIndexConfiguration<T extends Doc = Doc> extends TClass implements IndexingConfiguration<T> {
   indexes!: FieldIndex<T>[]
   searchDisabled!: boolean
-}
-@Model(core.class.CollaborationState, core.class.Doc, DOMAIN_TRANSIENT)
-export class TCollaborationState extends TDoc implements CollaborationState {
-  documents!: CollaborativeDocumentId[]
 }

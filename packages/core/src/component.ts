@@ -22,7 +22,6 @@ import type {
   AttachedDoc,
   BlobData,
   Class,
-  CollaborationState,
   Collection,
   Configuration,
   ConfigurationElement,
@@ -120,7 +119,6 @@ export default plugin(coreId, {
     TypeRelatedDocument: '' as Ref<Class<Type<RelatedDocument>>>,
     DocIndexState: '' as Ref<Class<DocIndexState>>,
     IndexStageState: '' as Ref<Class<IndexStageState>>,
-    CollaborationState: '' as Ref<Class<CollaborationState>>,
 
     Configuration: '' as Ref<Class<Configuration>>,
 
@@ -151,9 +149,6 @@ export default plugin(coreId, {
   },
   version: {
     Model: '' as Ref<Version>
-  },
-  collaboration: {
-    CollaborationState: '' as Ref<CollaborationState>
   },
   string: {
     Id: '' as IntlString,

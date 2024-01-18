@@ -31,7 +31,6 @@ import { Config } from './config'
 import { Context, buildContext } from './context'
 import { ActionsExtension } from './extensions/action'
 import { HtmlTransformer } from './transformers/html'
-import { StateExtension } from './extensions/state'
 import { StorageExtension } from './extensions/storage'
 import { Controller, getClientFactory } from './platform'
 import { MinioStorageAdapter } from './storage/minio'
@@ -125,7 +124,6 @@ export async function start (
     unloadImmediately: false,
 
     extensions: [
-      new StateExtension({ controller }),
       new ActionsExtension({
         ctx: extensionsCtx.newChild('actions', {}),
         transformer
