@@ -37,6 +37,7 @@ export { default as ActivityScrolledView } from './components/ActivityScrolledVi
 export { default as ActivityDocLink } from './components/ActivityDocLink.svelte'
 export { default as ReactionPresenter } from './components/reactions/ReactionPresenter.svelte'
 export { default as ActivityMessageNotificationLabel } from './components/activity-message/ActivityMessageNotificationLabel.svelte'
+export { default as ActivityMessageHeader } from './components/activity-message/ActivityMessageHeader.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
