@@ -15,7 +15,18 @@
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { AnyComponent, Button, Component, IconAdd, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
+  import {
+    AnyComponent,
+    Button,
+    Component,
+    IconAdd,
+    IModeSelector,
+    Label,
+    Loading,
+    ModeSelector,
+    SearchEdit,
+    showPopup
+  } from '@hcengineering/ui'
   import { ViewOptions, Viewlet, ViewletDescriptor, ViewletPreference } from '@hcengineering/view'
   import { FilterBar, FilterButton, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
 
@@ -29,6 +40,7 @@
   export let isCreationDisabled = false
   export let descriptors: Array<Ref<ViewletDescriptor>> | undefined = undefined
   export let baseQuery: DocumentQuery<Doc> | undefined = undefined
+  export let modes: IModeSelector | undefined = undefined
 
   let search = ''
   let viewlet: WithLookup<Viewlet> | undefined
@@ -41,15 +53,18 @@
   $: searchQuery = search === '' ? query : { ...query, $search: search }
   $: resultQuery = searchQuery
 
-  function showCreateDialog () {
+  function showCreateDialog (): void {
     if (createComponent === undefined) return
     showPopup(createComponent, createComponentProps, 'top')
   }
 </script>
 
-<div class="ac-header full divide caption-height">
+<div class="ac-header full divide caption-height" class:header-with-mode-selector={modes !== undefined}>
   <div class="ac-header__wrap-title mr-3">
     <span class="ac-header__title"><Label {label} /></span>
+    {#if modes !== undefined}
+      <ModeSelector props={modes} />
+    {/if}
   </div>
 
   <div class="ac-header-full medium-gap mb-1">
