@@ -30,7 +30,8 @@ import core, {
   Hierarchy,
   MixinUpdate,
   Ref,
-  RefTo, Space,
+  RefTo,
+  Space,
   Timestamp,
   Tx,
   TxCollectionCUD,
@@ -396,7 +397,7 @@ export async function pushInboxNotifications (
   data: Partial<Data<InboxNotification>>,
   _class: Ref<Class<InboxNotification>>,
   modifiedOn: Timestamp,
-  shouldUpdateTimestamp = true,
+  shouldUpdateTimestamp = true
 ): Promise<void> {
   const docNotifyContext = docNotifyContexts.find(({ user }) => user === targetUser)
 
@@ -408,8 +409,8 @@ export async function pushInboxNotifications (
   if (docNotifyContext === undefined) {
     const createContextTx = control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, space, {
       user: targetUser,
-      attachedTo: attachedTo,
-      attachedToClass: attachedToClass ,
+      attachedTo,
+      attachedToClass,
       hidden: false,
       lastUpdateTimestamp: shouldUpdateTimestamp ? modifiedOn : undefined
     })
