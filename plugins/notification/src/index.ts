@@ -272,8 +272,8 @@ export interface DocNotifyContext extends Doc {
 export interface InboxNotificationsClient {
   docNotifyContextByDoc: Writable<Map<Ref<Doc>, DocNotifyContext>>
   docNotifyContexts: Writable<DocNotifyContext[]>
-  inboxNotifications: Writable<InboxNotification[]>
-  activityInboxNotifications: Readable<ActivityInboxNotification[]>
+  inboxNotifications: Readable<InboxNotification[]>
+  activityInboxNotifications: Writable<ActivityInboxNotification[]>
   inboxNotificationsByContext: Readable<Map<Ref<DocNotifyContext>, InboxNotification[]>>
   readDoc: (_id: Ref<Doc>) => Promise<void>
   forceReadDoc: (_id: Ref<Doc>, _class: Ref<Class<Doc>>) => Promise<void>
@@ -393,7 +393,10 @@ const notification = plugin(notificationId, {
     GetInboxNotificationsClient: '' as Resource<InboxNotificationsClientFactory>,
     HasHiddenDocNotifyContext: '' as Resource<(doc: Doc[]) => Promise<boolean>>,
     IsDocNotifyContextHidden: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
-    IsDocNotifyContextTracked: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
+    IsDocNotifyContextTracked: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    HasInboxNotifications: '' as Resource<
+    (notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>) => Promise<boolean>
+    >
   },
   resolver: {
     Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>

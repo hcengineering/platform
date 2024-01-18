@@ -16,7 +16,7 @@
   import contact, { Employee, PersonAccount } from '@hcengineering/contact'
   import core, { Class, Doc, getCurrentAccount, Ref, setCurrentAccount, Space } from '@hcengineering/core'
   import login from '@hcengineering/login'
-  import notification, { inboxId } from '@hcengineering/notification'
+  import notification, { DocNotifyContext, inboxId, InboxNotification } from '@hcengineering/notification'
   import { BrowserNotificatator, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { broadcastEvent, getMetadata, getResource, IntlString } from '@hcengineering/platform'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
@@ -162,17 +162,21 @@
   )
 
   const workspaceId = $location.path[1]
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+  const inboxNotificationsByContextStore = inboxClient.inboxNotificationsByContext
 
+  let hasNotificationsFn: ((data: Map<Ref<DocNotifyContext>, InboxNotification[]>) => Promise<boolean>) | undefined =
+    undefined
   let hasInboxNotifications = false
   let syncPromise: Promise<void> | undefined = undefined
   let locUpdate = 0
 
-  const notificationClient = InboxNotificationsClientImpl.getClient()
+  getResource(notification.function.HasInboxNotifications).then((f) => {
+    hasNotificationsFn = f
+  })
 
-  notificationClient.inboxNotificationsByContext.subscribe((inboxNotificationsByContext) => {
-    hasInboxNotifications = Array.from(inboxNotificationsByContext.entries()).some(([_, notifications]) =>
-      notifications.some(({ isViewed }) => !isViewed)
-    )
+  $: hasNotificationsFn?.($inboxNotificationsByContextStore).then((res) => {
+    hasInboxNotifications = res
   })
 
   const doSyncLoc = async (loc: Location, iteration: number): Promise<void> => {
