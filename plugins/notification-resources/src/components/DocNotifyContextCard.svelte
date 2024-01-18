@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ActionIcon, CheckBox, Component, IconMoreH, Label, showPopup } from '@hcengineering/ui'
+  import { ActionIcon, Component, IconMoreH, Label, showPopup } from '@hcengineering/ui'
   import notification, {
     ActivityNotificationViewlet,
     DisplayInboxNotification,
@@ -71,13 +71,13 @@
     }}
   >
     <div class="header">
-      <CheckBox
-        circle
-        kind="primary"
-        on:value={(event) => {
-          dispatch('check', event.detail)
-        }}
-      />
+      <!--      <CheckBox-->
+      <!--        circle-->
+      <!--        kind="primary"-->
+      <!--        on:value={(event) => {-->
+      <!--          dispatch('check', event.detail)-->
+      <!--        }}-->
+      <!--      />-->
       <NotifyContextIcon {value} />
 
       {#if presenterMixin?.labelPresenter}
@@ -134,10 +134,6 @@
     .title {
       font-weight: 500;
       max-width: 20.5rem;
-    }
-
-    &:hover {
-      background-color: var(--highlight-hover);
     }
   }
 

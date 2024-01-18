@@ -204,7 +204,11 @@ export async function unReadNotifyContext (doc: DocNotifyContext): Promise<void>
 /**
  * @public
  */
-export async function deleteContextNotifications (doc: DocNotifyContext): Promise<void> {
+export async function deleteContextNotifications (doc?: DocNotifyContext): Promise<void> {
+  if (doc === undefined) {
+    return
+  }
+
   const client = getClient()
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const inboxNotifications = get(inboxClient.inboxNotificationsByContext).get(doc._id) ?? []
@@ -325,9 +329,11 @@ async function generateLocation (
   const workspace = loc.path[1] ?? ''
   const messageId = loc.query?.message as Ref<ActivityMessage> | undefined
 
-  const context = await client.findOne(notification.class.DocNotifyContext, { _id: contextId })
+  const contextNotification = await client.findOne(notification.class.InboxNotification, {
+    docNotifyContext: contextId
+  })
 
-  if (context === undefined) {
+  if (contextNotification === undefined) {
     return {
       loc: {
         path: [loc.path[0], loc.path[1], inboxId],

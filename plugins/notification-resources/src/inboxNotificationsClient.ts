@@ -86,7 +86,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     this.otherInboxNotificationsQuery.query(
       notification.class.InboxNotification,
       {
-        _class: { $ne: notification.class.ActivityInboxNotification },
+        _class: { $nin: [notification.class.ActivityInboxNotification] },
         user: getCurrentAccount()._id
       },
       (result: InboxNotification[]) => {

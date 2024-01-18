@@ -32,7 +32,8 @@
     Scroller,
     Separator,
     TabItem,
-    TabList
+    TabList,
+    Location
   } from '@hcengineering/ui'
   import chunter from '@hcengineering/chunter'
   import { Ref, WithLookup } from '@hcengineering/core'
@@ -41,7 +42,7 @@
 
   import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
   import Filter from '../Filter.svelte'
-  import { getDisplayInboxNotifications } from '../../utils'
+  import { getDisplayInboxNotifications, resolveLocation } from '../../utils'
   import { InboxNotificationsFilter } from '../../types'
 
   export let visibleNav: boolean = true
@@ -92,12 +93,18 @@
   $: displayNotifications = getDisplayInboxNotifications($notificationsByContextStore, filter)
 
   locationStore.subscribe((newLocation) => {
-    selectedContextId = newLocation.fragment as Ref<DocNotifyContext> | undefined
+    syncLocation(newLocation)
+  })
+
+  async function syncLocation (newLocation: Location) {
+    const loc = await resolveLocation(newLocation)
+
+    selectedContextId = loc?.loc.fragment as Ref<DocNotifyContext> | undefined
 
     if (selectedContextId !== selectedContext?._id) {
       selectedContext = undefined
     }
-  })
+  }
 
   $: selectedContext = selectedContextId
     ? selectedContext ?? $notifyContextsStore.find(({ _id }) => _id === selectedContextId)
@@ -240,7 +247,8 @@
                 props={{
                   notifications: filteredNotifications,
                   checkedContexts,
-                  viewlets
+                  viewlets,
+                  selectedContext
                 }}
                 on:click={selectContext}
               />

@@ -13,10 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Scroller } from '@hcengineering/ui'
-  import { ActivityNotificationViewlet, DisplayInboxNotification } from '@hcengineering/notification'
+  import { ListView } from '@hcengineering/ui'
+  import { ActivityNotificationViewlet, DisplayInboxNotification, DocNotifyContext } from '@hcengineering/notification'
   import { createEventDispatcher } from 'svelte'
-  import { flip } from 'svelte/animate'
 
   import InboxNotificationPresenter from './InboxNotificationPresenter.svelte'
   import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
@@ -29,44 +28,94 @@
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const notifyContextsStore = inboxClient.docNotifyContexts
 
-  async function handleCheck (notification: DisplayInboxNotification, isChecked: boolean) {
-    if (!isChecked) {
-      return
-    }
+  let list: ListView
+  let listSelection = 0
+  let element: HTMLDivElement | undefined
 
-    await deleteInboxNotification(notification)
+  function onKeydown (key: KeyboardEvent): void {
+    if (key.code === 'ArrowUp') {
+      key.stopPropagation()
+      key.preventDefault()
+      list.select(listSelection - 1)
+    }
+    if (key.code === 'ArrowDown') {
+      key.stopPropagation()
+      key.preventDefault()
+      list.select(listSelection + 1)
+    }
+    if (key.code === 'Backspace') {
+      key.preventDefault()
+      key.stopPropagation()
+
+      const notification = notifications[listSelection]
+
+      deleteInboxNotification(notification)
+    }
+    if (key.code === 'Enter') {
+      key.preventDefault()
+      key.stopPropagation()
+      const notification = notifications[listSelection]
+      const context = $notifyContextsStore.find(({ _id }) => _id === notification.docNotifyContext)
+      dispatch('click', {
+        context,
+        notification
+      })
+    }
   }
+
+  $: if (element) {
+    element.focus()
+  }
+
+  // async function handleCheck(notification: DisplayInboxNotification, isChecked: boolean) {
+  //   if (!isChecked) {
+  //     return
+  //   }
+  //
+  //   await deleteInboxNotification(notification)
+  // }
 </script>
 
-<Scroller>
-  {#each notifications as notification (notification._id)}
-    <div animate:flip={{ duration: 500 }}>
-      <div class="notification gap-2 ml-2">
-        <!--        <div class="mt-6">-->
-        <!--          <CheckBox-->
-        <!--            circle-->
-        <!--            kind="primary"-->
-        <!--            on:value={(event) => {-->
-        <!--              handleCheck(notification, event.detail)-->
-        <!--            }}-->
-        <!--          />-->
-        <!--        </div>-->
-        <InboxNotificationPresenter
-          value={notification}
-          {viewlets}
-          onClick={() => {
-            dispatch('click', {
-              context: $notifyContextsStore.find(({ _id }) => _id === notification.docNotifyContext),
-              notification
-            })
-          }}
-        />
-      </div>
-    </div>
-  {/each}
-</Scroller>
+<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div class="root" bind:this={element} tabindex="0" on:keydown={onKeydown}>
+  <ListView bind:this={list} bind:selection={listSelection} count={notifications.length}>
+    <svelte:fragment slot="item" let:item={itemIndex}>
+      {@const notification = notifications[itemIndex]}
+      {#key notification._id}
+        <div class="notification gap-2 ml-2">
+          <!--        <div class="mt-6">-->
+          <!--          <CheckBox-->
+          <!--            circle-->
+          <!--            kind="primary"-->
+          <!--            on:value={(event) => {-->
+          <!--              handleCheck(notification, event.detail)-->
+          <!--            }}-->
+          <!--          />-->
+          <!--        </div>-->
+          <InboxNotificationPresenter
+            value={notification}
+            {viewlets}
+            onClick={() => {
+              dispatch('click', {
+                context: $notifyContextsStore.find(({ _id }) => _id === notification.docNotifyContext),
+                notification
+              })
+            }}
+          />
+        </div>
+      {/key}
+    </svelte:fragment>
+  </ListView>
+</div>
 
 <style lang="scss">
+  .root {
+    &:focus {
+      outline: 0;
+    }
+  }
+
   .notification {
     display: flex;
   }
