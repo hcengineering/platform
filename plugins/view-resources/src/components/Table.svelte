@@ -320,49 +320,49 @@
   >
     {#if !hiddenHeader}
       <thead class="scroller-thead">
-      <tr class="scroller-thead__tr">
-        {#if enableChecking || showNotification}
-          <th>
-            {#if enableChecking && objects?.length > 0}
-              <div class="antiTable-cells__checkCell" class:checkall={checkedSet.size > 0}>
-                <CheckBox
-                  symbol={'minus'}
-                  checked={objects?.length === checkedSet.size && objects?.length > 0}
-                  on:value={(event) => {
-                    check(objects, event.detail)
-                  }}
-                />
-              </div>
-            {/if}
-          </th>
-        {/if}
-        {#each model as attribute}
-          <th
-            class:w-full={attribute.displayProps?.grow === true}
-            class:sortable={attribute.sortingKey}
-            class:sorted={attribute.sortingKey === _sortKey}
-            class:align-left={attribute.displayProps?.align === 'left'}
-            class:align-center={attribute.displayProps?.align === 'center'}
-            class:align-right={attribute.displayProps?.align === 'right'}
-            on:click={() => {
-              changeSorting(attribute.sortingKey)
-            }}
-          >
-            <div
-              class="antiTable-cells"
-            >
-              {#if attribute.label}
-                <Label label={attribute.label} />
-              {/if}
-              {#if attribute.sortingKey === _sortKey}
-                <div class="icon">
-                  <IconUpDown size={'small'} descending={sortOrder === SortingOrder.Descending} />
+        <tr class="scroller-thead__tr">
+          {#if enableChecking || showNotification}
+            <th>
+              {#if enableChecking && objects?.length > 0}
+                <div class="antiTable-cells__checkCell" class:checkall={checkedSet.size > 0}>
+                  <CheckBox
+                    symbol={'minus'}
+                    checked={objects?.length === checkedSet.size && objects?.length > 0}
+                    on:value={(event) => {
+                      check(objects, event.detail)
+                    }}
+                  />
                 </div>
               {/if}
-            </div>
-          </th>
-        {/each}
-      </tr>
+            </th>
+          {/if}
+          {#each model as attribute}
+            <th
+              class:w-full={attribute.displayProps?.grow === true}
+              class:sortable={attribute.sortingKey}
+              class:sorted={attribute.sortingKey === _sortKey}
+              class:align-left={attribute.displayProps?.align === 'left'}
+              class:align-center={attribute.displayProps?.align === 'center'}
+              class:align-right={attribute.displayProps?.align === 'right'}
+              on:click={() => {
+                changeSorting(attribute.sortingKey)
+              }}
+            >
+              <div
+                class="antiTable-cells"
+              >
+                {#if attribute.label}
+                  <Label label={attribute.label} />
+                {/if}
+                {#if attribute.sortingKey === _sortKey}
+                  <div class="icon">
+                    <IconUpDown size={'small'} descending={sortOrder === SortingOrder.Descending} />
+                  </div>
+                {/if}
+              </div>
+            </th>
+          {/each}
+        </tr>
       </thead>
     {/if}
     {#if objects.length > 0 || objectsRecieved}
