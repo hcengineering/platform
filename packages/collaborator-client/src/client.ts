@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import { Class, Doc, Markup, Ref, concatLink } from '@hcengineering/core'
+import { Class, Doc, Hierarchy, Markup, Ref, concatLink } from '@hcengineering/core'
+import { minioDocumentId, mongodbDocumentId } from './utils'
 
 /**
  * @public
@@ -26,18 +27,31 @@ export interface CollaboratorClient {
 /**
  * @public
  */
-export function getClient (token: string, collaboratorUrl: string): CollaboratorClient {
-  return new CollaboratorClientImpl(token, collaboratorUrl)
+export function getClient (hierarchy: Hierarchy, token: string, collaboratorUrl: string): CollaboratorClient {
+  return new CollaboratorClientImpl(hierarchy, token, collaboratorUrl)
 }
 
 class CollaboratorClientImpl implements CollaboratorClient {
   constructor (
+    private readonly hierarchy: Hierarchy,
     private readonly token: string,
     private readonly collaboratorUrl: string
   ) {}
 
+  initialContentId (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string): string {
+    const domain = this.hierarchy.getDomain(classId)
+    return mongodbDocumentId(domain, docId, attribute)
+  }
+
   async get (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string): Promise<Markup> {
-    const url = concatLink(this.collaboratorUrl, `/api/content/${classId}/${docId}/${attribute}`)
+    const documentId = minioDocumentId(docId, attribute)
+    const initialContentId = this.initialContentId(classId, docId, attribute)
+
+    const url = concatLink(
+      this.collaboratorUrl,
+      `/api/content/${documentId}/${attribute}?initialContentId=${initialContentId}`
+    )
+
     const res = await fetch(url, {
       method: 'GET',
       headers: {
@@ -50,7 +64,14 @@ class CollaboratorClientImpl implements CollaboratorClient {
   }
 
   async update (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string, value: Markup): Promise<void> {
-    const url = concatLink(this.collaboratorUrl, `/api/content/${classId}/${docId}/${attribute}`)
+    const documentId = minioDocumentId(docId, attribute)
+    const initialContentId = this.initialContentId(classId, docId, attribute)
+
+    const url = concatLink(
+      this.collaboratorUrl,
+      `/api/content/${documentId}/${attribute}?initialContentId=${initialContentId}`
+    )
+
     await fetch(url, {
       method: 'PUT',
       headers: {
