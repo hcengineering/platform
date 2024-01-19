@@ -14,7 +14,7 @@
 //
 
 import { MeasureContext } from '@hcengineering/core'
-import { Connection, Document, Extension, Hocuspocus, onConfigurePayload, onStatelessPayload } from '@hocuspocus/server'
+import { Connection, Extension, Hocuspocus, onConfigurePayload, onStatelessPayload } from '@hocuspocus/server'
 import { Transformer } from '@hocuspocus/transformer'
 import * as Y from 'yjs'
 
@@ -87,10 +87,8 @@ export class ActionsExtension implements Extension {
 
     const connection = await instance.openDirectConnection(documentName, context)
 
-    let document: Document | null = null
-
     try {
-      document = connection.document
+      const document = connection.document
 
       if (document != null) {
         if (!document.share.has(field)) {
@@ -106,10 +104,6 @@ export class ActionsExtension implements Extension {
       }
     } finally {
       await connection.disconnect()
-    }
-
-    if (document !== null && document.getConnectionsCount() === 0) {
-      instance.unloadDocument(document)
     }
   }
 
