@@ -13,5 +13,12 @@
 // limitations under the License.
 //
 
-export { type CollaboratorClient, getClient } from './client'
-export * from './utils'
+import { Doc, Domain, Ref } from '@hcengineering/core'
+
+export function minioDocumentId (docId: Ref<Doc>, attribute?: string): string {
+  return attribute !== undefined ? `minio://${docId}%${attribute}` : `minio://${docId}`
+}
+
+export function mongodbDocumentId (domain: Domain, docId: Ref<Doc>, attribute: string): string {
+  return `mongodb://${domain}/${docId}/${attribute}`
+}

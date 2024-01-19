@@ -153,18 +153,18 @@ export async function start (
 
   const restCtx = ctx.newChild('REST', {})
 
-  const getContext = (token: Token, documentId: string): Context => {
+  const getContext = (token: Token, initialContentId?: string): Context => {
     return {
       connectionId: generateId(),
       workspaceId: token.workspace,
       clientFactory: getClientFactory(token, controller),
-      initialContentId: documentId,
+      initialContentId: initialContentId ?? '',
       targetContentId: ''
     }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.get('/api/content/:classId/:docId/:attribute', async (req, res) => {
+  app.get('/api/content/:documentId/:field', async (req, res) => {
     console.log('handle request', req.method, req.url)
 
     const authHeader = req.headers.authorization
@@ -176,22 +176,21 @@ export async function start (
     const token = authHeader.split(' ')[1]
     const decodedToken = decodeToken(token)
 
-    const docId = req.params.docId
-    const attribute = req.params.attribute
+    const documentId = req.params.documentId
+    const field = req.params.field
+    const initialContentId = req.query.initialContentId as string
 
-    if (docId === undefined || docId === '') {
-      res.status(400).send({ err: "'docId' is missing" })
+    if (documentId === undefined || documentId === '') {
+      res.status(400).send({ err: "'documentId' is missing" })
       return
     }
 
-    if (attribute === undefined || attribute === '') {
-      res.status(400).send({ err: "'attribute' is missing" })
+    if (field === undefined || field === '') {
+      res.status(400).send({ err: "'field' is missing" })
       return
     }
 
-    const documentId = `minio://${docId}%${attribute}`
-
-    const context = getContext(decodedToken, documentId)
+    const context = getContext(decodedToken, initialContentId)
 
     await restCtx.with(`${req.method} /content`, {}, async (ctx) => {
       const connection = await ctx.with('connect', {}, async () => {
@@ -202,7 +201,7 @@ export async function start (
         const html = await ctx.with('transform', {}, async () => {
           let content = ''
           await connection.transact((document) => {
-            content = transformer.fromYdoc(document, attribute)
+            content = transformer.fromYdoc(document, field)
           })
           return content
         })
@@ -221,7 +220,7 @@ export async function start (
   })
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.put('/api/content/:classId/:docId/:attribute', async (req, res) => {
+  app.put('/api/content/:documentId/:field', async (req, res) => {
     console.log('handle request', req.method, req.url)
 
     const authHeader = req.headers.authorization
@@ -233,27 +232,26 @@ export async function start (
     const token = authHeader.split(' ')[1]
     const decodedToken = decodeToken(token)
 
-    const docId = req.params.docId
-    const attribute = req.params.attribute
-
-    if (docId === undefined || docId === '') {
-      res.status(400).send({ err: "'docId' is missing" })
-      return
-    }
-
-    if (attribute === undefined || attribute === '') {
-      res.status(400).send({ err: "'attribute' is missing" })
-      return
-    }
-
-    const documentId = `minio://${docId}%${attribute}`
+    const documentId = req.params.documentId
+    const field = req.params.field
+    const initialContentId = req.query.initialContentId as string
     const data = req.body.html ?? '<p></p>'
 
-    const context = getContext(decodedToken, documentId)
+    if (documentId === undefined || documentId === '') {
+      res.status(400).send({ err: "'documentId' is missing" })
+      return
+    }
+
+    if (field === undefined || field === '') {
+      res.status(400).send({ err: "'field' is missing" })
+      return
+    }
+
+    const context = getContext(decodedToken, initialContentId)
 
     await restCtx.with(`${req.method} /content`, {}, async (ctx) => {
       const update = await ctx.with('transform', {}, () => {
-        const ydoc = transformer.toYdoc(data, attribute)
+        const ydoc = transformer.toYdoc(data, field)
         return encodeStateAsUpdate(ydoc)
       })
 
@@ -264,7 +262,7 @@ export async function start (
       try {
         await ctx.with('update', {}, async () => {
           await connection.transact((document) => {
-            const fragment = document.getXmlFragment(attribute)
+            const fragment = document.getXmlFragment(field)
             document.transact((tr) => {
               fragment.delete(0, fragment.length)
               applyUpdate(document, update)

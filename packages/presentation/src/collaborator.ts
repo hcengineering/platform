@@ -13,20 +13,22 @@
 // limitations under the License.
 //
 
-import { type CollaboratorClient, getClient } from '@hcengineering/collaborator-client'
+import { type CollaboratorClient, getClient as getCollaborator } from '@hcengineering/collaborator-client'
 import type { Class, Doc, Markup, Ref } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 
+import { getClient } from '.'
 import presentation from './plugin'
 
 /**
  * @public
  */
 export function getCollaboratorClient (): CollaboratorClient {
+  const hierarchy = getClient().getHierarchy()
   const token = getMetadata(presentation.metadata.Token) ?? ''
   const collaboratorURL = getMetadata(presentation.metadata.CollaboratorUrl) ?? ''
 
-  return getClient(token, collaboratorURL)
+  return getCollaborator(hierarchy, token, collaboratorURL)
 }
 
 /**
