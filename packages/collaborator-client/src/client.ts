@@ -44,8 +44,9 @@ class CollaboratorClientImpl implements CollaboratorClient {
   }
 
   async get (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string): Promise<Markup> {
-    const documentId = minioDocumentId(docId, attribute)
-    const initialContentId = this.initialContentId(classId, docId, attribute)
+    const documentId = encodeURIComponent(minioDocumentId(docId, attribute))
+    const initialContentId = encodeURIComponent(this.initialContentId(classId, docId, attribute))
+    attribute = encodeURIComponent(attribute)
 
     const url = concatLink(
       this.collaboratorUrl,
@@ -64,8 +65,9 @@ class CollaboratorClientImpl implements CollaboratorClient {
   }
 
   async update (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string, value: Markup): Promise<void> {
-    const documentId = minioDocumentId(docId, attribute)
-    const initialContentId = this.initialContentId(classId, docId, attribute)
+    const documentId = encodeURIComponent(minioDocumentId(docId, attribute))
+    const initialContentId = encodeURIComponent(this.initialContentId(classId, docId, attribute))
+    attribute = encodeURIComponent(attribute)
 
     const url = concatLink(
       this.collaboratorUrl,
