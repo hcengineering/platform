@@ -114,7 +114,13 @@
       </div>
 
       <div class="separator" />
-      <Scroller contentDirection={'horizontal'} padding={'.125rem .125rem .5rem'} stickedScrollBars thinScrollBars>
+      <Scroller
+        contentDirection={'horizontal'}
+        padding={'.125rem .125rem .5rem'}
+        noStretch
+        stickedScrollBars
+        thinScrollBars
+      >
         <ChannelsEditor
           attachedTo={object._id}
           attachedClass={object._class}

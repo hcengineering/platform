@@ -19,5 +19,5 @@
 </script>
 
 {#each extensions as extension}
-  <Component is={extension.component} props={{ ...extension.props, ...props }} />
+  <Component is={extension.component} props={{ ...extension.props, ...props }} on:open />
 {/each}

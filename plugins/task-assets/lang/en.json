@@ -15,6 +15,9 @@
     "TaskDueTo": "Due date",
     "ProjectName": "Project",
     "Task": "Task",
+    "SubTask": "Sub-task",
+    "TaskAndSubTask": "Task & Sub-task",
+    "TaskAndSubTaskDescription": "This task type can be used to create both tasks and subtasks in a project",
     "TaskParent": "Parent",
     "IssueName": "Name",
     "TaskComments": "Comments",
@@ -73,7 +76,7 @@
     "AllTime": "All time",
     "RelatedIssues": "Related processes",
     "StatusName": "Status name",
-    "StatusPopupTitle": "Create new status or edit name for existing",
+    "StatusPopupTitle": "Edit state",
     "NameAlreadyExists": "This name already exists for this status type",
     "ProjectType": "Project type",
     "ProjectTypes": "Project types",
@@ -85,7 +88,12 @@
     "ClassicProject": "Classic project",
     "LastSave": "Last save",
     "Published": "Published",
+    "CountTasks": "{count, plural, =0 {No tasks} =1 {# task} other {# tasks}}",
     "CountProjects": "{count, plural, =0 {No projects} =1 {# project} other {# projects}}",
-    "ProjectTypeTitle": "Project type title"
+    "ProjectTypeTitle": "Project type title",
+    "ProcessStates": "Process states",
+    "Type": "Type",
+    "Group": "Group",
+    "Color": "Color"
   }
 }

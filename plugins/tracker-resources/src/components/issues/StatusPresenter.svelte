@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
+  import { ColorDefinition } from '@hcengineering/ui'
   import { IssueStatus, Project } from '@hcengineering/tracker'
   import IssueStatusIcon from './IssueStatusIcon.svelte'
   import { ProjectType, TaskType } from '@hcengineering/task'
@@ -23,28 +24,51 @@
   export let projectType: Ref<ProjectType> | undefined = undefined
   export let taskType: Ref<TaskType> | undefined = undefined
   export let size: 'small' | 'medium' = 'small'
-  export let kind: 'list-header' | undefined = undefined
+  export let kind: 'list-header' | 'table-attrs' | undefined = undefined
   export let colorInherit: boolean = false
   export let accent: boolean = false
   export let inline: boolean = false
   export let shouldShowAvatar: boolean = true
+
+  let accentedColor: ColorDefinition | undefined
 </script>
 
 {#if value}
-  <div class="flex-presenter" style:color={'inherit'}>
-    {#if !inline && shouldShowAvatar}
-      <IssueStatusIcon {value} {size} {space} on:accent-color {projectType} {taskType} />
-    {/if}
+  {#if kind === 'table-attrs'}
+    <button class="hulyTableAttr-content__row-icon-wrapper" on:click>
+      <IssueStatusIcon
+        {value}
+        {size}
+        {space}
+        {projectType}
+        {taskType}
+        on:accent-color={(event) => {
+          if (event.detail) accentedColor = event.detail
+        }}
+      />
+    </button>
     <span
-      class="overflow-label"
-      class:ml-2={!inline && shouldShowAvatar}
-      class:list-header={kind === 'list-header'}
-      class:colorInherit
-      class:fs-bold={accent}
+      class="hulyTableAttr-content__row-label font-medium-12 uppercase grow overflow-label"
+      style:color={accentedColor?.color ?? 'var(--global-primary-TextColor)'}
     >
       {value.name}
     </span>
-  </div>
+  {:else}
+    <div class="flex-presenter" style:color={'inherit'}>
+      {#if !inline && shouldShowAvatar}
+        <IssueStatusIcon {value} {size} {space} on:accent-color {projectType} {taskType} />
+      {/if}
+      <span
+        class="overflow-label"
+        class:ml-2={!inline && shouldShowAvatar}
+        class:list-header={kind === 'list-header'}
+        class:colorInherit
+        class:fs-bold={accent}
+      >
+        {value.name}
+      </span>
+    </div>
+  {/if}
 {/if}
 
 <style lang="scss">

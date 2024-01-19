@@ -1,25 +1,35 @@
 <script lang="ts">
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { TaskTypeKind } from '@hcengineering/task'
-  import { ButtonKind, DropdownLabelsIntl, Label } from '@hcengineering/ui'
+  import { Label, ButtonMenu } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import IconLayers from '../icons/Layers.svelte'
+  import IconLayerTop from '../icons/LayerTop.svelte'
+  import IconLayerBottom from '../icons/LayerBottom.svelte'
+  import plugin from '../../plugin'
 
   export let kind: TaskTypeKind
   export let readonly = false
-  export let buttonKind: ButtonKind = 'regular'
+  export let buttonKind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
+  export let buttonSize: 'large' | 'medium' | 'small' = 'large'
+
   const dispatch = createEventDispatcher()
   const items = [
     {
+      id: 'both',
+      icon: IconLayers,
+      label: plugin.string.TaskAndSubTask,
+      description: plugin.string.TaskAndSubTaskDescription
+    },
+    {
       id: 'task',
-      label: getEmbeddedLabel('Task')
+      icon: IconLayerTop,
+      label: plugin.string.Task
     },
     {
       id: 'subtask',
-      label: getEmbeddedLabel('Sub-task')
-    },
-    {
-      id: 'both',
-      label: getEmbeddedLabel('Task & Sub-task')
+      icon: IconLayerBottom,
+      label: plugin.string.SubTask
     }
   ]
   $: selected = items.find((it) => it.id === kind)
@@ -30,13 +40,13 @@
     <Label label={selected.label} />
   {/if}
 {:else}
-  <DropdownLabelsIntl
+  <ButtonMenu
     selected={kind}
     {items}
-    justify={'left'}
-    size={'large'}
+    icon={selected?.icon}
+    label={selected?.label}
     kind={buttonKind}
-    disabled={readonly}
+    size={buttonSize}
     on:selected={(evt) => {
       if (evt.detail != null) {
         kind = evt.detail

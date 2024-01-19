@@ -21,9 +21,22 @@
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
   export let size: 'large' | 'medium' | 'small' = 'large'
   export let icon: Asset | AnySvelteComponent | ComponentType
+  export let iconProps: any | undefined = undefined
   export let disabled: boolean = false
+  export let pressed: boolean = false
   export let loading: boolean = false
   export let inheritColor: boolean = false
 </script>
 
-<ButtonBase type={'type-button-icon'} {kind} {size} {icon} {disabled} {loading} {inheritColor} on:click />
+<ButtonBase
+  type={'type-button-icon'}
+  {kind}
+  {size}
+  {icon}
+  {iconProps}
+  {disabled}
+  {loading}
+  {inheritColor}
+  {pressed}
+  on:click
+/>

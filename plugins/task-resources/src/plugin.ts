@@ -69,6 +69,9 @@ export default mergeIds(taskId, task, {
 
     Tasks: '' as IntlString,
     Task: '' as IntlString,
+    SubTask: '' as IntlString,
+    TaskAndSubTask: '' as IntlString,
+    TaskAndSubTaskDescription: '' as IntlString,
     AllTime: '' as IntlString,
     StatusName: '' as IntlString,
     StatusPopupTitle: '' as IntlString,
@@ -79,8 +82,13 @@ export default mergeIds(taskId, task, {
     ClassicProject: '' as IntlString,
     LastSave: '' as IntlString,
     Published: '' as IntlString,
+    CountTasks: '' as IntlString,
     CountProjects: '' as IntlString,
-    ProjectTypeTitle: '' as IntlString
+    ProjectTypeTitle: '' as IntlString,
+    ProcessStates: '' as IntlString,
+    Type: '' as IntlString,
+    Group: '' as IntlString,
+    Color: '' as IntlString
   },
   status: {
     AssigneeRequired: '' as IntlString

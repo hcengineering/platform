@@ -15,7 +15,7 @@
 <script lang="ts">
   import core from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Label } from '@hcengineering/ui'
+  import { Label, resizeObserver, Scroller } from '@hcengineering/ui'
   import { DropdownIntlItem } from '@hcengineering/ui/src/types'
   import { createEventDispatcher } from 'svelte'
   import view from '@hcengineering/view'
@@ -47,85 +47,19 @@
   }
 </script>
 
-<div class="hulyPopupMenu-container">
-  <div class="hulyPopupMenu-group">
+<div class="hulyPopup-container" use:resizeObserver={() => dispatch('changeContent')}>
+  <Scroller padding={'var(--spacing-0_5)'} gap={'flex-gap-0-5'}>
     {#each items as item}
       <button
-        class="hulyPopupMenu-group__item"
+        class="hulyPopup-row"
         on:click={() => {
           handleSelection(item.id)
         }}
       >
-        <span class="hulyPopupMenu-group__item-label overflow-label">
+        <span class="hulyPopup-row__label overflow-label">
           <Label label={item.label} />
         </span>
       </button>
     {/each}
-  </div>
+  </Scroller>
 </div>
-
-<style lang="scss">
-  .hulyPopupMenu-container {
-    display: flex;
-    align-items: flex-start;
-    flex-shrink: 0;
-    width: 15rem;
-    min-width: 0;
-    min-height: 0;
-    background-color: var(--global-popover-BackgroundColor);
-    border: 1px solid var(--global-popover-BorderColor);
-    border-radius: var(--medium-BorderRadius);
-
-    .hulyPopupMenu-group {
-      display: flex;
-      flex: 1 0 0;
-      flex-direction: column;
-      justify-content: stretch;
-      align-items: flex-start;
-      align-self: stretch;
-      gap: var(--spacing-0_25);
-      padding: var(--spacing-0_5);
-
-      &__item {
-        box-sizing: border-box;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-grow: 1;
-        margin: 0;
-        width: 100%;
-        border: 2px solid transparent;
-        border-radius: var(--extra-small-focus-BorderRadius);
-        outline: 2px solid transparent;
-
-        &.submenu {
-          padding: var(--spacing-1_5) var(--spacing-1_5) var(--spacing-1_5) var(--spacing-2);
-        }
-        &:not(.submenu) {
-          padding: var(--spacing-1_5) var(--spacing-2);
-        }
-
-        &-icon {
-          flex-shrink: 0;
-          width: var(--global-min-Size);
-          height: var(--global-min-Size);
-          color: var(--global-on-accent-TextColor);
-        }
-        &-label {
-          flex-grow: 1;
-          text-align: left;
-          color: var(--global-on-accent-TextColor);
-        }
-
-        &:hover {
-          background-color: var(--global-popover-hover-BackgroundColor);
-        }
-        &:focus {
-          background-color: var(--global-popover-hover-BackgroundColor);
-          border-color: var(--global-focus-inset-BorderColor);
-          outline-color: var(--global-focus-BorderColor);
-        }
-      }
-    }
-  }
-</style>

@@ -15,6 +15,9 @@
     "TaskDueTo": "Срок сдачи",
     "ProjectName": "Проект",
     "Task": "Задача",
+    "SubTask": "Подзадача",
+    "TaskAndSubTask": "Задача & Подзадача",
+    "TaskAndSubTaskDescription": "Этот тип задачи можно использовать для создания как задач, так и подзадач в проекте",
     "TaskParent": "Родитель",
     "IssueName": "Название",
     "TaskComments": "Комментарии",
@@ -73,7 +76,7 @@
     "AllTime": "Все время",
     "RelatedIssues": "Связанные процессы",
     "StatusName": "Имя статуса",
-    "StatusPopupTitle": "Создание статуса и изменение имени существующего",
+    "StatusPopupTitle": "Редактировать состояние",
     "NameAlreadyExists": "Данное имя уже используется другим статусом этого типа",
     "ProjectType": "Тип проекта",
     "ProjectTypes": "Типы проектов",
@@ -85,7 +88,12 @@
     "ClassicProject": "Классический проект",
     "LastSave": "Последнее сохранение",
     "Published": "Опубликовано",
+    "CountTasks": "{count, plural, =0 {Нет задач} =1 {# задача} other {# задач}}",
     "CountProjects": "{count, plural, =0 {Нет проектов} =1 {# проект} other {# проектов}}",
-    "ProjectTypeTitle": "Название типа проекта"
+    "ProjectTypeTitle": "Название типа проекта",
+    "ProcessStates": "Состояния процесса",
+    "Type": "Тип",
+    "Group": "Группа",
+    "Color": "Цвет"
   }
 }

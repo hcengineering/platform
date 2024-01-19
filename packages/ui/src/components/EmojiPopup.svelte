@@ -141,7 +141,7 @@
   }
 </script>
 
-<div class={!embedded ? 'antiPopup antiPopup-withHeader popup' : ''}>
+<div class={!embedded ? 'antiPopup antiPopup-withHeader popup' : 'flex-col'}>
   <div class="flex-row-center popup-header">
     {#each categories as category}
       <!-- svelte-ignore a11y-click-events-have-key-events -->

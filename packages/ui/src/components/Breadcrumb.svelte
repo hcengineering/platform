@@ -51,6 +51,7 @@
     min-width: 0;
     border: none;
     outline: none;
+    cursor: default;
 
     .hulyBreadcrumb-avatar {
       display: flex;
@@ -72,13 +73,14 @@
     }
     &:not(.current) {
       cursor: pointer;
-    }
-    &:hover {
-      .hulyBreadcrumb-avatar {
-        background-color: var(--global-ui-hover-BackgroundColor);
-      }
-      .hulyBreadcrumb-label {
-        color: var(--global-primary-LinkColor);
+
+      &:hover {
+        .hulyBreadcrumb-avatar {
+          background-color: var(--global-ui-hover-BackgroundColor);
+        }
+        .hulyBreadcrumb-label {
+          color: var(--global-primary-LinkColor);
+        }
       }
     }
   }

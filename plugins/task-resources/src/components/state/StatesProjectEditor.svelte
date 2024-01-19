@@ -20,8 +20,8 @@
   import {
     CircleButton,
     ColorDefinition,
-    IconAdd,
-    IconCircles,
+    IconOpenedArrow,
+    IconMoreV2,
     IconMoreH,
     Label,
     defaultBackground,
@@ -35,6 +35,7 @@
   import { createEventDispatcher } from 'svelte'
   import task from '../../plugin'
   import StatusesPopup from './StatusesPopup.svelte'
+  import { settingsStore, clearSettingsStore } from '@hcengineering/setting-resources'
 
   export let taskType: TaskType
   export let type: ProjectType
@@ -46,6 +47,7 @@
   const elements: HTMLElement[] = []
   let selected: number | undefined
   let dragState: Ref<Status>
+  let opened: Ref<Status> | undefined
 
   function dragswap (ev: MouseEvent, i: number): boolean {
     const s = selected as number
@@ -186,31 +188,64 @@
       }
     })
   }
+  settingsStore.subscribe((value) => {
+    if ((value.id === undefined && opened !== undefined) || (value.id !== undefined && value.id !== opened)) { opened = undefined }
+  })
+  const handleSelect = (_status: Status): void => {
+    if (opened === undefined || opened !== _status._id) {
+      opened = _status._id
+      const icons: Asset[] = []
+      const projectStatus = getProjectStatus(type, _status, categoriesMap)
+      $settingsStore = {
+        id: opened,
+        component: task.component.CreateStatePopup,
+        props: {
+          status: _status,
+          taskType,
+          type,
+          ofAttribute: _status.ofAttribute,
+          icon: projectStatus?.icon,
+          color: projectStatus?.color,
+          icons
+        }
+      }
+    } else if (opened === _status._id) {
+      clearSettingsStore()
+      opened = undefined
+    }
+  }
 </script>
 
 {#each categories as cat, i}
   {@const states = groups.get(cat._id) ?? []}
   {@const prevIndex = getPrevIndex(groups, cat._id)}
-  <div class="flex-col p-2">
-    <div class="flex-no-shrink flex-between trans-title uppercase" class:mt-4={i > 0}>
+  <div class="hulyTableAttr-content class withTitle">
+    <div class="hulyTableAttr-content__title">
       <Label label={cat.label} />
-      <CircleButton
+      <!-- <CircleButton
         icon={IconAdd}
         size={'medium'}
         on:click={() => {
           add(findStatusAttr(getClient().getHierarchy(), taskType.ofClass)?._id, cat._id)
         }}
-      />
+      /> -->
     </div>
-    <div class="flex-col flex-no-shrink mt-3">
+    <div class="hulyTableAttr-content__wrapper">
       {#each states as state, i}
         {@const color = getColor(type, state, categoriesMap)}
         <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div
+        <!-- style:background={color.background ?? defaultBackground($themeStore.dark)} -->
+        <button
           bind:this={elements[prevIndex + i]}
-          class="flex-row-center flex-between states"
-          style:background={color.background ?? defaultBackground($themeStore.dark)}
+          class="hulyTableAttr-content__row"
+          class:selected={state._id === opened}
           draggable={true}
+          on:contextmenu|preventDefault={(e) => {
+            click(e, state)
+          }}
+          on:click={() => {
+            handleSelect(state)
+          }}
           on:dragover|preventDefault={(ev) => {
             dragover(ev, i + prevIndex)
           }}
@@ -225,67 +260,27 @@
             selected = undefined
           }}
         >
-          <div class="flex-row-center">
-            <div class="bar"><IconCircles size={'small'} /></div>
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <div
-              class="color"
-              on:click={(ev) => {
-                if (state.category !== undefined) {
-                  selectIcon(elements[i + prevIndex], state)
-                } else {
-                  onColor(state, color, elements[i + prevIndex])
-                }
-              }}
-            >
-              <ObjectPresenter
-                _class={state._class}
-                objectId={state._id}
-                value={state}
-                props={{ projectType: type._id, taskType: taskType._id }}
-              />
-            </div>
-          </div>
-
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <div
-            class="tool hover-trans"
-            on:click={(e) => {
-              click(e, state)
+          <button class="hulyTableAttr-content__row-dragMenu" on:click|stopPropagation={() => {}}>
+            <IconMoreV2 size={'small'} />
+          </button>
+          <ObjectPresenter
+            _class={state._class}
+            objectId={state._id}
+            value={state}
+            props={{ projectType: type._id, taskType: taskType._id, kind: 'table-attrs' }}
+            on:click={(ev) => {
+              if (state.category !== undefined) {
+                selectIcon(elements[i + prevIndex], state)
+              } else {
+                onColor(state, color, elements[i + prevIndex])
+              }
             }}
-          >
-            <IconMoreH size={'medium'} />
+          />
+          <div class="hulyTableAttr-content__row-arrow">
+            <IconOpenedArrow size={'small'} />
           </div>
-        </div>
+        </button>
       {/each}
     </div>
   </div>
 {/each}
-
-<style lang="scss">
-  .states {
-    padding: 0.5rem 1rem 0.5rem 0.25rem;
-    color: var(--theme-caption-color);
-    background-color: var(--theme-button-default);
-    border: 1px solid var(--theme-button-border);
-    border-radius: 0.5rem;
-    user-select: none;
-
-    .bar {
-      margin-right: 0.25rem;
-      width: 1rem;
-      height: 1rem;
-      opacity: 0.4;
-      cursor: grabbing;
-    }
-    .color {
-      cursor: pointer;
-    }
-    .tool {
-      margin-left: 1rem;
-    }
-  }
-  .states + .states {
-    margin-top: 0.5rem;
-  }
-</style>

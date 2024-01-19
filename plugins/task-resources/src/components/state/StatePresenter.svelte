@@ -50,6 +50,7 @@
   export let projectType: Ref<ProjectType> | undefined = undefined
   export let taskType: Ref<TaskType> | undefined = undefined
   export let size: IconSize = 'small'
+  export let kind: 'table-attrs' | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -123,46 +124,72 @@
 </script>
 
 {#if value}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div
-    id="{value.category}:{value.name}"
-    class="flex-presenter"
-    class:inline-presenter={inline}
-    class:flex-no-shrink={!shouldShowName || shrink === 0}
-    class:fs-bold={accent}
-    on:click
-  >
-    {#if shouldShowAvatar}
-      <div
-        class="state-container"
-        class:inline
-        class:mr-2={shouldShowName}
-        title={shouldShowTooltip ? value.name : undefined}
-      >
-        {#if icon != null}
-          <Icon {icon} {size} iconProps={{ icon: projectState?.color ?? category?.color }} />
-        {:else if category?._id === task.statusCategory.Active}
-          <Icon
-            icon={categoryIcons[category._id]}
-            {size}
-            iconProps={{ index, count: sameCategory.length + 1, fill: projectState?.color ?? category?.color }}
-          />
-        {:else}
-          <Icon
-            icon={categoryIcons[category?._id ?? task.statusCategory.UnStarted]}
-            {size}
-            iconProps={{ fill: projectState?.color ?? category?.color }}
-          />
-        {/if}
-      </div>
-    {/if}
-    {#if shouldShowName}
-      <span class="overflow-label label" class:nowrap={oneLine} class:no-underline={noUnderline || disabled}>
-        {value.name}
-      </span>
-    {/if}
-  </div>
+  {#if kind === 'table-attrs'}
+    <button class="hulyTableAttr-content__row-icon-wrapper" on:click>
+      {#if icon != null}
+        <Icon {icon} {size} iconProps={{ icon: projectState?.color ?? category?.color }} />
+      {:else if category?._id === task.statusCategory.Active}
+        <Icon
+          icon={categoryIcons[category._id]}
+          {size}
+          iconProps={{ index, count: sameCategory.length + 1, fill: projectState?.color ?? category?.color }}
+        />
+      {:else}
+        <Icon
+          icon={categoryIcons[category?._id ?? task.statusCategory.UnStarted]}
+          {size}
+          iconProps={{ fill: projectState?.color ?? category?.color }}
+        />
+      {/if}
+    </button>
+    <span
+      class="hulyTableAttr-content__row-label font-medium-12 uppercase grow overflow-label"
+      style:color={projectState?.color ?? category?.color ?? 'var(--global-primary-TextColor)'}
+    >
+      {value.name}
+    </span>
+  {:else}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <div
+      id="{value.category}:{value.name}"
+      class="flex-presenter"
+      class:inline-presenter={inline}
+      class:flex-no-shrink={!shouldShowName || shrink === 0}
+      class:fs-bold={accent}
+      on:click
+    >
+      {#if shouldShowAvatar}
+        <div
+          class="state-container"
+          class:inline
+          class:mr-2={shouldShowName}
+          title={shouldShowTooltip ? value.name : undefined}
+        >
+          {#if icon != null}
+            <Icon {icon} {size} iconProps={{ icon: projectState?.color ?? category?.color }} />
+          {:else if category?._id === task.statusCategory.Active}
+            <Icon
+              icon={categoryIcons[category._id]}
+              {size}
+              iconProps={{ index, count: sameCategory.length + 1, fill: projectState?.color ?? category?.color }}
+            />
+          {:else}
+            <Icon
+              icon={categoryIcons[category?._id ?? task.statusCategory.UnStarted]}
+              {size}
+              iconProps={{ fill: projectState?.color ?? category?.color }}
+            />
+          {/if}
+        </div>
+      {/if}
+      {#if shouldShowName}
+        <span class="overflow-label label" class:nowrap={oneLine} class:no-underline={noUnderline || disabled}>
+          {value.name}
+        </span>
+      {/if}
+    </div>
+  {/if}
 {/if}
 
 <style lang="scss">

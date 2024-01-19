@@ -19,6 +19,7 @@
     align-items: center;
     align-self: stretch;
     flex-shrink: 0;
+    min-height: var(--global-max-Size);
     text-transform: uppercase;
     color: var(--global-secondary-TextColor);
     
@@ -27,10 +28,18 @@
     }
     &:not(.withButton) {
       padding: var(--spacing-2) var(--spacing-2) var(--spacing-2) var(--spacing-2_5);
+
+      span {
+        margin-left: var(--spacing-1_5);
+      }
     }
     span {
       flex-grow: 1;
-      margin-left: var(--spacing-1_5);
+    }
+    .icon {
+      flex-shrink: 0;
+      width: var(--global-min-Size);
+      height: var(--global-min-Size);
     }
   }
   .hulyTableAttr-content {
@@ -106,11 +115,15 @@
         color: var(--global-primary-TextColor);
       }
       &-icon-wrapper {
+        margin: 0;
+        padding: 0;
         width: var(--global-medium-Size);
         height: var(--global-medium-Size);
         color: var(--global-secondary-TextColor);
-        background-color: var(--theme-panel-color); // var(--global-surface-02-BackgroundColor);
+        background-color: var(--theme-button-hovered); // var(--global-surface-02-BackgroundColor);
         border-radius: var(--small-BorderRadius);
+        border: none;
+        outline: none;
 
         &.pointer {
           cursor: pointer;

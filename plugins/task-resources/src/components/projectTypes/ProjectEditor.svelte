@@ -53,7 +53,7 @@
   import { ContextMenu } from '@hcengineering/view-resources'
   import plugin from '../../plugin'
   import setting from '@hcengineering/setting'
-  import { ClassAttributes } from '@hcengineering/setting-resources'
+  import { ClassAttributes, clearSettingsStore } from '@hcengineering/setting-resources'
   import CreateTaskType from '../taskTypes/CreateTaskType.svelte'
   import TaskTypeEditor from '../taskTypes/TaskTypeEditor.svelte'
   import TaskTypeIcon from '../taskTypes/TaskTypeIcon.svelte'
@@ -150,6 +150,7 @@
       loc.path.length = 5
     }
     selectedTaskTypeId = id as Ref<TaskType>
+    clearSettingsStore()
     navigate(loc)
   }
   $: items =
@@ -240,17 +241,15 @@
             <div class="hulyComponent-content__column-group">
               <div class="hulyComponent-content__header">
                 <ButtonIcon icon={descriptor.icon} size={'large'} kind={'secondary'} />
-                <div class="flex-row-center no-word-wrap">
-                  <ModernButton
-                    icon={IconSquareExpand}
-                    label={plugin.string.CountProjects}
-                    labelParams={{ count: projects.length }}
-                    disabled={projects.length === 0}
-                    kind={'tertiary'}
-                    size={'medium'}
-                    hasMenu
-                  />
-                </div>
+                <ModernButton
+                  icon={IconSquareExpand}
+                  label={plugin.string.CountProjects}
+                  labelParams={{ count: projects.length }}
+                  disabled={projects.length === 0}
+                  kind={'tertiary'}
+                  size={'medium'}
+                  hasMenu
+                />
               </div>
               <ModernEditbox
                 kind={'ghost'}
@@ -264,7 +263,7 @@
                 }}
               />
               <TextArea
-                placeholder={getEmbeddedLabel('Description')}
+                placeholder={plugin.string.Description}
                 width={'100%'}
                 height={'4.5rem'}
                 margin={'var(--spacing-1) var(--spacing-2)'}
@@ -310,7 +309,7 @@
                         </div>
                       {/if}
                       <div class="hulyTableAttr-content__row-label grow dark font-regular-14">
-                        <TaskTypeKindEditor readonly kind={taskType.kind} buttonKind={'link'} />
+                        <TaskTypeKindEditor readonly kind={taskType.kind} />
                       </div>
                     </button>
                   {/each}

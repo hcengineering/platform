@@ -56,4 +56,11 @@
   --medium-focus-BorderRadius: 0.625rem;
   --large-BorderRadius: 1rem;
   --large-focus-BorderRadius: 1.125rem;
+
+  /** Shadow Properties **/
+
+  --global-popover-ShadowBlur: 0.75rem;
+  --global-popover-ShadowSpread: 0;
+  --global-popover-ShadowX: 0;
+  --global-popover-ShadowY: 0.5rem;
 }

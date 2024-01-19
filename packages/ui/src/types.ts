@@ -174,6 +174,7 @@ export type EditStyle =
   | 'ghost'
   | 'default-large'
   | 'ghost-large'
+  | 'modern-ghost-large'
 
 export interface ButtonItem {
   id: string
@@ -314,7 +315,10 @@ export interface DropdownTextItem {
 export interface DropdownIntlItem {
   id: string | number
   label: IntlString
+  icon?: Asset | AnySvelteComponent | ComponentType
   params?: Record<string, any>
+  description?: IntlString
+  paramsDescription?: Record<string, any>
 }
 
 export interface PopupOptions {

@@ -33,7 +33,8 @@
     showPopup,
     Label,
     NavItem,
-    NavGroup
+    NavGroup,
+    type AnyComponent
   } from '@hcengineering/ui'
   import { NavFooter } from '@hcengineering/workbench-resources'
   import { ComponentType, onDestroy } from 'svelte'
@@ -48,7 +49,7 @@
 
   let categories: SettingsCategory[] = []
   const account = getCurrentAccount() as PersonAccount
-  let asideComponent: ComponentType | null = null
+  let asideComponent: ComponentType | AnyComponent | null = null
   let asideProps: object | null = null
 
   const settingsQuery = createQuery()
@@ -62,6 +63,7 @@
     { sort: { order: 1 } }
   )
 
+  onDestroy(() => { clearSettingsStore() })
   onDestroy(
     resolvedLocationStore.subscribe((loc) => {
       void (async (loc) => {
@@ -106,9 +108,13 @@
     showPopup(login.component.InviteLink, {})
   }
 
-  const updatedStore = (ss: SettingsStore): ComponentType | null => {
+  const updatedStore = (ss: SettingsStore): ComponentType | AnyComponent | null => {
     asideProps = ss.props ?? null
-    return ss.component ?? null
+    return ss.component === undefined
+      ? null
+      : typeof ss.component === 'string'
+        ? (ss.component)
+        : (ss.component)
   }
   $: asideComponent = updatedStore($settingsStore)
 
@@ -191,7 +197,11 @@
     <Separator name={'setting'} index={1} color={'transparent'} />
     <div class="hulySidePanel-container">
       {#key asideProps}
-        <svelte:component this={asideComponent} {...asideProps} />
+        {#if typeof asideComponent === 'string'}
+          <Component is={asideComponent} props={{ ...asideProps }} />
+        {:else}
+          <svelte:component this={asideComponent} {...asideProps} />
+        {/if}
       {/key}
     </div>
   {/if}

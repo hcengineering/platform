@@ -102,7 +102,7 @@
   $: classUpdated(_class)
 
   settingsStore.subscribe((value) => {
-    if (value.id === undefined) selected = undefined
+    if ((value.id === undefined && selected !== undefined) || (value.id !== undefined && value.id !== selected?._id)) { selected = undefined }
   })
   const handleDeselect = (): void => {
     selected = undefined
