@@ -75,6 +75,10 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
     return [res[0], res[1], mergeTargets(target, res[2])]
   }
 
+  handleBroadcast (tx: Tx[], targets?: string[]): Tx[] {
+    return this.provideHandleBroadcast(tx, targets)
+  }
+
   override async findAll<T extends Doc>(
     ctx: SessionContext,
     _class: Ref<Class<T>>,

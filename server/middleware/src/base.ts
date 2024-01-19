@@ -20,11 +20,11 @@ import {
   FindOptions,
   FindResult,
   Ref,
-  ServerStorage,
-  Tx,
-  SearchQuery,
   SearchOptions,
-  SearchResult
+  SearchQuery,
+  SearchResult,
+  ServerStorage,
+  Tx
 } from '@hcengineering/core'
 import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
 
@@ -56,6 +56,13 @@ export abstract class BaseMiddleware {
     }
     const res = await this.storage.tx(ctx, tx)
     return [res[0], res[1], undefined]
+  }
+
+  provideHandleBroadcast (tx: Tx[], targets?: string[]): Tx[] {
+    if (this.next !== undefined) {
+      return this.next.handleBroadcast(tx, targets)
+    }
+    return tx
   }
 
   protected async provideFindAll<T extends Doc>(

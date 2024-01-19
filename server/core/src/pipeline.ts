@@ -23,16 +23,16 @@ import {
   MeasureContext,
   ModelDb,
   Ref,
+  SearchOptions,
+  SearchQuery,
+  SearchResult,
   ServerStorage,
   StorageIterator,
   Tx,
-  TxResult,
-  SearchQuery,
-  SearchOptions,
-  SearchResult
+  TxResult
 } from '@hcengineering/core'
 import { DbConfiguration, createServerStorage } from './storage'
-import { BroadcastFunc, Middleware, MiddlewareCreator, Pipeline, SessionContext } from './types'
+import { BroadcastFunc, HandledBroadcastFunc, Middleware, MiddlewareCreator, Pipeline, SessionContext } from './types'
 
 /**
  * @public
@@ -44,12 +44,22 @@ export async function createPipeline (
   upgrade: boolean,
   broadcast: BroadcastFunc
 ): Promise<Pipeline> {
+  let broadcastHook: HandledBroadcastFunc = (): Tx[] => {
+    return []
+  }
   const storage = await createServerStorage(conf, {
     upgrade,
-    broadcast
+    broadcast: (tx: Tx[], targets?: string[]) => {
+      const sendTx = broadcastHook?.(tx, targets) ?? tx
+      broadcast(sendTx, targets)
+    }
   })
   const pipeline = PipelineImpl.create(ctx, storage, constructors, broadcast)
-  return await pipeline
+  const pipelineResult = await pipeline
+  broadcastHook = (tx, targets) => {
+    return pipelineResult.handleBroadcast(tx, targets)
+  }
+  return pipelineResult
 }
 
 class PipelineImpl implements Pipeline {
@@ -57,6 +67,10 @@ class PipelineImpl implements Pipeline {
   readonly modelDb: ModelDb
   private constructor (readonly storage: ServerStorage) {
     this.modelDb = storage.modelDb
+  }
+
+  handleBroadcast (tx: Tx[], targets?: string[]): Tx[] {
+    return this.head?.handleBroadcast(tx, targets) ?? tx
   }
 
   static async create (

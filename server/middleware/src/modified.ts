@@ -34,6 +34,10 @@ export class ModifiedMiddleware extends BaseMiddleware implements Middleware {
     return new ModifiedMiddleware(storage, next)
   }
 
+  handleBroadcast (tx: Tx[], targets?: string[]): Tx[] {
+    return this.provideHandleBroadcast(tx, targets)
+  }
+
   async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
     if (tx.modifiedBy !== core.account.System && ctx.userEmail !== systemAccountEmail) {
       tx.modifiedOn = Date.now()
