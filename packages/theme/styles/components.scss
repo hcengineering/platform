@@ -877,7 +877,7 @@
       font-size: 0.75rem;
     }
     .label {
-      margin-bottom: 0rem;
+      margin-bottom: 0;
     }
   }
 }
@@ -915,6 +915,16 @@
     }
     &:hover .antiTable-cells__checkCell { visibility: visible; }
     .checkall { visibility: visible; }
+
+    &.align-left .antiTable-cells { justify-content: start; }
+    &.align-center .antiTable-cells { justify-content: center; }
+    &.align-right .antiTable-cells { justify-content: end; }
+  }
+
+  td {
+    &.align-left { text-align: left; }
+    &.align-center { text-align: center; }
+    &.align-right { text-align: right; }
   }
 
   &.editable {

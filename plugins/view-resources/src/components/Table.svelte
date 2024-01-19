@@ -80,14 +80,13 @@
   $: lookup = buildConfigLookup(hierarchy, _class, config, options?.lookup)
 
   let _sortKey = prefferedSorting
+  let userSorting = false
   $: if (!userSorting) {
     _sortKey = prefferedSorting
   }
 
   let sortOrder = SortingOrder.Descending
   let loading = 0
-
-  let userSorting = false
 
   let objects: Doc[] = []
   let gtotal: number = 0
@@ -321,137 +320,147 @@
   >
     {#if !hiddenHeader}
       <thead class="scroller-thead">
-        <tr class="scroller-thead__tr">
-          {#if enableChecking || showNotification}
-            <th>
-              {#if enableChecking && objects?.length > 0}
-                <div class="antiTable-cells__checkCell" class:checkall={checkedSet.size > 0}>
-                  <CheckBox
-                    symbol={'minus'}
-                    checked={objects?.length === checkedSet.size && objects?.length > 0}
-                    on:value={(event) => {
-                      check(objects, event.detail)
-                    }}
-                  />
+      <tr class="scroller-thead__tr">
+        {#if enableChecking || showNotification}
+          <th>
+            {#if enableChecking && objects?.length > 0}
+              <div class="antiTable-cells__checkCell" class:checkall={checkedSet.size > 0}>
+                <CheckBox
+                  symbol={'minus'}
+                  checked={objects?.length === checkedSet.size && objects?.length > 0}
+                  on:value={(event) => {
+                    check(objects, event.detail)
+                  }}
+                />
+              </div>
+            {/if}
+          </th>
+        {/if}
+        {#each model as attribute}
+          <th
+            class:w-full={attribute.displayProps?.grow === true}
+            class:sortable={attribute.sortingKey}
+            class:sorted={attribute.sortingKey === _sortKey}
+            class:align-left={attribute.displayProps?.align === 'left'}
+            class:align-center={attribute.displayProps?.align === 'center'}
+            class:align-right={attribute.displayProps?.align === 'right'}
+            on:click={() => {
+              changeSorting(attribute.sortingKey)
+            }}
+          >
+            <div
+              class="antiTable-cells"
+            >
+              {#if attribute.label}
+                <Label label={attribute.label} />
+              {/if}
+              {#if attribute.sortingKey === _sortKey}
+                <div class="icon">
+                  <IconUpDown size={'small'} descending={sortOrder === SortingOrder.Descending} />
                 </div>
               {/if}
-            </th>
-          {/if}
-          {#each model as attribute}
-            <th
-              class:sortable={attribute.sortingKey}
-              class:sorted={attribute.sortingKey === _sortKey}
-              on:click={() => {
-                changeSorting(attribute.sortingKey)
-              }}
-            >
-              <div class="antiTable-cells">
-                {#if attribute.label}
-                  <Label label={attribute.label} />
-                {/if}
-                {#if attribute.sortingKey === _sortKey}
-                  <div class="icon">
-                    <IconUpDown size={'small'} descending={sortOrder === SortingOrder.Descending} />
-                  </div>
-                {/if}
-              </div>
-            </th>
-          {/each}
-        </tr>
+            </div>
+          </th>
+        {/each}
+      </tr>
       </thead>
     {/if}
     {#if objects.length > 0 || objectsRecieved}
       <tbody>
-        {#each objects as object, row (object._id)}
-          <tr
-            class="antiTable-body__row"
-            class:checking={checkedSet.has(object._id)}
-            class:fixed={row === selection}
-            class:selected={row === selection}
-            on:mouseover={mouseAttractor(() => {
-              onRow(object)
-            })}
-            on:mouseenter={mouseAttractor(() => {
-              onRow(object)
-            })}
-            on:focus={() => {}}
-            bind:this={refs[row]}
-            on:contextmenu|preventDefault={contextHandler(object, row)}
-            use:lazyObserver={(val) => {
-              if (val && row >= rowLimit) {
-                rowLimit = row + 10
-              }
-            }}
-          >
-            {#if enableChecking || showNotification}
-              <td class="relative">
-                {#if showNotification}
-                  <div class="antiTable-cells__notifyCell">
-                    {#if enableChecking}
-                      <div class="antiTable-cells__checkCell">
-                        <CheckBox
-                          checked={checkedSet.has(object._id)}
-                          on:value={(event) => {
-                            check([object], event.detail)
-                          }}
-                        />
-                      </div>
-                    {/if}
-                    <Component
-                      is={notification.component.NotificationPresenter}
-                      props={{ value: object, kind: enableChecking ? 'table' : 'block' }}
-                    />
-                  </div>
-                {:else}
-                  <div class="antiTable-cells__checkCell">
-                    <CheckBox
-                      checked={checkedSet.has(object._id)}
-                      on:value={(event) => {
-                        check([object], event.detail)
-                      }}
-                    />
-                  </div>
-                {/if}
+      {#each objects as object, row (object._id)}
+        <tr
+          class="antiTable-body__row"
+          class:checking={checkedSet.has(object._id)}
+          class:fixed={row === selection}
+          class:selected={row === selection}
+          on:mouseover={mouseAttractor(() => {
+            onRow(object)
+          })}
+          on:mouseenter={mouseAttractor(() => {
+            onRow(object)
+          })}
+          on:focus={() => {}}
+          bind:this={refs[row]}
+          on:contextmenu|preventDefault={contextHandler(object, row)}
+          use:lazyObserver={(val) => {
+            if (val && row >= rowLimit) {
+              rowLimit = row + 10
+            }
+          }}
+        >
+          {#if enableChecking || showNotification}
+            <td class="relative">
+              {#if showNotification}
+                <div class="antiTable-cells__notifyCell">
+                  {#if enableChecking}
+                    <div class="antiTable-cells__checkCell">
+                      <CheckBox
+                        checked={checkedSet.has(object._id)}
+                        on:value={(event) => {
+                          check([object], event.detail)
+                        }}
+                      />
+                    </div>
+                  {/if}
+                  <Component
+                    is={notification.component.NotificationPresenter}
+                    props={{ value: object, kind: enableChecking ? 'table' : 'block' }}
+                  />
+                </div>
+              {:else}
+                <div class="antiTable-cells__checkCell">
+                  <CheckBox
+                    checked={checkedSet.has(object._id)}
+                    on:value={(event) => {
+                      check([object], event.detail)
+                    }}
+                  />
+                </div>
+              {/if}
+            </td>
+          {/if}
+          {#if row < rowLimit}
+            {#each model as attribute, cell}
+              <td
+                class:align-left={attribute.displayProps?.align === 'left'}
+                class:align-center={attribute.displayProps?.align === 'center'}
+                class:align-right={attribute.displayProps?.align === 'right'}
+              >
+                <div class:antiTable-cells__firstCell={!cell}>
+                  <!-- {getOnChange(object, attribute) !== undefined} -->
+                  <svelte:component
+                    this={attribute.presenter}
+                    value={getValue(attribute, object)}
+                    onChange={getOnChange(object, attribute)}
+                    {...joinProps(attribute, object)}
+                  />
+                </div>
               </td>
-            {/if}
-            {#if row < rowLimit}
-              {#each model as attribute, cell}
-                <td>
-                  <div class:antiTable-cells__firstCell={!cell}>
-                    <!-- {getOnChange(object, attribute) !== undefined} -->
-                    <svelte:component
-                      this={attribute.presenter}
-                      value={getValue(attribute, object)}
-                      onChange={getOnChange(object, attribute)}
-                      {...joinProps(attribute, object)}
-                    />
-                  </div>
-                </td>
-              {/each}
-            {/if}
-          </tr>
-        {/each}
+            {/each}
+          {/if}
+        </tr>
+      {/each}
       </tbody>
     {:else if loadingProps !== undefined}
       <tbody>
-        {#each Array(getLoadingLength(loadingProps, options)) as i, row}
-          <tr class="antiTable-body__row" class:fixed={row === selection}>
-            {#each model as attribute, cell}
-              {#if !cell}
-                {#if enableChecking}
-                  <td>
-                    <div class="antiTable-cells__checkCell">
-                      <CheckBox checked={false} />
-                    </div>
-                  </td>
-                {/if}
-                <td id={`loader-${i}-${attribute.key}`}>
-                  <Spinner size="small" />
+      {#each Array(getLoadingLength(loadingProps, options)) as i, row}
+        <tr class="antiTable-body__row" class:fixed={row === selection}>
+          {#each model as attribute, cell}
+            {#if !cell}
+              {#if enableChecking}
+                <td>
+                  <div class="antiTable-cells__checkCell">
+                    <CheckBox checked={false} />
+                  </div>
                 </td>
               {/if}
-            {/each}
-          </tr>
-        {/each}
+              <td id={`loader-${i}-${attribute.key}`}>
+                <Spinner size="small" />
+              </td>
+            {/if}
+          {/each}
+        </tr>
+      {/each}
       </tbody>
     {/if}
   </table>
