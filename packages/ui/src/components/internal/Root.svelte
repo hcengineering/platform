@@ -167,7 +167,7 @@
           {:else if status.severity !== Severity.OK}
             <StatusComponent {status} />
           {:else}
-            <span class="logo-status">Zenflow</span>
+            <span class="logo-status">{getMetadata(uiPlugin.metadata.PlatformTitle)}</span>
           {/if}
         </div>
         <div class="flex-row-reverse" style:-webkit-app-region={'no-drag'}>
