@@ -31,6 +31,7 @@ import core, {
   MixinUpdate,
   Ref,
   RefTo,
+  Space,
   Timestamp,
   Tx,
   TxCollectionCUD,
@@ -389,7 +390,9 @@ export async function pushInboxNotifications (
   control: TriggerControl,
   res: Tx[],
   targetUser: Ref<Account>,
-  object: Doc,
+  attachedTo: Ref<Doc>,
+  attachedToClass: Ref<Class<Doc>>,
+  space: Ref<Space>,
   docNotifyContexts: DocNotifyContext[],
   data: Partial<Data<InboxNotification>>,
   _class: Ref<Class<InboxNotification>>,
@@ -404,10 +407,10 @@ export async function pushInboxNotifications (
   let docNotifyContextId: Ref<DocNotifyContext>
 
   if (docNotifyContext === undefined) {
-    const createContextTx = control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, object.space, {
+    const createContextTx = control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, space, {
       user: targetUser,
-      attachedTo: object._id,
-      attachedToClass: object._class,
+      attachedTo,
+      attachedToClass,
       hidden: false,
       lastUpdateTimestamp: shouldUpdateTimestamp ? modifiedOn : undefined
     })
@@ -426,7 +429,7 @@ export async function pushInboxNotifications (
 
   if (!isHidden) {
     res.push(
-      control.txFactory.createTxCreateDoc(_class, object.space, {
+      control.txFactory.createTxCreateDoc(_class, space, {
         user: targetUser,
         isViewed: false,
         docNotifyContext: docNotifyContextId,
@@ -469,7 +472,9 @@ export async function pushActivityInboxNotifications (
     control,
     res,
     targetUser,
-    object,
+    activityMessage.attachedTo,
+    activityMessage.attachedToClass,
+    activityMessage.space,
     docNotifyContexts,
     data,
     notification.class.ActivityInboxNotification,
@@ -547,7 +552,9 @@ export async function createCollabDocInfo (
   }
 
   const targets = new Set(collaborators)
-  const notifyContexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo: object._id })
+  const notifyContexts = await control.findAll(notification.class.DocNotifyContext, {
+    attachedTo: activityMessage.attachedTo
+  })
 
   for (const target of targets) {
     res = res.concat(
@@ -711,6 +718,17 @@ async function collectionCollabDoc (
   let res = await collaboratorDocHandler(actualTx, control, activityMessage, tx)
 
   if (![core.class.TxCreateDoc, core.class.TxRemoveDoc].includes(actualTx._class)) {
+    return res
+  }
+
+  const isNotificationPushed = (res as TxCUD<Doc>[])
+    .filter(
+      (ctx: TxCUD<Doc>): ctx is TxCreateDoc<ActivityInboxNotification> =>
+        ctx._class === core.class.TxCreateDoc && ctx.objectClass === notification.class.ActivityInboxNotification
+    )
+    .some(({ attributes }) => attributes.attachedTo === activityMessage._id)
+
+  if (isNotificationPushed) {
     return res
   }
 

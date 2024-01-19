@@ -209,8 +209,9 @@ export function sortActivityMessages<T extends ActivityMessage> (messages: T[], 
 function canCombineMessage (message: ActivityMessage): boolean {
   const hasReactions = message.reactions !== undefined && message.reactions > 0
   const isPinned = message.isPinned === true
+  const hasReplies = message.replies !== undefined && message.replies > 0
 
-  return !hasReactions && !isPinned
+  return !hasReactions && !isPinned && !hasReplies
 }
 
 function groupByTime<T extends ActivityMessage> (messages: T[]): T[][] {
