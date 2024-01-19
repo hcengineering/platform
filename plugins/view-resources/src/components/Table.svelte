@@ -80,14 +80,13 @@
   $: lookup = buildConfigLookup(hierarchy, _class, config, options?.lookup)
 
   let _sortKey = prefferedSorting
+  let userSorting = false
   $: if (!userSorting) {
     _sortKey = prefferedSorting
   }
 
   let sortOrder = SortingOrder.Descending
   let loading = 0
-
-  let userSorting = false
 
   let objects: Doc[] = []
   let gtotal: number = 0
@@ -339,8 +338,12 @@
           {/if}
           {#each model as attribute}
             <th
+              class:w-full={attribute.displayProps?.grow === true}
               class:sortable={attribute.sortingKey}
               class:sorted={attribute.sortingKey === _sortKey}
+              class:align-left={attribute.displayProps?.align === 'left'}
+              class:align-center={attribute.displayProps?.align === 'center'}
+              class:align-right={attribute.displayProps?.align === 'right'}
               on:click={() => {
                 changeSorting(attribute.sortingKey)
               }}
@@ -416,7 +419,11 @@
             {/if}
             {#if row < rowLimit}
               {#each model as attribute, cell}
-                <td>
+                <td
+                  class:align-left={attribute.displayProps?.align === 'left'}
+                  class:align-center={attribute.displayProps?.align === 'center'}
+                  class:align-right={attribute.displayProps?.align === 'right'}
+                >
                   <div class:antiTable-cells__firstCell={!cell}>
                     <!-- {getOnChange(object, attribute) !== undefined} -->
                     <svelte:component
