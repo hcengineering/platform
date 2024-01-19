@@ -206,6 +206,7 @@ export async function configurePlatform() {
   // Disable for now, since it causes performance issues on linux/docker/kubernetes boxes for now.
   setMetadata(client.metadata.UseProtocolCompression, true)
 
+  setMetadata(uiPlugin.metadata.PlatformTitle, config.TITLE ?? 'Platform')
   setMetadata(workbench.metadata.PlatformTitle, config.TITLE ?? 'Platform')
   setDefaultLanguage(config.DEFAULT_LANGUAGE ?? 'en')
   setMetadata(workbench.metadata.DefaultApplication, 'tracker')

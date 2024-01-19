@@ -101,7 +101,8 @@ export const uis = plugin(uiId, {
   metadata: {
     DefaultApplication: '' as Metadata<AnyComponent>,
     Routes: '' as Metadata<Map<string, AnyComponent>>,
-    Languages: '' as Metadata<string[]>
+    Languages: '' as Metadata<string[]>,
+    PlatformTitle: '' as Metadata<string>
   }
 })
 

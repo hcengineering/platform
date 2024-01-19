@@ -102,6 +102,7 @@ export async function configurePlatform() {
   addLocation(calendarId, () => import(/* webpackChunkName: "calendar" */ '@hcengineering/calendar-resources'))
 
   addLocation(trackerId, () => import(/* webpackChunkName: "tracker" */ '@hcengineering/tracker-resources'))
+  setMetadata(uiPlugin.metadata.PlatformTitle, 'Tracker')
   setMetadata(workbench.metadata.PlatformTitle, 'Tracker')
 
   setMetadata(client.metadata.FilterModel, true)
