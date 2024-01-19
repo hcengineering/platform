@@ -348,9 +348,7 @@
                 changeSorting(attribute.sortingKey)
               }}
             >
-              <div
-                class="antiTable-cells"
-              >
+              <div class="antiTable-cells">
                 {#if attribute.label}
                   <Label label={attribute.label} />
                 {/if}
