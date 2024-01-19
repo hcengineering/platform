@@ -63,7 +63,9 @@
     { sort: { order: 1 } }
   )
 
-  onDestroy(() => { clearSettingsStore() })
+  onDestroy(() => {
+    clearSettingsStore()
+  })
   onDestroy(
     resolvedLocationStore.subscribe((loc) => {
       void (async (loc) => {
@@ -110,11 +112,7 @@
 
   const updatedStore = (ss: SettingsStore): ComponentType | AnyComponent | null => {
     asideProps = ss.props ?? null
-    return ss.component === undefined
-      ? null
-      : typeof ss.component === 'string'
-        ? (ss.component)
-        : (ss.component)
+    return ss.component === undefined ? null : ss.component
   }
   $: asideComponent = updatedStore($settingsStore)
 

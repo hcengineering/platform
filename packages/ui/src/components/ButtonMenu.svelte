@@ -17,7 +17,7 @@
   import type { Asset, IntlString } from '@hcengineering/platform'
   import { deepEqual } from 'fast-equals'
   import { AnySvelteComponent, DropdownIntlItem } from '../types'
-    import ButtonBase from './ButtonBase.svelte'
+  import ButtonBase from './ButtonBase.svelte'
   import { showPopup, closePopup, eventToHTMLElement } from '..'
   import ModernPopup from './ModernPopup.svelte'
 

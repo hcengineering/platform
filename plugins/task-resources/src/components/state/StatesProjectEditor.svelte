@@ -189,7 +189,9 @@
     })
   }
   settingsStore.subscribe((value) => {
-    if ((value.id === undefined && opened !== undefined) || (value.id !== undefined && value.id !== opened)) { opened = undefined }
+    if ((value.id === undefined && opened !== undefined) || (value.id !== undefined && value.id !== opened)) {
+      opened = undefined
+    }
   })
   const handleSelect = (_status: Status): void => {
     if (opened === undefined || opened !== _status._id) {
