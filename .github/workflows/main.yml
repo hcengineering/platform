@@ -242,8 +242,7 @@ jobs:
       #   with:
       #     name: db-snapshot
       #     path: ./tests/db_dump
-  docker-build:
-    if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
+  docker-build:    
     needs: [build, uitest, test, svelte-check]
     runs-on: ubuntu-latest
     steps:
@@ -259,12 +258,6 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
-      - name: Installing...
-        run: node common/scripts/install-run-rush.js install
-      - name: Setting model version from git release...
-        run: node common/scripts/install-run-rush.js bump-model-version
-      - name: Build, to include new model version
-        run: node common/scripts/install-run-rush.js build
       - name: Bundle
         run: node common/scripts/install-run-rush.js bundle
       - name: Docker build
@@ -276,7 +269,6 @@ jobs:
         with:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-
       - name: Docker push staging
         if: ${{ github.ref == 'refs/heads/main' }}
         run: node common/scripts/install-run-rush.js docker:staging
