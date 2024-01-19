@@ -367,100 +367,100 @@
     {/if}
     {#if objects.length > 0 || objectsRecieved}
       <tbody>
-      {#each objects as object, row (object._id)}
-        <tr
-          class="antiTable-body__row"
-          class:checking={checkedSet.has(object._id)}
-          class:fixed={row === selection}
-          class:selected={row === selection}
-          on:mouseover={mouseAttractor(() => {
-            onRow(object)
-          })}
-          on:mouseenter={mouseAttractor(() => {
-            onRow(object)
-          })}
-          on:focus={() => {}}
-          bind:this={refs[row]}
-          on:contextmenu|preventDefault={contextHandler(object, row)}
-          use:lazyObserver={(val) => {
-            if (val && row >= rowLimit) {
-              rowLimit = row + 10
-            }
-          }}
-        >
-          {#if enableChecking || showNotification}
-            <td class="relative">
-              {#if showNotification}
-                <div class="antiTable-cells__notifyCell">
-                  {#if enableChecking}
-                    <div class="antiTable-cells__checkCell">
-                      <CheckBox
-                        checked={checkedSet.has(object._id)}
-                        on:value={(event) => {
-                          check([object], event.detail)
-                        }}
-                      />
-                    </div>
-                  {/if}
-                  <Component
-                    is={notification.component.NotificationPresenter}
-                    props={{ value: object, kind: enableChecking ? 'table' : 'block' }}
-                  />
-                </div>
-              {:else}
-                <div class="antiTable-cells__checkCell">
-                  <CheckBox
-                    checked={checkedSet.has(object._id)}
-                    on:value={(event) => {
-                      check([object], event.detail)
-                    }}
-                  />
-                </div>
-              {/if}
-            </td>
-          {/if}
-          {#if row < rowLimit}
-            {#each model as attribute, cell}
-              <td
-                class:align-left={attribute.displayProps?.align === 'left'}
-                class:align-center={attribute.displayProps?.align === 'center'}
-                class:align-right={attribute.displayProps?.align === 'right'}
-              >
-                <div class:antiTable-cells__firstCell={!cell}>
-                  <!-- {getOnChange(object, attribute) !== undefined} -->
-                  <svelte:component
-                    this={attribute.presenter}
-                    value={getValue(attribute, object)}
-                    onChange={getOnChange(object, attribute)}
-                    {...joinProps(attribute, object)}
-                  />
-                </div>
+        {#each objects as object, row (object._id)}
+          <tr
+            class="antiTable-body__row"
+            class:checking={checkedSet.has(object._id)}
+            class:fixed={row === selection}
+            class:selected={row === selection}
+            on:mouseover={mouseAttractor(() => {
+              onRow(object)
+            })}
+            on:mouseenter={mouseAttractor(() => {
+              onRow(object)
+            })}
+            on:focus={() => {}}
+            bind:this={refs[row]}
+            on:contextmenu|preventDefault={contextHandler(object, row)}
+            use:lazyObserver={(val) => {
+              if (val && row >= rowLimit) {
+                rowLimit = row + 10
+              }
+            }}
+          >
+            {#if enableChecking || showNotification}
+              <td class="relative">
+                {#if showNotification}
+                  <div class="antiTable-cells__notifyCell">
+                    {#if enableChecking}
+                      <div class="antiTable-cells__checkCell">
+                        <CheckBox
+                          checked={checkedSet.has(object._id)}
+                          on:value={(event) => {
+                            check([object], event.detail)
+                          }}
+                        />
+                      </div>
+                    {/if}
+                    <Component
+                      is={notification.component.NotificationPresenter}
+                      props={{ value: object, kind: enableChecking ? 'table' : 'block' }}
+                    />
+                  </div>
+                {:else}
+                  <div class="antiTable-cells__checkCell">
+                    <CheckBox
+                      checked={checkedSet.has(object._id)}
+                      on:value={(event) => {
+                        check([object], event.detail)
+                      }}
+                    />
+                  </div>
+                {/if}
               </td>
-            {/each}
-          {/if}
-        </tr>
-      {/each}
+            {/if}
+            {#if row < rowLimit}
+              {#each model as attribute, cell}
+                <td
+                  class:align-left={attribute.displayProps?.align === 'left'}
+                  class:align-center={attribute.displayProps?.align === 'center'}
+                  class:align-right={attribute.displayProps?.align === 'right'}
+                >
+                  <div class:antiTable-cells__firstCell={!cell}>
+                    <!-- {getOnChange(object, attribute) !== undefined} -->
+                    <svelte:component
+                      this={attribute.presenter}
+                      value={getValue(attribute, object)}
+                      onChange={getOnChange(object, attribute)}
+                      {...joinProps(attribute, object)}
+                    />
+                  </div>
+                </td>
+              {/each}
+            {/if}
+          </tr>
+        {/each}
       </tbody>
     {:else if loadingProps !== undefined}
       <tbody>
-      {#each Array(getLoadingLength(loadingProps, options)) as i, row}
-        <tr class="antiTable-body__row" class:fixed={row === selection}>
-          {#each model as attribute, cell}
-            {#if !cell}
-              {#if enableChecking}
-                <td>
-                  <div class="antiTable-cells__checkCell">
-                    <CheckBox checked={false} />
-                  </div>
+        {#each Array(getLoadingLength(loadingProps, options)) as i, row}
+          <tr class="antiTable-body__row" class:fixed={row === selection}>
+            {#each model as attribute, cell}
+              {#if !cell}
+                {#if enableChecking}
+                  <td>
+                    <div class="antiTable-cells__checkCell">
+                      <CheckBox checked={false} />
+                    </div>
+                  </td>
+                {/if}
+                <td id={`loader-${i}-${attribute.key}`}>
+                  <Spinner size="small" />
                 </td>
               {/if}
-              <td id={`loader-${i}-${attribute.key}`}>
-                <Spinner size="small" />
-              </td>
-            {/if}
-          {/each}
-        </tr>
-      {/each}
+            {/each}
+          </tr>
+        {/each}
       </tbody>
     {/if}
   </table>
