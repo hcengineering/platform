@@ -25,13 +25,15 @@ interface EVENTS {
 async function fetchContent (doc: YDoc, name: string): Promise<void> {
   const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
 
-  const res = await fetch(concatLink(frontUrl, `/files?file=${name}`))
+  try {
+    const res = await fetch(concatLink(frontUrl, `/files?file=${name}`))
 
-  if (res.ok) {
-    const blob = await res.blob()
-    const buffer = await blob.arrayBuffer()
-    applyUpdate(doc, new Uint8Array(buffer))
-  }
+    if (res.ok) {
+      const blob = await res.blob()
+      const buffer = await blob.arrayBuffer()
+      applyUpdate(doc, new Uint8Array(buffer))
+    }
+  } catch {}
 }
 
 export class MinioProvider extends Observable<EVENTS> {

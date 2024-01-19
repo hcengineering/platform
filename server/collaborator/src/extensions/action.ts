@@ -99,44 +99,24 @@ export class ActionsExtension implements Extension {
 
     const _context: Context = { ...context, initialContentId: '', targetContentId: '' }
 
-    let source: Document | null = null
-    let target: Document | null = null
-
     const sourceConnection = await instance.openDirectConnection(sourceId, _context)
     const targetConnection = await instance.openDirectConnection(targetId, _context)
 
     try {
-      source = sourceConnection.document
-      target = targetConnection.document
+      let updates = new Uint8Array()
 
-      if (source !== null && target !== null) {
-        const updates = Y.encodeStateAsUpdate(source)
+      await sourceConnection.transact((source) => {
+        updates = Y.encodeStateAsUpdate(source)
+      })
 
-        // make an empty transaction to force source document save
-        // without that force document unload won't save the doc
-        await sourceConnection.transact(() => {})
-
-        await targetConnection.transact((target) => {
-          Y.applyUpdate(target, updates)
-        })
-      } else {
-        console.warn('empty ydoc document', sourceId, targetId)
-      }
+      await targetConnection.transact((target) => {
+        // TODO this does not work properly for existing documents
+        // we need to replace content, not only apply updates
+        Y.applyUpdate(target, updates)
+      })
     } finally {
       await targetConnection.disconnect()
       await sourceConnection.disconnect()
-    }
-
-    // Hocuspocus does not unload document when direct conneciton is used
-    // so we have to do it manually
-    // https://github.com/ueberdosis/hocuspocus/issues/709
-
-    if (source !== null && source.getConnectionsCount() === 0) {
-      instance.unloadDocument(source)
-    }
-
-    if (target !== null && target.getConnectionsCount() === 0) {
-      instance.unloadDocument(target)
     }
   }
 
@@ -153,13 +133,9 @@ export class ActionsExtension implements Extension {
 
     const _context: Context = { ...context, initialContentId: '', targetContentId: '' }
 
-    let doc: Document | null = null
-
     const docConnection = await instance.openDirectConnection(documentId, _context)
 
     try {
-      doc = docConnection.document
-
       await docConnection.transact((doc) => {
         const srcField = doc.getXmlFragment(srcFieldId)
         const dstField = doc.getXmlFragment(dstFieldId)
@@ -172,14 +148,6 @@ export class ActionsExtension implements Extension {
       })
     } finally {
       await docConnection.disconnect()
-    }
-
-    // Hocuspocus does not unload document when direct conneciton is used
-    // so we have to do it manually
-    // https://github.com/ueberdosis/hocuspocus/issues/709
-
-    if (doc !== null && doc.getConnectionsCount() === 0) {
-      instance.unloadDocument(doc)
     }
   }
 }

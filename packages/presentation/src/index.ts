@@ -49,6 +49,7 @@ export * from './types'
 export * from './utils'
 export * from './drafts'
 export { presentationId }
+export * from './collaborator'
 export * from './configuration'
 export * from './context'
 export * from './pipeline'

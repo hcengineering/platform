@@ -110,7 +110,7 @@ services:
     environment:
       - COLLABORATOR_PORT=3078
       - SECRET=secret
-      - TRANSACTOR_URL=ws://localhost:3334
+      - TRANSACTOR_URL=ws://transactor:3334
       - UPLOAD_URL=/files
       - MONGO_URL=mongodb://mongodb:27018
       - MINIO_ENDPOINT=minio

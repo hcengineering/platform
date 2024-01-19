@@ -49,7 +49,7 @@ export class MongodbStorageAdapter implements StorageAdapter {
   ) {}
 
   async loadDocument (documentId: string, context: Context): Promise<YDoc | undefined> {
-    const { decodedToken } = context
+    const { workspaceId } = context
     const { objectId, objectDomain, objectAttr } = parseDocumentId(documentId)
 
     if (!isValidDocumentId({ objectId, objectDomain, objectAttr })) {
@@ -59,7 +59,7 @@ export class MongodbStorageAdapter implements StorageAdapter {
 
     return await this.ctx.with('load-document', {}, async (ctx) => {
       const doc = await ctx.with('query', {}, async () => {
-        const db = this.mongodb.db(toWorkspaceString(decodedToken.workspace))
+        const db = this.mongodb.db(toWorkspaceString(workspaceId))
         return await db.collection(objectDomain).findOne({ _id: objectId }, { projection: { [objectAttr]: 1 } })
       })
 

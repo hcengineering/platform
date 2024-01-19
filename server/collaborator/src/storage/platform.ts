@@ -18,7 +18,6 @@ import { Transformer } from '@hocuspocus/transformer'
 import { Doc as YDoc } from 'yjs'
 
 import { Context } from '../context'
-import { connect, getTxOperations } from '../platform'
 
 import { StorageAdapter } from './adapter'
 
@@ -44,12 +43,11 @@ function isValidDocumentId (documentId: PlatformDocumentId): boolean {
 export class PlatformStorageAdapter implements StorageAdapter {
   constructor (
     private readonly ctx: MeasureContext,
-    private readonly transactorUrl: string,
     private readonly transformer: Transformer
   ) {}
 
   async loadDocument (documentId: string, context: Context): Promise<YDoc | undefined> {
-    const { token } = context
+    const { clientFactory } = context
     const { objectId, objectClass, objectAttr } = parseDocumentId(documentId)
 
     if (!isValidDocumentId({ objectId, objectClass, objectAttr })) {
@@ -61,18 +59,14 @@ export class PlatformStorageAdapter implements StorageAdapter {
       let content = ''
 
       const client = await ctx.with('connect', {}, async () => {
-        return await connect(this.transactorUrl, token)
+        return await clientFactory({ derived: false })
       })
 
-      try {
-        const doc = await ctx.with('query', {}, async () => {
-          return await client.findOne(objectClass, { _id: objectId }, { projection: { [objectAttr]: 1 } })
-        })
-        if (doc !== undefined && objectAttr in doc) {
-          content = (doc as any)[objectAttr] as string
-        }
-      } finally {
-        await client.close()
+      const doc = await ctx.with('query', {}, async () => {
+        return await client.findOne(objectClass, { _id: objectId }, { projection: { [objectAttr]: 1 } })
+      })
+      if (doc !== undefined && objectAttr in doc) {
+        content = (doc as any)[objectAttr] as string
       }
 
       return await ctx.with('transform', {}, () => {
@@ -82,7 +76,7 @@ export class PlatformStorageAdapter implements StorageAdapter {
   }
 
   async saveDocument (documentId: string, document: YDoc, context: Context): Promise<void> {
-    const { decodedToken, token } = context
+    const { clientFactory } = context
     const { objectId, objectClass, objectAttr } = parseDocumentId(documentId)
 
     if (!isValidDocumentId({ objectId, objectClass, objectAttr })) {
@@ -91,28 +85,23 @@ export class PlatformStorageAdapter implements StorageAdapter {
     }
 
     await this.ctx.with('save-document', {}, async (ctx) => {
-      const connection = await ctx.with('connect', {}, async () => {
-        return await connect(this.transactorUrl, token)
+      const client = await ctx.with('connect', {}, async () => {
+        return await clientFactory({ derived: false })
       })
-      const client = await getTxOperations(connection, decodedToken)
 
-      try {
-        const current = await ctx.with('query', {}, async () => {
-          return await client.findOne(objectClass, { _id: objectId })
+      const current = await ctx.with('query', {}, async () => {
+        return await client.findOne(objectClass, { _id: objectId })
+      })
+
+      if (current !== undefined) {
+        const content = await ctx.with('transform', {}, () => {
+          return this.transformer.fromYdoc(document, objectAttr)
         })
-
-        if (current !== undefined) {
-          const content = await ctx.with('transform', {}, () => {
-            return this.transformer.fromYdoc(document, objectAttr)
-          })
-          await ctx.with('update', {}, async () => {
-            if ((current as any)[objectAttr] !== content) {
-              await client.update(current, { [objectAttr]: content })
-            }
-          })
-        }
-      } finally {
-        await connection.close()
+        await ctx.with('update', {}, async () => {
+          if ((current as any)[objectAttr] !== content) {
+            await client.update(current, { [objectAttr]: content })
+          }
+        })
       }
     })
   }
