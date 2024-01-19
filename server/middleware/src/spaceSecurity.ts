@@ -398,6 +398,15 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     return [res[0], res[1], mergeTargets(targets, res[2])]
   }
 
+  handleBroadcast (tx: Tx[], targets?: string[]): Tx[] {
+    for (const t of tx) {
+      if (this.storage.hierarchy.isDerived(t._class, core.class.TxCUD)) {
+        this.processTxSpaceDomain(t as TxCUD<Doc>)
+      }
+    }
+    return this.provideHandleBroadcast(tx, targets)
+  }
+
   private getAllAllowedSpaces (account: Account): Ref<Space>[] {
     let userSpaces: Ref<Space>[] = []
     try {

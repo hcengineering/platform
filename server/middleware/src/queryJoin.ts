@@ -60,6 +60,10 @@ export class QueryJoinMiddleware extends BaseMiddleware implements Middleware {
     return await this.provideTx(ctx, tx)
   }
 
+  handleBroadcast (tx: Tx[], targets?: string[]): Tx[] {
+    return this.provideHandleBroadcast(tx, targets)
+  }
+
   override async findAll<T extends Doc>(
     ctx: SessionContext,
     _class: Ref<Class<T>>,
