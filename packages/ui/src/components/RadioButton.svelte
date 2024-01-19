@@ -29,6 +29,7 @@
   export let action: () => void = () => {}
   export let gap: 'large' | 'small' | 'medium' | 'none' = 'none'
   export let labelGap: 'large' | 'medium' = 'medium'
+  export let kind: 'primary' | 'positive' | 'negative' | 'default' = 'default'
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -37,6 +38,9 @@
   class="antiRadio gap-{gap}"
   class:disabled
   class:checked={group === value}
+  class:kind-primary={kind === 'primary'}
+  class:kind-positive={kind === 'positive'}
+  class:kind-negative={kind === 'negative'}
   tabindex="-1"
   on:click={() => {
     if (!disabled && group !== value) action()

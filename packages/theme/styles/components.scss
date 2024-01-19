@@ -69,7 +69,7 @@
   &__navHeader {
     flex-direction: column;
     flex-shrink: 0;
-    
+
     &.divide {
       border-bottom: 1px solid var(--theme-navpanel-divider);
     }
@@ -171,11 +171,11 @@
 .hulyModal-container {
   height: 100%;
   border-top: 1px solid transparent;
-  
+
   .hulyModal-content {
     padding: var(--spacing-2) var(--spacing-1_5);
     height: 100%;
-    
+
     &__titleGroup {
       flex-shrink: 0;
       padding: var(--spacing-2) var(--spacing-0_5) 0;
@@ -186,7 +186,7 @@
     }
     &__settingsSet {
       flex-shrink: 0;
-      
+
       &:not(.table) {
         padding: var(--spacing-4) var(--spacing-2_5) 0;
       }
@@ -203,7 +203,7 @@
         min-width: 0;
         min-height: var(--global-max-Size);
         border-bottom: 1px solid var(--global-subtle-ui-BorderColor);
-        
+
         &:first-child {
           border-top: 1px solid var(--global-subtle-ui-BorderColor);
         }
@@ -672,14 +672,14 @@
       &:active {
         .marker {
           background-color: var(--primary-button-pressed);
-        } 
+        }
       }
 
       .marker::after {
         opacity: 1;
       }
     }
-    
+
     label {
       color: var(--theme-caption-color);
     }
@@ -725,6 +725,15 @@
         opacity: 1;
       }
     }
+  }
+  &.kind-primary .marker {
+    border-color: var(--primary-button-default);
+  }
+  &.kind-positive .marker {
+    border-color: var(--positive-button-default);
+  }
+  &.kind-negative .marker {
+    border-color: var(--negative-button-default);
   }
 }
 

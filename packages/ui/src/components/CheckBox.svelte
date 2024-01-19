@@ -19,14 +19,14 @@
   export let symbol: 'check' | 'minus' = 'check'
   export let size: 'small' | 'medium' | 'large' = 'small'
   export let circle: boolean = false
-  export let kind: 'default' | 'primary' | 'positive' = 'default'
+  export let kind: 'default' | 'primary' | 'positive' | 'negative' = 'default'
   export let readonly = false
 
   const dispatch = createEventDispatcher()
 
   let oldChecked = checked
 
-  const handleValueChanged = (event: Event) => {
+  const handleValueChanged = (event: Event): void => {
     if (readonly) {
       return
     }
@@ -47,6 +47,7 @@
   class:circle
   class:primary={kind === 'primary'}
   class:positive={kind === 'positive'}
+  class:negative={kind === 'negative'}
   class:readonly
   class:checked
   on:click|stopPropagation
@@ -59,6 +60,7 @@
           class="check"
           class:primary={kind === 'primary'}
           class:positive={kind === 'positive'}
+          class:negative={kind === 'negative'}
           x="4"
           y="7.4"
           width="8"
@@ -69,6 +71,7 @@
           class="check"
           class:primary={kind === 'primary'}
           class:positive={kind === 'positive'}
+          class:negative={kind === 'negative'}
           points="7.3,11.5 4,8.3 5,7.4 7.3,9.7 11.8,5.1 12.7,6.1 "
         />
       {/if}
@@ -103,19 +106,31 @@
       height: 1rem;
       border-radius: 50%;
     }
-    &.checked {
-      background-color: var(--theme-checkbox-bg-color);
+    & {
+      &.checked {
+        background-color: var(--theme-checkbox-bg-color);
+      }
     }
-    &.primary.checked {
-      background-color: var(--primary-button-default);
-      border-color: transparent;
-    }
-    &.positive.checked {
-      background-color: var(--positive-button-default);
-      border-color: transparent;
-    }
-    &.readonly.checked {
+    &.readonly {
       background-color: var(--theme-checkbox-disabled);
+    }
+    &.primary {
+      border-color: var(--primary-button-default);
+      &:not(.readonly).checked {
+        background-color: var(--primary-button-default);
+      }
+    }
+    &.positive {
+      border-color: var(--positive-button-default);
+      &:not(.readonly).checked {
+        background-color: var(--positive-button-default);
+      }
+    }
+    &.negative {
+      border-color: var(--negative-button-default);
+      &:not(.readonly).checked {
+        background-color: var(--negative-button-default);
+      }
     }
 
     .chBox {
@@ -132,10 +147,10 @@
         & .check {
           visibility: visible;
           fill: var(--theme-checkbox-color);
-          &.primary {
-            fill: var(--primary-button-color);
-          }
-          &.positive {
+
+          &.primary,
+          &.positive,
+          &.negative {
             fill: var(--primary-button-color);
           }
         }
@@ -144,7 +159,7 @@
         cursor: pointer;
       }
       &:disabled + .checkSVG .check {
-        fill: var(--theme-checkbox-disabled);
+        fill: var(--primary-button-color);
       }
     }
     .checkSVG {
