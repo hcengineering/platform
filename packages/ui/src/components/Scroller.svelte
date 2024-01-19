@@ -774,7 +774,7 @@
     }
 
     &.vertical {
-      min-width: 1.5rem 0;
+      min-width: 1.5rem;
     }
     // &.horizontal {
     //   margin-right: 2rem;

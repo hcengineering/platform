@@ -13,17 +13,29 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Asset, Metadata, getEmbeddedLabel } from '@hcengineering/platform'
   import { Attribute, Class, Ref, Status, StatusCategory } from '@hcengineering/core'
-  import presentation, { Card, getClient } from '@hcengineering/presentation'
+  import presentation, { getClient } from '@hcengineering/presentation'
   import { ProjectType, TaskType, calculateStatuses, createState } from '@hcengineering/task'
-  import { EditBox, getColorNumberByText } from '@hcengineering/ui'
-  import { statusStore } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
+  import {
+    ModernEditbox,
+    getColorNumberByText,
+    Modal,
+    Label,
+    ButtonMenu,
+    IconSettings,
+    TextArea,
+    getPlatformColorDef,
+    themeStore,
+    EmojiPopup
+  } from '@hcengineering/ui'
+  import { statusStore, ColorsPopup } from '@hcengineering/view-resources'
+  import view from '@hcengineering/view-resources/src/plugin'
+  import { clearSettingsStore } from '@hcengineering/setting-resources'
   import task from '../plugin'
   import { taskTypeStore } from '..'
+  import IconLink from './icons/Link.svelte'
 
-  const dispatch = createEventDispatcher()
-  const client = getClient()
   export let status: Status | undefined = undefined
   export let _class: Ref<Class<Status>> | undefined = status?._class
   export let taskType: TaskType
@@ -31,6 +43,17 @@
   export let ofAttribute: Ref<Attribute<Status>>
   export let category: Ref<StatusCategory> | undefined = status?.category
   export let value = status?.name ?? ''
+  export let color: number | undefined = undefined
+  export let icons: Asset[]
+  export let iconWithEmoji: Asset = view.ids.IconWithEmoji
+
+  const client = getClient()
+
+  let description: string | undefined = status?.description
+
+  $: needUpdate =
+    (status?.name.trim() !== value.trim() || description !== status?.description || color !== status?.color) &&
+    value.trim() !== ''
 
   async function save (): Promise<void> {
     if (taskType === undefined || _class === undefined) return
@@ -39,7 +62,8 @@
         ofAttribute,
         name: value.trim(),
         category,
-        color: 9
+        color,
+        description
       })
 
       const states = taskType.statuses.map((p) => $statusStore.byId.get(p)).filter((p) => p !== undefined) as Status[]
@@ -52,12 +76,13 @@
       await client.update(taskType, {
         statuses
       })
-    } else if (status.name.trim() !== value.trim()) {
+    } else if (needUpdate) {
       const _id = await createState(client, _class, {
         ofAttribute,
         name: value.trim(),
         category,
-        color: getColorNumberByText(value.trim())
+        color,
+        description
       })
       const index = taskType.statuses.indexOf(status._id)
       const statuses = [...taskType.statuses.slice(0, index), _id, ...taskType.statuses.slice(index + 1)]
@@ -86,17 +111,103 @@
         await op.commit()
       }
     }
-    dispatch('close')
+    clearSettingsStore()
   }
+
+  let selected: number = 0
+  const items = [
+    {
+      id: 'color',
+      label: task.string.Color
+    },
+    {
+      id: 'emoji',
+      label: view.string.EmojiCategory
+    }
+  ]
 </script>
 
-<Card
+<Modal
   label={task.string.StatusPopupTitle}
-  okAction={save}
-  canSave
+  type={'type-aside'}
   okLabel={presentation.string.Save}
-  on:changeContent
-  onCancel={() => dispatch('close')}
+  okAction={save}
+  canSave={needUpdate}
+  onCancel={() => {
+    clearSettingsStore()
+  }}
 >
-  <EditBox focusIndex={1} bind:value placeholder={task.string.StatusName} kind={'large-style'} autoFocus fullSize />
-</Card>
+  <div class="hulyModal-content__titleGroup">
+    <ModernEditbox bind:value label={task.string.StatusName} size={'large'} kind={'ghost'} />
+    <TextArea
+      placeholder={task.string.Description}
+      width={'100%'}
+      height={'4.5rem'}
+      margin={'var(--spacing-1) var(--spacing-2)'}
+      noFocusBorder
+      bind:value={description}
+    />
+  </div>
+  <div class="hulyModal-content__settingsSet">
+    <div class="hulyModal-content__settingsSet-line">
+      <span class="label"><Label label={task.string.Group} /></span>
+      <!-- <ButtonMenu
+        {items}
+        {selected}
+        icon={IconLink}
+        label={getEmbeddedLabel('Compeletd')}
+        kind={'secondary'}
+        size={'medium'}
+        on:selected={() => {}}
+      /> -->
+    </div>
+    <div class="hulyModal-content__settingsSet-line">
+      <span class="label"><Label label={task.string.Type} /></span>
+      <!-- <ButtonMenu
+        {items}
+        {selected}
+        icon={IconLink}
+        label={getEmbeddedLabel('Success')}
+        kind={'secondary'}
+        size={'medium'}
+        on:selected={() => {}}
+      /> -->
+    </div>
+  </div>
+  <div class="hulyModal-content__settingsSet table">
+    <div class="hulyTableAttr-container">
+      <div class="hulyTableAttr-header font-medium-12 withButton">
+        <ButtonMenu
+          {items}
+          {selected}
+          icon={IconSettings}
+          label={items[selected].label}
+          kind={'secondary'}
+          size={'small'}
+          on:selected={(event) => {
+            if (event.detail) selected = items.findIndex((it) => it.id === event.detail)
+          }}
+        />
+      </div>
+      <div class="hulyTableAttr-content" class:mb-2={selected === 1}>
+        {#if selected === 0}
+          <ColorsPopup
+            selected={getPlatformColorDef(color ?? 0, $themeStore.dark).name}
+            embedded
+            columns={'auto'}
+            on:close={(evt) => {
+              color = evt.detail
+            }}
+          />
+        {:else}
+          <EmojiPopup
+            embedded
+            on:close={(evt) => {
+              color = evt.detail.codePointAt(0)
+            }}
+          />
+        {/if}
+      </div>
+    </div>
+  </div>
+</Modal>

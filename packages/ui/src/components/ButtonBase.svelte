@@ -24,6 +24,7 @@
   export let label: IntlString | undefined = undefined
   export let labelParams: Record<string, any> = {}
   export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
+  export let iconProps: any | undefined = undefined
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative'
   export let size: 'large' | 'medium' | 'small'
   export let disabled: boolean = false
@@ -32,9 +33,11 @@
   export let hasMenu: boolean = false
   export let type: 'type-button' | 'type-button-icon'
   export let inheritColor: boolean = false
+  export let element: HTMLButtonElement | undefined = undefined
 </script>
 
 <button
+  bind:this={element}
   class="font-medium-14 {kind} {size} {type}"
   class:loading
   class:pressed
@@ -46,7 +49,7 @@
   {#if loading}
     <div class="icon animate"><Spinner size={type === 'type-button' && !hasMenu ? 'medium' : 'small'} /></div>
   {:else if icon}<div class="icon">
-      <Icon {icon} size={type === 'type-button' && !hasMenu ? 'medium' : 'small'} />
+      <Icon {icon} {iconProps} size={type === 'type-button' && !hasMenu ? 'medium' : 'small'} />
     </div>{/if}
   {#if label}<span><Label {label} params={labelParams} /></span>{/if}
   {#if title}<span>{title}</span>{/if}

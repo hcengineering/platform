@@ -84,5 +84,6 @@
     {...props}
     on:accent-color
     on:close
+    on:click
   />
 {/if}

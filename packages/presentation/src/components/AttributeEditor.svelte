@@ -25,7 +25,7 @@
   export let _class: Ref<Class<Doc>>
   export let key: KeyedAttribute | string
   export let object: any
-  export let maxWidth: string
+  export let maxWidth: string | undefined = undefined
   export let focus: boolean = false
   export let editable = true
   export let focusIndex = -1

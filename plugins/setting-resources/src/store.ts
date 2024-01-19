@@ -15,13 +15,14 @@
 
 import { type ComponentType } from 'svelte'
 import { writable } from 'svelte/store'
+import type { AnyComponent } from '@hcengineering/ui'
 
 /**
  * @public
  */
 export interface SettingsStore {
   id?: any | undefined
-  component?: ComponentType | undefined
+  component?: ComponentType | AnyComponent | undefined
   props?: object | undefined
 }
 

@@ -27,7 +27,7 @@
       &:focus { box-shadow: 0 0 0 1px var(--theme-editbox-focus-border); }
     }
   }
-  .focusable:not(.default, .default-large, .ghost, .ghost-large) {
+  .focusable:not(.default, .default-large, .ghost, .ghost-large, .modern-ghost-large) {
     margin: 0 -0.75rem;
     padding: 0.625rem 0.75rem;
     width: calc(100% + 1.5rem);
@@ -94,4 +94,35 @@
     }
   }
   .default, .default-large { border-color: var(--theme-divider-color); }
+  .modern-ghost-large {
+    padding: var(--spacing-1) var(--spacing-2);
+    height: var(--spacing-6);
+    font-weight: 500;
+    font-size: 1.5rem;
+
+    input {
+      font: inherit;
+
+      &::placeholder {
+        color: var(--input-PlaceholderColor);
+      }
+    }
+    &:hover input:not(:focus)::placeholder {
+      color: var(--input-hover-PlaceholderColor);
+    }
+    input:focus::placeholder {
+      color: var(--input-focus-PlaceholderColor);
+    }
+    &.disabled {
+      box-shadow: inset 0 0 0 1px var(--input-BorderColor);
+
+      &,
+      input {
+        cursor: not-allowed;
+      }
+      input::placeholder {
+        color: var(--input-PlaceholderColor);
+      }
+    }
+  }
 }

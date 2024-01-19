@@ -18,7 +18,7 @@
   import task, { ProjectType, TaskType, calculateStatuses } from '@hcengineering/task'
   import { Ref, Status } from '@hcengineering/core'
   import { Asset, getEmbeddedLabel } from '@hcengineering/platform'
-  import { Label, showPopup } from '@hcengineering/ui'
+  import { Label, showPopup, ButtonIcon, ModernButton, IconSquareExpand, IconAdd, Icon } from '@hcengineering/ui'
   import { IconPicker, statusStore } from '@hcengineering/view-resources'
   import { ClassAttributes } from '@hcengineering/setting-resources'
   import { taskTypeStore } from '../..'
@@ -26,6 +26,7 @@
   import TaskTypeKindEditor from '../taskTypes/TaskTypeKindEditor.svelte'
   import TaskTypeRefEditor from '../taskTypes/TaskTypeRefEditor.svelte'
   import TaskTypeIcon from './TaskTypeIcon.svelte'
+  import plugin from '../../plugin'
 
   export let projectType: ProjectType
   export let taskType: TaskType
@@ -53,37 +54,37 @@
   }
 </script>
 
-<div class="flex-col">
-  <div class="flex-row-center flex-between">
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="mb-1" on:click={selectIcon}>
-      <TaskTypeIcon value={taskType} size={'large'} />
-    </div>
-    <div class="ml-2 flex-row-center">
-      {taskTypeCounter.get(taskType._id) ?? 0}
-    </div>
-  </div>
-  <div class="flex-row-center">
-    <div class="fs-title mb-4">
-      <AttributeEditor
-        maxWidth={'10rem'}
-        _class={task.class.TaskType}
-        object={taskType}
-        key="name"
-        editKind={'large-style'}
+<div class="hulyComponent-content__column-group mt-4">
+  <div class="hulyComponent-content__header mb-6">
+    <div class="flex-row-center gap-1-5">
+      <TaskTypeKindEditor
+        kind={taskType.kind}
+        on:change={(evt) => {
+          void client.diffUpdate(taskType, { kind: evt.detail })
+        }}
+      />
+      <ButtonIcon
+        icon={TaskTypeIcon}
+        iconProps={{ value: taskType }}
+        size={'large'}
+        kind={'secondary'}
+        on:click={selectIcon}
       />
     </div>
+    <ModernButton
+      icon={IconSquareExpand}
+      label={plugin.string.CountTasks}
+      labelParams={{ count: taskTypeCounter.get(taskType._id) ?? 0 }}
+      disabled={taskTypeCounter.get(taskType._id) === undefined}
+      kind={'tertiary'}
+      size={'medium'}
+      hasMenu
+    />
   </div>
 
-  <TaskTypeKindEditor
-    kind={taskType.kind}
-    on:change={(evt) => {
-      void client.diffUpdate(taskType, { kind: evt.detail })
-    }}
-  />
+  <AttributeEditor _class={task.class.TaskType} object={taskType} key="name" editKind={'modern-ghost-large'} />
 
-  <div class="flex-row-center p-2 mt-4">
+  <div class="flex-row-center mt-4 ml-4 mr-4 gap-4">
     <div class="flex-no-shrink trans-title uppercase">
       <Label label={getEmbeddedLabel('Parent type restrictions')} />
     </div>
@@ -99,69 +100,47 @@
     {/if}
   </div>
 </div>
-<div class="panelBox">
-  <div class="p-2 trans-title">
-    <Label label={getEmbeddedLabel('Process')} />
-  </div>
-  <div class="ml-2">
-    <StatesProjectEditor
-      {taskType}
-      type={projectType}
-      {states}
-      on:delete={async (evt) => {
-        const index = taskType.statuses.findIndex((p) => p === evt.detail.state._id)
-        taskType.statuses.splice(index, 1)
-        await client.update(taskType, {
-          statuses: taskType.statuses
-        })
-        await client.update(projectType, {
-          statuses: calculateStatuses(projectType, $taskTypeStore, [
-            { taskTypeId: taskType._id, statuses: taskType.statuses }
-          ])
-        })
-      }}
-      on:move={async (evt) => {
-        const index = taskType.statuses.findIndex((p) => p === evt.detail.stateID)
-        const state = taskType.statuses.splice(index, 1)[0]
 
-        const statuses = [
-          ...taskType.statuses.slice(0, evt.detail.position),
-          state,
-          ...taskType.statuses.slice(evt.detail.position)
-        ]
-        await client.update(taskType, {
-          statuses
-        })
-
-        await client.update(projectType, {
-          statuses: calculateStatuses(projectType, $taskTypeStore, [{ taskTypeId: taskType._id, statuses }])
-        })
-      }}
-    />
+<div class="hulyTableAttr-container">
+  <div class="hulyTableAttr-header font-medium-12">
+    <Icon icon={task.icon.ManageTemplates} size={'small'} />
+    <span><Label label={plugin.string.ProcessStates} /></span>
+    <ButtonIcon kind={'primary'} icon={IconAdd} size={'small'} on:click={(ev) => {}} />
   </div>
+  <StatesProjectEditor
+    {taskType}
+    type={projectType}
+    {states}
+    on:delete={async (evt) => {
+      const index = taskType.statuses.findIndex((p) => p === evt.detail.state._id)
+      taskType.statuses.splice(index, 1)
+      await client.update(taskType, {
+        statuses: taskType.statuses
+      })
+      await client.update(projectType, {
+        statuses: calculateStatuses(projectType, $taskTypeStore, [
+          { taskTypeId: taskType._id, statuses: taskType.statuses }
+        ])
+      })
+    }}
+    on:move={async (evt) => {
+      const index = taskType.statuses.findIndex((p) => p === evt.detail.stateID)
+      const state = taskType.statuses.splice(index, 1)[0]
+
+      const statuses = [
+        ...taskType.statuses.slice(0, evt.detail.position),
+        state,
+        ...taskType.statuses.slice(evt.detail.position)
+      ]
+      await client.update(taskType, {
+        statuses
+      })
+
+      await client.update(projectType, {
+        statuses: calculateStatuses(projectType, $taskTypeStore, [{ taskTypeId: taskType._id, statuses }])
+      })
+    }}
+  />
 </div>
 
 <ClassAttributes ofClass={taskType.ofClass} _class={taskType.targetClass} showHierarchy />
-
-<style lang="scss">
-  .row {
-    // border-bottom: 1px solid var(--theme-list-border-color);
-    // border-top: 1px solid var(--theme-list-border-color);
-    width: 100%;
-  }
-  .projects {
-    padding: 0.5rem 1rem 0.5rem 0.25rem;
-    color: var(--theme-caption-color);
-    background-color: var(--theme-button-default);
-    border: 1px solid var(--theme-button-border);
-    border-radius: 0.5rem;
-    user-select: none;
-  }
-  .panelBox {
-    padding: 0.5rem;
-    // TODO: Need to update it
-    border: 1px solid var(--theme-button-border);
-    background: var(--theme-button-default);
-    border-radius: 8px;
-  }
-</style>

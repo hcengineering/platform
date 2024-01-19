@@ -278,6 +278,7 @@ input.search {
 .flex-gap-2 { gap: .5rem; }
 .flex-gap-1-5 { gap: .375rem; }
 .flex-gap-1 { gap: .25rem; }
+.flex-gap-0-5 { gap: .125rem; }
 
 .flex-between-half-content > * {
   flex-basis: 50%;
@@ -534,6 +535,7 @@ input.search {
 .m-0-5 { margin: .125rem; }
 .m-1 { margin: .25rem; }
 .m-3 { margin: .75rem; }
+.m-4 { margin: 1rem; }
 
 .pl-0-5 { padding-left: .125rem; }
 .pl-1 { padding-left: .25rem; }
