@@ -190,7 +190,7 @@
         <EditableAvatar
           avatar={object.avatar}
           size={'large'}
-          name={object.name}
+          name={combineName(firstName?.trim() ?? '', lastName?.trim() ?? '')}
           bind:this={avatarEditor}
           bind:direct={avatar}
         />
