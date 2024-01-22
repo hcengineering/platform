@@ -132,6 +132,7 @@ export {
   OrganizationPresenter,
   EmployeeBrowser,
   MemberPresenter,
+  EmployeeArrayEditor,
   EmployeeEditor,
   PersonAccountRefPresenter,
   MembersPresenter,
