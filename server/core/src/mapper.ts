@@ -139,7 +139,7 @@ export async function updateDocWithPresenter (
     } else if (typeof prop.config === 'string') {
       value = reader.get(prop.config)
     } else if (prop.provider !== undefined) {
-      const func = (await getResource(Object.values(prop.provider)[0] as Resource<any>))
+      const func = await getResource(Object.values(prop.provider)[0] as Resource<any>)
       const renderProps = await readAndMapProps(reader, prop.config.props)
       value = func(hierarchy, { _class: elasticDoc._class, ...renderProps })
     } else if (prop.name === 'searchIcon') {
