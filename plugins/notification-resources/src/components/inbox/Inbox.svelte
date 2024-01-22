@@ -44,6 +44,7 @@
   import Filter from '../Filter.svelte'
   import { getDisplayInboxNotifications, resolveLocation } from '../../utils'
   import { InboxNotificationsFilter } from '../../types'
+  import { onDestroy } from 'svelte'
 
   export let visibleNav: boolean = true
   export let navFloat: boolean = false
@@ -54,8 +55,6 @@
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const notificationsByContextStore = inboxClient.inboxNotificationsByContext
   const notifyContextsStore = inboxClient.docNotifyContexts
-
-  const checkedContexts = new Set<Ref<DocNotifyContext>>()
 
   const allTab: TabItem = {
     id: 'all',
@@ -71,11 +70,12 @@
   }
 
   let displayNotifications: DisplayInboxNotification[] = []
+  let displayContextsIds = new Set<Ref<DocNotifyContext>>()
+
   let filteredNotifications: DisplayInboxNotification[] = []
   let filter: InboxNotificationsFilter = 'all'
 
   let tabItems: TabItem[] = []
-  let displayContextsIds = new Set<Ref<DocNotifyContext>>()
   let selectedTabId: string = allTab.id
 
   let selectedContextId: Ref<DocNotifyContext> | undefined = undefined
@@ -83,6 +83,7 @@
   let selectedComponent: AnyComponent | undefined = undefined
 
   let viewlets: ActivityNotificationViewlet[] = []
+
   let viewlet: WithLookup<Viewlet> | undefined
   let loading = true
 
@@ -91,10 +92,9 @@
   })
 
   $: displayNotifications = getDisplayInboxNotifications($notificationsByContextStore, filter)
+  $: displayContextsIds = new Set(displayNotifications.map(({ docNotifyContext }) => docNotifyContext))
 
-  locationStore.subscribe((newLocation) => {
-    syncLocation(newLocation)
-  })
+  $: filteredNotifications = filterNotifications(selectedTabId, displayNotifications, $notifyContextsStore)
 
   async function syncLocation (newLocation: Location) {
     const loc = await resolveLocation(newLocation)
@@ -110,11 +110,8 @@
     ? selectedContext ?? $notifyContextsStore.find(({ _id }) => _id === selectedContextId)
     : undefined
 
-  $: displayContextsIds = new Set(displayNotifications.map(({ docNotifyContext }) => docNotifyContext))
   $: updateSelectedPanel(selectedContext)
-
   $: updateTabItems(displayContextsIds, $notifyContextsStore)
-  $: filteredNotifications = filterNotifications(selectedTabId, displayNotifications, $notifyContextsStore)
 
   function updateTabItems (displayContextsIds: Set<Ref<DocNotifyContext>>, notifyContexts: DocNotifyContext[]): void {
     const displayClasses = new Set(
@@ -174,6 +171,7 @@
 
     const isChunterChannel = hierarchy.isDerived(selectedContext.attachedToClass, chunter.class.ChunterSpace)
     const panelComponent = hierarchy.classHierarchyMixin(selectedContext.attachedToClass, view.mixin.ObjectPanel)
+
     selectedComponent = panelComponent?.component ?? view.component.EditDoc
 
     const contextNotifications = $notificationsByContextStore.get(selectedContext._id) ?? []
@@ -246,7 +244,6 @@
                 is={viewlet.$lookup.descriptor.component}
                 props={{
                   notifications: filteredNotifications,
-                  checkedContexts,
                   viewlets,
                   selectedContext
                 }}

@@ -82,7 +82,6 @@
   <ListView bind:this={list} bind:selection={listSelection} count={notifications.length}>
     <svelte:fragment slot="item" let:item={itemIndex}>
       {@const notification = notifications[itemIndex]}
-      {#key notification._id}
         <div class="notification gap-2 ml-2">
           <!--        <div class="mt-6">-->
           <!--          <CheckBox-->
@@ -104,7 +103,6 @@
             }}
           />
         </div>
-      {/key}
     </svelte:fragment>
   </ListView>
 </div>

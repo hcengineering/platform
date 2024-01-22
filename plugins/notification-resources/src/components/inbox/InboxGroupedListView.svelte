@@ -101,7 +101,6 @@
       {@const contextId = displayData[itemIndex][0]}
       {@const contextNotifications = displayData[itemIndex][1]}
       {@const context = $notifyContextsStore.find(({ _id }) => _id === contextId)}
-      {#key contextId}
         {#if context}
           <DocNotifyContextCard
             value={context}
@@ -115,7 +114,6 @@
           />
           <div class="separator" />
         {/if}
-      {/key}
     </svelte:fragment>
   </ListView>
 </div>
