@@ -178,12 +178,12 @@ export class FullTextPushStage implements FullTextPipelineStage {
               }
             }
           }
-          const parentDoc: DocIndexState | undefined = undefined
+          let parentDoc: DocIndexState | undefined
           if (doc.attachedToClass != null && doc.attachedTo != null) {
             const propagate: Ref<Class<Doc>>[] = collectPropagate(pipeline, doc.attachedToClass)
             if (propagate.some((it) => pipeline.hierarchy.isDerived(doc.objectClass, it))) {
               // We need to include all parent content into this one.
-              const [parentDoc] = await metrics.with(
+              ;[parentDoc] = await metrics.with(
                 'find-parent',
                 {},
                 async (ctx) =>
