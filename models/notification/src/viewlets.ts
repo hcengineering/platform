@@ -45,10 +45,10 @@ export function defineViewlets (builder: Builder): void {
     core.space.Model,
     {
       attachTo: notification.class.DocNotifyContext,
-      descriptor: notification.viewlet.GroupedList,
+      descriptor: notification.viewlet.FlatList,
       config: []
     },
-    notification.viewlet.InboxGroupedList
+    notification.viewlet.InboxFlatList
   )
 
   builder.createDoc(
@@ -56,9 +56,9 @@ export function defineViewlets (builder: Builder): void {
     core.space.Model,
     {
       attachTo: notification.class.DocNotifyContext,
-      descriptor: notification.viewlet.FlatList,
+      descriptor: notification.viewlet.GroupedList,
       config: []
     },
-    notification.viewlet.InboxFlatList
+    notification.viewlet.InboxGroupedList
   )
 }
