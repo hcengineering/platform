@@ -82,27 +82,27 @@
   <ListView bind:this={list} bind:selection={listSelection} count={notifications.length}>
     <svelte:fragment slot="item" let:item={itemIndex}>
       {@const notification = notifications[itemIndex]}
-        <div class="notification gap-2 ml-2">
-          <!--        <div class="mt-6">-->
-          <!--          <CheckBox-->
-          <!--            circle-->
-          <!--            kind="primary"-->
-          <!--            on:value={(event) => {-->
-          <!--              handleCheck(notification, event.detail)-->
-          <!--            }}-->
-          <!--          />-->
-          <!--        </div>-->
-          <InboxNotificationPresenter
-            value={notification}
-            {viewlets}
-            onClick={() => {
-              dispatch('click', {
-                context: $notifyContextsStore.find(({ _id }) => _id === notification.docNotifyContext),
-                notification
-              })
-            }}
-          />
-        </div>
+      <div class="notification gap-2 ml-2">
+        <!--        <div class="mt-6">-->
+        <!--          <CheckBox-->
+        <!--            circle-->
+        <!--            kind="primary"-->
+        <!--            on:value={(event) => {-->
+        <!--              handleCheck(notification, event.detail)-->
+        <!--            }}-->
+        <!--          />-->
+        <!--        </div>-->
+        <InboxNotificationPresenter
+          value={notification}
+          {viewlets}
+          onClick={() => {
+            dispatch('click', {
+              context: $notifyContextsStore.find(({ _id }) => _id === notification.docNotifyContext),
+              notification
+            })
+          }}
+        />
+      </div>
     </svelte:fragment>
   </ListView>
 </div>
