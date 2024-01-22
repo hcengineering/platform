@@ -34,7 +34,8 @@ import core, {
   TxResult,
   SearchQuery,
   SearchOptions,
-  SearchResult
+  SearchResult,
+  MeasureDoneOperation
 } from '@hcengineering/core'
 import { createInMemoryTxAdapter } from '@hcengineering/dev-storage'
 import devmodel from '@hcengineering/devmodel'
@@ -104,6 +105,10 @@ class ServerStorageWrapper implements ClientConnection {
   async upload (domain: Domain, docs: Doc[]): Promise<void> {}
 
   async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
+
+  async measure (operationName: string): Promise<MeasureDoneOperation> {
+    return async () => ({ time: 0, serverTime: 0 })
+  }
 }
 
 async function createNullFullTextAdapter (): Promise<FullTextAdapter> {
@@ -152,7 +157,8 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
     defaultContentAdapter: 'default',
     workspace: getWorkspaceId('')
   }
-  const serverStorage = await createServerStorage(conf, {
+  const ctx = new MeasureMetricsContext('client', {})
+  const serverStorage = await createServerStorage(ctx, conf, {
     upgrade: false
   })
   setMetadata(devmodel.metadata.DevModel, serverStorage)

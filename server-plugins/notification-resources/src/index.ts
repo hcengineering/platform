@@ -28,6 +28,7 @@ import core, {
   Doc,
   DocumentUpdate,
   Hierarchy,
+  MeasureContext,
   MixinUpdate,
   Ref,
   RefTo,
@@ -746,7 +747,7 @@ async function collectionCollabDoc (
   activityMessages: ActivityMessage[]
 ): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
-  let res = await createCollaboratorNotifications(actualTx, control, activityMessages, tx)
+  let res = await createCollaboratorNotifications(control.ctx, actualTx, control, activityMessages, tx)
 
   if (![core.class.TxCreateDoc, core.class.TxRemoveDoc, core.class.TxUpdateDoc].includes(actualTx._class)) {
     return res
@@ -959,6 +960,7 @@ export async function OnAttributeUpdate (tx: Tx, control: TriggerControl): Promi
 }
 
 export async function createCollaboratorNotifications (
+  ctx: MeasureContext,
   tx: TxCUD<Doc>,
   control: TriggerControl,
   activityMessages: ActivityMessage[],
@@ -992,7 +994,7 @@ async function OnChatMessageCreate (tx: TxCollectionCUD<Doc, ChatMessage>, contr
   const createTx = TxProcessor.extractTx(tx) as TxCreateDoc<ChatMessage>
   const message = (await control.findAll(chunter.class.ChatMessage, { _id: createTx.objectId }))[0]
 
-  return await createCollaboratorNotifications(tx, control, [message])
+  return await createCollaboratorNotifications(control.ctx, tx, control, [message])
 }
 
 /**

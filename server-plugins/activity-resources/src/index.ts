@@ -13,22 +13,23 @@
 // limitations under the License.
 //
 
+import activity, { ActivityMessage, DocUpdateMessage, Reaction } from '@hcengineering/activity'
 import core, {
   Account,
   AttachedDoc,
   Data,
   Doc,
-  matchQuery,
+  MeasureContext,
   Ref,
   Tx,
+  TxCUD,
   TxCollectionCUD,
   TxCreateDoc,
-  TxCUD,
-  TxProcessor
+  TxProcessor,
+  matchQuery
 } from '@hcengineering/core'
 import { ActivityControl, DocObjectCache } from '@hcengineering/server-activity'
 import type { TriggerControl } from '@hcengineering/server-core'
-import activity, { ActivityMessage, DocUpdateMessage, Reaction } from '@hcengineering/activity'
 import {
   createCollabDocInfo,
   createCollaboratorNotifications,
@@ -87,6 +88,7 @@ export async function createReactionNotifications (
 
   const messageTx = (
     await pushDocUpdateMessages(
+      control.ctx,
       control,
       res as TxCollectionCUD<Doc, DocUpdateMessage>[],
       parentMessage,
@@ -136,6 +138,7 @@ function getDocUpdateMessageTx (
 }
 
 async function pushDocUpdateMessages (
+  ctx: MeasureContext,
   control: ActivityControl,
   res: TxCollectionCUD<Doc, DocUpdateMessage>[],
   object: Doc | undefined,
@@ -194,6 +197,7 @@ async function pushDocUpdateMessages (
 }
 
 export async function generateDocUpdateMessages (
+  ctx: MeasureContext,
   tx: TxCUD<Doc>,
   control: ActivityControl,
   res: TxCollectionCUD<Doc, DocUpdateMessage>[] = [],
@@ -241,7 +245,11 @@ export async function generateDocUpdateMessages (
   switch (tx._class) {
     case core.class.TxCreateDoc: {
       const doc = TxProcessor.createDoc2Doc(tx as TxCreateDoc<Doc>)
-      return await pushDocUpdateMessages(control, res, doc, originTx ?? tx, undefined, objectCache)
+      return await ctx.with(
+        'pushDocUpdateMessages',
+        {},
+        async (ctx) => await pushDocUpdateMessages(ctx, control, res, doc, originTx ?? tx, undefined, objectCache)
+      )
     }
     case core.class.TxMixin:
     case core.class.TxUpdateDoc: {
@@ -249,17 +257,29 @@ export async function generateDocUpdateMessages (
       if (doc === undefined) {
         doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
       }
-      return await pushDocUpdateMessages(control, res, doc ?? undefined, originTx ?? tx, undefined, objectCache)
+      return await ctx.with(
+        'pushDocUpdateMessages',
+        {},
+        async (ctx) =>
+          await pushDocUpdateMessages(ctx, control, res, doc ?? undefined, originTx ?? tx, undefined, objectCache)
+      )
     }
     case core.class.TxCollectionCUD: {
       const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
-      res = await generateDocUpdateMessages(actualTx, control, res, tx, objectCache)
+      res = await generateDocUpdateMessages(ctx, actualTx, control, res, tx, objectCache)
       if ([core.class.TxCreateDoc, core.class.TxRemoveDoc, core.class.TxUpdateDoc].includes(actualTx._class)) {
         let doc = objectCache?.docs?.get(tx.objectId)
         if (doc === undefined) {
           doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
         }
-        return await pushDocUpdateMessages(control, res, doc ?? undefined, originTx ?? tx, undefined, objectCache)
+        if (doc !== undefined) {
+          return await ctx.with(
+            'pushDocUpdateMessages',
+            {},
+            async (ctx) =>
+              await pushDocUpdateMessages(ctx, control, res, doc ?? undefined, originTx ?? tx, undefined, objectCache)
+          )
+        }
       }
       return res
     }
@@ -273,10 +293,18 @@ async function ActivityMessagesHandler (tx: TxCUD<Doc>, control: TriggerControl)
     return []
   }
 
-  const txes = await generateDocUpdateMessages(tx, control)
+  const txes = await control.ctx.with(
+    'generateDocUpdateMessages',
+    {},
+    async (ctx) => await generateDocUpdateMessages(ctx, tx, control)
+  )
   const messages = txes.map((messageTx) => TxProcessor.createDoc2Doc(messageTx.tx as TxCreateDoc<DocUpdateMessage>))
 
-  const notificationTxes = await createCollaboratorNotifications(tx, control, messages)
+  const notificationTxes = await control.ctx.with(
+    'createNotificationTxes',
+    {},
+    async (ctx) => await createCollaboratorNotifications(ctx, tx, control, messages)
+  )
 
   return [...txes, ...notificationTxes]
 }

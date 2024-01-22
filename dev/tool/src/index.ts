@@ -562,7 +562,7 @@ export function devTool (
 
   program
     .command('benchmark')
-    .description('clean archived spaces')
+    .description('benchmark')
     .option('--from <from>', 'Min client count', '10')
     .option('--steps <steps>', 'Step with client count', '10')
     .option('--sleep <sleep>', 'Random Delay max between operations', '0')

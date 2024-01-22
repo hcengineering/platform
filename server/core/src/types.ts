@@ -113,12 +113,22 @@ export interface Pipeline extends LowLevelStorage {
  * @public
  */
 export interface TriggerControl {
+  ctx: MeasureContext
   workspace: WorkspaceId
   txFactory: TxFactory
   findAll: Storage['findAll']
+  findAllCtx: <T extends Doc>(
+    ctx: MeasureContext,
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ) => Promise<FindResult<T>>
   hierarchy: Hierarchy
   modelDb: ModelDb
   removedMap: Map<Ref<Doc>, Doc>
+
+  // // An object cache,
+  // getCachedObject: <T extends Doc>(_class: Ref<Class<T>>, _id: Ref<T>) => Promise<T | undefined>
 
   fulltextFx: (f: (adapter: FullTextAdapter) => Promise<void>) => void
   // Since we don't have other storages let's consider adapter is MinioClient
@@ -128,6 +138,7 @@ export interface TriggerControl {
 
   // Bulk operations in case trigger require some
   apply: (tx: Tx[], broadcast: boolean) => Promise<TxResult>
+  applyCtx: (ctx: MeasureContext, tx: Tx[], broadcast: boolean) => Promise<TxResult>
 }
 
 /**

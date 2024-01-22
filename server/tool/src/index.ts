@@ -135,7 +135,7 @@ export async function initModel (
     const result = await db.collection(DOMAIN_TX).insertMany(model as Document[])
     logger.log(`${result.insertedCount} model transactions inserted.`)
 
-    logger.log('creating data...')
+    logger.log('creating data...', transactorUrl)
     const connection = (await connect(transactorUrl, workspaceId, undefined, {
       model: 'upgrade'
     })) as unknown as CoreClient & BackupClient
