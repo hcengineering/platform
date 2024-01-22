@@ -150,6 +150,7 @@
       onReply={() => {
         handleReply(displayMessage)
       }}
+      {onClick}
     />
   {/if}
 {/if}

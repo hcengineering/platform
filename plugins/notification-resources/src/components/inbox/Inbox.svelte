@@ -14,7 +14,6 @@
 -->
 <script lang="ts">
   import notification, {
-    ActivityInboxNotification,
     ActivityNotificationViewlet,
     DisplayInboxNotification,
     DocNotifyContext

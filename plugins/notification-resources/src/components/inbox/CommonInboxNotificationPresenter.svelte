@@ -25,7 +25,7 @@
   import core, { Doc, getDisplayTime, Ref } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
-  import notification, { CommonInboxNotification, DocNotifyContext } from '@hcengineering/notification'
+  import notification, { CommonInboxNotification } from '@hcengineering/notification'
   import { ActionIcon, IconMoreH, Label, showPopup } from '@hcengineering/ui'
   import { getDocLinkTitle, Menu } from '@hcengineering/view-resources'
   import { ActivityDocLink } from '@hcengineering/activity-resources'
@@ -37,6 +37,7 @@
   export let embedded = false
   export let skipLabel = false
   export let showNotify = true
+  export let withActions = true
   export let onClick: (() => void) | undefined = undefined
 
   const objectQuery = createQuery()
@@ -54,7 +55,7 @@
     personAccount?.person !== undefined
       ? $employeeByIdStore.get(personAccount.person as Ref<Employee>) ?? $personByIdStore.get(personAccount.person)
       : undefined
-
+  $: context = $docNotifyContextsStore.find(({ _id }) => _id === value.docNotifyContext)
   $: context &&
     objectQuery.query(context.attachedToClass, { _id: context.attachedTo }, (result) => {
       object = result[0]
@@ -141,7 +142,7 @@
     </div>
   </div>
 
-  {#if !embedded}
+  {#if !embedded && withActions}
     <div class="actions clear-mins flex flex-gap-2 items-center" class:opened={isActionMenuOpened}>
       <ActionIcon icon={IconMoreH} size="small" action={showMenu} />
     </div>
