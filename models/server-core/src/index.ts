@@ -45,8 +45,8 @@ export class TObjectDDParticipant extends TClass implements ObjectDDParticipant 
 @Mixin(serverCore.mixin.SearchPresenter, core.class.Class)
 export class TSearchPresenter extends TClass implements SearchPresenter {
   searchConfig!: ClassSearchConfig
-  getSearchShortTitle!: Resource<SearchPresenterFunc>
-  getSearchTitle!: Resource<SearchPresenterFunc>
+  getSearchShortTitle!: SearchPresenterFunc
+  getSearchTitle!: SearchPresenterFunc
 }
 
 export function createModel (builder: Builder): void {

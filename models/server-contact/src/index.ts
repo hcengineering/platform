@@ -55,7 +55,9 @@ export function createModel (builder: Builder): void {
         }
       ]
     },
-    getSearchTitle: serverContact.function.ContactNameProvider
+    getSearchTitle: {
+      name: serverContact.function.ContactNameProvider
+    }
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {

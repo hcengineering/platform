@@ -65,10 +65,13 @@ export function createModel (builder: Builder): void {
         props: ['number']
       },
       title: {
-        props: [{ _class: ['attachedTo', '_class'] }, { name: ['attachedTo', 'name'] }]
+        tmpl: '{name} - {vacName}',
+        props: [{ _class: ['attachedTo', '_class'] }, { name: ['attachedTo', 'name'] }, { vacName: ['space', 'name'] }]
       }
     },
-    getSearchTitle: serverContact.function.ContactNameProvider
+    getSearchTitle: {
+      name: serverContact.function.ContactNameProvider
+    }
   })
 
   builder.mixin(

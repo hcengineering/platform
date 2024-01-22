@@ -349,7 +349,11 @@ export type SearchProps = Record<string, string>
 /**
  * @public
  */
-export type SearchPresenterFunc = (hierarchy: Hierarchy, props: SearchProps) => string
+export type SearchPresenterProvider = (hierarchy: Hierarchy, props: SearchProps) => string
+/**
+ * @public
+ */
+export type SearchPresenterFunc = Record<string, Resource<SearchPresenterProvider>>
 
 /**
  * @public
@@ -386,6 +390,6 @@ export interface ClassSearchConfig {
  */
 export interface SearchPresenter extends Class<Doc> {
   searchConfig: ClassSearchConfig
-  getSearchShortTitle?: Resource<SearchPresenterFunc>
-  getSearchTitle?: Resource<SearchPresenterFunc>
+  getSearchShortTitle?: SearchPresenterFunc
+  getSearchTitle?: SearchPresenterFunc
 }
