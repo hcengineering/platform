@@ -216,7 +216,7 @@
     overflow: hidden;
     border: 1px solid transparent;
     border-radius: 0.25rem;
-    width: calc(100% - 2rem);
+    width: 100%;
 
     &.clickable {
       cursor: pointer;

@@ -488,3 +488,15 @@ export function getClosestDateSelectorDate (date: Timestamp, scrollElement: HTML
 
   return closestDate
 }
+
+export function isReactionMessage (message?: ActivityMessage): message is DocUpdateMessage {
+  if (message === undefined) {
+    return false
+  }
+
+  if (message._class !== activity.class.DocUpdateMessage) {
+    return false
+  }
+
+  return (message as DocUpdateMessage).objectClass === activity.class.Reaction
+}

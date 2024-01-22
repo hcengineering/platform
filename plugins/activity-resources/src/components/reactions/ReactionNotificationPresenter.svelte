@@ -17,12 +17,17 @@
   import activity, { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
   import { createQuery } from '@hcengineering/presentation'
   import { Ref } from '@hcengineering/core'
-  import { getLocation, navigate } from '@hcengineering/ui'
+  import { Action, getLocation, navigate } from '@hcengineering/ui'
+
   import ActivityMessagePresenter from '../activity-message/ActivityMessagePresenter.svelte'
 
   export let message: DisplayActivityMessage
   export let notification: ActivityInboxNotification
   export let embedded = false
+  export let showNotify = true
+  export let withActions = true
+  export let actions: Action[] = []
+  export let excludedActions: string[] = []
   export let onClick: (() => void) | undefined = undefined
 
   const parentQuery = createQuery()
@@ -43,7 +48,28 @@
 </script>
 
 {#if embedded && parentMessage}
-  <ActivityMessagePresenter value={parentMessage} skipLabel embedded onReply={handleReply} {onClick} />
+  <ActivityMessagePresenter
+    value={parentMessage}
+    skipLabel
+    embedded
+    {withActions}
+    {actions}
+    {excludedActions}
+    withFlatActions={false}
+    onReply={handleReply}
+    {onClick}
+  />
 {:else if !embedded && message}
-  <ActivityMessagePresenter value={message} skipLabel showEmbedded onReply={handleReply} {onClick} />
+  <ActivityMessagePresenter
+    value={message}
+    skipLabel
+    showEmbedded
+    showNotify={showNotify && !notification.isViewed}
+    {withActions}
+    {actions}
+    {excludedActions}
+    withFlatActions={false}
+    onReply={handleReply}
+    {onClick}
+  />
 {/if}

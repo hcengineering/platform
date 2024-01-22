@@ -15,6 +15,7 @@
 <script lang="ts">
   import { ThreadMessage } from '@hcengineering/chunter'
   import ChatMessagePresenter from '../chat-message/ChatMessagePresenter.svelte'
+  import { Action } from '@hcengineering/ui'
 
   export let value: ThreadMessage | undefined
   export let showNotify: boolean = false
@@ -26,6 +27,8 @@
   export let showEmbedded = false
   export let skipLabel = false
   export let withFlatActions: boolean = true
+  export let actions: Action[] = []
+  export let excludedActions: string[] = []
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 </script>
@@ -41,6 +44,8 @@
   {embedded}
   {skipLabel}
   {withFlatActions}
+  {excludedActions}
+  {actions}
   {onClick}
   {onReply}
 />

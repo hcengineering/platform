@@ -18,6 +18,9 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { ChunterSpace } from '@hcengineering/chunter'
+  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+  import { location as locationStore } from '@hcengineering/ui'
+  import { isReactionMessage } from '@hcengineering/activity-resources'
 
   import ChannelPresenter from './ChannelView.svelte'
   import ThreadViewPanel from './threads/ThreadViewPanel.svelte'
@@ -28,14 +31,28 @@
 
   const objectQuery = createQuery()
   const client = getClient()
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+  const activityInboxNotificationsStore = inboxClient.activityInboxNotifications
   const hierarchy = client.getHierarchy()
 
   let object: ChunterSpace | undefined = undefined
   let threadId: Ref<ActivityMessage> | undefined = undefined
 
-  $: threadId = hierarchy.isDerived(context.attachedToClass, activity.class.ActivityMessage)
-    ? (context.attachedTo as Ref<ActivityMessage>)
+  let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
+
+  locationStore.subscribe((newLocation) => {
+    selectedMessageId = newLocation.query?.message as Ref<ActivityMessage> | undefined
+  })
+
+  $: notification = selectedMessageId
+    ? $activityInboxNotificationsStore.find(({ attachedTo }) => attachedTo === selectedMessageId)
     : undefined
+
+  $: threadId =
+    hierarchy.isDerived(context.attachedToClass, activity.class.ActivityMessage) &&
+    !isReactionMessage(notification?.$lookup?.attachedTo)
+      ? (context.attachedTo as Ref<ActivityMessage>)
+      : undefined
 
   $: objectQuery.query(_class, { _id }, (res) => {
     object = res[0]

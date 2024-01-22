@@ -25,8 +25,8 @@
   import core, { Doc, getDisplayTime, Ref } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
-  import notification, { CommonInboxNotification } from '@hcengineering/notification'
-  import { ActionIcon, CheckBox, IconMoreH, Label, showPopup } from '@hcengineering/ui'
+  import notification, { CommonInboxNotification, DocNotifyContext } from '@hcengineering/notification'
+  import { ActionIcon, IconMoreH, Label, showPopup } from '@hcengineering/ui'
   import { getDocLinkTitle, Menu } from '@hcengineering/view-resources'
   import { ActivityDocLink } from '@hcengineering/activity-resources'
   import view from '@hcengineering/view'
@@ -36,6 +36,7 @@
   export let value: CommonInboxNotification
   export let embedded = false
   export let skipLabel = false
+  export let showNotify = true
   export let onClick: (() => void) | undefined = undefined
 
   const objectQuery = createQuery()
@@ -53,8 +54,6 @@
     personAccount?.person !== undefined
       ? $employeeByIdStore.get(personAccount.person as Ref<Employee>) ?? $personByIdStore.get(personAccount.person)
       : undefined
-
-  $: context = $docNotifyContextsStore.find(({ _id }) => _id === value.docNotifyContext)
 
   $: context &&
     objectQuery.query(context.attachedToClass, { _id: context.attachedTo }, (result) => {
@@ -95,7 +94,7 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="root clear-mins flex-grow" on:click={onClick}>
   {#if !embedded}
-    {#if !value.isViewed}
+    {#if !value.isViewed && showNotify}
       <div class="notify" />
     {/if}
 
