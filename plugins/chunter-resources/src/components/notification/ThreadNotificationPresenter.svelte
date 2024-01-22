@@ -15,12 +15,16 @@
 <script lang="ts">
   import { ThreadMessage } from '@hcengineering/chunter'
   import ThreadMessagePresenter from '../threads/ThreadMessagePresenter.svelte'
-  import { getLocation, navigate } from '@hcengineering/ui'
+  import { Action, getLocation, navigate } from '@hcengineering/ui'
   import { ActivityInboxNotification } from '@hcengineering/notification'
 
   export let message: ThreadMessage
   export let notification: ActivityInboxNotification
   export let embedded = false
+  export let showNotify = true
+  export let withActions = true
+  export let actions: Action[] = []
+  export let excludedActions: string[] = []
   export let onClick: (() => void) | undefined = undefined
 
   function handleReply (): void {
@@ -31,4 +35,15 @@
   }
 </script>
 
-<ThreadMessagePresenter value={message} {embedded} showEmbedded={!embedded} onReply={handleReply} {onClick} />
+<ThreadMessagePresenter
+  value={message}
+  {embedded}
+  showEmbedded={!embedded}
+  {withActions}
+  {actions}
+  {excludedActions}
+  withFlatActions={false}
+  showNotify={showNotify && !notification.isViewed}
+  onReply={handleReply}
+  {onClick}
+/>

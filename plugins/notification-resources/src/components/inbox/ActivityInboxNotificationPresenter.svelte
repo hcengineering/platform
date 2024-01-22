@@ -33,6 +33,8 @@
   export let value: DisplayActivityInboxNotification
   export let embedded = false
   export let skipLabel = false
+  export let showNotify = true
+  export let withActions = true
   export let viewlets: ActivityNotificationViewlet[] = []
   export let onClick: (() => void) | undefined = undefined
 
@@ -120,14 +122,27 @@
 
 {#if displayMessage !== undefined}
   {#if viewlet}
-    <Component is={viewlet.presenter} props={{ message: displayMessage, notification: value, embedded, onClick }} />
+    <Component
+      is={viewlet.presenter}
+      props={{
+        message: displayMessage,
+        notification: value,
+        embedded,
+        withActions,
+        showNotify,
+        actions,
+        excludedActions: [chunter.action.ReplyToThread],
+        onClick
+      }}
+    />
   {:else}
     <ActivityMessagePresenter
       value={displayMessage}
-      showNotify={!value.isViewed && !embedded}
+      showNotify={showNotify ? !value.isViewed && !embedded : false}
       isSelected={displayMessage._id === selectedMessageId}
       excludedActions={[chunter.action.ReplyToThread]}
       showEmbedded
+      {withActions}
       {embedded}
       {skipLabel}
       {actions}

@@ -18,10 +18,11 @@
   import { location as locationStore } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import activity, { ActivityMessage, ActivityMessagesFilter } from '@hcengineering/activity'
-  import { ActivityScrolledView } from '@hcengineering/activity-resources'
+  import { ActivityScrolledView, isReactionMessage } from '@hcengineering/activity-resources'
   import { getClient } from '@hcengineering/presentation'
 
   import chunter from '../plugin'
+  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 
   export let context: DocNotifyContext
   export let object: Doc
@@ -29,11 +30,20 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+  const activityInboxNotificationsStore = inboxClient.activityInboxNotifications
 
   let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
 
   const unsubscribe = locationStore.subscribe((newLocation) => {
     selectedMessageId = newLocation.query?.message as Ref<ActivityMessage> | undefined
+    const selectedMessage = selectedMessageId
+      ? $activityInboxNotificationsStore.find(({ attachedTo }) => attachedTo === selectedMessageId)?.$lookup?.attachedTo
+      : undefined
+
+    if (isReactionMessage(selectedMessage)) {
+      selectedMessageId = selectedMessage.attachedTo as Ref<ActivityMessage>
+    }
   })
 
   onDestroy(unsubscribe)

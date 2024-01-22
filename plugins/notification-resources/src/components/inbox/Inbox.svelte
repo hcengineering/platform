@@ -154,7 +154,7 @@
 
     if (selectedContext !== undefined) {
       loc.fragment = selectedContext._id
-      loc.query = { message: event?.detail?.notification?.attachedTo }
+      loc.query = { message: event?.detail?.notification?.attachedTo ?? null }
     } else {
       loc.fragment = undefined
       loc.query = undefined
@@ -283,7 +283,8 @@
   }
 
   .notifications {
-    margin: 0 0.5rem;
+    margin: 0.5rem;
+    padding: 0.5rem;
     height: 100%;
   }
 </style>
