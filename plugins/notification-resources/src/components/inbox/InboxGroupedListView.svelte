@@ -101,21 +101,19 @@
       {@const contextId = displayData[itemIndex][0]}
       {@const contextNotifications = displayData[itemIndex][1]}
       {@const context = $notifyContextsStore.find(({ _id }) => _id === contextId)}
-      {#key contextId}
-        {#if context}
-          <DocNotifyContextCard
-            value={context}
-            notifications={contextNotifications}
-            {viewlets}
-            on:click={(event) => {
-              dispatch('click', event.detail)
-              listSelection = itemIndex
-            }}
-            on:check={(event) => handleCheck(context, event.detail)}
-          />
-          <div class="separator" />
-        {/if}
-      {/key}
+      {#if context}
+        <DocNotifyContextCard
+          value={context}
+          notifications={contextNotifications}
+          {viewlets}
+          on:click={(event) => {
+            dispatch('click', event.detail)
+            listSelection = itemIndex
+          }}
+          on:check={(event) => handleCheck(context, event.detail)}
+        />
+        <div class="separator" />
+      {/if}
     </svelte:fragment>
   </ListView>
 </div>
