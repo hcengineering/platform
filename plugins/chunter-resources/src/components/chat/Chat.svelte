@@ -69,11 +69,6 @@
     }
   }
 
-  defineSeparators('chat', [
-    { minSize: 20, maxSize: 40, size: 30, float: 'navigator' },
-    { size: 'auto', minSize: 30, maxSize: 'auto', float: undefined }
-  ])
-
   $: selectedContextId &&
     notifyContextQuery.query(
       notification.class.DocNotifyContext,
@@ -88,9 +83,10 @@
       object = res[0]
     })
 
-  $: isDocChatOpened =
-    selectedContext !== undefined &&
-    ![chunter.class.Channel, chunter.class.DirectMessage].includes(selectedContext.attachedToClass)
+  defineSeparators('chat', [
+    { minSize: 20, maxSize: 40, size: 30, float: 'navigator' },
+    { size: 'auto', minSize: 30, maxSize: 'auto', float: undefined }
+  ])
 </script>
 
 <div class="flex-row-top h-full">
@@ -101,12 +97,8 @@
         : 'landscape'} background-comp-header-color"
     >
       <div class="antiPanel-wrap__content">
-        {#if !isDocChatOpened}
-          <NavHeader label={chunter.string.Chat} />
-          <ChatNavigator {selectedContextId} {currentSpecial} />
-        {:else if object}
-          <DocChatPanel {object} {filterId} />
-        {/if}
+        <NavHeader label={chunter.string.Chat} />
+        <ChatNavigator {selectedContextId} {currentSpecial} />
       </div>
       <Separator name="chat" float={navFloat ? 'navigator' : true} index={0} />
     </div>
@@ -132,8 +124,7 @@
           }
         }}
       />
-    {/if}
-    {#if selectedContext && object}
+    {:else if selectedContext && object}
       {#key selectedContext._id}
         <ChannelView context={selectedContext} {object} {filterId} />
       {/key}
