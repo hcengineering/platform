@@ -25,7 +25,7 @@ import core, {
   matchQuery
 } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
-import { getClient } from '@hcengineering/presentation'
+import { getClient, type LiveQuery } from '@hcengineering/presentation'
 import {
   type Action,
   type ActionGroup,
@@ -50,6 +50,21 @@ export function getSelection (focus: FocusSelection, selection: SelectionStore):
   return docs
 }
 
+export function queryAction (
+  query: LiveQuery,
+  client: Client,
+  doc: Doc | Doc[],
+  id: Ref<Action>,
+  callback: (action: Action | undefined) => void | Promise<void>,
+  derived: Ref<Class<Doc>> = core.class.Doc,
+  mode: ViewContextType = 'context'
+): boolean {
+  return query.query(view.class.Action, { 'context.mode': mode, _id: id }, async (actions) => {
+    const filteredActions = await filterActionsByHierarchyInputAndVisibility(actions, client, doc, derived)
+    await callback(filteredActions[0])
+  })
+}
+
 /**
  * @public
  *
@@ -64,19 +79,37 @@ export async function getActions (
   derived: Ref<Class<Doc>> = core.class.Doc,
   mode: ViewContextType = 'context'
 ): Promise<Action[]> {
-  let actions: Action[] = await client.findAll(view.class.Action, {
+  const actions: Action[] = await client.findAll(view.class.Action, {
     'context.mode': mode
   })
 
+  const filteredActions = await filterActionsByHierarchyInputAndVisibility(actions, client, doc, derived)
+
   const categories: Partial<Record<ActionGroup | 'top', number>> = { top: 1, tools: 50, other: 100, remove: 200 }
+  filteredActions.sort((a, b) => {
+    const aTarget = categories[a.context.group ?? 'top'] ?? 0
+    const bTarget = categories[b.context.group ?? 'top'] ?? 0
+    return aTarget - bTarget
+  })
+  return filteredActions
+}
+
+async function filterActionsByHierarchyInputAndVisibility (
+  actions: Action[],
+  client: Client,
+  doc: Doc | Doc[],
+  derived: Ref<Class<Doc>> = core.class.Doc
+): Promise<Action[]> {
+  let filtered = [...actions]
 
   if (Array.isArray(doc)) {
     for (const d of doc) {
-      actions = filterActions(client, d, actions, derived)
+      filtered = filterActions(client, d, filtered, derived)
     }
   } else {
-    actions = filterActions(client, doc, actions, derived)
+    filtered = filterActions(client, doc, filtered, derived)
   }
+
   const inputVal: ViewActionInput[] = ['none']
   if (!Array.isArray(doc) || doc.length === 1) {
     inputVal.push('focus')
@@ -86,26 +119,22 @@ export async function getActions (
     inputVal.push('selection')
     inputVal.push('any')
   }
-  actions = actions.filter((it) => inputVal.includes(it.input))
+  filtered = filtered.filter((it) => inputVal.includes(it.input))
 
-  const filteredActions: Action[] = []
-  for (const action of actions) {
+  const visible: Action[] = []
+  for (const action of filtered) {
     if (action.visibilityTester == null) {
-      filteredActions.push(action)
+      visible.push(action)
     } else {
       const visibilityTester = await getResource(action.visibilityTester)
 
       if (await visibilityTester(doc)) {
-        filteredActions.push(action)
+        visible.push(action)
       }
     }
   }
-  filteredActions.sort((a, b) => {
-    const aTarget = categories[a.context.group ?? 'top'] ?? 0
-    const bTarget = categories[b.context.group ?? 'top'] ?? 0
-    return aTarget - bTarget
-  })
-  return filteredActions
+
+  return visible
 }
 
 export async function invokeAction (
