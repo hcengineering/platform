@@ -16,29 +16,34 @@
 <script lang="ts">
   import { ComponentProps } from 'svelte'
   import { Button } from '@hcengineering/ui'
-  import { Ref } from '@hcengineering/core'
-  import { Action } from '@hcengineering/view'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { invokeAction, queryAction } from '../actions'
-
-  type T = $$Generic<Doc>
+  import { Doc, Ref } from '@hcengineering/core'
+  import { Action, ViewContextType } from '@hcengineering/view'
+  import { getClient } from '@hcengineering/presentation'
+  import { getAction, invokeAction, isActionAvailable } from '../actions'
 
   type $$Props = Omit<ComponentProps<Button>, 'icon' | 'label'> & {
-    id: Ref<Action<T>>
-    object: T | T[]
+    id: Ref<Action>
+    object: Doc | Doc[]
+    mode?: ViewContextType
   }
-  export let id: Ref<Action<T>>
-  export let object: T | T[]
+  export let id: Ref<Action>
+  export let object: Doc | Doc[]
+  export let mode: ViewContextType | undefined = undefined
+
+  const client = getClient()
 
   let action: Action | null = null
-  const query = createQuery()
-  const client = getClient()
-  $: queryAction(query, client, object, id as Ref<Action>, (result) => {
+  $: void getAction(client, id, mode).then((result) => {
     action = result ?? null
+  })
+
+  let isAvailable = false
+  $: void (action === null ? Promise.resolve(false) : isActionAvailable(action, client, object)).then((result) => {
+    isAvailable = result
   })
 </script>
 
-{#if action !== null}
+{#if action !== null && isAvailable}
   <Button
     {...$$props}
     icon={action.icon}

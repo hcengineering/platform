@@ -25,7 +25,7 @@ import core, {
   matchQuery
 } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
-import { getClient, type LiveQuery } from '@hcengineering/presentation'
+import { getClient } from '@hcengineering/presentation'
 import {
   type Action,
   type ActionGroup,
@@ -50,18 +50,15 @@ export function getSelection (focus: FocusSelection, selection: SelectionStore):
   return docs
 }
 
-export function queryAction (
-  query: LiveQuery,
+/** @public */
+export async function getAction (
   client: Client,
-  doc: Doc | Doc[],
   id: Ref<Action>,
-  callback: (action: Action | undefined) => void | Promise<void>,
-  derived: Ref<Class<Doc>> = core.class.Doc,
   mode: ViewContextType = 'context'
-): boolean {
-  return query.query(view.class.Action, { 'context.mode': mode, _id: id }, async (actions) => {
-    const filteredActions = await filterActionsByHierarchyInputAndVisibility(actions, client, doc, derived)
-    await callback(filteredActions[0])
+): Promise<Action | undefined> {
+  return await client.findOne(view.class.Action, {
+    'context.mode': mode,
+    _id: id
   })
 }
 
@@ -83,7 +80,12 @@ export async function getActions (
     'context.mode': mode
   })
 
-  const filteredActions = await filterActionsByHierarchyInputAndVisibility(actions, client, doc, derived)
+  const filteredActions: Action[] = []
+  for (const action of actions) {
+    if (await isActionAvailable(action, client, doc, derived)) {
+      filteredActions.push(action)
+    }
+  }
 
   const categories: Partial<Record<ActionGroup | 'top', number>> = { top: 1, tools: 50, other: 100, remove: 200 }
   filteredActions.sort((a, b) => {
@@ -94,49 +96,45 @@ export async function getActions (
   return filteredActions
 }
 
-async function filterActionsByHierarchyInputAndVisibility (
-  actions: Action[],
+/**
+ * @public
+ *
+ * Find all action contributions applicable for specified _class.
+ * If derivedFrom is specified, only actions applicable to derivedFrom class will be used.
+ * So if we have contribution for Doc, Space and we ask for Project and derivedFrom=Space,
+ * we won't receive Doc contribution but receive Space ones.
+ */
+export async function isActionAvailable (
+  action: Action,
   client: Client,
   doc: Doc | Doc[],
   derived: Ref<Class<Doc>> = core.class.Doc
-): Promise<Action[]> {
-  let filtered = [...actions]
-
-  if (Array.isArray(doc)) {
-    for (const d of doc) {
-      filtered = filterActions(client, d, filtered, derived)
-    }
-  } else {
-    filtered = filterActions(client, doc, filtered, derived)
+): Promise<boolean> {
+  const docCheck = (Array.isArray(doc) ? doc : [doc]).every(
+    (doc) => filterActions(client, doc, [action], derived)[0] === action
+  )
+  if (!docCheck) {
+    return false
   }
 
-  const inputVal: ViewActionInput[] = ['none']
-  if (!Array.isArray(doc) || doc.length === 1) {
-    inputVal.push('focus')
-    inputVal.push('any')
-  }
-  if (Array.isArray(doc) && doc.length > 0) {
-    inputVal.push('selection')
-    inputVal.push('any')
-  }
-  filtered = filtered.filter((it) => inputVal.includes(it.input))
-
-  const visible: Action[] = []
-  for (const action of filtered) {
-    if (action.visibilityTester == null) {
-      visible.push(action)
-    } else {
-      const visibilityTester = await getResource(action.visibilityTester)
-
-      if (await visibilityTester(doc)) {
-        visible.push(action)
-      }
-    }
+  const inputCheck = (['none'] as ViewActionInput[])
+    .concat(Array.isArray(doc) && doc.length > 0 ? ['selection', 'any'] : [])
+    .concat(!Array.isArray(doc) || doc.length === 1 ? ['focus', 'any'] : [])
+    .includes(action.input)
+  if (!inputCheck) {
+    return false
   }
 
-  return visible
+  if (action.visibilityTester === undefined) {
+    return true
+  }
+
+  return await (
+    await getResource(action.visibilityTester)
+  )(doc)
 }
 
+/** @public */
 export async function invokeAction (
   object: Doc | Doc[],
   evt: Event,
