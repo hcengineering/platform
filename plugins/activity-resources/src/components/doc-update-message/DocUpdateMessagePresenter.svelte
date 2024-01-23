@@ -49,6 +49,7 @@
   export let skipLabel = false
   export let withFlatActions: boolean = true
   export let excludedActions: string[] = []
+  export let hoverable = true
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -161,6 +162,7 @@
     {actions}
     {skipLabel}
     {withFlatActions}
+    {hoverable}
     {onClick}
     {onReply}
   >

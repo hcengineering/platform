@@ -146,6 +146,7 @@
       {embedded}
       {skipLabel}
       {actions}
+      hoverable={false}
       withFlatActions={false}
       onReply={() => {
         handleReply(displayMessage)

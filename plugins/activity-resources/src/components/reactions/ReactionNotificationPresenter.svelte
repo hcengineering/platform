@@ -56,6 +56,7 @@
     {actions}
     {excludedActions}
     withFlatActions={false}
+    hoverable={false}
     onReply={handleReply}
     {onClick}
   />
@@ -68,6 +69,7 @@
     {withActions}
     {actions}
     {excludedActions}
+    hoverable={false}
     withFlatActions={false}
     onReply={handleReply}
     {onClick}

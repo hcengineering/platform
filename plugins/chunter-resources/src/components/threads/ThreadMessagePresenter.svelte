@@ -29,6 +29,7 @@
   export let withFlatActions: boolean = true
   export let actions: Action[] = []
   export let excludedActions: string[] = []
+  export let hoverable = true
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 </script>
@@ -46,6 +47,7 @@
   {withFlatActions}
   {excludedActions}
   {actions}
+  {hoverable}
   {onClick}
   {onReply}
 />

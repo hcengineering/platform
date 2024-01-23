@@ -43,6 +43,7 @@
   {actions}
   {excludedActions}
   withFlatActions={false}
+  hoverable={false}
   showNotify={showNotify && !notification.isViewed}
   onReply={handleReply}
   {onClick}

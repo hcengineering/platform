@@ -50,6 +50,7 @@
   export let showEmbedded = false
   export let hideReplies = false
   export let skipLabel = false
+  export let hoverable = true
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -123,6 +124,7 @@
       class:clickable={!!onClick}
       class:highlighted={isHighlighted}
       class:selected={isSelected}
+      class:hoverable
       class:embedded
       on:click={onClick}
     >
@@ -258,8 +260,10 @@
       visibility: visible;
     }
 
-    &:hover:not(.embedded) {
-      border: 1px solid var(--highlight-hover);
+    &.hoverable {
+      &:hover:not(.embedded) {
+        border: 1px solid var(--highlight-hover);
+      }
     }
   }
 

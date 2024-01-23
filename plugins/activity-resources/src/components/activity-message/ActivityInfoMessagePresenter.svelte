@@ -40,6 +40,7 @@
   export let withFlatActions: boolean = true
   export let excludedActions: string[] = []
   export let actions: Action[] = []
+  export let hoverable = true
   export let onClick: (() => void) | undefined = undefined
 
   $: personAccount = $personAccountByIdStore.get((value.createdBy ?? value.modifiedBy) as Ref<PersonAccount>)
@@ -72,6 +73,7 @@
   {actions}
   {excludedActions}
   {withFlatActions}
+  {hoverable}
   viewlet={undefined}
   {onClick}
 >
