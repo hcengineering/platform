@@ -96,6 +96,10 @@
 
   $: filteredNotifications = filterNotifications(selectedTabId, displayNotifications, $notifyContextsStore)
 
+  locationStore.subscribe((newLocation) => {
+    syncLocation(newLocation)
+  })
+
   async function syncLocation (newLocation: Location) {
     const loc = await resolveLocation(newLocation)
 
