@@ -227,11 +227,17 @@
     if (offset === -2 || offset === 2) {
       if (level + 1 >= viewOptions.groupBy.length) {
         if (offset === -2) {
+          if (listListCategory?.[0] == null) {
+            return
+          }
           const obj = listListCategory[0].getLimited()[0]
           listListCategory[0].expand()
           select(0, obj)
           return
         } else {
+          if (listListCategory?.[0] == null) {
+            return
+          }
           const g = listListCategory[categories.length - 1].getLimited()
           listListCategory[categories.length - 1].expand()
           const obj = g[g.length - 1]
