@@ -1,8 +1,8 @@
 import { Class, Doc, DocIndexState, docKey, Hierarchy, Ref, RefTo, SearchResultDoc } from '@hcengineering/core'
-import { getResource } from '@hcengineering/platform'
+import { getResource, Resource } from '@hcengineering/platform'
 
 import plugin from './plugin'
-import { ClassSearchConfigProps, IndexedDoc, SearchPresenter, SearchScoring } from './types'
+import { ClassSearchConfigProps, IndexedDoc, SearchPresenter, SearchPresenterFunc, SearchScoring } from './types'
 
 interface IndexedReader {
   get: (attribute: string) => any
@@ -39,7 +39,14 @@ function createIndexedReader (
   }
 }
 
-function readAndMapProps (reader: IndexedReader, props: ClassSearchConfigProps[]): Record<string, any> {
+async function readAndMapProps (
+  reader: IndexedReader,
+  props: ClassSearchConfigProps[],
+  searchProvider?: {
+    hierarchy: Hierarchy
+    providers: SearchPresenterFunc
+  }
+): Promise<Record<string, any>> {
   const res: Record<string, any> = {}
   for (const prop of props) {
     if (typeof prop === 'string') {
@@ -48,7 +55,18 @@ function readAndMapProps (reader: IndexedReader, props: ClassSearchConfigProps[]
       for (const [propName, rest] of Object.entries(prop)) {
         if (rest.length > 1) {
           const val = reader.getDoc(rest[0])?.get(rest[1])
-          res[propName] = Array.isArray(val) ? val[0] : val
+          const v = Array.isArray(val) ? val[0] : val
+          if (searchProvider !== undefined) {
+            const func =
+              searchProvider.providers !== undefined && Object.keys(searchProvider.providers).includes(propName)
+                ? ((await getResource(searchProvider.providers[propName])) as any)
+                : undefined
+            if (func !== undefined) {
+              res[propName] = func(searchProvider.hierarchy, { _class: res?._class, [propName]: v })
+              continue
+            }
+          }
+          res[propName] = v
         }
       }
     }
@@ -116,16 +134,16 @@ export async function updateDocWithPresenter (
     let value
     if (prop.config.tmpl !== undefined) {
       const tmpl = prop.config.tmpl
-      const renderProps = readAndMapProps(reader, prop.config.props)
+      const renderProps = await readAndMapProps(reader, prop.config.props, { hierarchy, providers: prop.provider })
       value = fillTemplate(tmpl, renderProps)
     } else if (typeof prop.config === 'string') {
       value = reader.get(prop.config)
     } else if (prop.provider !== undefined) {
-      const func = (await getResource(prop.provider)) as any
-      const renderProps = readAndMapProps(reader, prop.config.props)
+      const func = await getResource(Object.values(prop.provider)[0] as Resource<any>)
+      const renderProps = await readAndMapProps(reader, prop.config.props)
       value = func(hierarchy, { _class: elasticDoc._class, ...renderProps })
     } else if (prop.name === 'searchIcon') {
-      value = readAndMapProps(reader, prop.config.props)
+      value = await readAndMapProps(reader, prop.config.props)
     }
     elasticDoc[prop.name] = value
   }
