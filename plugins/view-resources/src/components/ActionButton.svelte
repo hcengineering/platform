@@ -26,6 +26,7 @@
     object: Doc | Doc[]
     mode?: ViewContextType
   }
+  export let disabled: boolean = false
   export let id: Ref<Action>
   export let object: Doc | Doc[]
   export let mode: ViewContextType | undefined = undefined
@@ -41,6 +42,8 @@
   $: void (action === null ? Promise.resolve(false) : isActionAvailable(action, client, object)).then((result) => {
     isAvailable = result
   })
+
+  let isBeingInvoked = false
 </script>
 
 {#if action !== null && isAvailable}
@@ -48,9 +51,12 @@
     {...$$props}
     icon={action.icon}
     label={action.label}
+    disabled={disabled || isBeingInvoked}
     on:click={async (event) => {
       if (action !== null) {
+        isBeingInvoked = true
         await invokeAction(object, event, action.action, action.actionProps)
+        isBeingInvoked = false
       }
     }}
   />
