@@ -18,7 +18,7 @@ import { prepareTools as prepareToolsRaw } from '@hcengineering/server-tool'
 import { Data, Tx, Version } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { MigrateOperation } from '@hcengineering/model'
-import builder, { migrateOperations, version } from '@hcengineering/model-all'
+import builder, { migrateOperations, getModelVersion } from '@hcengineering/model-all'
 import { devTool } from '.'
 
 import { addLocation } from '@hcengineering/platform'
@@ -69,7 +69,7 @@ function prepareTools (): {
 } {
   const enabled = (process.env.MODEL_ENABLED ?? '*').split(',').map((it) => it.trim())
   const disabled = (process.env.MODEL_DISABLED ?? '').split(',').map((it) => it.trim())
-  return { ...prepareToolsRaw(builder(enabled, disabled).getTxes()), version, migrateOperations }
+  return { ...prepareToolsRaw(builder(enabled, disabled).getTxes()), version: getModelVersion(), migrateOperations }
 }
 
 console.log(`tools git_version: ${process.env.GIT_REVISION ?? ''} model_version: ${process.env.MODEL_VERSION ?? ''}`)

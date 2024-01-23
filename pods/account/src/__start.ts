@@ -15,7 +15,7 @@
 
 import { getMethods } from '@hcengineering/account'
 import { Tx } from '@hcengineering/core'
-import builder, { migrateOperations, version } from '@hcengineering/model-all'
+import builder, { migrateOperations, getModelVersion } from '@hcengineering/model-all'
 import { serveAccount } from '.'
 
 const enabled = (process.env.MODEL_ENABLED ?? '*').split(',').map((it) => it.trim())
@@ -23,4 +23,4 @@ const disabled = (process.env.MODEL_DISABLED ?? '').split(',').map((it) => it.tr
 
 const txes = JSON.parse(JSON.stringify(builder(enabled, disabled).getTxes())) as Tx[]
 
-serveAccount(getMethods(version, txes, migrateOperations))
+serveAccount(getMethods(getModelVersion(), txes, migrateOperations))

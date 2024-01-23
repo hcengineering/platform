@@ -66,8 +66,8 @@ jobs:
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
-      - name: Setting model version from git release...
-        run: node common/scripts/install-run-rush.js bump-model-version
+      - name: Model version from git tags
+        run: node common/scripts/install-run-rush.js model-version
 
       - name: Building...
         run: node common/scripts/install-run-rush.js build
@@ -258,6 +258,18 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
+      - name: Installing...
+        run: node common/scripts/install-run-rush.js install
+
+      - name: Model version from git tags
+        run: node common/scripts/install-run-rush.js model-version
+
+      - name: Building...
+        run: node common/scripts/install-run-rush.js build
+  
+      - name: Print model version
+        run: node common/scripts/install-run-rush.js model-version
+  
       - name: Bundle
         run: node common/scripts/install-run-rush.js bundle
       - name: Docker build

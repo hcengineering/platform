@@ -303,15 +303,7 @@
       "summary": "show model version",
       "description": "show model version",
       "safeForSimultaneousRushProcesses": true,
-      "shellCommand": "cd ./models/all/ && npx ts-node ./src/__showversion.ts"
-    },
-    {
-      "commandKind": "global",
-      "name": "bump-model-version",
-      "summary": "set model version from git + patch +1",
-      "description": "set current model version",
-      "safeForSimultaneousRushProcesses": true,
-      "shellCommand": "cd ./models/all/ && npx ts-node ./src/__bumpversion.ts"
+      "shellCommand": "npx node ./common/scripts/show_version.js"
     },
     {
       "commandKind": "global",

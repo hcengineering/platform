@@ -14,7 +14,6 @@
 //
 
 import core, { coreId, type Data, type PluginConfiguration, type Ref, type Tx, type Version } from '@hcengineering/core'
-import jsonVersion from './version.json'
 
 import { Builder } from '@hcengineering/model'
 import { activityId, createModel as activityModel } from '@hcengineering/model-activity'
@@ -34,6 +33,7 @@ import { preferenceId, createModel as preferenceModel } from '@hcengineering/mod
 import presentation, { presentationId, createModel as presentationModel } from '@hcengineering/model-presentation'
 import recruit, { recruitId, createModel as recruitModel } from '@hcengineering/model-recruit'
 import { requestId, createModel as requestModel } from '@hcengineering/model-request'
+import { serverActivityId, createModel as serverActivityModel } from '@hcengineering/model-server-activity'
 import { serverAttachmentId, createModel as serverAttachmentModel } from '@hcengineering/model-server-attachment'
 import { serverCalendarId, createModel as serverCalendarModel } from '@hcengineering/model-server-calendar'
 import { serverChunterId, createModel as serverChunterModel } from '@hcengineering/model-server-chunter'
@@ -46,13 +46,12 @@ import { serverLeadId, createModel as serverLeadModel } from '@hcengineering/mod
 import { serverNotificationId, createModel as serverNotificationModel } from '@hcengineering/model-server-notification'
 import { serverRecruitId, createModel as serverRecruitModel } from '@hcengineering/model-server-recruit'
 import { serverRequestId, createModel as serverRequestModel } from '@hcengineering/model-server-request'
-import { serverSettingId, createModel as serveSettingModel } from '@hcengineering/model-server-setting'
+import { createModel as serveSettingModel, serverSettingId } from '@hcengineering/model-server-setting'
 import { serverTagsId, createModel as serverTagsModel } from '@hcengineering/model-server-tags'
 import { serverTaskId, createModel as serverTaskModel } from '@hcengineering/model-server-task'
 import { serverTelegramId, createModel as serverTelegramModel } from '@hcengineering/model-server-telegram'
 import { serverTrackerId, createModel as serverTrackerModel } from '@hcengineering/model-server-tracker'
 import { serverViewId, createModel as serverViewModel } from '@hcengineering/model-server-view'
-import { serverActivityId, createModel as serverActivityModel } from '@hcengineering/model-server-activity'
 import setting, { settingId, createModel as settingModel } from '@hcengineering/model-setting'
 import { supportId, createModel as supportModel } from '@hcengineering/model-support'
 import { tagsId, createModel as tagsModel } from '@hcengineering/model-tags'
@@ -69,11 +68,21 @@ import { createModel as serverTranslate, translateId } from '@hcengineering/mode
 
 import { type Plugin } from '@hcengineering/platform'
 
-export const version: Data<Version> = jsonVersion as Data<Version>
-
 interface ConfigurablePlugin extends Omit<Data<PluginConfiguration>, 'pluginId' | 'transactions'> {}
 
 type BuilderConfig = [(b: Builder) => void, Plugin] | [(b: Builder) => void, Plugin, ConfigurablePlugin | undefined]
+
+export function getModelVersion (): Data<Version> {
+  const rawVersion = (process.env.MODEL_VERSION ?? '0.6.0').trim().replace('v', '').split('.')
+  if (rawVersion.length === 3) {
+    return {
+      major: parseInt(rawVersion[0]),
+      minor: parseInt(rawVersion[1]),
+      patch: parseInt(rawVersion[2])
+    }
+  }
+  return { major: 0, minor: 6, patch: 0 }
+}
 
 /**
  * @public
@@ -308,7 +317,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     builder.onTx = undefined
   }
 
-  builder.createDoc(core.class.Version, core.space.Model, version, core.version.Model)
+  builder.createDoc(core.class.Version, core.space.Model, getModelVersion(), core.version.Model)
   return builder
 }
 
