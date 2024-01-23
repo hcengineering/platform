@@ -32,6 +32,7 @@
   export let actions: Action[] = []
   export let excludedActions: string[] = []
   export let withFlatActions: boolean = true
+  export let hoverable = true
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -58,6 +59,7 @@
       actions,
       excludedActions,
       withFlatActions,
+      hoverable,
       onClick,
       onReply
     }}
