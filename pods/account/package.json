@@ -9,7 +9,7 @@
     "build": "tsc",
     "build:watch": "tsc",
     "lint:fix": "eslint --fix src",
-    "bundle": "esbuild src/__start.ts --bundle --minify --platform=node > bundle.js",
+    "bundle": "esbuild src/__start.ts --bundle --define:process.env.MODEL_VERSION=$(node ../../common/scripts/show_version.js) --minify --platform=node > bundle.js",
     "docker:build": "docker build -t hardcoreeng/account .",
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/account staging",
     "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/account",

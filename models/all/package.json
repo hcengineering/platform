@@ -8,9 +8,6 @@
     "build": "tsc",
     "build:watch": "tsc",
     "lint:fix": "eslint --fix src",
-    "genmodel": "ts-node src/__genmodel.ts",
-    "version": "ts-node src/__showversion.ts",
-    "bumpversion": "ts-node src/__bumpversion.ts",
     "lint": "eslint src",
     "format": "format src"
   },
