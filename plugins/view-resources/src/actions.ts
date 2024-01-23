@@ -64,42 +64,13 @@ export async function getActions (
   derived: Ref<Class<Doc>> = core.class.Doc,
   mode: ViewContextType = 'context'
 ): Promise<Action[]> {
-  let actions: Action[] = await client.findAll(view.class.Action, {
+  const actions: Action[] = await client.findAll(view.class.Action, {
     'context.mode': mode
   })
 
+  const filteredActions = await filterAvailableActions(actions, client, doc, derived)
+
   const categories: Partial<Record<ActionGroup | 'top', number>> = { top: 1, tools: 50, other: 100, remove: 200 }
-
-  if (Array.isArray(doc)) {
-    for (const d of doc) {
-      actions = filterActions(client, d, actions, derived)
-    }
-  } else {
-    actions = filterActions(client, doc, actions, derived)
-  }
-  const inputVal: ViewActionInput[] = ['none']
-  if (!Array.isArray(doc) || doc.length === 1) {
-    inputVal.push('focus')
-    inputVal.push('any')
-  }
-  if (Array.isArray(doc) && doc.length > 0) {
-    inputVal.push('selection')
-    inputVal.push('any')
-  }
-  actions = actions.filter((it) => inputVal.includes(it.input))
-
-  const filteredActions: Action[] = []
-  for (const action of actions) {
-    if (action.visibilityTester == null) {
-      filteredActions.push(action)
-    } else {
-      const visibilityTester = await getResource(action.visibilityTester)
-
-      if (await visibilityTester(doc)) {
-        filteredActions.push(action)
-      }
-    }
-  }
   filteredActions.sort((a, b) => {
     const aTarget = categories[a.context.group ?? 'top'] ?? 0
     const bTarget = categories[b.context.group ?? 'top'] ?? 0
@@ -108,6 +79,39 @@ export async function getActions (
   return filteredActions
 }
 
+export async function filterAvailableActions (
+  actions: Action[],
+  client: Client,
+  doc: Doc | Doc[],
+  derived: Ref<Class<Doc>> = core.class.Doc
+): Promise<Action[]> {
+  actions = (Array.isArray(doc) ? doc : [doc]).reduce(
+    (actions, doc) => filterActions(client, doc, actions, derived),
+    actions
+  )
+
+  const input = (['none'] as ViewActionInput[])
+    .concat(Array.isArray(doc) && doc.length > 0 ? ['selection', 'any'] : [])
+    .concat(!Array.isArray(doc) || doc.length === 1 ? ['focus', 'any'] : [])
+  actions = actions.filter((it) => input.includes(it.input))
+
+  const result: Action[] = []
+  for (const action of actions) {
+    if (action.visibilityTester == null) {
+      result.push(action)
+    } else {
+      const visibilityTester = await getResource(action.visibilityTester)
+
+      if (await visibilityTester(doc)) {
+        result.push(action)
+      }
+    }
+  }
+
+  return result
+}
+
+/** @public */
 export async function invokeAction (
   object: Doc | Doc[],
   evt: Event,
