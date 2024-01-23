@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Ref } from '@hcengineering/core'
-  import { DocNotifyContext } from '@hcengineering/notification'
+  import { Class, Ref, WithLookup } from '@hcengineering/core'
+  import { ActivityInboxNotification, DocNotifyContext } from '@hcengineering/notification'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { ChunterSpace } from '@hcengineering/chunter'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-  import { location as locationStore } from '@hcengineering/ui'
+  import { location as locationStore, Location } from '@hcengineering/ui'
   import { isReactionMessage } from '@hcengineering/activity-resources'
 
   import ChannelPresenter from './ChannelView.svelte'
@@ -37,10 +37,13 @@
 
   let object: ChunterSpace | undefined = undefined
   let threadId: Ref<ActivityMessage> | undefined = undefined
+  let notification: WithLookup<ActivityInboxNotification> | undefined = undefined
 
   let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
+  let loc: Location | undefined = undefined
 
   locationStore.subscribe((newLocation) => {
+    loc = newLocation
     selectedMessageId = newLocation.query?.message as Ref<ActivityMessage> | undefined
   })
 
@@ -48,11 +51,25 @@
     ? $activityInboxNotificationsStore.find(({ attachedTo }) => attachedTo === selectedMessageId)
     : undefined
 
-  $: threadId =
-    hierarchy.isDerived(context.attachedToClass, activity.class.ActivityMessage) &&
-    !isReactionMessage(notification?.$lookup?.attachedTo)
-      ? (context.attachedTo as Ref<ActivityMessage>)
-      : undefined
+  $: updateThreadId(context, notification, loc)
+
+  function updateThreadId (
+    context: DocNotifyContext,
+    notification?: WithLookup<ActivityInboxNotification>,
+    loc?: Location
+  ) {
+    threadId = loc?.query?.thread as Ref<ActivityMessage> | undefined
+
+    if (threadId !== undefined) {
+      return
+    }
+
+    threadId =
+      hierarchy.isDerived(context.attachedToClass, activity.class.ActivityMessage) &&
+      !isReactionMessage(notification?.$lookup?.attachedTo)
+        ? (context.attachedTo as Ref<ActivityMessage>)
+        : undefined
+  }
 
   $: objectQuery.query(_class, { _id }, (res) => {
     object = res[0]

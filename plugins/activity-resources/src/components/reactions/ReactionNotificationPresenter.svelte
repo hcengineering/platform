@@ -41,8 +41,10 @@
 
   function handleReply (): void {
     const loc = getLocation()
+
     loc.fragment = notification.docNotifyContext
-    loc.query = { message: notification.attachedTo }
+    loc.query = { thread: parentMessage?._id ?? message._id }
+
     navigate(loc)
   }
 </script>

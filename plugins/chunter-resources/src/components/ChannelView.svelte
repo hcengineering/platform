@@ -31,6 +31,7 @@
   function openThread (_id: Ref<ChatMessage>) {
     const loc = getLocation()
     loc.path[4] = _id
+    loc.query = { ...loc.query, thread: _id }
     navigate(loc)
   }
 </script>

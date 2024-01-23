@@ -15,6 +15,7 @@
 <script lang="ts">
   import { ActionIcon, Component, IconMoreH, Label, showPopup } from '@hcengineering/ui'
   import notification, {
+    ActivityInboxNotification,
     ActivityNotificationViewlet,
     DisplayInboxNotification,
     DocNotifyContext
@@ -23,18 +24,23 @@
   import { getDocTitle, getDocIdentifier, Menu } from '@hcengineering/view-resources'
   import chunter from '@hcengineering/chunter'
   import { createEventDispatcher } from 'svelte'
+  import { WithLookup } from '@hcengineering/core'
+  import { AddReactionAction } from '@hcengineering/activity-resources'
 
   import InboxNotificationPresenter from './inbox/InboxNotificationPresenter.svelte'
   import NotifyContextIcon from './NotifyContextIcon.svelte'
   import NotifyMarker from './NotifyMarker.svelte'
 
   export let value: DocNotifyContext
-  export let notifications: DisplayInboxNotification[] = []
+  export let notifications: WithLookup<DisplayInboxNotification>[] = []
   export let viewlets: ActivityNotificationViewlet[] = []
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
+
+  let idTitle: string | undefined
+  let title: string | undefined
 
   $: visibleNotification = notifications[0]
 
@@ -50,15 +56,40 @@
           chunter.action.OpenChannel
         ]
       },
-      ev.target as HTMLElement
+      ev.target as HTMLElement,
+      handleActionMenuClosed
     )
+    handleActionMenuOpened()
   }
 
-  const presenterMixin = hierarchy.classHierarchyMixin(
+  $: presenterMixin = hierarchy.classHierarchyMixin(
     value.attachedToClass,
     notification.mixin.NotificationContextPresenter
   )
   $: isCompact = notifications.length === 1
+
+  $: message =
+    visibleNotification._class === notification.class.ActivityInboxNotification
+      ? (visibleNotification as WithLookup<ActivityInboxNotification>).$lookup?.attachedTo
+      : undefined
+
+  let isActionMenuOpened = false
+
+  function handleActionMenuOpened (): void {
+    isActionMenuOpened = true
+  }
+
+  function handleActionMenuClosed (): void {
+    isActionMenuOpened = false
+  }
+
+  $: getDocIdentifier(client, value.attachedTo, value.attachedToClass).then((res) => {
+    idTitle = res
+  })
+
+  $: getDocTitle(client, value.attachedTo, value.attachedToClass).then((res) => {
+    title = res
+  })
 </script>
 
 {#if visibleNotification}
@@ -74,12 +105,14 @@
   >
     {#if isCompact}
       <InboxNotificationPresenter value={visibleNotification} {viewlets} showNotify={false} withActions={false} />
-      <div class="actions compact">
-        <ActionIcon icon={IconMoreH} size="small" action={showMenu} />
-      </div>
-
       <div class="notifyMarker compact">
         <NotifyMarker count={unreadCount} />
+      </div>
+      <div class="actions clear-mins flex flex-gap-2 items-center" class:opened={isActionMenuOpened}>
+        {#if message}
+          <AddReactionAction object={message} on:open={handleActionMenuOpened} on:close={handleActionMenuClosed} />
+        {/if}
+        <ActionIcon icon={IconMoreH} size="small" action={showMenu} />
       </div>
     {:else}
       <div class="header">
@@ -96,30 +129,23 @@
           <Component is={presenterMixin.labelPresenter} props={{ notification: visibleNotification, context: value }} />
         {:else}
           <div class="labels">
-            {#await getDocIdentifier(client, value.attachedTo, value.attachedToClass) then title}
-              {#if title}
-                {title}
-              {:else}
-                <Label label={hierarchy.getClass(value.attachedToClass).label} />
-              {/if}
-            {/await}
-            {#await getDocTitle(client, value.attachedTo, value.attachedToClass) then title}
-              <div class="title overflow-label" {title}>
-                {title ?? hierarchy.getClass(value.attachedToClass).label}
-              </div>
-            {/await}
+            {#if idTitle}
+              {idTitle}
+            {:else}
+              <Label label={hierarchy.getClass(value.attachedToClass).label} />
+            {/if}
+            <div class="title overflow-label" {title}>
+              {title ?? hierarchy.getClass(value.attachedToClass).label}
+            </div>
           </div>
         {/if}
-
-        <div class="actions">
-          <ActionIcon icon={IconMoreH} size="small" action={showMenu} />
-        </div>
-
-        <div class="notifyMarker">
-          <NotifyMarker count={unreadCount} />
-        </div>
       </div>
-
+      <div class="actions clear-mins flex flex-gap-2 items-center" class:opened={isActionMenuOpened}>
+        <ActionIcon icon={IconMoreH} size="small" action={showMenu} />
+      </div>
+      <div class="notifyMarker">
+        <NotifyMarker count={unreadCount} />
+      </div>
       <div class="notification">
         <InboxNotificationPresenter value={visibleNotification} {viewlets} embedded skipLabel />
       </div>
@@ -135,7 +161,8 @@
     cursor: pointer;
     border: 1px solid transparent;
     border-radius: 0.5rem;
-    padding: 0 1rem;
+    padding: 0.5rem 1rem;
+    padding-right: 0;
     margin: 0.5rem 0;
 
     &.compact {
@@ -155,6 +182,22 @@
       font-weight: 500;
       max-width: 20.5rem;
     }
+
+    .actions {
+      position: absolute;
+      visibility: hidden;
+      top: 0.75rem;
+      right: 0.75rem;
+      color: var(--theme-halfcontent-color);
+
+      &.opened {
+        visibility: visible;
+      }
+    }
+
+    &:hover > .actions {
+      visibility: visible;
+    }
   }
 
   .labels {
@@ -163,28 +206,17 @@
   }
 
   .notification {
-    margin-top: 1rem;
+    margin-top: 0.25rem;
     margin-left: 4rem;
   }
 
   .notifyMarker {
     position: absolute;
-    right: 1.875rem;
+    left: 0.25rem;
     top: 0;
 
     &.compact {
-      right: 2.875rem;
-      top: 0.5rem;
-    }
-  }
-
-  .actions {
-    position: absolute;
-    right: 0;
-    top: 0;
-
-    &.compact {
-      right: 1rem;
+      left: 0.25rem;
       top: 0.5rem;
     }
   }
