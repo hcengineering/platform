@@ -14,34 +14,54 @@
 -->
 <script lang="ts">
   import { Ref, Doc } from '@hcengineering/core'
-  import { getLocation, navigate } from '@hcengineering/ui'
+  import { defineSeparators, location as locationStore, panelSeparators, Separator } from '@hcengineering/ui'
   import { DocNotifyContext } from '@hcengineering/notification'
-  import activity, { ActivityMessage, ActivityMessagesFilter } from '@hcengineering/activity'
-  import { ChatMessage } from '@hcengineering/chunter'
+  import activity, { ActivityMessagesFilter } from '@hcengineering/activity'
+  import { getClient } from '@hcengineering/presentation'
 
   import Channel from './Channel.svelte'
   import PinnedMessages from './PinnedMessages.svelte'
   import ChannelHeader from './ChannelHeader.svelte'
+  import DocChatPanel from './chat/DocChatPanel.svelte'
+  import chunter from '../plugin'
 
   export let context: DocNotifyContext
   export let object: Doc
   export let filterId: Ref<ActivityMessagesFilter> = activity.ids.AllFilter
   export let allowClose = false
+  export let embedded = false
 
-  function openThread (_id: Ref<ChatMessage>) {
-    const loc = getLocation()
-    loc.path[4] = _id
-    navigate(loc)
-  }
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  let isThreadOpened = false
+
+  $: isDocChat = !hierarchy.isDerived(object._class, chunter.class.ChunterSpace)
+  $: asideShown = !embedded && isDocChat && !isThreadOpened
+
+  locationStore.subscribe((newLocation) => {
+    isThreadOpened = newLocation.path[4] != null
+  })
+
+  defineSeparators('aside', panelSeparators)
 </script>
 
-<ChannelHeader {object} {allowClose} on:close />
-<PinnedMessages {context} />
-<Channel
-  {context}
-  {object}
-  {filterId}
-  on:openThread={(e) => {
-    openThread(e.detail)
-  }}
-/>
+<div class="popupPanel panel" class:embedded>
+  <ChannelHeader {object} {allowClose} on:close />
+  <div class="popupPanel-body" class:asideShown>
+    <div class="popupPanel-body__main">
+      <PinnedMessages {context} />
+      <Channel {context} {object} {filterId} />
+    </div>
+
+    {#if asideShown}
+      <Separator name="aside" float={false} index={0} />
+      <div class="popupPanel-body__aside" class:float={false} class:shown={asideShown}>
+        <Separator name="aside" float index={0} />
+        <div class="antiPanel-wrap__content">
+          <DocChatPanel {object} {filterId} />
+        </div>
+      </div>
+    {/if}
+  </div>
+</div>
