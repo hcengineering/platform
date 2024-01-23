@@ -189,6 +189,7 @@ export async function deleteChatMessage (message: ChatMessage): Promise<void> {
 export async function replyToThread (message: ActivityMessage): Promise<void> {
   const loc = getLocation()
   loc.path[4] = message._id
+  loc.query = { ...loc.query, thread: message._id }
   navigate(loc)
 }
 

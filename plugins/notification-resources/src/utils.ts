@@ -49,16 +49,9 @@ import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
  * @public
  */
 export async function hasMarkAsUnreadAction (doc: DisplayInboxNotification): Promise<boolean> {
-  const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
+  const canRead = await hasMarkAsReadAction(doc)
 
-  const combinedIds =
-    doc._class === notification.class.ActivityInboxNotification
-      ? (doc as DisplayActivityInboxNotification).combinedIds
-      : [doc._id]
-
-  return get(inboxNotificationsClient.inboxNotifications).some(
-    ({ _id, isViewed }) => combinedIds.includes(_id) && isViewed
-  )
+  return !canRead
 }
 
 export async function hasMarkAsReadAction (doc: DisplayInboxNotification): Promise<boolean> {
@@ -353,11 +346,11 @@ async function generateLocation (
     loc: {
       path: [appComponent, workspace, inboxId],
       fragment: contextId,
-      query: { message: message !== undefined ? (messageId as string) : null }
+      query: { ...loc.query, message: message !== undefined ? (messageId as string) : null }
     },
     defaultLocation: {
       path: [appComponent, workspace, inboxId],
-      query: { message: message !== undefined ? (messageId as string) : null }
+      query: { ...loc.query, message: message !== undefined ? (messageId as string) : null }
     }
   }
 }

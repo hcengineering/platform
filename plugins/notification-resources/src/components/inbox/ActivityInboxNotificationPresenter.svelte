@@ -40,8 +40,8 @@
 
   const client = getClient()
   const messagesQuery = createQuery()
-  const notificationsClient = InboxNotificationsClientImpl.getClient()
-  const notificationsStore = notificationsClient.inboxNotifications
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+  const notificationsStore = inboxClient.inboxNotifications
 
   let messages: ActivityMessage[] = []
   let viewlet: ActivityNotificationViewlet | undefined = undefined
@@ -81,6 +81,7 @@
 
   function updateViewlet (viewlets: ActivityNotificationViewlet[], message?: DisplayActivityMessage) {
     if (viewlets.length === 0 || message === undefined) {
+      viewlet = undefined
       return
     }
 
@@ -91,6 +92,8 @@
         return
       }
     }
+
+    viewlet = undefined
   }
 
   function handleReply (message?: DisplayActivityMessage): void {
@@ -99,7 +102,7 @@
     }
     const loc = getLocation()
     loc.fragment = value.docNotifyContext
-    loc.query = { message: message._id }
+    loc.query = { thread: message._id }
     navigate(loc)
   }
 

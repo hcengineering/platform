@@ -86,6 +86,7 @@
     }
     const loc = getLocation()
     loc.path[4] = message._id
+    loc.query = { ...loc.query, thread: message._id }
     navigate(loc)
   }
 </script>

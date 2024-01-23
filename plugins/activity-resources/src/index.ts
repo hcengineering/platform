@@ -38,6 +38,7 @@ export { default as ActivityDocLink } from './components/ActivityDocLink.svelte'
 export { default as ReactionPresenter } from './components/reactions/ReactionPresenter.svelte'
 export { default as ActivityMessageNotificationLabel } from './components/activity-message/ActivityMessageNotificationLabel.svelte'
 export { default as ActivityMessageHeader } from './components/activity-message/ActivityMessageHeader.svelte'
+export { default as AddReactionAction } from './components/reactions/AddReactionAction.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {

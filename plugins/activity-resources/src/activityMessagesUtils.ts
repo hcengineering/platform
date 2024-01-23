@@ -244,7 +244,7 @@ function groupByTime<T extends ActivityMessage> (messages: T[]): T[][] {
 
 function getDocUpdateMessageKey (message: DocUpdateMessage): string {
   const personAccountById = get(personAccountByIdStore)
-  const person = personAccountById.get(message.modifiedBy as any)?.person ?? message.modifiedBy
+  const person = personAccountById.get(message.createdBy as any)?.person ?? message.createdBy
 
   if (message.action === 'update') {
     return [message._class, message.attachedTo, message.action, person, getAttributeUpdatesKey(message)].join('_')

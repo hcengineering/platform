@@ -48,7 +48,7 @@
 
   onDestroy(unsubscribe)
 
-  $: isDocChannel = !hierarchy.isDerived(context.attachedToClass, chunter.class.ChunterSpace)
+  $: isDocChannel = !hierarchy.isDerived(object._class, chunter.class.ChunterSpace)
   $: messagesClass = isDocChannel ? activity.class.ActivityMessage : chunter.class.ChatMessage
   $: collection = isDocChannel ? 'comments' : 'messages'
 </script>

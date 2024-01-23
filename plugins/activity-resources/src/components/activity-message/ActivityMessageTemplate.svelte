@@ -178,8 +178,9 @@
         class:opened={isActionMenuOpened || message.isPinned}
       >
         {#if withActions}
+          <AddReactionAction object={message} on:open={handleActionMenuOpened} on:close={handleActionMenuClosed} />
+
           {#if withFlatActions}
-            <AddReactionAction object={message} />
             <PinMessageAction object={message} />
             <SaveMessageAction object={message} />
 
@@ -231,11 +232,9 @@
     }
 
     &.embedded {
-      padding: 0;
-
-      .content {
-        padding: 0.75rem 0.75rem 0.75rem 0;
-      }
+      padding: 0.75rem 0 0 0;
+      gap: 0.25rem;
+      border-radius: 0;
     }
 
     .actions {
@@ -292,7 +291,7 @@
   }
 
   .embeddedMarker {
-    width: 6px;
+    width: 0.25rem;
     border-radius: 0.5rem;
     background: var(--secondary-button-default);
   }
