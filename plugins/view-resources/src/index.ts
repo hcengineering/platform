@@ -113,7 +113,7 @@ import {
 import { IndexedDocumentPreview } from '@hcengineering/presentation'
 import { showEmptyGroups } from './viewOptions'
 import { AggregationMiddleware } from './middleware'
-export { getAction, isActionAvailable, getActions, invokeAction, getContextActions } from './actions'
+export { getActions, invokeAction, getContextActions } from './actions'
 export { default as ActionButton } from './components/ActionButton.svelte'
 export { default as ActionHandler } from './components/ActionHandler.svelte'
 export { default as FilterButton } from './components/filter/FilterButton.svelte'

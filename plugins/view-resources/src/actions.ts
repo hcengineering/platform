@@ -50,18 +50,6 @@ export function getSelection (focus: FocusSelection, selection: SelectionStore):
   return docs
 }
 
-/** @public */
-export async function getAction (
-  client: Client,
-  id: Ref<Action>,
-  mode: ViewContextType = 'context'
-): Promise<Action | undefined> {
-  return await client.findOne(view.class.Action, {
-    'context.mode': mode,
-    _id: id
-  })
-}
-
 /**
  * @public
  *
@@ -80,12 +68,7 @@ export async function getActions (
     'context.mode': mode
   })
 
-  const filteredActions: Action[] = []
-  for (const action of actions) {
-    if (await isActionAvailable(action, client, doc, derived)) {
-      filteredActions.push(action)
-    }
-  }
+  const filteredActions = await filterAvailableActions(actions, client, doc, derived)
 
   const categories: Partial<Record<ActionGroup | 'top', number>> = { top: 1, tools: 50, other: 100, remove: 200 }
   filteredActions.sort((a, b) => {
@@ -96,42 +79,36 @@ export async function getActions (
   return filteredActions
 }
 
-/**
- * @public
- *
- * Find all action contributions applicable for specified _class.
- * If derivedFrom is specified, only actions applicable to derivedFrom class will be used.
- * So if we have contribution for Doc, Space and we ask for Project and derivedFrom=Space,
- * we won't receive Doc contribution but receive Space ones.
- */
-export async function isActionAvailable (
-  action: Action,
+export async function filterAvailableActions (
+  actions: Action[],
   client: Client,
   doc: Doc | Doc[],
   derived: Ref<Class<Doc>> = core.class.Doc
-): Promise<boolean> {
-  const docCheck = (Array.isArray(doc) ? doc : [doc]).every(
-    (doc) => filterActions(client, doc, [action], derived)[0] === action
+): Promise<Action[]> {
+  actions = (Array.isArray(doc) ? doc : [doc]).reduce(
+    (actions, doc) => filterActions(client, doc, actions, derived),
+    actions
   )
-  if (!docCheck) {
-    return false
-  }
 
-  const inputCheck = (['none'] as ViewActionInput[])
+  const input = (['none'] as ViewActionInput[])
     .concat(Array.isArray(doc) && doc.length > 0 ? ['selection', 'any'] : [])
     .concat(!Array.isArray(doc) || doc.length === 1 ? ['focus', 'any'] : [])
-    .includes(action.input)
-  if (!inputCheck) {
-    return false
+  actions = actions.filter((it) => input.includes(it.input))
+
+  const result: Action[] = []
+  for (const action of actions) {
+    if (action.visibilityTester == null) {
+      result.push(action)
+    } else {
+      const visibilityTester = await getResource(action.visibilityTester)
+
+      if (await visibilityTester(doc)) {
+        result.push(action)
+      }
+    }
   }
 
-  if (action.visibilityTester === undefined) {
-    return true
-  }
-
-  return await (
-    await getResource(action.visibilityTester)
-  )(doc)
+  return result
 }
 
 /** @public */

@@ -19,7 +19,8 @@
   import { Doc, Ref } from '@hcengineering/core'
   import { Action, ViewContextType } from '@hcengineering/view'
   import { getClient } from '@hcengineering/presentation'
-  import { getAction, invokeAction, isActionAvailable } from '../actions'
+  import { filterAvailableActions, invokeAction } from '../actions'
+  import view from '../plugin'
 
   type $$Props = Omit<ComponentProps<Button>, 'icon' | 'label'> & {
     id: Ref<Action>
@@ -34,14 +35,21 @@
   const client = getClient()
 
   let action: Action | null = null
-  $: void getAction(client, id, mode).then((result) => {
-    action = result ?? null
-  })
+  $: void client
+    .findOne(view.class.Action, {
+      'context.mode': mode,
+      _id: id
+    })
+    .then((result) => {
+      action = result ?? null
+    })
 
   let isAvailable = false
-  $: void (action === null ? Promise.resolve(false) : isActionAvailable(action, client, object)).then((result) => {
-    isAvailable = result
-  })
+  $: if (action !== null) {
+    void filterAvailableActions([action], client, object).then((result) => {
+      isAvailable = result[0] === action
+    })
+  }
 
   let isBeingInvoked = false
 </script>
