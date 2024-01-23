@@ -78,56 +78,54 @@
   }
 </script>
 
-<div class="popupPanel panel">
-  <div class="actions">
-    <ActionIcon
-      icon={view.icon.Open}
-      size="medium"
-      action={() => {
-        openDoc(client.getHierarchy(), object)
-      }}
-    />
-  </div>
+<div class="actions">
+  <ActionIcon
+    icon={view.icon.Open}
+    size="medium"
+    action={() => {
+      openDoc(client.getHierarchy(), object)
+    }}
+  />
+</div>
 
-  <div class="header">
-    <div class="identifier">
-      <Label label={clazz.label} />
-      {#if linkTitle}
-        •
-        <DocNavLink {object}>
-          {linkTitle}
-        </DocNavLink>
-      {/if}
-    </div>
-    {#if objectChatPanel}
-      {#await getResource(objectChatPanel.titleProvider) then getTitle}
-        <div class="title overflow-label">
-          {getTitle(object)}
-        </div>
-      {/await}
+<div class="header">
+  <div class="identifier">
+    <Label label={clazz.label} />
+    {#if linkTitle}
+      •
+      <DocNavLink {object}>
+        {linkTitle}
+      </DocNavLink>
     {/if}
   </div>
-
-  <DocAttributeBar {object} {mixins} ignoreKeys={objectChatPanel?.ignoreKeys ?? []} showHeader={false} />
-
-  {#each filters as filter}
-    {#key filter._id}
-      {#await getMessagesCount(filter, activityMessages) then count}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        {#if filter._id === activity.ids.AllFilter || count > 0}
-          <div
-            on:click={() => {
-              handleFilterSelected(filter)
-            }}
-          >
-            <SpecialElement label={filter.label} selected={filterId === filter._id} notifications={count} />
-          </div>
-        {/if}
-      {/await}
-    {/key}
-  {/each}
+  {#if objectChatPanel}
+    {#await getResource(objectChatPanel.titleProvider) then getTitle}
+      <div class="title overflow-label">
+        {getTitle(object)}
+      </div>
+    {/await}
+  {/if}
 </div>
+
+<DocAttributeBar {object} {mixins} ignoreKeys={objectChatPanel?.ignoreKeys ?? []} showHeader={false} />
+
+{#each filters as filter}
+  {#key filter._id}
+    {#await getMessagesCount(filter, activityMessages) then count}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      {#if filter._id === activity.ids.AllFilter || count > 0}
+        <div
+          on:click={() => {
+            handleFilterSelected(filter)
+          }}
+        >
+          <SpecialElement label={filter.label} selected={filterId === filter._id} notifications={count} />
+        </div>
+      {/if}
+    {/await}
+  {/key}
+{/each}
 
 <style lang="scss">
   .header {

@@ -80,6 +80,6 @@
   <ThreadViewPanel _id={threadId} on:close />
 {:else if object}
   <div class="antiComponent">
-    <ChannelPresenter {object} {context} allowClose on:close />
+    <ChannelPresenter {object} {context} embedded allowClose on:close />
   </div>
 {/if}
