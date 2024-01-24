@@ -14,21 +14,36 @@
 -->
 <script lang="ts">
   import core, { Enum } from '@hcengineering/core'
-  import presentation, { Card, getClient, MessageBox } from '@hcengineering/presentation'
-  import { ActionIcon, EditBox, IconAdd, IconAttachment, IconDelete, ListView, showPopup } from '@hcengineering/ui'
-  import view from '@hcengineering/view-resources/src/plugin'
+  import presentation, { getClient, MessageBox } from '@hcengineering/presentation'
+  import {
+    IconAdd,
+    IconAttachment,
+    IconDelete,
+    showPopup,
+    Modal,
+    ModernEditbox,
+    Label,
+    ButtonIcon,
+    IconMoreV,
+    IconMoreV2,
+    eventToHTMLElement,
+    ModernPopup
+  } from '@hcengineering/ui'
+  import type { DropdownIntlItem } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import setting from '../plugin'
   import EnumValuesList from './EnumValuesList.svelte'
-  import Copy from './icons/Copy.svelte'
+  import IconBulletList from './icons/BulletList.svelte'
+  import Report from './icons/Report.svelte'
+  import { IntlString } from '@hcengineering/platform'
 
   export let value: Enum | undefined
   export let name: string = value?.name ?? ''
   export let values: string[] = value?.enumValues ?? []
+  export let title: IntlString = setting.string.EditEnum
+
   const client = getClient()
   const dispatch = createEventDispatcher()
-
-  let list: ListView
 
   async function save (): Promise<void> {
     if (value === undefined) {
@@ -47,18 +62,29 @@
 
   function add () {
     newValue = newValue.trim()
-    if (newValue.length === 0) return
+    if (matched) return
     if (values.includes(newValue)) return
     values.push(newValue)
     values = values
     newValue = ''
   }
-
   function remove (value: string) {
     values = values.filter((p) => p !== value)
   }
+  const handleKeydown = (evt: KeyboardEvent) => {
+    if (evt.key === 'Enter') {
+      add()
+    }
+    if (evt.key === 'Escape') {
+      newItem = false
+      newValue = ''
+      evt.stopPropagation()
+    }
+  }
 
   let newValue = ''
+  let newItem: boolean = false
+  let opened: boolean = false
   let inputFile: HTMLInputElement
 
   function processText (text: string): void {
@@ -89,6 +115,7 @@
   }
 
   function fileDrop (e: DragEvent) {
+    dragover = false
     const list = e.dataTransfer?.files
     if (list === undefined || list.length === 0) return
     for (let index = 0; index < list.length; index++) {
@@ -114,40 +141,78 @@
     const text = await navigator.clipboard.readText()
     processText(text)
   }
+
   let dragover = false
   const selection: number = 0
 
-  function onKeydown (key: KeyboardEvent): void {
-    if (key.code === 'ArrowUp') {
-      key.stopPropagation()
-      key.preventDefault()
-      list.select(selection - 1)
+  // $: filtered = newValue.length > 0 ? values.filter((it) => it.includes(newValue)) : values
+  $: matched = values.includes(newValue.trim())
+
+  // function onDelete () {
+  //   showPopup(
+  //     MessageBox,
+  //     {
+  //       label: view.string.DeleteObject,
+  //       message: view.string.DeleteObjectConfirm,
+  //       params: { count: filtered.length }
+  //     },
+  //     'top',
+  //     (result?: boolean) => {
+  //       if (result === true) {
+  //         values = values.filter((it) => !filtered.includes(it))
+  //         newValue = ''
+  //       }
+  //     }
+  //   )
+  // }
+
+  const items: (DropdownIntlItem & { action: () => void })[] = [
+    {
+      id: 'import',
+      icon: IconAttachment,
+      label: setting.string.ImportEnum,
+      action: () => {
+        inputFile.click()
+      }
+    },
+    {
+      id: 'paste',
+      icon: Report,
+      label: setting.string.ImportEnumCopy,
+      action: () => {
+        handleClipboard()
+      }
     }
-    if (key.code === 'ArrowDown') {
-      key.stopPropagation()
-      key.preventDefault()
-      list.select(selection + 1)
+  ]
+
+  const openPopup = (ev: MouseEvent): void => {
+    if (!opened) {
+      opened = true
+      showPopup(ModernPopup, { items }, eventToHTMLElement(ev), (result) => {
+        if (result) items.find((it) => it.id === result)?.action()
+        opened = false
+      })
     }
   }
 
-  $: filtered = newValue.length > 0 ? values.filter((it) => it.includes(newValue)) : values
+  async function showConfirmationDialog (): Promise<void> {
+    const isEnumEmpty = values.length === 0
 
-  function onDelete () {
-    showPopup(
-      MessageBox,
-      {
-        label: view.string.DeleteObject,
-        message: view.string.DeleteObjectConfirm,
-        params: { count: filtered.length }
-      },
-      'top',
-      (result?: boolean) => {
-        if (result === true) {
-          values = values.filter((it) => !filtered.includes(it))
-          newValue = ''
+    if (isEnumEmpty) {
+      dispatch('close')
+    } else {
+      showPopup(
+        MessageBox,
+        {
+          label: setting.string.NewEnumDialogClose,
+          message: setting.string.NewEnumDialogCloseNote
+        },
+        'top',
+        (result?: boolean) => {
+          if (result === true) dispatch('close')
         }
-      }
-    )
+      )
+    }
   }
 </script>
 
@@ -163,57 +228,22 @@
   on:change={fileSelected}
 />
 
-<Card
-  label={core.string.Enum}
+<Modal
+  label={title}
+  type={'type-popup'}
   okLabel={presentation.string.Save}
   okAction={save}
   canSave={name.trim().length > 0 && values.length > 0}
-  on:close={() => {
-    dispatch('close')
+  onCancel={() => {
+    showConfirmationDialog()
   }}
-  on:changeContent
 >
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class="flex-col" on:keydown={onKeydown}>
-    <EditBox bind:value={name} placeholder={core.string.Name} kind={'large-style'} fullSize />
-    <div class="flex-between my-4">
-      <EditBox placeholder={presentation.string.Search} kind={'large-style'} bind:value={newValue} fullSize />
-      <div class="flex-row-center flex-no-shrink gap-2 ml-4">
-        <ActionIcon icon={IconAdd} label={presentation.string.Add} action={add} size={'small'} />
-        <ActionIcon
-          icon={Copy}
-          label={setting.string.ImportEnumCopy}
-          action={() => {
-            handleClipboard()
-          }}
-          size={'small'}
-        />
-        <ActionIcon
-          icon={IconDelete}
-          label={setting.string.Delete}
-          action={() => {
-            onDelete()
-          }}
-          size={'small'}
-        />
-      </div>
-    </div>
-    <div class="scroll" style:margin={'0 -.5rem'}>
-      <div class="box flex max-h-125">
-        <EnumValuesList
-          bind:values
-          bind:filtered
-          on:remove={(e) => {
-            remove(e.detail)
-          }}
-        />
-      </div>
-    </div>
-  </div>
-  <svelte:fragment slot="footer">
+  <div class="flex-col">
+    <ModernEditbox bind:value={name} label={setting.string.EnumTitle} kind={'ghost'} size={'large'} width={'100%'} />
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
-      class="resume flex-center"
-      class:solid={dragover}
+      class="hulyTableAttr-container mt-6"
+      class:dragDropZone={dragover}
       on:dragover|preventDefault={() => {
         dragover = true
       }}
@@ -222,14 +252,81 @@
       }}
       on:drop|preventDefault|stopPropagation={fileDrop}
     >
-      <ActionIcon
-        icon={IconAttachment}
-        label={setting.string.ImportEnum}
-        action={() => {
-          inputFile.click()
-        }}
-        size={'small'}
-      />
+      <div class="hulyTableAttr-header font-medium-12">
+        <IconBulletList size={'small'} />
+        <span><Label label={setting.string.Options} /></span>
+        <div class="buttons-group tertiary-textColor">
+          <ButtonIcon
+            kind={'tertiary'}
+            icon={IconMoreV}
+            size={'small'}
+            pressed={opened}
+            inheritColor
+            hasMenu
+            on:click={(ev) => {
+              openPopup(ev)
+            }}
+          />
+          <ButtonIcon
+            kind={'primary'}
+            icon={IconAdd}
+            size={'small'}
+            tooltip={{ label: setting.string.Add }}
+            on:click={() => {
+              newItem = true
+            }}
+          />
+        </div>
+      </div>
+      {#if values.length > 0 || newItem}
+        <div class="hulyTableAttr-content options">
+          <EnumValuesList
+            bind:values
+            disableMouseOver={newItem}
+            on:remove={(e) => {
+              remove(e.detail)
+            }}
+          />
+          {#if newItem}
+            <div class="hulyTableAttr-content__row hovered">
+              <div class="hulyTableAttr-content__row-dragMenu">
+                <IconMoreV2 size={'small'} />
+              </div>
+              <div class="hulyTableAttr-content__row-label font-regular-14 accent grow">
+                <ModernEditbox
+                  kind={'ghost'}
+                  size={'small'}
+                  label={setting.string.EnterOptionTitle}
+                  on:keydown={handleKeydown}
+                  bind:value={newValue}
+                  width={'100%'}
+                  autoFocus
+                />
+              </div>
+              {#if matched}
+                <div class="hulyChip-item error font-medium-12">
+                  <Label label={presentation.string.Match} />
+                </div>
+              {/if}
+              <ButtonIcon
+                kind={'tertiary'}
+                icon={IconDelete}
+                size={'small'}
+                on:click={() => {
+                  newValue = ''
+                  newItem = false
+                }}
+              />
+            </div>
+          {/if}
+        </div>
+      {/if}
     </div>
-  </svelte:fragment>
-</Card>
+  </div>
+</Modal>
+
+<style lang="scss">
+  .dragDropZone {
+    border: 2px dashed var(--theme-popup-hover);
+  }
+</style>

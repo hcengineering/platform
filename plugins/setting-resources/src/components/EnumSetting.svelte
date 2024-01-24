@@ -15,10 +15,8 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import core, { Enum } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery } from '@hcengineering/presentation'
   import {
-    CircleButton,
-    EditBox,
     eventToHTMLElement,
     IconAdd,
     IconMoreH,
@@ -29,7 +27,10 @@
     defineSeparators,
     settingsSeparators,
     Separator,
-    Scroller
+    Scroller,
+    ButtonIcon,
+    IconTableOfContents,
+    ModernButton
   } from '@hcengineering/ui'
   import { ContextMenu } from '@hcengineering/view-resources'
   import setting from '../plugin'
@@ -44,7 +45,6 @@
   let enums: Enum[] = []
   let selected: Enum | undefined
   let hovered: number | null = null
-  const client = getClient()
 
   query.query(core.class.Enum, {}, (res) => {
     enums = res
@@ -54,32 +54,38 @@
   })
 
   function create () {
-    showPopup(setting.component.EditEnum, {}, 'top')
+    showPopup(setting.component.EditEnum, { title: setting.string.CreateEnum }, 'top')
   }
 
-  async function update (value: Enum): Promise<void> {
-    await client.update(value, {
-      name: value.name
-    })
-  }
   defineSeparators('workspaceSettings', settingsSeparators)
 </script>
 
 <div class="hulyComponent">
   <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
     <Breadcrumb icon={setting.icon.Enums} label={setting.string.Enums} size={'large'} isCurrent />
+    <svelte:fragment slot="actions">
+      <ModernButton
+        kind={'primary'}
+        icon={IconAdd}
+        label={setting.string.CreateEnum}
+        size={'small'}
+        on:click={create}
+      />
+    </svelte:fragment>
   </Header>
   <div class="hulyComponent-content__container columns">
     <div class="hulyComponent-content__column">
-      <div class="flex-between trans-title m-3">
-        <Label label={setting.string.Enums} />
-        <CircleButton icon={IconAdd} size="medium" on:click={create} />
+      <div class="hulyComponent-content__navHeader">
+        <div class="hulyComponent-content__navHeader-menu">
+          <ButtonIcon kind={'tertiary'} icon={IconTableOfContents} size={'small'} inheritColor />
+        </div>
+        <div class="hulyComponent-content__navHeader-hint paragraph-regular-14">
+          <Label label={setting.string.EnumsSettingHint} />
+        </div>
       </div>
-      <div class="overflow-y-auto">
+      <Scroller>
         {#each enums as value, i}
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <!-- svelte-ignore a11y-no-static-element-interactions -->
-          <div
+          <button
             class="enum__list-item"
             class:hovered={hovered === i}
             class:selected={selected === value}
@@ -87,21 +93,27 @@
               selected = value
             }}
           >
-            <EditBox bind:value={value.name} on:change={() => update(value)} />
-            <div
-              class="hover-trans"
-              on:click|stopPropagation={(ev) => {
+            <div class="flex-col">
+              <span class="font-regular-14 overflow-label">{value.name}</span>
+              <span class="font-regular-12 secondary-textColor overflow-label">
+                <Label label={setting.string.EnumsCount} params={{ count: value.enumValues.length }} />
+              </span>
+            </div>
+            <ButtonIcon
+              kind={'tertiary'}
+              icon={IconMoreH}
+              size={'small'}
+              pressed={hovered === i}
+              on:click={(ev) => {
                 hovered = i
                 showPopup(ContextMenu, { object: value }, eventToHTMLElement(ev), () => {
                   hovered = null
                 })
               }}
-            >
-              <IconMoreH size={'medium'} />
-            </div>
-          </div>
+            />
+          </button>
         {/each}
-      </div>
+      </Scroller>
     </div>
     <Separator name={'workspaceSettings'} index={0} color={'var(--theme-divider-color)'} />
     <div class="hulyComponent-content__column content">
@@ -121,21 +133,27 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    min-height: 2.5rem;
-    margin: 0 0.75rem;
-    padding: 0 1.25rem;
-    border: 1px solid transparent;
-    border-radius: 12px;
-    cursor: pointer;
+    margin: 0 var(--spacing-1_5);
+    padding: var(--spacing-1) var(--spacing-1_25);
+    text-align: left;
+    border: none;
+    border-radius: var(--small-BorderRadius);
+    outline: none;
 
+    & :global(button.type-button-icon) {
+      visibility: hidden;
+    }
     &.hovered,
     &:hover {
       background-color: var(--theme-button-hovered);
+
+      & :global(button.type-button-icon) {
+        visibility: visible;
+      }
     }
     &.selected {
       background-color: var(--theme-button-default);
-      border-color: var(--theme-button-border);
-      cursor: auto;
+      cursor: default;
     }
   }
 </style>

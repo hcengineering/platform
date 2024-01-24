@@ -13,20 +13,29 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import presentation from '@hcengineering/presentation'
-  import { ActionIcon, IconCircles, IconDelete, Label, Scroller } from '@hcengineering/ui'
+  import {
+    ModernPopup,
+    IconDelete,
+    ButtonIcon,
+    IconMoreV,
+    IconMoreV2,
+    showPopup,
+    eventToHTMLElement
+  } from '@hcengineering/ui'
+  import type { DropdownIntlItem } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import setting from '../plugin'
 
   export let values: string[]
-  export let filtered: string[]
+  export let disableMouseOver: boolean = false
 
   let selected: string | undefined
+  let opened: number | undefined = undefined
   const elements: HTMLElement[] = []
 
   function dragswap (ev: MouseEvent, item: string): boolean {
-    const s = filtered.findIndex((p) => p === selected)
-    const i = filtered.findIndex((p) => p === item)
+    const s = values.findIndex((p) => p === selected)
+    const i = values.findIndex((p) => p === item)
     if (i < s) {
       return ev.offsetY < elements[i].offsetHeight / 2
     } else if (i > s) {
@@ -52,45 +61,79 @@
   async function onDrop () {
     dispatch('drop')
   }
+
+  const items: (DropdownIntlItem & { action: () => void })[] = [
+    {
+      id: 'delete',
+      icon: IconDelete,
+      label: setting.string.Delete,
+      action: () => {
+        if (opened !== undefined) {
+          remove(values[opened])
+          opened = undefined
+        }
+      }
+    }
+  ]
+
+  function openPopup (ev: MouseEvent, n: number) {
+    if (opened === undefined) {
+      opened = n
+      showPopup(ModernPopup, { items }, eventToHTMLElement(ev), (result) => {
+        if (result) {
+          switch (result) {
+            case 'delete':
+              remove(values[n])
+              break
+          }
+        }
+        opened = undefined
+      })
+    }
+  }
 </script>
 
-<Scroller>
-  {#each filtered as item, i}
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div
-      class="flex-between flex-nowrap item step-tb25"
-      draggable={true}
-      bind:this={elements[i]}
-      on:dragover|preventDefault={(ev) => {
-        dragover(ev, item)
-      }}
-      on:drop|preventDefault={onDrop}
-      on:dragstart={() => {
-        selected = item
-      }}
-      on:dragend={() => {
-        selected = undefined
-      }}
-    >
-      <div class="flex-row-center">
-        <div class="circles-mark"><IconCircles size={'small'} /></div>
-        <span class="overflow-label mx-2">{item}</span>
-      </div>
-      <ActionIcon
-        icon={IconDelete}
-        label={setting.string.Delete}
-        action={() => {
-          remove(item)
-        }}
-        size={'small'}
-      />
+{#each values as item, i}
+  <button
+    bind:this={elements[i]}
+    draggable={!disableMouseOver}
+    class="hulyTableAttr-content__row"
+    class:disableMouseOver
+    class:hovered={opened === i && !disableMouseOver}
+    class:selected={selected === item}
+    on:dragover|preventDefault={(ev) => {
+      dragover(ev, item)
+    }}
+    on:drop|preventDefault={onDrop}
+    on:dragstart={() => {
+      selected = item
+    }}
+    on:dragend={() => {
+      selected = undefined
+    }}
+  >
+    <button class="hulyTableAttr-content__row-dragMenu" class:drag={!disableMouseOver}>
+      <IconMoreV2 size={'small'} />
+    </button>
+    <div class="hulyTableAttr-content__row-label font-regular-14 accent">
+      {item}
     </div>
-  {/each}
-  {#if filtered.length}<div class="antiVSpacer x4" />{/if}
-</Scroller>
-{#if filtered.length === 0}
-  <Label label={presentation.string.NoMatchesFound} />
-{/if}
+    <div class="hulyTableAttr-content__row-label grow" />
+    {#if !disableMouseOver}
+      <ButtonIcon
+        kind={'tertiary'}
+        icon={IconMoreV}
+        iconProps={{ fill: 'var(--global-tertiary-TextColor)' }}
+        size={'small'}
+        pressed={opened === i}
+        hasMenu
+        on:click={(ev) => {
+          openPopup(ev, i)
+        }}
+      />
+    {/if}
+  </button>
+{/each}
 
 <style lang="scss">
   .item {

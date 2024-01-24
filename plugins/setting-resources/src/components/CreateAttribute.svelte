@@ -26,7 +26,17 @@
   } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import { AnyComponent, Component, DropdownLabelsIntl, ModernEditbox, Label, Modal } from '@hcengineering/ui'
+  import {
+    AnyComponent,
+    Component,
+    DropdownLabelsIntl,
+    ModernEditbox,
+    Label,
+    Modal,
+    ButtonIcon,
+    IconDelete,
+    IconCopy
+  } from '@hcengineering/ui'
   import { DropdownIntlItem } from '@hcengineering/ui/src/types'
   import setting from '../plugin'
   import view from '@hcengineering/view'
@@ -108,6 +118,10 @@
     clearSettingsStore()
   }}
 >
+  <svelte:fragment slot="actions">
+    <ButtonIcon icon={IconDelete} size={'small'} kind={'tertiary'} />
+    <ButtonIcon icon={IconCopy} size={'small'} kind={'tertiary'} />
+  </svelte:fragment>
   <div class="hulyModal-content__titleGroup">
     <div class="hulyChip-item font-medium-12">
       <Label label={setting.string.Custom} />

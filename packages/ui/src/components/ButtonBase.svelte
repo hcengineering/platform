@@ -14,7 +14,8 @@
 -->
 <script lang="ts">
   import type { Asset, IntlString } from '@hcengineering/platform'
-  import { AnySvelteComponent } from '../types'
+  import { AnySvelteComponent, LabelAndProps } from '../types'
+  import { tooltip as tp } from '../tooltips'
   import { ComponentType } from 'svelte'
   import Spinner from './Spinner.svelte'
   import Icon from './Icon.svelte'
@@ -33,6 +34,7 @@
   export let hasMenu: boolean = false
   export let type: 'type-button' | 'type-button-icon'
   export let inheritColor: boolean = false
+  export let tooltip: LabelAndProps | undefined = undefined
   export let element: HTMLButtonElement | undefined = undefined
 </script>
 
@@ -44,6 +46,7 @@
   class:inheritColor
   class:menu={hasMenu}
   disabled={loading || disabled}
+  use:tp={tooltip}
   on:click
 >
   {#if loading}
@@ -298,6 +301,9 @@
           color: var(--button-negative-loading-LabelColor);
         }
       }
+    }
+    & > * {
+      pointer-events: none;
     }
   }
 
