@@ -93,8 +93,6 @@ export class ClientSession implements Session {
         modifiedOn: Date.now(),
         role: AccountRole.Owner
       }
-      // Add for other services to work properly
-      this._pipeline.modelDb.addDoc(account)
       return account
     }
     return account[0]
