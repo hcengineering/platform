@@ -30,7 +30,7 @@
   export let disabled: boolean = false
   export let id: Ref<Action>
   export let object: Doc | Doc[]
-  export let mode: ViewContextType | undefined = undefined
+  export let mode: ViewContextType = 'context'
 
   const client = getClient()
 
