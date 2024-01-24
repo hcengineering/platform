@@ -15,10 +15,10 @@
 
 import { Doc, Domain, Ref } from '@hcengineering/core'
 
-export function minioDocumentId (docId: Ref<Doc>, attribute?: string): string {
-  return attribute !== undefined ? `minio://${docId}%${attribute}` : `minio://${docId}`
+export function minioDocumentId (workspace: string, docId: Ref<Doc>, attribute?: string): string {
+  return attribute !== undefined ? `minio://${workspace}/${docId}%${attribute}` : `minio://${workspace}/${docId}`
 }
 
-export function mongodbDocumentId (domain: Domain, docId: Ref<Doc>, attribute: string): string {
-  return `mongodb://${domain}/${docId}/${attribute}`
+export function mongodbDocumentId (workspace: string, domain: Domain, docId: Ref<Doc>, attribute: string): string {
+  return `mongodb://${workspace}/${domain}/${docId}/${attribute}`
 }

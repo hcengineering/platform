@@ -15,7 +15,7 @@
 import { Doc as Ydoc } from 'yjs'
 import { HocuspocusProvider, type HocuspocusProviderConfiguration } from '@hocuspocus/provider'
 
-export type DocumentId = string
+export type DocumentId = string & { __documentId: true }
 
 export type TiptapCollabProviderConfiguration = HocuspocusProviderConfiguration &
 Required<Pick<HocuspocusProviderConfiguration, 'token'>> &

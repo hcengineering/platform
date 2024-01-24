@@ -14,8 +14,9 @@
 //
 
 import { type CollaboratorClient, getClient as getCollaborator } from '@hcengineering/collaborator-client'
-import type { Class, Doc, Markup, Ref } from '@hcengineering/core'
+import { getWorkspaceId, type Class, type Doc, type Markup, type Ref } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
+import { getCurrentLocation } from '@hcengineering/ui'
 
 import { getClient } from '.'
 import presentation from './plugin'
@@ -24,11 +25,12 @@ import presentation from './plugin'
  * @public
  */
 export function getCollaboratorClient (): CollaboratorClient {
+  const workspaceId = getWorkspaceId(getCurrentLocation().path[1] ?? '')
   const hierarchy = getClient().getHierarchy()
   const token = getMetadata(presentation.metadata.Token) ?? ''
   const collaboratorURL = getMetadata(presentation.metadata.CollaboratorUrl) ?? ''
 
-  return getCollaborator(hierarchy, token, collaboratorURL)
+  return getCollaborator(hierarchy, workspaceId, token, collaboratorURL)
 }
 
 /**

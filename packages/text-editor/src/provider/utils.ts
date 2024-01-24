@@ -15,18 +15,28 @@
 
 import type { Doc, Ref } from '@hcengineering/core'
 import { type KeyedAttribute, getClient } from '@hcengineering/presentation'
+import { getCurrentLocation } from '@hcengineering/ui'
 
 import { type DocumentId } from './tiptap'
 
+function getWorkspace (): string {
+  return getCurrentLocation().path[1] ?? ''
+}
+
 export function minioDocumentId (docId: Ref<Doc>, attr?: KeyedAttribute): DocumentId {
-  return attr !== undefined ? `minio://${docId}%${attr.key}` : `minio://${docId}`
+  const workspace = getWorkspace()
+  return attr !== undefined
+    ? (`minio://${workspace}/${docId}%${attr.key}` as DocumentId)
+    : (`minio://${workspace}/${docId}` as DocumentId)
 }
 
 export function platformDocumentId (docId: Ref<Doc>, attr: KeyedAttribute): DocumentId {
-  return `platform://${attr.attr.attributeOf}/${docId}/${attr.key}`
+  const workspace = getWorkspace()
+  return `platform://${workspace}/${attr.attr.attributeOf}/${docId}/${attr.key}` as DocumentId
 }
 
 export function mongodbDocumentId (docId: Ref<Doc>, attr: KeyedAttribute): DocumentId {
+  const workspace = getWorkspace()
   const domain = getClient().getHierarchy().getDomain(attr.attr.attributeOf)
-  return `mongodb://${domain}/${docId}/${attr.key}`
+  return `mongodb://${workspace}/${domain}/${docId}/${attr.key}` as DocumentId
 }

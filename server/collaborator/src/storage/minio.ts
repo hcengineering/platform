@@ -22,6 +22,23 @@ import { Context } from '../context'
 
 import { StorageAdapter } from './adapter'
 
+interface MinioDocumentId {
+  workspace: string
+  minioDocumentId: string
+}
+
+function parseDocumentId (documentId: string): MinioDocumentId {
+  const [workspace, minioDocumentId] = documentId.split('/')
+  return {
+    workspace: workspace ?? '',
+    minioDocumentId: minioDocumentId ?? ''
+  }
+}
+
+function isValidDocumentId (documentId: MinioDocumentId, context: Context): boolean {
+  return documentId.minioDocumentId !== '' && documentId.workspace === context.workspaceId.name
+}
+
 function maybePlatformDocumentId (documentId: string): boolean {
   return !documentId.includes('%')
 }
@@ -35,10 +52,17 @@ export class MinioStorageAdapter implements StorageAdapter {
   async loadDocument (documentId: string, context: Context): Promise<YDoc | undefined> {
     const { workspaceId } = context
 
+    const { workspace, minioDocumentId } = parseDocumentId(documentId)
+
+    if (!isValidDocumentId({ workspace, minioDocumentId }, context)) {
+      console.warn('malformed document id', documentId)
+      return undefined
+    }
+
     return await this.ctx.with('load-document', {}, async (ctx) => {
       const minioDocument = await ctx.with('query', {}, async () => {
         try {
-          const buffer = await this.minio.read(workspaceId, documentId)
+          const buffer = await this.minio.read(workspaceId, minioDocumentId)
           return Buffer.concat(buffer)
         } catch {
           return undefined
@@ -67,6 +91,13 @@ export class MinioStorageAdapter implements StorageAdapter {
   async saveDocument (documentId: string, document: YDoc, context: Context): Promise<void> {
     const { clientFactory, workspaceId } = context
 
+    const { workspace, minioDocumentId } = parseDocumentId(documentId)
+
+    if (!isValidDocumentId({ workspace, minioDocumentId }, context)) {
+      console.warn('malformed document id', documentId)
+      return undefined
+    }
+
     await this.ctx.with('save-document', {}, async (ctx) => {
       const buffer = await ctx.with('transform', {}, () => {
         const updates = encodeStateAsUpdate(document)
@@ -75,13 +106,13 @@ export class MinioStorageAdapter implements StorageAdapter {
 
       await ctx.with('update', {}, async () => {
         const metadata = { 'content-type': 'application/ydoc' }
-        await this.minio.put(workspaceId, documentId, buffer, buffer.length, metadata)
+        await this.minio.put(workspaceId, minioDocumentId, buffer, buffer.length, metadata)
       })
 
       // minio file is usually an attachment document
       // we need to touch an attachment from here to notify platform about changes
 
-      if (!maybePlatformDocumentId(documentId)) {
+      if (!maybePlatformDocumentId(minioDocumentId)) {
         // documentId is not a platform document id, we can skip platform notification
         return
       }
@@ -92,7 +123,7 @@ export class MinioStorageAdapter implements StorageAdapter {
         })
 
         const current = await ctx.with('query', {}, async () => {
-          return await client.findOne(attachment.class.Attachment, { _id: documentId as Ref<Attachment> })
+          return await client.findOne(attachment.class.Attachment, { _id: minioDocumentId as Ref<Attachment> })
         })
 
         if (current !== undefined) {

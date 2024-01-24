@@ -22,22 +22,29 @@ import { Context } from '../context'
 import { StorageAdapter } from './adapter'
 
 interface PlatformDocumentId {
+  workspace: string
   objectClass: Ref<Class<Doc>>
   objectId: Ref<Doc>
   objectAttr: string
 }
 
 function parseDocumentId (documentId: string): PlatformDocumentId {
-  const [objectClass, objectId, objectAttr] = documentId.split('/')
+  const [workspace, objectClass, objectId, objectAttr] = documentId.split('/')
   return {
+    workspace: workspace ?? '',
     objectClass: (objectClass ?? '') as Ref<Class<Doc>>,
     objectId: (objectId ?? '') as Ref<Doc>,
     objectAttr: objectAttr ?? ''
   }
 }
 
-function isValidDocumentId (documentId: PlatformDocumentId): boolean {
-  return documentId.objectClass !== '' && documentId.objectId !== '' && documentId.objectAttr !== ''
+function isValidDocumentId (documentId: PlatformDocumentId, context: Context): boolean {
+  return (
+    documentId.objectClass !== '' &&
+    documentId.objectId !== '' &&
+    documentId.objectAttr !== '' &&
+    documentId.workspace === context.workspaceId.name
+  )
 }
 
 export class PlatformStorageAdapter implements StorageAdapter {
@@ -48,9 +55,9 @@ export class PlatformStorageAdapter implements StorageAdapter {
 
   async loadDocument (documentId: string, context: Context): Promise<YDoc | undefined> {
     const { clientFactory } = context
-    const { objectId, objectClass, objectAttr } = parseDocumentId(documentId)
+    const { workspace, objectId, objectClass, objectAttr } = parseDocumentId(documentId)
 
-    if (!isValidDocumentId({ objectId, objectClass, objectAttr })) {
+    if (!isValidDocumentId({ workspace, objectId, objectClass, objectAttr }, context)) {
       console.warn('malformed document id', documentId)
       return undefined
     }
@@ -77,9 +84,9 @@ export class PlatformStorageAdapter implements StorageAdapter {
 
   async saveDocument (documentId: string, document: YDoc, context: Context): Promise<void> {
     const { clientFactory } = context
-    const { objectId, objectClass, objectAttr } = parseDocumentId(documentId)
+    const { workspace, objectId, objectClass, objectAttr } = parseDocumentId(documentId)
 
-    if (!isValidDocumentId({ objectId, objectClass, objectAttr })) {
+    if (!isValidDocumentId({ workspace, objectId, objectClass, objectAttr }, context)) {
       console.warn('malformed document id', documentId)
       return undefined
     }

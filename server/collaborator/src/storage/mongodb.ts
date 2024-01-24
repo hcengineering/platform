@@ -23,22 +23,29 @@ import { Context } from '../context'
 import { StorageAdapter } from './adapter'
 
 interface MongodbDocumentId {
+  workspace: string
   objectDomain: string
   objectId: string
   objectAttr: string
 }
 
 function parseDocumentId (documentId: string): MongodbDocumentId {
-  const [objectDomain, objectId, objectAttr] = documentId.split('/')
+  const [workspace, objectDomain, objectId, objectAttr] = documentId.split('/')
   return {
+    workspace: workspace ?? '',
     objectId: objectId ?? '',
     objectDomain: objectDomain ?? '',
     objectAttr: objectAttr ?? ''
   }
 }
 
-function isValidDocumentId (documentId: MongodbDocumentId): boolean {
-  return documentId.objectDomain !== '' && documentId.objectId !== '' && documentId.objectAttr !== ''
+function isValidDocumentId (documentId: MongodbDocumentId, context: Context): boolean {
+  return (
+    documentId.objectDomain !== '' &&
+    documentId.objectId !== '' &&
+    documentId.objectAttr !== '' &&
+    documentId.workspace === context.workspaceId.name
+  )
 }
 
 export class MongodbStorageAdapter implements StorageAdapter {
@@ -49,17 +56,16 @@ export class MongodbStorageAdapter implements StorageAdapter {
   ) {}
 
   async loadDocument (documentId: string, context: Context): Promise<YDoc | undefined> {
-    const { workspaceId } = context
-    const { objectId, objectDomain, objectAttr } = parseDocumentId(documentId)
+    const { workspace, objectId, objectDomain, objectAttr } = parseDocumentId(documentId)
 
-    if (!isValidDocumentId({ objectId, objectDomain, objectAttr })) {
+    if (!isValidDocumentId({ workspace, objectId, objectDomain, objectAttr }, context)) {
       console.warn('malformed document id', documentId)
       return undefined
     }
 
     return await this.ctx.with('load-document', {}, async (ctx) => {
       const doc = await ctx.with('query', {}, async () => {
-        const db = this.mongodb.db(toWorkspaceString(workspaceId))
+        const db = this.mongodb.db(toWorkspaceString(context.workspaceId))
         return await db.collection(objectDomain).findOne({ _id: objectId }, { projection: { [objectAttr]: 1 } })
       })
 
