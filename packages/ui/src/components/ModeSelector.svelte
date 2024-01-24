@@ -1,8 +1,8 @@
-<script lang="ts">
+<script lang="ts" generics="T extends string">
   import TabList from './TabList.svelte'
   import { IModeSelector } from '../utils'
 
-  export let props: IModeSelector
+  export let props: IModeSelector<T>
 
   $: modeList = props.config.map((c) => {
     return {

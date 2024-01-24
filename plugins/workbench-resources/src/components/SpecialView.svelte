@@ -40,7 +40,7 @@
   export let isCreationDisabled = false
   export let descriptors: Array<Ref<ViewletDescriptor>> | undefined = undefined
   export let baseQuery: DocumentQuery<Doc> | undefined = undefined
-  export let modes: IModeSelector | undefined = undefined
+  export let modes: IModeSelector<any> | undefined = undefined
 
   let search = ''
   let viewlet: WithLookup<Viewlet> | undefined
