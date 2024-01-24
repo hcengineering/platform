@@ -44,6 +44,7 @@ import { activityMessagesComparator, combineActivityMessages } from '@hcengineer
 
 import { type InboxNotificationsFilter } from './types'
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
+import { checkIsObjectRemoved } from '@hcengineering/view-resources'
 
 /**
  * @public
@@ -355,11 +356,12 @@ async function generateLocation (
   }
 }
 
-export function getDisplayInboxNotifications (
+export async function getDisplayInboxNotifications (
   notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>,
   filter: InboxNotificationsFilter = 'all',
   objectClass?: Ref<Class<Doc>>
-): DisplayInboxNotification[] {
+): Promise<DisplayInboxNotification[]> {
+  const client = getClient()
   const filteredNotifications = Array.from(notificationsByContext.values())
     .flat()
     .filter(({ isViewed }) => {
@@ -374,6 +376,10 @@ export function getDisplayInboxNotifications (
           return false
       }
     })
+
+  const viewletsHideIfRemoved = client
+    .getModel()
+    .findAllSync(activity.class.DocUpdateMessageViewlet, { hideIfRemoved: true })
 
   const activityNotifications = filteredNotifications.filter(
     (n): n is WithLookup<ActivityInboxNotification> => n._class === notification.class.ActivityInboxNotification
@@ -397,9 +403,31 @@ export function getDisplayInboxNotifications (
 
       return (message as DocUpdateMessage).objectClass === objectClass
     })
-    .sort(activityMessagesComparator)
 
-  const combinedMessages = combineActivityMessages(messages, SortingOrder.Descending)
+  for (const [index, message] of messages.entries()) {
+    if (message._class !== activity.class.DocUpdateMessage) {
+      continue
+    }
+
+    const docUpdateMessage = message as DocUpdateMessage
+
+    const hideIfRemoved = viewletsHideIfRemoved.some(
+      (viewlet) => viewlet.action === docUpdateMessage.action && viewlet.objectClass === docUpdateMessage.objectClass
+    )
+
+    if (!hideIfRemoved) {
+      continue
+    }
+
+    const isRemoved = await checkIsObjectRemoved(client, docUpdateMessage.objectId, docUpdateMessage.objectClass)
+
+    if (isRemoved) {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete messages[index]
+    }
+  }
+
+  const combinedMessages = combineActivityMessages(messages.sort(activityMessagesComparator), SortingOrder.Descending)
 
   for (const message of combinedMessages) {
     if (message._class === activity.class.DocUpdateMessage) {
@@ -439,7 +467,7 @@ export function getDisplayInboxNotifications (
 export async function hasInboxNotifications (
   notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>
 ): Promise<boolean> {
-  const displayNotifications = getDisplayInboxNotifications(notificationsByContext)
+  const displayNotifications = await getDisplayInboxNotifications(notificationsByContext)
 
   return displayNotifications.some(({ isViewed }) => !isViewed)
 }
