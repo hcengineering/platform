@@ -179,10 +179,6 @@
     &:hover > .actions {
       visibility: visible;
     }
-
-    &:hover {
-      background-color: var(--highlight-hover);
-    }
   }
 
   .header {
