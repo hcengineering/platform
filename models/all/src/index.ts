@@ -127,8 +127,8 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       {
         label: chunter.string.ConfigLabel,
         description: chunter.string.ConfigDescription,
-        enabled: false,
-        beta: true,
+        enabled: true,
+        beta: false,
         icon: chunter.icon.Chunter,
         classFilter: [workbench.class.Application]
       }
