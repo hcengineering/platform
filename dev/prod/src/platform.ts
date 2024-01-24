@@ -40,7 +40,7 @@ import telegram, { telegramId } from '@hcengineering/telegram'
 import { templatesId } from '@hcengineering/templates'
 import tracker, { trackerId } from '@hcengineering/tracker'
 import uiPlugin from '@hcengineering/ui'
-import { viewId } from '@hcengineering/view'
+import view, { viewId } from '@hcengineering/view'
 import workbench, { workbenchId } from '@hcengineering/workbench'
 
 import { bitrixId } from '@hcengineering/bitrix'
@@ -154,6 +154,8 @@ export async function configurePlatform() {
   setMetadata(textEditor.metadata.CollaboratorUrl, config.COLLABORATOR_URL ?? 'ws://locahost:3078')
 
   setMetadata(uiPlugin.metadata.DefaultApplication, login.component.LoginApp)
+  
+  setMetadata(uiPlugin.metadata.SearchPopup, view.component.ShowActions)
 
   const languages = config.LANGUAGES ? (config.LANGUAGES as string).split(',').map((l) => l.trim()) : ['en', 'ru']
 

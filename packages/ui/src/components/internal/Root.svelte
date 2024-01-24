@@ -15,6 +15,7 @@
   import FontSizeSelector from './FontSizeSelector.svelte'
   import LangSelector from './LangSelector.svelte'
   import ThemeSelector from './ThemeSelector.svelte'
+  import SearchSelector from './SearchSelector.svelte'
 
   let application: AnyComponent | undefined
 
@@ -175,6 +176,7 @@
             <Clock />
           </div>
           <div class="flex-row-center gap-statusbar">
+            <SearchSelector />
             <FontSizeSelector />
             <ThemeSelector />
             <LangSelector />

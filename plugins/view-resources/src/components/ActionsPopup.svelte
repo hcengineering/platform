@@ -48,8 +48,9 @@
 
   import ChevronDown from './icons/ChevronDown.svelte'
   import ChevronUp from './icons/ChevronUp.svelte'
+  import { contextStore } from '@hcengineering/presentation'
 
-  export let viewContext: ViewContext
+  export let viewContext: ViewContext | undefined = $contextStore.getLastContext()
 
   let search: string = ''
   let actions: Array<WithLookup<Action>> = []
@@ -105,7 +106,7 @@
     fActions = fActions.filter(
       (it) =>
         (it.$lookup?.category?.visible ?? true) &&
-        (it.context.application === viewContext.application || it.context.application === undefined)
+        (it.context.application === viewContext?.application || it.context.application === undefined)
     )
     for (const d of docs) {
       fActions = filterActions(client, d, fActions)
