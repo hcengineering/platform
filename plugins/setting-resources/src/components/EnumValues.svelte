@@ -15,25 +15,44 @@
 <script lang="ts">
   import { Enum } from '@hcengineering/core'
   import presentation, { getClient, MessageBox } from '@hcengineering/presentation'
-  import { ActionIcon, EditBox, IconAdd, IconAttachment, IconDelete, showPopup } from '@hcengineering/ui'
+  import {
+    ModernEditbox,
+    IconAdd,
+    IconAttachment,
+    IconDelete,
+    showPopup,
+    ModernButton,
+    Label,
+    ButtonIcon,
+    IconMoreV,
+    IconMoreV2,
+    ModernPopup,
+    eventToHTMLElement
+  } from '@hcengineering/ui'
+  import type { DropdownIntlItem } from '@hcengineering/ui'
   import view from '@hcengineering/view-resources/src/plugin'
   import setting from '../plugin'
   import EnumValuesList from './EnumValuesList.svelte'
-  import Copy from './icons/Copy.svelte'
+  import IconCrossedArrows from './icons/CrossedArrows.svelte'
+  import IconBulletList from './icons/BulletList.svelte'
+  import Report from './icons/Report.svelte'
 
   export let value: Enum
 
   const client = getClient()
 
-  let newValue = ''
+  let newValue: string = ''
+  let newItem: boolean = false
+  let opened: boolean = false
 
   async function add () {
     if (newValue.trim().length === 0) return
-    if (value.enumValues.includes(newValue.trim())) return
+    if (matched) return
     await client.update(value, {
       $push: { enumValues: newValue }
     })
     newValue = ''
+    newItem = false
   }
 
   async function remove (target: string) {
@@ -45,8 +64,13 @@
     if (evt.key === 'Enter') {
       add()
     }
+    if (evt.key === 'Escape') {
+      newItem = false
+      newValue = ''
+    }
   }
-  $: filtered = newValue.length > 0 ? value.enumValues.filter((it) => it.includes(newValue)) : value.enumValues
+  // $: filtered = newValue.length > 0 ? value.enumValues.filter((it) => it.includes(newValue)) : []
+  $: matched = value.enumValues.includes(newValue.trim())
 
   async function handleClipboard (): Promise<void> {
     const text = await navigator.clipboard.readText()
@@ -81,31 +105,84 @@
     }
     inputFile.value = ''
   }
-  function onDelete () {
-    showPopup(
-      MessageBox,
-      {
-        label: view.string.DeleteObject,
-        message: view.string.DeleteObjectConfirm,
-        params: { count: filtered.length }
-      },
-      undefined,
-      (result?: boolean) => {
-        if (result === true) {
-          client.update(value, {
-            $pull: { enumValues: { $in: filtered } }
-          })
-          newValue = ''
-        }
-      }
-    )
+  // function onDelete () {
+  //   showPopup(
+  //     MessageBox,
+  //     {
+  //       label: view.string.DeleteObject,
+  //       message: view.string.DeleteObjectConfirm,
+  //       params: { count: filtered.length }
+  //     },
+  //     undefined,
+  //     (result?: boolean) => {
+  //       if (result === true) {
+  //         client.update(value, {
+  //           $pull: { enumValues: { $in: filtered } }
+  //         })
+  //         newValue = ''
+  //       }
+  //     }
+  //   )
+  // }
+
+  async function update (value: Enum): Promise<void> {
+    await client.update(value, {
+      name: value.name
+    })
   }
 
   async function onDrop () {
     await client.update(value, { enumValues: value.enumValues })
   }
+
+  const items: (DropdownIntlItem & { action: () => void })[] = [
+    {
+      id: 'import',
+      icon: IconAttachment,
+      label: setting.string.ImportEnum,
+      action: () => {
+        inputFile.click()
+      }
+    },
+    {
+      id: 'paste',
+      icon: Report,
+      label: setting.string.ImportEnumCopy,
+      action: () => {
+        handleClipboard()
+      }
+    }
+  ]
+
+  const openPopup = (ev: MouseEvent): void => {
+    if (!opened) {
+      opened = true
+      showPopup(ModernPopup, { items }, eventToHTMLElement(ev), (result) => {
+        if (result) items.find((it) => it.id === result)?.action()
+        opened = false
+      })
+    }
+  }
 </script>
 
+<div class="flex-between flex-gap-2">
+  <ModernEditbox
+    bind:value={value.name}
+    label={setting.string.EnumTitle}
+    kind={'ghost'}
+    size={'large'}
+    on:change={() => update(value)}
+  />
+  <ModernButton
+    icon={IconCrossedArrows}
+    label={setting.string.ProjectTypesCount}
+    labelParams={{ count: 0 }}
+    disabled
+    kind={'tertiary'}
+    size={'medium'}
+    hasMenu
+  />
+</div>
 <input
   bind:this={inputFile}
   multiple
@@ -115,56 +192,72 @@
   style="display: none"
   on:change={fileSelected}
 />
-<div class="flex-grow">
-  <div class="flex-between mb-4">
-    <EditBox
-      placeholder={presentation.string.Search}
-      on:keydown={handleKeydown}
-      kind="large-style"
-      bind:value={newValue}
-    />
-    <div class="flex-row-center gap-2">
-      <ActionIcon
+
+<div class="hulyTableAttr-container mt-6">
+  <div class="hulyTableAttr-header font-medium-12">
+    <IconBulletList size={'small'} />
+    <span><Label label={setting.string.Options} /></span>
+    <div class="buttons-group tertiary-textColor">
+      <ButtonIcon
+        kind={'tertiary'}
+        icon={IconMoreV}
+        size={'small'}
+        pressed={opened}
+        inheritColor
+        hasMenu
+        on:click={(ev) => { openPopup(ev) }}
+      />
+      <ButtonIcon
+        kind={'primary'}
         icon={IconAdd}
-        label={setting.string.Add}
-        action={add}
         size={'small'}
-        disabled={value.enumValues.includes(newValue.trim())}
-      />
-      <ActionIcon
-        icon={IconAttachment}
-        label={setting.string.ImportEnum}
-        action={() => {
-          inputFile.click()
+        tooltip={{ label: setting.string.Add }}
+        on:click={() => {
+          newItem = true
         }}
-        size={'small'}
-      />
-      <ActionIcon
-        icon={Copy}
-        label={setting.string.ImportEnumCopy}
-        action={() => {
-          handleClipboard()
-        }}
-        size={'small'}
-      />
-      <ActionIcon
-        icon={IconDelete}
-        label={setting.string.Delete}
-        action={() => {
-          onDelete()
-        }}
-        size={'small'}
       />
     </div>
   </div>
-  <div class="scroll">
-    <div class="box">
+  {#if value.enumValues.length > 0 || newItem}
+    <div class="hulyTableAttr-content options">
       <EnumValuesList
         bind:values={value.enumValues}
-        bind:filtered
+        disableMouseOver={newItem}
         on:remove={(e) => remove(e.detail)}
         on:drop={onDrop}
       />
+      {#if newItem}
+        <div class="hulyTableAttr-content__row hovered">
+          <div class="hulyTableAttr-content__row-dragMenu">
+            <IconMoreV2 size={'small'} />
+          </div>
+          <div class="hulyTableAttr-content__row-label font-regular-14 accent grow">
+            <ModernEditbox
+              kind={'ghost'}
+              size={'small'}
+              label={setting.string.EnterOptionTitle}
+              on:keydown={handleKeydown}
+              bind:value={newValue}
+              width={'100%'}
+              autoFocus
+            />
+          </div>
+          {#if matched}
+            <div class="hulyChip-item error font-medium-12">
+              <Label label={presentation.string.Match} />
+            </div>
+          {/if}
+          <ButtonIcon
+            kind={'tertiary'}
+            icon={IconDelete}
+            size={'small'}
+            on:click={() => {
+              newValue = ''
+              newItem = false
+            }}
+          />
+        </div>
+      {/if}
     </div>
-  </div>
+  {/if}
 </div>

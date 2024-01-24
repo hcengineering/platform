@@ -16,7 +16,7 @@
   import { createEventDispatcher } from 'svelte'
   import { IconMaximize, IconMinimize, IconClose, ButtonIcon } from '..'
 
-  export let type: 'type-aside' | 'type-component' = 'type-component'
+  export let type: 'type-aside' | 'type-popup' | 'type-component' = 'type-component'
   export let minimize: boolean = false
 
   const dispatch = createEventDispatcher()
@@ -41,8 +41,8 @@
       <slot name="actions" />
     </div>
   {/if}
-  {#if type === 'type-aside'}
-    <div class="hulyHeader-divider" />
+  {#if type !== 'type-component'}
+    {#if type !== 'type-popup'}<div class="hulyHeader-divider" />{/if}
     <div class="hulyHotKey-item">Esc</div>
     <ButtonIcon icon={IconClose} kind={'tertiary'} size={'small'} on:click={() => dispatch('close')} />
   {/if}

@@ -64,8 +64,12 @@
 
       &:not(.small) { font-size: .875rem; }
       &.small { font-size: .75rem; }
-      &:not(.dark) { color: var(--global-on-accent-TextColor); }
-      &.dark { color: var(--global-secondary-TextColor); }
+      &:not(.dark) {
+        color: var(--global-primary-TextColor); // var(--global-on-accent-TextColor);
+      }
+      &.dark {
+        color: var(--theme-dark-color); // var(--global-secondary-TextColor);
+      }
     }
 
     &:hover {

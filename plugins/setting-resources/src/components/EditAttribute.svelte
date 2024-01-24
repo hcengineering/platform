@@ -25,7 +25,10 @@
     ModernEditbox,
     Label,
     themeStore,
-    Modal
+    Modal,
+    ButtonIcon,
+    IconDelete,
+    IconCopy
   } from '@hcengineering/ui'
   import view from '@hcengineering/view-resources/src/plugin'
   import { clearSettingsStore } from '../store'
@@ -111,6 +114,10 @@
     clearSettingsStore()
   }}
 >
+  <svelte:fragment slot="actions">
+    <ButtonIcon icon={IconDelete} size={'small'} kind={'tertiary'} />
+    <ButtonIcon icon={IconCopy} size={'small'} kind={'tertiary'} />
+  </svelte:fragment>
   <div class="hulyModal-content__titleGroup">
     {#if attribute.isCustom}
       <div class="hulyChip-item font-medium-12">

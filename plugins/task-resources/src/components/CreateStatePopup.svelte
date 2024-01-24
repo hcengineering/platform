@@ -27,7 +27,10 @@
     TextArea,
     getPlatformColorDef,
     themeStore,
-    EmojiPopup
+    EmojiPopup,
+    ButtonIcon,
+    IconDelete,
+    IconCopy
   } from '@hcengineering/ui'
   import { statusStore, ColorsPopup } from '@hcengineering/view-resources'
   import view from '@hcengineering/view-resources/src/plugin'
@@ -137,6 +140,10 @@
     clearSettingsStore()
   }}
 >
+  <svelte:fragment slot="actions">
+    <ButtonIcon icon={IconDelete} size={'small'} kind={'tertiary'} />
+    <ButtonIcon icon={IconCopy} size={'small'} kind={'tertiary'} />
+  </svelte:fragment>
   <div class="hulyModal-content__titleGroup">
     <ModernEditbox bind:value label={task.string.StatusName} size={'large'} kind={'ghost'} />
     <TextArea

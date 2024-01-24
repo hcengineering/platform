@@ -22,6 +22,7 @@
     "NoMatchesInThis": "В этом {space} совпадения не обнаружены",
     "NoMatchesFound": "Не найдено соответствий",
     "NotInThis": "Не в этом {space}",
+    "Match": "Совпадение",
     "Add": "Добавить",
     "Edit": "Редактировать",    
     "DocumentPreview": "Предпросмотр",

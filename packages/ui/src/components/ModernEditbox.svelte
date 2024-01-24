@@ -4,7 +4,7 @@
   // Licensed under the Eclipse Public License v2.0 (SPDX: EPL-2.0).
   //
 
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
   import { IntlString, translate } from '@hcengineering/platform'
   import Label from './Label.svelte'
   import { themeStore } from '..'
@@ -17,6 +17,9 @@
   export let error: boolean = false
   export let password: boolean = false
   export let limit: number = 0
+  export let element: HTMLInputElement | undefined = undefined
+  export let autoFocus: boolean = false
+  export let width: string = ''
 
   const dispatch = createEventDispatcher()
 
@@ -28,14 +31,23 @@
   })
   $: labeled = kind === 'default' && size === 'large'
   $: placeholder = labeled ? ' ' : placeholderStr
+
+  onMount(() => {
+    if (autoFocus && element) {
+      autoFocus = false
+      element.focus()
+    }
+  })
 </script>
 
 <label class="editbox-wrapper {kind} {size}" class:error class:disabled>
   {#if password}
     <input
+      bind:this={element}
       type="password"
       class="font-regular-14"
       class:labeled
+      style:width
       bind:value
       autocomplete="off"
       {placeholder}
@@ -44,6 +56,7 @@
       {maxlength}
       on:change
       on:keyup
+      on:keydown
       on:input
       on:blur={() => {
         dispatch('blur', value)
@@ -51,9 +64,11 @@
     />
   {:else}
     <input
+      bind:this={element}
       type="text"
       class="font-regular-14"
       class:labeled
+      style:width
       bind:value
       autocomplete="off"
       {placeholder}
@@ -62,6 +77,7 @@
       {maxlength}
       on:change
       on:keyup
+      on:keydown
       on:input
       on:blur={() => {
         dispatch('blur', value)

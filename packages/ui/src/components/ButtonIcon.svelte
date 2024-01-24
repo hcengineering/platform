@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { Asset } from '@hcengineering/platform'
-  import { AnySvelteComponent } from '../types'
+  import { AnySvelteComponent, LabelAndProps } from '../types'
   import { ComponentType } from 'svelte'
   import ButtonBase from './ButtonBase.svelte'
 
@@ -24,8 +24,10 @@
   export let iconProps: any | undefined = undefined
   export let disabled: boolean = false
   export let pressed: boolean = false
+  export let hasMenu: boolean = false
   export let loading: boolean = false
   export let inheritColor: boolean = false
+  export let tooltip: LabelAndProps | undefined = undefined
 </script>
 
 <ButtonBase
@@ -38,5 +40,7 @@
   {loading}
   {inheritColor}
   {pressed}
+  {hasMenu}
+  {tooltip}
   on:click
 />

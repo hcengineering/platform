@@ -968,6 +968,9 @@ a.no-line {
 .content-color { color: var(--theme-content-color); }
 .caption-color { color: var(--theme-caption-color); }
 
+.secondary-textColor { color: var(--global-secondary-TextColor) !important; }
+.tertiary-textColor { color: var(--global-tertiary-TextColor) !important; }
+
 .content-primary-color { color: var(--primary-button-color); }
 .red-color { color: var(--highlight-red); }
 .error-color { color: var(--theme-error-color); }

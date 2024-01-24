@@ -20,11 +20,9 @@
   import ButtonIcon from './ButtonIcon.svelte'
   import ButtonBase from './ButtonBase.svelte'
   import Scroller from './Scroller.svelte'
-  import IconDelete from './icons/Delete.svelte'
-  import IconCopy from './icons/Copy.svelte'
   import ui from '..'
 
-  export let type: 'type-aside' | 'type-component'
+  export let type: 'type-aside' | 'type-popup' | 'type-component'
   export let label: IntlString
   export let labelProps: any | undefined = undefined
   export let okAction: () => Promise<void> | void
@@ -49,26 +47,42 @@
   <Header {type} on:close={close}>
     <Label {label} params={labelProps} />
     <svelte:fragment slot="actions">
-      <ButtonIcon icon={IconDelete} size={'small'} kind={'tertiary'} />
-      <ButtonIcon icon={IconCopy} size={'small'} kind={'tertiary'} />
+      <slot name="actions" />
     </svelte:fragment>
   </Header>
   <div class="hulyModal-content">
-    <Scroller>
+    <Scroller
+      padding={type === 'type-popup'
+        ? 'var(--spacing-2) var(--spacing-3) var(--spacing-4)'
+        : type === 'type-aside'
+          ? 'var(--spacing-2) var(--spacing-1_5)'
+          : 'var(--spacing-3)'}
+      bottomPadding={type === 'type-popup'
+        ? undefined
+        : type === 'type-aside'
+          ? 'var(--spacing-2)'
+          : 'var(--spacing-3)'}
+    >
       <slot />
     </Scroller>
   </div>
-  {#if type === 'type-aside'}
+  {#if type !== 'type-component'}
     <div class="hulyModal-footer">
       <ButtonBase
         type={'type-button'}
         kind={'primary'}
-        size={'large'}
+        size={type === 'type-aside' ? 'large' : 'medium'}
         label={okLabel}
         on:click={okAction}
         disabled={!canSave}
       />
-      <ButtonBase type={'type-button'} kind={'secondary'} size={'large'} label={ui.string.Cancel} on:click={onCancel} />
+      <ButtonBase
+        type={'type-button'}
+        kind={'secondary'}
+        size={type === 'type-aside' ? 'large' : 'medium'}
+        label={ui.string.Cancel}
+        on:click={onCancel}
+      />
     </div>
   {/if}
 </div>

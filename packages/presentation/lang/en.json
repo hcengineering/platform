@@ -22,6 +22,7 @@
     "NoMatchesInThis": "No matches in this {space}",
     "NoMatchesFound": "No matches found",
     "NotInThis": "Not in this {space}",
+    "Match": "Match",
     "Add": "Add",
     "Edit": "Edit",
     "DocumentPreview": "Preview",
