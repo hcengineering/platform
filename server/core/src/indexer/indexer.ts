@@ -17,6 +17,7 @@ import core, {
   AttachedDoc,
   Class,
   DOMAIN_DOC_INDEX_STATE,
+  DOMAIN_FULLTEXT_BLOB,
   Doc,
   DocIndexState,
   DocumentQuery,
@@ -600,23 +601,38 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
         console.log(this.workspace.name, 'checking index', c)
 
+        // All indexable documents
+        const indexable = (
+          await dbStorage.findAll<Doc>(this.metrics, c, { _class: c }, { projection: { _id: 1 } })
+        ).map((it) => it._id)
+
         // All saved state documents
         const states = (
           await this.storage.findAll(core.class.DocIndexState, { objectClass: c }, { projection: { _id: 1 } })
         ).map((it) => it._id)
 
-        while (true) {
+        const indexableSet = new Set(indexable)
+        const statesSet = new Set(states)
+
+        const toIndex = indexable.filter((it) => !statesSet.has(it as Ref<DocIndexState>))
+        const toRemove = states.filter((it) => !indexableSet.has(it))
+
+        const chunkSize = 500
+        for (let i = 0; i < toIndex.length; i += chunkSize) {
           if (this.cancelling) {
             return
           }
+
+          const chunk = toIndex.slice(i, i + chunkSize)
+
           let newDocs: DocIndexState[] = []
           try {
             newDocs = (
               await dbStorage.findAll<Doc>(
                 this.metrics,
                 c,
-                { _class: c, _id: { $nin: states } },
-                { limit: 500, projection: { _id: 1, attachedTo: 1, attachedToClass: 1 } as any }
+                { _class: c, _id: { $in: chunk } },
+                { limit: chunkSize, projection: { _id: 1, attachedTo: 1, attachedToClass: 1 } as any }
               )
             ).map((it) => {
               return createStateDoc(it._id, c, {
@@ -633,24 +649,17 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             break
           }
 
-          states.push(...newDocs.map((it) => it._id))
-
-          if (newDocs.length === 0) {
-            // All updated for this class
-            break
-          }
-
           try {
             await this.storage.upload(DOMAIN_DOC_INDEX_STATE, newDocs)
           } catch (err: any) {
             console.error(err)
           }
         }
-        const statesSet = new Set(states)
-        const docIds = (await dbStorage.findAll<Doc>(this.metrics, c, { _class: c }, { projection: { _id: 1 } }))
-          .filter((it) => !statesSet.has(it._id as Ref<DocIndexState>))
-          .map((it) => it._id)
-        await this.storage.clean(DOMAIN_DOC_INDEX_STATE, docIds)
+
+        if (toRemove.length > 0) {
+          await this.storage.clean(DOMAIN_DOC_INDEX_STATE, toRemove)
+          await this.storage.clean(DOMAIN_FULLTEXT_BLOB, toRemove)
+        }
       }
 
       // Clean for non existing classes
