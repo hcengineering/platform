@@ -44,7 +44,8 @@ import core, {
   type TxCreateDoc,
   type TxUpdateDoc,
   type TxMixin,
-  ClassifierKind
+  ClassifierKind,
+  type TypeAny
 } from '@hcengineering/core'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import { getResource, translate } from '@hcengineering/platform'
@@ -172,6 +173,7 @@ export async function getAttributePresenter (
 
   const hierarchy = client.getHierarchy()
   const attribute = hierarchy.getAttribute(_class, key)
+
   const presenterClass = getAttributePresenterClass(hierarchy, attribute)
   const isCollectionAttr = presenterClass.category === 'collection'
   const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : actualMixinClass
@@ -181,7 +183,15 @@ export async function getAttributePresenter (
   if (presenterMixin?.presenter === undefined && mixinClass != null && mixin === mixinClass) {
     presenterMixin = hierarchy.classHierarchyMixin(presenterClass.attrClass, view.mixin.AttributePresenter)
   }
-  if (presenterMixin?.presenter === undefined) {
+
+  let presenter: AnySvelteComponent
+
+  if (presenterMixin?.presenter !== undefined) {
+    presenter = await getResource(presenterMixin.presenter)
+  } else if (presenterClass.attrClass === core.class.TypeAny) {
+    const typeAny = attribute.type as TypeAny
+    presenter = await getResource(typeAny.presenter)
+  } else {
     throw new Error('attribute presenter not found for ' + JSON.stringify(preserveKey))
   }
 
@@ -191,7 +201,6 @@ export async function getAttributePresenter (
     : attribute.type._class === core.class.ArrOf
       ? resultKey + '.length'
       : resultKey
-  const presenter = await getResource(presenterMixin.presenter)
 
   return {
     key: preserveKey.key,
@@ -201,7 +210,7 @@ export async function getAttributePresenter (
     presenter,
     props: preserveKey.props,
     displayProps: preserveKey.displayProps,
-    icon: presenterMixin.icon,
+    icon: presenterMixin?.icon,
     attribute,
     collectionAttr: isCollectionAttr,
     isLookup: false
