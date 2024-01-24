@@ -36,7 +36,8 @@ import core, {
   generateId,
   type SearchQuery,
   type SearchOptions,
-  type SearchResult
+  type SearchResult,
+  TxFactory
 } from '@hcengineering/core'
 import { type Pipeline, type SessionContext } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
@@ -82,18 +83,31 @@ export class ClientSession implements Session {
   async getAccount (ctx: MeasureContext): Promise<Account> {
     const account = await this._pipeline.modelDb.findAll(core.class.Account, { email: this.token.email })
     if (account.length === 0 && this.token.extra?.admin === 'true') {
-      // Generate fake account for admin user
-      const account = {
-        _id: core.account.System,
-        _class: 'contact:class:PersonAccount' as Ref<Class<Account>>,
-        name: 'System,Ghost',
-        email: this.token.email,
-        space: core.space.Model,
-        modifiedBy: core.account.System,
-        modifiedOn: Date.now(),
-        role: AccountRole.Owner
+      const systemAccount = await this._pipeline.modelDb.findAll(core.class.Account, {
+        _id: this.token.email as Ref<Account>
+      })
+      if (systemAccount.length === 0) {
+        // Generate account for admin user
+        const factory = new TxFactory(core.account.System)
+        const email = `system:${this.token.email}`
+        const createTx = factory.createTxCreateDoc(
+          core.class.Account,
+          core.space.Model,
+          {
+            role: AccountRole.Owner,
+            email
+          },
+          this.token.email as Ref<Account>
+        )
+        const context = ctx as SessionContext
+        context.userEmail = this.token.email
+        context.admin = this.token.extra?.admin === 'true'
+        await this._pipeline.tx(context, createTx)
+        const acc = TxProcessor.createDoc2Doc(createTx)
+        return acc
+      } else {
+        return systemAccount[0]
       }
-      return account
     }
     return account[0]
   }
