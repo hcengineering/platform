@@ -155,7 +155,7 @@ export async function configurePlatform() {
 
   setMetadata(uiPlugin.metadata.DefaultApplication, login.component.LoginApp)
   
-  setMetadata(uiPlugin.metadata.SearchPopup, view.component.ShowActions)
+  setMetadata(uiPlugin.metadata.SearchPopup, view.component.ActionsPopup)
 
   const languages = config.LANGUAGES ? (config.LANGUAGES as string).split(',').map((l) => l.trim()) : ['en', 'ru']
 
