@@ -39,18 +39,37 @@
   async function getData (href: string): Promise<Data> {
     let params = href.replace(/(http.:\/\/)?(www.)?github.com\//, '')
     params = params.replace('/pull/', '/pulls/')
-    const res = await (await fetch(`https://api.github.com/repos/${params}`)).json()
+
+    const token = null // TODO: Get Token
+
+    const url = `https://api.github.com/repos/${params}`
+    let headers = {}
+
+    if (token) {
+      headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    }
+
+    const request = await fetch(url, {
+      method: 'GET',
+      headers
+    })
+
+    const result = await request.json()
+
     return {
-      number: res.number,
-      body: format(res.body),
-      title: res.title,
-      assignees: res.assignees?.map((p: any) => {
+      number: result.number,
+      body: format(result.body),
+      title: result.title,
+      assignees: result.assignees?.map((p: any) => {
         return {
           login: p.login,
           url: p.html_url
         }
       }),
-      labels: res.labels
+      labels: result.labels
     }
   }
 
@@ -67,7 +86,11 @@
   <div class="line" style="background-color: {getPlatformColor(7, $themeStore.dark)}" />
   {#await getData(href) then data}
     <div class="flex-col">
-      <a class="fs-title mb-1" {href}>#{data.number} {data.title}</a>
+      {#if data.number !== undefined && data.title !== undefined}
+        <a class="fs-title mb-1" {href}>#{data.number} {data.title}</a>
+      {:else}
+        <a class="fs-title mb-1" {href}><LabelComponent label={view.string.ViewOnGithub}/></a>
+      {/if}
       {#if data.body}
         <div>
           <MessageViewer message={data.body} />
