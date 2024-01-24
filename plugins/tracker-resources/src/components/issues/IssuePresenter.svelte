@@ -51,11 +51,6 @@
 
 {#if value}
   <div class="flex-row-center">
-    {#if shouldShowAvatar && taskType !== undefined}
-      <div class="text-sm mr-1">
-        <TaskTypeIcon value={taskType} />
-      </div>
-    {/if}
     <DocNavLink
       object={value}
       {onClick}
@@ -71,7 +66,11 @@
         <span class="issuePresenterRoot" class:list={kind === 'list'} class:cursor-pointer={!disabled}>
           {#if shouldShowAvatar}
             <div class="icon" use:tooltip={{ label: tracker.string.Issue }}>
-              <Icon icon={icon ?? tracker.icon.Issues} size={'small'} />
+              {#if taskType !== undefined}
+                <TaskTypeIcon value={taskType} />
+              {:else}
+                <Icon icon={icon ?? tracker.icon.Issues} size={'small'} />
+              {/if}
             </div>
           {/if}
           <span class="overflow-label" class:select-text={!noSelect} title={value?.title}>

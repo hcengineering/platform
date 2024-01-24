@@ -855,6 +855,7 @@ const view = plugin(viewId, {
     List: '' as Ref<ViewletDescriptor>
   },
   component: {
+    ActionsPopup: '' as AnyComponent,
     ObjectPresenter: '' as AnyComponent,
     EditDoc: '' as AnyComponent,
     SpacePresenter: '' as AnyComponent,

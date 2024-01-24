@@ -15,6 +15,7 @@
   import FontSizeSelector from './FontSizeSelector.svelte'
   import LangSelector from './LangSelector.svelte'
   import ThemeSelector from './ThemeSelector.svelte'
+  import SearchSelector from './SearchSelector.svelte'
 
   let application: AnyComponent | undefined
 
@@ -166,8 +167,6 @@
             </div>
           {:else if status.severity !== Severity.OK}
             <StatusComponent {status} />
-          {:else}
-            <span class="logo-status">{getMetadata(uiPlugin.metadata.PlatformTitle)}</span>
           {/if}
         </div>
         <div class="flex-row-reverse" style:-webkit-app-region={'no-drag'}>
@@ -175,6 +174,7 @@
             <Clock />
           </div>
           <div class="flex-row-center gap-statusbar">
+            <SearchSelector />
             <FontSizeSelector />
             <ThemeSelector />
             <LangSelector />
