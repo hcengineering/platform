@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Class, Doc, Hierarchy, Markup, Ref, concatLink } from '@hcengineering/core'
+import { Class, Doc, Hierarchy, Markup, Ref, WorkspaceId, concatLink } from '@hcengineering/core'
 import { minioDocumentId, mongodbDocumentId } from './utils'
 
 /**
@@ -27,25 +27,32 @@ export interface CollaboratorClient {
 /**
  * @public
  */
-export function getClient (hierarchy: Hierarchy, token: string, collaboratorUrl: string): CollaboratorClient {
-  return new CollaboratorClientImpl(hierarchy, token, collaboratorUrl)
+export function getClient (
+  hierarchy: Hierarchy,
+  workspaceId: WorkspaceId,
+  token: string,
+  collaboratorUrl: string
+): CollaboratorClient {
+  return new CollaboratorClientImpl(hierarchy, workspaceId, token, collaboratorUrl)
 }
 
 class CollaboratorClientImpl implements CollaboratorClient {
   constructor (
     private readonly hierarchy: Hierarchy,
+    private readonly workspace: WorkspaceId,
     private readonly token: string,
     private readonly collaboratorUrl: string
   ) {}
 
-  initialContentId (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string): string {
+  initialContentId (workspace: string, classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string): string {
     const domain = this.hierarchy.getDomain(classId)
-    return mongodbDocumentId(domain, docId, attribute)
+    return mongodbDocumentId(workspace, domain, docId, attribute)
   }
 
   async get (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string): Promise<Markup> {
-    const documentId = encodeURIComponent(minioDocumentId(docId, attribute))
-    const initialContentId = encodeURIComponent(this.initialContentId(classId, docId, attribute))
+    const workspace = this.workspace.name
+    const documentId = encodeURIComponent(minioDocumentId(workspace, docId, attribute))
+    const initialContentId = encodeURIComponent(this.initialContentId(workspace, classId, docId, attribute))
     attribute = encodeURIComponent(attribute)
 
     const url = concatLink(
@@ -65,8 +72,9 @@ class CollaboratorClientImpl implements CollaboratorClient {
   }
 
   async update (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string, value: Markup): Promise<void> {
-    const documentId = encodeURIComponent(minioDocumentId(docId, attribute))
-    const initialContentId = encodeURIComponent(this.initialContentId(classId, docId, attribute))
+    const workspace = this.workspace.name
+    const documentId = encodeURIComponent(minioDocumentId(workspace, docId, attribute))
+    const initialContentId = encodeURIComponent(this.initialContentId(workspace, classId, docId, attribute))
     attribute = encodeURIComponent(attribute)
 
     const url = concatLink(

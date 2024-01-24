@@ -88,7 +88,7 @@ export function copyDocumentField (
 
 export function copyDocumentContent (
   documentId: DocumentId,
-  snapshotId: string,
+  snapshotId: DocumentId,
   providerData: ProviderData,
   initialContentId?: DocumentId
 ): void {

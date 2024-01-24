@@ -44,6 +44,10 @@ export class MinioProvider extends Observable<EVENTS> {
 
     if (name.startsWith('minio://')) {
       name = name.split('://', 2)[1]
+      if (name.includes('/')) {
+        // drop workspace part
+        name = name.split('/', 2)[1]
+      }
     }
 
     void fetchContent(doc, name).then(() => {

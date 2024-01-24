@@ -69,6 +69,7 @@ export { ImageExtension, type ImageOptions } from './components/extension/imageE
 export { TodoItemExtension, TodoListExtension } from './components/extension/todo'
 
 export {
+  type DocumentId,
   TiptapCollabProvider,
   type TiptapCollabProviderConfiguration,
   createTiptapCollaborationData

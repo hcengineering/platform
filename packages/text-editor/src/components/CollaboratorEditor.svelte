@@ -56,7 +56,7 @@
     return collaborativeEditor?.commands()
   }
 
-  export function takeSnapshot (snapshotId: string): void {
+  export function takeSnapshot (snapshotId: DocumentId): void {
     collaborativeEditor?.takeSnapshot(snapshotId)
   }
 

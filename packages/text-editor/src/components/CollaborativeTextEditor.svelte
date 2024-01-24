@@ -150,7 +150,7 @@
     return commandHandler
   }
 
-  export function takeSnapshot (snapshotId: string): void {
+  export function takeSnapshot (snapshotId: DocumentId): void {
     copyDocumentContent(documentId, snapshotId, { provider: remoteProvider }, initialContentId)
   }
 
