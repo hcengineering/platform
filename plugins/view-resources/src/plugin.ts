@@ -96,7 +96,8 @@ export default mergeIds(viewId, view, {
     IconCategory: '' as IntlString,
     EmojiCategory: '' as IntlString,
     NumberItems: '' as IntlString,
-    ToViewCommands: '' as IntlString
+    ToViewCommands: '' as IntlString,
+    ViewOnGithub: '' as IntlString
   },
   function: {
     CreateDocMiddleware: '' as Resource<PresentationMiddlewareCreator>
