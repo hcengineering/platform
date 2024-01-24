@@ -30,7 +30,6 @@
     eventToHTMLElement
   } from '@hcengineering/ui'
   import type { DropdownIntlItem } from '@hcengineering/ui'
-  import view from '@hcengineering/view-resources/src/plugin'
   import setting from '../plugin'
   import EnumValuesList from './EnumValuesList.svelte'
   import IconCrossedArrows from './icons/CrossedArrows.svelte'
@@ -205,7 +204,9 @@
         pressed={opened}
         inheritColor
         hasMenu
-        on:click={(ev) => { openPopup(ev) }}
+        on:click={(ev) => {
+          openPopup(ev)
+        }}
       />
       <ButtonIcon
         kind={'primary'}

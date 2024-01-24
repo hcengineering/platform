@@ -263,7 +263,9 @@
             pressed={opened}
             inheritColor
             hasMenu
-            on:click={(ev) => { openPopup(ev) }}
+            on:click={(ev) => {
+              openPopup(ev)
+            }}
           />
           <ButtonIcon
             kind={'primary'}
@@ -278,7 +280,13 @@
       </div>
       {#if values.length > 0 || newItem}
         <div class="hulyTableAttr-content options">
-          <EnumValuesList bind:values disableMouseOver={newItem} on:remove={(e) => { remove(e.detail) }} />
+          <EnumValuesList
+            bind:values
+            disableMouseOver={newItem}
+            on:remove={(e) => {
+              remove(e.detail)
+            }}
+          />
           {#if newItem}
             <div class="hulyTableAttr-content__row hovered">
               <div class="hulyTableAttr-content__row-dragMenu">
