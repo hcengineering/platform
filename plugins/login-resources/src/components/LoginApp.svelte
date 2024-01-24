@@ -19,6 +19,7 @@
   import { getMetadata } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
   import workbench from '@hcengineering/workbench'
+  import { TextPixel } from '@hcengineering/animation-resources'
   import { onDestroy } from 'svelte'
   import Confirmation from './Confirmation.svelte'
   import ConfirmationSend from './ConfirmationSend.svelte'
@@ -33,7 +34,7 @@
 
   import loginBack from '../../img/login_back.png'
   import loginBack2x from '../../img/login_back_2x.png'
-
+  
   import loginBackAvif from '../../img/login_back.avif'
   import loginBack2xAvif from '../../img/login_back_2x.avif'
 
@@ -72,6 +73,7 @@
       })(loc)
     })
   )
+
 </script>
 
 <div class="theme-dark w-full h-full backd" class:paneld={$deviceInfo.docWidth <= 768} class:white={!$themeStore.dark}>
@@ -98,30 +100,35 @@
       <LoginIcon /><span class="fs-title">{getMetadata(workbench.metadata.PlatformTitle)}</span>
     </div>
 
-    <div class="panel-base" class:panel={$deviceInfo.docWidth > 768} class:white={!$themeStore.dark}>
-      <Scroller padding={'1rem 0'}>
-        <div class="form-content">
-          {#if page === 'login'}
-            <LoginForm {navigateUrl} />
-          {:else if page === 'signup'}
-            <SignupForm />
-          {:else if page === 'createWorkspace'}
-            <CreateWorkspaceForm />
-          {:else if page === 'password'}
-            <PasswordRequest />
-          {:else if page === 'recovery'}
-            <PasswordRestore />
-          {:else if page === 'selectWorkspace'}
-            <SelectWorkspace {navigateUrl} />
-          {:else if page === 'join'}
-            <Join />
-          {:else if page === 'confirm'}
-            <Confirmation />
-          {:else if page === 'confirmationSend'}
-            <ConfirmationSend />
-          {/if}
-        </div>
-      </Scroller>
+    <div class="panel-container">
+      <div class="text-pixel" style:display={$deviceInfo.docWidth > 768 ? "" : "none"}>
+        <TextPixel text={getMetadata(workbench.metadata.PlatformTitle)} width={"80%"}/>
+      </div>
+      <div class="panel-base" class:panel={$deviceInfo.docWidth > 768} class:white={!$themeStore.dark}>
+        <Scroller padding={'1rem 0'}>
+          <div class="form-content">
+            {#if page === 'login'}
+              <LoginForm {navigateUrl} />
+            {:else if page === 'signup'}
+              <SignupForm />
+            {:else if page === 'createWorkspace'}
+              <CreateWorkspaceForm />
+            {:else if page === 'password'}
+              <PasswordRequest />
+            {:else if page === 'recovery'}
+              <PasswordRestore />
+            {:else if page === 'selectWorkspace'}
+              <SelectWorkspace {navigateUrl} />
+            {:else if page === 'join'}
+              <Join />
+            {:else if page === 'confirm'}
+              <Confirmation />
+            {:else if page === 'confirmationSend'}
+              <ConfirmationSend />
+            {/if}
+          </div>
+        </Scroller>
+      </div>
     </div>
 
     <Popup />
@@ -129,6 +136,18 @@
 </div>
 
 <style lang="scss">
+  .panel-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+    height: 100%;
+  }
+  .text-pixel {
+    width: 100%;
+    height: 100%;
+  }
   .back-image {
     position: fixed;
     top: 32px;

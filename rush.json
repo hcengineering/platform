@@ -447,6 +447,21 @@
     // },
     //
     {
+      "packageName": "@hcengineering/animation",
+      "projectFolder": "plugins/animation",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/animation-resources",
+      "projectFolder": "plugins/animation-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/animation-assets",
+      "projectFolder": "plugins/animation-assets",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/platform-rig",
       "projectFolder": "packages/platform-rig",
       "shouldPublish": false

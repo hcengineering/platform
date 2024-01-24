@@ -1,6 +1,6 @@
 {
-  "name": "@hcengineering/login-resources",
-  "version": "0.6.2",
+  "name": "@hcengineering/animation-resources",
+  "version": "0.0.0",
   "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -38,14 +38,12 @@
   "dependencies": {
     "@hcengineering/platform": "^0.6.9",
     "svelte": "^4.2.5",
-    "@hcengineering/login": "^0.6.8",
+    "@hcengineering/animation": "^0.0.0",
     "@hcengineering/ui": "^0.6.11",
     "@hcengineering/workbench": "^0.6.9",
     "@hcengineering/core": "^0.6.28",
     "@hcengineering/presentation": "^0.6.2",
     "@hcengineering/setting": "^0.6.11",
-    "@hcengineering/theme": "^0.6.3",
-    "@hcengineering/animation": "^0.0.0",
-    "@hcengineering/animation-resources": "^0.0.0"
+    "@hcengineering/theme": "^0.6.3"
   }
 }
