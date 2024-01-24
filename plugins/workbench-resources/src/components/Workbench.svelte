@@ -14,54 +14,54 @@
 -->
 <script lang="ts">
   import contact, { Employee, PersonAccount } from '@hcengineering/contact'
-  import core, { Class, Doc, getCurrentAccount, Ref, setCurrentAccount, Space } from '@hcengineering/core'
+  import core, { AccountRole, Class, Doc, Ref, Space, getCurrentAccount } from '@hcengineering/core'
   import login from '@hcengineering/login'
-  import notification, { DocNotifyContext, inboxId, InboxNotification } from '@hcengineering/notification'
+  import notification, { DocNotifyContext, InboxNotification, inboxId } from '@hcengineering/notification'
   import { BrowserNotificatator, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-  import { broadcastEvent, getMetadata, getResource, IntlString } from '@hcengineering/platform'
+  import { IntlString, broadcastEvent, getMetadata, getResource } from '@hcengineering/platform'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import support, { SupportStatus } from '@hcengineering/support'
   import {
     AnyComponent,
-    areLocationsEqual,
     Button,
-    closePanel,
-    closePopup,
-    closeTooltip,
     CompAndProps,
     Component,
-    defineSeparators,
-    deviceOptionsStore as deviceInfo,
-    getCurrentLocation,
-    getLocation,
+    IconSettings,
     Label,
     Location,
-    location,
-    locationStorageKeyId,
-    navigate,
-    openPanel,
     PanelInstance,
     Popup,
     PopupAlignment,
     PopupPosAlignment,
     PopupResult,
-    popupstore,
     ResolvedLocation,
-    resolvedLocationStore,
     Separator,
+    TooltipInstance,
+    areLocationsEqual,
+    closePanel,
+    closePopup,
+    closeTooltip,
+    defineSeparators,
+    deviceOptionsStore as deviceInfo,
+    getCurrentLocation,
+    getLocation,
+    location,
+    locationStorageKeyId,
+    navigate,
+    openPanel,
+    popupstore,
+    resolvedLocationStore,
     setResolvedLocation,
     showPopup,
-    workbenchSeparators,
-    IconSettings,
-    TooltipInstance
+    workbenchSeparators
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import {
     ActionHandler,
     ListSelectionProvider,
-    migrateViewOpttions,
     NavLink,
+    migrateViewOpttions,
     updateFocus
   } from '@hcengineering/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
@@ -129,37 +129,22 @@
     })
   })
 
-  const accountId = (getCurrentAccount() as PersonAccount)._id
-
-  let account: PersonAccount | undefined
-  const accountQ = createQuery()
-  accountQ.query<PersonAccount>(
-    contact.class.PersonAccount,
-    {
-      _id: accountId
-    },
-    (res) => {
-      if (res.length > 0) {
-        account = res[0]
-        setCurrentAccount(account)
-      }
-    },
-    { limit: 1 }
-  )
+  const account = getCurrentAccount() as PersonAccount
 
   let employee: Employee | undefined
   const employeeQ = createQuery()
 
-  $: employeeQ.query<Employee>(
-    contact.mixin.Employee,
-    {
-      _id: account?.person as Ref<Employee>
-    },
-    (res) => {
-      employee = res[0]
-    },
-    { limit: 1 }
-  )
+  $: account &&
+    employeeQ.query<Employee>(
+      contact.mixin.Employee,
+      {
+        _id: account?.person as Ref<Employee>
+      },
+      (res) => {
+        employee = res[0]
+      },
+      { limit: 1 }
+    )
 
   const workspaceId = $location.path[1]
   const inboxClient = InboxNotificationsClientImpl.getClient()
@@ -621,7 +606,20 @@
   defineSeparators('workbench', workbenchSeparators)
 </script>
 
-{#if employee?.active === true || accountId === core.account.System}
+{#if employee && !employee.active}
+  <div class="flex-col-center justify-center h-full flex-grow">
+    <h1><Label label={workbench.string.AccountDisabled} /></h1>
+    <Label label={workbench.string.AccountDisabledDescr} />
+    <Button
+      label={setting.string.Signout}
+      kind={'link'}
+      size={'small'}
+      on:click={() => {
+        signOut()
+      }}
+    />
+  </div>
+{:else if employee?.active || account.role === AccountRole.Owner}
   <ActionHandler />
   <svg class="svg-mask">
     <clipPath id="notify-normal">
@@ -843,19 +841,6 @@
     </svelte:fragment>
   </Popup>
   <BrowserNotificatator />
-{:else if employee}
-  <div class="flex-col-center justify-center h-full flex-grow">
-    <h1><Label label={workbench.string.AccountDisabled} /></h1>
-    <Label label={workbench.string.AccountDisabledDescr} />
-    <Button
-      label={setting.string.Signout}
-      kind={'link'}
-      size={'small'}
-      on:click={() => {
-        signOut()
-      }}
-    />
-  </div>
 {/if}
 
 <style lang="scss">
