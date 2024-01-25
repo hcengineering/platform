@@ -25,7 +25,8 @@ import core, {
   type Ref,
   type RelatedDocument,
   toIdMap,
-  type TxOperations
+  type TxOperations,
+  DOMAIN_CONFIGURATION
 } from '@hcengineering/core'
 import { type Resources, translate } from '@hcengineering/platform'
 import { getClient, MessageBox, type ObjectSearchResult } from '@hcengineering/presentation'
@@ -303,35 +304,39 @@ async function deleteProject (project: Project | undefined): Promise<void> {
                 continue
               }
               const d = h.findDomain(c._id)
-              if (d !== undefined && d !== DOMAIN_MODEL) {
-                while (true) {
-                  const docs = await client.findAll(c._id, { space: project._id }, { limit: 50 })
-                  if (docs.length === 0) {
-                    break
-                  }
-                  const ops = client.apply('delete')
-                  for (const object of docs) {
-                    if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
-                      const adoc = object as AttachedDoc
-                      await ops
-                        .removeCollection(
-                          object._class,
-                          object.space,
-                          adoc._id,
-                          adoc.attachedTo,
-                          adoc.attachedToClass,
-                          adoc.collection
-                        )
-                        .catch((err) => {
+              if (d !== undefined && d !== DOMAIN_MODEL && d !== DOMAIN_CONFIGURATION) {
+                try {
+                  while (true) {
+                    const docs = await client.findAll(c._id, { space: project._id }, { limit: 50 })
+                    if (docs.length === 0) {
+                      break
+                    }
+                    const ops = client.apply('delete')
+                    for (const object of docs) {
+                      if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
+                        const adoc = object as AttachedDoc
+                        await ops
+                          .removeCollection(
+                            object._class,
+                            object.space,
+                            adoc._id,
+                            adoc.attachedTo,
+                            adoc.attachedToClass,
+                            adoc.collection
+                          )
+                          .catch((err) => {
+                            console.error(err)
+                          })
+                      } else {
+                        await ops.removeDoc(object._class, object.space, object._id).catch((err) => {
                           console.error(err)
                         })
-                    } else {
-                      await ops.removeDoc(object._class, object.space, object._id).catch((err) => {
-                        console.error(err)
-                      })
+                      }
                     }
+                    await ops.commit()
                   }
-                  await ops.commit()
+                } catch (err: any) {
+                  console.error(err)
                 }
               }
             }
