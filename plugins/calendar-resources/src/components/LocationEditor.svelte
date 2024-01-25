@@ -20,7 +20,7 @@
   }
 </script>
 
-<div class="flex-row-center flex-gap-1 container">
+<div class="flex-row-center flex-gap-1 container flex-no-shrink">
   <Icon icon={calendar.icon.Location} size={'small'} />
   <div class="flex-row-center">
     <EditBox bind:value placeholder={calendar.string.Location} kind={'ghost'} {focusIndex} fullSize focusable />
