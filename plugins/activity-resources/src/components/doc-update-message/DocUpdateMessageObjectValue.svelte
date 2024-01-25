@@ -67,14 +67,15 @@
     <Component is={objectPresenter.presenter} props={{ value: object, accent: true, shouldShowAvatar: false }} />
   {:else}
     {#await getValue(object) then value}
-      <span>
+      <span class="valueLink">
         <DocNavLink
           {object}
+          colorInherit
           disabled={message.action === 'remove'}
           component={objectPanel?.component ?? view.component.EditDoc}
           shrink={0}
         >
-          <span class="overflow-label select-text valueLink">{value}</span>
+          <span class="overflow-label select-text">{value}</span>
         </DocNavLink>
         {#if hasSeparator}
           <span class="separator">,</span>
