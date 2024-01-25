@@ -144,7 +144,6 @@ export default plugin(serverNotificationId, {
   },
   trigger: {
     OnBacklinkCreate: '' as Resource<TriggerFunc>,
-    ActivityNotificationsHandler: '' as Resource<TriggerFunc>,
     OnAttributeCreate: '' as Resource<TriggerFunc>,
     OnAttributeUpdate: '' as Resource<TriggerFunc>,
     OnReactionChanged: '' as Resource<TriggerFunc>,
