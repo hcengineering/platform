@@ -511,7 +511,7 @@ export function cutObjectArray (obj: any): any {
       } else Object.assign(r, { [key]: obj[key] })
       continue
     }
-    if (typeof obj[key] === 'object') {
+    if (typeof obj[key] === 'object' && obj[key] !== null) {
       Object.assign(r, { [key]: cutObjectArray(obj[key]) })
       continue
     }
