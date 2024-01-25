@@ -63,47 +63,45 @@
   }
 </script>
 
-<div class="flex mt-2">
-  <div class="line" style="background-color: {getPlatformColor(7, $themeStore.dark)}" />
-  {#await getData(href) then data}
-    <div class="flex-col">
-      {#if data.number !== undefined && data.title !== undefined}
+{#await getData(href) then data}
+  {#if data.number !== undefined && data.title !== undefined}
+    <div class="flex mt-2">
+      <div class="line" style="background-color: {getPlatformColor(7, $themeStore.dark)}" />
+      <div class="flex-col">
         <a class="fs-title mb-1" {href}>#{data.number} {data.title}</a>
-      {:else}
-        <a class="fs-title mb-1" {href}><LabelComponent label={view.string.ViewOnGithub} /></a>
-      {/if}
-      {#if data.body}
-        <div>
-          <MessageViewer message={data.body} />
+        {#if data.body}
+          <div>
+            <MessageViewer message={data.body} />
+          </div>
+        {/if}
+        <div class="flex-between">
+          {#if data.assignees?.length}
+            <div class="flex-col">
+              <div class="fs-title"><LabelComponent label={view.string.Assignees} /></div>
+              <div>
+                {#each data.assignees as assignee}
+                  <a href={assignee.url}>@{assignee.login}</a>
+                {/each}
+              </div>
+            </div>
+          {/if}
+          {#if data.labels?.length}
+            <div class="flex-col">
+              <div class="fs-title"><LabelComponent label={view.string.Labels} /></div>
+              <div>
+                {#each data.labels as label, i}
+                  {#if i},
+                  {/if}
+                  {label.name}
+                {/each}
+              </div>
+            </div>
+          {/if}
         </div>
-      {/if}
-      <div class="flex-between">
-        {#if data.assignees?.length}
-          <div class="flex-col">
-            <div class="fs-title"><LabelComponent label={view.string.Assignees} /></div>
-            <div>
-              {#each data.assignees as assignee}
-                <a href={assignee.url}>@{assignee.login}</a>
-              {/each}
-            </div>
-          </div>
-        {/if}
-        {#if data.labels?.length}
-          <div class="flex-col">
-            <div class="fs-title"><LabelComponent label={view.string.Labels} /></div>
-            <div>
-              {#each data.labels as label, i}
-                {#if i},
-                {/if}
-                {label.name}
-              {/each}
-            </div>
-          </div>
-        {/if}
       </div>
     </div>
-  {/await}
-</div>
+  {/if}
+{/await}
 
 <style lang="scss">
   .line {
