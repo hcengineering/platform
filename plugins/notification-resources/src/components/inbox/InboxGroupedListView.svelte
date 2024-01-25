@@ -76,14 +76,14 @@
       key.preventDefault()
       key.stopPropagation()
 
-      const context = $notifyContextsStore.find(({ _id }) => _id === displayData[listSelection][0])
+      const context = $notifyContextsStore.find(({ _id }) => _id === displayData[listSelection]?.[0])
 
       deleteContextNotifications(context)
     }
     if (key.code === 'Enter') {
       key.preventDefault()
       key.stopPropagation()
-      const context = $notifyContextsStore.find(({ _id }) => _id === displayData[listSelection][0])
+      const context = $notifyContextsStore.find(({ _id }) => _id === displayData[listSelection]?.[0])
       dispatch('click', { context })
     }
   }

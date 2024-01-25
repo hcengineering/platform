@@ -44,7 +44,6 @@
   import Filter from '../Filter.svelte'
   import { getDisplayInboxNotifications, resolveLocation } from '../../utils'
   import { InboxNotificationsFilter } from '../../types'
-  import { onDestroy } from 'svelte'
 
   export let visibleNav: boolean = true
   export let navFloat: boolean = false
@@ -91,7 +90,9 @@
     viewlets = res
   })
 
-  $: displayNotifications = getDisplayInboxNotifications($notificationsByContextStore, filter)
+  $: getDisplayInboxNotifications($notificationsByContextStore, filter).then((res) => {
+    displayNotifications = res
+  })
   $: displayContextsIds = new Set(displayNotifications.map(({ docNotifyContext }) => docNotifyContext))
 
   $: filteredNotifications = filterNotifications(selectedTabId, displayNotifications, $notifyContextsStore)
