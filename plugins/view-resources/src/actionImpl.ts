@@ -32,6 +32,7 @@ import {
 } from './selection'
 import { deleteObjects, getObjectLinkFragment } from './utils'
 import contact from '@hcengineering/contact'
+import { locationToUrl } from '@hcengineering/ui'
 
 /**
  * Action to be used for copying text to clipboard.
@@ -237,6 +238,26 @@ async function Open (
   const component = props?.component ?? panelComponent?.component ?? view.component.EditDoc
   const loc = await getObjectLinkFragment(hierarchy, d, {}, component)
   navigate(loc)
+}
+
+async function OpenInNewTab (
+  doc: Doc,
+  evt: Event,
+  props:
+  | {
+    component?: AnyComponent
+  }
+  | undefined
+): Promise<void> {
+  evt.preventDefault()
+  const d = Array.isArray(doc) ? doc[0] : doc
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const panelComponent = hierarchy.classHierarchyMixin(d._class, view.mixin.ObjectPanel)
+  const component = props?.component ?? panelComponent?.component ?? view.component.EditDoc
+  const loc = await getObjectLinkFragment(hierarchy, d, {}, component)
+  const url = locationToUrl(loc)
+  window.open(url, '_blank')
 }
 
 /**
@@ -495,6 +516,7 @@ export const actionImpl = {
   ShowActions,
   ShowPreview,
   Open,
+  OpenInNewTab,
   UpdateDocument,
   ShowPanel,
   ShowPopup,

@@ -848,7 +848,8 @@ const view = plugin(viewId, {
     Preview: '' as Ref<Action>,
 
     // Edit document
-    Open: '' as Ref<Action>
+    Open: '' as Ref<Action>,
+    OpenInNewTab: '' as Ref<Action>
   },
   viewlet: {
     Table: '' as Ref<ViewletDescriptor>,
@@ -888,6 +889,7 @@ const view = plugin(viewId, {
     Rename: '' as IntlString,
     Assigned: '' as IntlString,
     Open: '' as IntlString,
+    OpenInNewTab: '' as IntlString,
     Created: '' as IntlString,
     Delete: '' as IntlString,
     Then: '' as IntlString,
