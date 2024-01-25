@@ -53,7 +53,7 @@
     if (Array.isArray(value)) {
       await Promise.all(
         value.map(async (p) => {
-          if ('_class' in value) {
+          if ('_class' in p) {
             await client.update(p, { component: newComponentId })
           }
         })
