@@ -601,13 +601,14 @@ abstract class MongoAdapterBase implements DbAdapter {
     let res: T[] = []
     try {
       res = await cursor.toArray()
+      if (options?.total === true && options?.limit === undefined) {
+        total = res.length
+      }
+      return toFindResult(this.stripHash(res), total)
     } catch (e) {
       console.error('error during executing cursor in findAll', _class, cutObjectArray(query), options, e)
+      throw e
     }
-    if (options?.total === true && options?.limit === undefined) {
-      total = res.length
-    }
-    return toFindResult(this.stripHash(res), total)
   }
 
   stripHash<T extends Doc>(docs: T[]): T[] {
