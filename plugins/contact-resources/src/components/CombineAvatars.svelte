@@ -86,6 +86,17 @@
     .combine-avatar.small:not(:first-child) {
       margin-left: calc(1px - 1rem);
     }
+    .combine-avatar.inline,
+    .combine-avatar.tiny,
+    .combine-avatar.card,
+    .combine-avatar.x-small,
+    .combine-avatar.smaller,
+    .combine-avatar.small {
+      &:not(:last-child) {
+        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16,24.5v-17c0-3.2,1.8-6.1,4.5-7.5H8C3.6,0,0,3.6,0,8v16c0,4.4,3.6,8,8,8h12.5C17.8,30.6,16,27.7,16,24.5z'/%3E%3C/svg%3E%0A")
+          no-repeat;
+      }
+    }
     .combine-avatar.medium:not(:first-child) {
       margin-left: calc(1px - (2.25rem / 2));
     }

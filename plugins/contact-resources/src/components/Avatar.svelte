@@ -185,10 +185,6 @@
       font-size: 0.625rem;
       letter-spacing: -0.05em;
     }
-
-    &.roundedRect {
-      border-radius: 0.25rem;
-    }
   }
 
   .ava-card {
@@ -201,6 +197,14 @@
       letter-spacing: -0.05em;
     }
   }
+  .ava-inline,
+  .ava-tiny,
+  .ava-card {
+    &.roundedRect {
+      border-radius: 0.25rem;
+    }
+  }
+
   .ava-x-small {
     width: 1.5rem; // 24
     height: 1.5rem;
@@ -292,15 +296,17 @@
       border-radius: 50%;
     }
 
-    &.roundedRect {
+    .roundedRect & {
       border-radius: 0.5rem;
 
-      .ava-tiny {
+      &.ava-inline,
+      &.ava-tiny,
+      &.ava-card {
         border-radius: 0.25rem;
       }
 
-      .ava-x-large,
-      .ava-2x-large {
+      &.ava-x-large,
+      &.ava-2x-large {
         border-radius: 1rem;
       }
     }
