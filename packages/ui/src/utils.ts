@@ -206,9 +206,9 @@ export function parseURL (text: string): string {
 /**
  * @public
  */
-export interface IModeSelector {
-  mode: string
-  config: Array<[string, IntlString, object]>
+export interface IModeSelector<Mode extends string = string> {
+  mode: Mode
+  config: Array<[Mode, IntlString, object]>
   onChange: (_mode: string) => void
 }
 
