@@ -279,7 +279,12 @@ async function createUpdateIndexes (connection: CoreClient, db: Db, logger: Mode
     const bb: (string | FieldIndex<Doc>)[] = []
     for (const vv of v.values()) {
       try {
-        await collection.createIndex(vv)
+        const key = typeof vv === 'string' ? vv : Object.keys(vv)[0]
+        const name = typeof vv === 'string' ? `${key}_1` : `${key}_${vv[key]}`
+        const exists = await collection.indexExists(name)
+        if (!exists) {
+          await collection.createIndex(vv)
+        }
       } catch (err: any) {
         logger.log('error', JSON.stringify(err))
       }
