@@ -120,13 +120,9 @@
 
   const lookup: Lookup<Issue> = {
     ...(options?.lookup ?? {}),
-    space: tracker.class.Project,
-    status: tracker.class.IssueStatus,
-    component: tracker.class.Component,
-    milestone: tracker.class.Milestone,
+    attachedTo: tracker.class.Issue,
     _id: {
-      subIssues: tracker.class.Issue,
-      labels: tags.class.TagReference
+      subIssues: tracker.class.Issue
     }
   }
 
