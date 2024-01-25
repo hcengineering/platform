@@ -19,11 +19,11 @@
   import { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
   import core from '@hcengineering/core/lib/component'
   import { AttachmentDocList } from '@hcengineering/attachment-resources'
-  import { LinkPresenter } from '@hcengineering/view-resources'
+  import { getDocLinkTitle, LinkPresenter } from '@hcengineering/view-resources'
   import { Action, Button, IconEdit, ShowMore } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import activity, { DisplayActivityMessage } from '@hcengineering/activity'
-  import { ActivityMessageTemplate } from '@hcengineering/activity-resources'
+  import { ActivityDocLink, ActivityMessageTemplate } from '@hcengineering/activity-resources'
   import chunter, { ChatMessage, ChatMessageViewlet } from '@hcengineering/chunter'
 
   import ChatMessageHeader from './ChatMessageHeader.svelte'
@@ -43,6 +43,7 @@
   export let excludedActions: string[] = []
   export let withFlatActions: boolean = true
   export let hoverable = true
+  export let inline = false
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -150,7 +151,16 @@
   let refInput: ChatMessageInput
 </script>
 
-{#if value}
+{#if inline && object}
+  {#await getDocLinkTitle(client, object._id, object._class, object) then title}
+    <ActivityDocLink
+      {object}
+      {title}
+      panelComponent={hierarchy.classHierarchyMixin(object._class, view.mixin.ObjectPanel)?.component ??
+        view.component.EditDoc}
+    />
+  {/await}
+{:else if value && !inline}
   <ActivityMessageTemplate
     message={value}
     {viewlet}

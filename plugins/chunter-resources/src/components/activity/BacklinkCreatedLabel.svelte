@@ -79,7 +79,9 @@
 {#if doc && value}
   <span class="text-sm lower"><Label label={chunter.string.In} /></span>
   <DocNavLink object={doc} component={docPanel?.component ?? view.component.EditDoc} shrink={0}>
-    <span class="text-sm"><BacklinkReference {value} inline={false} /></span>
+    <span class="text-sm"
+      ><BacklinkReference {value} inline={hierarchy.isDerived(doc._class, chunter.class.ChatMessage)} /></span
+    >
   </DocNavLink>
 {/if}
 
