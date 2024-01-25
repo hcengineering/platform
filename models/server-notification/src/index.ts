@@ -31,7 +31,6 @@ import serverNotification, {
   type NotificationContentProvider
 } from '@hcengineering/server-notification'
 import chunter from '@hcengineering/model-chunter'
-import activity from '@hcengineering/activity'
 
 export { serverNotificationId } from '@hcengineering/server-notification'
 
@@ -59,15 +58,6 @@ export class TTypeMatch extends TNotificationType implements TypeMatch {
 
 export function createModel (builder: Builder): void {
   builder.createModel(THTMLPresenter, TTextPresenter, TTypeMatch, TNotificationPresenter)
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverNotification.trigger.ActivityNotificationsHandler,
-    txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx._class': core.class.TxCreateDoc,
-      'tx.objectClass': activity.class.DocUpdateMessage
-    }
-  })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverNotification.trigger.OnActivityNotificationViewed,

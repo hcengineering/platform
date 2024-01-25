@@ -29,7 +29,11 @@ import core, {
 import { ActivityControl, DocObjectCache } from '@hcengineering/server-activity'
 import type { TriggerControl } from '@hcengineering/server-core'
 import activity, { ActivityMessage, DocUpdateMessage, Reaction } from '@hcengineering/activity'
-import { createCollabDocInfo, removeDocInboxNotifications } from '@hcengineering/server-notification-resources'
+import {
+  createCollabDocInfo,
+  createCollaboratorNotifications,
+  removeDocInboxNotifications
+} from '@hcengineering/server-notification-resources'
 
 import { getDocUpdateAction, getTxAttributesUpdates } from './utils'
 
@@ -98,7 +102,7 @@ export async function createReactionNotifications (
   const docUpdateMessage = TxProcessor.createDoc2Doc(messageTx.tx as TxCreateDoc<DocUpdateMessage>)
 
   res = res.concat(
-    await createCollabDocInfo([user], control, tx.tx, tx, parentMessage, docUpdateMessage, true, false, false)
+    await createCollabDocInfo([user], control, tx.tx, tx, parentMessage, [docUpdateMessage], true, false, false)
   )
 
   return res
@@ -271,7 +275,12 @@ async function ActivityMessagesHandler (tx: TxCUD<Doc>, control: TriggerControl)
     return []
   }
 
-  return await generateDocUpdateMessages(tx, control)
+  const txes = await generateDocUpdateMessages(tx, control)
+  const messages = txes.map((messageTx) => TxProcessor.createDoc2Doc(messageTx.tx as TxCreateDoc<DocUpdateMessage>))
+
+  const notificationTxes = await createCollaboratorNotifications(tx, control, messages)
+
+  return [...txes, ...notificationTxes]
 }
 
 async function OnDocRemoved (originTx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
