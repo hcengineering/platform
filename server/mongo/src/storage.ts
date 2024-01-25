@@ -457,6 +457,7 @@ abstract class MongoAdapterBase implements DbAdapter {
       res = (await cursor.toArray())[0]
     } catch (e) {
       console.error('error during executing cursor in findWithPipeline', clazz, cutObjectArray(query), options, e)
+      throw e
     }
     const result = res.results as WithLookup<T>[]
     const total = options?.total === true ? res.totalCount?.shift()?.count ?? 0 : -1
