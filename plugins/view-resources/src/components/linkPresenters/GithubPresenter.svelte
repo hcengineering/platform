@@ -40,7 +40,6 @@
     let params = href.replace(/(http.:\/\/)?(www.)?github.com\//, '')
     params = params.replace('/pull/', '/pulls/')
     const res = await (await fetch(`https://api.github.com/repos/${params}`)).json()
-
     return {
       number: res.number,
       body: format(res.body),
