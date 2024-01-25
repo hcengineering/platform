@@ -39,37 +39,19 @@
   async function getData (href: string): Promise<Data> {
     let params = href.replace(/(http.:\/\/)?(www.)?github.com\//, '')
     params = params.replace('/pull/', '/pulls/')
-
-    const token = null // TODO: Get Token
-
-    const url = `https://api.github.com/repos/${params}`
-    let headers = {}
-
-    if (token) {
-      headers = {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    }
-
-    const request = await fetch(url, {
-      method: 'GET',
-      headers
-    })
-
-    const result = await request.json()
+    const res = await (await fetch(`https://api.github.com/repos/${params}`)).json()
 
     return {
-      number: result.number,
-      body: format(result.body),
-      title: result.title,
-      assignees: result.assignees?.map((p: any) => {
+      number: res.number,
+      body: format(res.body),
+      title: res.title,
+      assignees: res.assignees?.map((p: any) => {
         return {
           login: p.login,
           url: p.html_url
         }
       }),
-      labels: result.labels
+      labels: res.labels
     }
   }
 
