@@ -117,8 +117,6 @@
     "ToViewCommands": "to view available commands",
     "UnArchive": "Unarchive",
     "Pin": "Pin",
-    "Unpin": "Unpin",
-
-    "ViewOnGithub": "View On GitHub"
+    "Unpin": "Unpin"
   }
 }
