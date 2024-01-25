@@ -432,6 +432,8 @@ export interface DocIndexState extends Doc {
   attachedTo?: Ref<Doc>
   attachedToClass?: Ref<Class<Doc>>
 
+  generationId?: string
+
   // States for stages
   stages: Record<string, boolean | string>
 

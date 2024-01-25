@@ -318,6 +318,11 @@ export class TDocIndexState extends TDoc implements DocIndexState {
   @Index(IndexKind.Indexed)
   @Hidden()
     stages!: Record<string, boolean | string>
+
+  @Prop(TypeString(), getEmbeddedLabel('Generation'))
+  @Index(IndexKind.Indexed)
+  @Hidden()
+    generationId?: string
 }
 
 @Model(core.class.IndexStageState, core.class.Doc, DOMAIN_DOC_INDEX_STATE)
