@@ -27,7 +27,8 @@
     IconMoreH,
     createFocusManager,
     getUserTimezone,
-    showPopup
+    showPopup,
+    Scroller
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
@@ -178,44 +179,45 @@
       />
     </div>
   </div>
-  <div class="block first flex-no-shrink">
-    <EventTimeEditor {allDay} bind:startDate bind:dueDate {timeZone} focusIndex={10004} />
-    <EventTimeExtraButton
-      bind:allDay
-      bind:timeZone
-      bind:rules
-      on:repeat={setRecurrance}
-      on:allday={allDayChangeHandler}
-    />
-  </div>
-  <div class="block rightCropPadding">
-    <LocationEditor focusIndex={10010} bind:value={location} />
-    <EventParticipants focusIndex={10011} bind:participants bind:externalParticipants />
-  </div>
-  <div class="block flex-no-shrink">
-    <div class="flex-row-top gap-1-5">
+  <Scroller thinScrollBars>
+    <div class="block first flex-no-shrink">
+      <EventTimeEditor {allDay} bind:startDate bind:dueDate {timeZone} focusIndex={10004} />
+      <EventTimeExtraButton
+        bind:allDay
+        bind:timeZone
+        bind:rules
+        on:repeat={setRecurrance}
+        on:allday={allDayChangeHandler}
+      />
+    </div>
+    <div class="block rightCropPadding">
+      <LocationEditor focusIndex={10010} bind:value={location} />
+      <EventParticipants focusIndex={10011} bind:participants bind:externalParticipants />
+    </div>
+    <div class="block row gap-1-5">
       <div class="top-icon">
         <Icon icon={calendar.icon.Description} size={'small'} />
       </div>
       <StyledTextBox
         alwaysEdit={true}
+        isScrollable={false}
         kind={'indented'}
-        maxHeight={'limited'}
         showButtons={false}
         focusIndex={10100}
         placeholder={calendar.string.Description}
         bind:content={description}
       />
     </div>
-  </div>
-  <div class="block rightCropPadding">
-    <CalendarSelector bind:value={space} focusIndex={10101} />
-    <div class="flex-row-center flex-gap-1">
-      <Icon icon={calendar.icon.Hidden} size={'small'} />
-      <VisibilityEditor bind:value={visibility} kind={'ghost'} focusIndex={10102} withoutIcon />
+    <div class="block rightCropPadding">
+      <CalendarSelector bind:value={space} focusIndex={10101} />
+      <div class="flex-row-center flex-gap-1">
+        <Icon icon={calendar.icon.Hidden} size={'small'} />
+        <VisibilityEditor bind:value={visibility} kind={'ghost'} focusIndex={10102} withoutIcon />
+      </div>
+      <EventReminders bind:reminders focusIndex={10103} />
     </div>
-    <EventReminders bind:reminders focusIndex={10103} />
-  </div>
+  </Scroller>
+  <div class="antiDivider noMargin" />
   <div class="flex-between p-5 flex-no-shrink">
     <div />
     <Button
@@ -246,11 +248,16 @@
 
     .block {
       display: flex;
-      flex-direction: column;
+      flex-shrink: 0;
       min-width: 0;
       min-height: 0;
-      border-bottom: 1px solid var(--theme-divider-color);
 
+      &:not(:last-child) {
+        border-bottom: 1px solid var(--theme-divider-color);
+      }
+      &:not(.row) {
+        flex-direction: column;
+      }
       &.first {
         padding-top: 0;
       }
@@ -260,10 +267,13 @@
       &.rightCropPadding {
         padding: 0.75rem 1rem 0.75rem 1.25rem;
       }
+      &.row {
+        padding: 0 1.25rem 0.5rem;
+      }
     }
     .top-icon {
       flex-shrink: 0;
-      margin-top: 0.875rem;
+      margin-top: 1.375rem;
     }
   }
 </style>
