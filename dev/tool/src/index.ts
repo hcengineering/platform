@@ -43,7 +43,7 @@ import {
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin, { FileModelLogger } from '@hcengineering/server-tool'
 
-import { program } from 'commander'
+import { program, Command } from 'commander'
 import { Db, MongoClient } from 'mongodb'
 import { clearTelegramHistory } from './telegram'
 import { diffWorkspace } from './workspace'
@@ -78,7 +78,8 @@ export function devTool (
     version: Data<Version>
     migrateOperations: [string, MigrateOperation][]
   },
-  productId: string
+  productId: string,
+  extendProgram?: (prog: Command) => void
 ): void {
   const serverSecret = process.env.SERVER_SECRET
   if (serverSecret === undefined) {
@@ -602,6 +603,8 @@ export function devTool (
       const { mongodbUri } = prepareTools()
       await fixSkills(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl, step)
     })
+
+  extendProgram?.(program)
 
   program.parse(process.argv)
 }
