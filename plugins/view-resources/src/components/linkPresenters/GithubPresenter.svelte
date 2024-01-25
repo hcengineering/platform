@@ -70,7 +70,7 @@
       {#if data.number !== undefined && data.title !== undefined}
         <a class="fs-title mb-1" {href}>#{data.number} {data.title}</a>
       {:else}
-        <a class="fs-title mb-1" {href}><LabelComponent label={view.string.ViewOnGithub}/></a>
+        <a class="fs-title mb-1" {href}><LabelComponent label={view.string.ViewOnGithub} /></a>
       {/if}
       {#if data.body}
         <div>
