@@ -19,6 +19,7 @@ import { mergeAttributes, nodeInputRule } from '@tiptap/core'
 import { type Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { type EditorView } from '@tiptap/pm/view'
+import extract from 'png-chunks-extract'
 
 /**
  * @public
@@ -205,7 +206,9 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
   },
 
   addProseMirrorPlugins () {
-    const opt = this.options
+    const attachFile = this.options.attachFile
+    const uploadUrl = this.options.uploadUrl
+
     function handleDrop (
       view: EditorView,
       pos: { pos: number, inside: number } | null,
@@ -216,7 +219,7 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
       for (const uri of uris) {
         if (uri !== '') {
           const url = new URL(uri)
-          if (opt.uploadUrl === undefined || !url.href.includes(opt.uploadUrl)) {
+          if (uploadUrl === undefined || !url.href.includes(uploadUrl)) {
             continue
           }
 
@@ -242,25 +245,18 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
       }
 
       const files = dataTransfer?.files
-      if (files !== undefined && opt.attachFile !== undefined) {
+      if (files !== undefined && attachFile !== undefined) {
         for (let i = 0; i < files.length; i++) {
           const file = files.item(i)
           if (file != null) {
             result = true
-            void opt.attachFile(file).then((id) => {
-              if (id !== undefined) {
-                if (id.type.includes('image')) {
-                  const node = view.state.schema.nodes.image.create({ 'file-id': id.file })
-                  const transaction = view.state.tr.insert(pos?.pos ?? 0, node)
-                  view.dispatch(transaction)
-                }
-              }
-            })
+            void handleImageUpload(file, view, pos, attachFile, uploadUrl)
           }
         }
       }
       return result
     }
+
     return [
       new Plugin({
         key: new PluginKey('handle-image-paste'),
@@ -283,7 +279,12 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
             if (dataTransfer !== null) {
               return handleDrop(view, view.posAtCoords({ left: event.x, top: event.y }), dataTransfer)
             }
-          },
+          }
+        }
+      }),
+      new Plugin({
+        key: new PluginKey('handle-image-open'),
+        props: {
           handleDoubleClickOn (view, pos, node, nodePos, event) {
             if (node.type.name !== 'image') {
               return
@@ -309,3 +310,84 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
     ]
   }
 })
+
+async function handleImageUpload (
+  file: File,
+  view: EditorView,
+  pos: { pos: number, inside: number } | null,
+  attachFile: FileAttachFunction,
+  uploadUrl: string
+): Promise<void> {
+  const size = await getImageSize(file)
+  const attached = await attachFile(file)
+  if (attached !== undefined) {
+    if (attached.type.includes('image')) {
+      const image = new Image()
+      image.onload = () => {
+        const node = view.state.schema.nodes.image.create({
+          'file-id': attached.file,
+          width: size?.width ?? image.naturalWidth
+        })
+        const transaction = view.state.tr.insert(pos?.pos ?? 0, node)
+        view.dispatch(transaction)
+      }
+      image.src = getFileUrl(attached.file, 'full', uploadUrl)
+    }
+  }
+}
+
+async function getImageSize (file: File): Promise<{ width: number, height: number } | undefined> {
+  if (file.type !== 'image/png') {
+    return undefined
+  }
+
+  try {
+    const buffer = await file.arrayBuffer()
+    const chunks = extract(new Uint8Array(buffer))
+
+    const pHYsChunk = chunks.find((chunk) => chunk.name === 'pHYs')
+    const iHDRChunk = chunks.find((chunk) => chunk.name === 'IHDR')
+
+    if (pHYsChunk === undefined || iHDRChunk === undefined) {
+      return undefined
+    }
+
+    // See http://www.libpng.org/pub/png/spec/1.2/PNG-Chunks.html
+    // Section 4.1.1. IHDR Image header
+    // Section 4.2.4.2. pHYs Physical pixel dimensions
+    const idhrData = parseIHDR(new DataView(iHDRChunk.data.buffer))
+    const physData = parsePhys(new DataView(pHYsChunk.data.buffer))
+
+    if (physData.unit === 0 && physData.ppux === physData.ppuy) {
+      const pixelRatio = Math.round(physData.ppux / 2834.5)
+      return {
+        width: Math.round(idhrData.width / pixelRatio),
+        height: Math.round(idhrData.height / pixelRatio)
+      }
+    }
+  } catch (err) {
+    console.error(err)
+    return undefined
+  }
+
+  return undefined
+}
+
+// See http://www.libpng.org/pub/png/spec/1.2/PNG-Chunks.html
+// Section 4.1.1. IHDR Image header
+function parseIHDR (view: DataView): { width: number, height: number } {
+  return {
+    width: view.getUint32(0),
+    height: view.getUint32(4)
+  }
+}
+
+// See http://www.libpng.org/pub/png/spec/1.2/PNG-Chunks.html
+// Section 4.2.4.2. pHYs Physical pixel dimensions
+function parsePhys (view: DataView): { ppux: number, ppuy: number, unit: number } {
+  return {
+    ppux: view.getUint32(0),
+    ppuy: view.getUint32(4),
+    unit: view.getUint8(4)
+  }
+}

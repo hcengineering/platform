@@ -223,8 +223,9 @@
 
 .ProseMirror-selectednode {
   img {
-    box-shadow: 0 0 0 2px var(--text-editor-selected-node-color);
-    border-radius: 0.125rem;
+    outline: 2px solid var(--primary-button-outline);
+    outline-offset: 2px;
+    border-radius: 2px;
   }
 }
 

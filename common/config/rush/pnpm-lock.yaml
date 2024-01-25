@@ -821,6 +821,9 @@ dependencies:
   '@types/pdfkit':
     specifier: ~0.12.3
     version: 0.12.12
+  '@types/png-chunks-extract':
+    specifier: ^1.0.2
+    version: 1.0.2
   '@types/qs':
     specifier: ~6.9.7
     version: 6.9.8
@@ -1037,6 +1040,9 @@ dependencies:
   pdfkit:
     specifier: ~0.13.0
     version: 0.13.0
+  png-chunks-extract:
+    specifier: ^1.0.0
+    version: 1.0.0
   postcss:
     specifier: ^8.4.20
     version: 8.4.31
@@ -7295,6 +7301,10 @@ packages:
       '@types/node': 16.11.68
     dev: false
 
+  /@types/png-chunks-extract@1.0.2:
+    resolution: {integrity: sha512-z6djfFIbrrddtunoMJBOPlyZrnmeuG1kkvHUNi2QfpOb+JMMLuLliHHTmMyRi7k7LiTAut0HbdGCF6ibDtQAHQ==}
+    dev: false
+
   /@types/pretty-hrtime@1.0.1:
     resolution: {integrity: sha512-VjID5MJb1eGKthz2qUerWT8+R4b9N+CHvGCzg9fn4kWZgaF9AhdYikQio3R7wV8YY1NsQKPaCwKz1Yff+aHNUQ==}
     dev: false
@@ -9068,6 +9078,11 @@ packages:
       parse-json: 5.2.0
       path-type: 4.0.0
       typescript: 5.2.2
+    dev: false
+
+  /crc-32@0.3.0:
+    resolution: {integrity: sha512-kucVIjOmMc1f0tv53BJ/5WIX+MGLcKuoBhnGqQrgKJNqLByb/sVMWfW/Aw6hw0jgcqjJ2pi9E5y32zOIpaUlsA==}
+    engines: {node: '>=0.8'}
     dev: false
 
   /create-jest@29.7.0(@types/node@16.11.68)(ts-node@10.9.1):
@@ -14051,6 +14066,12 @@ packages:
       playwright-core: 1.40.1
     optionalDependencies:
       fsevents: 2.3.2
+    dev: false
+
+  /png-chunks-extract@1.0.0:
+    resolution: {integrity: sha512-ZiVwF5EJ0DNZyzAqld8BP1qyJBaGOFaq9zl579qfbkcmOwWLLO4I9L8i2O4j3HkI6/35i0nKG2n+dZplxiT89Q==}
+    dependencies:
+      crc-32: 0.3.0
     dev: false
 
   /png-js@1.0.0:
@@ -23684,7 +23705,7 @@ packages:
     dev: false
 
   file:projects/text-editor.tgz(@types/node@16.11.68)(bufferutil@4.0.7)(esbuild@0.16.17)(postcss-load-config@4.0.1)(postcss@8.4.31)(prosemirror-model@1.19.3)(ts-node@10.9.1):
-    resolution: {integrity: sha512-q4IthAiGXw8l3HkEitwxvXppLyB/mszif5wHdy0jcaz7Yc0moJOzS6ElJ3AgA/0IQHxKB7ladDAkU/wklo7icw==, tarball: file:projects/text-editor.tgz}
+    resolution: {integrity: sha512-iPBMTKEApdZq+f8GfFNZHYKFBWwfm0z5+MVzB4Tm3FU+kjd0dl4h11aaz0s6mtOHeEQetgrKE+82yGBStsfmbQ==, tarball: file:projects/text-editor.tgz}
     id: file:projects/text-editor.tgz
     name: '@rush-temp/text-editor'
     version: 0.0.0
@@ -23717,6 +23738,7 @@ packages:
       '@tiptap/suggestion': 2.1.12(@tiptap/core@2.1.12)(@tiptap/pm@2.1.12)
       '@types/diff': 5.0.5
       '@types/jest': 29.5.5
+      '@types/png-chunks-extract': 1.0.2
       '@typescript-eslint/eslint-plugin': 6.11.0(@typescript-eslint/parser@6.11.0)(eslint@8.54.0)(typescript@5.2.2)
       '@typescript-eslint/parser': 6.11.0(eslint@8.54.0)(typescript@5.2.2)
       diff: 5.1.0
@@ -23728,6 +23750,7 @@ packages:
       eslint-plugin-svelte: 2.35.0(eslint@8.54.0)(svelte@4.2.5)(ts-node@10.9.1)
       jest: 29.7.0(@types/node@16.11.68)(ts-node@10.9.1)
       lib0: 0.2.88
+      png-chunks-extract: 1.0.0
       prettier: 3.1.0
       prettier-plugin-svelte: 3.1.0(prettier@3.1.0)(svelte@4.2.5)
       prosemirror-codemark: 0.4.2(prosemirror-model@1.19.3)

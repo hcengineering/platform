@@ -63,7 +63,8 @@
       return {
         id: `#imageWidth${it}`,
         label: it === plugin.string.Unset ? it : getEmbeddedLabel(it),
-        action: () => textEditor.commands.setImageSize({ width: it === plugin.string.Unset ? undefined : it }),
+        action: () =>
+          textEditor.commands.setImageSize({ width: it === plugin.string.Unset ? undefined : it, height: undefined }),
         category: {
           label: plugin.string.Width
         }
