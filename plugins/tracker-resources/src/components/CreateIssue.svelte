@@ -412,9 +412,6 @@
         tag: label.tag
       })
     }
-    await descriptionBox.createAttachments(_id)
-
-    await operations.commit()
 
     if (relatedTo !== undefined) {
       const doc = await client.findOne(tracker.class.Issue, { _id })
@@ -427,6 +424,11 @@
         }
       }
     }
+
+    await operations.commit()
+
+    await descriptionBox.createAttachments(_id)
+
     addNotification(
       await translate(tracker.string.IssueCreated, {}, $themeStore.language),
       getTitle(object.title),
