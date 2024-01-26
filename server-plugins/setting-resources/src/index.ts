@@ -22,10 +22,7 @@ import setting, { Integration } from '@hcengineering/setting'
  * @public
  */
 export async function integrationHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
-  const integration = doc as Integration
-  const type = (await control.modelDb.findAll(setting.class.IntegrationType, { _id: integration.type }))[0]
-  if (type === undefined) return ''
-  return await translate(type.label, {})
+  return await integrationTextPresenter(doc, control)
 }
 
 /**
@@ -35,7 +32,8 @@ export async function integrationTextPresenter (doc: Doc, control: TriggerContro
   const integration = doc as Integration
   const type = (await control.modelDb.findAll(setting.class.IntegrationType, { _id: integration.type }))[0]
   if (type === undefined) return ''
-  return await translate(type.label, {})
+  const label = await translate(type.label, {})
+  return `${label} (${integration.value})`
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
