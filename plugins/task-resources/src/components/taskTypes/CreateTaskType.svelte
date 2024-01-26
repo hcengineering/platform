@@ -162,7 +162,9 @@
   canSave
   okLabel={taskType !== undefined ? presentation.string.Save : presentation.string.Create}
   on:changeContent
-  onCancel={() => { clearSettingsStore() }}
+  onCancel={() => {
+    clearSettingsStore()
+  }}
 >
   <div class="hulyModal-content__titleGroup">
     <ModernEditbox bind:value={name} label={task.string.TaskName} size={'large'} kind={'ghost'} autoFocus />
