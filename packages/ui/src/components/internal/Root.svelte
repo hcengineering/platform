@@ -201,6 +201,7 @@
     flex-direction: column;
     // height: 100vh;
     height: 100%;
+    height: 100dvh;
     // height: var(--app-height);
 
     .antiStatusBar {
