@@ -25,6 +25,7 @@
 
   export let _id: Ref<ActivityMessage>
   export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
+  export let showHeader: boolean = true
 
   const messageQuery = createQuery()
   const dispatch = createEventDispatcher()
@@ -43,19 +44,21 @@
   let content: HTMLDivElement | undefined = undefined
 </script>
 
-<div class="header">
-  <div class="title"><Label label={chunter.string.Thread} /></div>
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div
-    class="tool"
-    on:click={() => {
-      dispatch('close')
-    }}
-  >
-    <IconClose size="medium" />
+{#if showHeader}
+  <div class="header">
+    <div class="title"><Label label={chunter.string.Thread} /></div>
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <div
+      class="tool"
+      on:click={() => {
+        dispatch('close')
+      }}
+    >
+      <IconClose size="medium" />
+    </div>
   </div>
-</div>
+{/if}
 {#if message}
   <ThreadParentMessage {message} />
 
