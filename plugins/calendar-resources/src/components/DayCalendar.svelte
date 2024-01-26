@@ -1027,7 +1027,7 @@
 
 <style lang="scss">
   .calendar-container {
-    will-change: transform;
+    will-change: scroll-position;
     position: relative;
     display: grid;
 
@@ -1165,7 +1165,7 @@
   .sticky-header {
     position: sticky;
     background-color: var(--theme-comp-header-color);
-    z-index: 10;
+    z-index: 15;
 
     &:not(.head) {
       top: 3.5rem;

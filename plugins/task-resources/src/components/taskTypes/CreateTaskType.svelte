@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { Class, ClassifierKind, Data, Ref, RefTo, Status, generateId, toIdMap } from '@hcengineering/core'
   import { Resource, getEmbeddedLabel, getResource } from '@hcengineering/platform'
-  import presentation, { Card, getClient, hasResource } from '@hcengineering/presentation'
+  import presentation, { getClient, hasResource } from '@hcengineering/presentation'
   import {
     ProjectType,
     ProjectTypeDescriptor,
@@ -25,12 +25,11 @@
     createState,
     findStatusAttr
   } from '@hcengineering/task'
-  import { DropdownIntlItem, DropdownLabelsIntl, EditBox, getColorNumberByText } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { DropdownIntlItem, Modal, ModernEditbox, Label, ButtonMenu } from '@hcengineering/ui'
   import task from '../../plugin'
   import TaskTypeKindEditor from './TaskTypeKindEditor.svelte'
+  import { clearSettingsStore } from '@hcengineering/setting-resources'
 
-  const dispatch = createEventDispatcher()
   const client = getClient()
   export let type: ProjectType
   export let descriptor: ProjectTypeDescriptor
@@ -74,12 +73,12 @@
     }
   }
 
-  let taskTypeDescriptor: Ref<TaskTypeDescriptor> = taskTypeDescriptors[0]._id
+  let taskTypeDescriptor: TaskTypeDescriptor = taskTypeDescriptors[0]
 
   async function save (): Promise<void> {
     if (type === undefined) return
 
-    const descr = taskTypeDescriptors.find((it) => it._id === taskTypeDescriptor)
+    const descr = taskTypeDescriptors.find((it) => it._id === taskTypeDescriptor._id)
     if (descr === undefined) return
 
     const ofClass = descr.baseClass
@@ -87,7 +86,7 @@
       kind,
       name,
       ofClass,
-      descriptor: taskTypeDescriptor,
+      descriptor: taskTypeDescriptor._id,
       targetClass,
       statusCategories,
       statuses,
@@ -146,31 +145,53 @@
       await client.update(type, { $push: { tasks: taskTypeId } })
     }
 
-    dispatch('close')
+    clearSettingsStore()
   }
 
-  const descriptorItems: DropdownIntlItem[] = taskTypeDescriptors.map((it) => ({ id: it._id, label: it.name }))
+  const descriptorItems: DropdownIntlItem[] = taskTypeDescriptors.map((it) => ({
+    id: it._id,
+    icon: it.icon,
+    label: it.name
+  }))
 </script>
 
-<Card
+<Modal
   label={task.string.TaskType}
+  type={'type-aside'}
   okAction={save}
   canSave
   okLabel={taskType !== undefined ? presentation.string.Save : presentation.string.Create}
   on:changeContent
-  onCancel={() => dispatch('close')}
+  onCancel={() => { clearSettingsStore() }}
 >
-  <EditBox
-    focusIndex={1}
-    bind:value={name}
-    placeholder={task.string.TaskName}
-    kind={'large-style'}
-    autoFocus
-    fullSize
-  />
-  <div class="p-1 flex-row-center mt-4">
-    <TaskTypeKindEditor bind:kind />
-
-    <DropdownLabelsIntl kind={'regular'} size={'large'} items={descriptorItems} bind:selected={taskTypeDescriptor} />
+  <div class="hulyModal-content__titleGroup">
+    <ModernEditbox bind:value={name} label={task.string.TaskName} size={'large'} kind={'ghost'} autoFocus />
   </div>
-</Card>
+  <div class="hulyModal-content__settingsSet">
+    <div class="hulyModal-content__settingsSet-line">
+      <span class="label">
+        <Label label={task.string.TaskType} />
+      </span>
+      <TaskTypeKindEditor bind:kind />
+    </div>
+    <div class="hulyModal-content__settingsSet-line">
+      <span class="label">
+        <Label label={task.string.Type} />
+      </span>
+      <ButtonMenu
+        selected={taskTypeDescriptor._id}
+        items={descriptorItems}
+        icon={taskTypeDescriptor.icon}
+        label={taskTypeDescriptor.name}
+        kind={'secondary'}
+        size={'large'}
+        on:selected={(evt) => {
+          if (evt.detail != null) {
+            const tt = taskTypeDescriptors.find((tt) => tt._id === evt.detail)
+            if (tt) taskTypeDescriptor = tt
+          }
+        }}
+      />
+    </div>
+  </div>
+</Modal>
