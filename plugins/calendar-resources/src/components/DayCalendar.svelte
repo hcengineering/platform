@@ -1027,7 +1027,7 @@
 
 <style lang="scss">
   .calendar-container {
-    will-change: scroll-position;
+    will-change: transform;
     position: relative;
     display: grid;
 
@@ -1168,13 +1168,13 @@
     z-index: 15;
 
     &:not(.head) {
-      top: 3.5rem;
+      top: calc(3.5rem - .5px);
       border-top: 1px solid var(--theme-divider-color);
       border-bottom: 1px solid var(--theme-divider-color);
     }
     &.head,
     &.top {
-      top: 0;
+      top: -.5px;
     }
     &.zm {
       top: var(--calendar-ad-height, 2.25rem);
