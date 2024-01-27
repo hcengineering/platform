@@ -1168,13 +1168,13 @@
     z-index: 15;
 
     &:not(.head) {
-      top: calc(3.5rem - .5px);
+      top: calc(3.5rem - 0.5px);
       border-top: 1px solid var(--theme-divider-color);
       border-bottom: 1px solid var(--theme-divider-color);
     }
     &.head,
     &.top {
-      top: -.5px;
+      top: -0.5px;
     }
     &.zm {
       top: var(--calendar-ad-height, 2.25rem);
