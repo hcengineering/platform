@@ -17,7 +17,7 @@ test.describe('Attachments tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test('Create issue with several attachment tests', async ({ page }) => {
+  test('Create issue with several attachment test', async ({ page }) => {
     const newIssue: NewIssue = {
       title: `Create issue with several attachment tests-${generateId()}`,
       description: 'Create issue with several attachment tests description'
@@ -36,7 +36,6 @@ test.describe('Attachments tests', () => {
     await issuesPage.fillNewIssueForm(newIssue)
     await issuesPage.attachFileToNewIssueForm('cat.jpeg')
     await issuesPage.attachFileToNewIssueForm('cat2.jpeg')
-
     await issuesPage.buttonCreateIssue.click()
 
     await issuesPage.searchIssueByName(newIssue.title)
