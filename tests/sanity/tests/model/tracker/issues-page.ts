@@ -30,6 +30,8 @@ export class IssuesPage extends CommonTrackerPage {
   readonly issuesList: Locator
   readonly buttonPopupCreateNewIssueParent: Locator
   readonly buttonPopupCreateNewIssueTemplate: Locator
+  readonly inputPopupAddAttachmentsFile: Locator
+  readonly textPopupAddAttachmentsFile: Locator
 
   constructor (page: Page) {
     super(page)
@@ -72,6 +74,8 @@ export class IssuesPage extends CommonTrackerPage {
     this.buttonPopupCreateNewIssueTemplate = page.locator(
       'form[id="tracker:string:NewIssue"] div[class*="title"] > div > button'
     )
+    this.inputPopupAddAttachmentsFile = page.locator('div.popup-tooltip input#file')
+    this.textPopupAddAttachmentsFile = page.locator('div.popup-tooltip div.item div.name')
   }
 
   async createNewIssue (data: NewIssue, closeNotification: boolean = false): Promise<void> {
@@ -128,8 +132,7 @@ export class IssuesPage extends CommonTrackerPage {
       }
     }
     if (data.filePath != null) {
-      await this.inputPopupCreateNewIssueFile.setInputFiles(path.join(__dirname, `../../files/${data.filePath}`))
-      await expect(this.textPopupCreateNewIssueFile.filter({ hasText: data.filePath })).toBeVisible()
+      await this.attachFileToNewIssueForm(data.filePath)
     }
     if (data.parentIssue != null) {
       await this.buttonPopupCreateNewIssueParent.click()
@@ -203,5 +206,30 @@ export class IssuesPage extends CommonTrackerPage {
   async selectTemplate (templateName: string): Promise<void> {
     await this.buttonPopupCreateNewIssueTemplate.click()
     await this.selectMenuItem(this.page, templateName)
+  }
+
+  async attachFileToNewIssueForm (filePath: string): Promise<void> {
+    await this.inputPopupCreateNewIssueFile.setInputFiles(path.join(__dirname, `../../files/${filePath}`))
+    await expect(this.textPopupCreateNewIssueFile.filter({ hasText: filePath })).toBeVisible()
+  }
+
+  async checkAttachmentsCount (issueName: string, count: string): Promise<void> {
+    await expect(
+      this.page
+        .locator('div.row span', { hasText: issueName })
+        .locator('xpath=..')
+        .locator('a > button > div[slot="content"]')
+    ).toHaveText(count)
+  }
+
+  async addAttachmentToIssue (issueName: string, filePath: string): Promise<void> {
+    await this.page.locator('div.row span', { hasText: issueName }).locator('xpath=..').locator('a > button').click()
+    await this.inputPopupAddAttachmentsFile.setInputFiles(path.join(__dirname, `../../files/${filePath}`))
+    await expect(this.textPopupAddAttachmentsFile.filter({ hasText: filePath })).toBeVisible()
+  }
+
+  async checkAddAttachmentPopupContainsFile (issueName: string, filePath: string): Promise<void> {
+    await this.page.locator('div.row span', { hasText: issueName }).locator('xpath=..').locator('a > button').click()
+    await expect(this.textPopupAddAttachmentsFile.filter({ hasText: filePath })).toBeVisible()
   }
 }
