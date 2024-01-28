@@ -47,6 +47,8 @@
   }
 
   function openEmojiPalette (ev: Event) {
+    ev.preventDefault()
+    ev.stopPropagation()
     showPopup(EmojiPopup, {}, ev.target as HTMLElement, (emoji: string) => {
       updateDocReactions(client, reactions, object, emoji)
     })
