@@ -748,7 +748,7 @@ async function collectionCollabDoc (
   const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
   let res = await createCollaboratorNotifications(actualTx, control, activityMessages, tx)
 
-  if (![core.class.TxCreateDoc, core.class.TxRemoveDoc].includes(actualTx._class)) {
+  if (![core.class.TxCreateDoc, core.class.TxRemoveDoc, core.class.TxUpdateDoc].includes(actualTx._class)) {
     return res
   }
 

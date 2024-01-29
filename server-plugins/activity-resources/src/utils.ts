@@ -189,6 +189,17 @@ export async function getTxAttributesUpdates (
     return []
   }
 
+  let updateObject = object
+
+  if (updateObject._id !== tx.objectId) {
+    updateObject =
+      objectCache?.docs?.get(tx.objectId) ?? (await control.findAll(tx.objectClass, { _id: tx.objectId }))[0]
+  }
+
+  if (updateObject === undefined) {
+    return []
+  }
+
   const hierarchy = control.hierarchy
   const keys = getAvailableAttributesKeys(tx, hierarchy)
 
@@ -201,7 +212,14 @@ export async function getTxAttributesUpdates (
   const isMixin = hierarchy.isDerived(tx._class, core.class.TxMixin)
   const mixin = isMixin ? (tx as TxMixin<Doc, Doc>).mixin : undefined
 
-  const { doc, prevDoc } = await getDocDiff(control, object._class, object._id, originTx._id, mixin, objectCache)
+  const { doc, prevDoc } = await getDocDiff(
+    control,
+    updateObject._class,
+    updateObject._id,
+    originTx._id,
+    mixin,
+    objectCache
+  )
 
   for (const key of keys) {
     let attrValue = modifiedAttributes[key]
@@ -212,7 +230,7 @@ export async function getTxAttributesUpdates (
 
     let attrClass: Ref<Class<Doc>> | undefined = mixin
 
-    const clazz = hierarchy.findAttribute(object._class, key)
+    const clazz = hierarchy.findAttribute(updateObject._class, key)
 
     if (clazz !== undefined && 'to' in clazz.type) {
       attrClass = clazz.type.to as Ref<Class<Doc>>
@@ -247,10 +265,18 @@ export async function getTxAttributesUpdates (
       }
     }
 
+    let setAttr = []
+
+    if (Array.isArray(attrValue)) {
+      setAttr = attrValue
+    } else if (key in modifiedAttributes) {
+      setAttr = [attrValue]
+    }
+
     result.push({
       attrKey: key,
       attrClass,
-      set: Array.isArray(attrValue) ? attrValue : [attrValue],
+      set: setAttr,
       added,
       removed,
       prevValue,
