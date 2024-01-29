@@ -21,6 +21,7 @@ import core, {
   type Doc,
   groupByArray,
   type Hierarchy,
+  type Mixin,
   type Ref,
   SortingOrder,
   type Timestamp
@@ -70,7 +71,13 @@ export async function getAttributeValues (client: Client, values: any[], attrCla
   const docIds = docs.map(({ _id }) => _id)
   const missedIds = values.filter((value) => !docIds.includes(value))
   const removedDocs = await Promise.all(missedIds.map(async (value) => await buildRemovedDoc(client, value, attrClass)))
-  return [...docs, ...removedDocs].filter((doc) => !(doc == null))
+  const allDocs = [...docs, ...removedDocs].filter((doc) => !(doc == null))
+
+  if (allDocs.length > 0) {
+    return allDocs
+  }
+
+  return values
 }
 
 export function getCollectionAttribute (
@@ -94,6 +101,19 @@ export function getCollectionAttribute (
   return undefined
 }
 
+async function getAttributePresenterSafe (
+  client: Client,
+  _class: Ref<Class<Doc>>,
+  attrKey: string,
+  mixin?: Ref<Mixin<Doc>>
+): Promise<AttributeModel | undefined> {
+  try {
+    return await getAttributePresenter(client, _class, attrKey, { key: attrKey }, mixin)
+  } catch (e) {
+    console.error(e)
+  }
+}
+
 export async function getAttributeModel (
   client: Client,
   attributeUpdates: DocAttributeUpdates | undefined,
@@ -105,28 +125,24 @@ export async function getAttributeModel (
 
   const hierarchy = client.getHierarchy()
 
-  try {
-    const { attrKey, attrClass, isMixin } = attributeUpdates
-    let attrObjectClass = objectClass
+  const { attrKey, attrClass, isMixin } = attributeUpdates
+  let attrObjectClass = objectClass
 
-    if (isMixin) {
-      const keyedAttribute = getFiltredKeys(hierarchy, attrClass, []).find(({ key }) => key === attrKey)
-      if (keyedAttribute === undefined) {
-        return undefined
-      }
-      attrObjectClass = keyedAttribute.attr.attributeOf
+  if (isMixin) {
+    const keyedAttribute = getFiltredKeys(hierarchy, attrClass, []).find(({ key }) => key === attrKey)
+    if (keyedAttribute === undefined) {
+      return undefined
     }
-
-    return await getAttributePresenter(
-      client,
-      attrObjectClass,
-      attrKey,
-      { key: attrKey },
-      view.mixin.ActivityAttributePresenter
-    )
-  } catch (e) {
-    // ignore error
+    attrObjectClass = keyedAttribute.attr.attributeOf
   }
+
+  const model = await getAttributePresenterSafe(client, attrObjectClass, attrKey, view.mixin.ActivityAttributePresenter)
+
+  if (model !== undefined) {
+    return model
+  }
+
+  return await getAttributePresenterSafe(client, attrObjectClass, attrKey)
 }
 
 export function activityMessagesComparator (message1: ActivityMessage, message2: ActivityMessage): number {

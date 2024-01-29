@@ -22,15 +22,17 @@
 
   export let message: DisplayDocUpdateMessage
   export let viewlet: DocUpdateMessageViewlet | undefined
-  export let objectPanel: ObjectPanel | undefined
-  export let objectPresenter: ObjectPresenter | undefined
   export let withIcon: boolean = false
   export let hasSeparator: boolean = false
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
   const objectQuery = createQuery()
 
   let object: Doc | undefined = undefined
+
+  $: objectPanel = hierarchy.classHierarchyMixin(message.objectClass, view.mixin.ObjectPanel)
+  $: objectPresenter = hierarchy.classHierarchyMixin(message.objectClass, view.mixin.ObjectPresenter)
 
   async function getValue (object: Doc): Promise<string | undefined> {
     if (viewlet?.valueAttr) {

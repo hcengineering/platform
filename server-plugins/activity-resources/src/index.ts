@@ -186,7 +186,7 @@ async function pushDocUpdateMessages (
     )
   }
 
-  if (attributesUpdates.length === 0) {
+  if (attributesUpdates.length === 0 && rawMessage.action !== 'update') {
     res.push(getDocUpdateMessageTx(control, originTx, object, rawMessage, modifiedBy))
   }
 
@@ -254,14 +254,12 @@ export async function generateDocUpdateMessages (
     case core.class.TxCollectionCUD: {
       const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
       res = await generateDocUpdateMessages(actualTx, control, res, tx, objectCache)
-      if ([core.class.TxCreateDoc, core.class.TxRemoveDoc].includes(actualTx._class)) {
+      if ([core.class.TxCreateDoc, core.class.TxRemoveDoc, core.class.TxUpdateDoc].includes(actualTx._class)) {
         let doc = objectCache?.docs?.get(tx.objectId)
         if (doc === undefined) {
           doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
         }
-        if (doc !== undefined) {
-          return await pushDocUpdateMessages(control, res, doc ?? undefined, originTx ?? tx, undefined, objectCache)
-        }
+        return await pushDocUpdateMessages(control, res, doc ?? undefined, originTx ?? tx, undefined, objectCache)
       }
       return res
     }
