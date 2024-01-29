@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AnyAttribute, EnumOf, Type } from '@hcengineering/core'
+  import core, { AnyAttribute, ArrOf, Doc, EnumOf, RefTo, Type } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { AnySvelteComponent, Icon, IconMoreV2, Label, IconOpenedArrow } from '@hcengineering/ui'
@@ -39,6 +39,11 @@
     const ref = (type as EnumOf).of
     const res = await client.findOne(core.class.Enum, { _id: ref })
     return res?.name
+  }
+  function getArrayName (type: Type<any>): IntlString | undefined {
+    const ref = (type as ArrOf<any>).of
+    const res = client.getHierarchy().getClass((ref as RefTo<Doc>).to)
+    return res?.label
   }
 </script>
 
@@ -73,6 +78,12 @@
           : {name}
         {/if}
       {/await}
+    {/if}
+    {#if attribute.type._class === core.class.ArrOf}
+      {@const name = getArrayName(attribute.type)}
+      {#if name}
+        : <Label label={name} />
+      {/if}
     {/if}
   </div>
   <div class="hulyTableAttr-content__row-arrow">

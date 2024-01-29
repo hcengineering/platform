@@ -122,6 +122,10 @@ export function definePresenters (builder: Builder): void {
     inlineEditor: tracker.component.ComponentSelector
   })
 
+  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.ArrayEditor, {
+    inlineEditor: view.component.ArrayEditor
+  })
+
   builder.mixin(tracker.class.Component, core.class.Class, view.mixin.AttributePresenter, {
     presenter: tracker.component.ComponentRefPresenter
   })
