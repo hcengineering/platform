@@ -228,6 +228,17 @@ export class IssuesPage extends CommonTrackerPage {
     await expect(this.textPopupAddAttachmentsFile.filter({ hasText: filePath })).toBeVisible()
   }
 
+  async deleteAttachmentToIssue (issueName: string, filePath: string): Promise<void> {
+    await this.page.locator('div.row span', { hasText: issueName }).locator('xpath=..').locator('a > button').click()
+    await this.page.locator(`div.popup-tooltip div.item div.name a[download="${filePath}"]`).hover()
+    await this.page
+      .locator(`div.popup-tooltip div.item div.name a[download="${filePath}"]`)
+      .locator('xpath=../..')
+      .locator('span.remove-link')
+      .click()
+    await expect(this.textPopupAddAttachmentsFile.filter({ hasText: filePath })).toBeVisible({ visible: false })
+  }
+
   async checkAddAttachmentPopupContainsFile (issueName: string, filePath: string): Promise<void> {
     await this.page.locator('div.row span', { hasText: issueName }).locator('xpath=..').locator('a > button').click()
     await expect(this.textPopupAddAttachmentsFile.filter({ hasText: filePath })).toBeVisible()

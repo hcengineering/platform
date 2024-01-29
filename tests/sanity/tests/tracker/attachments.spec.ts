@@ -41,20 +41,29 @@ test.describe('Attachments tests', () => {
     await issuesPage.searchIssueByName(newIssue.title)
     await issuesPage.checkAttachmentsCount(newIssue.title, '2')
 
-    await issuesPage.checkAddAttachmentPopupContainsFile(newIssue.title, 'cat.jpeg')
-    await issuesPage.checkAddAttachmentPopupContainsFile(newIssue.title, 'cat2.jpeg')
+    await test.step('Add attachments in the popup', async () => {
+      await issuesPage.checkAddAttachmentPopupContainsFile(newIssue.title, 'cat.jpeg')
+      await issuesPage.checkAddAttachmentPopupContainsFile(newIssue.title, 'cat2.jpeg')
 
-    await issuesPage.addAttachmentToIssue(newIssue.title, 'cat3.jpeg')
-    await issuesPage.checkAddAttachmentPopupContainsFile(newIssue.title, 'cat.jpeg')
-    await issuesPage.checkAddAttachmentPopupContainsFile(newIssue.title, 'cat2.jpeg')
+      await issuesPage.addAttachmentToIssue(newIssue.title, 'cat3.jpeg')
+      await issuesPage.checkAddAttachmentPopupContainsFile(newIssue.title, 'cat.jpeg')
+      await issuesPage.checkAddAttachmentPopupContainsFile(newIssue.title, 'cat2.jpeg')
 
-    await issuesPage.checkAttachmentsCount(newIssue.title, '3')
+      await issuesPage.checkAttachmentsCount(newIssue.title, '3')
+    })
+
+    await test.step('Delete attachments in the popup', async () => {
+      await issuesPage.deleteAttachmentToIssue(newIssue.title, 'cat2.jpeg')
+      await issuesPage.checkAddAttachmentPopupContainsFile(newIssue.title, 'cat.jpeg')
+      await issuesPage.checkAddAttachmentPopupContainsFile(newIssue.title, 'cat3.jpeg')
+
+      await issuesPage.checkAttachmentsCount(newIssue.title, '2')
+    })
 
     await issuesPage.openIssueByName(newIssue.title)
 
     const issuesDetailsPage = new IssuesDetailsPage(page)
     await issuesDetailsPage.checkIssueContainsAttachment('cat.jpeg')
-    await issuesDetailsPage.checkIssueContainsAttachment('cat2.jpeg')
     await issuesDetailsPage.checkIssueContainsAttachment('cat3.jpeg')
   })
 })
