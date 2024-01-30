@@ -715,7 +715,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     return this.stripHash(
       this.stripHash(
         await this.db
-          .collection(domain)
+          .collection<Doc>(domain)
           .find<Doc>({ _id: { $in: docs } })
           .toArray()
       )
@@ -783,7 +783,7 @@ abstract class MongoAdapterBase implements DbAdapter {
   }
 
   async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {
-    await this.db.collection(domain).deleteMany({ _id: { $in: docs } })
+    await this.db.collection<Doc>(domain).deleteMany({ _id: { $in: docs } })
   }
 }
 
@@ -1087,7 +1087,7 @@ class MongoAdapter extends MongoAdapterBase {
                   '%hash%': null
                 }
               } as unknown as UpdateFilter<Document>,
-              { returnDocument: 'after' }
+              { returnDocument: 'after', includeResultMetadata: true }
             )
             return { object: result.value }
           }
@@ -1128,7 +1128,7 @@ class MongoAdapter extends MongoAdapterBase {
           ? async (): Promise<TxResult> => {
             const result = await this.db
               .collection(domain)
-              .findOneAndUpdate(filter, update, { returnDocument: 'after' })
+              .findOneAndUpdate(filter, update, { returnDocument: 'after', includeResultMetadata: true })
             return { object: result.value }
           }
           : async () => await this.db.collection(domain).updateOne(filter, update)

@@ -194,6 +194,6 @@ export class MigrateClientImpl implements MigrationClient {
   }
 
   async deleteMany<T extends Doc>(domain: Domain, query: DocumentQuery<T>): Promise<void> {
-    await this.db.collection(domain).deleteMany(query)
+    await this.db.collection<Doc>(domain).deleteMany(query as any)
   }
 }
