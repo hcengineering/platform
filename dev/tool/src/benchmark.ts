@@ -23,6 +23,7 @@ import core, {
   Doc,
   DocumentUpdate,
   MeasureMetricsContext,
+  Metrics,
   Ref,
   TxOperations,
   WorkspaceId,
@@ -170,13 +171,32 @@ export async function benchmark (
 
   let running = false
 
+  function extract (metrics: Metrics, ...path: string[]): Metrics | null {
+    let m = metrics
+    for (const p of path) {
+      let found = false
+      for (const [k, v] of Object.entries(m.measurements)) {
+        if (k.includes(p)) {
+          m = v
+          found = true
+          break
+        }
+      }
+      if (!found) {
+        return null
+      }
+    }
+    return m
+  }
+
   let timer: any
   if (isMainThread) {
     timer = setInterval(() => {
       const st = Date.now()
 
       try {
-        void fetch(transactorUrl.replace('ws:/', 'http:/') + '/' + token)
+        const fetchUrl = transactorUrl.replace('ws:/', 'http:/') + '/api/v1/statistics?token=' + token
+        void fetch(fetchUrl)
           .then((res) => {
             void res
               .json()
@@ -184,15 +204,17 @@ export async function benchmark (
                 memUsed = json.statistics.memoryUsed
                 memTotal = json.statistics.memoryTotal
                 cpu = json.statistics.cpuUsage
-                const r =
-                  json.metrics?.measurements?.client?.measurements?.handleRequest?.measurements?.call?.measurements?.[
-                    'find-all'
-                  ]
-                operations = r?.operations ?? 0
-                requestTime = (r?.value ?? 0) / (((r?.operations as number) ?? 0) + 1)
-                transfer =
-                  json.metrics?.measurements?.client?.measurements?.handleRequest?.measurements?.['#send-data']
-                    ?.value ?? 0
+                operations = 0
+                requestTime = 0
+                transfer = 0
+                for (const w of workspaceId) {
+                  const r = extract(json.metrics as Metrics, w.name, 'client', 'handleRequest', 'process', 'find-all')
+                  operations += r?.operations ?? 0
+                  requestTime += (r?.value ?? 0) / (((r?.operations as number) ?? 0) + 1)
+
+                  const tr = extract(json.metrics as Metrics, w.name, 'client', 'handleRequest', '#send-data')
+                  transfer += tr?.value ?? 0
+                }
               })
               .catch((err) => {
                 console.log(err)

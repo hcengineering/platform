@@ -169,11 +169,11 @@ export function startHttpServer (
         if (ws.readyState !== ws.OPEN) {
           return
         }
-        const smsg = await ctx.with('serialize', {}, async () => serialize(msg, binary))
+        const smsg = await ctx.with('📦 serialize', {}, async () => serialize(msg, binary))
 
         ctx.measure('send-data', smsg.length)
 
-        await ctx.with('socket-send', {}, async (ctx) => {
+        await ctx.with('📤 socket-send', {}, async (ctx) => {
           await new Promise<void>((resolve, reject) => {
             ws.send(smsg, { binary, compress: compression }, (err) => {
               if (err != null) {
@@ -191,6 +191,10 @@ export function startHttpServer (
       buffer?.push(msg)
     })
     const session = await sessions.addSession(ctx, cs, token, pipelineFactory, productId, sessionId)
+    if ('upgrade' in session) {
+      cs.close()
+      return
+    }
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('message', (msg: RawData) => {
       let buff: any | undefined
@@ -200,22 +204,21 @@ export function startHttpServer (
         buff = Buffer.concat(msg).toString()
       }
       if (buff !== undefined) {
-        void handleRequest(ctx, session, cs, buff, token.workspace.name)
+        void handleRequest(session.context, session.session, cs, buff, token.workspace.name)
       }
     })
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('close', (code: number, reason: Buffer) => {
-      if (session.workspaceClosed ?? false) {
+      if (session.session.workspaceClosed ?? false) {
         return
       }
       // remove session after 1seconds, give a time to reconnect.
-      // if (LOGGING_ENABLED) console.log(token.workspace.name, `client "${token.email}" closed ${code === 1000 ? 'normally' : 'abnormally'}`)
-      void sessions.close(ctx, cs, token.workspace, code, reason.toString())
+      void sessions.close(cs, token.workspace, code, reason.toString())
     })
     const b = buffer
     buffer = undefined
     for (const msg of b) {
-      await handleRequest(ctx, session, cs, msg, token.workspace.name)
+      await handleRequest(session.context, session.session, cs, msg, token.workspace.name)
     }
   })
 
@@ -226,7 +229,6 @@ export function startHttpServer (
     try {
       const payload = decodeToken(token ?? '')
       const sessionId = url.searchParams.get('sessionId')
-      // if (LOGGING_ENABLED) console.log(payload.workspace.name, 'client connected with payload', payload, sessionId)
 
       if (payload.workspace.productId !== productId) {
         throw new Error('Invalid workspace product')

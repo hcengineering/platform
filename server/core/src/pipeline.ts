@@ -47,14 +47,23 @@ export async function createPipeline (
   let broadcastHook: HandledBroadcastFunc = (): Tx[] => {
     return []
   }
-  const storage = await createServerStorage(conf, {
-    upgrade,
-    broadcast: (tx: Tx[], targets?: string[]) => {
-      const sendTx = broadcastHook?.(tx, targets) ?? tx
-      broadcast(sendTx, targets)
-    }
-  })
-  const pipeline = PipelineImpl.create(ctx, storage, constructors, broadcast)
+  const storage = await ctx.with(
+    'create-server-storage',
+    {},
+    async (ctx) =>
+      await createServerStorage(ctx, conf, {
+        upgrade,
+        broadcast: (tx: Tx[], targets?: string[]) => {
+          const sendTx = broadcastHook?.(tx, targets) ?? tx
+          broadcast(sendTx, targets)
+        }
+      })
+  )
+  const pipeline = ctx.with(
+    'create pipeline',
+    {},
+    async (ctx) => await PipelineImpl.create(ctx, storage, constructors, broadcast)
+  )
   const pipelineResult = await pipeline
   broadcastHook = (tx, targets) => {
     return pipelineResult.handleBroadcast(tx, targets)
@@ -92,7 +101,7 @@ class PipelineImpl implements Pipeline {
     let current: Middleware | undefined
     for (let index = constructors.length - 1; index >= 0; index--) {
       const element = constructors[index]
-      current = await element(ctx, broadcast, this.storage, current)
+      current = await ctx.with('build chain', {}, async (ctx) => await element(ctx, broadcast, this.storage, current))
     }
     return current
   }

@@ -70,7 +70,17 @@ export class Triggers {
       if (matches.length > 0) {
         await ctx.with(resource, {}, async (ctx) => {
           for (const tx of matches) {
-            result.push(...(await trigger(tx, { ...ctrl, txFactory: new TxFactory(tx.modifiedBy, true) })))
+            result.push(
+              ...(await trigger(tx, {
+                ...ctrl,
+                ctx,
+                txFactory: new TxFactory(tx.modifiedBy, true),
+                findAll: async (clazz, query, options) => await ctrl.findAllCtx(ctx, clazz, query, options),
+                apply: async (tx, broadcast) => {
+                  return await ctrl.applyCtx(ctx, tx, broadcast)
+                }
+              }))
+            )
           }
         })
       }

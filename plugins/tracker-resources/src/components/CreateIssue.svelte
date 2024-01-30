@@ -352,97 +352,105 @@
       return
     }
 
-    const operations = client.apply(_id)
+    // TODO: We need a measure client and mark all operations with it as measure under one root,
+    // to prevent other operations to infer our measurement.
+    const doneOp = await getClient().measure('tracker.createIssue')
 
-    const lastOne = await client.findOne<Issue>(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
-    const incResult = await client.updateDoc(
-      tracker.class.Project,
-      core.space.Space,
-      _space,
-      {
-        $inc: { sequence: 1 }
-      },
-      true
-    )
+    try {
+      const operations = client.apply(_id)
 
-    const value: DocData<Issue> = {
-      title: getTitle(object.title),
-      description: object.description,
-      assignee: object.assignee,
-      component: object.component,
-      milestone: object.milestone,
-      number: (incResult as any).object.sequence,
-      status: object.status,
-      priority: object.priority,
-      rank: calcRank(lastOne, undefined),
-      comments: 0,
-      subIssues: 0,
-      dueDate: object.dueDate,
-      parents:
-        parentIssue != null
-          ? [
-              { parentId: parentIssue._id, parentTitle: parentIssue.title, space: parentIssue.space },
-              ...parentIssue.parents
-            ]
-          : [],
-      reportedTime: 0,
-      remainingTime: 0,
-      estimation: object.estimation,
-      reports: 0,
-      relations: relatedTo !== undefined ? [{ _id: relatedTo._id, _class: relatedTo._class }] : [],
-      childInfo: [],
-      kind
-    }
+      const lastOne = await client.findOne<Issue>(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
+      const incResult = await client.updateDoc(
+        tracker.class.Project,
+        core.space.Space,
+        _space,
+        {
+          $inc: { sequence: 1 }
+        },
+        true
+      )
 
-    await docCreateManager.commit(operations, _id, _space, value)
+      const value: DocData<Issue> = {
+        title: getTitle(object.title),
+        description: object.description,
+        assignee: object.assignee,
+        component: object.component,
+        milestone: object.milestone,
+        number: (incResult as any).object.sequence,
+        status: object.status,
+        priority: object.priority,
+        rank: calcRank(lastOne, undefined),
+        comments: 0,
+        subIssues: 0,
+        dueDate: object.dueDate,
+        parents:
+          parentIssue != null
+            ? [
+                { parentId: parentIssue._id, parentTitle: parentIssue.title, space: parentIssue.space },
+                ...parentIssue.parents
+              ]
+            : [],
+        reportedTime: 0,
+        remainingTime: 0,
+        estimation: object.estimation,
+        reports: 0,
+        relations: relatedTo !== undefined ? [{ _id: relatedTo._id, _class: relatedTo._class }] : [],
+        childInfo: [],
+        kind
+      }
 
-    await operations.addCollection(
-      tracker.class.Issue,
-      _space,
-      parentIssue?._id ?? tracker.ids.NoParent,
-      parentIssue?._class ?? tracker.class.Issue,
-      'subIssues',
-      value,
-      _id
-    )
-    for (const label of object.labels) {
-      await operations.addCollection(label._class, label.space, _id, tracker.class.Issue, 'labels', {
-        title: label.title,
-        color: label.color,
-        tag: label.tag
-      })
-    }
+      await docCreateManager.commit(operations, _id, _space, value)
 
-    if (relatedTo !== undefined) {
-      const doc = await client.findOne(tracker.class.Issue, { _id })
-      if (doc !== undefined) {
-        if (client.getHierarchy().isDerived(relatedTo._class, tracker.class.Issue)) {
-          await updateIssueRelation(operations, relatedTo as Issue, doc, 'relations', '$push')
-        } else {
-          const update = await getResource(chunter.backreference.Update)
-          await update(doc, 'relations', [relatedTo], tracker.string.AddedReference)
+      await operations.addCollection(
+        tracker.class.Issue,
+        _space,
+        parentIssue?._id ?? tracker.ids.NoParent,
+        parentIssue?._class ?? tracker.class.Issue,
+        'subIssues',
+        value,
+        _id
+      )
+      for (const label of object.labels) {
+        await operations.addCollection(label._class, label.space, _id, tracker.class.Issue, 'labels', {
+          title: label.title,
+          color: label.color,
+          tag: label.tag
+        })
+      }
+
+      if (relatedTo !== undefined) {
+        const doc = await client.findOne(tracker.class.Issue, { _id })
+        if (doc !== undefined) {
+          if (client.getHierarchy().isDerived(relatedTo._class, tracker.class.Issue)) {
+            await updateIssueRelation(operations, relatedTo as Issue, doc, 'relations', '$push')
+          } else {
+            const update = await getResource(chunter.backreference.Update)
+            await update(doc, 'relations', [relatedTo], tracker.string.AddedReference)
+          }
         }
       }
+
+      await operations.commit()
+      await descriptionBox.createAttachments(_id)
+      addNotification(
+        await translate(tracker.string.IssueCreated, {}, $themeStore.language),
+        getTitle(object.title),
+        IssueNotification,
+        {
+          issueId: _id,
+          subTitlePostfix: (await translate(tracker.string.CreatedOne, {}, $themeStore.language)).toLowerCase(),
+          issueUrl: currentProject != null && generateIssueShortLink(getIssueId(currentProject, value as Issue))
+        }
+      )
+      console.log('createIssue measure', await doneOp())
+
+      draftController.remove()
+      descriptionBox?.removeDraft(false)
+      isAssigneeTouched = false
+    } catch (err: any) {
+      console.error(err)
+      await doneOp() // Complete in case of error
     }
-
-    await operations.commit()
-
-    await descriptionBox.createAttachments(_id)
-
-    addNotification(
-      await translate(tracker.string.IssueCreated, {}, $themeStore.language),
-      getTitle(object.title),
-      IssueNotification,
-      {
-        issueId: _id,
-        subTitlePostfix: (await translate(tracker.string.CreatedOne, {}, $themeStore.language)).toLowerCase(),
-        issueUrl: currentProject != null && generateIssueShortLink(getIssueId(currentProject, value as Issue))
-      }
-    )
-
-    draftController.remove()
-    descriptionBox?.removeDraft(false)
-    isAssigneeTouched = false
   }
 
   async function setParentIssue (): Promise<void> {

@@ -20,16 +20,15 @@ import core, {
   Class,
   ClassifierKind,
   Collection,
+  DOMAIN_DOC_INDEX_STATE,
+  DOMAIN_MODEL,
+  DOMAIN_TX,
   Doc,
   DocumentQuery,
   DocumentUpdate,
   Domain,
-  DOMAIN_DOC_INDEX_STATE,
-  DOMAIN_MODEL,
-  DOMAIN_TX,
   FindOptions,
   FindResult,
-  generateId,
   Hierarchy,
   IndexingUpdateEvent,
   LoadModelResponse,
@@ -37,13 +36,16 @@ import core, {
   Mixin,
   ModelDb,
   Ref,
+  SearchOptions,
+  SearchQuery,
+  SearchResult,
   ServerStorage,
   StorageIterator,
   Timestamp,
   Tx,
   TxApplyIf,
-  TxCollectionCUD,
   TxCUD,
+  TxCollectionCUD,
   TxFactory,
   TxProcessor,
   TxRemoveDoc,
@@ -52,9 +54,7 @@ import core, {
   TxWorkspaceEvent,
   WorkspaceEvent,
   WorkspaceId,
-  SearchQuery,
-  SearchOptions,
-  SearchResult
+  generateId
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { getResource } from '@hcengineering/platform'
@@ -74,7 +74,6 @@ import type {
   ObjectDDParticipant,
   TriggerControl
 } from './types'
-import { createFindAll } from './utils'
 
 /**
  * @public
@@ -165,12 +164,16 @@ class TServerStorage implements ServerStorage {
         const adapter = this.getAdapter(lastDomain as Domain)
         const toDelete = part.filter((it) => it._class === core.class.TxRemoveDoc).map((it) => it.objectId)
 
-        const toDeleteDocs = await adapter.load(lastDomain as Domain, toDelete)
+        const toDeleteDocs = await ctx.with(
+          'adapter-load',
+          { domain: lastDomain },
+          async () => await adapter.load(lastDomain as Domain, toDelete)
+        )
         for (const ddoc of toDeleteDocs) {
           removedDocs.set(ddoc._id, ddoc)
         }
 
-        const r = await adapter.tx(...part)
+        const r = await ctx.with('adapter-tx', {}, async () => await adapter.tx(...part))
         if (Array.isArray(r)) {
           result.push(...r)
         } else {
@@ -370,13 +373,13 @@ class TServerStorage implements ServerStorage {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    return await ctx.with('find-all', {}, (ctx) => {
-      const domain = this.hierarchy.getDomain(clazz)
-      if (query?.$search !== undefined) {
-        return ctx.with('full-text-find-all', {}, (ctx) => this.fulltext.findAll(ctx, clazz, query, options))
-      }
-      return ctx.with('db-find-all', { d: domain }, () => this.getAdapter(domain).findAll(clazz, query, options))
-    })
+    const domain = this.hierarchy.getDomain(clazz)
+    if (query?.$search !== undefined) {
+      return await ctx.with('client-fulltext-find-all', {}, (ctx) => this.fulltext.findAll(ctx, clazz, query, options))
+    }
+    return await ctx.with('client-find-all', { _class: clazz }, () =>
+      this.getAdapter(domain).findAll(clazz, query, options)
+    )
   }
 
   async searchFulltext (ctx: MeasureContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
@@ -550,13 +553,13 @@ class TServerStorage implements ServerStorage {
         ): Promise<FindResult<T>> =>
           findAll(mctx, clazz, query, options)
 
-    const removed = await ctx.with('process-remove', {}, () => this.processRemove(ctx, txes, findAll, removedMap))
-    const collections = await ctx.with('process-collection', {}, () =>
+    const removed = await ctx.with('process-remove', {}, (ctx) => this.processRemove(ctx, txes, findAll, removedMap))
+    const collections = await ctx.with('process-collection', {}, (ctx) =>
       this.processCollection(ctx, txes, findAll, removedMap)
     )
-    const moves = await ctx.with('process-move', {}, () => this.processMove(ctx, txes, findAll))
+    const moves = await ctx.with('process-move', {}, (ctx) => this.processMove(ctx, txes, findAll))
 
-    const triggerControl: Omit<TriggerControl, 'txFactory'> = {
+    const triggerControl: Omit<TriggerControl, 'txFactory' | 'ctx'> = {
       removedMap,
       workspace: this.workspace,
       fx: triggerFx.fx,
@@ -572,15 +575,25 @@ class TServerStorage implements ServerStorage {
         triggerFx.fx(() => f(adapter, this.workspace))
       },
       findAll: fAll(ctx),
+      findAllCtx: findAll,
       modelDb: this.modelDb,
       hierarchy: this.hierarchy,
       apply: async (tx, broadcast) => {
+        return await this.apply(ctx, tx, broadcast)
+      },
+      applyCtx: async (ctx, tx, broadcast) => {
         return await this.apply(ctx, tx, broadcast)
       }
     }
     const triggers = await ctx.with('process-triggers', {}, async (ctx) => {
       const result: Tx[] = []
-      result.push(...(await this.triggers.apply(ctx, txes, triggerControl)))
+      result.push(
+        ...(await this.triggers.apply(ctx, txes, {
+          ...triggerControl,
+          ctx,
+          findAll: fAll(ctx)
+        }))
+      )
       return result
     })
 
@@ -685,7 +698,18 @@ class TServerStorage implements ServerStorage {
 
   async processTxes (ctx: MeasureContext, txes: Tx[]): Promise<[TxResult, Tx[]]> {
     // store tx
-    const _findAll = createFindAll(this)
+    const _findAll: ServerStorage['findAll'] = async <T extends Doc>(
+      ctx: MeasureContext,
+      clazz: Ref<Class<T>>,
+      query: DocumentQuery<T>,
+      options?: FindOptions<T>
+    ): Promise<FindResult<T>> => {
+      const domain = this.hierarchy.getDomain(clazz)
+      if (query?.$search !== undefined) {
+        return await ctx.with('full-text-find-all', {}, (ctx) => this.fulltext.findAll(ctx, clazz, query, options))
+      }
+      return await ctx.with('find-all', { _class: clazz }, () => this.getAdapter(domain).findAll(clazz, query, options))
+    }
     const txToStore: Tx[] = []
     const modelTx: Tx[] = []
     const applyTxes: Tx[] = []
@@ -748,7 +772,7 @@ class TServerStorage implements ServerStorage {
   }
 
   async tx (ctx: MeasureContext, tx: Tx): Promise<[TxResult, Tx[]]> {
-    return await this.processTxes(ctx, [tx])
+    return await ctx.with('client-tx', { _class: tx._class }, async (ctx) => await this.processTxes(ctx, [tx]))
   }
 
   find (domain: Domain): StorageIterator {
@@ -801,6 +825,7 @@ export interface ServerStorageOptions {
  * @public
  */
 export async function createServerStorage (
+  ctx: MeasureContext,
   conf: DbConfiguration,
   options: ServerStorageOptions
 ): Promise<ServerStorage> {
@@ -809,63 +834,65 @@ export async function createServerStorage (
   const adapters = new Map<string, DbAdapter>()
   const modelDb = new ModelDb(hierarchy)
 
-  console.timeLog(conf.workspace.name, 'create server storage')
   const storageAdapter = conf.storageFactory?.()
 
   for (const key in conf.adapters) {
     const adapterConf = conf.adapters[key]
     adapters.set(key, await adapterConf.factory(hierarchy, adapterConf.url, conf.workspace, modelDb, storageAdapter))
-    console.timeLog(conf.workspace.name, 'adapter', key)
   }
 
   const txAdapter = adapters.get(conf.domains[DOMAIN_TX]) as TxAdapter
-  if (txAdapter === undefined) {
-    console.log('no txadapter found')
-  }
 
-  console.timeLog(conf.workspace.name, 'begin get model')
-  const model = await txAdapter.getModel()
-  console.timeLog(conf.workspace.name, 'get model')
-  for (const tx of model) {
-    try {
-      hierarchy.tx(tx)
-      await triggers.tx(tx)
-    } catch (err: any) {
-      console.error('failed to apply model transaction, skipping', JSON.stringify(tx), err)
+  const model = await ctx.with('get model', {}, async (ctx) => {
+    const model = await txAdapter.getModel()
+    for (const tx of model) {
+      try {
+        hierarchy.tx(tx)
+        await triggers.tx(tx)
+      } catch (err: any) {
+        console.error('failed to apply model transaction, skipping', JSON.stringify(tx), err)
+      }
     }
-  }
-  console.timeLog(conf.workspace.name, 'finish hierarchy')
-
-  for (const tx of model) {
-    try {
-      await modelDb.tx(tx)
-    } catch (err: any) {
-      console.error('failed to apply model transaction, skipping', JSON.stringify(tx), err)
+    for (const tx of model) {
+      try {
+        await modelDb.tx(tx)
+      } catch (err: any) {
+        console.error('failed to apply model transaction, skipping', JSON.stringify(tx), err)
+      }
     }
-  }
-  console.timeLog(conf.workspace.name, 'finish local model')
+    return model
+  })
 
   for (const [adn, adapter] of adapters) {
-    await adapter.init(model)
-    console.timeLog(conf.workspace.name, 'finish init adapter', adn)
+    await ctx.with('init-adapter', { name: adn }, async (ctx) => {
+      await adapter.init(model)
+    })
   }
 
-  const fulltextAdapter = await conf.fulltextAdapter.factory(
-    conf.fulltextAdapter.url,
-    conf.workspace,
-    conf.metrics.newChild('fulltext', {})
+  const fulltextAdapter = await ctx.with(
+    'create full text adapter',
+    {},
+    async (ctx) =>
+      await conf.fulltextAdapter.factory(
+        conf.fulltextAdapter.url,
+        conf.workspace,
+        conf.metrics.newChild('🗒️ fulltext', {})
+      )
   )
-  console.timeLog(conf.workspace.name, 'finish fulltext adapter')
 
-  const metrics = conf.metrics.newChild('server-storage', {})
+  const metrics = conf.metrics.newChild('📔 server-storage', {})
 
-  const contentAdapter = await createContentAdapter(
-    conf.contentAdapters,
-    conf.defaultContentAdapter,
-    conf.workspace,
-    metrics.newChild('content', {})
+  const contentAdapter = await ctx.with(
+    'create content adapter',
+    {},
+    async (ctx) =>
+      await createContentAdapter(
+        conf.contentAdapters,
+        conf.defaultContentAdapter,
+        conf.workspace,
+        metrics.newChild('content', {})
+      )
   )
-  console.timeLog(conf.workspace.name, 'finish content adapter')
 
   const defaultAdapter = adapters.get(conf.defaultAdapter)
   if (defaultAdapter === undefined) {
@@ -877,7 +904,6 @@ export async function createServerStorage (
       throw new Error('No storage adapter')
     }
     const stages = conf.fulltextAdapter.stages(fulltextAdapter, storage, storageAdapter, contentAdapter)
-    console.timeLog(conf.workspace.name, 'finish index pipeline stages')
 
     const indexer = new FullTextIndexPipeline(
       defaultAdapter,
@@ -903,7 +929,6 @@ export async function createServerStorage (
         options.broadcast?.([tx])
       }
     )
-    console.timeLog(conf.workspace.name, 'finish create indexer')
     return new FullTextIndex(
       hierarchy,
       fulltextAdapter,

@@ -25,6 +25,7 @@
   export let bordered: boolean = false
   export let expandable = true
   export let contentColor = false
+  export let showChevron = true
 </script>
 
 <div class="flex-col">
@@ -38,7 +39,7 @@
         if (expandable) expanded = !expanded
       }}
     >
-      <Chevron {expanded} marginRight={'.5rem'} />
+      <Chevron {expanded} marginRight={'.5rem'} fill={!showChevron ? 'transparent' : undefined} />
       {#if icon}
         <div class="min-w-4 mr-2">
           <Icon {icon} size={'small'} />

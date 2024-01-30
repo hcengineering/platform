@@ -13,13 +13,18 @@ export class MeasureMetricsContext implements MeasureContext {
   metrics: Metrics
   private readonly done: (value?: number) => void
 
-  constructor (name: string, params: Record<string, ParamType>, metrics: Metrics = newMetrics()) {
+  constructor (
+    name: string,
+    params: Record<string, ParamType>,
+    metrics: Metrics = newMetrics(),
+    logger?: MeasureLogger
+  ) {
     this.name = name
     this.params = params
     this.metrics = metrics
     this.done = measure(metrics, params)
 
-    this.logger = {
+    this.logger = logger ?? {
       info: (msg, args) => {
         console.info(msg, ...args)
       },
@@ -34,8 +39,8 @@ export class MeasureMetricsContext implements MeasureContext {
     c.done(value)
   }
 
-  newChild (name: string, params: Record<string, ParamType>): MeasureContext {
-    return new MeasureMetricsContext(name, params, childMetrics(this.metrics, [name]))
+  newChild (name: string, params: Record<string, ParamType>, logger?: MeasureLogger): MeasureContext {
+    return new MeasureMetricsContext(name, params, childMetrics(this.metrics, [name]), logger)
   }
 
   async with<T>(
@@ -52,13 +57,17 @@ export class MeasureMetricsContext implements MeasureContext {
       c.end()
       return value
     } catch (err: any) {
-      await c.error(err)
+      await c.error('Error during:' + name, err)
       throw err
     }
   }
 
-  async error (err: Error | string): Promise<void> {
-    console.error(err)
+  async error (message: string, ...args: any[]): Promise<void> {
+    this.logger.error(message, args)
+  }
+
+  async info (message: string, ...args: any[]): Promise<void> {
+    this.logger.info(message, args)
   }
 
   end (): void {

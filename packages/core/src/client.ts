@@ -19,8 +19,8 @@ import { Account, AttachedDoc, Class, DOMAIN_MODEL, Doc, Domain, PluginConfigura
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { ModelDb } from './memdb'
-import type { DocumentQuery, FindOptions, FindResult, Storage, FulltextStorage, TxResult, WithLookup } from './storage'
-import { SortingOrder, SearchQuery, SearchOptions, SearchResult } from './storage'
+import type { DocumentQuery, FindOptions, FindResult, FulltextStorage, Storage, TxResult, WithLookup } from './storage'
+import { SearchOptions, SearchQuery, SearchResult, SortingOrder } from './storage'
 import { Tx, TxCUD, TxCollectionCUD, TxCreateDoc, TxProcessor, TxUpdateDoc } from './tx'
 import { toFindResult } from './utils'
 
@@ -46,10 +46,17 @@ export interface Client extends Storage, FulltextStorage {
   close: () => Promise<void>
 }
 
+export type MeasureDoneOperation = () => Promise<{ time: number, serverTime: number }>
+
+export interface MeasureClient extends Client {
+  // Will perform on server operation measure and will return a local client time and on server time
+  measure: (operationName: string) => Promise<MeasureDoneOperation>
+}
+
 /**
  * @public
  */
-export interface AccountClient extends Client {
+export interface AccountClient extends MeasureClient {
   getAccount: () => Promise<Account>
 }
 
@@ -86,9 +93,11 @@ export interface ClientConnection extends Storage, FulltextStorage, BackupClient
   // If hash is passed, will return LoadModelResponse
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
   getAccount: () => Promise<Account>
+
+  measure: (operationName: string) => Promise<MeasureDoneOperation>
 }
 
-class ClientImpl implements AccountClient, BackupClient {
+class ClientImpl implements AccountClient, BackupClient, MeasureClient {
   notify?: (tx: Tx) => void
   hierarchy!: Hierarchy
   model!: ModelDb
@@ -149,6 +158,10 @@ class ClientImpl implements AccountClient, BackupClient {
     const result = await this.conn.tx(tx)
     this.notify?.(tx)
     return result
+  }
+
+  async measure (operationName: string): Promise<MeasureDoneOperation> {
+    return await this.conn.measure(operationName)
   }
 
   async updateFromRemote (tx: Tx): Promise<void> {
@@ -402,14 +415,14 @@ async function buildModel (
     try {
       hierarchy.tx(tx)
     } catch (err: any) {
-      console.error('failed to apply model transaction, skipping', JSON.stringify(tx), err)
+      console.error('failed to apply model transaction, skipping', tx._id, tx._class, err?.message)
     }
   }
   for (const tx of txes) {
     try {
       await model.tx(tx)
     } catch (err: any) {
-      console.error('failed to apply model transaction, skipping', JSON.stringify(tx), err)
+      console.error('failed to apply model transaction, skipping', tx._id, tx._class, err?.message)
     }
   }
 }

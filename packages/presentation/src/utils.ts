@@ -16,7 +16,6 @@
 
 import core, {
   TxOperations,
-  type TypeAny,
   getCurrentAccount,
   type AnyAttribute,
   type ArrOf,
@@ -29,6 +28,8 @@ import core, {
   type FindOptions,
   type FindResult,
   type Hierarchy,
+  type MeasureClient,
+  type MeasureDoneOperation,
   type Mixin,
   type Obj,
   type Ref,
@@ -38,6 +39,7 @@ import core, {
   type SearchResult,
   type Tx,
   type TxResult,
+  type TypeAny,
   type WithLookup
 } from '@hcengineering/core'
 import { getMetadata, getResource } from '@hcengineering/platform'
@@ -51,7 +53,7 @@ import { OptimizeQueryMiddleware, PresentationPipelineImpl, type PresentationPip
 import plugin from './plugin'
 
 let liveQuery: LQ
-let client: TxOperations
+let client: TxOperations & MeasureClient
 let pipeline: PresentationPipeline
 
 const txListeners: Array<(tx: Tx) => void> = []
@@ -73,12 +75,33 @@ export function removeTxListener (l: (tx: Tx) => void): void {
   }
 }
 
-class UIClient extends TxOperations implements Client {
+class UIClient extends TxOperations implements Client, MeasureClient {
   constructor (
-    client: Client,
+    client: MeasureClient,
     private readonly liveQuery: Client
   ) {
     super(client, getCurrentAccount()._id)
+  }
+
+  afterMeasure: Tx[] = []
+  measureOp?: MeasureDoneOperation
+
+  async doNotify (tx: Tx): Promise<void> {
+    if (this.measureOp !== undefined) {
+      this.afterMeasure.push(tx)
+    } else {
+      try {
+        await pipeline.notifyTx(tx)
+
+        await liveQuery.tx(tx)
+
+        txListeners.forEach((it) => {
+          it(tx)
+        })
+      } catch (err: any) {
+        console.log(err)
+      }
+    }
   }
 
   override async findAll<T extends Doc>(
@@ -104,19 +127,38 @@ class UIClient extends TxOperations implements Client {
   async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
     return await this.client.searchFulltext(query, options)
   }
+
+  async measure (operationName: string): Promise<MeasureDoneOperation> {
+    // return await (this.client as MeasureClient).measure(operationName)
+    const mop = await (this.client as MeasureClient).measure(operationName)
+    this.measureOp = mop
+    return async () => {
+      const result = await mop()
+      this.measureOp = undefined
+      if (this.afterMeasure.length > 0) {
+        const txes = this.afterMeasure
+        console.log('after measture', txes)
+        this.afterMeasure = []
+        for (const tx of txes) {
+          await this.doNotify(tx)
+        }
+      }
+      return result
+    }
+  }
 }
 
 /**
  * @public
  */
-export function getClient (): TxOperations {
+export function getClient (): TxOperations & MeasureClient {
   return client
 }
 
 /**
  * @public
  */
-export async function setClient (_client: Client): Promise<void> {
+export async function setClient (_client: MeasureClient): Promise<void> {
   if (liveQuery !== undefined) {
     await liveQuery.close()
   }
@@ -131,20 +173,11 @@ export async function setClient (_client: Client): Promise<void> {
 
   const needRefresh = liveQuery !== undefined
   liveQuery = new LQ(pipeline)
-  client = new UIClient(pipeline, liveQuery)
+  const uiClient = new UIClient(pipeline, liveQuery)
+  client = uiClient
 
   _client.notify = (tx: Tx) => {
-    pipeline.notifyTx(tx).catch((err) => {
-      console.log(err)
-    })
-
-    liveQuery.tx(tx).catch((err) => {
-      console.log(err)
-    })
-
-    txListeners.forEach((it) => {
-      it(tx)
-    })
+    void uiClient.doNotify(tx)
   }
   if (needRefresh || globalQueries.length > 0) {
     await refreshClient()
