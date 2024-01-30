@@ -182,7 +182,7 @@ function withProductId (productId: string, query: Filter<Workspace>): Filter<Wor
  * @returns
  */
 export async function getWorkspace (db: Db, productId: string, workspace: string): Promise<Workspace | null> {
-  return await db.collection(WORKSPACE_COLLECTION).findOne<Workspace>(withProductId(productId, { workspace }))
+  return await db.collection<Workspace>(WORKSPACE_COLLECTION).findOne(withProductId(productId, { workspace }))
 }
 
 function toAccountInfo (account: Account): AccountInfo {
@@ -196,7 +196,7 @@ async function getAccountInfo (db: Db, email: string, password: string): Promise
   if (account === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
-  if (!verifyPassword(password, account.hash.buffer, account.salt.buffer)) {
+  if (!verifyPassword(password, Buffer.from(account.hash.buffer), Buffer.from(account.salt.buffer))) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidPassword, { account: email }))
   }
   return toAccountInfo(account)

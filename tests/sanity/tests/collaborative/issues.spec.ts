@@ -50,6 +50,9 @@ test.describe('Collaborative test for issue', () => {
 
     // check created issued by second user
     const issuesPageSecond = new IssuesPage(userSecondPage)
+    await userSecondPage.evaluate(() => {
+      localStorage.setItem('platform.activity.threshold', '0')
+    })
     await issuesPageSecond.linkSidebarAll.click()
     await issuesPageSecond.modelSelectorAll.click()
     await issuesPageSecond.searchIssueByName(newIssue.title)
@@ -99,6 +102,9 @@ test.describe('Collaborative test for issue', () => {
     await issuesPageSecond.openIssueByName(issue.title)
 
     const issuesDetailsPageSecond = new IssuesDetailsPage(userSecondPage)
+    await userSecondPage.evaluate(() => {
+      localStorage.setItem('platform.activity.threshold', '0')
+    })
     await issuesDetailsPageSecond.checkIssue({
       ...issue,
       status: 'In Progress'

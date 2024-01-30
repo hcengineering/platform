@@ -46,7 +46,7 @@ import activity, {
 // Use 5 minutes to combine similar messages
 const combineThresholdMs = 5 * 60 * 1000
 // Use 10 seconds to combine update messages after creation.
-const createCombineThreshold = 10 * 1000
+const createCombineThreshold = parseInt(localStorage.getItem('platform.activity.threshold') ?? '10 * 1000')
 
 const valueTypes: ReadonlyArray<Ref<Class<Doc>>> = [
   core.class.TypeString,

@@ -1,7 +1,7 @@
 version: "3"
 services:
   mongodb:
-    image: mongo
+    image: 'mongo:7-jammy'
     command: mongod --port 27018
     environment:
       - PUID=1000

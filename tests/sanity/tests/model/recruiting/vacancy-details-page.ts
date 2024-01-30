@@ -33,7 +33,7 @@ export class VacancyDetailsPage extends CommonRecruitingPage {
 
   async addAttachments (filePath: string): Promise<void> {
     await this.inputAttachFile.setInputFiles(path.join(__dirname, `../../files/${filePath}`))
-    await expect(this.textAttachmentName).toHaveAttribute('download', filePath)
+    await expect(this.textAttachmentName.first()).toHaveAttribute('download', filePath)
   }
 
   async addDescription (description: string): Promise<void> {

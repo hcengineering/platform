@@ -9,7 +9,7 @@ export class CommonRecruitingPage extends CalendarPage {
   readonly buttonSendComment: Locator
   readonly textComment: Locator
   readonly inputAddAttachment: Locator
-  readonly textAttachmentName: Locator
+  textAttachmentName: Locator
   readonly buttonCreateFirstReview: Locator
   readonly buttonMoreActions: Locator
   readonly buttonDelete: Locator
@@ -60,7 +60,7 @@ export class CommonRecruitingPage extends CalendarPage {
 
   async addAttachments (filePath: string): Promise<void> {
     await this.inputAddAttachment.setInputFiles(path.join(__dirname, `../../files/${filePath}`))
-    await expect(this.textAttachmentName.filter({ hasText: filePath })).toBeVisible()
+    await expect(this.textAttachmentName.filter({ hasText: filePath }).first()).toBeVisible()
   }
 
   async addFirstReview (reviewTitle: string, reviewDescription: string): Promise<void> {
