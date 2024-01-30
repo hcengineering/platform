@@ -2,7 +2,7 @@
 
 The Platform is a framework that helps in building business applications (such as CRM) fast.
 The current exemplary applications include Chat, Issue Management (Tracker), Applicant Tracking System, Boards, Leads, and HR.
-Several teams building products on top of the Platform including [Zenflow](https://zenflow.app) and [TraceX](https://tracex.co).
+Several teams building products on top of the Platform including [Huly](https://huly.io) and [TraceX](https://tracex.co).
 
 - [Pre-requisites](#pre-requisites)
 - [Fast start](#fast-start)
