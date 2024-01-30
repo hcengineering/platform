@@ -399,6 +399,13 @@ export const actionTemplates = template({
     keyBinding: ['Enter'],
     input: 'focus',
     category: view.category.General
+  },
+  openInNewTab: {
+    action: view.actionImpl.OpenInNewTab,
+    label: view.string.OpenInNewTab,
+    icon: view.icon.Open,
+    input: 'focus',
+    category: view.category.General
   }
 })
 
@@ -1044,6 +1051,17 @@ export function createModel (builder: Builder): void {
       context: { mode: ['browser', 'context'], group: 'edit' }
     },
     view.action.Open
+  )
+
+  createAction(
+    builder,
+    {
+      ...actionTemplates.openInNewTab,
+      target: core.class.Doc,
+      category: view.category.Editor,
+      context: { mode: ['browser', 'context'], group: 'create' }
+    },
+    view.action.OpenInNewTab
   )
 
   builder.mixin(core.class.Status, core.class.Class, view.mixin.ObjectPresenter, {
