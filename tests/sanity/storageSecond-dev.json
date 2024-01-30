@@ -21,7 +21,7 @@
           "value": "0"
         },
         {
-          "name": "#platform.notification.timeout",
+          "name": "platform.activity.threshold",
           "value": "0"
         },
         {
