@@ -37,9 +37,10 @@
     .map((p) => hierarchy.getClass(p))
     .filter((p) => {
       return (
-        hierarchy.hasMixin(p, view.mixin.ArrayEditor) &&
-        hierarchy.hasMixin(p, view.mixin.ObjectEditor) &&
-        p.label !== undefined
+        (hierarchy.hasMixin(p, view.mixin.ArrayEditor) &&
+          hierarchy.hasMixin(p, view.mixin.ObjectEditor) &&
+          p.label !== undefined) ||
+        p._id === core.class.RefTo
       )
     })
 

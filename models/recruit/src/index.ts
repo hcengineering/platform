@@ -263,6 +263,10 @@ export function createModel (builder: Builder): void {
     inlineEditor: recruit.component.VacancyEditor
   })
 
+  builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.ArrayEditor, {
+    inlineEditor: view.component.ArrayEditor
+  })
+
   builder.mixin(recruit.class.Applicant, core.class.Class, notification.mixin.ClassCollaborators, {
     fields: ['createdBy']
   })
