@@ -22,21 +22,39 @@
   export let targetEmp: Person
   export let cast: Ref<Mixin<Doc>> | undefined = undefined
   export let key: string
-  export let selected = false
+  export let selected: boolean = false
   export let onChange: (key: string, value: boolean) => void
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  function isEqual (value: Person, targetEmp: Person, key: string) {
+  function isEqual (value: Person, targetEmp: Person, key: string): boolean {
     if (cast !== undefined) {
       value = hierarchy.as(value, cast)
       targetEmp = hierarchy.as(targetEmp, cast)
     }
     if (!(value as any)[key]) return true
     if (!(targetEmp as any)[key]) return true
+
     return (value as any)[key] === (targetEmp as any)[key]
   }
+
+  const handleSourceValueSelected = (event: CustomEvent<boolean>): void => {
+    const isChecked = event.detail
+
+    selected = !isChecked
+
+    onChange(key, !isChecked)
+  }
+
+  const handleTargetValueSelected = (event: CustomEvent<boolean>): void => {
+    const isChecked = event.detail
+
+    selected = isChecked
+
+    onChange(key, isChecked)
+  }
+
   $: attribute = hierarchy.findAttribute(cast ?? value._class, key)
 </script>
 
@@ -52,28 +70,14 @@
 
     <div class="flex-center">
       <div class="mr-2">
-        <CheckBox
-          circle
-          checked={selected}
-          on:value={(e) => {
-            selected = false
-            onChange(key, false)
-          }}
-        />
+        <CheckBox circle checked={selected} on:value={handleSourceValueSelected} />
       </div>
       <slot name="item" item={value} />
     </div>
     <div class="flex-row-center" />
     <div class="flex-center">
       <div class="mr-2">
-        <CheckBox
-          circle
-          checked={!selected}
-          on:value={(e) => {
-            selected = true
-            onChange(key, true)
-          }}
-        />
+        <CheckBox circle checked={!selected} on:value={handleTargetValueSelected} />
       </div>
       <slot name="item" item={targetEmp} />
     </div>
