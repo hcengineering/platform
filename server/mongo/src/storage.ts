@@ -116,7 +116,7 @@ abstract class MongoAdapterBase implements DbAdapter {
       try {
         await this.db.collection(domain).createIndex(vv)
       } catch (err: any) {
-        console.error(err)
+        console.error('failed to create index', domain, vv, err)
       }
     }
   }

@@ -275,6 +275,10 @@ async function createUpdateIndexes (connection: CoreClient, db: Db, logger: Mode
   }
 
   for (const [d, v] of domains.entries()) {
+    const collInfo = await db.listCollections({ name: d }).next()
+    if (collInfo === null) {
+      await db.createCollection(d)
+    }
     const collection = db.collection(d)
     const bb: (string | FieldIndex<Doc>)[] = []
     for (const vv of v.values()) {
@@ -286,7 +290,7 @@ async function createUpdateIndexes (connection: CoreClient, db: Db, logger: Mode
           await collection.createIndex(vv)
         }
       } catch (err: any) {
-        logger.log('error', JSON.stringify(err))
+        logger.log('error: failed to create index', d, vv, JSON.stringify(err))
       }
       bb.push(vv)
     }
