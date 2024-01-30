@@ -246,10 +246,12 @@
         loc.path[3] = currentSpace ?? currentSpecial ?? resolved.defaultLocation.path[3]
         if (loc.path[3] !== undefined && isSameApp) {
           // setting space special/aside only if it belongs to the same app
-          if (loc.path[3] === resolved.defaultLocation.path[3]) {
+          if (currentSpace && currentSpecial) {
+            loc.path[4] = currentSpecial
+          } else if (loc.path[3] === resolved.defaultLocation.path[3]) {
             loc.path[4] = resolved.defaultLocation.path[4]
           } else {
-            loc.path[4] = (currentSpace && currentSpecial) ?? (asideId as string)
+            loc.path[4] = asideId as string
           }
         } else {
           loc.path.length = 4
