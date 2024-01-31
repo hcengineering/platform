@@ -264,6 +264,7 @@
     "PreviousWorkDay": "Предыдущий Рабочий День",
     "TimeReportDayTypeLabel": "Выберите тип дня для временного отчета",
     "DefaultAssignee": "Исполнитель задачи по умолчанию",
+    "DefaultComponent": "Компонент по умолчанию",
 
     "SevenHoursLength": "Семь Часов",
     "EightHoursLength": "Восемь Часов",

@@ -264,6 +264,7 @@
     "PreviousWorkDay": "Previous Working Day",
     "TimeReportDayTypeLabel": "Select time report day type",
     "DefaultAssignee": "Default assignee for issues",
+    "DefaultComponent": "Default component for issues",
 
     "SevenHoursLength": "Seven Hours",
     "EightHoursLength": "Eight Hours",
