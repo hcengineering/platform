@@ -203,7 +203,12 @@ async function getAccountInfo (db: Db, email: string, password: string): Promise
 }
 
 async function getAccountInfoByToken (db: Db, productId: string, token: string): Promise<AccountInfo> {
-  const { email } = decodeToken(token)
+  let email: string = ''
+  try {
+    email = decodeToken(token)?.email
+  } catch (err: any) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Unauthorized, {}))
+  }
   const account = await getAccount(db, email)
   if (account === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
@@ -1244,12 +1249,17 @@ function wrap (f: (db: Db, productId: string, ...args: any[]) => Promise<any>): 
     return await f(db, productId, ...request.params)
       .then((result) => ({ id: request.id, result }))
       .catch((err) => {
-        console.error(err)
+        const status =
+          err instanceof PlatformError
+            ? err.status
+            : new Status(Severity.ERROR, platform.status.InternalServerError, {})
+        if (status.code === platform.status.InternalServerError) {
+          console.error(status, err)
+        } else {
+          console.error(status)
+        }
         return {
-          error:
-            err instanceof PlatformError
-              ? err.status
-              : new Status(Severity.ERROR, platform.status.InternalServerError, {})
+          error: status
         }
       })
   }

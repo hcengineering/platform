@@ -89,6 +89,7 @@
 
       if (result !== undefined) {
         setMetadata(presentation.metadata.Token, result.token)
+        setMetadataLocalStorage(login.metadata.LastToken, result.token)
         const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
         tokens[object.workspace] = result.token
         setMetadataLocalStorage(login.metadata.LoginTokens, tokens)

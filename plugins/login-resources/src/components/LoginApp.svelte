@@ -63,6 +63,7 @@
   onDestroy(
     location.subscribe((loc) => {
       void (async (loc) => {
+        token = getMetadata(presentation.metadata.Token)
         page = loc.path[1] ?? (token ? 'selectWorkspace' : 'login')
         if (!pages.includes(page)) {
           page = 'login'

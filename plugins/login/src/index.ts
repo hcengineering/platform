@@ -27,6 +27,9 @@ export const loginId = 'login' as Plugin
  */
 export interface Workspace {
   workspace: string
+
+  workspaceUrl?: string // A workspace URL, if not passed will use workspace.
+  company?: string // A company name
 }
 
 /**
@@ -50,6 +53,7 @@ export default plugin(loginId, {
   metadata: {
     AccountsUrl: '' as Asset,
     LoginTokens: '' as Metadata<Record<string, string>>,
+    LastToken: '' as Metadata<string>,
     LoginEndpoint: '' as Metadata<string>,
     LoginEmail: '' as Metadata<string>,
     OverrideLoginToken: '' as Metadata<string>, // debug purposes

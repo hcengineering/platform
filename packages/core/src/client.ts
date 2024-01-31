@@ -229,7 +229,7 @@ export async function createClient (
   let lastTx: number
 
   function txHandler (tx: Tx): void {
-    if (tx === null) {
+    if (tx == null) {
       return
     }
     if (client === null) {

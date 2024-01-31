@@ -31,7 +31,7 @@
     navigate(loc)
   }
 
-  function goToLogin () {
+  function goToLogin (): void {
     const loc = getCurrentLocation()
     loc.query = undefined
     loc.path[1] = 'login'
@@ -39,7 +39,7 @@
     navigate(loc)
   }
 
-  async function check () {
+  async function check (): Promise<void> {
     const location = getCurrentLocation()
     if (location.query?.id === undefined || location.query?.id === null) return
     status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
@@ -50,6 +50,7 @@
 
     if (result !== undefined) {
       setMetadata(presentation.metadata.Token, result.token)
+      setMetadataLocalStorage(login.metadata.LastToken, result.token)
       setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
       setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
       goToWorkspaces()

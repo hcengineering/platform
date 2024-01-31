@@ -217,6 +217,7 @@ function clearMetadata (ws: string): void {
     setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
   }
   setMetadata(presentation.metadata.Token, null)
+  setMetadataLocalStorage(login.metadata.LastToken, null)
   document.cookie =
     encodeURIComponent(presentation.metadata.Token.replaceAll(':', '-')) + '=' + encodeURIComponent('') + '; path=/'
   setMetadataLocalStorage(login.metadata.LoginEndpoint, null)

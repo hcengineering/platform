@@ -195,6 +195,7 @@ export function signOut (): void {
     setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
   }
   setMetadata(presentation.metadata.Token, null)
+  setMetadataLocalStorage(login.metadata.LastToken, null)
   setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
   setMetadataLocalStorage(login.metadata.LoginEmail, null)
   void closeClient()
