@@ -1059,7 +1059,7 @@ export function createModel (builder: Builder): void {
       ...actionTemplates.openInNewTab,
       target: core.class.Doc,
       category: view.category.Editor,
-      context: { mode: ['browser', 'context'], group: 'create' }
+      context: { mode: ['browser', 'context'], group: 'edit' }
     },
     view.action.OpenInNewTab
   )
