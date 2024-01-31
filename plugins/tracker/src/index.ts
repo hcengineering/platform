@@ -60,6 +60,7 @@ export interface Project extends TaskProject, IconProps {
   defaultIssueStatus: Ref<IssueStatus>
   defaultAssignee?: Ref<Employee>
   defaultTimeReportDay: TimeReportDayType
+  defaultComponent?: Ref<Component>
 }
 
 export type RelatedIssueKind = 'classRule' | 'spaceRule'

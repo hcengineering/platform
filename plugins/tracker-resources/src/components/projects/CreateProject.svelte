@@ -19,8 +19,9 @@
   import { Asset } from '@hcengineering/platform'
   import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
   import task, { ProjectType } from '@hcengineering/task'
+  import { typeStore, taskTypeStore } from '@hcengineering/task-resources'
   import { StyledTextBox } from '@hcengineering/text-editor'
-  import { IssueStatus, Project, TimeReportDayType } from '@hcengineering/tracker'
+  import { Component as ComponentType, IssueStatus, Project, TimeReportDayType } from '@hcengineering/tracker'
   import {
     Button,
     Component,
@@ -41,8 +42,8 @@
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import StatusSelector from '../issues/StatusSelector.svelte'
+  import ComponentSelector from '../components/ComponentSelector.svelte'
   import ChangeIdentity from './ChangeIdentity.svelte'
-  import { typeStore, taskTypeStore } from '@hcengineering/task-resources'
 
   export let project: Project | undefined = undefined
 
@@ -60,6 +61,7 @@
   let color = project?.color ?? getColorNumberByText(name)
   let isColorSelected = false
   let defaultAssignee: Ref<Employee> | null | undefined = project?.defaultAssignee ?? null
+  let defaultComponent: Ref<ComponentType> | null | undefined = project?.defaultComponent ?? null
   let members: Ref<Account>[] =
     project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount()._id]
   let projectsIdentifiers = new Set<string>()
@@ -92,11 +94,20 @@
       identifier: identifier.toUpperCase(),
       sequence: 0,
       defaultAssignee: defaultAssignee ?? undefined,
+      defaultComponent: defaultComponent ?? undefined,
       icon,
       color,
       defaultIssueStatus: defaultStatus ?? ('' as Ref<IssueStatus>),
       defaultTimeReportDay: project?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay
     }
+  }
+
+  const handleComponentIdChanged = (componentId: Ref<ComponentType> | null | undefined) => {
+    if (componentId === undefined) {
+      return
+    }
+
+    defaultComponent = componentId
   }
 
   async function updateProject (): Promise<void> {
@@ -117,6 +128,9 @@
     }
     if (projectData.defaultAssignee !== project?.defaultAssignee) {
       update.defaultAssignee = projectData.defaultAssignee
+    }
+    if (projectData.defaultComponent !== project?.defaultComponent) {
+      update.defaultComponent = projectData.defaultComponent
     }
     if (projectData.defaultIssueStatus !== project?.defaultIssueStatus) {
       update.defaultIssueStatus = projectData.defaultIssueStatus
@@ -388,6 +402,20 @@
         type={typeId}
         kind={'regular'}
         size={'large'}
+      />
+    </div>
+
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header">
+        <Label label={tracker.string.DefaultComponent} />
+      </div>
+      <ComponentSelector
+        value={defaultComponent}
+        isEditable={true}
+        kind={'regular'}
+        size={'large'}
+        onChange={handleComponentIdChanged}
+        showTooltip={{ label: tracker.string.DefaultComponent }}
       />
     </div>
   </div>
