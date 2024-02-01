@@ -15,8 +15,6 @@ Various teams are building products on top of the Platform, including [Huly](htt
   </a>
 </p>
 
-<sub><sup>&copy; 2024 Hardcore Engineering Inc.</sup></sub>
-
 ## Activity
 
 ![Alt](https://repobeats.axiom.co/api/embed/c42c99e21691fa60ea61b5cdf11c2e0647621534.svg "Repobeats analytics image")
