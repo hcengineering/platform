@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { generateId, iterateLocator, PlatformSetting, PlatformURI } from '../utils'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesPage } from '../model/tracker/issues-page'
-import { NewIssue } from '../model/tracker/types'
+import { DateDivided, NewIssue } from '../model/tracker/types'
 import { allure } from 'allure-playwright'
 import { DEFAULT_STATUSES, DEFAULT_STATUSES_ID, PRIORITIES } from './tracker.utils'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
@@ -88,23 +88,24 @@ test.describe('Tracker filters tests', () => {
       await issuesPage.checkFilteredIssueExist(newIssue.title)
     })
 
-    await test.step('Check Filter Check Filter Between Dates', async () => {
+    await test.step('Check Filter Between Dates', async () => {
       await issuesPage.updateFilterDimension('Between dates')
       const dateYesterday = new Date()
       dateYesterday.setDate(dateYesterday.getDate() - 1)
       const dateTomorrow = new Date()
       dateTomorrow.setDate(dateTomorrow.getDate() + 1)
+      const dateYesterdayDivided: DateDivided = {
+        day: dateYesterday.getDate().toString(),
+        month: (dateYesterday.getMonth() + 1).toString(),
+        year: dateYesterday.getFullYear().toString()
+      }
+      const dateTomorrowDivided: DateDivided = {
+        day: dateTomorrow.getDate().toString(),
+        month: (dateTomorrow.getMonth() + 1).toString(),
+        year: dateTomorrow.getFullYear().toString()
+      }
 
-      const dateYesterdayString = `${dateYesterday.getDate().toString().padStart(2, '0')}${(
-        dateYesterday.getMonth() + 1
-      )
-        .toString()
-        .padStart(2, '0')}${dateYesterday.getFullYear()}`
-      const dateTomorrowString = `${dateTomorrow.getDate().toString().padStart(2, '0')}${(dateTomorrow.getMonth() + 1)
-        .toString()
-        .padStart(2, '0')}${dateTomorrow.getFullYear()}`
-
-      await issuesPage.fillBetweenDate(dateYesterdayString, dateTomorrowString)
+      await issuesPage.fillBetweenDate(dateYesterdayDivided, dateTomorrowDivided)
       await issuesPage.checkFilter('Modified date', 'is between', dateYesterday.getDate().toString())
       await issuesPage.checkFilter('Modified date', 'is between', dateTomorrow.getDate().toString())
 
@@ -189,17 +190,18 @@ test.describe('Tracker filters tests', () => {
       dateYesterday.setDate(dateYesterday.getDate() - 1)
       const dateTomorrow = new Date()
       dateTomorrow.setDate(dateTomorrow.getDate() + 1)
+      const dateYesterdayDivided: DateDivided = {
+        day: dateYesterday.getDate().toString(),
+        month: (dateYesterday.getMonth() + 1).toString(),
+        year: dateYesterday.getFullYear().toString()
+      }
+      const dateTomorrowDivided: DateDivided = {
+        day: dateTomorrow.getDate().toString(),
+        month: (dateTomorrow.getMonth() + 1).toString(),
+        year: dateTomorrow.getFullYear().toString()
+      }
 
-      const dateYesterdayString = `${dateYesterday.getDate().toString().padStart(2, '0')}${(
-        dateYesterday.getMonth() + 1
-      )
-        .toString()
-        .padStart(2, '0')}${dateYesterday.getFullYear()}`
-      const dateTomorrowString = `${dateTomorrow.getDate().toString().padStart(2, '0')}${(dateTomorrow.getMonth() + 1)
-        .toString()
-        .padStart(2, '0')}${dateTomorrow.getFullYear()}`
-
-      await issuesPage.fillBetweenDate(dateYesterdayString, dateTomorrowString)
+      await issuesPage.fillBetweenDate(dateYesterdayDivided, dateTomorrowDivided)
       await issuesPage.checkFilter('Created date', 'is between', dateYesterday.getDate().toString())
       await issuesPage.checkFilter('Created date', 'is between', dateTomorrow.getDate().toString())
 
