@@ -193,6 +193,12 @@
   }
 }
 
+@supports (selector(:has(.text-editor-image-container))) {
+  p:has(> .text-editor-image-container) {
+    user-select: none;
+  }
+}
+
 .text-editor-image-container {
   display: flex;
   flex-direction: row;
