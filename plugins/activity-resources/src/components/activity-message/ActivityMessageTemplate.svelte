@@ -28,7 +28,6 @@
   import ReactionsPresenter from '../reactions/ReactionsPresenter.svelte'
   import ActivityMessageExtensionComponent from './ActivityMessageExtension.svelte'
   import ActivityMessagePresenter from './ActivityMessagePresenter.svelte'
-  import Replies from '../Replies.svelte'
   import ActivityMessageActions from '../ActivityMessageActions.svelte'
   import { isReactionMessage } from '../../activityMessagesUtils'
 
@@ -47,7 +46,7 @@
   export let withActions: boolean = true
   export let withFlatActions: boolean = true
   export let showEmbedded = false
-  export let hideReplies = false
+  export let hideFooter = false
   export let skipLabel = false
   export let hoverable = true
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'filledHover'
@@ -150,16 +149,17 @@
 
         <slot name="content" />
 
-        {#if !hideReplies && message.replies && message.replies > 0}
-          <div class="mt-2" />
-          <Replies {message} {onReply} />
+        {#if !hideFooter}
+          <ActivityMessageExtensionComponent
+            kind="footer"
+            {extensions}
+            props={{ object: message, embedded, onReply }}
+          />
         {/if}
-        <ActivityMessageExtensionComponent kind="footer" {extensions} props={{ object: message }} />
-
         <ReactionsPresenter object={message} />
         {#if parentMessage && showEmbedded}
           <div class="mt-2" />
-          <ActivityMessagePresenter value={parentMessage} embedded hideReplies withActions={false} />
+          <ActivityMessagePresenter value={parentMessage} embedded hideFooter withActions={false} />
         {/if}
       </div>
 

@@ -18,10 +18,11 @@
   import { location as locationStore } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import { ActivityMessage, ActivityMessagesFilter, DisplayActivityMessage } from '@hcengineering/activity'
-  import { ActivityScrolledView, getMessageFromLoc } from '@hcengineering/activity-resources'
   import { getClient } from '@hcengineering/presentation'
+  import { getMessageFromLoc } from '@hcengineering/activity-resources'
 
   import chunter from '../plugin'
+  import ChannelScrollView from './ChannelScrollView.svelte'
 
   export let context: DocNotifyContext
   export let object: Doc | undefined
@@ -43,7 +44,7 @@
   $: collection = isDocChannel ? 'comments' : 'messages'
 </script>
 
-<ActivityScrolledView
+<ChannelScrollView
   {messages}
   objectId={context.attachedTo}
   objectClass={context.attachedToClass}

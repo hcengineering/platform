@@ -37,7 +37,7 @@
   export let embedded: boolean = false
   export let withActions: boolean = true
   export let showEmbedded = false
-  export let hideReplies = false
+  export let hideFooter = false
   export let skipLabel = false
   export let actions: Action[] = []
   export let excludedActions: string[] = []
@@ -172,7 +172,7 @@
     {withActions}
     actions={additionalActions}
     {showEmbedded}
-    {hideReplies}
+    {hideFooter}
     {withFlatActions}
     {hoverable}
     {onClick}

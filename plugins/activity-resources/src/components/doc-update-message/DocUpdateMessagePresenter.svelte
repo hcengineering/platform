@@ -44,7 +44,7 @@
   export let embedded: boolean = false
   export let withActions: boolean = true
   export let showEmbedded = false
-  export let hideReplies = false
+  export let hideFooter = false
   export let actions: Action[] = []
   export let skipLabel = false
   export let withFlatActions: boolean = true
@@ -151,7 +151,7 @@
   {withActions}
   {viewlet}
   {showEmbedded}
-  {hideReplies}
+  {hideFooter}
   {actions}
   {skipLabel}
   {withFlatActions}

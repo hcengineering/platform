@@ -23,8 +23,7 @@ import core, {
   type Hierarchy,
   type Mixin,
   type Ref,
-  SortingOrder,
-  type Timestamp
+  SortingOrder
 } from '@hcengineering/core'
 import view, { type AttributeModel } from '@hcengineering/view'
 import { getClient, getFiltredKeys } from '@hcengineering/presentation'
@@ -36,13 +35,12 @@ import {
   hasAttributePresenter
 } from '@hcengineering/view-resources'
 import { type Person } from '@hcengineering/contact'
-import { getResource, type IntlString } from '@hcengineering/platform'
+import { type IntlString } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui'
 import { get } from 'svelte/store'
 import { personAccountByIdStore } from '@hcengineering/contact-resources'
 import activity, {
   type ActivityMessage,
-  type ActivityMessagesFilter,
   type DisplayActivityMessage,
   type DisplayDocUpdateMessage,
   type DocAttributeUpdates,
@@ -548,51 +546,6 @@ export async function getMessageFragment (doc: Doc): Promise<string> {
   }
   label = label ?? doc._class
   return `${label}-${doc._id}`
-}
-
-export async function filterActivityMessages (
-  messages: DisplayActivityMessage[],
-  filters: ActivityMessagesFilter[],
-  objectClass: Ref<Class<Doc>>,
-  selectedIds: Array<Ref<ActivityMessagesFilter>>
-): Promise<DisplayActivityMessage[]> {
-  if (selectedIds.length === 0 || selectedIds.includes(activity.ids.AllFilter)) {
-    return messages
-  }
-
-  const selectedFilters = filters.filter(({ _id }) => selectedIds.includes(_id))
-
-  if (selectedFilters.length === 0) {
-    return messages
-  }
-  const filtersFns: Array<(message: ActivityMessage, _class?: Ref<Doc>) => boolean> = []
-
-  for (const filter of selectedFilters) {
-    const filterFn = await getResource(filter.filter)
-    filtersFns.push(filterFn)
-  }
-
-  return messages.filter((message) => filtersFns.some((filterFn) => filterFn(message, objectClass)))
-}
-
-export function getClosestDateSelectorDate (date: Timestamp, scrollElement: HTMLDivElement): Timestamp | undefined {
-  const dateSelectors = scrollElement.getElementsByClassName('dateSelector')
-
-  if (dateSelectors === undefined || dateSelectors.length === 0) {
-    return
-  }
-
-  let closestDate: Timestamp | undefined = parseInt(dateSelectors[dateSelectors.length - 1].id)
-
-  for (const elem of Array.from(dateSelectors).reverse()) {
-    const curDate = parseInt(elem.id)
-    if (curDate < date) break
-    else if (curDate - date < closestDate - date) {
-      closestDate = curDate
-    }
-  }
-
-  return closestDate
 }
 
 export function isReactionMessage (message?: ActivityMessage): message is DocUpdateMessage {

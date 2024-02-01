@@ -29,7 +29,8 @@ import {
   type IdMap,
   type Ref,
   type Space,
-  type Class
+  type Class,
+  type Timestamp
 } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import {
@@ -40,16 +41,22 @@ import {
   navigate
 } from '@hcengineering/ui'
 import { workbenchId } from '@hcengineering/workbench'
-import { type Asset, translate } from '@hcengineering/platform'
+import { type Asset, getResource, translate } from '@hcengineering/platform'
 import { classIcon, getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
-import activity, { type ActivityMessage, type DocUpdateMessage } from '@hcengineering/activity'
+import activity, {
+  type ActivityMessage,
+  type ActivityMessagesFilter,
+  type DisplayActivityMessage,
+  type DocUpdateMessage
+} from '@hcengineering/activity'
 import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-import { type DocNotifyContext } from '@hcengineering/notification'
+import { type DocNotifyContext, inboxId } from '@hcengineering/notification'
 import { get, type Unsubscriber } from 'svelte/store'
 
 import chunter from './plugin'
 import DirectIcon from './components/DirectIcon.svelte'
 import ChannelIcon from './components/ChannelIcon.svelte'
+import { chatSpecials } from './components/chat/utils'
 
 export async function getDmName (client: Client, space?: Space): Promise<string> {
   if (space === undefined) {
@@ -317,4 +324,70 @@ export function getUnreadThreadsCount (): number {
     .filter((_id) => _id !== undefined)
 
   return new Set(threadIds).size
+}
+
+export function getClosestDateSelectorDate (date: Timestamp, scrollElement: HTMLDivElement): Timestamp | undefined {
+  const dateSelectors = scrollElement.getElementsByClassName('dateSelector')
+
+  if (dateSelectors === undefined || dateSelectors.length === 0) {
+    return
+  }
+
+  let closestDate: Timestamp | undefined = parseInt(dateSelectors[dateSelectors.length - 1].id)
+
+  for (const elem of Array.from(dateSelectors).reverse()) {
+    const curDate = parseInt(elem.id)
+    if (curDate < date) break
+    else if (curDate - date < closestDate - date) {
+      closestDate = curDate
+    }
+  }
+
+  return closestDate
+}
+
+export async function filterChatMessages (
+  messages: DisplayActivityMessage[],
+  filters: ActivityMessagesFilter[],
+  objectClass: Ref<Class<Doc>>,
+  selectedIds: Array<Ref<ActivityMessagesFilter>>
+): Promise<DisplayActivityMessage[]> {
+  if (selectedIds.length === 0 || selectedIds.includes(activity.ids.AllFilter)) {
+    return messages
+  }
+
+  const selectedFilters = filters.filter(({ _id }) => selectedIds.includes(_id))
+
+  if (selectedFilters.length === 0) {
+    return messages
+  }
+  const filtersFns: Array<(message: ActivityMessage, _class?: Ref<Doc>) => boolean> = []
+
+  for (const filter of selectedFilters) {
+    const filterFn = await getResource(filter.filter)
+    filtersFns.push(filterFn)
+  }
+
+  return messages.filter((message) => filtersFns.some((filterFn) => filterFn(message, objectClass)))
+}
+
+export function navigateToThread (loc: Location, contextId: Ref<DocNotifyContext>, _id: Ref<ActivityMessage>): void {
+  const specials = chatSpecials.map(({ id }) => id)
+
+  if (loc.path[2] === chunterId && specials.includes(loc.path[3])) {
+    loc.path[4] = _id
+    loc.query = { message: _id }
+    navigate(loc)
+    return
+  }
+
+  if (loc.path[2] !== inboxId) {
+    loc.path[2] = chunterId
+  }
+
+  loc.path[3] = contextId
+  loc.path[4] = _id
+  loc.fragment = undefined
+  loc.query = { message: _id }
+  navigate(loc)
 }

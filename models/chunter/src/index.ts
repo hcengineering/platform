@@ -678,6 +678,21 @@ export function createModel (builder: Builder, options = { addApplication: true 
     ofClass: chunter.class.ChatMessage,
     components: { input: chunter.component.ChatMessageInput }
   })
+
+  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
+    ofMessage: chunter.class.ChatMessage,
+    components: [{ kind: 'footer', component: chunter.component.Replies }]
+  })
+
+  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
+    ofMessage: activity.class.DocUpdateMessage,
+    components: [{ kind: 'footer', component: chunter.component.Replies }]
+  })
+
+  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
+    ofMessage: activity.class.ActivityInfoMessage,
+    components: [{ kind: 'footer', component: chunter.component.Replies }]
+  })
 }
 
 export default chunter

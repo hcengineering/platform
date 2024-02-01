@@ -26,15 +26,13 @@ import {
   type AnySvelteComponent,
   ErrorPresenter,
   themeStore,
-  type Location,
-  navigate
+  type Location
 } from '@hcengineering/ui'
 import view, { type AttributeModel, type BuildModelKey, type BuildModelOptions } from '@hcengineering/view'
 import { getObjectPresenter } from '@hcengineering/view-resources'
 
 import { type ActivityKey, activityKey } from './activity'
 import activity from './plugin'
-import { type DocNotifyContext, inboxId } from '@hcengineering/notification'
 
 const valueTypes: ReadonlyArray<Ref<Class<Doc>>> = [
   core.class.TypeString,
@@ -428,17 +426,4 @@ export async function updateDocReactions (
 
 export function getMessageFromLoc (loc: Location): Ref<ActivityMessage> | undefined {
   return (loc.query?.message ?? undefined) as Ref<ActivityMessage> | undefined
-}
-
-// TODO: move to chunter
-export function navigateToThread (loc: Location, contextId: Ref<DocNotifyContext>, _id: Ref<ActivityMessage>): void {
-  if (loc.path[2] !== inboxId) {
-    loc.path[2] = 'chunter'
-  }
-
-  loc.path[3] = contextId
-  loc.path[4] = _id
-  loc.fragment = undefined
-  loc.query = { message: _id }
-  navigate(loc)
 }

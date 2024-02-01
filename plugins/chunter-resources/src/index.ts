@@ -60,6 +60,7 @@ import ChannelIcon from './components/ChannelIcon.svelte'
 import ThreadNotificationPresenter from './components/notification/ThreadNotificationPresenter.svelte'
 import ChatMessageNotificationLabel from './components/notification/ChatMessageNotificationLabel.svelte'
 import ChatAside from './components/chat/ChatAside.svelte'
+import Replies from './components/Replies.svelte'
 
 import { updateBacklinksList } from './backlinks'
 import {
@@ -73,10 +74,10 @@ import {
   getMessageLink,
   getTitle,
   getUnreadThreadsCount,
-  canCopyMessageLink
+  canCopyMessageLink,
+  navigateToThread
 } from './utils'
 import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-import { navigateToThread } from '@hcengineering/activity-resources'
 
 export { default as ChatMessagesPresenter } from './components/chat-message/ChatMessagesPresenter.svelte'
 export { default as ChatMessagePopup } from './components/chat-message/ChatMessagePopup.svelte'
@@ -155,7 +156,6 @@ async function OpenChannel (notifyContext?: DocNotifyContext, evt?: Event): Prom
 }
 
 async function UnpinAllChannels (contexts: DocNotifyContext[]): Promise<void> {
-  console.log({ contexts })
   const client = getClient()
   await Promise.all(contexts.map(async (context) => await client.update(context, { isPinned: false })))
 }
@@ -250,7 +250,8 @@ export default async (): Promise<Resources> => ({
     ChannelIcon,
     ChatMessageNotificationLabel,
     ThreadNotificationPresenter,
-    ChatAside
+    ChatAside,
+    Replies
   },
   function: {
     GetDmName: getDmName,

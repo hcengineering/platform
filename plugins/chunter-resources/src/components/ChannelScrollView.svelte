@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref, SortingOrder, isOtherDay, Timestamp, getCurrentAccount } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Class, Doc, Ref, isOtherDay, Timestamp, getCurrentAccount } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
   import activity, {
     ActivityExtension,
     ActivityMessage,
@@ -25,14 +25,15 @@
   import notification, { InboxNotificationsClient } from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
   import { get } from 'svelte/store'
-
-  import ActivityMessagePresenter from './activity-message/ActivityMessagePresenter.svelte'
-  import { filterActivityMessages, getClosestDateSelectorDate } from '../activityMessagesUtils'
-  import ActivityMessagesSeparator from './activity-message/ActivityMessagesSeparator.svelte'
-  import JumpToDateSelector from './JumpToDateSelector.svelte'
-  import ActivityExtensionComponent from './ActivityExtension.svelte'
-  import ChatMessage from './ChatMessage.svelte'
   import { Scroller, ScrollParams } from '@hcengineering/ui'
+  import {
+    ActivityMessagePresenter,
+    ActivityExtension as ActivityExtensionComponent
+  } from '@hcengineering/activity-resources'
+
+  import ActivityMessagesSeparator from './ChannelMessagesSeparator.svelte'
+  import JumpToDateSelector from './JumpToDateSelector.svelte'
+  import { filterChatMessages, getClosestDateSelectorDate } from '../utils'
 
   export let messages: DisplayActivityMessage[] = []
   export let object: Doc | undefined
@@ -271,7 +272,7 @@
     selectedDate = parseInt(firstVisibleDateElement.id)
   }
 
-  $: filterActivityMessages(messages, filters, objectClass, selectedFilters).then((filteredMessages) => {
+  $: filterChatMessages(messages, filters, objectClass, selectedFilters).then((filteredMessages) => {
     displayMessages = filteredMessages
   })
 

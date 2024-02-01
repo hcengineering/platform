@@ -177,7 +177,8 @@ export default plugin(chunterId, {
     ChatMessagesPresenter: '' as AnyComponent,
     ChatMessagePresenter: '' as AnyComponent,
     ThreadMessagePresenter: '' as AnyComponent,
-    ChatAside: '' as AnyComponent
+    ChatAside: '' as AnyComponent,
+    Replies: '' as AnyComponent
   },
   class: {
     Message: '' as Ref<Class<Message>>,

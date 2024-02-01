@@ -70,7 +70,7 @@
   <Header icon={activity.icon.Bookmark} intlLabel={chunter.string.Saved} titleKind="breadcrumbs" />
 </div>
 
-<div class="body">
+<div class="body h-full w-full">
   <Scroller padding="0.75rem 0.5rem">
     {#if savedMessages.length > 0 || savedAttachments.length > 0}
       {#each savedMessages as message}
@@ -123,7 +123,6 @@
 
 <style lang="scss">
   .body {
-    flex-grow: 1;
     background-color: var(--theme-panel-color);
   }
   .empty {

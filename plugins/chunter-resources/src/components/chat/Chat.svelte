@@ -105,6 +105,7 @@
 
     loc.path[3] = selectedContextId as string
     loc.path[4] = ''
+    loc.query = { ...loc.query, message: null }
     loc.path.length = 4
 
     navigate(loc)

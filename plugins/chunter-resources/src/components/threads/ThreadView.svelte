@@ -18,12 +18,13 @@
   import { Breadcrumbs, IconClose, Label, location as locationStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import activity, { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
-  import { ActivityScrolledView, getMessageFromLoc } from '@hcengineering/activity-resources'
+  import { getMessageFromLoc } from '@hcengineering/activity-resources'
   import contact from '@hcengineering/contact'
 
   import chunter from '../../plugin'
   import ThreadParentMessage from './ThreadParentPresenter.svelte'
   import { getChannelIcon, getChannelName } from '../../utils'
+  import ChannelScrollView from '../ChannelScrollView.svelte'
 
   export let _id: Ref<ActivityMessage>
   export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
@@ -110,7 +111,7 @@
   <div class="popupPanel-body">
     <div class="container">
       {#if message}
-        <ActivityScrolledView
+        <ChannelScrollView
           {selectedMessageId}
           {messages}
           withDates={false}
@@ -132,7 +133,7 @@
               <div class="line" />
             </div>
           </svelte:fragment>
-        </ActivityScrolledView>
+        </ChannelScrollView>
       {/if}
     </div>
   </div>

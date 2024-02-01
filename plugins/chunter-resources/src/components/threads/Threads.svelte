@@ -22,6 +22,7 @@
 
   import chunter from '../../plugin'
   import Header from '../Header.svelte'
+  import { openMessageFromSpecial } from '../../utils'
 
   const threadsQuery = createQuery()
   const me = getCurrentAccount() as PersonAccount
@@ -47,17 +48,16 @@
   <Header icon={chunter.icon.Thread} intlLabel={chunter.string.Threads} titleKind="breadcrumbs" />
 </div>
 
-<div class="body">
+<div class="body h-full w-full">
   <Scroller padding="0.75rem 0.5rem">
     {#each threads as thread}
-      <ActivityMessagePresenter value={thread} />
+      <ActivityMessagePresenter value={thread} onClick={() => openMessageFromSpecial(thread)} />
     {/each}
   </Scroller>
 </div>
 
 <style lang="scss">
   .body {
-    flex-grow: 1;
     background-color: var(--theme-panel-color);
   }
 </style>
