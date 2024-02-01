@@ -62,15 +62,12 @@
   let object: Doc | undefined
 
   let viewlet: ChatMessageViewlet | undefined
-
-  $: value &&
-    viewletQuery.query(
-      chunter.class.ChatMessageViewlet,
-      { objectClass: value.attachedToClass, messageClass: value._class },
-      (result: ChatMessageViewlet[]) => {
-        viewlet = result[0]
-      }
-    )
+  ;[viewlet] = value
+    ? client.getModel().findAllSync(chunter.class.ChatMessageViewlet, {
+      objectClass: value.attachedToClass,
+      messageClass: value._class
+    })
+    : []
 
   $: value &&
     userQuery.query(core.class.Account, { _id: value.createdBy }, (res: Account[]) => {

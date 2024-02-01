@@ -23,7 +23,7 @@
   import chunter from '../plugin'
   import { getDmPersons } from '../utils'
 
-  export let value: DirectMessage
+  export let value: DirectMessage | undefined
   export let size: IconSize = 'small'
 
   const visiblePersons = 4
@@ -31,12 +31,13 @@
 
   let persons: Person[] = []
 
-  $: getDmPersons(client, value).then((res) => {
-    persons = res
-  })
+  $: value &&
+    getDmPersons(client, value).then((res) => {
+      persons = res
+    })
 </script>
 
-{#if persons.length === 0}
+{#if persons.length === 0 && value}
   <Icon icon={classIcon(client, value._class) ?? chunter.icon.Chunter} {size} />
 {/if}
 

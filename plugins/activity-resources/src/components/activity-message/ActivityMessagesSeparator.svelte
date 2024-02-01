@@ -16,22 +16,18 @@
   import type { IntlString } from '@hcengineering/platform'
   import { Label } from '@hcengineering/ui'
 
-  export let title: IntlString
-  export let line: boolean = false
+  export let label: IntlString
   export let params: any = undefined
-  export let reverse: boolean = false
-  export let isNew: boolean = false
+
   export let element: HTMLDivElement | undefined = undefined
 </script>
 
-<div
-  class="w-full text-sm flex-center whitespace-nowrap"
-  class:flex-reverse={reverse}
-  class:new={isNew}
-  bind:this={element}
->
-  <div class:ml-8={!reverse} class:mr-4={reverse}><Label label={title} {params} /></div>
-  <div class:ml-4={!reverse} class:mr-4={reverse} class:line />
+<div class="w-full text-sm flex-center whitespace-nowrap" bind:this={element}>
+  <div class="line mr-3" />
+  <div class="label">
+    <Label {label} {params} />
+  </div>
+  <div class="line ml-3" />
 </div>
 
 <style lang="scss">
@@ -39,13 +35,10 @@
     position: relative;
     width: 100%;
     height: 1px;
-    background-color: var(--divider-color);
+    border-top: 1px dashed var(--global-higlight-Color);
   }
 
-  .new {
-    .line {
-      background-color: var(--highlight-red);
-    }
-    color: var(--highlight-red);
+  .label {
+    color: var(--global-higlight-Color);
   }
 </style>

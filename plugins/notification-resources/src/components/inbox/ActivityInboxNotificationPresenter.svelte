@@ -23,12 +23,12 @@
   } from '@hcengineering/notification'
   import { ActivityMessagePresenter, combineActivityMessages } from '@hcengineering/activity-resources'
   import activity, { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
-  import { location, Action, getLocation, navigate, Component } from '@hcengineering/ui'
+  import { location, Action, Component } from '@hcengineering/ui'
   import { getActions } from '@hcengineering/view-resources'
   import { getResource } from '@hcengineering/platform'
-  import chunter from '@hcengineering/chunter'
 
   import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
+  import { openInboxDoc } from '../../utils'
 
   export let value: DisplayActivityInboxNotification
   export let embedded = false
@@ -36,6 +36,7 @@
   export let showNotify = true
   export let withActions = true
   export let viewlets: ActivityNotificationViewlet[] = []
+  export let withFlatActions = false
   export let onClick: (() => void) | undefined = undefined
 
   const client = getClient()
@@ -43,7 +44,6 @@
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const notificationsStore = inboxClient.inboxNotifications
 
-  let messages: ActivityMessage[] = []
   let viewlet: ActivityNotificationViewlet | undefined = undefined
   let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
   let displayMessage: DisplayActivityMessage | undefined = undefined
@@ -62,7 +62,9 @@
     activity.class.ActivityMessage,
     { _id: { $in: messageIds } },
     (res) => {
-      messages = res
+      combineActivityMessages(res).then((m) => {
+        displayMessage = m[0]
+      })
     },
     {
       sort: {
@@ -70,8 +72,6 @@
       }
     }
   )
-
-  $: displayMessage = messages.length > 1 ? combineActivityMessages(messages)[0] : messages[0]
 
   $: getAllActions(value).then((res) => {
     actions = res
@@ -100,10 +100,8 @@
     if (message === undefined) {
       return
     }
-    const loc = getLocation()
-    loc.fragment = value.docNotifyContext
-    loc.query = { thread: message._id }
-    navigate(loc)
+
+    openInboxDoc(value.docNotifyContext, message._id, message._id)
   }
 
   async function getAllActions (value: ActivityInboxNotification): Promise<Action[]> {
@@ -134,7 +132,6 @@
         withActions,
         showNotify,
         actions,
-        excludedActions: [chunter.action.ReplyToThread],
         onClick
       }}
     />
@@ -143,14 +140,13 @@
       value={displayMessage}
       showNotify={showNotify ? !value.isViewed && !embedded : false}
       isSelected={displayMessage._id === selectedMessageId}
-      excludedActions={[chunter.action.ReplyToThread]}
       showEmbedded
       {withActions}
       {embedded}
       {skipLabel}
       {actions}
       hoverable={false}
-      withFlatActions={false}
+      {withFlatActions}
       onReply={() => {
         handleReply(displayMessage)
       }}

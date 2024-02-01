@@ -17,7 +17,7 @@
   import { afterUpdate, beforeUpdate, createEventDispatcher, onDestroy, onMount } from 'svelte'
   import { resizeObserver } from '../resize'
   import { closeTooltip, tooltipstore } from '../tooltips'
-  import type { FadeOptions } from '../types'
+  import type { FadeOptions, ScrollParams } from '../types'
   import { defaultSP } from '../types'
   import { DelayedCaller } from '../utils'
   import IconDownOutline from './icons/DownOutline.svelte'
@@ -39,9 +39,11 @@
   export let buttons: 'normal' | 'union' | false = false
   export let shrink: boolean = false
   export let divScroll: HTMLElement | undefined | null = undefined
+  export let divBox: HTMLElement | undefined = undefined
   export let checkForHeaders: boolean = false
   export let stickedScrollBars: boolean = false
   export let thinScrollBars: boolean = false
+  export let onScroll: ((params: ScrollParams) => void) | undefined = undefined
 
   export function scroll (top: number, left?: number, behavior: 'auto' | 'smooth' = 'auto') {
     if (divScroll) {
@@ -65,7 +67,6 @@
   let maskH: 'left' | 'right' | 'both' | 'none' = 'none'
 
   let divHScroll: HTMLElement
-  let divBox: HTMLElement
   let divBar: HTMLElement
   let divBarH: HTMLElement
   let isScrolling: 'vertical' | 'horizontal' | false = false
@@ -74,8 +75,8 @@
   let beforeContent: number | undefined = undefined
   let leftContent: number | undefined = undefined
   let rightContent: number | undefined = undefined
-  let scrolling: boolean = autoscroll
-  let firstScroll: boolean = autoscroll
+  $: scrolling = autoscroll
+  let firstScroll = autoscroll
   let orientir: 'vertical' | 'horizontal' = 'vertical'
 
   let timer: any | undefined = undefined
@@ -162,7 +163,7 @@
     }
   }
 
-  const onScroll = (event: MouseEvent): void => {
+  const handleScroll = (event: MouseEvent): void => {
     scrolling = false
     if (
       (divBar == null && isScrolling === 'vertical') ||
@@ -198,7 +199,7 @@
     }
   }
   const onScrollEnd = (): void => {
-    document.removeEventListener('mousemove', onScroll)
+    document.removeEventListener('mousemove', handleScroll)
     document.body.style.userSelect = 'auto'
     document.body.style.webkitUserSelect = 'auto'
     document.removeEventListener('mouseup', onScrollEnd)
@@ -209,7 +210,7 @@
     scrolling = false
     dXY = direction === 'vertical' ? event.offsetY : event.offsetX
     document.addEventListener('mouseup', onScrollEnd)
-    document.addEventListener('mousemove', onScroll)
+    document.addEventListener('mousemove', handleScroll)
     document.body.style.userSelect = 'none'
     document.body.style.webkitUserSelect = 'none'
     isScrolling = direction
@@ -301,7 +302,11 @@
       divScroll.scrollTop = divScroll.scrollHeight - divHeight + 2
     }
   }
-  $: if (scrolling && belowContent && belowContent > 0) scrollDown()
+
+  $: if (scrolling && belowContent && belowContent > 0) {
+    firstScroll = false
+    scrollDown()
+  }
 
   const checkIntersection = (entries: IntersectionObserverEntry[], observer: IntersectionObserver) => {
     const interArr: Element[] = []
@@ -537,6 +542,9 @@
       class="scroll relative flex-shrink"
       style:overflow-x={horizontal ? 'auto' : 'hidden'}
       on:scroll={() => {
+        if (onScroll) {
+          onScroll({ autoScrolling: autoscroll && scrolling })
+        }
         if (
           $tooltipstore.label !== undefined ||
           ($tooltipstore.component !== undefined && $tooltipstore.kind !== 'submenu')
@@ -686,7 +694,7 @@
       &:hover,
       &:focus {
         color: var(--theme-caption-color);
-        background-color: ver(--theme-button-hovered);
+        background-color: var(--theme-button-hovered);
       }
     }
     .updown-down {

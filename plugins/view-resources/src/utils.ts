@@ -217,6 +217,30 @@ export async function getAttributePresenter (
   }
 }
 
+export function hasAttributePresenter (
+  client: Client,
+  _class: Ref<Class<Obj>>,
+  key: string,
+  mixinClass?: Ref<Mixin<CollectionPresenter>>
+): boolean {
+  const actualMixinClass = mixinClass ?? view.mixin.AttributePresenter
+
+  const hierarchy = client.getHierarchy()
+  const attribute = hierarchy.getAttribute(_class, key)
+
+  const presenterClass = getAttributePresenterClass(hierarchy, attribute)
+  const isCollectionAttr = presenterClass.category === 'collection'
+  const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : actualMixinClass
+
+  let presenterMixin = hierarchy.classHierarchyMixin(presenterClass.attrClass, mixin)
+
+  if (presenterMixin?.presenter === undefined && mixinClass != null && mixin === mixinClass) {
+    presenterMixin = hierarchy.classHierarchyMixin(presenterClass.attrClass, view.mixin.AttributePresenter)
+  }
+
+  return presenterMixin?.presenter !== undefined || (attribute.type as TypeAny)?.presenter !== undefined
+}
+
 export async function getPresenter<T extends Doc> (
   client: Client,
   _class: Ref<Class<T>>,
@@ -552,6 +576,12 @@ export function makeViewletKey (loc?: Location): string {
   loc = loc != null ? { path: loc.path } : getCurrentResolvedLocation()
   loc.fragment = undefined
   loc.query = undefined
+
+  // TODO: make better fix. Just temporary fix for correct inbox viewlets.
+  if (loc.path[2] === 'inbox') {
+    loc.path = loc.path.slice(0, 3)
+  }
+
   return 'viewlet' + locationToUrl(loc)
 }
 

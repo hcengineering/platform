@@ -203,11 +203,9 @@ export class TDocNotifyContext extends TDoc implements DocNotifyContext {
     hidden!: boolean
 
   @Prop(TypeDate(), core.string.Date)
-  @Index(IndexKind.Indexed)
     lastViewedTimestamp?: Timestamp
 
   @Prop(TypeDate(), core.string.Date)
-  @Index(IndexKind.Indexed)
     lastUpdateTimestamp?: Timestamp
 
   @Prop(TypeBoolean(), notification.string.Pinned)
@@ -337,7 +335,8 @@ export function createModel (builder: Builder): void {
       alias: inboxId,
       hidden: true,
       locationResolver: notification.resolver.Location,
-      component: notification.component.Inbox
+      component: notification.component.Inbox,
+      aside: chunter.component.ThreadView
     },
     notification.app.Inbox
   )

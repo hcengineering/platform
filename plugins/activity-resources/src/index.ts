@@ -39,6 +39,8 @@ export { default as ReactionPresenter } from './components/reactions/ReactionPre
 export { default as ActivityMessageNotificationLabel } from './components/activity-message/ActivityMessageNotificationLabel.svelte'
 export { default as ActivityMessageHeader } from './components/activity-message/ActivityMessageHeader.svelte'
 export { default as AddReactionAction } from './components/reactions/AddReactionAction.svelte'
+export { default as ActivityMessageAction } from './components/ActivityMessageAction.svelte'
+export { default as ActivityMessagesFilterPopup } from './components/FilterPopup.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {

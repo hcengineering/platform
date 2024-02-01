@@ -87,9 +87,7 @@ async function generateDocUpdateMessageByTx (
 
 async function createDocUpdateMessages (client: MigrationClient): Promise<void> {
   const activityDocs = await client.model.findAll(activity.mixin.ActivityDoc, {})
-  const activityDocClasses = activityDocs
-    .map(({ _id }) => _id)
-    .filter((_class) => !client.hierarchy.isDerived(_class, activity.class.ActivityMessage))
+  const activityDocClasses = activityDocs.map(({ _id }) => _id)
 
   const notificationControl = getActivityControl(client)
 

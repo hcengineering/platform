@@ -27,6 +27,8 @@
   import { getResource } from '@hcengineering/platform'
 
   import activity from '../plugin'
+  import { navigateToThread } from '../utils'
+  import { get } from 'svelte/store'
 
   export let message: ActivityMessage
   export let onReply: (() => void) | undefined = undefined
@@ -84,10 +86,18 @@
       onReply()
       return
     }
-    const loc = getLocation()
-    loc.path[4] = message._id
-    loc.query = { ...loc.query, thread: message._id }
-    navigate(loc)
+
+    if (inboxClient === undefined) {
+      return
+    }
+
+    const context = get(inboxClient.docNotifyContextByDoc).get(message.attachedTo)
+
+    if (context === undefined) {
+      return
+    }
+
+    navigateToThread(getLocation(), context._id, message._id)
   }
 </script>
 

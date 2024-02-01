@@ -13,44 +13,28 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment, { Attachment, SavedAttachments } from '@hcengineering/attachment'
+  import { Attachment, SavedAttachments } from '@hcengineering/attachment'
   import { AttachmentPreview } from '@hcengineering/attachment-resources'
   import { Person, PersonAccount, getName as getContactName } from '@hcengineering/contact'
   import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
   import { getDisplayTime, IdMap, Ref, WithLookup } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { Icon, Label, Scroller } from '@hcengineering/ui'
   import activity, { ActivityMessage, SavedMessage } from '@hcengineering/activity'
   import { ActivityMessagePresenter } from '@hcengineering/activity-resources'
 
   import chunter from '../../../plugin'
   import { openMessageFromSpecial } from '../../../utils'
+  import { savedAttachmentsStore, savedMessagesStore } from '../utils'
+  import Header from '../../Header.svelte'
 
   const client = getClient()
 
   let savedMessages: WithLookup<SavedMessage>[] = []
   let savedAttachments: WithLookup<SavedAttachments>[] = []
 
-  const savedMessagesQuery = createQuery()
-  const savedAttachmentsQuery = createQuery()
-
-  savedMessagesQuery.query(
-    activity.class.SavedMessage,
-    {},
-    (res) => {
-      savedMessages = res
-    },
-    { lookup: { attachedTo: activity.class.ActivityMessage } }
-  )
-
-  savedAttachmentsQuery.query(
-    attachment.class.SavedAttachments,
-    {},
-    (res) => {
-      savedAttachments = res
-    },
-    { lookup: { attachedTo: attachment.class.Attachment } }
-  )
+  $: savedMessages = $savedMessagesStore
+  $: savedAttachments = $savedAttachmentsStore
 
   async function openAttachment (attach?: Attachment) {
     if (attach === undefined) {
@@ -65,11 +49,11 @@
   }
 
   function getName (
-    a: Attachment,
+    attach: Attachment,
     personAccountByIdStore: IdMap<PersonAccount>,
     personByIdStore: IdMap<Person>
   ): string | undefined {
-    const acc = personAccountByIdStore.get(a.modifiedBy as Ref<PersonAccount>)
+    const acc = personAccountByIdStore.get(attach.modifiedBy as Ref<PersonAccount>)
     if (acc !== undefined) {
       const emp = personByIdStore.get(acc?.person)
       if (emp !== undefined) {
@@ -77,63 +61,71 @@
       }
     }
   }
+  function handleMessageClicked (message?: ActivityMessage) {
+    openMessageFromSpecial(message)
+  }
 </script>
 
-<div class="ac-header full divide caption-height">
-  <div class="ac-header__wrap-title">
-    <span class="ac-header__title"><Label label={chunter.string.SavedItems} /></span>
-  </div>
+<div class="ac-header full divide caption-height" style="padding: 0.5rem 1rem">
+  <Header icon={activity.icon.Bookmark} intlLabel={chunter.string.Saved} titleKind="breadcrumbs" />
 </div>
-<Scroller>
-  {#if savedMessages.length > 0 || savedAttachments.length > 0}
-    {#each savedMessages as message}
-      {#if message.$lookup?.attachedTo}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
 
-        <ActivityMessagePresenter
-          value={message.$lookup?.attachedTo}
-          onClick={() => {
-            openMessageFromSpecial(message.$lookup?.attachedTo)
-          }}
-        />
-      {/if}
-    {/each}
-    {#each savedAttachments as attach}
-      {#if attach.$lookup?.attachedTo}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div
-          class="attachmentContainer flex-no-shrink clear-mins"
-          on:click={() => openAttachment(attach.$lookup?.attachedTo)}
-        >
-          <AttachmentPreview value={attach.$lookup.attachedTo} isSaved={true} />
-          <div class="label">
-            <Label
-              label={chunter.string.SharedBy}
-              params={{
-                name: getName(attach.$lookup.attachedTo, $personAccountByIdStore, $personByIdStore),
-                time: getDisplayTime(attach.modifiedOn)
-              }}
-            />
+<div class="body">
+  <Scroller padding="0.75rem 0.5rem">
+    {#if savedMessages.length > 0 || savedAttachments.length > 0}
+      {#each savedMessages as message}
+        {#if message.$lookup?.attachedTo}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
+
+          <ActivityMessagePresenter
+            value={message.$lookup?.attachedTo}
+            onClick={() => {
+              handleMessageClicked(message.$lookup?.attachedTo)
+            }}
+          />
+        {/if}
+      {/each}
+      {#each savedAttachments as attach}
+        {#if attach.$lookup?.attachedTo}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
+          <div
+            class="attachmentContainer flex-no-shrink clear-mins"
+            on:click={() => openAttachment(attach.$lookup?.attachedTo)}
+          >
+            <AttachmentPreview value={attach.$lookup.attachedTo} isSaved={true} />
+            <div class="label">
+              <Label
+                label={chunter.string.SharedBy}
+                params={{
+                  name: getName(attach.$lookup.attachedTo, $personAccountByIdStore, $personByIdStore),
+                  time: getDisplayTime(attach.modifiedOn)
+                }}
+              />
+            </div>
           </div>
+        {/if}
+      {/each}
+    {:else}
+      <div class="empty">
+        <Icon icon={activity.icon.Bookmark} size="large" />
+        <div class="an-element__label header">
+          <Label label={chunter.string.EmptySavedHeader} />
         </div>
-      {/if}
-    {/each}
-  {:else}
-    <div class="empty">
-      <Icon icon={activity.icon.Bookmark} size="large" />
-      <div class="an-element__label header">
-        <Label label={chunter.string.EmptySavedHeader} />
+        <span class="an-element__label">
+          <Label label={chunter.string.EmptySavedText} />
+        </span>
       </div>
-      <span class="an-element__label">
-        <Label label={chunter.string.EmptySavedText} />
-      </span>
-    </div>
-  {/if}
-</Scroller>
+    {/if}
+  </Scroller>
+</div>
 
 <style lang="scss">
+  .body {
+    flex-grow: 1;
+    background-color: var(--theme-panel-color);
+  }
   .empty {
     display: flex;
     align-self: center;
@@ -151,10 +143,12 @@
   }
 
   .attachmentContainer {
+    cursor: pointer;
     padding: 2rem;
+    border-radius: 0.25rem;
 
     &:hover {
-      background-color: var(--highlight-hover);
+      background-color: var(--global-ui-BackgroundColor);
     }
 
     .label {

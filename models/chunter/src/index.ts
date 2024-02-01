@@ -171,7 +171,6 @@ export class TChatMessage extends TActivityMessage implements ChatMessage {
     message!: string
 
   @Prop(TypeTimestamp(), chunter.string.Edit)
-  @Index(IndexKind.Indexed)
     editedOn?: Timestamp
 
   @Prop(PropCollection(attachment.class.Attachment), attachment.string.Attachments, {
@@ -183,9 +182,11 @@ export class TChatMessage extends TActivityMessage implements ChatMessage {
 @Model(chunter.class.ThreadMessage, chunter.class.ChatMessage)
 export class TThreadMessage extends TChatMessage implements ThreadMessage {
   @Prop(TypeRef(activity.class.ActivityMessage), core.string.AttachedTo)
+  @Index(IndexKind.Indexed)
   declare attachedTo: Ref<ActivityMessage>
 
   @Prop(TypeRef(activity.class.ActivityMessage), core.string.AttachedToClass)
+  @Index(IndexKind.Indexed)
   declare attachedToClass: Ref<Class<ActivityMessage>>
 
   @Prop(TypeRef(core.class.Doc), core.string.Object)
@@ -406,7 +407,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
         alias: chunterId,
         hidden: false,
         component: chunter.component.Chat,
-        aside: chunter.component.ThreadView
+        aside: chunter.component.ChatAside
       },
       chunter.app.Chunter
     )
@@ -429,6 +430,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
       input: 'none',
       category: chunter.category.Chunter,
       target: activity.class.ActivityMessage,
+      visibilityTester: chunter.function.CanCopyMessageLink,
       context: {
         mode: ['context', 'browser'],
         application: chunter.app.Chunter,
@@ -585,8 +587,6 @@ export function createModel (builder: Builder, options = { addApplication: true 
     filter: chunter.filter.ChatMessagesFilter
   })
 
-  builder.mixin(chunter.class.ChatMessage, core.class.Class, activity.mixin.ActivityDoc, {})
-
   builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.ObjectIdentifier, {
     provider: chunter.function.DmIdentifierProvider
   })
@@ -639,6 +639,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
       input: 'focus',
       category: chunter.category.Chunter,
       target: activity.class.ActivityMessage,
+      visibilityTester: chunter.function.CanReplyToThread,
       context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
     },
     chunter.action.ReplyToThread

@@ -19,6 +19,7 @@ import type { IntlString, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 import { type ViewAction } from '@hcengineering/view'
+import { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 
 export default mergeIds(chunterId, chunter, {
   component: {
@@ -43,7 +44,10 @@ export default mergeIds(chunterId, chunter, {
     GetDmName: '' as Resource<(client: Client, space: Space) => Promise<string>>,
     DirectTitleProvider: '' as Resource<(client: Client, id: Ref<Doc>) => Promise<string>>,
     ChannelTitleProvider: '' as Resource<(client: Client, id: Ref<Doc>) => Promise<string>>,
-    ChunterBrowserVisible: '' as Resource<(spaces: Space[]) => Promise<boolean>>
+    ChunterBrowserVisible: '' as Resource<(spaces: Space[]) => Promise<boolean>>,
+    GetUnreadThreadsCount: '' as Resource<
+    (inboxNotificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>) => number
+    >
   },
   actionImpl: {
     SubscribeMessage: '' as ViewAction,
@@ -88,7 +92,7 @@ export default mergeIds(chunterId, chunter, {
     SharedBy: '' as IntlString,
     LeaveChannel: '' as IntlString,
     ChannelBrowser: '' as IntlString,
-    SavedItems: '' as IntlString,
+    Saved: '' as IntlString,
     MessagesBrowser: '' as IntlString,
     ChunterBrowser: '' as IntlString,
     Messages: '' as IntlString,

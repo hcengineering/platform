@@ -17,9 +17,10 @@
   import activity, { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
   import { createQuery } from '@hcengineering/presentation'
   import { Ref } from '@hcengineering/core'
-  import { Action, getLocation, navigate } from '@hcengineering/ui'
+  import { Action, getLocation } from '@hcengineering/ui'
 
   import ActivityMessagePresenter from '../activity-message/ActivityMessagePresenter.svelte'
+  import { navigateToThread } from '../../utils'
 
   export let message: DisplayActivityMessage
   export let notification: ActivityInboxNotification
@@ -40,12 +41,7 @@
     })
 
   function handleReply (): void {
-    const loc = getLocation()
-
-    loc.fragment = notification.docNotifyContext
-    loc.query = { thread: parentMessage?._id ?? message._id }
-
-    navigate(loc)
+    navigateToThread(getLocation(), notification.docNotifyContext, parentMessage?._id ?? message._id)
   }
 </script>
 
@@ -57,7 +53,6 @@
     {withActions}
     {actions}
     {excludedActions}
-    withFlatActions={false}
     hoverable={false}
     onReply={handleReply}
     {onClick}
@@ -72,7 +67,6 @@
     {actions}
     {excludedActions}
     hoverable={false}
-    withFlatActions={false}
     onReply={handleReply}
     {onClick}
   />

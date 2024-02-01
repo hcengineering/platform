@@ -201,9 +201,9 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   async readMessages (ids: Array<Ref<ActivityMessage>>): Promise<void> {
     const client = getClient()
 
-    const notificationsToRead = get(this.inboxNotifications)
-      .filter((n): n is ActivityInboxNotification => n._class === notification.class.ActivityInboxNotification)
-      .filter(({ attachedTo, isViewed }) => ids.includes(attachedTo) && !isViewed)
+    const notificationsToRead = get(this.activityInboxNotifications).filter(
+      ({ attachedTo, isViewed }) => ids.includes(attachedTo) && !isViewed
+    )
 
     await Promise.all(
       notificationsToRead.map(async (notification) => await client.update(notification, { isViewed: true }))

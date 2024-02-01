@@ -79,10 +79,10 @@
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="root" bind:this={element} tabindex="0" on:keydown={onKeydown}>
-  <ListView bind:this={list} bind:selection={listSelection} count={notifications.length}>
+  <ListView bind:this={list} bind:selection={listSelection} count={notifications.length} noScroll colorsSchema="lumia">
     <svelte:fragment slot="item" let:item={itemIndex}>
       {@const notification = notifications[itemIndex]}
-      <div class="notification gap-2 ml-2">
+      <div class="notification gap-2">
         <!--        <div class="mt-6">-->
         <!--          <CheckBox-->
         <!--            circle-->
@@ -95,6 +95,7 @@
         <InboxNotificationPresenter
           value={notification}
           {viewlets}
+          withFlatActions
           onClick={() => {
             dispatch('click', {
               context: $notifyContextsStore.find(({ _id }) => _id === notification.docNotifyContext),

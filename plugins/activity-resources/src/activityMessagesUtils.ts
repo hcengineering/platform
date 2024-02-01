@@ -27,7 +27,13 @@ import core, {
 } from '@hcengineering/core'
 import view, { type AttributeModel } from '@hcengineering/view'
 import { getClient, getFiltredKeys } from '@hcengineering/presentation'
-import { buildRemovedDoc, getAttributePresenter, getDocLinkTitle } from '@hcengineering/view-resources'
+import {
+  buildRemovedDoc,
+  checkIsObjectRemoved,
+  getAttributePresenter,
+  getDocLinkTitle,
+  hasAttributePresenter
+} from '@hcengineering/view-resources'
 import { type Person } from '@hcengineering/contact'
 import { getResource, type IntlString } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui'
@@ -125,7 +131,45 @@ export async function getAttributeModel (
       view.mixin.ActivityAttributePresenter
     )
   } catch (e) {
-    // ignore error
+    console.error(e)
+  }
+}
+
+export function hasAttributeModel (
+  client: Client,
+  attributeUpdates: DocAttributeUpdates | undefined,
+  objectClass: Ref<Class<Doc>>
+): boolean {
+  if (attributeUpdates === undefined) {
+    return false
+  }
+
+  const hierarchy = client.getHierarchy()
+
+  try {
+    const { attrKey, attrClass, isMixin } = attributeUpdates
+    let attrObjectClass = objectClass
+    if (isMixin) {
+      const keyedAttribute = getFiltredKeys(hierarchy, attrClass, []).find(({ key }) => key === attrKey)
+      if (keyedAttribute === undefined) {
+        return false
+      }
+      attrObjectClass = keyedAttribute.attr.attributeOf
+    }
+
+    const hasActivityAttrPresenter = hasAttributePresenter(
+      client,
+      attrObjectClass,
+      attrKey,
+      view.mixin.ActivityAttributePresenter
+    )
+
+    if (hasActivityAttrPresenter) {
+      return true
+    }
+    return hasAttributePresenter(client, attrObjectClass, attrKey)
+  } catch (e) {
+    return false
   }
 }
 
@@ -162,17 +206,22 @@ function combineByCreateThreshold (docUpdateMessages: DocUpdateMessage[]): DocUp
   })
 }
 
-export function combineActivityMessages (
+export async function combineActivityMessages (
   messages: ActivityMessage[],
   sortingOrder: SortingOrder = SortingOrder.Ascending
-): DisplayActivityMessage[] {
+): Promise<DisplayActivityMessage[]> {
+  const client = getClient()
   const uncombinedMessages = messages.filter((message) => message._class !== activity.class.DocUpdateMessage)
 
   const docUpdateMessages = combineByCreateThreshold(
     messages.filter((message): message is DocUpdateMessage => message._class === activity.class.DocUpdateMessage)
   )
 
-  const result: DisplayActivityMessage[] = [...uncombinedMessages]
+  if (docUpdateMessages.length === 0) {
+    return sortActivityMessages(uncombinedMessages, sortingOrder)
+  }
+
+  const result: Array<DisplayActivityMessage | undefined> = [...uncombinedMessages]
 
   const groupedByType: Map<string, DocUpdateMessage[]> = groupByArray(docUpdateMessages, getDocUpdateMessageKey)
 
@@ -195,7 +244,44 @@ export function combineActivityMessages (
     result.push(...cantMerge)
   }
 
-  return sortActivityMessages(result, sortingOrder)
+  const viewlets = client.getModel().findAllSync(activity.class.DocUpdateMessageViewlet, {})
+
+  for (const [index, message] of result.entries()) {
+    if (message?._class !== activity.class.DocUpdateMessage) {
+      continue
+    }
+    const docUpdateMessage = message as DocUpdateMessage
+
+    if (
+      docUpdateMessage.action === 'update' &&
+      !hasAttributeModel(client, docUpdateMessage.attributeUpdates, docUpdateMessage.objectClass)
+    ) {
+      result[index] = undefined
+      continue
+    }
+
+    const hideIfRemoved = viewlets.some(
+      (viewlet) =>
+        viewlet.action === docUpdateMessage.action &&
+        viewlet.hideIfRemoved === true &&
+        viewlet.objectClass === docUpdateMessage.objectClass
+    )
+
+    if (!hideIfRemoved) {
+      continue
+    }
+
+    const isRemoved = await checkIsObjectRemoved(client, docUpdateMessage.objectId, docUpdateMessage.objectClass)
+
+    if (isRemoved) {
+      result[index] = undefined
+    }
+  }
+
+  return sortActivityMessages(
+    result.filter((msg): msg is DisplayActivityMessage => msg !== undefined),
+    sortingOrder
+  )
 }
 
 export function sortActivityMessages<T extends ActivityMessage> (messages: T[], order: SortingOrder): T[] {
@@ -452,21 +538,25 @@ export async function filterActivityMessages (
   messages: DisplayActivityMessage[],
   filters: ActivityMessagesFilter[],
   objectClass: Ref<Class<Doc>>,
-  filterId?: Ref<ActivityMessagesFilter>
+  selectedIds: Array<Ref<ActivityMessagesFilter>>
 ): Promise<DisplayActivityMessage[]> {
-  if (filterId === undefined || filterId === activity.ids.AllFilter) {
+  if (selectedIds.length === 0 || selectedIds.includes(activity.ids.AllFilter)) {
     return messages
   }
 
-  const filter = filters.find(({ _id }) => _id === filterId)
+  const selectedFilters = filters.filter(({ _id }) => selectedIds.includes(_id))
 
-  if (filter === undefined) {
+  if (selectedFilters.length === 0) {
     return messages
   }
+  const filtersFns: Array<(message: ActivityMessage, _class?: Ref<Doc>) => boolean> = []
 
-  const filterFn = await getResource(filter.filter)
+  for (const filter of selectedFilters) {
+    const filterFn = await getResource(filter.filter)
+    filtersFns.push(filterFn)
+  }
 
-  return messages.filter((message) => filterFn(message, objectClass))
+  return messages.filter((message) => filtersFns.some((filterFn) => filterFn(message, objectClass)))
 }
 
 export function getClosestDateSelectorDate (date: Timestamp, scrollElement: HTMLDivElement): Timestamp | undefined {

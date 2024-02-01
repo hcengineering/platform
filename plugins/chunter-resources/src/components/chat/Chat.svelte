@@ -15,23 +15,31 @@
 <script lang="ts">
   import { Doc, Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Component, defineSeparators, getCurrentLocation, location, navigate, Separator } from '@hcengineering/ui'
+  import {
+    Component,
+    defineSeparators,
+    getCurrentLocation,
+    location,
+    navigate,
+    Separator,
+    Location
+  } from '@hcengineering/ui'
   import chunter from '@hcengineering/chunter'
-  import notification, { DocNotifyContext } from '@hcengineering/notification'
+  import { DocNotifyContext } from '@hcengineering/notification'
   import { NavHeader } from '@hcengineering/workbench-resources'
   import { NavigatorModel, SpecialNavModel } from '@hcengineering/workbench'
-  import { ActivityMessagesFilter } from '@hcengineering/activity'
+  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 
   import ChatNavigator from './navigator/ChatNavigator.svelte'
   import ChannelView from '../ChannelView.svelte'
-  import DocChatPanel from './DocChatPanel.svelte'
   import { chatSpecials } from './utils'
 
   export let visibleNav: boolean = true
   export let navFloat: boolean = false
   export let appsDirection: 'vertical' | 'horizontal' = 'horizontal'
 
-  const notifyContextQuery = createQuery()
+  const notificationsClient = InboxNotificationsClientImpl.getClient()
+  const contextsStore = notificationsClient.docNotifyContexts
   const objectQuery = createQuery()
 
   const navigatorModel: NavigatorModel = {
@@ -41,47 +49,66 @@
 
   let selectedContextId: Ref<DocNotifyContext> | undefined = undefined
   let selectedContext: DocNotifyContext | undefined = undefined
-  let filterId: Ref<ActivityMessagesFilter> | undefined = undefined
-
-  let object: Doc | undefined = undefined
 
   let currentSpecial: SpecialNavModel | undefined
 
+  let object: Doc | undefined = undefined
+
   location.subscribe((loc) => {
-    updateSpecialComponent(loc.path[3])
-    updateSelectedContext(loc.path[3])
-    filterId = loc.query?.filter as Ref<ActivityMessagesFilter> | undefined
+    syncLocation(loc)
   })
 
-  function updateSpecialComponent (id?: string): SpecialNavModel | undefined {
-    if (id === undefined) {
-      return
-    }
+  $: updateSelectedContext($contextsStore, selectedContextId)
 
-    currentSpecial = navigatorModel?.specials?.find((special) => special.id === id)
-  }
-
-  function updateSelectedContext (id?: string) {
-    selectedContextId = id as Ref<DocNotifyContext> | undefined
-
-    if (selectedContext && selectedContextId !== selectedContext._id) {
-      selectedContext = undefined
-    }
-  }
-
-  $: selectedContextId &&
-    notifyContextQuery.query(
-      notification.class.DocNotifyContext,
-      { _id: selectedContextId },
-      (res: DocNotifyContext[]) => {
-        selectedContext = res[0]
-      }
+  $: selectedContext &&
+    objectQuery.query(
+      selectedContext.attachedToClass,
+      { _id: selectedContext.attachedTo },
+      (res) => {
+        object = res[0]
+      },
+      { limit: 1 }
     )
 
-  $: selectedContext !== undefined &&
-    objectQuery.query(selectedContext.attachedToClass, { _id: selectedContext.attachedTo }, (res: Doc[]) => {
-      object = res[0]
-    })
+  function syncLocation (loc: Location) {
+    const specialId = loc.path[3]
+
+    currentSpecial = navigatorModel?.specials?.find((special) => special.id === specialId)
+
+    if (currentSpecial !== undefined) {
+      selectedContext = undefined
+      selectedContextId = undefined
+    } else {
+      selectedContextId = loc.path[3] as Ref<DocNotifyContext> | undefined
+    }
+  }
+
+  function updateSelectedContext (contexts: DocNotifyContext[], _id?: Ref<DocNotifyContext>) {
+    if (selectedContextId === undefined) {
+      selectedContext = undefined
+    } else {
+      selectedContext = contexts.find(({ _id }) => _id === selectedContextId)
+    }
+  }
+
+  function handleChannelSelected (event: CustomEvent) {
+    const { context } = event.detail ?? {}
+
+    selectedContext = context
+    selectedContextId = selectedContext?._id
+
+    if (selectedContext?.attachedTo !== object?._id) {
+      object = undefined
+    }
+
+    const loc = getCurrentLocation()
+
+    loc.path[3] = selectedContextId as string
+    loc.path[4] = ''
+    loc.path.length = 4
+
+    navigate(loc)
+  }
 
   defineSeparators('chat', [
     { minSize: 20, maxSize: 40, size: 30, float: 'navigator' },
@@ -98,7 +125,12 @@
     >
       <div class="antiPanel-wrap__content">
         <NavHeader label={chunter.string.Chat} />
-        <ChatNavigator {selectedContextId} {currentSpecial} />
+        <ChatNavigator
+          {selectedContextId}
+          selectedObjectClass={selectedContext?.attachedToClass}
+          {currentSpecial}
+          on:select={handleChannelSelected}
+        />
       </div>
       <Separator name="chat" float={navFloat ? 'navigator' : true} index={0} />
     </div>
@@ -124,10 +156,8 @@
           }
         }}
       />
-    {:else if selectedContext && object}
-      {#key selectedContext._id}
-        <ChannelView context={selectedContext} {object} {filterId} />
-      {/key}
+    {:else if selectedContext}
+      <ChannelView context={selectedContext} {object} />
     {/if}
   </div>
 </div>

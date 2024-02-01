@@ -25,6 +25,7 @@
   export let showNotify = true
   export let withActions = true
   export let viewlets: ActivityNotificationViewlet[] = []
+  export let withFlatActions = false
   export let onClick: (() => void) | undefined = undefined
   export let onCheck: ((isChecked: boolean) => void) | undefined = undefined
 
@@ -37,6 +38,6 @@
 {#if objectPresenter}
   <Component
     is={objectPresenter.presenter}
-    props={{ value, embedded, skipLabel, viewlets, showNotify, withActions, onClick, onCheck }}
+    props={{ value, embedded, skipLabel, viewlets, showNotify, withActions, withFlatActions, onClick, onCheck }}
   />
 {/if}
