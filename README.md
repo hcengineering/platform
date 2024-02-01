@@ -3,17 +3,15 @@
 [![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/huly_io?style=for-the-badge)](https://x.com/huly_io)
 ![GitHub License](https://img.shields.io/github/license/hcengineering/platform?style=for-the-badge)
 
+⭐️ Your star shines on us. Star us on GitHub!
+
 ## About
 
 The Huly Platform is a robust framework designed to accelerate the development of business applications, such as CRM systems. 
 This repository includes several applications, such as Chat, Project Management, CRM, HRM, and ATS. 
 Various teams are building products on top of the Platform, including [Huly](https://huly.io) and [TraceX](https://tracex.co).
 
-<p align="center">
-  <a href="https://huly.io">
-    <img src="https://huly.io/_astro/dark-kanban.51390fd6_vIfr7.webp" srcset="https://huly.io/_astro/dark-kanban.51390fd6_1tAM0H.webp 980w, https://huly.io/_astro/dark-kanban.51390fd6_htsmY.webp 1960w" loading="eager" alt="Huly Platform" decoding="async">
-  </a>
-</p>
+![Huly](https://huly.io/_astro/dark-kanban.51390fd6_vIfr7.webp)
 
 ## Activity
 
