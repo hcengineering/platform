@@ -218,7 +218,7 @@ export function start (
     QueryJoinMiddleware.create // Should be last one
   ]
 
-  const metrics = getMetricsContext().newChild('indexing', {})
+  const metrics = getMetricsContext()
   function createIndexStages (
     fullText: MeasureContext,
     workspace: WorkspaceId,
@@ -270,6 +270,7 @@ export function start (
   }
 
   const pipelineFactory: PipelineFactory = (ctx, workspace, upgrade, broadcast) => {
+    const wsMetrics = metrics.newChild('🧲 ' + workspace.name, {})
     const conf: DbConfiguration = {
       domains: {
         [DOMAIN_TX]: 'MongoTx',
@@ -278,7 +279,7 @@ export function start (
         [DOMAIN_FULLTEXT_BLOB]: 'FullTextBlob',
         [DOMAIN_MODEL]: 'Null'
       },
-      metrics,
+      metrics: wsMetrics,
       defaultAdapter: 'Mongo',
       adapters: {
         MongoTx: {
@@ -310,7 +311,14 @@ export function start (
         factory: createElasticAdapter,
         url: opt.fullTextUrl,
         stages: (adapter, storage, storageAdapter, contentAdapter) =>
-          createIndexStages(metrics.newChild('stages', {}), workspace, adapter, storage, storageAdapter, contentAdapter)
+          createIndexStages(
+            wsMetrics.newChild('stages', {}),
+            workspace,
+            adapter,
+            storage,
+            storageAdapter,
+            contentAdapter
+          )
       },
       contentAdapters: {
         Rekoni: {

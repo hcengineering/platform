@@ -209,7 +209,7 @@ export function parseURL (text: string): string {
 export interface IModeSelector<Mode extends string = string> {
   mode: Mode
   config: Array<[Mode, IntlString, object]>
-  onChange: (_mode: string) => void
+  onChange: (mode: Mode) => void
 }
 
 /**

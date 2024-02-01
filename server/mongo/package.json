@@ -34,6 +34,6 @@
     "@hcengineering/core": "^0.6.28",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/server-core": "^0.6.1",
-    "mongodb": "^4.11.0"
+    "mongodb": "^6.3.0"
   }
 }

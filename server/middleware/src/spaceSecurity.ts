@@ -78,7 +78,9 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     next?: Middleware
   ): Promise<SpaceSecurityMiddleware> {
     const res = new SpaceSecurityMiddleware(broadcast, storage, next)
-    await res.init(ctx)
+    await ctx.with('space chain', {}, async (ctx) => {
+      await res.init(ctx)
+    })
     return res
   }
 

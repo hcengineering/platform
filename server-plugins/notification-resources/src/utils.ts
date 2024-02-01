@@ -115,7 +115,7 @@ export async function isShouldNotify (
     isSpace,
     docUpdateMessage?.attributeUpdates?.attrKey
   )
-  console.log({ types })
+
   const personAccount = await getPersonAccountById(user, control)
 
   for (const type of types) {
@@ -126,7 +126,6 @@ export async function isShouldNotify (
         // Also check if we have different account for same user.
         (personAccount?.person !== undefined && personAccount?.person === modifiedAccount?.person))
     ) {
-      console.log('1')
       continue
     }
     if (control.hierarchy.hasMixin(type, serverNotification.mixin.TypeMatch)) {

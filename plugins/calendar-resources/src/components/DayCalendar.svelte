@@ -34,7 +34,8 @@
     getWeekDayName,
     resizeObserver,
     showPopup,
-    ticker
+    ticker,
+    isWeekend
   } from '@hcengineering/ui'
   import { Menu } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
@@ -767,7 +768,7 @@
   <div
     bind:this={container}
     on:dragleave
-    class="calendar-container"
+    class="calendar-container timeline-grid-bg"
     class:clearCells={clearCells || resizeId !== null || dragId !== null}
     class:cursor-row-resize={resizeId !== null && directionResize !== null}
     style:--calendar-ad-height={styleAD + 'px'}
@@ -920,9 +921,11 @@
       {/if}
       {#each [...Array(displayedDaysCount).keys()] as dayOfWeek}
         {@const day = getDay(weekMonday, dayOfWeek)}
+        {@const weekend = isWeekend(day)}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="empty-cell"
+          class:weekend
           style:width={`${colWidth}px`}
           style:grid-column={`col-start ${dayOfWeek + 1} / ${dayOfWeek + 2}`}
           style:grid-row={`row-start ${hourOfDay * 2 + 1} / row-start ${hourOfDay * 2 + 3}`}
@@ -1026,6 +1029,22 @@
 </Scroller>
 
 <style lang="scss">
+  $timeline-bg-color: var(--theme-comp-header-color);
+  $timeline-weekend-stroke-color: var(--theme-calendar-weekend-stroke-color);
+
+  .timeline-grid-bg {
+    background-image: linear-gradient(
+      135deg,
+      $timeline-weekend-stroke-color 10%,
+      $timeline-bg-color 10%,
+      $timeline-bg-color 50%,
+      $timeline-weekend-stroke-color 50%,
+      $timeline-weekend-stroke-color 60%,
+      $timeline-bg-color 60%,
+      $timeline-bg-color 100%
+    );
+    background-size: 7px 7px;
+  }
   .calendar-container {
     will-change: transform;
     position: relative;
@@ -1090,6 +1109,10 @@
   .empty-cell {
     border-left: 1px solid var(--theme-divider-color);
     border-bottom: 1px solid var(--theme-divider-color);
+
+    &:not(.weekend) {
+      background-color: $timeline-bg-color;
+    }
   }
   .time-cell {
     display: inline-flex;
@@ -1097,6 +1120,10 @@
     align-items: center;
     font-size: 0.75rem;
     color: var(--theme-dark-color);
+    background-color: $timeline-bg-color;
+  }
+  .clear-cell {
+    background-color: $timeline-bg-color;
   }
   .calendar-element {
     position: absolute;
@@ -1165,16 +1192,16 @@
   .sticky-header {
     position: sticky;
     background-color: var(--theme-comp-header-color);
-    z-index: 10;
+    z-index: 15;
 
     &:not(.head) {
-      top: 3.5rem;
+      top: calc(3.5rem - 0.5px);
       border-top: 1px solid var(--theme-divider-color);
       border-bottom: 1px solid var(--theme-divider-color);
     }
     &.head,
     &.top {
-      top: 0;
+      top: -0.5px;
     }
     &.zm {
       top: var(--calendar-ad-height, 2.25rem);

@@ -71,6 +71,7 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
     upload: async (domain: Domain, docs: Doc[]) => {},
     clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
     loadModel: async (last: Timestamp) => txes,
-    getAccount: async () => null as unknown as Account
+    getAccount: async () => null as unknown as Account,
+    measure: async () => async () => ({ time: 0, serverTime: 0 })
   }
 }

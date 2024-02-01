@@ -24,17 +24,13 @@
 
   export let message: DisplayDocUpdateMessage
   export let viewlet: DocUpdateMessageViewlet | undefined
-  export let objectName: IntlString
+  export let objectName: IntlString | undefined
   export let collectionName: IntlString | undefined
-  export let objectClass: Ref<Class<Doc>>
   export let collectionAttribute: Attribute<Collection<AttachedDoc>> | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const clazz = hierarchy.getClass(message.objectClass)
-
-  const objectPanel = hierarchy.classHierarchyMixin(objectClass, view.mixin.ObjectPanel)
-  const objectPresenter = hierarchy.classHierarchyMixin(objectClass, view.mixin.ObjectPresenter)
 
   const isOwn = message.objectId === message.attachedTo
 
@@ -59,7 +55,7 @@
   <span class="lower">
     {#if collectionName && (message.previousMessages?.length || !isOwn)}
       <Label label={collectionName} />:
-    {:else}
+    {:else if objectName}
       <Label label={objectName} />:
     {/if}
   </span>
@@ -71,8 +67,6 @@
     {#each createMessages as valueMessage, index}
       <DocUpdateMessageObjectValue
         message={valueMessage}
-        {objectPresenter}
-        {objectPanel}
         {viewlet}
         withIcon={index === 0}
         hasSeparator={createMessages.length > 1 && index !== createMessages.length - 1}
@@ -81,8 +75,6 @@
     {#each removeMessages as valueMessage, index}
       <DocUpdateMessageObjectValue
         message={valueMessage}
-        {objectPresenter}
-        {objectPanel}
         {viewlet}
         withIcon={index === 0}
         hasSeparator={removeMessages.length > 1 && index !== removeMessages.length - 1}
@@ -92,8 +84,6 @@
     {#each valueMessages as valueMessage, index}
       <DocUpdateMessageObjectValue
         message={valueMessage}
-        {objectPresenter}
-        {objectPanel}
         {viewlet}
         hasSeparator={valueMessages.length > 1 && index !== valueMessages.length - 1}
       />

@@ -27,6 +27,7 @@
 
   export let _id: Ref<ActivityMessage>
   export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
+  export let showHeader: boolean = true
 
   const dispatch = createEventDispatcher()
 
@@ -90,19 +91,21 @@
 </script>
 
 <div class="popupPanel panel">
-  <div class="ac-header divide full caption-height" style="padding: 0.5rem 1rem">
-    <Breadcrumbs items={getBreadcrumbsItems(channel, message, channelName)} />
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div
-      class="close"
-      on:click={() => {
-        dispatch('close')
-      }}
-    >
-      <IconClose size="medium" />
+  {#if showHeader}
+    <div class="ac-header divide full caption-height" style="padding: 0.5rem 1rem">
+      <Breadcrumbs items={getBreadcrumbsItems(channel, message, channelName)} />
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div
+        class="close"
+        on:click={() => {
+          dispatch('close')
+        }}
+      >
+        <IconClose size="medium" />
+      </div>
     </div>
-  </div>
+  {/if}
 
   <div class="popupPanel-body">
     <div class="container">

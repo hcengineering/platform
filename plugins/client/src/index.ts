@@ -16,9 +16,6 @@
 import type { AccountClient, ClientConnectEvent } from '@hcengineering/core'
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { Metadata, plugin } from '@hcengineering/platform'
-// import type { LiveQuery } from '@hcengineering/query'
-
-// export type Connection = Client & LiveQuery & TxOperations
 
 /**
  * @public

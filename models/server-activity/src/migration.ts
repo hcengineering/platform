@@ -13,30 +13,31 @@
 // limitations under the License.
 //
 
+import activity, { type DocUpdateMessage } from '@hcengineering/activity'
 import core, {
+  MeasureMetricsContext,
+  SortingOrder,
+  TxFactory,
+  TxProcessor,
+  toFindResult,
+  toIdMap,
   type AttachedDoc,
   type Class,
   type Doc,
   type Ref,
   type TxCUD,
   type TxCollectionCUD,
-  TxProcessor,
-  toIdMap,
-  SortingOrder,
-  TxFactory,
-  toFindResult,
   type TxCreateDoc
 } from '@hcengineering/core'
-import activity, { type DocUpdateMessage } from '@hcengineering/activity'
 import { tryMigrate, type MigrateOperation, type MigrationClient, type MigrationIterator } from '@hcengineering/model'
+import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import {
-  type ActivityControl,
-  type DocObjectCache,
   getAllObjectTransactions,
-  serverActivityId
+  serverActivityId,
+  type ActivityControl,
+  type DocObjectCache
 } from '@hcengineering/server-activity'
 import { generateDocUpdateMessages } from '@hcengineering/server-activity-resources'
-import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 
 function getActivityControl (client: MigrationClient): ActivityControl {
   const txFactory = new TxFactory(core.account.System, false)
@@ -66,7 +67,14 @@ async function generateDocUpdateMessageByTx (
     return
   }
 
-  const createCollectionCUDTxes = await generateDocUpdateMessages(tx, control, undefined, undefined, objectCache)
+  const createCollectionCUDTxes = await generateDocUpdateMessages(
+    new MeasureMetricsContext('migration', {}),
+    tx,
+    control,
+    undefined,
+    undefined,
+    objectCache
+  )
 
   for (const collectionTx of createCollectionCUDTxes) {
     const createTx = collectionTx.tx as TxCreateDoc<DocUpdateMessage>

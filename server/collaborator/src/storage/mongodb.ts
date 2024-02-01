@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { MeasureContext, toWorkspaceString } from '@hcengineering/core'
+import { Doc, MeasureContext, Ref, toWorkspaceString } from '@hcengineering/core'
 import { Transformer } from '@hocuspocus/transformer'
 import { MongoClient } from 'mongodb'
 import { Doc as YDoc } from 'yjs'
@@ -66,10 +66,12 @@ export class MongodbStorageAdapter implements StorageAdapter {
     return await this.ctx.with('load-document', {}, async (ctx) => {
       const doc = await ctx.with('query', {}, async () => {
         const db = this.mongodb.db(toWorkspaceString(context.workspaceId))
-        return await db.collection(objectDomain).findOne({ _id: objectId }, { projection: { [objectAttr]: 1 } })
+        return await db
+          .collection<Doc>(objectDomain)
+          .findOne({ _id: objectId as Ref<Doc> }, { projection: { [objectAttr]: 1 } })
       })
 
-      const content = doc !== null && objectAttr in doc ? (doc[objectAttr] as string) : ''
+      const content = doc !== null && objectAttr in doc ? ((doc as any)[objectAttr] as string) : ''
 
       return await ctx.with('transform', {}, () => {
         return this.transformer.toYdoc(content, objectAttr)

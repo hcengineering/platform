@@ -207,6 +207,10 @@ export function createModel (builder: Builder): void {
     editor: hr.component.EditDepartment
   })
 
+  builder.mixin(hr.class.Department, core.class.Class, view.mixin.ArrayEditor, {
+    inlineEditor: view.component.ArrayEditor
+  })
+
   builder.mixin(hr.class.Request, core.class.Class, view.mixin.ObjectEditor, {
     editor: hr.component.EditRequest
   })

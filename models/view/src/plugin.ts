@@ -40,7 +40,8 @@ export default mergeIds(viewId, view, {
     ShowActions: '' as ViewAction,
     Preview: '' as ViewAction,
 
-    Open: '' as ViewAction
+    Open: '' as ViewAction,
+    OpenInNewTab: '' as ViewAction
   },
   component: {
     StringEditor: '' as AnyComponent,

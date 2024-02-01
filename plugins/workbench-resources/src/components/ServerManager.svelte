@@ -1,6 +1,6 @@
 <script lang="ts">
   import contact, { PersonAccount } from '@hcengineering/contact'
-  import { metricsToRows } from '@hcengineering/core'
+  import { Metrics } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getEmbeddedLabel, getMetadata } from '@hcengineering/platform'
   import presentation, { createQuery } from '@hcengineering/presentation'
@@ -9,10 +9,8 @@
     IconArrowRight,
     Loading,
     Panel,
-    Scroller,
     TabItem,
     TabList,
-    closePopup,
     fetchMetadataLocalStorage,
     ticker
   } from '@hcengineering/ui'
@@ -20,6 +18,7 @@
   import Expandable from '@hcengineering/ui/src/components/Expandable.svelte'
   import { ObjectPresenter } from '@hcengineering/view-resources'
   import { onDestroy } from 'svelte'
+  import MetricsInfo from './statistics/MetricsInfo.svelte'
 
   const _endpoint: string = fetchMetadataLocalStorage(login.metadata.LoginEndpoint) ?? ''
   const token: string = getMetadata(presentation.metadata.Token) ?? ''
@@ -33,12 +32,9 @@
   let admin = false
   onDestroy(
     ticker.subscribe(() => {
-      fetch(endpoint + `/api/v1/statistics?token=${token}`, {}).then(async (json) => {
+      void fetch(endpoint + `/api/v1/statistics?token=${token}`, {}).then(async (json) => {
         data = await json.json()
         admin = data?.admin ?? false
-        if (!admin) {
-          closePopup()
-        }
       })
     })
   )
@@ -86,15 +82,34 @@
     }
     employees = emp
   })
-  const toNum = (value: any) => value as number
-
   let warningTimeout = 15
+
+  $: metricsData = data?.metrics as Metrics | undefined
+
+  $: totalStats = Array.from(Object.entries(activeSessions).values()).reduce(
+    (cur, it) => {
+      const totalFind = it[1].reduce((it, itm) => itm.current.find + it, 0)
+      const totalTx = it[1].reduce((it, itm) => itm.current.tx + it, 0)
+      return {
+        find: cur.find + totalFind,
+        tx: cur.tx + totalTx
+      }
+    },
+    { find: 0, tx: 0 }
+  )
 </script>
 
 <Panel on:close isFullSize useMaxWidth={true}>
   <svelte:fragment slot="header">
     {#if data}
-      Mem: {data.statistics.memoryUsed} / {data.statistics.memoryTotal} CPU: {data.statistics.cpuUsage}
+      <div class="flex-col">
+        <span>
+          Mem: {data.statistics.memoryUsed} / {data.statistics.memoryTotal} CPU: {data.statistics.cpuUsage}
+        </span>
+        <span>
+          TotalFind: {totalStats.find} / Total Tx: {totalStats.tx}
+        </span>
+      </div>
     {/if}
   </svelte:fragment>
   <svelte:fragment slot="title">
@@ -118,7 +133,7 @@
               icon={IconArrowRight}
               label={getEmbeddedLabel('Set maintenance warning')}
               on:click={() => {
-                fetch(endpoint + `/api/v1/manage?token=${token}&operation=maintenance&timeout=${warningTimeout}`, {
+                void fetch(endpoint + `/api/v1/manage?token=${token}&operation=maintenance&timeout=${warningTimeout}`, {
                   method: 'PUT'
                 })
               }}
@@ -136,7 +151,7 @@
               icon={IconArrowRight}
               label={getEmbeddedLabel('Reboot server')}
               on:click={() => {
-                fetch(endpoint + `/api/v1/manage?token=${token}&operation=reboot`, {
+                void fetch(endpoint + `/api/v1/manage?token=${token}&operation=reboot`, {
                   method: 'PUT'
                 })
               }}
@@ -151,92 +166,74 @@
           {@const totalTx = act[1].reduce((it, itm) => itm.current.tx + it, 0)}
           {@const employeeGroups = Array.from(new Set(act[1].map((it) => it.userId)))}
           <span class="flex-col">
-            <div class="fs-title">
-              Workspace: {act[0]}: {act[1].length} current 5 mins => {totalFind}/{totalTx}
-            </div>
-
-            <div class="flex-col">
-              {#each employeeGroups as employeeId}
-                {@const employee = employees.get(employeeId)}
-                {@const connections = act[1].filter((it) => it.userId === employeeId)}
-
-                {@const find = connections.reduce((it, itm) => itm.current.find + it, 0)}
-                {@const txes = connections.reduce((it, itm) => itm.current.tx + it, 0)}
-                <div class="p-1 flex-col">
-                  <Expandable>
-                    <svelte:fragment slot="title">
-                      <div class="flex-row-center p-1">
-                        {#if employee}
-                          <ObjectPresenter
-                            _class={contact.mixin.Employee}
-                            objectId={employee.person}
-                            props={{ shouldShowAvatar: true }}
-                          />
-                        {:else}
-                          {employeeId}
-                        {/if}
-                        : {connections.length}
-                        <div class="ml-4">
-                          <div class="ml-1">{find}/{txes}</div>
-                        </div>
-                      </div>
-                    </svelte:fragment>
-                    {#each connections as user, i}
-                      <div class="flex-row-center ml-10">
-                        #{i}
-                        {user.userId}
-                        <div class="p-1">
-                          Total: {user.total.find}/{user.total.tx}
-                        </div>
-                        <div class="p-1">
-                          Previous 5 mins: {user.mins5.find}/{user.mins5.tx}
-                        </div>
-                        <div class="p-1">
-                          Current 5 mins: {user.current.find}/{user.current.tx}
-                        </div>
-                      </div>
-                      <div class="p-1 flex-col ml-10">
-                        {#each Object.entries(user.data ?? {}) as [k, v]}
-                          <div class="p-1">
-                            {k}: {JSON.stringify(v)}
-                          </div>
-                        {/each}
-                      </div>
-                    {/each}
-                  </Expandable>
+            <Expandable contentColor expanded={false} expandable={true} bordered>
+              <svelte:fragment slot="title">
+                <div class="fs-title">
+                  Workspace: {act[0]}: {act[1].length} current 5 mins => {totalFind}/{totalTx}
                 </div>
-              {/each}
-            </div>
+              </svelte:fragment>
+              <div class="flex-col">
+                {#each employeeGroups as employeeId}
+                  {@const employee = employees.get(employeeId)}
+                  {@const connections = act[1].filter((it) => it.userId === employeeId)}
+
+                  {@const find = connections.reduce((it, itm) => itm.current.find + it, 0)}
+                  {@const txes = connections.reduce((it, itm) => itm.current.tx + it, 0)}
+                  <div class="p-1 flex-col ml-4">
+                    <Expandable>
+                      <svelte:fragment slot="title">
+                        <div class="flex-row-center p-1">
+                          {#if employee}
+                            <ObjectPresenter
+                              _class={contact.mixin.Employee}
+                              objectId={employee.person}
+                              props={{ shouldShowAvatar: true, disabled: true }}
+                            />
+                          {:else}
+                            {employeeId}
+                          {/if}
+                          : {connections.length}
+                          <div class="ml-4">
+                            <div class="ml-1">{find}/{txes}</div>
+                          </div>
+                        </div>
+                      </svelte:fragment>
+                      {#each connections as user, i}
+                        <div class="flex-row-center ml-10">
+                          #{i}
+                          {user.userId}
+                          <div class="p-1">
+                            Total: {user.total.find}/{user.total.tx}
+                          </div>
+                          <div class="p-1">
+                            Previous 5 mins: {user.mins5.find}/{user.mins5.tx}
+                          </div>
+                          <div class="p-1">
+                            Current 5 mins: {user.current.find}/{user.current.tx}
+                          </div>
+                        </div>
+                        <div class="p-1 flex-col ml-10">
+                          {#each Object.entries(user.data ?? {}) as [k, v]}
+                            <div class="p-1">
+                              {k}: {JSON.stringify(v)}
+                            </div>
+                          {/each}
+                        </div>
+                      {/each}
+                    </Expandable>
+                  </div>
+                {/each}
+              </div>
+            </Expandable>
           </span>
         {/each}
       </div>
     {:else if selectedTab === 'statistics'}
-      <Scroller>
-        <table class="antiTable" class:highlightRows={true}>
-          <thead class="scroller-thead">
-            <tr>
-              <th><div class="p-1">Name</div> </th>
-              <th>Average</th>
-              <th>Total</th>
-              <th>Ops</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each metricsToRows(data.metrics, 'System') as row}
-              <tr class="antiTable-body__row">
-                <td>
-                  <span style={`padding-left: ${toNum(row[0]) + 0.5}rem;`}>
-                    {row[1]}
-                  </span>
-                </td>
-                <td>{row[2]}</td>
-                <td>{row[3]}</td>
-                <td>{row[4]}</td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </Scroller>
+      <div class="flex-column p-3 h-full" style:overflow="auto">
+        {#if metricsData !== undefined}
+          <MetricsInfo metrics={metricsData} />
+        {/if}
+      </div>
     {/if}
   {:else}
     <Loading />

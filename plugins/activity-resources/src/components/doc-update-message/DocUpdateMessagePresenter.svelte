@@ -190,14 +190,7 @@
       </ShowMore>
     {:else if value.action === 'create' || value.action === 'remove'}
       <ShowMore>
-        <DocUpdateMessageContent
-          objectClass={value.objectClass}
-          message={value}
-          {viewlet}
-          {objectName}
-          {collectionName}
-          {collectionAttribute}
-        />
+        <DocUpdateMessageContent message={value} {viewlet} {objectName} {collectionName} {collectionAttribute} />
       </ShowMore>
     {:else if value.attributeUpdates && attributeModel}
       <DocUpdateMessageAttributes attributeUpdates={value.attributeUpdates} {attributeModel} {viewlet} />

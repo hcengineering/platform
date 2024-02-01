@@ -566,8 +566,8 @@ export async function fixSkills (
             tag: t._id
           })) as TagReference[]
           const ids = references.map((r) => r._id)
-          await db.collection(DOMAIN_TAGS).deleteMany({ _id: { $in: ids } })
-          await db.collection(DOMAIN_TAGS).deleteOne({ _id: t._id })
+          await db.collection<Doc>(DOMAIN_TAGS).deleteMany({ _id: { $in: ids } })
+          await db.collection<Doc>(DOMAIN_TAGS).deleteOne({ _id: t._id })
         }
       }
       await fixCount()
@@ -588,8 +588,8 @@ export async function fixSkills (
           tag: t._id
         })) as TagReference[]
         const ids = references.map((r) => r._id)
-        await db.collection(DOMAIN_TAGS).deleteMany({ _id: { $in: ids } })
-        await db.collection(DOMAIN_TAGS).deleteOne({ _id: t._id })
+        await db.collection<Doc>(DOMAIN_TAGS).deleteMany({ _id: { $in: ids } })
+        await db.collection<Doc>(DOMAIN_TAGS).deleteOne({ _id: t._id })
       }
       console.log('DONE 6 STEP')
     }
@@ -610,8 +610,8 @@ export async function fixSkills (
             tag: t._id
           })) as TagReference[]
           const ids = references.map((r) => r._id)
-          await db.collection(DOMAIN_TAGS).deleteMany({ _id: { $in: ids } })
-          await db.collection(DOMAIN_TAGS).deleteOne({ _id: t._id })
+          await db.collection<Doc>(DOMAIN_TAGS).deleteMany({ _id: { $in: ids } })
+          await db.collection<Doc>(DOMAIN_TAGS).deleteOne({ _id: t._id })
         }
       }
       await fixCount()

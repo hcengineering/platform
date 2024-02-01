@@ -59,6 +59,8 @@ export interface Session {
   total: StatisticsElement
   current: StatisticsElement
   mins5: StatisticsElement
+
+  measureCtx?: { ctx: MeasureContext, time: number }
 }
 
 /**
@@ -107,6 +109,7 @@ export function disableLogging (): void {
  * @public
  */
 export interface Workspace {
+  context: MeasureContext
   id: string
   pipeline: Promise<Pipeline>
   sessions: Map<string, { session: Session, socket: ConnectionSocket }>
@@ -130,25 +133,13 @@ export interface SessionManager {
     pipelineFactory: PipelineFactory,
     productId: string,
     sessionId?: string
-  ) => Promise<Session>
+  ) => Promise<{ session: Session, context: MeasureContext } | { upgrade: true }>
 
   broadcastAll: (workspace: Workspace, tx: Tx[], targets?: string[]) => void
 
-  close: (
-    ctx: MeasureContext,
-    ws: ConnectionSocket,
-    workspaceId: WorkspaceId,
-    code: number,
-    reason: string
-  ) => Promise<void>
+  close: (ws: ConnectionSocket, workspaceId: WorkspaceId, code: number, reason: string) => Promise<void>
 
-  closeAll: (
-    ctx: MeasureContext,
-    wsId: string,
-    workspace: Workspace,
-    code: number,
-    reason: 'upgrade' | 'shutdown'
-  ) => Promise<void>
+  closeAll: (wsId: string, workspace: Workspace, code: number, reason: 'upgrade' | 'shutdown') => Promise<void>
 
   closeWorkspaces: (ctx: MeasureContext) => Promise<void>
 

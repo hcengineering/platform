@@ -21,6 +21,7 @@
     "Archive": "Archive",
     "ArchiveConfirm": "Do you want to archive this {count, plural, =1 {object} other {# objects}}?",
     "Open": "Open",
+    "OpenInNewTab": "Open in new tab",
     "Assignees": "Assignees",
     "Labels": "Labels",
     "MoveLeft": "Move left",

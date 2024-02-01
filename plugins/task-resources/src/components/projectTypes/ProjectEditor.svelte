@@ -53,7 +53,7 @@
   import { ContextMenu } from '@hcengineering/view-resources'
   import plugin from '../../plugin'
   import setting from '@hcengineering/setting'
-  import { ClassAttributes, clearSettingsStore } from '@hcengineering/setting-resources'
+  import { ClassAttributes, clearSettingsStore, settingsStore } from '@hcengineering/setting-resources'
   import CreateTaskType from '../taskTypes/CreateTaskType.svelte'
   import TaskTypeEditor from '../taskTypes/TaskTypeEditor.svelte'
   import TaskTypeIcon from '../taskTypes/TaskTypeIcon.svelte'
@@ -161,9 +161,11 @@
         ]
       : [{ label: plugin.string.ProjectType, icon: descriptor?.icon }]
 
+  let scroller: Scroller
   const navigator: {
     id: string
     label: IntlString
+    element?: HTMLElement
   }[] = [
     { id: 'properties', label: setting.string.Properties },
     { id: 'tasktypes', label: setting.string.TaskTypes },
@@ -228,14 +230,21 @@
             <ButtonIcon kind={'tertiary'} icon={IconDescription} size={'small'} inheritColor />
           </div>
         </div>
-        {#each navigator as navItem (navItem.id)}
-          <NavItem type={'type-anchor-link'} label={navItem.label} />
+        {#each navigator as navItem, i (navItem.id)}
+          <NavItem
+            type={'type-anchor-link'}
+            label={navItem.label}
+            on:click={() => {
+              if (i === 0) scroller.scroll(0)
+              else navItem.element?.scrollIntoView()
+            }}
+          />
         {/each}
       </div>
       <Separator name={'typeSettings'} index={0} color={'transparent'} />
     {/if}
     <div class="hulyComponent-content__column content">
-      <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
+      <Scroller bind:this={scroller} align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
         <div class="hulyComponent-content gap">
           {#if selectedTaskType === undefined}
             <div class="hulyComponent-content__column-group">
@@ -278,7 +287,7 @@
 
             <ClassAttributes ofClass={descriptor.baseClass} _class={type.targetClass} showHierarchy />
 
-            <div class="hulyTableAttr-container">
+            <div bind:this={navigator[1].element} class="hulyTableAttr-container">
               <div class="hulyTableAttr-header font-medium-12">
                 <IconLayers size={'small'} />
                 <span><Label label={setting.string.TaskTypes} /></span>
@@ -287,7 +296,8 @@
                   icon={IconAdd}
                   size={'small'}
                   on:click={(ev) => {
-                    showPopup(CreateTaskType, { type, descriptor }, 'top')
+                    $settingsStore = { id: 'createTaskType', component: CreateTaskType, props: { type, descriptor } }
+                    // showPopup(CreateTaskType, { type, descriptor }, 'top')
                   }}
                 />
               </div>
@@ -317,9 +327,11 @@
               {/if}
             </div>
 
-            <ComponentExtensions extension={task.extensions.ProjectEditorExtension} props={{ type }} />
+            <div bind:this={navigator[2].element} class="flex-col">
+              <ComponentExtensions extension={task.extensions.ProjectEditorExtension} props={{ type }} />
+            </div>
 
-            <div class="hulyTableAttr-container">
+            <div bind:this={navigator[3].element} class="hulyTableAttr-container">
               <div class="hulyTableAttr-header font-medium-12">
                 <IconFolder size={'small'} />
                 <span><Label label={setting.string.Collections} /></span>

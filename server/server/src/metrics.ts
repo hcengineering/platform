@@ -4,6 +4,7 @@ import { writeFile } from 'fs/promises'
 
 const apmUrl = process.env.APM_SERVER_URL
 const metricsFile = process.env.METRICS_FILE
+// const logsRoot = process.env.LOGS_ROOT
 const metricsConsole = (process.env.METRICS_CONSOLE ?? 'false') === 'true'
 
 const METRICS_UPDATE_INTERVAL = !metricsConsole ? 1000 : 60000

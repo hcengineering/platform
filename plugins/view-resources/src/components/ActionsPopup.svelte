@@ -157,7 +157,9 @@
 
   async function handleSelection (evt: Event, selection: number): Promise<void> {
     const item = items[selection]
-
+    if (item == null) {
+      return
+    }
     if (item.item !== undefined) {
       const doc = item.item.doc
       void client.findOne(doc._class, { _id: doc._id }).then((value) => {

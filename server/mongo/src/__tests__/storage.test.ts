@@ -160,8 +160,8 @@ describe('mongo operations', () => {
       workspace: getWorkspaceId(dbId, ''),
       storageFactory: () => createNullStorageFactory()
     }
-    const serverStorage = await createServerStorage(conf, { upgrade: false })
     const ctx = new MeasureMetricsContext('client', {})
+    const serverStorage = await createServerStorage(ctx, conf, { upgrade: false })
     client = await createClient(async (handler) => {
       const st: ClientConnection = {
         findAll: async (_class, query, options) => await serverStorage.findAll(ctx, _class, query, options),
@@ -174,7 +174,8 @@ describe('mongo operations', () => {
         upload: async (domain: Domain, docs: Doc[]) => {},
         clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
         loadModel: async () => txes,
-        getAccount: async () => ({}) as any
+        getAccount: async () => ({}) as any,
+        measure: async () => async () => ({ time: 0, serverTime: 0 })
       }
       return st
     })

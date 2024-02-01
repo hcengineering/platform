@@ -56,6 +56,7 @@ export class ClientSession implements Session {
   total: StatisticsElement = { find: 0, tx: 0 }
   current: StatisticsElement = { find: 0, tx: 0 }
   mins5: StatisticsElement = { find: 0, tx: 0 }
+  measures: { id: string, message: string, time: 0 }[] = []
 
   constructor (
     protected readonly broadcast: BroadcastCall,

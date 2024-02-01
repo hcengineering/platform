@@ -135,7 +135,7 @@ export async function initModel (
     const result = await db.collection(DOMAIN_TX).insertMany(model as Document[])
     logger.log(`${result.insertedCount} model transactions inserted.`)
 
-    logger.log('creating data...')
+    logger.log('creating data...', transactorUrl)
     const connection = (await connect(transactorUrl, workspaceId, undefined, {
       model: 'upgrade'
     })) as unknown as CoreClient & BackupClient
@@ -275,13 +275,22 @@ async function createUpdateIndexes (connection: CoreClient, db: Db, logger: Mode
   }
 
   for (const [d, v] of domains.entries()) {
+    const collInfo = await db.listCollections({ name: d }).next()
+    if (collInfo === null) {
+      await db.createCollection(d)
+    }
     const collection = db.collection(d)
     const bb: (string | FieldIndex<Doc>)[] = []
     for (const vv of v.values()) {
       try {
-        await collection.createIndex(vv)
+        const key = typeof vv === 'string' ? vv : Object.keys(vv)[0]
+        const name = typeof vv === 'string' ? `${key}_1` : `${key}_${vv[key]}`
+        const exists = await collection.indexExists(name)
+        if (!exists) {
+          await collection.createIndex(vv)
+        }
       } catch (err: any) {
-        logger.log('error', JSON.stringify(err))
+        logger.log('error: failed to create index', d, vv, JSON.stringify(err))
       }
       bb.push(vv)
     }

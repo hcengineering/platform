@@ -18,6 +18,7 @@ import core, {
   DOMAIN_TX,
   SortingOrder,
   TxProcessor,
+  cutObjectArray,
   escapeLikeForRegexp,
   getTypeOf,
   isOperator,
@@ -57,8 +58,8 @@ import core, {
   type WorkspaceId
 } from '@hcengineering/core'
 import type { DbAdapter, TxAdapter } from '@hcengineering/server-core'
-import serverCore from '@hcengineering/server-core'
 import {
+  type AbstractCursor,
   type AnyBulkWriteOperation,
   type Collection,
   type Db,
@@ -70,8 +71,6 @@ import {
 } from 'mongodb'
 import { createHash } from 'node:crypto'
 import { getMongoClient, getWorkspaceDB } from './utils'
-import { cutObjectArray } from '@hcengineering/core'
-import { getMetadata } from '@hcengineering/platform'
 
 function translateDoc (doc: Doc): Document {
   return { ...doc, '%hash%': null }
@@ -111,12 +110,21 @@ abstract class MongoAdapterBase implements DbAdapter {
 
   async init (): Promise<void> {}
 
+  async toArray<T>(cursor: AbstractCursor<T>): Promise<T[]> {
+    const data: T[] = []
+    for await (const r of cursor.stream()) {
+      data.push(r)
+    }
+    await cursor.close()
+    return data
+  }
+
   async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {
     for (const vv of config.indexes) {
       try {
         await this.db.collection(domain).createIndex(vv)
       } catch (err: any) {
-        console.error(err)
+        console.error('failed to create index', domain, vv, err)
       }
     }
   }
@@ -451,16 +459,18 @@ abstract class MongoAdapterBase implements DbAdapter {
       checkKeys: false,
       enableUtf8Validation: false
     })
-    cursor.maxTimeMS(parseInt(getMetadata(serverCore.metadata.CursorMaxTimeMS) ?? '30000'))
-    let res: Document = []
+    const result: WithLookup<T>[] = []
+    let total = options?.total === true ? 0 : -1
     try {
-      res = (await cursor.toArray())[0]
+      const rres = await this.toArray(cursor)
+      for (const r of rres) {
+        result.push(...r.results)
+        total = options?.total === true ? r.totalCount?.shift()?.count ?? 0 : -1
+      }
     } catch (e) {
       console.error('error during executing cursor in findWithPipeline', clazz, cutObjectArray(query), options, e)
       throw e
     }
-    const result = res.results as WithLookup<T>[]
-    const total = options?.total === true ? res.totalCount?.shift()?.count ?? 0 : -1
     for (const row of result) {
       await this.fillLookupValue(clazz, options?.lookup, row)
       this.clearExtraLookups(row)
@@ -596,11 +606,8 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
 
     // Error in case of timeout
-    cursor.maxTimeMS(parseInt(getMetadata(serverCore.metadata.CursorMaxTimeMS) ?? '30000'))
-    cursor.maxAwaitTimeMS(30000)
-    let res: T[] = []
     try {
-      res = await cursor.toArray()
+      const res: T[] = await this.toArray(cursor)
       if (options?.total === true && options?.limit === undefined) {
         total = res.length
       }
@@ -712,14 +719,9 @@ abstract class MongoAdapterBase implements DbAdapter {
   }
 
   async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
-    return this.stripHash(
-      this.stripHash(
-        await this.db
-          .collection(domain)
-          .find<Doc>({ _id: { $in: docs } })
-          .toArray()
-      )
-    )
+    const cursor = this.db.collection<Doc>(domain).find<Doc>({ _id: { $in: docs } })
+    const result = await this.toArray(cursor)
+    return this.stripHash(this.stripHash(result))
   }
 
   async upload (domain: Domain, docs: Doc[]): Promise<void> {
@@ -783,7 +785,7 @@ abstract class MongoAdapterBase implements DbAdapter {
   }
 
   async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {
-    await this.db.collection(domain).deleteMany({ _id: { $in: docs } })
+    await this.db.collection<Doc>(domain).deleteMany({ _id: { $in: docs } })
   }
 }
 
@@ -1087,7 +1089,7 @@ class MongoAdapter extends MongoAdapterBase {
                   '%hash%': null
                 }
               } as unknown as UpdateFilter<Document>,
-              { returnDocument: 'after' }
+              { returnDocument: 'after', includeResultMetadata: true }
             )
             return { object: result.value }
           }
@@ -1128,7 +1130,7 @@ class MongoAdapter extends MongoAdapterBase {
           ? async (): Promise<TxResult> => {
             const result = await this.db
               .collection(domain)
-              .findOneAndUpdate(filter, update, { returnDocument: 'after' })
+              .findOneAndUpdate(filter, update, { returnDocument: 'after', includeResultMetadata: true })
             return { object: result.value }
           }
           : async () => await this.db.collection(domain).updateOne(filter, update)
@@ -1163,11 +1165,11 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
   }
 
   async getModel (): Promise<Tx[]> {
-    const model = await this.db
+    const cursor = this.db
       .collection(DOMAIN_TX)
       .find<Tx>({ objectSpace: core.space.Model })
       .sort({ _id: 1, modifiedOn: 1 })
-      .toArray()
+    const model = await this.toArray(cursor)
     // We need to put all core.account.System transactions first
     const systemTx: Tx[] = []
     const userTx: Tx[] = []

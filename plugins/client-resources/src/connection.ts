@@ -38,7 +38,8 @@ import core, {
   generateId,
   SearchQuery,
   SearchOptions,
-  SearchResult
+  SearchResult,
+  MeasureDoneOperation
 } from '@hcengineering/core'
 import { PlatformError, UNAUTHORIZED, broadcastEvent, getMetadata, unknownError } from '@hcengineering/platform'
 
@@ -374,6 +375,27 @@ class Connection implements ClientConnection {
     await sendData()
     void broadcastEvent(client.event.NetworkRequests, this.requests.size)
     return await promise.promise
+  }
+
+  async measure (operationName: string): Promise<MeasureDoneOperation> {
+    const dateNow = Date.now()
+
+    // Send measure-start
+    const mid = await this.sendRequest({
+      method: 'measure',
+      params: [operationName]
+    })
+    return async () => {
+      const serverTime: number = await this.sendRequest({
+        method: 'measure-done',
+        params: [operationName, mid]
+      })
+
+      return {
+        time: Date.now() - dateNow,
+        serverTime
+      }
+    }
   }
 
   async loadModel (last: Timestamp, hash?: string): Promise<Tx[] | LoadModelResponse> {

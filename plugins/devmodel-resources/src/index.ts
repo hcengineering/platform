@@ -30,7 +30,8 @@ import core, {
   type WithLookup,
   type SearchQuery,
   type SearchOptions,
-  type SearchResult
+  type SearchResult,
+  type MeasureDoneOperation
 } from '@hcengineering/core'
 import { devModelId } from '@hcengineering/devmodel'
 import { Builder } from '@hcengineering/model'
@@ -66,6 +67,10 @@ class ModelClient implements AccountClient {
         console.debug('devmodel# notify=>', tx, this.client.getModel(), getMetadata(devmodel.metadata.DevModel))
       }
     }
+  }
+
+  async measure (operationName: string): Promise<MeasureDoneOperation> {
+    return await this.client.measure(operationName)
   }
 
   notify?: (tx: Tx) => void

@@ -18,6 +18,7 @@ import { type Resources } from '@hcengineering/platform'
 import { getEventPopupPositionElement, type PopupAlignment } from '@hcengineering/ui'
 import { actionImpl } from './actionImpl'
 import ActionsPopup from './components/ActionsPopup.svelte'
+import ArrayEditor from './components/ArrayEditor.svelte'
 import BooleanEditor from './components/BooleanEditor.svelte'
 import BooleanPresenter from './components/BooleanPresenter.svelte'
 import BooleanTruePresenter from './components/BooleanTruePresenter.svelte'
@@ -203,6 +204,7 @@ export default async (): Promise<Resources> => ({
   actionImpl,
   component: {
     ArrayFilter,
+    ArrayEditor,
     ClassPresenter,
     ClassRefPresenter,
     ObjectFilter,

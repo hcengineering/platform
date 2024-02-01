@@ -87,7 +87,12 @@
     bind:isNewestFirst
   />
 </div>
-<div class="p-activity select-text" id={activity.string.Activity}>
+{#if isNewestFirst && showCommenInput}
+  <div class="ref-input newest-first">
+    <ActivityExtensionComponent kind="input" {extensions} props={{ object, boundary, focusIndex }} />
+  </div>
+{/if}
+<div class="p-activity select-text" id={activity.string.Activity} class:newest-first={isNewestFirst}>
   {#if filteredMessages.length}
     <Grid column={1} rowGap={0}>
       {#each filteredMessages as message}
@@ -104,8 +109,8 @@
     </Grid>
   {/if}
 </div>
-{#if showCommenInput}
-  <div class="ref-input">
+{#if showCommenInput && !isNewestFirst}
+  <div class="ref-input oldest-first">
     <ActivityExtensionComponent kind="input" {extensions} props={{ object, boundary, focusIndex }} />
   </div>
 {/if}
@@ -113,12 +118,22 @@
 <style lang="scss">
   .ref-input {
     flex-shrink: 0;
-    margin-top: 1.75rem;
-    padding-bottom: 2.5rem;
+    &.newest-first {
+      margin-bottom: 1rem;
+      padding-top: 1rem;
+    }
+    &.oldest-first {
+      padding-bottom: 2.5rem;
+    }
   }
 
   .p-activity {
-    margin-top: 1.75rem;
+    &.newest-first {
+      padding-bottom: 1.75rem;
+    }
+    &:not(.newest-first) {
+      margin: 1.75rem 0;
+    }
   }
 
   .invisible {

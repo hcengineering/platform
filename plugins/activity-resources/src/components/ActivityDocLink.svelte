@@ -29,7 +29,7 @@
 {/if}
 <span class="text-sm" {title}>
   <DocNavLink {object} component={panelComponent} shrink={0}>
-    <span class="overflow-label select-text">{title}</span>
+    <span class="overflow-label select-text" class:withoutMargin={!preposition}>{title}</span>
   </DocNavLink>
 </span>
 
@@ -38,5 +38,9 @@
     margin-left: 0.25rem;
     font-weight: 400;
     line-height: 1.25rem;
+
+    &.withoutMargin {
+      margin: 0;
+    }
   }
 </style>

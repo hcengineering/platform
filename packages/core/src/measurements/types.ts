@@ -31,7 +31,7 @@ export interface MeasureLogger {
  */
 export interface MeasureContext {
   // Create a child metrics context
-  newChild: (name: string, params: Record<string, ParamType>) => MeasureContext
+  newChild: (name: string, params: Record<string, ParamType>, logger?: MeasureLogger) => MeasureContext
 
   with: <T>(name: string, params: Record<string, ParamType>, op: (ctx: MeasureContext) => T | Promise<T>) => Promise<T>
 
@@ -40,7 +40,8 @@ export interface MeasureContext {
   measure: (name: string, value: number) => void
 
   // Capture error
-  error: (err: Error | string | any) => Promise<void>
+  error: (message: string, ...args: any[]) => Promise<void>
+  info: (message: string, ...args: any[]) => Promise<void>
 
   // Mark current context as complete
   // If no value is passed, time difference will be used.
