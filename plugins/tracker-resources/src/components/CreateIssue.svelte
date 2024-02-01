@@ -153,13 +153,16 @@
   }
 
   function getDefaultObject (id: Ref<Issue> | undefined = undefined, ignoreOriginal = false): IssueDraft {
+    const currentComponent =
+      parentIssue?.component !== undefined ? parentIssue?.component : component ?? $activeComponent ?? null
+
     const base: IssueDraft = {
       _id: id ?? generateId(),
       title: '',
       description: '',
       priority: priority ?? IssuePriority.NoPriority,
       space: _space as Ref<Project>,
-      component: component ?? $activeComponent ?? null,
+      component: currentComponent,
       dueDate: null,
       attachments: 0,
       estimation: 0,
@@ -210,7 +213,10 @@
     status: status ?? currentProject?.defaultIssueStatus,
     parentIssue: parentIssue?._id,
     description: '<p></p>',
-    component: component ?? $activeComponent ?? currentProject?.defaultComponent ?? null,
+    component:
+      parentIssue?.component !== undefined
+        ? parentIssue?.component
+        : component ?? $activeComponent ?? currentProject?.defaultComponent ?? null,
     milestone: milestone ?? $activeMilestone ?? null,
     priority: priority ?? IssuePriority.NoPriority,
     space: _space
@@ -330,7 +336,12 @@
   }
 
   function updateComponentId (object: IssueDraft, currentProject: Project | undefined): void {
-    if (!isComponentModified && object.component == null && currentProject !== undefined) {
+    if (
+      !isComponentModified &&
+      object.component === null &&
+      parentIssue?.component !== null &&
+      currentProject !== undefined
+    ) {
       if (currentProject.defaultComponent !== undefined) {
         object.component = currentProject.defaultComponent
       } else {
