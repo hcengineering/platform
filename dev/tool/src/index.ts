@@ -211,7 +211,17 @@ export function devTool (
     .action(async (workspace, cmd) => {
       const { mongodbUri, txes, version, migrateOperations } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
-        await createWorkspace(version, txes, migrateOperations, db, productId, cmd.email, cmd.workspaceName, workspace)
+        const { client } = await createWorkspace(
+          version,
+          txes,
+          migrateOperations,
+          db,
+          productId,
+          cmd.email,
+          cmd.workspaceName,
+          workspace
+        )
+        await client?.close()
       })
     })
 

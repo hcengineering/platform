@@ -15,6 +15,8 @@
 //
 
 import account, { ACCOUNT_DB, AccountMethod, accountId } from '@hcengineering/account'
+import accountEn from '@hcengineering/account/lang/en.json'
+import accountRu from '@hcengineering/account/lang/ru.json'
 import platform, { Severity, Status, addStringsLoader, setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
 import toolPlugin from '@hcengineering/server-tool'
@@ -24,8 +26,6 @@ import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
 import { MongoClient } from 'mongodb'
-import accountEn from '@hcengineering/account/lang/en.json'
-import accountRu from '@hcengineering/account/lang/ru.json'
 
 /**
  * @public
@@ -127,8 +127,8 @@ export function serveAccount (methods: Record<string, AccountMethod>, productId 
   })
 
   const close = (): void => {
+    void client.close()
     server.close()
-    process.exit(0)
   }
 
   process.on('uncaughtException', (e) => {

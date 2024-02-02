@@ -116,13 +116,14 @@ export async function initModel (
   rawTxes: Tx[],
   migrateOperations: [string, MigrateOperation][],
   logger: ModelLogger = consoleModelLogger
-): Promise<void> {
+): Promise<CoreClient & BackupClient> {
   const { mongodbUri, minio, txes } = prepareTools(rawTxes)
   if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
     throw Error('Model txes must target only core.space.Model')
   }
 
   const client = new MongoClient(mongodbUri)
+  let connection: CoreClient & BackupClient
   try {
     await client.connect()
     const db = getWorkspaceDB(client, workspaceId)
@@ -136,30 +137,30 @@ export async function initModel (
     logger.log(`${result.insertedCount} model transactions inserted.`)
 
     logger.log('creating data...', transactorUrl)
-    const connection = (await connect(transactorUrl, workspaceId, undefined, {
+    connection = (await connect(transactorUrl, workspaceId, undefined, {
       model: 'upgrade'
     })) as unknown as CoreClient & BackupClient
+
     try {
       for (const op of migrateOperations) {
         logger.log('Migrage', op[0])
         await op[1].upgrade(connection, logger)
       }
+
+      // Create update indexes
+      await createUpdateIndexes(connection, db, logger)
+
+      logger.log('create minio bucket')
+      if (!(await minio.exists(workspaceId))) {
+        await minio.make(workspaceId)
+      }
     } catch (e) {
       logger.log(e)
-    } finally {
-      await connection.close()
-    }
-
-    // Create update indexes
-    await createUpdateIndexes(connection, db, logger)
-
-    logger.log('create minio bucket')
-    if (!(await minio.exists(workspaceId))) {
-      await minio.make(workspaceId)
     }
   } finally {
     await client.close()
   }
+  return connection
 }
 
 /**
