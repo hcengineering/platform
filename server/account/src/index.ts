@@ -25,6 +25,8 @@ import contact, {
 } from '@hcengineering/contact'
 import core, {
   AccountRole,
+  BackupClient,
+  Client,
   concatLink,
   Data,
   generateId,
@@ -45,7 +47,7 @@ import toolPlugin, { connect, initModel, upgradeModel } from '@hcengineering/ser
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { Binary, Db, Filter, ObjectId } from 'mongodb'
 import fetch from 'node-fetch'
-import accountPlugin, { accountId } from './plugin'
+import accountPlugin from './plugin'
 
 const WORKSPACE_COLLECTION = 'workspace'
 const ACCOUNT_COLLECTION = 'account'
@@ -389,10 +391,10 @@ export async function confirmEmail (db: Db, _email: string): Promise<Account> {
   console.log(`confirm email:${email}`)
 
   if (account === null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: accountId }))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: _email }))
   }
   if (account.confirmed === true) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyConfirmed, { account: accountId }))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyConfirmed, { account: _email }))
   }
 
   await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { confirmed: true } })
@@ -407,7 +409,7 @@ export async function confirm (db: Db, productId: string, token: string): Promis
   const decode = decodeToken(token)
   const _email = decode.extra?.confirm
   if (_email === undefined) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: accountId }))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: _email }))
   }
   const email = cleanEmail(_email)
   const account = await confirmEmail(db, email)
@@ -692,7 +694,7 @@ export async function createWorkspace (
   email: string,
   workspaceName: string,
   workspace?: string
-): Promise<{ workspaceInfo: Workspace, err?: any }> {
+): Promise<{ workspaceInfo: Workspace, err?: any, client?: Client & BackupClient }> {
   // We need to search for duplicate workspaceUrl
   await searchPromise
 
@@ -700,12 +702,14 @@ export async function createWorkspace (
   searchPromise = generateWorkspaceRecord(db, email, productId, version, workspaceName, workspace)
 
   const workspaceInfo = await searchPromise
+  let client: Client & BackupClient
   try {
     const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
     const wsId = getWorkspaceId(workspaceInfo.workspace, productId)
     if (initWS !== undefined) {
       if ((await getWorkspaceById(db, productId, initWS)) !== null) {
-        await initModel(getTransactor(), wsId, txes, [])
+        client = await initModel(getTransactor(), wsId, txes, [])
+        await client.close()
         await cloneWorkspace(
           getTransactor(),
           getWorkspaceId(initWS, productId),
@@ -714,11 +718,11 @@ export async function createWorkspace (
         await upgradeModel(getTransactor(), wsId, txes, migrationOperation)
       }
     }
-    await initModel(getTransactor(), wsId, txes, migrationOperation)
+    client = await initModel(getTransactor(), wsId, txes, migrationOperation)
   } catch (err: any) {
-    return { workspaceInfo, err }
+    return { workspaceInfo, err, client: {} as any }
   }
-  return { workspaceInfo }
+  return { workspaceInfo, client }
 }
 
 /**
@@ -793,7 +797,7 @@ export const createUserWorkspace =
         }
       }
 
-      const { workspaceInfo, err } = await createWorkspace(
+      const { workspaceInfo, err, client } = await createWorkspace(
         version,
         txes,
         migrationOperation,
@@ -815,15 +819,19 @@ export const createUserWorkspace =
         )
         throw err
       }
-      info.lastWorkspace = Date.now()
+      try {
+        info.lastWorkspace = Date.now()
 
-      // Update last workspace time.
-      await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: info._id }, { $set: { lastWorkspace: Date.now() } })
+        // Update last workspace time.
+        await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: info._id }, { $set: { lastWorkspace: Date.now() } })
 
-      const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
-      const shouldUpdateAccount = initWS !== undefined && (await getWorkspaceById(db, productId, initWS)) !== null
-      await assignWorkspace(db, productId, email, workspaceInfo.workspace, shouldUpdateAccount)
-      await setRole(email, workspaceInfo.workspace, productId, AccountRole.Owner)
+        const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
+        const shouldUpdateAccount = initWS !== undefined && (await getWorkspaceById(db, productId, initWS)) !== null
+        await assignWorkspace(db, productId, email, workspaceInfo.workspace, shouldUpdateAccount, client)
+        await setRole(email, workspaceInfo.workspace, productId, AccountRole.Owner, client)
+      } finally {
+        await client?.close()
+      }
       const result = {
         endpoint: getEndpoint(),
         email,
@@ -924,27 +932,31 @@ async function getWorkspaceAndAccount (
   productId: string,
   _email: string,
   workspaceUrl: string
-): Promise<{ accountId: ObjectId, workspaceId: ObjectId }> {
+): Promise<{ account: Account, workspace: Workspace }> {
   const email = cleanEmail(_email)
   const wsPromise = await getWorkspaceById(db, productId, workspaceUrl)
   if (wsPromise === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceUrl }))
   }
-  const workspaceId = wsPromise._id
   const account = await getAccount(db, email)
   if (account === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
-  const accountId = account._id
-  return { accountId, workspaceId }
+  return { account, workspace: wsPromise }
 }
 
 /**
  * @public
  */
-export async function setRole (_email: string, workspace: string, productId: string, role: AccountRole): Promise<void> {
+export async function setRole (
+  _email: string,
+  workspace: string,
+  productId: string,
+  role: AccountRole,
+  client?: Client & BackupClient
+): Promise<void> {
   const email = cleanEmail(_email)
-  const connection = await connect(getTransactor(), getWorkspaceId(workspace, productId))
+  const connection = client ?? (await connect(getTransactor(), getWorkspaceId(workspace, productId)))
   try {
     const ops = new TxOperations(connection, core.account.System)
 
@@ -957,7 +969,9 @@ export async function setRole (_email: string, workspace: string, productId: str
       })
     }
   } finally {
-    await connection.close()
+    if (client === undefined) {
+      await connection.close()
+    }
   }
 }
 
@@ -969,7 +983,8 @@ export async function assignWorkspace (
   productId: string,
   _email: string,
   workspaceId: string,
-  shouldReplaceAccount: boolean = false
+  shouldReplaceAccount: boolean = false,
+  client?: Client & BackupClient
 ): Promise<void> {
   const email = cleanEmail(_email)
   const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
@@ -977,21 +992,20 @@ export async function assignWorkspace (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
   const workspaceInfo = await getWorkspaceAndAccount(db, productId, email, workspaceId)
-  const account = await db.collection<Account>(ACCOUNT_COLLECTION).findOne({ _id: accountId })
 
-  if (account !== null) {
-    await createPersonAccount(account, productId, workspaceId, shouldReplaceAccount)
+  if (workspaceInfo.account !== null) {
+    await createPersonAccount(workspaceInfo.account, productId, workspaceId, shouldReplaceAccount, client)
   }
 
   // Add account into workspace.
   await db
     .collection(WORKSPACE_COLLECTION)
-    .updateOne({ _id: workspaceInfo.workspaceId }, { $addToSet: { accounts: workspaceInfo.accountId } })
+    .updateOne({ _id: workspaceInfo.workspace._id }, { $addToSet: { accounts: workspaceInfo.account._id } })
 
   // Add workspace to account
   await db
     .collection(ACCOUNT_COLLECTION)
-    .updateOne({ _id: workspaceInfo.accountId }, { $addToSet: { workspaces: workspaceInfo.workspaceId } })
+    .updateOne({ _id: workspaceInfo.account._id }, { $addToSet: { workspaces: workspaceInfo.workspace._id } })
 }
 
 async function createEmployee (ops: TxOperations, name: string, _email: string): Promise<Ref<Person>> {
@@ -1073,9 +1087,10 @@ async function createPersonAccount (
   account: Account,
   productId: string,
   workspace: string,
-  shouldReplaceCurrent: boolean = false
+  shouldReplaceCurrent: boolean = false,
+  client?: Client & BackupClient
 ): Promise<void> {
-  const connection = await connect(getTransactor(), getWorkspaceId(workspace, productId))
+  const connection = client ?? (await connect(getTransactor(), getWorkspaceId(workspace, productId)))
   try {
     const ops = new TxOperations(connection, core.account.System)
 
@@ -1113,7 +1128,9 @@ async function createPersonAccount (
       }
     }
   } finally {
-    await connection.close()
+    if (client === undefined) {
+      await connection.close()
+    }
   }
 }
 
@@ -1207,12 +1224,12 @@ export async function restorePassword (db: Db, productId: string, token: string,
   const decode = decodeToken(token)
   const email = decode.extra?.restore
   if (email === undefined) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: accountId }))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
   const account = await getAccount(db, email)
 
   if (account === null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: accountId }))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
   const salt = randomBytes(32)
   const hash = hashWithSalt(password, salt)
@@ -1225,14 +1242,14 @@ export async function restorePassword (db: Db, productId: string, token: string,
 /**
  * @public
  */
-export async function removeWorkspace (db: Db, productId: string, email: string, workspace: string): Promise<void> {
-  const { workspaceId, accountId } = await getWorkspaceAndAccount(db, productId, email, workspace)
+export async function removeWorkspace (db: Db, productId: string, email: string, workspaceId: string): Promise<void> {
+  const { workspace, account } = await getWorkspaceAndAccount(db, productId, email, workspaceId)
 
   // Add account into workspace.
-  await db.collection(WORKSPACE_COLLECTION).updateOne({ _id: workspaceId }, { $pull: { accounts: accountId } })
+  await db.collection(WORKSPACE_COLLECTION).updateOne({ _id: workspace._id }, { $pull: { accounts: account._id } })
 
   // Add account a workspace
-  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: accountId }, { $pull: { workspaces: workspaceId } })
+  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $pull: { workspaces: workspace._id } })
 }
 
 /**
