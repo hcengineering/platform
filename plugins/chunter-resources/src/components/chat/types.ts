@@ -12,22 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type Asset, type IntlString } from '@hcengineering/platform'
+import { type IntlString } from '@hcengineering/platform'
 import { type DocumentQuery } from '@hcengineering/core'
 import { type DocNotifyContext } from '@hcengineering/notification'
-import { type ViewAction } from '@hcengineering/view'
 import { type AnyComponent } from '@hcengineering/ui'
 
+export type Mode = 'channels' | 'direct' | 'activity'
+
 export interface ChatNavGroupModel {
-  id: string
-  label?: IntlString
+  id: Mode
+  label: IntlString
+  tabLabel: IntlString
   addLabel?: IntlString
   addComponent?: AnyComponent
-  query?: DocumentQuery<DocNotifyContext>
-  hideEmpty?: boolean
-  actions?: Array<{
-    icon: Asset
-    label: IntlString
-    action: ViewAction
-  }>
+  query: DocumentQuery<DocNotifyContext>
 }

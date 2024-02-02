@@ -17,8 +17,10 @@
   import { IconSize } from '@hcengineering/ui'
   import Avatar from './Avatar.svelte'
 
-  export let value: Person
+  export let value: Person | undefined
   export let size: IconSize = 'small'
 </script>
 
-<Avatar avatar={value.avatar} {size} />
+{#if value}
+  <Avatar avatar={value.avatar} {size} />
+{/if}

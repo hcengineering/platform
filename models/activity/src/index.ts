@@ -137,7 +137,10 @@ export class TDocUpdateMessage extends TActivityMessage implements DocUpdateMess
   @Index(IndexKind.Indexed)
     txId!: Ref<TxCUD<Doc>>
 
-  action!: DocUpdateAction
+  @Prop(TypeString(), core.string.Object)
+  @Index(IndexKind.Indexed)
+    action!: DocUpdateAction
+
   updateCollection?: string
   attributeUpdates?: DocAttributeUpdates
 }
@@ -227,8 +230,10 @@ export class TReaction extends TAttachedDoc implements Reaction {
 @Model(activity.class.SavedMessage, preference.class.Preference)
 export class TSavedMessage extends TPreference implements SavedMessage {
   @Prop(TypeRef(activity.class.ActivityMessage), view.string.Save)
+  @Index(IndexKind.Indexed)
   declare attachedTo: Ref<ActivityMessage>
 }
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TTxViewlet,
@@ -246,8 +251,6 @@ export function createModel (builder: Builder): void {
     TSavedMessage,
     TIgnoreActivity
   )
-
-  builder.mixin(activity.class.DocUpdateMessage, core.class.Class, activity.mixin.ActivityDoc, {})
 
   builder.mixin(activity.class.DocUpdateMessage, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: activity.component.DocUpdateMessagePresenter

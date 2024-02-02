@@ -14,33 +14,51 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { IconFolder, EditBox, ToggleWithLabel, Grid } from '@hcengineering/ui'
-  import presentation, { getClient, SpaceCreateCard } from '@hcengineering/presentation'
+  import { ModernEditbox, ButtonMenu, Label, Modal, TextArea } from '@hcengineering/ui'
+  import presentation, { getClient } from '@hcengineering/presentation'
   import { getResource } from '@hcengineering/platform'
   import core, { getCurrentAccount } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
 
+  import Lock from '../../icons/Lock.svelte'
   import chunter from '../../../plugin'
 
   const dispatch = createEventDispatcher()
-
-  let isPrivate: boolean = false
-  let name: string = ''
-
-  export function canClose (): boolean {
-    return name === ''
-  }
-
   const client = getClient()
 
-  async function createChannel () {
+  const visibilityOptions = [
+    {
+      id: 'public',
+      icon: chunter.icon.Hashtag,
+      label: chunter.string.Public
+    },
+    {
+      id: 'private',
+      icon: Lock,
+      label: chunter.string.Private
+    }
+  ]
+
+  let selectedVisibilityId = visibilityOptions[0].id
+  let channelName = ''
+  let description = ''
+  let canSave = true
+
+  $: visibilityIcon = visibilityOptions.find(({ id }) => id === selectedVisibilityId)?.icon ?? visibilityOptions[0].icon
+  $: visibilityLabel =
+    visibilityOptions.find(({ id }) => id === selectedVisibilityId)?.label ?? visibilityOptions[0].label
+
+  $: canSave = !!channelName
+
+  async function save () {
     const accountId = getCurrentAccount()._id
     const channelId = await client.createDoc(chunter.class.Channel, core.space.Space, {
-      name,
+      name: channelName,
       description: '',
-      private: isPrivate,
+      private: selectedVisibilityId === 'private',
       archived: false,
-      members: [accountId]
+      members: [accountId],
+      topic: description
     })
     const notifyContextId = await client.createDoc(notification.class.DocNotifyContext, core.space.Space, {
       user: accountId,
@@ -53,28 +71,46 @@
 
     await navigate(undefined, undefined, { _id: notifyContextId })
   }
+
+  function handleCancel () {
+    dispatch('close')
+  }
 </script>
 
-<SpaceCreateCard
-  label={chunter.string.CreateChannel}
-  okAction={createChannel}
-  canSave={!!name}
-  on:close={() => {
-    dispatch('close')
-  }}
+<Modal
+  label={chunter.string.NewChannel}
+  type="type-popup"
+  okLabel={presentation.string.Create}
+  okAction={save}
+  {canSave}
+  onCancel={handleCancel}
+  on:close
 >
-  <Grid column={1} rowGap={1.5}>
-    <EditBox
-      label={chunter.string.ChannelName}
-      icon={IconFolder}
-      bind:value={name}
-      placeholder={chunter.string.ChannelNamePlaceholder}
-      autoFocus
+  <div class="hulyModal-content__titleGroup" style="padding: 0">
+    <ModernEditbox bind:value={channelName} label={chunter.string.NewChannel} size="large" kind="ghost" />
+    <TextArea
+      placeholder={chunter.string.DescriptionOptional}
+      width="100%"
+      height="6.5rem"
+      margin="var(--spacing-1) var(--spacing-2)"
+      noFocusBorder
+      bind:value={description}
     />
-    <ToggleWithLabel
-      label={presentation.string.MakePrivate}
-      description={presentation.string.MakePrivateDescription}
-      bind:on={isPrivate}
-    />
-  </Grid>
-</SpaceCreateCard>
+  </div>
+  <div class="hulyModal-content__settingsSet">
+    <div class="hulyModal-content__settingsSet-line">
+      <span class="label"><Label label={chunter.string.Visibility} /></span>
+      <ButtonMenu
+        items={visibilityOptions}
+        selected={selectedVisibilityId}
+        icon={visibilityIcon}
+        label={visibilityLabel}
+        kind="secondary"
+        size="medium"
+        on:selected={(ev) => {
+          selectedVisibilityId = ev.detail
+        }}
+      />
+    </div>
+  </div>
+</Modal>

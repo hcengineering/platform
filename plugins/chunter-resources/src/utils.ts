@@ -21,8 +21,17 @@ import {
   type ThreadMessage
 } from '@hcengineering/chunter'
 import contact, { type Employee, type PersonAccount, getName, type Person } from '@hcengineering/contact'
-import { employeeByIdStore } from '@hcengineering/contact-resources'
-import { type Client, type Doc, getCurrentAccount, type IdMap, type Ref, type Space } from '@hcengineering/core'
+import { employeeByIdStore, PersonIcon } from '@hcengineering/contact-resources'
+import {
+  type Client,
+  type Doc,
+  getCurrentAccount,
+  type IdMap,
+  type Ref,
+  type Space,
+  type Class,
+  type Timestamp
+} from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import {
   type AnySvelteComponent,
@@ -32,16 +41,22 @@ import {
   navigate
 } from '@hcengineering/ui'
 import { workbenchId } from '@hcengineering/workbench'
-import { type Asset, translate } from '@hcengineering/platform'
-import { classIcon } from '@hcengineering/view-resources'
-import { type ActivityMessage } from '@hcengineering/activity'
+import { type Asset, getResource, translate } from '@hcengineering/platform'
+import { classIcon, getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
+import activity, {
+  type ActivityMessage,
+  type ActivityMessagesFilter,
+  type DisplayActivityMessage,
+  type DocUpdateMessage
+} from '@hcengineering/activity'
 import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-import { type DocNotifyContext } from '@hcengineering/notification'
+import { type DocNotifyContext, inboxId } from '@hcengineering/notification'
 import { get, type Unsubscriber } from 'svelte/store'
 
 import chunter from './plugin'
 import DirectIcon from './components/DirectIcon.svelte'
 import ChannelIcon from './components/ChannelIcon.svelte'
+import { chatSpecials } from './components/chat/utils'
 
 export async function getDmName (client: Client, space?: Space): Promise<string> {
   if (space === undefined) {
@@ -93,6 +108,34 @@ export async function canDeleteMessage (doc?: ChatMessage): Promise<boolean> {
   const me = getCurrentAccount()
 
   return doc.createdBy === me._id
+}
+
+export async function canReplyToThread (doc?: ActivityMessage): Promise<boolean> {
+  if (doc === undefined) {
+    return false
+  }
+
+  if (doc._class === chunter.class.ThreadMessage) {
+    return false
+  }
+
+  if (doc._class === activity.class.DocUpdateMessage) {
+    return (doc as DocUpdateMessage).objectClass !== activity.class.Reaction
+  }
+
+  return true
+}
+
+export async function canCopyMessageLink (doc?: ActivityMessage): Promise<boolean> {
+  if (doc === undefined) {
+    return false
+  }
+
+  if (doc._class === activity.class.DocUpdateMessage) {
+    return (doc as DocUpdateMessage).objectClass !== activity.class.Reaction
+  }
+
+  return true
 }
 
 async function getDmAccounts (client: Client, space?: Space): Promise<PersonAccount[]> {
@@ -149,28 +192,25 @@ export async function openMessageFromSpecial (message?: ActivityMessage): Promis
   if (message === undefined) {
     return
   }
+
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const loc = getCurrentResolvedLocation()
 
   if (message._class === chunter.class.ThreadMessage) {
     const threadMessage = message as ThreadMessage
-    const context = get(inboxClient.docNotifyContextByDoc).get(threadMessage.objectId)
-    if (context === undefined) {
-      return
-    }
-    loc.path[2] = chunterId
-    loc.path[3] = context._id
-    loc.path[4] = message.attachedTo
+
+    loc.path[4] = threadMessage.attachedTo
   } else {
     const context = get(inboxClient.docNotifyContextByDoc).get(message.attachedTo)
+
     if (context === undefined) {
       return
     }
-    loc.path[2] = chunterId
-    loc.path[3] = context._id
+
+    loc.path[4] = context._id
   }
 
-  loc.fragment = message._id
+  loc.query = { ...loc.query, message: message._id }
 
   navigate(loc)
 }
@@ -189,7 +229,7 @@ export enum SearchType {
   Contacts
 }
 
-export async function getLink (message: ActivityMessage): Promise<string> {
+export async function getMessageLink (message: ActivityMessage): Promise<string> {
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const location = getCurrentResolvedLocation()
 
@@ -242,16 +282,112 @@ export async function chunterSpaceLinkFragmentProvider (doc: ChunterSpace): Prom
   return loc
 }
 
-export function getChannelIcon (doc: Doc): Asset | AnySvelteComponent | undefined {
+export function getChannelIcon (_class: Ref<Class<Doc>>): Asset | AnySvelteComponent | undefined {
   const client = getClient()
+  const hierarchy = client.getHierarchy()
 
-  if (doc._class === chunter.class.Channel) {
+  if (_class === chunter.class.Channel) {
     return ChannelIcon
   }
 
-  if (doc._class === chunter.class.DirectMessage) {
+  if (_class === chunter.class.DirectMessage) {
     return DirectIcon
   }
 
-  return classIcon(client, doc._class)
+  if (hierarchy.isDerived(_class, contact.class.Person)) {
+    return PersonIcon
+  }
+
+  return classIcon(client, _class)
+}
+
+export async function getChannelName (
+  _id: Ref<Doc>,
+  _class: Ref<Class<Doc>>,
+  object?: Doc
+): Promise<string | undefined> {
+  const client = getClient()
+
+  if (client.getHierarchy().isDerived(_class, chunter.class.ChunterSpace)) {
+    return await getDocTitle(client, _id, _class, object)
+  }
+
+  return await getDocLinkTitle(client, _id, _class, object)
+}
+
+export function getUnreadThreadsCount (): number {
+  const notificationClient = InboxNotificationsClientImpl.getClient()
+
+  const threadIds = get(notificationClient.activityInboxNotifications)
+    .filter(({ attachedToClass, isViewed }) => attachedToClass === chunter.class.ThreadMessage && !isViewed)
+    .map(({ $lookup }) => $lookup?.attachedTo?.attachedTo)
+    .filter((_id) => _id !== undefined)
+
+  return new Set(threadIds).size
+}
+
+export function getClosestDateSelectorDate (date: Timestamp, scrollElement: HTMLDivElement): Timestamp | undefined {
+  const dateSelectors = scrollElement.getElementsByClassName('dateSelector')
+
+  if (dateSelectors === undefined || dateSelectors.length === 0) {
+    return
+  }
+
+  let closestDate: Timestamp | undefined = parseInt(dateSelectors[dateSelectors.length - 1].id)
+
+  for (const elem of Array.from(dateSelectors).reverse()) {
+    const curDate = parseInt(elem.id)
+    if (curDate < date) break
+    else if (curDate - date < closestDate - date) {
+      closestDate = curDate
+    }
+  }
+
+  return closestDate
+}
+
+export async function filterChatMessages (
+  messages: DisplayActivityMessage[],
+  filters: ActivityMessagesFilter[],
+  objectClass: Ref<Class<Doc>>,
+  selectedIds: Array<Ref<ActivityMessagesFilter>>
+): Promise<DisplayActivityMessage[]> {
+  if (selectedIds.length === 0 || selectedIds.includes(activity.ids.AllFilter)) {
+    return messages
+  }
+
+  const selectedFilters = filters.filter(({ _id }) => selectedIds.includes(_id))
+
+  if (selectedFilters.length === 0) {
+    return messages
+  }
+  const filtersFns: Array<(message: ActivityMessage, _class?: Ref<Doc>) => boolean> = []
+
+  for (const filter of selectedFilters) {
+    const filterFn = await getResource(filter.filter)
+    filtersFns.push(filterFn)
+  }
+
+  return messages.filter((message) => filtersFns.some((filterFn) => filterFn(message, objectClass)))
+}
+
+export function navigateToThread (loc: Location, contextId: Ref<DocNotifyContext>, _id: Ref<ActivityMessage>): void {
+  const specials = chatSpecials.map(({ id }) => id)
+
+  if (loc.path[2] === chunterId && specials.includes(loc.path[3])) {
+    loc.path[4] = _id
+    loc.query = { message: _id }
+    navigate(loc)
+    return
+  }
+
+  if (loc.path[2] !== inboxId) {
+    loc.path[2] = chunterId
+  }
+
+  loc.path[3] = contextId
+  loc.path[4] = _id
+  loc.fragment = undefined
+  loc.query = { message: _id }
+  navigate(loc)
 }

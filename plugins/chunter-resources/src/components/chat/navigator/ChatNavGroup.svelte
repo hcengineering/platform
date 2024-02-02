@@ -14,43 +14,63 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import type { Doc, Ref } from '@hcengineering/core'
-  import { getCurrentAccount } from '@hcengineering/core'
+  import { Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { DocNotifyContext } from '@hcengineering/notification'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Action, IconAdd, Scroller, showPopup } from '@hcengineering/ui'
+  import activity from '@hcengineering/activity'
+  import view from '@hcengineering/view'
   import { getResource } from '@hcengineering/platform'
-  import { createQuery } from '@hcengineering/presentation'
-  import { Action, IconAdd, showPopup } from '@hcengineering/ui'
-  import { TreeNode } from '@hcengineering/view-resources'
 
-  import { getDocByNotifyContext } from '../utils'
+  import ChatNavItem from './ChatNavGroupItem.svelte'
+  import ChatGroupHeader from './ChatGroupHeader.svelte'
+  import chunter from '../../../plugin'
   import { ChatNavGroupModel } from '../types'
-  import ChatNavItem from './ChatNavItem.svelte'
 
-  export let model: ChatNavGroupModel
   export let selectedContextId: Ref<DocNotifyContext> | undefined = undefined
+  export let model: ChatNavGroupModel
 
   const dispatch = createEventDispatcher()
 
-  const notifyContextsQuery = createQuery()
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
 
-  let notifyContexts: DocNotifyContext[] = []
-  let docByNotifyContext: Map<Ref<DocNotifyContext>, Doc> = new Map<Ref<DocNotifyContext>, Doc>()
+  const contextsQuery = createQuery()
+  const pinnedQuery = createQuery()
 
-  notifyContextsQuery.query(
+  let contexts: DocNotifyContext[] = []
+  let pinnedContexts: DocNotifyContext[] = []
+
+  $: contextsQuery.query(
     notification.class.DocNotifyContext,
     {
       ...model.query,
       hidden: false,
+      isPinned: { $ne: true },
       user: getCurrentAccount()._id
     },
     (res: DocNotifyContext[]) => {
-      notifyContexts = res
+      contexts = sortContexts(
+        res.filter(
+          ({ attachedToClass }) =>
+            hierarchy.classHierarchyMixin(attachedToClass, activity.mixin.ActivityDoc) !== undefined
+        )
+      )
     }
   )
 
-  $: getDocByNotifyContext(notifyContexts).then((res) => {
-    docByNotifyContext = res
-  })
+  $: pinnedQuery.query(
+    notification.class.DocNotifyContext,
+    {
+      ...model.query,
+      hidden: false,
+      isPinned: true,
+      user: getCurrentAccount()._id
+    },
+    (res: DocNotifyContext[]) => {
+      pinnedContexts = res
+    }
+  )
 
   function getGroupActions (): Action[] {
     const result: Action[] = []
@@ -68,28 +88,85 @@
       })
     }
 
-    const additionalActions = model.actions?.map(({ icon, label, action }) => ({
+    return result
+  }
+
+  function getPinnedActions (): Action[] {
+    return [
+      {
+        icon: view.icon.Delete,
+        label: view.string.Delete,
+        action: chunter.actionImpl.UnpinAllChannels
+      }
+    ].map(({ icon, label, action }) => ({
       icon,
       label,
-      action: async (ctx: any, evt: Event) => {
-        const impl = await getResource(action)
-        await impl(notifyContexts, evt)
+      action: async (_: any, evt: Event) => {
+        const actionFn = await getResource(action)
+        await actionFn(pinnedContexts, evt)
       }
     }))
+  }
 
-    return additionalActions ? result.concat(additionalActions) : result
+  function sortContexts (contexts: DocNotifyContext[]): DocNotifyContext[] {
+    if (model.id !== 'activity') {
+      return contexts
+    }
+    return contexts.sort((context1, context2) => {
+      const hasNewMessages1 = (context1.lastUpdateTimestamp ?? 0) > (context1.lastViewedTimestamp ?? 0)
+      const hasNewMessages2 = (context2.lastUpdateTimestamp ?? 0) > (context2.lastViewedTimestamp ?? 0)
+
+      if (hasNewMessages1 && hasNewMessages2) {
+        return (context2.lastUpdateTimestamp ?? 0) - (context1.lastUpdateTimestamp ?? 0)
+      }
+
+      if (hasNewMessages1 && !hasNewMessages2) {
+        return -1
+      }
+
+      if (hasNewMessages2 && !hasNewMessages1) {
+        return 1
+      }
+
+      return (context2.lastUpdateTimestamp ?? 0) - (context1.lastUpdateTimestamp ?? 0)
+    })
   }
 </script>
 
-{#if !model.hideEmpty || notifyContexts.length > 0}
-  <TreeNode _id={`tree-${model.id}`} label={model.label} node actions={async () => getGroupActions()}>
-    {#each notifyContexts as docNotifyContext}
-      {@const doc = docByNotifyContext.get(docNotifyContext._id)}
-      {#if doc}
-        {#key docNotifyContext._id}
-          <ChatNavItem {doc} notifyContext={docNotifyContext} {selectedContextId} />
-        {/key}
-      {/if}
-    {/each}
-  </TreeNode>
-{/if}
+<Scroller padding="0 0.5rem">
+  {#if pinnedContexts.length}
+    <div class="block">
+      <ChatGroupHeader header={chunter.string.Pinned} actions={getPinnedActions()} />
+      {#each pinnedContexts as context (context._id)}
+        <ChatNavItem {context} isSelected={selectedContextId === context._id} on:select />
+      {/each}
+    </div>
+  {/if}
+
+  {#if pinnedContexts.length > 0 && contexts.length}
+    <div class="separator" />
+  {/if}
+
+  {#if contexts.length}
+    <div class="block">
+      <ChatGroupHeader header={model.label} actions={getGroupActions()} />
+      {#each contexts as context (context._id)}
+        <ChatNavItem {context} isSelected={selectedContextId === context._id} on:select />
+      {/each}
+    </div>
+  {/if}
+</Scroller>
+
+<style lang="scss">
+  .block {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .separator {
+    width: 100%;
+    height: 1px;
+    background: var(--theme-navpanel-border);
+    margin-top: 0.75rem;
+  }
+</style>

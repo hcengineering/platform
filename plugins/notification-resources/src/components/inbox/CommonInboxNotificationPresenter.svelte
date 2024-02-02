@@ -153,7 +153,7 @@
   .root {
     position: relative;
     display: flex;
-    padding: 0.75rem 0.75rem 0.75rem 1.25rem;
+    padding: 0.75rem 0.75rem 0.75rem 1rem;
     border-radius: 0.5rem;
     gap: 1rem;
     overflow: hidden;

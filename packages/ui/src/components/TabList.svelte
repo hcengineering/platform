@@ -25,6 +25,7 @@
   export let multiselect: boolean = false
   export let items: TabItem[]
   export let kind: 'normal' | 'regular' | 'plain' | 'separated' | 'separated-free' = 'normal'
+  export let expansion: 'stretch' | 'default' = 'default'
   export let onlyIcons: boolean = false
   export let size: 'small' | 'medium' = 'medium'
   export let adaptiveShrink: WidthType | null = null
@@ -67,7 +68,7 @@
     />
   {:else}
     <Scroller horizontal>
-      <div class="tablist-container {kind} {size}">
+      <div class="tablist-container {kind} {size} {expansion}">
         {#each items as item, i}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -78,6 +79,7 @@
             class:free={kind === 'separated-free'}
             class:onlyIcons
             class:selected={getSelected(item.id, selected)}
+            class:stretch={expansion === 'stretch'}
             data-view={item.tooltip}
             data-id={`tab-${item.id}`}
             use:tooltip={{ label: item.tooltip ?? undefined, element: tabs[i] ?? undefined }}
@@ -120,6 +122,10 @@
     display: flex;
     align-items: center;
     width: fit-content;
+
+    &.stretch {
+      width: 100%;
+    }
 
     .button {
       position: relative;
@@ -181,6 +187,10 @@
       background-color: var(--theme-tablist-color);
       border-radius: 0.25rem;
 
+      &.stretch {
+        flex-grow: 1;
+      }
+
       .button {
         color: var(--theme-trans-color);
         border: 1px solid transparent;
@@ -201,6 +211,10 @@
       background-color: var(--theme-button-default);
       border: 1px solid var(--theme-button-border);
       border-radius: 0.25rem;
+
+      &.stretch {
+        flex-grow: 1;
+      }
 
       .button {
         background-color: transparent;
@@ -236,6 +250,10 @@
       color: var(--theme-dark-color);
       border-top: 2px solid transparent;
       border-bottom: 2px solid transparent;
+
+      &.stretch {
+        flex-grow: 1;
+      }
 
       &:not(.selected) {
         cursor: pointer;

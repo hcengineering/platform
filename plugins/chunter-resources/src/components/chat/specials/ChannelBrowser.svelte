@@ -84,7 +84,7 @@
     searchQuery = search.length ? { $search: search } : {}
   }
 
-  function showCreateDialog (ev: Event) {
+  function showCreateDialog (_: Event) {
     showPopup(createItemDialog as AnyComponent, {}, 'middle')
   }
 
@@ -158,7 +158,7 @@
 <Scroller padding={'2.5rem'}>
   <div class="spaces-container">
     {#each spaces as space (space._id)}
-      {@const icon = getChannelIcon(space)}
+      {@const icon = getChannelIcon(space._class)}
       {@const joined = space.members.includes(me)}
       <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
       <div class="item flex-between" tabindex="0">

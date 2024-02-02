@@ -23,6 +23,7 @@
 
   export let selectedFiltersRefs: Ref<ActivityMessagesFilter>[] | Ref<ActivityMessagesFilter> = activity.ids.AllFilter
   export let filters: ActivityMessagesFilter[] = []
+  export let showToggle = true
 
   const allId = activity.ids.AllFilter
 
@@ -130,15 +131,17 @@
   <div class="ap-space" />
   <div class="ap-scroll">
     <div class="ap-box" bind:this={popup}>
-      <div class="ml-3 mt-2 mb-2 mr-3">
-        <MiniToggle
-          bind:on={activityOrderNewestFirst}
-          label={activity.string.NewestFirst}
-          on:change={() => {
-            dispatch('update', { action: 'toggle', value: activityOrderNewestFirst })
-          }}
-        />
-      </div>
+      {#if showToggle}
+        <div class="ml-3 mt-2 mb-2 mr-3">
+          <MiniToggle
+            bind:on={activityOrderNewestFirst}
+            label={activity.string.NewestFirst}
+            on:change={() => {
+              dispatch('update', { action: 'toggle', value: activityOrderNewestFirst })
+            }}
+          />
+        </div>
+      {/if}
       <!-- svelte-ignore a11y-mouse-events-have-key-events -->
       {#each menu as item, i}
         <button

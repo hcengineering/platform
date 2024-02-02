@@ -24,7 +24,7 @@
 
   export let message: DisplayDocUpdateMessage
   export let viewlet: DocUpdateMessageViewlet | undefined
-  export let objectName: IntlString
+  export let objectName: IntlString | undefined
   export let collectionName: IntlString | undefined
   export let collectionAttribute: Attribute<Collection<AttachedDoc>> | undefined = undefined
 
@@ -55,7 +55,7 @@
   <span class="lower">
     {#if collectionName && (message.previousMessages?.length || !isOwn)}
       <Label label={collectionName} />:
-    {:else}
+    {:else if objectName}
       <Label label={objectName} />:
     {/if}
   </span>

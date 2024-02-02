@@ -34,7 +34,7 @@ import notification, {
   type InboxNotification
 } from '@hcengineering/notification'
 import { getClient } from '@hcengineering/presentation'
-import { type Location, type ResolvedLocation } from '@hcengineering/ui'
+import { getLocation, navigate, type Location, type ResolvedLocation } from '@hcengineering/ui'
 import activity, {
   type ActivityMessage,
   type DisplayDocUpdateMessage,
@@ -44,17 +44,10 @@ import { activityMessagesComparator, combineActivityMessages } from '@hcengineer
 
 import { type InboxNotificationsFilter } from './types'
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
-import { checkIsObjectRemoved } from '@hcengineering/view-resources'
 
 /**
  * @public
  */
-export async function hasMarkAsUnreadAction (doc: DisplayInboxNotification): Promise<boolean> {
-  const canRead = await hasMarkAsReadAction(doc)
-
-  return !canRead
-}
-
 export async function hasMarkAsReadAction (doc: DisplayInboxNotification): Promise<boolean> {
   const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
 
@@ -71,15 +64,85 @@ export async function hasMarkAsReadAction (doc: DisplayInboxNotification): Promi
 /**
  * @public
  */
+export async function hasMarkAsUnreadAction (doc: DisplayInboxNotification): Promise<boolean> {
+  const canRead = await hasMarkAsReadAction(doc)
+
+  return !canRead
+}
+
+/**
+ * @public
+ */
 export async function markAsReadInboxNotification (doc: DisplayInboxNotification): Promise<void> {
-  const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
+  const notificationsClient = InboxNotificationsClientImpl.getClient()
+  const isActivityNotification = doc._class === notification.class.ActivityInboxNotification
 
-  const ids =
-    doc._class === notification.class.ActivityInboxNotification
-      ? (doc as DisplayActivityInboxNotification).combinedIds
-      : [doc._id]
+  const ids = isActivityNotification ? (doc as DisplayActivityInboxNotification).combinedIds : [doc._id]
 
-  await inboxNotificationsClient.readNotifications(ids)
+  if (isActivityNotification) {
+    await updateLastViewedTimestampOnRead(doc as WithLookup<ActivityInboxNotification>, ids)
+  }
+
+  await notificationsClient.readNotifications(ids)
+}
+
+async function updateLastViewedTimestampOnRead (
+  doc: WithLookup<ActivityInboxNotification>,
+  viewedIds: Array<Ref<InboxNotification>>
+): Promise<void> {
+  const notificationsClient = InboxNotificationsClientImpl.getClient()
+  const client = getClient()
+
+  const context = get(notificationsClient.docNotifyContexts).find(({ _id }) => _id === doc.docNotifyContext)
+
+  if (context === undefined) {
+    return
+  }
+
+  const unViewed = get(notificationsClient.activityInboxNotifications).filter(
+    ({ _id, isViewed, docNotifyContext }) => context._id === docNotifyContext && !isViewed && !viewedIds.includes(_id)
+  )
+
+  let lastViewedTimestamp = context?.lastViewedTimestamp
+
+  if (unViewed.length === 0) {
+    lastViewedTimestamp = doc?.$lookup?.attachedTo?.createdOn ?? context.lastViewedTimestamp
+  } else {
+    const firstUnViewed = unViewed[unViewed.length - 1]
+
+    const hasNotificationsBefore = (firstUnViewed.createdOn ?? 0) < (doc.createdOn ?? 0)
+
+    if (!hasNotificationsBefore) {
+      lastViewedTimestamp = doc?.$lookup?.attachedTo?.createdOn ?? context.lastViewedTimestamp
+    }
+  }
+
+  if (lastViewedTimestamp !== undefined && lastViewedTimestamp > (context.lastViewedTimestamp ?? 0)) {
+    await client.update(context, { lastViewedTimestamp })
+  }
+}
+
+async function updateLastViewedOnUnread (doc: WithLookup<ActivityInboxNotification>): Promise<void> {
+  const notificationsClient = InboxNotificationsClientImpl.getClient()
+  const client = getClient()
+
+  const context = get(notificationsClient.docNotifyContexts).find(({ _id }) => _id === doc.docNotifyContext)
+
+  if (context === undefined) {
+    return
+  }
+
+  const messageTimestamp = doc?.$lookup?.attachedTo?.createdOn
+
+  if (messageTimestamp === undefined || messageTimestamp === 0) {
+    return
+  }
+
+  const lastViewedTimestamp = messageTimestamp - 1
+
+  if (lastViewedTimestamp < (context.lastViewedTimestamp ?? 0)) {
+    await client.update(context, { lastViewedTimestamp })
+  }
 }
 
 /**
@@ -87,22 +150,26 @@ export async function markAsReadInboxNotification (doc: DisplayInboxNotification
  */
 export async function markAsUnreadInboxNotification (doc: DisplayInboxNotification): Promise<void> {
   const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
+  const isActivityNotification = doc._class === notification.class.ActivityInboxNotification
 
-  const ids =
-    doc._class === notification.class.ActivityInboxNotification
-      ? (doc as DisplayActivityInboxNotification).combinedIds
-      : [doc._id]
+  const ids = isActivityNotification ? (doc as DisplayActivityInboxNotification).combinedIds : [doc._id]
+
+  if (isActivityNotification) {
+    await updateLastViewedOnUnread(doc as WithLookup<ActivityInboxNotification>)
+  }
 
   await inboxNotificationsClient.unreadNotifications(ids)
 }
 
 export async function deleteInboxNotification (doc: DisplayInboxNotification): Promise<void> {
   const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
+  const isActivityNotification = doc._class === notification.class.ActivityInboxNotification
 
-  const ids =
-    doc._class === notification.class.ActivityInboxNotification
-      ? (doc as DisplayActivityInboxNotification).combinedIds
-      : [doc._id]
+  const ids = isActivityNotification ? (doc as DisplayActivityInboxNotification).combinedIds : [doc._id]
+
+  if (isActivityNotification) {
+    await updateLastViewedTimestampOnRead(doc as WithLookup<ActivityInboxNotification>, ids)
+  }
 
   await inboxNotificationsClient.deleteNotifications(ids)
 }
@@ -160,13 +227,8 @@ export async function canReadNotifyContext (doc: DocNotifyContext): Promise<bool
  * @public
  */
 export async function canUnReadNotifyContext (doc: DocNotifyContext): Promise<boolean> {
-  const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
-
-  return (
-    get(inboxNotificationsClient.inboxNotificationsByContext)
-      .get(doc._id)
-      ?.every(({ isViewed }) => isViewed) ?? false
-  )
+  const canReadContext = await canReadNotifyContext(doc)
+  return !canReadContext
 }
 
 /**
@@ -185,14 +247,27 @@ export async function readNotifyContext (doc: DocNotifyContext): Promise<void> {
  * @public
  */
 export async function unReadNotifyContext (doc: DocNotifyContext): Promise<void> {
+  const client = getClient()
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const inboxNotifications = get(inboxClient.inboxNotificationsByContext).get(doc._id) ?? []
+  const notificationToUnread = inboxNotifications[0]
 
-  if (inboxNotifications.length === 0) {
+  if (notificationToUnread === undefined) {
     return
   }
 
-  await inboxClient.unreadNotifications([inboxNotifications[0]._id])
+  await inboxClient.unreadNotifications([notificationToUnread._id])
+
+  if (notificationToUnread._class === notification.class.ActivityInboxNotification) {
+    const activityNotification = notificationToUnread as WithLookup<ActivityInboxNotification>
+    const createdOn = activityNotification?.$lookup?.attachedTo?.createdOn
+
+    if (createdOn === undefined || createdOn === 0) {
+      return
+    }
+
+    await client.diffUpdate(doc, { lastViewedTimestamp: createdOn - 1 })
+  }
 }
 
 /**
@@ -290,78 +365,11 @@ export async function unpinDocNotifyContext (object: DocNotifyContext): Promise<
   })
 }
 
-export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
-  if (loc.path[2] !== inboxId) {
-    return undefined
-  }
-
-  const contextId = loc.fragment as Ref<DocNotifyContext> | undefined
-
-  if (contextId === undefined) {
-    return {
-      loc: {
-        path: [loc.path[0], loc.path[1], inboxId],
-        fragment: undefined
-      },
-      defaultLocation: {
-        path: [loc.path[0], loc.path[1], inboxId],
-        fragment: undefined
-      }
-    }
-  }
-
-  return await generateLocation(loc, contextId)
-}
-
-async function generateLocation (
-  loc: Location,
-  contextId: Ref<DocNotifyContext>
-): Promise<ResolvedLocation | undefined> {
-  const client = getClient()
-
-  const appComponent = loc.path[0] ?? ''
-  const workspace = loc.path[1] ?? ''
-  const messageId = loc.query?.message as Ref<ActivityMessage> | undefined
-
-  const contextNotification = await client.findOne(notification.class.InboxNotification, {
-    docNotifyContext: contextId
-  })
-
-  if (contextNotification === undefined) {
-    return {
-      loc: {
-        path: [loc.path[0], loc.path[1], inboxId],
-        fragment: undefined
-      },
-      defaultLocation: {
-        path: [loc.path[0], loc.path[1], inboxId],
-        fragment: undefined
-      }
-    }
-  }
-
-  const message =
-    messageId !== undefined ? await client.findOne(activity.class.ActivityMessage, { _id: messageId }) : undefined
-
-  return {
-    loc: {
-      path: [appComponent, workspace, inboxId],
-      fragment: contextId,
-      query: { ...loc.query, message: message !== undefined ? (messageId as string) : null }
-    },
-    defaultLocation: {
-      path: [appComponent, workspace, inboxId],
-      query: { ...loc.query, message: message !== undefined ? (messageId as string) : null }
-    }
-  }
-}
-
 export async function getDisplayInboxNotifications (
   notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>,
   filter: InboxNotificationsFilter = 'all',
   objectClass?: Ref<Class<Doc>>
 ): Promise<DisplayInboxNotification[]> {
-  const client = getClient()
   const filteredNotifications = Array.from(notificationsByContext.values())
     .flat()
     .filter(({ isViewed }) => {
@@ -376,10 +384,6 @@ export async function getDisplayInboxNotifications (
           return false
       }
     })
-
-  const viewletsHideIfRemoved = client
-    .getModel()
-    .findAllSync(activity.class.DocUpdateMessageViewlet, { hideIfRemoved: true })
 
   const activityNotifications = filteredNotifications.filter(
     (n): n is WithLookup<ActivityInboxNotification> => n._class === notification.class.ActivityInboxNotification
@@ -404,30 +408,10 @@ export async function getDisplayInboxNotifications (
       return (message as DocUpdateMessage).objectClass === objectClass
     })
 
-  for (const [index, message] of messages.entries()) {
-    if (message._class !== activity.class.DocUpdateMessage) {
-      continue
-    }
-
-    const docUpdateMessage = message as DocUpdateMessage
-
-    const hideIfRemoved = viewletsHideIfRemoved.some(
-      (viewlet) => viewlet.action === docUpdateMessage.action && viewlet.objectClass === docUpdateMessage.objectClass
-    )
-
-    if (!hideIfRemoved) {
-      continue
-    }
-
-    const isRemoved = await checkIsObjectRemoved(client, docUpdateMessage.objectId, docUpdateMessage.objectClass)
-
-    if (isRemoved) {
-      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-      delete messages[index]
-    }
-  }
-
-  const combinedMessages = combineActivityMessages(messages.sort(activityMessagesComparator), SortingOrder.Descending)
+  const combinedMessages = await combineActivityMessages(
+    messages.sort(activityMessagesComparator),
+    SortingOrder.Descending
+  )
 
   for (const message of combinedMessages) {
     if (message._class === activity.class.DocUpdateMessage) {
@@ -456,12 +440,10 @@ export async function getDisplayInboxNotifications (
     }
   }
 
-  displayNotifications.sort(
+  return displayNotifications.sort(
     (notification1, notification2) =>
       (notification2.createdOn ?? notification2.modifiedOn) - (notification1.createdOn ?? notification1.modifiedOn)
   )
-
-  return displayNotifications
 }
 
 export async function hasInboxNotifications (
@@ -470,4 +452,134 @@ export async function hasInboxNotifications (
   const displayNotifications = await getDisplayInboxNotifications(notificationsByContext)
 
   return displayNotifications.some(({ isViewed }) => !isViewed)
+}
+
+export async function getNotificationsCount (
+  context: DocNotifyContext | undefined,
+  notifications: InboxNotification[] = []
+): Promise<number> {
+  if (context === undefined || notifications.length === 0) {
+    return 0
+  }
+
+  const displayNotifications = await getDisplayInboxNotifications(new Map([[context._id, notifications]]))
+
+  return displayNotifications.filter(({ isViewed }) => !isViewed).length
+}
+
+export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
+  if (loc.path[2] !== inboxId) {
+    return undefined
+  }
+
+  const contextId = loc.path[3] as Ref<DocNotifyContext> | undefined
+
+  if (contextId === undefined) {
+    return {
+      loc: {
+        path: [loc.path[0], loc.path[1], inboxId],
+        fragment: undefined
+      },
+      defaultLocation: {
+        path: [loc.path[0], loc.path[1], inboxId],
+        fragment: undefined
+      }
+    }
+  }
+
+  return await generateLocation(loc, contextId)
+}
+
+async function generateLocation (
+  loc: Location,
+  contextId: Ref<DocNotifyContext>
+): Promise<ResolvedLocation | undefined> {
+  const client = getClient()
+
+  const appComponent = loc.path[0] ?? ''
+  const workspace = loc.path[1] ?? ''
+  const threadId = loc.path[4] as Ref<ActivityMessage> | undefined
+  const messageId = loc.query?.message as Ref<ActivityMessage> | undefined
+
+  const contextNotification = await client.findOne(notification.class.InboxNotification, {
+    docNotifyContext: contextId
+  })
+
+  if (contextNotification === undefined) {
+    return {
+      loc: {
+        path: [loc.path[0], loc.path[1], inboxId],
+        fragment: undefined
+      },
+      defaultLocation: {
+        path: [loc.path[0], loc.path[1], inboxId],
+        fragment: undefined
+      }
+    }
+  }
+
+  const thread =
+    threadId !== undefined ? await client.findOne(activity.class.ActivityMessage, { _id: messageId }) : undefined
+  const message =
+    messageId !== undefined ? await client.findOne(activity.class.ActivityMessage, { _id: messageId }) : undefined
+
+  if (thread === undefined) {
+    return {
+      loc: {
+        path: [appComponent, workspace, inboxId, contextId],
+        fragment: undefined,
+        query: { ...loc.query, message: message !== undefined ? (messageId as string) : null }
+      },
+      defaultLocation: {
+        path: [appComponent, workspace, inboxId, contextId],
+        fragment: undefined,
+        query: { ...loc.query, message: message !== undefined ? (messageId as string) : null }
+      }
+    }
+  }
+
+  return {
+    loc: {
+      path: [appComponent, workspace, inboxId, contextId, threadId as string],
+      fragment: undefined,
+      query: { ...loc.query, message: message !== undefined ? (messageId as string) : null }
+    },
+    defaultLocation: {
+      path: [appComponent, workspace, inboxId, contextId, threadId as string],
+      fragment: undefined,
+      query: { ...loc.query, message: message !== undefined ? (messageId as string) : null }
+    }
+  }
+}
+
+export function openInboxDoc (
+  contextId?: Ref<DocNotifyContext>,
+  thread?: Ref<ActivityMessage>,
+  message?: Ref<ActivityMessage>
+): void {
+  const loc = getLocation()
+
+  if (loc.path[2] !== inboxId) {
+    return
+  }
+
+  if (contextId === undefined) {
+    loc.query = { ...loc.query, message: null }
+    loc.path.length = 3
+    navigate(loc)
+    return
+  }
+
+  loc.path[3] = contextId
+
+  if (thread !== undefined) {
+    loc.path[4] = thread
+  } else {
+    loc.path[4] = ''
+    loc.path.length = 4
+  }
+
+  loc.query = { ...loc.query, message: message ?? null }
+
+  navigate(loc)
 }

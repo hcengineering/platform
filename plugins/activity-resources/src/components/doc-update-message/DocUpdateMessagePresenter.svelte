@@ -44,7 +44,7 @@
   export let embedded: boolean = false
   export let withActions: boolean = true
   export let showEmbedded = false
-  export let hideReplies = false
+  export let hideFooter = false
   export let actions: Action[] = []
   export let skipLabel = false
   export let withFlatActions: boolean = true
@@ -74,10 +74,6 @@
   let parentObject: Doc | undefined
   let object: Doc | undefined
   let isObjectRemoved: boolean = false
-
-  let isObjectLoading = true
-
-  $: isLoading = isObjectLoading
 
   $: [viewlet] = client
     .getModel()
@@ -111,10 +107,8 @@
 
     if (isObjectRemoved) {
       object = await buildRemovedDoc(client, _id, _class)
-      isObjectLoading = false
     } else {
       objectQuery.query(_class, { _id }, (res) => {
-        isObjectLoading = false
         object = res[0]
       })
     }
@@ -144,67 +138,65 @@
   }
 </script>
 
-{#if !isLoading && (!(viewlet?.hideIfRemoved ?? false) || !isObjectRemoved) && (value.action !== 'update' || attributeModel !== undefined)}
-  <ActivityMessageTemplate
-    message={value}
-    {parentMessage}
-    {person}
-    {showNotify}
-    {isHighlighted}
-    {isSelected}
-    {shouldScroll}
-    {embedded}
-    {excludedActions}
-    {withActions}
-    {viewlet}
-    {showEmbedded}
-    {hideReplies}
-    {actions}
-    {skipLabel}
-    {withFlatActions}
-    {hoverable}
-    {onClick}
-    {onReply}
-  >
-    <svelte:fragment slot="header">
-      {#if viewlet?.labelComponent}
-        <Component is={viewlet.labelComponent} props={{ value: object }} />
-      {:else}
-        <DocUpdateMessageHeader
-          message={value}
-          {object}
-          {parentObject}
-          {viewlet}
-          {person}
-          {objectName}
-          {collectionName}
-          {attributeModel}
-        />
-      {/if}
-    </svelte:fragment>
-    <svelte:fragment slot="content">
-      {#if viewlet?.component}
-        <ShowMore>
-          <div class="customContent">
-            {#each value?.previousMessages ?? [] as msg}
-              <Component is={viewlet.component} props={{ message: msg, _id: msg.objectId, _class: msg.objectClass }} />
-            {/each}
-            <Component
-              is={viewlet.component}
-              props={{ message: value, _id: value.objectId, _class: value.objectClass, value: object }}
-            />
-          </div>
-        </ShowMore>
-      {:else if value.action === 'create' || value.action === 'remove'}
-        <ShowMore>
-          <DocUpdateMessageContent message={value} {viewlet} {objectName} {collectionName} {collectionAttribute} />
-        </ShowMore>
-      {:else if value.attributeUpdates && attributeModel}
-        <DocUpdateMessageAttributes attributeUpdates={value.attributeUpdates} {attributeModel} {viewlet} />
-      {/if}
-    </svelte:fragment>
-  </ActivityMessageTemplate>
-{/if}
+<ActivityMessageTemplate
+  message={value}
+  {parentMessage}
+  {person}
+  {showNotify}
+  {isHighlighted}
+  {isSelected}
+  {shouldScroll}
+  {embedded}
+  {excludedActions}
+  {withActions}
+  {viewlet}
+  {showEmbedded}
+  {hideFooter}
+  {actions}
+  {skipLabel}
+  {withFlatActions}
+  {hoverable}
+  {onClick}
+  {onReply}
+>
+  <svelte:fragment slot="header">
+    {#if viewlet?.labelComponent && object}
+      <Component is={viewlet.labelComponent} props={{ value: object }} />
+    {:else if object}
+      <DocUpdateMessageHeader
+        message={value}
+        {object}
+        {parentObject}
+        {viewlet}
+        {person}
+        {objectName}
+        {collectionName}
+        {attributeModel}
+      />
+    {/if}
+  </svelte:fragment>
+  <svelte:fragment slot="content">
+    {#if viewlet?.component && object}
+      <ShowMore>
+        <div class="customContent">
+          {#each value?.previousMessages ?? [] as msg}
+            <Component is={viewlet.component} props={{ message: msg, _id: msg.objectId, _class: msg.objectClass }} />
+          {/each}
+          <Component
+            is={viewlet.component}
+            props={{ message: value, _id: value.objectId, _class: value.objectClass, value: object }}
+          />
+        </div>
+      </ShowMore>
+    {:else if value.action === 'create' || value.action === 'remove'}
+      <ShowMore>
+        <DocUpdateMessageContent message={value} {viewlet} {objectName} {collectionName} {collectionAttribute} />
+      </ShowMore>
+    {:else if value.attributeUpdates && attributeModel}
+      <DocUpdateMessageAttributes attributeUpdates={value.attributeUpdates} {attributeModel} {viewlet} />
+    {/if}
+  </svelte:fragment>
+</ActivityMessageTemplate>
 
 <style lang="scss">
   .customContent {

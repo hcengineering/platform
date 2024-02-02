@@ -1,5 +1,5 @@
 import { get } from 'svelte/store'
-import type { DisplayTx, Reaction, TxViewlet } from '@hcengineering/activity'
+import type { ActivityMessage, DisplayTx, Reaction, TxViewlet } from '@hcengineering/activity'
 import core, {
   type AttachedDoc,
   type Class,
@@ -21,7 +21,13 @@ import core, {
 } from '@hcengineering/core'
 import { type Asset, type IntlString, getResource, translate } from '@hcengineering/platform'
 import { getAttributePresenterClass } from '@hcengineering/presentation'
-import { type AnyComponent, type AnySvelteComponent, ErrorPresenter, themeStore } from '@hcengineering/ui'
+import {
+  type AnyComponent,
+  type AnySvelteComponent,
+  ErrorPresenter,
+  themeStore,
+  type Location
+} from '@hcengineering/ui'
 import view, { type AttributeModel, type BuildModelKey, type BuildModelOptions } from '@hcengineering/view'
 import { getObjectPresenter } from '@hcengineering/view-resources'
 
@@ -416,4 +422,8 @@ export async function updateDocReactions (
   } else {
     await client.remove(reaction)
   }
+}
+
+export function getMessageFromLoc (loc: Location): Ref<ActivityMessage> | undefined {
+  return (loc.query?.message ?? undefined) as Ref<ActivityMessage> | undefined
 }

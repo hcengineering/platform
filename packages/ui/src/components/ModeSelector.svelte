@@ -2,7 +2,10 @@
   import TabList from './TabList.svelte'
   import { IModeSelector } from '../utils'
 
-  export let props: IModeSelector<T>
+  export let props: IModeSelector
+  export let kind: 'separated' | 'separated-free' = 'separated'
+  export let expansion: 'stretch' | 'default' = 'default'
+  export let padding: string | undefined = undefined
 
   $: modeList = props.config.map((c) => {
     return {
@@ -16,12 +19,13 @@
   })
 </script>
 
-<div class="ac-header withoutBackground tabs-start full">
+<div class="ac-header withoutBackground tabs-start full" style:padding>
   <TabList
     items={modeList}
     selected={props.mode}
-    kind={'separated'}
-    adaptiveShrink={'sm'}
+    {kind}
+    {expansion}
+    adaptiveShrink="sm"
     on:select={(result) => {
       if (result.detail !== undefined && result.detail.action) result.detail.action()
     }}

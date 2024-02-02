@@ -13,14 +13,20 @@
 // limitations under the License.
 //
 
-import { writable } from 'svelte/store'
-import chunter, { type Backlink, type Channel, type ChatMessage, type DirectMessage } from '@hcengineering/chunter'
+import { get, writable } from 'svelte/store'
+import chunter, {
+  type Backlink,
+  type Channel,
+  type ChatMessage,
+  chunterId,
+  type DirectMessage
+} from '@hcengineering/chunter'
 import { type Data, type Doc, type DocumentQuery, type Ref, type RelatedDocument } from '@hcengineering/core'
 import { type IntlString, type Resources, translate } from '@hcengineering/platform'
 import { MessageBox, getClient } from '@hcengineering/presentation'
 import { closePanel, getCurrentLocation, getLocation, navigate, showPopup } from '@hcengineering/ui'
 import activity, { type ActivityMessage, type DocUpdateMessage } from '@hcengineering/activity'
-import { type DocNotifyContext } from '@hcengineering/notification'
+import { type DocNotifyContext, inboxId } from '@hcengineering/notification'
 
 import ChannelPresenter from './components/ChannelPresenter.svelte'
 import ChannelView from './components/ChannelView.svelte'
@@ -48,23 +54,30 @@ import ThreadMessagePresenter from './components/threads/ThreadMessagePresenter.
 import ThreadParentPresenter from './components/threads/ThreadParentPresenter.svelte'
 import ChannelHeader from './components/ChannelHeader.svelte'
 import SavedMessages from './components/chat/specials/SavedMessages.svelte'
-import Threads from './components/chat/specials/Threads.svelte'
+import Threads from './components/threads/Threads.svelte'
 import DirectIcon from './components/DirectIcon.svelte'
 import ChannelIcon from './components/ChannelIcon.svelte'
 import ThreadNotificationPresenter from './components/notification/ThreadNotificationPresenter.svelte'
 import ChatMessageNotificationLabel from './components/notification/ChatMessageNotificationLabel.svelte'
+import ChatAside from './components/chat/ChatAside.svelte'
+import Replies from './components/Replies.svelte'
 
 import { updateBacklinksList } from './backlinks'
 import {
   ChannelTitleProvider,
   DirectTitleProvider,
   canDeleteMessage,
+  canReplyToThread,
   chunterSpaceLinkFragmentProvider,
   dmIdentifierProvider,
   getDmName,
-  getLink,
-  getTitle
+  getMessageLink,
+  getTitle,
+  getUnreadThreadsCount,
+  canCopyMessageLink,
+  navigateToThread
 } from './utils'
+import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 
 export { default as ChatMessagesPresenter } from './components/chat-message/ChatMessagesPresenter.svelte'
 export { default as ChatMessagePopup } from './components/chat-message/ChatMessagePopup.svelte'
@@ -187,10 +200,19 @@ export async function deleteChatMessage (message: ChatMessage): Promise<void> {
 }
 
 export async function replyToThread (message: ActivityMessage): Promise<void> {
-  const loc = getLocation()
-  loc.path[4] = message._id
-  loc.query = { ...loc.query, thread: message._id }
-  navigate(loc)
+  const loc = getCurrentLocation()
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+  const context = get(inboxClient.docNotifyContextByDoc).get(message.attachedTo)
+
+  if (context === undefined) {
+    return
+  }
+
+  if (loc.path[2] !== inboxId) {
+    loc.path[2] = chunterId
+  }
+
+  navigateToThread(loc, context._id, message._id)
 }
 
 export default async (): Promise<Resources> => ({
@@ -227,18 +249,23 @@ export default async (): Promise<Resources> => ({
     DirectIcon,
     ChannelIcon,
     ChatMessageNotificationLabel,
-    ThreadNotificationPresenter
+    ThreadNotificationPresenter,
+    ChatAside,
+    Replies
   },
   function: {
     GetDmName: getDmName,
     ChunterBrowserVisible: chunterBrowserVisible,
     GetFragment: getTitle,
-    GetLink: getLink,
+    GetLink: getMessageLink,
     DirectTitleProvider,
     ChannelTitleProvider,
     DmIdentifierProvider: dmIdentifierProvider,
     CanDeleteMessage: canDeleteMessage,
-    GetChunterSpaceLinkFragment: chunterSpaceLinkFragmentProvider
+    CanReplyToThread: canReplyToThread,
+    CanCopyMessageLink: canCopyMessageLink,
+    GetChunterSpaceLinkFragment: chunterSpaceLinkFragmentProvider,
+    GetUnreadThreadsCount: getUnreadThreadsCount
   },
   activity: {
     BacklinkCreatedLabel

@@ -21,6 +21,7 @@
   export let addClass: string | undefined = undefined
   export let noScroll: boolean = false
   export let kind: 'default' | 'thin' = 'default'
+  export let colorsSchema: 'default' | 'lumia' = 'default'
   export let updateOnMouse = true
 
   const refs: HTMLElement[] = []
@@ -75,6 +76,8 @@
       <div
         class="list-item{addClass ? ` ${addClass}` : ''}"
         class:selection={row === selection}
+        class:lumia={colorsSchema === 'lumia'}
+        class:default={colorsSchema === 'default'}
         on:mouseover={mouseAttractor(() => {
           if (updateOnMouse) {
             onRow(row)
@@ -105,8 +108,17 @@
       margin: 0 0.5rem;
       min-width: 0;
       border-radius: 0.25rem;
-      &:hover {
-        background-color: var(--theme-popup-divider);
+
+      &.default {
+        &:hover {
+          background-color: var(--theme-popup-divider);
+        }
+      }
+
+      &.lumia {
+        &:hover {
+          background-color: var(--global-ui-highlight-BackgroundColor);
+        }
       }
     }
     &.thin {
@@ -118,8 +130,15 @@
         margin-top: 0.375rem;
       }
     }
+
     .selection {
-      background-color: var(--theme-popup-hover);
+      &.default {
+        background-color: var(--theme-popup-hover);
+      }
+
+      &.lumia {
+        background-color: var(--global-ui-highlight-BackgroundColor);
+      }
     }
   }
 </style>

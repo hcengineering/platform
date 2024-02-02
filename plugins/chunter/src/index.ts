@@ -176,7 +176,9 @@ export default plugin(chunterId, {
     ChatMessageInput: '' as AnyComponent,
     ChatMessagesPresenter: '' as AnyComponent,
     ChatMessagePresenter: '' as AnyComponent,
-    ThreadMessagePresenter: '' as AnyComponent
+    ThreadMessagePresenter: '' as AnyComponent,
+    ChatAside: '' as AnyComponent,
+    Replies: '' as AnyComponent
   },
   class: {
     Message: '' as Ref<Class<Message>>,
@@ -221,7 +223,14 @@ export default plugin(chunterId, {
     ReplyToThread: '' as IntlString,
     Channels: '' as IntlString,
     Direct: '' as IntlString,
-    RepliedTo: '' as IntlString
+    RepliedTo: '' as IntlString,
+    AllChannels: '' as IntlString,
+    AllContacts: '' as IntlString,
+    NewChannel: '' as IntlString,
+    DescriptionOptional: '' as IntlString,
+    Visibility: '' as IntlString,
+    Public: '' as IntlString,
+    Private: '' as IntlString
   },
   ids: {
     DMNotification: '' as Ref<NotificationType>,

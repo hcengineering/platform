@@ -58,6 +58,7 @@ export * from './utils'
 export * from './inboxNotificationsClient'
 
 export { default as BrowserNotificatator } from './components/BrowserNotificatator.svelte'
+export { default as NotifyMarker } from './components/NotifyMarker.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {

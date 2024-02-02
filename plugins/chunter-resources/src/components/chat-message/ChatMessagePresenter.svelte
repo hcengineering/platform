@@ -37,7 +37,7 @@
   export let embedded: boolean = false
   export let withActions: boolean = true
   export let showEmbedded = false
-  export let hideReplies = false
+  export let hideFooter = false
   export let skipLabel = false
   export let actions: Action[] = []
   export let excludedActions: string[] = []
@@ -63,15 +63,12 @@
   let object: Doc | undefined
 
   let viewlet: ChatMessageViewlet | undefined
-
-  $: value &&
-    viewletQuery.query(
-      chunter.class.ChatMessageViewlet,
-      { objectClass: value.attachedToClass, messageClass: value._class },
-      (result: ChatMessageViewlet[]) => {
-        viewlet = result[0]
-      }
-    )
+  ;[viewlet] = value
+    ? client.getModel().findAllSync(chunter.class.ChatMessageViewlet, {
+      objectClass: value.attachedToClass,
+      messageClass: value._class
+    })
+    : []
 
   $: value &&
     userQuery.query(core.class.Account, { _id: value.createdBy }, (res: Account[]) => {
@@ -175,7 +172,7 @@
     {withActions}
     actions={additionalActions}
     {showEmbedded}
-    {hideReplies}
+    {hideFooter}
     {withFlatActions}
     {hoverable}
     {onClick}

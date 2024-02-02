@@ -72,6 +72,8 @@ export async function createReactionNotifications (
   tx: TxCollectionCUD<ActivityMessage, Reaction>,
   control: TriggerControl
 ): Promise<Tx[]> {
+  const createTx = TxProcessor.extractTx(tx) as TxCreateDoc<Reaction>
+
   const parentMessage = (await control.findAll(activity.class.ActivityMessage, { _id: tx.objectId }))[0]
 
   if (parentMessage === undefined) {
@@ -86,20 +88,24 @@ export async function createReactionNotifications (
 
   let res: Tx[] = []
 
-  const messageTx = (
-    await pushDocUpdateMessages(
-      control.ctx,
-      control,
-      res as TxCollectionCUD<Doc, DocUpdateMessage>[],
-      parentMessage,
-      tx,
-      tx.modifiedBy
-    )
-  )[0]
+  const rawMessage: Data<DocUpdateMessage> = {
+    txId: tx._id,
+    attachedTo: parentMessage._id,
+    attachedToClass: parentMessage._class,
+    objectId: createTx.objectId,
+    objectClass: createTx.objectClass,
+    action: 'create',
+    collection: 'docUpdateMessages',
+    updateCollection: tx.collection
+  }
+
+  const messageTx = getDocUpdateMessageTx(control, tx, parentMessage, rawMessage, tx.modifiedBy)
 
   if (messageTx === undefined) {
     return []
   }
+
+  res.push(messageTx)
 
   const docUpdateMessage = TxProcessor.createDoc2Doc(messageTx.tx as TxCreateDoc<DocUpdateMessage>)
 

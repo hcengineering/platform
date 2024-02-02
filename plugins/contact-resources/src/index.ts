@@ -159,7 +159,8 @@ export {
   UserBoxItems,
   MembersBox,
   PersonRefPresenter,
-  SystemAvatar
+  SystemAvatar,
+  PersonIcon
 }
 
 const toObjectSearchResult = (e: WithLookup<Contact>): ObjectSearchResult => ({

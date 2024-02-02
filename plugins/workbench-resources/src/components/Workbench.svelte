@@ -272,7 +272,7 @@
         loc.path[4] = (currentSpecial as string) ?? resolved.defaultLocation.path[4]
       } else {
         loc.path[3] = resolvedSpace
-        loc.path[4] = resolvedSpecial ?? currentSpecial ?? (asideId as string) ?? resolved.defaultLocation.path[4]
+        loc.path[4] = resolvedSpecial ?? currentSpecial ?? resolved.defaultLocation.path[4]
       }
     }
     for (let index = 0; index < loc.path.length; index++) {
@@ -465,6 +465,7 @@
   function closeAside (): void {
     const loc = getLocation()
     loc.path.length = 4
+    asideId = undefined
     checkOnHide()
     navigate(loc)
   }

@@ -50,8 +50,10 @@
       activity.class.ActivityMessage,
       { attachedTo: objectId },
       (result: ActivityMessage[]) => {
-        activityMessages = combineActivityMessages(result, order)
-        isLoading = false
+        combineActivityMessages(result, order).then((messages) => {
+          activityMessages = messages
+          isLoading = false
+        })
       },
       {
         sort: {

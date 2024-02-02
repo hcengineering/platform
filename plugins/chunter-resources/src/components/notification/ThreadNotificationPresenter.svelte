@@ -15,7 +15,7 @@
 <script lang="ts">
   import { ThreadMessage } from '@hcengineering/chunter'
   import ThreadMessagePresenter from '../threads/ThreadMessagePresenter.svelte'
-  import { Action, getLocation, navigate } from '@hcengineering/ui'
+  import { Action } from '@hcengineering/ui'
   import { ActivityInboxNotification } from '@hcengineering/notification'
 
   export let message: ThreadMessage
@@ -26,13 +26,6 @@
   export let actions: Action[] = []
   export let excludedActions: string[] = []
   export let onClick: (() => void) | undefined = undefined
-
-  function handleReply (): void {
-    const loc = getLocation()
-    loc.fragment = notification.docNotifyContext
-    loc.query = { message: notification.attachedTo }
-    navigate(loc)
-  }
 </script>
 
 <ThreadMessagePresenter
@@ -42,9 +35,7 @@
   {withActions}
   {actions}
   {excludedActions}
-  withFlatActions={false}
   hoverable={false}
   showNotify={showNotify && !notification.isViewed}
-  onReply={handleReply}
   {onClick}
 />

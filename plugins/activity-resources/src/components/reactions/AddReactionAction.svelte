@@ -19,6 +19,7 @@
   import activity, { ActivityMessage, Reaction } from '@hcengineering/activity'
 
   import { updateDocReactions } from '../../utils'
+  import ActivityMessageAction from '../ActivityMessageAction.svelte'
 
   export let object: ActivityMessage | undefined = undefined
 
@@ -28,6 +29,7 @@
   const dispatch = createEventDispatcher()
 
   let reactions: Reaction[] = []
+  let isOpened = false
 
   $: if (object) {
     reactionsQuery.query(activity.class.Reaction, { attachedTo: object._id }, (res?: Reaction[]) => {
@@ -39,9 +41,12 @@
     dispatch('open')
     showPopup(EmojiPopup, {}, ev.target as HTMLElement, (emoji: string) => {
       updateDocReactions(client, reactions, object, emoji)
+      isOpened = false
       dispatch('close')
     })
+
+    isOpened = true
   }
 </script>
 
-<ActionIcon icon={IconEmoji} size="medium" action={openEmojiPalette} />
+<ActivityMessageAction icon={IconEmoji} action={openEmojiPalette} opened={isOpened} />

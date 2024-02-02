@@ -75,7 +75,6 @@ export default mergeIds(chunterId, chunter, {
     ConfigLabel: '' as IntlString,
     ConfigDescription: '' as IntlString,
     Reacted: '' as IntlString,
-    Saved: '' as IntlString,
     RepliedToThread: '' as IntlString
   },
   viewlet: {
@@ -107,6 +106,8 @@ export default mergeIds(chunterId, chunter, {
     GetFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     DmIdentifierProvider: '' as Resource<<T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<string>>,
     CanDeleteMessage: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    CanReplyToThread: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    CanCopyMessageLink: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     GetChunterSpaceLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>
   },
   filter: {

@@ -13,43 +13,70 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc } from '@hcengineering/core'
-  import { getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
+  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { getDocTitle } from '@hcengineering/view-resources'
   import { getClient } from '@hcengineering/presentation'
   import { Channel } from '@hcengineering/chunter'
+  import { ActivityMessagesFilter } from '@hcengineering/activity'
+  import contact from '@hcengineering/contact'
 
   import Header from './Header.svelte'
   import chunter from '../plugin'
-  import { getChannelIcon } from '../utils'
+  import { getChannelIcon, getChannelName } from '../utils'
 
-  export let object: Doc
+  export let _id: Ref<Doc>
+  export let _class: Ref<Class<Doc>>
+  export let object: Doc | undefined
   export let allowClose = false
+  export let canOpen = false
+  export let withAside = false
+  export let isAsideShown = false
+  export let filters: Ref<ActivityMessagesFilter>[] = []
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  $: topic = hierarchy.isDerived(object._class, chunter.class.Channel) ? (object as Channel).topic : undefined
+  let title: string | undefined = undefined
+  let description: string | undefined = undefined
 
-  async function getTitle (object: Doc) {
-    if (object._class === chunter.class.DirectMessage) {
-      return await getDocTitle(client, object._id, object._class, object)
+  $: updateDescription(_id, _class, object)
+
+  $: getChannelName(_id, _class, object).then((res) => {
+    title = res
+  })
+
+  async function updateDescription (_id: Ref<Doc>, _class: Ref<Class<Doc>>, object?: Doc) {
+    if (hierarchy.isDerived(_class, chunter.class.DirectMessage)) {
+      description = undefined
+    } else if (hierarchy.isDerived(_class, chunter.class.Channel)) {
+      description = (object as Channel)?.topic
+    } else {
+      description = await getDocTitle(client, _id, _class, object)
     }
-    return await getDocLinkTitle(client, object._id, object._class, object)
   }
+
+  $: isPerson =
+    hierarchy.isDerived(_class, chunter.class.DirectMessage) || hierarchy.isDerived(_class, contact.class.Person)
 </script>
 
 <div class="ac-header divide full caption-height">
-  {#await getTitle(object) then title}
-    <Header
-      icon={getChannelIcon(object)}
-      iconProps={{ value: object }}
-      label={title}
-      intlLabel={title ? undefined : chunter.string.Channel}
-      description={topic}
-      {allowClose}
-      on:close
-    />
-  {/await}
+  <Header
+    bind:filters
+    {object}
+    icon={getChannelIcon(_class)}
+    iconProps={{ value: object }}
+    label={title}
+    intlLabel={chunter.string.Channel}
+    {description}
+    titleKind={isPerson ? 'default' : 'breadcrumbs'}
+    withFilters={!hierarchy.isDerived(_class, chunter.class.ChunterSpace)}
+    {allowClose}
+    {canOpen}
+    {withAside}
+    {isAsideShown}
+    on:aside-toggled
+    on:close
+  />
 </div>
 
 <style lang="scss">

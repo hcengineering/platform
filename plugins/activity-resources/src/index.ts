@@ -33,12 +33,13 @@ export { default as Reactions } from './components/reactions/Reactions.svelte'
 export { default as ActivityMessageTemplate } from './components/activity-message/ActivityMessageTemplate.svelte'
 export { default as ActivityMessagePresenter } from './components/activity-message/ActivityMessagePresenter.svelte'
 export { default as ActivityExtension } from './components/ActivityExtension.svelte'
-export { default as ActivityScrolledView } from './components/ActivityScrolledView.svelte'
 export { default as ActivityDocLink } from './components/ActivityDocLink.svelte'
 export { default as ReactionPresenter } from './components/reactions/ReactionPresenter.svelte'
 export { default as ActivityMessageNotificationLabel } from './components/activity-message/ActivityMessageNotificationLabel.svelte'
 export { default as ActivityMessageHeader } from './components/activity-message/ActivityMessageHeader.svelte'
 export { default as AddReactionAction } from './components/reactions/AddReactionAction.svelte'
+export { default as ActivityMessageAction } from './components/ActivityMessageAction.svelte'
+export { default as ActivityMessagesFilterPopup } from './components/FilterPopup.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {

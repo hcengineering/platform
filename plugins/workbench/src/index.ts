@@ -19,6 +19,7 @@ import { plugin } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
 import { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui'
 import { ViewAction } from '@hcengineering/view'
+import { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
 
 /**
  * @public
@@ -104,6 +105,9 @@ export interface SpecialNavModel {
   // If defined, will be used to find spaces for visibleIf
   spaceClass?: Ref<Class<Space>>
   checkIsDisabled?: Resource<() => Promise<boolean>>
+  notificationsCountProvider?: Resource<
+  (inboxNotificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>) => number
+  >
 }
 
 /**

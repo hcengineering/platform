@@ -24,25 +24,24 @@
     AnyComponent,
     Component,
     defineSeparators,
-    getLocation,
     Label,
     Loading,
     location as locationStore,
-    navigate,
     Scroller,
     Separator,
     TabItem,
     TabList,
     Location
   } from '@hcengineering/ui'
-  import chunter from '@hcengineering/chunter'
+  import chunter, { ThreadMessage } from '@hcengineering/chunter'
   import { Ref, WithLookup } from '@hcengineering/core'
   import { ViewletSelector } from '@hcengineering/view-resources'
-  import activity from '@hcengineering/activity'
+  import activity, { ActivityMessage } from '@hcengineering/activity'
+  import { isReactionMessage } from '@hcengineering/activity-resources'
 
   import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
   import Filter from '../Filter.svelte'
-  import { getDisplayInboxNotifications, resolveLocation } from '../../utils'
+  import { getDisplayInboxNotifications, openInboxDoc, resolveLocation } from '../../utils'
   import { InboxNotificationsFilter } from '../../types'
 
   export let visibleNav: boolean = true
@@ -104,7 +103,7 @@
   async function syncLocation (newLocation: Location) {
     const loc = await resolveLocation(newLocation)
 
-    selectedContextId = loc?.loc.fragment as Ref<DocNotifyContext> | undefined
+    selectedContextId = loc?.loc.path[3] as Ref<DocNotifyContext> | undefined
 
     if (selectedContextId !== selectedContext?._id) {
       selectedContext = undefined
@@ -155,17 +154,31 @@
     selectedContext = event?.detail?.context
     selectedContextId = selectedContext?._id
 
-    const loc = getLocation()
-
-    if (selectedContext !== undefined) {
-      loc.fragment = selectedContext._id
-      loc.query = { message: event?.detail?.notification?.attachedTo ?? null }
-    } else {
-      loc.fragment = undefined
-      loc.query = undefined
+    if (selectedContext === undefined) {
+      openInboxDoc()
+      return
     }
 
-    navigate(loc)
+    if (hierarchy.isDerived(selectedContext.attachedToClass, activity.class.ActivityMessage)) {
+      const message = event?.detail?.notification?.$lookup?.attachedTo
+
+      if (selectedContext.attachedToClass === chunter.class.ThreadMessage) {
+        const thread = await client.findOne(chunter.class.ThreadMessage, {
+          _id: selectedContext.attachedTo as Ref<ThreadMessage>
+        })
+        openInboxDoc(selectedContext._id, thread?.attachedTo, thread?._id)
+      } else if (isReactionMessage(message)) {
+        openInboxDoc(selectedContext._id, undefined, selectedContext.attachedTo as Ref<ActivityMessage>)
+      } else {
+        openInboxDoc(
+          selectedContext._id,
+          selectedContext.attachedTo as Ref<ActivityMessage>,
+          event?.detail?.notification?.attachedTo
+        )
+      }
+    } else {
+      openInboxDoc(selectedContext._id, undefined, event?.detail?.notification?.attachedTo)
+    }
   }
 
   async function updateSelectedPanel (selectedContext?: DocNotifyContext) {
@@ -230,7 +243,13 @@
           <div class="ac-header__wrap-title mr-3">
             <span class="ac-header__title"><Label label={notification.string.Inbox} /></span>
           </div>
-          <ViewletSelector bind:viewlet bind:loading viewletQuery={{ attachTo: notification.class.DocNotifyContext }} />
+          <div class="flex-grow">
+            <ViewletSelector
+              bind:viewlet
+              bind:loading
+              viewletQuery={{ attachTo: notification.class.DocNotifyContext }}
+            />
+          </div>
           <div class="flex flex-gap-2">
             <Filter bind:filter />
           </div>
@@ -243,18 +262,16 @@
         {#if loading || !viewlet?.$lookup?.descriptor}
           <Loading />
         {:else if viewlet}
-          <Scroller>
-            <div class="notifications">
-              <Component
-                is={viewlet.$lookup.descriptor.component}
-                props={{
-                  notifications: filteredNotifications,
-                  viewlets,
-                  selectedContext
-                }}
-                on:click={selectContext}
-              />
-            </div>
+          <Scroller padding="1rem 0">
+            <Component
+              is={viewlet.$lookup.descriptor.component}
+              props={{
+                notifications: filteredNotifications,
+                viewlets,
+                selectedContext
+              }}
+              on:click={selectContext}
+            />
           </Scroller>
         {/if}
       </div>
@@ -283,13 +300,8 @@
   .tabs {
     display: flex;
     margin: 0.5rem;
+    margin-bottom: 0;
     padding-bottom: 0.5rem;
     border-bottom: 1px solid var(--theme-navpanel-border);
-  }
-
-  .notifications {
-    margin: 0.5rem;
-    padding: 0.5rem;
-    height: 100%;
   }
 </style>

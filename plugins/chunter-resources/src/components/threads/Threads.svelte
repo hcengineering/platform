@@ -13,14 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getCurrentAccount } from '@hcengineering/core'
+  import { getCurrentAccount, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Label, Scroller } from '@hcengineering/ui'
+  import { Scroller } from '@hcengineering/ui'
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { PersonAccount } from '@hcengineering/contact'
   import { ActivityMessagePresenter } from '@hcengineering/activity-resources'
 
-  import chunter from '../../../plugin'
+  import chunter from '../../plugin'
+  import Header from '../Header.svelte'
+  import { openMessageFromSpecial } from '../../utils'
 
   const threadsQuery = createQuery()
   const me = getCurrentAccount() as PersonAccount
@@ -30,26 +32,32 @@
   $: threadsQuery.query(
     activity.class.ActivityMessage,
     {
-      replies: { $gte: 1 }
+      replies: { $exists: true }
     },
     (res) => {
       threads = res.filter(
-        ({ createdBy, repliedPersons }) => createdBy === me._id || repliedPersons?.includes(me.person)
+        ({ createdBy, repliedPersons, replies }) =>
+          (replies !== undefined && replies > 0 && createdBy === me._id) || repliedPersons?.includes(me.person)
       )
-    }
+    },
+    { sort: { modifiedOn: SortingOrder.Descending } }
   )
 </script>
 
-<div class="ac-header full divide caption-height">
-  <div class="ac-header__wrap-title">
-    <span class="ac-header__title"><Label label={chunter.string.Threads} /></span>
-  </div>
+<div class="ac-header full divide caption-height" style="padding: 0.5rem 1rem">
+  <Header icon={chunter.icon.Thread} intlLabel={chunter.string.Threads} titleKind="breadcrumbs" />
 </div>
 
-<Scroller>
-  {#each threads as thread}
-    <div class="ml-4 mr-4">
-      <ActivityMessagePresenter value={thread} />
-    </div>
-  {/each}
-</Scroller>
+<div class="body h-full w-full">
+  <Scroller padding="0.75rem 0.5rem">
+    {#each threads as thread}
+      <ActivityMessagePresenter value={thread} onClick={() => openMessageFromSpecial(thread)} />
+    {/each}
+  </Scroller>
+</div>
+
+<style lang="scss">
+  .body {
+    background-color: var(--theme-panel-color);
+  }
+</style>
