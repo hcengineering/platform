@@ -150,7 +150,7 @@
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <span
-      class="select-text cover-channel overflow-label"
+      class="select-text cover-channel overflow-label with-tooltip"
       class:show
       class:copied={label === plugin.string.Copied}
       class:cursor-pointer={openable}
@@ -231,6 +231,10 @@
       font-size: 0.75rem;
       color: var(--theme-content-color);
       transform: translate(-50%, -50%);
+    }
+
+    &.with-tooltip {
+      min-width: 84px;
     }
   }
 
