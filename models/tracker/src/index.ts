@@ -274,7 +274,6 @@ function defineApplication (
       alias: trackerId,
       hidden: false,
       locationResolver: tracker.resolver.Location,
-      aside: chunter.component.ThreadView,
       navigatorModel: {
         specials: [
           {

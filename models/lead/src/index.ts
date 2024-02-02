@@ -155,7 +155,6 @@ export function createModel (builder: Builder): void {
       icon: lead.icon.LeadApplication,
       alias: leadId,
       hidden: false,
-      aside: chunter.component.ThreadView,
       navigatorModel: {
         specials: [
           {
