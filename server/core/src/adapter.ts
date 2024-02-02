@@ -49,7 +49,9 @@ export interface DbAdapter {
   findAll: <T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: FindOptions<T>
+    options?: FindOptions<T> & {
+      domain?: Domain // Allow to find for Doc's in specified domain only.
+    }
   ) => Promise<FindResult<T>>
   tx: (...tx: Tx[]) => Promise<TxResult>
 

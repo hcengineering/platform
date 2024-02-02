@@ -372,9 +372,11 @@ class TServerStorage implements ServerStorage {
     ctx: MeasureContext,
     clazz: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: FindOptions<T>
+    options?: FindOptions<T> & {
+      domain?: Domain // Allow to find for Doc's in specified domain only.
+    }
   ): Promise<FindResult<T>> {
-    const domain = this.hierarchy.getDomain(clazz)
+    const domain = options?.domain ?? this.hierarchy.getDomain(clazz)
     if (query?.$search !== undefined) {
       return await ctx.with('client-fulltext-find-all', {}, (ctx) => this.fulltext.findAll(ctx, clazz, query, options))
     }

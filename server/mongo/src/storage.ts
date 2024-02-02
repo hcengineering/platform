@@ -168,34 +168,41 @@ abstract class MongoAdapterBase implements DbAdapter {
       translated[tkey] = value
     }
     const baseClass = this.hierarchy.getBaseClass(clazz)
-    const classes = this.hierarchy.getDescendants(baseClass)
+    if (baseClass !== core.class.Doc) {
+      const classes = this.hierarchy.getDescendants(baseClass)
 
-    // Only replace if not specified
-    if (translated._class === undefined) {
-      translated._class = { $in: classes }
-    } else if (typeof translated._class === 'string') {
-      if (!classes.includes(translated._class)) {
+      // Only replace if not specified
+      if (translated._class === undefined) {
         translated._class = { $in: classes }
+      } else if (typeof translated._class === 'string') {
+        if (!classes.includes(translated._class)) {
+          translated._class = { $in: classes }
+        }
+      } else if (typeof translated._class === 'object' && translated._class !== null) {
+        let descendants: Ref<Class<Doc>>[] = classes
+
+        if (Array.isArray(translated._class.$in)) {
+          const classesIds = new Set(classes)
+          descendants = translated._class.$in.filter((c: Ref<Class<Doc>>) => classesIds.has(c))
+        }
+
+        if (translated._class != null && Array.isArray(translated._class.$nin)) {
+          const excludedClassesIds = new Set<Ref<Class<Doc>>>(translated._class.$nin)
+          descendants = descendants.filter((c) => !excludedClassesIds.has(c))
+        }
+
+        translated._class = { $in: descendants }
       }
-    } else if (typeof translated._class === 'object' && translated._class !== null) {
-      let descendants: Ref<Class<Doc>>[] = classes
 
-      if (Array.isArray(translated._class.$in)) {
-        const classesIds = new Set(classes)
-        descendants = translated._class.$in.filter((c: Ref<Class<Doc>>) => classesIds.has(c))
+      if (baseClass !== clazz) {
+        // Add an mixin to be exists flag
+        translated[clazz] = { $exists: true }
       }
-
-      if (translated._class != null && Array.isArray(translated._class.$nin)) {
-        const excludedClassesIds = new Set<Ref<Class<Doc>>>(translated._class.$nin)
-        descendants = descendants.filter((c) => !excludedClassesIds.has(c))
+    } else {
+      // No need to pass _class in case of fixed domain search.
+      if ('_class' in translated) {
+        delete translated._class
       }
-
-      translated._class = { $in: descendants }
-    }
-
-    if (baseClass !== clazz) {
-      // Add an mixin to be exists flag
-      translated[clazz] = { $exists: true }
     }
     return translated
   }
@@ -416,7 +423,9 @@ abstract class MongoAdapterBase implements DbAdapter {
   private async findWithPipeline<T extends Doc>(
     clazz: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: FindOptions<T>
+    options?: FindOptions<T> & {
+      domain?: Domain // Allow to find for Doc's in specified domain only.
+    }
   ): Promise<FindResult<T>> {
     const pipeline = []
     const match = { $match: this.translateQuery(clazz, query) }
@@ -454,7 +463,8 @@ abstract class MongoAdapterBase implements DbAdapter {
         ...(options?.total === true ? { totalCount: [{ $count: 'count' }] } : {})
       }
     })
-    const domain = this.hierarchy.getDomain(clazz)
+    // const domain = this.hierarchy.getDomain(clazz)
+    const domain = options?.domain ?? this.hierarchy.getDomain(clazz)
     const cursor = this.db.collection(domain).aggregate(pipeline, {
       checkKeys: false,
       enableUtf8Validation: false
@@ -562,13 +572,15 @@ abstract class MongoAdapterBase implements DbAdapter {
   async findAll<T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: FindOptions<T>
+    options?: FindOptions<T> & {
+      domain?: Domain // Allow to find for Doc's in specified domain only.
+    }
   ): Promise<FindResult<T>> {
     // TODO: rework this
     if (options != null && (options?.lookup != null || this.isEnumSort(_class, options) || this.isRulesSort(options))) {
       return await this.findWithPipeline(_class, query, options)
     }
-    const domain = this.hierarchy.getDomain(_class)
+    const domain = options?.domain ?? this.hierarchy.getDomain(_class)
     const coll = this.db.collection(domain)
     const mongoQuery = this.translateQuery(_class, query)
     let cursor = coll.find<T>(mongoQuery, {
@@ -719,6 +731,9 @@ abstract class MongoAdapterBase implements DbAdapter {
   }
 
   async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    if (docs.length === 0) {
+      return []
+    }
     const cursor = this.db.collection<Doc>(domain).find<Doc>({ _id: { $in: docs } })
     const result = await this.toArray(cursor)
     return this.stripHash(this.stripHash(result))

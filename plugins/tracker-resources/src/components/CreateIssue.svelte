@@ -442,11 +442,11 @@
           issueUrl: currentProject != null && generateIssueShortLink(getIssueId(currentProject, value as Issue))
         }
       )
-      console.log('createIssue measure', await doneOp())
 
       draftController.remove()
       descriptionBox?.removeDraft(false)
       isAssigneeTouched = false
+      console.log('createIssue measure', doneOp())
     } catch (err: any) {
       console.error(err)
       await doneOp() // Complete in case of error
