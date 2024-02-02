@@ -151,14 +151,14 @@ export async function start (
         documentName = documentName.split('://', 2)[1]
       }
 
-      if (documentName.includes('/')) {
-        const [workspace] = documentName.split('/', 2)
-        if (workspace !== context.workspaceId.name) {
-          throw new Error('documentName must include workspace')
-        }
-      } else {
-        throw new Error('documentName must include workspace')
-      }
+      // if (documentName.includes('/')) {
+      //   const [workspace] = documentName.split('/', 2)
+      //   if (workspace !== context.workspaceId.name) {
+      //     throw new Error('documentName must include workspace')
+      //   }
+      // } else {
+      //   throw new Error('documentName must include workspace')
+      // }
 
       return context
     },

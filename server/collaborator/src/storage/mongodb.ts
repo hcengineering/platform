@@ -41,10 +41,8 @@ function parseDocumentId (documentId: string): MongodbDocumentId {
 
 function isValidDocumentId (documentId: MongodbDocumentId, context: Context): boolean {
   return (
-    documentId.objectDomain !== '' &&
-    documentId.objectId !== '' &&
-    documentId.objectAttr !== '' &&
-    documentId.workspace === context.workspaceId.name
+    documentId.objectDomain !== '' && documentId.objectId !== '' && documentId.objectAttr !== ''
+    // && documentId.workspace === context.workspaceId.name
   )
 }
 
