@@ -355,3 +355,11 @@ export class TIndexConfiguration<T extends Doc = Doc> extends TClass implements 
   indexes!: FieldIndex<T>[]
   searchDisabled!: boolean
 }
+
+@UX(core.string.CollaborativeDoc)
+@Model(core.class.TypeCollaborativeDoc, core.class.Type)
+export class TTypeCollaborativeDoc extends TType {}
+
+@UX(core.string.CollaborativeDoc)
+@Model(core.class.TypeCollaborativeDocWithHistory, core.class.Type)
+export class TTypeCollaborativeDocWithHistory extends TType {}

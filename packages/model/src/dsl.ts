@@ -20,6 +20,8 @@ import core, {
   Class,
   Classifier,
   ClassifierKind,
+  CollaborativeDoc,
+  CollaborativeDocWithHistory,
   Data,
   DateRangeMode,
   Doc,
@@ -488,4 +490,18 @@ export function Collection<T extends AttachedDoc> (clazz: Ref<Class<T>>, itemLab
  */
 export function ArrOf<T extends PropertyType | Ref<Doc>> (type: Type<T>): TypeArrOf<T> {
   return { _class: core.class.ArrOf, label: core.string.Array, of: type }
+}
+
+/**
+ * @public
+ */
+export function TypeCollaborativeDoc (): Type<CollaborativeDoc> {
+  return { _class: core.class.TypeCollaborativeDoc, label: core.string.CollaborativeDoc }
+}
+
+/**
+ * @public
+ */
+export function TypeCollaborativeDocWithHistory (): Type<CollaborativeDocWithHistory> {
+  return { _class: core.class.TypeCollaborativeDocWithHistory, label: core.string.CollaborativeDoc }
 }

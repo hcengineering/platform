@@ -47,6 +47,7 @@ import {
   type MinioConfig
 } from '@hcengineering/server'
 import { serverAttachmentId } from '@hcengineering/server-attachment'
+import { serverCollaborationId } from '@hcengineering/server-collaboration'
 import { serverCalendarId } from '@hcengineering/server-calendar'
 import { serverChunterId } from '@hcengineering/server-chunter'
 import { serverContactId } from '@hcengineering/server-contact'
@@ -193,6 +194,7 @@ export function start (
   }
 ): () => Promise<void> {
   addLocation(serverAttachmentId, () => import('@hcengineering/server-attachment-resources'))
+  addLocation(serverCollaborationId, () => import('@hcengineering/server-collaboration-resources'))
   addLocation(serverContactId, () => import('@hcengineering/server-contact-resources'))
   addLocation(serverNotificationId, () => import('@hcengineering/server-notification-resources'))
   addLocation(serverSettingId, () => import('@hcengineering/server-setting-resources'))

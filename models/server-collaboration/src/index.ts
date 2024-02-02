@@ -1,5 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2021 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -11,25 +12,18 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 //
-export * from './classes'
-export * from './client'
-export * from './collaboration'
-export { coreId, systemAccountEmail, default } from './component'
-export * from './hierarchy'
-export * from './measurements'
-export * from './memdb'
-export * from './objvalue'
-export * from './operations'
-export * from './operator'
-export * from './query'
-export * from './server'
-export * from './storage'
-export * from './tx'
-export * from './utils'
-export * from './backup'
-export * from './status'
-export * from './typeof'
-export * from './common'
-export * from './time'
+
+import { type Builder } from '@hcengineering/model'
+
+import core from '@hcengineering/core'
+import serverCollaboration from '@hcengineering/server-collaboration'
+import serverCore from '@hcengineering/server-core'
+
+export { serverCollaborationId } from '@hcengineering/server-collaboration'
+
+export function createModel (builder: Builder): void {
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverCollaboration.trigger.OnDelete
+  })
+}
