@@ -384,6 +384,7 @@
           value={message}
           skipLabel={skipLabels}
           {showEmbedded}
+          hoverStyles="filledHover"
           isHighlighted={isSelected}
           shouldScroll={isSelected}
         />

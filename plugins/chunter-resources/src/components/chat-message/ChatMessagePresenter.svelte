@@ -44,13 +44,13 @@
   export let withFlatActions: boolean = true
   export let hoverable = true
   export let inline = false
+  export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  const viewletQuery = createQuery()
   const userQuery = createQuery()
 
   const currentAccount = getCurrentAccount()
@@ -175,6 +175,7 @@
     {hideFooter}
     {withFlatActions}
     {hoverable}
+    {hoverStyles}
     {onClick}
     {onReply}
   >

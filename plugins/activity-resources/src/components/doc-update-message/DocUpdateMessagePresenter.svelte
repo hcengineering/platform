@@ -50,6 +50,7 @@
   export let withFlatActions: boolean = true
   export let excludedActions: string[] = []
   export let hoverable = true
+  export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -156,6 +157,7 @@
   {skipLabel}
   {withFlatActions}
   {hoverable}
+  {hoverStyles}
   {onClick}
   {onReply}
 >
