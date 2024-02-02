@@ -148,7 +148,6 @@ export function createModel (builder: Builder): void {
       icon: inventory.icon.InventoryApplication,
       alias: inventoryId,
       hidden: false,
-      aside: chunter.component.ThreadView,
       navigatorModel: {
         specials: [
           {

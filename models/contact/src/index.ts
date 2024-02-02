@@ -286,7 +286,6 @@ export function createModel (builder: Builder): void {
       hidden: false,
       // component: contact.component.ContactsTabs,
       locationResolver: contact.resolver.Location,
-      aside: chunter.component.ThreadView,
       navigatorModel: {
         spaces: [],
         specials: [
