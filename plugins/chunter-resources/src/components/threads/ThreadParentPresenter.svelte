@@ -19,4 +19,4 @@
   export let message: ActivityMessage
 </script>
 
-<ActivityMessagePresenter value={message} hideFooter />
+<ActivityMessagePresenter value={message} hideFooter hoverStyles='filledHover' />
