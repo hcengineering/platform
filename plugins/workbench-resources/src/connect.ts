@@ -51,14 +51,9 @@ export async function connect (title: string): Promise<Client | undefined> {
   }
   const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
   const token = tokens[ws]
-  const path = `/${loc.path[0]}/${loc.path[1]}`
   setMetadata(presentation.metadata.Token, token)
   document.cookie =
-    encodeURIComponent(presentation.metadata.Token.replaceAll(':', '-')) +
-    '=' +
-    encodeURIComponent(token) +
-    '; path=' +
-    path
+    encodeURIComponent(presentation.metadata.Token.replaceAll(':', '-')) + '=' + encodeURIComponent(token) + '; path=/'
 
   const endpoint = fetchMetadataLocalStorage(login.metadata.LoginEndpoint)
   const email = fetchMetadataLocalStorage(login.metadata.LoginEmail)
