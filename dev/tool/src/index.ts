@@ -155,7 +155,16 @@ export function devTool (
       const { mongodbUri } = prepareTools()
       await withDatabase(mongodbUri, async (db, client) => {
         console.log(`assigning user ${email} to ${workspace}...`)
-        await assignWorkspace(db, productId, email, workspace)
+        const workspaceInfo = await getWorkspaceById(db, productId, workspace)
+        if (workspaceInfo === null) {
+          throw new Error(`workspace ${workspace} not found`)
+        }
+        console.log('assigning to workspace', workspaceInfo)
+        try {
+          await assignWorkspace(db, productId, email, workspaceInfo?.workspaceUrl ?? workspaceInfo.workspace)
+        } catch (err: any) {
+          console.error(err)
+        }
       })
     })
 

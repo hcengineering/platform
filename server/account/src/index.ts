@@ -979,17 +979,19 @@ export async function assignWorkspace (
   const workspaceInfo = await getWorkspaceAndAccount(db, productId, email, workspaceId)
   const account = await db.collection<Account>(ACCOUNT_COLLECTION).findOne({ _id: accountId })
 
-  if (account !== null) await createPersonAccount(account, productId, workspaceId, shouldReplaceAccount)
+  if (account !== null) {
+    await createPersonAccount(account, productId, workspaceId, shouldReplaceAccount)
+  }
 
   // Add account into workspace.
   await db
     .collection(WORKSPACE_COLLECTION)
-    .updateOne({ _id: workspaceInfo.workspaceId }, { $addToSet: { accounts: accountId } })
+    .updateOne({ _id: workspaceInfo.workspaceId }, { $addToSet: { accounts: workspaceInfo.accountId } })
 
   // Add workspace to account
   await db
     .collection(ACCOUNT_COLLECTION)
-    .updateOne({ _id: accountId }, { $addToSet: { workspaces: workspaceInfo.workspaceId } })
+    .updateOne({ _id: workspaceInfo.accountId }, { $addToSet: { workspaces: workspaceInfo.workspaceId } })
 }
 
 async function createEmployee (ops: TxOperations, name: string, _email: string): Promise<Ref<Person>> {
