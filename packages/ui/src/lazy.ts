@@ -7,7 +7,6 @@ const delayedCaller = new DelayedCaller(5)
 function makeObserver (rootMargin: string): IntersectionObserver {
   const entriesPending = new Map<Element, { isIntersecting: boolean }>()
   const notifyObservers = (observer: IntersectionObserver): void => {
-    console.log('notifyObservers', entriesPending.size)
     for (const [target, entry] of entriesPending.entries()) {
       const entryData = entryMap.get(target)
       if (entryData == null) {
@@ -69,12 +68,26 @@ export function lazyObserver (node: Element, onVisible: (value: boolean, unsubsc
     return {}
   }
 
-  const destroy = listen('20%', node, (isIntersecting) => {
-    visible = isIntersecting
-    onVisible(visible, destroy)
-  })
+  let needsUpdate = true
+  let destroy = (): void => {}
+  // we need this update function to re-trigger observer for moved elements
+  // moved elements are relevant because onVisible can have side effects
+  const update = (): void => {
+    if (!needsUpdate) {
+      return
+    }
+    needsUpdate = false
+    destroy()
+    destroy = listen('20%', node, (isIntersecting) => {
+      visible = isIntersecting
+      needsUpdate = visible
+      onVisible(visible, destroy)
+    })
+  }
+  update()
 
   return {
-    destroy
+    destroy,
+    update
   }
 }
