@@ -27,6 +27,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Component, ShowMore, Action } from '@hcengineering/ui'
   import { AttributeModel } from '@hcengineering/view'
+  import { buildRemovedDoc, checkIsObjectRemoved } from '@hcengineering/view-resources'
 
   import ActivityMessageTemplate from '../activity-message/ActivityMessageTemplate.svelte'
   import DocUpdateMessageAttributes from './DocUpdateMessageAttributes.svelte'
@@ -34,7 +35,6 @@
   import DocUpdateMessageHeader from './DocUpdateMessageHeader.svelte'
 
   import { getAttributeModel, getCollectionAttribute } from '../../activityMessagesUtils'
-  import { buildRemovedDoc, checkIsObjectRemoved } from '@hcengineering/view-resources'
 
   export let value: DisplayDocUpdateMessage
   export let showNotify: boolean = false
@@ -60,11 +60,14 @@
   const objectQuery = createQuery()
   const parentObjectQuery = createQuery()
 
-  const collectionAttribute = getCollectionAttribute(hierarchy, value.attachedToClass, value.updateCollection)
-  const clazz = hierarchy.getClass(value.objectClass)
-  const objectName: IntlString | undefined =
-    (collectionAttribute?.type as Collection<AttachedDoc>)?.itemLabel || clazz.label
-  const collectionName = collectionAttribute?.label
+  let objectName: IntlString | undefined = undefined
+  let collectionName: IntlString | undefined = undefined
+
+  $: collectionAttribute = getCollectionAttribute(hierarchy, value.attachedToClass, value.updateCollection)
+  $: clazz = hierarchy.getClass(value.objectClass)
+
+  $: objectName = (collectionAttribute?.type as Collection<AttachedDoc>)?.itemLabel || clazz.label
+  $: collectionName = collectionAttribute?.label
 
   let user: PersonAccount | undefined = undefined
   let person: Person | undefined = undefined
@@ -190,7 +193,13 @@
       </ShowMore>
     {:else if value.action === 'create' || value.action === 'remove'}
       <ShowMore>
-        <DocUpdateMessageContent message={value} {viewlet} {objectName} {collectionName} {collectionAttribute} />
+        <DocUpdateMessageContent
+          message={value}
+          {viewlet}
+          {objectName}
+          {collectionName}
+          objectIcon={collectionAttribute?.icon ?? clazz.icon}
+        />
       </ShowMore>
     {:else if value.attributeUpdates && attributeModel}
       <DocUpdateMessageAttributes attributeUpdates={value.attributeUpdates} {attributeModel} {viewlet} />
