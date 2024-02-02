@@ -17,6 +17,6 @@ test.describe('login test', () => {
     await loginPage.login(PlatformUser, '1234')
 
     const selectWorkspacePage = new SelectWorkspacePage(page)
-    await selectWorkspacePage.selectWorkspace('sanity-ws')
+    await selectWorkspacePage.selectWorkspace('SanityTest')
   })
 })

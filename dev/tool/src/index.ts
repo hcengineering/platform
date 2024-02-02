@@ -206,20 +206,12 @@ export function devTool (
   program
     .command('create-workspace <name>')
     .description('create workspace')
-    .requiredOption('-o, --organization <organization>', 'organization name')
+    .requiredOption('-w, --workspaceName <workspaceName>', 'Workspace name')
+    .option('-e, --email <email>', 'Author email', 'platform@email.com')
     .action(async (workspace, cmd) => {
       const { mongodbUri, txes, version, migrateOperations } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
-        await createWorkspace(
-          version,
-          txes,
-          migrateOperations,
-          db,
-          productId,
-          'platform@email.com',
-          cmd.organization,
-          workspace
-        )
+        await createWorkspace(version, txes, migrateOperations, db, productId, cmd.email, cmd.workspaceName, workspace)
       })
     })
 
