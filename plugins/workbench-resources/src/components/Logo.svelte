@@ -17,7 +17,7 @@
   export let workspace: string
 </script>
 
-<div class="antiLogo red" class:mini>{workspace?.toUpperCase()?.[0]}</div>
+<div class="antiLogo red" class:mini>{workspace?.toUpperCase()?.[0] ?? ''}</div>
 
 <style lang="scss">
   .antiLogo {

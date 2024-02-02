@@ -53,7 +53,7 @@
       </div>
     </FixedColumn>
   </svelte:fragment>
-  {#each Object.entries(metrics.measurements) as [k, v], i}
+  {#each Object.entries(metrics.measurements) as [k, v], i (k)}
     <div style:margin-left={`${level * 0.5}rem`}>
       <svelte:self metrics={v} name="{i}. {k}" level={level + 1} />
     </div>

@@ -59,7 +59,7 @@ export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Pr
   const issue = doc as Issue
   const issueId = await getIssueId(issue, control)
   const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.name}/${trackerId}/${issueId}`
+  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${trackerId}/${issueId}`
   const link = concatLink(front, path)
   return `<a href="${link}">${issueId}</a> ${issue.title}`
 }

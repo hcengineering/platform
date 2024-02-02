@@ -134,7 +134,7 @@ export async function OnChannelUpdate (tx: Tx, control: TriggerControl): Promise
 export async function personHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const person = doc as Person
   const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.name}/${contactId}/${doc._id}`
+  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${contactId}/${doc._id}`
   const link = concatLink(front, path)
   return `<a href="${link}">${getName(control.hierarchy, person)}</a>`
 }
@@ -153,7 +153,7 @@ export function personTextPresenter (doc: Doc, control: TriggerControl): string 
 export async function organizationHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const organization = doc as Organization
   const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.name}/${contactId}/${doc._id}`
+  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${contactId}/${doc._id}`
   const link = concatLink(front, path)
   return `<a href="${link}">${organization.name}</a>`
 }

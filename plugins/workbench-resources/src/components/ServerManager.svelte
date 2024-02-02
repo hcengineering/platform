@@ -32,10 +32,14 @@
   let admin = false
   onDestroy(
     ticker.subscribe(() => {
-      void fetch(endpoint + `/api/v1/statistics?token=${token}`, {}).then(async (json) => {
-        data = await json.json()
-        admin = data?.admin ?? false
-      })
+      void fetch(endpoint + `/api/v1/statistics?token=${token}`, {})
+        .then(async (json) => {
+          data = await json.json()
+          admin = data?.admin ?? false
+        })
+        .catch((err) => {
+          console.error(err)
+        })
     })
   )
   const tabs: TabItem[] = [

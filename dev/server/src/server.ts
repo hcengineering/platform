@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { DOMAIN_TX, getWorkspaceId, MeasureMetricsContext } from '@hcengineering/core'
+import { DOMAIN_TX, MeasureMetricsContext } from '@hcengineering/core'
 import { createInMemoryTxAdapter } from '@hcengineering/dev-storage'
 import {
   ContentTextAdapter,
@@ -44,7 +44,7 @@ async function createNullContentTextAdapter (): Promise<ContentTextAdapter> {
 export async function start (port: number, host?: string): Promise<void> {
   const ctx = new MeasureMetricsContext('server', {})
   startJsonRpc(ctx, {
-    pipelineFactory: (ctx) => {
+    pipelineFactory: (ctx, workspaceId) => {
       const conf: DbConfiguration = {
         domains: {
           [DOMAIN_TX]: 'InMemoryTx'
@@ -74,13 +74,14 @@ export async function start (port: number, host?: string): Promise<void> {
           }
         },
         defaultContentAdapter: 'default',
-        workspace: getWorkspaceId('')
+        workspace: workspaceId
       }
       return createPipeline(ctx, conf, [], false, () => {})
     },
     sessionFactory: (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
     port,
     productId: '',
-    serverFactory: startHttpServer
+    serverFactory: startHttpServer,
+    accountsUrl: ''
   })
 }

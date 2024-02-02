@@ -45,8 +45,8 @@ function count (): string {
  * @public
  * @returns
  */
-export function generateId<T extends Doc> (): Ref<T> {
-  return (timestamp() + random + count()) as Ref<T>
+export function generateId<T extends Doc> (join: string = ''): Ref<T> {
+  return (timestamp() + join + random + join + count()) as Ref<T>
 }
 
 let currentAccount: Account
@@ -87,6 +87,14 @@ export function toFindResult<T extends Doc> (docs: T[], total?: number): FindRes
 export interface WorkspaceId {
   name: string
   productId: string
+}
+
+/**
+ * @public
+ */
+export interface WorkspaceIdWithUrl extends WorkspaceId {
+  workspaceUrl: string
+  workspaceName: string
 }
 
 /**
@@ -507,7 +515,7 @@ export function cutObjectArray (obj: any): any {
   for (const key of Object.keys(obj)) {
     if (Array.isArray(obj[key])) {
       if (obj[key].length > 3) {
-        Object.assign(r, { [key]: `[${obj[key].slice(0, 3)}, ... and ${obj[key].length - 3} more]` })
+        Object.assign(r, { [key]: [...obj[key].slice(0, 3), `... and ${obj[key].length - 3} more`] })
       } else Object.assign(r, { [key]: obj[key] })
       continue
     }

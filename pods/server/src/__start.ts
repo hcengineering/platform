@@ -82,6 +82,12 @@ if (frontUrl === undefined) {
   process.exit(1)
 }
 
+const accountsUrl = process.env.ACCOUNTS_URL
+if (accountsUrl === undefined) {
+  console.log('Please provide ACCOUNTS_URL url')
+  process.exit(1)
+}
+
 const sesUrl = process.env.SES_URL
 const cursorMaxTime = process.env.SERVER_CURSOR_MAXTIMEMS
 
@@ -105,7 +111,8 @@ const shutdown = start(url, {
   indexParallel: 2,
   indexProcessing: 50,
   productId: '',
-  enableCompression
+  enableCompression,
+  accountsUrl
 })
 
 const close = (): void => {

@@ -155,7 +155,7 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
       }
     },
     defaultContentAdapter: 'default',
-    workspace: getWorkspaceId('')
+    workspace: { ...getWorkspaceId(''), workspaceUrl: '', workspaceName: '' }
   }
   const ctx = new MeasureMetricsContext('client', {})
   const serverStorage = await createServerStorage(ctx, conf, {

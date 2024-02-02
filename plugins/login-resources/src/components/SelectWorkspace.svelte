@@ -129,7 +129,7 @@
             class="workspace flex-center fs-title cursor-pointer focused-button bordered form-row"
             on:click={() => select(workspace.workspace)}
           >
-            {workspace.workspace}
+            {workspace.workspaceName ?? workspace.workspace}
           </div>
         {/each}
         {#if workspaces.length === 0 && account?.confirmed === true}

@@ -1,12 +1,12 @@
 import client from '@hcengineering/client'
 import core, {
-  type AccountClient,
-  type Client,
   ClientConnectEvent,
-  type Version,
   getCurrentAccount,
   setCurrentAccount,
-  versionToString
+  versionToString,
+  type AccountClient,
+  type Client,
+  type Version
 } from '@hcengineering/core'
 import login, { loginId } from '@hcengineering/login'
 import { addEventListener, broadcastEvent, getMetadata, getResource, setMetadata } from '@hcengineering/platform'

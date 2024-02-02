@@ -26,10 +26,8 @@ export const loginId = 'login' as Plugin
  * @public
  */
 export interface Workspace {
-  workspace: string
-
-  workspaceUrl?: string // A workspace URL, if not passed will use workspace.
-  company?: string // A company name
+  workspace: string //
+  workspaceName?: string // A company name
 }
 
 /**

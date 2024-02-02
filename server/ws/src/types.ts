@@ -1,4 +1,5 @@
 import {
+  type WorkspaceIdWithUrl,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -78,7 +79,7 @@ export type BroadcastCall = (
  */
 export type PipelineFactory = (
   ctx: MeasureContext,
-  ws: WorkspaceId,
+  ws: WorkspaceIdWithUrl,
   upgrade: boolean,
   broadcast: BroadcastFunc
 ) => Promise<Pipeline>
@@ -115,6 +116,8 @@ export interface Workspace {
   sessions: Map<string, { session: Session, socket: ConnectionSocket }>
   upgrade: boolean
   closing?: Promise<void>
+
+  workspaceName: string
 }
 
 /**
@@ -130,10 +133,14 @@ export interface SessionManager {
     ctx: MeasureContext,
     ws: ConnectionSocket,
     token: Token,
+    rawToken: string,
     pipelineFactory: PipelineFactory,
     productId: string,
-    sessionId?: string
-  ) => Promise<{ session: Session, context: MeasureContext } | { upgrade: true }>
+    sessionId: string | undefined,
+    accountsUrl: string
+  ) => Promise<
+  { session: Session, context: MeasureContext, workspaceName: string } | { upgrade: true } | { error: any }
+  >
 
   broadcastAll: (workspace: Workspace, tx: Tx[], targets?: string[]) => void
 
@@ -170,5 +177,6 @@ export type ServerFactory = (
   pipelineFactory: PipelineFactory,
   port: number,
   productId: string,
-  enableCompression: boolean
+  enableCompression: boolean,
+  accountsUrl: string
 ) => () => Promise<void>
