@@ -21,12 +21,19 @@ import chunter, {
   chunterId,
   type DirectMessage
 } from '@hcengineering/chunter'
-import { type Data, type Doc, type DocumentQuery, type Ref, type RelatedDocument } from '@hcengineering/core'
+import {
+  type Data,
+  type Doc,
+  type DocumentQuery,
+  getCurrentAccount,
+  type Ref,
+  type RelatedDocument
+} from '@hcengineering/core'
 import { type IntlString, type Resources, translate } from '@hcengineering/platform'
 import { MessageBox, getClient } from '@hcengineering/presentation'
 import { closePanel, getCurrentLocation, getLocation, navigate, showPopup } from '@hcengineering/ui'
 import activity, { type ActivityMessage, type DocUpdateMessage } from '@hcengineering/activity'
-import { type DocNotifyContext, inboxId } from '@hcengineering/notification'
+import notification, { type DocNotifyContext, inboxId } from '@hcengineering/notification'
 
 import ChannelPresenter from './components/ChannelPresenter.svelte'
 import ChannelView from './components/ChannelView.svelte'
@@ -201,10 +208,23 @@ export async function deleteChatMessage (message: ChatMessage): Promise<void> {
 
 export async function replyToThread (message: ActivityMessage): Promise<void> {
   const loc = getCurrentLocation()
-  const inboxClient = InboxNotificationsClientImpl.getClient()
-  const context = get(inboxClient.docNotifyContextByDoc).get(message.attachedTo)
+  const client = getClient()
 
-  if (context === undefined) {
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+
+  let contextId: Ref<DocNotifyContext> | undefined = get(inboxClient.docNotifyContextByDoc).get(message.attachedTo)?._id
+
+  if (contextId === undefined) {
+    contextId = await client.createDoc(notification.class.DocNotifyContext, message.space, {
+      attachedTo: message.attachedTo,
+      attachedToClass: message.attachedToClass,
+      user: getCurrentAccount()._id,
+      hidden: false,
+      lastViewedTimestamp: Date.now()
+    })
+  }
+
+  if (contextId === undefined) {
     return
   }
 
@@ -212,7 +232,7 @@ export async function replyToThread (message: ActivityMessage): Promise<void> {
     loc.path[2] = chunterId
   }
 
-  navigateToThread(loc, context._id, message._id)
+  navigateToThread(loc, contextId, message._id)
 }
 
 export default async (): Promise<Resources> => ({
