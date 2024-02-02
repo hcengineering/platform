@@ -13,11 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachedDoc, Attribute, Class, Collection, Doc, Ref } from '@hcengineering/core'
   import { Icon, Label } from '@hcengineering/ui'
-  import { IntlString } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
-  import view from '@hcengineering/view'
+  import { Asset, IntlString } from '@hcengineering/platform'
   import activity, { DisplayDocUpdateMessage, DocUpdateMessage, DocUpdateMessageViewlet } from '@hcengineering/activity'
 
   import DocUpdateMessageObjectValue from './DocUpdateMessageObjectValue.svelte'
@@ -26,11 +23,7 @@
   export let viewlet: DocUpdateMessageViewlet | undefined
   export let objectName: IntlString | undefined
   export let collectionName: IntlString | undefined
-  export let collectionAttribute: Attribute<Collection<AttachedDoc>> | undefined = undefined
-
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-  const clazz = hierarchy.getClass(message.objectClass)
+  export let objectIcon: Asset | undefined
 
   const isOwn = message.objectId === message.attachedTo
 
@@ -38,12 +31,11 @@
 
   $: valueMessages = message.previousMessages?.length ? [...message.previousMessages, message] : [message]
   $: hasDifferentActions = message.previousMessages?.some(({ action }) => action !== message.action)
-  $: icon = viewlet?.icon ?? collectionAttribute?.icon ?? clazz.icon ?? activity.icon.Activity
 </script>
 
 <div class="content">
   <span class="mr-1">
-    <Icon {icon} size="small" />
+    <Icon icon={viewlet?.icon ?? objectIcon ?? activity.icon.Activity} size="small" />
   </span>
   {#if hasDifferentActions}
     <Label label={activity.string.UpdatedCollection} />
