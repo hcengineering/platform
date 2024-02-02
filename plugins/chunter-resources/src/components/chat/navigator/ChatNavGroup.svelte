@@ -147,14 +147,12 @@
     <div class="separator" />
   {/if}
 
-  {#if contexts.length}
-    <div class="block">
-      <ChatGroupHeader header={model.label} actions={getGroupActions()} />
-      {#each contexts as context (context._id)}
-        <ChatNavItem {context} isSelected={selectedContextId === context._id} on:select />
-      {/each}
-    </div>
-  {/if}
+  <div class="block">
+    <ChatGroupHeader header={model.label} actions={getGroupActions()} />
+    {#each contexts as context (context._id)}
+      <ChatNavItem {context} isSelected={selectedContextId === context._id} on:select />
+    {/each}
+  </div>
 </Scroller>
 
 <style lang="scss">
