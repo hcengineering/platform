@@ -234,7 +234,7 @@
     }
 
     &.with-tooltip {
-      min-width: 84px;
+      min-width: 5.25rem;
     }
   }
 
