@@ -40,10 +40,8 @@ function parseDocumentId (documentId: string): PlatformDocumentId {
 
 function isValidDocumentId (documentId: PlatformDocumentId, context: Context): boolean {
   return (
-    documentId.objectClass !== '' &&
-    documentId.objectId !== '' &&
-    documentId.objectAttr !== '' &&
-    documentId.workspace === context.workspaceId.name
+    documentId.objectClass !== '' && documentId.objectId !== '' && documentId.objectAttr !== '' // &&
+    // documentId.workspace === context.workspaceId.name
   )
 }
 

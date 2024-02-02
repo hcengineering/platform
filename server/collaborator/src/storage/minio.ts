@@ -36,7 +36,7 @@ function parseDocumentId (documentId: string): MinioDocumentId {
 }
 
 function isValidDocumentId (documentId: MinioDocumentId, context: Context): boolean {
-  return documentId.minioDocumentId !== '' && documentId.workspace === context.workspaceId.name
+  return documentId.minioDocumentId !== '' // && documentId.workspace === context.workspaceId.name
 }
 
 function maybePlatformDocumentId (documentId: string): boolean {
