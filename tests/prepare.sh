@@ -7,10 +7,12 @@ docker compose -p sanity up -d --force-recreate --renew-anon-volumes
 ./wait-elastic.sh 9201
 
 # Create workspace record in accounts
-./tool.sh create-workspace sanity-ws -o SanityTest
+./tool.sh create-workspace sanity-ws -w SanityTest
 # Create user record in accounts
 ./tool.sh create-account user1 -f John -l Appleseed -p 1234
 ./tool.sh create-account user2 -f Kainin -l Dirak -p 1234
+./tool.sh assign-workspace user1 sanity-ws
+./tool.sh assign-workspace user2 sanity-ws
 # Make user the workspace maintainer
 ./tool.sh set-user-role user1 sanity-ws 1
 ./tool.sh confirm-email user1

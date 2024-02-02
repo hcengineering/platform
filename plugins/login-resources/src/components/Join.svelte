@@ -75,6 +75,7 @@
 
       if (result !== undefined) {
         setMetadata(presentation.metadata.Token, result.token)
+        setMetadataLocalStorage(login.metadata.LastToken, result.token)
         const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
         tokens[result.workspace] = result.token
         setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
@@ -128,10 +129,10 @@
   }
 
   onMount(() => {
-    check()
+    void check()
   })
 
-  async function check () {
+  async function check (): Promise<void> {
     if (location.query?.inviteId === undefined || location.query?.inviteId === null) return
     status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
     const [, result] = await checkJoined(location.query.inviteId)
@@ -139,6 +140,7 @@
     if (result !== undefined) {
       const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
       setMetadata(presentation.metadata.Token, result.token)
+      setMetadataLocalStorage(login.metadata.LastToken, result.token)
       tokens[result.workspace] = result.token
       setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
       setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)

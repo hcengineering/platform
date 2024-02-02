@@ -131,7 +131,7 @@ async function getUpdateBacklinksTxes (
 export async function channelHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const channel = doc as ChunterSpace
   const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.name}/${chunterId}/${channel._id}`
+  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${chunterId}/${channel._id}`
   const link = concatLink(front, path)
   return `<a href='${link}'>${channel.name}</a>`
 }

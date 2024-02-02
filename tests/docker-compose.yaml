@@ -37,7 +37,6 @@ services:
     links:
       - mongodb
       - minio
-      - transactor
     ports:
       - 3003:3003
     environment:
@@ -85,6 +84,7 @@ services:
       - elastic
       - minio
       - rekoni
+      - account
     ports:
       - 3334:3334
     environment:
@@ -99,6 +99,7 @@ services:
       - MINIO_SECRET_KEY=minioadmin  
       - REKONI_URL=http://rekoni:4005
       - FRONT_URL=http://localhost:8083
+      - ACCOUNTS_URL=http://account:3003
   collaborator:
     image: hardcoreeng/collaborator
     links:

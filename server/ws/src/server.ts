@@ -29,7 +29,6 @@ import { unknownError } from '@hcengineering/platform'
 import { readRequest, type HelloRequest, type HelloResponse, type Request, type Response } from '@hcengineering/rpc'
 import type { Pipeline, SessionContext } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
-// import WebSocket, { RawData } from 'ws'
 
 import {
   LOGGING_ENABLED,
@@ -41,6 +40,11 @@ import {
   type SessionManager,
   type Workspace
 } from './types'
+
+interface WorkspaceLoginInfo {
+  workspaceName?: string // A company name
+  workspace: string
+}
 
 function timeoutPromise (time: number): Promise<void> {
   return new Promise((resolve) => {
@@ -154,45 +158,96 @@ class TSessionManager implements SessionManager {
     return this.sessionFactory(token, pipeline, this.broadcast.bind(this))
   }
 
+  async getWorkspaceInfo (
+    accounts: string,
+    token: string
+  ): Promise<{
+      workspace: string
+      workspaceUrl?: string | null
+      workspaceName?: string
+    }> {
+    const userInfo = await (
+      await fetch(accounts, {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          method: 'getWorkspaceInfo',
+          params: []
+        })
+      })
+    ).json()
+
+    return userInfo.result as WorkspaceLoginInfo
+  }
+
   async addSession (
     baseCtx: MeasureContext,
     ws: ConnectionSocket,
     token: Token,
+    rawToken: string,
     pipelineFactory: PipelineFactory,
     productId: string,
-    sessionId?: string
-  ): Promise<{ session: Session, context: MeasureContext } | { upgrade: true }> {
+    sessionId: string | undefined,
+    accountsUrl: string
+  ): Promise<
+    { session: Session, context: MeasureContext, workspaceName: string } | { upgrade: true } | { error: any }
+    > {
     return await baseCtx.with('📲 add-session', {}, async (ctx) => {
       const wsString = toWorkspaceString(token.workspace, '@')
+
+      const workspaceInfo =
+        accountsUrl !== ''
+          ? await this.getWorkspaceInfo(accountsUrl, rawToken)
+          : {
+              workspace: token.workspace.name,
+              workspaceUrl: token.workspace.name,
+              workspaceName: token.workspace.name
+            }
+      if (workspaceInfo === undefined) {
+        // No access to workspace for token.
+        return { error: new Error(`No access to workspace for token ${token.email} ${token.workspace.name}`) }
+      }
 
       let workspace = this.workspaces.get(wsString)
       await workspace?.closing
       workspace = this.workspaces.get(wsString)
+      const workspaceName = workspaceInfo.workspaceName ?? workspaceInfo.workspaceUrl ?? workspaceInfo.workspace
 
       if (workspace === undefined) {
-        workspace = this.createWorkspace(baseCtx, pipelineFactory, token)
+        workspace = this.createWorkspace(
+          baseCtx,
+          pipelineFactory,
+          token,
+          workspaceInfo.workspaceUrl ?? workspaceInfo.workspace,
+          workspaceName
+        )
       }
 
       let pipeline: Pipeline
       if (token.extra?.model === 'upgrade') {
         if (workspace.upgrade) {
-          pipeline = await ctx.with(
-            '💤 wait ' + token.workspace.name,
-            {},
-            async () => await (workspace as Workspace).pipeline
-          )
+          pipeline = await ctx.with('💤 wait ' + workspaceName, {}, async () => await (workspace as Workspace).pipeline)
         } else {
-          pipeline = await this.createUpgradeSession(token, sessionId, ctx, wsString, workspace, pipelineFactory, ws)
+          pipeline = await this.createUpgradeSession(
+            token,
+            sessionId,
+            ctx,
+            wsString,
+            workspace,
+            pipelineFactory,
+            ws,
+            workspaceInfo.workspaceUrl ?? workspaceInfo.workspace,
+            workspaceName
+          )
         }
       } else {
         if (workspace.upgrade) {
           return { upgrade: true }
         }
-        pipeline = await ctx.with(
-          '💤 wait ' + token.workspace.name,
-          {},
-          async () => await (workspace as Workspace).pipeline
-        )
+        pipeline = await ctx.with('💤 wait ' + workspaceName, {}, async () => await (workspace as Workspace).pipeline)
       }
 
       const session = this.createSession(token, pipeline)
@@ -211,7 +266,7 @@ class TSessionManager implements SessionManager {
           session.useCompression
         )
       }
-      return { session, context: workspace.context }
+      return { session, context: workspace.context, workspaceName }
     })
   }
 
@@ -222,15 +277,18 @@ class TSessionManager implements SessionManager {
     wsString: string,
     workspace: Workspace,
     pipelineFactory: PipelineFactory,
-    ws: ConnectionSocket
+    ws: ConnectionSocket,
+    workspaceUrl: string,
+    workspaceName: string
   ): Promise<Pipeline> {
     if (LOGGING_ENABLED) {
-      console.log(token.workspace.name, 'reloading workspace', JSON.stringify(token))
+      console.log(workspaceName, 'reloading workspace', JSON.stringify(token))
     }
     // If upgrade client is used.
     // Drop all existing clients
     await this.closeAll(wsString, workspace, 0, 'upgrade')
     // Wipe workspace and update values.
+    workspace.workspaceName = workspaceName
     if (!workspace.upgrade) {
       // This is previous workspace, intended to be closed.
       workspace.id = generateId()
@@ -238,9 +296,14 @@ class TSessionManager implements SessionManager {
       workspace.upgrade = token.extra?.model === 'upgrade'
     }
     // Re-create pipeline.
-    workspace.pipeline = pipelineFactory(ctx, token.workspace, true, (tx, targets) => {
-      this.broadcastAll(workspace, tx, targets)
-    })
+    workspace.pipeline = pipelineFactory(
+      ctx,
+      { ...token.workspace, workspaceUrl, workspaceName },
+      true,
+      (tx, targets) => {
+        this.broadcastAll(workspace, tx, targets)
+      }
+    )
     return await workspace.pipeline
   }
 
@@ -271,20 +334,32 @@ class TSessionManager implements SessionManager {
     send()
   }
 
-  private createWorkspace (ctx: MeasureContext, pipelineFactory: PipelineFactory, token: Token): Workspace {
+  private createWorkspace (
+    ctx: MeasureContext,
+    pipelineFactory: PipelineFactory,
+    token: Token,
+    workspaceUrl: string,
+    workspaceName: string
+  ): Workspace {
     const upgrade = token.extra?.model === 'upgrade'
-    const context = ctx.newChild('🧲 ' + token.workspace.name, {})
+    const context = ctx.newChild('🧲 session', {})
     const workspace: Workspace = {
       context,
       id: generateId(),
-      pipeline: pipelineFactory(context, token.workspace, upgrade, (tx, targets) => {
-        this.broadcastAll(workspace, tx, targets)
-      }),
+      pipeline: pipelineFactory(
+        context,
+        { ...token.workspace, workspaceUrl, workspaceName },
+        upgrade,
+        (tx, targets) => {
+          this.broadcastAll(workspace, tx, targets)
+        }
+      ),
       sessions: new Map(),
-      upgrade
+      upgrade,
+      workspaceName
     }
-    if (LOGGING_ENABLED) console.time(token.workspace.name)
-    if (LOGGING_ENABLED) console.timeLog(token.workspace.name, 'Creating Workspace:', workspace.id)
+    if (LOGGING_ENABLED) console.time(workspaceName)
+    if (LOGGING_ENABLED) console.timeLog(workspaceName, 'Creating Workspace:', workspace.id)
     this.workspaces.set(toWorkspaceString(token.workspace), workspace)
     return workspace
   }
@@ -498,7 +573,9 @@ class TSessionManager implements SessionManager {
     msg: any,
     workspace: string
   ): Promise<void> {
-    const userCtx = requestCtx.newChild('📞 client', {}) as SessionContext
+    const userCtx = requestCtx.newChild('📞 client', {
+      workspace: '🧲 ' + workspace
+    }) as SessionContext
     userCtx.sessionId = service.sessionInstanceId ?? ''
 
     // Calculate total number of clients
@@ -668,6 +745,7 @@ export function start (
     productId: string
     serverFactory: ServerFactory
     enableCompression?: boolean
+    accountsUrl: string
   } & Partial<Timeouts>
 ): () => Promise<void> {
   const sessions = new TSessionManager(ctx, opt.sessionFactory, {
@@ -682,6 +760,7 @@ export function start (
     opt.pipelineFactory,
     opt.port,
     opt.productId,
-    opt.enableCompression ?? true
+    opt.enableCompression ?? true,
+    opt.accountsUrl
   )
 }

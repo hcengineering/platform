@@ -54,6 +54,7 @@ import core, {
   TxWorkspaceEvent,
   WorkspaceEvent,
   WorkspaceId,
+  WorkspaceIdWithUrl,
   generateId
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
@@ -92,7 +93,7 @@ export interface DbConfiguration {
   adapters: Record<string, DbAdapterConfiguration>
   domains: Record<string, string>
   defaultAdapter: string
-  workspace: WorkspaceId
+  workspace: WorkspaceIdWithUrl
   metrics: MeasureContext
   fulltextAdapter: {
     factory: FullTextAdapterFactory
@@ -121,7 +122,7 @@ class TServerStorage implements ServerStorage {
     private readonly fulltextAdapter: FullTextAdapter,
     readonly storageAdapter: MinioService | undefined,
     readonly modelDb: ModelDb,
-    private readonly workspace: WorkspaceId,
+    private readonly workspace: WorkspaceIdWithUrl,
     readonly indexFactory: (storage: ServerStorage) => FullTextIndex,
     readonly options: ServerStorageOptions,
     metrics: MeasureContext,

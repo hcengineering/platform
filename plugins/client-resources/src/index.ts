@@ -18,6 +18,7 @@ import core, {
   AccountClient,
   ClientConnectEvent,
   TxHandler,
+  TxPersistenceStore,
   TxWorkspaceEvent,
   WorkspaceEvent,
   createClient
@@ -68,34 +69,7 @@ export default async () => {
             return connect(url.href, upgradeHandler, onUpgrade, onUnauthorized, onConnect)
           },
           filterModel ? [...getPlugins(), ...(getMetadata(clientPlugin.metadata.ExtraPlugins) ?? [])] : undefined,
-          {
-            load: async () => {
-              if (typeof localStorage !== 'undefined') {
-                const storedValue = localStorage.getItem('platform.model') ?? null
-                try {
-                  const model = storedValue != null ? JSON.parse(storedValue) : undefined
-                  if (token !== model?.token) {
-                    return {
-                      full: false,
-                      transactions: [],
-                      hash: []
-                    }
-                  }
-                  return model.model
-                } catch {}
-              }
-              return {
-                full: true,
-                transactions: [],
-                hash: []
-              }
-            },
-            store: async (model) => {
-              if (typeof localStorage !== 'undefined') {
-                localStorage.setItem('platform.model', JSON.stringify({ token, model }))
-              }
-            }
-          }
+          createModelPersistence(token)
         )
         // Check if we had dev hook for client.
         client = hookClient(client)
@@ -104,6 +78,37 @@ export default async () => {
     }
   }
 }
+function createModelPersistence (token: string): TxPersistenceStore | undefined {
+  return {
+    load: async () => {
+      if (typeof localStorage !== 'undefined') {
+        const storedValue = localStorage.getItem('platform.model') ?? null
+        try {
+          const model = storedValue != null ? JSON.parse(storedValue) : undefined
+          if (token !== model?.token) {
+            return {
+              full: false,
+              transactions: [],
+              hash: []
+            }
+          }
+          return model.model
+        } catch {}
+      }
+      return {
+        full: true,
+        transactions: [],
+        hash: []
+      }
+    },
+    store: async (model) => {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('platform.model', JSON.stringify({ token, model }))
+      }
+    }
+  }
+}
+
 async function hookClient (client: Promise<AccountClient>): Promise<AccountClient> {
   const hook = getMetadata(clientPlugin.metadata.ClientHook)
   if (hook !== undefined) {

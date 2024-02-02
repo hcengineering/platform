@@ -17,7 +17,7 @@
 import builder, { migrateOperations, getModelVersion } from '@hcengineering/model-all'
 import { randomBytes } from 'crypto'
 import { Db, MongoClient } from 'mongodb'
-import accountPlugin, { getAccount, getMethods, getWorkspace } from '..'
+import accountPlugin, { getAccount, getMethods, getWorkspaceByUrl } from '..'
 import { setMetadata } from '@hcengineering/platform'
 
 const DB_NAME = 'test_accounts'
@@ -147,14 +147,14 @@ describe('server', () => {
 
     // Check we had one
     expect((await getAccount(db, 'andrey'))?.workspaces.length).toEqual(1)
-    expect((await getWorkspace(db, '', workspace))?.accounts.length).toEqual(1)
+    expect((await getWorkspaceByUrl(db, '', workspace))?.accounts.length).toEqual(1)
 
     await methods.removeWorkspace(db, '', {
       method: 'removeWorkspace',
       params: ['andrey', workspace]
     })
     expect((await getAccount(db, 'andrey'))?.workspaces.length).toEqual(0)
-    expect((await getWorkspace(db, '', workspace))?.accounts.length).toEqual(0)
+    expect((await getWorkspaceByUrl(db, '', workspace))?.accounts.length).toEqual(0)
   })
 
   afterAll(async () => {

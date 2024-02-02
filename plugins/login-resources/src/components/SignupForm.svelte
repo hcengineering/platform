@@ -16,7 +16,7 @@
 <script lang="ts">
   import { OK, Severity, Status, setMetadata } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
-  import { getCurrentLocation, navigate } from '@hcengineering/ui'
+  import { getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
   import login from '../plugin'
   import { signUp } from '../utils'
   import Form from './Form.svelte'
@@ -50,6 +50,7 @@
 
       if (result !== undefined) {
         setMetadata(presentation.metadata.Token, result.token)
+        setMetadataLocalStorage(login.metadata.LastToken, result.token)
         const loc = getCurrentLocation()
         loc.path[1] = 'confirmationSend'
         loc.path.length = 2

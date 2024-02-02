@@ -124,8 +124,9 @@
   }
 
   onMount(() => {
-    getResource(login.function.GetWorkspaces).then(async (getWorkspaceFn) => {
+    void getResource(login.function.GetWorkspaces).then(async (getWorkspaceFn) => {
       $workspacesStore = await getWorkspaceFn()
+      await updateWindowTitle(getLocation())
     })
   })
 
@@ -188,8 +189,15 @@
     })
   )
 
+  let windowWorkspaceName = ''
+
   async function updateWindowTitle (loc: Location): Promise<void> {
-    const ws = loc.path[1]
+    let ws = loc.path[1]
+    const wsName = $workspacesStore.find((it) => it.workspace === ws)
+    if (wsName !== undefined) {
+      ws = wsName?.workspaceName ?? wsName.workspace
+      windowWorkspaceName = ws
+    }
     const docTitle = await getWindowTitle(loc)
     if (docTitle !== undefined && docTitle !== '') {
       document.title = ws == null ? docTitle : `${docTitle} - ${ws}`
@@ -663,7 +671,7 @@
             showPopup(SelectWorkspaceMenu, {}, popupSpacePosition)
           }}
         >
-          <Logo mini={appsMini} workspace={$resolvedLocationStore.path[1]} />
+          <Logo mini={appsMini} workspace={windowWorkspaceName ?? $resolvedLocationStore.path[1]} />
         </div>
         <div class="topmenu-container clear-mins flex-no-shrink" class:mini={appsMini}>
           <AppItem

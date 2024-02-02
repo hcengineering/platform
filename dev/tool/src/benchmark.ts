@@ -207,14 +207,19 @@ export async function benchmark (
                 operations = 0
                 requestTime = 0
                 transfer = 0
-                for (const w of workspaceId) {
-                  const r = extract(json.metrics as Metrics, w.name, 'client', 'handleRequest', 'process', 'find-all')
-                  operations += r?.operations ?? 0
-                  requestTime += (r?.value ?? 0) / (((r?.operations as number) ?? 0) + 1)
+                const r = extract(
+                  json.metrics as Metrics,
+                  '🧲 session',
+                  'client',
+                  'handleRequest',
+                  'process',
+                  'find-all'
+                )
+                operations += r?.operations ?? 0
+                requestTime += (r?.value ?? 0) / (((r?.operations as number) ?? 0) + 1)
 
-                  const tr = extract(json.metrics as Metrics, w.name, 'client', 'handleRequest', '#send-data')
-                  transfer += tr?.value ?? 0
-                }
+                const tr = extract(json.metrics as Metrics, '🧲 session', 'client', 'handleRequest', '#send-data')
+                transfer += tr?.value ?? 0
               })
               .catch((err) => {
                 console.log(err)
