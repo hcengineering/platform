@@ -581,7 +581,7 @@ export async function listWorkspaces (db: Db, productId: string): Promise<Client
   return (await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, {})).toArray())
     .map((it) => ({ ...it, productId }))
     .filter((it) => it.disabled !== true)
-    .map(mapToClientWorkspace)
+    .map(trimWorkspaceInfo)
 }
 
 /**
@@ -875,9 +875,19 @@ export async function getInviteLink (
  */
 export type ClientWorkspaceInfo = Omit<Workspace, '_id' | 'accounts' | 'workspaceUrl'>
 
+/**
+ * @public
+ */
+export type WorkspaceInfo = Omit<Workspace, '_id' | 'accounts' | 'workspaceUrl'>
+
 function mapToClientWorkspace (ws: Workspace): ClientWorkspaceInfo {
   const { _id, accounts, ...data } = ws
   return { ...data, workspace: ws.workspaceUrl ?? ws.workspace }
+}
+
+function trimWorkspaceInfo (ws: Workspace): WorkspaceInfo {
+  const { _id, accounts, ...data } = ws
+  return { ...data }
 }
 
 /**
