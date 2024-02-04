@@ -94,9 +94,9 @@
     <span class="ac-header__title"><Label label={title} /></span>
   </div>
 
-  <div class="clear-mins mb-1 flex-row-center">
-    <Button icon={IconAdd} label={сreateItemLabel} kind={'primary'} on:click={showCreateDialog} />
+  <div class="ac-header-full medium-gap mb-1">
     <slot />
+    <Button icon={IconAdd} label={сreateItemLabel} kind={'primary'} on:click={showCreateDialog} />
   </div>
 </div>
 <div class="ac-header full divide search-start">
