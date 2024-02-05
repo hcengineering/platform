@@ -715,8 +715,7 @@ async function updateCollaboratorsMixin (
       prevCollabs = new Set(prevDocMixin.collaborators ?? [])
     } else {
       const mixin = hierarchy.classHierarchyMixin(prevDoc._class, notification.mixin.ClassCollaborators)
-      prevCollabs =
-        mixin !== undefined ? new Set(await getDocCollaborators(prevDoc, mixin, control)) : new Set()
+      prevCollabs = mixin !== undefined ? new Set(await getDocCollaborators(prevDoc, mixin, control)) : new Set()
     }
 
     for (const collab of tx.attributes.collaborators) {
