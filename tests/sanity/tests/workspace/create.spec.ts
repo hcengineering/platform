@@ -16,7 +16,7 @@ test.describe('Workspace tests', () => {
     await allure.parentSuite('Workspace tests')
   })
 
-  test.skip('Create a workspace with a custom name', async ({ page }) => {
+  test('Create a workspace with a custom name', async ({ page }) => {
     const newUser: SignUpData = {
       firstName: `FirstName-${generateId()}`,
       lastName: `LastName-${generateId()}`,
