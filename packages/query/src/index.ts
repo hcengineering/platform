@@ -659,7 +659,8 @@ export class LiveQuery extends TxProcessor implements Client {
 
   // Check if query is partially matched.
   private async matchQuery (q: Query, tx: TxUpdateDoc<Doc>, docCache?: Map<string, Doc>): Promise<boolean> {
-    if (!this.client.getHierarchy().isDerived(tx.objectClass, q._class)) {
+    const clazz = this.getHierarchy().isMixin(q._class) ? this.getHierarchy().getBaseClass(q._class) : q._class
+    if (!this.client.getHierarchy().isDerived(tx.objectClass, clazz)) {
       return false
     }
 
