@@ -21,9 +21,7 @@ import core, {
   DOMAIN_TX,
   Tx,
   WorkspaceId,
-  Domain,
   type Ref,
-  type Class,
   type Doc
 } from '@hcengineering/core'
 import { getWorkspaceDB } from '@hcengineering/mongo'
@@ -77,7 +75,7 @@ export async function updateField (
   mongoUrl: string,
   workspaceId: WorkspaceId,
   transactorUrl: string,
-  cmd: { objectId: string, objectClass: string, type: string, attribute: string, value: string }
+  cmd: { objectId: string, objectClass: string, type: string, attribute: string, value: string, domain: string }
 ): Promise<void> {
   const connection = (await connect(transactorUrl, workspaceId, undefined, {
     mode: 'backup'
@@ -89,18 +87,8 @@ export async function updateField (
     try {
       await client.connect()
       const db = getWorkspaceDB(client, workspaceId)
-      let domain: Domain | undefined
-      try {
-        domain = connection.getHierarchy().getDomain(cmd.objectClass as Ref<Class<Doc>>)
-      } catch (err: any) {
-        console.error('failed to get domain for', cmd.objectClass)
-      }
-      if (domain === undefined) {
-        console.error('Not found domain for', cmd.objectClass)
-        return
-      }
       await db
-        .collection(domain)
+        .collection(cmd.domain)
         .updateOne({ _id: cmd.objectId as Ref<Doc> }, { $set: { [cmd.attribute]: valueToPut } })
     } finally {
       await client.close()

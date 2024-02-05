@@ -636,10 +636,11 @@ export function devTool (
     .requiredOption('--attribute <attribute>')
     .requiredOption('--type <type>', 'number | string')
     .requiredOption('--value <value>')
+    .requiredOption('--domain <domain>')
     .action(
       async (
         workspace: string,
-        cmd: { objectId: string, objectClass: string, type: string, attribute: string, value: string }
+        cmd: { objectId: string, objectClass: string, type: string, attribute: string, value: string, domain: string }
       ) => {
         const { mongodbUri } = prepareTools()
         await updateField(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl, cmd)
