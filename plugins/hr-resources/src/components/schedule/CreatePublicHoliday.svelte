@@ -37,9 +37,9 @@
     }
   }
 
-  function saveHoliday () {
+  async function saveHoliday () {
     if (existingHoliday !== undefined) {
-      client.updateDoc(hr.class.PublicHoliday, core.space.Space, existingHoliday._id, {
+      await client.updateDoc(hr.class.PublicHoliday, core.space.Space, existingHoliday._id, {
         title,
         description
       })
@@ -50,7 +50,7 @@
         date: toTzDate(date),
         department
       }
-      client.createDoc(hr.class.PublicHoliday, core.space.Space, holiday)
+      await client.createDoc(hr.class.PublicHoliday, core.space.Space, holiday)
     }
   }
   findHoliday()
