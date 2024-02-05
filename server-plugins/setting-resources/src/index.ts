@@ -97,8 +97,8 @@ export default async () => ({
     IntegrationHTMLPresenter: integrationHTMLPresenter,
     IntegrationTextPresenter: integrationTextPresenter,
     GetValue: getValue,
-    GetFirstName: getFirstName,
-    GetLastName: getLastName,
+    GetFirstName: getOwnerFirstName,
+    GetLastName: getOwnerLastName,
     GetOwnerPosition: getOwnerPosition
   }
 })
