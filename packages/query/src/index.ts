@@ -671,18 +671,29 @@ export class LiveQuery extends TxProcessor implements Client {
       space: tx.objectSpace
     }
 
-    TxProcessor.updateDoc2Doc(doc, tx)
+    // we cannot handle $inc correctly, let's skip it
+    const { $inc, ...ops } = tx.operations
 
-    let matched = false
-    for (const key in q.query) {
-      const value = (q.query as any)[key]
-      const tkey = checkMixinKey(key, q._class, this.client.getHierarchy())
-      if ((doc as any)[tkey] === undefined) continue
-      const res = findProperty([doc], tkey, value)
-      if (res.length === 0) {
-        return false
-      } else {
-        matched = true
+    const emptyOps = Object.keys(ops).length === 0
+    let matched = emptyOps
+    if (!emptyOps) {
+      const virtualTx = {
+        ...tx,
+        operations: ops
+      }
+
+      TxProcessor.updateDoc2Doc(doc, virtualTx)
+
+      for (const key in q.query) {
+        const value = (q.query as any)[key]
+        const tkey = checkMixinKey(key, q._class, this.client.getHierarchy())
+        if ((doc as any)[tkey] === undefined) continue
+        const res = findProperty([doc], tkey, value)
+        if (res.length === 0) {
+          return false
+        } else {
+          matched = true
+        }
       }
     }
 
