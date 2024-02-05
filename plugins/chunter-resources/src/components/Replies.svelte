@@ -16,8 +16,8 @@
   import { Person } from '@hcengineering/contact'
   import { personByIdStore, Avatar } from '@hcengineering/contact-resources'
   import { Doc, IdMap, Ref, WithLookup } from '@hcengineering/core'
-  import { getLocation, Label, navigate, TimeSince } from '@hcengineering/ui'
-  import { ActivityMessage } from '@hcengineering/activity'
+  import { getLocation, Label, TimeSince } from '@hcengineering/ui'
+  import activity, { ActivityMessage } from '@hcengineering/activity'
   import notification, {
     ActivityInboxNotification,
     DocNotifyContext,
@@ -25,16 +25,18 @@
     InboxNotificationsClient
   } from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
+  import { get } from 'svelte/store'
 
-  import activity from '../plugin'
+  import { navigateToThread } from '../utils'
 
-  export let message: ActivityMessage
+  export let object: ActivityMessage
+  export let embedded = false
   export let onReply: (() => void) | undefined = undefined
 
   const maxDisplayPersons = 5
 
-  $: lastReply = message.lastReply ?? new Date().getTime()
-  $: persons = new Set(message.repliedPersons)
+  $: lastReply = object.lastReply ?? new Date().getTime()
+  $: persons = new Set(object.repliedPersons)
 
   let inboxClient: InboxNotificationsClient | undefined = undefined
 
@@ -47,7 +49,7 @@
   $: docNotifyContextByDocStore = inboxClient?.docNotifyContextByDoc
   $: notificationsByContextStore = inboxClient?.inboxNotificationsByContext
 
-  $: hasNew = hasNewReplies(message, $docNotifyContextByDocStore, $notificationsByContextStore)
+  $: hasNew = hasNewReplies(object, $docNotifyContextByDocStore, $notificationsByContextStore)
   $: updateQuery(persons, $personByIdStore)
 
   function hasNewReplies (
@@ -84,42 +86,52 @@
       onReply()
       return
     }
-    const loc = getLocation()
-    loc.path[4] = message._id
-    loc.query = { ...loc.query, thread: message._id }
-    navigate(loc)
+
+    if (inboxClient === undefined) {
+      return
+    }
+
+    const context = get(inboxClient.docNotifyContextByDoc).get(object.attachedTo)
+
+    if (context === undefined) {
+      return
+    }
+
+    navigateToThread(getLocation(), context._id, object._id)
   }
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="flex-row-center container cursor-pointer" on:click={handleReply}>
-  <div class="flex-row-center">
-    <div class="avatars">
-      {#each displayPersons as person}
-        <Avatar size="x-small" avatar={person.avatar} name={person.name} />
-      {/each}
-    </div>
-
-    {#if persons.size > maxDisplayPersons}
-      <div class="plus">
-        +{persons.size - maxDisplayPersons}
+{#if !embedded && object.replies && object.replies > 0}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <div class="flex-row-center container cursor-pointer mt-2" on:click={handleReply}>
+    <div class="flex-row-center">
+      <div class="avatars">
+        {#each displayPersons as person}
+          <Avatar size="x-small" avatar={person.avatar} name={person.name} />
+        {/each}
       </div>
+
+      {#if persons.size > maxDisplayPersons}
+        <div class="plus">
+          +{persons.size - maxDisplayPersons}
+        </div>
+      {/if}
+    </div>
+    <div class="whitespace-nowrap ml-2 mr-2 over-underline repliesCount">
+      <Label label={activity.string.RepliesCount} params={{ replies: object.replies ?? 0 }} />
+    </div>
+    {#if hasNew}
+      <div class="notifyMarker" />
     {/if}
+    <div class="lastReply">
+      <Label label={activity.string.LastReply} />
+    </div>
+    <div class="time">
+      <TimeSince value={lastReply} />
+    </div>
   </div>
-  <div class="whitespace-nowrap ml-2 mr-2 over-underline repliesCount">
-    <Label label={activity.string.RepliesCount} params={{ replies: message.replies ?? 0 }} />
-  </div>
-  {#if hasNew}
-    <div class="notifyMarker" />
-  {/if}
-  <div class="lastReply">
-    <Label label={activity.string.LastReply} />
-  </div>
-  <div class="time">
-    <TimeSince value={lastReply} />
-  </div>
-</div>
+{/if}
 
 <style lang="scss">
   .container {

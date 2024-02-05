@@ -17,20 +17,20 @@
 import {
   ACCOUNT_DB,
   assignWorkspace,
+  ClientWorkspaceInfo,
   confirmEmail,
   createAcc,
   createWorkspace,
   dropAccount,
   dropWorkspace,
   getAccount,
-  getWorkspace,
+  getWorkspaceById,
   listAccounts,
   listWorkspaces,
   replacePassword,
   setAccountAdmin,
   setRole,
-  upgradeWorkspace,
-  WorkspaceInfoOnly
+  upgradeWorkspace
 } from '@hcengineering/account'
 import { setMetadata } from '@hcengineering/platform'
 import {
@@ -43,7 +43,7 @@ import {
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin, { FileModelLogger } from '@hcengineering/server-tool'
 
-import { program, Command } from 'commander'
+import { Command, program } from 'commander'
 import { Db, MongoClient } from 'mongodb'
 import { clearTelegramHistory } from './telegram'
 import { diffWorkspace } from './workspace'
@@ -155,7 +155,16 @@ export function devTool (
       const { mongodbUri } = prepareTools()
       await withDatabase(mongodbUri, async (db, client) => {
         console.log(`assigning user ${email} to ${workspace}...`)
-        await assignWorkspace(db, productId, email, workspace)
+        const workspaceInfo = await getWorkspaceById(db, productId, workspace)
+        if (workspaceInfo === null) {
+          throw new Error(`workspace ${workspace} not found`)
+        }
+        console.log('assigning to workspace', workspaceInfo)
+        try {
+          await assignWorkspace(db, productId, email, workspaceInfo?.workspaceUrl ?? workspaceInfo.workspace)
+        } catch (err: any) {
+          console.error(err)
+        }
       })
     })
 
@@ -197,11 +206,22 @@ export function devTool (
   program
     .command('create-workspace <name>')
     .description('create workspace')
-    .requiredOption('-o, --organization <organization>', 'organization name')
+    .requiredOption('-w, --workspaceName <workspaceName>', 'Workspace name')
+    .option('-e, --email <email>', 'Author email', 'platform@email.com')
     .action(async (workspace, cmd) => {
       const { mongodbUri, txes, version, migrateOperations } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
-        await createWorkspace(version, txes, migrateOperations, db, productId, workspace, cmd.organization)
+        const { client } = await createWorkspace(
+          version,
+          txes,
+          migrateOperations,
+          db,
+          productId,
+          cmd.email,
+          cmd.workspaceName,
+          workspace
+        )
+        await client?.close()
       })
     })
 
@@ -230,7 +250,11 @@ export function devTool (
     .action(async (workspace, cmd) => {
       const { mongodbUri, version, txes, migrateOperations } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
-        await upgradeWorkspace(version, txes, migrateOperations, productId, db, workspace)
+        const info = await getWorkspaceById(db, productId, workspace)
+        if (info === null) {
+          throw new Error(`workspace ${workspace} not found`)
+        }
+        await upgradeWorkspace(version, txes, migrateOperations, productId, db, info.workspaceUrl ?? info.workspace)
       })
     })
 
@@ -252,7 +276,7 @@ export function devTool (
         const workspaces = await listWorkspaces(db, productId)
         const withError: string[] = []
 
-        async function _upgradeWorkspace (ws: WorkspaceInfoOnly): Promise<void> {
+        async function _upgradeWorkspace (ws: ClientWorkspaceInfo): Promise<void> {
           const t = Date.now()
           const logger = cmd.console
             ? consoleModelLogger
@@ -298,7 +322,7 @@ export function devTool (
     .action(async (workspace, cmd) => {
       const { mongodbUri } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
-        const ws = await getWorkspace(db, productId, workspace)
+        const ws = await getWorkspaceById(db, productId, workspace)
         if (ws === null) {
           console.log('no workspace exists')
           return

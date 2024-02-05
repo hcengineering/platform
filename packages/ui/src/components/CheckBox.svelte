@@ -24,7 +24,7 @@
 
   const dispatch = createEventDispatcher()
 
-  let oldChecked = checked
+  $: oldChecked = checked
 
   const handleValueChanged = (event: Event): void => {
     if (readonly) {
@@ -52,7 +52,7 @@
   class:checked
   on:click|stopPropagation
 >
-  <input class="chBox" disabled={readonly} type="checkbox" bind:checked on:change={handleValueChanged} />
+  <input class="chBox" disabled={readonly} type="checkbox" bind:checked on:change|capture={handleValueChanged} />
   <svg class="checkSVG" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
     {#if checked}
       {#if symbol === 'minus'}

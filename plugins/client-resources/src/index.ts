@@ -17,7 +17,9 @@ import clientPlugin from '@hcengineering/client'
 import core, {
   AccountClient,
   ClientConnectEvent,
+  LoadModelResponse,
   TxHandler,
+  TxPersistenceStore,
   TxWorkspaceEvent,
   WorkspaceEvent,
   createClient
@@ -68,34 +70,7 @@ export default async () => {
             return connect(url.href, upgradeHandler, onUpgrade, onUnauthorized, onConnect)
           },
           filterModel ? [...getPlugins(), ...(getMetadata(clientPlugin.metadata.ExtraPlugins) ?? [])] : undefined,
-          {
-            load: async () => {
-              if (typeof localStorage !== 'undefined') {
-                const storedValue = localStorage.getItem('platform.model') ?? null
-                try {
-                  const model = storedValue != null ? JSON.parse(storedValue) : undefined
-                  if (token !== model?.token) {
-                    return {
-                      full: false,
-                      transactions: [],
-                      hash: []
-                    }
-                  }
-                  return model.model
-                } catch {}
-              }
-              return {
-                full: true,
-                transactions: [],
-                hash: []
-              }
-            },
-            store: async (model) => {
-              if (typeof localStorage !== 'undefined') {
-                localStorage.setItem('platform.model', JSON.stringify({ token, model }))
-              }
-            }
-          }
+          createModelPersistence(token)
         )
         // Check if we had dev hook for client.
         client = hookClient(client)
@@ -104,6 +79,68 @@ export default async () => {
     }
   }
 }
+function createModelPersistence (token: string): TxPersistenceStore | undefined {
+  let dbRequest: IDBOpenDBRequest | undefined
+  let dbPromise: Promise<IDBDatabase | undefined> = Promise.resolve(undefined)
+
+  if (typeof localStorage !== 'undefined') {
+    dbPromise = new Promise<IDBDatabase>((resolve) => {
+      dbRequest = indexedDB.open('model.db.persistence', 2)
+
+      dbRequest.onupgradeneeded = function () {
+        const db = (dbRequest as IDBOpenDBRequest).result
+        if (!db.objectStoreNames.contains('model')) {
+          db.createObjectStore('model', { keyPath: 'id' })
+        }
+      }
+      dbRequest.onsuccess = function () {
+        const db = (dbRequest as IDBOpenDBRequest).result
+        resolve(db)
+      }
+    })
+  }
+  return {
+    load: async () => {
+      const db = await dbPromise
+      if (db !== undefined) {
+        const transaction = db.transaction('model', 'readwrite') // (1)
+        const models = transaction.objectStore('model') // (2)
+        const model = await new Promise<{ id: string, model: LoadModelResponse } | undefined>((resolve) => {
+          const storedValue: IDBRequest<{ id: string, model: LoadModelResponse }> = models.get(token)
+          storedValue.onsuccess = function () {
+            resolve(storedValue.result)
+          }
+          storedValue.onerror = function () {
+            resolve(undefined)
+          }
+        })
+
+        if (model == null) {
+          return {
+            full: false,
+            transactions: [],
+            hash: ''
+          }
+        }
+        return model.model
+      }
+      return {
+        full: true,
+        transactions: [],
+        hash: ''
+      }
+    },
+    store: async (model) => {
+      const db = await dbPromise
+      if (db !== undefined) {
+        const transaction = db.transaction('model', 'readwrite') // (1)
+        const models = transaction.objectStore('model') // (2)
+        models.put({ id: token, model })
+      }
+    }
+  }
+}
+
 async function hookClient (client: Promise<AccountClient>): Promise<AccountClient> {
   const hook = getMetadata(clientPlugin.metadata.ClientHook)
   if (hook !== undefined) {

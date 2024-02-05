@@ -199,11 +199,6 @@
     "NoDescription": "No description",
     "SearchIssue": "Search for task...",
 
-    "DurMinutes": "{minutes, plural, =0 {less than a minute} =1 {a minute} other {# minutes}}",
-    "DurHours": "{hours, plural, =0 {less than an hour} =1 {an hour} other {# hours}}",
-    "DurDays": "{days, plural, =0 {today} =1 {1 day} other {# days }}",
-    "DurMonths": "{months, plural, =0 {this month} =1 {1 month} other {# months}}",
-    "DurYears": "{years, plural, =0 {this year} =1 {a year} other {# years}}",
     "StatusHistory": "State History",
     "NewSubIssue": "Add sub-issue...",
     "AddLabel": "Add label",

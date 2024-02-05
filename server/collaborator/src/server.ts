@@ -27,6 +27,7 @@ import { MongoClient } from 'mongodb'
 import { WebSocket, WebSocketServer } from 'ws'
 import { applyUpdate, encodeStateAsUpdate } from 'yjs'
 
+import { getWorkspaceInfo } from './account'
 import { Config } from './config'
 import { Context, buildContext } from './context'
 import { ActionsExtension } from './extensions/action'
@@ -145,6 +146,9 @@ export async function start (
       ctx.measure('authenticate', 1)
       const context = buildContext(data, controller)
 
+      // verify workspace can be accessed with the token
+      const workspaceInfo = await getWorkspaceInfo(data.token)
+
       // verify document name
       let documentName = data.documentName
       if (documentName.includes('://')) {
@@ -152,8 +156,10 @@ export async function start (
       }
 
       if (documentName.includes('/')) {
-        const [workspace] = documentName.split('/', 2)
-        if (workspace !== context.workspaceId.name) {
+        const [workspaceUrl] = documentName.split('/', 2)
+
+        // verify workspace url in the document matches the token
+        if (workspaceInfo.workspace !== workspaceUrl) {
           throw new Error('documentName must include workspace')
         }
       } else {

@@ -508,3 +508,7 @@ export interface TimeZone {
  * @public
  */
 export type MouseTargetEvent = MouseEvent & { currentTarget: EventTarget & HTMLElement }
+
+export interface ScrollParams {
+  autoScrolling: boolean
+}

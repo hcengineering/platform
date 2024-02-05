@@ -14,12 +14,15 @@
 -->
 <script lang="ts">
   import { Doc, Ref } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import activity, { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
   import { ActivityMessagePresenter } from '@hcengineering/activity-resources'
+  import { ActionIcon, IconClose } from '@hcengineering/ui'
 
   export let attachedTo: Ref<Doc>
 
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
   const messagesQuery = createQuery()
 
   let pinnedMessages: DisplayActivityMessage[] = []
@@ -27,18 +30,48 @@
   $: messagesQuery.query(activity.class.ActivityMessage, { attachedTo, isPinned: true }, (res: ActivityMessage[]) => {
     pinnedMessages = res as DisplayActivityMessage[]
   })
+
+  async function unPinMessaage (message: ActivityMessage): Promise<void> {
+    await client.update(message, { isPinned: false })
+  }
 </script>
 
 <div class="antiPopup vScroll popup">
   {#each pinnedMessages as message}
-    <ActivityMessagePresenter value={message} withActions={false} />
+    <div class="message relative">
+      <ActivityMessagePresenter
+        value={message}
+        withActions={false}
+        skipLabel={!hierarchy.isDerived(message._class, activity.class.DocUpdateMessage)}
+      />
+      <div class="remove">
+        <ActionIcon
+          size="medium"
+          icon={IconClose}
+          action={() => {
+            unPinMessaage(message)
+          }}
+        />
+      </div>
+    </div>
   {/each}
 </div>
 
 <style lang="scss">
+  .antiPopup {
+    max-width: 40rem;
+  }
+  .message {
+    min-width: 30rem;
+  }
   .popup {
-    padding: 1.25rem 1.25rem 1.25rem;
+    padding: 1rem;
     max-height: 20rem;
     color: var(--caption-color);
+  }
+  .remove {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
   }
 </style>

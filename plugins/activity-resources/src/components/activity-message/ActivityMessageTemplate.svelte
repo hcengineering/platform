@@ -22,16 +22,14 @@
   import { Avatar, EmployeePresenter, SystemAvatar } from '@hcengineering/contact-resources'
   import core, { getDisplayTime } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Action, ActionIcon, IconMoreH, Label, showPopup } from '@hcengineering/ui'
-  import { Menu, getActions } from '@hcengineering/view-resources'
+  import { Action, Label } from '@hcengineering/ui'
+  import { getActions } from '@hcengineering/view-resources'
 
-  import AddReactionAction from '../reactions/AddReactionAction.svelte'
   import ReactionsPresenter from '../reactions/ReactionsPresenter.svelte'
   import ActivityMessageExtensionComponent from './ActivityMessageExtension.svelte'
   import ActivityMessagePresenter from './ActivityMessagePresenter.svelte'
-  import PinMessageAction from './PinMessageAction.svelte'
-  import Replies from '../Replies.svelte'
-  import SaveMessageAction from '../SaveMessageAction.svelte'
+  import ActivityMessageActions from '../ActivityMessageActions.svelte'
+  import { isReactionMessage } from '../../activityMessagesUtils'
 
   export let message: DisplayActivityMessage
   export let parentMessage: DisplayActivityMessage | undefined = undefined
@@ -48,9 +46,10 @@
   export let withActions: boolean = true
   export let withFlatActions: boolean = true
   export let showEmbedded = false
-  export let hideReplies = false
+  export let hideFooter = false
   export let skipLabel = false
   export let hoverable = true
+  export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -59,7 +58,7 @@
 
   let element: HTMLDivElement | undefined = undefined
   let extensions: ActivityMessageExtension[] = []
-  let isActionMenuOpened = false
+  let isActionsOpened = false
 
   $: withActions &&
     getActions(client, message, activity.class.ActivityMessage).then((res) => {
@@ -83,30 +82,15 @@
       extensions = res
     })
 
-  function handleActionMenuOpened (): void {
-    isActionMenuOpened = true
+  function handleActionsOpened (): void {
+    isActionsOpened = true
   }
 
-  function handleActionMenuClosed (): void {
-    isActionMenuOpened = false
+  function handleActionsClosed (): void {
+    isActionsOpened = false
   }
 
   $: key = parentMessage != null ? `${message._id}_${parentMessage._id}` : message._id
-
-  function showMenu (ev: MouseEvent): void {
-    showPopup(
-      Menu,
-      {
-        object: message,
-        baseMenuClass: activity.class.ActivityMessage,
-        excludedActions,
-        actions
-      },
-      ev.target as HTMLElement,
-      handleActionMenuClosed
-    )
-    handleActionMenuOpened()
-  }
 
   $: isHidden = !!viewlet?.onlyWithParent && parentMessage === undefined
   $: withActionMenu =
@@ -120,12 +104,15 @@
     <div
       bind:this={element}
       id={message._id}
-      class="root clear-mins"
+      class="activityMessage clear-mins"
       class:clickable={!!onClick}
       class:highlighted={isHighlighted}
       class:selected={isSelected}
       class:hoverable
       class:embedded
+      class:actionsOpened={isActionsOpened}
+      class:borderedHover={hoverStyles === 'borderedHover'}
+      class:filledHover={hoverStyles === 'filledHover'}
       on:click={onClick}
     >
       {#if showNotify && !embedded}
@@ -162,43 +149,34 @@
 
         <slot name="content" />
 
-        {#if !hideReplies && message.replies && message.replies > 0}
-          <div class="mt-2" />
-          <Replies {message} {onReply} />
+        {#if !hideFooter}
+          <ActivityMessageExtensionComponent
+            kind="footer"
+            {extensions}
+            props={{ object: message, embedded, onReply }}
+          />
         {/if}
-        <ActivityMessageExtensionComponent kind="footer" {extensions} props={{ object: message }} />
-
         <ReactionsPresenter object={message} />
         {#if parentMessage && showEmbedded}
           <div class="mt-2" />
-          <ActivityMessagePresenter value={parentMessage} embedded hideReplies withActions={false} />
+          <ActivityMessagePresenter value={parentMessage} embedded hideFooter withActions={false} />
         {/if}
       </div>
 
-      <div
-        class="actions clear-mins flex flex-gap-2 items-center"
-        class:opened={isActionMenuOpened || message.isPinned}
-      >
-        {#if withActions}
-          <AddReactionAction object={message} on:open={handleActionMenuOpened} on:close={handleActionMenuClosed} />
-
-          {#if withFlatActions}
-            <PinMessageAction object={message} />
-            <SaveMessageAction object={message} />
-
-            <ActivityMessageExtensionComponent
-              kind="action"
-              {extensions}
-              props={{ object: message }}
-              on:close={handleActionMenuClosed}
-              on:open={handleActionMenuOpened}
-            />
-          {/if}
-          {#if withActionMenu}
-            <ActionIcon icon={IconMoreH} size="small" action={showMenu} />
-          {/if}
-        {/if}
-      </div>
+      {#if withActions}
+        <div class="actions" class:opened={isActionsOpened}>
+          <ActivityMessageActions
+            message={isReactionMessage(message) ? parentMessage : message}
+            {extensions}
+            {actions}
+            {withActionMenu}
+            {withFlatActions}
+            {excludedActions}
+            on:open={handleActionsOpened}
+            on:close={handleActionsClosed}
+          />
+        </div>
+      {/if}
     </div>
   {/key}
 {/if}
@@ -210,13 +188,13 @@
     }
   }
 
-  .root {
+  .activityMessage {
     position: relative;
     display: flex;
     flex-shrink: 0;
-    padding: 0.75rem 0.75rem 0.75rem 1.25rem;
+    padding: 0.75rem 0.75rem 0.75rem 1rem;
     gap: 1rem;
-    overflow: hidden;
+    //overflow: hidden;
     border: 1px solid transparent;
     border-radius: 0.25rem;
     width: 100%;
@@ -242,9 +220,8 @@
     .actions {
       position: absolute;
       visibility: hidden;
-      top: 0.75rem;
+      top: -0.75rem;
       right: 0.75rem;
-      color: var(--theme-halfcontent-color);
 
       &.opened {
         visibility: visible;
@@ -259,9 +236,25 @@
       visibility: visible;
     }
 
+    &.actionsOpened {
+      &.borderedHover {
+        border: 1px solid var(--highlight-hover);
+      }
+
+      &.filledHover {
+        background-color: var(--global-ui-BackgroundColor);
+      }
+    }
+
     &.hoverable {
       &:hover:not(.embedded) {
-        border: 1px solid var(--highlight-hover);
+        &.borderedHover {
+          border: 1px solid var(--highlight-hover);
+        }
+
+        &.filledHover {
+          background-color: var(--global-ui-BackgroundColor);
+        }
       }
     }
   }

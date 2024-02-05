@@ -23,7 +23,7 @@ import { Context } from '../context'
 import { StorageAdapter } from './adapter'
 
 interface MongodbDocumentId {
-  workspace: string
+  workspaceUrl: string
   objectDomain: string
   objectId: string
   objectAttr: string
@@ -32,7 +32,7 @@ interface MongodbDocumentId {
 function parseDocumentId (documentId: string): MongodbDocumentId {
   const [workspace, objectDomain, objectId, objectAttr] = documentId.split('/')
   return {
-    workspace: workspace ?? '',
+    workspaceUrl: workspace ?? '',
     objectId: objectId ?? '',
     objectDomain: objectDomain ?? '',
     objectAttr: objectAttr ?? ''
@@ -41,10 +41,8 @@ function parseDocumentId (documentId: string): MongodbDocumentId {
 
 function isValidDocumentId (documentId: MongodbDocumentId, context: Context): boolean {
   return (
-    documentId.objectDomain !== '' &&
-    documentId.objectId !== '' &&
-    documentId.objectAttr !== '' &&
-    documentId.workspace === context.workspaceId.name
+    documentId.objectDomain !== '' && documentId.objectId !== '' && documentId.objectAttr !== ''
+    // && documentId.workspace === context.workspaceId.name
   )
 }
 
@@ -56,9 +54,9 @@ export class MongodbStorageAdapter implements StorageAdapter {
   ) {}
 
   async loadDocument (documentId: string, context: Context): Promise<YDoc | undefined> {
-    const { workspace, objectId, objectDomain, objectAttr } = parseDocumentId(documentId)
+    const { workspaceUrl, objectId, objectDomain, objectAttr } = parseDocumentId(documentId)
 
-    if (!isValidDocumentId({ workspace, objectId, objectDomain, objectAttr }, context)) {
+    if (!isValidDocumentId({ workspaceUrl, objectId, objectDomain, objectAttr }, context)) {
       console.warn('malformed document id', documentId)
       return undefined
     }

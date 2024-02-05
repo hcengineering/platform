@@ -42,18 +42,21 @@
 
   h1 {
     font-size: 1.75rem;
+    line-height: 150%;
     margin-top: 2.75rem;
     margin-bottom: 0.25rem;
   }
 
   h2 {
     font-size: 1.375rem;
+    line-height: 150%;
     margin-top: 2.25rem;
     margin-bottom: 0.25rem;
   }
 
   h3 {
     font-size: 1.125rem;
+    line-height: 150%;
     margin-top: 1.5rem;
     margin-bottom: 0.25rem;
   }
@@ -190,6 +193,12 @@
 
   span.deletion {
     text-decoration: line-through;
+  }
+}
+
+@supports (selector(:has(.text-editor-image-container))) {
+  p:has(> .text-editor-image-container) {
+    user-select: none;
   }
 }
 

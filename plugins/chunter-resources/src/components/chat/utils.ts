@@ -12,62 +12,50 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import notification, { type DocNotifyContext } from '@hcengineering/notification'
-import { type Doc, type Ref } from '@hcengineering/core'
-import { getClient } from '@hcengineering/presentation'
-
+import notification from '@hcengineering/notification'
+import { SortingOrder, type WithLookup } from '@hcengineering/core'
+import { createQuery, getClient } from '@hcengineering/presentation'
+import { writable } from 'svelte/store'
 import view from '@hcengineering/view'
 import workbench, { type SpecialNavModel } from '@hcengineering/workbench'
-import attachment from '@hcengineering/attachment'
-import activity from '@hcengineering/activity'
+import attachment, { type SavedAttachments } from '@hcengineering/attachment'
+import activity, { type SavedMessage } from '@hcengineering/activity'
 
 import { type ChatNavGroupModel } from './types'
 import chunter from '../../plugin'
 
+export const savedMessagesStore = writable<Array<WithLookup<SavedMessage>>>([])
+export const savedAttachmentsStore = writable<Array<WithLookup<SavedAttachments>>>([])
+
 export const chatSpecials: SpecialNavModel[] = [
-  {
-    id: 'channelBrowser',
-    component: workbench.component.SpaceBrowser,
-    icon: chunter.icon.ChannelBrowser,
-    label: chunter.string.ChannelBrowser,
-    position: 'top',
-    componentProps: {
-      _class: chunter.class.Channel,
-      label: chunter.string.ChannelBrowser,
-      createItemDialog: chunter.component.CreateChannel,
-      createItemLabel: chunter.string.CreateChannel
-    }
-  },
-  {
-    id: 'fileBrowser',
-    label: attachment.string.FileBrowser,
-    icon: attachment.icon.FileBrowser,
-    component: attachment.component.FileBrowser,
-    position: 'top',
-    componentProps: {
-      requestedSpaceClasses: [chunter.class.Channel, chunter.class.DirectMessage]
-    }
-  },
   {
     id: 'threads',
     label: chunter.string.Threads,
     icon: chunter.icon.Thread,
     component: chunter.component.Threads,
-    position: 'top'
+    position: 'top',
+    notificationsCountProvider: chunter.function.GetUnreadThreadsCount
   },
   {
     id: 'saved',
-    label: chunter.string.SavedItems,
+    label: chunter.string.Saved,
     icon: activity.icon.Bookmark,
-    position: 'bottom',
+    position: 'top',
     component: chunter.component.SavedMessages
+  },
+  {
+    id: 'chunterBrowser',
+    label: chunter.string.ChunterBrowser,
+    icon: workbench.icon.Search,
+    component: chunter.component.ChunterBrowser,
+    position: 'top'
   },
   {
     id: 'archive',
     component: workbench.component.Archive,
     icon: view.icon.Archive,
     label: workbench.string.Archive,
-    position: 'bottom',
+    position: 'top',
     componentProps: {
       _class: notification.class.DocNotifyContext,
       config: [
@@ -82,97 +70,71 @@ export const chatSpecials: SpecialNavModel[] = [
       }
     },
     visibleIf: notification.function.HasHiddenDocNotifyContext
-  },
-  {
-    id: 'chunterBrowser',
-    label: chunter.string.ChunterBrowser,
-    icon: workbench.icon.Search,
-    component: chunter.component.ChunterBrowser,
-    visibleIf: chunter.function.ChunterBrowserVisible
   }
 ]
 
-export const chatNavGroups: ChatNavGroupModel[] = [
-  {
-    id: 'pinned',
-    label: notification.string.Pinned,
-    hideEmpty: true,
-    query: {
-      isPinned: true
-    },
-    actions: [
-      {
-        icon: view.icon.Delete,
-        label: view.string.Delete,
-        action: chunter.actionImpl.UnpinAllChannels
-      }
-    ]
-  },
-  {
-    id: 'documents',
-    label: chunter.string.Docs,
-    query: {
-      attachedToClass: {
-        $nin: [
-          chunter.class.DirectMessage,
-          chunter.class.Channel,
-          activity.class.DocUpdateMessage,
-          chunter.class.ChatMessage,
-          chunter.class.ThreadMessage,
-          chunter.class.Backlink
-        ]
-      },
-      isPinned: { $ne: true }
-    }
-  },
+export const chatNavGroupsModel: ChatNavGroupModel[] = [
   {
     id: 'channels',
-    label: chunter.string.Channels,
+    tabLabel: chunter.string.Channels,
+    label: chunter.string.AllChannels,
     query: {
-      attachedToClass: { $in: [chunter.class.Channel] },
-      isPinned: { $ne: true }
+      attachedToClass: { $in: [chunter.class.Channel] }
     },
     addLabel: chunter.string.CreateChannel,
     addComponent: chunter.component.CreateChannel
   },
   {
     id: 'direct',
-    label: chunter.string.DirectMessages,
+    tabLabel: chunter.string.Direct,
+    label: chunter.string.AllContacts,
     query: {
-      attachedToClass: { $in: [chunter.class.DirectMessage] },
-      isPinned: { $ne: true }
+      attachedToClass: { $in: [chunter.class.DirectMessage] }
     },
     addLabel: chunter.string.NewDirectMessage,
     addComponent: chunter.component.CreateDirectMessage
+  },
+  {
+    id: 'activity',
+    tabLabel: activity.string.Activity,
+    label: activity.string.Activity,
+    query: {
+      attachedToClass: {
+        $nin: [chunter.class.DirectMessage, chunter.class.Channel, chunter.class.Backlink]
+      }
+    }
   }
 ]
 
-export async function getDocByNotifyContext (
-  docNotifyContexts: DocNotifyContext[]
-): Promise<Map<Ref<DocNotifyContext>, Doc>> {
+function fillSavedItemsStores (): void {
   const client = getClient()
 
-  const docs = await Promise.all(
-    docNotifyContexts.map(
-      async ({ attachedTo, attachedToClass }) => await client.findOne(attachedToClass, { _id: attachedTo })
+  if (client !== undefined) {
+    const savedMessagesQuery = createQuery(true)
+    const savedAttachmentsQuery = createQuery(true)
+
+    savedAttachmentsQuery.query(
+      attachment.class.SavedAttachments,
+      {},
+      (res) => {
+        savedAttachmentsStore.set(res.filter(({ $lookup }) => $lookup?.attachedTo !== undefined))
+      },
+      { lookup: { attachedTo: attachment.class.Attachment }, sort: { modifiedOn: SortingOrder.Descending } }
     )
-  )
 
-  const result: Map<Ref<DocNotifyContext>, Doc> = new Map<Ref<DocNotifyContext>, Doc>()
-
-  for (const doc of docs) {
-    if (doc === undefined) {
-      continue
-    }
-
-    const context = docNotifyContexts.find(({ attachedTo }) => attachedTo === doc._id)
-
-    if (context === undefined) {
-      continue
-    }
-
-    result.set(context._id, doc)
+    savedMessagesQuery.query(
+      activity.class.SavedMessage,
+      {},
+      (res) => {
+        savedMessagesStore.set(res.filter(({ $lookup }) => $lookup?.attachedTo !== undefined))
+      },
+      { lookup: { attachedTo: activity.class.ActivityMessage }, sort: { modifiedOn: SortingOrder.Descending } }
+    )
+  } else {
+    setTimeout(() => {
+      fillSavedItemsStores()
+    }, 50)
   }
-
-  return result
 }
+
+fillSavedItemsStores()

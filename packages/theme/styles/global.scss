@@ -71,7 +71,7 @@
 * {
   box-sizing: border-box;
   touch-action: manipulation;
-  scrollbar-color: var(--theme-comp-header-color) var(--theme-back-color);
+  scrollbar-color: var(--theme-navpanel-divider) transparent;
   scrollbar-width: none;
   --body-font-size: .875rem;
   --status-bar-height: 36px;

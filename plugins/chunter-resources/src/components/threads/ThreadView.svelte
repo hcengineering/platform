@@ -13,110 +13,157 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
-  import { IconClose, Label, location as locationStore } from '@hcengineering/ui'
+  import { Doc, Ref } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Breadcrumbs, IconClose, Label, location as locationStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import activity, { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
-  import { ActivityScrolledView } from '@hcengineering/activity-resources'
+  import { getMessageFromLoc } from '@hcengineering/activity-resources'
+  import contact from '@hcengineering/contact'
 
   import chunter from '../../plugin'
   import ThreadParentMessage from './ThreadParentPresenter.svelte'
+  import { getChannelIcon, getChannelName } from '../../utils'
+  import ChannelScrollView from '../ChannelScrollView.svelte'
 
   export let _id: Ref<ActivityMessage>
   export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
   export let showHeader: boolean = true
 
-  const messageQuery = createQuery()
   const dispatch = createEventDispatcher()
 
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  const messageQuery = createQuery()
+  const channelQuery = createQuery()
+  const messagesQuery = createQuery()
+
+  let channel: Doc | undefined = undefined
   let message: DisplayActivityMessage | undefined = undefined
+  let messages: DisplayActivityMessage[] = []
+
+  let channelName: string | undefined = undefined
 
   locationStore.subscribe((newLocation) => {
-    selectedMessageId = newLocation.query?.message as Ref<ActivityMessage> | undefined
+    selectedMessageId = getMessageFromLoc(newLocation)
   })
 
   $: messageQuery.query(activity.class.ActivityMessage, { _id }, (result: ActivityMessage[]) => {
     message = result[0] as DisplayActivityMessage
   })
 
-  let isLoading = false
-  let content: HTMLDivElement | undefined = undefined
-</script>
+  $: message &&
+    channelQuery.query(message.attachedToClass, { _id: message.attachedTo }, (res) => {
+      channel = res[0]
+    })
 
-{#if showHeader}
-  <div class="header">
-    <div class="title"><Label label={chunter.string.Thread} /></div>
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div
-      class="tool"
-      on:click={() => {
-        dispatch('close')
-      }}
-    >
-      <IconClose size="medium" />
-    </div>
-  </div>
-{/if}
-{#if message}
-  <ThreadParentMessage {message} />
+  $: message &&
+    messagesQuery.query(chunter.class.ThreadMessage, { attachedTo: message._id }, (res) => {
+      messages = res
+    })
 
-  <div class="separator">
-    {#if message.replies && message.replies > 0}
-      <div class="label lower">
-        <Label label={activity.string.RepliesCount} params={{ replies: message.replies }} />
-      </div>
-    {/if}
-    <div class="line" />
-  </div>
+  $: message &&
+    getChannelName(message.attachedTo, message.attachedToClass, channel).then((res) => {
+      channelName = res
+    })
 
-  <ActivityScrolledView
-    bind:isLoading
-    bind:scrollElement={content}
-    {selectedMessageId}
-    _class={chunter.class.ThreadMessage}
-    withDates={false}
-    skipLabels
-    object={message}
-  />
-{/if}
-
-<style lang="scss">
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 1.75rem 0 1rem;
-    height: 4rem;
-    min-height: 4rem;
-
-    .title {
-      flex-grow: 1;
-      font-weight: 500;
-      font-size: 1.25rem;
-      color: var(--caption-color);
-      user-select: none;
+  function getBreadcrumbsItems (channel?: Doc, message?: DisplayActivityMessage, channelName?: string) {
+    if (message === undefined) {
+      return []
     }
 
-    .tool {
-      margin-left: 0.75rem;
-      opacity: 0.4;
-      cursor: pointer;
+    const isPersonAvatar =
+      message.attachedToClass === chunter.class.DirectMessage ||
+      hierarchy.isDerived(message.attachedToClass, contact.class.Person)
 
-      &:hover {
-        opacity: 1;
-      }
+    return [
+      {
+        icon: getChannelIcon(message.attachedToClass),
+        iconProps: { value: channel },
+        iconWidth: isPersonAvatar ? 'auto' : undefined,
+        withoutIconBackground: isPersonAvatar,
+        title: channelName,
+        label: channelName ? undefined : chunter.string.Channel
+      },
+      { label: chunter.string.Thread }
+    ]
+  }
+</script>
+
+<div class="popupPanel panel">
+  {#if showHeader}
+    <div class="ac-header divide full caption-height" style="padding: 0.5rem 1rem">
+      <Breadcrumbs items={getBreadcrumbsItems(channel, message, channelName)} />
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div
+        class="close"
+        on:click={() => {
+          dispatch('close')
+        }}
+      >
+        <IconClose size="medium" />
+      </div>
+    </div>
+  {/if}
+
+  <div class="popupPanel-body">
+    <div class="container">
+      {#if message}
+        <ChannelScrollView
+          {selectedMessageId}
+          {messages}
+          withDates={false}
+          skipLabels
+          object={message}
+          objectId={message._id}
+          objectClass={message._class}
+        >
+          <svelte:fragment slot="header">
+            <div class="mt-3 mr-6 ml-6">
+              <ThreadParentMessage {message} />
+            </div>
+            <div class="separator">
+              {#if message.replies && message.replies > 0}
+                <div class="label lower">
+                  <Label label={activity.string.RepliesCount} params={{ replies: message.replies }} />
+                </div>
+              {/if}
+              <div class="line" />
+            </div>
+          </svelte:fragment>
+        </ChannelScrollView>
+      {/if}
+    </div>
+  </div>
+</div>
+
+<style lang="scss">
+  .container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .close {
+    margin-left: 0.75rem;
+    opacity: 0.4;
+    cursor: pointer;
+
+    &:hover {
+      opacity: 1;
     }
   }
 
   .separator {
     display: flex;
     align-items: center;
+    margin: 0.5rem 0;
 
     .label {
       white-space: nowrap;
-      margin: 0.5rem;
+      margin: 0 0.5rem;
       color: var(--theme-halfcontent-color);
     }
 

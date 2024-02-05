@@ -41,15 +41,15 @@
     let passed = now - value
     if (passed < 0) passed = 0
     if (passed < HOUR) {
-      time = await translate(ui.string.Minutes, { minutes: Math.floor(passed / MINUTE) }, $themeStore.language)
+      time = await translate(ui.string.MinutesAgo, { minutes: Math.floor(passed / MINUTE) }, $themeStore.language)
     } else if (passed < DAY) {
-      time = await translate(ui.string.Hours, { hours: Math.floor(passed / HOUR) }, $themeStore.language)
+      time = await translate(ui.string.HoursAgo, { hours: Math.floor(passed / HOUR) }, $themeStore.language)
     } else if (passed < MONTH) {
-      time = await translate(ui.string.Days, { days: Math.floor(passed / DAY) }, $themeStore.language)
+      time = await translate(ui.string.DaysAgo, { days: Math.floor(passed / DAY) }, $themeStore.language)
     } else if (passed < YEAR) {
-      time = await translate(ui.string.Months, { months: calculateMonthsPassed(now, value) }, $themeStore.language)
+      time = await translate(ui.string.MonthsAgo, { months: calculateMonthsPassed(now, value) }, $themeStore.language)
     } else {
-      time = await translate(ui.string.Years, { years: Math.floor(passed / YEAR) }, $themeStore.language)
+      time = await translate(ui.string.YearsAgo, { years: Math.floor(passed / YEAR) }, $themeStore.language)
     }
   }
 

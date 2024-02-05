@@ -199,11 +199,6 @@
     "NoDescription": "Нет описания",
     "SearchIssue": "Поиск задачи...",
 
-    "DurMinutes": "{minutes, plural, =0 {меньше минуты} one {# минуту} few {# минуты} other {# минут}}",
-    "DurHours": "{hours, plural, =0 {меньше часа} one {# час} few {# часа} other {# часов}}",
-    "DurDays": "{days, plural, =0 {сегодня} one {# день} few {# дня} other {# дней }}",
-    "DurMonths": "{months, plural, =0 {меньше месяца} one {# месяц} few {# месяца} other {# месяцев}}",
-    "DurYears": "{years, plural, =0 {меньше года} one {# год} few {# года} other {# лет}}",
     "StatusHistory": "История состояний",
     "NewSubIssue": "Добавить под-задачу...",
     "AddLabel": "Добавить метку",

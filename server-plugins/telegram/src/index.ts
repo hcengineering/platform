@@ -18,6 +18,7 @@ import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { ObjectDDParticipantFunc, TriggerFunc } from '@hcengineering/server-core'
 import { TypeMatchFunc } from '@hcengineering/server-notification'
+import { TemplateFieldServerFunc } from '@hcengineering/server-templates'
 
 /**
  * @public
@@ -33,6 +34,8 @@ export default plugin(serverTelegramId, {
   },
   function: {
     IsIncomingMessage: '' as TypeMatchFunc,
-    FindMessages: '' as Resource<ObjectDDParticipantFunc>
+    FindMessages: '' as Resource<ObjectDDParticipantFunc>,
+    GetCurrentEmployeeTG: '' as Resource<TemplateFieldServerFunc>,
+    GetIntegrationOwnerTG: '' as Resource<TemplateFieldServerFunc>
   }
 })

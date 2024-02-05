@@ -188,6 +188,8 @@ export function start (
     indexParallel: number // 2
 
     enableCompression?: boolean
+
+    accountsUrl: string
   }
 ): () => Promise<void> {
   addLocation(serverAttachmentId, () => import('@hcengineering/server-attachment-resources'))
@@ -270,7 +272,7 @@ export function start (
   }
 
   const pipelineFactory: PipelineFactory = (ctx, workspace, upgrade, broadcast) => {
-    const wsMetrics = metrics.newChild('🧲 ' + workspace.name, {})
+    const wsMetrics = metrics.newChild('🧲 session', {})
     const conf: DbConfiguration = {
       domains: {
         [DOMAIN_TX]: 'MongoTx',
@@ -357,6 +359,7 @@ export function start (
     port: opt.port,
     productId: opt.productId,
     serverFactory: opt.serverFactory,
-    enableCompression: opt.enableCompression
+    enableCompression: opt.enableCompression,
+    accountsUrl: opt.accountsUrl
   })
 }

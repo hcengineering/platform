@@ -124,7 +124,7 @@
     <Label label={tracker.string.Status} />
   </span>
 
-  <StatusEditor value={issue} size={'medium'} shouldShowLabel />
+  <StatusEditor value={issue} size={'medium'} iconSize={'small'} shouldShowLabel />
 
   {#if issue.blockedBy?.length}
     <span class="labelTop">

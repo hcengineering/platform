@@ -111,8 +111,11 @@
   }
 </script>
 
-<form class="container" style:padding={$deviceInfo.docWidth <= 480 ? '1.25rem' : '5rem'}>
+<form class="container h-60" style:padding={$deviceInfo.docWidth <= 480 ? '1.25rem' : '5rem'}>
   <div class="grow-separator" />
+  <div class="fs-title">
+    {account?.email}
+  </div>
   <div class="title"><Label label={login.string.SelectWorkspace} /></div>
   <div class="status">
     <StatusControl {status} />
@@ -126,7 +129,7 @@
             class="workspace flex-center fs-title cursor-pointer focused-button bordered form-row"
             on:click={() => select(workspace.workspace)}
           >
-            {workspace.workspace}
+            {workspace.workspaceName ?? workspace.workspace}
           </div>
         {/each}
         {#if workspaces.length === 0 && account?.confirmed === true}

@@ -15,7 +15,7 @@
 <script lang="ts">
   import attachment from '@hcengineering/attachment'
   import { FileBrowser } from '@hcengineering/attachment-resources'
-  import { AnySvelteComponent, Button } from '@hcengineering/ui'
+  import { AnySvelteComponent, Button, Scroller } from '@hcengineering/ui'
   import workbench from '@hcengineering/workbench'
   import { SpaceBrowser } from '@hcengineering/workbench-resources'
   import contact from '@hcengineering/contact-resources/src/plugin'
@@ -63,19 +63,21 @@
 </script>
 
 <div class="flex-col h-full">
-  <div class="ac-header divide full caption-height">
-    <Header icon={workbench.icon.Search} intlLabel={plugin.string.ChunterBrowser} />
+  <div class="ac-header divide full caption-height" style="padding: 0.5rem 1rem">
+    <Header icon={workbench.icon.Search} intlLabel={plugin.string.ChunterBrowser} titleKind="breadcrumbs" />
   </div>
   <div class="h-full browser">
     <div class="pb-16 component">
       <div class="h-full">
         {#if components[searchType].component}
-          <svelte:component
-            this={components[searchType].component}
-            withHeader={false}
-            bind:search={userSearch_}
-            {...components[searchType].props}
-          />
+          <Scroller>
+            <svelte:component
+              this={components[searchType].component}
+              withHeader={false}
+              bind:search={userSearch_}
+              {...components[searchType].props}
+            />
+          </Scroller>
         {/if}
       </div>
     </div>
@@ -133,6 +135,7 @@
     display: flex;
     justify-content: flex-start;
     flex-direction: column-reverse;
+    background-color: var(--theme-popup-color);
   }
 
   .bar {

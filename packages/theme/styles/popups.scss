@@ -167,6 +167,7 @@
     height: max-content;
     overflow-x: hidden;
     overflow-y: auto;
+    scrollbar-width: thin;
 
     &::-webkit-scrollbar { width: 0; }
     .box {
@@ -330,6 +331,8 @@
     min-height: 0;
     overflow-x: hidden;
     overflow-y: auto;
+    scrollbar-width: thin;
+
     &::-webkit-scrollbar-track { margin: 0; }
     &::-webkit-scrollbar-thumb {
       background-color: var(--scrollbar-bar-color);

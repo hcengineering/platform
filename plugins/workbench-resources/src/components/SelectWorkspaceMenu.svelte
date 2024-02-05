@@ -136,7 +136,7 @@
               <!-- <div class="drag"><Drag size={'small'} /></div> -->
               <!-- <div class="logo empty" /> -->
               <!-- <div class="flex-col flex-grow"> -->
-              <span class="label overflow-label flex-grow">{ws.workspace}</span>
+              <span class="label overflow-label flex-grow">{ws.workspaceName ?? ws.workspace}</span>
               <!-- <span class="description overflow-label">Description</span> -->
               <!-- </div> -->
               <div class="ap-check">

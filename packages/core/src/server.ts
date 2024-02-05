@@ -13,21 +13,21 @@
 // limitations under the License.
 //
 
-import { MeasureContext } from './measurements'
-import type { Doc, Class, Ref, Domain, Timestamp } from './classes'
+import { LoadModelResponse } from '.'
+import type { Class, Doc, Domain, Ref, Timestamp } from './classes'
 import { Hierarchy } from './hierarchy'
+import { MeasureContext } from './measurements'
 import { ModelDb } from './memdb'
 import type {
   DocumentQuery,
   FindOptions,
   FindResult,
-  TxResult,
-  SearchQuery,
   SearchOptions,
-  SearchResult
+  SearchQuery,
+  SearchResult,
+  TxResult
 } from './storage'
 import type { Tx } from './tx'
-import { LoadModelResponse } from '.'
 
 /**
  * @public
@@ -72,7 +72,9 @@ export interface ServerStorage extends LowLevelStorage {
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: FindOptions<T>
+    options?: FindOptions<T> & {
+      domain?: Domain // Allow to find for Doc's in specified domain only.
+    }
   ) => Promise<FindResult<T>>
   searchFulltext: (ctx: MeasureContext, query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
   tx: (ctx: MeasureContext, tx: Tx) => Promise<[TxResult, Tx[]]>

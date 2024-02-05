@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import { Doc } from '@hcengineering/core'
+import contact, { Person, PersonAccount, getFirstName, getLastName } from '@hcengineering/contact'
+import { Account, Doc, Ref } from '@hcengineering/core'
 import { translate } from '@hcengineering/platform'
 import type { TriggerControl } from '@hcengineering/server-core'
 import setting, { Integration } from '@hcengineering/setting'
@@ -36,10 +37,68 @@ export async function integrationTextPresenter (doc: Doc, control: TriggerContro
   return `${label} (${integration.value})`
 }
 
+export async function getValue (control: TriggerControl, context: Record<string, Doc>): Promise<string | undefined> {
+  const value = context[setting.class.Integration] as Integration
+  if (value === undefined) return
+  return value.value
+}
+
+async function getEmployee (control: TriggerControl, _id: Ref<Account>): Promise<Person | undefined> {
+  const employeeAccount = (
+    await control.modelDb.findAll(contact.class.PersonAccount, {
+      _id: _id as Ref<PersonAccount>
+    })
+  )[0]
+  if (employeeAccount !== undefined) {
+    const employee = (
+      await control.findAll(contact.class.Person, {
+        _id: employeeAccount.person
+      })
+    )[0]
+    return employee
+  }
+}
+
+export async function getOwnerFirstName (
+  control: TriggerControl,
+  context: Record<string, Doc>
+): Promise<string | undefined> {
+  const value = context[setting.class.Integration] as Integration
+  if (value === undefined) return
+  const employee = await getEmployee(control, value.modifiedBy)
+  return employee != null ? getFirstName(employee.name) : undefined
+}
+
+export async function getOwnerLastName (
+  control: TriggerControl,
+  context: Record<string, Doc>
+): Promise<string | undefined> {
+  const value = context[setting.class.Integration] as Integration
+  if (value === undefined) return
+  const employee = await getEmployee(control, value.modifiedBy)
+  return employee != null ? getLastName(employee.name) : undefined
+}
+
+export async function getOwnerPosition (
+  control: TriggerControl,
+  context: Record<string, Doc>
+): Promise<string | undefined> {
+  const value = context[setting.class.Integration] as Integration
+  if (value === undefined) return
+  const employee = await getEmployee(control, value.modifiedBy)
+  if (employee !== undefined) {
+    return control.hierarchy.as(employee, contact.mixin.Employee)?.position ?? undefined
+  }
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   function: {
     IntegrationHTMLPresenter: integrationHTMLPresenter,
-    IntegrationTextPresenter: integrationTextPresenter
+    IntegrationTextPresenter: integrationTextPresenter,
+    GetValue: getValue,
+    GetFirstName: getFirstName,
+    GetLastName: getLastName,
+    GetOwnerPosition: getOwnerPosition
   }
 })

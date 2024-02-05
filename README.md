@@ -1,8 +1,23 @@
-# Hardcore Engineering SaaS Platform
+# Huly Platform
 
-The Platform is a framework that helps in building business applications (such as CRM) fast.
-The current exemplary applications include Chat, Issue Management (Tracker), Applicant Tracking System, Boards, Leads, and HR.
-Several teams building products on top of the Platform including [Huly](https://huly.io) and [TraceX](https://tracex.co).
+[![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/huly_io?style=for-the-badge)](https://x.com/huly_io)
+![GitHub License](https://img.shields.io/github/license/hcengineering/platform?style=for-the-badge)
+
+⭐️ Your star shines on us. Star us on GitHub!
+
+## About
+
+The Huly Platform is a robust framework designed to accelerate the development of business applications, such as CRM systems. 
+This repository includes several applications, such as Chat, Project Management, CRM, HRM, and ATS. 
+Various teams are building products on top of the Platform, including [Huly](https://huly.io) and [TraceX](https://tracex.co).
+
+![Huly](https://huly.io/_astro/dark-kanban.51390fd6_vIfr7.webp)
+
+## Activity
+
+![Alt](https://repobeats.axiom.co/api/embed/c42c99e21691fa60ea61b5cdf11c2e0647621534.svg "Repobeats analytics image")
+
+## Table of Content
 
 - [Pre-requisites](#pre-requisites)
 - [Fast start](#fast-start)
@@ -68,7 +83,7 @@ Before you can begin, you need to create a workspace and an account and associat
 
 ```bash
 cd ./tool # dev/tool in the repository root
-rushx run-local create-workspace ws1 -o DevWorkspace # Create workspace
+rushx run-local create-workspace ws1 -w DevWorkspace # Create workspace
 rushx run-local create-account user1 -p 1234 -f John -l Appleseed # Create account
 rushx run-local configure ws1 --list --enable '*' # Enable all modules, even if they are not yet intended to be used by a wide audience.
 rushx run-local assign-workspace user1 ws1 # Assign workspace to user.
@@ -172,3 +187,5 @@ node ./common/scripts/bump.js -p projectName
 ## Additional testing
 
 This project is tested with BrowserStack.
+
+<sub><sup>&copy; 2024 Hardcore Engineering Inc.</sup></sub>

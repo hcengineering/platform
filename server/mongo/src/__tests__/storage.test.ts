@@ -157,7 +157,7 @@ describe('mongo operations', () => {
         }
       },
       defaultContentAdapter: 'default',
-      workspace: getWorkspaceId(dbId, ''),
+      workspace: { ...getWorkspaceId(dbId, ''), workspaceName: '', workspaceUrl: '' },
       storageFactory: () => createNullStorageFactory()
     }
     const ctx = new MeasureMetricsContext('client', {})

@@ -659,7 +659,8 @@ export class LiveQuery extends TxProcessor implements Client {
 
   // Check if query is partially matched.
   private async matchQuery (q: Query, tx: TxUpdateDoc<Doc>, docCache?: Map<string, Doc>): Promise<boolean> {
-    if (!this.client.getHierarchy().isDerived(tx.objectClass, q._class)) {
+    const clazz = this.getHierarchy().isMixin(q._class) ? this.getHierarchy().getBaseClass(q._class) : q._class
+    if (!this.client.getHierarchy().isDerived(tx.objectClass, clazz)) {
       return false
     }
 
@@ -671,18 +672,29 @@ export class LiveQuery extends TxProcessor implements Client {
       space: tx.objectSpace
     }
 
-    TxProcessor.updateDoc2Doc(doc, tx)
+    // we cannot handle $inc correctly, let's skip it
+    const { $inc, ...ops } = tx.operations
 
-    let matched = false
-    for (const key in q.query) {
-      const value = (q.query as any)[key]
-      const tkey = checkMixinKey(key, q._class, this.client.getHierarchy())
-      if ((doc as any)[tkey] === undefined) continue
-      const res = findProperty([doc], tkey, value)
-      if (res.length === 0) {
-        return false
-      } else {
-        matched = true
+    const emptyOps = Object.keys(ops).length === 0
+    let matched = emptyOps
+    if (!emptyOps) {
+      const virtualTx = {
+        ...tx,
+        operations: ops
+      }
+
+      TxProcessor.updateDoc2Doc(doc, virtualTx)
+
+      for (const key in q.query) {
+        const value = (q.query as any)[key]
+        const tkey = checkMixinKey(key, q._class, this.client.getHierarchy())
+        if ((doc as any)[tkey] === undefined) continue
+        const res = findProperty([doc], tkey, value)
+        if (res.length === 0) {
+          return false
+        } else {
+          matched = true
+        }
       }
     }
 

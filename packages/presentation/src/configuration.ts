@@ -13,11 +13,10 @@
 // limitations under the License.
 //
 
-import core, { type PluginConfiguration, SortingOrder } from '@hcengineering/core'
-import { type Plugin, type Resource, getResourcePlugin } from '@hcengineering/platform'
-import { get, writable } from 'svelte/store'
-import { createQuery } from '.'
-import { location as platformLocation } from '@hcengineering/ui'
+import core, { SortingOrder, type PluginConfiguration, type TxUpdateDoc } from '@hcengineering/core'
+import { getResourcePlugin, type Plugin, type Resource } from '@hcengineering/platform'
+import { writable } from 'svelte/store'
+import { addTxListener, createQuery } from '.'
 
 /**
  * @public
@@ -47,9 +46,17 @@ export const configurationStore = writable<ConfigurationManager>(configuration)
 
 const configQuery = createQuery(true)
 
-let hashString = ''
-let workspaceId: string = ''
-
+addTxListener((tx) => {
+  if (tx._class === core.class.TxUpdateDoc) {
+    const cud = tx as TxUpdateDoc<PluginConfiguration>
+    if (cud.objectClass === core.class.PluginConfiguration) {
+      if (cud.operations.enabled !== undefined) {
+        // Plugin enabled/disabled we need to refresh
+        location.reload()
+      }
+    }
+  }
+})
 /**
  * @public
  */
@@ -61,17 +68,8 @@ configQuery.query(
   core.class.PluginConfiguration,
   {},
   (res) => {
-    const newHash = res.map((it) => `${it.pluginId}=${it.enabled ? '+' : '-'}`).join('&')
-    const wsId = get(platformLocation).path[1]
-
-    if (hashString !== '' && hashString !== newHash && workspaceId !== '' && workspaceId === wsId) {
-      // Configuration is changed for same workspace.
-      location.reload()
-    }
-    workspaceId = wsId
-    hashString = newHash
     configuration = new ConfigurationManager(res, new Map(res.map((it) => [it.pluginId, it])))
     configurationStore.set(configuration)
   },
-  { sort: { label: SortingOrder.Ascending } }
+  { sort: { pluginId: SortingOrder.Ascending } }
 )

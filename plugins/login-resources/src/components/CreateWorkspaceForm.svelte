@@ -28,38 +28,7 @@
     {
       name: 'workspace',
       i18n: login.string.Workspace,
-      rules: [
-        {
-          rule: /^-/,
-          notMatch: true,
-          ruleDescr: login.string.WorkspaceNameRuleHyphen
-        },
-        {
-          rule: /-$/,
-          notMatch: true,
-          ruleDescr: login.string.WorkspaceNameRuleHyphenEnd
-        },
-        {
-          rule: /[A-Z]/,
-          notMatch: true,
-          ruleDescr: login.string.WorkspaceNameRuleCapital
-        },
-        {
-          rule: /^[0-9a-z-]+$/,
-          notMatch: false,
-          ruleDescr: login.string.WorkspaceNameRule
-        },
-        {
-          rule: /^[0-9a-z-]{3,}$/,
-          notMatch: false,
-          ruleDescr: login.string.WorkspaceNameRuleLengthLow
-        },
-        {
-          rule: /^[0-9a-z-]{3,63}$/,
-          notMatch: false,
-          ruleDescr: login.string.WorkspaceNameRuleLengthHigh
-        }
-      ]
+      rules: []
     }
   ]
 
@@ -89,12 +58,13 @@
 
       if (result !== undefined) {
         setMetadata(presentation.metadata.Token, result.token)
+        setMetadataLocalStorage(login.metadata.LastToken, result.token)
         const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
         tokens[object.workspace] = result.token
         setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
         setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
         setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
-        navigate({ path: [workbenchId, object.workspace] })
+        navigate({ path: [workbenchId, result.workspace] })
       }
     }
   }

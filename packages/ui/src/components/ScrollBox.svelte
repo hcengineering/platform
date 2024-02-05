@@ -50,6 +50,7 @@
     overflow-y: hidden;
     margin-right: 0;
     margin-bottom: -0.75rem;
+    scrollbar-width: thin;
 
     .box {
       position: absolute;

@@ -13,20 +13,20 @@
 // limitations under the License.
 //
 
-import { type MeasureContext, generateId } from '@hcengineering/core'
+import { generateId, type MeasureContext } from '@hcengineering/core'
 import { UNAUTHORIZED } from '@hcengineering/platform'
-import { type Response, serialize } from '@hcengineering/rpc'
-import { type Token, decodeToken } from '@hcengineering/server-token'
+import { serialize, type Response } from '@hcengineering/rpc'
+import { decodeToken, type Token } from '@hcengineering/server-token'
 import compression from 'compression'
 import cors from 'cors'
 import express from 'express'
 import http, { type IncomingMessage } from 'http'
-import { type RawData, type WebSocket, WebSocketServer } from 'ws'
+import { WebSocketServer, type RawData, type WebSocket } from 'ws'
 import { getStatistics } from './stats'
 import {
+  LOGGING_ENABLED,
   type ConnectionSocket,
   type HandleRequestFunction,
-  LOGGING_ENABLED,
   type PipelineFactory,
   type SessionManager
 } from './types'
@@ -44,7 +44,8 @@ export function startHttpServer (
   pipelineFactory: PipelineFactory,
   port: number,
   productId: string,
-  enableCompression: boolean
+  enableCompression: boolean,
+  accountsUrl: string
 ): () => Promise<void> {
   if (LOGGING_ENABLED) console.log(`starting server on port ${port} ...`)
 
@@ -151,7 +152,13 @@ export function startHttpServer (
     skipUTF8Validation: true
   })
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  wss.on('connection', async (ws: WebSocket, request: IncomingMessage, token: Token, sessionId?: string) => {
+  const handleConnection = async (
+    ws: WebSocket,
+    request: IncomingMessage,
+    token: Token,
+    rawToken: string,
+    sessionId?: string
+  ): Promise<void> => {
     let buffer: Buffer[] | undefined = []
 
     const data = {
@@ -190,8 +197,20 @@ export function startHttpServer (
     ws.on('message', (msg: Buffer) => {
       buffer?.push(msg)
     })
-    const session = await sessions.addSession(ctx, cs, token, pipelineFactory, productId, sessionId)
-    if ('upgrade' in session) {
+    const session = await sessions.addSession(
+      ctx,
+      cs,
+      token,
+      rawToken,
+      pipelineFactory,
+      productId,
+      sessionId,
+      accountsUrl
+    )
+    if ('upgrade' in session || 'error' in session) {
+      if ('error' in session) {
+        console.error(session.error)
+      }
       cs.close()
       return
     }
@@ -204,7 +223,7 @@ export function startHttpServer (
         buff = Buffer.concat(msg).toString()
       }
       if (buff !== undefined) {
-        void handleRequest(session.context, session.session, cs, buff, token.workspace.name)
+        void handleRequest(session.context, session.session, cs, buff, session.workspaceName)
       }
     })
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -218,9 +237,10 @@ export function startHttpServer (
     const b = buffer
     buffer = undefined
     for (const msg of b) {
-      await handleRequest(session.context, session.session, cs, msg, token.workspace.name)
+      await handleRequest(session.context, session.session, cs, msg, session.workspaceName)
     }
-  })
+  }
+  wss.on('connection', handleConnection as any)
 
   httpServer.on('upgrade', (request: IncomingMessage, socket: any, head: Buffer) => {
     const url = new URL('http://localhost' + (request.url ?? ''))
@@ -234,7 +254,7 @@ export function startHttpServer (
         throw new Error('Invalid workspace product')
       }
 
-      wss.handleUpgrade(request, socket, head, (ws) => wss.emit('connection', ws, request, payload, sessionId))
+      wss.handleUpgrade(request, socket, head, (ws) => wss.emit('connection', ws, request, payload, token, sessionId))
     } catch (err) {
       if (LOGGING_ENABLED) console.error('invalid token', err)
       wss.handleUpgrade(request, socket, head, (ws) => {

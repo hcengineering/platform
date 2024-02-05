@@ -512,6 +512,7 @@ input.search {
 .mb-0 { margin-bottom: 0 !important; }
 .mb-1 { margin-bottom: .25rem; }
 .mb-2 { margin-bottom: .5rem; }
+.mb-2-5 { margin-bottom: .625rem; }
 .mb-3 { margin-bottom: .75rem; }
 .mb-4 { margin-bottom: 1rem; }
 .mb-6 { margin-bottom: 1.5rem; }
@@ -924,9 +925,17 @@ a.no-line {
 
 .overflow-x-auto { overflow-x: auto; }
 .overflow-y-auto { overflow-y: auto; }
+.overflow-x-auto,
+.overflow-y-auto { scrollbar-width: thin; }
+
 .whitespace-nowrap { white-space: nowrap; }
 
 /* Scrollbars */
+.scroll-m-0,
+.scroll-m-10,
+.scroll-bg-accent-color,
+.scroll-divider-color { scrollbar-width: thin; }
+
 .scroll-m-0::-webkit-scrollbar-track { margin: 0; }
 .scroll-m-10::-webkit-scrollbar-track { margin: 2.5rem; }
 
@@ -960,6 +969,7 @@ a.no-line {
 .background-primary-color { background-color: var(--primary-button-default); }
 .background-content-accent-color { background-color: var(--accent-color); }
 .background-comp-header-color { background-color: var(--theme-comp-header-color) !important; }
+.background-navpanel-color { background-color: var(--theme-navpanel-color) !important; }
 
 .content-trans-color { color: var(--theme-trans-color); }
 .content-darker-color { color: var(--theme-darker-color); }

@@ -302,7 +302,6 @@ export function createModel (builder: Builder): void {
       locationResolver: recruit.resolver.Location,
       alias: recruitId,
       hidden: false,
-      aside: chunter.component.ThreadView,
       navigatorModel: {
         spaces: [],
         specials: [

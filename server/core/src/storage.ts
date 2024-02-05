@@ -54,6 +54,7 @@ import core, {
   TxWorkspaceEvent,
   WorkspaceEvent,
   WorkspaceId,
+  WorkspaceIdWithUrl,
   generateId
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
@@ -92,7 +93,7 @@ export interface DbConfiguration {
   adapters: Record<string, DbAdapterConfiguration>
   domains: Record<string, string>
   defaultAdapter: string
-  workspace: WorkspaceId
+  workspace: WorkspaceIdWithUrl
   metrics: MeasureContext
   fulltextAdapter: {
     factory: FullTextAdapterFactory
@@ -121,7 +122,7 @@ class TServerStorage implements ServerStorage {
     private readonly fulltextAdapter: FullTextAdapter,
     readonly storageAdapter: MinioService | undefined,
     readonly modelDb: ModelDb,
-    private readonly workspace: WorkspaceId,
+    private readonly workspace: WorkspaceIdWithUrl,
     readonly indexFactory: (storage: ServerStorage) => FullTextIndex,
     readonly options: ServerStorageOptions,
     metrics: MeasureContext,
@@ -371,9 +372,11 @@ class TServerStorage implements ServerStorage {
     ctx: MeasureContext,
     clazz: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: FindOptions<T>
+    options?: FindOptions<T> & {
+      domain?: Domain // Allow to find for Doc's in specified domain only.
+    }
   ): Promise<FindResult<T>> {
-    const domain = this.hierarchy.getDomain(clazz)
+    const domain = options?.domain ?? this.hierarchy.getDomain(clazz)
     if (query?.$search !== undefined) {
       return await ctx.with('client-fulltext-find-all', {}, (ctx) => this.fulltext.findAll(ctx, clazz, query, options))
     }

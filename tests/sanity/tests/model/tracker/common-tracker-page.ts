@@ -1,5 +1,6 @@
 import { expect, Locator, Page } from '@playwright/test'
 import { CalendarPage } from '../calendar-page'
+import { DateDivided } from './types'
 
 export class CommonTrackerPage extends CalendarPage {
   readonly page: Page
@@ -65,16 +66,63 @@ export class CommonTrackerPage extends CalendarPage {
     }
   }
 
-  async fillBetweenDate (dateStart: string, dateEnd: string): Promise<void> {
+  async fillBetweenDate (dateStart: DateDivided, dateEnd: DateDivided): Promise<void> {
+    // TODO removed after bug fixed
+    if (dateStart.day === '30' || dateEnd.day === '30') {
+      await this.page.locator('div.date-popup-container div.day:not(.wrongMonth)', { hasText: '30' }).first().click()
+    }
+
+    if (dateStart.day === '31' || dateEnd.day === '31') {
+      await this.page.locator('div.date-popup-container div.day:not(.wrongMonth)', { hasText: '31' }).first().click()
+    }
+
+    // dateStart - day
     await this.page
       .locator('div.date-popup-container div.input:first-child span.digit:first-child')
-      .click({ delay: 100 })
-    await this.page.type('div.date-popup-container div.input:first-child', dateStart)
+      .click({ delay: 100, position: { x: 1, y: 1 } })
+    await this.page
+      .locator('div.date-popup-container div.input:first-child span.digit:first-child')
+      .pressSequentially(dateStart.day)
 
+    // dateStart - month
+    await this.page
+      .locator('div.date-popup-container div.input:first-child span.digit:nth-child(3)')
+      .click({ delay: 100, position: { x: 1, y: 1 } })
+    await this.page
+      .locator('div.date-popup-container div.input:first-child span.digit:nth-child(3)')
+      .pressSequentially(dateStart.month)
+
+    // dateStart - year
+    await this.page
+      .locator('div.date-popup-container div.input:first-child span.digit:nth-child(5)')
+      .click({ delay: 100, position: { x: 1, y: 1 } })
+    await this.page
+      .locator('div.date-popup-container div.input:first-child span.digit:nth-child(5)')
+      .pressSequentially(dateStart.year)
+
+    // dateEnd - day
     await this.page
       .locator('div.date-popup-container div.input:last-child span.digit:first-child')
-      .click({ delay: 100 })
-    await this.page.type('div.date-popup-container div.input:last-child', dateEnd)
+      .click({ delay: 100, position: { x: 1, y: 1 } })
+    await this.page
+      .locator('div.date-popup-container div.input:last-child span.digit:first-child')
+      .pressSequentially(dateEnd.day)
+
+    // dateEnd - month
+    await this.page
+      .locator('div.date-popup-container div.input:last-child span.digit:nth-child(3)')
+      .click({ delay: 100, position: { x: 1, y: 1 } })
+    await this.page
+      .locator('div.date-popup-container div.input:last-child span.digit:nth-child(3)')
+      .pressSequentially(dateEnd.month)
+
+    // dateEnd - year
+    await this.page
+      .locator('div.date-popup-container div.input:last-child span.digit:nth-child(5)')
+      .click({ delay: 100, position: { x: 1, y: 1 } })
+    await this.page
+      .locator('div.date-popup-container div.input:last-child span.digit:nth-child(5)')
+      .pressSequentially(dateEnd.year)
 
     await this.page.locator('div.date-popup-container button[type="submit"]').click({ delay: 100 })
   }

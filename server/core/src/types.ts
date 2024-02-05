@@ -37,7 +37,8 @@ import {
   Tx,
   TxFactory,
   TxResult,
-  WorkspaceId
+  WorkspaceId,
+  WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import type { Asset, Resource } from '@hcengineering/platform'
@@ -114,7 +115,7 @@ export interface Pipeline extends LowLevelStorage {
  */
 export interface TriggerControl {
   ctx: MeasureContext
-  workspace: WorkspaceId
+  workspace: WorkspaceIdWithUrl
   txFactory: TxFactory
   findAll: Storage['findAll']
   findAllCtx: <T extends Doc>(

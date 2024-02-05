@@ -1,12 +1,12 @@
 import client from '@hcengineering/client'
 import core, {
-  type AccountClient,
-  type Client,
   ClientConnectEvent,
-  type Version,
   getCurrentAccount,
   setCurrentAccount,
-  versionToString
+  versionToString,
+  type AccountClient,
+  type Client,
+  type Version
 } from '@hcengineering/core'
 import login, { loginId } from '@hcengineering/login'
 import { addEventListener, broadcastEvent, getMetadata, getResource, setMetadata } from '@hcengineering/platform'
@@ -51,14 +51,9 @@ export async function connect (title: string): Promise<Client | undefined> {
   }
   const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
   const token = tokens[ws]
-  const path = `/${loc.path[0]}/${loc.path[1]}`
   setMetadata(presentation.metadata.Token, token)
   document.cookie =
-    encodeURIComponent(presentation.metadata.Token.replaceAll(':', '-')) +
-    '=' +
-    encodeURIComponent(token) +
-    '; path=' +
-    path
+    encodeURIComponent(presentation.metadata.Token.replaceAll(':', '-')) + '=' + encodeURIComponent(token) + '; path=/'
 
   const endpoint = fetchMetadataLocalStorage(login.metadata.LoginEndpoint)
   const email = fetchMetadataLocalStorage(login.metadata.LoginEmail)
@@ -217,6 +212,7 @@ function clearMetadata (ws: string): void {
     setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
   }
   setMetadata(presentation.metadata.Token, null)
+  setMetadataLocalStorage(login.metadata.LastToken, null)
   document.cookie =
     encodeURIComponent(presentation.metadata.Token.replaceAll(':', '-')) + '=' + encodeURIComponent('') + '; path=/'
   setMetadataLocalStorage(login.metadata.LoginEndpoint, null)

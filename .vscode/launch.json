@@ -46,6 +46,7 @@
         "COLLABORATOR_URL": "ws://localhost:3078",
         "REKONI_URL": "http://localhost:4004",
         "FRONT_URL": "http://localhost:8080",
+        "ACCOUNTS_URL": "http://localhost:3000",
         // "SERVER_PROVIDER":"uweb"
         "SERVER_PROVIDER":"ws",
         "MODEL_VERSION": ""
@@ -89,6 +90,7 @@
       "env": {
         "SECRET": "secret",
         "METRICS_CONSOLE": "true",
+        "ACCOUNTS_URL": "http://localhost:3000",
         "TRANSACTOR_URL": "ws://localhost:3333",
         "UPLOAD_URL": "/files",
         "MONGO_URL": "mongodb://localhost:27017",

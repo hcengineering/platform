@@ -17,47 +17,40 @@
   import { DocNotifyContext } from '@hcengineering/notification'
   import { location as locationStore } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
-  import activity, { ActivityMessage, ActivityMessagesFilter } from '@hcengineering/activity'
-  import { ActivityScrolledView, isReactionMessage } from '@hcengineering/activity-resources'
+  import { ActivityMessage, ActivityMessagesFilter, DisplayActivityMessage } from '@hcengineering/activity'
   import { getClient } from '@hcengineering/presentation'
+  import { getMessageFromLoc } from '@hcengineering/activity-resources'
 
   import chunter from '../plugin'
-  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+  import ChannelScrollView from './ChannelScrollView.svelte'
 
   export let context: DocNotifyContext
-  export let object: Doc
-  export let filterId: Ref<ActivityMessagesFilter> = activity.ids.AllFilter
+  export let object: Doc | undefined
+  export let filters: Ref<ActivityMessagesFilter>[] = []
+  export let messages: DisplayActivityMessage[] = []
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const inboxClient = InboxNotificationsClientImpl.getClient()
-  const activityInboxNotificationsStore = inboxClient.activityInboxNotifications
 
   let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
 
   const unsubscribe = locationStore.subscribe((newLocation) => {
-    selectedMessageId = newLocation.query?.message as Ref<ActivityMessage> | undefined
-    const selectedMessage = selectedMessageId
-      ? $activityInboxNotificationsStore.find(({ attachedTo }) => attachedTo === selectedMessageId)?.$lookup?.attachedTo
-      : undefined
-
-    if (isReactionMessage(selectedMessage)) {
-      selectedMessageId = selectedMessage.attachedTo as Ref<ActivityMessage>
-    }
+    selectedMessageId = getMessageFromLoc(newLocation)
   })
 
   onDestroy(unsubscribe)
 
-  $: isDocChannel = !hierarchy.isDerived(object._class, chunter.class.ChunterSpace)
-  $: messagesClass = isDocChannel ? activity.class.ActivityMessage : chunter.class.ChatMessage
+  $: isDocChannel = !hierarchy.isDerived(context.attachedToClass, chunter.class.ChunterSpace)
   $: collection = isDocChannel ? 'comments' : 'messages'
 </script>
 
-<ActivityScrolledView
-  _class={messagesClass}
+<ChannelScrollView
+  {messages}
+  objectId={context.attachedTo}
+  objectClass={context.attachedToClass}
   {object}
   skipLabels={!isDocChannel}
-  filter={filterId}
+  selectedFilters={filters}
   startFromBottom
   {selectedMessageId}
   {collection}

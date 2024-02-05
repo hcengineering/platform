@@ -18,6 +18,7 @@ import core, {
   Class,
   Doc,
   DocumentQuery,
+  Domain,
   FindOptions,
   FindResult,
   LookupData,
@@ -47,14 +48,19 @@ import { BroadcastFunc, Middleware, SessionContext, TxMiddlewareResult } from '@
 import { BaseMiddleware } from './base'
 import { getUser, isOwner, isSystem, mergeTargets } from './utils'
 
+type SpaceWithMembers = Pick<Space, '_id' | 'members' | 'private'>
+
 /**
  * @public
  */
 export class SpaceSecurityMiddleware extends BaseMiddleware implements Middleware {
   private allowedSpaces: Record<Ref<Account>, Ref<Space>[]> = {}
-  private privateSpaces: Record<Ref<Space>, Space | undefined> = {}
-  private domainSpaces: Record<string, Set<Ref<Space>>> = {}
+  private privateSpaces: Record<Ref<Space>, SpaceWithMembers | undefined> = {}
+  private readonly _domainSpaces = new Map<string, Set<Ref<Space>> | Promise<Set<Ref<Space>>>>()
   private publicSpaces: Ref<Space>[] = []
+
+  private spaceMeasureCtx!: MeasureContext
+
   private readonly systemSpaces = [
     core.space.Configuration,
     core.space.DerivedTx,
@@ -78,9 +84,8 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     next?: Middleware
   ): Promise<SpaceSecurityMiddleware> {
     const res = new SpaceSecurityMiddleware(broadcast, storage, next)
-    await ctx.with('space chain', {}, async (ctx) => {
-      await res.init(ctx)
-    })
+    res.spaceMeasureCtx = ctx.newChild('space chain', {})
+    await res.init(res.spaceMeasureCtx)
     return res
   }
 
@@ -90,7 +95,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     this.allowedSpaces[member] = arr
   }
 
-  private addSpace (space: Space): void {
+  private addSpace (space: SpaceWithMembers): void {
     this.privateSpaces[space._id] = space
     for (const member of space.members) {
       this.addMemberSpace(member, space._id)
@@ -98,49 +103,24 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
   }
 
   private async init (ctx: MeasureContext): Promise<void> {
-    const spaces = await this.storage.findAll(ctx, core.class.Space, { private: true })
-    for (const space of spaces) {
-      this.addSpace(space)
-    }
-    this.publicSpaces = (await this.storage.findAll(ctx, core.class.Space, { private: false })).map((p) => p._id)
-    await this.initDomains(ctx)
-  }
-
-  private async initDomains (ctx: MeasureContext): Promise<void> {
-    const classesPerDomain: Record<string, Ref<Class<Doc>>[]> = {}
-    const classes = this.storage.hierarchy.getDescendants(core.class.Doc)
-    for (const _class of classes) {
-      const clazz = this.storage.hierarchy.getClass(_class)
-      if (clazz.domain === undefined) continue
-      const domain = clazz.domain
-      classesPerDomain[domain] = classesPerDomain[domain] ?? []
-      classesPerDomain[domain].push(_class)
-    }
-    for (const domain in classesPerDomain) {
-      for (const _class of classesPerDomain[domain]) {
-        const field = this.getKey(_class)
-        const map = this.domainSpaces[domain] ?? new Set()
-        this.domainSpaces[domain] = map
-
-        while (true) {
-          const spaces = await this.storage.findAll(
-            ctx,
-            _class,
-            {
-              [field]: { $nin: Array.from(map.values()) }
-            },
-            {
-              projection: { [field]: 1 },
-              limit: 1000
-            }
-          )
-          if (spaces.length === 0) {
-            break
-          }
-          spaces.forEach((p) => map.add((p as any)[field] as Ref<Space>))
+    const spaces: SpaceWithMembers[] = await this.storage.findAll(
+      ctx,
+      core.class.Space,
+      {},
+      {
+        projection: {
+          private: 1,
+          _id: 1,
+          members: 1
         }
       }
+    )
+    for (const space of spaces) {
+      if (space.private) {
+        this.addSpace(space)
+      }
     }
+    this.publicSpaces = spaces.filter((it) => !it.private).map((p) => p._id)
   }
 
   private removeMemberSpace (member: Ref<Account>, space: Ref<Space>): void {
@@ -210,7 +190,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     }
   }
 
-  private async syncMembers (members: Ref<Account>[], space: Space): Promise<void> {
+  private async syncMembers (members: Ref<Account>[], space: SpaceWithMembers): Promise<void> {
     const oldMembers = new Set(space.members)
     const newMembers = new Set(members)
     const changed: Ref<Account>[] = []
@@ -253,7 +233,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     this.broadcast([tx], targets)
   }
 
-  private async broadcastNonMembers (space: Space | undefined): Promise<void> {
+  private async broadcastNonMembers (space: SpaceWithMembers | undefined): Promise<void> {
     const users = await this.storage.modelDb.findAll(core.class.Account, { _id: { $nin: space?.members } })
     await this.brodcastEvent(users.map((p) => p._id))
   }
@@ -291,7 +271,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       if (updateDoc.operations.$pull?.members !== undefined) {
         await this.pullMembersHandle(updateDoc.operations.$pull.members, space._id)
       }
-      space = TxProcessor.updateDoc2Doc(space, updateDoc)
+      space = TxProcessor.updateDoc2Doc(space as any, updateDoc)
     }
   }
 
@@ -349,7 +329,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     return targets
   }
 
-  private processTxSpaceDomain (tx: TxCUD<Doc>): void {
+  private async processTxSpaceDomain (tx: TxCUD<Doc>): Promise<void> {
     const actualTx = TxProcessor.extractTx(tx)
     if (actualTx._class === core.class.TxCreateDoc) {
       const ctx = actualTx as TxCreateDoc<Doc>
@@ -358,21 +338,19 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       const space = (doc as any)[key]
       if (space === undefined) return
       const domain = this.storage.hierarchy.getDomain(ctx.objectClass)
-      this.domainSpaces[domain] = this.domainSpaces[domain] ?? new Set()
-      this.domainSpaces[domain].add(space)
+      ;(await this.getDomainSpaces(domain)).add(space)
     } else if (actualTx._class === core.class.TxUpdateDoc) {
       const updTx = actualTx as TxUpdateDoc<Doc>
       const key = this.getKey(updTx.objectClass)
       const space = (updTx.operations as any)[key]
       if (space !== undefined) {
         const domain = this.storage.hierarchy.getDomain(updTx.objectClass)
-        this.domainSpaces[domain] = this.domainSpaces[domain] ?? new Set()
-        this.domainSpaces[domain].add(space)
+        ;(await this.getDomainSpaces(domain)).add(space)
       }
     }
   }
 
-  private async proccessTx (ctx: SessionContext, tx: Tx): Promise<void> {
+  private async processTx (ctx: SessionContext, tx: Tx): Promise<void> {
     const h = this.storage.hierarchy
     if (h.isDerived(tx._class, core.class.TxCUD)) {
       const cudTx = tx as TxCUD<Doc>
@@ -380,7 +358,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       if (isSpace) {
         await this.handleTx(ctx, cudTx as TxCUD<Space>)
       }
-      this.processTxSpaceDomain(tx as TxCUD<Doc>)
+      await this.processTxSpaceDomain(tx as TxCUD<Doc>)
       if (h.isDerived(cudTx.objectClass, core.class.Account) && cudTx._class === core.class.TxUpdateDoc) {
         const ctx = cudTx as TxUpdateDoc<Account>
         if (ctx.operations.role !== undefined) {
@@ -391,21 +369,24 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
   }
 
   async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
-    await this.proccessTx(ctx, tx)
+    await this.processTx(ctx, tx)
     const targets = await this.getTxTargets(ctx, tx)
     const res = await this.provideTx(ctx, tx)
     for (const tx of res[1]) {
-      await this.proccessTx(ctx, tx)
+      await this.processTx(ctx, tx)
     }
     return [res[0], res[1], mergeTargets(targets, res[2])]
   }
 
   handleBroadcast (tx: Tx[], targets?: string[]): Tx[] {
-    for (const t of tx) {
-      if (this.storage.hierarchy.isDerived(t._class, core.class.TxCUD)) {
-        this.processTxSpaceDomain(t as TxCUD<Doc>)
+    const process = async (): Promise<void> => {
+      for (const t of tx) {
+        if (this.storage.hierarchy.isDerived(t._class, core.class.TxCUD)) {
+          await this.processTxSpaceDomain(t as TxCUD<Doc>)
+        }
       }
     }
+    void process()
     return this.provideHandleBroadcast(tx, targets)
   }
 
@@ -419,18 +400,52 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     }
   }
 
-  private filterByDomain (domain: string, spaces: Ref<Space>[]): Ref<Space>[] {
-    const domainSpaces = this.domainSpaces[domain]
-    if (domainSpaces === undefined) return []
+  async loadDomainSpaces (ctx: MeasureContext, domain: Domain): Promise<Set<Ref<Space>>> {
+    const map = new Set<Ref<Space>>()
+    const field = this.getKey(domain)
+    while (true) {
+      const spaces = await this.storage.findAll(
+        ctx,
+        core.class.Doc,
+        {
+          [field]: { $nin: Array.from(map.values()) }
+        },
+        {
+          projection: { [field]: 1 },
+          limit: 1000,
+          domain
+        }
+      )
+      if (spaces.length === 0) {
+        break
+      }
+      spaces.forEach((p) => map.add((p as any)[field] as Ref<Space>))
+    }
+    return map
+  }
+
+  async getDomainSpaces (domain: Domain): Promise<Set<Ref<Space>>> {
+    let domainSpaces = this._domainSpaces.get(domain)
+    if (domainSpaces === undefined) {
+      const p = this.loadDomainSpaces(this.spaceMeasureCtx, domain)
+      this._domainSpaces.set(domain, p)
+      domainSpaces = await p
+      this._domainSpaces.set(domain, domainSpaces)
+    }
+    return domainSpaces instanceof Promise ? await domainSpaces : domainSpaces
+  }
+
+  private async filterByDomain (domain: Domain, spaces: Ref<Space>[]): Promise<Ref<Space>[]> {
+    const domainSpaces = await this.getDomainSpaces(domain)
     return spaces.filter((p) => domainSpaces.has(p))
   }
 
-  private mergeQuery<T extends Doc>(
+  private async mergeQuery<T extends Doc>(
     account: Account,
     query: ObjQueryType<T['space']>,
-    domain: string
-  ): ObjQueryType<T['space']> {
-    const spaces = this.filterByDomain(domain, this.getAllAllowedSpaces(account))
+    domain: Domain
+  ): Promise<ObjQueryType<T['space']>> {
+    const spaces = await this.filterByDomain(domain, this.getAllAllowedSpaces(account))
     if (query == null) {
       return { $in: spaces }
     }
@@ -446,12 +461,8 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     return query
   }
 
-  private getKey<T extends Doc>(_class: Ref<Class<T>>): string {
-    return this.storage.hierarchy.isDerived(_class, core.class.Tx)
-      ? 'objectSpace'
-      : this.storage.hierarchy.isDerived(_class, core.class.Space)
-        ? '_id'
-        : 'space'
+  private getKey (domain: string): string {
+    return domain === 'tx' ? 'objectSpace' : domain === 'space' ? '_id' : 'space'
   }
 
   override async findAll<T extends Doc>(
@@ -468,9 +479,9 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     if (!isSystem(account)) {
       if (!isOwner(account) || !this.storage.hierarchy.isDerived(_class, core.class.Space)) {
         if (query[field] !== undefined) {
-          ;(newQuery as any)[field] = this.mergeQuery(account, query[field], domain)
+          ;(newQuery as any)[field] = await this.mergeQuery(account, query[field], domain)
         } else {
-          const spaces = this.filterByDomain(domain, this.getAllAllowedSpaces(account))
+          const spaces = await this.filterByDomain(domain, this.getAllAllowedSpaces(account))
           ;(newQuery as any)[field] = { $in: spaces }
         }
       }

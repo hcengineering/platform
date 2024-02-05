@@ -17,12 +17,13 @@
   import chunter, { Channel } from '@hcengineering/chunter'
   import Lock from './icons/Lock.svelte'
 
-  export let value: Channel
+  export let value: Channel | undefined
   export let size: IconSize = 'small'
+  export let fill: string | undefined = 'currentColor'
 </script>
 
-{#if value.private}
-  <Lock {size} />
+{#if value?.private}
+  <Lock {size} {fill} />
 {:else}
-  <Icon icon={chunter.icon.Hashtag} {size} />
+  <Icon icon={chunter.icon.Hashtag} {size} {fill} />
 {/if}

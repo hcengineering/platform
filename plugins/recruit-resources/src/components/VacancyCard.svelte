@@ -18,9 +18,9 @@
   import { ChannelsEditor } from '@hcengineering/contact-resources'
   import { Ref, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Vacancy, recruitId } from '@hcengineering/recruit'
+  import { Vacancy } from '@hcengineering/recruit'
   import { Component, Label } from '@hcengineering/ui'
-  import { NavLink } from '@hcengineering/view-resources'
+  import { DocNavLink } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import VacancyIcon from './icons/Vacancy.svelte'
   import chunter from '@hcengineering/chunter'
@@ -73,7 +73,7 @@
   {/if}
   {#if vacancy}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <NavLink {disabled} space={vacancy._id} app={recruitId}>
+    <DocNavLink {disabled} object={vacancy}>
       <div class="name">
         {#if inline}
           <div class="flex-row-center">
@@ -86,7 +86,7 @@
           {vacancy.name}
         {/if}
       </div>
-    </NavLink>
+    </DocNavLink>
     {#if company}
       <span class="label overflow-label">{company.name}</span>
     {/if}

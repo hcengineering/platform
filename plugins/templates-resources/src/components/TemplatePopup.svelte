@@ -16,13 +16,12 @@
 <script lang="ts">
   import { createQuery } from '@hcengineering/presentation'
   import { MessageTemplate, TemplateCategory } from '@hcengineering/templates'
-  import { TextEditorHandler } from '@hcengineering/text-editor'
   import { closePopup, deviceOptionsStore, EditWithIcon, IconSearch } from '@hcengineering/ui'
   import { groupBy } from '@hcengineering/view-resources'
   import templates from '../plugin'
   import { getTemplateDataProvider } from '../utils'
+  import { createEventDispatcher } from 'svelte'
 
-  export let editor: TextEditorHandler
   let items: MessageTemplate[] = []
   let groups: TemplateCategory[] = []
 
@@ -46,11 +45,21 @@
 
   let selected = 0
 
+  const dispatch = createEventDispatcher()
+
   const provider = getTemplateDataProvider()
   async function dispatchItem (item: MessageTemplate): Promise<void> {
     const message = await provider.fillTemplate(item.message)
-    editor.insertTemplate(item.title, message)
-    closePopup()
+    dispatch('template', {
+      _id: item._id,
+      title: item.title,
+      message
+    })
+    dispatch('close', {
+      _id: item._id,
+      title: item.title,
+      message
+    })
   }
 
   export function onKeyDown (ev: KeyboardEvent) {

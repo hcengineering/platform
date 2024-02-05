@@ -88,7 +88,8 @@ describe('server', () => {
     sessionFactory: (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
     port: 3335,
     productId: '',
-    serverFactory: startHttpServer
+    serverFactory: startHttpServer,
+    accountsUrl: ''
   })
 
   function connect (): WebSocket {
@@ -186,7 +187,8 @@ describe('server', () => {
       sessionFactory: (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
       port: 3336,
       productId: '',
-      serverFactory: startHttpServer
+      serverFactory: startHttpServer,
+      accountsUrl: ''
     })
 
     async function findClose (token: string, timeoutPromise: Promise<void>, code: number): Promise<string> {

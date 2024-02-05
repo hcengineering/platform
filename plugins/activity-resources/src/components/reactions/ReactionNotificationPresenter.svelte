@@ -41,10 +41,9 @@
 
   function handleReply (): void {
     const loc = getLocation()
-
-    loc.fragment = notification.docNotifyContext
-    loc.query = { thread: parentMessage?._id ?? message._id }
-
+    loc.path[3] = notification.docNotifyContext
+    loc.path[4] = parentMessage?._id ?? message._id
+    loc.query = { message: parentMessage?._id ?? message._id }
     navigate(loc)
   }
 </script>
@@ -57,7 +56,6 @@
     {withActions}
     {actions}
     {excludedActions}
-    withFlatActions={false}
     hoverable={false}
     onReply={handleReply}
     {onClick}
@@ -72,7 +70,6 @@
     {actions}
     {excludedActions}
     hoverable={false}
-    withFlatActions={false}
     onReply={handleReply}
     {onClick}
   />

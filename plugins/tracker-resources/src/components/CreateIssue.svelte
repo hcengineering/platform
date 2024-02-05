@@ -466,7 +466,6 @@
           issueUrl: currentProject != null && generateIssueShortLink(getIssueId(currentProject, value as Issue))
         }
       )
-      console.log('createIssue measure', await doneOp())
 
       draftController.remove()
       descriptionBox?.removeDraft(false)

@@ -21,7 +21,12 @@ import contact, {
   Person,
   contactId,
   getName,
-  formatContactName
+  formatContactName,
+  PersonAccount,
+  formatName,
+  getLastName,
+  getFirstName,
+  Employee
 } from '@hcengineering/contact'
 import { Ref, Class, Doc, Tx, TxRemoveDoc, TxUpdateDoc, concatLink, Hierarchy } from '@hcengineering/core'
 import notification, { Collaborators } from '@hcengineering/notification'
@@ -134,7 +139,7 @@ export async function OnChannelUpdate (tx: Tx, control: TriggerControl): Promise
 export async function personHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const person = doc as Person
   const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.name}/${contactId}/${doc._id}`
+  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${contactId}/${doc._id}`
   const link = concatLink(front, path)
   return `<a href="${link}">${getName(control.hierarchy, person)}</a>`
 }
@@ -153,7 +158,7 @@ export function personTextPresenter (doc: Doc, control: TriggerControl): string 
 export async function organizationHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const organization = doc as Organization
   const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.name}/${contactId}/${doc._id}`
+  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${contactId}/${doc._id}`
   const link = concatLink(front, path)
   return `<a href="${link}">${organization.name}</a>`
 }
@@ -174,6 +179,76 @@ export function contactNameProvider (hierarchy: Hierarchy, props: Record<string,
   return formatContactName(hierarchy, _class, props.name ?? '')
 }
 
+export async function getCurrentEmployeeName (control: TriggerControl, context: Record<string, Doc>): Promise<string> {
+  const account = await control.modelDb.findOne(contact.class.PersonAccount, {
+    _id: control.txFactory.account as Ref<PersonAccount>
+  })
+  if (account === undefined) return ''
+  const employee = (await control.findAll(contact.class.Person, { _id: account.person }))[0]
+  return employee !== undefined ? formatName(employee.name) : ''
+}
+
+export async function getCurrentEmployeeEmail (control: TriggerControl, context: Record<string, Doc>): Promise<string> {
+  const account = await control.modelDb.findOne(contact.class.PersonAccount, {
+    _id: control.txFactory.account as Ref<PersonAccount>
+  })
+  if (account === undefined) return ''
+  return account.email
+}
+
+export async function getCurrentEmployeePosition (
+  control: TriggerControl,
+  context: Record<string, Doc>
+): Promise<string | undefined> {
+  const account = await control.modelDb.findOne(contact.class.PersonAccount, {
+    _id: control.txFactory.account as Ref<PersonAccount>
+  })
+  if (account === undefined) return ''
+  const employee = (await control.findAll(contact.mixin.Employee, { _id: account.person as Ref<Employee> }))[0]
+  if (employee !== undefined) {
+    return employee.position ?? ''
+  }
+}
+
+export async function getContactName (
+  control: TriggerControl,
+  context: Record<string, Doc>
+): Promise<string | undefined> {
+  const value = context[contact.class.Contact] as Contact
+  if (value === undefined) return
+  if (control.hierarchy.isDerived(value._class, contact.class.Person)) {
+    return getName(control.hierarchy, value)
+  } else {
+    return value.name
+  }
+}
+
+export async function getContactLastName (
+  control: TriggerControl,
+  context: Record<string, Doc>
+): Promise<string | undefined> {
+  const value = context[contact.class.Contact] as Contact
+  if (value === undefined) return
+  if (control.hierarchy.isDerived(value._class, contact.class.Person)) {
+    return getLastName(value.name)
+  } else {
+    return ''
+  }
+}
+
+export async function getContactFirstName (
+  control: TriggerControl,
+  context: Record<string, Doc>
+): Promise<string | undefined> {
+  const value = context[contact.class.Contact] as Contact
+  if (value === undefined) return
+  if (control.hierarchy.isDerived(value._class, contact.class.Person)) {
+    return getFirstName(value.name)
+  } else {
+    return value.name
+  }
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
@@ -185,6 +260,12 @@ export default async () => ({
     PersonTextPresenter: personTextPresenter,
     OrganizationHTMLPresenter: organizationHTMLPresenter,
     OrganizationTextPresenter: organizationTextPresenter,
-    ContactNameProvider: contactNameProvider
+    ContactNameProvider: contactNameProvider,
+    GetCurrentEmployeeName: getCurrentEmployeeName,
+    GetCurrentEmployeeEmail: getCurrentEmployeeEmail,
+    GetContactName: getContactName,
+    GetCurrentEmployeePosition: getCurrentEmployeePosition,
+    GetContactFirstName: getContactFirstName,
+    GetContactLastName: getContactLastName
   }
 })

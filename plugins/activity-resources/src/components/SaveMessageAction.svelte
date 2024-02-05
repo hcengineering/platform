@@ -19,6 +19,7 @@
   import preference from '@hcengineering/preference'
 
   import Bookmark from './icons/Bookmark.svelte'
+  import ActivityMessageAction from './ActivityMessageAction.svelte'
 
   export let object: ActivityMessage
 
@@ -43,9 +44,8 @@
   }
 </script>
 
-<ActionIcon
+<ActivityMessageAction
   icon={Bookmark}
   iconProps={savedMessage ? { fill: '#3265cb' } : undefined}
-  size="medium"
   action={toggleSaveMessage}
 />

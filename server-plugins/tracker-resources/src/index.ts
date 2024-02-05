@@ -59,7 +59,7 @@ export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Pr
   const issue = doc as Issue
   const issueId = await getIssueId(issue, control)
   const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.name}/${trackerId}/${issueId}`
+  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${trackerId}/${issueId}`
   const link = concatLink(front, path)
   return `<a href="${link}">${issueId}</a> ${issue.title}`
 }
@@ -392,8 +392,6 @@ async function doIssueUpdate (
     Object.prototype.hasOwnProperty.call(updateTx.operations, 'estimation') ||
     Object.prototype.hasOwnProperty.call(updateTx.operations, 'reportedTime') ||
     (Object.prototype.hasOwnProperty.call(updateTx.operations, '$inc') &&
-      Object.prototype.hasOwnProperty.call(updateTx.operations.$inc, 'reportedTime')) ||
-    (Object.prototype.hasOwnProperty.call(updateTx.operations, '$dec') &&
       Object.prototype.hasOwnProperty.call(updateTx.operations.$inc, 'reportedTime'))
   ) {
     const issue = await getCurrentIssue()

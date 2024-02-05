@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ActionIcon } from '@hcengineering/ui'
   import { getClient } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
   import { ActivityMessage } from '@hcengineering/activity'
+  import ActivityMessageAction from './ActivityMessageAction.svelte'
 
   export let object: ActivityMessage
 
@@ -27,9 +27,8 @@
   }
 </script>
 
-<ActionIcon
+<ActivityMessageAction
   icon={view.icon.Pin}
   iconProps={object.isPinned ? { fill: '#3265cb' } : undefined}
-  size="medium"
   action={toggleMessagePinning}
 />

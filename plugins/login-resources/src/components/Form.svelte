@@ -72,7 +72,7 @@
     for (const field of fields) {
       const v = object[field.name]
       const f = field
-      if (!f.optional && (!v || v === '')) {
+      if (!f.optional && (!v || v.trim() === '')) {
         status = new Status(Severity.INFO, login.status.RequiredField, {
           field: await translate(field.i18n, {}, language)
         })

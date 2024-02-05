@@ -46,7 +46,6 @@ services:
     links:
       - mongodb
       - minio
-      - transactor
     ports:
       - 3000:3000
     environment:
@@ -102,6 +101,7 @@ services:
     environment:
       - COLLABORATOR_PORT=3078
       - SECRET=secret
+      - ACCOUNTS_URL=http://account:3000
       - TRANSACTOR_URL=ws://transactor:3333
       - UPLOAD_URL=/files
       - MONGO_URL=mongodb://mongodb:27017
@@ -136,6 +136,7 @@ services:
       - elastic
       - minio
       - rekoni
+      - account
       # - apm-server
     ports:
       - 3333:3333
@@ -154,6 +155,7 @@ services:
       - FRONT_URL=http://localhost:8087
       # - APM_SERVER_URL=http://apm-server:8200
       - SERVER_PROVIDER=ws
+      - ACCOUNTS_URL=http://account:3000
     restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service

@@ -2,7 +2,7 @@
   import { ColorDefinition, IconSize, getPlatformColorDef, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
 
-  export let size: IconSize
+  export let size: IconSize = 'small'
 
   export let fill: number = -1
 

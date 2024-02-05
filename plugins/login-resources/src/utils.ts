@@ -116,7 +116,9 @@ export async function signUp (
   }
 }
 
-export async function createWorkspace (workspace: string): Promise<[Status, LoginInfo | undefined]> {
+export async function createWorkspace (
+  workspaceName: string
+): Promise<[Status, (LoginInfo & { workspace: string }) | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -128,7 +130,7 @@ export async function createWorkspace (workspace: string): Promise<[Status, Logi
   if (overrideToken !== undefined) {
     const endpoint = getMetadata(login.metadata.OverrideEndpoint)
     if (endpoint !== undefined) {
-      return [OK, { token: overrideToken, endpoint, email, confirmed: true }]
+      return [OK, { token: overrideToken, endpoint, email, confirmed: true, workspace: workspaceName }]
     }
   }
 
@@ -143,7 +145,7 @@ export async function createWorkspace (workspace: string): Promise<[Status, Logi
 
   const request = {
     method: 'createWorkspace',
-    params: [workspace]
+    params: [workspaceName]
   }
 
   try {
@@ -214,7 +216,7 @@ export async function getWorkspaces (): Promise<Workspace[]> {
   }
 }
 
-export async function getAccount (): Promise<LoginInfo | undefined> {
+export async function getAccount (doNavigate: boolean = true, token?: string): Promise<LoginInfo | undefined> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -230,12 +232,14 @@ export async function getAccount (): Promise<LoginInfo | undefined> {
     }
   }
 
-  const token = getMetadata(presentation.metadata.Token)
+  token = token ?? getMetadata(presentation.metadata.Token)
   if (token === undefined) {
-    const loc = getCurrentLocation()
-    loc.path[1] = 'login'
-    loc.path.length = 2
-    navigate(loc)
+    if (doNavigate) {
+      const loc = getCurrentLocation()
+      loc.path[1] = 'login'
+      loc.path.length = 2
+      navigate(loc)
+    }
     return
   }
 

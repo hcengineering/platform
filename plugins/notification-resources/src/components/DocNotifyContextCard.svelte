@@ -15,7 +15,6 @@
 <script lang="ts">
   import { ActionIcon, Component, IconMoreH, Label, showPopup } from '@hcengineering/ui'
   import notification, {
-    ActivityInboxNotification,
     ActivityNotificationViewlet,
     DisplayInboxNotification,
     DocNotifyContext
@@ -25,7 +24,6 @@
   import chunter from '@hcengineering/chunter'
   import { createEventDispatcher } from 'svelte'
   import { WithLookup } from '@hcengineering/core'
-  import { AddReactionAction } from '@hcengineering/activity-resources'
 
   import InboxNotificationPresenter from './inbox/InboxNotificationPresenter.svelte'
   import NotifyContextIcon from './NotifyContextIcon.svelte'
@@ -68,11 +66,6 @@
   )
   $: isCompact = notifications.length === 1
 
-  $: message =
-    visibleNotification._class === notification.class.ActivityInboxNotification
-      ? (visibleNotification as WithLookup<ActivityInboxNotification>).$lookup?.attachedTo
-      : undefined
-
   let isActionMenuOpened = false
 
   function handleActionMenuOpened (): void {
@@ -104,15 +97,9 @@
     }}
   >
     {#if isCompact}
-      <InboxNotificationPresenter value={visibleNotification} {viewlets} showNotify={false} withActions={false} />
+      <InboxNotificationPresenter value={visibleNotification} {viewlets} showNotify={false} withFlatActions />
       <div class="notifyMarker compact">
         <NotifyMarker count={unreadCount} />
-      </div>
-      <div class="actions clear-mins flex flex-gap-2 items-center" class:opened={isActionMenuOpened}>
-        {#if message}
-          <AddReactionAction object={message} on:open={handleActionMenuOpened} on:close={handleActionMenuClosed} />
-        {/if}
-        <ActionIcon icon={IconMoreH} size="small" action={showMenu} />
       </div>
     {:else}
       <div class="header">

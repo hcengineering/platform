@@ -27,12 +27,13 @@
   export let embedded: boolean = false
   export let withActions: boolean = true
   export let showEmbedded = false
-  export let hideReplies = false
+  export let hideFooter = false
   export let skipLabel = false
   export let actions: Action[] = []
   export let excludedActions: string[] = []
   export let withFlatActions: boolean = true
   export let hoverable = true
+  export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -55,11 +56,12 @@
       embedded,
       withActions,
       showEmbedded,
-      hideReplies,
+      hideFooter,
       actions,
       excludedActions,
       withFlatActions,
       hoverable,
+      hoverStyles,
       onClick,
       onReply
     }}

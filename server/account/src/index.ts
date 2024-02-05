@@ -25,8 +25,10 @@ import contact, {
 } from '@hcengineering/contact'
 import core, {
   AccountRole,
+  Client,
   concatLink,
   Data,
+  generateId,
   getWorkspaceId,
   Ref,
   systemAccountEmail,
@@ -44,7 +46,7 @@ import toolPlugin, { connect, initModel, upgradeModel } from '@hcengineering/ser
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { Binary, Db, Filter, ObjectId } from 'mongodb'
 import fetch from 'node-fetch'
-import accountPlugin, { accountId } from './plugin'
+import accountPlugin from './plugin'
 
 const WORKSPACE_COLLECTION = 'workspace'
 const ACCOUNT_COLLECTION = 'account'
@@ -93,12 +95,14 @@ export interface Account {
  */
 export interface Workspace {
   _id: ObjectId
-  workspace: string
-  organisation: string
+  workspace: string // An uniq workspace name, Database names
   accounts: ObjectId[]
   productId: string
   disabled?: boolean
   version?: Data<Version>
+
+  workspaceUrl?: string | null // An optional url to the workspace, if not set workspace will be used
+  workspaceName?: string // An displayed workspace name
 }
 
 /**
@@ -178,10 +182,27 @@ function withProductId (productId: string, query: Filter<Workspace>): Filter<Wor
 /**
  * @public
  * @param db -
+ * @param workspaceUrl -
+ * @returns
+ */
+export async function getWorkspaceByUrl (db: Db, productId: string, workspaceUrl: string): Promise<Workspace | null> {
+  const res = await db.collection<Workspace>(WORKSPACE_COLLECTION).findOne(withProductId(productId, { workspaceUrl }))
+  if (res != null) {
+    return res
+  }
+  // Fallback to old workspaces.
+  return await db
+    .collection<Workspace>(WORKSPACE_COLLECTION)
+    .findOne(withProductId(productId, { workspace: workspaceUrl, workspaceUrl: { $exists: false } }))
+}
+
+/**
+ * @public
+ * @param db -
  * @param workspace -
  * @returns
  */
-export async function getWorkspace (db: Db, productId: string, workspace: string): Promise<Workspace | null> {
+export async function getWorkspaceById (db: Db, productId: string, workspace: string): Promise<Workspace | null> {
   return await db.collection<Workspace>(WORKSPACE_COLLECTION).findOne(withProductId(productId, { workspace }))
 }
 
@@ -203,7 +224,12 @@ async function getAccountInfo (db: Db, email: string, password: string): Promise
 }
 
 async function getAccountInfoByToken (db: Db, productId: string, token: string): Promise<AccountInfo> {
-  const { email } = decodeToken(token)
+  let email: string = ''
+  try {
+    email = decodeToken(token)?.email
+  } catch (err: any) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Unauthorized, {}))
+  }
   const account = await getAccount(db, email)
   if (account === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
@@ -253,7 +279,7 @@ export async function selectWorkspace (
   db: Db,
   productId: string,
   token: string,
-  workspace: string,
+  workspaceUrl: string,
   allowAdmin: boolean = true
 ): Promise<WorkspaceLoginInfo> {
   let { email } = decodeToken(token)
@@ -263,21 +289,25 @@ export async function selectWorkspace (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
 
+  const workspaceInfo = await getWorkspaceByUrl(db, productId, workspaceUrl)
+  if (workspaceInfo == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceUrl }))
+  }
   if (accountInfo.admin === true && allowAdmin) {
     return {
       endpoint: getEndpoint(),
       email,
-      token: generateToken(email, getWorkspaceId(workspace, productId), getExtra(accountInfo)),
-      workspace,
+      token: generateToken(email, getWorkspaceId(workspaceInfo.workspace, productId), getExtra(accountInfo)),
+      workspace: workspaceUrl,
       productId
     }
   }
 
-  const workspaceInfo = await getWorkspace(db, productId, workspace)
-
   if (workspaceInfo !== null) {
     if (workspaceInfo.disabled === true) {
-      throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace }))
+      throw new PlatformError(
+        new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceUrl })
+      )
     }
     const workspaces = accountInfo.workspaces
 
@@ -286,8 +316,8 @@ export async function selectWorkspace (
         const result = {
           endpoint: getEndpoint(),
           email,
-          token: generateToken(email, getWorkspaceId(workspace, productId), getExtra(accountInfo)),
-          workspace,
+          token: generateToken(email, getWorkspaceId(workspaceInfo.workspace, productId), getExtra(accountInfo)),
+          workspace: workspaceUrl,
           productId
         }
         return result
@@ -360,10 +390,10 @@ export async function confirmEmail (db: Db, _email: string): Promise<Account> {
   console.log(`confirm email:${email}`)
 
   if (account === null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: accountId }))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: _email }))
   }
   if (account.confirmed === true) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyConfirmed, { account: accountId }))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyConfirmed, { account: _email }))
   }
 
   await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { confirmed: true } })
@@ -378,7 +408,7 @@ export async function confirm (db: Db, productId: string, token: string): Promis
   const decode = decodeToken(token)
   const _email = decode.extra?.confirm
   if (_email === undefined) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: accountId }))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: _email }))
   }
   const email = cleanEmail(_email)
   const account = await confirmEmail(db, email)
@@ -546,11 +576,11 @@ export async function createAccount (
 /**
  * @public
  */
-export async function listWorkspaces (db: Db, productId: string): Promise<WorkspaceInfoOnly[]> {
+export async function listWorkspaces (db: Db, productId: string): Promise<ClientWorkspaceInfo[]> {
   return (await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, {})).toArray())
     .map((it) => ({ ...it, productId }))
     .filter((it) => it.disabled !== true)
-    .map(trimWorkspace)
+    .map(trimWorkspaceInfo)
 }
 
 /**
@@ -559,6 +589,100 @@ export async function listWorkspaces (db: Db, productId: string): Promise<Worksp
 export async function listAccounts (db: Db): Promise<Account[]> {
   return await db.collection<Account>(ACCOUNT_COLLECTION).find({}).toArray()
 }
+
+const workspaceReg = /[a-z0-9]/
+const workspaceRegDigit = /[0-9]/
+
+function stripId (name: string): string {
+  let workspaceId = ''
+  for (const c of name.toLowerCase()) {
+    if (workspaceReg.test(c) || c === '-') {
+      if (workspaceId.length > 0 || !workspaceRegDigit.test(c)) {
+        workspaceId += c
+      }
+    }
+  }
+  return workspaceId
+}
+
+function getEmailName (email: string): string {
+  return email.split('@')[0]
+}
+
+async function generateWorkspaceRecord (
+  db: Db,
+  email: string,
+  productId: string,
+  version: Data<Version>,
+  workspaceName: string,
+  fixedWorkspace?: string
+): Promise<Workspace> {
+  const coll = db.collection<Omit<Workspace, '_id'>>(WORKSPACE_COLLECTION)
+  if (fixedWorkspace !== undefined) {
+    const ws = await coll.find<Workspace>({ workspaceUrl: fixedWorkspace }).toArray()
+    if ((await getWorkspaceById(db, productId, fixedWorkspace)) !== null || ws.length > 0) {
+      throw new PlatformError(
+        new Status(Severity.ERROR, platform.status.WorkspaceAlreadyExists, { workspace: fixedWorkspace })
+      )
+    }
+    const data = {
+      workspace: fixedWorkspace,
+      workspaceUrl: fixedWorkspace,
+      productId,
+      version,
+      workspaceName,
+      accounts: [],
+      disabled: false
+    }
+    // Add fixed workspace
+    const id = await coll.insertOne(data)
+    return { _id: id.insertedId, ...data }
+  }
+  const workspaceUrlPrefix = stripId(workspaceName)
+  const workspaceIdPrefix = stripId(getEmailName(email)).slice(0, 12) + '-' + workspaceUrlPrefix.slice(12)
+  let iteration = 0
+  let idPostfix = generateId('-')
+  let urlPostfix = ''
+  while (true) {
+    const workspace = 'w-' + workspaceIdPrefix + '-' + idPostfix
+    let workspaceUrl =
+      workspaceUrlPrefix + (workspaceUrlPrefix.length > 0 && urlPostfix.length > 0 ? '-' : '') + urlPostfix
+    if (workspaceUrl.trim().length === 0) {
+      workspaceUrl = generateId('-')
+    }
+    const ws = await coll.find<Workspace>({ $or: [{ workspaceUrl }, { workspace }] }).toArray()
+    if (ws.length === 0) {
+      const data = {
+        workspace,
+        workspaceUrl,
+        productId,
+        version,
+        workspaceName,
+        accounts: [],
+        disabled: false
+      }
+      // Nice we do not have a workspace or workspaceUrl duplicated.
+      const id = await coll.insertOne(data)
+      return { _id: id.insertedId, ...data }
+    }
+    for (const w of ws) {
+      if (w.workspace === workspaceUrl) {
+        idPostfix = generateId('-')
+      }
+      if (w.workspaceUrl === workspaceUrl) {
+        urlPostfix = generateId('-')
+      }
+    }
+    iteration++
+
+    // A stupid check, but for sure we not hang.
+    if (iteration > 10000) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceRateLimit, { workspace }))
+    }
+  }
+}
+
+let searchPromise: Promise<Workspace> | undefined
 
 /**
  * @public
@@ -569,32 +693,37 @@ export async function createWorkspace (
   migrationOperation: [string, MigrateOperation][],
   db: Db,
   productId: string,
-  workspace: string,
-  organisation: string
-): Promise<string> {
-  if ((await getWorkspace(db, productId, workspace)) !== null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceAlreadyExists, { workspace }))
-  }
-  const result = await db
-    .collection(WORKSPACE_COLLECTION)
-    .insertOne({
-      workspace,
-      organisation,
-      version,
-      productId
-    })
-    .then((e) => e.insertedId.toHexString())
-  const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
-  if (initWS !== undefined) {
-    if ((await getWorkspace(db, productId, initWS)) !== null) {
-      await initModel(getTransactor(), getWorkspaceId(workspace, productId), txes, [])
-      await cloneWorkspace(getTransactor(), getWorkspaceId(initWS, productId), getWorkspaceId(workspace, productId))
-      await upgradeModel(getTransactor(), getWorkspaceId(workspace, productId), txes, migrationOperation)
-      return result
+  email: string,
+  workspaceName: string,
+  workspace?: string
+): Promise<{ workspaceInfo: Workspace, err?: any, client?: Client }> {
+  // We need to search for duplicate workspaceUrl
+  await searchPromise
+
+  // Safe generate workspace record.
+  searchPromise = generateWorkspaceRecord(db, email, productId, version, workspaceName, workspace)
+
+  const workspaceInfo = await searchPromise
+  let client: Client
+  try {
+    const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
+    const wsId = getWorkspaceId(workspaceInfo.workspace, productId)
+    if (initWS !== undefined && (await getWorkspaceById(db, productId, initWS)) !== null) {
+      client = await initModel(getTransactor(), wsId, txes, [])
+      await client.close()
+      await cloneWorkspace(
+        getTransactor(),
+        getWorkspaceId(initWS, productId),
+        getWorkspaceId(workspaceInfo.workspace, productId)
+      )
+      client = await upgradeModel(getTransactor(), wsId, txes, migrationOperation)
+    } else {
+      client = await initModel(getTransactor(), wsId, txes, migrationOperation)
     }
+  } catch (err: any) {
+    return { workspaceInfo, err, client: {} as any }
   }
-  await initModel(getTransactor(), getWorkspaceId(workspace, productId), txes, migrationOperation)
-  return result
+  return { workspaceInfo, client }
 }
 
 /**
@@ -606,13 +735,13 @@ export async function upgradeWorkspace (
   migrationOperation: [string, MigrateOperation][],
   productId: string,
   db: Db,
-  workspace: string,
+  workspaceUrl: string,
   logger: ModelLogger = consoleModelLogger,
   forceUpdate: boolean = true
 ): Promise<string> {
-  const ws = await getWorkspace(db, productId, workspace)
+  const ws = await getWorkspaceByUrl(db, productId, workspaceUrl)
   if (ws === null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace }))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceUrl }))
   }
   if (ws.productId !== productId) {
     if (productId !== '' || ws.productId !== undefined) {
@@ -621,7 +750,7 @@ export async function upgradeWorkspace (
   }
   const versionStr = versionToString(version)
 
-  const currentVersion = await db.collection<Workspace>(WORKSPACE_COLLECTION).findOne({ workspace })
+  const currentVersion = await db.collection<Workspace>(WORKSPACE_COLLECTION).findOne({ workspace: workspaceUrl })
   console.log(
     `${forceUpdate ? 'force-' : ''}upgrade from "${
       currentVersion?.version !== undefined ? versionToString(currentVersion.version) : ''
@@ -632,12 +761,14 @@ export async function upgradeWorkspace (
     return versionStr
   }
   await db.collection(WORKSPACE_COLLECTION).updateOne(
-    { workspace },
+    { workspace: workspaceUrl },
     {
       $set: { version }
     }
   )
-  await upgradeModel(getTransactor(), getWorkspaceId(workspace, productId), txes, migrationOperation, logger)
+  await (
+    await upgradeModel(getTransactor(), getWorkspaceId(workspaceUrl, productId), txes, migrationOperation, logger)
+  ).close()
   return versionStr
 }
 
@@ -646,14 +777,12 @@ export async function upgradeWorkspace (
  */
 export const createUserWorkspace =
   (version: Data<Version>, txes: Tx[], migrationOperation: [string, MigrateOperation][]) =>
-    async (db: Db, productId: string, token: string, workspace: string): Promise<LoginInfo> => {
-      if (!/^[0-9a-z][0-9a-z-]{2,62}[0-9a-z]$/.test(workspace)) {
-        throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidId, { id: workspace }))
-      }
-
+    async (db: Db, productId: string, token: string, workspaceName: string): Promise<LoginInfo> => {
       const { email, extra } = decodeToken(token)
       const nonConfirmed = extra?.confirmed === false
-      console.log(`Creating workspace ${workspace} for ${email} ${nonConfirmed ? 'non confirmed' : 'confirmed'}`)
+      console.log(
+      `Creating workspace for "${workspaceName}" for ${email} ${nonConfirmed ? 'non confirmed' : 'confirmed'}`
+      )
 
       if (nonConfirmed) {
         throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
@@ -663,48 +792,57 @@ export const createUserWorkspace =
         throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
       }
 
-      if (info.lastWorkspace !== undefined) {
+      if (info.lastWorkspace !== undefined && info.admin === false) {
         if (Date.now() - info.lastWorkspace < 60 * 1000) {
-          throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceRateLimit, { workspace }))
+          throw new PlatformError(
+            new Status(Severity.ERROR, platform.status.WorkspaceRateLimit, { workspace: workspaceName })
+          )
         }
       }
 
-      if ((await getWorkspace(db, productId, workspace)) !== null) {
-        throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceAlreadyExists, { workspace }))
-      }
-      try {
-        await createWorkspace(version, txes, migrationOperation, db, productId, workspace, '')
-      } catch (err: any) {
+      const { workspaceInfo, err, client } = await createWorkspace(
+        version,
+        txes,
+        migrationOperation,
+        db,
+        productId,
+        email,
+        workspaceName
+      )
+
+      if (err != null) {
         console.error(err)
         // We need to drop workspace, to prevent wrong data usage.
-        const ws = await getWorkspace(db, productId, workspace)
-        if (ws === null) {
-          throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace }))
-        }
+
         await db.collection(WORKSPACE_COLLECTION).updateOne(
           {
-            _id: ws._id
+            _id: workspaceInfo._id
           },
           { $set: { disabled: true, message: JSON.stringify(err?.message ?? ''), err: JSON.stringify(err) } }
         )
         throw err
       }
-      info.lastWorkspace = Date.now()
+      try {
+        info.lastWorkspace = Date.now()
 
-      // Update last workspace time.
-      await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: info._id }, { $set: { lastWorkspace: Date.now() } })
+        // Update last workspace time.
+        await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: info._id }, { $set: { lastWorkspace: Date.now() } })
 
-      const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
-      const shouldUpdateAccount = initWS !== undefined && (await getWorkspace(db, productId, initWS)) !== null
-      await assignWorkspace(db, productId, email, workspace, shouldUpdateAccount)
-      await setRole(email, workspace, productId, AccountRole.Owner)
+        const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
+        const shouldUpdateAccount = initWS !== undefined && (await getWorkspaceById(db, productId, initWS)) !== null
+        await assignWorkspace(db, productId, email, workspaceInfo.workspace, shouldUpdateAccount, client)
+        await setRole(email, workspaceInfo.workspace, productId, AccountRole.Owner, client)
+      } finally {
+        await client?.close()
+      }
       const result = {
         endpoint: getEndpoint(),
         email,
-        token: generateToken(email, getWorkspaceId(workspace, productId), getExtra(info)),
-        productId
+        token: generateToken(email, getWorkspaceId(workspaceInfo.workspace, productId), getExtra(info)),
+        productId,
+        workspace: workspaceInfo.workspaceUrl
       }
-      console.log(`Creating workspace ${workspace} Done`)
+      console.log(`Creating workspace "${workspaceName}" Done`)
       return result
     }
 
@@ -720,7 +858,7 @@ export async function getInviteLink (
   limit: number
 ): Promise<ObjectId> {
   const { workspace } = decodeToken(token)
-  const wsPromise = await getWorkspace(db, productId, workspace.name)
+  const wsPromise = await getWorkspaceById(db, productId, workspace.name)
   if (wsPromise === null) {
     throw new PlatformError(
       new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspace.name })
@@ -738,17 +876,27 @@ export async function getInviteLink (
 /**
  * @public
  */
-export type WorkspaceInfoOnly = Omit<Workspace, '_id' | 'accounts'>
+export type ClientWorkspaceInfo = Omit<Workspace, '_id' | 'accounts' | 'workspaceUrl'>
 
-function trimWorkspace (ws: Workspace): WorkspaceInfoOnly {
+/**
+ * @public
+ */
+export type WorkspaceInfo = Omit<Workspace, '_id' | 'accounts' | 'workspaceUrl'>
+
+function mapToClientWorkspace (ws: Workspace): ClientWorkspaceInfo {
   const { _id, accounts, ...data } = ws
-  return data
+  return { ...data, workspace: ws.workspaceUrl ?? ws.workspace }
+}
+
+function trimWorkspaceInfo (ws: Workspace): WorkspaceInfo {
+  const { _id, accounts, ...data } = ws
+  return { ...data }
 }
 
 /**
  * @public
  */
-export async function getUserWorkspaces (db: Db, productId: string, token: string): Promise<WorkspaceInfoOnly[]> {
+export async function getUserWorkspaces (db: Db, productId: string, token: string): Promise<ClientWorkspaceInfo[]> {
   const { email } = decodeToken(token)
   const account = await getAccount(db, email)
   if (account === null) return []
@@ -759,35 +907,69 @@ export async function getUserWorkspaces (db: Db, productId: string, token: strin
       .toArray()
   )
     .filter((it) => it.disabled !== true)
-    .map(trimWorkspace)
+    .map(mapToClientWorkspace)
+}
+
+/**
+ * @public
+ */
+export async function getWorkspaceInfo (db: Db, productId: string, token: string): Promise<ClientWorkspaceInfo> {
+  const { email, workspace } = decodeToken(token)
+  let account: Pick<Account, 'admin' | 'workspaces'> | null = null
+  if (email !== systemAccountEmail) {
+    account = await getAccount(db, email)
+    if (account === null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+  } else {
+    account = {
+      admin: true,
+      workspaces: []
+    }
+  }
+
+  const [ws] = (
+    await db
+      .collection<Workspace>(WORKSPACE_COLLECTION)
+      .find(withProductId(productId, account.admin === true ? {} : { _id: { $in: account.workspaces } }))
+      .toArray()
+  ).filter((it) => it.disabled !== true && it.workspace === workspace.name)
+  if (ws == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+  return mapToClientWorkspace(ws)
 }
 
 async function getWorkspaceAndAccount (
   db: Db,
   productId: string,
   _email: string,
-  workspace: string
-): Promise<{ accountId: ObjectId, workspaceId: ObjectId }> {
+  workspaceUrl: string
+): Promise<{ account: Account, workspace: Workspace }> {
   const email = cleanEmail(_email)
-  const wsPromise = await getWorkspace(db, productId, workspace)
+  const wsPromise = await getWorkspaceById(db, productId, workspaceUrl)
   if (wsPromise === null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace }))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceUrl }))
   }
-  const workspaceId = wsPromise._id
   const account = await getAccount(db, email)
   if (account === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
-  const accountId = account._id
-  return { accountId, workspaceId }
+  return { account, workspace: wsPromise }
 }
 
 /**
  * @public
  */
-export async function setRole (_email: string, workspace: string, productId: string, role: AccountRole): Promise<void> {
+export async function setRole (
+  _email: string,
+  workspace: string,
+  productId: string,
+  role: AccountRole,
+  client?: Client
+): Promise<void> {
   const email = cleanEmail(_email)
-  const connection = await connect(getTransactor(), getWorkspaceId(workspace, productId), email)
+  const connection = client ?? (await connect(getTransactor(), getWorkspaceId(workspace, productId)))
   try {
     const ops = new TxOperations(connection, core.account.System)
 
@@ -800,7 +982,9 @@ export async function setRole (_email: string, workspace: string, productId: str
       })
     }
   } finally {
-    await connection.close()
+    if (client === undefined) {
+      await connection.close()
+    }
   }
 }
 
@@ -811,24 +995,30 @@ export async function assignWorkspace (
   db: Db,
   productId: string,
   _email: string,
-  workspace: string,
-  shouldReplaceAccount: boolean = false
+  workspaceId: string,
+  shouldReplaceAccount: boolean = false,
+  client?: Client
 ): Promise<void> {
   const email = cleanEmail(_email)
   const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
-  if (initWS !== undefined && initWS === workspace) {
+  if (initWS !== undefined && initWS === workspaceId) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
-  const { workspaceId, accountId } = await getWorkspaceAndAccount(db, productId, email, workspace)
-  const account = await db.collection<Account>(ACCOUNT_COLLECTION).findOne({ _id: accountId })
+  const workspaceInfo = await getWorkspaceAndAccount(db, productId, email, workspaceId)
 
-  if (account !== null) await createPersonAccount(account, productId, workspace, shouldReplaceAccount)
+  if (workspaceInfo.account !== null) {
+    await createPersonAccount(workspaceInfo.account, productId, workspaceId, shouldReplaceAccount, client)
+  }
 
   // Add account into workspace.
-  await db.collection(WORKSPACE_COLLECTION).updateOne({ _id: workspaceId }, { $addToSet: { accounts: accountId } })
+  await db
+    .collection(WORKSPACE_COLLECTION)
+    .updateOne({ _id: workspaceInfo.workspace._id }, { $addToSet: { accounts: workspaceInfo.account._id } })
 
   // Add workspace to account
-  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: accountId }, { $addToSet: { workspaces: workspaceId } })
+  await db
+    .collection(ACCOUNT_COLLECTION)
+    .updateOne({ _id: workspaceInfo.account._id }, { $addToSet: { workspaces: workspaceInfo.workspace._id } })
 }
 
 async function createEmployee (ops: TxOperations, name: string, _email: string): Promise<Ref<Person>> {
@@ -910,14 +1100,15 @@ async function createPersonAccount (
   account: Account,
   productId: string,
   workspace: string,
-  shouldReplaceCurrent: boolean = false
+  shouldReplaceCurrent: boolean = false,
+  client?: Client
 ): Promise<void> {
-  const connection = await connect(getTransactor(), getWorkspaceId(workspace, productId))
+  const connection = client ?? (await connect(getTransactor(), getWorkspaceId(workspace, productId)))
   try {
     const ops = new TxOperations(connection, core.account.System)
 
     const name = combineName(account.first, account.last)
-    // Check if EmployeeAccoun is not exists
+    // Check if EmployeeAccount is not exists
     if (shouldReplaceCurrent) {
       const currentAccount = await ops.findOne(contact.class.PersonAccount, {})
       if (currentAccount !== undefined) {
@@ -950,7 +1141,9 @@ async function createPersonAccount (
       }
     }
   } finally {
-    await connection.close()
+    if (client === undefined) {
+      await connection.close()
+    }
   }
 }
 
@@ -1044,12 +1237,12 @@ export async function restorePassword (db: Db, productId: string, token: string,
   const decode = decodeToken(token)
   const email = decode.extra?.restore
   if (email === undefined) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: accountId }))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
   const account = await getAccount(db, email)
 
   if (account === null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: accountId }))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
   const salt = randomBytes(32)
   const hash = hashWithSalt(password, salt)
@@ -1062,14 +1255,14 @@ export async function restorePassword (db: Db, productId: string, token: string,
 /**
  * @public
  */
-export async function removeWorkspace (db: Db, productId: string, email: string, workspace: string): Promise<void> {
-  const { workspaceId, accountId } = await getWorkspaceAndAccount(db, productId, email, workspace)
+export async function removeWorkspace (db: Db, productId: string, email: string, workspaceId: string): Promise<void> {
+  const { workspace, account } = await getWorkspaceAndAccount(db, productId, email, workspaceId)
 
   // Add account into workspace.
-  await db.collection(WORKSPACE_COLLECTION).updateOne({ _id: workspaceId }, { $pull: { accounts: accountId } })
+  await db.collection(WORKSPACE_COLLECTION).updateOne({ _id: workspace._id }, { $pull: { accounts: account._id } })
 
   // Add account a workspace
-  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: accountId }, { $pull: { workspaces: workspaceId } })
+  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $pull: { workspaces: workspace._id } })
 }
 
 /**
@@ -1090,10 +1283,10 @@ export async function checkJoin (
 /**
  * @public
  */
-export async function dropWorkspace (db: Db, productId: string, workspace: string): Promise<void> {
-  const ws = await getWorkspace(db, productId, workspace)
+export async function dropWorkspace (db: Db, productId: string, workspaceId: string): Promise<void> {
+  const ws = await getWorkspaceById(db, productId, workspaceId)
   if (ws === null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace }))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceId }))
   }
   await db.collection(WORKSPACE_COLLECTION).deleteOne({ _id: ws._id })
   await db
@@ -1138,7 +1331,7 @@ export async function leaveWorkspace (db: Db, productId: string, token: string, 
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: tokenData.email }))
   }
 
-  const workspace = await getWorkspace(db, productId, tokenData.workspace.name)
+  const workspace = await getWorkspaceById(db, productId, tokenData.workspace.name)
   if (workspace === null) {
     throw new PlatformError(
       new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: tokenData.workspace.name })
@@ -1168,7 +1361,7 @@ export async function sendInvite (db: Db, productId: string, token: string, emai
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: tokenData.email }))
   }
 
-  const workspace = await getWorkspace(db, productId, tokenData.workspace.name)
+  const workspace = await getWorkspaceById(db, productId, tokenData.workspace.name)
   if (workspace === null) {
     throw new PlatformError(
       new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: tokenData.workspace.name })
@@ -1214,7 +1407,7 @@ export async function sendInvite (db: Db, productId: string, token: string, emai
 }
 
 async function deactivatePersonAccount (email: string, workspace: string, productId: string): Promise<void> {
-  const connection = await connect(getTransactor(), getWorkspaceId(workspace, productId), email)
+  const connection = await connect(getTransactor(), getWorkspaceId(workspace, productId))
   try {
     const ops = new TxOperations(connection, core.account.System)
 
@@ -1244,12 +1437,17 @@ function wrap (f: (db: Db, productId: string, ...args: any[]) => Promise<any>): 
     return await f(db, productId, ...request.params)
       .then((result) => ({ id: request.id, result }))
       .catch((err) => {
-        console.error(err)
+        const status =
+          err instanceof PlatformError
+            ? err.status
+            : new Status(Severity.ERROR, platform.status.InternalServerError, {})
+        if (status.code === platform.status.InternalServerError) {
+          console.error(status, err)
+        } else {
+          console.error(status)
+        }
         return {
-          error:
-            err instanceof PlatformError
-              ? err.status
-              : new Status(Severity.ERROR, platform.status.InternalServerError, {})
+          error: status
         }
       })
   }
@@ -1272,6 +1470,7 @@ export function getMethods (
     getUserWorkspaces: wrap(getUserWorkspaces),
     getInviteLink: wrap(getInviteLink),
     getAccountInfo: wrap(getAccountInfo),
+    getWorkspaceInfo: wrap(getWorkspaceInfo),
     createAccount: wrap(createAccount),
     createWorkspace: wrap(createUserWorkspace(version, txes, migrateOperations)),
     assignWorkspace: wrap(assignWorkspace),
