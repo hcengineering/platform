@@ -24,6 +24,8 @@
 
   const dispatch = createEventDispatcher()
 
+  $: oldChecked = checked
+
   const handleValueChanged = (event: Event): void => {
     if (readonly) {
       return
@@ -31,7 +33,10 @@
     const eventTarget = event.target as HTMLInputElement
     const isChecked = eventTarget.checked
 
-    dispatch('value', isChecked)
+    if (oldChecked !== isChecked) {
+      oldChecked = isChecked
+      dispatch('value', isChecked)
+    }
   }
 </script>
 
@@ -47,7 +52,7 @@
   class:checked
   on:click|stopPropagation
 >
-  <input class="chBox" disabled={readonly} type="checkbox" bind:checked on:change={handleValueChanged} />
+  <input class="chBox" disabled={readonly} type="checkbox" bind:checked on:change|capture={handleValueChanged} />
   <svg class="checkSVG" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
     {#if checked}
       {#if symbol === 'minus'}

@@ -35,13 +35,13 @@
     }
     if (!(value as any)[key]) return true
     if (!(targetEmp as any)[key]) return true
-
     return (value as any)[key] === (targetEmp as any)[key]
   }
 
+  $: attribute = hierarchy.findAttribute(cast ?? value._class, key)
+
   const handleSourceValueSelected = (event: CustomEvent<boolean>): void => {
     const isChecked = event.detail
-
     selected = !isChecked
 
     onChange(key, !isChecked)
@@ -49,13 +49,10 @@
 
   const handleTargetValueSelected = (event: CustomEvent<boolean>): void => {
     const isChecked = event.detail
-
     selected = isChecked
 
     onChange(key, isChecked)
   }
-
-  $: attribute = hierarchy.findAttribute(cast ?? value._class, key)
 </script>
 
 {#if !isEqual(value, targetEmp, key)}
