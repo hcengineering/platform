@@ -111,6 +111,7 @@ services:
     environment:
       - COLLABORATOR_PORT=3078
       - SECRET=secret
+      - ACCOUNTS_URL=http://account:3003
       - TRANSACTOR_URL=ws://transactor:3334
       - UPLOAD_URL=/files
       - MONGO_URL=mongodb://mongodb:27018

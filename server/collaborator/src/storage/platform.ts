@@ -22,16 +22,16 @@ import { Context } from '../context'
 import { StorageAdapter } from './adapter'
 
 interface PlatformDocumentId {
-  workspace: string
+  workspaceUrl: string
   objectClass: Ref<Class<Doc>>
   objectId: Ref<Doc>
   objectAttr: string
 }
 
 function parseDocumentId (documentId: string): PlatformDocumentId {
-  const [workspace, objectClass, objectId, objectAttr] = documentId.split('/')
+  const [workspaceUrl, objectClass, objectId, objectAttr] = documentId.split('/')
   return {
-    workspace: workspace ?? '',
+    workspaceUrl: workspaceUrl ?? '',
     objectClass: (objectClass ?? '') as Ref<Class<Doc>>,
     objectId: (objectId ?? '') as Ref<Doc>,
     objectAttr: objectAttr ?? ''
@@ -53,9 +53,9 @@ export class PlatformStorageAdapter implements StorageAdapter {
 
   async loadDocument (documentId: string, context: Context): Promise<YDoc | undefined> {
     const { clientFactory } = context
-    const { workspace, objectId, objectClass, objectAttr } = parseDocumentId(documentId)
+    const { workspaceUrl, objectId, objectClass, objectAttr } = parseDocumentId(documentId)
 
-    if (!isValidDocumentId({ workspace, objectId, objectClass, objectAttr }, context)) {
+    if (!isValidDocumentId({ workspaceUrl, objectId, objectClass, objectAttr }, context)) {
       console.warn('malformed document id', documentId)
       return undefined
     }
@@ -82,9 +82,9 @@ export class PlatformStorageAdapter implements StorageAdapter {
 
   async saveDocument (documentId: string, document: YDoc, context: Context): Promise<void> {
     const { clientFactory } = context
-    const { workspace, objectId, objectClass, objectAttr } = parseDocumentId(documentId)
+    const { workspaceUrl, objectId, objectClass, objectAttr } = parseDocumentId(documentId)
 
-    if (!isValidDocumentId({ workspace, objectId, objectClass, objectAttr }, context)) {
+    if (!isValidDocumentId({ workspaceUrl, objectId, objectClass, objectAttr }, context)) {
       console.warn('malformed document id', documentId)
       return undefined
     }

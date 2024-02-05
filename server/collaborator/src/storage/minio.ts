@@ -23,20 +23,20 @@ import { Context } from '../context'
 import { StorageAdapter } from './adapter'
 
 interface MinioDocumentId {
-  workspace: string
+  workspaceUrl: string
   minioDocumentId: string
 }
 
 function parseDocumentId (documentId: string): MinioDocumentId {
-  const [workspace, minioDocumentId] = documentId.split('/')
+  const [workspaceUrl, minioDocumentId] = documentId.split('/')
   return {
-    workspace: workspace ?? '',
+    workspaceUrl: workspaceUrl ?? '',
     minioDocumentId: minioDocumentId ?? ''
   }
 }
 
-function isValidDocumentId (documentId: MinioDocumentId, context: Context): boolean {
-  return documentId.minioDocumentId !== '' // && documentId.workspace === context.workspaceId.name
+function isValidDocumentId (documentId: MinioDocumentId): boolean {
+  return documentId.minioDocumentId !== '' && documentId.workspaceUrl !== ''
 }
 
 function maybePlatformDocumentId (documentId: string): boolean {
@@ -52,9 +52,9 @@ export class MinioStorageAdapter implements StorageAdapter {
   async loadDocument (documentId: string, context: Context): Promise<YDoc | undefined> {
     const { workspaceId } = context
 
-    const { workspace, minioDocumentId } = parseDocumentId(documentId)
+    const { workspaceUrl, minioDocumentId } = parseDocumentId(documentId)
 
-    if (!isValidDocumentId({ workspace, minioDocumentId }, context)) {
+    if (!isValidDocumentId({ workspaceUrl, minioDocumentId })) {
       console.warn('malformed document id', documentId)
       return undefined
     }
@@ -91,9 +91,9 @@ export class MinioStorageAdapter implements StorageAdapter {
   async saveDocument (documentId: string, document: YDoc, context: Context): Promise<void> {
     const { clientFactory, workspaceId } = context
 
-    const { workspace, minioDocumentId } = parseDocumentId(documentId)
+    const { workspaceUrl, minioDocumentId } = parseDocumentId(documentId)
 
-    if (!isValidDocumentId({ workspace, minioDocumentId }, context)) {
+    if (!isValidDocumentId({ workspaceUrl, minioDocumentId })) {
       console.warn('malformed document id', documentId)
       return undefined
     }
