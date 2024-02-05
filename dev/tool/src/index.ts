@@ -46,7 +46,7 @@ import toolPlugin, { FileModelLogger } from '@hcengineering/server-tool'
 import { Command, program } from 'commander'
 import { Db, MongoClient } from 'mongodb'
 import { clearTelegramHistory } from './telegram'
-import { diffWorkspace } from './workspace'
+import { diffWorkspace, updateField } from './workspace'
 
 import { Data, getWorkspaceId, RateLimitter, Tx, Version } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
@@ -627,6 +627,24 @@ export function devTool (
       const { mongodbUri } = prepareTools()
       await fixSkills(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl, step)
     })
+
+  program
+    .command('change-field <workspace>')
+    .description('change field value for the object')
+    .requiredOption('--objectId <objectId>', 'objectId')
+    .requiredOption('--objectClass <objectClass>')
+    .requiredOption('--attribute <attribute>')
+    .requiredOption('--type <type>', 'number | string')
+    .requiredOption('--value <value>')
+    .action(
+      async (
+        workspace: string,
+        cmd: { objectId: string, objectClass: string, type: string, attribute: string, value: string }
+      ) => {
+        const { mongodbUri } = prepareTools()
+        await updateField(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl, cmd)
+      }
+    )
 
   extendProgram?.(program)
 
