@@ -1,4 +1,5 @@
 import { Browser, Locator, Page, expect } from '@playwright/test'
+import { allure } from 'allure-playwright'
 
 export const PlatformURI = process.env.PLATFORM_URI as string
 export const PlatformTransactor = process.env.PLATFORM_TRANSACTOR as string
@@ -73,4 +74,11 @@ export async function * iterateLocator (locator: Locator): AsyncGenerator<Locato
   for (let index = 0; index < (await locator.count()); index++) {
     yield locator.nth(index)
   }
+}
+
+export async function attachScreenshot (name: string, page: Page): Promise<void> {
+  await allure.attachment(name, await page.screenshot(), {
+    contentType: 'image/png'
+  })
+  await page.screenshot({ path: `screenshots/${name}` })
 }
