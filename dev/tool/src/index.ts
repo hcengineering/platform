@@ -17,7 +17,6 @@
 import {
   ACCOUNT_DB,
   assignWorkspace,
-  ClientWorkspaceInfo,
   confirmEmail,
   createAcc,
   createWorkspace,
@@ -30,7 +29,8 @@ import {
   replacePassword,
   setAccountAdmin,
   setRole,
-  upgradeWorkspace
+  upgradeWorkspace,
+  WorkspaceInfo
 } from '@hcengineering/account'
 import { setMetadata } from '@hcengineering/platform'
 import {
@@ -276,14 +276,23 @@ export function devTool (
         const workspaces = await listWorkspaces(db, productId)
         const withError: string[] = []
 
-        async function _upgradeWorkspace (ws: ClientWorkspaceInfo): Promise<void> {
+        async function _upgradeWorkspace (ws: WorkspaceInfo): Promise<void> {
           const t = Date.now()
           const logger = cmd.console
             ? consoleModelLogger
             : new FileModelLogger(path.join(cmd.logs, `${ws.workspace}.log`))
           console.log('---UPGRADING----', ws.workspace, !cmd.console ? (logger as FileModelLogger).file : '')
           try {
-            await upgradeWorkspace(version, txes, migrateOperations, productId, db, ws.workspace, logger, cmd.force)
+            await upgradeWorkspace(
+              version,
+              txes,
+              migrateOperations,
+              productId,
+              db,
+              ws.workspaceUrl ?? ws.workspace,
+              logger,
+              cmd.force
+            )
             console.log('---UPGRADING-DONE----', ws.workspace, Date.now() - t)
           } catch (err: any) {
             withError.push(ws.workspace)
