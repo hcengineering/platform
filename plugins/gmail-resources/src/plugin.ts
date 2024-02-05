@@ -20,8 +20,6 @@ import gmail, { gmailId } from '@hcengineering/gmail'
 
 export default mergeIds(gmailId, gmail, {
   string: {
-    From: '' as IntlString,
-    To: '' as IntlString,
     Copy: '' as IntlString,
     MessagesSelected: '' as IntlString,
     PublishSelected: '' as IntlString,

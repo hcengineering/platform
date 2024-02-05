@@ -236,11 +236,6 @@ export default mergeIds(trackerId, tracker, {
     Blocks: '' as IntlString,
     Related: '' as IntlString,
 
-    DurMinutes: '' as IntlString,
-    DurHours: '' as IntlString,
-    DurDays: '' as IntlString,
-    DurMonths: '' as IntlString,
-    DurYears: '' as IntlString,
     StatusHistory: '' as IntlString,
     AddLabel: '' as IntlString,
 

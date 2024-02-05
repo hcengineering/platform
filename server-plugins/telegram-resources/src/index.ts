@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import contact, { Channel } from '@hcengineering/contact'
+import contact, { Channel, ChannelProvider, Contact, Employee, PersonAccount } from '@hcengineering/contact'
 import {
   Account,
   Class,
@@ -30,6 +30,7 @@ import {
 import { TriggerControl } from '@hcengineering/server-core'
 import telegram, { TelegramMessage } from '@hcengineering/telegram'
 import notification, { NotificationType } from '@hcengineering/notification'
+import setting, { Integration } from '@hcengineering/setting'
 
 /**
  * @public
@@ -129,6 +130,51 @@ export async function IsIncomingMessage (
   return message.incoming && message.sendOn > (doc.createdOn ?? doc.modifiedOn)
 }
 
+export async function GetCurrentEmployeeTG (
+  control: TriggerControl,
+  context: Record<string, Doc>
+): Promise<string | undefined> {
+  const account = await control.modelDb.findOne(contact.class.PersonAccount, {
+    _id: control.txFactory.account as Ref<PersonAccount>
+  })
+  if (account === undefined) return
+  const employee = (await control.findAll(contact.mixin.Employee, { _id: account.person as Ref<Employee> }))[0]
+  if (employee !== undefined) {
+    return await getContactChannel(control, employee, contact.channelProvider.Telegram)
+  }
+}
+
+export async function GetIntegrationOwnerTG (
+  control: TriggerControl,
+  context: Record<string, Doc>
+): Promise<string | undefined> {
+  const value = context[setting.class.Integration] as Integration
+  if (value === undefined) return
+  const account = await control.modelDb.findOne(contact.class.PersonAccount, {
+    _id: value.modifiedBy as Ref<PersonAccount>
+  })
+  if (account === undefined) return
+  const employee = (await control.findAll(contact.mixin.Employee, { _id: account.person as Ref<Employee> }))[0]
+  if (employee !== undefined) {
+    return await getContactChannel(control, employee, contact.channelProvider.Telegram)
+  }
+}
+
+async function getContactChannel (
+  control: TriggerControl,
+  value: Contact,
+  provider: Ref<ChannelProvider>
+): Promise<string | undefined> {
+  if (value === undefined) return
+  const res = (
+    await control.findAll(contact.class.Channel, {
+      attachedTo: value._id,
+      provider
+    })
+  )[0]
+  return res?.value ?? ''
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
@@ -136,6 +182,8 @@ export default async () => ({
   },
   function: {
     IsIncomingMessage,
-    FindMessages
+    FindMessages,
+    GetCurrentEmployeeTG,
+    GetIntegrationOwnerTG
   }
 })

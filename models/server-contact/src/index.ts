@@ -21,6 +21,8 @@ import core from '@hcengineering/core'
 import serverContact from '@hcengineering/server-contact'
 import serverCore from '@hcengineering/server-core'
 import serverNotification from '@hcengineering/server-notification'
+import serverTemplates from '@hcengineering/server-templates'
+import templates from '@hcengineering/templates'
 export { serverContactId } from '@hcengineering/server-contact'
 
 export function createModel (builder: Builder): void {
@@ -75,4 +77,58 @@ export function createModel (builder: Builder): void {
       _class: core.class.TxUpdateDoc
     }
   })
+
+  builder.mixin(
+    contact.templateField.CurrentEmployeeName,
+    templates.class.TemplateField,
+    serverTemplates.mixin.ServerTemplateField,
+    {
+      serverFunc: serverContact.function.GetCurrentEmployeeName
+    }
+  )
+
+  builder.mixin(
+    contact.templateField.CurrentEmployeeEmail,
+    templates.class.TemplateField,
+    serverTemplates.mixin.ServerTemplateField,
+    {
+      serverFunc: serverContact.function.GetCurrentEmployeeEmail
+    }
+  )
+
+  builder.mixin(
+    contact.templateField.ContactName,
+    templates.class.TemplateField,
+    serverTemplates.mixin.ServerTemplateField,
+    {
+      serverFunc: serverContact.function.GetContactName
+    }
+  )
+
+  builder.mixin(
+    contact.templateField.CurrentEmployeePosition,
+    templates.class.TemplateField,
+    serverTemplates.mixin.ServerTemplateField,
+    {
+      serverFunc: serverContact.function.GetCurrentEmployeePosition
+    }
+  )
+
+  builder.mixin(
+    contact.templateField.ContactFirstName,
+    templates.class.TemplateField,
+    serverTemplates.mixin.ServerTemplateField,
+    {
+      serverFunc: serverContact.function.GetContactFirstName
+    }
+  )
+
+  builder.mixin(
+    contact.templateField.ContactLastName,
+    templates.class.TemplateField,
+    serverTemplates.mixin.ServerTemplateField,
+    {
+      serverFunc: serverContact.function.GetContactLastName
+    }
+  )
 }

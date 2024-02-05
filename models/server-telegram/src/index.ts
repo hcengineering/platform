@@ -22,6 +22,8 @@ import serverTelegram from '@hcengineering/server-telegram'
 import telegram from '@hcengineering/telegram'
 import notification from '@hcengineering/notification'
 import serverNotification from '@hcengineering/server-notification'
+import serverTemplates from '@hcengineering/server-templates'
+import templates from '@hcengineering/templates'
 
 export { serverTelegramId } from '@hcengineering/server-telegram'
 
@@ -50,6 +52,24 @@ export function createModel (builder: Builder): void {
     serverNotification.mixin.TypeMatch,
     {
       func: serverTelegram.function.IsIncomingMessage
+    }
+  )
+
+  builder.mixin(
+    telegram.templateField.CurrentEmployeeTelegram,
+    templates.class.TemplateField,
+    serverTemplates.mixin.ServerTemplateField,
+    {
+      serverFunc: serverTelegram.function.GetCurrentEmployeeTG
+    }
+  )
+
+  builder.mixin(
+    telegram.templateField.IntegrationOwnerTG,
+    templates.class.TemplateField,
+    serverTemplates.mixin.ServerTemplateField,
+    {
+      serverFunc: serverTelegram.function.GetIntegrationOwnerTG
     }
   )
 }

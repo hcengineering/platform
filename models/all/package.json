@@ -50,6 +50,7 @@
     "@hcengineering/model-server-recruit": "^0.6.0",
     "@hcengineering/model-server-lead": "^0.6.0",
     "@hcengineering/model-server-inventory": "^0.6.0",
+    "@hcengineering/model-server-templates": "^0.6.0",
     "@hcengineering/model-activity": "^0.6.0",
     "@hcengineering/model-attachment": "^0.6.0",
     "@hcengineering/model-gmail": "^0.6.0",

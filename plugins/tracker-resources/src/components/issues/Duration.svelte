@@ -14,8 +14,7 @@
 -->
 <script lang="ts">
   import { translate } from '@hcengineering/platform'
-  import tracker from '../../plugin'
-  import { DAY, HOUR, MINUTE, MONTH, YEAR, themeStore } from '@hcengineering/ui'
+  import ui, { DAY, HOUR, MINUTE, MONTH, YEAR, themeStore } from '@hcengineering/ui'
 
   export let value: number
 
@@ -24,15 +23,15 @@
   async function formatTime (passed: number) {
     if (passed < 0) passed = 0
     if (passed < HOUR) {
-      time = await translate(tracker.string.DurMinutes, { minutes: Math.floor(passed / MINUTE) }, $themeStore.language)
+      time = await translate(ui.string.Minutes, { minutes: Math.floor(passed / MINUTE) }, $themeStore.language)
     } else if (passed < DAY) {
-      time = await translate(tracker.string.DurHours, { hours: Math.floor(passed / HOUR) }, $themeStore.language)
+      time = await translate(ui.string.Hours, { hours: Math.floor(passed / HOUR) }, $themeStore.language)
     } else if (passed < MONTH) {
-      time = await translate(tracker.string.DurDays, { days: Math.floor(passed / DAY) }, $themeStore.language)
+      time = await translate(ui.string.Days, { days: Math.floor(passed / DAY) }, $themeStore.language)
     } else if (passed < YEAR) {
-      time = await translate(tracker.string.DurMonths, { months: Math.floor(passed / MONTH) }, $themeStore.language)
+      time = await translate(ui.string.Months, { months: Math.floor(passed / MONTH) }, $themeStore.language)
     } else {
-      time = await translate(tracker.string.DurYears, { years: Math.floor(passed / YEAR) }, $themeStore.language)
+      time = await translate(ui.string.Years, { years: Math.floor(passed / YEAR) }, $themeStore.language)
     }
   }
 

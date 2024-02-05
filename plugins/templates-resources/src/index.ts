@@ -18,20 +18,22 @@ import { type Resources } from '@hcengineering/platform'
 import Templates from './components/Templates.svelte'
 import { type TextEditorHandler } from '@hcengineering/text-editor'
 import { showPopup } from '@hcengineering/ui'
-import TemplatePopup from './components/TemplatePopup.svelte'
+import EditorTemplatePopup from './components/EditorTemplatePopup.svelte'
 import CreateTemplateCategory from './components/CreateTemplateCategory.svelte'
+import TemplatePopup from './components/TemplatePopup.svelte'
 import Move from './components/Move.svelte'
 import Copy from './components/Copy.svelte'
 import EditGroup from './components/EditGroup.svelte'
 import { getTemplateDataProvider } from './utils'
 
 function ShowTemplates (element: HTMLElement, editor: TextEditorHandler): void {
-  showPopup(TemplatePopup, { editor }, element)
+  showPopup(EditorTemplatePopup, { editor }, element)
 }
 
 export default async (): Promise<Resources> => ({
   component: {
     Templates,
+    TemplatePopup,
     CreateTemplateCategory,
     Move,
     Copy,

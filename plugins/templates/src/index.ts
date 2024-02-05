@@ -16,6 +16,7 @@
 import type { Class, Doc, Ref, Space } from '@hcengineering/core'
 import type { IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { Asset, plugin } from '@hcengineering/platform'
+import { AnyComponent } from '@hcengineering/ui'
 
 /**
  * @public
@@ -70,6 +71,8 @@ export interface TemplateField extends Doc {
   func: Resource<TemplateFieldFunc>
 }
 
+export const templateFieldRegexp = /\$\{(\S+?)}/gi
+
 /**
  * @public
  */
@@ -81,6 +84,12 @@ export default plugin(templatesId, {
     TemplateCategory: '' as Ref<Class<TemplateCategory>>,
     TemplateField: '' as Ref<Class<TemplateField>>,
     TemplateFieldCategory: '' as Ref<Class<TemplateFieldCategory>>
+  },
+  component: {
+    TemplatePopup: '' as AnyComponent
+  },
+  string: {
+    Template: '' as IntlString
   },
   space: {
     Templates: '' as Ref<TemplateCategory>

@@ -15,7 +15,7 @@
 
 import { ChannelItem } from '@hcengineering/contact'
 import type { Account, AttachedDoc, Class, Doc, Ref, Space, Timestamp } from '@hcengineering/core'
-import type { Plugin } from '@hcengineering/platform'
+import type { IntlString, Plugin } from '@hcengineering/platform'
 import { Metadata, plugin } from '@hcengineering/platform'
 import { NotificationType } from '@hcengineering/notification'
 import type { Handler, IntegrationType } from '@hcengineering/setting'
@@ -86,6 +86,10 @@ export default plugin(gmailId, {
     IconGmail: '' as AnyComponent,
     NewMessages: '' as AnyComponent,
     Configure: '' as AnyComponent
+  },
+  string: {
+    From: '' as IntlString,
+    To: '' as IntlString
   },
   integrationType: {
     Gmail: '' as Ref<IntegrationType>

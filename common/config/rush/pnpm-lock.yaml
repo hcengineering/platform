@@ -308,6 +308,9 @@ dependencies:
   '@rush-temp/model-server-telegram':
     specifier: file:./projects/model-server-telegram.tgz
     version: file:projects/model-server-telegram.tgz(svelte@4.2.5)(typescript@5.2.2)
+  '@rush-temp/model-server-templates':
+    specifier: file:./projects/model-server-templates.tgz
+    version: file:projects/model-server-templates.tgz(svelte@4.2.5)(typescript@5.2.2)
   '@rush-temp/model-server-tracker':
     specifier: file:./projects/model-server-tracker.tgz
     version: file:projects/model-server-tracker.tgz(svelte@4.2.5)(typescript@5.2.2)
@@ -533,6 +536,9 @@ dependencies:
   '@rush-temp/server-telegram-resources':
     specifier: file:./projects/server-telegram-resources.tgz
     version: file:projects/server-telegram-resources.tgz(@types/node@16.11.68)(esbuild@0.16.17)(svelte@4.2.5)(ts-node@10.9.1)
+  '@rush-temp/server-templates':
+    specifier: file:./projects/server-templates.tgz
+    version: file:projects/server-templates.tgz(esbuild@0.16.17)(svelte@4.2.5)(ts-node@10.9.1)
   '@rush-temp/server-token':
     specifier: file:./projects/server-token.tgz
     version: file:projects/server-token.tgz(esbuild@0.16.17)(svelte@4.2.5)(ts-node@10.9.1)
@@ -18562,7 +18568,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz(svelte@4.2.5)(typescript@5.2.2):
-    resolution: {integrity: sha512-PEl4zAGjvSsQ5stSRUuj2PYcZ0BdWTkxyaJNP63dbX4U6QA5sf7BuXamJRgETTD74jA40pGRXUAMnprS6t9z4w==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-rRoP0AGubenpWEnLgCxmsp24ap6T59CCi32i2svNsX3v3DqcSLMCD/m921cLLDtoLvrp7FEXEFzvA5G3sInS4w==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -19010,7 +19016,7 @@ packages:
     dev: false
 
   file:projects/model-server-contact.tgz(svelte@4.2.5)(typescript@5.2.2):
-    resolution: {integrity: sha512-d8ktsQb+9GnNT/Oc4b1KZxR0zxWhJcTzngYoD5R2396PyGo1WlPWSDyg7/ZwfW3VPuRUmFK4kQN9rvx5shqr1A==, tarball: file:projects/model-server-contact.tgz}
+    resolution: {integrity: sha512-vlsuafmQmf1ZBTgFnJs9jL2awlyHh/ErdTV2P2bUXXsYkBdA9XWHVAYZn+oi0Rd3id5j3DDGrDwN5NiR0U6+tQ==, tarball: file:projects/model-server-contact.tgz}
     id: file:projects/model-server-contact.tgz
     name: '@rush-temp/model-server-contact'
     version: 0.0.0
@@ -19220,7 +19226,7 @@ packages:
     dev: false
 
   file:projects/model-server-setting.tgz(svelte@4.2.5)(typescript@5.2.2):
-    resolution: {integrity: sha512-yVGC8ZWVTm3yOqKVta+BEaIkp42ZSpNbiUtjNJKUbn+3ExMzBt5BoCNxFnuZbcYpbgBGtVQ+ZJF0rflo+92ZEg==, tarball: file:projects/model-server-setting.tgz}
+    resolution: {integrity: sha512-sGvikiJYi3Q+I7SjeOSNmNnQALpeEMW338oLYIHWPqsdC5yK+mNBl3G62qx4RE5YCnQiT04QpGABEgUhoUK5ug==, tarball: file:projects/model-server-setting.tgz}
     id: file:projects/model-server-setting.tgz
     name: '@rush-temp/model-server-setting'
     version: 0.0.0
@@ -19283,9 +19289,30 @@ packages:
     dev: false
 
   file:projects/model-server-telegram.tgz(svelte@4.2.5)(typescript@5.2.2):
-    resolution: {integrity: sha512-0SFtpXukJznjjaLURWNNb3OUK8cLTYAGeFgUWte5oijmuDHcyPiFqvaCFPwyX8BTn+PL284jVnCy56HQGVv/lw==, tarball: file:projects/model-server-telegram.tgz}
+    resolution: {integrity: sha512-vsMfQWsKyRmKNuWnrTGt7XazrucPqAnK9lug4EqYvHeNht1p0ghjmypsTI1bZU72wJnnfGmuE24kHFqG7/Jumw==, tarball: file:projects/model-server-telegram.tgz}
     id: file:projects/model-server-telegram.tgz
     name: '@rush-temp/model-server-telegram'
+    version: 0.0.0
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 6.11.0(@typescript-eslint/parser@6.11.0)(eslint@8.54.0)(typescript@5.2.2)
+      '@typescript-eslint/parser': 6.11.0(eslint@8.54.0)(typescript@5.2.2)
+      eslint: 8.54.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.11.0)(eslint-plugin-import@2.28.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.54.0)(typescript@5.2.2)
+      eslint-plugin-import: 2.28.1(eslint@8.54.0)
+      eslint-plugin-n: 15.7.0(eslint@8.54.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.54.0)
+      prettier: 3.1.0
+      prettier-plugin-svelte: 3.1.0(prettier@3.1.0)(svelte@4.2.5)
+    transitivePeerDependencies:
+      - supports-color
+      - svelte
+      - typescript
+    dev: false
+
+  file:projects/model-server-templates.tgz(svelte@4.2.5)(typescript@5.2.2):
+    resolution: {integrity: sha512-OSVMWQCabgesTAbFc/TTbs9dzlu5ZqXRbm682xc1C0C0Z2rXDmonFYV7RYELMc5Jf39Kctnne4edqHZWcj3BtQ==, tarball: file:projects/model-server-templates.tgz}
+    id: file:projects/model-server-templates.tgz
+    name: '@rush-temp/model-server-templates'
     version: 0.0.0
     dependencies:
       '@typescript-eslint/eslint-plugin': 6.11.0(@typescript-eslint/parser@6.11.0)(eslint@8.54.0)(typescript@5.2.2)
@@ -20928,7 +20955,7 @@ packages:
     dev: false
 
   file:projects/server-contact.tgz(esbuild@0.16.17)(svelte@4.2.5)(ts-node@10.9.1):
-    resolution: {integrity: sha512-9uEmb9dproJeJoIM9tEknpiF6SmB3mUuYJSjJZBPsqVvckSPSiWhntDUEk2P6rVk1VDKr02Sxo8Ao9BBoHjBrA==, tarball: file:projects/server-contact.tgz}
+    resolution: {integrity: sha512-tFf4IQRLfSksCwdSdgf/UqHqUHEueA2Umyru2R1UB39sxiDA4tgzkYJg6NiJ9FYYQaGZfkkg1iHiNww4raIasw==, tarball: file:projects/server-contact.tgz}
     id: file:projects/server-contact.tgz
     name: '@rush-temp/server-contact'
     version: 0.0.0
@@ -21507,7 +21534,7 @@ packages:
     dev: false
 
   file:projects/server-setting.tgz(esbuild@0.16.17)(svelte@4.2.5)(ts-node@10.9.1):
-    resolution: {integrity: sha512-B1xZXUDrJjE6nRBumLMBkG0EGa7MSTSspMKcFNn1RUYeSQVj9K5EMQbuGHVdUyHDPoWy5h+BgYHdT7k/pkw87A==, tarball: file:projects/server-setting.tgz}
+    resolution: {integrity: sha512-BhdjSgGhI6B3T3YrKwfbHkn7wBc25CexZhqYAyo+yOPudt3BgKjaYsaEpWq0amLm82i4i0lzPB3YTh6Um/1yPA==, tarball: file:projects/server-setting.tgz}
     id: file:projects/server-setting.tgz
     name: '@rush-temp/server-setting'
     version: 0.0.0
@@ -21667,7 +21694,7 @@ packages:
     dev: false
 
   file:projects/server-telegram-resources.tgz(@types/node@16.11.68)(esbuild@0.16.17)(svelte@4.2.5)(ts-node@10.9.1):
-    resolution: {integrity: sha512-VhNEvKhlJ+YLFb/sQZcpq2wbO2MIy9rjAupK3a1UVtNSLjxQQdGG28/sBtzolxfqewS+iRFPdV5R5LxO31ocdg==, tarball: file:projects/server-telegram-resources.tgz}
+    resolution: {integrity: sha512-0xrMPAORRu6sTt0VKvmvv2I+6fy7kdMd4eU9LVKZZiNySzl9ar+9dLvVofzdP9pAZzndqeH89EjbIdi0WsIIeg==, tarball: file:projects/server-telegram-resources.tgz}
     id: file:projects/server-telegram-resources.tgz
     name: '@rush-temp/server-telegram-resources'
     version: 0.0.0
@@ -21699,9 +21726,41 @@ packages:
     dev: false
 
   file:projects/server-telegram.tgz(esbuild@0.16.17)(svelte@4.2.5)(ts-node@10.9.1):
-    resolution: {integrity: sha512-BA7dhLmV5p7UwD5wNpJD4Lfog13uVZy9cF6GDCsjGqodLUutP38zwFOEjLMmdC6bruxnS0PpH4N62VTxqGY8Ig==, tarball: file:projects/server-telegram.tgz}
+    resolution: {integrity: sha512-q7nsFwdvFCQw4bXA/Lb3bi2w5xtpJAzOZSra+pWwY+ZJMX1i2Dvo8LqevRwR/1vHALDFhQPsud/dipoJMnBFZw==, tarball: file:projects/server-telegram.tgz}
     id: file:projects/server-telegram.tgz
     name: '@rush-temp/server-telegram'
+    version: 0.0.0
+    dependencies:
+      '@types/jest': 29.5.5
+      '@types/node': 16.11.68
+      '@typescript-eslint/eslint-plugin': 6.11.0(@typescript-eslint/parser@6.11.0)(eslint@8.54.0)(typescript@5.2.2)
+      '@typescript-eslint/parser': 6.11.0(eslint@8.54.0)(typescript@5.2.2)
+      eslint: 8.54.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.11.0)(eslint-plugin-import@2.28.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.54.0)(typescript@5.2.2)
+      eslint-plugin-import: 2.28.1(eslint@8.54.0)
+      eslint-plugin-n: 15.7.0(eslint@8.54.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.54.0)
+      jest: 29.7.0(@types/node@16.11.68)(ts-node@10.9.1)
+      prettier: 3.1.0
+      prettier-plugin-svelte: 3.1.0(prettier@3.1.0)(svelte@4.2.5)
+      ts-jest: 29.1.1(esbuild@0.16.17)(jest@29.7.0)(typescript@5.2.2)
+      typescript: 5.2.2
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - svelte
+      - ts-node
+    dev: false
+
+  file:projects/server-templates.tgz(esbuild@0.16.17)(svelte@4.2.5)(ts-node@10.9.1):
+    resolution: {integrity: sha512-wFkwKZjd1eEPQ0sdZdZQnrAZxzUH0f3B5Ml/hVMtI8f5jqYJlGGZNMt0ivQuKDEA5cLQosGVs1kVUxenDHG88w==, tarball: file:projects/server-templates.tgz}
+    id: file:projects/server-templates.tgz
+    name: '@rush-temp/server-templates'
     version: 0.0.0
     dependencies:
       '@types/jest': 29.5.5
