@@ -19,16 +19,15 @@ import contact, {
   Contact,
   Organization,
   Person,
-  contactId,
-  getName,
-  formatContactName,
   PersonAccount,
+  contactId,
+  formatContactName,
   formatName,
-  getLastName,
   getFirstName,
-  Employee
+  getLastName,
+  getName
 } from '@hcengineering/contact'
-import { Ref, Class, Doc, Tx, TxRemoveDoc, TxUpdateDoc, concatLink, Hierarchy } from '@hcengineering/core'
+import { Class, Doc, Hierarchy, Ref, Tx, TxRemoveDoc, TxUpdateDoc, concatLink } from '@hcengineering/core'
 import notification, { Collaborators } from '@hcengineering/notification'
 import { getMetadata } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
@@ -204,9 +203,9 @@ export async function getCurrentEmployeePosition (
     _id: control.txFactory.account as Ref<PersonAccount>
   })
   if (account === undefined) return ''
-  const employee = (await control.findAll(contact.mixin.Employee, { _id: account.person as Ref<Employee> }))[0]
+  const employee = (await control.findAll(contact.class.Person, { _id: account.person }))[0]
   if (employee !== undefined) {
-    return employee.position ?? ''
+    return control.hierarchy.as(employee, contact.mixin.Employee)?.position ?? ''
   }
 }
 
