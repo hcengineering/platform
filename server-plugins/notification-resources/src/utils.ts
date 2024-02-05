@@ -117,9 +117,9 @@ export async function isShouldNotify (
   )
 
   const personAccount = await getPersonAccountById(user, control)
+  const modifiedAccount = await getPersonAccountById(tx.modifiedBy, control)
 
   for (const type of types) {
-    const modifiedAccount = await getPersonAccountById(tx.modifiedBy, control)
     if (
       type.allowedForAuthor !== true &&
       (tx.modifiedBy === user ||
