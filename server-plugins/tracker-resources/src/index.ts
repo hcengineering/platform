@@ -392,8 +392,6 @@ async function doIssueUpdate (
     Object.prototype.hasOwnProperty.call(updateTx.operations, 'estimation') ||
     Object.prototype.hasOwnProperty.call(updateTx.operations, 'reportedTime') ||
     (Object.prototype.hasOwnProperty.call(updateTx.operations, '$inc') &&
-      Object.prototype.hasOwnProperty.call(updateTx.operations.$inc, 'reportedTime')) ||
-    (Object.prototype.hasOwnProperty.call(updateTx.operations, '$dec') &&
       Object.prototype.hasOwnProperty.call(updateTx.operations.$inc, 'reportedTime'))
   ) {
     const issue = await getCurrentIssue()
