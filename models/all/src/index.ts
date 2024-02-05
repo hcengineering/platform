@@ -46,10 +46,11 @@ import { serverLeadId, createModel as serverLeadModel } from '@hcengineering/mod
 import { serverNotificationId, createModel as serverNotificationModel } from '@hcengineering/model-server-notification'
 import { serverRecruitId, createModel as serverRecruitModel } from '@hcengineering/model-server-recruit'
 import { serverRequestId, createModel as serverRequestModel } from '@hcengineering/model-server-request'
-import { createModel as serveSettingModel, serverSettingId } from '@hcengineering/model-server-setting'
+import { serverSettingId, createModel as serveSettingModel } from '@hcengineering/model-server-setting'
 import { serverTagsId, createModel as serverTagsModel } from '@hcengineering/model-server-tags'
 import { serverTaskId, createModel as serverTaskModel } from '@hcengineering/model-server-task'
 import { serverTelegramId, createModel as serverTelegramModel } from '@hcengineering/model-server-telegram'
+import { serverTemplatesId, createModel as serverTemplatesModel } from '@hcengineering/model-server-templates'
 import { serverTrackerId, createModel as serverTrackerModel } from '@hcengineering/model-server-tracker'
 import { serverViewId, createModel as serverViewModel } from '@hcengineering/model-server-view'
 import setting, { settingId, createModel as settingModel } from '@hcengineering/model-setting'
@@ -284,6 +285,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [serverCalendarModel, serverCalendarId],
     [serverRecruitModel, serverRecruitId],
     [serverGmailModel, serverGmailId],
+    [serverTemplatesModel, serverTemplatesId],
     [serverTelegramModel, serverTelegramId],
     [serverHrModel, serverHrId],
     [serverNotificationModel, serverNotificationId],

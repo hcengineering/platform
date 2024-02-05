@@ -18,6 +18,7 @@ import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { TriggerFunc, SearchPresenterProvider } from '@hcengineering/server-core'
 import { Presenter } from '@hcengineering/server-notification'
+import { TemplateFieldServerFunc } from '@hcengineering/server-templates'
 
 /**
  * @public
@@ -38,6 +39,12 @@ export default plugin(serverContactId, {
     OrganizationHTMLPresenter: '' as Resource<Presenter>,
     OrganizationTextPresenter: '' as Resource<Presenter>,
 
-    ContactNameProvider: '' as Resource<SearchPresenterProvider>
+    ContactNameProvider: '' as Resource<SearchPresenterProvider>,
+    GetCurrentEmployeeName: '' as Resource<TemplateFieldServerFunc>,
+    GetCurrentEmployeeEmail: '' as Resource<TemplateFieldServerFunc>,
+    GetContactName: '' as Resource<TemplateFieldServerFunc>,
+    GetCurrentEmployeePosition: '' as Resource<TemplateFieldServerFunc>,
+    GetContactFirstName: '' as Resource<TemplateFieldServerFunc>,
+    GetContactLastName: '' as Resource<TemplateFieldServerFunc>
   }
 })

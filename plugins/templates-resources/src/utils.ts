@@ -2,13 +2,12 @@ import { type Class, type Doc, generateId, type Ref } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
 import templates, {
+  templateFieldRegexp,
   type TemplateData,
   type TemplateDataProvider,
   type TemplateField,
   type TemplateFieldCategory
 } from '@hcengineering/templates'
-
-const fieldRegexp = /\$\{(\S+?)}/gi
 
 const templateData = new Map<Ref<TemplateFieldCategory>, TemplateData[]>()
 
@@ -32,7 +31,7 @@ class TemplateDataProviderImpl implements TemplateDataProvider {
 
   async fillTemplate (message: string): Promise<string> {
     while (true) {
-      const matched = fieldRegexp.exec(message)
+      const matched = templateFieldRegexp.exec(message)
       if (matched === null) return message
       const client = getClient()
       const field = await client.findOne(templates.class.TemplateField, { _id: matched[1] as Ref<TemplateField> })
@@ -41,7 +40,7 @@ class TemplateDataProviderImpl implements TemplateDataProvider {
       const result = await f(this)
       if (result !== undefined) {
         message = message.replaceAll(matched[0], result)
-        fieldRegexp.lastIndex = 0
+        templateFieldRegexp.lastIndex = 0
       }
     }
   }

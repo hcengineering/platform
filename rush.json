@@ -997,6 +997,16 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/server-templates",
+      "projectFolder": "server-plugins/templates",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-server-templates",
+      "projectFolder": "models/server-templates",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/model-text-editor",
       "projectFolder": "models/text-editor",
       "shouldPublish": false

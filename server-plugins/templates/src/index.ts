@@ -14,28 +14,31 @@
 // limitations under the License.
 //
 
+import { Ref, Mixin, Doc } from '@hcengineering/core'
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { ObjectDDParticipantFunc, TriggerFunc } from '@hcengineering/server-core'
-import { TypeMatchFunc } from '@hcengineering/server-notification'
-import { TemplateFieldServerFunc } from '@hcengineering/server-templates'
+import { type TriggerControl } from '@hcengineering/server-core'
+import { TemplateField } from '@hcengineering/templates'
+
+export type TemplateFieldServerFunc = (
+  control: TriggerControl,
+  context: Record<string, Doc>
+) => Promise<string | undefined>
+
+export interface ServerTemplateField extends TemplateField {
+  serverFunc: Resource<TemplateFieldServerFunc>
+}
 
 /**
  * @public
  */
-export const serverTelegramId = 'server-telegram' as Plugin
+export const serverTemplatesId = 'server-templates' as Plugin
 
 /**
  * @public
  */
-export default plugin(serverTelegramId, {
-  trigger: {
-    OnMessageCreate: '' as Resource<TriggerFunc>
-  },
-  function: {
-    IsIncomingMessage: '' as TypeMatchFunc,
-    FindMessages: '' as Resource<ObjectDDParticipantFunc>,
-    GetCurrentEmployeeTG: '' as Resource<TemplateFieldServerFunc>,
-    GetIntegrationOwnerTG: '' as Resource<TemplateFieldServerFunc>
+export default plugin(serverTemplatesId, {
+  mixin: {
+    ServerTemplateField: '' as Ref<Mixin<ServerTemplateField>>
   }
 })

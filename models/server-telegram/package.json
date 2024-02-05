@@ -33,6 +33,8 @@
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/telegram": "^0.6.14",
     "@hcengineering/notification": "^0.6.16",
+    "@hcengineering/templates": "^0.6.7",
+    "@hcengineering/server-templates": "^0.6.0",
     "@hcengineering/server-notification": "^0.6.1"
   }
 }

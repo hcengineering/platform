@@ -20,6 +20,8 @@ import core from '@hcengineering/core'
 import serverNotification from '@hcengineering/server-notification'
 import serverSetting from '@hcengineering/server-setting'
 import setting from '@hcengineering/setting'
+import serverTemplates from '@hcengineering/server-templates'
+import templates from '@hcengineering/templates'
 
 export { serverSettingId } from '@hcengineering/server-setting'
 
@@ -31,4 +33,35 @@ export function createModel (builder: Builder): void {
   builder.mixin(setting.class.Integration, core.class.Class, serverNotification.mixin.TextPresenter, {
     presenter: serverSetting.function.IntegrationTextPresenter
   })
+
+  builder.mixin(setting.templateField.Value, templates.class.TemplateField, serverTemplates.mixin.ServerTemplateField, {
+    serverFunc: serverSetting.function.GetValue
+  })
+
+  builder.mixin(
+    setting.templateField.OwnerFirstName,
+    templates.class.TemplateField,
+    serverTemplates.mixin.ServerTemplateField,
+    {
+      serverFunc: serverSetting.function.GetFirstName
+    }
+  )
+
+  builder.mixin(
+    setting.templateField.OwnerLastName,
+    templates.class.TemplateField,
+    serverTemplates.mixin.ServerTemplateField,
+    {
+      serverFunc: serverSetting.function.GetLastName
+    }
+  )
+
+  builder.mixin(
+    setting.templateField.OwnerPosition,
+    templates.class.TemplateField,
+    serverTemplates.mixin.ServerTemplateField,
+    {
+      serverFunc: serverSetting.function.GetOwnerPosition
+    }
+  )
 }

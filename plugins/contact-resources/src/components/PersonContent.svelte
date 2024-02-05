@@ -71,7 +71,7 @@
 
 {#if value}
   {#if statusLabel}
-    <div class="inline-flex items-center clear-mins">
+    <div class="inline-flex items-center clear-mins w-full">
       <PersonElement
         {value}
         {name}
