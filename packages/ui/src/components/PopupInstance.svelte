@@ -112,8 +112,8 @@
   let oldModalHTML: HTMLElement | undefined = undefined
 
   $: if (modalHTML !== undefined && oldModalHTML !== modalHTML) {
-    clientWidth = -1
-    clientHeight = -1
+    clientWidth = modalHTML.clientWidth
+    clientHeight = modalHTML.clientHeight
     oldModalHTML = modalHTML
     fitPopup(modalHTML, element, contentPanel)
     showing = true
@@ -127,7 +127,9 @@
   }
 
   export function fitPopupInstance (): void {
-    if (modalHTML) fitPopup(modalHTML, element, contentPanel)
+    if (modalHTML) {
+      fitPopup(modalHTML, element, contentPanel)
+    }
   }
 
   $: if ($deviceInfo.docWidth <= 900 && !docSize) docSize = true
