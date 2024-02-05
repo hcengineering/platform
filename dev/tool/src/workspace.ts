@@ -15,10 +15,19 @@
 //
 
 import contact from '@hcengineering/contact'
-import core, { DOMAIN_TX, Tx, WorkspaceId } from '@hcengineering/core'
+import core, {
+  Client as CoreClient,
+  BackupClient,
+  DOMAIN_TX,
+  Tx,
+  WorkspaceId,
+  type Ref,
+  type Doc
+} from '@hcengineering/core'
 import { getWorkspaceDB } from '@hcengineering/mongo'
 import { MongoClient } from 'mongodb'
 import { generateModelDiff, printDiff } from './mdiff'
+import { connect } from '@hcengineering/server-tool'
 
 export async function diffWorkspace (mongoUrl: string, workspace: WorkspaceId, rawTxes: Tx[]): Promise<void> {
   const client = new MongoClient(mongoUrl)
@@ -59,5 +68,32 @@ export async function diffWorkspace (mongoUrl: string, workspace: WorkspaceId, r
     }
   } finally {
     await client.close()
+  }
+}
+
+export async function updateField (
+  mongoUrl: string,
+  workspaceId: WorkspaceId,
+  transactorUrl: string,
+  cmd: { objectId: string, objectClass: string, type: string, attribute: string, value: string, domain: string }
+): Promise<void> {
+  const connection = (await connect(transactorUrl, workspaceId, undefined, {
+    mode: 'backup'
+  })) as unknown as CoreClient & BackupClient
+  const client = new MongoClient(mongoUrl)
+  let valueToPut: string | number = cmd.value
+  if (cmd.type === 'number') valueToPut = parseFloat(valueToPut)
+  try {
+    try {
+      await client.connect()
+      const db = getWorkspaceDB(client, workspaceId)
+      await db
+        .collection(cmd.domain)
+        .updateOne({ _id: cmd.objectId as Ref<Doc> }, { $set: { [cmd.attribute]: valueToPut } })
+    } finally {
+      await client.close()
+    }
+  } finally {
+    await connection.close()
   }
 }
