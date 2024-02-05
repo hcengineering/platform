@@ -23,4 +23,4 @@
   }
 </script>
 
-a<TemplatePopup on:template={dispatchItem} />
+<TemplatePopup on:template={dispatchItem} />
