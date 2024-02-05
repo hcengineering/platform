@@ -681,12 +681,16 @@ async function updateCollaboratorsMixin (
   activityMessages: ActivityMessage[],
   originTx: TxCUD<Doc>
 ): Promise<Tx[]> {
+  const { hierarchy } = control
+
   if (tx._class !== core.class.TxMixin) return []
   if (originTx.space === core.space.DerivedTx) return []
-  if (!control.hierarchy.isDerived(tx.mixin, notification.mixin.Collaborators)) return []
+  if (!hierarchy.isDerived(tx.mixin, notification.mixin.Collaborators)) return []
+
   const res: Tx[] = []
+
   if (tx.attributes.collaborators !== undefined) {
-    const createTx = control.hierarchy.isDerived(tx.objectClass, core.class.AttachedDoc)
+    const createTx = hierarchy.isDerived(tx.objectClass, core.class.AttachedDoc)
       ? (
           await control.findAll(core.class.TxCollectionCUD, {
             'tx.objectId': tx.objectId,
@@ -701,12 +705,22 @@ async function updateCollaboratorsMixin (
     const mixinTxes = await control.findAll(core.class.TxMixin, {
       objectId: tx.objectId
     })
-    const prevDoc = TxProcessor.buildDoc2Doc([createTx, ...mixinTxes].filter((t) => t._id !== tx._id)) as Collaborators
-    const prevDocMixin = control.hierarchy.as(prevDoc, notification.mixin.Collaborators)
-    const set = new Set(prevDocMixin?.collaborators ?? [])
+    const prevDoc = TxProcessor.buildDoc2Doc([createTx, ...mixinTxes].filter((t) => t._id !== tx._id)) as Doc
     const newCollabs: Ref<Account>[] = []
+
+    let prevCollabs: Set<Ref<Account>>
+
+    if (hierarchy.hasMixin(prevDoc, notification.mixin.Collaborators)) {
+      const prevDocMixin = control.hierarchy.as(prevDoc, notification.mixin.Collaborators)
+      prevCollabs = new Set(prevDocMixin.collaborators ?? [])
+    } else {
+      const mixin = hierarchy.classHierarchyMixin(prevDoc._class, notification.mixin.ClassCollaborators)
+      prevCollabs =
+        mixin !== undefined ? new Set(await getDocCollaborators(prevDoc, mixin, control)) : new Set()
+    }
+
     for (const collab of tx.attributes.collaborators) {
-      if (!set.has(collab)) {
+      if (!prevCollabs.has(collab) && tx.modifiedBy !== collab) {
         if (
           await isAllowed(
             control,
