@@ -116,7 +116,7 @@ export async function initModel (
   rawTxes: Tx[],
   migrateOperations: [string, MigrateOperation][],
   logger: ModelLogger = consoleModelLogger
-): Promise<CoreClient & BackupClient> {
+): Promise<CoreClient> {
   const { mongodbUri, minio, txes } = prepareTools(rawTxes)
   if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
     throw Error('Model txes must target only core.space.Model')
@@ -128,10 +128,10 @@ export async function initModel (
     await client.connect()
     const db = getWorkspaceDB(client, workspaceId)
 
-    logger.log('dropping database...')
+    logger.log('dropping database...', workspaceId)
     await db.dropDatabase()
 
-    logger.log('creating model...')
+    logger.log('creating model...', workspaceId)
     const model = txes
     const result = await db.collection(DOMAIN_TX).insertMany(model as Document[])
     logger.log(`${result.insertedCount} model transactions inserted.`)
@@ -172,7 +172,7 @@ export async function upgradeModel (
   rawTxes: Tx[],
   migrateOperations: [string, MigrateOperation][],
   logger: ModelLogger = consoleModelLogger
-): Promise<void> {
+): Promise<CoreClient> {
   const { mongodbUri, txes } = prepareTools(rawTxes)
 
   if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
@@ -231,7 +231,7 @@ export async function upgradeModel (
       logger.log(`${workspaceId.name}: upgrade:`, op[0], Date.now() - t)
     }
 
-    await connection.close()
+    return connection
   } finally {
     await client.close()
   }

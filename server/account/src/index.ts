@@ -25,7 +25,6 @@ import contact, {
 } from '@hcengineering/contact'
 import core, {
   AccountRole,
-  BackupClient,
   Client,
   concatLink,
   Data,
@@ -592,12 +591,15 @@ export async function listAccounts (db: Db): Promise<Account[]> {
 }
 
 const workspaceReg = /[a-z0-9]/
+const workspaceRegDigit = /[0-9]/
 
 function stripId (name: string): string {
   let workspaceId = ''
   for (const c of name.toLowerCase()) {
     if (workspaceReg.test(c) || c === '-') {
-      workspaceId += c
+      if (workspaceId.length > 0 || !workspaceRegDigit.test(c)) {
+        workspaceId += c
+      }
     }
   }
   return workspaceId
@@ -694,7 +696,7 @@ export async function createWorkspace (
   email: string,
   workspaceName: string,
   workspace?: string
-): Promise<{ workspaceInfo: Workspace, err?: any, client?: Client & BackupClient }> {
+): Promise<{ workspaceInfo: Workspace, err?: any, client?: Client }> {
   // We need to search for duplicate workspaceUrl
   await searchPromise
 
@@ -702,23 +704,22 @@ export async function createWorkspace (
   searchPromise = generateWorkspaceRecord(db, email, productId, version, workspaceName, workspace)
 
   const workspaceInfo = await searchPromise
-  let client: Client & BackupClient
+  let client: Client
   try {
     const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
     const wsId = getWorkspaceId(workspaceInfo.workspace, productId)
-    if (initWS !== undefined) {
-      if ((await getWorkspaceById(db, productId, initWS)) !== null) {
-        client = await initModel(getTransactor(), wsId, txes, [])
-        await client.close()
-        await cloneWorkspace(
-          getTransactor(),
-          getWorkspaceId(initWS, productId),
-          getWorkspaceId(workspaceInfo.workspace, productId)
-        )
-        await upgradeModel(getTransactor(), wsId, txes, migrationOperation)
-      }
+    if (initWS !== undefined && (await getWorkspaceById(db, productId, initWS)) !== null) {
+      client = await initModel(getTransactor(), wsId, txes, [])
+      await client.close()
+      await cloneWorkspace(
+        getTransactor(),
+        getWorkspaceId(initWS, productId),
+        getWorkspaceId(workspaceInfo.workspace, productId)
+      )
+      client = await upgradeModel(getTransactor(), wsId, txes, migrationOperation)
+    } else {
+      client = await initModel(getTransactor(), wsId, txes, migrationOperation)
     }
-    client = await initModel(getTransactor(), wsId, txes, migrationOperation)
   } catch (err: any) {
     return { workspaceInfo, err, client: {} as any }
   }
@@ -765,7 +766,9 @@ export async function upgradeWorkspace (
       $set: { version }
     }
   )
-  await upgradeModel(getTransactor(), getWorkspaceId(workspaceUrl, productId), txes, migrationOperation, logger)
+  await (
+    await upgradeModel(getTransactor(), getWorkspaceId(workspaceUrl, productId), txes, migrationOperation, logger)
+  ).close()
   return versionStr
 }
 
@@ -963,7 +966,7 @@ export async function setRole (
   workspace: string,
   productId: string,
   role: AccountRole,
-  client?: Client & BackupClient
+  client?: Client
 ): Promise<void> {
   const email = cleanEmail(_email)
   const connection = client ?? (await connect(getTransactor(), getWorkspaceId(workspace, productId)))
@@ -994,7 +997,7 @@ export async function assignWorkspace (
   _email: string,
   workspaceId: string,
   shouldReplaceAccount: boolean = false,
-  client?: Client & BackupClient
+  client?: Client
 ): Promise<void> {
   const email = cleanEmail(_email)
   const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
@@ -1098,14 +1101,14 @@ async function createPersonAccount (
   productId: string,
   workspace: string,
   shouldReplaceCurrent: boolean = false,
-  client?: Client & BackupClient
+  client?: Client
 ): Promise<void> {
   const connection = client ?? (await connect(getTransactor(), getWorkspaceId(workspace, productId)))
   try {
     const ops = new TxOperations(connection, core.account.System)
 
     const name = combineName(account.first, account.last)
-    // Check if EmployeeAccoun is not exists
+    // Check if EmployeeAccount is not exists
     if (shouldReplaceCurrent) {
       const currentAccount = await ops.findOne(contact.class.PersonAccount, {})
       if (currentAccount !== undefined) {

@@ -19,6 +19,7 @@
   import {
     fetchMetadataLocalStorage,
     getCurrentLocation,
+    Loading,
     Location,
     navigate,
     setMetadataLocalStorage,
@@ -117,6 +118,7 @@
       navigate(loc)
     }
   }
+  let loading = true
 
   async function chooseToken (time: number): Promise<void> {
     if (getMetadata(presentation.metadata.Token) == null) {
@@ -137,18 +139,25 @@
           setMetadataLocalStorage(login.metadata.LastToken, null)
         }
       }
+      loading = false
+    } else {
+      loading = false
     }
   }
 
   $: chooseToken($ticker)
 </script>
 
-<Form
-  caption={login.string.LogIn}
-  {status}
-  {fields}
-  {object}
-  {action}
-  bottomActions={[recoveryAction]}
-  ignoreInitialValidation
-/>
+{#if loading}
+  <Loading />
+{:else}
+  <Form
+    caption={login.string.LogIn}
+    {status}
+    {fields}
+    {object}
+    {action}
+    bottomActions={[recoveryAction]}
+    ignoreInitialValidation
+  />
+{/if}
