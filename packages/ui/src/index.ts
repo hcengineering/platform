@@ -251,9 +251,15 @@ export function createApp (target: HTMLElement): SvelteComponent {
 }
 
 export const ticker = readable(Date.now(), (set) => {
-  setInterval(() => {
+  set(Date.now())
+
+  const interval = setInterval(() => {
     set(Date.now())
   }, 10000)
+
+  return () => {
+    clearInterval(interval)
+  }
 })
 
 addLocation(uiId, async () => ({ default: async () => ({}) }))
