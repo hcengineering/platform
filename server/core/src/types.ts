@@ -128,9 +128,6 @@ export interface TriggerControl {
   modelDb: ModelDb
   removedMap: Map<Ref<Doc>, Doc>
 
-  // // An object cache,
-  // getCachedObject: <T extends Doc>(_class: Ref<Class<T>>, _id: Ref<T>) => Promise<T | undefined>
-
   fulltextFx: (f: (adapter: FullTextAdapter) => Promise<void>) => void
   // Since we don't have other storages let's consider adapter is MinioClient
   // Later can be replaced with generic one with bucket encapsulated inside.
@@ -140,6 +137,13 @@ export interface TriggerControl {
   // Bulk operations in case trigger require some
   apply: (tx: Tx[], broadcast: boolean) => Promise<TxResult>
   applyCtx: (ctx: MeasureContext, tx: Tx[], broadcast: boolean) => Promise<TxResult>
+
+  // Will create a live query if missing and return values immediately if already asked.
+  queryFind: <T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ) => Promise<FindResult<T>>
 }
 
 /**
@@ -283,7 +287,7 @@ export class DummyFullTextAdapter implements FullTextAdapter {
   async close (): Promise<void> {}
 
   metrics (): MeasureContext {
-    return new MeasureMetricsContext('', {})
+    return new MeasureMetricsContext('', {}, {})
   }
 }
 

@@ -6,9 +6,23 @@ export type ParamType = string | number | boolean | undefined
 /**
  * @public
  */
+export type ParamsType = Record<string, ParamType>
+
+/**
+ * @public
+ */
+export type FullParamsType = Record<string, any>
+
+/**
+ * @public
+ */
 export interface MetricsData {
   operations: number
   value: number
+  topResult?: {
+    value: number
+    params: FullParamsType
+  }[]
 }
 
 /**
@@ -31,9 +45,14 @@ export interface MeasureLogger {
  */
 export interface MeasureContext {
   // Create a child metrics context
-  newChild: (name: string, params: Record<string, ParamType>, logger?: MeasureLogger) => MeasureContext
+  newChild: (name: string, params: ParamsType, fullParams?: FullParamsType, logger?: MeasureLogger) => MeasureContext
 
-  with: <T>(name: string, params: Record<string, ParamType>, op: (ctx: MeasureContext) => T | Promise<T>) => Promise<T>
+  with: <T>(
+    name: string,
+    params: ParamsType,
+    op: (ctx: MeasureContext) => T | Promise<T>,
+    fullParams?: FullParamsType
+  ) => Promise<T>
 
   logger: MeasureLogger
 

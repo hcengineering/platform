@@ -1,7 +1,8 @@
 // Basic performance metrics suite.
 
 import { MetricsData } from '.'
-import { Metrics, ParamType } from './types'
+import { cutObjectArray } from '../utils'
+import { FullParamsType, Metrics, ParamsType } from './types'
 
 /**
  * @public
@@ -21,11 +22,30 @@ export function newMetrics (): Metrics {
   }
 }
 
+function getUpdatedTopResult (
+  current: Metrics['topResult'],
+  time: number,
+  params: FullParamsType
+): Metrics['topResult'] {
+  if (current === undefined || current.length < 3 || current.some((it) => it.value < time)) {
+    const result = [
+      ...(current ?? []),
+      {
+        value: time,
+        params: cutObjectArray(params)
+      }
+    ]
+    result.sort((a, b) => b.value - a.value)
+    return result.slice(0, 3)
+  }
+  return current
+}
+
 /**
  * Measure with tree expansion. Operation counter will be added only to leaf's.
  * @public
  */
-export function measure (metrics: Metrics, params: Record<string, ParamType>): () => void {
+export function measure (metrics: Metrics, params: ParamsType, fullParams: FullParamsType = {}): () => void {
   const st = Date.now()
   return (value?: number) => {
     const ed = Date.now()
@@ -47,10 +67,14 @@ export function measure (metrics: Metrics, params: Record<string, ParamType>): (
       }
       param.value += value ?? ed - st
       param.operations++
+
+      param.topResult = getUpdatedTopResult(param.topResult, ed - st, fullParams)
     }
     // Update leaf data
     metrics.value += value ?? ed - st
     metrics.operations++
+
+    metrics.topResult = getUpdatedTopResult(metrics.topResult, ed - st, fullParams)
   }
 }
 
@@ -84,11 +108,13 @@ export function metricsAggregate (m: Metrics): Metrics {
       .reduce((p, v) => {
         return p + v.value
       }, 0)
+
   return {
     operations: m.operations,
     measurements: ms,
     params: m.params,
-    value: sumVal
+    value: sumVal,
+    topResult: m.topResult
   }
 }
 
