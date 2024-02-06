@@ -1,6 +1,7 @@
 import { expect, type Locator, type Page } from '@playwright/test'
+import { CommonPage } from './common-page'
 
-export class SelectWorkspacePage {
+export class SelectWorkspacePage extends CommonPage {
   readonly page: Page
   readonly buttonWorkspace: Locator
   readonly buttonCreateWorkspace: Locator
@@ -8,6 +9,7 @@ export class SelectWorkspacePage {
   readonly buttonCreateNewWorkspace: Locator
 
   constructor (page: Page) {
+    super()
     this.page = page
     this.buttonWorkspace = page.locator('div[class*="workspace"]')
     this.buttonCreateWorkspace = page.locator('button > span', { hasText: 'Create workspace' })
