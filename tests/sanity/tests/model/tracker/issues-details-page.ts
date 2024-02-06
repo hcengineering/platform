@@ -36,7 +36,7 @@ export class IssuesDetailsPage extends CommonTrackerPage {
     this.textEstimation = page.locator('//span[text()="Estimation"]/following-sibling::div[1]/button/span')
     this.buttonEstimation = page.locator('(//span[text()="Estimation"]/../div/button)[3]')
     this.buttonCreatedBy = page.locator('(//span[text()="Assignee"]/../div/button)[1]')
-    this.buttonCloseIssue = page.locator('div.popupPanel-title > button')
+    this.buttonCloseIssue = page.locator('#btnPClose')
     this.textParentTitle = page.locator('span.issue-title')
     this.buttonAddSubIssue = page.locator('#add-sub-issue')
     this.textRelated = page.locator('//span[text()="Related"]/following-sibling::div[1]/div//span')
