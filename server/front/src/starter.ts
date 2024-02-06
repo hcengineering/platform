@@ -116,6 +116,8 @@ export function startFront (extraConfig?: Record<string, string>): void {
     process.exit(1)
   }
 
+  const lastNameFirst = process.env.LAST_NAME_FIRST
+
   const title = process.env.TITLE
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
@@ -128,6 +130,7 @@ export function startFront (extraConfig?: Record<string, string>): void {
     uploadUrl,
     modelVersion,
     gmailUrl,
+    lastNameFirst,
     telegramUrl,
     rekoniUrl,
     calendarUrl,

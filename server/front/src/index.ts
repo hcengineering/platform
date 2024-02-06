@@ -151,6 +151,7 @@ export function start (
     title?: string
     languages: string
     defaultLanguage: string
+    lastNameFirst?: string
   },
   port: number,
   extraConfig?: Record<string, string>
@@ -194,6 +195,7 @@ export function start (
       TITLE: config.title,
       LANGUAGES: config.languages,
       DEFAULT_LANGUAGE: config.defaultLanguage,
+      LAST_NAME_FIRST: config.lastNameFirst,
       ...(extraConfig ?? {})
     })
   })

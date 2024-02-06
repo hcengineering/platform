@@ -21,7 +21,7 @@ import { boardId } from '@hcengineering/board'
 import calendar, { calendarId } from '@hcengineering/calendar'
 import { chunterId } from '@hcengineering/chunter'
 import client, { clientId } from '@hcengineering/client'
-import { contactId } from '@hcengineering/contact'
+import contactPlugin, { contactId } from '@hcengineering/contact'
 import gmail, { gmailId } from '@hcengineering/gmail'
 import { hrId } from '@hcengineering/hr'
 import { imageCropperId } from '@hcengineering/image-cropper'
@@ -92,6 +92,7 @@ interface Config {
   TITLE?: string
   LANGUAGES?: string
   DEFAULT_LANGUAGE?: string
+  LAST_NAME_FIRST?: string
 }
 
 const devConfig = process.env.CLIENT_TYPE === 'dev-production'
@@ -157,6 +158,7 @@ export async function configurePlatform() {
   
   setMetadata(uiPlugin.metadata.SearchPopup, view.component.ActionsPopup)
 
+  setMetadata(contactPlugin.metadata.LastNameFirst, config.LAST_NAME_FIRST === 'true' ?? false)
   const languages = config.LANGUAGES ? (config.LANGUAGES as string).split(',').map((l) => l.trim()) : ['en', 'ru']
 
   setMetadata(uiPlugin.metadata.Languages, languages)

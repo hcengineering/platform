@@ -15,7 +15,7 @@
 //
 
 import { Account, AttachedDoc, Class, Doc, Ref, Space, Timestamp, UXObject } from '@hcengineering/core'
-import type { Asset, Plugin, Resource } from '@hcengineering/platform'
+import type { Asset, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
 import { TemplateField, TemplateFieldCategory } from '@hcengineering/templates'
 import type { AnyComponent, IconSize, ResolvedLocation } from '@hcengineering/ui'
@@ -253,6 +253,9 @@ export const contactPlugin = plugin(contactId, {
   },
   app: {
     Contacts: '' as Ref<Doc>
+  },
+  metadata: {
+    LastNameFirst: '' as Metadata<boolean>
   },
   string: {
     PersonAlreadyExists: '' as IntlString,
