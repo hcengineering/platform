@@ -111,7 +111,7 @@
   }
 </script>
 
-<form class="container h-60" style:padding={$deviceInfo.docWidth <= 480 ? '1.25rem' : '5rem'}>
+<form class="container" style:padding={$deviceInfo.docWidth <= 480 ? '1.25rem' : '5rem'}>
   <div class="grow-separator" />
   <div class="fs-title">
     {account?.email}
