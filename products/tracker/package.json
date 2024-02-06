@@ -33,7 +33,7 @@
     "style-loader": "^3.2.1",
     "file-loader": "^6.2.0",
     "sass-loader": "^12.1.0",
-    "@types/node": "~16.11.12",
+    "@types/node": "~20.11.16",
     "webpack-bundle-analyzer": "^4.4.1",
     "svgo-loader": "^3.0.0",
     "autoprefixer": "^10.2.6",
