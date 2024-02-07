@@ -44,13 +44,15 @@ class FocusManagerImpl implements FocusManager {
   }
 
   next (inc?: 1 | -1): void {
+    if (this.elements.length === 0) return
     const current = this.elements[this.current]
     if (!(current?.canBlur?.() ?? true)) {
       return
     }
-    while (true) {
+    for (let index = 0; index < this.elements.length; index++) {
       this.current = this.current + (inc ?? 1)
-      if (this.elements[Math.abs(this.current) % this.elements.length].focus()) {
+      const el = this.elements[Math.abs(this.current) % this.elements.length]
+      if (el?.focus()) {
         return
       }
     }
