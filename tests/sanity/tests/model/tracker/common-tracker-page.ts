@@ -150,4 +150,10 @@ export class CommonTrackerPage extends CalendarPage {
 
     await this.buttonMoveIssuesModal.click({ delay: 1000 })
   }
+
+  async addMentions (mention: string): Promise<void> {
+    await this.inputComment.fill('@')
+    await this.selectMention(this.page, mention)
+    await this.buttonSendComment.click()
+  }
 }

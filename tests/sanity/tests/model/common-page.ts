@@ -91,4 +91,8 @@ export class CommonPage {
   async checkInfoSectionNotExist (page: Page): Promise<void> {
     await expect(page.locator('div.INFO span')).not.toBeAttached()
   }
+
+  async selectMention (page: Page, mentionName: string): Promise<void> {
+    await page.locator('form.mentionPoup div.list-item span.name', { hasText: mentionName}).click()
+  }
 }
