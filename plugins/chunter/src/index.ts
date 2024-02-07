@@ -165,7 +165,8 @@ export default plugin(chunterId, {
     Hashtag: '' as Asset,
     Thread: '' as Asset,
     Lock: '' as Asset,
-    ChannelBrowser: '' as Asset
+    ChannelBrowser: '' as Asset,
+    Copy: '' as Asset
   },
   component: {
     DmHeader: '' as AnyComponent,

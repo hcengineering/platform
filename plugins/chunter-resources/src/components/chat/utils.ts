@@ -46,7 +46,7 @@ export const chatSpecials: SpecialNavModel[] = [
   {
     id: 'chunterBrowser',
     label: chunter.string.ChunterBrowser,
-    icon: workbench.icon.Search,
+    icon: view.icon.Database,
     component: chunter.component.ChunterBrowser,
     position: 'top'
   },

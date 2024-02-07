@@ -425,7 +425,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
         textProvider: chunter.function.GetLink
       },
       label: chunter.string.CopyLink,
-      icon: chunter.icon.Thread,
+      icon: chunter.icon.Copy,
       keyBinding: [],
       input: 'none',
       category: chunter.category.Chunter,
