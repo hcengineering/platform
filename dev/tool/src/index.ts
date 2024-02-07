@@ -161,7 +161,7 @@ export function devTool (
         }
         console.log('assigning to workspace', workspaceInfo)
         try {
-          await assignWorkspace(db, productId, email, workspaceInfo?.workspaceUrl ?? workspaceInfo.workspace)
+          await assignWorkspace(db, productId, email, workspaceInfo.workspace)
         } catch (err: any) {
           console.error(err)
         }
