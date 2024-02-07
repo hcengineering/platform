@@ -425,7 +425,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
         textProvider: chunter.function.GetLink
       },
       label: chunter.string.CopyLink,
-      icon: chunter.icon.Thread,
+      icon: chunter.icon.Copy,
       keyBinding: [],
       input: 'none',
       category: chunter.category.Chunter,
@@ -692,6 +692,14 @@ export function createModel (builder: Builder, options = { addApplication: true 
   builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
     ofMessage: activity.class.ActivityInfoMessage,
     components: [{ kind: 'footer', component: chunter.component.Replies }]
+  })
+
+  builder.mixin(chunter.class.Channel, core.class.Class, chunter.mixin.ObjectChatPanel, {
+    ignoreKeys: ['archived', 'collaborators', 'lastMessage', 'pinned', 'topic', 'description']
+  })
+
+  builder.mixin(chunter.class.DirectMessage, core.class.Class, chunter.mixin.ObjectChatPanel, {
+    ignoreKeys: ['archived', 'collaborators', 'lastMessage', 'pinned', 'topic', 'description']
   })
 }
 

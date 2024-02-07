@@ -184,6 +184,11 @@
 .hulyModal-container {
   height: 100%;
   border-top: 1px solid transparent;
+  visibility: visible;
+
+  &.hidden {
+    visibility: hidden;
+  }
 
   .hulyModal-content {
     height: 100%;

@@ -749,6 +749,10 @@ input.search {
 .square-36 { width: 2.25rem; height: 2.25rem; }
 
 /* --------- */
+.svg-xx-small {
+  width: .5rem;
+  height: .5rem;
+}
 .svg-tiny {
   width: .75rem;
   height: .75rem;
@@ -789,7 +793,7 @@ input.search {
   width: inherit;
   height: inherit;
 }
-.svg-card, .svg-x-small, .svg-small, .svg-medium, .svg-large, .svg-x-large { flex-shrink: 0; }
+.svg-card, .svg-xx-small, .svg-x-small, .svg-small, .svg-medium, .svg-large, .svg-x-large { flex-shrink: 0; }
 
 .svg-mask {
   position: absolute;

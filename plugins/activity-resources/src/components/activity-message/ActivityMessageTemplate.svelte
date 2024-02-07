@@ -21,7 +21,7 @@
   import { Person } from '@hcengineering/contact'
   import { Avatar, EmployeePresenter, SystemAvatar } from '@hcengineering/contact-resources'
   import core, { getDisplayTime } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { Action, Label } from '@hcengineering/ui'
   import { getActions } from '@hcengineering/view-resources'
 
@@ -30,6 +30,7 @@
   import ActivityMessagePresenter from './ActivityMessagePresenter.svelte'
   import ActivityMessageActions from '../ActivityMessageActions.svelte'
   import { isReactionMessage } from '../../activityMessagesUtils'
+  import Bookmark from '../icons/Bookmark.svelte'
 
   export let message: DisplayActivityMessage
   export let parentMessage: DisplayActivityMessage | undefined = undefined
@@ -54,11 +55,19 @@
   export let onReply: (() => void) | undefined = undefined
 
   const client = getClient()
+  const savedMessageQuery = createQuery()
+
   let allActionIds: string[] = []
 
   let element: HTMLDivElement | undefined = undefined
   let extensions: ActivityMessageExtension[] = []
   let isActionsOpened = false
+
+  let isSaved = false
+
+  savedMessageQuery.query(activity.class.SavedMessage, { attachedTo: message._id }, (res) => {
+    isSaved = res.length > 0
+  })
 
   $: withActions &&
     getActions(client, message, activity.class.ActivityMessage).then((res) => {
@@ -119,13 +128,18 @@
         <div class="notify" />
       {/if}
       {#if !embedded}
-        <div class="min-w-6 mt-1">
+        <div class="min-w-6 mt-1 relative">
           {#if $$slots.icon}
             <slot name="icon" />
           {:else if person}
             <Avatar size="medium" avatar={person.avatar} name={person.name} />
           {:else}
             <SystemAvatar size="medium" />
+          {/if}
+          {#if isSaved}
+            <div class="saveMarker">
+              <Bookmark size="xx-small" />
+            </div>
           {/if}
         </div>
       {:else}
@@ -184,7 +198,7 @@
 <style lang="scss">
   @keyframes highlight {
     50% {
-      background-color: var(--theme-warning-color);
+      background-color: var(--global-ui-highlight-BackgroundColor);
     }
   }
 
@@ -204,7 +218,7 @@
     }
 
     &.highlighted {
-      animation: highlight 5000ms ease-in-out;
+      animation: highlight 3000ms ease-in-out;
     }
 
     &.selected {
@@ -291,5 +305,22 @@
     width: 0.25rem;
     border-radius: 0.5rem;
     background: var(--secondary-button-default);
+  }
+
+  .saveMarker {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: var(--spacing-1);
+    border-radius: 50%;
+    background: linear-gradient(0deg, var(--button-primary-BackgroundColor), var(--button-primary-BackgroundColor)),
+      linear-gradient(0deg, var(--global-ui-BackgroundColor), var(--global-ui-BackgroundColor));
+    border: 1px solid var(--global-ui-BackgroundColor);
+    top: -0.5rem;
+    left: -0.5rem;
+    color: var(--white-color);
   }
 </style>

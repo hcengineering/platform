@@ -19,7 +19,7 @@
 
   export let icon: Asset | AnySvelteComponent | ComponentType
   export let iconProps: any | undefined = undefined
-  export let size: 'x-small' | 'small' | 'medium' | 'large' = 'medium'
+  export let size: 'x-small' | 'small' = 'small'
   export let action: (ev: MouseEvent) => Promise<void> | void = async () => {}
   export let opened = false
 </script>
@@ -30,8 +30,13 @@
 
 <style lang="scss">
   .action {
-    padding: 0.125rem;
-    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.25rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0.25rem;
 
     &:hover {
       color: var(--accent-color);

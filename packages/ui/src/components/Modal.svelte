@@ -29,6 +29,8 @@
   export let onCancel: (() => void) | undefined = undefined
   export let canSave: boolean = false
   export let okLabel: IntlString = ui.string.Ok
+  export let padding: string | undefined = undefined
+  export let hidden = false
 
   const dispatch = createEventDispatcher()
 
@@ -39,11 +41,18 @@
   function onKeyDown (ev: KeyboardEvent) {
     if (ev.key === 'Escape') close()
   }
+
+  $: typePadding =
+    type === 'type-popup'
+      ? 'var(--spacing-2) var(--spacing-3) var(--spacing-4)'
+      : type === 'type-aside'
+        ? 'var(--spacing-2) var(--spacing-1_5)'
+        : 'var(--spacing-3)'
 </script>
 
 <svelte:window on:keydown={onKeyDown} />
 
-<div class="hulyModal-container {type}">
+<div class="hulyModal-container {type}" class:hidden>
   <Header {type} on:close={close}>
     <Label {label} params={labelProps} />
     <svelte:fragment slot="actions">
@@ -52,11 +61,7 @@
   </Header>
   <div class="hulyModal-content">
     <Scroller
-      padding={type === 'type-popup'
-        ? 'var(--spacing-2) var(--spacing-3) var(--spacing-4)'
-        : type === 'type-aside'
-          ? 'var(--spacing-2) var(--spacing-1_5)'
-          : 'var(--spacing-3)'}
+      padding={padding ?? typePadding}
       bottomPadding={type === 'type-popup'
         ? undefined
         : type === 'type-aside'

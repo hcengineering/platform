@@ -91,6 +91,9 @@
     "DescriptionOptional": "Описание (необязательно)",
     "Visibility": "Видимость",
     "Public": "Публичный",
-    "Private": "Закрытый"
+    "Private": "Закрытый",
+    "NewDirectChat": "Новый личный чат",
+    "AddMembers": "Добавить участников",
+    "PinnedCount": "{count} закреплено"
   }
 }

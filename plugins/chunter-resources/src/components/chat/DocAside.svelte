@@ -41,20 +41,10 @@
 </script>
 
 <Scroller>
-  <div class="header">
-    <div class="identifier">
-      <Label label={clazz.label} />
-      {#if objectLinkTitle}
-        •
-        <DocNavLink {object}>
-          {objectLinkTitle}
-        </DocNavLink>
-      {/if}
-    </div>
-  </div>
   {#if object}
     <DocAttributeBar {object} {mixins} ignoreKeys={objectChatPanel?.ignoreKeys ?? []} showHeader={false} />
   {/if}
+  <slot />
 </Scroller>
 
 <style lang="scss">

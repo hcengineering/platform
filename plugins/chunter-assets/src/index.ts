@@ -22,5 +22,6 @@ loadMetadata(chunter.icon, {
   Hashtag: `${icons}#hashtag`,
   Thread: `${icons}#thread`,
   Lock: `${icons}#lock`,
-  ChannelBrowser: `${icons}#channelbrowser`
+  ChannelBrowser: `${icons}#channelbrowser`,
+  Copy: `${icons}#copy`
 })

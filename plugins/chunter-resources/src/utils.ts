@@ -30,7 +30,8 @@ import {
   type Ref,
   type Space,
   type Class,
-  type Timestamp
+  type Timestamp,
+  type Account
 } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import {
@@ -64,6 +65,14 @@ export async function getDmName (client: Client, space?: Space): Promise<string>
   }
 
   const employeeAccounts: PersonAccount[] = await getDmAccounts(client, space)
+
+  return await buildDmName(client, employeeAccounts)
+}
+
+export async function buildDmName (client: Client, employeeAccounts: PersonAccount[]): Promise<string> {
+  if (employeeAccounts.length === 0) {
+    return ''
+  }
 
   let unsub: Unsubscriber | undefined
   const promise = new Promise<IdMap<Employee>>((resolve) => {
@@ -390,4 +399,28 @@ export function navigateToThread (loc: Location, contextId: Ref<DocNotifyContext
   loc.fragment = undefined
   loc.query = { message: _id }
   navigate(loc)
+}
+
+export async function joinChannel (channel: Channel, value: Ref<Account> | Array<Ref<Account>>): Promise<void> {
+  const client = getClient()
+
+  if (Array.isArray(value)) {
+    if (value.length > 0) {
+      await client.update(channel, { $push: { members: { $each: value, $position: 0 } } })
+    }
+  } else {
+    await client.update(channel, { $push: { members: value } })
+  }
+}
+
+export async function leaveChannel (channel: Channel, value: Ref<Account> | Array<Ref<Account>>): Promise<void> {
+  const client = getClient()
+
+  if (Array.isArray(value)) {
+    if (value.length > 0) {
+      await client.update(channel, { $pull: { members: { $in: value } } })
+    }
+  } else {
+    await client.update(channel, { $pull: { members: value } })
+  }
 }

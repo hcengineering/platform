@@ -13,24 +13,42 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
   import { deepEqual } from 'fast-equals'
 
   import { DirectMessage } from '@hcengineering/chunter'
-  import contact, { Employee } from '@hcengineering/contact'
+  import contact, { Employee, PersonAccount } from '@hcengineering/contact'
   import core, { getCurrentAccount, Ref } from '@hcengineering/core'
-  import { getClient, SpaceCreateCard } from '@hcengineering/presentation'
   import { getResource } from '@hcengineering/platform'
-  import { UserBoxList } from '@hcengineering/contact-resources'
+  import { SelectUsersPopup } from '@hcengineering/contact-resources'
   import notification, { DocNotifyContext } from '@hcengineering/notification'
+  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+  import { Modal, showPopup } from '@hcengineering/ui'
 
   import chunter from '../../../plugin'
+  import { buildDmName } from '../../../utils'
+  import ChannelMembers from '../../ChannelMembers.svelte'
 
   const dispatch = createEventDispatcher()
   const client = getClient()
   const myAccId = getCurrentAccount()._id
+  const query = createQuery()
 
   let employeeIds: Ref<Employee>[] = []
+  let dmName = ''
+  let accounts: PersonAccount[] = []
+  let hidden = true
+
+  $: loadDmName(accounts).then((r) => {
+    dmName = r
+  })
+  $: query.query(contact.class.PersonAccount, { person: { $in: employeeIds } }, (res) => {
+    accounts = res
+  })
+
+  async function loadDmName (employeeAccounts: PersonAccount[]) {
+    return await buildDmName(client, employeeAccounts)
+  }
 
   async function createDirectMessage () {
     const employeeAccounts = await client.findAll(contact.class.PersonAccount, { person: { $in: employeeIds } })
@@ -73,17 +91,74 @@
       hidden: false
     })
 
-    await navigate(undefined, undefined, { _id: notifyContextId })
+    await navigate(undefined, undefined, { _id: notifyContextId, mode: 'direct' })
+  }
+
+  function handleCancel () {
+    dispatch('close')
+  }
+
+  onMount(() => {
+    openSelectUsersPopup(true)
+  })
+
+  function addMembersClicked () {
+    openSelectUsersPopup(false)
+  }
+
+  function openSelectUsersPopup (closeOnClose: boolean) {
+    showPopup(
+      SelectUsersPopup,
+      {
+        okLabel: presentation.string.Next,
+        skipCurrentAccount: true,
+        selected: employeeIds
+      },
+      'top',
+      (result?: Ref<Employee>[]) => {
+        if (result != null) {
+          employeeIds = result
+          hidden = false
+        } else if (closeOnClose) {
+          dispatch('close')
+        }
+      }
+    )
+    hidden = true
   }
 </script>
 
-<SpaceCreateCard
-  label={chunter.string.NewDirectMessage}
+<Modal
+  label={chunter.string.NewDirectChat}
+  type="type-popup"
+  {hidden}
+  okLabel={presentation.string.Create}
   okAction={createDirectMessage}
   canSave={employeeIds.length > 0}
-  on:close={() => {
-    dispatch('close')
-  }}
+  onCancel={handleCancel}
+  on:close
 >
-  <UserBoxList label={chunter.string.Members} on:update={(evt) => (employeeIds = evt.detail)} />
-</SpaceCreateCard>
+  <div class="hulyModal-content__titleGroup" style="padding: 0">
+    <div class="title overflow-label mb-4" title={dmName}>
+      {dmName}
+    </div>
+
+    <ChannelMembers
+      ids={employeeIds}
+      on:add={addMembersClicked}
+      on:remove={(ev) => {
+        employeeIds = employeeIds.filter((id) => id !== ev.detail)
+      }}
+    />
+  </div>
+</Modal>
+
+<style lang="scss">
+  .title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    padding: var(--spacing-1);
+    max-width: 40rem;
+    color: var(--global-primary-TextColor);
+  }
+</style>

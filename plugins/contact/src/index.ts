@@ -269,7 +269,8 @@ export const contactPlugin = plugin(contactId, {
     PersonLastNamePlaceholder: '' as IntlString,
     NumberMembers: '' as IntlString,
     Position: '' as IntlString,
-    For: '' as IntlString
+    For: '' as IntlString,
+    SelectUsers: '' as IntlString
   },
   viewlet: {
     TableMember: '' as Ref<Viewlet>,

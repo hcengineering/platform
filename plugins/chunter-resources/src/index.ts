@@ -41,7 +41,7 @@ import ChannelPanel from './components/ChannelPanel.svelte'
 import ChunterBrowser from './components/chat/specials/ChunterBrowser.svelte'
 import ConvertDmToPrivateChannelModal from './components/ConvertDmToPrivateChannel.svelte'
 import CreateChannel from './components/chat/create/CreateChannel.svelte'
-import CreateDirectMessage from './components/chat/create/CreateDirectMessage.svelte'
+import CreateDirectChat from './components/chat/create/CreateDirectChat.svelte'
 import DirectMessagePresenter from './components/DirectMessagePresenter.svelte'
 import DmHeader from './components/DmHeader.svelte'
 import DmPresenter from './components/DmPresenter.svelte'
@@ -85,6 +85,7 @@ import {
   navigateToThread
 } from './utils'
 import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+import { type Mode } from './components/chat/types'
 
 export { default as ChatMessagesPresenter } from './components/chat-message/ChatMessagesPresenter.svelte'
 export { default as ChatMessagePopup } from './components/chat-message/ChatMessagePopup.svelte'
@@ -144,19 +145,30 @@ async function ConvertDmToPrivateChannel (dm: DirectMessage): Promise<void> {
   })
 }
 
-async function OpenChannel (notifyContext?: DocNotifyContext, evt?: Event): Promise<void> {
+async function OpenChannel (
+  notifyContext?: DocNotifyContext,
+  evt?: Event,
+  props?: { mode?: Mode, _id: Ref<DocNotifyContext> }
+): Promise<void> {
   evt?.preventDefault()
 
   closePanel()
 
   const loc = getCurrentLocation()
-  const id = notifyContext?._id
+  const id = notifyContext?._id ?? props?._id
 
   if (id === undefined) {
     return
   }
 
+  if (loc.path[3] === id) {
+    return
+  }
+
   loc.path[3] = id
+  loc.path.length = 4
+  loc.query = { mode: props?.mode ?? loc.query?.mode ?? null, message: null }
+
   loc.fragment = undefined
 
   navigate(loc)
@@ -242,7 +254,7 @@ export default async (): Promise<Resources> => ({
   },
   component: {
     CreateChannel,
-    CreateDirectMessage,
+    CreateDirectChat,
     ThreadParentPresenter,
     ThreadViewPanel,
     ChannelHeader,

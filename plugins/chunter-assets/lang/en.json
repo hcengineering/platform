@@ -91,6 +91,9 @@
     "DescriptionOptional": "Description (optional)",
     "Visibility": "Visibility",
     "Public": "Public",
-    "Private": "Private"
+    "Private": "Private",
+    "NewDirectChat": "New direct chat",
+    "AddMembers": "Add members",
+    "PinnedCount": "{count} pinned"
   }
 }
