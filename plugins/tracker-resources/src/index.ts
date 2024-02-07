@@ -14,21 +14,21 @@
 //
 
 import core, {
+  ClassifierKind,
+  DOMAIN_CONFIGURATION,
+  DOMAIN_MODEL,
+  getCurrentAccount,
+  toIdMap,
   type AttachedDoc,
   type Class,
-  ClassifierKind,
   type Client,
   type Doc,
   type DocumentQuery,
-  DOMAIN_MODEL,
-  getCurrentAccount,
   type Ref,
   type RelatedDocument,
-  toIdMap,
-  type TxOperations,
-  DOMAIN_CONFIGURATION
+  type TxOperations
 } from '@hcengineering/core'
-import { type Resources, translate } from '@hcengineering/platform'
+import { translate, type Resources } from '@hcengineering/platform'
 import { getClient, MessageBox, type ObjectSearchResult } from '@hcengineering/presentation'
 import { type Issue, type Milestone, type Project } from '@hcengineering/tracker'
 import { getCurrentLocation, navigate, showPopup, themeStore } from '@hcengineering/ui'
@@ -45,23 +45,22 @@ import ProjectComponents from './components/components/ProjectComponents.svelte'
 import CreateIssue from './components/CreateIssue.svelte'
 import EditRelatedTargets from './components/EditRelatedTargets.svelte'
 import EditRelatedTargetsPopup from './components/EditRelatedTargetsPopup.svelte'
-import SettingsRelatedTargets from './components/SettingsRelatedTargets.svelte'
 import Inbox from './components/inbox/Inbox.svelte'
 import AssigneeEditor from './components/issues/AssigneeEditor.svelte'
 import DueDatePresenter from './components/issues/DueDatePresenter.svelte'
 import EditIssue from './components/issues/edit/EditIssue.svelte'
 import IssueItem from './components/issues/IssueItem.svelte'
-import IssueSearchIcon from './components/issues/IssueSearchIcon.svelte'
 import IssuePresenter from './components/issues/IssuePresenter.svelte'
 import IssuePreview from './components/issues/IssuePreview.svelte'
 import Issues from './components/issues/Issues.svelte'
+import IssueSearchIcon from './components/issues/IssueSearchIcon.svelte'
 import IssuesView from './components/issues/IssuesView.svelte'
 import KanbanView from './components/issues/KanbanView.svelte'
 import ModificationDatePresenter from './components/issues/ModificationDatePresenter.svelte'
 import NotificationIssuePresenter from './components/issues/NotificationIssuePresenter.svelte'
 import PriorityEditor from './components/issues/PriorityEditor.svelte'
-import PriorityInlineEditor from './components/issues/PriorityInlineEditor.svelte'
 import PriorityFilterValuePresenter from './components/issues/PriorityFilterValuePresenter.svelte'
+import PriorityInlineEditor from './components/issues/PriorityInlineEditor.svelte'
 import PriorityPresenter from './components/issues/PriorityPresenter.svelte'
 import PriorityRefPresenter from './components/issues/PriorityRefPresenter.svelte'
 import RelatedIssueSelector from './components/issues/related/RelatedIssueSelector.svelte'
@@ -75,21 +74,21 @@ import MilestoneDatePresenter from './components/milestones/MilestoneDatePresent
 import MyIssues from './components/myissues/MyIssues.svelte'
 import NewIssueHeader from './components/NewIssueHeader.svelte'
 import NopeComponent from './components/NopeComponent.svelte'
+import MembersArrayEditor from './components/projects/MembersArrayEditor.svelte'
 import ProjectFilterValuePresenter from './components/projects/ProjectFilterValuePresenter.svelte'
 import RelationsPopup from './components/RelationsPopup.svelte'
 import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
+import SettingsRelatedTargets from './components/SettingsRelatedTargets.svelte'
 import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
-import MembersArrayEditor from './components/projects/MembersArrayEditor.svelte'
 import {
-  getIssueId,
+  getIssueTitle,
+  getTitle,
   issueIdentifierProvider,
-  issueIdProvider,
   issueLinkFragmentProvider,
   issueLinkProvider,
-  getIssueTitle,
-  resolveLocation,
-  issueTitleProvider
+  issueTitleProvider,
+  resolveLocation
 } from './issues'
 import tracker from './plugin'
 
@@ -98,9 +97,9 @@ import MilestonePresenter from './components/milestones/MilestonePresenter.svelt
 import Milestones from './components/milestones/Milestones.svelte'
 import MilestoneSelector from './components/milestones/MilestoneSelector.svelte'
 import MilestoneStatusEditor from './components/milestones/MilestoneStatusEditor.svelte'
+import MilestoneStatusIcon from './components/milestones/MilestoneStatusIcon.svelte'
 import MilestoneStatusPresenter from './components/milestones/MilestoneStatusPresenter.svelte'
 import MilestoneTitlePresenter from './components/milestones/MilestoneTitlePresenter.svelte'
-import MilestoneStatusIcon from './components/milestones/MilestoneStatusIcon.svelte'
 
 import SubIssuesSelector from './components/issues/edit/SubIssuesSelector.svelte'
 import EstimationEditor from './components/issues/timereport/EstimationEditor.svelte'
@@ -125,9 +124,9 @@ import {
   getAllMilestones,
   getAllPriority,
   getComponentTitle,
+  getIssueChatTitle,
   getIssueStatusCategories,
   getMilestoneTitle,
-  getIssueChatTitle,
   getVisibleFilters,
   issuePrioritySort,
   issueStatusSort,
@@ -141,7 +140,9 @@ import PriorityIcon from './components/activity/PriorityIcon.svelte'
 import StatusIcon from './components/activity/StatusIcon.svelte'
 import TxIssueCreated from './components/activity/TxIssueCreated.svelte'
 import DeleteComponentPresenter from './components/components/DeleteComponentPresenter.svelte'
+import IssueStatusIcon from './components/issues/IssueStatusIcon.svelte'
 import MoveIssues from './components/issues/Move.svelte'
+import PriorityIconPresenter from './components/issues/PriorityIconPresenter.svelte'
 import StatusRefPresenter from './components/issues/StatusRefPresenter.svelte'
 import TimeSpendReportPopup from './components/issues/timereport/TimeSpendReportPopup.svelte'
 import IssueStatistics from './components/milestones/IssueStatistics.svelte'
@@ -150,21 +151,19 @@ import MilestoneRefPresenter from './components/milestones/MilestoneRefPresenter
 import CreateProject from './components/projects/CreateProject.svelte'
 import ProjectPresenter from './components/projects/ProjectPresenter.svelte'
 import ProjectSpacePresenter from './components/projects/ProjectSpacePresenter.svelte'
-import IssueStatusIcon from './components/issues/IssueStatusIcon.svelte'
-import PriorityIconPresenter from './components/issues/PriorityIconPresenter.svelte'
 
 import { get } from 'svelte/store'
 
+import { settingId } from '@hcengineering/setting'
 import EstimationValueEditor from './components/issues/timereport/EstimationValueEditor.svelte'
 import TimePresenter from './components/issues/timereport/TimePresenter.svelte'
-import { settingId } from '@hcengineering/setting'
 
 export { default as AssigneeEditor } from './components/issues/AssigneeEditor.svelte'
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 export { default as IssueStatusIcon } from './components/issues/IssueStatusIcon.svelte'
 export { default as StatusPresenter } from './components/issues/StatusPresenter.svelte'
 
-export { CreateProject, IssuePresenter, PriorityEditor, StatusEditor, TitlePresenter, activeProjects }
+export { activeProjects, CreateProject, IssuePresenter, PriorityEditor, StatusEditor, TitlePresenter }
 
 export async function queryIssue<D extends Issue> (
   _class: Ref<Class<D>>,
@@ -172,9 +171,7 @@ export async function queryIssue<D extends Issue> (
   search: string,
   filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
 ): Promise<ObjectSearchResult[]> {
-  const projects = await client.findAll<Project>(tracker.class.Project, {})
-
-  const q: DocumentQuery<Issue> = { title: { $like: `%${search}%` } }
+  const q: DocumentQuery<Issue> = { identifier: { $like: `%${search}%` } }
   if (filter?.in !== undefined || filter?.nin !== undefined) {
     q._id = {}
     if (filter.in !== undefined) {
@@ -185,40 +182,28 @@ export async function queryIssue<D extends Issue> (
     }
   }
 
-  const named = toIdMap(
+  const numbered = toIdMap(
     await client.findAll<Issue>(_class, q, {
-      limit: 200,
-      lookup: { space: tracker.class.Project }
+      limit: 200
     })
   )
-  for (const currentProject of projects) {
-    const nids: number[] = []
-    for (let n = 0; n <= currentProject.sequence; n++) {
-      const v = `${currentProject.identifier}-${n}`
-      if (v.includes(search)) {
-        nids.push(n)
-      }
-    }
-    if (nids.length > 0) {
-      const q2: DocumentQuery<Issue> = { number: { $in: nids } }
-      if (q._id !== undefined) {
-        q2._id = q._id
-      }
-      const numbered = await client.findAll<Issue>(_class, q2, { limit: 200, lookup: { space: tracker.class.Project } })
-      for (const d of numbered) {
-        const shortId = `${projects.find((it) => it._id === d.space)?.identifier ?? ''}-${d.number}`
-        if (shortId.includes(search) || d.title.includes(search)) {
-          if (!named.has(d._id)) {
-            named.set(d._id, d)
-          }
-        }
+
+  const q2: DocumentQuery<Issue> = { title: { $like: `%${search}%` } }
+  if (q._id !== undefined) {
+    q2._id = q._id
+  }
+  const named = await client.findAll<Issue>(_class, q2, { limit: 200 })
+  for (const d of named) {
+    if (d.identifier.includes(search) || d.title.includes(search)) {
+      if (!numbered.has(d._id)) {
+        numbered.set(d._id, d)
       }
     }
   }
 
-  return Array.from(named.values()).map((e) => ({
+  return Array.from(numbered.values()).map((e) => ({
     doc: e,
-    title: getIssueId(e.$lookup?.space as Project, e),
+    title: e.identifier,
     icon: tracker.icon.TrackerApplication,
     component: IssueItem
   }))
@@ -533,7 +518,7 @@ export default async (): Promise<Resources> => ({
     IssueTitleProvider: issueTitleProvider,
     ComponentTitleProvider: getComponentTitle,
     MilestoneTitleProvider: getMilestoneTitle,
-    GetIssueId: issueIdProvider,
+    GetIssueId: getTitle,
     GetIssueLink: issueLinkProvider,
     GetIssueLinkFragment: issueLinkFragmentProvider,
     GetIssueTitle: getIssueTitle,

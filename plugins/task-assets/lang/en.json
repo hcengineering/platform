@@ -94,6 +94,7 @@
     "ProcessStates": "Process states",
     "Type": "Type",
     "Group": "Group",
-    "Color": "Color"
+    "Color": "Color",
+    "Identifier": "Identifier"
   }
 }

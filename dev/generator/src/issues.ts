@@ -11,7 +11,7 @@ import core, {
   TxOperations,
   WorkspaceId
 } from '@hcengineering/core'
-import tracker, { Issue, IssuePriority, IssueStatus } from '@hcengineering/tracker'
+import tracker, { Issue, IssuePriority, IssueStatus, Project } from '@hcengineering/tracker'
 
 import { connect } from './connect'
 import { calcRank } from '@hcengineering/task'
@@ -38,6 +38,7 @@ const object: AttachedData<Issue> = {
   estimation: 0,
   reports: 0,
   childInfo: [],
+  identifier: '',
   kind: tracker.taskTypes.Issue
 }
 
@@ -82,13 +83,15 @@ async function genIssue (client: TxOperations, statuses: Ref<IssueStatus>[]): Pr
     },
     true
   )
+  const project = (incResult as any).object as Project
+  const number = project.sequence
   const value: AttachedData<Issue> = {
     title: faker.commerce.productName(),
     description: faker.lorem.paragraphs(),
     assignee: object.assignee,
     component: object.component,
     milestone: object.milestone,
-    number: (incResult as any).object.sequence,
+    number,
     status: faker.random.arrayElement(statuses),
     priority: faker.random.arrayElement(Object.values(IssuePriority)) as IssuePriority,
     rank: calcRank(lastOne, undefined),
@@ -102,6 +105,7 @@ async function genIssue (client: TxOperations, statuses: Ref<IssueStatus>[]): Pr
     reports: 0,
     relations: [],
     childInfo: [],
+    identifier: `${project.identifier}-${number}`,
     kind: tracker.taskTypes.Issue
   }
   await client.addCollection(

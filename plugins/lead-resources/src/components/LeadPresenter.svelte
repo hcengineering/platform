@@ -31,14 +31,14 @@
 {#if value}
   <DocNavLink object={value} {inline} {disabled} {noUnderline} {accent}>
     {#if inline}
-      <span class="antiMention" use:tooltip={{ label: lead.string.Lead }}>@LEAD-{value.number}</span>
+      <span class="antiMention" use:tooltip={{ label: lead.string.Lead }}>@{value.identifier}</span>
     {:else}
       <div class="flex-presenter">
         {#if shouldShowAvatar}
           <div class="icon"><Icon icon={lead.icon.Lead} size={'small'} /></div>
         {/if}
         <span class="label nowrap" class:no-underline={noUnderline || disabled} class:fs-bold={accent}
-          >LEAD-{value.number}</span
+          >{value.identifier}</span
         >
       </div>
     {/if}

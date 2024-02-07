@@ -1,16 +1,16 @@
 import contact, { getName } from '@hcengineering/contact'
-import { type Class, type Client, type Doc, Hierarchy, type Ref } from '@hcengineering/core'
-import presentation, { getClient } from '@hcengineering/presentation'
+import { Hierarchy, type Class, type Client, type Doc, type Ref } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
+import presentation, { getClient } from '@hcengineering/presentation'
 import {
+  recruitId,
   type Applicant,
   type Candidate,
   type Review,
   type Vacancy,
-  type VacancyList,
-  recruitId
+  type VacancyList
 } from '@hcengineering/recruit'
-import { type Location, type ResolvedLocation, getCurrentResolvedLocation, getPanelURI } from '@hcengineering/ui'
+import { getCurrentResolvedLocation, getPanelURI, type Location, type ResolvedLocation } from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 import recruit from './plugin'
@@ -191,7 +191,7 @@ export async function getAppIdentifier (client: Client, ref: Ref<Applicant>, doc
     return ''
   }
 
-  return `APP-${applicant.number}`
+  return applicant.identifier
 }
 
 export async function getRevTitle (client: Client, ref: Ref<Review>): Promise<string> {
@@ -201,6 +201,9 @@ export async function getRevTitle (client: Client, ref: Ref<Review>): Promise<st
 export async function getSequenceId (doc: RecruitDocument): Promise<string> {
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  if (hierarchy.isDerived(doc._class, recruit.class.Applicant)) {
+    return (doc as Applicant).identifier
+  }
   let clazz = hierarchy.getClass(doc._class)
   let label = clazz.shortLabel
   while (label === undefined && clazz.extends !== undefined) {

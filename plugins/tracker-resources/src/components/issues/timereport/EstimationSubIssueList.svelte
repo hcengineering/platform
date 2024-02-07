@@ -18,7 +18,6 @@
   import { Issue } from '@hcengineering/tracker'
   import { ListView, deviceOptionsStore as deviceInfo, getEventPositionElement, showPopup } from '@hcengineering/ui'
   import { ContextMenu, FixedColumn, ListSelectionProvider } from '@hcengineering/view-resources'
-  import { getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
   import { activeProjects } from '../../../utils'
   import EstimationEditor from './EstimationEditor.svelte'
@@ -52,9 +51,7 @@
     >
       <div class="flex-row-center clear-mins gap-2 flex-grow mr-4" class:p-text={twoRows}>
         <FixedColumn key={'estimation_issue'} justify={'left'} addClass={'fs-bold'}>
-          {#if currentProject}
-            {getIssueId(currentProject, issue)}
-          {/if}
+          {issue.identifier}
         </FixedColumn>
         <span class="overflow-label fs-bold caption-color" title={issue.title}>
           {issue.title}

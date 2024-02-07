@@ -15,13 +15,11 @@
 -->
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
-  import type { Issue, Project } from '@hcengineering/tracker'
+  import type { Issue } from '@hcengineering/tracker'
   import { FixedColumn, statusStore } from '@hcengineering/view-resources'
-  import { getIssueId } from '../../issues'
   import IssueStatusIcon from './IssueStatusIcon.svelte'
 
   export let value: WithLookup<Issue>
-  $: title = getIssueId(value.$lookup?.space as Project, value)
   $: st = $statusStore.byId.get(value.status)
 </script>
 
@@ -33,6 +31,6 @@
     {/if}
   </FixedColumn>
   <span class="ml-2 max-w-120 overflow-label">
-    {title} - {value.title}
+    {value.identifier} - {value.title}
   </span>
 </div>

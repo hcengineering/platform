@@ -60,10 +60,7 @@ export function createModel (builder: Builder): void {
         component: contact.component.Avatar,
         props: [{ avatar: ['attachedTo', 'avatar'] }, { name: ['attachedTo', 'name'] }]
       },
-      shortTitle: {
-        tmpl: 'APP-{number}',
-        props: ['number']
-      },
+      shortTitle: 'identifier',
       title: {
         tmpl: '{name} - {vacName}',
         props: [{ _class: ['attachedTo', '_class'] }, { name: ['attachedTo', 'name'] }, { vacName: ['space', 'name'] }]

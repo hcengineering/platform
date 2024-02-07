@@ -612,6 +612,7 @@ export async function moveIssueToSpace (
       },
       true
     )
+    const number = (incResult as any).object.sequence
     await updateIssuesOnMove(
       client,
       applyOps,
@@ -620,7 +621,8 @@ export async function moveIssueToSpace (
       {
         ...updates.get(doc._id),
         rank: calcRank(lastOne, undefined),
-        number: (incResult as any).object.sequence
+        number,
+        identifier: `${space.identifier}-${number}`
       },
       updates
     )

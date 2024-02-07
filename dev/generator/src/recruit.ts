@@ -178,14 +178,16 @@ async function genApplicant (
 ): Promise<void> {
   const applicantId = `vacancy-${vacancyId}-${candidateId}` as Ref<Applicant>
 
+  const number = faker.datatype.number()
   const applicant: AttachedData<Applicant> = {
-    number: faker.datatype.number(),
+    number,
     assignee: faker.random.arrayElement(emoloyeeIds),
     status: faker.random.arrayElement(states),
     rank,
     startDate: null,
     dueDate: null,
-    kind: recruit.taskTypes.Applicant
+    kind: recruit.taskTypes.Applicant,
+    identifier: `APP-${number}`
   }
 
   // Update or create candidate
