@@ -92,6 +92,8 @@ interface Config {
   TITLE?: string
   LANGUAGES?: string
   DEFAULT_LANGUAGE?: string
+  POSTHOG_API_KEY?: string
+  POSTHOG_ENDPOINT?: string
 }
 
 const devConfig = process.env.CLIENT_TYPE === 'dev-production'
@@ -168,6 +170,8 @@ export async function configurePlatform() {
       [calendarId, calendar.component.ConnectApp]
     ])
   )
+  setMetadata(uiPlugin.metadata.PosthogAPIKey, config.POSTHOG_API_KEY)
+  setMetadata(uiPlugin.metadata.PosthogEndpoint, config.POSTHOG_ENDPOINT ?? 'https://app.posthog.com')
 
   addLocation(coreId, async () => ({ default: async () => ({}) }))
   addLocation(presentationId, async () => ({ default: async () => ({}) }))

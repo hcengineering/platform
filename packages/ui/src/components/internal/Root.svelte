@@ -16,8 +16,18 @@
   import LangSelector from './LangSelector.svelte'
   import ThemeSelector from './ThemeSelector.svelte'
   import SearchSelector from './SearchSelector.svelte'
+  import posthog from 'posthog-js'
 
   let application: AnyComponent | undefined
+  if (!window.location.host.includes('127.0.0.1') && !window.location.host.includes('localhost')) {
+    const apiKey = getMetadata(uiPlugin.metadata.PosthogAPIKey)
+    const apiEndpoint = getMetadata(uiPlugin.metadata.PosthogEndpoint)
+    if (apiKey !== undefined && apiEndpoint !== undefined) {
+      posthog.init(apiKey, { api_host: apiEndpoint })
+    } else {
+      console.error('Posthog was not setup')
+    }
+  }
 
   onDestroy(
     location.subscribe((loc) => {
@@ -31,6 +41,7 @@
       }
 
       if (application === undefined) {
+        posthog.capture('$pageview')
         let last = loc.path[1] !== undefined ? localStorage.getItem(`${locationStorageKeyId}_${loc.path[1]}`) : null
         if (last === null) {
           last = localStorage.getItem(locationStorageKeyId)
