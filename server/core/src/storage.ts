@@ -58,7 +58,8 @@ import core, {
   generateId
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
-import { getResource } from '@hcengineering/platform'
+import { Metadata, getResource } from '@hcengineering/platform'
+import { LiveQuery as LQ } from '@hcengineering/query'
 import crypto from 'node:crypto'
 import { DbAdapter, DbAdapterConfiguration, TxAdapter } from './adapter'
 import { createContentAdapter } from './content'
@@ -113,6 +114,10 @@ class TServerStorage implements ServerStorage {
 
   hashes!: string[]
 
+  triggerData = new Map<Metadata<any>, any>()
+
+  liveQuery: LQ
+
   constructor (
     private readonly _domains: Record<string, string>,
     private readonly defaultAdapter: string,
@@ -128,6 +133,33 @@ class TServerStorage implements ServerStorage {
     metrics: MeasureContext,
     readonly model: Tx[]
   ) {
+    this.liveQuery = new LQ({
+      getHierarchy (): Hierarchy {
+        return hierarchy
+      },
+      getModel (): ModelDb {
+        return modelDb
+      },
+      close: async () => {},
+      findAll: async (_class, query, options) => {
+        return await metrics.with('query', {}, async (ctx) => await this.findAll(ctx, _class, query, options))
+      },
+      findOne: async (_class, query, options) => {
+        return (
+          await metrics.with(
+            'query',
+            {},
+            async (ctx) => await this.findAll(ctx, _class, query, { ...options, limit: 1 })
+          )
+        )[0]
+      },
+      tx: async (tx) => {
+        return {}
+      },
+      searchFulltext: async (query: SearchQuery, options: SearchOptions) => {
+        return await metrics.with('query', {}, async (ctx) => await this.searchFulltext(ctx, query, options))
+      }
+    })
     this.hierarchy = hierarchy
     this.fulltext = indexFactory(this)
 
@@ -165,16 +197,24 @@ class TServerStorage implements ServerStorage {
         const adapter = this.getAdapter(lastDomain as Domain)
         const toDelete = part.filter((it) => it._class === core.class.TxRemoveDoc).map((it) => it.objectId)
 
-        const toDeleteDocs = await ctx.with(
-          'adapter-load',
-          { domain: lastDomain },
-          async () => await adapter.load(lastDomain as Domain, toDelete)
-        )
-        for (const ddoc of toDeleteDocs) {
-          removedDocs.set(ddoc._id, ddoc)
+        if (toDelete.length > 0) {
+          const toDeleteDocs = await ctx.with(
+            'adapter-load',
+            { domain: lastDomain },
+            async () => await adapter.load(lastDomain as Domain, toDelete)
+          )
+
+          for (const ddoc of toDeleteDocs) {
+            removedDocs.set(ddoc._id, ddoc)
+          }
         }
 
-        const r = await ctx.with('adapter-tx', {}, async () => await adapter.tx(...part))
+        const r = await ctx.with('adapter-tx', { domain: lastDomain }, async () => await adapter.tx(...part))
+
+        // Update server live queries.
+        for (const t of part) {
+          await this.liveQuery.tx(t)
+        }
         if (Array.isArray(r)) {
           result.push(...r)
         } else {
@@ -374,14 +414,19 @@ class TServerStorage implements ServerStorage {
     query: DocumentQuery<T>,
     options?: FindOptions<T> & {
       domain?: Domain // Allow to find for Doc's in specified domain only.
+      prefix?: string
     }
   ): Promise<FindResult<T>> {
+    const p = options?.prefix ?? 'client'
     const domain = options?.domain ?? this.hierarchy.getDomain(clazz)
     if (query?.$search !== undefined) {
-      return await ctx.with('client-fulltext-find-all', {}, (ctx) => this.fulltext.findAll(ctx, clazz, query, options))
+      return await ctx.with(p + '-fulltext-find-all', {}, (ctx) => this.fulltext.findAll(ctx, clazz, query, options))
     }
-    return await ctx.with('client-find-all', { _class: clazz }, () =>
-      this.getAdapter(domain).findAll(clazz, query, options)
+    return await ctx.with(
+      p + '-find-all',
+      { _class: clazz },
+      () => this.getAdapter(domain).findAll(clazz, query, options),
+      { clazz, query, options }
     )
   }
 
@@ -586,6 +631,10 @@ class TServerStorage implements ServerStorage {
       },
       applyCtx: async (ctx, tx, broadcast) => {
         return await this.apply(ctx, tx, broadcast)
+      },
+      // Will create a live query if missing and return values immediately if already asked.
+      queryFind: async (_class, query, options) => {
+        return await this.liveQuery.queryFind(_class, query, options)
       }
     }
     const triggers = await ctx.with('process-triggers', {}, async (ctx) => {
@@ -707,11 +756,7 @@ class TServerStorage implements ServerStorage {
       query: DocumentQuery<T>,
       options?: FindOptions<T>
     ): Promise<FindResult<T>> => {
-      const domain = this.hierarchy.getDomain(clazz)
-      if (query?.$search !== undefined) {
-        return await ctx.with('full-text-find-all', {}, (ctx) => this.fulltext.findAll(ctx, clazz, query, options))
-      }
-      return await ctx.with('find-all', { _class: clazz }, () => this.getAdapter(domain).findAll(clazz, query, options))
+      return await this.findAll(ctx, clazz, query, { ...options, prefix: 'server' })
     }
     const txToStore: Tx[] = []
     const modelTx: Tx[] = []
@@ -751,7 +796,7 @@ class TServerStorage implements ServerStorage {
 
       // index object
       for (const _tx of txToProcess) {
-        await ctx.with('fulltext', {}, (ctx) => this.fulltext.tx(ctx, _tx))
+        await ctx.with('fulltext-tx', {}, (ctx) => this.fulltext.tx(ctx, _tx))
       }
 
       // index derived objects

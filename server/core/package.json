@@ -34,6 +34,7 @@
     "@hcengineering/core": "^0.6.28",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/minio": "^0.6.0",
+    "@hcengineering/query": "^0.6.8",
     "fast-equals": "^2.0.3",
     "html-to-text": "^9.0.3"
   }

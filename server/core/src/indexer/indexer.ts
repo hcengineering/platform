@@ -327,16 +327,20 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     })
 
     while (!this.cancelling) {
-      await this.metrics.with('initialize-stages', {}, async () => {
+      await this.metrics.with('initialize-stages', { workspace: this.workspace.name }, async () => {
         await this.initializeStages()
       })
 
-      await this.metrics.with('process-remove', {}, async () => {
+      await this.metrics.with('process-remove', { workspace: this.workspace.name }, async () => {
         await this.processRemove()
       })
 
       const _classes = await rateLimitter.exec(() => {
-        return this.metrics.with('init-stages', {}, async () => await this.processIndex())
+        return this.metrics.with(
+          'processIndex',
+          { workspace: this.workspace.name },
+          async (ctx) => await this.processIndex(ctx)
+        )
       })
 
       // Also update doc index state queries.
@@ -374,7 +378,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     console.log(this.workspace.name, 'Exit indexer', this.indexId)
   }
 
-  private async processIndex (): Promise<Ref<Class<Doc>>[]> {
+  private async processIndex (ctx: MeasureContext): Promise<Ref<Class<Doc>>[]> {
     let idx = 0
     const _classUpdate = new Set<Ref<Class<Doc>>>()
     for (const st of this.stages) {
@@ -387,14 +391,14 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           if (!st.enabled) {
             break
           }
-          await this.metrics.with('flush', {}, async () => {
+          await ctx.with('flush', {}, async () => {
             await this.flush(true)
           })
           const toSkip = Array.from(this.skipped.entries())
             .filter((it) => it[1] > 3)
             .map((it) => it[0])
 
-          let result = await this.metrics.with(
+          let result = await ctx.with(
             'get-to-index',
             {},
             async () =>
@@ -460,7 +464,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             // Do Indexing
             this.currentStage = st
 
-            await this.metrics.with('collect', { collector: st.stageId }, async (ctx) => {
+            await ctx.with('collect', { collector: st.stageId }, async (ctx) => {
               await st.collect(toIndex, this, ctx)
             })
             if (this.cancelling) {
@@ -474,7 +478,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
               const toIndex2 = this.matchStates(nst)
               if (toIndex2.length > 0) {
                 this.currentStage = nst
-                await this.metrics.with('collect', { collector: nst.stageId }, async (ctx) => {
+                await ctx.with('collect', { collector: nst.stageId }, async (ctx) => {
                   await nst.collect(toIndex2, this, ctx)
                 })
               }
@@ -575,152 +579,155 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   // TODO: Move to migration
   async checkIndexConsistency (dbStorage: ServerStorage): Promise<void> {
     await rateLimitter.exec(async () => {
-      if (process.env.MODEL_VERSION !== undefined && process.env.MODEL_VERSION !== '') {
-        const modelVersion = (await this.model.findAll(core.class.Version, {}))[0]
-        if (modelVersion !== undefined) {
-          const modelVersionString = versionToString(modelVersion)
-          if (modelVersionString !== process.env.MODEL_VERSION) {
-            console.error(
-              `Indexer: Model version mismatch model: ${modelVersionString} env: ${process.env.MODEL_VERSION}`
-            )
-            return
+      await this.metrics.with('check-index-consistency', {}, async (ctx) => {
+        if (process.env.MODEL_VERSION !== undefined && process.env.MODEL_VERSION !== '') {
+          const modelVersion = (await this.model.findAll(core.class.Version, {}))[0]
+          if (modelVersion !== undefined) {
+            const modelVersionString = versionToString(modelVersion)
+            if (modelVersionString !== process.env.MODEL_VERSION) {
+              console.error(
+                `Indexer: Model version mismatch model: ${modelVersionString} env: ${process.env.MODEL_VERSION}`
+              )
+              return
+            }
           }
         }
-      }
 
-      this.hierarchy.domains()
-      const allClasses = this.hierarchy.getDescendants(core.class.Doc)
-      for (const c of allClasses) {
-        if (this.cancelling) {
-          return
-        }
-
-        if (!isClassIndexable(this.hierarchy, c)) {
-          // No need, since no indexable fields or attachments.
-          continue
-        }
-
-        console.log(this.workspace.name, 'checking index', c)
-
-        const generationId = generateId()
-
-        let lastId = ''
-
-        while (true) {
+        this.hierarchy.domains()
+        const allClasses = this.hierarchy.getDescendants(core.class.Doc)
+        for (const c of allClasses) {
           if (this.cancelling) {
             return
           }
 
-          let newDocs: DocIndexState[] = []
-          let updates = new Map<Ref<DocIndexState>, DocumentUpdate<DocIndexState>>()
+          if (!isClassIndexable(this.hierarchy, c)) {
+            // No need, since no indexable fields or attachments.
+            continue
+          }
 
-          try {
-            const docs = await dbStorage.findAll<Doc>(
-              this.metrics,
-              c,
-              { _class: c, _id: { $gt: lastId as any } },
-              {
-                limit: 10000,
-                sort: { _id: 1 },
-                projection: { _id: 1, attachedTo: 1, attachedToClass: 1 } as any
+          console.log(this.workspace.name, 'checking index', c)
+
+          const generationId = generateId()
+
+          let lastId = ''
+
+          while (true) {
+            if (this.cancelling) {
+              return
+            }
+
+            let newDocs: DocIndexState[] = []
+            let updates = new Map<Ref<DocIndexState>, DocumentUpdate<DocIndexState>>()
+
+            try {
+              const docs = await dbStorage.findAll<Doc>(
+                ctx,
+                c,
+                { _class: c, _id: { $gt: lastId as any } },
+                {
+                  limit: 10000,
+                  sort: { _id: 1 },
+                  projection: { _id: 1, attachedTo: 1, attachedToClass: 1 } as any,
+                  prefix: 'indexer'
+                }
+              )
+
+              if (docs.length === 0) {
+                // All updated for this class
+                break
               }
-            )
 
-            if (docs.length === 0) {
-              // All updated for this class
+              lastId = docs[docs.length - 1]._id
+
+              const states = (
+                await this.storage.findAll(
+                  core.class.DocIndexState,
+                  {
+                    objectClass: c,
+                    _id: {
+                      $gte: docs[0]._id as any,
+                      $lte: docs[docs.length - 1]._id as any
+                    }
+                  },
+                  { projection: { _id: 1 } }
+                )
+              ).map((it) => it._id)
+              const statesSet = new Set(states)
+
+              // create missing index states
+              newDocs = docs
+                .filter((it) => !statesSet.has(it._id as Ref<DocIndexState>))
+                .map((it) => {
+                  return createStateDoc(it._id, c, {
+                    generationId,
+                    stages: {},
+                    attributes: {},
+                    removed: false,
+                    space: it.space,
+                    attachedTo: (it as AttachedDoc)?.attachedTo ?? undefined,
+                    attachedToClass: (it as AttachedDoc)?.attachedToClass ?? undefined
+                  })
+                })
+
+              // update generationId for existing index states
+              updates = new Map()
+              docs
+                .filter((it) => statesSet.has(it._id as Ref<DocIndexState>))
+                .forEach((it) => {
+                  updates.set(it._id as Ref<DocIndexState>, { generationId })
+                })
+            } catch (e) {
+              console.error(e)
               break
             }
 
-            lastId = docs[docs.length - 1]._id
+            try {
+              await this.storage.update(DOMAIN_DOC_INDEX_STATE, updates)
+            } catch (err: any) {
+              console.error(err)
+            }
 
-            const states = (
-              await this.storage.findAll(
-                core.class.DocIndexState,
-                {
-                  objectClass: c,
-                  _id: {
-                    $gte: docs[0]._id as any,
-                    $lte: docs[docs.length - 1]._id as any
-                  }
-                },
-                { projection: { _id: 1 } }
-              )
-            ).map((it) => it._id)
-            const statesSet = new Set(states)
+            try {
+              await this.storage.upload(DOMAIN_DOC_INDEX_STATE, newDocs)
+            } catch (err: any) {
+              console.error(err)
+            }
+          }
 
-            // create missing index states
-            newDocs = docs
-              .filter((it) => !statesSet.has(it._id as Ref<DocIndexState>))
-              .map((it) => {
-                return createStateDoc(it._id, c, {
-                  generationId,
-                  stages: {},
-                  attributes: {},
-                  removed: false,
-                  space: it.space,
-                  attachedTo: (it as AttachedDoc)?.attachedTo ?? undefined,
-                  attachedToClass: (it as AttachedDoc)?.attachedToClass ?? undefined
-                })
-              })
+          // remove index states for documents that do not exist
+          const toRemove = (
+            await this.storage.findAll(
+              core.class.DocIndexState,
+              { objectClass: c, generationId: { $ne: generationId } },
+              { projection: { _id: 1 } }
+            )
+          ).map((it) => it._id)
 
-            // update generationId for existing index states
-            updates = new Map()
-            docs
-              .filter((it) => statesSet.has(it._id as Ref<DocIndexState>))
-              .forEach((it) => {
-                updates.set(it._id as Ref<DocIndexState>, { generationId })
-              })
-          } catch (e) {
-            console.error(e)
+          if (toRemove.length > 0) {
+            await this.storage.clean(DOMAIN_DOC_INDEX_STATE, toRemove)
+            await this.storage.clean(DOMAIN_FULLTEXT_BLOB, toRemove)
+          }
+        }
+
+        // Clean for non existing classes
+
+        while (true) {
+          const docRefs = await this.storage.findAll(
+            core.class.DocIndexState,
+            { objectClass: { $nin: allClasses } },
+            { projection: { _id: 1, objectClass: 1 }, limit: 10000 }
+          )
+          const unknownClasses = docRefs.map((it) => it._id)
+
+          console.log('cleaning', docRefs.length, Array.from(new Set(docRefs.map((it) => it.objectClass))).join(', '))
+
+          if (unknownClasses.length > 0) {
+            await this.storage.clean(DOMAIN_DOC_INDEX_STATE, unknownClasses)
+          } else {
             break
           }
-
-          try {
-            await this.storage.update(DOMAIN_DOC_INDEX_STATE, updates)
-          } catch (err: any) {
-            console.error(err)
-          }
-
-          try {
-            await this.storage.upload(DOMAIN_DOC_INDEX_STATE, newDocs)
-          } catch (err: any) {
-            console.error(err)
-          }
         }
-
-        // remove index states for documents that do not exist
-        const toRemove = (
-          await this.storage.findAll(
-            core.class.DocIndexState,
-            { objectClass: c, generationId: { $ne: generationId } },
-            { projection: { _id: 1 } }
-          )
-        ).map((it) => it._id)
-
-        if (toRemove.length > 0) {
-          await this.storage.clean(DOMAIN_DOC_INDEX_STATE, toRemove)
-          await this.storage.clean(DOMAIN_FULLTEXT_BLOB, toRemove)
-        }
-      }
-
-      // Clean for non existing classes
-
-      while (true) {
-        const docRefs = await this.storage.findAll(
-          core.class.DocIndexState,
-          { objectClass: { $nin: allClasses } },
-          { projection: { _id: 1, objectClass: 1 }, limit: 10000 }
-        )
-        const unknownClasses = docRefs.map((it) => it._id)
-
-        console.log('cleaning', docRefs.length, Array.from(new Set(docRefs.map((it) => it.objectClass))).join(', '))
-
-        if (unknownClasses.length > 0) {
-          await this.storage.clean(DOMAIN_DOC_INDEX_STATE, unknownClasses)
-        } else {
-          break
-        }
-      }
+      })
     })
   }
 }

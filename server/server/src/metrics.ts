@@ -25,7 +25,7 @@ export function getMetricsContext (): MeasureContext {
     console.info('please provide apm server url for monitoring')
 
     const metrics = newMetrics()
-    metricsContext = new MeasureMetricsContext('System', {}, metrics)
+    metricsContext = new MeasureMetricsContext('System', {}, {}, metrics)
 
     if (metricsFile !== undefined || metricsConsole) {
       console.info('storing measurements into local file', metricsFile)
