@@ -76,6 +76,7 @@ services:
       - MINIO_ENDPOINT=minio
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
+      - LAST_NAME_FIRST=true
   transactor:
     image: hardcoreeng/transactor
     pull_policy: never
@@ -100,6 +101,7 @@ services:
       - REKONI_URL=http://rekoni:4005
       - FRONT_URL=http://localhost:8083
       - ACCOUNTS_URL=http://account:3003
+      - LAST_NAME_FIRST=true
   collaborator:
     image: hardcoreeng/collaborator
     links:
