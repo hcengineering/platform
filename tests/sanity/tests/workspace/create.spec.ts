@@ -93,4 +93,38 @@ test.describe('Workspace tests', () => {
       estimation: '2h'
     })
   })
+
+  test('Check validation steps description for the create flow', async ({ page }) => {
+    const newUser: SignUpData = {
+      firstName: `FirstName-${generateId()}`,
+      lastName: `LastName-${generateId()}`,
+      email: `email+${generateId()}@gmail.com`,
+      password: '1234'
+    }
+    const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
+
+    const loginPage = new LoginPage(page)
+    await loginPage.goto()
+    await loginPage.linkSignUp.click()
+
+    const signUpPage = new SignUpPage(page)
+    await signUpPage.checkInfo(page, 'Required field First name')
+    await signUpPage.inputFirstName.fill(newUser.firstName)
+    await signUpPage.checkInfo(page, 'Required field Last name')
+    await signUpPage.inputLastName.fill(newUser.lastName)
+    await signUpPage.checkInfo(page, 'Required field Email')
+    await signUpPage.inputEmail.fill(newUser.email)
+    await signUpPage.checkInfo(page, 'Required field Password')
+    await signUpPage.inputNewPassword.fill(newUser.password)
+    await signUpPage.checkInfo(page, "Repeat password don't match Password")
+    await signUpPage.inputRepeatPassword.fill(newUser.password)
+    await signUpPage.checkInfoSectionNotExist(page)
+    await signUpPage.buttonSignUp.click()
+
+    const selectWorkspacePage = new SelectWorkspacePage(page)
+    await selectWorkspacePage.buttonCreateWorkspace.click()
+    await selectWorkspacePage.checkInfo(page, 'Required field Workspace name')
+    await selectWorkspacePage.buttonWorkspaceName.fill(newWorkspaceName)
+    await selectWorkspacePage.checkInfoSectionNotExist(page)
+  })
 })

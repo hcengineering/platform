@@ -1,7 +1,8 @@
 import { expect, type Locator, type Page } from '@playwright/test'
 import { SignUpData } from './common-types'
+import { CommonPage } from './common-page'
 
-export class SignUpPage {
+export class SignUpPage extends CommonPage {
   readonly page: Page
   readonly inputFirstName: Locator
   readonly inputLastName: Locator
@@ -11,6 +12,7 @@ export class SignUpPage {
   readonly buttonSignUp: Locator
 
   constructor (page: Page) {
+    super()
     this.page = page
     this.inputFirstName = page.locator('input[name="given-name"]')
     this.inputLastName = page.locator('input[name="family-name"]')
