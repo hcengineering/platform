@@ -35,7 +35,7 @@
   $: selectedPriority = value.priority
 
   const changePriority = async (newPriority: IssuePriority | undefined) => {
-    if (!isEditable || newPriority === undefined || value.priority === newPriority) {
+    if (!isEditable || newPriority == null || value.priority === newPriority) {
       return
     }
 

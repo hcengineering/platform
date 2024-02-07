@@ -56,7 +56,7 @@
   const dispatch = createEventDispatcher()
 
   const changeStatus = async (newStatus: Ref<IssueStatus> | undefined, refocus: boolean = true) => {
-    if (!isEditable || newStatus === undefined || value.status === newStatus) {
+    if (!isEditable || newStatus == null || value.status === newStatus) {
       return
     }
 

@@ -39,9 +39,9 @@
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="menu-item" on:click={() => dispatch('close', 2)}>
     <BooleanPresenter value={false} />
-    {#if !value}
+    {#if withoutUndefined ? !value : !value}
       <div class="check">
-        <CheckBox checked={!value} kind={'primary'} />
+        <CheckBox checked={withoutUndefined ? !value : !value} kind={'primary'} />
       </div>
     {/if}
   </div>
