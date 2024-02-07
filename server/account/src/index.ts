@@ -639,7 +639,7 @@ async function generateWorkspaceRecord (
     return { _id: id.insertedId, ...data }
   }
   const workspaceUrlPrefix = stripId(workspaceName)
-  const workspaceIdPrefix = stripId(getEmailName(email)).slice(0, 12) + '-' + workspaceUrlPrefix.slice(12)
+  const workspaceIdPrefix = stripId(getEmailName(email)).slice(0, 12) + '-' + workspaceUrlPrefix.slice(0, 12)
   let iteration = 0
   let idPostfix = generateId('-')
   let urlPostfix = ''

@@ -47,8 +47,9 @@ export async function startCollaborator (): Promise<void> {
   const shutdown = await start(metricsContext, config, minioClient, mongoClient)
 
   const close = (): void => {
-    void mongoClient.close()
-    void shutdown()
+    void shutdown().then(() => {
+      void mongoClient.close()
+    })
   }
 
   process.on('uncaughtException', (e) => {
