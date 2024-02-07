@@ -59,7 +59,7 @@ async function createDefaultProjectType (tx: TxOperations): Promise<Ref<ProjectT
       descriptor: board.descriptors.BoardType,
       description: '',
       tasks: [],
-      classic: true
+      classic: false
     },
     [
       {

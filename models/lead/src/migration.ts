@@ -39,7 +39,7 @@ async function createSpace (tx: TxOperations): Promise<void> {
         descriptor: lead.descriptors.FunnelType,
         description: '',
         tasks: [],
-        classic: true
+        classic: false
       },
       [
         {
