@@ -1058,6 +1058,9 @@ dependencies:
   postcss-loader:
     specifier: ^7.0.2
     version: 7.3.3(postcss@8.4.31)(typescript@5.2.2)(webpack@5.88.2)
+  posthog-js:
+    specifier: ^1.105.0
+    version: 1.105.0
   prettier:
     specifier: ^3.1.0
     version: 3.1.0
@@ -9583,6 +9586,10 @@ packages:
     resolution: {integrity: sha512-3yurQZ2hD9VISAhJJP9bpYFNQrHHBXE2JxxjY5aLEcDi46RmAzJE2OC9FAde0yis5ElW0jTTzs0zfg/Cca4XqQ==}
     dev: false
 
+  /fflate@0.4.8:
+    resolution: {integrity: sha512-FJqqoDBR00Mdj9ppamLa/Y7vxm+PRmNWA67N846RvsoYVMKB4q3y/de5PA7gUmRMYK/8CMz2GDZQmCRN1wBcWA==}
+    dev: false
+
   /file-entry-cache@6.0.1:
     resolution: {integrity: sha512-7Gps/XWymbLk2QLYK4NzpMOrYjMhdIxXuIvy2QBsLE6ljuodKvdkWs/cpyJJ3CVIVpH0Oi1Hvg1ovbMzLdFBBg==}
     engines: {node: ^10.12.0 || >=12.0.0}
@@ -13143,6 +13150,17 @@ packages:
       nanoid: 3.3.6
       picocolors: 1.0.0
       source-map-js: 1.0.2
+    dev: false
+
+  /posthog-js@1.105.0:
+    resolution: {integrity: sha512-1pE4nuDphxHx1oxezvYB3jjSQgH9LYGwel5ys5+vw9N5+KggXuzwZ9sVIFTHo5/4Wox+OmM7w5j7b6h62OrOHQ==}
+    dependencies:
+      fflate: 0.4.8
+      preact: 10.19.3
+    dev: false
+
+  /preact@10.19.3:
+    resolution: {integrity: sha512-nHHTeFVBTHRGxJXKkKu5hT8C/YWBkPso4/Gad6xuj5dbptt9iF9NZr9pHbPhBrnT2klheu7mHTxTZ/LjwJiEiQ==}
     dev: false
 
   /prebuild-install@7.1.1:
@@ -20860,7 +20878,7 @@ packages:
     dev: false
 
   file:projects/server-core.tgz(esbuild@0.16.17)(svelte@4.2.5)(ts-node@10.9.1):
-    resolution: {integrity: sha512-0TKYx/CE1+k8i6hRMUAoeUekgqN2j2vy+8WBDKXBWYBGsw0xdOPM5F0f/B+cO1kONdSL55qB2vnLiiu6J8wYbA==, tarball: file:projects/server-core.tgz}
+    resolution: {integrity: sha512-Ob7bQovQU2Sk2CNAtoaNg/mHhLDm6a5YdfA2qMZ2NPiqW5QFfHHUXPRMghaQbILFGnJhBhikpARRhcnTxs5+Cg==, tarball: file:projects/server-core.tgz}
     id: file:projects/server-core.tgz
     name: '@rush-temp/server-core'
     version: 0.0.0
@@ -23075,7 +23093,7 @@ packages:
     dev: false
 
   file:projects/ui.tgz(@types/node@20.11.16)(esbuild@0.16.17)(postcss-load-config@4.0.1)(postcss@8.4.31)(ts-node@10.9.1):
-    resolution: {integrity: sha512-NLLrpPqJZipLd9j0HdIRZHzHVBAr5Laj9I/eGP0GkOkuVj1AswAN2KaQ7q1tin5xk2mvK6aea1gZYXi2RX84uQ==, tarball: file:projects/ui.tgz}
+    resolution: {integrity: sha512-99FaiL+zDnxDFRQT9jiHKwUcvzecDKFeQo3/OTNkrCw32EQ1PPiQ+ldlTRQO6URt9/ynBn9oiB6Ww0eYDb4M4A==, tarball: file:projects/ui.tgz}
     id: file:projects/ui.tgz
     name: '@rush-temp/ui'
     version: 0.0.0
@@ -23095,6 +23113,7 @@ packages:
       jest: 29.7.0(@types/node@20.11.16)(ts-node@10.9.1)
       just-clone: 6.2.0
       moment-timezone: 0.5.43
+      posthog-js: 1.105.0
       prettier: 3.1.0
       prettier-plugin-svelte: 3.1.0(prettier@3.1.0)(svelte@4.2.5)
       sass: 1.69.0
