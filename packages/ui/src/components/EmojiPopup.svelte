@@ -18,6 +18,7 @@
   import plugin from '../plugin'
 
   export let embedded = false
+  export let selected: string | undefined
 
   interface Category {
     id: string
@@ -179,7 +180,9 @@
             {#if emoji !== undefined}
               <!-- svelte-ignore a11y-click-events-have-key-events -->
               <!-- svelte-ignore a11y-no-static-element-interactions -->
-              <div class="element" on:click={() => dispatch('close', emoji)}>{emoji}</div>
+              <div class="element" class:selected={emoji === selected} on:click={() => dispatch('close', emoji)}>
+                {emoji}
+              </div>
             {/if}
           {/each}
         </div>
@@ -250,6 +253,7 @@
 
     &.selected {
       background-color: var(--theme-popup-header);
+      border: 1px solid var(--theme-popup-divider);
     }
   }
 </style>

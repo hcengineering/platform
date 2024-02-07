@@ -15,6 +15,7 @@
 -->
 <script lang="ts">
   import core, { IdMap, Ref, Status, StatusCategory } from '@hcengineering/core'
+  import { Asset } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import task, { Project, ProjectType, TaskType } from '@hcengineering/task'
   import {
@@ -31,10 +32,10 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import { typeStore } from '../..'
   import IconBacklog from '../icons/IconBacklog.svelte'
-  import IconUnstarted from '../icons/IconUnstarted.svelte'
   import IconCanceled from '../icons/IconCanceled.svelte'
   import IconCompleted from '../icons/IconCompleted.svelte'
   import IconStarted from '../icons/IconStarted.svelte'
+  import IconUnstarted from '../icons/IconUnstarted.svelte'
 
   export let value: Status | undefined
   export let shouldShowAvatar = true
@@ -80,20 +81,10 @@
 
   $: projectState = type?.statuses.find((p) => p._id === value?._id)
 
-  const dispatchAccentColor = (color?: ColorDefinition): void => {
-    dispatch('accent-color', color)
-  }
-
   $: color = getPlatformColorDef(
     projectState?.color ?? category?.color ?? getColorNumberByText(value?.name ?? ''),
     $themeStore.dark
   )
-  $: dispatchAccentColor(color)
-
-  onMount(() => {
-    dispatchAccentColor(color)
-  })
-
   $: void updateCategory(value)
 
   async function updateCategory (value: Status | undefined): Promise<void> {
@@ -119,8 +110,21 @@
   )
 
   $: index = sameCategory.findIndex((it) => it._id === value?._id) + 1
-
   $: icon = projectState?.icon === view.ids.IconWithEmoji ? IconWithEmoji : projectState?.icon
+
+  const dispatchAccentColor = (color?: ColorDefinition, icon?: Asset | typeof IconWithEmoji): void => {
+    if (icon === undefined) {
+      dispatch('accent-color', color)
+    } else {
+      dispatch('accent-color', null)
+    }
+  }
+
+  $: dispatchAccentColor(color, icon)
+
+  onMount(() => {
+    dispatchAccentColor(color, icon)
+  })
 </script>
 
 {#if value}

@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, ComponentType } from 'svelte'
   import type { Asset, IntlString } from '@hcengineering/platform'
   import { deepEqual } from 'fast-equals'
+  import { ComponentType, createEventDispatcher } from 'svelte'
+  import { closePopup, showPopup } from '..'
   import { AnySvelteComponent, DropdownIntlItem } from '../types'
   import ButtonBase from './ButtonBase.svelte'
-  import { showPopup, closePopup, eventToHTMLElement } from '..'
   import ModernPopup from './ModernPopup.svelte'
 
   export let title: string | undefined = undefined

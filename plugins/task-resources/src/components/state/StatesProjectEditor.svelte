@@ -13,36 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Attribute, IdMap, Ref, Status, StatusCategory, toIdMap } from '@hcengineering/core'
+  import core, { IdMap, Ref, Status, StatusCategory, toIdMap } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { ProjectStatus, ProjectType, TaskType, findStatusAttr } from '@hcengineering/task'
-  import {
-    CircleButton,
-    ColorDefinition,
-    IconOpenedArrow,
-    IconMoreV2,
-    IconMoreH,
-    Label,
-    defaultBackground,
-    eventToHTMLElement,
-    getColorNumberByText,
-    getPlatformColorDef,
-    showPopup,
-    themeStore
-  } from '@hcengineering/ui'
-  import { ColorsPopup, IconPicker, ObjectPresenter, statusStore } from '@hcengineering/view-resources'
+  import { createQuery } from '@hcengineering/presentation'
+  import { settingsStore } from '@hcengineering/setting-resources'
+  import { ProjectStatus, ProjectType, TaskType } from '@hcengineering/task'
+  import { IconMoreV2, IconOpenedArrow, Label } from '@hcengineering/ui'
+  import { ObjectPresenter } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import task from '../../plugin'
-  import StatusesPopup from './StatusesPopup.svelte'
-  import { settingsStore, clearSettingsStore } from '@hcengineering/setting-resources'
 
   export let taskType: TaskType
   export let type: ProjectType
   export let states: Status[] = []
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
 
   const elements: HTMLElement[] = []
   let selected: number | undefined
@@ -74,42 +59,6 @@
     })
   }
 
-  function onColor (state: Status, color: ColorDefinition, el: HTMLElement): void {
-    showPopup(ColorsPopup, { selected: color.name }, el, async (res) => {
-      if (res == null) {
-        return
-      }
-      const targetColors = type.statuses.filter((p) => p._id === state._id)
-      for (const targetColor of targetColors) {
-        targetColor.color = res
-      }
-      await client.update(type, { statuses: type.statuses })
-      type = type
-    })
-  }
-
-  function add (ofAttribute: Ref<Attribute<Status>> | undefined, cat: Ref<StatusCategory>): void {
-    if (ofAttribute === undefined) {
-      return
-    }
-    showPopup(task.component.CreateStatePopup, {
-      ofAttribute,
-      _class: taskType.statusClass,
-      category: cat,
-      taskType,
-      type
-    })
-  }
-
-  function edit (status: Status): void {
-    showPopup(task.component.CreateStatePopup, {
-      status,
-      taskType,
-      type,
-      ofAttribute: status.ofAttribute
-    })
-  }
-
   let categories: StatusCategory[] = []
   let categoriesMap: IdMap<StatusCategory> = new Map()
   let groups = new Map<Ref<StatusCategory>, Status[]>()
@@ -119,33 +68,8 @@
     categoriesMap = toIdMap(res)
   })
 
-  function click (ev: MouseEvent, state: Status): void {
-    showPopup(
-      StatusesPopup,
-      {
-        onDelete: () => dispatch('delete', { state }),
-        showDelete: states.filter((it) => it.category === state.category).length > 1,
-        onUpdate: () => {
-          edit(state)
-        }
-      },
-      eventToHTMLElement(ev),
-      () => {}
-    )
-  }
-
-  function getProjectStatus (
-    type: ProjectType,
-    state: Status,
-    categoriesMap: IdMap<StatusCategory>
-  ): ProjectStatus | undefined {
+  function getProjectStatus (type: ProjectType, state: Status): ProjectStatus | undefined {
     return type.statuses.find((p) => p._id === state._id)
-  }
-
-  function getColor (type: ProjectType, state: Status, categoriesMap: IdMap<StatusCategory>): ColorDefinition {
-    const category = state.category !== undefined ? categoriesMap.get(state.category) : undefined
-    const targetColor = getProjectStatus(type, state, categoriesMap)?.color ?? state.color ?? category?.color
-    return getPlatformColorDef(targetColor ?? getColorNumberByText(state.name), $themeStore.dark)
   }
 
   function group (categories: StatusCategory[], states: Status[]): Map<Ref<StatusCategory>, Status[]> {
@@ -171,23 +95,6 @@
     }
     return index
   }
-  function selectIcon (el: HTMLElement, state: Status): void {
-    const icons: Asset[] = []
-    const projectStatus = getProjectStatus(type, state, categoriesMap)
-    showPopup(IconPicker, { icon: projectStatus?.icon, color: projectStatus?.color, icons }, el, async (result) => {
-      if (result !== undefined && result !== null) {
-        const targetColors = type.statuses.filter((p) => p._id === state._id)
-        for (const targetColor of targetColors) {
-          targetColor.color = result.color
-          targetColor.icon = result.icon
-        }
-        if (targetColors.length > 0) {
-          await client.update(type, { statuses: type.statuses })
-          type = type
-        }
-      }
-    })
-  }
   settingsStore.subscribe((value) => {
     if ((value.id === undefined && opened !== undefined) || (value.id !== undefined && value.id !== opened)) {
       opened = undefined
@@ -197,7 +104,9 @@
     if (opened === undefined || opened !== _status._id) {
       opened = _status._id
       const icons: Asset[] = []
-      const projectStatus = getProjectStatus(type, _status, categoriesMap)
+      const category = _status.category !== undefined ? categoriesMap.get(_status.category) : undefined
+      const projectStatus = getProjectStatus(type, _status)
+      const color = getProjectStatus(type, _status)?.color ?? _status.color ?? category?.color
       $settingsStore = {
         id: opened,
         component: task.component.CreateStatePopup,
@@ -207,13 +116,10 @@
           type,
           ofAttribute: _status.ofAttribute,
           icon: projectStatus?.icon,
-          color: projectStatus?.color,
+          color,
           icons
         }
       }
-    } else if (opened === _status._id) {
-      clearSettingsStore()
-      opened = undefined
     }
   }
 </script>
@@ -224,27 +130,15 @@
   <div class="hulyTableAttr-content class withTitle">
     <div class="hulyTableAttr-content__title">
       <Label label={cat.label} />
-      <!-- <CircleButton
-        icon={IconAdd}
-        size={'medium'}
-        on:click={() => {
-          add(findStatusAttr(getClient().getHierarchy(), taskType.ofClass)?._id, cat._id)
-        }}
-      /> -->
     </div>
     <div class="hulyTableAttr-content__wrapper">
       {#each states as state, i}
-        {@const color = getColor(type, state, categoriesMap)}
         <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <!-- style:background={color.background ?? defaultBackground($themeStore.dark)} -->
         <button
           bind:this={elements[prevIndex + i]}
           class="hulyTableAttr-content__row"
           class:selected={state._id === opened}
           draggable={true}
-          on:contextmenu|preventDefault={(e) => {
-            click(e, state)
-          }}
           on:click={() => {
             handleSelect(state)
           }}
@@ -270,13 +164,6 @@
             objectId={state._id}
             value={state}
             props={{ projectType: type._id, taskType: taskType._id, kind: 'table-attrs' }}
-            on:click={(ev) => {
-              if (state.category !== undefined) {
-                selectIcon(elements[i + prevIndex], state)
-              } else {
-                onColor(state, color, elements[i + prevIndex])
-              }
-            }}
           />
           <div class="hulyTableAttr-content__row-arrow">
             <IconOpenedArrow size={'small'} />
