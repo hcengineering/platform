@@ -172,6 +172,7 @@
       eventToHTMLElement(e)
     )
   }
+  const me = getCurrentAccount()
 
   function isFutureDate () {
     const today = new Date(Date.now())
@@ -182,7 +183,7 @@
   }
 
   function isEditable (employee: Staff): boolean {
-    return editableList.includes(employee._id) && (isFutureDate() || getCurrentAccount().role === AccountRole.Owner)
+    return editableList.includes(employee._id) && (isFutureDate() || me.role === AccountRole.Owner)
   }
 
   function getTooltip (requests: Request[], day: Date, staff: Staff): LabelAndProps | undefined {
@@ -305,7 +306,7 @@
                 class="timeline-cell timeline-day-header flex-col-center justify-center"
                 style={getCellStyle()}
                 on:click={() => {
-                  if (isFutureDate()) {
+                  if (isFutureDate() || me.role === AccountRole.Owner) {
                     setPublicHoliday(day)
                   }
                 }}

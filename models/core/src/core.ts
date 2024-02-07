@@ -108,6 +108,7 @@ export class TDoc extends TObj implements Doc {
 
   @Prop(TypeTimestamp(), core.string.CreatedDate)
   @ReadOnly()
+  @Index(IndexKind.IndexedDsc)
     createdOn!: Timestamp
 }
 

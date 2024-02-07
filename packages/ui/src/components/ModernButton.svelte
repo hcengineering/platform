@@ -19,6 +19,7 @@
   export let disabled: boolean = false
   export let loading: boolean = false
   export let hasMenu: boolean = false
+  export let inheritFont: boolean = false
 </script>
 
 <ButtonBase
@@ -33,6 +34,7 @@
   {loading}
   {disabled}
   {hasMenu}
+  {inheritFont}
   on:click
 >
   <slot />

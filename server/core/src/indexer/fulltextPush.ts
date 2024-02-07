@@ -215,7 +215,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
             {},
             async (ctx) =>
               await this.dbStorage.findAll(ctx, core.class.DocIndexState, {
-                _id: doc.space as any as Ref<DocIndexState>
+                _id: (doc.attributes[docKey('space', { _class: doc.objectClass })] ?? doc.space) as Ref<DocIndexState>
               })
           )
 

@@ -143,9 +143,12 @@ a.noBold {
   &:hover, &:active, &:visited { font-weight: 400; }
 }
 
-.firstLetter span{
+.firstLetter span {
   display: inline-block;
   &::first-letter { text-transform: uppercase; }
+}
+.upperFirstLetter::first-letter {
+  text-transform: uppercase;
 }
 
 .inline-height2 {
@@ -597,6 +600,7 @@ input.search {
 
 .step-lr25 + .step-lr25 { margin-left: .25rem; }
 .step-lr75 + .step-lr75 { margin-left: .75rem; }
+.step-tb125 + .step-tb125 { margin-top: .125rem; }
 .step-tb25 + .step-tb25 { margin-top: .25rem; }
 .step-tb375 + .step-tb375 { margin-top: .375rem; }
 .step-tb5 + .step-tb5 { margin-top: .5rem; }
@@ -707,6 +711,7 @@ input.search {
 .min-h-2 { min-height: .5rem; }
 .min-h-4 { min-height: 1rem; }
 .min-h-5 { min-height: 1.25rem; }
+.min-h-6 { min-height: 1.5rem; }
 .min-h-7 { min-height: 1.75rem; }
 .min-h-8 { min-height: 2rem; }
 .min-h-9 { min-height: 2.25rem; }
@@ -727,6 +732,7 @@ input.search {
 .max-h-0 { max-height: 0; }
 .max-h-2 { max-height: .5rem; }
 .max-h-4 { max-height: 1rem; }
+.max-h-6 { max-height: 1.5rem; }
 .max-h-7 { max-height: 1.75rem; }
 .max-h-9 { max-height: 2.25rem; }
 .max-h-30 { max-height: 7.5rem; }

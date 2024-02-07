@@ -1,6 +1,6 @@
 # Project templates
 
-Folder contains a projeect templates and functionality to apply template values to all projects inside rush multi repo.
+Folder contains a project templates and functionality to apply template values to all projects inside rush multi repo.
 
 Any folder with package.json inside templates are template, so it is possible to apply it.
 

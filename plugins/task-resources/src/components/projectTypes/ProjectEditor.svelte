@@ -327,7 +327,7 @@
               {/if}
             </div>
 
-            <div bind:this={navigator[2].element} class="flex-col gap">
+            <div bind:this={navigator[2].element} class="flex-col gapV-8">
               <ComponentExtensions extension={task.extensions.ProjectEditorExtension} props={{ type }} />
             </div>
 

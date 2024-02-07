@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",
-    "@types/node": "~16.11.12",
+    "@types/node": "~20.11.16",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -34,6 +34,7 @@
     "@hcengineering/core": "^0.6.28",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/minio": "^0.6.0",
+    "@hcengineering/query": "^0.6.8",
     "fast-equals": "^2.0.3",
     "html-to-text": "^9.0.3"
   }

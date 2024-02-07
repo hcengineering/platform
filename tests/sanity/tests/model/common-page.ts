@@ -79,4 +79,16 @@ export class CommonPage {
   async closeNotification (page: Page): Promise<void> {
     await page.locator('div.notify-container button[type="button"].small').nth(0).click()
   }
+
+  async checkError (page: Page, errorMessage: string): Promise<void> {
+    await expect(page.locator('div.ERROR span')).toHaveText(errorMessage)
+  }
+
+  async checkInfo (page: Page, errorMessage: string): Promise<void> {
+    await expect(page.locator('div.INFO span')).toHaveText(errorMessage)
+  }
+
+  async checkInfoSectionNotExist (page: Page): Promise<void> {
+    await expect(page.locator('div.INFO span')).not.toBeAttached()
+  }
 }

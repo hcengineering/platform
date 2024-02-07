@@ -38,10 +38,17 @@ test.describe('Tracker duplicate issue tests', () => {
     const issuesPage = new IssuesPage(page)
     await issuesPage.modelSelectorAll.click()
     await issuesPage.createNewIssue(firstIssue)
+    // TODO need to delete if issue created successfully
+    await trackerNavigationMenuPage.openTemplateForProject('Default')
+    await trackerNavigationMenuPage.openIssuesForProject('Default')
+
     await issuesPage.searchIssueByName(firstIssue.title)
     const firstIssueId = await issuesPage.getIssueId(firstIssue.title)
 
     await issuesPage.createNewIssue(secondIssue)
+    // TODO need to delete if issue created successfully
+    await trackerNavigationMenuPage.openTemplateForProject('Default')
+    await trackerNavigationMenuPage.openIssuesForProject('Default')
     await issuesPage.searchIssueByName(secondIssue.title)
     const secondIssueId = await issuesPage.getIssueId(secondIssue.title, 1)
 

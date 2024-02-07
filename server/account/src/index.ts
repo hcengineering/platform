@@ -576,7 +576,7 @@ export async function createAccount (
 /**
  * @public
  */
-export async function listWorkspaces (db: Db, productId: string): Promise<ClientWorkspaceInfo[]> {
+export async function listWorkspaces (db: Db, productId: string): Promise<WorkspaceInfo[]> {
   return (await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, {})).toArray())
     .map((it) => ({ ...it, productId }))
     .filter((it) => it.disabled !== true)
@@ -639,7 +639,7 @@ async function generateWorkspaceRecord (
     return { _id: id.insertedId, ...data }
   }
   const workspaceUrlPrefix = stripId(workspaceName)
-  const workspaceIdPrefix = stripId(getEmailName(email)).slice(0, 12) + '-' + workspaceUrlPrefix.slice(12)
+  const workspaceIdPrefix = stripId(getEmailName(email)).slice(0, 12) + '-' + workspaceUrlPrefix.slice(0, 12)
   let iteration = 0
   let idPostfix = generateId('-')
   let urlPostfix = ''
@@ -750,7 +750,7 @@ export async function upgradeWorkspace (
   }
   const versionStr = versionToString(version)
 
-  const currentVersion = await db.collection<Workspace>(WORKSPACE_COLLECTION).findOne({ workspace: workspaceUrl })
+  const currentVersion = await db.collection<Workspace>(WORKSPACE_COLLECTION).findOne({ workspace: ws.workspace })
   console.log(
     `${forceUpdate ? 'force-' : ''}upgrade from "${
       currentVersion?.version !== undefined ? versionToString(currentVersion.version) : ''
@@ -761,13 +761,13 @@ export async function upgradeWorkspace (
     return versionStr
   }
   await db.collection(WORKSPACE_COLLECTION).updateOne(
-    { workspace: workspaceUrl },
+    { workspace: ws.workspace },
     {
       $set: { version }
     }
   )
   await (
-    await upgradeModel(getTransactor(), getWorkspaceId(workspaceUrl, productId), txes, migrationOperation, logger)
+    await upgradeModel(getTransactor(), getWorkspaceId(ws.workspace, productId), txes, migrationOperation, logger)
   ).close()
   return versionStr
 }
@@ -881,7 +881,7 @@ export type ClientWorkspaceInfo = Omit<Workspace, '_id' | 'accounts' | 'workspac
 /**
  * @public
  */
-export type WorkspaceInfo = Omit<Workspace, '_id' | 'accounts' | 'workspaceUrl'>
+export type WorkspaceInfo = Omit<Workspace, '_id' | 'accounts'>
 
 function mapToClientWorkspace (ws: Workspace): ClientWorkspaceInfo {
   const { _id, accounts, ...data } = ws

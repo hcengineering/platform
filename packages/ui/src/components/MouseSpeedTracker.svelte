@@ -1,9 +1,15 @@
 <script lang="ts" context="module">
   import { readable } from 'svelte/store'
   const ticker = readable(Date.now(), (set) => {
-    setInterval(() => {
+    set(Date.now())
+
+    const interval = setInterval(() => {
       set(Date.now())
     }, 100)
+
+    return () => {
+      clearInterval(interval)
+    }
   })
 </script>
 

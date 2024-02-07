@@ -1,4 +1,5 @@
 import {
+  Account,
   AttachedDoc,
   Class,
   Doc,
@@ -16,6 +17,9 @@ import {
 import core from '@hcengineering/core/lib/component'
 import { DocAttributeUpdates, DocUpdateAction } from '@hcengineering/activity'
 import { ActivityControl, DocObjectCache, getAllObjectTransactions } from '@hcengineering/server-activity'
+import { getDocCollaborators } from '@hcengineering/server-notification-resources'
+import notification from '@hcengineering/notification'
+import { TriggerControl } from '@hcengineering/server-core'
 
 function getAvailableAttributesKeys (tx: TxCUD<Doc>, hierarchy: Hierarchy): string[] {
   if (hierarchy.isDerived(tx._class, core.class.TxUpdateDoc)) {
@@ -143,16 +147,53 @@ export async function getDocDiff (
   return { doc, prevDoc }
 }
 
-export function getAttributeDiff (
-  hierarchy: Hierarchy,
+interface AttributeDiff {
+  added: DocAttributeUpdates['added']
+  removed: DocAttributeUpdates['removed']
+}
+
+async function getCollaboratorsDiff (
+  control: ActivityControl,
+  doc: Doc,
+  prevDoc: Doc | undefined
+): Promise<AttributeDiff> {
+  const { hierarchy } = control
+  const value = hierarchy.as(doc, notification.mixin.Collaborators).collaborators ?? []
+
+  let prevValue: Ref<Account>[] = []
+
+  if (prevDoc !== undefined && hierarchy.hasMixin(prevDoc, notification.mixin.Collaborators)) {
+    prevValue = hierarchy.as(prevDoc, notification.mixin.Collaborators).collaborators ?? []
+  } else if (prevDoc !== undefined) {
+    const mixin = hierarchy.classHierarchyMixin(prevDoc._class, notification.mixin.ClassCollaborators)
+    prevValue = mixin !== undefined ? await getDocCollaborators(prevDoc, mixin, control as TriggerControl) : []
+  }
+
+  const added = value.filter((item) => !prevValue.includes(item)) as DocAttributeUpdates['added']
+  const removed = prevValue.filter((item) => !value.includes(item)) as DocAttributeUpdates['removed']
+
+  return {
+    added,
+    removed
+  }
+}
+
+export async function getAttributeDiff (
+  control: ActivityControl,
   doc: Doc,
   prevDoc: Doc | undefined,
   attrKey: string,
   attrClass: Ref<Class<Doc>>,
   isMixin: boolean
-): { added: DocAttributeUpdates['added'], removed: DocAttributeUpdates['removed'] } {
+): Promise<AttributeDiff> {
+  const { hierarchy } = control
+
   let actualDoc: Doc | undefined = doc
   let actualPrevDoc: Doc | undefined = prevDoc
+
+  if (isMixin && hierarchy.isDerived(attrClass, notification.mixin.Collaborators)) {
+    return await getCollaboratorsDiff(control, doc, prevDoc)
+  }
 
   if (isMixin) {
     actualDoc = hierarchy.as(doc, attrClass)
@@ -247,7 +288,7 @@ export async function getTxAttributesUpdates (
     }
 
     if (Array.isArray(attrValue) && doc != null) {
-      const diff = getAttributeDiff(hierarchy, doc, prevDoc, key, attrClass, isMixin)
+      const diff = await getAttributeDiff(control, doc, prevDoc, key, attrClass, isMixin)
       added.push(...diff.added)
       removed.push(...diff.removed)
       attrValue = []

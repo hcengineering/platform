@@ -55,7 +55,7 @@
     "NoExpire": "Бессрочно",
     "TypeLabel": "Тип",
     "StatusDueDateTooltip": "До {date}",
-    "CopyToClipboard": "Скопировать в буфер обмена",
+    "CopyToClipboard": "Скопировать",
     "Copied": "Скопировано",
     "ViewFullProfile": "Посмотреть профиль",
     "Member": "Сотрудник компании",

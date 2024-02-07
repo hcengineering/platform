@@ -15,29 +15,25 @@
 
 import core, {
   AttachedDoc,
-  checkMixinKey,
+  BulkUpdateEvent,
   Class,
   Client,
+  DOMAIN_MODEL,
   Doc,
   DocumentQuery,
-  DOMAIN_MODEL,
   FindOptions,
-  findProperty,
   FindResult,
-  generateId,
-  getObjectValue,
   Hierarchy,
   IndexingUpdateEvent,
-  BulkUpdateEvent,
   Lookup,
   LookupData,
-  matchQuery,
   ModelDb,
   Ref,
-  resultSort,
   ReverseLookups,
+  SearchOptions,
+  SearchQuery,
+  SearchResult,
   SortingQuery,
-  toFindResult,
   Tx,
   TxCollectionCUD,
   TxCreateDoc,
@@ -49,9 +45,13 @@ import core, {
   TxWorkspaceEvent,
   WithLookup,
   WorkspaceEvent,
-  SearchQuery,
-  SearchOptions,
-  SearchResult
+  checkMixinKey,
+  findProperty,
+  generateId,
+  getObjectValue,
+  matchQuery,
+  resultSort,
+  toFindResult
 } from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
 
@@ -338,6 +338,32 @@ export class LiveQuery extends TxProcessor implements Client {
         this.queue.push(q)
       }
     }
+  }
+
+  async queryFind<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindResult<T>> {
+    const current = this.findQuery(_class, query, options)
+    if (current === undefined) {
+      const q = this.createQuery(
+        _class,
+        query,
+        {
+          callback: () => {
+            // do nothing
+          },
+          callbackId: generateId()
+        },
+        options
+      )
+      if (q.result instanceof Promise) {
+        q.result = await q.result
+      }
+      return toFindResult(this.clone(q.result), q.total) as FindResult<T>
+    }
+    return toFindResult(this.clone((current?.result as T[]) ?? []), current.total)
   }
 
   private async checkSearch (q: Query, _id: Ref<Doc>): Promise<boolean> {
@@ -699,17 +725,23 @@ export class LiveQuery extends TxProcessor implements Client {
     }
 
     if (matched) {
-      const docIdKey = doc._id + JSON.stringify(q.options?.lookup)
+      const docIdKey = doc._id + JSON.stringify(q.options?.lookup) + Hierarchy.mixinClass(doc)
 
       const lookup = q.options?.lookup
       const realDoc =
         docCache?.get(docIdKey) ??
         (await this.client.findOne(q._class, { _id: doc._id }, lookup !== undefined ? { lookup } : undefined))
+      if (realDoc == null) return false
 
-      if (realDoc != null && docCache != null) {
+      if (this.getHierarchy().isMixin(q._class)) {
+        if (!this.getHierarchy().hasMixin(realDoc, q._class)) {
+          return false
+        }
+      }
+
+      if (docCache != null) {
         docCache?.set(docIdKey, realDoc)
       }
-      if (realDoc === undefined) return false
       const res = matchQuery([realDoc], q.query, q._class, this.client.getHierarchy())
       if (res.length === 1) {
         if (q.result instanceof Promise) {

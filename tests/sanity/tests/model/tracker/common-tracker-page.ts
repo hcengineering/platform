@@ -57,10 +57,10 @@ export class CommonTrackerPage extends CalendarPage {
     if (dateStart !== undefined) {
       switch (dateStart) {
         case 'Today':
-          await this.page.locator('div.month-container div.today').click()
+          await this.page.locator('div.popup div.calendar button.day.today').click()
           break
         default:
-          await this.page.locator('div.month-container div.day', { hasText: dateStart }).click()
+          await this.page.locator('div.popup div.calendar button.day', { hasText: dateStart }).click()
           break
       }
     }
