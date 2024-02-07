@@ -135,8 +135,8 @@ export interface TriggerControl {
   fx: (f: () => Promise<void>) => void
 
   // Bulk operations in case trigger require some
-  apply: (tx: Tx[], broadcast: boolean) => Promise<TxResult>
-  applyCtx: (ctx: MeasureContext, tx: Tx[], broadcast: boolean) => Promise<TxResult>
+  apply: (tx: Tx[], broadcast: boolean, target?: string[]) => Promise<TxResult>
+  applyCtx: (ctx: MeasureContext, tx: Tx[], broadcast: boolean, target?: string[]) => Promise<TxResult>
 
   // Will create a live query if missing and return values immediately if already asked.
   queryFind: <T extends Doc>(

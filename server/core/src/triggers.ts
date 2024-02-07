@@ -76,8 +76,8 @@ export class Triggers {
                 ctx,
                 txFactory: new TxFactory(tx.modifiedBy, true),
                 findAll: async (clazz, query, options) => await ctrl.findAllCtx(ctx, clazz, query, options),
-                apply: async (tx, broadcast) => {
-                  return await ctrl.applyCtx(ctx, tx, broadcast)
+                apply: async (tx, broadcast, target) => {
+                  return await ctrl.applyCtx(ctx, tx, broadcast, target)
                 }
               }))
             )

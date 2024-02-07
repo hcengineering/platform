@@ -69,6 +69,7 @@ import { FullTextPipelineStage } from './indexer/types'
 import serverCore from './plugin'
 import { Triggers } from './triggers'
 import type {
+  BroadcastFunc,
   ContentTextAdapter,
   ContentTextAdapterConfiguration,
   FullTextAdapter,
@@ -626,11 +627,11 @@ class TServerStorage implements ServerStorage {
       findAllCtx: findAll,
       modelDb: this.modelDb,
       hierarchy: this.hierarchy,
-      apply: async (tx, broadcast) => {
-        return await this.apply(ctx, tx, broadcast)
+      apply: async (tx, broadcast, target) => {
+        return await this.apply(ctx, tx, broadcast, target)
       },
-      applyCtx: async (ctx, tx, broadcast) => {
-        return await this.apply(ctx, tx, broadcast)
+      applyCtx: async (ctx, tx, broadcast, target) => {
+        return await this.apply(ctx, tx, broadcast, target)
       },
       // Will create a live query if missing and return values immediately if already asked.
       queryFind: async (_class, query, options) => {
@@ -719,14 +720,14 @@ class TServerStorage implements ServerStorage {
     return { passed, onEnd }
   }
 
-  async apply (ctx: MeasureContext, txes: Tx[], broadcast: boolean): Promise<TxResult> {
+  async apply (ctx: MeasureContext, txes: Tx[], broadcast: boolean, target?: string[]): Promise<TxResult> {
     const result = await this.processTxes(ctx, txes)
     let derived: Tx[] = []
 
     derived = result[1]
 
     if (broadcast) {
-      this.options?.broadcast?.([...txes, ...derived])
+      this.options?.broadcast?.([...txes, ...derived], target)
     }
 
     return result[0]
@@ -867,7 +868,7 @@ export interface ServerStorageOptions {
   // Indexing is not required to be started for upgrade mode.
   upgrade: boolean
 
-  broadcast?: (tx: Tx[]) => void
+  broadcast?: BroadcastFunc
 }
 /**
  * @public
