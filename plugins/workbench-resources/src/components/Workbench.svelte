@@ -654,7 +654,7 @@
   </svg>
   <div
     class="workbench-container"
-    class:setting-app={currentApplication?.alias === 'setting'}
+    class:modern-app={['setting', 'time'].some((app) => currentApplication?.alias === app)}
     style:flex-direction={appsDirection === 'horizontal' ? 'column-reverse' : 'row'}
   >
     <div class="antiPanel-application {appsDirection}" class:lastDivider={!visibleNav}>
@@ -863,10 +863,14 @@
     height: 100%;
     touch-action: none;
 
-    &:not(.setting-app, .inner) {
+    &:not(.modern-app, .inner) {
       border-top: 1px solid var(--theme-navpanel-divider);
+      border-left: 1px solid var(--theme-navpanel-color);
     }
-    &.setting-app {
+    &.modern-app {
+      border-top: 1px solid transparent;
+    }
+    &.modern-app {
       position: relative;
       background-color: var(--theme-statusbar-color);
       border-radius: var(--medium-BorderRadius);

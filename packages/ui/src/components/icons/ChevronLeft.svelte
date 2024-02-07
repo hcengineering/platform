@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -18,5 +18,5 @@
 </script>
 
 <svg class="svg-{size}" {fill} viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-  <path d="M21.9999 16L11.9999 6L10.5857 7.41421L19.1715 16L10.5857 24.5858L11.9999 26L21.9999 16Z" />
+  <path d="M10 16L20 26L21.4142 24.5858L12.8284 16L21.4142 7.41421L20 6L10 16Z" />
 </svg>

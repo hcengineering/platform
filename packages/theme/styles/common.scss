@@ -16,18 +16,22 @@
 /* Typography */
 .font-regular-12,
 .font-medium-12,
+.font-bold-12,
 .font-regular-14,
 .font-medium-14,
 .font-bold-14,
 .paragraph-regular-14,
-.heading-medium-16 {
+.heading-medium-16,
+.heading-medium-20,
+.heading-bold-20 {
   font-family: var(--font-family);
   font-style: normal;
   line-height: 1rem;
   color: var(--global-primary-TextColor);
 }
 .font-regular-12,
-.font-medium-12 {
+.font-medium-12,
+.font-bold-12 {
   font-size: 0.75rem;
 }
 .font-regular-14,
@@ -45,13 +49,23 @@
 .font-medium-14 {
   font-weight: 500;
 }
-.font-bold-14 {
+.font-bold-12,
+.font-bold-14,
+.heading-bold-20 {
   font-weight: 700;
+}
+.heading-medium-16,
+.heading-medium-20 {
+  font-weight: 500;
 }
 .heading-medium-16 {
   font-size: 1rem;
-  font-weight: 500;
   line-height: 1.125rem;
+}
+.heading-medium-20,
+.heading-bold-20 {
+  font-size: 1.25rem;
+  line-height: 1.5rem;
 }
 .paragraph-regular-14 {
   line-height: 1.25rem;

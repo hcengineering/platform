@@ -36,11 +36,8 @@
     </div>
   {/if}
   <span class="{size === 'large' ? 'heading-medium-16' : 'font-regular-14'} hulyBreadcrumb-label overflow-label">
-    {#if label}
-      <Label {label} />
-    {:else if title}
-      {title}
-    {/if}
+    {#if label}<Label {label} />{/if}
+    {#if title}{title}{/if}
   </span>
 </button>
 

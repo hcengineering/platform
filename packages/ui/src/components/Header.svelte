@@ -16,13 +16,14 @@
   import { createEventDispatcher } from 'svelte'
   import { IconMaximize, IconMinimize, IconClose, ButtonIcon } from '..'
 
-  export let type: 'type-aside' | 'type-popup' | 'type-component' = 'type-component'
+  export let type: 'type-aside' | 'type-popup' | 'type-component' | 'type-panel' = 'type-component'
   export let minimize: boolean = false
+  export let hideSeparator: boolean = false
 
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="hulyHeader-container">
+<div class="hulyHeader-container" class:topIndent={type === 'type-panel'} class:hideSeparator>
   {#if type === 'type-component'}
     <button class="hulyHeader-button" on:click={() => dispatch('resize', minimize)}>
       {#if minimize}
@@ -41,7 +42,7 @@
       <slot name="actions" />
     </div>
   {/if}
-  {#if type !== 'type-component'}
+  {#if type === 'type-popup' || type === 'type-aside'}
     {#if type !== 'type-popup'}<div class="hulyHeader-divider" />{/if}
     <div class="hulyHotKey-item">Esc</div>
     <ButtonIcon icon={IconClose} kind={'tertiary'} size={'small'} on:click={() => dispatch('close')} />

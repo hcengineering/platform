@@ -27,13 +27,14 @@
   export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
   export let iconProps: any | undefined = undefined
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative'
-  export let size: 'large' | 'medium' | 'small'
+  export let size: 'large' | 'medium' | 'small' | 'extra-small'
   export let disabled: boolean = false
   export let loading: boolean = false
   export let pressed: boolean = false
   export let hasMenu: boolean = false
   export let type: 'type-button' | 'type-button-icon'
   export let inheritColor: boolean = false
+  export let inheritFont: boolean = false
   export let tooltip: LabelAndProps | undefined = undefined
   export let element: HTMLButtonElement | undefined = undefined
 </script>
@@ -44,6 +45,7 @@
   class:loading
   class:pressed
   class:inheritColor
+  class:inheritFont
   class:menu={hasMenu}
   disabled={loading || disabled}
   use:tp={tooltip}
@@ -73,6 +75,9 @@
     &:not(:disabled, .loading) {
       cursor: pointer;
     }
+    &.inheritFont {
+      font: inherit;
+    }
 
     .icon {
       width: var(--spacing-2_5);
@@ -91,36 +96,47 @@
       padding: 0;
     }
     &.large {
-      height: var(--spacing-6);
+      height: var(--global-large-Size);
       border-radius: var(--medium-BorderRadius);
 
       &.type-button {
         padding: 0 var(--spacing-2);
       }
       &.type-button-icon {
-        width: var(--spacing-6);
+        width: var(--global-large-Size);
       }
     }
     &.medium {
-      height: var(--spacing-5);
+      height: var(--global-medium-Size);
       border-radius: var(--medium-BorderRadius);
 
       &.type-button {
         padding: 0 var(--spacing-2);
       }
       &.type-button-icon {
-        width: var(--spacing-5);
+        width: var(--global-medium-Size);
       }
     }
     &.small {
-      height: var(--spacing-4);
+      height: var(--global-small-Size);
       border-radius: var(--small-BorderRadius);
 
       &.type-button {
         padding: 0 var(--spacing-1_5);
       }
       &.type-button-icon {
-        width: var(--spacing-4);
+        width: var(--global-small-Size);
+      }
+    }
+    &.extra-small {
+      height: var(--global-extra-small-Size);
+      border-radius: var(--extra-small-BorderRadius);
+
+      &.type-button {
+        padding: 0 var(--spacing-1);
+      }
+      &.type-button-icon {
+        width: var(--global-extra-small-Size);
       }
     }
     &.type-button-icon .icon,
