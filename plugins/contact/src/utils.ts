@@ -18,6 +18,7 @@ import { IconSize, ColorDefinition } from '@hcengineering/ui'
 import { MD5 } from 'crypto-js'
 import { Channel, Contact, contactPlugin, Person } from '.'
 import { AVATAR_COLORS, GravatarPlaceholderType } from './types'
+import { getMetadata } from '@hcengineering/platform'
 
 /**
  * @public
@@ -220,7 +221,9 @@ export function getLastName (name: string): string {
  * @public
  */
 export function formatName (name: string): string {
-  return getLastName(name) + ' ' + getFirstName(name)
+  return getMetadata(contactPlugin.metadata.LastNameFirst) === true
+    ? getLastName(name) + ' ' + getFirstName(name)
+    : getFirstName(name) + ' ' + getLastName(name)
 }
 
 /**
