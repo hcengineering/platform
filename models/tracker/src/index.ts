@@ -672,7 +672,8 @@ export function createModel (builder: Builder): void {
       name: tracker.string.TrackerApplication,
       description: tracker.string.ManageWorkflowStatuses,
       icon: task.icon.Task,
-      baseClass: tracker.class.Project
+      baseClass: tracker.class.Project,
+      allowedClassic: true
     },
     tracker.descriptors.ProjectType
   )

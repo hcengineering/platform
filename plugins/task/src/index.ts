@@ -174,6 +174,7 @@ export interface ProjectTypeDescriptor extends Doc {
   description: IntlString
   icon: Asset
   editor?: AnyComponent
+  allowedClassic?: boolean
   baseClass: Ref<Class<Task>>
 }
 

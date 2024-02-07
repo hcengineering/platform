@@ -42,7 +42,7 @@
         descriptor: descriptor._id,
         description: '',
         tasks: [],
-        classic
+        classic: descriptor.allowedClassic === true ? classic : false
       },
       [],
       generateId()
@@ -62,6 +62,8 @@
   function selectType (evt: CustomEvent<Ref<ProjectTypeDescriptor>>): void {
     descriptor = descriptors.find((it) => it._id === evt.detail)
   }
+
+  descriptor = descriptors[0]
 </script>
 
 <Card
@@ -76,6 +78,8 @@
   <div class="flex-col flex-gap-2">
     <EditBox bind:value={name} placeholder={task.string.ProjectType} />
     <DropdownLabelsIntl {items} on:selected={selectType} />
-    <ToggleWithLabel label={task.string.ClassicProject} bind:on={classic} />
+    {#if descriptor?.allowedClassic === true}
+      <ToggleWithLabel label={task.string.ClassicProject} bind:on={classic} />
+    {/if}
   </div>
 </Card>
