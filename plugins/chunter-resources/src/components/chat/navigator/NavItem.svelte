@@ -188,11 +188,10 @@
 
     &.withBackground {
       background: linear-gradient(0deg, var(--global-subtle-ui-BorderColor), var(--global-subtle-ui-BorderColor)),
-      linear-gradient(0deg, var(--global-ui-BackgroundColor), var(--global-ui-BackgroundColor));
-
+        linear-gradient(0deg, var(--global-ui-BackgroundColor), var(--global-ui-BackgroundColor));
       padding: 0.375rem;
       border-radius: 0.25rem;
-      border: 1px solid var(--global-subtle-ui-BorderColor)
+      border: 1px solid var(--global-subtle-ui-BorderColor);
     }
   }
 
