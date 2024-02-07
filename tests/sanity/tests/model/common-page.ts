@@ -93,6 +93,6 @@ export class CommonPage {
   }
 
   async selectMention (page: Page, mentionName: string): Promise<void> {
-    await page.locator('form.mentionPoup div.list-item span.name', { hasText: mentionName}).click()
+    await page.locator('form.mentionPoup div.list-item span.name', { hasText: mentionName }).click()
   }
 }

@@ -131,12 +131,20 @@ export class IssuesDetailsPage extends CommonTrackerPage {
 
   async checkCollaborators (names: Array<string>): Promise<void> {
     await this.buttonCollaborators.click()
-    for (let name of names) {
-      await expect(this.page.locator('//div[contains(@class, "popup")]//span[@class="label"]//div[contains(@class, "text-left")]', {hasText: name})
-        .locator('xpath=../../../../..')
-        .locator('div.check div'))
-        .toBeVisible()
+    for (const name of names) {
+      await expect(
+        this.page
+          .locator('//div[contains(@class, "popup")]//span[@class="label"]//div[contains(@class, "text-left")]', {
+            hasText: name
+          })
+          .locator('xpath=../../../../..')
+          .locator('div.check div')
+      ).toBeVisible()
     }
-    await this.inputTitle.click({force: true})
+    await this.inputTitle.click({ force: true })
+  }
+
+  async checkCollaboratorsCount (count: string): Promise<void> {
+    await expect(this.buttonCollaborators).toHaveText(count)
   }
 }

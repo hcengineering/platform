@@ -1,11 +1,10 @@
-import { expect, test } from '@playwright/test'
+import { test } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI } from '../utils'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
-import { Issue, NewIssue } from '../model/tracker/types'
+import { NewIssue } from '../model/tracker/types'
 import { allure } from 'allure-playwright'
-import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 
 test.use({
   storageState: PlatformSetting
@@ -39,5 +38,32 @@ test.describe('Mentions issue tests', () => {
     await issuesDetailsPage.checkCollaborators(['Appleseed John'])
     // TODO bug with adding in collaborators
     // await issuesDetailsPage.checkCollaborators(['Appleseed John', 'Dirak Kainin'])
+  })
+
+  test('When Change assigner user should be added as Collaborators', async ({ page }) => {
+    const mentionIssue: NewIssue = {
+      title: `When Change assigner user should be added as Collaborators-${generateId()}`,
+      description: 'When Change assigner user should be added as Collaborators description'
+    }
+
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
+    await issuesPage.createNewIssue(mentionIssue)
+    await issuesPage.searchIssueByName(mentionIssue.title)
+    await issuesPage.openIssueByName(mentionIssue.title)
+
+    const issuesDetailsPage = new IssuesDetailsPage(page)
+    await issuesDetailsPage.editIssue({ assignee: 'Dirak Kainin' })
+    await issuesDetailsPage.checkIssue({
+      ...mentionIssue,
+      assignee: 'Dirak Kainin'
+    })
+    await issuesDetailsPage.checkActivityExist('changed assignee')
+    await issuesDetailsPage.checkActivityContentExist('Assignee set to Dirak Kainin')
+    await issuesDetailsPage.checkCollaboratorsCount('2 members')
+    await issuesDetailsPage.checkCollaborators(['Appleseed John', 'Dirak Kainin'])
   })
 })
