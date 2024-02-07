@@ -48,7 +48,6 @@ test.describe('Tracker Projects tests', () => {
     }
     const updateProjectData: NewProject = {
       title: 'UpdateProject',
-      identifier: 'UPDAT',
       description: 'Updated Project description',
       private: true,
       defaultAssigneeForIssues: 'Chen Rosamund',

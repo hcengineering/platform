@@ -42,10 +42,7 @@ export function createModel (builder: Builder): void {
         component: tracker.component.IssueSearchIcon,
         props: ['status', 'space']
       },
-      shortTitle: {
-        tmpl: '{identifier}-{number}',
-        props: [{ identifier: ['space', 'identifier'] }, 'number']
-      },
+      shortTitle: 'identifier',
       title: 'title'
     }
   })

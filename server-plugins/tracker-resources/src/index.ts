@@ -57,11 +57,10 @@ async function updateSubIssues (
  */
 export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const issue = doc as Issue
-  const issueId = await getIssueId(issue, control)
   const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${trackerId}/${issueId}`
+  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${trackerId}/${issue.identifier}`
   const link = concatLink(front, path)
-  return `<a href="${link}">${issueId}</a> ${issue.title}`
+  return `<a href="${link}">${issue.identifier}</a> ${issue.title}`
 }
 
 /**
@@ -76,11 +75,9 @@ export async function getIssueId (doc: Issue, control: TriggerControl): Promise<
 /**
  * @public
  */
-export async function issueTextPresenter (doc: Doc, control: TriggerControl): Promise<string> {
+export async function issueTextPresenter (doc: Doc): Promise<string> {
   const issue = doc as Issue
-  const issueId = await getIssueId(issue, control)
-
-  return `${issueId} ${issue.title}`
+  return `${issue.identifier} ${issue.title}`
 }
 
 function isSamePerson (control: TriggerControl, assignee: Ref<Person>, target: Ref<Account>): boolean {
@@ -100,7 +97,7 @@ export async function getIssueNotificationContent (
 ): Promise<NotificationContent> {
   const issue = doc as Issue
 
-  const issueShortName = await issueTextPresenter(doc, control)
+  const issueShortName = await issueTextPresenter(doc)
   const issueTitle = `${issueShortName}: ${issue.title}`
 
   const title = tracker.string.IssueNotificationTitle

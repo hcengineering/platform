@@ -14,23 +14,22 @@
 -->
 <script lang="ts">
   import contact from '@hcengineering/contact'
-  import { Ref, Space, WithLookup } from '@hcengineering/core'
   import { UserBox } from '@hcengineering/contact-resources'
+  import { Ref, Space, WithLookup } from '@hcengineering/core'
   import { Project, TimeReportDayType, TimeSpendReport } from '@hcengineering/tracker'
   import {
+    DatePresenter,
+    ListView,
     deviceOptionsStore as deviceInfo,
     eventToHTMLElement,
     getEventPositionElement,
-    ListView,
-    showPopup,
-    DatePresenter
+    showPopup
   } from '@hcengineering/ui'
   import { ContextMenu, FixedColumn, ListSelectionProvider } from '@hcengineering/view-resources'
-  import { getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
+  import { activeProjects } from '../../../utils'
   import TimePresenter from './TimePresenter.svelte'
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
-  import { activeProjects } from '../../../utils'
 
   export let reports: WithLookup<TimeSpendReport>[]
 
@@ -86,8 +85,8 @@
     >
       <div class="flex-row-center clear-mins gap-2 flex-grow mr-4" class:p-text={twoRows}>
         <FixedColumn key={'timespend_issue'} justify={'left'} addClass={'fs-bold'}>
-          {#if currentProject && report.$lookup?.attachedTo}
-            {getIssueId(currentProject, report.$lookup?.attachedTo)}
+          {#if report.$lookup?.attachedTo}
+            {report.$lookup?.attachedTo?.identifier}
           {/if}
         </FixedColumn>
         {#if report.$lookup?.attachedTo?.title}

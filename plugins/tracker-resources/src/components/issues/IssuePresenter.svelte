@@ -16,14 +16,13 @@
   import { WithLookup } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import type { Issue, Project } from '@hcengineering/tracker'
+  import { taskTypeStore } from '@hcengineering/task-resources'
+  import TaskTypeIcon from '@hcengineering/task-resources/src/components/taskTypes/TaskTypeIcon.svelte'
+  import type { Issue } from '@hcengineering/tracker'
   import { AnySvelteComponent, Component, Icon, tooltip } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { DocNavLink } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
-  import { activeProjects } from '../../utils'
-  import { taskTypeStore } from '@hcengineering/task-resources'
-  import TaskTypeIcon from '@hcengineering/task-resources/src/components/taskTypes/TaskTypeIcon.svelte'
 
   export let value: WithLookup<Issue> | undefined
   export let disabled: boolean = false
@@ -34,14 +33,6 @@
   export let inline = false
   export let kind: 'list' | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
-
-  let currentProject: Project | undefined = value?.$lookup?.space
-
-  $: if (value !== undefined) {
-    currentProject = $activeProjects.get(value?.space) as Project
-  }
-
-  $: title = currentProject ? `${currentProject.identifier}-${value?.number}` : `${value?.number}`
 
   $: presenters =
     value !== undefined ? getClient().getHierarchy().findMixinMixins(value, view.mixin.ObjectPresenter) : []
@@ -61,7 +52,7 @@
       shrink={0}
     >
       {#if inline}
-        <span class="antiMention" use:tooltip={{ label: tracker.string.Issue }}>@{title}</span>
+        <span class="antiMention" use:tooltip={{ label: tracker.string.Issue }}>@{value.identifier}</span>
       {:else}
         <span class="issuePresenterRoot" class:list={kind === 'list'} class:cursor-pointer={!disabled}>
           {#if shouldShowAvatar}
@@ -74,7 +65,7 @@
             </div>
           {/if}
           <span class="overflow-label" class:select-text={!noSelect} title={value?.title}>
-            {title}
+            {value.identifier}
             <slot name="details" />
           </span>
         </span>

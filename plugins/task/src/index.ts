@@ -56,6 +56,7 @@ export interface Task extends AttachedDoc, DocWithRank {
   comments?: number
   attachments?: number
   labels?: number
+  identifier: string
 }
 
 /**
@@ -244,7 +245,8 @@ const task = plugin(taskId, {
     Dashboard: '' as IntlString,
     ProjectTypes: '' as IntlString,
     TaskType: '' as IntlString,
-    ProjectType: '' as IntlString
+    ProjectType: '' as IntlString,
+    Identifier: '' as IntlString
   },
   class: {
     Sequence: '' as Ref<Class<Sequence>>,

@@ -6,7 +6,7 @@
   import { Issue } from '@hcengineering/tracker'
   import { Component, Icon, IconClose, navigate } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { getIssueId, issueLinkFragmentProvider, updateIssueRelation } from '../../issues'
+  import { issueLinkFragmentProvider, updateIssueRelation } from '../../issues'
   import tracker from '../../plugin'
 
   export let value: Issue
@@ -24,14 +24,9 @@
 
   $: isIssue = client.getHierarchy().isDerived(_class, tracker.class.Issue)
   let documents: WithLookup<Doc>[] = []
-  $: issuesQuery.query(
-    _class,
-    query,
-    (result) => {
-      documents = result
-    },
-    { lookup: isIssue ? { space: tracker.class.Project } : {} }
-  )
+  $: issuesQuery.query(_class, query, (result) => {
+    documents = result
+  })
 
   async function handleClick (issue: RelatedDocument) {
     const prop = type === 'isBlocking' ? 'blockedBy' : type
@@ -82,19 +77,17 @@
 {#each documents as doc}
   {#if isIssue}
     {@const issue = asIssue(doc)}
-    {#if issue.$lookup?.space}
-      <div class="tag-container">
-        <Icon {icon} size={'small'} />
-        <div class="flex-grow">
-          <button on:click|stopPropagation={() => handleRedirect(issue)}>
-            <span class="overflow-label ml-1-5 content-color">{getIssueId(issue.$lookup.space, issue)}</span>
-          </button>
-        </div>
-        <button class="btn-close" on:click|stopPropagation={() => handleClick(issue)}>
-          <Icon icon={IconClose} size={'x-small'} />
+    <div class="tag-container">
+      <Icon {icon} size={'small'} />
+      <div class="flex-grow">
+        <button on:click|stopPropagation={() => handleRedirect(issue)}>
+          <span class="overflow-label ml-1-5 content-color">{issue.identifier}</span>
         </button>
       </div>
-    {/if}
+      <button class="btn-close" on:click|stopPropagation={() => handleClick(issue)}>
+        <Icon icon={IconClose} size={'x-small'} />
+      </button>
+    </div>
   {:else}
     <div class="tag-container between">
       <Component

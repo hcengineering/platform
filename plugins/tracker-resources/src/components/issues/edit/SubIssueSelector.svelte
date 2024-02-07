@@ -30,7 +30,7 @@
     tooltip
   } from '@hcengineering/ui'
   import { statusStore } from '@hcengineering/view-resources'
-  import { getIssueId, issueLinkFragmentProvider } from '../../../issues'
+  import { issueLinkFragmentProvider } from '../../../issues'
   import tracker from '../../../plugin'
   import { listIssueStatusOrder } from '../../../utils'
   import IssueStatusIcon from '../IssueStatusIcon.svelte'
@@ -75,7 +75,6 @@
       {
         sort: { modifiedOn: SortingOrder.Descending },
         lookup: {
-          space: tracker.class.Project,
           status: [tracker.class.IssueStatus, { category: core.class.StatusCategory }]
         }
       }
@@ -123,7 +122,7 @@
       id: iss._id,
       icon,
       isSelected: iss._id === issue._id,
-      ...(project !== undefined ? { text: `${getIssueId(project, iss)} ${iss.title}` } : undefined),
+      text: `${iss.identifier} ${iss.title}`,
       ...(color !== undefined ? { iconColor: getPlatformColorDef(color, $themeStore.dark).icon } : undefined),
       category:
         category !== undefined
@@ -151,9 +150,7 @@
             <IssueStatusIcon space={parentIssue.space} value={parentStatus} size="small" />
           </div>
         {/if}
-        {#if issue.$lookup?.space}
-          <span class="overflow-label flex-no-shrink mr-2">{getIssueId(issue.$lookup.space, parentIssue)}</span>
-        {/if}
+        <span class="overflow-label flex-no-shrink mr-2">{parentIssue.identifier}</span>
         <span class="overflow-label issue-title">{parentIssue.title}</span>
       </div>
     </div>

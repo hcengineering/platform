@@ -39,7 +39,7 @@
   }
 
   onMount(() => {
-    dispatch('open', { ignoreKeys: ['comments', 'number', 'title', 'customer'] })
+    dispatch('open', { ignoreKeys: ['comments', 'number', 'title', 'customer', 'identifier'] })
   })
 </script>
 

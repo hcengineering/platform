@@ -42,7 +42,9 @@ import {
   baseIssueTaskStatuses,
   classicIssueTaskStatuses,
   createStatesData,
-  type IssueStatus
+  type IssueStatus,
+  type Issue,
+  type Project
 } from '@hcengineering/tracker'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import tracker from './plugin'
@@ -333,6 +335,20 @@ async function restoreToDoCategory (client: MigrationClient): Promise<void> {
   }
 }
 
+async function migrateIdentifiers (client: MigrationClient): Promise<void> {
+  const classes = client.hierarchy.getDescendants(tracker.class.Issue)
+  const issues = await client.find<Issue>(DOMAIN_TASK, { _class: { $in: classes }, identifier: { $exists: false } })
+  if (issues.length === 0) return
+  const projects = await client.find<Project>(DOMAIN_SPACE, { _class: tracker.class.Project })
+  const projectsMap = toIdMap(projects)
+  for (const issue of issues) {
+    const project = projectsMap.get(issue.space)
+    if (project === undefined) continue
+    const identifier = project.identifier + '-' + issue.number
+    await client.update(DOMAIN_TASK, { _id: issue._id }, { $set: { identifier } })
+  }
+}
+
 export const trackerOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, 'tracker', [
@@ -464,6 +480,10 @@ export const trackerOperation: MigrateOperation = {
       {
         state: 'restoreToDoCategory',
         func: restoreToDoCategory
+      },
+      {
+        state: 'identifier',
+        func: migrateIdentifiers
       }
     ])
   },
