@@ -30,10 +30,12 @@
   import { FILTER_DEBOUNCE_MS, sortFilterValues } from '../../filter'
   import view from '../../plugin'
   import { getPresenter } from '../../utils'
+  import { IntlString } from '@hcengineering/platform'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined
   export let filter: Filter
+  export let noResultPlaceholder: IntlString = presentation.string.NoResults
   export let onChange: (e: Filter) => void
 
   filter.modes = [view.filter.FilterValueIn, view.filter.FilterValueNin]
@@ -229,6 +231,9 @@
               </div>
             </button>
           {/each}
+          {#if sortedValues.length === 0 && !isSearchable}
+            <div class="menu-item flex-center no-focus no-hover pointer-events-none"><Label label={noResultPlaceholder} /></div>
+          {/if}
         {/if}
       {/await}
     </div>
