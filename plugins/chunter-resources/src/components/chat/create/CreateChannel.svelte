@@ -67,9 +67,9 @@
       hidden: false
     })
 
-    const navigate = await getResource(chunter.actionImpl.OpenChannel)
+    const openChannelFn = await getResource(chunter.actionImpl.OpenChannel)
 
-    await navigate(undefined, undefined, { _id: notifyContextId })
+    await openChannelFn(undefined, undefined, { _id: notifyContextId, mode: 'channels' })
   }
 
   function handleCancel () {

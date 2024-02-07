@@ -693,6 +693,14 @@ export function createModel (builder: Builder, options = { addApplication: true 
     ofMessage: activity.class.ActivityInfoMessage,
     components: [{ kind: 'footer', component: chunter.component.Replies }]
   })
+
+  builder.mixin(chunter.class.Channel, core.class.Class, chunter.mixin.ObjectChatPanel, {
+    ignoreKeys: ['archived', 'collaborators', 'lastMessage', 'pinned', 'topic', 'description']
+  })
+
+  builder.mixin(chunter.class.DirectMessage, core.class.Class, chunter.mixin.ObjectChatPanel, {
+    ignoreKeys: ['archived', 'collaborators', 'lastMessage', 'pinned', 'topic', 'description']
+  })
 }
 
 export default chunter

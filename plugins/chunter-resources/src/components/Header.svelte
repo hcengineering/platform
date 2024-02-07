@@ -73,8 +73,11 @@
       <div class="antiHSpacer x2" />
     {/if}
     {#if withFilters}
-      <ChannelMessagesFilter bind:selectedFilters={filters} />
+      <div class="mr-2">
+        <ChannelMessagesFilter bind:selectedFilters={filters} />
+      </div>
     {/if}
+    <slot />
     {#if titleKind === 'breadcrumbs'}
       <Breadcrumbs
         items={[

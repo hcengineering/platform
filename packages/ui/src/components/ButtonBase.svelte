@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { Asset, IntlString } from '@hcengineering/platform'
-  import { AnySvelteComponent, LabelAndProps } from '../types'
+  import { AnySvelteComponent, IconSize, LabelAndProps } from '../types'
   import { tooltip as tp } from '../tooltips'
   import { ComponentType } from 'svelte'
   import Spinner from './Spinner.svelte'
@@ -25,6 +25,7 @@
   export let label: IntlString | undefined = undefined
   export let labelParams: Record<string, any> = {}
   export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
+  export let iconSize: IconSize | undefined = undefined
   export let iconProps: any | undefined = undefined
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative'
   export let size: 'large' | 'medium' | 'small'
@@ -36,6 +37,14 @@
   export let inheritColor: boolean = false
   export let tooltip: LabelAndProps | undefined = undefined
   export let element: HTMLButtonElement | undefined = undefined
+
+  let actualIconSize: IconSize = 'small'
+
+  $: if (iconSize) {
+    actualIconSize = iconSize
+  } else if (type === 'type-button' && !hasMenu) {
+    actualIconSize = 'medium'
+  }
 </script>
 
 <button
@@ -52,7 +61,7 @@
   {#if loading}
     <div class="icon animate"><Spinner size={type === 'type-button' && !hasMenu ? 'medium' : 'small'} /></div>
   {:else if icon}<div class="icon">
-      <Icon {icon} {iconProps} size={type === 'type-button' && !hasMenu ? 'medium' : 'small'} />
+      <Icon {icon} {iconProps} size={actualIconSize} />
     </div>{/if}
   {#if label}<span><Label {label} params={labelParams} /></span>{/if}
   {#if title}<span>{title}</span>{/if}

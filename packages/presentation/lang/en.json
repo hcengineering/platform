@@ -29,6 +29,7 @@
     "MakePrivate": "Make private",
     "MakePrivateDescription": "Only members can see it",
     "Created": "Created",
-    "NoResults": "No results to show"
+    "NoResults": "No results to show",
+    "Next": "Next"
   }
 }

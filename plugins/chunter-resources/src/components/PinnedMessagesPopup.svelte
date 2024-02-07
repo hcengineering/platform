@@ -13,22 +13,31 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref } from '@hcengineering/core'
+  import { Class, Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import activity, { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
   import { ActivityMessagePresenter } from '@hcengineering/activity-resources'
   import { ActionIcon, IconClose } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
+
+  import chunter from '../plugin'
 
   export let attachedTo: Ref<Doc>
+  export let attachedToClass: Ref<Class<Doc>>
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const messagesQuery = createQuery()
+  const dispatch = createEventDispatcher()
 
   let pinnedMessages: DisplayActivityMessage[] = []
 
   $: messagesQuery.query(activity.class.ActivityMessage, { attachedTo, isPinned: true }, (res: ActivityMessage[]) => {
     pinnedMessages = res as DisplayActivityMessage[]
+
+    if (pinnedMessages.length === 0) {
+      dispatch('close')
+    }
   })
 
   async function unPinMessaage (message: ActivityMessage): Promise<void> {
@@ -42,11 +51,12 @@
       <ActivityMessagePresenter
         value={message}
         withActions={false}
-        skipLabel={!hierarchy.isDerived(message._class, activity.class.DocUpdateMessage)}
+        hoverable={false}
+        skipLabel={!hierarchy.isDerived(attachedToClass, chunter.class.ChunterSpace)}
       />
-      <div class="remove">
+      <div class="actions">
         <ActionIcon
-          size="medium"
+          size="small"
           icon={IconClose}
           action={() => {
             unPinMessaage(message)
@@ -58,20 +68,38 @@
 </div>
 
 <style lang="scss">
+  .message {
+    min-width: 30rem;
+    border-radius: var(--medium-BorderRadius);
+
+    .actions {
+      visibility: hidden;
+      position: absolute;
+      top: -0.5rem;
+      right: 0.85rem;
+      box-shadow: 0.25rem 0.75rem 1rem 0.125rem var(--global-popover-ShadowColor);
+      border: 1px solid var(--global-subtle-ui-BorderColor);
+      background: linear-gradient(0deg, var(--global-surface-01-BorderColor), var(--global-surface-01-BorderColor)),
+        linear-gradient(0deg, var(--global-ui-BackgroundColor), var(--global-ui-BackgroundColor));
+      padding: var(--spacing-0_5);
+      border-radius: var(--small-BorderRadius);
+    }
+
+    &:hover > .actions {
+      visibility: visible;
+    }
+
+    &:hover {
+      background-color: var(--global-ui-BackgroundColor);
+    }
+  }
+
   .antiPopup {
     max-width: 40rem;
   }
-  .message {
-    min-width: 30rem;
-  }
   .popup {
     padding: 1rem;
-    max-height: 20rem;
+    max-height: 24.5rem;
     color: var(--caption-color);
-  }
-  .remove {
-    position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
   }
 </style>

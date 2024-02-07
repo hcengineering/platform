@@ -99,6 +99,10 @@ import TxNameChange from './components/activity/TxNameChange.svelte'
 import NameChangedActivityMessage from './components/activity/NameChangedActivityMessage.svelte'
 import SystemAvatar from './components/SystemAvatar.svelte'
 import PersonIcon from './components/PersonIcon.svelte'
+import UsersList from './components/UsersList.svelte'
+import SelectUsersPopup from './components/SelectUsersPopup.svelte'
+import IconAddMember from './components/icons/AddMember.svelte'
+import UserDetails from './components/UserDetails.svelte'
 
 import contact from './plugin'
 import {
@@ -160,7 +164,11 @@ export {
   MembersBox,
   PersonRefPresenter,
   SystemAvatar,
-  PersonIcon
+  PersonIcon,
+  UsersList,
+  SelectUsersPopup,
+  IconAddMember,
+  UserDetails
 }
 
 const toObjectSearchResult = (e: WithLookup<Contact>): ObjectSearchResult => ({

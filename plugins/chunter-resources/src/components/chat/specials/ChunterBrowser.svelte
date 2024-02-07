@@ -28,6 +28,7 @@
   import { SearchType } from '../../../utils'
   import plugin from '../../../plugin'
   import Header from '../../Header.svelte'
+  import ChannelBrowser from './ChannelBrowser.svelte'
 
   let userSearch_: string = ''
   userSearch.subscribe((v) => (userSearch_ = v))
@@ -43,7 +44,7 @@
     { searchType: SearchType.Messages, component: MessagesBrowser },
     {
       searchType: SearchType.Channels,
-      component: SpaceBrowser,
+      component: ChannelBrowser,
       filterClass: plugin.class.Channel,
       props: {
         _class: plugin.class.Channel,

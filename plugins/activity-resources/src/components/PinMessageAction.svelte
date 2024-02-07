@@ -29,6 +29,6 @@
 
 <ActivityMessageAction
   icon={view.icon.Pin}
-  iconProps={object.isPinned ? { fill: '#3265cb' } : undefined}
+  iconProps={{ fill: object.isPinned ? '#3265cb' : 'currentColor' }}
   action={toggleMessagePinning}
 />

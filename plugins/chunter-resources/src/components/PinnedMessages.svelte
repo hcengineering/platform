@@ -13,15 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { eventToHTMLElement, Label, showPopup } from '@hcengineering/ui'
+  import { eventToHTMLElement, Label, ModernButton, showPopup } from '@hcengineering/ui'
   import PinnedMessagesPopup from './PinnedMessagesPopup.svelte'
   import { createQuery } from '@hcengineering/presentation'
   import { DocNotifyContext } from '@hcengineering/notification'
   import activity, { ActivityMessage } from '@hcengineering/activity'
+  import { Class, Doc, Ref } from '@hcengineering/core'
+  import view from '@hcengineering/view'
 
   import chunter from '../plugin'
 
-  export let context: DocNotifyContext
+  export let _class: Ref<Class<Doc>>
+  export let _id: Ref<Doc>
 
   const pinnedQuery = createQuery()
 
@@ -29,28 +32,25 @@
 
   $: pinnedQuery.query(
     activity.class.ActivityMessage,
-    { attachedTo: context.attachedTo, isPinned: true },
+    { attachedTo: _id, isPinned: true },
     (res: ActivityMessage[]) => {
       pinnedMessagesCount = res.length
     }
   )
-  function openMessagesPopup (ev: MouseEvent & { currentTarget: EventTarget & HTMLDivElement }) {
-    showPopup(
-      PinnedMessagesPopup,
-      { attachedTo: context.attachedTo, attachedToClass: context.attachedToClass },
-      eventToHTMLElement(ev)
-    )
+  function openMessagesPopup (ev: MouseEvent) {
+    showPopup(PinnedMessagesPopup, { attachedTo: _id, attachedToClass: _class }, eventToHTMLElement(ev))
   }
 </script>
 
 {#if pinnedMessagesCount > 0}
-  <div class="bottom-divider over-underline pt-2 pb-2 container">
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div on:click={openMessagesPopup}>
-      <Label label={chunter.string.Pinned} />
-      {pinnedMessagesCount}
-    </div>
+  <div class="mr-2">
+    <ModernButton
+      icon={view.icon.Pin}
+      size="small"
+      label={chunter.string.PinnedCount}
+      labelParams={{ count: pinnedMessagesCount }}
+      on:click={openMessagesPopup}
+    />
   </div>
 {/if}
 

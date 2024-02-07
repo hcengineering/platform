@@ -125,7 +125,6 @@
         : 'landscape'} background-comp-header-color"
     >
       <div class="antiPanel-wrap__content">
-        <NavHeader label={chunter.string.Chat} />
         <ChatNavigator
           {selectedContextId}
           selectedObjectClass={selectedContext?.attachedToClass}

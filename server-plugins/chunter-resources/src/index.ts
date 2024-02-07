@@ -15,6 +15,7 @@
 
 import chunter, {
   Backlink,
+  Channel,
   ChatMessage,
   chunterId,
   ChunterSpace,
@@ -230,36 +231,47 @@ async function OnChatMessageCreated (tx: TxCUD<Doc>, control: TriggerControl): P
     return []
   }
 
-  const res: Tx[] = []
   const targetDoc = (
     await control.findAll(chatMessage.attachedToClass, { _id: chatMessage.attachedTo }, { limit: 1 })
   )[0]
 
-  if (targetDoc !== undefined) {
-    if (hierarchy.hasMixin(targetDoc, notification.mixin.Collaborators)) {
-      const collaboratorsMixin = hierarchy.as(targetDoc, notification.mixin.Collaborators)
-      if (!collaboratorsMixin.collaborators.includes(chatMessage.modifiedBy)) {
-        res.push(
-          control.txFactory.createTxMixin(
-            targetDoc._id,
-            targetDoc._class,
-            targetDoc.space,
-            notification.mixin.Collaborators,
-            {
-              $push: {
-                collaborators: chatMessage.modifiedBy
-              }
+  if (targetDoc === undefined) {
+    return []
+  }
+  const res: Tx[] = []
+  const isChannel = hierarchy.isDerived(targetDoc._class, chunter.class.Channel)
+
+  if (hierarchy.hasMixin(targetDoc, notification.mixin.Collaborators)) {
+    const collaboratorsMixin = hierarchy.as(targetDoc, notification.mixin.Collaborators)
+    if (!collaboratorsMixin.collaborators.includes(chatMessage.modifiedBy)) {
+      res.push(
+        control.txFactory.createTxMixin(
+          targetDoc._id,
+          targetDoc._class,
+          targetDoc.space,
+          notification.mixin.Collaborators,
+          {
+            $push: {
+              collaborators: chatMessage.modifiedBy
             }
-          )
+          }
         )
-      }
-    } else {
-      const collaborators = await getDocCollaborators(targetDoc, mixin, control)
-      if (!collaborators.includes(chatMessage.modifiedBy)) {
-        collaborators.push(chatMessage.modifiedBy)
-      }
-      res.push(getMixinTx(tx, control, collaborators))
+      )
     }
+  } else {
+    const collaborators = await getDocCollaborators(targetDoc, mixin, control)
+    if (!collaborators.includes(chatMessage.modifiedBy)) {
+      collaborators.push(chatMessage.modifiedBy)
+    }
+    res.push(getMixinTx(tx, control, collaborators))
+  }
+
+  if (isChannel && !(targetDoc as Channel).members.includes(chatMessage.modifiedBy)) {
+    res.push(
+      control.txFactory.createTxUpdateDoc(targetDoc._class, targetDoc.space, targetDoc._id, {
+        $push: { members: chatMessage.modifiedBy }
+      })
+    )
   }
 
   return res
@@ -532,13 +544,89 @@ async function OnChatMessageRemoved (tx: TxCollectionCUD<Doc, ChatMessage>, cont
   return res
 }
 
+function combineAttributes (attributes: any[], key: string, operator: string, arrayKey: string): any[] {
+  return Array.from(
+    new Set(
+      attributes.flatMap((attr) =>
+        Array.isArray(attr[operator]?.[key]?.[arrayKey]) ? attr[operator]?.[key]?.[arrayKey] : attr[operator]?.[key]
+      )
+    )
+  ).filter((v) => v != null)
+}
+
+async function OnChannelMembersChanged (tx: TxUpdateDoc<Channel>, control: TriggerControl): Promise<Tx[]> {
+  const changedAttributes = Object.entries(tx.operations)
+    .flatMap(([id, val]) => (['$push', '$pull'].includes(id) ? Object.keys(val) : id))
+    .filter((id) => !id.startsWith('$'))
+
+  if (!changedAttributes.includes('members')) {
+    return []
+  }
+
+  const added = combineAttributes([tx.operations], 'members', '$push', '$each')
+  const removed = combineAttributes([tx.operations], 'members', '$pull', '$in')
+
+  const res: Tx[] = []
+  const allContexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo: tx.objectId })
+
+  if (removed.length > 0) {
+    res.push(
+      control.txFactory.createTxMixin(tx.objectId, tx.objectClass, tx.objectSpace, notification.mixin.Collaborators, {
+        $pull: {
+          collaborators: { $in: removed }
+        }
+      })
+    )
+  }
+
+  for (const addedMember of added) {
+    const context = allContexts.find(({ user }) => user === addedMember)
+
+    if (context === undefined) {
+      res.push(
+        control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, tx.objectSpace, {
+          attachedTo: tx.objectId,
+          attachedToClass: tx.objectClass,
+          user: addedMember,
+          hidden: false,
+          lastViewedTimestamp: tx.modifiedOn
+        })
+      )
+    } else {
+      res.push(
+        control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
+          hidden: false,
+          lastViewedTimestamp: tx.modifiedOn
+        })
+      )
+    }
+  }
+
+  const contextsToRemove = allContexts.filter(({ user }) => removed.includes(user))
+
+  if (contextsToRemove.length === 0) {
+    return res
+  }
+
+  const channel = (await control.findAll(chunter.class.Channel, { _id: tx.objectId }))[0]
+
+  if (channel !== undefined) {
+    for (const context of contextsToRemove) {
+      res.push(control.txFactory.createTxRemoveDoc(context._class, context.space, context._id))
+    }
+  }
+
+  return res
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
     BacklinkTrigger,
     ChunterTrigger,
     OnDirectMessageSent,
-    OnChatMessageRemoved
+    OnChatMessageRemoved,
+    OnChannelMembersChanged
   },
   function: {
     CommentRemove,

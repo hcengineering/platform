@@ -19,10 +19,12 @@
   import { Channel } from '@hcengineering/chunter'
   import { ActivityMessagesFilter } from '@hcengineering/activity'
   import contact from '@hcengineering/contact'
+  import { DocNotifyContext } from '@hcengineering/notification'
 
   import Header from './Header.svelte'
   import chunter from '../plugin'
   import { getChannelIcon, getChannelName } from '../utils'
+  import PinnedMessages from './PinnedMessages.svelte'
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
@@ -76,7 +78,9 @@
     {isAsideShown}
     on:aside-toggled
     on:close
-  />
+  >
+    <PinnedMessages {_id} {_class} />
+  </Header>
 </div>
 
 <style lang="scss">

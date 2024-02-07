@@ -230,7 +230,9 @@ export default plugin(chunterId, {
     DescriptionOptional: '' as IntlString,
     Visibility: '' as IntlString,
     Public: '' as IntlString,
-    Private: '' as IntlString
+    Private: '' as IntlString,
+    NewDirectChat: '' as IntlString,
+    AddMembers: '' as IntlString
   },
   ids: {
     DMNotification: '' as Ref<NotificationType>,
