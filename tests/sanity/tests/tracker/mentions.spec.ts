@@ -11,7 +11,7 @@ test.use({
   storageState: PlatformSetting
 })
 
-test.describe('Tracker issue tests', () => {
+test.describe('Mentions issue tests', () => {
   test.beforeEach(async ({ page }) => {
     await allure.parentSuite('Tracker tests')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
