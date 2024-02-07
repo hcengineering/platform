@@ -33,7 +33,7 @@
   const sendOpen = () => {
     if (object !== undefined) {
       dispatch('open', {
-        ignoreKeys: ['comments', 'number'],
+        ignoreKeys: ['comments', 'number', 'identifier'],
         allowedCollections: ['labels'],
         title: object.identifier
       })

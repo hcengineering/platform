@@ -138,6 +138,7 @@ export class TTask extends TAttachedDoc implements Task {
     isDone?: boolean
 
   @Prop(TypeString(), task.string.Identifier)
+  @ReadOnly()
   @Index(IndexKind.Indexed)
     identifier!: string
 }

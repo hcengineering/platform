@@ -52,7 +52,7 @@
 
   const mixins: Mixin<Doc>[] = []
   const allowedCollections = ['labels']
-  const ignoreKeys = ['isArchived', 'location', 'title', 'description', 'status', 'number', 'assignee']
+  const ignoreKeys = ['isArchived', 'location', 'title', 'description', 'status', 'number', 'assignee', 'identifier']
 
   function change (field: string, value: any) {
     if (object) {

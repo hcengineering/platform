@@ -90,7 +90,8 @@
     'dueDate',
     'milestone',
     'relations',
-    'blockedBy'
+    'blockedBy',
+    'identifier'
   ])
 
   let account: PersonAccount | undefined
