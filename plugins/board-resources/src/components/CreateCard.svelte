@@ -17,11 +17,12 @@
   import type { Board, Card as BoardCard } from '@hcengineering/board'
   import core, { AttachedData, Ref, SortingOrder, Space, generateId } from '@hcengineering/core'
   import { OK, Status } from '@hcengineering/platform'
-  import { Card, SpaceSelector, getClient } from '@hcengineering/presentation'
-  import task, { calcRank } from '@hcengineering/task'
+  import { Card, SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
+  import task, { TaskType, calcRank } from '@hcengineering/task'
   import { EditBox, Grid, Status as StatusControl } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import board from '../plugin'
+  import { TaskKindSelector } from '@hcengineering/task-resources'
 
   export let space: Ref<Space>
 
@@ -32,11 +33,13 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const cardId = generateId()
+  const cardId = generateId<BoardCard>()
 
   export function canClose (): boolean {
     return title !== ''
   }
+
+  let kind: Ref<TaskType> | undefined = undefined
 
   async function createCard () {
     const sp = await client.findOne(board.class.Board, { _id: _space as Ref<Board> })
@@ -51,6 +54,9 @@
     if (status === undefined) {
       throw new Error('Status not found')
     }
+    if (kind === undefined) {
+      throw new Error('kind is not specified')
+    }
     const sequence = await client.findOne(task.class.Sequence, { attachedTo: board.class.Card })
     if (sequence === undefined) {
       throw new Error('sequence object not found')
@@ -59,10 +65,14 @@
     const lastOne = await client.findOne(board.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
+    const number = (incResult as any).object.sequence
+
     const value: AttachedData<BoardCard> = {
       status: status._id,
-      number: (incResult as any).object.sequence,
+      number,
       title,
+      kind,
+      identifier: `CARD-${number}`,
       rank: calcRank(lastOne, undefined),
       assignee: null,
       description: '',
@@ -75,6 +85,14 @@
     await client.addCollection(board.class.Card, _space, _space, board.class.Board, 'cards', value, cardId)
     dispatch('close')
   }
+
+  let boards: Board[] = []
+  const boardQuery = createQuery()
+  boardQuery.query(board.class.Board, {}, (res) => {
+    boards = res
+  })
+
+  $: currentBoard = boards.find((it) => it._id === _space)
 </script>
 
 <Card
@@ -88,6 +106,7 @@
 >
   <svelte:fragment slot="header">
     <SpaceSelector _class={board.class.Board} label={board.string.BoardName} bind:space={_space} />
+    <TaskKindSelector projectType={currentBoard?.type} bind:value={kind} baseClass={board.class.Card} />
   </svelte:fragment>
   <StatusControl slot="error" {status} />
   <Grid column={1} rowGap={1.5}>
