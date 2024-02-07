@@ -177,7 +177,7 @@
       </div>
       <Separator name={'setting'} float={navFloat ? 'navigator' : true} index={0} color={'transparent'} />
     </div>
-    <Separator name={'setting'} float={navFloat} index={0} color={'transparent'} />
+    <Separator name={'setting'} float={navFloat} index={0} color={'transparent'} separatorSize={0} short />
   {/if}
 
   <div class="antiPanel-component filledNav" style:flex-direction={'row'}>
@@ -193,7 +193,7 @@
     {/if}
   </div>
   {#if asideComponent != null}
-    <Separator name={'setting'} index={1} color={'transparent'} />
+    <Separator name={'setting'} index={1} color={'transparent'} separatorSize={0} short />
     <div class="hulySidePanel-container">
       {#key asideProps}
         {#if typeof asideComponent === 'string'}
@@ -205,45 +205,3 @@
     </div>
   {/if}
 </div>
-
-<style lang="scss">
-  .hulyPanels-container {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    min-width: 0;
-    min-height: 0;
-    background-color: var(--theme-navpanel-color); // var(--global-surface-01-BackgroundColor);
-    border-radius: 0 var(--small-focus-BorderRadius) var(--small-focus-BorderRadius) 0;
-
-    // .antiPanel-navigator {
-    //   background-color: transparent;
-    // }
-    .antiPanel-component {
-      border-radius: var(--small-focus-BorderRadius);
-    }
-  }
-  .hulyNavPanel-container :global(.hulyNavItem-container),
-  .hulyNavPanel-container :global(.hulyTaskNavLink-container) {
-    margin: 0 0.75rem;
-  }
-  .hulyNavPanel-container :global(.hulyNavItem-container) + :global(.hulyAccordionItem-container) {
-    margin-top: 0.75rem;
-  }
-  .hulyNavPanel-header {
-    padding: 1rem 1.25rem 1.5rem;
-    font-weight: 700;
-    font-size: 1.25rem;
-    line-height: 1.5rem;
-    color: var(--global-primary-TextColor);
-  }
-  .hulySidePanel-container {
-    display: flex;
-    flex-direction: column;
-    width: 10rem;
-    height: 100%;
-    min-width: 0;
-    min-height: 0;
-    border-radius: 0 var(--small-focus-BorderRadius) var(--small-focus-BorderRadius) 0;
-  }
-</style>

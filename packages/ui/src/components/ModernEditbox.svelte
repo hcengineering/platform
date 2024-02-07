@@ -12,13 +12,14 @@
   export let label: IntlString
   export let value: string | undefined = undefined
   export let kind: 'default' | 'ghost' = 'default'
-  export let size: 'small' | 'large' = 'small'
+  export let size: 'small' | 'medium' | 'large' = 'small'
   export let disabled: boolean = false
   export let error: boolean = false
   export let password: boolean = false
   export let limit: number = 0
   export let element: HTMLInputElement | undefined = undefined
   export let autoFocus: boolean = false
+  export let autoAction: boolean = true
   export let width: string = ''
 
   const dispatch = createEventDispatcher()
@@ -40,7 +41,20 @@
   })
 </script>
 
-<label class="editbox-wrapper {kind} {size}" class:error class:disabled>
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<svelte:element
+  this={autoAction ? 'label' : 'div'}
+  class="editbox-wrapper {kind} {size}"
+  class:error
+  class:disabled
+  style:width
+  on:click={() => {
+    if (!autoAction) element?.focus()
+  }}
+>
+  {#if size !== 'large' && $$slots.default}
+    <slot />
+  {/if}
   {#if password}
     <input
       bind:this={element}
@@ -85,12 +99,13 @@
     />
   {/if}
   {#if labeled}<div class="font-regular-14 label"><Label {label} /></div>{/if}
-</label>
+</svelte:element>
 
 <style lang="scss">
   .editbox-wrapper {
     display: flex;
     align-items: center;
+    gap: var(--spacing-0_75);
     min-width: 0;
     border-radius: var(--medium-BorderRadius);
 
@@ -100,16 +115,22 @@
 
       &.small {
         padding: var(--spacing-1) var(--spacing-1_5);
-        height: var(--spacing-4);
+        height: var(--global-small-Size);
+      }
+      &.medium {
+        padding: var(--spacing-1_5) var(--spacing-2);
+        height: var(--global-medium-Size);
       }
       &.large {
         position: relative;
         padding: 0 var(--spacing-2);
-        height: var(--spacing-6_5);
+        height: var(--global-extra-large-Size);
       }
     }
     &.ghost {
-      &.small {
+      &.small,
+      &.medium {
+        // medium/ghost - not designed
         padding: var(--spacing-1_5) var(--spacing-2);
         height: var(--spacing-5);
       }
@@ -132,7 +153,7 @@
 
       &.default {
         input::placeholder {
-          color: var(--input-LabelColor);
+          color: var(--input-PlaceholderColor);
         }
         &:active,
         &:focus-within {
@@ -150,6 +171,7 @@
       &:hover input:not(:focus)::placeholder {
         color: var(--input-hover-PlaceholderColor);
       }
+      &.default:active input::placeholder,
       input:focus::placeholder {
         color: var(--input-focus-PlaceholderColor);
       }

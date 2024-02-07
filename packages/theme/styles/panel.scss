@@ -13,6 +13,47 @@
 // limitations under the License.
 //
 
+/* Huly Panels */
+.hulyPanels-container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  background-color: var(--theme-navpanel-color); // var(--global-surface-01-BackgroundColor);
+  border-radius: 0 var(--small-focus-BorderRadius) var(--small-focus-BorderRadius) 0;
+
+  // .antiPanel-navigator {
+  //   background-color: transparent;
+  // }
+  .antiPanel-component {
+    border-radius: var(--small-focus-BorderRadius);
+  }
+}
+.hulyNavPanel-container .hulyNavItem-container,
+.hulyNavPanel-container .hulyTaskNavLink-container {
+  margin: 0 0.75rem;
+}
+.hulyNavPanel-container .hulyNavItem-container + .hulyAccordionItem-container {
+  margin-top: 0.75rem;
+}
+.hulyNavPanel-header {
+  padding: 1rem 1.25rem 1.5rem;
+  font-weight: 700;
+  font-size: 1.25rem;
+  line-height: 1.5rem;
+  color: var(--global-primary-TextColor);
+}
+.hulySidePanel-container {
+  display: flex;
+  flex-direction: column;
+  width: 10rem;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  border-radius: 0 var(--small-focus-BorderRadius) var(--small-focus-BorderRadius) 0;
+}
+
 /* Dialogs */
 .antiPanel {
   overflow: hidden;

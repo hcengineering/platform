@@ -19,22 +19,20 @@
 
   export let label: IntlString
   export let categoryName: string
-  export let selected: boolean = false
   export let tools: AnyComponent | undefined = undefined
-  export let collapsed: boolean = false
+  export let isOpen: boolean = true
+  export let selected: boolean = false
   export let second: boolean = false
 
   $: id = `navGroup-${categoryName}`
 </script>
 
-<div class="hulyAccordionItem-container" class:collapsed class:second>
-  <button
-    class="hulyAccordionItem-header"
-    class:selected={selected || !collapsed}
-    on:click={() => (collapsed = !collapsed)}
-  >
-    <div class="hulyAccordionItem-header__label font-medium-12">
-      <Label {label} />
+<div class="hulyAccordionItem-container" class:isOpen class:second>
+  <button class="hulyAccordionItem-header small" class:isOpen class:selected on:click={() => (isOpen = !isOpen)}>
+    <div class="hulyAccordionItem-header__label-wrapper font-medium-12">
+      <span class="hulyAccordionItem-header__label">
+        <Label {label} />
+      </span>
     </div>
     {#if tools}
       <div class="hulyAccordionItem-header__tools">
@@ -48,80 +46,7 @@
       </div>
     {/if}
   </button>
-  <div {id} class="hulyAccordionItem-content" class:collapsed>
+  <div {id} class="hulyAccordionItem-content" class:isOpen>
     <slot />
   </div>
 </div>
-
-<style lang="scss">
-  .hulyAccordionItem-container {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-
-    &:not(.second) {
-      border-top: 1px solid var(--theme-navpanel-divider);
-    }
-    &.second.collapsed {
-      border-bottom: 1px solid var(--theme-navpanel-divider); // var(--global-surface-01-BorderColor);
-    }
-    .hulyAccordionItem-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-shrink: 0;
-      gap: 0.5rem;
-      padding: 0 1rem;
-      height: 2.5rem;
-      border: none;
-      outline: none;
-
-      &__label {
-        white-space: nowrap;
-        word-break: break-all;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 0.125rem 0.25rem;
-        min-width: 0;
-        text-transform: uppercase;
-        color: var(--global-tertiary-TextColor);
-        border-radius: 0.25rem;
-      }
-      &__tools {
-        display: flex;
-        align-items: center;
-        flex-shrink: 0;
-        gap: 0.25rem;
-        min-width: 0;
-      }
-
-      &:hover .hulyAccordionItem-header__label {
-        color: var(--global-primary-TextColor);
-        background-color: var(--global-ui-hover-BackgroundColor);
-      }
-      &.selected .hulyAccordionItem-header__label {
-        color: var(--global-secondary-TextColor);
-        background-color: var(--global-ui-BackgroundColor);
-      }
-    }
-    .hulyAccordionItem-content {
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      padding-bottom: 0.75rem;
-      min-width: 0;
-      max-height: 100%;
-
-      &.collapsed {
-        padding-bottom: 0;
-        max-height: 0;
-      }
-    }
-  }
-  // :global(.hulyAccordionItem-container) + .hulyAccordionItem-container {
-  //   border-top: none;
-  // }
-</style>

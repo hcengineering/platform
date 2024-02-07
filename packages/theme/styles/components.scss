@@ -21,9 +21,16 @@
   height: 100%;
   min-height: 0;
   min-width: 0;
-  background-color: var(--theme-panel-color); // var(--global-surface-02-BackgroundColor);
   border: 1px solid var(--theme-divider-color); // var(--global-surface-02-BorderColor);
   border-radius: var(--small-focus-BorderRadius);
+
+  &:not(.modal) {
+    background-color: var(--theme-panel-color); // var(--global-surface-02-BackgroundColor);
+  }
+  &.modal {
+    overflow: hidden;
+    background-color: var(--theme-comp-header-color); // var(--global-surface-02-BackgroundColor);
+  }
 }
 .hulyComponent-content,
 .hulyComponent-content__container,
@@ -46,6 +53,7 @@
   &__container {
     height: 100%;
   }
+  &__container:not(.columns),
   &:not(.columns) {
     flex-direction: column;
   }
@@ -104,8 +112,13 @@
   padding: var(--spacing-1_5) var(--spacing-2);
   width: 100%;
   height: var(--spacing-6_5);
-  border-bottom: 1px solid var(--theme-divider-color); // var(--global-surface-02-BorderColor);
 
+  &:not(.hideSeparator) {
+    border-bottom: 1px solid var(--theme-divider-color); // var(--global-surface-02-BorderColor);
+  }
+  &.topIndent {
+    margin-top: 1px;
+  }
   .hulyHeader-button {
     display: flex;
     justify-content: center;
@@ -262,6 +275,336 @@
   textarea {
     font-weight: 400 !important;
     color: var(--global-tertiary-TextColor) !important;
+  }
+}
+
+/* Accordion */
+.hulyAccordionItem-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+
+  &:not(.second, .default),
+  &.border {
+    border-top: 1px solid var(--theme-navpanel-divider);
+  }
+  &.second:not(.isOpen),
+  &.border,
+  &.default:not(.nested:last-child) {
+    border-bottom: 1px solid var(--theme-navpanel-divider); // var(--global-surface-01-BorderColor);
+  }
+  .hulyAccordionItem-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    margin: 0;
+    border: none;
+    outline: none;
+
+    &__label-wrapper {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-0_75);
+      min-width: 0;
+    }
+    &__chevron,
+    &__icon {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    &__chevron {
+      width: var(--global-extra-small-Size);
+      height: var(--global-extra-small-Size);
+      color: var(--global-disabled-TextColor);
+      border-radius: var(--extra-small-BorderRadius);
+
+      & > * {
+        transform-origin: center;
+        transform: rotate(0deg);
+        transition: transform 0.1s ease-in-out;
+      }
+    }
+    &__icon {
+      color: var(--global-primary-TextColor);
+      background-color: var(--global-ui-BackgroundColor);
+      border: 1px solid var(--global-subtle-ui-BorderColor);
+    }
+    &__label {
+      white-space: nowrap;
+      word-break: break-all;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      min-width: 0;
+    }
+    &__tools {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      gap: var(--spacing-0_5);
+      min-width: 0;
+    }
+    &__separator,
+    &__counter,
+    &__duration {
+      flex-shrink: 0;
+      min-width: 0;
+      color: var(--global-tertiary-TextColor);
+    }
+    &__duration {
+      font-weight: 400;
+    }
+
+    &.small,
+    &.medium {
+      padding: var(--spacing-1) var(--spacing-2);
+      min-height: var(--global-medium-Size);
+  
+      .hulyAccordionItem-header__label-wrapper {
+        padding: var(--spacing-0_25) var(--spacing-0_5);
+        color: var(--global-tertiary-TextColor);
+        border-radius: var(--extra-small-BorderRadius);
+      }
+      .hulyAccordionItem-header__label {
+        text-transform: uppercase;
+      }
+
+      &:active,
+      &.default.isOpen,
+      &.selected {
+        .hulyAccordionItem-header__label-wrapper {
+          background-color: var(--global-ui-BackgroundColor);
+        }
+        .hulyAccordionItem-header__label,
+        .hulyAccordionItem-header__counter,
+        .hulyAccordionItem-header__duration {
+          color: var(--global-secondary-TextColor);
+        }
+      }
+      &:hover {
+        .hulyAccordionItem-header__label-wrapper {
+          background-color: var(--global-ui-hover-BackgroundColor);
+        }
+        .hulyAccordionItem-header__label,
+        .hulyAccordionItem-header__counter {
+          color: var(--global-primary-TextColor);
+        }
+        .hulyAccordionItem-header__duration {
+          color: var(--global-secondary-TextColor);
+        }
+      }
+    }
+    &.medium {
+      padding: var(--spacing-1_5) var(--spacing-2);
+      min-height: var(--global-large-Size);
+      
+      .hulyAccordionItem-header__label-wrapper {
+        &.withIcon {
+          padding: 0 var(--spacing-1) 0 0;
+        }
+        &:not(.withIcon) {
+          padding: var(--spacing-0_5) var(--spacing-1);
+        }
+      }
+      &.nested {
+        padding-left: var(--spacing-5);
+        
+        & + .hulyAccordionItem-content {
+          margin-left: var(--spacing-5);
+          margin-right: var(--spacing-2);
+        }
+      }
+      .hulyAccordionItem-header__icon {
+        margin-right: var(--spacing-0_5);
+        width: var(--global-extra-small-Size);
+        height: var(--global-extra-small-Size);
+        border-radius: var(--extra-small-BorderRadius);
+      }
+    }
+    &.large {
+      padding: var(--spacing-2) var(--spacing-1_5);
+      min-height: var(--global-max-Size);
+      
+      .hulyAccordionItem-header__label-wrapper {
+        gap: var(--spacing-1);
+        color: var(--global-tertiary-TextColor);
+      }
+      .hulyAccordionItem-header__icon {
+        width: var(--global-small-Size);
+        height: var(--global-small-Size);
+        border-radius: var(--small-BorderRadius);
+      }
+      .hulyAccordionItem-header__label {
+        margin-left: var(--spacing-0_5);
+        color: var(--global-secondary-TextColor);
+      }
+      .hulyAccordionItem-header__counter {
+        font-weight: 400;
+      }
+
+      &:active,
+      &:hover,
+      &.default.isOpen,
+      &.selected {
+        .hulyAccordionItem-header__label {
+          color: var(--global-primary-TextColor);
+        }
+        .hulyAccordionItem-header__counter,
+        .hulyAccordionItem-header__duration {
+          color: var(--global-secondary-TextColor);
+        }
+      }
+      &:hover .hulyAccordionItem-header__chevron {
+        color: var(--button-subtle-IconColor);
+        background-color: var(--global-ui-hover-BackgroundColor);
+      }
+    }
+
+    &.isOpen {
+      & + .hulyAccordionItem-content {
+        max-height: 100%;
+      }
+      &.small.bottomSpace + .hulyAccordionItem-content {
+        padding-bottom: var(--spacing-1_5);
+      }
+      &.medium.bottomSpace + .hulyAccordionItem-content {
+        padding-bottom: var(--spacing-2);
+      }
+      &.large {
+        padding: var(--spacing-2) var(--spacing-1_5) var(--spacing-1);
+        min-height: var(--global-extra-large-Size);
+
+        .hulyAccordionItem-header__chevron > * {
+          transform: rotate(90deg);
+        }
+        &.bottomSpace + .hulyAccordionItem-content {
+          padding-bottom: var(--spacing-2);
+        }
+      }
+    }  
+  }
+  .hulyAccordionItem-content {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    min-width: 0;
+    max-height: 0;
+  }
+}
+
+/* ToDo Line */
+.hulyToDoLine-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin: 0;
+  padding: var(--spacing-1) var(--spacing-1_5) var(--spacing-1) var(--spacing-0_75);
+  width: 100%;
+  min-width: 0;
+  min-height: var(--global-medium-Size);
+  color: var(--global-secondary-TextColor);
+  border: none;
+  border-radius: var(--medium-BorderRadius);
+  outline: none;
+  
+  &.small {
+    max-height: var(--global-medium-Size);
+  }
+
+  .hulyToDoLine-dragbox,
+  .hulyToDoLine-checkbox {
+    display: flex;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .hulyToDoLine-dragbox {
+    position: relative;
+    margin-right: var(--spacing-0_25);
+    padding: 0;
+    width: var(--global-min-Size);
+    height: var(--global-min-Size);
+    color: inherit;
+    border: none;
+    outline: none;
+
+    &.isNew::after {
+      position: absolute;
+      content: '';
+      top: var(--spacing-0_75);
+      right: var(--spacing-0_5);
+      width: var(--spacing-0_5);
+      height: var(--spacing-0_5);
+      background-color: var(--global-primary-LinkColor);
+      border-radius: 50%;
+    }
+    svg {
+      visibility: hidden;
+    }
+  }
+  .hulyToDoLine-checkbox {
+    padding-top: var(--spacing-0_5);
+    width: var(--global-extra-small-Size);
+    height: var(--global-extra-small-Size);
+  }
+  .hulyToDoLine-top-align {
+    color: var(--global-secondary-TextColor);
+
+    &.top-12 {
+      padding-top: 0.25rem;
+    }
+    &.top-14 {
+      padding-top: 0.175rem;
+    }
+  }
+  .hulyToDoLine-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    width: var(--global-min-Size);
+    height: var(--global-extra-small-Size);
+  }
+  .hulyToDoLine-label {
+    flex-grow: 1;
+    flex-shrink: 1;
+    padding-top: var(--spacing-0_5);
+    color: var(--global-secondary-TextColor);
+
+    &:not(.large) {
+      height: var(--global-extra-small-Size);
+    }
+  }
+
+  &.hovered,
+  &:hover {
+    background-color: var(--global-surface-01-hover-BackgroundColor);
+
+    .hulyToDoLine-dragbox {
+      &.isNew::after {
+        content: none;
+      }
+      svg {
+        visibility: visible;
+      }
+    }
+  }
+
+  &.isDrag {
+    .hulyToDoLine-dragbox {
+      &.isNew::after {
+        content: '';
+      }
+      svg {
+        visibility: hidden;
+      }
+    }
   }
 }
 

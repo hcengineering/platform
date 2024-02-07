@@ -16,8 +16,8 @@
   import { afterUpdate, createEventDispatcher } from 'svelte'
   import { capitalizeFirstLetter } from '../../utils'
   import Icon from '../Icon.svelte'
-  import IconNavNext from '../icons/NavNext.svelte'
-  import IconNavPrev from '../icons/NavPrev.svelte'
+  import IconChevronRight from '../icons/ChevronRight.svelte'
+  import IconChevronLeft from '../icons/ChevronLeft.svelte'
   import {
     ICell,
     TCellStyle,
@@ -29,12 +29,14 @@
     getUserTimezone,
     getWeekDayName
   } from './internal/DateUtils'
+  import ButtonIcon from '../ButtonIcon.svelte'
   import moment from 'moment-timezone'
 
   export let currentDate: Date | null
   export let mondayStart: boolean = true
   export let timeZone: string = getUserTimezone()
   export let hideNavigator: boolean = false
+  export let replacementDay: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -82,56 +84,64 @@
 <div class="month-container">
   <div class="header">
     {#if viewDate}
-      <div class="monthYear">{monthYear}</div>
-      <div class="group" class:hideNavigator>
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div
-          class="btn"
-          on:click={() => {
-            viewDate.setMonth(viewDate.getMonth() - 1)
-            renderCellStyles()
-          }}
-        >
-          <div class="icon-btn"><Icon icon={IconNavPrev} size={'full'} /></div>
+      <div class="monthYear font-medium-14">{monthYear}</div>
+      <slot name="header" />
+      {#if !hideNavigator}
+        <div class="flex-row-center flex-no-shrink gap-2 tertiary-textColor">
+          <ButtonIcon
+            icon={IconChevronLeft}
+            kind={'tertiary'}
+            size={'extra-small'}
+            inheritColor
+            on:click={() => {
+              viewDate.setMonth(viewDate.getMonth() - 1)
+              renderCellStyles()
+            }}
+          />
+          <ButtonIcon
+            icon={IconChevronRight}
+            kind={'tertiary'}
+            size={'extra-small'}
+            inheritColor
+            on:click={() => {
+              viewDate.setMonth(viewDate.getMonth() + 1)
+              renderCellStyles()
+            }}
+          />
         </div>
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div
-          class="btn"
-          on:click={() => {
-            viewDate.setMonth(viewDate.getMonth() + 1)
-            renderCellStyles()
-          }}
-        >
-          <div class="icon-btn"><Icon icon={IconNavNext} size={'full'} /></div>
-        </div>
-      </div>
+      {/if}
     {/if}
   </div>
 
   {#if viewDate}
-    <div class="calendar">
+    <div class="caption">
       {#each [...Array(7).keys()] as dayOfWeek}
-        <span class="caption"
+        <span class="weekdays ui-regular-12"
           >{capitalizeFirstLetter(getWeekDayName(day(firstDayOfCurrentMonth, dayOfWeek), 'short'))}</span
         >
       {/each}
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
+    </div>
+    <div class="calendar">
       {#each days as day, i}
-        <div
-          class="day {day.style}"
+        <button
+          class="day ui-regular-14 {day.style}"
           class:today={isToday(i + 1)}
           class:day-off={day.dayOfWeek > 5}
-          style="grid-column: {day.dayOfWeek}/{day.dayOfWeek + 1};"
+          style="grid-column: {mondayStart ? day.dayOfWeek : day.dayOfWeek === 7 ? 1 : day.dayOfWeek + 1}/{mondayStart
+            ? day.dayOfWeek + 1
+            : day.dayOfWeek === 7
+              ? 2
+              : day.dayOfWeek + 2};"
           on:click|stopPropagation={() => {
             viewDate.setDate(i + 1)
             dispatch('update', viewDate)
           }}
         >
-          {i + 1}
-        </div>
+          <slot day={{ display: i + 1, date: new Date(viewDate.getFullYear(), viewDate.getMonth(), i + 1) }}>
+            {i + 1}
+          </slot>
+          {#if $$slots.default && !replacementDay}{i + 1}{/if}
+        </button>
       {/each}
     </div>
   {/if}
@@ -141,59 +151,39 @@
   .month-container {
     display: flex;
     flex-direction: column;
+    min-width: 0;
     min-height: 0;
     width: 100%;
     height: 100%;
-    color: var(--caption-color);
+    border-radius: var(--medium-BorderRadius);
 
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1rem 1rem 0.75rem;
-      color: var(--caption-color);
+      padding: var(--spacing-2) var(--spacing-2) var(--spacing-2) var(--spacing-2_75);
 
       .monthYear {
-        font-weight: 500;
-        font-size: 1rem;
+        white-space: nowrap;
+        word-break: break-all;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        min-width: 0;
+        color: var(--global-primary-TextColor);
+
         &::first-letter {
           text-transform: capitalize;
-        }
-      }
-      .group {
-        display: flex;
-        align-items: center;
-
-        &.hideNavigator {
-          visibility: hidden;
-        }
-        .btn {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          width: 1.25rem;
-          height: 1.75rem;
-          color: var(--dark-color);
-          cursor: pointer;
-
-          .icon-btn {
-            height: 0.75rem;
-          }
-          &:hover {
-            color: var(--accent-color);
-          }
         }
       }
     }
   }
 
+  .caption,
   .calendar {
-    position: relative;
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    padding: 0 1rem 1rem;
 
-    .caption,
+    .weekdays,
     .day {
       display: flex;
       justify-content: center;
@@ -201,43 +191,52 @@
       width: 2rem;
       height: 2rem;
       margin: 0.125rem;
-      font-size: 1rem;
       color: var(--content-color);
     }
-    .caption {
-      align-items: start;
+  }
+  .caption {
+    padding: 0 var(--spacing-2);
+
+    .weekdays {
       height: 2rem;
       color: var(--dark-color);
       &::first-letter {
         text-transform: capitalize;
       }
     }
+  }
+  .calendar {
+    padding: var(--spacing-1) var(--spacing-2) var(--spacing-2);
+
     .day {
       position: relative;
+      margin: 0;
+      padding: 0;
       color: var(--accent-color);
       background-color: rgba(var(--accent-color), 0.05);
       border: 1px solid transparent;
       border-radius: 0.25rem;
-      cursor: pointer;
+      outline: none;
 
       &.day-off {
         color: var(--content-color);
       }
-      &.today:not(.selected, :hover) {
-        font-weight: 500;
-        background-color: rgba(76, 56, 188, 0.2);
-        border-radius: 50%;
-      }
       &.focused {
         box-shadow: 0 0 0 3px var(--primary-button-outline);
-      }
-      &.selected {
-        color: var(--primary-button-color);
-        background-color: var(--primary-button-default);
       }
       &:hover {
         color: var(--caption-color);
         background-color: var(--primary-button-transparent);
+      }
+      &.today:not(.selected) {
+        font-weight: 700;
+        color: var(--global-primary-LinkColor);
+      }
+      &.selected {
+        font-weight: 700;
+        color: var(--primary-button-color);
+        background-color: var(--primary-button-default);
+        cursor: default;
       }
 
       &:before {
@@ -245,16 +244,6 @@
         position: absolute;
         inset: -0.625rem;
       }
-    }
-
-    &::before {
-      position: absolute;
-      content: '';
-      top: 2rem;
-      left: 0;
-      width: 100%;
-      height: 1px;
-      background-color: var(--button-bg-color);
     }
   }
 </style>

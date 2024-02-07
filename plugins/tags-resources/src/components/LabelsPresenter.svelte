@@ -14,7 +14,7 @@
   export let object: WithLookup<Doc>
   export let full: boolean
   export let ckeckFilled: boolean = false
-  export let kind: 'short' | 'full' | 'list' | 'link' = 'short'
+  export let kind: 'short' | 'full' | 'list' | 'link' | 'todo' = 'short'
   export let isEditable: boolean = false
   export let action: (evt: MouseEvent) => Promise<void> | void = async () => {}
   export let compression: boolean = false
@@ -52,7 +52,7 @@
   })
 </script>
 
-{#if kind === 'list' || kind === 'link'}
+{#if kind === 'list' || kind === 'link' || kind === 'todo'}
   {#if items.length > 4}
     <div
       class="label-box no-shrink"
