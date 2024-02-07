@@ -107,4 +107,4 @@ export const fieldStateId = 'fld-v11'
 /**
  * @public
  */
-export const fullTextPushStageId = 'fts-v9bc'
+export const fullTextPushStageId = 'fts-v9_2'
