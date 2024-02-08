@@ -1,6 +1,6 @@
 <script lang="ts">
   import { AttachmentStyleBoxEditor } from '@hcengineering/attachment-resources'
-  import { getClient } from '@hcengineering/presentation'
+  import { getClient, getDocRules } from '@hcengineering/presentation'
   import { Component } from '@hcengineering/tracker'
   import { EditBox, Label } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
@@ -15,8 +15,10 @@
   let oldLabel = ''
   let rawLabel = ''
 
-  function change<K extends keyof Component> (field: K, value: Component[K]) {
-    client.update(object, { [field]: value })
+  $: rulesQuery = getDocRules<Component>(object, 'label')
+
+  function change<K extends keyof Component> (field: K, value: Component[K]): void {
+    void client.update(object, { [field]: value })
   }
 
   $: if (oldLabel !== object.label) {
@@ -33,6 +35,7 @@
 <EditBox
   bind:value={rawLabel}
   placeholder={tracker.string.Component}
+  disabled={rulesQuery?.disableEdit ?? false}
   kind="large-style"
   on:blur={() => {
     const trimmedLabel = rawLabel.trim()
