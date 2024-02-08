@@ -382,10 +382,14 @@ export async function filterChatMessages (
 
 export function buildThreadLink (loc: Location, contextId: Ref<DocNotifyContext>, _id: Ref<ActivityMessage>): Location {
   const specials = chatSpecials.map(({ id }) => id)
+  const isSameContext = loc.path[3] === contextId
+
+  if (!isSameContext) {
+    loc.query = { message: _id }
+  }
 
   if (loc.path[2] === chunterId && specials.includes(loc.path[3])) {
     loc.path[4] = _id
-    loc.query = { message: _id }
     return loc
   }
 
