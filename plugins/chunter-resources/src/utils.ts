@@ -382,10 +382,14 @@ export async function filterChatMessages (
 
 export function navigateToThread (loc: Location, contextId: Ref<DocNotifyContext>, _id: Ref<ActivityMessage>): void {
   const specials = chatSpecials.map(({ id }) => id)
+  const isSameContext = loc.path[3] === contextId
+
+  if (!isSameContext) {
+    loc.query = { message: _id }
+  }
 
   if (loc.path[2] === chunterId && specials.includes(loc.path[3])) {
     loc.path[4] = _id
-    loc.query = { message: _id }
     navigate(loc)
     return
   }
@@ -397,7 +401,6 @@ export function navigateToThread (loc: Location, contextId: Ref<DocNotifyContext
   loc.path[3] = contextId
   loc.path[4] = _id
   loc.fragment = undefined
-  loc.query = { message: _id }
   navigate(loc)
 }
 

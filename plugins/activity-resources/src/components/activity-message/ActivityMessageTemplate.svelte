@@ -282,7 +282,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    width: calc(100% - 3.5rem);
 
     span {
       margin-left: 0.25rem;
