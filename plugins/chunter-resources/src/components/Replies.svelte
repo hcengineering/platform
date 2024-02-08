@@ -16,7 +16,7 @@
   import { Person } from '@hcengineering/contact'
   import { personByIdStore, Avatar } from '@hcengineering/contact-resources'
   import { Doc, IdMap, Ref, WithLookup } from '@hcengineering/core'
-  import { getLocation, Label, TimeSince } from '@hcengineering/ui'
+  import { getLocation, Label, navigate, TimeSince } from '@hcengineering/ui'
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import notification, {
     ActivityInboxNotification,
@@ -27,7 +27,7 @@
   import { getResource } from '@hcengineering/platform'
   import { get } from 'svelte/store'
 
-  import { navigateToThread } from '../utils'
+  import { buildThreadLink } from '../utils'
 
   export let object: ActivityMessage
   export let embedded = false
@@ -97,7 +97,7 @@
       return
     }
 
-    navigateToThread(getLocation(), context._id, object._id)
+    navigate(buildThreadLink(getLocation(), context._id, object._id))
   }
 </script>
 

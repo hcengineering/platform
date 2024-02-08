@@ -414,7 +414,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
   }
 
   builder.mixin(chunter.class.ThreadMessage, core.class.Class, view.mixin.LinkProvider, {
-    encode: chunter.function.GetFragment
+    encode: chunter.function.GetThreadLink
   })
 
   createAction(

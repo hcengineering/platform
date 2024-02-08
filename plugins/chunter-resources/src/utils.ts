@@ -51,7 +51,7 @@ import activity, {
   type DocUpdateMessage
 } from '@hcengineering/activity'
 import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-import { type DocNotifyContext, inboxId } from '@hcengineering/notification'
+import notification, { type DocNotifyContext, inboxId } from '@hcengineering/notification'
 import { get, type Unsubscriber } from 'svelte/store'
 
 import chunter from './plugin'
@@ -380,7 +380,7 @@ export async function filterChatMessages (
   return messages.filter((message) => filtersFns.some((filterFn) => filterFn(message, objectClass)))
 }
 
-export function navigateToThread (loc: Location, contextId: Ref<DocNotifyContext>, _id: Ref<ActivityMessage>): void {
+export function buildThreadLink (loc: Location, contextId: Ref<DocNotifyContext>, _id: Ref<ActivityMessage>): Location {
   const specials = chatSpecials.map(({ id }) => id)
   const isSameContext = loc.path[3] === contextId
 
@@ -390,8 +390,7 @@ export function navigateToThread (loc: Location, contextId: Ref<DocNotifyContext
 
   if (loc.path[2] === chunterId && specials.includes(loc.path[3])) {
     loc.path[4] = _id
-    navigate(loc)
-    return
+    return loc
   }
 
   if (loc.path[2] !== inboxId) {
@@ -401,7 +400,33 @@ export function navigateToThread (loc: Location, contextId: Ref<DocNotifyContext
   loc.path[3] = contextId
   loc.path[4] = _id
   loc.fragment = undefined
-  navigate(loc)
+  loc.query = { message: _id }
+
+  return loc
+}
+
+export async function getThreadLink (doc: ThreadMessage): Promise<Location> {
+  const loc = getCurrentResolvedLocation()
+  const client = getClient()
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+
+  let contextId: Ref<DocNotifyContext> | undefined = get(inboxClient.docNotifyContextByDoc).get(doc.objectId)?._id
+
+  if (contextId === undefined) {
+    contextId = await client.createDoc(notification.class.DocNotifyContext, doc.space, {
+      attachedTo: doc.attachedTo,
+      attachedToClass: doc.attachedToClass,
+      user: getCurrentAccount()._id,
+      hidden: false,
+      lastViewedTimestamp: Date.now()
+    })
+  }
+
+  if (contextId === undefined) {
+    return loc
+  }
+
+  return buildThreadLink(loc, contextId, doc.attachedTo)
 }
 
 export async function joinChannel (channel: Channel, value: Ref<Account> | Array<Ref<Account>>): Promise<void> {

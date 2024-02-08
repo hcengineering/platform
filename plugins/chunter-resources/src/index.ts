@@ -82,7 +82,8 @@ import {
   getTitle,
   getUnreadThreadsCount,
   canCopyMessageLink,
-  navigateToThread
+  buildThreadLink,
+  getThreadLink
 } from './utils'
 import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 import { type Mode } from './components/chat/types'
@@ -244,7 +245,7 @@ export async function replyToThread (message: ActivityMessage): Promise<void> {
     loc.path[2] = chunterId
   }
 
-  navigateToThread(loc, contextId, message._id)
+  navigate(buildThreadLink(loc, contextId, message._id))
 }
 
 export default async (): Promise<Resources> => ({
@@ -297,7 +298,8 @@ export default async (): Promise<Resources> => ({
     CanReplyToThread: canReplyToThread,
     CanCopyMessageLink: canCopyMessageLink,
     GetChunterSpaceLinkFragment: chunterSpaceLinkFragmentProvider,
-    GetUnreadThreadsCount: getUnreadThreadsCount
+    GetUnreadThreadsCount: getUnreadThreadsCount,
+    GetThreadLink: getThreadLink
   },
   activity: {
     BacklinkCreatedLabel
