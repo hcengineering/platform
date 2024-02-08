@@ -41,7 +41,6 @@
   export let onReply: (() => void) | undefined = undefined
 
   const client = getClient()
-  $: console.log({ value })
 </script>
 
 {#if inline && value}
