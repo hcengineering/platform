@@ -286,7 +286,7 @@
       {labelSend}
       {showSend}
       {showActions}
-      {loading}
+      loading={loading || progress}
       {boundary}
       extraActions={[
         ...extraActions,
