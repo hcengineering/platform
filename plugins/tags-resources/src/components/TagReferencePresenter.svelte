@@ -80,6 +80,7 @@
 <style lang="scss">
   .todoLabel-container {
     padding: var(--spacing-0_25) var(--spacing-0_5);
+    color: var(--global-on-accent-TextColor);
     border-radius: var(--extra-small-BorderRadius);
   }
   .listitems-container {
