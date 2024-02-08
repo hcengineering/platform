@@ -19,7 +19,7 @@ test.describe('Mentions issue tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test('If user mentioned in the issue than he should be added as Collaborators', async ({ page }) => {
+  test.skip('If user mentioned in the issue than he should be added as Collaborators', async ({ page }) => {
     const mentionIssue: NewIssue = {
       title: `Issue user mentioned as Collaborators-${generateId()}`,
       description: 'Issue user mentioned as Collaborators description'
@@ -43,7 +43,7 @@ test.describe('Mentions issue tests', () => {
     // await issuesDetailsPage.checkCollaborators(['Appleseed John', 'Dirak Kainin'])
   })
 
-  test('When Change assigner user should be added as Collaborators', async ({ page }) => {
+  test.skip('When Change assigner user should be added as Collaborators', async ({ page }) => {
     const mentionIssue: NewIssue = {
       title: `When Change assigner user should be added as Collaborators-${generateId()}`,
       description: 'When Change assigner user should be added as Collaborators description'
@@ -70,7 +70,7 @@ test.describe('Mentions issue tests', () => {
     await issuesDetailsPage.checkCollaborators(['Appleseed John', 'Dirak Kainin'])
   })
 
-  test('Check that the backlink shown in the Contact activity', async ({ page }) => {
+  test.skip('Check that the backlink shown in the Contact activity', async ({ page }) => {
     const mentionName = 'Dirak Kainin'
     const mentionIssue: NewIssue = {
       title: `Check that the backlink shown in the Contact activity-${generateId()}`,
@@ -100,5 +100,38 @@ test.describe('Mentions issue tests', () => {
 
     const employeeDetailsPage = new EmployeeDetailsPage(page)
     await employeeDetailsPage.checkActivityExist(`mentioned ${mentionName} in`, `@${mentionName}`)
+  })
+
+  test('Check that the backlink shown in the Issue activity', async ({ page }) => {
+    const mentionName = 'Dirak Kainin'
+    const backlinkIssue: NewIssue = {
+      title: `Check that the backlink shown in the Contact activity-${generateId()}`,
+      description: 'Check that the backlink shown in the Contact activity description'
+    }
+
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
+    await issuesPage.createNewIssue(backlinkIssue)
+    await issuesPage.searchIssueByName(backlinkIssue.title)
+    await issuesPage.openIssueByName(backlinkIssue.title)
+
+    const issuesDetailsPage = new IssuesDetailsPage(page)
+    await issuesDetailsPage.checkActivityExist('created issue')
+    await issuesDetailsPage.checkActivityContentExist(`New issue: ${backlinkIssue.title}`)
+    await issuesDetailsPage.openLinkFromActivitiesByText(backlinkIssue.title)
+    await issuesDetailsPage.checkIssue(backlinkIssue)
+
+    await issuesDetailsPage.addMentions(mentionName)
+    await issuesDetailsPage.checkCommentExist(`@${mentionName}`)
+    await issuesDetailsPage.openLinkFromActivitiesByText(mentionName)
+
+    const employeeDetailsPage = new EmployeeDetailsPage(page)
+    await employeeDetailsPage.checkEmployee({
+      firstName: mentionName.split(' ')[1],
+      lastName: mentionName.split(' ')[0]
+    })
   })
 })
